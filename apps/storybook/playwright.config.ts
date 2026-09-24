@@ -28,7 +28,9 @@ export default defineConfig({
   },
   webServer: {
     // The job starts its own server on the built Storybook; a running one is never reused.
-    command: `pnpm exec vite preview --outDir storybook-static --host 127.0.0.1 --port ${String(PORT)} --strictPort`,
+    // Vite runs directly under Node: through `pnpm exec`, the stop signal did not reach it and
+    // the server outlived the run.
+    command: `node node_modules/vite/bin/vite.js preview --outDir storybook-static --host 127.0.0.1 --port ${String(PORT)} --strictPort`,
     url: `http://127.0.0.1:${String(PORT)}/index.json`,
     reuseExistingServer: false,
     timeout: 60_000,
