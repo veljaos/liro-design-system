@@ -38,3 +38,9 @@ jobs:
 
       - name: Formatting
         run: pnpm format:check
+
+      - name: Build
+        run: pnpm build
+
+      - name: Consumer check (packed tarballs)
+        run: pnpm consumer-check

@@ -10,6 +10,8 @@
   "scripts": {
     "lint": "eslint . --max-warnings 0",
     "typecheck": "tsc -p tsconfig.json && pnpm -r --if-present typecheck",
+    "build": "pnpm -r --if-present build",
+    "consumer-check": "node scripts/consumer-check.mjs",
     "format": "prettier . --write",
     "format:check": "prettier . --check"
   },

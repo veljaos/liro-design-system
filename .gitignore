@@ -25,3 +25,6 @@ secrets/
 *.secrets
 credentials*.json
 service-account*.json
+
+# Claude Code: personal, machine-specific settings (the shared .claude/settings.json is committed)
+.claude/settings.local.json

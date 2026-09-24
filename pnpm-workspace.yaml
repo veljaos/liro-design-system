@@ -1,3 +1,11 @@
 packages:
   - packages/*
   - apps/*
+  # A consumer installs packed tarballs, never workspace links (BUILD-PLAN Appendix B.10).
+  - '!apps/consumer-check'
+
+# Install scripts stay off. esbuild and @parcel/watcher load prebuilt binaries from their
+# optional platform packages; their scripts only verify or compile a fallback.
+allowBuilds:
+  '@parcel/watcher': false
+  esbuild: false

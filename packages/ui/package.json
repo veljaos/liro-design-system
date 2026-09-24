@@ -1,0 +1,36 @@
+{
+  "name": "@liro/ui",
+  "version": "2.0.0-alpha.0",
+  "description": "Liro Design System components and screen templates, with precompiled CSS.",
+  "type": "module",
+  "sideEffects": [
+    "*.css"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./styles.css": "./dist/styles.css",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup && tailwindcss --input src/styles.css --output dist/styles.css --minify",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "peerDependencies": {
+    "@liro/tokens": "workspace:*",
+    "react": "^19.0.0"
+  },
+  "devDependencies": {
+    "@liro/tokens": "workspace:*",
+    "@tailwindcss/cli": "4.3.3",
+    "@types/react": "19.3.0",
+    "react": "19.3.0",
+    "tailwindcss": "4.3.3",
+    "tsup": "8.5.1"
+  }
+}

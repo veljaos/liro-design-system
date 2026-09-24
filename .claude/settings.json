@@ -1,0 +1,47 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git push origin bp/*)",
+      "Bash(git push -u origin bp/*)",
+      "Bash(gh pr create *)",
+      "Bash(gh pr view)",
+      "Bash(gh pr view *)",
+      "Bash(gh pr checks)",
+      "Bash(gh pr checks *)",
+      "Bash(gh pr diff)",
+      "Bash(gh pr diff *)",
+      "Bash(gh pr list)",
+      "Bash(gh pr list *)",
+      "Bash(gh pr edit * --body *)",
+      "Bash(gh pr edit * --body-file *)",
+      "Bash(gh pr merge * --auto --squash)"
+    ],
+    "deny": [
+      "Bash(git push *main*)",
+      "Bash(git push *--force*)",
+      "Bash(git push *-f *)",
+      "Bash(git push *-f)",
+      "Bash(git push *+*)",
+      "Bash(git push *--mirror*)",
+      "Bash(git push *--delete*)",
+      "Bash(git push *--no-verify*)",
+      "Bash(gh pr close*)",
+      "Bash(gh pr review*)",
+      "Bash(gh pr merge)",
+      "Bash(gh pr merge *--merge*)",
+      "Bash(gh pr merge *--rebase*)",
+      "Bash(gh pr merge *-m*)",
+      "Bash(gh pr merge *-r*)",
+      "Bash(gh pr merge *--disable-auto*)",
+      "Bash(gh pr *--admin*)",
+      "Bash(gh api *)",
+      "Bash(gh repo edit*)",
+      "Bash(*runas*)",
+      "Bash(*RunAs*)",
+      "PowerShell(*RunAs*)",
+      "PowerShell(*runas*)",
+      "PowerShell(git push *)",
+      "PowerShell(gh *)"
+    ]
+  }
+}

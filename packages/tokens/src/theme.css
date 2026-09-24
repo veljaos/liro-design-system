@@ -1,0 +1,14 @@
+/*
+ * Tailwind v4 theme: semantic utility names that read the Liro variables from tokens.css.
+ * `inline` makes utilities reference the --liro-* variables directly, so the values live in one place.
+ */
+@theme inline {
+  --color-surface-page: var(--liro-surface-page);
+  --color-text-primary: var(--liro-text-primary);
+  --color-brand-solid: var(--liro-brand-solid);
+  --color-brand-solid-hover: var(--liro-brand-solid-hover);
+  --color-brand-solid-active: var(--liro-brand-solid-active);
+  --color-brand-on-solid: var(--liro-brand-on-solid);
+  --color-border-focus: var(--liro-border-focus);
+  --radius-md: var(--liro-radius-md);
+}

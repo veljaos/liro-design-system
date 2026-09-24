@@ -1,0 +1,21 @@
+{
+  "name": "@liro/tokens",
+  "version": "2.0.0-alpha.0",
+  "description": "Liro Design System tokens: CSS variables, the Tailwind theme and the same values as JSON.",
+  "type": "module",
+  "sideEffects": [
+    "*.css"
+  ],
+  "exports": {
+    "./tokens.css": "./dist/tokens.css",
+    "./theme.css": "./dist/theme.css",
+    "./tokens.json": "./dist/tokens.json",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "node scripts/build.mjs"
+  }
+}
