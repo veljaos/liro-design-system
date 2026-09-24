@@ -218,7 +218,7 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 
 | Step | Title | Depends on | Status | Date | Note |
 |---|---|---|---|---|---|
-| P0.1 | Repository and toolchain | — | in progress | 2026-09-24 | Local install, lint, typecheck pass; waiting for a GitHub repository to run CI |
+| P0.1 | Repository and toolchain | — | done | 2026-09-24 | pnpm 12, TypeScript 6.0.3, ESLint 9, Prettier; CI green on PR #1 |
 | P0.2 | Packages, build, consumer check | P0.1 | todo | | |
 | P0.3 | Storybook with the toolbar | P0.2 | todo | | |
 | P0.4 | CI on Linux: tests, accessibility, visual | P0.3 | todo | | |
