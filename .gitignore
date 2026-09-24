@@ -1,0 +1,27 @@
+node_modules/
+dist/
+storybook-static/
+coverage/
+*.tgz
+*.tsbuildinfo
+.eslintcache
+.DS_Store
+
+# Secrets: never commit these (the repository is public)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.keystore
+*.jks
+id_rsa*
+id_ed25519*
+.npmrc.local
+secrets/
+*.secret
+*.secrets
+credentials*.json
+service-account*.json
