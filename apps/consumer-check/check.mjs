@@ -1,9 +1,11 @@
 // Runs inside the installed copy of consumer-check, after `vite build`.
 // Proves that the packed packages work for a consumer: the button renders, the CSS files
-// resolve through the exports maps and reach the bundle, and the ESLint config loads and applies.
+// resolve through the exports maps and reach the bundle, the ESLint config loads and applies,
+// and the license travels with every package.
 import assert from 'node:assert/strict'
-import { readdir, readFile } from 'node:fs/promises'
+import { access, readdir, readFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
+import { dirname, join } from 'node:path'
 import { ESLint } from 'eslint'
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
@@ -51,5 +53,18 @@ assert.deepEqual(
   ['2:no-restricted-imports', '3:no-restricted-imports'],
 )
 console.log('eslint: @liro/eslint-config reports Radix and internal imports, allows styles.css')
+
+// 4. Every package carries the license and the third-party notices.
+for (const name of ['@liro/tokens', '@liro/ui', '@liro/eslint-config']) {
+  const dir = dirname(require.resolve(`${name}/package.json`))
+  const manifest = JSON.parse(await readFile(join(dir, 'package.json'), 'utf8'))
+  assert.equal(manifest.license, 'UNLICENSED', `${name}: license field`)
+  for (const file of ['LICENSE', 'THIRD-PARTY-NOTICES.md']) {
+    await access(join(dir, 'dist', file))
+  }
+}
+console.log(
+  'legal: every package has license UNLICENSED, dist/LICENSE and dist/THIRD-PARTY-NOTICES.md',
+)
 
 console.log('consumer-check: passed')

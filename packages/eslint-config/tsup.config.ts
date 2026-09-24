@@ -1,6 +1,7 @@
 import { defineConfig } from 'tsup'
 
-// Outputs (BUILD-PLAN Appendix B.10): dist/index.js and dist/index.d.ts.
+// Outputs (BUILD-PLAN Appendix B.10): dist/index.js and dist/index.d.ts; dist/LICENSE and
+// dist/THIRD-PARTY-NOTICES.md come from scripts/copy-legal.mjs.
 export default defineConfig({
   entry: ['src/index.ts'],
   format: ['esm'],

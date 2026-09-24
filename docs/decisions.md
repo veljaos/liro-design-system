@@ -38,6 +38,15 @@ All dependencies are pinned to exact versions (`.npmrc`: `save-exact=true`). Eac
 | Vite                           | 8.3.0   | consumer-check only. **Not 8.3.1**, which was published on 2026-09-24 and is younger than pnpm's one-day minimum release age.                                                                                                                          |
 | @vitejs/plugin-react           | 6.1.1   | consumer-check only.                                                                                                                                                                                                                                   |
 
+### P0.3 — Storybook with the toolbar (2026-09-24)
+
+| Tool                                                                           | Version | Note                                                                                             |
+| ------------------------------------------------------------------------------ | ------- | ------------------------------------------------------------------------------------------------ |
+| storybook, @storybook/react-vite, @storybook/addon-docs, @storybook/addon-a11y | 10.6.0  | Telemetry off (`core.disableTelemetry`).                                                         |
+| @tailwindcss/vite                                                              | 4.3.3   | Compiles the `@liro/ui` source styles inside Storybook.                                          |
+| Vite                                                                           | 8.3.0   | Same as consumer-check.                                                                          |
+| Vitest                                                                         | 5.0.1   | Unit tests of `@liro/ui`, in Node. Brought forward from P0.4 because P0.3 adds formatting logic. |
+
 ## Lint
 
 - **2026-09-24 — Inline configuration is off.** `linterOptions.noInlineConfig: true`, `reportUnusedDisableDirectives: "error"` and `--max-warnings 0`: an `eslint-disable` comment produces a warning, and a warning fails the run. Exceptions go into `eslint.config.mjs`, where they are visible and protected (BUILD-PLAN rule 10).
@@ -53,9 +62,24 @@ All dependencies are pinned to exact versions (`.npmrc`: `save-exact=true`). Eac
 - **2026-09-24 — @liro/tokens is a peer of @liro/ui.** The components' CSS reads the `--liro-*` variables, which the application loads once from `@liro/tokens/tokens.css`. pnpm warns that this peer is unmet in consumer-check, because it does not count a `file:` tarball as satisfying a version range; the peer is linked all the same.
 - **2026-09-24 — Install scripts stay off.** `allowBuilds` in `pnpm-workspace.yaml` denies the install scripts of esbuild and @parcel/watcher; both load prebuilt binaries from optional platform packages.
 - **2026-09-24 — Versions start at 2.0.0-alpha.0**, the version the end of Phase 0 publishes (BUILD-PLAN section 2: no collision with the old 1.0.0).
-- **2026-09-24 — No license field yet.** The packages carry no `license` until the owner chooses one.
+- **2026-09-24 — Proprietary license.** Every package has `"license": "UNLICENSED"`; the root `LICENSE` states the terms. Each build copies `LICENSE` and `THIRD-PARTY-NOTICES.md` into the package's `dist/` (`scripts/copy-legal.mjs`), and consumer-check verifies both are in every installed package.
+- **2026-09-24 — Third-party notices.** `THIRD-PARTY-NOTICES.md` lists code copied into the repository, code included in the packages, runtime and peer dependencies, and what the published Storybook bundles. It is updated in the same pull request that adds any of these.
 
 ## Agent permissions
 
 - **2026-09-24 — `.claude/settings.json` is protected** (BUILD-PLAN rule 10). It allows pushing `bp/*` branches and only these `gh pr` commands: `create`, `view`, `checks`, `diff`, `list`, `edit` with `--body`/`--body-file`, and `merge <number> --auto --squash`. It denies pushing to `main`, force pushes, `gh pr close`, `gh pr review`, merges with `--merge`/`--rebase`/`--disable-auto`, anything with `--admin`, and `gh api`. Permissions are never widened without the owner's approval. Personal settings go in `.claude/settings.local.json`, which is git-ignored.
 - **2026-09-24 — Auto-merge.** After opening a pull request the agent runs `gh pr merge <number> --auto --squash`; GitHub merges only when CI passes. A pull request that changes a protected file gets no auto-merge: the owner merges it.
+
+## Storybook
+
+- **2026-09-24 — Stories use the source.** Storybook aliases `@liro/ui` to `packages/ui/src`, so the provider in the global decorator and the components in the stories are the same module. Tokens come from the built `@liro/tokens`: run `pnpm build` before `pnpm storybook`.
+- **2026-09-24 — Stories stay out of the package CSS.** `packages/ui/src/styles.css` excludes `*.stories.tsx` and tests from its sources; Storybook adds them back in its own `preview.css`.
+- **2026-09-24 — Toolbar globals** go through `LiroProvider`: theme, direction (from locale, or forced), format locale (`en`, `sr-Latn-RS`, `ar`, `ja`), number scheme (from locale, or one of five), money decimals (0, 2, 4, 6). The viewport is Storybook's own: phone 390×844, tablet 820×1180, desktop 1440×900. Storybook turns a numeric URL global into a number, so the decorator compares values as strings.
+- **2026-09-24 — Accessibility.** The a11y addon runs only the WCAG 2.0/2.1/2.2 A and AA rules, with `test: "error"`, so a violation fails the story tests of P0.4.
+
+## Provider
+
+- **2026-09-24 — First LiroProvider subset (P0.3).** `locale`, `direction` (default from the locale's likely script, via `Intl.Locale.maximize()`), `colorScheme` (`system` follows `prefers-color-scheme`), and `format` with `number`, `money`, `numberScheme` (default read from Intl) and `moneyDecimals` (default 2). P1.5 adds messages, parsing, dates, `today`, `weekStartsOn` and `linkComponent`.
+- **2026-09-24 — The provider sets `dir`, `lang` and `data-liro-theme` on a `display: contents` wrapper.** It adds no box to the layout, and all three still inherit. Portals (overlays, P2.4) will need their own container inside the provider.
+- **2026-09-24 — Formatting works on the decimal string.** Zeros are added up to `decimals`; digits beyond it are never cut or rounded; a string that is not a decimal is shown unchanged. Group separators: `.`, `,`, no-break space, or right single quotation mark. The currency position comes from Intl for the locale; amount and currency are joined by a no-break space.
+- **2026-09-24 — Numbers in right-to-left text need isolation.** Without it, the bidi algorithm moved the minus sign to the end of "-42,00" and put the currency on the wrong side. The Storybook sample wraps values in `<bdi>`. `NumberText` and `MoneyText` (P2.8) must do the same.

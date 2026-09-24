@@ -36,6 +36,9 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
+      - name: Unit tests
+        run: pnpm test
+
       - name: Formatting
         run: pnpm format:check
 
@@ -44,3 +47,6 @@ jobs:
 
       - name: Consumer check (packed tarballs)
         run: pnpm consumer-check
+
+      - name: Storybook build
+        run: pnpm build-storybook

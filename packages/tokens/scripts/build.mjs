@@ -1,5 +1,6 @@
 // Builds @liro/tokens: copies the CSS and JSON sources to dist/.
 // Outputs (BUILD-PLAN Appendix B.10): dist/tokens.css, dist/theme.css, dist/tokens.json.
+// dist/LICENSE and dist/THIRD-PARTY-NOTICES.md come from scripts/copy-legal.mjs, which runs next.
 import { copyFile, mkdir, rm } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 

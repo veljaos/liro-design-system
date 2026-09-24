@@ -2,6 +2,7 @@
   "name": "@liro/tokens",
   "version": "2.0.0-alpha.0",
   "description": "Liro Design System tokens: CSS variables, the Tailwind theme and the same values as JSON.",
+  "license": "UNLICENSED",
   "type": "module",
   "sideEffects": [
     "*.css"
@@ -16,6 +17,6 @@
     "dist"
   ],
   "scripts": {
-    "build": "node scripts/build.mjs"
+    "build": "node scripts/build.mjs && node ../../scripts/copy-legal.mjs"
   }
 }

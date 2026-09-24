@@ -7,3 +7,6 @@
 @import 'tailwindcss/utilities.css' layer(utilities) source(none);
 @import '@liro/tokens/theme.css';
 @source './';
+/* Stories and tests are not shipped; their classes stay out of the package CSS. */
+@source not './**/*.stories.tsx';
+@source not './**/*.test.{ts,tsx}';

@@ -220,7 +220,7 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 |---|---|---|---|---|---|
 | P0.1 | Repository and toolchain | — | done | 2026-09-24 | pnpm 12, TypeScript 6.0.3, ESLint 9, Prettier; CI green on PR #1 |
 | P0.2 | Packages, build, consumer check | P0.1 | done | 2026-09-24 | tsup + Tailwind CLI 4.3; consumer-check installs packed tarballs outside the repo; placeholder Button until P1.3 |
-| P0.3 | Storybook with the toolbar | P0.2 | todo | | |
+| P0.3 | Storybook with the toolbar | P0.2 | done | 2026-09-24 | Storybook 10.6; first LiroProvider subset (locale, direction, theme, number format); Vitest; license UNLICENSED + notices |
 | P0.4 | CI on Linux: tests, accessibility, visual | P0.3 | todo | | |
 | P0.5 | AGENTS.md and decisions.md | P0.4 | todo | | |
 | P1.1 | Tokens: values, meanings, themes | P0.5 | todo | | |
