@@ -11,7 +11,15 @@ const TS_FILES = ['**/*.{ts,tsx,mts,cts}']
 const TEST_FILES = ['**/*.{test,spec}.{ts,tsx}', '**/__tests__/**/*.{ts,tsx}']
 
 export default defineConfig(
-  globalIgnores(['**/node_modules/', '**/dist/', '**/storybook-static/', '**/coverage/']),
+  globalIgnores([
+    '**/node_modules/',
+    '**/dist/',
+    '**/storybook-static/',
+    '**/coverage/',
+    // Not a workspace package: its dependencies exist only in the temporary install made by
+    // `pnpm consumer-check`, which typechecks it there against the packed type declarations.
+    'apps/consumer-check/',
+  ]),
 
   {
     linterOptions: {

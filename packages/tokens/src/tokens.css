@@ -1,0 +1,14 @@
+/*
+ * Liro meanings as CSS variables. P0.2 seeds only what the placeholder button needs;
+ * P1.1 adds every value and meaning of BUILD-PLAN Appendix A, and the dark theme.
+ */
+:root {
+  --liro-surface-page: #f3f2f1;
+  --liro-text-primary: #323130;
+  --liro-brand-solid: #0078d4;
+  --liro-brand-solid-hover: #0069bc;
+  --liro-brand-solid-active: #0059a4;
+  --liro-brand-on-solid: #ffffff;
+  --liro-border-focus: #0078d4;
+  --liro-radius-md: 8px;
+}

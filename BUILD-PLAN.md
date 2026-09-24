@@ -115,7 +115,7 @@ liro-design-system/
 7. **Stop and ask** when a *Stop and ask if* condition occurs, when something is not covered here, or when a check fails for a reason you do not understand. Do not guess.
 8. **English only** in code, identifiers, comments, commits, stories and documentation.
 9. **Report to the owner in Serbian, in plain language,** at the end of every step: what was done, how to see it in Storybook, what is next, anything waiting for him. One line of explanation for any technical word.
-10. **No silent guard changes.** A pull request that changes lint configuration, `tsconfig*`, CI, the Playwright or Storybook test configuration, or any accessibility setting must contain a section `## Protected file changes` with a reason per file; CI fails without it. The owner is told in the step report.
+10. **No silent guard changes.** A pull request that changes lint configuration, `tsconfig*`, CI, the Playwright or Storybook test configuration, any accessibility setting, or the agent permissions in `.claude/settings.json` must contain a section `## Protected file changes` with a reason per file; CI fails without it. The owner is told in the step report.
 11. **Every prop must do something.** A prop that is accepted and ignored is a bug (Appendix B.9). Each prop is exercised by a story or a test.
 
 ---
@@ -219,7 +219,7 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | Step | Title | Depends on | Status | Date | Note |
 |---|---|---|---|---|---|
 | P0.1 | Repository and toolchain | — | done | 2026-09-24 | pnpm 12, TypeScript 6.0.3, ESLint 9, Prettier; CI green on PR #1 |
-| P0.2 | Packages, build, consumer check | P0.1 | todo | | |
+| P0.2 | Packages, build, consumer check | P0.1 | done | 2026-09-24 | tsup + Tailwind CLI 4.3; consumer-check installs packed tarballs outside the repo; placeholder Button until P1.3 |
 | P0.3 | Storybook with the toolbar | P0.2 | todo | | |
 | P0.4 | CI on Linux: tests, accessibility, visual | P0.3 | todo | | |
 | P0.5 | AGENTS.md and decisions.md | P0.4 | todo | | |
@@ -296,9 +296,9 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 - One workflow: lint → typecheck → unit tests → build → consumer check → Storybook build → story tests → accessibility → visual.
 - Accessibility and visual runs happen inside the official Playwright Docker image **pinned by digest**, against the built Storybook, for **light/dark × ltr/rtl**. The Storybook server is started by the job, never reused.
 - Visual baselines are generated only in that image. `AGENTS.md` (P0.5) explains how to refresh them locally through the same image.
-- The `protected-files` check of rule 10.
+- The `protected-files` check of rule 10, covering every file class it names, including `.claude/settings.json`.
 
-**Done when** all jobs run on every pull request; a pull request changing `eslint.config.mjs` without the protected-files section fails.
+**Done when** all jobs run on every pull request; a pull request changing `eslint.config.mjs` or `.claude/settings.json` without the protected-files section fails.
 
 ### P0.5 — AGENTS.md and decisions.md
 **Do**

@@ -1,0 +1,24 @@
+{
+  "name": "consumer-check",
+  "version": "0.0.0",
+  "private": true,
+  "packageManager": "pnpm@12.6.0",
+  "description": "A plain Vite + React app that installs the packed @liro/* tarballs like a real consumer. Run it with `pnpm consumer-check` from the repository root; the script adds the @liro/* dependencies.",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json && vite build",
+    "check": "node check.mjs"
+  },
+  "dependencies": {
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "devDependencies": {
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.1",
+    "eslint": "9.39.5",
+    "typescript": "6.0.3",
+    "vite": "8.3.0"
+  }
+}
