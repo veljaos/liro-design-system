@@ -1,6 +1,7 @@
 {
   "name": "liro-design-system",
   "private": true,
+  "license": "UNLICENSED",
   "type": "module",
   "packageManager": "pnpm@12.6.0",
   "engines": {
@@ -10,8 +11,11 @@
   "scripts": {
     "lint": "eslint . --max-warnings 0",
     "typecheck": "tsc -p tsconfig.json && pnpm -r --if-present typecheck",
+    "test": "pnpm -r --if-present test",
     "build": "pnpm -r --if-present build",
     "consumer-check": "node scripts/consumer-check.mjs",
+    "storybook": "pnpm --filter liro-storybook storybook",
+    "build-storybook": "pnpm --filter liro-storybook build-storybook",
     "format": "prettier . --write",
     "format:check": "prettier . --check"
   },

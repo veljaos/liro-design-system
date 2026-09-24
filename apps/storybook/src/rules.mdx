@@ -1,0 +1,40 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+
+<Meta title="Rules" />
+
+# Rules
+
+The principles every component and template follows. Source: `BUILD-PLAN.md`, sections 1 and 6.
+
+## What we are building
+
+The shared look, components and screen templates of every Liro application, so that every screen in every module looks and behaves the same.
+
+The model is Carbon (IBM) and SAP's UI5 controls, not an application framework:
+
+- The Design System is **independent of any backend.** It knows nothing about Liro Business Core, tenants, permissions, APIs, manifests, translations or document types. It receives everything it shows through props and one provider.
+- **Liro Business Core adapts to it**, through an adapter layer that lives in `liro-core`, not here. That adapter turns the Core's descriptors into props, plugs in the Core's translations and formatting, and passes permission answers as "disabled, because …". The Design System never waits for the Core.
+- It is **small on purpose.** Bricks (components) and templates (screen layouts), with Liro's look. Whole flows — sign-in, onboarding, data-subject requests, agent confirmation — are built in `liro-core` **from** these bricks.
+
+### What the Design System never does
+
+1. Calls an API, reads a cookie, or knows a URL of a backend.
+2. Translates. It shows the text it is given; its own few strings ("Next", "Rows per page") come from the provider with English defaults.
+3. Decides permissions. It shows what it is told: hidden, read-only, or disabled with a reason.
+4. Computes money. Amounts arrive as decimal strings and totals arrive already computed; the Design System displays them and never adds, rounds or converts them to a JavaScript `number`.
+5. Knows a business domain. No "invoice", "post", "storno", "PIB" or "VAT" inside components. Examples in Storybook may use them as fictitious data.
+6. Hard-codes colours, a language or a direction.
+
+## Definition of done for every component
+
+A component is finished only when all of these hold.
+
+1. **Tokens only.** Semantic Tailwind classes or CSS variables; no raw colours, no hex values.
+2. **Logical properties only.** `ms-`/`me-`/`ps-`/`pe-`/`start-`/`end-`, `text-start`; never `ml-`, `left-`, `text-left`. Drag and pointer logic measures from the leading edge.
+3. **No text of its own** except provider `messages`; no formatting of its own except provider `format`.
+4. **Stories:** default; every state it supports (disabled with reason, read-only, error, loading, empty); long text; phone width; one story with Arabic sample text and one with Japanese sample text.
+5. **Accessibility:** axe with WCAG 2.2 AA tags passes in light and dark, left-to-right and right-to-left; operable by keyboard alone; visible focus never hidden under sticky elements; targets at least 24×24 CSS pixels; no interaction possible only by dragging.
+6. **Visual baselines** on Linux for light/dark × ltr/rtl.
+7. **Unit tests** for any logic (parsing, counting, keyboard handling).
+8. **Every prop exercised** by a story or a test.
+9. **Exported** from `@liro/ui` and documented in its story: what it is for, when to use it, when not to.
