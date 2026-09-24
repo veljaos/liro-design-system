@@ -7,5 +7,12 @@
       "@liro/ui": ["../../packages/ui/src/index.ts"]
     }
   },
-  "include": [".storybook/**/*.ts", ".storybook/**/*.tsx", "src/**/*.ts", "src/**/*.tsx"]
+  "include": [
+    ".storybook/**/*.ts",
+    ".storybook/**/*.tsx",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "tests/**/*.ts",
+    "playwright.config.ts"
+  ]
 }

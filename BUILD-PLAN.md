@@ -42,7 +42,7 @@
 | Languages | Every component works left-to-right and right-to-left, and with Latin, Cyrillic, Greek, Arabic, Hebrew, Chinese and Japanese text. |
 | Accessibility | WCAG 2.2 AA, automated and manual, zero allowed exceptions. |
 | Devices | Mobile-first, installable web app (PWA) friendly, one-hand use on phones. |
-| Version | Packages start at **2.0.0**. An old `@liro/*` 1.0.0 was published before; the numbers must not collide. |
+| Version | Packages start at **0.1.0-alpha.0** (end of Phase 0), then `0.1.0-alpha.1`, … after each phase, and reach **1.0.0** at the end of this plan (P6.5). No `@liro/*` package was published before. |
 | Language of everything technical | English. Reports to the owner in Serbian. |
 
 ---
@@ -221,7 +221,7 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P0.1 | Repository and toolchain | — | done | 2026-09-24 | pnpm 12, TypeScript 6.0.3, ESLint 9, Prettier; CI green on PR #1 |
 | P0.2 | Packages, build, consumer check | P0.1 | done | 2026-09-24 | tsup + Tailwind CLI 4.3; consumer-check installs packed tarballs outside the repo; placeholder Button until P1.3 |
 | P0.3 | Storybook with the toolbar | P0.2 | done | 2026-09-24 | Storybook 10.6; first LiroProvider subset (locale, direction, theme, number format); Vitest; license UNLICENSED + notices |
-| P0.4 | CI on Linux: tests, accessibility, visual | P0.3 | todo | | |
+| P0.4 | CI on Linux: tests, accessibility, visual | P0.3 | done | 2026-09-24 | Playwright 1.63 image pinned by digest; story tests via Storybook events; axe WCAG 2.2 AA; baselines ×4; protected-files check |
 | P0.5 | AGENTS.md and decisions.md | P0.4 | todo | | |
 | P1.1 | Tokens: values, meanings, themes | P0.5 | todo | | |
 | P1.2 | Typography and fonts for seven scripts | P1.1 | todo | | |
@@ -260,7 +260,7 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P6.2 | Manual WCAG 2.2 checks | P6.1 | todo | | |
 | P6.3 | Performance budget | P4.8 | todo | | |
 | P6.4 | Documentation for consumers | P6.2 | todo | | |
-| P6.5 | Release 2.0.0 | all | todo | | |
+| P6.5 | Release 1.0.0 | all | todo | | |
 
 ---
 
@@ -307,7 +307,7 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 
 **Done when** both files exist and every rule in `AGENTS.md` names the lint rule or test that enforces it, or says "enforced by review".
 
-**End of Phase 0:** publish `2.0.0-alpha.0`; report to the owner with a link to the Storybook build.
+**End of Phase 0:** publish `0.1.0-alpha.0`; report to the owner with a link to the Storybook build.
 
 ---
 
@@ -359,7 +359,7 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 
 **Done when** the tests pass and the Storybook toolbar drives the provider.
 
-**End of Phase 1:** `2.0.0-alpha.1`; report.
+**End of Phase 1:** `0.1.0-alpha.1`; report.
 
 ---
 
@@ -411,7 +411,7 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 
 **Done when** a story simulates slow updates and fast typing, and a Playwright test proves no layout shift and one announcement per settle.
 
-**End of Phase 2:** `2.0.0-alpha.2`; report.
+**End of Phase 2:** `0.1.0-alpha.2`; report.
 
 ---
 
@@ -449,7 +449,7 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 ### P3.5 — Form layout
 **Do** `FormSection`, `FormTabs` (a tab with an error shows an indicator and focus moves to the first error), `FormActions` at the top **and** a sticky bar at the bottom that appears only when the form scrolls (Appendix B.8), `useUnsavedChangesGuard`, `FormWizard` (per-step validation hooks, no re-entry of data). Optional `@liro/ui/form` binding for React Hook Form.
 
-**End of Phase 3:** `2.0.0-alpha.3`; report.
+**End of Phase 3:** `0.1.0-alpha.3`; report.
 
 ---
 
@@ -483,7 +483,7 @@ Templates are layouts with **slots**; they contain no data logic.
 
 **Done when** the owner can open the examples and see Liro as it will look.
 
-**End of Phase 4:** `2.0.0-alpha.4`; report with links to every example screen.
+**End of Phase 4:** `0.1.0-alpha.4`; report with links to every example screen.
 
 ---
 
@@ -512,7 +512,7 @@ All generic: labels and states come in as props.
 ### P5.7 — Kanban board
 **Do** `KanbanBoard` with columns and cards, drag **and** a keyboard/menu alternative for moving a card (WCAG 2.2 dragging), rtl-correct.
 
-**End of Phase 5:** `2.0.0-alpha.5`; report.
+**End of Phase 5:** `0.1.0-alpha.5`; report.
 
 ---
 
@@ -530,10 +530,10 @@ Measure the JavaScript and CSS needed for the list example and the document exam
 ### P6.4 — Documentation for consumers
 `README.md` and `docs/getting-started.md` for agents building `liro-core`: installing, the two CSS imports, `LiroProvider` and what the Core should pass into each field, the rule "never import primitives or Radix", how to choose an intent or family, how to ask for a missing component. Final pass on `AGENTS.md` and `docs/decisions.md`.
 
-### P6.5 — Release 2.0.0
-All steps `done`; changesets complete; `2.0.0` published with exact versions; final report to the owner in Serbian: what exists, where to see it, what `liro-core` does next.
+### P6.5 — Release 1.0.0
+All steps `done`; changesets complete; `1.0.0` published with exact versions; final report to the owner in Serbian: what exists, where to see it, what `liro-core` does next.
 
-**After 2.0.0 (not part of this plan):** the adapter in `liro-core`; the owner-approved human checks with a screen reader and native Arabic and Japanese readers, run on the product's real screens once they exist.
+**After 1.0.0 (not part of this plan):** the adapter in `liro-core`; the owner-approved human checks with a screen reader and native Arabic and Japanese readers, run on the product's real screens once they exist.
 
 ---
 

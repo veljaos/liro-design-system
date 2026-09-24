@@ -1,6 +1,6 @@
 {
   "name": "@liro/ui",
-  "version": "2.0.0-alpha.0",
+  "version": "0.1.0-alpha.0",
   "description": "Liro Design System components and screen templates, with precompiled CSS.",
   "license": "UNLICENSED",
   "type": "module",
