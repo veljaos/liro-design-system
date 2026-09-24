@@ -67,6 +67,7 @@ jobs:
     name: Story tests, accessibility, visual
     needs: checks
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
     # The official Playwright image, pinned by digest. Its version matches @playwright/test in
     # apps/storybook/package.json; visual baselines are generated only in this image.
     container:
@@ -91,14 +92,19 @@ jobs:
 
       # Each step starts its own server on the built Storybook (playwright.config.ts).
       - name: Story tests
+        timeout-minutes: 5
+        env:
+          DEBUG: pw:webserver
         run: pnpm --filter liro-storybook test:stories
 
       - name: Accessibility (WCAG 2.2 AA, light/dark × ltr/rtl)
         if: ${{ !cancelled() }}
+        timeout-minutes: 5
         run: pnpm --filter liro-storybook test:a11y
 
       - name: Visual (light/dark × ltr/rtl)
         if: ${{ !cancelled() }}
+        timeout-minutes: 5
         run: pnpm --filter liro-storybook test:visual
 
       # On failure: the report, the actual and diff images, and any baseline written for a
