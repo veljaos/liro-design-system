@@ -1,0 +1,8 @@
+node_modules/
+dist/
+storybook-static/
+coverage/
+*.tgz
+*.tsbuildinfo
+.eslintcache
+.DS_Store
