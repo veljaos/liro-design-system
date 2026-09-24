@@ -8,10 +8,15 @@
   "scripts": {
     "storybook": "storybook dev --port 6006",
     "build-storybook": "storybook build",
-    "typecheck": "tsc -p tsconfig.json"
+    "typecheck": "tsc -p tsconfig.json",
+    "test:stories": "playwright test tests/stories.spec.ts",
+    "test:a11y": "playwright test tests/accessibility.spec.ts",
+    "test:visual": "playwright test tests/visual.spec.ts"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
     "@liro/tokens": "workspace:*",
+    "@playwright/test": "1.63.0",
     "@storybook/addon-a11y": "10.6.0",
     "@storybook/addon-docs": "10.6.0",
     "@storybook/react-vite": "10.6.0",

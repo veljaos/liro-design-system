@@ -1,4 +1,8 @@
 # Changing this file is a protected change (BUILD-PLAN rule 10).
+#
+# One workflow: lint → typecheck → unit tests → build → consumer check → Storybook build →
+# story tests → accessibility → visual (BUILD-PLAN P0.4). The protected-files check runs in
+# protected-files.yml, because it must also run when a pull request description is edited.
 name: CI
 
 on:
@@ -15,6 +19,7 @@ concurrency:
 
 jobs:
   checks:
+    # The name is kept from P0.1, so required-check settings keep matching.
     name: Install, lint, typecheck
     runs-on: ubuntu-24.04
     steps:
@@ -50,3 +55,60 @@ jobs:
 
       - name: Storybook build
         run: pnpm build-storybook
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: storybook-static
+          path: apps/storybook/storybook-static
+          if-no-files-found: error
+          retention-days: 7
+
+  storybook-tests:
+    name: Story tests, accessibility, visual
+    needs: checks
+    runs-on: ubuntu-24.04
+    # The official Playwright image, pinned by digest. Its version matches @playwright/test in
+    # apps/storybook/package.json; visual baselines are generated only in this image.
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble@sha256:eff16c30e6f3f4af0a03fa4b706120d5e9b0891c344a27d64559aff5900a4a27
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: storybook-static
+          path: apps/storybook/storybook-static
+
+      # Each step starts its own server on the built Storybook (playwright.config.ts).
+      - name: Story tests
+        run: pnpm --filter liro-storybook test:stories
+
+      - name: Accessibility (WCAG 2.2 AA, light/dark × ltr/rtl)
+        if: ${{ !cancelled() }}
+        run: pnpm --filter liro-storybook test:a11y
+
+      - name: Visual (light/dark × ltr/rtl)
+        if: ${{ !cancelled() }}
+        run: pnpm --filter liro-storybook test:visual
+
+      # On failure: the report, the actual and diff images, and any baseline written for a
+      # story that had none, to be reviewed and committed.
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ failure() }}
+        with:
+          name: playwright-results
+          path: |
+            apps/storybook/playwright-report
+            apps/storybook/test-results
+            apps/storybook/tests/__screenshots__
+          retention-days: 14

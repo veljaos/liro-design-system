@@ -2,4 +2,6 @@ pnpm-lock.yaml
 dist/
 storybook-static/
 coverage/
+playwright-report/
+test-results/
 BUILD-PLAN.md

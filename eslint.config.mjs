@@ -16,6 +16,8 @@ export default defineConfig(
     '**/dist/',
     '**/storybook-static/',
     '**/coverage/',
+    '**/playwright-report/',
+    '**/test-results/',
     // Not a workspace package: its dependencies exist only in the temporary install made by
     // `pnpm consumer-check`, which typechecks it there against the packed type declarations.
     'apps/consumer-check/',

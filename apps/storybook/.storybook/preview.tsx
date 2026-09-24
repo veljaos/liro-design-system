@@ -1,6 +1,7 @@
 // Changing the accessibility settings in this file is a protected change (BUILD-PLAN rule 10).
 import { LiroProvider, NUMBER_SCHEMES, type LiroFormat } from '@liro/ui'
 import type { Decorator, Preview } from '@storybook/react-vite'
+import { WCAG_TAGS } from './a11y'
 import './preview.css'
 
 const LOCALES = ['en', 'sr-Latn-RS', 'ar', 'ja'] as const
@@ -115,14 +116,14 @@ const preview: Preview = {
       },
     },
     a11y: {
-      // WCAG 2.2 AA: every rule tagged for levels A and AA of WCAG 2.0, 2.1 and 2.2.
+      // WCAG 2.2 AA (see ./a11y.ts).
       options: {
         runOnly: {
           type: 'tag',
-          values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'],
+          values: WCAG_TAGS,
         },
       },
-      // A violation fails the story test (P0.4), not just a warning in the panel.
+      // A violation fails the story (its storyFinished status is "error"), so the story tests fail.
       test: 'error',
     },
   },

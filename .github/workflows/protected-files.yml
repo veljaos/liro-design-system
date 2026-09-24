@@ -1,0 +1,35 @@
+# Changing this file is a protected change (BUILD-PLAN rule 10).
+#
+# BUILD-PLAN rule 10: a pull request that changes a protected file must contain a section
+# "## Protected file changes" with a reason per file. Runs again when the description is edited.
+name: Protected files
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: protected-files-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  protected-files:
+    name: Protected files
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+
+      - name: Check the description names every protected file
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: node scripts/protected-files.mjs
