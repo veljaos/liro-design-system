@@ -78,6 +78,7 @@ Update this list in the pull request that adds, renames or removes one.
 | Typography page (`apps/storybook/src/foundations/typography.stories.tsx`)                        | Foundation | P1.2 | Scripts (seven script classes) and type scale.                                                               |
 | `langAttribute`, `useLangAttribute`                                                              | Helpers    | P1.2 | The `lang` rule (D15).                                                                                       |
 | `Button`, `IconButton`, `INTENTS`, `FAMILY_NAMES`, `INTENT_NAMES`                                | Component  | P1.3 | `intent`, or `family` + `icon`; `label` always; `emphasis` primary/secondary/menu; no `color` or `variant`.  |
+| `StatusBadge`, `toneFor`, `TONE_NAMES`                                                           | Component  | P1.4 | `label` + `tone`; optional `withBorder`, `icon`; the status-to-tone map is the application's data.           |
 
 No templates yet.
 
