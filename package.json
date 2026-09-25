@@ -17,9 +17,11 @@
     "storybook": "pnpm --filter liro-storybook storybook",
     "build-storybook": "pnpm --filter liro-storybook build-storybook",
     "format": "prettier . --write",
-    "format:check": "prettier . --check"
+    "format:check": "prettier . --check",
+    "changeset": "changeset"
   },
   "devDependencies": {
+    "@changesets/cli": "3.0.3",
     "@eslint/js": "9.39.5",
     "@types/eslint-plugin-jsx-a11y": "6.10.1",
     "@types/node": "24.13.6",

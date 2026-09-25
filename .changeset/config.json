@@ -1,0 +1,10 @@
+{
+  "baseBranch": "main",
+  "changelog": "@changesets/changelog-git",
+  "commit": false,
+  "fixed": [["@veljaos/tokens", "@veljaos/ui", "@veljaos/eslint-config"]],
+  "linked": [],
+  "updateInternalDependencies": "patch",
+  "ignore": [],
+  "format": "prettier"
+}
