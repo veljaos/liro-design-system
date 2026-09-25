@@ -119,7 +119,10 @@ export type CommonName = keyof typeof COMMON
 /** A meaning in both themes: [light, dark]. */
 export type Pair = readonly [light: string, dark: string]
 
-/** A.2 Meanings. Keys become --liro-<group>-<kebab-case key>. */
+/**
+ * A.2 Meanings. Keys become --liro-<group>-<kebab-case key>. surface.inverse, text.onInverse and
+ * border.control were added in P2.1 by the owner's decision (docs/decisions.md, "Tokens").
+ */
 export const MEANINGS = {
   surface: {
     page: ['gray1', 'ink'],
@@ -132,6 +135,7 @@ export const MEANINGS = {
     disabled: ['gray2', 'rgba(255,255,255,0.06)'],
     backdrop: ['rgba(0,0,0,0.45)', 'rgba(0,0,0,0.65)'],
     scrim: ['rgba(0,0,0,0.55)', 'rgba(0,0,0,0.55)'],
+    inverse: ['gray9', 'gray2'],
   },
   text: {
     primary: ['gray9', 'gray1'],
@@ -141,6 +145,7 @@ export const MEANINGS = {
     onAccent: ['white', 'white'],
     brand: ['blue7', 'blue4'],
     link: ['blue7', 'blue4'],
+    onInverse: ['white', 'black'],
   },
   border: {
     default: ['gray3', '#3B3B3B'],
@@ -148,6 +153,7 @@ export const MEANINGS = {
     subtle: ['gray2', '#2E2E2E'],
     brand: ['blue6', 'blue5'],
     focus: ['blue6', 'blue4'],
+    control: ['gray6', 'gray6'],
   },
   brand: {
     solid: ['blue6', 'blue6'],

@@ -2,7 +2,7 @@
  * Precompiled CSS of @veljaos/ui (dist/styles.css). Consumers need no Tailwind to use the components.
  * No preflight: the reset belongs to the application, not to a component library.
  */
-@layer theme, utilities;
+@layer theme, base, utilities;
 @import 'tailwindcss/theme.css' layer(theme);
 @import 'tailwindcss/utilities.css' layer(utilities) source(none);
 @import '@veljaos/tokens/theme.css';
@@ -10,3 +10,101 @@
 /* Stories and tests are not shipped; their classes stay out of the package CSS. */
 @source not './**/*.stories.tsx';
 @source not './**/*.test.{ts,tsx}';
+
+/*
+ * Not a reset: only the elements of the primitives (each carries data-slot) size their padding and
+ * border inside their width, as Tailwind's preflight would, so `w-full` with padding never
+ * overflows in an application without preflight. Zero specificity: any utility wins.
+ */
+@layer base {
+  :where([data-slot], [data-slot]::before, [data-slot]::after) {
+    box-sizing: border-box;
+  }
+}
+
+/*
+ * How overlays and panels enter and leave (P2.1). Mantine 9 defaults ("Values taken from Mantine
+ * defaults" in docs/decisions.md): popover, menu and select fade in 150ms (our base duration),
+ * tooltip 100ms (our fast duration); the modal fades down by 30px, the drawer slides in from its
+ * side, the overlay fades and a collapsible opens, each in 200ms, which has no motion token.
+ * Easing: our standard curve. With prefers-reduced-motion, the token durations are 0ms and the
+ * elements that use a 200ms animation also carry motion-reduce:animate-none.
+ */
+@theme inline {
+  --animate-liro-popover-in: liro-fade-in var(--liro-duration-base) var(--liro-ease-standard);
+  --animate-liro-popover-out: liro-fade-out var(--liro-duration-base) var(--liro-ease-standard);
+  --animate-liro-tooltip-in: liro-fade-in var(--liro-duration-fast) var(--liro-ease-standard);
+  --animate-liro-tooltip-out: liro-fade-out var(--liro-duration-fast) var(--liro-ease-standard);
+  --animate-liro-overlay-in: liro-fade-in 200ms var(--liro-ease-standard);
+  --animate-liro-overlay-out: liro-fade-out 200ms var(--liro-ease-standard);
+  --animate-liro-modal-in: liro-fade-down-in 200ms var(--liro-ease-standard);
+  --animate-liro-modal-out: liro-fade-down-out 200ms var(--liro-ease-standard);
+  --animate-liro-slide-in: liro-slide-in 200ms var(--liro-ease-standard);
+  --animate-liro-slide-out: liro-slide-out 200ms var(--liro-ease-standard);
+  --animate-liro-collapse-open: liro-collapse-open 200ms var(--liro-ease-standard);
+  --animate-liro-collapse-close: liro-collapse-close 200ms var(--liro-ease-standard);
+  --animate-liro-skeleton: liro-skeleton 1500ms linear infinite;
+
+  @keyframes liro-fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes liro-fade-out {
+    to {
+      opacity: 0;
+    }
+  }
+  @keyframes liro-fade-down-in {
+    from {
+      opacity: 0;
+      transform: translateY(-30px);
+    }
+  }
+  @keyframes liro-fade-down-out {
+    to {
+      opacity: 0;
+      transform: translateY(-30px);
+    }
+  }
+  /* The element sets --liro-slide-from to the transform it enters from (its side, per direction). */
+  @keyframes liro-slide-in {
+    from {
+      opacity: 0;
+      transform: var(--liro-slide-from);
+    }
+  }
+  @keyframes liro-slide-out {
+    to {
+      opacity: 0;
+      transform: var(--liro-slide-from);
+    }
+  }
+  @keyframes liro-collapse-open {
+    from {
+      opacity: 0;
+      height: 0;
+    }
+    to {
+      height: var(--radix-collapsible-content-height);
+    }
+  }
+  @keyframes liro-collapse-close {
+    from {
+      height: var(--radix-collapsible-content-height);
+    }
+    to {
+      opacity: 0;
+      height: 0;
+    }
+  }
+  @keyframes liro-skeleton {
+    0%,
+    100% {
+      opacity: 0.4;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+}

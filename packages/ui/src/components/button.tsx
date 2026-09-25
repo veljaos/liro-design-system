@@ -1,89 +1,11 @@
 import type { MouseEventHandler } from 'react'
+import { BUTTON_SHAPES, buttonClassName, type ButtonShape } from '../primitives/button'
 import { INTENTS, type Emphasis, type Family, type IconComponent, type Intent } from './intents'
 
-/**
- * Colours by family and emphasis ("button weights" in docs/decisions.md). Tailwind finds classes
- * by reading the source, so every class is written out.
- * - primary (filled): the family fill with white text; one and two shades darker on hover and press.
- * - secondary (light): the family tint with the family's text; the stronger tint and the stronger
- *   text on hover. Neutral is "default" instead: raised surface, border.default, text.primary.
- * - menu (subtle): the family's text only; the tint (neutral: surface.hover) and the stronger
- *   text on hover.
+/*
+ * The look (colours by family and emphasis, the Mantine sizes of each shape) lives in
+ * primitives/button.tsx, shared with the buttons inside other primitives.
  */
-const COLOURS: Record<Family, Record<Emphasis, string>> = {
-  primary: {
-    primary:
-      'bg-family-primary-solid text-on-accent enabled:hover:bg-family-primary-solid-hover enabled:active:bg-family-primary-solid-active',
-    secondary:
-      'bg-family-primary-subtle text-family-primary-fg enabled:hover:bg-family-primary-subtle-hover enabled:hover:text-family-primary-fg-hover',
-    menu: 'bg-transparent text-family-primary-fg enabled:hover:bg-family-primary-subtle enabled:hover:text-family-primary-fg-hover',
-  },
-  verify: {
-    primary:
-      'bg-family-verify-solid text-on-accent enabled:hover:bg-family-verify-solid-hover enabled:active:bg-family-verify-solid-active',
-    secondary:
-      'bg-family-verify-subtle text-family-verify-fg enabled:hover:bg-family-verify-subtle-hover enabled:hover:text-family-verify-fg-hover',
-    menu: 'bg-transparent text-family-verify-fg enabled:hover:bg-family-verify-subtle enabled:hover:text-family-verify-fg-hover',
-  },
-  document: {
-    primary:
-      'bg-family-document-solid text-on-accent enabled:hover:bg-family-document-solid-hover enabled:active:bg-family-document-solid-active',
-    secondary:
-      'bg-family-document-subtle text-family-document-fg enabled:hover:bg-family-document-subtle-hover enabled:hover:text-family-document-fg-hover',
-    menu: 'bg-transparent text-family-document-fg enabled:hover:bg-family-document-subtle enabled:hover:text-family-document-fg-hover',
-  },
-  positive: {
-    primary:
-      'bg-family-positive-solid text-on-accent enabled:hover:bg-family-positive-solid-hover enabled:active:bg-family-positive-solid-active',
-    secondary:
-      'bg-family-positive-subtle text-family-positive-fg enabled:hover:bg-family-positive-subtle-hover enabled:hover:text-family-positive-fg-hover',
-    menu: 'bg-transparent text-family-positive-fg enabled:hover:bg-family-positive-subtle enabled:hover:text-family-positive-fg-hover',
-  },
-  destructive: {
-    primary:
-      'bg-family-destructive-solid text-on-accent enabled:hover:bg-family-destructive-solid-hover enabled:active:bg-family-destructive-solid-active',
-    secondary:
-      'bg-family-destructive-subtle text-family-destructive-fg enabled:hover:bg-family-destructive-subtle-hover enabled:hover:text-family-destructive-fg-hover',
-    menu: 'bg-transparent text-family-destructive-fg enabled:hover:bg-family-destructive-subtle enabled:hover:text-family-destructive-fg-hover',
-  },
-  caution: {
-    primary:
-      'bg-family-caution-solid text-on-accent enabled:hover:bg-family-caution-solid-hover enabled:active:bg-family-caution-solid-active',
-    secondary:
-      'bg-family-caution-subtle text-family-caution-fg enabled:hover:bg-family-caution-subtle-hover enabled:hover:text-family-caution-fg-hover',
-    menu: 'bg-transparent text-family-caution-fg enabled:hover:bg-family-caution-subtle enabled:hover:text-family-caution-fg-hover',
-  },
-  neutral: {
-    primary:
-      'bg-family-neutral-solid text-on-accent enabled:hover:bg-family-neutral-solid-hover enabled:active:bg-family-neutral-solid-active',
-    secondary:
-      'border-default bg-surface-raised text-family-neutral-fg enabled:hover:bg-surface-hover enabled:hover:text-family-neutral-fg-hover',
-    menu: 'bg-transparent text-family-neutral-fg enabled:hover:bg-surface-hover enabled:hover:text-family-neutral-fg-hover',
-  },
-}
-
-/** Disabled, in every emphasis: Mantine's disabled colours, transparent border (Button.css). */
-const DISABLED =
-  'disabled:border-transparent disabled:bg-surface-disabled disabled:text-disabled disabled:cursor-not-allowed'
-
-/**
- * The previous Design System's Mantine sizes ("Button sizes" in docs/decisions.md, source
- * @mantine/core 9.6.2 styles/Button.css and ActionIcon.css): radius md (8px), 1px border,
- * weight 600, line height 1. Button = size 'sm': height 36px, font size 13px, horizontal padding
- * 18px, 12px (18 / 1.5) on the side of the icon, 10px between icon and label, icon 15px.
- * IconButton = the same button without visible text: 36px high, 8px horizontal padding, icon
- * 16px (the old ActionButton). CompactIconButton = Mantine ActionIcon size 'md': 28px square,
- * neutral and subtle by default, for tight places only.
- */
-const BASE =
-  'inline-flex shrink-0 cursor-pointer items-center justify-center rounded-md border border-solid font-sans font-semibold leading-none whitespace-nowrap box-border select-none transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus'
-type Shape = 'text' | 'icon' | 'compact'
-
-const SHAPES: Record<Shape, { button: string; icon: string }> = {
-  text: { button: 'h-control gap-2.5 ps-3 pe-4.5 text-sm', icon: 'size-3.75 shrink-0' },
-  icon: { button: 'h-control px-2', icon: 'size-4 shrink-0' },
-  compact: { button: 'size-7 p-0', icon: 'size-4 shrink-0' },
-}
 
 interface CommonProps {
   /** The visible text of a Button, the accessible name of an IconButton. From the application. */
@@ -157,22 +79,13 @@ function resolve(props: CompactIconButtonProps, defaultEmphasis: Emphasis | null
   }
 }
 
-function buttonParts(props: CompactIconButtonProps, shape: Shape) {
+function buttonParts(props: CompactIconButtonProps, shape: ButtonShape) {
   const { family, emphasis, Icon, mirrors, data } = resolve(
     props,
     shape === 'compact' ? 'menu' : null,
   )
-  const size = SHAPES[shape]
-  const className = [
-    BASE,
-    size.button,
-    // Every emphasis has a 1px border, so all have the same size; only neutral "default" shows it.
-    family === 'neutral' && emphasis === 'secondary' ? '' : 'border-transparent',
-    COLOURS[family][emphasis],
-    DISABLED,
-  ]
-    .filter((part) => part !== '')
-    .join(' ')
+  const size = BUTTON_SHAPES[shape]
+  const className = buttonClassName({ family, emphasis, shape })
   const icon = (
     <Icon aria-hidden="true" className={mirrors ? `${size.icon} rtl:-scale-x-100` : size.icon} />
   )
