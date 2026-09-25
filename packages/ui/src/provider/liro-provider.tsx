@@ -17,6 +17,7 @@ import {
 } from './format'
 import type { LiroMessages } from './messages'
 import { messagesEn } from './messages.en'
+import { PortalContainerContext } from './portal'
 
 /**
  * Everything that differs between applications, languages and customers (BUILD-PLAN section 5).
@@ -125,7 +126,8 @@ function useSystemPrefersDark(): boolean {
 
 /**
  * Wrap the application in it once. Sets `dir`, `lang` and the theme on a wrapper that adds no
- * box to the layout, and gives Radix primitives the same direction.
+ * box to the layout, gives Radix primitives the same direction, and holds the element overlays
+ * render into.
  */
 export function LiroProvider({
   locale,
@@ -147,6 +149,7 @@ export function LiroProvider({
   // Read once: a page left open past midnight keeps its date until the application passes one.
   const [deviceToday] = useState(localToday)
   const resolvedWeekStart = weekStartsOn ?? weekStartsOnForLocale(locale)
+  const [portalContainer, setPortalContainer] = useState<HTMLDivElement | null>(null)
 
   const value = useMemo<LiroContextValue>(
     () => ({
@@ -182,7 +185,9 @@ export function LiroProvider({
           data-liro-theme={resolvedScheme}
           style={{ display: 'contents' }}
         >
-          {children}
+          <PortalContainerContext value={portalContainer}>{children}</PortalContainerContext>
+          {/* Overlays render here, so they inherit dir, lang and the theme (provider/portal.ts). */}
+          <div data-liro-portal="" ref={setPortalContainer} style={{ display: 'contents' }} />
         </div>
       </Direction.Provider>
     </LiroContext>

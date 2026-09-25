@@ -273,6 +273,9 @@ export function themeCss(): string {
     lines.push(`--border-color-${kebab(name)}: var(--liro-border-${kebab(name)});`)
   }
   lines.push('--outline-color-focus: var(--liro-border-focus);')
+  // The control boundary also fills the parts that mark a control, such as the off track of a
+  // switch (P2.1): bg-control.
+  lines.push('--background-color-control: var(--liro-border-control);')
   lines.push('--ring-color-focus: var(--liro-border-focus);')
   lines.push('', '/* A.2 Brand: backgrounds, the text on them, and the accent */')
   for (const name of ['solid', 'solidHover', 'solidActive', 'subtle', 'subtleHover']) {

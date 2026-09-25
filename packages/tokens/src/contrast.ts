@@ -48,6 +48,8 @@ export interface ContrastCheck {
 
 /** WCAG 2.2 AA for normal text. */
 const TEXT = 4.5
+/** WCAG 2.2 AA 1.4.11 for the boundary of a control against what surrounds it. */
+const NON_TEXT = 3
 const BLACK: Rgb = [0, 0, 0]
 const SURFACES = ['page', 'raised', 'sunken', 'overlay', 'header'] as const
 
@@ -58,8 +60,8 @@ function pick(pair: Pair, theme: Theme): string {
 /** Every text-on-background pair of the families and tones, in both themes, on every surface. */
 export function contrastChecks(): ContrastCheck[] {
   const checks: ContrastCheck[] = []
-  const add = (name: string, text: Rgb, background: Rgb) => {
-    checks.push({ name, ratio: contrastRatio(text, background), minimum: TEXT })
+  const add = (name: string, text: Rgb, background: Rgb, minimum = TEXT) => {
+    checks.push({ name, ratio: contrastRatio(text, background), minimum })
   }
   for (const theme of ['light', 'dark'] as const) {
     const onAccent = toRgb(pick(MEANINGS.text.onAccent, theme), BLACK)
@@ -93,6 +95,15 @@ export function contrastChecks(): ContrastCheck[] {
         }
       }
 
+      // Controls (P2.1): the boundary of inputs, checkboxes and radios, and the off track of a
+      // switch, against the surface around them (WCAG 1.4.11).
+      add(
+        `${theme}: border.control ${over}`,
+        toRgb(pick(MEANINGS.border.control, theme), surface),
+        surface,
+        NON_TEXT,
+      )
+
       // Status tones: fg on bg (Appendix B.6), P1.4.
       for (const [tone, parts] of Object.entries(TONES)) {
         const background = toRgb(pick(parts.bg, theme), surface)
@@ -103,6 +114,14 @@ export function contrastChecks(): ContrastCheck[] {
         )
       }
     }
+
+    // Tooltips (P2.1): text.onInverse on surface.inverse, which is opaque in both themes.
+    const inverse = toRgb(pick(MEANINGS.surface.inverse, theme), BLACK)
+    add(
+      `${theme}: text.onInverse on surface.inverse`,
+      toRgb(pick(MEANINGS.text.onInverse, theme), inverse),
+      inverse,
+    )
   }
   return checks
 }
