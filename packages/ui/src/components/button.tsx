@@ -70,20 +70,26 @@ const DISABLED =
  * The previous Design System's Mantine sizes ("Button sizes" in docs/decisions.md, source
  * @mantine/core 9.6.2 styles/Button.css and ActionIcon.css): radius md (8px), 1px border,
  * weight 600, line height 1. Button = size 'sm': height 36px, font size 13px, horizontal padding
- * 18px, 12px (18 / 1.5) on the side of the icon, 10px between icon and label. IconButton =
- * ActionIcon size 'md': 28px square.
+ * 18px, 12px (18 / 1.5) on the side of the icon, 10px between icon and label, icon 15px.
+ * IconButton = the same button without visible text: 36px high, 8px horizontal padding, icon
+ * 16px (the old ActionButton). CompactIconButton = Mantine ActionIcon size 'md': 28px square,
+ * neutral and subtle by default, for tight places only.
  */
 const BASE =
   'inline-flex shrink-0 cursor-pointer items-center justify-center rounded-md border border-solid font-sans font-semibold leading-none whitespace-nowrap box-border select-none transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus'
-const BUTTON = 'h-control gap-2.5 ps-3 pe-4.5 text-sm'
-const ICON_BUTTON = 'size-7 p-0'
-const ICON = 'size-4 shrink-0'
+type Shape = 'text' | 'icon' | 'compact'
+
+const SHAPES: Record<Shape, { button: string; icon: string }> = {
+  text: { button: 'h-control gap-2.5 ps-3 pe-4.5 text-sm', icon: 'size-3.75 shrink-0' },
+  icon: { button: 'h-control px-2', icon: 'size-4 shrink-0' },
+  compact: { button: 'size-7 p-0', icon: 'size-4 shrink-0' },
+}
 
 interface CommonProps {
   /** The visible text of a Button, the accessible name of an IconButton. From the application. */
   label: string
   /**
-   * Default: the intent's emphasis; for a family, 'secondary'. IconButton: 'menu'.
+   * Default: the intent's emphasis; for a family, 'secondary'. CompactIconButton: 'menu'.
    * One 'primary' per screen.
    */
   emphasis?: Emphasis
@@ -113,8 +119,10 @@ interface FamilyProps {
 
 export type ButtonProps = CommonProps & (IntentProps | FamilyProps)
 
-/** An icon button: an intent, or an icon with a family (default neutral, as Mantine's ActionIcon). */
-export type IconButtonProps = CommonProps &
+export type IconButtonProps = ButtonProps
+
+/** A compact icon button: an intent, or an icon with a family (default neutral, as Mantine's ActionIcon). */
+export type CompactIconButtonProps = CommonProps &
   (IntentProps | { icon: IconComponent; family?: Family; intent?: never })
 
 interface Resolved {
@@ -126,7 +134,7 @@ interface Resolved {
 }
 
 /** Family, emphasis, icon and data attributes of either kind of button. */
-function resolve(props: IconButtonProps, defaultEmphasis: Emphasis | null): Resolved {
+function resolve(props: CompactIconButtonProps, defaultEmphasis: Emphasis | null): Resolved {
   if (props.intent !== undefined) {
     const intent = INTENTS[props.intent]
     return {
@@ -149,11 +157,15 @@ function resolve(props: IconButtonProps, defaultEmphasis: Emphasis | null): Reso
   }
 }
 
-function buttonParts(props: IconButtonProps, square: boolean) {
-  const { family, emphasis, Icon, mirrors, data } = resolve(props, square ? 'menu' : null)
+function buttonParts(props: CompactIconButtonProps, shape: Shape) {
+  const { family, emphasis, Icon, mirrors, data } = resolve(
+    props,
+    shape === 'compact' ? 'menu' : null,
+  )
+  const size = SHAPES[shape]
   const className = [
     BASE,
-    square ? ICON_BUTTON : BUTTON,
+    size.button,
     // Every emphasis has a 1px border, so all have the same size; only neutral "default" shows it.
     family === 'neutral' && emphasis === 'secondary' ? '' : 'border-transparent',
     COLOURS[family][emphasis],
@@ -161,7 +173,9 @@ function buttonParts(props: IconButtonProps, square: boolean) {
   ]
     .filter((part) => part !== '')
     .join(' ')
-  const icon = <Icon aria-hidden="true" className={mirrors ? `${ICON} rtl:-scale-x-100` : ICON} />
+  const icon = (
+    <Icon aria-hidden="true" className={mirrors ? `${size.icon} rtl:-scale-x-100` : size.icon} />
+  )
   return {
     icon,
     attributes: {
@@ -181,7 +195,7 @@ function buttonParts(props: IconButtonProps, square: boolean) {
  * with an `icon`; never a colour. The label always comes from the application.
  */
 export function Button(props: ButtonProps) {
-  const { icon, attributes } = buttonParts(props, false)
+  const { icon, attributes } = buttonParts(props, 'text')
   return (
     <button {...attributes}>
       {icon}
@@ -191,11 +205,24 @@ export function Button(props: ButtonProps) {
 }
 
 /**
- * A square button with only an icon, subtle (menu emphasis) by default. `label` is required: it
- * is the accessible name and the tooltip.
+ * An action without visible text: the same 36px button with only its icon. `label` is required:
+ * it is the accessible name and the tooltip. Use it where the icon is universally understood.
  */
 export function IconButton(props: IconButtonProps) {
-  const { icon, attributes } = buttonParts(props, true)
+  const { icon, attributes } = buttonParts(props, 'icon')
+  return (
+    <button {...attributes} aria-label={props.label} title={props.label}>
+      {icon}
+    </button>
+  )
+}
+
+/**
+ * A 28px icon button for tight places only: table row menus, close buttons. Neutral and subtle
+ * (menu emphasis) by default. `label` is required: it is the accessible name and the tooltip.
+ */
+export function CompactIconButton(props: CompactIconButtonProps) {
+  const { icon, attributes } = buttonParts(props, 'compact')
   return (
     <button {...attributes} aria-label={props.label} title={props.label}>
       {icon}

@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { BookCheck, ShieldCheck, Signature } from 'lucide-react'
 import type { ReactNode } from 'react'
-import { Button, IconButton } from './button'
+import { Button, CompactIconButton, IconButton } from './button'
 import { FAMILY_NAMES, INTENT_NAMES, INTENTS, type Emphasis } from './intents'
 
 const EMPHASES: readonly Emphasis[] = ['primary', 'secondary', 'menu']
@@ -88,7 +88,9 @@ const meta = {
           'group.\n\n' +
           '**When not:** navigation to another page is a link; an unavailable action shows its ' +
           'reason as text (unavailable action, P2.7); a row of actions goes into ActionGroup (P2.7). ' +
-          'Use IconButton only where the icon is universally understood, with its label.',
+          'Use IconButton (the same 36px button, only the icon) only where the icon is ' +
+          'universally understood; its label is the accessible name. CompactIconButton (28px, ' +
+          'neutral and subtle) only in tight places: table row menus, close buttons.',
       },
     },
   },
@@ -138,18 +140,35 @@ export const Disabled: Story = {
   ),
 }
 
-/** Button: Mantine size 'sm' (36px). IconButton: ActionIcon size 'md' (28px), neutral and subtle by default. */
+/** Button and IconButton: 36px. CompactIconButton: 28px, neutral and subtle by default. */
 export const Sizes: Story = {
   render: () => (
     <Surface>
       <div className="flex flex-wrap items-center gap-3">
         <Button intent="save" label="Save" />
         <Button intent="cancel" label="Cancel" />
-        <IconButton intent="more" label="More actions" />
-        <IconButton icon={Signature} label="Sign" />
+        <IconButton intent="edit" label="Edit" />
         <IconButton icon={Signature} family="verify" label="Sign" />
-        <IconButton intent="delete" label="Delete" emphasis="secondary" />
         <IconButton intent="save" label="Save" emphasis="primary" disabled />
+        <CompactIconButton intent="more" label="Row actions" />
+        <CompactIconButton icon={Signature} label="Sign" />
+        <CompactIconButton intent="delete" label="Delete" emphasis="secondary" />
+      </div>
+    </Surface>
+  ),
+}
+
+/** CompactIconButton in its tight places: a row's actions menu and a close button. */
+export const CompactPlaces: Story = {
+  render: () => (
+    <Surface>
+      <div className="flex items-center justify-between gap-3 border-b border-subtle pb-2">
+        <span>Order 2026-0142</span>
+        <CompactIconButton intent="more" label="Actions for order 2026-0142" />
+      </div>
+      <div className="flex items-center justify-between gap-3">
+        <span className="text-h4">Filters</span>
+        <CompactIconButton intent="cancel" label="Close" />
       </div>
     </Surface>
   ),
