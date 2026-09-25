@@ -276,6 +276,9 @@ export function themeCss(): string {
   // The control boundary also fills the parts that mark a control, such as the off track of a
   // switch (P2.1): bg-control.
   lines.push('--background-color-control: var(--liro-border-control);')
+  // The border of an invalid field takes the danger text colour (P2.2, owner's decision):
+  // border-status-danger-fg. status.danger.border is too light for a control boundary.
+  lines.push('--border-color-status-danger-fg: var(--liro-status-danger-fg);')
   lines.push('--ring-color-focus: var(--liro-border-focus);')
   lines.push('', '/* A.2 Brand: backgrounds, the text on them, and the accent */')
   for (const name of ['solid', 'solidHover', 'solidActive', 'subtle', 'subtleHover']) {
