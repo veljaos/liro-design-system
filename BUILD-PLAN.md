@@ -234,7 +234,7 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P2.1 | Primitives adapted | P1.3 | done | 2026-09-25 | 24 shadcn primitives in `src/primitives/` with Mantine 9.6.2 values and Liro tokens, unexported; internal stories; overlays render inside the provider; RTL fixed in sheet, calendar and progress; owner added `surface.inverse`, `text.onInverse`, `border.control` |
 | P2.2 | Field system and text inputs | P2.1, P1.5 | in progress (split: P2.2a, P2.2b) | | Done when P2.2a and P2.2b are done |
 | P2.2a | Field and the simple fields | P2.1, P1.5 | done | 2026-09-25 | Field, TextField, TextAreaField, SelectField, CheckboxField, SwitchField, RadioGroupField; owner: read-only as plain text, error border in danger fg |
-| P2.2b | ComboboxField and MultiSelectField | P2.2a | todo | | |
+| P2.2b | ComboboxField and MultiSelectField | P2.2a | in progress | | Draft PR; components, stories, tests and baselines written; docs and changeset remain |
 | P2.3 | Numbers, money and dates | P2.2 | todo | | |
 | P2.4 | Overlays and confirmations | P2.1 | todo | | |
 | P2.5 | Feedback | P2.1 | todo | | |
