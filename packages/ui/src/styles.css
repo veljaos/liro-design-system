@@ -1,11 +1,11 @@
 /*
- * Precompiled CSS of @liro/ui (dist/styles.css). Consumers need no Tailwind to use the components.
+ * Precompiled CSS of @veljaos/ui (dist/styles.css). Consumers need no Tailwind to use the components.
  * No preflight: the reset belongs to the application, not to a component library.
  */
 @layer theme, utilities;
 @import 'tailwindcss/theme.css' layer(theme);
 @import 'tailwindcss/utilities.css' layer(utilities) source(none);
-@import '@liro/tokens/theme.css';
+@import '@veljaos/tokens/theme.css';
 @source './';
 /* Stories and tests are not shipped; their classes stay out of the package CSS. */
 @source not './**/*.stories.tsx';

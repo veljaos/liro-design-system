@@ -4,7 +4,7 @@
     "noEmit": true,
     "types": ["node"],
     "paths": {
-      "@liro/ui": ["../../packages/ui/src/index.ts"]
+      "@veljaos/ui": ["../../packages/ui/src/index.ts"]
     }
   },
   "include": [

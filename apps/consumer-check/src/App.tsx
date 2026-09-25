@@ -1,4 +1,4 @@
-import { Button } from '@liro/ui'
+import { Button } from '@veljaos/ui'
 import { useState } from 'react'
 
 export function App() {

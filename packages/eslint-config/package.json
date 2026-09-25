@@ -1,8 +1,13 @@
 {
-  "name": "@liro/eslint-config",
+  "name": "@veljaos/eslint-config",
   "version": "0.1.0-alpha.0",
   "description": "ESLint rules for applications built on the Liro Design System.",
   "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/veljaos/liro-design-system.git",
+    "directory": "packages/eslint-config"
+  },
   "type": "module",
   "exports": {
     ".": {
@@ -24,5 +29,8 @@
   "devDependencies": {
     "eslint": "9.39.5",
     "tsup": "8.5.1"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
   }
 }

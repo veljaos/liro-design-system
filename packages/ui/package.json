@@ -1,8 +1,13 @@
 {
-  "name": "@liro/ui",
+  "name": "@veljaos/ui",
   "version": "0.1.0-alpha.0",
   "description": "Liro Design System components and screen templates, with precompiled CSS.",
   "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/veljaos/liro-design-system.git",
+    "directory": "packages/ui"
+  },
   "type": "module",
   "sideEffects": [
     "*.css"
@@ -24,11 +29,11 @@
     "test": "vitest run"
   },
   "peerDependencies": {
-    "@liro/tokens": "workspace:*",
+    "@veljaos/tokens": "workspace:*",
     "react": "^19.0.0"
   },
   "devDependencies": {
-    "@liro/tokens": "workspace:*",
+    "@veljaos/tokens": "workspace:*",
     "@storybook/react-vite": "10.6.0",
     "@tailwindcss/cli": "4.3.3",
     "@types/react": "19.3.0",
@@ -40,5 +45,8 @@
     "tsup": "8.5.1",
     "vite": "8.3.0",
     "vitest": "5.0.1"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
   }
 }

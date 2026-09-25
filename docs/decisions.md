@@ -1,6 +1,6 @@
 # Decisions
 
-Why things are as they are. Newest entries at the end of each section. The lessons carried over from Design System 1.0 are added in P0.5.
+Why things are as they are. Newest entries at the end of each section. The last section, "Lessons from the previous Design System", holds the lessons of BUILD-PLAN Appendix B, so the reasons survive.
 
 ## Versions
 
@@ -31,21 +31,21 @@ All dependencies are pinned to exact versions (`.npmrc`: `save-exact=true`). Eac
 
 | Tool                           | Version | Note                                                                                                                                                                                                                                                   |
 | ------------------------------ | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| React, React DOM               | 19.3.0  | `@liro/ui` declares `react ^19.0.0` as a peer; the exact version is used for building and for consumer-check.                                                                                                                                          |
+| React, React DOM               | 19.3.0  | `@veljaos/ui` declares `react ^19.0.0` as a peer; the exact version is used for building and for consumer-check.                                                                                                                                       |
 | @types/react, @types/react-dom | 19.3.0  | Match React.                                                                                                                                                                                                                                           |
 | tsup                           | 8.5.1   | JavaScript (ESM) and type declarations. Its declaration build sets `baseUrl`, which TypeScript 6 reports as deprecated; `ignoreDeprecations: "6.0"` is passed to that build only, in `tsup.config.ts`, not to any tsconfig. Revisit with TypeScript 7. |
-| tailwindcss, @tailwindcss/cli  | 4.3.3   | Builds `@liro/ui/styles.css`.                                                                                                                                                                                                                          |
+| tailwindcss, @tailwindcss/cli  | 4.3.3   | Builds `@veljaos/ui/styles.css`.                                                                                                                                                                                                                       |
 | Vite                           | 8.3.0   | consumer-check only. **Not 8.3.1**, which was published on 2026-09-24 and is younger than pnpm's one-day minimum release age.                                                                                                                          |
 | @vitejs/plugin-react           | 6.1.1   | consumer-check only.                                                                                                                                                                                                                                   |
 
 ### P0.3 — Storybook with the toolbar (2026-09-24)
 
-| Tool                                                                           | Version | Note                                                                                             |
-| ------------------------------------------------------------------------------ | ------- | ------------------------------------------------------------------------------------------------ |
-| storybook, @storybook/react-vite, @storybook/addon-docs, @storybook/addon-a11y | 10.6.0  | Telemetry off (`core.disableTelemetry`).                                                         |
-| @tailwindcss/vite                                                              | 4.3.3   | Compiles the `@liro/ui` source styles inside Storybook.                                          |
-| Vite                                                                           | 8.3.0   | Same as consumer-check.                                                                          |
-| Vitest                                                                         | 5.0.1   | Unit tests of `@liro/ui`, in Node. Brought forward from P0.4 because P0.3 adds formatting logic. |
+| Tool                                                                           | Version | Note                                                                                                |
+| ------------------------------------------------------------------------------ | ------- | --------------------------------------------------------------------------------------------------- |
+| storybook, @storybook/react-vite, @storybook/addon-docs, @storybook/addon-a11y | 10.6.0  | Telemetry off (`core.disableTelemetry`).                                                            |
+| @tailwindcss/vite                                                              | 4.3.3   | Compiles the `@veljaos/ui` source styles inside Storybook.                                          |
+| Vite                                                                           | 8.3.0   | Same as consumer-check.                                                                             |
+| Vitest                                                                         | 5.0.1   | Unit tests of `@veljaos/ui`, in Node. Brought forward from P0.4 because P0.3 adds formatting logic. |
 
 ### P0.4 — CI on Linux: tests, accessibility, visual (2026-09-24)
 
@@ -66,14 +66,25 @@ All dependencies are pinned to exact versions (`.npmrc`: `save-exact=true`). Eac
 ## Packaging
 
 - **2026-09-24 — Consumers install tarballs.** `pnpm consumer-check` packs the three packages with `pnpm pack`, copies `apps/consumer-check` to a temporary folder outside the repository, installs the tarballs there and builds, typechecks and checks the app. `apps/consumer-check` is excluded from the workspace and from the root ESLint run, because its dependencies exist only in that temporary install (Appendix B.10).
-- **2026-09-24 — What consumer-check proves.** The button renders (server-side render in Node); every CSS and JSON export resolves; the Vite bundle contains the token variables and the button utilities; the app typechecks against the packed `.d.ts` with `skipLibCheck: false`; `@liro/eslint-config` loads and reports Radix and internal `@liro/ui/*` imports. Rendering in a real browser comes with Playwright in P0.4.
+- **2026-09-24 — What consumer-check proves.** The button renders (server-side render in Node); every CSS and JSON export resolves; the Vite bundle contains the token variables and the button utilities; the app typechecks against the packed `.d.ts` with `skipLibCheck: false`; `@veljaos/eslint-config` loads and reports Radix and internal `@veljaos/ui/*` imports. Rendering in a real browser comes with Playwright in P0.4.
 - **2026-09-24 — Build outputs are declared.** Each build writes only to its package's `dist/`, and each build config states its outputs in a comment (Appendix B.10). `files: ["dist"]` in every package; no package is private.
-- **2026-09-24 — No preflight in styles.css.** `@liro/ui/styles.css` contains the Tailwind theme and the utilities the components use, not Tailwind's reset: the reset belongs to the application.
-- **2026-09-24 — @liro/tokens is a peer of @liro/ui.** The components' CSS reads the `--liro-*` variables, which the application loads once from `@liro/tokens/tokens.css`. pnpm warns that this peer is unmet in consumer-check, because it does not count a `file:` tarball as satisfying a version range; the peer is linked all the same.
+- **2026-09-24 — No preflight in styles.css.** `@veljaos/ui/styles.css` contains the Tailwind theme and the utilities the components use, not Tailwind's reset: the reset belongs to the application.
+- **2026-09-24 — @veljaos/tokens is a peer of @veljaos/ui.** The components' CSS reads the `--liro-*` variables, which the application loads once from `@veljaos/tokens/tokens.css`. pnpm warns that this peer is unmet in consumer-check, because it does not count a `file:` tarball as satisfying a version range; the peer is linked all the same.
 - **2026-09-24 — Install scripts stay off.** `allowBuilds` in `pnpm-workspace.yaml` denies the install scripts of esbuild and @parcel/watcher; both load prebuilt binaries from optional platform packages.
-- **2026-09-24 — Versions start at 0.1.0-alpha.0**, the version the end of Phase 0 publishes; each later phase publishes the next `0.1.0-alpha.N`, and P6.5 publishes `1.0.0`. No `@liro/*` package was ever published, so there is nothing to collide with. (Corrected on 2026-09-24: the plan first said 2.0.0, assuming an earlier 1.0.0 existed.)
+- **2026-09-24 — Versions start at 0.1.0-alpha.0**, the version the end of Phase 0 publishes; each later phase publishes the next `0.1.0-alpha.N`, and P6.5 publishes `1.0.0`. No `@veljaos/*` package was ever published, so there is nothing to collide with. (Corrected on 2026-09-24: the plan first said 2.0.0, assuming an earlier 1.0.0 existed.)
 - **2026-09-24 — Proprietary license.** Every package has `"license": "UNLICENSED"`; the root `LICENSE` states the terms. Each build copies `LICENSE` and `THIRD-PARTY-NOTICES.md` into the package's `dist/` (`scripts/copy-legal.mjs`), and consumer-check verifies both are in every installed package.
-- **2026-09-24 — Third-party notices.** `THIRD-PARTY-NOTICES.md` lists code copied into the repository, code included in the packages, runtime and peer dependencies, and what the published Storybook bundles. It is updated in the same pull request that adds any of these.
+- **2026-09-24 — Third-party notices.** `THIRD-PARTY-NOTICES.md` lists code copied into the repository, code included in the packages, runtime and peer dependencies, and what the Storybook build bundles. It is updated in the same pull request that adds any of these.
+- **2026-09-25 — Package scope `@veljaos`.** The packages are `@veljaos/tokens`, `@veljaos/ui` and `@veljaos/eslint-config` (they were `@liro/*` until P0.5). GitHub Packages accepts only the scope of the account that owns the repository, and the GitHub name `liro` belongs to an unrelated person. Decided by the owner on 2026-09-25. Moving the repository to an organization later means renaming the scope again. Component and token names keep Liro (`LiroProvider`, `--liro-*`).
+- **2026-09-25 — Notices checked against their sources.** The Tailwind CSS, React and Storybook notices match the upstream texts exactly (Storybook: `LICENSE` at tag v10.6.0). The Storybook build also bundles React DOM and scheduler (MIT, React's notice), axe-core 4.13.0 (MPL-2.0, with its third-party notices) and the Nunito Sans font (OFL-1.1); those notices were added. The `storybook` package pre-bundles its own dependencies without separate notices; they are not listed.
+
+## Publishing
+
+- **2026-09-25 — Tag-triggered publishing.** `.github/workflows/publish.yml` runs when a tag `v<version>` is pushed. It checks that the tagged commit is on `main` (so it passed the required checks) and that the tag equals the version of every package; runs unit tests, build and consumer-check; publishes with `pnpm -r publish` to `https://npm.pkg.github.com`; and confirms each version with `pnpm view`. Each package has `publishConfig.registry` and a `repository` field, which links the package to this repository.
+- **2026-09-25 — No personal token.** The workflow authenticates with its own `GITHUB_TOKEN`, with `packages: write` for that job only. The token is referenced as `${NODE_AUTH_TOKEN}` in `~/.npmrc` and never written to disk.
+- **2026-09-25 — Dist-tags.** A prerelease (`0.1.0-alpha.0`) is published under its identifier (`alpha`), a release under `latest`. `@veljaos/ui` pins its peer `@veljaos/tokens` to the exact same version (`workspace:*`), because both are released together.
+- **2026-09-25 — Package visibility follows the repository.** The repository is public, so the packages are public too; installing from GitHub Packages still needs a token with `read:packages`. The code is proprietary regardless (`LICENSE`).
+- **2026-09-25 — Version bumps are manual until the end of Phase 1,** where Changesets arrives with the first bump (`0.1.0-alpha.1`). A release: bump the versions in a step's pull request, merge, then tag the merge commit on `main` with `v<version>` and push the tag. Pushing a tag is not in the agent's allowed commands; the owner approves each one.
+- **2026-09-25 — Storybook is not hosted.** No GitHub Pages or other hosting: it is viewed locally with `pnpm build` then `pnpm storybook`. CI keeps each pull request's static build as the artifact `storybook-static` (7 days); the publish workflow keeps the build of each version as `storybook-<version>` (90 days). The build carries `LICENSE` and `THIRD-PARTY-NOTICES.md`.
 
 ## Agent permissions
 
@@ -82,7 +93,7 @@ All dependencies are pinned to exact versions (`.npmrc`: `save-exact=true`). Eac
 
 ## Storybook
 
-- **2026-09-24 — Stories use the source.** Storybook aliases `@liro/ui` to `packages/ui/src`, so the provider in the global decorator and the components in the stories are the same module. Tokens come from the built `@liro/tokens`: run `pnpm build` before `pnpm storybook`.
+- **2026-09-24 — Stories use the source.** Storybook aliases `@veljaos/ui` to `packages/ui/src`, so the provider in the global decorator and the components in the stories are the same module. Tokens come from the built `@veljaos/tokens`: run `pnpm build` before `pnpm storybook`.
 - **2026-09-24 — Stories stay out of the package CSS.** `packages/ui/src/styles.css` excludes `*.stories.tsx` and tests from its sources; Storybook adds them back in its own `preview.css`.
 - **2026-09-24 — Toolbar globals** go through `LiroProvider`: theme, direction (from locale, or forced), format locale (`en`, `sr-Latn-RS`, `ar`, `ja`), number scheme (from locale, or one of five), money decimals (0, 2, 4, 6). The viewport is Storybook's own: phone 390×844, tablet 820×1180, desktop 1440×900. Storybook turns a numeric URL global into a number, so the decorator compares values as strings.
 - **2026-09-24 — Accessibility.** The a11y addon runs only the WCAG 2.0/2.1/2.2 A and AA rules, with `test: "error"`, so a violation fails the story tests of P0.4.
@@ -104,3 +115,39 @@ All dependencies are pinned to exact versions (`.npmrc`: `save-exact=true`). Eac
 - **2026-09-24 — The server is started by the job.** Playwright's `webServer` runs `vite preview` on `storybook-static` with `reuseExistingServer: false` (Appendix B.9: a crashed, reused dev server once failed 166 of 198 tests).
 - **2026-09-24 — Protected files (rule 10).** `scripts/protected-files.mjs` holds the list: `.claude/settings.json`; ESLint configuration and `packages/eslint-config`; every `tsconfig*.json`; `.github/`; the check scripts (protected-files, consumer-check); Playwright configuration, `apps/storybook/.storybook/` (Storybook test configuration and accessibility settings) and `apps/storybook/tests/*.ts`. Workflow `Protected files` runs on every pull request event, including description edits, and fails when the section `## Protected file changes` does not name each changed protected file. Its job summary lists them. Unit tests: `scripts/protected-files.test.mjs`.
 - **2026-09-24 — Required checks.** Auto-merge waits only for required checks. `Story tests, accessibility, visual` and `Protected files` must be required checks on `main`, next to `Install, lint, typecheck`. That is a repository setting, which the owner changes.
+
+## Lessons from the previous Design System
+
+Copied from BUILD-PLAN Appendix B on 2026-09-25. Each was learned in Design System 1.0 by measurement or by a real defect; the step that applies it cites it.
+
+- **2026-09-25 — B.1 Language tags name the script.** Always `sr-Latn` / `sr-Cyrl`, never bare `sr`: `Intl` reads bare `sr` as Cyrillic, which once produced Cyrillic month names on a Latin screen for weeks. Treat `sr-RS` as Latin (everyday Serbian usage).
+
+- **2026-09-25 — B.2 Two locales that barely differ hide bugs.** Bosnian and Serbian share about two thirds of their strings; a stale setting rendered Bosnian for an afternoon while everyone believed it was Serbian. Any language picker shows the current language.
+
+- **2026-09-25 — B.3 Number entry.** A masking input configured for Serbian turned `1234.56` into `123456` — a hundredfold error on the form people type when copying from foreign invoices. Hence no mask: parse the raw text. Accept `1234.56`, `1234,56`, `1.234,56`, `1,234.56`, grouping by space, non-breaking space, thin space or either apostrophe, and Indian 2-2-3 grouping. **The rule:** with both separators present, the last one is the decimal separator; with one kind present, it is a decimal separator when it appears once and grouping when it repeats; the screen's own number scheme is consulted **only** to break a tie the string cannot break itself (a string that is exactly a grouped integer in the scheme's own grouping, e.g. `240.000` on a dot-comma screen, is read as grouped). The alternative "under dot-comma a dot is never a decimal" breaks `1234.56` and was rejected. What the system prints, it must be able to read back — test every scheme's output through the parser.
+
+- **2026-09-25 — B.4 Unreadable is `null`, never `0`.** An unparseable amount counted as zero once made an unbalanced journal entry look balanced. Also: `value * 100` is not a conversion (`1.005 * 100` is `100.49999999999999`); work on the decimal string. This was fixed once and reintroduced by a "simplification".
+
+- **2026-09-25 — B.5 Tables.** Rendering both the desktop table and the phone cards and hiding one with CSS gave 1,592 ms per interaction at 932 rows; real branching plus virtualisation gave 120 ms. `table-layout: fixed` made columns worse. An empty value is an em dash (—), never a hyphen, which reads as a minus sign. Amount and currency joined by a non-breaking space so they never wrap apart. Raw numbers, not formatted text, go into CSV and Excel.
+
+- **2026-09-25 — B.6 Contrast.** Opacity on text enters the contrast ratio (`opacity: 0.85` dropped a bar from passing to 4.31:1) — make quieter text with size and weight. Translucent dark-theme tokens assume the page background; on a coloured surface they mix (a tone on a blue bubble measured 2.34 instead of 6.32) — layer them over an opaque base. Status `solid` colours are for bars and dots, never text; text on a tone is its `fg` on its `bg`. Automatic contrast switching was measured and rejected: the threshold between two families was three thousandths apart. Contrast is measured after layers composite, not per token.
+
+- **2026-09-25 — B.7 Right-to-left.** Three drag handlers (column resize, split divider, their arrow keys) all ran backwards in right-to-left because they computed in physical pixels. Every pointer or keyboard movement measures from the **leading** edge. This is a class of bug, not an incident. Progress bars flip (a bar is a metaphor for reading); prop names like `left`/`right` and symmetric stretches do not.
+
+- **2026-09-25 — B.8 Ways of working that the owner established.**
+  - Navigation is a **launchpad of module cards** at the root and **tabs inside a module**, not a sidebar.
+  - **Full page** for creating or editing anything with more than about ten fields, tabs or attachments (it has an address, room for errors, and a back button); **drawer** for a short edit with the list still visible; **modal** for one action with one outcome, or a read-only view.
+  - Routes: `/things`, `/things/new`, `/things/[id]`, `/things/[id]/part`; breadcrumbs from the third level; the table never decides whether a row opens a page or a drawer.
+  - Actions at the top **and** at the bottom of a scrolling form; the bottom bar is sticky only while the form actually scrolls.
+  - On a list: search on the start side, filters beside it, actions at the end, paging at the bottom. Once a user knows where search is on one screen, they know it on every screen.
+  - One filled button per screen; the main action is last in its group.
+  - The error sits next to the field. Success messages disappear; errors wait.
+  - Hidden fields are never submitted.
+  - A table on a phone is not a table: it is cards.
+  - Confirmation does not scale: a bulk action asks once, with the count.
+
+- **2026-09-25 — B.9 Habits.** A prop that is accepted and does nothing was found eleven times, and none failed lint, types, tests or the accessibility sweep — each was found by looking at a screen. Initials come from first and last name ("Ana Jovanović" → AJ, not AN). A finding is a hypothesis until code confirms it. When a check fails on more places than a change could touch, suspect the environment (a crashed dev server once failed 166 of 198 accessibility tests).
+
+- **2026-09-25 — B.10 Packaging.** A package whose `files` field missed a sibling folder worked inside the workspace and returned errors for every consumer; a package marked private could not be installed at all. Workspace links hide both. That is why `consumer-check` installs **packed** tarballs. Every build tool task declares its outputs (a missing declaration once filled a cache to 223 GB).
+
+- **2026-09-25 — B.11 The JMBG sex marker is not gender identity.** Never prefill anything about a person's gender from an identification number. (Domain validation itself is not in the Design System; this is recorded for whoever builds forms on it.)

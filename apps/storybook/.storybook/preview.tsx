@@ -1,5 +1,5 @@
 // Changing the accessibility settings in this file is a protected change (BUILD-PLAN rule 10).
-import { LiroProvider, NUMBER_SCHEMES, type LiroFormat } from '@liro/ui'
+import { LiroProvider, NUMBER_SCHEMES, type LiroFormat } from '@veljaos/ui'
 import type { Decorator, Preview } from '@storybook/react-vite'
 import { WCAG_TAGS } from './a11y'
 import './preview.css'

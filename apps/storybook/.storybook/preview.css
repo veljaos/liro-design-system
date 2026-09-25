@@ -1,8 +1,8 @@
 /*
- * Storybook styles: the tokens as a consumer loads them, and the @liro/ui source styles compiled
+ * Storybook styles: the tokens as a consumer loads them, and the @veljaos/ui source styles compiled
  * by the Tailwind Vite plugin, with the stories and this catalogue added as sources.
  */
-@import '@liro/tokens/tokens.css';
+@import '@veljaos/tokens/tokens.css';
 @import '../../../packages/ui/src/styles.css';
 @source '../../../packages/ui/src/**/*.stories.tsx';
 @source './';
