@@ -28,9 +28,10 @@ dependency, or copies third-party code (for example a shadcn/ui component) into 
 
 ## Runtime and peer dependencies
 
-| Software | Version   | License | Used by       |
-| -------- | --------- | ------- | ------------- |
-| React    | 19 (peer) | MIT     | `@veljaos/ui` |
+| Software                                                            | Version   | License | Used by                                                                                      |
+| ------------------------------------------------------------------- | --------- | ------- | -------------------------------------------------------------------------------------------- |
+| React                                                               | 19 (peer) | MIT     | `@veljaos/ui`                                                                                |
+| Radix UI (`radix-ui`, and the `@radix-ui/*` packages it depends on) | 1.6.7     | MIT     | `@veljaos/ui` (`LiroProvider` sets Radix's direction; the primitives of P2.1). Notice below. |
 
 ## Storybook build
 
@@ -44,6 +45,7 @@ this file. Besides our own code it bundles:
 | React, React DOM                                                     | 19.3.0  | MIT     | Notice below (React DOM carries the same notice).                                                                                            |
 | scheduler                                                            | 0.28.0  | MIT     | Dependency of React DOM; same notice as React.                                                                                               |
 | axe-core                                                             | 4.13.0  | MPL-2.0 | Used by the accessibility addon. Unmodified; source: https://github.com/dequelabs/axe-core/tree/v4.13.0. Notices below.                      |
+| Radix UI (`@radix-ui/react-direction`, through `radix-ui`)           | 1.1.4   | MIT     | Used by `LiroProvider`. Notice below (Radix UI).                                                                                             |
 | Nunito Sans                                                          | —       | OFL-1.1 | Interface font of the Storybook manager, shipped inside the storybook package. Notice below, from https://github.com/googlefonts/NunitoSans. |
 
 The `storybook` package ships its own dependencies pre-bundled into its code, without separate
@@ -52,7 +54,7 @@ notices; they are not listed here.
 ## Planned
 
 Entries are added, with their notices, in the step that brings them in (BUILD-PLAN section 3):
-shadcn/ui (copied components, MIT), Radix UI primitives (MIT), TanStack Table and TanStack Virtual
+shadcn/ui (copied components, MIT), TanStack Table and TanStack Virtual
 (MIT), lucide-react (ISC), cmdk (MIT), sonner (MIT), react-day-picker (MIT), Recharts (MIT),
 React Hook Form (MIT).
 
@@ -90,6 +92,34 @@ SOFTWARE.
 MIT License
 
 Copyright (c) Meta Platforms, Inc. and affiliates.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+### Radix UI
+
+The same notice is in `radix-ui` 1.6.7 and in each `@radix-ui/*` package it depends on.
+
+```
+MIT License
+
+Copyright (c) 2022 WorkOS
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

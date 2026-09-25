@@ -229,7 +229,7 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P1.2 | Typography and fonts for seven scripts | P1.1 | done | 2026-09-25 | A.5 type scale as tokens and Tailwind utilities; Noto families, Space Grotesk and Inter shipped with unicode-range subsets; CJK order by lang; per-script leading; `useLangAttribute`; Scripts story |
 | P1.3 | Intents, families and Button | P1.1 | todo | | |
 | P1.4 | Status tones and badges | P1.1 | todo | | |
-| P1.5 | LiroProvider, messages and format | P0.5 | todo | | |
+| P1.5 | LiroProvider, messages and format | P0.5 | done | 2026-09-25 | Every provider prop; typed messages; parseNumber per B.3/B.4; dates Gregorian with Latin digits, parsed in the locale's order; Radix direction |
 | P2.1 | Primitives adapted | P1.3 | todo | | |
 | P2.2 | Field system and text inputs | P2.1, P1.5 | todo | | |
 | P2.3 | Numbers, money and dates | P2.2 | todo | | |
