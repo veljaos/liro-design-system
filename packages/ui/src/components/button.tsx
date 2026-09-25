@@ -62,27 +62,31 @@ const COLOURS: Record<Family, Record<Emphasis, string>> = {
   },
 }
 
-const DISABLED: Record<Emphasis, string> = {
-  primary: 'disabled:bg-surface-disabled disabled:text-disabled',
-  secondary: 'disabled:border-transparent disabled:bg-surface-disabled disabled:text-disabled',
-  menu: 'disabled:bg-transparent disabled:text-disabled',
-}
+/** Disabled, in every emphasis: Mantine's disabled colours, transparent border (Button.css). */
+const DISABLED =
+  'disabled:border-transparent disabled:bg-surface-disabled disabled:text-disabled disabled:cursor-not-allowed'
 
+/**
+ * The previous Design System's Mantine sizes ("Button sizes" in docs/decisions.md, source
+ * @mantine/core 9.6.2 styles/Button.css and ActionIcon.css): radius md (8px), 1px border,
+ * weight 600, line height 1. Button = size 'sm': height 36px, font size 13px, horizontal padding
+ * 18px, 12px (18 / 1.5) on the side of the icon, 10px between icon and label. IconButton =
+ * ActionIcon size 'md': 28px square.
+ */
 const BASE =
-  'inline-flex shrink-0 cursor-pointer items-center justify-center rounded-sm border border-solid font-sans font-semibold whitespace-nowrap box-border select-none transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed'
-
-const SIZES = {
-  md: { button: 'h-control gap-2 px-4 text-md', square: 'size-control', icon: 'size-4' },
-  sm: { button: 'h-control-sm gap-1.5 px-3 text-sm', square: 'size-control-sm', icon: 'size-3.5' },
-} as const
+  'inline-flex shrink-0 cursor-pointer items-center justify-center rounded-md border border-solid font-sans font-semibold leading-none whitespace-nowrap box-border select-none transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus'
+const BUTTON = 'h-control gap-2.5 ps-3 pe-4.5 text-sm'
+const ICON_BUTTON = 'size-7 p-0'
+const ICON = 'size-4 shrink-0'
 
 interface CommonProps {
   /** The visible text of a Button, the accessible name of an IconButton. From the application. */
   label: string
-  /** Default: the intent's emphasis; 'secondary' for a family. One 'primary' per screen. */
+  /**
+   * Default: the intent's emphasis; for a family, 'secondary'. IconButton: 'menu'.
+   * One 'primary' per screen.
+   */
   emphasis?: Emphasis
-  /** md = the control height (36px), sm = the small control (30px). Default: md. */
-  size?: 'md' | 'sm'
   /** Default: 'button'. */
   type?: 'button' | 'submit' | 'reset'
   /**
@@ -109,13 +113,25 @@ interface FamilyProps {
 
 export type ButtonProps = CommonProps & (IntentProps | FamilyProps)
 
+/** An icon button: an intent, or an icon with a family (default neutral, as Mantine's ActionIcon). */
+export type IconButtonProps = CommonProps &
+  (IntentProps | { icon: IconComponent; family?: Family; intent?: never })
+
+interface Resolved {
+  family: Family
+  emphasis: Emphasis
+  Icon: IconComponent
+  mirrors: boolean
+  data: Record<string, string>
+}
+
 /** Family, emphasis, icon and data attributes of either kind of button. */
-function resolve(props: ButtonProps) {
+function resolve(props: IconButtonProps, defaultEmphasis: Emphasis | null): Resolved {
   if (props.intent !== undefined) {
     const intent = INTENTS[props.intent]
     return {
       family: intent.family,
-      emphasis: props.emphasis ?? intent.emphasis,
+      emphasis: props.emphasis ?? defaultEmphasis ?? intent.emphasis,
       Icon: intent.icon,
       mirrors: intent.mirrorsInRtl,
       data: {
@@ -125,33 +141,27 @@ function resolve(props: ButtonProps) {
     }
   }
   return {
-    family: props.family,
-    emphasis: props.emphasis ?? 'secondary',
+    family: props.family ?? 'neutral',
+    emphasis: props.emphasis ?? defaultEmphasis ?? 'secondary',
     Icon: props.icon,
     mirrors: false,
     data: {},
   }
 }
 
-function buttonParts(props: ButtonProps, square: boolean) {
-  const { family, emphasis, Icon, mirrors, data } = resolve(props)
-  const size = SIZES[props.size ?? 'md']
+function buttonParts(props: IconButtonProps, square: boolean) {
+  const { family, emphasis, Icon, mirrors, data } = resolve(props, square ? 'menu' : null)
   const className = [
     BASE,
-    square ? `${size.square} p-0` : size.button,
+    square ? ICON_BUTTON : BUTTON,
     // Every emphasis has a 1px border, so all have the same size; only neutral "default" shows it.
     family === 'neutral' && emphasis === 'secondary' ? '' : 'border-transparent',
     COLOURS[family][emphasis],
-    DISABLED[emphasis],
+    DISABLED,
   ]
     .filter((part) => part !== '')
     .join(' ')
-  const icon = (
-    <Icon
-      aria-hidden="true"
-      className={mirrors ? `${size.icon} shrink-0 rtl:-scale-x-100` : `${size.icon} shrink-0`}
-    />
-  )
+  const icon = <Icon aria-hidden="true" className={mirrors ? `${ICON} rtl:-scale-x-100` : ICON} />
   return {
     icon,
     attributes: {
@@ -180,8 +190,11 @@ export function Button(props: ButtonProps) {
   )
 }
 
-/** A square button with only an icon. `label` is required: it is the accessible name and the tooltip. */
-export function IconButton(props: ButtonProps) {
+/**
+ * A square button with only an icon, subtle (menu emphasis) by default. `label` is required: it
+ * is the accessible name and the tooltip.
+ */
+export function IconButton(props: IconButtonProps) {
   const { icon, attributes } = buttonParts(props, true)
   return (
     <button {...attributes} aria-label={props.label} title={props.label}>
@@ -189,5 +202,3 @@ export function IconButton(props: ButtonProps) {
     </button>
   )
 }
-
-export type IconButtonProps = ButtonProps

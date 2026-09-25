@@ -138,17 +138,18 @@ export const Disabled: Story = {
   ),
 }
 
-/** md (36px, the control height) and sm (30px). */
+/** Button: Mantine size 'sm' (36px). IconButton: ActionIcon size 'md' (28px), neutral and subtle by default. */
 export const Sizes: Story = {
   render: () => (
     <Surface>
       <div className="flex flex-wrap items-center gap-3">
         <Button intent="save" label="Save" />
-        <Button intent="save" label="Save" size="sm" />
         <Button intent="cancel" label="Cancel" />
-        <Button intent="cancel" label="Cancel" size="sm" />
         <IconButton intent="more" label="More actions" />
-        <IconButton intent="more" label="More actions" size="sm" />
+        <IconButton icon={Signature} label="Sign" />
+        <IconButton icon={Signature} family="verify" label="Sign" />
+        <IconButton intent="delete" label="Delete" emphasis="secondary" />
+        <IconButton intent="save" label="Save" emphasis="primary" disabled />
       </div>
     </Surface>
   ),
