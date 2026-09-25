@@ -225,7 +225,7 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P0.3 | Storybook with the toolbar | P0.2 | done | 2026-09-24 | Storybook 10.6; first LiroProvider subset (locale, direction, theme, number format); Vitest; license UNLICENSED + notices |
 | P0.4 | CI on Linux: tests, accessibility, visual | P0.3 | done | 2026-09-24 | Playwright 1.63 image pinned by digest; story tests via Storybook events; axe WCAG 2.2 AA; baselines ×4; protected-files check |
 | P0.5 | AGENTS.md and decisions.md | P0.4 | done | 2026-09-25 | Packages renamed to `@veljaos/*` (GitHub Packages scope); tag-triggered publish workflow; notices completed; local baseline script |
-| P1.1 | Tokens: values, meanings, themes | P0.5 | todo | | |
+| P1.1 | Tokens: values, meanings, themes | P0.5 | done | 2026-09-25 | One source (`tokens.ts`) generates CSS, Tailwind theme and JSON, tested against Appendix A; raw palette removed; lint rules `liro/no-raw-colors` and `liro/logical-properties` with fixtures; Tokens page |
 | P1.2 | Typography and fonts for seven scripts | P1.1 | todo | | |
 | P1.3 | Intents, families and Button | P1.1 | todo | | |
 | P1.4 | Status tones and badges | P1.1 | todo | | |

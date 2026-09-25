@@ -6,3 +6,4 @@
 @import '../../../packages/ui/src/styles.css';
 @source '../../../packages/ui/src/**/*.stories.tsx';
 @source './';
+@source '../src';
