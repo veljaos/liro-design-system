@@ -1,14 +1,25 @@
 /**
- * Writes the three published files of @veljaos/tokens from src/tokens.ts:
- * tokens.css (the --liro-* variables), theme.css (the Tailwind v4 theme) and tokens.json.
+ * Writes the published files of @veljaos/tokens from src/tokens.ts: tokens.css (the --liro-*
+ * variables and the base typography), fonts.css (the font faces), theme.css (the Tailwind v4
+ * theme) and tokens.json.
  */
 import {
+  BRAND_STACK,
   BREAKPOINTS,
   COMMON,
   DURATION,
   EASING,
+  FONT_CJK_ORDER,
+  FONT_SIZE,
+  FONT_WEIGHT,
+  HEADINGS,
   kebab,
   LAYERS,
+  LEADING,
+  MONO_STACK,
+  RELAXED_SCRIPT_LANGUAGES,
+  sansStack,
+  TRACKING,
   MEANINGS,
   meaningEntries,
   RADIUS,
@@ -85,6 +96,28 @@ export function tokensCss(): string {
   for (const [name, value] of Object.entries(SIZES))
     values.push(`--liro-size-${kebab(name)}: ${value};`)
   for (const [name, value] of Object.entries(LAYERS)) values.push(`--liro-layer-${name}: ${value};`)
+  values.push('', '/* A.5 Typography */')
+  values.push(`--liro-font-sans: ${sansStack(FONT_CJK_ORDER.default)};`)
+  values.push(`--liro-font-brand: ${BRAND_STACK};`)
+  values.push(`--liro-font-mono: ${MONO_STACK};`)
+  for (const [name, value] of Object.entries(FONT_SIZE))
+    values.push(`--liro-font-size-${name}: ${value};`)
+  for (const [name, value] of Object.entries(FONT_WEIGHT))
+    values.push(`--liro-font-weight-${name}: ${value};`)
+  for (const [name, value] of Object.entries(LEADING))
+    values.push(`--liro-leading-${name}: ${value};`)
+  for (const [name, value] of Object.entries(TRACKING))
+    values.push(`--liro-tracking-${name}: ${value};`)
+  for (const [level, [size, lineHeight]] of Object.entries(HEADINGS)) {
+    values.push(`--liro-heading-${level.slice(1)}-size: ${size};`)
+    values.push(`--liro-heading-${level.slice(1)}-line-height: ${lineHeight};`)
+  }
+  values.push(
+    '/* Body text: the line height and letter spacing a script uses (per-script adjustment below). */',
+  )
+  values.push('--liro-leading-body: var(--liro-leading-base);')
+  values.push('--liro-tracking-body-text: var(--liro-tracking-body);')
+  values.push('--liro-tracking-heading-text: var(--liro-tracking-heading);')
 
   const themed = (theme: Theme) => {
     const index = theme === 'light' ? 0 : 1
@@ -101,6 +134,34 @@ export function tokensCss(): string {
 
   const shadcn = Object.entries(SHADCN).map(([name, variable]) => `--${name}: var(${variable});`)
 
+  const langs = (languages: readonly string[]) =>
+    `:where(${languages.map((language) => `:lang(${language})`).join(', ')})`
+  const base = [
+    '/* The interface face, body line height and letter spacing, set where the language may',
+    '   change: the root, every themed element (LiroProvider) and every element with lang. */',
+    block(':where(:root, [data-liro-theme], [lang])', [
+      'font-family: var(--liro-font-sans);',
+      'line-height: var(--liro-leading-body);',
+      'letter-spacing: var(--liro-tracking-body-text);',
+    ]),
+    '/* The body size inside LiroProvider; the root size stays, so rem units do not change. */',
+    block(':where([data-liro-theme])', ['font-size: var(--liro-font-size-md);']),
+    '/* Han characters are drawn differently in Chinese and Japanese: text marked with lang gets',
+    '   its own family first. */',
+    block(langs(['zh']), [`--liro-font-sans: ${sansStack(FONT_CJK_ORDER.default)};`]),
+    block(langs(['zh-Hant', 'zh-TW', 'zh-HK', 'zh-MO']), [
+      `--liro-font-sans: ${sansStack(FONT_CJK_ORDER['zh-Hant'])};`,
+    ]),
+    block(langs(['ja']), [`--liro-font-sans: ${sansStack(FONT_CJK_ORDER.ja)};`]),
+    '/* Per-script adjustment: Arabic script and CJK text take the relaxed line height and no',
+    '   letter spacing. */',
+    block(langs(RELAXED_SCRIPT_LANGUAGES), [
+      '--liro-leading-body: var(--liro-leading-relaxed);',
+      '--liro-tracking-body-text: 0;',
+      '--liro-tracking-heading-text: 0;',
+    ]),
+  ]
+
   return [
     HEADER,
     '/*',
@@ -108,6 +169,8 @@ export function tokensCss(): string {
     ' * meanings per theme. LiroProvider sets data-liro-theme; without it, the light theme applies.',
     ' * Any element may carry data-liro-theme, so both themes can appear on one page.',
     ' */',
+    "@import './fonts.css';",
+    '',
     block(':root', values),
     '',
     block('@media (prefers-reduced-motion: reduce)', [
@@ -124,7 +187,50 @@ export function tokensCss(): string {
     '   resolves in its own theme. */',
     block(':root,\n[data-liro-theme]', shadcn),
     '',
+    '/* A.5 and P1.2 Base typography, in the lowest layer: any utility or application style wins. */',
+    block('@layer base', base.join('\n').split('\n')),
+    '',
   ].join('\n')
+}
+
+/** A font package and the stylesheets of it that fonts.css includes (variable weight axis only). */
+export const FONT_PACKAGES: { name: string; stylesheets: string[] }[] = [
+  { name: '@fontsource-variable/noto-sans', stylesheets: ['wght.css', 'wght-italic.css'] },
+  { name: '@fontsource-variable/noto-sans-arabic', stylesheets: ['wght.css'] },
+  { name: '@fontsource-variable/noto-sans-hebrew', stylesheets: ['wght.css'] },
+  { name: '@fontsource-variable/noto-sans-sc', stylesheets: ['wght.css'] },
+  { name: '@fontsource-variable/noto-sans-tc', stylesheets: ['wght.css'] },
+  { name: '@fontsource-variable/noto-sans-jp', stylesheets: ['wght.css'] },
+  { name: '@fontsource-variable/space-grotesk', stylesheets: ['wght.css'] },
+  { name: '@fontsource-variable/inter', stylesheets: ['wght.css'] },
+]
+
+/**
+ * fonts.css from the font packages' stylesheets: every @font-face keeps its unicode-range, so
+ * a browser downloads a subset only when the page has a character in it. The files move from
+ * ./files/ to ./fonts/. Returns the CSS and the file names it refers to.
+ */
+export function fontsCss(stylesheets: string[]): { css: string; files: string[] } {
+  const files: string[] = []
+  const faces = stylesheets
+    .join('\n')
+    .replace(/url\(\.\/files\/([^)]+)\)/g, (_match, file: string) => {
+      files.push(file)
+      return `url(./fonts/${file})`
+    })
+  if (/url\((?!\.\/fonts\/)/.test(faces)) {
+    throw new Error('a font stylesheet refers to a file outside ./files/')
+  }
+  return {
+    css: [
+      HEADER,
+      '/* Font faces of the Liro interface and brand faces (BUILD-PLAN P1.2), from Fontsource.',
+      '   Licences: THIRD-PARTY-NOTICES.md (SIL Open Font License 1.1). */',
+      faces.trim(),
+      '',
+    ].join('\n'),
+    files,
+  }
 }
 
 /**
@@ -140,6 +246,11 @@ export function themeCss(): string {
     '--shadow-*: initial;',
     '--ease-*: initial;',
     '--breakpoint-*: initial;',
+    '--font-*: initial;',
+    '--font-weight-*: initial;',
+    '--text-*: initial;',
+    '--leading-*: initial;',
+    '--tracking-*: initial;',
     '',
     '/* A.4 Breakpoints (literal: media queries cannot read variables) */',
     ...Object.entries(BREAKPOINTS).map(([name, value]) => `--breakpoint-${name}: ${value};`),
@@ -203,6 +314,38 @@ export function themeCss(): string {
   lines.push('--spacing-control: var(--liro-size-control-height);')
   lines.push('--spacing-control-sm: var(--liro-size-control-height-sm);')
   lines.push('--container-content: var(--liro-size-content-max-width);')
+  lines.push(
+    '',
+    '/* A.5 Typography: font-sans, font-brand, font-mono; text-xs … text-xl with the body line',
+    '   height and letter spacing of the script; text-h1 … text-h6; font-regular … font-bold;',
+    '   leading-tight|base|relaxed; tracking-heading|body|caps. Tabular digits: tabular-nums. */',
+  )
+  lines.push('--font-sans: var(--liro-font-sans);')
+  lines.push('--font-brand: var(--liro-font-brand);')
+  lines.push('--font-mono: var(--liro-font-mono);')
+  lines.push('--default-font-family: var(--liro-font-sans);')
+  lines.push('--default-mono-font-family: var(--liro-font-mono);')
+  for (const name of Object.keys(FONT_SIZE)) {
+    lines.push(`--text-${name}: var(--liro-font-size-${name});`)
+    lines.push(`--text-${name}--line-height: var(--liro-leading-body);`)
+    lines.push(`--text-${name}--letter-spacing: var(--liro-tracking-body-text);`)
+  }
+  for (const level of Object.keys(HEADINGS)) {
+    const n = level.slice(1)
+    lines.push(`--text-${level}: var(--liro-heading-${n}-size);`)
+    lines.push(`--text-${level}--line-height: var(--liro-heading-${n}-line-height);`)
+    lines.push(`--text-${level}--font-weight: var(--liro-font-weight-semibold);`)
+    lines.push(`--text-${level}--letter-spacing: var(--liro-tracking-heading-text);`)
+  }
+  for (const name of Object.keys(FONT_WEIGHT)) {
+    lines.push(`--font-weight-${name}: var(--liro-font-weight-${name});`)
+  }
+  for (const name of Object.keys(LEADING)) {
+    lines.push(`--leading-${name}: var(--liro-leading-${name});`)
+  }
+  for (const name of Object.keys(TRACKING)) {
+    lines.push(`--tracking-${name}: var(--liro-tracking-${name});`)
+  }
   lines.push(
     '',
     '/* shadcn/ui names, for the copied primitives only (bg-background, text-muted-foreground, …).',

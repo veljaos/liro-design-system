@@ -6,6 +6,7 @@ export {
   directionForLocale,
   formatDecimal,
   intlLocale,
+  langAttribute,
   LiroProvider,
   localToday,
   messagesEn,
@@ -13,6 +14,7 @@ export {
   numberSchemeForLocale,
   parseDateText,
   parseDecimal,
+  useLangAttribute,
   useLiro,
   weekStartsOnForLocale,
 } from './provider'

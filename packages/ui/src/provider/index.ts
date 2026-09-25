@@ -14,3 +14,4 @@ export { directionForLocale, LiroProvider, localToday, useLiro } from './liro-pr
 export type { LiroContextValue, LiroProviderProps } from './liro-provider'
 export type { LiroMessages } from './messages'
 export { messagesEn } from './messages.en'
+export { langAttribute, useLangAttribute } from './lang'
