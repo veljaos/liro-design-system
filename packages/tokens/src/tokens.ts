@@ -303,6 +303,94 @@ export const LAYERS = {
   tooltip: '700',
 } as const
 
+/**
+ * A.5 and P1.2 Fonts. The interface face is Noto Sans with its script families; the files ship
+ * in @veljaos/tokens (fonts.css), each script subset downloading only when text needs it. Latin,
+ * Cyrillic and Greek come from Noto Sans; Arabic and Hebrew from their own families; Han, kana and
+ * hangul from the CJK families, in an order that depends on the language (FONT_CJK_ORDER).
+ */
+export const FONT_FAMILY = {
+  notoSans: 'Noto Sans Variable',
+  notoSansArabic: 'Noto Sans Arabic Variable',
+  notoSansHebrew: 'Noto Sans Hebrew Variable',
+  notoSansSc: 'Noto Sans SC Variable',
+  notoSansTc: 'Noto Sans TC Variable',
+  notoSansJp: 'Noto Sans JP Variable',
+  spaceGrotesk: 'Space Grotesk Variable',
+  inter: 'Inter Variable',
+} as const
+
+/**
+ * The order of the CJK families: Chinese and Japanese share Han characters but draw them
+ * differently, so text marked with `lang` gets its own family first.
+ */
+export const FONT_CJK_ORDER = {
+  default: [FONT_FAMILY.notoSansSc, FONT_FAMILY.notoSansTc, FONT_FAMILY.notoSansJp],
+  'zh-Hant': [FONT_FAMILY.notoSansTc, FONT_FAMILY.notoSansSc, FONT_FAMILY.notoSansJp],
+  ja: [FONT_FAMILY.notoSansJp, FONT_FAMILY.notoSansSc, FONT_FAMILY.notoSansTc],
+} as const
+
+/** The interface font stack with a given CJK order. */
+export function sansStack(cjk: readonly string[]): string {
+  return [FONT_FAMILY.notoSans, FONT_FAMILY.notoSansArabic, FONT_FAMILY.notoSansHebrew, ...cjk]
+    .map((family) => `'${family}'`)
+    .concat(['system-ui', 'sans-serif'])
+    .join(', ')
+}
+
+/** A.5 Brand face (wordmark, status pages) and monospace. The brand face falls back to Inter, then the interface stack. */
+export const BRAND_STACK = `'${FONT_FAMILY.spaceGrotesk}', '${FONT_FAMILY.inter}', var(--liro-font-sans)`
+export const MONO_STACK =
+  "'JetBrains Mono', 'Cascadia Code', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
+
+/** A.5 Sizes; md is the body size. */
+export const FONT_SIZE = {
+  xs: '12px',
+  sm: '13px',
+  md: '14px',
+  lg: '16px',
+  xl: '20px',
+} as const
+
+/** A.5 Weights. */
+export const FONT_WEIGHT = {
+  regular: '400',
+  medium: '500',
+  semibold: '600',
+  bold: '700',
+} as const
+
+/** A.5 Line heights. */
+export const LEADING = {
+  tight: '1.25',
+  base: '1.45',
+  relaxed: '1.6',
+} as const
+
+/** A.5 Letter spacing. */
+export const TRACKING = {
+  heading: '-0.015em',
+  body: '-0.01em',
+  caps: '0.5px',
+} as const
+
+/** A.5 Headings, all semibold: [size, line height]. */
+export const HEADINGS = {
+  h1: ['24px', '1.3'],
+  h2: ['20px', '1.35'],
+  h3: ['16px', '1.4'],
+  h4: ['14px', '1.45'],
+  h5: ['13px', '1.45'],
+  h6: ['12px', '1.45'],
+} as const satisfies Record<string, readonly [string, string]>
+
+/**
+ * P1.2 Per-script adjustment. Arabic script and CJK text get the relaxed line height of A.5 for
+ * body text, and no letter spacing: spacing breaks the joining of Arabic letters, and CJK text is
+ * set solid. Languages are matched with :lang(), so any region or script subtag counts.
+ */
+export const RELAXED_SCRIPT_LANGUAGES = ['ar', 'fa', 'ur', 'ja', 'zh'] as const
+
 export type Theme = 'light' | 'dark'
 export const THEMES: readonly Theme[] = ['light', 'dark']
 
@@ -414,5 +502,22 @@ export function resolvedTokens() {
     breakpoint: { ...BREAKPOINTS },
     size: { ...SIZES },
     layer: { ...LAYERS },
+    typography: {
+      family: {
+        sans: sansStack(FONT_CJK_ORDER.default),
+        brand: BRAND_STACK.replace('var(--liro-font-sans)', sansStack(FONT_CJK_ORDER.default)),
+        mono: MONO_STACK,
+      },
+      size: { ...FONT_SIZE },
+      weight: { ...FONT_WEIGHT },
+      leading: { ...LEADING },
+      tracking: { ...TRACKING },
+      heading: Object.fromEntries(
+        Object.entries(HEADINGS).map(([level, [size, lineHeight]]) => [
+          level,
+          { size, lineHeight, weight: FONT_WEIGHT.semibold },
+        ]),
+      ),
+    },
   }
 }

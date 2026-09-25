@@ -2,3 +2,4 @@ export { createFormat, formatDecimal, NUMBER_SCHEMES, numberSchemeForLocale } fr
 export type { LiroFormat, NumberScheme } from './format'
 export { directionForLocale, LiroProvider, useLiro } from './liro-provider'
 export type { LiroContextValue, LiroProviderProps } from './liro-provider'
+export { langAttribute, useLangAttribute } from './lang'

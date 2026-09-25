@@ -3,10 +3,20 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { describe, it } from 'vitest'
-import { SHADCN, themeCss, tokensCss, tokensJson } from './generate.ts'
+import { FONT_PACKAGES, fontsCss, SHADCN, themeCss, tokensCss, tokensJson } from './generate.ts'
 import {
+  BRAND_STACK,
   BREAKPOINTS,
   COMMON,
+  FONT_CJK_ORDER,
+  FONT_FAMILY,
+  FONT_SIZE,
+  FONT_WEIGHT,
+  HEADINGS,
+  LEADING,
+  MONO_STACK,
+  sansStack,
+  TRACKING,
   DURATION,
   EASING,
   LAYERS,
@@ -262,5 +272,111 @@ describe('generated files', () => {
       border: 'rgba(164,38,44,0.50)',
       solid: RAMPS.red[6],
     })
+  })
+})
+
+describe('typography equals Appendix A.5', () => {
+  const a5 = section('A.5')
+  /** The plan writes negative numbers with U+2212 MINUS SIGN. */
+  const ascii = (pairs: [string, string][]) =>
+    pairs.map(([name, value]): [string, string] => [name, value.replace('−', '-')])
+
+  it('has the sizes, weights, line heights and letter spacing', () => {
+    assert.deepEqual(
+      Object.entries(FONT_SIZE),
+      dotted(a5, 'Sizes: ').map(([name, value]): [string, string] => [
+        name,
+        value.replace(' (body)', ''),
+      ]),
+    )
+    assert.deepEqual(Object.entries(FONT_WEIGHT), dotted(a5, 'Weights: '))
+    assert.deepEqual(Object.entries(LEADING), dotted(a5, 'Line heights: '))
+    assert.deepEqual(Object.entries(TRACKING), ascii(dotted(a5, 'Letter spacing: ')))
+  })
+
+  it('has the headings, all semibold', () => {
+    assert.deepEqual(
+      Object.entries(HEADINGS).map(([level, [size, lineHeight]]) => [
+        level,
+        `${size}/${lineHeight}`,
+      ]),
+      dotted(a5, 'Headings (all semibold): '),
+    )
+  })
+
+  it('names the interface, brand and monospace faces', () => {
+    assert.match(a5, /Interface face: Noto Sans/)
+    assert.match(sansStack(FONT_CJK_ORDER.default), /^'Noto Sans Variable'/)
+    assert.match(a5, /Space Grotesk with Inter fallback/)
+    assert.match(BRAND_STACK, /^'Space Grotesk Variable', 'Inter Variable'/)
+    assert.match(a5, /JetBrains Mono, Cascadia Code, system monospace/)
+    assert.match(MONO_STACK, /^'JetBrains Mono', 'Cascadia Code', ui-monospace/)
+  })
+})
+
+describe('fonts (P1.2)', () => {
+  const tokens = tokensCss()
+  const theme = themeCss()
+
+  it('imports the font faces first, and keeps every subset downloadable on demand', () => {
+    assert.match(tokens, /^\/\*[^]*?\*\/\n[^]*?@import '\.\/fonts\.css';/)
+    assert.equal(tokens.indexOf('@import'), tokens.indexOf("@import './fonts.css';"))
+    const stylesheets = FONT_PACKAGES.flatMap(({ name, stylesheets: names }) =>
+      names.map((file) =>
+        readFileSync(new URL(`../node_modules/${name}/${file}`, import.meta.url), 'utf8'),
+      ),
+    )
+    const { css, files } = fontsCss(stylesheets)
+    const faces = css.split('@font-face').slice(1)
+    assert.equal(faces.length, files.length)
+    for (const face of faces) {
+      assert.match(face, /unicode-range: U\+/)
+      assert.match(face, /url\(\.\/fonts\/[\w.[\]-]+\.woff2\)/)
+    }
+    for (const family of Object.values(FONT_FAMILY)) {
+      assert.ok(css.includes(`font-family: '${family}';`), `fonts.css has no ${family}`)
+    }
+    // Serbian Cyrillic italics need an italic Noto Sans.
+    assert.match(css, /font-family: 'Noto Sans Variable';\s*font-style: italic;/)
+  })
+
+  it('puts the right CJK family first for Chinese, Traditional Chinese and Japanese', () => {
+    assert.match(
+      tokens,
+      /:where\(:lang\(ja\)\) \{\s*--liro-font-sans: [^;]*?'Noto Sans JP Variable', 'Noto Sans SC Variable'/,
+    )
+    assert.match(
+      tokens,
+      /:lang\(zh-Hant\)[^{]*\{\s*--liro-font-sans: [^;]*?'Noto Sans TC Variable', 'Noto Sans SC Variable'/,
+    )
+    assert.ok(tokens.indexOf(':lang(zh-Hant)') > tokens.indexOf(':where(:lang(zh))'))
+  })
+
+  it('gives Arabic script and CJK text the relaxed line height and no letter spacing', () => {
+    assert.match(
+      tokens,
+      /:lang\(ar\)[^{]*:lang\(ja\)[^{]*:lang\(zh\)\) \{\s*--liro-leading-body: var\(--liro-leading-relaxed\);\s*--liro-tracking-body-text: 0;/,
+    )
+  })
+
+  it('sets the body type in the base layer, and keeps the root font size', () => {
+    assert.match(tokens, /@layer base \{/)
+    assert.doesNotMatch(tokens, /:root[^{]*\{[^}]*[^-]font-size:/)
+  })
+
+  it('exposes the type scale to Tailwind and removes Tailwind’s own', () => {
+    for (const reset of [
+      '--font-*',
+      '--text-*',
+      '--font-weight-*',
+      '--leading-*',
+      '--tracking-*',
+    ]) {
+      assert.ok(theme.includes(`${reset}: initial;`), reset)
+    }
+    assert.match(theme, /--text-md: var\(--liro-font-size-md\);/)
+    assert.match(theme, /--text-md--line-height: var\(--liro-leading-body\);/)
+    assert.match(theme, /--text-h1--font-weight: var\(--liro-font-weight-semibold\);/)
+    assert.match(theme, /--font-brand: var\(--liro-font-brand\);/)
   })
 })

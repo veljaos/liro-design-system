@@ -14,8 +14,10 @@
   ],
   "exports": {
     "./tokens.css": "./dist/tokens.css",
+    "./fonts.css": "./dist/fonts.css",
     "./theme.css": "./dist/theme.css",
     "./tokens.json": "./dist/tokens.json",
+    "./fonts/*": "./dist/fonts/*",
     "./package.json": "./package.json"
   },
   "files": [
@@ -30,6 +32,14 @@
     "registry": "https://npm.pkg.github.com"
   },
   "devDependencies": {
+    "@fontsource-variable/inter": "5.3.0",
+    "@fontsource-variable/noto-sans": "5.3.0",
+    "@fontsource-variable/noto-sans-arabic": "5.3.0",
+    "@fontsource-variable/noto-sans-hebrew": "5.3.0",
+    "@fontsource-variable/noto-sans-jp": "5.3.0",
+    "@fontsource-variable/noto-sans-sc": "5.3.0",
+    "@fontsource-variable/noto-sans-tc": "5.3.0",
+    "@fontsource-variable/space-grotesk": "5.3.0",
     "vitest": "5.0.1"
   }
 }
