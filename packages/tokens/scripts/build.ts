@@ -5,7 +5,18 @@
 // scripts/copy-legal.mjs, which runs next.
 import { copyFile, mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
+import { contrastChecks, contrastFailures } from '../src/contrast.ts'
 import { FONT_PACKAGES, fontsCss, themeCss, tokensCss, tokensJson } from '../src/generate.ts'
+
+// Contrast is measured, never assumed (Appendix B.6): the build fails below the minimum.
+const failures = contrastFailures()
+if (failures.length > 0) {
+  for (const failure of failures) {
+    console.error(`${failure.ratio.toFixed(2)} < ${String(failure.minimum)}  ${failure.name}`)
+  }
+  throw new Error(`@veljaos/tokens: ${String(failures.length)} contrast checks fail`)
+}
+console.log(`@veljaos/tokens: ${String(contrastChecks().length)} contrast checks pass`)
 
 const root = new URL('../', import.meta.url)
 const dist = fileURLToPath(new URL('dist/', root))

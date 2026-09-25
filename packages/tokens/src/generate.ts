@@ -9,6 +9,7 @@ import {
   COMMON,
   DURATION,
   EASING,
+  FAMILIES,
   FONT_CJK_ORDER,
   FONT_SIZE,
   FONT_WEIGHT,
@@ -292,6 +293,23 @@ export function themeCss(): string {
     lines.push(`--background-color-status-${tone}-solid: var(${base}-solid);`)
     lines.push(`--fill-status-${tone}-solid: var(${base}-solid);`)
     lines.push(`--stroke-status-${tone}-solid: var(${base}-solid);`)
+  }
+  lines.push(
+    '',
+    '/* A.6 Families, for buttons: bg-family-destructive-solid (hover, active), text-on-accent on it;',
+    '   bg-family-destructive-subtle (hover) with text-family-destructive-fg. */',
+  )
+  for (const [family, parts] of Object.entries(FAMILIES)) {
+    const base = `--liro-family-${family}`
+    for (const part of ['solid', 'solidHover', 'solidActive', 'subtle', 'subtleHover']) {
+      if (part in parts) {
+        lines.push(
+          `--background-color-family-${family}-${kebab(part)}: var(${base}-${kebab(part)});`,
+        )
+      }
+    }
+    lines.push(`--text-color-family-${family}-fg: var(${base}-fg);`)
+    lines.push(`--text-color-family-${family}-fg-hover: var(${base}-fg-hover);`)
   }
   lines.push('', '/* A.3 Radius (rounded-none and rounded-full are built in) and shadows */')
   for (const name of ['xs', 'sm', 'md', 'lg', 'xl']) {

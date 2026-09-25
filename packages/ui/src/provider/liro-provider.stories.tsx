@@ -64,7 +64,7 @@ function ToolbarSample() {
         <LinkComponent href="#liro-provider" className="text-inherit underline">
           A link through linkComponent
         </LinkComponent>
-        <Button>Save</Button>
+        <Button intent="save" label="Save" />
       </div>
     </div>
   )

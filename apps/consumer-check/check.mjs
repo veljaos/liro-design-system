@@ -13,8 +13,10 @@ import { Button } from '@veljaos/ui'
 import liroEslintConfig from '@veljaos/eslint-config'
 
 // 1. The button renders.
-const html = renderToStaticMarkup(createElement(Button, null, 'Save'))
-assert.match(html, /^<button type="button" class="[^"]*bg-brand-solid[^"]*">Save<\/button>$/)
+const html = renderToStaticMarkup(createElement(Button, { intent: 'save', label: 'Save' }))
+assert.match(html, /^<button type="button" class="[^"]*bg-family-primary-solid[^"]*"[^>]*>/)
+assert.match(html, /data-intent="save"/)
+assert.match(html, /<svg[^>]*aria-hidden="true"[^>]*>.*<\/svg><span>Save<\/span><\/button>$/)
 console.log(`render: ${html}`)
 
 // 2. Every CSS and JSON export resolves, and the built bundle contains the button's styles.
@@ -39,7 +41,10 @@ assert.ok(
   css.includes('--liro-brand-solid:') && css.includes('--liro-status-danger-fg:'),
   'bundle is missing the token variables of tokens.css',
 )
-assert.ok(css.includes('.bg-brand-solid'), 'bundle is missing the button utilities of styles.css')
+assert.ok(
+  css.includes('.bg-family-primary-solid') && css.includes('.bg-family-destructive-subtle'),
+  'bundle is missing the button utilities of styles.css',
+)
 console.log(`bundle: dist/assets/${cssFiles[0]} has the tokens and the button styles`)
 
 // 3. The ESLint config loads, forbids Radix and internal paths, raw colours and physical
