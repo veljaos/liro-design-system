@@ -1,11 +1,10 @@
+import { intlLocale } from './format'
 import { useLiro } from './liro-provider'
 
-/** Language and script of a tag; Serbian without a script is Latin (Appendix B.1). */
+/** Language and script of a tag; Serbian without a script is Latin (intlLocale, Appendix B.1). */
 function languageAndScript(tag: string): string {
-  const given = new Intl.Locale(tag)
-  const script =
-    given.script ?? (given.language === 'sr' ? 'Latn' : new Intl.Locale(tag).maximize().script)
-  return `${given.language}-${script ?? ''}`
+  const locale = new Intl.Locale(intlLocale(tag)).maximize()
+  return `${locale.language}-${locale.script ?? ''}`
 }
 
 /**

@@ -50,20 +50,28 @@ describe('Button', () => {
     expect(renderToStaticMarkup(<Button intent="save" label="Save" />)).not.toContain('rtl:')
   })
 
-  it('passes type, size, disabled and onClick to the element', () => {
+  it("has the previous system's Mantine 'sm' size: 36px, 13px, radius md, 12/18px padding, 10px gap", () => {
+    const html = renderToStaticMarkup(<Button intent="save" label="Save" />)
+    for (const part of [
+      'h-control',
+      'text-sm',
+      'rounded-md',
+      'font-semibold',
+      'leading-none',
+      'ps-3',
+      'pe-4.5',
+      'gap-2.5',
+    ]) {
+      expect(html).toContain(` ${part} `)
+    }
+  })
+
+  it('passes type, disabled and onClick to the element', () => {
     const html = renderToStaticMarkup(
-      <Button
-        intent="save"
-        label="Save"
-        type="submit"
-        size="sm"
-        disabled
-        onClick={() => undefined}
-      />,
+      <Button intent="save" label="Save" type="submit" disabled onClick={() => undefined} />,
     )
     expect(html).toContain('type="submit"')
     expect(html).toContain('disabled=""')
-    expect(html).toContain('h-control-sm')
     expect(html).toContain('disabled:bg-surface-disabled')
   })
 
@@ -94,6 +102,19 @@ describe('IconButton', () => {
     expect(html).toContain('aria-label="More actions"')
     expect(html).toContain('title="More actions"')
     expect(html).not.toContain('<span>')
-    expect(html).toContain('size-control p-0')
+    expect(html).toContain('size-7 p-0')
+  })
+
+  it("defaults to Mantine's ActionIcon: neutral family, subtle (menu) emphasis", () => {
+    const withIcon = renderToStaticMarkup(<IconButton icon={Star} label="Favourite" />)
+    expect(withIcon).toContain('data-family="neutral"')
+    expect(withIcon).toContain('data-emphasis="menu"')
+    const withIntent = renderToStaticMarkup(<IconButton intent="delete" label="Delete" />)
+    expect(withIntent).toContain('data-family="destructive"')
+    expect(withIntent).toContain('data-emphasis="menu"')
+    const raised = renderToStaticMarkup(
+      <IconButton intent="save" label="Save" emphasis="primary" />,
+    )
+    expect(raised).toContain('data-emphasis="primary"')
   })
 })
