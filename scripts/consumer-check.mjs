@@ -1,4 +1,4 @@
-// Installs the packed @liro/* packages into a copy of apps/consumer-check outside the
+// Installs the packed @veljaos/* packages into a copy of apps/consumer-check outside the
 // repository, then builds and checks it like a real consumer (BUILD-PLAN P0.2, Appendix B.10).
 // Workspace links hide a missing `files` entry or a private package; tarballs do not.
 // Run `pnpm build` first.
@@ -55,7 +55,7 @@ try {
   manifest.dependencies = { ...manifest.dependencies, ...dependencies }
   await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`)
 
-  // pnpm warns that the peer @liro/tokens of @liro/ui is unmet: it does not count a `file:` tarball
+  // pnpm warns that the peer @veljaos/tokens of @veljaos/ui is unmet: it does not count a `file:` tarball
   // as satisfying a version range. The peer is linked to the tarball all the same; from a registry
   // the range is met.
   // --ignore-workspace: the copy lives outside the repository, and must never pick up workspace links.

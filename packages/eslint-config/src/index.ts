@@ -6,9 +6,9 @@ import type { Linter } from 'eslint'
  */
 const config: Linter.Config[] = [
   {
-    name: '@liro/eslint-config/imports',
+    name: '@veljaos/eslint-config/imports',
     rules: {
-      // Consumers import @liro/ui only: never Radix, never a primitive or an internal path.
+      // Consumers import @veljaos/ui only: never Radix, never a primitive or an internal path.
       'no-restricted-imports': [
         'error',
         {
@@ -16,11 +16,11 @@ const config: Linter.Config[] = [
             {
               group: ['@radix-ui/*'],
               message:
-                'Use the components of @liro/ui; Radix primitives are internal to the Design System.',
+                'Use the components of @veljaos/ui; Radix primitives are internal to the Design System.',
             },
             {
-              group: ['@liro/ui/*', '!@liro/ui/styles.css'],
-              message: 'Import from @liro/ui; internal paths are not part of its API.',
+              group: ['@veljaos/ui/*', '!@veljaos/ui/styles.css'],
+              message: 'Import from @veljaos/ui; internal paths are not part of its API.',
             },
           ],
         },

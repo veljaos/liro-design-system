@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "packageManager": "pnpm@12.6.0",
-  "description": "A plain Vite + React app that installs the packed @liro/* tarballs like a real consumer. Run it with `pnpm consumer-check` from the repository root; the script adds the @liro/* dependencies.",
+  "description": "A plain Vite + React app that installs the packed @veljaos/* tarballs like a real consumer. Run it with `pnpm consumer-check` from the repository root; the script adds the @veljaos/* dependencies.",
   "license": "UNLICENSED",
   "type": "module",
   "scripts": {

@@ -1,4 +1,4 @@
-# BUILD-PLAN — Liro Design System 2.0, from zero
+# BUILD-PLAN — Liro Design System, from zero
 
 **For:** the coding agent (Claude Code) building `liro-design-system` from an empty folder.
 **Owner:** Veljko Stanojević. Not an engineer — see rule 9.
@@ -33,7 +33,7 @@
 |---|---|
 | Foundation | **shadcn/ui** (Radix primitives + Tailwind CSS), code copied into this repository and owned by it |
 | Tables | **TanStack Table** + **TanStack Virtual** |
-| Catalogue and playground | **Storybook**, English only, small |
+| Catalogue and playground | **Storybook**, English only, small. Not hosted anywhere: viewed locally with `pnpm storybook`; CI and the publish workflow attach the static build as a downloadable artifact |
 | Look | Kept from the previous Design System: token values are carried over **1:1** (Appendix A). Refreshing later is a change in one place. |
 | Tokens | **Three layers.** Values (open, change freely) → meanings (closed vocabulary, change rarely and deliberately) → components (choose a meaning, never a colour). |
 | Colour by purpose | Buttons choose an **intent** or a **family** (Appendix A.6), never a colour or a variant. Blue means confirm, red means destructive, everywhere. |
@@ -42,7 +42,9 @@
 | Languages | Every component works left-to-right and right-to-left, and with Latin, Cyrillic, Greek, Arabic, Hebrew, Chinese and Japanese text. |
 | Accessibility | WCAG 2.2 AA, automated and manual, zero allowed exceptions. |
 | Devices | Mobile-first, installable web app (PWA) friendly, one-hand use on phones. |
-| Version | Packages start at **0.1.0-alpha.0** (end of Phase 0), then `0.1.0-alpha.1`, … after each phase, and reach **1.0.0** at the end of this plan (P6.5). No `@liro/*` package was published before. |
+| Version | Packages start at **0.1.0-alpha.0** (end of Phase 0), then `0.1.0-alpha.1`, … after each phase, and reach **1.0.0** at the end of this plan (P6.5). No `@veljaos/*` package was published before. |
+| Package names | `@veljaos/tokens`, `@veljaos/ui`, `@veljaos/eslint-config`. GitHub Packages accepts only the scope of the account that owns the repository (`veljaos`); the name `liro` on GitHub belongs to someone else. The components keep the Liro names (`LiroProvider`, `--liro-*`). |
+| License | Proprietary: `"license": "UNLICENSED"` in every package, `LICENSE` at the root, third-party notices in `THIRD-PARTY-NOTICES.md` |
 | Language of everything technical | English. Reports to the owner in Serbian. |
 
 ---
@@ -65,11 +67,11 @@ Pin every dependency to an **exact** version (no `^`, no `~`). At setup, take th
 | Command palette | cmdk (shadcn Command) |
 | Toasts | sonner (shadcn) |
 | Charts | Recharts through shadcn Chart |
-| Forms | Presentational fields in `@liro/ui`; an optional React Hook Form binding in `@liro/ui/form`. No validation library inside the Design System. |
+| Forms | Presentational fields in `@veljaos/ui`; an optional React Hook Form binding in `@veljaos/ui/form`. No validation library inside the Design System. |
 | Library build | tsup (JavaScript + type declarations) and the Tailwind CLI (CSS) |
 | Catalogue | Storybook (React + Vite), with the accessibility addon and a toolbar of globals |
 | Tests | Vitest (logic), Storybook test runner / Vitest addon (stories), Playwright + axe-core (accessibility and visual), in a pinned Linux Docker image |
-| Releases | Changesets, GitHub Packages |
+| Releases | GitHub Packages, published only by `.github/workflows/publish.yml` when a tag `v<version>` is pushed, with the workflow's own `GITHUB_TOKEN` (`packages: write`); no personal token. Changesets for version bumps and changelogs from the end of Phase 1 |
 
 ### Repository layout
 
@@ -80,26 +82,26 @@ liro-design-system/
 ├── docs/
 │   └── decisions.md          why things are as they are (seeded from Appendix B)
 ├── packages/
-│   ├── tokens/               @liro/tokens — CSS variables (light, dark), Tailwind theme, tokens.json, fonts
-│   ├── ui/                   @liro/ui — provider, components, templates
+│   ├── tokens/               @veljaos/tokens — CSS variables (light, dark), Tailwind theme, tokens.json, fonts
+│   ├── ui/                   @veljaos/ui — provider, components, templates
 │   │   └── src/
 │   │       ├── primitives/   shadcn copies, adapted; NOT exported
 │   │       ├── components/   the Liro API
 │   │       ├── templates/    screen templates
 │   │       ├── provider/     LiroProvider, messages, format
 │   │       └── form/         optional React Hook Form binding (subpath export)
-│   └── eslint-config/        @liro/eslint-config — the rules, shipped to consumers
+│   └── eslint-config/        @veljaos/eslint-config — the rules, shipped to consumers
 └── apps/
     ├── storybook/            the catalogue and playground
     └── consumer-check/       a plain Vite + React app that installs the built packages like a consumer
 ```
 
-**Primitives are private.** `packages/ui/src/primitives/` holds shadcn code adapted to Liro tokens. Only `components/` and `templates/` are exported. Consumers (`liro-core`) import `@liro/ui` only — never Radix, never a primitive. Lint enforces it.
+**Primitives are private.** `packages/ui/src/primitives/` holds shadcn code adapted to Liro tokens. Only `components/` and `templates/` are exported. Consumers (`liro-core`) import `@veljaos/ui` only — never Radix, never a primitive. Lint enforces it.
 
 ### How consumers use it
 
-- `import '@liro/tokens/tokens.css'` and `import '@liro/ui/styles.css'` — **precompiled CSS**, so a consumer does not need Tailwind to use the components.
-- A consumer that uses Tailwind for its own layout imports `@liro/tokens/theme.css` (Tailwind v4 `@theme`) to get the same semantic names.
+- `import '@veljaos/tokens/tokens.css'` and `import '@veljaos/ui/styles.css'` — **precompiled CSS**, so a consumer does not need Tailwind to use the components.
+- A consumer that uses Tailwind for its own layout imports `@veljaos/tokens/theme.css` (Tailwind v4 `@theme`) to get the same semantic names.
 - Wrap the application in `<LiroProvider>` (section 5).
 
 ---
@@ -208,7 +210,7 @@ A component is finished only when all of these hold. Each step's *Done when* inc
 6. **Visual baselines** on Linux for light/dark × ltr/rtl.
 7. **Unit tests** for any logic (parsing, counting, keyboard handling).
 8. **Every prop exercised** by a story or a test (rule 11).
-9. **Exported** from `@liro/ui` and documented in its story: what it is for, when to use it, when not to.
+9. **Exported** from `@veljaos/ui` and documented in its story: what it is for, when to use it, when not to.
 
 ---
 
@@ -222,7 +224,7 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P0.2 | Packages, build, consumer check | P0.1 | done | 2026-09-24 | tsup + Tailwind CLI 4.3; consumer-check installs packed tarballs outside the repo; placeholder Button until P1.3 |
 | P0.3 | Storybook with the toolbar | P0.2 | done | 2026-09-24 | Storybook 10.6; first LiroProvider subset (locale, direction, theme, number format); Vitest; license UNLICENSED + notices |
 | P0.4 | CI on Linux: tests, accessibility, visual | P0.3 | done | 2026-09-24 | Playwright 1.63 image pinned by digest; story tests via Storybook events; axe WCAG 2.2 AA; baselines ×4; protected-files check |
-| P0.5 | AGENTS.md and decisions.md | P0.4 | todo | | |
+| P0.5 | AGENTS.md and decisions.md | P0.4 | done | 2026-09-25 | Packages renamed to `@veljaos/*` (GitHub Packages scope); tag-triggered publish workflow; notices completed; local baseline script |
 | P1.1 | Tokens: values, meanings, themes | P0.5 | todo | | |
 | P1.2 | Typography and fonts for seven scripts | P1.1 | todo | | |
 | P1.3 | Intents, families and Button | P1.1 | todo | | |
@@ -277,7 +279,7 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 
 ### P0.2 — Packages, build, consumer check
 **Do**
-- `@liro/tokens`, `@liro/ui`, `@liro/eslint-config` with `exports` maps; tsup for JavaScript and type declarations; Tailwind CLI producing `@liro/ui/styles.css`; `files` fields that include everything needed at runtime (Appendix B.10).
+- `@veljaos/tokens`, `@veljaos/ui`, `@veljaos/eslint-config` with `exports` maps; tsup for JavaScript and type declarations; Tailwind CLI producing `@veljaos/ui/styles.css`; `files` fields that include everything needed at runtime (Appendix B.10).
 - `apps/consumer-check`: a Vite + React app that installs the **packed** packages (`pnpm pack`), not workspace links, and renders one button.
 
 **Done when** `pnpm build` produces `dist/` for every package and `consumer-check` builds and renders in CI from the packed tarballs.
@@ -307,7 +309,7 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 
 **Done when** both files exist and every rule in `AGENTS.md` names the lint rule or test that enforces it, or says "enforced by review".
 
-**End of Phase 0:** publish `0.1.0-alpha.0`; report to the owner with a link to the Storybook build.
+**End of Phase 0:** publish `0.1.0-alpha.0`; report to the owner with how to open Storybook locally (`pnpm storybook`).
 
 ---
 
@@ -315,12 +317,12 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 
 ### P1.1 — Tokens: values, meanings, themes
 **Do**
-- **Values** (`@liro/tokens`): the colour ramps, spacing, radius, shadows, motion and layout sizes of Appendix A, exactly.
+- **Values** (`@veljaos/tokens`): the colour ramps, spacing, radius, shadows, motion and layout sizes of Appendix A, exactly.
 - **Meanings**: the semantic tokens of Appendix A.2 as CSS variables for light and dark (`--liro-surface-page`, `--liro-text-secondary`, `--liro-status-danger-fg`, …).
 - **Tailwind theme** (`theme.css`): semantic utility names (`bg-surface-raised`, `text-secondary`, `border-strong`, `bg-status-danger-bg`, `text-brand`, …).
 - **shadcn compatibility**: shadcn's variables (`--background`, `--foreground`, `--primary`, `--destructive`, `--muted`, `--border`, `--input`, `--ring` …) are **mapped onto Liro meanings**, so copied primitives look Liro without edits. Liro components use Liro names.
 - `tokens.json`: the same values as data, for non-React renderers (PDF and e-mail templates in `liro-core`).
-- Lint rule in `@liro/eslint-config`: no raw colour utilities (`bg-red-500`, `text-gray-700`), no arbitrary colour values (`bg-[#…]`, `text-[rgb(…)]`), no hex literals outside `packages/tokens`.
+- Lint rule in `@veljaos/eslint-config`: no raw colour utilities (`bg-red-500`, `text-gray-700`), no arbitrary colour values (`bg-[#…]`, `text-[rgb(…)]`), no hex literals outside `packages/tokens`.
 - Storybook page "Tokens" showing every value and meaning in both themes.
 
 **Done when** the tokens page renders; the lint rule has fixture tests; light and dark switch everything without a single component rule.
@@ -328,7 +330,7 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 ### P1.2 — Typography and fonts for seven scripts
 **Do**
 - Font sizes, weights, line heights, letter spacing and headings of Appendix A.5.
-- Fonts shipped with `@liro/tokens` as CSS with `unicode-range` subsets: Noto Sans (Latin, Cyrillic, Greek), Noto Sans Arabic, Noto Sans Hebrew, Noto Sans SC, Noto Sans TC, Noto Sans JP; the brand face for the wordmark and status pages. Each subset downloads only when text needs it.
+- Fonts shipped with `@veljaos/tokens` as CSS with `unicode-range` subsets: Noto Sans (Latin, Cyrillic, Greek), Noto Sans Arabic, Noto Sans Hebrew, Noto Sans SC, Noto Sans TC, Noto Sans JP; the brand face for the wordmark and status pages. Each subset downloads only when text needs it.
 - A `lang` helper and rule: text whose language differs from the page carries `lang`, so Serbian Cyrillic italics use Serbian letterforms and Japanese does not render with Chinese glyphs.
 - Per-script line-height adjustment; tabular (fixed-width) digits utility for numbers and amounts.
 
@@ -447,7 +449,7 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 **Done when** a full entry of ten lines is possible without a mouse, in ltr and rtl.
 
 ### P3.5 — Form layout
-**Do** `FormSection`, `FormTabs` (a tab with an error shows an indicator and focus moves to the first error), `FormActions` at the top **and** a sticky bar at the bottom that appears only when the form scrolls (Appendix B.8), `useUnsavedChangesGuard`, `FormWizard` (per-step validation hooks, no re-entry of data). Optional `@liro/ui/form` binding for React Hook Form.
+**Do** `FormSection`, `FormTabs` (a tab with an error shows an indicator and focus moves to the first error), `FormActions` at the top **and** a sticky bar at the bottom that appears only when the form scrolls (Appendix B.8), `useUnsavedChangesGuard`, `FormWizard` (per-step validation hooks, no re-entry of data). Optional `@veljaos/ui/form` binding for React Hook Form.
 
 **End of Phase 3:** `0.1.0-alpha.3`; report.
 
@@ -483,7 +485,7 @@ Templates are layouts with **slots**; they contain no data logic.
 
 **Done when** the owner can open the examples and see Liro as it will look.
 
-**End of Phase 4:** `0.1.0-alpha.4`; report with links to every example screen.
+**End of Phase 4:** `0.1.0-alpha.4`; report with the Storybook path of every example screen.
 
 ---
 
@@ -537,7 +539,7 @@ All steps `done`; changesets complete; `1.0.0` published with exact versions; fi
 
 ---
 
-## Appendix A — The look, carried over from Design System 1.0
+## Appendix A — The look, carried over from the previous Design System
 
 These values define the established Liro look. Carry them over exactly in P1.1–P1.4.
 
@@ -669,7 +671,7 @@ draft neutral · pending warning · in review info · approved success · posted
 
 ---
 
-## Appendix B — Lessons carried over from Design System 1.0
+## Appendix B — Lessons carried over from the previous Design System
 
 Each of these was learned by measurement or by a real defect. Copy them into `docs/decisions.md` in P0.5.
 

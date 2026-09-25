@@ -9,8 +9,8 @@ import { dirname, join } from 'node:path'
 import { ESLint } from 'eslint'
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { Button } from '@liro/ui'
-import liroEslintConfig from '@liro/eslint-config'
+import { Button } from '@veljaos/ui'
+import liroEslintConfig from '@veljaos/eslint-config'
 
 // 1. The button renders.
 const html = renderToStaticMarkup(createElement(Button, null, 'Save'))
@@ -20,10 +20,10 @@ console.log(`render: ${html}`)
 // 2. Every CSS and JSON export resolves, and the built bundle contains the button's styles.
 const require = createRequire(import.meta.url)
 for (const specifier of [
-  '@liro/tokens/tokens.css',
-  '@liro/tokens/theme.css',
-  '@liro/tokens/tokens.json',
-  '@liro/ui/styles.css',
+  '@veljaos/tokens/tokens.css',
+  '@veljaos/tokens/theme.css',
+  '@veljaos/tokens/tokens.json',
+  '@veljaos/ui/styles.css',
 ]) {
   console.log(`resolve: ${specifier} -> ${require.resolve(specifier)}`)
 }
@@ -45,17 +45,17 @@ console.log(`bundle: dist/assets/${cssFiles[0]} has the tokens and the button st
 // 3. The ESLint config loads and forbids Radix and internal paths.
 const eslint = new ESLint({ overrideConfigFile: true, overrideConfig: liroEslintConfig })
 const [result] = await eslint.lintText(
-  "import '@liro/ui/styles.css'\nimport '@radix-ui/react-dialog'\nimport '@liro/ui/src/primitives/button'\n",
+  "import '@veljaos/ui/styles.css'\nimport '@radix-ui/react-dialog'\nimport '@veljaos/ui/src/primitives/button'\n",
   { filePath: 'example.js' },
 )
 assert.deepEqual(
   result.messages.map((message) => `${message.line}:${message.ruleId}`),
   ['2:no-restricted-imports', '3:no-restricted-imports'],
 )
-console.log('eslint: @liro/eslint-config reports Radix and internal imports, allows styles.css')
+console.log('eslint: @veljaos/eslint-config reports Radix and internal imports, allows styles.css')
 
 // 4. Every package carries the license and the third-party notices.
-for (const name of ['@liro/tokens', '@liro/ui', '@liro/eslint-config']) {
+for (const name of ['@veljaos/tokens', '@veljaos/ui', '@veljaos/eslint-config']) {
   const dir = dirname(require.resolve(`${name}/package.json`))
   const manifest = JSON.parse(await readFile(join(dir, 'package.json'), 'utf8'))
   assert.equal(manifest.license, 'UNLICENSED', `${name}: license field`)

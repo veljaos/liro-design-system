@@ -14,9 +14,9 @@ const config: StorybookConfig = {
     mergeConfig(viteConfig, {
       plugins: [tailwindcss()],
       resolve: {
-        // Stories and the preview use the @liro/ui source, so the provider in the decorator
+        // Stories and the preview use the @veljaos/ui source, so the provider in the decorator
         // and the components in the stories are the same module.
-        alias: { '@liro/ui': uiSource },
+        alias: { '@veljaos/ui': uiSource },
         dedupe: ['react', 'react-dom'],
       },
     }),
