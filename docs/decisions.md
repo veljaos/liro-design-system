@@ -116,6 +116,7 @@ No new tools. Vitest 5.0.1 now also runs the tests of `@veljaos/tokens` and `@ve
   - The icon size is not in these files (the old system passed icons in): 16px, recorded here so it can change in one place.
   - Button therefore has no `size` prop: a second size comes when a screen needs one and its values are known.
 - **2026-09-25 — Direction arrows mirror.** The `back` (ArrowLeft) and `next` (ArrowRight) icons are drawn mirrored in right-to-left, so "next" points forward in reading order (A.6 marks `back`; `next` is the same class of icon, B.7).
+- **2026-09-25 — StatusBadge and toneFor (P1.4).** `StatusBadge` takes `label` and `tone`, with optional `withBorder` and `icon`, in the badge weights above; line height 1.4 is an arbitrary value (`leading-[1.4]`) because A.5 has no 1.4 and the owner gave it exactly. `toneFor(status, map, fallback = 'neutral')` reads the tone from a map the application gives as data; an unknown status (including inherited names such as `toString`) gets the fallback. The example map of A.7 lives only in the StatusBadge stories. Every tone's fg on its bg is measured by the contrast script in both themes over every surface (lowest: dark danger on the overlay surface, 4.66).
 
 ## Tokens
 
