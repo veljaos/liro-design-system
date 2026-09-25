@@ -130,8 +130,11 @@ A baseline changes only when the look is meant to change; say why in the pull re
 
 ## How to publish a version
 
-1. In a step's pull request, set the same new version in `packages/*/package.json` (from the end of
-   Phase 1, with Changesets). Merge.
-2. Tag the merge commit on `main`: `git tag v<version> <commit>` and `git push origin v<version>`
+1. Every pull request that changes a published package adds a changeset: `pnpm changeset`
+   (the three packages always share one version; see `.changeset/README.md`).
+2. At the end of a phase, a release pull request runs `pnpm changeset version`: it bumps
+   `packages/*/package.json` to the next `0.1.0-alpha.N` (prerelease mode `alpha` until 1.0.0)
+   and writes each package's `CHANGELOG.md`. Merge it.
+3. Tag the merge commit on `main`: `git tag v<version> <commit>` and `git push origin v<version>`
    (the owner approves the push).
-3. Workflow `Publish` checks, builds, publishes to GitHub Packages and confirms each version.
+4. Workflow `Publish` checks, builds, publishes to GitHub Packages and confirms each version.

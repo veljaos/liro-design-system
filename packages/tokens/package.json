@@ -1,6 +1,6 @@
 {
   "name": "@veljaos/tokens",
-  "version": "0.1.0-alpha.0",
+  "version": "0.1.0-alpha.1",
   "description": "Liro Design System tokens: CSS variables, the Tailwind theme and the same values as JSON.",
   "license": "UNLICENSED",
   "repository": {

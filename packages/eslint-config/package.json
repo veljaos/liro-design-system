@@ -1,6 +1,6 @@
 {
   "name": "@veljaos/eslint-config",
-  "version": "0.1.0-alpha.0",
+  "version": "0.1.0-alpha.1",
   "description": "ESLint rules for applications built on the Liro Design System.",
   "license": "UNLICENSED",
   "repository": {

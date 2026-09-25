@@ -79,6 +79,12 @@ No new tools. Vitest 5.0.1 now also runs the tests of `@veljaos/tokens` and `@ve
 | ------------ | ------- | -------------------------------------------------------------------------------------------- |
 | lucide-react | 1.48.0  | Runtime dependency of `@veljaos/ui`: the icons of the interface intents (Appendix A.6). ISC. |
 
+### Release 0.1.0-alpha.1 (2026-09-25)
+
+| Tool            | Version | Note                                                                                                                          |
+| --------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| @changesets/cli | 3.0.3   | Version bumps and changelogs from the end of Phase 1 (BUILD-PLAN section 3). `@changesets/changelog-git` 1.0.0 comes with it. |
+
 ## Lint
 
 - **2026-09-24 — Inline configuration is off.** `linterOptions.noInlineConfig: true`, `reportUnusedDisableDirectives: "error"` and `--max-warnings 0`: an `eslint-disable` comment produces a warning, and a warning fails the run. Exceptions go into `eslint.config.mjs`, where they are visible and protected (BUILD-PLAN rule 10).
@@ -150,8 +156,9 @@ No new tools. Vitest 5.0.1 now also runs the tests of `@veljaos/tokens` and `@ve
 - **2026-09-25 — No personal token.** The workflow authenticates with its own `GITHUB_TOKEN`, with `packages: write` for that job only. The token is referenced as `${NODE_AUTH_TOKEN}` in `~/.npmrc` and never written to disk.
 - **2026-09-25 — Dist-tags.** A prerelease (`0.1.0-alpha.0`) is published under its identifier (`alpha`), a release under `latest`. `@veljaos/ui` pins its peer `@veljaos/tokens` to the exact same version (`workspace:*`), because both are released together.
 - **2026-09-25 — Package visibility follows the repository.** The repository is public, so the packages are public too; installing from GitHub Packages still needs a token with `read:packages`. The code is proprietary regardless (`LICENSE`).
-- **2026-09-25 — Version bumps are manual until the end of Phase 1,** where Changesets arrives with the first bump (`0.1.0-alpha.1`). A release: bump the versions in a step's pull request, merge, then tag the merge commit on `main` with `v<version>` and push the tag. Pushing a tag is not in the agent's allowed commands; the owner approves each one.
+- **2026-09-25 — Version bumps were manual until the end of Phase 1,** where Changesets arrived with the first bump (`0.1.0-alpha.1`). A release: bump the versions in a step's pull request, merge, then tag the merge commit on `main` with `v<version>` and push the tag. Pushing a tag is not in the agent's allowed commands; the owner approves each one.
 - **2026-09-25 — Storybook is not hosted.** No GitHub Pages or other hosting: it is viewed locally with `pnpm build` then `pnpm storybook`. CI keeps each pull request's static build as the artifact `storybook-static` (7 days); the publish workflow keeps the build of each version as `storybook-<version>` (90 days). The build carries `LICENSE` and `THIRD-PARTY-NOTICES.md`.
+- **2026-09-25 — Changesets from 0.1.0-alpha.1.** `.changeset/config.json` releases `@veljaos/tokens`, `@veljaos/ui` and `@veljaos/eslint-config` as one `fixed` group, so they always share a version (the tag must equal every package version). The repository is in prerelease mode `alpha` (`.changeset/pre.json`) until 1.0.0: a patch changeset moves `0.1.0-alpha.0` to `0.1.0-alpha.1`. Changelogs use `@changesets/changelog-git`. Changesets only bumps and writes changelogs; publishing stays with `.github/workflows/publish.yml` on a tag. The config was written by hand: `changeset init` is interactive.
 
 ## Agent permissions
 
