@@ -36,23 +36,42 @@ assert.equal(
 )
 const css = await readFile(`dist/assets/${cssFiles[0]}`, 'utf8')
 assert.ok(
-  css.includes('--liro-brand-solid:'),
+  css.includes('--liro-brand-solid:') && css.includes('--liro-status-danger-fg:'),
   'bundle is missing the token variables of tokens.css',
 )
 assert.ok(css.includes('.bg-brand-solid'), 'bundle is missing the button utilities of styles.css')
 console.log(`bundle: dist/assets/${cssFiles[0]} has the tokens and the button styles`)
 
-// 3. The ESLint config loads and forbids Radix and internal paths.
+// 3. The ESLint config loads, forbids Radix and internal paths, raw colours and physical
+//    properties, and allows styles.css and the Liro meanings.
 const eslint = new ESLint({ overrideConfigFile: true, overrideConfig: liroEslintConfig })
 const [result] = await eslint.lintText(
-  "import '@veljaos/ui/styles.css'\nimport '@radix-ui/react-dialog'\nimport '@veljaos/ui/src/primitives/button'\n",
+  [
+    "import '@veljaos/ui/styles.css'",
+    "import '@radix-ui/react-dialog'",
+    "import '@veljaos/ui/src/primitives/button'",
+    "export const raw = 'bg-red-500 text-[#0078d4]'",
+    "export const physical = 'ml-4 text-left'",
+    "export const meanings = 'bg-surface-raised text-secondary ms-4 text-start'",
+    '',
+  ].join('\n'),
   { filePath: 'example.js' },
 )
 assert.deepEqual(
   result.messages.map((message) => `${message.line}:${message.ruleId}`),
-  ['2:no-restricted-imports', '3:no-restricted-imports'],
+  [
+    '2:no-restricted-imports',
+    '3:no-restricted-imports',
+    '4:liro/no-raw-colors',
+    '4:liro/no-raw-colors',
+    '5:liro/logical-properties',
+    '5:liro/logical-properties',
+  ],
 )
-console.log('eslint: @veljaos/eslint-config reports Radix and internal imports, allows styles.css')
+console.log(
+  'eslint: @veljaos/eslint-config reports Radix and internal imports, raw colours and physical ' +
+    'properties; allows styles.css and Liro meanings',
+)
 
 // 4. Every package carries the license and the third-party notices.
 for (const name of ['@veljaos/tokens', '@veljaos/ui', '@veljaos/eslint-config']) {

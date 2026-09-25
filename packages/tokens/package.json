@@ -22,9 +22,14 @@
     "dist"
   ],
   "scripts": {
-    "build": "node scripts/build.mjs && node ../../scripts/copy-legal.mjs"
+    "build": "node scripts/build.ts && node ../../scripts/copy-legal.mjs",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
+  },
+  "devDependencies": {
+    "vitest": "5.0.1"
   }
 }

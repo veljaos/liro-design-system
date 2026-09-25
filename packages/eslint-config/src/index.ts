@@ -1,32 +1,53 @@
-import type { Linter } from 'eslint'
+import type { ESLint, Linter } from 'eslint'
+import logicalProperties from './logical-properties.ts'
+import noRawColors from './no-raw-colors.ts'
+
+/** The Liro rules, as an ESLint plugin. The configurations below register it as `liro`. */
+export const plugin = {
+  meta: { name: '@veljaos/eslint-config' },
+  rules: {
+    'no-raw-colors': noRawColors,
+    'logical-properties': logicalProperties,
+  },
+} satisfies ESLint.Plugin
 
 /**
- * Rules for applications that use the Liro Design System.
- * P1.1 adds the colour rules (no raw colour utilities, no arbitrary colour values).
+ * Colours only through Liro meanings, and logical properties only (BUILD-PLAN sections 2 and 6).
+ * The Design System applies this to its own code too.
  */
-const config: Linter.Config[] = [
-  {
-    name: '@veljaos/eslint-config/imports',
-    rules: {
-      // Consumers import @veljaos/ui only: never Radix, never a primitive or an internal path.
-      'no-restricted-imports': [
-        'error',
-        {
-          patterns: [
-            {
-              group: ['@radix-ui/*'],
-              message:
-                'Use the components of @veljaos/ui; Radix primitives are internal to the Design System.',
-            },
-            {
-              group: ['@veljaos/ui/*', '!@veljaos/ui/styles.css'],
-              message: 'Import from @veljaos/ui; internal paths are not part of its API.',
-            },
-          ],
-        },
-      ],
-    },
+export const tokenRules: Linter.Config = {
+  name: '@veljaos/eslint-config/tokens',
+  plugins: { liro: plugin },
+  rules: {
+    'liro/no-raw-colors': 'error',
+    'liro/logical-properties': 'error',
   },
-]
+}
+
+/** Consumers import @veljaos/ui only: never Radix, never a primitive or an internal path. */
+export const importRules: Linter.Config = {
+  name: '@veljaos/eslint-config/imports',
+  rules: {
+    'no-restricted-imports': [
+      'error',
+      {
+        patterns: [
+          {
+            group: ['@radix-ui/*'],
+            message:
+              'Use the components of @veljaos/ui; Radix primitives are internal to the Design System.',
+          },
+          {
+            group: ['@veljaos/ui/*', '!@veljaos/ui/styles.css'],
+            message: 'Import from @veljaos/ui; internal paths are not part of its API.',
+          },
+        ],
+      },
+    ],
+  },
+}
+
+/** Rules for applications that use the Liro Design System. */
+const config: Linter.Config[] = [importRules, tokenRules]
 
 export default config
