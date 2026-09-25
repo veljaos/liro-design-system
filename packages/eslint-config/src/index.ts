@@ -33,7 +33,8 @@ export const importRules: Linter.Config = {
       {
         patterns: [
           {
-            group: ['@radix-ui/*'],
+            // Radix ships as @radix-ui/* packages and as the single package radix-ui.
+            group: ['@radix-ui/*', 'radix-ui', 'radix-ui/*'],
             message:
               'Use the components of @veljaos/ui; Radix primitives are internal to the Design System.',
           },

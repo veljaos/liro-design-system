@@ -49,7 +49,9 @@ const [result] = await eslint.lintText(
   [
     "import '@veljaos/ui/styles.css'",
     "import '@radix-ui/react-dialog'",
+    "import { Dialog } from 'radix-ui'",
     "import '@veljaos/ui/src/primitives/button'",
+    'export { Dialog }',
     "export const raw = 'bg-red-500 text-[#0078d4]'",
     "export const physical = 'ml-4 text-left'",
     "export const meanings = 'bg-surface-raised text-secondary ms-4 text-start'",
@@ -62,10 +64,11 @@ assert.deepEqual(
   [
     '2:no-restricted-imports',
     '3:no-restricted-imports',
-    '4:liro/no-raw-colors',
-    '4:liro/no-raw-colors',
-    '5:liro/logical-properties',
-    '5:liro/logical-properties',
+    '4:no-restricted-imports',
+    '6:liro/no-raw-colors',
+    '6:liro/no-raw-colors',
+    '7:liro/logical-properties',
+    '7:liro/logical-properties',
   ],
 )
 console.log(
