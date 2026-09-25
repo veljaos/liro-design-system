@@ -1,7 +1,7 @@
 import { Star } from 'lucide-react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
-import { Button, IconButton } from './button'
+import { Button, CompactIconButton, IconButton } from './button'
 import { INTENT_NAMES, INTENTS } from './intents'
 
 describe('Button', () => {
@@ -52,6 +52,7 @@ describe('Button', () => {
 
   it("has the previous system's Mantine 'sm' size: 36px, 13px, radius md, 12/18px padding, 10px gap", () => {
     const html = renderToStaticMarkup(<Button intent="save" label="Save" />)
+    expect(html).toContain('size-3.75 shrink-0')
     for (const part of [
       'h-control',
       'text-sm',
@@ -97,23 +98,40 @@ describe('Button', () => {
 })
 
 describe('IconButton', () => {
-  it('uses the label as the accessible name and draws only the icon', () => {
+  it('is the 36px button without visible text: 8px padding, 16px icon, label as its name', () => {
     const html = renderToStaticMarkup(<IconButton intent="more" label="More actions" />)
     expect(html).toContain('aria-label="More actions"')
     expect(html).toContain('title="More actions"')
     expect(html).not.toContain('<span>')
-    expect(html).toContain('size-7 p-0')
+    expect(html).toContain(' h-control px-2 ')
+    expect(html).toContain('size-4 shrink-0')
   })
 
-  it("defaults to Mantine's ActionIcon: neutral family, subtle (menu) emphasis", () => {
-    const withIcon = renderToStaticMarkup(<IconButton icon={Star} label="Favourite" />)
+  it("keeps the intent's or family's emphasis, like Button", () => {
+    expect(renderToStaticMarkup(<IconButton intent="save" label="Save" />)).toContain(
+      'data-emphasis="primary"',
+    )
+    const family = renderToStaticMarkup(<IconButton family="verify" icon={Star} label="Sign" />)
+    expect(family).toContain('data-emphasis="secondary"')
+  })
+})
+
+describe('CompactIconButton', () => {
+  it("is Mantine's 28px ActionIcon, for tight places", () => {
+    const html = renderToStaticMarkup(<CompactIconButton intent="more" label="Row actions" />)
+    expect(html).toContain('size-7 p-0')
+    expect(html).toContain('aria-label="Row actions"')
+  })
+
+  it('defaults to the neutral family and subtle (menu) emphasis', () => {
+    const withIcon = renderToStaticMarkup(<CompactIconButton icon={Star} label="Favourite" />)
     expect(withIcon).toContain('data-family="neutral"')
     expect(withIcon).toContain('data-emphasis="menu"')
-    const withIntent = renderToStaticMarkup(<IconButton intent="delete" label="Delete" />)
-    expect(withIntent).toContain('data-family="destructive"')
+    const withIntent = renderToStaticMarkup(<CompactIconButton intent="save" label="Save" />)
+    expect(withIntent).toContain('data-family="primary"')
     expect(withIntent).toContain('data-emphasis="menu"')
     const raised = renderToStaticMarkup(
-      <IconButton intent="save" label="Save" emphasis="primary" />,
+      <CompactIconButton intent="save" label="Save" emphasis="primary" />,
     )
     expect(raised).toContain('data-emphasis="primary"')
   })
