@@ -33,7 +33,7 @@ const withLiroProvider: Decorator = (Story, { globals }) => {
       format={format}
       {...(direction === 'auto' ? {} : { direction })}
     >
-      <div className="min-h-dvh bg-surface-page p-4 text-text-primary">
+      <div className="min-h-dvh bg-surface-page p-4 text-primary">
         <Story />
       </div>
     </LiroProvider>

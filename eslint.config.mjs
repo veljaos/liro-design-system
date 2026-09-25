@@ -6,6 +6,8 @@ import reactHooks from 'eslint-plugin-react-hooks'
 import { defineConfig, globalIgnores } from 'eslint/config'
 import globals from 'globals'
 import tseslint from 'typescript-eslint'
+// The source, not the build: lint runs before the build in CI. Node strips the types.
+import { tokenRules } from './packages/eslint-config/src/index.ts'
 
 const TS_FILES = ['**/*.{ts,tsx,mts,cts}']
 const TEST_FILES = ['**/*.{test,spec}.{ts,tsx}', '**/__tests__/**/*.{ts,tsx}']
@@ -21,6 +23,8 @@ export default defineConfig(
     // Not a workspace package: its dependencies exist only in the temporary install made by
     // `pnpm consumer-check`, which typechecks it there against the packed type declarations.
     'apps/consumer-check/',
+    // Fixtures of the Liro rules: they break the rules on purpose (packages/eslint-config/src/rules.test.ts).
+    'packages/eslint-config/fixtures/',
   ]),
 
   {
@@ -85,6 +89,14 @@ export default defineConfig(
   {
     files: ['**/*.{js,jsx,mjs,ts,tsx,mts}'],
     extends: [reactHooks.configs.flat['recommended-latest']],
+  },
+
+  // The Liro rules the packages ship: colours only through meanings, logical properties only.
+  // Colour values live only in @veljaos/tokens; the rules and their tests quote forbidden classes.
+  {
+    files: ['**/*.{js,jsx,mjs,ts,tsx,mts}'],
+    ignores: ['packages/tokens/**', 'packages/eslint-config/src/**'],
+    extends: [tokenRules],
   },
 
   prettier,

@@ -2,7 +2,11 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "noEmit": true,
-    "types": []
+    "types": ["node"],
+    // The repository's own eslint.config.mjs imports src/index.ts, which Node runs by stripping
+    // types: imports name the .ts file, and only syntax that can be erased is allowed.
+    "allowImportingTsExtensions": true,
+    "erasableSyntaxOnly": true
   },
   "include": ["src", "tsup.config.ts"]
 }

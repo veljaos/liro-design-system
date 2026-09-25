@@ -7,7 +7,12 @@ const uiSource = fileURLToPath(new URL('../../../packages/ui/src/index.ts', impo
 
 const config: StorybookConfig = {
   framework: '@storybook/react-vite',
-  stories: ['../src/**/*.mdx', '../../../packages/ui/src/**/*.stories.tsx'],
+  stories: [
+    '../src/**/*.mdx',
+    // Foundations (tokens): pages of @veljaos/tokens, which has no components of its own.
+    '../src/**/*.stories.tsx',
+    '../../../packages/ui/src/**/*.stories.tsx',
+  ],
   addons: ['@storybook/addon-docs', '@storybook/addon-a11y'],
   core: { disableTelemetry: true },
   viteFinal: (viteConfig) =>
