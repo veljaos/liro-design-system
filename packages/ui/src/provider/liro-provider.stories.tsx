@@ -38,7 +38,7 @@ function ToolbarSample() {
         ))}
       </dl>
       <div className="flex justify-end">
-        <Button>Save</Button>
+        <Button intent="save" label="Save" />
       </div>
     </div>
   )

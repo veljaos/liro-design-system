@@ -391,6 +391,102 @@ export const HEADINGS = {
  */
 export const RELAXED_SCRIPT_LANGUAGES = ['ar', 'fa', 'ur', 'ja', 'zh'] as const
 
+/**
+ * A.6 Families: the colour of an action by its purpose. Carried over from the previous Design
+ * System (built on Mantine; "button weights" in docs/decisions.md):
+ * - solid: the filled button (primary emphasis), white text; hover one shade darker, press two.
+ *   Gray and orange fill with shade 7, because shade 6 fails AA with white text (Appendix B.6).
+ * - subtle / subtleHover: the light button (secondary emphasis) and the hover of the subtle
+ *   button (menu emphasis). Light: shades 0 and 1, as brand.subtle; dark: the solid colour at
+ *   0.16 and 0.26, as brand.subtle. The neutral family has none: its secondary button is
+ *   "default" (raised surface, border.default, text.primary) and its hover is surface.hover.
+ * - fg: the family's text colour, for light and subtle buttons: text.brand for primary, the
+ *   matching status tone's fg for the others (teal, which has no tone, as the tones: 7 and 3),
+ *   text.primary for neutral.
+ * - fgHover: the family's text on hover, one shade stronger (darker in light, lighter in dark),
+ *   because fg on subtleHover measured below 4.5:1 (decided by the owner, 2026-09-25).
+ */
+export const FAMILIES = {
+  primary: {
+    solid: ['blue6', 'blue6'],
+    solidHover: ['blue7', 'blue7'],
+    solidActive: ['blue8', 'blue8'],
+    subtle: ['blue0', 'rgba(0,120,212,0.16)'],
+    subtleHover: ['blue1', 'rgba(0,120,212,0.26)'],
+    fg: ['blue7', 'blue4'],
+    fgHover: ['blue8', 'blue3'],
+  },
+  verify: {
+    solid: ['teal6', 'teal6'],
+    solidHover: ['teal7', 'teal7'],
+    solidActive: ['teal8', 'teal8'],
+    subtle: ['teal0', 'rgba(3,131,135,0.16)'],
+    subtleHover: ['teal1', 'rgba(3,131,135,0.26)'],
+    fg: ['teal7', 'teal3'],
+    fgHover: ['teal8', 'teal2'],
+  },
+  document: {
+    solid: ['violet6', 'violet6'],
+    solidHover: ['violet7', 'violet7'],
+    solidActive: ['violet8', 'violet8'],
+    subtle: ['violet0', 'rgba(121,80,242,0.16)'],
+    subtleHover: ['violet1', 'rgba(121,80,242,0.26)'],
+    fg: ['violet7', 'violet3'],
+    fgHover: ['violet8', 'violet2'],
+  },
+  positive: {
+    solid: ['green6', 'green6'],
+    solidHover: ['green7', 'green7'],
+    solidActive: ['green8', 'green8'],
+    subtle: ['green0', 'rgba(28,136,21,0.16)'],
+    subtleHover: ['green1', 'rgba(28,136,21,0.26)'],
+    fg: ['green7', 'green3'],
+    fgHover: ['green8', 'green2'],
+  },
+  destructive: {
+    solid: ['red6', 'red6'],
+    solidHover: ['red7', 'red7'],
+    solidActive: ['red8', 'red8'],
+    subtle: ['red0', 'rgba(189,47,59,0.16)'],
+    subtleHover: ['red1', 'rgba(189,47,59,0.26)'],
+    fg: ['red7', 'red3'],
+    fgHover: ['red8', 'red2'],
+  },
+  caution: {
+    solid: ['orange7', 'orange7'],
+    solidHover: ['orange8', 'orange8'],
+    solidActive: ['orange9', 'orange9'],
+    subtle: ['orange0', 'rgba(216,59,1,0.16)'],
+    subtleHover: ['orange1', 'rgba(216,59,1,0.26)'],
+    fg: ['orange8', 'orange3'],
+    fgHover: ['orange9', 'orange2'],
+  },
+  neutral: {
+    solid: ['gray7', 'gray7'],
+    solidHover: ['gray8', 'gray8'],
+    solidActive: ['gray9', 'gray9'],
+    fg: ['gray9', 'gray1'],
+    fgHover: ['gray9', 'gray1'],
+  },
+} as const satisfies Record<
+  string,
+  Record<'solid' | 'solidHover' | 'solidActive' | 'fg' | 'fgHover', Pair> &
+    Partial<Record<'subtle' | 'subtleHover', Pair>>
+>
+
+export type Family = keyof typeof FAMILIES
+
+/** A.6 The filled shade of each family, as the plan lists it. */
+export const FAMILY_FILLED_SHADE: Record<Family, string> = {
+  primary: 'blue6',
+  verify: 'teal6',
+  document: 'violet6',
+  positive: 'green6',
+  destructive: 'red6',
+  caution: 'orange7',
+  neutral: 'gray7',
+}
+
 export type Theme = 'light' | 'dark'
 export const THEMES: readonly Theme[] = ['light', 'dark']
 
@@ -445,6 +541,7 @@ export function valueVariable(reference: string): string | null {
 /** MEANINGS and TONES, typed for iteration. */
 const MEANING_GROUPS: Record<string, Record<string, Pair>> = MEANINGS
 const TONE_GROUPS: Record<string, Record<string, Pair>> = TONES
+const FAMILY_GROUPS: Record<string, Record<string, Pair>> = FAMILIES
 
 /** Every meaning (A.2 including tones) as [CSS variable, light, dark], in a stable order. */
 export function meaningEntries(): { variable: string; path: string; pair: Pair }[] {
@@ -459,6 +556,15 @@ export function meaningEntries(): { variable: string; path: string; pair: Pair }
       entries.push({
         variable: `--liro-status-${tone}-${part}`,
         path: `status.${tone}.${part}`,
+        pair,
+      })
+    }
+  }
+  for (const [family, parts] of Object.entries(FAMILY_GROUPS)) {
+    for (const [part, pair] of Object.entries(parts)) {
+      entries.push({
+        variable: `--liro-family-${family}-${kebab(part)}`,
+        path: `family.${family}.${part}`,
         pair,
       })
     }
@@ -483,7 +589,13 @@ export function resolvedTokens() {
         Object.fromEntries(Object.entries(parts).map(([part, pair]) => [part, pick(pair)])),
       ]),
     )
-    return { ...groups, status }
+    const family = Object.fromEntries(
+      Object.entries(FAMILY_GROUPS).map(([name, parts]) => [
+        name,
+        Object.fromEntries(Object.entries(parts).map(([part, pair]) => [part, pick(pair)])),
+      ]),
+    )
+    return { ...groups, status, family }
   }
   const shadows = (theme: Theme) =>
     Object.fromEntries(

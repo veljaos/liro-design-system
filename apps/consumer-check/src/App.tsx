@@ -6,12 +6,12 @@ export function App() {
   return (
     <main>
       <Button
+        intent="save"
+        label="Save"
         onClick={() => {
           setClicks(clicks + 1)
         }}
-      >
-        Save
-      </Button>
+      />
       <p aria-live="polite">Clicked {clicks} times</p>
     </main>
   )

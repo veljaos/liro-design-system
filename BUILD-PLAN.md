@@ -227,7 +227,7 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P0.5 | AGENTS.md and decisions.md | P0.4 | done | 2026-09-25 | Packages renamed to `@veljaos/*` (GitHub Packages scope); tag-triggered publish workflow; notices completed; local baseline script |
 | P1.1 | Tokens: values, meanings, themes | P0.5 | done | 2026-09-25 | One source (`tokens.ts`) generates CSS, Tailwind theme and JSON, tested against Appendix A; raw palette removed; lint rules `liro/no-raw-colors` and `liro/logical-properties` with fixtures; Tokens page |
 | P1.2 | Typography and fonts for seven scripts | P1.1 | done | 2026-09-25 | A.5 type scale as tokens and Tailwind utilities; Noto families, Space Grotesk and Inter shipped with unicode-range subsets; CJK order by lang; per-script leading; `useLangAttribute`; Scripts story |
-| P1.3 | Intents, families and Button | P1.1 | todo | | |
+| P1.3 | Intents, families and Button | P1.1 | done | 2026-09-25 | Seven families as tokens (owner's Mantine weights; hover text one shade stronger for contrast); 470 contrast checks fail the build below 4.5:1; Button and IconButton by intent or family; all 20 intents |
 | P1.4 | Status tones and badges | P1.1 | todo | | |
 | P1.5 | LiroProvider, messages and format | P0.5 | todo | | |
 | P2.1 | Primitives adapted | P1.3 | todo | | |
