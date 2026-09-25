@@ -104,6 +104,14 @@ export function contrastChecks(): ContrastCheck[] {
         NON_TEXT,
       )
 
+      // An invalid field (P2.2): its border takes status.danger.fg (WCAG 1.4.11).
+      add(
+        `${theme}: status.danger.fg as a border ${over}`,
+        toRgb(pick(TONES.danger.fg, theme), surface),
+        surface,
+        NON_TEXT,
+      )
+
       // Status tones: fg on bg (Appendix B.6), P1.4.
       for (const [tone, parts] of Object.entries(TONES)) {
         const background = toRgb(pick(parts.bg, theme), surface)
