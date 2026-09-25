@@ -172,7 +172,7 @@ Not added: `class-variance-authority` (variants are typed maps, as in Button) an
   - **Dialog, alert dialog, popover, tooltip, command.** Centred, or placed by Radix from the trigger; nothing directional. The dialog's close button sits at the inline end.
 - **2026-09-25 — Values taken from Mantine defaults (P2.1).** From `@mantine/core` 9.6.2 `styles/*.css` and the components' `defaultProps` (`esm/components/*`), with the owner's theme (radius md 8px, font sizes of A.5) and Liro meanings for every colour:
   - Input.css, size 'sm': height 36px, padding 12px (36 / 3), radius 8px, 1px border, 13px text; the border takes the focus colour on focus. Textarea: 5.5px vertical padding (multiline), no resize. Input.Label: 13px, weight 600.
-  - Checkbox.css and Radio.css, size 'sm': 20px, radius 8px (checkbox) or full, 1px border; the mark 60% of the box (checkbox), an 8px dot (radio); 100ms transition.
+  - Checkbox.css and Radio.css, size 'sm': 20px, radius 4px (checkbox: `radius: 'sm'` in its defaultProps, which overrides the theme's md) or full, 1px border; the mark 60% of the box (checkbox), an 8px dot (radio); 100ms transition.
   - Switch.css, size 'sm': track 38 × 20px, thumb 14px, 2.5px from the edge, 150ms.
   - Combobox.css, size 'sm', and OptionsDropdown: dropdown padding 4px; option padding 6px 10px, 13px, radius 8px; chevron 18px in a 34px right section; check 0.8em, 8px gap, before the text; options at most 220px high; group label weight 600 at 0.85 × 13px (12px here, the smallest A.5 size).
   - Popover.css and Popover defaults: padding 12px 16px, 1px border, radius 8px, no shadow, 8px from the target, fade 150ms.
