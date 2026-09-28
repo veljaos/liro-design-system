@@ -146,6 +146,21 @@ function CalendarPopover({
   )
 }
 
+/**
+ * Whether a calendar popover is open, and how many times it has opened: the calendar is keyed by
+ * that count, so it starts on the right month and day each time. Reopened quickly, the closing
+ * popover is still mounted (it fades out) and the calendar kept the month it last showed.
+ */
+export function useCalendarOpen() {
+  const [open, setOpenState] = useState(false)
+  const [openings, setOpenings] = useState(0)
+  const setOpen = (next: boolean) => {
+    if (next && !open) setOpenings((count) => count + 1)
+    setOpenState(next)
+  }
+  return { open, setOpen, openings }
+}
+
 /** Alt+ArrowDown in a typing area opens the calendar. */
 function openOnAltArrowDown(open: () => void) {
   return (event: KeyboardEvent<HTMLInputElement>) => {
@@ -165,7 +180,7 @@ export function DateField(props: DateFieldProps) {
   const labels = useCalendarLabels()
   const entry = useDateEntry(props)
   const error = entryError(props.error, entry.valid, messages['field.invalidDate'])
-  const [open, setOpen] = useState(false)
+  const { open, setOpen, openings } = useCalendarOpen()
   const inputRef = useRef<HTMLInputElement>(null)
 
   return (
@@ -200,6 +215,7 @@ export function DateField(props: DateFieldProps) {
               </PopoverAnchor>
               <CalendarPopover labelId={control.labelId} returnTo={inputRef}>
                 <Calendar
+                  key={openings}
                   mode="single"
                   labels={labels}
                   defaultMonth={openingMonth(entry.value, today)}
@@ -298,7 +314,7 @@ export function DateRangeField(props: DateRangeFieldProps) {
       : messages['field.invalidRange']
   const error = entryError(props.error, ownError === undefined, ownError ?? '')
 
-  const [open, setOpen] = useState(false)
+  const { open, setOpen, openings } = useCalendarOpen()
   // Days picked since the calendar opened: the first is the start, the second the end.
   const [picked, setPicked] = useState<string | null>(null)
   const startRef = useRef<HTMLInputElement>(null)
@@ -400,6 +416,7 @@ export function DateRangeField(props: DateRangeFieldProps) {
               </PopoverAnchor>
               <CalendarPopover labelId={control.labelId} returnTo={startRef}>
                 <Calendar
+                  key={openings}
                   mode="range"
                   labels={labels}
                   defaultMonth={openingMonth(range.start ?? range.end, today)}
