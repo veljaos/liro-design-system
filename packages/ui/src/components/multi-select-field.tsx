@@ -11,8 +11,9 @@ import { Field, fieldProps, type FieldBaseProps } from './field'
  * Several choices from a list, shown as pills inside the field (Mantine MultiSelect, PillsInput
  * and Pill.css, size 'sm'): the field grows with its pills, 5.5px vertical padding (multiline
  * input), 8px between pills (PillGroup 'sm'); a pill is 22px high, fully rounded, 12px text,
- * padding 0.8em, in the neutral tone (Mantine: gray-1); its remove button is the pill's height
- * and 2em wide. The typing area is at least 100px wide and 1.6em high. The list stays open while
+ * padding 0.8em, in the neutral tone (Mantine: gray-1); its remove button is 2em (24px) wide
+ * (Mantine) and 24px high, 1px beyond the pill on each side, so the target is 24 × 24px
+ * (Mantine: the pill's height, 22px). The typing area is at least 100px wide and 1.6em high. The list stays open while
  * choosing; Backspace in the empty typing area removes the last pill.
  */
 
@@ -79,7 +80,7 @@ export function MultiSelectField(props: MultiSelectFieldProps) {
                   aria-label={messages['field.remove'](option.label)}
                   className={cn(
                     BUTTON_RESET,
-                    'flex h-full min-w-[2em] cursor-pointer items-center justify-center rounded-e-full ps-[0.1em] pe-[0.3em] text-inherit',
+                    'flex h-6 min-w-6 cursor-pointer items-center justify-center rounded-e-full ps-[0.1em] pe-[0.3em] text-inherit',
                     FOCUS_RING,
                   )}
                   onClick={() => {
