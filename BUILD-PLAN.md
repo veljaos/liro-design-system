@@ -245,7 +245,10 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P2.4b | ConfirmDialog, delete preset, IrreversibleConfirmDialog | P2.4a | done | 2026-09-28 | Owner: the old ConfirmModal (tone from family, centred, radius lg, loading blocks closing); DeleteConfirmDialog texts from messages; typed text enables the irreversible one |
 | P2.5 | Feedback | P2.1 | todo | | |
 | P2.6 | Navigation pieces and command palette | P2.1 | todo | | |
-| P2.7 | Actions | P1.3, P2.4 | todo | | |
+| P2.7 | Actions | P1.3, P2.4 | in progress (split: P2.7a, P2.7b, P2.7c) | | Done when P2.7a–P2.7c are done |
+| P2.7a | ActionGroup, UnavailableAction | P2.4 | done | 2026-09-28 | Owner: end-aligned wrapping row; "More" overflow keeps the main action; unavailable with visible reason (phone-width story) and tooltip on focus and touch |
+| P2.7b | SplitAction | P2.7a | todo | | Owner: joined buttons, 30% currentColor separator, menu bottom-end with arrow |
+| P2.7c | BulkActionBar | P2.7b | todo | | Owner: brand.subtle panel, live count, select all, one confirmation |
 | P2.8 | Display pieces | P2.3 | todo | | |
 | P3.1 | DataTable core | P2.7, P2.8 | todo | | |
 | P3.2 | Table on phones, large lists, column resize | P3.1 | todo | | |

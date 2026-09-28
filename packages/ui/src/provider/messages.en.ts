@@ -27,6 +27,7 @@ export const messagesEn: LiroMessages = {
   'confirm.deleteMessage': 'This cannot be undone.',
   'confirm.deleteLabel': 'Delete',
   'confirm.typeToConfirm': (text) => `Type ${text} to confirm`,
+  'action.more': 'More actions',
   'action.unavailable': (reason) => `Unavailable: ${reason}`,
   'connection.offline': 'Offline',
 }

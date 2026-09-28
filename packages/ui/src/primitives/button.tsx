@@ -19,58 +19,62 @@ import { cn } from './cn'
 const COLOURS: Record<Family, Record<Emphasis, string>> = {
   primary: {
     primary:
-      'bg-family-primary-solid text-on-accent enabled:hover:bg-family-primary-solid-hover enabled:active:bg-family-primary-solid-active',
+      'bg-family-primary-solid text-on-accent enabled:not-aria-disabled:hover:bg-family-primary-solid-hover enabled:not-aria-disabled:active:bg-family-primary-solid-active',
     secondary:
-      'bg-family-primary-subtle text-family-primary-fg enabled:hover:bg-family-primary-subtle-hover enabled:hover:text-family-primary-fg-hover',
-    menu: 'bg-transparent text-family-primary-fg enabled:hover:bg-family-primary-subtle enabled:hover:text-family-primary-fg-hover',
+      'bg-family-primary-subtle text-family-primary-fg enabled:not-aria-disabled:hover:bg-family-primary-subtle-hover enabled:not-aria-disabled:hover:text-family-primary-fg-hover',
+    menu: 'bg-transparent text-family-primary-fg enabled:not-aria-disabled:hover:bg-family-primary-subtle enabled:not-aria-disabled:hover:text-family-primary-fg-hover',
   },
   verify: {
     primary:
-      'bg-family-verify-solid text-on-accent enabled:hover:bg-family-verify-solid-hover enabled:active:bg-family-verify-solid-active',
+      'bg-family-verify-solid text-on-accent enabled:not-aria-disabled:hover:bg-family-verify-solid-hover enabled:not-aria-disabled:active:bg-family-verify-solid-active',
     secondary:
-      'bg-family-verify-subtle text-family-verify-fg enabled:hover:bg-family-verify-subtle-hover enabled:hover:text-family-verify-fg-hover',
-    menu: 'bg-transparent text-family-verify-fg enabled:hover:bg-family-verify-subtle enabled:hover:text-family-verify-fg-hover',
+      'bg-family-verify-subtle text-family-verify-fg enabled:not-aria-disabled:hover:bg-family-verify-subtle-hover enabled:not-aria-disabled:hover:text-family-verify-fg-hover',
+    menu: 'bg-transparent text-family-verify-fg enabled:not-aria-disabled:hover:bg-family-verify-subtle enabled:not-aria-disabled:hover:text-family-verify-fg-hover',
   },
   document: {
     primary:
-      'bg-family-document-solid text-on-accent enabled:hover:bg-family-document-solid-hover enabled:active:bg-family-document-solid-active',
+      'bg-family-document-solid text-on-accent enabled:not-aria-disabled:hover:bg-family-document-solid-hover enabled:not-aria-disabled:active:bg-family-document-solid-active',
     secondary:
-      'bg-family-document-subtle text-family-document-fg enabled:hover:bg-family-document-subtle-hover enabled:hover:text-family-document-fg-hover',
-    menu: 'bg-transparent text-family-document-fg enabled:hover:bg-family-document-subtle enabled:hover:text-family-document-fg-hover',
+      'bg-family-document-subtle text-family-document-fg enabled:not-aria-disabled:hover:bg-family-document-subtle-hover enabled:not-aria-disabled:hover:text-family-document-fg-hover',
+    menu: 'bg-transparent text-family-document-fg enabled:not-aria-disabled:hover:bg-family-document-subtle enabled:not-aria-disabled:hover:text-family-document-fg-hover',
   },
   positive: {
     primary:
-      'bg-family-positive-solid text-on-accent enabled:hover:bg-family-positive-solid-hover enabled:active:bg-family-positive-solid-active',
+      'bg-family-positive-solid text-on-accent enabled:not-aria-disabled:hover:bg-family-positive-solid-hover enabled:not-aria-disabled:active:bg-family-positive-solid-active',
     secondary:
-      'bg-family-positive-subtle text-family-positive-fg enabled:hover:bg-family-positive-subtle-hover enabled:hover:text-family-positive-fg-hover',
-    menu: 'bg-transparent text-family-positive-fg enabled:hover:bg-family-positive-subtle enabled:hover:text-family-positive-fg-hover',
+      'bg-family-positive-subtle text-family-positive-fg enabled:not-aria-disabled:hover:bg-family-positive-subtle-hover enabled:not-aria-disabled:hover:text-family-positive-fg-hover',
+    menu: 'bg-transparent text-family-positive-fg enabled:not-aria-disabled:hover:bg-family-positive-subtle enabled:not-aria-disabled:hover:text-family-positive-fg-hover',
   },
   destructive: {
     primary:
-      'bg-family-destructive-solid text-on-accent enabled:hover:bg-family-destructive-solid-hover enabled:active:bg-family-destructive-solid-active',
+      'bg-family-destructive-solid text-on-accent enabled:not-aria-disabled:hover:bg-family-destructive-solid-hover enabled:not-aria-disabled:active:bg-family-destructive-solid-active',
     secondary:
-      'bg-family-destructive-subtle text-family-destructive-fg enabled:hover:bg-family-destructive-subtle-hover enabled:hover:text-family-destructive-fg-hover',
-    menu: 'bg-transparent text-family-destructive-fg enabled:hover:bg-family-destructive-subtle enabled:hover:text-family-destructive-fg-hover',
+      'bg-family-destructive-subtle text-family-destructive-fg enabled:not-aria-disabled:hover:bg-family-destructive-subtle-hover enabled:not-aria-disabled:hover:text-family-destructive-fg-hover',
+    menu: 'bg-transparent text-family-destructive-fg enabled:not-aria-disabled:hover:bg-family-destructive-subtle enabled:not-aria-disabled:hover:text-family-destructive-fg-hover',
   },
   caution: {
     primary:
-      'bg-family-caution-solid text-on-accent enabled:hover:bg-family-caution-solid-hover enabled:active:bg-family-caution-solid-active',
+      'bg-family-caution-solid text-on-accent enabled:not-aria-disabled:hover:bg-family-caution-solid-hover enabled:not-aria-disabled:active:bg-family-caution-solid-active',
     secondary:
-      'bg-family-caution-subtle text-family-caution-fg enabled:hover:bg-family-caution-subtle-hover enabled:hover:text-family-caution-fg-hover',
-    menu: 'bg-transparent text-family-caution-fg enabled:hover:bg-family-caution-subtle enabled:hover:text-family-caution-fg-hover',
+      'bg-family-caution-subtle text-family-caution-fg enabled:not-aria-disabled:hover:bg-family-caution-subtle-hover enabled:not-aria-disabled:hover:text-family-caution-fg-hover',
+    menu: 'bg-transparent text-family-caution-fg enabled:not-aria-disabled:hover:bg-family-caution-subtle enabled:not-aria-disabled:hover:text-family-caution-fg-hover',
   },
   neutral: {
     primary:
-      'bg-family-neutral-solid text-on-accent enabled:hover:bg-family-neutral-solid-hover enabled:active:bg-family-neutral-solid-active',
+      'bg-family-neutral-solid text-on-accent enabled:not-aria-disabled:hover:bg-family-neutral-solid-hover enabled:not-aria-disabled:active:bg-family-neutral-solid-active',
     secondary:
-      'border-default bg-surface-raised text-family-neutral-fg enabled:hover:bg-surface-hover enabled:hover:text-family-neutral-fg-hover',
-    menu: 'bg-transparent text-family-neutral-fg enabled:hover:bg-surface-hover enabled:hover:text-family-neutral-fg-hover',
+      'border-default bg-surface-raised text-family-neutral-fg enabled:not-aria-disabled:hover:bg-surface-hover enabled:not-aria-disabled:hover:text-family-neutral-fg-hover',
+    menu: 'bg-transparent text-family-neutral-fg enabled:not-aria-disabled:hover:bg-surface-hover enabled:not-aria-disabled:hover:text-family-neutral-fg-hover',
   },
 }
 
 /** Disabled, in every emphasis: Mantine's disabled colours, transparent border (Button.css). */
+/**
+ * Disabled, and unavailable (`aria-disabled="true"`: still focusable, so its reason can be read;
+ * the unavailable action of P2.7) look the same; neither changes on hover or press.
+ */
 const DISABLED =
-  'disabled:border-transparent disabled:bg-surface-disabled disabled:text-disabled disabled:cursor-not-allowed'
+  'disabled:border-transparent disabled:bg-surface-disabled disabled:text-disabled disabled:cursor-not-allowed aria-disabled:border-transparent aria-disabled:bg-surface-disabled aria-disabled:text-disabled aria-disabled:cursor-not-allowed'
 
 /**
  * The previous Design System's Mantine sizes ("Button sizes" in docs/decisions.md, source

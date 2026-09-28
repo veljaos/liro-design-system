@@ -51,6 +51,7 @@ describe('messages', () => {
     const incomplete: LiroMessages = { 'table.next': 'Next' }
     expect(Object.keys(incomplete)).toHaveLength(1)
     expect(Object.keys(messagesEn).sort()).toEqual([
+      'action.more',
       'action.unavailable',
       'confirm.deleteLabel',
       'confirm.deleteMessage',

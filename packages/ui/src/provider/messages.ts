@@ -42,6 +42,8 @@ export interface LiroMessages {
   'confirm.typeToConfirm': (text: string) => string
   /** The button that closes a dialog or a drawer. */
   'dialog.close': string
+  /** The button that opens the actions that do not fit. */
+  'action.more': string
   /** An action that cannot be used, with the reason it is given. */
   'action.unavailable': (reason: string) => string
   /** The connection is lost. */
