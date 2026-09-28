@@ -52,7 +52,12 @@ describe('messages', () => {
     expect(Object.keys(incomplete)).toHaveLength(1)
     expect(Object.keys(messagesEn).sort()).toEqual([
       'action.unavailable',
+      'confirm.deleteLabel',
+      'confirm.deleteMessage',
+      'confirm.deleteTitle',
+      'confirm.typeToConfirm',
       'connection.offline',
+      'dialog.cancel',
       'dialog.close',
       'field.invalidNumber',
       'field.loading',

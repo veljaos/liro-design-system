@@ -30,6 +30,16 @@ export interface LiroMessages {
   'field.noResults': string
   /** The button that removes one chosen value (its label) from a multiple choice. */
   'field.remove': (label: string) => string
+  /** The button that dismisses a confirmation without acting. */
+  'dialog.cancel': string
+  /** The default question of a delete confirmation. */
+  'confirm.deleteTitle': string
+  /** The default text of a delete confirmation. */
+  'confirm.deleteMessage': string
+  /** The default label of a delete confirmation's button. */
+  'confirm.deleteLabel': string
+  /** The label of the field where the user types `text` to confirm an irreversible action. */
+  'confirm.typeToConfirm': (text: string) => string
   /** The button that closes a dialog or a drawer. */
   'dialog.close': string
   /** The button that closes a toast. */
