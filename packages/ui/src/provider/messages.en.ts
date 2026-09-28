@@ -17,6 +17,7 @@ export const messagesEn: LiroMessages = {
   'table.noMatch': 'No rows match',
   'field.required': 'Required',
   'field.readOnly': 'Read-only',
+  'field.invalidNumber': 'Enter a number',
   'field.loading': 'Loading…',
   'field.noResults': 'Nothing found',
   'field.remove': (label) => `Remove ${label}`,
