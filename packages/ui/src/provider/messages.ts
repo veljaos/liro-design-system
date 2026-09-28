@@ -30,6 +30,19 @@ export interface LiroMessages {
   'field.noResults': string
   /** The button that removes one chosen value (its label) from a multiple choice. */
   'field.remove': (label: string) => string
+  /** The button that closes a dismissible alert or banner. */
+  'alert.close': string
+  /** EmptyState 'empty': nothing here yet. */
+  'empty.emptyTitle': string
+  'empty.emptyDescription': string
+  /** EmptyState 'no-results': nothing matches the search or the filters. */
+  'empty.noResultsTitle': string
+  'empty.noResultsDescription': string
+  /** EmptyState 'error' and ErrorState: loading failed. */
+  'empty.errorTitle': string
+  'empty.errorDescription': string
+  /** Before the case number of an ErrorState. */
+  'empty.caseId': string
   /** An action that cannot be used, with the reason it is given. */
   'action.unavailable': (reason: string) => string
   /** The connection is lost. */
