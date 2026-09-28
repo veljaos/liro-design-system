@@ -10,6 +10,8 @@
 /* Stories and tests are not shipped; their classes stay out of the package CSS. */
 @source not './**/*.stories.tsx';
 @source not './**/*.test.{ts,tsx}';
+@source not './**/*-story-data.ts';
+@source not './**/story-helpers.ts';
 
 /*
  * Not a reset: only the elements of the primitives (each carries data-slot) size their padding and

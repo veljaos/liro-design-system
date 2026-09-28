@@ -20,11 +20,20 @@ export const FOCUS_RING =
  * A text input (Input.css, size 'sm'): 36px high, 12px (36 / 3) horizontal padding, radius md,
  * 1px border, 13px text; the border turns to the focus colour on focus. Border: border.control,
  * which meets 3:1 on every surface (owner's decision, 2026-09-25; Mantine's gray-4 did not).
- * Placeholder: text.tertiary. Disabled: surface.disabled and text.disabled, border.default, no
+ * Placeholder: text.tertiary. Invalid (aria-invalid): the border in status.danger.fg (owner's
+ * decision, 2026-09-25). Disabled: surface.disabled and text.disabled, border.default, no
  * opacity (Appendix B.6).
  */
 export const INPUT =
-  'block h-control w-full min-w-0 rounded-md border border-solid border-control bg-surface-raised px-3 font-sans text-sm text-primary outline-none transition-colors duration-(--liro-duration-fast) ease-standard placeholder:text-tertiary focus:border-focus disabled:cursor-not-allowed disabled:border-default disabled:bg-surface-disabled disabled:text-disabled'
+  'block h-control w-full min-w-0 rounded-md border border-solid border-control bg-surface-raised px-3 font-sans text-sm text-primary outline-none transition-colors duration-(--liro-duration-fast) ease-standard placeholder:text-tertiary focus:border-focus disabled:cursor-not-allowed disabled:border-default disabled:bg-surface-disabled disabled:text-disabled aria-invalid:border-status-danger-fg'
+
+/**
+ * A read-only control (owner's decision, 2026-09-25): plain text in the full text colour, no
+ * border and no background, at the same height and padding as an editable control, so a form
+ * that mixes both stays aligned. It keeps a focus ring: it can be focused, selected and copied.
+ */
+export const READ_ONLY =
+  'cursor-text border-transparent bg-transparent focus:border-transparent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus'
 
 /**
  * The floating surface of popovers, menus and selects (Popover.css): 1px border, radius md, no
