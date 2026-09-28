@@ -22,6 +22,11 @@ export const messagesEn: LiroMessages = {
   'field.noResults': 'Nothing found',
   'field.remove': (label) => `Remove ${label}`,
   'breadcrumbs.label': 'Breadcrumbs',
+  'command.title': 'Search and commands',
+  'command.placeholder': 'Search…',
+  'command.actions': 'Actions',
+  'command.navigation': 'Go to',
+  'command.noResults': 'Nothing found',
   'action.unavailable': (reason) => `Unavailable: ${reason}`,
   'connection.offline': 'Offline',
 }

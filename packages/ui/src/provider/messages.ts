@@ -32,6 +32,16 @@ export interface LiroMessages {
   'field.remove': (label: string) => string
   /** Names the breadcrumb trail for assistive technology. */
   'breadcrumbs.label': string
+  /** Names the command palette and its search field. */
+  'command.title': string
+  /** The placeholder of the command palette's search field. */
+  'command.placeholder': string
+  /** The heading of the palette's actions. */
+  'command.actions': string
+  /** The heading of the palette's places to go. */
+  'command.navigation': string
+  /** The palette found nothing. */
+  'command.noResults': string
   /** An action that cannot be used, with the reason it is given. */
   'action.unavailable': (reason: string) => string
   /** The connection is lost. */

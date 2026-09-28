@@ -242,9 +242,9 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P2.3c | PeriodField | P2.3b | todo | | `yearStartMonth`, presets from `today` |
 | P2.4 | Overlays and confirmations | P2.1 | todo | | |
 | P2.5 | Feedback | P2.1 | todo | | |
-| P2.6 | Navigation pieces and command palette | P2.1 | in progress (split: P2.6a, P2.6b) | | Done when P2.6a and P2.6b are done |
+| P2.6 | Navigation pieces and command palette | P2.1 | done | 2026-09-28 | Split into P2.6a and P2.6b |
 | P2.6a | Tabs, Breadcrumbs, CursorPagination, ShortcutHint | P2.1 | done | 2026-09-28 | Owner: centred tabs, panels not kept (AGENTS.md D16); "›" separator; Pagination sm previous/next only; Kbd xs |
-| P2.6b | CommandPalette | P2.6a | todo | | Owner: the old Spotlight (Ctrl/Cmd+K and +P, groups, highlight) |
+| P2.6b | CommandPalette | P2.6a | done | 2026-09-28 | Owner: the old Spotlight (Ctrl/Cmd+K and +P, actions then Go to, highlighted matches, keywords); cmdk |
 | P2.7 | Actions | P1.3, P2.4 | todo | | |
 | P2.8 | Display pieces | P2.3 | todo | | |
 | P3.1 | DataTable core | P2.7, P2.8 | todo | | |
