@@ -23,8 +23,9 @@ import { entryAttributes, entryError, useEntry, type EntryProps } from './use-en
  * The text is laid out left to right in every direction (`dir="ltr"`): a number is written left to
  * right, and in a right-to-left field the bidi algorithm moved the minus sign to the end of
  * "-42,00" (docs/decisions.md, Provider). In right-to-left it is aligned to the field's start,
- * which is the input's end. The direction is read from the input's parent with `:dir(rtl)`, not
- * with Tailwind's `rtl:`, which also matches a left-to-right field inside a right-to-left page.
+ * which is the input's end. The direction is the provider's (`useLiro().direction`), not CSS:
+ * Tailwind's `rtl:` also matches a left-to-right field inside a right-to-left page, and Vite's CSS
+ * minifier rewrites `:dir(rtl)` into a list of right-to-left languages.
  */
 
 interface NumberValueProps extends EntryProps {
@@ -78,7 +79,8 @@ function numberAttributes(
  * "1 234,56" and the other forms of Appendix B.3 all give the decimal string "1234.56".
  */
 export function NumberField(props: NumberFieldProps) {
-  const { messages } = useLiro()
+  const { messages, direction } = useLiro()
+  const rtl = direction === 'rtl'
   const entry = useNumberEntry(props, props.decimals)
   const error = entryError(props.error, entry.valid, messages['field.invalidNumber'])
   return (
@@ -88,7 +90,7 @@ export function NumberField(props: NumberFieldProps) {
           <Input
             {...controlAttributes(control, messages['field.readOnly'])}
             {...numberAttributes(entry, props, control.readOnly)}
-            className={cn('tabular-nums [:dir(rtl)>&]:text-end', control.readOnly && READ_ONLY)}
+            className={cn('tabular-nums', rtl && 'text-end', control.readOnly && READ_ONLY)}
           />
           {props.name !== undefined && (
             <input type="hidden" name={props.name} value={entry.value ?? ''} />
@@ -105,7 +107,8 @@ export function NumberField(props: NumberFieldProps) {
  * string, and the currency is the application's.
  */
 export function MoneyField(props: MoneyFieldProps) {
-  const { messages, format } = useLiro()
+  const { messages, format, direction } = useLiro()
+  const rtl = direction === 'rtl'
   const entry = useNumberEntry(props, props.decimals ?? format.moneyDecimals)
   const error = entryError(props.error, entry.valid, messages['field.invalidNumber'])
   const first = currencyFirst(format, props.currency)
@@ -146,12 +149,13 @@ export function MoneyField(props: MoneyFieldProps) {
                 {...attributes}
                 {...numberAttributes(entry, props, control.readOnly)}
                 className={cn(
-                  'm-0 h-full min-w-0 flex-1 border-0 bg-transparent py-0 font-sans text-sm text-inherit tabular-nums outline-none placeholder:text-tertiary disabled:cursor-not-allowed [:dir(rtl)>&]:text-end',
+                  'm-0 h-full min-w-0 flex-1 border-0 bg-transparent py-0 font-sans text-sm text-inherit tabular-nums outline-none placeholder:text-tertiary disabled:cursor-not-allowed',
+                  rtl && 'text-end',
                   // The input is left to right inside a field that may be right to left: the side
                   // next to the currency has no padding (the section is its space), the other 12px.
-                  first
-                    ? 'ps-0 pe-3 [:dir(rtl)>&]:ps-3 [:dir(rtl)>&]:pe-0'
-                    : 'ps-3 pe-0 [:dir(rtl)>&]:ps-0 [:dir(rtl)>&]:pe-3',
+                  // The input's own direction is left to right: its start is the field's end in
+                  // right-to-left.
+                  first === !rtl ? 'ps-0 pe-3' : 'ps-3 pe-0',
                   control.readOnly && 'cursor-text',
                 )}
               />
