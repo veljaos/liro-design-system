@@ -29,6 +29,8 @@ export const messagesEn: LiroMessages = {
   'calendar.previousMonth': 'Previous month',
   'calendar.nextMonth': 'Next month',
   'calendar.navigation': 'Months',
+  'calendar.previousYear': 'Previous year',
+  'calendar.nextYear': 'Next year',
   'period.quarter': (quarter, year) => `Q${String(quarter)} ${year}`,
   'period.today': 'Today',
   'period.thisWeek': 'This week',
