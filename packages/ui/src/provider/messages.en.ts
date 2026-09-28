@@ -21,6 +21,7 @@ export const messagesEn: LiroMessages = {
   'field.loading': 'Loading…',
   'field.noResults': 'Nothing found',
   'field.remove': (label) => `Remove ${label}`,
+  'breadcrumbs.label': 'Breadcrumbs',
   'action.unavailable': (reason) => `Unavailable: ${reason}`,
   'connection.offline': 'Offline',
 }

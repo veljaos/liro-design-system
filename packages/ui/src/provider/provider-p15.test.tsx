@@ -52,6 +52,7 @@ describe('messages', () => {
     expect(Object.keys(incomplete)).toHaveLength(1)
     expect(Object.keys(messagesEn).sort()).toEqual([
       'action.unavailable',
+      'breadcrumbs.label',
       'connection.offline',
       'field.invalidNumber',
       'field.loading',

@@ -8,6 +8,15 @@ export { Field } from './components/field'
 export type { FieldBaseProps, FieldControl, FieldProps } from './components/field'
 export { MultiSelectField } from './components/multi-select-field'
 export type { MultiSelectFieldProps } from './components/multi-select-field'
+export { Breadcrumbs, CursorPagination, ShortcutHint, Tabs } from './components/navigation'
+export type {
+  BreadcrumbsProps,
+  Crumb,
+  CursorPaginationProps,
+  ShortcutHintProps,
+  TabItem,
+  TabsProps,
+} from './components/navigation'
 export { MoneyField, NumberField } from './components/number-field'
 export type { MoneyFieldProps, NumberFieldProps } from './components/number-field'
 export { RadioGroupField } from './components/radio-group-field'

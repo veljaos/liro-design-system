@@ -30,6 +30,8 @@ export interface LiroMessages {
   'field.noResults': string
   /** The button that removes one chosen value (its label) from a multiple choice. */
   'field.remove': (label: string) => string
+  /** Names the breadcrumb trail for assistive technology. */
+  'breadcrumbs.label': string
   /** An action that cannot be used, with the reason it is given. */
   'action.unavailable': (reason: string) => string
   /** The connection is lost. */
