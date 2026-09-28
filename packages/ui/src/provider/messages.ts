@@ -22,6 +22,12 @@ export interface LiroMessages {
   'field.required': string
   /** Announces a read-only field. */
   'field.readOnly': string
+  /** A searching field is waiting for its results. */
+  'field.loading': string
+  /** A searching field found nothing for the text typed. */
+  'field.noResults': string
+  /** The button that removes one chosen value (its label) from a multiple choice. */
+  'field.remove': (label: string) => string
   /** An action that cannot be used, with the reason it is given. */
   'action.unavailable': (reason: string) => string
   /** The connection is lost. */
