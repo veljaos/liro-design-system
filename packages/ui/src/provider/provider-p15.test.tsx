@@ -53,6 +53,7 @@ describe('messages', () => {
     expect(Object.keys(messagesEn).sort()).toEqual([
       'action.unavailable',
       'connection.offline',
+      'dialog.close',
       'field.invalidNumber',
       'field.loading',
       'field.noResults',

@@ -30,6 +30,8 @@ export interface LiroMessages {
   'field.noResults': string
   /** The button that removes one chosen value (its label) from a multiple choice. */
   'field.remove': (label: string) => string
+  /** The button that closes a dialog or a drawer. */
+  'dialog.close': string
   /** An action that cannot be used, with the reason it is given. */
   'action.unavailable': (reason: string) => string
   /** The connection is lost. */
