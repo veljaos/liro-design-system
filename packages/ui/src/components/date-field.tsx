@@ -372,7 +372,7 @@ export function DateRangeField(props: DateRangeFieldProps) {
                 aria-labelledby={`${control.labelId} ${endLabel}`}
                 className={cn(
                   TYPING,
-                  'px-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
+                  'px-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
                 )}
               />
             </div>
@@ -417,7 +417,7 @@ export function DateRangeField(props: DateRangeFieldProps) {
                       openOnAltArrowDown(openCalendar)(event)
                       endTyping.onKeyDown(event)
                     }}
-                    className={cn(TYPING, 'px-0')}
+                    className={cn(TYPING, 'px-0.5')}
                   />
                   <CalendarButton disabled={control.disabled} />
                 </div>
