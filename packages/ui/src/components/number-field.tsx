@@ -1,10 +1,11 @@
-import { useState, type FocusEventHandler, type KeyboardEvent, type ReactNode } from 'react'
+import type { FocusEventHandler } from 'react'
 import { INPUT, READ_ONLY } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { Input } from '../primitives/input'
 import { useLiro } from '../provider/liro-provider'
 import { controlAttributes, Field, fieldProps, type FieldBaseProps } from './field'
 import { currencyFirst, readNumber, showNumber } from './number-logic'
+import { entryAttributes, entryError, useEntry, type EntryProps } from './use-entry'
 
 /*
  * NumberField and MoneyField (BUILD-PLAN P2.3). No input mask (Appendix B.3): the user types
@@ -25,21 +26,7 @@ import { currencyFirst, readNumber, showNumber } from './number-logic'
  * which is the input's end.
  */
 
-interface NumberValueProps {
-  /** Controlled value: a decimal string such as "1234.5", or null for empty. */
-  value?: string | null
-  /** Uncontrolled initial value. */
-  defaultValue?: string | null
-  /**
-   * Called when the user leaves the field or presses Enter and the value changed: the decimal
-   * string read from the text, or null when the text is empty or cannot be read.
-   */
-  onChange?: (value: string | null) => void
-  /**
-   * Called when the text becomes unreadable (false) or readable again (true). While it is false
-   * the value is null and the field shows its own error; a form should not save.
-   */
-  onValidityChange?: (valid: boolean) => void
+interface NumberValueProps extends EntryProps {
   onBlur?: FocusEventHandler<HTMLInputElement>
   /** Shown while the field is empty. From the application. */
   placeholder?: string
@@ -62,83 +49,26 @@ export interface MoneyFieldProps extends FieldBaseProps, NumberValueProps {
   decimals?: number
 }
 
-/** The value, the text in the field and its validity, shared by both fields. */
+/** The typed entry of a number: read by `format.parseNumber`, shown by `format.number`. */
 function useNumberEntry(props: NumberValueProps, decimals: number | undefined) {
   const { format } = useLiro()
-  const [inner, setInner] = useState(props.defaultValue ?? null)
-  const value = props.value === undefined ? inner : props.value
-  // The text while it differs from the value's own text (being typed, or unreadable).
-  const [text, setText] = useState<string | null>(null)
-  const [valid, setValid] = useState(true)
-  // The last value this field reported, and the last value it was given: a new value from the
-  // application (not the one just reported) replaces any text being typed.
-  const [reported, setReported] = useState(value)
-  const [seen, setSeen] = useState(value)
-  if (seen !== value) {
-    setSeen(value)
-    if (value !== reported) {
-      setReported(value)
-      setText(null)
-      if (!valid) {
-        setValid(true)
-        props.onValidityChange?.(true)
-      }
-    }
-  }
-
-  const commit = () => {
-    if (text === null) return
-    const entry = readNumber(text, format)
-    if (entry.valid !== valid) {
-      setValid(entry.valid)
-      props.onValidityChange?.(entry.valid)
-    }
-    if (entry.valid) setText(null)
-    if (entry.value !== value) {
-      setInner(entry.value)
-      setReported(entry.value)
-      props.onChange?.(entry.value)
-    }
-  }
-
-  return {
-    value,
-    valid,
-    text: text ?? showNumber(value, format, decimals),
-    setText,
-    commit,
-  }
+  return useEntry(
+    props,
+    (text) => readNumber(text, format),
+    (value) => showNumber(value, format, decimals),
+  )
 }
 
-/** The error a number field shows: the application's, else its own for unreadable text. */
-function numberError(error: ReactNode, valid: boolean, message: string): ReactNode {
-  if (error !== undefined && error !== null && error !== false) return error
-  return valid ? undefined : message
-}
-
-/** The attributes of the typing area, shared by both fields. */
-function entryAttributes(
-  entry: ReturnType<typeof useNumberEntry>,
+/** The attributes of a number's typing area: a numeric keyboard, left to right. */
+function numberAttributes(
+  entry: ReturnType<typeof useEntry>,
   props: NumberValueProps,
   readOnly: boolean,
 ) {
   return {
-    type: 'text',
+    ...entryAttributes(entry, props, readOnly),
     inputMode: 'decimal' as const,
-    autoComplete: 'off',
     dir: 'ltr',
-    value: entry.text,
-    ...(props.placeholder === undefined ? {} : { placeholder: props.placeholder }),
-    onChange: (event: { target: { value: string } }) => {
-      if (!readOnly) entry.setText(event.target.value)
-    },
-    onKeyDown: (event: KeyboardEvent<HTMLInputElement>) => {
-      if (event.key === 'Enter') entry.commit()
-    },
-    onBlur: (event: Parameters<FocusEventHandler<HTMLInputElement>>[0]) => {
-      entry.commit()
-      props.onBlur?.(event)
-    },
   }
 }
 
@@ -149,14 +79,14 @@ function entryAttributes(
 export function NumberField(props: NumberFieldProps) {
   const { messages } = useLiro()
   const entry = useNumberEntry(props, props.decimals)
-  const error = numberError(props.error, entry.valid, messages['field.invalidNumber'])
+  const error = entryError(props.error, entry.valid, messages['field.invalidNumber'])
   return (
     <Field {...fieldProps({ ...props, error })}>
       {(control) => (
         <>
           <Input
             {...controlAttributes(control, messages['field.readOnly'])}
-            {...entryAttributes(entry, props, control.readOnly)}
+            {...numberAttributes(entry, props, control.readOnly)}
             className={cn('tabular-nums rtl:text-end', control.readOnly && READ_ONLY)}
           />
           {props.name !== undefined && (
@@ -176,7 +106,7 @@ export function NumberField(props: NumberFieldProps) {
 export function MoneyField(props: MoneyFieldProps) {
   const { messages, format } = useLiro()
   const entry = useNumberEntry(props, props.decimals ?? format.moneyDecimals)
-  const error = numberError(props.error, entry.valid, messages['field.invalidNumber'])
+  const error = entryError(props.error, entry.valid, messages['field.invalidNumber'])
   const first = currencyFirst(format, props.currency)
   return (
     <Field {...fieldProps({ ...props, error })}>
@@ -213,7 +143,7 @@ export function MoneyField(props: MoneyFieldProps) {
               {first && currency}
               <input
                 {...attributes}
-                {...entryAttributes(entry, props, control.readOnly)}
+                {...numberAttributes(entry, props, control.readOnly)}
                 className={cn(
                   'm-0 h-full min-w-0 flex-1 border-0 bg-transparent py-0 font-sans text-sm text-inherit tabular-nums outline-none placeholder:text-tertiary disabled:cursor-not-allowed rtl:text-end',
                   // The input is left to right inside a field that may be right to left: the side

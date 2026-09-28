@@ -52,10 +52,18 @@ describe('messages', () => {
     expect(Object.keys(incomplete)).toHaveLength(1)
     expect(Object.keys(messagesEn).sort()).toEqual([
       'action.unavailable',
+      'calendar.navigation',
+      'calendar.nextMonth',
+      'calendar.previousMonth',
       'connection.offline',
+      'field.invalidDate',
       'field.invalidNumber',
+      'field.invalidRange',
       'field.loading',
       'field.noResults',
+      'field.openCalendar',
+      'field.rangeEnd',
+      'field.rangeStart',
       'field.readOnly',
       'field.remove',
       'field.required',

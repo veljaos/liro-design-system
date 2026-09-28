@@ -238,7 +238,7 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P2.2b | ComboboxField and MultiSelectField | P2.2a | done | 2026-09-28 | Own WAI-ARIA combobox; application search after 300ms (owner) with loading and "nothing found"; pills with Mantine Pill values, remove target 24×24 |
 | P2.3 | Numbers, money and dates | P2.2 | in progress (split: P2.3a, P2.3b, P2.3c) | | Done when P2.3a, P2.3b and P2.3c are done |
 | P2.3a | NumberField and MoneyField | P2.2 | done | 2026-09-28 | No mask, read on blur or Enter; decimal string or null; owner: currency on the locale's side, start-aligned, unreadable text kept with the field's own message |
-| P2.3b | DateField and DateRangeField | P2.3a | todo | | Owner: calendar only from its button or Alt+ArrowDown |
+| P2.3b | DateField and DateRangeField | P2.3a | done | 2026-09-28 | Typed or picked, YYYY-MM-DD; owner: calendar only from its button or Alt+ArrowDown, focus in and back; opens on the provider's today; range end before start is an error |
 | P2.3c | PeriodField | P2.3b | todo | | `yearStartMonth`, presets from `today` |
 | P2.4 | Overlays and confirmations | P2.1 | todo | | |
 | P2.5 | Feedback | P2.1 | todo | | |
