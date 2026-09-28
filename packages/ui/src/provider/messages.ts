@@ -22,6 +22,8 @@ export interface LiroMessages {
   'field.required': string
   /** Announces a read-only field. */
   'field.readOnly': string
+  /** A number or amount field whose text cannot be read as a number (shown under the field). */
+  'field.invalidNumber': string
   /** A searching field is waiting for its results. */
   'field.loading': string
   /** A searching field found nothing for the text typed. */
