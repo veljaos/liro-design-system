@@ -1,9 +1,25 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { expect, userEvent, within } from 'storybook/test'
 import { settle } from '../primitives/story-helpers'
+import { LiroProvider, useLiro } from '../provider/liro-provider'
 import { ARABIC, JAPANESE, LONG } from './field-story-data'
 import { MoneyField, NumberField } from './number-field'
+
+/**
+ * Right to left through a nested provider, as an application does it: number and money fields
+ * take the direction from the provider (AGENTS.md D11), not from a `dir` attribute.
+ */
+function RightToLeft({ children }: { children: ReactNode }) {
+  const { colorScheme, locale } = useLiro()
+  return (
+    <LiroProvider locale={locale} direction="rtl" colorScheme={colorScheme}>
+      <div lang="ar" dir="rtl" className="flex max-w-100 flex-col gap-6">
+        {children}
+      </div>
+    </LiroProvider>
+  )
+}
 
 const meta = {
   title: 'Components/Fields/NumberField',
@@ -158,7 +174,7 @@ export const LongTextPhone: Story = {
 /** Arabic sample text, right to left: the number itself stays left to right. */
 export const Arabic: Story = {
   render: () => (
-    <div lang="ar" dir="rtl" className="flex max-w-100 flex-col gap-6">
+    <RightToLeft>
       <NumberField
         label={ARABIC.label}
         description={ARABIC.description}
@@ -168,7 +184,7 @@ export const Arabic: Story = {
       <NumberField label={ARABIC.label} required error={ARABIC.error} />
       <NumberField label={ARABIC.label} readOnly defaultValue="1234.5" />
       <NumberField label={ARABIC.label} disabled disabledReason={ARABIC.reason} defaultValue="7" />
-    </div>
+    </RightToLeft>
   ),
 }
 
