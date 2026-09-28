@@ -30,6 +30,8 @@ export const messagesEn: LiroMessages = {
   'calendar.nextMonth': 'Next month',
   'calendar.navigation': 'Months',
   'dialog.close': 'Close',
+  'notice.close': 'Close',
+  'notice.region': 'Notifications',
   'action.unavailable': (reason) => `Unavailable: ${reason}`,
   'connection.offline': 'Offline',
 }
