@@ -246,11 +246,11 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P2.5 | Feedback | P2.1 | todo | | |
 | P2.6 | Navigation pieces and command palette | P2.1 | todo | | |
 | P2.7 | Actions | P1.3, P2.4 | todo | | |
-| P2.8 | Display pieces | P2.3 | in progress (split: P2.8a–P2.8d) | | Done when P2.8a–P2.8d are done |
+| P2.8 | Display pieces | P2.3 | done | 2026-09-28 | Split into P2.8a–P2.8d |
 | P2.8a | Card, SectionCard, KeyValueList | P2.1 | done | 2026-09-28 | Owner: radius lg; SectionCard header and divider; KeyValueList labels upper case only in cased scripts (by :lang) |
 | P2.8b | PersonAvatar, PersonName | P2.8a | done | 2026-09-28 | Owner: light primary avatar, radius xl; initials from the first and last word (B.9, tested); decorative unless alt |
 | P2.8c | DateText, DateRangeText, DueDate, NumberText, MoneyText | P2.8b | done | 2026-09-28 | Owner: tabular, "—" when empty; DueDate from the provider today, overdue days in the badge; new `format.dateLong` |
-| P2.8d | SettlingValue | P2.8c | todo | | Plan: no layout shift, one announcement per settle (Playwright test; protected file) |
+| P2.8d | SettlingValue | P2.8c | done | 2026-09-28 | Owner: 6px dot after 300ms in a reserved slot; a Playwright test proves no layout shift and one announcement per settle (ltr, rtl) |
 | P3.1 | DataTable core | P2.7, P2.8 | todo | | |
 | P3.2 | Table on phones, large lists, column resize | P3.1 | todo | | |
 | P3.3 | Filters and search | P3.1 | todo | | |
