@@ -15,6 +15,10 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: true,
   retries: 0,
+  // A run that takes too long is stopped by Playwright itself, which also stops the server below.
+  // A CI step timeout killed Playwright but left the server running, so the next step found the
+  // port taken (docs/decisions.md, CI, P0.4a).
+  globalTimeout: 25 * 60_000,
   reporter: [['list'], ['html', { open: 'never', outputFolder: 'playwright-report' }]],
   expect: {
     toHaveScreenshot: { animations: 'disabled', caret: 'hide', maxDiffPixels: 0 },
