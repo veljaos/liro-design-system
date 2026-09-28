@@ -5,6 +5,21 @@ import { LiroProvider, useLiro } from '../provider/liro-provider'
 import { ARABIC, JAPANESE, LONG } from './field-story-data'
 import { MoneyField } from './number-field'
 
+/**
+ * Right to left through a nested provider, as an application does it: number and money fields
+ * take the direction from the provider (AGENTS.md D11), not from a `dir` attribute.
+ */
+function RightToLeft({ children }: { children: ReactNode }) {
+  const { colorScheme, locale } = useLiro()
+  return (
+    <LiroProvider locale={locale} direction="rtl" colorScheme={colorScheme}>
+      <div lang="ar" dir="rtl" className="flex max-w-100 flex-col gap-6">
+        {children}
+      </div>
+    </LiroProvider>
+  )
+}
+
 const meta = {
   title: 'Components/Fields/MoneyField',
   component: MoneyField,
@@ -124,7 +139,7 @@ export const LongTextPhone: Story = {
 /** Arabic sample text, right to left: the currency moves with the direction. */
 export const Arabic: Story = {
   render: () => (
-    <div lang="ar" dir="rtl" className="flex max-w-100 flex-col gap-6">
+    <RightToLeft>
       <MoneyField
         label={ARABIC.label}
         description={ARABIC.description}
@@ -140,7 +155,7 @@ export const Arabic: Story = {
         disabledReason={ARABIC.reason}
         defaultValue="7"
       />
-    </div>
+    </RightToLeft>
   ),
 }
 
