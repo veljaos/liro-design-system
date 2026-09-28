@@ -8,7 +8,7 @@ import { cn } from './cn'
 
 /*
  * A modal dialog (shadcn/ui dialog, adapted; Mantine Modal.css, ModalBase.css and defaults):
- * 440px wide (size 'md'), 5dvh from the top and at least 5vw from each side, radius md, shadow xl,
+ * 440px wide (size 'md'), 5dvh from the top and at least 5% of the width from each side, radius md, shadow xl,
  * on the overlay surface over surface.backdrop; it fades down 30px in 200ms. Header: at least
  * 60px, 16px padding (11px at the inline end, beside the close button), sticky while the body
  * scrolls; title 14px regular. Body: 16px padding, none on top under a header. The close button
@@ -33,7 +33,7 @@ export function DialogContent({
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(
-          'fixed inset-x-0 top-[5dvh] z-(--liro-layer-modal) mx-auto flex max-h-[90dvh] w-110 max-w-[90vw] flex-col overflow-y-auto rounded-md bg-surface-overlay font-sans text-primary shadow-xl outline-none',
+          'fixed inset-x-0 top-[5dvh] z-(--liro-layer-modal) mx-auto flex max-h-[90dvh] w-110 max-w-[90%] flex-col overflow-y-auto rounded-md bg-surface-overlay font-sans text-primary shadow-xl outline-none',
           'data-[state=open]:animate-liro-modal-in data-[state=closed]:animate-liro-modal-out motion-reduce:animate-none',
           className,
         )}
