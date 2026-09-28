@@ -22,6 +22,8 @@ export const messagesEn: LiroMessages = {
   'field.noResults': 'Nothing found',
   'field.remove': (label) => `Remove ${label}`,
   'dialog.close': 'Close',
+  'notice.close': 'Close',
+  'notice.region': 'Notifications',
   'action.unavailable': (reason) => `Unavailable: ${reason}`,
   'connection.offline': 'Offline',
 }
