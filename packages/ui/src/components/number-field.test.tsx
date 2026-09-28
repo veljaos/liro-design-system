@@ -99,7 +99,10 @@ const render = (node: React.ReactNode, locale = 'en') =>
 
 describe('NumberField and MoneyField markup', () => {
   it('shows the value through format.number, left to right, with tabular digits', () => {
-    const html = render(<NumberField id="q" label="Quantity" value="1234.5" decimals={2} />, 'sr-Latn-RS')
+    const html = render(
+      <NumberField id="q" label="Quantity" value="1234.5" decimals={2} />,
+      'sr-Latn-RS',
+    )
     expect(html).toContain('value="1.234,50"')
     expect(html).toMatch(/<input[^>]*dir="ltr"/)
     expect(html).toMatch(/<input[^>]*inputMode="decimal"/)
@@ -112,7 +115,9 @@ describe('NumberField and MoneyField markup', () => {
   })
 
   it('never blocks paste', () => {
-    expect(render(<NumberField label="A" />) + render(<MoneyField label="B" currency="EUR" />)).not.toContain('onpaste')
+    expect(
+      render(<NumberField label="A" />) + render(<MoneyField label="B" currency="EUR" />),
+    ).not.toContain('onpaste')
   })
 
   it('puts the currency after the amount in Serbian and before it in English, as a label', () => {
@@ -126,7 +131,9 @@ describe('NumberField and MoneyField markup', () => {
   })
 
   it('uses the decimals prop over the provider default for money', () => {
-    expect(render(<MoneyField label="A" currency="EUR" value="1" decimals={4} />)).toContain('value="1.0000"')
+    expect(render(<MoneyField label="A" currency="EUR" value="1" decimals={4} />)).toContain(
+      'value="1.0000"',
+    )
   })
 
   it("shows the application's error and marks the field invalid", () => {
@@ -140,7 +147,9 @@ describe('NumberField and MoneyField markup', () => {
     const readOnly = render(<MoneyField label="A" currency="EUR" value="5" readOnly />)
     expect(readOnly).toMatch(/<input[^>]*readOnly=""/)
     expect(readOnly).toContain('border-transparent bg-transparent')
-    const disabled = render(<NumberField id="d" label="A" disabled disabledReason="Closed period" />)
+    const disabled = render(
+      <NumberField id="d" label="A" disabled disabledReason="Closed period" />,
+    )
     expect(disabled).toContain('Closed period')
     expect(disabled).toMatch(/<input[^>]*disabled=""/)
   })

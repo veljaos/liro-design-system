@@ -13,11 +13,11 @@ const meta = {
       description: {
         component:
           '**What for:** an amount of money. Typed and read as NumberField (no mask, decimal ' +
-          'string, never rounded, unreadable text kept with the field\'s own message), shown with ' +
-          'the provider\'s money decimals unless `decimals` is given, and the currency beside it ' +
+          "string, never rounded, unreadable text kept with the field's own message), shown with " +
+          "the provider's money decimals unless `decimals` is given, and the currency beside it " +
           'on the side where the locale writes it — the same rule as `format.money`, so an amount ' +
           'looks the same in a field and in text (Serbian 1.234,56 EUR, English EUR 1,234.56). The ' +
-          'currency is the application\'s; the field never converts or totals.\n\n' +
+          "currency is the application's; the field never converts or totals.\n\n" +
           '**When not:** a quantity or a rate (NumberField); a total computed by the server ' +
           '(MoneyText, P2.8, read-only display).',
       },
@@ -69,7 +69,12 @@ export const CurrencyPosition: Story = {
         <MoneyField label="Amount (en)" currency="EUR" defaultValue="1234.56" />
       </Locale>
       <Locale locale="en">
-        <MoneyField label="Amount (en), 4 decimals" currency="USD" defaultValue="0.5" decimals={4} />
+        <MoneyField
+          label="Amount (en), 4 decimals"
+          currency="USD"
+          defaultValue="0.5"
+          decimals={4}
+        />
       </Locale>
     </div>
   ),
@@ -120,7 +125,12 @@ export const LongTextPhone: Story = {
 export const Arabic: Story = {
   render: () => (
     <div lang="ar" dir="rtl" className="flex max-w-100 flex-col gap-6">
-      <MoneyField label={ARABIC.label} description={ARABIC.description} currency="EUR" defaultValue="-42" />
+      <MoneyField
+        label={ARABIC.label}
+        description={ARABIC.description}
+        currency="EUR"
+        defaultValue="-42"
+      />
       <MoneyField label={ARABIC.label} currency="EUR" required error={ARABIC.error} />
       <MoneyField label={ARABIC.label} currency="EUR" readOnly defaultValue="1234.5" />
       <MoneyField
@@ -138,7 +148,13 @@ export const Arabic: Story = {
 export const Japanese: Story = {
   render: () => (
     <div lang="ja" className="flex max-w-100 flex-col gap-6">
-      <MoneyField label={JAPANESE.label} description={JAPANESE.description} currency="JPY" defaultValue="1234" decimals={0} />
+      <MoneyField
+        label={JAPANESE.label}
+        description={JAPANESE.description}
+        currency="JPY"
+        defaultValue="1234"
+        decimals={0}
+      />
       <MoneyField label={JAPANESE.label} currency="JPY" required error={JAPANESE.error} />
       <MoneyField label={JAPANESE.label} currency="JPY" readOnly defaultValue="1234" decimals={0} />
       <MoneyField

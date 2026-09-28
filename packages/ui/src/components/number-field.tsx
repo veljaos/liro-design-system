@@ -1,9 +1,4 @@
-import {
-  useState,
-  type FocusEventHandler,
-  type KeyboardEvent,
-  type ReactNode,
-} from 'react'
+import { useState, type FocusEventHandler, type KeyboardEvent, type ReactNode } from 'react'
 import { INPUT, READ_ONLY } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { Input } from '../primitives/input'

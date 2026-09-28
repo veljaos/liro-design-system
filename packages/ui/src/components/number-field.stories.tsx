@@ -14,10 +14,10 @@ const meta = {
         component:
           '**What for:** a number typed freely, without a mask: quantities, rates, counts. ' +
           'Whatever people type or paste ("1234.56", "1.234,56", "1 234,56", "1\'234.56") is read ' +
-          'on leaving the field or on Enter by the provider\'s `format.parseNumber`, and the value ' +
+          "on leaving the field or on Enter by the provider's `format.parseNumber`, and the value " +
           'is a **decimal string**, never a JavaScript number. `decimals` adds zeros; it never ' +
           'rounds. Text that cannot be read stays in the field, the value is null (never 0), the ' +
-          'field shows its own message and calls `onValidityChange(false)`; the application\'s ' +
+          "field shows its own message and calls `onValidityChange(false)`; the application's " +
           '`error` replaces the message. Start-aligned, tabular digits. MoneyField adds the ' +
           'currency, on the side the locale writes it.\n\n' +
           '**When not:** an identifier made of digits (a tax number, a phone number: TextField); ' +
@@ -125,7 +125,11 @@ export const States: Story = {
         defaultValue="0.0725"
       />
       <NumberField label="Exchange rate, 6 decimals" defaultValue="117.2" decimals={6} />
-      <NumberField label="More digits than decimals: all shown" defaultValue="1.23456" decimals={2} />
+      <NumberField
+        label="More digits than decimals: all shown"
+        defaultValue="1.23456"
+        decimals={2}
+      />
       <NumberField label="Negative" defaultValue="-42" decimals={2} />
     </div>
   ),
@@ -155,7 +159,12 @@ export const LongTextPhone: Story = {
 export const Arabic: Story = {
   render: () => (
     <div lang="ar" dir="rtl" className="flex max-w-100 flex-col gap-6">
-      <NumberField label={ARABIC.label} description={ARABIC.description} defaultValue="-42" decimals={2} />
+      <NumberField
+        label={ARABIC.label}
+        description={ARABIC.description}
+        defaultValue="-42"
+        decimals={2}
+      />
       <NumberField label={ARABIC.label} required error={ARABIC.error} />
       <NumberField label={ARABIC.label} readOnly defaultValue="1234.5" />
       <NumberField label={ARABIC.label} disabled disabledReason={ARABIC.reason} defaultValue="7" />
@@ -167,10 +176,19 @@ export const Arabic: Story = {
 export const Japanese: Story = {
   render: () => (
     <div lang="ja" className="flex max-w-100 flex-col gap-6">
-      <NumberField label={JAPANESE.label} description={JAPANESE.description} defaultValue="1234.5" />
+      <NumberField
+        label={JAPANESE.label}
+        description={JAPANESE.description}
+        defaultValue="1234.5"
+      />
       <NumberField label={JAPANESE.label} required error={JAPANESE.error} />
       <NumberField label={JAPANESE.label} readOnly defaultValue="1234.5" />
-      <NumberField label={JAPANESE.label} disabled disabledReason={JAPANESE.reason} defaultValue="7" />
+      <NumberField
+        label={JAPANESE.label}
+        disabled
+        disabledReason={JAPANESE.reason}
+        defaultValue="7"
+      />
     </div>
   ),
 }
