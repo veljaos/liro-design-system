@@ -22,7 +22,8 @@ import { currencyFirst, readNumber, showNumber } from './number-logic'
  * The text is laid out left to right in every direction (`dir="ltr"`): a number is written left to
  * right, and in a right-to-left field the bidi algorithm moved the minus sign to the end of
  * "-42,00" (docs/decisions.md, Provider). In right-to-left it is aligned to the field's start,
- * which is the input's end.
+ * which is the input's end. The direction is read from the input's parent with `:dir(rtl)`, not
+ * with Tailwind's `rtl:`, which also matches a left-to-right field inside a right-to-left page.
  */
 
 interface NumberValueProps {
@@ -157,7 +158,7 @@ export function NumberField(props: NumberFieldProps) {
           <Input
             {...controlAttributes(control, messages['field.readOnly'])}
             {...entryAttributes(entry, props, control.readOnly)}
-            className={cn('tabular-nums rtl:text-end', control.readOnly && READ_ONLY)}
+            className={cn('tabular-nums [:dir(rtl)>&]:text-end', control.readOnly && READ_ONLY)}
           />
           {props.name !== undefined && (
             <input type="hidden" name={props.name} value={entry.value ?? ''} />
@@ -215,10 +216,12 @@ export function MoneyField(props: MoneyFieldProps) {
                 {...attributes}
                 {...entryAttributes(entry, props, control.readOnly)}
                 className={cn(
-                  'm-0 h-full min-w-0 flex-1 border-0 bg-transparent py-0 font-sans text-sm text-inherit tabular-nums outline-none placeholder:text-tertiary disabled:cursor-not-allowed rtl:text-end',
+                  'm-0 h-full min-w-0 flex-1 border-0 bg-transparent py-0 font-sans text-sm text-inherit tabular-nums outline-none placeholder:text-tertiary disabled:cursor-not-allowed [:dir(rtl)>&]:text-end',
                   // The input is left to right inside a field that may be right to left: the side
                   // next to the currency has no padding (the section is its space), the other 12px.
-                  first ? 'ps-0 pe-3 rtl:ps-3 rtl:pe-0' : 'ps-3 pe-0 rtl:ps-0 rtl:pe-3',
+                  first
+                    ? 'ps-0 pe-3 [:dir(rtl)>&]:ps-3 [:dir(rtl)>&]:pe-0'
+                    : 'ps-3 pe-0 [:dir(rtl)>&]:ps-0 [:dir(rtl)>&]:pe-3',
                   control.readOnly && 'cursor-text',
                 )}
               />
