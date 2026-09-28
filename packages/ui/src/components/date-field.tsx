@@ -332,8 +332,11 @@ export function DateRangeField(props: DateRangeFieldProps) {
     <Field {...fieldProps({ ...props, error })}>
       {(control) => {
         const attributes = controlAttributes(control, messages['field.readOnly'])
-        const startTyping = entryAttributes(start, props, control.readOnly)
-        const endTyping = entryAttributes(end, props, control.readOnly)
+        // dir="auto": a date in Latin digits is laid out left to right (in a right-to-left input,
+        // Chromium on Linux cut its last digit); a date Intl writes with right-to-left marks
+        // (Arabic) stays right to left.
+        const startTyping = { ...entryAttributes(start, props, control.readOnly), dir: 'auto' }
+        const endTyping = { ...entryAttributes(end, props, control.readOnly), dir: 'auto' }
         const startLabel = `${nameId}-start`
         const endLabel = `${nameId}-end`
         const names = (
@@ -374,7 +377,7 @@ export function DateRangeField(props: DateRangeFieldProps) {
                 className={cn(
                   TYPING,
                   RANGE_PART,
-                  'px-0.5 rtl:ps-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
+                  'px-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
                 )}
               />
             </div>
@@ -397,7 +400,7 @@ export function DateRangeField(props: DateRangeFieldProps) {
               }}
             >
               <PopoverAnchor asChild>
-                <div data-slot="date-range" className={dateBoxClass(control)}>
+                <div data-slot="date-range" className={cn(dateBoxClass(control), 'ps-3')}>
                   <input
                     ref={startRef}
                     {...attributes}
@@ -407,7 +410,7 @@ export function DateRangeField(props: DateRangeFieldProps) {
                       openOnAltArrowDown(openCalendar)(event)
                       startTyping.onKeyDown(event)
                     }}
-                    className={cn(TYPING, RANGE_PART, 'ps-3 pe-0')}
+                    className={cn(TYPING, RANGE_PART, 'px-0')}
                   />
                   {separator}
                   <input
@@ -419,7 +422,7 @@ export function DateRangeField(props: DateRangeFieldProps) {
                       openOnAltArrowDown(openCalendar)(event)
                       endTyping.onKeyDown(event)
                     }}
-                    className={cn(TYPING, RANGE_PART, 'px-0.5 rtl:ps-2')}
+                    className={cn(TYPING, RANGE_PART, 'px-0.5')}
                   />
                   {/* The room between the end and the calendar button. */}
                   <span aria-hidden="true" className="flex-1" />
