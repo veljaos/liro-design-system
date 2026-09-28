@@ -91,6 +91,13 @@ function dateBoxClass(control: { invalid: boolean; disabled: boolean }) {
 const TYPING =
   'm-0 h-full min-w-0 flex-1 border-0 bg-transparent py-0 font-sans text-sm text-inherit tabular-nums outline-none placeholder:text-tertiary disabled:cursor-not-allowed'
 
+/**
+ * The start of a range is as wide as its text (`field-sizing: content`, at least 8 characters so
+ * an empty start can be clicked), so the range reads "start – end" as Mantine writes it, in any
+ * locale's date length. Without field-sizing, a browser gives the input its default width.
+ */
+const RANGE_START = 'min-w-[8ch] flex-none field-sizing-content'
+
 /** The calendar button, in a section at the end of the field. */
 function CalendarButton({ disabled }: { disabled: boolean }) {
   const { messages } = useLiro()
@@ -353,6 +360,7 @@ export function DateRangeField(props: DateRangeFieldProps) {
                 aria-labelledby={`${control.labelId} ${startLabel}`}
                 className={cn(
                   TYPING,
+                  RANGE_START,
                   'px-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
                 )}
               />
@@ -397,7 +405,7 @@ export function DateRangeField(props: DateRangeFieldProps) {
                       openOnAltArrowDown(openCalendar)(event)
                       startTyping.onKeyDown(event)
                     }}
-                    className={cn(TYPING, 'ps-3 pe-0')}
+                    className={cn(TYPING, RANGE_START, 'ps-3 pe-0')}
                   />
                   {separator}
                   <input
