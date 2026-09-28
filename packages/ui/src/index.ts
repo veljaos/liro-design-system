@@ -15,6 +15,22 @@ export { Dialog, Drawer } from './components/dialog'
 export type { DialogProps, DrawerProps } from './components/dialog'
 export { DropdownMenu } from './components/dropdown-menu'
 export type { DropdownMenuProps, MenuEntry } from './components/dropdown-menu'
+export {
+  DateRangeText,
+  DateText,
+  daysBetween,
+  DueDate,
+  dueState,
+  MoneyText,
+  NumberText,
+} from './components/display-text'
+export type {
+  DateRangeTextProps,
+  DateTextProps,
+  DueDateProps,
+  MoneyTextProps,
+  NumberTextProps,
+} from './components/display-text'
 export { Field } from './components/field'
 export type { FieldBaseProps, FieldControl, FieldProps } from './components/field'
 export { MultiSelectField } from './components/multi-select-field'

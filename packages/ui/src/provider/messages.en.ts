@@ -22,6 +22,10 @@ export const messagesEn: LiroMessages = {
   'field.noResults': 'Nothing found',
   'field.remove': (label) => `Remove ${label}`,
   'dialog.close': 'Close',
+  'due.settled': 'Settled',
+  'due.overdue': (days) => (days === 1 ? '1 day overdue' : `${String(days)} days overdue`),
+  'due.today': 'Due today',
+  'due.inDays': (days) => (days === 1 ? 'Due in 1 day' : `Due in ${String(days)} days`),
   'action.unavailable': (reason) => `Unavailable: ${reason}`,
   'connection.offline': 'Offline',
 }

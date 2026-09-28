@@ -32,6 +32,14 @@ export interface LiroMessages {
   'field.remove': (label: string) => string
   /** The button that closes a dialog or a drawer. */
   'dialog.close': string
+  /** A DueDate that is paid or otherwise closed. */
+  'due.settled': string
+  /** A DueDate that has passed, with the number of days. */
+  'due.overdue': (days: number) => string
+  /** A DueDate that is today. */
+  'due.today': string
+  /** A DueDate within the warning days, with the number of days left. */
+  'due.inDays': (days: number) => string
   /** An action that cannot be used, with the reason it is given. */
   'action.unavailable': (reason: string) => string
   /** The connection is lost. */
