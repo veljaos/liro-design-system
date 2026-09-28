@@ -52,6 +52,7 @@ describe('messages', () => {
     expect(Object.keys(incomplete)).toHaveLength(1)
     expect(Object.keys(messagesEn).sort()).toEqual([
       'action.more',
+      'action.moreOptions',
       'action.unavailable',
       'confirm.deleteLabel',
       'confirm.deleteMessage',

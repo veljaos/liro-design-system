@@ -46,6 +46,8 @@
   --animate-liro-collapse-open: liro-collapse-open 200ms var(--liro-ease-standard);
   --animate-liro-collapse-close: liro-collapse-close 200ms var(--liro-ease-standard);
   --animate-liro-skeleton: liro-skeleton 1500ms linear infinite;
+  --animate-liro-pop-in: liro-pop-in var(--liro-duration-base) var(--liro-ease-standard);
+  --animate-liro-pop-out: liro-pop-out var(--liro-duration-base) var(--liro-ease-standard);
   --animate-liro-spin: liro-spin 1200ms linear infinite;
 
   @keyframes liro-fade-in {
@@ -99,6 +101,19 @@
     to {
       opacity: 0;
       height: 0;
+    }
+  }
+  /* Mantine transitions 'pop': from scale 0.9, 10px lower, transparent (transform, opacity). */
+  @keyframes liro-pop-in {
+    from {
+      opacity: 0;
+      transform: scale(0.9) translateY(10px);
+    }
+  }
+  @keyframes liro-pop-out {
+    to {
+      opacity: 0;
+      transform: scale(0.9) translateY(10px);
     }
   }
   /* Mantine Loader.css, type 'oval': one turn in 1.2s, linear. */

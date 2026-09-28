@@ -28,6 +28,7 @@ export const messagesEn: LiroMessages = {
   'confirm.deleteLabel': 'Delete',
   'confirm.typeToConfirm': (text) => `Type ${text} to confirm`,
   'action.more': 'More actions',
+  'action.moreOptions': (label) => `More options: ${label}`,
   'action.unavailable': (reason) => `Unavailable: ${reason}`,
   'connection.offline': 'Offline',
 }
