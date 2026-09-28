@@ -67,6 +67,8 @@ describe('messages', () => {
       'field.readOnly',
       'field.remove',
       'field.required',
+      'notice.close',
+      'notice.region',
       'table.count',
       'table.next',
       'table.noMatch',

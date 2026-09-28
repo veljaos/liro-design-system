@@ -29,6 +29,8 @@ export const messagesEn: LiroMessages = {
   'empty.errorTitle': 'This could not be loaded',
   'empty.errorDescription': 'Something went wrong on our side. Try again in a moment.',
   'empty.caseId': 'Case number:',
+  'notice.close': 'Close',
+  'notice.region': 'Notifications',
   'action.unavailable': (reason) => `Unavailable: ${reason}`,
   'connection.offline': 'Offline',
 }
