@@ -56,6 +56,7 @@ describe('messages', () => {
       'calendar.nextMonth',
       'calendar.previousMonth',
       'connection.offline',
+      'dialog.close',
       'field.invalidDate',
       'field.invalidNumber',
       'field.invalidRange',

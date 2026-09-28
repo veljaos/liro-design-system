@@ -29,6 +29,7 @@ export const messagesEn: LiroMessages = {
   'calendar.previousMonth': 'Previous month',
   'calendar.nextMonth': 'Next month',
   'calendar.navigation': 'Months',
+  'dialog.close': 'Close',
   'action.unavailable': (reason) => `Unavailable: ${reason}`,
   'connection.offline': 'Offline',
 }

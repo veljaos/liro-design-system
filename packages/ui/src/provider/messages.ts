@@ -46,6 +46,8 @@ export interface LiroMessages {
   'calendar.nextMonth': string
   /** Names the group of the calendar's month buttons. */
   'calendar.navigation': string
+  /** The button that closes a dialog or a drawer. */
+  'dialog.close': string
   /** An action that cannot be used, with the reason it is given. */
   'action.unavailable': (reason: string) => string
   /** The connection is lost. */
