@@ -31,6 +31,7 @@ export const messagesEn: LiroMessages = {
   'empty.caseId': 'Case number:',
   'notice.close': 'Close',
   'notice.region': 'Notifications',
+  'stepper.completed': 'Completed',
   'action.unavailable': (reason) => `Unavailable: ${reason}`,
   'connection.offline': 'Offline',
 }

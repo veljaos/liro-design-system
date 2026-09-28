@@ -69,6 +69,7 @@ describe('messages', () => {
       'field.required',
       'notice.close',
       'notice.region',
+      'stepper.completed',
       'table.count',
       'table.next',
       'table.noMatch',
