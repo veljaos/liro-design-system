@@ -44,6 +44,10 @@ export interface LiroMessages {
   'dialog.close': string
   /** The button that opens the actions that do not fit. */
   'action.more': string
+  /** The button that closes a toast. */
+  'notice.close': string
+  /** Names the region where toasts appear, for assistive technology. */
+  'notice.region': string
   /** An action that cannot be used, with the reason it is given. */
   'action.unavailable': (reason: string) => string
   /** The connection is lost. */
