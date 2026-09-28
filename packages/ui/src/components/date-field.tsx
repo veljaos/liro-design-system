@@ -374,7 +374,7 @@ export function DateRangeField(props: DateRangeFieldProps) {
                 className={cn(
                   TYPING,
                   RANGE_PART,
-                  'px-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
+                  'px-0.5 rtl:ps-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
                 )}
               />
             </div>
@@ -419,7 +419,7 @@ export function DateRangeField(props: DateRangeFieldProps) {
                       openOnAltArrowDown(openCalendar)(event)
                       endTyping.onKeyDown(event)
                     }}
-                    className={cn(TYPING, RANGE_PART, 'px-0.5')}
+                    className={cn(TYPING, RANGE_PART, 'px-0.5 rtl:ps-2')}
                   />
                   {/* The room between the end and the calendar button. */}
                   <span aria-hidden="true" className="flex-1" />
