@@ -42,6 +42,10 @@ export interface LiroMessages {
   'confirm.typeToConfirm': (text: string) => string
   /** The button that closes a dialog or a drawer. */
   'dialog.close': string
+  /** The button that closes a toast. */
+  'notice.close': string
+  /** Names the region where toasts appear, for assistive technology. */
+  'notice.region': string
   /** An action that cannot be used, with the reason it is given. */
   'action.unavailable': (reason: string) => string
   /** The connection is lost. */
