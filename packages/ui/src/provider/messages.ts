@@ -46,6 +46,16 @@ export interface LiroMessages {
   'calendar.nextMonth': string
   /** Names the group of the calendar's month buttons. */
   'calendar.navigation': string
+  /** The button that dismisses a confirmation without acting. */
+  'dialog.cancel': string
+  /** The default question of a delete confirmation. */
+  'confirm.deleteTitle': string
+  /** The default text of a delete confirmation. */
+  'confirm.deleteMessage': string
+  /** The default label of a delete confirmation's button. */
+  'confirm.deleteLabel': string
+  /** The label of the field where the user types `text` to confirm an irreversible action. */
+  'confirm.typeToConfirm': (text: string) => string
   /** The button that closes a dialog or a drawer. */
   'dialog.close': string
   /** The button that closes a toast. */
