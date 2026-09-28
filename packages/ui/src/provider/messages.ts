@@ -46,6 +46,14 @@ export interface LiroMessages {
   'action.more': string
   /** Names the menu button of a split action (its main action's label). */
   'action.moreOptions': (label: string) => string
+  /** How many rows are selected, in a BulkActionBar. */
+  'bulk.selected': (count: number) => string
+  /** Offers to select every row of the result. */
+  'bulk.selectAll': (total: number) => string
+  /** The button that clears the selection. */
+  'bulk.clear': string
+  /** The question before an action on the selection. */
+  'bulk.confirmTitle': (count: number) => string
   /** An action that cannot be used, with the reason it is given. */
   'action.unavailable': (reason: string) => string
   /** The connection is lost. */

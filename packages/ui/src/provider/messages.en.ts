@@ -29,6 +29,13 @@ export const messagesEn: LiroMessages = {
   'confirm.typeToConfirm': (text) => `Type ${text} to confirm`,
   'action.more': 'More actions',
   'action.moreOptions': (label) => `More options: ${label}`,
+  'bulk.selected': (count) => `${formatDecimal(String(count), 'comma-dot')} selected`,
+  'bulk.selectAll': (total) => `Select all ${formatDecimal(String(total), 'comma-dot')}`,
+  'bulk.clear': 'Clear the selection',
+  'bulk.confirmTitle': (count) =>
+    count === 1
+      ? 'Apply to 1 item?'
+      : `Apply to ${formatDecimal(String(count), 'comma-dot')} items?`,
   'action.unavailable': (reason) => `Unavailable: ${reason}`,
   'connection.offline': 'Offline',
 }

@@ -1,5 +1,7 @@
 export { ActionGroup, UnavailableAction } from './components/actions'
 export type { ActionGroupProps, ActionItem, UnavailableActionProps } from './components/actions'
+export { asksFirst, BulkActionBar } from './components/bulk-action-bar'
+export type { BulkAction, BulkActionBarProps } from './components/bulk-action-bar'
 export { Button, CompactIconButton, IconButton } from './components/button'
 export type { ButtonProps, CompactIconButtonProps, IconButtonProps } from './components/button'
 export { CheckboxField, SwitchField } from './components/checkbox-field'
