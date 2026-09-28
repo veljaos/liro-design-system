@@ -21,6 +21,7 @@ export const messagesEn: LiroMessages = {
   'field.loading': 'Loading…',
   'field.noResults': 'Nothing found',
   'field.remove': (label) => `Remove ${label}`,
+  'dialog.close': 'Close',
   'alert.close': 'Close',
   'empty.emptyTitle': 'Nothing here yet',
   'empty.emptyDescription': 'When something is added, it appears here.',

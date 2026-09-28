@@ -54,6 +54,7 @@ describe('messages', () => {
       'action.unavailable',
       'alert.close',
       'connection.offline',
+      'dialog.close',
       'empty.caseId',
       'empty.emptyDescription',
       'empty.emptyTitle',
