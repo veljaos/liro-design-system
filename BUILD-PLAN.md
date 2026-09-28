@@ -236,11 +236,11 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P2.2 | Field system and text inputs | P2.1, P1.5 | done | 2026-09-28 | Split into P2.2a and P2.2b |
 | P2.2a | Field and the simple fields | P2.1, P1.5 | done | 2026-09-25 | Field, TextField, TextAreaField, SelectField, CheckboxField, SwitchField, RadioGroupField; owner: read-only as plain text, error border in danger fg |
 | P2.2b | ComboboxField and MultiSelectField | P2.2a | done | 2026-09-28 | Own WAI-ARIA combobox; application search after 300ms (owner) with loading and "nothing found"; pills with Mantine Pill values, remove target 24×24 |
-| P2.3 | Numbers, money and dates | P2.2 | in progress (split: P2.3a, P2.3b, P2.3c, P2.3d) | | Done when P2.3a–P2.3d are done |
+| P2.3 | Numbers, money and dates | P2.2 | done | 2026-09-28 | Split into P2.3a–P2.3d |
 | P2.3a | NumberField and MoneyField | P2.2 | done | 2026-09-28 | No mask, read on blur or Enter; decimal string or null; owner: currency on the locale's side, start-aligned, unreadable text kept with the field's own message |
 | P2.3b | DateField and DateRangeField | P2.3a | done | 2026-09-28 | Typed or picked, YYYY-MM-DD; owner: calendar only from its button or Alt+ArrowDown, focus in and back; opens on the provider's today; range end before start is an error |
 | P2.3c | PeriodField | P2.3b | done | 2026-09-28 | Owner: the old PeriodPicker (presets and a custom range); `yearStartMonth`, `quarterBasis`; `format.businessYear` "2025/26"; tested with a July business year and a `today` other than the device's |
-| P2.3d | MonthField | P2.3c | todo | | Owner: the old AccountingPeriodSelect, a month grid |
+| P2.3d | MonthField | P2.3c | done | 2026-09-28 | Owner: the old AccountingPeriodSelect; Mantine MonthPickerInput look; arrows from the leading edge |
 | P2.4 | Overlays and confirmations | P2.1 | todo | | |
 | P2.5 | Feedback | P2.1 | todo | | |
 | P2.6 | Navigation pieces and command palette | P2.1 | todo | | |
