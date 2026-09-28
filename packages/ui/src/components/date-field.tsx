@@ -94,8 +94,9 @@ const TYPING =
 /**
  * Each end of a range is as wide as its text (`field-sizing: content`, at least 8 characters so
  * an empty end can be clicked), so the range reads "start – end" as Mantine writes it, in any
- * locale's date length. A wide end area also cut its last digit in right-to-left in Chromium on
- * Linux. Without field-sizing, a browser gives each input its default width.
+ * locale's date length; each has 4px at its inline end, because Chromium on Linux draws hinted
+ * text a pixel or two wider than it lays it out, and an area exactly as wide as its text cut the
+ * last digit. Without field-sizing, a browser gives each input its default width.
  */
 const RANGE_PART = 'min-w-[8ch] flex-none field-sizing-content'
 
@@ -365,7 +366,7 @@ export function DateRangeField(props: DateRangeFieldProps) {
                 className={cn(
                   TYPING,
                   RANGE_PART,
-                  'px-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
+                  'ps-0 pe-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
                 )}
               />
               {separator}
@@ -377,7 +378,7 @@ export function DateRangeField(props: DateRangeFieldProps) {
                 className={cn(
                   TYPING,
                   RANGE_PART,
-                  'px-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
+                  'ps-0.5 pe-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
                 )}
               />
             </div>
@@ -410,7 +411,7 @@ export function DateRangeField(props: DateRangeFieldProps) {
                       openOnAltArrowDown(openCalendar)(event)
                       startTyping.onKeyDown(event)
                     }}
-                    className={cn(TYPING, RANGE_PART, 'px-0')}
+                    className={cn(TYPING, RANGE_PART, 'ps-0 pe-1')}
                   />
                   {separator}
                   <input
@@ -422,7 +423,7 @@ export function DateRangeField(props: DateRangeFieldProps) {
                       openOnAltArrowDown(openCalendar)(event)
                       endTyping.onKeyDown(event)
                     }}
-                    className={cn(TYPING, RANGE_PART, 'px-0.5')}
+                    className={cn(TYPING, RANGE_PART, 'ps-0.5 pe-1')}
                   />
                   {/* The room between the end and the calendar button. */}
                   <span aria-hidden="true" className="flex-1" />
