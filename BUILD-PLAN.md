@@ -240,8 +240,13 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P2.3a | NumberField and MoneyField | P2.2 | done | 2026-09-28 | No mask, read on blur or Enter; decimal string or null; owner: currency on the locale's side, start-aligned, unreadable text kept with the field's own message |
 | P2.3b | DateField and DateRangeField | P2.3a | todo | | Owner: calendar only from its button or Alt+ArrowDown |
 | P2.3c | PeriodField | P2.3b | todo | | `yearStartMonth`, presets from `today` |
-| P2.4 | Overlays and confirmations | P2.1 | todo | | |
-| P2.5 | Feedback | P2.1 | todo | | |
+| P2.4 | Overlays and confirmations | P2.1 | in progress (split: P2.4a, P2.4b) | | Done when P2.4a and P2.4b are done |
+| P2.4a | Dialog, Drawer, Popover, Tooltip, DropdownMenu | P2.1 | done | 2026-09-28 | On the P2.1 primitives; B.8 rules in AGENTS.md D14; Button passes trigger attributes through; non-modal menu |
+| P2.4b | ConfirmDialog, delete preset, IrreversibleConfirmDialog | P2.4a | todo | | Owner: the old ConfirmModal look |
+| P2.5 | Feedback | P2.1 | in progress (split: P2.5a, P2.5b, P2.5c) | | Done when P2.5a–P2.5c are done |
+| P2.5a | Toast | P2.1 | done | 2026-09-28 | Owner: the old notice API (kinds, times, loading → update), bottom end, 4 visible; sonner 2.0.8 |
+| P2.5b | Alert, Banner, EmptyState, ErrorState | P2.1 | todo | | Owner: Mantine Alert light; old EmptyState variants and icons |
+| P2.5c | Skeleton, ProgressBar, Stepper | P2.1 | todo | | Owner: Stepper sm with 32px icons; ProgressBar sm, rounded, flips in rtl; Skeleton radius md |
 | P2.6 | Navigation pieces and command palette | P2.1 | in progress (split: P2.6a, P2.6b) | | Done when P2.6a and P2.6b are done |
 | P2.6a | Tabs, Breadcrumbs, CursorPagination, ShortcutHint | P2.1 | done | 2026-09-28 | Owner: centred tabs, panels not kept (AGENTS.md D16); "›" separator; Pagination sm previous/next only; Kbd xs |
 | P2.6b | CommandPalette | P2.6a | todo | | Owner: the old Spotlight (Ctrl/Cmd+K and +P, groups, highlight) |
