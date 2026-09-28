@@ -4,6 +4,8 @@ export { CheckboxField, SwitchField } from './components/checkbox-field'
 export type { CheckboxFieldProps, SwitchFieldProps } from './components/checkbox-field'
 export { ComboboxField } from './components/combobox-field'
 export type { ComboboxFieldProps, ComboboxOption } from './components/combobox-field'
+export { DateField, DateRangeField } from './components/date-field'
+export type { DateFieldProps, DateRange, DateRangeFieldProps } from './components/date-field'
 export {
   ConfirmDialog,
   confirmTone,
@@ -58,7 +60,7 @@ export {
   weekStartsOnForLocale,
 } from './provider'
 export type {
-  DateField,
+  DatePart,
   LiroContextValue,
   LiroFormat,
   LiroMessages,
