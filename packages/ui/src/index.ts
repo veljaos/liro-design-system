@@ -41,6 +41,8 @@ export type {
 } from './components/empty-state'
 export { Field } from './components/field'
 export type { FieldBaseProps, FieldControl, FieldProps } from './components/field'
+export { MonthField } from './components/month-field'
+export type { MonthFieldProps } from './components/month-field'
 export { MultiSelectField } from './components/multi-select-field'
 export type { MultiSelectFieldProps } from './components/multi-select-field'
 export { Breadcrumbs, CursorPagination, ShortcutHint, Tabs } from './components/navigation'
