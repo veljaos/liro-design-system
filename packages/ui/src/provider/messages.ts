@@ -46,6 +46,10 @@ export interface LiroMessages {
   'calendar.previousMonth': string
   /** The calendar's button that shows the next month. */
   'calendar.nextMonth': string
+  /** The month grid's button that shows the previous year. */
+  'calendar.previousYear': string
+  /** The month grid's button that shows the next year. */
+  'calendar.nextYear': string
   /** Names the group of the calendar's month buttons. */
   'calendar.navigation': string
   /** A quarter and its year's name, e.g. "Q1 2025/26". quarter is 1 … 4. */
