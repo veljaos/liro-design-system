@@ -195,7 +195,7 @@ export function CommandPalette(props: CommandPaletteProps) {
                           item.onSelect()
                         }}
                         className={cn(
-                          'group flex w-full cursor-pointer items-center rounded-md px-4 py-[7px] text-sm text-primary outline-none select-none hover:bg-surface-hover',
+                          'group flex cursor-pointer items-center rounded-md px-4 py-[7px] text-sm text-primary outline-none select-none hover:bg-surface-hover',
                           'data-[selected=true]:bg-brand-solid data-[selected=true]:text-brand-on-solid',
                         )}
                       >
