@@ -48,6 +48,23 @@ export interface LiroMessages {
   'calendar.nextMonth': string
   /** Names the group of the calendar's month buttons. */
   'calendar.navigation': string
+  /** A quarter and its year's name, e.g. "Q1 2025/26". quarter is 1 … 4. */
+  'period.quarter': (quarter: number, year: string) => string
+  /** Period presets. */
+  'period.today': string
+  'period.thisWeek': string
+  'period.thisMonth': string
+  'period.lastMonth': string
+  'period.thisQuarter': string
+  'period.lastQuarter': string
+  'period.yearToDate': string
+  'period.lastYear': string
+  /** Removes the chosen period: all periods. */
+  'period.clear': string
+  /** A period field with no period chosen: all periods. */
+  'period.all': string
+  /** The caption over the calendar of a period field. */
+  'period.customRange': string
   /** The button that dismisses a confirmation without acting. */
   'dialog.cancel': string
   /** The default question of a delete confirmation. */
@@ -60,6 +77,8 @@ export interface LiroMessages {
   'confirm.typeToConfirm': (text: string) => string
   /** The button that closes a dialog or a drawer. */
   'dialog.close': string
+  /** The button that opens the actions that do not fit. */
+  'action.more': string
   /** The button that closes a dismissible alert or banner. */
   'alert.close': string
   /** EmptyState 'empty': nothing here yet. */
