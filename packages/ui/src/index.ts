@@ -86,6 +86,13 @@ export { initialsOf, PersonAvatar, PersonName } from './components/person'
 export type { PersonAvatarProps, PersonNameProps } from './components/person'
 export { notice, Toaster } from './components/notice'
 export type { NoticeKind, NoticeOptions } from './components/notice'
+export { ProgressBar, Skeleton, Stepper, stepState } from './components/progress'
+export type {
+  ProgressBarProps,
+  SkeletonProps,
+  StepperProps,
+  StepperStep,
+} from './components/progress'
 export { RadioGroupField } from './components/radio-group-field'
 export type { RadioGroupFieldProps, RadioOption } from './components/radio-group-field'
 export { SelectField } from './components/select-field'

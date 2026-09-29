@@ -78,6 +78,7 @@ export const messagesEn: LiroMessages = {
       : `Apply to ${formatDecimal(String(count), 'comma-dot')} items?`,
   'notice.close': 'Close',
   'notice.region': 'Notifications',
+  'stepper.completed': 'Completed',
   'action.unavailable': (reason) => `Unavailable: ${reason}`,
   'connection.offline': 'Offline',
 }
