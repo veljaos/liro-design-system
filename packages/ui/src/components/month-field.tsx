@@ -84,7 +84,14 @@ export function MonthField(props: MonthFieldProps) {
   const { open, setOpen, openings } = useCalendarOpen()
   const current = value === null ? monthIndexOf(liro.today) : monthIndexOf(value)
   // The month that holds the focus in the grid; its year is the year shown.
-  const [focused, setFocused] = useState(current)
+  const [focused, setFocusedState] = useState(current)
+  // The same month at once: the button focus moves to a frame later, so a second arrow key
+  // pressed before that frame reaches the old button and must still move on from here.
+  const focusedNow = useRef(current)
+  const setFocused = (index: number) => {
+    focusedNow.current = index
+    setFocusedState(index)
+  }
   const grid = useRef<HTMLDivElement>(null)
   const shownYear = Math.floor(focused / 12)
 
@@ -105,8 +112,8 @@ export function MonthField(props: MonthFieldProps) {
     props.onChange?.(month)
     setOpen(false)
   }
-  const onKeyDown = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
-    const next = moveMonth(index, event.key, direction)
+  const onKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
+    const next = moveMonth(focusedNow.current, event.key, direction)
     if (next !== null) {
       event.preventDefault()
       focusMonth(next)
@@ -208,7 +215,7 @@ export function MonthField(props: MonthFieldProps) {
                           tabIndex={index === focused ? 0 : -1}
                           className={CONTROL}
                           onKeyDown={(event) => {
-                            onKeyDown(event, index)
+                            onKeyDown(event)
                           }}
                           onClick={() => {
                             choose(index)
