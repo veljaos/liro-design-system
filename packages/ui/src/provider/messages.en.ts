@@ -26,6 +26,7 @@ export const messagesEn: LiroMessages = {
   'field.loading': 'Loading…',
   'field.noResults': 'Nothing found',
   'field.remove': (label) => `Remove ${label}`,
+  'breadcrumbs.label': 'Breadcrumbs',
   'calendar.previousMonth': 'Previous month',
   'calendar.nextMonth': 'Next month',
   'calendar.navigation': 'Months',
