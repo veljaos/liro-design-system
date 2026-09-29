@@ -24,12 +24,28 @@ export interface LiroMessages {
   'field.readOnly': string
   /** A number or amount field whose text cannot be read as a number (shown under the field). */
   'field.invalidNumber': string
+  /** A date field whose text cannot be read as a date (shown under the field). */
+  'field.invalidDate': string
+  /** A date range whose end is before its start (shown under the field). */
+  'field.invalidRange': string
+  /** The button that opens a date field's calendar. */
+  'field.openCalendar': string
+  /** Names the first date of a range for assistive technology. */
+  'field.rangeStart': string
+  /** Names the last date of a range for assistive technology. */
+  'field.rangeEnd': string
   /** A searching field is waiting for its results. */
   'field.loading': string
   /** A searching field found nothing for the text typed. */
   'field.noResults': string
   /** The button that removes one chosen value (its label) from a multiple choice. */
   'field.remove': (label: string) => string
+  /** The calendar's button that shows the previous month. */
+  'calendar.previousMonth': string
+  /** The calendar's button that shows the next month. */
+  'calendar.nextMonth': string
+  /** Names the group of the calendar's month buttons. */
+  'calendar.navigation': string
   /** The button that dismisses a confirmation without acting. */
   'dialog.cancel': string
   /** The default question of a delete confirmation. */
