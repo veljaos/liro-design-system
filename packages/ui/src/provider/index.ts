@@ -9,7 +9,7 @@ export {
   parseDecimal,
   weekStartsOnForLocale,
 } from './format'
-export type { DateField, LiroFormat, NumberScheme, Weekday } from './format'
+export type { DatePart, LiroFormat, NumberScheme, Weekday } from './format'
 export { directionForLocale, LiroProvider, localToday, useLiro } from './liro-provider'
 export type { LiroContextValue, LiroProviderProps } from './liro-provider'
 export type { LiroMessages } from './messages'

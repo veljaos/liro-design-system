@@ -4,6 +4,19 @@ export { CheckboxField, SwitchField } from './components/checkbox-field'
 export type { CheckboxFieldProps, SwitchFieldProps } from './components/checkbox-field'
 export { ComboboxField } from './components/combobox-field'
 export type { ComboboxFieldProps, ComboboxOption } from './components/combobox-field'
+export { DateField, DateRangeField } from './components/date-field'
+export type { DateFieldProps, DateRange, DateRangeFieldProps } from './components/date-field'
+export {
+  ConfirmDialog,
+  confirmTone,
+  DeleteConfirmDialog,
+  IrreversibleConfirmDialog,
+} from './components/confirm-dialog'
+export type {
+  ConfirmDialogProps,
+  DeleteConfirmDialogProps,
+  IrreversibleConfirmDialogProps,
+} from './components/confirm-dialog'
 export { Dialog, Drawer } from './components/dialog'
 export type { DialogProps, DrawerProps } from './components/dialog'
 export { DropdownMenu } from './components/dropdown-menu'
@@ -56,7 +69,7 @@ export {
   weekStartsOnForLocale,
 } from './provider'
 export type {
-  DateField,
+  DatePart,
   LiroContextValue,
   LiroFormat,
   LiroMessages,
