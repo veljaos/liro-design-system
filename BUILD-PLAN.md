@@ -251,7 +251,11 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P2.6a | Tabs, Breadcrumbs, CursorPagination, ShortcutHint | P2.1 | done | 2026-09-28 | Owner: centred tabs, panels not kept (AGENTS.md D16); "›" separator; Pagination sm previous/next only; Kbd xs |
 | P2.6b | CommandPalette | P2.6a | todo | | Owner: the old Spotlight (Ctrl/Cmd+K and +P, groups, highlight) |
 | P2.7 | Actions | P1.3, P2.4 | todo | | |
-| P2.8 | Display pieces | P2.3 | todo | | |
+| P2.8 | Display pieces | P2.3 | in progress (split: P2.8a–P2.8d) | | Done when P2.8a–P2.8d are done |
+| P2.8a | Card, SectionCard, KeyValueList | P2.1 | done | 2026-09-28 | Owner: radius lg; SectionCard header and divider; KeyValueList labels upper case only in cased scripts (by :lang) |
+| P2.8b | PersonAvatar, PersonName | P2.8a | todo | | Owner: light primary avatar; initials from the first and last word (B.9) |
+| P2.8c | DateText, DateRangeText, DueDate, NumberText, MoneyText | P2.8b | todo | | Owner: tabular, "—" when empty; DueDate badges from today, overdue days visible |
+| P2.8d | SettlingValue | P2.8c | todo | | Plan: no layout shift, one announcement per settle (Playwright test; protected file) |
 | P3.1 | DataTable core | P2.7, P2.8 | todo | | |
 | P3.2 | Table on phones, large lists, column resize | P3.1 | todo | | |
 | P3.3 | Filters and search | P3.1 | todo | | |
