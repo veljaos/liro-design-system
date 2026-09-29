@@ -40,6 +40,8 @@ export interface LiroMessages {
   'field.noResults': string
   /** The button that removes one chosen value (its label) from a multiple choice. */
   'field.remove': (label: string) => string
+  /** Names the breadcrumb trail for assistive technology. */
+  'breadcrumbs.label': string
   /** The calendar's button that shows the previous month. */
   'calendar.previousMonth': string
   /** The calendar's button that shows the next month. */
@@ -58,6 +60,8 @@ export interface LiroMessages {
   'confirm.typeToConfirm': (text: string) => string
   /** The button that closes a dialog or a drawer. */
   'dialog.close': string
+  /** The button that opens the actions that do not fit. */
+  'action.more': string
   /** The button that closes a dismissible alert or banner. */
   'alert.close': string
   /** EmptyState 'empty': nothing here yet. */

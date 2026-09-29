@@ -247,9 +247,18 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P2.5a | Toast | P2.1 | done | 2026-09-28 | Owner: the old notice API (kinds, times, loading → update), bottom end, 4 visible; sonner 2.0.8 |
 | P2.5b | Alert, Banner, EmptyState, ErrorState | P2.5a | done | 2026-09-28 | Owner: Mantine Alert light, radius md; the old EmptyState (three variants, icons, texts from messages, compact); ErrorState with case number and report slot; 24px close target |
 | P2.5c | Skeleton, ProgressBar, Stepper | P2.5b | done | 2026-09-28 | Owner: Stepper sm with 32px icons, primary; ProgressBar sm, fully rounded, flips in rtl; Skeleton radius md |
-| P2.6 | Navigation pieces and command palette | P2.1 | todo | | |
-| P2.7 | Actions | P1.3, P2.4 | todo | | |
-| P2.8 | Display pieces | P2.3 | todo | | |
+| P2.6 | Navigation pieces and command palette | P2.1 | in progress (split: P2.6a, P2.6b) | | Done when P2.6a and P2.6b are done |
+| P2.6a | Tabs, Breadcrumbs, CursorPagination, ShortcutHint | P2.1 | done | 2026-09-28 | Owner: centred tabs, panels not kept (AGENTS.md D16); "›" separator; Pagination sm previous/next only; Kbd xs |
+| P2.6b | CommandPalette | P2.6a | todo | | Owner: the old Spotlight (Ctrl/Cmd+K and +P, groups, highlight) |
+| P2.7 | Actions | P1.3, P2.4 | in progress (split: P2.7a, P2.7b, P2.7c) | | Done when P2.7a–P2.7c are done |
+| P2.7a | ActionGroup, UnavailableAction | P2.4 | done | 2026-09-28 | Owner: end-aligned wrapping row; "More" overflow keeps the main action; unavailable with visible reason (phone-width story) and tooltip on focus and touch |
+| P2.7b | SplitAction | P2.7a | todo | | Owner: joined buttons, 30% currentColor separator, menu bottom-end with arrow |
+| P2.7c | BulkActionBar | P2.7b | todo | | Owner: brand.subtle panel, live count, select all, one confirmation |
+| P2.8 | Display pieces | P2.3 | in progress (split: P2.8a–P2.8d) | | Done when P2.8a–P2.8d are done |
+| P2.8a | Card, SectionCard, KeyValueList | P2.1 | done | 2026-09-28 | Owner: radius lg; SectionCard header and divider; KeyValueList labels upper case only in cased scripts (by :lang) |
+| P2.8b | PersonAvatar, PersonName | P2.8a | todo | | Owner: light primary avatar; initials from the first and last word (B.9) |
+| P2.8c | DateText, DateRangeText, DueDate, NumberText, MoneyText | P2.8b | todo | | Owner: tabular, "—" when empty; DueDate badges from today, overdue days visible |
+| P2.8d | SettlingValue | P2.8c | todo | | Plan: no layout shift, one announcement per settle (Playwright test; protected file) |
 | P3.1 | DataTable core | P2.7, P2.8 | todo | | |
 | P3.2 | Table on phones, large lists, column resize | P3.1 | todo | | |
 | P3.3 | Filters and search | P3.1 | todo | | |
