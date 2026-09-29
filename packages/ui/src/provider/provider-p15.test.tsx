@@ -54,6 +54,7 @@ describe('messages', () => {
       'action.more',
       'action.unavailable',
       'alert.close',
+      'breadcrumbs.label',
       'calendar.navigation',
       'calendar.nextMonth',
       'calendar.previousMonth',
