@@ -140,3 +140,27 @@
     }
   }
 }
+
+/*
+ * KeyValueList labels are upper case with the caps letter spacing only in scripts with letter
+ * case (owner's decision, 2026-09-28): Arabic, Hebrew, Chinese, Japanese and Korean labels stay
+ * as written and unspaced, because letter spacing breaks the joining of Arabic letters. Matched
+ * by the label's language (:lang), which the provider or a lang attribute sets. Unlayered, so it
+ * wins over the utilities.
+ */
+[data-slot='key-value-label']:where(
+  :lang(ar),
+  :lang(fa),
+  :lang(ur),
+  :lang(ps),
+  :lang(sd),
+  :lang(ug),
+  :lang(he),
+  :lang(yi),
+  :lang(zh),
+  :lang(ja),
+  :lang(ko)
+) {
+  text-transform: none;
+  letter-spacing: normal;
+}
