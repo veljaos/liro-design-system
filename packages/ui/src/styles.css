@@ -46,6 +46,7 @@
   --animate-liro-collapse-open: liro-collapse-open 200ms var(--liro-ease-standard);
   --animate-liro-collapse-close: liro-collapse-close 200ms var(--liro-ease-standard);
   --animate-liro-skeleton: liro-skeleton 1500ms linear infinite;
+  --animate-liro-spin: liro-spin 1200ms linear infinite;
 
   @keyframes liro-fade-in {
     from {
@@ -98,6 +99,12 @@
     to {
       opacity: 0;
       height: 0;
+    }
+  }
+  /* Mantine Loader.css, type 'oval': one turn in 1.2s, linear. */
+  @keyframes liro-spin {
+    to {
+      transform: rotate(360deg);
     }
   }
   @keyframes liro-skeleton {
