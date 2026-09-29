@@ -245,7 +245,7 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P2.4b | ConfirmDialog, delete preset, IrreversibleConfirmDialog | P2.4a | done | 2026-09-28 | Owner: the old ConfirmModal (tone from family, centred, radius lg, loading blocks closing); DeleteConfirmDialog texts from messages; typed text enables the irreversible one |
 | P2.5 | Feedback | P2.1 | in progress (split: P2.5a, P2.5b, P2.5c) | | Done when P2.5a–P2.5c are done |
 | P2.5a | Toast | P2.1 | done | 2026-09-28 | Owner: the old notice API (kinds, times, loading → update), bottom end, 4 visible; sonner 2.0.8 |
-| P2.5b | Alert, Banner, EmptyState, ErrorState | P2.1 | todo | | Owner: Mantine Alert light; old EmptyState variants and icons |
+| P2.5b | Alert, Banner, EmptyState, ErrorState | P2.5a | done | 2026-09-28 | Owner: Mantine Alert light, radius md; the old EmptyState (three variants, icons, texts from messages, compact); ErrorState with case number and report slot; 24px close target |
 | P2.5c | Skeleton, ProgressBar, Stepper | P2.1 | todo | | Owner: Stepper sm with 32px icons; ProgressBar sm, rounded, flips in rtl; Skeleton radius md |
 | P2.6 | Navigation pieces and command palette | P2.1 | todo | | |
 | P2.7 | Actions | P1.3, P2.4 | in progress (split: P2.7a, P2.7b, P2.7c) | | Done when P2.7a–P2.7c are done |
