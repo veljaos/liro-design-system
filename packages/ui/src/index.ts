@@ -17,6 +17,8 @@ export { CheckboxField, SwitchField } from './components/checkbox-field'
 export type { CheckboxFieldProps, SwitchFieldProps } from './components/checkbox-field'
 export { ComboboxField } from './components/combobox-field'
 export type { ComboboxFieldProps, ComboboxOption } from './components/combobox-field'
+export { CommandPalette } from './components/command-palette'
+export type { CommandItem, CommandPaletteProps } from './components/command-palette'
 export { DateField, DateRangeField } from './components/date-field'
 export type { DateFieldProps, DateRange, DateRangeFieldProps } from './components/date-field'
 export {
