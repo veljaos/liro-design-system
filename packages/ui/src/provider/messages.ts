@@ -60,6 +60,19 @@ export interface LiroMessages {
   'confirm.typeToConfirm': (text: string) => string
   /** The button that closes a dialog or a drawer. */
   'dialog.close': string
+  /** The button that closes a dismissible alert or banner. */
+  'alert.close': string
+  /** EmptyState 'empty': nothing here yet. */
+  'empty.emptyTitle': string
+  'empty.emptyDescription': string
+  /** EmptyState 'no-results': nothing matches the search or the filters. */
+  'empty.noResultsTitle': string
+  'empty.noResultsDescription': string
+  /** EmptyState 'error' and ErrorState: loading failed. */
+  'empty.errorTitle': string
+  'empty.errorDescription': string
+  /** Before the case number of an ErrorState. */
+  'empty.caseId': string
   /** The button that closes a toast. */
   'notice.close': string
   /** Names the region where toasts appear, for assistive technology. */
