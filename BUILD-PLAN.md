@@ -251,10 +251,11 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P2.6 | Navigation pieces and command palette | P2.1 | done | 2026-09-28 | Split into P2.6a and P2.6b |
 | P2.6a | Tabs, Breadcrumbs, CursorPagination, ShortcutHint | P2.1 | done | 2026-09-28 | Owner: centred tabs, panels not kept (AGENTS.md D16); "›" separator; Pagination sm previous/next only; Kbd xs |
 | P2.6b | CommandPalette | P2.6a | done | 2026-09-28 | Owner: the old Spotlight (Ctrl/Cmd+K and +P, actions then Go to, highlighted matches, keywords); cmdk |
-| P2.7 | Actions | P1.3, P2.4 | done | 2026-09-28 | Split into P2.7a–P2.7c; the unavailable action with its reason is shown at phone width |
+| P2.7 | Actions | P1.3, P2.4 | done | 2026-09-29 | Split into P2.7a–P2.7d; the unavailable action with its reason is shown at phone width |
 | P2.7a | ActionGroup, UnavailableAction | P2.4 | done | 2026-09-28 | Owner: end-aligned wrapping row; "More" overflow keeps the main action; unavailable with visible reason (phone-width story) and tooltip on focus and touch |
 | P2.7b | SplitAction | P2.7a | done | 2026-09-28 | Owner: joined halves, 30% currentColor line (a logical pseudo-element), menu bottom-end with arrow and pop, 16px item icons |
 | P2.7c | BulkActionBar | P2.7b | done | 2026-09-28 | Owner: brand.subtle panel sliding in (140ms), live count, select all, small actions, one confirmation with the count |
+| P2.7d | Long button labels wrap | P2.7c | done | 2026-09-29 | Owner: never "…"; wraps centred (normally two lines), the button grows from 36px; ActionGroup and BulkActionBar move actions into "More" first |
 | P2.8 | Display pieces | P2.3 | done | 2026-09-28 | Split into P2.8a–P2.8d |
 | P2.8a | Card, SectionCard, KeyValueList | P2.1 | done | 2026-09-28 | Owner: radius lg; SectionCard header and divider; KeyValueList labels upper case only in cased scripts (by :lang) |
 | P2.8b | PersonAvatar, PersonName | P2.8a | done | 2026-09-28 | Owner: light primary avatar, radius xl; initials from the first and last word (B.9, tested); decorative unless alt |

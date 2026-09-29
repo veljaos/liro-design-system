@@ -85,7 +85,7 @@ export interface PeriodFieldProps extends FieldBaseProps {
 }
 
 /** A small preset button (Mantine Button 'xs'), full width, aligned to the start. */
-const PRESET = 'h-control-sm w-full justify-start px-3.5 text-xs'
+const PRESET = 'min-h-control-sm w-full justify-start px-3.5 text-start text-xs'
 
 /**
  * A reporting period: a preset (this month, last quarter, year to date …) or a custom range

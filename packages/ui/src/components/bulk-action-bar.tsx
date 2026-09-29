@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { BUTTON_RESET, FOCUS_RING } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
-import { ActionButton, UnavailableAction, type ActionItem } from './actions'
+import { ActionButton, OverflowRow, UnavailableAction, type ActionItem } from './actions'
 import { CompactIconButton } from './button'
 import { ConfirmDialog } from './confirm-dialog'
 import { INTENTS } from './intents'
@@ -20,7 +20,9 @@ import { INTENTS } from './intents'
  *   disabled while loading;
  * - an action that needs confirmation opens ONE ConfirmDialog for the whole selection, with the
  *   count in its title; confirmation does not scale (Appendix B.8);
- * - the row wraps on narrow screens.
+ * - the row wraps on narrow screens; when the actions still do not fit, the ones before the
+ *   main action move into a "More" menu (the owner, 2026-09-29, P2.7d), and only then does a
+ *   label wrap.
  */
 
 /** An action on the selection. */
@@ -94,18 +96,13 @@ export function BulkActionBar(props: BulkActionBarProps) {
             </button>
           )}
       </div>
-      <div className="flex flex-wrap items-center gap-2">
-        {props.actions.map((action) =>
+      <OverflowRow
+        actions={props.actions}
+        render={(action) =>
           action.unavailableReason !== undefined ? (
-            <UnavailableAction
-              {...action}
-              key={action.key}
-              reason={action.unavailableReason}
-              small
-            />
+            <UnavailableAction {...action} reason={action.unavailableReason} small />
           ) : (
             <ActionButton
-              key={action.key}
               action={action}
               small
               disabled={loading}
@@ -113,9 +110,15 @@ export function BulkActionBar(props: BulkActionBarProps) {
                 run(action)
               }}
             />
-          ),
-        )}
-      </div>
+          )
+        }
+        onMenuSelect={run}
+        disabled={loading}
+        small
+        align="end"
+        className="flex-1"
+      />
+
       {asking !== null && (
         <ConfirmDialog
           open

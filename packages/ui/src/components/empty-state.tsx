@@ -82,7 +82,7 @@ export interface EmptyStateProps {
 }
 
 /** Mantine Button 'xs' (30px, 14px padding, 12px text), neutral "default". */
-const SMALL = 'h-control-sm gap-2 px-3.5 text-xs'
+const SMALL = 'min-h-control-sm gap-2 px-3.5 text-xs'
 
 /**
  * What a place shows when it has nothing: nothing yet ('empty', with the first step), nothing
