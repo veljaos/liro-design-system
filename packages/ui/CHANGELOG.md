@@ -1,5 +1,35 @@
 # @veljaos/ui
 
+## 0.1.0-alpha.2
+
+### Patch Changes
+
+- 79c0854: P2.1: three new meanings in `@veljaos/tokens`: `surface.inverse` and `text.onInverse` (tooltips) and `border.control` (the boundary of inputs, checkboxes, radios and the off state of switches, at least 3:1 on every surface), with the utilities `bg-surface-inverse`, `text-on-inverse`, `border-control` and `bg-control`. `@veljaos/ui` gains its internal primitives (not exported) and new runtime dependencies (cmdk, react-day-picker, clsx, tailwind-merge); `LiroProvider` now renders an element that overlays render into, so they inherit the theme and direction.
+- 24bf323: P2.2a: `Field`, `TextField`, `TextAreaField`, `SelectField`, `CheckboxField`, `SwitchField` and `RadioGroupField`, with the error under the field, a required mark, read-only as plain text and disabled with a visible reason. `@veljaos/tokens` adds the `border-status-danger-fg` utility for the border of an invalid field.
+- 4d67fd6: P2.2b: `ComboboxField` (one choice found by typing; the application searches after a 300ms pause with `onSearch` and `loading`, or the field filters its options) and `MultiSelectField` (several choices as pills). New messages `field.loading`, `field.noResults` and `field.remove`.
+- 18b9f69: P2.3a: `NumberField` and `MoneyField`. No input mask: the text is read by the provider's `format.parseNumber` on leaving the field or on Enter; the value is a decimal string or null, never a JavaScript number and never 0 for unreadable text. `decimals` adds zeros and never rounds. Unreadable text stays in the field with the new message `field.invalidNumber`, and `onValidityChange` tells the application. MoneyField shows the currency on the side where `format.money` writes it for the locale.
+- 1acb483: P2.3b: `DateField` and `DateRangeField`. A date is typed (read by `format.parseDate` on leaving the field or on Enter) or picked in the calendar, which opens only from its button or with Alt+ArrowDown, on the provider's `today`; the value is YYYY-MM-DD. A range whose end is before its start is an error, never swapped. New messages: `field.invalidDate`, `field.invalidRange`, `field.openCalendar`, `field.rangeStart`, `field.rangeEnd`, `calendar.previousMonth`, `calendar.nextMonth`, `calendar.navigation`. **Breaking:** the provider type `DateField` (`'day' | 'month' | 'year'`) is renamed `DatePart`, because the component takes the name.
+- 0da9978: P2.3c: `PeriodField`, the previous Design System's PeriodPicker: a button that opens presets (today, this week, this month, last month, this quarter, last quarter, year to date, last year; optional "Clear") and a custom range calendar. Presets follow `yearStartMonth`, `quarterBasis` ('business' or 'calendar') and the provider's `today`. New `format.businessYear` ("2026", "2025/26") and messages `period.*`.
+- 4ccc64a: P2.3d: `MonthField`, one month (YYYY-MM) chosen in a grid of twelve, the previous Design System's AccountingPeriodSelect. New messages `calendar.previousYear` and `calendar.nextYear`.
+- ba06814: P2.4a: `Dialog`, `Drawer`, `Popover`, `Tooltip` and `DropdownMenu` (entries as data), with the new message `dialog.close`. `Button`, `IconButton` and `CompactIconButton` now pass other attributes and a ref through, so they work as the trigger of an overlay.
+- 8c133e3: P2.4b: `ConfirmDialog` (the previous Design System's ConfirmModal: tone from the action's family, loading that blocks closing), `DeleteConfirmDialog` (texts from the provider) and `IrreversibleConfirmDialog` (enabled by typing a given text), with `confirmTone`. New messages `dialog.cancel`, `confirm.deleteTitle`, `confirm.deleteMessage`, `confirm.deleteLabel`, `confirm.typeToConfirm`.
+- 5a47909: P2.5a: toasts — place `<Toaster />` once inside LiroProvider and call `notice.success | info | warning | error | loading(message, { title })`; `notice.update(id, kind, message)` turns a loading toast into its result; `notice.dismiss(id)`. New runtime dependency sonner 2.0.8 (MIT) and messages `notice.close`, `notice.region`.
+- eb939e6: P2.5b: `Alert` and `Banner` (tones info, success, warning, danger; dismissible), `EmptyState` (empty, no-results, error; compact; one action) and `ErrorState` (case number and report action). New messages `alert.close` and `empty.*`.
+- 01e8a9e: P2.5c: `ProgressBar` (named, 5px, fills from the start side), `Skeleton` and `Stepper` (32px step icons, `aria-current`, optional `onStepClick`). New message `stepper.completed`.
+- 6d2c6b3: P2.6a: `Tabs` (centred, only the active panel mounted), `Breadcrumbs` (links through the provider's `linkComponent`), `CursorPagination` (previous and next only) and `ShortcutHint`. New message `breadcrumbs.label`.
+- 8259054: P2.6b: `CommandPalette` — Ctrl/Cmd+K or Ctrl/Cmd+P, actions first then "Go to", matches highlighted, items found by label, description or keywords; local filtering or `onSearch` with `loading`. New messages `command.*`.
+- 99468d5: P2.7a: `ActionGroup` (actions as data, the main one last, the others into a "More" menu on a narrow row) and `UnavailableAction` (`aria-disabled`, its reason in words beside it and in a tooltip on hover, focus and touch). Buttons now draw `aria-disabled="true"` like `disabled`. New message `action.more`.
+- 8259054: P2.7b: `SplitAction` — a main action and a chevron menu of related actions joined into one control. New message `action.moreOptions`.
+- 8259054: P2.7c: `BulkActionBar` — appears on a selection with the count (announced), "Select all N", clear, and small actions; an action that confirms asks once for the whole selection. `UnavailableAction` takes `small`. New messages `bulk.*`.
+- 5cd8a8a: P2.7d: a long button label wraps instead of overflowing: lines centred, normally at most two, the button growing in height from its 36px (30px small) minimum; never cut with "…". Text buttons can now shrink to their container. `BulkActionBar` moves the actions before the main one into a "More" menu when they do not fit, as `ActionGroup` does, so wrapping is the last resort.
+- 43c8064: P2.8a: `Card`, `SectionCard` (header with icon, title, description and actions; divider; flush body) and `KeyValueList` (one to four columns, labels upper case only in scripts with letter case, empty values as "—", loading skeletons).
+- 8259054: P2.8b: `PersonAvatar` (photo or initials from the first and last word, light primary style) and `PersonName`, with `initialsOf`.
+- 8259054: P2.8c: `DateText`, `DateRangeText`, `DueDate` (from the provider's `today`; overdue days in the badge), `NumberText` and `MoneyText`, with `dueState` and `daysBetween`. New `format.dateLong` and messages `due.*`.
+- 8259054: P2.8d: `SettlingValue` — the last confirmed value stays still while a new one is computed, a quiet dot after 300ms, reserved width, and one polite announcement when it settles.
+- Updated dependencies [79c0854]
+- Updated dependencies [24bf323]
+  - @veljaos/tokens@0.1.0-alpha.2
+
 ## 0.1.0-alpha.1
 
 ### Patch Changes
