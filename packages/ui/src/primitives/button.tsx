@@ -89,8 +89,9 @@ const DISABLED =
  * A long label wraps (the owner, 2026-09-29, P2.7d): never cut with "…"; normally at most two
  * lines, a third only when even two do not fit; each line centred; the button grows in height
  * from its 36px (30px small) minimum. It wraps only when it is alone on its line and still too
- * wide: it shrinks down to its container (`min-w-0`, `max-w-full`). The line height is 1.25 so
- * two lines do not touch; a single line stays centred in the same 36px.
+ * wide: it shrinks down to its container (`min-w-0`, `max-w-full`). The line height is the font
+ * size plus 4px, so two lines do not touch and a single line sits on exactly the same pixels as
+ * with Mantine's line height 1 (2px of leading on each side, a whole pixel; 1.25 moved it by one).
  */
 const BASE =
   'inline-flex cursor-pointer items-center justify-center rounded-md border border-solid font-sans font-semibold box-border select-none transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus'
@@ -101,7 +102,7 @@ export type ButtonShape = 'text' | 'icon' | 'compact'
 export const BUTTON_SHAPES: Record<ButtonShape, { button: string; icon: string }> = {
   text: {
     button:
-      'min-h-control min-w-0 max-w-full gap-2.5 py-1 ps-3 pe-4.5 text-center text-sm leading-tight',
+      'min-h-control min-w-0 max-w-full gap-2.5 py-1 ps-3 pe-4.5 text-center text-sm leading-[calc(1em+4px)]',
     icon: 'size-3.75 shrink-0',
   },
   icon: { button: 'h-control px-2 shrink-0 leading-none', icon: 'size-4 shrink-0' },

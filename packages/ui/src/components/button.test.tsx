@@ -58,7 +58,7 @@ describe('Button', () => {
       'text-sm',
       'rounded-md',
       'font-semibold',
-      'leading-tight',
+      'leading-[calc(1em+4px)]',
       'ps-3',
       'pe-4.5',
       'gap-2.5',
