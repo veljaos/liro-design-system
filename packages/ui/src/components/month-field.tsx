@@ -143,8 +143,9 @@ export function MonthField(props: MonthFieldProps) {
                   disabled={control.disabled}
                   className={cn(
                     INPUT,
-                    'cursor-pointer text-start capitalize enabled:hover:bg-surface-hover',
-                    text === null && 'text-tertiary',
+                    'cursor-pointer text-start enabled:hover:bg-surface-hover',
+                    // The month's name is capitalised; the placeholder is shown as given.
+                    text === null ? 'text-tertiary' : 'capitalize',
                     // A button cannot be aria-invalid; the error is linked by aria-describedby.
                     control.invalid && 'border-status-danger-fg',
                   )}
