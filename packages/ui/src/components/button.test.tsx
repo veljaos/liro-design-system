@@ -50,20 +50,33 @@ describe('Button', () => {
     expect(renderToStaticMarkup(<Button intent="save" label="Save" />)).not.toContain('rtl:')
   })
 
-  it("has the previous system's Mantine 'sm' size: 36px, 13px, radius md, 12/18px padding, 10px gap", () => {
+  it("has the previous system's Mantine 'sm' size: at least 36px, 13px, radius md, 12/18px padding, 10px gap", () => {
     const html = renderToStaticMarkup(<Button intent="save" label="Save" />)
     expect(html).toContain('size-3.75 shrink-0')
     for (const part of [
-      'h-control',
+      'min-h-control',
       'text-sm',
       'rounded-md',
       'font-semibold',
-      'leading-none',
+      'leading-[calc(1em+4px)]',
       'ps-3',
       'pe-4.5',
       'gap-2.5',
     ]) {
       expect(html).toContain(` ${part} `)
+    }
+  })
+
+  it('lets a long label wrap, centred, and shrink to its container; icon buttons never wrap (P2.7d)', () => {
+    const html = renderToStaticMarkup(<Button intent="save" label="Save" />)
+    for (const part of ['min-w-0', 'max-w-full', 'text-center']) {
+      expect(html).toContain(` ${part} `)
+    }
+    expect(html).not.toContain('whitespace-nowrap')
+    expect(html).not.toContain(' h-control ')
+    const icon = renderToStaticMarkup(<IconButton intent="save" label="Save" />)
+    for (const part of ['h-control', 'shrink-0', 'leading-none']) {
+      expect(icon).toContain(` ${part} `)
     }
   })
 

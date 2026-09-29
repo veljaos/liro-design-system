@@ -1,4 +1,5 @@
 import {
+  Fragment,
   useId,
   useLayoutEffect,
   useRef,
@@ -6,6 +7,7 @@ import {
   type ComponentProps,
   type MouseEvent,
   type PointerEvent,
+  type ReactNode,
 } from 'react'
 import { BUTTON_SHAPES, ButtonPrimitive } from '../primitives/button'
 import { cn } from '../primitives/cn'
@@ -17,7 +19,7 @@ import {
 } from '../primitives/tooltip'
 import { useLiro } from '../provider/liro-provider'
 import { visibleActions } from './action-logic'
-import { Button, IconButton } from './button'
+import { Button, CompactIconButton, IconButton } from './button'
 import { DropdownMenu, type MenuEntry } from './dropdown-menu'
 import { INTENTS, type Emphasis, type Family, type IconComponent, type Intent } from './intents'
 
@@ -64,7 +66,7 @@ function look(action: ActionLook) {
 }
 
 /** Mantine Button 'xs' (30px, 14px padding, 12px text, 12px icon), for bars. */
-const SMALL = 'h-control-sm gap-2 px-3.5 text-xs'
+const SMALL = 'min-h-control-sm gap-2 px-3.5 text-xs'
 
 /**
  * An action's button: the button primitive in the action's family and weight, with its icon
@@ -134,7 +136,7 @@ export function UnavailableAction({ reason, small = false, ...action }: Unavaila
     }
   }
   return (
-    <span className="inline-flex max-w-full flex-wrap items-center gap-x-2 gap-y-1">
+    <span className="inline-flex min-w-0 max-w-full flex-wrap items-center gap-x-2 gap-y-1">
       <TooltipProvider>
         <TooltipRoot open={open} onOpenChange={setOpen}>
           <TooltipTrigger
@@ -182,6 +184,46 @@ export interface ActionGroupProps {
  * the others move into a "More" menu, and the main action stays.
  */
 export function ActionGroup({ actions, align = 'end', className }: ActionGroupProps) {
+  return (
+    <OverflowRow
+      actions={actions}
+      render={(action) => <Action action={action} />}
+      onMenuSelect={(action) => action.onClick?.()}
+      align={align}
+      {...(className === undefined ? {} : { className })}
+    />
+  )
+}
+
+interface OverflowRowProps<T extends ActionItem> {
+  /** The actions in order, the main one last. */
+  actions: readonly T[]
+  /** An action's own control in the row. */
+  render: (action: T) => ReactNode
+  /** Runs an action chosen in the "More" menu. */
+  onMenuSelect: (action: T) => void
+  /** A menu entry is disabled when its action is unavailable, or when this says so. */
+  disabled?: boolean
+  /** The 28px "More" button, beside small actions (BulkActionBar). */
+  small?: boolean
+  align: 'start' | 'end'
+  className?: string
+}
+
+/**
+ * The row of ActionGroup and BulkActionBar. When the actions do not fit on one line, the ones
+ * before the main action move into a "More" menu first; a label wraps (P2.7d) only when the main
+ * action alone is still too wide. Widths are measured unwrapped, in an invisible copy of the row.
+ */
+export function OverflowRow<T extends ActionItem>({
+  actions,
+  render,
+  onMenuSelect,
+  disabled = false,
+  small = false,
+  align,
+  className,
+}: OverflowRowProps<T>) {
   const { messages } = useLiro()
   const row = useRef<HTMLDivElement>(null)
   const measure = useRef<HTMLDivElement>(null)
@@ -211,6 +253,11 @@ export function ActionGroup({ actions, align = 'end', className }: ActionGroupPr
     }
   }, [actions])
 
+  const more = small ? (
+    <CompactIconButton intent="more" label={messages['action.more']} />
+  ) : (
+    <IconButton intent="more" label={messages['action.more']} />
+  )
   const hidden = actions.slice(0, actions.length - visible)
   const shown = actions.slice(actions.length - visible)
   const entries: MenuEntry[] = hidden.map((action) => {
@@ -218,8 +265,10 @@ export function ActionGroup({ actions, align = 'end', className }: ActionGroupPr
     return {
       label: action.label,
       icon,
-      onSelect: action.onClick ?? (() => undefined),
-      disabled: action.unavailableReason !== undefined,
+      onSelect: () => {
+        onMenuSelect(action)
+      },
+      disabled: disabled || action.unavailableReason !== undefined,
       destructive:
         action.intent === undefined
           ? action.family === 'destructive'
@@ -229,17 +278,18 @@ export function ActionGroup({ actions, align = 'end', className }: ActionGroupPr
 
   return (
     <div ref={row} className={cn('relative min-w-0', className)}>
-      {/* Every action and the "More" button, laid out once invisibly, to measure their widths. */}
+      {/* Every action and the "More" button, laid out once invisibly and unwrapped, to measure
+          their widths. */}
       <div
         ref={measure}
         aria-hidden="true"
         inert
-        className="pointer-events-none invisible absolute flex gap-2 whitespace-nowrap"
+        className="pointer-events-none invisible absolute flex w-max gap-2 **:whitespace-nowrap"
       >
         {actions.map((action) => (
-          <Action key={action.key} action={action} />
+          <Fragment key={action.key}>{render(action)}</Fragment>
         ))}
-        <IconButton intent="more" label={messages['action.more']} />
+        {more}
       </div>
       <div
         className={cn(
@@ -247,15 +297,9 @@ export function ActionGroup({ actions, align = 'end', className }: ActionGroupPr
           align === 'end' ? 'justify-end' : 'justify-start',
         )}
       >
-        {hidden.length > 0 && (
-          <DropdownMenu
-            trigger={<IconButton intent="more" label={messages['action.more']} />}
-            entries={entries}
-            align="end"
-          />
-        )}
+        {hidden.length > 0 && <DropdownMenu trigger={more} entries={entries} align="end" />}
         {shown.map((action) => (
-          <Action key={action.key} action={action} />
+          <Fragment key={action.key}>{render(action)}</Fragment>
         ))}
       </div>
     </div>

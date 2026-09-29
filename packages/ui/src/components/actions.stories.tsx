@@ -87,6 +87,53 @@ export const Overflow: Story = {
 }
 
 /**
+ * Long labels at phone width: the actions before the main one move into "More" first; only the
+ * main action, alone and still too wide, wraps its label (P2.7d).
+ */
+export const LongTextPhone: Story = {
+  name: 'Long text, phone width',
+  render: () => (
+    <div className="w-[390px] max-w-full rounded-md border border-default p-2">
+      <ActionGroup
+        actions={[
+          {
+            key: 'cancel',
+            intent: 'cancel',
+            label: 'Cancel and return to the list',
+            onClick: noop,
+          },
+          {
+            key: 'draft',
+            intent: 'save',
+            emphasis: 'secondary',
+            label: 'Save as a draft for later',
+            onClick: noop,
+          },
+          {
+            key: 'send',
+            family: 'positive',
+            icon: Send,
+            emphasis: 'primary',
+            label: 'Send the delivery note to the customer and to the warehouse',
+            onClick: noop,
+          },
+        ]}
+      />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await canvas.findByRole('button', { name: 'More actions' })
+    const send = canvas.getByRole('button', { name: /Send the delivery note/ })
+    await expect(send).toBeVisible()
+    // Wrapped: taller than one 36px line, and within the row.
+    await expect(send.getBoundingClientRect().height).toBeGreaterThan(36)
+    await expect(send.getBoundingClientRect().width).toBeLessThanOrEqual(390)
+    await settle()
+  },
+}
+
+/**
  * An unavailable action with its reason at phone width (BUILD-PLAN P2.7 "Done when"): the reason
  * is written, focusable with the keyboard, and shown in a tooltip on focus.
  */

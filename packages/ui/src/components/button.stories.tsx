@@ -202,18 +202,34 @@ export const IconButtons: Story = {
   ),
 }
 
-/** A label never wraps; a long one stays on one line. The main action is last. */
+/**
+ * A long label stays on one line while it fits. Where it does not (phone width), it wraps, centred,
+ * to two lines and the button grows in height; it is never cut with "…" (P2.7d).
+ */
 export const LongText: Story = {
   render: () => (
-    <Surface>
-      <div className="flex flex-wrap items-center gap-3">
-        <Button intent="cancel" label="Cancel" />
-        <Button
-          intent="confirm"
-          label="Confirm the transfer of every selected document to the archive"
-        />
+    <div className="flex flex-col gap-4">
+      <Surface>
+        <div className="flex flex-wrap items-center gap-3">
+          <Button intent="cancel" label="Cancel" />
+          <Button
+            intent="confirm"
+            label="Confirm the transfer of every selected document to the archive"
+          />
+        </div>
+      </Surface>
+      <div className="w-[390px] max-w-full">
+        <Surface>
+          <div className="flex flex-wrap justify-end gap-2">
+            <Button intent="cancel" label="Cancel" />
+            <Button
+              intent="confirm"
+              label="Confirm the transfer of every selected document to the archive"
+            />
+          </div>
+        </Surface>
       </div>
-    </Surface>
+    </div>
   ),
 }
 

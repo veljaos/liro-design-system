@@ -43,8 +43,9 @@ describe('BulkActionBar', () => {
         ]}
       />,
     )
-    // The two actions; the clear button stays usable.
-    expect(html.match(/disabled=""/g)).toHaveLength(2)
+    // The two actions, each twice: in the row and in its invisible measuring copy (the overflow
+    // into "More", P2.7d). The clear button stays usable.
+    expect(html.match(/disabled=""/g)).toHaveLength(4)
   })
 })
 
