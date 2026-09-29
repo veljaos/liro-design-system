@@ -51,6 +51,7 @@ describe('messages', () => {
     const incomplete: LiroMessages = { 'table.next': 'Next' }
     expect(Object.keys(incomplete)).toHaveLength(1)
     expect(Object.keys(messagesEn).sort()).toEqual([
+      'action.more',
       'action.unavailable',
       'alert.close',
       'breadcrumbs.label',
@@ -89,6 +90,18 @@ describe('messages', () => {
       'field.required',
       'notice.close',
       'notice.region',
+      'period.all',
+      'period.clear',
+      'period.customRange',
+      'period.lastMonth',
+      'period.lastQuarter',
+      'period.lastYear',
+      'period.quarter',
+      'period.thisMonth',
+      'period.thisQuarter',
+      'period.thisWeek',
+      'period.today',
+      'period.yearToDate',
       'table.count',
       'table.next',
       'table.noMatch',

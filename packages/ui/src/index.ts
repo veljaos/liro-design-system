@@ -1,7 +1,16 @@
+export { ActionGroup, UnavailableAction } from './components/actions'
+export type { ActionGroupProps, ActionItem, UnavailableActionProps } from './components/actions'
 export { Alert, alertRole, Banner } from './components/alert'
 export type { AlertProps, AlertTone, BannerProps } from './components/alert'
 export { Button, CompactIconButton, IconButton } from './components/button'
 export type { ButtonProps, CompactIconButtonProps, IconButtonProps } from './components/button'
+export { Card, KeyValueList, SectionCard } from './components/cards'
+export type {
+  CardProps,
+  KeyValueItem,
+  KeyValueListProps,
+  SectionCardProps,
+} from './components/cards'
 export { CheckboxField, SwitchField } from './components/checkbox-field'
 export type { CheckboxFieldProps, SwitchFieldProps } from './components/checkbox-field'
 export { ComboboxField } from './components/combobox-field'
@@ -47,6 +56,10 @@ export type {
 } from './components/navigation'
 export { MoneyField, NumberField } from './components/number-field'
 export type { MoneyFieldProps, NumberFieldProps } from './components/number-field'
+export { PeriodField } from './components/period-field'
+export type { PeriodFieldProps } from './components/period-field'
+export { PERIOD_PRESETS } from './components/period-logic'
+export type { PeriodPreset, QuarterBasis } from './components/period-logic'
 export { Popover, Tooltip } from './components/popover'
 export type { PopoverProps, TooltipProps } from './components/popover'
 export { notice, Toaster } from './components/notice'
