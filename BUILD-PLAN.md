@@ -238,12 +238,15 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P2.2b | ComboboxField and MultiSelectField | P2.2a | done | 2026-09-28 | Own WAI-ARIA combobox; application search after 300ms (owner) with loading and "nothing found"; pills with Mantine Pill values, remove target 24×24 |
 | P2.3 | Numbers, money and dates | P2.2 | in progress (split: P2.3a, P2.3b, P2.3c) | | Done when P2.3a, P2.3b and P2.3c are done |
 | P2.3a | NumberField and MoneyField | P2.2 | done | 2026-09-28 | No mask, read on blur or Enter; decimal string or null; owner: currency on the locale's side, start-aligned, unreadable text kept with the field's own message |
-| P2.3b | DateField and DateRangeField | P2.3a | todo | | Owner: calendar only from its button or Alt+ArrowDown |
+| P2.3b | DateField and DateRangeField | P2.3a | done | 2026-09-28 | Typed or picked, YYYY-MM-DD; owner: calendar only from its button or Alt+ArrowDown, focus in and back; opens on the provider's today; range end before start is an error |
 | P2.3c | PeriodField | P2.3b | todo | | `yearStartMonth`, presets from `today` |
 | P2.4 | Overlays and confirmations | P2.1 | done | 2026-09-28 | Split into P2.4a and P2.4b |
 | P2.4a | Dialog, Drawer, Popover, Tooltip, DropdownMenu | P2.1 | done | 2026-09-28 | On the P2.1 primitives; B.8 rules in AGENTS.md D14; Button passes trigger attributes through; non-modal menu |
 | P2.4b | ConfirmDialog, delete preset, IrreversibleConfirmDialog | P2.4a | done | 2026-09-28 | Owner: the old ConfirmModal (tone from family, centred, radius lg, loading blocks closing); DeleteConfirmDialog texts from messages; typed text enables the irreversible one |
-| P2.5 | Feedback | P2.1 | todo | | |
+| P2.5 | Feedback | P2.1 | in progress (split: P2.5a, P2.5b, P2.5c) | | Done when P2.5a–P2.5c are done |
+| P2.5a | Toast | P2.1 | done | 2026-09-28 | Owner: the old notice API (kinds, times, loading → update), bottom end, 4 visible; sonner 2.0.8 |
+| P2.5b | Alert, Banner, EmptyState, ErrorState | P2.5a | done | 2026-09-28 | Owner: Mantine Alert light, radius md; the old EmptyState (three variants, icons, texts from messages, compact); ErrorState with case number and report slot; 24px close target |
+| P2.5c | Skeleton, ProgressBar, Stepper | P2.1 | todo | | Owner: Stepper sm with 32px icons; ProgressBar sm, rounded, flips in rtl; Skeleton radius md |
 | P2.6 | Navigation pieces and command palette | P2.1 | todo | | |
 | P2.7 | Actions | P1.3, P2.4 | in progress (split: P2.7a, P2.7b, P2.7c) | | Done when P2.7a–P2.7c are done |
 | P2.7a | ActionGroup, UnavailableAction | P2.4 | done | 2026-09-28 | Owner: end-aligned wrapping row; "More" overflow keeps the main action; unavailable with visible reason (phone-width story) and tooltip on focus and touch |
