@@ -102,7 +102,7 @@ export type ButtonShape = 'text' | 'icon' | 'compact'
 export const BUTTON_SHAPES: Record<ButtonShape, { button: string; icon: string }> = {
   text: {
     button:
-      'min-h-control min-w-0 max-w-full gap-2.5 py-1 ps-3 pe-4.5 text-center text-sm leading-[calc(1em+4px)]',
+      'h-fit min-h-control min-w-0 max-w-full gap-2.5 py-1 ps-3 pe-4.5 text-center text-sm leading-[calc(1em+4px)]',
     icon: 'size-3.75 shrink-0',
   },
   icon: { button: 'h-control px-2 shrink-0 leading-none', icon: 'size-4 shrink-0' },

@@ -51,6 +51,7 @@ export function SplitAction(props: SplitActionProps) {
   const Icon = props.intent === undefined ? props.icon : INTENTS[props.intent].icon
   const mirrors = props.intent !== undefined && INTENTS[props.intent].mirrorsInRtl
   return (
+    // The chevron half takes the height of the main half, which grows when its label wraps.
     <span className="inline-flex max-w-full items-stretch">
       <ButtonPrimitive
         family={family}
@@ -74,7 +75,7 @@ export function SplitAction(props: SplitActionProps) {
             disabled={props.disabled === true}
             aria-label={messages['action.moreOptions'](props.label)}
             title={messages['action.moreOptions'](props.label)}
-            className="relative -ms-px rounded-s-none px-2 before:absolute before:inset-y-0 before:start-0 before:w-px before:bg-current before:opacity-30"
+            className="relative -ms-px h-auto shrink-0 rounded-s-none px-2 before:absolute before:inset-y-0 before:start-0 before:w-px before:bg-current before:opacity-30"
           >
             <ChevronDown aria-hidden="true" className="size-4 shrink-0" />
           </ButtonPrimitive>
