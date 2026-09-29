@@ -100,6 +100,8 @@ export interface LiroMessages {
   'notice.close': string
   /** Names the region where toasts appear, for assistive technology. */
   'notice.region': string
+  /** Tells assistive technology that a step of a Stepper is completed. */
+  'stepper.completed': string
   /** An action that cannot be used, with the reason it is given. */
   'action.unavailable': (reason: string) => string
   /** The connection is lost. */

@@ -61,6 +61,7 @@ export const messagesEn: LiroMessages = {
   'action.more': 'More actions',
   'notice.close': 'Close',
   'notice.region': 'Notifications',
+  'stepper.completed': 'Completed',
   'action.unavailable': (reason) => `Unavailable: ${reason}`,
   'connection.offline': 'Offline',
 }

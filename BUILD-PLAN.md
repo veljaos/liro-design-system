@@ -244,10 +244,10 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P2.4 | Overlays and confirmations | P2.1 | done | 2026-09-28 | Split into P2.4a and P2.4b |
 | P2.4a | Dialog, Drawer, Popover, Tooltip, DropdownMenu | P2.1 | done | 2026-09-28 | On the P2.1 primitives; B.8 rules in AGENTS.md D14; Button passes trigger attributes through; non-modal menu |
 | P2.4b | ConfirmDialog, delete preset, IrreversibleConfirmDialog | P2.4a | done | 2026-09-28 | Owner: the old ConfirmModal (tone from family, centred, radius lg, loading blocks closing); DeleteConfirmDialog texts from messages; typed text enables the irreversible one |
-| P2.5 | Feedback | P2.1 | in progress (split: P2.5a, P2.5b, P2.5c) | | Done when P2.5a–P2.5c are done |
+| P2.5 | Feedback | P2.1 | done | 2026-09-28 | Split into P2.5a–P2.5c |
 | P2.5a | Toast | P2.1 | done | 2026-09-28 | Owner: the old notice API (kinds, times, loading → update), bottom end, 4 visible; sonner 2.0.8 |
 | P2.5b | Alert, Banner, EmptyState, ErrorState | P2.5a | done | 2026-09-28 | Owner: Mantine Alert light, radius md; the old EmptyState (three variants, icons, texts from messages, compact); ErrorState with case number and report slot; 24px close target |
-| P2.5c | Skeleton, ProgressBar, Stepper | P2.1 | todo | | Owner: Stepper sm with 32px icons; ProgressBar sm, rounded, flips in rtl; Skeleton radius md |
+| P2.5c | Skeleton, ProgressBar, Stepper | P2.5b | done | 2026-09-28 | Owner: Stepper sm with 32px icons, primary; ProgressBar sm, fully rounded, flips in rtl; Skeleton radius md |
 | P2.6 | Navigation pieces and command palette | P2.1 | in progress (split: P2.6a, P2.6b) | | Done when P2.6a and P2.6b are done |
 | P2.6a | Tabs, Breadcrumbs, CursorPagination, ShortcutHint | P2.1 | done | 2026-09-28 | Owner: centred tabs, panels not kept (AGENTS.md D16); "›" separator; Pagination sm previous/next only; Kbd xs |
 | P2.6b | CommandPalette | P2.6a | todo | | Owner: the old Spotlight (Ctrl/Cmd+K and +P, groups, highlight) |

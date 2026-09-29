@@ -99,6 +99,7 @@ describe('messages', () => {
       'period.thisWeek',
       'period.today',
       'period.yearToDate',
+      'stepper.completed',
       'table.count',
       'table.next',
       'table.noMatch',
