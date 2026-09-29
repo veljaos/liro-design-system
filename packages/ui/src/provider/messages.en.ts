@@ -63,6 +63,14 @@ export const messagesEn: LiroMessages = {
   'confirm.deleteLabel': 'Delete',
   'confirm.typeToConfirm': (text) => `Type ${text} to confirm`,
   'action.more': 'More actions',
+  'action.moreOptions': (label) => `More options: ${label}`,
+  'bulk.selected': (count) => `${formatDecimal(String(count), 'comma-dot')} selected`,
+  'bulk.selectAll': (total) => `Select all ${formatDecimal(String(total), 'comma-dot')}`,
+  'bulk.clear': 'Clear the selection',
+  'bulk.confirmTitle': (count) =>
+    count === 1
+      ? 'Apply to 1 item?'
+      : `Apply to ${formatDecimal(String(count), 'comma-dot')} items?`,
   'notice.close': 'Close',
   'notice.region': 'Notifications',
   'action.unavailable': (reason) => `Unavailable: ${reason}`,

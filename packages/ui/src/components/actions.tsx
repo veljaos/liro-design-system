@@ -1,4 +1,13 @@
-import { useId, useLayoutEffect, useRef, useState, type MouseEvent, type PointerEvent } from 'react'
+import {
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ComponentProps,
+  type MouseEvent,
+  type PointerEvent,
+} from 'react'
+import { BUTTON_SHAPES, ButtonPrimitive } from '../primitives/button'
 import { cn } from '../primitives/cn'
 import {
   Tooltip as TooltipRoot,
@@ -54,19 +63,62 @@ function look(action: ActionLook) {
     : { intent: action.intent, ...emphasis }
 }
 
+/** Mantine Button 'xs' (30px, 14px padding, 12px text, 12px icon), for bars. */
+const SMALL = 'h-control-sm gap-2 px-3.5 text-xs'
+
+/**
+ * An action's button: the button primitive in the action's family and weight, with its icon
+ * (15px, 12px small) and label. Other attributes (a Radix trigger's, aria-disabled) pass through.
+ */
+export function ActionButton({
+  action,
+  small = false,
+  ...rest
+}: { action: ActionLook & { label: string }; small?: boolean } & Omit<
+  ComponentProps<'button'>,
+  'children'
+>) {
+  const intent = action.intent === undefined ? undefined : INTENTS[action.intent]
+  const family = intent?.family ?? action.family ?? 'neutral'
+  const emphasis = action.emphasis ?? intent?.emphasis ?? 'secondary'
+  const Icon = intent?.icon ?? action.icon
+  return (
+    <ButtonPrimitive
+      family={family}
+      emphasis={emphasis}
+      {...(action.intent === undefined ? {} : { 'data-intent': action.intent })}
+      {...rest}
+      className={cn(small && SMALL, rest.className)}
+    >
+      {Icon !== undefined && (
+        <Icon
+          aria-hidden="true"
+          className={cn(
+            small ? 'size-3 shrink-0' : BUTTON_SHAPES.text.icon,
+            intent?.mirrorsInRtl === true && 'rtl:-scale-x-100',
+          )}
+        />
+      )}
+      <span>{action.label}</span>
+    </ButtonPrimitive>
+  )
+}
+
 export type UnavailableActionProps = DistributiveOmit<
   ActionItem,
   'key' | 'onClick' | 'unavailableReason'
 > & {
   /** Why it cannot be used now, from the application: shown as text and in a tooltip. */
   reason: string
+  /** Mantine size 'xs', for bars (BulkActionBar). */
+  small?: boolean
 }
 
 /**
  * An action the user cannot use now, with the reason in words beside it (and in a tooltip): never
  * only a greyed-out button. Announced to assistive technology with its reason.
  */
-export function UnavailableAction({ reason, ...action }: UnavailableActionProps) {
+export function UnavailableAction({ reason, small = false, ...action }: UnavailableActionProps) {
   const { messages } = useLiro()
   const reasonId = `${useId()}-reason`
   const [open, setOpen] = useState(false)
@@ -92,7 +144,7 @@ export function UnavailableAction({ reason, ...action }: UnavailableActionProps)
             onPointerDown={onPointerDown}
             onClick={onClick}
           >
-            <Button {...look(action)} label={action.label} />
+            <ActionButton action={action} small={small} />
           </TooltipTrigger>
           <TooltipContent className="w-60 whitespace-normal">{reason}</TooltipContent>
         </TooltipRoot>
