@@ -236,10 +236,11 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P2.2 | Field system and text inputs | P2.1, P1.5 | done | 2026-09-28 | Split into P2.2a and P2.2b |
 | P2.2a | Field and the simple fields | P2.1, P1.5 | done | 2026-09-25 | Field, TextField, TextAreaField, SelectField, CheckboxField, SwitchField, RadioGroupField; owner: read-only as plain text, error border in danger fg |
 | P2.2b | ComboboxField and MultiSelectField | P2.2a | done | 2026-09-28 | Own WAI-ARIA combobox; application search after 300ms (owner) with loading and "nothing found"; pills with Mantine Pill values, remove target 24×24 |
-| P2.3 | Numbers, money and dates | P2.2 | in progress (split: P2.3a, P2.3b, P2.3c) | | Done when P2.3a, P2.3b and P2.3c are done |
+| P2.3 | Numbers, money and dates | P2.2 | in progress (split: P2.3a, P2.3b, P2.3c, P2.3d) | | Done when P2.3a–P2.3d are done |
 | P2.3a | NumberField and MoneyField | P2.2 | done | 2026-09-28 | No mask, read on blur or Enter; decimal string or null; owner: currency on the locale's side, start-aligned, unreadable text kept with the field's own message |
 | P2.3b | DateField and DateRangeField | P2.3a | done | 2026-09-28 | Typed or picked, YYYY-MM-DD; owner: calendar only from its button or Alt+ArrowDown, focus in and back; opens on the provider's today; range end before start is an error |
-| P2.3c | PeriodField | P2.3b | todo | | `yearStartMonth`, presets from `today` |
+| P2.3c | PeriodField | P2.3b | done | 2026-09-28 | Owner: the old PeriodPicker (presets and a custom range); `yearStartMonth`, `quarterBasis`; `format.businessYear` "2025/26"; tested with a July business year and a `today` other than the device's |
+| P2.3d | MonthField | P2.3c | todo | | Owner: the old AccountingPeriodSelect, a month grid |
 | P2.4 | Overlays and confirmations | P2.1 | done | 2026-09-28 | Split into P2.4a and P2.4b |
 | P2.4a | Dialog, Drawer, Popover, Tooltip, DropdownMenu | P2.1 | done | 2026-09-28 | On the P2.1 primitives; B.8 rules in AGENTS.md D14; Button passes trigger attributes through; non-modal menu |
 | P2.4b | ConfirmDialog, delete preset, IrreversibleConfirmDialog | P2.4a | done | 2026-09-28 | Owner: the old ConfirmModal (tone from family, centred, radius lg, loading blocks closing); DeleteConfirmDialog texts from messages; typed text enables the irreversible one |
@@ -250,7 +251,10 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P2.6 | Navigation pieces and command palette | P2.1 | in progress (split: P2.6a, P2.6b) | | Done when P2.6a and P2.6b are done |
 | P2.6a | Tabs, Breadcrumbs, CursorPagination, ShortcutHint | P2.1 | done | 2026-09-28 | Owner: centred tabs, panels not kept (AGENTS.md D16); "›" separator; Pagination sm previous/next only; Kbd xs |
 | P2.6b | CommandPalette | P2.6a | todo | | Owner: the old Spotlight (Ctrl/Cmd+K and +P, groups, highlight) |
-| P2.7 | Actions | P1.3, P2.4 | todo | | |
+| P2.7 | Actions | P1.3, P2.4 | in progress (split: P2.7a, P2.7b, P2.7c) | | Done when P2.7a–P2.7c are done |
+| P2.7a | ActionGroup, UnavailableAction | P2.4 | done | 2026-09-28 | Owner: end-aligned wrapping row; "More" overflow keeps the main action; unavailable with visible reason (phone-width story) and tooltip on focus and touch |
+| P2.7b | SplitAction | P2.7a | todo | | Owner: joined buttons, 30% currentColor separator, menu bottom-end with arrow |
+| P2.7c | BulkActionBar | P2.7b | todo | | Owner: brand.subtle panel, live count, select all, one confirmation |
 | P2.8 | Display pieces | P2.3 | done | 2026-09-28 | Split into P2.8a–P2.8d |
 | P2.8a | Card, SectionCard, KeyValueList | P2.1 | done | 2026-09-28 | Owner: radius lg; SectionCard header and divider; KeyValueList labels upper case only in cased scripts (by :lang) |
 | P2.8b | PersonAvatar, PersonName | P2.8a | done | 2026-09-28 | Owner: light primary avatar, radius xl; initials from the first and last word (B.9, tested); decorative unless alt |

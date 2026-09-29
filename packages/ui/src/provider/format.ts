@@ -28,6 +28,11 @@ export interface LiroFormat {
   monthName(month: number, style: 'long' | 'short'): string
   /** weekday is 0 (Sunday) … 6 (Saturday). */
   weekdayName(weekday: number, style: 'long' | 'short' | 'narrow'): string
+  /**
+   * The name of a business year that starts in `startMonth` (1 … 12) of `startYear`: "2026" when
+   * it starts in January, "2025/26" otherwise (owner's decision, 2026-09-28).
+   */
+  businessYear(startYear: number, startMonth: number): string
   /** Separator scheme: 'dot-comma' (1.234,56), 'comma-dot' (1,234.56), 'space-comma', 'space-dot', 'apostrophe-dot'. */
   numberScheme: NumberScheme
   /** Default number of decimals for money. */
@@ -352,6 +357,10 @@ export function createFormat(locale: string, overrides: Partial<LiroFormat> = {}
     },
     parseDate(text) {
       return parseDateText(text, order)
+    },
+    businessYear(startYear, startMonth) {
+      if (startMonth === 1) return String(startYear)
+      return `${String(startYear)}/${String((startYear + 1) % 100).padStart(2, '0')}`
     },
     monthName(month, style) {
       if (!Number.isInteger(month) || month < 1 || month > 12) {
