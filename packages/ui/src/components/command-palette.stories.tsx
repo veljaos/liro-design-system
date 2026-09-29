@@ -101,7 +101,10 @@ export const NothingFound: Story = {
   play: async ({ canvasElement }) => {
     const body = within(canvasElement.ownerDocument.body)
     await userEvent.type(await body.findByRole('combobox'), 'xyz', { delay: 0 })
-    await expect(body.getByText('Nothing found')).toBeVisible()
+    // The palette may still be fading in (opacity counts as not visible): wait until it shows.
+    await waitFor(async () => {
+      await expect(body.getByText('Nothing found')).toBeVisible()
+    })
     await settle()
   },
 }
