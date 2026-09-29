@@ -154,7 +154,9 @@ export function PeriodField(props: PeriodFieldProps) {
                   )}
                 >
                   <CalendarDays aria-hidden="true" className="size-3.75 shrink-0" />
-                  <span id={textId} className="truncate">
+                  {/* 2px of room at the end, taken back by the margin: Chromium on Linux draws
+                      hinted text wider than it lays it out, and `truncate` cut the last digit. */}
+                  <span id={textId} className="-me-0.5 truncate pe-0.5">
                     {text}
                   </span>
                   <ChevronDown aria-hidden="true" className="size-3.5 shrink-0" />
