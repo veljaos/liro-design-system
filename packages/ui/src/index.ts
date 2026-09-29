@@ -1,3 +1,5 @@
+export { ActionGroup, UnavailableAction } from './components/actions'
+export type { ActionGroupProps, ActionItem, UnavailableActionProps } from './components/actions'
 export { Alert, alertRole, Banner } from './components/alert'
 export type { AlertProps, AlertTone, BannerProps } from './components/alert'
 export { Button, CompactIconButton, IconButton } from './components/button'

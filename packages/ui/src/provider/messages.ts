@@ -60,6 +60,8 @@ export interface LiroMessages {
   'confirm.typeToConfirm': (text: string) => string
   /** The button that closes a dialog or a drawer. */
   'dialog.close': string
+  /** The button that opens the actions that do not fit. */
+  'action.more': string
   /** The button that closes a dismissible alert or banner. */
   'alert.close': string
   /** EmptyState 'empty': nothing here yet. */
