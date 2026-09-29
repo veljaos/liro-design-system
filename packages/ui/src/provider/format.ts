@@ -229,14 +229,14 @@ const NUMERIC_DATE: Intl.DateTimeFormatOptions = {
 /** Bidirectional marks Intl puts into the dates of right-to-left locales. */
 const BIDI_MARKS = /[‎‏؜]/g
 
-export type DateField = 'day' | 'month' | 'year'
+export type DatePart = 'day' | 'month' | 'year'
 
 /** The order of day, month and year in the locale's numeric dates. */
-export function dateFieldOrder(locale: string): DateField[] {
+export function dateFieldOrder(locale: string): DatePart[] {
   return new Intl.DateTimeFormat(intlLocale(locale), { ...NUMERIC_DATE, timeZone: 'UTC' })
     .formatToParts(Date.UTC(2026, 2, 1))
     .map((part) => part.type)
-    .filter((type): type is DateField => type === 'day' || type === 'month' || type === 'year')
+    .filter((type): type is DatePart => type === 'day' || type === 'month' || type === 'year')
 }
 
 /**
@@ -245,7 +245,7 @@ export function dateFieldOrder(locale: string): DateField[] {
  * "01/03/2026", "2026/03/01"), in the locale's order of day, month and year. A two-digit year is
  * in the 2000s.
  */
-export function parseDateText(text: string, order: readonly DateField[]): string | null {
+export function parseDateText(text: string, order: readonly DatePart[]): string | null {
   const cleaned = text.replace(BIDI_MARKS, '').trim().replace(/\.$/, '')
   const iso = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(cleaned)
   if (iso !== null) {
@@ -268,7 +268,7 @@ export function parseDateText(text: string, order: readonly DateField[]): string
   }
   if (parts.length !== 3 || order.length !== 3) return null
 
-  const fields: Partial<Record<DateField, string>> = {}
+  const fields: Partial<Record<DatePart, string>> = {}
   order.forEach((field, index) => {
     const part = parts[index]
     if (part !== undefined) fields[field] = part

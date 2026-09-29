@@ -43,11 +43,16 @@ function Hint({ label, children }: { label: string; children: ReactNode }) {
   return (
     <TooltipProvider>
       <TooltipRoot>
-        {/* A button, so the keyboard reaches the tooltip as the pointer does; it does nothing. */}
+        {/* A button, so the keyboard reaches the tooltip as the pointer does; it does nothing. It
+            takes the font of the text around it (a button has its own without preflight). */}
         <TooltipTrigger asChild>
           <button
             type="button"
-            className={cn(BUTTON_RESET, 'cursor-default rounded-xs text-inherit', FOCUS_RING)}
+            className={cn(
+              BUTTON_RESET,
+              'cursor-default rounded-xs text-inherit [font:inherit]',
+              FOCUS_RING,
+            )}
           >
             {children}
           </button>
