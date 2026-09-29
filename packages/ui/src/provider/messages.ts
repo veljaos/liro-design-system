@@ -67,6 +67,22 @@ export interface LiroMessages {
   'period.all': string
   /** The caption over the calendar of a period field. */
   'period.customRange': string
+  /** The button that dismisses a confirmation without acting. */
+  'dialog.cancel': string
+  /** The default question of a delete confirmation. */
+  'confirm.deleteTitle': string
+  /** The default text of a delete confirmation. */
+  'confirm.deleteMessage': string
+  /** The default label of a delete confirmation's button. */
+  'confirm.deleteLabel': string
+  /** The label of the field where the user types `text` to confirm an irreversible action. */
+  'confirm.typeToConfirm': (text: string) => string
+  /** The button that closes a dialog or a drawer. */
+  'dialog.close': string
+  /** The button that closes a toast. */
+  'notice.close': string
+  /** Names the region where toasts appear, for assistive technology. */
+  'notice.region': string
   /** An action that cannot be used, with the reason it is given. */
   'action.unavailable': (reason: string) => string
   /** The connection is lost. */

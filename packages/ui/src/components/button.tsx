@@ -79,6 +79,27 @@ function resolve(props: CompactIconButtonProps, defaultEmphasis: Emphasis | null
   }
 }
 
+/** The props every button reads itself; anything else is passed through. */
+const OWN = new Set([
+  'intent',
+  'family',
+  'icon',
+  'emphasis',
+  'label',
+  'type',
+  'disabled',
+  'onClick',
+])
+
+/**
+ * The attributes a button did not declare, passed to the element: a Radix trigger (`asChild`)
+ * gives its button `aria-expanded`, `aria-haspopup`, `data-state`, its event handlers and a ref,
+ * and a button that dropped them could not open a dialog or a menu (found in P2.4).
+ */
+function passThrough(props: object): Record<string, unknown> {
+  return Object.fromEntries(Object.entries(props).filter(([key]) => !OWN.has(key)))
+}
+
 function buttonParts(props: CompactIconButtonProps, shape: ButtonShape) {
   const { family, emphasis, Icon, mirrors, data } = resolve(
     props,
@@ -92,6 +113,7 @@ function buttonParts(props: CompactIconButtonProps, shape: ButtonShape) {
   return {
     icon,
     attributes: {
+      ...passThrough(props),
       type: props.type ?? 'button',
       disabled: props.disabled,
       onClick: props.onClick,
