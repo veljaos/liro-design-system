@@ -116,7 +116,7 @@ export function BulkActionBar(props: BulkActionBarProps) {
         disabled={loading}
         small
         align="end"
-        className="flex-1"
+        className="grow"
       />
 
       {asking !== null && (
