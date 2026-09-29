@@ -68,13 +68,14 @@ const COLOURS: Record<Family, Record<Emphasis, string>> = {
   },
 }
 
-/** Disabled, in every emphasis: Mantine's disabled colours, transparent border (Button.css). */
 /**
- * Disabled, and unavailable (`aria-disabled="true"`: still focusable, so its reason can be read;
- * the unavailable action of P2.7) look the same; neither changes on hover or press.
+ * Disabled, in every emphasis: Mantine's disabled colours, transparent border (Button.css).
+ * Unavailable (`aria-disabled="true"`: still focusable, so its reason can be read; the
+ * unavailable action of P2.7) looks the same; neither changes on hover or press. A loading
+ * button (`aria-busy`, also aria-disabled) keeps its colours, as Mantine's does.
  */
 const DISABLED =
-  'disabled:border-transparent disabled:bg-surface-disabled disabled:text-disabled disabled:cursor-not-allowed aria-disabled:border-transparent aria-disabled:bg-surface-disabled aria-disabled:text-disabled aria-disabled:cursor-not-allowed'
+  'disabled:border-transparent disabled:bg-surface-disabled disabled:text-disabled disabled:cursor-not-allowed aria-disabled:not-aria-busy:border-transparent aria-disabled:not-aria-busy:bg-surface-disabled aria-disabled:not-aria-busy:text-disabled aria-disabled:cursor-not-allowed'
 
 /**
  * The previous Design System's Mantine sizes ("Button sizes" in docs/decisions.md, source
