@@ -42,6 +42,16 @@ export interface LiroMessages {
   'field.remove': (label: string) => string
   /** Names the breadcrumb trail for assistive technology. */
   'breadcrumbs.label': string
+  /** Names the command palette and its search field. */
+  'command.title': string
+  /** The placeholder of the command palette's search field. */
+  'command.placeholder': string
+  /** The heading of the palette's actions. */
+  'command.actions': string
+  /** The heading of the palette's places to go. */
+  'command.navigation': string
+  /** The palette found nothing. */
+  'command.noResults': string
   /** The calendar's button that shows the previous month. */
   'calendar.previousMonth': string
   /** The calendar's button that shows the next month. */
@@ -81,8 +91,26 @@ export interface LiroMessages {
   'confirm.typeToConfirm': (text: string) => string
   /** The button that closes a dialog or a drawer. */
   'dialog.close': string
+  /** A DueDate that is paid or otherwise closed. */
+  'due.settled': string
+  /** A DueDate that has passed, with the number of days. */
+  'due.overdue': (days: number) => string
+  /** A DueDate that is today. */
+  'due.today': string
+  /** A DueDate within the warning days, with the number of days left. */
+  'due.inDays': (days: number) => string
   /** The button that opens the actions that do not fit. */
   'action.more': string
+  /** Names the menu button of a split action (its main action's label). */
+  'action.moreOptions': (label: string) => string
+  /** How many rows are selected, in a BulkActionBar. */
+  'bulk.selected': (count: number) => string
+  /** Offers to select every row of the result. */
+  'bulk.selectAll': (total: number) => string
+  /** The button that clears the selection. */
+  'bulk.clear': string
+  /** The question before an action on the selection. */
+  'bulk.confirmTitle': (count: number) => string
   /** The button that closes a dismissible alert or banner. */
   'alert.close': string
   /** EmptyState 'empty': nothing here yet. */

@@ -1,5 +1,7 @@
 export { ActionGroup, UnavailableAction } from './components/actions'
 export type { ActionGroupProps, ActionItem, UnavailableActionProps } from './components/actions'
+export { asksFirst, BulkActionBar } from './components/bulk-action-bar'
+export type { BulkAction, BulkActionBarProps } from './components/bulk-action-bar'
 export { Alert, alertRole, Banner } from './components/alert'
 export type { AlertProps, AlertTone, BannerProps } from './components/alert'
 export { Button, CompactIconButton, IconButton } from './components/button'
@@ -15,6 +17,8 @@ export { CheckboxField, SwitchField } from './components/checkbox-field'
 export type { CheckboxFieldProps, SwitchFieldProps } from './components/checkbox-field'
 export { ComboboxField } from './components/combobox-field'
 export type { ComboboxFieldProps, ComboboxOption } from './components/combobox-field'
+export { CommandPalette } from './components/command-palette'
+export type { CommandItem, CommandPaletteProps } from './components/command-palette'
 export { DateField, DateRangeField } from './components/date-field'
 export type { DateFieldProps, DateRange, DateRangeFieldProps } from './components/date-field'
 export {
@@ -32,6 +36,22 @@ export { Dialog, Drawer } from './components/dialog'
 export type { DialogProps, DrawerProps } from './components/dialog'
 export { DropdownMenu } from './components/dropdown-menu'
 export type { DropdownMenuProps, MenuEntry } from './components/dropdown-menu'
+export {
+  DateRangeText,
+  DateText,
+  daysBetween,
+  DueDate,
+  dueState,
+  MoneyText,
+  NumberText,
+} from './components/display-text'
+export type {
+  DateRangeTextProps,
+  DateTextProps,
+  DueDateProps,
+  MoneyTextProps,
+  NumberTextProps,
+} from './components/display-text'
 export { EmptyState, ErrorState } from './components/empty-state'
 export type {
   EmptyAction,
@@ -62,6 +82,8 @@ export { PERIOD_PRESETS } from './components/period-logic'
 export type { PeriodPreset, QuarterBasis } from './components/period-logic'
 export { Popover, Tooltip } from './components/popover'
 export type { PopoverProps, TooltipProps } from './components/popover'
+export { initialsOf, PersonAvatar, PersonName } from './components/person'
+export type { PersonAvatarProps, PersonNameProps } from './components/person'
 export { notice, Toaster } from './components/notice'
 export type { NoticeKind, NoticeOptions } from './components/notice'
 export { ProgressBar, Skeleton, Stepper, stepState } from './components/progress'
@@ -78,6 +100,10 @@ export type { SelectFieldProps, SelectOption } from './components/select-field'
 export { TextAreaField, TextField } from './components/text-field'
 export type { TextAreaFieldProps, TextFieldProps } from './components/text-field'
 export { FAMILY_NAMES, INTENT_NAMES, INTENTS } from './components/intents'
+export { SETTLING_DELAY, SettlingValue } from './components/settling-value'
+export type { SettlingValueProps } from './components/settling-value'
+export { SplitAction } from './components/split-action'
+export type { SplitActionProps } from './components/split-action'
 export { StatusBadge, TONE_NAMES, toneFor } from './components/status-badge'
 export type { StatusBadgeProps, Tone } from './components/status-badge'
 export type { Emphasis, Family, IconComponent, Intent, IntentInfo } from './components/intents'

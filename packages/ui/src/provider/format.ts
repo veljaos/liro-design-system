@@ -20,6 +20,8 @@ export interface LiroFormat {
   /** value is YYYY-MM-DD. */
   date(value: string): string
   dateTime(isoInstant: string): string
+  /** value is YYYY-MM-DD: the weekday and the date in words, e.g. "Monday, 28 September 2026". */
+  dateLong(value: string): string
   /** Accepts "010326", "1.3.2026", "01/03/2026" and the locale's own format. Returns YYYY-MM-DD or null. */
   parseDate(text: string): string | null
   /** month is 1 (January) … 12. */
@@ -310,6 +312,15 @@ export function createFormat(locale: string, overrides: Partial<LiroFormat> = {}
     hour: '2-digit',
     minute: '2-digit',
   })
+  // The weekday and the date in words, as DateText's tooltip shows it.
+  const longDateFormat = new Intl.DateTimeFormat(intl, {
+    ...DATE_BASE,
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  })
   const order = dateFieldOrder(locale)
 
   const format: LiroFormat = {
@@ -339,6 +350,10 @@ export function createFormat(locale: string, overrides: Partial<LiroFormat> = {}
     dateTime(isoInstant) {
       const timestamp = Date.parse(isoInstant)
       return Number.isNaN(timestamp) ? isoInstant : dateTimeFormat.format(timestamp)
+    },
+    dateLong(value) {
+      const timestamp = utcTimestamp(value)
+      return timestamp === null ? value : longDateFormat.format(timestamp)
     },
     parseDate(text) {
       return parseDateText(text, order)

@@ -9,7 +9,7 @@
     "storybook": "storybook dev --port 6006",
     "build-storybook": "storybook build && node ../../scripts/copy-legal.mjs storybook-static",
     "typecheck": "tsc -p tsconfig.json",
-    "test:stories": "playwright test tests/stories.spec.ts",
+    "test:stories": "playwright test tests/stories.spec.ts tests/settling-value.spec.ts",
     "test:a11y": "playwright test tests/accessibility.spec.ts",
     "test:visual": "playwright test tests/visual.spec.ts"
   },
