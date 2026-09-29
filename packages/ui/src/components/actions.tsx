@@ -1,0 +1,211 @@
+import { useId, useLayoutEffect, useRef, useState, type MouseEvent, type PointerEvent } from 'react'
+import { cn } from '../primitives/cn'
+import {
+  Tooltip as TooltipRoot,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '../primitives/tooltip'
+import { useLiro } from '../provider/liro-provider'
+import { visibleActions } from './action-logic'
+import { Button, IconButton } from './button'
+import { DropdownMenu, type MenuEntry } from './dropdown-menu'
+import { INTENTS, type Emphasis, type Family, type IconComponent, type Intent } from './intents'
+
+/*
+ * ActionGroup and UnavailableAction (BUILD-PLAN P2.7), the previous Design System's (owner's
+ * decision, 2026-09-28, docs/decisions.md "Actions"):
+ * - ActionGroup: a wrapping row, 8px (xs) apart, centred vertically, aligned to the END by
+ *   default (the main action sits at the end, where the eye and the thumb expect it); `align`
+ *   'start' only beside text. New here, as the plan asks: on a narrow row the actions before the
+ *   main one move into a "More" menu, the main action staying visible and last.
+ * - UnavailableAction: disabled, with its reason as visible text beside the button (the plan)
+ *   and in a tooltip (the old system: 240px wide, several lines, with the arrow), which opens on
+ *   hover, on keyboard focus and on touch. The button is `aria-disabled` rather than `disabled`,
+ *   so it can take the focus and the reason can be read; pressing it does nothing.
+ */
+
+/** An action, as Button takes it. */
+export type ActionItem = {
+  /** A stable key. */
+  key: string
+  /** From the application. */
+  label: string
+  onClick?: () => void
+  /** Weight within the family's rules (AGENTS.md D13). */
+  emphasis?: Emphasis
+  /** Makes it unavailable, with this reason (from the application) beside it and in a tooltip. */
+  unavailableReason?: string
+} & (
+  | { intent: Intent; family?: never; icon?: never }
+  | { family: Family; icon: IconComponent; intent?: never }
+)
+
+/** Omit that keeps a union a union, so intent and family stay distinct. */
+type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never
+
+type ActionLook = DistributiveOmit<ActionItem, 'key' | 'label' | 'onClick' | 'unavailableReason'>
+
+/** The intent, or the family and icon, of an action, as Button props. */
+function look(action: ActionLook) {
+  const emphasis = action.emphasis === undefined ? {} : { emphasis: action.emphasis }
+  return action.intent === undefined
+    ? { family: action.family, icon: action.icon, ...emphasis }
+    : { intent: action.intent, ...emphasis }
+}
+
+export type UnavailableActionProps = DistributiveOmit<
+  ActionItem,
+  'key' | 'onClick' | 'unavailableReason'
+> & {
+  /** Why it cannot be used now, from the application: shown as text and in a tooltip. */
+  reason: string
+}
+
+/**
+ * An action the user cannot use now, with the reason in words beside it (and in a tooltip): never
+ * only a greyed-out button. Announced to assistive technology with its reason.
+ */
+export function UnavailableAction({ reason, ...action }: UnavailableActionProps) {
+  const { messages } = useLiro()
+  const reasonId = `${useId()}-reason`
+  const [open, setOpen] = useState(false)
+  const touch = useRef(false)
+  const onPointerDown = (event: PointerEvent) => {
+    touch.current = event.pointerType === 'touch'
+  }
+  const onClick = (event: MouseEvent) => {
+    // A disabled action does nothing; a touch shows the reason (no hover on a touch screen).
+    if (touch.current) {
+      event.preventDefault()
+      setOpen(true)
+    }
+  }
+  return (
+    <span className="inline-flex max-w-full flex-wrap items-center gap-x-2 gap-y-1">
+      <TooltipProvider>
+        <TooltipRoot open={open} onOpenChange={setOpen}>
+          <TooltipTrigger
+            asChild
+            aria-disabled="true"
+            aria-describedby={reasonId}
+            onPointerDown={onPointerDown}
+            onClick={onClick}
+          >
+            <Button {...look(action)} label={action.label} />
+          </TooltipTrigger>
+          <TooltipContent className="w-60 whitespace-normal">{reason}</TooltipContent>
+        </TooltipRoot>
+      </TooltipProvider>
+      <span id={reasonId} className="text-xs text-secondary">
+        {messages['action.unavailable'](reason)}
+      </span>
+    </span>
+  )
+}
+
+function Action({ action }: { action: ActionItem }) {
+  if (action.unavailableReason !== undefined) {
+    return <UnavailableAction {...action} reason={action.unavailableReason} />
+  }
+  return (
+    <Button
+      {...look(action)}
+      label={action.label}
+      {...(action.onClick === undefined ? {} : { onClick: action.onClick })}
+    />
+  )
+}
+
+export interface ActionGroupProps {
+  /** The actions in order, the main action last. */
+  actions: readonly ActionItem[]
+  /** 'end' (default): at the end of a form or a header. 'start': only beside text. */
+  align?: 'start' | 'end'
+  className?: string
+}
+
+/**
+ * The actions of a form, a page header or a dialog, the main one last. When the row is too narrow
+ * the others move into a "More" menu, and the main action stays.
+ */
+export function ActionGroup({ actions, align = 'end', className }: ActionGroupProps) {
+  const { messages } = useLiro()
+  const row = useRef<HTMLDivElement>(null)
+  const measure = useRef<HTMLDivElement>(null)
+  const [visible, setVisible] = useState(actions.length)
+
+  useLayoutEffect(() => {
+    const rowElement = row.current
+    const measureElement = measure.current
+    if (rowElement === null || measureElement === null) return
+    const update = () => {
+      const children = [...measureElement.children] as HTMLElement[]
+      const more = children.pop()
+      setVisible(
+        visibleActions(
+          children.map((child) => child.offsetWidth),
+          more?.offsetWidth ?? 0,
+          8,
+          rowElement.clientWidth,
+        ),
+      )
+    }
+    update()
+    const observer = new ResizeObserver(update)
+    observer.observe(rowElement)
+    return () => {
+      observer.disconnect()
+    }
+  }, [actions])
+
+  const hidden = actions.slice(0, actions.length - visible)
+  const shown = actions.slice(actions.length - visible)
+  const entries: MenuEntry[] = hidden.map((action) => {
+    const icon = action.intent === undefined ? action.icon : INTENTS[action.intent].icon
+    return {
+      label: action.label,
+      icon,
+      onSelect: action.onClick ?? (() => undefined),
+      disabled: action.unavailableReason !== undefined,
+      destructive:
+        action.intent === undefined
+          ? action.family === 'destructive'
+          : INTENTS[action.intent].family === 'destructive',
+    }
+  })
+
+  return (
+    <div ref={row} className={cn('relative min-w-0', className)}>
+      {/* Every action and the "More" button, laid out once invisibly, to measure their widths. */}
+      <div
+        ref={measure}
+        aria-hidden="true"
+        inert
+        className="pointer-events-none invisible absolute flex gap-2 whitespace-nowrap"
+      >
+        {actions.map((action) => (
+          <Action key={action.key} action={action} />
+        ))}
+        <IconButton intent="more" label={messages['action.more']} />
+      </div>
+      <div
+        className={cn(
+          'flex flex-wrap items-center gap-2',
+          align === 'end' ? 'justify-end' : 'justify-start',
+        )}
+      >
+        {hidden.length > 0 && (
+          <DropdownMenu
+            trigger={<IconButton intent="more" label={messages['action.more']} />}
+            entries={entries}
+            align="end"
+          />
+        )}
+        {shown.map((action) => (
+          <Action key={action.key} action={action} />
+        ))}
+      </div>
+    </div>
+  )
+}
