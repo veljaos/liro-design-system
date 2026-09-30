@@ -33,14 +33,21 @@ export type {
   IrreversibleConfirmDialogProps,
 } from './components/confirm-dialog'
 export { DataTable } from './components/data-table'
-export type { DataTableColumn, DataTableProps } from './components/data-table'
+export type { DataTableColumn, DataTableMobile, DataTableProps } from './components/data-table'
 export {
   ariaSort,
+  clampWidth,
   COUNT_THRESHOLD,
   formatCount,
   hasActiveFilters,
   isActiveFilterValue,
+  MAX_COLUMN_WIDTH,
+  MIN_COLUMN_WIDTH,
   nextSort,
+  RESIZE_STEP,
+  RESIZE_STEP_LARGE,
+  widthAfterDrag,
+  widthAfterKey,
 } from './components/data-table-logic'
 export type { DataTableFilters, DataTableSort } from './components/data-table-logic'
 export { Dialog, Drawer } from './components/dialog'

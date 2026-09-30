@@ -116,13 +116,16 @@ describe('messages', () => {
       'stepper.completed',
       'table.clearFilters',
       'table.count',
+      'table.narrower',
       'table.next',
       'table.noMatch',
       'table.noRows',
       'table.previous',
+      'table.resizeColumn',
       'table.rowActions',
       'table.selectAll',
       'table.selectRow',
+      'table.wider',
     ])
   })
 

@@ -5,11 +5,16 @@ import { messagesEn } from '../provider/messages.en'
 import { DataTable, type DataTableColumn, type DataTableProps } from './data-table'
 import {
   ariaSort,
+  clampWidth,
   COUNT_THRESHOLD,
   formatCount,
   hasActiveFilters,
   isActiveFilterValue,
+  MAX_COLUMN_WIDTH,
+  MIN_COLUMN_WIDTH,
   nextSort,
+  widthAfterDrag,
+  widthAfterKey,
 } from './data-table-logic'
 
 interface Line {
@@ -204,5 +209,99 @@ describe('DataTable', () => {
       bulk(false).match(/<button[^>]*disabled=""[^>]*>/g)?.length ?? 0,
     )
     expect(render({ className: 'my-table' })).toContain('my-table')
+  })
+})
+
+describe('column widths', () => {
+  it('stay between 64px (or the column minimum) and 640px, in whole pixels', () => {
+    expect(clampWidth(10)).toBe(MIN_COLUMN_WIDTH)
+    expect(clampWidth(10, 120)).toBe(120)
+    expect(clampWidth(9000)).toBe(MAX_COLUMN_WIDTH)
+    expect(clampWidth(100.6)).toBe(101)
+  })
+
+  it('widen with the arrow that points in the reading direction, 10px or 40px with Shift', () => {
+    expect(widthAfterKey(200, 'ArrowRight', false, 'ltr')).toBe(210)
+    expect(widthAfterKey(200, 'ArrowLeft', false, 'ltr')).toBe(190)
+    expect(widthAfterKey(200, 'ArrowRight', true, 'ltr')).toBe(240)
+    expect(widthAfterKey(200, 'ArrowLeft', false, 'rtl')).toBe(210)
+    expect(widthAfterKey(200, 'ArrowRight', true, 'rtl')).toBe(160)
+    expect(widthAfterKey(200, 'ArrowUp', false, 'ltr')).toBeNull()
+    expect(widthAfterKey(70, 'ArrowLeft', true, 'ltr')).toBe(MIN_COLUMN_WIDTH)
+    expect(widthAfterKey(635, 'ArrowRight', false, 'ltr')).toBe(MAX_COLUMN_WIDTH)
+  })
+
+  it('follow the pointer from the leading edge in both directions', () => {
+    expect(widthAfterDrag(200, 500, 530, 'ltr')).toBe(230)
+    expect(widthAfterDrag(200, 500, 470, 'ltr')).toBe(170)
+    // In right-to-left the column's end is on the left: moving left widens it.
+    expect(widthAfterDrag(200, 500, 470, 'rtl')).toBe(230)
+    expect(widthAfterDrag(200, 500, 530, 'rtl')).toBe(170)
+    expect(widthAfterDrag(200, 500, 0, 'ltr', 90)).toBe(90)
+  })
+})
+
+describe('DataTable on a phone', () => {
+  it('renders either the table or the cards, never both', () => {
+    const cards = render({ layout: 'cards' })
+    expect(cards).not.toContain('<table')
+    expect(cards).toContain('<ul')
+    const table = render({ layout: 'table' })
+    expect(table).toContain('<table')
+    expect(table).not.toContain('<ul')
+  })
+
+  it('builds each card from the mobile description', () => {
+    const html = render({
+      layout: 'cards',
+      mobile: {
+        title: (row) => `Title ${row.name}`,
+        subtitle: (row) => `Sub ${row.id}`,
+        badge: () => 'BADGE',
+        details: ['amount'],
+      },
+      selection: ['a'],
+      onSelectionChange: () => undefined,
+      rowActions: () => [],
+    })
+    expect(html).toContain('Title Alpha')
+    expect(html).toContain('Sub a')
+    expect(html).toContain('BADGE')
+    expect(html).toContain('<dt class="text-xs text-tertiary">Amount</dt>')
+    expect(html).not.toContain('>Name</dt>')
+    expect(html).toContain('aria-label="Select Alpha"')
+    expect(html).toContain('aria-label="Actions: Alpha"')
+    expect(html).toContain('border-brand bg-surface-selected')
+  })
+
+  it('uses the row label and every column without a mobile description', () => {
+    const html = render({ layout: 'cards' })
+    expect(html).toContain('>Alpha</span>')
+    expect(html).toContain('>Name</dt>')
+    expect(html).toContain('>Amount</dt>')
+  })
+
+  it('shows the given totals under the cards, and the empty and loading states', () => {
+    const html = render({ layout: 'cards', totals: { amount: '99.00' }, totalsLabel: 'Total' })
+    expect(html).toContain('>99.00</span>')
+    expect(render({ layout: 'cards', rows: [] })).toContain(messagesEn['table.noRows'])
+    expect(
+      render({ layout: 'cards', rows: [], loading: true }).match(/data-slot="skeleton"/g),
+    ).toHaveLength(5)
+  })
+})
+
+describe('DataTable with many rows', () => {
+  it('numbers the rows for assistive technology when virtualized', () => {
+    const rows = Array.from({ length: 1000 }, (_, index) => ({
+      id: String(index),
+      name: `Row ${String(index)}`,
+      amount: '1.00',
+    }))
+    const html = render({ rows, virtualize: true, maxHeight: '400px' })
+    expect(html).toContain('aria-rowcount="1001"')
+    expect(html).toContain('sticky top-0')
+    // Only the rows in view are drawn, never all thousand.
+    expect((html.match(/aria-rowindex=/g) ?? []).length).toBeLessThan(100)
   })
 })

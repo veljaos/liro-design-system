@@ -7,12 +7,16 @@ import {
   type RowSelectionState,
   type Updater,
 } from '@tanstack/react-table'
+import { useVirtualizer } from '@tanstack/react-virtual'
 import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react'
 import {
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
+  type CSSProperties,
   type KeyboardEvent,
   type MouseEvent,
   type ReactNode,
@@ -24,28 +28,32 @@ import { Skeleton } from '../primitives/skeleton'
 import { useLiro } from '../provider/liro-provider'
 import { BulkActionBar, type BulkAction } from './bulk-action-bar'
 import { CompactIconButton } from './button'
+import { DataTableCard, fromControl } from './data-table-card'
 import {
   ariaSort,
+  clampWidth,
   formatCount,
   hasActiveFilters,
+  MIN_COLUMN_WIDTH,
   nextSort,
   type DataTableFilters,
   type DataTableSort,
 } from './data-table-logic'
+import { ResizeHandle } from './data-table-resize'
 import { DropdownMenu, type MenuEntry } from './dropdown-menu'
 import { EmptyState, type EmptyAction } from './empty-state'
 import { CursorPagination } from './navigation'
 
 /*
- * DataTable (BUILD-PLAN P3.1), on TanStack Table and fully controlled: the table never fetches,
- * sorts, filters or sums. Rows arrive in the order to show; sort, filters, selection, paging and
- * totals arrive as props, and every change goes back through a callback.
+ * DataTable (BUILD-PLAN P3.1, P3.2), on TanStack Table and fully controlled: the table never
+ * fetches, sorts, filters or sums. Rows arrive in the order to show; sort, filters, selection,
+ * paging and totals arrive as props, and every change goes back through a callback.
  *
  * The previous Design System's values (the owner, 2026-09-30, docs/decisions.md "Table"):
  * - table font size sm (13px), cells 12px (sm) top and bottom and 16px (md) at the sides;
- * - the header row on surface.sunken; sticky when `stickyHeader` (inside the table's own scroll
- *   area, `maxHeight`);
+ * - the header row on surface.sunken; sticky when `stickyHeader`, always when virtualized;
  * - minimum column width 64px; below 640px the table scrolls sideways inside its container;
+ *   resizable, the table is exactly as wide as its columns, so resizing one never moves another;
  * - rows highlight under the pointer only when they can be pressed;
  * - sortable headers: a plain button, label then a 13px icon 4px after it (ArrowUpDown, ArrowUp,
  *   ArrowDown), the label and icon in text.brand when sorted; aria-sort on sortable headers only;
@@ -57,7 +65,9 @@ import { CursorPagination } from './navigation'
  *   translucent overlay;
  * - totals row: surface.sunken, semibold, a 1px border.strong line above it, sticky at the
  *   bottom while the table scrolls; values from the application, never computed;
- * - filters decide "nothing here yet" or "no rows match" (with "Clear filters").
+ * - filters decide "nothing here yet" or "no rows match" (with "Clear filters");
+ * - on a phone (below 48em) the rows are cards, by real branching: only one layout is rendered
+ *   (Appendix B.5); virtualized rows are 44px, cards estimated at 104px.
  * Everything else is Mantine 9.6.2 Table (Table.css) with Liro meanings.
  */
 
@@ -67,6 +77,11 @@ export interface DataTableColumn<Row extends RowData> {
   id: string
   /** The header's text, from the application. */
   header: ReactNode
+  /**
+   * The header as plain text, for the names of its resize controls. Default: `header` when it is
+   * a string, else the id.
+   */
+  label?: string
   /** The cell of one row. Numbers and amounts through NumberText / MoneyText. */
   cell: (row: Row) => ReactNode
   /** Default 'start'. Numbers and amounts: 'end'. */
@@ -75,6 +90,24 @@ export interface DataTableColumn<Row extends RowData> {
   numeric?: boolean
   /** The header sorts by this column (the application sorts; the table never does). */
   sortable?: boolean
+  /** With `resizable`: the starting width in pixels. Default: the width the content takes. */
+  width?: number
+  /** With `resizable`: the narrowest it can be made. Default 64px. */
+  minWidth?: number
+  /** With `resizable`: false keeps this column's width. Default true. */
+  resizable?: boolean
+}
+
+/** Which parts of a row make its card on a phone. */
+export interface DataTableMobile<Row extends RowData> {
+  /** The card's title (one line). Default: `getRowLabel`. */
+  title?: (row: Row) => ReactNode
+  /** A second line under the title. */
+  subtitle?: (row: Row) => ReactNode
+  /** At the card's end, e.g. a StatusBadge. */
+  badge?: (row: Row) => ReactNode
+  /** The columns shown as label and value under the title, by id. Default: every column. */
+  details?: readonly string[]
 }
 
 export interface DataTableProps<Row extends RowData> {
@@ -141,6 +174,20 @@ export interface DataTableProps<Row extends RowData> {
   stickyHeader?: boolean
   /** The table scrolls inside this height (CSS length, e.g. "60vh"), so header and totals stay. */
   maxHeight?: string
+
+  /** The card of a row on a phone. */
+  mobile?: DataTableMobile<Row>
+  /** 'auto' (default): cards below 48em, the table above. 'table' or 'cards' forces one. */
+  layout?: 'auto' | 'table' | 'cards'
+  /**
+   * Renders only the rows in view, for long lists: 44px rows, the header sticky. Needs
+   * `maxHeight`, the height it scrolls in.
+   */
+  virtualize?: boolean
+  /** Columns can be resized by pointer, keyboard and a popover (without dragging). */
+  resizable?: boolean
+  /** The widths after each resize, per column id, for the application to keep. */
+  onColumnWidthsChange?: (widths: Record<string, number>) => void
   className?: string
 }
 
@@ -151,17 +198,48 @@ const ALIGN = { start: 'text-start', center: 'text-center', end: 'text-end' } as
 /** Mantine Table cell padding: vertical sm (12px), horizontal md (16px). */
 const CELL = 'px-4 py-3'
 
-/** Keeps a press on a control inside a row (checkbox, menu, link) from pressing the row. */
-function fromControl(event: MouseEvent | KeyboardEvent): boolean {
-  const target = event.target as Element
-  // Menus render in a portal; their events still bubble through the React tree to the row.
-  if (!event.currentTarget.contains(target)) return true
-  return target.closest('button, a, input, select, textarea, [role="checkbox"]') !== null
+/** A virtualized row (owner) and the estimated card (owner). */
+const ROW_HEIGHT = 44
+const CARD_HEIGHT = 104
+
+/** The selection column (16px checkbox, 16px each side) and the menu column (28px, 8px each side). */
+const SELECT_WIDTH = 48
+const ACTIONS_WIDTH = 44
+
+/** Phones are narrower than the sm breakpoint (48em), as KeyValueList and FilterBar (owner). */
+const WIDE_QUERY = '(min-width: 48em)'
+
+function subscribeToWidth(onChange: () => void) {
+  const query = window.matchMedia(WIDE_QUERY)
+  query.addEventListener('change', onChange)
+  return () => {
+    query.removeEventListener('change', onChange)
+  }
+}
+
+/** Whether the viewport is a phone's. On the server: not (the table). */
+function usePhone(): boolean {
+  return useSyncExternalStore(
+    subscribeToWidth,
+    () => !window.matchMedia(WIDE_QUERY).matches,
+    () => false,
+  )
+}
+
+/** The narrowest a column can be resized to. */
+function columnMinWidth<Row extends RowData>(column: DataTableColumn<Row>): number {
+  return column.minWidth ?? MIN_COLUMN_WIDTH
+}
+
+/** The column's name as text. */
+function columnLabel<Row extends RowData>(column: DataTableColumn<Row>): string {
+  return column.label ?? (typeof column.header === 'string' ? column.header : column.id)
 }
 
 /**
  * A list of records: columns, sort, selection with bulk actions, row actions, totals, count and
- * paging by cursor. Controlled: the application fetches, sorts and filters on the server.
+ * paging by cursor; cards on a phone; virtual rows for long lists; resizable columns.
+ * Controlled: the application fetches, sorts and filters on the server.
  */
 export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
   const { messages } = useLiro()
@@ -178,6 +256,12 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
   const selectable = onSelectionChange !== undefined
   const hasActions = props.rowActions !== undefined
   const clickable = props.onRowClick !== undefined
+  const phone = usePhone()
+  const layout = props.layout ?? 'auto'
+  const cards = layout === 'cards' || (layout === 'auto' && phone)
+  const virtualize = props.virtualize === true
+  const sticky = props.stickyHeader === true || virtualize
+  const resizable = props.resizable === true && !cards
 
   const rowSelection = useMemo<RowSelectionState>(
     () => Object.fromEntries((selection ?? []).map((id) => [id, true])),
@@ -226,7 +310,64 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
     return () => {
       observer.disconnect()
     }
-  }, [])
+  }, [cards])
+
+  // Column widths, once resizing is on: the given widths, else the ones the content took in the
+  // first (automatic) layout, measured before the browser paints. Then the layout is fixed and the
+  // table exactly as wide as its columns.
+  const [widths, setWidths] = useState<Record<string, number>>({})
+  const widthsRef = useRef(widths)
+  widthsRef.current = widths
+  const headerCells = useRef(new Map<string, HTMLTableCellElement>())
+  useLayoutEffect(() => {
+    if (!resizable) return
+    const missing = columns.filter((column) => widths[column.id] === undefined)
+    if (missing.length === 0) return
+    const next = { ...widths }
+    for (const column of missing) {
+      const measured = headerCells.current.get(column.id)?.getBoundingClientRect().width
+      // Rounded up: a column a fraction of a pixel too narrow would end its text with "…".
+      const natural = measured === undefined ? undefined : Math.ceil(measured)
+      next[column.id] = clampWidth(
+        column.width ?? natural ?? MIN_COLUMN_WIDTH,
+        columnMinWidth(column),
+      )
+    }
+    setWidths(next)
+  }, [resizable, columns, widths])
+  // The first measurement may run before the web fonts have loaded, with a narrower fallback
+  // font: whenever fonts finish loading, measure again, until the user resizes a column.
+  const userResized = useRef(false)
+  useEffect(() => {
+    if (!resizable) return
+    const remeasure = () => {
+      if (!userResized.current) setWidths({})
+    }
+    document.fonts.addEventListener('loadingdone', remeasure)
+    return () => {
+      document.fonts.removeEventListener('loadingdone', remeasure)
+    }
+  }, [resizable])
+  const fixed = resizable && columns.every((column) => widths[column.id] !== undefined)
+  // The measuring pass, before the first paint: every column at its natural one-line width, so a
+  // long text in one column does not squeeze the others before they are measured.
+  const measuring = resizable && !fixed
+  const tableWidth = fixed
+    ? columns.reduce((sum, column) => sum + (widths[column.id] ?? 0), 0) +
+      (selectable ? SELECT_WIDTH : 0) +
+      (hasActions ? ACTIONS_WIDTH : 0)
+    : undefined
+
+  const virtualizer = useVirtualizer({
+    count: rows.length,
+    getScrollElement: () => scroller.current,
+    estimateSize: () => (cards ? CARD_HEIGHT : ROW_HEIGHT),
+    overscan: 8,
+    enabled: virtualize,
+    // Before the scroll area is measured (and on the server), assume a screen's height, so the
+    // first rows are drawn at once instead of after a measurement.
+    initialRect: { width: 0, height: 720 },
+  })
 
   const byId = new Map(columns.map((column) => [column.id, column]))
   const tableRows = table.getRowModel().rows
@@ -235,22 +376,74 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
   const span = columns.length + (selectable ? 1 : 0) + (hasActions ? 1 : 0)
   const allSelected = tableRows.length > 0 && table.getIsAllRowsSelected()
   const someSelected = !allSelected && table.getIsSomeRowsSelected()
+  const filtered = hasActiveFilters(props.filters)
+  // Cells cut what does not fit with an ellipsis: resized columns (owner) and 44px virtual rows.
+  const oneLine = fixed || virtualize
+
+  const skeleton = (
+    <div className="flex flex-col gap-2 p-4">
+      {Array.from({ length: props.skeletonRows ?? 5 }, (_, index) => (
+        <Skeleton key={index} className="h-9 rounded-sm" />
+      ))}
+    </div>
+  )
+
+  const empty = () => {
+    const { onFiltersChange } = props
+    const clear =
+      filtered && onFiltersChange !== undefined
+        ? {
+            label: messages['table.clearFilters'],
+            onClick: () => {
+              onFiltersChange({})
+            },
+          }
+        : undefined
+    const action = filtered ? clear : props.emptyAction
+    return (
+      <EmptyState
+        // A new element per state: the "Clear filters" button is not reused as the "nothing here
+        // yet" action, so the focus never stays on a button whose action has changed.
+        key={filtered ? 'no-match' : 'empty'}
+        variant={filtered ? 'no-results' : 'empty'}
+        title={filtered ? messages['table.noMatch'] : messages['table.noRows']}
+        {...(action === undefined ? {} : { action })}
+      />
+    )
+  }
+
+  const onResize = (column: DataTableColumn<Row>, width: number) => {
+    userResized.current = true
+    setWidths((current) => ({ ...current, [column.id]: width }))
+  }
+  const onResizeEnd = () => {
+    // After React has applied the last width.
+    queueMicrotask(() => {
+      props.onColumnWidthsChange?.({ ...widthsRef.current })
+    })
+  }
 
   const header = (column: DataTableColumn<Row>) => {
     const align = column.align ?? 'start'
     const sortable = column.sortable === true && onSortChange !== undefined
     const sorted = sort?.column === column.id ? sort.direction : null
     const Icon = sorted === 'asc' ? ArrowUp : sorted === 'desc' ? ArrowDown : ArrowUpDown
+    const width = widths[column.id]
     return (
       <th
         key={column.id}
+        ref={(element) => {
+          if (element === null) headerCells.current.delete(column.id)
+          else headerCells.current.set(column.id, element)
+        }}
         scope="col"
         aria-sort={ariaSort(sort, column.id, sortable)}
         className={cn(
           CELL,
-          'min-w-16 border-0 border-b border-solid border-default bg-surface-sunken font-bold text-primary',
+          'group/header min-w-16 border-0 border-b border-solid border-default bg-surface-sunken font-bold text-primary',
           ALIGN[align],
-          props.stickyHeader === true && 'sticky top-0 z-10',
+          sticky ? 'sticky top-0 z-10' : resizable && 'relative',
+          oneLine && 'truncate',
         )}
       >
         {sortable ? (
@@ -261,141 +454,163 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
             }}
             className={cn(
               BUTTON_RESET,
-              'inline-flex cursor-pointer items-center gap-1 rounded-sm text-sm font-bold',
+              'inline-flex max-w-full cursor-pointer items-center gap-1 rounded-sm text-sm font-bold',
               sorted === null ? 'text-primary' : 'text-brand',
               FOCUS_RING,
             )}
           >
-            <span>{column.header}</span>
+            <span className={cn(oneLine && 'truncate')}>{column.header}</span>
             <Icon aria-hidden="true" className="size-[13px] shrink-0" />
           </button>
         ) : (
           column.header
         )}
+        {resizable && column.resizable !== false && width !== undefined && (
+          <ResizeHandle
+            label={columnLabel(column)}
+            width={width}
+            min={columnMinWidth(column)}
+            onResize={(next) => {
+              onResize(column, next)
+            }}
+            onResizeEnd={onResizeEnd}
+          />
+        )}
       </th>
+    )
+  }
+
+  const tableRow = (index: number) => {
+    const row = tableRows[index]
+    if (row === undefined) return null
+    const original = row.original
+    const selected = row.getIsSelected()
+    const label = getRowLabel(original)
+    const press = () => props.onRowClick?.(original)
+    return (
+      <tr
+        key={row.id}
+        aria-selected={selectable ? selected : undefined}
+        aria-rowindex={virtualize ? index + 2 : undefined}
+        {...(clickable
+          ? {
+              tabIndex: 0,
+              onClick: (event: MouseEvent) => {
+                if (!fromControl(event)) press()
+              },
+              onKeyDown: (event: KeyboardEvent) => {
+                if (event.key === 'Enter' && !fromControl(event)) {
+                  event.preventDefault()
+                  press()
+                }
+              },
+            }
+          : {})}
+        className={cn(
+          virtualize && 'h-11',
+          selected && 'bg-surface-selected',
+          clickable &&
+            'cursor-pointer outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus',
+          clickable && !selected && 'hover:bg-surface-sunken',
+        )}
+      >
+        {selectable && (
+          <td
+            className={cn(
+              CELL,
+              'w-px border-0 border-b border-solid border-default',
+              virtualize && 'py-0',
+            )}
+          >
+            <Checkbox
+              checked={selected}
+              onCheckedChange={(value) => {
+                row.toggleSelected(value === true)
+              }}
+              aria-label={messages['table.selectRow'](label)}
+              className="flex size-4 after:-inset-1 [&_svg]:size-2.5"
+            />
+          </td>
+        )}
+        {row.getAllCells().map((cell) => {
+          const column = byId.get(cell.column.id)
+          return (
+            <td
+              key={cell.id}
+              className={cn(
+                CELL,
+                'min-w-16 border-0 border-b border-solid border-default',
+                ALIGN[column?.align ?? 'start'],
+                column?.numeric === true && 'tabular-nums',
+                virtualize && 'py-0',
+                oneLine && 'truncate',
+              )}
+            >
+              <table.FlexRender cell={cell} />
+            </td>
+          )
+        })}
+        {hasActions && (
+          <td className="w-px border-0 border-b border-solid border-default px-2 py-0 text-end">
+            <DropdownMenu
+              align="end"
+              trigger={
+                <CompactIconButton intent="more" label={messages['table.rowActions'](label)} />
+              }
+              entries={props.rowActions?.(original) ?? []}
+            />
+          </td>
+        )}
+      </tr>
     )
   }
 
   const body = () => {
     if (firstLoad) {
-      const count = props.skeletonRows ?? 5
       return (
         <tr>
-          <td colSpan={span} className="p-4">
-            <div className="flex flex-col gap-2">
-              {Array.from({ length: count }, (_, index) => (
-                <Skeleton key={index} className="h-9 rounded-sm" />
-              ))}
-            </div>
+          <td colSpan={span} className="p-0">
+            {skeleton}
           </td>
         </tr>
       )
     }
     if (rows.length === 0) {
-      const filtered = hasActiveFilters(props.filters)
-      const { onFiltersChange } = props
-      const clear =
-        filtered && onFiltersChange !== undefined
-          ? {
-              label: messages['table.clearFilters'],
-              onClick: () => {
-                onFiltersChange({})
-              },
-            }
-          : undefined
-      const action = filtered ? clear : props.emptyAction
       return (
         <tr>
           <td colSpan={span} className="p-4">
-            <EmptyState
-              variant={filtered ? 'no-results' : 'empty'}
-              title={filtered ? messages['table.noMatch'] : messages['table.noRows']}
-              {...(action === undefined ? {} : { action })}
-            />
+            {empty()}
           </td>
         </tr>
       )
     }
-    return tableRows.map((row) => {
-      const original = row.original
-      const selected = row.getIsSelected()
-      const label = getRowLabel(original)
-      const press = () => props.onRowClick?.(original)
-      return (
-        <tr
-          key={row.id}
-          aria-selected={selectable ? selected : undefined}
-          {...(clickable
-            ? {
-                tabIndex: 0,
-                onClick: (event: MouseEvent) => {
-                  if (!fromControl(event)) press()
-                },
-                onKeyDown: (event: KeyboardEvent) => {
-                  if (event.key === 'Enter' && !fromControl(event)) {
-                    event.preventDefault()
-                    press()
-                  }
-                },
-              }
-            : {})}
-          className={cn(
-            'group/row',
-            selected && 'bg-surface-selected',
-            clickable &&
-              'cursor-pointer outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus',
-            clickable && !selected && 'hover:bg-surface-sunken',
-          )}
-        >
-          {selectable && (
-            <td className={cn(CELL, 'w-px border-0 border-b border-solid border-default')}>
-              <Checkbox
-                checked={selected}
-                onCheckedChange={(value) => {
-                  row.toggleSelected(value === true)
-                }}
-                aria-label={messages['table.selectRow'](label)}
-                className="flex size-4 after:-inset-1 [&_svg]:size-2.5"
-              />
-            </td>
-          )}
-          {row.getAllCells().map((cell) => {
-            const column = byId.get(cell.column.id)
-            return (
-              <td
-                key={cell.id}
-                className={cn(
-                  CELL,
-                  'min-w-16 border-0 border-b border-solid border-default',
-                  ALIGN[column?.align ?? 'start'],
-                  column?.numeric === true && 'tabular-nums',
-                )}
-              >
-                <table.FlexRender cell={cell} />
-              </td>
-            )
-          })}
-          {hasActions && (
-            <td className="w-px border-0 border-b border-solid border-default px-2 py-0 text-end">
-              <DropdownMenu
-                align="end"
-                trigger={
-                  <CompactIconButton intent="more" label={messages['table.rowActions'](label)} />
-                }
-                entries={props.rowActions?.(original) ?? []}
-              />
-            </td>
-          )}
-        </tr>
-      )
-    })
+    if (!virtualize) return tableRows.map((_, index) => tableRow(index))
+    // Only the rows in view, between two spacer rows that keep the scroll height.
+    const items = virtualizer.getVirtualItems()
+    const before = items[0]?.start ?? 0
+    const after = virtualizer.getTotalSize() - (items.at(-1)?.end ?? 0)
+    return (
+      <>
+        {before > 0 && (
+          <tr aria-hidden="true" style={{ height: before }}>
+            <td colSpan={span} className="border-0 p-0" />
+          </tr>
+        )}
+        {items.map((item) => tableRow(item.index))}
+        {after > 0 && (
+          <tr aria-hidden="true" style={{ height: after }}>
+            <td colSpan={span} className="border-0 p-0" />
+          </tr>
+        )}
+      </>
+    )
   }
 
   const totals = props.totals
   const footer =
     totals !== undefined && rows.length > 0 ? (
       <tfoot>
-        <tr>
+        <tr aria-rowindex={virtualize ? rows.length + 2 : undefined}>
           {selectable && <td className={cn(CELL, 'bg-surface-sunken', TOTALS_LINE)} />}
           {columns.map((column, index) => {
             const value = totals[column.id] ?? (index === 0 ? props.totalsLabel : undefined) ?? null
@@ -408,6 +623,7 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
                   TOTALS_LINE,
                   ALIGN[column.align ?? 'start'],
                   column.numeric === true && 'tabular-nums',
+                  oneLine && 'truncate',
                 )}
               >
                 {value}
@@ -419,11 +635,109 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
       </tfoot>
     ) : null
 
+  const detailColumns = (props.mobile?.details ?? columns.map((column) => column.id))
+    .map((id) => byId.get(id))
+    .filter((column) => column !== undefined)
+
+  const card = (index: number) => {
+    const row = tableRows[index]
+    if (row === undefined) return null
+    const original = row.original
+    const label = getRowLabel(original)
+    const { mobile, rowActions, onRowClick } = props
+    const subtitle = mobile?.subtitle?.(original)
+    const badge = mobile?.badge?.(original)
+    return (
+      <DataTableCard
+        title={mobile?.title?.(original) ?? label}
+        {...(subtitle === undefined ? {} : { subtitle })}
+        {...(badge === undefined ? {} : { badge })}
+        details={detailColumns.map((column) => ({
+          key: column.id,
+          label: column.header,
+          value: column.cell(original),
+        }))}
+        selected={row.getIsSelected()}
+        {...(selectable
+          ? {
+              onSelectedChange: (value: boolean) => {
+                row.toggleSelected(value)
+              },
+            }
+          : {})}
+        selectLabel={messages['table.selectRow'](label)}
+        {...(rowActions === undefined ? {} : { actions: rowActions(original) })}
+        actionsLabel={messages['table.rowActions'](label)}
+        {...(onRowClick === undefined
+          ? {}
+          : {
+              onPress: () => {
+                onRowClick(original)
+              },
+            })}
+      />
+    )
+  }
+
+  const cardList = () => {
+    if (firstLoad) return skeleton
+    if (rows.length === 0) return <div className="p-4">{empty()}</div>
+    if (!virtualize) {
+      return (
+        <ul aria-label={props.label} className="m-0 flex list-none flex-col gap-4 p-0">
+          {tableRows.map((row, index) => (
+            <li key={row.id}>{card(index)}</li>
+          ))}
+        </ul>
+      )
+    }
+    // Cards differ in height: each is measured once drawn; the gap is part of its item.
+    return (
+      <ul
+        aria-label={props.label}
+        className="relative m-0 list-none p-0"
+        style={{ height: virtualizer.getTotalSize() }}
+      >
+        {virtualizer.getVirtualItems().map((item) => (
+          <li
+            key={tableRows[item.index]?.id ?? item.index}
+            data-index={item.index}
+            ref={virtualizer.measureElement}
+            aria-setsize={rows.length}
+            aria-posinset={item.index + 1}
+            className="absolute inset-x-0 top-0 pb-4"
+            style={{ transform: `translateY(${String(item.start)}px)` }}
+          >
+            {card(item.index)}
+          </li>
+        ))}
+      </ul>
+    )
+  }
+
+  const cardTotals =
+    cards && totals !== undefined && rows.length > 0 ? (
+      <div className="flex flex-col gap-0.5 rounded-md border-0 border-t border-solid border-strong bg-surface-sunken p-3 text-xs font-semibold text-primary">
+        {props.totalsLabel !== undefined && <div className="text-sm">{props.totalsLabel}</div>}
+        {columns
+          .filter((column) => totals[column.id] !== undefined)
+          .map((column) => (
+            <div key={column.id} className="flex items-baseline justify-between gap-4">
+              <span>{column.header}</span>
+              <span className="text-end tabular-nums">{totals[column.id]}</span>
+            </div>
+          ))}
+      </div>
+    ) : null
+
   const paging = props.onNext !== undefined || props.onPrevious !== undefined
   const countText =
     props.count === undefined
       ? undefined
       : formatCount(messages, props.count, props.countIsExact ?? true, props.countThreshold)
+
+  const scrollStyle: CSSProperties | undefined =
+    props.maxHeight === undefined ? undefined : { maxHeight: props.maxHeight }
 
   return (
     <div className={cn('flex min-w-0 flex-col gap-3 font-sans', props.className)}>
@@ -448,58 +762,81 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
         <div
           ref={scroller}
           {...(scrolls ? { tabIndex: 0, role: 'region', 'aria-label': props.label } : {})}
+          aria-busy={cards && props.loading === true ? true : undefined}
           className={cn(
             'overflow-auto',
             FOCUS_RING,
             'focus-visible:-outline-offset-2',
             // A row reached by the keyboard is scrolled clear of the sticky header and totals
             // (focus never hidden, WCAG 2.4.11): both are one 13px line with 12px above and below.
-            props.stickyHeader === true && 'scroll-pt-12',
-            props.totals !== undefined && 'scroll-pb-12',
+            !cards && sticky && 'scroll-pt-12',
+            !cards && props.totals !== undefined && 'scroll-pb-12',
           )}
-          style={props.maxHeight === undefined ? undefined : { maxHeight: props.maxHeight }}
+          style={scrollStyle}
         >
-          <table
-            aria-label={props.label}
-            aria-busy={props.loading === true ? true : undefined}
-            className="w-full min-w-160 border-separate border-spacing-0 text-sm text-primary"
-          >
-            <thead>
-              <tr>
-                {selectable && (
-                  <th
-                    scope="col"
-                    className={cn(
-                      CELL,
-                      'w-px border-0 border-b border-solid border-default bg-surface-sunken',
-                      props.stickyHeader === true && 'sticky top-0 z-10',
-                    )}
-                  >
-                    <Checkbox
-                      checked={allSelected ? true : someSelected ? 'indeterminate' : false}
-                      disabled={tableRows.length === 0}
-                      onCheckedChange={(value) => {
-                        table.toggleAllRowsSelected(value === true)
-                      }}
-                      aria-label={messages['table.selectAll']}
-                      className="flex size-4 after:-inset-1 [&_svg]:size-2.5"
+          {cards ? (
+            cardList()
+          ) : (
+            <table
+              aria-label={props.label}
+              aria-busy={props.loading === true ? true : undefined}
+              aria-rowcount={virtualize ? rows.length + 1 + (footer === null ? 0 : 1) : undefined}
+              className={cn(
+                'border-separate border-spacing-0 text-sm text-primary',
+                fixed
+                  ? 'table-fixed'
+                  : measuring
+                    ? 'w-max [&_td]:text-nowrap [&_th]:text-nowrap'
+                    : 'w-full min-w-160',
+              )}
+              style={tableWidth === undefined ? undefined : { width: tableWidth }}
+            >
+              {fixed && (
+                <colgroup>
+                  {selectable && <col style={{ width: SELECT_WIDTH }} />}
+                  {columns.map((column) => (
+                    <col key={column.id} style={{ width: widths[column.id] }} />
+                  ))}
+                  {hasActions && <col style={{ width: ACTIONS_WIDTH }} />}
+                </colgroup>
+              )}
+              <thead>
+                <tr aria-rowindex={virtualize ? 1 : undefined}>
+                  {selectable && (
+                    <th
+                      scope="col"
+                      className={cn(
+                        CELL,
+                        'w-px border-0 border-b border-solid border-default bg-surface-sunken',
+                        sticky && 'sticky top-0 z-10',
+                      )}
+                    >
+                      <Checkbox
+                        checked={allSelected ? true : someSelected ? 'indeterminate' : false}
+                        disabled={tableRows.length === 0}
+                        onCheckedChange={(value) => {
+                          table.toggleAllRowsSelected(value === true)
+                        }}
+                        aria-label={messages['table.selectAll']}
+                        className="flex size-4 after:-inset-1 [&_svg]:size-2.5"
+                      />
+                    </th>
+                  )}
+                  {columns.map(header)}
+                  {hasActions && (
+                    <td
+                      className={cn(
+                        'w-px border-0 border-b border-solid border-default bg-surface-sunken',
+                        sticky && 'sticky top-0 z-10',
+                      )}
                     />
-                  </th>
-                )}
-                {columns.map(header)}
-                {hasActions && (
-                  <td
-                    className={cn(
-                      'w-px border-0 border-b border-solid border-default bg-surface-sunken',
-                      props.stickyHeader === true && 'sticky top-0 z-10',
-                    )}
-                  />
-                )}
-              </tr>
-            </thead>
-            <tbody className="[&>tr:last-child>td]:border-b-0">{body()}</tbody>
-            {footer}
-          </table>
+                  )}
+                </tr>
+              </thead>
+              <tbody className="[&>tr:last-child>td]:border-b-0">{body()}</tbody>
+              {footer}
+            </table>
+          )}
         </div>
         {refetching && (
           <span
@@ -514,6 +851,7 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
           </span>
         )}
       </div>
+      {cardTotals}
       {props.rowLimitMessage !== undefined && (
         <div className="text-sm text-secondary">{props.rowLimitMessage}</div>
       )}

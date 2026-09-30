@@ -26,6 +26,12 @@ export interface LiroMessages {
   'table.selectRow': (label: string) => string
   /** The button that opens a row's actions menu; `label` names the row. */
   'table.rowActions': (label: string) => string
+  /** The handle that resizes a column; `label` is the column's name. */
+  'table.resizeColumn': (label: string) => string
+  /** The resize popover's button that narrows the column; `label` is the column's name. */
+  'table.narrower': (label: string) => string
+  /** The resize popover's button that widens the column; `label` is the column's name. */
+  'table.wider': (label: string) => string
   /** Marks a required field. */
   'field.required': string
   /** Announces a read-only field. */

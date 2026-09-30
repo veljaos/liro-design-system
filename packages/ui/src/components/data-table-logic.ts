@@ -62,3 +62,53 @@ export function ariaSort(
   if (sort?.column !== column) return 'none'
   return sort.direction === 'asc' ? 'ascending' : 'descending'
 }
+
+/** The narrowest a column can be resized to, unless the column sets its own minimum (owner). */
+export const MIN_COLUMN_WIDTH = 64
+
+/** The widest a column can be resized to (owner). */
+export const MAX_COLUMN_WIDTH = 640
+
+/** One arrow key press; with Shift, and the popover's buttons, the large step (owner). */
+export const RESIZE_STEP = 10
+export const RESIZE_STEP_LARGE = 40
+
+/** A width within the limits, in whole pixels. */
+export function clampWidth(width: number, min = MIN_COLUMN_WIDTH): number {
+  return Math.min(MAX_COLUMN_WIDTH, Math.max(min, Math.round(width)))
+}
+
+/**
+ * The width after an arrow key on a resize handle, or null for any other key. The arrow that
+ * widens points in the reading direction: ArrowRight in left-to-right, ArrowLeft in
+ * right-to-left (Appendix B.7: movement measures from the leading edge).
+ */
+export function widthAfterKey(
+  width: number,
+  key: string,
+  shift: boolean,
+  direction: 'ltr' | 'rtl',
+  min = MIN_COLUMN_WIDTH,
+): number | null {
+  const wider = direction === 'rtl' ? 'ArrowLeft' : 'ArrowRight'
+  const narrower = direction === 'rtl' ? 'ArrowRight' : 'ArrowLeft'
+  if (key !== wider && key !== narrower) return null
+  const step = shift ? RESIZE_STEP_LARGE : RESIZE_STEP
+  return clampWidth(width + (key === wider ? step : -step), min)
+}
+
+/**
+ * The width while dragging a resize handle: the pointer's movement from where the drag started,
+ * measured from the leading edge, so moving towards the column's end widens it in both
+ * directions (Appendix B.7).
+ */
+export function widthAfterDrag(
+  startWidth: number,
+  startX: number,
+  x: number,
+  direction: 'ltr' | 'rtl',
+  min = MIN_COLUMN_WIDTH,
+): number {
+  const moved = direction === 'rtl' ? startX - x : x - startX
+  return clampWidth(startWidth + moved, min)
+}
