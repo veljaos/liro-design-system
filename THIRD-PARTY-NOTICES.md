@@ -34,16 +34,17 @@ dependency, or copies third-party code (for example a shadcn/ui component) into 
 
 ## Runtime and peer dependencies
 
-| Software                                                                                 | Version   | License                              | Used by                                                                                      |
-| ---------------------------------------------------------------------------------------- | --------- | ------------------------------------ | -------------------------------------------------------------------------------------------- |
-| React                                                                                    | 19 (peer) | MIT                                  | `@veljaos/ui`                                                                                |
-| Radix UI (`radix-ui`, and the `@radix-ui/*` packages it depends on)                      | 1.6.7     | MIT                                  | `@veljaos/ui` (`LiroProvider` sets Radix's direction; the primitives of P2.1). Notice below. |
-| lucide-react                                                                             | 1.48.0    | ISC (part derived from Feather, MIT) | `@veljaos/ui` (the icons of the intents). Notice below.                                      |
-| cmdk                                                                                     | 1.1.1     | MIT                                  | `@veljaos/ui` (the command primitive, P2.1). Notice below.                                   |
-| react-day-picker (with its dependencies date-fns 4.4.0 and @date-fns/tz 1.5.0, both MIT) | 10.0.1    | MIT                                  | `@veljaos/ui` (the calendar primitive, P2.1). Notices below.                                 |
-| clsx                                                                                     | 2.1.1     | MIT                                  | `@veljaos/ui` (joining class names, P2.1). Notice below.                                     |
-| tailwind-merge                                                                           | 3.7.0     | MIT                                  | `@veljaos/ui` (merging class names, P2.1). Notice below.                                     |
-| sonner                                                                                   | 2.0.8     | MIT                                  | `@veljaos/ui` (toasts, P2.5). Notice below.                                                  |
+| Software                                                                                                                                  | Version   | License                              | Used by                                                                                      |
+| ----------------------------------------------------------------------------------------------------------------------------------------- | --------- | ------------------------------------ | -------------------------------------------------------------------------------------------- |
+| React                                                                                                                                     | 19 (peer) | MIT                                  | `@veljaos/ui`                                                                                |
+| Radix UI (`radix-ui`, and the `@radix-ui/*` packages it depends on)                                                                       | 1.6.7     | MIT                                  | `@veljaos/ui` (`LiroProvider` sets Radix's direction; the primitives of P2.1). Notice below. |
+| lucide-react                                                                                                                              | 1.48.0    | ISC (part derived from Feather, MIT) | `@veljaos/ui` (the icons of the intents). Notice below.                                      |
+| cmdk                                                                                                                                      | 1.1.1     | MIT                                  | `@veljaos/ui` (the command primitive, P2.1). Notice below.                                   |
+| react-day-picker (with its dependencies date-fns 4.4.0 and @date-fns/tz 1.5.0, both MIT)                                                  | 10.0.1    | MIT                                  | `@veljaos/ui` (the calendar primitive, P2.1). Notices below.                                 |
+| clsx                                                                                                                                      | 2.1.1     | MIT                                  | `@veljaos/ui` (joining class names, P2.1). Notice below.                                     |
+| tailwind-merge                                                                                                                            | 3.7.0     | MIT                                  | `@veljaos/ui` (merging class names, P2.1). Notice below.                                     |
+| sonner                                                                                                                                    | 2.0.8     | MIT                                  | `@veljaos/ui` (toasts, P2.5). Notice below.                                                  |
+| TanStack Table (`@tanstack/react-table`, `@tanstack/table-core`), with TanStack Store (`@tanstack/react-store`, `@tanstack/store` 0.11.2) | 9.2.4     | MIT                                  | `@veljaos/ui` (DataTable, P3.1). Notices below.                                              |
 
 ## Storybook build
 
@@ -51,15 +52,15 @@ The static Storybook build (`apps/storybook/storybook-static`) is not hosted any
 only as a downloadable artifact of CI runs and of the publish workflow, and carries `LICENSE` and
 this file. Besides our own code it bundles:
 
-| Software                                                                                                                                  | Version  | License  | Note                                                                                                                                         |
-| ----------------------------------------------------------------------------------------------------------------------------------------- | -------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| Storybook (storybook, @storybook/addon-a11y, addon-docs, react-vite)                                                                      | 10.6.0   | MIT      | Notice below, from the upstream repository (tag v10.6.0); the npm package ships no LICENSE file.                                             |
-| React, React DOM                                                                                                                          | 19.3.0   | MIT      | Notice below (React DOM carries the same notice).                                                                                            |
-| scheduler                                                                                                                                 | 0.28.0   | MIT      | Dependency of React DOM; same notice as React.                                                                                               |
-| axe-core                                                                                                                                  | 4.13.0   | MPL-2.0  | Used by the accessibility addon. Unmodified; source: https://github.com/dequelabs/axe-core/tree/v4.13.0. Notices below.                      |
-| Radix UI (`@radix-ui/react-direction`, through `radix-ui`)                                                                                | 1.1.4    | MIT      | Used by `LiroProvider`. Notice below (Radix UI).                                                                                             |
-| `@veljaos/ui` runtime dependencies (lucide-react, cmdk, react-day-picker, date-fns, @date-fns/tz, clsx, tailwind-merge, sonner, Radix UI) | as above | MIT, ISC | Used by the components and primitives in the stories. Notices below.                                                                         |
-| Nunito Sans                                                                                                                               | —        | OFL-1.1  | Interface font of the Storybook manager, shipped inside the storybook package. Notice below, from https://github.com/googlefonts/NunitoSans. |
+| Software                                                                                                                                                            | Version  | License  | Note                                                                                                                                         |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Storybook (storybook, @storybook/addon-a11y, addon-docs, react-vite)                                                                                                | 10.6.0   | MIT      | Notice below, from the upstream repository (tag v10.6.0); the npm package ships no LICENSE file.                                             |
+| React, React DOM                                                                                                                                                    | 19.3.0   | MIT      | Notice below (React DOM carries the same notice).                                                                                            |
+| scheduler                                                                                                                                                           | 0.28.0   | MIT      | Dependency of React DOM; same notice as React.                                                                                               |
+| axe-core                                                                                                                                                            | 4.13.0   | MPL-2.0  | Used by the accessibility addon. Unmodified; source: https://github.com/dequelabs/axe-core/tree/v4.13.0. Notices below.                      |
+| Radix UI (`@radix-ui/react-direction`, through `radix-ui`)                                                                                                          | 1.1.4    | MIT      | Used by `LiroProvider`. Notice below (Radix UI).                                                                                             |
+| `@veljaos/ui` runtime dependencies (lucide-react, cmdk, react-day-picker, date-fns, @date-fns/tz, clsx, tailwind-merge, sonner, TanStack Table and Store, Radix UI) | as above | MIT, ISC | Used by the components and primitives in the stories. Notices below.                                                                         |
+| Nunito Sans                                                                                                                                                         | —        | OFL-1.1  | Interface font of the Storybook manager, shipped inside the storybook package. Notice below, from https://github.com/googlefonts/NunitoSans. |
 
 The `storybook` package ships its own dependencies pre-bundled into its code, without separate
 notices; they are not listed here.
@@ -67,7 +68,7 @@ notices; they are not listed here.
 ## Planned
 
 Entries are added, with their notices, in the step that brings them in (BUILD-PLAN section 3):
-TanStack Table and TanStack Virtual (MIT), Recharts (MIT), React Hook Form (MIT).
+TanStack Virtual (MIT), Recharts (MIT), React Hook Form (MIT).
 
 ## Notices
 
@@ -343,6 +344,62 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 MIT License
 
 Copyright (c) 2023 Emil Kowalski
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+### TanStack Table
+
+`@tanstack/react-table` and `@tanstack/table-core` 9.2.4 carry the same notice.
+
+```
+MIT License
+
+Copyright (c) 2016 Tanner Linsley
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+### TanStack Store
+
+`@tanstack/react-store` and `@tanstack/store` 0.11.2 carry the same notice.
+
+```
+MIT License
+
+Copyright (c) 2021 Tanner Linsley
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

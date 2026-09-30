@@ -114,11 +114,15 @@ describe('messages', () => {
       'period.today',
       'period.yearToDate',
       'stepper.completed',
+      'table.clearFilters',
       'table.count',
       'table.next',
       'table.noMatch',
       'table.noRows',
       'table.previous',
+      'table.rowActions',
+      'table.selectAll',
+      'table.selectRow',
     ])
   })
 

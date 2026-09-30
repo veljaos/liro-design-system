@@ -262,7 +262,7 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P2.8c | DateText, DateRangeText, DueDate, NumberText, MoneyText | P2.8b | done | 2026-09-28 | Owner: tabular, "—" when empty; DueDate from the provider today, overdue days in the badge; new `format.dateLong` |
 | P2.8d | SettlingValue | P2.8c | done | 2026-09-28 | Owner: 6px dot after 300ms in a reserved slot; a Playwright test proves no layout shift and one announcement per settle (ltr, rtl) |
 | P3.0 | Faster CI | P0.4 | done | 2026-09-30 | Story tests, accessibility and visual in 4 parts each on 12 machines: CI 39 → 6 min; the visual test fails on a failed story before any screenshot |
-| P3.1 | DataTable core | P2.7, P2.8 | todo | | |
+| P3.1 | DataTable core | P2.7, P2.8 | done | 2026-09-30 | Owner: old look (sm text, sunken header, sort asc → desc → asc with 13px icons in text.brand, skeleton first load and 14px refetch loader, sticky totals); filters only choose the empty state, no `filterable` flag; TanStack Table 9.2.4 |
 | P3.2 | Table on phones, large lists, column resize | P3.1 | todo | | |
 | P3.3 | Filters and search | P3.1 | todo | | |
 | P3.4 | Editable grid | P3.1, P2.3 | todo | | |
