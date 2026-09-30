@@ -18,6 +18,14 @@ export interface LiroMessages {
   'table.noRows': string
   /** A table whose filters match no row. */
   'table.noMatch': string
+  /** The action of the "no rows match" state that clears the table's filters. */
+  'table.clearFilters': string
+  /** The checkbox in the header that selects every row shown. */
+  'table.selectAll': string
+  /** The checkbox of one row; `label` names the row (from the application). */
+  'table.selectRow': (label: string) => string
+  /** The button that opens a row's actions menu; `label` names the row. */
+  'table.rowActions': (label: string) => string
   /** Marks a required field. */
   'field.required': string
   /** Announces a read-only field. */

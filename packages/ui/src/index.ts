@@ -32,6 +32,17 @@ export type {
   DeleteConfirmDialogProps,
   IrreversibleConfirmDialogProps,
 } from './components/confirm-dialog'
+export { DataTable } from './components/data-table'
+export type { DataTableColumn, DataTableProps } from './components/data-table'
+export {
+  ariaSort,
+  COUNT_THRESHOLD,
+  formatCount,
+  hasActiveFilters,
+  isActiveFilterValue,
+  nextSort,
+} from './components/data-table-logic'
+export type { DataTableFilters, DataTableSort } from './components/data-table-logic'
 export { Dialog, Drawer } from './components/dialog'
 export type { DialogProps, DrawerProps } from './components/dialog'
 export { DropdownMenu } from './components/dropdown-menu'
