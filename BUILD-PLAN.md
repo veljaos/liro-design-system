@@ -261,7 +261,7 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P2.8b | PersonAvatar, PersonName | P2.8a | done | 2026-09-28 | Owner: light primary avatar, radius xl; initials from the first and last word (B.9, tested); decorative unless alt |
 | P2.8c | DateText, DateRangeText, DueDate, NumberText, MoneyText | P2.8b | done | 2026-09-28 | Owner: tabular, "—" when empty; DueDate from the provider today, overdue days in the badge; new `format.dateLong` |
 | P2.8d | SettlingValue | P2.8c | done | 2026-09-28 | Owner: 6px dot after 300ms in a reserved slot; a Playwright test proves no layout shift and one announcement per settle (ltr, rtl) |
-| P3.0 | Faster CI | P0.4 | in progress | 2026-09-30 | Story tests, accessibility and visual split into 4 parts each on 12 machines; the visual test fails on a failed story before any screenshot |
+| P3.0 | Faster CI | P0.4 | done | 2026-09-30 | Story tests, accessibility and visual in 4 parts each on 12 machines: CI 39 → 6 min; the visual test fails on a failed story before any screenshot |
 | P3.1 | DataTable core | P2.7, P2.8 | todo | | |
 | P3.2 | Table on phones, large lists, column resize | P3.1 | todo | | |
 | P3.3 | Filters and search | P3.1 | todo | | |
