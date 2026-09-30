@@ -498,6 +498,9 @@ export const ResizableColumns: Story = {
     await expect(handle).toHaveAttribute('aria-valuenow', '150')
     await userEvent.keyboard('{Escape}')
     await waitFor(() => expect(handle).toHaveFocus())
+    // End without focus: whether a returned focus counts as keyboard focus (:focus-visible) varies
+    // between runs, and the picture must not.
+    handle.blur()
     await settle()
   },
 }
