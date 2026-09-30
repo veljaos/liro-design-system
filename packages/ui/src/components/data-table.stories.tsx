@@ -338,19 +338,171 @@ export const CountAndRowLimit: Story = {
   ),
 }
 
-/** Long text wraps in its cell; at phone width the table scrolls sideways (cards: P3.2). */
+const MOBILE = {
+  title: (row: Invoice) => row.customer,
+  subtitle: (row: Invoice) => row.number,
+  badge: (row: Invoice) => (
+    <StatusBadge
+      label={STATUS_NAMES[row.status] ?? row.status}
+      tone={toneFor(row.status, STATUS_TONES)}
+    />
+  ),
+  details: ['date', 'amount'],
+}
+
+/**
+ * On a phone the rows are cards (only the cards are rendered): title and subtitle on one line
+ * each, the badge and the row menu at the end, the details under them. Long text is cut with an
+ * ellipsis in the title and wraps in a value. Stories force `layout="cards"`; in an application
+ * `layout` 'auto' switches below 48em.
+ */
 export const LongTextPhone: Story = {
-  name: 'Long text, phone width',
-  render: () => (
-    <div className="w-[390px] max-w-full">
+  name: 'Phone: cards, long text',
+  render: () => {
+    function Cards() {
+      const [selection, setSelection] = useState<string[]>(['2'])
+      return (
+        <div className="w-[390px] max-w-full">
+          <DataTable
+            {...BASE}
+            layout="cards"
+            mobile={MOBILE}
+            rows={[{ ...FIRST, customer: LONG.value }, ...INVOICES.slice(1)]}
+            rowActions={ROW_ACTIONS}
+            selection={selection}
+            onSelectionChange={setSelection}
+            bulkActions={[{ key: 'delete', intent: 'delete', label: 'Delete', onClick: noop }]}
+            onRowClick={noop}
+            totals={{ amount: <MoneyText value="17375.35" currency="EUR" /> }}
+            totalsLabel="Total"
+            count={4}
+          />
+        </div>
+      )
+    }
+    return <Cards />
+  },
+}
+
+const THOUSAND: Invoice[] = Array.from({ length: 1000 }, (_, index) => {
+  const base = INVOICES[index % INVOICES.length] ?? FIRST
+  return { ...base, id: String(index + 1), number: `F-2026-${String(1000 + index)}` }
+})
+
+function LargeList({ cards }: { cards: boolean }) {
+  const [selection, setSelection] = useState<string[]>([])
+  const [sort, setSort] = useState<DataTableSort>(null)
+  return (
+    <div className={cards ? 'w-[390px] max-w-full' : 'max-w-240'}>
       <DataTable
         {...BASE}
-        rows={[{ ...FIRST, customer: LONG.value }, ...INVOICES.slice(1)]}
+        layout={cards ? 'cards' : 'table'}
+        mobile={MOBILE}
+        rows={sortOnServer(THOUSAND, sort)}
+        sort={sort}
+        onSortChange={setSort}
+        selection={selection}
+        onSelectionChange={setSelection}
+        onRowClick={noop}
         rowActions={ROW_ACTIONS}
-        count={4}
+        virtualize
+        maxHeight="480px"
+        totals={{ amount: <MoneyText value="4343837.50" currency="EUR" /> }}
+        totalsLabel="Total"
+        count={1000}
       />
     </div>
-  ),
+  )
+}
+
+/**
+ * 1,000 rows, virtualized: only the rows in view are drawn (44px each), the header stays at the
+ * top and the totals at the bottom. Sorting and selecting stay quick (docs/decisions.md "Table").
+ */
+export const ThousandRows: Story = {
+  name: '1,000 rows (virtualized)',
+  render: () => <LargeList cards={false} />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('table')).toHaveAttribute('aria-rowcount', '1002')
+    await expect(canvas.getAllByRole('row').length).toBeLessThan(60)
+    await userEvent.click(canvas.getByRole('checkbox', { name: 'Select F-2026-1001' }))
+    await expect(canvas.getByRole('checkbox', { name: 'Select F-2026-1001' })).toBeChecked()
+  },
+}
+
+/** 1,000 cards on a phone, virtualized: each card measured once drawn (estimate 104px). */
+export const ThousandCards: Story = {
+  name: '1,000 cards (phone, virtualized)',
+  render: () => <LargeList cards />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getAllByRole('listitem').length).toBeLessThan(40)
+    await expect(canvas.getAllByRole('listitem')[0]).toHaveAttribute('aria-setsize', '1000')
+  },
+}
+
+function Resizing() {
+  const [widths, setWidths] = useState<Record<string, number>>({})
+  return (
+    <div className="flex max-w-240 flex-col gap-2">
+      <DataTable
+        {...BASE}
+        columns={COLUMNS.map((column) =>
+          column.id === 'customer' ? { ...column, width: 140 } : column,
+        )}
+        rows={[{ ...FIRST, customer: LONG.value }, ...INVOICES.slice(1)]}
+        sort={null}
+        onSortChange={noop}
+        resizable
+        onColumnWidthsChange={setWidths}
+      />
+      <p className="m-0 text-sm text-secondary" data-testid="widths">
+        {Object.keys(widths).length === 0
+          ? 'Not resized yet.'
+          : `Customer: ${String(widths.customer)}px`}
+      </p>
+    </div>
+  )
+}
+
+/**
+ * Resizable columns: drag the line at a header's end (it shows while the pointer is over the
+ * header), use the arrow keys on it (10px, Shift 40px; the arrow that widens points in the reading
+ * direction), or press it without moving for "Narrower" and "Wider" (no dragging needed, WCAG
+ * 2.5.7). Widths stay between 64px and 640px; what does not fit ends with "…". The table is as
+ * wide as its columns, so one column never moves another.
+ */
+export const ResizableColumns: Story = {
+  name: 'Resizable columns',
+  render: () => <Resizing />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const body = within(canvasElement.ownerDocument.body)
+    // The widths are measured again when the web fonts finish loading; resize after that.
+    await waitFor(() => expect(document.fonts.status).toBe('loaded'))
+    const handle = await canvas.findByRole('separator', { name: 'Resize column: Customer' })
+    // The arrow that widens points in the reading direction.
+    const rtl = getComputedStyle(handle).direction === 'rtl'
+    const wider = rtl ? '{ArrowLeft}' : '{ArrowRight}'
+    await expect(handle).toHaveAttribute('aria-valuenow', '140')
+    handle.focus()
+    await userEvent.keyboard(wider)
+    await expect(handle).toHaveAttribute('aria-valuenow', '150')
+    await userEvent.keyboard(`{Shift>}${wider}{/Shift}`)
+    await expect(handle).toHaveAttribute('aria-valuenow', '190')
+    await waitFor(() => expect(canvas.getByTestId('widths')).toHaveTextContent('Customer: 190px'))
+
+    await userEvent.click(handle)
+    await userEvent.click(await body.findByRole('button', { name: 'Narrower: Customer' }))
+    await expect(handle).toHaveAttribute('aria-valuenow', '150')
+    await userEvent.keyboard('{Escape}')
+    await waitFor(() => expect(handle).toHaveFocus())
+    // End without focus: whether a returned focus counts as keyboard focus (:focus-visible) varies
+    // between runs, and the picture must not.
+    handle.blur()
+    await settle()
+  },
 }
 
 /** Arabic sample text, right to left. */

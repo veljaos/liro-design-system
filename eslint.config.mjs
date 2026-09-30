@@ -91,6 +91,28 @@ export default defineConfig(
     extends: [reactHooks.configs.flat['recommended-latest']],
   },
 
+  // Exceptions (AGENTS.md W8), each for one file, with its reason.
+  {
+    // The column-resize handle is a focusable separator with arrow keys and a pointer drag: the
+    // WAI-ARIA window-splitter pattern, an interactive widget in ARIA 1.2. jsx-a11y counts every
+    // separator as non-interactive (P3.2, docs/decisions.md "Table").
+    files: ['packages/ui/src/components/data-table-resize.tsx'],
+    rules: {
+      'jsx-a11y/no-noninteractive-tabindex': [
+        'error',
+        { tags: [], roles: ['tabpanel', 'separator'], allowExpressionValues: true },
+      ],
+      'jsx-a11y/no-noninteractive-element-interactions': 'off',
+    },
+  },
+  {
+    // TanStack Virtual's useVirtualizer returns functions the React Compiler cannot memoize, so
+    // the compiler would skip this component; the warning says only that. The package is not
+    // built with the compiler (P3.2, docs/decisions.md "Table").
+    files: ['packages/ui/src/components/data-table.tsx'],
+    rules: { 'react-hooks/incompatible-library': 'off' },
+  },
+
   // The Liro rules the packages ship: colours only through meanings, logical properties only.
   // Colour values live only in @veljaos/tokens; the rules and their tests quote forbidden classes.
   {
