@@ -171,6 +171,20 @@ export interface LiroMessages {
   'stepper.completed': string
   /** An action that cannot be used, with the reason it is given. */
   'action.unavailable': (reason: string) => string
+  /** FormTabs: the name of a tab whose fields have errors (its label). */
+  'form.hasErrors': (label: string) => string
+  /** FormActions: the bottom bar's note while the form has unsaved changes. */
+  'form.unsaved': string
+  /** useUnsavedChangesGuard: the question before leaving a form with unsaved changes. */
+  'form.leaveTitle': string
+  'form.leaveMessage': string
+  /** useUnsavedChangesGuard: leave (and lose the changes), or stay on the form. */
+  'form.leave': string
+  'form.stay': string
+  /** FormWizard: the buttons that go to the previous and the next step, and finish. */
+  'wizard.back': string
+  'wizard.next': string
+  'wizard.finish': string
   /** The connection is lost. */
   'connection.offline': string
 }
