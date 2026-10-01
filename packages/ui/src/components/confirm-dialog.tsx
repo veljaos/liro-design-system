@@ -26,6 +26,11 @@ import { TextField } from './text-field'
  * - The text in text.secondary, 13px. Buttons at the end, 12px apart, 16px under the text:
  *   Cancel in the neutral "default" weight, then the confirm button filled in the action's family
  *   colour (the main action last).
+ * - Colours never mix (owner, P3.2a): the confirm button always follows the dialog's tone. Its
+ *   family is the action's when that family gives the tone, otherwise the tone's own family
+ *   (warning → caution, danger → destructive, info → primary, success → positive, neutral →
+ *   neutral, premium → document), so a confirmation without an action, or with a `tone` that
+ *   overrides the action's, never shows a warning title over a blue button.
  * - Centred on the screen, radius lg (12px).
  * - While confirming, the confirm button shows a loader, Cancel is disabled, and neither Escape
  *   nor a press outside closes it.
@@ -51,9 +56,27 @@ const TONE_TEXT: Record<Tone, string> = {
   premium: 'text-status-premium-fg',
 }
 
+/** The family that draws each tone's confirm button. */
+const TONE_FAMILY: Record<Tone, Family> = {
+  warning: 'caution',
+  danger: 'destructive',
+  info: 'primary',
+  success: 'positive',
+  neutral: 'neutral',
+  premium: 'document',
+}
+
 /** The tone of a confirmation: the given one, else its family's, else warning. */
 export function confirmTone(tone: Tone | undefined, family: Family | undefined): Tone {
   return tone ?? (family === undefined ? 'warning' : FAMILY_TONE[family])
+}
+
+/**
+ * The confirm button's family: the action's when it gives the dialog's tone, otherwise the
+ * tone's own, so the button never takes another colour than the title.
+ */
+export function confirmFamily(tone: Tone, family: Family | undefined): Family {
+  return family !== undefined && FAMILY_TONE[family] === tone ? family : TONE_FAMILY[tone]
 }
 
 interface ConfirmBase {
@@ -198,7 +221,7 @@ function ConfirmFrame(
               <span>{props.cancelLabel ?? messages['dialog.cancel']}</span>
             </ButtonPrimitive>
             <ButtonPrimitive
-              family={family ?? 'primary'}
+              family={confirmFamily(tone, family)}
               emphasis="primary"
               disabled={props.confirmDisabled === true}
               aria-disabled={busy || undefined}

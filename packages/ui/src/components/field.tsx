@@ -7,8 +7,12 @@ import { useLiro } from '../provider/liro-provider'
  * The frame of every field (BUILD-PLAN P2.2): label, optional description, the control, and under
  * it the error or the reason it is disabled. Mantine 9.6.2 Input.Wrapper (Input.css, InputWrapper):
  * label 13px weight 600; description and error at the label size minus 2px (12px here, the
- * smallest A.5 size) with line height 1.2 (A.5 tight, 1.25, here); the control 5px (10 / 2) below
- * a description and above an error. The required mark is Mantine's " *" in the error colour.
+ * smallest A.5 size) with line height 1.2 (A.5 tight, 1.25, here); the control 5px (10 / 2) above
+ * an error. The required mark is Mantine's " *" in the error colour.
+ *
+ * The control sits 4px (spacing xxs) under the label block, with or without a description (owner,
+ * P3.2a). Mantine puts it 5px (xs / 2) under a description and directly under a label alone, which
+ * left a label alone too close to its control.
  *
  * Owner's decisions (2026-09-25, docs/decisions.md "Fields"):
  * - Error: the message sits under the field in status.danger.fg with an icon, the control's border
@@ -173,12 +177,7 @@ export function Field(props: FieldProps) {
           {description}
         </p>
       )}
-      <div
-        className={cn(
-          ids.hasDescription && 'mt-[5px]',
-          (ids.hasError || ids.showReason) && 'mb-[5px]',
-        )}
-      >
+      <div className={cn('mt-1', (ids.hasError || ids.showReason) && 'mb-[5px]')}>
         {props.children(control)}
       </div>
       {ids.hasError && (
