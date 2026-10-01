@@ -54,6 +54,31 @@ export interface LiroMessages {
   'field.noResults': string
   /** The button that removes one chosen value (its label) from a multiple choice. */
   'field.remove': (label: string) => string
+  /** The button that empties a field (a clearable SelectField). */
+  'field.clear': string
+  /** FilterBar: the search field's placeholder and accessible name. */
+  'filter.search': string
+  /** FilterBar: the button that empties the search field. */
+  'filter.clearSearch': string
+  /** FilterBar: the button that opens the filters drawer, and the drawer's title. */
+  'filter.filters': string
+  /** FilterBar: the button that clears every filter of the bar. */
+  'filter.clearAll': string
+  /** FilterBar: an active filter on its pill, its label and its value: "Status: Sent". */
+  'filter.pill': (label: string, value: string) => string
+  /** FilterBar: the button that removes one active filter (its label). */
+  'filter.remove': (label: string) => string
+  /** FilterBar: the two choices of a yes / no filter. */
+  'filter.yes': string
+  'filter.no': string
+  /** FilterBar: the names of the two ends of a number range filter (its label). */
+  'filter.rangeFrom': (label: string) => string
+  'filter.rangeTo': (label: string) => string
+  /** FilterBar on phones: the sort button while nothing is sorted, and the sort menu's name. */
+  'filter.sort': string
+  /** FilterBar on phones: the two directions in the sort menu. */
+  'filter.ascending': string
+  'filter.descending': string
   /** Names the breadcrumb trail for assistive technology. */
   'breadcrumbs.label': string
   /** Names the command palette and its search field. */
