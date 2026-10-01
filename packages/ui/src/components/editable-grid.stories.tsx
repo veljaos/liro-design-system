@@ -284,7 +284,8 @@ export const TenLinesByKeyboard: Story = {
       }
     }
     // 1 + 2 + … + 10 = 55 pieces at 2.50.
-    await waitFor(() => expect(canvas.getByText('137.50')).toBeVisible())
+    // The visible total (SettlingValue also announces it in a live region).
+    await waitFor(() => expect(canvas.getAllByText('137.50')[0]).toBeVisible())
     await expect(canvas.getAllByRole('combobox', { name: /^Item, line/ })).toHaveLength(10)
     await settle()
   },
