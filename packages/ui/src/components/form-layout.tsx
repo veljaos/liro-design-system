@@ -200,7 +200,10 @@ export function FormTabs(props: FormTabsProps) {
 }
 
 export interface FormActionsProps {
-  /** The form's actions (an ActionGroup or buttons), the main one last. Shown at the top and in the bottom bar. */
+  /**
+   * The form's actions as an ActionGroup (it aligns itself to the end), the main one last. Shown
+   * at the top and in the bottom bar.
+   */
   actions: ReactNode
   /** The form's sections. */
   children: ReactNode
@@ -248,17 +251,18 @@ export function FormActions(props: FormActionsProps) {
       data-slot="form-actions"
       className={cn('flex min-w-0 flex-col gap-4 font-sans text-primary', props.className)}
     >
-      <div className="flex justify-end">{props.actions}</div>
+      {/* The full row: an ActionGroup aligns itself to the end and measures what fits. */}
+      <div className="min-w-0">{props.actions}</div>
       {props.children}
       {shown && (
         <div
           data-slot="form-bottom-bar"
           className="sticky bottom-0 z-(--liro-layer-sticky) flex flex-wrap items-center justify-between gap-3 border-0 border-t border-solid border-default bg-surface-page p-3"
         >
-          <span className="text-xs text-tertiary">
+          <span className="shrink-0 text-xs text-tertiary">
             {props.dirty === true ? messages['form.unsaved'] : null}
           </span>
-          <div className="ms-auto">{props.actions}</div>
+          <div className="min-w-0 flex-1">{props.actions}</div>
         </div>
       )}
     </div>
