@@ -21,8 +21,8 @@ import type { IconComponent } from './intents'
  *   phones, 16px apart. A `fullWidth` item spans every column with its label above its value
  *   (notes, descriptions). `groups` splits the list into titled groups (12px, semibold,
  *   text.secondary), 24px apart. Layout "stacked": the label above the value, 2px apart, no lines,
- *   16px between items, for short cards. An empty value is "—"; loading shows skeletons (label
- *   12 × 90px, value 16 × 150px).
+ *   16px between items, for short cards. Text values are isolated (`bdi`). An empty value is
+ *   "—"; loading shows skeletons (label 12 × 90px, value 16 × 150px).
  */
 
 export interface CardProps {
@@ -248,6 +248,10 @@ function ItemList({
                 <Skeleton className={cn('h-4 w-[150px] max-w-full', !stacked && 'ms-auto')} />
               ) : empty ? (
                 '—'
+              ) : typeof item.value === 'string' || typeof item.value === 'number' ? (
+                // Isolated, so a value in the other direction (Latin in right-to-left) keeps its
+                // own order ("12.345,60 EUR", "d.o.o."), while the row keeps the page's alignment.
+                <bdi>{item.value}</bdi>
               ) : (
                 item.value
               )}
