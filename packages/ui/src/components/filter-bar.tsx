@@ -292,7 +292,8 @@ function SearchField(props: {
 
 /**
  * An active filter as a pill with its remove button: Mantine Pill size 'sm' (as MultiSelectField's),
- * variant "contrast" (the raised surface) with a 1px border.default border (owner, 2026-10-01): the
+ * variant "contrast" (the raised surface, text.primary, the × in text.secondary) with a 1px
+ * border.default border (owner, 2026-10-01); the remove button is a 24 × 24px target. The
  * default variant's grey is the page's own, and the border keeps it visible on a card too.
  */
 function FilterPill({
@@ -316,7 +317,7 @@ function FilterPill({
         aria-label={messages['filter.remove'](label)}
         className={cn(
           BUTTON_RESET,
-          'flex h-6 min-w-6 cursor-pointer items-center justify-center rounded-e-full ps-[0.1em] pe-[0.3em] text-inherit',
+          'flex h-6 min-w-6 cursor-pointer items-center justify-center rounded-e-full ps-[0.1em] pe-[0.3em] text-secondary',
           FOCUS_RING,
         )}
         onClick={onRemove}
