@@ -290,7 +290,11 @@ function SearchField(props: {
   )
 }
 
-/** An active filter as a pill (Mantine Pill, as MultiSelectField's), with its remove button. */
+/**
+ * An active filter as a pill with its remove button: Mantine Pill size 'sm' (as MultiSelectField's),
+ * variant "contrast" (the raised surface) with a 1px border.default border (owner, 2026-10-01): the
+ * default variant's grey is the page's own, and the border keeps it visible on a card too.
+ */
 function FilterPill({
   text,
   label,
@@ -304,7 +308,7 @@ function FilterPill({
   return (
     <li
       data-slot="filter-pill"
-      className="inline-flex h-[22px] max-w-full items-center rounded-full bg-status-neutral-bg ps-[0.8em] text-xs leading-none text-status-neutral-fg"
+      className="box-border inline-flex h-[22px] max-w-full items-center rounded-full border border-solid border-default bg-surface-raised ps-[0.8em] text-xs leading-none text-primary"
     >
       <span className="truncate">{text}</span>
       <button
