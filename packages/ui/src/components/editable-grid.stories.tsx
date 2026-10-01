@@ -452,7 +452,7 @@ export const Arabic: Story = {
         columns={COLUMNS.map((column) =>
           column.id === 'description' ? { ...column, header: ARABIC.label } : column,
         )}
-        totalsLabel={ARABIC.options[2]}
+        totalsLabel={ARABIC.options[2] ?? ''}
       />
     </StoryProvider>
   ),
