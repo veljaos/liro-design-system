@@ -269,8 +269,13 @@ export const TenLinesByKeyboard: Story = {
       await userEvent.keyboard(`${String(line)}{Tab}`)
       await userEvent.keyboard('2.5{Tab}')
       if (line < 10) {
-        // From VAT (kept): the remove button, then "Add line".
-        await userEvent.keyboard('{Tab}{Tab}{Enter}')
+        // From VAT (kept) past the remove button (disabled while there is one line) to "Add line".
+        const addLine = canvas.getByRole('button', { name: 'Add line' })
+        for (let step = 0; step < 4 && document.activeElement !== addLine; step += 1) {
+          await userEvent.keyboard('{Tab}')
+        }
+        await expect(addLine).toHaveFocus()
+        await userEvent.keyboard('{Enter}')
         await waitFor(() =>
           expect(
             canvas.getByRole('combobox', { name: `Item, line ${String(line + 1)}` }),
