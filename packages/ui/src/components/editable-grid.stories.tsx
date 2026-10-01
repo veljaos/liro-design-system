@@ -391,23 +391,21 @@ export const Empty: Story = {
   render: () => <Lines initial={[]} minRows={0} />,
 }
 
+const DATE_COLUMN: EditableGridColumn<Line> = {
+  id: 'date',
+  header: 'Delivery',
+  type: 'date',
+  width: 150,
+  value: (line) => line.date,
+}
+
 /** A date column, and the balance in the footer slot (a journal entry). */
 export const WithDateAndFooter: Story = {
   name: 'Date column and footer',
   render: () => (
     <Lines
       initial={FILLED}
-      columns={[
-        COLUMNS[0],
-        {
-          id: 'date',
-          header: 'Delivery',
-          type: 'date',
-          width: 150,
-          value: (line: Line) => line.date,
-        },
-        ...COLUMNS.slice(2),
-      ].filter((column) => column !== undefined)}
+      columns={[...COLUMNS.slice(0, 1), DATE_COLUMN, ...COLUMNS.slice(2)]}
       footer={<span className="text-sm text-secondary">Balance: 0.00</span>}
     />
   ),
