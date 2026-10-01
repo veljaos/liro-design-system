@@ -113,7 +113,7 @@ export const Collapsible: Story = {
     const canvas = within(canvasElement)
     await expect(canvas.queryByRole('textbox', { name: 'Reference' })).toBeNull()
     await userEvent.click(canvas.getByRole('button', { name: 'More details' }))
-    await expect(canvas.getByRole('textbox', { name: 'Reference' })).toBeVisible()
+    await waitFor(() => expect(canvas.getByRole('textbox', { name: 'Reference' })).toBeVisible())
     await settle()
   },
 }
@@ -359,7 +359,10 @@ function BoundForm({ children }: { children?: ReactNode }) {
         void handleSubmit(
           () => undefined,
           () => {
-            if (formRef.current !== null) focusFirstInvalid(formRef.current)
+            // Once the errors are drawn.
+            requestAnimationFrame(() => {
+              if (formRef.current !== null) focusFirstInvalid(formRef.current)
+            })
           },
         )(event)
       }}

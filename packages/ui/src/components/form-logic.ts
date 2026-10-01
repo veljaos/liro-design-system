@@ -56,7 +56,8 @@ export function focusFirstInvalid(root: ParentNode): boolean {
     (field === null ||
       (tab.compareDocumentPosition(field) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0)
   if (tab !== null && tabFirst && tab.getAttribute('aria-selected') !== 'true') {
-    tab.click()
+    // A Radix tab is selected when it takes the focus (or on a pointer press), not on click().
+    tab.focus()
     focusLater(root)
     return true
   }
