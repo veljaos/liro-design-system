@@ -268,7 +268,7 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P3.2a | Fixes from the owner's Storybook review | P3.2 | done | 2026-10-01 | Option lists border-box, with a story-test check for sideways overflow; ConfirmDialog button follows its tone; 4px between label and control; cards and KeyValueList redesigned (rows layout, groups, stacked option) |
 | P3.3 | Filters and search | P3.1 | done | 2026-10-01 | Owner: old Toolbar layout (search 260px, bottom-aligned row), labelled inline filters, drawer from the end 320px, pills with "Clear all", phone "Sort" menu; six filter kinds; SelectField `clearable` |
 | P3.4 | Editable grid | P3.1, P2.3 | done | 2026-10-01 | Owner: cells always fields (the DS fields without frames), focus inset line on a neutral cell, Enter as Excel, Ctrl/Cmd+Enter and +Delete, messages under the row, totals with SettlingValue under a 2px line; ten lines by keyboard in ltr and rtl |
-| P3.5 | Form layout | P2.2, P2.7 | todo | | |
+| P3.5 | Form layout | P2.2, P2.7 | done | 2026-10-01 | Owner: FormSection as the SectionCard card with a field grid, collapsible variant; tab errors as a 13px danger AlertTriangle; actions top and a sticky bottom bar while the form scrolls; `focusFirstInvalid`; unsaved-changes guard; FormWizard; `@veljaos/ui/form` on React Hook Form 7.89.0 (optional peer) |
 | P4.1 | Application shell | P2.6, P2.7 | todo | | |
 | P4.2 | Home (launchpad) | P4.1 | todo | | |
 | P4.3 | List and worklist templates | P3.3, P4.1 | todo | | |

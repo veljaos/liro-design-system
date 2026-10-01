@@ -113,6 +113,12 @@ describe('messages', () => {
       'filter.search',
       'filter.sort',
       'filter.yes',
+      'form.hasErrors',
+      'form.leave',
+      'form.leaveMessage',
+      'form.leaveTitle',
+      'form.stay',
+      'form.unsaved',
       'grid.addLine',
       'grid.cell',
       'grid.cellMessage',
@@ -149,6 +155,9 @@ describe('messages', () => {
       'table.selectAll',
       'table.selectRow',
       'table.wider',
+      'wizard.back',
+      'wizard.finish',
+      'wizard.next',
     ])
   })
 

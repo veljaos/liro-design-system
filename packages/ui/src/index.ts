@@ -61,6 +61,30 @@ export type {
   GridMessage,
   GridPosition,
 } from './components/editable-grid-logic'
+export {
+  FormActions,
+  FormFullWidth,
+  FormSection,
+  FormTabs,
+  FormWizard,
+  useUnsavedChangesGuard,
+} from './components/form-layout'
+export type {
+  FormActionsProps,
+  FormSectionProps,
+  FormTab,
+  FormTabsProps,
+  FormWizardProps,
+  UnsavedChangesGuard,
+  WizardStep,
+} from './components/form-layout'
+export {
+  bottomBarShown,
+  firstErrorTab,
+  focusFirstInvalid,
+  wizardStepTarget,
+} from './components/form-logic'
+export type { StickyActions } from './components/form-logic'
 export type { DataTableColumn, DataTableMobile, DataTableProps } from './components/data-table'
 export {
   ariaSort,
