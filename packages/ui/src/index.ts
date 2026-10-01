@@ -16,6 +16,22 @@ export type {
   SectionCardProps,
 } from './components/cards'
 export { CheckboxField, SwitchField } from './components/checkbox-field'
+export { FilterBar } from './components/filter-bar'
+export type { FilterBarProps } from './components/filter-bar'
+export {
+  clearFilters,
+  emptyFilterValue,
+  filterValueText,
+  isFilterSet,
+  rangeText,
+  sortButtonText,
+} from './components/filter-logic'
+export type {
+  FilterDefinition,
+  FilterValue,
+  NumberRange,
+  SortColumn,
+} from './components/filter-logic'
 export type { CheckboxFieldProps, SwitchFieldProps } from './components/checkbox-field'
 export { ComboboxField } from './components/combobox-field'
 export type { ComboboxFieldProps, ComboboxOption } from './components/combobox-field'

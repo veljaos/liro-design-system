@@ -15,7 +15,6 @@ import {
   useMemo,
   useRef,
   useState,
-  useSyncExternalStore,
   type CSSProperties,
   type KeyboardEvent,
   type MouseEvent,
@@ -43,6 +42,7 @@ import { ResizeHandle } from './data-table-resize'
 import { DropdownMenu, type MenuEntry } from './dropdown-menu'
 import { EmptyState, type EmptyAction } from './empty-state'
 import { CursorPagination } from './navigation'
+import { usePhone } from './use-phone'
 
 /*
  * DataTable (BUILD-PLAN P3.1, P3.2), on TanStack Table and fully controlled: the table never
@@ -205,26 +205,6 @@ const CARD_HEIGHT = 104
 /** The selection column (16px checkbox, 16px each side) and the menu column (28px, 8px each side). */
 const SELECT_WIDTH = 48
 const ACTIONS_WIDTH = 44
-
-/** Phones are narrower than the sm breakpoint (48em), as KeyValueList and FilterBar (owner). */
-const WIDE_QUERY = '(min-width: 48em)'
-
-function subscribeToWidth(onChange: () => void) {
-  const query = window.matchMedia(WIDE_QUERY)
-  query.addEventListener('change', onChange)
-  return () => {
-    query.removeEventListener('change', onChange)
-  }
-}
-
-/** Whether the viewport is a phone's. On the server: not (the table). */
-function usePhone(): boolean {
-  return useSyncExternalStore(
-    subscribeToWidth,
-    () => !window.matchMedia(WIDE_QUERY).matches,
-    () => false,
-  )
-}
 
 /** The narrowest a column can be resized to. */
 function columnMinWidth<Row extends RowData>(column: DataTableColumn<Row>): number {

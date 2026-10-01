@@ -96,6 +96,7 @@ describe('KeyValueList', () => {
   it('in rows: label at the start in normal case, value at the end, weight 500', () => {
     const html = render(<KeyValueList items={[{ label: 'Total', value: '1,234.50' }]} />)
     expect(html).toContain('justify-between')
+    expect(html).toContain('gap-x-8')
     expect(html).toContain('text-end')
     expect(html).toContain('font-medium')
     expect(html).not.toContain('uppercase')
