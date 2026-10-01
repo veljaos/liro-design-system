@@ -140,3 +140,49 @@
     }
   }
 }
+
+/*
+ * EditableGrid (P3.4, owner's decision 2026-10-01): a cell's field loses its own frame, label gap
+ * and message (the messages stand under the row); the cell draws the focus (an inset 1px
+ * border.focus line on surface.hover) and an error (the danger line). Fields are 28px high with
+ * 4px of padding inside the cell's 4px. Numbers stand at the end: their typing area is written
+ * left to right in every direction (NumberField), so in a right-to-left grid the end is its start.
+ * Unlayered, so it wins over the fields' utilities.
+ */
+[data-slot='grid-cell']
+  :is(
+    [data-slot='input'],
+    [data-slot='select-trigger'],
+    [data-slot='date'],
+    [data-slot='date-range']
+  ) {
+  height: 28px;
+  border-color: transparent;
+  border-radius: 0;
+  background-color: transparent;
+  padding-inline: 4px;
+}
+[data-slot='grid-cell'] :is([data-slot='date'], [data-slot='date-range']) input {
+  padding-inline-start: 0;
+}
+[data-slot='grid-cell'] [data-slot='field'] > div {
+  margin: 0;
+}
+[data-slot='grid-cell'] [data-slot='field'] > p {
+  display: none;
+}
+[data-slot='grid-cell'][data-align='end'] input {
+  text-align: end;
+}
+[data-grid-direction='rtl'] [data-slot='grid-cell'][data-align='end'] input[dir='ltr'] {
+  text-align: start;
+}
+[data-slot='grid-cell']:focus-within {
+  outline: 1px solid var(--liro-border-focus);
+  outline-offset: -1px;
+  background-color: var(--liro-surface-hover);
+}
+[data-slot='grid-cell']:has([aria-invalid='true']) {
+  outline: 1px solid var(--liro-status-danger-fg);
+  outline-offset: -1px;
+}

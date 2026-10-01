@@ -171,6 +171,24 @@ export interface LiroMessages {
   'stepper.completed': string
   /** An action that cannot be used, with the reason it is given. */
   'action.unavailable': (reason: string) => string
+  /** EditableGrid: each cell's accessible name, its column and line: "Quantity, line 3". */
+  'grid.cell': (column: string, line: number) => string
+  /** EditableGrid: a message about one cell under its row: "Quantity: Enter a number". */
+  'grid.cellMessage': (column: string, text: string) => string
+  /** EditableGrid: the button that adds a line at the end. */
+  'grid.addLine': string
+  /** EditableGrid: the remove button of a line (its number). */
+  'grid.removeLine': (line: number) => string
+  /** EditableGrid: the names of the two row shortcuts shown beside "Add line". */
+  'grid.insertLine': string
+  'grid.deleteLine': string
+  /**
+   * EditableGrid: the keys of the row shortcuts as the user sees them. The application gives "⌘"
+   * on a Mac; the grid accepts Ctrl and Cmd on every system.
+   */
+  'grid.modifierKey': string
+  'grid.enterKey': string
+  'grid.deleteKey': string
   /** FormTabs: the name of a tab whose fields have errors (its label). */
   'form.hasErrors': (label: string) => string
   /** FormActions: the bottom bar's note while the form has unsaved changes. */

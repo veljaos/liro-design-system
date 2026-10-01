@@ -52,6 +52,15 @@ export type {
   IrreversibleConfirmDialogProps,
 } from './components/confirm-dialog'
 export { DataTable } from './components/data-table'
+export { EditableGrid } from './components/editable-grid'
+export type { EditableGridColumn, EditableGridProps, GridTotal } from './components/editable-grid'
+export { gridKeyAction, orderMessages } from './components/editable-grid-logic'
+export type {
+  GridAction,
+  GridKey,
+  GridMessage,
+  GridPosition,
+} from './components/editable-grid-logic'
 export {
   FormActions,
   FormFullWidth,

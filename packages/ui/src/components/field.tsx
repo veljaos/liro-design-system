@@ -42,6 +42,11 @@ export interface FieldBaseProps {
   disabledReason?: ReactNode
   /** The control's id. Default: generated. */
   id?: string
+  /**
+   * Ids of other elements that describe the control (added to its aria-describedby), such as the
+   * messages under an editable grid's row.
+   */
+  describedBy?: string
   /** Layout classes for the field's frame (width, margins). */
   className?: string
 }
@@ -129,6 +134,7 @@ export function useFieldIds(props: FieldBaseProps) {
       hasDescription ? ids.descriptionId : null,
       hasError ? ids.errorId : null,
       showReason ? ids.reasonId : null,
+      props.describedBy ?? null,
     ]
       .filter((part) => part !== null)
       .join(' ') || undefined
@@ -209,8 +215,18 @@ export function controlAttributes(control: FieldControl, readOnlyTitle: string) 
 
 /** The FieldBaseProps of a field's props, without undefined members. */
 export function fieldProps(props: FieldBaseProps) {
-  const { label, description, error, required, readOnly, disabled, disabledReason, id, className } =
-    props
+  const {
+    label,
+    description,
+    error,
+    required,
+    readOnly,
+    disabled,
+    disabledReason,
+    id,
+    className,
+    describedBy,
+  } = props
   return {
     label,
     ...(description === undefined ? {} : { description }),
@@ -221,5 +237,6 @@ export function fieldProps(props: FieldBaseProps) {
     ...(disabledReason === undefined ? {} : { disabledReason }),
     ...(id === undefined ? {} : { id }),
     ...(className === undefined ? {} : { className }),
+    ...(describedBy === undefined || describedBy === '' ? {} : { describedBy }),
   }
 }
