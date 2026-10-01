@@ -267,7 +267,7 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P3.2 | Table on phones, large lists, column resize | P3.1 | done | 2026-09-30 | Owner: cards below 48em by real branching; the old resize handle (9px strip, 3px line, arrows 10/40px, reading direction) plus a +/− popover without dragging (WCAG 2.5.7); TanStack Virtual 3.14.13; 1,000 rows: select 13–16ms (4× slower CPU 100–146ms) |
 | P3.2a | Fixes from the owner's Storybook review | P3.2 | done | 2026-10-01 | Option lists border-box, with a story-test check for sideways overflow; ConfirmDialog button follows its tone; 4px between label and control; cards and KeyValueList redesigned (rows layout, groups, stacked option) |
 | P3.3 | Filters and search | P3.1 | done | 2026-10-01 | Owner: old Toolbar layout (search 260px, bottom-aligned row), labelled inline filters, drawer from the end 320px, pills with "Clear all", phone "Sort" menu; six filter kinds; SelectField `clearable` |
-| P3.4 | Editable grid | P3.1, P2.3 | todo | | |
+| P3.4 | Editable grid | P3.1, P2.3 | done | 2026-10-01 | Owner: cells always fields (the DS fields without frames), focus inset line on a neutral cell, Enter as Excel, Ctrl/Cmd+Enter and +Delete, messages under the row, totals with SettlingValue under a 2px line; ten lines by keyboard in ltr and rtl |
 | P3.5 | Form layout | P2.2, P2.7 | todo | | |
 | P4.1 | Application shell | P2.6, P2.7 | todo | | |
 | P4.2 | Home (launchpad) | P4.1 | todo | | |
