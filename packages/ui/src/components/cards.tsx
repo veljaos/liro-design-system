@@ -18,7 +18,7 @@ import type { IconComponent } from './intents'
  *   weight 500, text.primary; tabular digits for `numeric`); long values wrap and stay at the end.
  *   8px above and below each row and a 1px border.subtle line between rows, none after the last
  *   row of a column. `columns` 1, 2 or 3 (default 2) from the sm breakpoint (48em), one column on
- *   phones, 16px apart. A `fullWidth` item spans every column with its label above its value
+ *   phones, 32px (xl) apart. A `fullWidth` item spans every column with its label above its value
  *   (notes, descriptions). `groups` splits the list into titled groups (12px, semibold,
  *   text.secondary), 24px apart. Layout "stacked": the label above the value, 2px apart, no lines,
  *   16px between items, for short cards. Text values are isolated (`bdi`). An empty value is
@@ -204,9 +204,9 @@ function ItemList({
     <dl
       aria-busy={loading || undefined}
       className={cn(
-        'm-0 grid grid-cols-1 gap-x-4 font-sans',
+        'm-0 grid grid-cols-1 font-sans',
         COLUMNS[columns],
-        !rows && 'gap-y-4',
+        rows ? 'gap-x-8' : 'gap-4',
         className,
       )}
     >
