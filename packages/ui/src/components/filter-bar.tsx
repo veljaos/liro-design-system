@@ -479,7 +479,7 @@ export function FilterBar(props: FilterBarProps) {
           )}
         </div>
         {props.actions !== undefined && (
-          <div className="flex flex-wrap items-center gap-2">{props.actions}</div>
+          <div className="ms-auto flex flex-wrap items-center gap-2">{props.actions}</div>
         )}
       </div>
       {pills.length > 0 && (
