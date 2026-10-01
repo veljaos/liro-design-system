@@ -310,7 +310,10 @@ describe('typography equals Appendix A.5', () => {
     assert.match(a5, /Space Grotesk with Inter fallback/)
     assert.match(BRAND_STACK, /^'Space Grotesk Variable', 'Inter Variable'/)
     assert.match(a5, /JetBrains Mono, Cascadia Code, system monospace/)
-    assert.match(MONO_STACK, /^'JetBrains Mono', 'Cascadia Code', ui-monospace/)
+    assert.match(
+      MONO_STACK,
+      /^'JetBrains Mono Variable', 'JetBrains Mono', 'Cascadia Code', ui-monospace/,
+    )
   })
 })
 

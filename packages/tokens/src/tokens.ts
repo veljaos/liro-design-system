@@ -324,6 +324,7 @@ export const FONT_FAMILY = {
   notoSansJp: 'Noto Sans JP Variable',
   spaceGrotesk: 'Space Grotesk Variable',
   inter: 'Inter Variable',
+  jetbrainsMono: 'JetBrains Mono Variable',
 } as const
 
 /**
@@ -344,10 +345,13 @@ export function sansStack(cjk: readonly string[]): string {
     .join(', ')
 }
 
-/** A.5 Brand face (wordmark, status pages) and monospace. The brand face falls back to Inter, then the interface stack. */
+/**
+ * A.5 Brand face (wordmark, status pages) and monospace. The brand face falls back to Inter, then
+ * the interface stack. JetBrains Mono is shipped (P3.0a): a system monospace differs between
+ * devices, and in the test image Chromium switched between two of them, which changed line heights.
+ */
 export const BRAND_STACK = `'${FONT_FAMILY.spaceGrotesk}', '${FONT_FAMILY.inter}', var(--liro-font-sans)`
-export const MONO_STACK =
-  "'JetBrains Mono', 'Cascadia Code', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
+export const MONO_STACK = `'${FONT_FAMILY.jetbrainsMono}', 'JetBrains Mono', 'Cascadia Code', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace`
 
 /** A.5 Sizes; md is the body size. */
 export const FONT_SIZE = {
