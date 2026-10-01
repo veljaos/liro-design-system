@@ -83,11 +83,13 @@ export function DropdownMenuCheckboxItem({
   )
 }
 
+/** One choice of a radio group in a menu; `check` draws a check mark instead of the dot. */
 export function DropdownMenuRadioItem({
   className,
   children,
+  check = false,
   ...props
-}: ComponentProps<typeof DropdownMenuPrimitive.RadioItem>) {
+}: ComponentProps<typeof DropdownMenuPrimitive.RadioItem> & { check?: boolean }) {
   return (
     <DropdownMenuPrimitive.RadioItem
       data-slot="dropdown-menu-radio-item"
@@ -96,7 +98,11 @@ export function DropdownMenuRadioItem({
     >
       <span className={INDICATOR}>
         <DropdownMenuPrimitive.ItemIndicator>
-          <span className="block size-1.5 rounded-full bg-current" />
+          {check ? (
+            <Check aria-hidden="true" className="size-3" />
+          ) : (
+            <span className="block size-1.5 rounded-full bg-current" />
+          )}
         </DropdownMenuPrimitive.ItemIndicator>
       </span>
       {children}
