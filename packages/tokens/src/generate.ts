@@ -204,6 +204,7 @@ export const FONT_PACKAGES: { name: string; stylesheets: string[] }[] = [
   { name: '@fontsource-variable/noto-sans-jp', stylesheets: ['wght.css'] },
   { name: '@fontsource-variable/space-grotesk', stylesheets: ['wght.css'] },
   { name: '@fontsource-variable/inter', stylesheets: ['wght.css'] },
+  { name: '@fontsource-variable/jetbrains-mono', stylesheets: ['wght.css'] },
 ]
 
 /**

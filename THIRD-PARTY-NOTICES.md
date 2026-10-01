@@ -25,6 +25,7 @@ dependency, or copies third-party code (for example a shadcn/ui component) into 
 | Noto Sans JP (`@fontsource-variable/noto-sans-jp`)         | 5.3.0   | OFL-1.1 | Font files in `@veljaos/tokens/dist/fonts/`, faces in `fonts.css`; also in the Storybook build. Notice below (Fonts). |
 | Space Grotesk (`@fontsource-variable/space-grotesk`)       | 5.3.0   | OFL-1.1 | Font files in `@veljaos/tokens/dist/fonts/`, faces in `fonts.css`; also in the Storybook build. Notice below (Fonts). |
 | Inter (`@fontsource-variable/inter`)                       | 5.3.0   | OFL-1.1 | Font files in `@veljaos/tokens/dist/fonts/`, faces in `fonts.css`; also in the Storybook build. Notice below (Fonts). |
+| JetBrains Mono (`@fontsource-variable/jetbrains-mono`)     | 5.3.0   | OFL-1.1 | Font files in `@veljaos/tokens/dist/fonts/`, faces in `fonts.css`; also in the Storybook build. Notice below (Fonts). |
 
 ## Copied into this repository
 
@@ -486,6 +487,7 @@ The font files in `@veljaos/tokens` come from the Fontsource packages listed abo
 - Noto Sans TC: `Google Inc.`
 - Noto Sans JP: `Google Inc.`
 - Space Grotesk: `Copyright 2020 The Space Grotesk Project Authors (https://github.com/floriankarsten/space-grotesk)`
+- JetBrains Mono: `Copyright 2020 The JetBrains Mono Project Authors (https://github.com/JetBrains/JetBrainsMono) JetBrainsMono-Italic[wght].ttf: Copyright 2020 The JetBrains Mono Project Authors (https://github.com/JetBrains/JetBrainsMono)`
 - Inter: `Copyright 2016 The Inter Project Authors (https://github.com/rsms/inter) Inter-Italic[opsz,wght].ttf: Copyright 2016 The Inter Project Authors (https://github.com/rsms/inter)`
 
 ```
