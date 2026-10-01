@@ -50,17 +50,20 @@ export const FLOATING_MOTION =
 /**
  * An item of a menu (Menu.css): 13px, padding 6.67px (10 / 1.5) by 12px, radius md; the
  * highlighted item takes surface.sunken (Mantine: gray-1; surface.hover, gray-0, is too faint to
- * show keyboard focus). Disabled: text.disabled, no opacity.
+ * show keyboard focus). Disabled: text.disabled, no opacity. Full width with padding, so its box
+ * is border-box: without a reset it would be wider than its list by the padding, and the list
+ * would scroll sideways under the highlighted item (P3.2a).
  */
 export const MENU_ITEM =
-  'relative flex w-full cursor-default items-center rounded-md px-3 py-[calc(10px/1.5)] text-sm text-primary outline-none select-none data-highlighted:bg-surface-sunken data-disabled:cursor-not-allowed data-disabled:text-disabled'
+  'relative box-border flex w-full cursor-default items-center rounded-md px-3 py-[calc(10px/1.5)] text-sm text-primary outline-none select-none data-highlighted:bg-surface-sunken data-disabled:cursor-not-allowed data-disabled:text-disabled'
 
 /**
  * An option of a select or command list (Combobox.css, size 'sm'): 13px, padding 6px 10px,
- * radius md; the option chosen with the keyboard is filled with the brand colour.
+ * radius md; the option chosen with the keyboard is filled with the brand colour. Border-box, as
+ * MENU_ITEM.
  */
 export const OPTION =
-  'relative flex w-full cursor-pointer items-center gap-2 rounded-md px-2.5 py-1.5 text-sm text-primary outline-none select-none data-highlighted:bg-brand-solid data-highlighted:text-brand-on-solid data-disabled:cursor-not-allowed data-disabled:text-disabled'
+  'relative box-border flex w-full cursor-pointer items-center gap-2 rounded-md px-2.5 py-1.5 text-sm text-primary outline-none select-none data-highlighted:bg-brand-solid data-highlighted:text-brand-on-solid data-disabled:cursor-not-allowed data-disabled:text-disabled'
 
 /** The modal layer's backdrop (Overlay.css): surface.backdrop, fading with the modal (200ms). */
 export const BACKDROP =

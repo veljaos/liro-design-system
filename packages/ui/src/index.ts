@@ -6,10 +6,12 @@ export { Alert, alertRole, Banner } from './components/alert'
 export type { AlertProps, AlertTone, BannerProps } from './components/alert'
 export { Button, CompactIconButton, IconButton } from './components/button'
 export type { ButtonProps, CompactIconButtonProps, IconButtonProps } from './components/button'
-export { Card, KeyValueList, SectionCard } from './components/cards'
+export { Card, KeyValueList, keyValueLines, SectionCard } from './components/cards'
 export type {
   CardProps,
+  KeyValueGroup,
   KeyValueItem,
+  KeyValueLayout,
   KeyValueListProps,
   SectionCardProps,
 } from './components/cards'
@@ -23,6 +25,7 @@ export { DateField, DateRangeField } from './components/date-field'
 export type { DateFieldProps, DateRange, DateRangeFieldProps } from './components/date-field'
 export {
   ConfirmDialog,
+  confirmFamily,
   confirmTone,
   DeleteConfirmDialog,
   IrreversibleConfirmDialog,

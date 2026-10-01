@@ -146,7 +146,7 @@ export function CommandItem({ className, ...props }: ComponentProps<typeof Comma
     <CommandPrimitive.Item
       data-slot="command-item"
       className={cn(
-        'relative flex w-full cursor-pointer items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm text-primary outline-none select-none',
+        'relative box-border flex w-full cursor-pointer items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm text-primary outline-none select-none',
         'data-[selected=true]:bg-brand-solid data-[selected=true]:text-brand-on-solid',
         'data-[disabled=true]:cursor-not-allowed data-[disabled=true]:text-disabled',
         '[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*=size-])]:size-3.75',

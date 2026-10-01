@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { LiroProvider } from '../provider/liro-provider'
 import { messagesEn } from '../provider/messages.en'
 import { Button } from './button'
-import { ConfirmDialog, confirmTone, DeleteConfirmDialog } from './confirm-dialog'
+import { ConfirmDialog, confirmFamily, confirmTone, DeleteConfirmDialog } from './confirm-dialog'
 import { FAMILY_NAMES } from './intents'
 
 describe('confirmTone', () => {
@@ -25,6 +25,28 @@ describe('confirmTone', () => {
   it('is warning without a family, and the tone prop wins', () => {
     expect(confirmTone(undefined, undefined)).toBe('warning')
     expect(confirmTone('premium', 'destructive')).toBe('premium')
+  })
+})
+
+describe('confirmFamily', () => {
+  it("keeps the action's family when it gives the tone", () => {
+    for (const family of FAMILY_NAMES) {
+      expect(confirmFamily(confirmTone(undefined, family), family)).toBe(family)
+    }
+  })
+
+  it("takes the tone's own family without an action (owner, P3.2a)", () => {
+    expect(confirmFamily('warning', undefined)).toBe('caution')
+    expect(confirmFamily('danger', undefined)).toBe('destructive')
+    expect(confirmFamily('info', undefined)).toBe('primary')
+    expect(confirmFamily('success', undefined)).toBe('positive')
+    expect(confirmFamily('neutral', undefined)).toBe('neutral')
+    expect(confirmFamily('premium', undefined)).toBe('document')
+  })
+
+  it('follows a tone that overrides the action, so colours never mix', () => {
+    expect(confirmFamily('danger', 'primary')).toBe('destructive')
+    expect(confirmFamily('warning', 'positive')).toBe('caution')
   })
 })
 

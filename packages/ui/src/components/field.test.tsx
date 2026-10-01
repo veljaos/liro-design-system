@@ -22,6 +22,14 @@ describe('Field', () => {
     expect(html).toContain('text-status-danger-fg')
   })
 
+  it('puts the control the same 4px under the label, with or without a description', () => {
+    const gap = (html: string) => /<div class="([^"]*)"><input/.exec(html)?.[1]
+    expect(gap(render(<TextField id="a" label="Name" />))).toBe('mt-1')
+    expect(gap(render(<TextField id="b" label="Name" description="As on the invoice" />))).toBe(
+      'mt-1',
+    )
+  })
+
   it('marks a required field with " *" named by messages, and the control as required', () => {
     const html = render(<TextField id="name" label="Name" required />)
     expect(html).toContain('title="Required"')
