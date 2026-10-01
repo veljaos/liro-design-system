@@ -1,5 +1,11 @@
 # @veljaos/tokens
 
+## 0.1.0-alpha.3
+
+### Patch Changes
+
+- 7e029e7: P3.0a: JetBrains Mono is shipped. `fonts.css` adds the `JetBrains Mono Variable` faces (weights 100–800, six subsets, downloaded only when a page has monospace text), and `--liro-font-mono` / `font-mono` start with it, so monospace text (variable names, case numbers, shortcut keys) looks the same on every device.
+
 ## 0.1.0-alpha.2
 
 ### Patch Changes
