@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useEffect, useRef, type RefObject } from 'react'
 import {
   useController,
   type Control,
@@ -30,6 +30,7 @@ import {
   type TextAreaFieldProps,
   type TextFieldProps,
 } from '../components/text-field'
+import { focusFirstInvalid } from '../components/form-logic'
 import { useLiro } from '../provider/liro-provider'
 
 /*
@@ -349,4 +350,20 @@ export function FormSwitchField<TValues extends FieldValues, TName extends Field
       error={errorOf(error, props.error)}
     />
   )
+}
+
+/**
+ * After each failed submit, once the errors are drawn, reveals and focuses the first invalid field
+ * of the form (`focusFirstInvalid`: its tab, a closed section). Pass React Hook Form's `formState`.
+ */
+export function useFocusFirstInvalid(
+  form: RefObject<HTMLElement | null>,
+  state: { submitCount: number; isSubmitSuccessful: boolean },
+): void {
+  const { submitCount, isSubmitSuccessful } = state
+  useEffect(() => {
+    if (submitCount > 0 && !isSubmitSuccessful && form.current !== null) {
+      focusFirstInvalid(form.current)
+    }
+  }, [form, submitCount, isSubmitSuccessful])
 }

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { useRef, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useForm } from 'react-hook-form'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
 import {
@@ -8,6 +8,7 @@ import {
   FormSelectField,
   FormSwitchField,
   FormTextField,
+  useFocusFirstInvalid,
 } from '../form'
 import { settle } from '../primitives/story-helpers'
 import { ActionGroup } from './actions'
@@ -123,15 +124,17 @@ function RecordForm(props: { stickyActions?: 'auto' | 'always' | 'never'; long?:
   const formRef = useRef<HTMLFormElement>(null)
   const [name, setName] = useState('Alfa Trade d.o.o.')
   const [street, setStreet] = useState('')
-  const [submitted, setSubmitted] = useState(false)
+  const [attempts, setAttempts] = useState(0)
+  const submitted = attempts > 0
   const dirty = name !== 'Alfa Trade d.o.o.' || street !== ''
   const streetError = submitted && street === '' ? 'Enter the street.' : undefined
   const save = () => {
-    setSubmitted(true)
-    requestAnimationFrame(() => {
-      if (formRef.current !== null) focusFirstInvalid(formRef.current)
-    })
+    setAttempts((count) => count + 1)
   }
+  // After each failed save, once the errors are drawn.
+  useEffect(() => {
+    if (attempts > 0 && formRef.current !== null) focusFirstInvalid(formRef.current)
+  }, [attempts])
   const filler = (count: number) =>
     Array.from({ length: count }, (_, index) => (
       <TextField key={index} label={`Field ${String(index + 1)}`} />
@@ -348,23 +351,16 @@ interface Invoice {
 
 function BoundForm({ children }: { children?: ReactNode }) {
   const formRef = useRef<HTMLFormElement>(null)
-  const { control, handleSubmit } = useForm<Invoice>({
+  const { control, handleSubmit, formState } = useForm<Invoice>({
     defaultValues: { customer: '', issued: null, total: null, currency: 'EUR', paid: false },
   })
+  useFocusFirstInvalid(formRef, formState)
   return (
     <form
       ref={formRef}
       noValidate
       onSubmit={(event) => {
-        void handleSubmit(
-          () => undefined,
-          () => {
-            // Once the errors are drawn.
-            requestAnimationFrame(() => {
-              if (formRef.current !== null) focusFirstInvalid(formRef.current)
-            })
-          },
-        )(event)
+        void handleSubmit(() => undefined)(event)
       }}
       className="flex max-w-180 flex-col gap-4"
     >
