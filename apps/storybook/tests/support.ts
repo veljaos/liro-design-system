@@ -133,3 +133,32 @@ export async function openEntry(page: Page, entry: Entry, mode: Mode): Promise<O
     errors: [...(state?.errors ?? []), ...pageErrors],
   }
 }
+
+/**
+ * The open option lists, menus and floating contents (popovers, selects, menus, the command
+ * palette's list) whose content is wider than their box (scrollWidth > clientWidth), with every
+ * scrolling element inside them. Each is described by its role or data-slot and its two widths.
+ */
+export async function sidewaysOverflow(page: Page): Promise<string[]> {
+  return page.evaluate(() => {
+    const lists =
+      '[role="listbox"], [role="menu"], [cmdk-list], [data-radix-popper-content-wrapper] > *'
+    const found = new Set<Element>(document.querySelectorAll(lists))
+    for (const element of [...found]) {
+      for (const inner of element.querySelectorAll('*')) {
+        const overflow = getComputedStyle(inner).overflowX
+        if (overflow === 'auto' || overflow === 'scroll') found.add(inner)
+      }
+    }
+    return [...found]
+      .filter((element) => element.getClientRects().length > 0)
+      .filter((element) => element.scrollWidth > element.clientWidth)
+      .map((element) => {
+        const name =
+          element.getAttribute('role') ??
+          element.getAttribute('data-slot') ??
+          element.tagName.toLowerCase()
+        return `${name}: content ${String(element.scrollWidth)}px in ${String(element.clientWidth)}px`
+      })
+  })
+}

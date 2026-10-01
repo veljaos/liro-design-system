@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { Send } from 'lucide-react'
+import { Ban, CheckCheck } from 'lucide-react'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { settle } from '../primitives/story-helpers'
 import { Button } from './button'
@@ -20,7 +20,9 @@ const meta = {
           "action's family colour (main action last). The tone follows the `intent` or " +
           '`family` (destructive → danger, positive → success, caution → warning, primary and ' +
           'verify → info, document and neutral → neutral; warning without one); `tone` ' +
-          'overrides it. When `onConfirm` returns a promise, the button shows a loader, Cancel ' +
+          'overrides it. Colours never mix: without an action, or when `tone` overrides the ' +
+          "action's, the button takes the tone's family (warning → caution, danger → " +
+          'destructive, info → primary, success → positive, neutral → neutral). When `onConfirm` returns a promise, the button shows a loader, Cancel ' +
           'is disabled and nothing closes the dialog until it settles. `DeleteConfirmDialog` ' +
           'has the delete texts from the provider; `IrreversibleConfirmDialog` enables its ' +
           'button only when the user types `confirmText`.\n\n' +
@@ -65,7 +67,7 @@ export const Positive: Story = {
     <ConfirmDialog
       defaultOpen
       family="positive"
-      actionIcon={Send}
+      actionIcon={CheckCheck}
       title="Approve 12 invoices?"
       message="They are sent to the customers today."
       confirmLabel="Approve and send"
@@ -74,7 +76,7 @@ export const Positive: Story = {
   ),
 }
 
-/** No intent or family: the warning tone. */
+/** No intent or family: the warning tone, and the button in the caution family (orange). */
 export const WithoutAction: Story = {
   name: 'Without an action (warning)',
   render: () => (
@@ -83,6 +85,22 @@ export const WithoutAction: Story = {
       title="Leave without saving?"
       message="Your changes to this invoice are lost."
       confirmLabel="Leave"
+      onConfirm={() => undefined}
+    />
+  ),
+}
+
+/** `tone` overrides the action's: the button follows the tone (danger → destructive). */
+export const ToneOverride: Story = {
+  name: 'Tone overrides the action',
+  render: () => (
+    <ConfirmDialog
+      defaultOpen
+      intent="save"
+      tone="danger"
+      title="Save over the signed version?"
+      message="The signed version is replaced and its signature is removed."
+      confirmLabel="Save anyway"
       onConfirm={() => undefined}
     />
   ),
@@ -122,7 +140,7 @@ export const Irreversible: Story = {
     <IrreversibleConfirmDialog
       defaultOpen
       family="caution"
-      actionIcon={Send}
+      actionIcon={Ban}
       title="Void invoice F-114?"
       message="A voided invoice cannot be restored; its number is not reused."
       confirmLabel="Void the invoice"

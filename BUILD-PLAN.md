@@ -264,6 +264,7 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P3.0 | Faster CI | P0.4 | done | 2026-09-30 | Story tests, accessibility and visual in 4 parts each on 12 machines: CI 39 → 6 min; the visual test fails on a failed story before any screenshot |
 | P3.1 | DataTable core | P2.7, P2.8 | done | 2026-09-30 | Owner: old look (sm text, sunken header, sort asc → desc → asc with 13px icons in text.brand, skeleton first load and 14px refetch loader, sticky totals); filters only choose the empty state, no `filterable` flag; TanStack Table 9.2.4 |
 | P3.2 | Table on phones, large lists, column resize | P3.1 | done | 2026-09-30 | Owner: cards below 48em by real branching; the old resize handle (9px strip, 3px line, arrows 10/40px, reading direction) plus a +/− popover without dragging (WCAG 2.5.7); TanStack Virtual 3.14.13; 1,000 rows: select 13–16ms (4× slower CPU 100–146ms) |
+| P3.2a | Fixes from the owner's Storybook review | P3.2 | done | 2026-10-01 | Option lists border-box, with a story-test check for sideways overflow; ConfirmDialog button follows its tone; 4px between label and control; cards and KeyValueList redesigned (rows layout, groups, stacked option) |
 | P3.3 | Filters and search | P3.1 | todo | | |
 | P3.4 | Editable grid | P3.1, P2.3 | todo | | |
 | P3.5 | Form layout | P2.2, P2.7 | todo | | |
