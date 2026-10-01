@@ -345,7 +345,7 @@ function SortMenu(props: {
           aria-label={`${messages['filter.sort']}: ${sortButtonText(sort, columns, '—')}`}
         />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" aria-label={messages['filter.sort']}>
+      <DropdownMenuContent align="start">
         <DropdownMenuRadioGroup
           value={sort?.column ?? ''}
           onValueChange={(column) => {

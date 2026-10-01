@@ -160,8 +160,8 @@ export const DrawerOpen: Story = {
     const body = within(canvasElement.ownerDocument.body)
     await userEvent.click(within(canvasElement).getByRole('button', { name: 'Filters' }))
     const drawer = await body.findByRole('dialog', { name: 'Filters' })
-    await expect(within(drawer).getByRole('group', { name: 'Total' })).toBeVisible()
     await settle()
+    await waitFor(() => expect(within(drawer).getByRole('group', { name: 'Total' })).toBeVisible())
   },
 }
 
@@ -214,13 +214,13 @@ export const PhoneSort: Story = {
   play: async ({ canvasElement }) => {
     const body = within(canvasElement.ownerDocument.body)
     await userEvent.click(within(canvasElement).getByRole('button', { name: 'Sort: Date ↓' }))
-    const menu = await body.findByRole('menu', { name: 'Sort' })
+    const menu = await body.findByRole('menu')
     await userEvent.click(within(menu).getByRole('menuitemradio', { name: 'Total' }))
     await waitFor(() =>
       expect(within(canvasElement).getByRole('button', { name: 'Sort: Total ↓' })).toBeVisible(),
     )
     await userEvent.click(within(canvasElement).getByRole('button', { name: 'Sort: Total ↓' }))
-    await body.findByRole('menu', { name: 'Sort' })
+    await body.findByRole('menu')
     await settle()
   },
 }

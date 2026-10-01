@@ -74,7 +74,7 @@ export interface LiroMessages {
   /** FilterBar: the names of the two ends of a number range filter (its label). */
   'filter.rangeFrom': (label: string) => string
   'filter.rangeTo': (label: string) => string
-  /** FilterBar on phones: the sort button while nothing is sorted, and the sort menu's name. */
+  /** FilterBar on phones: the sort button's text while nothing is sorted, and the start of its name. */
   'filter.sort': string
   /** FilterBar on phones: the two directions in the sort menu. */
   'filter.ascending': string
