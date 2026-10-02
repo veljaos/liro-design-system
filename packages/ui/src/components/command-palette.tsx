@@ -1,7 +1,7 @@
 import { Command as CommandPrimitive } from 'cmdk'
 import { Search } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { TEXT_DIRECTION } from '../primitives/classes'
+import { TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { Dialog, DialogContent, DialogTitle } from '../primitives/dialog'
 import { useLiro } from '../provider/liro-provider'
@@ -157,7 +157,7 @@ export function CommandPalette(props: CommandPaletteProps) {
               role="status"
               className={cn(
                 'm-0 border-0 border-t border-solid border-subtle p-4 text-center text-sm text-secondary',
-                TEXT_DIRECTION,
+                TEXT_ISOLATE,
               )}
             >
               {messages['field.loading']}
@@ -168,7 +168,7 @@ export function CommandPalette(props: CommandPaletteProps) {
               role="status"
               className={cn(
                 'm-0 border-0 border-t border-solid border-subtle p-4 text-center text-sm text-secondary',
-                TEXT_DIRECTION,
+                TEXT_ISOLATE,
               )}
             >
               {messages['command.noResults']}

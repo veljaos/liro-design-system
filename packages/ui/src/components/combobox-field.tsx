@@ -1,6 +1,13 @@
 import { Check } from 'lucide-react'
 import { useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
-import { READ_ONLY, FLOATING, FLOATING_MOTION, OPTION, TEXT_DIRECTION } from '../primitives/classes'
+import {
+  READ_ONLY,
+  FLOATING,
+  FLOATING_MOTION,
+  OPTION,
+  TEXT_DIRECTION,
+  TEXT_ISOLATE,
+} from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { Input } from '../primitives/input'
 import { Popover, PopoverAnchor, PopoverContent } from '../primitives/popover'
@@ -85,7 +92,7 @@ export function ComboboxList(props: ListProps) {
       {props.loading && (
         <p
           role="status"
-          className={cn('m-0 px-2.5 py-1.5 text-center text-sm text-secondary', TEXT_DIRECTION)}
+          className={cn('m-0 px-2.5 py-1.5 text-center text-sm text-secondary', TEXT_ISOLATE)}
         >
           {messages['field.loading']}
         </p>
@@ -93,7 +100,7 @@ export function ComboboxList(props: ListProps) {
       {!props.loading && props.showEmpty && (
         <p
           role="status"
-          className={cn('m-0 px-2.5 py-1.5 text-center text-sm text-secondary', TEXT_DIRECTION)}
+          className={cn('m-0 px-2.5 py-1.5 text-center text-sm text-secondary', TEXT_ISOLATE)}
         >
           {messages['field.noResults']}
         </p>

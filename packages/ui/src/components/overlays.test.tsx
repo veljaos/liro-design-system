@@ -43,7 +43,7 @@ describe('overlay triggers', () => {
         <Button intent="settings" label="Settings" />
       </Tooltip>,
     )
-    expect(html).toContain('<span class="[unicode-bidi:plaintext]">Settings</span>')
+    expect(html).toContain('<span class="bidi-content">Settings</span>')
     expect(html).not.toContain('Opens the settings')
   })
 })

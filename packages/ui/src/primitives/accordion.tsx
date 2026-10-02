@@ -75,7 +75,13 @@ export function AccordionContent({
       className="overflow-hidden data-[state=closed]:animate-liro-collapse-close data-[state=open]:animate-liro-collapse-open motion-reduce:animate-none"
       {...props}
     >
-      <div className={cn('px-4 pt-[5px] pb-4 text-sm break-words text-primary', className)}>
+      <div
+        className={cn(
+          'px-4 pt-[5px] pb-4 text-sm break-words text-primary',
+          TEXT_DIRECTION,
+          className,
+        )}
+      >
         {children}
       </div>
     </AccordionPrimitive.Content>

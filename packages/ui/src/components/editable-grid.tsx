@@ -1,6 +1,6 @@
 import { CircleAlert, Plus, Trash2, TriangleAlert } from 'lucide-react'
 import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
-import { TEXT_DIRECTION } from '../primitives/classes'
+import { TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 import { ActionButton } from './actions'
@@ -435,7 +435,7 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
                 className={cn(
                   CELL_BORDER,
                   'bg-surface-sunken px-2 py-2 align-bottom font-semibold break-words',
-                  TEXT_DIRECTION,
+                  TEXT_ISOLATE,
                   column.type === 'number' || (column.type === 'display' && column.align === 'end')
                     ? 'text-end'
                     : 'text-start',

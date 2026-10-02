@@ -92,8 +92,8 @@ export const Japanese: Story = {
 
 /**
  * English in a right-to-left page (P3.6): labels, descriptions, errors and reasons take their
- * direction from their own text, so ".Enter a number" never happens; the layout stays right to
- * left (the label at the right edge).
+ * direction from their own text, so ".Enter a number" never happens; the fields and the order
+ * of their parts stay right to left.
  */
 export const EnglishInRtl: Story = {
   render: () => (

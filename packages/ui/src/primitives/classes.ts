@@ -73,9 +73,19 @@ export const BACKDROP =
  * A block of text takes its direction from its own content, while the layout keeps the page's
  * (P3.6, owner): an English sentence in a right-to-left page — a message the application has not
  * translated yet — keeps its word order (".Unavailable: The period …" was broken), and an
- * Arabic one in a left-to-right page keeps its own. `unicode-bidi: plaintext` sets the bidi
- * paragraph direction from the first strong character and isolates an inline element, but
- * leaves `direction`, so `text-align: start` and the box still follow the page; `dir="auto"`
- * would also turn the alignment.
+ * Arabic one in a left-to-right page keeps its own. `unicode-bidi: plaintext` sets each
+ * paragraph's direction from its first strong character and isolates an inline element; it
+ * leaves `direction`, so the component's layout (the order of icon, text and buttons, flex rows,
+ * logical margins) stays the page's. On its own it would also move the text to the side its
+ * language starts on (`text-align: start` follows the paragraph), so an English title in a
+ * right-to-left accordion drifted to the left; `text-align: match-parent` resolves start and end
+ * against the parent's direction instead, keeping the text on the page's start side. The utility
+ * is in styles.css (`bidi-content`): Chromium needs the -webkit- form, Firefox the plain one.
  */
-export const TEXT_DIRECTION = '[unicode-bidi:plaintext]'
+export const TEXT_DIRECTION = 'bidi-content'
+
+/**
+ * TEXT_DIRECTION for text whose alignment is set on the same element (centred messages, end-
+ * aligned headers): only the word order follows the content.
+ */
+export const TEXT_ISOLATE = 'bidi-isolate'
