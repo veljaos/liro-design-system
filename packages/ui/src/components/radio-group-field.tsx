@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { cn } from '../primitives/cn'
+import { TEXT_DIRECTION } from '../primitives/classes'
 import { RadioGroup, RadioGroupItem } from '../primitives/radio-group'
 import { useLiro } from '../provider/liro-provider'
 import { Field, fieldProps, type FieldBaseProps } from './field'
@@ -82,6 +83,7 @@ export function RadioGroupField(props: RadioGroupFieldProps) {
                       htmlFor={id}
                       className={cn(
                         'text-sm leading-5 break-words',
+                        TEXT_DIRECTION,
                         disabled ? 'cursor-not-allowed text-disabled' : 'text-primary',
                         !disabled && !control.readOnly && 'cursor-pointer',
                       )}
@@ -89,7 +91,12 @@ export function RadioGroupField(props: RadioGroupFieldProps) {
                       {option.label}
                     </label>
                     {option.description !== undefined && (
-                      <p className="m-0 mt-[5px] text-xs leading-tight text-secondary">
+                      <p
+                        className={cn(
+                          'm-0 mt-[5px] text-xs leading-tight text-secondary',
+                          TEXT_DIRECTION,
+                        )}
+                      >
                         {option.description}
                       </p>
                     )}

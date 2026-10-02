@@ -1,6 +1,13 @@
 import { Check } from 'lucide-react'
 import { useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
-import { READ_ONLY, FLOATING, FLOATING_MOTION, OPTION } from '../primitives/classes'
+import {
+  READ_ONLY,
+  FLOATING,
+  FLOATING_MOTION,
+  OPTION,
+  TEXT_DIRECTION,
+  TEXT_ISOLATE,
+} from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { Input } from '../primitives/input'
 import { Popover, PopoverAnchor, PopoverContent } from '../primitives/popover'
@@ -77,18 +84,24 @@ export function ComboboxList(props: ListProps) {
               <span className="flex size-[0.8em] shrink-0 items-center justify-center">
                 {props.isChosen(option) && <Check aria-hidden="true" className="size-[0.8em]" />}
               </span>
-              <span className="min-w-0 break-words">{option.label}</span>
+              <span className={cn('min-w-0 break-words', TEXT_DIRECTION)}>{option.label}</span>
             </div>
           ))}
         </div>
       )}
       {props.loading && (
-        <p role="status" className="m-0 px-2.5 py-1.5 text-center text-sm text-secondary">
+        <p
+          role="status"
+          className={cn('m-0 px-2.5 py-1.5 text-center text-sm text-secondary', TEXT_ISOLATE)}
+        >
           {messages['field.loading']}
         </p>
       )}
       {!props.loading && props.showEmpty && (
-        <p role="status" className="m-0 px-2.5 py-1.5 text-center text-sm text-secondary">
+        <p
+          role="status"
+          className={cn('m-0 px-2.5 py-1.5 text-center text-sm text-secondary', TEXT_ISOLATE)}
+        >
           {messages['field.noResults']}
         </p>
       )}

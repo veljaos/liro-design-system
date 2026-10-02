@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { expect } from 'storybook/test'
 import { LiroProvider, useLiro } from '../provider/liro-provider'
 
 /*
@@ -51,4 +52,17 @@ export function PhoneFrame({ children }: { children: ReactNode }) {
       <StoryProvider>{children}</StoryProvider>
     </div>
   )
+}
+
+/**
+ * The "English in right-to-left" stories (P3.6): an Arabic page whose texts fell back to English,
+ * as when the application has no translation yet. Proves that each named text block takes its
+ * direction from its content (unicode-bidi: plaintext) while the layout (`direction`) stays right
+ * to left.
+ */
+export async function expectContentDirection(...elements: Element[]) {
+  for (const element of elements) {
+    await expect(getComputedStyle(element).unicodeBidi).toBe('plaintext')
+    await expect(getComputedStyle(element).direction).toBe('rtl')
+  }
 }

@@ -1,6 +1,6 @@
 import { Check } from 'lucide-react'
 import { Fragment, type ReactNode } from 'react'
-import { BUTTON_RESET, FOCUS_RING } from '../primitives/classes'
+import { BUTTON_RESET, FOCUS_RING, TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { Progress } from '../primitives/progress'
 import { Skeleton as SkeletonPrimitive } from '../primitives/skeleton'
@@ -112,9 +112,13 @@ export function Stepper({ steps, active, onStepClick, className }: StepperProps)
         )
         const text = (
           <span className="ms-3 flex min-w-0 flex-col text-start">
-            <span className="text-sm leading-none font-semibold text-primary">{step.label}</span>
+            <span className={cn('text-sm leading-none font-semibold text-primary', TEXT_DIRECTION)}>
+              {step.label}
+            </span>
             {step.description !== undefined && (
-              <span className="my-1 text-xs leading-none text-secondary">{step.description}</span>
+              <span className={cn('my-1 text-xs leading-none text-secondary', TEXT_DIRECTION)}>
+                {step.description}
+              </span>
             )}
             {state === 'completed' && (
               <span className="sr-only">{messages['stepper.completed']}</span>

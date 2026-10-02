@@ -25,7 +25,7 @@ import {
 import { focusFirstInvalid } from './form-logic'
 import { NumberField } from './number-field'
 import { SelectField } from './select-field'
-import { StoryProvider } from './story-frames'
+import { expectContentDirection, StoryProvider } from './story-frames'
 import { TextAreaField, TextField } from './text-field'
 
 const meta = {
@@ -37,9 +37,11 @@ const meta = {
         component:
           '**FormSection** — a titled card of fields in 1–3 columns (one on phones); ' +
           '`FormFullWidth` spans the row; `collapsible` folds rarely used fields away. ' +
-          '**FormTabs** — the tabs of a long form; a tab with errors shows a warning icon and ' +
-          'says so. **FormActions** — the actions at the top and, while the form scrolls, in a ' +
-          'bar at the bottom ("Unsaved changes" when `dirty`). **useUnsavedChangesGuard** — asks ' +
+          '**FormTabs** — the tabs of a long form, as the first row of the form card (start-' +
+          'aligned; its sections are drawn flat inside); a tab with errors shows a warning icon ' +
+          'and says so. **FormActions** — the actions at the top and, once they scroll out of ' +
+          'view, in a bar at the bottom ("Unsaved changes" when `dirty`): the two sets are never ' +
+          'visible together. **useUnsavedChangesGuard** — asks ' +
           'before leaving with unsaved changes. **FormWizard** — a form in checked steps. ' +
           '**focusFirstInvalid(form)** — after a failed save: opens the tab or section with the ' +
           'first error and focuses it. **@veljaos/ui/form** binds the fields to React Hook Form.' +
@@ -212,11 +214,14 @@ export const TabsWithErrors: Story = {
   },
 }
 
-/** A long form in a scrolling area: the bottom bar shows ('auto'), with "Unsaved changes". */
+/**
+ * A long form in a scrolling area ('auto'): no bottom bar while the top actions are in view;
+ * scrolled down, the bar shows with "Unsaved changes" — never both sets at once.
+ */
 export const BottomBarWhileScrolling: Story = {
   name: 'Bottom bar while scrolling',
   render: () => (
-    <div className="h-130 overflow-y-auto">
+    <div data-testid="scroller" className="h-130 overflow-y-auto">
       <RecordForm long />
     </div>
   ),
@@ -224,6 +229,9 @@ export const BottomBarWhileScrolling: Story = {
     const canvas = within(canvasElement)
     const name = canvas.getByRole('textbox', { name: 'Name' })
     await userEvent.type(name, ' Group')
+    await expect(canvas.queryByText('Unsaved changes')).toBeNull()
+    const scroller = canvas.getByTestId('scroller')
+    scroller.scrollTop = scroller.scrollHeight
     await waitFor(() => expect(canvas.getByText('Unsaved changes')).toBeVisible())
     await settle()
   },
@@ -470,4 +478,33 @@ export const Japanese: Story = {
       </div>
     </StoryProvider>
   ),
+}
+
+/**
+ * English in a right-to-left page (P3.6): section titles, tab labels and "Unsaved changes" keep
+ * their own order; the grid, the tabs and the bottom bar stay right to left.
+ */
+export const EnglishInRtl: Story = {
+  render: () => (
+    <StoryProvider locale="ar">
+      <FormActions
+        dirty
+        stickyActions="always"
+        actions={<ActionGroup actions={[{ key: 'save', intent: 'save', label: 'Save (draft)' }]} />}
+      >
+        <FormSection title="Customer (main office)" description="3 fields are required.">
+          <TextField label="Name" defaultValue="Alfa Trade d.o.o." />
+          <TextField label="Tax number" />
+        </FormSection>
+      </FormActions>
+    </StoryProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expectContentDirection(
+      canvas.getByText('Customer (main office)'),
+      canvas.getByText('Unsaved changes'),
+    )
+    await settle()
+  },
 }

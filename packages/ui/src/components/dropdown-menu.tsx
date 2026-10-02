@@ -1,4 +1,5 @@
 import type { ReactElement } from 'react'
+import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import {
   DropdownMenu as MenuRoot,
@@ -76,7 +77,7 @@ export function DropdownMenu({ trigger, entries, align = 'start' }: DropdownMenu
               )}
             >
               {Icon !== undefined && <Icon aria-hidden="true" />}
-              <span className="min-w-0 flex-1">{entry.label}</span>
+              <span className={cn('min-w-0 flex-1', TEXT_DIRECTION)}>{entry.label}</span>
               {entry.shortcut !== undefined && (
                 <DropdownMenuShortcut>{entry.shortcut}</DropdownMenuShortcut>
               )}

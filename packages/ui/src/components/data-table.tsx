@@ -21,7 +21,7 @@ import {
   type ReactNode,
 } from 'react'
 import { Checkbox } from '../primitives/checkbox'
-import { BUTTON_RESET, FOCUS_RING } from '../primitives/classes'
+import { BUTTON_RESET, FOCUS_RING, TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { Skeleton } from '../primitives/skeleton'
 import { useLiro } from '../provider/liro-provider'
@@ -61,8 +61,9 @@ import { usePhone } from './use-phone'
  * - the selection column with an xs (16px) checkbox; the header checkbox is indeterminate when
  *   some rows are selected; selected rows on surface.selected;
  * - loading: first load 5 skeleton bars (36px, radius sm, 8px apart, 16px around), the header
- *   stays; a refetch keeps the rows as they are with a 14px loader in the top end corner; never a
- *   translucent overlay;
+ *   stays; a refetch keeps the rows as they are with a 14px loader above the table at the end, in
+ *   a slot always reserved (P3.6), and "Updating…" for screen readers; never a translucent
+ *   overlay;
  * - totals row: surface.sunken, semibold, a 1px border.strong line above it, sticky at the
  *   bottom while the table scrolls; values from the application, never computed;
  * - filters decide "nothing here yet" or "no rows match" (with "Clear filters");
@@ -197,6 +198,13 @@ const ALIGN = { start: 'text-start', center: 'text-center', end: 'text-end' } as
 
 /** Mantine Table cell padding: vertical sm (12px), horizontal md (16px). */
 const CELL = 'px-4 py-3'
+
+/**
+ * A selected row (P3.6, owner): besides its neutral background, a 3px bar in border.selected on
+ * the row's start edge, drawn by the first cell, so selected differs from hovered by shape too.
+ */
+const SELECTED_ROW =
+  "[&>td:first-child]:relative [&>td:first-child]:before:absolute [&>td:first-child]:before:inset-y-0 [&>td:first-child]:before:start-0 [&>td:first-child]:before:border-0 [&>td:first-child]:before:border-s-[3px] [&>td:first-child]:before:border-solid [&>td:first-child]:before:border-selected [&>td:first-child]:before:content-['']"
 
 /** A virtualized row (owner) and the estimated card (owner). */
 const ROW_HEIGHT = 44
@@ -434,13 +442,15 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
             }}
             className={cn(
               BUTTON_RESET,
-              'inline-flex max-w-full cursor-pointer items-center gap-1 rounded-sm text-sm font-bold',
-              sorted === null ? 'text-primary' : 'text-brand',
+              'inline-flex max-w-full cursor-pointer items-center gap-1 rounded-sm text-sm font-bold text-primary',
               FOCUS_RING,
             )}
           >
-            <span className={cn(oneLine && 'truncate')}>{column.header}</span>
-            <Icon aria-hidden="true" className="size-[13px] shrink-0" />
+            <span className={cn(TEXT_DIRECTION, oneLine && 'truncate')}>{column.header}</span>
+            <Icon
+              aria-hidden="true"
+              className={cn('size-[13px] shrink-0', sorted === null && 'text-tertiary')}
+            />
           </button>
         ) : (
           column.header
@@ -488,7 +498,7 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
           : {})}
         className={cn(
           virtualize && 'h-11',
-          selected && 'bg-surface-selected',
+          selected && [SELECTED_ROW, 'bg-surface-selected'],
           clickable &&
             'cursor-pointer outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus',
           clickable && !selected && 'hover:bg-surface-sunken',
@@ -703,7 +713,7 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
           .filter((column) => totals[column.id] !== undefined)
           .map((column) => (
             <div key={column.id} className="flex items-baseline justify-between gap-4">
-              <span>{column.header}</span>
+              <span className={TEXT_DIRECTION}>{column.header}</span>
               <span className="text-end tabular-nums">{totals[column.id]}</span>
             </div>
           ))}
@@ -721,9 +731,31 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
 
   return (
     <div className={cn('flex min-w-0 flex-col gap-3 font-sans', props.className)}>
-      {props.exportAction !== undefined && (
-        <div className="flex justify-end">{props.exportAction}</div>
-      )}
+      {/*
+        Above the table at the end (P3.6, owner; the old system kept it at the top): the refetch
+        loader in a slot that is always reserved, so showing or hiding it never moves the table,
+        then the export slot. The slot is a polite live region: "Updating…" is announced when a
+        refetch starts.
+      */}
+      <div className="flex min-h-3.5 flex-wrap items-center justify-end gap-3">
+        <span
+          role="status"
+          aria-live="polite"
+          data-slot="refetch-loader"
+          className="flex size-3.5 shrink-0 items-center justify-center"
+        >
+          {refetching && (
+            <>
+              <span
+                aria-hidden="true"
+                className="box-border size-3.5 animate-liro-spin rounded-full border-[1.75px] border-solid border-brand border-s-transparent motion-reduce:animate-none"
+              />
+              <span className="sr-only">{messages['table.updating']}</span>
+            </>
+          )}
+        </span>
+        {props.exportAction}
+      </div>
       {selectable && props.bulkActions !== undefined && (
         <BulkActionBar
           count={selection?.length ?? 0}
@@ -818,18 +850,6 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
             </table>
           )}
         </div>
-        {refetching && (
-          <span
-            role="status"
-            className="absolute end-0.5 top-0.5 z-20 flex size-3.5 items-center justify-center"
-          >
-            <span
-              aria-hidden="true"
-              className="box-border size-3.5 animate-liro-spin rounded-full border-[1.75px] border-solid border-brand border-s-transparent"
-            />
-            <span className="sr-only">{messages['field.loading']}</span>
-          </span>
-        )}
       </div>
       {cardTotals}
       {props.rowLimitMessage !== undefined && (

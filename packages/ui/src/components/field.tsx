@@ -1,5 +1,6 @@
 import { CircleAlert } from 'lucide-react'
 import { useId, type ReactNode } from 'react'
+import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 
@@ -106,7 +107,7 @@ export function FieldMessage({
       )}
     >
       {tone === 'error' && <CircleAlert aria-hidden="true" className="mt-px size-3 shrink-0" />}
-      <span>{children}</span>
+      <span className={TEXT_DIRECTION}>{children}</span>
     </p>
   )
 }
@@ -158,7 +159,10 @@ export function Field(props: FieldProps) {
     readOnly,
     disabled,
   }
-  const labelClass = 'inline-block text-sm font-semibold break-words text-primary'
+  const labelClass = cn(
+    'inline-block text-sm font-semibold break-words text-primary',
+    TEXT_DIRECTION,
+  )
   return (
     <div
       data-slot="field"
@@ -179,7 +183,10 @@ export function Field(props: FieldProps) {
         </label>
       )}
       {ids.hasDescription && (
-        <p id={ids.descriptionId} className="m-0 text-xs leading-tight text-secondary">
+        <p
+          id={ids.descriptionId}
+          className={cn('m-0 text-xs leading-tight text-secondary', TEXT_DIRECTION)}
+        >
           {description}
         </p>
       )}

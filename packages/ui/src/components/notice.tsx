@@ -3,6 +3,7 @@ import type { CSSProperties, ReactNode } from 'react'
 import { toast, Toaster as SonnerToaster } from 'sonner'
 import { buttonClassName, BUTTON_SHAPES } from '../primitives/button'
 import { cn } from '../primitives/cn'
+import { TEXT_DIRECTION } from '../primitives/classes'
 import { useLiro } from '../provider/liro-provider'
 import type { Family, IconComponent } from './intents'
 
@@ -97,8 +98,14 @@ export function NoticeView({ id, kind, message, title }: NoticeViewProps) {
         </span>
       )}
       <div className="me-2.5 min-w-0 flex-1">
-        {hasTitle && <p className="m-0 mb-0.5 text-sm font-semibold break-words">{title}</p>}
-        <p className={cn('m-0 text-sm break-words', hasTitle && 'text-secondary')}>{message}</p>
+        {hasTitle && (
+          <p className={cn('m-0 mb-0.5 text-sm font-semibold break-words', TEXT_DIRECTION)}>
+            {title}
+          </p>
+        )}
+        <p className={cn('m-0 text-sm break-words', TEXT_DIRECTION, hasTitle && 'text-secondary')}>
+          {message}
+        </p>
       </div>
       {kind !== 'loading' && (
         <button

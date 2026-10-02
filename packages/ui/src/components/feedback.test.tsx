@@ -13,6 +13,19 @@ describe('Alert and Banner', () => {
     expect(alertRole('warning')).toBe('alert')
     expect(alertRole('info')).toBe('status')
     expect(alertRole('success')).toBe('status')
+    expect(alertRole('neutral')).toBe('status')
+  })
+
+  it('are neutral without a tone, and info only when asked for', () => {
+    const plain = render(<Alert title="Note">x</Alert>)
+    expect(plain).toContain('data-tone="neutral"')
+    expect(plain).toContain('bg-status-neutral-bg')
+    // A visible outline: the neutral grey is the page's own.
+    expect(plain).toContain('border-status-neutral-border')
+    expect(plain).not.toContain('border-transparent')
+    expect(plain).not.toContain('status-info')
+    expect(render(<Banner>x</Banner>)).toContain('data-tone="neutral"')
+    expect(render(<Alert tone="info">x</Alert>)).toContain('bg-status-info-bg')
   })
 
   it("draw the tone's light look, the title in the tone's colour", () => {

@@ -4,6 +4,7 @@ import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { settle } from '../primitives/story-helpers'
 import { ActionGroup, UnavailableAction, type ActionItem } from './actions'
 import { ARABIC, JAPANESE } from './field-story-data'
+import { expectContentDirection, StoryProvider } from './story-frames'
 
 const meta = {
   title: 'Components/Actions/ActionGroup',
@@ -202,4 +203,37 @@ export const Japanese: Story = {
       />
     </div>
   ),
+}
+
+/**
+ * English in a right-to-left page (P3.6): the reason reads "Unavailable: The period August 2026
+ * is closed." in its own order (it was ".Unavailable: The period August 2026 is closed"); the
+ * buttons and the row stay right to left, the main action at the end (the left).
+ */
+export const EnglishInRtl: Story = {
+  render: () => (
+    <StoryProvider locale="ar">
+      <div className="flex max-w-150 flex-col items-start gap-6">
+        <UnavailableAction
+          intent="delete"
+          label="Delete"
+          reason="The period August 2026 is closed."
+        />
+        <ActionGroup
+          actions={[
+            { key: 'print', intent: 'print', label: 'Print (2 copies)' },
+            { key: 'save', intent: 'save', label: 'Save and close' },
+          ]}
+        />
+      </div>
+    </StoryProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expectContentDirection(
+      canvas.getByText('Unavailable: The period August 2026 is closed.'),
+      canvas.getAllByText('Save and close')[0] ?? canvasElement,
+    )
+    await settle()
+  },
 }

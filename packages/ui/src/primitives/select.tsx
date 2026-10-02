@@ -2,7 +2,7 @@ import { Check, ChevronDown, ChevronUp } from 'lucide-react'
 import { Select as SelectPrimitive } from 'radix-ui'
 import { createContext, useContext, useState, type ComponentProps } from 'react'
 import { usePortalContainer } from '../provider/portal'
-import { BUTTON_RESET, FLOATING, FLOATING_MOTION, INPUT, OPTION } from './classes'
+import { BUTTON_RESET, FLOATING, FLOATING_MOTION, INPUT, OPTION, TEXT_DIRECTION } from './classes'
 import { cn } from './cn'
 
 /*
@@ -128,7 +128,7 @@ export function SelectItem({
           <Check aria-hidden="true" className="size-[0.8em]" />
         </SelectPrimitive.ItemIndicator>
       </span>
-      <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
+      <SelectPrimitive.ItemText className={TEXT_DIRECTION}>{children}</SelectPrimitive.ItemText>
     </SelectPrimitive.Item>
   )
 }

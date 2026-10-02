@@ -1,4 +1,5 @@
 import { useId, type ReactNode } from 'react'
+import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { Skeleton } from '../primitives/skeleton'
 import type { IconComponent } from './intents'
@@ -88,10 +89,14 @@ export function SectionCard(props: SectionCardProps) {
             )}
             <div className="flex min-w-0 flex-col gap-0.5">
               {props.title !== undefined && (
-                <Heading className="m-0 text-h4 break-words">{props.title}</Heading>
+                <Heading className={cn('m-0 text-h4 break-words', TEXT_DIRECTION)}>
+                  {props.title}
+                </Heading>
               )}
               {props.description !== undefined && (
-                <p className="m-0 text-xs break-words text-secondary">{props.description}</p>
+                <p className={cn('m-0 text-xs break-words text-secondary', TEXT_DIRECTION)}>
+                  {props.description}
+                </p>
               )}
             </div>
           </div>
@@ -231,6 +236,7 @@ function ItemList({
               data-slot="key-value-label"
               className={cn(
                 'min-w-0 text-sm break-words text-secondary',
+                TEXT_DIRECTION,
                 !stacked && 'max-w-1/2 shrink-0',
               )}
             >
@@ -272,6 +278,7 @@ function Group({ group, ...options }: ListOptions & { group: KeyValueGroup }) {
         data-slot="key-value-group-title"
         className={cn(
           'm-0 text-xs font-semibold text-secondary',
+          TEXT_DIRECTION,
           options.layout === 'stacked' && 'mb-2',
         )}
       >

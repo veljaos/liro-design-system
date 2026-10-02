@@ -1,6 +1,7 @@
 import { Command as CommandPrimitive } from 'cmdk'
 import { Search } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { Dialog, DialogContent, DialogTitle } from '../primitives/dialog'
 import { useLiro } from '../provider/liro-provider'
@@ -20,8 +21,8 @@ import type { IconComponent } from './intents'
  *
  * Mantine 9.6.2 Spotlight (@mantine/spotlight styles.css and defaults): a modal 80px from the top
  * (yOffset), the Modal's 440px width; the search is an Input of size 'lg' without border or
- * background (50px high, 16px text); the results under a 1px line (gray-2 / dark-4:
- * border.default), 4px padding, at most 400px high and scrolling;
+ * background (50px high, 16px text); the results under a 1px line (gray-2 / dark-4; P3.6, owner:
+ * border.subtle, thin and quiet), 4px padding, at most 400px high and scrolling;
  * an item 7px by 16px, radius md, surface.hover under the pointer, filled with the brand colour
  * when chosen with the keyboard, its icon 16px before the label, its description 12px in
  * text.secondary (on the brand fill, brand.onSolid: Mantine lowers it with opacity 0.7, which
@@ -148,13 +149,16 @@ export function CommandPalette(props: CommandPaletteProps) {
               }}
               placeholder={messages['command.placeholder']}
               aria-label={messages['command.title']}
-              className="h-full min-w-0 flex-1 border-0 bg-transparent pe-4 font-sans text-lg text-primary outline-none placeholder:text-tertiary"
+              className="m-0 h-full min-w-0 flex-1 appearance-none rounded-none border-0 bg-transparent p-0 pe-4 font-sans text-lg text-primary shadow-none outline-none placeholder:text-tertiary focus:outline-none focus-visible:outline-none"
             />
           </div>
           {props.loading === true && (
             <p
               role="status"
-              className="m-0 border-0 border-t border-solid border-default p-4 text-center text-sm text-secondary"
+              className={cn(
+                'm-0 border-0 border-t border-solid border-subtle p-4 text-center text-sm text-secondary',
+                TEXT_ISOLATE,
+              )}
             >
               {messages['field.loading']}
             </p>
@@ -162,7 +166,10 @@ export function CommandPalette(props: CommandPaletteProps) {
           {props.loading !== true && shown.length === 0 && (
             <p
               role="status"
-              className="m-0 border-0 border-t border-solid border-default p-4 text-center text-sm text-secondary"
+              className={cn(
+                'm-0 border-0 border-t border-solid border-subtle p-4 text-center text-sm text-secondary',
+                TEXT_ISOLATE,
+              )}
             >
               {messages['command.noResults']}
             </p>
@@ -173,7 +180,7 @@ export function CommandPalette(props: CommandPaletteProps) {
            */}
           <CommandPrimitive.List
             label={messages['command.title']}
-            className="max-h-100 overflow-y-auto border-0 border-t border-solid border-default p-1"
+            className="max-h-100 overflow-y-auto border-0 border-t border-solid border-subtle p-1"
           >
             {groups.map((group) => {
               const items = shown.filter((item) => item.group === group.key)
@@ -202,7 +209,7 @@ export function CommandPalette(props: CommandPaletteProps) {
                         {Icon !== undefined && (
                           <Icon aria-hidden="true" className="me-4 size-[17px] shrink-0" />
                         )}
-                        <span className="min-w-0 flex-1">
+                        <span className={cn('min-w-0 flex-1', TEXT_DIRECTION)}>
                           <span className="block">
                             <Label text={item.label} query={query} />
                           </span>

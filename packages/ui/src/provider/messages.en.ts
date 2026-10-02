@@ -13,6 +13,7 @@ export const messagesEn: LiroMessages = {
     if (!exact) return `More than ${number} rows`
     return count === 1 ? '1 row' : `${number} rows`
   },
+  'table.updating': 'Updating…',
   'table.noRows': 'Nothing here yet',
   'table.noMatch': 'No rows match',
   'table.clearFilters': 'Clear filters',
@@ -33,6 +34,7 @@ export const messagesEn: LiroMessages = {
   'field.loading': 'Loading…',
   'field.noResults': 'Nothing found',
   'field.remove': (label) => `Remove ${label}`,
+  'field.selectedCount': (count) => `${formatDecimal(String(count), 'comma-dot')} selected`,
   'field.clear': 'Clear',
   'filter.search': 'Search…',
   'filter.clearSearch': 'Clear search',
@@ -42,8 +44,8 @@ export const messagesEn: LiroMessages = {
   'filter.remove': (label) => `Remove filter: ${label}`,
   'filter.yes': 'Yes',
   'filter.no': 'No',
-  'filter.rangeFrom': (label) => `${label}, from`,
-  'filter.rangeTo': (label) => `${label}, to`,
+  'filter.from': 'From',
+  'filter.to': 'To',
   'filter.sort': 'Sort',
   'filter.ascending': 'Ascending',
   'filter.descending': 'Descending',

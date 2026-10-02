@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { BUTTON_RESET, FOCUS_RING } from '../primitives/classes'
+import { ListChecks } from 'lucide-react'
+import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 import { ActionButton, OverflowRow, UnavailableAction, type ActionItem } from './actions'
@@ -11,11 +12,12 @@ import { INTENTS } from './intents'
  * BulkActionBar (BUILD-PLAN P2.7), the previous Design System's, carried over (owner's decision,
  * 2026-09-28, docs/decisions.md "Actions"):
  * - it appears, sliding down in 140ms, while at least one row is selected;
- * - a panel with a border.brand border, radius md, 10px (xs) padding, on brand.subtle;
+ * - a panel with a border.strong border, radius md, 10px (xs) padding, on surface.sunken —
+ *   neutral since P3.6 (owner: blue is for actions, links and focus);
  * - at the start a clear-selection icon button (the cancel intent), then "N selected" (13px,
- *   semibold, text.brand) in an aria-live="polite" region — the only way a screen reader hears
- *   the count change — and, when the whole result is larger, "Select all N" (12px, text.brand,
- *   underlined);
+ *   semibold, text.primary) in an aria-live="polite" region — the only way a screen reader hears
+ *   the count change — and, when the whole result is larger, "Select all N" (a neutral subtle xs
+ *   button, as "Clear all" in FilterBar);
  * - at the end the actions, small (Mantine 'xs'), each can be unavailable with a reason, all
  *   disabled while loading;
  * - an action that needs confirmation opens ONE ConfirmDialog for the whole selection, with the
@@ -71,29 +73,31 @@ export function BulkActionBar(props: BulkActionBarProps) {
   return (
     <div
       className={cn(
-        'flex animate-liro-slide-down flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-md border border-solid border-brand bg-brand-subtle p-2.5 font-sans motion-reduce:animate-none',
+        'flex animate-liro-slide-down flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-md border border-solid border-strong bg-surface-sunken p-2.5 font-sans motion-reduce:animate-none',
         props.className,
       )}
     >
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
         <CompactIconButton intent="cancel" label={messages['bulk.clear']} onClick={props.onClear} />
-        <span aria-live="polite" className="text-sm font-semibold text-brand">
+        <span
+          aria-live="polite"
+          className={cn('text-sm font-semibold text-primary', TEXT_DIRECTION)}
+        >
           {messages['bulk.selected'](props.count)}
         </span>
         {props.total !== undefined &&
           props.total > props.count &&
           props.onSelectAll !== undefined && (
-            <button
-              type="button"
+            <ActionButton
+              small
+              action={{
+                family: 'neutral',
+                icon: ListChecks,
+                emphasis: 'menu',
+                label: messages['bulk.selectAll'](props.total),
+              }}
               onClick={props.onSelectAll}
-              className={cn(
-                BUTTON_RESET,
-                'cursor-pointer rounded-sm text-xs text-brand underline',
-                FOCUS_RING,
-              )}
-            >
-              {messages['bulk.selectAll'](props.total)}
-            </button>
+            />
           )}
       </div>
       <OverflowRow

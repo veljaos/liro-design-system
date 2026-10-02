@@ -1,6 +1,7 @@
 import { CloudAlert, Inbox, SearchX } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { ButtonPrimitive } from '../primitives/button'
+import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 import type { LiroMessages } from '../provider/messages'
@@ -119,12 +120,18 @@ export function EmptyState(props: EmptyStateProps) {
         <p
           className={cn(
             'm-0 leading-[1.3] font-semibold text-balance text-primary',
+            TEXT_DIRECTION,
             compact ? 'text-md' : 'text-lg',
           )}
         >
           {props.title ?? messages[look.title]}
         </p>
-        <p className="m-0 max-w-[32rem] text-sm leading-[1.55] text-pretty text-secondary">
+        <p
+          className={cn(
+            'm-0 max-w-[32rem] text-sm leading-[1.55] text-pretty text-secondary',
+            TEXT_DIRECTION,
+          )}
+        >
           {props.description ?? messages[look.description]}
         </p>
         {props.action !== undefined && (
@@ -164,7 +171,7 @@ export function ErrorState({ caseId, reportAction, ...props }: ErrorStateProps) 
   return (
     <EmptyState {...props} variant="error">
       {caseId !== undefined && (
-        <p className="m-0 text-xs text-secondary">
+        <p className={cn('m-0 text-xs text-secondary', TEXT_DIRECTION)}>
           {messages['empty.caseId']}{' '}
           <span className="font-mono text-primary select-all">{caseId}</span>
         </p>

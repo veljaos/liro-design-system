@@ -113,6 +113,13 @@ describe('filterValueText', () => {
     expect(text('total', { min: '10', max: null })).toBe('10.00 –')
   })
 
+  it('writes an amount range with its currency (P3.6)', () => {
+    const amount = { id: 'amount', label: 'Amount', type: 'numberRange' as const, currency: 'EUR' }
+    expect(filterValueText(amount, { min: '10', max: '20.5' }, format, messagesEn)).toBe(
+      `${format.money('10', 'EUR')} – ${format.money('20.5', 'EUR')}`,
+    )
+  })
+
   it('joins the ends with an en dash', () => {
     expect(rangeText('a', 'b')).toBe('a – b')
   })

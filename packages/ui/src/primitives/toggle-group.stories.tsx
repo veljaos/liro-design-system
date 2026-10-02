@@ -9,7 +9,7 @@ const meta = {
     docs: {
       description: {
         component: internal(
-          "Toggles in a track, with Mantine SegmentedControl's look; arrow keys follow the direction. View switches, PeriodField (P2.3).",
+          "One choice: toggles in a track, with Mantine SegmentedControl's look (view switches, PeriodField). Several choices: separate toggles with Mantine Chip's look (radius sm), a check and the neutral selection when pressed. Arrow keys follow the direction.",
         ),
       },
     },
@@ -22,7 +22,7 @@ export default meta
 
 type Story = StoryObj<typeof meta>
 
-/** One pressed of three (single), two pressed (multiple), and a disabled item. */
+/** One pressed of three (single, segmented); two pressed of four (multiple, separate toggles with a check), one disabled. */
 export const States: Story = {
   args: { type: 'single' },
   render: () => (

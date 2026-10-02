@@ -32,8 +32,8 @@ describe('PersonAvatar', () => {
 
   it('draws the light primary style with radius xl', () => {
     const html = render(<PersonAvatar name="Ana Jovanović" />)
-    expect(html).toContain('bg-brand-subtle')
-    expect(html).toContain('text-brand')
+    expect(html).toContain('bg-surface-sunken')
+    expect(html).toContain('text-primary')
     expect(html).toContain('rounded-xl')
     expect(html).toContain('>AJ<')
   })
