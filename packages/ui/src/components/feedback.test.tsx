@@ -20,6 +20,9 @@ describe('Alert and Banner', () => {
     const plain = render(<Alert title="Note">x</Alert>)
     expect(plain).toContain('data-tone="neutral"')
     expect(plain).toContain('bg-status-neutral-bg')
+    // A visible outline: the neutral grey is the page's own.
+    expect(plain).toContain('border-status-neutral-border')
+    expect(plain).not.toContain('border-transparent')
     expect(plain).not.toContain('status-info')
     expect(render(<Banner>x</Banner>)).toContain('data-tone="neutral"')
     expect(render(<Alert tone="info">x</Alert>)).toContain('bg-status-info-bg')

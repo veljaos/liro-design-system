@@ -1,6 +1,6 @@
 import { X } from 'lucide-react'
 import { useId, useRef, useState, type KeyboardEvent } from 'react'
-import { BUTTON_RESET, FOCUS_RING, INPUT } from '../primitives/classes'
+import { BUTTON_RESET, FOCUS_RING, INPUT, TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 import { ComboboxList, ComboboxPopover, optionId, type ComboboxOption } from './combobox-field'
@@ -28,6 +28,12 @@ export interface MultiSelectFieldProps extends FieldBaseProps {
   placeholder?: string
   /** The form field name; one hidden input per value. */
   name?: string
+  /**
+   * Keeps the field one control high (36px): the choices are summed up on one line - the
+   * option's label for one, `messages['field.selectedCount']` for more - instead of pills, and are
+   * changed in the list (P3.6, for a filter in a row of controls).
+   */
+  summary?: boolean
 }
 
 /** Values with `value` added, or removed when it is already there. */
@@ -54,6 +60,13 @@ export function MultiSelectField(props: MultiSelectFieldProps) {
     return option === undefined ? [] : [option]
   })
   const showEmpty = shown.length === 0 && query !== ''
+  const summaryId = `${listId}-summary`
+  const summaryText =
+    props.summary !== true || chosen.length === 0 || query !== ''
+      ? null
+      : chosen.length === 1
+        ? (chosen[0]?.label ?? null)
+        : messages['field.selectedCount'](chosen.length)
   const visible = open && (shown.length > 0 || showEmpty)
   const update = (next: string[]) => {
     setInner(next)
@@ -155,14 +168,24 @@ export function MultiSelectField(props: MultiSelectFieldProps) {
                   data-slot="multi-select"
                   className={cn(
                     INPUT,
-                    'flex h-auto min-h-control cursor-text flex-wrap items-center gap-2 py-[5.5px] focus-within:border-focus',
+                    'flex h-auto min-h-control cursor-text items-center gap-2 py-[5.5px] focus-within:border-focus',
+                    props.summary === true ? 'flex-nowrap' : 'flex-wrap',
                     control.invalid &&
                       'border-status-danger-fg focus-within:border-status-danger-fg',
                     control.disabled &&
                       'cursor-not-allowed border-default bg-surface-disabled text-disabled',
                   )}
                 >
-                  {pills(!control.disabled)}
+                  {props.summary === true
+                    ? summaryText !== null && (
+                        <span
+                          id={summaryId}
+                          className={cn('min-w-0 shrink truncate text-sm', TEXT_DIRECTION)}
+                        >
+                          {summaryText}
+                        </span>
+                      )
+                    : pills(!control.disabled)}
                   <input
                     ref={inputRef}
                     id={control.id}
@@ -173,7 +196,11 @@ export function MultiSelectField(props: MultiSelectFieldProps) {
                     aria-activedescendant={
                       visible && active >= 0 ? optionId(listId, active) : undefined
                     }
-                    aria-describedby={control.describedBy}
+                    aria-describedby={
+                      summaryText === null
+                        ? control.describedBy
+                        : [summaryId, control.describedBy].filter(Boolean).join(' ')
+                    }
                     aria-invalid={control.invalid || undefined}
                     aria-required={control.required || undefined}
                     disabled={control.disabled}
@@ -182,7 +209,10 @@ export function MultiSelectField(props: MultiSelectFieldProps) {
                     {...(props.placeholder !== undefined && values.length === 0
                       ? { placeholder: props.placeholder }
                       : {})}
-                    className="m-0 h-[1.6em] min-w-25 flex-1 border-0 bg-transparent p-0 font-sans text-sm text-inherit outline-none placeholder:text-tertiary disabled:cursor-not-allowed"
+                    className={cn(
+                      'm-0 h-[1.6em] flex-1 border-0 bg-transparent p-0 font-sans text-sm text-inherit outline-none placeholder:text-tertiary disabled:cursor-not-allowed',
+                      summaryText === null ? 'min-w-25' : 'min-w-4',
+                    )}
                     onChange={(event) => {
                       setQuery(event.target.value)
                       setOpen(true)

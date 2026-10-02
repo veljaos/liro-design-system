@@ -31,7 +31,12 @@ interface ToneLook {
 
 /** Literal classes, so Tailwind finds them. */
 const TONES: Record<AlertTone, ToneLook> = {
-  neutral: { icon: Info, box: 'bg-status-neutral-bg', fg: 'text-status-neutral-fg' },
+  // Neutral has a border (owner, P3.6): its grey is the page's own, so the box would vanish.
+  neutral: {
+    icon: Info,
+    box: 'border-status-neutral-border bg-status-neutral-bg',
+    fg: 'text-status-neutral-fg',
+  },
   info: { icon: Info, box: 'bg-status-info-bg', fg: 'text-status-info-fg' },
   success: { icon: CircleCheck, box: 'bg-status-success-bg', fg: 'text-status-success-fg' },
   warning: { icon: TriangleAlert, box: 'bg-status-warning-bg', fg: 'text-status-warning-fg' },

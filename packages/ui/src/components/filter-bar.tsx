@@ -31,7 +31,7 @@ import {
   type SortColumn,
 } from './filter-logic'
 import { MultiSelectField } from './multi-select-field'
-import { NumberField } from './number-field'
+import { MoneyField, NumberField } from './number-field'
 import { SelectField } from './select-field'
 import { TextField } from './text-field'
 import { usePhone } from './use-phone'
@@ -51,7 +51,12 @@ import { usePhone } from './use-phone'
  * - The drawer: from the end side, 320px (100% on phones), titled "Filters" (13px, bold), the
  *   controls stacked 12px apart.
  * - Inline widths: select and text 180px, multiSelect 220px, dateRange 240px, boolean 140px,
- *   each end of a number range 100px.
+ *   each end of a number range 100px (140px with a currency: MoneyFields, P3.6).
+ * - P3.6 (owner): an inline multiSelect keeps the control height, its choices summed up on one
+ *   line ("Alfa Trade", "2 selected"); a number range has "From" and "To" labels (messages); the
+ *   actions, when they do not fit beside search and filters, take their own line ABOVE them,
+ *   end-aligned. The page's main action ("New invoice") belongs in the page header (P4.3); the
+ *   bar keeps the list's own actions, such as Export.
  * - Active filters that are not inline show as removable pills "Label: value" under the row, with
  *   "Clear all" (subtle, xs), which clears only this bar's filters.
  * - On phones, where cards have no column headers, a "Sort" button beside "Filters" shows the
@@ -137,34 +142,42 @@ function TextFilter({ filter, value, onChange, inline, delay }: ControlProps) {
   )
 }
 
-/** A number range: the label over two fields, "from" and "to", 8px apart. */
+/**
+ * A number range: the filter's label over two fields labelled "From" and "To" (messages), 8px
+ * apart (P3.6: they were two unlabelled boxes). With a `currency` they are MoneyFields, 140px each
+ * in the row (owner); otherwise NumberFields, 100px each.
+ */
 function NumberRangeFilter({ filter, value, onChange, inline }: ControlProps) {
   const { messages } = useLiro()
   const labelId = useId()
   const range = (value ?? { min: null, max: null }) as NumberRange
-  const decimals =
-    filter.type === 'numberRange' && filter.decimals !== undefined
-      ? { decimals: filter.decimals }
-      : {}
-  const end = (key: 'min' | 'max', name: string) => (
-    <NumberField
-      label={<span className="sr-only">{name}</span>}
-      value={range[key]}
-      onChange={(next) => {
+  const definition = filter.type === 'numberRange' ? filter : undefined
+  const decimals = definition?.decimals === undefined ? {} : { decimals: definition.decimals }
+  const currency = definition?.currency
+  const end = (key: 'min' | 'max', name: string) => {
+    const common = {
+      label: name,
+      value: range[key],
+      onChange: (next: string | null) => {
         onChange({ ...range, [key]: next })
-      }}
-      {...decimals}
-      className={cn('[&>div]:mt-0', inline ? 'w-25' : 'min-w-0 flex-1')}
-    />
-  )
+      },
+      ...decimals,
+    }
+    const width = inline ? (currency === undefined ? 'w-25' : 'w-35') : 'min-w-0 flex-1'
+    return currency === undefined ? (
+      <NumberField {...common} className={width} />
+    ) : (
+      <MoneyField {...common} currency={currency} className={width} />
+    )
+  }
   return (
     <div role="group" aria-labelledby={labelId} className="flex min-w-0 flex-col">
-      <span id={labelId} className="text-sm font-semibold text-primary">
+      <span id={labelId} className={cn('text-sm font-semibold text-primary', TEXT_DIRECTION)}>
         {filter.label}
       </span>
       <div className="mt-1 flex gap-2">
-        {end('min', messages['filter.rangeFrom'](filter.label))}
-        {end('max', messages['filter.rangeTo'](filter.label))}
+        {end('min', messages['filter.from'])}
+        {end('max', messages['filter.to'])}
       </div>
     </div>
   )
@@ -215,6 +228,7 @@ function FilterControl(props: ControlProps) {
           options={filter.options}
           value={Array.isArray(value) ? (value as string[]) : []}
           onChange={onChange}
+          summary={inline}
           className={width}
         />
       )
@@ -430,7 +444,12 @@ export function FilterBar(props: FilterBarProps) {
         props.className,
       )}
     >
-      <div className="flex flex-wrap items-end justify-between gap-3">
+      {/*
+        wrap-reverse (P3.6, owner): when the actions do not fit beside search and filters, their
+        line goes ABOVE them, end-aligned, never under the filters. With wrap-reverse the cross
+        axis runs upwards, so items-start keeps the controls on one bottom line.
+      */}
+      <div className="flex flex-wrap-reverse items-start justify-between gap-3">
         <div className="flex min-w-0 flex-wrap items-end gap-3">
           {props.onSearchChange !== undefined && (
             <SearchField

@@ -492,7 +492,7 @@ Templates are layouts with **slots**; they contain no data logic.
 **Do** `Launchpad` with `ModuleCard`s: icon, name, counter, optional **locked** state with a text passed in (e.g. "Available in <plan>"), reorder and hide through callbacks, keyboard 1–9 to open and arrows to move.
 
 ### P4.3 — List and worklist templates
-**Do** `ListPage` (title, actions, `FilterBar`, `DataTable`, `CursorPagination`), `WorklistPage` (a queue processed item by item: list plus detail side by side on desktop, stacked on phones).
+**Do** `ListPage` (title, actions, `FilterBar`, `DataTable`, `CursorPagination`), `WorklistPage` (a queue processed item by item: list plus detail side by side on desktop, stacked on phones). The page's main action (e.g. "New invoice") goes into the page header; the `FilterBar` keeps only the list's own actions, such as Export (owner, P3.6).
 
 ### P4.4 — Detail and record form templates
 **Do** `DetailPage` (header with status and actions, sections, side column); `RecordFormPage` (back link, actions top and bottom, side column, unsaved-changes guard).
