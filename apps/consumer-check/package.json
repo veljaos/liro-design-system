@@ -12,7 +12,8 @@
   },
   "dependencies": {
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "react-hook-form": "7.89.0"
   },
   "devDependencies": {
     "@types/react": "19.3.0",
