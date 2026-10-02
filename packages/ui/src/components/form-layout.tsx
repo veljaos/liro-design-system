@@ -1,5 +1,5 @@
 import { ChevronDown, ChevronRight, TriangleAlert } from 'lucide-react'
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
 import { cn } from '../primitives/cn'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../primitives/collapsible'
 import { BUTTON_RESET, FOCUS_RING, TEXT_DIRECTION } from '../primitives/classes'
@@ -27,9 +27,14 @@ import { Stepper } from './progress'
  *   text.secondary.
  * - FormTabs: a tab with errors shows a 13px TriangleAlert in the danger colour 6px after its label,
  *   never wrapping, and is named "<label> — has errors"; `focusFirstInvalid` selects the first
- *   such tab and focuses the first invalid field.
+ *   such tab and focuses the first invalid field. Since P3.6 (owner) FormTabs is the form's card:
+ *   the tab list is its first row, start-aligned, its line across the card's width, and the
+ *   FormSections in a panel are drawn flat inside it (no card of their own). Page-level Tabs keep
+ *   their own rule (centred).
  * - FormActions (the old RecordFormTemplate): the actions at the top and a bar at the bottom,
- *   sticky, while the content scrolls ('auto'), or 'always' / 'never'; the bar on surface.page
+ *   sticky, shown only while the top actions are out of view ('auto', P3.6: an
+ *   IntersectionObserver, so both sets are never visible at once), or 'always' / 'never'; the bar
+ *   on surface.page
  *   with a 1px border.default line on top, no shadow, 12px padding, "Unsaved changes" (12px,
  *   text.tertiary) at the start when `dirty`, the actions at the end.
  */
@@ -70,8 +75,15 @@ function FieldGrid({ columns, children }: { columns: 1 | 2 | 3; children: ReactN
   return <div className={cn('grid grid-cols-1 gap-4', COLUMNS[columns])}>{children}</div>
 }
 
+/** True inside a FormTabs panel: its sections are drawn flat in the tabs' card. */
+const InTabsCard = createContext(false)
+
+/** Takes a section's card frame off when it stands inside the FormTabs card. */
+const FLAT = 'rounded-none border-0 bg-transparent'
+
 /** A titled group of fields in a form. */
 export function FormSection(props: FormSectionProps) {
+  const flat = useContext(InTabsCard)
   const columns = props.columns ?? 2
   const [open, setOpen] = useState(props.defaultOpen ?? false)
   if (props.collapsible !== true) {
@@ -81,7 +93,7 @@ export function FormSection(props: FormSectionProps) {
         {...(props.description === undefined ? {} : { description: props.description })}
         {...(props.actions === undefined ? {} : { actions: props.actions })}
         {...(props.headingLevel === undefined ? {} : { headingLevel: props.headingLevel })}
-        {...(props.className === undefined ? {} : { className: props.className })}
+        className={cn(flat && FLAT, props.className)}
       >
         <FieldGrid columns={columns}>{props.children}</FieldGrid>
       </SectionCard>
@@ -94,6 +106,7 @@ export function FormSection(props: FormSectionProps) {
         data-slot="form-section"
         className={cn(
           'overflow-hidden rounded-lg border border-solid border-default bg-surface-raised font-sans text-primary',
+          flat && FLAT,
           props.className,
         )}
       >
@@ -165,9 +178,17 @@ export function FormTabs(props: FormTabsProps) {
   }
 
   return (
-    <TabsRoot value={value} onValueChange={select} className={props.className}>
+    <TabsRoot
+      value={value}
+      onValueChange={select}
+      data-slot="form-tabs"
+      className={cn(
+        'overflow-hidden rounded-lg border border-solid border-default bg-surface-raised font-sans text-primary',
+        props.className,
+      )}
+    >
       <TabsList
-        className="justify-center"
+        className="justify-start px-4"
         {...(props.label === undefined ? {} : { 'aria-label': props.label })}
       >
         {props.items.map((item) => (
@@ -191,8 +212,8 @@ export function FormTabs(props: FormTabsProps) {
         ))}
       </TabsList>
       {props.items.map((item) => (
-        <TabsContent key={item.value} value={item.value}>
-          {item.content}
+        <TabsContent key={item.value} value={item.value} className="flex flex-col">
+          <InTabsCard.Provider value={true}>{item.content}</InTabsCard.Provider>
         </TabsContent>
       ))}
     </TabsRoot>
@@ -207,52 +228,61 @@ export interface FormActionsProps {
   actions: ReactNode
   /** The form's sections. */
   children: ReactNode
-  /** The bottom bar: 'auto' (default) while the content scrolls, 'always' or 'never'. */
+  /**
+   * The bottom bar: 'auto' (default) only while the top actions are out of view, 'always' or
+   * 'never'.
+   */
   stickyActions?: StickyActions
   /** The form has unsaved changes: the bottom bar says so. */
   dirty?: boolean
   className?: string
 }
 
-/** Whether the content around `element` scrolls, kept up to date as sizes change. */
-function useScrolls(element: HTMLElement | null, active: boolean): boolean {
-  const [scrolls, setScrolls] = useState(false)
+/**
+ * Whether `element` (the top actions) is out of view in its scroll container or the page, kept up
+ * to date by an IntersectionObserver (P3.6, owner: the top and the bottom actions are never
+ * visible at the same time).
+ */
+function useOutOfView(element: HTMLElement | null, active: boolean): boolean {
+  const [hidden, setHidden] = useState(false)
   useEffect(() => {
     if (element === null || !active) return
     const container = scrollContainerOf(element)
-    const measure = () => {
-      setScrolls(container.scrollHeight > container.clientHeight + 1)
-    }
-    const observer = new ResizeObserver(measure)
+    const page = container === document.scrollingElement || container === document.documentElement
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[entries.length - 1]
+        if (entry !== undefined) setHidden(!entry.isIntersecting)
+      },
+      { root: page ? null : container },
+    )
     observer.observe(element)
-    observer.observe(container)
-    window.addEventListener('resize', measure)
     return () => {
       observer.disconnect()
-      window.removeEventListener('resize', measure)
     }
   }, [element, active])
-  return scrolls
+  return hidden
 }
 
 /**
- * A record's form with its actions at the top and, while the content scrolls, again in a bar
- * sticky at the bottom (Appendix B.8), where the user is when they finish.
+ * A record's form with its actions at the top and, once they are scrolled out of view, again in a
+ * bar sticky at the bottom (Appendix B.8), where the user is when they finish.
  */
 export function FormActions(props: FormActionsProps) {
   const { messages } = useLiro()
   const mode = props.stickyActions ?? 'auto'
-  const [root, setRoot] = useState<HTMLDivElement | null>(null)
-  const scrolls = useScrolls(root, mode === 'auto')
-  const shown = bottomBarShown(mode, scrolls)
+  const [top, setTop] = useState<HTMLDivElement | null>(null)
+  const topHidden = useOutOfView(top, mode === 'auto')
+  const shown = bottomBarShown(mode, topHidden)
   return (
     <div
-      ref={setRoot}
       data-slot="form-actions"
       className={cn('flex min-w-0 flex-col gap-4 font-sans text-primary', props.className)}
     >
       {/* The full row: an ActionGroup aligns itself to the end and measures what fits. */}
-      <div className="min-w-0">{props.actions}</div>
+      <div ref={setTop} className="min-w-0">
+        {props.actions}
+      </div>
       {props.children}
       {shown && (
         <div

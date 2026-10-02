@@ -4,14 +4,14 @@
  * a wizard may go, and finding the first invalid field in the page.
  */
 
-/** 'auto' shows the bottom bar only while the content actually scrolls. */
+/** 'auto' shows the bottom bar only while the top actions are out of view (P3.6). */
 export type StickyActions = 'auto' | 'always' | 'never'
 
 /** Whether the bottom action bar is shown. */
-export function bottomBarShown(mode: StickyActions, scrolls: boolean): boolean {
+export function bottomBarShown(mode: StickyActions, topActionsHidden: boolean): boolean {
   if (mode === 'always') return true
   if (mode === 'never') return false
-  return scrolls
+  return topActionsHidden
 }
 
 /** The first tab with errors, or null. */
