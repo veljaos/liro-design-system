@@ -161,6 +161,8 @@ describe('dates', () => {
     ['sr-Latn-RS', '01/03/2026', '2026-03-01'],
     ['sr-Latn-RS', '1-3-26', '2026-03-01'],
     ['sr-Latn-RS', '2026-03-01', '2026-03-01'],
+    // P3.6 check (owner): six digits in the locale's day-month-year order.
+    ['sr-Latn-RS', '151026', '2026-10-15'],
     ['en', '03/01/2026', '2026-03-01'],
     ['en', '030126', '2026-03-01'],
     ['en', '3/1/26', '2026-03-01'],
@@ -182,6 +184,10 @@ describe('dates', () => {
     '1.3.202',
   ])('returns null for %j', (text) => {
     expect(createFormat('sr-Latn-RS').parseDate(text)).toBeNull()
+  })
+
+  it('rejects "151026" in en-US, where it would be month 15 (P3.6 check)', () => {
+    expect(createFormat('en-US').parseDate('151026')).toBeNull()
   })
 
   it('names months and weekdays through Intl', () => {

@@ -16,7 +16,7 @@ const meta = {
           '**What for:** a message in the page about what the user is looking at — the period ' +
           "is closed, the document was sent, a rate is missing. Mantine's Alert, light variant " +
           "(the owner's old look): the tone's subtle background, the title and icon in the " +
-          "tone's colour. Tones info, success, warning, danger; warnings and dangers are " +
+          "tone's colour. Tones neutral (the default, grey), info, success, warning, danger — info only when asked for, blue being kept for actions; warnings and dangers are " +
           'announced at once (`role="alert"`), the others politely. `onClose` makes it ' +
           'dismissible. `Banner` is the same look in one row across its container, with actions ' +
           'at the end, for something about the whole page or application.\n\n' +
@@ -25,7 +25,6 @@ const meta = {
       },
     },
   },
-  args: { tone: 'info' },
   play: settle,
 } satisfies Meta<typeof Alert>
 
@@ -33,10 +32,11 @@ export default meta
 
 type Story = StoryObj<typeof meta>
 
-/** The four tones, with and without a title. */
+/** The five tones, with and without a title; the first has no tone, so it is neutral. */
 export const Tones: Story = {
   render: () => (
     <div className="flex max-w-150 flex-col gap-4">
+      <Alert title="Draft">This document is not sent yet.</Alert>
       <Alert tone="info" title="New exchange rates">
         Rates for 28 September are loaded.
       </Alert>
@@ -49,7 +49,7 @@ export const Tones: Story = {
       <Alert tone="danger" title="Period closed">
         Entries dated in August cannot be changed.
       </Alert>
-      <Alert tone="info">Without a title: the message alone.</Alert>
+      <Alert>Without a title or a tone: the message alone, neutral.</Alert>
     </div>
   ),
 }

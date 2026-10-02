@@ -198,6 +198,13 @@ const ALIGN = { start: 'text-start', center: 'text-center', end: 'text-end' } as
 /** Mantine Table cell padding: vertical sm (12px), horizontal md (16px). */
 const CELL = 'px-4 py-3'
 
+/**
+ * A selected row (P3.6, owner): besides its neutral background, a 3px bar in border.selected on
+ * the row's start edge, drawn by the first cell, so selected differs from hovered by shape too.
+ */
+const SELECTED_ROW =
+  "[&>td:first-child]:relative [&>td:first-child]:before:absolute [&>td:first-child]:before:inset-y-0 [&>td:first-child]:before:start-0 [&>td:first-child]:before:border-0 [&>td:first-child]:before:border-s-[3px] [&>td:first-child]:before:border-solid [&>td:first-child]:before:border-selected [&>td:first-child]:before:content-['']"
+
 /** A virtualized row (owner) and the estimated card (owner). */
 const ROW_HEIGHT = 44
 const CARD_HEIGHT = 104
@@ -434,13 +441,15 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
             }}
             className={cn(
               BUTTON_RESET,
-              'inline-flex max-w-full cursor-pointer items-center gap-1 rounded-sm text-sm font-bold',
-              sorted === null ? 'text-primary' : 'text-brand',
+              'inline-flex max-w-full cursor-pointer items-center gap-1 rounded-sm text-sm font-bold text-primary',
               FOCUS_RING,
             )}
           >
             <span className={cn(oneLine && 'truncate')}>{column.header}</span>
-            <Icon aria-hidden="true" className="size-[13px] shrink-0" />
+            <Icon
+              aria-hidden="true"
+              className={cn('size-[13px] shrink-0', sorted === null && 'text-tertiary')}
+            />
           </button>
         ) : (
           column.header
@@ -488,7 +497,7 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
           : {})}
         className={cn(
           virtualize && 'h-11',
-          selected && 'bg-surface-selected',
+          selected && [SELECTED_ROW, 'bg-surface-selected'],
           clickable &&
             'cursor-pointer outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus',
           clickable && !selected && 'hover:bg-surface-sunken',

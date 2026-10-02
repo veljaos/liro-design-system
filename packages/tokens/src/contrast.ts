@@ -104,6 +104,25 @@ export function contrastChecks(): ContrastCheck[] {
         NON_TEXT,
       )
 
+      // A selected row or card (P3.6): its text on surface.selected, and the border.selected bar
+      // against the selected background and the surface around it (WCAG 1.4.11).
+      const selected = toRgb(pick(MEANINGS.surface.selected, theme), surface)
+      for (const textName of ['primary', 'secondary', 'tertiary'] as const) {
+        add(
+          `${theme}: text.${textName} on surface.selected ${over}`,
+          toRgb(pick(MEANINGS.text[textName], theme), selected),
+          selected,
+        )
+      }
+      const selectedBorder = toRgb(pick(MEANINGS.border.selected, theme), surface)
+      add(
+        `${theme}: border.selected on surface.selected ${over}`,
+        selectedBorder,
+        selected,
+        NON_TEXT,
+      )
+      add(`${theme}: border.selected ${over}`, selectedBorder, surface, NON_TEXT)
+
       // An invalid field (P2.2): its border takes status.danger.fg (WCAG 1.4.11).
       add(
         `${theme}: status.danger.fg as a border ${over}`,
@@ -122,6 +141,14 @@ export function contrastChecks(): ContrastCheck[] {
         )
       }
     }
+
+    // The avatar's initials (P3.6): text.primary on surface.sunken, which is opaque in both themes.
+    const sunken = toRgb(pick(MEANINGS.surface.sunken, theme), BLACK)
+    add(
+      `${theme}: text.primary on surface.sunken (avatar)`,
+      toRgb(pick(MEANINGS.text.primary, theme), sunken),
+      sunken,
+    )
 
     // Tooltips (P2.1): text.onInverse on surface.inverse, which is opaque in both themes.
     const inverse = toRgb(pick(MEANINGS.surface.inverse, theme), BLACK)

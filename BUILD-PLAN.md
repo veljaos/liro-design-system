@@ -593,7 +593,7 @@ Common: white #FFFFFF, black #000000, dark page `ink` #1B1B1B, `inkRaised` #2424
 | surface.overlay | white | inkOverlay |
 | surface.header | white | inkRaised |
 | surface.hover | gray0 | rgba(255,255,255,0.05) |
-| surface.selected | blue0 | rgba(0,120,212,0.18) |
+| surface.selected | gray2 | #363636 |
 | surface.disabled | gray2 | rgba(255,255,255,0.06) |
 | surface.backdrop | rgba(0,0,0,0.45) | rgba(0,0,0,0.65) |
 | surface.scrim | rgba(0,0,0,0.55) | rgba(0,0,0,0.55) |
@@ -611,6 +611,7 @@ Common: white #FFFFFF, black #000000, dark page `ink` #1B1B1B, `inkRaised` #2424
 | border.brand | blue6 | blue5 |
 | border.focus | blue6 | blue4 |
 | border.control | gray6 | gray6 |
+| border.selected | gray7 | gray4 |
 | brand.solid / solidHover / solidActive | blue6 / blue7 / blue8 | blue6 / blue7 / blue8 |
 | brand.subtle / subtleHover | blue0 / blue1 | rgba(0,120,212,0.16) / rgba(0,120,212,0.26) |
 | brand.onSolid | white | white |
@@ -627,7 +628,7 @@ Status tones — `fg` / `bg` / `border` / `solid`:
 | neutral | gray9 / gray1 / gray3 / gray7 | gray1 / rgba(255,255,255,0.07) / #3B3B3B / gray5 |
 | premium | violet7 / violet0 / violet2 / violet6 | violet3 / rgba(121,80,242,0.20) / rgba(121,80,242,0.45) / violet5 |
 
-`surface.inverse`, `text.onInverse` (tooltips) and `border.control` (the boundary of inputs, checkboxes, radios and the off state of switches, at least 3:1 on every surface for WCAG 1.4.11) were added in P2.1 by the owner's decision.
+`surface.inverse`, `text.onInverse` (tooltips) and `border.control` (the boundary of inputs, checkboxes, radios and the off state of switches, at least 3:1 on every surface for WCAG 1.4.11) were added in P2.1 by the owner's decision. In P3.6 the owner made `surface.selected` neutral (it was blue0 / rgba(0,120,212,0.18)) and added `border.selected` (the start-edge bar of a selected row and the border of a selected card): blue is kept for actions, links, focus, checked controls and the highlighted option.
 
 `brand.solid` is a background and `text.brand` is text; they move in opposite directions between themes and must never share a token.
 

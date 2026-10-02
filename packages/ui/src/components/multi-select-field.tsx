@@ -59,6 +59,15 @@ export function MultiSelectField(props: MultiSelectFieldProps) {
     setInner(next)
     props.onChange?.(next)
   }
+  // Choosing clears the typed search (P3.6, owner: "URgent" stayed after "Urgent" was added);
+  // the list shows every option again, with the chosen one still active.
+  const choose = (option: ComboboxOption) => {
+    update(toggleValue(values, option.value))
+    if (query !== '') {
+      setQuery('')
+      setActive(props.options.indexOf(option))
+    }
+  }
 
   return (
     <Field {...fieldProps(props)}>
@@ -122,9 +131,7 @@ export function MultiSelectField(props: MultiSelectFieldProps) {
           } else if (event.key === 'Enter' && visible && active >= 0) {
             event.preventDefault()
             const option = shown[active]
-            if (option !== undefined && option.disabled !== true) {
-              update(toggleValue(values, option.value))
-            }
+            if (option !== undefined && option.disabled !== true) choose(option)
           } else if (event.key === 'Escape' && open) {
             event.preventDefault()
             setOpen(false)
@@ -141,7 +148,7 @@ export function MultiSelectField(props: MultiSelectFieldProps) {
               onOptionHover={setActive}
               onOptionClick={(index) => {
                 const option = shown[index]
-                if (option !== undefined) update(toggleValue(values, option.value))
+                if (option !== undefined) choose(option)
               }}
               anchor={
                 <div

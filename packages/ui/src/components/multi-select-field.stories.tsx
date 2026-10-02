@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { useState } from 'react'
-import { userEvent, within } from 'storybook/test'
+import { expect, userEvent, within } from 'storybook/test'
 import { settle } from '../primitives/story-helpers'
 import type { ComboboxOption } from './combobox-field'
 import { ARABIC, JAPANESE, LONG } from './field-story-data'
@@ -58,6 +58,27 @@ export const Open: Story = {
     await userEvent.click(input)
     await userEvent.type(input, 'e', { delay: 0 })
     await userEvent.keyboard('{ArrowDown}')
+    await settle()
+  },
+}
+
+/**
+ * Choosing clears the search: "urg" and Enter add "Urgent", the typed text is gone and every
+ * option is listed again, so the next one can be typed at once.
+ */
+export const ChoosingClearsSearch: Story = {
+  render: (args) => (
+    <div className="flex min-h-80 max-w-100 flex-col">
+      <MultiSelectField {...args} />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const input = within(canvasElement).getByRole('combobox')
+    await userEvent.click(input)
+    await userEvent.type(input, 'URg', { delay: 0 })
+    await userEvent.keyboard('{ArrowDown}{Enter}')
+    await expect(input).toHaveValue('')
+    await expect(within(canvasElement).getByRole('button', { name: 'Remove Urgent' })).toBeVisible()
     await settle()
   },
 }

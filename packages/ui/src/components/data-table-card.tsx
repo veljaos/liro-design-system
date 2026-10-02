@@ -69,7 +69,11 @@ export function DataTableCard(props: DataTableCardProps) {
           })}
       className={cn(
         'flex flex-col gap-4 rounded-md border border-solid p-3 text-primary',
-        props.selected ? 'border-brand bg-surface-selected' : 'border-default bg-surface-raised',
+        // Selected (P3.6, owner): neutral, with a 3px start bar; the start padding gives back
+        // the 2px the bar adds, so the content does not move.
+        props.selected
+          ? 'border-s-[3px] border-selected bg-surface-selected ps-2.5'
+          : 'border-default bg-surface-raised',
         onPress !== undefined &&
           'cursor-pointer outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
       )}

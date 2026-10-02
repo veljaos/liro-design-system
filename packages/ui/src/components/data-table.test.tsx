@@ -271,7 +271,7 @@ describe('DataTable on a phone', () => {
     expect(html).not.toContain('>Name</dt>')
     expect(html).toContain('aria-label="Select Alpha"')
     expect(html).toContain('aria-label="Actions: Alpha"')
-    expect(html).toContain('border-brand bg-surface-selected')
+    expect(html).toContain('border-selected bg-surface-selected')
   })
 
   it('uses the row label and every column without a mobile description', () => {

@@ -121,7 +121,8 @@ export type Pair = readonly [light: string, dark: string]
 
 /**
  * A.2 Meanings. Keys become --liro-<group>-<kebab-case key>. surface.inverse, text.onInverse and
- * border.control were added in P2.1 by the owner's decision (docs/decisions.md, "Tokens").
+ * border.control were added in P2.1 by the owner's decision (docs/decisions.md, "Tokens");
+ * surface.selected became neutral and border.selected was added in P3.6 (owner, "Less blue").
  */
 export const MEANINGS = {
   surface: {
@@ -131,7 +132,7 @@ export const MEANINGS = {
     overlay: ['white', 'inkOverlay'],
     header: ['white', 'inkRaised'],
     hover: ['gray0', 'rgba(255,255,255,0.05)'],
-    selected: ['blue0', 'rgba(0,120,212,0.18)'],
+    selected: ['gray2', '#363636'],
     disabled: ['gray2', 'rgba(255,255,255,0.06)'],
     backdrop: ['rgba(0,0,0,0.45)', 'rgba(0,0,0,0.65)'],
     scrim: ['rgba(0,0,0,0.55)', 'rgba(0,0,0,0.55)'],
@@ -154,6 +155,7 @@ export const MEANINGS = {
     brand: ['blue6', 'blue5'],
     focus: ['blue6', 'blue4'],
     control: ['gray6', 'gray6'],
+    selected: ['gray7', 'gray4'],
   },
   brand: {
     solid: ['blue6', 'blue6'],
