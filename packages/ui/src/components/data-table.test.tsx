@@ -267,7 +267,7 @@ describe('DataTable on a phone', () => {
     expect(html).toContain('Title Alpha')
     expect(html).toContain('Sub a')
     expect(html).toContain('BADGE')
-    expect(html).toContain('<dt class="text-xs text-tertiary">Amount</dt>')
+    expect(html).toContain('<dt class="text-xs text-tertiary [unicode-bidi:plaintext]">Amount</dt>')
     expect(html).not.toContain('>Name</dt>')
     expect(html).toContain('aria-label="Select Alpha"')
     expect(html).toContain('aria-label="Actions: Alpha"')

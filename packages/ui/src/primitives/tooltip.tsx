@@ -1,6 +1,7 @@
 import { Tooltip as TooltipPrimitive } from 'radix-ui'
 import type { ComponentProps } from 'react'
 import { usePortalContainer } from '../provider/portal'
+import { TEXT_DIRECTION } from './classes'
 import { cn } from './cn'
 
 /*
@@ -36,6 +37,7 @@ export function TooltipContent({
         sideOffset={sideOffset}
         className={cn(
           'z-(--liro-layer-tooltip) rounded-sm bg-surface-inverse px-2.5 py-[5px] font-sans text-xs whitespace-nowrap text-on-inverse data-[state=closed]:animate-liro-tooltip-out data-[state=delayed-open]:animate-liro-tooltip-in data-[state=instant-open]:animate-liro-tooltip-in',
+          TEXT_DIRECTION,
           className,
         )}
         {...props}

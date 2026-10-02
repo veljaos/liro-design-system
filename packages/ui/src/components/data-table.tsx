@@ -21,7 +21,7 @@ import {
   type ReactNode,
 } from 'react'
 import { Checkbox } from '../primitives/checkbox'
-import { BUTTON_RESET, FOCUS_RING } from '../primitives/classes'
+import { BUTTON_RESET, FOCUS_RING, TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { Skeleton } from '../primitives/skeleton'
 import { useLiro } from '../provider/liro-provider'
@@ -445,7 +445,7 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
               FOCUS_RING,
             )}
           >
-            <span className={cn(oneLine && 'truncate')}>{column.header}</span>
+            <span className={cn(TEXT_DIRECTION, oneLine && 'truncate')}>{column.header}</span>
             <Icon
               aria-hidden="true"
               className={cn('size-[13px] shrink-0', sorted === null && 'text-tertiary')}
@@ -712,7 +712,7 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
           .filter((column) => totals[column.id] !== undefined)
           .map((column) => (
             <div key={column.id} className="flex items-baseline justify-between gap-4">
-              <span>{column.header}</span>
+              <span className={TEXT_DIRECTION}>{column.header}</span>
               <span className="text-end tabular-nums">{totals[column.id]}</span>
             </div>
           ))}

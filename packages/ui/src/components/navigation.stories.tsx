@@ -5,6 +5,7 @@ import { expect, userEvent, within } from 'storybook/test'
 import { settle } from '../primitives/story-helpers'
 import { ARABIC, JAPANESE, LONG } from './field-story-data'
 import { Breadcrumbs, CursorPagination, ShortcutHint, Tabs } from './navigation'
+import { expectContentDirection, StoryProvider } from './story-frames'
 
 const meta = {
   title: 'Components/Navigation',
@@ -199,4 +200,40 @@ export const Japanese: Story = {
       <ShortcutHint keys={['Ctrl', 'K']} />
     </div>
   ),
+}
+
+/**
+ * English in a right-to-left page (P3.6): tab labels and crumbs keep their own order ("Lines
+ * (12)", "Invoices 2026"); the tab list stays centred and the crumbs run from the right.
+ */
+export const EnglishInRtl: Story = {
+  render: () => (
+    <StoryProvider locale="ar">
+      <div className="flex max-w-150 flex-col gap-6">
+        <Breadcrumbs
+          items={[
+            { label: 'Sales', href: '#sales' },
+            { label: 'Invoices 2026', href: '#invoices' },
+            { label: 'F-2026-114 (draft)' },
+          ]}
+        />
+        <Tabs
+          label="Invoice"
+          items={[
+            { value: 'general', label: 'General', content: <p>3 fields are required.</p> },
+            { value: 'lines', label: 'Lines (12)', content: null },
+          ]}
+        />
+      </div>
+    </StoryProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expectContentDirection(
+      canvas.getByText('Lines (12)'),
+      canvas.getByText('Invoices 2026'),
+      canvas.getByText('F-2026-114 (draft)'),
+    )
+    await settle()
+  },
 }

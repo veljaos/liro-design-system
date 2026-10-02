@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '../primitives/avatar'
+import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 
@@ -94,9 +95,11 @@ export function PersonName({
         />
       )}
       <span className="flex min-w-0 flex-col">
-        <span className="truncate text-sm text-primary">{name}</span>
+        <span className={cn('truncate text-sm text-primary', TEXT_DIRECTION)}>{name}</span>
         {description !== undefined && (
-          <span className="truncate text-xs text-secondary">{description}</span>
+          <span className={cn('truncate text-xs text-secondary', TEXT_DIRECTION)}>
+            {description}
+          </span>
         )}
       </span>
     </span>

@@ -1,6 +1,6 @@
 import { ArrowUpDown, Search, X } from 'lucide-react'
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
-import { BUTTON_RESET, FOCUS_RING } from '../primitives/classes'
+import { BUTTON_RESET, FOCUS_RING, TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { DialogBody, DialogCloseButton, DialogHeader, DialogTitle } from '../primitives/dialog'
 import {
@@ -311,7 +311,7 @@ function FilterPill({
       data-slot="filter-pill"
       className="box-border inline-flex h-[22px] max-w-full items-center rounded-full border border-solid border-default bg-surface-raised ps-[0.8em] text-xs leading-none text-primary"
     >
-      <span className="truncate">{text}</span>
+      <span className={cn('truncate', TEXT_DIRECTION)}>{text}</span>
       <button
         type="button"
         aria-label={messages['filter.remove'](label)}

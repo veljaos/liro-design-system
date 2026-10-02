@@ -2,7 +2,7 @@ import { ChevronDown, ChevronRight, TriangleAlert } from 'lucide-react'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { cn } from '../primitives/cn'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../primitives/collapsible'
-import { BUTTON_RESET, FOCUS_RING } from '../primitives/classes'
+import { BUTTON_RESET, FOCUS_RING, TEXT_DIRECTION } from '../primitives/classes'
 import { Tabs as TabsRoot, TabsContent, TabsList, TabsTrigger } from '../primitives/tabs'
 import { useLiro } from '../provider/liro-provider'
 import { ActionButton } from './actions'
@@ -113,7 +113,7 @@ export function FormSection(props: FormSectionProps) {
               aria-hidden="true"
               className="hidden size-3.5 shrink-0 group-data-[state=open]:block"
             />
-            <span className="min-w-0 break-words">{props.title}</span>
+            <span className={cn('min-w-0 break-words', TEXT_DIRECTION)}>{props.title}</span>
           </CollapsibleTrigger>
         </Heading>
         {/* Mounted while closed (hidden), so a field with an error can be found and revealed. */}
@@ -180,7 +180,7 @@ export function FormTabs(props: FormTabsProps) {
               ? { 'aria-label': messages['form.hasErrors'](item.label), 'data-has-errors': '' }
               : {})}
           >
-            {item.label}
+            <span className={TEXT_DIRECTION}>{item.label}</span>
             {item.hasErrors === true && (
               <TriangleAlert
                 aria-hidden="true"
@@ -259,7 +259,7 @@ export function FormActions(props: FormActionsProps) {
           data-slot="form-bottom-bar"
           className="sticky bottom-0 z-(--liro-layer-sticky) flex flex-wrap items-center justify-between gap-3 border-0 border-t border-solid border-default bg-surface-page p-3"
         >
-          <span className="shrink-0 text-xs text-tertiary">
+          <span className={cn('shrink-0 text-xs text-tertiary', TEXT_DIRECTION)}>
             {props.dirty === true ? messages['form.unsaved'] : null}
           </span>
           <div className="min-w-0 flex-1">{props.actions}</div>

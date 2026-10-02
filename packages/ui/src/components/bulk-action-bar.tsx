@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { ListChecks } from 'lucide-react'
+import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 import { ActionButton, OverflowRow, UnavailableAction, type ActionItem } from './actions'
@@ -78,7 +79,10 @@ export function BulkActionBar(props: BulkActionBarProps) {
     >
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
         <CompactIconButton intent="cancel" label={messages['bulk.clear']} onClick={props.onClear} />
-        <span aria-live="polite" className="text-sm font-semibold text-primary">
+        <span
+          aria-live="polite"
+          className={cn('text-sm font-semibold text-primary', TEXT_DIRECTION)}
+        >
           {messages['bulk.selected'](props.count)}
         </span>
         {props.total !== undefined &&

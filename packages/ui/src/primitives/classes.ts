@@ -68,3 +68,14 @@ export const OPTION =
 /** The modal layer's backdrop (Overlay.css): surface.backdrop, fading with the modal (200ms). */
 export const BACKDROP =
   'fixed inset-0 z-(--liro-layer-modal) bg-surface-backdrop data-[state=open]:animate-liro-overlay-in data-[state=closed]:animate-liro-overlay-out motion-reduce:animate-none'
+
+/**
+ * A block of text takes its direction from its own content, while the layout keeps the page's
+ * (P3.6, owner): an English sentence in a right-to-left page — a message the application has not
+ * translated yet — keeps its word order (".Unavailable: The period …" was broken), and an
+ * Arabic one in a left-to-right page keeps its own. `unicode-bidi: plaintext` sets the bidi
+ * paragraph direction from the first strong character and isolates an inline element, but
+ * leaves `direction`, so `text-align: start` and the box still follow the page; `dir="auto"`
+ * would also turn the alignment.
+ */
+export const TEXT_DIRECTION = '[unicode-bidi:plaintext]'

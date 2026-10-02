@@ -5,7 +5,7 @@ import { settle } from '../primitives/story-helpers'
 import { Button } from './button'
 import { Dialog } from './dialog'
 import { ARABIC, JAPANESE, LONG } from './field-story-data'
-import { PhoneFrame, StoryProvider } from './story-frames'
+import { expectContentDirection, PhoneFrame, StoryProvider } from './story-frames'
 import { TextField } from './text-field'
 
 const meta = {
@@ -148,4 +148,31 @@ export const Japanese: Story = {
       />
     </StoryProvider>
   ),
+}
+
+/**
+ * English in a right-to-left page (P3.6): the title and the description keep their own order;
+ * the close button stays at the inline end (the left) and the actions at the end of the row.
+ */
+export const EnglishInRtl: Story = {
+  render: () => (
+    <StoryProvider locale="ar">
+      <Dialog
+        defaultOpen
+        title="Send 3 invoices?"
+        description="3 invoices are ready to send. The customers receive them by e-mail."
+        actions={<Button intent="confirm" label="Send (3)" />}
+      />
+    </StoryProvider>
+  ),
+  play: async () => {
+    const dialog = await within(document.body).findByRole('dialog')
+    await expectContentDirection(
+      within(dialog).getByText('Send 3 invoices?'),
+      within(dialog).getByText(
+        '3 invoices are ready to send. The customers receive them by e-mail.',
+      ),
+    )
+    await settle()
+  },
 }

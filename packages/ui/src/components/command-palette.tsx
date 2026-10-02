@@ -1,6 +1,7 @@
 import { Command as CommandPrimitive } from 'cmdk'
 import { Search } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { Dialog, DialogContent, DialogTitle } from '../primitives/dialog'
 import { useLiro } from '../provider/liro-provider'
@@ -154,7 +155,10 @@ export function CommandPalette(props: CommandPaletteProps) {
           {props.loading === true && (
             <p
               role="status"
-              className="m-0 border-0 border-t border-solid border-default p-4 text-center text-sm text-secondary"
+              className={cn(
+                'm-0 border-0 border-t border-solid border-default p-4 text-center text-sm text-secondary',
+                TEXT_DIRECTION,
+              )}
             >
               {messages['field.loading']}
             </p>
@@ -162,7 +166,10 @@ export function CommandPalette(props: CommandPaletteProps) {
           {props.loading !== true && shown.length === 0 && (
             <p
               role="status"
-              className="m-0 border-0 border-t border-solid border-default p-4 text-center text-sm text-secondary"
+              className={cn(
+                'm-0 border-0 border-t border-solid border-default p-4 text-center text-sm text-secondary',
+                TEXT_DIRECTION,
+              )}
             >
               {messages['command.noResults']}
             </p>
@@ -202,7 +209,7 @@ export function CommandPalette(props: CommandPaletteProps) {
                         {Icon !== undefined && (
                           <Icon aria-hidden="true" className="me-4 size-[17px] shrink-0" />
                         )}
-                        <span className="min-w-0 flex-1">
+                        <span className={cn('min-w-0 flex-1', TEXT_DIRECTION)}>
                           <span className="block">
                             <Label text={item.label} query={query} />
                           </span>

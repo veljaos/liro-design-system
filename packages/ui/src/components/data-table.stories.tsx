@@ -9,6 +9,7 @@ import type { DataTableFilters, DataTableSort } from './data-table-logic'
 import { DateText, MoneyText } from './display-text'
 import { ARABIC, JAPANESE, LONG } from './field-story-data'
 import { StatusBadge, toneFor, type Tone } from './status-badge'
+import { expectContentDirection, StoryProvider } from './story-frames'
 
 const meta = {
   title: 'Components/Table/DataTable',
@@ -545,4 +546,31 @@ export const Japanese: Story = {
       />
     </div>
   ),
+}
+
+/**
+ * English in a right-to-left page (P3.6): the headers ("Amount (EUR)") and the bulk bar's
+ * "2 selected" keep their own order; columns, the selection bar and the selected rows' bar stay
+ * right to left.
+ */
+export const EnglishInRtl: Story = {
+  render: () => (
+    <StoryProvider locale="ar">
+      <Interactive
+        layout="table"
+        columns={[...COLUMNS.slice(0, 4), { ...AMOUNT, header: 'Amount (EUR)' }]}
+      />
+    </StoryProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const boxes = canvas.getAllByRole('checkbox')
+    await userEvent.click(boxes[1] ?? canvasElement)
+    await userEvent.click(boxes[2] ?? canvasElement)
+    await expectContentDirection(
+      await canvas.findByText('2 selected'),
+      canvas.getByText('Amount (EUR)'),
+    )
+    await settle()
+  },
 }

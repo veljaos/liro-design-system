@@ -1,8 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { within } from 'storybook/test'
 import { Input } from '../primitives/input'
 import { settle } from '../primitives/story-helpers'
+import { CheckboxField } from './checkbox-field'
 import { Field } from './field'
 import { ARABIC, JAPANESE, LONG } from './field-story-data'
+import { expectContentDirection, StoryProvider } from './story-frames'
+import { TextField } from './text-field'
 
 const meta = {
   title: 'Components/Fields/Field',
@@ -84,4 +88,40 @@ export const Japanese: Story = {
       />
     </div>
   ),
+}
+
+/**
+ * English in a right-to-left page (P3.6): labels, descriptions, errors and reasons take their
+ * direction from their own text, so ".Enter a number" never happens; the layout stays right to
+ * left (the label at the right edge).
+ */
+export const EnglishInRtl: Story = {
+  render: () => (
+    <StoryProvider locale="ar">
+      <div className="flex max-w-100 flex-col gap-6">
+        <TextField
+          label="Quantity (pcs.)"
+          description="Shown on the delivery note."
+          error="Enter a number, e.g. 12."
+          defaultValue="12x"
+        />
+        <TextField
+          label="Warehouse"
+          disabled
+          disabledReason="The period August 2026 is closed."
+          defaultValue="Main"
+        />
+        <CheckboxField label="Send a copy by e-mail." description="To the customer's address." />
+      </div>
+    </StoryProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expectContentDirection(
+      canvas.getByText('Shown on the delivery note.'),
+      canvas.getByText('Enter a number, e.g. 12.'),
+      canvas.getByText('The period August 2026 is closed.'),
+    )
+    await settle()
+  },
 }

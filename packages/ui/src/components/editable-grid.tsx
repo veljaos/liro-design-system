@@ -1,5 +1,6 @@
 import { CircleAlert, Plus, TriangleAlert } from 'lucide-react'
 import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
+import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 import { ActionButton } from './actions'
@@ -455,7 +456,7 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
                               )}
                             >
                               <tone.Icon aria-hidden="true" className="mt-px size-3 shrink-0" />
-                              <span>{message.text}</span>
+                              <span className={TEXT_DIRECTION}>{message.text}</span>
                             </li>
                           )
                         })}

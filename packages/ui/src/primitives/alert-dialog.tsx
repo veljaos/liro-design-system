@@ -3,7 +3,7 @@ import type { ComponentProps } from 'react'
 import type { Emphasis, Family } from '../components/intents'
 import { usePortalContainer } from '../provider/portal'
 import { buttonClassName } from './button'
-import { BACKDROP } from './classes'
+import { BACKDROP, TEXT_DIRECTION } from './classes'
 import { cn } from './cn'
 
 /*
@@ -45,7 +45,7 @@ export function AlertDialogTitle({
   return (
     <AlertDialogPrimitive.Title
       data-slot="alert-dialog-title"
-      className={cn('m-0 text-md leading-none font-regular', className)}
+      className={cn('m-0 text-md leading-none font-regular', TEXT_DIRECTION, className)}
       {...props}
     />
   )
@@ -59,7 +59,7 @@ export function AlertDialogDescription({
   return (
     <AlertDialogPrimitive.Description
       data-slot="alert-dialog-description"
-      className={cn('m-0 text-sm text-secondary', className)}
+      className={cn('m-0 text-sm text-secondary', TEXT_DIRECTION, className)}
       {...props}
     />
   )

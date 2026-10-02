@@ -3,7 +3,7 @@ import { Dialog as DialogPrimitive } from 'radix-ui'
 import type { ComponentProps } from 'react'
 import { usePortalContainer } from '../provider/portal'
 import { buttonClassName, BUTTON_SHAPES } from './button'
-import { BACKDROP } from './classes'
+import { BACKDROP, TEXT_DIRECTION } from './classes'
 import { cn } from './cn'
 
 /*
@@ -63,7 +63,7 @@ export function DialogTitle({ className, ...props }: ComponentProps<typeof Dialo
   return (
     <DialogPrimitive.Title
       data-slot="dialog-title"
-      className={cn('m-0 text-md leading-none font-regular', className)}
+      className={cn('m-0 text-md leading-none font-regular', TEXT_DIRECTION, className)}
       {...props}
     />
   )
@@ -77,7 +77,7 @@ export function DialogDescription({
   return (
     <DialogPrimitive.Description
       data-slot="dialog-description"
-      className={cn('m-0 text-sm text-secondary', className)}
+      className={cn('m-0 text-sm text-secondary', TEXT_DIRECTION, className)}
       {...props}
     />
   )

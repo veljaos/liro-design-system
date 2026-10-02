@@ -25,7 +25,7 @@ import {
 import { focusFirstInvalid } from './form-logic'
 import { NumberField } from './number-field'
 import { SelectField } from './select-field'
-import { StoryProvider } from './story-frames'
+import { expectContentDirection, StoryProvider } from './story-frames'
 import { TextAreaField, TextField } from './text-field'
 
 const meta = {
@@ -470,4 +470,33 @@ export const Japanese: Story = {
       </div>
     </StoryProvider>
   ),
+}
+
+/**
+ * English in a right-to-left page (P3.6): section titles, tab labels and "Unsaved changes" keep
+ * their own order; the grid, the tabs and the bottom bar stay right to left.
+ */
+export const EnglishInRtl: Story = {
+  render: () => (
+    <StoryProvider locale="ar">
+      <FormActions
+        dirty
+        stickyActions="always"
+        actions={<ActionGroup actions={[{ key: 'save', intent: 'save', label: 'Save (draft)' }]} />}
+      >
+        <FormSection title="Customer (main office)" description="3 fields are required.">
+          <TextField label="Name" defaultValue="Alfa Trade d.o.o." />
+          <TextField label="Tax number" />
+        </FormSection>
+      </FormActions>
+    </StoryProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expectContentDirection(
+      canvas.getByText('Customer (main office)'),
+      canvas.getByText('Unsaved changes'),
+    )
+    await settle()
+  },
 }

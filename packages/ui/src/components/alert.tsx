@@ -1,6 +1,6 @@
 import { CircleCheck, CircleX, Info, TriangleAlert, X } from 'lucide-react'
 import type { ReactNode } from 'react'
-import { BUTTON_RESET, FOCUS_RING } from '../primitives/classes'
+import { BUTTON_RESET, FOCUS_RING, TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 import type { IconComponent } from './intents'
@@ -116,11 +116,11 @@ export function Alert({ tone = 'neutral', title, icon, onClose, className, child
               onClose !== undefined && 'pe-4',
             )}
           >
-            <span className="min-w-0 break-words">{title}</span>
+            <span className={cn('min-w-0 break-words', TEXT_DIRECTION)}>{title}</span>
           </div>
         )}
         {children !== undefined && (
-          <div className="text-sm break-words text-primary">{children}</div>
+          <div className={cn('text-sm break-words text-primary', TEXT_DIRECTION)}>{children}</div>
         )}
       </div>
       {onClose !== undefined && <CloseButton onClose={onClose} fg={look.fg} />}
@@ -163,7 +163,7 @@ export function Banner({
       <span aria-hidden="true" className={cn('flex size-5 shrink-0 items-center', look.fg)}>
         <Icon className="size-5" />
       </span>
-      <p className="m-0 min-w-0 flex-1 text-sm break-words text-primary">
+      <p className={cn('m-0 min-w-0 flex-1 text-sm break-words text-primary', TEXT_DIRECTION)}>
         {title !== undefined && <strong className={cn('font-bold', look.fg)}>{title} </strong>}
         {children}
       </p>

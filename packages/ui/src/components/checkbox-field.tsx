@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { Checkbox } from '../primitives/checkbox'
 import { cn } from '../primitives/cn'
+import { TEXT_DIRECTION } from '../primitives/classes'
 import { Switch } from '../primitives/switch'
 import { useLiro } from '../provider/liro-provider'
 import { FieldMessage, RequiredMark, useFieldIds, type FieldBaseProps } from './field'
@@ -83,6 +84,7 @@ function InlineField(props: InlineProps) {
           htmlFor={ids.id}
           className={cn(
             'text-sm leading-5 break-words',
+            TEXT_DIRECTION,
             disabled ? 'cursor-not-allowed text-disabled' : 'text-primary',
             !disabled && !readOnly && 'cursor-pointer',
           )}
@@ -91,7 +93,10 @@ function InlineField(props: InlineProps) {
           {props.required === true && <RequiredMark />}
         </label>
         {ids.hasDescription && (
-          <p id={ids.descriptionId} className="m-0 mt-[5px] text-xs leading-tight text-secondary">
+          <p
+            id={ids.descriptionId}
+            className={cn('m-0 mt-[5px] text-xs leading-tight text-secondary', TEXT_DIRECTION)}
+          >
             {props.description}
           </p>
         )}
