@@ -61,8 +61,9 @@ import { usePhone } from './use-phone'
  * - the selection column with an xs (16px) checkbox; the header checkbox is indeterminate when
  *   some rows are selected; selected rows on surface.selected;
  * - loading: first load 5 skeleton bars (36px, radius sm, 8px apart, 16px around), the header
- *   stays; a refetch keeps the rows as they are with a 14px loader in the top end corner; never a
- *   translucent overlay;
+ *   stays; a refetch keeps the rows as they are with a 14px loader above the table at the end, in
+ *   a slot always reserved (P3.6), and "Updating…" for screen readers; never a translucent
+ *   overlay;
  * - totals row: surface.sunken, semibold, a 1px border.strong line above it, sticky at the
  *   bottom while the table scrolls; values from the application, never computed;
  * - filters decide "nothing here yet" or "no rows match" (with "Clear filters");
@@ -730,9 +731,31 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
 
   return (
     <div className={cn('flex min-w-0 flex-col gap-3 font-sans', props.className)}>
-      {props.exportAction !== undefined && (
-        <div className="flex justify-end">{props.exportAction}</div>
-      )}
+      {/*
+        Above the table at the end (P3.6, owner; the old system kept it at the top): the refetch
+        loader in a slot that is always reserved, so showing or hiding it never moves the table,
+        then the export slot. The slot is a polite live region: "Updating…" is announced when a
+        refetch starts.
+      */}
+      <div className="flex min-h-3.5 flex-wrap items-center justify-end gap-3">
+        <span
+          role="status"
+          aria-live="polite"
+          data-slot="refetch-loader"
+          className="flex size-3.5 shrink-0 items-center justify-center"
+        >
+          {refetching && (
+            <>
+              <span
+                aria-hidden="true"
+                className="box-border size-3.5 animate-liro-spin rounded-full border-[1.75px] border-solid border-brand border-s-transparent motion-reduce:animate-none"
+              />
+              <span className="sr-only">{messages['table.updating']}</span>
+            </>
+          )}
+        </span>
+        {props.exportAction}
+      </div>
       {selectable && props.bulkActions !== undefined && (
         <BulkActionBar
           count={selection?.length ?? 0}
@@ -827,18 +850,6 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
             </table>
           )}
         </div>
-        {refetching && (
-          <span
-            role="status"
-            className="absolute end-0.5 top-0.5 z-20 flex size-3.5 items-center justify-center"
-          >
-            <span
-              aria-hidden="true"
-              className="box-border size-3.5 animate-liro-spin rounded-full border-[1.75px] border-solid border-brand border-s-transparent"
-            />
-            <span className="sr-only">{messages['field.loading']}</span>
-          </span>
-        )}
       </div>
       {cardTotals}
       {props.rowLimitMessage !== undefined && (

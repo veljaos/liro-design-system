@@ -241,13 +241,25 @@ export const Loading: Story = {
   ),
 }
 
-/** A refetch (e.g. after a filter change): the rows stay, a small loader in the top end corner. */
+/**
+ * A refetch (e.g. after a filter change): the rows stay; a small loader above the table at the
+ * end, in a slot that is always reserved, and "Updating…" for screen readers.
+ */
 export const Refetching: Story = {
   render: () => (
     <div className="max-w-240">
       <DataTable {...BASE} rows={INVOICES} loading count={4} />
     </div>
   ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const status = canvas.getByRole('status')
+    await expect(status).toHaveTextContent('Updating…')
+    // Above the table, never over a header label (P3.6).
+    const header = canvas.getByRole('columnheader', { name: 'Amount' }).getBoundingClientRect()
+    await expect(status.getBoundingClientRect().bottom).toBeLessThanOrEqual(header.top)
+    await settle()
+  },
 }
 
 /** Nothing yet: the empty state with the first step. */

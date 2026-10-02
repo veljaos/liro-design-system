@@ -155,6 +155,7 @@ describe('messages', () => {
       'table.rowActions',
       'table.selectAll',
       'table.selectRow',
+      'table.updating',
       'table.wider',
       'wizard.back',
       'wizard.finish',

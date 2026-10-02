@@ -13,6 +13,7 @@ export const messagesEn: LiroMessages = {
     if (!exact) return `More than ${number} rows`
     return count === 1 ? '1 row' : `${number} rows`
   },
+  'table.updating': 'Updating…',
   'table.noRows': 'Nothing here yet',
   'table.noMatch': 'No rows match',
   'table.clearFilters': 'Clear filters',

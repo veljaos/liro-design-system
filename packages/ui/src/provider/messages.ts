@@ -16,6 +16,7 @@ export interface LiroMessages {
   'table.count': (count: number, exact: boolean) => string
   /** A table that has no rows yet. */
   'table.noRows': string
+  'table.updating': string
   /** A table whose filters match no row. */
   'table.noMatch': string
   /** The action of the "no rows match" state that clears the table's filters. */
