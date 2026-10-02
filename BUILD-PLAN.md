@@ -269,6 +269,7 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P3.3 | Filters and search | P3.1 | done | 2026-10-01 | Owner: old Toolbar layout (search 260px, bottom-aligned row), labelled inline filters, drawer from the end 320px, pills with "Clear all", phone "Sort" menu; six filter kinds; SelectField `clearable` |
 | P3.4 | Editable grid | P3.1, P2.3 | done | 2026-10-01 | Owner: cells always fields (the DS fields without frames), focus inset line on a neutral cell, Enter as Excel, Ctrl/Cmd+Enter and +Delete, messages under the row, totals with SettlingValue under a 2px line; ten lines by keyboard in ltr and rtl |
 | P3.5 | Form layout | P2.2, P2.7 | done | 2026-10-01 | Owner: FormSection as the SectionCard card with a field grid, collapsible variant; tab errors as a 13px danger AlertTriangle; actions top and a sticky bottom bar while the form scrolls; `focusFirstInvalid`; unsaved-changes guard; FormWizard; `@veljaos/ui/form` on React Hook Form 7.89.0 (optional peer) |
+| P3.6 | Polish from the owner's review | P3.5 | done | 2026-10-02 | Less blue (neutral selection, sort header, bulk bar, avatar; `border.selected`), text direction from content (`unicode-bidi: plaintext`), neutral default Alert, EditableGrid cards on phones, FilterBar summary / From–To / actions above, bottom bar by IntersectionObserver, FormTabs in the card, Chip-style multiple toggles, Spinner and Accordion |
 | P4.1 | Application shell | P2.6, P2.7 | todo | | |
 | P4.2 | Home (launchpad) | P4.1 | todo | | |
 | P4.3 | List and worklist templates | P3.3, P4.1 | todo | | |
@@ -520,13 +521,13 @@ Templates are layouts with **slots**; they contain no data logic.
 All generic: labels and states come in as props.
 
 ### P5.1 — History, comments and messages
-**Do** `Timeline` / `HistoryList` (who, when, what changed; actor kind marker for human, system, agent, integration; "on behalf of" line); the **`Message` family** (`MessageBubble`, `MessageList`, `MessageThread`, `MessageComposer` — Enter sends, Shift+Enter breaks the line) used for comments and task conversations; `MentionCombobox` for mentions (candidate list comes from props).
+**Do** `Timeline` / `HistoryList` (who, when, what changed; actor kind marker for human, system, agent, integration; "on behalf of" line); the **`Message` family** (`MessageBubble`, `MessageList`, `MessageThread`, `MessageComposer` — Enter sends, Shift+Enter breaks the line) used for comments and task conversations; `MentionCombobox` for mentions (candidate list comes from props). The Message family and the agent interactions are built on the shadcn/ui Radix versions of **Bubble**, **Marker**, **Message Scroller** and **Questionnaire** (Questionnaire for the questions an agent asks the user), adapted like the P2.1 primitives; shadcn's Carousel is not used (owner, P3.6).
 
 ### P5.2 — Presence and agent marking
 **Do** `PresenceAvatars` (who else is here, overflow count, tooltips with names); `AgentMark` (a consistent machine marker shown next to any name that belongs to an agent).
 
 ### P5.3 — Connection, environment and session markers
-**Do** `OfflineIndicator` (always visible while offline, in the shell); `ConnectionState` for drafts (saved on this device / sending / sent); `EnvironmentMarker` (e.g. sandbox, demo — label from props, always visible); `ImpersonationBar` (not dismissible; shows whose account, mode, reason and time left, with an exit action); generic `Banner` placements in the shell.
+**Do** `OfflineIndicator` (always visible while offline, in the shell); `ConnectionState` for drafts (saved on this device / sending / sent); `EnvironmentMarker` (e.g. sandbox, demo — label from props, always visible); `ImpersonationBar` (not dismissible; shows whose account, mode, reason and time left, with an exit action); generic `Banner` placements in the shell. Agent interactions in the shell (an agent asking the user something, an agent's marker) use the same shadcn/ui Radix Bubble, Marker, Message Scroller and Questionnaire as P5.1 (owner, P3.6).
 
 ### P5.4 — Delivery and progress status
 **Do** `StatusTimeline` (a sequence of states with the current one highlighted and a next-step slot, e.g. "delivery pending — action needed" with retry and manual-export actions); `JobProgress` (progress, cancel, final report of successes and failures).
