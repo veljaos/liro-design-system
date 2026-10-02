@@ -169,7 +169,7 @@ export const ActiveFilters: Story = {
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.getByText('Total: 1,000.00 –')).toBeVisible()
+    await expect(canvas.getByText(/^Total: EUR\s1,000\.00 –$/)).toBeVisible()
     await userEvent.click(canvas.getByRole('button', { name: 'Remove filter: Paid' }))
     await waitFor(() => expect(canvas.queryByText('Paid: No')).toBeNull())
     // An inline select is emptied in place by its clear button.

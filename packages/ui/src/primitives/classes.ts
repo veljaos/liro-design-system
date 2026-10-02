@@ -85,7 +85,9 @@ export const BACKDROP =
 export const TEXT_DIRECTION = 'bidi-content'
 
 /**
- * TEXT_DIRECTION for text whose alignment is set on the same element (centred messages, end-
- * aligned headers): only the word order follows the content.
+ * TEXT_DIRECTION for inline text (a header label inside its cell) and for centred text: only the
+ * word order follows the content. Never on a block with `text-start` or `text-end`: with
+ * plaintext those resolve against the text's own direction, so an end-aligned English header
+ * moved to the wrong side of a right-to-left cell.
  */
 export const TEXT_ISOLATE = 'bidi-isolate'

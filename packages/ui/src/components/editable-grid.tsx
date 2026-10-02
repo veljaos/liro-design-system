@@ -410,7 +410,7 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
   const hasTotals = props.totals !== undefined && Object.keys(props.totals).length > 0
   const minWidth = columns.reduce((sum, column) => sum + (column.width ?? 120), 0) + 44
 
-  const table = (
+  const table = () => (
     <div className="overflow-x-auto">
       <table
         aria-label={props.label}
@@ -435,13 +435,12 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
                 className={cn(
                   CELL_BORDER,
                   'bg-surface-sunken px-2 py-2 align-bottom font-semibold break-words',
-                  TEXT_ISOLATE,
                   column.type === 'number' || (column.type === 'display' && column.align === 'end')
                     ? 'text-end'
                     : 'text-start',
                 )}
               >
-                {column.header}
+                <span className={TEXT_ISOLATE}>{column.header}</span>
               </th>
             ))}
             <td className={cn(CELL_BORDER, 'bg-surface-sunken')} />
@@ -536,7 +535,7 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
     </div>
   )
 
-  const cards = (
+  const cards = () => (
     <>
       {(hasTotals || props.footer !== undefined) && (
         <div
@@ -642,7 +641,7 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
       data-grid-direction={direction}
       className={cn('flex min-w-0 flex-col gap-2 font-sans text-primary', props.className)}
     >
-      {phone ? cards : table}
+      {phone ? cards() : table()}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3">
           <ActionButton
