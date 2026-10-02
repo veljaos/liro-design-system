@@ -270,6 +270,7 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P3.4 | Editable grid | P3.1, P2.3 | done | 2026-10-01 | Owner: cells always fields (the DS fields without frames), focus inset line on a neutral cell, Enter as Excel, Ctrl/Cmd+Enter and +Delete, messages under the row, totals with SettlingValue under a 2px line; ten lines by keyboard in ltr and rtl |
 | P3.5 | Form layout | P2.2, P2.7 | done | 2026-10-01 | Owner: FormSection as the SectionCard card with a field grid, collapsible variant; tab errors as a 13px danger AlertTriangle; actions top and a sticky bottom bar while the form scrolls; `focusFirstInvalid`; unsaved-changes guard; FormWizard; `@veljaos/ui/form` on React Hook Form 7.89.0 (optional peer) |
 | P3.6 | Polish from the owner's review | P3.5 | done | 2026-10-02 | Less blue (neutral selection, sort header, bulk bar, avatar; `border.selected`), text direction from content (`unicode-bidi: plaintext`), neutral default Alert, EditableGrid cards on phones, FilterBar summary / From–To / actions above, bottom bar by IntersectionObserver, FormTabs in the card, Chip-style multiple toggles, Spinner and Accordion |
+| P3.6a | consumer-check covers `@veljaos/ui/form` | P3.5 | done | 2026-10-02 | Separate pull request #48 (protected files, merged by the owner): React Hook Form installed beside the packed tarballs, a bound field type-checked and rendered |
 | P4.1 | Application shell | P2.6, P2.7 | todo | | |
 | P4.2 | Home (launchpad) | P4.1 | todo | | |
 | P4.3 | List and worklist templates | P3.3, P4.1 | todo | | |
