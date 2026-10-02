@@ -21,7 +21,9 @@ const meta = {
           'application shows (the line amount). **Keys:** Enter goes to the same column in the ' +
           'next row and adds a row after the last; Shift+Enter goes up; Tab and Shift+Tab move ' +
           'across; while a list is open, Enter chooses. Ctrl+Enter (Cmd on a Mac) inserts a row ' +
-          'below, Ctrl+Delete removes the row. On phones Enter ("next") goes through the row. ' +
+          'below, Ctrl+Delete removes the row. **On phones** each line is a card (fields under ' +
+          'their column labels, "Remove line" at the end), the totals and the balance stay in a ' +
+          'card sticky at the top, and Enter ("next") goes through the line, then the next one. ' +
           '**Controlled:** the application keeps the rows, adds and removes them when asked, ' +
           'computes amounts and totals (shown with SettlingValue) and sends errors and warnings, ' +
           'shown under their row.\n\n**When not:** a list to read (DataTable); one record ' +
@@ -411,19 +413,34 @@ export const WithDateAndFooter: Story = {
   ),
 }
 
-/** Phone width: the grid scrolls sideways; Enter ("next") goes through the row. */
+/**
+ * Phone width (P3.6, the old behaviour): each line is a card with its fields stacked under their
+ * column labels and "Remove line" at its end; the total and the balance stand in a card sticky at
+ * the top, where the operator keeps seeing them; "next" on the on-screen keyboard (Enter) goes
+ * through a line's fields, then into the next line.
+ */
 export const Phone: Story = {
   name: 'Phone width',
   render: () => (
     <div className="w-[390px] max-w-full">
-      <Lines initial={FILLED.slice(0, 2)} layout="phone" />
+      <Lines
+        initial={FILLED.slice(0, 2)}
+        layout="phone"
+        footer={<span className="text-sm text-secondary">Balance: 0.00</span>}
+      />
     </div>
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
+    const totals = canvasElement.querySelector('[data-slot="grid-totals"]')
+    await expect(totals === null ? '' : getComputedStyle(totals).position).toBe('sticky')
     await userEvent.click(canvas.getByRole('textbox', { name: 'Description, line 1' }))
     await userEvent.keyboard('{Enter}')
     await expect(canvas.getByRole('textbox', { name: 'Quantity, line 1' })).toHaveFocus()
+    await userEvent.click(canvas.getByRole('textbox', { name: 'Unit price, line 1' }))
+    await userEvent.keyboard('{Enter}{Enter}')
+    await expect(canvas.getByRole('combobox', { name: 'Item, line 2' })).toHaveFocus()
+    await expect(canvas.getByRole('button', { name: 'Remove line 2' })).toBeVisible()
     await settle()
   },
 }

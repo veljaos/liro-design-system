@@ -186,3 +186,15 @@
   outline: 1px solid var(--liro-status-danger-fg);
   outline-offset: -1px;
 }
+
+/*
+ * EditableGrid on phones (P3.6): each field keeps its frame, under the column's label in the
+ * card; the field's own label is for screen readers ("Quantity, line 3"), so its gap goes, and its
+ * own message is hidden because the line's messages stand under the card's fields.
+ */
+[data-slot='grid-card-cell'] [data-slot='field'] > div {
+  margin: 0;
+}
+[data-slot='grid-card-cell'] [data-slot='field'] > p {
+  display: none;
+}
