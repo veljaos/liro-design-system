@@ -1,5 +1,6 @@
 import { Button } from '@veljaos/ui'
 import { useState } from 'react'
+import { FormExample } from './FormExample'
 
 export function App() {
   const [clicks, setClicks] = useState(0)
@@ -13,6 +14,7 @@ export function App() {
         }}
       />
       <p aria-live="polite">Clicked {clicks} times</p>
+      <FormExample />
     </main>
   )
 }

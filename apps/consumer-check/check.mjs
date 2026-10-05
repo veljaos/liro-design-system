@@ -1,7 +1,9 @@
 // Runs inside the installed copy of consumer-check, after `vite build`.
-// Proves that the packed packages work for a consumer: the button renders, the CSS files
-// resolve through the exports maps and reach the bundle, the ESLint config loads and applies,
-// and the license travels with every package.
+// Proves that the packed packages work for a consumer: the button renders, a field bound with
+// React Hook Form renders from the `@veljaos/ui/form` subpath, the CSS files resolve through the
+// exports maps and reach the bundle, the ESLint config loads and applies, and the license travels
+// with every package. (The subpath's types are checked by `tsc` in the app's build:
+// src/FormExample.tsx.)
 import assert from 'node:assert/strict'
 import { access, readdir, readFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
@@ -9,15 +11,32 @@ import { dirname, join } from 'node:path'
 import { ESLint } from 'eslint'
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { Button } from '@veljaos/ui'
+import { useForm } from 'react-hook-form'
+import { Button, LiroProvider } from '@veljaos/ui'
+import { FormTextField } from '@veljaos/ui/form'
 import liroEslintConfig from '@veljaos/eslint-config'
 
 // 1. The button renders.
 const html = renderToStaticMarkup(createElement(Button, { intent: 'save', label: 'Save' }))
 assert.match(html, /^<button type="button" class="[^"]*bg-family-primary-solid[^"]*"[^>]*>/)
 assert.match(html, /data-intent="save"/)
-assert.match(html, /<svg[^>]*aria-hidden="true"[^>]*>.*<\/svg><span>Save<\/span><\/button>$/)
+assert.match(html, /<svg[^>]*aria-hidden="true"[^>]*>.*<\/svg><span[^>]*>Save<\/span><\/button>$/)
 console.log(`render: ${html}`)
+
+// 1b. A field bound with React Hook Form (the optional peer) renders from the subpath, with the
+//     form's value, its label and the field's name.
+function BoundField() {
+  const { control } = useForm({ defaultValues: { name: 'Alfa Trade' } })
+  return createElement(FormTextField, { control, name: 'name', label: 'Name' })
+}
+const form = renderToStaticMarkup(
+  createElement(LiroProvider, { locale: 'en' }, createElement(BoundField)),
+)
+assert.match(form, /<label[^>]*for="([^"]+)"[^>]*>Name<\/label>/)
+assert.match(form, /<input[^>]*name="name"[^>]*value="Alfa Trade"/)
+console.log(
+  `form: FormTextField from @veljaos/ui/form (${import.meta.resolve('@veljaos/ui/form')}) renders the bound value`,
+)
 
 // 2. Every CSS and JSON export resolves, and the built bundle contains the button's styles.
 const require = createRequire(import.meta.url)
