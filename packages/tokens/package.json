@@ -1,7 +1,7 @@
 {
   "name": "@veljaos/tokens",
   "version": "0.1.0-alpha.3",
-  "description": "Liro Design System tokens: CSS variables, the Tailwind theme and the same values as JSON.",
+  "description": "Liro Design System tokens: CSS variables, the Tailwind theme, the same values as JSON, and the Liro brand files.",
   "license": "UNLICENSED",
   "repository": {
     "type": "git",
@@ -18,10 +18,12 @@
     "./theme.css": "./dist/theme.css",
     "./tokens.json": "./dist/tokens.json",
     "./fonts/*": "./dist/fonts/*",
+    "./brand/*": "./brand/*",
     "./package.json": "./package.json"
   },
   "files": [
-    "dist"
+    "dist",
+    "brand"
   ],
   "scripts": {
     "build": "node scripts/build.ts && node ../../scripts/copy-legal.mjs",
