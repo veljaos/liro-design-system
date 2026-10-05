@@ -49,7 +49,7 @@ function Page({ title, intro, children }: { title: string; intro: string; childr
   return (
     <div className="flex flex-col gap-6 font-sans text-primary">
       <h2 className="m-0 text-h2">{title}</h2>
-      <p className="m-0 max-w-3xl text-secondary">{intro}</p>
+      <p className="bidi-content m-0 max-w-3xl text-secondary">{intro}</p>
       {children}
     </div>
   )
@@ -77,10 +77,10 @@ function OnBothThemes({ children }: { children: (theme: 'light' | 'dark') => Rea
 function Caption({ file }: { file: BrandFile }) {
   return (
     <span className="flex flex-col text-xs">
-      <code dir="ltr" className="font-mono text-secondary">
+      <code dir="ltr" className="self-start font-mono text-secondary">
         {file.name}
       </code>
-      <span className="text-tertiary">{file.use}</span>
+      <span className="bidi-content text-tertiary">{file.use}</span>
     </span>
   )
 }
