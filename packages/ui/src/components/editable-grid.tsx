@@ -24,7 +24,7 @@ import {
 import { ShortcutHint } from './navigation'
 import { NumberField } from './number-field'
 import { SelectField, type SelectOption } from './select-field'
-import { SettlingValue } from './settling-value'
+import { SettlingSince, SettlingValue } from './settling-value'
 import { TextField } from './text-field'
 import { EntryDraftSlot, type EntryDraft } from './use-entry'
 import { usePhone } from './use-phone'
@@ -162,14 +162,22 @@ function isEditable<Row>(column: EditableGridColumn<Row>): boolean {
   return column.type !== 'display'
 }
 
-function Total({ total }: { total: GridTotal }) {
+function Total({
+  total,
+  since,
+}: {
+  total: GridTotal
+  since: { since: Map<string, number>; key: string }
+}) {
   return (
-    <SettlingValue
-      value={total.value}
-      {...(total.pending === undefined ? {} : { pending: total.pending })}
-      {...(total.currency === undefined ? {} : { currency: total.currency })}
-      {...(total.decimals === undefined ? {} : { decimals: total.decimals })}
-    />
+    <SettlingSince.Provider value={since}>
+      <SettlingValue
+        value={total.value}
+        {...(total.pending === undefined ? {} : { pending: total.pending })}
+        {...(total.currency === undefined ? {} : { currency: total.currency })}
+        {...(total.decimals === undefined ? {} : { decimals: total.decimals })}
+      />
+    </SettlingSince.Provider>
   )
 }
 
@@ -207,6 +215,8 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
   const [unreadable, setUnreadable] = useState<Readonly<Record<string, boolean>>>({})
   // Typed text of the number and date cells, kept while the layout changes (see EntryDraftSlot).
   const drafts = useRef(new Map<string, EntryDraft>()).current
+  // Since when each total is pending, kept while the layout changes (see SettlingSince).
+  const pendingSince = useRef(new Map<string, number>()).current
   const { rows, columns } = props
   const editable = columns.filter(isEditable)
   const minRows = props.minRows ?? 1
@@ -587,7 +597,7 @@ ${column.id}`,
                     )}
                   >
                     {total !== undefined ? (
-                      <Total total={total} />
+                      <Total total={total} since={{ since: pendingSince, key: column.id }} />
                     ) : index === 0 ? (
                       props.totalsLabel
                     ) : null}
@@ -623,7 +633,7 @@ ${column.id}`,
                   <div key={column.id} className="flex items-baseline justify-between gap-4">
                     <dt className={cn('text-secondary', TEXT_DIRECTION)}>{column.header}</dt>
                     <dd className="m-0 font-semibold">
-                      <Total total={total} />
+                      <Total total={total} since={{ since: pendingSince, key: column.id }} />
                     </dd>
                   </div>
                 )

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState } from 'react'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 
@@ -23,6 +23,14 @@ import { useLiro } from '../provider/liro-provider'
 
 /** Milliseconds a value must be pending before the dot shows. */
 export const SETTLING_DELAY = 300
+
+/**
+ * Inside it, a SettlingValue keeps the time its value became pending in `since` under `key`, and
+ * one mounted anew while still pending (EditableGrid renders its totals anew when the layout
+ * changes between the table and the cards) shows the dot when the first would have (internal,
+ * not exported).
+ */
+export const SettlingSince = createContext<{ since: Map<string, number>; key: string } | null>(null)
 
 export interface SettlingValueProps {
   /** The last confirmed value: a decimal string, or null when there is none. */
@@ -72,17 +80,31 @@ export function SettlingValue(props: SettlingValueProps) {
   }
 
   // The dot shows only after the value has been pending for SETTLING_DELAY.
-  const [late, setLate] = useState(false)
+  const slot = useContext(SettlingSince)
+  const [late, setLate] = useState(() => {
+    const since = pending ? slot?.since.get(slot.key) : undefined
+    return since !== undefined && Date.now() - since >= SETTLING_DELAY
+  })
   if (!pending && late) setLate(false)
+  const since = slot?.since
+  const key = slot?.key
   useEffect(() => {
-    if (!pending) return
-    const timer = window.setTimeout(() => {
-      setLate(true)
-    }, SETTLING_DELAY)
+    if (!pending) {
+      if (key !== undefined) since?.delete(key)
+      return
+    }
+    const started = (key === undefined ? undefined : since?.get(key)) ?? Date.now()
+    if (key !== undefined) since?.set(key, started)
+    const timer = window.setTimeout(
+      () => {
+        setLate(true)
+      },
+      Math.max(0, SETTLING_DELAY - (Date.now() - started)),
+    )
     return () => {
       window.clearTimeout(timer)
     }
-  }, [pending])
+  }, [pending, since, key])
 
   return (
     <span

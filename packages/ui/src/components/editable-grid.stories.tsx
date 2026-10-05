@@ -452,15 +452,19 @@ function LayoutChange() {
   return (
     <div className="flex flex-col gap-4">
       <SwitchField label="Phone layout" checked={phone} onChange={setPhone} />
-      <Lines initial={FILLED.slice(0, 2)} layout={phone ? 'phone' : 'desktop'} />
+      <Lines
+        initial={FILLED.slice(0, 2)}
+        settleAfter={60_000}
+        layout={phone ? 'phone' : 'desktop'}
+      />
     </div>
   )
 }
 
 /**
  * When the layout changes between the table and the cards, nothing typed is lost: unreadable
- * text stays in its cell with its message, and the focused cell keeps the focus and its
- * selection. The play switches without moving the focus, as a resize would.
+ * text stays in its cell with its message, the focused cell keeps the focus and its selection,
+ * and a pending total keeps its dot. The play switches without moving the focus, as a resize would.
  */
 export const LayoutChangeKeepsFocus: Story = {
   name: 'Layout change keeps typing and focus',
@@ -481,9 +485,13 @@ export const LayoutChangeKeepsFocus: Story = {
     canvas
       .getByRole<HTMLInputElement>('textbox', { name: 'Unit price, line 2' })
       .setSelectionRange(1, 3)
+    const dot = () => canvasElement.querySelector('[data-slot="settling-dot"]')
+    await waitFor(() => expect(dot()).not.toBeNull())
     const toggle = canvas.getByRole('switch', { name: 'Phone layout' })
     await fireEvent.click(toggle)
     await waitFor(() => expect(canvas.getByRole('button', { name: 'Remove line 2' })).toBeVisible())
+    // The cards' total is new, and already shows the dot: no 300ms without it.
+    await expect(dot()).not.toBeNull()
     await expect(canvas.getByRole('textbox', { name: 'Unit price, line 2' })).toHaveFocus()
     await expect(selected()).toEqual([1, 3])
     await fireEvent.click(toggle)
