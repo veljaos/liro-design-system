@@ -110,6 +110,7 @@ describe('messages', () => {
       'filter.no',
       'filter.pill',
       'filter.rangeFrom',
+      'filter.rangeLabel',
       'filter.rangeTo',
       'filter.remove',
       'filter.search',

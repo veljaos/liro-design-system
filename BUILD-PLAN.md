@@ -273,6 +273,7 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P3.6a | consumer-check covers `@veljaos/ui/form` | P3.5 | done | 2026-10-02 | Separate pull request #48 (protected files, merged by the owner): React Hook Form installed beside the packed tarballs, a bound field type-checked and rendered |
 | P3.6b | Branch hygiene | P3.6 | done | 2026-10-05 | Rule W16 in AGENTS.md (owner): a step's branch is deleted when its pull request is merged or closed; `main` is the only branch at the end of every phase. The six branches of #29–#34 (combined into #35) and `bp/P3.6-polish` were checked against `main` and removed |
 | P3.6c | Field polish from the owner's P3.6 review | P3.6 | done | 2026-10-05 | Free text and chosen options take their direction from their content (`dir="auto"`) at the page's start side, codes left to right (TextField `direction`); FilterBar number range: one label, "From" / "To" inside the fields (`startText`); empty date range "From – To" without a lone dash |
+| P3.6d | FilterBar amount range | P3.6c | done | 2026-10-05 | The currency once in the label ("Total (EUR)"), "From" / "To" and the number in the fields; fields grow with a long amount and the pair wraps, never cut |
 | P3.7 | Liro brand assets | P3.6 | done | 2026-10-05 | The owner's logo in `@veljaos/tokens/brand/` (exported `./brand/*`, checked by `brand.test.ts`); Storybook's title, wordmark and favicon; "Foundations / Brand"; rule D18 (logo through props) |
 | P4.1 | Application shell | P2.6, P2.7 | todo | | |
 | P4.2 | Home (launchpad) | P4.1 | todo | | |

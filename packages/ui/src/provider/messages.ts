@@ -79,9 +79,14 @@ export interface LiroMessages {
    */
   'filter.from': string
   'filter.to': string
-  /** FilterBar: the names of the two ends of a number range, with the filter's label. */
-  'filter.rangeFrom': (label: string) => string
-  'filter.rangeTo': (label: string) => string
+  /**
+   * FilterBar: the names of the two ends of a number range, with the filter's label and, for an
+   * amount, its currency ("Total from (EUR)").
+   */
+  'filter.rangeFrom': (label: string, currency?: string) => string
+  'filter.rangeTo': (label: string, currency?: string) => string
+  /** FilterBar: an amount range's visible label, with its currency once ("Total (EUR)"). */
+  'filter.rangeLabel': (label: string, currency: string) => string
   /** FilterBar on phones: the sort button's text while nothing is sorted, and the start of its name. */
   'filter.sort': string
   /** FilterBar on phones: the two directions in the sort menu. */

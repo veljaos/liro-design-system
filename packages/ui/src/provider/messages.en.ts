@@ -46,8 +46,11 @@ export const messagesEn: LiroMessages = {
   'filter.no': 'No',
   'filter.from': 'From',
   'filter.to': 'To',
-  'filter.rangeFrom': (label) => `${label} from`,
-  'filter.rangeTo': (label) => `${label} to`,
+  'filter.rangeFrom': (label, currency) =>
+    currency === undefined ? `${label} from` : `${label} from (${currency})`,
+  'filter.rangeTo': (label, currency) =>
+    currency === undefined ? `${label} to` : `${label} to (${currency})`,
+  'filter.rangeLabel': (label, currency) => `${label} (${currency})`,
   'filter.sort': 'Sort',
   'filter.ascending': 'Ascending',
   'filter.descending': 'Descending',
