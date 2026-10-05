@@ -124,7 +124,8 @@ export const InlineChoices: Story = {
     const from = canvas.getByRole('textbox', { name: 'Total from EUR' })
     await expect(from).toBeVisible()
     await expect(canvas.getByRole('textbox', { name: 'Total to EUR' })).toBeVisible()
-    await expect(canvas.queryByText('Total from')).toBeNull()
+    // The names are for screen readers only: no second row of labels.
+    await expect(canvas.getByText('Total from')).toHaveClass('sr-only')
     // Every control's top edge on one line: the pair stands under its label as the others do.
     const select = canvas.getByRole('combobox', { name: 'Status' })
     const box = from.closest('[data-slot="money"]') ?? from
