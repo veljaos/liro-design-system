@@ -8,6 +8,7 @@ import type { DataTableFilters, DataTableSort } from './data-table-logic'
 import { FilterBar } from './filter-bar'
 import type { FilterDefinition } from './filter-logic'
 import { ARABIC, JAPANESE, LONG } from './field-story-data'
+import { useLiro } from '../provider/liro-provider'
 import { PhoneFrame, StoryProvider } from './story-frames'
 
 const meta = {
@@ -121,11 +122,13 @@ export const InlineChoices: Story = {
     const frame = canvasElement.querySelector('[data-slot="multi-select"]')
     await expect(frame?.getBoundingClientRect().height).toBe(36)
     // One label over the pair; "From" and "To" inside the fields, which are named by the label.
-    const from = canvas.getByRole('textbox', { name: 'Total from EUR' })
+    const from = canvas.getByRole('textbox', { name: 'Total from (EUR)' })
     await expect(from).toBeVisible()
-    await expect(canvas.getByRole('textbox', { name: 'Total to EUR' })).toBeVisible()
-    // The names are for screen readers only: no second row of labels.
-    await expect(canvas.getByText('Total from')).toHaveClass('sr-only')
+    await expect(canvas.getByRole('textbox', { name: 'Total to (EUR)' })).toBeVisible()
+    // The currency once, in the label; the names are for screen readers only.
+    await expect(canvas.getByRole('group', { name: 'Total (EUR)' })).toBeVisible()
+    await expect(canvas.getByText('Total from (EUR)')).toHaveClass('sr-only')
+    await expect(from).toHaveValue('100.00')
     // Every control's top edge on one line: the pair stands under its label as the others do.
     const select = canvas.getByRole('combobox', { name: 'Status' })
     const box = from.closest('[data-slot="money"]') ?? from
@@ -217,7 +220,62 @@ export const DrawerOpen: Story = {
     await userEvent.click(within(canvasElement).getByRole('button', { name: 'Filters' }))
     const drawer = await body.findByRole('dialog', { name: 'Filters' })
     await settle()
-    await waitFor(() => expect(within(drawer).getByRole('group', { name: 'Total' })).toBeVisible())
+    await waitFor(() =>
+      expect(within(drawer).getByRole('group', { name: 'Total (EUR)' })).toBeVisible(),
+    )
+  },
+}
+
+/** Every typing area of the amount range shows all of its text: none is cut. */
+async function expectWholeAmounts(scope: HTMLElement) {
+  const group = within(scope).getByRole('group', { name: 'Total (EUR)' })
+  const fields = within(group).getAllByRole('textbox')
+  await expect(fields.map((field) => (field as HTMLInputElement).value)).toEqual([
+    '1.234.567,89',
+    '9.876.543,21',
+  ])
+  for (const field of fields) {
+    await expect(field.scrollWidth).toBeLessThanOrEqual(field.clientWidth)
+  }
+}
+
+/** A long amount in the screen's own number format ("1.234.567,89"). */
+function LongAmount(props: { inline: number }) {
+  const { direction } = useLiro()
+  return (
+    <StoryProvider locale="sr-Latn-RS" direction={direction}>
+      <Controlled
+        inline={props.inline}
+        layout="desktop"
+        initial={{ total: { min: '1234567.89', max: '9876543.21' } }}
+      />
+    </StoryProvider>
+  )
+}
+
+/**
+ * A long amount fits (P3.6d): each field grows with its number instead of cutting it, and the
+ * pair wraps when it does not fit in the row.
+ */
+export const LongAmountInline: Story = {
+  name: 'Long amount',
+  render: () => <LongAmount inline={4} />,
+  play: async ({ canvasElement }) => {
+    await expectWholeAmounts(canvasElement)
+    await settle()
+  },
+}
+
+/** The same long amount in the Filters drawer, 320px wide: the pair wraps, nothing is cut. */
+export const LongAmountDrawer: Story = {
+  name: 'Long amount in the drawer',
+  render: () => <LongAmount inline={1} />,
+  play: async ({ canvasElement }) => {
+    const body = within(canvasElement.ownerDocument.body)
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Filters' }))
+    const drawer = await body.findByRole('dialog', { name: 'Filters' })
+    await settle()
+    await expectWholeAmounts(drawer)
   },
 }
 
