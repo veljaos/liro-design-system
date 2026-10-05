@@ -94,7 +94,9 @@ function Section(props: {
   return props.htmlFor === undefined ? (
     <span
       aria-hidden="true"
-      className={className}
+      // Wider than the currency, so with air of its own: 12px from the field's edge (the field's
+      // text padding) and 8px to the typing area (the gap between fields).
+      className={cn(className, 'ps-3 pe-2')}
       onMouseDown={(event) => {
         event.preventDefault()
         props.onPress?.()

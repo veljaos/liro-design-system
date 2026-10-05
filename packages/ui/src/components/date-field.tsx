@@ -358,6 +358,8 @@ export function DateRangeField(props: DateRangeFieldProps) {
         // at all.
         const empty = start.text === '' && end.text === ''
         const placeholders = props.placeholder !== undefined && props.endPlaceholder !== undefined
+        // An empty part is as wide as its placeholder ("From – To"), not as a date.
+        const emptyWidth = empty && placeholders && 'min-w-0'
         const startLabel = `${nameId}-start`
         const endLabel = `${nameId}-end`
         const names = (
@@ -435,7 +437,7 @@ export function DateRangeField(props: DateRangeFieldProps) {
                       openOnAltArrowDown(openCalendar)(event)
                       startTyping.onKeyDown(event)
                     }}
-                    className={cn(TYPING, RANGE_PART, 'ps-0 pe-1')}
+                    className={cn(TYPING, RANGE_PART, 'ps-0 pe-1', emptyWidth)}
                   />
                   {separator}
                   <input
@@ -447,7 +449,7 @@ export function DateRangeField(props: DateRangeFieldProps) {
                       openOnAltArrowDown(openCalendar)(event)
                       endTyping.onKeyDown(event)
                     }}
-                    className={cn(TYPING, RANGE_PART, 'ps-0.5 pe-1')}
+                    className={cn(TYPING, RANGE_PART, 'ps-0.5 pe-1', emptyWidth)}
                   />
                   {/* The room between the end and the calendar button. */}
                   <span aria-hidden="true" className="flex-1" />
