@@ -219,7 +219,10 @@ export const EnglishInRtl: Story = {
           label="Delete"
           reason="The period August 2026 is closed."
         />
+        {/* The group takes the column's width, as in a toolbar: in a column whose items keep
+            their own width it would measure only itself. */}
         <ActionGroup
+          className="self-stretch"
           actions={[
             { key: 'print', intent: 'print', label: 'Print (2 copies)' },
             { key: 'save', intent: 'save', label: 'Save and close' },
@@ -234,6 +237,8 @@ export const EnglishInRtl: Story = {
       canvas.getByText('Unavailable: The period August 2026 is closed.'),
       canvas.getAllByText('Save and close')[0] ?? canvasElement,
     )
+    // 600px is room for both: nothing goes into "More".
+    await expect(canvas.queryByRole('button', { name: 'More actions' })).toBeNull()
     await settle()
   },
 }

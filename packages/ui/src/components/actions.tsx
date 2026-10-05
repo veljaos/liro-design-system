@@ -249,6 +249,8 @@ export function OverflowRow<T extends ActionItem>({
     update()
     const observer = new ResizeObserver(update)
     observer.observe(rowElement)
+    // The copy's width changes when a font arrives after the first measurement.
+    observer.observe(measureElement)
     return () => {
       observer.disconnect()
     }
