@@ -31,7 +31,7 @@ import {
   type SortColumn,
 } from './filter-logic'
 import { MultiSelectField } from './multi-select-field'
-import { MoneyField, NumberField } from './number-field'
+import { NumberField } from './number-field'
 import { SelectField } from './select-field'
 import { TextField } from './text-field'
 import { usePhone } from './use-phone'
@@ -51,7 +51,7 @@ import { usePhone } from './use-phone'
  * - The drawer: from the end side, 320px (100% on phones), titled "Filters" (13px, bold), the
  *   controls stacked 12px apart.
  * - Inline widths: select and text 180px, multiSelect 220px, dateRange 240px, boolean 140px,
- *   each end of a number range 100px (140px with a currency: MoneyFields, P3.6).
+ *   each end of a number range at least 140px, growing with its number (P3.6d).
  * - P3.6 (owner): an inline multiSelect keeps the control height, its choices summed up on one
  *   line ("Alfa Trade", "2 selected"); a number range has "From" and "To" labels (messages); the
  *   actions, when they do not fit beside search and filters, take their own line ABOVE them,
@@ -145,44 +145,47 @@ function TextFilter({ filter, value, onChange, inline, delay }: ControlProps) {
 /**
  * A number range: the filter's label over two fields, 8px apart, so it lines up with the other
  * filters (P3.6c, owner). "From" and "To" (messages) are short texts inside each field at its
- * start, as the currency is at its side; the fields are named "Total from" / "Total to"
- * (`filter.rangeFrom` / `filter.rangeTo`). With a `currency` they are MoneyFields, 140px each in
- * the row (owner); otherwise NumberFields, 100px each. The same in the drawer.
+ * start; the fields are named "Total from" / "Total to" (`filter.rangeFrom` / `filter.rangeTo`).
+ * An amount (`currency`) shows its currency once, in the label ("Total (EUR)",
+ * `filter.rangeLabel`), and in the names ("Total from (EUR)"), never inside the fields, and takes
+ * the provider's money decimals (P3.6d, owner). Each field is at least 140px and grows with its
+ * number, so a long amount ("1.234.567,89") is never cut; the pair wraps when it does not fit.
+ * The same in the drawer.
  */
 function NumberRangeFilter({ filter, value, onChange, inline }: ControlProps) {
-  const { messages } = useLiro()
+  const { messages, format } = useLiro()
   const labelId = useId()
   const range = (value ?? { min: null, max: null }) as NumberRange
   const definition = filter.type === 'numberRange' ? filter : undefined
-  const decimals = definition?.decimals === undefined ? {} : { decimals: definition.decimals }
   const currency = definition?.currency
-  const end = (key: 'min' | 'max', name: string, startText: string) => {
-    const common = {
-      label: <span className="sr-only">{name}</span>,
-      startText,
-      value: range[key],
-      onChange: (next: string | null) => {
+  const decimals =
+    definition?.decimals ?? (currency === undefined ? undefined : format.moneyDecimals)
+  const end = (key: 'min' | 'max', name: string, startText: string) => (
+    <NumberField
+      label={<span className="sr-only">{name}</span>}
+      startText={startText}
+      value={range[key]}
+      onChange={(next) => {
         onChange({ ...range, [key]: next })
-      },
-      ...decimals,
-    }
-    const width = inline ? (currency === undefined ? 'w-25' : 'w-35') : 'min-w-0 flex-1'
-    return currency === undefined ? (
-      <NumberField {...common} className={width} />
-    ) : (
-      <MoneyField {...common} currency={currency} className={width} />
-    )
-  }
+      }}
+      {...(decimals === undefined ? {} : { decimals })}
+      className={inline ? 'min-w-35' : 'min-w-35 flex-auto'}
+    />
+  )
   return (
     <div role="group" aria-labelledby={labelId} className="flex min-w-0 flex-col">
       <span id={labelId} className={cn('text-sm font-semibold text-primary', TEXT_DIRECTION)}>
-        {filter.label}
+        {currency === undefined
+          ? filter.label
+          : messages['filter.rangeLabel'](filter.label, currency)}
       </span>
       {/* Each field keeps its own 4px under its (hidden) label: the pair stands 4px under the
-          filter's label, as every other filter's control does. */}
-      <div className="flex gap-2">
-        {end('min', messages['filter.rangeFrom'](filter.label), messages['filter.from'])}
-        {end('max', messages['filter.rangeTo'](filter.label), messages['filter.to'])}
+          filter's label, as every other filter's control does. The typing areas are as wide as
+          their text (field-sizing, from an automatic basis), so a field grows instead of cutting
+          its number, and the pair wraps when it no longer fits. */}
+      <div className="flex flex-wrap gap-2 [&_input]:flex-auto [&_input]:field-sizing-content">
+        {end('min', messages['filter.rangeFrom'](filter.label, currency), messages['filter.from'])}
+        {end('max', messages['filter.rangeTo'](filter.label, currency), messages['filter.to'])}
       </div>
     </div>
   )
