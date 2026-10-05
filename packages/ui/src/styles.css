@@ -26,6 +26,14 @@
     text-align: match-parent;
   }
 }
+/* A field's typed text whose direction comes from its content (dir="auto") stays at the page's
+   start side, as text blocks do (P3.6c). */
+@utility text-match-parent {
+  text-align: -webkit-match-parent;
+  @supports (text-align: match-parent) {
+    text-align: match-parent;
+  }
+}
 @utility bidi-isolate {
   unicode-bidi: plaintext;
 }

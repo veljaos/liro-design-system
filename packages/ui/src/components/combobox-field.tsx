@@ -1,6 +1,7 @@
 import { Check } from 'lucide-react'
 import { useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
 import {
+  AUTO_DIRECTION,
   READ_ONLY,
   FLOATING,
   FLOATING_MOTION,
@@ -232,7 +233,14 @@ export function ComboboxField(props: ComboboxFieldProps) {
       {(control) => {
         const attributes = controlAttributes(control, messages['field.readOnly'])
         if (control.readOnly) {
-          return <Input {...attributes} value={value?.label ?? ''} className={READ_ONLY} />
+          return (
+            <Input
+              {...attributes}
+              value={value?.label ?? ''}
+              dir={AUTO_DIRECTION.dir}
+              className={cn(AUTO_DIRECTION.className, READ_ONLY)}
+            />
+          )
         }
         const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
           if ((MOVE_KEYS as readonly string[]).includes(event.key)) {
@@ -271,6 +279,8 @@ export function ComboboxField(props: ComboboxFieldProps) {
                     visible && active >= 0 ? optionId(listId, active) : undefined
                   }
                   autoComplete="off"
+                  dir={AUTO_DIRECTION.dir}
+                  className={AUTO_DIRECTION.className}
                   value={query ?? value?.label ?? ''}
                   {...(props.placeholder === undefined ? {} : { placeholder: props.placeholder })}
                   onChange={(event) => {

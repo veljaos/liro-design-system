@@ -91,3 +91,11 @@ export const TEXT_DIRECTION = 'bidi-content'
  * moved to the wrong side of a right-to-left cell.
  */
 export const TEXT_ISOLATE = 'bidi-isolate'
+
+/**
+ * Props of a field's typing area for free text (P3.6c): its direction from the content
+ * (`dir="auto"`), so "Alfa Trade d.o.o." keeps its full stop at the end in a right-to-left form,
+ * while the text stays at the page's start side (`text-align: match-parent`). Numbers, money,
+ * dates and codes are written left to right instead.
+ */
+export const AUTO_DIRECTION = { dir: 'auto', className: 'text-match-parent' } as const

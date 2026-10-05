@@ -143,9 +143,11 @@ function TextFilter({ filter, value, onChange, inline, delay }: ControlProps) {
 }
 
 /**
- * A number range: the filter's label over two fields labelled "From" and "To" (messages), 8px
- * apart (P3.6: they were two unlabelled boxes). With a `currency` they are MoneyFields, 140px each
- * in the row (owner); otherwise NumberFields, 100px each.
+ * A number range: the filter's label over two fields, 8px apart, so it lines up with the other
+ * filters (P3.6c, owner). "From" and "To" (messages) are short texts inside each field at its
+ * start, as the currency is at its side; the fields are named "Total from" / "Total to"
+ * (`filter.rangeFrom` / `filter.rangeTo`). With a `currency` they are MoneyFields, 140px each in
+ * the row (owner); otherwise NumberFields, 100px each. The same in the drawer.
  */
 function NumberRangeFilter({ filter, value, onChange, inline }: ControlProps) {
   const { messages } = useLiro()
@@ -154,9 +156,10 @@ function NumberRangeFilter({ filter, value, onChange, inline }: ControlProps) {
   const definition = filter.type === 'numberRange' ? filter : undefined
   const decimals = definition?.decimals === undefined ? {} : { decimals: definition.decimals }
   const currency = definition?.currency
-  const end = (key: 'min' | 'max', name: string) => {
+  const end = (key: 'min' | 'max', name: string, startText: string) => {
     const common = {
-      label: name,
+      label: <span className="sr-only">{name}</span>,
+      startText,
       value: range[key],
       onChange: (next: string | null) => {
         onChange({ ...range, [key]: next })
@@ -175,9 +178,11 @@ function NumberRangeFilter({ filter, value, onChange, inline }: ControlProps) {
       <span id={labelId} className={cn('text-sm font-semibold text-primary', TEXT_DIRECTION)}>
         {filter.label}
       </span>
-      <div className="mt-1 flex gap-2">
-        {end('min', messages['filter.from'])}
-        {end('max', messages['filter.to'])}
+      {/* Each field keeps its own 4px under its (hidden) label: the pair stands 4px under the
+          filter's label, as every other filter's control does. */}
+      <div className="flex gap-2">
+        {end('min', messages['filter.rangeFrom'](filter.label), messages['filter.from'])}
+        {end('max', messages['filter.rangeTo'](filter.label), messages['filter.to'])}
       </div>
     </div>
   )
@@ -236,6 +241,8 @@ function FilterControl(props: ControlProps) {
       return (
         <DateRangeField
           label={filter.label}
+          placeholder={messages['filter.from']}
+          endPlaceholder={messages['filter.to']}
           value={(value ?? { start: null, end: null }) as DateRange}
           onChange={onChange}
           className={width}

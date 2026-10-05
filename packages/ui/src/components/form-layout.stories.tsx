@@ -494,7 +494,15 @@ export const EnglishInRtl: Story = {
       >
         <FormSection title="Customer (main office)" description="3 fields are required.">
           <TextField label="Name" defaultValue="Alfa Trade d.o.o." />
-          <TextField label="Tax number" />
+          <TextField label="Tax number" direction="ltr" defaultValue="100123456" />
+          <SelectField
+            label="Payment terms"
+            options={[
+              { value: '30', label: '30 days' },
+              { value: '60', label: '60 days' },
+            ]}
+            defaultValue="30"
+          />
         </FormSection>
       </FormActions>
     </StoryProvider>
@@ -505,6 +513,16 @@ export const EnglishInRtl: Story = {
       canvas.getByText('Customer (main office)'),
       canvas.getByText('Unsaved changes'),
     )
+    // Free text takes its direction from itself ("Alfa Trade d.o.o." keeps its full stop at the
+    // end) and stays at the page's start side; a code is left to right; a chosen option reads
+    // as written.
+    const name = canvas.getByDisplayValue('Alfa Trade d.o.o.')
+    await expect(name).toHaveAttribute('dir', 'auto')
+    await expect(getComputedStyle(name).textAlign).toBe('right')
+    await expect(canvas.getByDisplayValue('100123456')).toHaveAttribute('dir', 'ltr')
+    await expect(
+      canvas.getAllByText('30 days').some((element) => element.getAttribute('dir') === 'auto'),
+    ).toBe(true)
     await settle()
   },
 }

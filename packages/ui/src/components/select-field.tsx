@@ -104,7 +104,9 @@ export function SelectField(props: SelectFieldProps) {
                 aria-invalid={control.invalid || undefined}
                 className={cn('w-full', showClear && 'pe-9 [&>svg]:hidden')}
               >
+                {/* The chosen option's text takes its direction from itself (P3.6c). */}
                 <SelectValue
+                  dir="auto"
                   {...(props.placeholder === undefined ? {} : { placeholder: props.placeholder })}
                 />
               </SelectTrigger>

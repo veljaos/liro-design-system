@@ -1,6 +1,12 @@
 import { X } from 'lucide-react'
 import { useId, useRef, useState, type KeyboardEvent } from 'react'
-import { BUTTON_RESET, FOCUS_RING, INPUT, TEXT_DIRECTION } from '../primitives/classes'
+import {
+  AUTO_DIRECTION,
+  BUTTON_RESET,
+  FOCUS_RING,
+  INPUT,
+  TEXT_DIRECTION,
+} from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 import { ComboboxList, ComboboxPopover, optionId, type ComboboxOption } from './combobox-field'
@@ -95,7 +101,9 @@ export function MultiSelectField(props: MultiSelectFieldProps) {
                 !removable && 'pe-[0.8em]',
               )}
             >
-              <span className="truncate">{option.label}</span>
+              <span dir="auto" className="truncate">
+                {option.label}
+              </span>
               {removable && (
                 <button
                   type="button"
@@ -205,12 +213,14 @@ export function MultiSelectField(props: MultiSelectFieldProps) {
                     aria-required={control.required || undefined}
                     disabled={control.disabled}
                     autoComplete="off"
+                    dir={AUTO_DIRECTION.dir}
                     value={query}
                     {...(props.placeholder !== undefined && values.length === 0
                       ? { placeholder: props.placeholder }
                       : {})}
                     className={cn(
                       'm-0 h-[1.6em] flex-1 border-0 bg-transparent p-0 font-sans text-sm text-inherit outline-none placeholder:text-tertiary disabled:cursor-not-allowed',
+                      AUTO_DIRECTION.className,
                       summaryText === null ? 'min-w-25' : 'min-w-4',
                     )}
                     onChange={(event) => {

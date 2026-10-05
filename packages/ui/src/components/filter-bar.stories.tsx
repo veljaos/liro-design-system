@@ -104,8 +104,8 @@ const ACTIONS = (
 
 /**
  * Inline choices stay one control high (P3.6): two customers read "2 selected" on one line (the
- * pills are edited in the list or in the drawer), and the amount range has "From" and "To" money
- * fields.
+ * pills are edited in the list or in the drawer); the amount range has one label over two money
+ * fields with "From" and "To" inside them (P3.6c), and the empty date range reads "From – To".
  */
 export const InlineChoices: Story = {
   render: () => (
@@ -120,8 +120,20 @@ export const InlineChoices: Story = {
     await expect(canvas.getByText('2 selected')).toBeVisible()
     const frame = canvasElement.querySelector('[data-slot="multi-select"]')
     await expect(frame?.getBoundingClientRect().height).toBe(36)
-    await expect(canvas.getByRole('textbox', { name: 'From EUR' })).toBeVisible()
-    await expect(canvas.getByRole('textbox', { name: 'To EUR' })).toBeVisible()
+    // One label over the pair; "From" and "To" inside the fields, which are named by the label.
+    const from = canvas.getByRole('textbox', { name: 'Total from EUR' })
+    await expect(from).toBeVisible()
+    await expect(canvas.getByRole('textbox', { name: 'Total to EUR' })).toBeVisible()
+    await expect(canvas.queryByText('Total from')).toBeNull()
+    // Every control's top edge on one line: the pair stands under its label as the others do.
+    const select = canvas.getByRole('combobox', { name: 'Status' })
+    const box = from.closest('[data-slot="money"]') ?? from
+    await expect(box.getBoundingClientRect().top).toBeCloseTo(select.getBoundingClientRect().top, 0)
+    // The empty date range: "From – To", faint placeholders, no lone dash.
+    await expect(canvas.getByRole('textbox', { name: 'Issue date Start' })).toHaveAttribute(
+      'placeholder',
+      'From',
+    )
     await settle()
   },
 }

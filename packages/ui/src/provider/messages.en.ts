@@ -46,6 +46,8 @@ export const messagesEn: LiroMessages = {
   'filter.no': 'No',
   'filter.from': 'From',
   'filter.to': 'To',
+  'filter.rangeFrom': (label) => `${label} from`,
+  'filter.rangeTo': (label) => `${label} to`,
   'filter.sort': 'Sort',
   'filter.ascending': 'Ascending',
   'filter.descending': 'Descending',

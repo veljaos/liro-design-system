@@ -1,5 +1,5 @@
 import type { ChangeEvent, FocusEventHandler, HTMLInputAutoCompleteAttribute } from 'react'
-import { READ_ONLY } from '../primitives/classes'
+import { AUTO_DIRECTION, READ_ONLY } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { Input } from '../primitives/input'
 import { Textarea } from '../primitives/textarea'
@@ -26,6 +26,12 @@ export interface TextFieldProps extends FieldBaseProps, TextValueProps {
   type?: 'text' | 'email' | 'tel' | 'url' | 'search'
   /** The browser's autofill hint, e.g. 'email', 'organization'. */
   autoComplete?: HTMLInputAutoCompleteAttribute
+  /**
+   * 'ltr' for text written left to right in every language: a tax number, an IBAN, a code.
+   * Default 'auto': the direction of the text itself, at the page's start side. E-mail,
+   * telephone and URL fields are always 'ltr'.
+   */
+  direction?: 'auto' | 'ltr'
 }
 
 function valueProps(props: TextValueProps) {
@@ -43,17 +49,24 @@ function valueProps(props: TextValueProps) {
  * The value is plain text; paste is always allowed.
  */
 export function TextField(props: TextFieldProps) {
-  const { messages } = useLiro()
+  const { messages, direction } = useLiro()
+  const type = props.type ?? 'text'
+  const ltr = props.direction === 'ltr' || type === 'email' || type === 'tel' || type === 'url'
   return (
     <Field {...fieldProps(props)}>
       {(control) => (
         <Input
           {...controlAttributes(control, messages['field.readOnly'])}
           {...valueProps(props)}
-          type={props.type ?? 'text'}
+          type={type}
           {...(props.autoComplete === undefined ? {} : { autoComplete: props.autoComplete })}
           onChange={(event: ChangeEvent<HTMLInputElement>) => props.onChange?.(event.target.value)}
-          className={cn(control.readOnly && READ_ONLY)}
+          // Left to right as NumberField: at the field's start, which is its end in right-to-left.
+          dir={ltr ? 'ltr' : AUTO_DIRECTION.dir}
+          className={cn(
+            ltr ? direction === 'rtl' && 'text-end' : AUTO_DIRECTION.className,
+            control.readOnly && READ_ONLY,
+          )}
         />
       )}
     </Field>
@@ -78,7 +91,8 @@ export function TextAreaField(props: TextAreaFieldProps) {
           onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
             props.onChange?.(event.target.value)
           }
-          className={cn(control.readOnly && READ_ONLY)}
+          dir={AUTO_DIRECTION.dir}
+          className={cn(AUTO_DIRECTION.className, control.readOnly && READ_ONLY)}
         />
       )}
     </Field>

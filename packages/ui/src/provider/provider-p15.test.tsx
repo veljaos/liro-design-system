@@ -109,6 +109,8 @@ describe('messages', () => {
       'filter.from',
       'filter.no',
       'filter.pill',
+      'filter.rangeFrom',
+      'filter.rangeTo',
       'filter.remove',
       'filter.search',
       'filter.sort',

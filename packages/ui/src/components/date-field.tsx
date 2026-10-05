@@ -271,6 +271,12 @@ export interface DateRangeFieldProps extends FieldBaseProps, DateInputProps {
   startName?: string
   /** The form field name of the end. */
   endName?: string
+  /**
+   * Shown in the end while the range is empty; `placeholder` is the start's. With both ("From",
+   * "To") the empty field reads "From – To", the dash as faint as they are; with neither it is
+   * empty, without a lone dash.
+   */
+  endPlaceholder?: string
 }
 
 /**
@@ -337,7 +343,21 @@ export function DateRangeField(props: DateRangeFieldProps) {
         // Chromium on Linux cut its last digit); a date Intl writes with right-to-left marks
         // (Arabic) stays right to left.
         const startTyping = { ...entryAttributes(start, props, control.readOnly), dir: 'auto' }
-        const endTyping = { ...entryAttributes(end, props, control.readOnly), dir: 'auto' }
+        const endTyping = {
+          ...entryAttributes(
+            end,
+            {
+              ...(props.onBlur === undefined ? {} : { onBlur: props.onBlur }),
+              ...(props.endPlaceholder === undefined ? {} : { placeholder: props.endPlaceholder }),
+            },
+            control.readOnly,
+          ),
+          dir: 'auto',
+        }
+        // Empty: no text in either end. The dash stands between two placeholders, faint, or not
+        // at all.
+        const empty = start.text === '' && end.text === ''
+        const placeholders = props.placeholder !== undefined && props.endPlaceholder !== undefined
         const startLabel = `${nameId}-start`
         const endLabel = `${nameId}-end`
         const names = (
@@ -350,11 +370,15 @@ export function DateRangeField(props: DateRangeFieldProps) {
             </span>
           </>
         )
-        const separator = (
-          <span aria-hidden="true" className="shrink-0 px-1 text-sm text-secondary">
-            –
-          </span>
-        )
+        const separator =
+          empty && !placeholders ? null : (
+            <span
+              aria-hidden="true"
+              className={cn('shrink-0 px-1 text-sm', empty ? 'text-tertiary' : 'text-secondary')}
+            >
+              –
+            </span>
+          )
         if (control.readOnly) {
           return (
             <div className="flex h-control items-center px-3 font-sans text-sm text-primary">
