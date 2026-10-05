@@ -185,7 +185,7 @@ export function CursorPagination(props: CursorPaginationProps) {
     <div
       className={cn('flex flex-wrap items-center justify-between gap-2 font-sans', props.className)}
     >
-      <div className="text-sm text-secondary">{props.count}</div>
+      <div className={cn('text-sm text-secondary', TEXT_DIRECTION)}>{props.count}</div>
       <div className="flex items-center gap-2">
         {control(messages['table.previous'], props.hasPrevious, props.onPrevious, ChevronLeft)}
         {control(messages['table.next'], props.hasNext, props.onNext, ChevronRight)}

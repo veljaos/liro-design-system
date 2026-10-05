@@ -450,7 +450,7 @@ export const Phone: Story = {
 function LayoutChange() {
   const [phone, setPhone] = useState(false)
   return (
-    <div className="flex max-w-[390px] flex-col gap-4">
+    <div className="flex flex-col gap-4">
       <SwitchField label="Phone layout" checked={phone} onChange={setPhone} />
       <Lines initial={FILLED.slice(0, 2)} layout={phone ? 'phone' : 'desktop'} />
     </div>

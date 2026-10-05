@@ -124,7 +124,10 @@ export const KnownProgress: Story = {
     >
       <div role="status" className="flex items-center gap-4">
         <ProgressBar label="Sending 24 invoices" value={8} max={24} className="flex-1" />
-        <span className="shrink-0 text-sm tabular-nums">8 / 24</span>
+        {/* A fraction reads left to right in every language. */}
+        <span dir="ltr" className="shrink-0 text-sm tabular-nums">
+          8 / 24
+        </span>
       </div>
     </Dialog>
   ),
