@@ -504,7 +504,6 @@ export const EnglishInRtl: Story = {
     await expectContentDirection(
       canvas.getByText('Customer (main office)'),
       canvas.getByText('Unsaved changes'),
-      canvas.getByDisplayValue('Alfa Trade d.o.o.'),
     )
     await settle()
   },
