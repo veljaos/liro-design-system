@@ -582,6 +582,7 @@ export const EnglishInRtl: Story = {
     await expectContentDirection(
       await canvas.findByText('2 selected'),
       canvas.getByText('Amount (EUR)'),
+      canvas.getAllByText('Alfa Trade d.o.o.')[0] ?? canvasElement,
     )
     await settle()
   },

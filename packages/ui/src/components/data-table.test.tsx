@@ -50,7 +50,9 @@ const render = (props: Partial<DataTableProps<Line>> = {}) =>
 
 /** The row names in the order the table draws them. */
 const order = (html: string) =>
-  [...html.matchAll(/<td[^>]*>(Alpha|Beta|Gamma)<\/td>/g)].map((match) => match[1])
+  [...html.matchAll(/<td[^>]*><span[^>]*>(Alpha|Beta|Gamma)<\/span><\/td>/g)].map(
+    (match) => match[1],
+  )
 
 describe('formatCount', () => {
   it('shows the exact number up to the threshold and "More than" above it', () => {

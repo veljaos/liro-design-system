@@ -21,7 +21,7 @@ import {
   type ReactNode,
 } from 'react'
 import { Checkbox } from '../primitives/checkbox'
-import { BUTTON_RESET, FOCUS_RING, TEXT_DIRECTION } from '../primitives/classes'
+import { BUTTON_RESET, FOCUS_RING, TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { Skeleton } from '../primitives/skeleton'
 import { useLiro } from '../provider/liro-provider'
@@ -536,7 +536,10 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
                 oneLine && 'truncate',
               )}
             >
-              <table.FlexRender cell={cell} />
+              {/* The application's content takes its direction from itself; the cell keeps its side. */}
+              <span className={TEXT_ISOLATE}>
+                <table.FlexRender cell={cell} />
+              </span>
             </td>
           )
         })}
@@ -853,7 +856,7 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
       </div>
       {cardTotals}
       {props.rowLimitMessage !== undefined && (
-        <div className="text-sm text-secondary">{props.rowLimitMessage}</div>
+        <div className={cn('text-sm text-secondary', TEXT_DIRECTION)}>{props.rowLimitMessage}</div>
       )}
       {paging ? (
         <CursorPagination
@@ -864,7 +867,9 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
           count={countText}
         />
       ) : (
-        countText !== undefined && <div className="text-sm text-secondary">{countText}</div>
+        countText !== undefined && (
+          <div className={cn('text-sm text-secondary', TEXT_DIRECTION)}>{countText}</div>
+        )
       )}
     </div>
   )
