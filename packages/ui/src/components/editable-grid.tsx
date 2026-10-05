@@ -1,5 +1,14 @@
-import { CircleAlert, Plus, TriangleAlert } from 'lucide-react'
-import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
+import { CircleAlert, Plus, Trash2, TriangleAlert } from 'lucide-react'
+import {
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type ReactNode,
+} from 'react'
+import { TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 import { ActionButton } from './actions'
@@ -15,8 +24,9 @@ import {
 import { ShortcutHint } from './navigation'
 import { NumberField } from './number-field'
 import { SelectField, type SelectOption } from './select-field'
-import { SettlingValue } from './settling-value'
+import { SettlingMemory, SettlingValue, type SettlingMemoryValue } from './settling-value'
 import { TextField } from './text-field'
+import { EntryDraftSlot, type EntryDraft } from './use-entry'
 import { usePhone } from './use-phone'
 
 /*
@@ -40,6 +50,17 @@ import { usePhone } from './use-phone'
  *   danger border.
  * - Totals from props, shown with SettlingValue, under a 2px border.strong line. Nothing is
  *   computed: the application sums, checks the balance and sends the messages.
+ *
+ * On phones (below 48em; P3.6, owner: the old behaviour — a table scrolling sideways is not usable
+ * there):
+ * - every line is a card (border.default, radius md, padding sm) with its fields stacked, each
+ *   under its column's label (xs, text.tertiary, 2px gap), the line's messages under the fields,
+ *   and an xs "Remove line" button (Trash2, destructive family, menu weight) at the card's end;
+ * - the totals and the footer (the balance) stand in a card sticky at the TOP (raised, border,
+ *   radius md, padding xs): the balance is the number the operator watches, and a long entry
+ *   would push a total at the bottom below the screen;
+ * - "Add line" under the cards, without the shortcut hints (no hardware keyboard); the on-screen
+ *   keyboard's "next" goes through a line's fields, then to the next line.
  */
 
 interface ColumnBase<Row> {
@@ -115,11 +136,14 @@ export interface EditableGridProps<Row> {
   messages?: Readonly<Record<string, readonly GridMessage[]>>
   /** Totals by column id, from the application. */
   totals?: Readonly<Record<string, GridTotal>>
-  /** Shown in the totals row's first column when it has no total of its own. */
+  /**
+   * Shown in the totals row's first column when it has no total of its own; on phones, the
+   * title of the totals card.
+   */
   totalsLabel?: string
-  /** Under the grid at the end: the balance or a summary, from the application. */
+  /** The balance or a summary, from the application: under the grid, on phones in the totals card. */
   footer?: ReactNode
-  /** Forces the desktop or the phone keyboard; default: by the viewport (48em). */
+  /** Forces the desktop table or the phone cards; default: by the viewport (48em). */
   layout?: 'desktop' | 'phone'
   className?: string
 }
@@ -138,6 +162,39 @@ function isEditable<Row>(column: EditableGridColumn<Row>): boolean {
   return column.type !== 'display'
 }
 
+function Total({ total, since }: { total: GridTotal; since: SettlingMemoryValue }) {
+  return (
+    <SettlingMemory.Provider value={since}>
+      <SettlingValue
+        value={total.value}
+        {...(total.pending === undefined ? {} : { pending: total.pending })}
+        {...(total.currency === undefined ? {} : { currency: total.currency })}
+        {...(total.decimals === undefined ? {} : { decimals: total.decimals })}
+      />
+    </SettlingMemory.Provider>
+  )
+}
+
+function MessageList({ list, ids }: { list: readonly GridMessage[]; ids: readonly string[] }) {
+  return (
+    <ul className="m-0 flex list-none flex-col gap-0.5 p-0">
+      {list.map((message, index) => {
+        const tone = MESSAGE_TONE[message.tone]
+        return (
+          <li
+            key={index}
+            id={ids[index]}
+            className={cn('flex items-start gap-1 text-xs leading-tight', tone.text)}
+          >
+            <tone.Icon aria-hidden="true" className="mt-px size-3 shrink-0" />
+            <span className={TEXT_DIRECTION}>{message.text}</span>
+          </li>
+        )
+      })}
+    </ul>
+  )
+}
+
 /**
  * Lines of a document or journal entry, entered from the keyboard. Controlled: the application
  * keeps the rows, adds and removes them when asked, computes totals and checks; the grid shows.
@@ -146,10 +203,16 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
   const { messages, direction } = useLiro()
   const viewportPhone = usePhone()
   const phone = props.layout === undefined ? viewportPhone : props.layout === 'phone'
-  const tableRef = useRef<HTMLTableElement>(null)
+  const rootRef = useRef<HTMLDivElement>(null)
   const idBase = useId()
   const pending = useRef<{ row: number; column: number } | null>(null)
   const [unreadable, setUnreadable] = useState<Readonly<Record<string, boolean>>>({})
+  // Typed text of the number and date cells, kept while the layout changes (see EntryDraftSlot).
+  const drafts = useRef(new Map<string, EntryDraft>()).current
+  // Each total's pending start and reserved width, kept while the layout changes (see
+  // SettlingMemory).
+  const pendingSince = useRef(new Map<string, number>()).current
+  const totalWidths = useRef(new Map<string, number>()).current
   const { rows, columns } = props
   const editable = columns.filter(isEditable)
   const minRows = props.minRows ?? 1
@@ -158,12 +221,13 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
   const lineCount = rows.length
 
   const focusCell = (row: number, column: number) => {
-    const cell = tableRef.current?.querySelector(
+    const cell = rootRef.current?.querySelector(
       `[data-grid-row="${String(row)}"][data-grid-column="${String(column)}"]`,
     )
     const target = cell?.querySelector<HTMLElement>(FOCUSABLE)
     target?.focus()
     if (target instanceof HTMLInputElement) target.select()
+    return target
   }
 
   // After a row is added or removed, the focus goes where the action asked, once the rows arrive.
@@ -174,11 +238,54 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
     focusCell(target.row, target.column)
   }, [lineCount])
 
+  // The cell that has the focus, kept while the layout changes between the table and the cards
+  // (a resize across 48em, a rotated tablet): the old cell's field leaves the page with the focus,
+  // and the same cell of the new layout takes it back, with the same selection. A focus anywhere
+  // else forgets it.
+  const focused = useRef<{ row: number; column: number; element: Element } | null>(null)
+  useEffect(() => {
+    const onFocusIn = (event: FocusEvent) => {
+      const target = event.target instanceof Element ? event.target : null
+      const cell =
+        rootRef.current?.contains(target) === true ? target?.closest('[data-grid-row]') : null
+      focused.current =
+        cell === null || cell === undefined || target === null
+          ? null
+          : {
+              row: Number(cell.getAttribute('data-grid-row')),
+              column: Number(cell.getAttribute('data-grid-column')),
+              element: target,
+            }
+    }
+    document.addEventListener('focusin', onFocusIn)
+    return () => {
+      document.removeEventListener('focusin', onFocusIn)
+    }
+  }, [])
+  const shownPhone = useRef(phone)
+  useLayoutEffect(() => {
+    if (shownPhone.current === phone) return
+    shownPhone.current = phone
+    const last = focused.current
+    if (last === null || last.element.isConnected) return
+    const active = document.activeElement
+    if (active !== null && active !== document.body) return
+    const target = focusCell(last.row, last.column)
+    if (target instanceof HTMLInputElement && last.element instanceof HTMLInputElement) {
+      const { selectionStart, selectionEnd, selectionDirection } = last.element
+      if (selectionStart !== null && selectionEnd !== null) {
+        target.setSelectionRange(selectionStart, selectionEnd, selectionDirection ?? 'none')
+      }
+    }
+  }, [phone])
+
   // The on-screen keyboard shows "next" on every field of the grid.
   useEffect(() => {
-    tableRef.current?.querySelectorAll('input:not([type="hidden"])').forEach((input) => {
-      input.setAttribute('enterkeyhint', 'next')
-    })
+    rootRef.current
+      ?.querySelectorAll('[data-grid-row] input:not([type="hidden"])')
+      .forEach((input) => {
+        input.setAttribute('enterkeyhint', 'next')
+      })
   })
 
   const run = (action: GridAction) => {
@@ -195,6 +302,15 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
         pending.current = { row: action.focusRow, column: action.column }
       props.onRemoveRow(props.getRowId(row))
     }
+  }
+
+  const removeRow = (rowIndex: number) => {
+    run({
+      type: 'remove',
+      row: rowIndex,
+      focusRow: rowIndex < rows.length - 1 ? rowIndex : rowIndex - 1,
+      column: 0,
+    })
   }
 
   const onCellKey = (event: KeyboardEvent<HTMLElement>, row: number, column: number) => {
@@ -224,6 +340,25 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
     run(action)
   }
 
+  /** The keys of a cell, in a table cell and in a phone card. */
+  const cellKeys = (row: number, column: number) => ({
+    onKeyDownCapture: (event: KeyboardEvent<HTMLElement>) => {
+      // A closed select opens on Enter in Radix; in the grid Enter moves (Space, Alt+ArrowDown or
+      // the arrows open it).
+      if (
+        event.key === 'Enter' &&
+        event.target instanceof Element &&
+        event.target.closest('[data-slot="select-trigger"]') !== null &&
+        event.target.getAttribute('aria-expanded') !== 'true'
+      ) {
+        onCellKey(event, row, column)
+      }
+    },
+    onKeyDown: (event: KeyboardEvent<HTMLElement>) => {
+      onCellKey(event, row, column)
+    },
+  })
+
   const editor = (column: EditableGridColumn<Row>, row: Row, rowIndex: number, ids: string) => {
     const rowId = props.getRowId(row)
     const label = (
@@ -245,60 +380,74 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
     const validity = (valid: boolean) => {
       setUnreadable((current) => ({ ...current, [`${rowId}\n${column.id}`]: !valid }))
     }
-    switch (column.type) {
-      case 'text':
-        return <TextField {...common} value={column.value(row)} onChange={change} />
-      case 'number':
-        return (
-          <NumberField
-            {...common}
-            value={column.value(row)}
-            onChange={change}
-            onValidityChange={validity}
-            {...(column.decimals === undefined ? {} : { decimals: column.decimals })}
-          />
-        )
-      case 'select':
-        return (
-          <SelectField
-            {...common}
-            options={column.options}
-            value={column.value(row)}
-            onChange={change}
-          />
-        )
-      case 'combobox': {
-        const options = typeof column.options === 'function' ? column.options(row) : column.options
-        const search = column.onSearch
-        return (
-          <ComboboxField
-            {...common}
-            options={options}
-            value={column.value(row)}
-            onChange={change}
-            {...(search === undefined
-              ? {}
-              : {
-                  onSearch: (query: string) => {
-                    search(rowId, query)
-                  },
-                })}
-            loading={column.loading?.(row) === true}
-          />
-        )
+    const field = () => {
+      switch (column.type) {
+        case 'text':
+          return <TextField {...common} value={column.value(row)} onChange={change} />
+        case 'number':
+          return (
+            <NumberField
+              {...common}
+              value={column.value(row)}
+              onChange={change}
+              onValidityChange={validity}
+              {...(column.decimals === undefined ? {} : { decimals: column.decimals })}
+            />
+          )
+        case 'select':
+          return (
+            <SelectField
+              {...common}
+              options={column.options}
+              value={column.value(row)}
+              onChange={change}
+            />
+          )
+        case 'combobox': {
+          const options =
+            typeof column.options === 'function' ? column.options(row) : column.options
+          const search = column.onSearch
+          return (
+            <ComboboxField
+              {...common}
+              options={options}
+              value={column.value(row)}
+              onChange={change}
+              {...(search === undefined
+                ? {}
+                : {
+                    onSearch: (query: string) => {
+                      search(rowId, query)
+                    },
+                  })}
+              loading={column.loading?.(row) === true}
+            />
+          )
+        }
+        case 'date':
+          return (
+            <DateField
+              {...common}
+              value={column.value(row)}
+              onChange={change}
+              onValidityChange={validity}
+            />
+          )
+        case 'display':
+          return null
       }
-      case 'date':
-        return (
-          <DateField
-            {...common}
-            value={column.value(row)}
-            onChange={change}
-            onValidityChange={validity}
-          />
-        )
-      case 'display':
-        return null
     }
+    return (
+      <EntryDraftSlot.Provider
+        value={{
+          drafts,
+          key: `${rowId}
+${column.id}`,
+        }}
+      >
+        {field()}
+      </EntryDraftSlot.Provider>
+    )
   }
 
   /** The row's messages: the application's, then a line for each unreadable cell of the grid's own. */
@@ -323,182 +472,255 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
     return orderMessages([...(props.messages?.[rowId] ?? []), ...own])
   }
 
+  /** A row's id, messages and the ids that describe its fields. */
+  const rowParts = (row: Row) => {
+    const rowId = props.getRowId(row)
+    const list = rowMessages(row)
+    const messageIds = list.map((_, index) => `${idBase}-${rowId}-${String(index)}`)
+    return { rowId, list, messageIds, describedBy: messageIds.join(' ') }
+  }
+
   const hasTotals = props.totals !== undefined && Object.keys(props.totals).length > 0
   const minWidth = columns.reduce((sum, column) => sum + (column.width ?? 120), 0) + 44
 
+  const table = () => (
+    <div className="overflow-x-auto">
+      <table
+        aria-label={props.label}
+        className="w-full table-fixed border-collapse text-sm"
+        style={{ minWidth }}
+      >
+        <colgroup>
+          {columns.map((column) => (
+            <col
+              key={column.id}
+              {...(column.width === undefined ? {} : { style: { width: column.width } })}
+            />
+          ))}
+          <col style={{ width: 44 }} />
+        </colgroup>
+        <thead>
+          <tr>
+            {columns.map((column) => (
+              <th
+                key={column.id}
+                scope="col"
+                className={cn(
+                  CELL_BORDER,
+                  'bg-surface-sunken px-2 py-2 align-bottom font-semibold break-words',
+                  column.type === 'number' || (column.type === 'display' && column.align === 'end')
+                    ? 'text-end'
+                    : 'text-start',
+                )}
+              >
+                <span className={TEXT_ISOLATE}>{column.header}</span>
+              </th>
+            ))}
+            <td className={cn(CELL_BORDER, 'bg-surface-sunken')} />
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row, rowIndex) => {
+            const { rowId, list, messageIds, describedBy } = rowParts(row)
+            let editIndex = -1
+            return [
+              <tr key={rowId} data-row-id={rowId}>
+                {columns.map((column) => {
+                  if (column.type === 'display') {
+                    return (
+                      <td
+                        key={column.id}
+                        className={cn(
+                          CELL_BORDER,
+                          'px-2 py-1 align-middle break-words',
+                          column.align === 'end' ? 'text-end' : 'text-start',
+                          column.numeric === true && 'tabular-nums',
+                        )}
+                      >
+                        {column.display(row)}
+                      </td>
+                    )
+                  }
+                  editIndex += 1
+                  const at = editIndex
+                  return (
+                    <td
+                      key={column.id}
+                      data-slot="grid-cell"
+                      data-grid-row={rowIndex}
+                      data-grid-column={at}
+                      data-align={column.type === 'number' ? 'end' : 'start'}
+                      className={cn(CELL_BORDER, 'p-1 align-middle')}
+                      {...cellKeys(rowIndex, at)}
+                    >
+                      {editor(column, row, rowIndex, describedBy)}
+                    </td>
+                  )
+                })}
+                <td className={cn(CELL_BORDER, 'p-1 text-center align-middle')}>
+                  <CompactIconButton
+                    intent="cancel"
+                    label={messages['grid.removeLine'](rowIndex + 1)}
+                    disabled={!canRemove}
+                    onClick={() => {
+                      removeRow(rowIndex)
+                    }}
+                  />
+                </td>
+              </tr>,
+              list.length > 0 ? (
+                <tr key={`${rowId}-messages`} data-slot="grid-messages">
+                  <td colSpan={columns.length + 1} className={cn(CELL_BORDER, 'px-2 py-1')}>
+                    <MessageList list={list} ids={messageIds} />
+                  </td>
+                </tr>
+              ) : null,
+            ]
+          })}
+        </tbody>
+        {hasTotals && (
+          <tfoot>
+            <tr>
+              {columns.map((column, index) => {
+                const total = props.totals?.[column.id]
+                return (
+                  <td
+                    key={column.id}
+                    className={cn(
+                      CELL_BORDER,
+                      'border-t-2 border-t-strong bg-surface-sunken px-2 py-2 font-semibold',
+                      total === undefined ? 'text-start' : 'text-end',
+                    )}
+                  >
+                    {total !== undefined ? (
+                      <Total
+                        total={total}
+                        since={{ since: pendingSince, widest: totalWidths, key: column.id }}
+                      />
+                    ) : index === 0 ? (
+                      props.totalsLabel
+                    ) : null}
+                  </td>
+                )
+              })}
+              <td className={cn(CELL_BORDER, 'border-t-2 border-t-strong bg-surface-sunken')} />
+            </tr>
+          </tfoot>
+        )}
+      </table>
+    </div>
+  )
+
+  const cards = () => (
+    <>
+      {(hasTotals || props.footer !== undefined) && (
+        <div
+          data-slot="grid-totals"
+          className="sticky top-0 z-(--liro-layer-sticky) flex flex-col gap-1 rounded-md border border-solid border-default bg-surface-raised p-2 text-sm"
+        >
+          {props.totalsLabel !== undefined && (
+            <span className={cn('text-xs font-semibold text-secondary', TEXT_DIRECTION)}>
+              {props.totalsLabel}
+            </span>
+          )}
+          {hasTotals && (
+            <dl className="m-0 flex flex-col gap-1">
+              {columns.map((column) => {
+                const total = props.totals?.[column.id]
+                if (total === undefined) return null
+                return (
+                  <div key={column.id} className="flex items-baseline justify-between gap-4">
+                    <dt className={cn('text-secondary', TEXT_DIRECTION)}>{column.header}</dt>
+                    <dd className="m-0 font-semibold">
+                      <Total
+                        total={total}
+                        since={{ since: pendingSince, widest: totalWidths, key: column.id }}
+                      />
+                    </dd>
+                  </div>
+                )
+              })}
+            </dl>
+          )}
+          {props.footer !== undefined && <div>{props.footer}</div>}
+        </div>
+      )}
+      <ul aria-label={props.label} className="m-0 flex list-none flex-col gap-3 p-0">
+        {rows.map((row, rowIndex) => {
+          const { rowId, list, messageIds, describedBy } = rowParts(row)
+          let editIndex = -1
+          return (
+            <li
+              key={rowId}
+              data-row-id={rowId}
+              className="flex flex-col gap-3 rounded-md border border-solid border-default bg-surface-raised p-3"
+            >
+              {columns.map((column) => {
+                if (column.type === 'display') {
+                  return (
+                    <div key={column.id} className="flex flex-col gap-0.5">
+                      <span className={cn('text-xs text-tertiary', TEXT_DIRECTION)}>
+                        {column.header}
+                      </span>
+                      <div className={cn('text-sm', column.numeric === true && 'tabular-nums')}>
+                        {column.display(row)}
+                      </div>
+                    </div>
+                  )
+                }
+                editIndex += 1
+                const at = editIndex
+                return (
+                  <div
+                    key={column.id}
+                    data-slot="grid-card-cell"
+                    data-grid-row={rowIndex}
+                    data-grid-column={at}
+                    className="flex flex-col gap-0.5"
+                    {...cellKeys(rowIndex, at)}
+                  >
+                    {/* The field's own name is "Quantity, line 3" (screen readers); this is the visible one. */}
+                    <span
+                      aria-hidden="true"
+                      className={cn('text-xs text-tertiary', TEXT_DIRECTION)}
+                    >
+                      {column.header}
+                    </span>
+                    {editor(column, row, rowIndex, describedBy)}
+                  </div>
+                )
+              })}
+              {list.length > 0 && <MessageList list={list} ids={messageIds} />}
+              <div className="flex justify-end">
+                <ActionButton
+                  small
+                  action={{
+                    family: 'destructive',
+                    icon: Trash2,
+                    emphasis: 'menu',
+                    label: messages['grid.removeLine'](rowIndex + 1),
+                  }}
+                  disabled={!canRemove}
+                  onClick={() => {
+                    removeRow(rowIndex)
+                  }}
+                />
+              </div>
+            </li>
+          )
+        })}
+      </ul>
+    </>
+  )
+
   return (
     <div
+      ref={rootRef}
       data-slot="editable-grid"
       data-grid-direction={direction}
       className={cn('flex min-w-0 flex-col gap-2 font-sans text-primary', props.className)}
     >
-      <div className="overflow-x-auto">
-        <table
-          ref={tableRef}
-          aria-label={props.label}
-          className="w-full table-fixed border-collapse text-sm"
-          style={{ minWidth }}
-        >
-          <colgroup>
-            {columns.map((column) => (
-              <col
-                key={column.id}
-                {...(column.width === undefined ? {} : { style: { width: column.width } })}
-              />
-            ))}
-            <col style={{ width: 44 }} />
-          </colgroup>
-          <thead>
-            <tr>
-              {columns.map((column) => (
-                <th
-                  key={column.id}
-                  scope="col"
-                  className={cn(
-                    CELL_BORDER,
-                    'bg-surface-sunken px-2 py-2 align-bottom font-semibold break-words',
-                    column.type === 'number' ||
-                      (column.type === 'display' && column.align === 'end')
-                      ? 'text-end'
-                      : 'text-start',
-                  )}
-                >
-                  {column.header}
-                </th>
-              ))}
-              <td className={cn(CELL_BORDER, 'bg-surface-sunken')} />
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row, rowIndex) => {
-              const rowId = props.getRowId(row)
-              const list = rowMessages(row)
-              const messageIds = list.map((_, index) => `${idBase}-${rowId}-${String(index)}`)
-              let editIndex = -1
-              return [
-                <tr key={rowId} data-row-id={rowId}>
-                  {columns.map((column) => {
-                    if (column.type === 'display') {
-                      return (
-                        <td
-                          key={column.id}
-                          className={cn(
-                            CELL_BORDER,
-                            'px-2 py-1 align-middle break-words',
-                            column.align === 'end' ? 'text-end' : 'text-start',
-                            column.numeric === true && 'tabular-nums',
-                          )}
-                        >
-                          {column.display(row)}
-                        </td>
-                      )
-                    }
-                    editIndex += 1
-                    const at = editIndex
-                    return (
-                      <td
-                        key={column.id}
-                        data-slot="grid-cell"
-                        data-grid-row={rowIndex}
-                        data-grid-column={at}
-                        data-align={column.type === 'number' ? 'end' : 'start'}
-                        className={cn(CELL_BORDER, 'p-1 align-middle')}
-                        onKeyDownCapture={(event) => {
-                          // A closed select opens on Enter in Radix; in the grid Enter moves
-                          // (Space, Alt+ArrowDown or the arrows open it).
-                          if (
-                            event.key === 'Enter' &&
-                            event.target instanceof Element &&
-                            event.target.closest('[data-slot="select-trigger"]') !== null &&
-                            event.target.getAttribute('aria-expanded') !== 'true'
-                          ) {
-                            onCellKey(event, rowIndex, at)
-                          }
-                        }}
-                        onKeyDown={(event) => {
-                          onCellKey(event, rowIndex, at)
-                        }}
-                      >
-                        {editor(column, row, rowIndex, messageIds.join(' '))}
-                      </td>
-                    )
-                  })}
-                  <td className={cn(CELL_BORDER, 'p-1 text-center align-middle')}>
-                    <CompactIconButton
-                      intent="cancel"
-                      label={messages['grid.removeLine'](rowIndex + 1)}
-                      disabled={!canRemove}
-                      onClick={() => {
-                        run({
-                          type: 'remove',
-                          row: rowIndex,
-                          focusRow: rowIndex < rows.length - 1 ? rowIndex : rowIndex - 1,
-                          column: 0,
-                        })
-                      }}
-                    />
-                  </td>
-                </tr>,
-                list.length > 0 ? (
-                  <tr key={`${rowId}-messages`} data-slot="grid-messages">
-                    <td colSpan={columns.length + 1} className={cn(CELL_BORDER, 'px-2 py-1')}>
-                      <ul className="m-0 flex list-none flex-col gap-0.5 p-0">
-                        {list.map((message, index) => {
-                          const tone = MESSAGE_TONE[message.tone]
-                          return (
-                            <li
-                              key={index}
-                              id={messageIds[index]}
-                              className={cn(
-                                'flex items-start gap-1 text-xs leading-tight',
-                                tone.text,
-                              )}
-                            >
-                              <tone.Icon aria-hidden="true" className="mt-px size-3 shrink-0" />
-                              <span>{message.text}</span>
-                            </li>
-                          )
-                        })}
-                      </ul>
-                    </td>
-                  </tr>
-                ) : null,
-              ]
-            })}
-          </tbody>
-          {hasTotals && (
-            <tfoot>
-              <tr>
-                {columns.map((column, index) => {
-                  const total = props.totals?.[column.id]
-                  return (
-                    <td
-                      key={column.id}
-                      className={cn(
-                        CELL_BORDER,
-                        'border-t-2 border-t-strong bg-surface-sunken px-2 py-2 font-semibold',
-                        total === undefined ? 'text-start' : 'text-end',
-                      )}
-                    >
-                      {total !== undefined ? (
-                        <SettlingValue
-                          value={total.value}
-                          {...(total.pending === undefined ? {} : { pending: total.pending })}
-                          {...(total.currency === undefined ? {} : { currency: total.currency })}
-                          {...(total.decimals === undefined ? {} : { decimals: total.decimals })}
-                        />
-                      ) : index === 0 ? (
-                        props.totalsLabel
-                      ) : null}
-                    </td>
-                  )
-                })}
-                <td className={cn(CELL_BORDER, 'border-t-2 border-t-strong bg-surface-sunken')} />
-              </tr>
-            </tfoot>
-          )}
-        </table>
-      </div>
+      {phone ? cards() : table()}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3">
           <ActionButton
@@ -514,18 +736,20 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
               run({ type: 'add', at: rows.length, column: 0 })
             }}
           />
-          <span className="flex flex-wrap items-center gap-3 text-xs text-secondary">
-            <span className="flex items-center gap-1">
-              {messages['grid.insertLine']}
-              <ShortcutHint keys={[messages['grid.modifierKey'], messages['grid.enterKey']]} />
+          {!phone && (
+            <span className="flex flex-wrap items-center gap-3 text-xs text-secondary">
+              <span className="flex items-center gap-1">
+                {messages['grid.insertLine']}
+                <ShortcutHint keys={[messages['grid.modifierKey'], messages['grid.enterKey']]} />
+              </span>
+              <span className="flex items-center gap-1">
+                {messages['grid.deleteLine']}
+                <ShortcutHint keys={[messages['grid.modifierKey'], messages['grid.deleteKey']]} />
+              </span>
             </span>
-            <span className="flex items-center gap-1">
-              {messages['grid.deleteLine']}
-              <ShortcutHint keys={[messages['grid.modifierKey'], messages['grid.deleteKey']]} />
-            </span>
-          </span>
+          )}
         </div>
-        {props.footer !== undefined && <div className="ms-auto">{props.footer}</div>}
+        {!phone && props.footer !== undefined && <div className="ms-auto">{props.footer}</div>}
       </div>
     </div>
   )

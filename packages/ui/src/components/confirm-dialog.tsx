@@ -2,6 +2,7 @@ import { TriangleAlert } from 'lucide-react'
 import { useState, type ReactElement, type ReactNode } from 'react'
 import { ButtonPrimitive } from '../primitives/button'
 import { cn } from '../primitives/cn'
+import { TEXT_DIRECTION } from '../primitives/classes'
 import {
   Dialog as DialogRoot,
   DialogCloseButton,
@@ -198,7 +199,7 @@ function ConfirmFrame(
             )}
           >
             <TitleIcon aria-hidden="true" className="size-4.5 shrink-0" />
-            <span>{props.title}</span>
+            <span className={TEXT_DIRECTION}>{props.title}</span>
           </DialogTitle>
           {!busy && <DialogCloseButton label={messages['dialog.close']} />}
         </div>

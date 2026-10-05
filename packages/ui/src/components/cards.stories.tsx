@@ -1,9 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { within } from 'storybook/test'
 import { settle } from '../primitives/story-helpers'
 import { Button } from './button'
 import { Card, KeyValueList, SectionCard, type KeyValueGroup, type KeyValueItem } from './cards'
 import { ARABIC, JAPANESE, LONG } from './field-story-data'
+import { PersonName } from './person'
 import { StatusBadge } from './status-badge'
+import { expectContentDirection, StoryProvider } from './story-frames'
 
 const meta = {
   title: 'Components/Display/Cards',
@@ -182,4 +185,39 @@ export const Japanese: Story = {
       </SectionCard>
     </div>
   ),
+}
+
+/**
+ * English in a right-to-left page (P3.6): the card title and description, the labels and a
+ * person's line keep their own order; labels stay at the start (the right), values at the end.
+ */
+export const EnglishInRtl: Story = {
+  render: () => (
+    <StoryProvider locale="ar">
+      <SectionCard
+        title="Customer (main office)"
+        description="Last changed 3 days ago."
+        className="max-w-150"
+      >
+        <KeyValueList
+          columns={1}
+          items={[
+            { label: 'Payment terms:', value: '30 days' },
+            { label: 'Credit limit (EUR)', value: '12.345,60', numeric: true },
+          ]}
+        />
+        <PersonName name="Ana Jovanović" description="Account manager, 2 customers." />
+      </SectionCard>
+    </StoryProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expectContentDirection(
+      canvas.getByText('Customer (main office)'),
+      canvas.getByText('Last changed 3 days ago.'),
+      canvas.getByText('Payment terms:'),
+      canvas.getByText('Account manager, 2 customers.'),
+    )
+    await settle()
+  },
 }

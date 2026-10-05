@@ -1,6 +1,6 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Fragment, type ReactNode } from 'react'
-import { BUTTON_RESET, FOCUS_RING } from '../primitives/classes'
+import { BUTTON_RESET, FOCUS_RING, TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { Tabs as TabsRoot, TabsContent, TabsList, TabsTrigger } from '../primitives/tabs'
 import { useLiro } from '../provider/liro-provider'
@@ -69,7 +69,7 @@ export function Tabs(props: TabsProps) {
           return (
             <TabsTrigger key={item.value} value={item.value} disabled={item.disabled === true}>
               {Icon !== undefined && <Icon aria-hidden="true" />}
-              {item.label}
+              <span className={TEXT_DIRECTION}>{item.label}</span>
             </TabsTrigger>
           )
         })}
@@ -114,14 +114,18 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
                 {last || item.href === undefined ? (
                   <span
                     {...(last ? { 'aria-current': 'page' as const } : {})}
-                    className="text-primary"
+                    className={cn('text-primary', TEXT_DIRECTION)}
                   >
                     {item.label}
                   </span>
                 ) : (
                   <Link
                     href={item.href}
-                    className={cn('rounded-sm text-link no-underline hover:underline', FOCUS_RING)}
+                    className={cn(
+                      'rounded-sm text-link no-underline hover:underline',
+                      TEXT_DIRECTION,
+                      FOCUS_RING,
+                    )}
                   >
                     {item.label}
                   </Link>
@@ -181,7 +185,7 @@ export function CursorPagination(props: CursorPaginationProps) {
     <div
       className={cn('flex flex-wrap items-center justify-between gap-2 font-sans', props.className)}
     >
-      <div className="text-sm text-secondary">{props.count}</div>
+      <div className={cn('text-sm text-secondary', TEXT_DIRECTION)}>{props.count}</div>
       <div className="flex items-center gap-2">
         {control(messages['table.previous'], props.hasPrevious, props.onPrevious, ChevronLeft)}
         {control(messages['table.next'], props.hasNext, props.onNext, ChevronRight)}

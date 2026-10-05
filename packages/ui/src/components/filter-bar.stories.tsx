@@ -60,7 +60,7 @@ const FILTERS: FilterDefinition[] = [
     ],
   },
   { id: 'issued', label: 'Issue date', type: 'dateRange' },
-  { id: 'total', label: 'Total', type: 'numberRange', decimals: 2 },
+  { id: 'total', label: 'Total', type: 'numberRange', decimals: 2, currency: 'EUR' },
   { id: 'paid', label: 'Paid', type: 'boolean' },
   { id: 'reference', label: 'Reference', type: 'text' },
 ]
@@ -102,6 +102,49 @@ const ACTIONS = (
   </>
 )
 
+/**
+ * Inline choices stay one control high (P3.6): two customers read "2 selected" on one line (the
+ * pills are edited in the list or in the drawer), and the amount range has "From" and "To" money
+ * fields.
+ */
+export const InlineChoices: Story = {
+  render: () => (
+    <Controlled
+      inline={4}
+      layout="desktop"
+      initial={{ customer: ['alfa', 'beta'], total: { min: '100', max: null } }}
+    />
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('2 selected')).toBeVisible()
+    const frame = canvasElement.querySelector('[data-slot="multi-select"]')
+    await expect(frame?.getBoundingClientRect().height).toBe(36)
+    await expect(canvas.getByRole('textbox', { name: 'From EUR' })).toBeVisible()
+    await expect(canvas.getByRole('textbox', { name: 'To EUR' })).toBeVisible()
+    await settle()
+  },
+}
+
+/**
+ * Actions that do not fit beside search and filters move to their own line ABOVE them, at the
+ * end (P3.6) — never wrapped under the filters.
+ */
+export const ActionsAbove: Story = {
+  render: () => (
+    <div className="max-w-180">
+      <Controlled inline={2} actions={ACTIONS} layout="desktop" />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const action = canvas.getByRole('button', { name: 'New invoice' }).getBoundingClientRect()
+    const search = canvas.getByRole('textbox', { name: 'Search…' }).getBoundingClientRect()
+    await expect(action.bottom).toBeLessThanOrEqual(search.top)
+    await settle()
+  },
+}
+
 /** Desktop: search, two inline filters, "Filters" for the rest, actions at the end. */
 export const Default: Story = {
   render: () => <Controlled inline={2} actions={ACTIONS} layout="desktop" />,
@@ -126,7 +169,7 @@ export const ActiveFilters: Story = {
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.getByText('Total: 1,000.00 –')).toBeVisible()
+    await expect(canvas.getByText(/^Total: EUR\s1,000\.00 –$/)).toBeVisible()
     await userEvent.click(canvas.getByRole('button', { name: 'Remove filter: Paid' }))
     await waitFor(() => expect(canvas.queryByText('Paid: No')).toBeNull())
     // An inline select is emptied in place by its clear button.

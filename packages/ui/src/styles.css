@@ -14,6 +14,23 @@
 @source not './**/story-helpers.ts';
 
 /*
+ * Text direction from the content (P3.6; TEXT_DIRECTION in primitives/classes.ts): the word order
+ * follows the text (unicode-bidi: plaintext), the alignment the parent's direction. Chromium and
+ * WebKit know only -webkit-match-parent, Firefox match-parent; the second is applied only where it
+ * is supported, so a minifier cannot fold the two declarations into one.
+ */
+@utility bidi-content {
+  unicode-bidi: plaintext;
+  text-align: -webkit-match-parent;
+  @supports (text-align: match-parent) {
+    text-align: match-parent;
+  }
+}
+@utility bidi-isolate {
+  unicode-bidi: plaintext;
+}
+
+/*
  * Not a reset: only the elements of the primitives (each carries data-slot) size their padding and
  * border inside their width, as Tailwind's preflight would, so `w-full` with padding never
  * overflows in an application without preflight. Zero specificity: any utility wins.
@@ -185,4 +202,16 @@
 [data-slot='grid-cell']:has([aria-invalid='true']) {
   outline: 1px solid var(--liro-status-danger-fg);
   outline-offset: -1px;
+}
+
+/*
+ * EditableGrid on phones (P3.6): each field keeps its frame, under the column's label in the
+ * card; the field's own label is for screen readers ("Quantity, line 3"), so its gap goes, and its
+ * own message is hidden because the line's messages stand under the card's fields.
+ */
+[data-slot='grid-card-cell'] [data-slot='field'] > div {
+  margin: 0;
+}
+[data-slot='grid-card-cell'] [data-slot='field'] > p {
+  display: none;
 }

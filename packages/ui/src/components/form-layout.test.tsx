@@ -12,7 +12,7 @@ const render = (node: React.ReactNode) =>
   renderToStaticMarkup(<LiroProvider locale="en">{node}</LiroProvider>)
 
 describe('form logic', () => {
-  it('shows the bottom bar while the content scrolls, or as forced', () => {
+  it('shows the bottom bar while the top actions are out of view, or as forced', () => {
     expect(bottomBarShown('auto', true)).toBe(true)
     expect(bottomBarShown('auto', false)).toBe(false)
     expect(bottomBarShown('always', false)).toBe(true)

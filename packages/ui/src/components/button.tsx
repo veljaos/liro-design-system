@@ -1,5 +1,6 @@
 import type { MouseEventHandler } from 'react'
 import { BUTTON_SHAPES, buttonClassName, type ButtonShape } from '../primitives/button'
+import { TEXT_DIRECTION } from '../primitives/classes'
 import { INTENTS, type Emphasis, type Family, type IconComponent, type Intent } from './intents'
 
 /*
@@ -134,7 +135,7 @@ export function Button(props: ButtonProps) {
   return (
     <button {...attributes}>
       {icon}
-      <span>{props.label}</span>
+      <span className={TEXT_DIRECTION}>{props.label}</span>
     </button>
   )
 }

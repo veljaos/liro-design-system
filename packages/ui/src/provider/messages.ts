@@ -16,6 +16,7 @@ export interface LiroMessages {
   'table.count': (count: number, exact: boolean) => string
   /** A table that has no rows yet. */
   'table.noRows': string
+  'table.updating': string
   /** A table whose filters match no row. */
   'table.noMatch': string
   /** The action of the "no rows match" state that clears the table's filters. */
@@ -54,6 +55,7 @@ export interface LiroMessages {
   'field.noResults': string
   /** The button that removes one chosen value (its label) from a multiple choice. */
   'field.remove': (label: string) => string
+  'field.selectedCount': (count: number) => string
   /** The button that empties a field (a clearable SelectField). */
   'field.clear': string
   /** FilterBar: the search field's placeholder and accessible name. */
@@ -72,8 +74,8 @@ export interface LiroMessages {
   'filter.yes': string
   'filter.no': string
   /** FilterBar: the names of the two ends of a number range filter (its label). */
-  'filter.rangeFrom': (label: string) => string
-  'filter.rangeTo': (label: string) => string
+  'filter.from': string
+  'filter.to': string
   /** FilterBar on phones: the sort button's text while nothing is sorted, and the start of its name. */
   'filter.sort': string
   /** FilterBar on phones: the two directions in the sort menu. */

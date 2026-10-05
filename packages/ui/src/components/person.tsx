@@ -1,12 +1,13 @@
 import type { ReactNode } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '../primitives/avatar'
+import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 
 /*
  * PersonAvatar and PersonName (BUILD-PLAN P2.8), the previous Design System's, carried over
- * (owner's decision, 2026-09-28, docs/decisions.md "Display"): Mantine's light avatar in the
- * primary colour (brand.subtle with text.brand), radius xl (16px), 38px (size 'md'), a photo when
+ * (owner's decision, 2026-09-28, docs/decisions.md "Display"): Mantine's light avatar, neutral
+ * since P3.6 (surface.sunken with text.primary; blue is for actions), radius xl (16px), 38px (size 'md'), a photo when
  * given; decorative by default (the name is written beside it), unless `alt` is given. Initials
  * from the first letter of the FIRST and the LAST word ("Ana Marija Jovanović" → AJ, Appendix B.9;
  * the old code took the first two words).
@@ -52,7 +53,7 @@ export function PersonAvatar({ name, src, alt, size = 'md', className }: PersonA
     >
       {src !== undefined && <AvatarImage src={src} alt={decorative ? '' : alt} />}
       <AvatarFallback
-        className={cn('rounded-xl bg-brand-subtle text-brand', size === 'sm' && 'text-xs')}
+        className={cn('rounded-xl bg-surface-sunken text-primary', size === 'sm' && 'text-xs')}
       >
         {initialsOf(name, locale)}
       </AvatarFallback>
@@ -94,9 +95,11 @@ export function PersonName({
         />
       )}
       <span className="flex min-w-0 flex-col">
-        <span className="truncate text-sm text-primary">{name}</span>
+        <span className={cn('truncate text-sm text-primary', TEXT_DIRECTION)}>{name}</span>
         {description !== undefined && (
-          <span className="truncate text-xs text-secondary">{description}</span>
+          <span className={cn('truncate text-xs text-secondary', TEXT_DIRECTION)}>
+            {description}
+          </span>
         )}
       </span>
     </span>

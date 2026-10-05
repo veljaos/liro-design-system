@@ -1,6 +1,6 @@
 import { CircleCheck, CircleX, Info, TriangleAlert, X } from 'lucide-react'
 import type { ReactNode } from 'react'
-import { BUTTON_RESET, FOCUS_RING } from '../primitives/classes'
+import { BUTTON_RESET, FOCUS_RING, TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 import type { IconComponent } from './intents'
@@ -13,12 +13,15 @@ import type { IconComponent } from './intents'
  * the text colour, 10px between them. The icons are the toasts': Info, CircleCheck,
  * TriangleAlert, CircleX.
  *
+ * Without a tone, an alert is neutral (grey: the neutral tone's bg and fg; P3.6, owner): blue
+ * is for actions, and "info" is given only when asked for.
+ *
  * Mantine's close button is 16px; ours is 24px (the minimum target, Definition of done), with the
  * same 16px icon and no background.
  */
 
 /** The tones of an alert. */
-export type AlertTone = 'info' | 'success' | 'warning' | 'danger'
+export type AlertTone = 'neutral' | 'info' | 'success' | 'warning' | 'danger'
 
 interface ToneLook {
   icon: IconComponent
@@ -28,6 +31,12 @@ interface ToneLook {
 
 /** Literal classes, so Tailwind finds them. */
 const TONES: Record<AlertTone, ToneLook> = {
+  // Neutral has a border (owner, P3.6): its grey is the page's own, so the box would vanish.
+  neutral: {
+    icon: Info,
+    box: 'border-status-neutral-border bg-status-neutral-bg',
+    fg: 'text-status-neutral-fg',
+  },
   info: { icon: Info, box: 'bg-status-info-bg', fg: 'text-status-info-fg' },
   success: { icon: CircleCheck, box: 'bg-status-success-bg', fg: 'text-status-success-fg' },
   warning: { icon: TriangleAlert, box: 'bg-status-warning-bg', fg: 'text-status-warning-fg' },
@@ -43,7 +52,8 @@ export function alertRole(tone: AlertTone): 'alert' | 'status' {
 }
 
 interface AlertBaseProps {
-  tone: AlertTone
+  /** Default: 'neutral'. */
+  tone?: AlertTone
   /** A heading, from the application. */
   title?: ReactNode
   /** The icon; default: the tone's. */
@@ -83,7 +93,7 @@ function CloseButton({ onClose, fg }: { onClose: () => void; fg: string }) {
  * A message in the page about its content: information, success, a warning or a danger. It stays
  * until the user closes it (when `onClose` is given) or the page changes.
  */
-export function Alert({ tone, title, icon, onClose, className, children }: AlertProps) {
+export function Alert({ tone = 'neutral', title, icon, onClose, className, children }: AlertProps) {
   const look = TONES[tone]
   const Icon = icon ?? look.icon
   return (
@@ -111,11 +121,11 @@ export function Alert({ tone, title, icon, onClose, className, children }: Alert
               onClose !== undefined && 'pe-4',
             )}
           >
-            <span className="min-w-0 break-words">{title}</span>
+            <span className={cn('min-w-0 break-words', TEXT_DIRECTION)}>{title}</span>
           </div>
         )}
         {children !== undefined && (
-          <div className="text-sm break-words text-primary">{children}</div>
+          <div className={cn('text-sm break-words text-primary', TEXT_DIRECTION)}>{children}</div>
         )}
       </div>
       {onClose !== undefined && <CloseButton onClose={onClose} fg={look.fg} />}
@@ -134,7 +144,15 @@ export interface BannerProps extends AlertBaseProps {
  * A strip across its container about the whole page or application: offline, a trial ending, a
  * closed period. The Alert's look in one row: icon, title and message, actions at the end.
  */
-export function Banner({ tone, title, icon, onClose, className, children, actions }: BannerProps) {
+export function Banner({
+  tone = 'neutral',
+  title,
+  icon,
+  onClose,
+  className,
+  children,
+  actions,
+}: BannerProps) {
   const look = TONES[tone]
   const Icon = icon ?? look.icon
   return (
@@ -150,7 +168,7 @@ export function Banner({ tone, title, icon, onClose, className, children, action
       <span aria-hidden="true" className={cn('flex size-5 shrink-0 items-center', look.fg)}>
         <Icon className="size-5" />
       </span>
-      <p className="m-0 min-w-0 flex-1 text-sm break-words text-primary">
+      <p className={cn('m-0 min-w-0 flex-1 text-sm break-words text-primary', TEXT_DIRECTION)}>
         {title !== undefined && <strong className={cn('font-bold', look.fg)}>{title} </strong>}
         {children}
       </p>

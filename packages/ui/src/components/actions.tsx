@@ -11,6 +11,7 @@ import {
 } from 'react'
 import { BUTTON_SHAPES, ButtonPrimitive } from '../primitives/button'
 import { cn } from '../primitives/cn'
+import { TEXT_DIRECTION } from '../primitives/classes'
 import {
   Tooltip as TooltipRoot,
   TooltipContent,
@@ -101,7 +102,7 @@ export function ActionButton({
           )}
         />
       )}
-      <span>{action.label}</span>
+      <span className={TEXT_DIRECTION}>{action.label}</span>
     </ButtonPrimitive>
   )
 }
@@ -151,7 +152,7 @@ export function UnavailableAction({ reason, small = false, ...action }: Unavaila
           <TooltipContent className="w-60 whitespace-normal">{reason}</TooltipContent>
         </TooltipRoot>
       </TooltipProvider>
-      <span id={reasonId} className="text-xs text-secondary">
+      <span id={reasonId} className={cn('text-xs text-secondary', TEXT_DIRECTION)}>
         {messages['action.unavailable'](reason)}
       </span>
     </span>
@@ -248,6 +249,8 @@ export function OverflowRow<T extends ActionItem>({
     update()
     const observer = new ResizeObserver(update)
     observer.observe(rowElement)
+    // The copy's width changes when a font arrives after the first measurement.
+    observer.observe(measureElement)
     return () => {
       observer.disconnect()
     }

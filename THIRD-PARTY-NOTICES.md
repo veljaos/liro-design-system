@@ -29,9 +29,9 @@ dependency, or copies third-party code (for example a shadcn/ui component) into 
 
 ## Copied into this repository
 
-| Software                                                        | Version    | License | Where                                                                         |
-| --------------------------------------------------------------- | ---------- | ------- | ----------------------------------------------------------------------------- |
-| shadcn/ui (components generated with the `shadcn` CLI, adapted) | CLI 4.21.0 | MIT     | `packages/ui/src/primitives/` (P2.1); built into `@veljaos/ui`. Notice below. |
+| Software                                                        | Version    | License | Where                                                                                               |
+| --------------------------------------------------------------- | ---------- | ------- | --------------------------------------------------------------------------------------------------- |
+| shadcn/ui (components generated with the `shadcn` CLI, adapted) | CLI 4.21.0 | MIT     | `packages/ui/src/primitives/` (P2.1; `accordion.tsx` P3.6); built into `@veljaos/ui`. Notice below. |
 
 ## Runtime and peer dependencies
 

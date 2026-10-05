@@ -12,7 +12,7 @@ describe('Button', () => {
     expect(html).toContain('data-intent="delete"')
     expect(html).toContain('data-confirms="true"')
     expect(html).toContain('text-family-destructive-fg')
-    expect(html).toContain('<span>Delete row</span>')
+    expect(html).toContain('<span class="bidi-content">Delete row</span>')
     expect(html).toMatch(/<svg[^>]*lucide-trash[^>]*aria-hidden="true"/)
   })
 

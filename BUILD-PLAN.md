@@ -269,6 +269,8 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P3.3 | Filters and search | P3.1 | done | 2026-10-01 | Owner: old Toolbar layout (search 260px, bottom-aligned row), labelled inline filters, drawer from the end 320px, pills with "Clear all", phone "Sort" menu; six filter kinds; SelectField `clearable` |
 | P3.4 | Editable grid | P3.1, P2.3 | done | 2026-10-01 | Owner: cells always fields (the DS fields without frames), focus inset line on a neutral cell, Enter as Excel, Ctrl/Cmd+Enter and +Delete, messages under the row, totals with SettlingValue under a 2px line; ten lines by keyboard in ltr and rtl |
 | P3.5 | Form layout | P2.2, P2.7 | done | 2026-10-01 | Owner: FormSection as the SectionCard card with a field grid, collapsible variant; tab errors as a 13px danger AlertTriangle; actions top and a sticky bottom bar while the form scrolls; `focusFirstInvalid`; unsaved-changes guard; FormWizard; `@veljaos/ui/form` on React Hook Form 7.89.0 (optional peer) |
+| P3.6 | Polish from the owner's review | P3.5 | done | 2026-10-02 | Less blue (neutral selection, sort header, bulk bar, avatar; `border.selected`), text direction from content (`unicode-bidi: plaintext`), neutral default Alert, EditableGrid cards on phones, FilterBar summary / From–To / actions above, bottom bar by IntersectionObserver, FormTabs in the card, Chip-style multiple toggles, Spinner and Accordion; 2026-10-05: EditableGrid keeps focus, typed text and pending dots across a layout change (the Linux visual flake), direction gaps from the baseline review, baselines |
+| P3.6a | consumer-check covers `@veljaos/ui/form` | P3.5 | done | 2026-10-02 | Separate pull request #48 (protected files, merged by the owner): React Hook Form installed beside the packed tarballs, a bound field type-checked and rendered |
 | P4.1 | Application shell | P2.6, P2.7 | todo | | |
 | P4.2 | Home (launchpad) | P4.1 | todo | | |
 | P4.3 | List and worklist templates | P3.3, P4.1 | todo | | |
@@ -492,7 +494,7 @@ Templates are layouts with **slots**; they contain no data logic.
 **Do** `Launchpad` with `ModuleCard`s: icon, name, counter, optional **locked** state with a text passed in (e.g. "Available in <plan>"), reorder and hide through callbacks, keyboard 1–9 to open and arrows to move.
 
 ### P4.3 — List and worklist templates
-**Do** `ListPage` (title, actions, `FilterBar`, `DataTable`, `CursorPagination`), `WorklistPage` (a queue processed item by item: list plus detail side by side on desktop, stacked on phones).
+**Do** `ListPage` (title, actions, `FilterBar`, `DataTable`, `CursorPagination`), `WorklistPage` (a queue processed item by item: list plus detail side by side on desktop, stacked on phones). The page's main action (e.g. "New invoice") goes into the page header; the `FilterBar` keeps only the list's own actions, such as Export (owner, P3.6).
 
 ### P4.4 — Detail and record form templates
 **Do** `DetailPage` (header with status and actions, sections, side column); `RecordFormPage` (back link, actions top and bottom, side column, unsaved-changes guard).
@@ -520,13 +522,13 @@ Templates are layouts with **slots**; they contain no data logic.
 All generic: labels and states come in as props.
 
 ### P5.1 — History, comments and messages
-**Do** `Timeline` / `HistoryList` (who, when, what changed; actor kind marker for human, system, agent, integration; "on behalf of" line); the **`Message` family** (`MessageBubble`, `MessageList`, `MessageThread`, `MessageComposer` — Enter sends, Shift+Enter breaks the line) used for comments and task conversations; `MentionCombobox` for mentions (candidate list comes from props).
+**Do** `Timeline` / `HistoryList` (who, when, what changed; actor kind marker for human, system, agent, integration; "on behalf of" line); the **`Message` family** (`MessageBubble`, `MessageList`, `MessageThread`, `MessageComposer` — Enter sends, Shift+Enter breaks the line) used for comments and task conversations; `MentionCombobox` for mentions (candidate list comes from props). The Message family and the agent interactions are built on the shadcn/ui Radix versions of **Bubble**, **Marker**, **Message Scroller** and **Questionnaire** (Questionnaire for the questions an agent asks the user), adapted like the P2.1 primitives; shadcn's Carousel is not used (owner, P3.6).
 
 ### P5.2 — Presence and agent marking
 **Do** `PresenceAvatars` (who else is here, overflow count, tooltips with names); `AgentMark` (a consistent machine marker shown next to any name that belongs to an agent).
 
 ### P5.3 — Connection, environment and session markers
-**Do** `OfflineIndicator` (always visible while offline, in the shell); `ConnectionState` for drafts (saved on this device / sending / sent); `EnvironmentMarker` (e.g. sandbox, demo — label from props, always visible); `ImpersonationBar` (not dismissible; shows whose account, mode, reason and time left, with an exit action); generic `Banner` placements in the shell.
+**Do** `OfflineIndicator` (always visible while offline, in the shell); `ConnectionState` for drafts (saved on this device / sending / sent); `EnvironmentMarker` (e.g. sandbox, demo — label from props, always visible); `ImpersonationBar` (not dismissible; shows whose account, mode, reason and time left, with an exit action); generic `Banner` placements in the shell. Agent interactions in the shell (an agent asking the user something, an agent's marker) use the same shadcn/ui Radix Bubble, Marker, Message Scroller and Questionnaire as P5.1 (owner, P3.6).
 
 ### P5.4 — Delivery and progress status
 **Do** `StatusTimeline` (a sequence of states with the current one highlighted and a next-step slot, e.g. "delivery pending — action needed" with retry and manual-export actions); `JobProgress` (progress, cancel, final report of successes and failures).
@@ -593,7 +595,7 @@ Common: white #FFFFFF, black #000000, dark page `ink` #1B1B1B, `inkRaised` #2424
 | surface.overlay | white | inkOverlay |
 | surface.header | white | inkRaised |
 | surface.hover | gray0 | rgba(255,255,255,0.05) |
-| surface.selected | blue0 | rgba(0,120,212,0.18) |
+| surface.selected | gray2 | #363636 |
 | surface.disabled | gray2 | rgba(255,255,255,0.06) |
 | surface.backdrop | rgba(0,0,0,0.45) | rgba(0,0,0,0.65) |
 | surface.scrim | rgba(0,0,0,0.55) | rgba(0,0,0,0.55) |
@@ -611,6 +613,7 @@ Common: white #FFFFFF, black #000000, dark page `ink` #1B1B1B, `inkRaised` #2424
 | border.brand | blue6 | blue5 |
 | border.focus | blue6 | blue4 |
 | border.control | gray6 | gray6 |
+| border.selected | gray7 | gray4 |
 | brand.solid / solidHover / solidActive | blue6 / blue7 / blue8 | blue6 / blue7 / blue8 |
 | brand.subtle / subtleHover | blue0 / blue1 | rgba(0,120,212,0.16) / rgba(0,120,212,0.26) |
 | brand.onSolid | white | white |
@@ -627,7 +630,7 @@ Status tones — `fg` / `bg` / `border` / `solid`:
 | neutral | gray9 / gray1 / gray3 / gray7 | gray1 / rgba(255,255,255,0.07) / #3B3B3B / gray5 |
 | premium | violet7 / violet0 / violet2 / violet6 | violet3 / rgba(121,80,242,0.20) / rgba(121,80,242,0.45) / violet5 |
 
-`surface.inverse`, `text.onInverse` (tooltips) and `border.control` (the boundary of inputs, checkboxes, radios and the off state of switches, at least 3:1 on every surface for WCAG 1.4.11) were added in P2.1 by the owner's decision.
+`surface.inverse`, `text.onInverse` (tooltips) and `border.control` (the boundary of inputs, checkboxes, radios and the off state of switches, at least 3:1 on every surface for WCAG 1.4.11) were added in P2.1 by the owner's decision. In P3.6 the owner made `surface.selected` neutral (it was blue0 / rgba(0,120,212,0.18)) and added `border.selected` (the start-edge bar of a selected row and the border of a selected card): blue is kept for actions, links, focus, checked controls and the highlighted option.
 
 `brand.solid` is a background and `text.brand` is text; they move in opposite directions between themes and must never share a token.
 

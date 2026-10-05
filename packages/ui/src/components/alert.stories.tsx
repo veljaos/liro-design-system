@@ -4,7 +4,9 @@ import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { settle } from '../primitives/story-helpers'
 import { Alert, Banner } from './alert'
 import { Button } from './button'
+import { EmptyState } from './empty-state'
 import { ARABIC, JAPANESE, LONG } from './field-story-data'
+import { expectContentDirection, StoryProvider } from './story-frames'
 
 const meta = {
   title: 'Components/Feedback/Alert',
@@ -16,7 +18,7 @@ const meta = {
           '**What for:** a message in the page about what the user is looking at — the period ' +
           "is closed, the document was sent, a rate is missing. Mantine's Alert, light variant " +
           "(the owner's old look): the tone's subtle background, the title and icon in the " +
-          "tone's colour. Tones info, success, warning, danger; warnings and dangers are " +
+          "tone's colour. Tones neutral (the default, grey), info, success, warning, danger — info only when asked for, blue being kept for actions; warnings and dangers are " +
           'announced at once (`role="alert"`), the others politely. `onClose` makes it ' +
           'dismissible. `Banner` is the same look in one row across its container, with actions ' +
           'at the end, for something about the whole page or application.\n\n' +
@@ -25,7 +27,6 @@ const meta = {
       },
     },
   },
-  args: { tone: 'info' },
   play: settle,
 } satisfies Meta<typeof Alert>
 
@@ -33,10 +34,11 @@ export default meta
 
 type Story = StoryObj<typeof meta>
 
-/** The four tones, with and without a title. */
+/** The five tones, with and without a title; the first has no tone, so it is neutral. */
 export const Tones: Story = {
   render: () => (
     <div className="flex max-w-150 flex-col gap-4">
+      <Alert title="Draft">This document is not sent yet.</Alert>
       <Alert tone="info" title="New exchange rates">
         Rates for 28 September are loaded.
       </Alert>
@@ -49,7 +51,7 @@ export const Tones: Story = {
       <Alert tone="danger" title="Period closed">
         Entries dated in August cannot be changed.
       </Alert>
-      <Alert tone="info">Without a title: the message alone.</Alert>
+      <Alert>Without a title or a tone: the message alone, neutral.</Alert>
     </div>
   ),
 }
@@ -148,4 +150,34 @@ export const Japanese: Story = {
       </Banner>
     </div>
   ),
+}
+
+/**
+ * English in a right-to-left page (P3.6): alert, banner and empty-state texts keep their own
+ * order ("3 invoices are ready to send." was ".invoices are ready to send 3"); icons, close
+ * buttons and actions stay where right to left puts them.
+ */
+export const EnglishInRtl: Story = {
+  render: () => (
+    <StoryProvider locale="ar">
+      <div className="flex max-w-150 flex-col gap-4">
+        <Alert tone="info" title="Ready (3)" onClose={() => undefined}>
+          3 invoices are ready to send.
+        </Alert>
+        <Banner tone="warning" actions={<Button intent="refresh" label="Reload" />}>
+          Today&apos;s exchange rate is not published yet.
+        </Banner>
+        <EmptyState compact />
+      </div>
+    </StoryProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expectContentDirection(
+      canvas.getByText('3 invoices are ready to send.'),
+      canvas.getByText('Ready (3)'),
+      canvas.getByText("Today's exchange rate is not published yet."),
+    )
+    await settle()
+  },
 }

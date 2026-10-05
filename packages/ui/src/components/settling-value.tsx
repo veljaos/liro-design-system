@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState } from 'react'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 
@@ -23,6 +23,19 @@ import { useLiro } from '../provider/liro-provider'
 
 /** Milliseconds a value must be pending before the dot shows. */
 export const SETTLING_DELAY = 300
+
+/**
+ * Inside it, a SettlingValue keeps, under `key`, the time its value became pending (`since`) and
+ * the widest width it has reserved (`widest`), so one mounted anew (EditableGrid renders its
+ * totals anew when the layout changes between the table and the cards) shows the dot when the
+ * first would have and keeps the number where it was (internal, not exported).
+ */
+export interface SettlingMemoryValue {
+  since: Map<string, number>
+  widest: Map<string, number>
+  key: string
+}
+export const SettlingMemory = createContext<SettlingMemoryValue | null>(null)
 
 export interface SettlingValueProps {
   /** The last confirmed value: a decimal string, or null when there is none. */
@@ -59,8 +72,14 @@ export function SettlingValue(props: SettlingValueProps) {
           )
 
   // The widest text so far: the number never gets narrower, so nothing around it moves back.
-  const [widest, setWidest] = useState(text.length)
+  const slot = useContext(SettlingMemory)
+  const [widest, setWidest] = useState(() => Math.max(text.length, slot?.widest.get(slot.key) ?? 0))
   if (text.length > widest) setWidest(text.length)
+  const kept = slot?.widest
+  const keptKey = slot?.key
+  useEffect(() => {
+    if (kept !== undefined && keptKey !== undefined) kept.set(keptKey, widest)
+  }, [kept, keptKey, widest])
   const reserve = Math.max(widest, props.reserveChars ?? 0)
 
   // The announcement: the text of each new settled value, once (not the first one on the page).
@@ -72,17 +91,30 @@ export function SettlingValue(props: SettlingValueProps) {
   }
 
   // The dot shows only after the value has been pending for SETTLING_DELAY.
-  const [late, setLate] = useState(false)
+  const [late, setLate] = useState(() => {
+    const since = pending ? slot?.since.get(slot.key) : undefined
+    return since !== undefined && Date.now() - since >= SETTLING_DELAY
+  })
   if (!pending && late) setLate(false)
+  const since = slot?.since
+  const key = slot?.key
   useEffect(() => {
-    if (!pending) return
-    const timer = window.setTimeout(() => {
-      setLate(true)
-    }, SETTLING_DELAY)
+    if (!pending) {
+      if (key !== undefined) since?.delete(key)
+      return
+    }
+    const started = (key === undefined ? undefined : since?.get(key)) ?? Date.now()
+    if (key !== undefined) since?.set(key, started)
+    const timer = window.setTimeout(
+      () => {
+        setLate(true)
+      },
+      Math.max(0, SETTLING_DELAY - (Date.now() - started)),
+    )
     return () => {
       window.clearTimeout(timer)
     }
-  }, [pending])
+  }, [pending, since, key])
 
   return (
     <span

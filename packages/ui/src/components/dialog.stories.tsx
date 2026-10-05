@@ -4,8 +4,10 @@ import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { settle } from '../primitives/story-helpers'
 import { Button } from './button'
 import { Dialog } from './dialog'
+import { ProgressBar } from './progress'
+import { Spinner } from './spinner'
 import { ARABIC, JAPANESE, LONG } from './field-story-data'
-import { PhoneFrame, StoryProvider } from './story-frames'
+import { expectContentDirection, PhoneFrame, StoryProvider } from './story-frames'
 import { TextField } from './text-field'
 
 const meta = {
@@ -83,7 +85,10 @@ export const Default: Story = {
   },
 }
 
-/** While an action runs: Escape and a press outside do not close it; no close button. */
+/**
+ * While an action runs: Escape and a press outside do not close it; no close button. A Spinner
+ * beside the text says that work is going on (P3.6); it is a `role="status"`.
+ */
 export const NotDismissible: Story = {
   name: 'Not dismissible',
   render: () => (
@@ -92,7 +97,9 @@ export const NotDismissible: Story = {
       dismissible={false}
       title="Sending 24 invoices"
       description="The dialog closes when the invoices are sent."
-    />
+    >
+      <Spinner>Sent 8 of 24…</Spinner>
+    </Dialog>
   ),
   play: async ({ canvasElement }) => {
     const body = within(canvasElement.ownerDocument.body)
@@ -101,6 +108,33 @@ export const NotDismissible: Story = {
     await userEvent.keyboard('{Escape}')
     await expect(body.getByRole('dialog')).toBeVisible()
     await expect(body.queryByRole('button', { name: 'Close' })).toBeNull()
+    await settle()
+  },
+}
+
+/** When the progress is known: a ProgressBar with the count beside it, in a `role="status"`. */
+export const KnownProgress: Story = {
+  name: 'Known progress',
+  render: () => (
+    <Dialog
+      defaultOpen
+      dismissible={false}
+      title="Sending 24 invoices"
+      description="The dialog closes when the invoices are sent."
+    >
+      <div role="status" className="flex items-center gap-4">
+        <ProgressBar label="Sending 24 invoices" value={8} max={24} className="flex-1" />
+        {/* A fraction reads left to right in every language. */}
+        <span dir="ltr" className="shrink-0 text-sm tabular-nums">
+          8 / 24
+        </span>
+      </div>
+    </Dialog>
+  ),
+  play: async ({ canvasElement }) => {
+    const body = within(canvasElement.ownerDocument.body)
+    const dialog = await body.findByRole('dialog')
+    await expect(within(dialog).getByRole('status')).toHaveTextContent('8 / 24')
     await settle()
   },
 }
@@ -148,4 +182,31 @@ export const Japanese: Story = {
       />
     </StoryProvider>
   ),
+}
+
+/**
+ * English in a right-to-left page (P3.6): the title and the description keep their own order;
+ * the close button stays at the inline end (the left) and the actions at the end of the row.
+ */
+export const EnglishInRtl: Story = {
+  render: () => (
+    <StoryProvider locale="ar">
+      <Dialog
+        defaultOpen
+        title="Send 3 invoices?"
+        description="3 invoices are ready to send. The customers receive them by e-mail."
+        actions={<Button intent="confirm" label="Send (3)" />}
+      />
+    </StoryProvider>
+  ),
+  play: async () => {
+    const dialog = await within(document.body).findByRole('dialog')
+    await expectContentDirection(
+      within(dialog).getByText('Send 3 invoices?'),
+      within(dialog).getByText(
+        '3 invoices are ready to send. The customers receive them by e-mail.',
+      ),
+    )
+    await settle()
+  },
 }

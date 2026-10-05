@@ -1,5 +1,6 @@
 import type { KeyboardEvent, MouseEvent, ReactNode } from 'react'
 import { Checkbox } from '../primitives/checkbox'
+import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { CompactIconButton } from './button'
 import { DropdownMenu, type MenuEntry } from './dropdown-menu'
@@ -69,7 +70,11 @@ export function DataTableCard(props: DataTableCardProps) {
           })}
       className={cn(
         'flex flex-col gap-4 rounded-md border border-solid p-3 text-primary',
-        props.selected ? 'border-brand bg-surface-selected' : 'border-default bg-surface-raised',
+        // Selected (P3.6, owner): neutral, with a 3px start bar; the start padding gives back
+        // the 2px the bar adds, so the content does not move.
+        props.selected
+          ? 'border-s-[3px] border-selected bg-surface-selected ps-2.5'
+          : 'border-default bg-surface-raised',
         onPress !== undefined &&
           'cursor-pointer outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
       )}
@@ -86,9 +91,13 @@ export function DataTableCard(props: DataTableCardProps) {
           />
         )}
         <div className="flex min-w-0 flex-1 flex-col">
-          <span className="truncate text-sm font-semibold">{props.title}</span>
+          <span className={cn('truncate text-sm font-semibold', TEXT_DIRECTION)}>
+            {props.title}
+          </span>
           {props.subtitle !== undefined && (
-            <span className="truncate text-xs text-secondary">{props.subtitle}</span>
+            <span className={cn('truncate text-xs text-secondary', TEXT_DIRECTION)}>
+              {props.subtitle}
+            </span>
           )}
         </div>
         {props.badge !== undefined && <div className="shrink-0">{props.badge}</div>}
@@ -104,7 +113,7 @@ export function DataTableCard(props: DataTableCardProps) {
         <dl className="m-0 flex flex-col gap-0.5">
           {props.details.map((detail) => (
             <div key={detail.key} className="flex items-baseline justify-between gap-4">
-              <dt className="text-xs text-tertiary">{detail.label}</dt>
+              <dt className={cn('text-xs text-tertiary', TEXT_DIRECTION)}>{detail.label}</dt>
               <dd className="m-0 text-end text-xs font-medium tabular-nums">{detail.value}</dd>
             </div>
           ))}

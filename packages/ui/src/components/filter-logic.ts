@@ -30,7 +30,12 @@ export type FilterDefinition = FilterBase &
     | { type: 'select'; options: readonly SelectOption[] }
     | { type: 'multiSelect'; options: readonly ComboboxOption[] }
     | { type: 'dateRange' }
-    | { type: 'numberRange'; decimals?: number }
+    | {
+        type: 'numberRange'
+        decimals?: number
+        /** An amount range: the ends are MoneyFields with this currency (P3.6). */
+        currency?: string
+      }
     | { type: 'boolean' }
     | { type: 'text' }
   )
@@ -97,7 +102,7 @@ export function rangeText(from: string | null, to: string | null): string {
 export function filterValueText(
   filter: FilterDefinition,
   value: unknown,
-  format: Pick<LiroFormat, 'date' | 'number'>,
+  format: Pick<LiroFormat, 'date' | 'number' | 'money'>,
   messages: Pick<LiroMessages, 'filter.yes' | 'filter.no'>,
 ): string | null {
   if (!isFilterSet(value)) return null
@@ -120,8 +125,13 @@ export function filterValueText(
     case 'numberRange': {
       const range = value as NumberRange
       const decimals = filter.decimals === undefined ? {} : { decimals: filter.decimals }
+      const currency = filter.currency
       const text = (end: string | null) =>
-        end === null || end === '' ? null : format.number(end, decimals)
+        end === null || end === ''
+          ? null
+          : currency === undefined
+            ? format.number(end, decimals)
+            : format.money(end, currency, decimals)
       return rangeText(text(range.min), text(range.max))
     }
     case 'boolean':

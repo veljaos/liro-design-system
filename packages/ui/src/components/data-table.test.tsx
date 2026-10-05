@@ -50,7 +50,9 @@ const render = (props: Partial<DataTableProps<Line>> = {}) =>
 
 /** The row names in the order the table draws them. */
 const order = (html: string) =>
-  [...html.matchAll(/<td[^>]*>(Alpha|Beta|Gamma)<\/td>/g)].map((match) => match[1])
+  [...html.matchAll(/<td[^>]*><span[^>]*>(Alpha|Beta|Gamma)<\/span><\/td>/g)].map(
+    (match) => match[1],
+  )
 
 describe('formatCount', () => {
   it('shows the exact number up to the threshold and "More than" above it', () => {
@@ -267,11 +269,11 @@ describe('DataTable on a phone', () => {
     expect(html).toContain('Title Alpha')
     expect(html).toContain('Sub a')
     expect(html).toContain('BADGE')
-    expect(html).toContain('<dt class="text-xs text-tertiary">Amount</dt>')
+    expect(html).toContain('<dt class="text-xs text-tertiary bidi-content">Amount</dt>')
     expect(html).not.toContain('>Name</dt>')
     expect(html).toContain('aria-label="Select Alpha"')
     expect(html).toContain('aria-label="Actions: Alpha"')
-    expect(html).toContain('border-brand bg-surface-selected')
+    expect(html).toContain('border-selected bg-surface-selected')
   })
 
   it('uses the row label and every column without a mobile description', () => {
