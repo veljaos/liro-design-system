@@ -274,6 +274,7 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P3.6b | Branch hygiene | P3.6 | done | 2026-10-05 | Rule W16 in AGENTS.md (owner): a step's branch is deleted when its pull request is merged or closed; `main` is the only branch at the end of every phase. The six branches of #29–#34 (combined into #35) and `bp/P3.6-polish` were checked against `main` and removed |
 | P3.6c | Field polish from the owner's P3.6 review | P3.6 | done | 2026-10-05 | Free text and chosen options take their direction from their content (`dir="auto"`) at the page's start side, codes left to right (TextField `direction`); FilterBar number range: one label, "From" / "To" inside the fields (`startText`); empty date range "From – To" without a lone dash |
 | P3.6d | FilterBar amount range | P3.6c | done | 2026-10-05 | The currency once in the label ("Total (EUR)"), "From" / "To" and the number in the fields; fields grow with a long amount and the pair wraps, never cut |
+| P3.7 | Liro brand assets | P3.6 | done | 2026-10-05 | The owner's logo in `@veljaos/tokens/brand/` (exported `./brand/*`, checked by `brand.test.ts`); Storybook's title, wordmark and favicon; "Foundations / Brand"; rule D18 (logo through props) |
 | P4.1 | Application shell | P2.6, P2.7 | todo | | |
 | P4.2 | Home (launchpad) | P4.1 | todo | | |
 | P4.3 | List and worklist templates | P3.3, P4.1 | todo | | |
@@ -491,7 +492,7 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 Templates are layouts with **slots**; they contain no data logic.
 
 ### P4.1 — Application shell
-**Do** `AppShell`: header with product name and logo (props), search trigger (opens `CommandPalette`), slots for a company switcher, notifications and the user menu; **module tabs** inside a module (navigation is a launchpad plus tabs, not a sidebar — Appendix B.8); breadcrumbs; slots for the offline indicator, environment marker and impersonation bar (P5.3); on phones, a bottom action bar within thumb reach and safe-area insets for installed apps.
+**Do** `AppShell`: header with product name and logo (props), search trigger (opens `CommandPalette`), slots for a company switcher, notifications and the user menu; **module tabs** inside a module (navigation is a launchpad plus tabs, not a sidebar — Appendix B.8); breadcrumbs; slots for the offline indicator, environment marker and impersonation bar (P5.3); on phones, a bottom action bar within thumb reach and safe-area insets for installed apps. The logo is a prop: the application passes the Liro brand files of `@veljaos/tokens/brand/` as the default; the component never imports them (AGENTS.md D18, P3.7).
 
 ### P4.2 — Home (launchpad)
 **Do** `Launchpad` with `ModuleCard`s: icon, name, counter, optional **locked** state with a text passed in (e.g. "Available in <plan>"), reorder and hide through callbacks, keyboard 1–9 to open and arrows to move.
@@ -509,7 +510,7 @@ Templates are layouts with **slots**; they contain no data logic.
 **Do** `ReportPage` (parameters, result, export slot), `DashboardPage` with `StatCard` and chart wrappers (bar, line, area, donut) on shadcn Chart with tokens, `SettingsPage` (sections of rows).
 
 ### P4.7 — Status pages and sign-in shell
-**Do** status pages: not signed in (401), no access (403), not found (404), error (500, with case-id slot), maintenance, suspended; `AuthShell` (centred card, product name and logo from props).
+**Do** status pages: not signed in (401), no access (403), not found (404), error (500, with case-id slot), maintenance, suspended; `AuthShell` (centred card, product name and logo from props). The status pages also take the logo from props; the Liro brand files of `@veljaos/tokens/brand/` are the application's default (D18, P3.7).
 
 ### P4.8 — Example screens
 **Do** Storybook "Examples" section, English, fictitious data, full-screen: a list of invoices, an invoice document with lines and totals, an employee record form, a dashboard, a worklist. Each works in both themes, both directions and phone width.

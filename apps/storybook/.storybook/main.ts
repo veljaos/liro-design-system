@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url'
 import { mergeConfig } from 'vite'
 
 const uiSource = fileURLToPath(new URL('../../../packages/ui/src/index.ts', import.meta.url))
+const brand = fileURLToPath(new URL('../../../packages/tokens/brand', import.meta.url))
 
 const config: StorybookConfig = {
   framework: '@storybook/react-vite',
@@ -14,6 +15,13 @@ const config: StorybookConfig = {
     '../../../packages/ui/src/**/*.stories.tsx',
   ],
   addons: ['@storybook/addon-docs', '@storybook/addon-a11y'],
+  // The Liro brand (P3.7): the web icons at the root, so the catalogue's favicon is Liro's
+  // (Storybook takes favicon.svg from a static directory), and every brand file under /brand for
+  // the manager's wordmark (manager.ts).
+  staticDirs: [
+    { from: `${brand}/web`, to: '/' },
+    { from: brand, to: '/brand' },
+  ],
   core: { disableTelemetry: true },
   viteFinal: (viteConfig) =>
     mergeConfig(viteConfig, {
