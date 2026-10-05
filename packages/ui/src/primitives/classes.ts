@@ -22,12 +22,12 @@ export const FOCUS_RING =
  * which meets 3:1 on every surface (owner's decision, 2026-09-25; Mantine's gray-4 did not).
  * Placeholder: text.tertiary. Invalid (aria-invalid): the border in status.danger.fg (owner's
  * decision, 2026-09-25). Disabled: surface.disabled and text.disabled, border.default, no
- * opacity (Appendix B.6). The typed text takes its direction from itself (`unicode-bidi:
- * plaintext`, as TEXT_ISOLATE; D15): "Alfa Trade d.o.o." keeps its full stop at the end in a
- * right-to-left page, and the text stays at the field's start.
+ * opacity (Appendix B.6). The typed text and the placeholder take their direction from
+ * themselves (`unicode-bidi: plaintext`, as TEXT_ISOLATE; D15): "Alfa Trade d.o.o." keeps its
+ * full stop at the end in a right-to-left page, and the text stays at the field's start.
  */
 export const INPUT =
-  'bidi-isolate block h-control w-full min-w-0 rounded-md border border-solid border-control bg-surface-raised px-3 font-sans text-sm text-primary outline-none transition-colors duration-(--liro-duration-fast) ease-standard placeholder:text-tertiary focus:border-focus disabled:cursor-not-allowed disabled:border-default disabled:bg-surface-disabled disabled:text-disabled aria-invalid:border-status-danger-fg'
+  'bidi-isolate placeholder:bidi-isolate block h-control w-full min-w-0 rounded-md border border-solid border-control bg-surface-raised px-3 font-sans text-sm text-primary outline-none transition-colors duration-(--liro-duration-fast) ease-standard placeholder:text-tertiary focus:border-focus disabled:cursor-not-allowed disabled:border-default disabled:bg-surface-disabled disabled:text-disabled aria-invalid:border-status-danger-fg'
 
 /**
  * A read-only control (owner's decision, 2026-09-25): plain text in the full text colour, no
