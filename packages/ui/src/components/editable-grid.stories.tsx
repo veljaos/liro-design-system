@@ -1,11 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { useEffect, useState, type ComponentProps } from 'react'
-import { expect, userEvent, waitFor, within } from 'storybook/test'
+import { expect, fireEvent, userEvent, waitFor, within } from 'storybook/test'
 import { settle } from '../primitives/story-helpers'
 import type { ComboboxOption } from './combobox-field'
 import { NumberText } from './display-text'
 import { EditableGrid, type EditableGridColumn } from './editable-grid'
 import type { GridMessage } from './editable-grid-logic'
+import { SwitchField } from './checkbox-field'
 import { ARABIC, JAPANESE, LONG } from './field-story-data'
 import { StoryProvider } from './story-frames'
 
@@ -441,6 +442,50 @@ export const Phone: Story = {
     await userEvent.keyboard('{Enter}{Enter}')
     await expect(canvas.getByRole('combobox', { name: 'Item, line 2' })).toHaveFocus()
     await expect(canvas.getByRole('button', { name: 'Remove line 2' })).toBeVisible()
+    await settle()
+  },
+}
+
+/** The switch stands in for the viewport crossing 48em (a resize, a rotated tablet). */
+function LayoutChange() {
+  const [phone, setPhone] = useState(false)
+  return (
+    <div className="flex max-w-[390px] flex-col gap-4">
+      <SwitchField label="Phone layout" checked={phone} onChange={setPhone} />
+      <Lines initial={FILLED.slice(0, 2)} layout={phone ? 'phone' : 'desktop'} />
+    </div>
+  )
+}
+
+/**
+ * When the layout changes between the table and the cards, the focused cell keeps the focus and
+ * its selection: the same field of the new layout takes it. The play switches without moving the
+ * focus, as a resize would.
+ */
+export const LayoutChangeKeepsFocus: Story = {
+  name: 'Layout change keeps the focus',
+  render: () => <LayoutChange />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('textbox', { name: 'Unit price, line 2' }))
+    const selected = () => {
+      const active = document.activeElement
+      return active instanceof HTMLInputElement
+        ? [active.selectionStart, active.selectionEnd]
+        : null
+    }
+    canvas
+      .getByRole<HTMLInputElement>('textbox', { name: 'Unit price, line 2' })
+      .setSelectionRange(1, 3)
+    const toggle = canvas.getByRole('switch', { name: 'Phone layout' })
+    await fireEvent.click(toggle)
+    await waitFor(() => expect(canvas.getByRole('button', { name: 'Remove line 2' })).toBeVisible())
+    await expect(canvas.getByRole('textbox', { name: 'Unit price, line 2' })).toHaveFocus()
+    await expect(selected()).toEqual([1, 3])
+    await fireEvent.click(toggle)
+    await waitFor(() => expect(canvas.getByRole('table', { name: 'Invoice lines' })).toBeVisible())
+    await expect(canvas.getByRole('textbox', { name: 'Unit price, line 2' })).toHaveFocus()
+    await expect(selected()).toEqual([1, 3])
     await settle()
   },
 }

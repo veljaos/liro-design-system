@@ -1,5 +1,13 @@
 import { CircleAlert, Plus, Trash2, TriangleAlert } from 'lucide-react'
-import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
+import {
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type ReactNode,
+} from 'react'
 import { TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
@@ -210,6 +218,7 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
     const target = cell?.querySelector<HTMLElement>(FOCUSABLE)
     target?.focus()
     if (target instanceof HTMLInputElement) target.select()
+    return target
   }
 
   // After a row is added or removed, the focus goes where the action asked, once the rows arrive.
@@ -219,6 +228,47 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
     pending.current = null
     focusCell(target.row, target.column)
   }, [lineCount])
+
+  // The cell that has the focus, kept while the layout changes between the table and the cards
+  // (a resize across 48em, a rotated tablet): the old cell's field leaves the page with the focus,
+  // and the same cell of the new layout takes it back, with the same selection. A focus anywhere
+  // else forgets it.
+  const focused = useRef<{ row: number; column: number; element: Element } | null>(null)
+  useEffect(() => {
+    const onFocusIn = (event: FocusEvent) => {
+      const target = event.target instanceof Element ? event.target : null
+      const cell =
+        rootRef.current?.contains(target) === true ? target?.closest('[data-grid-row]') : null
+      focused.current =
+        cell === null || cell === undefined || target === null
+          ? null
+          : {
+              row: Number(cell.getAttribute('data-grid-row')),
+              column: Number(cell.getAttribute('data-grid-column')),
+              element: target,
+            }
+    }
+    document.addEventListener('focusin', onFocusIn)
+    return () => {
+      document.removeEventListener('focusin', onFocusIn)
+    }
+  }, [])
+  const shownPhone = useRef(phone)
+  useLayoutEffect(() => {
+    if (shownPhone.current === phone) return
+    shownPhone.current = phone
+    const last = focused.current
+    if (last === null || last.element.isConnected) return
+    const active = document.activeElement
+    if (active !== null && active !== document.body) return
+    const target = focusCell(last.row, last.column)
+    if (target instanceof HTMLInputElement && last.element instanceof HTMLInputElement) {
+      const { selectionStart, selectionEnd, selectionDirection } = last.element
+      if (selectionStart !== null && selectionEnd !== null) {
+        target.setSelectionRange(selectionStart, selectionEnd, selectionDirection ?? 'none')
+      }
+    }
+  }, [phone])
 
   // The on-screen keyboard shows "next" on every field of the grid.
   useEffect(() => {
