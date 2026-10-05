@@ -25,12 +25,17 @@ import { useLiro } from '../provider/liro-provider'
 export const SETTLING_DELAY = 300
 
 /**
- * Inside it, a SettlingValue keeps the time its value became pending in `since` under `key`, and
- * one mounted anew while still pending (EditableGrid renders its totals anew when the layout
- * changes between the table and the cards) shows the dot when the first would have (internal,
- * not exported).
+ * Inside it, a SettlingValue keeps, under `key`, the time its value became pending (`since`) and
+ * the widest width it has reserved (`widest`), so one mounted anew (EditableGrid renders its
+ * totals anew when the layout changes between the table and the cards) shows the dot when the
+ * first would have and keeps the number where it was (internal, not exported).
  */
-export const SettlingSince = createContext<{ since: Map<string, number>; key: string } | null>(null)
+export interface SettlingMemoryValue {
+  since: Map<string, number>
+  widest: Map<string, number>
+  key: string
+}
+export const SettlingMemory = createContext<SettlingMemoryValue | null>(null)
 
 export interface SettlingValueProps {
   /** The last confirmed value: a decimal string, or null when there is none. */
@@ -67,8 +72,14 @@ export function SettlingValue(props: SettlingValueProps) {
           )
 
   // The widest text so far: the number never gets narrower, so nothing around it moves back.
-  const [widest, setWidest] = useState(text.length)
+  const slot = useContext(SettlingMemory)
+  const [widest, setWidest] = useState(() => Math.max(text.length, slot?.widest.get(slot.key) ?? 0))
   if (text.length > widest) setWidest(text.length)
+  const kept = slot?.widest
+  const keptKey = slot?.key
+  useEffect(() => {
+    if (kept !== undefined && keptKey !== undefined) kept.set(keptKey, widest)
+  }, [kept, keptKey, widest])
   const reserve = Math.max(widest, props.reserveChars ?? 0)
 
   // The announcement: the text of each new settled value, once (not the first one on the page).
@@ -80,7 +91,6 @@ export function SettlingValue(props: SettlingValueProps) {
   }
 
   // The dot shows only after the value has been pending for SETTLING_DELAY.
-  const slot = useContext(SettlingSince)
   const [late, setLate] = useState(() => {
     const since = pending ? slot?.since.get(slot.key) : undefined
     return since !== undefined && Date.now() - since >= SETTLING_DELAY
