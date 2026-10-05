@@ -73,9 +73,15 @@ export interface LiroMessages {
   /** FilterBar: the two choices of a yes / no filter. */
   'filter.yes': string
   'filter.no': string
-  /** FilterBar: the names of the two ends of a number range filter (its label). */
+  /**
+   * FilterBar: the short texts inside the two ends of a number range, at their start, and the
+   * empty date range's placeholders ("From – To").
+   */
   'filter.from': string
   'filter.to': string
+  /** FilterBar: the names of the two ends of a number range, with the filter's label. */
+  'filter.rangeFrom': (label: string) => string
+  'filter.rangeTo': (label: string) => string
   /** FilterBar on phones: the sort button's text while nothing is sorted, and the start of its name. */
   'filter.sort': string
   /** FilterBar on phones: the two directions in the sort menu. */

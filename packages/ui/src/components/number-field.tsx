@@ -1,4 +1,4 @@
-import type { FocusEventHandler } from 'react'
+import type { FocusEventHandler, ReactNode } from 'react'
 import { INPUT, READ_ONLY } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { Input } from '../primitives/input'
@@ -34,6 +34,12 @@ interface NumberValueProps extends EntryProps {
   placeholder?: string
   /** The form field name; the decimal string is submitted, not the text shown. */
   name?: string
+  /**
+   * A short fixed text inside the field at its start, drawn as the currency is (FilterBar's
+   * "From" / "To"). Decorative: the field's label names it; a press on it puts the caret in the
+   * field.
+   */
+  startText?: string
 }
 
 export interface NumberFieldProps extends FieldBaseProps, NumberValueProps {
@@ -74,6 +80,106 @@ function numberAttributes(
   }
 }
 
+/** A fixed text beside the typing area: Mantine's input section, at least 34px wide, centred. */
+function Section(props: {
+  children: ReactNode
+  disabled: boolean
+  htmlFor?: string
+  onPress?: () => void
+}) {
+  const className = cn(
+    'flex h-full min-w-[34px] shrink-0 cursor-text items-center justify-center text-sm',
+    props.disabled ? 'cursor-not-allowed text-disabled' : 'text-secondary',
+  )
+  return props.htmlFor === undefined ? (
+    <span
+      aria-hidden="true"
+      // Wider than the currency, so with air of its own: 12px from the field's edge (the field's
+      // text padding) and 8px to the typing area (the gap between fields).
+      className={cn(className, 'ps-3 pe-2')}
+      onMouseDown={(event) => {
+        event.preventDefault()
+        props.onPress?.()
+      }}
+    >
+      {props.children}
+    </span>
+  ) : (
+    <label htmlFor={props.htmlFor} className={className}>
+      {props.children}
+    </label>
+  )
+}
+
+/**
+ * The framed box of MoneyField, and of NumberField with a `startText`: the typing area between
+ * fixed texts. The typing area is left to right inside a field that may be right to left, so the
+ * side next to a section has no padding (the section is its space) and a free side 12px.
+ */
+function NumberBox(props: {
+  control: Parameters<typeof controlAttributes>[0]
+  entry: ReturnType<typeof useNumberEntry>
+  field: NumberValueProps
+  before: ReactNode
+  after: ReactNode
+}) {
+  const { messages, direction } = useLiro()
+  const rtl = direction === 'rtl'
+  const { control } = props
+  const attributes = controlAttributes(control, messages['field.readOnly'])
+  // The typing area's own direction is left to right: its start is the field's end in
+  // right-to-left.
+  const left = rtl ? props.after !== null : props.before !== null
+  const right = rtl ? props.before !== null : props.after !== null
+  return (
+    <>
+      <div
+        data-slot="money"
+        className={cn(
+          INPUT,
+          'flex items-center px-0 focus-within:border-focus',
+          control.invalid && 'border-status-danger-fg focus-within:border-status-danger-fg',
+          control.disabled && 'cursor-not-allowed border-default bg-surface-disabled text-disabled',
+          control.readOnly &&
+            'border-transparent bg-transparent focus-within:border-transparent has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-focus',
+        )}
+      >
+        {props.before}
+        <input
+          {...attributes}
+          {...numberAttributes(props.entry, props.field, control.readOnly)}
+          className={cn(
+            'm-0 h-full min-w-0 flex-1 border-0 bg-transparent py-0 font-sans text-sm text-inherit tabular-nums outline-none placeholder:text-tertiary disabled:cursor-not-allowed',
+            rtl && 'text-end',
+            left ? 'ps-0' : 'ps-3',
+            right ? 'pe-0' : 'pe-3',
+            control.readOnly && 'cursor-text',
+          )}
+        />
+        {props.after}
+      </div>
+      {props.field.name !== undefined && (
+        <input type="hidden" name={props.field.name} value={props.entry.value ?? ''} />
+      )}
+    </>
+  )
+}
+
+/** The `startText` section, which puts the caret in the field when pressed. */
+function startSection(text: string | undefined, control: { id: string; disabled: boolean }) {
+  if (text === undefined) return null
+  return (
+    <Section
+      disabled={control.disabled}
+      onPress={() => {
+        document.getElementById(control.id)?.focus()
+      }}
+    >
+      {text}
+    </Section>
+  )
+}
+
 /**
  * A number typed freely (no mask) and read on leaving the field: "1234.56", "1.234,56",
  * "1 234,56" and the other forms of Appendix B.3 all give the decimal string "1234.56".
@@ -85,18 +191,28 @@ export function NumberField(props: NumberFieldProps) {
   const error = entryError(props.error, entry.valid, messages['field.invalidNumber'])
   return (
     <Field {...fieldProps({ ...props, error })}>
-      {(control) => (
-        <>
-          <Input
-            {...controlAttributes(control, messages['field.readOnly'])}
-            {...numberAttributes(entry, props, control.readOnly)}
-            className={cn('tabular-nums', rtl && 'text-end', control.readOnly && READ_ONLY)}
+      {(control) =>
+        props.startText === undefined ? (
+          <>
+            <Input
+              {...controlAttributes(control, messages['field.readOnly'])}
+              {...numberAttributes(entry, props, control.readOnly)}
+              className={cn('tabular-nums', rtl && 'text-end', control.readOnly && READ_ONLY)}
+            />
+            {props.name !== undefined && (
+              <input type="hidden" name={props.name} value={entry.value ?? ''} />
+            )}
+          </>
+        ) : (
+          <NumberBox
+            control={control}
+            entry={entry}
+            field={props}
+            before={startSection(props.startText, control)}
+            after={null}
           />
-          {props.name !== undefined && (
-            <input type="hidden" name={props.name} value={entry.value ?? ''} />
-          )}
-        </>
-      )}
+        )
+      }
     </Field>
   )
 }
@@ -107,64 +223,36 @@ export function NumberField(props: NumberFieldProps) {
  * string, and the currency is the application's.
  */
 export function MoneyField(props: MoneyFieldProps) {
-  const { messages, format, direction } = useLiro()
-  const rtl = direction === 'rtl'
+  const { messages, format } = useLiro()
   const entry = useNumberEntry(props, props.decimals ?? format.moneyDecimals)
   const error = entryError(props.error, entry.valid, messages['field.invalidNumber'])
   const first = currencyFirst(format, props.currency)
   return (
     <Field {...fieldProps({ ...props, error })}>
       {(control) => {
-        const attributes = controlAttributes(control, messages['field.readOnly'])
         // The currency is a second label of the input: a press on it puts the caret in the
-        // amount, and the input's name includes it ("Amount EUR"). Mantine's input section (Input.css): at least the input's height minus 2px wide (34px),
-        // the content centred, in the dimmed colour (text.secondary).
+        // amount, and the input's name includes it ("Amount EUR").
         const currency = (
-          <label
-            htmlFor={control.id}
-            className={cn(
-              'flex h-full min-w-[34px] shrink-0 cursor-text items-center justify-center text-sm',
-              control.disabled ? 'cursor-not-allowed text-disabled' : 'text-secondary',
-            )}
-          >
+          <Section disabled={control.disabled} htmlFor={control.id}>
             {props.currency}
-          </label>
+          </Section>
         )
+        const start = startSection(props.startText, control)
         return (
-          <>
-            <div
-              data-slot="money"
-              className={cn(
-                INPUT,
-                'flex items-center px-0 focus-within:border-focus',
-                control.invalid && 'border-status-danger-fg focus-within:border-status-danger-fg',
-                control.disabled &&
-                  'cursor-not-allowed border-default bg-surface-disabled text-disabled',
-                control.readOnly &&
-                  'border-transparent bg-transparent focus-within:border-transparent has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-focus',
-              )}
-            >
-              {first && currency}
-              <input
-                {...attributes}
-                {...numberAttributes(entry, props, control.readOnly)}
-                className={cn(
-                  'm-0 h-full min-w-0 flex-1 border-0 bg-transparent py-0 font-sans text-sm text-inherit tabular-nums outline-none placeholder:text-tertiary disabled:cursor-not-allowed',
-                  rtl && 'text-end',
-                  // The input is left to right inside a field that may be right to left: the side
-                  // next to the currency has no padding (the section is its space), the other 12px.
-                  // The input's own direction is left to right: its start is the field's end in
-                  // right-to-left.
-                  first === !rtl ? 'ps-0 pe-3' : 'ps-3 pe-0',
-                  control.readOnly && 'cursor-text',
-                )}
-              />
-              {!first && currency}
-            </div>
-            {props.name !== undefined && (
-              <input type="hidden" name={props.name} value={entry.value ?? ''} />
-            )}
-          </>
+          <NumberBox
+            control={control}
+            entry={entry}
+            field={props}
+            before={
+              start === null && !first ? null : (
+                <>
+                  {start}
+                  {first && currency}
+                </>
+              )
+            }
+            after={first ? null : currency}
+          />
         )
       }}
     </Field>

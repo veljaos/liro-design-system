@@ -151,6 +151,30 @@ export const States: Story = {
   ),
 }
 
+/**
+ * `startText`: a short fixed text inside the field at its start, drawn as the currency is
+ * (FilterBar's number range: "From" / "To" under one label). It is decorative: the label names
+ * the field; pressing it puts the caret in the field.
+ */
+export const StartText: Story = {
+  name: 'Start text',
+  render: () => (
+    <div className="flex max-w-100 flex-col gap-6">
+      <NumberField label="Quantity from" startText="From" defaultValue="5" />
+      <MoneyField label="Total from" startText="From" currency="EUR" defaultValue="100" />
+      <MoneyField label="Total to" startText="To" currency="EUR" />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const quantity = canvas.getByRole('textbox', { name: 'Quantity from' })
+    await userEvent.click(canvas.getAllByText('From')[0] ?? canvasElement)
+    await expect(quantity).toHaveFocus()
+    await expect(canvas.getByRole('textbox', { name: 'Total from EUR' })).toHaveValue('100.00')
+    await settle()
+  },
+}
+
 /** Long label, description, value and error at phone width: everything wraps, nothing clips. */
 export const LongTextPhone: Story = {
   name: 'Long text, phone width',
