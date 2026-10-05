@@ -458,15 +458,19 @@ function LayoutChange() {
 }
 
 /**
- * When the layout changes between the table and the cards, the focused cell keeps the focus and
- * its selection: the same field of the new layout takes it. The play switches without moving the
- * focus, as a resize would.
+ * When the layout changes between the table and the cards, nothing typed is lost: unreadable
+ * text stays in its cell with its message, and the focused cell keeps the focus and its
+ * selection. The play switches without moving the focus, as a resize would.
  */
 export const LayoutChangeKeepsFocus: Story = {
-  name: 'Layout change keeps the focus',
+  name: 'Layout change keeps typing and focus',
   render: () => <LayoutChange />,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
+    const quantity = () => canvas.getByRole('textbox', { name: 'Quantity, line 1' })
+    await userEvent.clear(quantity())
+    await userEvent.type(quantity(), 'abc{Tab}')
+    await expect(await canvas.findByText('Quantity: Enter a number')).toBeVisible()
     await userEvent.click(canvas.getByRole('textbox', { name: 'Unit price, line 2' }))
     const selected = () => {
       const active = document.activeElement
@@ -486,6 +490,9 @@ export const LayoutChangeKeepsFocus: Story = {
     await waitFor(() => expect(canvas.getByRole('table', { name: 'Invoice lines' })).toBeVisible())
     await expect(canvas.getByRole('textbox', { name: 'Unit price, line 2' })).toHaveFocus()
     await expect(selected()).toEqual([1, 3])
+    await expect(quantity()).toHaveValue('abc')
+    await expect(quantity()).toHaveAttribute('aria-invalid', 'true')
+    await expect(canvas.getByText('Quantity: Enter a number')).toBeVisible()
     await settle()
   },
 }

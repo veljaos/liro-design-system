@@ -1,4 +1,12 @@
-import { useState, type FocusEvent, type KeyboardEvent, type ReactNode } from 'react'
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  type FocusEvent,
+  type KeyboardEvent,
+  type ReactNode,
+} from 'react'
 
 /*
  * Typed entry for the number, money and date fields (BUILD-PLAN P2.3): the user types freely, and
@@ -14,6 +22,22 @@ export interface Entry {
   /** False when the text is not empty and cannot be read. */
   valid: boolean
 }
+
+/** A typed field's text while it differs from its value, and whether it can be read. */
+export interface EntryDraft {
+  text: string | null
+  valid: boolean
+}
+
+/**
+ * Inside it, a typed field keeps its draft in `drafts` under `key` and starts from it when it is
+ * mounted again: EditableGrid renders a cell's field anew when its layout changes between the
+ * table and the cards, and unreadable text must not be lost (internal, not exported).
+ */
+export const EntryDraftSlot = createContext<{
+  drafts: Map<string, EntryDraft>
+  key: string
+} | null>(null)
 
 /** The value props every typed field takes. */
 export interface EntryProps {
@@ -42,9 +66,11 @@ export function useEntry(
 ) {
   const [inner, setInner] = useState(props.defaultValue ?? null)
   const value = props.value === undefined ? inner : props.value
+  const slot = useContext(EntryDraftSlot)
+  const kept = slot?.drafts.get(slot.key)
   // The text while it differs from the value's own text (being typed, or unreadable).
-  const [text, setText] = useState<string | null>(null)
-  const [valid, setValid] = useState(true)
+  const [text, setText] = useState<string | null>(kept?.text ?? null)
+  const [valid, setValid] = useState(kept?.valid ?? true)
   const [reported, setReported] = useState(value)
   const [seen, setSeen] = useState(value)
 
@@ -87,6 +113,14 @@ export function useEntry(
       props.onChange?.(entry.value)
     }
   }
+
+  const drafts = slot?.drafts
+  const key = slot?.key
+  useEffect(() => {
+    if (drafts === undefined || key === undefined) return
+    if (text === null && valid) drafts.delete(key)
+    else drafts.set(key, { text, valid })
+  }, [drafts, key, text, valid])
 
   return { value, valid, text: text ?? show(value), setText, commit, pick }
 }

@@ -26,6 +26,7 @@ import { NumberField } from './number-field'
 import { SelectField, type SelectOption } from './select-field'
 import { SettlingValue } from './settling-value'
 import { TextField } from './text-field'
+import { EntryDraftSlot, type EntryDraft } from './use-entry'
 import { usePhone } from './use-phone'
 
 /*
@@ -204,6 +205,8 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
   const idBase = useId()
   const pending = useRef<{ row: number; column: number } | null>(null)
   const [unreadable, setUnreadable] = useState<Readonly<Record<string, boolean>>>({})
+  // Typed text of the number and date cells, kept while the layout changes (see EntryDraftSlot).
+  const drafts = useRef(new Map<string, EntryDraft>()).current
   const { rows, columns } = props
   const editable = columns.filter(isEditable)
   const minRows = props.minRows ?? 1
@@ -371,60 +374,74 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
     const validity = (valid: boolean) => {
       setUnreadable((current) => ({ ...current, [`${rowId}\n${column.id}`]: !valid }))
     }
-    switch (column.type) {
-      case 'text':
-        return <TextField {...common} value={column.value(row)} onChange={change} />
-      case 'number':
-        return (
-          <NumberField
-            {...common}
-            value={column.value(row)}
-            onChange={change}
-            onValidityChange={validity}
-            {...(column.decimals === undefined ? {} : { decimals: column.decimals })}
-          />
-        )
-      case 'select':
-        return (
-          <SelectField
-            {...common}
-            options={column.options}
-            value={column.value(row)}
-            onChange={change}
-          />
-        )
-      case 'combobox': {
-        const options = typeof column.options === 'function' ? column.options(row) : column.options
-        const search = column.onSearch
-        return (
-          <ComboboxField
-            {...common}
-            options={options}
-            value={column.value(row)}
-            onChange={change}
-            {...(search === undefined
-              ? {}
-              : {
-                  onSearch: (query: string) => {
-                    search(rowId, query)
-                  },
-                })}
-            loading={column.loading?.(row) === true}
-          />
-        )
+    const field = () => {
+      switch (column.type) {
+        case 'text':
+          return <TextField {...common} value={column.value(row)} onChange={change} />
+        case 'number':
+          return (
+            <NumberField
+              {...common}
+              value={column.value(row)}
+              onChange={change}
+              onValidityChange={validity}
+              {...(column.decimals === undefined ? {} : { decimals: column.decimals })}
+            />
+          )
+        case 'select':
+          return (
+            <SelectField
+              {...common}
+              options={column.options}
+              value={column.value(row)}
+              onChange={change}
+            />
+          )
+        case 'combobox': {
+          const options =
+            typeof column.options === 'function' ? column.options(row) : column.options
+          const search = column.onSearch
+          return (
+            <ComboboxField
+              {...common}
+              options={options}
+              value={column.value(row)}
+              onChange={change}
+              {...(search === undefined
+                ? {}
+                : {
+                    onSearch: (query: string) => {
+                      search(rowId, query)
+                    },
+                  })}
+              loading={column.loading?.(row) === true}
+            />
+          )
+        }
+        case 'date':
+          return (
+            <DateField
+              {...common}
+              value={column.value(row)}
+              onChange={change}
+              onValidityChange={validity}
+            />
+          )
+        case 'display':
+          return null
       }
-      case 'date':
-        return (
-          <DateField
-            {...common}
-            value={column.value(row)}
-            onChange={change}
-            onValidityChange={validity}
-          />
-        )
-      case 'display':
-        return null
     }
+    return (
+      <EntryDraftSlot.Provider
+        value={{
+          drafts,
+          key: `${rowId}
+${column.id}`,
+        }}
+      >
+        {field()}
+      </EntryDraftSlot.Provider>
+    )
   }
 
   /** The row's messages: the application's, then a line for each unreadable cell of the grid's own. */
