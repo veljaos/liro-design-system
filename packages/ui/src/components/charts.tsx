@@ -542,13 +542,15 @@ export function DonutChart(props: DonutChartProps) {
               const anchor = x > cx ? 'start' : 'end'
               // The share after the name in reading order: at its right in left-to-right, at
               // its left in right-to-left (the plot's text runs left to right, see ChartFrame).
-              const name = <tspan fill="var(--liro-text-primary)">{slice.label}</tspan>
-              const share = <tspan fill="var(--liro-text-secondary)">{slice.share}</tspan>
+              const name = { fill: 'var(--liro-text-primary)', text: slice.label }
+              const share = { fill: 'var(--liro-text-secondary)', text: slice.share }
+              const [first, second] = direction === 'rtl' ? [share, name] : [name, share]
               return (
                 <text x={x} y={y} textAnchor={anchor} dominantBaseline="central" fontSize={12}>
-                  {direction === 'rtl' ? share : name}
-                  <tspan dx={6} />
-                  {direction === 'rtl' ? name : share}
+                  <tspan fill={first.fill}>{first.text}</tspan>
+                  <tspan fill={second.fill} dx={6}>
+                    {second.text}
+                  </tspan>
                 </text>
               )
             }}
