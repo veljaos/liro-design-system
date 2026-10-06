@@ -473,7 +473,12 @@ export function AppShell(props: AppShellProps) {
                     aria-hidden="true"
                     className="h-4.5 shrink-0 border-0 border-s border-solid border-default"
                   />
-                  <Breadcrumbs items={props.breadcrumbs} className="min-w-0 text-xs" />
+                  {/* One line in the header: crumbs that do not fit end with "…" (the full text stays
+                      in the accessible name and the page's title). */}
+                  <Breadcrumbs
+                    items={props.breadcrumbs}
+                    className="min-w-0 overflow-hidden text-xs [&_li:not([aria-hidden])]:min-w-0 [&_li:not([aria-hidden])]:truncate [&_li:not([aria-hidden])]:leading-base [&_ol]:flex-nowrap"
+                  />
                 </>
               )}
             </div>

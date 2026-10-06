@@ -437,6 +437,8 @@ Not added: `class-variance-authority` (variants are typed maps, as in Button) an
   7. **Phones** (below 48em by real branching, or `layout`): the lockup without the product name, no breadcrumbs, the icon search, the company switcher inside the user menu, and `bottomBar` for the page's main action within thumb reach: the form's bottom bar (`surface.page`, a 1px `border.default` line on top, padding sm), sticky at the bottom, its content full width, with the safe-area insets (`env(safe-area-inset-*)`) at the bottom and sides; the header adds the top inset.
   8. **A skip link** ("Skip to content", `messages['shell.skipToContent']`) is the first focusable element and leads to the `main` element (WCAG 2.4.1).
   - **Story data (owner's quality bar for Phase 4):** realistic Serbian companies, people, tax numbers, amounts and dates (`templates/shell-story-data.ts`); the interface text stays English. `ExampleProvider` (stories only) keeps the story's locale, direction and theme but writes numbers and dates as a Serbian tenant sees them (12.345,60 RSD, 06.10.2026.) with a fixed today (2026-10-06).
+  - **Banner is border-box (fix found in the AppShell review).** Banner is `w-full` with 16px padding and a 1px border; without a reset it was 34px wider than its container (the page scrolled sideways in the "Slots" story). It now says `box-border` itself, as the option lists do (P3.2a).
+  - **Breadcrumbs in the header stay on one line:** crumbs that do not fit end with "…" (the separators never shrink).
   - **Open (reported to the owner):** the CommandPalette's group headings ("ACTIONS", "GO TO") are upper case (Mantine Spotlight, P2.6b), which the Phase 4 quality bar forbids for micro-labels.
 
 ## Packaging

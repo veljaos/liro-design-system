@@ -230,13 +230,13 @@ export const Slots: Story = {
   args: {
     layout: 'desktop',
     impersonationBar: (
-      <Banner tone="warning" title="Viewing as Milica Petrović.">
+      <Banner tone="warning" title="Viewing as Milica Petrović." className="rounded-none">
         Support session, read-only, ends at 14:30.
       </Banner>
     ),
     environmentMarker: <StatusBadge label="Sandbox" tone="premium" withBorder />,
     offlineIndicator: (
-      <Banner tone="neutral" title="Offline.">
+      <Banner tone="neutral" title="Offline." className="rounded-none border-x-0 border-t-0">
         Changes are kept on this device and sent when the connection returns.
       </Banner>
     ),
