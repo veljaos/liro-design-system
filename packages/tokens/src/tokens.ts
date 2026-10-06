@@ -213,6 +213,25 @@ export const TONES = {
 
 export type Tone = keyof typeof TONES
 
+/**
+ * On a selected row or card (surface.selected; P4.3, decided by the owner): measured over the
+ * selection, a few dark-theme text colours fall below 4.5:1, so there they take the shade that
+ * passes — the next lighter one, which their hover already uses. Keyed by the variable's name
+ * after `--liro-`; the light theme needs none. An element marks the selection with
+ * `data-liro-surface="selected"` (tokens.css redeclares these variables inside it), and
+ * contrast.ts measures with them.
+ */
+export const ON_SELECTED: Record<Theme, Readonly<Record<string, string>>> = {
+  light: {},
+  dark: {
+    'status-danger-fg': 'red2',
+    'status-premium-fg': 'violet2',
+    'family-primary-fg': 'blue3',
+    'family-document-fg': 'violet2',
+    'family-destructive-fg': 'red2',
+  },
+}
+
 /** A.3 Spacing. Tailwind's own scale (--spacing: 0.25rem) gives the same steps: p-1 = 4px … p-16 = 64px. */
 export const SPACE = {
   none: '0',

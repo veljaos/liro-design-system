@@ -278,7 +278,7 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P4.0 | Baselines on CI, Storybook and brand follow-ups | P3.7 | done | 2026-10-06 | Workflow `Baselines`: twelve machines, one artifact of new and changed images; Storybook favicon (Windows path bug), 28px sidebar wordmark, no onboarding checklist; Brand page shows each surface's own versions; `BrandLockup` (owner: the app name as text, no icon); tab favicon without the tile, simplified dots, lighter in dark browsers; no ready-made "Liro Business Apps" file in the owner's folder |
 | P4.1 | Application shell | P2.6, P2.7 | done | 2026-10-06 | Owner's values: 56px header, lockup, xs breadcrumbs, search with Ctrl K, red unread dot without a number, company switcher (search above 7, in the user menu on phones), avatar user menu, centred module tabs as links, slots, phone bottom bar with safe areas, skip link; no sidebar |
 | P4.2 | Home (launchpad) | P4.1 | done | 2026-10-06 | Owner's values: cards with the icon in a sunken square that turns blue on hover, plain counter, locked cards, 1–9 and arrows, editing mode (move, hide, drag, hidden list with Show), skeletons |
-| P4.3 | List and worklist templates | P3.3, P4.1 | todo | | |
+| P4.3 | List and worklist templates | P3.3, P4.1 | done | 2026-10-06 | Owner's values: one list card (saved views, FilterBar, table edge to edge), hidden page title where a tab names it (PageHeader), column chooser without dragging, quick preview (click/Space; Enter opens), worklist 380px + detail from 62em, Back / Next item below |
 | P4.4 | Detail and record form templates | P3.5, P4.1 | todo | | |
 | P4.5 | Document template | P3.4, P4.4 | todo | | |
 | P4.6 | Report, dashboard and settings templates | P4.1 | todo | | |
@@ -637,6 +637,8 @@ Status tones — `fg` / `bg` / `border` / `solid`:
 | premium | violet7 / violet0 / violet2 / violet6 | violet3 / rgba(121,80,242,0.20) / rgba(121,80,242,0.45) / violet5 |
 
 `surface.inverse`, `text.onInverse` (tooltips) and `border.control` (the boundary of inputs, checkboxes, radios and the off state of switches, at least 3:1 on every surface for WCAG 1.4.11) were added in P2.1 by the owner's decision. In P3.6 the owner made `surface.selected` neutral (it was blue0 / rgba(0,120,212,0.18)) and added `border.selected` (the start-edge bar of a selected row and the border of a selected card): blue is kept for actions, links, focus, checked controls and the highlighted option. In P4.1 the owner added `text.logo` (blue6 / blue4, the colours of the logo files) for the app lockup, the application's name written as the logo; `text.brand` is unchanged.
+
+On a selected row or card (`surface.selected`, marked `data-liro-surface="selected"`), five dark-theme text colours that measure below 4.5:1 over the selection take the next lighter shade, the one their hover already uses (P4.3, owner): status.danger.fg red3 → red2, status.premium.fg violet3 → violet2, and the family texts primary blue4 → blue3, document violet3 → violet2, destructive red3 → red2. The light theme needs none.
 
 `brand.solid` is a background and `text.brand` is text; they move in opposite directions between themes and must never share a token.
 

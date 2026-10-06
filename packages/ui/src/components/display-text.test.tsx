@@ -87,3 +87,10 @@ describe('NumberText and MoneyText', () => {
     expect(render(<NumberText value="" />)).toContain('>—<')
   })
 })
+
+describe('DateText direction (P4.3)', () => {
+  it('is laid out by its own content, so a final dot stays at the end in right-to-left', () => {
+    const html = renderToStaticMarkup(<DateText value="2026-09-26" />)
+    expect(html).toMatch(/<time dir="auto"/)
+  })
+})

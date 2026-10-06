@@ -3,7 +3,15 @@
  * the opaque surface under it before its contrast is measured. The build fails when any pair
  * listed here is below its minimum (BUILD-PLAN P1.3, P1.4).
  */
-import { FAMILIES, MEANINGS, resolveColor, TONES, type Pair, type Theme } from './tokens.ts'
+import {
+  FAMILIES,
+  MEANINGS,
+  ON_SELECTED,
+  resolveColor,
+  TONES,
+  type Pair,
+  type Theme,
+} from './tokens.ts'
 
 type Rgb = readonly [number, number, number]
 
@@ -55,6 +63,12 @@ const SURFACES = ['page', 'raised', 'sunken', 'overlay', 'header'] as const
 
 function pick(pair: Pair, theme: Theme): string {
   return resolveColor(pair[theme === 'light' ? 0 : 1])
+}
+
+/** A text colour as it is on a selected row or card: its ON_SELECTED shade, if it has one. */
+function pickOnSelected(variable: string, pair: Pair, theme: Theme): string {
+  const shade = ON_SELECTED[theme][variable]
+  return shade === undefined ? pick(pair, theme) : resolveColor(shade)
 }
 
 /** Every text-on-background pair of the families and tones, in both themes, on every surface. */
@@ -139,6 +153,27 @@ export function contrastChecks(): ContrastCheck[] {
           toRgb(pick(parts.fg, theme), background),
           background,
         )
+      }
+
+      // Every tone's text straight on the surface (a field's error, a due date's text) and on a
+      // selected row or card over it; every tone's badge (fg on bg) over a selected row; every
+      // family's text on a selected row, as a subtle and as a light button (P4.3, owner).
+      for (const [tone, parts] of Object.entries(TONES)) {
+        add(`${theme}: tone ${tone} fg ${over}`, toRgb(pick(parts.fg, theme), surface), surface)
+        const fg = (background: Rgb) =>
+          toRgb(pickOnSelected(`status-${tone}-fg`, parts.fg, theme), background)
+        add(`${theme}: tone ${tone} fg on surface.selected ${over}`, fg(selected), selected)
+        const badge = toRgb(pick(parts.bg, theme), selected)
+        add(`${theme}: tone ${tone} fg on bg on surface.selected ${over}`, fg(badge), badge)
+      }
+      for (const [family, parts] of Object.entries(FAMILIES)) {
+        const fg = (background: Rgb) =>
+          toRgb(pickOnSelected(`family-${family}-fg`, parts.fg, theme), background)
+        add(`${theme}: family ${family} fg on surface.selected ${over}`, fg(selected), selected)
+        if ('subtle' in parts) {
+          const tint = toRgb(pick(parts.subtle, theme), selected)
+          add(`${theme}: family ${family} fg on subtle on surface.selected ${over}`, fg(tint), tint)
+        }
       }
     }
 

@@ -78,7 +78,11 @@ export function DateText({ value, withWeekday = false, dimmed = false, className
   const { format } = useLiro()
   if (value === undefined || value === null || value === '') return <Empty />
   const text = (
+    // dir="auto", as a bdi: a date of Latin digits has no strong character and is laid out left to
+    // right, so "26.09.2026." keeps its final dot in a right-to-left page (P4.3); a date Intl
+    // writes with right-to-left marks (Arabic) stays right to left.
     <time
+      dir="auto"
       dateTime={value}
       className={cn('tabular-nums', dimmed ? 'text-secondary' : 'text-inherit', className)}
     >

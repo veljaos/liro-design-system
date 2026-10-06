@@ -3,6 +3,7 @@ import { Checkbox } from '../primitives/checkbox'
 import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { CompactIconButton } from './button'
+import { rowKeyAction } from './data-table-logic'
 import { DropdownMenu, type MenuEntry } from './dropdown-menu'
 
 /*
@@ -34,8 +35,10 @@ export interface DataTableCardProps {
   /** The row menu, named `actionsLabel`. */
   actions?: readonly MenuEntry[]
   actionsLabel: string
-  /** Pressing the card (pointer, or Enter on the focused card). */
+  /** Pressing the card (pointer, or Space or Enter on the focused card). */
   onPress?: () => void
+  /** Enter opens the record instead of pressing the card (the table's `onRowOpen`). */
+  onOpen?: () => void
   /** The card's position for a virtual list. */
   index?: number
 }
@@ -54,6 +57,7 @@ export function DataTableCard(props: DataTableCardProps) {
   return (
     <div
       data-index={props.index}
+      data-liro-surface={props.selected ? 'selected' : undefined}
       {...(onPress === undefined
         ? {}
         : {
@@ -62,10 +66,12 @@ export function DataTableCard(props: DataTableCardProps) {
               if (!fromControl(event)) onPress()
             },
             onKeyDown: (event: KeyboardEvent) => {
-              if (event.key === 'Enter' && !fromControl(event)) {
-                event.preventDefault()
-                onPress()
-              }
+              if (fromControl(event)) return
+              const action = rowKeyAction(event.key, props.onOpen !== undefined)
+              if (action === null) return
+              event.preventDefault()
+              if (action === 'open') props.onOpen?.()
+              else onPress()
             },
           })}
       className={cn(

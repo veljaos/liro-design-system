@@ -112,3 +112,14 @@ export function widthAfterDrag(
   const moved = direction === 'rtl' ? startX - x : x - startX
   return clampWidth(startWidth + moved, min)
 }
+
+/**
+ * What a key does on a focused row or card that can be pressed (P4.3, owner): Space presses it
+ * (the pointer's action: a quick preview on a list page); Enter opens the record when the table
+ * has `onRowOpen`, and otherwise presses it as before.
+ */
+export function rowKeyAction(key: string, canOpen: boolean): 'press' | 'open' | null {
+  if (key === ' ') return 'press'
+  if (key === 'Enter') return canOpen ? 'open' : 'press'
+  return null
+}

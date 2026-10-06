@@ -11,49 +11,59 @@ const WIDE_QUERY = '(min-width: 48em)'
  */
 export const LAYOUT_SETTLE = 300
 
-/** The settled answer, shared by every component; undefined until first read. */
-let settled: boolean | undefined
-let query: MediaQueryList | undefined
-let timer: number | undefined
-const listeners = new Set<() => void>()
+/**
+ * A settled "narrower than" answer for one media query, shared by every component that asks it:
+ * undefined until first read, then changed only LAYOUT_SETTLE after the viewport last crossed.
+ */
+function createNarrowStore(wideQuery: string) {
+  let settled: boolean | undefined
+  let query: MediaQueryList | undefined
+  let timer: number | undefined
+  const listeners = new Set<() => void>()
 
-function livePhone(): boolean {
-  return !window.matchMedia(WIDE_QUERY).matches
-}
+  const live = () => !window.matchMedia(wideQuery).matches
 
-function readSettled(): boolean {
-  settled ??= livePhone()
-  return settled
-}
-
-/** After LAYOUT_SETTLE without another change, the live answer becomes the settled one. */
-function scheduleSettle() {
-  window.clearTimeout(timer)
-  timer = window.setTimeout(() => {
-    const next = livePhone()
-    if (next === settled) return
-    settled = next
-    listeners.forEach((listener) => {
-      listener()
-    })
-  }, LAYOUT_SETTLE)
-}
-
-function subscribeToWidth(onChange: () => void) {
-  if (query === undefined) {
-    query = window.matchMedia(WIDE_QUERY)
-    query.addEventListener('change', scheduleSettle)
+  const read = (): boolean => {
+    settled ??= live()
+    return settled
   }
-  // The viewport may have changed between the first read and this subscription.
-  if (livePhone() !== readSettled()) scheduleSettle()
-  listeners.add(onChange)
-  return () => {
-    listeners.delete(onChange)
+
+  /** After LAYOUT_SETTLE without another change, the live answer becomes the settled one. */
+  const scheduleSettle = () => {
+    window.clearTimeout(timer)
+    timer = window.setTimeout(() => {
+      const next = live()
+      if (next === settled) return
+      settled = next
+      listeners.forEach((listener) => {
+        listener()
+      })
+    }, LAYOUT_SETTLE)
   }
+
+  const subscribe = (onChange: () => void) => {
+    if (query === undefined) {
+      query = window.matchMedia(wideQuery)
+      query.addEventListener('change', scheduleSettle)
+    }
+    // The viewport may have changed between the first read and this subscription.
+    if (live() !== read()) scheduleSettle()
+    listeners.add(onChange)
+    return () => {
+      listeners.delete(onChange)
+    }
+  }
+
+  return { subscribe, read }
 }
+
+const phone = createNarrowStore(WIDE_QUERY)
+
+/** Narrower than md (62em): the WorklistPage stacks its list and detail (owner, P4.3). */
+const belowMd = createNarrowStore('(min-width: 62em)')
 
 /** The store behind usePhone, for its tests (not exported from the package). */
-export const phoneStore = { subscribe: subscribeToWidth, read: readSettled }
+export const phoneStore = phone
 
 /**
  * Whether the viewport is a phone's, for components that render a different layout there (real
@@ -61,5 +71,10 @@ export const phoneStore = { subscribe: subscribeToWidth, read: readSettled }
  * LAYOUT_SETTLE. On the server: not.
  */
 export function usePhone(): boolean {
-  return useSyncExternalStore(subscribeToWidth, readSettled, () => false)
+  return useSyncExternalStore(phone.subscribe, phone.read, () => false)
+}
+
+/** Whether the viewport is narrower than md (62em), settled as usePhone. On the server: not. */
+export function useBelowMd(): boolean {
+  return useSyncExternalStore(belowMd.subscribe, belowMd.read, () => false)
 }

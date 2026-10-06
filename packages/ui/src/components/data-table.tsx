@@ -35,6 +35,7 @@ import {
   hasActiveFilters,
   MIN_COLUMN_WIDTH,
   nextSort,
+  rowKeyAction,
   type DataTableFilters,
   type DataTableSort,
 } from './data-table-logic'
@@ -145,8 +146,16 @@ export interface DataTableProps<Row extends RowData> {
   /** Shown in the first column of the totals row when that column has no total of its own. */
   totalsLabel?: ReactNode
 
-  /** Pressing a row (pointer, or Enter on the focused row). The application decides what opens. */
+  /**
+   * Pressing a row (pointer, or Space or Enter on the focused row). The application decides what
+   * opens.
+   */
   onRowClick?: (row: Row) => void
+  /**
+   * Enter on the focused row (or card) opens the record (its full page), while the pointer and
+   * Space keep `onRowClick` (a quick preview, P4.3). Needs `onRowClick`.
+   */
+  onRowOpen?: (row: Row) => void
   /** The actions of one row, in a menu at the row's end. */
   rowActions?: (row: Row) => readonly MenuEntry[]
 
@@ -173,6 +182,12 @@ export interface DataTableProps<Row extends RowData> {
 
   /** The header stays at the top while the rows scroll (inside `maxHeight`). */
   stickyHeader?: boolean
+  /**
+   * The table sits in a card (ListPage, P4.3): the table reaches the card's edges, the parts above
+   * and below it (the loader and export slot, the bulk bar, the row-limit note, the count and
+   * paging) keep 16px from them, and 12px stay under the paging.
+   */
+  inCard?: boolean
   /** The table scrolls inside this height (CSS length, e.g. "60vh"), so header and totals stay. */
   maxHeight?: string
 
@@ -481,6 +496,8 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
       <tr
         key={row.id}
         aria-selected={selectable ? selected : undefined}
+        // The selection's own text colours (P4.3): tokens.css lightens the few that fail on it.
+        data-liro-surface={selected ? 'selected' : undefined}
         aria-rowindex={virtualize ? index + 2 : undefined}
         {...(clickable
           ? {
@@ -489,10 +506,12 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
                 if (!fromControl(event)) press()
               },
               onKeyDown: (event: KeyboardEvent) => {
-                if (event.key === 'Enter' && !fromControl(event)) {
-                  event.preventDefault()
-                  press()
-                }
+                if (fromControl(event)) return
+                const action = rowKeyAction(event.key, props.onRowOpen !== undefined)
+                if (action === null) return
+                event.preventDefault()
+                if (action === 'open') props.onRowOpen?.(original)
+                else press()
               },
             }
           : {})}
@@ -637,7 +656,7 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
     if (row === undefined) return null
     const original = row.original
     const label = getRowLabel(original)
-    const { mobile, rowActions, onRowClick } = props
+    const { mobile, rowActions, onRowClick, onRowOpen } = props
     const subtitle = mobile?.subtitle?.(original)
     const badge = mobile?.badge?.(original)
     return (
@@ -666,6 +685,13 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
           : {
               onPress: () => {
                 onRowClick(original)
+              },
+            })}
+        {...(onRowOpen === undefined
+          ? {}
+          : {
+              onOpen: () => {
+                onRowOpen(original)
               },
             })}
       />
@@ -732,15 +758,23 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
   const scrollStyle: CSSProperties | undefined =
     props.maxHeight === undefined ? undefined : { maxHeight: props.maxHeight }
 
+  const edge = props.inCard === true ? 'px-4' : undefined
+
   return (
-    <div className={cn('flex min-w-0 flex-col gap-3 font-sans', props.className)}>
+    <div
+      className={cn(
+        'flex min-w-0 flex-col gap-3 font-sans',
+        props.inCard === true && 'pb-3',
+        props.className,
+      )}
+    >
       {/*
         Above the table at the end (P3.6, owner; the old system kept it at the top): the refetch
         loader in a slot that is always reserved, so showing or hiding it never moves the table,
         then the export slot. The slot is a polite live region: "Updating…" is announced when a
         refetch starts.
       */}
-      <div className="flex min-h-3.5 flex-wrap items-center justify-end gap-3">
+      <div className={cn('flex min-h-3.5 flex-wrap items-center justify-end gap-3', edge)}>
         <span
           role="status"
           aria-live="polite"
@@ -760,18 +794,20 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
         {props.exportAction}
       </div>
       {selectable && props.bulkActions !== undefined && (
-        <BulkActionBar
-          count={selection?.length ?? 0}
-          {...(props.count !== undefined && props.countIsExact !== false
-            ? { total: props.count }
-            : {})}
-          {...(props.onSelectAll === undefined ? {} : { onSelectAll: props.onSelectAll })}
-          onClear={() => {
-            onSelectionChange([])
-          }}
-          actions={props.bulkActions}
-          {...(props.bulkLoading === undefined ? {} : { loading: props.bulkLoading })}
-        />
+        <div className={cn('empty:hidden', edge)}>
+          <BulkActionBar
+            count={selection?.length ?? 0}
+            {...(props.count !== undefined && props.countIsExact !== false
+              ? { total: props.count }
+              : {})}
+            {...(props.onSelectAll === undefined ? {} : { onSelectAll: props.onSelectAll })}
+            onClear={() => {
+              onSelectionChange([])
+            }}
+            actions={props.bulkActions}
+            {...(props.bulkLoading === undefined ? {} : { loading: props.bulkLoading })}
+          />
+        </div>
       )}
       <div className="relative min-w-0">
         <div
@@ -856,19 +892,23 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
       </div>
       {cardTotals}
       {props.rowLimitMessage !== undefined && (
-        <div className={cn('text-sm text-secondary', TEXT_DIRECTION)}>{props.rowLimitMessage}</div>
+        <div className={cn('text-sm text-secondary', TEXT_DIRECTION, edge)}>
+          {props.rowLimitMessage}
+        </div>
       )}
       {paging ? (
-        <CursorPagination
-          hasPrevious={props.hasPrevious === true}
-          hasNext={props.hasNext === true}
-          onPrevious={props.onPrevious ?? noop}
-          onNext={props.onNext ?? noop}
-          count={countText}
-        />
+        <div className={edge}>
+          <CursorPagination
+            hasPrevious={props.hasPrevious === true}
+            hasNext={props.hasNext === true}
+            onPrevious={props.onPrevious ?? noop}
+            onNext={props.onNext ?? noop}
+            count={countText}
+          />
+        </div>
       ) : (
         countText !== undefined && (
-          <div className={cn('text-sm text-secondary', TEXT_DIRECTION)}>{countText}</div>
+          <div className={cn('text-sm text-secondary', TEXT_DIRECTION, edge)}>{countText}</div>
         )
       )}
     </div>

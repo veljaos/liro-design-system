@@ -242,6 +242,20 @@ export interface LiroMessages {
   /** Launchpad, editing mode: the title over the hidden modules, and their "Show" button. */
   'launchpad.hidden': (count: number) => string
   'launchpad.showLabel': string
+  /** ListPage: names the row of saved views. */
+  'list.views': string
+  /** ColumnChooser: its button, its title, and the move buttons of a column (`label`). */
+  'columns.button': string
+  'columns.title': string
+  'columns.moveUp': (label: string) => string
+  'columns.moveDown': (label: string) => string
+  /** QuickPreview: opens the record's full page. */
+  'preview.open': string
+  /** WorklistPage, below 62em: back to the list, and on to the next item. */
+  'worklist.back': string
+  'worklist.next': string
+  /** WorklistPage, from 62em: names the detail pane. */
+  'worklist.detail': string
   /** The accessible name of a hidden module's "Show" button. */
   'launchpad.show': (name: string) => string
 }

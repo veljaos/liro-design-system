@@ -23,7 +23,7 @@ describe('StatusBadge', () => {
     const html = renderToStaticMarkup(<StatusBadge label="Paid" tone="success" />)
     expect(html).toContain('bg-status-success-bg text-status-success-fg')
     expect(html).toContain('data-tone="success"')
-    expect(html).toContain('<span>Paid</span>')
+    expect(html).toContain('<span class="bidi-isolate">Paid</span>')
     expect(html).not.toContain('border')
     expect(html).toContain('whitespace-nowrap')
   })
@@ -37,7 +37,9 @@ describe('StatusBadge', () => {
     const html = renderToStaticMarkup(
       <StatusBadge label="Paid" tone="success" icon={CircleCheck} />,
     )
-    expect(html).toMatch(/<svg[^>]*aria-hidden="true"[^>]*>.*<\/svg><span>Paid<\/span>/)
+    expect(html).toMatch(
+      /<svg[^>]*aria-hidden="true"[^>]*>.*<\/svg><span class="bidi-isolate">Paid<\/span>/,
+    )
   })
 
   it('knows the six tones', () => {
