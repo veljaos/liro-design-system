@@ -12,16 +12,14 @@ const meta = {
     docs: {
       description: {
         component:
-          '**What for:** the brand at the start of the application header, on status pages and ' +
-          'on the sign-in screen: the icon and the wordmark side by side, then the product name ' +
-          'as live text in the brand face, so the product name is data. One link home, named by ' +
-          'the full product name ("Liro Business Apps").\n\n' +
-          '**How:** the application passes the files of `@veljaos/tokens/brand/` (`icon`, ' +
-          '`wordmark` for light surfaces, `wordmarkOnDark` for the dark theme) and the names. ' +
-          "`size` 'md' (header: icon 28px, wordmark 20px, name 16px, 8px apart) or 'lg' (status " +
-          'pages, sign-in). Below 48em the product name is left out; `compact` forces it.\n\n' +
-          '**When not:** documents, e-mail and print take the brand files directly; the icon ' +
-          'alone (a favicon, an app icon) is a file, not this component.',
+          '**What for:** the application’s name at the start of the header, on status pages and ' +
+          'on the sign-in screen: "Liro Business Apps" as text in the brand face and colour, ' +
+          'the brand bold and the product regular, one line, no icon. Both names are data. One ' +
+          'link home, named by the full product name.\n\n' +
+          "**How:** `brandName`, `productName`, `href`; `size` 'md' (header, 20px) or 'lg' " +
+          '(24px). Below 48em only the brand name; `compact` forces it.\n\n' +
+          '**When not:** documents, e-mail, print, the favicon and the installed app take the ' +
+          'brand files of `@veljaos/tokens/brand/` directly.',
       },
     },
   },
@@ -45,7 +43,7 @@ export const Default: Story = {
 /** Status pages and the sign-in screen. */
 export const Large: Story = { args: { size: 'lg' } }
 
-/** Without a link: an image named by the product name. */
+/** Without a link: text named by the product name. */
 export const WithoutLink: Story = {
   name: 'Without link',
   render: () => <BrandLockup {...LIRO_BRAND} />,
@@ -60,15 +58,7 @@ export const WithoutLink: Story = {
 /** The brand alone, without a product name. */
 export const BrandOnly: Story = {
   name: 'Brand only',
-  render: () => (
-    <BrandLockup
-      brandName={LIRO_BRAND.brandName}
-      icon={LIRO_BRAND.icon}
-      wordmark={LIRO_BRAND.wordmark}
-      wordmarkOnDark={LIRO_BRAND.wordmarkOnDark}
-      href="#home"
-    />
-  ),
+  render: () => <BrandLockup brandName={LIRO_BRAND.brandName} href="#home" />,
 }
 
 /** `compact`: the product name left out, as below 48em; the link keeps the full name. */
@@ -89,27 +79,26 @@ export const LongText: Story = {
   args: { productName: 'Business Apps for Accounting Offices' },
 }
 
-/** Both sizes in a 56px header bar, light and dark side by side. */
+/** In a 56px header bar, light and dark side by side. */
 export const InHeader: Story = {
   name: 'In a header',
   render: (args) => (
     <div className="flex flex-col gap-4">
       {(['light', 'dark'] as const).map((theme) => (
-        <div
-          key={theme}
-          data-liro-theme={theme}
-          className="flex h-header items-center border-0 border-b border-solid border-default bg-surface-header px-6"
-        >
-          <StoryProvider colorScheme={theme}>
+        <StoryProvider key={theme} colorScheme={theme}>
+          <div
+            data-liro-theme={theme}
+            className="flex h-header items-center border-0 border-b border-solid border-default bg-surface-header px-6"
+          >
             <BrandLockup {...args} />
-          </StoryProvider>
-        </div>
+          </div>
+        </StoryProvider>
       ))}
     </div>
   ),
 }
 
-/** At phone width the application passes `compact` (or leaves it to the 48em rule). */
+/** At phone width: the brand name alone. */
 export const PhoneWidth: Story = {
   name: 'Phone width',
   render: (args) => (
@@ -121,7 +110,7 @@ export const PhoneWidth: Story = {
   ),
 }
 
-/** An Arabic product name, in a right-to-left page: the icon stands at the start (right). */
+/** An Arabic product name, in a right-to-left page. */
 export const Arabic: Story = {
   render: (args) => (
     <StoryProvider locale="ar">

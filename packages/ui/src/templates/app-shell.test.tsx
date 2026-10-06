@@ -18,8 +18,6 @@ const BASE: AppShellProps = {
   brand: {
     brandName: 'Liro',
     productName: 'Business Apps',
-    icon: 'i.svg',
-    wordmark: 'w.svg',
     href: '/',
   },
   breadcrumbs: [{ label: 'Sales', href: '/sales' }, { label: 'Invoices' }],
@@ -75,14 +73,16 @@ describe('AppShell', () => {
     expect(html).toContain('aria-label="Breadcrumbs"')
     expect(html).toContain('Switch company: Kvadrat Gradnja d.o.o.')
     expect(html).toContain('>Search…<')
-    expect(html).toContain('>Business Apps<')
+    expect(html).toContain('Business Apps</span>')
+    expect(html).toContain('>Ctrl K<')
+    expect(html).not.toContain('<kbd')
   })
   it('on phones: no breadcrumbs or company button, an icon search, the bottom bar', () => {
     const html = render({ layout: 'phone', bottomBar: <button type="button">New invoice</button> })
     expect(html).not.toContain('aria-label="Breadcrumbs"')
     expect(html).not.toContain('Switch company:')
     expect(html).toContain('aria-label="Search…"')
-    expect(html).not.toContain('>Business Apps<')
+    expect(html).not.toContain('Business Apps</span>')
     expect(html).toContain('data-slot="shell-bottom-bar"')
     expect(render({ layout: 'desktop', bottomBar: <span /> })).not.toContain('shell-bottom-bar')
   })

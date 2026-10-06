@@ -9,6 +9,7 @@ import iconMonoBlack from '@veljaos/tokens/brand/icon-mono-black.svg'
 import iconMonoWhite from '@veljaos/tokens/brand/icon-mono-white.svg'
 import appleTouchIcon from '@veljaos/tokens/brand/web/apple-touch-icon.png'
 import favicon from '@veljaos/tokens/brand/web/favicon.ico'
+import faviconSvg from '@veljaos/tokens/brand/web/favicon.svg'
 import icon512 from '@veljaos/tokens/brand/web/icon-512.png'
 import iconMaskable from '@veljaos/tokens/brand/web/icon-maskable-512.png'
 import wordmarkLight from '@veljaos/tokens/brand/wordmark-light.svg'
@@ -50,7 +51,7 @@ const ICONS: BrandFile[] = [
   {
     name: 'icon.svg',
     src: icon,
-    use: 'Brand tile (also web/favicon.svg)',
+    use: 'Brand tile (the installed app)',
     on: ['light', 'dark'],
   },
   { name: 'icon-light.svg', src: iconLight, use: 'Light tile, blue mark', on: ['light'] },
@@ -161,46 +162,58 @@ export const Versions: Story = {
 }
 
 /**
- * The lockup (P4.0): BrandLockup from `@veljaos/ui` with these files and the product name as live
- * text, as the header, the status pages and the sign-in screen show it.
+ * The application lockup (P4.0, owner): BrandLockup from `@veljaos/ui`, the name as text — no
+ * icon — as the header, the status pages and the sign-in screen show it.
  */
 export const Lockup: Story = {
   render: () => (
     <Page
-      title="Lockup"
-      intro="BrandLockup: the icon and the wordmark 8px apart, then the product name as live text in Space Grotesk, so it can change without a new file. The header size (icon 28px, wordmark 20px, name 16px) and the large size for status pages and sign-in. Below 48em the product name is left out. The icon keeps its sharp corners, as in documents, e-mail and on the website."
+      title="App lockup"
+      intro="The application's name in the header: text, no icon. Space Grotesk in the brand's text colour, the brand bold and the product name regular, one line; both names are data. Below 48em only the brand name. The wordmark and icon files are for documents, e-mail, the favicon and the installed app."
     >
       <OnBothThemes>
         {(theme) => (
           <LiroProvider locale="en" colorScheme={theme}>
             <div className="flex flex-col items-start gap-6">
-              <BrandLockup
-                brandName="Liro"
-                productName="Business Apps"
-                icon={icon}
-                wordmark={wordmarkLight}
-                wordmarkOnDark={wordmarkMonoWhite}
-                compact={false}
-              />
-              <BrandLockup
-                brandName="Liro"
-                productName="Business Apps"
-                icon={icon}
-                wordmark={wordmarkLight}
-                wordmarkOnDark={wordmarkMonoWhite}
-                size="lg"
-                compact={false}
-              />
-              <BrandLockup
-                brandName="Liro"
-                productName="Business Apps"
-                icon={icon}
-                wordmark={wordmarkLight}
-                wordmarkOnDark={wordmarkMonoWhite}
-                compact
-              />
+              <BrandLockup brandName="Liro" productName="Business Apps" compact={false} />
+              <BrandLockup brandName="Liro" productName="Business Apps" size="lg" compact={false} />
+              <BrandLockup brandName="Liro" productName="Business Apps" compact />
             </div>
           </LiroProvider>
+        )}
+      </OnBothThemes>
+    </Page>
+  ),
+}
+
+/**
+ * The browser tab's favicon (P4.0, owner): the icon's dots on a transparent background, brand
+ * blue, lighter in a dark browser; a simplified version with fewer, larger dots, so it stays
+ * a dotted mark at 16px. The installed-app icons keep the blue tile.
+ */
+export const Favicon: Story = {
+  render: () => (
+    <Page
+      title="Favicon"
+      intro="web/favicon.svg at 16 and 32 px on a light and a dark tab bar. It follows the browser's colour scheme: brand-blue dots (blue 6) in a light browser, the lighter blue (blue 4) in a dark one. web/favicon.ico holds 16, 32 (simplified) and 48 px."
+    >
+      <OnBothThemes>
+        {() => (
+          <div className="flex items-center gap-6">
+            {[16, 32].map((size) => (
+              <span key={size} className="flex items-center gap-2 text-xs text-secondary">
+                <img
+                  src={faviconSvg}
+                  alt={`Liro favicon, ${String(size)} px`}
+                  width={size}
+                  height={size}
+                />
+                <code dir="ltr" className="font-mono">
+                  {size} px
+                </code>
+              </span>
+            ))}
+          </div>
         )}
       </OnBothThemes>
     </Page>
