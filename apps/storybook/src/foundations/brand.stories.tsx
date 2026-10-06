@@ -174,7 +174,9 @@ export const Lockup: Story = {
       <OnBothThemes>
         {(theme) => (
           <LiroProvider locale="en" colorScheme={theme}>
-            <div className="flex flex-col items-start gap-6">
+            {/* On the header's surface, where it stands (on the grey page it would not reach
+                4.5:1). */}
+            <div className="flex flex-col items-start gap-6 rounded-md border border-solid border-default bg-surface-header p-4">
               <BrandLockup brandName="Liro" productName="Business Apps" compact={false} />
               <BrandLockup brandName="Liro" productName="Business Apps" size="lg" compact={false} />
               <BrandLockup brandName="Liro" productName="Business Apps" compact />
