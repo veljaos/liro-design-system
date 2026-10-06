@@ -6,7 +6,7 @@ import { CommandPalette, type CommandPaletteProps } from '../components/command-
 import { commandMatches } from '../components/command-logic'
 import { Dialog } from '../components/dialog'
 import type { MenuEntry } from '../components/dropdown-menu'
-import { Breadcrumbs, ShortcutHint, type Crumb } from '../components/navigation'
+import { Breadcrumbs, type Crumb } from '../components/navigation'
 import { PersonAvatar } from '../components/person'
 import { usePhone } from '../components/use-phone'
 import { ButtonPrimitive } from '../primitives/button'
@@ -31,7 +31,8 @@ import { useLiro } from '../provider/liro-provider'
  *   breadcrumbs in xs. End: the search button, then 16px, then the cluster of notifications,
  *   company switcher and user menu, 8px (xs) apart.
  * - Search (the old look): a neutral "default" button, small (30px), the Search icon 15px,
- *   `messages['shell.search']`, then the shortcut (ShortcutHint, quiet: text.tertiary); width by
+ *   `messages['shell.search']`, then 16px (md) and the shortcut as plain text ("Ctrl K"; the
+ *   application gives "⌘K" on a Mac) in xs text.tertiary, no key boxes (owner); width by
  *   content. It opens the CommandPalette (also Ctrl/Cmd+K). On phones an icon-only subtle 36px
  *   button, like the bell.
  * - Notifications: a subtle 36px button with an 18px Bell; while anything is unread a 10px dot in
@@ -107,8 +108,11 @@ export interface AppShellProps {
   breadcrumbs?: readonly Crumb[]
   /** The command palette the search button opens (its items and search). */
   commands?: Omit<CommandPaletteProps, 'open' | 'onOpenChange'>
-  /** The search shortcut as the user sees it. Default: Ctrl (`messages['grid.modifierKey']`) K. */
-  searchShortcut?: readonly string[]
+  /**
+   * The search shortcut as the user sees it, plain text. Default: "Ctrl K"
+   * (`messages['grid.modifierKey']` and K); the application gives "⌘K" on a Mac.
+   */
+  searchShortcut?: string
   notifications?: ShellNotifications
   companies?: ShellCompanies
   user?: ShellUser
@@ -440,7 +444,7 @@ export function AppShell(props: AppShellProps) {
   const phone = props.layout === undefined ? viewportPhone : props.layout === 'phone'
   const [searching, setSearching] = useState(false)
   const contentId = useId()
-  const shortcut = props.searchShortcut ?? [messages['grid.modifierKey'], 'K']
+  const shortcut = props.searchShortcut ?? `${messages['grid.modifierKey']} K`
 
   return (
     <div data-slot="app-shell" className="flex min-h-dvh flex-col bg-surface-page font-sans">
@@ -510,8 +514,12 @@ export function AppShell(props: AppShellProps) {
                   >
                     <Search aria-hidden="true" className="size-3.75 shrink-0" />
                     <span className={TEXT_DIRECTION}>{messages['shell.search']}</span>
-                    <span aria-hidden="true" className="flex">
-                      <ShortcutHint keys={shortcut} quiet />
+                    <span
+                      aria-hidden="true"
+                      dir="ltr"
+                      className="ms-2 text-xs font-regular whitespace-nowrap text-tertiary"
+                    >
+                      {shortcut}
                     </span>
                   </ButtonPrimitive>
                 ))}

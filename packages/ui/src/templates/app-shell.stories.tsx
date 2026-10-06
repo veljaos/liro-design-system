@@ -214,9 +214,9 @@ export const UserMenu: Story = {
   },
 }
 
-/** The search button opens the command palette. */
+/** The search button opens the command palette; on a Mac the application gives "⌘K". */
 export const Search: Story = {
-  args: { layout: 'desktop' },
+  args: { layout: 'desktop', searchShortcut: '⌘K' },
   play: async ({ canvasElement }) => {
     await settle()
     await userEvent.click(within(canvasElement).getByRole('button', { name: 'Search…' }))
