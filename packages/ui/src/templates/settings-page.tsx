@@ -89,10 +89,11 @@ function Row({ row, phone }: { row: SettingRow; phone: boolean }) {
           </span>
         )}
       </div>
-      <div className={cn('flex shrink-0 items-center gap-3', !phone && 'justify-end')}>
+      <div className={cn('flex shrink-0 items-center', !phone && 'justify-end')}>
+        {/* Always present (a live region), and without room of its own while empty. */}
         <span role="status" className="flex min-w-0 items-center">
           {row.state === 'saved' && (
-            <span className="flex items-center gap-1 text-xs text-status-success-fg">
+            <span className="me-3 flex items-center gap-1 text-xs text-status-success-fg">
               <Check aria-hidden="true" className="size-3.5 shrink-0" />
               <span className={TEXT_DIRECTION}>{messages['settings.saved']}</span>
             </span>

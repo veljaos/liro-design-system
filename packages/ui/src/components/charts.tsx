@@ -188,7 +188,12 @@ function ChartFrame({
       ) : (
         <>
           {legend}
-          <div role="img" aria-label={title} className="min-w-0">
+          {/*
+            The plot is drawn left to right: Recharts places every text by physical coordinates
+            and mirrors the axes itself in right-to-left (below), while an inherited rtl
+            direction would flip the SVG text anchors over the plot. The tooltip sets its own.
+          */}
+          <div role="img" aria-label={title} className="min-w-0 [direction:ltr]">
             {children}
           </div>
         </>
@@ -306,8 +311,12 @@ function TooltipBody({
   label: string
   rows: readonly { key: string; name: string; colour: string; text: string }[]
 }) {
+  const { direction } = useLiro()
   return (
-    <div className="flex min-w-36 flex-col gap-1 rounded-md border border-solid border-default bg-surface-overlay px-3 py-2 font-sans text-xs text-primary shadow-md">
+    <div
+      dir={direction}
+      className="flex min-w-36 flex-col gap-1 rounded-md border border-solid border-default bg-surface-overlay px-3 py-2 font-sans text-xs text-primary shadow-md"
+    >
       <span className={cn('font-semibold', TEXT_DIRECTION)}>{label}</span>
       {rows.map((row) => (
         <span key={row.key} className="flex items-center gap-2">
@@ -482,6 +491,7 @@ export function AreaChart(props: CartesianChartProps) {
 
 /** Parts of one whole, with their shares from the application. */
 export function DonutChart(props: DonutChartProps) {
+  const { direction } = useLiro()
   const palette = props.palette ?? 'default'
   const write = useFormatValue(props.currency, props.decimals)
   const height = props.height ?? 240
@@ -530,12 +540,15 @@ export function DonutChart(props: DonutChartProps) {
               const x = cx + radius * Math.cos(angle)
               const y = cy + radius * Math.sin(angle)
               const anchor = x > cx ? 'start' : 'end'
+              // The share after the name in reading order: at its right in left-to-right, at
+              // its left in right-to-left (the plot's text runs left to right, see ChartFrame).
+              const name = <tspan fill="var(--liro-text-primary)">{slice.label}</tspan>
+              const share = <tspan fill="var(--liro-text-secondary)">{slice.share}</tspan>
               return (
                 <text x={x} y={y} textAnchor={anchor} dominantBaseline="central" fontSize={12}>
-                  <tspan fill="var(--liro-text-primary)">{slice.label}</tspan>
-                  <tspan fill="var(--liro-text-secondary)" dx={6}>
-                    {slice.share}
-                  </tspan>
+                  {direction === 'rtl' ? share : name}
+                  <tspan dx={6} />
+                  {direction === 'rtl' ? name : share}
                 </text>
               )
             }}
