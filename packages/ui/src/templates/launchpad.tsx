@@ -83,7 +83,7 @@ export interface LaunchpadProps {
 }
 
 const CARD =
-  'box-border flex min-h-33 flex-col rounded-lg border border-solid p-4 font-sans text-start no-underline'
+  'box-border flex min-h-33 flex-col rounded-lg border border-solid p-4 font-sans text-start text-primary no-underline visited:text-primary'
 
 function ModuleIcon({ icon: Icon, locked }: { icon: IconComponent; locked: boolean }) {
   return (

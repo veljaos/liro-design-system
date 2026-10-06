@@ -122,7 +122,7 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
                   <Link
                     href={item.href}
                     className={cn(
-                      'rounded-sm text-link no-underline hover:underline',
+                      'rounded-sm text-link no-underline visited:text-link hover:text-link hover:underline active:text-link',
                       TEXT_DIRECTION,
                       FOCUS_RING,
                     )}

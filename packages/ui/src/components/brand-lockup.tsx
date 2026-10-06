@@ -71,7 +71,8 @@ export function BrandLockup({
   )
 
   const classes = cn(
-    'inline-block shrink-0 rounded-sm font-brand whitespace-nowrap text-logo no-underline',
+    // The logo's colour in every link state (P4.4, owner): never the browser's visited purple.
+    'inline-block shrink-0 rounded-sm font-brand whitespace-nowrap text-logo no-underline visited:text-logo hover:text-logo active:text-logo focus:text-logo hover:no-underline',
     size === 'lg' ? 'text-h1' : 'text-xl',
     'leading-tight',
     href !== undefined && FOCUS_RING,
