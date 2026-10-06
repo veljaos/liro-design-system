@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { BrandLockup, LiroProvider } from '@veljaos/ui'
 import type { ReactNode } from 'react'
 import icon from '@veljaos/tokens/brand/icon.svg'
 import iconDark from '@veljaos/tokens/brand/icon-dark.svg'
@@ -8,6 +9,7 @@ import iconMonoBlack from '@veljaos/tokens/brand/icon-mono-black.svg'
 import iconMonoWhite from '@veljaos/tokens/brand/icon-mono-white.svg'
 import appleTouchIcon from '@veljaos/tokens/brand/web/apple-touch-icon.png'
 import favicon from '@veljaos/tokens/brand/web/favicon.ico'
+import faviconSvg from '@veljaos/tokens/brand/web/favicon.svg'
 import icon512 from '@veljaos/tokens/brand/web/icon-512.png'
 import iconMaskable from '@veljaos/tokens/brand/web/icon-maskable-512.png'
 import wordmarkLight from '@veljaos/tokens/brand/wordmark-light.svg'
@@ -21,28 +23,42 @@ import wordmarkNeutral from '@veljaos/tokens/brand/wordmark-neutral.svg'
  * the application passes these files.
  */
 
+type Surface = 'light' | 'dark'
+
 interface BrandFile {
   /** The path under `@veljaos/tokens/brand/`. */
   name: string
   src: string
   /** What it is for. */
   use: string
+  /** The backgrounds it is made for (P4.0: each surface shows only its own versions). */
+  on: readonly Surface[]
 }
 
 const WORDMARKS: BrandFile[] = [
-  { name: 'wordmark-light.svg', src: wordmarkLight, use: 'Brand blue, on light backgrounds' },
-  { name: 'wordmark-neutral.svg', src: wordmarkNeutral, use: 'Text colour, on light backgrounds' },
-  { name: 'wordmark-mono-black.svg', src: wordmarkMonoBlack, use: 'Black, for print and fax' },
-  { name: 'wordmark-mono-white.svg', src: wordmarkMonoWhite, use: 'White, on dark backgrounds' },
+  { name: 'wordmark-light.svg', src: wordmarkLight, use: 'Brand blue', on: ['light'] },
+  { name: 'wordmark-neutral.svg', src: wordmarkNeutral, use: 'Text colour', on: ['light'] },
+  {
+    name: 'wordmark-mono-black.svg',
+    src: wordmarkMonoBlack,
+    use: 'Black, for print and fax',
+    on: ['light'],
+  },
+  { name: 'wordmark-mono-white.svg', src: wordmarkMonoWhite, use: 'White', on: ['dark'] },
 ]
 
 const ICONS: BrandFile[] = [
-  { name: 'icon.svg', src: icon, use: 'Brand tile (also web/favicon.svg)' },
-  { name: 'icon-light.svg', src: iconLight, use: 'Light tile' },
-  { name: 'icon-dark.svg', src: iconDark, use: 'Dark tile, light blue mark' },
-  { name: 'icon-dark-white.svg', src: iconDarkWhite, use: 'Dark tile, white mark' },
-  { name: 'icon-mono-black.svg', src: iconMonoBlack, use: 'The mark alone, black' },
-  { name: 'icon-mono-white.svg', src: iconMonoWhite, use: 'The mark alone, white' },
+  {
+    name: 'icon.svg',
+    src: icon,
+    use: 'Brand tile (the installed app)',
+    on: ['light', 'dark'],
+  },
+  { name: 'icon-light.svg', src: iconLight, use: 'Light tile, blue mark', on: ['light'] },
+  { name: 'icon-dark.svg', src: iconDark, use: 'Dark tile, light blue mark', on: ['dark'] },
+  { name: 'icon-dark-white.svg', src: iconDarkWhite, use: 'Dark tile, white mark', on: ['dark'] },
+  { name: 'icon-mono-black.svg', src: iconMonoBlack, use: 'The mark alone, black', on: ['light'] },
+  { name: 'icon-mono-white.svg', src: iconMonoWhite, use: 'The mark alone, white', on: ['dark'] },
 ]
 
 function Page({ title, intro, children }: { title: string; intro: string; children: ReactNode }) {
@@ -108,18 +124,18 @@ export default meta
 
 type Story = StoryObj<typeof meta>
 
-/** Every version of the wordmark and the icon on light and on dark. */
+/** Each surface with only the versions made for it. */
 export const Versions: Story = {
   render: () => (
     <Page
       title="Versions"
-      intro="The wordmark and the icon in every version, on the light and the dark surface. There is no coloured wordmark for dark backgrounds yet: use the white monochrome wordmark there."
+      intro="Each surface shows only the versions made for it. The icon.svg brand tile works on both. There is no coloured wordmark for dark backgrounds: use the white one there."
     >
       <OnBothThemes>
-        {() => (
+        {(theme) => (
           <>
             <ul className="m-0 flex list-none flex-col gap-4 p-0">
-              {WORDMARKS.map((file) => (
+              {WORDMARKS.filter((file) => file.on.includes(theme)).map((file) => (
                 <li key={file.name} className="flex flex-col gap-1">
                   <img
                     src={file.src}
@@ -131,7 +147,7 @@ export const Versions: Story = {
               ))}
             </ul>
             <ul className="m-0 grid list-none grid-cols-2 gap-4 p-0 sm:grid-cols-3">
-              {ICONS.map((file) => (
+              {ICONS.filter((file) => file.on.includes(theme)).map((file) => (
                 <li key={file.name} className="flex flex-col gap-1">
                   <img src={file.src} alt={`Liro (${file.name})`} className="size-16" />
                   <Caption file={file} />
@@ -139,6 +155,65 @@ export const Versions: Story = {
               ))}
             </ul>
           </>
+        )}
+      </OnBothThemes>
+    </Page>
+  ),
+}
+
+/**
+ * The application lockup (P4.0, owner): BrandLockup from `@veljaos/ui`, the name as text — no
+ * icon — as the header, the status pages and the sign-in screen show it.
+ */
+export const Lockup: Story = {
+  render: () => (
+    <Page
+      title="App lockup"
+      intro="The application's name in the header: text, no icon. Space Grotesk in the brand's text colour, the brand bold and the product name regular, one line; both names are data. Below 48em only the brand name. The wordmark and icon files are for documents, e-mail, the favicon and the installed app."
+    >
+      <OnBothThemes>
+        {(theme) => (
+          <LiroProvider locale="en" colorScheme={theme}>
+            <div className="flex flex-col items-start gap-6">
+              <BrandLockup brandName="Liro" productName="Business Apps" compact={false} />
+              <BrandLockup brandName="Liro" productName="Business Apps" size="lg" compact={false} />
+              <BrandLockup brandName="Liro" productName="Business Apps" compact />
+            </div>
+          </LiroProvider>
+        )}
+      </OnBothThemes>
+    </Page>
+  ),
+}
+
+/**
+ * The browser tab's favicon (P4.0, owner): the icon's dots on a transparent background, brand
+ * blue, lighter in a dark browser; a simplified version with fewer, larger dots, so it stays
+ * a dotted mark at 16px. The installed-app icons keep the blue tile.
+ */
+export const Favicon: Story = {
+  render: () => (
+    <Page
+      title="Favicon"
+      intro="web/favicon.svg at 16 and 32 px on a light and a dark tab bar. It follows the browser's colour scheme: brand-blue dots (blue 6) in a light browser, the lighter blue (blue 4) in a dark one. web/favicon.ico holds 16, 32 (simplified) and 48 px."
+    >
+      <OnBothThemes>
+        {() => (
+          <div className="flex items-center gap-6">
+            {[16, 32].map((size) => (
+              <span key={size} className="flex items-center gap-2 text-xs text-secondary">
+                <img
+                  src={faviconSvg}
+                  alt={`Liro favicon, ${String(size)} px`}
+                  width={size}
+                  height={size}
+                />
+                <code dir="ltr" className="font-mono">
+                  {size} px
+                </code>
+              </span>
+            ))}
+          </div>
         )}
       </OnBothThemes>
     </Page>

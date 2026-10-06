@@ -16,7 +16,7 @@ function pick<T extends string>(value: unknown, options: readonly T[], fallback:
   return options.find((option) => option === text) ?? fallback
 }
 
-const withLiroProvider: Decorator = (Story, { globals }) => {
+const withLiroProvider: Decorator = (Story, { globals, parameters }) => {
   const locale = pick(globals.locale, LOCALES, 'en')
   const theme = pick(globals.theme, ['light', 'dark'], 'light')
   const direction = pick(globals.direction, ['auto', 'ltr', 'rtl'], 'auto')
@@ -33,7 +33,15 @@ const withLiroProvider: Decorator = (Story, { globals }) => {
       format={format}
       {...(direction === 'auto' ? {} : { direction })}
     >
-      <div className="min-h-dvh bg-surface-page p-4 text-primary">
+      {/* A full screen (templates and example screens, `parameters.screen`) fills the frame
+          edge to edge; every other story stands on the page with 16px around it. */}
+      <div
+        className={
+          parameters.screen === true
+            ? 'min-h-dvh bg-surface-page text-primary'
+            : 'min-h-dvh bg-surface-page p-4 text-primary'
+        }
+      >
         <Story />
       </div>
     </LiroProvider>
