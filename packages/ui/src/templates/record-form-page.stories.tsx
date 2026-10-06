@@ -80,7 +80,7 @@ function EmployeeForm({
         {...props}
       >
         <div className="flex flex-col gap-4">
-          <FormSection title="Personal">
+          <FormSection title="Personal" columns={phone ? 1 : 2}>
             <TextField label="First name" defaultValue="Jelena" required />
             <TextField label="Last name" defaultValue="Marković" required />
             <DateField label="Date of birth" defaultValue={EMPLOYEE.birthDate} />
@@ -93,7 +93,7 @@ function EmployeeForm({
             <TextField label="E-mail" type="email" defaultValue={EMPLOYEE.email} />
             <TextField label="Address" defaultValue={EMPLOYEE.address} />
           </FormSection>
-          <FormSection title="Employment">
+          <FormSection title="Employment" columns={phone ? 1 : 2}>
             <TextField label="Position" defaultValue={EMPLOYEE.position} />
             <SelectField
               label="Department"
@@ -107,7 +107,7 @@ function EmployeeForm({
             <DateField label="Start date" defaultValue={EMPLOYEE.since} />
             <DateField label="Contract end" defaultValue={EMPLOYEE.contractEnd} />
           </FormSection>
-          <FormSection title="Payroll">
+          <FormSection title="Payroll" columns={phone ? 1 : 2}>
             <MoneyField label="Gross salary" currency="RSD" defaultValue={EMPLOYEE.gross} />
             <TextField label="Bank account" defaultValue={EMPLOYEE.account} direction="ltr" />
           </FormSection>

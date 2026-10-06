@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { Printer } from 'lucide-react'
-import { expect, userEvent, within } from 'storybook/test'
+import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { Button } from '../components/button'
 import { KeyValueList } from '../components/cards'
 import { DataTable } from '../components/data-table'
@@ -271,7 +271,15 @@ export const SectionBarStory: Story = {
       'location',
     )
     await expect(document.activeElement?.id).toBe('payroll')
-    window.scrollTo(0, 0)
+    // Back to the first section at once (whatever element scrolls), so the picture does not
+    // depend on the smooth scroll's timing.
+    document.getElementById('personal')?.scrollIntoView({ behavior: 'instant', block: 'start' })
+    await waitFor(async () => {
+      await expect(nav.getByRole('link', { name: 'Personal' })).toHaveAttribute(
+        'aria-current',
+        'location',
+      )
+    })
   },
 }
 

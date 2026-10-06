@@ -13,7 +13,8 @@ import { useLiro } from '../provider/liro-provider'
  * - Sticky under the AppShell's sticky top (`--liro-shell-top`), above the content.
  * - A `nav` landmark named by `messages['page.sections']`; the current link `aria-current`
  *   ("location"). A press scrolls to the section (smoothly, unless the user reduces motion) and
- *   moves the focus there; the current section follows the scroll (`currentSection`).
+ *   moves the focus there; the current section follows the scroll (`currentSection`), except
+ *   that a pressed section stays current until its scroll ends.
  * - The sections keep a scroll margin of the shell and the bar (SECTION_SCROLL_MARGIN), so a
  *   section reached by the bar or the keyboard is never hidden under them (WCAG 2.4.11).
  */
@@ -49,12 +50,17 @@ export function SectionBar({ sections, className }: SectionBarProps) {
   const { messages } = useLiro()
   const [current, setCurrent] = useState(sections[0]?.id)
   const bar = useRef<HTMLElement>(null)
+  // After a press, the pressed section stays current until its scroll ends, so the bar does not
+  // run through the sections it passes on the way.
+  const pressed = useRef<string | null>(null)
+  const recompute = useRef<() => void>(() => undefined)
 
   useEffect(() => {
     let frame = 0
     const update = () => {
       cancelAnimationFrame(frame)
       frame = requestAnimationFrame(() => {
+        if (pressed.current !== null) return
         const line = (bar.current?.getBoundingClientRect().bottom ?? 0) + 1
         const tops = sections.map(
           (section) =>
@@ -64,12 +70,15 @@ export function SectionBar({ sections, className }: SectionBarProps) {
         setCurrent(sections[currentSection(tops, line)]?.id)
       })
     }
+    recompute.current = update
     update()
-    window.addEventListener('scroll', update, { passive: true })
+    // Every scroll on the page, in the capture phase: the scrolling element may be the window or
+    // a container of the application (scroll events of an element do not bubble).
+    document.addEventListener('scroll', update, { capture: true, passive: true })
     window.addEventListener('resize', update)
     return () => {
       cancelAnimationFrame(frame)
-      window.removeEventListener('scroll', update)
+      document.removeEventListener('scroll', update, { capture: true })
       window.removeEventListener('resize', update)
     }
   }, [sections])
@@ -82,6 +91,18 @@ export function SectionBar({ sections, className }: SectionBarProps) {
     target.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' })
     target.focus({ preventScroll: true })
     setCurrent(id)
+    pressed.current = id
+    let timer = 0
+    const release = () => {
+      window.clearTimeout(timer)
+      document.removeEventListener('scrollend', release, { capture: true })
+      if (pressed.current !== id) return
+      pressed.current = null
+      recompute.current()
+    }
+    document.addEventListener('scrollend', release, { capture: true })
+    // Without scrollend (an older engine), or when nothing needed to scroll.
+    timer = window.setTimeout(release, 1000)
   }
 
   return (

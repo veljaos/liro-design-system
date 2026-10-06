@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { expect, userEvent, within } from 'storybook/test'
+import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { settle } from '../primitives/story-helpers'
 import { SECTION_SCROLL_MARGIN, SectionBar } from './section-bar'
 import { StoryProvider } from './story-frames'
@@ -62,7 +62,15 @@ export const Press: Story = {
       'aria-current',
       'location',
     )
-    window.scrollTo(0, 0)
+    // Back to the first section at once (whatever element scrolls), so the picture does not
+    // depend on the smooth scroll's timing.
+    document.getElementById('bar-general')?.scrollIntoView({ behavior: 'instant', block: 'start' })
+    await waitFor(async () => {
+      await expect(nav.getByRole('link', { name: 'General' })).toHaveAttribute(
+        'aria-current',
+        'location',
+      )
+    })
   },
 }
 
