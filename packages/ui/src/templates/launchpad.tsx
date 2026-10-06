@@ -70,6 +70,11 @@ export interface LaunchpadProps {
   skeletonCount?: number
   /** The editing mode: reorder and hide. Switched on by the application. */
   editing?: boolean
+  /**
+   * 'phone' forces one column (a narrow frame at desktop width); default: by the viewport —
+   * one column on phones, two from xs (36em), three from sm (48em).
+   */
+  layout?: 'desktop' | 'phone'
   /** The new order of the visible modules' ids. */
   onReorder?: (ids: string[]) => void
   onHide?: (id: string) => void
@@ -112,7 +117,7 @@ function CardText({ module }: { module: LaunchpadModule }) {
 function Counter({ module }: { module: LaunchpadModule }) {
   if (module.locked !== undefined) {
     return (
-      <span className="flex items-center gap-1 text-xs font-medium text-secondary">
+      <span className="flex min-w-0 items-center gap-1 text-xs font-medium text-secondary">
         <Lock aria-hidden="true" className="size-3 shrink-0" />
         <span className={TEXT_DIRECTION}>{module.locked}</span>
       </span>
@@ -120,7 +125,12 @@ function Counter({ module }: { module: LaunchpadModule }) {
   }
   if (module.counter === undefined) return null
   return (
-    <span className={cn('text-xs font-medium text-secondary tabular-nums', TEXT_DIRECTION)}>
+    <span
+      className={cn(
+        'min-w-0 text-end text-xs font-medium break-words text-secondary tabular-nums',
+        TEXT_DIRECTION,
+      )}
+    >
       {module.counter}
     </span>
   )
@@ -139,6 +149,8 @@ export function Launchpad(props: LaunchpadProps) {
   const [dragging, setDragging] = useState<string | null>(null)
   const hiddenHeading = useId()
   const editing = props.editing === true
+  const grid =
+    props.layout === 'phone' ? 'grid-cols-1' : 'grid-cols-1 xs:grid-cols-2 sm:grid-cols-3'
   const ids = props.modules.map((module) => module.id)
 
   const cards = () =>
@@ -214,7 +226,7 @@ export function Launchpad(props: LaunchpadProps) {
         aria-busy="true"
         aria-label={props.label}
         role="region"
-        className={cn('grid grid-cols-1 gap-4 xs:grid-cols-2 sm:grid-cols-3', props.className)}
+        className={cn('grid gap-4', grid, props.className)}
       >
         {Array.from({ length: props.skeletonCount ?? 6 }, (_, index) => (
           <Skeleton key={index} className="h-33 rounded-lg" />
@@ -227,11 +239,7 @@ export function Launchpad(props: LaunchpadProps) {
 
   return (
     <div className={cn('flex flex-col gap-6', props.className)}>
-      <ul
-        ref={list}
-        aria-label={props.label}
-        className="m-0 grid list-none grid-cols-1 gap-4 p-0 xs:grid-cols-2 sm:grid-cols-3"
-      >
+      <ul ref={list} aria-label={props.label} className={cn('m-0 grid list-none gap-4 p-0', grid)}>
         {props.modules.map((module, index) => {
           const locked = module.locked !== undefined
           if (editing) {

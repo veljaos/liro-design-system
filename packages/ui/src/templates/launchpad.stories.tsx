@@ -31,10 +31,15 @@ function Home({
         }
       >
         <div className="flex items-center justify-between gap-4">
-          <h1 className="m-0 text-h1 text-primary">Kvadrat Gradnja d.o.o.</h1>
+          <h1 className="bidi-content m-0 text-h1 text-primary">Kvadrat Gradnja d.o.o.</h1>
           {props.action}
         </div>
-        <Launchpad label="Modules" modules={MODULES} {...props} />
+        <Launchpad
+          label="Modules"
+          modules={MODULES}
+          layout={phone ? 'phone' : 'desktop'}
+          {...props}
+        />
       </div>
     </AppShell>
   )
