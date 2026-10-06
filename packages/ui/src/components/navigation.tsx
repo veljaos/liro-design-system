@@ -197,6 +197,8 @@ export function CursorPagination(props: CursorPaginationProps) {
 export interface ShortcutHintProps {
   /** The keys, from the application in the user's words: ["Ctrl", "K"] or ["⌘", "K"]. */
   keys: readonly string[]
+  /** Text in text.tertiary instead of text.secondary, beside other text (the AppShell search). */
+  quiet?: boolean
   className?: string
 }
 
@@ -205,13 +207,19 @@ export interface ShortcutHintProps {
  * smallest size is 12px), radius sm, a 1px border.default border with a 3px bottom edge,
  * text.secondary on surface.hover, padding 0.12em 0.45em; keys joined by "+".
  */
-export function ShortcutHint({ keys, className }: ShortcutHintProps) {
+export function ShortcutHint({ keys, quiet = false, className }: ShortcutHintProps) {
+  const tone = quiet ? 'text-tertiary' : 'text-secondary'
   return (
-    <span className={cn('inline-flex items-center gap-1 text-xs text-secondary', className)}>
+    <span className={cn('inline-flex items-center gap-1 text-xs', tone, className)}>
       {keys.map((key, index) => (
         <Fragment key={index}>
           {index > 0 && <span aria-hidden="true">+</span>}
-          <kbd className="rounded-sm border border-b-[3px] border-solid border-default bg-surface-hover px-[0.45em] py-[0.12em] text-center font-mono text-xs leading-[1.55] font-bold text-secondary [unicode-bidi:embed]">
+          <kbd
+            className={cn(
+              'rounded-sm border border-b-[3px] border-solid border-default bg-surface-hover px-[0.45em] py-[0.12em] text-center font-mono text-xs leading-[1.55] font-bold [unicode-bidi:embed]',
+              tone,
+            )}
+          >
             {key}
           </kbd>
         </Fragment>

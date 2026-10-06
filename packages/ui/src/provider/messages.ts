@@ -218,4 +218,21 @@ export interface LiroMessages {
   'wizard.finish': string
   /** The connection is lost. */
   'connection.offline': string
+  /** AppShell: the link that skips the header and goes to the page's content. */
+  'shell.skipToContent': string
+  /** AppShell: the search button that opens the command palette. */
+  'shell.search': string
+  /** AppShell: the notifications button; `unread` is how many are unread (0: none). */
+  'shell.notifications': (unread: number) => string
+  /** AppShell: the user menu's button. */
+  'shell.userMenu': string
+  /** AppShell: names the row of module tabs. */
+  'shell.moduleTabs': string
+  /** Company switcher: the button's name (`company` is the current one), and its list. */
+  'shell.switchCompany': (company: string) => string
+  'shell.companies': string
+  /** Company switcher: the search field shown when there are many companies. */
+  'shell.findCompany': string
+  /** Company switcher: how many items wait in a company. */
+  'shell.waiting': (count: number) => string
 }

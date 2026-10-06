@@ -210,3 +210,12 @@ export type {
   NumberScheme,
   Weekday,
 } from './provider'
+export { AppShell, COMPANY_SEARCH_THRESHOLD, matchingCompanies } from './templates/app-shell'
+export type {
+  AppShellProps,
+  ModuleTab,
+  ShellCompanies,
+  ShellCompany,
+  ShellNotifications,
+  ShellUser,
+} from './templates/app-shell'

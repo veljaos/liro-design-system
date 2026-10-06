@@ -127,4 +127,16 @@ export const messagesEn: LiroMessages = {
   'wizard.next': 'Next',
   'wizard.finish': 'Finish',
   'connection.offline': 'Offline',
+  'shell.skipToContent': 'Skip to content',
+  'shell.search': 'Search…',
+  'shell.notifications': (unread) =>
+    unread > 0
+      ? `Notifications, ${formatDecimal(String(unread), 'comma-dot')} unread`
+      : 'Notifications',
+  'shell.userMenu': 'Account',
+  'shell.moduleTabs': 'Module',
+  'shell.switchCompany': (company) => `Switch company: ${company}`,
+  'shell.companies': 'Companies',
+  'shell.findCompany': 'Find company',
+  'shell.waiting': (count) => `${formatDecimal(String(count), 'comma-dot')} waiting`,
 }
