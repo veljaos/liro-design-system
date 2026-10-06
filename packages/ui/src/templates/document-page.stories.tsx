@@ -11,6 +11,8 @@ import { ExampleProvider, PhoneFrame, StoryProvider } from '../components/story-
 import type { TotalsRow } from '../components/document-totals'
 import type { LifecycleStep } from '../components/lifecycle-bar'
 import type { SidePanel } from '../components/side-panels'
+import { TEXT_DIRECTION } from '../primitives/classes'
+import { cn } from '../primitives/cn'
 import { settle } from '../primitives/story-helpers'
 import { AppShell } from './app-shell'
 import { DocumentPage, type DocumentPageProps } from './document-page'
@@ -141,7 +143,9 @@ const PANELS: SidePanel[] = [
         </div>
         <div className="flex justify-between gap-2">
           <dt className="text-secondary">Sent</dt>
-          <dd className="m-0 tabular-nums">28.09.2026. 10:42</dd>
+          <dd className="m-0 tabular-nums" dir="ltr">
+            28.09.2026. 10:42
+          </dd>
         </div>
       </dl>
     ),
@@ -172,7 +176,11 @@ const PANELS: SidePanel[] = [
     key: 'comments',
     title: 'Comments',
     count: 3,
-    content: <p className="m-0 text-sm">Dragan Ilić: Customer asked for delivery on Friday.</p>,
+    content: (
+      <p className={cn('m-0 text-sm', TEXT_DIRECTION)}>
+        Dragan Ilić: Customer asked for delivery on Friday.
+      </p>
+    ),
   },
   {
     key: 'history',
@@ -219,7 +227,7 @@ const BASE: DocumentPageProps = {
       key: 'terms',
       title: 'Payment',
       content: (
-        <p className="m-0 text-sm text-primary">
+        <p className={cn('m-0 text-sm text-primary', TEXT_DIRECTION)}>
           Payment to 160-0000012345678-21 with reference 97 2026-0412, within 15 days.
         </p>
       ),

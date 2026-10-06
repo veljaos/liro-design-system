@@ -97,7 +97,7 @@ function CounterpartyBlock({ party }: { party: Counterparty }) {
       <span className={cn('text-xs text-secondary', TEXT_DIRECTION)}>{party.label}</span>
       <span className={cn('text-sm font-semibold text-primary', TEXT_DIRECTION)}>{party.name}</span>
       {party.taxId !== undefined && (
-        <span className="text-xs text-secondary tabular-nums" dir="auto">
+        <span className={cn('text-xs text-secondary tabular-nums', TEXT_DIRECTION)}>
           {party.taxId}
         </span>
       )}
