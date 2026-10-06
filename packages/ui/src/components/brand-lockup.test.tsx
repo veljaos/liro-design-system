@@ -24,9 +24,9 @@ describe('BrandLockup', () => {
       /class="font-regular[^"]*"> <!-- -->Business Apps<\/span>|> Business Apps</,
     )
   })
-  it('writes the brand in the brand face and colour, 20px in the header, 24px large', () => {
+  it('writes the brand in the brand face and the logo colour, 20px in the header, 24px large', () => {
     expect(renderToStaticMarkup(<BrandLockup {...BRAND} />)).toMatch(
-      /font-brand[^"]*text-brand[^"]*text-xl/,
+      /font-brand[^"]*text-logo[^"]*text-xl/,
     )
     expect(renderToStaticMarkup(<BrandLockup {...BRAND} size="lg" />)).toContain('text-h1')
   })

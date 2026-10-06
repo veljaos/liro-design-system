@@ -147,6 +147,9 @@ export const MEANINGS = {
     brand: ['blue7', 'blue4'],
     link: ['blue7', 'blue4'],
     onInverse: ['white', 'black'],
+    // The app lockup (P4.1, owner): the logo's own colours, #0078D4 and #3EACEB, so the name in
+    // the header matches the logo files. Not text.brand (blue 7 in light), which stays.
+    logo: ['blue6', 'blue4'],
   },
   border: {
     default: ['gray3', '#3B3B3B'],
