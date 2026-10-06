@@ -11,14 +11,16 @@ import { LiroProvider, useLiro } from '../provider/liro-provider'
  * element with a transform is the containing block of its fixed descendants.
  */
 
-/** A nested provider in the story's theme; locale and direction may be given. */
+/** A nested provider in the story's theme; locale, direction and theme may be given. */
 export function StoryProvider({
   locale,
   direction,
+  colorScheme,
   children,
 }: {
   locale?: string
   direction?: 'ltr' | 'rtl'
+  colorScheme?: 'light' | 'dark'
   children: ReactNode
 }) {
   const liro = useLiro()
@@ -28,7 +30,7 @@ export function StoryProvider({
     <LiroProvider
       locale={locale ?? liro.locale}
       {...(dir === undefined ? {} : { direction: dir })}
-      colorScheme={liro.colorScheme}
+      colorScheme={colorScheme ?? liro.colorScheme}
       today={liro.today}
     >
       {children}

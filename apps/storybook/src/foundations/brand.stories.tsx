@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { BrandLockup, LiroProvider } from '@veljaos/ui'
 import type { ReactNode } from 'react'
 import icon from '@veljaos/tokens/brand/icon.svg'
 import iconDark from '@veljaos/tokens/brand/icon-dark.svg'
@@ -21,28 +22,42 @@ import wordmarkNeutral from '@veljaos/tokens/brand/wordmark-neutral.svg'
  * the application passes these files.
  */
 
+type Surface = 'light' | 'dark'
+
 interface BrandFile {
   /** The path under `@veljaos/tokens/brand/`. */
   name: string
   src: string
   /** What it is for. */
   use: string
+  /** The backgrounds it is made for (P4.0: each surface shows only its own versions). */
+  on: readonly Surface[]
 }
 
 const WORDMARKS: BrandFile[] = [
-  { name: 'wordmark-light.svg', src: wordmarkLight, use: 'Brand blue, on light backgrounds' },
-  { name: 'wordmark-neutral.svg', src: wordmarkNeutral, use: 'Text colour, on light backgrounds' },
-  { name: 'wordmark-mono-black.svg', src: wordmarkMonoBlack, use: 'Black, for print and fax' },
-  { name: 'wordmark-mono-white.svg', src: wordmarkMonoWhite, use: 'White, on dark backgrounds' },
+  { name: 'wordmark-light.svg', src: wordmarkLight, use: 'Brand blue', on: ['light'] },
+  { name: 'wordmark-neutral.svg', src: wordmarkNeutral, use: 'Text colour', on: ['light'] },
+  {
+    name: 'wordmark-mono-black.svg',
+    src: wordmarkMonoBlack,
+    use: 'Black, for print and fax',
+    on: ['light'],
+  },
+  { name: 'wordmark-mono-white.svg', src: wordmarkMonoWhite, use: 'White', on: ['dark'] },
 ]
 
 const ICONS: BrandFile[] = [
-  { name: 'icon.svg', src: icon, use: 'Brand tile (also web/favicon.svg)' },
-  { name: 'icon-light.svg', src: iconLight, use: 'Light tile' },
-  { name: 'icon-dark.svg', src: iconDark, use: 'Dark tile, light blue mark' },
-  { name: 'icon-dark-white.svg', src: iconDarkWhite, use: 'Dark tile, white mark' },
-  { name: 'icon-mono-black.svg', src: iconMonoBlack, use: 'The mark alone, black' },
-  { name: 'icon-mono-white.svg', src: iconMonoWhite, use: 'The mark alone, white' },
+  {
+    name: 'icon.svg',
+    src: icon,
+    use: 'Brand tile (also web/favicon.svg)',
+    on: ['light', 'dark'],
+  },
+  { name: 'icon-light.svg', src: iconLight, use: 'Light tile, blue mark', on: ['light'] },
+  { name: 'icon-dark.svg', src: iconDark, use: 'Dark tile, light blue mark', on: ['dark'] },
+  { name: 'icon-dark-white.svg', src: iconDarkWhite, use: 'Dark tile, white mark', on: ['dark'] },
+  { name: 'icon-mono-black.svg', src: iconMonoBlack, use: 'The mark alone, black', on: ['light'] },
+  { name: 'icon-mono-white.svg', src: iconMonoWhite, use: 'The mark alone, white', on: ['dark'] },
 ]
 
 function Page({ title, intro, children }: { title: string; intro: string; children: ReactNode }) {
@@ -108,18 +123,18 @@ export default meta
 
 type Story = StoryObj<typeof meta>
 
-/** Every version of the wordmark and the icon on light and on dark. */
+/** Each surface with only the versions made for it. */
 export const Versions: Story = {
   render: () => (
     <Page
       title="Versions"
-      intro="The wordmark and the icon in every version, on the light and the dark surface. There is no coloured wordmark for dark backgrounds yet: use the white monochrome wordmark there."
+      intro="Each surface shows only the versions made for it. The icon.svg brand tile works on both. There is no coloured wordmark for dark backgrounds: use the white one there."
     >
       <OnBothThemes>
-        {() => (
+        {(theme) => (
           <>
             <ul className="m-0 flex list-none flex-col gap-4 p-0">
-              {WORDMARKS.map((file) => (
+              {WORDMARKS.filter((file) => file.on.includes(theme)).map((file) => (
                 <li key={file.name} className="flex flex-col gap-1">
                   <img
                     src={file.src}
@@ -131,7 +146,7 @@ export const Versions: Story = {
               ))}
             </ul>
             <ul className="m-0 grid list-none grid-cols-2 gap-4 p-0 sm:grid-cols-3">
-              {ICONS.map((file) => (
+              {ICONS.filter((file) => file.on.includes(theme)).map((file) => (
                 <li key={file.name} className="flex flex-col gap-1">
                   <img src={file.src} alt={`Liro (${file.name})`} className="size-16" />
                   <Caption file={file} />
@@ -139,6 +154,53 @@ export const Versions: Story = {
               ))}
             </ul>
           </>
+        )}
+      </OnBothThemes>
+    </Page>
+  ),
+}
+
+/**
+ * The lockup (P4.0): BrandLockup from `@veljaos/ui` with these files and the product name as live
+ * text, as the header, the status pages and the sign-in screen show it.
+ */
+export const Lockup: Story = {
+  render: () => (
+    <Page
+      title="Lockup"
+      intro="BrandLockup: the icon and the wordmark 8px apart, then the product name as live text in Space Grotesk, so it can change without a new file. The header size (icon 28px, wordmark 20px, name 16px) and the large size for status pages and sign-in. Below 48em the product name is left out. The icon keeps its sharp corners, as in documents, e-mail and on the website."
+    >
+      <OnBothThemes>
+        {(theme) => (
+          <LiroProvider locale="en" colorScheme={theme}>
+            <div className="flex flex-col items-start gap-6">
+              <BrandLockup
+                brandName="Liro"
+                productName="Business Apps"
+                icon={icon}
+                wordmark={wordmarkLight}
+                wordmarkOnDark={wordmarkMonoWhite}
+                compact={false}
+              />
+              <BrandLockup
+                brandName="Liro"
+                productName="Business Apps"
+                icon={icon}
+                wordmark={wordmarkLight}
+                wordmarkOnDark={wordmarkMonoWhite}
+                size="lg"
+                compact={false}
+              />
+              <BrandLockup
+                brandName="Liro"
+                productName="Business Apps"
+                icon={icon}
+                wordmark={wordmarkLight}
+                wordmarkOnDark={wordmarkMonoWhite}
+                compact
+              />
+            </div>
+          </LiroProvider>
         )}
       </OnBothThemes>
     </Page>
