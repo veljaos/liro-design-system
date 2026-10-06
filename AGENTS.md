@@ -157,9 +157,10 @@ screenshots taken on Windows or macOS directly.
   and choose the branch. It builds Storybook once, runs the visual tests with
   `--update-snapshots=changed` on twelve machines in the pinned image, and uploads one artifact
   `baselines` with only the new and changed images, laid out like
-  `apps/storybook/tests/__screenshots__/` (the run's summary lists them). Download it
-  (`gh run download <run-id> -n baselines -D apps/storybook/tests/__screenshots__`), look at
-  every image, commit them, and let CI confirm. A story whose interaction fails writes no image
+  `apps/storybook/tests/__screenshots__/` (the run's summary lists them). Download it into an
+  empty folder (`gh run download <run-id> -n baselines -D <tmp>`; it refuses to overwrite files)
+  and copy that folder's content over `apps/storybook/tests/__screenshots__/`; look at every
+  image, commit them, and let CI confirm. A story whose interaction fails writes no image
   and fails its part. The workflow never commits; images of removed stories are deleted by hand.
 - **Through CI.** Push the branch. When a story has no baseline or looks different, the job
   `Story tests, accessibility, visual` fails and uploads the artifact `playwright-results` (the
