@@ -1,3 +1,4 @@
+import { TEXT_ISOLATE } from '../primitives/classes'
 import type { IconComponent } from './intents'
 
 /** The six status tones (Appendix A.2). */
@@ -72,7 +73,8 @@ export function StatusBadge({ label, tone, withBorder = false, icon: Icon }: Sta
   return (
     <span className={className} data-tone={tone}>
       {Icon === undefined ? null : <Icon aria-hidden="true" className="size-3 shrink-0" />}
-      <span>{label}</span>
+      {/* Its direction from its own text: "3 days overdue" in a right-to-left page (P4.3). */}
+      <span className={TEXT_ISOLATE}>{label}</span>
     </span>
   )
 }
