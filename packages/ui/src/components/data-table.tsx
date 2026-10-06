@@ -828,6 +828,8 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
           aria-busy={cards && props.loading === true ? true : undefined}
           className={cn(
             'overflow-auto',
+            // In a card, phone cards stand 16px inside its edges, as the rows' text does.
+            cards && edge,
             FOCUS_RING,
             'focus-visible:-outline-offset-2',
             // A row reached by the keyboard is scrolled clear of the sticky header and totals

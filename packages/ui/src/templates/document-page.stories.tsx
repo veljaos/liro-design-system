@@ -363,6 +363,8 @@ export const Default: Story = {
       'aria-expanded',
       'true',
     )
+    // The click scrolled the panel into view; the picture shows the page from its top.
+    window.scrollTo(0, 0)
   },
 }
 
@@ -440,12 +442,13 @@ export const PhoneWidth: Story = {
             <DataTable
               label="Lines"
               layout="cards"
+              inCard
               columns={COLUMNS}
               rows={LINES}
               getRowId={(line) => line.id}
               getRowLabel={(line) => line.item}
               mobile={{ details: ['quantity', 'price', 'amount'] }}
-              className="p-4"
+              className="pt-4"
             />
           }
           actions={<Button intent="pdf" label="PDF" emphasis="secondary" />}
