@@ -11,12 +11,14 @@ import { cn } from '../primitives/cn'
 import { Popover, PopoverContent, PopoverTrigger } from '../primitives/popover'
 import { useLiro } from '../provider/liro-provider'
 import { moveModule } from './launchpad-logic'
+import { PageHeader } from './page-header'
 
 /*
  * ListPage, ColumnChooser and QuickPreview (BUILD-PLAN P4.3; the owner's values,
  * docs/decisions.md "List page"):
- * - The page title (h1) and the page's main action ("New invoice") on the page background, the
- *   title at the start and the actions at the end; below them ONE card (the raised surface,
+ * - The page's main action ("New invoice") at the end of a row on the page background; the title
+ *   is the page's h1 for screen readers only, because the module tab already names the page
+ *   (`titleHidden`, default true; PageHeader). Below them ONE card (the raised surface,
  *   border.default, radius lg, no shadow) holding the saved views as its first row, the FilterBar
  *   (inCard) and the table edge to edge. No other cards. The FilterBar keeps only the list's own
  *   actions (Export, Columns).
@@ -44,6 +46,11 @@ export interface SavedView {
 export interface ListPageProps {
   /** The page's title (h1), from the application. */
   title: string
+  /**
+   * The title for screen readers only, because the active module tab already names the page.
+   * Default true (owner, P4.3); false where no tab names the list.
+   */
+  titleHidden?: boolean
   /** The page's main action at the end of the title row (a Button), the main one last. */
   actions?: ReactNode
   /** The saved views: the card's first row. */
@@ -125,12 +132,11 @@ export function ListPage(props: ListPageProps) {
         props.className,
       )}
     >
-      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-        <h1 className={cn('m-0 min-w-0 text-h1 text-primary', TEXT_DIRECTION)}>{props.title}</h1>
-        {props.actions !== undefined && (
-          <div className="flex flex-wrap items-center gap-2">{props.actions}</div>
-        )}
-      </div>
+      <PageHeader
+        title={props.title}
+        titleHidden={props.titleHidden ?? true}
+        {...(props.actions === undefined ? {} : { actions: props.actions })}
+      />
       <section
         aria-label={props.title}
         className="box-border flex min-w-0 flex-col overflow-hidden rounded-lg border border-solid border-default bg-surface-raised"

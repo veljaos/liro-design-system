@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { rowKeyAction } from '../components/data-table-logic'
 import { LiroProvider } from '../provider/liro-provider'
 import { ListPage } from './list-page'
+import { PageHeader } from './page-header'
 import { WorklistPage } from './worklist-page'
 
 function render(node: React.ReactNode) {
@@ -40,7 +41,8 @@ describe('ListPage', () => {
         <table />
       </ListPage>,
     )
-    expect(html).toContain('<h1')
+    // The module tab names the page: the h1 is for screen readers only (owner, P4.3).
+    expect(html).toContain('<h1 class="sr-only">Invoices</h1>')
     expect(html).toContain('New invoice')
     expect(html).toContain('aria-label="Views"')
     expect(html).toMatch(/aria-pressed="true"[^>]*>.*All.*1\.284/)
@@ -93,10 +95,44 @@ describe('WorklistPage', () => {
     expect(detail).toContain('Back to list')
     expect(detail).toContain('Next item')
   })
+  it('leaves out the inline actions of the chosen row while its detail stands beside it', () => {
+    const items = ITEMS.map((item) => ({
+      ...item,
+      actions: <button type="button">Approve {item.id}</button>,
+    }))
+    const split = render(
+      <WorklistPage
+        layout="split"
+        title="T"
+        label="T"
+        items={items}
+        selected="a"
+        detail={<p>D</p>}
+      />,
+    )
+    expect(split).not.toContain('Approve a')
+    expect(split).toContain('Approve b')
+    const alone = render(
+      <WorklistPage layout="split" title="T" label="T" items={items} selected="a" />,
+    )
+    expect(alone).toContain('Approve a')
+  })
   it('shows the empty slot when there are no items', () => {
     const html = render(
       <WorklistPage layout="split" title="T" label="T" items={[]} empty={<p>NOTHING</p>} />,
     )
     expect(html).toContain('NOTHING')
+  })
+})
+
+describe('PageHeader', () => {
+  it('shows the title unless titleHidden, and keeps the h1 either way', () => {
+    const shown = render(
+      <PageHeader title="Ana Jovanović" actions={<button type="button">Edit</button>} />,
+    )
+    expect(shown).toMatch(/<h1 class="m-0 [^"]*text-h1[^"]*">Ana Jovanović<\/h1>/)
+    const hidden = render(<PageHeader title="Invoices" titleHidden />)
+    expect(hidden).toContain('<h1 class="sr-only">Invoices</h1>')
+    expect(hidden).not.toContain('text-h1')
   })
 })

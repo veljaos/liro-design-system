@@ -4,6 +4,7 @@ import { useBelowMd } from '../components/use-phone'
 import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
+import { PageHeader } from './page-header'
 
 /*
  * WorklistPage (BUILD-PLAN P4.3; the owner's values, docs/decisions.md "Worklist"): a queue
@@ -15,7 +16,8 @@ import { useLiro } from '../provider/liro-provider'
  *   "Next item".
  * - Rows (the old WorklistItem): the title (sm semibold), a subtitle (xs text.secondary), one
  *   deciding figure at the end (sm medium, tabular) with the status badge under it, and optional
- *   inline actions (Approve / Reject) under the text; rows separated by border.subtle, padding sm
+ *   inline actions (Approve / Reject) under the text — not on the chosen row while its detail
+ *   stands beside the list with the same actions; rows separated by border.subtle, padding sm
  *   by md. The chosen row is surface.selected with a 3px border.selected bar at its start (the
  *   neutral selection, AGENTS.md D17). The detail pane is optional.
  */
@@ -37,6 +39,8 @@ export interface WorklistItem {
 export interface WorklistPageProps {
   /** The page's title (h1). */
   title: string
+  /** The title for screen readers only, when a module tab already names the page. Default false. */
+  titleHidden?: boolean
   /** The page's actions at the end of the title row. */
   actions?: ReactNode
   /** Names the list for assistive technology ("Invoices to approve"). */
@@ -64,10 +68,13 @@ function Row({
   item,
   selected,
   onSelect,
+  actions = true,
 }: {
   item: WorklistItem
   selected: boolean
   onSelect?: (id: string) => void
+  /** False while the item's detail stands beside the list with the same actions. */
+  actions?: boolean
 }) {
   const choose = () => onSelect?.(item.id)
   return (
@@ -110,7 +117,7 @@ function Row({
           </div>
         )}
       </div>
-      {item.actions !== undefined && (
+      {actions && item.actions !== undefined && (
         <div className="flex flex-wrap items-center gap-2">{item.actions}</div>
       )}
     </li>
@@ -169,6 +176,8 @@ export function WorklistPage(props: WorklistPageProps) {
               key={item.id}
               item={item}
               selected={item.id === props.selected}
+              // The chosen item's actions are in its detail beside the list: not twice.
+              actions={stacked || props.detail === undefined || item.id !== props.selected}
               {...(props.onSelect === undefined ? {} : { onSelect: props.onSelect })}
             />
           ))}
@@ -178,12 +187,11 @@ export function WorklistPage(props: WorklistPageProps) {
   )
 
   const header = (
-    <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-      <h1 className={cn('m-0 min-w-0 text-h1 text-primary', TEXT_DIRECTION)}>{props.title}</h1>
-      {props.actions !== undefined && (
-        <div className="flex flex-wrap items-center gap-2">{props.actions}</div>
-      )}
-    </div>
+    <PageHeader
+      title={props.title}
+      {...(props.titleHidden === undefined ? {} : { titleHidden: props.titleHidden })}
+      {...(props.actions === undefined ? {} : { actions: props.actions })}
+    />
   )
 
   if (stacked) {

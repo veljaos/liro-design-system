@@ -237,3 +237,5 @@ export type {
 } from './templates/list-page'
 export { WorklistPage } from './templates/worklist-page'
 export type { WorklistItem, WorklistPageProps } from './templates/worklist-page'
+export { PageHeader } from './templates/page-header'
+export type { PageHeaderProps } from './templates/page-header'

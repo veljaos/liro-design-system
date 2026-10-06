@@ -75,6 +75,20 @@ const ALL_COLUMNS: (DataTableColumn<InvoiceRow> & { label: string })[] = [
   },
 ]
 
+interface Rate {
+  currency: string
+  date: string
+  rate: string
+}
+
+/** NBS middle rates of a fictitious day (illustrative values). */
+const RATES: Rate[] = [
+  { currency: 'EUR', date: '2026-10-06', rate: '117,1532' },
+  { currency: 'USD', date: '2026-10-06', rate: '100,0418' },
+  { currency: 'CHF', date: '2026-10-06', rate: '125,3307' },
+  { currency: 'GBP', date: '2026-10-06', rate: '134,8915' },
+]
+
 const VIEWS: SavedView[] = [
   { id: 'all', label: 'All', count: 1284 },
   { id: 'unpaid', label: 'Unpaid', count: 37 },
@@ -320,6 +334,45 @@ export const PhoneWidth: Story = {
         <InvoiceList phone />
       </ExampleProvider>
     </PhoneFrame>
+  ),
+}
+
+/** A list that no module tab names (a report's list, a settings list): the title shows. */
+export const VisibleTitle: Story = {
+  name: 'Visible title',
+  render: () => (
+    <ExampleProvider>
+      <ListPage
+        layout="desktop"
+        title="Exchange rates"
+        titleHidden={false}
+        actions={<Button intent="refresh" label="Update rates" emphasis="secondary" />}
+      >
+        <DataTable
+          label="Exchange rates"
+          inCard
+          columns={[
+            { id: 'currency', header: 'Currency', cell: (row: Rate) => row.currency },
+            {
+              id: 'date',
+              header: 'Date',
+              numeric: true,
+              cell: (row: Rate) => <DateText value={row.date} />,
+            },
+            {
+              id: 'rate',
+              header: 'Middle rate (RSD)',
+              align: 'end',
+              numeric: true,
+              cell: (row: Rate) => row.rate,
+            },
+          ]}
+          rows={RATES}
+          getRowId={(row) => row.currency}
+          getRowLabel={(row) => row.currency}
+        />
+      </ListPage>
+    </ExampleProvider>
   ),
 }
 
