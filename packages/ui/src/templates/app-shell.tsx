@@ -500,7 +500,9 @@ export function AppShell(props: AppShellProps) {
                   <ButtonPrimitive
                     family="neutral"
                     emphasis="secondary"
-                    className={SMALL_BUTTON}
+                    // Exactly 30px (owner): the keys' line height made it 35.5px, which put its
+                    // edges between pixels and changed their antialiasing from run to run.
+                    className={cn(SMALL_BUTTON, 'h-control-sm py-0')}
                     aria-keyshortcuts="Control+K Meta+K"
                     onClick={() => {
                       setSearching(true)
