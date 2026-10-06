@@ -189,7 +189,7 @@ export function CommandPalette(props: CommandPaletteProps) {
                 <CommandPrimitive.Group
                   key={group.key}
                   heading={group.heading}
-                  className="mt-4 first:mt-0 **:[[cmdk-group-heading]]:ps-4 **:[[cmdk-group-heading]]:pb-1 **:[[cmdk-group-heading]]:text-xs **:[[cmdk-group-heading]]:font-bold **:[[cmdk-group-heading]]:text-secondary **:[[cmdk-group-heading]]:uppercase"
+                  className="mt-4 first:mt-0 **:[[cmdk-group-heading]]:ps-4 **:[[cmdk-group-heading]]:pb-1 **:[[cmdk-group-heading]]:text-xs **:[[cmdk-group-heading]]:font-semibold **:[[cmdk-group-heading]]:text-secondary"
                 >
                   {items.map((item) => {
                     const Icon = item.icon
