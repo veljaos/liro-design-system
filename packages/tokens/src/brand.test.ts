@@ -69,6 +69,18 @@ describe('brand', () => {
     assert.match(svg, /<title>Liro<\/title>/)
   })
 
+  it('has a tab favicon without a tile: brand-blue dots, lighter in a dark browser (P4.0)', () => {
+    const svg = read('web/favicon.svg').toString('utf8')
+    assert.doesNotMatch(svg, /<rect/)
+    assert.match(svg, /path\{fill:#0078D4\}/)
+    assert.match(svg, /@media \(prefers-color-scheme:dark\)\{path\{fill:#3EACEB\}\}/)
+    // The installed-app icons keep the full blue tile.
+    assert.match(
+      read('icon.svg').toString('utf8'),
+      /<rect width="512" height="512" fill="#0078D4"\/>/,
+    )
+  })
+
   it('has the web icons in their sizes', () => {
     assert.deepEqual(pngSize(read('web/apple-touch-icon.png')), [180, 180])
     assert.deepEqual(pngSize(read('web/icon-192.png')), [192, 192])
