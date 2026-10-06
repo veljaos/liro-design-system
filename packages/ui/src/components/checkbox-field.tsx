@@ -23,6 +23,11 @@ export interface CheckboxFieldProps extends FieldBaseProps {
   name?: string
   /** The value submitted with the form when checked. Default: 'on'. */
   value?: string
+  /**
+   * The label for assistive technology only, where the row around the control already names it
+   * (a setting row, P4.6). Description and error stay visible.
+   */
+  hideLabel?: boolean
 }
 
 interface InlineProps extends CheckboxFieldProps {
@@ -78,11 +83,12 @@ function InlineField(props: InlineProps) {
         ...(props.name === undefined ? {} : { name: props.name }),
         ...(props.value === undefined ? {} : { value: props.value }),
       })}
-      <div className="flex min-w-0 flex-col ps-3">
+      <div className={cn('flex min-w-0 flex-col', props.hideLabel !== true && 'ps-3')}>
         <label
           id={ids.labelId}
           htmlFor={ids.id}
           className={cn(
+            props.hideLabel === true && 'sr-only',
             'text-sm leading-5 break-words',
             TEXT_DIRECTION,
             disabled ? 'cursor-not-allowed text-disabled' : 'text-primary',

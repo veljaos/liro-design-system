@@ -169,6 +169,19 @@ export const MEANINGS = {
     onSolid: ['white', 'white'],
     accent: ['teal6', 'teal4'],
   },
+  // Charts (P4.6, the owner's decision): one brand blue for the main series, greys for the
+  // comparison and the rest; an opt-in categorical palette of five hues from the ramps, in a fixed
+  // order, validated for colour-vision deficiency (docs/decisions.md "Dashboard").
+  chart: {
+    main: ['blue6', 'blue4'],
+    comparison: ['gray6', 'gray5'],
+    other: ['gray8', 'gray3'],
+    category1: ['blue6', 'blue5'],
+    category2: ['orange7', 'orange6'],
+    category3: ['violet8', 'violet5'],
+    category4: ['green7', 'green5'],
+    category5: ['teal5', 'teal5'],
+  },
 } as const satisfies Record<string, Record<string, Pair>>
 
 /** A.2 Status tones: fg (text), bg (background under that text), border, solid (bars and dots, never text). */

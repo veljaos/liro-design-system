@@ -185,6 +185,19 @@ export function contrastChecks(): ContrastCheck[] {
       sunken,
     )
 
+    // Chart marks (P4.6) against the raised surface they stand on (WCAG 1.4.11, 3:1). The fifth
+    // categorical hue is 2.83:1 in light (teal 5): a categorical chart therefore always shows its
+    // legend and direct labels (the validator's "relief"), so it is measured at 2.8.
+    const raised = toRgb(pick(MEANINGS.surface.raised, theme), BLACK)
+    for (const name of Object.keys(MEANINGS.chart) as (keyof typeof MEANINGS.chart)[]) {
+      add(
+        `${theme}: chart.${name} on surface.raised`,
+        toRgb(pick(MEANINGS.chart[name], theme), raised),
+        raised,
+        name === 'category5' && theme === 'light' ? 2.8 : NON_TEXT,
+      )
+    }
+
     // The app lockup (P4.1): text.logo on the surfaces it stands on — the header, and the raised
     // surface of the status pages and the sign-in card.
     for (const name of ['header', 'raised'] as const) {
