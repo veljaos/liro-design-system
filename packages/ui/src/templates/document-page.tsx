@@ -24,7 +24,8 @@ import { PageHeader, type PageBack } from './page-header'
  *   application ("Customer", "Supplier") in xs text.secondary, the name sm semibold, the tax number
  *   and the address xs text.secondary; then the key figures (KeyFigures).
  * - The lines (an EditableGrid or a read-only DataTable, from the application) in one card, edge
- *   to edge, the totals (DocumentTotals) under them at the end, inside the same card.
+ *   to edge, without a title by default (the column headers say what it is), the table header at
+ *   the card's top; the totals (DocumentTotals) under them at the end, inside the same card.
  * - Further sections (notes, payment terms) as SectionCards under the lines.
  * - The side panels (SidePanels) in a 300px column from lg (75em), as DetailPage; the whole
  *   column can be hidden (`panelsHidden`), and the document takes the full width. Below 75em and
@@ -62,8 +63,11 @@ export interface DocumentPageProps {
   lifecycle?: { steps: readonly LifecycleStep[]; current: number; label: string }
   counterparty?: Counterparty
   keyFigures?: readonly KeyFigure[]
-  /** The lines' card title ("Lines"), from the application. */
-  linesTitle: string
+  /**
+   * A title over the lines' card. Default: none — the table's column headers say what it is,
+   * and the table starts at the card's top (owner, P4.5).
+   */
+  linesTitle?: string
   /** The lines: an EditableGrid or a DataTable (with `inCard`). */
   lines: ReactNode
   /** Actions in the lines' header ("Add from order"). */
@@ -142,7 +146,7 @@ export function DocumentPage(props: DocumentPageProps) {
   const document = (
     <div className="flex min-w-0 flex-col gap-4">
       <SectionCard
-        title={props.linesTitle}
+        {...(props.linesTitle === undefined ? {} : { title: props.linesTitle })}
         headingLevel={2}
         flush
         {...(props.linesActions === undefined ? {} : { actions: props.linesActions })}

@@ -78,7 +78,9 @@ function Panel({
           />
         </button>
       </h2>
-      <div id={contentId} hidden={!isOpen} className="px-4 pb-4">
+      {/* 16px on every side: the header's own padding above, the content's at the sides and
+          below, aligned with the header's text. */}
+      <div id={contentId} hidden={!isOpen} className="box-border px-4 pt-0 pb-4">
         {isOpen && panel.content}
       </div>
     </section>

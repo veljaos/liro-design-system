@@ -42,6 +42,7 @@ function Row({ row, final = false }: { row: TotalsRow; final?: boolean }) {
   return (
     <div
       className={cn(
+        // Label and amount on one baseline; a long label wraps, its amount on the first line.
         'flex items-baseline justify-between gap-4',
         final
           ? 'mt-1 border-0 border-t border-solid border-strong pt-3 text-lg font-semibold'
@@ -53,7 +54,10 @@ function Row({ row, final = false }: { row: TotalsRow; final?: boolean }) {
         {row.label}
       </dt>
       <dd className="m-0 text-primary tabular-nums">
+        {/* On the label's baseline: the amount's text gives the baseline, the dot slot is
+            centred (it would otherwise give its own). */}
         <SettlingValue
+          className="items-baseline [&>[aria-hidden]]:self-center"
           value={row.value}
           {...(row.currency === undefined ? {} : { currency: row.currency })}
           {...(row.decimals === undefined ? {} : { decimals: row.decimals })}

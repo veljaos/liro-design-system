@@ -203,7 +203,6 @@ const BASE: DocumentPageProps = {
       <Button family="verify" icon={Send} label="Send reminder" />
     </>
   ),
-  linesTitle: 'Lines',
   lines: (
     <DataTable
       label="Lines"

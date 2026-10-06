@@ -104,7 +104,6 @@ describe('SidePanels', () => {
 describe('DocumentPage', () => {
   const base = {
     title: 'F-2026-0412',
-    linesTitle: 'Lines',
     lines: <p>LINES</p>,
     counterparty: { label: 'Customer', name: 'Panonija Agro d.o.o.', taxId: 'PIB 104987265' },
     panels: [{ key: 'att', title: 'Attachments', content: <p>FILES</p> }],

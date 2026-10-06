@@ -280,7 +280,7 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P4.2 | Home (launchpad) | P4.1 | done | 2026-10-06 | Owner's values: cards with the icon in a sunken square that turns blue on hover, plain counter, locked cards, 1–9 and arrows, editing mode (move, hide, drag, hidden list with Show), skeletons |
 | P4.3 | List and worklist templates | P3.3, P4.1 | done | 2026-10-06 | Owner's values: one list card (saved views, FilterBar, table edge to edge), hidden page title where a tab names it (PageHeader), column chooser without dragging, quick preview (click/Space; Enter opens), worklist 380px + detail from 62em, Back / Next item below |
 | P4.4 | Detail and record form templates | P3.5, P4.1 | done | 2026-10-06 | Owner's values: key figures (20px, colour only for state), sticky section bar like module tabs, side column 300px from 75em, the old 28px back button "Back to <list>"; sections as SectionCards; record form with top and bottom actions and the unsaved-changes guard on back |
-| P4.5 | Document template | P3.4, P4.4 | todo | | |
+| P4.5 | Document template | P3.4, P4.4 | done | 2026-10-06 | Owner's values: lifecycle bar (dots and lines, error step with reason, one line on phones), counterparty only, lines card without title, totals block on the baseline (rows from props, groups, large final row), side panels collapsible one by one and as a column, both reported |
 | P4.6 | Report, dashboard and settings templates | P4.1 | todo | | |
 | P4.7 | Status pages and sign-in shell | P4.1 | todo | | |
 | P4.8 | Example screens | P4.2–P4.7 | todo | | |
