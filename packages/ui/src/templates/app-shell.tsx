@@ -417,7 +417,7 @@ function ModuleTabs({ tabs }: { tabs: readonly ModuleTab[] }) {
               href={tab.href}
               {...(tab.current === true ? { 'aria-current': 'page' } : {})}
               className={cn(
-                'flex items-center rounded-t-md border-0 border-b-2 border-solid border-transparent px-4 font-sans text-sm leading-none whitespace-nowrap text-primary no-underline hover:border-default hover:bg-surface-hover',
+                'flex items-center rounded-t-md border-0 border-b-2 border-solid border-transparent px-4 font-sans text-sm leading-none whitespace-nowrap text-primary no-underline visited:text-primary hover:border-default hover:bg-surface-hover hover:text-primary active:text-primary',
                 tab.current === true && 'border-brand hover:border-brand',
                 FOCUS_RING,
                 '-outline-offset-2',
@@ -474,7 +474,7 @@ export function AppShell(props: AppShellProps) {
       <a
         href={`#${contentId}`}
         className={cn(
-          'sr-only z-(--liro-layer-tooltip) rounded-md bg-surface-overlay px-3 py-2 text-sm text-link focus:not-sr-only focus:absolute focus:start-2 focus:top-2',
+          'sr-only z-(--liro-layer-tooltip) rounded-md bg-surface-overlay px-3 py-2 text-sm text-link visited:text-link focus:not-sr-only focus:absolute focus:start-2 focus:top-2',
           FOCUS_RING,
         )}
       >

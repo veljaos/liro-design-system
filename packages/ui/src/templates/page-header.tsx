@@ -67,7 +67,7 @@ export const BackButton = forwardRef<HTMLAnchorElement, { back: PageBack }>(func
         {...(back.onClick === undefined ? {} : { onClick: back.onClick })}
         className={cn(
           buttonClassName({ family: 'neutral', emphasis: 'menu', shape: 'compact' }),
-          'no-underline',
+          'no-underline visited:text-family-neutral-fg',
         )}
       >
         <ArrowLeft aria-hidden="true" className="size-4.5 shrink-0 rtl:-scale-x-100" />

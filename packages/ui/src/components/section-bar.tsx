@@ -127,7 +127,7 @@ export function SectionBar({ sections, className }: SectionBarProps) {
                 }}
                 {...(active ? { 'aria-current': 'location' as const } : {})}
                 className={cn(
-                  '-mb-px flex items-center rounded-t-md border-0 border-b-2 border-solid border-transparent px-4 font-sans text-sm leading-none whitespace-nowrap text-primary no-underline hover:border-default hover:bg-surface-hover',
+                  '-mb-px flex items-center rounded-t-md border-0 border-b-2 border-solid border-transparent px-4 font-sans text-sm leading-none whitespace-nowrap text-primary no-underline visited:text-primary hover:border-default hover:bg-surface-hover hover:text-primary active:text-primary',
                   active && 'border-brand hover:border-brand',
                   FOCUS_RING,
                   '-outline-offset-2',
