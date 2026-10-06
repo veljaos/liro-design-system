@@ -150,6 +150,17 @@ export function contrastChecks(): ContrastCheck[] {
       sunken,
     )
 
+    // The app lockup (P4.1): text.logo on the surfaces it stands on — the header, and the raised
+    // surface of the status pages and the sign-in card.
+    for (const name of ['header', 'raised'] as const) {
+      const surface = toRgb(pick(MEANINGS.surface[name], theme), BLACK)
+      add(
+        `${theme}: text.logo on surface.${name}`,
+        toRgb(pick(MEANINGS.text.logo, theme), surface),
+        surface,
+      )
+    }
+
     // Tooltips (P2.1): text.onInverse on surface.inverse, which is opaque in both themes.
     const inverse = toRgb(pick(MEANINGS.surface.inverse, theme), BLACK)
     add(
