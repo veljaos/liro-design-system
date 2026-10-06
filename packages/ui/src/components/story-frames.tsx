@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { expect } from 'storybook/test'
+import { createFormat } from '../provider/format'
 import { LiroProvider, useLiro } from '../provider/liro-provider'
 
 /*
@@ -32,6 +33,31 @@ export function StoryProvider({
       {...(dir === undefined ? {} : { direction: dir })}
       colorScheme={colorScheme ?? liro.colorScheme}
       today={liro.today}
+    >
+      {children}
+    </LiroProvider>
+  )
+}
+
+/** The tenant's date in the template stories, so pictures do not change with the date. */
+export const EXAMPLE_TODAY = '2026-10-06'
+
+const SERBIAN_FORMAT = createFormat('sr-Latn-RS')
+
+/**
+ * The template and example stories (Phase 4): the story's locale, direction and theme, the
+ * English interface text, but numbers, amounts and dates written as a Serbian tenant sees them
+ * (12.345,60 RSD, 06.10.2026.), and a fixed today.
+ */
+export function ExampleProvider({ children }: { children: ReactNode }) {
+  const liro = useLiro()
+  return (
+    <LiroProvider
+      locale={liro.locale}
+      direction={liro.direction}
+      colorScheme={liro.colorScheme}
+      format={SERBIAN_FORMAT}
+      today={EXAMPLE_TODAY}
     >
       {children}
     </LiroProvider>

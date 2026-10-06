@@ -160,7 +160,9 @@ export function Banner({
       role={alertRole(tone)}
       data-tone={tone}
       className={cn(
-        'flex w-full flex-wrap items-center gap-x-4 gap-y-2.5 rounded-md border border-solid border-transparent p-4 font-sans',
+        // Border-box: full width with its padding and border, in an application without a reset
+        // (P4.1: it was 34px wider than its container).
+        'box-border flex w-full flex-wrap items-center gap-x-4 gap-y-2.5 rounded-md border border-solid border-transparent p-4 font-sans',
         look.box,
         className,
       )}

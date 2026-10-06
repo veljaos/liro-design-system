@@ -5,11 +5,11 @@ import { useLiro } from '../provider/liro-provider'
 /*
  * BrandLockup (P4.0, the owner's decision, docs/decisions.md "Brand lockup"): the application's
  * name as text, without an icon — "Liro Business Apps" in the brand face (Space Grotesk), the
- * brand's text colour (text.brand: blue in light, the lighter blue in dark), one line: the brand
+ * logo's colours (text.logo: #0078D4 in light, #3EACEB in dark, as the logo files), one line: the brand
  * name bold, the product name regular. Both names are data (props), so a new product name needs
  * no new file.
  * - md (the header): 20px (xl), about the height of the old wordmark.
- * - lg (status pages, sign-in): 24px (h1 size; no owner's value yet, reported).
+ * - lg (status pages, sign-in): 24px (approved by the owner).
  * - Below 48em only the brand name; the product name is left out (`compact` forces either way).
  * - One link to the home page (the provider's `linkComponent`), its accessible name the full
  *   product name ("Liro Business Apps"), which contains the visible text (WCAG 2.5.3). Without
@@ -71,7 +71,7 @@ export function BrandLockup({
   )
 
   const classes = cn(
-    'inline-block shrink-0 rounded-sm font-brand whitespace-nowrap text-brand no-underline',
+    'inline-block shrink-0 rounded-sm font-brand whitespace-nowrap text-logo no-underline',
     size === 'lg' ? 'text-h1' : 'text-xl',
     'leading-tight',
     href !== undefined && FOCUS_RING,
