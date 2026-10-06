@@ -139,4 +139,10 @@ export const messagesEn: LiroMessages = {
   'shell.companies': 'Companies',
   'shell.findCompany': 'Find company',
   'shell.waiting': (count) => `${formatDecimal(String(count), 'comma-dot')} waiting`,
+  'launchpad.moveEarlier': (name) => `Move earlier: ${name}`,
+  'launchpad.moveLater': (name) => `Move later: ${name}`,
+  'launchpad.hide': (name) => `Hide: ${name}`,
+  'launchpad.hidden': (count) => `Hidden (${formatDecimal(String(count), 'comma-dot')})`,
+  'launchpad.showLabel': 'Show',
+  'launchpad.show': (name) => `Show: ${name}`,
 }

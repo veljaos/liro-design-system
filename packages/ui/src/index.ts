@@ -219,3 +219,11 @@ export type {
   ShellNotifications,
   ShellUser,
 } from './templates/app-shell'
+export { Launchpad } from './templates/launchpad'
+export type { LaunchpadModule, LaunchpadProps } from './templates/launchpad'
+export {
+  dropModule,
+  launchpadArrowTarget,
+  launchpadDigitTarget,
+  moveModule,
+} from './templates/launchpad-logic'

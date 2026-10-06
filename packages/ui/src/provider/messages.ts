@@ -235,4 +235,13 @@ export interface LiroMessages {
   'shell.findCompany': string
   /** Company switcher: how many items wait in a company. */
   'shell.waiting': (count: number) => string
+  /** Launchpad, editing mode: the buttons of a module card (`name` is the module's). */
+  'launchpad.moveEarlier': (name: string) => string
+  'launchpad.moveLater': (name: string) => string
+  'launchpad.hide': (name: string) => string
+  /** Launchpad, editing mode: the title over the hidden modules, and their "Show" button. */
+  'launchpad.hidden': (count: number) => string
+  'launchpad.showLabel': string
+  /** The accessible name of a hidden module's "Show" button. */
+  'launchpad.show': (name: string) => string
 }

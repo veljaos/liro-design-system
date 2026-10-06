@@ -4,12 +4,27 @@
  * src/index.ts imports this file. No classes here: Storybook compiles classes only from
  * *.stories.tsx files.
  */
-import { Building2, LogOut, Settings, UserRound } from 'lucide-react'
+import {
+  BookOpen,
+  Building,
+  Building2,
+  ChartColumn,
+  Landmark,
+  LogOut,
+  Package,
+  Receipt,
+  Settings,
+  ShoppingCart,
+  UserRound,
+  Users,
+  Wallet,
+} from 'lucide-react'
 import type { BrandLockupProps } from '../components/brand-lockup'
 import type { Crumb } from '../components/navigation'
 import { LIRO_BRAND } from '../components/story-brand'
 import type { CommandItem } from '../components/command-palette'
 import type { ModuleTab, ShellCompany, ShellUser } from './app-shell'
+import type { LaunchpadModule } from './launchpad'
 
 export const BRAND: BrandLockupProps = { ...LIRO_BRAND, href: '#home' }
 
@@ -123,3 +138,83 @@ export const INVOICES: InvoiceRow[] = [
     status: 'Draft',
   },
 ]
+
+/** The modules of a mid-sized company, in the user's order. */
+export const MODULES: LaunchpadModule[] = [
+  {
+    id: 'sales',
+    name: 'Sales',
+    description: 'Invoices, quotes, customers',
+    icon: Receipt,
+    href: '#sales',
+    counter: '3 to send',
+  },
+  {
+    id: 'purchasing',
+    name: 'Purchasing',
+    description: 'Supplier invoices and orders',
+    icon: ShoppingCart,
+    href: '#purchasing',
+    counter: '7 to approve',
+  },
+  {
+    id: 'banking',
+    name: 'Banking',
+    description: 'Statements and payments',
+    icon: Landmark,
+    href: '#banking',
+    counter: '2 statements',
+  },
+  {
+    id: 'accounting',
+    name: 'Accounting',
+    description: 'General ledger, journal entries, VAT',
+    icon: BookOpen,
+    href: '#accounting',
+  },
+  {
+    id: 'inventory',
+    name: 'Inventory',
+    description: 'Items, warehouses, stock counts',
+    icon: Package,
+    href: '#inventory',
+    counter: '14 below minimum',
+  },
+  {
+    id: 'hr',
+    name: 'Employees',
+    description: 'Records, contracts, leave',
+    icon: Users,
+    href: '#hr',
+    counter: '1 leave request',
+  },
+  {
+    id: 'payroll',
+    name: 'Payroll',
+    description: 'September 2026 due on 15.10.',
+    icon: Wallet,
+    href: '#payroll',
+  },
+  {
+    id: 'reports',
+    name: 'Reports',
+    description: 'Balance sheet, income statement',
+    icon: ChartColumn,
+    href: '#reports',
+  },
+  {
+    id: 'assets',
+    name: 'Fixed assets',
+    description: 'Register and depreciation',
+    icon: Building,
+    href: '#assets',
+    locked: 'Available in Pro',
+  },
+]
+
+/** One of MODULES by id. */
+export function moduleById(id: string): LaunchpadModule {
+  const found = MODULES.find((module) => module.id === id)
+  if (found === undefined) throw new Error(`No story module ${id}`)
+  return found
+}
