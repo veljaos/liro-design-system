@@ -778,25 +778,33 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
         then the export slot. The slot is a polite live region: "Updating…" is announced when a
         refetch starts.
       */}
-      <div className={cn('flex min-h-3.5 flex-wrap items-center justify-end gap-3', edge)}>
-        <span
-          role="status"
-          aria-live="polite"
-          data-slot="refetch-loader"
-          className="flex size-3.5 shrink-0 items-center justify-center"
-        >
-          {refetching && (
-            <>
-              <span
-                aria-hidden="true"
-                className="box-border size-3.5 animate-liro-spin rounded-full border-[1.75px] border-solid border-brand border-s-transparent motion-reduce:animate-none"
-              />
-              <span className="sr-only">{messages['table.updating']}</span>
-            </>
-          )}
-        </span>
-        {props.exportAction}
-      </div>
+      {/*
+        In a card (P4.5): the slot only where a refetch can happen (the application passes
+        `loading`) or an export slot stands, so a document's lines start at the card's top.
+      */}
+      {(props.inCard !== true ||
+        props.loading !== undefined ||
+        props.exportAction !== undefined) && (
+        <div className={cn('flex min-h-3.5 flex-wrap items-center justify-end gap-3', edge)}>
+          <span
+            role="status"
+            aria-live="polite"
+            data-slot="refetch-loader"
+            className="flex size-3.5 shrink-0 items-center justify-center"
+          >
+            {refetching && (
+              <>
+                <span
+                  aria-hidden="true"
+                  className="box-border size-3.5 animate-liro-spin rounded-full border-[1.75px] border-solid border-brand border-s-transparent motion-reduce:animate-none"
+                />
+                <span className="sr-only">{messages['table.updating']}</span>
+              </>
+            )}
+          </span>
+          {props.exportAction}
+        </div>
+      )}
       {selectable && props.bulkActions !== undefined && (
         <div className={cn('empty:hidden', edge)}>
           <BulkActionBar
@@ -820,6 +828,8 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
           aria-busy={cards && props.loading === true ? true : undefined}
           className={cn(
             'overflow-auto',
+            // In a card, phone cards stand 16px inside its edges, as the rows' text does.
+            cards && edge,
             FOCUS_RING,
             'focus-visible:-outline-offset-2',
             // A row reached by the keyboard is scrolled clear of the sticky header and totals

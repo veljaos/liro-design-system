@@ -150,8 +150,8 @@ export function ListPage(props: ListPageProps) {
           />
         )}
         {props.filterBar}
-        {/* The table to the card's edges; on phones the cards stand inside 16px. */}
-        <div className={cn('min-w-0', phone && 'p-4')}>{props.children}</div>
+        {/* The table to the card's edges; on phones the cards 16px inside (DataTable inCard). */}
+        <div className="min-w-0">{props.children}</div>
       </section>
     </div>
   )

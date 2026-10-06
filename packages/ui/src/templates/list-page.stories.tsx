@@ -181,7 +181,7 @@ function InvoiceList({
         <DataTable
           label="Invoices"
           layout={phone ? 'cards' : 'table'}
-          inCard={!phone}
+          inCard
           columns={shown}
           rows={INVOICE_LIST}
           getRowId={(row) => row.id}
