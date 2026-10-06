@@ -1,15 +1,8 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
-import { LiroProvider } from '../provider/liro-provider'
 import { BrandLockup, lockupName } from './brand-lockup'
 
-const BRAND = {
-  brandName: 'Liro',
-  productName: 'Business Apps',
-  icon: 'icon.svg',
-  wordmark: 'wordmark-light.svg',
-  wordmarkOnDark: 'wordmark-mono-white.svg',
-}
+const BRAND = { brandName: 'Liro', productName: 'Business Apps' }
 
 describe('lockupName', () => {
   it('joins the brand and the product name', () => {
@@ -22,11 +15,20 @@ describe('lockupName', () => {
 })
 
 describe('BrandLockup', () => {
-  it('is one link home named by the full product name, its images decorative', () => {
+  it('is one link home named by the full product name, text only', () => {
     const html = renderToStaticMarkup(<BrandLockup {...BRAND} href="/" />)
     expect(html).toContain('<a href="/" aria-label="Liro Business Apps"')
-    expect(html.match(/<a /g)).toHaveLength(1)
-    expect(html.match(/alt=""/g)).toHaveLength(2)
+    expect(html).not.toContain('<img')
+    expect(html).toContain('<span class="font-bold">Liro</span>')
+    expect(html).toMatch(
+      /class="font-regular[^"]*"> <!-- -->Business Apps<\/span>|> Business Apps</,
+    )
+  })
+  it('writes the brand in the brand face and colour, 20px in the header, 24px large', () => {
+    expect(renderToStaticMarkup(<BrandLockup {...BRAND} />)).toMatch(
+      /font-brand[^"]*text-brand[^"]*text-xl/,
+    )
+    expect(renderToStaticMarkup(<BrandLockup {...BRAND} size="lg" />)).toContain('text-h1')
   })
   it('hides the product name below 48em by default, and always when compact', () => {
     expect(renderToStaticMarkup(<BrandLockup {...BRAND} />)).toContain('max-sm:hidden')
@@ -36,25 +38,5 @@ describe('BrandLockup', () => {
     expect(renderToStaticMarkup(<BrandLockup {...BRAND} compact={false} />)).not.toContain(
       'max-sm:hidden',
     )
-  })
-  it('takes the dark files in the dark theme', () => {
-    const light = renderToStaticMarkup(
-      <LiroProvider locale="en" colorScheme="light">
-        <BrandLockup {...BRAND} />
-      </LiroProvider>,
-    )
-    const dark = renderToStaticMarkup(
-      <LiroProvider locale="en" colorScheme="dark">
-        <BrandLockup {...BRAND} iconOnDark="icon-dark.svg" />
-      </LiroProvider>,
-    )
-    expect(light).toContain('src="wordmark-light.svg"')
-    expect(light).toContain('src="icon.svg"')
-    expect(dark).toContain('src="wordmark-mono-white.svg"')
-    expect(dark).toContain('src="icon-dark.svg"')
-  })
-  it('keeps the icon file as it is: no rounding', () => {
-    const html = renderToStaticMarkup(<BrandLockup {...BRAND} size="lg" />)
-    expect(html).toContain('<img src="icon.svg" alt="" class="block shrink-0 size-10"/>')
   })
 })
