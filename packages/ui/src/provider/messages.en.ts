@@ -153,5 +153,7 @@ export const messagesEn: LiroMessages = {
   'worklist.back': 'Back to list',
   'worklist.next': 'Next item',
   'worklist.detail': 'Details',
+  'page.backTo': (list) => `Back to ${list}`,
+  'page.sections': 'Sections',
   'launchpad.show': (name) => `Show: ${name}`,
 }

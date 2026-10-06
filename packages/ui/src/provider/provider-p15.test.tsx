@@ -145,6 +145,8 @@ describe('messages', () => {
       'list.views',
       'notice.close',
       'notice.region',
+      'page.backTo',
+      'page.sections',
       'period.all',
       'period.clear',
       'period.customRange',

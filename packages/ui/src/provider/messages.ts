@@ -256,6 +256,10 @@ export interface LiroMessages {
   'worklist.next': string
   /** WorklistPage, from 62em: names the detail pane. */
   'worklist.detail': string
+  /** PageHeader's back button: its name and tooltip (`list` is the list's name). */
+  'page.backTo': (list: string) => string
+  /** SectionBar: names the row of section links. */
+  'page.sections': string
   /** The accessible name of a hidden module's "Show" button. */
   'launchpad.show': (name: string) => string
 }
