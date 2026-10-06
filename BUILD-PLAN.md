@@ -277,7 +277,7 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P3.7 | Liro brand assets | P3.6 | done | 2026-10-05 | The owner's logo in `@veljaos/tokens/brand/` (exported `./brand/*`, checked by `brand.test.ts`); Storybook's title, wordmark and favicon; "Foundations / Brand"; rule D18 (logo through props) |
 | P4.0 | Baselines on CI, Storybook and brand follow-ups | P3.7 | done | 2026-10-06 | Workflow `Baselines`: twelve machines, one artifact of new and changed images; Storybook favicon (Windows path bug), 28px sidebar wordmark, no onboarding checklist; Brand page shows each surface's own versions; `BrandLockup` (owner's compact values); no ready-made "Liro Business Apps" file in the owner's folder |
 | P4.1 | Application shell | P2.6, P2.7 | done | 2026-10-06 | Owner's values: 56px header, lockup, xs breadcrumbs, search with Ctrl K, red unread dot without a number, company switcher (search above 7, in the user menu on phones), avatar user menu, centred module tabs as links, slots, phone bottom bar with safe areas, skip link; no sidebar |
-| P4.2 | Home (launchpad) | P4.1 | todo | | |
+| P4.2 | Home (launchpad) | P4.1 | done | 2026-10-06 | Owner's values: cards with the icon in a sunken square that turns blue on hover, plain counter, locked cards, 1–9 and arrows, editing mode (move, hide, drag, hidden list with Show), skeletons |
 | P4.3 | List and worklist templates | P3.3, P4.1 | todo | | |
 | P4.4 | Detail and record form templates | P3.5, P4.1 | todo | | |
 | P4.5 | Document template | P3.4, P4.4 | todo | | |
