@@ -136,3 +136,54 @@ export const Japanese: Story = {
     </StoryProvider>
   ),
 }
+
+/** Whether the page's styles have a `:visited` rule for this utility class. */
+function hasVisitedRule(className: string): boolean {
+  const escaped = CSS.escape(className)
+  for (const sheet of Array.from(document.styleSheets)) {
+    let rules: CSSRuleList
+    try {
+      rules = sheet.cssRules
+    } catch {
+      continue
+    }
+    const stack = Array.from(rules)
+    while (stack.length > 0) {
+      const rule = stack.pop()
+      // Flattened (".visited\:text-logo:visited") or nested ("&:visited" inside the class).
+      if (
+        rule instanceof CSSStyleRule &&
+        rule.selectorText.includes(`.${escaped}`) &&
+        rule.cssText.includes(':visited')
+      ) {
+        return true
+      }
+      if (rule !== undefined && 'cssRules' in rule) {
+        stack.push(...Array.from((rule as CSSGroupingRule).cssRules))
+      }
+    }
+  }
+  return false
+}
+
+/**
+ * A visited link (it points to this very page): the lockup keeps the logo's colour, never the
+ * browser's visited purple. Browsers hide a visited link's colour from scripts, so the play
+ * function checks the explicit `:visited` rule and the colour of the link state, and the visual
+ * baseline shows what is drawn.
+ */
+export const VisitedLink: Story = {
+  name: 'Visited link',
+  render: () => <BrandLockup {...LIRO_BRAND} href={window.location.href} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const link = within(canvasElement).getByRole('link', { name: 'Liro Business Apps' })
+    await expect(hasVisitedRule('visited:text-logo')).toBe(true)
+    const probe = document.createElement('span')
+    probe.className = 'text-logo'
+    link.parentElement?.append(probe)
+    const logo = getComputedStyle(probe).color
+    probe.remove()
+    await expect(getComputedStyle(link).color).toBe(logo)
+  },
+}

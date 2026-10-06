@@ -339,3 +339,33 @@ export const APPROVALS: ApprovalRow[] = [
     requester: 'Marko Đorđević',
   },
 ]
+
+/** The HR module's tabs. */
+export const HR_TABS: ModuleTab[] = [
+  { key: 'employees', label: 'Employees', href: '#hr/employees', current: true },
+  { key: 'leave', label: 'Leave', href: '#hr/leave' },
+  { key: 'contracts', label: 'Contracts', href: '#hr/contracts' },
+  { key: 'payroll', label: 'Payroll', href: '#hr/payroll' },
+]
+
+/** One employee, as the detail page and the record form show her. */
+export const EMPLOYEE = {
+  name: 'Jelena Marković',
+  position: 'Senior accountant',
+  department: 'Finance',
+  since: '2021-03-01',
+  contractEnd: '2026-12-31',
+  birthDate: '1988-06-14',
+  personalId: '1406988••••••',
+  address: 'Bulevar oslobođenja 46, 21000 Novi Sad',
+  phone: '+381 64 218 4473',
+  email: 'jelena.markovic@kvadratgradnja.rs',
+  manager: 'Dragan Ilić',
+  contract: 'Fixed term',
+  hours: '40 h a week',
+  gross: '145000.00',
+  net: '98412.37',
+  account: '160-0000012345678-21',
+  leaveLeft: '14',
+  sickDays: '3',
+} as const
