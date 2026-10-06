@@ -23,11 +23,6 @@ export interface CheckboxFieldProps extends FieldBaseProps {
   name?: string
   /** The value submitted with the form when checked. Default: 'on'. */
   value?: string
-  /**
-   * The label for assistive technology only, where the row around the control already names it
-   * (a setting row, P4.6). Description and error stay visible.
-   */
-  hideLabel?: boolean
 }
 
 interface InlineProps extends CheckboxFieldProps {

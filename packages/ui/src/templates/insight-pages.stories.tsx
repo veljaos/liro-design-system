@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { expect, userEvent, within } from 'storybook/test'
 import { Button } from '../components/button'
 import { BarChart, DonutChart, LineChart } from '../components/charts'
+import { SectionCard } from '../components/cards'
 import { DataTable } from '../components/data-table'
 import { DateText, MoneyText } from '../components/display-text'
 import { EmptyState } from '../components/empty-state'
@@ -136,58 +137,61 @@ function Report({ phone = false, ran = false }: { phone?: boolean; ran?: boolean
         }}
       >
         {hasRun ? (
-          <DataTable
-            label="Account card 2040"
-            layout={phone ? 'cards' : 'table'}
-            columns={[
-              {
-                id: 'date',
-                header: 'Date',
-                numeric: true,
-                cell: (row: LedgerRow) => <DateText value={row.date} />,
-              },
-              { id: 'document', header: 'Document', cell: (row: LedgerRow) => row.document },
-              {
-                id: 'description',
-                header: 'Description',
-                cell: (row: LedgerRow) => row.description,
-              },
-              {
-                id: 'debit',
-                header: 'Debit',
-                align: 'end',
-                numeric: true,
-                cell: (row: LedgerRow) => <MoneyText value={row.debit} currency="RSD" />,
-              },
-              {
-                id: 'credit',
-                header: 'Credit',
-                align: 'end',
-                numeric: true,
-                cell: (row: LedgerRow) => <MoneyText value={row.credit} currency="RSD" />,
-              },
-              {
-                id: 'balance',
-                header: 'Balance',
-                align: 'end',
-                numeric: true,
-                cell: (row: LedgerRow) => <MoneyText value={row.balance} currency="RSD" />,
-              },
-            ]}
-            rows={LEDGER}
-            getRowId={(row) => row.id}
-            getRowLabel={(row) => row.document}
-            totals={{
-              debit: <MoneyText value="122918.40" currency="RSD" />,
-              credit: <MoneyText value="143918.40" currency="RSD" />,
-              balance: <MoneyText value="1883211.40" currency="RSD" />,
-            }}
-            totalsLabel="Total"
-            mobile={{
-              subtitle: (row) => row.description,
-              details: ['date', 'debit', 'credit', 'balance'],
-            }}
-          />
+          <SectionCard flush>
+            <DataTable
+              inCard
+              label="Account card 2040"
+              layout={phone ? 'cards' : 'table'}
+              columns={[
+                {
+                  id: 'date',
+                  header: 'Date',
+                  numeric: true,
+                  cell: (row: LedgerRow) => <DateText value={row.date} />,
+                },
+                { id: 'document', header: 'Document', cell: (row: LedgerRow) => row.document },
+                {
+                  id: 'description',
+                  header: 'Description',
+                  cell: (row: LedgerRow) => row.description,
+                },
+                {
+                  id: 'debit',
+                  header: 'Debit',
+                  align: 'end',
+                  numeric: true,
+                  cell: (row: LedgerRow) => <MoneyText value={row.debit} currency="RSD" />,
+                },
+                {
+                  id: 'credit',
+                  header: 'Credit',
+                  align: 'end',
+                  numeric: true,
+                  cell: (row: LedgerRow) => <MoneyText value={row.credit} currency="RSD" />,
+                },
+                {
+                  id: 'balance',
+                  header: 'Balance',
+                  align: 'end',
+                  numeric: true,
+                  cell: (row: LedgerRow) => <MoneyText value={row.balance} currency="RSD" />,
+                },
+              ]}
+              rows={LEDGER}
+              getRowId={(row) => row.id}
+              getRowLabel={(row) => row.document}
+              totals={{
+                debit: <MoneyText value="122918.40" currency="RSD" />,
+                credit: <MoneyText value="143918.40" currency="RSD" />,
+                balance: <MoneyText value="1883211.40" currency="RSD" />,
+              }}
+              totalsLabel="Total"
+              mobile={{
+                subtitle: (row) => row.description,
+                details: ['date', 'debit', 'credit', 'balance'],
+              }}
+            />
+          </SectionCard>
         ) : (
           <EmptyState
             title="Choose the parameters and run the report"
@@ -256,6 +260,7 @@ function Settings({ phone = false }: { phone?: boolean }) {
                     control: (
                       <SelectField
                         label="Number series"
+                        hideLabel
                         className="w-48"
                         defaultValue="f"
                         options={[

@@ -48,6 +48,11 @@ export interface FieldBaseProps {
    * messages under an editable grid's row.
    */
   describedBy?: string
+  /**
+   * The label for assistive technology only, where the row around the field already names it (a
+   * setting row, P4.6). Description and error stay visible.
+   */
+  hideLabel?: boolean
   /** Layout classes for the field's frame (width, margins). */
   className?: string
 }
@@ -162,6 +167,7 @@ export function Field(props: FieldProps) {
   const labelClass = cn(
     'inline-block text-sm font-semibold break-words text-primary',
     TEXT_DIRECTION,
+    props.hideLabel === true && 'sr-only',
   )
   return (
     <div
@@ -190,7 +196,12 @@ export function Field(props: FieldProps) {
           {description}
         </p>
       )}
-      <div className={cn('mt-1', (ids.hasError || ids.showReason) && 'mb-[5px]')}>
+      <div
+        className={cn(
+          (props.hideLabel !== true || ids.hasDescription) && 'mt-1',
+          (ids.hasError || ids.showReason) && 'mb-[5px]',
+        )}
+      >
         {props.children(control)}
       </div>
       {ids.hasError && (
@@ -233,6 +244,7 @@ export function fieldProps(props: FieldBaseProps) {
     id,
     className,
     describedBy,
+    hideLabel,
   } = props
   return {
     label,
@@ -244,6 +256,7 @@ export function fieldProps(props: FieldBaseProps) {
     ...(disabledReason === undefined ? {} : { disabledReason }),
     ...(id === undefined ? {} : { id }),
     ...(className === undefined ? {} : { className }),
+    ...(hideLabel === undefined ? {} : { hideLabel }),
     ...(describedBy === undefined || describedBy === '' ? {} : { describedBy }),
   }
 }

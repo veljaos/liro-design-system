@@ -30,6 +30,26 @@ describe('Field', () => {
     )
   })
 
+  it('hides the label visually only with hideLabel, keeping the name and the description', () => {
+    const html = render(
+      <SelectField
+        id="series"
+        label="Number series"
+        hideLabel
+        options={[{ value: 'f', label: 'F-YYYY-NNNN' }]}
+      />,
+    )
+    expect(html).toMatch(/<label id="series-label" for="series" class="[^"]*sr-only/)
+    expect(/<div class="([^"]*)"><button/.exec(html)?.[1] ?? '').not.toContain('mt-1')
+    const described = render(
+      <TextField id="n" label="Name" hideLabel description="As on the invoice" />,
+    )
+    expect(described).toContain('id="n-description"')
+    expect(/<div class="([^"]*)"><input/.exec(described)?.[1]).toBe('mt-1')
+    const switchHtml = render(<SwitchField id="s" label="Send to SEF" hideLabel />)
+    expect(switchHtml).toContain('sr-only')
+  })
+
   it('marks a required field with " *" named by messages, and the control as required', () => {
     const html = render(<TextField id="name" label="Name" required />)
     expect(html).toContain('title="Required"')
