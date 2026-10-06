@@ -21,8 +21,11 @@ on:
 permissions:
   contents: read
 
+# A newer update run replaces an older one on the same branch. A push without `[baselines]`
+# starts a run that does nothing; it gets a group of its own (its commit), so it never cancels an
+# update in progress.
 concurrency:
-  group: baselines-${{ github.ref }}
+  group: baselines-${{ github.ref }}-${{ (github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[baselines]')) && 'update' || github.sha }}
   cancel-in-progress: true
 
 jobs:
