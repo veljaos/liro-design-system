@@ -185,7 +185,8 @@ export interface DataTableProps<Row extends RowData> {
   /**
    * The table sits in a card (ListPage, P4.3): the table reaches the card's edges, the parts above
    * and below it (the loader and export slot, the bulk bar, the row-limit note, the count and
-   * paging) keep 16px from them, and 12px stay under the paging.
+   * paging) keep 16px from them, and 12px stay under the paging. The loader slot stands right
+   * above the table, without a gap (P4.4).
    */
   inCard?: boolean
   /** The table scrolls inside this height (CSS length, e.g. "60vh"), so header and totals stay. */
@@ -763,8 +764,11 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
   return (
     <div
       className={cn(
-        'flex min-w-0 flex-col gap-3 font-sans',
-        props.inCard === true && 'pb-3',
+        'flex min-w-0 flex-col font-sans',
+        // In a card the reserved loader slot sits right above the table, without a gap of its
+        // own (the card's header or the FilterBar already gives the room); the parts under the
+        // table keep 12px from it.
+        props.inCard === true ? 'pb-3 [&>*+*:not(:has(table))]:mt-3' : 'gap-3',
         props.className,
       )}
     >
