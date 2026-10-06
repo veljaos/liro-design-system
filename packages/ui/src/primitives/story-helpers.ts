@@ -9,6 +9,16 @@
  * not waited for.
  */
 export async function settle(): Promise<void> {
+  // The fonts first: a chart draws its plot once they are ready (charts.tsx, Plot), then two
+  // frames for it to render and measure.
+  await document.fonts.ready
+  await new Promise<void>((resolve) => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        resolve()
+      })
+    })
+  })
   const finite = document
     .getAnimations()
     .filter((animation) => animation.effect?.getComputedTiming().iterations !== Infinity)

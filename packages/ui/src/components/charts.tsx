@@ -1,5 +1,5 @@
 import { ChartColumn, Table2 } from 'lucide-react'
-import { useId, useState, type ReactNode } from 'react'
+import { useEffect, useId, useState, type ReactNode } from 'react'
 import {
   Area,
   AreaChart as AreaRoot,
@@ -333,6 +333,47 @@ const AXIS_TICK = { fontSize: 12, fill: 'var(--liro-text-tertiary)' }
 
 type Kind = 'bar' | 'line' | 'area'
 
+/**
+ * Bumps when the page's fonts finish loading. Recharts measures the value axis's labels once, as
+ * it draws; drawn before the web font arrived, the axis kept the fallback font's width (2px off
+ * between two runs of the visual tests). The plot is therefore drawn only once the fonts are
+ * ready, and drawn again whenever more fonts load (another script's face).
+ */
+function useFontGeneration(): number | null {
+  const [generation, setGeneration] = useState<number | null>(() =>
+    // No font API (a server, or jsdom in an application's tests): drawn at once.
+    typeof document === 'undefined' || !('fonts' in document) || document.fonts.status === 'loaded'
+      ? 0
+      : null,
+  )
+  useEffect(() => {
+    if (!('fonts' in document)) return
+    const fonts = document.fonts
+    let cancelled = false
+    const bump = () => {
+      if (!cancelled) setGeneration((current) => (current ?? 0) + 1)
+    }
+    void fonts.ready.then(bump)
+    fonts.addEventListener('loadingdone', bump)
+    return () => {
+      cancelled = true
+      fonts.removeEventListener('loadingdone', bump)
+    }
+  }, [])
+  return generation
+}
+
+/** The plot's container: its height is kept while the fonts load; drawn once they are ready. */
+function Plot({ height, children }: { height: number; children: ReactNode }) {
+  const generation = useFontGeneration()
+  if (generation === null) return <div style={{ height }} />
+  return (
+    <ResponsiveContainer key={generation} width="100%" height={height}>
+      {children}
+    </ResponsiveContainer>
+  )
+}
+
 function Cartesian({ kind, ...props }: CartesianChartProps & { kind: Kind }) {
   const { direction, format } = useLiro()
   const rtl = direction === 'rtl'
@@ -467,9 +508,7 @@ function Cartesian({ kind, ...props }: CartesianChartProps & { kind: Kind }) {
         />
       }
     >
-      <ResponsiveContainer width="100%" height={height}>
-        {chart}
-      </ResponsiveContainer>
+      <Plot height={height}>{chart}</Plot>
     </ChartFrame>
   )
 }
@@ -520,7 +559,7 @@ export function DonutChart(props: DonutChartProps) {
         />
       }
     >
-      <ResponsiveContainer width="100%" height={height}>
+      <Plot height={height}>
         <PieRoot accessibilityLayer={false}>
           <Pie
             data={data}
@@ -577,7 +616,7 @@ export function DonutChart(props: DonutChartProps) {
             }}
           />
         </PieRoot>
-      </ResponsiveContainer>
+      </Plot>
     </ChartFrame>
   )
 }
