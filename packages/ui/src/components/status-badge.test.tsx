@@ -37,7 +37,9 @@ describe('StatusBadge', () => {
     const html = renderToStaticMarkup(
       <StatusBadge label="Paid" tone="success" icon={CircleCheck} />,
     )
-    expect(html).toMatch(/<svg[^>]*aria-hidden="true"[^>]*>.*<\/svg><span class="bidi-isolate">Paid<\/span>/)
+    expect(html).toMatch(
+      /<svg[^>]*aria-hidden="true"[^>]*>.*<\/svg><span class="bidi-isolate">Paid<\/span>/,
+    )
   })
 
   it('knows the six tones', () => {
