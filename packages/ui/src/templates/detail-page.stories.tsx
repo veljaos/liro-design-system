@@ -265,12 +265,25 @@ export const SectionBarStory: Story = {
   play: async ({ canvasElement }) => {
     await settle()
     const nav = within(within(canvasElement).getByRole('navigation', { name: 'Sections' }))
+    // The smooth scroll to Payroll ends before the story scrolls back, or it would carry on
+    // under the instant one and leave the page a few pixels off (seen in the visual tests).
+    const scrolled = new Promise<void>((resolve) => {
+      document.addEventListener(
+        'scrollend',
+        () => {
+          resolve()
+        },
+        { capture: true, once: true },
+      )
+      setTimeout(resolve, 2000)
+    })
     await userEvent.click(nav.getByRole('link', { name: 'Payroll' }))
     await expect(nav.getByRole('link', { name: 'Payroll' })).toHaveAttribute(
       'aria-current',
       'location',
     )
     await expect(document.activeElement?.id).toBe('payroll')
+    await scrolled
     // Back to the first section at once (whatever element scrolls), so the picture does not
     // depend on the smooth scroll's timing.
     document.getElementById('personal')?.scrollIntoView({ behavior: 'instant', block: 'start' })
