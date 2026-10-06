@@ -253,3 +253,31 @@ export { SidePanels } from './components/side-panels'
 export type { SidePanel, SidePanelsProps } from './components/side-panels'
 export { DocumentPage } from './templates/document-page'
 export type { Counterparty, DocumentPageProps, DocumentSection } from './templates/document-page'
+export { sparklinePoints, StatCard } from './components/stat-card'
+export type { StatCardProps, StatChange } from './components/stat-card'
+export {
+  AreaChart,
+  BarChart,
+  DonutChart,
+  LineChart,
+  plotValue,
+  seriesColour,
+} from './components/charts'
+export type {
+  CartesianChartProps,
+  ChartCategory,
+  ChartSeries,
+  DonutChartProps,
+  DonutSlice,
+} from './components/charts'
+export { DashboardPage } from './templates/dashboard-page'
+export type { DashboardPageProps } from './templates/dashboard-page'
+export { ReportPage } from './templates/report-page'
+export type { ReportPageProps, ReportParameterSummary } from './templates/report-page'
+export { SettingsPage } from './templates/settings-page'
+export type {
+  SettingRow,
+  SettingsGroup,
+  SettingsPageProps,
+  SettingsSection,
+} from './templates/settings-page'

@@ -266,6 +266,15 @@ export interface LiroMessages {
   'document.hidePanels': string
   'document.showPanels': string
   'document.panels': string
+  /** Charts: the button that shows the values as a table, and back as a chart. */
+  'chart.showTable': string
+  'chart.showChart': string
+  /** ReportPage: run the report; edit its parameters again; names the parameters. */
+  'report.run': string
+  'report.edit': string
+  'report.parameters': string
+  /** SettingsPage: a setting saved (shown in its row). */
+  'settings.saved': string
   /** The accessible name of a hidden module's "Show" button. */
   'launchpad.show': (name: string) => string
 }

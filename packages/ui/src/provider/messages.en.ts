@@ -160,5 +160,11 @@ export const messagesEn: LiroMessages = {
   'document.hidePanels': 'Hide panels',
   'document.showPanels': 'Show panels',
   'document.panels': 'Panels',
+  'chart.showTable': 'Show as table',
+  'chart.showChart': 'Show as chart',
+  'report.run': 'Run report',
+  'report.edit': 'Edit',
+  'report.parameters': 'Report parameters',
+  'settings.saved': 'Saved',
   'launchpad.show': (name) => `Show: ${name}`,
 }
