@@ -160,7 +160,9 @@ function CompanyList({ companies, onDone }: { companies: ShellCompanies; onDone:
   return (
     <CommandPrimitive
       shouldFilter={false}
-      label={messages['shell.companies']}
+      // cmdk names its input with this label (aria-labelledby wins over the input's own name);
+      // the list below has its own.
+      label={searchable ? messages['shell.findCompany'] : messages['shell.companies']}
       className="flex flex-col font-sans text-primary"
     >
       {searchable && (
@@ -168,7 +170,6 @@ function CompanyList({ companies, onDone }: { companies: ShellCompanies; onDone:
           value={query}
           onValueChange={setQuery}
           placeholder={messages['shell.findCompany']}
-          aria-label={messages['shell.findCompany']}
           className="mb-1 box-border block h-control w-full min-w-0 appearance-none rounded-md border border-solid border-control bg-surface-raised px-3 font-sans text-sm text-primary outline-none placeholder:text-tertiary focus:border-focus"
         />
       )}

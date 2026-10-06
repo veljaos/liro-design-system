@@ -142,7 +142,8 @@ export const Default: Story = {
     await settle()
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('link', { name: 'Liro Business Apps' })).toBeVisible()
-    await expect(canvas.getByRole('link', { name: 'Invoices' })).toHaveAttribute(
+    const tabs = within(canvas.getByRole('navigation', { name: 'Module' }))
+    await expect(tabs.getByRole('link', { name: 'Invoices' })).toHaveAttribute(
       'aria-current',
       'page',
     )
@@ -195,7 +196,7 @@ export const ManyCompanies: Story = {
     )
     await settle()
     const body = within(document.body)
-    await userEvent.type(body.getByRole('combobox', { name: 'Find company' }), '1076')
+    await userEvent.type(body.getByRole('combobox', { name: 'Find company' }), '10781')
     await expect(body.getAllByRole('option')).toHaveLength(1)
     await expect(body.getByRole('option')).toHaveTextContent('Medic Lab Niš d.o.o.')
   },
