@@ -1,6 +1,6 @@
 import { Bell, Check, ChevronDown, Search } from 'lucide-react'
 import { Command as CommandPrimitive } from 'cmdk'
-import { useId, useState, type ReactNode } from 'react'
+import { useId, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { BrandLockup, type BrandLockupProps } from '../components/brand-lockup'
 import { CommandPalette, type CommandPaletteProps } from '../components/command-palette'
 import { commandMatches } from '../components/command-logic'
@@ -441,9 +441,32 @@ export function AppShell(props: AppShellProps) {
   const [searching, setSearching] = useState(false)
   const contentId = useId()
   const shortcut = props.searchShortcut ?? [messages['grid.modifierKey'], 'K']
+  const root = useRef<HTMLDivElement>(null)
+  const top = useRef<HTMLDivElement>(null)
+
+  // The height of everything sticky at the top (bars, header, tabs), as --liro-shell-top on the
+  // shell, so a page can fill the rest of the screen (WorklistPage's panes scroll on their own).
+  useLayoutEffect(() => {
+    const bar = top.current
+    const shell = root.current
+    if (bar === null || shell === null) return
+    const measure = () => {
+      shell.style.setProperty('--liro-shell-top', `${String(bar.offsetHeight)}px`)
+    }
+    measure()
+    const observer = new ResizeObserver(measure)
+    observer.observe(bar)
+    return () => {
+      observer.disconnect()
+    }
+  }, [])
 
   return (
-    <div data-slot="app-shell" className="flex min-h-dvh flex-col bg-surface-page font-sans">
+    <div
+      ref={root}
+      data-slot="app-shell"
+      className="flex min-h-dvh flex-col bg-surface-page font-sans"
+    >
       <a
         href={`#${contentId}`}
         className={cn(
@@ -453,7 +476,7 @@ export function AppShell(props: AppShellProps) {
       >
         {messages['shell.skipToContent']}
       </a>
-      <div className="sticky top-0 z-(--liro-layer-header)">
+      <div ref={top} className="sticky top-0 z-(--liro-layer-header)">
         {props.impersonationBar}
         <header className="border-0 border-b border-solid border-default bg-surface-header pt-[env(safe-area-inset-top)]">
           <div

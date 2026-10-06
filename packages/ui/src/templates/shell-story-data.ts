@@ -218,3 +218,124 @@ export function moduleById(id: string): LaunchpadModule {
   if (found === undefined) throw new Error(`No story module ${id}`)
   return found
 }
+
+/** A fuller invoice list (the list page and the examples). */
+export const INVOICE_LIST: InvoiceRow[] = [
+  ...INVOICES,
+  {
+    id: '6',
+    number: 'F-2026-0407',
+    customer: 'Bojović i sinovi d.o.o.',
+    issued: '2026-09-18',
+    due: '2026-10-02',
+    total: '9450.00',
+    status: 'Overdue',
+  },
+  {
+    id: '7',
+    number: 'F-2026-0406',
+    customer: 'Zlatibor Turs d.o.o.',
+    issued: '2026-09-17',
+    due: '2026-10-17',
+    total: '33612.80',
+    status: 'Sent',
+  },
+  {
+    id: '8',
+    number: 'F-2026-0405',
+    customer: 'Rakić Pekara SZR',
+    issued: '2026-09-15',
+    due: '2026-09-30',
+    total: '2184.50',
+    status: 'Paid',
+  },
+  {
+    id: '9',
+    number: 'F-2026-0404',
+    customer: 'Knjigovodstvo Jelić',
+    issued: '2026-09-12',
+    due: '2026-09-27',
+    total: '14400.00',
+    status: 'Paid',
+  },
+  {
+    id: '10',
+    number: 'F-2026-0403',
+    customer: 'Panonija Agro d.o.o.',
+    issued: '2026-09-10',
+    due: '2026-10-10',
+    total: '247809.12',
+    status: 'Sent',
+  },
+]
+
+/** Supplier invoices waiting for approval (the worklist). */
+export interface ApprovalRow {
+  id: string
+  number: string
+  supplier: string
+  received: string
+  due: string
+  total: string
+  status: 'To approve' | 'Query sent' | 'Overdue'
+  costCenter: string
+  requester: string
+}
+
+export const APPROVALS: ApprovalRow[] = [
+  {
+    id: 'u1',
+    number: 'UF-2026-1187',
+    supplier: 'EPS Snabdevanje d.o.o.',
+    received: '2026-10-01',
+    due: '2026-10-15',
+    total: '48216.90',
+    status: 'To approve',
+    costCenter: 'Proizvodnja Novi Sad',
+    requester: 'Dragan Ilić',
+  },
+  {
+    id: 'u2',
+    number: 'UF-2026-1186',
+    supplier: 'Telekom Srbija a.d.',
+    received: '2026-10-01',
+    due: '2026-10-20',
+    total: '12873.40',
+    status: 'To approve',
+    costCenter: 'Uprava',
+    requester: 'Jelena Marković',
+  },
+  {
+    id: 'u3',
+    number: 'UF-2026-1183',
+    supplier: 'Gradska čistoća Novi Sad',
+    received: '2026-09-29',
+    due: '2026-10-04',
+    total: '6520.00',
+    status: 'Overdue',
+    costCenter: 'Magacin Zrenjanin',
+    requester: 'Dragan Ilić',
+  },
+  {
+    id: 'u4',
+    number: 'UF-2026-1179',
+    supplier: 'Metalac Proizvodnja a.d.',
+    received: '2026-09-27',
+    due: '2026-10-27',
+    total: '386400.00',
+    status: 'Query sent',
+    costCenter: 'Proizvodnja Novi Sad',
+    requester: 'Nikola Stojanović',
+  },
+  {
+    id: 'u5',
+    number: 'UF-2026-1176',
+    supplier: 'NIS a.d. Novi Sad',
+    received: '2026-09-26',
+    due: '2026-10-11',
+    total: '27345.60',
+    status: 'To approve',
+    costCenter: 'Vozni park',
+    requester: 'Marko Đorđević',
+  },
+]

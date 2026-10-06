@@ -65,6 +65,10 @@ describe('messages', () => {
       'calendar.nextYear',
       'calendar.previousMonth',
       'calendar.previousYear',
+      'columns.button',
+      'columns.moveDown',
+      'columns.moveUp',
+      'columns.title',
       'command.actions',
       'command.navigation',
       'command.noResults',
@@ -138,6 +142,7 @@ describe('messages', () => {
       'launchpad.moveLater',
       'launchpad.show',
       'launchpad.showLabel',
+      'list.views',
       'notice.close',
       'notice.region',
       'period.all',
@@ -152,6 +157,7 @@ describe('messages', () => {
       'period.thisWeek',
       'period.today',
       'period.yearToDate',
+      'preview.open',
       'shell.companies',
       'shell.findCompany',
       'shell.moduleTabs',
@@ -178,6 +184,9 @@ describe('messages', () => {
       'wizard.back',
       'wizard.finish',
       'wizard.next',
+      'worklist.back',
+      'worklist.detail',
+      'worklist.next',
     ])
   })
 
