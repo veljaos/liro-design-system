@@ -16,8 +16,7 @@ import { PageHeader } from './page-header'
  *   "Next item".
  * - Rows (the old WorklistItem): the title (sm semibold), a subtitle (xs text.secondary), one
  *   deciding figure at the end (sm medium, tabular) with the status badge under it, and optional
- *   inline actions (Approve / Reject) under the text — not on the chosen row while its detail
- *   stands beside the list with the same actions; rows separated by border.subtle, padding sm
+ *   inline actions (Approve / Reject) under the text; rows separated by border.subtle, padding sm
  *   by md. The chosen row is surface.selected with a 3px border.selected bar at its start (the
  *   neutral selection, AGENTS.md D17). The detail pane is optional.
  */
@@ -68,18 +67,16 @@ function Row({
   item,
   selected,
   onSelect,
-  actions = true,
 }: {
   item: WorklistItem
   selected: boolean
   onSelect?: (id: string) => void
-  /** False while the item's detail stands beside the list with the same actions. */
-  actions?: boolean
 }) {
   const choose = () => onSelect?.(item.id)
   return (
     <li
       aria-current={selected ? 'true' : undefined}
+      data-liro-surface={selected ? 'selected' : undefined}
       className={cn(
         'relative box-border flex flex-col gap-2 border-0 border-b border-solid border-subtle px-4 py-3',
         selected
@@ -117,7 +114,7 @@ function Row({
           </div>
         )}
       </div>
-      {actions && item.actions !== undefined && (
+      {item.actions !== undefined && (
         <div className="flex flex-wrap items-center gap-2">{item.actions}</div>
       )}
     </li>
@@ -176,8 +173,6 @@ export function WorklistPage(props: WorklistPageProps) {
               key={item.id}
               item={item}
               selected={item.id === props.selected}
-              // The chosen item's actions are in its detail beside the list: not twice.
-              actions={stacked || props.detail === undefined || item.id !== props.selected}
               {...(props.onSelect === undefined ? {} : { onSelect: props.onSelect })}
             />
           ))}

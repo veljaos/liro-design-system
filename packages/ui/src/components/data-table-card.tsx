@@ -57,6 +57,7 @@ export function DataTableCard(props: DataTableCardProps) {
   return (
     <div
       data-index={props.index}
+      data-liro-surface={props.selected ? 'selected' : undefined}
       {...(onPress === undefined
         ? {}
         : {

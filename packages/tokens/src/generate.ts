@@ -18,6 +18,7 @@ import {
   LAYERS,
   LEADING,
   MONO_STACK,
+  ON_SELECTED,
   RELAXED_SCRIPT_LANGUAGES,
   sansStack,
   TRACKING,
@@ -183,6 +184,14 @@ export function tokensCss(): string {
     block(":root,\n[data-liro-theme='light']", themed('light')),
     '',
     block("[data-liro-theme='dark']", themed('dark')),
+    '',
+    '/* P4.3 On a selected row or card, the dark-theme text colours that pass over the selection. */',
+    block(
+      "[data-liro-theme='dark'] [data-liro-surface='selected'],\n[data-liro-theme='dark'][data-liro-surface='selected']",
+      Object.entries(ON_SELECTED.dark).map(
+        ([name, value]) => `--liro-${name}: ${cssValue(value)};`,
+      ),
+    ),
     '',
     '/* shadcn/ui variables mapped onto Liro meanings. Declared on every themed element, so each',
     '   resolves in its own theme. */',

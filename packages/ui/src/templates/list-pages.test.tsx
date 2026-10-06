@@ -95,7 +95,7 @@ describe('WorklistPage', () => {
     expect(detail).toContain('Back to list')
     expect(detail).toContain('Next item')
   })
-  it('leaves out the inline actions of the chosen row while its detail stands beside it', () => {
+  it('marks the chosen row as a selected surface, and keeps its inline actions', () => {
     const items = ITEMS.map((item) => ({
       ...item,
       actions: <button type="button">Approve {item.id}</button>,
@@ -110,12 +110,8 @@ describe('WorklistPage', () => {
         detail={<p>D</p>}
       />,
     )
-    expect(split).not.toContain('Approve a')
-    expect(split).toContain('Approve b')
-    const alone = render(
-      <WorklistPage layout="split" title="T" label="T" items={items} selected="a" />,
-    )
-    expect(alone).toContain('Approve a')
+    expect(split).toContain('data-liro-surface="selected"')
+    expect(split).toContain('Approve a')
   })
   it('shows the empty slot when there are no items', () => {
     const html = render(

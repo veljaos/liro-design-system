@@ -496,6 +496,8 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
       <tr
         key={row.id}
         aria-selected={selectable ? selected : undefined}
+        // The selection's own text colours (P4.3): tokens.css lightens the few that fail on it.
+        data-liro-surface={selected ? 'selected' : undefined}
         aria-rowindex={virtualize ? index + 2 : undefined}
         {...(clickable
           ? {

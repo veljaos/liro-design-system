@@ -637,6 +637,8 @@ Status tones — `fg` / `bg` / `border` / `solid`:
 
 `surface.inverse`, `text.onInverse` (tooltips) and `border.control` (the boundary of inputs, checkboxes, radios and the off state of switches, at least 3:1 on every surface for WCAG 1.4.11) were added in P2.1 by the owner's decision. In P3.6 the owner made `surface.selected` neutral (it was blue0 / rgba(0,120,212,0.18)) and added `border.selected` (the start-edge bar of a selected row and the border of a selected card): blue is kept for actions, links, focus, checked controls and the highlighted option.
 
+On a selected row or card (`surface.selected`, marked `data-liro-surface="selected"`), five dark-theme text colours that measure below 4.5:1 over the selection take the next lighter shade, the one their hover already uses (P4.3, owner): status.danger.fg red3 → red2, status.premium.fg violet3 → violet2, and the family texts primary blue4 → blue3, document violet3 → violet2, destructive red3 → red2. The light theme needs none.
+
 `brand.solid` is a background and `text.brand` is text; they move in opposite directions between themes and must never share a token.
 
 ### A.3 Spacing, radius, shadows
