@@ -260,6 +260,12 @@ export interface LiroMessages {
   'page.backTo': (list: string) => string
   /** SectionBar: names the row of section links. */
   'page.sections': string
+  /** LifecycleBar on phones: "Step 3 of 4: Sent to SEF". */
+  'lifecycle.step': (step: number, total: number, label: string) => string
+  /** DocumentPage: the button that hides or shows the side panels, and the panels' name. */
+  'document.hidePanels': string
+  'document.showPanels': string
+  'document.panels': string
   /** The accessible name of a hidden module's "Show" button. */
   'launchpad.show': (name: string) => string
 }

@@ -155,5 +155,10 @@ export const messagesEn: LiroMessages = {
   'worklist.detail': 'Details',
   'page.backTo': (list) => `Back to ${list}`,
   'page.sections': 'Sections',
+  'lifecycle.step': (step, total, label) =>
+    `Step ${formatDecimal(String(step), 'comma-dot')} of ${formatDecimal(String(total), 'comma-dot')}: ${label}`,
+  'document.hidePanels': 'Hide panels',
+  'document.showPanels': 'Show panels',
+  'document.panels': 'Panels',
   'launchpad.show': (name) => `Show: ${name}`,
 }
