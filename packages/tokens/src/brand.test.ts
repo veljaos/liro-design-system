@@ -51,6 +51,8 @@ describe('brand', () => {
           `wordmark-${variant}-128.png`,
         ]),
         'web/apple-touch-icon.png',
+        'web/favicon-16.png',
+        'web/favicon-32.png',
         'web/favicon.ico',
         'web/icon-192.png',
         'web/icon-512.png',
@@ -69,7 +71,7 @@ describe('brand', () => {
     assert.match(svg, /<title>Liro<\/title>/)
   })
 
-  it('has a tab favicon without a tile: brand-blue dots, lighter in a dark browser (P4.0)', () => {
+  it('has a tab favicon without a tile: brand-blue dots, lighter in a dark browser (P4.7b)', () => {
     const svg = read('web/favicon.svg').toString('utf8')
     assert.doesNotMatch(svg, /<rect/)
     assert.match(svg, /path\{fill:#0078D4\}/)
@@ -83,6 +85,8 @@ describe('brand', () => {
 
   it('has the web icons in their sizes', () => {
     assert.deepEqual(pngSize(read('web/apple-touch-icon.png')), [180, 180])
+    assert.deepEqual(pngSize(read('web/favicon-16.png')), [16, 16])
+    assert.deepEqual(pngSize(read('web/favicon-32.png')), [32, 32])
     assert.deepEqual(pngSize(read('web/icon-192.png')), [192, 192])
     assert.deepEqual(pngSize(read('web/icon-512.png')), [512, 512])
     assert.deepEqual(pngSize(read('web/icon-maskable-512.png')), [512, 512])
