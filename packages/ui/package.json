@@ -21,6 +21,10 @@
       "types": "./dist/form.d.ts",
       "import": "./dist/form.js"
     },
+    "./charts": {
+      "types": "./dist/charts.d.ts",
+      "import": "./dist/charts.js"
+    },
     "./styles.css": "./dist/styles.css",
     "./package.json": "./package.json"
   },

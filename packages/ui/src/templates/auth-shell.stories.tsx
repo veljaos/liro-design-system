@@ -49,11 +49,7 @@ function EmailStep({
 }
 
 const SIGN_IN: ReactNode = (
-  <EmailStep
-    label="Work e-mail"
-    button="Continue"
-    placeholder="milica.petrovic@kvadratgradnja.rs"
-  />
+  <EmailStep label="Work e-mail" button="Continue" placeholder="name@company.rs" />
 )
 
 const meta = {
@@ -123,7 +119,7 @@ export const LongText: Story = {
       <EmailStep
         label="Work e-mail address used for your company account"
         button="Continue with this e-mail address"
-        placeholder="milica.petrovic@kvadratgradnja.rs"
+        placeholder="name@company.rs"
       />
     ),
   },

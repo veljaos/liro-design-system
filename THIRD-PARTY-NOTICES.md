@@ -29,9 +29,9 @@ dependency, or copies third-party code (for example a shadcn/ui component) into 
 
 ## Copied into this repository
 
-| Software                                                        | Version    | License | Where                                                                                               |
-| --------------------------------------------------------------- | ---------- | ------- | --------------------------------------------------------------------------------------------------- |
-| shadcn/ui (components generated with the `shadcn` CLI, adapted) | CLI 4.21.0 | MIT     | `packages/ui/src/primitives/` (P2.1; `accordion.tsx` P3.6); built into `@veljaos/ui`. Notice below. |
+| Software                                                        | Version    | License | Where                                                                                                                                            |
+| --------------------------------------------------------------- | ---------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| shadcn/ui (components generated with the `shadcn` CLI, adapted) | CLI 4.21.0 | MIT     | `packages/ui/src/primitives/` (P2.1; `accordion.tsx` P3.6; `chart.tsx` P4.7a, from the shadcn registry); built into `@veljaos/ui`. Notice below. |
 
 ## Runtime and peer dependencies
 
@@ -205,7 +205,7 @@ SOFTWARE.
 
 ### shadcn/ui
 
-The components in `packages/ui/src/primitives/` were generated with the shadcn CLI 4.21.0 (style `radix-vega`) and adapted. The notice is the `shadcn-ui/ui` repository's, as shipped in the `shadcn` package.
+The components in `packages/ui/src/primitives/` were generated with the shadcn CLI 4.21.0 (style `radix-vega`) and adapted; `chart.tsx` (P4.7a) was taken from the same style's registry entry (`https://ui.shadcn.com/r/styles/radix-vega/chart.json`, 2026-10-07) and adapted. The notice is the `shadcn-ui/ui` repository's, as shipped in the `shadcn` package.
 
 ```
 MIT License
