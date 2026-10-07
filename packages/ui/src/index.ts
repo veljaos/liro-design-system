@@ -264,6 +264,7 @@ export {
   seriesColour,
 } from './components/charts'
 export type {
+  BarChartProps,
   CartesianChartProps,
   ChartCategory,
   ChartSeries,
@@ -281,3 +282,7 @@ export type {
   SettingsPageProps,
   SettingsSection,
 } from './templates/settings-page'
+export { StatusPage, STATUS_KINDS, statusLook } from './templates/status-page'
+export type { StatusAction, StatusKind, StatusPageProps } from './templates/status-page'
+export { AuthShell } from './templates/auth-shell'
+export type { AuthShellProps } from './templates/auth-shell'

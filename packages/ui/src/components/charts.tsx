@@ -80,6 +80,14 @@ export interface CartesianChartProps {
   className?: string
 }
 
+export interface BarChartProps extends CartesianChartProps {
+  /**
+   * 'horizontal': bars run along the reading direction, categories down the start side — for
+   * long category names ("Top 5 customers"). Default 'vertical'.
+   */
+  orientation?: 'vertical' | 'horizontal'
+}
+
 export interface DonutSlice {
   key: string
   label: string
@@ -374,7 +382,11 @@ function Plot({ height, children }: { height: number; children: ReactNode }) {
   )
 }
 
-function Cartesian({ kind, ...props }: CartesianChartProps & { kind: Kind }) {
+function Cartesian({
+  kind,
+  orientation = 'vertical',
+  ...props
+}: CartesianChartProps & { kind: Kind; orientation?: BarChartProps['orientation'] }) {
   const { direction, format } = useLiro()
   const rtl = direction === 'rtl'
   const palette = props.palette ?? 'default'
@@ -416,7 +428,32 @@ function Cartesian({ kind, ...props }: CartesianChartProps & { kind: Kind }) {
       }}
     />
   )
-  const axes = (
+  const horizontal = kind === 'bar' && orientation === 'horizontal'
+  const axes = horizontal ? (
+    <>
+      <CartesianGrid horizontal={false} stroke="var(--liro-border-subtle)" strokeWidth={1} />
+      <XAxis
+        type="number"
+        reversed={rtl}
+        tickLine={false}
+        axisLine={false}
+        tick={AXIS_TICK}
+        tickMargin={8}
+        tickFormatter={(tick: number) => format.number(String(tick))}
+      />
+      <YAxis
+        type="category"
+        dataKey="__label"
+        orientation={rtl ? 'right' : 'left'}
+        tickLine={false}
+        axisLine={{ stroke: 'var(--liro-border-default)' }}
+        tick={AXIS_TICK}
+        tickMargin={8}
+        width="auto"
+      />
+      {tooltip}
+    </>
+  ) : (
     <>
       <CartesianGrid vertical={false} stroke="var(--liro-border-subtle)" strokeWidth={1} />
       <XAxis
@@ -442,7 +479,13 @@ function Cartesian({ kind, ...props }: CartesianChartProps & { kind: Kind }) {
 
   const chart =
     kind === 'bar' ? (
-      <BarRoot data={data} accessibilityLayer={false} barGap={2} barCategoryGap="30%">
+      <BarRoot
+        data={data}
+        accessibilityLayer={false}
+        barGap={2}
+        barCategoryGap="30%"
+        layout={horizontal ? 'vertical' : 'horizontal'}
+      >
         {axes}
         {props.series.map((each, index) => (
           <Bar
@@ -451,7 +494,8 @@ function Cartesian({ kind, ...props }: CartesianChartProps & { kind: Kind }) {
             name={each.label}
             fill={colours[index] ?? 'currentColor'}
             maxBarSize={24}
-            radius={[4, 4, 0, 0]}
+            // Rounded at the data end, square at the baseline.
+            radius={horizontal ? (rtl ? [4, 0, 0, 4] : [0, 4, 4, 0]) : [4, 4, 0, 0]}
             isAnimationActive={false}
           />
         ))}
@@ -514,8 +558,8 @@ function Cartesian({ kind, ...props }: CartesianChartProps & { kind: Kind }) {
 }
 
 /** Values per category, as bars: magnitudes to compare. */
-export function BarChart(props: CartesianChartProps) {
-  return <Cartesian {...props} kind="bar" />
+export function BarChart({ orientation, ...props }: BarChartProps) {
+  return <Cartesian {...props} kind="bar" orientation={orientation ?? 'vertical'} />
 }
 
 /** Values over time, as lines: change and trend. */
@@ -565,8 +609,8 @@ export function DonutChart(props: DonutChartProps) {
             data={data}
             dataKey="plot"
             nameKey="label"
-            innerRadius="58%"
-            outerRadius="78%"
+            innerRadius="50%"
+            outerRadius="66%"
             stroke="var(--liro-surface-raised)"
             strokeWidth={2}
             isAnimationActive={false}

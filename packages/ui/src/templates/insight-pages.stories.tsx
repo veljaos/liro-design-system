@@ -14,7 +14,7 @@ import { ExampleProvider, PhoneFrame, StoryProvider } from '../components/story-
 import { settle } from '../primitives/story-helpers'
 import { AppShell } from './app-shell'
 import { DashboardPage } from './dashboard-page'
-import { CASH, LEDGER, REVENUE, type LedgerRow } from './insight-story-data'
+import { CASH, LEDGER, REVENUE, TOP_CUSTOMERS, type LedgerRow } from './insight-story-data'
 import { ReportPage } from './report-page'
 import { SettingsPage } from './settings-page'
 import { BRAND, COMMANDS, COMPANIES, USER } from './shell-story-data'
@@ -95,6 +95,7 @@ function Dashboard({ phone = false, loading = false }: { phone?: boolean; loadin
             },
           ]}
         />
+        <BarChart {...TOP_CUSTOMERS} orientation="horizontal" />
       </DashboardPage>
     </Shell>
   )

@@ -282,8 +282,10 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P4.4 | Detail and record form templates | P3.5, P4.1 | done | 2026-10-06 | Owner's values: key figures (20px, colour only for state), sticky section bar like module tabs, side column 300px from 75em, the old 28px back button "Back to <list>"; sections as SectionCards; record form with top and bottom actions and the unsaved-changes guard on back |
 | P4.5 | Document template | P3.4, P4.4 | done | 2026-10-06 | Owner's values: lifecycle bar (dots and lines, error step with reason, one line on phones), counterparty only, lines card without title, totals block on the baseline (rows from props, groups, large final row), side panels collapsible one by one and as a column, both reported |
 | P4.6 | Report, dashboard and settings templates | P4.1 | done | 2026-10-06 | Owner's values: one blue and greys for charts (categorical opt-in, validated, teal 5 at 2.8:1 covered by legend and table), StatCard, settings rows saved at once with Saved/error, report parameters collapsing to a summary; charts on Recharts 3.10.1 directly, as shadcn Chart is (its wrapper not copied: our own card, legend, tooltip and table); settings width 960px chosen, reported |
-| P4.7 | Status pages and sign-in shell | P4.1 | todo | | |
-| P4.8 | Example screens | P4.2–P4.7 | todo | | |
+| P4.7 | Status pages and sign-in shell | P4.1 | done | 2026-10-07 | Owner's values: StatusPage for 401, 402, 403, 404, 500 (case number), maintenance, suspended — tone square 84px (warning, neutral or danger, never blue), the bare code above the title; AuthShell 420px card on surface.sunken, lockup above, no frame on phones; SettingsPage and its tabs start-aligned (Tabs `align`); dashboard: "Top 5 customers" horizontal bars beside the donut, donut sized to its card |
+| P4.7a | Charts catalogue | P4.7 | todo | | |
+| P4.7b | Small-size favicon | P4.7 | todo | | Three variants shown to the owner; merged after the owner's choice (protected: Storybook's favicon URL gets a version) |
+| P4.8 | Example screens | P4.2–P4.7a | todo | | |
 | P5.1 | History, comments and messages | P2.8 | todo | | |
 | P5.2 | Presence and agent marking | P2.8 | todo | | |
 | P5.3 | Connection, environment and session markers | P4.1 | todo | | |
@@ -513,6 +515,32 @@ Templates are layouts with **slots**; they contain no data logic.
 ### P4.7 — Status pages and sign-in shell
 **Do** status pages: not signed in (401), no access (403), not found (404), error (500, with case-id slot), maintenance, suspended; `AuthShell` (centred card, product name and logo from props). The status pages also take the logo from props; the Liro brand files of `@veljaos/tokens/brand/` are the application's default (D18, P3.7).
 
+### P4.7a — Charts catalogue (owner, 2026-10-07)
+**Do** a catalogue of chart variants after shadcn/ui's charts (https://ui.shadcn.com/charts), on Recharts as shadcn's Chart is, each a story with realistic Serbian business data, so the example screens (P4.8) can use them.
+- **Area:** default, linear, step, stacked, stacked expanded (100%), with legend, axes, interactive (a time-range Select "Last 3 months / 30 days / 7 days" and a series toggle in the header). shadcn's gradient variant becomes a flat fill at low opacity — no gradients.
+- **Bar:** default, horizontal, multiple, stacked with legend, with labels, a custom label inside the bar, active (one bar highlighted), negative (profit/loss), mixed (a colour per bar, only with the categorical palette), interactive.
+- **Line:** default, linear, step, multiple, with dots, with labels, interactive.
+- **Pie:** simple, with labels, label list, with legend, donut, donut active, donut with the total in the centre, stacked (two rings), interactive.
+- **Radar:** default, with dots, multiple, lines only, circular grid, no grid, with legend.
+- **Radial:** simple, with labels, with grid, value in the centre, stacked, progress to a goal.
+- **Tooltip:** default, line indicator, no indicator, custom label, formatted values, with a total row.
+
+Rules for every chart:
+- **Colour:** one series is brand blue, a second neutral grey (as in P4.6); three or more series only with the opt-in categorical palette (chart tokens, contrast-checked in both themes, colour-blind-safe order). Green and red only when the data carries that meaning (profit/loss, overdue). No gradients, shadows or 3D.
+- **Numbers and dates** through the provider's `format`: money as decimal strings, never rounded in tooltips (axis ticks may be abbreviated, with words from `messages`); `null` is a gap in a line or a missing bar, never 0.
+- **Right-to-left:** time runs right to left, the value axis on the right, the legend's order follows the direction.
+- **Accessibility:** every chart has a title, a description and the "Show as table" toggle; the chart is keyboard-focusable and the arrow keys move between points and show the tooltip; never colour alone (a legend or direct labels; stacked parts separated); 3:1 for graphical elements.
+- **Motion:** short (at most 300ms), none under `prefers-reduced-motion` and none in tests.
+- **States:** loading (a chart-shaped skeleton, no spinner), empty ("No data for this period"), error with Retry, partial data with gaps.
+- **Phones:** fewer axis ticks, the legend below, horizontal bars when labels are long; the interactive header stacks.
+- **Packaging:** charts are exported from a subpath, `@veljaos/ui/charts`, so an application without charts does not load Recharts. Recharts pinned exactly; `THIRD-PARTY-NOTICES.md` updated.
+- **A short docs page "Choosing a chart":** a trend over time → line or area; comparing categories → bar (horizontal when labels are long or there are more than 7 items); a part of a whole with 5 or fewer parts → donut, otherwise bar; radar and radial only for a few scores or progress to a goal, never for money over time.
+
+**Done when** every variant has its story in both themes, both directions and phone width, and the rules above hold.
+
+### P4.7b — Small-size favicon (owner, 2026-10-07)
+**Do** a dedicated small mark for 16 and 32px: far fewer, larger dots on a whole-pixel grid (no dot under 2px at 16px, no sub-pixel positions, no anti-aliased specks), keeping the logo's round silhouette; the full sphere stays for 48px and up (apple-touch-icon, manifest). The transparent background and the dark-mode colour rule stay. Three variants are shown to the owner at real size and at 400% on light and dark tab bars; the chosen one is merged. Storybook's favicon URL carries a version (`?v=N`), so browsers pick up a change at once.
+
 ### P4.8 — Example screens
 **Do** Storybook "Examples" section, English, fictitious data, full-screen: a list of invoices, an invoice document with lines and totals, an employee record form, a dashboard, a worklist. Each works in both themes, both directions and phone width.
 
@@ -528,6 +556,8 @@ All generic: labels and states come in as props.
 
 ### P5.1 — History, comments and messages
 **Do** `Timeline` / `HistoryList` (who, when, what changed; actor kind marker for human, system, agent, integration; "on behalf of" line); the **`Message` family** (`MessageBubble`, `MessageList`, `MessageThread`, `MessageComposer` — Enter sends, Shift+Enter breaks the line) used for comments and task conversations; `MentionCombobox` for mentions (candidate list comes from props). The Message family and the agent interactions are built on the shadcn/ui Radix versions of **Bubble**, **Marker**, **Message Scroller** and **Questionnaire** (Questionnaire for the questions an agent asks the user), adapted like the P2.1 primitives; shadcn's Carousel is not used (owner, P3.6).
+
+**Questionnaire is a general step-by-step question component** (owner, 2026-10-07), not only for agents: e.g. guided document generation — an employment contract (fixed or indefinite term, the end date, place of work: office / remote / hybrid, probation …). It must support **branching** (the next question depends on the answer); **answer types**: single choice, multiple choice, date, number, amount, short text, and "Other" with its own text; **Back** without losing answers; a **final summary** where any answer can be changed; and **progress**. The questions, their branching and the answers come from the Core or a module (props); the component decides nothing about the content.
 
 ### P5.2 — Presence and agent marking
 **Do** `PresenceAvatars` (who else is here, overflow count, tooltips with names); `AgentMark` (a consistent machine marker shown next to any name that belongs to an agent).

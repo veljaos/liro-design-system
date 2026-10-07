@@ -39,6 +39,11 @@ export interface TabsProps {
   onValueChange?: (value: string) => void
   /** Names the list of tabs for assistive technology. From the application. */
   label?: string
+  /**
+   * Where the tab list stands. Default 'center' (page-level tabs, AGENTS.md D16); 'start' where
+   * the tabs head a start-aligned column, as on SettingsPage (P4.7, owner).
+   */
+  align?: 'center' | 'start'
   /** Layout classes. */
   className?: string
 }
@@ -61,7 +66,7 @@ export function Tabs(props: TabsProps) {
       className={props.className}
     >
       <TabsList
-        className="justify-center"
+        className={props.align === 'start' ? 'justify-start' : 'justify-center'}
         {...(props.label === undefined ? {} : { 'aria-label': props.label })}
       >
         {props.items.map((item) => {

@@ -166,5 +166,22 @@ export const messagesEn: LiroMessages = {
   'report.edit': 'Edit',
   'report.parameters': 'Report parameters',
   'settings.saved': 'Saved',
+  'status.unauthenticatedTitle': 'Sign in to continue',
+  'status.unauthenticatedDescription':
+    'Your session has ended. Sign in again to pick up where you left off.',
+  'status.planRequiredTitle': 'Not included in your plan',
+  'status.planRequiredDescription': 'This part of the application is available in a higher plan.',
+  'status.forbiddenTitle': 'You do not have access',
+  'status.forbiddenDescription':
+    'Your role does not include this page. Ask an administrator of your company for access.',
+  'status.notFoundTitle': 'Page not found',
+  'status.notFoundDescription': 'The address may be mistyped, or the page was moved or deleted.',
+  'status.errorTitle': 'Something went wrong',
+  'status.errorDescription':
+    'The error has been recorded. Try again in a moment; if it happens again, quote the case number.',
+  'status.maintenanceTitle': 'Down for maintenance',
+  'status.maintenanceDescription': 'The application is being updated and will be back shortly.',
+  'status.suspendedTitle': 'Account suspended',
+  'status.suspendedDescription': 'Access to this account is suspended. Contact your administrator.',
   'launchpad.show': (name) => `Show: ${name}`,
 }
