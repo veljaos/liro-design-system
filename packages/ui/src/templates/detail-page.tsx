@@ -92,9 +92,7 @@ function Columns({
 }) {
   if (side === undefined) return <div className="flex min-w-0 flex-col gap-4">{children}</div>
   return (
-    <div
-      className={cn('grid grid-cols-1 gap-6', !phone && 'lg:grid-cols-[minmax(0,1fr)_300px]')}
-    >
+    <div className={cn('grid grid-cols-1 gap-6', !phone && 'lg:grid-cols-[minmax(0,1fr)_300px]')}>
       <div className="flex min-w-0 flex-col gap-4">{children}</div>
       <aside className="flex min-w-0 flex-col gap-4">{side}</aside>
     </div>
