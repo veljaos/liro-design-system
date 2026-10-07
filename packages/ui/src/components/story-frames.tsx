@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import type { ElementType, ReactNode } from 'react'
 import { expect } from 'storybook/test'
 import { createFormat } from '../provider/format'
 import { LiroProvider, useLiro } from '../provider/liro-provider'
@@ -57,7 +57,14 @@ export function percentText(value: string, sign: 'auto' | 'always' = 'auto'): st
  * English interface text, but numbers, amounts and dates written as a Serbian tenant sees them
  * (12.345,60 RSD, 06.10.2026.), and a fixed today.
  */
-export function ExampleProvider({ children }: { children: ReactNode }) {
+export function ExampleProvider({
+  linkComponent,
+  children,
+}: {
+  /** The example screens' router link (P4.8); default a plain anchor. */
+  linkComponent?: ElementType
+  children: ReactNode
+}) {
   const liro = useLiro()
   return (
     <LiroProvider
@@ -66,6 +73,7 @@ export function ExampleProvider({ children }: { children: ReactNode }) {
       colorScheme={liro.colorScheme}
       format={SERBIAN_FORMAT}
       today={EXAMPLE_TODAY}
+      {...(linkComponent === undefined ? {} : { linkComponent })}
     >
       {children}
     </LiroProvider>
