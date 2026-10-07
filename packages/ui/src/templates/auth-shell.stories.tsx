@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { ArrowRight } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { expect, within } from 'storybook/test'
 import { Button } from '../components/button'
@@ -44,7 +43,7 @@ function EmailStep({
       }}
     >
       <TextField label={label} type="email" autoComplete="email" placeholder={placeholder} />
-      <Button family="primary" icon={ArrowRight} label={button} emphasis="primary" type="submit" />
+      <Button intent="next" label={button} type="submit" />
     </form>
   )
 }

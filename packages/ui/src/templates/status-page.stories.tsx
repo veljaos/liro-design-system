@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { ArrowRight, House, LogIn, RotateCcw } from 'lucide-react'
+import { House, LogIn, RotateCcw } from 'lucide-react'
 import { expect, within } from 'storybook/test'
 import { ExampleProvider, PhoneFrame, StoryProvider } from '../components/story-frames'
 import { settle } from '../primitives/story-helpers'
@@ -74,7 +74,7 @@ export const PlanRequired: Story = {
   args: {
     kind: 'planRequired',
     description: 'Payroll is available in the Pro plan. Your administrator can change the plan.',
-    primaryAction: { label: 'See plans', href: '#plans', icon: ArrowRight },
+    primaryAction: { label: 'See plans', href: '#plans' },
     secondaryAction: HOME,
   },
 }
