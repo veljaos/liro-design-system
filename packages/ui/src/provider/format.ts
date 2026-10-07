@@ -15,6 +15,12 @@ export interface LiroFormat {
   /** value is a decimal string, e.g. "1234.5". Never a JavaScript number. */
   number(value: string, options?: { decimals?: number }): string
   money(value: string, currency: string, options?: { decimals?: number }): string
+  /**
+   * A percentage (P4.7c): `value` is the percentage as a decimal string ("62.4" for 62,4 %), never
+   * rounded; the sign, the percent sign and the space between them follow the locale (CLDR):
+   * "62,4%" in sr-Latn, "62.4%" in en, "62,4 %" in de. `sign: 'always'` writes "+" for a rise.
+   */
+  percent(value: string, options?: { decimals?: number; sign?: 'auto' | 'always' }): string
   /** Accepts what people type: "1234.56", "1234,56", "1.234,56", "1,234.56", spaces, apostrophes. Returns a decimal string or null. */
   parseNumber(text: string): string | null
   /** value is YYYY-MM-DD. */
@@ -197,6 +203,28 @@ function currencyFirst(locale: string, currency: string): boolean {
   }
 }
 
+/**
+ * The locale's percent pattern around the number (CLDR, through Intl): what stands before it
+ * (the sign, a direction mark) and after it (a space, the percent sign). Only the pattern is taken
+ * from Intl; the number itself is formatted from its decimal string.
+ */
+function percentPattern(locale: string): {
+  before: readonly Intl.NumberFormatPart[]
+  after: readonly Intl.NumberFormatPart[]
+} {
+  const parts = new Intl.NumberFormat(intlLocale(locale), {
+    style: 'percent',
+    minimumFractionDigits: 1,
+  }).formatToParts(-0.015)
+  const numeric = new Set(['integer', 'group', 'decimal', 'fraction'])
+  const first = parts.findIndex((part) => numeric.has(part.type))
+  let last = first
+  parts.forEach((part, index) => {
+    if (numeric.has(part.type)) last = index
+  })
+  return { before: parts.slice(0, first), after: parts.slice(last + 1) }
+}
+
 /** Days in a month of the Gregorian calendar; month is 1 … 12. */
 function daysInMonth(year: number, month: number): number {
   return new Date(Date.UTC(year, month, 0)).getUTCDate()
@@ -322,6 +350,7 @@ export function createFormat(locale: string, overrides: Partial<LiroFormat> = {}
     timeZone: 'UTC',
   })
   const order = dateFieldOrder(locale)
+  const percentParts = percentPattern(locale)
 
   const format: LiroFormat = {
     numberScheme: numberSchemeForLocale(locale),
@@ -339,6 +368,20 @@ export function createFormat(locale: string, overrides: Partial<LiroFormat> = {}
       return currencyFirst(locale, currency)
         ? `${currency}${NBSP}${amount}`
         : `${amount}${NBSP}${currency}`
+    },
+    percent(value, options) {
+      const unsigned = value.replace(/^[-+]/, '')
+      if (!DECIMAL_STRING.test(unsigned)) return value
+      const negative = value.startsWith('-') && /[1-9]/.test(unsigned)
+      const sign = negative ? '-' : options?.sign === 'always' && /[1-9]/.test(unsigned) ? '+' : ''
+      const number = formatDecimal(unsigned, format.numberScheme, options?.decimals)
+      const before = percentParts.before
+        .map((part) => (part.type === 'minusSign' || part.type === 'plusSign' ? sign : part.value))
+        .join('')
+      const signed = percentParts.before.some((part) => part.type === 'minusSign')
+        ? before
+        : `${sign}${before}`
+      return `${signed}${number}${percentParts.after.map((part) => part.value).join('')}`
     },
     parseNumber(text) {
       return parseDecimal(text, format.numberScheme)

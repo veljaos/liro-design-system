@@ -3,7 +3,7 @@
  * in src/index.ts imports this file. No classes here: Storybook compiles classes only from
  * *.stories.tsx files.
  */
-import type { CartesianChartProps } from '../components/charts'
+import type { CartesianChartProps } from '../charts'
 
 export const MONTHS = [
   { key: '04', label: 'Apr' },

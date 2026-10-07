@@ -269,6 +269,18 @@ export interface LiroMessages {
   /** Charts: the button that shows the values as a table, and back as a chart. */
   'chart.showTable': string
   'chart.showChart': string
+  /** Charts (P4.7a): no values in the period; a failed load and its retry; loading. */
+  'chart.noData': string
+  'chart.error': string
+  'chart.retry': string
+  'chart.loading': string
+  /**
+   * Axis ticks written short (P4.7a): `value` is the tick already divided and formatted
+   * ("1,5"); the words are the Core's ("1,5 hilj.", "1,5 mil.").
+   */
+  'chart.thousands': (value: string) => string
+  'chart.millions': (value: string) => string
+  'chart.billions': (value: string) => string
   /** ReportPage: run the report; edit its parameters again; names the parameters. */
   'report.run': string
   'report.edit': string

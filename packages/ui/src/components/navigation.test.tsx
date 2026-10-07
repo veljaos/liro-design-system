@@ -11,7 +11,7 @@ const render = (node: React.ReactNode, props: { linkComponent?: React.ElementTyp
   )
 
 describe('Tabs', () => {
-  it('mounts only the active panel and centres the list', () => {
+  it('mounts only the active panel and starts the list at the start (P4.7c)', () => {
     const html = render(
       <Tabs
         items={[
@@ -22,7 +22,7 @@ describe('Tabs', () => {
     )
     expect(html).toContain('General panel')
     expect(html).not.toContain('Lines panel')
-    expect(html).toContain('justify-center')
+    expect(html).toContain('justify-start')
   })
 })
 

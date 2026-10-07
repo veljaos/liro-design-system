@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { settle } from '../primitives/story-helpers'
 import { MoneyText } from './display-text'
 import { StatCard } from './stat-card'
-import { ExampleProvider, PhoneFrame, StoryProvider } from './story-frames'
+import { ExampleProvider, percentText, PhoneFrame, StoryProvider } from './story-frames'
 
 const meta = {
   title: 'Components/Display/StatCard',
@@ -21,7 +21,7 @@ const meta = {
   args: {
     label: 'Revenue, September',
     value: <MoneyText value="5684200" currency="RSD" decimals={0} />,
-    change: { text: '+16,7 %', direction: 'up', sentiment: 'good' },
+    change: { text: percentText('16.7', 'always'), direction: 'up', sentiment: 'good' },
     comparison: 'vs September 2025',
     trend: ['4812.4', '5230.9', '4977.1', '3906.5', '4421.8', '5684.2'],
   },
@@ -48,7 +48,7 @@ export const BadChange: Story = {
   args: {
     label: 'Overdue receivables',
     value: <MoneyText value="421740" currency="RSD" decimals={0} />,
-    change: { text: '+8,2 %', direction: 'up', sentiment: 'bad' },
+    change: { text: percentText('8.2', 'always'), direction: 'up', sentiment: 'bad' },
     comparison: 'vs last week',
   },
 }
@@ -59,7 +59,7 @@ export const NeutralChange: Story = {
   args: {
     label: 'Invoices issued',
     value: '214',
-    change: { text: '−3 %', direction: 'down' },
+    change: { text: percentText('-3'), direction: 'down' },
     comparison: 'vs September 2025',
     trend: [],
   },

@@ -1,5 +1,6 @@
 import { Button } from '@veljaos/ui'
 import { useState } from 'react'
+import { ChartsExample } from './ChartsExample'
 import { FormExample } from './FormExample'
 
 export function App() {
@@ -15,6 +16,7 @@ export function App() {
       />
       <p aria-live="polite">Clicked {clicks} times</p>
       <FormExample />
+      <ChartsExample />
     </main>
   )
 }

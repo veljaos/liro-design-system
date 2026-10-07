@@ -45,6 +45,14 @@ export const EXAMPLE_TODAY = '2026-10-06'
 const SERBIAN_FORMAT = createFormat('sr-Latn-RS')
 
 /**
+ * A percentage as the application writes it for a Serbian tenant ("62,4%", "+16,7%"): story data
+ * goes through the provider's format, never a hand-written "62,4 %" (P4.7c).
+ */
+export function percentText(value: string, sign: 'auto' | 'always' = 'auto'): string {
+  return SERBIAN_FORMAT.percent(value, { sign })
+}
+
+/**
  * The template and example stories (Phase 4): the story's locale, direction and theme, the
  * English interface text, but numbers, amounts and dates written as a Serbian tenant sees them
  * (12.345,60 RSD, 06.10.2026.), and a fixed today.

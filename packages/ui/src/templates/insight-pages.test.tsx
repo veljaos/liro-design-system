@@ -1,6 +1,5 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
-import { plotValue, seriesColour } from '../components/charts'
 import { sparklinePoints, StatCard } from '../components/stat-card'
 import { LiroProvider } from '../provider/liro-provider'
 import { DashboardPage } from './dashboard-page'
@@ -10,28 +9,6 @@ import { SettingsPage } from './settings-page'
 function render(node: React.ReactNode) {
   return renderToStaticMarkup(<LiroProvider locale="en">{node}</LiroProvider>)
 }
-
-describe('seriesColour', () => {
-  it('gives the main series the brand blue and the rest greys by default', () => {
-    expect(seriesColour({}, 0, 'default')).toBe('var(--liro-chart-main)')
-    expect(seriesColour({}, 1, 'default')).toBe('var(--liro-chart-comparison)')
-    expect(seriesColour({}, 2, 'default')).toBe('var(--liro-chart-other)')
-    expect(seriesColour({ role: 'comparison' }, 0, 'default')).toBe('var(--liro-chart-comparison)')
-  })
-  it('uses a status colour when a series means a state, and the fixed categorical order', () => {
-    expect(seriesColour({ tone: 'danger' }, 0, 'default')).toBe('var(--liro-status-danger-solid)')
-    expect(seriesColour({}, 0, 'categorical')).toBe('var(--liro-chart-category1)')
-    expect(seriesColour({}, 4, 'categorical')).toBe('var(--liro-chart-category5)')
-  })
-})
-
-describe('plotValue', () => {
-  it('reads a decimal string for drawing only; unreadable or missing is empty', () => {
-    expect(plotValue('5684.2')).toBe(5684.2)
-    expect(plotValue(null)).toBeNull()
-    expect(plotValue('abc')).toBeNull()
-  })
-})
 
 describe('sparklinePoints', () => {
   it('places the values in a 96 × 32 box, oldest at the start', () => {
@@ -46,12 +23,12 @@ describe('StatCard', () => {
       <StatCard
         label="Revenue"
         value="1"
-        change={{ text: '+5 %', direction: 'up', sentiment: 'good' }}
+        change={{ text: '+5%', direction: 'up', sentiment: 'good' }}
       />,
     )
     expect(good).toContain('text-status-success-fg')
     const neutral = render(
-      <StatCard label="Invoices" value="1" change={{ text: '−3 %', direction: 'down' }} />,
+      <StatCard label="Invoices" value="1" change={{ text: '-3%', direction: 'down' }} />,
     )
     expect(neutral).not.toContain('text-status-')
     expect(render(<StatCard label="X" loading />)).toContain('h-26')

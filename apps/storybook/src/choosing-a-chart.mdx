@@ -1,0 +1,45 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+
+<Meta title="Charts/Choosing a chart" />
+
+# Choosing a chart
+
+Pick the chart by what the numbers must show. Charts come from `@veljaos/ui/charts`, a subpath of their own, so an application without charts does not load Recharts.
+
+| What the reader must see                        | Chart                                                             |
+| ----------------------------------------------- | ----------------------------------------------------------------- |
+| A trend over time                               | **LineChart**, or **AreaChart** for a volume                      |
+| How parts make up a volume over time            | **AreaChart** with `stack="stacked"` (or `"expanded"` for shares) |
+| Categories compared: months, customers, regions | **BarChart**                                                      |
+| … with long names, or more than 7 items         | **BarChart** with `orientation="horizontal"`                      |
+| Profit and loss                                 | **BarChart** with `signTones`                                     |
+| Parts of one whole, **5 or fewer**              | **PieChart** or **DonutChart**                                    |
+| Parts of one whole, more than 5                 | **BarChart** (horizontal), largest first                          |
+| A few scores of one or two things               | **RadarChart**                                                    |
+| Progress to a goal                              | **RadialChart** with `max`                                        |
+| One number that matters                         | **StatCard**, not a chart                                         |
+
+**Never:** radar or radial charts for money over time; a pie for parts that do not add up to one whole; two value axes in one chart.
+
+## Colour
+
+- One series is the brand blue; a second is grey. Three or more series only with `palette="categorical"`: five hues in a fixed order — blue, magenta, purple, teal, indigo — none of which reads as a status, checked for colour-vision deficiency and for 3:1 on the card in both themes ("Charts / Palette"). Past five, use a table.
+- A colour per bar (`colorBy="category"`) only when the same colours link the bars to another chart on the page (the same regions in a donut beside it); otherwise one colour.
+- Green and red only when the data means it: profit and loss (`signTones`), a state (`tone`, e.g. "Over 30 days" in danger).
+- No gradients, shadows or 3D. Areas are a flat, light wash.
+- Never colour alone: a legend or direct labels name every colour, and stacked parts and slices are 2px apart.
+
+## Lines and curves
+
+- Monthly or sparse data (up to 31 points): straight segments (`linear`, the default there); a dot on each value up to 12 points.
+- Dense series (daily over a quarter): smooth (`monotone`, the default there) — it never passes the values.
+- A value that holds until it changes (a rate, a price list): `step`.
+- Never a curve that swings past the values (`natural`): the line would show amounts that never occurred.
+
+## Numbers
+
+Values are decimal strings and are written through the provider's `format`, never rounded in the tooltip or the table. Axis ticks are round steps and may be written short ("12K"; the words come from `messages`). Percentages go through the provider's `format.percent`, which follows the locale ("62,4%" in Serbian, "62,4 %" in German). A missing value (`null`) is a gap, never 0. Totals and shares come from the application; a chart adds nothing.
+
+## Everyone can read it
+
+Every chart has a title, a description and **Show as table**. The plot is reachable by keyboard: the arrow keys move between points and show the tooltip. In right-to-left pages time runs from the right and the value axis stands at the right. On phones there are fewer ticks, the legend stands under the plot and long labels go horizontal.

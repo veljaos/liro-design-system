@@ -255,22 +255,6 @@ export { DocumentPage } from './templates/document-page'
 export type { Counterparty, DocumentPageProps, DocumentSection } from './templates/document-page'
 export { sparklinePoints, StatCard } from './components/stat-card'
 export type { StatCardProps, StatChange } from './components/stat-card'
-export {
-  AreaChart,
-  BarChart,
-  DonutChart,
-  LineChart,
-  plotValue,
-  seriesColour,
-} from './components/charts'
-export type {
-  BarChartProps,
-  CartesianChartProps,
-  ChartCategory,
-  ChartSeries,
-  DonutChartProps,
-  DonutSlice,
-} from './components/charts'
 export { DashboardPage } from './templates/dashboard-page'
 export type { DashboardPageProps } from './templates/dashboard-page'
 export { ReportPage } from './templates/report-page'
