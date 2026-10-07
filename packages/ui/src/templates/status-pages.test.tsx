@@ -94,10 +94,10 @@ describe('AuthShell', () => {
 })
 
 describe('start-aligned tabs', () => {
-  it('Tabs centre by default and start with align="start"', () => {
+  it('Tabs stand at the start by default and centre with align="center" (P4.7c)', () => {
     const items = [{ value: 'a', label: 'A', content: 'a' }]
-    expect(render(<Tabs items={items} />)).toContain('justify-center')
-    expect(render(<Tabs items={items} align="start" />)).toContain('justify-start')
+    expect(render(<Tabs items={items} />)).toContain('justify-start')
+    expect(render(<Tabs items={items} align="center" />)).toContain('justify-center')
   })
   it('SettingsPage stands at the start with start-aligned tabs', () => {
     const html = render(

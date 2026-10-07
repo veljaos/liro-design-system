@@ -70,7 +70,6 @@ describe('messages', () => {
       'chart.loading',
       'chart.millions',
       'chart.noData',
-      'chart.percent',
       'chart.retry',
       'chart.showChart',
       'chart.showTable',

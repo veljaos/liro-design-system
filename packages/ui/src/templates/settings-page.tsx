@@ -158,7 +158,6 @@ export function SettingsPage(props: SettingsPageProps) {
       ) : (
         <Tabs
           label={props.title}
-          align="start"
           items={props.groups.map((group) => ({
             value: group.key,
             label: group.label,

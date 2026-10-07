@@ -15,7 +15,7 @@ const meta = {
       description: {
         component:
           '**Tabs** — parts of one screen shown one at a time, the tabs inside a module ' +
-          '(Appendix B.8); the list is always centred; a hidden panel is not kept, so a dialog ' +
+          '(Appendix B.8); the list stands at the start (only the shell’s module tabs are centred); a hidden panel is not kept, so a dialog ' +
           'opened from a tab belongs at page level. **Breadcrumbs** — where the user is, from ' +
           "the third level on; links through the provider's `linkComponent`, the last item is " +
           'the current page. **CursorPagination** — only previous and next, with a count ' +
@@ -204,7 +204,7 @@ export const Japanese: Story = {
 
 /**
  * English in a right-to-left page (P3.6): tab labels and crumbs keep their own order ("Lines
- * (12)", "Invoices 2026"); the tab list stays centred and the crumbs run from the right.
+ * (12)", "Invoices 2026"); the tab list stands at the start (the right) and the crumbs run from the right.
  */
 export const EnglishInRtl: Story = {
   render: () => (

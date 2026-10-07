@@ -169,7 +169,6 @@ export const messagesEn: LiroMessages = {
   'chart.thousands': (value) => `${value}K`,
   'chart.millions': (value) => `${value}M`,
   'chart.billions': (value) => `${value}B`,
-  'chart.percent': (value) => `${value}%`,
   'report.run': 'Run report',
   'report.edit': 'Edit',
   'report.parameters': 'Report parameters',

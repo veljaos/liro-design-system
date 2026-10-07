@@ -10,7 +10,7 @@ import { EmptyState } from '../components/empty-state'
 import { PeriodField } from '../components/period-field'
 import { SelectField } from '../components/select-field'
 import { SwitchField } from '../components/checkbox-field'
-import { ExampleProvider, PhoneFrame, StoryProvider } from '../components/story-frames'
+import { ExampleProvider, percentText, PhoneFrame, StoryProvider } from '../components/story-frames'
 import { settle } from '../primitives/story-helpers'
 import { AppShell } from './app-shell'
 import { DashboardPage } from './dashboard-page'
@@ -52,7 +52,7 @@ function Dashboard({ phone = false, loading = false }: { phone?: boolean; loadin
             key: 'revenue',
             label: 'Revenue, September',
             value: <MoneyText value="5684200" currency="RSD" decimals={0} />,
-            change: { text: '+16,7 %', direction: 'up', sentiment: 'good' },
+            change: { text: percentText('16.7', 'always'), direction: 'up', sentiment: 'good' },
             comparison: 'vs September 2025',
             trend: ['4812.4', '5230.9', '4977.1', '3906.5', '4421.8', '5684.2'],
           },
@@ -60,14 +60,14 @@ function Dashboard({ phone = false, loading = false }: { phone?: boolean; loadin
             key: 'receivables',
             label: 'Overdue receivables',
             value: <MoneyText value="421740" currency="RSD" decimals={0} />,
-            change: { text: '+8,2 %', direction: 'up', sentiment: 'bad' },
+            change: { text: percentText('8.2', 'always'), direction: 'up', sentiment: 'bad' },
             comparison: 'vs last week',
           },
           {
             key: 'cash',
             label: 'Cash',
             value: <MoneyText value="3012775" currency="RSD" decimals={0} />,
-            change: { text: '+34,1 %', direction: 'up', sentiment: 'good' },
+            change: { text: percentText('34.1', 'always'), direction: 'up', sentiment: 'good' },
             comparison: 'vs 31.08.2026.',
           },
           {
@@ -84,13 +84,18 @@ function Dashboard({ phone = false, loading = false }: { phone?: boolean; loadin
           description="RSD, on 06.10.2026."
           currency="RSD"
           slices={[
-            { key: 'current', label: 'Not due', value: '1842300.00', share: '62,4 %' },
-            { key: 'late30', label: 'Up to 30 days', value: '688120.50', share: '23,3 %' },
+            { key: 'current', label: 'Not due', value: '1842300.00', share: percentText('62.4') },
+            {
+              key: 'late30',
+              label: 'Up to 30 days',
+              value: '688120.50',
+              share: percentText('23.3'),
+            },
             {
               key: 'late',
               label: 'Over 30 days',
               value: '421740.00',
-              share: '14,3 %',
+              share: percentText('14.3'),
               tone: 'danger',
             },
           ]}
@@ -481,7 +486,7 @@ export const Japanese: Story = {
               key: 'r',
               label: '売上高（9月）',
               value: <MoneyText value="5684200" currency="RSD" decimals={0} />,
-              change: { text: '+16,7 %', direction: 'up', sentiment: 'good' },
+              change: { text: percentText('16.7', 'always'), direction: 'up', sentiment: 'good' },
               comparison: '前年同月比',
             },
           ]}

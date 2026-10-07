@@ -112,15 +112,21 @@ export interface CartesianChartProps extends ChartStateProps {
 export type ChartCurve = 'monotone' | 'linear' | 'step'
 
 export interface AreaChartProps extends CartesianChartProps {
-  /** Default 'monotone' (smooth without overshooting the values). */
+  /**
+   * Default by density (P4.7c, owner): 'linear' — straight segments — up to 31 points (monthly or
+   * sparse data), 'monotone' for denser series; never a curve that passes the values.
+   */
   curve?: ChartCurve
+  /** A dot on each value. Default: with 12 or fewer points. */
+  dots?: boolean
   /** 'stacked': the series on top of each other; 'expanded': stacked to 100%. Default 'none'. */
   stack?: 'none' | 'stacked' | 'expanded'
 }
 
 export interface LineChartProps extends CartesianChartProps {
+  /** Default by density: 'linear' up to 31 points, 'monotone' for denser series. */
   curve?: ChartCurve
-  /** A dot on each value. */
+  /** A dot on each value. Default: with 12 or fewer points. */
   dots?: boolean
   /** Each value written above its point. */
   labels?: boolean
@@ -152,7 +158,9 @@ export interface BarChartProps extends CartesianChartProps {
 
 type Kind = 'area' | 'bar' | 'line'
 
-type AnyCartesianProps = AreaChartProps & LineChartProps & Omit<BarChartProps, 'labels' | 'stack'>
+type AnyCartesianProps = AreaChartProps &
+  Omit<LineChartProps, 'curve' | 'dots'> &
+  Omit<BarChartProps, 'labels' | 'stack'>
 
 const CURVE_TYPE: Record<ChartCurve, 'monotone' | 'linear' | 'stepAfter'> = {
   monotone: 'monotone',
@@ -161,6 +169,26 @@ const CURVE_TYPE: Record<ChartCurve, 'monotone' | 'linear' | 'stepAfter'> = {
 }
 
 const AXIS_TICK = { fontSize: 12 }
+
+/** Up to this many points a line is straight segments; denser series are drawn smooth. */
+export const LINEAR_MAX_POINTS = 31
+/** Up to this many points each value has a dot. */
+export const DOTS_MAX_POINTS = 12
+
+/** The curve a series is drawn with: the application's, else by density. */
+export function defaultCurve(points: number): ChartCurve {
+  return points <= LINEAR_MAX_POINTS ? 'linear' : 'monotone'
+}
+
+/**
+ * The category ticks of a dense axis, at equal intervals ending on the last point (the latest
+ * day), at most `max` of them; every category when they fit.
+ */
+export function equalTicks<T>(categories: readonly T[], max: number): T[] {
+  if (categories.length <= max) return [...categories]
+  const step = Math.ceil((categories.length - 1) / (max - 1))
+  return categories.filter((_, index) => (categories.length - 1 - index) % step === 0)
+}
 
 function Cartesian({
   kind,
@@ -290,7 +318,7 @@ function Cartesian({
   )
 
   const valueTick = (tick: number) =>
-    stack === 'expanded' ? percentTick(tick, format, messages) : shortTick(tick, format, messages)
+    stack === 'expanded' ? percentTick(tick, format) : shortTick(tick, format, messages)
   const valueAxisShown = props.valueAxis ?? true
   const categoryAxisShown = props.categoryAxis ?? true
   const gridShown = props.grid ?? true
@@ -333,8 +361,11 @@ function Cartesian({
         axisLine={{ stroke: 'var(--liro-border-default)' }}
         tick={AXIS_TICK}
         tickMargin={8}
-        minTickGap={phone ? 24 : 8}
-        interval="preserveStartEnd"
+        ticks={equalTicks(
+          props.categories.map((category) => category.label),
+          phone ? 4 : 8,
+        )}
+        interval={0}
       />
       <YAxis
         hide={!valueAxisShown}
@@ -355,13 +386,27 @@ function Cartesian({
   const labelText = (seriesKey: string, index: number | undefined): string =>
     write(props.values[seriesKey]?.[props.categories[index ?? -1]?.key ?? ''])
 
+  // Lines and areas start and end on the plot's edges, so the last category label (and the first
+  // where no value axis stands) needs room beside the plot, or it is cut ("06.1", "Se").
+  const edge = kind === 'bar' ? 8 : 24
   const margin = {
     top: (kind === 'line' && props.labels === true) || barLabels === 'end' ? 20 : 8,
-    right: horizontal && barLabels === 'end' && !rtl ? 64 : 8,
-    left: horizontal && barLabels === 'end' && rtl ? 64 : 8,
+    right: horizontal && barLabels === 'end' && !rtl ? 64 : rtl ? 8 : edge,
+    left: horizontal && barLabels === 'end' && rtl ? 64 : rtl ? edge : 8,
     bottom: 0,
   }
   const motion = { isAnimationActive: animate, animationDuration: CHART_MOTION_MS }
+  const curve = CURVE_TYPE[props.curve ?? defaultCurve(props.categories.length)]
+  const dots = props.dots ?? props.categories.length <= DOTS_MAX_POINTS
+  const dot = (key: string) =>
+    dots
+      ? {
+          r: 3.5,
+          strokeWidth: 2,
+          fill: `var(--color-${key})`,
+          stroke: 'var(--liro-surface-raised)',
+        }
+      : false
   const hasNegative =
     kind === 'bar' &&
     props.series.some((each) =>
@@ -540,19 +585,10 @@ function Cartesian({
             key={each.key}
             dataKey={each.key}
             name={each.label}
-            type={CURVE_TYPE[props.curve ?? 'monotone']}
+            type={curve}
             stroke={`var(--color-${each.key})`}
             strokeWidth={2}
-            dot={
-              props.dots === true
-                ? {
-                    r: 4,
-                    strokeWidth: 2,
-                    fill: `var(--color-${each.key})`,
-                    stroke: 'var(--liro-surface-raised)',
-                  }
-                : false
-            }
+            dot={dot(each.key)}
             activeDot={{ r: 5, strokeWidth: 2, stroke: 'var(--liro-surface-raised)' }}
             connectNulls={false}
             {...motion}
@@ -598,11 +634,12 @@ function Cartesian({
             key={each.key}
             dataKey={each.key}
             name={each.label}
-            type={CURVE_TYPE[props.curve ?? 'monotone']}
+            type={curve}
             stroke={`var(--color-${each.key})`}
             strokeWidth={2}
             fill={`var(--color-${each.key})`}
             fillOpacity={stacked ? 0.4 : 0.1}
+            dot={dot(each.key)}
             activeDot={{ r: 4, strokeWidth: 2, stroke: 'var(--liro-surface-raised)' }}
             connectNulls={false}
             {...(stacked ? { stackId: 'stack' } : {})}

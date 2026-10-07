@@ -310,24 +310,39 @@ function dayLabel(date: Date): string {
   return `${day}.${month}.`
 }
 
+/** A repeatable pseudo-random number in [0, 1) for day `n` (the pictures must not change). */
+function noise(n: number): number {
+  const x = Math.sin(n * 12.9898 + 78.233) * 43758.5453
+  return x - Math.floor(x)
+}
+
 /**
- * Daily sales of the two stores for 92 days to 6 October 2026, thousands of RSD: a weekly rhythm
- * (Saturday strongest, Sunday closed in Novi Sad), written out as decimal strings.
+ * Daily sales of the two stores for 92 days to 6 October 2026, thousands of RSD (P4.7c, owner:
+ * believable data). Both stores keep the same week — Saturday strongest, Sunday short hours —
+ * with a few percent of day-to-day noise and no sawtooth (weekdays alike, Friday and Saturday
+ * stronger, Sunday about 60%); the first working days of a month are stronger
+ * (contractors start their jobs), the week before the school year has the end-of-season sale,
+ * and the last Friday of September (pay day for many customers) is a peak.
  */
 function dailySales() {
   const end = Date.UTC(2026, 9, 6)
   const categories: ChartCategory[] = []
   const beograd: Record<string, string> = {}
   const noviSad: Record<string, string> = {}
+  // Monday … Sunday shares of an average day.
+  const week = [1.0, 0.97, 1.01, 0.99, 1.08, 1.22, 0.62]
   for (let offset = 91; offset >= 0; offset -= 1) {
     const date = new Date(end - offset * 86_400_000)
     const key = date.toISOString().slice(0, 10)
     categories.push({ key, label: dayLabel(date) })
-    const weekday = date.getUTCDay()
-    const rhythm = [0.55, 0.95, 1, 1.02, 1.05, 1.18, 1.4][weekday] ?? 1
-    const wave = 1 + 0.08 * Math.sin(offset / 6.3) + 0.05 * Math.cos(offset / 2.1)
-    const bg = Math.round(18640 * rhythm * wave) / 100
-    const ns = weekday === 0 ? 0 : Math.round(11270 * rhythm * (2 - wave)) / 100
+    const weekday = (date.getUTCDay() + 6) % 7
+    const day = date.getUTCDate()
+    let factor = week[weekday] ?? 1
+    if (day <= 3 && weekday < 6) factor *= 1.12
+    if (key >= '2026-08-24' && key <= '2026-08-29') factor *= 1.22
+    if (key === '2026-09-25') factor *= 1.18
+    const bg = 186.4 * factor * (0.95 + 0.1 * noise(offset))
+    const ns = 112.7 * factor * (0.94 + 0.12 * noise(offset + 500))
     beograd[key] = bg.toFixed(2)
     noviSad[key] = ns.toFixed(2)
   }

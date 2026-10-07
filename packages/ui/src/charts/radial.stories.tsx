@@ -34,11 +34,11 @@ const meta = {
     },
   },
   args: {
-    title: 'September plan by representative',
-    description: 'Percent of each target',
-    items: REPS,
-    max: '120',
-    palette: 'categorical',
+    title: 'September plan, Nikola Petković',
+    description: 'Percent of his target',
+    items: [{ key: 'nikola', label: 'Nikola Petković', value: '94' }],
+    max: '100',
+    percent: true,
   },
   render: (args: RadialChartProps) => (
     <ExampleProvider>
@@ -54,14 +54,36 @@ export default meta
 
 type Story = StoryObj<typeof meta>
 
-/** A ring per representative from the centre out, named in the legend. */
+/** One ring: one person's plan; the title names it. */
 export const Simple: Story = {}
 
-/** Each ring named at its start, on a small raised tag. */
-export const WithLabels: Story = { name: 'With labels', args: { labels: true } }
+/**
+ * A ring per representative, each named with its value at its start ("Jovana Marić 112%"); the
+ * names identify the rings, so all are the brand blue (owner).
+ */
+export const WithLabels: Story = {
+  name: 'With labels',
+  args: {
+    title: 'September plan by representative',
+    description: 'Percent of each target',
+    items: REPS,
+    max: '120',
+    labels: true,
+  },
+}
 
 /** Circles behind the rings. */
-export const WithGrid: Story = { name: 'With grid', args: { grid: true } }
+export const WithGrid: Story = {
+  name: 'With grid',
+  args: {
+    title: 'September plan by representative',
+    description: 'Percent of each target',
+    items: REPS,
+    max: '120',
+    labels: true,
+    grid: true,
+  },
+}
 
 /** One value in the centre. */
 export const ValueInCentre: Story = {
@@ -71,9 +93,9 @@ export const ValueInCentre: Story = {
     description: 'September 2026',
     items: [{ key: 'onTime', label: 'On time', value: '96.4' }],
     max: '100',
-    palette: 'default',
+    percent: true,
     decimals: 1,
-    centre: { value: '96.4', label: 'percent on time' },
+    centre: { value: '96.4', label: 'on time' },
   },
 }
 
@@ -118,7 +140,8 @@ export const PhoneWidth: Story = {
             description="Percent of each target"
             items={REPS}
             max="120"
-            palette="categorical"
+            percent
+            labels
             layout="phone"
           />
         </div>
@@ -137,7 +160,7 @@ export const Arabic: Story = {
             title="تحقيق الخطة حسب المندوب"
             description="نسبة مئوية من الهدف"
             max="120"
-            palette="categorical"
+            percent
             labels
             items={[
               { key: 'a', label: 'يوفانا', value: '112' },
@@ -177,6 +200,8 @@ export const LongText: Story = {
   name: 'Long text',
   args: {
     title: 'Plan fulfilment of the sales representatives for wholesale customers, September 2026',
+    max: '120',
+    labels: true,
     items: [
       { key: 'jovana', label: 'Jovana Marić, wholesale Vojvodina', value: '112' },
       { key: 'nikola', label: 'Nikola Petković, wholesale Beograd and Šumadija', value: '94' },

@@ -23,14 +23,22 @@ Pick the chart by what the numbers must show. Charts come from `@veljaos/ui/char
 
 ## Colour
 
-- One series is the brand blue; a second is grey. Three or more series only with `palette="categorical"`: five hues in a fixed order, checked for contrast and colour-vision deficiency in both themes. Past five, use a table.
+- One series is the brand blue; a second is grey. Three or more series only with `palette="categorical"`: five hues in a fixed order — blue, magenta, purple, teal, indigo — none of which reads as a status, checked for colour-vision deficiency and for 3:1 on the card in both themes ("Charts / Palette"). Past five, use a table.
+- A colour per bar (`colorBy="category"`) only when the same colours link the bars to another chart on the page (the same regions in a donut beside it); otherwise one colour.
 - Green and red only when the data means it: profit and loss (`signTones`), a state (`tone`, e.g. "Over 30 days" in danger).
 - No gradients, shadows or 3D. Areas are a flat, light wash.
 - Never colour alone: a legend or direct labels name every colour, and stacked parts and slices are 2px apart.
 
+## Lines and curves
+
+- Monthly or sparse data (up to 31 points): straight segments (`linear`, the default there); a dot on each value up to 12 points.
+- Dense series (daily over a quarter): smooth (`monotone`, the default there) — it never passes the values.
+- A value that holds until it changes (a rate, a price list): `step`.
+- Never a curve that swings past the values (`natural`): the line would show amounts that never occurred.
+
 ## Numbers
 
-Values are decimal strings and are written through the provider's `format`, never rounded in the tooltip or the table. Axis ticks are round steps and may be written short ("12K"; the words come from `messages`). A missing value (`null`) is a gap, never 0. Totals and shares come from the application; a chart adds nothing.
+Values are decimal strings and are written through the provider's `format`, never rounded in the tooltip or the table. Axis ticks are round steps and may be written short ("12K"; the words come from `messages`). Percentages go through the provider's `format.percent`, which follows the locale ("62,4%" in Serbian, "62,4 %" in German). A missing value (`null`) is a gap, never 0. Totals and shares come from the application; a chart adds nothing.
 
 ## Everyone can read it
 

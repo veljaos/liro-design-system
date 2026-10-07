@@ -170,17 +170,20 @@ export const MEANINGS = {
     accent: ['teal6', 'teal4'],
   },
   // Charts (P4.6, the owner's decision): one brand blue for the main series, greys for the
-  // comparison and the rest; an opt-in categorical palette of five hues from the ramps, in a fixed
-  // order, validated for colour-vision deficiency (docs/decisions.md "Dashboard").
+  // comparison and the rest; an opt-in categorical palette of five hues in a fixed order, validated
+  // for colour-vision deficiency. P4.7c (owner): no hue that reads as a status (red, orange,
+  // green) — blue, magenta, purple, teal, indigo, at least 3:1 on the card in both themes
+  // (docs/decisions.md "Categorical palette"). They are not on the ramps (no magenta ramp exists).
+  // The dark first hue is blue 5: blue 4 is lighter than the validator's dark band.
   chart: {
     main: ['blue6', 'blue4'],
     comparison: ['gray6', 'gray5'],
     other: ['gray8', 'gray3'],
     category1: ['blue6', 'blue5'],
-    category2: ['orange7', 'orange6'],
-    category3: ['violet8', 'violet5'],
-    category4: ['green7', 'green5'],
-    category5: ['teal5', 'teal5'],
+    category2: ['#970E75', '#B75B97'],
+    category3: ['#7E6EF2', '#8475F9'],
+    category4: ['#179A8E', '#059488'],
+    category5: ['#334DB0', '#5778DF'],
   },
 } as const satisfies Record<string, Record<string, Pair>>
 
@@ -196,7 +199,9 @@ export const TONES = {
     fg: ['orange8', 'orange3'],
     bg: ['orange0', 'rgba(216,59,1,0.20)'],
     border: ['orange2', 'rgba(216,59,1,0.45)'],
-    solid: ['orange7', 'orange6'],
+    // Light orange 6 (P4.7c, owner): orange 7 read like danger's red 7. Icons only, never text;
+    // never straight on the page background (docs/decisions.md "Warning solid").
+    solid: ['orange6', 'orange6'],
   },
   danger: {
     fg: ['red7', 'red3'],

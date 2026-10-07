@@ -1,6 +1,14 @@
 // @veljaos/ui/charts (P4.7a): the charts, on Recharts through the shadcn/ui Chart primitive. A
 // subpath of its own, so an application without charts does not load Recharts.
-export { AreaChart, BarChart, LineChart } from './cartesian'
+export {
+  AreaChart,
+  BarChart,
+  defaultCurve,
+  DOTS_MAX_POINTS,
+  equalTicks,
+  LINEAR_MAX_POINTS,
+  LineChart,
+} from './cartesian'
 export type {
   AreaChartProps,
   BarChartProps,

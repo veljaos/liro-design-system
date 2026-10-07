@@ -9,9 +9,10 @@ import type { IconComponent } from './intents'
 /*
  * Tabs, Breadcrumbs, CursorPagination and ShortcutHint (BUILD-PLAN P2.6), the previous Design
  * System's (owner's decision, 2026-09-28, docs/decisions.md "Navigation"):
- * - Tabs: radius md; the list always centred (a list at the start of a wide screen leaves a gap
- *   that looks like something is missing); hidden panels are not kept mounted, so a dialog opened
- *   from a tab belongs at page level, outside the Tabs (AGENTS.md D14).
+ * - Tabs: radius md; the list at the start of the content it heads (P4.7c, owner: business
+ *   screens are start-aligned; it was centred until then); hidden panels are not kept mounted, so
+ *   a dialog opened from a tab belongs at page level, outside the Tabs (AGENTS.md D14). Only the
+ *   AppShell's module tabs are centred (P4.1), and they are not this component.
  * - Breadcrumbs: the separator "›", which mirrors in right-to-left by itself (a Unicode mirrored
  *   character), 10px (xs) on each side; links underlined only on hover; the last item not a link.
  * - CursorPagination: Mantine Pagination 'sm', radius md, no first/last buttons; only the
@@ -40,8 +41,8 @@ export interface TabsProps {
   /** Names the list of tabs for assistive technology. From the application. */
   label?: string
   /**
-   * Where the tab list stands. Default 'center' (page-level tabs, AGENTS.md D16); 'start' where
-   * the tabs head a start-aligned column, as on SettingsPage (P4.7, owner).
+   * Where the tab list stands. Default 'start' (AGENTS.md D16, P4.7c); 'center' only for a list
+   * that heads centred content.
    */
   align?: 'center' | 'start'
   /** Layout classes. */
@@ -66,7 +67,7 @@ export function Tabs(props: TabsProps) {
       className={props.className}
     >
       <TabsList
-        className={props.align === 'start' ? 'justify-start' : 'justify-center'}
+        className={props.align === 'center' ? 'justify-center' : 'justify-start'}
         {...(props.label === undefined ? {} : { 'aria-label': props.label })}
       >
         {props.items.map((item) => {

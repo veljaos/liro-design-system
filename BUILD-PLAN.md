@@ -285,7 +285,8 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P4.7 | Status pages and sign-in shell | P4.1 | done | 2026-10-07 | Owner's values: StatusPage for 401, 402, 403, 404, 500 (case number), maintenance, suspended — tone square 84px (warning, neutral or danger, never blue), the bare code above the title; AuthShell 420px card on surface.sunken, lockup above, no frame on phones; SettingsPage and its tabs start-aligned (Tabs `align`); dashboard: "Top 5 customers" horizontal bars beside the donut, donut sized to its card |
 | P4.7a | Charts catalogue | P4.7 | done | 2026-10-07 | shadcn Chart copied into `primitives/chart.tsx` and adapted; the four P4.6 charts rebuilt on it plus Pie, Radar, Radial and ChartSeriesToggle; every shadcn variant as a story with Serbian data; `@veljaos/ui/charts` subpath (Recharts only there); keyboard, motion, states, phones; "Choosing a chart" page |
 | P4.7b | Small-size favicon | P4.7 | todo | | Three variants shown to the owner; merged after the owner's choice (protected: Storybook's favicon URL gets a version) |
-| P4.8 | Example screens | P4.2–P4.7a | todo | | |
+| P4.7c | Fixes from the owner's P4.7a review | P4.7a | done | 2026-10-07 | Light warning.solid orange6 (icons only, on raised surfaces; tested); Tabs start-aligned by default (D16: only the shell's module tabs centred); believable daily data, equal ticks; lines straight up to 31 points with dots up to 12; categorical palette without status hues (blue, magenta, purple, teal, indigo; validated, ≥3:1, Palette story); radial labels with values in one blue; `format.percent` (CLDR) |
+| P4.8 | Example screens | P4.2–P4.7c | todo | | |
 | P5.1 | History, comments and messages | P2.8 | todo | | |
 | P5.2 | Presence and agent marking | P2.8 | todo | | |
 | P5.3 | Connection, environment and session markers | P4.1 | todo | | |
@@ -700,23 +701,23 @@ Common: white #FFFFFF, black #000000, dark page `ink` #1B1B1B, `inkRaised` #2424
 | chart.comparison | gray6 | gray5 |
 | chart.other | gray8 | gray3 |
 | chart.category1 | blue6 | blue5 |
-| chart.category2 | orange7 | orange6 |
-| chart.category3 | violet8 | violet5 |
-| chart.category4 | green7 | green5 |
-| chart.category5 | teal5 | teal5 |
+| chart.category2 | #970E75 | #B75B97 |
+| chart.category3 | #7E6EF2 | #8475F9 |
+| chart.category4 | #179A8E | #059488 |
+| chart.category5 | #334DB0 | #5778DF |
 
 Status tones — `fg` / `bg` / `border` / `solid`:
 
 | Tone | Light | Dark |
 |---|---|---|
 | success | green7 / green0 / green2 / green7 | green3 / rgba(16,124,16,0.20) / rgba(16,124,16,0.45) / green6 |
-| warning | orange8 / orange0 / orange2 / orange7 | orange3 / rgba(216,59,1,0.20) / rgba(216,59,1,0.45) / orange6 |
+| warning | orange8 / orange0 / orange2 / orange6 | orange3 / rgba(216,59,1,0.20) / rgba(216,59,1,0.45) / orange6 |
 | danger | red7 / red0 / red2 / red7 | red3 / rgba(164,38,44,0.22) / rgba(164,38,44,0.50) / red6 |
 | info | blue7 / blue0 / blue2 / blue6 | blue3 / rgba(0,120,212,0.18) / rgba(0,120,212,0.45) / blue6 |
 | neutral | gray9 / gray1 / gray3 / gray7 | gray1 / rgba(255,255,255,0.07) / #3B3B3B / gray5 |
 | premium | violet7 / violet0 / violet2 / violet6 | violet3 / rgba(121,80,242,0.20) / rgba(121,80,242,0.45) / violet5 |
 
-`surface.inverse`, `text.onInverse` (tooltips) and `border.control` (the boundary of inputs, checkboxes, radios and the off state of switches, at least 3:1 on every surface for WCAG 1.4.11) were added in P2.1 by the owner's decision. In P3.6 the owner made `surface.selected` neutral (it was blue0 / rgba(0,120,212,0.18)) and added `border.selected` (the start-edge bar of a selected row and the border of a selected card): blue is kept for actions, links, focus, checked controls and the highlighted option. In P4.6 the owner added the `chart.*` meanings: one brand blue for a chart's main series, greys for the comparison and the rest, and an opt-in categorical palette of five hues in a fixed order, validated for colour-vision deficiency. In P4.1 the owner added `text.logo` (blue6 / blue4, the colours of the logo files) for the app lockup, the application's name written as the logo; `text.brand` is unchanged.
+`surface.inverse`, `text.onInverse` (tooltips) and `border.control` (the boundary of inputs, checkboxes, radios and the off state of switches, at least 3:1 on every surface for WCAG 1.4.11) were added in P2.1 by the owner's decision. In P3.6 the owner made `surface.selected` neutral (it was blue0 / rgba(0,120,212,0.18)) and added `border.selected` (the start-edge bar of a selected row and the border of a selected card): blue is kept for actions, links, focus, checked controls and the highlighted option. In P4.6 the owner added the `chart.*` meanings: one brand blue for a chart's main series, greys for the comparison and the rest, and an opt-in categorical palette of five hues in a fixed order, validated for colour-vision deficiency; in P4.7c the owner replaced its hues that read as a status (orange, green) with blue, magenta, purple, teal and indigo (values outside the ramps), and made the light `warning.solid` orange6 (orange7 read like danger's red) — icons only, never on the page background. In P4.1 the owner added `text.logo` (blue6 / blue4, the colours of the logo files) for the app lockup, the application's name written as the logo; `text.brand` is unchanged.
 
 On a selected row or card (`surface.selected`, marked `data-liro-surface="selected"`), five dark-theme text colours that measure below 4.5:1 over the selection take the next lighter shade, the one their hover already uses (P4.3, owner): status.danger.fg red3 → red2, status.premium.fg violet3 → violet2, and the family texts primary blue4 → blue3, document violet3 → violet2, destructive red3 → red2. The light theme needs none.
 
