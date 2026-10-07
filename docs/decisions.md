@@ -546,6 +546,7 @@ Not added: `class-variance-authority` (variants are typed maps, as in Button) an
   - **The same figures everywhere (owner):** F-2026-0412 to Panonija Agro d.o.o., total 185.954,00 RSD, amount due 135.954,00 RSD after the advance A-2026-031, appears with these values in the list (and its preview), on its page and in the overview's "Largest open invoices"; the overview's overdue receivables (152.940,00 RSD, 2 invoices) are the overdue invoices of the list; cash and revenue match the charts. The stories add amounts in whole paras, playing the application.
   - **Only the public entry points:** the screens import `@veljaos/ui` (`../index`) and `@veljaos/ui/charts` (`../charts`), never internal modules, so they show what the Core can build. Their classes live in a `*.stories.tsx` file, so nothing of the examples reaches the published CSS.
   - Tested: every example's story test (the walk-through and the same-figures checks) and axe in the four modes, 136 checks locally.
+  - **Found in the examples' review, fixed:** DetailPage and RecordFormPage put their side column beside the content from 75em by the viewport, even in the phone layout — in a phone frame inside a wide window the form shrank to one letter per line. The side column now always stands under the content when the page is laid out for phones (tested).
 
 ## Packaging
 

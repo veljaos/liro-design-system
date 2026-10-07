@@ -76,11 +76,25 @@ export interface RecordFormPageProps extends PageFrame {
   stickyActions?: StickyActions
 }
 
-/** The content and the side column: side by side from 75em, the side under the content below. */
-function Columns({ side, children }: { side?: ReactNode; children: ReactNode }) {
+/**
+ * The content and the side column: side by side from 75em, the side under the content below — and
+ * always under it in the phone layout, whatever the viewport (P4.8: a phone frame inside a wide
+ * window drew both columns in 390px).
+ */
+function Columns({
+  side,
+  phone,
+  children,
+}: {
+  side?: ReactNode
+  phone: boolean
+  children: ReactNode
+}) {
   if (side === undefined) return <div className="flex min-w-0 flex-col gap-4">{children}</div>
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
+    <div
+      className={cn('grid grid-cols-1 gap-6', !phone && 'lg:grid-cols-[minmax(0,1fr)_300px]')}
+    >
       <div className="flex min-w-0 flex-col gap-4">{children}</div>
       <aside className="flex min-w-0 flex-col gap-4">{side}</aside>
     </div>
@@ -133,7 +147,7 @@ export function DetailPage(props: DetailPageProps) {
           className={phone ? '-mx-4 px-4' : '-mx-6 px-6'}
         />
       )}
-      <Columns side={props.side}>
+      <Columns side={props.side} phone={phone}>
         {props.sections.map((section) => (
           // The section bar scrolls here and moves the focus here (tabIndex -1).
           <div
@@ -193,7 +207,7 @@ export function RecordFormPage(props: RecordFormPageProps) {
   return (
     <div data-slot="record-form-page" className={frameClasses(phone, props.className)}>
       <Header frame={{ ...props, ...(back === undefined ? {} : { back }) }} phone={phone} />
-      <Columns side={props.side}>
+      <Columns side={props.side} phone={phone}>
         <FormActions
           actions={props.actions}
           {...(props.dirty === undefined ? {} : { dirty: props.dirty })}
