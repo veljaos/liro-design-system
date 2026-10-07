@@ -1,31 +1,37 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { useState } from 'react'
 import { SelectField } from '../components/select-field'
-import { ExampleProvider, PhoneFrame, StoryProvider } from '../components/story-frames'
+import { ExampleProvider, percentText, PhoneFrame, StoryProvider } from '../components/story-frames'
 import { settle } from '../primitives/story-helpers'
 import { PieChart, type PieChartProps, type PieSlice } from './pie'
 
 /** Receivables by age on 06.10.2026., RSD; the shares are the application's. */
 const RECEIVABLES: PieSlice[] = [
-  { key: 'current', label: 'Not due', value: '1842300.00', share: '62,4 %' },
-  { key: 'late30', label: 'Up to 30 days', value: '688120.50', share: '23,3 %' },
-  { key: 'late', label: 'Over 30 days', value: '421740.00', share: '14,3 %', tone: 'danger' },
+  { key: 'current', label: 'Not due', value: '1842300.00', share: percentText('62.4') },
+  { key: 'late30', label: 'Up to 30 days', value: '688120.50', share: percentText('23.3') },
+  {
+    key: 'late',
+    label: 'Over 30 days',
+    value: '421740.00',
+    share: percentText('14.3'),
+    tone: 'danger',
+  },
 ]
 
 /** Costs by group, September 2026, RSD (four parts: the categorical palette). */
 const COST_GROUPS: PieSlice[] = [
-  { key: 'goods', label: 'Goods', value: '3480412.60', share: '73,6 %' },
-  { key: 'salaries', label: 'Salaries', value: '871200.00', share: '18,4 %' },
-  { key: 'transport', label: 'Transport', value: '248610.00', share: '5,3 %' },
-  { key: 'other', label: 'Other', value: '128954.80', share: '2,7 %' },
+  { key: 'goods', label: 'Goods', value: '3480412.60', share: percentText('73.6') },
+  { key: 'salaries', label: 'Salaries', value: '871200.00', share: percentText('18.4') },
+  { key: 'transport', label: 'Transport', value: '248610.00', share: percentText('5.3') },
+  { key: 'other', label: 'Other', value: '128954.80', share: percentText('2.7') },
 ]
 
 /** The same groups in August, for the second ring. */
 const COST_GROUPS_AUGUST: PieSlice[] = [
-  { key: 'goods', label: 'Goods', value: '2702904.15', share: '70,1 %' },
-  { key: 'salaries', label: 'Salaries', value: '856500.00', share: '22,2 %' },
-  { key: 'transport', label: 'Transport', value: '195040.20', share: '5,1 %' },
-  { key: 'other', label: 'Other', value: '100000.00', share: '2,6 %' },
+  { key: 'goods', label: 'Goods', value: '2702904.15', share: percentText('70.1') },
+  { key: 'salaries', label: 'Salaries', value: '856500.00', share: percentText('22.2') },
+  { key: 'transport', label: 'Transport', value: '195040.20', share: percentText('5.1') },
+  { key: 'other', label: 'Other', value: '100000.00', share: percentText('2.6') },
 ]
 
 const meta = {
@@ -172,13 +178,23 @@ export const Arabic: Story = {
             currency="RSD"
             donut
             slices={[
-              { key: 'current', label: 'غير مستحقة', value: '1842300.00', share: '62,4 %' },
-              { key: 'late30', label: 'حتى 30 يومًا', value: '688120.50', share: '23,3 %' },
+              {
+                key: 'current',
+                label: 'غير مستحقة',
+                value: '1842300.00',
+                share: percentText('62.4'),
+              },
+              {
+                key: 'late30',
+                label: 'حتى 30 يومًا',
+                value: '688120.50',
+                share: percentText('23.3'),
+              },
               {
                 key: 'late',
                 label: 'أكثر من 30 يومًا',
                 value: '421740.00',
-                share: '14,3 %',
+                share: percentText('14.3'),
                 tone: 'danger',
               },
             ]}
@@ -202,10 +218,10 @@ export const Japanese: Story = {
             palette="categorical"
             labels="none"
             slices={[
-              { key: 'goods', label: '商品', value: '3480412.60', share: '73,6 %' },
-              { key: 'salaries', label: '給与', value: '871200.00', share: '18,4 %' },
-              { key: 'transport', label: '運送', value: '248610.00', share: '5,3 %' },
-              { key: 'other', label: 'その他', value: '128954.80', share: '2,7 %' },
+              { key: 'goods', label: '商品', value: '3480412.60', share: percentText('73.6') },
+              { key: 'salaries', label: '給与', value: '871200.00', share: percentText('18.4') },
+              { key: 'transport', label: '運送', value: '248610.00', share: percentText('5.3') },
+              { key: 'other', label: 'その他', value: '128954.80', share: percentText('2.7') },
             ]}
           />
         </div>
@@ -225,14 +241,19 @@ export const LongText: Story = {
         key: 'current',
         label: 'Not yet due under the agreed terms',
         value: '1842300.00',
-        share: '62,4 %',
+        share: percentText('62.4'),
       },
-      { key: 'late30', label: 'Overdue up to 30 days', value: '688120.50', share: '23,3 %' },
+      {
+        key: 'late30',
+        label: 'Overdue up to 30 days',
+        value: '688120.50',
+        share: percentText('23.3'),
+      },
       {
         key: 'late',
         label: 'Overdue more than 30 days, reminders sent',
         value: '421740.00',
-        share: '14,3 %',
+        share: percentText('14.3'),
         tone: 'danger',
       },
     ],

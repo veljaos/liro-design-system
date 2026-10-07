@@ -201,8 +201,13 @@ export interface RadialChartProps extends ChartStateProps {
   currency?: string
   decimals?: number
   palette?: ChartPalette
-  /** Each ring's name at its start. */
+  /**
+   * Each ring's name and value at its start ("Jovana Marić 112%"). The names identify the rings,
+   * so every ring is then the brand blue (P4.7c, owner) unless an item has a tone.
+   */
   labels?: boolean
+  /** The values are percentages: written with the provider's `format.percent`. */
+  percent?: boolean
   /** Circles behind the rings. */
   grid?: boolean
   /** Text in the centre: a value (decimal string) and its name. */
@@ -225,9 +230,21 @@ export function RadialChart(props: RadialChartProps) {
   const phone = props.layout === undefined ? viewportPhone : props.layout === 'phone'
   const animate = useChartMotion()
   const palette = props.palette ?? 'default'
-  const write = useFormatValue(props.currency, props.decimals)
+  const writeNumber = useFormatValue(props.currency, props.decimals)
+  const { format } = useLiro()
+  const write = (value: string | null | undefined) =>
+    props.percent === true && value !== null && value !== undefined && value !== ''
+      ? format.percent(value, props.decimals === undefined ? {} : { decimals: props.decimals })
+      : writeNumber(value)
   const height = props.height ?? (phone ? 220 : 240)
-  const colours = props.items.map((item, index) => seriesColour(item, index, palette))
+  // Labelled rings are named by their labels: one colour (the brand blue) for all of them.
+  const colours = props.items.map((item, index) =>
+    seriesColour(
+      item,
+      props.labels === true ? 0 : index,
+      props.labels === true ? 'default' : palette,
+    ),
+  )
   const config: ChartConfig = Object.fromEntries(
     props.items.map((item, index) => [
       item.key,
@@ -264,7 +281,8 @@ export function RadialChart(props: RadialChartProps) {
     if (item === undefined || viewBox === undefined) return null
     const { cx = 0, cy = 0, innerRadius = 0, outerRadius = 0 } = viewBox
     const y = cy - (innerRadius + outerRadius) / 2
-    const width = item.label.length * 6 + 10
+    const valueText = write(item.value)
+    const width = (item.label.length + valueText.length + 1) * 6 + 10
     // On a small raised tag: a nearly full ring runs under its own name.
     const tagX = rtl ? cx + 2 : cx - 2 - width
     return (
@@ -285,7 +303,15 @@ export function RadialChart(props: RadialChartProps) {
           fontSize={11}
           fill="var(--liro-text-primary)"
         >
-          {item.label}
+          {rtl ? (
+            <>
+              <tspan fontWeight={600}>{valueText}</tspan> {item.label}
+            </>
+          ) : (
+            <>
+              {item.label} <tspan fontWeight={600}>{valueText}</tspan>
+            </>
+          )}
         </text>
       </g>
     )

@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { createFormat } from '../provider/format'
 import { LiroProvider } from '../provider/liro-provider'
 import { messagesEn } from '../provider/messages.en'
-import { BarChart } from './cartesian'
+import { BarChart, defaultCurve, equalTicks } from './cartesian'
 import { centreValueSize } from './centre'
 import { ChartSeriesToggle } from './series-toggle'
 import { DonutChart } from './pie'
@@ -73,7 +73,7 @@ describe('shortTick', () => {
   })
   it('has no floating-point noise', () => {
     expect(shortTick(300000 * 3, serbian, messagesEn)).toBe('900K')
-    expect(percentTick(0.7000000000000001, serbian, messagesEn)).toBe('70%')
+    expect(percentTick(0.7000000000000001, serbian)).toBe('70%')
   })
 })
 
@@ -131,13 +131,13 @@ describe('charts', () => {
         title="Receivables"
         labels="none"
         slices={[
-          { key: 'a', label: 'Not due', value: '100', share: '62,4 %' },
-          { key: 'b', label: 'Overdue', value: '60', share: '37,6 %', tone: 'danger' },
+          { key: 'a', label: 'Not due', value: '100', share: '62,4%' },
+          { key: 'b', label: 'Overdue', value: '60', share: '37,6%', tone: 'danger' },
         ]}
       />,
     )
     expect(html).toContain('data-slot="chart-legend"')
-    expect(html).toContain('Not due 62,4 %')
+    expect(html).toContain('Not due 62,4%')
   })
 })
 
@@ -165,5 +165,22 @@ describe('centreValueSize', () => {
     expect(centreValueSize('2.952.160,50 RSD', 70)).toBe(12)
     expect(centreValueSize('421.740,00 RSD', 92)).toBe(18)
     expect(centreValueSize('12.345.678.901,00 RSD', 40)).toBe(12)
+  })
+})
+
+describe('defaultCurve and equalTicks (P4.7c)', () => {
+  it('draws straight segments up to 31 points and smooth ones beyond', () => {
+    expect(defaultCurve(6)).toBe('linear')
+    expect(defaultCurve(31)).toBe('linear')
+    expect(defaultCurve(92)).toBe('monotone')
+  })
+  it('keeps every category when they fit, else equal steps ending on the last', () => {
+    expect(equalTicks(['a', 'b', 'c'], 8)).toEqual(['a', 'b', 'c'])
+    const days = Array.from({ length: 30 }, (_, index) => index)
+    const ticks = equalTicks(days, 8)
+    expect(ticks.at(-1)).toBe(29)
+    const steps = ticks.slice(1).map((tick, index) => tick - (ticks[index] ?? 0))
+    expect(new Set(steps).size).toBe(1)
+    expect(ticks.length).toBeLessThanOrEqual(8)
   })
 })

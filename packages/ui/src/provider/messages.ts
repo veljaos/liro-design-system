@@ -281,8 +281,6 @@ export interface LiroMessages {
   'chart.thousands': (value: string) => string
   'chart.millions': (value: string) => string
   'chart.billions': (value: string) => string
-  /** A share on a 100% axis or label: "40 %". */
-  'chart.percent': (value: string) => string
   /** ReportPage: run the report; edit its parameters again; names the parameters. */
   'report.run': string
   'report.edit': string

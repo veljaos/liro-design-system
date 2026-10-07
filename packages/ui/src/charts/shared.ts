@@ -130,13 +130,9 @@ export function shortTick(
   return format.number(tickText(tick))
 }
 
-/** A share on a 100% axis (0–1 from the expanded stack): "40%". */
-export function percentTick(
-  share: number,
-  format: Pick<LiroFormat, 'number'>,
-  messages: Pick<LiroMessages, 'chart.percent'>,
-): string {
-  return messages['chart.percent'](format.number(tickText(share * 100)))
+/** A share on a 100% axis (0–1 from the expanded stack), written by the locale: "40%". */
+export function percentTick(share: number, format: Pick<LiroFormat, 'percent'>): string {
+  return format.percent(tickText(share * 100))
 }
 
 function subscribeMotion(onChange: () => void): () => void {

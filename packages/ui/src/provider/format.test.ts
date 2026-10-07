@@ -84,3 +84,21 @@ describe('createFormat', () => {
     expect(createFormat('en').money('5', 'not a code')).toBe(`5.00${NBSP}not a code`)
   })
 })
+
+describe('format.percent (P4.7c)', () => {
+  it('follows the locale: no space in sr-Latn and en, a space in de', () => {
+    expect(createFormat('sr-Latn-RS').percent('62.4')).toBe('62,4%')
+    expect(createFormat('en').percent('62.4')).toBe('62.4%')
+    expect(createFormat('de').percent('62.4')).toMatch(/^62,4\s%$/)
+  })
+  it('writes the sign: "-" always, "+" for a rise when asked, none for zero', () => {
+    expect(createFormat('sr-Latn-RS').percent('16.7', { sign: 'always' })).toBe('+16,7%')
+    expect(createFormat('en').percent('-8.2', { sign: 'always' })).toBe('-8.2%')
+    expect(createFormat('en').percent('0', { sign: 'always' })).toBe('0%')
+  })
+  it('never rounds, pads with decimals, and leaves unreadable text as it is', () => {
+    expect(createFormat('en').percent('12.345')).toBe('12.345%')
+    expect(createFormat('en').percent('5', { decimals: 1 })).toBe('5.0%')
+    expect(createFormat('en').percent('abc')).toBe('abc')
+  })
+})

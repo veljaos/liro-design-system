@@ -23,12 +23,12 @@ describe('StatCard', () => {
       <StatCard
         label="Revenue"
         value="1"
-        change={{ text: '+5 %', direction: 'up', sentiment: 'good' }}
+        change={{ text: '+5%', direction: 'up', sentiment: 'good' }}
       />,
     )
     expect(good).toContain('text-status-success-fg')
     const neutral = render(
-      <StatCard label="Invoices" value="1" change={{ text: '−3 %', direction: 'down' }} />,
+      <StatCard label="Invoices" value="1" change={{ text: '-3%', direction: 'down' }} />,
     )
     expect(neutral).not.toContain('text-status-')
     expect(render(<StatCard label="X" loading />)).toContain('h-26')
