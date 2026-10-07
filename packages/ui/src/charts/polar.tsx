@@ -17,6 +17,7 @@ import {
   type ChartConfig,
 } from '../primitives/chart'
 import { useLiro } from '../provider/liro-provider'
+import { CentreText } from './centre'
 import { ChartCard, ValuesTable } from './frame'
 import {
   CHART_MOTION_MS,
@@ -330,83 +331,77 @@ export function RadialChart(props: RadialChartProps) {
         />
       }
     >
-      <ChartContainer config={config} height={height}>
-        <RadialBarChart
-          data={data}
-          startAngle={90}
-          endAngle={endAngle}
-          innerRadius={stacked ? '62%' : props.centre === undefined ? '24%' : '58%'}
-          outerRadius={stacked ? '86%' : '90%'}
-          {...(stacked ? { barSize: 18 } : {})}
-        >
-          {props.grid === true && <PolarGrid gridType="circle" radialLines={false} />}
-          {/* The value runs around the circle: the angle axis carries the scale (the goal). */}
-          <PolarAngleAxis type="number" domain={domain} tick={false} axisLine={false} />
-          <ChartTooltip
-            isAnimationActive={false}
-            cursor={false}
-            content={({ active, payload }) => {
-              if (!active || payload.length === 0) return null
-              const shown = stacked
-                ? props.items
-                : props.items.filter(
-                    (item) =>
-                      item.key === (payload[0]?.payload as { __key?: string } | undefined)?.__key,
-                  )
-              return (
-                <ChartTooltipContent
-                  direction={direction}
-                  rows={shown.map((item) => ({
-                    key: item.key,
-                    name: item.label,
-                    color: colours[props.items.indexOf(item)] ?? '',
-                    text: write(item.value),
-                  }))}
+      <div className="relative">
+        <ChartContainer config={config} height={height}>
+          <RadialBarChart
+            data={data}
+            startAngle={90}
+            endAngle={endAngle}
+            innerRadius={stacked ? '62%' : props.centre === undefined ? '24%' : '58%'}
+            outerRadius={stacked ? '86%' : '90%'}
+            {...(stacked ? { barSize: 18 } : {})}
+          >
+            {props.grid === true && <PolarGrid gridType="circle" radialLines={false} />}
+            {/* The value runs around the circle: the angle axis carries the scale (the goal). */}
+            <PolarAngleAxis type="number" domain={domain} tick={false} axisLine={false} />
+            <ChartTooltip
+              isAnimationActive={false}
+              cursor={false}
+              content={({ active, payload }) => {
+                if (!active || payload.length === 0) return null
+                const shown = stacked
+                  ? props.items
+                  : props.items.filter(
+                      (item) =>
+                        item.key === (payload[0]?.payload as { __key?: string } | undefined)?.__key,
+                    )
+                return (
+                  <ChartTooltipContent
+                    direction={direction}
+                    rows={shown.map((item) => ({
+                      key: item.key,
+                      name: item.label,
+                      color: colours[props.items.indexOf(item)] ?? '',
+                      text: write(item.value),
+                    }))}
+                  />
+                )
+              }}
+            />
+            {stacked ? (
+              props.items.map((item, index) => (
+                <RadialBar
+                  key={item.key}
+                  dataKey={item.key}
+                  stackId="ring"
+                  fill={`var(--color-${item.key})`}
+                  stroke="var(--liro-surface-raised)"
+                  strokeWidth={2}
+                  cornerRadius={index === 0 || index === props.items.length - 1 ? 4 : 0}
+                  {...(index === 0 ? { background: true } : {})}
+                  {...motion}
                 />
-              )
-            }}
-          />
-          {stacked ? (
-            props.items.map((item, index) => (
+              ))
+            ) : (
               <RadialBar
-                key={item.key}
-                dataKey={item.key}
-                stackId="ring"
-                fill={`var(--color-${item.key})`}
-                stroke="var(--liro-surface-raised)"
-                strokeWidth={2}
-                cornerRadius={index === 0 || index === props.items.length - 1 ? 4 : 0}
-                {...(index === 0 ? { background: true } : {})}
+                dataKey="plot"
+                background
+                cornerRadius={4}
+                {...(props.labels === true ? { label: ringLabel } : {})}
                 {...motion}
               />
-            ))
-          ) : (
-            <RadialBar
-              dataKey="plot"
-              background
-              cornerRadius={4}
-              {...(props.labels === true ? { label: ringLabel } : {})}
-              {...motion}
-            />
-          )}
-          {props.centre !== undefined && (
-            <text x="50%" y="50%" textAnchor="middle" dominantBaseline="central">
-              <tspan
-                x="50%"
-                dy="-0.4em"
-                fontSize={22}
-                fontWeight={600}
-                fill="var(--liro-text-primary)"
-              >
-                {write(props.centre.value)}
-              </tspan>
-              <tspan x="50%" dy="1.6em" fontSize={12} fill="var(--liro-text-secondary)">
-                {props.centre.label}
-              </tspan>
-            </text>
-          )}
-        </RadialBarChart>
-      </ChartContainer>
+            )}
+          </RadialBarChart>
+        </ChartContainer>
+        {props.centre !== undefined && (
+          <CentreText
+            value={write(props.centre.value)}
+            name={props.centre.label}
+            height={height}
+            innerShare={stacked ? 0.62 : 0.58}
+          />
+        )}
+      </div>
     </ChartCard>
   )
 }

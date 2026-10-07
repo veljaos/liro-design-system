@@ -4,6 +4,7 @@ import { createFormat } from '../provider/format'
 import { LiroProvider } from '../provider/liro-provider'
 import { messagesEn } from '../provider/messages.en'
 import { BarChart } from './cartesian'
+import { centreValueSize } from './centre'
 import { ChartSeriesToggle } from './series-toggle'
 import { DonutChart } from './pie'
 import {
@@ -155,5 +156,14 @@ describe('ChartSeriesToggle', () => {
     )
     expect(html).toMatch(/aria-pressed="true"[^>]*>.*Sales/)
     expect(html).toContain('aria-pressed="false"')
+  })
+})
+
+describe('centreValueSize', () => {
+  it('keeps 20px when the value fits the hole, shrinks a long one, never below 12px', () => {
+    expect(centreValueSize('96,4', 70)).toBe(20)
+    expect(centreValueSize('2.952.160,50 RSD', 70)).toBe(12)
+    expect(centreValueSize('421.740,00 RSD', 92)).toBe(18)
+    expect(centreValueSize('12.345.678.901,00 RSD', 40)).toBe(12)
   })
 })

@@ -9,6 +9,7 @@ import {
   type ChartConfig,
 } from '../primitives/chart'
 import { useLiro } from '../provider/liro-provider'
+import { CentreText } from './centre'
 import { ChartCard, ValuesTable } from './frame'
 import {
   CHART_MOTION_MS,
@@ -279,88 +280,76 @@ export function PieChart(props: PieChartProps) {
         />
       }
     >
-      <ChartContainer config={config} height={height}>
-        <PieRoot>
-          <Pie
-            data={data}
-            dataKey="plot"
-            nameKey="label"
-            innerRadius={inner}
-            outerRadius={outer}
-            stroke="var(--liro-surface-raised)"
-            strokeWidth={2}
-            labelLine={false}
-            shape={shape}
-            {...(labels === 'outside'
-              ? { label: outsideLabel }
-              : labels === 'inside'
-                ? { label: insideLabel }
-                : {})}
-            {...motion}
-          />
-          {twoRings && (
+      <div className="relative">
+        <ChartContainer config={config} height={height}>
+          <PieRoot>
             <Pie
-              data={outerData}
+              data={data}
               dataKey="plot"
               nameKey="label"
-              innerRadius="60%"
-              outerRadius="80%"
+              innerRadius={inner}
+              outerRadius={outer}
               stroke="var(--liro-surface-raised)"
               strokeWidth={2}
               labelLine={false}
+              shape={shape}
+              {...(labels === 'outside'
+                ? { label: outsideLabel }
+                : labels === 'inside'
+                  ? { label: insideLabel }
+                  : {})}
               {...motion}
             />
-          )}
-          {props.centre !== undefined && (
-            <text
-              x="50%"
-              y="50%"
-              textAnchor="middle"
-              dominantBaseline="central"
-              className="font-sans"
-            >
-              <tspan
-                x="50%"
-                dy="-0.4em"
-                fontSize={20}
-                fontWeight={600}
-                fill="var(--liro-text-primary)"
-              >
-                {write(props.centre.value)}
-              </tspan>
-              <tspan x="50%" dy="1.6em" fontSize={12} fill="var(--liro-text-secondary)">
-                {props.centre.label}
-              </tspan>
-            </text>
-          )}
-          <ChartTooltip
-            isAnimationActive={false}
-            content={({ active, payload }) => {
-              const entry = payload[0]?.payload as
-                (PieSlice & { ring: 0 | 1; fill: string }) | undefined
-              if (!active || entry === undefined) return null
-              const share = entry.share ?? ''
-              const name = twoRings
-                ? [ringNames[entry.ring], share].filter((part) => part !== '').join(' · ')
-                : share
-              return (
-                <ChartTooltipContent
-                  direction={direction}
-                  label={entry.label}
-                  rows={[
-                    {
-                      key: entry.key,
-                      name,
-                      color: entry.fill,
-                      text: write(entry.value),
-                    },
-                  ]}
-                />
-              )
-            }}
+            {twoRings && (
+              <Pie
+                data={outerData}
+                dataKey="plot"
+                nameKey="label"
+                innerRadius="60%"
+                outerRadius="80%"
+                stroke="var(--liro-surface-raised)"
+                strokeWidth={2}
+                labelLine={false}
+                {...motion}
+              />
+            )}
+            <ChartTooltip
+              isAnimationActive={false}
+              content={({ active, payload }) => {
+                const entry = payload[0]?.payload as
+                  (PieSlice & { ring: 0 | 1; fill: string }) | undefined
+                if (!active || entry === undefined) return null
+                const share = entry.share ?? ''
+                const name = twoRings
+                  ? [ringNames[entry.ring], share].filter((part) => part !== '').join(' · ')
+                  : share
+                return (
+                  <ChartTooltipContent
+                    direction={direction}
+                    label={entry.label}
+                    rows={[
+                      {
+                        key: entry.key,
+                        name,
+                        color: entry.fill,
+                        text: write(entry.value),
+                      },
+                    ]}
+                  />
+                )
+              }}
+            />
+          </PieRoot>
+        </ChartContainer>
+        {props.centre !== undefined && (
+          <CentreText
+            value={write(props.centre.value)}
+            name={props.centre.label}
+            height={height}
+            innerShare={typeof inner === 'number' ? 0 : Number.parseFloat(inner) / 100}
           />
-        </PieRoot>
-      </ChartContainer>
+        )}
+      </div>
     </ChartCard>
   )
 }
