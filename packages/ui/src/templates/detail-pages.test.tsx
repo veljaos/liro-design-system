@@ -103,3 +103,16 @@ describe('RecordFormPage', () => {
     expect(html).toContain('FORM')
   })
 })
+
+describe('side column in the phone layout (P4.8)', () => {
+  it('stands under the content whatever the viewport', () => {
+    const page = (layout: 'phone' | 'desktop') =>
+      render(
+        <RecordFormPage title="Jelena Marković" actions={null} layout={layout} side={<p>Leave</p>}>
+          <p>Form</p>
+        </RecordFormPage>,
+      )
+    expect(page('desktop')).toContain('lg:grid-cols-[minmax(0,1fr)_300px]')
+    expect(page('phone')).not.toContain('lg:grid-cols-[minmax(0,1fr)_300px]')
+  })
+})
