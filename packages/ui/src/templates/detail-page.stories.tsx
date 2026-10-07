@@ -48,102 +48,117 @@ const LEAVE: LeaveRow[] = [
   },
 ]
 
-const SECTIONS: DetailSection[] = [
-  {
-    id: 'personal',
-    label: 'Personal',
-    content: (
-      <KeyValueList
-        items={[
-          { label: 'Date of birth', value: <DateText value={EMPLOYEE.birthDate} />, numeric: true },
-          { label: 'Personal ID', value: EMPLOYEE.personalId, numeric: true },
-          { label: 'Phone', value: EMPLOYEE.phone, numeric: true },
-          { label: 'E-mail', value: EMPLOYEE.email },
-          { label: 'Address', value: EMPLOYEE.address, fullWidth: true },
-        ]}
-      />
-    ),
-  },
-  {
-    id: 'employment',
-    label: 'Employment',
-    actions: <Button intent="edit" label="Edit" />,
-    content: (
-      <KeyValueList
-        items={[
-          { label: 'Position', value: EMPLOYEE.position },
-          { label: 'Department', value: EMPLOYEE.department },
-          { label: 'Contract', value: EMPLOYEE.contract },
-          {
-            label: 'Contract period',
-            value: <DateRangeText from={EMPLOYEE.since} to={EMPLOYEE.contractEnd} />,
-            numeric: true,
-          },
-          { label: 'Working hours', value: EMPLOYEE.hours },
-          { label: 'Manager', value: EMPLOYEE.manager },
-        ]}
-      />
-    ),
-  },
-  {
-    id: 'payroll',
-    label: 'Payroll',
-    content: (
-      <KeyValueList
-        items={[
-          {
-            label: 'Gross salary',
-            value: <MoneyText value={EMPLOYEE.gross} currency="RSD" />,
-            numeric: true,
-          },
-          { label: 'Bank account', value: EMPLOYEE.account, numeric: true },
-          { label: 'Tax relief', value: 'Standard' },
-          { label: 'Pension fund', value: 'PIO Fund of Serbia' },
-        ]}
-      />
-    ),
-  },
-  {
-    id: 'leave',
-    label: 'Leave',
-    flush: true,
-    content: (
-      <DataTable
-        label="Leave"
-        inCard
-        columns={[
-          { id: 'kind', header: 'Kind', cell: (row: LeaveRow) => row.kind },
-          {
-            id: 'period',
-            header: 'Period',
-            numeric: true,
-            cell: (row: LeaveRow) => <DateRangeText from={row.from} to={row.to} />,
-          },
-          {
-            id: 'days',
-            header: 'Days',
-            align: 'end',
-            numeric: true,
-            cell: (row: LeaveRow) => row.days,
-          },
-          {
-            id: 'status',
-            header: 'Status',
-            cell: (row: LeaveRow) => (
-              <StatusBadge
-                label={row.status}
-                tone={row.status === 'Approved' ? 'success' : 'warning'}
-              />
-            ),
-          },
-        ]}
-        rows={LEAVE}
-        getRowId={(row) => row.id}
-        getRowLabel={(row) => `${row.kind} ${row.from}`}
-      />
-    ),
-  },
-]
+/**
+ * The sections; `columns` 1 in the phone layout (KeyValueList picks one column below 48em by the
+ * viewport, and the phone frame stands in a wide window).
+ */
+function sectionsFor(columns: 1 | 2): DetailSection[] {
+  return [
+    {
+      id: 'personal',
+      label: 'Personal',
+      content: (
+        <KeyValueList
+          columns={columns}
+          items={[
+            {
+              label: 'Date of birth',
+              value: <DateText value={EMPLOYEE.birthDate} />,
+              numeric: true,
+            },
+            { label: 'Personal ID', value: EMPLOYEE.personalId, numeric: true },
+            { label: 'Phone', value: EMPLOYEE.phone, numeric: true },
+            { label: 'E-mail', value: EMPLOYEE.email },
+            { label: 'Address', value: EMPLOYEE.address, fullWidth: true },
+          ]}
+        />
+      ),
+    },
+    {
+      id: 'employment',
+      label: 'Employment',
+      actions: <Button intent="edit" label="Edit" />,
+      content: (
+        <KeyValueList
+          columns={columns}
+          items={[
+            { label: 'Position', value: EMPLOYEE.position },
+            { label: 'Department', value: EMPLOYEE.department },
+            { label: 'Contract', value: EMPLOYEE.contract },
+            {
+              label: 'Contract period',
+              value: <DateRangeText from={EMPLOYEE.since} to={EMPLOYEE.contractEnd} />,
+              numeric: true,
+            },
+            { label: 'Working hours', value: EMPLOYEE.hours },
+            { label: 'Manager', value: EMPLOYEE.manager },
+          ]}
+        />
+      ),
+    },
+    {
+      id: 'payroll',
+      label: 'Payroll',
+      content: (
+        <KeyValueList
+          columns={columns}
+          items={[
+            {
+              label: 'Gross salary',
+              value: <MoneyText value={EMPLOYEE.gross} currency="RSD" />,
+              numeric: true,
+            },
+            { label: 'Bank account', value: EMPLOYEE.account, numeric: true },
+            { label: 'Tax relief', value: 'Standard' },
+            { label: 'Pension fund', value: 'PIO Fund of Serbia' },
+          ]}
+        />
+      ),
+    },
+    {
+      id: 'leave',
+      label: 'Leave',
+      flush: true,
+      content: (
+        <DataTable
+          label="Leave"
+          inCard
+          columns={[
+            { id: 'kind', header: 'Kind', cell: (row: LeaveRow) => row.kind },
+            {
+              id: 'period',
+              header: 'Period',
+              numeric: true,
+              cell: (row: LeaveRow) => <DateRangeText from={row.from} to={row.to} />,
+            },
+            {
+              id: 'days',
+              header: 'Days',
+              align: 'end',
+              numeric: true,
+              cell: (row: LeaveRow) => row.days,
+            },
+            {
+              id: 'status',
+              header: 'Status',
+              cell: (row: LeaveRow) => (
+                <StatusBadge
+                  label={row.status}
+                  tone={row.status === 'Approved' ? 'success' : 'warning'}
+                />
+              ),
+            },
+          ]}
+          rows={LEAVE}
+          getRowId={(row) => row.id}
+          getRowLabel={(row) => `${row.kind} ${row.from}`}
+        />
+      ),
+    },
+  ]
+}
+
+const SECTIONS = sectionsFor(2)
 
 /** The side column: the record's history and files (P5 brings the real panels). */
 const SIDE = (
@@ -207,7 +222,14 @@ function Shell({ phone = false, ...props }: Partial<DetailPageProps> & { phone?:
       user={USER}
       moduleTabs={HR_TABS}
     >
-      <DetailPage {...BASE} {...props} layout={phone ? 'phone' : 'desktop'} />
+      <DetailPage
+        {...BASE}
+        {...props}
+        {...(phone
+          ? { sections: sectionsFor(1).slice(0, (props.sections ?? SECTIONS).length) }
+          : {})}
+        layout={phone ? 'phone' : 'desktop'}
+      />
     </AppShell>
   )
 }
