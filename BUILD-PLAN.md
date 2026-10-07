@@ -293,6 +293,16 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P5.5 | Files and document frame | P2.5 | todo | | |
 | P5.6 | Sign-in building blocks | P2.2 | todo | | |
 | P5.7 | Kanban board | P2.8 | todo | | |
+| P5.8 | Calendar and scheduling | P2.3 | todo | | |
+| P5.9 | Tree | P2.8 | todo | | |
+| P5.10 | Touch mode and POS | P5.3 | todo | | |
+| P5.11 | Scanner-first warehouse | P5.3 | todo | | |
+| P5.12 | Learning | P5.1, P5.15 | todo | | |
+| P5.13 | Attendance and quick marking | P3.4 | todo | | |
+| P5.14 | Sensitive fields | P2.8 | todo | | |
+| P5.15 | Print templates | P4.5 | todo | | |
+| P5.16 | Portal shell | P4.1 | todo | | |
+| P5.17 | Industry example screens | P5.8–P5.16 | todo | | |
 | P6.1 | Full language and direction matrix | Phases 1–5 | todo | | |
 | P6.2 | Manual WCAG 2.2 checks | P6.1 | todo | | |
 | P6.3 | Performance budget | P4.8 | todo | | |
@@ -576,6 +586,38 @@ All generic: labels and states come in as props.
 
 ### P5.7 — Kanban board
 **Do** `KanbanBoard` with columns and cards, drag **and** a keyboard/menu alternative for moving a card (WCAG 2.2 dragging), rtl-correct.
+
+**Beyond the ERP (owner, 2026-10-07).** Liro Business Apps is not only an ERP: the same Design System serves Health, School, University, Learning, Inventory, Warehouse, POS and other business systems. It stays domain-neutral — P5.8–P5.17 are shared building blocks and layouts; the module logic lives in the applications. Every existing rule applies (tokens only, less blue, right-to-left, accessibility, baselines, one pull request per step).
+
+### P5.8 — Calendar and scheduling
+**Do** `CalendarView` (day, week, month, agenda; the week start and the month and weekday names from `LiroProvider`); `ResourceSchedule` (rows of resources such as doctors, rooms, teachers × time; drag, and a keyboard/menu alternative); `SlotPicker` (free slots for booking); `Timetable` (a weekly school grid with periods). Right-to-left correct; the time zone and "today" from the provider. After the date components of P2.3.
+
+### P5.9 — Tree
+**Do** `TreeView` and `TreeTable`: expand and collapse, lazy children, keyboard per the WAI-ARIA tree pattern, selection, right-to-left. Uses: chart of accounts, warehouse locations, org units, course structure.
+
+### P5.10 — Touch mode and POS
+**Do** a "touch" density (targets at least 44px); `PosShell` (full screen, no header, kiosk-safe); `NumericKeypad`; a `ProductTile` grid; `CartPanel`; `PaymentDialog` (cash, card, split, change due; amounts as decimal strings); `ReceiptPreview`. Works offline (the state shown, a queue slot), with keyboard and barcode-scanner input. After the connection markers of P5.3.
+
+### P5.11 — Scanner-first warehouse
+**Do** `ScanField` (a hardware scanner as keyboard input, plus an optional camera through a consumer callback); `QuantityStepper`; `PickList` and `StockCount` layouts for handheld devices at 360px; clear success and error feedback (sound and vibration slots, never colour alone); the offline state. After the connection markers of P5.3.
+
+### P5.12 — Learning
+**Do** a `CoursePage` layout (course outline, lesson content, progress, previous/next); progress to completion; quizzes use the general Questionnaire (P5.1); the certificate's print layout comes from P5.15.
+
+### P5.13 — Attendance and quick marking
+**Do** an EditableGrid pattern for fast marking (present / absent / late / excused) with one key per mark, bulk marking, and a gradebook example.
+
+### P5.14 — Sensitive fields
+**Do** `MaskedValue`: reveal requires a reason (the list of reasons from props), an "access logged" note, and a callback for the audit. Used for health data and salaries.
+
+### P5.15 — Print templates
+**Do** A4 print layouts with print CSS: a document (invoice), a certificate, a school report, a medical finding; header and footer slots, page numbers, no application chrome. After P4.5.
+
+### P5.16 — Portal shell
+**Do** a simpler shell for external participants (patient, parent, student, customer): no launchpad, few sections, the same tokens, phone-first.
+
+### P5.17 — Industry example screens
+**Do** in Storybook "Examples": appointment booking (Health), POS checkout, warehouse picking on a handheld, a school timetable and attendance, a course lesson. Realistic Serbian data, English interface text, both themes, both directions, phone width. After P5.8–P5.16.
 
 **End of Phase 5:** `0.1.0-alpha.5`; report.
 
