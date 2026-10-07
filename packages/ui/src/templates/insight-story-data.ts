@@ -43,6 +43,29 @@ export const REVENUE: CartesianChartProps = {
   decimals: 1,
 }
 
+export const TOP_CUSTOMERS: CartesianChartProps = {
+  title: 'Top 5 customers by revenue',
+  description: 'Thousands of RSD, January–September 2026',
+  categories: [
+    { key: 'panonija', label: 'Panonija Agro d.o.o.' },
+    { key: 'bojovic', label: 'Bojović i sinovi d.o.o.' },
+    { key: 'vojvodjanka', label: 'Vojvođanka Mlin a.d.' },
+    { key: 'medic', label: 'Medic Lab Niš d.o.o.' },
+    { key: 'stanic', label: 'Stanić Elektro STR' },
+  ],
+  series: [{ key: 'revenue', label: 'Revenue' }],
+  values: {
+    revenue: {
+      panonija: '6842.5',
+      bojovic: '5120.8',
+      vojvodjanka: '3977.2',
+      medic: '2415.6',
+      stanic: '1988.3',
+    },
+  },
+  decimals: 1,
+}
+
 export const CASH: CartesianChartProps = {
   title: 'Cash at month end',
   description: 'Thousands of RSD, all accounts',

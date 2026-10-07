@@ -275,6 +275,21 @@ export interface LiroMessages {
   'report.parameters': string
   /** SettingsPage: a setting saved (shown in its row). */
   'settings.saved': string
+  /** Status pages (P4.7): the default title and description of each kind. */
+  'status.unauthenticatedTitle': string
+  'status.unauthenticatedDescription': string
+  'status.planRequiredTitle': string
+  'status.planRequiredDescription': string
+  'status.forbiddenTitle': string
+  'status.forbiddenDescription': string
+  'status.notFoundTitle': string
+  'status.notFoundDescription': string
+  'status.errorTitle': string
+  'status.errorDescription': string
+  'status.maintenanceTitle': string
+  'status.maintenanceDescription': string
+  'status.suspendedTitle': string
+  'status.suspendedDescription': string
   /** The accessible name of a hidden module's "Show" button. */
   'launchpad.show': (name: string) => string
 }

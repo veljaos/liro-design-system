@@ -19,8 +19,9 @@ import { PageHeader } from './page-header'
  *   successful save the row shows "Saved" with a 14px check in status.success.fg
  *   (`role="status"`); an error appears in the row in status.danger.fg with its icon
  *   (`role="alert"`, announced at once).
- * - Several groups of sections: page-level tabs at the top (centred, AGENTS.md D16), never a side
- *   navigation.
+ * - Several groups of sections: tabs at the top, never a side navigation.
+ * - The column (at most 960px) stands at the page's start, aligned with the header, and so do its
+ *   tabs (P4.7, owner: business screens are start-aligned).
  */
 
 /** One setting. */
@@ -143,7 +144,7 @@ export function SettingsPage(props: SettingsPageProps) {
     <div
       data-slot="settings-page"
       className={cn(
-        'mx-auto box-border flex w-full max-w-240 flex-col',
+        'box-border flex w-full max-w-240 flex-col',
         phone ? 'gap-2 p-4' : 'gap-4 p-6',
         props.className,
       )}
@@ -157,6 +158,7 @@ export function SettingsPage(props: SettingsPageProps) {
       ) : (
         <Tabs
           label={props.title}
+          align="start"
           items={props.groups.map((group) => ({
             value: group.key,
             label: group.label,
