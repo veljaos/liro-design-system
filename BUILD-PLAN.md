@@ -284,7 +284,7 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P4.6 | Report, dashboard and settings templates | P4.1 | done | 2026-10-06 | Owner's values: one blue and greys for charts (categorical opt-in, validated, teal 5 at 2.8:1 covered by legend and table), StatCard, settings rows saved at once with Saved/error, report parameters collapsing to a summary; charts on Recharts 3.10.1 directly, as shadcn Chart is (its wrapper not copied: our own card, legend, tooltip and table); settings width 960px chosen, reported |
 | P4.7 | Status pages and sign-in shell | P4.1 | done | 2026-10-07 | Owner's values: StatusPage for 401, 402, 403, 404, 500 (case number), maintenance, suspended — tone square 84px (warning, neutral or danger, never blue), the bare code above the title; AuthShell 420px card on surface.sunken, lockup above, no frame on phones; SettingsPage and its tabs start-aligned (Tabs `align`); dashboard: "Top 5 customers" horizontal bars beside the donut, donut sized to its card |
 | P4.7a | Charts catalogue | P4.7 | todo | | |
-| P4.7b | Small-size favicon | P4.7 | todo | | Three variants shown to the owner; merged after the owner's choice (protected: Storybook's favicon URL gets a version) |
+| P4.7b | Small-size favicon | P4.7 | done | 2026-10-07 | The owner rejected the three pixel-grid variants and drew the small mark from the logo's rule; his favicon.svg, favicon.ico (16, 32, 48) and 16/32px PNGs copied as they are; Storybook links favicon.svg first and favicon.ico as the fallback, both `?v=2` |
 | P4.8 | Example screens | P4.2–P4.7a | todo | | |
 | P5.1 | History, comments and messages | P2.8 | todo | | |
 | P5.2 | Presence and agent marking | P2.8 | todo | | |

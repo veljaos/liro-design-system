@@ -189,15 +189,16 @@ export const Lockup: Story = {
 }
 
 /**
- * The browser tab's favicon (P4.0, owner): the icon's dots on a transparent background, brand
- * blue, lighter in a dark browser; a simplified version with fewer, larger dots, so it stays
- * a dotted mark at 16px. The installed-app icons keep the blue tile.
+ * The browser tab's favicon (P4.7b, drawn by the owner): the small mark redrawn from the logo's
+ * rule — a centre dot and rings, the dots larger toward the bottom-left and smaller toward the
+ * top-right — on a transparent background, brand blue, lighter in a dark browser. The
+ * installed-app icons keep the blue tile and the full sphere.
  */
 export const Favicon: Story = {
   render: () => (
     <Page
       title="Favicon"
-      intro="web/favicon.svg at 16 and 32 px on a light and a dark tab bar. It follows the browser's colour scheme: brand-blue dots (blue 6) in a light browser, the lighter blue (blue 4) in a dark one. web/favicon.ico holds 16, 32 (simplified) and 48 px."
+      intro="web/favicon.svg at 16 and 32 px on a light and a dark tab bar. It follows the browser's colour scheme: brand-blue dots (blue 6) in a light browser, the lighter blue (blue 4) in a dark one. web/favicon.ico holds 16, 32 and 48 px; favicon-16.png and favicon-32.png are the same mark as PNG files. Drawn by the owner from the logo's rule; the full sphere stays for 48 px and up."
     >
       <OnBothThemes>
         {() => (
