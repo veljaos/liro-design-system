@@ -88,15 +88,13 @@ function Calculator({ delay, label }: { delay: number; label: string }) {
 }
 
 /**
- * Slow answers (4.2 s, 4.5 s after the last key): the dot appears after 300ms; the total never
- * blanks or moves. The Playwright test samples the value for about a second (up to three on a
- * loaded Windows machine) while it is pending, then waits at most 5 s for it to settle, so the
- * answer must come after the sampling and within that wait (P4.9d: at 1.2 s it had settled before
- * the check on Windows).
+ * Slow answers (1.2 s, 1.5 s after the last key): the dot appears after 300ms; the total never
+ * blanks or moves. The Playwright test drives the page's clock itself (`page.clock`), so it
+ * checks the pending value at fixed moments of the story's own time and never races this delay.
  */
 export const SlowUpdates: Story = {
   name: 'Slow updates and fast typing',
-  render: () => <Calculator delay={4200} label="Quantity" />,
+  render: () => <Calculator delay={1200} label="Quantity" />,
 }
 
 /** Fast answers (100 ms): no dot at all, so nothing flickers. */

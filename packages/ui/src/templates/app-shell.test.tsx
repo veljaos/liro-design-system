@@ -173,6 +173,7 @@ describe('AppShell', () => {
     const html = render({ layout: 'phone', bottomBar: <button type="button">New invoice</button> })
     expect(html).not.toContain('aria-label="Breadcrumbs"')
     expect(html).not.toContain('Switch company:')
+    expect(html).not.toContain('max-w-60 truncate')
     expect(html).toContain('aria-label="Search…"')
     expect(html).not.toContain('Business Apps</span>')
     expect(html).toContain('data-slot="shell-bottom-bar"')

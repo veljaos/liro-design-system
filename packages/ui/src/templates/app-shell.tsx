@@ -14,7 +14,7 @@ import {
   type CommandItem,
   type CommandPaletteProps,
 } from '../components/command-palette'
-import type { MenuEntry } from '../components/dropdown-menu'
+import { MenuItemText, menuIconClass, type MenuEntry } from '../components/dropdown-menu'
 import { Breadcrumbs, type Crumb } from '../components/navigation'
 import { PersonAvatar } from '../components/person'
 import { usePhone } from '../components/use-phone'
@@ -224,11 +224,12 @@ function UserMenu({
         <DropdownMenuSeparator />
         {companies !== undefined && onSwitchCompany !== undefined && (
           <>
-            <DropdownMenuItem onSelect={onSwitchCompany}>
-              <Building2 aria-hidden="true" />
-              <span className={cn('min-w-0 flex-1 truncate', TEXT_DIRECTION)}>
-                {messages['shell.switchCompany'](currentCompanyName(companies))}
-              </span>
+            <DropdownMenuItem onSelect={onSwitchCompany} className="items-start">
+              <Building2 aria-hidden="true" className={menuIconClass('')} />
+              <MenuItemText
+                label={messages['shell.switchCompanyTitle']}
+                value={currentCompanyName(companies)}
+              />
             </DropdownMenuItem>
             <DropdownMenuSeparator />
           </>
@@ -246,9 +247,12 @@ function UserMenu({
               key={index}
               disabled={entry.disabled === true}
               onSelect={entry.onSelect}
+              className={cn(entry.value !== undefined && 'items-start')}
             >
-              {Icon !== undefined && <Icon aria-hidden="true" />}
-              <span className={cn('min-w-0 flex-1', TEXT_DIRECTION)}>{entry.label}</span>
+              {Icon !== undefined && (
+                <Icon aria-hidden="true" className={menuIconClass(entry.value)} />
+              )}
+              <MenuItemText label={entry.label} value={entry.value} />
             </DropdownMenuItem>
           )
         })}

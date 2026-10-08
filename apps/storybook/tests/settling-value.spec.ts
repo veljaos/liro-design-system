@@ -27,6 +27,10 @@ for (const mode of MODES) {
   test(`SettlingValue: no layout shift, one announcement per settle [${mode.direction}]`, async ({
     page,
   }) => {
+    // The page's clock is the test's (P5, the owner: deterministic, no race against the story's
+    // delay). Installed before the story loads, it runs normally until it is paused below; then
+    // time moves only when the test moves it, on every machine alike.
+    await page.clock.install()
     const outcome = await openEntry(page, STORY, mode)
     expect(outcome.status).toBe('success')
     const value = page.locator('[data-slot="settling-value"]')
@@ -43,6 +47,9 @@ for (const mode of MODES) {
       }).observe(live, { childList: true, characterData: true, subtree: true })
     })
 
+    const now = await page.evaluate(() => Date.now())
+    await page.clock.pauseAt(now + 1000)
+
     const input = page.getByRole('textbox', { name: 'Quantity' })
     for (const typed of ['12', '7']) {
       // Fast typing: every key starts a new computation; only the last one settles.
@@ -50,13 +57,17 @@ for (const mode of MODES) {
       await input.press('ControlOrMeta+A')
       await input.pressSequentially(typed, { delay: 40 })
       await expect(value).toHaveAttribute('data-pending', 'true')
-      // While pending (1.5s), the value does not move and the dot appears in its reserved slot.
+      // While pending (the answer comes 1.5 s after the last key, in the page's time), the value
+      // does not move, and after 300ms the dot appears in its reserved slot.
       for (let sample = 0; sample < 5; sample += 1) {
-        await page.waitForTimeout(200)
+        await page.clock.runFor(200)
         expect(await value.boundingBox()).toEqual(before)
+        await expect(value).toHaveAttribute('data-pending', 'true')
       }
       await expect(page.locator('[data-slot="settling-dot"]')).toBeVisible()
-      await expect(value).not.toHaveAttribute('data-pending', { timeout: 5000 })
+      // Past the answer: settled, still in place.
+      await page.clock.runFor(1000)
+      await expect(value).not.toHaveAttribute('data-pending')
       expect(await value.boundingBox()).toEqual(before)
     }
 

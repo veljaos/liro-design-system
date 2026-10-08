@@ -1,3 +1,4 @@
+import { ChevronRight } from 'lucide-react'
 import type { ReactElement } from 'react'
 import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
@@ -33,6 +34,12 @@ export type MenuEntry =
       disabled?: boolean
       /** A destructive action (delete, reject): drawn in the danger colours. */
       destructive?: boolean
+      /**
+       * The current value the item changes ("Kvadrat Gradnja d.o.o." under "Switch company"): a
+       * second line in smaller secondary text that wraps instead of being cut, with a chevron at
+       * the end, because choosing the item opens a chooser. From the application.
+       */
+      value?: string
     }
   | { type: 'separator' }
   | {
@@ -72,12 +79,15 @@ export function DropdownMenu({ trigger, entries, align = 'start' }: DropdownMenu
               disabled={entry.disabled === true}
               onSelect={entry.onSelect}
               className={cn(
+                entry.value !== undefined && 'items-start',
                 entry.destructive === true &&
                   'text-status-danger-fg data-highlighted:bg-status-danger-bg',
               )}
             >
-              {Icon !== undefined && <Icon aria-hidden="true" />}
-              <span className={cn('min-w-0 flex-1', TEXT_DIRECTION)}>{entry.label}</span>
+              {Icon !== undefined && (
+                <Icon aria-hidden="true" className={menuIconClass(entry.value)} />
+              )}
+              <MenuItemText label={entry.label} value={entry.value} />
               {entry.shortcut !== undefined && (
                 <DropdownMenuShortcut>{entry.shortcut}</DropdownMenuShortcut>
               )}
@@ -87,4 +97,32 @@ export function DropdownMenu({ trigger, entries, align = 'start' }: DropdownMenu
       </DropdownMenuContent>
     </MenuRoot>
   )
+}
+
+/**
+ * The text of a menu item (P5, the owner's review of the phone user menu). With a current value
+ * the item has two lines — the action, then the value in xs text.secondary, wrapping onto more
+ * lines rather than ending in "…" — and a chevron at the end. Every menu item that shows a current
+ * value uses it (DropdownMenu entries with `value`, the AppShell's "Switch company"). Internal.
+ */
+export function MenuItemText({ label, value }: { label: string; value?: string | undefined }) {
+  if (value === undefined) {
+    return <span className={cn('min-w-0 flex-1', TEXT_DIRECTION)}>{label}</span>
+  }
+  return (
+    <>
+      <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <span className={TEXT_DIRECTION}>{label}</span>
+        <span className={cn('text-xs wrap-break-word text-secondary', TEXT_DIRECTION)}>
+          {value}
+        </span>
+      </span>
+      <ChevronRight aria-hidden="true" className="shrink-0 self-center rtl:-scale-x-100" />
+    </>
+  )
+}
+
+/** A two-line item's icon stands beside its first line (13px text on a 1.45 line). */
+export function menuIconClass(value: string | undefined): string | undefined {
+  return value === undefined ? undefined : 'mt-0.75'
 }

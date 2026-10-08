@@ -269,7 +269,7 @@ async function openCompanySheet(canvasElement: HTMLElement) {
   await settle()
   await userEvent.click(
     within(document.body).getByRole('menuitem', {
-      name: 'Switch company: Kvadrat Gradnja d.o.o.',
+      name: 'Switch company Kvadrat Gradnja d.o.o.',
     }),
   )
   await settle()
@@ -413,11 +413,14 @@ export const PhoneUserMenu: Story = {
     await settle()
     await userEvent.click(within(canvasElement).getByRole('button', { name: 'Account' }))
     await settle()
-    await expect(
-      within(document.body).getByRole('menuitem', {
-        name: 'Switch company: Kvadrat Gradnja d.o.o.',
-      }),
-    ).toBeVisible()
+    const item = within(document.body).getByRole('menuitem', {
+      name: 'Switch company Kvadrat Gradnja d.o.o.',
+    })
+    await expect(item).toBeVisible()
+    // Two lines: the action, then the current company, never cut with "…" (P5, the owner).
+    for (const line of item.querySelectorAll('span')) {
+      await expect(line.scrollWidth).toBeLessThanOrEqual(line.clientWidth)
+    }
   },
 }
 

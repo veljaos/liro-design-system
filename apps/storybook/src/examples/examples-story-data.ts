@@ -6,7 +6,7 @@
  * is needed (the stories play the application; components never add). Not part of the package.
  * No classes here: Storybook compiles classes only from *.stories.tsx files.
  */
-import type { CartesianChartProps } from '../charts'
+import type { CartesianChartProps } from '../../../../packages/ui/src/charts'
 
 export interface ExampleInvoice {
   number: string
