@@ -368,4 +368,71 @@ export interface LiroMessages {
   'status.suspendedCompanyDescription': (company: string) => string
   /** The accessible name of a hidden module's "Show" button. */
   'launchpad.show': (name: string) => string
+  // ── P5 group A ──
+  /** Joins a few names or labels into one line ("Dragan Ilić, Ivana Stojanović"). */
+  'text.join': (items: readonly string[]) => string
+  /** AgentMark: names the machine marker after an agent's name (assistive technology, tooltip). */
+  'agent.mark': string
+  /** An agent's name where only text can mark it (an accessible name): "Liro agent (agent)". */
+  'agent.named': (name: string) => string
+  /** AgentQuestion: names the question an agent asks ("Question from Liro agent"). */
+  'agent.question': (name: string) => string
+  /** PresenceAvatars: the accessible name and tooltip, with the names already joined. */
+  'presence.here': (names: string) => string
+  /** PresenceAvatars: the overflow ("+3"); `text` is the count written by `format.number`. */
+  'presence.more': (count: number, text: string) => string
+  /** PresenceAvatars: the list of everyone here (the popover's name). */
+  'presence.list': string
+  /** HistoryList: the marker of a change made by the system or by an integration. */
+  'history.system': string
+  'history.integration': string
+  /** HistoryList: a change made for someone else ("On behalf of Milica Petrović"). */
+  'history.onBehalfOf': (name: string) => string
+  /** HistoryList: the old and the new value of a field, for assistive technology. */
+  'history.before': string
+  'history.after': string
+  /** HistoryList: loads the next, older entries. */
+  'history.showMore': string
+  /** HistoryList: no entries yet. */
+  'history.emptyTitle': string
+  'history.emptyDescription': string
+  /** MessageBubble: the user's own messages, for assistive technology. */
+  'message.you': string
+  /** MessageComposer: the send button; its state while sending; the keys, shown under the field. */
+  'message.send': string
+  'message.sending': string
+  'message.sendHint': string
+  /** MessageBubble: a message that could not be sent, and its retry. */
+  'message.failed': string
+  'message.retry': string
+  /** MessageList: the button back to the latest message; with the count of new ones. */
+  'message.jumpToLatest': string
+  'message.newMessages': (count: number, text: string) => string
+  /** MessageList: no messages yet. */
+  'message.emptyTitle': string
+  'message.emptyDescription': string
+  /** MentionCombobox: names the list of people that can be mentioned. */
+  'mention.list': string
+  /** Questionnaire: the buttons that move between questions and to the summary. */
+  'questionnaire.next': string
+  'questionnaire.back': string
+  'questionnaire.review': string
+  /** Questionnaire: the default of the final button (the application usually names it). */
+  'questionnaire.submit': string
+  /** Questionnaire: "3 of 9 answered"; the texts are written by `format.number`. */
+  'questionnaire.progress': (
+    answered: number,
+    answeredText: string,
+    total: number,
+    totalText: string,
+  ) => string
+  /** Questionnaire: the progress bar's name. */
+  'questionnaire.progressLabel': string
+  /** Questionnaire: the summary's title, where any answer can be changed. */
+  'questionnaire.summaryTitle': string
+  /** Questionnaire: an optional question left without an answer, in the summary. */
+  'questionnaire.notAnswered': string
+  /** Questionnaire: a required question without an answer; an "Other" without its text. */
+  'questionnaire.required': string
+  'questionnaire.otherRequired': string
 }
