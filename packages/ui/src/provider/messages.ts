@@ -368,4 +368,105 @@ export interface LiroMessages {
   'status.suspendedCompanyDescription': (company: string) => string
   /** The accessible name of a hidden module's "Show" button. */
   'launchpad.show': (name: string) => string
+  // ── P5 group E ──
+  /** LookupDialog: how the keyboard moves through the results (under the table; the search's description). */
+  'lookup.keyboardHint': string
+  /** ImportWizard: the names of its four steps. */
+  'import.stepFile': string
+  'import.stepColumns': string
+  'import.stepCheck': string
+  'import.stepImport': string
+  /** ImportWizard: the button that chooses the file. */
+  'import.chooseFile': string
+  /** ImportWizard, column mapping: the headers and a column's states. */
+  'import.field': string
+  'import.column': string
+  'import.sample': string
+  'import.notImported': string
+  'import.suggested': string
+  /** The name of a field's column choice ("Column for Name"). */
+  'import.columnFor': (field: string) => string
+  /** The file's columns no field takes ("Not imported: Note, Phone 2"); joined by the component. */
+  'import.unusedColumns': (columns: string) => string
+  /** Next is unavailable while required fields have no column; `fields` joined by the component. */
+  'import.missingRequired': (fields: string) => string
+  /** The validation preview's counts, each with its noun; `text` is `count` through `format.number`. */
+  'import.ready': (count: number, text: string) => string
+  'import.withErrors': (count: number, text: string) => string
+  'import.withWarnings': (count: number, text: string) => string
+  'import.duplicates': (count: number, text: string) => string
+  /** The preview's filter and the choice to leave invalid rows out. */
+  'import.problemsOnly': string
+  'import.skipInvalid': string
+  /** Import is unavailable while rows have errors and they are not skipped. */
+  'import.fixOrSkip': string
+  /** The preview's columns: the line in the file, and the row's problems. */
+  'import.line': string
+  'import.problems': string
+  /** The preview filtered to problems, and none left. */
+  'import.noProblems': string
+  /** The import button ("Import 1.198 rows"). */
+  'import.run': (count: number, text: string) => string
+  /** The import's progress: the bar's name and "312 of 1.284". */
+  'import.progress': string
+  'import.progressText': (
+    done: number,
+    doneText: string,
+    total: number,
+    totalText: string,
+  ) => string
+  /** BulkEditDrawer: the title ("Edit 24 records"), a field left as it is, and the summary. */
+  'bulkEdit.title': (count: number, text: string) => string
+  'bulkEdit.unchanged': string
+  'bulkEdit.summary': string
+  'bulkEdit.nothing': string
+  /** The apply button, the confirmation's question and its button. */
+  'bulkEdit.apply': (count: number, text: string) => string
+  'bulkEdit.confirmTitle': (count: number, text: string) => string
+  'bulkEdit.confirm': string
+  /** DuplicateWarning: the default title, the list's name and the two choices. */
+  'duplicate.title': string
+  'duplicate.existing': string
+  'duplicate.openExisting': string
+  'duplicate.createAnyway': string
+  /** The question when the application asks for a reason to create a duplicate. */
+  'duplicate.reasonTitle': string
+  /** RegisterPage: the entry number's header and the correction column. */
+  'register.number': string
+  'register.correction': string
+  /** A correction refers to the entry it corrects, and the corrected entry to it. */
+  'register.corrects': (number: string) => string
+  'register.correctedBy': (number: string) => string
+  /** A locked entry: the lock's name, and its row menu's one (unavailable) item. */
+  'register.locked': string
+  'register.lockedEntry': string
+  /** A locked period ("January–June 2026 is locked"); the period is the application's text. */
+  'register.periodLocked': (period: string) => string
+  /** StatutoryFormPage: the field number and description headers. */
+  'statutory.number': string
+  'statutory.description': string
+  /** The amount opens its source documents: "1.234,00 RSD, sources of 3.2". */
+  'statutory.showSources': (field: string, value: string) => string
+  /** The drill-down: the documents' name, none, and the field's value line ("Field 3.2"). */
+  'statutory.sources': string
+  'statutory.noSources': string
+  'statutory.fieldValue': (field: string) => string
+  /** A manual override: the marker, who and when, the computed value, and the way back. */
+  'statutory.overridden': string
+  'statutory.overriddenBy': (who: string, when: string) => string
+  'statutory.computed': (value: string) => string
+  'statutory.useComputed': string
+  /** Saves a value typed over the computed one. */
+  'statutory.saveOverride': string
+  /** Rule checks: the state before a rule's text, and the summary's counts with their noun. */
+  'statutory.checkFailed': string
+  'statutory.checkWarning': string
+  'statutory.checkPassed': string
+  'statutory.checksFailed': (count: number, text: string) => string
+  'statutory.checksWarnings': (count: number, text: string) => string
+  'statutory.checksPassed': (count: number, text: string) => string
+  /** The summary's link to a field ("Go to 5.4"). */
+  'statutory.goToField': (field: string) => string
+  /** Names the checks summary. */
+  'statutory.checks': string
 }
