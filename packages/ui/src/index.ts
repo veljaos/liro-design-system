@@ -522,3 +522,70 @@ export {
   rulesTone,
 } from './templates/register-logic'
 export type { RuleResult, StatutoryRule } from './templates/register-logic'
+// ── P5 group B ──
+export {
+  CONNECTION_STATUSES,
+  ConnectionState,
+  EnvironmentMarker,
+  ImpersonationBar,
+  minutesLeft,
+  OfflineIndicator,
+  untilNextMinute,
+} from './components/shell-markers'
+export type {
+  ConnectionStateProps,
+  ConnectionStatus,
+  EnvironmentMarkerProps,
+  EnvironmentTone,
+  ImpersonationBarProps,
+  OfflineIndicatorProps,
+} from './components/shell-markers'
+export { StatusTimeline } from './components/status-timeline'
+export type {
+  StatusNextStep,
+  StatusTimelineProps,
+  StatusTimelineStep,
+} from './components/status-timeline'
+export { clampedDone, JobProgress, jobOutcome } from './components/job-progress'
+export type {
+  JobFailure,
+  JobOutcome,
+  JobOutcomeLine,
+  JobProgressProps,
+  JobState,
+} from './components/job-progress'
+export { acceptsFile, checkFiles, FileDropzone } from './components/file-dropzone'
+export type {
+  FileDropzoneProps,
+  FileFacts,
+  FileRejection,
+  FileRules,
+  RejectionReason,
+} from './components/file-dropzone'
+export { AttachmentList, attachmentOffers } from './components/attachment-list'
+export type {
+  Attachment,
+  AttachmentListProps,
+  AttachmentOffers,
+  AttachmentState,
+} from './components/attachment-list'
+export {
+  DocumentFrame,
+  FRAME_PROTOCOL,
+  FRAME_TIMEOUT,
+  FRAME_VERSION,
+  frameReducer,
+  hostMessage,
+  INITIAL_FRAME_STATE,
+  originAllowed,
+  readViewerMessage,
+  targetOrigin,
+  ZOOM_STEPS,
+  zoomStep,
+} from './components/document-frame'
+export type {
+  DocumentFrameProps,
+  FrameState,
+  HostMessage,
+  ViewerMessage,
+} from './components/document-frame'

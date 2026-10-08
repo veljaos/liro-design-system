@@ -192,4 +192,20 @@ describe('AppShell', () => {
     expect(order.every((position) => position > -1)).toBe(true)
     expect([...order].sort((a, b) => a - b)).toEqual(order)
   })
+  it('puts the application-wide banners under the offline indicator, at the top of the content', () => {
+    const html = render({
+      layout: 'desktop',
+      impersonationBar: <div>IMPERSONATION</div>,
+      offlineIndicator: <div>OFFLINE</div>,
+      banners: <div>TRIAL</div>,
+    })
+    const order = ['IMPERSONATION', '<header', 'OFFLINE', '<main', 'shell-banners', 'TRIAL', 'Page']
+    const positions = order.map((text) => html.indexOf(text))
+    expect(positions.every((position) => position > -1)).toBe(true)
+    expect([...positions].sort((a, b) => a - b)).toEqual(positions)
+    // Banners scroll with the page: they are inside main, outside the sticky top.
+    expect(html.indexOf('TRIAL')).toBeGreaterThan(html.indexOf('</header>'))
+    expect(render({ layout: 'desktop' })).not.toContain('shell-banners')
+    expect(render({ layout: 'desktop', banners: null })).not.toContain('shell-banners')
+  })
 })

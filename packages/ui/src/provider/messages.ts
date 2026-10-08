@@ -688,4 +688,92 @@ export interface LiroMessages {
   'statutory.goToField': (field: string) => string
   /** Names the checks summary. */
   'statutory.checks': string
+  // ── P5 group B ──
+  /** OfflineIndicator: announced politely once the connection returns. */
+  'connection.online': string
+  /** ConnectionState: a draft saved on this device only; `time` is `format.time`, or null. */
+  'connection.local': (time: string | null) => string
+  /** ConnectionState: the draft is being sent. */
+  'connection.sending': string
+  /** ConnectionState: the draft has been sent; `time` is `format.time`, or null. */
+  'connection.sent': (time: string | null) => string
+  /** ConnectionState: sending failed (the draft is still on this device). */
+  'connection.failed': string
+  /** ConnectionState: the button that sends a draft again. */
+  'connection.retry': string
+  /** EnvironmentMarker: read before the environment's name ("Environment: Sandbox"). */
+  'environment.prefix': string
+  /** ImpersonationBar: the bar's name as a region. */
+  'impersonation.region': string
+  /** ImpersonationBar: whose account is being used; `name` from the application. */
+  'impersonation.viewingAs': (name: string) => string
+  /** ImpersonationBar: why; `reason` from the application. */
+  'impersonation.reason': (reason: string) => string
+  /** ImpersonationBar: the time left; `text` is the minutes written by `format.number`. */
+  'impersonation.minutesLeft': (minutes: number, text: string) => string
+  /** ImpersonationBar: the session's time is over. */
+  'impersonation.ended': string
+  /** ImpersonationBar: the action that ends the session. */
+  'impersonation.exit': string
+  /** StatusTimeline: a step that failed, for assistive technology (its reason is shown). */
+  'timeline.failed': string
+  /** StatusTimeline: the name of the next-step block under the current state. */
+  'timeline.next': string
+  /** JobProgress: how far it has come ("312 of 1.284"), both counts through `format.number`. */
+  'job.progress': (done: number, doneText: string, total: number, totalText: string) => string
+  /** JobProgress: stops the job; and while it stops. */
+  'job.cancel': string
+  'job.cancelling': string
+  /** JobProgress: the report's heading after the job finished or was cancelled. */
+  'job.finished': string
+  'job.cancelled': string
+  /** JobProgress: the heading of the list of items that failed, with their reasons. */
+  'job.failures': string
+  /** FileDropzone: the button that opens the file dialog (one file or several). */
+  'file.choose': (multiple: boolean) => string
+  /** FileDropzone: beside the button, where dropping is possible. */
+  'file.drop': (multiple: boolean) => string
+  /** FileDropzone: the size limit before choosing; `limit` is the application's text ("10 MB"). */
+  'file.maxSize': (limit: string) => string
+  /** FileDropzone: a file of a type not accepted; `accepted` is the application's text. */
+  'file.rejectedType': (name: string, accepted: string) => string
+  /** FileDropzone: a file over the size limit; `limit` is the application's text ("10 MB"). */
+  'file.rejectedSize': (name: string, limit: string) => string
+  /** FileDropzone: a file beyond the number allowed; `text` is `max` through `format.number`. */
+  'file.rejectedCount': (name: string, max: number, text: string) => string
+  /**
+   * AttachmentList: uploading, and what comes next; `percent` through `format.percent`, or null
+   * while the progress is not known.
+   */
+  'attachment.uploading': (percent: string | null) => string
+  /** AttachmentList: being checked for viruses, and what comes next. */
+  'attachment.scanning': string
+  /** AttachmentList: blocked after the check, and what to do. */
+  'attachment.quarantined': string
+  /** AttachmentList: the upload failed (the application's reason follows). */
+  'attachment.failed': string
+  /** AttachmentList: the accessible names of a file's buttons; `name` is the file's name. */
+  'attachment.download': (name: string) => string
+  'attachment.remove': (name: string) => string
+  'attachment.retry': (name: string) => string
+  /** AttachmentList: the visible label of the retry button. */
+  'attachment.retryLabel': string
+  /** AttachmentList: a list without files. */
+  'attachment.none': string
+  /** DocumentFrame: the toolbar's name and its buttons. */
+  'frame.toolbar': string
+  'frame.previousPage': string
+  'frame.nextPage': string
+  'frame.zoomIn': string
+  'frame.zoomOut': string
+  /** DocumentFrame: "Page 3 of 12", both numbers through `format.number`. */
+  'frame.page': (page: number, pageText: string, count: number, countText: string) => string
+  /** DocumentFrame: the zoom level for assistive technology; `text` through `format.percent`. */
+  'frame.zoom': (text: string) => string
+  /** DocumentFrame: while the viewer loads; when it failed, or did not answer in time. */
+  'frame.loading': string
+  'frame.error': string
+  'frame.timeout': string
+  /** DocumentFrame: loads the viewer again. */
+  'frame.retry': string
 }

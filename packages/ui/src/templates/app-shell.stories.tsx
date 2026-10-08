@@ -1,9 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
+import { CreditCard } from 'lucide-react'
 import { Banner } from '../components/alert'
 import { Button } from '../components/button'
 import { DataTable, type DataTableColumn } from '../components/data-table'
 import { DateText, MoneyText } from '../components/display-text'
+import { EnvironmentMarker, ImpersonationBar, OfflineIndicator } from '../components/shell-markers'
 import { StatusBadge, toneFor } from '../components/status-badge'
 import { settle } from '../primitives/story-helpers'
 import { ExampleProvider, PhoneFrame, StoryProvider } from '../components/story-frames'
@@ -116,8 +118,12 @@ const meta = {
           '(searchable by name or tax number, pinned and recent first, virtualised for thousands, ' +
           'suspended companies marked; also "Switch company…" in the command palette) and the ' +
           'user menu (all entries neutral, sign-out too). Breadcrumbs only from two levels. A module adds its tabs as a second row (96px in ' +
-          'all), centred. Slots for the impersonation bar, environment marker and offline ' +
-          'indicator. On phones the lockup drops the product name, the breadcrumbs go, the ' +
+          'all), centred. Slots (P5.3), top to bottom: `impersonationBar` (ImpersonationBar) ' +
+          'above the header, `environmentMarker` (EnvironmentMarker) after the brand, ' +
+          '`offlineIndicator` (OfflineIndicator) under the header — these three sticky with it — ' +
+          'and `banners`, the application-wide Banners (a trial ending, a maintenance window), ' +
+          'full width and square at the top of the content, scrolling with the page; a ' +
+          'dismissible banner is the application’s state. On phones the lockup drops the product name, the breadcrumbs go, the ' +
           'company switcher becomes an entry of the user menu that opens a full-screen sheet ' +
           'with the search at the top, module tabs that do not fit scroll and fade at the edge, ' +
           'and `bottomBar` holds the main action within thumb reach.\n\n' +
@@ -335,7 +341,100 @@ export const Search: Story = {
   },
 }
 
-/** The slots of P5.3: impersonation bar above, environment marker after the brand, offline. */
+/** A support session's end, 23 minutes from now (less a second, so it reads 23). */
+function supportSessionEnd(): string {
+  return new Date(Date.now() + 23 * 60_000 - 1_000).toISOString()
+}
+
+/** The markers of P5.3 together, as the Core fills the slots. */
+function shellMarkers(phone: boolean): Partial<AppShellProps> {
+  return {
+    impersonationBar: (
+      <ImpersonationBar
+        person="Milica Petrović"
+        mode="Read-only"
+        reason="Support request 4821"
+        endsAt={supportSessionEnd()}
+        onExit={() => undefined}
+        layout={phone ? 'phone' : 'desktop'}
+      />
+    ),
+    environmentMarker: <EnvironmentMarker label="Sandbox" />,
+    offlineIndicator: (
+      <OfflineIndicator
+        offline
+        layout={phone ? 'phone' : 'desktop'}
+        waiting="2 changes are kept on this device and sent when the connection returns."
+      />
+    ),
+    banners: (
+      <Banner
+        title="Trial ends on 15.10.2026."
+        actions={<Button family="primary" icon={CreditCard} label="Choose a plan" />}
+      >
+        Choose a plan to keep your data and your invoices in SEF.
+      </Banner>
+    ),
+  }
+}
+
+/**
+ * The shell markers (P5.3) in their places, top to bottom: the impersonation bar above the header,
+ * the environment marker after the brand, the offline indicator under the header — these three
+ * sticky —, then an application-wide banner at the top of the content, which scrolls away.
+ */
+export const ShellMarkers: Story = {
+  name: 'Shell markers',
+  args: { layout: 'desktop', ...shellMarkers(false) },
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const bar = canvas.getByRole('region', { name: 'Session as another user' })
+    const header = canvasElement.querySelector('header')
+    const offline = canvas.getByText(/2 changes are kept/)
+    const banner = canvas.getByText('Trial ends on 15.10.2026.')
+    const main = canvas.getByRole('main')
+    // The order on the screen.
+    const tops = [bar, header, offline, banner].map(
+      (element) => element?.getBoundingClientRect().top ?? -1,
+    )
+    await expect([...tops].sort((a, b) => a - b)).toEqual(tops)
+    // Bar, header and offline indicator are sticky together; the banner is in the content.
+    await expect(main).toContainElement(banner)
+    await expect(main).not.toContainElement(offline)
+    await expect(bar).toHaveTextContent('23 minutes left')
+    await expect(canvas.getByText('Environment:')).toBeInTheDocument()
+  },
+}
+
+/** The same markers on a phone: the bars wrap, the environment marker stays beside the lockup. */
+export const ShellMarkersPhone: Story = {
+  name: 'Shell markers, phone',
+  render: (args) => (
+    <PhoneFrame>
+      <ExampleProvider>
+        <AppShell
+          {...args}
+          {...shellMarkers(true)}
+          layout="phone"
+          bottomBar={<Button intent="create" label="New invoice" />}
+          children={<SamplePage phone />}
+        />
+      </ExampleProvider>
+    </PhoneFrame>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('button', { name: 'Exit' })).toBeVisible()
+    await expect(canvas.getByText('Sandbox')).toBeVisible()
+    // Nothing overflows sideways at phone width.
+    const shell = canvasElement.querySelector('[data-slot="app-shell"]')
+    await expect(shell?.scrollWidth).toBeLessThanOrEqual(shell?.clientWidth ?? 0)
+  },
+}
+
+/** The slots take any content: here plain elements, as before P5.3. */
 export const Slots: Story = {
   args: {
     layout: 'desktop',
