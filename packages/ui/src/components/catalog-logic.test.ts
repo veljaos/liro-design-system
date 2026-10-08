@@ -7,7 +7,7 @@ import {
   isProblemRow,
   isTypingKey,
   issuesOf,
-  lookupKeyTarget,
+  lookupDialogKeyTarget,
   missingRequired,
   toggleChanging,
   unusedColumns,
@@ -15,34 +15,34 @@ import {
   type ImportPreviewRow,
 } from './catalog-logic'
 
-describe('lookupKeyTarget', () => {
+describe('lookupDialogKeyTarget', () => {
   it('ArrowDown leaves the search field for the first result; other keys stay in the field', () => {
-    expect(lookupKeyTarget('ArrowDown', -1, 25)).toBe(0)
-    expect(lookupKeyTarget('ArrowUp', -1, 25)).toBeNull()
-    expect(lookupKeyTarget('End', -1, 25)).toBeNull()
-    expect(lookupKeyTarget('Home', -1, 25)).toBeNull()
+    expect(lookupDialogKeyTarget('ArrowDown', -1, 25)).toBe(0)
+    expect(lookupDialogKeyTarget('ArrowUp', -1, 25)).toBeNull()
+    expect(lookupDialogKeyTarget('End', -1, 25)).toBeNull()
+    expect(lookupDialogKeyTarget('Home', -1, 25)).toBeNull()
   })
 
   it('moves one row and stops at the ends; ArrowUp from the first row returns to the search', () => {
-    expect(lookupKeyTarget('ArrowDown', 3, 25)).toBe(4)
-    expect(lookupKeyTarget('ArrowDown', 24, 25)).toBe(24)
-    expect(lookupKeyTarget('ArrowUp', 3, 25)).toBe(2)
-    expect(lookupKeyTarget('ArrowUp', 0, 25)).toBe('search')
+    expect(lookupDialogKeyTarget('ArrowDown', 3, 25)).toBe(4)
+    expect(lookupDialogKeyTarget('ArrowDown', 24, 25)).toBe(24)
+    expect(lookupDialogKeyTarget('ArrowUp', 3, 25)).toBe(2)
+    expect(lookupDialogKeyTarget('ArrowUp', 0, 25)).toBe('search')
   })
 
   it('pages by ten, Home and End go to the first and last', () => {
-    expect(lookupKeyTarget('PageDown', 3, 25)).toBe(13)
-    expect(lookupKeyTarget('PageDown', 20, 25)).toBe(24)
-    expect(lookupKeyTarget('PageUp', 13, 25)).toBe(3)
-    expect(lookupKeyTarget('PageUp', 4, 25)).toBe(0)
-    expect(lookupKeyTarget('Home', 13, 25)).toBe(0)
-    expect(lookupKeyTarget('End', 2, 25)).toBe(24)
+    expect(lookupDialogKeyTarget('PageDown', 3, 25)).toBe(13)
+    expect(lookupDialogKeyTarget('PageDown', 20, 25)).toBe(24)
+    expect(lookupDialogKeyTarget('PageUp', 13, 25)).toBe(3)
+    expect(lookupDialogKeyTarget('PageUp', 4, 25)).toBe(0)
+    expect(lookupDialogKeyTarget('Home', 13, 25)).toBe(0)
+    expect(lookupDialogKeyTarget('End', 2, 25)).toBe(24)
   })
 
   it('does nothing without results, and ignores other keys', () => {
-    expect(lookupKeyTarget('ArrowDown', -1, 0)).toBeNull()
-    expect(lookupKeyTarget('Enter', 2, 25)).toBeNull()
-    expect(lookupKeyTarget('a', 2, 25)).toBeNull()
+    expect(lookupDialogKeyTarget('ArrowDown', -1, 0)).toBeNull()
+    expect(lookupDialogKeyTarget('Enter', 2, 25)).toBeNull()
+    expect(lookupDialogKeyTarget('a', 2, 25)).toBeNull()
   })
 })
 

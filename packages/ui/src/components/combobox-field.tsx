@@ -128,6 +128,7 @@ export function ComboboxPopover({
   anchor,
   onOptionHover,
   onOptionClick,
+  className,
   children,
 }: {
   open: boolean
@@ -135,6 +136,8 @@ export function ComboboxPopover({
   anchor: ReactNode
   onOptionHover: (index: number) => void
   onOptionClick: (index: number) => void
+  /** Extra classes for the floating box (LookupField: a minimum width, P5.19). */
+  className?: string
   children: ReactNode
 }) {
   const anchorRef = useRef<HTMLDivElement>(null)
@@ -145,7 +148,12 @@ export function ComboboxPopover({
       </PopoverAnchor>
       <PopoverContent
         align="start"
-        className={cn(FLOATING, FLOATING_MOTION, 'w-(--radix-popover-trigger-width) p-1')}
+        className={cn(
+          FLOATING,
+          FLOATING_MOTION,
+          'w-(--radix-popover-trigger-width) p-1',
+          className,
+        )}
         onOpenAutoFocus={(event) => {
           event.preventDefault()
         }}

@@ -480,7 +480,7 @@ export {
   isTypingKey,
   issuesOf,
   LOOKUP_PAGE_STEP,
-  lookupKeyTarget,
+  lookupDialogKeyTarget,
   missingRequired,
   toggleChanging,
   unusedColumns,
@@ -621,3 +621,37 @@ export type {
 export type { DocumentBlock } from './templates/document-page'
 export type { IrreversibleReason } from './components/confirm-dialog'
 export { subtotalStart } from './components/data-table-logic'
+// ── P5 group D1 ──
+export type { GridDetail } from './components/editable-grid-logic'
+export type { GridLookupCreate } from './components/editable-grid'
+export {
+  ADDABLE_LINE_TYPES,
+  editableCellCount,
+  LINE_TYPES,
+  spansRow,
+  taxCategoryText,
+} from './components/line-types'
+export type { AddableLineType, LineType, TaxCategory, UnitOfMeasure } from './components/line-types'
+export { LookupField } from './components/lookup-field'
+export type { LookupFieldProps } from './components/lookup-field'
+export {
+  choosableCount,
+  lookupKeyTarget,
+  lookupKindLabel,
+  lookupRowHeight,
+  lookupRows,
+  LOOKUP_ROW_HEIGHTS,
+} from './components/lookup-logic'
+export type {
+  LookupCreateKind,
+  LookupKind,
+  LookupOption,
+  LookupRow,
+  LookupRowsInput,
+} from './components/lookup-logic'
+export { LookupCreateDrawer } from './components/lookup-create-drawer'
+export type {
+  LookupCreateDrawerProps,
+  LookupDraft,
+  LookupDraftErrors,
+} from './components/lookup-create-drawer'

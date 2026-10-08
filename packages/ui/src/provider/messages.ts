@@ -814,4 +814,36 @@ export interface LiroMessages {
   'correction.original': string
   'correction.change': string
   'correction.new': string
+  // ── P5 group D1 ──
+  /** LookupField: the heading over the recent records shown while nothing is typed. */
+  'lookup.recent': string
+  /**
+   * LookupField: the entry that creates a catalogue record from the typed text. `kind` is the
+   * kind's noun from the application ("service"); `query` the text typed.
+   */
+  'lookup.create': (kind: string, query: string) => string
+  /** LookupField: the entry for a one-off line without a catalogue record (when allowed). */
+  'lookup.oneOff': (query: string) => string
+  /** The kind shown in a line filled with a one-off entry. */
+  'lookup.oneOffKind': string
+  /** LookupField: the last entry, which opens the application's full search. */
+  'lookup.searchAll': string
+  /** The panel that creates a catalogue record from a line: its title, from the kind's noun. */
+  'lookup.createTitle': (kind: string) => string
+  /** The panel's fields and its button. */
+  'lookup.name': string
+  'lookup.unit': string
+  'lookup.price': string
+  'lookup.taxCategory': string
+  'lookup.createButton': string
+  /** EditableGrid: the names of the one cell of a text line and of a section heading. */
+  'grid.textCell': string
+  'grid.headingCell': string
+  /** EditableGrid "Add line ▾": the rarer line types. */
+  'grid.addText': string
+  'grid.addHeading': string
+  'grid.addDiscount': string
+  'grid.addDeduction': string
+  /** EditableGrid: the note before a line's detail that never reaches the customer's document. */
+  'grid.internal': string
 }

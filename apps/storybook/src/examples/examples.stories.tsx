@@ -1,9 +1,21 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
-import { notice } from '@veljaos/ui'
+import { createFormat, notice } from '@veljaos/ui'
 import { settle } from '../../../../packages/ui/src/primitives/story-helpers'
 import { FEATURED } from './examples-story-data'
 import { C_ROUTES } from './data-C'
+import {
+  draftTotals,
+  fromParas,
+  fromRecord,
+  initialDraft,
+  newLine,
+  NEW_SERVICE,
+  specificationOf,
+  specTotals,
+  type DraftLine,
+} from './data-D1'
+import { D1_ROUTES } from './screens-D1'
 import { D2_ROUTES } from './screens-D2'
 import { ExampleApp, OnPhone } from './example-app'
 import { ROUTES } from './example-shell'
@@ -313,7 +325,6 @@ export const NotFoundPhone: Story = {
 
 // ── P5 group F ──
 // (Imports here, inside the group's block, so the groups' blocks merge without touching the top.)
-import { createFormat } from '@veljaos/ui'
 import { PAYROLL_TOTALS, STATEMENT_TOTALS } from './data-F'
 import { F_ROUTES } from './screens-F'
 
@@ -1344,5 +1355,135 @@ export const CancellationPhone: Story = {
   play: async ({ canvasElement }) => {
     await settle()
     await noSidewaysOverflow(canvasElement)
+  },
+}
+
+// ── P5 group D1 ──
+
+// SERBIAN: the format declared in group F's block above (one per file).
+// As the page's text reads it (the no-break space of an amount is a space there).
+const rsd = (value: string) => SERBIAN.money(value, 'RSD').replace(/\s/gu, ' ')
+
+/** The draft's lines after the walk-through: the last line is the new service, 24 hours. */
+function draftAfterCreate(): DraftLine[] {
+  const lines = initialDraft()
+  const last = lines[lines.length - 1] ?? newLine()
+  const option = { value: NEW_SERVICE.value, label: NEW_SERVICE.name, kind: 'service' }
+  return [...lines.slice(0, -1), { ...fromRecord(last, option), quantity: '24' }]
+}
+
+/**
+ * P5.18: a draft to Bojović i sinovi d.o.o. whose lines are added by search — items with their
+ * stock (a warning when the quantity is above it), services, a fixed asset sold (its number, and
+ * its book value marked internal) — in two sections with subtotals, a text line and a discount,
+ * S 20% and S 10%. The walk-through creates the service "Montaža skele" from the last line's
+ * search ("+ Create service …"), enters 24 hours, and the totals follow (computed in data-D1.ts).
+ */
+export const D1InvoiceDraft: Story = {
+  name: 'Invoice draft, lines by search',
+  render: () => <ExampleApp start={D1_ROUTES.draft} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const before = draftTotals(initialDraft())
+    await expect(canvasElement).toHaveTextContent(rsd(before.total.value ?? '0'))
+    await expect(
+      canvas.getByText('Only 36 pc of ART-0118 in stock: the rest goes on back order.'),
+    ).toBeVisible()
+    await expect(canvas.getByText('Internal')).toBeVisible()
+    // The last line: search, nothing found, "+ Create service …" with the typed name.
+    const item = canvas.getByRole('combobox', { name: 'Item, service or asset, line 13' })
+    await userEvent.click(item)
+    await userEvent.type(item, NEW_SERVICE.name, { delay: 0 })
+    const body = within(document.body)
+    await userEvent.click(
+      await body.findByRole(
+        'option',
+        { name: `Create service “${NEW_SERVICE.name}”` },
+        { timeout: 3000 },
+      ),
+    )
+    const panel = await body.findByRole('dialog', { name: 'New service' })
+    await userEvent.type(within(panel).getByRole('textbox', { name: /^Price/ }), '1850')
+    await userEvent.click(within(panel).getByRole('button', { name: 'Create' }))
+    await waitFor(() => expect(body.queryByRole('dialog')).toBeNull())
+    await expect(item).toHaveValue(NEW_SERVICE.name)
+    // The quantity, and the totals the Core computes again.
+    const quantity = canvas.getByRole('textbox', { name: 'Quantity, line 13' })
+    await userEvent.click(quantity)
+    await userEvent.keyboard('24{Tab}')
+    const after = draftTotals(draftAfterCreate())
+    await waitFor(() => expect(canvasElement).toHaveTextContent(rsd(after.total.value ?? '0')))
+    await expect(canvasElement).toHaveTextContent(rsd(after.net))
+    await settle()
+  },
+}
+
+export const D1InvoiceDraftPhone: Story = {
+  name: 'Invoice draft, lines by search, phone',
+  render: () => <OnPhone start={D1_ROUTES.draft} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const before = draftTotals(initialDraft())
+    await expect(canvasElement).toHaveTextContent(rsd(before.net))
+    await expect(
+      within(canvasElement).getByRole('button', { name: 'More options: Add line' }),
+    ).toBeVisible()
+    // Nothing overflows sideways at phone width.
+    const main = canvasElement.querySelector('main')
+    await expect(main === null ? 0 : main.scrollWidth - main.clientWidth).toBeLessThanOrEqual(0)
+  },
+}
+
+/**
+ * P5.18: the specification of works of IS-2026-007 (Vojvođanka Mlin a.d., contract 12/2026):
+ * 300 positions in 12 groups, each group a heading and a subtotal, Previous / This period /
+ * Cumulative quantities, edited like document lines. Changing a position's quantity this period
+ * updates its amount, its group's subtotal, the key figure and the recap (data-D1.ts).
+ */
+export const D1Specification: Story = {
+  name: 'Interim situation, editing the specification',
+  render: () => <ExampleApp start={D1_ROUTES.specification} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const rows = specificationOf()
+    const before = specTotals(rows)
+    await expect(before.positions).toBe(300)
+    await expect(canvasElement).toHaveTextContent(rsd(fromParas(before.contract)))
+    await expect(canvasElement).toHaveTextContent(rsd(fromParas(before.current)))
+    // Cells found by their row and column (a query by name would name all 1,800 fields).
+    const cellOf = (rowId: string) =>
+      canvasElement.querySelector<HTMLInputElement>(
+        `[data-row-id="${rowId}"] [data-column-id="current"] input`,
+      )
+    // Every row is in the table's count (with the header and the totals); only the rows around
+    // the view are drawn.
+    const table = within(canvasElement).getByRole('table', { name: 'Specification of works' })
+    await expect(table).toHaveAttribute('aria-rowcount', String(rows.length + 2))
+    // Position 1.1 (line 2): 5 units this period; Enter goes to position 1.2.
+    const cell = cellOf('p1-1')
+    await expect(cell).toHaveAccessibleName('This period, line 2')
+    if (cell === null) return
+    await userEvent.click(cell)
+    await userEvent.keyboard('{Control>}a{/Control}5{Enter}')
+    await expect(cellOf('p1-2')).toHaveFocus()
+    const after = specTotals(
+      rows.map((row) => (row.id === 'p1-1' ? { ...row, current: '5' } : row)),
+    )
+    await waitFor(() => expect(canvasElement).toHaveTextContent(rsd(fromParas(after.current))))
+    await expect(canvasElement).toHaveTextContent(rsd(after.recap.total.value ?? '0'))
+    await settle()
+  },
+}
+
+export const D1SpecificationPhone: Story = {
+  name: 'Interim situation, editing the specification, phone',
+  render: () => <OnPhone start={D1_ROUTES.specification} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const before = specTotals(specificationOf())
+    await expect(canvasElement).toHaveTextContent(rsd(fromParas(before.current)))
+    const main = canvasElement.querySelector('main')
+    await expect(main === null ? 0 : main.scrollWidth - main.clientWidth).toBeLessThanOrEqual(0)
   },
 }

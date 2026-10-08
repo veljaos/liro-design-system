@@ -13,7 +13,7 @@ import { Sheet, SheetContent } from '../primitives/sheet'
 import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
-import { isTypingKey, lookupKeyTarget } from './catalog-logic'
+import { isTypingKey, lookupDialogKeyTarget } from './catalog-logic'
 import { DataTable, type DataTableColumn, type DataTableMobile } from './data-table'
 import type { DataTableFilters } from './data-table-logic'
 import { FilterBar } from './filter-bar'
@@ -142,7 +142,7 @@ function LookupBody<Row extends RowData>(props: LookupDialogProps<Row> & { phone
         search?.focus()
         return
       }
-      const next = lookupKeyTarget(event.key, index, rows.length)
+      const next = lookupDialogKeyTarget(event.key, index, rows.length)
       if (next === null) return
       event.preventDefault()
       if (next === 'search') search?.focus()

@@ -24,6 +24,7 @@ import { GROUP_A_ROUTES } from './screens-A'
 import { GROUP_C_ROUTES } from './screens-C'
 import { GROUP_E_ROUTES } from './screens-E'
 import { GROUP_D2_ROUTES } from './screens-D2'
+import { GROUP_D1_ROUTES } from './screens-D1'
 
 // ── Routes ────────────────────────────────────────────────────────────────────────────────
 
@@ -44,6 +45,7 @@ const EXAMPLE_ROUTES: readonly ExampleRoute[] = [
   ...GROUP_C_ROUTES,
   ...GROUP_E_ROUTES,
   ...GROUP_D2_ROUTES,
+  ...GROUP_D1_ROUTES,
 ]
 
 // ── The app ───────────────────────────────────────────────────────────────────────────────────

@@ -16,7 +16,7 @@
  *   row returns to the search field; PageDown / PageUp move ten; Home / End go to the first and
  *   the last row.
  */
-export function lookupKeyTarget(
+export function lookupDialogKeyTarget(
   key: string,
   index: number,
   count: number,
