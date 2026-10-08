@@ -368,4 +368,60 @@ export interface LiroMessages {
   'status.suspendedCompanyDescription': (company: string) => string
   /** The accessible name of a hidden module's "Show" button. */
   'launchpad.show': (name: string) => string
+  // ── P5 group F ──
+  /** MatchingView (P5.21): the button that matches the selection of both lists. */
+  'matching.match': string
+  /** Why "Match" cannot be used yet: nothing selected in one of the lists. */
+  'matching.selectBoth': string
+  /** The heading of the suggested matches. */
+  'matching.suggestions': string
+  /** The accessible name of a suggestion's "Match" button; `label` is the suggestion's, from the application. */
+  'matching.acceptSuggestion': (label: string) => string
+  /** The accessible name of a suggestion's dismiss button. */
+  'matching.dismissSuggestion': (label: string) => string
+  /** The heading of the matches made. */
+  'matching.matched': string
+  /** The button that takes a match apart; its accessible name adds the match's label. */
+  'matching.unmatch': string
+  'matching.unmatchItem': (label: string) => string
+  /** For assistive technology, between the two sides of a match. */
+  'matching.matchedWith': string
+  /** The accessible name of a list's search field; `list` is the list's title. */
+  'matching.search': (list: string) => string
+  /** A list with nothing left in it. */
+  'matching.empty': string
+  /** The keys under the lists: Space selects, Enter matches, Escape clears. */
+  'matching.select': string
+  'matching.clear': string
+  'matching.spaceKey': string
+  'matching.enterKey': string
+  'matching.escapeKey': string
+  /** Phones: the accessible name of the switch between the two lists. */
+  'matching.showList': string
+  /** BalanceBar (P5.21): the three values of a balanced entry and its state. */
+  'balance.label': string
+  'balance.debit': string
+  'balance.credit': string
+  'balance.difference': string
+  'balance.balanced': string
+  'balance.unbalanced': string
+  /** An amount cannot be read or is missing, so the balance is not known. */
+  'balance.incomplete': string
+  /** PeriodicRunPage (P5.21): the checks of a step and their results. */
+  'run.checks': string
+  'run.passed': string
+  'run.warning': string
+  'run.failed': string
+  'run.notRun': string
+  /** Counts of check results: the number for plural rules and its text through `format.number`. */
+  'run.passedCount': (count: number, text: string) => string
+  'run.warningCount': (count: number, text: string) => string
+  'run.failedCount': (count: number, text: string) => string
+  /** The heading of the preview before posting. */
+  'run.preview': string
+  /** The period's lock state. */
+  'run.periodOpen': string
+  'run.periodLocked': string
+  /** The button that runs the process again (it asks for a reason first). */
+  'run.rerun': string
 }
