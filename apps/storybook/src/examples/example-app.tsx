@@ -21,6 +21,7 @@ import {
 } from './screens-core'
 import { GROUP_F_ROUTES } from './screens-F'
 import { GROUP_A_ROUTES } from './screens-A'
+import { GROUP_C_ROUTES } from './screens-C'
 
 // ── Routes ────────────────────────────────────────────────────────────────────────────────
 
@@ -38,6 +39,7 @@ const EXAMPLE_ROUTES: readonly ExampleRoute[] = [
   // ── P5 routes ──
   ...GROUP_F_ROUTES,
   ...GROUP_A_ROUTES,
+  ...GROUP_C_ROUTES,
 ]
 
 // ── The app ───────────────────────────────────────────────────────────────────────────────────

@@ -397,3 +397,74 @@ export type {
 } from './components/questionnaire-logic'
 export { AgentQuestion } from './components/agent-question'
 export type { AgentQuestionProps } from './components/agent-question'
+// ── P5 group C ──
+export { EmailFirstForm, ProviderSignInButtons } from './components/sign-in'
+export type {
+  EmailFirstFormProps,
+  ProviderSignInButtonsProps,
+  SignInProvider,
+} from './components/sign-in'
+export { PasswordField } from './components/password-field'
+export type { PasswordFieldProps } from './components/password-field'
+export { CodeInput } from './components/code-input'
+export type { CodeInputProps } from './components/code-input'
+export {
+  codeBoxes,
+  codeCharacters,
+  codeComplete,
+  codeKeyTarget,
+  codeValue,
+  eraseCode,
+  fillCode,
+} from './components/code-input-logic'
+export type { CodeKind } from './components/code-input-logic'
+export { RecoveryCodes } from './components/recovery-codes'
+export type { RecoveryCodesProps } from './components/recovery-codes'
+export { SessionList } from './components/session-list'
+export type { SessionItem, SessionListProps } from './components/session-list'
+export { KanbanBoard } from './components/kanban-board'
+export type {
+  KanbanBoardProps,
+  KanbanCard,
+  KanbanColumn,
+  KanbanMove,
+} from './components/kanban-board'
+export {
+  dragLayout,
+  dropTarget,
+  kanbanKeyTarget,
+  moveCard,
+  placeOf,
+} from './components/kanban-logic'
+export type { ColumnGeometry, KanbanColumnIds, KanbanPlace } from './components/kanban-logic'
+export { PermissionMatrix } from './components/permission-matrix'
+export type {
+  PermissionAction,
+  PermissionArea,
+  PermissionChange,
+  PermissionMatrixProps,
+} from './components/permission-matrix'
+export { SetupChecklist } from './components/setup-checklist'
+export type { SetupAction, SetupChecklistProps, SetupStep } from './components/setup-checklist'
+export { SignerList } from './components/signer-list'
+export type { Signer, SignerListProps } from './components/signer-list'
+export { SigningPage } from './templates/signing-page'
+export type { SigningPageProps } from './templates/signing-page'
+export {
+  instantText,
+  isAllowed,
+  matrixKeyTarget,
+  maySign,
+  recoveryCodesText,
+  resumeStep,
+  setPermission,
+  setupProgress,
+  signerTurn,
+  signingSummary,
+} from './components/admin-logic'
+export type {
+  MatrixCell,
+  PermissionValue,
+  SetupStepState,
+  SignerState,
+} from './components/admin-logic'

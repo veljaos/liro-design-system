@@ -491,4 +491,100 @@ export interface LiroMessages {
   /** Questionnaire: a required question without an answer; an "Other" without its text. */
   'questionnaire.required': string
   'questionnaire.otherRequired': string
+
+  // ── P5 group C ──
+  /** EmailFirstForm (P5.6): the e-mail field's default label and the button that goes on. */
+  'signIn.email': string
+  'signIn.continue': string
+  /** The divider between the provider buttons and the e-mail form ("or"). */
+  'signIn.or': string
+  /** PasswordField: the toggle that shows the typed password (its pressed state says shown). */
+  'password.show': string
+  /** PasswordField: a hint under the field while Caps Lock is on. */
+  'password.capsLock': string
+  /** CodeInput: one box's name, "Character 2 of 6"; numbers already written by `format.number`. */
+  'code.box': (position: number, positionText: string, total: number, totalText: string) => string
+  /** RecoveryCodes: the list's name and the heading of the downloaded and printed file. */
+  'recovery.codes': string
+  /** RecoveryCodes: the codes are shown once (a warning above them). */
+  'recovery.shownOnce': string
+  'recovery.copy': string
+  /** Announced after the codes were copied. */
+  'recovery.copied': string
+  /** The browser refused to copy. */
+  'recovery.copyFailed': string
+  'recovery.download': string
+  'recovery.print': string
+  /** The confirmation that enables Continue. */
+  'recovery.saved': string
+  'recovery.continue': string
+  /** SessionList (P5.6): the current device's mark, its state, another device's last activity. */
+  'session.thisDevice': string
+  'session.activeNow': string
+  /** `when` is the date and time, already written by `format`. */
+  'session.lastActive': (when: string) => string
+  /** The button that ends another device's session; its name with the device. */
+  'session.revoke': string
+  'session.revokeNamed': (device: string) => string
+  'session.revokeOthers': string
+  /** No other device is signed in. */
+  'session.noOthers': string
+  /** KanbanBoard (P5.7): an empty column; the card's drag handle and its menu (named by title). */
+  'kanban.emptyColumn': string
+  'kanban.moveCard': (title: string) => string
+  'kanban.cardMenu': (title: string) => string
+  /** The menu's entries: a heading over the columns, a column entry, up and down. */
+  'kanban.moveTo': string
+  'kanban.moveToColumn': (column: string) => string
+  'kanban.moveUp': string
+  'kanban.moveDown': string
+  /** The handle's description: how to move a card with the keyboard. */
+  'kanban.instructions': string
+  /**
+   * Announcements while a card is moved with the keyboard: picked up, moved, dropped (the place
+   * as "position of total"; numbers already written by `format.number`), cancelled.
+   */
+  'kanban.lifted': (title: string, column: string, position: string, total: string) => string
+  'kanban.moved': (title: string, column: string, position: string, total: string) => string
+  'kanban.dropped': (title: string, column: string, position: string, total: string) => string
+  'kanban.cancelled': (title: string) => string
+  /** Phones: the choice of the column shown. */
+  'kanban.column': string
+  /** PermissionMatrix (P5.21): a cell's checkbox name, its read-only states, the corner header. */
+  'permissions.cell': (area: string, action: string) => string
+  'permissions.allowed': string
+  'permissions.notAllowed': string
+  'permissions.notApplicable': string
+  'permissions.area': string
+  /** SetupChecklist (P5.21): "2 of 5 done"; numbers already written by `format.number`. */
+  'setup.progress': (done: number, doneText: string, total: number, totalText: string) => string
+  /** A step's state for assistive technology (the marker shows it). */
+  'setup.done': string
+  'setup.next': string
+  'setup.todo': string
+  'setup.blocked': string
+  /** SignerList (P5.21): "1 of 3 signed"; numbers already written by `format.number`. */
+  'signing.summary': (
+    signed: number,
+    signedText: string,
+    total: number,
+    totalText: string,
+  ) => string
+  /** A signer's state; `when` is the date and time, already written by `format`. */
+  'signing.waiting': string
+  'signing.signedAt': (when: string) => string
+  'signing.declinedAt': (when: string) => string
+  /** After the current user's name. */
+  'signing.you': string
+  'signing.sign': string
+  'signing.decline': string
+  /** The decline dialog's title and its confirm button. */
+  'signing.declineTitle': string
+  'signing.declineConfirm': string
+  /** In order: the signer whose turn comes first. */
+  'signing.notYourTurn': (name: string) => string
+  /** SigningPage: its sections. */
+  'signing.signers': string
+  'signing.document': string
+  'signing.attachments': string
 }
