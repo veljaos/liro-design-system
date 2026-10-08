@@ -468,3 +468,57 @@ export type {
   SetupStepState,
   SignerState,
 } from './components/admin-logic'
+// ── P5 group E ──
+export { LookupDialog } from './components/lookup-dialog'
+export type { LookupDialogProps } from './components/lookup-dialog'
+export {
+  assignColumn,
+  changedFields,
+  hasErrors,
+  importBlocked,
+  isProblemRow,
+  isTypingKey,
+  issuesOf,
+  LOOKUP_PAGE_STEP,
+  lookupKeyTarget,
+  missingRequired,
+  toggleChanging,
+  unusedColumns,
+} from './components/catalog-logic'
+export type {
+  ImportCounts,
+  ImportField,
+  ImportIssue,
+  ImportMapping,
+  ImportPreviewRow,
+  ImportSourceColumn,
+} from './components/catalog-logic'
+export { IMPORT_STEPS, ImportWizard } from './components/import-wizard'
+export type {
+  ImportFile,
+  ImportProgress,
+  ImportStep,
+  ImportWizardProps,
+} from './components/import-wizard'
+export { BulkEditDrawer } from './components/bulk-edit-drawer'
+export type { BulkEditDrawerProps, BulkEditField } from './components/bulk-edit-drawer'
+export { DuplicateWarning } from './components/duplicate-warning'
+export type { DuplicateWarningProps } from './components/duplicate-warning'
+export { RegisterPage } from './templates/register-page'
+export type { RegisterEntry, RegisterLock, RegisterPageProps } from './templates/register-page'
+export { StatutoryFormPage } from './templates/statutory-form-page'
+export type {
+  SourceDocument,
+  StatutoryField,
+  StatutoryFormPageProps,
+  StatutoryOverride,
+  StatutorySection,
+} from './templates/statutory-form-page'
+export {
+  fieldElementId,
+  fieldRules,
+  registerMenu,
+  ruleCounts,
+  rulesTone,
+} from './templates/register-logic'
+export type { RuleResult, StatutoryRule } from './templates/register-logic'
