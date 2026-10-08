@@ -259,11 +259,17 @@ function useOverflowEnds(element: HTMLElement | null): { start: boolean; end: bo
     }
     measure()
     element.addEventListener('scroll', measure, { passive: true })
+    // The row's own box keeps its width when its tabs grow, so each tab is observed; a web font
+    // that arrives after the first measure changes the tabs' widths (found as a flaky baseline).
     const observer = new ResizeObserver(measure)
     observer.observe(element)
-    for (const child of element.children) observer.observe(child)
+    for (const item of element.querySelectorAll('li')) observer.observe(item)
+    const fonts = typeof document === 'undefined' ? undefined : document.fonts
+    fonts?.addEventListener('loadingdone', measure)
+    void fonts?.ready.then(measure)
     return () => {
       element.removeEventListener('scroll', measure)
+      fonts?.removeEventListener('loadingdone', measure)
       observer.disconnect()
     }
   }, [element])
