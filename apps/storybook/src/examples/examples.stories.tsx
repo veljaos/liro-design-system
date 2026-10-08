@@ -324,7 +324,8 @@ export const NotFoundPhone: Story = {
 // ── P5 group D1 ──
 
 const SERBIAN = createFormat('sr-Latn-RS')
-const rsd = (value: string) => SERBIAN.money(value, 'RSD')
+// As the page's text reads it (the no-break space of an amount is a space there).
+const rsd = (value: string) => SERBIAN.money(value, 'RSD').replace(/\s/gu, ' ')
 
 /** The draft's lines after the walk-through: the last line is the new service, 24 hours. */
 function draftAfterCreate(): DraftLine[] {

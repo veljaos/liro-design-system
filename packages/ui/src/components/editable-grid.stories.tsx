@@ -1024,7 +1024,9 @@ export const OneOffLine: Story = {
     await userEvent.click(oneOff)
     await expect(canvas.getByText('One-off')).toBeVisible()
     // The row's message (the account cell's own copy of it is hidden in the grid).
-    await expect(canvas.getAllByText('A one-off line needs a revenue account.')[0]).toBeVisible()
+    await expect(
+      canvas.getAllByText('A one-off line needs a revenue account.').at(-1),
+    ).toBeVisible()
     await settle()
   },
 }

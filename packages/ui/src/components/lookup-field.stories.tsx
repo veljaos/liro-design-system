@@ -284,6 +284,7 @@ function OneOffAndSearchAll() {
         value={value}
         onChange={setValue}
         allowOneOff
+        searchDelay={200}
         onSearchAll={setAll}
       />
       <p className="m-0 text-sm text-secondary" data-testid="outcome">
@@ -469,6 +470,7 @@ export const Japanese: Story = {
         description={JAPANESE.description}
         className="max-w-120"
         placeholder={JAPANESE.placeholder}
+        defaultValue={{ value: 'j1', label: JAPANESE.value }}
         results={[]}
         onSearch={() => undefined}
         recent={[{ value: 'j1', label: JAPANESE.value, description: 'C-0042' }]}
