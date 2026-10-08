@@ -1,5 +1,5 @@
 import type { RowData } from '@tanstack/react-table'
-import { useEffect, useId, useRef, useState } from 'react'
+import { useCallback, useId, useRef, useState } from 'react'
 import {
   DialogBody,
   DialogCloseButton,
@@ -126,9 +126,10 @@ function LookupBody<Row extends RowData>(props: LookupDialogProps<Row> & { phone
   const { phone } = props
 
   // The keys of the search field and of the results, as they bubble (a native listener: the
-  // container is not a control of its own).
-  useEffect(() => {
-    const element = area.current
+  // container is not a control of its own). A ref callback, not an effect: the portal may mount
+  // its content a moment after the dialog (a provider's new container).
+  const listen = useCallback((element: HTMLDivElement | null) => {
+    area.current = element
     if (element === null) return
     const onKey = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement
@@ -169,7 +170,7 @@ function LookupBody<Row extends RowData>(props: LookupDialogProps<Row> & { phone
         <DialogTitle>{props.title}</DialogTitle>
         <DialogCloseButton label={messages['dialog.close']} />
       </DialogHeader>
-      <div ref={area} className="flex min-h-0 flex-1 flex-col">
+      <div ref={listen} className="flex min-h-0 flex-1 flex-col">
         <DialogBody className={cn('min-h-0 flex-1', phone && 'px-0')}>
           {props.description !== undefined && (
             <DialogDescription id={descriptionId} className={cn(phone && 'px-4')}>

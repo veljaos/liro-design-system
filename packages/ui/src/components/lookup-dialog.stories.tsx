@@ -260,6 +260,7 @@ export const TypingFromResults: Story = {
     const search = dialog.getByRole('textbox', { name: 'Name, tax number or city' })
     await waitFor(() => expect(search).toHaveFocus())
     await userEvent.keyboard('{ArrowDown}{ArrowDown}')
+    await expect(dialog.getByRole('row', { name: /Drina Prevoz/ })).toHaveFocus()
     await userEvent.keyboard('m')
     await expect(search).toHaveFocus()
   },

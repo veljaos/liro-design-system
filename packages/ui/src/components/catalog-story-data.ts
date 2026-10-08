@@ -162,6 +162,129 @@ export function searchCustomers(all: readonly StoryCustomer[], query: string): S
   })
 }
 
+// ── Import (the application's side, for the stories) ─────────────────────────────────────────
+
+/** The customer catalogue's fields a file's column can fill. */
+export const IMPORT_FIELDS = [
+  { id: 'name', label: 'Name', required: true },
+  { id: 'taxId', label: 'Tax number', required: true, description: '9 digits (PIB)' },
+  { id: 'registration', label: 'Registration number', description: '8 digits (MB)' },
+  { id: 'city', label: 'City' },
+  { id: 'address', label: 'Address' },
+  { id: 'email', label: 'E-mail' },
+  { id: 'paymentTerm', label: 'Payment term (days)' },
+]
+
+/** The file the stories "read": its header and first row, as the application would parse it. */
+export const IMPORT_CSV = [
+  'Naziv kupca;PIB;MB;Mesto;Adresa;E-pošta;Rok plaćanja;Napomena',
+  'Panonija Agro d.o.o.;104987265;20876543;Kać;Novosadski put 14;nabavka@panonija-agro.rs;15;',
+  'Lazić Beton d.o.o.;102345671;21987654;Inđija;Industrijska zona bb;office@lazicbeton.rs;30;',
+].join('\n')
+
+/** A story helper (never in the package): the columns of a CSV's header and first data row. */
+export function csvColumns(text: string): { id: string; name: string; sample?: string }[] {
+  const [header = '', first = ''] = text.split(/\r?\n/)
+  const separator = header.includes(';') ? ';' : ','
+  const samples = first.split(separator)
+  return header.split(separator).map((name, index) => {
+    const sample = samples[index]
+    return {
+      id: `col-${String(index)}`,
+      name: name.trim(),
+      ...(sample === undefined || sample === '' ? {} : { sample: sample.trim() }),
+    }
+  })
+}
+
+/** Reads a chosen file's text (the application's work; stories only). */
+export function readFileText(file: File): Promise<string> {
+  return file.text()
+}
+
+/** The application's suggestion for IMPORT_CSV: the field → column by name. */
+export const IMPORT_SUGGESTION: Record<string, string | null> = {
+  name: 'col-0',
+  taxId: 'col-1',
+  registration: 'col-2',
+  city: 'col-3',
+  address: 'col-4',
+  email: 'col-5',
+  paymentTerm: 'col-6',
+}
+
+/** Rows of the validation preview: the first lines of the file, three with problems. */
+export const IMPORT_PREVIEW = [
+  {
+    id: 'l2',
+    line: 2,
+    values: {
+      name: 'Panonija Agro d.o.o.',
+      taxId: '104987265',
+      city: 'Kać',
+      email: 'nabavka@panonija-agro.rs',
+      paymentTerm: '15',
+    },
+    issues: [{ tone: 'warning' as const, text: 'A customer with this tax number exists' }],
+  },
+  {
+    id: 'l3',
+    line: 3,
+    values: {
+      name: 'Lazić Beton d.o.o.',
+      taxId: '102345671',
+      city: 'Inđija',
+      email: 'office@lazicbeton.rs',
+      paymentTerm: '30',
+    },
+    issues: [],
+  },
+  {
+    id: 'l4',
+    line: 4,
+    values: {
+      name: 'Tomić Instal STR',
+      taxId: '10234567',
+      city: 'Ruma',
+      email: 'tomic.instal@gmail',
+      paymentTerm: '30',
+    },
+    issues: [
+      { field: 'taxId', tone: 'danger' as const, text: 'A tax number has 9 digits' },
+      { field: 'email', tone: 'danger' as const, text: 'Not an e-mail address' },
+    ],
+  },
+  {
+    id: 'l5',
+    line: 5,
+    values: {
+      name: 'Kostić Metal d.o.o.',
+      taxId: '105112398',
+      city: 'Šabac',
+      email: 'racuni@kosticmetal.rs',
+      paymentTerm: '120',
+    },
+    issues: [
+      { field: 'paymentTerm', tone: 'warning' as const, text: 'Longer than the usual 60 days' },
+    ],
+  },
+  {
+    id: 'l6',
+    line: 6,
+    values: {
+      name: 'Ilić Drvo SZR',
+      taxId: '108765432',
+      city: 'Valjevo',
+      email: 'ilicdrvo@mts.rs',
+      paymentTerm: '15',
+    },
+    issues: [],
+  },
+]
+
+/** The whole file's counts (1.213 rows): from the application's check. */
+export const IMPORT_COUNTS = { ready: 1198, errors: 12, duplicates: 3 }
+
 /** A page of results by cursor (the index of the first row), as a keyset page from the server. */
 export function pageOf<Row>(rows: readonly Row[], cursor: number, size: number) {
   return {
