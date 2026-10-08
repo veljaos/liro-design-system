@@ -308,3 +308,178 @@ export const NotFoundPhone: Story = {
   name: 'Not found (404), phone',
   render: () => <OnPhone start="/banking" />,
 }
+
+// ── P5 group F ──
+// (Imports here, inside the group's block, so the groups' blocks merge without touching the top.)
+import { createFormat } from '@veljaos/ui'
+import { PAYROLL_TOTALS, STATEMENT_TOTALS } from './data-F'
+import { F_ROUTES } from './screens-F'
+
+const SERBIAN = createFormat('sr-Latn-RS')
+
+/**
+ * Bank statement 188 of 06.10.2026 (Banca Intesa) against the open invoices: three lines matched
+ * at import, the Core's suggestions with their confidence, one partial payment (F-2026-0410), and
+ * line 10 (a malformed reference) matched by hand after a search.
+ */
+export const BankStatementScreen: Story = {
+  name: 'Bank statement matching',
+  render: () => <ExampleApp start={F_ROUTES.statement} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { level: 1, name: 'Statement 188' })).toBeVisible()
+    await expect(canvasElement).toHaveTextContent(SERBIAN.money(STATEMENT_TOTALS.closing, 'RSD'))
+    // Three lines were matched at import.
+    const matched = canvas.getByRole('heading', { name: 'Matched' }).parentElement
+    if (matched === null) throw new Error('no matched section')
+    await expect(matched).toHaveTextContent('F-2026-0396')
+    await expect(matched).toHaveTextContent('Matched at import')
+    // The partial payment: F-2026-0410 stays open with what is left.
+    await userEvent.click(
+      canvas.getByRole('button', {
+        name: 'Match: Line 3, Medic Lab Niš d.o.o. with F-2026-0410',
+      }),
+    )
+    const invoices = canvas.getByRole('listbox', { name: 'Open invoices' })
+    await expect(within(invoices).getByRole('option', { name: /^F-2026-0410/ })).toHaveTextContent(
+      '36.420,35 RSD left',
+    )
+    // Line 10 by hand: search the invoice, select both, match.
+    await userEvent.type(canvas.getByRole('searchbox', { name: 'Search: Open invoices' }), '0399')
+    await userEvent.click(await within(invoices).findByRole('option', { name: /^F-2026-0399/ }))
+    const lines = canvas.getByRole('listbox', { name: 'Statement lines' })
+    await userEvent.click(within(lines).getByRole('option', { name: /Bojović i sinovi/ }))
+    await userEvent.click(canvas.getByRole('button', { name: 'Match' }))
+    await expect(matched).toHaveTextContent('Matched by Milica Petrović')
+    await expect(within(lines).queryByRole('option', { name: /Bojović i sinovi/ })).toBeNull()
+    await settle()
+  },
+}
+
+export const BankStatementPhone: Story = {
+  name: 'Bank statement matching, phone',
+  render: () => <OnPhone start={F_ROUTES.statement} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('option', { name: /Bojović i sinovi/ }))
+    await userEvent.click(canvas.getByRole('radio', { name: /Open invoices/ }))
+    await userEvent.type(canvas.getByRole('searchbox', { name: 'Search: Open invoices' }), '0399')
+    await userEvent.click(await canvas.findByRole('option', { name: /^F-2026-0399/ }))
+    await userEvent.click(canvas.getByRole('button', { name: 'Match' }))
+    await expect(canvasElement).toHaveTextContent('Matched by Milica Petrović')
+    const view = canvasElement.querySelector('[data-slot="matching-view"]')
+    if (view === null) throw new Error('no view')
+    await expect(view.scrollWidth).toBeLessThanOrEqual(view.clientWidth)
+    await settle()
+  },
+}
+
+/** Journal entry NK-2026-0912, balanced: the supplier invoice UF-2026-1204 booked. */
+export const JournalEntryScreen: Story = {
+  name: 'Journal entry',
+  render: () => <ExampleApp start={F_ROUTES.journal} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const bar = canvasElement.querySelector('[data-slot="balance-bar"]')
+    if (bar === null) throw new Error('no balance bar')
+    await expect(bar).toHaveTextContent('144.720,00 RSD')
+    await expect(bar).toHaveTextContent('Balanced')
+    await expect(within(canvasElement).getByRole('button', { name: 'Post' })).toBeEnabled()
+  },
+}
+
+/**
+ * The same entry while the supplier's amount is mistyped: the difference is marked and "Post" is
+ * unavailable with the Core's reason; correcting the amount balances it.
+ */
+export const JournalEntryUnbalanced: Story = {
+  name: 'Journal entry, unbalanced',
+  render: () => <ExampleApp start={F_ROUTES.journalUnbalanced} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const bar = canvasElement.querySelector('[data-slot="balance-bar"]')
+    if (bar === null) throw new Error('no balance bar')
+    await expect(bar).toHaveTextContent('Not balanced')
+    await expect(bar).toHaveTextContent('2.000,00 RSD')
+    await expect(canvasElement).toHaveTextContent(
+      'Unavailable: Debit and credit must be equal. The difference is 2.000,00 RSD.',
+    )
+    const credit = canvas.getByRole('textbox', { name: 'Credit, line 4' })
+    await userEvent.clear(credit)
+    await userEvent.type(credit, '144720')
+    await userEvent.tab()
+    await expect(bar).toHaveTextContent('Balanced')
+    await expect(canvas.getByRole('button', { name: 'Post' })).toBeEnabled()
+    await settle()
+  },
+}
+
+export const JournalEntryPhone: Story = {
+  name: 'Journal entry, unbalanced, phone',
+  render: () => <OnPhone start={F_ROUTES.journalUnbalanced} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const bar = canvasElement.querySelector('[data-slot="balance-bar"]')
+    const totals = bar?.closest('[data-slot="grid-totals"]')
+    await expect(
+      totals === null || totals === undefined ? '' : getComputedStyle(totals).position,
+    ).toBe('sticky')
+    await expect(bar).toHaveTextContent('Not balanced')
+  },
+}
+
+/** Payroll September 2026 at review: one warning, the totals of 46 employees, the period open. */
+export const PayrollScreen: Story = {
+  name: 'Payroll run',
+  render: () => <ExampleApp start={F_ROUTES.payroll} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('1 warning')
+    await expect(canvasElement).toHaveTextContent('Period open')
+    for (const value of [
+      PAYROLL_TOTALS.gross,
+      PAYROLL_TOTALS.contributions,
+      PAYROLL_TOTALS.tax,
+      PAYROLL_TOTALS.net,
+    ]) {
+      await expect(canvasElement).toHaveTextContent(SERBIAN.money(value, 'RSD'))
+    }
+  },
+}
+
+export const PayrollPhone: Story = {
+  name: 'Payroll run, phone',
+  render: () => <OnPhone start={F_ROUTES.payroll} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('Step 3 of 5: Review')
+    const page = canvasElement.querySelector('[data-slot="periodic-run-page"]')
+    if (page === null) throw new Error('no page')
+    await expect(page.scrollWidth).toBeLessThanOrEqual(page.clientWidth)
+  },
+}
+
+/** The rerun asks for a reason, then the run goes back to Calculate. */
+export const PayrollRerun: Story = {
+  name: 'Payroll run, rerun',
+  render: () => <ExampleApp start={F_ROUTES.payroll} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Rerun' }))
+    await settle()
+    const dialog = within(document.body).getByRole('alertdialog')
+    await userEvent.click(within(dialog).getByRole('radio', { name: 'Corrected working hours' }))
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Rerun' }))
+    await settle()
+    await expect(
+      await canvas.findByText(/0 of 46 employees · Corrected working hours/),
+    ).toBeVisible()
+    await expect(canvasElement.querySelector('[aria-current="step"]')).toHaveTextContent(
+      'Calculate',
+    )
+  },
+}

@@ -104,18 +104,16 @@ function JournalEntry({ layout }: { layout?: 'desktop' | 'phone' }) {
       ? 'balanced'
       : 'unbalanced'
   const messages: Record<string, GridMessage[]> = Object.fromEntries(
-    lines
-      .filter(empty)
-      .map((line) => [
-        line.id,
-        [
-          {
-            tone: 'danger',
-            text: 'Enter a debit or a credit amount.',
-            columns: ['debit', 'credit'],
-          },
-        ],
-      ]),
+    lines.filter(empty).map((line) => [
+      line.id,
+      [
+        {
+          tone: 'danger',
+          text: 'Enter a debit or a credit amount.',
+          columns: ['debit', 'credit'],
+        },
+      ],
+    ]),
   )
   const difference = debit - credit
   const reason =
@@ -303,7 +301,8 @@ export const InJournalEntry: Story = {
     await expect(status).toHaveTextContent('Balanced')
     const credit = canvas.getByRole('textbox', { name: 'Credit, line 4' })
     await userEvent.clear(credit)
-    await userEvent.type(credit, '142720{Enter}')
+    await userEvent.type(credit, '142720')
+    await userEvent.tab()
     await expect(status).toHaveTextContent('Not balanced')
     await expect(canvasElement).toHaveTextContent(
       'Unavailable: Debit and credit must be equal. The difference is 2.000,00 RSD.',
@@ -313,7 +312,8 @@ export const InJournalEntry: Story = {
     await userEvent.tab()
     await expect(status).toHaveTextContent('Amounts missing')
     await expect(canvasElement).toHaveTextContent('Enter a debit or a credit amount.')
-    await userEvent.type(debit, '34000{Enter}')
+    await userEvent.type(debit, '34000')
+    await userEvent.tab()
     await expect(status).toHaveTextContent('Balanced')
     await settle()
   },
