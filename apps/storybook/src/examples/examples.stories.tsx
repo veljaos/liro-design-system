@@ -3,6 +3,7 @@ import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { notice } from '@veljaos/ui'
 import { settle } from '../../../../packages/ui/src/primitives/story-helpers'
 import { FEATURED } from './examples-story-data'
+import { C_ROUTES } from './data-C'
 import { ExampleApp, OnPhone } from './example-app'
 import { ROUTES } from './example-shell'
 
