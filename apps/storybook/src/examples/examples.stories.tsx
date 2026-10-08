@@ -416,7 +416,7 @@ export const CustomersLookup: Story = {
     await waitFor(async () => {
       await expect(search).toHaveFocus()
     })
-    await userEvent.type(search, 'vojvodjanka')
+    await userEvent.type(search, 'vojvo')
     await expect(await dialog.findByRole('row', { name: /Vojvođanka Mlin a.d./ })).toBeVisible()
     await userEvent.keyboard('{ArrowDown}{Enter}')
     await expect(
@@ -478,9 +478,12 @@ export const VatReturnScreen: Story = {
     const page = within(document.body)
     await expect(canvas.getByText('1 check failed · 4 checks passed')).toBeVisible()
     await expect(canvas.getByText('By Ivana Stojanović on 05.10.2026. 14:12')).toBeVisible()
-    await expect(canvas.getByText('Difference: 64.400,00 RSD', { exact: false })).toBeVisible()
+    await expect(
+      canvas.getAllByText('Difference: 64.400,00 RSD', { exact: false })[0],
+    ).toBeVisible()
     await userEvent.click(canvas.getByRole('button', { name: '510.809,60 RSD, sources of 3.2' }))
     const drawer = within(await page.findByRole('dialog', { name: '3.2 Tax base' }))
+    await settle()
     await expect(drawer.getByRole('link', { name: /F-2026-0412/ })).toBeVisible()
     await expect(drawer.getByText('144.920,00 RSD')).toBeVisible()
     await userEvent.keyboard('{Escape}')

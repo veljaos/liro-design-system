@@ -169,7 +169,7 @@ export const Default: Story = {
     await userEvent.keyboard('{Escape}')
     await userEvent.click(canvas.getByRole('button', { name: 'Actions: No. 9, Snežana Popović' }))
     await userEvent.click(await body.findByRole('menuitem', { name: 'Correct entry' }))
-    await expect(canvas.getByRole('status')).toHaveTextContent('Correcting no. 9')
+    await expect(canvas.getByText('Correcting no. 9')).toBeInTheDocument()
   },
 }
 

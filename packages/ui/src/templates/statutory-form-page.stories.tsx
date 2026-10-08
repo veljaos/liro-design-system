@@ -355,6 +355,7 @@ export const Default: Story = {
     await expect(canvasElement.ownerDocument.activeElement).toHaveTextContent('8e.6')
     await userEvent.click(canvas.getByRole('button', { name: /sources of 3\.2$/ }))
     const drawer = within(await body.findByRole('dialog', { name: /3\.2/ }))
+    await settle()
     await expect(drawer.getAllByRole('listitem')).toHaveLength(6)
     await expect(drawer.getByRole('link', { name: /F-2026-0412/ })).toBeVisible()
     await expect(drawer.getByText('144.920,00 RSD')).toBeVisible()

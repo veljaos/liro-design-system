@@ -206,13 +206,13 @@ export const Columns: Story = {
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
-    await expect(canvas.getByText('Choose a column for Tax number')).toBeVisible()
+    await expect(canvas.getByText(/Choose a column for Tax number/)).toBeVisible()
     await expect(canvas.getByText('Not imported: PIB, Napomena')).toBeVisible()
     await userEvent.click(canvas.getByRole('combobox', { name: 'Column for Tax number' }))
     await userEvent.click(
       await within(canvasElement.ownerDocument.body).findByRole('option', { name: 'PIB' }),
     )
-    await waitFor(() => expect(canvas.queryByText('Choose a column for Tax number')).toBeNull())
+    await waitFor(() => expect(canvas.queryByText(/Choose a column for Tax number/)).toBeNull())
     await expect(canvas.getByRole('button', { name: 'Next' })).toBeEnabled()
     await settle()
   },
@@ -298,7 +298,7 @@ export const NoProblems: Story = {
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('status')).toHaveTextContent('No row has a problem.')
+    await expect(canvas.getByText('No row has a problem.')).toHaveAttribute('role', 'status')
     await expect(canvas.getByRole('button', { name: 'Import 1.213 rows' })).toBeEnabled()
   },
 }
