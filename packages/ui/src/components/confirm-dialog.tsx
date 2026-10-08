@@ -1,5 +1,5 @@
 import { TriangleAlert } from 'lucide-react'
-import { useState, type ReactElement, type ReactNode } from 'react'
+import { useRef, useState, type ReactElement, type ReactNode } from 'react'
 import { ButtonPrimitive } from '../primitives/button'
 import { cn } from '../primitives/cn'
 import { TEXT_DIRECTION } from '../primitives/classes'
@@ -156,6 +156,9 @@ function ConfirmFrame(
   const { family, icon: ActionIcon } = actionOf(props)
   const tone = confirmTone(props.tone, family)
   const TitleIcon = props.icon ?? TriangleAlert
+  // The safe action takes the focus when the dialog opens (P4.9d): a single Enter never confirms
+  // a delete, a rejection or a discard, and the close button is not where typing starts.
+  const cancelRef = useRef<HTMLButtonElement>(null)
 
   const setOpen = (next: boolean) => {
     if (busy && !next) return
@@ -189,12 +192,17 @@ function ConfirmFrame(
       <DialogContent
         role="alertdialog"
         className="inset-y-0 my-auto h-fit rounded-lg"
+        onOpenAutoFocus={(event) => {
+          event.preventDefault()
+          cancelRef.current?.focus()
+        }}
         onEscapeKeyDown={keep}
         onPointerDownOutside={keep}
         onInteractOutside={keep}
         {...(props.message === undefined ? { 'aria-describedby': undefined } : {})}
       >
-        <div className="flex items-start justify-between gap-4 p-4 pe-[11px]">
+        {/* One inset for the header, the text and the footer (P4.9d): 16px from every edge. */}
+        <div className="flex items-start justify-between gap-4 p-4">
           <DialogTitle
             className={cn(
               'flex items-center gap-2 text-sm leading-tight font-bold',
@@ -207,9 +215,9 @@ function ConfirmFrame(
           {!busy && <DialogCloseButton label={messages['dialog.close']} />}
         </div>
         <div className="flex flex-col px-4 pb-4">
-          {/* The text starts where the title's text does: after the 18px icon and its 8px gap. */}
+          {/* The text starts at the header row's start, under the icon (one inset, P4.9d). */}
           {(props.message !== undefined || props.extra !== undefined) && (
-            <div data-slot="confirm-body" className="flex flex-col ps-6.5">
+            <div data-slot="confirm-body" className="flex flex-col">
               {props.message !== undefined && (
                 <DialogDescription className="text-sm text-secondary">
                   {props.message}
@@ -220,6 +228,7 @@ function ConfirmFrame(
           )}
           <DialogFooter className="mt-4">
             <ButtonPrimitive
+              ref={cancelRef}
               family="neutral"
               emphasis="secondary"
               disabled={busy}

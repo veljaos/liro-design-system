@@ -10,7 +10,7 @@ import { cn } from './cn'
  * A modal dialog (shadcn/ui dialog, adapted; Mantine Modal.css, ModalBase.css and defaults):
  * 440px wide (size 'md'), 5dvh from the top and at least 5% of the width from each side, radius md, shadow xl,
  * on the overlay surface over surface.backdrop; it fades down 30px in 200ms. Header: at least
- * 60px, 16px padding (11px at the inline end, beside the close button), sticky while the body
+ * 60px, 16px padding on every side — one inset with the body and footer (P4.9d) — sticky while the body
  * scrolls; title 14px regular. Body: 16px padding, none on top under a header. The close button
  * is the CompactIconButton look ("Two icon-only buttons" in docs/decisions.md); its label is
  * required, because the Design System has no text of its own.
@@ -51,7 +51,7 @@ export function DialogHeader({ className, ...props }: ComponentProps<'div'>) {
     <div
       data-slot="dialog-header"
       className={cn(
-        'sticky top-0 z-(--liro-layer-raised) flex min-h-15 items-center justify-between gap-4 bg-surface-overlay p-4 pe-[11px]',
+        'sticky top-0 z-(--liro-layer-raised) flex min-h-15 items-center justify-between gap-4 bg-surface-overlay p-4',
         className,
       )}
       {...props}

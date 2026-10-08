@@ -7,6 +7,7 @@ import {
   useRef,
   useState,
   type KeyboardEvent,
+  type RefObject,
 } from 'react'
 import { StatusBadge } from '../components/status-badge'
 import { ButtonPrimitive } from '../primitives/button'
@@ -373,27 +374,40 @@ export function CompanySheet({
   companies,
   open,
   onOpenChange,
+  returnFocusTo,
 }: {
   companies: ShellCompanies
   open: boolean
   onOpenChange: (open: boolean) => void
+  /**
+   * Where the focus goes when the sheet closes (Escape, the close button, a choice): the button
+   * that opened it. The menu entry that opened it is gone by then, so Radix would lose the focus.
+   */
+  returnFocusTo?: RefObject<HTMLElement | null>
 }) {
   const { messages } = useLiro()
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
-        side="bottom"
+        side="full"
+        onCloseAutoFocus={(event) => {
+          const target = returnFocusTo?.current
+          if (target === null || target === undefined) return
+          event.preventDefault()
+          target.focus({ preventScroll: true })
+        }}
         aria-describedby={undefined}
         // The search field takes the focus, not the close button (the sheet is for finding).
         onOpenAutoFocus={(event) => {
           event.preventDefault()
           const sheet = event.currentTarget
-          if (sheet instanceof HTMLElement) sheet.querySelector('input')?.focus()
+          if (sheet instanceof HTMLElement)
+            sheet.querySelector('input')?.focus({ preventScroll: true })
         }}
-        className="h-dvh max-h-none overflow-hidden pb-[env(safe-area-inset-bottom)]"
+        className="overflow-hidden pb-[env(safe-area-inset-bottom)] ps-[env(safe-area-inset-left)] pe-[env(safe-area-inset-right)]"
       >
         <DialogHeader className="shrink-0 pt-[max(16px,env(safe-area-inset-top))]">
-          <DialogTitle>{messages['shell.companies']}</DialogTitle>
+          <DialogTitle>{messages['shell.switchCompanyTitle']}</DialogTitle>
           <DialogCloseButton label={messages['dialog.close']} />
         </DialogHeader>
         <div className="flex min-h-0 flex-1 flex-col px-4 pb-4">

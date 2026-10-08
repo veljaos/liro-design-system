@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { expect, userEvent, within } from 'storybook/test'
+import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { Banner } from '../components/alert'
 import { Button } from '../components/button'
 import { DataTable, type DataTableColumn } from '../components/data-table'
@@ -262,6 +262,19 @@ export const ManyCompanies: Story = {
   },
 }
 
+/** Opens the phone company sheet from the user menu. */
+async function openCompanySheet(canvasElement: HTMLElement) {
+  await settle()
+  await userEvent.click(within(canvasElement).getByRole('button', { name: 'Account' }))
+  await settle()
+  await userEvent.click(
+    within(document.body).getByRole('menuitem', {
+      name: 'Switch company: Kvadrat Gradnja d.o.o.',
+    }),
+  )
+  await settle()
+}
+
 /**
  * An accountant's 5,000 companies: only the rows in view are in the page, the search answers at
  * once, and the arrow keys move through the list (End reaches the last company).
@@ -423,22 +436,29 @@ export const PhoneCompanySheet: Story = {
   render: (args) => (
     <PhoneFrame>
       <ExampleProvider>
-        <AppShell {...args} layout="phone" children={<SamplePage phone />} />
+        <AppShell
+          {...args}
+          layout="phone"
+          bottomBar={<Button intent="create" label="New invoice" />}
+          children={<SamplePage phone />}
+        />
       </ExampleProvider>
     </PhoneFrame>
   ),
   play: async ({ canvasElement }) => {
-    await settle()
-    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Account' }))
-    await settle()
-    await userEvent.click(
-      within(document.body).getByRole('menuitem', {
-        name: 'Switch company: Kvadrat Gradnja d.o.o.',
-      }),
-    )
-    await settle()
-    const sheet = within(document.body).getByRole('dialog', { name: 'Companies' })
+    await openCompanySheet(canvasElement)
+    const sheet = within(document.body).getByRole('dialog', { name: 'Switch company' })
     await expect(within(sheet).getByRole('combobox', { name: 'Find company' })).toHaveFocus()
+    // A true full-screen sheet: it covers the whole frame, the bottom bar included.
+    // The phone frame: the first box around the shell (the provider's root has no box of its own).
+    let frame = canvasElement.querySelector('[data-slot="app-shell"]')?.parentElement ?? null
+    while (frame !== null && frame.getBoundingClientRect().width === 0) frame = frame.parentElement
+    const covered = frame?.getBoundingClientRect()
+    const box = (await within(document.body).findByRole('dialog')).getBoundingClientRect()
+    await expect(covered).toBeDefined()
+    await expect(Math.round(box.top)).toBe(Math.round(covered?.top ?? -1))
+    await expect(Math.round(box.bottom)).toBe(Math.round(covered?.bottom ?? -1))
+    await expect(Math.round(box.width)).toBe(Math.round(covered?.width ?? -1))
   },
 }
 
@@ -497,5 +517,20 @@ export const Japanese: Story = {
       { key: 'c', label: '顧客', href: '#c' },
       { key: 'r', label: 'レポート', href: '#r' },
     ],
+  },
+}
+
+/** Escape closes the phone company sheet and the focus returns to the user menu's button. */
+export const PhoneCompanySheetEscape: Story = {
+  ...PhoneCompanySheet,
+  name: 'Phone company switcher, Escape',
+  play: async ({ canvasElement }) => {
+    await openCompanySheet(canvasElement)
+    await userEvent.keyboard('{Escape}')
+    await settle()
+    await waitFor(() => expect(within(document.body).queryByRole('dialog')).toBeNull())
+    await waitFor(() =>
+      expect(within(canvasElement).getByRole('button', { name: 'Account' })).toHaveFocus(),
+    )
   },
 }

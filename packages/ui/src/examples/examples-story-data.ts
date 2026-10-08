@@ -422,7 +422,7 @@ export const APPROVAL_DETAILS: Record<string, ApprovalDetailData> = {
         vat: 'S 20%',
         amount: '6090.00',
       },
-      { item: 'Network fee', quantity: '1', unit: 'month', vat: 'S 20%', amount: '3358.75' },
+      { item: 'Network fee', quantity: '1', unit: 'mo', vat: 'S 20%', amount: '3358.75' },
     ],
   },
   u2: {
@@ -431,14 +431,14 @@ export const APPROVAL_DETAILS: Record<string, ApprovalDetailData> = {
       {
         item: 'Mobile subscriptions, 12 lines',
         quantity: '12',
-        unit: 'line',
+        unit: 'pc',
         vat: 'S 20%',
         amount: '8280.00',
       },
       {
         item: 'Business internet 500 Mbit/s',
         quantity: '1',
-        unit: 'month',
+        unit: 'mo',
         vat: 'S 20%',
         amount: '2447.83',
       },
@@ -450,7 +450,7 @@ export const APPROVAL_DETAILS: Record<string, ApprovalDetailData> = {
       {
         item: 'Waste collection, September',
         quantity: '1',
-        unit: 'month',
+        unit: 'mo',
         vat: 'S 10%',
         amount: '5927.27',
       },

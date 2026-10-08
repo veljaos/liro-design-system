@@ -1,5 +1,13 @@
 import { Bell, Building2, Search } from 'lucide-react'
-import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
+import {
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ReactNode,
+  type RefObject,
+} from 'react'
 import { BrandLockup, type BrandLockupProps } from '../components/brand-lockup'
 import {
   CommandPalette,
@@ -171,8 +179,11 @@ function UserMenu({
   user,
   companies,
   onSwitchCompany,
+  triggerRef,
 }: {
   user: ShellUser
+  /** The menu's button, where the focus returns after the company sheet. */
+  triggerRef?: RefObject<HTMLButtonElement | null>
   /** Phones: the company switcher moves into the user menu, as one entry. */
   companies?: ShellCompanies
   onSwitchCompany?: () => void
@@ -185,6 +196,7 @@ function UserMenu({
           family="neutral"
           emphasis="menu"
           shape="icon"
+          ref={triggerRef}
           aria-label={messages['shell.userMenu']}
           className="px-1.25"
         >
@@ -341,6 +353,7 @@ export function AppShell(props: AppShellProps) {
   const phone = props.layout === undefined ? viewportPhone : props.layout === 'phone'
   const [searching, setSearching] = useState(false)
   const [switching, setSwitching] = useState(false)
+  const userButton = useRef<HTMLButtonElement>(null)
   const contentId = useId()
   const shortcut = props.searchShortcut ?? `${messages['grid.modifierKey']} K`
   const root = useRef<HTMLDivElement>(null)
@@ -383,6 +396,26 @@ export function AppShell(props: AppShellProps) {
       observer.disconnect()
     }
   }, [])
+
+  // The bottom bar's height, as --liro-shell-bottom on the provider's root (P4.9d), so the
+  // Toaster — placed inside LiroProvider, beside or inside the shell — stands above the bar and
+  // never covers its actions.
+  const [bottom, setBottom] = useState<HTMLDivElement | null>(null)
+  useLayoutEffect(() => {
+    const shell = root.current
+    if (bottom === null || shell === null) return
+    const owner = shell.closest<HTMLElement>('[data-liro-theme]') ?? shell
+    const measure = () => {
+      owner.style.setProperty('--liro-shell-bottom', `${String(bottom.offsetHeight)}px`)
+    }
+    measure()
+    const observer = new ResizeObserver(measure)
+    observer.observe(bottom)
+    return () => {
+      observer.disconnect()
+      owner.style.removeProperty('--liro-shell-bottom')
+    }
+  }, [bottom])
 
   return (
     <div
@@ -480,6 +513,7 @@ export function AppShell(props: AppShellProps) {
                 {props.user !== undefined && (
                   <UserMenu
                     user={props.user}
+                    triggerRef={userButton}
                     {...(phone && props.companies !== undefined
                       ? {
                           companies: props.companies,
@@ -504,6 +538,7 @@ export function AppShell(props: AppShellProps) {
       </main>
       {phone && props.bottomBar !== undefined && (
         <div
+          ref={setBottom}
           data-slot="shell-bottom-bar"
           className="sticky bottom-0 z-(--liro-layer-sticky) border-0 border-t border-solid border-default bg-surface-page ps-[max(12px,env(safe-area-inset-left))] pe-[max(12px,env(safe-area-inset-right))] pt-3 pb-[calc(12px+env(safe-area-inset-bottom))] [&>*]:w-full"
         >
@@ -519,7 +554,12 @@ export function AppShell(props: AppShellProps) {
         />
       )}
       {phone && props.companies !== undefined && (
-        <CompanySheet companies={props.companies} open={switching} onOpenChange={setSwitching} />
+        <CompanySheet
+          companies={props.companies}
+          open={switching}
+          onOpenChange={setSwitching}
+          returnFocusTo={userButton}
+        />
       )}
     </div>
   )

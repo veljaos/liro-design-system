@@ -141,6 +141,7 @@ export const messagesEn: LiroMessages = {
   'shell.allCompanies': 'All companies',
   'shell.noCompany': (query) => `No company matches “${query}”.`,
   'shell.switchCompanyCommand': 'Switch company…',
+  'shell.switchCompanyTitle': 'Switch company',
   'notifications.title': 'Notifications',
   'notifications.unreadCount': (_count, text) => `${text} unread`,
   'notifications.unread': 'Unread',

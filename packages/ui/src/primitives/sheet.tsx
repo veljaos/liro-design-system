@@ -19,7 +19,7 @@ export const Sheet = SheetPrimitive.Root
 export const SheetTrigger = SheetPrimitive.Trigger
 export const SheetClose = SheetPrimitive.Close
 
-export type SheetSide = 'start' | 'end' | 'top' | 'bottom'
+export type SheetSide = 'start' | 'end' | 'top' | 'bottom' | 'full'
 
 const SIDES: Record<SheetSide, string> = {
   start:
@@ -27,6 +27,9 @@ const SIDES: Record<SheetSide, string> = {
   end: 'inset-y-0 end-0 h-full w-110 max-w-full [--liro-slide-from:translateX(100%)] rtl:[--liro-slide-from:translateX(-100%)]',
   top: 'inset-x-0 top-0 h-110 max-h-full w-full [--liro-slide-from:translateY(-100%)]',
   bottom: 'inset-x-0 bottom-0 h-110 max-h-full w-full [--liro-slide-from:translateY(100%)]',
+  // The whole of its containing block — the viewport in an application, a phone frame in a
+  // story — never the window's height (P4.9d: `h-dvh` overran a frame and left the page showing).
+  full: 'inset-0 h-full max-h-full w-full [--liro-slide-from:translateY(100%)]',
 }
 
 export function SheetContent({

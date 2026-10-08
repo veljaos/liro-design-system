@@ -458,7 +458,8 @@ const MODULES: LaunchpadModule[] = [
     description: 'Supplier invoices and orders',
     icon: ShoppingCart,
     href: '#/purchasing/approvals',
-    counter: `${String(APPROVALS.length)} to approve`,
+    // The application writes its counter; its number goes through the provider's format (Home).
+    counter: 'to approve',
   },
   {
     id: 'reports',
@@ -516,6 +517,13 @@ const MODULES: LaunchpadModule[] = [
 ]
 
 function Home({ phone }: { phone: boolean }) {
+  const { format } = useLiro()
+  // Counts the application writes go through the provider's format, as every number (P4.9).
+  const modules = MODULES.map((module) =>
+    module.id === 'purchasing'
+      ? { ...module, counter: `${format.number(String(APPROVALS.length))} to approve` }
+      : module,
+  )
   return (
     <Shell phone={phone}>
       <div
@@ -527,7 +535,7 @@ function Home({ phone }: { phone: boolean }) {
       >
         {/* The company is in the header: the page's h1 is for screen readers only. */}
         <h1 className="sr-only">Home</h1>
-        <Launchpad label="Modules" modules={MODULES} layout={phone ? 'phone' : 'desktop'} />
+        <Launchpad label="Modules" modules={modules} layout={phone ? 'phone' : 'desktop'} />
       </div>
     </Shell>
   )
@@ -965,7 +973,7 @@ function sum(values: readonly string[]): string {
 const OVERDUE = INVOICES.filter((invoice) => invoice.status === 'Overdue')
 
 function Dashboard({ phone }: { phone: boolean }) {
-  const { linkComponent: Link } = useLiro()
+  const { format, linkComponent: Link } = useLiro()
   const columns: DataTableColumn<ExampleInvoice>[] = [
     {
       id: 'number',
@@ -1022,7 +1030,7 @@ function Dashboard({ phone }: { phone: boolean }) {
             key: 'overdue',
             label: 'Overdue receivables',
             value: <MoneyText value={sum(OVERDUE.map((invoice) => invoice.open))} currency="RSD" />,
-            comparison: `${String(OVERDUE.length)} invoices`,
+            comparison: `${format.number(String(OVERDUE.length))} invoices`,
           },
           {
             key: 'cash',
@@ -1067,12 +1075,11 @@ const APPROVAL_LINE_COLUMNS: DataTableColumn<ApprovalLine>[] = [
     header: 'Quantity',
     align: 'end',
     numeric: true,
-    cell: (line) => (
-      <>
-        <NumberText value={line.quantity} /> {line.unit}
-      </>
-    ),
+    cell: (line) => <NumberText value={line.quantity} />,
   },
+  // The unit of measure is the Core's (its symbol, with its standard code), in its own column:
+  // a number is never joined to a word that would need a plural ("12 line", P4.9d).
+  { id: 'unit', header: 'Unit', cell: (line) => line.unit },
   { id: 'vat', header: 'VAT', align: 'end', numeric: true, cell: (line) => line.vat },
   {
     id: 'amount',
@@ -1185,7 +1192,7 @@ function ApprovalDetail({
             rows={detail.lines}
             getRowId={(line) => line.item}
             getRowLabel={(line) => line.item}
-            mobile={{ details: ['quantity', 'vat', 'amount'] }}
+            mobile={{ details: ['quantity', 'unit', 'vat', 'amount'] }}
           />
         </section>
       )}
@@ -1357,7 +1364,7 @@ function Approvals({ phone }: { phone: boolean }) {
           decide(rejecting.ids, `${rejecting.name} rejected.`, false)
         }}
       />
-      <Toaster />
+      <Toaster layout={phone ? 'phone' : 'desktop'} />
     </Shell>
   )
 }
@@ -1906,6 +1913,50 @@ export const ApprovalPhoneDetail: Story = {
     await settle()
     await expect(canvas.getByRole('heading', { name: 'EPS Snabdevanje d.o.o.' })).toBeVisible()
     await expect(canvas.getByRole('button', { name: 'Approve' })).toBeVisible()
+  },
+}
+
+/** The first ancestor that has a box of its own (`display: contents` elements have none). */
+function boxAround(element: Element | null): Element | null {
+  let parent = element?.parentElement ?? null
+  while (parent !== null && parent.getBoundingClientRect().width === 0)
+    parent = parent.parentElement
+  return parent
+}
+
+/**
+ * Approve on a phone: the toast spans the screen less 16px at each side and stands above the
+ * bottom action bar, never over Reject and Approve (P4.9d).
+ */
+export const ApprovalPhoneToast: Story = {
+  name: 'Supplier invoice to approve, phone, approved',
+  render: () => <OnPhone start={ROUTES.approvals} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const page = within(document.body)
+    await userEvent.click(canvas.getByRole('button', { name: /EPS Snabdevanje/ }))
+    await settle()
+    await userEvent.click(canvas.getByRole('button', { name: 'Approve' }))
+    const text = await page.findByText('UF-2026-1187 approved.')
+    // The phone frame: the first box around the shell (the provider's root has no box of its own).
+    const frame = boxAround(canvasElement.querySelector('[data-slot="app-shell"]'))
+    const bar = canvasElement.querySelector('[data-slot="shell-bottom-bar"]')
+    await waitFor(async () => {
+      const toast = text.closest('li')?.getBoundingClientRect()
+      const screen = frame?.getBoundingClientRect()
+      const actions = bar?.getBoundingClientRect()
+      await expect(toast !== undefined && screen !== undefined && actions !== undefined).toBe(true)
+      if (toast === undefined || screen === undefined || actions === undefined) return
+      await expect(Math.round(toast.left - screen.left)).toBe(16)
+      await expect(Math.round(screen.right - toast.right)).toBe(16)
+      await expect(toast.bottom).toBeLessThanOrEqual(actions.top - 16 + 1)
+    })
+    // The pictures are taken without toasts, which come and go with time.
+    notice.dismiss()
+    await waitFor(async () => {
+      await expect(page.queryByText('UF-2026-1187 approved.')).toBeNull()
+    })
   },
 }
 
