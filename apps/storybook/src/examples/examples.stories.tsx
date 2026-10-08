@@ -485,3 +485,138 @@ export const PayrollRerun: Story = {
     )
   },
 }
+
+// ── P5 group A ──
+
+/** Group A's routes (screens-A.tsx). */
+const ROUTES_A = { invoice: '/sales/invoices/F-2026-0410', contract: '/hr/contracts/new' }
+
+/**
+ * Invoice F-2026-0410 (partially paid): Dragan and the Liro agent are viewing it; the comments
+ * as a conversation in which the agent asks for the payment date; the full history (SEF, the
+ * bank import, the agent on behalf of Milica); the side panel keeps the latest activity.
+ */
+export const InvoiceActivityScreen: Story = {
+  name: 'Invoice with history, comments and presence',
+  render: () => <ExampleApp start={ROUTES_A.invoice} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: 'F-2026-0410' }),
+    ).toBeVisible()
+    // The same figures as the invoice list: total 186.420,35, due 86.420,35 after 100.000,00.
+    const [label] = canvas.getAllByText('Amount due', { selector: 'dt' })
+    const figures = label?.closest('dl')
+    if (figures === null || figures === undefined) throw new Error('No key figures')
+    await expect(figures).toHaveTextContent('86.420,35 RSD')
+    await expect(figures).toHaveTextContent('186.420,35 RSD')
+    const totals = canvasElement.querySelector('[data-slot="document-totals"]')
+    await expect(totals).toHaveTextContent('-100.000,00 RSD')
+    await expect(totals).toHaveTextContent('186.420,35 RSD')
+    await expect(
+      canvas.getByRole('button', { name: 'Also here: Dragan Ilić, Liro agent (agent)' }),
+    ).toBeVisible()
+    // The agent's question, answered from the keyboard.
+    const question = canvas.getByRole('group', { name: 'Question from Liro agent' })
+    const date = within(question).getByRole('textbox', { name: 'Expected payment date' })
+    await userEvent.type(date, '20.10.2026{Enter}')
+    await expect(await canvas.findByText('Payment expected on 20.10.2026.')).toBeVisible()
+    await expect(canvas.getByText(/I will check the payment on 20\.10\.2026\./)).toBeVisible()
+    // A comment with a mention.
+    const field = canvas.getByRole('textbox', { name: 'Comment' })
+    await userEvent.type(field, 'Thanks @iva')
+    await within(document.body).findByRole('listbox', { name: 'People to mention' })
+    await userEvent.keyboard('{Enter}')
+    await userEvent.type(field, 'please note it.{Enter}')
+    await expect(field).toHaveValue('')
+    const log = canvas.getByRole('log')
+    await expect(within(log).getByText('@Ivana Stojanović')).toBeVisible()
+    // The history: newest first, older entries on request.
+    const history = canvas.getByRole('group', { name: 'History of F-2026-0410' })
+    await expect(
+      within(history).getAllByText('On behalf of Milica Petrović').length,
+    ).toBeGreaterThan(0)
+    await userEvent.click(within(history).getByRole('button', { name: 'Show more' }))
+    await expect(
+      await within(history).findByText('Created the invoice from order N-2026-0149'),
+    ).toBeVisible()
+    await settle()
+  },
+}
+
+export const InvoiceActivityPhone: Story = {
+  name: 'Invoice with history, comments and presence, phone',
+  render: () => <OnPhone start={ROUTES_A.invoice} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: 'F-2026-0410' }),
+    ).toBeVisible()
+    await expect(canvas.getByRole('log')).toBeInTheDocument()
+    // Nothing overflows sideways at phone width.
+    const main = canvas.getByRole('main')
+    await expect(main.scrollWidth).toBeLessThanOrEqual(main.clientWidth)
+  },
+}
+
+/**
+ * The questions for Stefan Nikolić's employment contract: branching (hybrid asks for the office
+ * days, probation for its months), the application's checks, the summary, and "Generate
+ * contract", which opens RU-2026-017 for signing (group C's screen).
+ */
+export const ContractQuestionnaireScreen: Story = {
+  name: 'Employment contract questionnaire',
+  render: () => <ExampleApp start={ROUTES_A.contract} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const next = () => userEvent.keyboard('{Enter}')
+    await userEvent.click(await canvas.findByRole('radio', { name: /Stefan Nikolić/ }))
+    await next()
+    await userEvent.keyboard('1')
+    await next()
+    await userEvent.keyboard('1')
+    await next()
+    // The application's check: the start must be after today.
+    const start = canvas.getByRole('textbox', { name: 'When does the employee start?' })
+    await userEvent.type(start, '01.10.2026{Enter}')
+    await expect(canvas.getByText('The start date must be after today.')).toBeVisible()
+    await userEvent.clear(start)
+    await userEvent.type(start, '02.11.2026{Enter}')
+    await userEvent.keyboard('3')
+    await next()
+    await userEvent.type(canvas.getByRole('textbox', { name: 'Office days per week' }), '3{Enter}')
+    await userEvent.keyboard('1')
+    await next()
+    await userEvent.type(canvas.getByRole('textbox', { name: 'Probation months' }), '3{Enter}')
+    await userEvent.keyboard('1')
+    await next()
+    await userEvent.type(
+      canvas.getByRole('textbox', { name: /Gross monthly salary/ }),
+      '185000{Enter}',
+    )
+    await userEvent.type(canvas.getByRole('textbox', { name: 'Annual leave days' }), '22{Enter}')
+    await expect(await canvas.findByRole('heading', { name: 'Check your answers' })).toBeVisible()
+    await expect(canvas.getByText('11 of 11 answered')).toBeVisible()
+    await expect(canvas.getByText('185.000,00 RSD')).toBeVisible()
+    await expect(canvas.getByText('02.11.2026.')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Generate contract' })).toBeEnabled()
+    await settle()
+  },
+}
+
+export const ContractQuestionnairePhone: Story = {
+  name: 'Employment contract questionnaire, phone',
+  render: () => <OnPhone start={ROUTES_A.contract} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(
+      await canvas.findByRole('group', { name: 'Who is the contract for?' }),
+    ).toBeVisible()
+    const main = canvas.getByRole('main')
+    await expect(main.scrollWidth).toBeLessThanOrEqual(main.clientWidth)
+  },
+}

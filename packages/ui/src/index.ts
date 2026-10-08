@@ -350,3 +350,50 @@ export type {
 } from './templates/periodic-run-page'
 export { countChecks, RUN_RESULT_ORDER } from './templates/periodic-run-logic'
 export type { RunCheckResult } from './templates/periodic-run-logic'
+// ── P5 group A ──
+export { AgentMark } from './components/agent-mark'
+export type { AgentMarkProps } from './components/agent-mark'
+export { PresenceAvatars } from './components/presence-avatars'
+export type { PresenceAvatarsProps, PresencePerson } from './components/presence-avatars'
+export { HistoryList } from './components/history-list'
+export type {
+  ActorKind,
+  HistoryActor,
+  HistoryChange,
+  HistoryEntry,
+  HistoryListProps,
+} from './components/history-list'
+export {
+  MentionText,
+  MessageBubble,
+  MessageComposer,
+  MessageList,
+  MessageThread,
+} from './components/messages'
+export type {
+  ComposedMessage,
+  MentionTextProps,
+  MessageAuthor,
+  MessageBubbleProps,
+  MessageComposerProps,
+  MessageListProps,
+  MessageThreadProps,
+  ThreadMessage,
+} from './components/messages'
+export { MentionCombobox } from './components/mention-combobox'
+export type { MentionCandidate, MentionComboboxProps } from './components/mention-combobox'
+export { mentionsInText, splitMentions } from './components/message-logic'
+export type { Mention, MentionPart } from './components/message-logic'
+export { Questionnaire } from './components/questionnaire'
+export type { QuestionnaireProps } from './components/questionnaire'
+export { answersOnPath, nextQuestionId, questionPath } from './components/questionnaire-logic'
+export type {
+  QuestionAnswer,
+  QuestionAnswers,
+  QuestionDefinition,
+  QuestionnaireStep,
+  QuestionOption,
+  QuestionType,
+} from './components/questionnaire-logic'
+export { AgentQuestion } from './components/agent-question'
+export type { AgentQuestionProps } from './components/agent-question'
