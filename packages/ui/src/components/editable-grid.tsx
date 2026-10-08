@@ -1,6 +1,8 @@
 import { CircleAlert, Plus, Trash2, TriangleAlert } from 'lucide-react'
 import {
+  createContext,
   memo,
+  useContext,
   useEffect,
   useId,
   useLayoutEffect,
@@ -17,6 +19,7 @@ import { ActionButton } from './actions'
 import { CompactIconButton } from './button'
 import { ComboboxField, type ComboboxOption } from './combobox-field'
 import { DateField } from './date-field'
+import { ariaRowIndexes, gridWindow, VIRTUALIZE_FROM } from './editable-grid-window'
 import {
   gridKeyAction,
   orderMessages,
@@ -269,6 +272,11 @@ export interface EditableGridProps<Row> {
   lineText?: { columnId: string; value: (row: Row) => string }
   /** The rarer line types "Add line ▾" offers (the document's rule); none: a plain "Add line". */
   addTypes?: readonly AddableLineType[]
+  /**
+   * Draw only the lines in view (and 600px around them, and the focused line): for long grids,
+   * such as a specification of 300 positions. Default: from VIRTUALIZE_FROM (100) rows on.
+   */
+  virtualize?: boolean
   className?: string
 }
 
@@ -377,12 +385,28 @@ interface GridApi {
   drafts: Map<string, EntryDraft>
 }
 
+/**
+ * The rows' numbers from 1, by row id, for the fields' names ("Quantity, line 3"). Read by the
+ * small CellName inside each field's label, so a row inserted at the top renames the fields below
+ * it without rendering their fields again.
+ */
+const LineNumbers = createContext<ReadonlyMap<string, number>>(new Map())
+
+/** A field's name for assistive technology: "<column>, line <n>". */
+function CellName({ rowId, header }: { rowId: string; header: string }) {
+  const { messages, format } = useLiro()
+  const line = useContext(LineNumbers).get(rowId) ?? 0
+  return (
+    <span className="sr-only">
+      {messages['grid.cell'](header, line, format.number(String(line)))}
+    </span>
+  )
+}
+
 interface CellProps {
   api: GridApi
   column: CellColumn
   rowId: string
-  /** The row's number from 1, for the field's name ("Quantity, line 3"). */
-  line: number
   /** The cell's value as the column gave it for the row. */
   value: unknown
   /** A combobox's options for the row. */
@@ -402,11 +426,7 @@ interface CellProps {
 const GridCellEditor = memo(function GridCellEditor(props: CellProps) {
   const { messages, format } = useLiro()
   const { api, column, rowId } = props
-  const label = (
-    <span className="sr-only">
-      {messages['grid.cell'](column.header, props.line, format.number(String(props.line)))}
-    </span>
-  )
+  const label = <CellName rowId={rowId} header={column.header} />
   const common = {
     label,
     readOnly: props.readOnly,
@@ -545,7 +565,60 @@ const GridCellEditor = memo(function GridCellEditor(props: CellProps) {
       {field()}
     </EntryDraftSlot.Provider>
   )
-})
+}, sameCell)
+
+/**
+ * Whether a cell's field must render again. Every prop is compared as it is, except the column:
+ * an application that builds its columns again on each change (their `display` functions read
+ * its state) gives a new object each time, so the column is compared by what its field shows —
+ * the row functions are not the cell's (the grid calls them and passes the values).
+ */
+function sameCell(previous: CellProps, next: CellProps): boolean {
+  return (
+    previous.api === next.api &&
+    previous.rowId === next.rowId &&
+    Object.is(previous.value, next.value) &&
+    previous.options === next.options &&
+    previous.results === next.results &&
+    previous.loading === next.loading &&
+    previous.readOnly === next.readOnly &&
+    previous.error === next.error &&
+    previous.describedBy === next.describedBy &&
+    sameEditor(previous.column, next.column)
+  )
+}
+
+/** Two columns draw the same field: the same kind, heading and choices. */
+function sameEditor(a: CellColumn, b: CellColumn): boolean {
+  if (a === b) return true
+  if (a.id !== b.id || a.header !== b.header) return false
+  switch (a.type) {
+    case 'text':
+    case 'date':
+      return b.type === a.type
+    case 'number':
+      return b.type === 'number' && a.decimals === b.decimals
+    case 'select':
+      return b.type === 'select' && a.options === b.options
+    case 'taxCategory':
+      return b.type === 'taxCategory' && a.categories === b.categories
+    case 'unit':
+      return b.type === 'unit' && a.units === b.units
+    case 'combobox':
+      return b.type === 'combobox' && (a.onSearch === undefined) === (b.onSearch === undefined)
+    case 'lookup':
+      return (
+        b.type === 'lookup' &&
+        a.recent === b.recent &&
+        a.kinds === b.kinds &&
+        a.allowOneOff === b.allowOneOff &&
+        (a.onSearchAll === undefined) === (b.onSearchAll === undefined) &&
+        a.create?.kinds === b.create?.kinds
+      )
+    case 'display':
+      return b.type === 'display'
+  }
+}
 
 /** The values a cell takes from its row (the column's row functions, called by the grid). */
 function cellValues<Row>(column: EditableGridColumn<Row>, row: Row) {
@@ -679,6 +752,8 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
   // else forgets it. In a full line, its column is also the one Enter keeps (`preferred`).
   const focused = useRef<{ row: number; column: number; element: Element } | null>(null)
   const preferred = useRef(0)
+  // The focused line, which a long grid always draws (with its neighbours).
+  const [focusRow, setFocusRow] = useState<number | null>(null)
   useEffect(() => {
     const onFocusIn = (event: FocusEvent) => {
       const target = event.target instanceof Element ? event.target : null
@@ -686,11 +761,13 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
         rootRef.current?.contains(target) === true ? target?.closest('[data-grid-row]') : null
       if (cell === null || cell === undefined || target === null) {
         focused.current = null
+        if (rootRef.current?.contains(target) !== true) setFocusRow(null)
         return
       }
       const row = Number(cell.getAttribute('data-grid-row'))
       const column = Number(cell.getAttribute('data-grid-column'))
       focused.current = { row, column, element: target }
+      setFocusRow(row)
       if (cell.getAttribute('data-grid-span') === null) preferred.current = column
     }
     document.addEventListener('focusin', onFocusIn)
@@ -715,10 +792,11 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
     }
   }, [phone])
 
-  // The on-screen keyboard shows "next" on every field of the grid.
+  // The on-screen keyboard shows "next" on every field of the grid (set once per field: an
+  // attribute written again would make the browser recalculate the styles of a long grid).
   useEffect(() => {
     rootRef.current
-      ?.querySelectorAll('[data-grid-row] input:not([type="hidden"])')
+      ?.querySelectorAll('[data-grid-row] input:not([type="hidden"]):not([enterkeyhint])')
       .forEach((input) => {
         input.setAttribute('enterkeyhint', 'next')
       })
@@ -822,7 +900,6 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
         api={api}
         column={column}
         rowId={rowId}
-        line={rowIndex + 1}
         value={values.value}
         options={values.options}
         results={values.results}
@@ -877,6 +954,103 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
   const removeLabel = (rowIndex: number) =>
     messages['grid.removeLine'](rowIndex + 1, format.number(String(rowIndex + 1)))
 
+  // The rows' numbers by id; a new map only when the rows' order or number changes.
+  const rowIds = rows.map((row) => props.getRowId(row))
+  const idsKey = rowIds.join('\n')
+  const lineNumbers = useMemo(
+    () => new Map(idsKey === '' ? [] : idsKey.split('\n').map((id, index) => [id, index + 1])),
+    [idsKey],
+  )
+
+  // ── The row window of a long grid (editable-grid-window.ts) ──
+  const virtual = props.virtualize ?? rows.length >= VIRTUALIZE_FROM
+  const gap = phone && !inCard ? 12 : 0
+  const [measured, setMeasured] = useState<ReadonlyMap<string, number>>(() => new Map())
+  const estimate = (row: Row): number => {
+    const type = rowType(row)
+    if (!phone) return 37
+    if (type === 'subtotal') return 40 + 24 * (columns.length - editable.length) + gap
+    if (type === 'text' || type === 'heading') return 110 + gap
+    return 60 + 58 * editable.length + 40 * (columns.length - editable.length) + gap
+  }
+  const heights = virtual
+    ? rows.map((row, index) => measured.get(rowIds[index] ?? '') ?? estimate(row))
+    : []
+  const [view, setView] = useState({ top: 0, height: 900 })
+  const win = virtual
+    ? gridWindow(heights, view.top, view.height, focusRow)
+    : { first: 0, last: rows.length, before: 0, after: 0 }
+  const shown = rows.slice(win.first, win.last)
+  const bodyRef = useRef<HTMLElement | null>(null)
+  const setBody = (element: HTMLElement | null) => {
+    bodyRef.current = element
+  }
+  // What the scroll handler needs, from the last render.
+  const windowState = useRef({ heights, focusRow, first: win.first, last: win.last })
+  useLayoutEffect(() => {
+    windowState.current = { heights, focusRow, first: win.first, last: win.last }
+  })
+  // The view follows any scrolling (the page, a scrolling container, a phone frame) and resizing;
+  // a render happens only when the window of rows changes.
+  useLayoutEffect(() => {
+    if (!virtual) return
+    let frame = 0
+    const update = () => {
+      const body = bodyRef.current
+      if (body === null) return
+      const next = { top: -body.getBoundingClientRect().top, height: window.innerHeight }
+      const state = windowState.current
+      const range = gridWindow(state.heights, next.top, next.height, state.focusRow)
+      if (range.first !== state.first || range.last !== state.last) setView(next)
+    }
+    const onScroll = () => {
+      cancelAnimationFrame(frame)
+      frame = requestAnimationFrame(update)
+    }
+    update()
+    window.addEventListener('scroll', onScroll, { capture: true, passive: true })
+    window.addEventListener('resize', onScroll)
+    return () => {
+      cancelAnimationFrame(frame)
+      window.removeEventListener('scroll', onScroll, { capture: true })
+      window.removeEventListener('resize', onScroll)
+    }
+  }, [virtual])
+  // The drawn rows' heights (a line and its notes, a card and its gap), kept by row id.
+  useLayoutEffect(() => {
+    if (!virtual) return
+    const root = rootRef.current
+    if (root === null) return
+    const sizes = new Map<string, number>()
+    root.querySelectorAll<HTMLElement>('[data-row-key]').forEach((element) => {
+      const key = element.getAttribute('data-row-key') ?? ''
+      sizes.set(key, (sizes.get(key) ?? gap) + element.getBoundingClientRect().height)
+    })
+    const keep = () => {
+      setMeasured((current) => {
+        const changed = [...sizes].some(
+          ([key, size]) => Math.abs((current.get(key) ?? -1) - size) > 0.5,
+        )
+        if (!changed) return current
+        const next = new Map(current)
+        sizes.forEach((size, key) => next.set(key, size))
+        return next
+      })
+    }
+    keep()
+  })
+  // aria-rowindex and aria-rowcount, so assistive technology hears the whole table.
+  const aria = virtual
+    ? ariaRowIndexes(
+        rows.map(
+          (row) =>
+            (props.details?.[props.getRowId(row)]?.length ?? 0) + rowMessages(row).length > 0,
+        ),
+        1,
+        props.totals !== undefined && Object.keys(props.totals).length > 0 ? 1 : 0,
+      )
+    : undefined
+
   const hasTotals = props.totals !== undefined && Object.keys(props.totals).length > 0
   const minWidth = columns.reduce((sum, column) => sum + (column.width ?? 120), 0) + 44
   // A subtotal's text spans the columns before the first value column.
@@ -887,6 +1061,7 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
     <div className="overflow-x-auto">
       <table
         aria-label={props.label}
+        {...(aria === undefined ? {} : { 'aria-rowcount': aria.count })}
         className="w-full table-fixed border-collapse text-sm"
         style={{ minWidth }}
       >
@@ -900,7 +1075,7 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
           <col style={{ width: 44 }} />
         </colgroup>
         <thead>
-          <tr>
+          <tr {...(aria === undefined ? {} : { 'aria-rowindex': 1 })}>
             {columns.map((column) => (
               <th
                 key={column.id}
@@ -919,13 +1094,33 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
             <td className={cn(CELL_BORDER, 'bg-surface-sunken')} />
           </tr>
         </thead>
-        <tbody>
-          {rows.map((row, rowIndex) => {
+        <tbody ref={setBody}>
+          {win.before > 0 && (
+            <tr aria-hidden="true" data-slot="grid-spacer">
+              <td
+                colSpan={columns.length + 1}
+                className="border-0 p-0"
+                style={{ height: win.before }}
+              />
+            </tr>
+          )}
+          {/* One flat list of keyed rows: an array per line would be keyed by its position, and
+              a line inserted at the top would mount every line after it again (P5.18). */}
+          {shown.flatMap((row, offset) => {
+            const rowIndex = win.first + offset
             const type = rowType(row)
             const { rowId, notes, describedBy } = rowParts(row)
+            const index = aria?.indexes[rowIndex]
+            const rowAria = (extra = 0) =>
+              index === undefined ? {} : { 'aria-rowindex': index + extra }
             const notesRow =
               notes.length > 0 ? (
-                <tr key={`${rowId}-messages`} data-slot="grid-messages">
+                <tr
+                  key={`${rowId}-messages`}
+                  data-slot="grid-messages"
+                  data-row-key={rowId}
+                  {...rowAria(1)}
+                >
                   <td colSpan={columns.length + 1} className={cn(CELL_BORDER, 'px-2 py-1')}>
                     <NoteList notes={notes} />
                   </td>
@@ -933,7 +1128,13 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
               ) : null
             if (type === 'subtotal') {
               return [
-                <tr key={rowId} data-row-id={rowId} data-row-type={type}>
+                <tr
+                  key={rowId}
+                  data-row-id={rowId}
+                  data-row-key={rowId}
+                  data-row-type={type}
+                  {...rowAria()}
+                >
                   <td
                     colSpan={labelSpan}
                     className={cn(
@@ -965,7 +1166,13 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
             }
             const span = type === 'text' || type === 'heading' ? spanColumns?.[type] : undefined
             return [
-              <tr key={rowId} data-row-id={rowId} data-row-type={type}>
+              <tr
+                key={rowId}
+                data-row-id={rowId}
+                data-row-key={rowId}
+                data-row-type={type}
+                {...rowAria()}
+              >
                 {span !== undefined ? (
                   <td
                     colSpan={columns.length}
@@ -1036,10 +1243,19 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
               notesRow,
             ]
           })}
+          {win.after > 0 && (
+            <tr aria-hidden="true" data-slot="grid-spacer">
+              <td
+                colSpan={columns.length + 1}
+                className="border-0 p-0"
+                style={{ height: win.after }}
+              />
+            </tr>
+          )}
         </tbody>
         {hasTotals && (
           <tfoot>
-            <tr>
+            <tr {...(aria === undefined ? {} : { 'aria-rowindex': aria.count })}>
               {columns.map((column, index) => {
                 const total = props.totals?.[column.id]
                 return (
@@ -1069,6 +1285,10 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
       </table>
     </div>
   )
+
+  /** A card's place in the whole list, when only a window of the cards is drawn. */
+  const cardAria = (rowIndex: number) =>
+    virtual ? { 'aria-setsize': rows.length, 'aria-posinset': rowIndex + 1 } : {}
 
   const cardClass = (extra?: string) =>
     cn(
@@ -1137,10 +1357,15 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
         </div>
       )}
       <ul
+        ref={setBody}
         aria-label={props.label}
         className={cn('m-0 flex list-none flex-col p-0', !inCard && 'gap-3')}
       >
-        {rows.map((row, rowIndex) => {
+        {win.before > 0 && (
+          <li aria-hidden="true" data-slot="grid-spacer" style={{ height: win.before - gap }} />
+        )}
+        {shown.map((row, offset) => {
+          const rowIndex = win.first + offset
           const type = rowType(row)
           const { rowId, notes, describedBy } = rowParts(row)
           if (type === 'subtotal') {
@@ -1149,7 +1374,9 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
               <li
                 key={rowId}
                 data-row-id={rowId}
+                data-row-key={rowId}
                 data-row-type={type}
+                {...cardAria(rowIndex)}
                 className={cardClass('gap-1 border-t border-t-strong text-sm font-semibold')}
               >
                 <span className={cn('text-end', TEXT_DIRECTION)}>{props.lineText?.value(row)}</span>
@@ -1175,7 +1402,14 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
           const span = type === 'text' || type === 'heading' ? spanColumns?.[type] : undefined
           if (span !== undefined) {
             return (
-              <li key={rowId} data-row-id={rowId} data-row-type={type} className={cardClass()}>
+              <li
+                key={rowId}
+                data-row-id={rowId}
+                data-row-key={rowId}
+                data-row-type={type}
+                {...cardAria(rowIndex)}
+                className={cardClass()}
+              >
                 <div
                   data-slot="grid-card-cell"
                   data-grid-row={rowIndex}
@@ -1200,7 +1434,14 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
           }
           let editIndex = -1
           return (
-            <li key={rowId} data-row-id={rowId} data-row-type={type} className={cardClass()}>
+            <li
+              key={rowId}
+              data-row-id={rowId}
+              data-row-key={rowId}
+              data-row-type={type}
+              {...cardAria(rowIndex)}
+              className={cardClass()}
+            >
               {columns.map((column) => {
                 if (column.type === 'display') {
                   return (
@@ -1242,6 +1483,9 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
             </li>
           )
         })}
+        {win.after > 0 && (
+          <li aria-hidden="true" data-slot="grid-spacer" style={{ height: win.after - gap }} />
+        )}
       </ul>
     </>
   )
@@ -1273,7 +1517,7 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
         props.className,
       )}
     >
-      {phone ? cards() : table()}
+      <LineNumbers.Provider value={lineNumbers}>{phone ? cards() : table()}</LineNumbers.Provider>
       <div
         className={cn(
           'flex flex-wrap items-center justify-between gap-3',

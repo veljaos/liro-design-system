@@ -101,7 +101,7 @@ const grid = (extra: Partial<React.ComponentProps<typeof EditableGrid<Line>>> = 
 describe('EditableGrid line types', () => {
   it('draws a heading and a text line as one field across the row, by typography', () => {
     const html = grid()
-    expect(html).toMatch(/<tr data-row-id="h" data-row-type="heading"><td colSpan="5"/)
+    expect(html).toMatch(/<tr data-row-id="h"[^>]*data-row-type="heading"[^>]*><td colSpan="5"/)
     expect(html).toContain('[&amp;_input]:font-semibold')
     expect(html).toContain('[&amp;_input]:text-xs [&amp;_input]:text-secondary')
     expect(html).toContain('Section heading, line 1')
@@ -111,7 +111,7 @@ describe('EditableGrid line types', () => {
   it('draws a subtotal without a field: its text end-aligned, semibold, a rule above', () => {
     const html = grid()
     const subtotal =
-      /<tr data-row-id="s" data-row-type="subtotal">(.*?)<\/tr>/.exec(html)?.[1] ?? ''
+      /<tr data-row-id="s"[^>]*data-row-type="subtotal"[^>]*>(.*?)<\/tr>/.exec(html)?.[1] ?? ''
     expect(subtotal).toContain('colSpan="4"')
     expect(subtotal).toContain('border-t-strong')
     expect(subtotal).toContain('text-end font-semibold')
@@ -142,9 +142,34 @@ describe('EditableGrid line types', () => {
 
   it('keeps the types on phones: one field for a heading, the subtotal without a field', () => {
     const html = grid({ layout: 'phone' })
-    expect(html).toMatch(/<li data-row-id="s" data-row-type="subtotal"[^>]*border-t-strong/)
+    expect(html).toMatch(/<li data-row-id="s"[^>]*data-row-type="subtotal"[^>]*border-t-strong/)
     expect(html).toContain('Subtotal 1. Earthworks')
     expect(html).toMatch(/data-row-type="heading"[\s\S]*?Section heading, line 1/)
+  })
+})
+
+describe('EditableGrid with many lines', () => {
+  const many = Array.from({ length: 150 }, (_, index) => ({
+    ...blank,
+    id: `m${String(index)}`,
+    type: 'line' as const,
+    text: '',
+    quantity: String(index + 1),
+  }))
+
+  it('draws a window of the lines, with a spacer and the whole table’s row count', () => {
+    const html = grid({ rows: many })
+    const drawn = html.match(/<tr data-row-id=/g)?.length ?? 0
+    expect(drawn).toBeGreaterThan(20)
+    expect(drawn).toBeLessThan(60)
+    expect(html).toContain('aria-rowcount="151"')
+    expect(html).toContain('data-slot="grid-spacer"')
+    expect(html).toContain('aria-rowindex="2"')
+  })
+
+  it('draws every line when told not to virtualise, or below 100 lines', () => {
+    expect(grid({ rows: many, virtualize: false }).match(/<tr data-row-id=/g)).toHaveLength(150)
+    expect(grid({ rows: many.slice(0, 99) })).not.toContain('aria-rowcount')
   })
 })
 
