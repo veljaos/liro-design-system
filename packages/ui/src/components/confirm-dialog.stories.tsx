@@ -30,7 +30,10 @@ const meta = {
           'destructive, info → primary, success → positive, neutral → neutral). When `onConfirm` returns a promise, the button shows a loader, Cancel ' +
           'is disabled and nothing closes the dialog until it settles. `DeleteConfirmDialog` ' +
           'has the delete texts from the provider; `IrreversibleConfirmDialog` enables its ' +
-          'button only when the user types `confirmText`.\n\n' +
+          'button only when the user types `confirmText`; with `reason` (P5.18, a cancellation) ' +
+          'the same dialog also asks why — a required text, or a choice from `reason.reasons` ' +
+          'with optional details — and `onConfirm` receives the answer: one dialog, never two ' +
+          'in a row.\n\n' +
           '**When not:** an action that can be undone (just do it, and offer undo); a bulk ' +
           'action asks once, with the count, not per item (Appendix B.8).',
       },
@@ -338,4 +341,91 @@ export const Japanese: Story = {
       />
     </StoryProvider>
   ),
+}
+
+// ── P5 group D2: a cancellation asks why and for the number, in one dialog (P5.18) ──────────
+
+/**
+ * Cancelling an issued invoice: one dialog asks for the reason (required) and the typed number;
+ * the button enables once both are given, and `onConfirm` receives the reason.
+ */
+export const IrreversibleWithReason: Story = {
+  name: 'Irreversible with a reason',
+  render: () => (
+    <IrreversibleConfirmDialog
+      trigger={<Button family="caution" icon={Ban} label="Cancel invoice" />}
+      family="caution"
+      actionIcon={Ban}
+      title="Cancel invoice F-2026-0407?"
+      message="A cancellation document is issued and sent to SEF. This cannot be undone."
+      confirmLabel="Cancel invoice"
+      confirmText="F-2026-0407"
+      cancelLabel="Keep invoice"
+      reason={{ label: 'Reason for the cancellation' }}
+      onConfirm={(answer) => {
+        document.body.dataset.cancelReason = answer.text
+      }}
+    />
+  ),
+  play: async ({ canvasElement }) => {
+    const body = within(canvasElement.ownerDocument.body)
+    await userEvent.click(body.getByRole('button', { name: 'Cancel invoice' }))
+    const dialog = within(await body.findByRole('alertdialog'))
+    await settle()
+    // The safe action takes the focus.
+    await expect(dialog.getByRole('button', { name: 'Keep invoice' })).toHaveFocus()
+    const confirm = dialog.getByRole('button', { name: 'Cancel invoice' })
+    await userEvent.type(dialog.getByRole('textbox', { name: /^Type F-2026-0407/ }), 'F-2026-0407')
+    // The number alone is not enough: the reason is required.
+    await expect(confirm).toBeDisabled()
+    await userEvent.type(
+      dialog.getByRole('textbox', { name: /Reason for the cancellation/ }),
+      'Wrong prices.',
+    )
+    await expect(confirm).toBeEnabled()
+    await userEvent.click(confirm)
+    await waitFor(() => expect(body.queryByRole('alertdialog')).toBeNull())
+    await expect(document.body.dataset.cancelReason).toBe('Wrong prices.')
+    delete document.body.dataset.cancelReason
+    // Opened again for the picture: everything empty.
+    await userEvent.click(body.getByRole('button', { name: 'Cancel invoice' }))
+    await body.findByRole('alertdialog')
+    await settle()
+  },
+}
+
+/** With the Core's list of reasons: one must be chosen, the details are optional. */
+export const IrreversibleWithReasons: Story = {
+  name: 'Irreversible with a list of reasons',
+  render: () => (
+    <IrreversibleConfirmDialog
+      defaultOpen
+      family="caution"
+      actionIcon={Ban}
+      title="Cancel invoice F-2026-0407?"
+      message="A cancellation document is issued and sent to SEF."
+      confirmLabel="Cancel invoice"
+      confirmText="F-2026-0407"
+      reason={{
+        reasons: [
+          { value: 'price', label: 'Wrong prices' },
+          { value: 'customer', label: 'Wrong customer' },
+          { value: 'duplicate', label: 'Issued twice' },
+        ],
+        label: 'Reason',
+        detailsLabel: 'Details for the cancellation document',
+      }}
+      onConfirm={() => undefined}
+    />
+  ),
+  play: async ({ canvasElement }) => {
+    const body = within(canvasElement.ownerDocument.body)
+    const dialog = within(await body.findByRole('alertdialog'))
+    await settle()
+    await userEvent.type(dialog.getByRole('textbox', { name: /^Type F-2026-0407/ }), 'F-2026-0407')
+    const confirm = dialog.getByRole('button', { name: 'Cancel invoice' })
+    await expect(confirm).toBeDisabled()
+    await userEvent.click(dialog.getByRole('radio', { name: 'Wrong prices' }))
+    await expect(confirm).toBeEnabled()
+  },
 }

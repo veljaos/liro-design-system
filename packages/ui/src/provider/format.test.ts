@@ -102,3 +102,23 @@ describe('format.percent (P4.7c)', () => {
     expect(createFormat('en').percent('abc')).toBe('abc')
   })
 })
+
+describe('sign (P5.18)', () => {
+  const sr = createFormat('sr-Latn-RS')
+
+  it('writes "+" before a change above zero only when asked', () => {
+    expect(sr.number('12.5', { sign: 'always' })).toBe('+12,5')
+    expect(sr.number('12.5')).toBe('12,5')
+    expect(sr.money('13780', 'RSD', { sign: 'always' })).toBe(`+13.780,00${NBSP}RSD`)
+  })
+
+  it('leaves zero, negative values and text alone', () => {
+    expect(sr.number('0.00', { sign: 'always' })).toBe('0,00')
+    expect(sr.money('-13780.00', 'RSD', { sign: 'always' })).toBe(`-13.780,00${NBSP}RSD`)
+    expect(sr.number('n/a', { sign: 'always' })).toBe('n/a')
+  })
+
+  it('never rounds a signed value', () => {
+    expect(sr.money('0.005', 'EUR', { sign: 'always' })).toBe(`+0,005${NBSP}EUR`)
+  })
+})

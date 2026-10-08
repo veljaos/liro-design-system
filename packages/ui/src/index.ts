@@ -589,3 +589,35 @@ export type {
   HostMessage,
   ViewerMessage,
 } from './components/document-frame'
+// ── P5 group D2 ──
+export {
+  CancellationBanner,
+  ChangeText,
+  correctionColumns,
+  DocumentCurrency,
+  DocumentNotes,
+  DocumentReferences,
+  DocumentSpecification,
+} from './components/document-blocks'
+export type {
+  CancellationBannerProps,
+  ChangeTextProps,
+  CorrectionColumnSpec,
+  DocumentCurrencyProps,
+  DocumentNotesProps,
+  DocumentReference,
+  DocumentReferenceGroup,
+  DocumentReferencesProps,
+  DocumentSpecificationProps,
+} from './components/document-blocks'
+export { chosenNoteTexts, hasNotes } from './components/document-logic'
+export type { DocumentNotesValue, NoteTemplate } from './components/document-logic'
+export type {
+  TaxRecap,
+  TaxRecapRow,
+  TotalsExchange,
+  TotalsFootnote,
+} from './components/document-totals'
+export type { DocumentBlock } from './templates/document-page'
+export type { IrreversibleReason } from './components/confirm-dialog'
+export { subtotalStart } from './components/data-table-logic'

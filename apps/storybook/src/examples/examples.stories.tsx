@@ -4,6 +4,7 @@ import { notice } from '@veljaos/ui'
 import { settle } from '../../../../packages/ui/src/primitives/story-helpers'
 import { FEATURED } from './examples-story-data'
 import { C_ROUTES } from './data-C'
+import { D2_ROUTES } from './screens-D2'
 import { ExampleApp, OnPhone } from './example-app'
 import { ROUTES } from './example-shell'
 
@@ -1057,3 +1058,291 @@ export const InjuryRegisterMany: Story = {
 
 import { IMPORT_FILE } from './data-E'
 import { E_ROUTES } from './screens-E'
+
+// ── P5 group D2 ──
+// Complex documents (P5.18): the play functions read the amounts the screens show and check
+// that they add up — lines → recap by tax category → totals → deductions → amount due — in whole
+// paras, as written for a Serbian tenant ("1.234,56").
+
+/** An amount as shown ("-1.234,56 RSD") in whole paras. */
+function paras(text: string | null | undefined): bigint {
+  const match = /(-?)(\d[\d.]*),(\d{2})/.exec(text ?? '')
+  if (match === null) throw new Error(`No amount in "${text ?? ''}"`)
+  const value = BigInt(`${(match[2] ?? '').replaceAll('.', '')}${match[3] ?? ''}`)
+  return match[1] === '-' ? -value : value
+}
+
+function total(values: readonly bigint[]): bigint {
+  return values.reduce((sum, value) => sum + value, 0n)
+}
+
+/** A totals row's amount, found by its label. */
+function totalsAmount(root: Element, label: string): bigint {
+  const term = [...root.querySelectorAll('dt')].find((dt) => dt.textContent.trim() === label)
+  if (term === undefined) throw new Error(`No totals row "${label}"`)
+  return paras(term.nextElementSibling?.textContent)
+}
+
+/** The amounts of a table's lines (not headings, text lines or subtotals): the last cell. */
+function lineAmounts(table: HTMLElement): bigint[] {
+  return [
+    ...table.querySelectorAll(
+      'tbody > tr:not([data-line="heading"]):not([data-line="text"]):not([data-line="subtotal"])',
+    ),
+  ].map((row) => paras(row.querySelector('td:last-child')?.textContent))
+}
+
+/** The recap's bases and taxes (a dash is no tax). */
+function recapRows(root: Element): { base: bigint; tax: bigint }[] {
+  const table = root.querySelector('[data-slot="tax-recap"]')
+  if (table === null) throw new Error('No recap')
+  return [...table.querySelectorAll('tbody > tr')].map((row) => {
+    const cells = row.querySelectorAll('td')
+    const tax = cells[2]?.textContent ?? '—'
+    return { base: paras(cells[0]?.textContent), tax: tax.trim() === '—' ? 0n : paras(tax) }
+  })
+}
+
+/** Nothing on the page is wider than the phone frame. */
+async function noSidewaysOverflow(canvasElement: HTMLElement) {
+  const page = canvasElement.querySelector('[data-slot="document-page"]')
+  await expect(page).not.toBeNull()
+  if (page !== null) await expect(page.scrollWidth).toBeLessThanOrEqual(page.clientWidth)
+}
+
+/**
+ * Final invoice F-2026-0418 to Vojvođanka Mlin a.d.: "Based on" references (proforma, two
+ * advances, contract), lines with sections, subtotals, a text line and a discount, the recap by
+ * tax category, both advances deducted (links), notes and attachments with their "Send with the
+ * e-invoice" flags.
+ */
+export const FinalInvoiceScreen: Story = {
+  name: 'Final invoice with advances',
+  render: () => <ExampleApp start={D2_ROUTES.final} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const lines = canvas.getByRole('table', { name: 'Lines' })
+    const amounts = lineAmounts(lines)
+    const recap = recapRows(canvasElement)
+    // The lines add up to the bases of the recap; bases and taxes to the invoice total.
+    await expect(total(amounts)).toBe(total(recap.map((row) => row.base)))
+    const invoiceTotal = totalsAmount(canvasElement, 'Invoice total')
+    await expect(total(recap.map((row) => row.base + row.tax))).toBe(invoiceTotal)
+    // The section's lines add up to its subtotal.
+    const subtotal = within(lines).getByText('Total steel structure').closest('tr')
+    await expect(paras(subtotal?.textContent)).toBe(total(amounts.slice(0, 3)))
+    // The invoice total less both advances is the amount due, as the key figure says.
+    const due =
+      invoiceTotal +
+      totalsAmount(canvasElement, 'Advance A-2026-038') +
+      totalsAmount(canvasElement, 'Advance A-2026-044')
+    await expect(totalsAmount(canvasElement, 'Amount due')).toBe(due)
+    await expect(canvasElement).toHaveTextContent('5.003.678,22')
+    await expect(
+      canvas.getByRole('link', { name: 'Advance invoice A-2026-044, Paid' }),
+    ).toHaveAttribute('href', '#/sales/invoices/A-2026-044')
+    // INTEGRATION: AttachmentList — the flags change with a press.
+    const flag = within(canvas.getByRole('group', { name: 'Otpremnice OTP-2026-0388–0402.pdf' }))
+    await userEvent.click(flag.getByRole('checkbox', { name: 'Send with the e-invoice' }))
+    await expect(flag.getByRole('checkbox')).toBeChecked()
+    window.scrollTo(0, 0)
+  },
+}
+
+export const FinalInvoicePhone: Story = {
+  name: 'Final invoice with advances, phone',
+  render: () => <OnPhone start={D2_ROUTES.final} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('5.003.678,22')
+    await noSidewaysOverflow(canvasElement)
+  },
+}
+
+/**
+ * Interim situation IS-2026-007 (contract 12/2026, Hall B extension): the works of the period as
+ * one line, the specification as a summary row ("300 positions") whose "Open" shows all 300
+ * positions in twelve groups with subtotals and the previous / this period / cumulative columns.
+ */
+export const SituationScreen: Story = {
+  name: 'Interim situation with a specification',
+  render: () => <ExampleApp start={D2_ROUTES.situation} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvasElement).toHaveTextContent('Specification of works: 300 positions,')
+    const lineAmount = total(lineAmounts(canvas.getByRole('table', { name: 'Lines' })))
+    await userEvent.click(canvas.getByRole('button', { name: 'Open' }))
+    const sheet = await within(document.body).findByRole('dialog', {
+      name: 'Specification of works',
+    })
+    const table = within(sheet).getByRole('table', { name: 'Specification of works' })
+    // 12 groups × (heading + 25 positions + subtotal), and the header: drawn as they come into view.
+    await expect(table).toHaveAttribute('aria-rowcount', '325')
+    // The recap's base is the situation's line.
+    await expect(recapRows(sheet)[0]?.base).toBe(lineAmount)
+    // Virtualised: only the rows in view are drawn.
+    await expect(within(table).getAllByRole('row').length).toBeLessThan(60)
+    await settle()
+  },
+}
+
+export const SituationPhone: Story = {
+  name: 'Interim situation with a specification, phone',
+  render: () => <OnPhone start={D2_ROUTES.situation} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await noSidewaysOverflow(canvasElement)
+  },
+}
+
+/**
+ * Invoice F-2026-0415 in EUR to Donau Bau GmbH: the currency block in the header, the lines in
+ * EUR with S 20%, S 10%, E¹ and AE², the reasons once under the totals, and the RSD equivalents
+ * with the rate line only in the totals.
+ */
+export const EurInvoiceScreen: Story = {
+  name: 'Invoice in EUR, mixed tax categories',
+  render: () => <ExampleApp start={D2_ROUTES.eur} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const recap = recapRows(canvasElement)
+    await expect(recap).toHaveLength(4)
+    await expect(total(lineAmounts(canvas.getByRole('table', { name: 'Lines' })))).toBe(
+      total(recap.map((row) => row.base)),
+    )
+    await expect(total(recap.map((row) => row.base + row.tax))).toBe(
+      totalsAmount(canvasElement, 'Invoice total'),
+    )
+    await expect(
+      totalsAmount(canvasElement, 'Total without VAT in RSD') +
+        totalsAmount(canvasElement, 'VAT in RSD'),
+    ).toBe(totalsAmount(canvasElement, 'Invoice total in RSD'))
+    await expect(canvasElement).toHaveTextContent(
+      '1 EUR = 117,1825 RSD, NBS middle rate on 05.10.2026.',
+    )
+    await expect(canvasElement).toHaveTextContent('¹ E: returnable packaging')
+  },
+}
+
+export const EurInvoicePhone: Story = {
+  name: 'Invoice in EUR, mixed tax categories, phone',
+  render: () => <OnPhone start={D2_ROUTES.eur} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    // Footnotes stay on phones.
+    await expect(canvasElement).toHaveTextContent('² AE: reverse charge')
+    await noSidewaysOverflow(canvasElement)
+  },
+}
+
+/**
+ * Decrease document KO-2026-0009 against F-2026-0410 (Medic Lab Niš d.o.o.): "Corrects" links
+ * back, the lines as Original / Change / New, the totals of the change; original total plus the
+ * change is the new total.
+ */
+export const DecreaseScreen: Story = {
+  name: 'Decrease document',
+  render: () => <ExampleApp start={D2_ROUTES.decrease} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const table = canvas.getByRole('table', { name: 'Corrected lines' })
+    const headers = within(table)
+      .getAllByRole('columnheader')
+      .map((cell) => cell.textContent)
+    const change = headers.indexOf('Change')
+    const changes = [...table.querySelectorAll('tbody > tr')].map((row) =>
+      paras(row.querySelectorAll('td')[change]?.textContent),
+    )
+    const base = totalsAmount(canvasElement, 'Change of tax base S 20%')
+    await expect(total(changes)).toBe(base)
+    const decrease = totalsAmount(canvasElement, 'Total decrease')
+    await expect(base + totalsAmount(canvasElement, 'Change of VAT S 20%')).toBe(decrease)
+    // 186.420,35 (the invoice in the list) − 18.657,60 = 167.762,75.
+    await expect(canvasElement).toHaveTextContent('186.420,35')
+    await expect(paras('186.420,35') + decrease).toBe(paras('167.762,75'))
+    await expect(canvasElement).toHaveTextContent('167.762,75')
+    await expect(
+      canvas.getByRole('link', { name: 'Invoice F-2026-0410, Partially paid' }),
+    ).toBeVisible()
+  },
+}
+
+export const DecreasePhone: Story = {
+  name: 'Decrease document, phone',
+  render: () => <OnPhone start={D2_ROUTES.decrease} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await noSidewaysOverflow(canvasElement)
+  },
+}
+
+/**
+ * Cancelled invoice F-2026-0407: the banner at the top says who cancelled it, when and why, and
+ * links to cancellation document ST-2026-0004, which links back ("Cancels"); its totals are the
+ * invoice's, negated.
+ */
+export const CancelledScreen: Story = {
+  name: 'Cancelled invoice and its cancellation document',
+  render: () => <ExampleApp start={D2_ROUTES.cancelled} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvasElement).toHaveTextContent(
+      'Cancelled by Milica Petrović on 06.10.2026. at 11:20.',
+    )
+    const invoiceTotal = totalsAmount(canvasElement, 'Invoice total')
+    await expect(total(lineAmounts(canvas.getByRole('table', { name: 'Lines' })))).toBe(
+      totalsAmount(canvasElement, 'Total without VAT'),
+    )
+    // The banner's link (the side panel lists the same document).
+    const [link] = canvas.getAllByRole('link', { name: 'Cancellation document ST-2026-0004' })
+    if (link !== undefined) await userEvent.click(link)
+    await settle()
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: 'ST-2026-0004' }),
+    ).toBeVisible()
+    await expect(totalsAmount(canvasElement, 'Total')).toBe(-invoiceTotal)
+    // And back.
+    await userEvent.click(canvas.getByRole('link', { name: 'Invoice F-2026-0407, Cancelled' }))
+    await settle()
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: 'F-2026-0407' }),
+    ).toBeVisible()
+  },
+}
+
+export const CancelledPhone: Story = {
+  name: 'Cancelled invoice, phone',
+  render: () => <OnPhone start={D2_ROUTES.cancelled} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await noSidewaysOverflow(canvasElement)
+  },
+}
+
+/** The cancellation document ST-2026-0004 on its own. */
+export const CancellationScreen: Story = {
+  name: 'Cancellation document',
+  render: () => <ExampleApp start={D2_ROUTES.cancellation} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(total(lineAmounts(canvas.getByRole('table', { name: 'Lines' })))).toBe(
+      totalsAmount(canvasElement, 'Total without VAT'),
+    )
+    await expect(canvasElement).toHaveTextContent('-94.500,00')
+  },
+}
+
+export const CancellationPhone: Story = {
+  name: 'Cancellation document, phone',
+  render: () => <OnPhone start={D2_ROUTES.cancellation} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await noSidewaysOverflow(canvasElement)
+  },
+}
