@@ -27,6 +27,13 @@ import { PageHeader, type PageBack } from './page-header'
  *   to edge, without a title by default (the column headers say what it is), the table header at
  *   the card's top; the totals (DocumentTotals) under them at the end, inside the same card.
  * - Further sections (notes, payment terms) as SectionCards under the lines.
+ * - The header is a set of slots (P4.9, the owner's review): the Core decides what a document's
+ *   header shows — `counterparty` (the customer block), `keyFigures` (amount due, total, due date …,
+ *   any two to four, or none), `details` (the values the system filled in on a draft, as
+ *   ChangeableValues). A slot left out takes no room.
+ * - A draft is as simple as possible (P4.9): the application passes no side panels (attachments
+ *   only when there are some), two header actions (Preview, Issue invoice), the filled-in values as
+ *   `details`, and an EditableGrid with unit, tax category and amount per line.
  * - The side panels (SidePanels) in a 300px column from lg (75em), as DetailPage; the whole
  *   column can be hidden (`panelsHidden`), and the document takes the full width. Below 75em and
  *   on phones the panels stand under the document, and the whole-column button is not shown. Both
@@ -63,6 +70,11 @@ export interface DocumentPageProps {
   lifecycle?: { steps: readonly LifecycleStep[]; current: number; label: string }
   counterparty?: Counterparty
   keyFigures?: readonly KeyFigure[]
+  /**
+   * The document's own values under the counterparty — on a draft, the values the system filled
+   * in (number, issue date, due date) as ChangeableValues, in one wrapping row.
+   */
+  details?: ReactNode
   /**
    * A title over the lines' card. Default: none — the table's column headers say what it is,
    * and the table starts at the card's top (owner, P4.5).
@@ -211,6 +223,11 @@ export function DocumentPage(props: DocumentPageProps) {
           {...(actions === undefined ? {} : { actions })}
         />
         {props.counterparty !== undefined && <CounterpartyBlock party={props.counterparty} />}
+        {props.details !== undefined && (
+          <div data-slot="document-details" className="flex flex-wrap items-start gap-x-8 gap-y-3">
+            {props.details}
+          </div>
+        )}
         {props.keyFigures !== undefined && props.keyFigures.length > 0 && (
           <KeyFigures items={props.keyFigures} layout={phone ? 'phone' : 'desktop'} />
         )}

@@ -24,6 +24,7 @@ import type { Crumb } from '../components/navigation'
 import { LIRO_BRAND } from '../components/story-brand'
 import type { CommandItem } from '../components/command-palette'
 import type { ModuleTab, ShellCompany, ShellUser } from './app-shell'
+import type { NotificationItem } from './notifications-logic'
 import type { LaunchpadModule } from './launchpad'
 
 export const BRAND: BrandLockupProps = { ...LIRO_BRAND, href: '#home' }
@@ -43,23 +44,156 @@ export const SALES_TABS: ModuleTab[] = [
   { key: 'reports', label: 'Reports', href: '#sales/reports' },
 ]
 
-/** Recently used first, as the Core orders them. */
+/** A few companies: no search field, no sections. */
 export const COMPANIES: ShellCompany[] = [
-  { id: 'kvadrat', name: 'Kvadrat Gradnja d.o.o.', description: 'PIB 108452317', waiting: 3 },
+  { id: 'kvadrat', name: 'Kvadrat Gradnja d.o.o.', description: 'PIB 108452317', note: '3 tasks' },
   { id: 'panonija', name: 'Panonija Agro d.o.o.', description: 'PIB 104987265' },
-  { id: 'bojovic', name: 'Bojović i sinovi d.o.o.', description: 'PIB 109773148', waiting: 12 },
+  {
+    id: 'bojovic',
+    name: 'Bojović i sinovi d.o.o.',
+    description: 'PIB 109773148',
+    note: '12 tasks',
+  },
 ]
 
+/** An accountant's companies: more than seven, one suspended and one inactive. */
 export const MANY_COMPANIES: ShellCompany[] = [
   ...COMPANIES,
   { id: 'drina', name: 'Drina Prevoz d.o.o.', description: 'PIB 101665092' },
-  { id: 'stanic', name: 'Stanić Elektro STR', description: 'PIB 112048376', waiting: 1 },
+  { id: 'stanic', name: 'Stanić Elektro STR', description: 'PIB 112048376', note: '1 task' },
   { id: 'vojvodjanka', name: 'Vojvođanka Mlin a.d.', description: 'PIB 100421987' },
-  { id: 'jelic', name: 'Knjigovodstvo Jelić', description: 'PIB 110583224' },
+  {
+    id: 'jelic',
+    name: 'Knjigovodstvo Jelić',
+    description: 'PIB 110583224',
+    status: { label: 'Inactive', tone: 'neutral' },
+  },
   { id: 'zlatibor', name: 'Zlatibor Turs d.o.o.', description: 'PIB 106234871' },
-  { id: 'medic', name: 'Medic Lab Niš d.o.o.', description: 'PIB 107819450', waiting: 5 },
-  { id: 'rakic', name: 'Rakić Pekara SZR', description: 'PIB 111296603' },
+  { id: 'medic', name: 'Medic Lab Niš d.o.o.', description: 'PIB 107819450', note: '5 tasks' },
+  {
+    id: 'rakic',
+    name: 'Rakić Pekara SZR',
+    description: 'PIB 111296603',
+    status: { label: 'Suspended', tone: 'danger' },
+  },
 ]
+
+/** The user's pinned companies and the recently used ones (ids, the Core's data). */
+export const PINNED_COMPANIES = ['kvadrat', 'medic']
+export const RECENT_COMPANIES = ['bojovic', 'panonija', 'drina']
+
+const ROOTS = [
+  'Panonija',
+  'Drina',
+  'Morava',
+  'Zlatibor',
+  'Tara',
+  'Fruška',
+  'Šumadija',
+  'Timok',
+  'Banat',
+  'Srem',
+  'Bačka',
+  'Kosmaj',
+  'Rudnik',
+  'Avala',
+  'Dunav',
+  'Sava',
+  'Ibar',
+  'Tisa',
+  'Kolubara',
+  'Jastrebac',
+  'Kopaonik',
+  'Homolje',
+  'Stig',
+  'Pomoravlje',
+  'Mačva',
+  'Toplica',
+  'Rasina',
+  'Petrović',
+  'Jovanović',
+  'Nikolić',
+  'Marković',
+  'Đorđević',
+  'Stojanović',
+  'Ilić',
+  'Pavlović',
+  'Milošević',
+  'Stanković',
+  'Lazić',
+  'Kostić',
+  'Živković',
+  'Todorović',
+  'Radović',
+  'Vasić',
+]
+const TRADES = [
+  'Agro',
+  'Gradnja',
+  'Elektro',
+  'Prevoz',
+  'Mlin',
+  'Pekara',
+  'Trgovina',
+  'Metal',
+  'Drvo',
+  'Promet',
+  'Inženjering',
+  'Kop',
+  'Mlekara',
+  'Auto',
+  'Farm',
+  'Turs',
+  'Stil',
+  'Print',
+  'Soft',
+  'Logistika',
+  'Komerc',
+  'Plast',
+  'Voće',
+  'Vino',
+  'Beton',
+]
+const FORMS = ['d.o.o.', 'd.o.o.', 'd.o.o.', 'a.d.', 'STR', 'SZR', 'preduzetnik']
+const TOWNS = ['Novi Sad', 'Niš', 'Kragujevac', 'Subotica', 'Čačak', 'Valjevo', 'Šabac', 'Leskovac']
+
+/**
+ * Generated companies of a large accounting office (an accountant may keep 5,000): repeatable
+ * names, tax numbers and notes, sorted by name as the Core lists "All companies".
+ */
+export function manyCompanies(count: number): ShellCompany[] {
+  let seed = 20261008
+  const next = () => {
+    seed = (seed * 1103515245 + 12345) % 2147483648
+    return seed
+  }
+  const names = new Set<string>()
+  const companies: ShellCompany[] = []
+  for (let index = 0; companies.length < count; index += 1) {
+    const root = ROOTS[index % ROOTS.length] ?? ''
+    const trade = TRADES[Math.floor(index / ROOTS.length) % TRADES.length] ?? ''
+    const form = FORMS[next() % FORMS.length] ?? ''
+    const round = Math.floor(index / (ROOTS.length * TRADES.length))
+    const town = round === 0 ? '' : ` ${TOWNS[(round - 1) % TOWNS.length] ?? ''}`
+    const name = `${root} ${trade}${town} ${form}`
+    if (names.has(name)) continue
+    names.add(name)
+    const pib = String(100000000 + (next() % 13000000))
+    const roll = next() % 100
+    companies.push({
+      id: `c${String(companies.length + 1)}`,
+      name,
+      description: `PIB ${pib}`,
+      ...(roll < 3 ? { status: { label: 'Suspended', tone: 'danger' as const } } : {}),
+      ...(roll >= 3 && roll < 6 ? { status: { label: 'Inactive', tone: 'neutral' as const } } : {}),
+      ...(roll >= 90 ? { note: `${String((roll % 9) + 1)} tasks` } : {}),
+    })
+  }
+  return companies.sort((a, b) => a.name.localeCompare(b.name, 'sr-Latn'))
+}
+
+/** 5,000 companies, generated once. */
+export const FIVE_THOUSAND_COMPANIES = manyCompanies(5000)
 
 export const USER: ShellUser = {
   name: 'Milica Petrović',
@@ -369,3 +503,92 @@ export const EMPLOYEE = {
   leaveLeft: '14',
   sickDays: '3',
 } as const
+
+/** Notification types of the stories (the Core's). */
+export const NOTIFICATION_TYPES = [
+  { value: 'approvals', label: 'Approvals' },
+  { value: 'documents', label: 'Documents and SEF' },
+  { value: 'mentions', label: 'Mentions and comments' },
+  { value: 'system', label: 'System' },
+]
+
+/** An accountant's notifications on 6 October 2026 (the stories' today), newest first. */
+export const NOTIFICATIONS: NotificationItem[] = [
+  {
+    id: 'n1',
+    title: 'UF-2026-1187 from EPS Snabdevanje waits for your approval',
+    company: 'Kvadrat Gradnja d.o.o.',
+    companyId: 'kvadrat',
+    type: 'approvals',
+    at: '2026-10-06T10:14:00+02:00',
+    href: '#purchasing/approvals/UF-2026-1187',
+    read: false,
+  },
+  {
+    id: 'n2',
+    title: 'SEF rejected F-2026-0398: the buyer’s PIB is not registered',
+    company: 'Medic Lab Niš d.o.o.',
+    companyId: 'medic',
+    type: 'documents',
+    at: '2026-10-06T09:42:00+02:00',
+    href: '#sales/invoices/F-2026-0398',
+    read: false,
+  },
+  {
+    id: 'n3',
+    title: 'Dragan Ilić mentioned you on F-2026-0412',
+    body: '“Milica, the customer asked for delivery on Friday — can we confirm?”',
+    company: 'Kvadrat Gradnja d.o.o.',
+    companyId: 'kvadrat',
+    type: 'mentions',
+    at: '2026-10-06T08:05:00+02:00',
+    href: '#sales/invoices/F-2026-0412',
+    read: false,
+  },
+  {
+    id: 'n4',
+    title: 'Bank statement 187 imported: 14 payments matched, 2 to review',
+    company: 'Bojović i sinovi d.o.o.',
+    companyId: 'bojovic',
+    type: 'system',
+    at: '2026-10-05T16:30:00+02:00',
+    href: '#banking/statements/187',
+    read: true,
+  },
+  {
+    id: 'n5',
+    title: 'SEF delivered F-2026-0409 to Stanić Elektro STR',
+    company: 'Kvadrat Gradnja d.o.o.',
+    companyId: 'kvadrat',
+    type: 'documents',
+    at: '2026-10-05T11:02:00+02:00',
+    href: '#sales/invoices/F-2026-0409',
+    read: true,
+  },
+  {
+    id: 'n6',
+    title: 'VAT return for September is due on 15.10.2026.',
+    company: 'Panonija Agro d.o.o.',
+    companyId: 'panonija',
+    type: 'system',
+    at: '2026-10-02T07:00:00+02:00',
+    href: '#accounting/vat/2026-09',
+    read: true,
+  },
+  {
+    id: 'n7',
+    title: 'Jelena Marković approved UF-2026-1179 (386.400,00 RSD)',
+    company: 'Kvadrat Gradnja d.o.o.',
+    companyId: 'kvadrat',
+    type: 'approvals',
+    at: '2026-10-01T14:21:00+02:00',
+    href: '#purchasing/invoices/UF-2026-1179',
+    read: true,
+  },
+]
+
+/** The companies the notifications come from, for the company filter. */
+export const NOTIFICATION_COMPANIES = MANY_COMPANIES.map((company) => ({
+  value: company.id,
+  label: company.name,
+}))

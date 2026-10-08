@@ -1,6 +1,6 @@
-import type { MouseEvent, ReactNode } from 'react'
+import { useEffect, useRef, type MouseEvent, type ReactNode } from 'react'
 import { SectionCard } from '../components/cards'
-import { FormActions, useUnsavedChangesGuard } from '../components/form-layout'
+import { FormActions, FormBottomBar, useUnsavedChangesGuard } from '../components/form-layout'
 import type { StickyActions } from '../components/form-logic'
 import { KeyFigures, type KeyFigure } from '../components/key-figures'
 import { SECTION_SCROLL_MARGIN, SectionBar } from '../components/section-bar'
@@ -10,17 +10,25 @@ import { PageHeader, type PageBack } from './page-header'
 
 /*
  * DetailPage and RecordFormPage (BUILD-PLAN P4.4; the owner's values, docs/decisions.md "Detail
- * and record form pages").
+ * and record form pages"; view and edit mode from P4.9, "Records: one page, read and edited").
  * - The header: the back button, the title (h1, visible: it names the record), the status, a
  *   subtitle line, the actions at the end; then the key figures (KeyFigures), 16px under it.
- * - DetailPage: the sections as SectionCards (the system's record group, as the forms' FormSection),
- *   16px apart; an optional SectionBar, sticky under the shell, for long pages.
- * - The side column (FactBox-like panels, from the application): 300px from lg (75em), the old form
- *   value, 24px (lg) from the content, for both templates; below 75em it stands under the content,
- *   never hidden.
- * - RecordFormPage: the actions at the top and the bottom bar only while the top ones are out of
- *   view (FormActions), the unsaved-changes guard: while `dirty`, the back button and closing the
- *   page ask first.
+ * - DetailPage: the sections stacked as SectionCards (the system's record group, as the forms'
+ *   FormSection), 16px apart; values as plain text (KeyValueList), never disabled inputs; an
+ *   optional SectionBar, sticky under the shell, for long pages. A record has no tabs and no side
+ *   column (P4.9): history and files are sections too.
+ * - Edit mode (SAP Fiori, P4.9): one mode for the whole record. The application's one "Edit"
+ *   header action sets `mode` 'edit'; the same sections then show their `edit` content (fields)
+ *   in the same order, and a section with `editable: false` keeps its read-only content; the
+ *   header actions and section actions go away, and a bar sticky at the bottom (FormBottomBar:
+ *   "Unsaved changes" when `dirty`, `editActions` — Cancel, then Save — at the end) stays visible
+ *   while the page scrolls, on phones too; the first field takes the focus; while `dirty`, the
+ *   back button and closing the page ask first (one unsaved-changes guard). No per-section Edit
+ *   buttons.
+ * - The side column (`side`, for pages that are not records): 300px from lg (75em), 24px from
+ *   the content; below 75em and in the phone layout under the content, never hidden.
+ * - RecordFormPage: a new record's form (FormSections): the actions at the top and the bottom bar
+ *   only while the top ones are out of view (FormActions), the same unsaved-changes guard.
  * - Page padding 24px (lg), 16px (md) on phones, as ListPage; the content's maximum width.
  */
 
@@ -32,11 +40,19 @@ export interface DetailSection {
   label: string
   /** A line under the heading. */
   description?: ReactNode
-  /** Actions at the end of the section's header. */
+  /** Actions at the end of the section's header (view mode only). */
   actions?: ReactNode
   /** No padding around the content (a table). */
   flush?: boolean
+  /** The section's values to read (a KeyValueList). */
   content: ReactNode
+  /** The same values as fields, shown in edit mode. */
+  edit?: ReactNode
+  /**
+   * False keeps the read-only `content` in edit mode (the user may not change this part, from
+   * the application). Default: true when `edit` is given.
+   */
+  editable?: boolean
 }
 
 interface PageFrame {
@@ -50,7 +66,7 @@ interface PageFrame {
   subtitle?: ReactNode
   /** Two to four key figures under the title. */
   keyFigures?: readonly KeyFigure[]
-  /** The side column: panels from the application. */
+  /** The side column: panels from the application. Not on a record (P4.9). */
   side?: ReactNode
   /** 'desktop' or 'phone' forces one; default by the viewport (48em). */
   layout?: 'desktop' | 'phone'
@@ -58,17 +74,23 @@ interface PageFrame {
 }
 
 export interface DetailPageProps extends PageFrame {
-  /** The page's actions at the end of the header, the main one last. */
+  /** The page's actions at the end of the header, the main one last (view mode only). */
   actions?: ReactNode
   sections: readonly DetailSection[]
   /** The sticky section bar, for long pages. Default false. */
   sectionBar?: boolean
+  /** 'view' (default) or 'edit': the whole record at once, from the application. */
+  mode?: 'view' | 'edit'
+  /** Edit mode: the bottom bar's actions (an ActionGroup: Cancel, then Save). */
+  editActions?: ReactNode
+  /** Edit mode: unsaved changes; the bar says so, and leaving asks first. */
+  dirty?: boolean
 }
 
 export interface RecordFormPageProps extends PageFrame {
   /** The form's actions (an ActionGroup), at the top and in the bottom bar. */
   actions: ReactNode
-  /** The form: FormSections or FormTabs. */
+  /** The form: FormSections. */
   children: ReactNode
   /** Unsaved changes: the bottom bar says so, and leaving asks first. */
   dirty?: boolean
@@ -132,65 +154,18 @@ function Header({
   )
 }
 
-/** One record to read: its header, key figures, sections and side panels. */
-export function DetailPage(props: DetailPageProps) {
-  const viewportPhone = usePhone()
-  const phone = props.layout === undefined ? viewportPhone : props.layout === 'phone'
-  return (
-    <div data-slot="detail-page" className={frameClasses(phone, props.className)}>
-      <Header frame={props} phone={phone} actions={props.actions} />
-      {props.sectionBar === true && props.sections.length > 1 && (
-        <SectionBar
-          sections={props.sections.map((section) => ({ id: section.id, label: section.label }))}
-          className={phone ? '-mx-4 px-4' : '-mx-6 px-6'}
-        />
-      )}
-      <Columns side={props.side} phone={phone}>
-        {props.sections.map((section) => (
-          // The section bar scrolls here and moves the focus here (tabIndex -1).
-          <div
-            key={section.id}
-            id={section.id}
-            tabIndex={-1}
-            className={cn('outline-none', SECTION_SCROLL_MARGIN)}
-          >
-            <SectionCard
-              title={section.label}
-              headingLevel={2}
-              {...(section.description === undefined ? {} : { description: section.description })}
-              {...(section.actions === undefined ? {} : { actions: section.actions })}
-              {...(section.flush === true ? { flush: true } : {})}
-            >
-              {section.content}
-            </SectionCard>
-          </div>
-        ))}
-      </Columns>
-    </div>
-  )
-}
-
-/**
- * One record to create or edit on a full page (more than about ten fields, tabs or attachments,
- * AGENTS.md D14): back, title, the form with its actions at the top and the bottom bar, and the
- * unsaved-changes guard.
- */
-export function RecordFormPage(props: RecordFormPageProps) {
-  const viewportPhone = usePhone()
-  const phone = props.layout === undefined ? viewportPhone : props.layout === 'phone'
-  const guard = useUnsavedChangesGuard(props.dirty === true)
-
-  const back: PageBack | undefined =
-    props.back === undefined
+/** The back button that asks first while there are unsaved changes, and the guard's dialog. */
+function useGuardedBack(back: PageBack | undefined, dirty: boolean) {
+  const guard = useUnsavedChangesGuard(dirty)
+  const guarded: PageBack | undefined =
+    back === undefined
       ? undefined
       : {
-          ...props.back,
+          ...back,
           onClick: (event: MouseEvent<HTMLAnchorElement>) => {
-            props.back?.onClick?.(event)
+            back.onClick?.(event)
             const link = event.currentTarget
-            if (event.defaultPrevented || link.dataset.leaving === 'true' || props.dirty !== true) {
-              return
-            }
+            if (event.defaultPrevented || link.dataset.leaving === 'true' || !dirty) return
             // Ask first; on "Leave", follow the same link again (through the application's
             // router), marked so this handler lets it through.
             event.preventDefault()
@@ -201,6 +176,91 @@ export function RecordFormPage(props: RecordFormPageProps) {
             })
           },
         }
+  return { back: guarded, dialog: guard.dialog }
+}
+
+/** The fields that can take the focus when a record enters edit mode. */
+const FIELD =
+  'input:not([type=hidden]):not([disabled]):not([readonly]), textarea:not([disabled]), [role=combobox]:not([aria-disabled=true])'
+
+/** One record: its header, key figures and sections, read or edited as a whole. */
+export function DetailPage(props: DetailPageProps) {
+  const viewportPhone = usePhone()
+  const phone = props.layout === undefined ? viewportPhone : props.layout === 'phone'
+  const editing = props.mode === 'edit'
+  const { back, dialog } = useGuardedBack(props.back, editing && props.dirty === true)
+  const body = useRef<HTMLDivElement>(null)
+
+  // Entering edit mode moves the focus to the first field, where the user goes on.
+  useEffect(() => {
+    if (!editing) return
+    body.current?.querySelector<HTMLElement>(FIELD)?.focus()
+  }, [editing])
+
+  return (
+    <div
+      data-slot="detail-page"
+      data-mode={editing ? 'edit' : 'view'}
+      className={frameClasses(phone, props.className)}
+    >
+      <Header
+        frame={{ ...props, ...(back === undefined ? {} : { back }) }}
+        phone={phone}
+        {...(editing || props.actions === undefined ? {} : { actions: props.actions })}
+      />
+      {props.sectionBar === true && props.sections.length > 1 && (
+        <SectionBar
+          sections={props.sections.map((section) => ({ id: section.id, label: section.label }))}
+          className={phone ? '-mx-4 px-4' : '-mx-6 px-6'}
+        />
+      )}
+      <Columns side={props.side} phone={phone}>
+        <div ref={body} className="flex min-w-0 flex-col gap-4">
+          {props.sections.map((section) => {
+            const editable = section.editable ?? section.edit !== undefined
+            return (
+              // The section bar scrolls here and moves the focus here (tabIndex -1).
+              <div
+                key={section.id}
+                id={section.id}
+                tabIndex={-1}
+                className={cn('outline-none', SECTION_SCROLL_MARGIN)}
+              >
+                <SectionCard
+                  title={section.label}
+                  headingLevel={2}
+                  {...(section.description === undefined
+                    ? {}
+                    : { description: section.description })}
+                  {...(section.actions === undefined || editing
+                    ? {}
+                    : { actions: section.actions })}
+                  {...(section.flush === true ? { flush: true } : {})}
+                >
+                  {editing && editable ? section.edit : section.content}
+                </SectionCard>
+              </div>
+            )
+          })}
+        </div>
+        {editing && props.editActions !== undefined && (
+          <FormBottomBar actions={props.editActions} dirty={props.dirty === true} />
+        )}
+      </Columns>
+      {dialog}
+    </div>
+  )
+}
+
+/**
+ * One new record to create on a full page (more than about ten fields or attachments, AGENTS.md
+ * D14): back, title, the form with its actions at the top and the bottom bar, and the
+ * unsaved-changes guard. An existing record is edited on its DetailPage (`mode` 'edit').
+ */
+export function RecordFormPage(props: RecordFormPageProps) {
+  const viewportPhone = usePhone()
+  const phone = props.layout === undefined ? viewportPhone : props.layout === 'phone'
+  const { back, dialog } = useGuardedBack(props.back, props.dirty === true)
 
   return (
     <div data-slot="record-form-page" className={frameClasses(phone, props.className)}>
@@ -214,7 +274,7 @@ export function RecordFormPage(props: RecordFormPageProps) {
           {props.children}
         </FormActions>
       </Columns>
-      {guard.dialog}
+      {dialog}
     </div>
   )
 }

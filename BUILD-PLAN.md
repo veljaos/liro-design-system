@@ -287,6 +287,7 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P4.7b | Small-size favicon | P4.7 | done | 2026-10-07 | The owner rejected the three pixel-grid variants and drew the small mark from the logo's rule; his favicon.svg, favicon.ico (16, 32, 48) and 16/32px PNGs copied as they are; Storybook links favicon.svg first and favicon.ico as the fallback, both `?v=2` |
 | P4.7c | Fixes from the owner's P4.7a review | P4.7a | done | 2026-10-07 | Light warning.solid orange6 (icons only, on raised surfaces; tested); Tabs start-aligned by default (D16: only the shell's module tabs centred); believable daily data, equal ticks; lines straight up to 31 points with dots up to 12; categorical palette without status hues (blue, magenta, purple, teal, indigo; validated, ≥3:1, Palette story); radial labels with values in one blue; `format.percent` (CLDR) |
 | P4.8 | Example screens | P4.2–P4.7c | done | 2026-10-07 | Storybook "Examples": sign in, home, invoice list, invoice F-2026-0412, overview, approvals, employee record, 404 — one dataset (the same invoice and totals in list, document and overview), linked through LiroProvider's `linkComponent` into one walk-through; desktop and phone, both themes and directions; public entry points only |
+| P4.9 | Fixes from the owner's Storybook review | P4.8 | done | 2026-10-08 | Company switcher for thousands, notifications panel and page, record view/edit mode, approvals with reasons, counts through format, flat lists on phones, live launchpad drag, charts table in RTL; the class fixed, not the instance |
 | P5.1 | History, comments and messages | P2.8 | todo | | |
 | P5.2 | Presence and agent marking | P2.8 | todo | | |
 | P5.3 | Connection, environment and session markers | P4.1 | todo | | |
@@ -304,6 +305,10 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P5.15 | Print templates | P4.5 | todo | | |
 | P5.16 | Portal shell | P4.1 | todo | | |
 | P5.17 | Industry example screens | P5.8–P5.16 | todo | | |
+| P5.18 | Complex documents | P4.5, P3.4 | todo | | |
+| P5.19 | Catalogs at scale | P3.1, P2.2 | todo | | |
+| P5.20 | Registers and official forms | P4.4, P5.1 | todo | | |
+| P5.21 | Common business processes | P3.4, P4.3 | todo | | |
 | P6.1 | Full language and direction matrix | Phases 1–5 | todo | | |
 | P6.2 | Manual WCAG 2.2 checks | P6.1 | todo | | |
 | P6.3 | Performance budget | P4.8 | todo | | |
@@ -557,6 +562,14 @@ Rules for every chart:
 
 **Done when** the owner can open the examples and see Liro as it will look.
 
+### P4.9 — Fixes from the owner's Storybook review (owner, 2026-10-08)
+**Do** in one pull request, fixing each class of fault everywhere in the library (components, templates, examples, docs), not only the instance found, and recording each general rule in `docs/decisions.md`:
+- **Shell and navigation:** a company switcher for thousands of companies (search by name or tax number; pinned, then recent, then all; keyboard; virtualised; status for suspended or inactive companies; labelled or no counts; "Switch company…" in the command palette; a full-screen sheet on phones; a clear empty result); notifications — the bell keeps its dot, a panel of recent notifications with the unread count, "Mark all as read" and "View all", and a `NotificationsPage` (grouped by day, All / Unread, by company and type, read state per item, settings link, empty states) in the walk-through; no company heading on the home page (a hidden h1), the overview's subtitle only the period, no breadcrumbs with one level; a live launchpad drag (the card lifts, the others move aside, a drop placeholder, no grey ghost, none of the motion under reduced motion; the keyboard stays); a suspended page for a company or an account; a neutral sign-out.
+- **Lists, documents, records, reports:** every count through `format`; the due date always shown, its state as small tone text; "All" as an empty filter's placeholder; amounts never rounded; saved views as tabs with "More" (a select on phones), phone filter bar with search first and Export in a menu; no white area under tables; one spacing rule for side panels; related documents as links with type, number and status; comments with the latest two and "Show all"; the document header as slots; a simple draft document; approvals decided in the detail with a reason for rejecting, the next item opening and Undo; records in one view/edit mode without tabs or side column; one dialog footer.
+- **Phone and right-to-left:** no cards inside a card; key figures in two columns; the bottom bar within thumb reach; no horizontal overflow at 360px; a fade at the edge of scrolling module tabs; charts in one column; label above value; words never broken; one label per setting; the charts' table view right in right-to-left, with baselines.
+
+**Done when** every item of the owner's list holds in Storybook in light, dark, right-to-left and at 360px, the new and changed components pass axe and the keyboard, and CI with new baselines is green.
+
 **End of Phase 4:** `0.1.0-alpha.4`; report with the Storybook path of every example screen.
 
 ---
@@ -584,6 +597,8 @@ All generic: labels and states come in as props.
 
 ### P5.6 — Sign-in building blocks
 **Do** building blocks only, the flows live in `liro-core`: `EmailFirstForm`, `PasswordField` (paste allowed, show/hide), `CodeInput` for one-time codes (paste of the whole code works), `RecoveryCodes` (shown once, copy, download, print, "I have saved them" confirmation), `SessionList` (device, place, time, revoke, "this wasn't me" action slot).
+
+**Addition (owner, 2026-10-08).** Reference: https://ui.shadcn.com/blocks/login — our `AuthShell` matches login-03 and `EmailFirstForm` matches login-05. Add `ProviderSignInButtons` ("Continue with Microsoft" / "Continue with Google"; the providers and their labels from props; each provider's official mark drawn as its brand rules require; neutral buttons, never the provider's colours as a fill) with an "or" divider between them and the e-mail form; optional slots under the form for a "No account?" link and a terms and privacy sentence. No cover-image variants (owner's decision in P4.7).
 
 ### P5.7 — Kanban board
 **Do** `KanbanBoard` with columns and cards, drag **and** a keyboard/menu alternative for moving a card (WCAG 2.2 dragging), rtl-correct.
@@ -619,6 +634,56 @@ All generic: labels and states come in as props.
 
 ### P5.17 — Industry example screens
 **Do** in Storybook "Examples": appointment booking (Health), POS checkout, warehouse picking on a handheld, a school timetable and attendance, a course lesson. Realistic Serbian data, English interface text, both themes, both directions, phone width. After P5.8–P5.16.
+
+### P5.18 — Complex documents (owner, 2026-10-08)
+A design question, not a list of business cases: the `DocumentPage` layout must stay calm and readable when a document carries a lot of structure. All rules, codes, numbers and legal texts come from the Core as data; the Design System only presents them and offers them for choice.
+
+**Building blocks**
+- **Line types:** item, service, free-text line, section heading with subtotal, line and document discount, deduction line (e.g. an advance).
+- **One search field per line instead of a "Type" column:** the user types a name, code or asset number and the results are grouped by kind (Items with stock and warehouse, Services, Fixed assets, other kinds the Core allows for this document type). The kind is taken from the chosen result and shown as a small secondary text label in the line (no colour). Kind-specific details from props: a stock warning when the quantity exceeds the stock; the asset number and a sale note for fixed assets; internal values (e.g. book value) never on the customer's PDF. An "Add line ▾" menu for the rarer line types (text line, section heading, discount); Enter adds a normal line; which kinds are allowed per document comes from the Core. When the search finds nothing, the list ends with "+ Create service '…'" / "+ Create item '…'" (kinds and labels from props), opening a small panel (name, unit of measure, price, tax category) that saves and fills the line without leaving the document. A one-off line without a catalogue entry is allowed only when the Core says so, and then requires an account and a tax category.
+- **Every line carries a tax category** (code and rate, e.g. "S 20%", "S 10%", "AE", "E", as the e-invoice system requires) **and a unit of measure** (display name and code, e.g. "pc" with its standard code); both chosen from lists supplied by the Core.
+- **`DocumentReferences` block:** links to related documents — proforma, advances, the original document, delivery notes, contract and order numbers.
+- **Currency block** for foreign-currency documents: currency, rate, rate date, equivalents in the home currency.
+- **Notes block:** template texts and free notes.
+- **Attachments** with a "send with the e-invoice" flag.
+- **Specification:** created and edited the same way as document lines (EditableGrid, line by line, the same keyboard shortcuts, a tax category and unit of measure per line), grouped with subtotals per group; it can also be produced as an attachment.
+
+**Design principles**
+- A fixed block order: header → "Based on" references → lines → totals → notes → attachments; a block without content is not rendered.
+- References as one line of links: "Based on: Proforma PR-2026-031 · Advances A-2026-031, A-2026-044 · Contract 12/2026".
+- Line types distinguished by typography, not colour: a section heading bold across the row; a subtotal end-aligned, semibold, with a rule above; a text line smaller and secondary; discounts as negative amounts.
+- The tax category shown as a short code with the rate in the VAT column; exemption and reverse-charge reasons appear once, as footnotes under the totals ("Exempt¹", "AE²").
+- The totals block ends with a recap by tax category (category, base, rate, VAT), then the deductions (one row per advance with its number), then a bold "Amount due"; a specification ends with subtotals per group and the same recap.
+- Foreign currency: lines in the document's currency; the home-currency equivalents and the rate line only in the totals block.
+- A long specification is not inside the lines table: a summary row ("Specification of works: 84 positions, 2.418.300,00 RSD") with "Open", which shows the full-width specification (columns previous / this period / cumulative where relevant).
+- On phones the same order; tables become lists; footnotes stay.
+
+**Corrective documents (addition, owner, 2026-10-08).** A template for decrease and increase documents, linked to one original document or to several documents for a period, with lines shown as Original / Change / New. Cancellation (storno) as an action on an issued document: a required reason, `IrreversibleConfirmDialog`, then the status "Cancelled", a visible marker on the page and on the PDF, and links both ways between the document and its cancellation.
+
+**Done when** two or three stress-test examples put many of these on one document — for example a final invoice deducting two advances, with notes, references and attachments; a construction interim situation with a long specification of works; an invoice in EUR with mixed tax categories — in light, dark, right-to-left and phone versions, all numbers consistent.
+
+### P5.19 — Catalogs at scale (owner, 2026-10-08)
+**Do** for catalogues of tens of thousands of records (customers, items, services, accounts):
+- `LookupField` for forms and document lines: asynchronous search while typing, recent records first, "+ Create …" when nothing is found.
+- `LookupDialog` ("Search all…"): the full table with filters, columns, keyset paging and keyboard selection.
+- Bulk work on catalogue lists: import from Excel or CSV with column mapping and a validation preview before anything is saved; edit several records at once; inactive records hidden but not deleted (a filter shows them); a duplicate warning (the same PIB or name) from the Core.
+
+### P5.20 — Registers and official forms (owner, 2026-10-08)
+**Do**
+- `RegisterPage`: a chronological register for a period (e.g. VAT records, the work-injury register, the safety-training register). Entries are never deleted, only corrected by a new entry that references the old one; locked periods clearly marked; export and print.
+- `StatutoryFormPage`: mirrors an official form with its own section and field numbers (e.g. "3.2", "8a.1"); values prefilled from the books, each amount drills down to its source documents; manually overridden values clearly marked with who and when; rule checks ("5.4 must equal 5.1 + 5.2 + 5.3") shown next to the field and in a summary; comparison with the previous period; status draft → checked → submitted; print and export.
+- Field definitions, numbering, rules and texts come from the Core as data. Guided forms may use the Questionnaire (P5.1).
+
+**Done when** a VAT return form and a work-injury register for Kvadrat Gradnja are examples in light, dark, right-to-left and phone width.
+
+### P5.21 — Common business processes (owner, 2026-10-08)
+**Do** generic building blocks; the data comes from the Core:
+- `MatchingView` (reconciliation): two lists side by side (e.g. bank statement lines and open invoices), suggested matches with a confidence label, match and unmatch, partial matches, keyboard support; on phones one list at a time.
+- **Balanced entry** (journal entry): an EditableGrid with an always-visible Debit / Credit / Difference bar; a non-zero difference is clearly marked and blocks posting (the rule from the Core).
+- `PeriodicRunPage` (payroll, depreciation, VAT period close): the steps prepare → calculate → review → post → send, checks per step, a preview before posting, the period's lock state, a rerun with a reason.
+- **Users and roles:** a role list and a permissions matrix (areas × actions) for a company administrator; who has which role; the state of invitations.
+- `SetupChecklist`: the first-run steps of a new company (company data, e-invoicing connection, import customers, first invoice) with progress and resume.
+- **Signing:** the list of signers in order, the state per signer (waiting, signed, declined), the current user's "Sign" action and the document's preview; the signing itself is done by the Core / Liro Bridge.
 
 **End of Phase 5:** `0.1.0-alpha.5`; report.
 

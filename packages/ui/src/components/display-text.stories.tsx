@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import type { ReactNode } from 'react'
-import { expect, userEvent, within } from 'storybook/test'
+import { expect } from 'storybook/test'
 import { settle } from '../primitives/story-helpers'
 import { LiroProvider, useLiro } from '../provider/liro-provider'
 import { DateRangeText, DateText, DueDate, MoneyText, NumberText } from './display-text'
@@ -33,8 +33,9 @@ const meta = {
           "**DateText** — a date in the locale's form, tabular digits; `withWeekday` adds a " +
           'tooltip with the weekday and the date in words; `dimmed` for dates that matter less. ' +
           '**DateRangeText** — "from – to". **DueDate** — measured from the provider\'s `today` ' +
-          '(28 September 2026 in these stories): settled, overdue with the days in the badge ' +
-          'itself, due today, due within `warningDays`, or the plain date. **NumberText** and ' +
+          '(28 September 2026 in these stories): always the date, then a short note in xs — ' +
+          'overdue with the days (danger), due today or within `warningDays` (warning), settled ' +
+          '(secondary); never a badge, so a due column is never a second status. **NumberText** and ' +
           "**MoneyText** — through the provider's `format`, never rounded, isolated so the " +
           'minus sign and the currency stay in place in right-to-left. Every empty value is ' +
           '"—".\n\n' +
@@ -82,18 +83,22 @@ export const DueDates: Story = {
   ),
 }
 
-/** The due date in a tooltip, from the keyboard. */
-export const DueDateTooltip: Story = {
-  name: 'DueDate, tooltip on focus',
+/**
+ * In a narrow column the note wraps under the date; the date always stays (P4.9: the date is
+ * what a due column is read for).
+ */
+export const DueDateNarrow: Story = {
+  name: 'DueDate, narrow column',
   render: () => (
-    <div className="min-h-20 pt-10">
+    <div className="flex w-30 flex-col gap-3 text-sm">
       <DueDate value="2026-09-25" />
+      <DueDate value="2026-09-30" />
+      <DueDate value="2026-09-01" settled />
     </div>
   ),
   play: async ({ canvasElement }) => {
-    await userEvent.tab()
-    const body = within(canvasElement.ownerDocument.body)
-    await expect(await body.findByRole('tooltip')).toHaveTextContent('09/25/2026')
+    await expect(canvasElement).toHaveTextContent('09/25/2026')
+    await expect(canvasElement).toHaveTextContent('3 days overdue')
     await settle()
   },
 }

@@ -3,6 +3,8 @@
  * Kvadrat Gradnja d.o.o., in RSD. Not part of the package: nothing in src/charts/index.ts imports
  * this file. No classes here: Storybook compiles classes only from *.stories.tsx files.
  */
+import { expect, userEvent, within } from 'storybook/test'
+import { settle } from '../primitives/story-helpers'
 import type { CartesianChartProps } from './cartesian'
 import type { ChartCategory } from './shared'
 
@@ -362,4 +364,19 @@ export function dailyTotal(store: 'beograd' | 'noviSad', days: number): string {
     0,
   )
   return `${String(Math.trunc(paras / 100))}.${String(paras % 100).padStart(2, '0')}`
+}
+
+/**
+ * A story's play function: opens the first chart's "Show as table" and checks the table, so the
+ * table view of every chart family has its pictures in the four modes (P4.9: it was wrong in
+ * right-to-left and had no baseline).
+ */
+export async function showTable({ canvasElement }: { canvasElement: HTMLElement }) {
+  await settle()
+  const canvas = within(canvasElement)
+  const button = canvas.getAllByRole('button', { name: 'Show as table' }).at(0)
+  if (button === undefined) throw new Error('No "Show as table" button')
+  await userEvent.click(button)
+  await expect(canvas.getByRole('table')).toBeVisible()
+  await settle()
 }

@@ -1,13 +1,18 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { FileText, Send } from 'lucide-react'
-import { useState } from 'react'
+import { FileCheck, Send } from 'lucide-react'
+import { useState, type ReactNode } from 'react'
 import { expect, userEvent, within } from 'storybook/test'
 import { Button } from '../components/button'
+import { KeyValueList } from '../components/cards'
+import { ChangeableValue } from '../components/changeable-value'
 import { DataTable, type DataTableColumn } from '../components/data-table'
+import { DateField } from '../components/date-field'
 import { DateText, MoneyText } from '../components/display-text'
 import { EditableGrid, type EditableGridColumn } from '../components/editable-grid'
+import { ActivityList, RelatedDocuments } from '../components/panel-lists'
 import { StatusBadge } from '../components/status-badge'
 import { ExampleProvider, PhoneFrame, StoryProvider } from '../components/story-frames'
+import { TextField } from '../components/text-field'
 import type { TotalsRow } from '../components/document-totals'
 import type { LifecycleStep } from '../components/lifecycle-bar'
 import type { SidePanel } from '../components/side-panels'
@@ -24,7 +29,8 @@ interface Line {
   quantity: string
   unit: string
   price: string
-  vat: '20%' | '10%'
+  /** The tax category and rate, as the e-invoice system names them ("S 20%"). */
+  vat: 'S 20%' | 'S 10%'
   amount: string
 }
 
@@ -36,7 +42,7 @@ const LINES: Line[] = [
     quantity: '120',
     unit: 'bag',
     price: '685.00',
-    vat: '20%',
+    vat: 'S 20%',
     amount: '82200.00',
   },
   {
@@ -45,7 +51,7 @@ const LINES: Line[] = [
     quantity: '18',
     unit: 'pc',
     price: '2940.00',
-    vat: '20%',
+    vat: 'S 20%',
     amount: '52920.00',
   },
   {
@@ -54,7 +60,7 @@ const LINES: Line[] = [
     quantity: '1',
     unit: 'trip',
     price: '9800.00',
-    vat: '20%',
+    vat: 'S 20%',
     amount: '9800.00',
   },
   {
@@ -63,7 +69,7 @@ const LINES: Line[] = [
     quantity: '2',
     unit: 'set',
     price: '4250.00',
-    vat: '10%',
+    vat: 'S 10%',
     amount: '8500.00',
   },
 ]
@@ -85,7 +91,7 @@ const COLUMNS: DataTableColumn<Line>[] = [
     numeric: true,
     cell: (line) => <MoneyText value={line.price} currency="RSD" />,
   },
-  { id: 'vat', header: 'VAT', align: 'end', numeric: true, cell: (line) => line.vat },
+  { id: 'vat', header: 'VAT', cell: (line) => line.vat },
   {
     id: 'amount',
     header: 'Amount',
@@ -95,21 +101,17 @@ const COLUMNS: DataTableColumn<Line>[] = [
   },
 ]
 
+/** As the application sends them: bases and VAT of the lines above, the total, the advance. */
 const TOTAL_ROWS: TotalsRow[] = [
-  { key: 'base20', label: 'Tax base 20%', value: '144920.00', currency: 'RSD' },
-  { key: 'vat20', label: 'VAT 20%', value: '28984.00', currency: 'RSD' },
-  { key: 'base10', label: 'Tax base 10%', value: '8500.00', currency: 'RSD', group: true },
-  { key: 'vat10', label: 'VAT 10%', value: '850.00', currency: 'RSD' },
-  {
-    key: 'advance',
-    label: 'Advance deducted (A-2026-031)',
-    value: '-50000.00',
-    currency: 'RSD',
-    group: true,
-  },
+  { key: 'base20', label: 'Tax base S 20%', value: '144920.00', currency: 'RSD' },
+  { key: 'vat20', label: 'VAT S 20%', value: '28984.00', currency: 'RSD' },
+  { key: 'base10', label: 'Tax base S 10%', value: '8500.00', currency: 'RSD', group: true },
+  { key: 'vat10', label: 'VAT S 10%', value: '850.00', currency: 'RSD' },
+  { key: 'total', label: 'Invoice total', value: '183254.00', currency: 'RSD', group: true },
+  { key: 'advance', label: 'Advance A-2026-031', value: '-50000.00', currency: 'RSD' },
 ]
 
-const TOTAL: TotalsRow = { key: 'total', label: 'Amount due', value: '133254.00', currency: 'RSD' }
+const TOTAL: TotalsRow = { key: 'due', label: 'Amount due', value: '133254.00', currency: 'RSD' }
 
 const STEPS: LifecycleStep[] = [
   { key: 'draft', label: 'Draft' },
@@ -129,36 +131,56 @@ const REJECTED: LifecycleStep[] = [
   { key: 'paid', label: 'Paid' },
 ]
 
+/** A time as the application writes it (`format.dateTime` in the tenant's zone). */
+function Time({ children }: { children: ReactNode }) {
+  return <span dir="ltr">{children}</span>
+}
+
 const PANELS: SidePanel[] = [
   {
     key: 'delivery',
     title: 'Delivery',
     content: (
-      <dl className="m-0 flex flex-col gap-2 text-sm">
-        <div className="flex justify-between gap-2">
-          <dt className="text-secondary">SEF</dt>
-          <dd className="m-0">
-            <StatusBadge label="Delivered" tone="info" />
-          </dd>
-        </div>
-        <div className="flex justify-between gap-2">
-          <dt className="text-secondary">Sent</dt>
-          <dd className="m-0 tabular-nums" dir="ltr">
-            28.09.2026. 10:42
-          </dd>
-        </div>
-      </dl>
+      <KeyValueList
+        columns={1}
+        items={[
+          { label: 'SEF', value: <StatusBadge label="Delivered" tone="success" /> },
+          { label: 'Sent', value: <Time>28.09.2026. 10:42</Time>, numeric: true },
+        ]}
+      />
     ),
   },
   {
     key: 'related',
     title: 'Related documents',
-    count: 2,
+    count: 3,
     content: (
-      <ul className="m-0 flex list-none flex-col gap-2 p-0 text-sm">
-        <li>Order N-2026-0157</li>
-        <li>Delivery note OTP-2026-0311</li>
-      </ul>
+      <RelatedDocuments
+        label="Related documents"
+        items={[
+          {
+            key: 'order',
+            type: 'Order',
+            number: 'N-2026-0157',
+            href: '#sales/orders/N-2026-0157',
+            status: <StatusBadge label="Completed" tone="neutral" />,
+          },
+          {
+            key: 'delivery',
+            type: 'Delivery note',
+            number: 'OTP-2026-0311',
+            href: '#sales/deliveries/OTP-2026-0311',
+            status: <StatusBadge label="Delivered" tone="success" />,
+          },
+          {
+            key: 'advance',
+            type: 'Advance invoice',
+            number: 'A-2026-031',
+            href: '#sales/invoices/A-2026-031',
+            status: <StatusBadge label="Paid" tone="success" />,
+          },
+        ]}
+      />
     ),
   },
   {
@@ -166,10 +188,13 @@ const PANELS: SidePanel[] = [
     title: 'Attachments',
     count: 2,
     content: (
-      <ul className="m-0 flex list-none flex-col gap-2 p-0 text-sm">
-        <li>Otpremnica 0311.pdf</li>
-        <li>Ugovor 2026-04.pdf</li>
-      </ul>
+      <RelatedDocuments
+        label="Attachments"
+        items={[
+          { key: 'a', type: 'PDF, 184 KB', number: 'Otpremnica 0311.pdf', href: '#files/0311' },
+          { key: 'b', type: 'PDF, 92 KB', number: 'Ugovor 2026-04.pdf', href: '#files/2026-04' },
+        ]}
+      />
     ),
   },
   {
@@ -177,15 +202,59 @@ const PANELS: SidePanel[] = [
     title: 'Comments',
     count: 3,
     content: (
-      <p className={cn('m-0 text-sm', TEXT_DIRECTION)}>
-        Dragan Ilić: Customer asked for delivery on Friday.
-      </p>
+      <ActivityList
+        label="Comments"
+        items={[
+          {
+            key: 'c3',
+            author: 'Dragan Ilić',
+            time: <Time>02.10.2026. 09:15</Time>,
+            text: 'Customer asked for delivery on Friday.',
+          },
+          {
+            key: 'c2',
+            author: 'Milica Petrović',
+            time: <Time>29.09.2026. 13:40</Time>,
+            text: 'Advance A-2026-031 deducted, as agreed with Panonija.',
+          },
+          {
+            key: 'c1',
+            author: 'Jelena Marković',
+            time: <Time>28.09.2026. 10:05</Time>,
+            text: 'Prices checked against the September price list.',
+          },
+        ]}
+      />
     ),
   },
   {
     key: 'history',
     title: 'History',
-    content: <p className="m-0 text-sm">Issued by Milica Petrović, 28.09.2026.</p>,
+    content: (
+      <ActivityList
+        label="History"
+        items={[
+          {
+            key: 'h3',
+            author: 'Milica Petrović',
+            time: <Time>28.09.2026. 10:42</Time>,
+            text: 'Sent to SEF',
+          },
+          {
+            key: 'h2',
+            author: 'Milica Petrović',
+            time: <Time>28.09.2026. 10:40</Time>,
+            text: 'Issued',
+          },
+          {
+            key: 'h1',
+            author: 'Milica Petrović',
+            time: <Time>26.09.2026. 14:05</Time>,
+            text: 'Created the draft',
+          },
+        ]}
+      />
+    ),
   },
 ]
 
@@ -202,7 +271,7 @@ const BASE: DocumentPageProps = {
   },
   keyFigures: [
     { label: 'Amount due', value: <MoneyText value="133254.00" currency="RSD" /> },
-    { label: 'Issued', value: <DateText value="2026-09-28" /> },
+    { label: 'Invoice total', value: <MoneyText value="183254.00" currency="RSD" /> },
     { label: 'Due', value: <DateText value="2026-10-13" /> },
   ],
   actions: (
@@ -239,8 +308,9 @@ const BASE: DocumentPageProps = {
 /** The invoice as the Core would drive it: the panel states live here. */
 function Invoice({
   layout = 'desktop',
+  bottomBar,
   ...props
-}: Partial<DocumentPageProps> & { layout?: DocumentPageProps['layout'] }) {
+}: Partial<DocumentPageProps> & { layout?: DocumentPageProps['layout']; bottomBar?: ReactNode }) {
   const [open, setOpen] = useState<string[]>(['delivery', 'related', 'attachments'])
   const [hidden, setHidden] = useState(false)
   return (
@@ -253,6 +323,7 @@ function Invoice({
       companies={{ items: COMPANIES, current: 'kvadrat', onSelect: () => undefined }}
       user={USER}
       moduleTabs={SALES_TABS}
+      {...(bottomBar === undefined ? {} : { bottomBar })}
     >
       <DocumentPage
         {...BASE}
@@ -267,11 +338,85 @@ function Invoice({
   )
 }
 
+// ── The draft ──────────────────────────────────────────────────────────────────────────────
+
 interface DraftLine {
   id: string
   item: string
   quantity: string | null
+  unit: string
   price: string | null
+  vat: string
+}
+
+/** Units of measure from the Core: the display name, with the standard code as the option's value. */
+const UNITS = [
+  { value: 'H87', label: 'pc' },
+  { value: 'XBG', label: 'bag' },
+  { value: 'SET', label: 'set' },
+  { value: 'E54', label: 'trip' },
+]
+
+/** Tax categories from the Core: code and rate, as the e-invoice system requires. */
+const TAX_CATEGORIES = [
+  { value: 'S20', label: 'S 20%', rate: '20' },
+  { value: 'S10', label: 'S 10%', rate: '10' },
+]
+
+// The application's arithmetic, played by the story on decimal strings (components never add).
+function toUnits(value: string, places: number): bigint {
+  const [whole = '0', fraction = ''] = value.split('.')
+  return BigInt(whole + fraction.padEnd(places, '0').slice(0, places))
+}
+
+function fromUnits(units: bigint, places: number): string {
+  const digits = units.toString().padStart(places + 1, '0')
+  return `${digits.slice(0, -places)}.${digits.slice(-places)}`
+}
+
+/** Rounds `places + extra` decimals to `places`, half up (amounts here are never negative). */
+function roundUnits(units: bigint, extra: number): bigint {
+  const factor = 10n ** BigInt(extra)
+  return (units + factor / 2n) / factor
+}
+
+/** The line's amount: quantity × price, to the para. */
+function amountOf(line: DraftLine): string | null {
+  if (line.quantity === null || line.price === null) return null
+  return fromUnits(roundUnits(toUnits(line.quantity, 3) * toUnits(line.price, 2), 3), 2)
+}
+
+/** Bases and VAT per tax category, the total: what the Core would send for the draft. */
+function draftTotals(lines: readonly DraftLine[]): { rows: TotalsRow[]; total: TotalsRow } {
+  const rows: TotalsRow[] = []
+  let total = 0n
+  for (const category of TAX_CATEGORIES) {
+    const base = lines
+      .filter((line) => line.vat === category.value)
+      .reduce((sum, line) => sum + toUnits(amountOf(line) ?? '0', 2), 0n)
+    if (base === 0n) continue
+    const vat = roundUnits(base * toUnits(category.rate, 0), 2)
+    total += base + vat
+    rows.push(
+      {
+        key: `base-${category.value}`,
+        label: `Tax base ${category.label}`,
+        value: fromUnits(base, 2),
+        currency: 'RSD',
+        ...(rows.length > 0 ? { group: true } : {}),
+      },
+      {
+        key: `vat-${category.value}`,
+        label: `VAT ${category.label}`,
+        value: fromUnits(vat, 2),
+        currency: 'RSD',
+      },
+    )
+  }
+  return {
+    rows,
+    total: { key: 'total', label: 'Invoice total', value: fromUnits(total, 2), currency: 'RSD' },
+  }
 }
 
 const DRAFT_COLUMNS: EditableGridColumn<DraftLine>[] = [
@@ -280,46 +425,153 @@ const DRAFT_COLUMNS: EditableGridColumn<DraftLine>[] = [
     id: 'quantity',
     header: 'Quantity',
     type: 'number',
-    width: 120,
+    width: 100,
     value: (line) => line.quantity,
+  },
+  {
+    id: 'unit',
+    header: 'Unit',
+    type: 'select',
+    width: 90,
+    value: (line) => line.unit,
+    options: UNITS,
   },
   {
     id: 'price',
     header: 'Price',
     type: 'number',
-    width: 160,
+    width: 140,
     decimals: 2,
     value: (line) => line.price,
   },
+  {
+    id: 'vat',
+    header: 'VAT',
+    type: 'select',
+    width: 100,
+    value: (line) => line.vat,
+    options: TAX_CATEGORIES,
+  },
+  {
+    id: 'amount',
+    header: 'Amount',
+    type: 'display',
+    width: 150,
+    align: 'end',
+    numeric: true,
+    display: (line) => <MoneyText value={amountOf(line)} currency="RSD" />,
+  },
 ]
 
-/** A draft: the lines in the editable grid. */
-function DraftLines() {
-  const [lines, setLines] = useState<DraftLine[]>([
-    { id: 'a', item: 'Cement CEM II 42,5 R, 25 kg', quantity: '120', price: '685.00' },
-    { id: 'b', item: 'Armature mesh Q188, 2,15 × 6 m', quantity: '18', price: '2940.00' },
-  ])
+const DRAFT_LINES: DraftLine[] = [
+  {
+    id: 'a',
+    item: 'Cement CEM II 42,5 R, 25 kg',
+    quantity: '120',
+    unit: 'XBG',
+    price: '685.00',
+    vat: 'S20',
+  },
+  {
+    id: 'b',
+    item: 'Armature mesh Q188, 2,15 × 6 m',
+    quantity: '18',
+    unit: 'H87',
+    price: '2940.00',
+    vat: 'S20',
+  },
+  {
+    id: 'c',
+    item: 'Technical drawings, printed set',
+    quantity: '2',
+    unit: 'SET',
+    price: '4250.00',
+    vat: 'S10',
+  },
+]
+
+/**
+ * A draft as the Core would show it: no side panels (no attachments yet), Preview and Issue
+ * invoice, the values the system filled in as values that can be changed, the lines in the
+ * editable grid with unit, tax category and amount, totals that follow the lines.
+ */
+function DraftInvoice({ layout = 'desktop' }: { layout?: 'desktop' | 'phone' }) {
+  const [lines, setLines] = useState<DraftLine[]>(DRAFT_LINES)
+  const [number, setNumber] = useState('F-2026-0413')
+  const [issued, setIssued] = useState<string | null>('2026-10-06')
+  const [due, setDue] = useState<string | null>('2026-10-21')
+  const totals = draftTotals(lines)
+  const issue = (
+    <Button family="primary" icon={FileCheck} label="Issue invoice" emphasis="primary" />
+  )
   return (
-    <EditableGrid<DraftLine>
-      label="Lines"
-      columns={DRAFT_COLUMNS}
-      rows={lines}
-      getRowId={(line) => line.id}
-      onCellChange={(rowId, columnId, value) => {
-        setLines((current) =>
-          current.map((line) => (line.id === rowId ? { ...line, [columnId]: value } : line)),
-        )
-      }}
-      onAddRow={(index) => {
-        setLines((current) => [
-          ...current.slice(0, index),
-          { id: String(Date.now()), item: '', quantity: null, price: null },
-          ...current.slice(index),
-        ])
-      }}
-      onRemoveRow={(rowId) => {
-        setLines((current) => current.filter((line) => line.id !== rowId))
-      }}
+    <Invoice
+      layout={layout}
+      title="New invoice"
+      status={<StatusBadge label="Draft" tone="neutral" />}
+      lifecycle={{ steps: STEPS, current: 0, label: 'Invoice status' }}
+      keyFigures={[]}
+      details={
+        <>
+          <ChangeableValue
+            label="Number"
+            value={<span dir="ltr">{number}</span>}
+            field={<TextField label="Number" direction="ltr" value={number} onChange={setNumber} />}
+          />
+          <ChangeableValue
+            label="Issue date"
+            value={<DateText value={issued} />}
+            field={<DateField label="Issue date" value={issued} onChange={setIssued} />}
+          />
+          <ChangeableValue
+            label="Due date"
+            value={<DateText value={due} />}
+            field={<DateField label="Due date" value={due} onChange={setDue} />}
+          />
+        </>
+      }
+      lines={
+        <EditableGrid<DraftLine>
+          label="Lines"
+          inCard
+          layout={layout}
+          columns={DRAFT_COLUMNS}
+          rows={lines}
+          getRowId={(line) => line.id}
+          onCellChange={(rowId, columnId, value) => {
+            setLines((current) =>
+              current.map((line) => (line.id === rowId ? { ...line, [columnId]: value } : line)),
+            )
+          }}
+          onAddRow={(index) => {
+            setLines((current) => [
+              ...current.slice(0, index),
+              {
+                id: String(Date.now()),
+                item: '',
+                quantity: null,
+                unit: 'H87',
+                price: null,
+                vat: 'S20',
+              },
+              ...current.slice(index),
+            ])
+          }}
+          onRemoveRow={(rowId) => {
+            setLines((current) => current.filter((line) => line.id !== rowId))
+          }}
+        />
+      }
+      totals={{ rows: totals.rows, total: totals.total, label: 'Totals' }}
+      sections={[]}
+      panels={[]}
+      actions={
+        <>
+          <Button intent="preview" label="Preview" />
+          {layout === 'phone' ? null : issue}
+        </>
+      }
+      {...(layout === 'phone' ? { bottomBar: issue } : {})}
     />
   )
 }
@@ -339,9 +591,25 @@ const meta = {
           'a read-only DataTable) with the totals under them, further sections, and the side ' +
           'panels (delivery, related documents, attachments, comments, history, presence), each ' +
           'collapsible, the whole column hidden with "Hide panels".\n\n' +
+          '**The header is slots; the Core decides what it shows.** `counterparty` (the customer ' +
+          'or supplier block), `keyFigures` (any two to four values: amount due, invoice total, ' +
+          'due date …, or none), `details` (on a draft, the values the system filled in — ' +
+          'number, issue date, due date — as `ChangeableValue`s: a value with a pencil that ' +
+          'turns it into its field). Leave a slot out and it takes no room.\n\n' +
+          '**Side panels** follow one spacing rule (header, 12px, the body padded 16px) and use ' +
+          'the panel lists: `KeyValueList` (one column) for facts, `RelatedDocuments` (every ' +
+          'item a link with its type, number and status), `ActivityList` for comments and ' +
+          'history (author and time on one line, the text under it, the latest two and "Show ' +
+          'all").\n\n' +
+          '**A draft is as simple as possible:** no side panels (attachments only when there ' +
+          'are some), two actions — Preview and Issue invoice —, the filled-in values as ' +
+          '`details`, and the lines with unit, tax category ("S 20%") and amount; the totals ' +
+          'follow the lines (the Core computes them).\n\n' +
           '**How:** everything through props; the totals and their rows are computed by the ' +
           'application (never here); `panelsOpen` / `onPanelsOpenChange` and `panelsHidden` / ' +
-          '`onPanelsHiddenChange` let the Core remember the panels.\n\n' +
+          '`onPanelsHiddenChange` let the Core remember the panels. On phones the lines are a ' +
+          'flat list in the card (never cards in a card), the key figures two columns, and the ' +
+          'main action in the shell’s bottom bar.\n\n' +
           '**When not:** a record without lines (DetailPage); a list (ListPage).',
       },
     },
@@ -366,11 +634,21 @@ export const Default: Story = {
     const canvas = within(canvasElement)
     const bar = within(canvas.getByRole('list', { name: 'Invoice status' }))
     await expect(bar.getByText('Sent to SEF').closest('li')).toHaveAttribute('aria-current', 'step')
+    // Related documents are links.
+    await expect(canvas.getByRole('link', { name: /N-2026-0157/ })).toHaveAttribute(
+      'href',
+      '#sales/orders/N-2026-0157',
+    )
     await userEvent.click(canvas.getByRole('button', { name: /^Comments/ }))
     await expect(canvas.getByRole('button', { name: /^Comments/ })).toHaveAttribute(
       'aria-expanded',
       'true',
     )
+    // The latest two comments, then all three.
+    const comments = canvas.getByRole('list', { name: 'Comments' })
+    await expect(within(comments).getAllByRole('listitem')).toHaveLength(2)
+    await userEvent.click(canvas.getByRole('button', { name: 'Show all 3' }))
+    await expect(within(comments).getAllByRole('listitem')).toHaveLength(3)
     // The click scrolled the panel into view; the picture shows the page from its top.
     window.scrollTo(0, 0)
   },
@@ -395,6 +673,7 @@ export const Rejected: Story = {
       <Invoice
         lifecycle={{ steps: REJECTED, current: 2, label: 'Invoice status' }}
         status={<StatusBadge label="Rejected" tone="danger" />}
+        panels={PANELS.filter((panel) => panel.key !== 'delivery')}
       />
     </ExampleProvider>
   ),
@@ -408,25 +687,27 @@ export const Rejected: Story = {
   },
 }
 
-/** A draft: the lines in the editable grid, no totals yet. */
+/**
+ * A new invoice (draft): no side panels, Preview and Issue invoice, the number and dates the
+ * system filled in as values with a pencil, lines with unit, tax category and amount; the totals
+ * follow the lines.
+ */
 export const Draft: Story = {
   render: () => (
     <ExampleProvider>
-      <Invoice
-        title="Draft 2026-118"
-        status={<StatusBadge label="Draft" tone="neutral" />}
-        lifecycle={{ steps: STEPS, current: 0, label: 'Invoice status' }}
-        keyFigures={[]}
-        lines={<DraftLines />}
-        actions={
-          <>
-            <Button intent="preview" label="Preview" />
-            <Button family="primary" icon={FileText} label="Issue invoice" emphasis="primary" />
-          </>
-        }
-      />
+      <DraftInvoice />
     </ExampleProvider>
   ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.queryByRole('complementary', { name: 'Panels' })).toBeNull()
+    // 135.120,00 at 20% and 8.500,00 at 10%: VAT 27.024,00 and 850,00, total 171.494,00.
+    await expect(canvasElement).toHaveTextContent('27.024,00')
+    await expect(canvasElement).toHaveTextContent('171.494,00')
+    await userEvent.click(canvas.getByRole('button', { name: 'Change Due date' }))
+    await expect(canvas.getByRole('textbox', { name: 'Due date' })).toHaveFocus()
+  },
 }
 
 /** Below 75em: the panels under the document, no whole-column button. */
@@ -438,7 +719,10 @@ export const Narrow: Story = {
   ),
 }
 
-/** Phone width: the lifecycle as one line, figures in two columns, panels under the document. */
+/**
+ * Phone width: the lifecycle as one line, figures in a two-column grid, the lines as a flat list
+ * in the card, panels under the document, the main action in the bottom bar.
+ */
 export const PhoneWidth: Story = {
   name: 'Phone width',
   render: () => (
@@ -455,12 +739,24 @@ export const PhoneWidth: Story = {
               rows={LINES}
               getRowId={(line) => line.id}
               getRowLabel={(line) => line.item}
-              mobile={{ details: ['quantity', 'price', 'amount'] }}
-              className="pt-4"
+              mobile={{ details: ['quantity', 'unit', 'price', 'vat', 'amount'] }}
             />
           }
           actions={<Button intent="pdf" label="PDF" emphasis="secondary" />}
+          bottomBar={<Button family="verify" icon={Send} label="Send reminder" />}
         />
+      </ExampleProvider>
+    </PhoneFrame>
+  ),
+}
+
+/** The draft at phone width: the lines as a flat list, Issue invoice in the bottom bar. */
+export const DraftPhone: Story = {
+  name: 'Draft, phone width',
+  render: () => (
+    <PhoneFrame>
+      <ExampleProvider>
+        <DraftInvoice layout="phone" />
       </ExampleProvider>
     </PhoneFrame>
   ),

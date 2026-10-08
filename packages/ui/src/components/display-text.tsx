@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { BUTTON_RESET, FOCUS_RING } from '../primitives/classes'
+import { BUTTON_RESET, FOCUS_RING, TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import {
   Tooltip as TooltipRoot,
@@ -8,7 +8,6 @@ import {
   TooltipTrigger,
 } from '../primitives/tooltip'
 import { useLiro } from '../provider/liro-provider'
-import { StatusBadge } from './status-badge'
 
 /*
  * DateText, DateRangeText, DueDate, NumberText and MoneyText (BUILD-PLAN P2.8), the previous
@@ -17,11 +16,10 @@ import { StatusBadge } from './status-badge'
  * through the provider's `format` (never here). Numbers and amounts are isolated (<bdi>), so a
  * minus sign or a currency never moves in right-to-left text (docs/decisions.md, Provider).
  *
- * DueDate compares with the provider's `today` (the tenant's date, not the device's):
- * settled → success "Settled"; overdue → danger, the number of days in the badge's own text (a
- * deliberate change: the old system hid it in the tooltip); due today → warning "Due today";
- * due within `warningDays` (default 5) → warning "Due in N days"; otherwise the plain date. The
- * badges carry the due date in a tooltip (300ms), on a plain button so the keyboard reaches it.
+ * DueDate compares with the provider's `today` (the tenant's date, not the device's) and always
+ * shows the date; a short xs note follows it — "3 days overdue" in the danger tone, "Due today" and
+ * "Due in N days" (within `warningDays`, default 5) in the warning tone, "Settled" in
+ * text.secondary. No badge (P4.9: a second pill beside the status badge read as a second status).
  */
 
 /** The empty value: an em dash, never a hyphen (a hyphen reads as a minus sign). */
@@ -133,39 +131,44 @@ export function dueState(
   return { kind: 'later', days }
 }
 
+/** The note after a due date: its words and its tone (P4.9). */
+const DUE_NOTE = {
+  overdue: 'text-status-danger-fg',
+  today: 'text-status-warning-fg',
+  soon: 'text-status-warning-fg',
+  settled: 'text-secondary',
+} as const
+
 /**
- * When something is due, measured from the provider's `today`: settled, overdue (with the days),
- * due today, due soon, or just the date.
+ * When something is due, measured from the provider's `today`: always the date, and after it a
+ * short note in xs — overdue (with the days) in the danger tone, due today or soon in the warning
+ * tone, settled in text.secondary; a later date has no note. Never a badge: the date is what a
+ * column of due dates is read for (P4.9, the owner's review).
  */
 export function DueDate({ value, settled = false, warningDays = 5 }: DueDateProps) {
   const { messages, format, today } = useLiro()
   if (value === undefined || value === null || value === '') return <Empty />
   const state = dueState(value, today, settled, warningDays)
-  const date = format.date(value)
-  switch (state.kind) {
-    case 'settled':
-      return <StatusBadge tone="success" label={messages['due.settled']} />
-    case 'overdue':
-      return (
-        <Hint label={date}>
-          <StatusBadge tone="danger" label={messages['due.overdue'](state.days)} />
-        </Hint>
-      )
-    case 'today':
-      return (
-        <Hint label={date}>
-          <StatusBadge tone="warning" label={messages['due.today']} />
-        </Hint>
-      )
-    case 'soon':
-      return (
-        <Hint label={date}>
-          <StatusBadge tone="warning" label={messages['due.inDays'](state.days)} />
-        </Hint>
-      )
-    case 'later':
-      return <DateText value={value} />
-  }
+  const days = format.number(String(state.days))
+  const note =
+    state.kind === 'settled'
+      ? messages['due.settled']
+      : state.kind === 'overdue'
+        ? messages['due.overdue'](state.days, days)
+        : state.kind === 'today'
+          ? messages['due.today']
+          : state.kind === 'soon'
+            ? messages['due.inDays'](state.days, days)
+            : undefined
+  if (note === undefined || state.kind === 'later') return <DateText value={value} />
+  return (
+    <span data-slot="due-date" className="inline-flex flex-wrap items-baseline gap-x-2">
+      <DateText value={value} />
+      <span className={cn('text-xs font-medium', DUE_NOTE[state.kind], TEXT_DIRECTION)}>
+        {note}
+      </span>
+    </span>
+  )
 }
 
 export interface NumberTextProps {

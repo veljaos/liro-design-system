@@ -12,9 +12,22 @@ import { useLiro } from '../provider/liro-provider'
  *   the panel: the name (sm semibold), the count after it (xs text.secondary, tabular), a 14px
  *   ChevronDown at the end that turns when the panel is closed; padding md. Closed, only the
  *   header row stays. 16px between panels.
+ * - One spacing rule for every panel (P4.9, the owner's review): the header (padding md), an sm
+ *   (12px) gap, the body padded md at the sides and the bottom. The body's content adds no space
+ *   of its own at its outer edges: the first and last rows of a KeyValueList, RelatedDocuments or
+ *   ActivityList lose their outer padding here, so every panel's first row stands 12px under its
+ *   header and its last row 16px above the panel's edge, whatever the content.
  * - Which panels are open is the application's (`open`, `onOpenChange`), so the Core can remember
  *   it. The content of a closed panel is not mounted.
  */
+
+/**
+ * The body's content starts and ends at the body's padding: the outer rows of the panel lists
+ * (KeyValueList rows, RelatedDocuments, ActivityList) lose their own top and bottom padding.
+ * Literal classes, so Tailwind finds them.
+ */
+const PANEL_BODY =
+  '[&_[data-slot=key-value-item]:first-child]:pt-0 [&_[data-slot=key-value-item]:last-child]:pb-0 [&_[data-slot=panel-row]:first-child]:pt-0 [&_[data-slot=panel-row]:last-child]:pb-0'
 
 /** One panel. */
 export interface SidePanel {
@@ -58,7 +71,9 @@ function Panel({
           onClick={toggle}
           className={cn(
             BUTTON_RESET,
-            'box-border flex w-full cursor-pointer items-center gap-2 p-4 text-start text-primary hover:bg-surface-hover',
+            'box-border flex w-full cursor-pointer items-center gap-2 px-4 pt-4 text-start text-primary hover:bg-surface-hover',
+            // Open: an sm (12px) gap to the body; closed: md (16px) under the header.
+            isOpen ? 'pb-3' : 'pb-4',
             FOCUS_RING,
             '-outline-offset-2',
           )}
@@ -78,9 +93,9 @@ function Panel({
           />
         </button>
       </h2>
-      {/* 16px on every side: the header's own padding above, the content's at the sides and
-          below, aligned with the header's text. */}
-      <div id={contentId} hidden={!isOpen} className="box-border px-4 pt-0 pb-4">
+      {/* The header's 12px gap above, md (16px) at the sides and below, aligned with the header's
+          text; the content's own outer padding is taken off (PANEL_BODY). */}
+      <div id={contentId} hidden={!isOpen} className={cn('box-border px-4 pt-0 pb-4', PANEL_BODY)}>
         {isOpen && panel.content}
       </div>
     </section>

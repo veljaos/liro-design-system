@@ -1,5 +1,6 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
+import { createFormat } from '../provider/format'
 import { LiroProvider } from '../provider/liro-provider'
 import { messagesEn } from '../provider/messages.en'
 import { DataTable, type DataTableColumn, type DataTableProps } from './data-table'
@@ -54,17 +55,25 @@ const order = (html: string) =>
     (match) => match[1],
   )
 
+const en = createFormat('en')
+
 describe('formatCount', () => {
   it('shows the exact number up to the threshold and "More than" above it', () => {
-    expect(formatCount(messagesEn, 1)).toBe('1 row')
-    expect(formatCount(messagesEn, 1234)).toBe('1,234 rows')
-    expect(formatCount(messagesEn, COUNT_THRESHOLD)).toBe('10,000 rows')
-    expect(formatCount(messagesEn, 10_001)).toBe('More than 10,000 rows')
-    expect(formatCount(messagesEn, 250, true, 100)).toBe('More than 100 rows')
+    expect(formatCount(messagesEn, en, 1)).toBe('1 row')
+    expect(formatCount(messagesEn, en, 1234)).toBe('1,234 rows')
+    expect(formatCount(messagesEn, en, COUNT_THRESHOLD)).toBe('10,000 rows')
+    expect(formatCount(messagesEn, en, 10_001)).toBe('More than 10,000 rows')
+    expect(formatCount(messagesEn, en, 250, true, 100)).toBe('More than 100 rows')
   })
 
   it('reads a count the server did not finish as a lower bound', () => {
-    expect(formatCount(messagesEn, 500, false)).toBe('More than 500 rows')
+    expect(formatCount(messagesEn, en, 500, false)).toBe('More than 500 rows')
+  })
+
+  it('writes the number through the provider format, as every count (P4.9)', () => {
+    const sr = createFormat('sr-Latn-RS')
+    expect(formatCount(messagesEn, sr, 1284)).toBe('1.284 rows')
+    expect(formatCount(messagesEn, sr, 10_001)).toBe('More than 10.000 rows')
   })
 })
 
@@ -281,6 +290,18 @@ describe('DataTable on a phone', () => {
     expect(html).toContain('>Alpha</span>')
     expect(html).toContain('>Name</dt>')
     expect(html).toContain('>Amount</dt>')
+  })
+
+  it('in a card, draws one flat list with dividers, never cards in a card (P4.9)', () => {
+    const flat = render({ layout: 'cards', inCard: true })
+    expect(flat).not.toContain('rounded-md border border-solid p-3')
+    expect(flat).toContain('[&amp;&gt;li+li]:border-t')
+    expect(render({ layout: 'cards' })).toContain('rounded-md border border-solid p-3')
+  })
+
+  it('in a card, ends with the last row when nothing stands under it (P4.9)', () => {
+    expect(render({ layout: 'table', inCard: true })).not.toContain('pb-3')
+    expect(render({ layout: 'table', inCard: true, count: 3 })).toContain('pb-3')
   })
 
   it('shows the given totals under the cards, and the empty and loading states', () => {

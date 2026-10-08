@@ -1,5 +1,5 @@
 import { CircleAlert } from 'lucide-react'
-import { useId, type ReactNode } from 'react'
+import { createContext, useContext, useId, type ReactNode } from 'react'
 import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
@@ -148,6 +148,14 @@ export function useFieldIds(props: FieldBaseProps) {
 }
 
 /**
+ * Inside it, every field's label is for assistive technology only, as with `hideLabel` (not
+ * exported from the package): a template whose row already names the control — a SettingsPage
+ * row — sets it, so a visible label is never written twice (P4.9, the owner's review). A field's
+ * own `hideLabel` still wins.
+ */
+export const FieldLabelsHidden = createContext(false)
+
+/**
  * The frame of a field: label, description, control, error or disabled reason. TextField,
  * SelectField and the other fields use it; use it directly only for a control the Design System
  * does not have yet.
@@ -155,6 +163,8 @@ export function useFieldIds(props: FieldBaseProps) {
 export function Field(props: FieldProps) {
   const { label, description, error, required = false, readOnly = false, disabled = false } = props
   const ids = useFieldIds(props)
+  const labelsHidden = useContext(FieldLabelsHidden)
+  const hideLabel = props.hideLabel ?? labelsHidden
   const control: FieldControl = {
     id: ids.id,
     labelId: ids.labelId,
@@ -167,7 +177,7 @@ export function Field(props: FieldProps) {
   const labelClass = cn(
     'inline-block text-sm font-semibold break-words text-primary',
     TEXT_DIRECTION,
-    props.hideLabel === true && 'sr-only',
+    hideLabel && 'sr-only',
   )
   return (
     <div
@@ -198,7 +208,7 @@ export function Field(props: FieldProps) {
       )}
       <div
         className={cn(
-          (props.hideLabel !== true || ids.hasDescription) && 'mt-1',
+          (!hideLabel || ids.hasDescription) && 'mt-1',
           (ids.hasError || ids.showReason) && 'mb-[5px]',
         )}
       >

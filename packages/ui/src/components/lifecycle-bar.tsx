@@ -78,7 +78,7 @@ const NAME: Record<StepState, string> = {
 
 /** Where a document stands in its life. */
 export function LifecycleBar({ steps, current, label, layout, className }: LifecycleBarProps) {
-  const { messages } = useLiro()
+  const { messages, format } = useLiro()
   const viewportPhone = usePhone()
   const phone = layout === undefined ? viewportPhone : layout === 'phone'
 
@@ -94,7 +94,13 @@ export function LifecycleBar({ steps, current, label, layout, className }: Lifec
       >
         <Dot state={state} />
         <span className={cn(NAME[state], TEXT_DIRECTION)}>
-          {messages['lifecycle.step'](index + 1, steps.length, step.label)}
+          {messages['lifecycle.step'](
+            index + 1,
+            format.number(String(index + 1)),
+            steps.length,
+            format.number(String(steps.length)),
+            step.label,
+          )}
           {step.error !== undefined && `: ${step.error}`}
         </span>
       </p>

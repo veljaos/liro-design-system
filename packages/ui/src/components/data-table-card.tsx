@@ -41,6 +41,11 @@ export interface DataTableCardProps {
   onOpen?: () => void
   /** The card's position for a virtual list. */
   index?: number
+  /**
+   * A row of a flat list inside a card (P4.9: no cards inside a card): no border or radius of its
+   * own, padding 12px by 16px; the list draws the dividers.
+   */
+  flat?: boolean
 }
 
 /** Keeps a press on a control inside the card (checkbox, menu, link) from pressing the card. */
@@ -75,14 +80,31 @@ export function DataTableCard(props: DataTableCardProps) {
             },
           })}
       className={cn(
-        'flex flex-col gap-4 rounded-md border border-solid p-3 text-primary',
-        // Selected (P3.6, owner): neutral, with a 3px start bar; the start padding gives back
-        // the 2px the bar adds, so the content does not move.
-        props.selected
-          ? 'border-s-[3px] border-selected bg-surface-selected ps-2.5'
-          : 'border-default bg-surface-raised',
+        'flex flex-col text-primary',
+        props.flat === true
+          ? cn(
+              'gap-3 px-4 py-3',
+              // Selected: the neutral selection and the 3px start bar; the start padding gives
+              // back the bar's width, so the content does not move.
+              props.selected
+                ? 'border-0 border-s-[3px] border-solid border-selected bg-surface-selected ps-3.25'
+                : 'bg-surface-raised',
+            )
+          : cn(
+              'gap-4 rounded-md border border-solid p-3',
+              // Selected (P3.6, owner): neutral, with a 3px start bar; the start padding gives
+              // back the 2px the bar adds, so the content does not move.
+              props.selected
+                ? 'border-s-[3px] border-selected bg-surface-selected ps-2.5'
+                : 'border-default bg-surface-raised',
+            ),
         onPress !== undefined &&
-          'cursor-pointer outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
+          cn(
+            'cursor-pointer outline-none focus-visible:outline-2 focus-visible:outline-focus',
+            props.flat === true
+              ? 'focus-visible:-outline-offset-2'
+              : 'focus-visible:outline-offset-2',
+          ),
       )}
     >
       <div className="flex items-center gap-4">

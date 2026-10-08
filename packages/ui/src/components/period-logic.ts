@@ -162,7 +162,7 @@ export function matchingPreset(
 export function describePeriod(
   range: DateRange | null,
   rules: Pick<PeriodRules, 'yearStartMonth' | 'quarterBasis'>,
-  format: Pick<LiroFormat, 'date' | 'monthName' | 'businessYear'>,
+  format: Pick<LiroFormat, 'date' | 'monthName' | 'businessYear' | 'number'>,
   messages: Pick<LiroMessages, 'period.all' | 'period.quarter'>,
 ): string {
   if (range === null || (range.start === null && range.end === null)) return messages['period.all']
@@ -185,7 +185,7 @@ export function describePeriod(
     const anchor = quarterAnchor(rules)
     if (count === 3 && periodStart(first, anchor, 3) === first) {
       const quarter = Math.floor(mod(first - (anchor - 1), 12) / 3) + 1
-      return messages['period.quarter'](quarter, yearName(anchor))
+      return messages['period.quarter'](quarter, format.number(String(quarter)), yearName(anchor))
     }
     if (count === 12 && periodStart(first, rules.yearStartMonth, 12) === first) {
       return yearName(rules.yearStartMonth)

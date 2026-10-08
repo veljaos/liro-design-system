@@ -1,65 +1,55 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { Printer } from 'lucide-react'
+import { useState } from 'react'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
+import { ActionGroup } from '../components/actions'
 import { Button } from '../components/button'
 import { KeyValueList } from '../components/cards'
-import { DataTable } from '../components/data-table'
+import { DateField } from '../components/date-field'
 import { DateRangeText, DateText, MoneyText } from '../components/display-text'
+import { FormFullWidth, FormGrid } from '../components/form-layout'
+import type { KeyFigure } from '../components/key-figures'
+import { MoneyField } from '../components/number-field'
+import { SelectField } from '../components/select-field'
 import { StatusBadge } from '../components/status-badge'
 import { ExampleProvider, PhoneFrame, StoryProvider } from '../components/story-frames'
+import { TextField } from '../components/text-field'
 import { settle } from '../primitives/story-helpers'
 import { AppShell } from './app-shell'
 import { DetailPage, type DetailPageProps, type DetailSection } from './detail-page'
 import { BRAND, COMMANDS, COMPANIES, EMPLOYEE, HR_TABS, USER } from './shell-story-data'
 
-interface LeaveRow {
-  id: string
-  kind: string
-  from: string
-  to: string
-  days: string
-  status: 'Approved' | 'Requested'
+/** What the Core keeps while the record is edited; the stories play the Core. */
+interface Values {
+  phone: string
+  email: string
+  address: string
+  position: string
 }
 
-const LEAVE: LeaveRow[] = [
-  {
-    id: '1',
-    kind: 'Annual leave',
-    from: '2026-07-20',
-    to: '2026-08-07',
-    days: '15',
-    status: 'Approved',
-  },
-  {
-    id: '2',
-    kind: 'Sick leave',
-    from: '2026-03-09',
-    to: '2026-03-11',
-    days: '3',
-    status: 'Approved',
-  },
-  {
-    id: '3',
-    kind: 'Annual leave',
-    from: '2026-12-28',
-    to: '2026-12-31',
-    days: '4',
-    status: 'Requested',
-  },
-]
+const START: Values = {
+  phone: EMPLOYEE.phone,
+  email: EMPLOYEE.email,
+  address: EMPLOYEE.address,
+  position: EMPLOYEE.position,
+}
 
 /**
- * The sections; `columns` 1 in the phone layout (KeyValueList picks one column below 48em by the
- * viewport, and the phone frame stands in a wide window).
+ * The employee's sections — Personal, Employment, Leave, Payroll — each with its values to read
+ * and the same values as fields. Leave is kept by leave requests, so it stays read-only in edit
+ * mode; Payroll only when `payrollEditable`.
  */
-function sectionsFor(columns: 1 | 2): DetailSection[] {
+function employeeSections(
+  values: Values,
+  change: (patch: Partial<Values>) => void,
+  payrollEditable = true,
+): DetailSection[] {
   return [
     {
       id: 'personal',
       label: 'Personal',
       content: (
         <KeyValueList
-          columns={columns}
           items={[
             {
               label: 'Date of birth',
@@ -67,22 +57,53 @@ function sectionsFor(columns: 1 | 2): DetailSection[] {
               numeric: true,
             },
             { label: 'Personal ID', value: EMPLOYEE.personalId, numeric: true },
-            { label: 'Phone', value: EMPLOYEE.phone, numeric: true },
-            { label: 'E-mail', value: EMPLOYEE.email },
-            { label: 'Address', value: EMPLOYEE.address, fullWidth: true },
+            { label: 'Phone', value: values.phone, numeric: true },
+            { label: 'E-mail', value: values.email },
+            { label: 'Address', value: values.address, fullWidth: true },
           ]}
         />
+      ),
+      edit: (
+        <FormGrid>
+          <DateField label="Date of birth" defaultValue={EMPLOYEE.birthDate} />
+          <TextField label="Personal ID" value={EMPLOYEE.personalId} readOnly direction="ltr" />
+          <TextField
+            label="Phone"
+            type="tel"
+            value={values.phone}
+            direction="ltr"
+            onChange={(phone) => {
+              change({ phone })
+            }}
+          />
+          <TextField
+            label="E-mail"
+            type="email"
+            value={values.email}
+            direction="ltr"
+            onChange={(email) => {
+              change({ email })
+            }}
+          />
+          <FormFullWidth>
+            <TextField
+              label="Address"
+              value={values.address}
+              onChange={(address) => {
+                change({ address })
+              }}
+            />
+          </FormFullWidth>
+        </FormGrid>
       ),
     },
     {
       id: 'employment',
       label: 'Employment',
-      actions: <Button intent="edit" label="Edit" />,
       content: (
         <KeyValueList
-          columns={columns}
           items={[
-            { label: 'Position', value: EMPLOYEE.position },
+            { label: 'Position', value: values.position },
             { label: 'Department', value: EMPLOYEE.department },
             { label: 'Contract', value: EMPLOYEE.contract },
             {
@@ -91,6 +112,54 @@ function sectionsFor(columns: 1 | 2): DetailSection[] {
               numeric: true,
             },
             { label: 'Working hours', value: EMPLOYEE.hours },
+          ]}
+        />
+      ),
+      edit: (
+        <FormGrid>
+          <TextField
+            label="Position"
+            value={values.position}
+            onChange={(position) => {
+              change({ position })
+            }}
+          />
+          <SelectField
+            label="Department"
+            defaultValue="finance"
+            options={[
+              { value: 'finance', label: 'Finance' },
+              { value: 'sales', label: 'Sales' },
+              { value: 'warehouse', label: 'Warehouse' },
+            ]}
+          />
+          <SelectField
+            label="Contract"
+            defaultValue="fixed"
+            options={[
+              { value: 'fixed', label: 'Fixed term' },
+              { value: 'indefinite', label: 'Indefinite' },
+            ]}
+          />
+          <DateField label="Contract end" defaultValue={EMPLOYEE.contractEnd} />
+          <TextField label="Working hours" defaultValue={EMPLOYEE.hours} />
+        </FormGrid>
+      ),
+    },
+    {
+      id: 'leave',
+      label: 'Leave',
+      description: 'Changed through leave requests',
+      content: (
+        <KeyValueList
+          items={[
+            { label: 'Days left in 2026', value: EMPLOYEE.leaveLeft, numeric: true },
+            { label: 'Days taken', value: '18', numeric: true },
+            {
+              label: 'Next leave',
+              value: <DateRangeText from="2026-12-28" to="2026-12-31" />,
+              numeric: true,
+            },
             { label: 'Manager', value: EMPLOYEE.manager },
           ]}
         />
@@ -99,9 +168,9 @@ function sectionsFor(columns: 1 | 2): DetailSection[] {
     {
       id: 'payroll',
       label: 'Payroll',
+      editable: payrollEditable,
       content: (
         <KeyValueList
-          columns={columns}
           items={[
             {
               label: 'Gross salary',
@@ -114,103 +183,53 @@ function sectionsFor(columns: 1 | 2): DetailSection[] {
           ]}
         />
       ),
-    },
-    {
-      id: 'leave',
-      label: 'Leave',
-      flush: true,
-      content: (
-        <DataTable
-          label="Leave"
-          inCard
-          columns={[
-            { id: 'kind', header: 'Kind', cell: (row: LeaveRow) => row.kind },
-            {
-              id: 'period',
-              header: 'Period',
-              numeric: true,
-              cell: (row: LeaveRow) => <DateRangeText from={row.from} to={row.to} />,
-            },
-            {
-              id: 'days',
-              header: 'Days',
-              align: 'end',
-              numeric: true,
-              cell: (row: LeaveRow) => row.days,
-            },
-            {
-              id: 'status',
-              header: 'Status',
-              cell: (row: LeaveRow) => (
-                <StatusBadge
-                  label={row.status}
-                  tone={row.status === 'Approved' ? 'success' : 'warning'}
-                />
-              ),
-            },
-          ]}
-          rows={LEAVE}
-          getRowId={(row) => row.id}
-          getRowLabel={(row) => `${row.kind} ${row.from}`}
-        />
+      edit: (
+        <FormGrid>
+          <MoneyField label="Gross salary" currency="RSD" defaultValue={EMPLOYEE.gross} />
+          <TextField label="Bank account" defaultValue={EMPLOYEE.account} direction="ltr" />
+        </FormGrid>
       ),
     },
   ]
 }
 
-const SECTIONS = sectionsFor(2)
+const KEY_FIGURES: readonly KeyFigure[] = [
+  {
+    label: 'Net salary, September 2026',
+    value: <MoneyText value={EMPLOYEE.net} currency="RSD" />,
+  },
+  { label: 'Leave left', value: `${EMPLOYEE.leaveLeft} days` },
+  { label: 'Contract ends', value: <DateText value={EMPLOYEE.contractEnd} /> },
+]
 
-/** The side column: the record's history and files (P5 brings the real panels). */
-const SIDE = (
-  <>
-    <section className="flex flex-col gap-3 rounded-lg border border-solid border-default bg-surface-raised p-4">
-      <h2 className="m-0 text-h5 text-primary">History</h2>
-      <ol className="m-0 flex list-none flex-col gap-3 p-0 text-sm">
-        <li className="flex flex-col gap-0.5">
-          <span className="text-primary">Salary changed to 145.000,00 RSD</span>
-          <span className="text-xs text-secondary">Dragan Ilić · 01.07.2026.</span>
-        </li>
-        <li className="flex flex-col gap-0.5">
-          <span className="text-primary">Contract extended to 31.12.2026.</span>
-          <span className="text-xs text-secondary">Milica Petrović · 15.12.2025.</span>
-        </li>
-      </ol>
-    </section>
-    <section className="flex flex-col gap-3 rounded-lg border border-solid border-default bg-surface-raised p-4">
-      <h2 className="m-0 text-h5 text-primary">Attachments</h2>
-      <ul className="m-0 flex list-none flex-col gap-2 p-0 text-sm text-primary">
-        <li>Ugovor o radu 2025.pdf</li>
-        <li>Aneks ugovora 01-2026.pdf</li>
-      </ul>
-    </section>
-  </>
-)
-
-const BASE: DetailPageProps = {
-  title: EMPLOYEE.name,
-  back: { href: '#hr/employees', label: 'Employees' },
-  status: <StatusBadge label="Active" tone="success" />,
-  subtitle: `${EMPLOYEE.position} · ${EMPLOYEE.department}`,
-  actions: (
-    <>
-      <Button family="document" icon={Printer} label="Print record" emphasis="secondary" />
-      <Button intent="edit" label="Edit" />
-    </>
-  ),
-  keyFigures: [
-    {
-      label: 'Net salary, September 2026',
-      value: <MoneyText value={EMPLOYEE.net} currency="RSD" />,
-    },
-    { label: 'Leave left', value: `${EMPLOYEE.leaveLeft} days` },
-    { label: 'Contract ends', value: <DateText value={EMPLOYEE.contractEnd} /> },
-    { label: 'Sick leave this year', value: `${EMPLOYEE.sickDays} days` },
-  ],
-  sections: SECTIONS,
-  side: SIDE,
+interface RecordOptions {
+  phone?: boolean
+  startMode?: 'view' | 'edit'
+  payrollEditable?: boolean
+  frame?: Partial<DetailPageProps>
 }
 
-function Shell({ phone = false, ...props }: Partial<DetailPageProps> & { phone?: boolean }) {
+/** The employee's record as the Core drives it: the mode, the values and `dirty` live here. */
+function EmployeeRecord({
+  phone = false,
+  startMode = 'view',
+  payrollEditable = true,
+  frame,
+}: RecordOptions) {
+  const [mode, setMode] = useState(startMode)
+  const [saved, setSaved] = useState(START)
+  const [values, setValues] = useState(START)
+  const dirty = JSON.stringify(values) !== JSON.stringify(saved)
+  const editButton = (
+    <Button
+      intent="edit"
+      label="Edit"
+      onClick={() => {
+        setMode('edit')
+      }}
+    />
+  )
+  const editing = mode === 'edit'
   return (
     <AppShell
       layout={phone ? 'phone' : 'desktop'}
@@ -221,14 +240,57 @@ function Shell({ phone = false, ...props }: Partial<DetailPageProps> & { phone?:
       companies={{ items: COMPANIES, current: 'kvadrat', onSelect: () => undefined }}
       user={USER}
       moduleTabs={HR_TABS}
+      // On phones the main action stands in the shell's bottom bar, within thumb reach; while
+      // editing, the page's own bar (Cancel, Save) takes that place.
+      {...(phone && !editing ? { bottomBar: editButton } : {})}
     >
       <DetailPage
-        {...BASE}
-        {...props}
-        {...(phone
-          ? { sections: sectionsFor(1).slice(0, (props.sections ?? SECTIONS).length) }
-          : {})}
+        title={EMPLOYEE.name}
+        back={{ href: '#hr/employees', label: 'Employees' }}
+        status={<StatusBadge label="Active" tone="success" />}
+        subtitle={`${EMPLOYEE.position} · ${EMPLOYEE.department}`}
+        keyFigures={KEY_FIGURES}
+        actions={
+          <>
+            <Button family="document" icon={Printer} label="Print record" emphasis="secondary" />
+            {!phone && editButton}
+          </>
+        }
+        sections={employeeSections(
+          values,
+          (patch) => {
+            setValues((current) => ({ ...current, ...patch }))
+          },
+          payrollEditable,
+        )}
+        mode={mode}
+        dirty={dirty}
+        editActions={
+          <ActionGroup
+            actions={[
+              {
+                key: 'cancel',
+                intent: 'cancel',
+                label: 'Cancel',
+                onClick: () => {
+                  setValues(saved)
+                  setMode('view')
+                },
+              },
+              {
+                key: 'save',
+                intent: 'save',
+                label: 'Save',
+                onClick: () => {
+                  setSaved(values)
+                  setMode('view')
+                },
+              },
+            ]}
+          />
+        }
         layout={phone ? 'phone' : 'desktop'}
+        {...frame}
       />
     </AppShell>
   )
@@ -242,22 +304,35 @@ const meta = {
     docs: {
       description: {
         component:
-          '**What for:** one record to read. The header: the back button to its list, the ' +
-          'record’s name (its h1, visible), the status, a line under it and the actions; the ' +
-          'key figures under it; the sections as cards; the side column (history, files, ' +
-          'related records) 300px from 75em, under the content below. `sectionBar` adds the ' +
-          'sticky row of section names for long pages.\n\n' +
+          '**What for:** one record (an employee, a customer, an item), read and edited on one ' +
+          'page. The header: the back button to its list, the record’s name (its h1), the ' +
+          'status, a line under it and the actions; the key figures under it; then the ' +
+          'sections stacked, their values as plain text in two columns of label and value ' +
+          '(KeyValueList), never disabled inputs. No tabs and no side column: history and files ' +
+          'are sections too. `sectionBar` adds the sticky row of section names for a long ' +
+          'record.\n\n' +
+          '**Editing (SAP Fiori):** one mode for the whole record. The one "Edit" header action ' +
+          '(intent edit) sets `mode` to "edit": every section shows its `edit` content — fields ' +
+          'in a FormGrid, in the same order — and a section with `editable: false` stays ' +
+          'read-only; the header actions go away and a bar at the bottom with Cancel and Save ' +
+          '(`editActions`) stays visible while the page scrolls, on phones too; the first field ' +
+          'takes the focus; while `dirty`, leaving asks first. No per-section Edit buttons.\n\n' +
+          '**Tabs** only for a record whose sections serve different people at different times ' +
+          'and that is longer than about eight sections (an item with its sales, purchasing and ' +
+          'warehouse data): then the sections are grouped under start-aligned page Tabs, edit ' +
+          'mode still covers the whole record, and a tab with an error says so. Below that, ' +
+          'the section bar is enough.\n\n' +
           '**How:** `title`, `back`, `status`, `subtitle`, `actions`, `keyFigures`, `sections` ' +
-          '(id, label, content), `side`.\n\n' +
-          '**When not:** editing (RecordFormPage); a business document with lines (DocumentPage, ' +
-          'P4.5).',
+          '(id, label, content, edit, editable), `mode`, `editActions`, `dirty`.\n\n' +
+          '**When not:** a new record (RecordFormPage); a business document with lines ' +
+          '(DocumentPage).',
       },
     },
   },
-  args: BASE,
-  render: (args) => (
+  args: { title: EMPLOYEE.name, sections: [] },
+  render: () => (
     <ExampleProvider>
-      <Shell {...args} />
+      <EmployeeRecord />
     </ExampleProvider>
   ),
   play: settle,
@@ -267,7 +342,7 @@ export default meta
 
 type Story = StoryObj<typeof meta>
 
-/** An employee's record: back, key figures, sections, side panels. */
+/** An employee's record: back, key figures, four sections of values. */
 export const Default: Story = {
   play: async ({ canvasElement }) => {
     await settle()
@@ -277,13 +352,98 @@ export const Default: Story = {
       'href',
       '#hr/employees',
     )
+    // Values are text, never disabled inputs.
+    await expect(canvas.queryAllByRole('textbox')).toHaveLength(0)
+  },
+}
+
+/**
+ * Edit pressed: the same sections as fields, the first one focused, Leave still read-only, the
+ * bar with Cancel and Save at the bottom; a change says "Unsaved changes".
+ */
+export const EditMode: Story = {
+  name: 'Edit mode',
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Edit' }))
+    await settle()
+    await expect(canvas.queryByRole('button', { name: 'Edit' })).toBeNull()
+    const phone = canvas.getByRole('textbox', { name: 'Phone' })
+    await userEvent.clear(phone)
+    await userEvent.type(phone, '+381 64 218 4474')
+    await expect(canvas.getByText('Unsaved changes')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Save' })).toBeVisible()
+    await expect(canvas.getByText('Changed through leave requests')).toBeVisible()
+    await userEvent.click(canvas.getByRole('button', { name: 'Cancel' }))
+    await settle()
+    await expect(canvas.getByText(EMPLOYEE.phone)).toBeVisible()
+  },
+}
+
+/** Saving goes back to reading, with the new value. */
+export const EditAndSave: Story = {
+  name: 'Edit and save',
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Edit' }))
+    await settle()
+    await waitFor(async () => {
+      await expect(document.activeElement).toHaveAccessibleName('Date of birth')
+    })
+    const position = canvas.getByRole('textbox', { name: 'Position' })
+    await userEvent.clear(position)
+    await userEvent.type(position, 'Head of accounting')
+    await userEvent.click(canvas.getByRole('button', { name: 'Save' }))
+    await settle()
+    await expect(canvas.getByText('Head of accounting')).toBeVisible()
+    await expect(canvas.queryByText('Unsaved changes')).toBeNull()
+  },
+}
+
+/** A user who may not change pay: in edit mode Payroll keeps its values as text. */
+export const ReadOnlySection: Story = {
+  name: 'Read-only section in edit mode',
+  render: () => (
+    <ExampleProvider>
+      <EmployeeRecord startMode="edit" payrollEditable={false} />
+    </ExampleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.queryByRole('textbox', { name: 'Bank account' })).toBeNull()
+    await expect(canvas.getByText(EMPLOYEE.account)).toBeVisible()
+  },
+}
+
+/** Leaving with unsaved changes asks first: Stay, then Leave (the main action last). */
+export const UnsavedChanges: Story = {
+  name: 'Unsaved changes',
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Edit' }))
+    await settle()
+    await userEvent.type(canvas.getByRole('textbox', { name: 'Address' }), ', stan 4')
+    await userEvent.click(canvas.getByRole('link', { name: 'Back to Employees' }))
+    await settle()
+    const dialog = within(document.body).getByRole('alertdialog')
+    const buttons = within(dialog).getAllByRole('button')
+    await expect(buttons.at(-2)).toHaveAccessibleName('Stay')
+    await expect(buttons.at(-1)).toHaveAccessibleName('Leave')
   },
 }
 
 /** A long record with the section bar: a press scrolls to the section and marks it current. */
 export const SectionBarStory: Story = {
   name: 'Section bar',
-  args: { sectionBar: true },
+  render: () => (
+    <ExampleProvider>
+      <EmployeeRecord frame={{ sectionBar: true }} />
+    </ExampleProvider>
+  ),
   play: async ({ canvasElement }) => {
     await settle()
     const nav = within(within(canvasElement).getByRole('navigation', { name: 'Sections' }))
@@ -318,18 +478,39 @@ export const SectionBarStory: Story = {
   },
 }
 
-/** Without key figures or a side column. */
+/** Without key figures: two sections. */
 export const Simple: Story = {
-  args: { keyFigures: [], side: undefined, sections: SECTIONS.slice(0, 2) },
+  render: () => (
+    <ExampleProvider>
+      <EmployeeRecord
+        frame={{ keyFigures: [], sections: employeeSections(START, () => undefined).slice(0, 2) }}
+      />
+    </ExampleProvider>
+  ),
 }
 
-/** Phone width: figures in two columns, the side column under the content. */
+/**
+ * Phone width: the figures in two columns, each label above its value, Edit in the shell's
+ * bottom bar.
+ */
 export const PhoneWidth: Story = {
   name: 'Phone width',
-  render: (args) => (
+  render: () => (
     <PhoneFrame>
       <ExampleProvider>
-        <Shell {...args} phone />
+        <EmployeeRecord phone />
+      </ExampleProvider>
+    </PhoneFrame>
+  ),
+}
+
+/** Phone width while editing: one column of fields, Cancel and Save in the bottom bar. */
+export const PhoneEdit: Story = {
+  name: 'Phone width, edit mode',
+  render: () => (
+    <PhoneFrame>
+      <ExampleProvider>
+        <EmployeeRecord phone startMode="edit" />
       </ExampleProvider>
     </PhoneFrame>
   ),
@@ -338,24 +519,31 @@ export const PhoneWidth: Story = {
 /** Long names and values wrap. */
 export const LongText: Story = {
   name: 'Long text',
-  args: {
-    title: 'Aleksandra Stefanović-Radosavljević',
-    subtitle: 'Head of accounting and financial reporting · Finance and controlling',
-  },
+  render: () => (
+    <ExampleProvider>
+      <EmployeeRecord
+        frame={{
+          title: 'Aleksandra Stefanović-Radosavljević',
+          subtitle: 'Head of accounting and financial reporting · Finance and controlling',
+        }}
+      />
+    </ExampleProvider>
+  ),
 }
 
 /** Arabic record names in a right-to-left page. */
 export const Arabic: Story = {
-  args: {
-    title: 'ليلى حداد',
-    subtitle: 'محاسبة أولى · المالية',
-    back: { href: '#e', label: 'الموظفون' },
-    sections: SECTIONS.slice(0, 1),
-  },
-  render: (args) => (
+  render: () => (
     <StoryProvider locale="ar">
       <ExampleProvider>
-        <DetailPage {...BASE} {...args} layout="desktop" />
+        <DetailPage
+          title="ليلى حداد"
+          subtitle="محاسبة أولى · المالية"
+          back={{ href: '#e', label: 'الموظفون' }}
+          keyFigures={KEY_FIGURES}
+          sections={employeeSections(START, () => undefined).slice(0, 1)}
+          layout="desktop"
+        />
       </ExampleProvider>
     </StoryProvider>
   ),
@@ -363,16 +551,17 @@ export const Arabic: Story = {
 
 /** Japanese record names. */
 export const Japanese: Story = {
-  args: {
-    title: '佐藤 花子',
-    subtitle: '主任会計士 · 経理部',
-    back: { href: '#e', label: '従業員' },
-    sections: SECTIONS.slice(0, 1),
-  },
-  render: (args) => (
+  render: () => (
     <StoryProvider locale="ja">
       <ExampleProvider>
-        <DetailPage {...BASE} {...args} layout="desktop" />
+        <DetailPage
+          title="佐藤 花子"
+          subtitle="主任会計士 · 経理部"
+          back={{ href: '#e', label: '従業員' }}
+          keyFigures={KEY_FIGURES}
+          sections={employeeSections(START, () => undefined).slice(0, 1)}
+          layout="desktop"
+        />
       </ExampleProvider>
     </StoryProvider>
   ),

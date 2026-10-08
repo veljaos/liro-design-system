@@ -18,7 +18,8 @@ const meta = {
           '(Appendix B.8); the list stands at the start (only the shell’s module tabs are centred); a hidden panel is not kept, so a dialog ' +
           'opened from a tab belongs at page level. **Breadcrumbs** — where the user is, from ' +
           "the third level on; links through the provider's `linkComponent`, the last item is " +
-          'the current page. **CursorPagination** — only previous and next, with a count ' +
+          'the current page; one item alone shows nothing (it would repeat the title). ' +
+          '**CursorPagination** — only previous and next, with a count ' +
           'beside them, because lists page by cursor. **ShortcutHint** — a keyboard shortcut as ' +
           'keys.\n\n' +
           '**When not:** Tabs for moving between modules (the launchpad, P4.2); page numbers ' +

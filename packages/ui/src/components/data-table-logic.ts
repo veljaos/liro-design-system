@@ -1,3 +1,4 @@
+import type { LiroFormat } from '../provider/format'
 import type { LiroMessages } from '../provider/messages'
 
 /** The column a table is sorted by, and the direction. `null`: the order the rows came in. */
@@ -16,16 +17,20 @@ export const COUNT_THRESHOLD = 10_000
 /**
  * The count of rows in words, through `messages['table.count']`: the exact number up to the
  * threshold, else "More than <threshold>". A count the server did not finish (`exact` false) is
- * a lower bound: "More than <count>".
+ * a lower bound: "More than <count>". The number is written by the provider's `format.number`,
+ * as every count is (P4.9).
  */
 export function formatCount(
   messages: Pick<LiroMessages, 'table.count'>,
+  format: Pick<LiroFormat, 'number'>,
   count: number,
   exact = true,
   threshold = COUNT_THRESHOLD,
 ): string {
-  if (count > threshold) return messages['table.count'](threshold, false)
-  return messages['table.count'](count, exact)
+  if (count > threshold) {
+    return messages['table.count'](threshold, format.number(String(threshold)), false)
+  }
+  return messages['table.count'](count, format.number(String(count)), exact)
 }
 
 /** Whether a filter value filters anything: not null, undefined, '', false or an empty list. */

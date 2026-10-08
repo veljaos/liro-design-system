@@ -1,10 +1,16 @@
-import type { ReactNode } from 'react'
+import { useContext, type ReactNode } from 'react'
 import { Checkbox } from '../primitives/checkbox'
 import { cn } from '../primitives/cn'
 import { TEXT_DIRECTION } from '../primitives/classes'
 import { Switch } from '../primitives/switch'
 import { useLiro } from '../provider/liro-provider'
-import { FieldMessage, RequiredMark, useFieldIds, type FieldBaseProps } from './field'
+import {
+  FieldLabelsHidden,
+  FieldMessage,
+  RequiredMark,
+  useFieldIds,
+  type FieldBaseProps,
+} from './field'
 
 /*
  * A checkbox or a switch with its label beside it (Mantine InlineInput.css, size 'sm'): the label
@@ -47,6 +53,8 @@ interface InlineControlProps {
 function InlineField(props: InlineProps) {
   const { messages } = useLiro()
   const ids = useFieldIds(props)
+  const labelsHidden = useContext(FieldLabelsHidden)
+  const hideLabel = props.hideLabel ?? labelsHidden
   const readOnly = props.readOnly === true
   const disabled = props.disabled === true
   const current = props.checked ?? props.defaultChecked ?? false
@@ -78,12 +86,12 @@ function InlineField(props: InlineProps) {
         ...(props.name === undefined ? {} : { name: props.name }),
         ...(props.value === undefined ? {} : { value: props.value }),
       })}
-      <div className={cn('flex min-w-0 flex-col', props.hideLabel !== true && 'ps-3')}>
+      <div className={cn('flex min-w-0 flex-col', !hideLabel && 'ps-3')}>
         <label
           id={ids.labelId}
           htmlFor={ids.id}
           className={cn(
-            props.hideLabel === true && 'sr-only',
+            hideLabel && 'sr-only',
             'text-sm leading-5 break-words',
             TEXT_DIRECTION,
             disabled ? 'cursor-not-allowed text-disabled' : 'text-primary',

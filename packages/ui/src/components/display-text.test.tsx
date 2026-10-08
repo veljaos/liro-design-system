@@ -41,10 +41,19 @@ describe('dueState, from the provider today', () => {
 })
 
 describe('DueDate', () => {
-  it('shows the days overdue in the badge text itself', () => {
+  it('always shows the date, the days overdue after it in the danger tone, never a badge', () => {
     const html = render(<DueDate value="2026-09-25" />)
+    expect(html).toContain('09/25/2026')
     expect(html).toContain('3 days overdue')
     expect(html).toContain('text-status-danger-fg')
+    expect(html).not.toContain('<button')
+    expect(render(<DueDate value="2026-09-01" settled />)).toContain('09/01/2026')
+  })
+
+  it('writes the days through the provider format', () => {
+    expect(render(<DueDate value="2023-01-01" />, 'sr-Latn-RS', '2026-09-28')).toContain(
+      '1.366 days overdue',
+    )
   })
 
   it('says settled, due today and due soon, and gives the plain date later', () => {

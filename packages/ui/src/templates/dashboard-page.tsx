@@ -11,7 +11,10 @@ import { PageHeader } from './page-header'
  * - The StatCards in a row: one column on phones, two from xs (36em), four from md (62em), 16px
  *   apart; skeleton cards while loading.
  * - The charts (BarChart, LineChart, AreaChart, DonutChart) under them in two columns from md,
- *   16px apart; a chart may span both (`wide` on its wrapper, from the application's layout).
+ *   16px apart; a chart or table may span both with `col-span-full` on its wrapper — never a
+ *   fixed span such as `md:col-span-2`, which in the phone layout (a phone-width frame in a wide
+ *   window) adds a second, implicit column and squeezes two charts side by side (P4.9). The
+ *   phone layout is one column, whatever the viewport.
  */
 
 export interface DashboardPageProps {
@@ -22,7 +25,10 @@ export interface DashboardPageProps {
   stats?: readonly (StatCardProps & { key: string })[]
   /** Skeleton cards instead of the numbers. */
   loading?: boolean
-  /** The charts (and other panels), laid out two to a row from 62em. */
+  /**
+   * The charts (and other panels), laid out two to a row from 62em; `col-span-full` on one
+   * spans both.
+   */
   children?: ReactNode
   layout?: 'desktop' | 'phone'
   className?: string
@@ -60,7 +66,15 @@ export function DashboardPage(props: DashboardPageProps) {
         </div>
       )}
       {props.children !== undefined && (
-        <div className={cn('grid gap-4', phone ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2')}>
+        <div
+          className={cn(
+            'grid gap-4',
+            // minmax(0, 1fr): a wide chart or table never widens its column past the page.
+            phone
+              ? 'grid-cols-[minmax(0,1fr)]'
+              : 'grid-cols-1 md:grid-cols-[repeat(2,minmax(0,1fr))]',
+          )}
+        >
           {props.children}
         </div>
       )}

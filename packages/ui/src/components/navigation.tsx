@@ -105,10 +105,12 @@ export interface BreadcrumbsProps {
 /**
  * Where the user is, from the third level of routes on (Appendix B.8). Links use the provider's
  * `linkComponent`, so navigation stays in the application's router; the last item is the current
- * page and is not a link.
+ * page and is not a link. Fewer than two items render nothing (P4.9).
  */
 export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
   const { linkComponent: Link, messages } = useLiro()
+  // One level is no trail: it only repeats the page's title (P4.9, the owner's review).
+  if (items.length < 2) return null
   return (
     <nav aria-label={messages['breadcrumbs.label']} className={cn('font-sans text-md', className)}>
       <ol className="m-0 flex list-none flex-wrap items-center p-0">

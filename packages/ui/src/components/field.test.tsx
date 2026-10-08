@@ -2,7 +2,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 import { LiroProvider } from '../provider/liro-provider'
 import { CheckboxField, SwitchField } from './checkbox-field'
-import { Field } from './field'
+import { Field, FieldLabelsHidden } from './field'
 import { RadioGroupField } from './radio-group-field'
 import { groupOptions, SelectField } from './select-field'
 import { TextAreaField, TextField } from './text-field'
@@ -48,6 +48,27 @@ describe('Field', () => {
     expect(/<div class="([^"]*)"><input/.exec(described)?.[1]).toBe('mt-1')
     const switchHtml = render(<SwitchField id="s" label="Send to SEF" hideLabel />)
     expect(switchHtml).toContain('sr-only')
+  })
+
+  it('hides every label inside FieldLabelsHidden (a settings row names its control once)', () => {
+    const html = render(
+      <FieldLabelsHidden.Provider value={true}>
+        <SelectField
+          id="term"
+          label="Default payment term"
+          options={[{ value: '15', label: '15 days' }]}
+        />
+        <SwitchField id="auto" label="Send automatically" />
+      </FieldLabelsHidden.Provider>,
+    )
+    expect(html).toMatch(/<label id="term-label" for="term" class="[^"]*sr-only/)
+    expect(html).toMatch(/<label id="auto-label" for="auto" class="[^"]*sr-only/)
+    const shown = render(
+      <FieldLabelsHidden.Provider value={true}>
+        <TextField id="x" label="Shown" hideLabel={false} />
+      </FieldLabelsHidden.Provider>,
+    )
+    expect(shown).not.toMatch(/<label id="x-label" for="x" class="[^"]*sr-only/)
   })
 
   it('marks a required field with " *" named by messages, and the control as required', () => {

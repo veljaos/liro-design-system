@@ -18,8 +18,9 @@ import type { IconComponent } from './intents'
  *   text.secondary, as written: never upper case or letter-spaced) and the value at the end (13px,
  *   weight 500, text.primary; tabular digits for `numeric`); long values wrap and stay at the end.
  *   8px above and below each row and a 1px border.subtle line between rows, none after the last
- *   row of a column. `columns` 1, 2 or 3 (default 2) from the sm breakpoint (48em), one column on
- *   phones, 32px (xl) apart. A `fullWidth` item spans every column with its label above its value
+ *   row of a column. `columns` 1, 2 or 3 (default 2) by the list's own width (container queries,
+ *   P4.9): two from 36rem, three from 54rem, one below, 32px (xl) apart; in a list narrower than
+ *   24rem (a phone) the label stands above the value. A `fullWidth` item spans every column with its label above its value
  *   (notes, descriptions). `groups` splits the list into titled groups (12px, semibold,
  *   text.secondary), 24px apart. Layout "stacked": the label above the value, 2px apart, no lines,
  *   16px between items, for short cards. Text values are isolated (`bdi`). An empty value is
@@ -141,7 +142,7 @@ export type KeyValueListProps = {
    * "stacked": the label above the value, no lines, for short cards.
    */
   layout?: KeyValueLayout
-  /** Columns from the sm breakpoint (48em) on; one on phones. Default: 2. */
+  /** Columns by the list's own width: two from 36rem, three from 54rem; one below. Default: 2. */
   columns?: 1 | 2 | 3
   /** Shows skeletons in place of the labels and values. */
   loading?: boolean
@@ -151,11 +152,25 @@ export type KeyValueListProps = {
   | { groups: readonly KeyValueGroup[]; items?: never }
 )
 
-/** Literal classes, so Tailwind finds them. */
+/*
+ * The list answers to its own width, not the viewport's (P4.9, the owner's review: a two-column
+ * list in a phone-width pane broke words in the middle, "Wareho use"): container queries on the
+ * list's wrapper. Literal classes, so Tailwind finds them.
+ * - Columns: two from a 36rem (576px) wide list, three from 54rem (864px); one below.
+ * - "rows": the label beside the value from a 24rem (384px) wide list; below it (a phone) the
+ *   label stands above the value, at the start.
+ */
 const COLUMNS: Record<1 | 2 | 3, string> = {
-  1: 'sm:grid-cols-1',
-  2: 'sm:grid-cols-2',
-  3: 'sm:grid-cols-3',
+  1: '',
+  2: '@min-[36rem]:grid-cols-2',
+  3: '@min-[54rem]:grid-cols-3',
+}
+
+/** The line under an item where the columns apply (see `keyValueLines`). */
+const WIDE_LINE: Record<1 | 2 | 3, { on: string; off: string }> = {
+  1: { on: '', off: '' },
+  2: { on: '@min-[36rem]:border-b', off: '@min-[36rem]:border-b-0' },
+  3: { on: '@min-[54rem]:border-b', off: '@min-[54rem]:border-b-0' },
 }
 
 /** Whether a value counts as empty. */
@@ -206,66 +221,70 @@ function ItemList({
   const rows = layout === 'rows'
   const lines = keyValueLines(items, columns)
   return (
-    <dl
-      aria-busy={loading || undefined}
-      className={cn(
-        'm-0 grid grid-cols-1 font-sans',
-        COLUMNS[columns],
-        rows ? 'gap-x-8' : 'gap-4',
-        className,
-      )}
-    >
-      {items.map((item, index) => {
-        const stacked = !rows || item.fullWidth === true
-        const empty = isEmptyValue(item.value)
-        const line = lines[index] ?? { phone: false, wide: false }
-        return (
-          <div
-            key={item.key ?? index}
-            data-slot="key-value-item"
-            className={cn(
-              'flex min-w-0',
-              stacked ? 'flex-col gap-0.5' : 'items-baseline justify-between gap-4',
-              item.fullWidth === true && 'col-span-full',
-              rows && 'border-0 border-solid border-subtle py-2',
-              rows && (line.phone ? 'border-b' : 'border-b-0'),
-              rows && (line.wide ? 'sm:border-b' : 'sm:border-b-0'),
-            )}
-          >
-            <dt
-              data-slot="key-value-label"
+    <div className={cn('@container min-w-0', className)}>
+      <dl
+        aria-busy={loading || undefined}
+        className={cn(
+          'm-0 grid grid-cols-1 font-sans',
+          COLUMNS[columns],
+          rows ? 'gap-x-8' : 'gap-4',
+        )}
+      >
+        {items.map((item, index) => {
+          const stacked = !rows || item.fullWidth === true
+          const empty = isEmptyValue(item.value)
+          const line = lines[index] ?? { phone: false, wide: false }
+          return (
+            <div
+              key={item.key ?? index}
+              data-slot="key-value-item"
               className={cn(
-                'min-w-0 text-sm break-words text-secondary',
-                TEXT_DIRECTION,
-                !stacked && 'max-w-1/2 shrink-0',
+                'flex min-w-0 flex-col gap-0.5',
+                !stacked &&
+                  '@min-[24rem]:flex-row @min-[24rem]:items-baseline @min-[24rem]:justify-between @min-[24rem]:gap-4',
+                item.fullWidth === true && 'col-span-full',
+                rows && 'border-0 border-solid border-subtle py-2',
+                rows && (line.phone ? 'border-b' : 'border-b-0'),
+                rows && (line.wide ? WIDE_LINE[columns].on : WIDE_LINE[columns].off),
               )}
             >
-              {loading ? <Skeleton className="h-3 w-[90px] max-w-full" /> : item.label}
-            </dt>
-            <dd
-              className={cn(
-                'm-0 min-w-0 text-sm font-medium break-words',
-                !stacked && 'flex-1 text-end',
-                empty && !loading ? 'text-secondary' : 'text-primary',
-                item.numeric === true && 'tabular-nums',
-              )}
-            >
-              {loading ? (
-                <Skeleton className={cn('h-4 w-[150px] max-w-full', !stacked && 'ms-auto')} />
-              ) : empty ? (
-                '—'
-              ) : typeof item.value === 'string' || typeof item.value === 'number' ? (
-                // Isolated, so a value in the other direction (Latin in right-to-left) keeps its
-                // own order ("12.345,60 EUR", "d.o.o."), while the row keeps the page's alignment.
-                <bdi>{item.value}</bdi>
-              ) : (
-                item.value
-              )}
-            </dd>
-          </div>
-        )
-      })}
-    </dl>
+              <dt
+                data-slot="key-value-label"
+                className={cn(
+                  'min-w-0 text-sm break-words text-secondary',
+                  TEXT_DIRECTION,
+                  !stacked && '@min-[24rem]:max-w-1/2 @min-[24rem]:shrink-0',
+                )}
+              >
+                {loading ? <Skeleton className="h-3 w-[90px] max-w-full" /> : item.label}
+              </dt>
+              <dd
+                className={cn(
+                  'm-0 min-w-0 text-sm font-medium break-words',
+                  !stacked && '@min-[24rem]:flex-1 @min-[24rem]:text-end',
+                  empty && !loading ? 'text-secondary' : 'text-primary',
+                  item.numeric === true && 'tabular-nums',
+                )}
+              >
+                {loading ? (
+                  <Skeleton
+                    className={cn('h-4 w-[150px] max-w-full', !stacked && '@min-[24rem]:ms-auto')}
+                  />
+                ) : empty ? (
+                  '—'
+                ) : typeof item.value === 'string' || typeof item.value === 'number' ? (
+                  // Isolated, so a value in the other direction (Latin in right-to-left) keeps its
+                  // own order ("12.345,60 EUR", "d.o.o."), while the row keeps the page's alignment.
+                  <bdi>{item.value}</bdi>
+                ) : (
+                  item.value
+                )}
+              </dd>
+            </div>
+          )
+        })}
+      </dl>
+    </div>
   )
 }
 

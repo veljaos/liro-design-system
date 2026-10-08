@@ -5,6 +5,7 @@ import {
   Building,
   Building2,
   ChartColumn,
+  FileSpreadsheet,
   CheckCheck,
   CircleX,
   House,
@@ -26,34 +27,45 @@ import {
   type ComponentProps,
   type ReactNode,
 } from 'react'
-import { expect, userEvent, within } from 'storybook/test'
+import { expect, userEvent, waitFor, within } from 'storybook/test'
 import {
   ActionGroup,
+  ActivityList,
   AppShell,
   AuthShell,
+  BulkActionBar,
   Button,
   ColumnChooser,
   DashboardPage,
   DataTable,
   DateField,
+  DateRangeText,
   DateText,
+  DetailPage,
   DocumentPage,
   DueDate,
+  EmptyState,
   FilterBar,
-  FormSection,
-  FormTabs,
+  filterNotifications,
+  FormGrid,
   KeyValueList,
   Launchpad,
   ListPage,
   MoneyField,
   MoneyText,
+  NumberText,
+  notice,
+  NotificationsPage,
+  NotificationsPanel,
   QuickPreview,
-  RecordFormPage,
+  ReasonConfirmDialog,
+  RelatedDocuments,
   SectionCard,
   SelectField,
   StatusBadge,
   StatusPage,
   TextField,
+  Toaster,
   toneFor,
   useLiro,
   WorklistPage,
@@ -61,10 +73,12 @@ import {
   type CommandItem,
   type DataTableColumn,
   type DataTableFilters,
+  type DetailSection,
   type FilterDefinition,
   type LaunchpadModule,
   type LifecycleStep,
   type ModuleTab,
+  type NotificationItem,
   type ShellCompany,
   type ShellUser,
   type SidePanel,
@@ -76,6 +90,7 @@ import { LIRO_BRAND } from '../components/story-brand'
 import { ExampleProvider, PhoneFrame, percentText } from '../components/story-frames'
 import { settle } from '../primitives/story-helpers'
 import {
+  APPROVAL_DETAILS,
   APPROVALS,
   CASH,
   EMPLOYEE,
@@ -83,8 +98,10 @@ import {
   INVOICES,
   LARGEST_OPEN,
   LINES,
+  REJECT_REASONS,
   REVENUE,
   TOTALS,
+  type ApprovalLine,
   type ExampleApproval,
   type ExampleInvoice,
   type ExampleLine,
@@ -129,17 +146,114 @@ const ROUTES = {
   dashboard: '/reports/overview',
   approvals: '/purchasing/approvals',
   employee: `/hr/employees/${EMPLOYEE.id}`,
+  notifications: '/notifications',
 }
 
 // ── Shared pieces ─────────────────────────────────────────────────────────────────────────────
 
 const BRAND = { ...LIRO_BRAND, href: '#/home' }
 
+/** The companies Milica works for: more than seven, so the switcher searches; one suspended. */
 const COMPANIES: ShellCompany[] = [
-  { id: 'kvadrat', name: 'Kvadrat Gradnja d.o.o.', description: 'PIB 108452317', waiting: 5 },
-  { id: 'panonija', name: 'Panonija Agro d.o.o.', description: 'PIB 104987265' },
-  { id: 'bojovic', name: 'Bojović i sinovi d.o.o.', description: 'PIB 109773148', waiting: 12 },
+  {
+    id: 'bojovic',
+    name: 'Bojović i sinovi d.o.o.',
+    description: 'PIB 109773148',
+    note: '12 tasks',
+  },
+  { id: 'drina', name: 'Drina Prevoz d.o.o.', description: 'PIB 101665092' },
+  { id: 'jelic', name: 'Knjigovodstvo Jelić', description: 'PIB 110583224' },
+  { id: 'kvadrat', name: 'Kvadrat Gradnja d.o.o.', description: 'PIB 108452317', note: '5 tasks' },
+  { id: 'medic', name: 'Medic Lab Niš d.o.o.', description: 'PIB 107819450' },
+  { id: 'panonija', name: 'Panonija Agro d.o.o.', description: 'PIB 104987265', note: '1 task' },
+  {
+    id: 'rakic',
+    name: 'Rakić Pekara SZR',
+    description: 'PIB 111296603',
+    status: { label: 'Suspended', tone: 'danger' },
+  },
+  { id: 'stanic', name: 'Stanić Elektro STR', description: 'PIB 112048376' },
+  { id: 'vojvodjanka', name: 'Vojvođanka Mlin a.d.', description: 'PIB 100421987' },
 ]
+
+/** Milica's notifications on 6 October 2026: two unread; the links open the example screens. */
+const NOTIFICATIONS: NotificationItem[] = [
+  {
+    id: 'n1',
+    title: 'UF-2026-1187 from EPS Snabdevanje waits for your approval',
+    company: 'Kvadrat Gradnja d.o.o.',
+    companyId: 'kvadrat',
+    type: 'approvals',
+    at: '2026-10-06T10:14:00+02:00',
+    href: '#/purchasing/approvals',
+    read: false,
+  },
+  {
+    id: 'n2',
+    title: 'F-2026-0411 to Drina Prevoz d.o.o. is 3 days overdue',
+    company: 'Kvadrat Gradnja d.o.o.',
+    companyId: 'kvadrat',
+    type: 'documents',
+    at: '2026-10-06T07:00:00+02:00',
+    href: '#/sales/invoices',
+    read: false,
+  },
+  {
+    id: 'n3',
+    title: 'Dragan Ilić commented on F-2026-0412',
+    body: '“Customer asked for delivery on Friday.”',
+    company: 'Kvadrat Gradnja d.o.o.',
+    companyId: 'kvadrat',
+    type: 'mentions',
+    at: '2026-10-05T15:20:00+02:00',
+    href: '#/sales/invoices/F-2026-0412',
+    read: true,
+  },
+  {
+    id: 'n4',
+    title: 'Jelena Marković asked for leave, 13.–17.10.2026.',
+    company: 'Kvadrat Gradnja d.o.o.',
+    companyId: 'kvadrat',
+    type: 'approvals',
+    at: '2026-10-05T09:31:00+02:00',
+    href: `#/hr/employees/${EMPLOYEE.id}`,
+    read: true,
+  },
+  {
+    id: 'n5',
+    title: 'UF-2026-0877 from Elektrovojvodina waits for your approval',
+    company: 'Panonija Agro d.o.o.',
+    companyId: 'panonija',
+    type: 'approvals',
+    at: '2026-10-02T13:05:00+02:00',
+    href: '#/purchasing/approvals',
+    read: true,
+  },
+  {
+    id: 'n6',
+    title: 'Bank statement 187 imported: 14 payments matched',
+    company: 'Kvadrat Gradnja d.o.o.',
+    companyId: 'kvadrat',
+    type: 'system',
+    at: '2026-10-02T07:40:00+02:00',
+    href: '#/banking',
+    read: true,
+  },
+]
+
+const NOTIFICATION_TYPES = [
+  { value: 'approvals', label: 'Approvals' },
+  { value: 'documents', label: 'Documents and SEF' },
+  { value: 'mentions', label: 'Mentions and comments' },
+  { value: 'system', label: 'System' },
+]
+
+/** The read state of the notifications, kept by the application across its screens. */
+const Notifications = createContext<{
+  items: NotificationItem[]
+  /** An id, or 'all'. */
+  setRead: (id: string, read: boolean) => void
+}>({ items: NOTIFICATIONS, setRead: () => undefined })
 
 const SALES_TABS: ModuleTab[] = [
   { key: 'invoices', label: 'Invoices', href: '#/sales/invoices', current: true },
@@ -184,6 +298,8 @@ function Shell({
   children: ReactNode
 }) {
   const navigate = useContext(Navigate)
+  const notifications = useContext(Notifications)
+  const unread = notifications.items.filter((item) => !item.read).length
   const commands: CommandItem[] = [
     {
       id: 'new-invoice',
@@ -217,6 +333,14 @@ function Shell({
         navigate(ROUTES.approvals)
       },
     },
+    {
+      id: 'go-notifications',
+      label: 'Notifications',
+      group: 'navigation',
+      onSelect: () => {
+        navigate(ROUTES.notifications)
+      },
+    },
   ]
   const user: ShellUser = {
     name: 'Milica Petrović',
@@ -241,10 +365,28 @@ function Shell({
       {...(crumbs === undefined ? {} : { breadcrumbs: crumbs })}
       commands={{ items: commands }}
       notifications={{
-        unread: 2,
-        panel: <p className="m-0 text-sm">2 supplier invoices are overdue for approval.</p>,
+        unread,
+        panel: (
+          <NotificationsPanel
+            items={notifications.items.slice(0, 5)}
+            unread={unread}
+            viewAllHref={`#${ROUTES.notifications}`}
+            onOpen={(item) => {
+              notifications.setRead(item.id, true)
+            }}
+            onMarkAllRead={() => {
+              notifications.setRead('all', true)
+            }}
+          />
+        ),
       }}
-      companies={{ items: COMPANIES, current: 'kvadrat', onSelect: () => undefined }}
+      companies={{
+        items: COMPANIES,
+        pinned: ['kvadrat', 'panonija'],
+        recent: ['bojovic', 'medic'],
+        current: 'kvadrat',
+        onSelect: () => undefined,
+      }}
       user={user}
       {...(tabs === undefined ? {} : { moduleTabs: tabs })}
       {...(bottomBar === undefined ? {} : { bottomBar })}
@@ -383,7 +525,8 @@ function Home({ phone }: { phone: boolean }) {
             : 'mx-auto box-border flex w-full max-w-content flex-col gap-6 p-6'
         }
       >
-        <h1 className="bidi-content m-0 text-h1 text-primary">Kvadrat Gradnja d.o.o.</h1>
+        {/* The company is in the header: the page's h1 is for screen readers only. */}
+        <h1 className="sr-only">Home</h1>
         <Launchpad label="Modules" modules={MODULES} layout={phone ? 'phone' : 'desktop'} />
       </div>
     </Shell>
@@ -445,6 +588,17 @@ const INVOICE_FILTERS: FilterDefinition[] = [
   { id: 'total', label: 'Total', type: 'numberRange', decimals: 2, currency: 'RSD' },
 ]
 
+/** The saved views: five as tabs on desktop, the rest under "More"; one select on phones. */
+const INVOICE_VIEWS = [
+  { id: 'all', label: 'All', count: 1284 },
+  { id: 'unpaid', label: 'Unpaid', count: 37 },
+  { id: 'overdue', label: 'Overdue', count: 9 },
+  { id: 'drafts', label: 'Drafts', count: 4 },
+  { id: 'mine', label: 'Mine' },
+  { id: 'sef', label: 'Rejected by SEF', count: 2 },
+  { id: 'cancelled', label: 'Cancelled', count: 6 },
+]
+
 function InvoiceList({ phone }: { phone: boolean }) {
   const navigate = useContext(Navigate)
   const [view, setView] = useState('all')
@@ -477,12 +631,7 @@ function InvoiceList({ phone }: { phone: boolean }) {
         layout={phone ? 'phone' : 'desktop'}
         title="Invoices"
         {...(phone ? {} : { actions: newInvoice })}
-        views={[
-          { id: 'all', label: 'All', count: 1284 },
-          { id: 'unpaid', label: 'Unpaid', count: 37 },
-          { id: 'overdue', label: 'Overdue', count: 9 },
-          { id: 'mine', label: 'Mine' },
-        ]}
+        views={INVOICE_VIEWS}
         view={view}
         onViewChange={setView}
         saveView={<Button family="neutral" emphasis="menu" icon={BookmarkPlus} label="Save view" />}
@@ -503,6 +652,7 @@ function InvoiceList({ phone }: { phone: boolean }) {
                 <Button intent="export" label="Export" />
               </>
             }
+            phoneMenu={[{ label: 'Export', icon: FileSpreadsheet, onSelect: () => undefined }]}
           />
         }
       >
@@ -577,7 +727,7 @@ const LINE_COLUMNS: DataTableColumn<ExampleLine>[] = [
     header: 'Quantity',
     align: 'end',
     numeric: true,
-    cell: (line) => line.quantity,
+    cell: (line) => <NumberText value={line.quantity} />,
   },
   { id: 'unit', header: 'Unit', cell: (line) => line.unit },
   {
@@ -587,7 +737,7 @@ const LINE_COLUMNS: DataTableColumn<ExampleLine>[] = [
     numeric: true,
     cell: (line) => <MoneyText value={line.price} currency="RSD" />,
   },
-  { id: 'vat', header: 'VAT', align: 'end', numeric: true, cell: (line) => line.vat },
+  { id: 'vat', header: 'VAT', cell: (line) => line.vat },
   {
     id: 'amount',
     header: 'Amount',
@@ -598,13 +748,13 @@ const LINE_COLUMNS: DataTableColumn<ExampleLine>[] = [
 ]
 
 const TOTAL_ROWS: TotalsRow[] = [
-  { key: 'base20', label: 'Tax base 20%', value: TOTALS.base20, currency: 'RSD' },
-  { key: 'vat20', label: 'VAT 20%', value: TOTALS.vat20, currency: 'RSD' },
-  { key: 'base10', label: 'Tax base 10%', value: TOTALS.base10, currency: 'RSD', group: true },
-  { key: 'vat10', label: 'VAT 10%', value: TOTALS.vat10, currency: 'RSD' },
+  { key: 'base20', label: 'Tax base S 20%', value: TOTALS.base20, currency: 'RSD' },
+  { key: 'vat20', label: 'VAT S 20%', value: TOTALS.vat20, currency: 'RSD' },
+  { key: 'base10', label: 'Tax base S 10%', value: TOTALS.base10, currency: 'RSD', group: true },
+  { key: 'vat10', label: 'VAT S 10%', value: TOTALS.vat10, currency: 'RSD' },
   {
     key: 'exempt',
-    label: 'VAT-exempt deposit',
+    label: 'Exempt E (deposit)',
     value: TOTALS.exempt,
     currency: 'RSD',
     group: true,
@@ -625,25 +775,23 @@ const STEPS: LifecycleStep[] = [
   { key: 'paid', label: 'Paid' },
 ]
 
+/** A time as the application writes it (`format.dateTime` in the tenant's zone). */
+function Time({ children }: { children: ReactNode }) {
+  return <span dir="ltr">{children}</span>
+}
+
 const PANELS: SidePanel[] = [
   {
     key: 'delivery',
     title: 'Delivery',
     content: (
-      <dl className="m-0 flex flex-col gap-2 text-sm">
-        <div className="flex justify-between gap-2">
-          <dt className="text-secondary">SEF</dt>
-          <dd className="m-0">
-            <StatusBadge label="Delivered" tone="info" />
-          </dd>
-        </div>
-        <div className="flex justify-between gap-2">
-          <dt className="text-secondary">Sent</dt>
-          <dd className="m-0 tabular-nums" dir="ltr">
-            28.09.2026. 10:42
-          </dd>
-        </div>
-      </dl>
+      <KeyValueList
+        columns={1}
+        items={[
+          { label: 'SEF', value: <StatusBadge label="Delivered" tone="success" /> },
+          { label: 'Sent', value: <Time>28.09.2026. 10:42</Time>, numeric: true },
+        ]}
+      />
     ),
   },
   {
@@ -651,38 +799,99 @@ const PANELS: SidePanel[] = [
     title: 'Related documents',
     count: 3,
     content: (
-      <ul className="m-0 flex list-none flex-col gap-2 p-0 text-sm">
-        <li>Order N-2026-0157</li>
-        <li>Delivery note OTP-2026-0311</li>
-        <li>Advance invoice A-2026-031</li>
-      </ul>
+      <RelatedDocuments
+        label="Related documents"
+        items={[
+          {
+            key: 'order',
+            type: 'Order',
+            number: 'N-2026-0157',
+            href: '#/sales/orders/N-2026-0157',
+            status: <StatusBadge label="Completed" tone="neutral" />,
+          },
+          {
+            key: 'delivery',
+            type: 'Delivery note',
+            number: 'OTP-2026-0311',
+            href: '#/sales/deliveries/OTP-2026-0311',
+            status: <StatusBadge label="Delivered" tone="success" />,
+          },
+          {
+            key: 'advance',
+            type: 'Advance invoice',
+            number: 'A-2026-031',
+            href: '#/sales/invoices/A-2026-031',
+            status: <StatusBadge label="Paid" tone="success" />,
+          },
+        ]}
+      />
     ),
   },
   {
     key: 'comments',
     title: 'Comments',
-    count: 1,
+    count: 3,
     content: (
-      <p className="bidi-content m-0 text-sm">
-        Dragan Ilić: Customer asked for delivery on Friday.
-      </p>
+      <ActivityList
+        label="Comments"
+        items={[
+          {
+            key: 'c3',
+            author: 'Dragan Ilić',
+            time: <Time>02.10.2026. 09:15</Time>,
+            text: 'Customer asked for delivery on Friday.',
+          },
+          {
+            key: 'c2',
+            author: 'Milica Petrović',
+            time: <Time>29.09.2026. 13:40</Time>,
+            text: 'Advance A-2026-031 deducted, as agreed with Panonija.',
+          },
+          {
+            key: 'c1',
+            author: 'Jelena Marković',
+            time: <Time>28.09.2026. 10:05</Time>,
+            text: 'Prices checked against the September price list.',
+          },
+        ]}
+      />
     ),
   },
   {
     key: 'history',
     title: 'History',
-    content: <p className="m-0 text-sm">Issued by Milica Petrović, 28.09.2026.</p>,
+    content: (
+      <ActivityList
+        label="History"
+        items={[
+          {
+            key: 'h3',
+            author: 'Milica Petrović',
+            time: <Time>28.09.2026. 10:42</Time>,
+            text: 'Sent to SEF',
+          },
+          {
+            key: 'h2',
+            author: 'Milica Petrović',
+            time: <Time>28.09.2026. 10:40</Time>,
+            text: 'Issued',
+          },
+        ]}
+      />
+    ),
   },
 ]
 
 function Invoice({ phone, invoice }: { phone: boolean; invoice: ExampleInvoice }) {
   const [open, setOpen] = useState<string[]>(['delivery', 'related'])
   const [hidden, setHidden] = useState(false)
+  const reminder = <Button family="verify" icon={Send} label="Send reminder" />
   return (
     <Shell
       phone={phone}
       crumbs={[{ label: 'Invoices', href: '#/sales/invoices' }, { label: invoice.number }]}
       tabs={SALES_TABS}
+      {...(phone ? { bottomBar: reminder } : {})}
     >
       <DocumentPage
         layout={phone ? 'phone' : 'desktop'}
@@ -704,7 +913,7 @@ function Invoice({ phone, invoice }: { phone: boolean; invoice: ExampleInvoice }
         actions={
           <>
             <Button intent="pdf" label="PDF" emphasis="secondary" />
-            <Button family="verify" icon={Send} label="Send reminder" />
+            {phone ? null : reminder}
           </>
         }
         lines={
@@ -716,7 +925,7 @@ function Invoice({ phone, invoice }: { phone: boolean; invoice: ExampleInvoice }
             rows={LINES}
             getRowId={(line) => line.id}
             getRowLabel={(line) => line.item}
-            mobile={{ details: ['quantity', 'price', 'vat', 'amount'] }}
+            mobile={{ details: ['quantity', 'unit', 'price', 'vat', 'amount'] }}
           />
         }
         totals={{
@@ -797,12 +1006,14 @@ function Dashboard({ phone }: { phone: boolean }) {
       <DashboardPage
         layout={phone ? 'phone' : 'desktop'}
         title="Overview"
-        subtitle="Kvadrat Gradnja d.o.o. · September 2026"
+        // The company is in the header already: the subtitle names only the period.
+        subtitle="September 2026"
         stats={[
           {
             key: 'revenue',
             label: 'Revenue, September',
-            value: <MoneyText value="5684200" currency="RSD" decimals={0} />,
+            // Money is never rounded: every amount with its paras (P4.9).
+            value: <MoneyText value="5684200.00" currency="RSD" />,
             change: { text: percentText('16.7', 'always'), direction: 'up', sentiment: 'good' },
             comparison: 'vs September 2025',
             trend: ['4812.4', '5230.9', '4977.1', '3906.5', '4421.8', '5684.2'],
@@ -816,20 +1027,21 @@ function Dashboard({ phone }: { phone: boolean }) {
           {
             key: 'cash',
             label: 'Cash',
-            value: <MoneyText value="3012775" currency="RSD" decimals={0} />,
+            value: <MoneyText value="3012775.40" currency="RSD" />,
             change: { text: percentText('36.0', 'always'), direction: 'up', sentiment: 'good' },
             comparison: 'vs 31.08.2026.',
           },
           {
             key: 'vat',
             label: 'VAT due 15.10.',
-            value: <MoneyText value="612480" currency="RSD" decimals={0} />,
+            value: <MoneyText value="612480.00" currency="RSD" />,
           },
         ]}
       >
         <BarChart {...REVENUE} />
         <LineChart {...CASH} />
-        <SectionCard title="Largest open invoices" headingLevel={3} flush className="md:col-span-2">
+        {/* col-span-full, never md:col-span-2: in the phone layout one column stays one. */}
+        <SectionCard title="Largest open invoices" headingLevel={3} flush className="col-span-full">
           <DataTable
             label="Largest open invoices"
             layout={phone ? 'cards' : 'table'}
@@ -848,15 +1060,64 @@ function Dashboard({ phone }: { phone: boolean }) {
 
 // ── Approvals (worklist) ──────────────────────────────────────────────────────────────────────
 
+const APPROVAL_LINE_COLUMNS: DataTableColumn<ApprovalLine>[] = [
+  { id: 'item', header: 'Item', cell: (line) => line.item },
+  {
+    id: 'quantity',
+    header: 'Quantity',
+    align: 'end',
+    numeric: true,
+    cell: (line) => (
+      <>
+        <NumberText value={line.quantity} /> {line.unit}
+      </>
+    ),
+  },
+  { id: 'vat', header: 'VAT', align: 'end', numeric: true, cell: (line) => line.vat },
+  {
+    id: 'amount',
+    header: 'Amount',
+    align: 'end',
+    numeric: true,
+    cell: (line) => <MoneyText value={line.amount} currency="RSD" />,
+  },
+]
+
+/** Reject first, then Approve: the confirming action last (mirrored in right-to-left). */
+function Decisions({ onApprove, onReject }: { onApprove: () => void; onReject: () => void }) {
+  return (
+    <>
+      <Button family="destructive" icon={CircleX} label="Reject" onClick={onReject} />
+      <Button
+        family="positive"
+        icon={CheckCheck}
+        label="Approve"
+        emphasis="primary"
+        onClick={onApprove}
+      />
+    </>
+  )
+}
+
+/**
+ * The chosen supplier invoice, whole: its facts, its lines and its PDF, and the two decisions —
+ * at the top of the pane on a desktop, in the bottom bar on a phone.
+ */
 function ApprovalDetail({
   row,
-  onDecide,
+  phone,
+  onApprove,
+  onReject,
 }: {
   row: ExampleApproval
-  onDecide: (id: string) => void
+  phone: boolean
+  onApprove: () => void
+  onReject: () => void
 }) {
+  const { linkComponent: Link } = useLiro()
+  const detail = APPROVAL_DETAILS[row.id]
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className={phone ? 'flex flex-col gap-4' : 'flex flex-col gap-6 p-6'}>
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex min-w-0 flex-col gap-1">
           <h2 className="bidi-content m-0 text-h2 text-primary">{row.supplier}</h2>
@@ -864,84 +1125,157 @@ function ApprovalDetail({
             {row.number} · requested by {row.requester}
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button
-            family="destructive"
-            icon={CircleX}
-            label="Reject"
-            onClick={() => {
-              onDecide(row.id)
-            }}
-          />
-          <Button
-            family="positive"
-            icon={CheckCheck}
-            label="Approve"
-            emphasis="primary"
-            onClick={() => {
-              onDecide(row.id)
-            }}
-          />
-        </div>
+        {!phone && (
+          <div className="flex gap-2">
+            <Decisions onApprove={onApprove} onReject={onReject} />
+          </div>
+        )}
       </div>
       <KeyValueList
-        columns={2}
         items={[
           { label: 'Amount', value: <MoneyText value={row.total} currency="RSD" />, numeric: true },
           { label: 'Due', value: <DueDate value={row.due} />, numeric: true },
           { label: 'Received', value: <DateText value={row.received} />, numeric: true },
           { label: 'Cost centre', value: row.costCenter },
-          { label: 'Requested by', value: row.requester },
-          { label: 'Goods received', value: '30.09.2026., complete' },
+          ...(detail?.purchaseOrder === undefined
+            ? []
+            : [{ label: 'Purchase order', value: detail.purchaseOrder, numeric: true }]),
+          // Two values, never "30.09.2026., complete" (a date followed by a comma).
+          ...(detail?.goods === undefined
+            ? []
+            : [
+                { label: 'Goods received', value: detail.goods.state },
+                {
+                  label: 'Goods received on',
+                  value: <DateText value={detail.goods.date} />,
+                  numeric: true,
+                },
+              ]),
+          ...(detail === undefined
+            ? []
+            : [
+                {
+                  label: 'Attachment',
+                  value: (
+                    <Link
+                      href={`#/purchasing/files/${detail.attachment}`}
+                      className="text-link no-underline visited:text-link hover:underline"
+                    >
+                      {detail.attachment}
+                    </Link>
+                  ),
+                },
+              ]),
         ]}
       />
+      {detail !== undefined && (
+        <section aria-label="Lines" className={phone ? undefined : '-mx-6'}>
+          <h3
+            className={
+              phone ? 'm-0 mb-2 text-h4 text-primary' : 'm-0 mb-2 px-6 text-h4 text-primary'
+            }
+          >
+            Lines
+          </h3>
+          <DataTable
+            label="Lines"
+            layout={phone ? 'cards' : 'table'}
+            inCard
+            columns={APPROVAL_LINE_COLUMNS}
+            rows={detail.lines}
+            getRowId={(line) => line.item}
+            getRowLabel={(line) => line.item}
+            mobile={{ details: ['quantity', 'vat', 'amount'] }}
+          />
+        </section>
+      )}
     </div>
   )
 }
 
 function Approvals({ phone }: { phone: boolean }) {
+  const { format } = useLiro()
   const [rows, setRows] = useState(APPROVALS)
   const [selected, setSelected] = useState<string | undefined>(phone ? undefined : 'u1')
-  const decide = (id: string) => {
-    const index = rows.findIndex((row) => row.id === id)
-    const rest = rows.filter((row) => row.id !== id)
-    setRows(rest)
-    setSelected(rest[Math.min(index, rest.length - 1)]?.id)
+  const [checked, setChecked] = useState<string[]>([])
+  // What Reject asks about — one invoice or the checked ones — kept while the dialog closes.
+  const [rejecting, setRejecting] = useState<{ ids: readonly string[]; name: string }>({
+    ids: [],
+    name: '',
+  })
+  const [asking, setAsking] = useState(false)
+  const reject = (ids: readonly string[]) => {
+    setRejecting({ ids, name: numbers(ids) })
+    setAsking(true)
   }
+
+  /** Takes the invoices off the queue and opens the next one at the same place. */
+  const decide = (ids: readonly string[], done: string, undo: boolean) => {
+    const index = rows.findIndex((row) => ids.includes(row.id))
+    const rest = rows.filter((row) => !ids.includes(row.id))
+    setRows(rest)
+    setChecked([])
+    if (!phone || selected !== undefined) {
+      setSelected(rest[Math.min(Math.max(index, 0), rest.length - 1)]?.id)
+    }
+    notice.success(done, {
+      // Undo only where the Core can take the decision back (an approval; a rejection has
+      // already gone to SEF).
+      ...(undo
+        ? {
+            action: {
+              label: 'Undo',
+              onClick: () => {
+                setRows((current) =>
+                  APPROVALS.filter(
+                    (each) => ids.includes(each.id) || current.some((row) => row.id === each.id),
+                  ),
+                )
+                setSelected(ids[0])
+              },
+            },
+          }
+        : {}),
+    })
+  }
+  function numbers(ids: readonly string[]) {
+    return ids.length === 1
+      ? (rows.find((row) => row.id === ids[0])?.number ?? '')
+      : `${format.number(String(ids.length))} invoices`
+  }
+  const approve = (ids: readonly string[]) => {
+    decide(ids, `${numbers(ids)} approved.`, true)
+  }
+
   const row = rows.find((each) => each.id === selected)
   const index = rows.findIndex((each) => each.id === selected)
   const items: WorklistItem[] = rows.map((each) => ({
     id: each.id,
+    label: each.number,
     title: each.supplier,
     subtitle: `${each.number} · ${each.costCenter}`,
     figure: <MoneyText value={each.total} currency="RSD" />,
     status: statusBadge(each.status),
-    actions: (
-      <>
-        <Button
-          family="destructive"
-          icon={CircleX}
-          label="Reject"
-          emphasis="menu"
-          onClick={() => {
-            decide(each.id)
-          }}
-        />
-        <Button
-          family="positive"
-          icon={CheckCheck}
-          label="Approve"
-          onClick={() => {
-            decide(each.id)
-          }}
-        />
-      </>
-    ),
   }))
+  const decisions =
+    row === undefined ? undefined : (
+      <Decisions
+        onApprove={() => {
+          approve([row.id])
+        }}
+        onReject={() => {
+          reject([row.id])
+        }}
+      />
+    )
   return (
     <Shell
       phone={phone}
       crumbs={[{ label: 'Purchasing', href: '#/purchasing' }, { label: 'To approve' }]}
+      // On a phone the decisions stand in the bottom bar, within thumb reach.
+      {...(phone && decisions !== undefined
+        ? { bottomBar: <div className="flex gap-2 [&>*]:flex-1">{decisions}</div> }
+        : {})}
     >
       <WorklistPage
         layout={phone ? 'stacked' : 'split'}
@@ -950,7 +1284,58 @@ function Approvals({ phone }: { phone: boolean }) {
         items={items}
         {...(selected === undefined ? {} : { selected })}
         onSelect={setSelected}
-        {...(row === undefined ? {} : { detail: <ApprovalDetail row={row} onDecide={decide} /> })}
+        checked={checked}
+        onCheckedChange={setChecked}
+        bulkBar={
+          <BulkActionBar
+            count={checked.length}
+            onClear={() => {
+              setChecked([])
+            }}
+            actions={[
+              {
+                key: 'reject',
+                family: 'destructive',
+                icon: CircleX,
+                label: 'Reject',
+                onClick: () => {
+                  reject(checked)
+                },
+              },
+              {
+                key: 'approve',
+                family: 'positive',
+                icon: CheckCheck,
+                label: 'Approve',
+                onClick: () => {
+                  approve(checked)
+                },
+              },
+            ]}
+          />
+        }
+        empty={
+          <EmptyState
+            title="Nothing to approve"
+            description="New supplier invoices appear here when they arrive from SEF."
+          />
+        }
+        {...(row === undefined
+          ? {}
+          : {
+              detail: (
+                <ApprovalDetail
+                  row={row}
+                  phone={phone}
+                  onApprove={() => {
+                    approve([row.id])
+                  }}
+                  onReject={() => {
+                    reject([row.id])
+                  }}
+                />
+              ),
+            })}
         onBack={() => {
           setSelected(undefined)
         }}
@@ -958,137 +1343,245 @@ function Approvals({ phone }: { phone: boolean }) {
           setSelected(rows[(index + 1) % rows.length]?.id)
         }}
       />
+      <ReasonConfirmDialog
+        open={asking}
+        onOpenChange={setAsking}
+        family="destructive"
+        actionIcon={CircleX}
+        title={`Reject ${rejecting.name}?`}
+        message="The supplier sees the reason on SEF. A rejection cannot be taken back."
+        reasonLabel="Reason for rejection"
+        reasons={REJECT_REASONS}
+        confirmLabel="Reject"
+        onConfirm={() => {
+          decide(rejecting.ids, `${rejecting.name} rejected.`, false)
+        }}
+      />
+      <Toaster />
     </Shell>
   )
 }
 
-// ── Employee record form ──────────────────────────────────────────────────────────────────────
+// ── Employee record ───────────────────────────────────────────────────────────────────────────
 
+/** What the Core keeps while the record is edited. */
+interface EmployeeValues {
+  phone: string
+  email: string
+  address: string
+  position: string
+}
+
+const EMPLOYEE_START: EmployeeValues = {
+  phone: EMPLOYEE.phone,
+  email: EMPLOYEE.email,
+  address: EMPLOYEE.address,
+  position: EMPLOYEE.position,
+}
+
+/**
+ * The employee's record (DetailPage): read, and edited as a whole with one Edit — no tabs, no
+ * side column, the leave data in its own section.
+ */
 function Employee({ phone }: { phone: boolean }) {
-  const [dirty, setDirty] = useState(false)
-  const touched = () => {
-    setDirty(true)
+  const [mode, setMode] = useState<'view' | 'edit'>('view')
+  const [saved, setSaved] = useState(EMPLOYEE_START)
+  const [values, setValues] = useState(EMPLOYEE_START)
+  const dirty = JSON.stringify(values) !== JSON.stringify(saved)
+  const change = (patch: Partial<EmployeeValues>) => {
+    setValues((current) => ({ ...current, ...patch }))
   }
-  const columns = phone ? 1 : 2
-  const actions = (
-    <ActionGroup
-      actions={[
-        { key: 'cancel', intent: 'cancel', label: 'Cancel' },
-        {
-          key: 'save',
-          intent: 'save',
-          label: 'Save',
-          onClick: () => {
-            setDirty(false)
-          },
-        },
-      ]}
+  const edit = (
+    <Button
+      intent="edit"
+      label="Edit"
+      onClick={() => {
+        setMode('edit')
+      }}
     />
   )
+  const sections: DetailSection[] = [
+    {
+      id: 'personal',
+      label: 'Personal',
+      content: (
+        <KeyValueList
+          items={[
+            {
+              label: 'Date of birth',
+              value: <DateText value={EMPLOYEE.birthDate} />,
+              numeric: true,
+            },
+            { label: 'Phone', value: values.phone, numeric: true },
+            { label: 'E-mail', value: values.email },
+            { label: 'Address', value: values.address },
+          ]}
+        />
+      ),
+      edit: (
+        <FormGrid>
+          <DateField label="Date of birth" defaultValue={EMPLOYEE.birthDate} />
+          <TextField
+            label="Phone"
+            type="tel"
+            value={values.phone}
+            onChange={(phoneNumber) => {
+              change({ phone: phoneNumber })
+            }}
+          />
+          <TextField
+            label="E-mail"
+            type="email"
+            value={values.email}
+            onChange={(email) => {
+              change({ email })
+            }}
+          />
+          <TextField
+            label="Address"
+            value={values.address}
+            onChange={(address) => {
+              change({ address })
+            }}
+          />
+        </FormGrid>
+      ),
+    },
+    {
+      id: 'employment',
+      label: 'Employment',
+      content: (
+        <KeyValueList
+          items={[
+            { label: 'Position', value: values.position },
+            { label: 'Department', value: 'Finance' },
+            { label: 'Contract', value: EMPLOYEE.contract },
+            {
+              label: 'Contract period',
+              value: <DateRangeText from={EMPLOYEE.since} to={EMPLOYEE.contractEnd} />,
+              numeric: true,
+            },
+            { label: 'Working hours', value: EMPLOYEE.hours },
+          ]}
+        />
+      ),
+      edit: (
+        <FormGrid>
+          <TextField
+            label="Position"
+            value={values.position}
+            onChange={(position) => {
+              change({ position })
+            }}
+          />
+          <SelectField
+            label="Department"
+            defaultValue={EMPLOYEE.department}
+            options={[
+              { value: 'finance', label: 'Finance' },
+              { value: 'sales', label: 'Sales' },
+              { value: 'warehouse', label: 'Warehouse' },
+            ]}
+          />
+          <DateField label="Start date" defaultValue={EMPLOYEE.since} />
+          <DateField label="Contract end" defaultValue={EMPLOYEE.contractEnd} />
+        </FormGrid>
+      ),
+    },
+    {
+      id: 'leave',
+      label: 'Leave',
+      // Kept by leave requests: read-only in edit mode too.
+      description: 'Changed through leave requests',
+      content: (
+        <KeyValueList
+          items={[
+            { label: 'Days left in 2026', value: EMPLOYEE.leaveLeft, numeric: true },
+            { label: 'Days taken', value: EMPLOYEE.leaveTaken, numeric: true },
+            {
+              label: 'Next leave',
+              value: <DateRangeText from={EMPLOYEE.nextLeave.from} to={EMPLOYEE.nextLeave.to} />,
+              numeric: true,
+            },
+            { label: 'Manager', value: EMPLOYEE.manager },
+          ]}
+        />
+      ),
+    },
+    {
+      id: 'payroll',
+      label: 'Payroll',
+      content: (
+        <KeyValueList
+          items={[
+            {
+              label: 'Gross salary',
+              value: <MoneyText value={EMPLOYEE.gross} currency="RSD" />,
+              numeric: true,
+            },
+            { label: 'Bank account', value: EMPLOYEE.account, numeric: true },
+          ]}
+        />
+      ),
+      edit: (
+        <FormGrid>
+          <MoneyField label="Gross salary" currency="RSD" defaultValue={EMPLOYEE.gross} />
+          <TextField label="Bank account" defaultValue={EMPLOYEE.account} direction="ltr" />
+        </FormGrid>
+      ),
+    },
+  ]
   return (
     <Shell
       phone={phone}
       crumbs={[{ label: 'Employees', href: '#/hr/employees' }, { label: EMPLOYEE.name }]}
       tabs={HR_TABS}
+      // On a phone Edit stands in the bottom bar; while editing, the page's own bar does.
+      {...(phone && mode === 'view' ? { bottomBar: edit } : {})}
     >
-      <RecordFormPage
+      <DetailPage
         layout={phone ? 'phone' : 'desktop'}
         title={EMPLOYEE.name}
         back={{ href: '#/home', label: 'Home' }}
         status={<StatusBadge label="Active" tone="success" />}
-        subtitle={`${EMPLOYEE.position} · Finance`}
+        subtitle={`${values.position} · Finance`}
+        keyFigures={[
+          {
+            label: 'Net salary, September 2026',
+            value: <MoneyText value={EMPLOYEE.net} currency="RSD" />,
+          },
+          { label: 'Leave left', value: `${EMPLOYEE.leaveLeft} days` },
+          { label: 'Contract ends', value: <DateText value={EMPLOYEE.contractEnd} /> },
+        ]}
+        {...(phone ? {} : { actions: edit })}
+        sections={sections}
+        mode={mode}
         dirty={dirty}
-        actions={actions}
-        side={
-          <section className="flex flex-col gap-3 rounded-lg border border-solid border-default bg-surface-raised p-4">
-            <h2 className="m-0 text-h5 text-primary">Leave</h2>
-            <KeyValueList
-              layout="stacked"
-              columns={1}
-              items={[
-                { label: 'Days left in 2026', value: EMPLOYEE.leaveLeft, numeric: true },
-                { label: 'Manager', value: EMPLOYEE.manager },
-                { label: 'Last changed', value: 'Dragan Ilić, 01.07.2026.' },
-              ]}
-            />
-          </section>
+        editActions={
+          <ActionGroup
+            actions={[
+              {
+                key: 'cancel',
+                intent: 'cancel',
+                label: 'Cancel',
+                onClick: () => {
+                  setValues(saved)
+                  setMode('view')
+                },
+              },
+              {
+                key: 'save',
+                intent: 'save',
+                label: 'Save',
+                onClick: () => {
+                  setSaved(values)
+                  setMode('view')
+                },
+              },
+            ]}
+          />
         }
-      >
-        <FormTabs
-          label="Employee"
-          items={[
-            {
-              value: 'personal',
-              label: 'Personal',
-              content: (
-                <FormSection title="Personal details" columns={columns}>
-                  <TextField
-                    label="First name"
-                    defaultValue={EMPLOYEE.firstName}
-                    required
-                    onChange={touched}
-                  />
-                  <TextField
-                    label="Last name"
-                    defaultValue={EMPLOYEE.lastName}
-                    required
-                    onChange={touched}
-                  />
-                  <DateField label="Date of birth" defaultValue={EMPLOYEE.birthDate} />
-                  <TextField
-                    label="Phone"
-                    type="tel"
-                    defaultValue={EMPLOYEE.phone}
-                    onChange={touched}
-                  />
-                  <TextField
-                    label="E-mail"
-                    type="email"
-                    defaultValue={EMPLOYEE.email}
-                    onChange={touched}
-                  />
-                  <TextField label="Address" defaultValue={EMPLOYEE.address} onChange={touched} />
-                </FormSection>
-              ),
-            },
-            {
-              value: 'employment',
-              label: 'Employment',
-              content: (
-                <FormSection title="Employment" columns={columns}>
-                  <TextField label="Position" defaultValue={EMPLOYEE.position} onChange={touched} />
-                  <SelectField
-                    label="Department"
-                    defaultValue={EMPLOYEE.department}
-                    options={[
-                      { value: 'finance', label: 'Finance' },
-                      { value: 'sales', label: 'Sales' },
-                      { value: 'warehouse', label: 'Warehouse' },
-                    ]}
-                  />
-                  <DateField label="Start date" defaultValue={EMPLOYEE.since} />
-                  <DateField label="Contract end" defaultValue={EMPLOYEE.contractEnd} />
-                </FormSection>
-              ),
-            },
-            {
-              value: 'payroll',
-              label: 'Payroll',
-              content: (
-                <FormSection title="Payroll" columns={columns}>
-                  <MoneyField label="Gross salary" currency="RSD" defaultValue={EMPLOYEE.gross} />
-                  <TextField
-                    label="Bank account"
-                    defaultValue={EMPLOYEE.account}
-                    direction="ltr"
-                    onChange={touched}
-                  />
-                </FormSection>
-              ),
-            },
-          ]}
-        />
-      </RecordFormPage>
+      />
     </Shell>
   )
 }
@@ -1105,6 +1598,58 @@ function NotFound() {
   )
 }
 
+// ── Notifications ─────────────────────────────────────────────────────────────────────────────
+
+function NotificationsScreen({ phone }: { phone: boolean }) {
+  const notifications = useContext(Notifications)
+  const [show, setShow] = useState<'all' | 'unread'>('all')
+  const [companies, setCompanies] = useState<string[]>([])
+  const [types, setTypes] = useState<string[]>([])
+  return (
+    <Shell phone={phone}>
+      <NotificationsPage
+        layout={phone ? 'phone' : 'desktop'}
+        title="Notifications"
+        items={filterNotifications(notifications.items, {
+          unreadOnly: show === 'unread',
+          companies,
+          types,
+        })}
+        unread={notifications.items.filter((item) => !item.read).length}
+        show={show}
+        onShowChange={setShow}
+        companyFilter={{
+          label: 'Company',
+          options: COMPANIES.map((company) => ({ value: company.id, label: company.name })),
+          value: companies,
+          onChange: setCompanies,
+        }}
+        typeFilter={{
+          label: 'Type',
+          options: NOTIFICATION_TYPES,
+          value: types,
+          onChange: setTypes,
+        }}
+        onOpen={(item) => {
+          notifications.setRead(item.id, true)
+        }}
+        onReadChange={(item, read) => {
+          notifications.setRead(item.id, read)
+        }}
+        onMarkAllRead={() => {
+          notifications.setRead('all', true)
+        }}
+        onClearFilters={() => {
+          setShow('all')
+          setCompanies([])
+          setTypes([])
+        }}
+        settingsHref="#/settings/notifications"
+      />
+    </Shell>
+  )
+}
+
 // ── The app ───────────────────────────────────────────────────────────────────────────────────
 
 function Screen({ path, phone }: { path: string; phone: boolean }) {
@@ -1114,6 +1659,7 @@ function Screen({ path, phone }: { path: string; phone: boolean }) {
   if (path === ROUTES.dashboard) return <Dashboard phone={phone} />
   if (path === ROUTES.approvals) return <Approvals phone={phone} />
   if (path === ROUTES.employee) return <Employee phone={phone} />
+  if (path === ROUTES.notifications) return <NotificationsScreen phone={phone} />
   if (path === ROUTES.invoice(FEATURED)) {
     const invoice = INVOICES.find((each) => each.number === FEATURED)
     if (invoice !== undefined) return <Invoice phone={phone} invoice={invoice} />
@@ -1128,12 +1674,21 @@ function ExampleApp({ start, phone = false }: { start: string; phone?: boolean }
     setPath(next)
     window.scrollTo(0, 0)
   }, [])
+  // The notifications' read state lives above the screens, as the Core keeps it.
+  const [items, setItems] = useState(NOTIFICATIONS)
+  const setRead = useCallback((id: string, read: boolean) => {
+    setItems((list) =>
+      list.map((item) => (id === 'all' || item.id === id ? { ...item, read } : item)),
+    )
+  }, [])
   return (
     <Navigate.Provider value={navigate}>
-      <ExampleProvider linkComponent={RouterLink}>
-        {/* A new screen starts with fresh state, as a page of the application does. */}
-        <Screen key={path} path={path} phone={phone} />
-      </ExampleProvider>
+      <Notifications.Provider value={{ items, setRead }}>
+        <ExampleProvider linkComponent={RouterLink}>
+          {/* A new screen starts with fresh state, as a page of the application does. */}
+          <Screen key={path} path={path} phone={phone} />
+        </ExampleProvider>
+      </Notifications.Provider>
     </Navigate.Provider>
   )
 }
@@ -1157,8 +1712,8 @@ const meta = {
         component:
           'Liro as it will look: Kvadrat Gradnja d.o.o. on 6 October 2026, one dataset and the ' +
           'screens linked into one application — sign in, the home page, the invoice list, ' +
-          'invoice F-2026-0412, the overview, supplier invoices to approve, an employee record and ' +
-          'a page that does not exist. Every link goes through the provider’s ' +
+          'invoice F-2026-0412, the overview, supplier invoices to approve, an employee record, ' +
+          'the notifications (the bell’s "View all") and a page that does not exist. Every link goes through the provider’s ' +
           '`linkComponent`, as the Core’s router will; the screens use only `@veljaos/ui` and ' +
           '`@veljaos/ui/charts`. The interface text is English; numbers and dates are written as ' +
           'a Serbian tenant sees them. Start with "Walk-through" and click.',
@@ -1201,6 +1756,21 @@ export const WalkThrough: Story = {
     await userEvent.click(canvas.getByRole('link', { name: 'Back to Invoices' }))
     await settle()
     await expect(await canvas.findByRole('row', { name: /F-2026-0412/ })).toBeVisible()
+    // The bell: the panel, then "View all" opens the notifications page.
+    await userEvent.click(canvas.getByRole('button', { name: 'Notifications, 2 unread' }))
+    await settle()
+    await userEvent.click(within(document.body).getByRole('link', { name: 'View all' }))
+    await settle()
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: 'Notifications' }),
+    ).toBeVisible()
+    await expect(canvas.getByRole('heading', { level: 2, name: 'Today' })).toBeVisible()
+    // Opening a notification goes to its record and marks it read.
+    await userEvent.click(canvas.getByRole('link', { name: /UF-2026-1187 from EPS Snabdevanje/ }))
+    await settle()
+    await expect(
+      await canvas.findByRole('button', { name: 'Notifications, 1 unread' }),
+    ).toBeVisible()
   },
 }
 
@@ -1272,10 +1842,52 @@ export const DashboardPhone: Story = {
   render: () => <OnPhone start={ROUTES.dashboard} />,
 }
 
-/** Supplier invoices to approve: Approve or Reject in the row or in the detail. */
+/**
+ * Supplier invoices to approve: the decisions only in the detail (Reject, then Approve), with the
+ * invoice's lines and PDF; checked rows get the bulk bar.
+ */
 export const ApprovalsScreen: Story = {
   name: 'Supplier invoices to approve',
   render: () => <ExampleApp start={ROUTES.approvals} />,
+}
+
+/**
+ * Deciding: Approve opens the next invoice and confirms with a toast that offers Undo; Reject
+ * asks for the reason first, and its toast has no Undo (the rejection goes to SEF).
+ */
+export const ApprovalsDecide: Story = {
+  name: 'Supplier invoices to approve, deciding',
+  render: () => <ExampleApp start={ROUTES.approvals} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const page = within(document.body)
+    await expect(canvas.getByRole('heading', { name: 'EPS Snabdevanje d.o.o.' })).toBeVisible()
+    await userEvent.click(canvas.getByRole('button', { name: 'Approve' }))
+    await expect(await canvas.findByRole('heading', { name: 'Telekom Srbija a.d.' })).toBeVisible()
+    await waitFor(async () => {
+      await expect(page.getByText('UF-2026-1187 approved.')).toBeVisible()
+    })
+    await userEvent.click(page.getByRole('button', { name: 'Undo' }))
+    await expect(
+      await canvas.findByRole('heading', { name: 'EPS Snabdevanje d.o.o.' }),
+    ).toBeVisible()
+    await userEvent.click(canvas.getByRole('button', { name: 'Reject' }))
+    const dialog = within(await page.findByRole('alertdialog'))
+    const confirm = dialog.getByRole('button', { name: 'Reject' })
+    await expect(confirm).toBeDisabled()
+    await userEvent.click(dialog.getByRole('radio', { name: 'Price differs from the order' }))
+    await userEvent.click(confirm)
+    await expect(await canvas.findByRole('heading', { name: 'Telekom Srbija a.d.' })).toBeVisible()
+    await waitFor(async () => {
+      await expect(page.getByText('UF-2026-1187 rejected.')).toBeVisible()
+    })
+    // The pictures are taken without toasts, which come and go with time.
+    notice.dismiss()
+    await waitFor(async () => {
+      await expect(page.queryByText('UF-2026-1187 rejected.')).toBeNull()
+    })
+  },
 }
 
 export const ApprovalsPhone: Story = {
@@ -1283,10 +1895,42 @@ export const ApprovalsPhone: Story = {
   render: () => <OnPhone start={ROUTES.approvals} />,
 }
 
-/** An employee record: tabs in the form card, sections, the bottom bar once something changes. */
+/** On a phone: the invoice full width, each label above its value, the decisions in the bottom bar. */
+export const ApprovalPhoneDetail: Story = {
+  name: 'Supplier invoice to approve, phone',
+  render: () => <OnPhone start={ROUTES.approvals} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: /EPS Snabdevanje/ }))
+    await settle()
+    await expect(canvas.getByRole('heading', { name: 'EPS Snabdevanje d.o.o.' })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Approve' })).toBeVisible()
+  },
+}
+
+/**
+ * An employee's record: header, key figures, then Personal, Employment, Leave and Payroll as
+ * text; one Edit turns the whole record into fields.
+ */
 export const EmployeeScreen: Story = {
   name: 'Employee record',
   render: () => <ExampleApp start={ROUTES.employee} />,
+}
+
+/** Edit: the same sections as fields (Leave stays read-only), Cancel and Save in the bottom bar. */
+export const EmployeeEdit: Story = {
+  name: 'Employee record, editing',
+  render: () => <ExampleApp start={ROUTES.employee} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Edit' }))
+    await settle()
+    await userEvent.type(canvas.getByRole('textbox', { name: 'Address' }), ', stan 4')
+    await expect(canvas.getByText('Unsaved changes')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Save' })).toBeVisible()
+  },
 }
 
 export const EmployeePhone: Story = {
@@ -1295,6 +1939,17 @@ export const EmployeePhone: Story = {
 }
 
 /** A page that does not exist (any module the examples do not have, e.g. Banking). */
+/** Every notification of every company, grouped by day, with filters (from the bell's "View all"). */
+export const NotificationsExample: Story = {
+  name: 'Notifications',
+  render: () => <ExampleApp start={ROUTES.notifications} />,
+}
+
+export const NotificationsPhone: Story = {
+  name: 'Notifications, phone',
+  render: () => <OnPhone start={ROUTES.notifications} />,
+}
+
 export const NotFoundScreen: Story = {
   name: 'Not found (404)',
   render: () => <ExampleApp start="/banking" />,

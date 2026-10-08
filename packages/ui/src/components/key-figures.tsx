@@ -11,7 +11,10 @@ import { usePhone } from './use-phone'
  *   digits, 2px apart; 32px (xl) between items; no frame, no card, no separators.
  * - Colour only for a state: `tone` writes the value in the tone's text colour ("Overdue 3 days"
  *   in status.danger.fg); everything else text.primary.
- * - Phones (below 48em, or `layout`): two columns.
+ * - Phones (below 48em, or `layout`): a clean two-column grid (P4.9, the owner's review): two equal
+ *   columns 16px apart, 12px between rows, every value 16px (lg) semibold so an amount with its
+ *   currency ("135.954,00 RSD") fits its half of a 360px screen on one line; an amount never
+ *   breaks inside itself (MoneyText keeps its currency with a non-breaking space).
  */
 
 export type KeyFigureTone = 'danger' | 'warning' | 'success' | 'info'
@@ -52,7 +55,7 @@ export function KeyFigures({ items, layout, className }: KeyFiguresProps) {
       data-slot="key-figures"
       className={cn(
         'm-0 font-sans',
-        phone ? 'grid grid-cols-2 gap-x-8 gap-y-4' : 'flex flex-wrap gap-x-8 gap-y-4',
+        phone ? 'grid grid-cols-2 gap-x-4 gap-y-3' : 'flex flex-wrap gap-x-8 gap-y-4',
         className,
       )}
     >
@@ -61,7 +64,8 @@ export function KeyFigures({ items, layout, className }: KeyFiguresProps) {
           <dt className={cn('text-xs text-secondary', TEXT_DIRECTION)}>{item.label}</dt>
           <dd
             className={cn(
-              'm-0 text-xl font-semibold tabular-nums',
+              'm-0 font-semibold tabular-nums',
+              phone ? 'text-lg' : 'text-xl',
               item.tone === undefined ? 'text-primary' : TONE_TEXT[item.tone],
               TEXT_DIRECTION,
             )}

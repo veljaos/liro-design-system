@@ -18,7 +18,7 @@ const meta = {
         component:
           '**What for:** the full page shown instead of the application when it cannot be used ' +
           'here: not signed in (401), not in the plan (402), no access (403), not found (404), ' +
-          'an error (500, with the case number), maintenance, and a suspended account. The one ' +
+          'an error (500, with the case number), maintenance, and a suspension (of the user’s account or of a company). The one ' +
           'place where centring is right.\n\n' +
           '**How:** `kind` chooses the tone, the icon, the code above the title and the default ' +
           'texts (from `messages`, so the Core translates them); `title`, `description` and ' +
@@ -114,12 +114,35 @@ export const Maintenance: Story = {
   },
 }
 
-/** A suspended account: danger, no code. */
+/**
+ * A suspended company: danger, no code. The subject (`subject`) is a company the user works for,
+ * named by the application; the default texts say so.
+ */
 export const Suspended: Story = {
+  name: 'Suspended company',
   args: {
     kind: 'suspended',
-    description: 'Access for Kvadrat Gradnja d.o.o. is suspended. Contact your administrator.',
+    subject: { kind: 'company', name: 'Kvadrat Gradnja d.o.o.' },
     secondaryAction: { label: 'Sign out', href: '#sign-out' },
+  },
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('Company suspended')
+    await expect(canvasElement).toHaveTextContent('Access for Kvadrat Gradnja d.o.o. is suspended.')
+  },
+}
+
+/** The user's own account suspended (the default subject). */
+export const SuspendedAccount: Story = {
+  name: 'Suspended account',
+  args: {
+    kind: 'suspended',
+    secondaryAction: { label: 'Sign out', href: '#sign-out' },
+  },
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('Account suspended')
+    await expect(canvasElement).toHaveTextContent('Your account is suspended.')
   },
 }
 

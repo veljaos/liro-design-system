@@ -65,12 +65,12 @@ export function AlertDialogDescription({
   )
 }
 
-/** The actions, at the end, 16px apart; the main action last. */
+/** The actions, at the end, 8px apart as every row of buttons (P4.9); the main action last. */
 export function AlertDialogFooter({ className, ...props }: ComponentProps<'div'>) {
   return (
     <div
       data-slot="alert-dialog-footer"
-      className={cn('flex flex-wrap items-center justify-end gap-4', className)}
+      className={cn('flex flex-wrap items-center justify-end gap-2', className)}
       {...props}
     />
   )

@@ -115,7 +115,7 @@ describe('KeyValueList', () => {
     )
     expect(html).toContain('<dl')
     expect(html).toContain('grid-cols-1 ')
-    expect(html).toContain('sm:grid-cols-3')
+    expect(html).toContain('@min-[54rem]:grid-cols-3')
     expect(html).toContain('tabular-nums')
     expect(html).toContain('col-span-full')
     expect(html).toMatch(/flex-col[^"]*col-span-full/)

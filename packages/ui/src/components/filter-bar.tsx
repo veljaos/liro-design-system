@@ -15,10 +15,11 @@ import { Input } from '../primitives/input'
 import { Sheet, SheetContent, SheetTrigger } from '../primitives/sheet'
 import { useLiro } from '../provider/liro-provider'
 import { ActionButton } from './actions'
-import { CompactIconButton } from './button'
+import { CompactIconButton, IconButton } from './button'
 import { useDebouncedCallback } from './combobox-logic'
 import type { DataTableFilters, DataTableSort } from './data-table-logic'
 import { DateRangeField, type DateRange } from './date-field'
+import { DropdownMenu, type MenuEntry } from './dropdown-menu'
 import {
   clearFilters,
   emptyFilterValue,
@@ -45,8 +46,9 @@ import { usePhone } from './use-phone'
  * - Search: 260px (100% below 36em), a 15px search icon at the start, a clear button at the end
  *   while there is text; placeholder and accessible name `messages['filter.search']` unless
  *   given. Reported after typing pauses (`searchDelay`, 300ms); clearing reports at once.
- * - The first `inline` filters stand in the row on desktop, each with its label above it and the
- *   same text as its placeholder; the others are in a drawer opened by "Filters" (intent filter).
+ * - The first `inline` filters stand in the row on desktop, each with its label above it; the
+ *   others are in a drawer opened by "Filters" (intent filter). A placeholder never repeats the
+ *   label: an empty choice says "All" (`messages['filter.all']`), a text filter has none (P4.9).
  *   On phones (below 48em) every filter is in the drawer, full width.
  * - The drawer: from the end side, 320px (100% on phones), titled "Filters" (13px, bold), the
  *   controls stacked 12px apart.
@@ -61,6 +63,10 @@ import { usePhone } from './use-phone'
  *   "Clear all" (subtle, xs), which clears only this bar's filters.
  * - On phones, where cards have no column headers, a "Sort" button beside "Filters" shows the
  *   current sort ("Date ↓") and opens a menu of the sortable columns and the two directions.
+ * - Phones (P4.9): search first, full width; then Filters, Sort and, with `phoneMenu`, one "⋯"
+ *   menu (`messages['action.more']`) holding the list's actions (Export). `actions` is a desktop
+ *   row and is not shown on phones when `phoneMenu` is given; choosing columns has no meaning on
+ *   cards, so the ColumnChooser belongs only in `actions`.
  * The bar only reports changes; the application filters and sorts, on the server.
  */
 
@@ -88,6 +94,11 @@ export interface FilterBarProps {
   onSortChange?: (sort: DataTableSort) => void
   /** Actions at the end of the row (buttons), the main one last. */
   actions?: ReactNode
+  /**
+   * Phones: the list's actions as menu entries in one "⋯" menu after Filters and Sort, in place of
+   * `actions` (P4.9). Without it, phones show `actions` under the search.
+   */
+  phoneMenu?: readonly MenuEntry[]
   /** The bar sits at the top of a card: it takes the card's padding. */
   inCard?: boolean
   /** Forces the desktop or the phone layout; default: by the viewport (48em). */
@@ -130,7 +141,6 @@ function TextFilter({ filter, value, onChange, inline, delay }: ControlProps) {
   return (
     <TextField
       label={filter.label}
-      placeholder={filter.label}
       value={text}
       onChange={(next) => {
         setText(next)
@@ -201,7 +211,7 @@ function FilterControl(props: ControlProps) {
       return (
         <SelectField
           label={filter.label}
-          placeholder={filter.label}
+          placeholder={messages['filter.all']}
           options={filter.options}
           value={typeof value === 'string' ? value : ''}
           onChange={(next) => {
@@ -215,7 +225,7 @@ function FilterControl(props: ControlProps) {
       return (
         <SelectField
           label={filter.label}
-          placeholder={filter.label}
+          placeholder={messages['filter.all']}
           options={[
             { value: 'true', label: messages['filter.yes'] },
             { value: 'false', label: messages['filter.no'] },
@@ -232,7 +242,7 @@ function FilterControl(props: ControlProps) {
       return (
         <MultiSelectField
           label={filter.label}
-          placeholder={filter.label}
+          placeholder={messages['filter.all']}
           options={filter.options}
           value={Array.isArray(value) ? (value as string[]) : []}
           onChange={onChange}
@@ -444,6 +454,34 @@ export function FilterBar(props: FilterBarProps) {
   })
   const anySet = props.filters.some((filter) => isFilterSet(props.values[filter.id]))
   const sortable = phone && props.onSortChange !== undefined && (props.sortColumns?.length ?? 0) > 0
+  const menu = phone && props.phoneMenu !== undefined && props.phoneMenu.length > 0
+  const drawerControls = (
+    <>
+      {drawerFilters.length > 0 && (
+        <Sheet>
+          <SheetTrigger asChild>
+            <ActionButton action={{ intent: 'filter', label: messages['filter.filters'] }} />
+          </SheetTrigger>
+          <SheetContent side="end" aria-describedby={undefined} className="w-80 max-sm:w-full">
+            <DialogHeader>
+              <DialogTitle className="text-sm font-bold">{messages['filter.filters']}</DialogTitle>
+              <DialogCloseButton label={messages['dialog.close']} />
+            </DialogHeader>
+            <DialogBody className="gap-3">
+              {drawerFilters.map((filter) => control(filter, false))}
+            </DialogBody>
+          </SheetContent>
+        </Sheet>
+      )}
+      {sortable && props.onSortChange !== undefined && (
+        <SortMenu
+          sort={props.sort ?? null}
+          columns={props.sortColumns ?? []}
+          onSortChange={props.onSortChange}
+        />
+      )}
+    </>
+  )
 
   return (
     <div
@@ -454,13 +492,9 @@ export function FilterBar(props: FilterBarProps) {
         props.className,
       )}
     >
-      {/*
-        wrap-reverse (P3.6, owner): when the actions do not fit beside search and filters, their
-        line goes ABOVE them, end-aligned, never under the filters. With wrap-reverse the cross
-        axis runs upwards, so items-start keeps the controls on one bottom line.
-      */}
-      <div className="flex flex-wrap-reverse items-start justify-between gap-3">
-        <div className="flex min-w-0 flex-wrap items-end gap-3">
+      {phone ? (
+        // Phones (P4.9): search first, then the filters, the sort and the list's ⋯ menu.
+        <div className="flex flex-col gap-3">
           {props.onSearchChange !== undefined && (
             <SearchField
               value={props.search ?? ''}
@@ -470,47 +504,51 @@ export function FilterBar(props: FilterBarProps) {
               wide={!phone}
             />
           )}
-          {inlineFilters.map((filter) => control(filter, true))}
-          {(drawerFilters.length > 0 || sortable) && (
-            <div className="flex flex-wrap items-end gap-3">
-              {drawerFilters.length > 0 && (
-                <Sheet>
-                  <SheetTrigger asChild>
-                    <ActionButton
-                      action={{ intent: 'filter', label: messages['filter.filters'] }}
-                    />
-                  </SheetTrigger>
-                  <SheetContent
-                    side="end"
-                    aria-describedby={undefined}
-                    className="w-80 max-sm:w-full"
-                  >
-                    <DialogHeader>
-                      <DialogTitle className="text-sm font-bold">
-                        {messages['filter.filters']}
-                      </DialogTitle>
-                      <DialogCloseButton label={messages['dialog.close']} />
-                    </DialogHeader>
-                    <DialogBody className="gap-3">
-                      {drawerFilters.map((filter) => control(filter, false))}
-                    </DialogBody>
-                  </SheetContent>
-                </Sheet>
-              )}
-              {sortable && props.onSortChange !== undefined && (
-                <SortMenu
-                  sort={props.sort ?? null}
-                  columns={props.sortColumns ?? []}
-                  onSortChange={props.onSortChange}
-                />
+          {(drawerFilters.length > 0 || sortable || menu) && (
+            <div className="flex flex-wrap items-center gap-3">
+              {drawerControls}
+              {menu && (
+                <span className="ms-auto">
+                  <DropdownMenu
+                    align="end"
+                    entries={props.phoneMenu ?? []}
+                    trigger={<IconButton intent="more" label={messages['action.more']} />}
+                  />
+                </span>
               )}
             </div>
           )}
+          {!menu && props.actions !== undefined && (
+            <div className="flex flex-wrap items-center gap-2">{props.actions}</div>
+          )}
         </div>
-        {props.actions !== undefined && (
-          <div className="ms-auto flex flex-wrap items-center gap-2">{props.actions}</div>
-        )}
-      </div>
+      ) : (
+        /*
+          wrap-reverse (P3.6, owner): when the actions do not fit beside search and filters, their
+          line goes ABOVE them, end-aligned, never under the filters. With wrap-reverse the cross
+          axis runs upwards, so items-start keeps the controls on one bottom line.
+        */
+        <div className="flex flex-wrap-reverse items-start justify-between gap-3">
+          <div className="flex min-w-0 flex-wrap items-end gap-3">
+            {props.onSearchChange !== undefined && (
+              <SearchField
+                value={props.search ?? ''}
+                onChange={props.onSearchChange}
+                delay={delay}
+                placeholder={props.searchPlaceholder ?? messages['filter.search']}
+                wide={!phone}
+              />
+            )}
+            {inlineFilters.map((filter) => control(filter, true))}
+            {(drawerFilters.length > 0 || sortable) && (
+              <div className="flex flex-wrap items-end gap-3">{drawerControls}</div>
+            )}
+          </div>
+          {props.actions !== undefined && (
+            <div className="ms-auto flex flex-wrap items-center gap-2">{props.actions}</div>
+          )}
+        </div>
+      )}
       {pills.length > 0 && (
         <div className="flex flex-wrap items-center gap-2">
           <ul className="m-0 flex list-none flex-wrap items-center gap-2 p-0">

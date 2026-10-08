@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { CheckCheck, CircleX } from 'lucide-react'
 import { useState } from 'react'
 import { expect, userEvent, within } from 'storybook/test'
+import { BulkActionBar } from '../components/bulk-action-bar'
 import { Button } from '../components/button'
 import { KeyValueList } from '../components/cards'
 import { DateText, DueDate, MoneyText } from '../components/display-text'
@@ -15,27 +16,18 @@ import { WorklistPage, type WorklistItem } from './worklist-page'
 
 const TONES = { 'To approve': 'warning', 'Query sent': 'info', Overdue: 'danger' } as const
 
-function item(row: ApprovalRow, inline: boolean): WorklistItem {
+function item(row: ApprovalRow): WorklistItem {
   return {
     id: row.id,
+    label: row.number,
     title: row.supplier,
     subtitle: `${row.number} · ${row.costCenter}`,
     figure: <MoneyText value={row.total} currency="RSD" />,
     status: <StatusBadge label={row.status} tone={toneFor(row.status, TONES)} />,
-    ...(inline
-      ? {
-          actions: (
-            <>
-              <Button family="destructive" icon={CircleX} label="Reject" emphasis="menu" />
-              <Button family="positive" icon={CheckCheck} label="Approve" />
-            </>
-          ),
-        }
-      : {}),
   }
 }
 
-/** The chosen invoice: its facts and the two decisions. */
+/** The chosen invoice: its facts and the two decisions, Reject then Approve (the main one last). */
 function Detail({ row }: { row: ApprovalRow }) {
   return (
     <div className="flex flex-col gap-6 p-6">
@@ -73,7 +65,8 @@ function Detail({ row }: { row: ApprovalRow }) {
           { label: 'Cost center', value: row.costCenter },
           { label: 'Requested by', value: row.requester },
           { label: 'Purchase order', value: 'N-2026-0157', numeric: true },
-          { label: 'Goods received', value: '30.09.2026., complete' },
+          { label: 'Goods received', value: 'Complete' },
+          { label: 'Delivery date', value: <DateText value="2026-09-30" />, numeric: true },
         ]}
       />
     </div>
@@ -82,14 +75,17 @@ function Detail({ row }: { row: ApprovalRow }) {
 
 function Approvals({
   stacked = false,
-  inline = false,
+  checkable = false,
+  startChecked = [],
   startSelected = 'u1',
 }: {
   stacked?: boolean
-  inline?: boolean
+  checkable?: boolean
+  startChecked?: string[]
   startSelected?: string
 }) {
   const [selected, setSelected] = useState<string | undefined>(startSelected || undefined)
+  const [checked, setChecked] = useState<string[]>(startChecked)
   const row = APPROVALS.find((each) => each.id === selected)
   const index = APPROVALS.findIndex((each) => each.id === selected)
   return (
@@ -106,7 +102,31 @@ function Approvals({
         layout={stacked ? 'stacked' : 'split'}
         title="Supplier invoices to approve"
         label="Supplier invoices to approve"
-        items={APPROVALS.map((each) => item(each, inline))}
+        items={APPROVALS.map(item)}
+        {...(checkable
+          ? {
+              checked,
+              onCheckedChange: setChecked,
+              bulkBar: (
+                <BulkActionBar
+                  count={checked.length}
+                  onClear={() => {
+                    setChecked([])
+                  }}
+                  actions={[
+                    { key: 'reject', family: 'destructive', icon: CircleX, label: 'Reject' },
+                    {
+                      key: 'approve',
+                      family: 'positive',
+                      icon: CheckCheck,
+                      label: 'Approve',
+                      confirm: true,
+                    },
+                  ]}
+                />
+              ),
+            }
+          : {})}
         {...(selected === undefined ? {} : { selected })}
         onSelect={setSelected}
         {...(row === undefined ? {} : { detail: <Detail row={row} /> })}
@@ -132,8 +152,10 @@ const meta = {
           '**What for:** a queue worked item by item (invoices to approve, statements to ' +
           'post). From 62em the list (380px) and the chosen item’s detail side by side, each ' +
           'scrolling on its own; below 62em the list, then the detail full width with "Back to ' +
-          'list" and "Next item". A row: title, subtitle, the one deciding figure, the status, ' +
-          'and optional inline actions (Approve / Reject).\n\n' +
+          'list" and "Next item". A row: title, subtitle, the one deciding figure, the status. ' +
+          'The decisions (Reject, then Approve — the main one last) stand only in the detail, ' +
+          'where the item is seen whole, never in every row; with `onCheckedChange` rows get ' +
+          'checkboxes and `bulkBar` (a BulkActionBar) decides for the checked ones.\n\n' +
           '**How:** `items`, `selected` / `onSelect`, `detail` (optional), `onBack`, `onNext`; ' +
           'the application decides and stores.\n\n' +
           '**When not:** a list to search and filter (ListPage); a single record (DetailPage).',
@@ -163,14 +185,21 @@ export const Default: Story = {
   },
 }
 
-/** Inline actions on each row, without opening it. */
-export const InlineActions: Story = {
-  name: 'Inline actions',
+/** Checked rows: the bulk bar above the list decides for all of them at once. */
+export const CheckedRows: Story = {
+  name: 'Checked rows',
   render: () => (
     <ExampleProvider>
-      <Approvals inline />
+      <Approvals checkable startChecked={['u2', 'u5']} />
     </ExampleProvider>
   ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('2 selected')).toBeVisible()
+    await userEvent.click(canvas.getByRole('checkbox', { name: 'Select UF-2026-1187' }))
+    await expect(canvas.getByText('3 selected')).toBeVisible()
+  },
 }
 
 /** Nothing waits: the empty state. */

@@ -59,7 +59,7 @@ describe('asksFirst', () => {
 
 describe('bulk messages', () => {
   it('put the count in the question, once for the whole selection', () => {
-    expect(messagesEn['bulk.confirmTitle'](1)).toBe('Apply to 1 item?')
-    expect(messagesEn['bulk.confirmTitle'](24)).toBe('Apply to 24 items?')
+    expect(messagesEn['bulk.confirmTitle'](1, '1')).toBe('Apply to 1 item?')
+    expect(messagesEn['bulk.confirmTitle'](24, '24')).toBe('Apply to 24 items?')
   })
 })

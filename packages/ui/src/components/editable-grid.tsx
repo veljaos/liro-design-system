@@ -61,6 +61,14 @@ import { usePhone } from './use-phone'
  *   would push a total at the bottom below the screen;
  * - "Add line" under the cards, without the shortcut hints (no hardware keyboard); the on-screen
  *   keyboard's "next" goes through a line's fields, then to the next line.
+ *
+ * P4.9 (the owner's review):
+ * - "Add line" is a normal button — the default neutral look (raised, border.default) at the
+ *   normal 36px size and padding with the Plus icon — not a small tinted one.
+ * - `inCard` (a document's lines card, as DataTable's): no card inside a card. On desktop the
+ *   grid keeps md (16px) from the card's edges; on phones the lines are a flat list with 1px
+ *   border.subtle dividers, padded md at the sides, and the totals a sticky bar with a line under
+ *   it instead of a card.
  */
 
 interface ColumnBase<Row> {
@@ -145,6 +153,8 @@ export interface EditableGridProps<Row> {
   footer?: ReactNode
   /** Forces the desktop table or the phone cards; default: by the viewport (48em). */
   layout?: 'desktop' | 'phone'
+  /** Inside a card (a document's lines): no frames of its own on phones, md from the edges. */
+  inCard?: boolean
   className?: string
 }
 
@@ -200,9 +210,10 @@ function MessageList({ list, ids }: { list: readonly GridMessage[]; ids: readonl
  * keeps the rows, adds and removes them when asked, computes totals and checks; the grid shows.
  */
 export function EditableGrid<Row>(props: EditableGridProps<Row>) {
-  const { messages, direction } = useLiro()
+  const { messages, direction, format } = useLiro()
   const viewportPhone = usePhone()
   const phone = props.layout === undefined ? viewportPhone : props.layout === 'phone'
+  const inCard = props.inCard === true
   const rootRef = useRef<HTMLDivElement>(null)
   const idBase = useId()
   const pending = useRef<{ row: number; column: number } | null>(null)
@@ -362,7 +373,9 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
   const editor = (column: EditableGridColumn<Row>, row: Row, rowIndex: number, ids: string) => {
     const rowId = props.getRowId(row)
     const label = (
-      <span className="sr-only">{messages['grid.cell'](column.header, rowIndex + 1)}</span>
+      <span className="sr-only">
+        {messages['grid.cell'](column.header, rowIndex + 1, format.number(String(rowIndex + 1)))}
+      </span>
     )
     const readOnly = column.readOnly?.(row) === true
     const errorText = (props.messages?.[rowId] ?? []).find(
@@ -560,7 +573,10 @@ ${column.id}`,
                 <td className={cn(CELL_BORDER, 'p-1 text-center align-middle')}>
                   <CompactIconButton
                     intent="cancel"
-                    label={messages['grid.removeLine'](rowIndex + 1)}
+                    label={messages['grid.removeLine'](
+                      rowIndex + 1,
+                      format.number(String(rowIndex + 1)),
+                    )}
                     disabled={!canRemove}
                     onClick={() => {
                       removeRow(rowIndex)
@@ -616,7 +632,12 @@ ${column.id}`,
       {(hasTotals || props.footer !== undefined) && (
         <div
           data-slot="grid-totals"
-          className="sticky top-0 z-(--liro-layer-sticky) flex flex-col gap-1 rounded-md border border-solid border-default bg-surface-raised p-2 text-sm"
+          className={cn(
+            'sticky top-0 z-(--liro-layer-sticky) flex flex-col gap-1 bg-surface-raised text-sm',
+            inCard
+              ? 'border-0 border-b border-solid border-default px-4 py-2'
+              : 'rounded-md border border-solid border-default p-2',
+          )}
         >
           {props.totalsLabel !== undefined && (
             <span className={cn('text-xs font-semibold text-secondary', TEXT_DIRECTION)}>
@@ -645,7 +666,10 @@ ${column.id}`,
           {props.footer !== undefined && <div>{props.footer}</div>}
         </div>
       )}
-      <ul aria-label={props.label} className="m-0 flex list-none flex-col gap-3 p-0">
+      <ul
+        aria-label={props.label}
+        className={cn('m-0 flex list-none flex-col p-0', !inCard && 'gap-3')}
+      >
         {rows.map((row, rowIndex) => {
           const { rowId, list, messageIds, describedBy } = rowParts(row)
           let editIndex = -1
@@ -653,7 +677,12 @@ ${column.id}`,
             <li
               key={rowId}
               data-row-id={rowId}
-              className="flex flex-col gap-3 rounded-md border border-solid border-default bg-surface-raised p-3"
+              className={cn(
+                'flex flex-col gap-3 bg-surface-raised',
+                inCard
+                  ? 'border-0 border-b border-solid border-subtle px-4 py-3'
+                  : 'rounded-md border border-solid border-default p-3',
+              )}
             >
               {columns.map((column) => {
                 if (column.type === 'display') {
@@ -698,7 +727,10 @@ ${column.id}`,
                     family: 'destructive',
                     icon: Trash2,
                     emphasis: 'menu',
-                    label: messages['grid.removeLine'](rowIndex + 1),
+                    label: messages['grid.removeLine'](
+                      rowIndex + 1,
+                      format.number(String(rowIndex + 1)),
+                    ),
                   }}
                   disabled={!canRemove}
                   onClick={() => {
@@ -718,15 +750,23 @@ ${column.id}`,
       ref={rootRef}
       data-slot="editable-grid"
       data-grid-direction={direction}
-      className={cn('flex min-w-0 flex-col gap-2 font-sans text-primary', props.className)}
+      className={cn(
+        'flex min-w-0 flex-col gap-2 font-sans text-primary',
+        inCard && (phone ? 'gap-3 pb-4' : 'gap-3 p-4'),
+        props.className,
+      )}
     >
       {phone ? cards() : table()}
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div
+        className={cn(
+          'flex flex-wrap items-center justify-between gap-3',
+          inCard && phone && 'px-4',
+        )}
+      >
         <div className="flex flex-wrap items-center gap-3">
           <ActionButton
-            small
             action={{
-              family: 'primary',
+              family: 'neutral',
               icon: Plus,
               emphasis: 'secondary',
               label: messages['grid.addLine'],

@@ -51,7 +51,7 @@ function Dashboard({ phone = false, loading = false }: { phone?: boolean; loadin
           {
             key: 'revenue',
             label: 'Revenue, September',
-            value: <MoneyText value="5684200" currency="RSD" decimals={0} />,
+            value: <MoneyText value="5684200.00" currency="RSD" />,
             change: { text: percentText('16.7', 'always'), direction: 'up', sentiment: 'good' },
             comparison: 'vs September 2025',
             trend: ['4812.4', '5230.9', '4977.1', '3906.5', '4421.8', '5684.2'],
@@ -59,21 +59,21 @@ function Dashboard({ phone = false, loading = false }: { phone?: boolean; loadin
           {
             key: 'receivables',
             label: 'Overdue receivables',
-            value: <MoneyText value="421740" currency="RSD" decimals={0} />,
+            value: <MoneyText value="421740.00" currency="RSD" />,
             change: { text: percentText('8.2', 'always'), direction: 'up', sentiment: 'bad' },
             comparison: 'vs last week',
           },
           {
             key: 'cash',
             label: 'Cash',
-            value: <MoneyText value="3012775" currency="RSD" decimals={0} />,
+            value: <MoneyText value="3012775.40" currency="RSD" />,
             change: { text: percentText('34.1', 'always'), direction: 'up', sentiment: 'good' },
             comparison: 'vs 31.08.2026.',
           },
           {
             key: 'vat',
             label: 'VAT due 15.10.',
-            value: <MoneyText value="612480" currency="RSD" decimals={0} />,
+            value: <MoneyText value="612480.00" currency="RSD" />,
           },
         ]}
       >
@@ -485,7 +485,7 @@ export const Japanese: Story = {
             {
               key: 'r',
               label: '売上高（9月）',
-              value: <MoneyText value="5684200" currency="RSD" decimals={0} />,
+              value: <MoneyText value="5684200.00" currency="RSD" />,
               change: { text: percentText('16.7', 'always'), direction: 'up', sentiment: 'good' },
               comparison: '前年同月比',
             },

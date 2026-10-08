@@ -1,13 +1,22 @@
-import { ArrowDown, ArrowUp, Columns3 } from 'lucide-react'
-import { useId, type ReactNode } from 'react'
+import { Command as CommandPrimitive } from 'cmdk'
+import { ArrowDown, ArrowUp, Check, ChevronDown, Columns3 } from 'lucide-react'
+import { useId, useState, type ReactNode } from 'react'
 import { Button } from '../components/button'
 import { KeyValueList, type KeyValueGroup, type KeyValueItem } from '../components/cards'
+import { commandMatches } from '../components/command-logic'
 import { Drawer } from '../components/dialog'
 import { usePhone } from '../components/use-phone'
 import { ButtonPrimitive } from '../primitives/button'
 import { Checkbox } from '../primitives/checkbox'
 import { FOCUS_RING, TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from '../primitives/dropdown-menu'
 import { Popover, PopoverContent, PopoverTrigger } from '../primitives/popover'
 import { useLiro } from '../provider/liro-provider'
 import { moveModule } from './launchpad-logic'
@@ -24,8 +33,10 @@ import { PageHeader } from './page-header'
  *   actions (Export, Columns).
  * - Saved views: the card's first row, start-aligned (list filters, not page tabs), the tab look
  *   with the blue line under the active one; the count after the label in xs text.tertiary,
- *   tabular; the "Save view" slot at the end of the row. The DS only renders them; the Core
- *   stores them.
+ *   tabular (through `format.number`); the "Save view" slot at the end of the row. The DS only
+ *   renders them; the Core stores them. P4.9: on desktop the first five (`visibleViews`) are tabs
+ *   and the rest are under "More", whose button names the current view when it is there; on
+ *   phones one select "View: All 1.284" lists them with their counts, searchable above 7.
  * - ColumnChooser: a neutral small button "Columns" opening a list of the columns, each with a
  *   checkbox (shown) and 28px move up / move down buttons — no dragging needed (WCAG 2.5.7); the
  *   choice is reported with `onChange`.
@@ -58,6 +69,11 @@ export interface ListPageProps {
   /** The current view's id. */
   view?: string
   onViewChange?: (id: string) => void
+  /**
+   * Desktop: how many views stand as tabs; the rest are under "More" (P4.9). Default 5
+   * (`VISIBLE_VIEWS`). Phones show one select of all views.
+   */
+  visibleViews?: number
   /** At the end of the views row, e.g. a "Save view" button. */
   saveView?: ReactNode
   /** The FilterBar (with `inCard`). */
@@ -69,14 +85,51 @@ export interface ListPageProps {
   className?: string
 }
 
-/** The saved views as a row of tab-like buttons; the current one is pressed. */
-function SavedViews(props: {
+/** On phones the view list shows a search field above this many views (as the companies). */
+export const VIEW_SEARCH_THRESHOLD = 7
+
+/** Desktop shows this many views as tabs by default; the rest go under "More". */
+export const VISIBLE_VIEWS = 5
+
+/**
+ * The views shown as tabs and those under "More" (P4.9): the first `visible`, in the
+ * application's order; one view more than `visible` is shown as a tab rather than a menu of one.
+ * A current view under "More" stays there; the "More" button then names it.
+ */
+export function splitViews<View extends { id: string }>(
+  views: readonly View[],
+  visible: number,
+): { tabs: View[]; more: View[] } {
+  const count = views.length <= visible + 1 ? views.length : Math.max(1, visible)
+  return { tabs: views.slice(0, count), more: views.slice(count) }
+}
+
+const VIEW_TAB =
+  'm-0 box-border flex h-10 shrink-0 cursor-pointer items-center gap-2 rounded-t-md border-0 border-b-2 border-solid border-transparent bg-transparent px-4 font-sans text-sm leading-none whitespace-nowrap text-primary hover:border-default hover:bg-surface-hover'
+
+/** A view's count after its name, through the provider's format. */
+function ViewCount({ count }: { count: number | undefined }) {
+  const { format } = useLiro()
+  if (count === undefined) return null
+  return <span className="text-xs text-tertiary tabular-nums">{format.number(String(count))}</span>
+}
+
+interface SavedViewsProps {
   views: readonly SavedView[]
   view?: string
   onViewChange?: (id: string) => void
   saveView?: ReactNode
-}) {
-  const { messages, format } = useLiro()
+  visible: number
+}
+
+/**
+ * Desktop: the first views as a row of tab-like buttons (the current one pressed), the rest in a
+ * "More" menu whose button takes the current view's name when that view is in it.
+ */
+function SavedViewTabs(props: SavedViewsProps) {
+  const { messages } = useLiro()
+  const { tabs, more } = splitViews(props.views, props.visible)
+  const hiddenCurrent = more.find((view) => view.id === props.view)
   return (
     <div className="flex items-end gap-4 border-0 border-b border-solid border-default px-4">
       <div
@@ -84,7 +137,7 @@ function SavedViews(props: {
         aria-label={messages['list.views']}
         className="-mb-px flex min-w-0 flex-1 overflow-x-auto [scrollbar-width:none]"
       >
-        {props.views.map((view) => {
+        {tabs.map((view) => {
           const current = view.id === props.view
           return (
             <button
@@ -93,24 +146,157 @@ function SavedViews(props: {
               aria-pressed={current}
               onClick={() => props.onViewChange?.(view.id)}
               className={cn(
-                'm-0 box-border flex h-10 shrink-0 cursor-pointer items-center gap-2 rounded-t-md border-0 border-b-2 border-solid border-transparent bg-transparent px-4 font-sans text-sm leading-none whitespace-nowrap text-primary hover:border-default hover:bg-surface-hover',
+                VIEW_TAB,
                 current && 'border-brand hover:border-brand',
                 FOCUS_RING,
                 '-outline-offset-2',
               )}
             >
               <span className={TEXT_DIRECTION}>{view.label}</span>
-              {view.count !== undefined && (
-                <span className="text-xs text-tertiary tabular-nums">
-                  {format.number(String(view.count))}
-                </span>
-              )}
+              <ViewCount count={view.count} />
             </button>
           )
         })}
+        {more.length > 0 && (
+          <DropdownMenu modal={false}>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                aria-pressed={hiddenCurrent !== undefined}
+                className={cn(
+                  VIEW_TAB,
+                  hiddenCurrent !== undefined && 'border-brand hover:border-brand',
+                  FOCUS_RING,
+                  '-outline-offset-2',
+                )}
+              >
+                <span className={TEXT_DIRECTION}>
+                  {hiddenCurrent?.label ?? messages['list.moreViews']}
+                </span>
+                {hiddenCurrent !== undefined && <ViewCount count={hiddenCurrent.count} />}
+                <ChevronDown aria-hidden="true" className="size-3.5 shrink-0 text-secondary" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="min-w-50 shadow-md">
+              <DropdownMenuRadioGroup
+                value={props.view ?? ''}
+                onValueChange={(id) => props.onViewChange?.(id)}
+              >
+                {more.map((view) => (
+                  <DropdownMenuRadioItem key={view.id} value={view.id} check>
+                    <span className={cn('min-w-0 flex-1', TEXT_DIRECTION)}>{view.label}</span>
+                    <ViewCount count={view.count} />
+                  </DropdownMenuRadioItem>
+                ))}
+              </DropdownMenuRadioGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
       {props.saveView !== undefined && (
         <div className="flex shrink-0 items-center self-center">{props.saveView}</div>
+      )}
+    </div>
+  )
+}
+
+/**
+ * Phones: one select-like button "View: All 1.284" opening the views with their counts, the
+ * current one checked; a search field above them when there are more than 7.
+ */
+function SavedViewSelect(props: SavedViewsProps) {
+  const { messages, locale } = useLiro()
+  const [open, setOpen] = useState(false)
+  const [query, setQuery] = useState('')
+  const current = props.views.find((view) => view.id === props.view)
+  const searchable = props.views.length > VIEW_SEARCH_THRESHOLD
+  const shown = searchable
+    ? props.views.filter((view) => commandMatches({ label: view.label }, query, locale))
+    : props.views
+  return (
+    <div className="flex items-center gap-2 border-0 border-b border-solid border-default px-2 py-2">
+      <Popover
+        open={open}
+        onOpenChange={(next) => {
+          setOpen(next)
+          if (!next) setQuery('')
+        }}
+      >
+        <PopoverTrigger asChild>
+          <ButtonPrimitive
+            family="neutral"
+            emphasis="menu"
+            className="min-w-0 flex-1 justify-start gap-2 px-2 text-sm"
+          >
+            <span className={cn('min-w-0 truncate font-semibold', TEXT_DIRECTION)}>
+              {messages['list.view'](current?.label ?? '')}
+            </span>
+            {current !== undefined && <ViewCount count={current.count} />}
+            <ChevronDown aria-hidden="true" className="size-3.5 shrink-0 text-secondary" />
+          </ButtonPrimitive>
+        </PopoverTrigger>
+        <PopoverContent
+          align="start"
+          className="box-border w-72 max-w-[calc(100vw-32px)] p-1 shadow-md"
+        >
+          <CommandPrimitive
+            shouldFilter={false}
+            label={searchable ? messages['list.findView'] : messages['list.views']}
+            className="flex flex-col font-sans text-primary"
+          >
+            {searchable && (
+              <CommandPrimitive.Input
+                value={query}
+                onValueChange={setQuery}
+                placeholder={messages['list.findView']}
+                className="mb-1 box-border block h-control w-full min-w-0 appearance-none rounded-md border border-solid border-control bg-surface-raised px-3 font-sans text-sm text-primary outline-none placeholder:text-tertiary focus:border-focus"
+              />
+            )}
+            {shown.length === 0 && (
+              <p role="status" className="m-0 px-2.5 py-1.5 text-sm text-secondary">
+                {messages['field.noResults']}
+              </p>
+            )}
+            <CommandPrimitive.List
+              label={messages['list.views']}
+              className="max-h-80 overflow-y-auto"
+            >
+              {shown.map((view) => {
+                const isCurrent = view.id === props.view
+                return (
+                  <CommandPrimitive.Item
+                    key={view.id}
+                    value={view.id}
+                    onSelect={() => {
+                      props.onViewChange?.(view.id)
+                      setOpen(false)
+                      setQuery('')
+                    }}
+                    {...(isCurrent ? { 'aria-current': 'true' as const } : {})}
+                    className="box-border flex min-h-9 w-full cursor-pointer items-center gap-2 rounded-md px-2.5 py-1.5 text-sm text-primary outline-none select-none data-[selected=true]:bg-surface-sunken"
+                  >
+                    <span aria-hidden="true" className="flex size-3.5 shrink-0 items-center">
+                      {isCurrent && <Check className="size-3.5" />}
+                    </span>
+                    <span
+                      className={cn(
+                        'min-w-0 flex-1 truncate',
+                        TEXT_DIRECTION,
+                        isCurrent && 'font-medium',
+                      )}
+                    >
+                      {view.label}
+                    </span>
+                    <ViewCount count={view.count} />
+                  </CommandPrimitive.Item>
+                )
+              })}
+            </CommandPrimitive.List>
+          </CommandPrimitive>
+        </PopoverContent>
+      </Popover>
+      {props.saveView !== undefined && (
+        <div className="flex shrink-0 items-center">{props.saveView}</div>
       )}
     </div>
   )
@@ -123,6 +309,7 @@ function SavedViews(props: {
 export function ListPage(props: ListPageProps) {
   const viewportPhone = usePhone()
   const phone = props.layout === undefined ? viewportPhone : props.layout === 'phone'
+  const Views = phone ? SavedViewSelect : SavedViewTabs
   return (
     <div
       data-slot="list-page"
@@ -142,7 +329,8 @@ export function ListPage(props: ListPageProps) {
         className="box-border flex min-w-0 flex-col overflow-hidden rounded-lg border border-solid border-default bg-surface-raised"
       >
         {props.views !== undefined && props.views.length > 0 && (
-          <SavedViews
+          <Views
+            visible={props.visibleViews ?? VISIBLE_VIEWS}
             views={props.views}
             {...(props.view === undefined ? {} : { view: props.view })}
             {...(props.onViewChange === undefined ? {} : { onViewChange: props.onViewChange })}

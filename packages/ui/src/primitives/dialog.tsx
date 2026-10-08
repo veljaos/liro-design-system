@@ -94,12 +94,17 @@ export function DialogBody({ className, ...props }: ComponentProps<'div'>) {
   )
 }
 
-/** Actions at the end of the body, 16px apart, the main action last (Group, justify end). */
+/**
+ * Actions at the end of the body, the main action last. One rule for every dialog, drawer and
+ * confirmation (P4.9, the owner's review): 16px under the body's last part (the body's gap), the
+ * buttons 8px apart as in every other row of buttons (ActionGroup), the row's end on the body's
+ * 16px inset.
+ */
 export function DialogFooter({ className, ...props }: ComponentProps<'div'>) {
   return (
     <div
       data-slot="dialog-footer"
-      className={cn('flex flex-wrap items-center justify-end gap-4', className)}
+      className={cn('flex flex-wrap items-center justify-end gap-2', className)}
       {...props}
     />
   )

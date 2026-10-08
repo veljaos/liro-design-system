@@ -145,8 +145,8 @@ export const Sizes: Story = {
   render: () => (
     <Surface>
       <div className="flex flex-wrap items-center gap-3">
-        <Button intent="save" label="Save" />
         <Button intent="cancel" label="Cancel" />
+        <Button intent="save" label="Save" />
         <IconButton intent="edit" label="Edit" />
         <IconButton icon={Signature} family="verify" label="Sign" />
         <IconButton intent="save" label="Save" emphasis="primary" disabled />

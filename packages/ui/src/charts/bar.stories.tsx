@@ -8,11 +8,12 @@ import { BarChart, type BarChartProps } from './cartesian'
 import {
   COSTS,
   DAILY,
+  dailyTotal,
   REGIONS,
   RESULT,
   REVENUE,
+  showTable,
   TOP_CUSTOMERS,
-  dailyTotal,
 } from './chart-story-data'
 import { ChartSeriesToggle } from './series-toggle'
 
@@ -48,6 +49,13 @@ const meta = {
 export default meta
 
 type Story = StoryObj<typeof meta>
+
+/** "Show as table": the same values as a table; in right-to-left the columns follow the page. */
+export const AsTable: Story = {
+  name: 'Show as table',
+  args: { ...REVENUE },
+  play: showTable,
+}
 
 /** One series in the brand blue. */
 export const Default: Story = {}

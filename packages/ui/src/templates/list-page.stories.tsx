@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { BookmarkPlus } from 'lucide-react'
+import { BookmarkPlus, FileSpreadsheet } from 'lucide-react'
 import { useState } from 'react'
 import { expect, userEvent, within } from 'storybook/test'
 import { Button } from '../components/button'
@@ -89,11 +89,22 @@ const RATES: Rate[] = [
   { currency: 'GBP', date: '2026-10-06', rate: '134,8915' },
 ]
 
+/** Seven views: five tabs and "More" on desktop, one select on phones (P4.9). */
 const VIEWS: SavedView[] = [
   { id: 'all', label: 'All', count: 1284 },
   { id: 'unpaid', label: 'Unpaid', count: 37 },
   { id: 'overdue', label: 'Overdue', count: 9 },
+  { id: 'drafts', label: 'Drafts', count: 4 },
   { id: 'mine', label: 'Mine' },
+  { id: 'sef', label: 'Rejected by SEF', count: 2 },
+  { id: 'cancelled', label: 'Cancelled', count: 6 },
+]
+
+/** Many views: the phone's select gets a search field above 7. */
+const MANY_VIEWS: SavedView[] = [
+  ...VIEWS,
+  { id: 'export', label: 'Export customers', count: 118 },
+  { id: 'novisad', label: 'Customers in Novi Sad', count: 342 },
 ]
 
 const FILTERS: FilterDefinition[] = [
@@ -116,9 +127,11 @@ const FILTERS: FilterDefinition[] = [
 function InvoiceList({
   phone = false,
   previewOpen = false,
+  views = VIEWS,
 }: {
   phone?: boolean
   previewOpen?: boolean
+  views?: readonly SavedView[]
 }) {
   const [view, setView] = useState('all')
   const [filters, setFilters] = useState<DataTableFilters>({})
@@ -154,7 +167,7 @@ function InvoiceList({
         layout={phone ? 'phone' : 'desktop'}
         title="Invoices"
         {...(phone ? {} : { actions: <Button intent="create" label="New invoice" /> })}
-        views={VIEWS}
+        views={views}
         view={view}
         onViewChange={setView}
         saveView={<Button family="neutral" emphasis="menu" icon={BookmarkPlus} label="Save view" />}
@@ -175,6 +188,7 @@ function InvoiceList({
                 <Button intent="export" label="Export" />
               </>
             }
+            phoneMenu={[{ label: 'Export', icon: FileSpreadsheet, onSelect: () => undefined }]}
           />
         }
       >
@@ -286,6 +300,48 @@ export const Default: Story = {
       'aria-pressed',
       'true',
     )
+  },
+}
+
+/** The views that do not fit as tabs are under "More"; choosing one names it on the button. */
+export const MoreViews: Story = {
+  name: 'More views',
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const body = within(canvasElement.ownerDocument.body)
+    await userEvent.click(canvas.getByRole('button', { name: 'More' }))
+    const menu = await body.findByRole('menu')
+    await userEvent.click(within(menu).getByRole('menuitemradio', { name: /Cancelled/ }))
+    await expect(canvas.getByRole('button', { name: /^Cancelled/ })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    await userEvent.click(canvas.getByRole('button', { name: /^Cancelled/ }))
+    await body.findByRole('menu')
+    await settle()
+  },
+}
+
+/** Phones: one select "View: All 1.284" with the counts; above 7 views a search field. */
+export const PhoneViews: Story = {
+  name: 'Phone views',
+  render: () => (
+    <PhoneFrame>
+      <ExampleProvider>
+        <InvoiceList phone views={MANY_VIEWS} />
+      </ExampleProvider>
+    </PhoneFrame>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const body = within(canvasElement.ownerDocument.body)
+    await userEvent.click(canvas.getByRole('button', { name: /View: All/ }))
+    const search = await body.findByPlaceholderText('Find view')
+    await userEvent.type(search, 'novi')
+    await expect(body.getByRole('option', { name: /Customers in Novi Sad/ })).toBeVisible()
+    await settle()
   },
 }
 

@@ -1,4 +1,3 @@
-import { formatDecimal } from './format'
 import type { LiroMessages } from './messages'
 
 /**
@@ -8,10 +7,9 @@ import type { LiroMessages } from './messages'
 export const messagesEn: LiroMessages = {
   'table.next': 'Next',
   'table.previous': 'Previous',
-  'table.count': (count, exact) => {
-    const number = formatDecimal(String(count), 'comma-dot')
-    if (!exact) return `More than ${number} rows`
-    return count === 1 ? '1 row' : `${number} rows`
+  'table.count': (count, text, exact) => {
+    if (!exact) return `More than ${text} rows`
+    return count === 1 ? `${text} row` : `${text} rows`
   },
   'table.updating': 'Updating…',
   'table.noRows': 'Nothing here yet',
@@ -34,7 +32,7 @@ export const messagesEn: LiroMessages = {
   'field.loading': 'Loading…',
   'field.noResults': 'Nothing found',
   'field.remove': (label) => `Remove ${label}`,
-  'field.selectedCount': (count) => `${formatDecimal(String(count), 'comma-dot')} selected`,
+  'field.selectedCount': (_count, text) => `${text} selected`,
   'field.clear': 'Clear',
   'filter.search': 'Search…',
   'filter.clearSearch': 'Clear search',
@@ -51,6 +49,7 @@ export const messagesEn: LiroMessages = {
   'filter.rangeTo': (label, currency) =>
     currency === undefined ? `${label} to` : `${label} to (${currency})`,
   'filter.rangeLabel': (label, currency) => `${label} (${currency})`,
+  'filter.all': 'All',
   'filter.sort': 'Sort',
   'filter.ascending': 'Ascending',
   'filter.descending': 'Descending',
@@ -65,7 +64,7 @@ export const messagesEn: LiroMessages = {
   'calendar.navigation': 'Months',
   'calendar.previousYear': 'Previous year',
   'calendar.nextYear': 'Next year',
-  'period.quarter': (quarter, year) => `Q${String(quarter)} ${year}`,
+  'period.quarter': (_quarter, text, year) => `Q${text} ${year}`,
   'period.today': 'Today',
   'period.thisWeek': 'This week',
   'period.thisMonth': 'This month',
@@ -79,9 +78,9 @@ export const messagesEn: LiroMessages = {
   'period.customRange': 'Custom range',
   'dialog.close': 'Close',
   'due.settled': 'Settled',
-  'due.overdue': (days) => (days === 1 ? '1 day overdue' : `${String(days)} days overdue`),
+  'due.overdue': (days, text) => (days === 1 ? `${text} day overdue` : `${text} days overdue`),
   'due.today': 'Due today',
-  'due.inDays': (days) => (days === 1 ? 'Due in 1 day' : `Due in ${String(days)} days`),
+  'due.inDays': (days, text) => (days === 1 ? `Due in ${text} day` : `Due in ${text} days`),
   'alert.close': 'Close',
   'empty.emptyTitle': 'Nothing here yet',
   'empty.emptyDescription': 'When something is added, it appears here.',
@@ -95,23 +94,23 @@ export const messagesEn: LiroMessages = {
   'confirm.deleteMessage': 'This cannot be undone.',
   'confirm.deleteLabel': 'Delete',
   'confirm.typeToConfirm': (text) => `Type ${text} to confirm`,
+  'confirm.reason': 'Reason',
+  'confirm.reasonDetails': 'Details',
   'action.more': 'More actions',
   'action.moreOptions': (label) => `More options: ${label}`,
-  'bulk.selected': (count) => `${formatDecimal(String(count), 'comma-dot')} selected`,
-  'bulk.selectAll': (total) => `Select all ${formatDecimal(String(total), 'comma-dot')}`,
+  'bulk.selected': (_count, text) => `${text} selected`,
+  'bulk.selectAll': (_total, text) => `Select all ${text}`,
   'bulk.clear': 'Clear the selection',
-  'bulk.confirmTitle': (count) =>
-    count === 1
-      ? 'Apply to 1 item?'
-      : `Apply to ${formatDecimal(String(count), 'comma-dot')} items?`,
+  'bulk.confirmTitle': (count, text) =>
+    count === 1 ? `Apply to ${text} item?` : `Apply to ${text} items?`,
   'notice.close': 'Close',
   'notice.region': 'Notifications',
   'stepper.completed': 'Completed',
   'action.unavailable': (reason) => `Unavailable: ${reason}`,
-  'grid.cell': (column, line) => `${column}, line ${String(line)}`,
+  'grid.cell': (column, _line, text) => `${column}, line ${text}`,
   'grid.cellMessage': (column, text) => `${column}: ${text}`,
   'grid.addLine': 'Add line',
-  'grid.removeLine': (line) => `Remove line ${String(line)}`,
+  'grid.removeLine': (_line, text) => `Remove line ${text}`,
   'grid.insertLine': 'Insert line',
   'grid.deleteLine': 'Delete line',
   'grid.modifierKey': 'Ctrl',
@@ -129,22 +128,44 @@ export const messagesEn: LiroMessages = {
   'connection.offline': 'Offline',
   'shell.skipToContent': 'Skip to content',
   'shell.search': 'Search…',
-  'shell.notifications': (unread) =>
-    unread > 0
-      ? `Notifications, ${formatDecimal(String(unread), 'comma-dot')} unread`
-      : 'Notifications',
+  'shell.notifications': (unread, text) =>
+    unread > 0 ? `Notifications, ${text} unread` : 'Notifications',
   'shell.userMenu': 'Account',
   'shell.moduleTabs': 'Module',
   'shell.switchCompany': (company) => `Switch company: ${company}`,
   'shell.companies': 'Companies',
   'shell.findCompany': 'Find company',
-  'shell.waiting': (count) => `${formatDecimal(String(count), 'comma-dot')} waiting`,
+  'shell.findCompanyHint': 'Name or tax number',
+  'shell.pinnedCompanies': 'Pinned',
+  'shell.recentCompanies': 'Recent',
+  'shell.allCompanies': 'All companies',
+  'shell.noCompany': (query) => `No company matches “${query}”.`,
+  'shell.switchCompanyCommand': 'Switch company…',
+  'notifications.title': 'Notifications',
+  'notifications.unreadCount': (_count, text) => `${text} unread`,
+  'notifications.unread': 'Unread',
+  'notifications.markAllRead': 'Mark all as read',
+  'notifications.markRead': (title) => `Mark as read: ${title}`,
+  'notifications.markUnread': (title) => `Mark as unread: ${title}`,
+  'notifications.viewAll': 'View all',
+  'notifications.settings': 'Notification settings',
+  'notifications.all': 'All',
+  'notifications.unreadFilter': 'Unread',
+  'notifications.show': 'Show',
+  'notifications.today': 'Today',
+  'notifications.yesterday': 'Yesterday',
+  'notifications.emptyTitle': 'No notifications',
+  'notifications.emptyDescription': 'When something needs your attention, it appears here.',
+  'notifications.noMatchTitle': 'No notification matches these filters',
   'launchpad.moveEarlier': (name) => `Move earlier: ${name}`,
   'launchpad.moveLater': (name) => `Move later: ${name}`,
   'launchpad.hide': (name) => `Hide: ${name}`,
-  'launchpad.hidden': (count) => `Hidden (${formatDecimal(String(count), 'comma-dot')})`,
+  'launchpad.hidden': (_count, text) => `Hidden (${text})`,
   'launchpad.showLabel': 'Show',
   'list.views': 'Views',
+  'list.moreViews': 'More',
+  'list.view': (view) => `View: ${view}`,
+  'list.findView': 'Find view',
   'columns.button': 'Columns',
   'columns.title': 'Shown columns',
   'columns.moveUp': (label) => `Move up: ${label}`,
@@ -155,11 +176,14 @@ export const messagesEn: LiroMessages = {
   'worklist.detail': 'Details',
   'page.backTo': (list) => `Back to ${list}`,
   'page.sections': 'Sections',
-  'lifecycle.step': (step, total, label) =>
-    `Step ${formatDecimal(String(step), 'comma-dot')} of ${formatDecimal(String(total), 'comma-dot')}: ${label}`,
+  'lifecycle.step': (_step, stepText, _total, totalText, label) =>
+    `Step ${stepText} of ${totalText}: ${label}`,
   'document.hidePanels': 'Hide panels',
   'document.showPanels': 'Show panels',
   'document.panels': 'Panels',
+  'panel.showAll': (_count, countText) => `Show all ${countText}`,
+  'panel.showFewer': 'Show fewer',
+  'value.change': (label) => `Change ${label}`,
   'chart.showTable': 'Show as table',
   'chart.showChart': 'Show as chart',
   'chart.noData': 'No data for this period',
@@ -189,6 +213,9 @@ export const messagesEn: LiroMessages = {
   'status.maintenanceTitle': 'Down for maintenance',
   'status.maintenanceDescription': 'The application is being updated and will be back shortly.',
   'status.suspendedTitle': 'Account suspended',
-  'status.suspendedDescription': 'Access to this account is suspended. Contact your administrator.',
+  'status.suspendedDescription': 'Your account is suspended. Contact your administrator.',
+  'status.suspendedCompanyTitle': 'Company suspended',
+  'status.suspendedCompanyDescription': (company) =>
+    `Access for ${company} is suspended. Contact your administrator.`,
   'launchpad.show': (name) => `Show: ${name}`,
 }

@@ -69,7 +69,10 @@ import { usePhone } from './use-phone'
  *   bottom while the table scrolls; values from the application, never computed;
  * - filters decide "nothing here yet" or "no rows match" (with "Clear filters");
  * - on a phone (below 48em) the rows are cards, by real branching: only one layout is rendered
- *   (Appendix B.5); virtualized rows are 44px, cards estimated at 104px.
+ *   (Appendix B.5); virtualized rows are 44px, cards estimated at 104px. Inside a card (`inCard`)
+ *   they are not cards but one flat list divided by border.subtle lines (P4.9: no cards inside a
+ *   card); in a card nothing is padded under the last row unless totals, a note, the count or the
+ *   paging stand there.
  * Everything else is Mantine 9.6.2 Table (Table.css) with Liro meanings.
  */
 
@@ -246,7 +249,7 @@ function columnLabel<Row extends RowData>(column: DataTableColumn<Row>): string 
  * Controlled: the application fetches, sorts and filters on the server.
  */
 export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
-  const { messages } = useLiro()
+  const { messages, format } = useLiro()
   const {
     columns,
     rows,
@@ -263,6 +266,9 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
   const phone = usePhone()
   const layout = props.layout ?? 'auto'
   const cards = layout === 'cards' || (layout === 'auto' && phone)
+  // Cards inside a card would be cards in a card (P4.9): in a card the rows are one flat list
+  // with dividers instead.
+  const flat = cards && props.inCard === true
   const virtualize = props.virtualize === true
   const sticky = props.stickyHeader === true || virtualize
   const resizable = props.resizable === true && !cards
@@ -671,6 +677,7 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
           value: column.cell(original),
         }))}
         selected={row.getIsSelected()}
+        flat={flat}
         {...(selectable
           ? {
               onSelectedChange: (value: boolean) => {
@@ -704,7 +711,10 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
     if (rows.length === 0) return <div className="p-4">{empty()}</div>
     if (!virtualize) {
       return (
-        <ul aria-label={props.label} className="m-0 flex list-none flex-col gap-4 p-0">
+        <ul
+          aria-label={props.label}
+          className={cn('m-0 flex list-none flex-col p-0', flat ? FLAT_DIVIDERS : 'gap-4')}
+        >
           {tableRows.map((row, index) => (
             <li key={row.id}>{card(index)}</li>
           ))}
@@ -725,7 +735,10 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
             ref={virtualizer.measureElement}
             aria-setsize={rows.length}
             aria-posinset={item.index + 1}
-            className="absolute inset-x-0 top-0 pb-4"
+            className={cn(
+              'absolute inset-x-0 top-0',
+              flat ? item.index > 0 && 'border-0 border-t border-solid border-subtle' : 'pb-4',
+            )}
             style={{ transform: `translateY(${String(item.start)}px)` }}
           >
             {card(item.index)}
@@ -737,7 +750,13 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
 
   const cardTotals =
     cards && totals !== undefined && rows.length > 0 ? (
-      <div className="flex flex-col gap-0.5 rounded-md border-0 border-t border-solid border-strong bg-surface-sunken p-3 text-xs font-semibold text-primary">
+      <div
+        {...(flat ? { 'data-flat': '' } : {})}
+        className={cn(
+          'flex flex-col gap-0.5 border-0 border-t border-solid border-strong bg-surface-sunken text-xs font-semibold text-primary',
+          flat ? 'px-4 py-3' : 'rounded-md p-3',
+        )}
+      >
         {props.totalsLabel !== undefined && <div className="text-sm">{props.totalsLabel}</div>}
         {columns
           .filter((column) => totals[column.id] !== undefined)
@@ -754,12 +773,14 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
   const countText =
     props.count === undefined
       ? undefined
-      : formatCount(messages, props.count, props.countIsExact ?? true, props.countThreshold)
+      : formatCount(messages, format, props.count, props.countIsExact ?? true, props.countThreshold)
 
   const scrollStyle: CSSProperties | undefined =
     props.maxHeight === undefined ? undefined : { maxHeight: props.maxHeight }
 
   const edge = props.inCard === true ? 'px-4' : undefined
+  const under =
+    cardTotals !== null || props.rowLimitMessage !== undefined || paging || countText !== undefined
 
   return (
     <div
@@ -768,7 +789,11 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
         // In a card the reserved loader slot sits right above the table, without a gap of its
         // own (the card's header or the FilterBar already gives the room); the parts under the
         // table keep 12px from it.
-        props.inCard === true ? 'pb-3 [&>*+*:not(:has(table))]:mt-3' : 'gap-3',
+        // Nothing under the last row (P4.9): the card ends with it, without 12px of white; the
+        // flat phone list and its totals follow the parts above them directly.
+        props.inCard === true
+          ? cn('[&>*+*:not(:has(table)):not([data-flat])]:mt-3', under && 'pb-3')
+          : 'gap-3',
         props.className,
       )}
     >
@@ -821,7 +846,7 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
           />
         </div>
       )}
-      <div className="relative min-w-0">
+      <div className="relative min-w-0" {...(flat ? { 'data-flat': '' } : {})}>
         <div
           ref={scroller}
           {...(scrolls ? { tabIndex: 0, role: 'region', 'aria-label': props.label } : {})}
@@ -829,7 +854,7 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
           className={cn(
             'overflow-auto',
             // In a card, phone cards stand 16px inside its edges, as the rows' text does.
-            cards && edge,
+            cards && !flat && edge,
             FOCUS_RING,
             'focus-visible:-outline-offset-2',
             // A row reached by the keyboard is scrolled clear of the sticky header and totals
@@ -928,6 +953,10 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
     </div>
   )
 }
+
+/** The dividers between the rows of the flat phone list in a card (P4.9). */
+const FLAT_DIVIDERS =
+  '[&>li+li]:border-0 [&>li+li]:border-t [&>li+li]:border-solid [&>li+li]:border-subtle'
 
 /** The totals row: the 1px border.strong line above it, and sticky at the bottom edge. */
 const TOTALS_LINE = 'sticky bottom-0 z-10 border-0 border-t border-solid border-strong'
