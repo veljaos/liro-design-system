@@ -19,6 +19,7 @@ import {
   NotificationsScreen,
   SignIn,
 } from './screens-core'
+import { GROUP_D2_ROUTES } from './screens-D2'
 
 // ── Routes ────────────────────────────────────────────────────────────────────────────────
 
@@ -34,6 +35,7 @@ export interface ExampleRoute {
  */
 const EXAMPLE_ROUTES: readonly ExampleRoute[] = [
   // ── P5 routes ──
+  ...GROUP_D2_ROUTES,
 ]
 
 // ── The app ───────────────────────────────────────────────────────────────────────────────────
