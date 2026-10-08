@@ -30,6 +30,7 @@ import {
   DetailPage,
   DocumentPage,
   DueDate,
+  EmailFirstForm,
   EmptyState,
   FilterBar,
   filterNotifications,
@@ -93,6 +94,7 @@ import {
   Shell,
   statusBadge,
 } from './example-shell'
+import { signInProviders } from './data-C'
 
 // ── Sign in ───────────────────────────────────────────────────────────────────────────────────
 
@@ -119,22 +121,29 @@ export function SignIn({ phone }: { phone: boolean }) {
         </>
       }
     >
-      <form
-        className="flex flex-col gap-4 [&>button]:w-full"
-        onSubmit={(event) => {
-          event.preventDefault()
+      {/* P5.6 (group C): the e-mail first, then the "or" divider and the providers' buttons. */}
+      <EmailFirstForm
+        label="Work e-mail"
+        placeholder="name@company.rs"
+        defaultValue="milica.petrovic@kvadratgradnja.rs"
+        onSubmit={() => {
           navigate(ROUTES.home)
         }}
-      >
-        <TextField
-          label="Work e-mail"
-          type="email"
-          autoComplete="email"
-          placeholder="name@company.rs"
-          defaultValue="milica.petrovic@kvadratgradnja.rs"
-        />
-        <Button intent="next" label="Continue" type="submit" />
-      </form>
+        providers={signInProviders(() => {
+          navigate(ROUTES.home)
+        })}
+        signUp={
+          <>
+            No account?{' '}
+            <Link
+              href="#/sign-in/help"
+              className="text-link underline visited:text-link hover:text-link active:text-link"
+            >
+              Ask your company’s administrator
+            </Link>
+          </>
+        }
+      />
     </AuthShell>
   )
 }

@@ -5,6 +5,7 @@ import { settle } from '../../../../packages/ui/src/primitives/story-helpers'
 import { FEATURED } from './examples-story-data'
 import { ExampleApp, OnPhone } from './example-app'
 import { ROUTES } from './example-shell'
+import { C_ROUTES } from './data-C'
 
 // ── Stories ───────────────────────────────────────────────────────────────────────────────────
 
@@ -307,4 +308,184 @@ export const NotFoundScreen: Story = {
 export const NotFoundPhone: Story = {
   name: 'Not found (404), phone',
   render: () => <OnPhone start="/banking" />,
+}
+
+// ── P5 group C ──
+
+/** Sign in with the providers (P5.6): the e-mail first, then "or" and Microsoft and Google. */
+export const SignInProviders: Story = {
+  name: 'Sign in, providers',
+  render: () => <ExampleApp start={ROUTES.signIn} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await Promise.all(
+      Array.from(document.images).map((image) => image.decode().catch(() => undefined)),
+    )
+    const canvas = within(canvasElement)
+    const microsoft = canvas.getByRole('button', { name: 'Continue with Microsoft' })
+    await expect(microsoft.querySelector('img')?.naturalWidth).toBeGreaterThan(0)
+    await expect(canvas.getByRole('button', { name: 'Continue with Google' })).toBeVisible()
+    await expect(canvas.getByRole('textbox', { name: 'Work e-mail' })).toHaveAttribute(
+      'autocomplete',
+      'username',
+    )
+  },
+}
+
+/** Users and roles (P5.21): members, the roles with a custom role's permissions, invitations. */
+export const UsersAndRoles: Story = {
+  name: 'Users and roles',
+  render: () => <ExampleApp start={C_ROUTES.users} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('row', { name: /Snežana Popović/ })).toHaveTextContent(
+      'Site manager',
+    )
+    await userEvent.click(canvas.getByRole('tab', { name: 'Roles' }))
+    await settle()
+    await expect(canvas.getByRole('heading', { name: 'Permissions: Site manager' })).toBeVisible()
+    const cell = canvas.getByRole('checkbox', { name: 'Edit: Supplier invoices' })
+    await userEvent.click(cell)
+    await expect(cell).toBeChecked()
+    await expect(canvas.getByRole('button', { name: 'Save' })).toBeVisible()
+    await userEvent.click(canvas.getByRole('button', { name: 'Cancel' }))
+    await expect(cell).not.toBeChecked()
+    // A built-in role is read-only.
+    await userEvent.click(canvas.getByRole('row', { name: /Accountant/ }))
+    await expect(canvas.getByRole('heading', { name: 'Permissions: Accountant' })).toBeVisible()
+    await expect(canvas.queryByRole('checkbox', { name: 'Edit: Supplier invoices' })).toBeNull()
+  },
+}
+
+/** Inviting: the drawer, then the new invitation pending beside the others. */
+export const UsersInvite: Story = {
+  name: 'Users and roles, inviting',
+  render: () => <ExampleApp start={C_ROUTES.users} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const page = within(document.body)
+    await userEvent.click(canvas.getByRole('button', { name: 'Invite user' }))
+    const drawer = within(await page.findByRole('dialog', { name: 'Invite user' }))
+    await userEvent.type(
+      drawer.getByRole('textbox', { name: 'E-mail' }),
+      'marija.jovic@kvadratgradnja.rs',
+    )
+    await userEvent.click(drawer.getByRole('button', { name: 'Send invitation' }))
+    await settle()
+    await expect(await canvas.findByRole('row', { name: /marija\.jovic/ })).toHaveTextContent(
+      'Pending',
+    )
+    await expect(canvas.getByRole('row', { name: /biljana\.ristic/ })).toHaveTextContent('Expired')
+    notice.dismiss()
+    await waitFor(async () => {
+      await expect(page.queryByText(/Invitation sent to/)).toBeNull()
+    })
+  },
+}
+
+export const UsersPhone: Story = {
+  name: 'Users and roles, phone',
+  render: () => <OnPhone start={C_ROUTES.users} />,
+}
+
+/** First-run setup of Stanić Elektro STR (P5.21): two of five steps done, resume at the next. */
+export const SetupScreen: Story = {
+  name: 'First-run setup',
+  render: () => <ExampleApp start={C_ROUTES.setup} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(
+      canvas.getByRole('heading', { level: 1, name: 'Stanić Elektro STR' }),
+    ).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('2 of 5 done')
+    await expect(canvasElement.querySelector('[aria-current="step"]')).toHaveTextContent(
+      'Import customers',
+    )
+  },
+}
+
+export const SetupPhone: Story = {
+  name: 'First-run setup, phone',
+  render: () => <OnPhone start={C_ROUTES.setup} />,
+}
+
+/** RU-2026-017 awaiting signatures, seen by Milica (not a signer): who has signed, a reminder. */
+export const ContractSigning: Story = {
+  name: 'Contract awaiting signatures',
+  render: () => <ExampleApp start={C_ROUTES.signing} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { level: 1, name: 'RU-2026-017' })).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('1 of 3 signed')
+    await expect(canvasElement).toHaveTextContent('Signed 05.10.2026. 14:12')
+    await expect(canvas.queryByRole('button', { name: 'Sign' })).toBeNull()
+  },
+}
+
+export const ContractSigningPhone: Story = {
+  name: 'Contract awaiting signatures, phone',
+  render: () => <OnPhone start={C_ROUTES.signing} />,
+}
+
+/** Stefan Nikolić from his e-mail link: he signs; Jelena Marković signs next. */
+export const ContractSignerLink: Story = {
+  name: 'Contract signing, the employee signs',
+  render: () => <ExampleApp start={C_ROUTES.signerLink} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const page = within(document.body)
+    await userEvent.click(canvas.getByRole('button', { name: 'Sign' }))
+    await waitFor(async () => {
+      await expect(canvasElement).toHaveTextContent('2 of 3 signed')
+    })
+    await expect(canvas.getByText('Signed by you')).toBeVisible()
+    notice.dismiss()
+    await waitFor(async () => {
+      await expect(page.queryByText(/RU-2026-017 signed/)).toBeNull()
+    })
+  },
+}
+
+export const ContractSignerLinkPhone: Story = {
+  name: 'Contract signing, the employee, phone',
+  render: () => <OnPhone start={C_ROUTES.signerLink} />,
+}
+
+/** The tasks board (P5.7): each card links to its record; the columns count their tasks. */
+export const TasksScreen: Story = {
+  name: 'Tasks',
+  render: () => <ExampleApp start={C_ROUTES.tasks} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('link', { name: 'Contract RU-2026-017' })).toHaveAttribute(
+      'href',
+      `#${C_ROUTES.signing}`,
+    )
+    const todo = canvasElement.querySelector('[data-kanban-column="todo"]')
+    await expect(todo).toHaveTextContent('3 tasks')
+    // "Send reminder for F-2026-0411" moves to In progress with its menu.
+    await userEvent.click(
+      canvas.getByRole('button', { name: 'Move to: Send reminder for F-2026-0411' }),
+    )
+    await userEvent.click(
+      await within(document.body).findByRole('menuitem', { name: 'In progress' }),
+    )
+    await waitFor(async () => {
+      await expect(todo).toHaveTextContent('2 tasks')
+    })
+    await expect(canvasElement.querySelector('[data-kanban-column="progress"]')).toHaveTextContent(
+      '3 tasks',
+    )
+  },
+}
+
+export const TasksPhone: Story = {
+  name: 'Tasks, phone',
+  render: () => <OnPhone start={C_ROUTES.tasks} />,
 }

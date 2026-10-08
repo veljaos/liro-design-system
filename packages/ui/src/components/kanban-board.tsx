@@ -506,7 +506,7 @@ export function KanbanBoard(props: KanbanBoardProps) {
             <Link
               href={card.record.href}
               className={cn(
-                'rounded-sm text-link no-underline visited:text-link hover:text-link hover:underline active:text-link',
+                'rounded-sm text-link underline visited:text-link hover:text-link active:text-link',
                 FOCUS_RING,
               )}
             >

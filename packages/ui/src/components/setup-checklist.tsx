@@ -12,6 +12,8 @@ import { ProgressBar } from './progress'
  * SetupChecklist (BUILD-PLAN P5.21): the first-run steps of a new company — company data, the
  * e-invoicing connection, importing customers, the first invoice … The steps, their states and
  * their actions are the Core's.
+ * - One card (raised, border.default, radius lg): the steps reach its edges, so the highlighted
+ *   step's band does too, and the card ends with its last step (P4.9).
  * - The header: the title (the application's, h2 by default), the progress "2 of 5 done"
  *   (`messages['setup.progress']`, numbers through `format.number`) and a ProgressBar.
  * - The steps in order, rows divided by lines (no cards inside the card it stands in). Each: a
@@ -147,9 +149,12 @@ export function SetupChecklist(props: SetupChecklistProps) {
     <section
       data-slot="setup-checklist"
       aria-labelledby={headingId}
-      className={cn('flex flex-col font-sans text-primary', props.className)}
+      className={cn(
+        'flex flex-col overflow-hidden rounded-lg border border-solid border-default bg-surface-raised font-sans text-primary',
+        props.className,
+      )}
     >
-      <div className="flex flex-col gap-1 pb-4">
+      <div className="flex flex-col gap-1 p-4">
         <Heading id={headingId} className={cn('m-0 text-h4 text-primary', TEXT_DIRECTION)}>
           {props.title}
         </Heading>
@@ -173,7 +178,7 @@ export function SetupChecklist(props: SetupChecklistProps) {
       {props.loading === true ? (
         <div
           aria-busy="true"
-          className="flex flex-col gap-3 border-0 border-t border-solid border-subtle pt-3"
+          className="flex flex-col gap-3 border-0 border-t border-solid border-subtle p-4"
         >
           {[0, 1, 2, 3].map((index) => (
             <Skeleton key={index} className="h-12" />
