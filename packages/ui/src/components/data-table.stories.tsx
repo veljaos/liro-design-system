@@ -6,10 +6,11 @@ import { settle } from '../primitives/story-helpers'
 import { Button } from './button'
 import { DataTable, type DataTableColumn } from './data-table'
 import type { DataTableFilters, DataTableSort } from './data-table-logic'
-import { DateText, MoneyText } from './display-text'
+import { DateText, MoneyText, NumberText } from './display-text'
 import { ARABIC, JAPANESE, LONG } from './field-story-data'
 import { StatusBadge, toneFor, type Tone } from './status-badge'
-import { expectContentDirection, StoryProvider } from './story-frames'
+import type { LineType } from './line-types'
+import { ExampleProvider, expectContentDirection, PhoneFrame, StoryProvider } from './story-frames'
 
 const meta = {
   title: 'Components/Table/DataTable',
@@ -27,7 +28,13 @@ const meta = {
           'table says "nothing here yet" (with the first step) or, when filters are set, "no ' +
           'rows match" (with "Clear filters").\n\n**When not:** a few labelled values of one ' +
           'record (KeyValueList); editing lines (the editable grid, P3.4); a phone (card layout, ' +
-          'P3.2).',
+          'P3.2).\n\n**Line types (P5.18):** a document’s read-only lines and a specification ' +
+          'pass `lineType` (the types of `line-types.ts`): a heading bold across the row, a text ' +
+          'line smaller and secondary, a subtotal semibold with a rule above and its label ' +
+          'end-aligned before the amounts (the trailing end-aligned columns), discounts and ' +
+          'deductions as lines with negative amounts from the application. `lineKind` writes ' +
+          'what a line is ("Item", "Service") as small secondary text under its first cell. ' +
+          'Phones keep the types by typography.',
       },
     },
   },
@@ -622,4 +629,245 @@ export const EnglishInRtl: Story = {
     )
     await settle()
   },
+}
+
+// ── P5 group D2: line types (P5.18) ──────────────────────────────────────────────────────────
+
+interface DocumentLine {
+  id: string
+  type: LineType
+  item: string
+  kind?: string
+  quantity?: string
+  unit?: string
+  vat?: string
+  amount?: string
+}
+
+/** Part of final invoice F-2026-0418: sections with subtotals, a text line, a discount. */
+const DOCUMENT_LINES: DocumentLine[] = [
+  { id: 'h1', type: 'heading', item: 'Steel structure' },
+  {
+    id: '1',
+    type: 'line',
+    item: 'Steel beams HEA 200, S275JR',
+    kind: 'Item',
+    quantity: '12.6',
+    unit: 't',
+    vat: 'S 20%',
+    amount: '1799280.00',
+  },
+  {
+    id: '2',
+    type: 'line',
+    item: 'Steel columns HEB 240, S275JR',
+    kind: 'Item',
+    quantity: '8.4',
+    unit: 't',
+    vat: 'S 20%',
+    amount: '1230600.00',
+  },
+  { id: 's1', type: 'subtotal', item: 'Total steel structure', amount: '3029880.00' },
+  { id: 'h2', type: 'heading', item: 'Services' },
+  {
+    id: '3',
+    type: 'line',
+    item: 'Assembly drawings, printed and bound',
+    kind: 'Service',
+    quantity: '2',
+    unit: 'lot',
+    vat: 'S 10%',
+    amount: '12800.00',
+  },
+  { id: 's2', type: 'subtotal', item: 'Total services', amount: '12800.00' },
+  {
+    id: 't',
+    type: 'text',
+    item: 'Delivered to the site at Temerinski put 51, Novi Sad, from 14 to 25 September 2026.',
+  },
+  {
+    id: 'd',
+    type: 'discount',
+    item: 'Contract discount 3% on the steel structure',
+    kind: 'Discount',
+    vat: 'S 20%',
+    amount: '-90896.40',
+  },
+  {
+    id: 'a',
+    type: 'deduction',
+    item: 'Advance A-2026-038',
+    kind: 'Deduction',
+    vat: 'S 20%',
+    amount: '-1000000.00',
+  },
+]
+
+function LineAmount({ line }: { line: DocumentLine }) {
+  return line.amount === undefined ? null : <MoneyText value={line.amount} currency="RSD" />
+}
+
+const LINE_TYPE_COLUMNS: DataTableColumn<DocumentLine>[] = [
+  { id: 'item', header: 'Item', cell: (line) => line.item },
+  {
+    id: 'quantity',
+    header: 'Quantity',
+    align: 'end',
+    numeric: true,
+    cell: (line) => (line.quantity === undefined ? null : <NumberText value={line.quantity} />),
+  },
+  { id: 'unit', header: 'Unit', cell: (line) => line.unit },
+  { id: 'vat', header: 'VAT', cell: (line) => line.vat },
+  {
+    id: 'amount',
+    header: 'Amount',
+    align: 'end',
+    numeric: true,
+    cell: (line) => <LineAmount line={line} />,
+  },
+]
+
+function LineTypesTable({
+  layout,
+  selectable = false,
+}: {
+  layout: 'table' | 'cards'
+  selectable?: boolean
+}) {
+  const [selection, setSelection] = useState<string[]>([])
+  return (
+    <div className="overflow-hidden rounded-lg border border-solid border-default bg-surface-raised">
+      <DataTable
+        label="Lines"
+        layout={layout}
+        inCard
+        columns={LINE_TYPE_COLUMNS}
+        rows={DOCUMENT_LINES}
+        getRowId={(line) => line.id}
+        getRowLabel={(line) => line.item}
+        lineType={(line) => line.type}
+        lineKind={(line) => line.kind}
+        mobile={{ details: ['quantity', 'unit', 'vat', 'amount'] }}
+        {...(selectable ? { selection, onSelectionChange: setSelection } : {})}
+      />
+    </div>
+  )
+}
+
+/**
+ * A document's lines with their types: headings bold across the row, subtotals end-aligned and
+ * semibold under a rule, a text line small and secondary, a discount and a deduction as lines
+ * with negative amounts; the kind under each item.
+ */
+export const LineTypes: Story = {
+  name: 'Line types',
+  render: () => (
+    <ExampleProvider>
+      <LineTypesTable layout="table" selectable />
+    </ExampleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const heading = canvas.getByText('Steel structure').closest('tr')
+    await expect(heading).toHaveAttribute('data-line', 'heading')
+    const subtotal = canvas.getByText('Total steel structure').closest('td')
+    await expect(subtotal).toHaveClass('text-end', 'font-semibold')
+    await expect(canvas.getByText('Total steel structure').closest('tr')).toHaveTextContent(
+      '3.029.880,00',
+    )
+    // Only lines can be selected: the header's checkbox and one per line, discount and deduction.
+    await expect(canvas.getAllByRole('checkbox')).toHaveLength(6)
+    await expect(canvasElement).toHaveTextContent('-90.896,40')
+  },
+}
+
+/** Phone width: the same order and types, by typography, as a flat list in the card. */
+export const LineTypesPhone: Story = {
+  name: 'Line types, phone',
+  render: () => (
+    <PhoneFrame>
+      <div className="p-4">
+        <ExampleProvider>
+          <LineTypesTable layout="cards" />
+        </ExampleProvider>
+      </div>
+    </PhoneFrame>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const list = within(canvasElement).getByRole('list', { name: 'Lines' })
+    await expect(list.querySelector('li[data-line="subtotal"]')).not.toBeNull()
+    await expect(list.scrollWidth).toBeLessThanOrEqual(list.clientWidth)
+  },
+}
+
+/** Arabic headings and items in a right-to-left table. */
+export const LineTypesArabic: Story = {
+  name: 'Line types, Arabic',
+  render: () => (
+    <StoryProvider locale="ar">
+      <ExampleProvider>
+        <DataTable
+          label="البنود"
+          layout="table"
+          columns={LINE_TYPE_COLUMNS}
+          rows={[
+            { id: 'h', type: 'heading', item: 'الهيكل الفولاذي' },
+            {
+              id: '1',
+              type: 'line',
+              item: 'عوارض فولاذية',
+              kind: 'صنف',
+              quantity: '12.6',
+              unit: 't',
+              vat: 'S 20%',
+              amount: '1799280.00',
+            },
+            { id: 's', type: 'subtotal', item: 'مجموع الهيكل الفولاذي', amount: '1799280.00' },
+            { id: 't', type: 'text', item: 'تم التسليم إلى الموقع.' },
+          ]}
+          getRowId={(line) => line.id}
+          getRowLabel={(line) => line.item}
+          lineType={(line) => line.type}
+          lineKind={(line) => line.kind}
+        />
+      </ExampleProvider>
+    </StoryProvider>
+  ),
+}
+
+/** Japanese headings and items. */
+export const LineTypesJapanese: Story = {
+  name: 'Line types, Japanese',
+  render: () => (
+    <StoryProvider locale="ja">
+      <ExampleProvider>
+        <DataTable
+          label="明細"
+          layout="table"
+          columns={LINE_TYPE_COLUMNS}
+          rows={[
+            { id: 'h', type: 'heading', item: '鉄骨工事' },
+            {
+              id: '1',
+              type: 'line',
+              item: '鉄骨梁 HEA 200',
+              kind: '品目',
+              quantity: '12.6',
+              unit: 't',
+              vat: 'S 20%',
+              amount: '1799280.00',
+            },
+            { id: 's', type: 'subtotal', item: '鉄骨工事 小計', amount: '1799280.00' },
+            { id: 't', type: 'text', item: '現場に納品済み。' },
+          ]}
+          getRowId={(line) => line.id}
+          getRowLabel={(line) => line.item}
+          lineType={(line) => line.type}
+          lineKind={(line) => line.kind}
+        />
+      </ExampleProvider>
+    </StoryProvider>
+  ),
 }
