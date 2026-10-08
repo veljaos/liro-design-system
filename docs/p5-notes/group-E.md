@@ -298,4 +298,37 @@ None. No new dependency; no file copied from shadcn/ui or elsewhere.
 
 ## 6. Verification results
 
-See the final report; filled in at the end of the work.
+All on the owner's Windows machine, branch `bp/P5-group-E`, while six other groups ran their
+own builds and Playwright runs on the same machine (so the timings below are pessimistic).
+
+- `npx pnpm@12.6.0 lint` — pass (0 warnings).
+- `npx pnpm@12.6.0 typecheck` — pass (root, tokens, eslint-config, ui, storybook).
+- `npx pnpm@12.6.0 test` — pass: tokens 45, eslint-config 40, ui 544 tests (48 files; group E
+  adds `catalog-logic.test.ts`, `register-logic.test.ts`, `registers-and-catalogs.test.tsx`
+  and its keys in `provider-p15.test.tsx`), scripts 9.
+- `npx pnpm@12.6.0 build` and `npx pnpm@12.6.0 build-storybook` — pass.
+- `npx prettier --check` on every changed path — pass (written with `--write`).
+- Story and accessibility tests (`tests/stories.spec.ts`, `tests/accessibility.spec.ts`), all
+  four modes, against the built Storybook on port 6106 (`playwright.local.config.mjs`, not
+  committed): every story of Components/Catalogs/LookupDialog, ImportWizard, BulkEditDrawer,
+  DuplicateWarning, Templates/RegisterPage, Templates/StatutoryFormPage and group E's
+  Examples (Customers, phone, bulk edit, deactivate, search all; Customer import, phone; VAT
+  return, phone; Work-injury register, phone, 5,000 entries) — all pass. The last failures
+  found and fixed on the way: play functions (exact texts, a status role shared with
+  DataTable, animations not yet settled, a non-breaking space in an accessible name, a search
+  not yet applied) and timeouts under the machine's load, which passed again with
+  `--workers=2`.
+- Visual baselines: not made (CI only); every new story needs baselines from the Baselines
+  workflow.
+- **Performance** (built Storybook, Chromium of Playwright 1.63, from the event to the next
+  painted frame, five times each; "4×" is Chrome's CPU throttling):
+  - Register, 5,000 entries (story "5,000 entries (virtualized)"): a 2,000px scroll jump
+    129–266ms; 4× slower 677–3,427ms (two runs; the register's two date columns go through
+    `format.date` per cell).
+  - Customers, 50,007 records (Examples / Customers, the whole catalogue in the browser,
+    virtualised): a 2,000px scroll jump 163–463ms (4×: 243–1,089ms); selecting a row 86–109ms
+    (4×: 135–1,072ms); switching view (the application filters 50,007) 120–200ms (4×:
+    103–1,761ms); a search after the 300ms pause 145–178ms (4×: 693–789ms). Fewer than 60 rows
+    are in the page at any time (checked by the stories). A real application pages from the
+    server rather than holding 50,000 records; the example holds them to show that the list
+    stays usable even so.

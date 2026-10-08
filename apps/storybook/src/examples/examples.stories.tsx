@@ -373,9 +373,9 @@ export const CustomersBulkEdit: Story = {
       await expect(page.queryByRole('alertdialog')).toBeNull()
     })
     await settle()
-    await expect(await canvas.findByRole('row', { name: /Drina Prevoz d.o.o./ })).toHaveTextContent(
-      /\b30\b/,
-    )
+    // Drina Prevoz's payment term was 7 days; it is now 30.
+    const drina = await canvas.findByRole('row', { name: /Drina Prevoz d.o.o./ })
+    await expect(within(drina).getByRole('cell', { name: '30' })).toBeVisible()
   },
 }
 
@@ -419,7 +419,11 @@ export const CustomersLookup: Story = {
       await expect(search).toHaveFocus()
     })
     await userEvent.type(search, 'vojvo')
-    await expect(await dialog.findByRole('row', { name: /Vojvođanka Mlin a.d./ })).toBeVisible()
+    // The application's results for "vojvo" have replaced the first page.
+    await waitFor(async () => {
+      await expect(dialog.queryByRole('row', { name: /Panonija Agro/ })).toBeNull()
+    })
+    await expect(dialog.getByRole('row', { name: /Vojvođanka Mlin a.d./ })).toBeVisible()
     await userEvent.keyboard('{ArrowDown}{Enter}')
     await waitFor(async () => {
       await expect(page.queryByRole('dialog')).toBeNull()
