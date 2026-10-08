@@ -318,3 +318,35 @@ export type {
 } from './templates/status-page'
 export { AuthShell } from './templates/auth-shell'
 export type { AuthShellProps } from './templates/auth-shell'
+// ── P5 group F ──
+export { MatchingView } from './components/matching-view'
+export type {
+  MatchingItem,
+  MatchingList,
+  MatchingMatch,
+  MatchingViewProps,
+  MatchSuggestion,
+} from './components/matching-view'
+export {
+  canMatch,
+  MATCHING_PAGE,
+  MATCHING_ROW_HEIGHT,
+  MATCHING_VIRTUALIZE_FROM,
+  matchingKeyAction,
+  toggleSelection,
+} from './components/matching-logic'
+export type { MatchingKeyAction } from './components/matching-logic'
+export { BalanceBar } from './components/balance-bar'
+export type { BalanceBarProps, BalanceState } from './components/balance-bar'
+export { PeriodicRunPage } from './templates/periodic-run-page'
+export type {
+  PeriodicRunPageProps,
+  RunCheck,
+  RunLock,
+  RunPreview,
+  RunProgress,
+  RunRerun,
+  RunStep,
+} from './templates/periodic-run-page'
+export { countChecks, RUN_RESULT_ORDER } from './templates/periodic-run-logic'
+export type { RunCheckResult } from './templates/periodic-run-logic'
