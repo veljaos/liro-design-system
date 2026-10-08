@@ -77,8 +77,12 @@ export {
  *   the current one `aria-current="page"` with the 2px brand line; a row wider than the screen
  *   scrolls and fades at the edge with more past it (P4.9). There is no sidebar, ever
  *   (Appendix B.8).
- * - Slots: the impersonation bar above the header, the environment marker after the brand, the
- *   offline indicator under the header (P5.3 fills them).
+ * - Slots (P5.3), top to bottom: the impersonation bar (ImpersonationBar) above the header, the
+ *   environment marker (EnvironmentMarker) after the brand, the offline indicator
+ *   (OfflineIndicator) under the header and its tabs — these three sticky with the header —, then
+ *   the application-wide `banners` at the top of the content, full width and square, scrolling
+ *   with the page. A session as another user outranks everything, so it is first; being offline
+ *   concerns every action on the screen, so it stays in view; a trial ending does not.
  * - Phones (below 48em, by real branching, or `layout`): the lockup without the product name, no
  *   breadcrumbs, the bottom bar for the main action within thumb reach — the form's bottom bar
  *   (surface.page, a 1px border.default line on top, padding sm) plus the safe-area insets.
@@ -132,6 +136,13 @@ export interface AppShellProps {
   environmentMarker?: ReactNode
   /** Under the header (P5.3 OfflineIndicator). */
   offlineIndicator?: ReactNode
+  /**
+   * Application-wide Banners (P5.3: a trial ending, a maintenance window), most important first.
+   * They stand under the header and the offline indicator, above the page, full width and
+   * square, and scroll away with the page; a dismissible one is the application's state
+   * (`onClose`). Never a message about one page's content: that is an Alert in the page.
+   */
+  banners?: ReactNode
   /** Phones only: the page's main action within thumb reach. */
   bottomBar?: ReactNode
   /** 'desktop' or 'phone' forces one; default by the viewport (48em). */
@@ -538,6 +549,21 @@ export function AppShell(props: AppShellProps) {
         {props.offlineIndicator}
       </div>
       <main id={contentId} tabIndex={-1} className="flex min-w-0 flex-1 flex-col outline-none">
+        {props.banners !== undefined && props.banners !== null && props.banners !== false && (
+          // Full-width strips at the top of the content (P5.3): square, without side borders, a
+          // 1px border.default line under each, padded like the header; they scroll with the page.
+          <div
+            data-slot="shell-banners"
+            className={cn(
+              'flex flex-col [&>*]:rounded-none [&>*]:border-0 [&>*]:border-b [&>*]:border-solid [&>*]:border-default [&>*]:py-3',
+              phone
+                ? '[&>*]:ps-[max(16px,env(safe-area-inset-left))] [&>*]:pe-[max(16px,env(safe-area-inset-right))]'
+                : '[&>*]:px-6',
+            )}
+          >
+            {props.banners}
+          </div>
+        )}
         {props.children}
       </main>
       {phone && props.bottomBar !== undefined && (
