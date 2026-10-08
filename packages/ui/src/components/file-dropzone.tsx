@@ -200,24 +200,14 @@ export function FileDropzone(props: FileDropzoneProps) {
               <span className={TEXT_DIRECTION}>{messages['file.choose'](multiple)}</span>
             </ButtonPrimitive>
             {!phone && (
-              <span
-                className={cn(
-                  'text-sm',
-                  disabled ? 'text-disabled' : 'text-secondary',
-                  TEXT_DIRECTION,
-                )}
-              >
+              <span className={cn('text-sm', 'text-secondary', TEXT_DIRECTION)}>
                 {messages['file.drop'](multiple)}
               </span>
             )}
             {hint.length > 0 && (
               <p
                 id={hintId}
-                className={cn(
-                  'm-0 basis-full text-xs',
-                  disabled ? 'text-disabled' : 'text-secondary',
-                  TEXT_DIRECTION,
-                )}
+                className={cn('m-0 basis-full text-xs', 'text-secondary', TEXT_DIRECTION)}
               >
                 {hint.map((part, index) => (
                   <span key={index}>

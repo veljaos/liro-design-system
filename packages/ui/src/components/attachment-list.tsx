@@ -243,7 +243,7 @@ export function AttachmentList(props: AttachmentListProps) {
                     }}
                     className={cn(
                       BUTTON_RESET,
-                      'min-w-0 cursor-pointer rounded-sm text-start text-sm font-medium text-link hover:underline',
+                      'inline-flex min-h-6 min-w-0 cursor-pointer items-center rounded-sm text-start text-sm font-medium text-link hover:underline',
                       FOCUS_RING,
                     )}
                   >

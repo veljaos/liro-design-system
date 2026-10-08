@@ -24,13 +24,21 @@ function fileInput(canvasElement: HTMLElement): HTMLInputElement {
   return input
 }
 
-/** Drops files on an element as the browser does (dragenter, dragover, drop). */
-async function drop(target: Element, files: File[]) {
+/** Sends one drag event with these files, as the browser does. */
+function drag(target: Element, type: string, files: File[]) {
+  // A real DataTransfer: Testing Library's fireEvent copies only own properties and loses files.
   const transfer = new DataTransfer()
   for (const item of files) transfer.items.add(item)
-  await fireEvent.dragEnter(target, { dataTransfer: transfer })
-  await fireEvent.dragOver(target, { dataTransfer: transfer })
-  await fireEvent.drop(target, { dataTransfer: transfer })
+  target.dispatchEvent(
+    new DragEvent(type, { bubbles: true, cancelable: true, dataTransfer: transfer }),
+  )
+}
+
+/** Drops files on an element as the browser does (dragenter, dragover, drop). */
+function drop(target: Element, files: File[]) {
+  drag(target, 'dragenter', files)
+  drag(target, 'dragover', files)
+  drag(target, 'drop', files)
 }
 
 const meta = {
@@ -108,13 +116,12 @@ export const Dropping: Story = {
     await settle()
     const zone = canvasElement.querySelector('[data-slot="file-dropzone"]')
     if (zone === null) throw new Error('No zone')
-    const transfer = new DataTransfer()
-    await fireEvent.dragEnter(zone, { dataTransfer: transfer })
-    await fireEvent.dragOver(zone, { dataTransfer: transfer })
-    await expect(zone).toHaveAttribute('data-dragging', 'true')
-    await fireEvent.dragLeave(zone, { dataTransfer: transfer })
-    await expect(zone).not.toHaveAttribute('data-dragging')
-    await drop(zone, [
+    drag(zone, 'dragenter', [])
+    drag(zone, 'dragover', [])
+    await waitFor(() => expect(zone).toHaveAttribute('data-dragging', 'true'))
+    drag(zone, 'dragleave', [])
+    await waitFor(() => expect(zone).not.toHaveAttribute('data-dragging'))
+    drop(zone, [
       file('Situacija IS-2026-007.pdf', 'application/pdf', 4 * MB),
       file('Snimak gradilišta.jpg', 'image/jpeg', 14 * MB),
     ])
@@ -142,7 +149,7 @@ export const SingleFile: Story = {
     await expect(canvas.getByRole('button', { name: 'Choose a file' })).toBeVisible()
     const zone = canvasElement.querySelector('[data-slot="file-dropzone"]')
     if (zone === null) throw new Error('No zone')
-    await drop(zone, [
+    drop(zone, [
       file('RU-2026-017 potpisan.pdf', 'application/pdf', MB),
       file('RU-2026-017 aneks.pdf', 'application/pdf', MB),
     ])
@@ -163,7 +170,7 @@ export const CountLimit: Story = {
     await settle()
     const zone = canvasElement.querySelector('[data-slot="file-dropzone"]')
     if (zone === null) throw new Error('No zone')
-    await drop(zone, [file('a.pdf', 'application/pdf', MB), file('b.pdf', 'application/pdf', MB)])
+    drop(zone, [file('a.pdf', 'application/pdf', MB), file('b.pdf', 'application/pdf', MB)])
     await expect(
       await within(canvasElement).findByText(
         'b.pdf was not added: at most 5 files can be attached.',
