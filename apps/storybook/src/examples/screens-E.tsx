@@ -457,7 +457,12 @@ export function Customers({ phone }: { phone: boolean }) {
         rows={found.slice(lookupCursor, lookupCursor + 25)}
         getRowId={(row) => row.id}
         getRowLabel={(row) => row.name}
-        onChoose={setPreview}
+        // The chosen customer shown in the list: its tax number in the search, every view.
+        onChoose={(customer) => {
+          setView('all')
+          setFilters({})
+          setSearch(customer.taxId)
+        }}
         hasNext={lookupCursor + 25 < found.length}
         onNext={() => {
           setLookupCursor(lookupCursor + 25)

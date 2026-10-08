@@ -370,11 +370,12 @@ export const CustomersBulkEdit: Story = {
     await userEvent.click(confirm.getByRole('button', { name: 'Change' }))
     await waitFor(async () => {
       await expect(page.queryByRole('dialog')).toBeNull()
+      await expect(page.queryByRole('alertdialog')).toBeNull()
     })
-    await expect(canvas.getByRole('row', { name: /Drina Prevoz d.o.o./ })).toHaveTextContent(
+    await settle()
+    await expect(await canvas.findByRole('row', { name: /Drina Prevoz d.o.o./ })).toHaveTextContent(
       /\b30\b/,
     )
-    await settle()
   },
 }
 
@@ -401,7 +402,8 @@ export const CustomersDeactivate: Story = {
 
 /**
  * "Search all…" opens the whole catalogue in the LookupDialog (the integrator wires the
- * LookupField's last entry to it): type, ArrowDown, Enter chooses — here the quick preview.
+ * LookupField's last entry to it): type, ArrowDown, Enter chooses — here the list then shows
+ * the chosen customer (its tax number in the search).
  */
 export const CustomersLookup: Story = {
   name: 'Customers, search all',
@@ -419,10 +421,16 @@ export const CustomersLookup: Story = {
     await userEvent.type(search, 'vojvo')
     await expect(await dialog.findByRole('row', { name: /Vojvođanka Mlin a.d./ })).toBeVisible()
     await userEvent.keyboard('{ArrowDown}{Enter}')
-    await expect(
-      await page.findByRole('dialog', { name: 'Vojvođanka Mlin a.d.' }),
-    ).toHaveTextContent('61.204,75')
+    await waitFor(async () => {
+      await expect(page.queryByRole('dialog')).toBeNull()
+    })
     await settle()
+    await expect(canvas.getByRole('textbox', { name: 'Name, tax number or city' })).toHaveValue(
+      '100421987',
+    )
+    await expect(
+      await canvas.findByRole('row', { name: /Vojvođanka Mlin a.d./ }),
+    ).toHaveTextContent('61.204,75')
   },
 }
 
@@ -481,7 +489,9 @@ export const VatReturnScreen: Story = {
     await expect(
       canvas.getAllByText('Difference: 64.400,00 RSD', { exact: false })[0],
     ).toBeVisible()
-    await userEvent.click(canvas.getByRole('button', { name: '510.809,60 RSD, sources of 3.2' }))
+    await userEvent.click(
+      canvas.getByRole('button', { name: /^510\.809,60\sRSD, sources of 3\.2$/ }),
+    )
     const drawer = within(await page.findByRole('dialog', { name: '3.2 Tax base' }))
     await settle()
     await expect(drawer.getByRole('link', { name: /F-2026-0412/ })).toBeVisible()

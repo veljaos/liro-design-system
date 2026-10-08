@@ -220,7 +220,10 @@ integrator to copy into `docs/decisions.md`, `AGENTS.md` and `BUILD-PLAN.md`.
      paras); Rakić Pekara SZR inactive; bulk edit of the payment term and group; Deactivate /
      Activate; "Search all…" opens the LookupDialog over the whole catalogue
      (`// INTEGRATION: LookupField` — the integrator wires D1's LookupField `onSearchAll` to it);
-     choosing opens the QuickPreview.
+     choosing shows the chosen customer in the list (its tax number in the search, view All).
+     Opening another modal (the QuickPreview) in the same moment the dialog closes does not
+     work: Radix returns the focus to the dialog's opener, which closes the new one — an
+     application opens the next overlay after the dialog has closed, or fills its field.
   2. **Customer import** (`/sales/customers/import`): the four steps with the old system's CSV
      (`kupci-stari-sistem.csv`, 1.213 rows), the suggested mapping, the preview with the
      duplicate warning for Panonija Agro d.o.o. (line 2, the same PIB 104987265), a row with two
