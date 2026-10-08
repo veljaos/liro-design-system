@@ -66,6 +66,67 @@ export const Delete: Story = {
   },
 }
 
+/**
+ * The safe action takes the focus (P4.9d): in every confirmation Cancel is focused when the
+ * dialog opens, so a single Enter closes it and never deletes, rejects or discards.
+ */
+export const SafeInitialFocus: Story = {
+  name: 'Initial focus on Cancel',
+  render: () => {
+    const confirmed: string[] = []
+    return (
+      <div className="flex flex-wrap gap-2">
+        <DeleteConfirmDialog
+          trigger={<Button intent="delete" label="Delete" />}
+          onConfirm={() => {
+            confirmed.push('delete')
+            document.body.dataset.confirmed = confirmed.join(',')
+          }}
+        />
+        <ReasonConfirmDialog
+          trigger={<Button family="destructive" icon={CircleX} label="Reject" />}
+          family="destructive"
+          actionIcon={CircleX}
+          title="Reject UF-2026-1187?"
+          confirmLabel="Reject"
+          reasons={[{ value: 'price', label: 'Price differs from the order' }]}
+          onConfirm={() => {
+            confirmed.push('reject')
+            document.body.dataset.confirmed = confirmed.join(',')
+          }}
+        />
+        <IrreversibleConfirmDialog
+          trigger={<Button family="caution" icon={Ban} label="Void" />}
+          family="caution"
+          actionIcon={Ban}
+          title="Void F-2026-0412?"
+          confirmLabel="Void"
+          confirmText="F-2026-0412"
+          onConfirm={() => {
+            confirmed.push('void')
+            document.body.dataset.confirmed = confirmed.join(',')
+          }}
+        />
+      </div>
+    )
+  },
+  play: async ({ canvasElement }) => {
+    const body = within(canvasElement.ownerDocument.body)
+    delete document.body.dataset.confirmed
+    for (const name of ['Delete', 'Reject', 'Void']) {
+      await userEvent.click(within(canvasElement).getByRole('button', { name }))
+      const dialog = await body.findByRole('alertdialog')
+      await waitFor(() =>
+        expect(within(dialog).getByRole('button', { name: 'Cancel' })).toHaveFocus(),
+      )
+      await userEvent.keyboard('{Enter}')
+      await waitFor(() => expect(body.queryByRole('alertdialog')).toBeNull())
+    }
+    await expect(document.body.dataset.confirmed).toBeUndefined()
+    await settle()
+  },
+}
+
 /** A positive action (approve): the success tone and a filled green button. */
 export const Positive: Story = {
   render: () => (

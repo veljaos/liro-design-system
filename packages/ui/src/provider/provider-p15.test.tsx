@@ -214,6 +214,7 @@ describe('messages', () => {
       'shell.skipToContent',
       'shell.switchCompany',
       'shell.switchCompanyCommand',
+      'shell.switchCompanyTitle',
       'shell.userMenu',
       'status.errorDescription',
       'status.errorTitle',

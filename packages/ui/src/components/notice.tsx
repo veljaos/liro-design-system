@@ -1,10 +1,11 @@
 import { CircleCheck, CircleX, Info, TriangleAlert, X } from 'lucide-react'
-import type { CSSProperties, ReactNode } from 'react'
+import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
 import { toast, Toaster as SonnerToaster } from 'sonner'
 import { buttonClassName, BUTTON_SHAPES } from '../primitives/button'
 import { cn } from '../primitives/cn'
 import { TEXT_DIRECTION } from '../primitives/classes'
 import { useLiro } from '../provider/liro-provider'
+import { usePhone } from './use-phone'
 import type { Family, IconComponent } from './intents'
 
 /*
@@ -202,28 +203,70 @@ export const notice = {
   dismiss: (id?: string | number) => toast.dismiss(id),
 }
 
+export interface ToasterProps {
+  /**
+   * 'phone': full width with 16px (md) margins at both sides; 'desktop': 440px at the bottom end.
+   * Default by the viewport (48em), as AppShell's.
+   */
+  layout?: 'desktop' | 'phone'
+}
+
 /**
  * Where toasts appear: place it once, inside LiroProvider (usually beside the application's
- * layout). Bottom right, bottom left in right-to-left; at most 4 visible.
+ * layout). Bottom right, bottom left in right-to-left; at most 4 visible. Toasts stand 16px above
+ * the AppShell's bottom action bar on phones (`--liro-shell-bottom`), never over its actions.
  */
-export function Toaster() {
+export function Toaster({ layout }: ToasterProps = {}) {
   const { direction, messages } = useLiro()
+  const viewportPhone = usePhone()
+  const phone = layout === undefined ? viewportPhone : layout === 'phone'
+  // On phones the toasts span the screen less two 16px margins (P4.9d: a 440px toast in a 390px
+  // frame was cut at the start side). Sonner sizes its list and each toast with --width, so the
+  // screen's width is measured by an empty fixed line across it (the viewport, or a frame that
+  // contains fixed elements, as a story's phone frame does).
+  const [span, setSpan] = useState<HTMLSpanElement | null>(null)
+  const [screenWidth, setScreenWidth] = useState<number | undefined>(undefined)
+  useEffect(() => {
+    if (span === null) return
+    const measure = () => {
+      setScreenWidth(span.offsetWidth)
+    }
+    measure()
+    const observer = new ResizeObserver(measure)
+    observer.observe(span)
+    return () => {
+      observer.disconnect()
+    }
+  }, [span])
+  const phoneWidth =
+    screenWidth === undefined ? 'calc(100vw - 32px)' : `${String(screenWidth - 32)}px`
   const style = {
-    '--width': '440px',
+    '--width': phone ? phoneWidth : '440px',
     zIndex: 'var(--liro-layer-toast)',
   } as CSSProperties
+  const bottom = 'calc(16px + var(--liro-shell-bottom, 0px))'
+  const offset = { top: '16px', bottom, left: '16px', right: '16px' }
   return (
-    <SonnerToaster
-      position={direction === 'rtl' ? 'bottom-left' : 'bottom-right'}
-      dir={direction}
-      visibleToasts={4}
-      expand
-      gap={16}
-      offset={16}
-      mobileOffset={16}
-      containerAriaLabel={messages['notice.region']}
-      toastOptions={{ unstyled: true }}
-      style={style}
-    />
+    <>
+      {phone && (
+        <span
+          ref={setSpan}
+          aria-hidden="true"
+          className="pointer-events-none fixed inset-x-0 bottom-0 h-0"
+        />
+      )}
+      <SonnerToaster
+        position={direction === 'rtl' ? 'bottom-left' : 'bottom-right'}
+        dir={direction}
+        visibleToasts={4}
+        expand
+        gap={16}
+        offset={offset}
+        mobileOffset={offset}
+        containerAriaLabel={messages['notice.region']}
+        toastOptions={{ unstyled: true }}
+        style={style}
+      />
+    </>
   )
 }

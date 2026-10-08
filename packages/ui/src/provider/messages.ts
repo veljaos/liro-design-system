@@ -249,6 +249,8 @@ export interface LiroMessages {
   'shell.noCompany': (query: string) => string
   /** The command palette's entry that opens the company switcher. */
   'shell.switchCompanyCommand': string
+  /** The title of the full-screen company sheet on phones. */
+  'shell.switchCompanyTitle': string
   /** NotificationsPanel and NotificationsPage: the title, the unread count (`text` formatted). */
   'notifications.title': string
   'notifications.unreadCount': (count: number, text: string) => string
