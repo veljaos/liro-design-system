@@ -318,3 +318,37 @@ export type {
 } from './templates/status-page'
 export { AuthShell } from './templates/auth-shell'
 export type { AuthShellProps } from './templates/auth-shell'
+// ── P5 group D1 ──
+export type { GridDetail } from './components/editable-grid-logic'
+export type { GridLookupCreate } from './components/editable-grid'
+export {
+  ADDABLE_LINE_TYPES,
+  editableCellCount,
+  LINE_TYPES,
+  spansRow,
+  taxCategoryText,
+} from './components/line-types'
+export type { AddableLineType, LineType, TaxCategory, UnitOfMeasure } from './components/line-types'
+export { LookupField } from './components/lookup-field'
+export type { LookupFieldProps } from './components/lookup-field'
+export {
+  choosableCount,
+  lookupKeyTarget,
+  lookupKindLabel,
+  lookupRowHeight,
+  lookupRows,
+  LOOKUP_ROW_HEIGHTS,
+} from './components/lookup-logic'
+export type {
+  LookupCreateKind,
+  LookupKind,
+  LookupOption,
+  LookupRow,
+  LookupRowsInput,
+} from './components/lookup-logic'
+export { LookupCreateDrawer } from './components/lookup-create-drawer'
+export type {
+  LookupCreateDrawerProps,
+  LookupDraft,
+  LookupDraftErrors,
+} from './components/lookup-create-drawer'

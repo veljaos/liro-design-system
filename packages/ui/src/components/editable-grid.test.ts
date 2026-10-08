@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest'
+import { createFormat } from '../provider/format'
+import { editableCellCount, taxCategoryText } from './line-types'
 import {
   gridKeyAction,
   orderMessages,
@@ -105,6 +107,108 @@ describe('gridKeyAction on phones ("next" on the on-screen keyboard)', () => {
       row: 0,
       column: 3,
     })
+  })
+})
+
+describe('gridKeyAction across line types (P5.18)', () => {
+  // A heading (1 cell), two lines (4 cells), a subtotal (0), a text line (1), a line (4).
+  const rowCells = [1, 4, 4, 0, 1, 4]
+  const typed = (row: number, column: number, extra: Partial<GridPosition> = {}) =>
+    at(row, column, { rowCount: 6, rowCells, ...extra })
+
+  it('Enter skips the subtotal and keeps the column through a one-cell row', () => {
+    // From the second line's third cell, down past the subtotal into the text line's one cell.
+    expect(gridKeyAction(key('Enter'), typed(2, 2))).toEqual({ type: 'focus', row: 4, column: 0 })
+    // From the text line, the preferred column comes back in the next full line.
+    expect(gridKeyAction(key('Enter'), typed(4, 0, { preferredColumn: 2 }))).toEqual({
+      type: 'focus',
+      row: 5,
+      column: 2,
+    })
+    // Up from the last line skips nothing it can stop at: the text line.
+    expect(gridKeyAction(key('Enter', { shift: true }), typed(5, 3))).toEqual({
+      type: 'focus',
+      row: 4,
+      column: 0,
+    })
+    // Up from the text line skips the subtotal into the line above it, in the preferred column.
+    expect(
+      gridKeyAction(key('Enter', { shift: true }), typed(4, 0, { preferredColumn: 3 })),
+    ).toEqual({ type: 'focus', row: 2, column: 3 })
+  })
+
+  it('Enter on the last row adds a line in the preferred column', () => {
+    expect(gridKeyAction(key('Enter'), typed(5, 1))).toEqual({ type: 'add', at: 6, column: 1 })
+  })
+
+  it('Ctrl+Enter inserts below a heading in the preferred column', () => {
+    expect(gridKeyAction(key('Enter', { mod: true }), typed(0, 0, { preferredColumn: 2 }))).toEqual(
+      { type: 'add', at: 1, column: 2 },
+    )
+  })
+
+  it('Ctrl+Delete moves the focus past a subtotal to the next row with cells', () => {
+    // Removing row 2: the subtotal (3) is skipped, the text line (4) becomes row 3.
+    expect(gridKeyAction(key('Delete', { mod: true }), typed(2, 3))).toEqual({
+      type: 'remove',
+      row: 2,
+      focusRow: 3,
+      column: 0,
+    })
+    // Removing the last row: back to the text line, row 4.
+    expect(gridKeyAction(key('Delete', { mod: true }), typed(5, 2))).toEqual({
+      type: 'remove',
+      row: 5,
+      focusRow: 4,
+      column: 0,
+    })
+  })
+
+  it('on phones "next" goes through a heading’s one cell and skips the subtotal', () => {
+    const phone = { phone: true }
+    expect(gridKeyAction(key('Enter'), typed(0, 0, phone))).toEqual({
+      type: 'focus',
+      row: 1,
+      column: 0,
+    })
+    expect(gridKeyAction(key('Enter'), typed(2, 3, phone))).toEqual({
+      type: 'focus',
+      row: 4,
+      column: 0,
+    })
+    expect(gridKeyAction(key('Enter', { shift: true }), typed(4, 0, phone))).toEqual({
+      type: 'focus',
+      row: 2,
+      column: 3,
+    })
+  })
+
+  it('a grid of subtotals only has nowhere to go', () => {
+    expect(
+      gridKeyAction(key('Enter', { shift: true }), at(1, 0, { rowCount: 2, rowCells: [0, 4] })),
+    ).toBeNull()
+  })
+})
+
+describe('line types (P5.18)', () => {
+  it('counts the editable cells of each type', () => {
+    expect(editableCellCount('line', 5, true)).toBe(5)
+    expect(editableCellCount('discount', 5, true)).toBe(5)
+    expect(editableCellCount('deduction', 5, false)).toBe(5)
+    expect(editableCellCount('text', 5, true)).toBe(1)
+    expect(editableCellCount('heading', 5, true)).toBe(1)
+    expect(editableCellCount('heading', 5, false)).toBe(0)
+    expect(editableCellCount('subtotal', 5, true)).toBe(0)
+  })
+
+  it('writes a tax category as its code with the rate through format.percent', () => {
+    const percent = (value: string) => `${value}%`
+    expect(taxCategoryText({ value: 'S20', code: 'S', rate: '20' }, percent)).toBe('S 20%')
+    expect(taxCategoryText({ value: 'AE', code: 'AE' }, percent)).toBe('AE')
+    const serbian = createFormat('sr-Latn-RS')
+    expect(
+      taxCategoryText({ value: 'S10', code: 'S', rate: '10' }, (value) => serbian.percent(value)),
+    ).toBe('S 10%')
   })
 })
 

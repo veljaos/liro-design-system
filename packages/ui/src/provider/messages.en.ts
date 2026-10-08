@@ -219,4 +219,23 @@ export const messagesEn: LiroMessages = {
   'status.suspendedCompanyDescription': (company) =>
     `Access for ${company} is suspended. Contact your administrator.`,
   'launchpad.show': (name) => `Show: ${name}`,
+  // ── P5 group D1 ──
+  'lookup.recent': 'Recent',
+  'lookup.create': (kind, query) => `Create ${kind} “${query}”`,
+  'lookup.oneOff': (query) => `Use “${query}” as a one-off line`,
+  'lookup.oneOffKind': 'One-off',
+  'lookup.searchAll': 'Search all…',
+  'lookup.createTitle': (kind) => `New ${kind}`,
+  'lookup.name': 'Name',
+  'lookup.unit': 'Unit of measure',
+  'lookup.price': 'Price',
+  'lookup.taxCategory': 'Tax category',
+  'lookup.createButton': 'Create',
+  'grid.textCell': 'Text',
+  'grid.headingCell': 'Section heading',
+  'grid.addText': 'Text line',
+  'grid.addHeading': 'Section heading',
+  'grid.addDiscount': 'Discount',
+  'grid.addDeduction': 'Deduction',
+  'grid.internal': 'Internal',
 }
