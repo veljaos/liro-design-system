@@ -26,6 +26,12 @@ export interface LiroFormat {
   /** value is YYYY-MM-DD. */
   date(value: string): string
   dateTime(isoInstant: string): string
+  /**
+   * The clock time of an instant as it is written ("2026-10-06T09:42:00+02:00" → "09:42"): the
+   * Core sends instants in the tenant's offset, so the time is the tenant's, beside a day the
+   * screen has already named (a notification under "Today"). Unreadable input is returned as is.
+   */
+  time(isoInstant: string): string
   /** value is YYYY-MM-DD: the weekday and the date in words, e.g. "Monday, 28 September 2026". */
   dateLong(value: string): string
   /** Accepts "010326", "1.3.2026", "01/03/2026" and the locale's own format. Returns YYYY-MM-DD or null. */
@@ -340,6 +346,13 @@ export function createFormat(locale: string, overrides: Partial<LiroFormat> = {}
     hour: '2-digit',
     minute: '2-digit',
   })
+  // A clock time as written in an instant (`time`): read in UTC, so it is never shifted.
+  const timeFormat = new Intl.DateTimeFormat(intl, {
+    ...DATE_BASE,
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'UTC',
+  })
   // The weekday and the date in words, as DateText's tooltip shows it.
   const longDateFormat = new Intl.DateTimeFormat(intl, {
     ...DATE_BASE,
@@ -393,6 +406,11 @@ export function createFormat(locale: string, overrides: Partial<LiroFormat> = {}
     dateTime(isoInstant) {
       const timestamp = Date.parse(isoInstant)
       return Number.isNaN(timestamp) ? isoInstant : dateTimeFormat.format(timestamp)
+    },
+    time(isoInstant) {
+      const clock = /T(\d{2}):(\d{2})/.exec(isoInstant)
+      if (clock === null) return isoInstant
+      return timeFormat.format(Date.UTC(2000, 0, 1, Number(clock[1]), Number(clock[2])))
     },
     dateLong(value) {
       const timestamp = utcTimestamp(value)

@@ -6,7 +6,15 @@ import { ExampleProvider, PhoneFrame, StoryProvider } from '../components/story-
 import { settle } from '../primitives/story-helpers'
 import { useLiro } from '../provider/liro-provider'
 import { AreaChart, type AreaChartProps } from './cartesian'
-import { CASH, CHANNELS, DAILY, PAYMENT_METHODS, REVENUE, dailyTotal } from './chart-story-data'
+import {
+  CASH,
+  CHANNELS,
+  DAILY,
+  dailyTotal,
+  PAYMENT_METHODS,
+  REVENUE,
+  showTable,
+} from './chart-story-data'
 import { ChartSeriesToggle } from './series-toggle'
 
 const meta = {
@@ -41,6 +49,12 @@ const meta = {
 export default meta
 
 type Story = StoryObj<typeof meta>
+
+/** "Show as table": the same values as a table; in right-to-left the columns follow the page. */
+export const AsTable: Story = {
+  name: 'Show as table',
+  play: showTable,
+}
 
 /** One series, a smooth line (monotone: never past the values) and a 10% wash. */
 export const Default: Story = {}

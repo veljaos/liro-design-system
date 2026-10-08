@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest'
 import { DocumentTotals } from '../components/document-totals'
 import { LifecycleBar, lifecycleState } from '../components/lifecycle-bar'
 import { SidePanels } from '../components/side-panels'
+import { ActivityList, RelatedDocuments } from '../components/panel-lists'
+import { ChangeableValue } from '../components/changeable-value'
 import { LiroProvider } from '../provider/liro-provider'
 import { DocumentPage } from './document-page'
 
@@ -126,5 +128,89 @@ describe('DocumentPage', () => {
     expect(narrow).toContain('aria-label="Panels"')
     expect(narrow).not.toContain('Show panels')
     expect(narrow).not.toContain('lg:grid-cols-')
+  })
+})
+
+describe('panel lists (P4.9)', () => {
+  const entries = ['c4', 'c3', 'c2', 'c1'].map((key) => ({
+    key,
+    author: `Author ${key}`,
+    time: '01.10.2026.',
+    text: `Text ${key}`,
+  }))
+
+  it('shows the latest two entries and "Show all" with the count through format', () => {
+    const html = render(<ActivityList label="Comments" items={entries} />)
+    expect(html).toContain('Author c4')
+    expect(html).toContain('Author c3')
+    expect(html).not.toContain('Author c2')
+    expect(html).toContain('Show all 4')
+    expect(html).toContain('aria-expanded="false"')
+  })
+
+  it('shows every entry and no button when there are no more than the limit', () => {
+    const html = render(<ActivityList label="History" items={entries} limit={4} />)
+    expect(html).toContain('Author c1')
+    expect(html).not.toContain('Show all')
+  })
+
+  it('makes every related document a link with its type, number and status', () => {
+    const html = render(
+      <RelatedDocuments
+        label="Related documents"
+        items={[
+          {
+            key: 'o',
+            type: 'Order',
+            number: 'N-2026-0157',
+            href: '#orders/N-2026-0157',
+            status: <span>Completed</span>,
+          },
+        ]}
+      />,
+    )
+    expect(html).toMatch(/<a href="#orders\/N-2026-0157"[^>]*>.*Order.*N-2026-0157.*<\/a>/)
+    expect(html).toContain('Completed')
+  })
+
+  it('leaves no space of its own at a panel body’s edges', () => {
+    const html = render(
+      <SidePanels
+        open={['p']}
+        onOpenChange={() => undefined}
+        panels={[
+          { key: 'p', title: 'Comments', content: <ActivityList label="C" items={entries} /> },
+        ]}
+      />,
+    )
+    expect(html).toContain('[&amp;_[data-slot=panel-row]:first-child]:pt-0')
+    expect(html).toContain('pb-3')
+  })
+})
+
+describe('ChangeableValue (P4.9)', () => {
+  it('shows the value and a pencil named after it, not the field', () => {
+    const html = render(
+      <ChangeableValue
+        label="Due date"
+        value="21.10.2026."
+        field={<input aria-label="Due date" />}
+      />,
+    )
+    expect(html).toContain('21.10.2026.')
+    expect(html).toContain('aria-label="Change Due date"')
+    expect(html).not.toContain('<input')
+  })
+
+  it('shows the field when editing', () => {
+    const html = render(
+      <ChangeableValue
+        label="Due date"
+        value="21.10.2026."
+        editing
+        field={<input aria-label="Due date" />}
+      />,
+    )
+    expect(html).toContain('<input aria-label="Due date"/>')
   })
 })

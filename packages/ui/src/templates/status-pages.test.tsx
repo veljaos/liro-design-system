@@ -67,6 +67,24 @@ describe('StatusPage', () => {
     expect(html).toMatch(/<button[^>]*>.*Retry/)
     expect(html).toContain('bg-status-warning-solid')
   })
+  it('names the suspended subject: the user’s account by default, or a company', () => {
+    const account = render(<StatusPage kind="suspended" brand={BRAND} />)
+    expect(account).toContain('Account suspended')
+    expect(account).toContain('Your account is suspended.')
+    const company = render(
+      <StatusPage
+        kind="suspended"
+        brand={BRAND}
+        subject={{ kind: 'company', name: 'Kvadrat Gradnja d.o.o.' }}
+      />,
+    )
+    expect(company).toContain('Company suspended')
+    expect(company).toContain('Access for Kvadrat Gradnja d.o.o. is suspended.')
+    // Another kind ignores the subject.
+    expect(
+      render(<StatusPage kind="notFound" brand={BRAND} subject={{ kind: 'company', name: 'X' }} />),
+    ).toContain('Page not found')
+  })
   it('has no buttons without actions', () => {
     expect(render(<StatusPage kind="maintenance" brand={BRAND} />)).not.toContain('<button')
   })

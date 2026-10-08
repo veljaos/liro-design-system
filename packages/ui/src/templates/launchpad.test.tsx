@@ -4,10 +4,13 @@ import { describe, expect, it } from 'vitest'
 import { LiroProvider } from '../provider/liro-provider'
 import { Launchpad } from './launchpad'
 import {
+  dragTargetIndex,
   dropModule,
   launchpadArrowTarget,
   launchpadDigitTarget,
   moveModule,
+  moveModuleTo,
+  slotShift,
 } from './launchpad-logic'
 
 describe('launchpadArrowTarget', () => {
@@ -59,6 +62,44 @@ describe('moveModule and dropModule', () => {
       'hr',
     ])
     expect(dropModule(ids, 'sales', 'sales')).toEqual(ids)
+  })
+})
+
+describe('live dragging', () => {
+  // Three columns of 200 × 132 cards, 16px apart; in right-to-left the first card stands at the right.
+  const ltr = [0, 1, 2, 3, 4].map((index) => ({
+    x: (index % 3) * 216,
+    y: Math.floor(index / 3) * 148,
+    width: 200,
+    height: 132,
+  }))
+  const rtl = ltr.map((slot) => ({ ...slot, x: 432 - slot.x }))
+  it('takes the slot nearest to the centre of the dragged card', () => {
+    expect(dragTargetIndex(ltr, { x: 100, y: 66 })).toBe(0)
+    expect(dragTargetIndex(ltr, { x: 330, y: 70 })).toBe(1)
+    expect(dragTargetIndex(ltr, { x: 300, y: 220 })).toBe(4)
+    // Far outside the grid: still the nearest slot.
+    expect(dragTargetIndex(ltr, { x: 2000, y: -500 })).toBe(2)
+  })
+  it('measures on the laid-out slots, so right-to-left needs no mirroring (B.7)', () => {
+    // Dragging the first card (at the right in rtl) 216px to the left takes the second place.
+    const first = rtl[0]
+    if (first === undefined) throw new Error('no slot')
+    expect(dragTargetIndex(rtl, { x: first.x + 100 - 216, y: 66 })).toBe(1)
+    expect(dragTargetIndex(rtl, { x: first.x + 100 + 216, y: 66 })).toBe(0)
+  })
+  it('shows the order with the dragged card at its target, never past an end', () => {
+    const ids = ['a', 'b', 'c', 'd']
+    expect(moveModuleTo(ids, 'a', 2)).toEqual(['b', 'c', 'a', 'd'])
+    expect(moveModuleTo(ids, 'd', 0)).toEqual(['d', 'a', 'b', 'c'])
+    expect(moveModuleTo(ids, 'b', 9)).toEqual(['a', 'c', 'd', 'b'])
+    expect(moveModuleTo(ids, 'x', 1)).toEqual(ids)
+  })
+  it('moves the other cards by the distance between their old and new slots', () => {
+    expect(slotShift(ltr, 1, 0)).toEqual({ x: -216, y: 0 })
+    expect(slotShift(ltr, 3, 2)).toEqual({ x: 432, y: -148 })
+    expect(slotShift(rtl, 1, 0)).toEqual({ x: 216, y: 0 })
+    expect(slotShift(ltr, 1, 9)).toEqual({ x: 0, y: 0 })
   })
 })
 

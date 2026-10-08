@@ -52,7 +52,7 @@ export function toggleValue(values: readonly string[], value: string): string[] 
  * remove button; read-only shows the pills without it.
  */
 export function MultiSelectField(props: MultiSelectFieldProps) {
-  const { messages, locale } = useLiro()
+  const { messages, locale, format } = useLiro()
   const listId = `${useId()}-list`
   const inputRef = useRef<HTMLInputElement>(null)
   const [inner, setInner] = useState<readonly string[]>(props.defaultValue ?? [])
@@ -72,7 +72,7 @@ export function MultiSelectField(props: MultiSelectFieldProps) {
       ? null
       : chosen.length === 1
         ? (chosen[0]?.label ?? null)
-        : messages['field.selectedCount'](chosen.length)
+        : messages['field.selectedCount'](chosen.length, format.number(String(chosen.length)))
   const visible = open && (shown.length > 0 || showEmpty)
   const update = (next: string[]) => {
     setInner(next)

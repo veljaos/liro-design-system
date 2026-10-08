@@ -139,7 +139,7 @@ describe('describePeriod', () => {
     const format = { ...en, businessYear: (year: number) => `FY${String(year + 1)}` }
     const messages = {
       ...messagesEn,
-      'period.quarter': (q: number, y: string) => `K${String(q)} ${y}`,
+      'period.quarter': (_q: number, text: string, y: string) => `K${text} ${y}`,
     }
     expect(describePeriod({ start: '2025-07-01', end: '2025-09-30' }, july, format, messages)).toBe(
       'K1 FY2026',

@@ -61,7 +61,7 @@ export function asksFirst(action: BulkAction): boolean {
  * and actions that apply to all of them at once.
  */
 export function BulkActionBar(props: BulkActionBarProps) {
-  const { messages } = useLiro()
+  const { messages, format } = useLiro()
   const [asking, setAsking] = useState<BulkAction | null>(null)
   if (props.count < 1) return null
   const loading = props.loading === true
@@ -83,7 +83,7 @@ export function BulkActionBar(props: BulkActionBarProps) {
           aria-live="polite"
           className={cn('text-sm font-semibold text-primary', TEXT_DIRECTION)}
         >
-          {messages['bulk.selected'](props.count)}
+          {messages['bulk.selected'](props.count, format.number(String(props.count)))}
         </span>
         {props.total !== undefined &&
           props.total > props.count &&
@@ -94,7 +94,7 @@ export function BulkActionBar(props: BulkActionBarProps) {
                 family: 'neutral',
                 icon: ListChecks,
                 emphasis: 'menu',
-                label: messages['bulk.selectAll'](props.total),
+                label: messages['bulk.selectAll'](props.total, format.number(String(props.total))),
               }}
               onClick={props.onSelectAll}
             />
@@ -132,7 +132,7 @@ export function BulkActionBar(props: BulkActionBarProps) {
           {...(asking.intent === undefined
             ? { family: asking.family, actionIcon: asking.icon }
             : { intent: asking.intent })}
-          title={messages['bulk.confirmTitle'](props.count)}
+          title={messages['bulk.confirmTitle'](props.count, format.number(String(props.count)))}
           confirmLabel={asking.label}
           onConfirm={() => asking.onClick?.()}
         />

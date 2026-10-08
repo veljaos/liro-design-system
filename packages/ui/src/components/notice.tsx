@@ -18,6 +18,10 @@ import type { Family, IconComponent } from './intents'
  *   (CircleX). Loading: the primary colour, a loader, no close button.
  * - Closes by itself after 3500ms (success), 4000ms (info), 6000ms (warning); an error and a
  *   loading toast stay until closed or updated (Appendix B.8: success disappears, errors wait).
+ * - `action` (P4.9, the owner's review: "Approved. Undo"): one small neutral button before the
+ *   close button, from the application (Undo, only when the Core allows it); pressing it runs the
+ *   action and closes the toast. A toast with an action stays at least 8000ms, so there is time to
+ *   reach it (sonner also pauses while the pointer or the focus is on it).
  *
  * The rest is Mantine 9.6.2 Notification and @mantine/notifications: the raised overlay surface
  * with a 1px border.default border and shadow lg; padding 10px, 22px at the start; the icon in a
@@ -55,9 +59,19 @@ const CIRCLE: Record<Family, string> = {
   neutral: 'bg-family-neutral-solid',
 }
 
-/** How long a kind stays; exported for its test. */
-export function noticeDuration(kind: NoticeKind): number {
-  return KINDS[kind].duration
+/** A toast with an action stays at least this long (milliseconds). */
+export const NOTICE_ACTION_DURATION = 8000
+
+/** How long a kind stays, with or without an action; exported for its test. */
+export function noticeDuration(kind: NoticeKind, withAction = false): number {
+  const duration = KINDS[kind].duration
+  return withAction ? Math.max(duration, NOTICE_ACTION_DURATION) : duration
+}
+
+/** The one action of a toast (Undo), from the application. */
+export interface NoticeAction {
+  label: string
+  onClick: () => void
 }
 
 interface NoticeViewProps {
@@ -65,10 +79,11 @@ interface NoticeViewProps {
   kind: NoticeKind
   message: ReactNode
   title?: ReactNode
+  action?: NoticeAction
 }
 
 /** One toast (Mantine Notification with an icon). Exported for the stories, not from the package. */
-export function NoticeView({ id, kind, message, title }: NoticeViewProps) {
+export function NoticeView({ id, kind, message, title, action }: NoticeViewProps) {
   const { messages } = useLiro()
   const look = KINDS[kind]
   const Icon = look.icon
@@ -107,6 +122,21 @@ export function NoticeView({ id, kind, message, title }: NoticeViewProps) {
           {message}
         </p>
       </div>
+      {action !== undefined && (
+        <button
+          type="button"
+          className={cn(
+            buttonClassName({ family: 'neutral', emphasis: 'secondary', shape: 'text' }),
+            'me-1 min-h-control-sm shrink-0 px-3 text-xs',
+          )}
+          onClick={() => {
+            action.onClick()
+            toast.dismiss(id)
+          }}
+        >
+          <span className={TEXT_DIRECTION}>{action.label}</span>
+        </button>
+      )}
       {kind !== 'loading' && (
         <button
           type="button"
@@ -129,6 +159,8 @@ export interface NoticeOptions {
   title?: ReactNode
   /** The toast to replace; by default a new one. */
   id?: string | number
+  /** One action before the close button (Undo), only when the application can carry it out. */
+  action?: NoticeAction
 }
 
 function show(kind: NoticeKind, message: ReactNode, options: NoticeOptions = {}) {
@@ -139,10 +171,11 @@ function show(kind: NoticeKind, message: ReactNode, options: NoticeOptions = {})
         kind={kind}
         message={message}
         {...(options.title === undefined ? {} : { title: options.title })}
+        {...(options.action === undefined ? {} : { action: options.action })}
       />
     ),
     {
-      duration: KINDS[kind].duration,
+      duration: noticeDuration(kind, options.action !== undefined),
       ...(options.id === undefined ? {} : { id: options.id }),
     },
   )

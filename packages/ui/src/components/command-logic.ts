@@ -4,7 +4,7 @@
  */
 
 /** Lower case in the page's locale, without accents: "Čačak" and "cacak" match. */
-function fold(text: string, locale: string): string {
+export function fold(text: string, locale: string): string {
   return text
     .toLocaleLowerCase(locale)
     .normalize('NFD')
@@ -12,7 +12,7 @@ function fold(text: string, locale: string): string {
 }
 
 /** The words of a query. */
-function words(query: string): string[] {
+export function words(query: string): string[] {
   return query
     .trim()
     .split(/\s+/u)

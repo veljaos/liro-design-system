@@ -2,7 +2,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 import { rowKeyAction } from '../components/data-table-logic'
 import { LiroProvider } from '../provider/liro-provider'
-import { ListPage } from './list-page'
+import { ListPage, splitViews } from './list-page'
 import { PageHeader } from './page-header'
 import { WorklistPage } from './worklist-page'
 
@@ -51,9 +51,57 @@ describe('ListPage', () => {
   })
 })
 
+describe('saved views (P4.9)', () => {
+  const VIEWS = ['all', 'unpaid', 'overdue', 'mine', 'drafts', 'sent', 'archived'].map((id) => ({
+    id,
+    label: id,
+  }))
+
+  it('shows the first views as tabs and the rest under "More", never a menu of one', () => {
+    expect(splitViews(VIEWS, 5).tabs.map((view) => view.id)).toEqual([
+      'all',
+      'unpaid',
+      'overdue',
+      'mine',
+      'drafts',
+    ])
+    expect(splitViews(VIEWS, 5).more).toHaveLength(2)
+    expect(splitViews(VIEWS.slice(0, 6), 5).more).toHaveLength(0)
+  })
+
+  it('desktop: a "More" button that names the current view when it is under it', () => {
+    const html = render(
+      <ListPage layout="desktop" title="Invoices" views={VIEWS} view="archived" visibleViews={3}>
+        <table />
+      </ListPage>,
+    )
+    expect(html).toMatch(/aria-pressed="true"[^>]*>.*archived/)
+    expect(html).not.toContain('>More<')
+  })
+
+  it('phone: one select with the current view and its count through format', () => {
+    const html = render(
+      <ListPage
+        layout="phone"
+        title="Invoices"
+        views={[
+          { id: 'all', label: 'All', count: 1284 },
+          { id: 'mine', label: 'Mine' },
+        ]}
+        view="all"
+      >
+        <table />
+      </ListPage>,
+    )
+    expect(html).toContain('View: All')
+    expect(html).toContain('1.284')
+    expect(html).not.toContain('aria-pressed')
+  })
+})
+
 const ITEMS = [
   { id: 'a', title: 'EPS Snabdevanje d.o.o.', subtitle: 'UF-2026-1187', figure: '48.216,90' },
-  { id: 'b', title: 'Telekom Srbija a.d.', actions: <button type="button">Approve</button> },
+  { id: 'b', title: 'Telekom Srbija a.d.' },
 ]
 
 describe('WorklistPage', () => {
@@ -71,7 +119,6 @@ describe('WorklistPage', () => {
     expect(html).toContain('grid-cols-[380px_minmax(0,1fr)]')
     expect(html).toContain('DETAIL')
     expect(html).toContain('aria-current="true"')
-    expect(html).toContain('Approve')
   })
   it('stacked: the list until an item is chosen, then the detail with Back and Next', () => {
     const list = render(
@@ -95,23 +142,46 @@ describe('WorklistPage', () => {
     expect(detail).toContain('Back to list')
     expect(detail).toContain('Next item')
   })
-  it('marks the chosen row as a selected surface, and keeps its inline actions', () => {
-    const items = ITEMS.map((item) => ({
-      ...item,
-      actions: <button type="button">Approve {item.id}</button>,
-    }))
+  it('marks the chosen row as a selected surface', () => {
     const split = render(
       <WorklistPage
         layout="split"
         title="T"
         label="T"
-        items={items}
+        items={ITEMS}
         selected="a"
         detail={<p>D</p>}
       />,
     )
     expect(split).toContain('data-liro-surface="selected"')
-    expect(split).toContain('Approve a')
+  })
+  it('checkboxes and the bulk bar: the bar only while a row is checked', () => {
+    const none = render(
+      <WorklistPage
+        layout="split"
+        title="T"
+        label="T"
+        items={ITEMS}
+        checked={[]}
+        onCheckedChange={() => undefined}
+        bulkBar={<p>BULK</p>}
+      />,
+    )
+    expect(none).toContain('aria-label="Select EPS Snabdevanje d.o.o."')
+    expect(none).not.toContain('BULK')
+    const one = render(
+      <WorklistPage
+        layout="split"
+        title="T"
+        label="T"
+        items={[{ id: 'a', title: 'EPS Snabdevanje d.o.o.', label: 'UF-2026-1187' }]}
+        checked={['a']}
+        onCheckedChange={() => undefined}
+        bulkBar={<p>BULK</p>}
+      />,
+    )
+    expect(one).toContain('BULK')
+    expect(one).toContain('aria-label="Select UF-2026-1187"')
   })
   it('shows the empty slot when there are no items', () => {
     const html = render(

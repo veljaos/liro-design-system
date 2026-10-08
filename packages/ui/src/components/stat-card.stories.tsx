@@ -20,7 +20,7 @@ const meta = {
   },
   args: {
     label: 'Revenue, September',
-    value: <MoneyText value="5684200" currency="RSD" decimals={0} />,
+    value: <MoneyText value="5684200.00" currency="RSD" />,
     change: { text: percentText('16.7', 'always'), direction: 'up', sentiment: 'good' },
     comparison: 'vs September 2025',
     trend: ['4812.4', '5230.9', '4977.1', '3906.5', '4421.8', '5684.2'],
@@ -47,7 +47,7 @@ export const BadChange: Story = {
   name: 'Bad change',
   args: {
     label: 'Overdue receivables',
-    value: <MoneyText value="421740" currency="RSD" decimals={0} />,
+    value: <MoneyText value="421740.00" currency="RSD" />,
     change: { text: percentText('8.2', 'always'), direction: 'up', sentiment: 'bad' },
     comparison: 'vs last week',
   },

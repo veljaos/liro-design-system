@@ -145,11 +145,12 @@ export interface ExampleLine {
   quantity: string
   unit: string
   price: string
-  vat: '20%' | '10%' | 'Exempt'
+  /** The tax category and its rate, as the e-invoice system names them ("S 20%", "E"). */
+  vat: 'S 20%' | 'S 10%' | 'E'
   amount: string
 }
 
-/** The lines of F-2026-0412: three VAT treatments (20%, 10% and an exempt deposit). */
+/** The lines of F-2026-0412: three tax categories (S 20%, S 10% and E, an exempt deposit). */
 export const LINES: ExampleLine[] = [
   {
     id: '1',
@@ -157,7 +158,7 @@ export const LINES: ExampleLine[] = [
     quantity: '120',
     unit: 'bag',
     price: '685.00',
-    vat: '20%',
+    vat: 'S 20%',
     amount: '82200.00',
   },
   {
@@ -166,7 +167,7 @@ export const LINES: ExampleLine[] = [
     quantity: '18',
     unit: 'pc',
     price: '2940.00',
-    vat: '20%',
+    vat: 'S 20%',
     amount: '52920.00',
   },
   {
@@ -175,7 +176,7 @@ export const LINES: ExampleLine[] = [
     quantity: '1',
     unit: 'trip',
     price: '9800.00',
-    vat: '20%',
+    vat: 'S 20%',
     amount: '9800.00',
   },
   {
@@ -184,7 +185,7 @@ export const LINES: ExampleLine[] = [
     quantity: '2',
     unit: 'set',
     price: '4250.00',
-    vat: '10%',
+    vat: 'S 10%',
     amount: '8500.00',
   },
   {
@@ -193,7 +194,7 @@ export const LINES: ExampleLine[] = [
     quantity: '6',
     unit: 'pc',
     price: '450.00',
-    vat: 'Exempt',
+    vat: 'E',
     amount: '2700.00',
   },
 ]
@@ -368,6 +369,126 @@ export const EMPLOYEE = {
   email: 'jelena.markovic@kvadratgradnja.rs',
   manager: 'Dragan Ilić',
   gross: '145000.00',
+  /** Net pay for September 2026, as the payroll computed it. */
+  net: '98412.37',
   account: '160-0000012345678-21',
+  contract: 'Fixed term',
+  hours: '40 hours a week',
   leaveLeft: '14',
+  leaveTaken: '6',
+  /** The next approved leave. */
+  nextLeave: { from: '2026-12-28', to: '2026-12-31' },
 } as const
+
+/** One line of a supplier invoice: the tax base and the VAT rate, as SEF delivers them. */
+export interface ApprovalLine {
+  item: string
+  quantity: string
+  unit: string
+  vat: 'S 20%' | 'S 10%'
+  /** Without VAT. */
+  amount: string
+}
+
+/** What the approval detail shows beyond the row: the lines, the PDF and the goods receipt. */
+export interface ApprovalDetailData {
+  lines: ApprovalLine[]
+  attachment: string
+  purchaseOrder?: string
+  /** The goods receipt for goods (none for services). */
+  goods?: { state: 'Complete' | 'Partial'; date: string }
+}
+
+/**
+ * The lines of each invoice to approve. Bases and VAT add up to the totals above: u1 40.180,75 +
+ * 8.036,15; u2 10.727,83 + 2.145,57; u3 5.927,27 + 592,73 (10%); u4 322.000,00 + 64.400,00; u5
+ * 22.788,00 + 4.557,60.
+ */
+export const APPROVAL_DETAILS: Record<string, ApprovalDetailData> = {
+  u1: {
+    attachment: 'UF-2026-1187.pdf',
+    lines: [
+      {
+        item: 'Electricity, higher tariff, September',
+        quantity: '3120',
+        unit: 'kWh',
+        vat: 'S 20%',
+        amount: '30732.00',
+      },
+      {
+        item: 'Electricity, lower tariff, September',
+        quantity: '1450',
+        unit: 'kWh',
+        vat: 'S 20%',
+        amount: '6090.00',
+      },
+      { item: 'Network fee', quantity: '1', unit: 'month', vat: 'S 20%', amount: '3358.75' },
+    ],
+  },
+  u2: {
+    attachment: 'UF-2026-1186.pdf',
+    lines: [
+      {
+        item: 'Mobile subscriptions, 12 lines',
+        quantity: '12',
+        unit: 'line',
+        vat: 'S 20%',
+        amount: '8280.00',
+      },
+      {
+        item: 'Business internet 500 Mbit/s',
+        quantity: '1',
+        unit: 'month',
+        vat: 'S 20%',
+        amount: '2447.83',
+      },
+    ],
+  },
+  u3: {
+    attachment: 'UF-2026-1183.pdf',
+    lines: [
+      {
+        item: 'Waste collection, September',
+        quantity: '1',
+        unit: 'month',
+        vat: 'S 10%',
+        amount: '5927.27',
+      },
+    ],
+  },
+  u4: {
+    attachment: 'UF-2026-1179.pdf',
+    purchaseOrder: 'N-2026-0151',
+    goods: { state: 'Partial', date: '2026-09-26' },
+    lines: [
+      {
+        item: 'Cement CEM II 42,5 R, 25 kg',
+        quantity: '800',
+        unit: 'bag',
+        vat: 'S 20%',
+        amount: '276000.00',
+      },
+      {
+        item: 'Transport Beočin – Novi Sad',
+        quantity: '4',
+        unit: 'trip',
+        vat: 'S 20%',
+        amount: '46000.00',
+      },
+    ],
+  },
+  u5: {
+    attachment: 'UF-2026-1176.pdf',
+    purchaseOrder: 'N-2026-0157',
+    goods: { state: 'Complete', date: '2026-09-26' },
+    lines: [{ item: 'Eurodiesel', quantity: '120', unit: 'l', vat: 'S 20%', amount: '22788.00' }],
+  },
+}
+
+/** The reasons the Core offers for rejecting a supplier invoice on SEF. */
+export const REJECT_REASONS = [
+  { value: 'price', label: 'Price differs from the order' },
+  { value: 'quantity', label: 'Quantity differs from the delivery' },
+  { value: 'duplicate', label: 'Invoice already received' },
+  { value: 'other', label: 'Other' },
+]

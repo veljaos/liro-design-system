@@ -31,7 +31,7 @@ describe('KeyFigures', () => {
       />,
     )
     expect(html).toMatch(/<dt[^>]*text-xs text-secondary[^>]*>Amount due<\/dt>/)
-    expect(html).toMatch(/<dd[^>]*text-xl font-semibold tabular-nums text-primary/)
+    expect(html).toMatch(/<dd[^>]*font-semibold tabular-nums text-xl text-primary/)
     expect(html).toMatch(/<dd[^>]*text-status-danger-fg[^>]*>3 days<\/dd>/)
     expect(html).toContain('flex flex-wrap gap-x-8')
     expect(render(<KeyFigures layout="phone" items={[]} />)).toContain('grid grid-cols-2')

@@ -397,6 +397,42 @@ export const LongTextPhone: Story = {
   },
 }
 
+/**
+ * Phones, inside a card (`inCard`): no cards inside the card (P4.9) — one flat list, the rows
+ * divided by a line, 12px by 16px each; the selected row neutral with its start bar; totals and
+ * paging close the card.
+ */
+export const CardsInCard: Story = {
+  name: 'Phone: in a card, a flat list',
+  render: () => {
+    function InCard() {
+      const [selection, setSelection] = useState<string[]>(['2'])
+      return (
+        <div className="box-border w-[360px] max-w-full overflow-hidden rounded-lg border border-solid border-default bg-surface-raised">
+          <DataTable
+            {...BASE}
+            layout="cards"
+            inCard
+            rows={INVOICES}
+            mobile={MOBILE}
+            rowActions={ROW_ACTIONS}
+            selection={selection}
+            onSelectionChange={setSelection}
+            onRowClick={noop}
+            totals={{ amount: <MoneyText value="17375.35" currency="EUR" /> }}
+            totalsLabel="Total"
+            count={1284}
+            hasNext
+            onNext={noop}
+            onPrevious={noop}
+          />
+        </div>
+      )
+    }
+    return <InCard />
+  },
+}
+
 const THOUSAND: Invoice[] = Array.from({ length: 1000 }, (_, index) => {
   const base = INVOICES[index % INVOICES.length] ?? FIRST
   return { ...base, id: String(index + 1), number: `F-2026-${String(1000 + index)}` }

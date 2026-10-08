@@ -1,5 +1,13 @@
 import { ArrowLeft, ArrowRight, Eye, EyeOff, Lock } from 'lucide-react'
-import { useEffect, useId, useRef, useState, type DragEvent, type KeyboardEvent } from 'react'
+import {
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type CSSProperties,
+  type KeyboardEvent,
+  type PointerEvent,
+} from 'react'
 import type { IconComponent } from '../components/intents'
 import { ButtonPrimitive } from '../primitives/button'
 import { FOCUS_RING, TEXT_DIRECTION } from '../primitives/classes'
@@ -7,11 +15,14 @@ import { cn } from '../primitives/cn'
 import { Skeleton } from '../primitives/skeleton'
 import { useLiro } from '../provider/liro-provider'
 import {
-  dropModule,
+  dragTargetIndex,
   isTyping,
   launchpadArrowTarget,
   launchpadDigitTarget,
   moveModule,
+  moveModuleTo,
+  slotShift,
+  type CardSlot,
 } from './launchpad-logic'
 
 /*
@@ -34,7 +45,13 @@ import {
  *   between cards (left and right in reading order, up and down by a row), Home and End.
  * - Editing (`editing`, switched on by the application): each card shows three 28px buttons —
  *   move earlier, move later, hide — and is not a link; dragging also reorders, the buttons always
- *   remain (WCAG 2.5.7). Hidden modules are listed under the grid ("Hidden (2)") with "Show".
+ *   remain (WCAG 2.5.7). Dragging is live (P4.9, owner): pointer events, not the browser's drag
+ *   and drop, so there is no grey ghost and touch works (a 250ms press first, so a swipe still
+ *   scrolls); the dragged card lifts (shadow lg) and follows the pointer, the others slide to
+ *   their new places in the slow duration (0ms under reduced motion, the token), and a dashed
+ *   border.strong placeholder on surface.sunken shows where it lands. The target is the slot
+ *   nearest to the card's centre, measured on the laid-out grid, so it holds in right-to-left
+ *   (B.7). Escape or a cancelled pointer puts everything back. Hidden modules are listed under the grid ("Hidden (2)") with "Show".
  *   The application's page header holds "Customize" and "Done", which switch the mode. Every
  *   change is reported through a callback.
  * - Loading: skeleton cards, 132px high.
@@ -80,6 +97,18 @@ export interface LaunchpadProps {
   onHide?: (id: string) => void
   onShow?: (id: string) => void
   className?: string
+}
+
+/** A drag in progress: the card, its place, the place it would take and how far it moved. */
+interface DragState {
+  id: string
+  from: number
+  target: number
+  dx: number
+  dy: number
+  slots: CardSlot[]
+  /** The list's width, to place the placeholder from the inline start. */
+  width: number
 }
 
 const CARD =
@@ -144,9 +173,9 @@ function columnsOf(cards: readonly HTMLElement[]): number {
 
 /** The home screen: the modules as cards; 1–9 and the arrows open and move. */
 export function Launchpad(props: LaunchpadProps) {
-  const { messages, direction, linkComponent: Link } = useLiro()
+  const { messages, direction, format, linkComponent: Link } = useLiro()
   const list = useRef<HTMLUListElement>(null)
-  const [dragging, setDragging] = useState<string | null>(null)
+  const [drag, setDrag] = useState<DragState | null>(null)
   const hiddenHeading = useId()
   const editing = props.editing === true
   const grid =
@@ -197,28 +226,108 @@ export function Launchpad(props: LaunchpadProps) {
     if (next.join('\u0000') !== ids.join('\u0000')) props.onReorder?.(next)
   }
 
-  const dragProps = (module: LaunchpadModule) =>
-    editing
-      ? {
-          draggable: true,
-          onDragStart: (event: DragEvent) => {
-            event.dataTransfer.effectAllowed = 'move'
-            event.dataTransfer.setData('text/plain', module.id)
-            setDragging(module.id)
-          },
-          onDragOver: (event: DragEvent) => {
-            if (dragging !== null) event.preventDefault()
-          },
-          onDrop: (event: DragEvent) => {
-            event.preventDefault()
-            if (dragging !== null) reorder(dropModule(ids, dragging, module.id))
-            setDragging(null)
-          },
-          onDragEnd: () => {
-            setDragging(null)
-          },
+  // Live dragging on pointer events (no browser ghost; touch after a short press).
+  const startDrag = (event: PointerEvent<HTMLElement>, module: LaunchpadModule, from: number) => {
+    if (!editing || event.button !== 0) return
+    if (event.target instanceof Element && event.target.closest('button') !== null) return
+    const listElement = list.current
+    if (listElement === null) return
+    const touch = event.pointerType === 'touch'
+    const startX = event.clientX
+    const startY = event.clientY
+    let active = false
+    let slots: CardSlot[] = []
+    let current: DragState | null = null
+    const relative = (x: number, y: number) => {
+      const box = listElement.getBoundingClientRect()
+      return { x: x - box.left, y: y - box.top }
+    }
+    const start = relative(startX, startY)
+    const activate = () => {
+      const box = listElement.getBoundingClientRect()
+      slots = cards().map((card) => {
+        const rect = card.getBoundingClientRect()
+        return {
+          x: rect.left - box.left,
+          y: rect.top - box.top,
+          width: rect.width,
+          height: rect.height,
         }
-      : {}
+      })
+      active = true
+      current = { id: module.id, from, target: from, dx: 0, dy: 0, slots, width: box.width }
+      setDrag(current)
+    }
+    const timer = touch ? window.setTimeout(activate, 250) : undefined
+    const finish = (commit: boolean) => {
+      window.clearTimeout(timer)
+      window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('pointerup', onUp)
+      window.removeEventListener('pointercancel', onCancel)
+      window.removeEventListener('keydown', onKey, true)
+      window.removeEventListener('touchmove', onTouchMove)
+      if (active && commit && current !== null) {
+        reorder(moveModuleTo(ids, current.id, current.target))
+      }
+      setDrag(null)
+    }
+    const onMove = (move: globalThis.PointerEvent) => {
+      const distance = Math.hypot(move.clientX - startX, move.clientY - startY)
+      if (!active) {
+        // A touch that moves before the press completes is a swipe: the page scrolls.
+        if (touch) {
+          if (distance > 8) finish(false)
+          return
+        }
+        if (distance < 4) return
+        activate()
+      }
+      const point = relative(move.clientX, move.clientY)
+      const dx = point.x - start.x
+      const dy = point.y - start.y
+      const own = slots[from]
+      if (own === undefined) return
+      const target = dragTargetIndex(slots, {
+        x: own.x + own.width / 2 + dx,
+        y: own.y + own.height / 2 + dy,
+      })
+      current = { id: module.id, from, target, dx, dy, slots, width: current?.width ?? 0 }
+      setDrag(current)
+    }
+    const onUp = () => {
+      finish(true)
+    }
+    const onCancel = () => {
+      finish(false)
+    }
+    const onKey = (key: globalThis.KeyboardEvent) => {
+      if (key.key !== 'Escape' || !active) return
+      key.preventDefault()
+      key.stopPropagation()
+      finish(false)
+    }
+    // While a touch drags, the page must not scroll under it.
+    const onTouchMove = (touchMove: TouchEvent) => {
+      if (active) touchMove.preventDefault()
+    }
+    window.addEventListener('pointermove', onMove)
+    window.addEventListener('pointerup', onUp)
+    window.addEventListener('pointercancel', onCancel)
+    window.addEventListener('keydown', onKey, true)
+    window.addEventListener('touchmove', onTouchMove, { passive: false })
+  }
+
+  const shown = drag === null ? ids : moveModuleTo(ids, drag.id, drag.target)
+
+  /** Where an editing card stands while another is dragged, or how far the dragged one moved. */
+  const dragStyle = (id: string, index: number): CSSProperties | undefined => {
+    if (drag === null) return undefined
+    const shift =
+      id === drag.id ? { x: drag.dx, y: drag.dy } : slotShift(drag.slots, index, shown.indexOf(id))
+    return { transform: `translate(${String(shift.x)}px, ${String(shift.y)}px)` }
+  }
+
+  const placeholder = drag === null ? undefined : drag.slots[drag.target]
 
   if (props.loading === true) {
     return (
@@ -239,7 +348,28 @@ export function Launchpad(props: LaunchpadProps) {
 
   return (
     <div className={cn('flex flex-col gap-6', props.className)}>
-      <ul ref={list} aria-label={props.label} className={cn('m-0 grid list-none gap-4 p-0', grid)}>
+      <ul
+        ref={list}
+        aria-label={props.label}
+        className={cn('relative m-0 grid list-none gap-4 p-0', grid)}
+      >
+        {placeholder !== undefined && drag !== null && (
+          // Where the dragged card lands: neutral, never blue (D17).
+          <li
+            aria-hidden="true"
+            data-slot="launchpad-drop-placeholder"
+            className="pointer-events-none absolute box-border rounded-lg border-2 border-dashed border-strong bg-surface-sunken"
+            style={{
+              top: placeholder.y,
+              insetInlineStart:
+                direction === 'rtl'
+                  ? drag.width - placeholder.x - placeholder.width
+                  : placeholder.x,
+              width: placeholder.width,
+              height: placeholder.height,
+            }}
+          />
+        )}
         {props.modules.map((module, index) => {
           const locked = module.locked !== undefined
           if (editing) {
@@ -247,11 +377,19 @@ export function Launchpad(props: LaunchpadProps) {
               <li
                 key={module.id}
                 data-launchpad-card=""
-                {...dragProps(module)}
+                {...(drag?.id === module.id ? { 'data-dragging': '' } : {})}
+                onPointerDown={(event) => {
+                  startDrag(event, module, index)
+                }}
+                style={dragStyle(module.id, index)}
                 className={cn(
                   CARD,
-                  'cursor-grab border-default bg-surface-raised',
-                  dragging === module.id && 'border-strong bg-surface-sunken',
+                  'relative cursor-grab border-default bg-surface-raised select-none',
+                  drag !== null &&
+                    drag.id !== module.id &&
+                    'transition-transform duration-(--liro-duration-slow) ease-standard',
+                  drag?.id === module.id &&
+                    'z-(--liro-layer-raised) cursor-grabbing border-strong shadow-lg',
                 )}
               >
                 <div className="flex items-start justify-between gap-2">
@@ -333,7 +471,7 @@ export function Launchpad(props: LaunchpadProps) {
       {editing && hidden.length > 0 && (
         <section aria-labelledby={hiddenHeading} className="flex flex-col gap-3">
           <h2 id={hiddenHeading} className={cn('m-0 text-h5 text-secondary', TEXT_DIRECTION)}>
-            {messages['launchpad.hidden'](hidden.length)}
+            {messages['launchpad.hidden'](hidden.length, format.number(String(hidden.length)))}
           </h2>
           <ul className="m-0 flex list-none flex-col p-0">
             {hidden.map((module) => {

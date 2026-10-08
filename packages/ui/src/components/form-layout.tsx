@@ -39,13 +39,6 @@ import { Stepper } from './progress'
  *   text.tertiary) at the start when `dirty`, the actions at the end.
  */
 
-/** Literal classes, so Tailwind finds them. */
-const COLUMNS: Record<1 | 2 | 3, string> = {
-  1: 'sm:grid-cols-1',
-  2: 'sm:grid-cols-2',
-  3: 'sm:grid-cols-3',
-}
-
 export interface FormSectionProps {
   /** The section's heading, from the application. */
   title: ReactNode
@@ -55,7 +48,11 @@ export interface FormSectionProps {
   actions?: ReactNode
   /** The heading level of the title. Default: 4. */
   headingLevel?: 2 | 3 | 4 | 5 | 6
-  /** Columns of fields from the sm breakpoint (48em) on; one on phones. Default: 2. */
+  /**
+   * Columns of fields by the section's own width (container queries, P4.9): two from 36rem,
+   * three from 54rem, one below — so a phone-width pane gets one column whatever the viewport.
+   * Default: 2.
+   */
   columns?: 1 | 2 | 3
   /** Folded away until opened: for fields that are rarely used. */
   collapsible?: boolean
@@ -66,13 +63,41 @@ export interface FormSectionProps {
   className?: string
 }
 
-/** A field that spans every column of its FormSection (an address, a note). */
+/** Literal classes, so Tailwind finds them: columns by the grid's own width, as KeyValueList. */
+const OWN_COLUMNS: Record<1 | 2 | 3, string> = {
+  1: '',
+  2: '@min-[36rem]:grid-cols-2',
+  3: '@min-[54rem]:grid-cols-3',
+}
+
+export interface FormGridProps {
+  /** Columns by the grid's own width: two from 36rem, three from 54rem, one below. Default 2. */
+  columns?: 1 | 2 | 3
+  /** The fields. */
+  children: ReactNode
+  className?: string
+}
+
+/**
+ * Fields in a grid without a card of its own, 16px apart: a DetailPage section in edit mode,
+ * where the section is already the card (P4.9). Its columns follow its own width, as the
+ * KeyValueList it replaces, so read and edit mode line up.
+ */
+export function FormGrid({ columns = 2, children, className }: FormGridProps) {
+  return (
+    <div className={cn('@container min-w-0', className)}>
+      <div className={cn('grid grid-cols-1 gap-4', OWN_COLUMNS[columns])}>{children}</div>
+    </div>
+  )
+}
+
+/** A field that spans every column of its FormSection or FormGrid (an address, a note). */
 export function FormFullWidth({ children }: { children: ReactNode }) {
   return <div className="col-span-full min-w-0">{children}</div>
 }
 
 function FieldGrid({ columns, children }: { columns: 1 | 2 | 3; children: ReactNode }) {
-  return <div className={cn('grid grid-cols-1 gap-4', COLUMNS[columns])}>{children}</div>
+  return <FormGrid columns={columns}>{children}</FormGrid>
 }
 
 /** True inside a FormTabs panel: its sections are drawn flat in the tabs' card. */
@@ -269,7 +294,6 @@ function useOutOfView(element: HTMLElement | null, active: boolean): boolean {
  * bar sticky at the bottom (Appendix B.8), where the user is when they finish.
  */
 export function FormActions(props: FormActionsProps) {
-  const { messages } = useLiro()
   const mode = props.stickyActions ?? 'auto'
   const [top, setTop] = useState<HTMLDivElement | null>(null)
   const topHidden = useOutOfView(top, mode === 'auto')
@@ -284,17 +308,27 @@ export function FormActions(props: FormActionsProps) {
         {props.actions}
       </div>
       {props.children}
-      {shown && (
-        <div
-          data-slot="form-bottom-bar"
-          className="sticky bottom-0 z-(--liro-layer-sticky) flex flex-wrap items-center justify-between gap-3 border-0 border-t border-solid border-default bg-surface-page p-3"
-        >
-          <span className={cn('shrink-0 text-xs text-tertiary', TEXT_DIRECTION)}>
-            {props.dirty === true ? messages['form.unsaved'] : null}
-          </span>
-          <div className="min-w-0 flex-1">{props.actions}</div>
-        </div>
-      )}
+      {shown && <FormBottomBar actions={props.actions} dirty={props.dirty === true} />}
+    </div>
+  )
+}
+
+/**
+ * The bar at the bottom of a form or of a record in edit mode (not exported from the package):
+ * sticky, surface.page with a 1px border.default line on top, 12px padding, "Unsaved changes"
+ * (12px, text.tertiary) at the start when `dirty`, the actions at the end.
+ */
+export function FormBottomBar({ actions, dirty }: { actions: ReactNode; dirty: boolean }) {
+  const { messages } = useLiro()
+  return (
+    <div
+      data-slot="form-bottom-bar"
+      className="sticky bottom-0 z-(--liro-layer-sticky) flex flex-wrap items-center justify-between gap-3 border-0 border-t border-solid border-default bg-surface-page p-3"
+    >
+      <span className={cn('shrink-0 text-xs text-tertiary', TEXT_DIRECTION)}>
+        {dirty ? messages['form.unsaved'] : null}
+      </span>
+      <div className="min-w-0 flex-1">{actions}</div>
     </div>
   )
 }
@@ -438,7 +472,7 @@ export function FormWizard(props: FormWizardProps) {
       <div ref={bodyRef} key={active}>
         {step?.content}
       </div>
-      <div className="flex flex-wrap items-center justify-end gap-3">
+      <div className="flex flex-wrap items-center justify-end gap-2">
         {active > 0 && (
           <ActionButton
             action={{ intent: 'back', label: messages['wizard.back'] }}

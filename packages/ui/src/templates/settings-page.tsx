@@ -1,5 +1,6 @@
 import { AlertTriangle, Check } from 'lucide-react'
 import { useId, type ReactNode } from 'react'
+import { FieldLabelsHidden } from '../components/field'
 import { Tabs } from '../components/navigation'
 import { usePhone } from '../components/use-phone'
 import { TEXT_DIRECTION } from '../primitives/classes'
@@ -14,7 +15,9 @@ import { PageHeader } from './page-header'
  *   text.secondary, padding md) — no description, no icon.
  * - Each row: the setting's name (13px semibold) and its description (xs text.secondary) at the
  *   start, the control (a switch, a select, a button) at the end; a 1px border.subtle line between
- *   rows; padding sm by md. On phones the control stands under the description.
+ *   rows; padding sm by md. On phones the control stands under the description. The row names its
+ *   control once: a field's own label inside the control is for assistive technology only (P4.9;
+ *   FieldLabelsHidden), so the name never shows twice.
  * - No Save button: a setting saves as soon as it changes (the application's work). After a
  *   successful save the row shows "Saved" with a 14px check in status.success.fg
  *   (`role="status"`); an error appears in the row in status.danger.fg with its icon
@@ -30,7 +33,10 @@ export interface SettingRow {
   /** The setting's name ("Send invoices to SEF automatically"). */
   label: string
   description?: string
-  /** The control: a SwitchField, a SelectField, a Button … (its own label for assistive technology). */
+  /**
+   * The control: a SwitchField, a SelectField, a Button … Give a field its label (the row's name);
+   * the row keeps it for assistive technology only, so the name is not written twice.
+   */
   control: ReactNode
   /** 'saved' after a successful save; 'error' with `error` after a failed one. */
   state?: 'saved' | 'error'
@@ -100,7 +106,7 @@ function Row({ row, phone }: { row: SettingRow; phone: boolean }) {
             </span>
           )}
         </span>
-        {row.control}
+        <FieldLabelsHidden.Provider value={true}>{row.control}</FieldLabelsHidden.Provider>
       </div>
     </li>
   )

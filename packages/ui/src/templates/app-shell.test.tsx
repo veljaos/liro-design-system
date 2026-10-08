@@ -4,9 +4,15 @@ import { LiroProvider } from '../provider/liro-provider'
 import {
   AppShell,
   COMPANY_SEARCH_THRESHOLD,
+  companyKeyTarget,
+  companyRows,
+  companySections,
+  edgeFade,
   matchingCompanies,
   type AppShellProps,
 } from './app-shell'
+import { rowOffsets, scrollToShow, visibleRows } from './company-logic'
+import { manyCompanies } from './shell-story-data'
 
 const COMPANIES = [
   { id: 'a', name: 'Kvadrat Gradnja d.o.o.', description: 'PIB 108452317' },
@@ -51,6 +57,87 @@ describe('matchingCompanies', () => {
   it('shows a search field above seven companies', () => {
     expect(COMPANY_SEARCH_THRESHOLD).toBe(7)
   })
+  it('searches 5,000 companies quickly, by name or tax number', () => {
+    const companies = manyCompanies(5000)
+    expect(new Set(companies.map((company) => company.name)).size).toBe(5000)
+    const started = performance.now()
+    const found = matchingCompanies(companies, 'drina prevoz', 'sr-Latn')
+    expect(performance.now() - started).toBeLessThan(200)
+    expect(found.length).toBeGreaterThan(0)
+    expect(found.every((company) => company.name.includes('Drina Prevoz'))).toBe(true)
+  })
+})
+
+describe('companySections', () => {
+  it('lists pinned, then recent, then all, each company once, empty sections left out', () => {
+    const sections = companySections(COMPANIES, ['c'], ['c', 'a'])
+    expect(sections.map((section) => [section.key, section.companies.map((c) => c.id)])).toEqual([
+      ['pinned', ['c']],
+      ['recent', ['a']],
+      ['all', ['b']],
+    ])
+    expect(companySections(COMPANIES).map((section) => section.key)).toEqual(['all'])
+    expect(companySections(COMPANIES.slice(1, 2), ['c'], ['a']).map((s) => s.key)).toEqual(['all'])
+  })
+  it('heads the rows only with more than one section, and counts the companies', () => {
+    expect(companyRows(companySections(COMPANIES)).map((row) => row.kind)).toEqual([
+      'company',
+      'company',
+      'company',
+    ])
+    const rows = companyRows(companySections(COMPANIES, ['b']))
+    expect(rows.map((row) => (row.kind === 'heading' ? row.key : row.position))).toEqual([
+      'pinned',
+      1,
+      'all',
+      2,
+      3,
+    ])
+  })
+})
+
+describe('companyKeyTarget', () => {
+  const rows = companyRows(companySections(COMPANIES, ['b']))
+  it('moves by one, by ten and to the ends, skipping headings', () => {
+    expect(companyKeyTarget(rows, 1, 'ArrowDown')).toBe(3)
+    expect(companyKeyTarget(rows, 3, 'ArrowUp')).toBe(1)
+    expect(companyKeyTarget(rows, 1, 'ArrowUp')).toBe(1)
+    expect(companyKeyTarget(rows, 4, 'ArrowDown')).toBe(4)
+    expect(companyKeyTarget(rows, 1, 'PageDown')).toBe(4)
+    expect(companyKeyTarget(rows, 4, 'Home')).toBe(1)
+    expect(companyKeyTarget(rows, 1, 'End')).toBe(4)
+    expect(companyKeyTarget(rows, 1, 'a')).toBeUndefined()
+    expect(companyKeyTarget([], 0, 'ArrowDown')).toBeUndefined()
+  })
+})
+
+describe('the company list virtualiser', () => {
+  it('draws only the rows in view and around them', () => {
+    const { tops, total } = rowOffsets(Array.from({ length: 5000 }, () => 48))
+    expect(total).toBe(240000)
+    expect(visibleRows(tops, total, 0, 400)).toEqual({ first: 0, last: 14 })
+    const middle = visibleRows(tops, total, 48000, 400)
+    expect(middle.first).toBe(995)
+    expect(middle.last - middle.first).toBeLessThan(20)
+    expect(visibleRows([], 0, 0, 400)).toEqual({ first: 0, last: 0 })
+  })
+  it('scrolls a row fully into view, or not at all', () => {
+    expect(scrollToShow(480, 48, 0, 400)).toBe(128)
+    expect(scrollToShow(48, 48, 100, 400)).toBe(48)
+    expect(scrollToShow(200, 48, 100, 400)).toBeUndefined()
+  })
+})
+
+describe('edgeFade', () => {
+  it('fades only the edges with more past them, in reading order', () => {
+    expect(edgeFade({ start: false, end: false }, 'ltr')).toBeUndefined()
+    expect(edgeFade({ start: false, end: true }, 'ltr')).toBe(
+      'linear-gradient(to right, currentcolor, currentcolor, currentcolor calc(100% - 32px), transparent)',
+    )
+    expect(edgeFade({ start: true, end: false }, 'rtl')).toBe(
+      'linear-gradient(to left, transparent, currentcolor 32px, currentcolor)',
+    )
+  })
 })
 
 describe('AppShell', () => {
@@ -67,6 +154,11 @@ describe('AppShell', () => {
     expect(html).toContain('aria-current="page"')
     expect(html).toMatch(/<a href="#[^"]+"[^>]*>Skip to content<\/a>/)
     expect(html).toContain('<main id=')
+  })
+  it('shows breadcrumbs only from two levels', () => {
+    expect(render({ layout: 'desktop', breadcrumbs: [{ label: 'Overview' }] })).not.toContain(
+      'aria-label="Breadcrumbs"',
+    )
   })
   it('on desktop: breadcrumbs, the company switcher and the search text', () => {
     const html = render({ layout: 'desktop' })

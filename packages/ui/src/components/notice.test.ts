@@ -10,3 +10,11 @@ describe('noticeDuration', () => {
     expect(noticeDuration('loading')).toBe(Infinity)
   })
 })
+
+describe('noticeDuration with an action', () => {
+  it('stays at least 8 seconds so the action can be reached; errors still wait', () => {
+    expect(noticeDuration('success', true)).toBe(8000)
+    expect(noticeDuration('warning', true)).toBe(8000)
+    expect(noticeDuration('error', true)).toBe(Infinity)
+  })
+})

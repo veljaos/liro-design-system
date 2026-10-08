@@ -192,6 +192,51 @@ describe('FilterBar', () => {
     expect(html).toContain('>Date ↓</span>')
   })
 
+  it('never repeats the label as the placeholder: an empty choice says "All" (P4.9)', () => {
+    const html = render(
+      <FilterBar
+        filters={FILTERS}
+        values={{}}
+        onValuesChange={() => undefined}
+        inline={2}
+        layout="desktop"
+      />,
+    )
+    expect(html).toContain('>All<')
+    expect(html).not.toContain('placeholder="Status"')
+    expect(html).not.toContain('>Status</span>')
+  })
+
+  it('on phones puts search first and the list actions in one menu (P4.9)', () => {
+    const html = render(
+      <FilterBar
+        filters={FILTERS}
+        values={{}}
+        onValuesChange={() => undefined}
+        layout="phone"
+        search=""
+        onSearchChange={() => undefined}
+        actions={<button type="button">COLUMNS</button>}
+        phoneMenu={[{ label: 'Export', onSelect: () => undefined }]}
+      />,
+    )
+    expect(html).not.toContain('COLUMNS')
+    expect(html).toContain('aria-label="More actions"')
+    expect(html.indexOf('aria-label="Search…"')).toBeLessThan(html.indexOf('>Filters</span>'))
+    const desktop = render(
+      <FilterBar
+        filters={FILTERS}
+        values={{}}
+        onValuesChange={() => undefined}
+        layout="desktop"
+        actions={<button type="button">COLUMNS</button>}
+        phoneMenu={[{ label: 'Export', onSelect: () => undefined }]}
+      />,
+    )
+    expect(desktop).toContain('COLUMNS')
+    expect(desktop).not.toContain('aria-label="More actions"')
+  })
+
   it('shows the search field only with onSearchChange, named by its placeholder', () => {
     const without = render(<FilterBar filters={[]} values={{}} onValuesChange={() => undefined} />)
     expect(without).not.toContain('aria-label="Search…"')

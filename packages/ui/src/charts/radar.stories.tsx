@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { ExampleProvider, PhoneFrame, StoryProvider } from '../components/story-frames'
 import { settle } from '../primitives/story-helpers'
+import { showTable } from './chart-story-data'
 import { RadarChart, RadialChart, type RadarChartProps } from './polar'
 
 /** Two suppliers scored by the purchasing team, 1–5. */
@@ -61,6 +62,12 @@ export default meta
 
 type Story = StoryObj<typeof meta>
 
+/** "Show as table": the same values as a table; in right-to-left the columns follow the page. */
+export const AsTable: Story = {
+  name: 'Show as table',
+  play: showTable,
+}
+
 /** One supplier: a blue shape with a flat wash. */
 export const Default: Story = {}
 
@@ -95,10 +102,9 @@ export const PhoneWidth: Story = {
             description="Revenue, RSD"
             layout="phone"
             currency="RSD"
-            decimals={0}
             items={[{ key: 'done', label: 'Achieved', value: '52430000' }]}
             max="68000000"
-            centre={{ value: '52430000', label: 'of 68.000.000 RSD' }}
+            centre={{ value: '52430000', label: 'of 68.000.000,00 RSD' }}
           />
         </div>
       </ExampleProvider>

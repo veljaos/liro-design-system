@@ -11,9 +11,10 @@ export interface LiroMessages {
   'table.previous': string
   /**
    * The number of rows: exact ("1,234 rows"), or a lower bound when the count stopped at a
-   * threshold ("More than 10,000 rows").
+   * threshold ("More than 10,000 rows"). Every message that shows a number receives the number
+   * (for plural rules) and its text already written by the provider's `format.number` (P4.9).
    */
-  'table.count': (count: number, exact: boolean) => string
+  'table.count': (count: number, text: string, exact: boolean) => string
   /** A table that has no rows yet. */
   'table.noRows': string
   'table.updating': string
@@ -55,7 +56,7 @@ export interface LiroMessages {
   'field.noResults': string
   /** The button that removes one chosen value (its label) from a multiple choice. */
   'field.remove': (label: string) => string
-  'field.selectedCount': (count: number) => string
+  'field.selectedCount': (count: number, text: string) => string
   /** The button that empties a field (a clearable SelectField). */
   'field.clear': string
   /** FilterBar: the search field's placeholder and accessible name. */
@@ -87,6 +88,8 @@ export interface LiroMessages {
   'filter.rangeTo': (label: string, currency?: string) => string
   /** FilterBar: an amount range's visible label, with its currency once ("Total (EUR)"). */
   'filter.rangeLabel': (label: string, currency: string) => string
+  /** FilterBar: the empty value of a choice filter, meaning no filter ("All"; P4.9). */
+  'filter.all': string
   /** FilterBar on phones: the sort button's text while nothing is sorted, and the start of its name. */
   'filter.sort': string
   /** FilterBar on phones: the two directions in the sort menu. */
@@ -115,7 +118,7 @@ export interface LiroMessages {
   /** Names the group of the calendar's month buttons. */
   'calendar.navigation': string
   /** A quarter and its year's name, e.g. "Q1 2025/26". quarter is 1 … 4. */
-  'period.quarter': (quarter: number, year: string) => string
+  'period.quarter': (quarter: number, text: string, year: string) => string
   /** Period presets. */
   'period.today': string
   'period.thisWeek': string
@@ -141,28 +144,32 @@ export interface LiroMessages {
   'confirm.deleteLabel': string
   /** The label of the field where the user types `text` to confirm an irreversible action. */
   'confirm.typeToConfirm': (text: string) => string
+  /** The reason field of ReasonConfirmDialog, when the application gives no label. */
+  'confirm.reason': string
+  /** ReasonConfirmDialog's free text beside a list of reasons. */
+  'confirm.reasonDetails': string
   /** The button that closes a dialog or a drawer. */
   'dialog.close': string
   /** A DueDate that is paid or otherwise closed. */
   'due.settled': string
   /** A DueDate that has passed, with the number of days. */
-  'due.overdue': (days: number) => string
+  'due.overdue': (days: number, text: string) => string
   /** A DueDate that is today. */
   'due.today': string
   /** A DueDate within the warning days, with the number of days left. */
-  'due.inDays': (days: number) => string
+  'due.inDays': (days: number, text: string) => string
   /** The button that opens the actions that do not fit. */
   'action.more': string
   /** Names the menu button of a split action (its main action's label). */
   'action.moreOptions': (label: string) => string
   /** How many rows are selected, in a BulkActionBar. */
-  'bulk.selected': (count: number) => string
+  'bulk.selected': (count: number, text: string) => string
   /** Offers to select every row of the result. */
-  'bulk.selectAll': (total: number) => string
+  'bulk.selectAll': (total: number, text: string) => string
   /** The button that clears the selection. */
   'bulk.clear': string
   /** The question before an action on the selection. */
-  'bulk.confirmTitle': (count: number) => string
+  'bulk.confirmTitle': (count: number, text: string) => string
   /** The button that closes a dismissible alert or banner. */
   'alert.close': string
   /** EmptyState 'empty': nothing here yet. */
@@ -185,13 +192,13 @@ export interface LiroMessages {
   /** An action that cannot be used, with the reason it is given. */
   'action.unavailable': (reason: string) => string
   /** EditableGrid: each cell's accessible name, its column and line: "Quantity, line 3". */
-  'grid.cell': (column: string, line: number) => string
+  'grid.cell': (column: string, line: number, text: string) => string
   /** EditableGrid: a message about one cell under its row: "Quantity: Enter a number". */
   'grid.cellMessage': (column: string, text: string) => string
   /** EditableGrid: the button that adds a line at the end. */
   'grid.addLine': string
   /** EditableGrid: the remove button of a line (its number). */
-  'grid.removeLine': (line: number) => string
+  'grid.removeLine': (line: number, text: string) => string
   /** EditableGrid: the names of the two row shortcuts shown beside "Add line". */
   'grid.insertLine': string
   'grid.deleteLine': string
@@ -223,7 +230,7 @@ export interface LiroMessages {
   /** AppShell: the search button that opens the command palette. */
   'shell.search': string
   /** AppShell: the notifications button; `unread` is how many are unread (0: none). */
-  'shell.notifications': (unread: number) => string
+  'shell.notifications': (unread: number, text: string) => string
   /** AppShell: the user menu's button. */
   'shell.userMenu': string
   /** AppShell: names the row of module tabs. */
@@ -231,19 +238,58 @@ export interface LiroMessages {
   /** Company switcher: the button's name (`company` is the current one), and its list. */
   'shell.switchCompany': (company: string) => string
   'shell.companies': string
-  /** Company switcher: the search field shown when there are many companies. */
+  /** Company switcher: the search field shown when there are many companies, and its hint. */
   'shell.findCompany': string
-  /** Company switcher: how many items wait in a company. */
-  'shell.waiting': (count: number) => string
+  'shell.findCompanyHint': string
+  /** Company switcher: the sections of the list. */
+  'shell.pinnedCompanies': string
+  'shell.recentCompanies': string
+  'shell.allCompanies': string
+  /** Company switcher: no company matches the search (`query` as typed). */
+  'shell.noCompany': (query: string) => string
+  /** The command palette's entry that opens the company switcher. */
+  'shell.switchCompanyCommand': string
+  /** NotificationsPanel and NotificationsPage: the title, the unread count (`text` formatted). */
+  'notifications.title': string
+  'notifications.unreadCount': (count: number, text: string) => string
+  /** Names an unread notification for assistive technology (beside its dot). */
+  'notifications.unread': string
+  'notifications.markAllRead': string
+  /** Mark one notification read or unread (`title` is the notification's). */
+  'notifications.markRead': (title: string) => string
+  'notifications.markUnread': (title: string) => string
+  /** The panel's link to the NotificationsPage. */
+  'notifications.viewAll': string
+  /** NotificationsPage: the header's link to the notification settings. */
+  'notifications.settings': string
+  /** NotificationsPage: the All / Unread toggle, its name, and the empty filters' placeholder. */
+  'notifications.all': string
+  'notifications.unreadFilter': string
+  'notifications.show': string
+  /** NotificationsPage: the day headings. */
+  'notifications.today': string
+  'notifications.yesterday': string
+  /** Nothing at all, and nothing that matches the filters. */
+  'notifications.emptyTitle': string
+  'notifications.emptyDescription': string
+  'notifications.noMatchTitle': string
   /** Launchpad, editing mode: the buttons of a module card (`name` is the module's). */
   'launchpad.moveEarlier': (name: string) => string
   'launchpad.moveLater': (name: string) => string
   'launchpad.hide': (name: string) => string
   /** Launchpad, editing mode: the title over the hidden modules, and their "Show" button. */
-  'launchpad.hidden': (count: number) => string
+  'launchpad.hidden': (count: number, text: string) => string
   'launchpad.showLabel': string
   /** ListPage: names the row of saved views. */
   'list.views': string
+  /**
+   * ListPage: the saved views that do not fit as tabs, in a "More" menu (desktop); on phones the
+   * one select's text ("View: All"; `view` is the current view's name) and its search field,
+   * shown above 7 views (P4.9).
+   */
+  'list.moreViews': string
+  'list.view': (view: string) => string
+  'list.findView': string
   /** ColumnChooser: its button, its title, and the move buttons of a column (`label`). */
   'columns.button': string
   'columns.title': string
@@ -261,11 +307,22 @@ export interface LiroMessages {
   /** SectionBar: names the row of section links. */
   'page.sections': string
   /** LifecycleBar on phones: "Step 3 of 4: Sent to SEF". */
-  'lifecycle.step': (step: number, total: number, label: string) => string
+  'lifecycle.step': (
+    step: number,
+    stepText: string,
+    total: number,
+    totalText: string,
+    label: string,
+  ) => string
   /** DocumentPage: the button that hides or shows the side panels, and the panels' name. */
   'document.hidePanels': string
   'document.showPanels': string
   'document.panels': string
+  /** Side-panel lists (ActivityList): show every entry ("Show all 5"), then only the latest. */
+  'panel.showAll': (count: number, countText: string) => string
+  'panel.showFewer': string
+  /** ChangeableValue: the button that turns a value the system filled in into its field. */
+  'value.change': (label: string) => string
   /** Charts: the button that shows the values as a table, and back as a chart. */
   'chart.showTable': string
   'chart.showChart': string
@@ -300,8 +357,13 @@ export interface LiroMessages {
   'status.errorDescription': string
   'status.maintenanceTitle': string
   'status.maintenanceDescription': string
+  /** A suspended page about the user's own account (the default subject). */
   'status.suspendedTitle': string
   'status.suspendedDescription': string
+  /** A suspended page about a company the user works for (P4.9). */
+  'status.suspendedCompanyTitle': string
+  /** `company` is the company's name, from the application. */
+  'status.suspendedCompanyDescription': (company: string) => string
   /** The accessible name of a hidden module's "Show" button. */
   'launchpad.show': (name: string) => string
 }

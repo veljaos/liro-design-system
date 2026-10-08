@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { SlidersHorizontal } from 'lucide-react'
 import { useState } from 'react'
-import { expect, userEvent, within } from 'storybook/test'
+import { expect, fireEvent, userEvent, within } from 'storybook/test'
 import { Button } from '../components/button'
 import { ExampleProvider, PhoneFrame, StoryProvider } from '../components/story-frames'
 import { settle } from '../primitives/story-helpers'
@@ -174,6 +174,57 @@ export const EditingMode: Story = {
     await expect(cards[1]?.textContent).toContain('Sales')
     await expect(canvas.getByRole('heading', { name: 'Hidden (2)' })).toBeVisible()
     await expect(canvas.getByRole('button', { name: 'Show: Reports' })).toBeVisible()
+  },
+}
+
+/** The centre of an element, in the window's coordinates. */
+function centreOf(element: Element) {
+  const rect = element.getBoundingClientRect()
+  return { clientX: rect.left + rect.width / 2, clientY: rect.top + rect.height / 2 }
+}
+
+/**
+ * Dragging is live: the dragged card lifts and follows the pointer, the others slide out of the
+ * way, a dashed placeholder shows where it lands — no grey ghost. The story drags Sales one place
+ * later and drops it, then picks up Purchasing and holds it over the third place (the picture).
+ * The move buttons stay the keyboard's way (WCAG 2.5.7).
+ */
+export const Dragging: Story = {
+  render: () => (
+    <ExampleProvider>
+      <Editing />
+    </ExampleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const cards = () => [...canvasElement.querySelectorAll('[data-launchpad-card]')]
+    const drag = async (from: number, to: number) => {
+      const card = cards()[from]
+      const target = cards()[to]
+      if (card === undefined || target === undefined) throw new Error('no card')
+      const start = centreOf(card)
+      const end = centreOf(target)
+      await fireEvent.pointerDown(card, { ...start, button: 0, pointerType: 'mouse' })
+      await fireEvent.pointerMove(window, {
+        clientX: start.clientX + 10,
+        clientY: start.clientY + 6,
+      })
+      await fireEvent.pointerMove(window, end)
+    }
+    await drag(0, 1)
+    await fireEvent.pointerUp(window)
+    await settle()
+    await expect(cards()[1]?.textContent).toContain('Sales')
+    await expect(canvasElement.querySelector('[data-slot="launchpad-drop-placeholder"]')).toBeNull()
+    // Hold Purchasing (now first) over the third place.
+    await drag(0, 2)
+    await settle()
+    await expect(
+      canvasElement.querySelector('[data-slot="launchpad-drop-placeholder"]'),
+    ).not.toBeNull()
+    await expect(canvasElement.querySelector('[data-dragging]')?.textContent).toContain(
+      'Purchasing',
+    )
   },
 }
 

@@ -11,12 +11,12 @@ function render(node: ReactNode): string {
 }
 
 function Messages() {
-  const { messages } = useLiro()
+  const { messages, format } = useLiro()
   return (
     <output>
       {[
         messages['table.next'],
-        messages['table.count'](1234, true),
+        messages['table.count'](1234, format.number('1234'), true),
         messages['action.unavailable']('closed period'),
       ].join('|')}
     </output>
@@ -40,9 +40,9 @@ function RadixDirection() {
 describe('messages', () => {
   it('has English defaults for every key', () => {
     expect(messagesEn['table.previous']).toBe('Previous')
-    expect(messagesEn['table.count'](1234, true)).toBe('1,234 rows')
-    expect(messagesEn['table.count'](1, true)).toBe('1 row')
-    expect(messagesEn['table.count'](10000, false)).toBe('More than 10,000 rows')
+    expect(messagesEn['table.count'](1234, '1,234', true)).toBe('1,234 rows')
+    expect(messagesEn['table.count'](1, '1', true)).toBe('1 row')
+    expect(messagesEn['table.count'](10000, '10,000', false)).toBe('More than 10,000 rows')
     expect(messagesEn['action.unavailable']('closed period')).toBe('Unavailable: closed period')
   })
 
@@ -86,6 +86,8 @@ describe('messages', () => {
       'confirm.deleteLabel',
       'confirm.deleteMessage',
       'confirm.deleteTitle',
+      'confirm.reason',
+      'confirm.reasonDetails',
       'confirm.typeToConfirm',
       'connection.offline',
       'dialog.cancel',
@@ -117,6 +119,7 @@ describe('messages', () => {
       'field.remove',
       'field.required',
       'field.selectedCount',
+      'filter.all',
       'filter.ascending',
       'filter.clearAll',
       'filter.clearSearch',
@@ -155,11 +158,32 @@ describe('messages', () => {
       'launchpad.show',
       'launchpad.showLabel',
       'lifecycle.step',
+      'list.findView',
+      'list.moreViews',
+      'list.view',
       'list.views',
       'notice.close',
       'notice.region',
+      'notifications.all',
+      'notifications.emptyDescription',
+      'notifications.emptyTitle',
+      'notifications.markAllRead',
+      'notifications.markRead',
+      'notifications.markUnread',
+      'notifications.noMatchTitle',
+      'notifications.settings',
+      'notifications.show',
+      'notifications.title',
+      'notifications.today',
+      'notifications.unread',
+      'notifications.unreadCount',
+      'notifications.unreadFilter',
+      'notifications.viewAll',
+      'notifications.yesterday',
       'page.backTo',
       'page.sections',
+      'panel.showAll',
+      'panel.showFewer',
       'period.all',
       'period.clear',
       'period.customRange',
@@ -177,15 +201,20 @@ describe('messages', () => {
       'report.parameters',
       'report.run',
       'settings.saved',
+      'shell.allCompanies',
       'shell.companies',
       'shell.findCompany',
+      'shell.findCompanyHint',
       'shell.moduleTabs',
+      'shell.noCompany',
       'shell.notifications',
+      'shell.pinnedCompanies',
+      'shell.recentCompanies',
       'shell.search',
       'shell.skipToContent',
       'shell.switchCompany',
+      'shell.switchCompanyCommand',
       'shell.userMenu',
-      'shell.waiting',
       'status.errorDescription',
       'status.errorTitle',
       'status.forbiddenDescription',
@@ -196,6 +225,8 @@ describe('messages', () => {
       'status.notFoundTitle',
       'status.planRequiredDescription',
       'status.planRequiredTitle',
+      'status.suspendedCompanyDescription',
+      'status.suspendedCompanyTitle',
       'status.suspendedDescription',
       'status.suspendedTitle',
       'status.unauthenticatedDescription',
@@ -214,6 +245,7 @@ describe('messages', () => {
       'table.selectRow',
       'table.updating',
       'table.wider',
+      'value.change',
       'wizard.back',
       'wizard.finish',
       'wizard.next',
@@ -229,13 +261,13 @@ describe('messages', () => {
         locale="sr-Latn-RS"
         messages={{
           'table.next': 'Sledeće',
-          'table.count': (count, exact) => `${exact ? '' : 'Više od '}${String(count)} redova`,
+          'table.count': (_count, text, exact) => `${exact ? '' : 'Više od '}${text} redova`,
         }}
       >
         <Messages />
       </LiroProvider>,
     )
-    expect(html).toContain('<output>Sledeće|1234 redova|Unavailable: closed period</output>')
+    expect(html).toContain('<output>Sledeće|1.234 redova|Unavailable: closed period</output>')
   })
 
   it('uses the English defaults outside a provider', () => {

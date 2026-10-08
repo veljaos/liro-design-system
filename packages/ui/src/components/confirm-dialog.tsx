@@ -8,13 +8,15 @@ import {
   DialogCloseButton,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogTitle,
   DialogTrigger,
 } from '../primitives/dialog'
 import { useLiro } from '../provider/liro-provider'
 import { INTENTS, type Family, type IconComponent, type Intent } from './intents'
 import type { Tone } from './status-badge'
-import { TextField } from './text-field'
+import { RadioGroupField } from './radio-group-field'
+import { TextAreaField, TextField } from './text-field'
 
 /*
  * ConfirmDialog (BUILD-PLAN P2.4), the previous Design System's ConfirmModal, carried over
@@ -24,7 +26,8 @@ import { TextField } from './text-field'
  * - The tone comes from the action's family: primary and verify → info, document → neutral,
  *   positive → success, destructive → danger, caution → warning, neutral → neutral; warning
  *   without an intent or family; the `tone` prop overrides it.
- * - The text in text.secondary, 13px. Buttons at the end, 12px apart, 16px under the text:
+ * - The text in text.secondary, 13px, aligned with the title's text (after the icon, P4.9). The
+ *   buttons in the standard dialog footer (DialogFooter: 16px under the text, 8px apart, P4.9):
  *   Cancel in the neutral "default" weight, then the confirm button filled in the action's family
  *   colour (the main action last).
  * - Colours never mix (owner, P3.2a): the confirm button always follows the dialog's tone. Its
@@ -204,13 +207,18 @@ function ConfirmFrame(
           {!busy && <DialogCloseButton label={messages['dialog.close']} />}
         </div>
         <div className="flex flex-col px-4 pb-4">
-          {props.message !== undefined && (
-            <DialogDescription className="text-sm text-secondary">
-              {props.message}
-            </DialogDescription>
+          {/* The text starts where the title's text does: after the 18px icon and its 8px gap. */}
+          {(props.message !== undefined || props.extra !== undefined) && (
+            <div data-slot="confirm-body" className="flex flex-col ps-6.5">
+              {props.message !== undefined && (
+                <DialogDescription className="text-sm text-secondary">
+                  {props.message}
+                </DialogDescription>
+              )}
+              {props.extra}
+            </div>
           )}
-          {props.extra}
-          <div className="mt-4 flex flex-wrap items-center justify-end gap-3">
+          <DialogFooter className="mt-4">
             <ButtonPrimitive
               family="neutral"
               emphasis="secondary"
@@ -242,7 +250,7 @@ function ConfirmFrame(
               </span>
               {busy && <Loader />}
             </ButtonPrimitive>
-          </div>
+          </DialogFooter>
         </div>
       </DialogContent>
     </DialogRoot>
@@ -314,6 +322,92 @@ export function IrreversibleConfirmDialog(props: IrreversibleConfirmDialogProps)
           onChange={setTyped}
           autoComplete="off"
         />
+      }
+    />
+  )
+}
+
+/** A reason the application offers (a rejection's reason). */
+export interface ConfirmReason {
+  value: string
+  label: string
+}
+
+/** What the user gave: the chosen reason (with a list) and the written text, trimmed. */
+export interface ConfirmAnswer {
+  reason: string | undefined
+  text: string
+}
+
+export type ReasonConfirmDialogProps = ConfirmAction &
+  Omit<ConfirmBase, 'onConfirm'> & {
+    /** The question, from the application: "Reject UF-2026-1187?". */
+    title: ReactNode
+    /** What will happen, from the application. */
+    message?: ReactNode
+    /** The confirm button's text, from the application. */
+    confirmLabel: string
+    /** Runs the action with the answer; as ConfirmDialog's `onConfirm`. */
+    onConfirm: (answer: ConfirmAnswer) => void | Promise<void>
+    /**
+     * The reasons to choose from (the Core's list). With them, one must be chosen and the text
+     * is optional details; without them, the text is the reason and is required.
+     */
+    reasons?: readonly ConfirmReason[]
+    /** The reason's label. Default: `messages['confirm.reason']`. */
+    reasonLabel?: string
+    /** The details' label beside a list. Default: `messages['confirm.reasonDetails']`. */
+    detailsLabel?: string
+  }
+
+/**
+ * A confirmation that asks why (P4.9, the owner's review): reject, return, cancel with a reason.
+ * The confirm button enables once a reason is given — a reason chosen from `reasons`, or the
+ * text written when there is no list; `onConfirm` receives both. Same frame, tone and buttons as
+ * ConfirmDialog.
+ */
+export function ReasonConfirmDialog(props: ReasonConfirmDialogProps) {
+  const { messages } = useLiro()
+  const [reason, setReason] = useState<string | undefined>(undefined)
+  const [text, setText] = useState('')
+  const { reasons, reasonLabel, detailsLabel, onConfirm, ...rest } = props
+  const hasList = reasons !== undefined && reasons.length > 0
+  const ready = hasList ? reason !== undefined : text.trim() !== ''
+  return (
+    <ConfirmFrame
+      {...rest}
+      confirmDisabled={!ready}
+      onConfirm={() => onConfirm({ reason, text: text.trim() })}
+      onOpenChange={(open) => {
+        if (!open) {
+          setReason(undefined)
+          setText('')
+        }
+        props.onOpenChange?.(open)
+      }}
+      extra={
+        <div className="mt-4 flex flex-col gap-4">
+          {hasList && (
+            <RadioGroupField
+              label={reasonLabel ?? messages['confirm.reason']}
+              required
+              options={reasons}
+              {...(reason === undefined ? {} : { value: reason })}
+              onChange={setReason}
+            />
+          )}
+          <TextAreaField
+            label={
+              hasList
+                ? (detailsLabel ?? messages['confirm.reasonDetails'])
+                : (reasonLabel ?? messages['confirm.reason'])
+            }
+            required={!hasList}
+            rows={3}
+            value={text}
+            onChange={setText}
+          />
+        </div>
       }
     />
   )

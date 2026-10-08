@@ -48,6 +48,12 @@ describe('Breadcrumbs', () => {
     expect(html).toContain('aria-label="Breadcrumbs"')
     expect(html.match(/›/g)).toHaveLength(2)
   })
+  it('shows nothing for one level: it would only repeat the page title', () => {
+    expect(render(<Breadcrumbs items={[{ label: 'Overview' }]} />)).toBe(
+      render(<Breadcrumbs items={[]} />),
+    )
+    expect(render(<Breadcrumbs items={[{ label: 'Overview' }]} />)).not.toContain('Breadcrumbs')
+  })
 })
 
 describe('CursorPagination', () => {

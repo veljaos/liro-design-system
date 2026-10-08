@@ -5,7 +5,7 @@ import { SelectField } from '../components/select-field'
 import { ExampleProvider, PhoneFrame, StoryProvider } from '../components/story-frames'
 import { settle } from '../primitives/story-helpers'
 import { LineChart, type LineChartProps } from './cartesian'
-import { CASH, CASH_FLOW, CHANNELS, DAILY, POLICY_RATE } from './chart-story-data'
+import { CASH, CASH_FLOW, CHANNELS, DAILY, POLICY_RATE, showTable } from './chart-story-data'
 
 const meta = {
   title: 'Charts/Line',
@@ -38,6 +38,12 @@ const meta = {
 export default meta
 
 type Story = StoryObj<typeof meta>
+
+/** "Show as table": the same values as a table; in right-to-left the columns follow the page. */
+export const AsTable: Story = {
+  name: 'Show as table',
+  play: showTable,
+}
 
 /** One series, smooth without passing the values. */
 export const Default: Story = {}

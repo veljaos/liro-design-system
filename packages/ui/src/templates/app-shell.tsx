@@ -1,10 +1,11 @@
-import { Bell, Check, ChevronDown, Search } from 'lucide-react'
-import { Command as CommandPrimitive } from 'cmdk'
-import { useId, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
+import { Bell, Building2, Search } from 'lucide-react'
+import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { BrandLockup, type BrandLockupProps } from '../components/brand-lockup'
-import { CommandPalette, type CommandPaletteProps } from '../components/command-palette'
-import { commandMatches } from '../components/command-logic'
-import { Dialog } from '../components/dialog'
+import {
+  CommandPalette,
+  type CommandItem,
+  type CommandPaletteProps,
+} from '../components/command-palette'
 import type { MenuEntry } from '../components/dropdown-menu'
 import { Breadcrumbs, type Crumb } from '../components/navigation'
 import { PersonAvatar } from '../components/person'
@@ -22,6 +23,21 @@ import {
 } from '../primitives/dropdown-menu'
 import { Popover, PopoverContent, PopoverTrigger } from '../primitives/popover'
 import { useLiro } from '../provider/liro-provider'
+import type { ShellCompanies } from './company-logic'
+import { CompanySheet, CompanySwitcher, currentCompanyName } from './company-switcher'
+
+export { COMPANY_SEARCH_THRESHOLD } from './company-switcher'
+export {
+  companyKeyTarget,
+  companyRows,
+  companySections,
+  matchingCompanies,
+  type CompanyRow,
+  type CompanySection,
+  type CompanySectionKey,
+  type ShellCompanies,
+  type ShellCompany,
+} from './company-logic'
 
 /*
  * AppShell (BUILD-PLAN P4.1; the owner's values, docs/decisions.md "Application shell"):
@@ -38,17 +54,20 @@ import { useLiro } from '../provider/liro-provider'
  * - Notifications: a subtle 36px button with an 18px Bell; while anything is unread a 10px dot in
  *   status.danger.solid sits at the bell's top end corner, 4px in (Mantine Indicator offset), no
  *   number and no animation; the count is in the button's name ("Notifications, 3 unread") and in
- *   the panel, which the application renders.
- * - Company switcher: a subtle neutral 30px button, the company 13px medium and a 14px chevron; a
- *   list below it at the end, 260px: each company with its description (a tax number) in xs
- *   text.tertiary, an optional waiting count, the current one with a check; a search field at the
- *   top when there are more than 7 (name or description); the order is the application's (recent
- *   first). On phones it moves into the user menu.
+ *   the panel (NotificationsPanel, P4.9), which the application passes.
+ * - Company switcher (CompanySwitcher, P4.9): a subtle neutral 30px button, the company 13px
+ *   medium and a 14px chevron; a 320px list below it at the end, searchable by name or tax number
+ *   above 7 companies, sectioned Pinned / Recent / All companies, virtualised for thousands, a
+ *   status badge for a suspended company and the application's note ("5 tasks") — never a bare
+ *   number. "Switch company…" is also in the command palette. On phones it is an entry of the
+ *   user menu that opens a full-screen sheet with the search field at the top.
  * - User menu: PersonAvatar sm (26px) in a 36px button, no name; the menu below at the end, 220px,
  *   radius md, shadow md: the name xs semibold and the e-mail xs text.tertiary, then the entries
- *   with 14px icons.
+ *   with 14px icons, all neutral — signing out is not destructive (P4.9).
+ * - Breadcrumbs only from two levels: one crumb repeats the page's title (P4.9).
  * - Module tabs: a second header row (the header 96px in all), centred, as page-level tabs; links,
- *   the current one `aria-current="page"` with the 2px brand line. There is no sidebar, ever
+ *   the current one `aria-current="page"` with the 2px brand line; a row wider than the screen
+ *   scrolls and fades at the edge with more past it (P4.9). There is no sidebar, ever
  *   (Appendix B.8).
  * - Slots: the impersonation bar above the header, the environment marker after the brand, the
  *   offline indicator under the header (P5.3 fills them).
@@ -56,25 +75,6 @@ import { useLiro } from '../provider/liro-provider'
  *   breadcrumbs, the bottom bar for the main action within thumb reach — the form's bottom bar
  *   (surface.page, a 1px border.default line on top, padding sm) plus the safe-area insets.
  */
-
-/** One company of the company switcher. */
-export interface ShellCompany {
-  id: string
-  /** The company's name, from the application. */
-  name: string
-  /** A second line, e.g. its tax number, from the application. Searched with the name. */
-  description?: string
-  /** How many items wait in this company; shown when above 0. */
-  waiting?: number
-}
-
-export interface ShellCompanies {
-  /** In the application's order (recently used first). */
-  items: readonly ShellCompany[]
-  /** The id of the current company. */
-  current: string
-  onSelect: (id: string) => void
-}
 
 export interface ShellUser {
   name: string
@@ -132,136 +132,10 @@ export interface AppShellProps {
   children: ReactNode
 }
 
-/** The companies list shows a search field above this many. */
-export const COMPANY_SEARCH_THRESHOLD = 7
-
-/** The companies that match the search: by name or description, ignoring case and accents. */
-export function matchingCompanies(
-  companies: readonly ShellCompany[],
-  query: string,
-  locale: string,
-): ShellCompany[] {
-  return companies.filter((company) =>
-    commandMatches(
-      {
-        label: company.name,
-        ...(company.description === undefined ? {} : { description: company.description }),
-      },
-      query,
-      locale,
-    ),
-  )
-}
-
 const SMALL_BUTTON = 'min-h-control-sm gap-2 px-3.5 text-xs'
 
-/** The list of companies, searchable above COMPANY_SEARCH_THRESHOLD. */
-function CompanyList({ companies, onDone }: { companies: ShellCompanies; onDone: () => void }) {
-  const { messages, locale, format } = useLiro()
-  const [query, setQuery] = useState('')
-  const searchable = companies.items.length > COMPANY_SEARCH_THRESHOLD
-  const shown = searchable ? matchingCompanies(companies.items, query, locale) : companies.items
-  return (
-    <CommandPrimitive
-      shouldFilter={false}
-      // cmdk names its input with this label (aria-labelledby wins over the input's own name);
-      // the list below has its own.
-      label={searchable ? messages['shell.findCompany'] : messages['shell.companies']}
-      className="flex flex-col font-sans text-primary"
-    >
-      {searchable && (
-        <CommandPrimitive.Input
-          value={query}
-          onValueChange={setQuery}
-          placeholder={messages['shell.findCompany']}
-          className="mb-1 box-border block h-control w-full min-w-0 appearance-none rounded-md border border-solid border-control bg-surface-raised px-3 font-sans text-sm text-primary outline-none placeholder:text-tertiary focus:border-focus"
-        />
-      )}
-      {shown.length === 0 && (
-        <p role="status" className="m-0 px-2.5 py-1.5 text-center text-sm text-secondary">
-          {messages['field.noResults']}
-        </p>
-      )}
-      <CommandPrimitive.List
-        label={messages['shell.companies']}
-        className="max-h-80 overflow-y-auto"
-      >
-        {shown.map((company) => {
-          const current = company.id === companies.current
-          return (
-            <CommandPrimitive.Item
-              key={company.id}
-              value={company.id}
-              onSelect={() => {
-                companies.onSelect(company.id)
-                onDone()
-              }}
-              {...(current ? { 'aria-current': 'true' as const } : {})}
-              className="group box-border flex w-full cursor-pointer items-center gap-2 rounded-md px-2.5 py-1.5 text-sm text-primary outline-none select-none data-[selected=true]:bg-surface-sunken"
-            >
-              <span aria-hidden="true" className="flex size-3.5 shrink-0 items-center">
-                {current && <Check className="size-3.5" />}
-              </span>
-              <span className="flex min-w-0 flex-1 flex-col">
-                <span className={cn('truncate', TEXT_DIRECTION, current && 'font-medium')}>
-                  {company.name}
-                </span>
-                {company.description !== undefined && (
-                  <span className={cn('truncate text-xs text-tertiary', TEXT_DIRECTION)}>
-                    {company.description}
-                  </span>
-                )}
-              </span>
-              {company.waiting !== undefined && company.waiting > 0 && (
-                <span className="shrink-0 text-xs text-secondary tabular-nums">
-                  <span aria-hidden="true">{format.number(String(company.waiting))}</span>
-                  <span className="sr-only">{messages['shell.waiting'](company.waiting)}</span>
-                </span>
-              )}
-            </CommandPrimitive.Item>
-          )
-        })}
-      </CommandPrimitive.List>
-    </CommandPrimitive>
-  )
-}
-
-function currentCompany(companies: ShellCompanies): ShellCompany | undefined {
-  return companies.items.find((company) => company.id === companies.current)
-}
-
-function CompanySwitcher({ companies }: { companies: ShellCompanies }) {
-  const { messages } = useLiro()
-  const [open, setOpen] = useState(false)
-  const current = currentCompany(companies)
-  const name = current?.name ?? ''
-  return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <ButtonPrimitive
-          family="neutral"
-          emphasis="menu"
-          aria-label={messages['shell.switchCompany'](name)}
-          className={cn(SMALL_BUTTON, 'gap-1.5 px-2.5 text-sm font-medium')}
-        >
-          <span className={cn('max-w-60 truncate', TEXT_DIRECTION)}>{name}</span>
-          <ChevronDown aria-hidden="true" className="size-3.5 shrink-0" />
-        </ButtonPrimitive>
-      </PopoverTrigger>
-      <PopoverContent align="end" className="box-border w-65 p-1 shadow-md">
-        <CompanyList
-          companies={companies}
-          onDone={() => {
-            setOpen(false)
-          }}
-        />
-      </PopoverContent>
-    </Popover>
-  )
-}
-
 function NotificationsButton({ notifications }: { notifications: ShellNotifications }) {
-  const { messages } = useLiro()
+  const { messages, format } = useLiro()
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -269,7 +143,10 @@ function NotificationsButton({ notifications }: { notifications: ShellNotificati
           family="neutral"
           emphasis="menu"
           shape="icon"
-          aria-label={messages['shell.notifications'](notifications.unread)}
+          aria-label={messages['shell.notifications'](
+            notifications.unread,
+            format.number(String(notifications.unread)),
+          )}
         >
           <span className="relative flex">
             <Bell aria-hidden="true" className="size-4.5" />
@@ -283,132 +160,146 @@ function NotificationsButton({ notifications }: { notifications: ShellNotificati
           </span>
         </ButtonPrimitive>
       </PopoverTrigger>
-      <PopoverContent align="end" className="shadow-md">
+      <PopoverContent align="end" className="box-border px-1 py-2 shadow-md">
         {notifications.panel}
       </PopoverContent>
     </Popover>
   )
 }
 
-function UserMenu({ user, companies }: { user: ShellUser; companies?: ShellCompanies }) {
+function UserMenu({
+  user,
+  companies,
+  onSwitchCompany,
+}: {
+  user: ShellUser
+  /** Phones: the company switcher moves into the user menu, as one entry. */
+  companies?: ShellCompanies
+  onSwitchCompany?: () => void
+}) {
   const { messages } = useLiro()
-  const [choosing, setChoosing] = useState(false)
-  const inline = companies !== undefined && companies.items.length <= COMPANY_SEARCH_THRESHOLD
-  const current = companies === undefined ? undefined : currentCompany(companies)
   return (
-    <>
-      <DropdownMenu modal={false}>
-        <DropdownMenuTrigger asChild>
-          <ButtonPrimitive
-            family="neutral"
-            emphasis="menu"
-            shape="icon"
-            aria-label={messages['shell.userMenu']}
-            className="px-1.25"
-          >
-            <PersonAvatar
-              name={user.name}
-              size="sm"
-              {...(user.avatarSrc === undefined ? {} : { src: user.avatarSrc })}
-            />
-          </ButtonPrimitive>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent
-          align="end"
-          className="box-border w-55 shadow-md [&_[data-slot=dropdown-menu-item]_svg]:size-3.5"
+    <DropdownMenu modal={false}>
+      <DropdownMenuTrigger asChild>
+        <ButtonPrimitive
+          family="neutral"
+          emphasis="menu"
+          shape="icon"
+          aria-label={messages['shell.userMenu']}
+          className="px-1.25"
         >
-          <div className="flex flex-col px-3 py-1.5">
-            <span className={cn('truncate text-xs font-semibold text-primary', TEXT_DIRECTION)}>
-              {user.name}
-            </span>
-            {user.email !== undefined && (
-              <span dir="ltr" className="truncate text-start text-xs text-tertiary">
-                {user.email}
-              </span>
-            )}
-          </div>
-          <DropdownMenuSeparator />
-          {companies !== undefined && inline && (
-            <>
-              <DropdownMenuLabel>{messages['shell.companies']}</DropdownMenuLabel>
-              {companies.items.map((company) => (
-                <DropdownMenuItem
-                  key={company.id}
-                  onSelect={() => {
-                    companies.onSelect(company.id)
-                  }}
-                  {...(company.id === companies.current ? { 'aria-current': 'true' as const } : {})}
-                >
-                  <span aria-hidden="true" className="flex size-3.5 shrink-0">
-                    {company.id === companies.current && <Check />}
-                  </span>
-                  <span className={cn('min-w-0 flex-1 truncate', TEXT_DIRECTION)}>
-                    {company.name}
-                  </span>
-                </DropdownMenuItem>
-              ))}
-              <DropdownMenuSeparator />
-            </>
-          )}
-          {companies !== undefined && !inline && (
-            <>
-              <DropdownMenuItem
-                onSelect={() => {
-                  setChoosing(true)
-                }}
-              >
-                <span className={cn('min-w-0 flex-1 truncate', TEXT_DIRECTION)}>
-                  {messages['shell.switchCompany'](current?.name ?? '')}
-                </span>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-            </>
-          )}
-          {user.entries.map((entry, index) => {
-            if (entry.type === 'separator') return <DropdownMenuSeparator key={index} />
-            if (entry.type === 'label') {
-              return <DropdownMenuLabel key={index}>{entry.label}</DropdownMenuLabel>
-            }
-            const Icon = entry.icon
-            return (
-              <DropdownMenuItem
-                key={index}
-                disabled={entry.disabled === true}
-                onSelect={entry.onSelect}
-                className={cn(
-                  entry.destructive === true &&
-                    'text-status-danger-fg data-highlighted:bg-status-danger-bg',
-                )}
-              >
-                {Icon !== undefined && <Icon aria-hidden="true" />}
-                <span className={cn('min-w-0 flex-1', TEXT_DIRECTION)}>{entry.label}</span>
-              </DropdownMenuItem>
-            )
-          })}
-        </DropdownMenuContent>
-      </DropdownMenu>
-      {companies !== undefined && !inline && (
-        <Dialog open={choosing} onOpenChange={setChoosing} title={messages['shell.companies']}>
-          <CompanyList
-            companies={companies}
-            onDone={() => {
-              setChoosing(false)
-            }}
+          <PersonAvatar
+            name={user.name}
+            size="sm"
+            {...(user.avatarSrc === undefined ? {} : { src: user.avatarSrc })}
           />
-        </Dialog>
-      )}
-    </>
+        </ButtonPrimitive>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="end"
+        className="box-border w-55 shadow-md [&_[data-slot=dropdown-menu-item]_svg]:size-3.5"
+      >
+        <div className="flex flex-col px-3 py-1.5">
+          <span className={cn('truncate text-xs font-semibold text-primary', TEXT_DIRECTION)}>
+            {user.name}
+          </span>
+          {user.email !== undefined && (
+            <span dir="ltr" className="truncate text-start text-xs text-tertiary">
+              {user.email}
+            </span>
+          )}
+        </div>
+        <DropdownMenuSeparator />
+        {companies !== undefined && onSwitchCompany !== undefined && (
+          <>
+            <DropdownMenuItem onSelect={onSwitchCompany}>
+              <Building2 aria-hidden="true" />
+              <span className={cn('min-w-0 flex-1 truncate', TEXT_DIRECTION)}>
+                {messages['shell.switchCompany'](currentCompanyName(companies))}
+              </span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </>
+        )}
+        {user.entries.map((entry, index) => {
+          if (entry.type === 'separator') return <DropdownMenuSeparator key={index} />
+          if (entry.type === 'label') {
+            return <DropdownMenuLabel key={index}>{entry.label}</DropdownMenuLabel>
+          }
+          const Icon = entry.icon
+          // The user menu is neutral (P4.9, the owner's review): signing out loses nothing, so it
+          // is never drawn in the danger colours; `destructive` is not read here.
+          return (
+            <DropdownMenuItem
+              key={index}
+              disabled={entry.disabled === true}
+              onSelect={entry.onSelect}
+            >
+              {Icon !== undefined && <Icon aria-hidden="true" />}
+              <span className={cn('min-w-0 flex-1', TEXT_DIRECTION)}>{entry.label}</span>
+            </DropdownMenuItem>
+          )
+        })}
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }
 
+/** Which ends of a scrolling row have more content past them (in reading order). */
+function useOverflowEnds(element: HTMLElement | null): { start: boolean; end: boolean } {
+  const [ends, setEnds] = useState({ start: false, end: false })
+  useEffect(() => {
+    if (element === null) return
+    const measure = () => {
+      // scrollLeft runs negative in right-to-left; its size from the start is what counts.
+      const fromStart = Math.abs(element.scrollLeft)
+      const room = element.scrollWidth - element.clientWidth
+      const next = { start: fromStart > 1, end: room - fromStart > 1 }
+      setEnds((last) => (last.start === next.start && last.end === next.end ? last : next))
+    }
+    measure()
+    element.addEventListener('scroll', measure, { passive: true })
+    const observer = new ResizeObserver(measure)
+    observer.observe(element)
+    for (const child of element.children) observer.observe(child)
+    return () => {
+      element.removeEventListener('scroll', measure)
+      observer.disconnect()
+    }
+  }, [element])
+  return ends
+}
+
+/**
+ * The mask that fades a scrolling row's edges where more lies past them: 32px from fully drawn to
+ * gone, toward the start and the end in reading order. A mask, not a colour: the row fades into
+ * whatever surface is behind it (only the mask's alpha counts, and currentcolor is opaque).
+ */
+export function edgeFade(
+  ends: { start: boolean; end: boolean },
+  direction: 'ltr' | 'rtl',
+): string | undefined {
+  if (!ends.start && !ends.end) return undefined
+  const towards = direction === 'rtl' ? 'to left' : 'to right'
+  const start = ends.start ? 'transparent, currentcolor 32px' : 'currentcolor, currentcolor'
+  const end = ends.end ? 'currentcolor calc(100% - 32px), transparent' : 'currentcolor'
+  return `linear-gradient(${towards}, ${start}, ${end})`
+}
+
 function ModuleTabs({ tabs }: { tabs: readonly ModuleTab[] }) {
-  const { messages, linkComponent: Link } = useLiro()
+  const { messages, direction, linkComponent: Link } = useLiro()
+  const [scroller, setScroller] = useState<HTMLElement | null>(null)
+  const mask = edgeFade(useOverflowEnds(scroller), direction)
   return (
     // On a narrow screen the row scrolls sideways, without a scrollbar of its own: a tab that takes
-    // the focus scrolls into view, and a finger swipes.
+    // the focus scrolls into view, and a finger swipes. While tabs lie past an edge, that edge
+    // fades into the header (P4.9), so the row shows that it goes on.
     <nav
+      ref={setScroller}
       aria-label={messages['shell.moduleTabs']}
+      data-fade={mask === undefined ? undefined : ''}
       className="-mb-px overflow-x-auto [scrollbar-width:none]"
+      {...(mask === undefined ? {} : { style: { maskImage: mask } })}
     >
       <ul className="m-0 flex h-10 list-none justify-center-safe p-0">
         {tabs.map((tab) => (
@@ -443,9 +334,31 @@ export function AppShell(props: AppShellProps) {
   const viewportPhone = usePhone()
   const phone = props.layout === undefined ? viewportPhone : props.layout === 'phone'
   const [searching, setSearching] = useState(false)
+  const [switching, setSwitching] = useState(false)
   const contentId = useId()
   const shortcut = props.searchShortcut ?? `${messages['grid.modifierKey']} K`
   const root = useRef<HTMLDivElement>(null)
+  // "Switch company…" in the command palette (P4.9): it opens the switcher once the palette has
+  // closed, so the palette's focus return does not close the popover again.
+  const commandItems: readonly CommandItem[] =
+    props.commands === undefined
+      ? []
+      : props.companies === undefined
+        ? props.commands.items
+        : [
+            ...props.commands.items,
+            {
+              id: 'liro-switch-company',
+              label: messages['shell.switchCompanyCommand'],
+              icon: Building2,
+              group: 'actions',
+              onSelect: () => {
+                window.setTimeout(() => {
+                  setSwitching(true)
+                }, 0)
+              },
+            },
+          ]
   const top = useRef<HTMLDivElement>(null)
 
   // The height of everything sticky at the top (bars, header, tabs), as --liro-shell-top on the
@@ -494,7 +407,8 @@ export function AppShell(props: AppShellProps) {
             <div className="flex min-w-0 flex-1 items-center gap-4">
               <BrandLockup {...props.brand} compact={phone} />
               {props.environmentMarker}
-              {!phone && props.breadcrumbs !== undefined && props.breadcrumbs.length > 0 && (
+              {/* One level is no trail: the page's title already says it (P4.9). */}
+              {!phone && props.breadcrumbs !== undefined && props.breadcrumbs.length > 1 && (
                 <>
                   <span
                     aria-hidden="true"
@@ -551,13 +465,22 @@ export function AppShell(props: AppShellProps) {
                   <NotificationsButton notifications={props.notifications} />
                 )}
                 {!phone && props.companies !== undefined && (
-                  <CompanySwitcher companies={props.companies} />
+                  <CompanySwitcher
+                    companies={props.companies}
+                    open={switching}
+                    onOpenChange={setSwitching}
+                  />
                 )}
                 {props.user !== undefined && (
                   <UserMenu
                     user={props.user}
                     {...(phone && props.companies !== undefined
-                      ? { companies: props.companies }
+                      ? {
+                          companies: props.companies,
+                          onSwitchCompany: () => {
+                            setSwitching(true)
+                          },
+                        }
                       : {})}
                   />
                 )}
@@ -582,7 +505,15 @@ export function AppShell(props: AppShellProps) {
         </div>
       )}
       {props.commands !== undefined && (
-        <CommandPalette {...props.commands} open={searching} onOpenChange={setSearching} />
+        <CommandPalette
+          {...props.commands}
+          items={commandItems}
+          open={searching}
+          onOpenChange={setSearching}
+        />
+      )}
+      {phone && props.companies !== undefined && (
+        <CompanySheet companies={props.companies} open={switching} onOpenChange={setSwitching} />
       )}
     </div>
   )

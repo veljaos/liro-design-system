@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { ExampleProvider, PhoneFrame, StoryProvider } from '../components/story-frames'
 import { settle } from '../primitives/story-helpers'
+import { showTable } from './chart-story-data'
 import { RadialChart, type RadialChartProps, type RadialItem } from './polar'
 
 /** Plan fulfilment by sales representative, percent of their September target. */
@@ -53,6 +54,12 @@ const meta = {
 export default meta
 
 type Story = StoryObj<typeof meta>
+
+/** "Show as table": the same values as a table; in right-to-left the columns follow the page. */
+export const AsTable: Story = {
+  name: 'Show as table',
+  play: showTable,
+}
 
 /** One ring: one person's plan; the title names it. */
 export const Simple: Story = {}
@@ -107,8 +114,7 @@ export const Stacked: Story = {
     items: BUDGET,
     stacked: true,
     currency: 'RSD',
-    decimals: 0,
-    centre: { value: '2512800', label: 'of 3.000.000 RSD' },
+    centre: { value: '2512800', label: 'of 3.000.000,00 RSD' },
     max: '3000000',
   },
 }
@@ -123,8 +129,7 @@ export const Goal: Story = {
     max: '68000000',
     palette: 'default',
     currency: 'RSD',
-    decimals: 0,
-    centre: { value: '52430000', label: 'of 68.000.000 RSD' },
+    centre: { value: '52430000', label: 'of 68.000.000,00 RSD' },
   },
 }
 
@@ -184,10 +189,9 @@ export const Japanese: Story = {
             title="2026年の売上計画"
             description="ディナール"
             currency="RSD"
-            decimals={0}
             items={[{ key: 'done', label: '達成', value: '52430000' }]}
             max="68000000"
-            centre={{ value: '52430000', label: '目標 68.000.000 RSD' }}
+            centre={{ value: '52430000', label: '目標 68.000.000,00 RSD' }}
           />
         </div>
       </ExampleProvider>

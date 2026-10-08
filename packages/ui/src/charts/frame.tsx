@@ -195,7 +195,14 @@ export function ChartCard(props: ChartCardProps) {
   )
 }
 
-/** The values as a table: the chart's text alternative and its "Show as table" view. */
+/**
+ * The values as a table: the chart's text alternative and its "Show as table" view.
+ * Right-to-left (P4.9, the owner's review: headers and columns stood on the wrong sides): a cell
+ * keeps the page's direction and its `text-start` / `text-end`; only the text inside it is
+ * isolated (an inline span or `bdi`), because `unicode-bidi: plaintext` on the cell itself
+ * resolves start and end against the text — a header of digits ("2026") is left to right and
+ * moved to the other side of a right-to-left cell.
+ */
 export function ValuesTable({
   title,
   categories,
@@ -222,13 +229,13 @@ export function ValuesTable({
           <tr>
             <th scope="col" className={cn(head, 'text-start')} />
             {series.map((each) => (
-              <th key={each.key} scope="col" className={cn(head, 'text-end', TEXT_ISOLATE)}>
-                {each.label}
+              <th key={each.key} scope="col" className={cn(head, 'text-end')}>
+                <span className={TEXT_ISOLATE}>{each.label}</span>
               </th>
             ))}
             {total !== undefined && (
-              <th scope="col" className={cn(head, 'text-end', TEXT_ISOLATE)}>
-                {total.label}
+              <th scope="col" className={cn(head, 'text-end')}>
+                <span className={TEXT_ISOLATE}>{total.label}</span>
               </th>
             )}
           </tr>
@@ -236,8 +243,8 @@ export function ValuesTable({
         <tbody>
           {categories.map((category) => (
             <tr key={category.key}>
-              <th scope="row" className={cn(cell, 'text-start font-regular', TEXT_DIRECTION)}>
-                {category.label}
+              <th scope="row" className={cn(cell, 'text-start font-regular')}>
+                <span className={TEXT_ISOLATE}>{category.label}</span>
               </th>
               {series.map((each) => (
                 <td key={each.key} className={cn(cell, 'text-end tabular-nums')}>

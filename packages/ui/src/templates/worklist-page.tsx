@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Button } from '../components/button'
+import { Checkbox } from '../primitives/checkbox'
 import { useBelowMd } from '../components/use-phone'
 import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
@@ -15,10 +16,14 @@ import { PageHeader } from './page-header'
  * - Below md: the list; choosing an item shows its detail full width with "Back to list" and
  *   "Next item".
  * - Rows (the old WorklistItem): the title (sm semibold), a subtitle (xs text.secondary), one
- *   deciding figure at the end (sm medium, tabular) with the status badge under it, and optional
- *   inline actions (Approve / Reject) under the text; rows separated by border.subtle, padding sm
- *   by md. The chosen row is surface.selected with a 3px border.selected bar at its start (the
- *   neutral selection, AGENTS.md D17). The detail pane is optional.
+ *   deciding figure at the end (sm medium, tabular) with the status badge under it; rows
+ *   separated by border.subtle, padding sm by md. The chosen row is surface.selected with a 3px
+ *   border.selected bar at its start (the neutral selection, AGENTS.md D17). The detail pane is
+ *   optional.
+ * - Decisions (Approve, Reject) stand only in the detail, where the item is seen whole, and in the
+ *   bulk bar for checked rows — never in every row (P4.9, the owner's review). With
+ *   `onCheckedChange` each row has a checkbox at its start (16px, a 24px target); `bulkBar` (a
+ *   BulkActionBar) stands above the list while any row is checked.
  */
 
 /** One item of the queue. */
@@ -31,8 +36,8 @@ export interface WorklistItem {
   figure?: ReactNode
   /** A StatusBadge. */
   status?: ReactNode
-  /** Small buttons acted on without opening the item (Approve, Reject). */
-  actions?: ReactNode
+  /** The item's name as plain text, for its checkbox ("UF-2026-1187"). Default: the title, if text. */
+  label?: string
 }
 
 export interface WorklistPageProps {
@@ -56,6 +61,12 @@ export interface WorklistPageProps {
   onNext?: () => void
   /** Above the list (a FilterBar or a count). */
   toolbar?: ReactNode
+  /** The checked rows' ids (for bulk decisions). */
+  checked?: readonly string[]
+  /** Gives every row a checkbox; reports the checked ids. */
+  onCheckedChange?: (ids: string[]) => void
+  /** Above the list while any row is checked: a BulkActionBar with the decisions. */
+  bulkBar?: ReactNode
   /** Shown instead of the rows when there are none (an EmptyState). */
   empty?: ReactNode
   /** 'split' (list and detail side by side) or 'stacked'; default by the viewport (62em). */
@@ -67,23 +78,38 @@ function Row({
   item,
   selected,
   onSelect,
+  check,
 }: {
   item: WorklistItem
   selected: boolean
   onSelect?: (id: string) => void
+  check?: { checked: boolean; onChange: (checked: boolean) => void }
 }) {
+  const { messages } = useLiro()
   const choose = () => onSelect?.(item.id)
+  const name = item.label ?? (typeof item.title === 'string' ? item.title : item.id)
   return (
     <li
       aria-current={selected ? 'true' : undefined}
       data-liro-surface={selected ? 'selected' : undefined}
       className={cn(
-        'relative box-border flex flex-col gap-2 border-0 border-b border-solid border-subtle px-4 py-3',
+        'relative box-border flex items-start gap-3 border-0 border-b border-solid border-subtle px-4 py-3',
         selected
           ? "bg-surface-selected before:absolute before:inset-y-0 before:start-0 before:border-0 before:border-s-[3px] before:border-solid before:border-selected before:content-['']"
           : 'hover:bg-surface-hover',
       )}
     >
+      {check !== undefined && (
+        // Outside the row's button; 16px with a 24px target, on the title's first line.
+        <Checkbox
+          checked={check.checked}
+          onCheckedChange={(value) => {
+            check.onChange(value === true)
+          }}
+          aria-label={messages['table.selectRow'](name)}
+          className="mt-0.5 flex size-4 after:-inset-1 [&_svg]:size-2.5"
+        />
+      )}
       <div
         role="button"
         tabIndex={0}
@@ -95,7 +121,7 @@ function Row({
             choose()
           }
         }}
-        className="flex cursor-pointer items-start gap-4 rounded-sm outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+        className="flex min-w-0 flex-1 cursor-pointer items-start gap-4 rounded-sm outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
       >
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
           <span className={cn('text-sm font-semibold text-primary', TEXT_DIRECTION)}>
@@ -114,9 +140,6 @@ function Row({
           </div>
         )}
       </div>
-      {item.actions !== undefined && (
-        <div className="flex flex-wrap items-center gap-2">{item.actions}</div>
-      )}
     </li>
   )
 }
@@ -161,9 +184,14 @@ export function WorklistPage(props: WorklistPageProps) {
   const stacked = props.layout === undefined ? viewportNarrow : props.layout === 'stacked'
   const showDetail = props.detail !== undefined && props.selected !== undefined
 
+  const checked = props.checked ?? []
+  const onChecked = props.onCheckedChange
   const list = (
     <div className="flex min-h-0 min-w-0 flex-col">
       {props.toolbar}
+      {props.bulkBar !== undefined && checked.length > 0 && (
+        <div className="border-0 border-b border-solid border-subtle p-3">{props.bulkBar}</div>
+      )}
       {props.items.length === 0 ? (
         props.empty
       ) : (
@@ -174,6 +202,18 @@ export function WorklistPage(props: WorklistPageProps) {
               item={item}
               selected={item.id === props.selected}
               {...(props.onSelect === undefined ? {} : { onSelect: props.onSelect })}
+              {...(onChecked === undefined
+                ? {}
+                : {
+                    check: {
+                      checked: checked.includes(item.id),
+                      onChange: (on: boolean) => {
+                        onChecked(
+                          on ? [...checked, item.id] : checked.filter((id) => id !== item.id),
+                        )
+                      },
+                    },
+                  })}
             />
           ))}
         </ul>

@@ -53,6 +53,27 @@ export const Kinds: Story = {
   ),
 }
 
+/** With an action: "Undo" before the close button, only when the application can undo. */
+export const WithAction: Story = {
+  name: 'With an action (Undo)',
+  render: () => (
+    <div className="flex max-w-full flex-col gap-4" style={WIDTH}>
+      <NoticeView
+        id="a"
+        kind="success"
+        message="UF-2026-1187 approved."
+        action={{ label: 'Undo', onClick: () => undefined }}
+      />
+      <NoticeView
+        id="b"
+        kind="info"
+        message="UF-2026-1186 rejected: Wrong quantity on line 2."
+        action={{ label: 'Undo', onClick: () => undefined }}
+      />
+    </div>
+  ),
+}
+
 /** Loading, then its result; an error stays until closed with its button. */
 export const LoadingThenResult: Story = {
   name: 'Loading, then the result',

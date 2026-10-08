@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { FileSpreadsheet } from 'lucide-react'
 import { useState, type ComponentProps } from 'react'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { settle } from '../primitives/story-helpers'
@@ -95,6 +96,9 @@ function Controlled(
     />
   )
 }
+
+/** The list's actions as menu entries for phones (P4.9). */
+const PHONE_MENU = [{ label: 'Export', icon: FileSpreadsheet, onSelect: () => undefined }]
 
 const ACTIONS = (
   <>
@@ -307,14 +311,43 @@ export const InCard: Story = {
   ),
 }
 
-/** Phone: search full width; every filter in the drawer; "Sort" shows the current sort. */
+/**
+ * Phone: search first, full width; every filter in the drawer; "Sort" shows the current sort; the
+ * list's actions in one "⋯" menu (`phoneMenu`) instead of the desktop row (P4.9).
+ */
 export const Phone: Story = {
   name: 'Phone width',
   render: () => (
     <div className="w-[390px] max-w-full">
-      <Controlled inline={2} layout="phone" initial={{ status: 'sent' }} />
+      <Controlled
+        inline={2}
+        layout="phone"
+        initial={{ status: 'sent' }}
+        actions={ACTIONS}
+        phoneMenu={PHONE_MENU}
+      />
     </div>
   ),
+}
+
+/** The phone's "⋯" menu with the list's actions (Export). */
+export const PhoneActions: Story = {
+  name: 'Phone actions menu',
+  render: () => (
+    <div className="w-[390px] max-w-full">
+      <Controlled layout="phone" actions={ACTIONS} phoneMenu={PHONE_MENU} />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const body = within(canvasElement.ownerDocument.body)
+    await expect(within(canvasElement).queryByRole('button', { name: 'Export' })).toBeNull()
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'More actions' }))
+    const menu = await body.findByRole('menu')
+    await settle()
+    await waitFor(() =>
+      expect(within(menu).getByRole('menuitem', { name: 'Export' })).toBeVisible(),
+    )
+  },
 }
 
 /** The phone's sort menu: the sortable columns, then the two directions, with check marks. */

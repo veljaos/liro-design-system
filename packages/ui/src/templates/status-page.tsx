@@ -18,7 +18,7 @@ import type { LiroMessages } from '../provider/messages'
 
 /*
  * StatusPage (P4.7, the owner's values, docs/decisions.md "Status pages and AuthShell"): the
- * pages for 401, 402, 403, 404, 500, maintenance and a suspended account — the one place where
+ * pages for 401, 402, 403, 404, 500, maintenance and a suspension — the one place where
  * centring is right.
  * - Full height on the raised surface; a centred column at most 440px wide, 24px (lg) apart:
  *   the large lockup (24px), an 84 × 84px square (radius xl) filled with the tone's solid colour
@@ -29,6 +29,9 @@ import type { LiroMessages } from '../provider/messages'
  * - Tone and icon by kind (owner): 401 warning LogIn, 402 warning CreditCard, 403 warning Lock,
  *   404 neutral FileQuestionMark, 500 danger ServerCrash, maintenance warning Construction,
  *   suspended danger Ban. Blue never fills a large surface (D17).
+ * - Suspended (P4.9, owner): the subject is the user's own account (the default, "Your account
+ *   is suspended.") or a company (`subject`, "Access for Kvadrat Gradnja d.o.o. is suspended."),
+ *   its name from the application.
  * - Titles and descriptions default to `messages` (the Core translates them); the application
  *   may pass its own. No logo inside (D18): the lockup's names come through `brand`.
  */
@@ -83,6 +86,9 @@ export function statusLook(kind: StatusKind): Readonly<KindLook> {
   return KIND_LOOK[kind]
 }
 
+/** What a suspension is about: the user's own account, or a company, named by the application. */
+export type SuspendedSubject = { kind: 'account' } | { kind: 'company'; name: string }
+
 /** One button of a status page: a link when it has `href`, else a button. */
 export interface StatusAction {
   label: string
@@ -104,6 +110,11 @@ export interface StatusPageProps {
    * and suspension. `null` removes it.
    */
   eyebrow?: string | null
+  /**
+   * `suspended` only: whose access is suspended — the user's account (default) or a company,
+   * which changes the default title and description.
+   */
+  subject?: SuspendedSubject
   /** The case number the application received for the failure, so the user can quote it. */
   caseId?: string
   /** The main action, filled ("Sign in", "Try again"). */
@@ -178,8 +189,18 @@ export function StatusPage(props: StatusPageProps) {
   const look = KIND_LOOK[props.kind]
   const Icon = look.icon
   const [titleKey, descriptionKey] = TITLES[props.kind]
-  const title = props.title ?? (messages[titleKey] as string)
-  const description = props.description ?? (messages[descriptionKey] as string)
+  const company =
+    props.kind === 'suspended' && props.subject?.kind === 'company' ? props.subject.name : undefined
+  const title =
+    props.title ??
+    (company === undefined
+      ? (messages[titleKey] as string)
+      : messages['status.suspendedCompanyTitle'])
+  const description =
+    props.description ??
+    (company === undefined
+      ? (messages[descriptionKey] as string)
+      : messages['status.suspendedCompanyDescription'](company))
   const eyebrow = props.eyebrow === undefined ? look.code : props.eyebrow
   const hasActions = props.primaryAction !== undefined || props.secondaryAction !== undefined
   return (

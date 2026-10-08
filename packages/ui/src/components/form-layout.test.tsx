@@ -48,7 +48,7 @@ describe('FormSection', () => {
         </FormFullWidth>
       </FormSection>,
     )
-    expect(html).toContain('grid grid-cols-1 gap-4 sm:grid-cols-2')
+    expect(html).toContain('grid grid-cols-1 gap-4 @min-[36rem]:grid-cols-2')
     expect(html).toContain('col-span-full')
     expect(html).toContain('<h4')
   })
@@ -62,7 +62,7 @@ describe('FormSection', () => {
     expect(html).toContain('aria-expanded="false"')
     expect(html).toContain('hidden=""')
     expect(html).toContain('>Reference</label>')
-    expect(html).toContain('sm:grid-cols-3')
+    expect(html).toContain('@min-[54rem]:grid-cols-3')
     expect(
       render(
         <FormSection title="More" collapsible defaultOpen>

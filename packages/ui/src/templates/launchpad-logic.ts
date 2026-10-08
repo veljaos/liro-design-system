@@ -75,3 +75,53 @@ export function isTyping(target: EventTarget | null): boolean {
     target.closest('input, textarea, select, [role="combobox"], [role="textbox"]') !== null
   )
 }
+
+/** A card's place in the grid while dragging, measured from the list's top-left corner. */
+export interface CardSlot {
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
+/**
+ * The place a dragged card would take: the slot whose centre is nearest to the dragged card's
+ * centre. Measured on the laid-out slots, so it holds in both directions (Appendix B.7: the grid
+ * already runs from the leading edge, and the slots are where the cards really stand).
+ */
+export function dragTargetIndex(
+  slots: readonly CardSlot[],
+  centre: { x: number; y: number },
+): number {
+  let best = 0
+  let bestDistance = Number.POSITIVE_INFINITY
+  slots.forEach((slot, index) => {
+    const dx = slot.x + slot.width / 2 - centre.x
+    const dy = slot.y + slot.height / 2 - centre.y
+    const distance = dx * dx + dy * dy
+    if (distance < bestDistance) {
+      best = index
+      bestDistance = distance
+    }
+  })
+  return best
+}
+
+/** The ids with `id` moved to the place `index` (the order shown while dragging). */
+export function moveModuleTo(ids: readonly string[], id: string, index: number): string[] {
+  const from = ids.indexOf(id)
+  if (from === -1) return [...ids]
+  return moveModule(ids, id, Math.max(0, Math.min(ids.length - 1, index)) - from)
+}
+
+/** How far a card moves (x, y) from its own slot to the slot it takes in the shown order. */
+export function slotShift(
+  slots: readonly CardSlot[],
+  from: number,
+  to: number,
+): { x: number; y: number } {
+  const a = slots[from]
+  const b = slots[to]
+  if (a === undefined || b === undefined) return { x: 0, y: 0 }
+  return { x: b.x - a.x, y: b.y - a.y }
+}

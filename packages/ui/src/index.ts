@@ -49,11 +49,15 @@ export {
   confirmTone,
   DeleteConfirmDialog,
   IrreversibleConfirmDialog,
+  ReasonConfirmDialog,
 } from './components/confirm-dialog'
 export type {
+  ConfirmAnswer,
   ConfirmDialogProps,
+  ConfirmReason,
   DeleteConfirmDialogProps,
   IrreversibleConfirmDialogProps,
+  ReasonConfirmDialogProps,
 } from './components/confirm-dialog'
 export { DataTable } from './components/data-table'
 export { EditableGrid } from './components/editable-grid'
@@ -68,6 +72,7 @@ export type {
 export {
   FormActions,
   FormFullWidth,
+  FormGrid,
   FormSection,
   FormTabs,
   FormWizard,
@@ -75,6 +80,7 @@ export {
 } from './components/form-layout'
 export type {
   FormActionsProps,
+  FormGridProps,
   FormSectionProps,
   FormTab,
   FormTabsProps,
@@ -161,7 +167,7 @@ export type { PopoverProps, TooltipProps } from './components/popover'
 export { initialsOf, PersonAvatar, PersonName } from './components/person'
 export type { PersonAvatarProps, PersonNameProps } from './components/person'
 export { notice, Toaster } from './components/notice'
-export type { NoticeKind, NoticeOptions } from './components/notice'
+export type { NoticeAction, NoticeKind, NoticeOptions } from './components/notice'
 export { ProgressBar, Skeleton, Stepper, stepState } from './components/progress'
 export type {
   ProgressBarProps,
@@ -210,15 +216,36 @@ export type {
   NumberScheme,
   Weekday,
 } from './provider'
-export { AppShell, COMPANY_SEARCH_THRESHOLD, matchingCompanies } from './templates/app-shell'
+export {
+  AppShell,
+  COMPANY_SEARCH_THRESHOLD,
+  companySections,
+  matchingCompanies,
+} from './templates/app-shell'
 export type {
   AppShellProps,
+  CompanySection,
   ModuleTab,
   ShellCompanies,
   ShellCompany,
   ShellNotifications,
   ShellUser,
 } from './templates/app-shell'
+export { NotificationsPanel } from './templates/notifications-panel'
+export type { NotificationsPanelProps } from './templates/notifications-panel'
+export { NotificationsPage } from './templates/notifications-page'
+export type { NotificationFilter, NotificationsPageProps } from './templates/notifications-page'
+export {
+  filterNotifications,
+  groupByDay,
+  notificationDay,
+  notificationFiltersActive,
+} from './templates/notifications-logic'
+export type {
+  NotificationFilters,
+  NotificationGroup,
+  NotificationItem,
+} from './templates/notifications-logic'
 export { Launchpad } from './templates/launchpad'
 export type { LaunchpadModule, LaunchpadProps } from './templates/launchpad'
 export {
@@ -227,7 +254,14 @@ export {
   launchpadDigitTarget,
   moveModule,
 } from './templates/launchpad-logic'
-export { ColumnChooser, ListPage, QuickPreview } from './templates/list-page'
+export {
+  ColumnChooser,
+  ListPage,
+  QuickPreview,
+  splitViews,
+  VIEW_SEARCH_THRESHOLD,
+  VISIBLE_VIEWS,
+} from './templates/list-page'
 export type {
   ChooserColumn,
   ColumnChooserProps,
@@ -251,6 +285,15 @@ export { DocumentTotals } from './components/document-totals'
 export type { DocumentTotalsProps, TotalsRow } from './components/document-totals'
 export { SidePanels } from './components/side-panels'
 export type { SidePanel, SidePanelsProps } from './components/side-panels'
+export { ActivityList, RelatedDocuments } from './components/panel-lists'
+export type {
+  ActivityEntry,
+  ActivityListProps,
+  RelatedDocument,
+  RelatedDocumentsProps,
+} from './components/panel-lists'
+export { ChangeableValue } from './components/changeable-value'
+export type { ChangeableValueProps } from './components/changeable-value'
 export { DocumentPage } from './templates/document-page'
 export type { Counterparty, DocumentPageProps, DocumentSection } from './templates/document-page'
 export { sparklinePoints, StatCard } from './components/stat-card'
@@ -267,6 +310,11 @@ export type {
   SettingsSection,
 } from './templates/settings-page'
 export { StatusPage, STATUS_KINDS, statusLook } from './templates/status-page'
-export type { StatusAction, StatusKind, StatusPageProps } from './templates/status-page'
+export type {
+  StatusAction,
+  StatusKind,
+  StatusPageProps,
+  SuspendedSubject,
+} from './templates/status-page'
 export { AuthShell } from './templates/auth-shell'
 export type { AuthShellProps } from './templates/auth-shell'

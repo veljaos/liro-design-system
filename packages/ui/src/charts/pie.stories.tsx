@@ -3,9 +3,10 @@ import { useState } from 'react'
 import { SelectField } from '../components/select-field'
 import { ExampleProvider, percentText, PhoneFrame, StoryProvider } from '../components/story-frames'
 import { settle } from '../primitives/story-helpers'
+import { showTable } from './chart-story-data'
 import { PieChart, type PieChartProps, type PieSlice } from './pie'
 
-/** Receivables by age on 06.10.2026., RSD; the shares are the application's. */
+/** Receivables by age on 6 October 2026, in RSD; the shares are the application's. */
 const RECEIVABLES: PieSlice[] = [
   { key: 'current', label: 'Not due', value: '1842300.00', share: percentText('62.4') },
   { key: 'late30', label: 'Up to 30 days', value: '688120.50', share: percentText('23.3') },
@@ -71,6 +72,12 @@ const meta = {
 export default meta
 
 type Story = StoryObj<typeof meta>
+
+/** "Show as table": the same values as a table; in right-to-left the columns follow the page. */
+export const AsTable: Story = {
+  name: 'Show as table',
+  play: showTable,
+}
 
 /** A full disc, each slice named with its share outside (never colour alone). */
 export const Simple: Story = {}

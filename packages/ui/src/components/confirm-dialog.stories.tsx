@@ -1,9 +1,14 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { Ban, CheckCheck } from 'lucide-react'
+import { Ban, CheckCheck, CircleX } from 'lucide-react'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { settle } from '../primitives/story-helpers'
 import { Button } from './button'
-import { ConfirmDialog, DeleteConfirmDialog, IrreversibleConfirmDialog } from './confirm-dialog'
+import {
+  ConfirmDialog,
+  DeleteConfirmDialog,
+  IrreversibleConfirmDialog,
+  ReasonConfirmDialog,
+} from './confirm-dialog'
 import { ARABIC, JAPANESE, LONG } from './field-story-data'
 import { PhoneFrame, StoryProvider } from './story-frames'
 
@@ -157,6 +162,67 @@ export const Irreversible: Story = {
     await userEvent.type(
       within(dialog).getByRole('textbox', { name: 'Type F-114 to confirm' }),
       'F-114',
+    )
+    await expect(button).toBeEnabled()
+  },
+}
+
+/** Reject with a written reason: the button enables once a reason is written. */
+export const Reason: Story = {
+  render: () => (
+    <ReasonConfirmDialog
+      defaultOpen
+      family="destructive"
+      actionIcon={CircleX}
+      title="Reject UF-2026-1187?"
+      message="EPS Snabdevanje d.o.o. is told the reason through SEF."
+      reasonLabel="Reason for rejection"
+      confirmLabel="Reject"
+      onConfirm={() => undefined}
+    />
+  ),
+  play: async ({ canvasElement }) => {
+    const body = within(canvasElement.ownerDocument.body)
+    const dialog = await body.findByRole('alertdialog')
+    await settle()
+    const button = within(dialog).getByRole('button', { name: 'Reject' })
+    await expect(button).toBeDisabled()
+    await userEvent.type(
+      within(dialog).getByRole('textbox', { name: /Reason for rejection/ }),
+      'Wrong quantity on line 2',
+    )
+    await expect(button).toBeEnabled()
+  },
+}
+
+/** Reject with a reason from the Core's list and optional details. */
+export const ReasonList: Story = {
+  name: 'Reason from a list',
+  render: () => (
+    <ReasonConfirmDialog
+      defaultOpen
+      family="destructive"
+      actionIcon={CircleX}
+      title="Reject UF-2026-1187?"
+      reasonLabel="Reason for rejection"
+      reasons={[
+        { value: 'price', label: 'Price differs from the order' },
+        { value: 'quantity', label: 'Quantity differs from the delivery' },
+        { value: 'duplicate', label: 'Invoice already received' },
+        { value: 'other', label: 'Other' },
+      ]}
+      confirmLabel="Reject"
+      onConfirm={() => undefined}
+    />
+  ),
+  play: async ({ canvasElement }) => {
+    const body = within(canvasElement.ownerDocument.body)
+    const dialog = await body.findByRole('alertdialog')
+    await settle()
+    const button = within(dialog).getByRole('button', { name: 'Reject' })
+    await expect(button).toBeDisabled()
+    await userEvent.click(
+      within(dialog).getByRole('radio', { name: 'Quantity differs from the delivery' }),
     )
     await expect(button).toBeEnabled()
   },

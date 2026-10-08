@@ -39,8 +39,8 @@ function ToolbarSample() {
     ['Today (fixed in this story)', `${today} · ${format.date(today)}`],
     ['Month', `${format.monthName(3, 'long')} · ${format.monthName(3, 'short')}`],
     ['Week starts on', format.weekdayName(weekStartsOn, 'long')],
-    ['Message', messages['table.count'](12345, true)],
-    ['Message', messages['table.count'](10000, false)],
+    ['Message', messages['table.count'](12345, format.number('12345'), true)],
+    ['Message', messages['table.count'](10000, format.number('10000'), false)],
   ]
   return (
     <div className="flex max-w-xl flex-col gap-4">
