@@ -329,7 +329,9 @@ export const BankStatementScreen: Story = {
     await settle()
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('heading', { level: 1, name: 'Statement 188' })).toBeVisible()
-    await expect(canvasElement).toHaveTextContent(SERBIAN.money(STATEMENT_TOTALS.closing, 'RSD'))
+    await expect(canvasElement).toHaveTextContent(
+      SERBIAN.number(STATEMENT_TOTALS.closing, { decimals: 2 }),
+    )
     // Three lines were matched at import.
     const matched = canvas.getByRole('heading', { name: 'Matched' }).parentElement
     if (matched === null) throw new Error('no matched section')
@@ -445,7 +447,7 @@ export const PayrollScreen: Story = {
       PAYROLL_TOTALS.tax,
       PAYROLL_TOTALS.net,
     ]) {
-      await expect(canvasElement).toHaveTextContent(SERBIAN.money(value, 'RSD'))
+      await expect(canvasElement).toHaveTextContent(SERBIAN.number(value, { decimals: 2 }))
     }
   },
 }
