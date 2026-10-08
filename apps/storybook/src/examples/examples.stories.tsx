@@ -352,7 +352,7 @@ export const UsersAndRoles: Story = {
     await userEvent.click(canvas.getByRole('button', { name: 'Cancel' }))
     await expect(cell).not.toBeChecked()
     // A built-in role is read-only.
-    await userEvent.click(canvas.getByRole('row', { name: /Accountant/ }))
+    await userEvent.click(canvas.getByRole('row', { name: /^Accountant Built-in/ }))
     await expect(canvas.getByRole('heading', { name: 'Permissions: Accountant' })).toBeVisible()
     await expect(canvas.queryByRole('checkbox', { name: 'Edit: Supplier invoices' })).toBeNull()
   },
