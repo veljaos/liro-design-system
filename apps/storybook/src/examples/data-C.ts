@@ -4,8 +4,6 @@
  * the tasks board — all on 6 October 2026, linked to the records of the one dataset
  * (`examples-story-data.ts`). Not part of the package. No classes here.
  */
-import googleMark from '@veljaos/tokens/brand/providers/google.svg'
-import microsoftMark from '@veljaos/tokens/brand/providers/microsoft.svg'
 import type {
   KanbanColumn,
   PermissionAction,
@@ -29,13 +27,13 @@ export const C_ROUTES = {
 
 // ── Sign-in providers ─────────────────────────────────────────────────────────────────────────
 
-/** The application passes its copy of the official marks (`@veljaos/tokens/brand/providers/`). */
+/** Microsoft's and Google's official marks are drawn by ProviderSignInButtons ('microsoft', 'google'). */
 export function signInProviders(onClick: (id: string) => void): SignInProvider[] {
   return [
     {
       id: 'microsoft',
       label: 'Continue with Microsoft',
-      mark: microsoftMark,
+      mark: 'microsoft',
       onClick: () => {
         onClick('microsoft')
       },
@@ -43,7 +41,7 @@ export function signInProviders(onClick: (id: string) => void): SignInProvider[]
     {
       id: 'google',
       label: 'Continue with Google',
-      mark: googleMark,
+      mark: 'google',
       onClick: () => {
         onClick('google')
       },

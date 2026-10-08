@@ -1,5 +1,6 @@
 import { ArrowRight } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
+import { isProviderMark, ProviderMarkIcon, type ProviderMark } from './provider-marks'
 import { ButtonPrimitive } from '../primitives/button'
 import { TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
 import { cn } from '../primitives/cn'
@@ -14,9 +15,10 @@ import { TextField } from './text-field'
  *   lines for "No account?" and the terms. The e-mail is the only field: the Core decides the
  *   next step (password, a code, the company's identity provider).
  * - ProviderSignInButtons: "Continue with Microsoft" / "Continue with Google". The providers and
- *   their labels come from the application; each provider's official mark comes in as a file
- *   (AGENTS.md D18: no component contains a logo; `@veljaos/tokens/brand/providers/` ships the
- *   marks). Neutral default buttons — never the provider's colour as a fill; the mark keeps its
+ *   their labels come from the application; Microsoft's and Google's official marks are drawn by
+ *   the Design System (`provider-marks.tsx`, the owner: beside this component, not in
+ *   @veljaos/tokens; D18 is about Liro's own logo), another provider's mark comes in as a file.
+ *   Neutral default buttons — never the provider's colour as a fill; the mark keeps its
  *   own colours, 18px, 12px before the label (Microsoft's spacing), full width, 8px apart.
  * - Loading: the pressed button keeps its size and name, its content hidden behind the loader
  *   (ConfirmDialog's look), `aria-busy`; it cannot be pressed twice.
@@ -38,10 +40,11 @@ export interface SignInProvider {
   /** The button's text, from the application: "Continue with Microsoft". */
   label: string
   /**
-   * The address of the provider's official mark, e.g. the application's copy of
-   * `@veljaos/tokens/brand/providers/microsoft.svg`. Drawn 18px, decorative (the label names it).
+   * The provider's official mark: 'microsoft' or 'google' draws the mark the Design System ships
+   * (exactly as the provider's branding rules require); any other value is the address of the
+   * application's own file for another provider. Drawn 18px, decorative (the label names it).
    */
-  mark: string
+  mark: ProviderMark | (string & {})
   onClick: () => void
   /** The provider cannot be used now. */
   disabled?: boolean
@@ -103,13 +106,17 @@ export function ProviderSignInButtons(props: ProviderSignInButtonsProps) {
               }}
             >
               <span className={cn('contents', busy && '[&>*]:opacity-0')}>
-                <img
-                  src={provider.mark}
-                  alt=""
-                  width={18}
-                  height={18}
-                  className="size-4.5 shrink-0"
-                />
+                {isProviderMark(provider.mark) ? (
+                  <ProviderMarkIcon mark={provider.mark} />
+                ) : (
+                  <img
+                    src={provider.mark}
+                    alt=""
+                    width={18}
+                    height={18}
+                    className="size-4.5 shrink-0"
+                  />
+                )}
                 <span className={TEXT_DIRECTION}>{provider.label}</span>
               </span>
               {busy && <Loader />}

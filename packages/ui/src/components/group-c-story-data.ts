@@ -10,15 +10,8 @@ import type { SetupStep } from './setup-checklist'
 import type { Signer } from './signer-list'
 import type { SignInProvider } from './sign-in'
 
-/**
- * The providers' official marks, as `@veljaos/tokens/brand/providers/` ships them; Storybook
- * serves the brand folder under /brand (main.ts), so the stories pass these addresses as an
- * application passes its copy of the files (D18: no component contains a logo).
- */
-export const PROVIDER_MARKS = {
-  microsoft: 'brand/providers/microsoft.svg',
-  google: 'brand/providers/google.svg',
-} as const
+/** The providers' official marks, drawn by ProviderSignInButtons itself. */
+export const PROVIDER_MARKS = { microsoft: 'microsoft', google: 'google' } as const
 
 /**
  * The two providers of the owner's brief, with the labels an application passes (English by

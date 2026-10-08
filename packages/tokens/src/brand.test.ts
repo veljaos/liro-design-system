@@ -21,27 +21,6 @@ const SVGS = [
   'web/favicon.svg',
 ]
 
-/**
- * The sign-in providers' official marks (P5.6), drawn exactly as each provider's sign-in branding
- * rules give them, for ProviderSignInButtons: Microsoft's four squares (21 × 21, 9px squares 1px
- * apart) and Google's standard-colour "G". Trademarks of their owners; the files carry no Liro
- * name.
- */
-const PROVIDERS = [
-  {
-    file: 'providers/microsoft.svg',
-    title: 'Microsoft',
-    viewBox: '0 0 21 21',
-    colours: ['#F25022', '#00A4EF', '#7FBA00', '#FFB900'],
-  },
-  {
-    file: 'providers/google.svg',
-    title: 'Google',
-    viewBox: '0 0 48 48',
-    colours: ['#EA4335', '#4285F4', '#FBBC05', '#34A853'],
-  },
-]
-
 /** Width and height of a PNG, from its IHDR chunk. */
 function pngSize(bytes: Buffer): [number, number] {
   assert.equal(bytes.toString('ascii', 1, 4), 'PNG')
@@ -60,9 +39,8 @@ function icoSizes(bytes: Buffer): number[] {
 describe('brand', () => {
   it('has exactly the expected files', () => {
     const files = [
-      ...readdirSync(brand).filter((name) => name !== 'web' && name !== 'providers'),
+      ...readdirSync(brand).filter((name) => name !== 'web'),
       ...readdirSync(new URL('web/', brand)).map((name) => `web/${name}`),
-      ...readdirSync(new URL('providers/', brand)).map((name) => `providers/${name}`),
     ].sort()
     assert.deepEqual(
       files,
@@ -80,7 +58,6 @@ describe('brand', () => {
         'web/icon-512.png',
         'web/icon-maskable-512.png',
         'web/site.webmanifest',
-        ...PROVIDERS.map((provider) => provider.file),
       ].sort(),
     )
   })
@@ -127,16 +104,5 @@ describe('brand', () => {
       assert.ok(read(`web/${icon.src.replace(/^\//, '')}`).length > 0, icon.src)
     }
     assert.ok(manifest.icons.some((icon) => icon.purpose === 'maskable'))
-  })
-
-  it.each(PROVIDERS)('$file is the official mark, clean', (provider) => {
-    const svg = read(provider.file).toString('utf8')
-    assert.match(svg, new RegExp(`^<svg [^>]*viewBox="${provider.viewBox}"`))
-    assert.match(svg, new RegExp(`<title>${provider.title}</title>`))
-    for (const forbidden of [/<text/, /<image/, /<script/, /@font-face/, /font-family/, /data:/]) {
-      assert.doesNotMatch(svg, forbidden)
-    }
-    const fills = [...svg.matchAll(/fill="(#[0-9A-F]{6})"/g)].map((match) => match[1])
-    assert.deepEqual(fills, provider.colours)
   })
 })

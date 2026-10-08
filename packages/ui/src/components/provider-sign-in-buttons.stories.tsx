@@ -25,10 +25,9 @@ const meta = {
           'provider’s **official mark** keeps its own colours at 18px — never the provider’s ' +
           'colour as the button’s fill. The "or" divider (`divider`: above or below) separates ' +
           'them from the e-mail form.\n\n' +
-          '**Marks:** no component contains a logo (D18). The marks are shipped in ' +
-          '`@veljaos/tokens/brand/providers/` (`microsoft.svg`, `google.svg`), drawn as each ' +
-          'provider’s sign-in branding rules give them; the application passes their address ' +
-          '(`mark`). Microsoft and Google and their marks are trademarks of their owners; use ' +
+          '**Marks:** `mark` "microsoft" or "google" draws that provider’s official mark, ' +
+          'shipped with this component exactly as each provider’s sign-in branding rules give ' +
+          'it; another provider’s mark is the address of the application’s file. Microsoft and Google and their marks are trademarks of their owners; use ' +
           'them only for signing in with that provider. The labels are the application’s and ' +
           'follow the providers’ wording ("Continue with …", "Sign in with …").\n\n' +
           '**States:** `loading` on the pressed provider (busy, the others unavailable until the ' +
@@ -61,9 +60,8 @@ export const Default: Story = {
     await expect(canvas.getByRole('button', { name: 'Continue with Microsoft' })).toHaveFocus()
     await userEvent.keyboard('{Enter}')
     await userEvent.click(canvas.getByRole('button', { name: 'Continue with Google' }))
-    const marks = Array.from(canvasElement.querySelectorAll('img'))
-    await expect(marks.map((mark) => mark.getAttribute('alt'))).toEqual(['', ''])
-    await expect(marks.every((mark) => mark.complete && mark.naturalWidth > 0)).toBe(true)
+    const marks = Array.from(canvasElement.querySelectorAll('[data-slot="provider-mark"]'))
+    await expect(marks.map((mark) => mark.getAttribute('aria-hidden'))).toEqual(['true', 'true'])
     await expect(onProvider).toHaveBeenCalledWith('microsoft')
     await expect(onProvider).toHaveBeenCalledWith('google')
   },
