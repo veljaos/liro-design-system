@@ -624,7 +624,7 @@ function Situation({ phone }: { phone: boolean }) {
               getRowId={(row) => row.id}
               getRowLabel={(row) => `${row.position?.number ?? ''} ${row.text}`}
               lineType={(row) => row.type}
-              stickyHeader
+              virtualize
               maxHeight="62vh"
               mobile={{
                 title: (row) => `${row.position?.number ?? ''} ${row.text}`,

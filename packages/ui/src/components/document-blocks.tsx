@@ -92,21 +92,18 @@ export function DocumentReferences({ groups, label, className }: DocumentReferen
     <div
       data-slot="document-references"
       className={cn(
-        'flex flex-wrap items-baseline gap-x-2 gap-y-1 font-sans text-sm text-primary',
+        'flex flex-wrap items-baseline gap-x-2 font-sans text-sm text-primary',
         className,
       )}
     >
       <span className={cn('text-secondary', TEXT_DIRECTION)}>
         {messages['references.lead'](lead)}
       </span>
-      <ul
-        aria-label={lead}
-        className="m-0 flex list-none flex-wrap items-baseline gap-x-2 gap-y-1 p-0"
-      >
+      <ul aria-label={lead} className="m-0 flex list-none flex-wrap items-baseline gap-x-2 p-0">
         {groups
           .filter((group) => group.items.length > 0)
           .map((group, index) => (
-            <li key={group.key} className="flex flex-wrap items-baseline gap-x-1.5 gap-y-1">
+            <li key={group.key} className="flex flex-wrap items-baseline gap-x-1.5">
               {index > 0 && (
                 <span aria-hidden="true" className="text-tertiary">
                   ·
@@ -122,7 +119,11 @@ export function DocumentReferences({ groups, label, className }: DocumentReferen
                       item.number,
                       item.status?.label,
                     )}
-                    className={cn(LINK, 'font-medium tabular-nums', FOCUS_RING)}
+                    className={cn(
+                      LINK,
+                      'inline-flex min-h-6 items-center font-medium tabular-nums',
+                      FOCUS_RING,
+                    )}
                   >
                     <span dir="ltr">{item.number}</span>
                   </Link>

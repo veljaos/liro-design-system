@@ -80,7 +80,7 @@ export const Edit: Story = {
     const field = canvas.getByRole('combobox', { name: 'Standard texts' })
     await userEvent.click(field)
     await userEvent.type(field, 'Warr')
-    await userEvent.keyboard('{Enter}')
+    await userEvent.click(await within(document.body).findByRole('option', { name: 'Warranty' }))
     await userEvent.keyboard('{Escape}')
     await expect(canvasElement).toHaveTextContent('Warranty on the steel structure')
     const note = canvas.getByRole('textbox', { name: 'Note' })

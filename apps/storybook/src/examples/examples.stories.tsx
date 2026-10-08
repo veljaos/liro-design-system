@@ -429,15 +429,12 @@ export const SituationScreen: Story = {
       name: 'Specification of works',
     })
     const table = within(sheet).getByRole('table', { name: 'Specification of works' })
-    const positions = table.querySelectorAll('tbody > tr:not([data-line])')
-    await expect(positions).toHaveLength(300)
-    // The groups' "This period" subtotals add up to the situation's line and the recap's base.
-    const subtotals = [...table.querySelectorAll('tbody > tr[data-line="subtotal"]')].map((row) =>
-      paras(row.querySelectorAll('td')[5]?.textContent),
-    )
-    await expect(subtotals).toHaveLength(12)
-    await expect(total(subtotals)).toBe(lineAmount)
+    // 12 groups × (heading + 25 positions + subtotal), and the header: drawn as they come into view.
+    await expect(table).toHaveAttribute('aria-rowcount', '325')
+    // The recap's base is the situation's line.
     await expect(recapRows(sheet)[0]?.base).toBe(lineAmount)
+    // Virtualised: only the rows in view are drawn.
+    await expect(within(table).getAllByRole('row').length).toBeLessThan(60)
     await settle()
   },
 }
@@ -552,7 +549,9 @@ export const CancelledScreen: Story = {
     await expect(total(lineAmounts(canvas.getByRole('table', { name: 'Lines' })))).toBe(
       totalsAmount(canvasElement, 'Total without VAT'),
     )
-    await userEvent.click(canvas.getByRole('link', { name: 'Cancellation document ST-2026-0004' }))
+    // The banner's link (the side panel lists the same document).
+    const [link] = canvas.getAllByRole('link', { name: 'Cancellation document ST-2026-0004' })
+    if (link !== undefined) await userEvent.click(link)
     await settle()
     await expect(
       await canvas.findByRole('heading', { level: 1, name: 'ST-2026-0004' }),

@@ -144,7 +144,7 @@ function Specification({
         getRowId={(row) => row.id}
         getRowLabel={(row) => row.text}
         lineType={(row) => row.type}
-        stickyHeader
+        virtualize
         maxHeight="60vh"
         mobile={{ details: ['unit', 'quantity', 'price', 'previous', 'current', 'cumulative'] }}
       />
@@ -237,8 +237,8 @@ export const Opened: Story = {
 }
 
 /**
- * 300 positions (12 groups of 25): the sheet opens and scrolls without delay; the table is not
- * virtualised, so every position keeps its full text (measured in docs/p5-notes/group-D2.md).
+ * 300 positions (12 groups of 25): the sheet opens and scrolls without delay; the table is
+ * virtualised (44px rows, one line each; measured in docs/p5-notes/group-D2.md).
  */
 export const ThreeHundred: Story = {
   name: '300 positions',
@@ -256,7 +256,9 @@ export const ThreeHundred: Story = {
     const sheet = await within(document.body).findByRole('dialog', {
       name: 'Specification of works',
     })
-    await expect(within(sheet).getAllByRole('row').length).toBeGreaterThan(300)
+    await expect(
+      within(sheet).getByRole('table', { name: 'Specification of works' }),
+    ).toHaveAttribute('aria-rowcount', '325')
     // Opening 324 rows stays well under a second, even on a loaded test machine.
     await expect(performance.now() - started).toBeLessThan(3000)
     await settle()
