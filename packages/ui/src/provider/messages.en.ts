@@ -219,4 +219,28 @@ export const messagesEn: LiroMessages = {
   'status.suspendedCompanyDescription': (company) =>
     `Access for ${company} is suspended. Contact your administrator.`,
   'launchpad.show': (name) => `Show: ${name}`,
+  // ── P5 group D2 ──
+  'references.basedOn': 'Based on',
+  'references.lead': (label) => `${label}:`,
+  'references.listSeparator': ', ',
+  'references.link': (kind, number, state) =>
+    state === undefined ? `${kind} ${number}` : `${kind} ${number}, ${state}`,
+  'document.currency': 'Currency',
+  'document.exchangeRate': 'Exchange rate',
+  'document.rateDate': 'Rate date',
+  'document.rate': (currency, homeCurrency, rateText) =>
+    `1 ${currency} = ${rateText} ${homeCurrency}`,
+  'document.rateLine': (rate, source) => `${rate}, ${source}`,
+  'document.cancelledTitle': 'Cancelled',
+  'document.cancelledBy': (name, dateText, timeText) =>
+    `Cancelled by ${name} on ${dateText} at ${timeText}.`,
+  'document.cancelReason': (reason) => `Reason: ${reason}`,
+  'notes.templates': 'Standard texts',
+  'notes.free': 'Note',
+  'specification.summary': (title, count, countText, amountText) =>
+    `${title}: ${countText} ${count === 1 ? 'position' : 'positions'}, ${amountText}`,
+  'specification.open': 'Open',
+  'correction.original': 'Original',
+  'correction.change': 'Change',
+  'correction.new': 'New',
 }

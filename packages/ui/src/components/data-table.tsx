@@ -36,9 +36,11 @@ import {
   MIN_COLUMN_WIDTH,
   nextSort,
   rowKeyAction,
+  subtotalStart,
   type DataTableFilters,
   type DataTableSort,
 } from './data-table-logic'
+import { LINE_TYPE_TEXT, spansRow, type LineType } from './line-types'
 import { ResizeHandle } from './data-table-resize'
 import { DropdownMenu, type MenuEntry } from './dropdown-menu'
 import { EmptyState, type EmptyAction } from './empty-state'
@@ -208,6 +210,23 @@ export interface DataTableProps<Row extends RowData> {
   resizable?: boolean
   /** The widths after each resize, per column id, for the application to keep. */
   onColumnWidthsChange?: (widths: Record<string, number>) => void
+  /**
+   * The type of each row (P5.18: a document's read-only lines and a specification; the types of
+   * `line-types.ts`), told apart by typography, never colour: a `heading` bold across the row; a
+   * `text` line smaller and secondary across the row; a `subtotal` semibold with a rule above, its
+   * label end-aligned before the amounts (the trailing end-aligned columns); `discount` and
+   * `deduction` as normal lines (their negative amounts from the application). Headings, text
+   * lines and subtotals have no checkbox, no menu and cannot be pressed. Default: every row a
+   * `line`.
+   */
+  lineType?: (row: Row) => LineType
+  /** The text of a heading, a text line and a subtotal's label. Default: the first column's cell. */
+  lineText?: (row: Row) => ReactNode
+  /**
+   * What a line is ("Item", "Service", "Fixed asset"), from the application: small secondary text
+   * under the first cell (P5.18; no colour).
+   */
+  lineKind?: (row: Row) => ReactNode
   className?: string
 }
 
@@ -272,6 +291,8 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
   const virtualize = props.virtualize === true
   const sticky = props.stickyHeader === true || virtualize
   const resizable = props.resizable === true && !cards
+  // Line types (P5.18): every row a normal line unless the application says otherwise.
+  const typeOf = (row: Row): LineType => props.lineType?.(row) ?? 'line'
 
   const rowSelection = useMemo<RowSelectionState>(
     () => Object.fromEntries((selection ?? []).map((id) => [id, true])),
@@ -297,7 +318,10 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
     getRowId: (row) => getRowId(row),
     state: { rowSelection },
     onRowSelectionChange: setRowSelection,
-    enableRowSelection: selectable,
+    // Headings, text lines and subtotals are not records: no checkbox (P5.18).
+    enableRowSelection: selectable
+      ? (row) => !spansRow(typeOf(row.original)) && typeOf(row.original) !== 'subtotal'
+      : false,
   })
 
   // The scroll area takes the focus only while it scrolls, so the keyboard can scroll it (WCAG
@@ -389,6 +413,12 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
   const filtered = hasActiveFilters(props.filters)
   // Cells cut what does not fit with an ellipsis: resized columns (owner) and 44px virtual rows.
   const oneLine = fixed || virtualize
+  const textOf = (row: Row): ReactNode => props.lineText?.(row) ?? columns[0]?.cell(row) ?? null
+  const amountsFrom = subtotalStart(columns.map((column) => column.align))
+  const lineAt = (index: number): LineType => {
+    const row = tableRows[index]
+    return row === undefined ? 'line' : typeOf(row.original)
+  }
 
   const skeleton = (
     <div className="flex flex-col gap-2 p-4">
@@ -496,12 +526,87 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
     const row = tableRows[index]
     if (row === undefined) return null
     const original = row.original
+    const type = typeOf(original)
+    // A subtotal draws its own rule above; the row before it has no line of its own (one line).
+    const next = tableRows[index + 1]
+    const rowLine =
+      next !== undefined && typeOf(next.original) === 'subtotal'
+        ? 'border-0'
+        : 'border-0 border-b border-solid border-default'
+    if (spansRow(type)) {
+      return (
+        <tr
+          key={row.id}
+          data-line={type}
+          aria-rowindex={virtualize ? index + 2 : undefined}
+          className={virtualize ? 'h-11' : undefined}
+        >
+          <td
+            colSpan={span}
+            className={cn(
+              CELL,
+              rowLine,
+              LINE_TYPE_TEXT[type],
+              virtualize && 'py-0',
+              oneLine && 'truncate',
+            )}
+          >
+            <span className={TEXT_ISOLATE}>{textOf(original)}</span>
+          </td>
+        </tr>
+      )
+    }
+    if (type === 'subtotal') {
+      const cellLine = cn(SUBTOTAL_LINE, rowLine === 'border-0' ? 'border-b-0' : 'border-b')
+      return (
+        <tr
+          key={row.id}
+          data-line={type}
+          aria-rowindex={virtualize ? index + 2 : undefined}
+          className={virtualize ? 'h-11' : undefined}
+        >
+          <td
+            colSpan={amountsFrom + (selectable ? 1 : 0)}
+            className={cn(
+              CELL,
+              cellLine,
+              'text-end',
+              LINE_TYPE_TEXT.subtotal,
+              virtualize && 'py-0',
+              oneLine && 'truncate',
+            )}
+          >
+            <span className={TEXT_ISOLATE}>{textOf(original)}</span>
+          </td>
+          {columns.slice(amountsFrom).map((column) => (
+            <td
+              key={column.id}
+              className={cn(
+                CELL,
+                cellLine,
+                'min-w-16',
+                ALIGN[column.align ?? 'start'],
+                LINE_TYPE_TEXT.subtotal,
+                column.numeric === true && 'tabular-nums',
+                virtualize && 'py-0',
+                oneLine && 'truncate',
+              )}
+            >
+              <span className={TEXT_ISOLATE}>{column.cell(original)}</span>
+            </td>
+          ))}
+          {hasActions && <td className={cellLine} />}
+        </tr>
+      )
+    }
+    const kind = props.lineKind?.(original)
     const selected = row.getIsSelected()
     const label = getRowLabel(original)
     const press = () => props.onRowClick?.(original)
     return (
       <tr
         key={row.id}
+        {...(type === 'line' ? {} : { 'data-line': type })}
         aria-selected={selectable ? selected : undefined}
         // The selection's own text colours (P4.3): tokens.css lightens the few that fail on it.
         data-liro-surface={selected ? 'selected' : undefined}
@@ -531,13 +636,7 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
         )}
       >
         {selectable && (
-          <td
-            className={cn(
-              CELL,
-              'w-px border-0 border-b border-solid border-default',
-              virtualize && 'py-0',
-            )}
-          >
+          <td className={cn(CELL, 'w-px', rowLine, virtualize && 'py-0')}>
             <Checkbox
               checked={selected}
               onCheckedChange={(value) => {
@@ -548,14 +647,15 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
             />
           </td>
         )}
-        {row.getAllCells().map((cell) => {
+        {row.getAllCells().map((cell, cellIndex) => {
           const column = byId.get(cell.column.id)
           return (
             <td
               key={cell.id}
               className={cn(
                 CELL,
-                'min-w-16 border-0 border-b border-solid border-default',
+                'min-w-16',
+                rowLine,
                 ALIGN[column?.align ?? 'start'],
                 column?.numeric === true && 'tabular-nums',
                 virtualize && 'py-0',
@@ -566,11 +666,20 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
               <span className={TEXT_ISOLATE}>
                 <table.FlexRender cell={cell} />
               </span>
+              {/* What the line is (P5.18): small secondary text under the first cell, no colour. */}
+              {cellIndex === 0 && kind !== undefined && kind !== null && (
+                <span
+                  data-slot="line-kind"
+                  className={cn('block text-xs text-secondary', TEXT_DIRECTION)}
+                >
+                  {kind}
+                </span>
+              )}
             </td>
           )
         })}
         {hasActions && (
-          <td className="w-px border-0 border-b border-solid border-default px-2 py-0 text-end">
+          <td className={cn('w-px px-2 py-0 text-end', rowLine)}>
             <DropdownMenu
               align="end"
               trigger={
@@ -662,9 +771,53 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
     const row = tableRows[index]
     if (row === undefined) return null
     const original = row.original
+    const type = typeOf(original)
+    // Phones keep the types by typography (P5.18): a heading and a text line are a line of text,
+    // a subtotal its label and amounts, semibold, under a rule (the list item draws it).
+    if (spansRow(type)) {
+      return (
+        <div
+          data-line={type}
+          className={cn(
+            flat ? 'px-4 py-3' : 'py-1',
+            LINE_TYPE_TEXT[type],
+            'break-words',
+            TEXT_DIRECTION,
+          )}
+        >
+          {textOf(original)}
+        </div>
+      )
+    }
+    if (type === 'subtotal') {
+      return (
+        <div
+          data-line={type}
+          className={cn(
+            'flex flex-col gap-0.5',
+            LINE_TYPE_TEXT.subtotal,
+            flat ? 'px-4 py-3' : 'border-0 border-t border-solid border-strong px-3 py-3',
+          )}
+        >
+          <span className={cn('break-words', TEXT_DIRECTION)}>{textOf(original)}</span>
+          <dl className="m-0 flex flex-col gap-0.5">
+            {columns.slice(amountsFrom).map((column) => (
+              <div key={column.id} className="flex items-baseline justify-between gap-4">
+                <dt className={cn('text-xs font-normal text-secondary', TEXT_DIRECTION)}>
+                  {column.header}
+                </dt>
+                <dd className="m-0 text-end tabular-nums">{column.cell(original)}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      )
+    }
     const label = getRowLabel(original)
+    const kind = props.lineKind?.(original)
     const { mobile, rowActions, onRowClick, onRowOpen } = props
-    const subtitle = mobile?.subtitle?.(original)
+    // What the line is stands under the title when the card has no subtitle of its own (P5.18).
+    const subtitle = mobile?.subtitle?.(original) ?? (kind === null ? undefined : kind)
     const badge = mobile?.badge?.(original)
     return (
       <DataTableCard
@@ -716,7 +869,9 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
           className={cn('m-0 flex list-none flex-col p-0', flat ? FLAT_DIVIDERS : 'gap-4')}
         >
           {tableRows.map((row, index) => (
-            <li key={row.id}>{card(index)}</li>
+            <li key={row.id} {...lineAttribute(typeOf(row.original))}>
+              {card(index)}
+            </li>
           ))}
         </ul>
       )
@@ -732,12 +887,17 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
           <li
             key={tableRows[item.index]?.id ?? item.index}
             data-index={item.index}
+            {...lineAttribute(lineAt(item.index))}
             ref={virtualizer.measureElement}
             aria-setsize={rows.length}
             aria-posinset={item.index + 1}
             className={cn(
               'absolute inset-x-0 top-0',
               flat ? item.index > 0 && 'border-0 border-t border-solid border-subtle' : 'pb-4',
+              // A subtotal's rule above it (P5.18), in place of the divider.
+              flat &&
+                lineAt(item.index) === 'subtotal' &&
+                'border-0 border-t border-solid border-strong',
             )}
             style={{ transform: `translateY(${String(item.start)}px)` }}
           >
@@ -954,9 +1114,23 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
   )
 }
 
-/** The dividers between the rows of the flat phone list in a card (P4.9). */
+/**
+ * The dividers between the rows of the flat phone list in a card (P4.9); a subtotal has the
+ * border.strong rule above it instead (P5.18).
+ */
 const FLAT_DIVIDERS =
-  '[&>li+li]:border-0 [&>li+li]:border-t [&>li+li]:border-solid [&>li+li]:border-subtle'
+  '[&>li+li]:border-0 [&>li+li]:border-t [&>li+li]:border-solid [&>li+li]:border-subtle [&>li[data-line=subtotal]]:border-0 [&>li[data-line=subtotal]]:border-t [&>li[data-line=subtotal]]:border-solid [&>li[data-line=subtotal]]:border-strong'
+
+/** Marks a list item with its line type (P5.18); a normal line carries nothing. */
+function lineAttribute(type: LineType): { 'data-line'?: LineType } {
+  return type === 'line' ? {} : { 'data-line': type }
+}
+
+/**
+ * A subtotal's cells (P5.18): the rule above in border.strong (line-types' SUBTOTAL_RULE), the
+ * row line below as every row's; the bottom width is set by the row.
+ */
+const SUBTOTAL_LINE = 'border-0 border-t border-solid border-t-strong border-b-default'
 
 /** The totals row: the 1px border.strong line above it, and sticky at the bottom edge. */
 const TOTALS_LINE = 'sticky bottom-0 z-10 border-0 border-t border-solid border-strong'

@@ -12,9 +12,16 @@ export const NUMBER_SCHEMES: readonly NumberScheme[] = [
 
 /** Formatting and parsing of numbers, money and dates (BUILD-PLAN section 5). */
 export interface LiroFormat {
-  /** value is a decimal string, e.g. "1234.5". Never a JavaScript number. */
-  number(value: string, options?: { decimals?: number }): string
-  money(value: string, currency: string, options?: { decimals?: number }): string
+  /**
+   * value is a decimal string, e.g. "1234.5". Never a JavaScript number. `sign: 'always'` writes
+   * "+" before a value above zero (a change on a corrective document, P5.18); default 'auto'.
+   */
+  number(value: string, options?: { decimals?: number; sign?: 'auto' | 'always' }): string
+  money(
+    value: string,
+    currency: string,
+    options?: { decimals?: number; sign?: 'auto' | 'always' },
+  ): string
   /**
    * A percentage (P4.7c): `value` is the percentage as a decimal string ("62.4" for 62,4 %), never
    * rounded; the sign, the percent sign and the space between them follow the locale (CLDR):
@@ -78,6 +85,17 @@ export function formatDecimal(value: string, scheme: NumberScheme, decimals?: nu
   const { group, decimal } = SEPARATORS[scheme]
   const grouped = integer.replace(/^0+(?=\d)/, '').replace(/\B(?=(\d{3})+$)/g, group)
   return fraction === '' ? `${sign}${grouped}` : `${sign}${grouped}${decimal}${fraction}`
+}
+
+/**
+ * A "+" before a formatted value above zero when `sign` is 'always' (P5.18: the change column of a
+ * corrective document). Zero and negative values, and text that is not a decimal, are unchanged.
+ */
+export function withSign(value: string, formatted: string, sign?: 'auto' | 'always'): string {
+  if (sign !== 'always') return formatted
+  const match = DECIMAL_STRING.exec(value)
+  if (match === null || match[1] === '-' || !/[1-9]/.test(value)) return formatted
+  return `+${formatted}`
 }
 
 /** Spaces people group digits with: space, no-break space, thin space, narrow no-break space. */
@@ -369,13 +387,17 @@ export function createFormat(locale: string, overrides: Partial<LiroFormat> = {}
     numberScheme: numberSchemeForLocale(locale),
     moneyDecimals: 2,
     number(value, options) {
-      return formatDecimal(value, format.numberScheme, options?.decimals)
+      return withSign(
+        value,
+        formatDecimal(value, format.numberScheme, options?.decimals),
+        options?.sign,
+      )
     },
     money(value, currency, options) {
-      const amount = formatDecimal(
+      const amount = withSign(
         value,
-        format.numberScheme,
-        options?.decimals ?? format.moneyDecimals,
+        formatDecimal(value, format.numberScheme, options?.decimals ?? format.moneyDecimals),
+        options?.sign,
       )
       // Amount and currency are joined by a non-breaking space, so they never wrap apart.
       return currencyFirst(locale, currency)

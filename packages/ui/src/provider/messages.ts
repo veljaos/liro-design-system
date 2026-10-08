@@ -368,4 +368,42 @@ export interface LiroMessages {
   'status.suspendedCompanyDescription': (company: string) => string
   /** The accessible name of a hidden module's "Show" button. */
   'launchpad.show': (name: string) => string
+  // ── P5 group D2 ──
+  /** DocumentReferences (P5.18): the default lead ("Based on") and how a lead is written ("Based on:"). */
+  'references.basedOn': string
+  'references.lead': (label: string) => string
+  /** Between two numbers of the same kind ("A-2026-038, A-2026-044"). */
+  'references.listSeparator': string
+  /** A reference's accessible name: its kind, number and, when given, its state. */
+  'references.link': (kind: string, number: string, state: string | undefined) => string
+  /** DocumentCurrency (P5.18): the labels of a foreign-currency document's currency block. */
+  'document.currency': string
+  'document.exchangeRate': string
+  'document.rateDate': string
+  /** The rate: "1 EUR = 117,1825 RSD"; `rateText` is already written by `format.number`. */
+  'document.rate': (currency: string, homeCurrency: string, rateText: string) => string
+  /** The rate line under the totals: the rate and where it comes from (the application's words). */
+  'document.rateLine': (rate: string, source: string) => string
+  /** CancellationBanner (P5.18): the title, who and when (both written by `format`), the reason. */
+  'document.cancelledTitle': string
+  'document.cancelledBy': (name: string, dateText: string, timeText: string) => string
+  'document.cancelReason': (reason: string) => string
+  /** DocumentNotes (P5.18): the default labels of the template texts and the free note. */
+  'notes.templates': string
+  'notes.free': string
+  /**
+   * DocumentSpecification (P5.18): the summary row ("Specification of works: 300 positions,
+   * 2.418.300,00 RSD"); `countText` and `amountText` are already written by `format`.
+   */
+  'specification.summary': (
+    title: string,
+    count: number,
+    countText: string,
+    amountText: string,
+  ) => string
+  'specification.open': string
+  /** correctionColumns (P5.18): the default headers of a corrected value's three columns. */
+  'correction.original': string
+  'correction.change': string
+  'correction.new': string
 }

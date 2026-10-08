@@ -298,44 +298,6 @@ export function DeleteConfirmDialog(props: DeleteConfirmDialogProps) {
   )
 }
 
-export type IrreversibleConfirmDialogProps = ConfirmDialogProps & {
-  /**
-   * The word or number the user types to enable the button: the document's number, the
-   * company's name. Compared exactly, ignoring spaces at either end.
-   */
-  confirmText: string
-}
-
-/**
- * The confirmation of an action that cannot be undone: it states the consequence (`message`) and
- * enables its button only when the user has typed `confirmText`.
- */
-export function IrreversibleConfirmDialog(props: IrreversibleConfirmDialogProps) {
-  const { messages } = useLiro()
-  const [typed, setTyped] = useState('')
-  const { confirmText, ...rest } = props
-  const matches = typed.trim() === confirmText
-  return (
-    <ConfirmFrame
-      {...rest}
-      confirmDisabled={!matches}
-      onOpenChange={(open) => {
-        if (!open) setTyped('')
-        props.onOpenChange?.(open)
-      }}
-      extra={
-        <TextField
-          className="mt-4"
-          label={messages['confirm.typeToConfirm'](confirmText)}
-          value={typed}
-          onChange={setTyped}
-          autoComplete="off"
-        />
-      }
-    />
-  )
-}
-
 /** A reason the application offers (a rejection's reason). */
 export interface ConfirmReason {
   value: string
@@ -346,6 +308,116 @@ export interface ConfirmReason {
 export interface ConfirmAnswer {
   reason: string | undefined
   text: string
+}
+
+/**
+ * The reason an irreversible action asks for (P5.18: a cancellation), as ReasonConfirmDialog
+ * asks it: with `reasons` one must be chosen and the text is optional details; without them the
+ * text is the reason and is required.
+ */
+export interface IrreversibleReason {
+  reasons?: readonly ConfirmReason[]
+  /** Default: `messages['confirm.reason']`. */
+  label?: string
+  /** The details' label beside a list. Default: `messages['confirm.reasonDetails']`. */
+  detailsLabel?: string
+}
+
+export type IrreversibleConfirmDialogProps = ConfirmAction &
+  Omit<ConfirmBase, 'onConfirm'> & {
+    /** The question, from the application: "Cancel invoice F-2026-0407?". */
+    title: ReactNode
+    /** What will happen, from the application. */
+    message?: ReactNode
+    /** The confirm button's text, from the application. */
+    confirmLabel: string
+    /**
+     * The word or number the user types to enable the button: the document's number, the
+     * company's name. Compared exactly, ignoring spaces at either end.
+     */
+    confirmText: string
+    /**
+     * Runs the action; as ConfirmDialog's `onConfirm`. With `reason`, it receives the answer (the
+     * chosen reason and the text); without it the answer is empty.
+     */
+    onConfirm: (answer: ConfirmAnswer) => void | Promise<void>
+    /**
+     * Also asks why (P5.18, owner: one dialog asks the reason AND the typed confirmation — never
+     * two dialogs in a row). The button enables once both are given.
+     */
+    reason?: IrreversibleReason
+  }
+
+/**
+ * The confirmation of an action that cannot be undone: it states the consequence (`message`) and
+ * enables its button only when the user has typed `confirmText` — and, with `reason`, has given
+ * the reason (a cancellation).
+ */
+export function IrreversibleConfirmDialog(props: IrreversibleConfirmDialogProps) {
+  const { messages } = useLiro()
+  const [typed, setTyped] = useState('')
+  const [chosen, setChosen] = useState<string | undefined>(undefined)
+  const [text, setText] = useState('')
+  const { confirmText, reason, onConfirm, ...rest } = props
+  const matches = typed.trim() === confirmText
+  const reasons = reason?.reasons
+  const hasList = reasons !== undefined && reasons.length > 0
+  const reasoned = reason === undefined || (hasList ? chosen !== undefined : text.trim() !== '')
+  return (
+    <ConfirmFrame
+      {...rest}
+      confirmDisabled={!matches || !reasoned}
+      onConfirm={() =>
+        onConfirm(
+          reason === undefined
+            ? { reason: undefined, text: '' }
+            : { reason: chosen, text: text.trim() },
+        )
+      }
+      onOpenChange={(open) => {
+        if (!open) {
+          setTyped('')
+          setChosen(undefined)
+          setText('')
+        }
+        props.onOpenChange?.(open)
+      }}
+      extra={
+        <div className="mt-4 flex flex-col gap-4">
+          {reason !== undefined && hasList && (
+            <RadioGroupField
+              label={reason.label ?? messages['confirm.reason']}
+              required
+              options={reasons}
+              {...(chosen === undefined ? {} : { value: chosen })}
+              onChange={setChosen}
+            />
+          )}
+          {reason !== undefined && (
+            <TextAreaField
+              label={
+                hasList
+                  ? (reason.detailsLabel ?? messages['confirm.reasonDetails'])
+                  : (reason.label ?? messages['confirm.reason'])
+              }
+              required={!hasList}
+              rows={3}
+              value={text}
+              onChange={setText}
+            />
+          )}
+          {/* The typed confirmation comes last: the reason is the thinking, typing the number
+              the decision. */}
+          <TextField
+            label={messages['confirm.typeToConfirm'](confirmText)}
+            value={typed}
+            onChange={setTyped}
+            autoComplete="off"
+          />
+        </div>
+      }
+    />
+  )
 }
 
 export type ReasonConfirmDialogProps = ConfirmAction &
