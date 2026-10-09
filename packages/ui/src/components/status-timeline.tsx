@@ -1,9 +1,8 @@
-import { Check, X } from 'lucide-react'
 import { useId, type ReactNode } from 'react'
 import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
-import { lifecycleState, type StepState } from './lifecycle-bar'
+import { lifecycleState, StepDot, type StepState } from './lifecycle-bar'
 
 /*
  * StatusTimeline (BUILD-PLAN P5.4; docs/decisions.md "Delivery and progress"): the states of a
@@ -60,24 +59,6 @@ export interface StatusTimelineProps {
   /** The next step, under the current state. */
   next?: StatusNextStep
   className?: string
-}
-
-function Dot({ state }: { state: StepState }) {
-  return (
-    <span
-      aria-hidden="true"
-      className={cn(
-        'relative box-border flex size-4 shrink-0 items-center justify-center rounded-full border border-solid',
-        state === 'completed' && 'border-strong bg-surface-sunken text-secondary',
-        state === 'current' && 'border-transparent bg-brand-solid',
-        state === 'future' && 'border-strong bg-surface-raised',
-        state === 'error' && 'border-transparent bg-status-danger-solid text-on-accent',
-      )}
-    >
-      {state === 'completed' && <Check className="size-2.5" strokeWidth={3} />}
-      {state === 'error' && <X className="size-2.5" strokeWidth={3} />}
-    </span>
-  )
 }
 
 const NAME: Record<StepState, string> = {
@@ -145,7 +126,7 @@ export function StatusTimeline({ label, steps, current, next, className }: Statu
               />
             )}
             <span className="flex h-5 items-center">
-              <Dot state={state} />
+              <StepDot state={state} onLine />
             </span>
             <div className="flex min-w-0 flex-1 flex-col">
               <p className="m-0 flex flex-wrap items-baseline gap-x-2 leading-5">

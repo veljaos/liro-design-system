@@ -17,26 +17,10 @@
  *   ST-2026-0004 (the number chosen by group D2).
  */
 
-/** The line types of P5.18, as DataTable's `lineType` takes them. */
-export type LineType = 'line' | 'text' | 'heading' | 'subtotal' | 'discount' | 'deduction'
+import type { LineType } from '@veljaos/ui'
+import { fromUnits, toUnits } from '../../../../packages/ui/src/components/amounts-story-data'
 
 // ── Arithmetic in whole paras (the application's) ───────────────────────────────────────────
-
-/** A decimal string with up to `places` decimals as whole units of 10^-places. */
-export function units(value: string, places = 2): bigint {
-  const negative = value.startsWith('-')
-  const [whole = '0', fraction = ''] = value.replace(/^-/, '').split('.')
-  const result = BigInt(whole + fraction.padEnd(places, '0').slice(0, places))
-  return negative ? -result : result
-}
-
-/** Whole units of 10^-places as a decimal string. */
-export function fromUnits(value: bigint, places = 2): string {
-  const negative = value < 0n
-  const digits = (negative ? -value : value).toString().padStart(places + 1, '0')
-  const text = places === 0 ? digits : `${digits.slice(0, -places)}.${digits.slice(-places)}`
-  return negative ? `-${text}` : text
-}
 
 /** Divides and rounds half away from zero (amounts are rounded to the para). */
 function divideRounded(value: bigint, divisor: bigint): bigint {
@@ -48,32 +32,32 @@ function divideRounded(value: bigint, divisor: bigint): bigint {
 
 /** quantity (up to 3 decimals) × price (paras) → paras, rounded to the para. */
 export function lineAmount(quantity: string, price: string): string {
-  return fromUnits(divideRounded(units(quantity, 3) * units(price, 2), 1000n))
+  return fromUnits(divideRounded(toUnits(quantity, 3) * toUnits(price, 2), 1000n))
 }
 
 /** The sum of decimal strings, in paras. */
 export function sum(values: readonly string[]): string {
-  return fromUnits(values.reduce((total, value) => total + units(value), 0n))
+  return fromUnits(values.reduce((total, value) => total + toUnits(value), 0n))
 }
 
 /** `amount` × `rate` % (rate a decimal string such as "20" or "3"), rounded to the para. */
 export function percentOf(amount: string, rate: string): string {
-  return fromUnits(divideRounded(units(amount) * units(rate, 4), 1_000_000n))
+  return fromUnits(divideRounded(toUnits(amount) * toUnits(rate, 4), 1_000_000n))
 }
 
 /** An amount in another currency at `rate` (home units for one foreign unit, 4 decimals). */
 export function converted(amount: string, rate: string): string {
-  return fromUnits(divideRounded(units(amount) * units(rate, 4), 10_000n))
+  return fromUnits(divideRounded(toUnits(amount) * toUnits(rate, 4), 10_000n))
 }
 
 /** Negates a decimal string. */
 export function negated(value: string): string {
-  return fromUnits(-units(value))
+  return fromUnits(-toUnits(value))
 }
 
 // ── Lines and tax categories ────────────────────────────────────────────────────────────────
 
-export interface TaxCategory {
+export interface DocTaxCategory {
   code: 'S20' | 'S10' | 'E' | 'AE'
   /** As the e-invoice system names it, and as the lines' tax column shows it. */
   label: string
@@ -83,7 +67,7 @@ export interface TaxCategory {
   marker?: string
 }
 
-export const TAX: Record<TaxCategory['code'], TaxCategory> = {
+export const TAX: Record<DocTaxCategory['code'], DocTaxCategory> = {
   S20: { code: 'S20', label: 'S 20%', rate: '20' },
   S10: { code: 'S10', label: 'S 10%', rate: '10' },
   E: { code: 'E', label: 'E', rate: null, marker: '¹' },
@@ -101,7 +85,7 @@ export interface DocLine {
   quantity?: string
   unit?: string
   price?: string
-  tax?: TaxCategory['code']
+  tax?: DocTaxCategory['code']
   amount?: string
 }
 
@@ -113,7 +97,7 @@ function line(
   quantity: string,
   unit: string,
   price: string,
-  tax: TaxCategory['code'],
+  tax: DocTaxCategory['code'],
 ): DocLine {
   return {
     id,
@@ -140,7 +124,7 @@ function taxed(lines: readonly DocLine[]): DocLine[] {
 
 /** One row of the recap by tax category. */
 export interface RecapRow {
-  code: TaxCategory['code']
+  code: DocTaxCategory['code']
   base: string
   tax: string | null
 }
@@ -326,14 +310,14 @@ export interface CorrectedLine {
   text: string
   unit: string
   price: string
-  tax: TaxCategory['code']
+  tax: DocTaxCategory['code']
   quantity: { original: string; change: string; next: string }
   amount: { original: string; change: string; next: string }
 }
 
 function corrected(original: DocLine, change: string): CorrectedLine {
   const quantity = original.quantity ?? '0'
-  const next = fromUnits(units(quantity, 3) + units(change, 3), 3).replace(/\.?0+$/, '')
+  const next = fromUnits(toUnits(quantity, 3) + toUnits(change, 3), 3).replace(/\.?0+$/, '')
   const amount = lineAmount(next, original.price ?? '0')
   return {
     id: original.id,

@@ -14,6 +14,10 @@ import type {
   UnitOfMeasure,
   LineType,
 } from '@veljaos/ui'
+import {
+  decimal as fromParas,
+  toUnits,
+} from '../../../../packages/ui/src/components/amounts-story-data'
 
 // ── Lists from the Core ─────────────────────────────────────────────────────────────────────
 
@@ -316,22 +320,9 @@ export const NEW_SERVICE = {
 
 // ── Arithmetic in whole paras ───────────────────────────────────────────────────────────────
 
-/** A decimal string as an integer with `scale` decimals (no rounding: extra digits are cut). */
-export function toUnits(value: string, scale: number): bigint {
-  const negative = value.startsWith('-')
-  const [whole = '0', fraction = ''] = value.replace('-', '').split('.')
-  const digits = BigInt(`${whole}${fraction.padEnd(scale, '0').slice(0, scale)}`)
-  return negative ? -digits : digits
-}
-
-/** Paras as a decimal string with two decimals. */
-export function fromParas(paras: bigint): string {
-  const negative = paras < 0n
-  const digits = (negative ? -paras : paras).toString().padStart(3, '0')
-  return `${negative ? '-' : ''}${digits.slice(0, -2)}.${digits.slice(-2)}`
-}
-
 /** quantity × price to the para, half away from zero (the Core's rounding of a line). */
+export { fromParas, toUnits }
+
 export function lineParas(quantity: string, price: string): bigint {
   const product = toUnits(quantity, 3) * toUnits(price, 2)
   const half = product < 0n ? -500n : 500n

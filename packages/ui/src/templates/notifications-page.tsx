@@ -10,8 +10,8 @@ import { buttonClassName } from '../primitives/button'
 import { FOCUS_RING, TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
-import type { LiroMessages } from '../provider/messages'
-import { groupByDay, type NotificationGroup, type NotificationItem } from './notifications-logic'
+import { dayHeading } from '../components/day-groups'
+import { groupByDay, type NotificationItem } from './notifications-logic'
 import { NotificationMeta, UnreadDot } from './notifications-panel'
 import { PageHeader } from './page-header'
 
@@ -118,16 +118,6 @@ function ShowToggle({
       })}
     </div>
   )
-}
-
-function dayHeading(
-  group: NotificationGroup,
-  messages: LiroMessages,
-  date: (day: string) => string,
-) {
-  if (group.kind === 'today') return messages['notifications.today']
-  if (group.kind === 'yesterday') return messages['notifications.yesterday']
-  return date(group.day)
 }
 
 /** Every notification, grouped by day, with filters and read state. */

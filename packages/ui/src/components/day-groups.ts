@@ -1,3 +1,5 @@
+import type { LiroMessages } from '../provider/messages'
+
 /*
  * Entries grouped by the day they happened on (P5.1): HistoryList (newest first, as the
  * notifications page) and MessageList (oldest first, as a conversation reads). Kept apart from the
@@ -65,4 +67,15 @@ export function groupByDayOf<T>(
     group.items.push(item)
   }
   return groups
+}
+
+/** The heading of a day: "Today", "Yesterday" (`day.today`, `day.yesterday`) or the date. */
+export function dayHeading(
+  group: { day: string; kind: DayGroup<unknown>['kind'] },
+  messages: LiroMessages,
+  date: (day: string) => string,
+): string {
+  if (group.kind === 'today') return messages['day.today']
+  if (group.kind === 'yesterday') return messages['day.yesterday']
+  return date(group.day)
 }

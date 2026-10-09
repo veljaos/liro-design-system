@@ -269,8 +269,8 @@ export interface LiroMessages {
   'notifications.unreadFilter': string
   'notifications.show': string
   /** NotificationsPage: the day headings. */
-  'notifications.today': string
-  'notifications.yesterday': string
+  'day.today': string
+  'day.yesterday': string
   /** Nothing at all, and nothing that matches the filters. */
   'notifications.emptyTitle': string
   'notifications.emptyDescription': string

@@ -39,6 +39,7 @@ import { settle } from '../primitives/story-helpers'
 import { AppShell } from './app-shell'
 import { DocumentPage, type DocumentPageProps } from './document-page'
 import { BRAND, COMMANDS, COMPANIES, SALES_TABS, USER } from './shell-story-data'
+import { fromUnits, toUnits } from '../components/amounts-story-data'
 
 interface Line {
   id: string
@@ -381,16 +382,6 @@ const TAX_CATEGORIES = [
 ]
 
 // The application's arithmetic, played by the story on decimal strings (components never add).
-function toUnits(value: string, places: number): bigint {
-  const [whole = '0', fraction = ''] = value.split('.')
-  return BigInt(whole + fraction.padEnd(places, '0').slice(0, places))
-}
-
-function fromUnits(units: bigint, places: number): string {
-  const digits = units.toString().padStart(places + 1, '0')
-  return `${digits.slice(0, -places)}.${digits.slice(-places)}`
-}
-
 /** Rounds `places + extra` decimals to `places`, half up (amounts here are never negative). */
 function roundUnits(units: bigint, extra: number): bigint {
   const factor = 10n ** BigInt(extra)

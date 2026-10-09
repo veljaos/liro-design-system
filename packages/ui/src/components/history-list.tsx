@@ -6,7 +6,7 @@ import { useLiro } from '../provider/liro-provider'
 import type { LiroMessages } from '../provider/messages'
 import { AgentMark } from './agent-mark'
 import { Button } from './button'
-import { groupByDayOf, type DayGroup } from './day-groups'
+import { dayHeading, groupByDayOf } from './day-groups'
 import { EmptyState } from './empty-state'
 import { PersonAvatar } from './person'
 import { Skeleton } from './progress'
@@ -191,17 +191,6 @@ function Entry({ entry }: { entry: HistoryEntry }) {
       </div>
     </li>
   )
-}
-
-/** The heading of a day: "Today", "Yesterday" or the date. */
-export function dayHeading(
-  group: DayGroup<unknown>,
-  messages: LiroMessages,
-  date: (day: string) => string,
-): string {
-  if (group.kind === 'today') return messages['notifications.today']
-  if (group.kind === 'yesterday') return messages['notifications.yesterday']
-  return date(group.day)
 }
 
 /** The full history of a record: who, when, what changed; grouped by day, newest first. */

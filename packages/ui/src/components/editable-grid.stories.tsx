@@ -20,6 +20,7 @@ import {
 import { SwitchField } from './checkbox-field'
 import { ARABIC, JAPANESE, LONG } from './field-story-data'
 import { StoryProvider } from './story-frames'
+import { toUnits } from './amounts-story-data'
 
 const meta = {
   title: 'Components/Table/EditableGrid',
@@ -109,14 +110,6 @@ const emptyLine = (): Line => ({
   date: null,
 })
 
-/** A decimal string as an integer at `scale` decimals (the application's arithmetic). */
-function scaled(value: string, scale: number): bigint {
-  const negative = value.startsWith('-')
-  const [whole = '0', fraction = ''] = value.replace('-', '').split('.')
-  const digits = BigInt(whole + fraction.padEnd(scale, '0').slice(0, scale))
-  return negative ? -digits : digits
-}
-
 /** An integer at `scale` decimals back to a decimal string, trailing zeros beyond two cut. */
 function unscaled(value: bigint, scale: number): string {
   const negative = value < 0n
@@ -129,13 +122,13 @@ function unscaled(value: bigint, scale: number): string {
 const amountOf = (line: Line): string | null =>
   line.quantity === null || line.price === null
     ? null
-    : unscaled(scaled(line.quantity, 4) * scaled(line.price, 4), 8)
+    : unscaled(toUnits(line.quantity, 4) * toUnits(line.price, 4), 8)
 
 const totalOf = (lines: readonly Line[]): string =>
   unscaled(
     lines.reduce((sum, line) => {
       const amount = amountOf(line)
-      return amount === null ? sum : sum + scaled(amount, 8)
+      return amount === null ? sum : sum + toUnits(amount, 8)
     }, 0n),
     8,
   )
@@ -144,7 +137,7 @@ function messagesOf(lines: readonly Line[]): Record<string, GridMessage[]> {
   const result: Record<string, GridMessage[]> = {}
   for (const line of lines) {
     const list: GridMessage[] = []
-    if (line.quantity !== null && scaled(line.quantity, 4) <= 0n) {
+    if (line.quantity !== null && toUnits(line.quantity, 4) <= 0n) {
       list.push({ tone: 'danger', text: 'Quantity must be more than 0.', columns: ['quantity'] })
     }
     if (line.item !== null && line.price === null) {
@@ -660,7 +653,7 @@ const DOC_LINES: DocLine[] = [
 /** The line's amount in paras (quantity × price, rounded half up to the para; the application's). */
 function docAmount(line: DocLine): bigint | null {
   if (line.quantity === null || line.price === null) return null
-  const product = scaled(line.quantity, 3) * scaled(line.price, 2)
+  const product = toUnits(line.quantity, 3) * toUnits(line.price, 2)
   const half = product < 0n ? -500n : 500n
   return (product + half) / 1000n
 }
@@ -699,7 +692,7 @@ function docMessages(lines: readonly DocLine[]): Record<string, GridMessage[]> {
     if (
       record?.stock !== undefined &&
       line.quantity !== null &&
-      scaled(line.quantity, 3) > scaled(record.stock, 3)
+      toUnits(line.quantity, 3) > toUnits(record.stock, 3)
     ) {
       list.push({
         tone: 'warning',
@@ -1117,12 +1110,12 @@ function specification(): Position[] {
 
 /** Two quantities added (the application's), without trailing zeros. */
 function plus(a: string, b: string): string {
-  return unscaled(scaled(a, 3) + scaled(b, 3), 3).replace(/\.?0+$/, '')
+  return unscaled(toUnits(a, 3) + toUnits(b, 3), 3).replace(/\.?0+$/, '')
 }
 
 function positionAmount(position: Position): bigint | null {
   if (position.current === null || position.price === null) return null
-  return (scaled(position.current, 3) * scaled(position.price, 2) + 500n) / 1000n
+  return (toUnits(position.current, 3) * toUnits(position.price, 2) + 500n) / 1000n
 }
 
 function Specification({ layout }: { layout?: 'desktop' | 'phone' }) {

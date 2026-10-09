@@ -54,6 +54,7 @@ import {
   type Customer,
   type Injury,
 } from './data-E'
+import { decimal, paras } from '../../../../packages/ui/src/components/amounts-story-data'
 
 /*
  * Group E's example screens (P5.19 catalogues at scale, P5.20 registers and official forms):
@@ -663,13 +664,7 @@ function vatRules(input: string, money: (value: string) => string): StatutoryRul
 
 /** One amount less another in whole paras (the Core's check, played here). */
 function subtract(value: string, less: string): string {
-  const toParas = (text: string) => {
-    const [whole = '0', fraction = ''] = text.split('.')
-    return BigInt(whole) * 100n + BigInt(fraction.padEnd(2, '0').slice(0, 2))
-  }
-  const result = toParas(value) - toParas(less)
-  const absolute = result < 0n ? -result : result
-  return `${result < 0n ? '-' : ''}${String(absolute / 100n)}.${String(absolute % 100n).padStart(2, '0')}`
+  return decimal(paras(value) - paras(less))
 }
 
 function vatSections(

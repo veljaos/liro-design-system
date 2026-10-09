@@ -5,6 +5,8 @@
  * the device. The Design System decides nothing about what a notification says.
  */
 
+import { dayOf, previousDay } from '../components/day-groups'
+
 /** One notification, from the application. */
 export interface NotificationItem {
   id: string
@@ -29,16 +31,10 @@ export interface NotificationItem {
 }
 
 /** The day of a notification: the date part of its instant, as the tenant's day (YYYY-MM-DD). */
-export function notificationDay(at: string): string {
-  return at.slice(0, 10)
-}
+export const notificationDay = dayOf
 
 /** The day before a YYYY-MM-DD date. */
-export function dayBefore(day: string): string {
-  const [year, month, date] = day.split('-').map(Number)
-  const previous = new Date(Date.UTC(year ?? 1970, (month ?? 1) - 1, (date ?? 1) - 1))
-  return previous.toISOString().slice(0, 10)
-}
+export const dayBefore = previousDay
 
 /** A group of notifications under one day's heading. */
 export interface NotificationGroup {

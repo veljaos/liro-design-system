@@ -5,6 +5,8 @@
  * file). No classes here.
  */
 
+import { decimal, paras } from '../components/amounts-story-data'
+
 /** One employee's payroll line, every amount a decimal string. */
 export interface PayrollLine {
   id: string
@@ -39,12 +41,6 @@ export const PAYROLL_RATES = {
   tax: 1000n,
   /** The monthly non-taxable amount, in paras (illustrative). */
   nonTaxable: 2842300n,
-}
-
-function decimal(paras: bigint): string {
-  const sign = paras < 0n ? '-' : ''
-  const abs = paras < 0n ? -paras : paras
-  return `${sign}${String(abs / 100n)}.${String(abs % 100n).padStart(2, '0')}`
 }
 
 /** A share in basis points, rounded half up to whole paras (the Core's rounding). */
@@ -143,11 +139,6 @@ export function payrollLines(count = 46): PayrollLine[] {
       employer: decimal(employer),
     }
   })
-}
-
-function paras(value: string): bigint {
-  const [whole = '0', fraction = '00'] = value.split('.')
-  return BigInt(whole) * 100n + BigInt(fraction.padEnd(2, '0').slice(0, 2))
 }
 
 /** The totals of the lines, summed in whole paras. */

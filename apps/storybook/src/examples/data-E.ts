@@ -6,20 +6,9 @@
  * Legal codes, field numbers and texts are illustrative, not authoritative. No classes here.
  */
 
+import { decimal, paras } from '../../../../packages/ui/src/components/amounts-story-data'
+
 // ── Amounts in whole paras ────────────────────────────────────────────────────────────────────
-
-function paras(value: string): bigint {
-  const negative = value.startsWith('-')
-  const [whole = '0', fraction = ''] = value.replace('-', '').split('.')
-  const amount = BigInt(whole) * 100n + BigInt(fraction.padEnd(2, '0').slice(0, 2))
-  return negative ? -amount : amount
-}
-
-function decimal(amount: bigint): string {
-  const sign = amount < 0n ? '-' : ''
-  const absolute = amount < 0n ? -amount : amount
-  return `${sign}${String(absolute / 100n)}.${String(absolute % 100n).padStart(2, '0')}`
-}
 
 /** Decimal strings added in whole paras. */
 export function addAmounts(...values: readonly string[]): string {

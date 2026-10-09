@@ -51,15 +51,21 @@ export function lifecycleState(step: LifecycleStep, index: number, current: numb
   return index === current ? 'current' : 'future'
 }
 
-function Dot({ state }: { state: StepState }) {
+/**
+ * A step's 16px dot, one look for every list of states (LifecycleBar, StatusTimeline). `onLine`
+ * fills a future step's ring with the raised surface, for a dot drawn over a joining line.
+ */
+export function StepDot({ state, onLine = false }: { state: StepState; onLine?: boolean }) {
   return (
     <span
       aria-hidden="true"
       className={cn(
         'box-border flex size-4 shrink-0 items-center justify-center rounded-full border border-solid',
+        onLine && 'relative',
         state === 'completed' && 'border-strong bg-surface-sunken text-secondary',
         state === 'current' && 'border-transparent bg-brand-solid',
-        state === 'future' && 'border-strong bg-transparent',
+        state === 'future' && 'border-strong',
+        state === 'future' && (onLine ? 'bg-surface-raised' : 'bg-transparent'),
         state === 'error' && 'border-transparent bg-status-danger-solid text-on-accent',
       )}
     >
@@ -92,7 +98,7 @@ export function LifecycleBar({ steps, current, label, layout, className }: Lifec
         data-slot="lifecycle-bar"
         className={cn('m-0 flex min-h-8 items-center gap-2 font-sans text-sm', className)}
       >
-        <Dot state={state} />
+        <StepDot state={state} />
         <span className={cn(NAME[state], TEXT_DIRECTION)}>
           {messages['lifecycle.step'](
             index + 1,
@@ -138,7 +144,7 @@ export function LifecycleBar({ steps, current, label, layout, className }: Lifec
                 className="ms-2 h-0 w-6 shrink-0 border-0 border-t border-solid border-default"
               />
             )}
-            <Dot state={state} />
+            <StepDot state={state} />
             {step.error === undefined ? (
               name
             ) : (

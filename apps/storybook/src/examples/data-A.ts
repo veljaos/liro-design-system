@@ -12,25 +12,12 @@ import type {
   QuestionDefinition,
   ThreadMessage,
 } from '@veljaos/ui'
+import { decimal, paras } from '../../../../packages/ui/src/components/amounts-story-data'
 import { INVOICES, type ExampleInvoice } from './examples-story-data'
 
+export { decimal, paras }
+
 // ── Money in whole paras ──────────────────────────────────────────────────────────────────────
-
-/** A decimal string ("1290.00") as whole paras (129000n). */
-export function paras(value: string): bigint {
-  const negative = value.startsWith('-')
-  const [whole = '0', fraction = ''] = value.replace('-', '').split('.')
-  const result = BigInt(whole) * 100n + BigInt((fraction + '00').slice(0, 2))
-  return negative ? -result : result
-}
-
-/** Whole paras as a decimal string with two decimals. */
-export function decimal(value: bigint): string {
-  const negative = value < 0n
-  const absolute = negative ? -value : value
-  const text = `${String(absolute / 100n)}.${String(absolute % 100n).padStart(2, '0')}`
-  return negative ? `-${text}` : text
-}
 
 // ── F-2026-0410 ───────────────────────────────────────────────────────────────────────────────
 

@@ -5,6 +5,8 @@
  * nothing in src/index.ts imports it, and styles.css skips it). No classes here.
  */
 
+import { decimal, paras } from './amounts-story-data'
+
 /** One line or open item, its amount in whole paras (negative for money going out). */
 export interface MatchingEntry {
   id: string
@@ -32,17 +34,12 @@ export interface MatchRecord {
 
 /** A decimal string from whole paras ("-1240.00"). */
 export function decimalOf(paras: bigint): string {
-  const sign = paras < 0n ? '-' : ''
-  const abs = paras < 0n ? -paras : paras
-  return `${sign}${String(abs / 100n)}.${String(abs % 100n).padStart(2, '0')}`
+  return decimal(paras)
 }
 
 /** Whole paras from a decimal string with two decimals ("135954.00"). */
 export function parasOf(decimal: string): bigint {
-  const negative = decimal.startsWith('-')
-  const [whole = '0', fraction = ''] = (negative ? decimal.slice(1) : decimal).split('.')
-  const value = BigInt(whole) * 100n + BigInt(fraction.padEnd(2, '0').slice(0, 2))
-  return negative ? -value : value
+  return paras(decimal)
 }
 
 export function sumParas(values: readonly bigint[]): bigint {

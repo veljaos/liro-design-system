@@ -5,6 +5,8 @@
  * src/index.ts imports this file. No classes here.
  */
 
+import { decimal, paras } from '../components/amounts-story-data'
+
 export interface TrainingEntry {
   id: string
   no: string
@@ -179,21 +181,6 @@ export function manyTraining(count: number): TrainingEntry[] {
 }
 
 // ── An illustrative VAT return (StatutoryFormPage) ───────────────────────────────────────────
-
-/** Paras of a decimal string. */
-function paras(value: string): bigint {
-  const negative = value.startsWith('-')
-  const [whole = '0', fraction = ''] = value.replace('-', '').split('.')
-  const amount = BigInt(whole) * 100n + BigInt(fraction.padEnd(2, '0').slice(0, 2))
-  return negative ? -amount : amount
-}
-
-/** A decimal string of paras. */
-function decimal(amount: bigint): string {
-  const sign = amount < 0n ? '-' : ''
-  const absolute = amount < 0n ? -amount : amount
-  return `${sign}${String(absolute / 100n)}.${String(absolute % 100n).padStart(2, '0')}`
-}
 
 /** Decimal strings added in whole paras (the stories play the application; components never add). */
 export function addAmounts(...values: readonly string[]): string {
