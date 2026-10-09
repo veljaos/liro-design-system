@@ -311,6 +311,7 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P5.20 | Registers and official forms | P4.4, P5.1 | done | 2026-10-09 | RegisterPage and StatutoryFormPage; examples VAT return September 2026 and work-injury register 2026 (and 5,000 entries) |
 | P5.21 | Common business processes | P3.4, P4.3 | done | 2026-10-09 | PermissionMatrix (users and roles composed from DataTables), SetupChecklist, SignerList and SigningPage (C); MatchingView, BalanceBar, PeriodicRunPage (F); examples users and roles, setup, contract signing, bank statement 188, journal entry NK-2026-0912, payroll September 2026 |
 | P5.21a | TanStack Virtual for every list | P5.21 | done | 2026-10-09 | The company switcher, LookupField, MatchingView and EditableGrid's row window on `useVirtualizer` with the shared window rules (600px, the focused or active row kept); the custom virtualiser removed (measured) |
+| P5.21b | Overscan per component | P5.21a | todo | | First step of Phase 5 part 2, before P5.8 (owner, 2026-10-09) |
 | P6.1 | Full language and direction matrix | Phases 1–5 | todo | | |
 | P6.2 | Manual WCAG 2.2 checks | P6.1 | todo | | |
 | P6.3 | Performance budget | P4.8 | todo | | |
@@ -686,6 +687,11 @@ A design question, not a list of business cases: the `DocumentPage` layout must 
 - **Users and roles:** a role list and a permissions matrix (areas × actions) for a company administrator; who has which role; the state of invitations.
 - `SetupChecklist`: the first-run steps of a new company (company data, e-invoicing connection, import customers, first invoice) with progress and resume.
 - **Signing:** the list of signers in order, the state per signer (waiting, signed, declined), the current user's "Sign" action and the document's preview; the signing itself is done by the Core / Liro Bridge.
+
+### P5.21b — Overscan per component (owner, 2026-10-09)
+**The first step of Phase 5 part 2, before P5.8.** P5.21a put every list on TanStack Virtual with one overscan of 600px, and the EditableGrid's page jump on the 300-line specification became slower (409 → 568ms at 1×, 1,240 → 1,513ms at 4× CPU; docs/decisions.md). **Do** tune the overscan per component: keep it smaller for the EditableGrid, whose rows are heavy (a line of fields), so that the page jump on the 300-line specification is back to **about 400ms or less** (1×, the P5.21a method); keep 600px for the light lists (DataTable, the company switcher, LookupField, MatchingView). Re-measure every list with the P5.21a method and record the numbers in docs/decisions.md.
+
+**Done when** the specification's page jump is about 400ms or less at 1×, the light lists keep their P5.21a figures, the focused row is still kept drawn everywhere, and the numbers are recorded.
 
 **End of Phase 5:** `0.1.0-alpha.5`; report.
 
