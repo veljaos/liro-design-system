@@ -2,6 +2,7 @@ import { useId, type ReactNode } from 'react'
 import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
+import { dayOf } from './day-groups'
 import { lifecycleState, StepDot, type StepState } from './lifecycle-bar'
 
 /*
@@ -31,7 +32,10 @@ export interface StatusTimelineStep {
   key: string
   /** The state's name, from the application ("Sent to SEF"). */
   label: string
-  /** When the state was reached: an instant (ISO 8601), shown by `format.dateTime`. */
+  /**
+   * When the state was reached: an ISO instant in the tenant's offset. Its date (`format.date`)
+   * and clock (`format.time`) are shown as written, the tenant's clock (P4.9), never shifted.
+   */
   at?: string
   /** A line under the name, from the application ("SEF ID 2f6c…", "by Dragan Ilić"). */
   detail?: ReactNode
@@ -145,7 +149,7 @@ export function StatusTimeline({ label, steps, current, next, className }: Statu
                     dir="auto"
                     className="text-xs whitespace-nowrap text-tertiary tabular-nums"
                   >
-                    {format.dateTime(step.at)}
+                    {format.date(dayOf(step.at))} {format.time(step.at)}
                   </time>
                 )}
               </p>
