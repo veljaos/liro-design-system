@@ -185,9 +185,10 @@ describe('AppShell', () => {
       impersonationBar: <div>IMPERSONATION</div>,
       environmentMarker: <span>SANDBOX</span>,
       offlineIndicator: <div>OFFLINE</div>,
+      agent: <button type="button">AGENT</button>,
     })
-    const order = ['IMPERSONATION', 'SANDBOX', 'Breadcrumbs', 'OFFLINE', 'Page'].map((text) =>
-      html.indexOf(text),
+    const order = ['IMPERSONATION', 'SANDBOX', 'Breadcrumbs', 'AGENT', 'OFFLINE', 'Page'].map(
+      (text) => html.indexOf(text),
     )
     expect(order.every((position) => position > -1)).toBe(true)
     expect([...order].sort((a, b) => a - b)).toEqual(order)

@@ -52,8 +52,8 @@ export {
  * - Header 56px on surface.header with a 1px border.default line under it; horizontal padding md
  *   (16px) on phones and lg (24px) from sm. Start, 16px (md) apart: the BrandLockup, an optional
  *   environment marker, then from sm a short vertical divider (18px, border.default) and the
- *   breadcrumbs in xs. End: the search button, then 16px, then the cluster of notifications,
- *   company switcher and user menu, 8px (xs) apart.
+ *   breadcrumbs in xs. End: the search button, then 16px, then the cluster of the agent button
+ *   (`agent`, P5.3), notifications, company switcher and user menu, 8px (xs) apart.
  * - Search (the old look): a neutral "default" button, small (30px), the Search icon 15px,
  *   `messages['shell.search']`, then 16px (md) and the shortcut as plain text ("Ctrl K"; the
  *   application gives "⌘K" on a Mac) in xs text.tertiary, no key boxes (owner); width by
@@ -125,6 +125,12 @@ export interface AppShellProps {
    * (`messages['grid.modifierKey']` and K); the application gives "⌘K" on a Mac.
    */
   searchShortcut?: string
+  /**
+   * The application's agent button, before the notifications (P5.3): a subtle 36px IconButton
+   * (Bot, named "Liro agent, 1 question") that opens a Popover or Drawer with AgentQuestion. On
+   * phones too.
+   */
+  agent?: ReactNode
   notifications?: ShellNotifications
   companies?: ShellCompanies
   user?: ShellUser
@@ -515,6 +521,7 @@ export function AppShell(props: AppShellProps) {
                   </ButtonPrimitive>
                 ))}
               <div className="flex items-center gap-2">
+                {props.agent}
                 {props.notifications !== undefined && (
                   <NotificationsButton notifications={props.notifications} />
                 )}

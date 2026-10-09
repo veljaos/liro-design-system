@@ -191,18 +191,29 @@ export function statusBadge(status: keyof typeof TONES) {
   return <StatusBadge label={status} tone={toneFor(status, TONES)} />
 }
 
-/** The shell around every signed-in screen. */
+/** Kvadrat Gradnja d.o.o.: the company of the walk-through. */
+export const HOME_COMPANY = 'kvadrat'
+
+/**
+ * The shell around every signed-in screen. `company` is the current company (another one for
+ * Stanić Elektro STR's setup; choosing Kvadrat Gradnja there goes home); `agent` is the agent
+ * button (P5.3).
+ */
 export function Shell({
   phone,
   crumbs,
   tabs,
   bottomBar,
+  company = HOME_COMPANY,
+  agent,
   children,
 }: {
   phone: boolean
   crumbs?: { label: string; href?: string }[]
   tabs?: ModuleTab[]
   bottomBar?: ReactNode
+  company?: string
+  agent?: ReactNode
   children: ReactNode
 }) {
   const navigate = useContext(Navigate)
@@ -292,12 +303,15 @@ export function Shell({
         items: COMPANIES,
         pinned: ['kvadrat', 'panonija'],
         recent: ['bojovic', 'medic'],
-        current: 'kvadrat',
-        onSelect: () => undefined,
+        current: company,
+        onSelect: (id) => {
+          if (id === HOME_COMPANY && company !== HOME_COMPANY) navigate(ROUTES.home)
+        },
       }}
       user={user}
       {...(tabs === undefined ? {} : { moduleTabs: tabs })}
       {...(bottomBar === undefined ? {} : { bottomBar })}
+      {...(agent === undefined ? {} : { agent })}
     >
       {children}
     </AppShell>

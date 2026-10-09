@@ -1,6 +1,8 @@
 import { Send } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import {
+  AttachmentList,
+  notice,
   ActivityList,
   Button,
   CancellationBanner,
@@ -304,43 +306,35 @@ const NOTE_TEMPLATES: NoteTemplate[] = [
   },
 ]
 
-/**
- * The attachments, each with its "Send with the e-invoice" flag.
- * INTEGRATION: AttachmentList — group B's AttachmentList replaces this list (its per-file extra
- * control takes the checkbox).
- */
+/** The attachments (AttachmentList, P5.5), each with its "Send with the e-invoice" flag. */
 function Attachments() {
   const [send, setSend] = useState(
     Object.fromEntries(FINAL_ATTACHMENTS.map((file) => [file.id, file.send])),
   )
   return (
-    <ul aria-label="Attachments" className="m-0 flex list-none flex-col p-0">
-      {FINAL_ATTACHMENTS.map((file) => (
-        <li
-          key={file.id}
-          className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-0 border-b border-solid border-subtle py-2 first:pt-0 last:border-b-0 last:pb-0"
-        >
-          <span className="flex min-w-0 flex-col">
-            <a
-              href={`#/files/${file.id}`}
-              className="text-sm font-medium break-words text-link no-underline visited:text-link hover:underline"
-            >
-              {file.name}
-            </a>
-            <span className="text-xs text-secondary">PDF, {file.size}</span>
-          </span>
-          <span role="group" aria-label={file.name}>
-            <CheckboxField
-              label="Send with the e-invoice"
-              checked={send[file.id] === true}
-              onChange={(checked) => {
-                setSend((current) => ({ ...current, [file.id]: checked }))
-              }}
-            />
-          </span>
-        </li>
-      ))}
-    </ul>
+    <AttachmentList
+      label="Attachments"
+      files={FINAL_ATTACHMENTS.map((file) => ({
+        id: file.id,
+        name: file.name,
+        sizeText: `PDF, ${file.size}`,
+        state: 'available',
+      }))}
+      onDownload={(file) => {
+        notice.info(`${file.name} is downloaded.`)
+      }}
+      extra={(file) => (
+        <span role="group" aria-label={file.name}>
+          <CheckboxField
+            label="Send with the e-invoice"
+            checked={send[file.id] === true}
+            onChange={(checked) => {
+              setSend((current) => ({ ...current, [file.id]: checked }))
+            }}
+          />
+        </span>
+      )}
+    />
   )
 }
 

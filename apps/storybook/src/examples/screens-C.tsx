@@ -2,6 +2,8 @@ import { LogOut, Send, UserPlus } from 'lucide-react'
 import { useContext, useState, type ReactNode } from 'react'
 import {
   AppShell,
+  AttachmentList,
+  DocumentFrame,
   Button,
   DataTable,
   DateText,
@@ -11,7 +13,6 @@ import {
   KeyValueList,
   moveCard,
   notice,
-  NotificationsPanel,
   PageHeader,
   PermissionMatrix,
   PersonAvatar,
@@ -32,14 +33,14 @@ import {
   type PermissionValue,
   type Signer,
 } from '@veljaos/ui'
+import { CONTRACT_VIEWER } from '../../../../packages/ui/src/components/document-frame-story-data'
 import type { ExampleRoute } from './example-app'
-import { BRAND, COMPANIES, HR_TABS, Navigate, Notifications, ROUTES, Shell } from './example-shell'
+import { BRAND, HR_TABS, Navigate, ROUTES, Shell } from './example-shell'
 import {
   ACTIONS,
   AREAS,
   C_ROUTES,
   CONTRACT_FILES,
-  CONTRACT_TEXT,
   contractSigners,
   DECLINE_REASONS,
   INVITATIONS,
@@ -79,74 +80,6 @@ function Frame({ phone, children }: { phone: boolean; children: ReactNode }) {
     >
       {children}
     </div>
-  )
-}
-
-/**
- * The shell with another current company (Stanić Elektro STR's setup). NEED (integrator): the
- * examples' `Shell` could take the current company; until then this is Shell's configuration with
- * `current` set.
- */
-function CompanyShell({
-  phone,
-  company,
-  bottomBar,
-  children,
-}: {
-  phone: boolean
-  company: string
-  bottomBar?: ReactNode
-  children: ReactNode
-}) {
-  const navigate = useContext(Navigate)
-  const notifications = useContext(Notifications)
-  const unread = notifications.items.filter((item) => !item.read).length
-  return (
-    <AppShell
-      layout={phone ? 'phone' : 'desktop'}
-      brand={BRAND}
-      notifications={{
-        unread,
-        panel: (
-          <NotificationsPanel
-            items={notifications.items.slice(0, 5)}
-            unread={unread}
-            viewAllHref={`#${ROUTES.notifications}`}
-            onOpen={(item) => {
-              notifications.setRead(item.id, true)
-            }}
-            onMarkAllRead={() => {
-              notifications.setRead('all', true)
-            }}
-          />
-        ),
-      }}
-      companies={{
-        items: COMPANIES,
-        pinned: ['kvadrat', 'panonija'],
-        recent: ['bojovic', 'medic'],
-        current: company,
-        onSelect: (id) => {
-          if (id === 'kvadrat') navigate(ROUTES.home)
-        },
-      }}
-      user={{
-        name: 'Milica Petrović',
-        email: 'milica.petrovic@kvadratgradnja.rs',
-        entries: [
-          {
-            label: 'Sign out',
-            icon: LogOut,
-            onSelect: () => {
-              navigate(ROUTES.signIn)
-            },
-          },
-        ],
-      }}
-      {...(bottomBar === undefined ? {} : { bottomBar })}
-    >
-      {children}
-    </AppShell>
   )
 }
 
@@ -534,11 +467,7 @@ export function SetupScreen({ phone }: { phone: boolean }) {
     />
   )
   return (
-    <CompanyShell
-      phone={phone}
-      company={STANIC.id}
-      {...(phone ? { bottomBar: importCustomers } : {})}
-    >
+    <Shell phone={phone} company={STANIC.id} {...(phone ? { bottomBar: importCustomers } : {})}>
       <Frame phone={phone}>
         <PageHeader
           title={STANIC.name}
@@ -550,7 +479,7 @@ export function SetupScreen({ phone }: { phone: boolean }) {
         />
         <SetupChecklist title="Set up the company" steps={STANIC_STEPS} className="max-w-180" />
       </Frame>
-    </CompanyShell>
+    </Shell>
   )
 }
 
@@ -561,49 +490,32 @@ const CONTRACT_TABS: ModuleTab[] = HR_TABS.map((tab) => ({
   current: tab.key === 'contracts',
 }))
 
-/**
- * The contract's first page. INTEGRATION: DocumentFrame (P5.5, group B) hosts the real viewer;
- * this stands in its place.
- */
+/** The contract's three pages in the document viewer (P5.5); the example's viewer is a srcdoc. */
 function ContractPreview() {
   return (
-    <div className="bg-surface-sunken p-4 sm:p-6">
-      <article className="mx-auto flex max-w-150 flex-col gap-3 bg-surface-raised p-6 text-sm text-primary shadow-xs sm:p-10">
-        {CONTRACT_TEXT.map((line, index) =>
-          index === 0 ? (
-            <h3 key={line} className="m-0 text-center text-h5">
-              {line}
-            </h3>
-          ) : (
-            <p key={line} className="m-0">
-              {line}
-            </p>
-          ),
-        )}
-      </article>
-    </div>
+    <DocumentFrame
+      title="Employment contract RU-2026-017"
+      srcDoc={CONTRACT_VIEWER}
+      allowedOrigin="null"
+    />
   )
 }
 
-/** INTEGRATION: AttachmentList (P5.5, group B) — a temporary simple list of the files. */
+/** The contract's attachments: available files, downloaded at the click (P5.5). */
 function ContractFiles() {
   return (
-    <ul className="m-0 flex list-none flex-col p-0">
-      {CONTRACT_FILES.map((file) => (
-        <li
-          key={file.name}
-          className="flex justify-between gap-3 border-0 border-b border-solid border-subtle py-2 text-sm first:pt-0 last:border-b-0 last:pb-0"
-        >
-          <a
-            href={`#/files/${file.name}`}
-            className="text-link no-underline visited:text-link hover:text-link hover:underline active:text-link"
-          >
-            {file.name}
-          </a>
-          <span className="shrink-0 text-xs text-secondary">{file.size}</span>
-        </li>
-      ))}
-    </ul>
+    <AttachmentList
+      label="Attachments"
+      files={CONTRACT_FILES.map((file) => ({
+        id: file.name,
+        name: file.name,
+        sizeText: file.size,
+        state: 'available',
+      }))}
+      onDownload={(file) => {
+        notice.info(`${file.name} is downloaded.`)
+      }}
+    />
   )
 }
 

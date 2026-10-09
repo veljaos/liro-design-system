@@ -1,7 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { Download } from 'lucide-react'
 import { expect, within } from 'storybook/test'
+import { AttachmentList } from '../components/attachment-list'
 import { Button } from '../components/button'
+import { DocumentFrame } from '../components/document-frame'
+import { CONTRACT_VIEWER, viewer } from '../components/document-frame-story-data'
 import { contractSigners, DECLINE_REASONS } from '../components/group-c-story-data'
 import { KeyValueList } from '../components/cards'
 import { SignerList } from '../components/signer-list'
@@ -10,61 +13,22 @@ import { ExampleProvider, PhoneFrame, StoryProvider } from '../components/story-
 import { settle } from '../primitives/story-helpers'
 import { SigningPage, type SigningPageProps } from './signing-page'
 
-/**
- * The document's preview. INTEGRATION: DocumentFrame (P5.5) hosts the real viewer; the story
- * shows the first page as the viewer would.
- */
-function Preview({ lines }: { lines: readonly string[] }) {
-  return (
-    <div className="bg-surface-sunken p-4 sm:p-6">
-      <article className="mx-auto flex max-w-150 flex-col gap-3 bg-surface-raised p-6 text-sm text-primary shadow-xs sm:p-10">
-        {lines.map((line, index) =>
-          index === 0 ? (
-            <h3 key={line} className="m-0 text-center text-h5">
-              {line}
-            </h3>
-          ) : (
-            <p key={line} className="m-0">
-              {line}
-            </p>
-          ),
-        )}
-      </article>
-    </div>
-  )
+/** The document's preview: DocumentFrame (P5.5) hosting the stories' viewer. */
+function Preview({ title, viewerDocument }: { title: string; viewerDocument: string }) {
+  return <DocumentFrame title={title} srcDoc={viewerDocument} allowedOrigin="null" />
 }
 
-const CONTRACT = [
-  'Employment contract RU-2026-017',
-  'Kvadrat Gradnja d.o.o., Novi Sad, PIB 108452317, represented by director Nenad Kovačević (the employer), and Stefan Nikolić (the employee) agree:',
-  'Article 1. The employee works as a site engineer from 02.11.2026., for an indefinite term.',
-  'Article 2. The place of work is the office in Novi Sad; the work is hybrid, with three office days a week.',
-  'Article 3. The probation period is three months.',
-  'Article 4. The gross salary is 185.000,00 RSD a month.',
-]
-
-/** INTEGRATION: AttachmentList (P5.5) — a temporary simple list of the files. */
+/** The contract's attachments, downloaded at the click. */
 function Attachments() {
   return (
-    <ul className="m-0 flex list-none flex-col p-0">
-      {[
-        ['Job description — site engineer.pdf', '182 KB'],
-        ['Health and safety statement.pdf', '96 KB'],
-      ].map(([name, size]) => (
-        <li
-          key={name}
-          className="flex justify-between gap-3 border-0 border-b border-solid border-subtle py-2 text-sm first:pt-0 last:border-b-0 last:pb-0"
-        >
-          <a
-            href={`#files/${String(name)}`}
-            className="text-link no-underline visited:text-link hover:text-link hover:underline active:text-link"
-          >
-            {name}
-          </a>
-          <span className="text-xs text-secondary">{size}</span>
-        </li>
-      ))}
-    </ul>
+    <AttachmentList
+      label="Attachments"
+      files={[
+        { id: 'job', name: 'Job description — site engineer.pdf', sizeText: '182 KB' },
+        { id: 'safety', name: 'Health and safety statement.pdf', sizeText: '96 KB' },
+      ].map((file) => ({ ...file, state: 'available' as const }))}
+      onDownload={() => undefined}
+    />
   )
 }
 
@@ -76,7 +40,7 @@ function Page(props: Partial<SigningPageProps> & { current?: 'stefan' | 'jelena'
       status={<StatusBadge label="Awaiting signatures" tone="warning" />}
       subtitle="Employment contract · Stefan Nikolić, site engineer"
       actions={<Button intent="download" label="Download PDF" />}
-      preview={<Preview lines={CONTRACT} />}
+      preview={<Preview title="Employment contract RU-2026-017" viewerDocument={CONTRACT_VIEWER} />}
       signers={
         <SignerList
           signers={contractSigners(props.current ?? 'none')}
@@ -216,7 +180,17 @@ export const Arabic: Story = {
         <Page
           current="stefan"
           subtitle="عقد عمل · ستيفان نيكوليتش"
-          preview={<Preview lines={['عقد عمل', 'يتفق صاحب العمل والموظف على ما يلي.']} />}
+          preview={
+            <Preview
+              title="عقد عمل"
+              viewerDocument={viewer({
+                title: 'عقد عمل',
+                lang: 'ar',
+                dir: 'rtl',
+                pages: ['<h1>عقد عمل</h1><p>يتفق صاحب العمل والموظف على ما يلي.</p>'],
+              })}
+            />
+          }
         />
       </ExampleProvider>
     </StoryProvider>
@@ -231,7 +205,16 @@ export const Japanese: Story = {
         <Page
           current="stefan"
           subtitle="雇用契約書 · ステファン・ニコリッチ"
-          preview={<Preview lines={['雇用契約書', '使用者と従業員は次のとおり合意する。']} />}
+          preview={
+            <Preview
+              title="雇用契約書"
+              viewerDocument={viewer({
+                title: '雇用契約書',
+                lang: 'ja',
+                pages: ['<h1>雇用契約書</h1><p>使用者と従業員は次のとおり合意する。</p>'],
+              })}
+            />
+          }
         />
       </ExampleProvider>
     </StoryProvider>

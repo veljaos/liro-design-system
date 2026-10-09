@@ -1153,7 +1153,7 @@ export const FinalInvoiceScreen: Story = {
     await expect(
       canvas.getByRole('link', { name: 'Advance invoice A-2026-044, Paid' }),
     ).toHaveAttribute('href', '#/sales/invoices/A-2026-044')
-    // INTEGRATION: AttachmentList — the flags change with a press.
+    // The attachments' flags change with a press.
     const flag = within(canvas.getByRole('group', { name: 'Otpremnice OTP-2026-0388–0402.pdf' }))
     await userEvent.click(flag.getByRole('checkbox', { name: 'Send with the e-invoice' }))
     await expect(flag.getByRole('checkbox')).toBeChecked()

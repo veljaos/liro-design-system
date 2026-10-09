@@ -375,17 +375,6 @@ export const DECLINE_REASONS = [
   { value: 'other', label: 'Another reason' },
 ]
 
-/** The contract's first page, as the viewer shows it (the questionnaire of group A made it). */
-export const CONTRACT_TEXT = [
-  'Employment contract RU-2026-017',
-  'Kvadrat Gradnja d.o.o., Novi Sad, PIB 108452317, MB 21456789, represented by director Nenad Kovačević (the employer), and Stefan Nikolić (the employee) agree as follows.',
-  'Article 1. The employee works as a site engineer from 02.11.2026., for an indefinite term.',
-  'Article 2. The place of work is the office in Novi Sad; the work is hybrid.',
-  'Article 3. The probation period is 3 months.',
-  'Article 4. The gross salary is 185.000,00 RSD a month, paid to the account the employee names.',
-  'Article 5. Annual leave and working time follow the Labour Law and the employer’s rules.',
-]
-
 export const CONTRACT_FILES = [
   { name: 'Job description, site engineer.pdf', size: '182 KB' },
   { name: 'Health and safety statement.pdf', size: '96 KB' },
