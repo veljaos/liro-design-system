@@ -310,6 +310,7 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P5.19 | Catalogs at scale | P3.1, P2.2 | done | 2026-10-09 | LookupField (recent, kinds, create, one-off, Search all…, virtualised) (D1); LookupDialog, ImportWizard, BulkEditDrawer, DuplicateWarning, inactive records by views and a neutral badge (E); customers example with 50,000 records and import |
 | P5.20 | Registers and official forms | P4.4, P5.1 | done | 2026-10-09 | RegisterPage and StatutoryFormPage; examples VAT return September 2026 and work-injury register 2026 (and 5,000 entries) |
 | P5.21 | Common business processes | P3.4, P4.3 | done | 2026-10-09 | PermissionMatrix (users and roles composed from DataTables), SetupChecklist, SignerList and SigningPage (C); MatchingView, BalanceBar, PeriodicRunPage (F); examples users and roles, setup, contract signing, bank statement 188, journal entry NK-2026-0912, payroll September 2026 |
+| P5.21a | TanStack Virtual for every list | P5.21 | done | 2026-10-09 | The company switcher, LookupField, MatchingView and EditableGrid's row window on `useVirtualizer` with the shared window rules (600px, the focused or active row kept); the custom virtualiser removed (measured) |
 | P6.1 | Full language and direction matrix | Phases 1–5 | todo | | |
 | P6.2 | Manual WCAG 2.2 checks | P6.1 | todo | | |
 | P6.3 | Performance budget | P4.8 | todo | | |
