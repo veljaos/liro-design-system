@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { ariaRowIndexes, gridWindow, WINDOW_OVERSCAN } from './editable-grid-window'
+import { ariaRowIndexes, gridWindow } from './editable-grid-window'
+import { WINDOW_OVERSCAN } from './virtual-rows'
 
 const rows = (count: number, height = 37) => Array.from({ length: count }, () => height)
 

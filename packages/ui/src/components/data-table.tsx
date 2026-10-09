@@ -7,27 +7,26 @@ import {
   type RowSelectionState,
   type Updater,
 } from '@tanstack/react-table'
-import { useVirtualizer } from '@tanstack/react-virtual'
+import { defaultRangeExtractor, useVirtualizer, type Range } from '@tanstack/react-virtual'
 import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react'
 import {
+  Fragment,
+  useCallback,
   useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
   useState,
   type CSSProperties,
-  type KeyboardEvent,
-  type MouseEvent,
   type ReactNode,
 } from 'react'
 import { Checkbox } from '../primitives/checkbox'
-import { BUTTON_RESET, FOCUS_RING, TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
+import { BUTTON_RESET, FOCUS_RING, TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { Skeleton } from '../primitives/skeleton'
 import { useLiro } from '../provider/liro-provider'
 import { BulkActionBar, type BulkAction } from './bulk-action-bar'
-import { CompactIconButton } from './button'
-import { DataTableCard, fromControl } from './data-table-card'
+import { DataTableCard } from './data-table-card'
 import {
   ariaSort,
   clampWidth,
@@ -35,17 +34,25 @@ import {
   hasActiveFilters,
   MIN_COLUMN_WIDTH,
   nextSort,
-  rowKeyAction,
   subtotalStart,
   type DataTableFilters,
   type DataTableSort,
 } from './data-table-logic'
 import { LINE_TYPE_TEXT, spansRow, type LineType } from './line-types'
 import { ResizeHandle } from './data-table-resize'
-import { DropdownMenu, type MenuEntry } from './dropdown-menu'
+import {
+  ALIGN,
+  CELL,
+  lineClasses,
+  TableRow,
+  type RowLatest,
+  type RowShared,
+} from './data-table-row'
+import { type MenuEntry } from './dropdown-menu'
 import { EmptyState, type EmptyAction } from './empty-state'
 import { CursorPagination } from './navigation'
 import { usePhone } from './use-phone'
+import { overscanRows, spacersBetween, withFocusedRow } from './virtual-rows'
 
 /*
  * DataTable (BUILD-PLAN P3.1, P3.2), on TanStack Table and fully controlled: the table never
@@ -71,7 +78,9 @@ import { usePhone } from './use-phone'
  *   bottom while the table scrolls; values from the application, never computed;
  * - filters decide "nothing here yet" or "no rows match" (with "Clear filters");
  * - on a phone (below 48em) the rows are cards, by real branching: only one layout is rendered
- *   (Appendix B.5); virtualized rows are 44px, cards estimated at 104px. Inside a card (`inCard`)
+ *   (Appendix B.5); virtualized rows are 44px, cards estimated at 104px, drawn by the shared
+ *   window rules of `virtual-rows.ts` (600px around the view, the focused row kept; P5.20), each
+ *   table row memoised (`data-table-row.tsx`). Inside a card (`inCard`)
  *   they are not cards but one flat list divided by border.subtle lines (P4.9: no cards inside a
  *   card); in a card nothing is padded under the last row unless totals, a note, the count or the
  *   paging stand there.
@@ -125,7 +134,11 @@ export interface DataTableProps<Row extends RowData> {
   rows: readonly Row[]
   /** A stable id per row: selection and keys use it. */
   getRowId: (row: Row) => string
-  /** Names a row for assistive technology: "Select <label>", "Actions: <label>". */
+  /**
+   * Names a row for assistive technology: "Select <label>", "Actions: <label>". A function of the
+   * row only: a row is drawn again when the row, its selection or `columns` change (P5.20), not
+   * when only this function is new.
+   */
   getRowLabel: (row: Row) => string
 
   sort?: DataTableSort
@@ -231,18 +244,6 @@ export interface DataTableProps<Row extends RowData> {
 }
 
 const features = tableFeatures({ rowSelectionFeature })
-
-const ALIGN = { start: 'text-start', center: 'text-center', end: 'text-end' } as const
-
-/** Mantine Table cell padding: vertical sm (12px), horizontal md (16px). */
-const CELL = 'px-4 py-3'
-
-/**
- * A selected row (P3.6, owner): besides its neutral background, a 3px bar in border.selected on
- * the row's start edge, drawn by the first cell, so selected differs from hovered by shape too.
- */
-const SELECTED_ROW =
-  "[&>td:first-child]:relative [&>td:first-child]:before:absolute [&>td:first-child]:before:inset-y-0 [&>td:first-child]:before:start-0 [&>td:first-child]:before:border-0 [&>td:first-child]:before:border-s-[3px] [&>td:first-child]:before:border-solid [&>td:first-child]:before:border-selected [&>td:first-child]:before:content-['']"
 
 /** A virtualized row (owner) and the estimated card (owner). */
 const ROW_HEIGHT = 44
@@ -392,11 +393,42 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
       (hasActions ? ACTIONS_WIDTH : 0)
     : undefined
 
+  // The row that holds the focus (its index), kept drawn with its neighbours wherever the view
+  // scrolls (virtual-rows.ts), so the focus is never lost with an unmounted row.
+  const [focusIndex, setFocusIndex] = useState<number | null>(null)
+  useEffect(() => {
+    const element = scroller.current
+    if (!virtualize || element === null) return
+    const onFocusIn = (event: FocusEvent) => {
+      const at =
+        event.target instanceof Element
+          ? event.target.closest('[data-index]')?.getAttribute('data-index')
+          : undefined
+      setFocusIndex(at === null || at === undefined ? null : Number(at))
+    }
+    const onFocusOut = (event: FocusEvent) => {
+      const next = event.relatedTarget
+      if (!(next instanceof Node) || !element.contains(next)) setFocusIndex(null)
+    }
+    element.addEventListener('focusin', onFocusIn)
+    element.addEventListener('focusout', onFocusOut)
+    return () => {
+      element.removeEventListener('focusin', onFocusIn)
+      element.removeEventListener('focusout', onFocusOut)
+    }
+  }, [virtualize, cards])
+  const rangeExtractor = useCallback(
+    (range: Range) => withFocusedRow(defaultRangeExtractor(range), focusIndex, range.count),
+    [focusIndex],
+  )
+  const rowHeight = cards ? CARD_HEIGHT : ROW_HEIGHT
   const virtualizer = useVirtualizer({
     count: rows.length,
     getScrollElement: () => scroller.current,
-    estimateSize: () => (cards ? CARD_HEIGHT : ROW_HEIGHT),
-    overscan: 8,
+    estimateSize: () => rowHeight,
+    // 600px above and below the view (virtual-rows.ts), as rows.
+    overscan: overscanRows(rowHeight),
+    rangeExtractor,
     enabled: virtualize,
     // Before the scroll area is measured (and on the server), assume a screen's height, so the
     // first rows are drawn at once instead of after a measurement.
@@ -419,6 +451,56 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
     const row = tableRows[index]
     return row === undefined ? 'line' : typeOf(row.original)
   }
+
+  // What every memoised row shares (data-table-row.tsx): a new object only when what rows draw
+  // changes. Handlers and the row label are read through `latest` when used.
+  const latest = useRef<RowLatest<Row>>({
+    getRowLabel,
+    onRowClick: props.onRowClick,
+    onRowOpen: props.onRowOpen,
+    toggle: () => undefined,
+  })
+  latest.current = {
+    getRowLabel,
+    onRowClick: props.onRowClick,
+    onRowOpen: props.onRowOpen,
+    toggle: (id, value) => {
+      table.getRow(id).toggleSelected(value)
+    },
+  }
+  const { rowActions, lineText, lineKind } = props
+  const shared = useMemo<RowShared<Row>>(
+    () => ({
+      columns,
+      selectable,
+      hasActions,
+      clickable,
+      virtualize,
+      oneLine,
+      span,
+      amountsFrom,
+      messages,
+      rowActions,
+      lineText,
+      lineKind,
+      latest,
+      classes: lineClasses(columns, virtualize, oneLine),
+    }),
+    [
+      columns,
+      selectable,
+      hasActions,
+      clickable,
+      virtualize,
+      oneLine,
+      span,
+      amountsFrom,
+      messages,
+      rowActions,
+      lineText,
+      lineKind,
+    ],
+  )
 
   const skeleton = (
     <div className="flex flex-col gap-2 p-4">
@@ -525,171 +607,18 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
   const tableRow = (index: number) => {
     const row = tableRows[index]
     if (row === undefined) return null
-    const original = row.original
-    const type = typeOf(original)
-    // A subtotal draws its own rule above; the row before it has no line of its own (one line).
     const next = tableRows[index + 1]
-    const rowLine =
-      next !== undefined && typeOf(next.original) === 'subtotal'
-        ? 'border-0'
-        : 'border-0 border-b border-solid border-default'
-    if (spansRow(type)) {
-      return (
-        <tr
-          key={row.id}
-          data-line={type}
-          aria-rowindex={virtualize ? index + 2 : undefined}
-          className={virtualize ? 'h-11' : undefined}
-        >
-          <td
-            colSpan={span}
-            className={cn(
-              CELL,
-              rowLine,
-              LINE_TYPE_TEXT[type],
-              virtualize && 'py-0',
-              oneLine && 'truncate',
-            )}
-          >
-            <span className={TEXT_ISOLATE}>{textOf(original)}</span>
-          </td>
-        </tr>
-      )
-    }
-    if (type === 'subtotal') {
-      const cellLine = cn(SUBTOTAL_LINE, rowLine === 'border-0' ? 'border-b-0' : 'border-b')
-      return (
-        <tr
-          key={row.id}
-          data-line={type}
-          aria-rowindex={virtualize ? index + 2 : undefined}
-          className={virtualize ? 'h-11' : undefined}
-        >
-          <td
-            colSpan={amountsFrom + (selectable ? 1 : 0)}
-            className={cn(
-              CELL,
-              cellLine,
-              'text-end',
-              LINE_TYPE_TEXT.subtotal,
-              virtualize && 'py-0',
-              oneLine && 'truncate',
-            )}
-          >
-            <span className={TEXT_ISOLATE}>{textOf(original)}</span>
-          </td>
-          {columns.slice(amountsFrom).map((column) => (
-            <td
-              key={column.id}
-              className={cn(
-                CELL,
-                cellLine,
-                'min-w-16',
-                ALIGN[column.align ?? 'start'],
-                LINE_TYPE_TEXT.subtotal,
-                column.numeric === true && 'tabular-nums',
-                virtualize && 'py-0',
-                oneLine && 'truncate',
-              )}
-            >
-              <span className={TEXT_ISOLATE}>{column.cell(original)}</span>
-            </td>
-          ))}
-          {hasActions && <td className={cellLine} />}
-        </tr>
-      )
-    }
-    const kind = props.lineKind?.(original)
-    const selected = row.getIsSelected()
-    const label = getRowLabel(original)
-    const press = () => props.onRowClick?.(original)
     return (
-      <tr
+      <TableRow
         key={row.id}
-        {...(type === 'line' ? {} : { 'data-line': type })}
-        aria-selected={selectable ? selected : undefined}
-        // The selection's own text colours (P4.3): tokens.css lightens the few that fail on it.
-        data-liro-surface={selected ? 'selected' : undefined}
-        aria-rowindex={virtualize ? index + 2 : undefined}
-        {...(clickable
-          ? {
-              tabIndex: 0,
-              onClick: (event: MouseEvent) => {
-                if (!fromControl(event)) press()
-              },
-              onKeyDown: (event: KeyboardEvent) => {
-                if (fromControl(event)) return
-                const action = rowKeyAction(event.key, props.onRowOpen !== undefined)
-                if (action === null) return
-                event.preventDefault()
-                if (action === 'open') props.onRowOpen?.(original)
-                else press()
-              },
-            }
-          : {})}
-        className={cn(
-          virtualize && 'h-11',
-          selected && [SELECTED_ROW, 'bg-surface-selected'],
-          clickable &&
-            'cursor-pointer outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus',
-          clickable && !selected && 'hover:bg-surface-sunken',
-        )}
-      >
-        {selectable && (
-          <td className={cn(CELL, 'w-px', rowLine, virtualize && 'py-0')}>
-            <Checkbox
-              checked={selected}
-              onCheckedChange={(value) => {
-                row.toggleSelected(value === true)
-              }}
-              aria-label={messages['table.selectRow'](label)}
-              className="flex size-4 after:-inset-1 [&_svg]:size-2.5"
-            />
-          </td>
-        )}
-        {row.getAllCells().map((cell, cellIndex) => {
-          const column = byId.get(cell.column.id)
-          return (
-            <td
-              key={cell.id}
-              className={cn(
-                CELL,
-                'min-w-16',
-                rowLine,
-                ALIGN[column?.align ?? 'start'],
-                column?.numeric === true && 'tabular-nums',
-                virtualize && 'py-0',
-                oneLine && 'truncate',
-              )}
-            >
-              {/* The application's content takes its direction from itself; the cell keeps its side. */}
-              <span className={TEXT_ISOLATE}>
-                <table.FlexRender cell={cell} />
-              </span>
-              {/* What the line is (P5.18): small secondary text under the first cell, no colour. */}
-              {cellIndex === 0 && kind !== undefined && kind !== null && (
-                <span
-                  data-slot="line-kind"
-                  className={cn('block text-xs text-secondary', TEXT_DIRECTION)}
-                >
-                  {kind}
-                </span>
-              )}
-            </td>
-          )
-        })}
-        {hasActions && (
-          <td className={cn('w-px px-2 py-0 text-end', rowLine)}>
-            <DropdownMenu
-              align="end"
-              trigger={
-                <CompactIconButton intent="more" label={messages['table.rowActions'](label)} />
-              }
-              entries={props.rowActions?.(original) ?? []}
-            />
-          </td>
-        )}
-      </tr>
+        shared={shared}
+        id={row.id}
+        original={row.original}
+        index={index}
+        type={typeOf(row.original)}
+        selected={rowSelection[row.id] === true}
+        beforeSubtotal={next !== undefined && typeOf(next.original) === 'subtotal'}
+      />
     )
   }
 
@@ -713,23 +642,29 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
       )
     }
     if (!virtualize) return tableRows.map((_, index) => tableRow(index))
-    // Only the rows in view, between two spacer rows that keep the scroll height.
+    // Only the rows in the window (and the focused row), with spacer rows that keep the scroll
+    // height: before the first, after the last, and between the window and a focused row.
     const items = virtualizer.getVirtualItems()
-    const before = items[0]?.start ?? 0
-    const after = virtualizer.getTotalSize() - (items.at(-1)?.end ?? 0)
+    const { before, after } = spacersBetween(items, virtualizer.getTotalSize())
+    const spacer = (key: string, height: number) => (
+      <tr key={key} aria-hidden="true" style={{ height }}>
+        <td colSpan={span} className="border-0 p-0" />
+      </tr>
+    )
     return (
       <>
-        {before > 0 && (
-          <tr aria-hidden="true" style={{ height: before }}>
-            <td colSpan={span} className="border-0 p-0" />
-          </tr>
-        )}
-        {items.map((item) => tableRow(item.index))}
-        {after > 0 && (
-          <tr aria-hidden="true" style={{ height: after }}>
-            <td colSpan={span} className="border-0 p-0" />
-          </tr>
-        )}
+        {items.map((item, at) => {
+          const gap = before[at] ?? 0
+          const drawn = tableRow(item.index)
+          if (drawn === null) return null
+          return (
+            <Fragment key={item.key}>
+              {gap > 0 && spacer('before', gap)}
+              {drawn}
+            </Fragment>
+          )
+        })}
+        {after > 0 && spacer('after', after)}
       </>
     )
   }
@@ -1125,12 +1060,6 @@ const FLAT_DIVIDERS =
 function lineAttribute(type: LineType): { 'data-line'?: LineType } {
   return type === 'line' ? {} : { 'data-line': type }
 }
-
-/**
- * A subtotal's cells (P5.18): the rule above in border.strong (line-types' SUBTOTAL_RULE), the
- * row line below as every row's; the bottom width is set by the row.
- */
-const SUBTOTAL_LINE = 'border-0 border-t border-solid border-t-strong border-b-default'
 
 /** The totals row: the 1px border.strong line above it, and sticky at the bottom edge. */
 const TOTALS_LINE = 'sticky bottom-0 z-10 border-0 border-t border-solid border-strong'

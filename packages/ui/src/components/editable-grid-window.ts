@@ -1,18 +1,22 @@
-import { rowOffsets, visibleRows } from './virtual-rows'
+import {
+  FOCUS_ROWS_AFTER,
+  FOCUS_ROWS_BEFORE,
+  rowOffsets,
+  visibleRows,
+  WINDOW_OVERSCAN,
+} from './virtual-rows'
 
 /*
  * EditableGrid's row window (P5.18: a specification of 300 positions), without React: which rows
  * are in the page. A long grid draws only the lines in view and OVERSCAN pixels around them, plus
  * the line that has the focus and its neighbours (so Enter, Tab and the row shortcuts always find
- * the next line); spacers keep the scroll height. Heights are measured once drawn, estimated
+ * the next line); spacers keep the scroll height. The rules are the shared ones of
+ * `virtual-rows.ts` (DataTable applies them through TanStack Virtual). Heights are measured once drawn, estimated
  * before. Cells stay fields: a line in the page is the same as in a short grid.
  */
 
 /** From this many rows on, a grid draws only its window (unless `virtualize` says otherwise). */
 export const VIRTUALIZE_FROM = 100
-
-/** Pixels drawn above and below the view: about fifteen lines of a table. */
-export const WINDOW_OVERSCAN = 600
 
 export interface GridWindow {
   /** The first row drawn. */
@@ -41,8 +45,8 @@ export function gridWindow(
   const visible = visibleRows(tops, total, viewTop, viewHeight, overscan)
   let { first, last } = visible
   if (focusRow !== null && focusRow >= 0 && focusRow < heights.length) {
-    first = Math.min(first, Math.max(0, focusRow - 1))
-    last = Math.max(last, Math.min(heights.length, focusRow + 3))
+    first = Math.min(first, Math.max(0, focusRow - FOCUS_ROWS_BEFORE))
+    last = Math.max(last, Math.min(heights.length, focusRow + FOCUS_ROWS_AFTER + 1))
   }
   first = Math.min(first, heights.length)
   last = Math.max(first, Math.min(last, heights.length))
