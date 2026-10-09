@@ -1,13 +1,30 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { FileCheck, Send } from 'lucide-react'
+import { Ban, FileCheck, Send } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
-import { expect, userEvent, within } from 'storybook/test'
+import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { Button } from '../components/button'
 import { KeyValueList } from '../components/cards'
 import { ChangeableValue } from '../components/changeable-value'
+import { IrreversibleConfirmDialog } from '../components/confirm-dialog'
 import { DataTable, type DataTableColumn } from '../components/data-table'
 import { DateField } from '../components/date-field'
-import { DateText, MoneyText } from '../components/display-text'
+import { DateText, MoneyText, NumberText } from '../components/display-text'
+import {
+  CancellationBanner,
+  DocumentNotes,
+  DocumentReferences,
+} from '../components/document-blocks'
+import type { DocumentNotesValue } from '../components/document-logic'
+import {
+  FINAL_DEDUCTIONS,
+  FINAL_DUE,
+  FINAL_LINES,
+  FINAL_RECAP,
+  FINAL_ROWS,
+  NOTE_TEMPLATES,
+  REFERENCES,
+  type FinalLine,
+} from '../components/document-story-data'
 import { EditableGrid, type EditableGridColumn } from '../components/editable-grid'
 import { ActivityList, RelatedDocuments } from '../components/panel-lists'
 import { StatusBadge } from '../components/status-badge'
@@ -22,6 +39,7 @@ import { settle } from '../primitives/story-helpers'
 import { AppShell } from './app-shell'
 import { DocumentPage, type DocumentPageProps } from './document-page'
 import { BRAND, COMMANDS, COMPANIES, SALES_TABS, USER } from './shell-story-data'
+import { fromUnits, toUnits } from '../components/amounts-story-data'
 
 interface Line {
   id: string
@@ -364,16 +382,6 @@ const TAX_CATEGORIES = [
 ]
 
 // The application's arithmetic, played by the story on decimal strings (components never add).
-function toUnits(value: string, places: number): bigint {
-  const [whole = '0', fraction = ''] = value.split('.')
-  return BigInt(whole + fraction.padEnd(places, '0').slice(0, places))
-}
-
-function fromUnits(units: bigint, places: number): string {
-  const digits = units.toString().padStart(places + 1, '0')
-  return `${digits.slice(0, -places)}.${digits.slice(-places)}`
-}
-
 /** Rounds `places + extra` decimals to `places`, half up (amounts here are never negative). */
 function roundUnits(units: bigint, extra: number): bigint {
   const factor = 10n ** BigInt(extra)
@@ -610,6 +618,19 @@ const meta = {
           '`onPanelsHiddenChange` let the Core remember the panels. On phones the lines are a ' +
           'flat list in the card (never cards in a card), the key figures two columns, and the ' +
           'main action in the shell’s bottom bar.\n\n' +
+          '**Complex documents (P5.18): a fixed block order** — `banner` (a cancelled ' +
+          'document’s CancellationBanner) above everything; the header with the `currency` ' +
+          'block (DocumentCurrency) in it; the "Based on" `references` (DocumentReferences); the ' +
+          'lines (DataTable with `lineType`: headings, subtotals, text lines, discounts) with a ' +
+          'long `specification`’s summary row (DocumentSpecification) under them; the totals ' +
+          '(recap by tax category, deductions, home-currency equivalents, footnotes); the ' +
+          '`notes` (DocumentNotes); the `attachments`; then the other sections. A block without ' +
+          'content is not rendered; phones keep the order. **Cancellation:** an ' +
+          'IrreversibleConfirmDialog with `reason` (one dialog asks why and for the number), ' +
+          'then the status "Cancelled" and the banner with who, when, why and the link to the ' +
+          'cancellation document, which links back ("Cancels"). **Corrective documents** are ' +
+          'DocumentPages too: "Corrects:" references and Original / Change / New lines ' +
+          '(`correctionColumns`).\n\n' +
           '**When not:** a record without lines (DetailPage); a list (ListPage).',
       },
     },
@@ -801,4 +822,263 @@ export const Japanese: Story = {
       </ExampleProvider>
     </StoryProvider>
   ),
+}
+
+const FINAL_COLUMNS: DataTableColumn<FinalLine>[] = [
+  { id: 'item', header: 'Item', cell: (line) => line.item },
+  {
+    id: 'quantity',
+    header: 'Quantity',
+    align: 'end',
+    numeric: true,
+    cell: (line) => (line.quantity === undefined ? null : <NumberText value={line.quantity} />),
+  },
+  { id: 'unit', header: 'Unit', cell: (line) => line.unit },
+  { id: 'vat', header: 'VAT', cell: (line) => line.vat },
+  {
+    id: 'amount',
+    header: 'Amount',
+    align: 'end',
+    numeric: true,
+    cell: (line) =>
+      line.amount === undefined ? null : <MoneyText value={line.amount} currency="RSD" />,
+  },
+]
+
+// ── P5 group D2: complex documents (P5.18) ────────────────────────────────────────────────────
+
+/** A final invoice with every block of P5.18, in the fixed order. */
+function ComplexInvoice({ layout = 'desktop' }: { layout?: 'desktop' | 'phone' }) {
+  const [notesMode, setNotesMode] = useState<'view' | 'edit'>('view')
+  const [notes, setNotes] = useState<DocumentNotesValue>({
+    templates: ['payment', 'advances'],
+    note: 'Please quote the contract number 12/2026 with the payment.',
+  })
+  return (
+    <Invoice
+      layout={layout}
+      title="F-2026-0418"
+      status={<StatusBadge label="Sent" tone="info" />}
+      counterparty={{
+        label: 'Customer',
+        name: 'Vojvođanka Mlin a.d.',
+        taxId: 'PIB 100421987',
+        address: 'Industrijska 4, 23000 Zrenjanin',
+      }}
+      keyFigures={[
+        { label: 'Amount due', value: <MoneyText value={FINAL_DUE.value} currency="RSD" /> },
+        { label: 'Invoice total', value: <MoneyText value="8003678.22" currency="RSD" /> },
+        { label: 'Due', value: <DateText value="2026-10-21" /> },
+      ]}
+      references={<DocumentReferences groups={REFERENCES} />}
+      lines={
+        <DataTable
+          label="Lines"
+          inCard
+          layout={layout === 'phone' ? 'cards' : 'table'}
+          columns={FINAL_COLUMNS}
+          rows={FINAL_LINES}
+          getRowId={(line) => line.id}
+          getRowLabel={(line) => line.item}
+          lineType={(line) => line.type}
+          lineKind={(line) => line.kind}
+          mobile={{ details: ['quantity', 'unit', 'vat', 'amount'] }}
+        />
+      }
+      totals={{
+        label: 'Totals',
+        rows: FINAL_ROWS,
+        recap: FINAL_RECAP,
+        deductions: FINAL_DEDUCTIONS,
+        total: FINAL_DUE,
+      }}
+      notes={{
+        title: 'Notes',
+        actions:
+          notesMode === 'view' ? (
+            <Button
+              intent="edit"
+              label="Edit notes"
+              onClick={() => {
+                setNotesMode('edit')
+              }}
+            />
+          ) : (
+            <Button
+              intent="save"
+              emphasis="secondary"
+              label="Done"
+              onClick={() => {
+                setNotesMode('view')
+              }}
+            />
+          ),
+        content: (
+          <DocumentNotes
+            mode={notesMode}
+            templates={NOTE_TEMPLATES}
+            value={notes}
+            onChange={setNotes}
+          />
+        ),
+      }}
+      attachments={{
+        title: 'Attachments',
+        content: (
+          <RelatedDocuments
+            label="Attachments"
+            items={[
+              { key: 'a', type: 'PDF, 412 KB', number: 'Ugovor 12-2026.pdf', href: '#files/12' },
+              {
+                key: 'b',
+                type: 'PDF, 1,2 MB',
+                number: 'Zapisnik o primopredaji.pdf',
+                href: '#files/zp',
+              },
+            ]}
+          />
+        ),
+      }}
+      sections={[]}
+      panels={PANELS.filter((panel) => panel.key === 'delivery' || panel.key === 'history')}
+    />
+  )
+}
+
+/**
+ * A final invoice with every P5.18 block: "Based on" references, lines, totals with the recap by
+ * tax category and two advances deducted (links), notes (template texts and a free note, edited
+ * in place), attachments. The block order is fixed.
+ */
+export const ComplexDocument: Story = {
+  name: 'Complex document',
+  render: () => (
+    <ExampleProvider>
+      <ComplexInvoice />
+    </ExampleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(
+      canvas.getByRole('link', { name: 'Advance invoice A-2026-044, Paid' }),
+    ).toBeVisible()
+    await expect(canvas.getByRole('table', { name: 'Recap by tax category' })).toBeVisible()
+    await userEvent.click(canvas.getByRole('button', { name: 'Edit notes' }))
+    await expect(canvas.getByRole('textbox', { name: 'Note' })).toBeVisible()
+    await userEvent.click(canvas.getByRole('button', { name: 'Done' }))
+    // The blocks in their order: references, lines, totals, notes, attachments.
+    const text = canvasElement.textContent
+    const order = [
+      'Based on:',
+      'Steel beams HEA 200',
+      'Recap by tax category',
+      'Payment within 15 days',
+      'Ugovor 12-2026.pdf',
+    ]
+    const positions = order.map((part) => text.indexOf(part))
+    await expect([...positions].sort((a, b) => a - b)).toEqual(positions)
+    window.scrollTo(0, 0)
+  },
+}
+
+/** The same at phone width: the same order, the lines a flat list, the recap full width. */
+export const ComplexDocumentPhone: Story = {
+  name: 'Complex document, phone',
+  render: () => (
+    <PhoneFrame>
+      <ExampleProvider>
+        <ComplexInvoice layout="phone" />
+      </ExampleProvider>
+    </PhoneFrame>
+  ),
+}
+
+/**
+ * Cancelling an issued invoice: "Cancel invoice" opens one dialog asking for the reason and the
+ * typed number; then the status is "Cancelled", the banner at the top says who, when and why,
+ * and links to the cancellation document.
+ */
+export const CancelDocument: Story = {
+  name: 'Cancel a document',
+  render: () => {
+    function Cancellable() {
+      const [reason, setReason] = useState<string | null>(null)
+      return (
+        <Invoice
+          status={
+            reason === null ? (
+              <StatusBadge label="Overdue" tone="danger" />
+            ) : (
+              <StatusBadge label="Cancelled" tone="neutral" />
+            )
+          }
+          {...(reason === null
+            ? {}
+            : {
+                banner: (
+                  <CancellationBanner
+                    by="Milica Petrović"
+                    at="2026-10-06T11:20:00+02:00"
+                    reason={reason}
+                    document={{
+                      kind: 'Cancellation document',
+                      number: 'ST-2026-0004',
+                      href: '#sales/invoices/ST-2026-0004',
+                    }}
+                  />
+                ),
+              })}
+          actions={
+            <>
+              <Button intent="pdf" label="PDF" emphasis="secondary" />
+              {reason === null && (
+                <IrreversibleConfirmDialog
+                  trigger={<Button family="caution" icon={Ban} label="Cancel invoice" />}
+                  family="caution"
+                  actionIcon={Ban}
+                  title="Cancel invoice F-2026-0412?"
+                  message="A cancellation document is issued and sent to SEF. This cannot be undone."
+                  confirmLabel="Cancel invoice"
+                  cancelLabel="Keep invoice"
+                  confirmText="F-2026-0412"
+                  reason={{ label: 'Reason for the cancellation' }}
+                  onConfirm={(answer) => {
+                    setReason(answer.text)
+                  }}
+                />
+              )}
+            </>
+          }
+        />
+      )
+    }
+    return (
+      <ExampleProvider>
+        <Cancellable />
+      </ExampleProvider>
+    )
+  },
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const body = within(document.body)
+    await userEvent.click(canvas.getByRole('button', { name: 'Cancel invoice' }))
+    const dialog = within(await body.findByRole('alertdialog'))
+    await userEvent.type(
+      dialog.getByRole('textbox', { name: /Reason for the cancellation/ }),
+      'Wrong prices: the September price list was not applied.',
+    )
+    await userEvent.type(dialog.getByRole('textbox', { name: /^Type F-2026-0412/ }), 'F-2026-0412')
+    await userEvent.click(dialog.getByRole('button', { name: 'Cancel invoice' }))
+    await waitFor(() => expect(body.queryByRole('alertdialog')).toBeNull())
+    await expect(
+      canvas.getByText(/Reason: Wrong prices: the September price list was not applied\./),
+    ).toBeVisible()
+    await expect(
+      canvas.getByRole('link', { name: 'Cancellation document ST-2026-0004' }),
+    ).toBeVisible()
+    await expect(canvas.queryByRole('button', { name: 'Cancel invoice' })).toBeNull()
+    await settle()
+  },
 }

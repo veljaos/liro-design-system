@@ -318,3 +318,340 @@ export type {
 } from './templates/status-page'
 export { AuthShell } from './templates/auth-shell'
 export type { AuthShellProps } from './templates/auth-shell'
+// ── P5 group F ──
+export { MatchingView } from './components/matching-view'
+export type {
+  MatchingItem,
+  MatchingList,
+  MatchingMatch,
+  MatchingViewProps,
+  MatchSuggestion,
+} from './components/matching-view'
+export {
+  canMatch,
+  MATCHING_PAGE,
+  MATCHING_ROW_HEIGHT,
+  MATCHING_VIRTUALIZE_FROM,
+  matchingKeyAction,
+  toggleSelection,
+} from './components/matching-logic'
+export type { MatchingKeyAction } from './components/matching-logic'
+export { BalanceBar } from './components/balance-bar'
+export type { BalanceBarProps, BalanceState } from './components/balance-bar'
+export { PeriodicRunPage } from './templates/periodic-run-page'
+export type {
+  PeriodicRunPageProps,
+  RunCheck,
+  RunLock,
+  RunPreview,
+  RunProgress,
+  RunRerun,
+  RunStep,
+} from './templates/periodic-run-page'
+export { countChecks, RUN_RESULT_ORDER } from './templates/periodic-run-logic'
+export type { RunCheckResult } from './templates/periodic-run-logic'
+// ── P5 group A ──
+export { AgentMark } from './components/agent-mark'
+export type { AgentMarkProps } from './components/agent-mark'
+export { PresenceAvatars } from './components/presence-avatars'
+export type { PresenceAvatarsProps, PresencePerson } from './components/presence-avatars'
+export { HistoryList } from './components/history-list'
+export type {
+  ActorKind,
+  HistoryActor,
+  HistoryChange,
+  HistoryEntry,
+  HistoryListProps,
+} from './components/history-list'
+export {
+  MentionText,
+  MessageBubble,
+  MessageComposer,
+  MessageList,
+  MessageThread,
+} from './components/messages'
+export type {
+  ComposedMessage,
+  MentionTextProps,
+  MessageAuthor,
+  MessageBubbleProps,
+  MessageComposerProps,
+  MessageListProps,
+  MessageThreadProps,
+  ThreadMessage,
+} from './components/messages'
+export { MentionCombobox } from './components/mention-combobox'
+export type { MentionCandidate, MentionComboboxProps } from './components/mention-combobox'
+export { mentionsInText, splitMentions } from './components/message-logic'
+export type { Mention, MentionPart } from './components/message-logic'
+export { Questionnaire } from './components/questionnaire'
+export type { QuestionnaireProps } from './components/questionnaire'
+export { answersOnPath, nextQuestionId, questionPath } from './components/questionnaire-logic'
+export type {
+  QuestionAnswer,
+  QuestionAnswers,
+  QuestionDefinition,
+  QuestionnaireStep,
+  QuestionOption,
+  QuestionType,
+} from './components/questionnaire-logic'
+export { AgentQuestion } from './components/agent-question'
+export type { AgentQuestionProps } from './components/agent-question'
+// ── P5 group C ──
+export { EmailFirstForm, ProviderSignInButtons } from './components/sign-in'
+export type {
+  EmailFirstFormProps,
+  ProviderSignInButtonsProps,
+  SignInProvider,
+} from './components/sign-in'
+export { PasswordField } from './components/password-field'
+export type { PasswordFieldProps } from './components/password-field'
+export { CodeInput } from './components/code-input'
+export type { CodeInputProps } from './components/code-input'
+export {
+  codeBoxes,
+  codeCharacters,
+  codeComplete,
+  codeKeyTarget,
+  codeValue,
+  eraseCode,
+  fillCode,
+} from './components/code-input-logic'
+export type { CodeKind } from './components/code-input-logic'
+export { RecoveryCodes } from './components/recovery-codes'
+export type { RecoveryCodesProps } from './components/recovery-codes'
+export { SessionList } from './components/session-list'
+export type { SessionItem, SessionListProps } from './components/session-list'
+export { KanbanBoard } from './components/kanban-board'
+export type {
+  KanbanBoardProps,
+  KanbanCard,
+  KanbanColumn,
+  KanbanMove,
+} from './components/kanban-board'
+export {
+  dragLayout,
+  dropTarget,
+  kanbanKeyTarget,
+  moveCard,
+  placeOf,
+} from './components/kanban-logic'
+export type { ColumnGeometry, KanbanColumnIds, KanbanPlace } from './components/kanban-logic'
+export { PermissionMatrix } from './components/permission-matrix'
+export type {
+  PermissionAction,
+  PermissionArea,
+  PermissionChange,
+  PermissionMatrixProps,
+} from './components/permission-matrix'
+export { SetupChecklist } from './components/setup-checklist'
+export type { SetupAction, SetupChecklistProps, SetupStep } from './components/setup-checklist'
+export { SignerList } from './components/signer-list'
+export type { Signer, SignerListProps } from './components/signer-list'
+export { SigningPage } from './templates/signing-page'
+export type { SigningPageProps } from './templates/signing-page'
+export {
+  instantText,
+  isAllowed,
+  matrixKeyTarget,
+  maySign,
+  recoveryCodesText,
+  resumeStep,
+  setPermission,
+  setupProgress,
+  signerTurn,
+  signingSummary,
+} from './components/admin-logic'
+export type {
+  MatrixCell,
+  PermissionValue,
+  SetupStepState,
+  SignerState,
+} from './components/admin-logic'
+// ── P5 group E ──
+export { LookupDialog } from './components/lookup-dialog'
+export type { LookupDialogProps } from './components/lookup-dialog'
+export {
+  assignColumn,
+  changedFields,
+  hasErrors,
+  importBlocked,
+  isProblemRow,
+  isTypingKey,
+  issuesOf,
+  LOOKUP_PAGE_STEP,
+  lookupDialogKeyTarget,
+  missingRequired,
+  toggleChanging,
+  unusedColumns,
+} from './components/catalog-logic'
+export type {
+  ImportCounts,
+  ImportField,
+  ImportIssue,
+  ImportMapping,
+  ImportPreviewRow,
+  ImportSourceColumn,
+} from './components/catalog-logic'
+export { IMPORT_STEPS, ImportWizard } from './components/import-wizard'
+export type {
+  ImportFile,
+  ImportProgress,
+  ImportStep,
+  ImportWizardProps,
+} from './components/import-wizard'
+export { BulkEditDrawer } from './components/bulk-edit-drawer'
+export type { BulkEditDrawerProps, BulkEditField } from './components/bulk-edit-drawer'
+export { DuplicateWarning } from './components/duplicate-warning'
+export type { DuplicateWarningProps } from './components/duplicate-warning'
+export { RegisterPage } from './templates/register-page'
+export type { RegisterEntry, RegisterLock, RegisterPageProps } from './templates/register-page'
+export { StatutoryFormPage } from './templates/statutory-form-page'
+export type {
+  SourceDocument,
+  StatutoryField,
+  StatutoryFormPageProps,
+  StatutoryOverride,
+  StatutorySection,
+} from './templates/statutory-form-page'
+export {
+  fieldElementId,
+  fieldRules,
+  registerMenu,
+  ruleCounts,
+  rulesTone,
+} from './templates/register-logic'
+export type { RuleResult, StatutoryRule } from './templates/register-logic'
+// ── P5 group B ──
+export {
+  CONNECTION_STATUSES,
+  ConnectionState,
+  EnvironmentMarker,
+  ImpersonationBar,
+  minutesLeft,
+  OfflineIndicator,
+  untilNextMinute,
+} from './components/shell-markers'
+export type {
+  ConnectionStateProps,
+  ConnectionStatus,
+  EnvironmentMarkerProps,
+  EnvironmentTone,
+  ImpersonationBarProps,
+  OfflineIndicatorProps,
+} from './components/shell-markers'
+export { StatusTimeline } from './components/status-timeline'
+export type {
+  StatusNextStep,
+  StatusTimelineProps,
+  StatusTimelineStep,
+} from './components/status-timeline'
+export { clampedDone, JobProgress, jobOutcome } from './components/job-progress'
+export type {
+  JobFailure,
+  JobOutcome,
+  JobOutcomeLine,
+  JobProgressProps,
+  JobState,
+} from './components/job-progress'
+export { acceptsFile, checkFiles, FileDropzone } from './components/file-dropzone'
+export type {
+  FileDropzoneProps,
+  FileFacts,
+  FileRejection,
+  FileRules,
+  RejectionReason,
+} from './components/file-dropzone'
+export { AttachmentList, attachmentOffers } from './components/attachment-list'
+export type {
+  Attachment,
+  AttachmentListProps,
+  AttachmentOffers,
+  AttachmentState,
+} from './components/attachment-list'
+export {
+  DocumentFrame,
+  FRAME_PROTOCOL,
+  FRAME_TIMEOUT,
+  FRAME_VERSION,
+  frameReducer,
+  hostMessage,
+  INITIAL_FRAME_STATE,
+  originAllowed,
+  readViewerMessage,
+  targetOrigin,
+  ZOOM_STEPS,
+  zoomStep,
+} from './components/document-frame'
+export type {
+  DocumentFrameProps,
+  FrameState,
+  HostMessage,
+  ViewerMessage,
+} from './components/document-frame'
+// ── P5 group D2 ──
+export {
+  CancellationBanner,
+  ChangeText,
+  correctionColumns,
+  DocumentCurrency,
+  DocumentNotes,
+  DocumentReferences,
+  DocumentSpecification,
+} from './components/document-blocks'
+export type {
+  CancellationBannerProps,
+  ChangeTextProps,
+  CorrectionColumnSpec,
+  DocumentCurrencyProps,
+  DocumentNotesProps,
+  DocumentReference,
+  DocumentReferenceGroup,
+  DocumentReferencesProps,
+  DocumentSpecificationProps,
+} from './components/document-blocks'
+export { chosenNoteTexts, hasNotes } from './components/document-logic'
+export type { DocumentNotesValue, NoteTemplate } from './components/document-logic'
+export type {
+  TaxRecap,
+  TaxRecapRow,
+  TotalsExchange,
+  TotalsFootnote,
+} from './components/document-totals'
+export type { DocumentBlock } from './templates/document-page'
+export type { IrreversibleReason } from './components/confirm-dialog'
+export { subtotalStart } from './components/data-table-logic'
+// ── P5 group D1 ──
+export type { GridDetail } from './components/editable-grid-logic'
+export type { GridLookupCreate } from './components/editable-grid'
+export {
+  ADDABLE_LINE_TYPES,
+  editableCellCount,
+  LINE_TYPES,
+  spansRow,
+  taxCategoryText,
+} from './components/line-types'
+export type { AddableLineType, LineType, TaxCategory, UnitOfMeasure } from './components/line-types'
+export { LookupField } from './components/lookup-field'
+export type { LookupFieldProps } from './components/lookup-field'
+export {
+  choosableCount,
+  lookupKeyTarget,
+  lookupKindLabel,
+  lookupRowHeight,
+  lookupRows,
+  LOOKUP_ROW_HEIGHTS,
+} from './components/lookup-logic'
+export type {
+  LookupCreateKind,
+  LookupKind,
+  LookupOption,
+  LookupRow,
+  LookupRowsInput,
+} from './components/lookup-logic'
+export { LookupCreateDrawer } from './components/lookup-create-drawer'
+export type {
+  LookupCreateDrawerProps,
+  LookupDraft,
+  LookupDraftErrors,
+} from './components/lookup-create-drawer'

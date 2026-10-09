@@ -1,4 +1,14 @@
-import type { ReactElement } from 'react'
+import { ChevronRight } from 'lucide-react'
+import {
+  cloneElement,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ButtonHTMLAttributes,
+  type PointerEvent,
+  type ReactElement,
+  type ReactNode,
+} from 'react'
 import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import {
@@ -33,6 +43,12 @@ export type MenuEntry =
       disabled?: boolean
       /** A destructive action (delete, reject): drawn in the danger colours. */
       destructive?: boolean
+      /**
+       * The current value the item changes ("Kvadrat Gradnja d.o.o." under "Switch company"): a
+       * second line in smaller secondary text that wraps instead of being cut, with a chevron at
+       * the end, because choosing the item opens a chooser. From the application.
+       */
+      value?: string
     }
   | { type: 'separator' }
   | {
@@ -59,32 +75,122 @@ export function DropdownMenu({ trigger, entries, align = 'start' }: DropdownMenu
     // menu is open, so the trigger never sits focusable inside aria-hidden content.
     <MenuRoot modal={false}>
       <DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
-      <DropdownMenuContent align={align}>
-        {entries.map((entry, index) => {
-          if (entry.type === 'separator') return <DropdownMenuSeparator key={index} />
-          if (entry.type === 'label') {
-            return <DropdownMenuLabel key={index}>{entry.label}</DropdownMenuLabel>
-          }
-          const Icon = entry.icon
-          return (
-            <DropdownMenuItem
-              key={index}
-              disabled={entry.disabled === true}
-              onSelect={entry.onSelect}
-              className={cn(
-                entry.destructive === true &&
-                  'text-status-danger-fg data-highlighted:bg-status-danger-bg',
-              )}
-            >
-              {Icon !== undefined && <Icon aria-hidden="true" />}
-              <span className={cn('min-w-0 flex-1', TEXT_DIRECTION)}>{entry.label}</span>
-              {entry.shortcut !== undefined && (
-                <DropdownMenuShortcut>{entry.shortcut}</DropdownMenuShortcut>
-              )}
-            </DropdownMenuItem>
-          )
-        })}
-      </DropdownMenuContent>
+      <DropdownMenuContent align={align}>{menuItems(entries)}</DropdownMenuContent>
     </MenuRoot>
   )
+}
+
+/** The items of a menu, from its entries. */
+function menuItems(entries: readonly MenuEntry[]): ReactNode {
+  return entries.map((entry, index) => {
+    if (entry.type === 'separator') return <DropdownMenuSeparator key={index} />
+    if (entry.type === 'label') {
+      return <DropdownMenuLabel key={index}>{entry.label}</DropdownMenuLabel>
+    }
+    const Icon = entry.icon
+    return (
+      <DropdownMenuItem
+        key={index}
+        disabled={entry.disabled === true}
+        onSelect={entry.onSelect}
+        className={cn(
+          entry.value !== undefined && 'items-start',
+          entry.destructive === true &&
+            'text-status-danger-fg data-highlighted:bg-status-danger-bg',
+        )}
+      >
+        {Icon !== undefined && <Icon aria-hidden="true" className={menuIconClass(entry.value)} />}
+        <MenuItemText label={entry.label} value={entry.value} />
+        {entry.shortcut !== undefined && (
+          <DropdownMenuShortcut>{entry.shortcut}</DropdownMenuShortcut>
+        )}
+      </DropdownMenuItem>
+    )
+  })
+}
+
+/**
+ * DropdownMenu for lists with a menu on every row (DataTable, P5.20): the menu itself is built
+ * only when it is about to be used. Until then its trigger is the same button, saying that it
+ * opens a menu (aria-haspopup, aria-expanded false); pressing it (pointer or touch) builds and
+ * opens the menu, and the keyboard's focus builds it, so Enter, Space and ArrowDown work as in
+ * DropdownMenu. The entries are read when the menu is drawn. Internal: not exported from the
+ * package.
+ */
+export function LazyDropdownMenu({
+  trigger,
+  entries,
+  align = 'start',
+}: {
+  trigger: ReactElement<ButtonHTMLAttributes<HTMLButtonElement>>
+  entries: () => readonly MenuEntry[]
+  align?: 'start' | 'center' | 'end'
+}) {
+  // How the menu was built: by the keyboard's focus (the focus then moves to the menu's own
+  // trigger, the same button drawn again) or by a press (the menu opens).
+  const [built, setBuilt] = useState<'focus' | 'press' | null>(null)
+  const [open, setOpen] = useState(false)
+  const triggerRef = useRef<HTMLButtonElement>(null)
+  useLayoutEffect(() => {
+    if (built === 'focus') triggerRef.current?.focus()
+  }, [built])
+  if (built === null) {
+    const press = () => {
+      setBuilt('press')
+      setOpen(true)
+    }
+    return cloneElement(trigger, {
+      'aria-haspopup': 'menu',
+      'aria-expanded': false,
+      // As Radix's trigger, so the button looks the same before and after.
+      ...{ 'data-state': 'closed' },
+      onFocus: () => {
+        setBuilt('focus')
+      },
+      onPointerDown: (event: PointerEvent<HTMLButtonElement>) => {
+        if (event.button !== 0 || event.ctrlKey) return
+        // As Radix's trigger: the open menu takes the focus, not the button.
+        event.preventDefault()
+        press()
+      },
+      // A click without a press first (assistive technology) opens it as well.
+      onClick: press,
+    })
+  }
+  return (
+    <MenuRoot modal={false} open={open} onOpenChange={setOpen}>
+      <DropdownMenuTrigger asChild ref={triggerRef}>
+        {trigger}
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align={align}>{menuItems(entries())}</DropdownMenuContent>
+    </MenuRoot>
+  )
+}
+
+/**
+ * The text of a menu item (P5, the owner's review of the phone user menu). With a current value
+ * the item has two lines — the action, then the value in xs text.secondary, wrapping onto more
+ * lines rather than ending in "…" — and a chevron at the end. Every menu item that shows a current
+ * value uses it (DropdownMenu entries with `value`, the AppShell's "Switch company"). Internal.
+ */
+export function MenuItemText({ label, value }: { label: string; value?: string | undefined }) {
+  if (value === undefined) {
+    return <span className={cn('min-w-0 flex-1', TEXT_DIRECTION)}>{label}</span>
+  }
+  return (
+    <>
+      <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <span className={TEXT_DIRECTION}>{label}</span>
+        <span className={cn('text-xs wrap-break-word text-secondary', TEXT_DIRECTION)}>
+          {value}
+        </span>
+      </span>
+      <ChevronRight aria-hidden="true" className="shrink-0 self-center rtl:-scale-x-100" />
+    </>
+  )
+}
+
+/** A two-line item's icon stands beside its first line (13px text on a 1.45 line). */
+export function menuIconClass(value: string | undefined): string | undefined {
+  return value === undefined ? undefined : 'mt-0.75'
 }

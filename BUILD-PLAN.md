@@ -289,13 +289,13 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P4.8 | Example screens | P4.2–P4.7c | done | 2026-10-07 | Storybook "Examples": sign in, home, invoice list, invoice F-2026-0412, overview, approvals, employee record, 404 — one dataset (the same invoice and totals in list, document and overview), linked through LiroProvider's `linkComponent` into one walk-through; desktop and phone, both themes and directions; public entry points only |
 | P4.9 | Fixes from the owner's Storybook review | P4.8 | done | 2026-10-08 | Company switcher for thousands, notifications panel and page, record view/edit mode, approvals with reasons, counts through format, flat lists on phones, live launchpad drag, charts table in RTL; the class fixed, not the instance |
 | P4.9d | Follow-ups to the owner's review of #68 | P4.9 | done | 2026-10-08 | Full-screen company sheet with focus return, one dialog inset, Cancel focused in confirmations, phone toasts above the bottom bar, units of measure as their own value, SettlingValue test on Windows |
-| P5.1 | History, comments and messages | P2.8 | todo | | |
-| P5.2 | Presence and agent marking | P2.8 | todo | | |
-| P5.3 | Connection, environment and session markers | P4.1 | todo | | |
-| P5.4 | Delivery and progress status | P2.8 | todo | | |
-| P5.5 | Files and document frame | P2.5 | todo | | |
-| P5.6 | Sign-in building blocks | P2.2 | todo | | |
-| P5.7 | Kanban board | P2.8 | todo | | |
+| P5.1 | History, comments and messages | P2.8 | done | 2026-10-09 | HistoryList, Message family, MentionCombobox and Questionnaire on the shadcn primitives (Bubble, Marker, Message, Message Scroller, Questionnaire; `@shadcn/react` 0.3.1); examples F-2026-0410 with history and comments, employment contract questionnaire |
+| P5.2 | Presence and agent marking | P2.8 | done | 2026-10-09 | PresenceAvatars, AgentMark |
+| P5.3 | Connection, environment and session markers | P4.1 | done | 2026-10-09 | ImpersonationBar, OfflineIndicator, EnvironmentMarker, ConnectionState, AppShell `banners` and the order of the shell markers (B); AgentQuestion for agent interactions (A) |
+| P5.4 | Delivery and progress status | P2.8 | done | 2026-10-09 | StatusTimeline (LifecycleBar's states, a next-step block), JobProgress (inline and in a Dialog, generalising "Progress in a dialog") |
+| P5.5 | Files and document frame | P2.5 | done | 2026-10-09 | FileDropzone, AttachmentList (per-file control slot), DocumentFrame with its protocol in `docs/document-frame.md` |
+| P5.6 | Sign-in building blocks | P2.2 | done | 2026-10-09 | EmailFirstForm, ProviderSignInButtons (Microsoft and Google marks in `provider-marks.tsx`), PasswordField, CodeInput, RecoveryCodes, SessionList; Sign in example with providers |
+| P5.7 | Kanban board | P2.8 | done | 2026-10-09 | KanbanBoard with pointer drag, keyboard and menu moving, phones one column at a time; Tasks example |
 | P5.8 | Calendar and scheduling | P2.3 | todo | | |
 | P5.9 | Tree | P2.8 | todo | | |
 | P5.10 | Touch mode and POS | P5.3 | todo | | |
@@ -306,10 +306,10 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P5.15 | Print templates | P4.5 | todo | | |
 | P5.16 | Portal shell | P4.1 | todo | | |
 | P5.17 | Industry example screens | P5.8–P5.16 | todo | | |
-| P5.18 | Complex documents | P4.5, P3.4 | todo | | |
-| P5.19 | Catalogs at scale | P3.1, P2.2 | todo | | |
-| P5.20 | Registers and official forms | P4.4, P5.1 | todo | | |
-| P5.21 | Common business processes | P3.4, P4.3 | todo | | |
+| P5.18 | Complex documents | P4.5, P3.4 | done | 2026-10-09 | EditableGrid line types, "Add line ▾", lookup / tax category / unit columns, line details, LookupCreateDrawer, a row window for 300 positions (measured) (D1); DocumentPage block order, DocumentReferences, DataTable line types, DocumentTotals recap / deductions / exchange / footnotes, DocumentCurrency, DocumentNotes, DocumentSpecification, corrective documents, cancellation (D2); examples F-2026-0419, IS-2026-007, F-2026-0418, F-2026-0415, KO-2026-0009, F-2026-0407 + ST-2026-0004 |
+| P5.19 | Catalogs at scale | P3.1, P2.2 | done | 2026-10-09 | LookupField (recent, kinds, create, one-off, Search all…, virtualised) (D1); LookupDialog, ImportWizard, BulkEditDrawer, DuplicateWarning, inactive records by views and a neutral badge (E); customers example with 50,000 records and import |
+| P5.20 | Registers and official forms | P4.4, P5.1 | done | 2026-10-09 | RegisterPage and StatutoryFormPage; examples VAT return September 2026 and work-injury register 2026 (and 5,000 entries) |
+| P5.21 | Common business processes | P3.4, P4.3 | done | 2026-10-09 | PermissionMatrix (users and roles composed from DataTables), SetupChecklist, SignerList and SigningPage (C); MatchingView, BalanceBar, PeriodicRunPage (F); examples users and roles, setup, contract signing, bank statement 188, journal entry NK-2026-0912, payroll September 2026 |
 | P6.1 | Full language and direction matrix | Phases 1–5 | todo | | |
 | P6.2 | Manual WCAG 2.2 checks | P6.1 | todo | | |
 | P6.3 | Performance budget | P4.8 | todo | | |

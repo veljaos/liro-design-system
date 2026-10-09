@@ -2,7 +2,7 @@ import { PanelRight } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Button } from '../components/button'
 import { SectionCard } from '../components/cards'
-import { DocumentTotals, type TotalsRow } from '../components/document-totals'
+import { DocumentTotals, type DocumentTotalsProps } from '../components/document-totals'
 import { KeyFigures, type KeyFigure } from '../components/key-figures'
 import { LifecycleBar, type LifecycleStep } from '../components/lifecycle-bar'
 import { SidePanels, type SidePanel } from '../components/side-panels'
@@ -38,7 +38,19 @@ import { PageHeader, type PageBack } from './page-header'
  *   column can be hidden (`panelsHidden`), and the document takes the full width. Below 75em and
  *   on phones the panels stand under the document, and the whole-column button is not shown. Both
  *   states are the application's (callbacks), so the Core can remember them.
+ * - Complex documents (P5.18), a fixed block order: header (with `banner` above it — a cancelled
+ *   document's marker — and the `currency` block in it) → "Based on" `references` → lines (with
+ *   the `specification` summary row under them) → totals (recap, deductions, home-currency
+ *   equivalents, footnotes) → `notes` → `attachments` → the other sections. A block without
+ *   content is not rendered. Phones keep the same order.
  */
+
+/** A titled block of the document (notes, attachments): a SectionCard in the fixed order. */
+export interface DocumentBlock {
+  title: string
+  content: ReactNode
+  actions?: ReactNode
+}
 
 /** The document's other party. */
 export interface Counterparty {
@@ -80,12 +92,41 @@ export interface DocumentPageProps {
    * and the table starts at the card's top (owner, P4.5).
    */
   linesTitle?: string
-  /** The lines: an EditableGrid or a DataTable (with `inCard`). */
+  /**
+   * The lines: an EditableGrid or a DataTable (with `inCard`). Nothing (null) leaves the lines'
+   * card out unless a specification or totals stand in it.
+   */
   lines: ReactNode
   /** Actions in the lines' header ("Add from order"). */
   linesActions?: ReactNode
-  /** The totals under the lines, computed by the application. */
-  totals?: { rows: readonly TotalsRow[]; total: TotalsRow; label: string }
+  /**
+   * The totals under the lines, computed by the application: rows, the final row, and (P5.18) the
+   * recap by tax category, the deductions, the home-currency equivalents and the footnotes.
+   */
+  totals?: Omit<DocumentTotalsProps, 'className'>
+  /**
+   * A marker above the whole document (P5.18): a cancelled document's `CancellationBanner`.
+   */
+  banner?: ReactNode
+  /** The currency block of a foreign-currency document (`DocumentCurrency`), in the header. */
+  currency?: ReactNode
+  /**
+   * The documents this one is based on (`DocumentReferences`), one line between the header and
+   * the lines; also the back-links of a cancellation or a corrective document.
+   */
+  references?: ReactNode
+  /**
+   * A long specification's summary row (`DocumentSpecification`), in the lines' card under the
+   * lines and above the totals.
+   */
+  specification?: ReactNode
+  /** The notes block (`DocumentNotes`), after the lines and totals (P5.18). */
+  notes?: DocumentBlock
+  /**
+   * The attachments block, after the notes (P5.18): the files, each with its "send with the
+   * document" flag.
+   */
+  attachments?: DocumentBlock
   sections?: readonly DocumentSection[]
   /** The side panels (history, attachments, comments, related documents, delivery, presence). */
   panels?: readonly SidePanel[]
@@ -155,26 +196,54 @@ export function DocumentPage(props: DocumentPageProps) {
       </>
     )
 
+  const hasLines = props.lines !== null && props.lines !== undefined && props.lines !== false
+  const hasSpecification = props.specification !== undefined && props.specification !== null
+  const blocks = [props.notes, props.attachments].filter(
+    (block): block is DocumentBlock => block !== undefined,
+  )
+
   const document = (
     <div className="flex min-w-0 flex-col gap-4">
-      <SectionCard
-        {...(props.linesTitle === undefined ? {} : { title: props.linesTitle })}
-        headingLevel={2}
-        flush
-        {...(props.linesActions === undefined ? {} : { actions: props.linesActions })}
-      >
-        {props.lines}
-        {props.totals !== undefined && (
-          <div className="border-0 border-t border-solid border-subtle px-4 py-4">
-            <DocumentTotals
-              rows={props.totals.rows}
-              total={props.totals.total}
-              label={props.totals.label}
-              {...(phone ? { className: 'max-w-none' } : {})}
-            />
-          </div>
-        )}
-      </SectionCard>
+      {(hasLines || hasSpecification || props.totals !== undefined) && (
+        <SectionCard
+          {...(props.linesTitle === undefined ? {} : { title: props.linesTitle })}
+          headingLevel={2}
+          flush
+          {...(props.linesActions === undefined ? {} : { actions: props.linesActions })}
+        >
+          {props.lines}
+          {hasSpecification && (
+            <div
+              className={cn(
+                'px-4 py-3',
+                hasLines && 'border-0 border-t border-solid border-subtle',
+              )}
+            >
+              {props.specification}
+            </div>
+          )}
+          {props.totals !== undefined && (
+            <div
+              className={cn(
+                'px-4 py-4',
+                (hasLines || hasSpecification) && 'border-0 border-t border-solid border-subtle',
+              )}
+            >
+              <DocumentTotals {...props.totals} {...(phone ? { className: 'max-w-none' } : {})} />
+            </div>
+          )}
+        </SectionCard>
+      )}
+      {blocks.map((block, index) => (
+        <SectionCard
+          key={block === props.notes ? 'notes' : `block-${String(index)}`}
+          title={block.title}
+          headingLevel={2}
+          {...(block.actions === undefined ? {} : { actions: block.actions })}
+        >
+          {block.content}
+        </SectionCard>
+      ))}
       {props.sections?.map((section) => (
         <SectionCard
           key={section.key}
@@ -208,6 +277,7 @@ export function DocumentPage(props: DocumentPageProps) {
       )}
     >
       <div className="flex flex-col gap-4">
+        {props.banner}
         {props.lifecycle !== undefined && (
           <LifecycleBar
             steps={props.lifecycle.steps}
@@ -228,9 +298,11 @@ export function DocumentPage(props: DocumentPageProps) {
             {props.details}
           </div>
         )}
+        {props.currency}
         {props.keyFigures !== undefined && props.keyFigures.length > 0 && (
           <KeyFigures items={props.keyFigures} layout={phone ? 'phone' : 'desktop'} />
         )}
+        {props.references}
       </div>
       {panels === null || hidden ? (
         document

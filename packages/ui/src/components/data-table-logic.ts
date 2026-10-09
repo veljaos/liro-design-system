@@ -119,6 +119,19 @@ export function widthAfterDrag(
 }
 
 /**
+ * Where a subtotal row's amounts start (P5.18): the index of the first column of the trailing run
+ * of end-aligned columns (the amounts at the row's end). The subtotal's label spans the columns
+ * before it, end-aligned, so it stands next to its amounts. With no end-aligned column at the end,
+ * the last column carries the amount; with only end-aligned columns, the first holds the label.
+ */
+export function subtotalStart(aligns: readonly ('start' | 'center' | 'end' | undefined)[]): number {
+  let start = aligns.length
+  while (start > 0 && aligns[start - 1] === 'end') start -= 1
+  if (start === aligns.length) return Math.max(aligns.length - 1, 1)
+  return Math.max(start, 1)
+}
+
+/**
  * What a key does on a focused row or card that can be pressed (P4.3, owner): Space presses it
  * (the pointer's action: a quick preview on a list page); Enter opens the record when the table
  * has `onRowOpen`, and otherwise presses it as before.

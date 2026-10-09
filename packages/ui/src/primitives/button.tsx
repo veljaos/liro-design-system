@@ -154,3 +154,56 @@ export function ButtonPrimitive({
     />
   )
 }
+
+/** Mantine's oval loader (Loader.css): 20px (36 / 1.8), a ring with one open quarter. */
+function OvalLoader() {
+  return (
+    <span
+      aria-hidden="true"
+      className="absolute inset-0 m-auto box-border size-5 animate-liro-spin rounded-full border-[2.5px] border-solid border-current border-s-transparent"
+    />
+  )
+}
+
+export type LoadingButtonPrimitiveProps = ButtonPrimitiveProps & {
+  /** Working: the content keeps the button's size and name but is hidden behind the loader. */
+  loading: boolean
+  /** Not pressable now (another button of the group is working), without the loader. */
+  waiting?: boolean
+}
+
+/**
+ * The one busy button (ConfirmDialog's look, P2.4b): while `loading` the content keeps the
+ * button's size and its accessible name at opacity 0 (Mantine) under the 20px oval loader in the
+ * button's text colour, `aria-busy`, and a press does nothing; `waiting` makes it unavailable
+ * without the loader. Used by ConfirmDialog, EmailFirstForm, ProviderSignInButtons and SignerList.
+ */
+export function LoadingButtonPrimitive({
+  loading,
+  waiting = false,
+  className,
+  children,
+  onClick,
+  ...props
+}: LoadingButtonPrimitiveProps) {
+  const blocked = loading || waiting
+  return (
+    <ButtonPrimitive
+      {...props}
+      aria-disabled={blocked || undefined}
+      aria-busy={loading || undefined}
+      data-loading={loading ? '' : undefined}
+      className={cn('relative data-loading:cursor-not-allowed', className)}
+      onClick={(event) => {
+        if (blocked) {
+          event.preventDefault()
+          return
+        }
+        onClick?.(event)
+      }}
+    >
+      <span className={cn('contents', loading && '[&>*]:opacity-0')}>{children}</span>
+      {loading && <OvalLoader />}
+    </ButtonPrimitive>
+  )
+}

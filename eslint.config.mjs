@@ -120,6 +120,13 @@ export default defineConfig(
     ignores: ['packages/tokens/**', 'packages/eslint-config/src/**'],
     extends: [tokenRules],
   },
+  {
+    // Microsoft's and Google's official sign-in marks keep their own colours, as their branding
+    // rules require; no Liro meaning may stand in (P5.6, docs/decisions.md "Sign-in building
+    // blocks"). Logical properties still apply.
+    files: ['packages/ui/src/components/provider-marks.tsx'],
+    rules: { 'liro/no-raw-colors': 'off' },
+  },
 
   prettier,
 )

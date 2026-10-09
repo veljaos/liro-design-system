@@ -29,9 +29,9 @@ dependency, or copies third-party code (for example a shadcn/ui component) into 
 
 ## Copied into this repository
 
-| Software                                                        | Version    | License | Where                                                                                                                                            |
-| --------------------------------------------------------------- | ---------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| shadcn/ui (components generated with the `shadcn` CLI, adapted) | CLI 4.21.0 | MIT     | `packages/ui/src/primitives/` (P2.1; `accordion.tsx` P3.6; `chart.tsx` P4.7a, from the shadcn registry); built into `@veljaos/ui`. Notice below. |
+| Software                                                        | Version    | License | Where                                                                                                                                                                                                                                         |
+| --------------------------------------------------------------- | ---------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| shadcn/ui (components generated with the `shadcn` CLI, adapted) | CLI 4.21.0 | MIT     | `packages/ui/src/primitives/` (P2.1; `accordion.tsx` P3.6; `chart.tsx` P4.7a; `bubble.tsx`, `marker.tsx`, `message.tsx`, `message-scroller.tsx`, `questionnaire.tsx` P5.1, from the shadcn registry); built into `@veljaos/ui`. Notice below. |
 
 ## Runtime and peer dependencies
 
@@ -49,6 +49,7 @@ dependency, or copies third-party code (for example a shadcn/ui component) into 
 | TanStack Virtual (`@tanstack/react-virtual` 3.14.13, with `@tanstack/virtual-core` 3.17.11)                                               | 3.14.13                 | MIT                                        | `@veljaos/ui` (DataTable virtual rows, P3.2). Notice below.                                                                          |
 | React Hook Form (`react-hook-form`)                                                                                                       | 7.89.0 (optional peer)  | MIT                                        | `@veljaos/ui/form` (P3.5): imported by the binding, installed by the application; not bundled. In the Storybook build. Notice below. |
 | Recharts (`recharts`, with the packages listed in its notice section), and `react-is` (its peer)                                          | 3.10.1; react-is 19.3.0 | MIT (d3 modules ISC, d3-ease BSD-3-Clause) | `@veljaos/ui` (the charts of DashboardPage, P4.6). Notices below.                                                                    |
+| @shadcn/react                                                                                                                             | 0.3.1                   | MIT                                        | `@veljaos/ui` (the unstyled Message Scroller and Questionnaire under the P5.1 primitives). Pre-1.0. Notice below.                    |
 
 ## Storybook build
 
@@ -56,15 +57,15 @@ The static Storybook build (`apps/storybook/storybook-static`) is not hosted any
 only as a downloadable artifact of CI runs and of the publish workflow, and carries `LICENSE` and
 this file. Besides our own code it bundles:
 
-| Software                                                                                                                                                                                      | Version  | License  | Note                                                                                                                                         |
-| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| Storybook (storybook, @storybook/addon-a11y, addon-docs, react-vite)                                                                                                                          | 10.6.0   | MIT      | Notice below, from the upstream repository (tag v10.6.0); the npm package ships no LICENSE file.                                             |
-| React, React DOM                                                                                                                                                                              | 19.3.0   | MIT      | Notice below (React DOM carries the same notice).                                                                                            |
-| scheduler                                                                                                                                                                                     | 0.28.0   | MIT      | Dependency of React DOM; same notice as React.                                                                                               |
-| axe-core                                                                                                                                                                                      | 4.13.0   | MPL-2.0  | Used by the accessibility addon. Unmodified; source: https://github.com/dequelabs/axe-core/tree/v4.13.0. Notices below.                      |
-| Radix UI (`@radix-ui/react-direction`, through `radix-ui`)                                                                                                                                    | 1.1.4    | MIT      | Used by `LiroProvider`. Notice below (Radix UI).                                                                                             |
-| `@veljaos/ui` runtime dependencies (lucide-react, cmdk, react-day-picker, date-fns, @date-fns/tz, clsx, tailwind-merge, sonner, TanStack Table, Store and Virtual, Radix UI), React Hook Form | as above | MIT, ISC | Used by the components and primitives in the stories. Notices below.                                                                         |
-| Nunito Sans                                                                                                                                                                                   | —        | OFL-1.1  | Interface font of the Storybook manager, shipped inside the storybook package. Notice below, from https://github.com/googlefonts/NunitoSans. |
+| Software                                                                                                                                                                                                     | Version  | License  | Note                                                                                                                                         |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Storybook (storybook, @storybook/addon-a11y, addon-docs, react-vite)                                                                                                                                         | 10.6.0   | MIT      | Notice below, from the upstream repository (tag v10.6.0); the npm package ships no LICENSE file.                                             |
+| React, React DOM                                                                                                                                                                                             | 19.3.0   | MIT      | Notice below (React DOM carries the same notice).                                                                                            |
+| scheduler                                                                                                                                                                                                    | 0.28.0   | MIT      | Dependency of React DOM; same notice as React.                                                                                               |
+| axe-core                                                                                                                                                                                                     | 4.13.0   | MPL-2.0  | Used by the accessibility addon. Unmodified; source: https://github.com/dequelabs/axe-core/tree/v4.13.0. Notices below.                      |
+| Radix UI (`@radix-ui/react-direction`, through `radix-ui`)                                                                                                                                                   | 1.1.4    | MIT      | Used by `LiroProvider`. Notice below (Radix UI).                                                                                             |
+| `@veljaos/ui` runtime dependencies (lucide-react, cmdk, react-day-picker, date-fns, @date-fns/tz, clsx, tailwind-merge, sonner, TanStack Table, Store and Virtual, Radix UI, @shadcn/react), React Hook Form | as above | MIT, ISC | Used by the components and primitives in the stories. Notices below.                                                                         |
+| Nunito Sans                                                                                                                                                                                                  | —        | OFL-1.1  | Interface font of the Storybook manager, shipped inside the storybook package. Notice below, from https://github.com/googlefonts/NunitoSans. |
 
 The `storybook` package ships its own dependencies pre-bundled into its code, without separate
 notices; they are not listed here.
@@ -72,6 +73,10 @@ notices; they are not listed here.
 ## Planned
 
 Entries are added, with their notices, in the step that brings them in (BUILD-PLAN section 3). Nothing is planned now (Recharts arrived in P4.6).
+
+## Trademarks
+
+Microsoft and the Microsoft logo are trademarks of the Microsoft group of companies. Google and the Google "G" logo are trademarks of Google LLC. The marks drawn in `packages/ui/src/components/provider-marks.tsx` (built into `@veljaos/ui`) are used only to identify the sign-in provider on its sign-in button, as the providers' branding guidelines allow, and are not covered by this repository's license.
 
 ## Notices
 
@@ -205,7 +210,35 @@ SOFTWARE.
 
 ### shadcn/ui
 
-The components in `packages/ui/src/primitives/` were generated with the shadcn CLI 4.21.0 (style `radix-vega`) and adapted; `chart.tsx` (P4.7a) was taken from the same style's registry entry (`https://ui.shadcn.com/r/styles/radix-vega/chart.json`, 2026-10-07) and adapted. The notice is the `shadcn-ui/ui` repository's, as shipped in the `shadcn` package.
+The components in `packages/ui/src/primitives/` were generated with the shadcn CLI 4.21.0 (style `radix-vega`) and adapted; `chart.tsx` (P4.7a) was taken from the same style's registry entry (`https://ui.shadcn.com/r/styles/radix-vega/chart.json`, 2026-10-07) and adapted; `bubble.tsx`, `marker.tsx`, `message.tsx`, `message-scroller.tsx` and `questionnaire.tsx` (P5.1) were taken from the same style's registry entries (`https://ui.shadcn.com/r/styles/radix-vega/<name>.json`, 2026-10-08) and adapted. The notice is the `shadcn-ui/ui` repository's, as shipped in the `shadcn` package.
+
+```
+MIT License
+
+Copyright (c) 2023 shadcn
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+### @shadcn/react
+
+`@shadcn/react` 0.3.1, from https://github.com/shadcn-ui/ui (`packages/react`). The notice is its `LICENSE.md`.
 
 ```
 MIT License

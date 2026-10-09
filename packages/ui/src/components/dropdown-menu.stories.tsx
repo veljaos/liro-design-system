@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { Copy, Pencil, Printer, Trash2 } from 'lucide-react'
+import { Building2, Copy, Pencil, Printer, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { settle } from '../primitives/story-helpers'
@@ -17,7 +17,7 @@ const meta = {
         component:
           '**What for:** a list of actions behind one button — a row menu, "more" actions. ' +
           'Entries come as data: items (label, optional icon and shortcut, disabled, ' +
-          'destructive), headings and separators. The arrows move through the items, Enter ' +
+          'destructive, and a current value as a second line — "Switch company" over the company, wrapping, with a chevron), headings and separators. The arrows move through the items, Enter ' +
           'chooses, Escape closes and returns the focus to the trigger. A destructive item is ' +
           'drawn in the danger colours; its confirmation is the ConfirmDialog.\n\n' +
           '**When not:** one or two actions that fit as buttons; choosing a value (SelectField).',
@@ -94,6 +94,12 @@ export const LongTextPhone: Story = {
         trigger={<Button intent="more" label="More" />}
         entries={[
           { label: LONG.label, onSelect: noop, icon: Pencil },
+          {
+            label: 'Switch company',
+            value: 'Građevinsko preduzeće Kvadrat Gradnja i partneri d.o.o. Novi Sad',
+            onSelect: noop,
+            icon: Building2,
+          },
           { label: LONG.error, onSelect: noop, destructive: true, icon: Trash2 },
         ]}
       />
@@ -101,8 +107,13 @@ export const LongTextPhone: Story = {
   ),
   play: async ({ canvasElement }) => {
     await userEvent.click(within(canvasElement).getByRole('button', { name: 'More' }))
-    await within(canvasElement.ownerDocument.body).findByRole('menu')
+    const menu = await within(canvasElement.ownerDocument.body).findByRole('menu')
     await settle()
+    // A current value wraps onto a second line instead of ending in "…".
+    const item = within(menu).getByRole('menuitem', { name: /Switch company/ })
+    for (const line of item.querySelectorAll('span')) {
+      await expect(line.scrollWidth).toBeLessThanOrEqual(line.clientWidth)
+    }
   },
 }
 
