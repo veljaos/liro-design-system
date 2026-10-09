@@ -107,9 +107,17 @@ export default defineConfig(
   },
   {
     // TanStack Virtual's useVirtualizer returns functions the React Compiler cannot memoize, so
-    // the compiler would skip this component; the warning says only that. The package is not
-    // built with the compiler (P3.2, docs/decisions.md "Table").
-    files: ['packages/ui/src/components/data-table.tsx'],
+    // the compiler would skip these components; the warning says only that. The package is not
+    // built with the compiler (P3.2, docs/decisions.md "Table"). Every list that draws only its
+    // rows in view calls it (P5.21a): DataTable, EditableGrid, LookupField, MatchingView and the
+    // company switcher.
+    files: [
+      'packages/ui/src/components/data-table.tsx',
+      'packages/ui/src/components/editable-grid.tsx',
+      'packages/ui/src/components/lookup-field.tsx',
+      'packages/ui/src/components/matching-view.tsx',
+      'packages/ui/src/templates/company-switcher.tsx',
+    ],
     rules: { 'react-hooks/incompatible-library': 'off' },
   },
 

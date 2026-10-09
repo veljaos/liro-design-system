@@ -1,12 +1,14 @@
+import { useVirtualizer, type Range } from '@tanstack/react-virtual'
 import { Check, Plus, Search, TextCursorInput } from 'lucide-react'
 import {
+  useCallback,
   useEffect,
   useId,
-  useLayoutEffect,
   useMemo,
   useRef,
   useState,
   type KeyboardEvent,
+  type ReactNode,
 } from 'react'
 import { AUTO_DIRECTION, READ_ONLY, TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
 import { cn } from '../primitives/cn'
@@ -20,6 +22,7 @@ import {
   firstChoosable,
   isChoosable,
   lookupKeyTarget,
+  LOOKUP_ROW_HEIGHTS,
   lookupRowHeight,
   lookupRows,
   type LookupCreateKind,
@@ -27,7 +30,7 @@ import {
   type LookupOption,
   type LookupRow,
 } from './lookup-logic'
-import { rowOffsets, scrollToShow, visibleRows } from './virtual-rows'
+import { keepFocusedRow, overscanRows } from './virtual-rows'
 
 /*
  * LookupField (BUILD-PLAN P5.19): the one searching field for catalogues of tens of thousands of
@@ -45,9 +48,10 @@ import { rowOffsets, scrollToShow, visibleRows } from './virtual-rows'
  *   application opens LookupCreateDrawer or its own form), a one-off entry when the application
  *   allows it (`allowOneOff`), and "Search all…" last (`onSearchAll`, which opens the application's
  *   LookupDialog with the query);
- * - the company switcher's own small virtualiser (rows of known heights: headings 28px, records
- *   36px or 48px with a second line, actions 36px), so a long result list stays quick; each row
- *   carries aria-setsize and aria-posinset.
+ * - only the rows in view, 600px around them and the active row are in the page (TanStack
+ *   Virtual with the shared window rules of `virtual-rows.ts`; rows of known heights: headings
+ *   28px, records 36px or 48px with a second line, actions 36px), so a long result list stays
+ *   quick; each row carries aria-setsize and aria-posinset.
  * The list opens on typing, ArrowDown, Alt+ArrowDown or a press on the field, never on Tab alone
  * (a grid of lookup cells would open a list in every cell). While something is typed, the first
  * record found is active, so Enter takes it (as the old grid's item search); nothing is active
@@ -56,6 +60,84 @@ import { rowOffsets, scrollToShow, visibleRows } from './virtual-rows'
 
 /** The list's height at most (and its first guess before it is measured). */
 const LIST_HEIGHT = 320
+
+/**
+ * The listbox of the open list: only the rows in view, 600px around them and the active row are
+ * drawn. Mounted with the list, so a list opened anew starts at its top.
+ */
+function LookupList({
+  rows,
+  active,
+  listId,
+  labelledBy,
+  hidden,
+  renderRow,
+}: {
+  rows: readonly LookupRow[]
+  active: number
+  listId: string
+  labelledBy: string
+  hidden: boolean
+  renderRow: (row: LookupRow, index: number) => ReactNode
+}) {
+  const scroller = useRef<HTMLDivElement>(null)
+  // A new list of rows gives new keys, so their sizes are taken anew (rows have known heights).
+  const getItemKey = useCallback(
+    (index: number) => `${String(rows.length)}-${String(index)}`,
+    [rows],
+  )
+  const estimateSize = useCallback(
+    (index: number) => {
+      const row = rows[index]
+      return row === undefined ? LOOKUP_ROW_HEIGHTS.option : lookupRowHeight(row)
+    },
+    [rows],
+  )
+  const rangeExtractor = useCallback(
+    (range: Range) => keepFocusedRow(range, active < 0 ? null : active),
+    [active],
+  )
+  const virtualizer = useVirtualizer({
+    count: rows.length,
+    getScrollElement: () => scroller.current,
+    estimateSize,
+    getItemKey,
+    overscan: overscanRows(LOOKUP_ROW_HEIGHTS.option),
+    rangeExtractor,
+    initialRect: { width: 0, height: LIST_HEIGHT },
+  })
+
+  // The active row stays in view.
+  useEffect(() => {
+    if (active >= 0 && active < rows.length) virtualizer.scrollToIndex(active)
+  }, [active, rows, virtualizer])
+
+  return (
+    <div
+      ref={scroller}
+      id={listId}
+      role="listbox"
+      aria-labelledby={labelledBy}
+      className={cn('max-h-80 overflow-y-auto', hidden && 'hidden')}
+    >
+      <div className="relative w-full" style={{ height: virtualizer.getTotalSize() }}>
+        {virtualizer.getVirtualItems().map((item) => {
+          const row = rows[item.index]
+          if (row === undefined) return null
+          return (
+            <div
+              key={item.index}
+              className="absolute inset-x-0 top-0"
+              style={{ transform: `translateY(${String(item.start)}px)` }}
+            >
+              {renderRow(row, item.index)}
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
 
 export interface LookupFieldProps extends FieldBaseProps {
   /** Controlled choice; null is none. */
@@ -137,7 +219,6 @@ export function LookupField(props: LookupFieldProps) {
     ],
   )
   const setSize = choosableCount(rows)
-  const { tops, total: totalHeight } = useMemo(() => rowOffsets(rows.map(lookupRowHeight)), [rows])
   const noResults = trimmed !== '' && !loading && !rows.some((row) => row.type === 'option')
   const visible = open && (rows.length > 0 || loading || noResults)
 
@@ -149,39 +230,6 @@ export function LookupField(props: LookupFieldProps) {
     const first = firstChoosable(rows)
     setActive(trimmed !== '' && rows[first]?.type === 'option' ? first : -1)
   }
-
-  // The list's own small virtualiser (the company switcher's): only the rows in view and 240px
-  // around them are in the page.
-  const scroller = useRef<HTMLDivElement>(null)
-  const [view, setView] = useState({ top: 0, height: LIST_HEIGHT })
-  const { first, last } = visibleRows(tops, totalHeight, view.top, view.height)
-  useLayoutEffect(() => {
-    const list = scroller.current
-    if (!visible || list === null) return
-    // A list opened anew starts at its top: the rows drawn follow its own scroll position.
-    const measure = () => {
-      setView((previous) =>
-        previous.height === list.clientHeight && previous.top === list.scrollTop
-          ? previous
-          : { top: list.scrollTop, height: list.clientHeight || LIST_HEIGHT },
-      )
-    }
-    measure()
-  }, [visible, totalHeight])
-
-  // The active row stays in view.
-  useEffect(() => {
-    const list = scroller.current
-    const row = rows[active]
-    if (list === null || row === undefined) return
-    const to = scrollToShow(
-      tops[active] ?? 0,
-      lookupRowHeight(row),
-      list.scrollTop,
-      list.clientHeight,
-    )
-    if (to !== undefined) list.scrollTop = to
-  }, [active, rows, tops])
 
   const close = () => {
     setOpen(false)
@@ -404,32 +452,14 @@ export function LookupField(props: LookupFieldProps) {
                   {messages['field.noResults']}
                 </p>
               )}
-              <div
-                ref={scroller}
-                id={listId}
-                role="listbox"
-                aria-labelledby={control.labelId}
-                onScroll={(event) => {
-                  const list = event.currentTarget
-                  setView({ top: list.scrollTop, height: list.clientHeight })
-                }}
-                className={cn('max-h-80 overflow-y-auto', setSize === 0 && 'hidden')}
-              >
-                <div className="relative w-full" style={{ height: totalHeight }}>
-                  {rows.slice(first, last).map((row, offset) => {
-                    const index = first + offset
-                    return (
-                      <div
-                        key={index}
-                        className="absolute inset-x-0 top-0"
-                        style={{ transform: `translateY(${String(tops[index] ?? 0)}px)` }}
-                      >
-                        {renderRow(row, index)}
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
+              <LookupList
+                rows={rows}
+                active={active}
+                listId={listId}
+                labelledBy={control.labelId}
+                hidden={setSize === 0}
+                renderRow={renderRow}
+              />
             </ComboboxPopover>
             {props.name !== undefined && (
               <input type="hidden" name={props.name} value={value?.value ?? ''} />

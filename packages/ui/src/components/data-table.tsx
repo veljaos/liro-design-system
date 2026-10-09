@@ -7,7 +7,7 @@ import {
   type RowSelectionState,
   type Updater,
 } from '@tanstack/react-table'
-import { defaultRangeExtractor, useVirtualizer, type Range } from '@tanstack/react-virtual'
+import { useVirtualizer, type Range } from '@tanstack/react-virtual'
 import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react'
 import {
   Fragment,
@@ -52,7 +52,7 @@ import { type MenuEntry } from './dropdown-menu'
 import { EmptyState, type EmptyAction } from './empty-state'
 import { CursorPagination } from './navigation'
 import { usePhone } from './use-phone'
-import { overscanRows, spacersBetween, withFocusedRow } from './virtual-rows'
+import { keepFocusedRow, overscanRows, spacersBetween } from './virtual-rows'
 
 /*
  * DataTable (BUILD-PLAN P3.1, P3.2), on TanStack Table and fully controlled: the table never
@@ -418,7 +418,7 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
     }
   }, [virtualize, cards])
   const rangeExtractor = useCallback(
-    (range: Range) => withFocusedRow(defaultRangeExtractor(range), focusIndex, range.count),
+    (range: Range) => keepFocusedRow(range, focusIndex),
     [focusIndex],
   )
   const rowHeight = cards ? CARD_HEIGHT : ROW_HEIGHT
