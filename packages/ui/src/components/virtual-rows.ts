@@ -1,13 +1,17 @@
+import { defaultRangeExtractor, type Range } from '@tanstack/react-virtual'
+
 /*
- * The shared row window of long lists (P4.9 company switcher, P5.18 EditableGrid, P5.19
- * LookupField, P5.20 matching view), without React: rows of known (or measured) heights, the
- * rows in view plus an overscan in pixels around them, and the scroll that brings a row into
- * view. DataTable keeps TanStack Virtual (the plan's choice for tables) and applies the same
- * rules through its overscan (`overscanRows`) and range extractor (`withFocusedRow`). The rules:
+ * The shared row window of long lists. Every list that draws only its rows in view — DataTable,
+ * EditableGrid (P5.18), LookupField (P5.19), the matching view (P5.20) and the company switcher
+ * (P4.9) — runs on TanStack Virtual (`useVirtualizer`, the plan's choice; P5.21a) and applies
+ * the same rules through its overscan (`overscanRows`) and range extractor (`keepFocusedRow`):
  * - the rows in view and WINDOW_OVERSCAN pixels above and below them are drawn;
- * - the row that holds the focus is drawn wherever it is, with one row before it and two after
+ * - the row that holds the focus (or the active option of a listbox, which
+ *   aria-activedescendant names) is drawn wherever it is, with one row before it and two after
  *   it, so Tab, Enter and the arrows always find their next row;
- * - the table still tells its whole size (`aria-rowcount`, `aria-rowindex` on each drawn row).
+ * - spacers stand wherever drawn rows are not next to each other (`spacersBetween`);
+ * - the list still tells its whole size (`aria-rowcount` / `aria-rowindex`, `aria-setsize` /
+ *   `aria-posinset`).
  */
 
 /** Pixels drawn above and below the view: about fifteen 40px lines. */
@@ -39,6 +43,11 @@ export function withFocusedRow(
   return [...wanted].sort((a, b) => a - b)
 }
 
+/** A TanStack Virtual range extractor's result: the window with the focused row kept. */
+export function keepFocusedRow(range: Range, focus: number | null): number[] {
+  return withFocusedRow(defaultRangeExtractor(range), focus, range.count)
+}
+
 /**
  * The spacers around drawn rows that are not all next to each other (the window and a focused
  * row far from it): for each drawn row, the empty height before it, and the height after the
@@ -55,54 +64,4 @@ export function spacersBetween(
     return gap
   })
   return { before, after: Math.max(0, total - bottom) }
-}
-
-/** The tops of rows of known heights, and the height of them all. */
-export function rowOffsets(heights: readonly number[]): { tops: number[]; total: number } {
-  let total = 0
-  const tops = heights.map((height) => {
-    const top = total
-    total += height
-    return top
-  })
-  return { tops, total }
-}
-
-/**
- * The rows to draw for a scroll position: those in view and `overscan` pixels around it (from
- * `first` up to but not including `last`). Rows have known heights, so nothing is measured here.
- */
-export function visibleRows(
-  tops: readonly number[],
-  total: number,
-  scrollTop: number,
-  height: number,
-  overscan = 240,
-): { first: number; last: number } {
-  const from = scrollTop - overscan
-  const to = scrollTop + height + overscan
-  // The first row whose bottom is below `from` (binary search over the tops).
-  let low = 0
-  let high = tops.length
-  while (low < high) {
-    const middle = (low + high) >> 1
-    const bottom = tops[middle + 1] ?? total
-    if (bottom <= from) low = middle + 1
-    else high = middle
-  }
-  let last = low
-  while (last < tops.length && (tops[last] ?? total) < to) last += 1
-  return { first: low, last }
-}
-
-/** The scroll position that brings a row fully into view, or undefined when it is in view. */
-export function scrollToShow(
-  top: number,
-  rowHeight: number,
-  scrollTop: number,
-  height: number,
-): number | undefined {
-  if (top < scrollTop) return top
-  if (top + rowHeight > scrollTop + height) return top + rowHeight - height
-  return undefined
 }

@@ -1,5 +1,7 @@
+import { useVirtualizer, type Range } from '@tanstack/react-virtual'
 import { Check, ChevronDown, Search } from 'lucide-react'
 import {
+  useCallback,
   useEffect,
   useId,
   useLayoutEffect,
@@ -17,7 +19,7 @@ import { DialogCloseButton, DialogHeader, DialogTitle } from '../primitives/dial
 import { Popover, PopoverContent, PopoverTrigger } from '../primitives/popover'
 import { Sheet, SheetContent } from '../primitives/sheet'
 import { useLiro } from '../provider/liro-provider'
-import { rowOffsets, scrollToShow, visibleRows } from '../components/virtual-rows'
+import { keepFocusedRow, overscanRows } from '../components/virtual-rows'
 import {
   companyKeyTarget,
   companyMatcher,
@@ -42,9 +44,10 @@ import {
  * - the keyboard: ArrowDown/ArrowUp, PageDown/PageUp (ten), Home/End (in the list; in the search
  *   field they move the caret), Enter chooses; the WAI-ARIA combobox pattern with
  *   aria-activedescendant, so the focus stays in the search field;
- * - only the rows in view (and 240px around them) are in the page — rows have known heights
- *   (headings 28px, companies 36px, 48px with a description), so a small virtualiser of its own
- *   places them without measuring; each option carries aria-setsize and aria-posinset;
+ * - only the rows in view (and 600px around them, with the active option wherever it is) are in
+ *   the page — TanStack Virtual with the shared window rules (`virtual-rows.ts`); rows have known
+ *   heights (headings 28px, companies 36px, 48px with a description), so nothing is measured;
+ *   each option carries aria-setsize and aria-posinset;
  * - nothing found: "No company matches “…”".
  * Desktop: a 320px popover under the button at the end, the list at most 400px high. Phones: a
  * full-screen sheet with the search field at the top, opened from the user menu or the command
@@ -100,28 +103,35 @@ export function CompanyList({
   const total = rows.reduce((count, row) => count + (row.kind === 'company' ? 1 : 0), 0)
   const [active, setActive] = useState(() => startRow(rows, companies.current))
   const scroller = useRef<HTMLDivElement>(null)
-  const { tops, total: totalHeight } = useMemo(() => rowOffsets(rows.map(rowHeight)), [rows])
-  // The list's own small virtualiser: rows have known heights, so only the rows in view (and
-  // 240px around them) are in the page — 5,000 companies stay as quick as five.
-  const [view, setView] = useState({ top: 0, height: LIST_HEIGHT })
-  const { first, last } = visibleRows(tops, totalHeight, view.top, view.height)
-  useLayoutEffect(() => {
-    const list = scroller.current
-    if (list === null) return
-    const measure = () => {
-      setView((previous) =>
-        previous.height === list.clientHeight && previous.top === list.scrollTop
-          ? previous
-          : { top: list.scrollTop, height: list.clientHeight || LIST_HEIGHT },
-      )
-    }
-    measure()
-    const observer = new ResizeObserver(measure)
-    observer.observe(list)
-    return () => {
-      observer.disconnect()
-    }
-  }, [])
+  // Only the rows in view, 600px around them and the active option are in the page (TanStack
+  // Virtual, virtual-rows.ts) — 5,000 companies stay as quick as five. Rows have known heights;
+  // a new list of rows gives new keys, so their sizes are taken anew.
+  const getItemKey = useCallback(
+    (index: number) => {
+      const row = rows[index]
+      if (row === undefined) return index
+      return row.kind === 'heading' ? `h-${row.key}` : row.company.id
+    },
+    [rows],
+  )
+  const estimateSize = useCallback(
+    (index: number) => {
+      const row = rows[index]
+      return row === undefined ? ROW_HEIGHT : rowHeight(row)
+    },
+    [rows],
+  )
+  const rangeExtractor = useCallback((range: Range) => keepFocusedRow(range, active), [active])
+  const virtualizer = useVirtualizer({
+    count: rows.length,
+    getScrollElement: () => scroller.current,
+    estimateSize,
+    getItemKey,
+    overscan: overscanRows(ROW_HEIGHT),
+    rangeExtractor,
+    // Before the list is measured (and on the server), assume its desktop height.
+    initialRect: { width: 0, height: LIST_HEIGHT },
+  })
 
   // A new search starts at the first company found.
   const lastQuery = useRef(query)
@@ -129,20 +139,15 @@ export function CompanyList({
     if (lastQuery.current === query) return
     lastQuery.current = query
     setActive(startRow(rows, ''))
-    if (scroller.current !== null) scroller.current.scrollTop = 0
-    setView((previous) => ({ ...previous, top: 0 }))
-  }, [query, rows])
+    virtualizer.scrollToOffset(0)
+  }, [query, rows, virtualizer])
 
   const optionId = (index: number) => `${id}-option-${String(index)}`
 
   // The active row stays in view.
   useEffect(() => {
-    const list = scroller.current
-    const row = rows[active]
-    if (list === null || row === undefined) return
-    const to = scrollToShow(tops[active] ?? 0, rowHeight(row), list.scrollTop, list.clientHeight)
-    if (to !== undefined) list.scrollTop = to
-  }, [active, rows, tops])
+    if (active >= 0 && active < rows.length) virtualizer.scrollToIndex(active)
+  }, [active, rows, virtualizer])
 
   const choose = (index: number) => {
     const row = rows[index]
@@ -288,26 +293,23 @@ export function CompanyList({
           const index = optionIndex(event.target)
           if (index !== undefined) choose(index)
         }}
-        onScroll={(event) => {
-          const list = event.currentTarget
-          setView({ top: list.scrollTop, height: list.clientHeight })
-        }}
         className={cn(
           'min-h-0 overflow-y-auto rounded-md outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus',
           fill ? 'flex-1' : 'max-h-100',
           total === 0 && 'hidden',
         )}
       >
-        <div className="relative w-full" style={{ height: totalHeight }}>
-          {rows.slice(first, last).map((row, offset) => {
-            const index = first + offset
+        <div className="relative w-full" style={{ height: virtualizer.getTotalSize() }}>
+          {virtualizer.getVirtualItems().map((item) => {
+            const row = rows[item.index]
+            if (row === undefined) return null
             return (
               <div
-                key={row.kind === 'heading' ? `h-${row.key}` : row.company.id}
+                key={item.key}
                 className="absolute inset-x-0 top-0"
-                style={{ transform: `translateY(${String(tops[index] ?? 0)}px)` }}
+                style={{ transform: `translateY(${String(item.start)}px)` }}
               >
-                {renderRow(row, index)}
+                {renderRow(row, item.index)}
               </div>
             )
           })}

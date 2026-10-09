@@ -1,5 +1,14 @@
+import { useVirtualizer, type Range } from '@tanstack/react-virtual'
 import { ArrowLeftRight, Check, Link2, Unlink2 } from 'lucide-react'
-import { useId, useLayoutEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
+import {
+  useCallback,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type ReactNode,
+} from 'react'
 import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { ToggleGroup, ToggleGroupItem } from '../primitives/toggle-group'
@@ -19,7 +28,7 @@ import { ShortcutHint } from './navigation'
 import { Skeleton } from './progress'
 import { TextField } from './text-field'
 import { usePhone } from './use-phone'
-import { rowOffsets, scrollToShow, visibleRows } from './virtual-rows'
+import { keepFocusedRow, overscanRows } from './virtual-rows'
 
 /*
  * MatchingView (BUILD-PLAN P5.21): reconciliation of two lists — bank statement lines and open
@@ -45,8 +54,8 @@ import { rowOffsets, scrollToShow, visibleRows } from './virtual-rows'
  *   border.selected bar at its start, and its checkbox drawn checked (checked boxes are blue).
  * - Rows: the title (sm medium) and a subtitle (xs text.secondary) at the start, the amount at the
  *   end (tabular) with what is left under it (xs text.secondary), 12px by 16px. From 100 items a
- *   list draws only the rows in view (64px rows, one line each, in a 480px area; the company
- *   switcher's small virtualiser).
+ *   list draws only the rows in view, 600px around them and the active item (64px rows, one line
+ *   each, in a 480px area; TanStack Virtual with the shared window rules of `virtual-rows.ts`).
  * - Phones (`layout` 'single', default below 48em): one list at a time — a segmented switch with
  *   both titles (and how many are selected in each) — the selection kept while switching; the bar
  *   sticks under the shell's top.
@@ -228,7 +237,19 @@ function ListBox({
   const scroller = useRef<HTMLDivElement>(null)
   const items = list.items
   const virtual = items.length >= MATCHING_VIRTUALIZE_FROM
-  const [view, setView] = useState({ top: 0, height: VIRTUAL_HEIGHT })
+  const rangeExtractor = useCallback(
+    (range: Range) => keepFocusedRow(range, active < 0 ? null : active),
+    [active],
+  )
+  const virtualizer = useVirtualizer({
+    count: items.length,
+    getScrollElement: () => scroller.current,
+    estimateSize: () => MATCHING_ROW_HEIGHT,
+    overscan: overscanRows(MATCHING_ROW_HEIGHT),
+    rangeExtractor,
+    enabled: virtual,
+    initialRect: { width: 0, height: VIRTUAL_HEIGHT },
+  })
   const optionId = (index: number) => `${listId}-${String(index)}`
   const activeItem = items[active]
 
@@ -246,13 +267,7 @@ function ListBox({
     const element = scroller.current
     if (element === null || active < 0) return
     if (virtual) {
-      const next = scrollToShow(
-        active * MATCHING_ROW_HEIGHT,
-        MATCHING_ROW_HEIGHT,
-        element.scrollTop,
-        element.clientHeight,
-      )
-      if (next !== undefined) element.scrollTop = next
+      virtualizer.scrollToIndex(active)
     } else {
       document.getElementById(optionId(active))?.scrollIntoView({ block: 'nearest' })
     }
@@ -374,13 +389,6 @@ function ListBox({
     return <div className="p-4">{list.empty ?? <EmptyMessage searching={searching} />}</div>
   }
 
-  const { tops, total } = virtual
-    ? rowOffsets(items.map(() => MATCHING_ROW_HEIGHT))
-    : { tops: [], total: 0 }
-  const { first, last } = virtual
-    ? visibleRows(tops, total, view.top, view.height)
-    : { first: 0, last: items.length }
-
   return (
     // The pointer is handled on the list (the options are found by their index); the keyboard
     // focus stays on the list, its active option is aria-activedescendant.
@@ -406,26 +414,23 @@ function ListBox({
         setActive(index)
         toggle(index)
       }}
-      onScroll={(event) => {
-        const element = event.currentTarget
-        if (virtual) setView({ top: element.scrollTop, height: element.clientHeight })
-      }}
       className={cn(
         'group min-w-0 outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus',
         virtual && 'h-120 overflow-y-auto',
       )}
     >
       {virtual ? (
-        <div className="relative w-full" style={{ height: total }}>
-          {items.slice(first, last).map((item, offset) => {
-            const index = first + offset
+        <div className="relative w-full" style={{ height: virtualizer.getTotalSize() }}>
+          {virtualizer.getVirtualItems().map((row) => {
+            const item = items[row.index]
+            if (item === undefined) return null
             return (
               <div
                 key={item.id}
                 className="absolute inset-x-0 top-0"
-                style={{ transform: `translateY(${String(tops[index] ?? 0)}px)` }}
+                style={{ transform: `translateY(${String(row.start)}px)` }}
               >
-                {option(item, index)}
+                {option(item, row.index)}
               </div>
             )
           })}

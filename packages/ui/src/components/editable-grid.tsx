@@ -1,7 +1,9 @@
+import { useVirtualizer, type Range, type Rect, type Virtualizer } from '@tanstack/react-virtual'
 import { CircleAlert, Plus, Trash2, TriangleAlert } from 'lucide-react'
 import {
   createContext,
   memo,
+  useCallback,
   useContext,
   useEffect,
   useId,
@@ -19,7 +21,7 @@ import { ActionButton } from './actions'
 import { CompactIconButton } from './button'
 import { ComboboxField, type ComboboxOption } from './combobox-field'
 import { DateField } from './date-field'
-import { ariaRowIndexes, gridWindow, VIRTUALIZE_FROM } from './editable-grid-window'
+import { ariaRowIndexes, VIRTUALIZE_FROM } from './editable-grid-window'
 import {
   gridKeyAction,
   orderMessages,
@@ -55,6 +57,7 @@ import { SplitAction } from './split-action'
 import { TextField } from './text-field'
 import { EntryDraftSlot, type EntryDraft } from './use-entry'
 import { usePhone } from './use-phone'
+import { keepFocusedRow, overscanRows, spacersBetween } from './virtual-rows'
 
 /*
  * EditableGrid (BUILD-PLAN P3.4): a keyboard-first line editor for document lines and journal
@@ -114,6 +117,63 @@ import { usePhone } from './use-phone'
  *   values the application gave for it, so typing in one cell renders that cell's field again,
  *   not the 2,000 others (docs/decisions.md "Liro patterns (Phase 5 part 1)", measured).
  */
+
+/*
+ * The row window follows the page, not a scrolling box of its own: TanStack Virtual's view is
+ * the window (`observeViewport`), and its offset how far the window's top is below the first
+ * line's top (`observeOffsetInPage`; negative while the grid starts lower on the screen), read
+ * once a frame after any scrolling — the page, a scrolling container, a phone frame — or
+ * resizing. The grid never scrolls itself (`scrollWithPage`): the browser keeps a focused field
+ * in view.
+ */
+function observeViewport(
+  instance: Virtualizer<HTMLElement, HTMLElement>,
+  onRect: (rect: Rect) => void,
+) {
+  const view = instance.targetWindow
+  if (view === null) return
+  const measure = () => {
+    onRect({ width: view.innerWidth, height: view.innerHeight })
+  }
+  measure()
+  view.addEventListener('resize', measure)
+  return () => {
+    view.removeEventListener('resize', measure)
+  }
+}
+
+function observeOffsetInPage(
+  instance: Virtualizer<HTMLElement, HTMLElement>,
+  onOffset: (offset: number, isScrolling: boolean) => void,
+) {
+  const body = instance.scrollElement
+  const view = instance.targetWindow
+  if (body === null || view === null) return
+  let frame = 0
+  const read = () => {
+    onOffset(-body.getBoundingClientRect().top, false)
+  }
+  const onScroll = () => {
+    view.cancelAnimationFrame(frame)
+    frame = view.requestAnimationFrame(read)
+  }
+  read()
+  view.addEventListener('scroll', onScroll, { capture: true, passive: true })
+  view.addEventListener('resize', onScroll)
+  return () => {
+    view.cancelAnimationFrame(frame)
+    view.removeEventListener('scroll', onScroll, { capture: true })
+    view.removeEventListener('resize', onScroll)
+  }
+}
+
+function scrollWithPage() {
+  // The page scrolls; the grid never moves it.
+}
+
+function keepScrollOnResize() {
+  return false
+}
 
 interface ColumnBase<Row> {
   /** Unique; `onCellChange`, `totals` and messages refer to it. */
@@ -962,61 +1022,56 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
     [idsKey],
   )
 
-  // ── The row window of a long grid (editable-grid-window.ts) ──
+  // ── The row window of a long grid (TanStack Virtual, virtual-rows.ts) ──
+  // The grid scrolls with the page (or any scrolling container around it), not in a box of its
+  // own (`observeViewport`, `observeOffsetInPage`). Heights are measured once drawn (a line and
+  // its notes, a card and its gap), estimated before; the focused line is always drawn.
   const virtual = props.virtualize ?? rows.length >= VIRTUALIZE_FROM
   const gap = phone && !inCard ? 12 : 0
-  const [measured, setMeasured] = useState<ReadonlyMap<string, number>>(() => new Map())
+  const lineEstimate = phone
+    ? 60 + 58 * editable.length + 40 * (columns.length - editable.length) + gap
+    : 37
   const estimate = (row: Row): number => {
     const type = rowType(row)
     if (!phone) return 37
     if (type === 'subtotal') return 40 + 24 * (columns.length - editable.length) + gap
     if (type === 'text' || type === 'heading') return 110 + gap
-    return 60 + 58 * editable.length + 40 * (columns.length - editable.length) + gap
+    return lineEstimate
   }
-  const heights = virtual
-    ? rows.map((row, index) => measured.get(rowIds[index] ?? '') ?? estimate(row))
-    : []
-  const [view, setView] = useState({ top: 0, height: 900 })
-  const win = virtual
-    ? gridWindow(heights, view.top, view.height, focusRow)
-    : { first: 0, last: rows.length, before: 0, after: 0 }
-  const shown = rows.slice(win.first, win.last)
   const bodyRef = useRef<HTMLElement | null>(null)
   const setBody = (element: HTMLElement | null) => {
     bodyRef.current = element
   }
-  // What the scroll handler needs, from the last render.
-  const windowState = useRef({ heights, focusRow, first: win.first, last: win.last })
-  useLayoutEffect(() => {
-    windowState.current = { heights, focusRow, first: win.first, last: win.last }
+  // Sizes are kept by line id and layout (a table row and a card differ).
+  const ids = useMemo(() => (idsKey === '' ? [] : idsKey.split('\n')), [idsKey])
+  const layout = phone ? 'card' : 'row'
+  const getItemKey = useCallback(
+    (index: number) => `${layout}:${ids[index] ?? String(index)}`,
+    [ids, layout],
+  )
+  const rangeExtractor = useCallback((range: Range) => keepFocusedRow(range, focusRow), [focusRow])
+  const virtualizer = useVirtualizer<HTMLElement, HTMLElement>({
+    count: rows.length,
+    getScrollElement: () => bodyRef.current,
+    estimateSize: (index) => {
+      const row = rows[index]
+      return row === undefined ? lineEstimate : estimate(row)
+    },
+    getItemKey,
+    // 600px above and below the view (virtual-rows.ts), as lines.
+    overscan: overscanRows(lineEstimate),
+    rangeExtractor,
+    enabled: virtual,
+    observeElementRect: observeViewport,
+    observeElementOffset: observeOffsetInPage,
+    scrollToFn: scrollWithPage,
+    // Before the grid is placed (and on the server), assume a screen's height from its top.
+    initialRect: { width: 0, height: 900 },
   })
-  // The view follows any scrolling (the page, a scrolling container, a phone frame) and resizing;
-  // a render happens only when the window of rows changes.
-  useLayoutEffect(() => {
-    if (!virtual) return
-    let frame = 0
-    const update = () => {
-      const body = bodyRef.current
-      if (body === null) return
-      const next = { top: -body.getBoundingClientRect().top, height: window.innerHeight }
-      const state = windowState.current
-      const range = gridWindow(state.heights, next.top, next.height, state.focusRow)
-      if (range.first !== state.first || range.last !== state.last) setView(next)
-    }
-    const onScroll = () => {
-      cancelAnimationFrame(frame)
-      frame = requestAnimationFrame(update)
-    }
-    update()
-    window.addEventListener('scroll', onScroll, { capture: true, passive: true })
-    window.addEventListener('resize', onScroll)
-    return () => {
-      cancelAnimationFrame(frame)
-      window.removeEventListener('scroll', onScroll, { capture: true })
-      window.removeEventListener('resize', onScroll)
-    }
-  }, [virtual])
-  // The drawn rows' heights (a line and its notes, a card and its gap), kept by row id.
+  // A line measured above the view moves the page's content, and the browser keeps the view in
+  // place itself (scroll anchoring); TanStack Virtual's own correction would count it twice.
+  virtualizer.shouldAdjustScrollPositionOnItemSizeChange = keepScrollOnResize
+  // The drawn rows' heights (a line and its notes, a card and its gap), by line.
   useLayoutEffect(() => {
     if (!virtual) return
     const root = rootRef.current
@@ -1026,19 +1081,29 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
       const key = element.getAttribute('data-row-key') ?? ''
       sizes.set(key, (sizes.get(key) ?? gap) + element.getBoundingClientRect().height)
     })
-    const keep = () => {
-      setMeasured((current) => {
-        const changed = [...sizes].some(
-          ([key, size]) => Math.abs((current.get(key) ?? -1) - size) > 0.5,
-        )
-        if (!changed) return current
-        const next = new Map(current)
-        sizes.forEach((size, key) => next.set(key, size))
-        return next
-      })
-    }
-    keep()
+    const known = virtualizer.measurementsCache
+    sizes.forEach((size, key) => {
+      const line = lineNumbers.get(key)
+      if (line === undefined) return
+      const current = known[line - 1]?.size
+      if (current === undefined || Math.abs(current - size) > 0.5) {
+        virtualizer.resizeItem(line - 1, size)
+      }
+    })
   })
+  // The lines drawn, each with the empty height before it (a spacer), and the height after them.
+  const drawn = virtual ? virtualizer.getVirtualItems() : []
+  const spacers = virtual
+    ? spacersBetween(drawn, virtualizer.getTotalSize())
+    : { before: [], after: 0 }
+  const shown = virtual
+    ? drawn.flatMap((item, at) => {
+        const row = rows[item.index]
+        return row === undefined
+          ? []
+          : [{ row, rowIndex: item.index, before: spacers.before[at] ?? 0 }]
+      })
+    : rows.map((row, rowIndex) => ({ row, rowIndex, before: 0 }))
   // aria-rowindex and aria-rowcount, so assistive technology hears the whole table.
   const aria = virtual
     ? ariaRowIndexes(
@@ -1095,21 +1160,22 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
           </tr>
         </thead>
         <tbody ref={setBody}>
-          {win.before > 0 && (
-            <tr aria-hidden="true" data-slot="grid-spacer">
-              <td
-                colSpan={columns.length + 1}
-                className="border-0 p-0"
-                style={{ height: win.before }}
-              />
-            </tr>
-          )}
           {/* One flat list of keyed rows: an array per line would be keyed by its position, and
               a line inserted at the top would mount every line after it again (P5.18). */}
-          {shown.flatMap((row, offset) => {
-            const rowIndex = win.first + offset
+          {shown.flatMap(({ row, rowIndex, before }) => {
             const type = rowType(row)
             const { rowId, notes, describedBy } = rowParts(row)
+            // The lines not drawn before this one.
+            const spacer =
+              before > 0 ? (
+                <tr key={`${rowId}-spacer`} aria-hidden="true" data-slot="grid-spacer">
+                  <td
+                    colSpan={columns.length + 1}
+                    className="border-0 p-0"
+                    style={{ height: before }}
+                  />
+                </tr>
+              ) : null
             const index = aria?.indexes[rowIndex]
             const rowAria = (extra = 0) =>
               index === undefined ? {} : { 'aria-rowindex': index + extra }
@@ -1128,6 +1194,7 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
               ) : null
             if (type === 'subtotal') {
               return [
+                spacer,
                 <tr
                   key={rowId}
                   data-row-id={rowId}
@@ -1166,6 +1233,7 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
             }
             const span = type === 'text' || type === 'heading' ? spanColumns?.[type] : undefined
             return [
+              spacer,
               <tr
                 key={rowId}
                 data-row-id={rowId}
@@ -1243,12 +1311,12 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
               notesRow,
             ]
           })}
-          {win.after > 0 && (
+          {spacers.after > 0 && (
             <tr aria-hidden="true" data-slot="grid-spacer">
               <td
                 colSpan={columns.length + 1}
                 className="border-0 p-0"
-                style={{ height: win.after }}
+                style={{ height: spacers.after }}
               />
             </tr>
           )}
@@ -1361,16 +1429,23 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
         aria-label={props.label}
         className={cn('m-0 flex list-none flex-col p-0', !inCard && 'gap-3')}
       >
-        {win.before > 0 && (
-          <li aria-hidden="true" data-slot="grid-spacer" style={{ height: win.before - gap }} />
-        )}
-        {shown.map((row, offset) => {
-          const rowIndex = win.first + offset
+        {shown.flatMap(({ row, rowIndex, before }) => {
           const type = rowType(row)
           const { rowId, notes, describedBy } = rowParts(row)
+          // The cards not drawn before this one; the list's gap follows the spacer.
+          const spacer =
+            before > 0 ? (
+              <li
+                key={`${rowId}-spacer`}
+                aria-hidden="true"
+                data-slot="grid-spacer"
+                style={{ height: Math.max(0, before - gap) }}
+              />
+            ) : null
           if (type === 'subtotal') {
             // The text and the amounts, semibold, with the rule above (no field, no remove).
-            return (
+            return [
+              spacer,
               <li
                 key={rowId}
                 data-row-id={rowId}
@@ -1396,12 +1471,13 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
                   ) : null,
                 )}
                 {notes.length > 0 && <NoteList notes={notes} />}
-              </li>
-            )
+              </li>,
+            ]
           }
           const span = type === 'text' || type === 'heading' ? spanColumns?.[type] : undefined
           if (span !== undefined) {
-            return (
+            return [
+              spacer,
               <li
                 key={rowId}
                 data-row-id={rowId}
@@ -1429,11 +1505,12 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
                 </div>
                 {notes.length > 0 && <NoteList notes={notes} />}
                 {removeButton(rowIndex)}
-              </li>
-            )
+              </li>,
+            ]
           }
           let editIndex = -1
-          return (
+          return [
+            spacer,
             <li
               key={rowId}
               data-row-id={rowId}
@@ -1480,11 +1557,15 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
               })}
               {notes.length > 0 && <NoteList notes={notes} />}
               {removeButton(rowIndex)}
-            </li>
-          )
+            </li>,
+          ]
         })}
-        {win.after > 0 && (
-          <li aria-hidden="true" data-slot="grid-spacer" style={{ height: win.after - gap }} />
+        {spacers.after > 0 && (
+          <li
+            aria-hidden="true"
+            data-slot="grid-spacer"
+            style={{ height: Math.max(0, spacers.after - gap) }}
+          />
         )}
       </ul>
     </>
