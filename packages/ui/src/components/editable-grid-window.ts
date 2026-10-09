@@ -1,4 +1,4 @@
-import { rowOffsets, visibleRows } from '../templates/company-logic'
+import { rowOffsets, visibleRows } from './virtual-rows'
 
 /*
  * EditableGrid's row window (P5.18: a specification of 300 positions), without React: which rows

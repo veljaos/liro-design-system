@@ -11,7 +11,6 @@ import {
   matchingCompanies,
   type AppShellProps,
 } from './app-shell'
-import { rowOffsets, scrollToShow, visibleRows } from './company-logic'
 import { manyCompanies } from './shell-story-data'
 
 const COMPANIES = [
@@ -108,23 +107,6 @@ describe('companyKeyTarget', () => {
     expect(companyKeyTarget(rows, 1, 'End')).toBe(4)
     expect(companyKeyTarget(rows, 1, 'a')).toBeUndefined()
     expect(companyKeyTarget([], 0, 'ArrowDown')).toBeUndefined()
-  })
-})
-
-describe('the company list virtualiser', () => {
-  it('draws only the rows in view and around them', () => {
-    const { tops, total } = rowOffsets(Array.from({ length: 5000 }, () => 48))
-    expect(total).toBe(240000)
-    expect(visibleRows(tops, total, 0, 400)).toEqual({ first: 0, last: 14 })
-    const middle = visibleRows(tops, total, 48000, 400)
-    expect(middle.first).toBe(995)
-    expect(middle.last - middle.first).toBeLessThan(20)
-    expect(visibleRows([], 0, 0, 400)).toEqual({ first: 0, last: 0 })
-  })
-  it('scrolls a row fully into view, or not at all', () => {
-    expect(scrollToShow(480, 48, 0, 400)).toBe(128)
-    expect(scrollToShow(48, 48, 100, 400)).toBe(48)
-    expect(scrollToShow(200, 48, 100, 400)).toBeUndefined()
   })
 })
 

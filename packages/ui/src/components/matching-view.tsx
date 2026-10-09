@@ -4,7 +4,6 @@ import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { ToggleGroup, ToggleGroupItem } from '../primitives/toggle-group'
 import { useLiro } from '../provider/liro-provider'
-import { rowOffsets, scrollToShow, visibleRows } from '../templates/company-logic'
 import { ActionButton, UnavailableAction } from './actions'
 import { CompactIconButton } from './button'
 import { EmptyState } from './empty-state'
@@ -20,6 +19,7 @@ import { ShortcutHint } from './navigation'
 import { Skeleton } from './progress'
 import { TextField } from './text-field'
 import { usePhone } from './use-phone'
+import { rowOffsets, scrollToShow, visibleRows } from './virtual-rows'
 
 /*
  * MatchingView (BUILD-PLAN P5.21): reconciliation of two lists — bank statement lines and open

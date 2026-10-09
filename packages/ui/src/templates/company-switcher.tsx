@@ -17,6 +17,7 @@ import { DialogCloseButton, DialogHeader, DialogTitle } from '../primitives/dial
 import { Popover, PopoverContent, PopoverTrigger } from '../primitives/popover'
 import { Sheet, SheetContent } from '../primitives/sheet'
 import { useLiro } from '../provider/liro-provider'
+import { rowOffsets, scrollToShow, visibleRows } from '../components/virtual-rows'
 import {
   companyKeyTarget,
   companyMatcher,
@@ -24,9 +25,6 @@ import {
   companySections,
   type CompanyRow,
   type CompanySectionKey,
-  rowOffsets,
-  scrollToShow,
-  visibleRows,
   type ShellCompanies,
 } from './company-logic'
 

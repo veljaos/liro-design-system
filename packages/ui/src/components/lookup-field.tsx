@@ -12,7 +12,6 @@ import { AUTO_DIRECTION, READ_ONLY, TEXT_DIRECTION, TEXT_ISOLATE } from '../prim
 import { cn } from '../primitives/cn'
 import { Input } from '../primitives/input'
 import { useLiro } from '../provider/liro-provider'
-import { rowOffsets, scrollToShow, visibleRows } from '../templates/company-logic'
 import { ComboboxPopover } from './combobox-field'
 import { useDebouncedCallback } from './combobox-logic'
 import { controlAttributes, Field, fieldProps, type FieldBaseProps } from './field'
@@ -28,6 +27,7 @@ import {
   type LookupOption,
   type LookupRow,
 } from './lookup-logic'
+import { rowOffsets, scrollToShow, visibleRows } from './virtual-rows'
 
 /*
  * LookupField (BUILD-PLAN P5.19): the one searching field for catalogues of tens of thousands of

@@ -3,7 +3,7 @@
  * unit-tested (AGENTS.md C7): which rows the list shows for a query — the recent records while
  * nothing is typed, else the application's results grouped by kind, then "+ Create …", the
  * one-off entry and "Search all…" — their heights for the list's own small virtualiser
- * (`rowOffsets` / `visibleRows` of the company switcher), and the keyboard's movement.
+ * (`rowOffsets` / `visibleRows` of `virtual-rows.ts`), and the keyboard's movement.
  */
 
 /** One record a LookupField can choose: an item, a service, a fixed asset, a customer … */
