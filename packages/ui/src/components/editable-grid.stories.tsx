@@ -1247,7 +1247,7 @@ function Specification({ layout }: { layout?: 'desktop' | 'phone' }) {
  * keys, a unit and a tax category per position), with Previous / This period / Cumulative
  * columns from the application. A grid of 100 lines or more draws only the lines around the view
  * (and the focused line), each cell a memoised field, so it stays quick (the measured numbers are
- * in docs/p5-notes/group-D1.md); the table still tells assistive technology its full size.
+ * in docs/decisions.md "Liro patterns (Phase 5 part 1)"); the table still tells assistive technology its full size.
  */
 export const LongSpecification: Story = {
   name: 'Specification, 300 positions',

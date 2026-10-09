@@ -28,7 +28,7 @@ import { usePhone } from './use-phone'
  * keyboard selection. The application searches, filters and pages on the server; the dialog only
  * renders what it is given and reports.
  *
- * Keyboard (decided, docs/p5-notes/group-E.md): the search field takes the focus when the dialog
+ * Keyboard (decided, docs/decisions.md "Liro patterns (Phase 5 part 1)"): the search field takes the focus when the dialog
  * opens; ArrowDown moves the focus to the first result; ArrowDown / ArrowUp move between results
  * (ArrowUp from the first back to the search field), PageDown / PageUp by ten, Home / End to the
  * first and last; Enter or Space chooses the focused result; typing on a result sends the focus

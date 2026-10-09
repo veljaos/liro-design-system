@@ -238,7 +238,7 @@ export const Opened: Story = {
 
 /**
  * 300 positions (12 groups of 25): the sheet opens and scrolls without delay; the table is
- * virtualised (44px rows, one line each; measured in docs/p5-notes/group-D2.md).
+ * virtualised (44px rows, one line each; measured in docs/decisions.md "Liro patterns (Phase 5 part 1)").
  */
 export const ThreeHundred: Story = {
   name: '300 positions',

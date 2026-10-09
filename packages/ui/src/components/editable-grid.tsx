@@ -112,7 +112,7 @@ import { usePhone } from './use-phone'
  *   an asset number, a sale note; `internal` ones after the "Internal" note) under the row.
  * - 300 lines stay responsive: each editable cell is a memoised component whose props are the
  *   values the application gave for it, so typing in one cell renders that cell's field again,
- *   not the 2,000 others (docs/p5-notes/group-D1.md, measured).
+ *   not the 2,000 others (docs/decisions.md "Liro patterns (Phase 5 part 1)", measured).
  */
 
 interface ColumnBase<Row> {

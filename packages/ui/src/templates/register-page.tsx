@@ -29,7 +29,7 @@ import { registerMenu } from './register-logic'
  *   export and print are the page's actions (the application's buttons, the main one last).
  * - Long registers stay responsive: `virtualize` draws only the rows in view (DataTable's 44px
  *   rows inside `maxHeight`, default 70% of the screen's height); measured with 5,000 entries
- *   (docs/p5-notes/group-E.md).
+ *   (docs/decisions.md "Liro patterns (Phase 5 part 1)").
  * Layout: the page header (visible title: no module tab names a register), then ONE card (as
  * ListPage): the period row, the locks, the table to the card's edges, count and paging under it.
  */

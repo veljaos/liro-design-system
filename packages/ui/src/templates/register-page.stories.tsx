@@ -203,7 +203,7 @@ export const Empty: Story = {
 
 /**
  * 5,000 entries, virtualized: fewer than 60 rows are drawn, the rest scroll in (measured in
- * docs/p5-notes/group-E.md).
+ * docs/decisions.md "Liro patterns (Phase 5 part 1)").
  */
 export const FiveThousand: Story = {
   name: '5,000 entries (virtualized)',

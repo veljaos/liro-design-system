@@ -21,7 +21,7 @@ import type { Tone } from './status-badge'
 import { TextAreaField } from './text-field'
 
 /*
- * The blocks of a complex document (BUILD-PLAN P5.18; docs/p5-notes/group-D2.md). DocumentPage
+ * The blocks of a complex document (BUILD-PLAN P5.18; docs/decisions.md "Liro patterns (Phase 5 part 1)"). DocumentPage
  * renders them in a fixed order — header (with the currency block) → "Based on" references →
  * lines (with the specification's summary row) → totals → notes → attachments — and leaves out a
  * block without content. All rules, codes, numbers and legal texts come from the application;
