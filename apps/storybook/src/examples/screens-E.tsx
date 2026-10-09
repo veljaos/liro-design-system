@@ -302,7 +302,6 @@ export function Customers({ phone }: { phone: boolean }) {
             searchPlaceholder="Name, tax number or city"
             actions={
               <>
-                {/* INTEGRATION: LookupField (D1) opens this LookupDialog with onSearchAll. */}
                 <Button
                   intent="view"
                   emphasis="secondary"

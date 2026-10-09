@@ -8,7 +8,6 @@ import {
   DateText,
   DocumentPage,
   HistoryList,
-  KeyValueList,
   MessageThread,
   MoneyText,
   NumberText,
@@ -25,6 +24,7 @@ import {
   type SidePanel,
   type ThreadMessage,
   type TotalsRow,
+  StatusTimeline,
 } from '@veljaos/ui'
 import type { ExampleRoute } from './example-app'
 import { HR_TABS, Navigate, SALES_TABS, Shell, statusBadge } from './example-shell'
@@ -35,6 +35,7 @@ import {
   COMMENTS_0410,
   CONTRACT_NUMBER,
   CONTRACT_QUESTIONS_A,
+  DELIVERY_0410,
   HISTORY_0410,
   INVOICE_0410,
   LINES_0410,
@@ -212,12 +213,14 @@ export function InvoiceActivity({ phone }: { phone: boolean }) {
       key: 'delivery',
       title: 'Delivery',
       content: (
-        <KeyValueList
-          columns={1}
-          items={[
-            { label: 'SEF', value: <StatusBadge label="Delivered" tone="success" /> },
-            { label: 'Sent', value: <span dir="ltr">25.09.2026. 10:04</span>, numeric: true },
-          ]}
+        <StatusTimeline
+          label="Delivery to SEF"
+          steps={DELIVERY_0410}
+          current={2}
+          next={{
+            title: 'Waiting for the buyer',
+            description: 'Medic Lab Niš d.o.o. accepts or rejects the invoice by 10.10.2026.',
+          }}
         />
       ),
     },

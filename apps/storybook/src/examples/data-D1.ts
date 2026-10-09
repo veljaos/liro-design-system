@@ -284,6 +284,13 @@ const FOLDED = CATALOGUE.map((record) =>
   fold(`${record.label} ${record.value} ${record.description ?? ''}`),
 )
 
+/** The Core's full search ("Search all…"): every record whose name, code or line has every word. */
+export function findInCatalogue(query: string): CatalogueRecord[] {
+  const words = fold(query).split(/\s+/).filter(Boolean)
+  if (words.length === 0) return CATALOGUE
+  return CATALOGUE.filter((_, index) => words.every((word) => FOLDED[index]?.includes(word) === true))
+}
+
 /**
  * The Core's search, played here: every word typed must appear in the name, the code or the
  * second line; the first eight records of each kind.

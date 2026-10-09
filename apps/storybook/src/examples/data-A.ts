@@ -10,6 +10,7 @@ import type {
   MentionCandidate,
   PresencePerson,
   QuestionDefinition,
+  StatusTimelineStep,
   ThreadMessage,
 } from '@veljaos/ui'
 import { decimal, paras } from '../../../../packages/ui/src/components/amounts-story-data'
@@ -162,6 +163,14 @@ export const COMMENTS_0410: ThreadMessage[] = [
 
 /** The agent's question in the thread: when the rest will be paid. */
 export const AGENT_QUESTION_AT = at('2026-10-06', '08:15')
+
+/** F-2026-0410's delivery to SEF: delivered, the buyer's answer awaited until 10.10.2026. */
+export const DELIVERY_0410: StatusTimelineStep[] = [
+  { key: 'issued', label: 'Issued', at: at('2026-09-25', '10:02'), detail: 'by Dragan Ilić' },
+  { key: 'sent', label: 'Sent to SEF', at: at('2026-09-25', '10:03') },
+  { key: 'delivered', label: 'Delivered', at: at('2026-09-25', '10:04') },
+  { key: 'accepted', label: 'Accepted by the buyer' },
+]
 
 /** The history of F-2026-0410, newest last (the list sorts it). */
 export const HISTORY_0410: HistoryEntry[] = [

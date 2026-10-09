@@ -7,11 +7,13 @@ import {
   DateText,
   DocumentPage,
   EditableGrid,
+  LookupDialog,
   MoneyText,
   NumberText,
   StatusBadge,
   TextField,
   useLiro,
+  type DataTableColumn,
   type EditableGridColumn,
   type GridDetail,
   type GridMessage,
@@ -28,6 +30,7 @@ import {
   draftTotals,
   DRAFT,
   fromParas,
+  findInCatalogue,
   fromRecord,
   initialDraft,
   KINDS,
@@ -43,6 +46,7 @@ import {
   TAX_CATEGORIES,
   toUnits,
   UNITS,
+  type CatalogueRecord,
   type DraftLine,
   type SpecRow,
 } from './data-D1'
@@ -122,6 +126,27 @@ function draftMessages(lines: readonly DraftLine[]): Record<string, GridMessage[
   return result
 }
 
+// ── The whole catalogue ("Search all…") ──────────────────────────────────────────────────────
+
+const KIND_NAMES: Record<CatalogueRecord['kind'], string> = {
+  item: 'Item',
+  service: 'Service',
+  asset: 'Fixed asset',
+  discount: 'Discount',
+}
+
+const CATALOGUE_COLUMNS: DataTableColumn<CatalogueRecord>[] = [
+  { id: 'code', header: 'Code', cell: (record) => <bdi>{record.value}</bdi> },
+  { id: 'name', header: 'Name', cell: (record) => record.label },
+  { id: 'kind', header: 'Kind', cell: (record) => KIND_NAMES[record.kind] },
+  {
+    id: 'price',
+    header: 'Price',
+    numeric: true,
+    cell: (record) => <MoneyText value={record.price} currency="RSD" />,
+  },
+]
+
 // ── Invoice draft, lines by search ──────────────────────────────────────────────────────────
 
 export function InvoiceDraft({ phone }: { phone: boolean }) {
@@ -131,6 +156,10 @@ export function InvoiceDraft({ phone }: { phone: boolean }) {
   const [issued, setIssued] = useState<string | null>(DRAFT.issued)
   const [due, setDue] = useState<string | null>(DRAFT.due)
   const { results, loading, onSearch } = useLineSearch()
+  const [searchAll, setSearchAll] = useState<{ rowId: string; query: string } | null>(null)
+  const [allQuery, setAllQuery] = useState('')
+  const [allCursor, setAllCursor] = useState(0)
+  const allFound = useMemo(() => findInCatalogue(allQuery), [allQuery])
   const subtotals = useMemo(() => draftSubtotals(lines), [lines])
   const totals = useMemo(() => draftTotals(lines), [lines])
 
@@ -148,8 +177,12 @@ export function InvoiceDraft({ phone }: { phone: boolean }) {
         recent: RECENT,
         kinds: KINDS,
         allowOneOff: true,
-        // INTEGRATION: LookupDialog (group E) — "Search all…" opens the full catalogue here.
-        onSearchAll: () => undefined,
+        // "Search all…" opens the whole catalogue in LookupDialog, with the text typed so far.
+        onSearchAll: (rowId, query) => {
+          setSearchAll({ rowId, query })
+          setAllQuery(query)
+          setAllCursor(0)
+        },
         create: {
           kinds: [
             { kind: 'service', noun: 'service' },
@@ -319,6 +352,40 @@ export function InvoiceDraft({ phone }: { phone: boolean }) {
         totals={{ rows: totals.rows, total: totals.total, label: 'Totals' }}
         sections={[]}
         panels={[]}
+      />
+      <LookupDialog
+        open={searchAll !== null}
+        onOpenChange={(open) => {
+          if (!open) setSearchAll(null)
+        }}
+        title="Items, services and assets"
+        initialQuery={searchAll?.query ?? ''}
+        onSearch={(query) => {
+          setAllQuery(query)
+          setAllCursor(0)
+        }}
+        searchPlaceholder="Name or code"
+        columns={CATALOGUE_COLUMNS}
+        rows={allFound.slice(allCursor, allCursor + 25)}
+        getRowId={(record) => record.value}
+        getRowLabel={(record) => `${record.label}, ${record.value}`}
+        onChoose={(record) => {
+          const rowId = searchAll?.rowId
+          setLines((current) =>
+            current.map((line) => (line.id === rowId ? fromRecord(line, record) : line)),
+          )
+        }}
+        hasNext={allCursor + 25 < allFound.length}
+        onNext={() => {
+          setAllCursor(allCursor + 25)
+        }}
+        hasPrevious={allCursor > 0}
+        onPrevious={() => {
+          setAllCursor(Math.max(0, allCursor - 25))
+        }}
+        count={allFound.length}
+        mobile={{ subtitle: (record) => `${record.value} · ${KIND_NAMES[record.kind]}` }}
+        layout={phone ? 'phone' : 'desktop'}
       />
     </Shell>
   )
