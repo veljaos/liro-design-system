@@ -215,7 +215,8 @@ export const Columns: Story = {
       await within(canvasElement.ownerDocument.body).findByRole('option', { name: 'PIB' }),
     )
     await waitFor(() => expect(canvas.queryByText(/Choose a column for Tax number/)).toBeNull())
-    await expect(canvas.getByRole('button', { name: 'Next' })).toBeEnabled()
+    // The option list closes with an animation; until then the rest of the page is hidden.
+    await waitFor(() => expect(canvas.getByRole('button', { name: 'Next' })).toBeEnabled())
     await settle()
   },
 }

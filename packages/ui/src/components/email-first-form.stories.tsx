@@ -80,7 +80,7 @@ export const Default: Story = {
     // The providers are neutral buttons named by their labels; the marks are decorative.
     const microsoft = canvas.getByRole('button', { name: 'Continue with Microsoft' })
     await expect(microsoft).toHaveAttribute('data-family', 'neutral')
-    await expect(microsoft.querySelector('img')).toHaveAttribute('alt', '')
+    await expect(microsoft.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
     await expect(canvas.getByText('or')).toBeVisible()
   },
 }

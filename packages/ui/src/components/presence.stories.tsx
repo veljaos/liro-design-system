@@ -75,6 +75,7 @@ export const Keyboard: Story = {
     await waitFor(() => expect(body.getByRole('tooltip')).toBeInTheDocument())
     await userEvent.keyboard('{Enter}')
     const list = await body.findByRole('dialog', { name: 'Who is here' })
+    await settle()
     await expect(within(list).getByText('Preparing a payment reminder')).toBeVisible()
     await expect(within(list).getAllByText('Agent').length).toBeGreaterThan(0)
     await settle()

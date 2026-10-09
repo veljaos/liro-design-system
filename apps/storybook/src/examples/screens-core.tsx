@@ -73,6 +73,7 @@ import {
   CASH,
   EMPLOYEE,
   INVOICES,
+  isOpen,
   LARGEST_OPEN,
   OVERDUE,
   OVERDUE_TOTAL,
@@ -278,7 +279,8 @@ const INVOICE_COLUMNS: (DataTableColumn<ExampleInvoice> & { label: string })[] =
     numeric: true,
     sortable: true,
     cell: (row) =>
-      row.status === 'Paid' ? <DateText value={row.due} /> : <DueDate value={row.due} />,
+      // Only an open invoice can be overdue: a paid or cancelled one shows its date alone.
+      isOpen(row) ? <DueDate value={row.due} /> : <DateText value={row.due} />,
   },
   {
     id: 'total',
@@ -427,7 +429,7 @@ export function InvoiceList({ phone }: { phone: boolean }) {
             { label: 'Issued', value: <DateText value={preview.issued} />, numeric: true },
             {
               label: 'Due',
-              value: <DueDate value={preview.due} settled={preview.status === 'Paid'} />,
+              value: <DueDate value={preview.due} settled={!isOpen(preview)} />,
               numeric: true,
             },
             {

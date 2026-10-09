@@ -404,7 +404,7 @@ export const Rerun: Story = {
     await userEvent.click(within(dialog).getByRole('button', { name: 'Rerun' }))
     await settle()
     await expect(await canvas.findByText('0 of 6')).toBeVisible()
-    await expect(canvas.getByText('Sick leave reported late')).toBeVisible()
+    await expect(canvas.getAllByText('Sick leave reported late')[0]).toBeVisible()
     await expect(canvasElement.querySelector('[aria-current="step"]')).toHaveTextContent(
       'Calculate',
     )

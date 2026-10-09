@@ -144,16 +144,26 @@ export const InvoiceListScreen: Story = {
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
-    // Cancelled by ST-2026-0004: shown as Cancelled, owing nothing.
+    // Cancelled by ST-2026-0004: shown as Cancelled, never overdue, owing nothing.
     const cancelled = await canvas.findByRole('row', { name: /F-2026-0407/ })
     await expect(cancelled).toHaveTextContent('Cancelled')
-    await expect(cancelled).not.toHaveTextContent('Overdue')
-    await expect(cancelled).toHaveTextContent('0,00')
+    await expect(cancelled).not.toHaveTextContent(/overdue/i)
+    await userEvent.click(cancelled)
+    await settle()
+    let preview = within(document.body).getByRole('dialog', { name: 'F-2026-0407' })
+    await expect(preview).toHaveTextContent(/Amount due\s*0,00\s*RSD/)
+    await userEvent.keyboard('{Escape}')
+    await settle()
     // Decreased by KO-2026-0009: the total after the decrease, and what is still due.
     const decreased = canvas.getByRole('row', { name: /F-2026-0410/ })
     await expect(decreased).toHaveTextContent('167.762,75')
-    await expect(decreased).toHaveTextContent('67.762,75')
     await expect(decreased).not.toHaveTextContent('186.420,35')
+    await userEvent.click(decreased)
+    await settle()
+    preview = within(document.body).getByRole('dialog', { name: 'F-2026-0410' })
+    await expect(preview).toHaveTextContent(/Amount due\s*67\.762,75\s*RSD/)
+    await userEvent.keyboard('{Escape}')
+    await settle()
   },
 }
 
@@ -538,7 +548,7 @@ export const PayrollRerun: Story = {
     await userEvent.click(within(dialog).getByRole('button', { name: 'Rerun' }))
     await settle()
     await expect(await canvas.findByText('0 of 46')).toBeVisible()
-    await expect(canvas.getByText('Corrected working hours')).toBeVisible()
+    await expect(canvas.getAllByText('Corrected working hours')[0]).toBeVisible()
     await expect(canvasElement.querySelector('[aria-current="step"]')).toHaveTextContent(
       'Calculate',
     )
@@ -693,12 +703,10 @@ export const SignInProviders: Story = {
   render: () => <ExampleApp start={ROUTES.signIn} />,
   play: async ({ canvasElement }) => {
     await settle()
-    await Promise.all(
-      Array.from(document.images).map((image) => image.decode().catch(() => undefined)),
-    )
     const canvas = within(canvasElement)
     const microsoft = canvas.getByRole('button', { name: 'Continue with Microsoft' })
-    await expect(microsoft.querySelector('img')?.naturalWidth).toBeGreaterThan(0)
+    // The mark is drawn by ProviderSignInButtons (provider-marks.tsx), decorative.
+    await expect(microsoft.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
     await expect(canvas.getByRole('button', { name: 'Continue with Google' })).toBeVisible()
     await expect(canvas.getByRole('textbox', { name: 'Work e-mail' })).toHaveAttribute(
       'autocomplete',

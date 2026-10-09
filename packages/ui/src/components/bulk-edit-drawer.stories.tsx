@@ -181,6 +181,7 @@ export const Default: Story = {
     await expect(summary.getByText('30 days')).toBeVisible()
     await userEvent.click(drawer.getByRole('button', { name: 'Apply to 24 records' }))
     const confirm = within(await body.findByRole('alertdialog', { name: 'Change 24 records?' }))
+    await settle()
     await expect(confirm.getByText('Payment term: 30 days')).toBeVisible()
     await userEvent.click(confirm.getByRole('button', { name: 'Change' }))
     await waitFor(() => expect(body.queryByRole('dialog')).toBeNull())
