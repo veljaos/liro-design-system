@@ -280,7 +280,7 @@ export const EUR_IN_RSD = (() => {
 
 // ── F-2026-0410 and its decrease KO-2026-0009 ───────────────────────────────────────────────
 
-/** The lines of F-2026-0410 (total 186.420,35 RSD, as in the invoice list). */
+/** The lines of F-2026-0410 (186.420,35 RSD as issued; group A's screen shows them too). */
 const BOARDS = line(
   '1',
   'Gypsum boards 12,5 mm, 1200 × 2000 mm',

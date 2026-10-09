@@ -634,6 +634,7 @@ const STATES: Record<string, ReactNode> = {
   Sent: statusBadge('Sent'),
   Overdue: statusBadge('Overdue'),
   Paid: statusBadge('Paid'),
+  Cancelled: statusBadge('Cancelled'),
   'Query sent': statusBadge('Query sent'),
   'To approve': statusBadge('To approve'),
 }

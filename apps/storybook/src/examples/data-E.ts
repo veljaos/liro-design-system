@@ -75,7 +75,7 @@ export const KNOWN_CUSTOMERS: Customer[] = [
     city: 'Niš',
     paymentTerm: '30',
     group: 'Retail',
-    balance: '86420.35',
+    balance: '67762.75',
     active: true,
   },
   {
@@ -85,7 +85,7 @@ export const KNOWN_CUSTOMERS: Customer[] = [
     city: 'Smederevo',
     paymentTerm: '15',
     group: 'Construction companies',
-    balance: '94500.00',
+    balance: '0.00',
     active: true,
   },
   {
@@ -404,7 +404,8 @@ export const SEPTEMBER_SALES_20 = [
     customer: 'Bojović i sinovi d.o.o.',
     date: '2026-09-18',
     base: '78750.00',
-    status: 'Overdue',
+    // Cancelled on 06.10.2026. (ST-2026-0004): the cancellation belongs to October's return.
+    status: 'Cancelled',
   },
   {
     number: 'F-2026-0404',

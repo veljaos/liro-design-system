@@ -448,7 +448,7 @@ export const TASKS: KanbanColumn[] = [
       {
         id: 't5',
         title: 'Collect the open amount of F-2026-0410',
-        description: '86.420,35 RSD of 186.420,35 RSD is still open.',
+        description: '67.762,75 RSD of 167.762,75 RSD is still open.',
         assignee: { name: 'Dragan Ilić' },
         due: '2026-10-25',
         record: {

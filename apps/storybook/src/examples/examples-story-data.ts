@@ -19,7 +19,7 @@ export interface ExampleInvoice {
   total: string
   /** What is still to be paid. */
   open: string
-  status: 'Draft' | 'Sent' | 'Paid' | 'Overdue' | 'Partially paid'
+  status: 'Draft' | 'Sent' | 'Paid' | 'Overdue' | 'Partially paid' | 'Cancelled'
 }
 
 /** The invoice list's first page (1,284 invoices in all), newest first. */
@@ -53,8 +53,9 @@ export const INVOICES: ExampleInvoice[] = [
     address: 'Bulevar Nemanjića 25, 18000 Niš',
     issued: '2026-09-25',
     due: '2026-10-25',
-    total: '186420.35',
-    open: '86420.35',
+    // After decrease KO-2026-0009 (06.10.2026.): 186.420,35 − 18.657,60.
+    total: '167762.75',
+    open: '67762.75',
     status: 'Partially paid',
   },
   {
@@ -87,8 +88,9 @@ export const INVOICES: ExampleInvoice[] = [
     issued: '2026-09-18',
     due: '2026-10-02',
     total: '94500.00',
-    open: '94500.00',
-    status: 'Overdue',
+    // Cancelled on 06.10.2026. by ST-2026-0004.
+    open: '0.00',
+    status: 'Cancelled',
   },
   {
     number: 'F-2026-0406',

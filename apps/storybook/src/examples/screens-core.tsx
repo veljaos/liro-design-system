@@ -297,6 +297,7 @@ const INVOICE_FILTERS: FilterDefinition[] = [
       { value: 'sent', label: 'Sent' },
       { value: 'paid', label: 'Paid' },
       { value: 'overdue', label: 'Overdue' },
+      { value: 'cancelled', label: 'Cancelled' },
     ],
   },
   { id: 'issued', label: 'Issue date', type: 'dateRange' },

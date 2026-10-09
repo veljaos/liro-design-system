@@ -25,6 +25,7 @@ import {
   type ThreadMessage,
   type TotalsRow,
   StatusTimeline,
+  DocumentReferences,
 } from '@veljaos/ui'
 import type { ExampleRoute } from './example-app'
 import { HR_TABS, Navigate, SALES_TABS, Shell, statusBadge } from './example-shell'
@@ -107,6 +108,19 @@ const TOTAL_ROWS: TotalsRow[] = [
     currency: 'RSD',
     group: true,
   },
+  {
+    key: 'decrease',
+    label: 'Decrease KO-2026-0009',
+    value: TOTALS_0410.decrease,
+    currency: 'RSD',
+  },
+  {
+    key: 'corrected',
+    label: 'Total after corrections',
+    value: TOTALS_0410.corrected,
+    currency: 'RSD',
+    group: true,
+  },
   { key: 'paid', label: 'Paid on 02.10.2026.', value: TOTALS_0410.paid, currency: 'RSD' },
 ]
 
@@ -131,7 +145,7 @@ function PaymentDateQuestion({
     <AgentQuestion
       agent="Liro agent"
       at={AGENT_QUESTION_AT}
-      question={`Medic Lab Niš d.o.o. paid 100.000,00 RSD on 02.10.2026. When will they pay the remaining 86.420,35 RSD? I will send the reminder only if the payment is late.`}
+      question={`Medic Lab Niš d.o.o. paid 100.000,00 RSD on 02.10.2026. When will they pay the remaining 67.762,75 RSD? I will send the reminder only if the payment is late.`}
       {...(answer === null ? {} : { answer: `Payment expected on ${format.date(answer)}` })}
     >
       <Questionnaire
@@ -293,8 +307,8 @@ export function InvoiceActivity({ phone }: { phone: boolean }) {
         keyFigures={[
           { label: 'Amount due', value: <MoneyText value={TOTALS_0410.due} currency="RSD" /> },
           {
-            label: 'Invoice total',
-            value: <MoneyText value={TOTALS_0410.total} currency="RSD" />,
+            label: 'Total after corrections',
+            value: <MoneyText value={TOTALS_0410.corrected} currency="RSD" />,
           },
           { label: 'Due', value: <DateText value={INVOICE_0410.due} /> },
         ]}
@@ -304,6 +318,25 @@ export function InvoiceActivity({ phone }: { phone: boolean }) {
             <Button intent="pdf" label="PDF" emphasis="secondary" />
             {phone ? null : reminder}
           </>
+        }
+        references={
+          <DocumentReferences
+            label="Corrected by"
+            groups={[
+              {
+                key: 'decrease',
+                label: 'Decrease',
+                items: [
+                  {
+                    key: 'ko9',
+                    number: 'KO-2026-0009',
+                    href: '#/sales/corrections/KO-2026-0009',
+                    status: { label: 'Sent to SEF', tone: 'info' },
+                  },
+                ],
+              },
+            ]}
+          />
         }
         lines={
           <DataTable

@@ -183,6 +183,7 @@ export const TONES = {
   Paid: 'success',
   Overdue: 'danger',
   'Partially paid': 'warning',
+  Cancelled: 'neutral',
   'To approve': 'warning',
   'Query sent': 'info',
 } as const

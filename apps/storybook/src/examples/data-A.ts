@@ -14,6 +14,7 @@ import type {
   ThreadMessage,
 } from '@veljaos/ui'
 import { decimal, paras } from '../../../../packages/ui/src/components/amounts-story-data'
+import { DECREASE, MEDIC_LINES } from './data-D2'
 import { INVOICES, type ExampleInvoice } from './examples-story-data'
 
 export { decimal, paras }
@@ -38,49 +39,19 @@ export interface LineA {
   amount: string
 }
 
-const RAW_LINES: Omit<LineA, 'amount'>[] = [
-  {
-    id: '1',
-    item: 'Ceramic floor tiles 60 × 60 cm, anti-slip R10',
-    quantity: '86',
-    unit: 'm²',
-    unitCode: 'MTK',
-    price: '1290.00',
-    vat: 'S 20%',
-  },
-  {
-    id: '2',
-    item: 'Tile adhesive C2TE, 25 kg',
-    quantity: '24',
-    unit: 'pc',
-    unitCode: 'H87',
-    price: '1145.00',
-    vat: 'S 20%',
-  },
-  {
-    id: '3',
-    item: 'Sanitary silicone, white, 300 ml',
-    quantity: '10',
-    unit: 'pc',
-    unitCode: 'H87',
-    price: '910.15',
-    vat: 'S 20%',
-  },
-  {
-    id: '4',
-    item: 'Installation manual, printed set',
-    quantity: '2',
-    unit: 'pc',
-    unitCode: 'H87',
-    price: '4270.25',
-    vat: 'S 10%',
-  },
-]
+/** The UN/ECE codes of the units the lines use. */
+const UNIT_CODES: Record<string, string> = { pc: 'H87', 'm²': 'MTK', lot: 'LO' }
 
-/** The lines of F-2026-0410: amount = quantity × price, in paras. */
-export const LINES_0410: LineA[] = RAW_LINES.map((line) => ({
-  ...line,
-  amount: decimal(BigInt(line.quantity) * paras(line.price)),
+/** The lines of F-2026-0410: group D2's (data-D2.ts), which its decrease KO-2026-0009 corrects. */
+export const LINES_0410: LineA[] = MEDIC_LINES.map((line) => ({
+  id: line.id,
+  item: line.text,
+  quantity: line.quantity ?? '0',
+  unit: line.unit ?? '',
+  unitCode: UNIT_CODES[line.unit ?? ''] ?? '',
+  price: line.price ?? '0.00',
+  vat: line.tax === 'S10' ? 'S 10%' : 'S 20%',
+  amount: line.amount ?? '0.00',
 }))
 
 const base = (vat: LineA['vat']) =>
@@ -100,6 +71,9 @@ const TOTAL = BASE_20 + VAT_20 + BASE_10 + VAT_10
 /** The payment booked from Banca Intesa statement 187 on 02.10.2026. */
 const PAID = paras('100000.00')
 
+/** Decrease KO-2026-0009 (group D2): damaged goods returned, issued on 06.10.2026. */
+const DECREASED = paras(DECREASE.change)
+
 /** The totals of F-2026-0410 as the application sends them. */
 export const TOTALS_0410 = {
   base20: decimal(BASE_20),
@@ -107,12 +81,14 @@ export const TOTALS_0410 = {
   base10: decimal(BASE_10),
   vat10: decimal(VAT_10),
   total: decimal(TOTAL),
+  decrease: decimal(DECREASED),
+  corrected: decimal(TOTAL + DECREASED),
   paid: decimal(-PAID),
-  due: decimal(TOTAL - PAID),
+  due: decimal(TOTAL + DECREASED - PAID),
 }
 
-// The same figures as the dataset's list: total 186.420,35, open 86.420,35.
-if (TOTALS_0410.total !== INVOICE_0410.total || TOTALS_0410.due !== INVOICE_0410.open) {
+// The same figures as the dataset's list after the decrease: total 167.762,75, open 67.762,75.
+if (TOTALS_0410.corrected !== INVOICE_0410.total || TOTALS_0410.due !== INVOICE_0410.open) {
   throw new Error('F-2026-0410: the lines do not add up to the dataset’s total')
 }
 
@@ -206,11 +182,21 @@ export const HISTORY_0410: HistoryEntry[] = [
     text: 'Payment reminder due: 86.420,35 RSD open, due on 25.10.2026.',
   },
   {
+    id: 'h5b',
+    at: at('2026-10-06', '07:50'),
+    actor: { name: 'Milica Petrović' },
+    text: 'Decreased by KO-2026-0009: damaged goods returned',
+    changes: [
+      { field: 'Invoice total', from: '186.420,35 RSD', to: '167.762,75 RSD' },
+      { field: 'Amount due', from: '86.420,35 RSD', to: '67.762,75 RSD' },
+    ],
+  },
+  {
     id: 'h6',
     at: at('2026-10-06', '08:14'),
     actor: { name: 'Liro agent', kind: 'agent' },
     onBehalfOf: 'Milica Petrović',
-    text: 'Prepared a payment reminder for 86.420,35 RSD',
+    text: 'Prepared a payment reminder for 67.762,75 RSD',
   },
   {
     id: 'h7',

@@ -288,7 +288,9 @@ const FOLDED = CATALOGUE.map((record) =>
 export function findInCatalogue(query: string): CatalogueRecord[] {
   const words = fold(query).split(/\s+/).filter(Boolean)
   if (words.length === 0) return CATALOGUE
-  return CATALOGUE.filter((_, index) => words.every((word) => FOLDED[index]?.includes(word) === true))
+  return CATALOGUE.filter((_, index) =>
+    words.every((word) => FOLDED[index]?.includes(word) === true),
+  )
 }
 
 /**

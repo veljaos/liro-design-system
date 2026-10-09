@@ -358,7 +358,7 @@ export const BankStatementScreen: Story = {
     )
     const invoices = canvas.getByRole('listbox', { name: 'Open invoices' })
     await expect(within(invoices).getByRole('option', { name: /^F-2026-0410/ })).toHaveTextContent(
-      '36.420,35 RSD left',
+      '17.762,75 RSD left',
     )
     // Line 10 by hand: search the invoice, select both, match.
     await userEvent.type(canvas.getByRole('searchbox', { name: 'Search: Open invoices' }), '0399')
@@ -517,15 +517,20 @@ export const InvoiceActivityScreen: Story = {
     await expect(
       await canvas.findByRole('heading', { level: 1, name: 'F-2026-0410' }),
     ).toBeVisible()
-    // The same figures as the invoice list: total 186.420,35, due 86.420,35 after 100.000,00.
+    // The same figures as the invoice list: 186.420,35 issued, decreased by KO-2026-0009 to
+    // 167.762,75, due 67.762,75 after 100.000,00.
     const [label] = canvas.getAllByText('Amount due', { selector: 'dt' })
     const figures = label?.closest('dl')
     if (figures === null || figures === undefined) throw new Error('No key figures')
-    await expect(figures).toHaveTextContent('86.420,35 RSD')
-    await expect(figures).toHaveTextContent('186.420,35 RSD')
+    await expect(figures).toHaveTextContent('67.762,75 RSD')
+    await expect(figures).toHaveTextContent('167.762,75 RSD')
     const totals = canvasElement.querySelector('[data-slot="document-totals"]')
-    await expect(totals).toHaveTextContent('-100.000,00 RSD')
     await expect(totals).toHaveTextContent('186.420,35 RSD')
+    await expect(totals).toHaveTextContent('-18.657,60 RSD')
+    await expect(totals).toHaveTextContent('-100.000,00 RSD')
+    await expect(
+      canvas.getByRole('link', { name: 'Decrease KO-2026-0009, Sent to SEF' }),
+    ).toHaveAttribute('href', '#/sales/corrections/KO-2026-0009')
     await expect(
       canvas.getByRole('button', { name: 'Also here: Dragan Ilić, Liro agent (agent)' }),
     ).toBeVisible()
@@ -1271,7 +1276,7 @@ export const DecreaseScreen: Story = {
     await expect(total(changes)).toBe(base)
     const decrease = totalsAmount(canvasElement, 'Total decrease')
     await expect(base + totalsAmount(canvasElement, 'Change of VAT S 20%')).toBe(decrease)
-    // 186.420,35 (the invoice in the list) − 18.657,60 = 167.762,75.
+    // 186.420,35 (F-2026-0410 as issued) − 18.657,60 = 167.762,75 (the invoice in the list).
     await expect(canvasElement).toHaveTextContent('186.420,35')
     await expect(paras('186.420,35') + decrease).toBe(paras('167.762,75'))
     await expect(canvasElement).toHaveTextContent('167.762,75')
