@@ -32,7 +32,13 @@ const meta = {
           'Liro as it will look: Kvadrat Gradnja d.o.o. on 6 October 2026, one dataset and the ' +
           'screens linked into one application — sign in, the home page, the invoice list, ' +
           'invoice F-2026-0412, the overview, supplier invoices to approve, an employee record, ' +
-          'the notifications (the bell’s "View all") and a page that does not exist. Every link goes through the provider’s ' +
+          'the notifications (the bell’s "View all") and a page that does not exist; and from ' +
+          'Phase 5: invoices with history and comments, a draft found line by line, complex and ' +
+          'corrective documents, customers at scale with their import, the VAT return and the ' +
+          'work-injury register, bank statement matching, a journal entry, the payroll run, ' +
+          'users and roles, the first-run setup, a contract from questions to signatures and the ' +
+          'tasks board — reached from the home page, the module tabs, the notifications, the user ' +
+          'menu and the search (Ctrl K). Every link goes through the provider’s ' +
           '`linkComponent`, as the Core’s router will; the screens use only `@veljaos/ui` and ' +
           '`@veljaos/ui/charts`. The interface text is English; numbers and dates are written as ' +
           'a Serbian tenant sees them. Start with "Walk-through" and click.',
@@ -48,7 +54,8 @@ type Story = StoryObj<typeof meta>
 
 /**
  * The whole path: sign in, open Sales from the home page, preview and open F-2026-0412, back
- * to the list. The same invoice shows the same total in the list and on its page.
+ * to the list, the notifications, bank statement 188 from its notification, home, the tasks.
+ * The same invoice shows the same total in the list and on its page.
  */
 export const WalkThrough: Story = {
   name: 'Walk-through',
@@ -90,6 +97,21 @@ export const WalkThrough: Story = {
     await expect(
       await canvas.findByRole('button', { name: 'Notifications, 1 unread' }),
     ).toBeVisible()
+    // Phase 5: the bank statement from its notification, then the tasks from the home page.
+    await userEvent.click(canvas.getByRole('button', { name: 'Notifications, 1 unread' }))
+    await settle()
+    await userEvent.click(within(document.body).getByRole('link', { name: 'View all' }))
+    await settle()
+    await userEvent.click(await canvas.findByRole('link', { name: /Bank statement 188 imported/ }))
+    await settle()
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: 'Statement 188' }),
+    ).toBeVisible()
+    await userEvent.click(canvas.getByRole('link', { name: 'Liro Business Apps' }))
+    await settle()
+    await userEvent.click(await canvas.findByRole('link', { name: /Tasks/ }))
+    await settle()
+    await expect(await canvas.findByRole('heading', { level: 1, name: 'Tasks' })).toBeVisible()
   },
 }
 

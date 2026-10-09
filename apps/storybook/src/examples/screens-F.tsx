@@ -35,7 +35,7 @@ import {
 } from '../../../../packages/ui/src/components/matching-story-data'
 import type { PayrollLine } from '../../../../packages/ui/src/templates/periodic-run-story-data'
 import type { ExampleRoute } from './example-app'
-import { HR_TABS, Shell } from './example-shell'
+import { hrTabs, Shell } from './example-shell'
 import {
   ACCOUNTS,
   decimalOf,
@@ -86,10 +86,7 @@ const ACCOUNTING_TABS: ModuleTab[] = [
   { key: 'periods', label: 'Periods', href: '#/accounting/periods' },
 ]
 
-const PAYROLL_TABS: ModuleTab[] = [
-  ...HR_TABS.map((tab) => ({ ...tab, current: false })),
-  { key: 'payroll', label: 'Payroll', href: '#/hr/payroll', current: true },
-]
+const PAYROLL_TABS: ModuleTab[] = hrTabs('payroll')
 
 /** The page frame of the screens that are not a template: padding and the content's width. */
 function Page({ phone, children }: { phone: boolean; children: ReactNode }) {

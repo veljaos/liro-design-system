@@ -139,12 +139,12 @@ export const NOTIFICATIONS: NotificationItem[] = [
   },
   {
     id: 'n6',
-    title: 'Bank statement 187 imported: 14 payments matched',
+    title: 'Bank statement 188 imported: 3 lines matched, 7 to check',
     company: 'Kvadrat Gradnja d.o.o.',
     companyId: 'kvadrat',
     type: 'system',
-    at: '2026-10-02T07:40:00+02:00',
-    href: '#/banking',
+    at: '2026-10-06T07:35:00+02:00',
+    href: '#/banking/statements/188',
     read: true,
   },
 ]
@@ -174,8 +174,15 @@ export const SALES_TABS: ModuleTab[] = [
 export const HR_TABS: ModuleTab[] = [
   { key: 'employees', label: 'Employees', href: '#/hr/employees', current: true },
   { key: 'leave', label: 'Leave', href: '#/hr/leave' },
-  { key: 'contracts', label: 'Contracts', href: '#/hr/contracts' },
+  { key: 'contracts', label: 'Contracts', href: '#/hr/contracts/RU-2026-017/signing' },
+  { key: 'payroll', label: 'Payroll', href: '#/hr/payroll/2026-09' },
+  { key: 'safety', label: 'Safety at work', href: '#/hr/safety/injury-register/2026' },
 ]
+
+/** The HR tabs with `key` current (the module's other screens). */
+export function hrTabs(key: string): ModuleTab[] {
+  return HR_TABS.map((tab) => ({ ...tab, current: tab.key === key }))
+}
 
 export const TONES = {
   Draft: 'neutral',
@@ -226,7 +233,15 @@ export function Shell({
       label: 'New invoice',
       group: 'actions',
       onSelect: () => {
-        navigate(ROUTES.invoices)
+        navigate('/sales/invoices/new')
+      },
+    },
+    {
+      id: 'new-contract',
+      label: 'New employment contract',
+      group: 'actions',
+      onSelect: () => {
+        navigate('/hr/contracts/new')
       },
     },
     {
@@ -254,6 +269,70 @@ export function Shell({
       },
     },
     {
+      id: 'go-customers',
+      label: 'Customers',
+      group: 'navigation',
+      onSelect: () => {
+        navigate('/sales/customers')
+      },
+    },
+    {
+      id: 'go-statement',
+      label: 'Bank statement 188',
+      group: 'navigation',
+      onSelect: () => {
+        navigate('/banking/statements/188')
+      },
+    },
+    {
+      id: 'go-tasks',
+      label: 'Tasks',
+      group: 'navigation',
+      onSelect: () => {
+        navigate('/tasks')
+      },
+    },
+    {
+      id: 'go-0418',
+      label: 'Final invoice F-2026-0418',
+      group: 'navigation',
+      onSelect: () => {
+        navigate('/sales/invoices/F-2026-0418')
+      },
+    },
+    {
+      id: 'go-0415',
+      label: 'Invoice in EUR F-2026-0415',
+      group: 'navigation',
+      onSelect: () => {
+        navigate('/sales/invoices/F-2026-0415')
+      },
+    },
+    {
+      id: 'go-situation',
+      label: 'Interim situation IS-2026-007',
+      group: 'navigation',
+      onSelect: () => {
+        navigate('/projects/IS-2026-007')
+      },
+    },
+    {
+      id: 'go-vat',
+      label: 'VAT return, September 2026',
+      group: 'navigation',
+      onSelect: () => {
+        navigate('/accounting/vat-return/2026-09')
+      },
+    },
+    {
+      id: 'go-setup',
+      label: 'Set up Stanić Elektro STR',
+      group: 'navigation',
+      onSelect: () => {
+        navigate('/setup')
+      },
+    },
+    {
       id: 'go-notifications',
       label: 'Notifications',
       group: 'navigation',
@@ -267,7 +346,13 @@ export function Shell({
     email: 'milica.petrovic@kvadratgradnja.rs',
     entries: [
       { label: 'Profile', icon: UserRound, onSelect: () => undefined },
-      { label: 'Company settings', icon: Building2, onSelect: () => undefined },
+      {
+        label: 'Company settings',
+        icon: Building2,
+        onSelect: () => {
+          navigate('/settings/users')
+        },
+      },
       { type: 'separator' },
       {
         label: 'Sign out',

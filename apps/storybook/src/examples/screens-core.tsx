@@ -12,6 +12,7 @@ import {
   Send,
   ShoppingCart,
   Users,
+  SquareKanban,
   Wallet,
 } from 'lucide-react'
 import { useContext, useState, type ReactNode } from 'react'
@@ -188,15 +189,15 @@ const MODULES: LaunchpadModule[] = [
     name: 'Banking',
     description: 'Statements and payments',
     icon: Landmark,
-    href: '#/banking',
-    counter: '2 statements',
+    href: '#/banking/statements/188',
+    counter: '7 lines to check',
   },
   {
     id: 'accounting',
     name: 'Accounting',
     description: 'General ledger, journal entries, VAT',
     icon: BookOpen,
-    href: '#/accounting',
+    href: '#/accounting/journal/NK-2026-0912',
   },
   {
     id: 'inventory',
@@ -211,7 +212,14 @@ const MODULES: LaunchpadModule[] = [
     name: 'Payroll',
     description: 'September 2026 due on 15.10.',
     icon: Wallet,
-    href: '#/payroll',
+    href: '#/hr/payroll/2026-09',
+  },
+  {
+    id: 'tasks',
+    name: 'Tasks',
+    description: 'The team’s board',
+    icon: SquareKanban,
+    href: '#/tasks',
   },
   {
     id: 'assets',
@@ -335,7 +343,15 @@ export function InvoiceList({ phone }: { phone: boolean }) {
   const open = (invoice: ExampleInvoice) => {
     navigate(ROUTES.invoice(invoice.number))
   }
-  const newInvoice = <Button intent="create" label="New invoice" />
+  const newInvoice = (
+    <Button
+      intent="create"
+      label="New invoice"
+      onClick={() => {
+        navigate('/sales/invoices/new')
+      }}
+    />
+  )
   return (
     <Shell
       phone={phone}

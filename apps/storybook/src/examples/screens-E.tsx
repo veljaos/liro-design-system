@@ -35,7 +35,7 @@ import {
   type StatutorySection,
 } from '@veljaos/ui'
 import type { ExampleRoute } from './example-app'
-import { HR_TABS, Navigate, SALES_TABS, Shell, statusBadge } from './example-shell'
+import { hrTabs, Navigate, SALES_TABS, Shell, statusBadge } from './example-shell'
 import {
   allCustomers,
   csvColumns,
@@ -76,10 +76,7 @@ const CUSTOMER_TABS: ModuleTab[] = SALES_TABS.map((tab) => ({
   current: tab.key === 'customers',
 }))
 
-const SAFETY_TABS: ModuleTab[] = [
-  ...HR_TABS.map((tab) => ({ ...tab, current: false })),
-  { key: 'safety', label: 'Safety at work', href: `#${E_ROUTES.injuryRegister}`, current: true },
-]
+const SAFETY_TABS: ModuleTab[] = hrTabs('safety')
 
 const ACCOUNTING_TABS: ModuleTab[] = [
   { key: 'journal', label: 'Journal', href: '#/accounting/journal' },
