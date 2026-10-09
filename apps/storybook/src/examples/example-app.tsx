@@ -1,5 +1,6 @@
 import { useCallback, useState, type ReactNode } from 'react'
 import { ExampleProvider, PhoneFrame } from '../../../../packages/ui/src/components/story-frames'
+import './dataset-checks'
 import { FEATURED, INVOICES } from './examples-story-data'
 import {
   Navigate,

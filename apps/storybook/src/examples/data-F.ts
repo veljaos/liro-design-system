@@ -19,7 +19,7 @@ import {
   payrollLines,
   payrollTotals,
 } from '../../../../packages/ui/src/templates/periodic-run-story-data'
-import { INVOICES } from './examples-story-data'
+import { INVOICES, isOpen } from './examples-story-data'
 
 export { decimalOf, parasOf, sumParas }
 
@@ -100,13 +100,9 @@ function invoice(number: string, customer: string, due: string, open: bigint): O
 }
 
 /** The dataset's invoices still open on 6 October (not paid, not drafts, not cancelled). */
-const DATASET_OPEN = INVOICES.filter(
-  (each) =>
-    each.status !== 'Paid' &&
-    each.status !== 'Draft' &&
-    each.number !== 'F-2026-0407' &&
-    parasOf(each.open) > 0n,
-).map((each) => invoice(each.number, each.customer, each.due, parasOf(each.open)))
+const DATASET_OPEN = INVOICES.filter((each) => each.status !== 'Paid' && isOpen(each)).map((each) =>
+  invoice(each.number, each.customer, each.due, parasOf(each.open)),
+)
 
 /** Earlier invoices of the same customers, open on 6 October. */
 const EARLIER_OPEN: OpenInvoice[] = [

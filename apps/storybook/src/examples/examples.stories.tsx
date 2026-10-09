@@ -141,6 +141,20 @@ export const HomePhone: Story = {
 export const InvoiceListScreen: Story = {
   name: 'Invoice list',
   render: () => <ExampleApp start={ROUTES.invoices} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    // Cancelled by ST-2026-0004: shown as Cancelled, owing nothing.
+    const cancelled = await canvas.findByRole('row', { name: /F-2026-0407/ })
+    await expect(cancelled).toHaveTextContent('Cancelled')
+    await expect(cancelled).not.toHaveTextContent('Overdue')
+    await expect(cancelled).toHaveTextContent('0,00')
+    // Decreased by KO-2026-0009: the total after the decrease, and what is still due.
+    const decreased = canvas.getByRole('row', { name: /F-2026-0410/ })
+    await expect(decreased).toHaveTextContent('167.762,75')
+    await expect(decreased).toHaveTextContent('67.762,75')
+    await expect(decreased).not.toHaveTextContent('186.420,35')
+  },
 }
 
 export const InvoiceListPhone: Story = {
@@ -171,10 +185,21 @@ export const DashboardScreen: Story = {
   render: () => <ExampleApp start={ROUTES.dashboard} />,
   play: async ({ canvasElement }) => {
     await settle()
-    const link = within(canvasElement).getByRole('link', { name: FEATURED })
+    const canvas = within(canvasElement)
+    const link = canvas.getByRole('link', { name: FEATURED })
     await expect(link.closest('tr')).toHaveTextContent('Panonija Agro d.o.o.')
     await expect(link.closest('tr')).toHaveTextContent('185.954,00')
     await expect(link.closest('tr')).toHaveTextContent('135.954,00')
+    // Overdue receivables: F-2026-0411 only; cancelled F-2026-0407 counts nowhere.
+    const overdue = canvas.getByText('Overdue receivables').closest('[data-slot="stat-card"]')
+    await expect(overdue).toHaveTextContent('58.440,00')
+    await expect(overdue).toHaveTextContent('1 invoice')
+    await expect(overdue).not.toHaveTextContent('152.940,00')
+    await expect(canvasElement).not.toHaveTextContent('F-2026-0407')
+    // F-2026-0410 owes what is left after decrease KO-2026-0009 and the payment.
+    const decreased = canvas.getByRole('row', { name: /F-2026-0410/ })
+    await expect(decreased).toHaveTextContent('167.762,75')
+    await expect(decreased).toHaveTextContent('67.762,75')
   },
 }
 

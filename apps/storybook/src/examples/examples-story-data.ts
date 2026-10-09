@@ -7,6 +7,7 @@
  * No classes here: Storybook compiles classes only from *.stories.tsx files.
  */
 import type { CartesianChartProps } from '../../../../packages/ui/src/charts'
+import { decimal, paras } from '../../../../packages/ui/src/components/amounts-story-data'
 
 export interface ExampleInvoice {
   number: string
@@ -276,13 +277,25 @@ export const CASH: CartesianChartProps = {
   decimals: 1,
 }
 
+/**
+ * Whether an invoice still asks for money: issued, not cancelled, something due. A cancelled
+ * invoice (F-2026-0407, ST-2026-0004) and a draft count in no total, count or table.
+ */
+export function isOpen(invoice: ExampleInvoice): boolean {
+  return invoice.status !== 'Draft' && invoice.status !== 'Cancelled' && paras(invoice.open) > 0n
+}
+
 /** The open invoices of the list, largest amount due first (the dashboard's table). */
-export const LARGEST_OPEN = INVOICES.filter(
-  (invoice) => invoice.open !== '0.00' && invoice.status !== 'Draft',
-)
+export const LARGEST_OPEN = INVOICES.filter(isOpen)
   .slice()
-  .sort((a, b) => Number(b.open) - Number(a.open))
+  .sort((a, b) => (paras(b.open) > paras(a.open) ? 1 : paras(b.open) < paras(a.open) ? -1 : 0))
   .slice(0, 5)
+
+/** The overdue invoices and what they still owe (the overview's "Overdue receivables"). */
+export const OVERDUE = INVOICES.filter((invoice) => invoice.status === 'Overdue' && isOpen(invoice))
+export const OVERDUE_TOTAL = decimal(
+  OVERDUE.reduce((total, invoice) => total + paras(invoice.open), 0n),
+)
 
 /** Supplier invoices waiting for approval. */
 export interface ExampleApproval {

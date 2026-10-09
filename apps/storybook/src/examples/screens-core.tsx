@@ -74,6 +74,8 @@ import {
   EMPLOYEE,
   INVOICES,
   LARGEST_OPEN,
+  OVERDUE,
+  OVERDUE_TOTAL,
   LINES,
   REJECT_REASONS,
   REVENUE,
@@ -688,14 +690,6 @@ export function Invoice({ phone, invoice }: { phone: boolean; invoice: ExampleIn
 
 // ── Dashboard ─────────────────────────────────────────────────────────────────────────────────
 
-/** Adds decimal strings in whole paras (the application's work, played by the story). */
-function sum(values: readonly string[]): string {
-  const paras = values.reduce((total, value) => total + Math.round(Number(value) * 100), 0)
-  return `${String(Math.trunc(paras / 100))}.${String(Math.abs(paras % 100)).padStart(2, '0')}`
-}
-
-const OVERDUE = INVOICES.filter((invoice) => invoice.status === 'Overdue')
-
 export function Dashboard({ phone }: { phone: boolean }) {
   const { format, linkComponent: Link } = useLiro()
   const columns: DataTableColumn<ExampleInvoice>[] = [
@@ -753,8 +747,8 @@ export function Dashboard({ phone }: { phone: boolean }) {
           {
             key: 'overdue',
             label: 'Overdue receivables',
-            value: <MoneyText value={sum(OVERDUE.map((invoice) => invoice.open))} currency="RSD" />,
-            comparison: `${format.number(String(OVERDUE.length))} invoices`,
+            value: <MoneyText value={OVERDUE_TOTAL} currency="RSD" />,
+            comparison: `${format.number(String(OVERDUE.length))} ${OVERDUE.length === 1 ? 'invoice' : 'invoices'}`,
           },
           {
             key: 'cash',
