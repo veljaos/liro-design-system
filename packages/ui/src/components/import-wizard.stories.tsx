@@ -29,7 +29,7 @@ function Import({
   fileError,
   clean = false,
   layout,
-  acceptText = 'CSV (separated by ; or ,) or Excel (.xlsx), up to 10 MB. The first row holds the column names.',
+  acceptText = 'CSV (separated by ; or ,) or Excel (.xlsx); the first row holds the column names',
 }: {
   step?: ImportStep
   chosen?: boolean
@@ -61,6 +61,8 @@ function Import({
       onStepChange={setStep}
       accept=".csv,text/csv,.xlsx"
       acceptText={acceptText}
+      maxSize={10 * 1024 * 1024}
+      maxSizeText="10 MB"
       onFileChoose={(chosenFile) => {
         void readFileText(chosenFile).then((text) => {
           const read = csvColumns(text)

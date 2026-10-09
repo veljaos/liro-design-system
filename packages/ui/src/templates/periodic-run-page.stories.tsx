@@ -10,7 +10,6 @@ import { ARABIC, JAPANESE } from '../components/field-story-data'
 import { KeyFigures } from '../components/key-figures'
 import { StatusBadge } from '../components/status-badge'
 import { ExampleProvider, PhoneFrame, StoryProvider } from '../components/story-frames'
-import { useLiro } from '../provider/liro-provider'
 import { settle } from '../primitives/story-helpers'
 import {
   PeriodicRunPage,
@@ -253,7 +252,7 @@ export const Running: Story = {
           label: 'Calculating payroll',
           value: 23,
           max: 46,
-          text: '23 of 46 employees',
+          current: 'Marko Petrović',
         }}
         noActions
         noRerun
@@ -353,7 +352,6 @@ export const Empty: Story = {
 export const Rerun: Story = {
   name: 'Rerun with a reason',
   render: function Render() {
-    const { format } = useLiro()
     const [rerun, setRerun] = useState<string | null>(null)
     return (
       <PayrollRun
@@ -369,7 +367,7 @@ export const Rerun: Story = {
                 label: 'Calculating payroll',
                 value: 0,
                 max: 6,
-                text: `${format.number('0')} of ${format.number('6')} employees · ${rerun}`,
+                current: rerun,
               },
             })}
         rerun={{
@@ -405,7 +403,8 @@ export const Rerun: Story = {
     await userEvent.click(within(dialog).getByRole('radio', { name: 'Sick leave reported late' }))
     await userEvent.click(within(dialog).getByRole('button', { name: 'Rerun' }))
     await settle()
-    await expect(await canvas.findByText(/0 of 6 employees/)).toBeVisible()
+    await expect(await canvas.findByText('0 of 6')).toBeVisible()
+    await expect(canvas.getByText('Sick leave reported late')).toBeVisible()
     await expect(canvasElement.querySelector('[aria-current="step"]')).toHaveTextContent(
       'Calculate',
     )

@@ -554,7 +554,9 @@ export function CustomerImport({ phone }: { phone: boolean }) {
           step={step}
           onStepChange={setStep}
           accept=".csv,text/csv,.xlsx"
-          acceptText="CSV (columns separated by ;) or Excel (.xlsx), up to 10 MB. The first row holds the column names."
+          acceptText="CSV (columns separated by ;) or Excel (.xlsx); the first row holds the column names"
+          maxSize={10 * 1024 * 1024}
+          maxSizeText="10 MB"
           onFileChoose={(chosen) => {
             setReading(true)
             void chosen.text().then((text) => {

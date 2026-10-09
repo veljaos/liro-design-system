@@ -110,12 +110,13 @@ describe('PeriodicRunPage', () => {
         steps={STEPS}
         active={1}
         lock={{ state: 'open' }}
-        progress={{ label: 'Calculating payroll', value: 23, max: 46, text: '23 of 46 employees' }}
+        progress={{ label: 'Calculating payroll', value: 23, max: 46, current: 'Marko Petrović' }}
         preview={{ summary: <p>Totals</p>, table: <table aria-label="Employees" /> }}
       />,
     )
     expect(html).toContain('Calculating payroll')
-    expect(html).toContain('23 of 46 employees')
+    expect(html).toContain('23 of 46')
+    expect(html).toContain('Marko Petrović')
     expect(html).toContain('role="progressbar"')
     expect(html).toContain('Preview before posting')
     expect(html).toContain('aria-label="Employees"')

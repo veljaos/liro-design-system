@@ -1,5 +1,5 @@
 import { CircleCheck, CircleX, Copy, TriangleAlert, Upload } from 'lucide-react'
-import { useRef, type ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
@@ -20,7 +20,9 @@ import {
 } from './catalog-logic'
 import { CheckboxField } from './checkbox-field'
 import { DataTable, type DataTableColumn } from './data-table'
-import { ProgressBar, Stepper } from './progress'
+import { FileDropzone } from './file-dropzone'
+import { JobProgress } from './job-progress'
+import { Stepper } from './progress'
 import { SelectField } from './select-field'
 import { Spinner } from './spinner'
 import { usePhone } from './use-phone'
@@ -45,7 +47,9 @@ import { usePhone } from './use-phone'
  *   with errors"; the rows with their line in the file, each value in its field's column with its
  *   problems under it (icon and words in the tone's colour), and the row's own problems. Import
  *   stays unavailable while rows have errors and they are not skipped.
- * - **Import:** the progress ("312 of 1.284", a ProgressBar), then the application's report.
+ * - **File:** a FileDropzone for one file (the button, or a drop), the types and the size limit
+ *   said before choosing, the file checked again on the device (P5.5).
+ * - **Import:** JobProgress while it runs ("312 of 1.284", P5.4), then the application's report.
  * The parsing and the checking are the application's; the wizard decides nothing about the data.
  */
 
@@ -74,8 +78,12 @@ export interface ImportWizardProps {
   onStepChange: (step: ImportStep) => void
   /** The file input's `accept` ("text/csv,.csv,.xlsx"). */
   accept: string
-  /** The accepted types and the size limit in words, shown before choosing. */
-  acceptText: ReactNode
+  /** The accepted types in words, shown before choosing ("CSV or Excel (.xlsx)"). */
+  acceptText: string
+  /** The largest file in bytes; a larger one is refused on the device. */
+  maxSize?: number
+  /** The limit in words ("10 MB"), shown before choosing. */
+  maxSizeText?: string
   /** A file was chosen: the application reads it. */
   onFileChoose: (file: File) => void
   /** The file the application read. */
@@ -164,7 +172,6 @@ export function ImportWizard(props: ImportWizardProps) {
   const { messages, format } = useLiro()
   const viewportPhone = usePhone()
   const phone = props.layout === undefined ? viewportPhone : props.layout === 'phone'
-  const fileInput = useRef<HTMLInputElement>(null)
   const index = IMPORT_STEPS.indexOf(props.step)
   const steps = [
     { label: messages['import.stepFile'] },
@@ -183,25 +190,20 @@ export function ImportWizard(props: ImportWizardProps) {
   // ── The steps' content ──
   const fileStep = (
     <div className="flex flex-col items-start gap-3">
-      <p className={cn('m-0 text-sm text-secondary', TEXT_DIRECTION)}>{props.acceptText}</p>
-      {/* INTEGRATION: FileDropzone (P5.5, group B) replaces this plain file button. */}
-      <input
-        ref={fileInput}
-        type="file"
-        hidden
-        accept={props.accept}
-        onChange={(event) => {
-          const chosen = event.target.files?.[0]
-          if (chosen !== undefined) props.onFileChoose(chosen)
-          event.target.value = ''
-        }}
-      />
-      <Button
-        intent="import"
-        label={messages['import.chooseFile']}
-        disabled={props.reading === true}
-        onClick={() => {
-          fileInput.current?.click()
+      <FileDropzone
+        label={messages['import.stepFile']}
+        hideLabel
+        className="w-full"
+        accept={props.accept.split(',').map((type) => type.trim())}
+        acceptText={props.acceptText}
+        {...(props.maxSize === undefined ? {} : { maxSize: props.maxSize })}
+        {...(props.maxSizeText === undefined ? {} : { maxSizeText: props.maxSizeText })}
+        multiple={false}
+        {...(props.fileError === undefined ? {} : { error: props.fileError })}
+        {...(props.layout === undefined ? {} : { layout: props.layout })}
+        onFiles={(files) => {
+          const chosen = files[0]
+          if (chosen !== undefined && props.reading !== true) props.onFileChoose(chosen)
         }}
       />
       {props.reading === true && <Spinner size="sm">{messages['field.loading']}</Spinner>}
@@ -215,15 +217,6 @@ export function ImportWizard(props: ImportWizardProps) {
               {props.file.description}
             </span>
           )}
-        </p>
-      )}
-      {props.fileError !== undefined && (
-        <p
-          role="alert"
-          className={cn('m-0 flex items-start gap-1 text-sm text-status-danger-fg', TEXT_DIRECTION)}
-        >
-          <CircleX aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
-          <span>{props.fileError}</span>
         </p>
       )}
     </div>
@@ -426,23 +419,13 @@ export function ImportWizard(props: ImportWizardProps) {
 
   const importStep = (
     <div className="flex flex-col gap-4">
-      {/* INTEGRATION: JobProgress (P5.4, group B) replaces this bar and takes the report. */}
-      {props.progress !== undefined && (
-        <div role="status" className="flex flex-col gap-2">
-          <ProgressBar
-            label={messages['import.progress']}
-            value={props.progress.done}
-            max={props.progress.total}
-          />
-          <span className="text-sm text-secondary tabular-nums">
-            {messages['import.progressText'](
-              props.progress.done,
-              count(props.progress.done),
-              props.progress.total,
-              count(props.progress.total),
-            )}
-          </span>
-        </div>
+      {props.progress !== undefined && props.result === undefined && (
+        <JobProgress
+          label={messages['import.progress']}
+          state="running"
+          done={props.progress.done}
+          total={props.progress.total}
+        />
       )}
       {props.result}
     </div>

@@ -646,7 +646,7 @@ export function PayrollRun({ phone }: { phone: boolean }) {
                 label: 'Calculating payroll',
                 value: 0,
                 max: PAYROLL_TOTALS.employees,
-                text: `${format.number('0')} of ${count} employees · ${rerun}`,
+                current: rerun,
               },
             }
           : {

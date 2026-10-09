@@ -13,7 +13,8 @@ import { SectionCard } from '../components/cards'
 import type { ConfirmAnswer, ConfirmReason } from '../components/confirm-dialog'
 import { ReasonConfirmDialog } from '../components/confirm-dialog'
 import { KeyFigures, type KeyFigure } from '../components/key-figures'
-import { ProgressBar, Stepper } from '../components/progress'
+import { JobProgress } from '../components/job-progress'
+import { Stepper } from '../components/progress'
 import { usePhone } from '../components/use-phone'
 import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
@@ -32,8 +33,8 @@ import { countChecks, type RunCheckResult } from './periodic-run-logic'
  * - The steps (prepare → calculate → review → post → send; names from the application) as the
  *   Stepper: done steps checked, the current one ringed. On phones "Step 3 of 5: Review" (the
  *   LifecycleBar's message) instead: five steps do not fit 360px.
- * - The running step (`progress`): a SectionCard with a ProgressBar and the application's count
- *   ("23 of 46 employees", through format), a polite status. // INTEGRATION: JobProgress
+ * - The running step (`progress`): a SectionCard with JobProgress (P5.4): the bar, "23 of 46"
+ *   through format and the item being worked on.
  * - "Checks" for the current step: a flush SectionCard of rows divided by lines — the result's
  *   icon and word in its tone (Passed success, Warning warning, Failed danger, Not run yet
  *   text.tertiary; words, never colour alone), the check's name (sm medium) and the application's
@@ -79,11 +80,12 @@ export interface RunLock {
 export interface RunProgress {
   /** What is running, for assistive technology and the card's title ("Calculating payroll"). */
   label: string
-  /** Done so far; omit while not known. */
+  /** Done so far. */
   value?: number
+  /** In all; omit while not known (a Spinner instead of the bar). */
   max?: number
-  /** The count in the application's words, through format ("23 of 46 employees"). */
-  text?: ReactNode
+  /** The item being worked on now, or why the run runs ("Rerun: corrected working hours"). */
+  current?: ReactNode
 }
 
 /** The rerun: a reason first, then the application runs again. */
@@ -286,20 +288,14 @@ export function PeriodicRunPage(props: PeriodicRunPageProps) {
         />
       )}
       {props.progress !== undefined && (
-        // INTEGRATION: JobProgress (group B) replaces this block once it exists.
         <SectionCard title={props.progress.label} headingLevel={2}>
-          <div className="flex flex-col gap-2">
-            <ProgressBar
-              label={props.progress.label}
-              {...(props.progress.value === undefined ? {} : { value: props.progress.value })}
-              {...(props.progress.max === undefined ? {} : { max: props.progress.max })}
-            />
-            {props.progress.text !== undefined && (
-              <p role="status" className={cn('m-0 text-sm text-secondary', TEXT_DIRECTION)}>
-                {props.progress.text}
-              </p>
-            )}
-          </div>
+          <JobProgress
+            label={props.progress.label}
+            state="running"
+            done={props.progress.value ?? 0}
+            {...(props.progress.max === undefined ? {} : { total: props.progress.max })}
+            {...(props.progress.current === undefined ? {} : { current: props.progress.current })}
+          />
         </SectionCard>
       )}
       {checks.length > 0 && (

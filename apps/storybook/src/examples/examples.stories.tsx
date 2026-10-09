@@ -490,9 +490,8 @@ export const PayrollRerun: Story = {
     await userEvent.click(within(dialog).getByRole('radio', { name: 'Corrected working hours' }))
     await userEvent.click(within(dialog).getByRole('button', { name: 'Rerun' }))
     await settle()
-    await expect(
-      await canvas.findByText(/0 of 46 employees · Corrected working hours/),
-    ).toBeVisible()
+    await expect(await canvas.findByText('0 of 46')).toBeVisible()
+    await expect(canvas.getByText('Corrected working hours')).toBeVisible()
     await expect(canvasElement.querySelector('[aria-current="step"]')).toHaveTextContent(
       'Calculate',
     )

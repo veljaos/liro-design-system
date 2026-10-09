@@ -595,8 +595,6 @@ export interface LiroMessages {
   'import.stepColumns': string
   'import.stepCheck': string
   'import.stepImport': string
-  /** ImportWizard: the button that chooses the file. */
-  'import.chooseFile': string
   /** ImportWizard, column mapping: the headers and a column's states. */
   'import.field': string
   'import.column': string
@@ -626,14 +624,8 @@ export interface LiroMessages {
   'import.noProblems': string
   /** The import button ("Import 1.198 rows"). */
   'import.run': (count: number, text: string) => string
-  /** The import's progress: the bar's name and "312 of 1.284". */
+  /** The import's progress: names its JobProgress. */
   'import.progress': string
-  'import.progressText': (
-    done: number,
-    doneText: string,
-    total: number,
-    totalText: string,
-  ) => string
   /** BulkEditDrawer: the title ("Edit 24 records"), a field left as it is, and the summary. */
   'bulkEdit.title': (count: number, text: string) => string
   'bulkEdit.unchanged': string
