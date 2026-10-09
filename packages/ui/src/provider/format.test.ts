@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { createFormat, formatDecimal, NUMBER_SCHEMES, numberSchemeForLocale } from './format'
+import {
+  cachedDateTimeFormat,
+  cachedNumberFormat,
+  createFormat,
+  formatDecimal,
+  NUMBER_SCHEMES,
+  numberSchemeForLocale,
+} from './format'
 
 const NBSP = '\u00A0'
 
@@ -120,5 +127,47 @@ describe('sign (P5.18)', () => {
 
   it('never rounds a signed value', () => {
     expect(sr.money('0.005', 'EUR', { sign: 'always' })).toBe(`+0,005${NBSP}EUR`)
+  })
+})
+
+describe('the formatter cache (P5.20)', () => {
+  it('builds one Intl formatter per locale and options', () => {
+    const options = { style: 'currency', currency: 'EUR', currencyDisplay: 'code' } as const
+    expect(cachedNumberFormat('de-DE', options)).toBe(cachedNumberFormat('de-DE', { ...options }))
+    expect(cachedNumberFormat('de-DE', options)).not.toBe(cachedNumberFormat('en-US', options))
+    const date = { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' } as const
+    expect(cachedDateTimeFormat('en-GB', date)).toBe(cachedDateTimeFormat('en-GB', { ...date }))
+    expect(cachedDateTimeFormat('en-GB', date).format(Date.UTC(2026, 9, 9))).toBe('09/10/2026')
+  })
+
+  it('gives the same text on every call, and the same as a fresh format', () => {
+    const values = ['1234567.891', '-0.5', '0', '98765432109876543210.123456789']
+    for (const locale of ['sr-Latn-RS', 'en', 'de-CH', 'ar-EG', 'ja']) {
+      const first = createFormat(locale)
+      const second = createFormat(locale)
+      for (const value of values) {
+        for (const currency of ['RSD', 'EUR', 'USD', 'XYZ']) {
+          const once = first.money(value, currency)
+          expect(first.money(value, currency)).toBe(once)
+          expect(second.money(value, currency)).toBe(once)
+        }
+        expect(second.number(value)).toBe(first.number(value))
+        expect(second.percent(value)).toBe(first.percent(value))
+      }
+      expect(second.date('2026-10-09')).toBe(first.date('2026-10-09'))
+      expect(second.dateLong('2026-10-09')).toBe(first.dateLong('2026-10-09'))
+      expect(second.monthName(10, 'long')).toBe(first.monthName(10, 'long'))
+      expect(second.weekdayName(5, 'short')).toBe(first.weekdayName(5, 'short'))
+    }
+  })
+
+  it('keeps every digit of a long amount (D4)', () => {
+    const sr = createFormat('sr-Latn-RS')
+    expect(sr.money('98765432109876543210.123456789', 'RSD', { decimals: 9 })).toBe(
+      '98.765.432.109.876.543.210,123456789 RSD',
+    )
+    expect(sr.money('98765432109876543210.123456789', 'RSD', { decimals: 9 })).toBe(
+      '98.765.432.109.876.543.210,123456789 RSD',
+    )
   })
 })

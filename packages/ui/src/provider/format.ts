@@ -194,9 +194,46 @@ export function intlLocale(locale: string): string {
   return locale
 }
 
+/*
+ * Intl formatters are slow to build and quick to use (P5.20: a list of 5,000 entries asked for
+ * the currency's side once per amount). Each is built once per locale and options and kept; what
+ * they produce is the same, so the cache changes only the time. Only patterns (separators, the
+ * currency's side, the percent sign, dates) come from Intl; amounts stay decimal strings (D4).
+ */
+const numberFormats = new Map<string, Intl.NumberFormat>()
+const dateTimeFormats = new Map<string, Intl.DateTimeFormat>()
+
+/** An Intl.NumberFormat for a locale (already Intl's) and options, built once. */
+export function cachedNumberFormat(
+  locale: string,
+  options: Intl.NumberFormatOptions = {},
+): Intl.NumberFormat {
+  const key = `${locale}|${JSON.stringify(options)}`
+  let formatter = numberFormats.get(key)
+  if (formatter === undefined) {
+    formatter = new Intl.NumberFormat(locale, options)
+    numberFormats.set(key, formatter)
+  }
+  return formatter
+}
+
+/** An Intl.DateTimeFormat for a locale (already Intl's) and options, built once. */
+export function cachedDateTimeFormat(
+  locale: string,
+  options: Intl.DateTimeFormatOptions = {},
+): Intl.DateTimeFormat {
+  const key = `${locale}|${JSON.stringify(options)}`
+  let formatter = dateTimeFormats.get(key)
+  if (formatter === undefined) {
+    formatter = new Intl.DateTimeFormat(locale, options)
+    dateTimeFormats.set(key, formatter)
+  }
+  return formatter
+}
+
 /** The separator scheme a locale uses, read from Intl. Falls back to 'comma-dot'. */
 export function numberSchemeForLocale(locale: string): NumberScheme {
-  const parts = new Intl.NumberFormat(intlLocale(locale)).formatToParts(1234567.5)
+  const parts = cachedNumberFormat(intlLocale(locale)).formatToParts(1234567.5)
   const group = parts.find((part) => part.type === 'group')?.value
   const decimal = parts.find((part) => part.type === 'decimal')?.value
   if (group === undefined || (decimal !== '.' && decimal !== ',')) {
@@ -210,21 +247,29 @@ export function numberSchemeForLocale(locale: string): NumberScheme {
   return 'comma-dot'
 }
 
-/** Whether the locale writes the currency before the amount. */
+const currencySides = new Map<string, boolean>()
+
+/** Whether the locale writes the currency before the amount (asked of Intl once per pair). */
 function currencyFirst(locale: string, currency: string): boolean {
+  const key = `${locale}|${currency}`
+  const known = currencySides.get(key)
+  if (known !== undefined) return known
+  let first: boolean
   try {
-    const types = new Intl.NumberFormat(intlLocale(locale), {
+    const types = cachedNumberFormat(intlLocale(locale), {
       style: 'currency',
       currency,
       currencyDisplay: 'code',
     })
       .formatToParts(1)
       .map((part) => part.type)
-    return types.indexOf('currency') < types.indexOf('integer')
+    first = types.indexOf('currency') < types.indexOf('integer')
   } catch {
     // Not a currency code Intl accepts: write it after the amount.
-    return false
+    first = false
   }
+  currencySides.set(key, first)
+  return first
 }
 
 /**
@@ -236,7 +281,7 @@ function percentPattern(locale: string): {
   before: readonly Intl.NumberFormatPart[]
   after: readonly Intl.NumberFormatPart[]
 } {
-  const parts = new Intl.NumberFormat(intlLocale(locale), {
+  const parts = cachedNumberFormat(intlLocale(locale), {
     style: 'percent',
     minimumFractionDigits: 1,
   }).formatToParts(-0.015)
@@ -290,7 +335,7 @@ export type DatePart = 'day' | 'month' | 'year'
 
 /** The order of day, month and year in the locale's numeric dates. */
 export function dateFieldOrder(locale: string): DatePart[] {
-  return new Intl.DateTimeFormat(intlLocale(locale), { ...NUMERIC_DATE, timeZone: 'UTC' })
+  return cachedDateTimeFormat(intlLocale(locale), { ...NUMERIC_DATE, timeZone: 'UTC' })
     .formatToParts(Date.UTC(2026, 2, 1))
     .map((part) => part.type)
     .filter((type): type is DatePart => type === 'day' || type === 'month' || type === 'year')
@@ -357,22 +402,22 @@ export function weekStartsOnForLocale(locale: string): Weekday {
 /** The default format for a locale; `overrides` replace any member. */
 export function createFormat(locale: string, overrides: Partial<LiroFormat> = {}): LiroFormat {
   const intl = intlLocale(locale)
-  const dateFormat = new Intl.DateTimeFormat(intl, { ...NUMERIC_DATE, timeZone: 'UTC' })
+  const dateFormat = cachedDateTimeFormat(intl, { ...NUMERIC_DATE, timeZone: 'UTC' })
   // An instant is shown in the time zone of the device.
-  const dateTimeFormat = new Intl.DateTimeFormat(intl, {
+  const dateTimeFormat = cachedDateTimeFormat(intl, {
     ...NUMERIC_DATE,
     hour: '2-digit',
     minute: '2-digit',
   })
   // A clock time as written in an instant (`time`): read in UTC, so it is never shifted.
-  const timeFormat = new Intl.DateTimeFormat(intl, {
+  const timeFormat = cachedDateTimeFormat(intl, {
     ...DATE_BASE,
     hour: '2-digit',
     minute: '2-digit',
     timeZone: 'UTC',
   })
   // The weekday and the date in words, as DateText's tooltip shows it.
-  const longDateFormat = new Intl.DateTimeFormat(intl, {
+  const longDateFormat = cachedDateTimeFormat(intl, {
     ...DATE_BASE,
     weekday: 'long',
     day: 'numeric',
@@ -449,7 +494,7 @@ export function createFormat(locale: string, overrides: Partial<LiroFormat> = {}
       if (!Number.isInteger(month) || month < 1 || month > 12) {
         throw new RangeError(`month must be 1 … 12, got ${String(month)}`)
       }
-      return new Intl.DateTimeFormat(intl, { ...DATE_BASE, month: style, timeZone: 'UTC' }).format(
+      return cachedDateTimeFormat(intl, { ...DATE_BASE, month: style, timeZone: 'UTC' }).format(
         Date.UTC(2026, month - 1, 1),
       )
     },
@@ -458,7 +503,7 @@ export function createFormat(locale: string, overrides: Partial<LiroFormat> = {}
         throw new RangeError(`weekday must be 0 … 6, got ${String(weekday)}`)
       }
       // 1 January 2023 was a Sunday.
-      return new Intl.DateTimeFormat(intl, {
+      return cachedDateTimeFormat(intl, {
         ...DATE_BASE,
         weekday: style,
         timeZone: 'UTC',
