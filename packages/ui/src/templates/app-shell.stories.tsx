@@ -1,8 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
-import { CreditCard } from 'lucide-react'
+import { Bot, CreditCard } from 'lucide-react'
 import { Banner } from '../components/alert'
-import { Button } from '../components/button'
+import { AgentQuestion } from '../components/agent-question'
+import { Button, IconButton } from '../components/button'
+import { Popover } from '../components/popover'
 import { DataTable, type DataTableColumn } from '../components/data-table'
 import { DateText, MoneyText } from '../components/display-text'
 import { EnvironmentMarker, ImpersonationBar, OfflineIndicator } from '../components/shell-markers'
@@ -327,6 +329,48 @@ export const UserMenu: Story = {
     await userEvent.click(within(canvasElement).getByRole('button', { name: 'Account' }))
     await settle()
     await expect(within(document.body).getByRole('menuitem', { name: 'Sign out' })).toBeVisible()
+  },
+}
+
+/** The agent button before the bell (P5.3): it opens the agent's question in a Popover. */
+export const Agent: Story = {
+  name: 'Agent button',
+  args: {
+    layout: 'desktop',
+    agent: (
+      <Popover
+        label="Liro agent"
+        align="end"
+        trigger={
+          <IconButton family="neutral" emphasis="menu" icon={Bot} label="Liro agent, 1 question" />
+        }
+      >
+        <div className="w-96 max-w-full">
+          <AgentQuestion
+            agent="Liro agent"
+            at="2026-10-06T08:15:00+02:00"
+            question="Three supplier invoices arrived without an order number. Shall I ask the suppliers for it?"
+          >
+            <Button intent="confirm" label="Ask the suppliers" />
+          </AgentQuestion>
+        </div>
+      </Popover>
+    ),
+  },
+  play: async ({ canvasElement }) => {
+    await settle()
+    const button = within(canvasElement).getByRole('button', { name: 'Liro agent, 1 question' })
+    const bell = within(canvasElement).getByRole('button', { name: /^Notifications/ })
+    // Before the bell, in reading order.
+    await expect(
+      button.compareDocumentPosition(bell) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+    await userEvent.click(button)
+    const popover = await within(document.body).findByRole('dialog', { name: 'Liro agent' })
+    await settle()
+    await expect(
+      within(popover).getByRole('group', { name: 'Question from Liro agent' }),
+    ).toBeVisible()
   },
 }
 
