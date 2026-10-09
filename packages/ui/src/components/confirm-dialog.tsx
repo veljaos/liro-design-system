@@ -1,6 +1,6 @@
 import { TriangleAlert } from 'lucide-react'
 import { useRef, useState, type ReactElement, type ReactNode } from 'react'
-import { ButtonPrimitive } from '../primitives/button'
+import { ButtonPrimitive, LoadingButtonPrimitive } from '../primitives/button'
 import { cn } from '../primitives/cn'
 import { TEXT_DIRECTION } from '../primitives/classes'
 import {
@@ -134,16 +134,6 @@ function actionOf(props: ConfirmAction): {
   return { family: props.family, icon: props.actionIcon }
 }
 
-/** Mantine's oval loader (Loader.css): 20px (36 / 1.8), a ring with one open quarter. */
-function Loader() {
-  return (
-    <span
-      aria-hidden="true"
-      className="absolute inset-0 m-auto box-border size-5 animate-liro-spin rounded-full border-[2.5px] border-solid border-current border-s-transparent"
-    />
-  )
-}
-
 /** The dialog every confirmation is drawn with; `extra` sits between the text and the buttons. */
 function ConfirmFrame(
   props: ConfirmDialogProps & { extra?: ReactNode; confirmDisabled?: boolean },
@@ -238,27 +228,20 @@ function ConfirmFrame(
             >
               <span>{props.cancelLabel ?? messages['dialog.cancel']}</span>
             </ButtonPrimitive>
-            <ButtonPrimitive
+            <LoadingButtonPrimitive
               family={confirmFamily(tone, family)}
               emphasis="primary"
               disabled={props.confirmDisabled === true}
-              aria-disabled={busy || undefined}
-              aria-busy={busy || undefined}
-              data-loading={busy ? '' : undefined}
-              className="relative data-loading:cursor-not-allowed"
+              loading={busy}
               onClick={() => {
-                if (!busy) confirm()
+                confirm()
               }}
             >
-              {/* While loading, the content keeps the button's size and its accessible name but is not seen (Mantine: opacity 0). */}
-              <span className={cn('contents', busy && '[&>*]:opacity-0')}>
-                {ActionIcon !== undefined && (
-                  <ActionIcon aria-hidden="true" className="size-3.75 shrink-0" />
-                )}
-                <span>{props.confirmLabel}</span>
-              </span>
-              {busy && <Loader />}
-            </ButtonPrimitive>
+              {ActionIcon !== undefined && (
+                <ActionIcon aria-hidden="true" className="size-3.75 shrink-0" />
+              )}
+              <span>{props.confirmLabel}</span>
+            </LoadingButtonPrimitive>
           </DialogFooter>
         </div>
       </DialogContent>

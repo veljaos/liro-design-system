@@ -1,6 +1,6 @@
 import { Check, PenLine, X } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
-import { ButtonPrimitive } from '../primitives/button'
+import { ButtonPrimitive, LoadingButtonPrimitive } from '../primitives/button'
 import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
@@ -157,20 +157,19 @@ export function SignerList(props: SignerListProps) {
                       </ButtonPrimitive>
                     )}
                     {props.onSign !== undefined && (
-                      <ButtonPrimitive
+                      <LoadingButtonPrimitive
                         family="primary"
                         emphasis="primary"
-                        aria-disabled={signing || undefined}
-                        aria-busy={signing || undefined}
+                        loading={signing}
                         onClick={() => {
-                          if (!signing) sign(signer)
+                          sign(signer)
                         }}
                       >
                         <PenLine aria-hidden="true" className="size-3.75 shrink-0" />
                         <span className={TEXT_DIRECTION}>
                           {props.signLabel ?? messages['signing.sign']}
                         </span>
-                      </ButtonPrimitive>
+                      </LoadingButtonPrimitive>
                     )}
                     {props.onDecline !== undefined && (
                       <ReasonConfirmDialog

@@ -1,7 +1,7 @@
 import { ArrowRight } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { isProviderMark, ProviderMarkIcon, type ProviderMark } from './provider-marks'
-import { ButtonPrimitive } from '../primitives/button'
+import { LoadingButtonPrimitive } from '../primitives/button'
 import { TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
@@ -23,16 +23,6 @@ import { TextField } from './text-field'
  * - Loading: the pressed button keeps its size and name, its content hidden behind the loader
  *   (ConfirmDialog's look), `aria-busy`; it cannot be pressed twice.
  */
-
-/** Mantine's oval loader (as ConfirmDialog's), 20px, in the button's text colour. */
-function Loader() {
-  return (
-    <span
-      aria-hidden="true"
-      className="absolute inset-0 m-auto box-border size-5 animate-liro-spin rounded-full border-[2.5px] border-solid border-current border-s-transparent"
-    />
-  )
-}
 
 /** One sign-in provider, from the application. */
 export interface SignInProvider {
@@ -92,35 +82,31 @@ export function ProviderSignInButtons(props: ProviderSignInButtonsProps) {
         {props.providers.map((provider) => {
           const busy = provider.loading === true
           return (
-            <ButtonPrimitive
+            <LoadingButtonPrimitive
               key={provider.id}
               family="neutral"
               emphasis="secondary"
               disabled={props.disabled === true || provider.disabled === true}
-              aria-disabled={busy || (anyLoading && !busy) || undefined}
-              aria-busy={busy || undefined}
-              data-loading={busy ? '' : undefined}
-              className="relative w-full gap-3 px-4.5 data-loading:cursor-not-allowed"
+              loading={busy}
+              waiting={anyLoading}
+              className="w-full gap-3 px-4.5"
               onClick={() => {
-                if (!anyLoading) provider.onClick()
+                provider.onClick()
               }}
             >
-              <span className={cn('contents', busy && '[&>*]:opacity-0')}>
-                {isProviderMark(provider.mark) ? (
-                  <ProviderMarkIcon mark={provider.mark} />
-                ) : (
-                  <img
-                    src={provider.mark}
-                    alt=""
-                    width={18}
-                    height={18}
-                    className="size-4.5 shrink-0"
-                  />
-                )}
-                <span className={TEXT_DIRECTION}>{provider.label}</span>
-              </span>
-              {busy && <Loader />}
-            </ButtonPrimitive>
+              {isProviderMark(provider.mark) ? (
+                <ProviderMarkIcon mark={provider.mark} />
+              ) : (
+                <img
+                  src={provider.mark}
+                  alt=""
+                  width={18}
+                  height={18}
+                  className="size-4.5 shrink-0"
+                />
+              )}
+              <span className={TEXT_DIRECTION}>{provider.label}</span>
+            </LoadingButtonPrimitive>
           )
         })}
       </div>
@@ -203,24 +189,17 @@ export function EmailFirstForm(props: EmailFirstFormProps) {
           {...(disabled ? { disabled: true } : {})}
           {...(props.disabledReason === undefined ? {} : { disabledReason: props.disabledReason })}
         />
-        <ButtonPrimitive
+        <LoadingButtonPrimitive
           type="submit"
           family="primary"
           emphasis="primary"
           disabled={disabled}
-          aria-disabled={busy || undefined}
-          aria-busy={busy || undefined}
-          data-loading={busy ? '' : undefined}
-          className="relative w-full data-loading:cursor-not-allowed"
+          loading={busy}
+          className="w-full"
         >
-          <span className={cn('contents', busy && '[&>*]:opacity-0')}>
-            <ArrowRight aria-hidden="true" className="size-3.75 shrink-0 rtl:-scale-x-100" />
-            <span className={TEXT_DIRECTION}>
-              {props.submitLabel ?? messages['signIn.continue']}
-            </span>
-          </span>
-          {busy && <Loader />}
-        </ButtonPrimitive>
+          <ArrowRight aria-hidden="true" className="size-3.75 shrink-0 rtl:-scale-x-100" />
+          <span className={TEXT_DIRECTION}>{props.submitLabel ?? messages['signIn.continue']}</span>
+        </LoadingButtonPrimitive>
       </form>
       {providers !== null && !before && (
         <ProviderSignInButtons providers={providers} divider="above" disabled={disabled || busy} />
