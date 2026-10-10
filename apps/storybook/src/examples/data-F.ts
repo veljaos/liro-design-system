@@ -1,174 +1,20 @@
 /*
- * Group F's example data (P5.21): bank statement 188 of 6 October 2026 (Banca Intesa) matched
- * against the open invoices of Kvadrat Gradnja d.o.o., journal entry NK-2026-0912 and the
- * September 2026 payroll for 46 employees. Amounts are whole paras (BigInt) and every total is
- * computed here, as the Core would; the components add nothing. The invoices F-2026-0403 to
- * F-2026-0412 are the dataset's (examples-story-data.ts) with their open amounts; F-2026-0381 to
- * F-2026-0402 are earlier invoices of the same customers, open on 6 October. F-2026-0407 (cancelled,
- * group D2) and F-2026-0408 (a draft) are not open items. Not part of the package. No classes here.
+ * Group F's example data (P5.21): journal entry NK-2026-0912 and the September 2026 payroll for
+ * 46 employees of Kvadrat Gradnja d.o.o. (bank statement 188 moved to data-bank.ts in P5.23).
+ * Amounts are whole paras (BigInt) and every total is computed here, as the Core would; the
+ * components add nothing. Not part of the package. No classes here.
  */
 import {
-  decimalOf,
-  parasOf,
-  sumParas,
-  type MatchingEntry,
-  type MatchRecord,
-  type SuggestionRecord,
-} from '../../../../packages/ui/src/components/matching-story-data'
+  decimal as decimalOf,
+  paras as parasOf,
+  sumUnits as sumParas,
+} from '../../../../packages/ui/src/components/amounts-story-data'
 import {
   payrollLines,
   payrollTotals,
 } from '../../../../packages/ui/src/templates/periodic-run-story-data'
-import { INVOICES, isOpen } from './examples-story-data'
 
 export { decimalOf, parasOf, sumParas }
-
-// ── Bank statement 188 ────────────────────────────────────────────────────────────────────────
-
-export const STATEMENT = {
-  number: '188',
-  date: '2026-10-06',
-  bank: 'Banca Intesa',
-  account: '160-0000000456789-12',
-  /** The balance before the statement, from the bank. */
-  opening: 1_284_550_17n,
-}
-
-/** A statement line: in (positive) or out (negative), with the payer and the reference. */
-export interface StatementLine extends MatchingEntry {
-  /** What the bank reports as the payer or payee. */
-  party: string
-  /** The reference the payer wrote, or "" when none. */
-  reference: string
-  /** Fees and interest are booked to an account, not matched to invoices. */
-  bankItem?: boolean
-}
-
-function line(
-  index: number,
-  party: string,
-  reference: string,
-  paras: bigint,
-  bankItem = false,
-): StatementLine {
-  return {
-    id: `b${String(index)}`,
-    label: `Line ${String(index)}, ${party}`,
-    title: party,
-    subtitle: `Line ${String(index)} · ${reference === '' ? 'No reference' : `Ref. ${reference}`}`,
-    party,
-    reference,
-    paras,
-    ...(bankItem ? { bankItem } : {}),
-  }
-}
-
-/** The 14 lines of statement 188. */
-export const STATEMENT_LINES: StatementLine[] = [
-  line(1, 'Panonija Agro d.o.o.', '97 F-2026-0412', 135_954_00n),
-  line(2, 'Drina Prevoz d.o.o.', 'F-2026-0411', 58_440_00n),
-  line(3, 'Medic Lab Niš d.o.o.', 'F-2026-0410', 50_000_00n),
-  line(4, 'Zlatibor Turs d.o.o.', '', 33_612_80n),
-  line(5, 'Panonija Agro d.o.o.', '97 F-2026-0403', 247_809_12n),
-  line(6, 'Vojvođanka Mlin a.d.', 'F-2026-0392, F-2026-0390', 214_260_00n),
-  line(7, 'Stanić Elektro STR', 'F-2026-0396', 41_280_00n),
-  line(8, 'Rakić Pekara SZR', 'F-2026-0388', 18_960_00n),
-  line(9, 'Knjigovodstvo Jelić', 'F-2026-0385', 14_400_00n),
-  line(10, 'Bojović i sinovi d.o.o.', 'Plaćanje F-399', 72_150_00n),
-  line(11, 'Petar Jovanović', 'Uplata', 12_000_00n),
-  line(12, 'Banca Intesa', 'Account fee, September', -1_240_00n, true),
-  line(13, 'Drina Prevoz d.o.o.', 'F-2026-0402', 26_880_00n),
-  line(14, 'Banca Intesa', 'Interest, September', 312_40n, true),
-]
-
-/** An open invoice of the dataset or an earlier one, with what is still to be paid. */
-export interface OpenInvoice extends MatchingEntry {
-  customer: string
-  due: string
-}
-
-function invoice(number: string, customer: string, due: string, open: bigint): OpenInvoice {
-  return {
-    id: number,
-    label: `${number}, ${customer}`,
-    title: number,
-    subtitle: customer,
-    customer,
-    due,
-    paras: open,
-  }
-}
-
-/** The dataset's invoices still open on 6 October (not paid, not drafts, not cancelled). */
-const DATASET_OPEN = INVOICES.filter((each) => each.status !== 'Paid' && isOpen(each)).map((each) =>
-  invoice(each.number, each.customer, each.due, parasOf(each.open)),
-)
-
-/** Earlier invoices of the same customers, open on 6 October. */
-const EARLIER_OPEN: OpenInvoice[] = [
-  invoice('F-2026-0402', 'Drina Prevoz d.o.o.', '2026-10-08', 26_880_00n),
-  invoice('F-2026-0399', 'Bojović i sinovi d.o.o.', '2026-10-05', 72_150_00n),
-  invoice('F-2026-0396', 'Stanić Elektro STR', '2026-10-04', 41_280_00n),
-  invoice('F-2026-0394', 'Panonija Agro d.o.o.', '2026-10-12', 54_312_00n),
-  invoice('F-2026-0392', 'Vojvođanka Mlin a.d.', '2026-10-01', 128_700_00n),
-  invoice('F-2026-0390', 'Vojvođanka Mlin a.d.', '2026-09-29', 85_560_00n),
-  invoice('F-2026-0388', 'Rakić Pekara SZR', '2026-09-30', 18_960_00n),
-  invoice('F-2026-0385', 'Knjigovodstvo Jelić', '2026-09-27', 14_400_00n),
-  invoice('F-2026-0381', 'Medic Lab Niš d.o.o.', '2026-09-25', 19_800_00n),
-]
-
-/** The open invoices, newest first. */
-export const OPEN_INVOICES: OpenInvoice[] = [...DATASET_OPEN, ...EARLIER_OPEN]
-
-/** Lines 7, 8 and 9 were matched when the statement was imported (exact amount and reference). */
-function imported(left: string, right: string, paras: bigint): MatchRecord {
-  return {
-    id: `import-${left}`,
-    left: [{ id: left, paras }],
-    right: [{ id: right, paras }],
-    how: 'Matched at import: exact amount and reference',
-  }
-}
-
-export const IMPORT_MATCHES: MatchRecord[] = [
-  imported('b7', 'F-2026-0396', 41_280_00n),
-  imported('b8', 'F-2026-0388', 18_960_00n),
-  imported('b9', 'F-2026-0385', 14_400_00n),
-]
-
-/** The Core's suggestions for the rest; line 10's reference is malformed, line 11's payer unknown. */
-export const STATEMENT_SUGGESTIONS: SuggestionRecord[] = [
-  { id: 's1', left: ['b1'], right: ['F-2026-0412'], confidence: 'Exact: amount and reference' },
-  { id: 's2', left: ['b2'], right: ['F-2026-0411'], confidence: 'Exact: amount and reference' },
-  {
-    id: 's3',
-    left: ['b3'],
-    right: ['F-2026-0410'],
-    confidence: 'Likely: reference, part of the amount',
-  },
-  { id: 's4', left: ['b4'], right: ['F-2026-0406'], confidence: 'Likely: amount and payer' },
-  { id: 's5', left: ['b5'], right: ['F-2026-0403'], confidence: 'Exact: amount and reference' },
-  {
-    id: 's6',
-    left: ['b6'],
-    right: ['F-2026-0392', 'F-2026-0390'],
-    confidence: 'Exact: sum of two invoices and references',
-  },
-  { id: 's13', left: ['b13'], right: ['F-2026-0402'], confidence: 'Exact: amount and reference' },
-]
-
-/** The statement's totals: money in, money out, and the closing balance. */
-export const STATEMENT_TOTALS = (() => {
-  const amounts = STATEMENT_LINES.map((each) => each.paras)
-  const incoming = sumParas(amounts.filter((paras) => paras > 0n))
-  const outgoing = sumParas(amounts.filter((paras) => paras < 0n))
-  return {
-    lines: STATEMENT_LINES.length,
-    incoming: decimalOf(incoming),
-    outgoing: decimalOf(-outgoing),
-    closing: decimalOf(STATEMENT.opening + incoming + outgoing),
-  }
-})()
 
 // ── Journal entry NK-2026-0912 ────────────────────────────────────────────────────────────────
 

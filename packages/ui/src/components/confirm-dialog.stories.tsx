@@ -1,8 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { Ban, CheckCheck, CircleX } from 'lucide-react'
+import { Ban, BookCheck, CheckCheck, CircleX } from 'lucide-react'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { settle } from '../primitives/story-helpers'
 import { Button } from './button'
+import { KeyValueList } from './cards'
 import {
   ConfirmDialog,
   DeleteConfirmDialog,
@@ -427,5 +428,45 @@ export const IrreversibleWithReasons: Story = {
     await expect(confirm).toBeDisabled()
     await userEvent.click(dialog.getByRole('radio', { name: 'Wrong prices' }))
     await expect(confirm).toBeEnabled()
+  },
+}
+
+/**
+ * `preview` shows what the action will do before it is confirmed — a summary and a read-only
+ * result — and `size` 'wide' gives it room. Cancel still takes the focus.
+ */
+export const WithPreview: Story = {
+  name: 'With a preview',
+  render: () => (
+    <ConfirmDialog
+      defaultOpen
+      family="primary"
+      actionIcon={BookCheck}
+      tone="info"
+      size="wide"
+      title="Post statement 188?"
+      message="The journal entry is posted and the open items are closed."
+      preview={
+        <KeyValueList
+          columns={1}
+          items={[
+            { label: 'Close open items', value: '4 lines, 4 items' },
+            { label: 'Posted to accounts', value: '6 lines' },
+            { label: 'Money in', value: '291.566,40 RSD', numeric: true },
+            { label: 'Money out', value: '4.180.462,00 RSD', numeric: true },
+          ]}
+        />
+      }
+      confirmLabel="Post statement"
+      onConfirm={() => undefined}
+    />
+  ),
+  play: async ({ canvasElement }) => {
+    const body = within(canvasElement.ownerDocument.body)
+    const dialog = await body.findByRole('alertdialog', { name: 'Post statement 188?' })
+    await expect(dialog).toHaveTextContent('4 lines, 4 items')
+    await expect(within(dialog).getByRole('button', { name: 'Cancel' })).toHaveFocus()
+    await expect(dialog.getBoundingClientRect().width).toBeGreaterThan(440)
+    await settle()
   },
 }

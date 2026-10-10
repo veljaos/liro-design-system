@@ -139,7 +139,7 @@ export const NOTIFICATIONS: NotificationItem[] = [
   },
   {
     id: 'n6',
-    title: 'Bank statement 188 imported: 3 lines matched, 7 to check',
+    title: 'Bank statement 188 imported: 8 suggestions ready, 2 lines to check',
     company: 'Kvadrat Gradnja d.o.o.',
     companyId: 'kvadrat',
     type: 'system',

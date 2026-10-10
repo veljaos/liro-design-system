@@ -275,7 +275,7 @@ export type {
   QuickPreviewProps,
   SavedView,
 } from './templates/list-page'
-export { WorklistPage } from './templates/worklist-page'
+export { WorklistPage, worklistPosition } from './templates/worklist-page'
 export type { WorklistItem, WorklistPageProps } from './templates/worklist-page'
 export { BackButton, PageHeader } from './templates/page-header'
 export type { PageBack, PageHeaderProps } from './templates/page-header'
@@ -325,23 +325,8 @@ export type {
 export { AuthShell } from './templates/auth-shell'
 export type { AuthShellProps } from './templates/auth-shell'
 // ── P5 group F ──
-export { MatchingView } from './components/matching-view'
-export type {
-  MatchingItem,
-  MatchingList,
-  MatchingMatch,
-  MatchingViewProps,
-  MatchSuggestion,
-} from './components/matching-view'
-export {
-  canMatch,
-  MATCHING_PAGE,
-  MATCHING_ROW_HEIGHT,
-  MATCHING_VIRTUALIZE_FROM,
-  matchingKeyAction,
-  toggleSelection,
-} from './components/matching-logic'
-export type { MatchingKeyAction } from './components/matching-logic'
+export { CandidateList, chooseCandidate } from './components/candidate-list'
+export type { Candidate, CandidateListProps } from './components/candidate-list'
 export { BalanceBar } from './components/balance-bar'
 export type { BalanceBarProps, BalanceState } from './components/balance-bar'
 export { PeriodicRunPage } from './templates/periodic-run-page'

@@ -304,9 +304,20 @@ export interface LiroMessages {
   'columns.moveDown': (label: string) => string
   /** QuickPreview: opens the record's full page. */
   'preview.open': string
-  /** WorklistPage, below 62em: back to the list, and on to the next item. */
+  /** WorklistPage: back to the list (below 62em), and to the previous and the next item. */
   'worklist.back': string
+  'worklist.previous': string
   'worklist.next': string
+  /**
+   * WorklistPage: where the chosen item stands in the queue ("3 of 11"); the numbers already
+   * written by `format.number` (`indexText`, `totalText`), the numbers kept for plural rules.
+   */
+  'worklist.position': (
+    index: number,
+    indexText: string,
+    total: number,
+    totalText: string,
+  ) => string
   /** WorklistPage, from 62em: names the detail pane. */
   'worklist.detail': string
   /** PageHeader's back button: its name and tooltip (`list` is the list's name). */
@@ -374,35 +385,8 @@ export interface LiroMessages {
   /** The accessible name of a hidden module's "Show" button. */
   'launchpad.show': (name: string) => string
   // ── P5 group F ──
-  /** MatchingView (P5.21): the button that matches the selection of both lists. */
-  'matching.match': string
-  /** Why "Match" cannot be used yet: nothing selected in one of the lists. */
-  'matching.selectBoth': string
-  /** The heading of the suggested matches. */
-  'matching.suggestions': string
-  /** The accessible name of a suggestion's "Match" button; `label` is the suggestion's, from the application. */
-  'matching.acceptSuggestion': (label: string) => string
-  /** The accessible name of a suggestion's dismiss button. */
-  'matching.dismissSuggestion': (label: string) => string
-  /** The heading of the matches made. */
-  'matching.matched': string
-  /** The button that takes a match apart; its accessible name adds the match's label. */
-  'matching.unmatch': string
-  'matching.unmatchItem': (label: string) => string
-  /** For assistive technology, between the two sides of a match. */
-  'matching.matchedWith': string
-  /** The accessible name of a list's search field; `list` is the list's title. */
-  'matching.search': (list: string) => string
-  /** A list with nothing left in it. */
-  'matching.empty': string
-  /** The keys under the lists: Space selects, Enter matches, Escape clears. */
-  'matching.select': string
-  'matching.clear': string
-  'matching.spaceKey': string
-  'matching.enterKey': string
-  'matching.escapeKey': string
-  /** Phones: the accessible name of the switch between the two lists. */
-  'matching.showList': string
+  /** CandidateList (P5.23): shown when the application proposes nothing. */
+  'candidates.empty': string
   /** BalanceBar (P5.21): the three values of a balanced entry and its state. */
   'balance.label': string
   'balance.debit': string
