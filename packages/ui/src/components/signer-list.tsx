@@ -119,7 +119,7 @@ export function SignerList(props: SignerListProps) {
                     <span className={cn('text-sm font-semibold text-primary', TEXT_DIRECTION)}>
                       {signer.name}
                       {current && (
-                        <span className="font-normal text-secondary">
+                        <span className="font-regular text-secondary">
                           {' '}
                           {messages['signing.you']}
                         </span>

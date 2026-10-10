@@ -705,7 +705,7 @@ function DesktopView(props: ViewProps) {
       <>
         <span className={cn('block text-sm font-semibold', TEXT_ISOLATE)}>{column.label}</span>
         {column.date !== undefined && (
-          <span className="block text-xs font-normal text-secondary">
+          <span className="block text-xs font-regular text-secondary">
             {format.weekdayName(weekdayOf(column.date), 'short')}
           </span>
         )}
@@ -786,7 +786,7 @@ function DesktopView(props: ViewProps) {
       </span>
     )
     const base = cn(
-      'sticky start-0 z-[5] w-48 min-w-48 max-w-72 bg-surface-raised p-0 text-start align-middle font-normal',
+      'sticky start-0 z-[5] w-48 min-w-48 max-w-72 bg-surface-raised p-0 text-start align-middle font-regular',
       CELL_LINES,
       'border-e-default',
     )
@@ -940,7 +940,7 @@ function DesktopView(props: ViewProps) {
                     </span>
                   )}
                   {code !== undefined ? (
-                    <CodeChip code={code} className={hoursMode ? 'h-4 font-normal' : undefined} />
+                    <CodeChip code={code} className={hoursMode ? 'h-4 font-regular' : undefined} />
                   ) : (
                     entry?.code != null && <span className="text-xs">{entry.code}</span>
                   )}

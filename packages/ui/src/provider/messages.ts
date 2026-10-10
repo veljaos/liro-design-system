@@ -1272,4 +1272,47 @@ export interface LiroMessages {
   'count.noItems': string
   'count.noItemsDescription': string
   'count.finish': string
+  // P5.15 / P5.12
+  /** PrintPage: the page number in the bottom margin of every printed page ("Page 1 of 3"). */
+  'print.pageNumber': (page: string, pages: string) => string
+  /** PrintPage: the marker of a draft, at the top of the first page and across every page. */
+  'print.draft': string
+  /** PrintPage: a place and a date under a printed document ("Novi Sad, 10.10.2026."). */
+  'print.placeAndDate': (place: string, date: string) => string
+  /** CoursePage: names the outline (its navigation, the phone's button and drawer). */
+  'course.outline': string
+  /** CoursePage: the progress to completion ("7 of 12 lessons"). */
+  'course.progress': (done: number, total: number, doneText: string, totalText: string) => string
+  /** CoursePage: names the progress bar. */
+  'course.progressLabel': string
+  /** CoursePage: a module's lessons done ("3 of 4 done"). */
+  'course.moduleProgress': (doneText: string, totalText: string) => string
+  /** CoursePage: a lesson's state in the outline. */
+  'course.done': string
+  'course.locked': string
+  /** CoursePage: a locked lesson's reason after the state ("Locked: finish module 1 first"). */
+  'course.lockedReason': (reason: string) => string
+  /** CoursePage: the action under a lesson, and the state once done. */
+  'course.markDone': string
+  'course.lessonDone': string
+  /** CoursePage: the lesson pager at the bottom, and its navigation's name. */
+  'course.previous': string
+  'course.next': string
+  'course.pager': string
+  /** CoursePage: a course without lessons. */
+  'course.empty': string
+  'course.emptyDescription': string
+  /** CoursePage: the completion block and its certificate. */
+  'course.completed': string
+  'course.downloadCertificate': string
+  'course.certificatePreview': string
+  /** QuizResult: the score ("8 of 10 correct"), the outcome and the answers' review. */
+  'quiz.score': (correct: number, total: number, correctText: string, totalText: string) => string
+  'quiz.passed': string
+  'quiz.failed': string
+  'quiz.review': string
+  'quiz.correct': string
+  'quiz.incorrect': string
+  'quiz.yourAnswer': (answer: string) => string
+  'quiz.correctAnswer': (answer: string) => string
 }

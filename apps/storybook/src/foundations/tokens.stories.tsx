@@ -286,13 +286,13 @@ function ValueTable({ caption, rows }: { caption: string; rows: [string, string,
       <caption className="pb-1 text-start font-semibold">{caption}</caption>
       <thead>
         <tr className="text-start text-secondary">
-          <th scope="col" className="py-1 pe-2 text-start font-normal">
+          <th scope="col" className="py-1 pe-2 text-start font-regular">
             Name
           </th>
-          <th scope="col" className="py-1 pe-2 text-start font-normal">
+          <th scope="col" className="py-1 pe-2 text-start font-regular">
             Variable
           </th>
-          <th scope="col" className="py-1 text-start font-normal">
+          <th scope="col" className="py-1 text-start font-regular">
             Value
           </th>
         </tr>

@@ -120,7 +120,7 @@ export function PermissionMatrix(props: PermissionMatrixProps) {
             >
               {area.label}
               {area.description !== undefined && (
-                <span className="block text-xs font-normal text-secondary">{area.description}</span>
+                <span className="block text-xs font-regular text-secondary">{area.description}</span>
               )}
             </legend>
             {props.actions.map((action) => {
@@ -218,7 +218,7 @@ export function PermissionMatrix(props: PermissionMatrixProps) {
               key={area.id}
               className="border-0 border-b border-solid border-subtle last:border-b-0"
             >
-              <th scope="row" className="px-3 py-2 text-start font-normal">
+              <th scope="row" className="px-3 py-2 text-start font-regular">
                 <span className={cn('block text-sm font-semibold', TEXT_DIRECTION)}>
                   {area.label}
                 </span>

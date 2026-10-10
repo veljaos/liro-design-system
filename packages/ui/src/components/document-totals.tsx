@@ -179,16 +179,16 @@ function RecapTable({ recap }: { recap: TaxRecap }) {
         </caption>
         <thead>
           <tr>
-            <th scope="col" className="px-0 py-1 text-start text-xs font-normal text-secondary">
+            <th scope="col" className="px-0 py-1 text-start text-xs font-regular text-secondary">
               <span className={TEXT_ISOLATE}>{recap.headers.category}</span>
             </th>
-            <th scope="col" className="py-1 ps-3 pe-0 text-end text-xs font-normal text-secondary">
+            <th scope="col" className="py-1 ps-3 pe-0 text-end text-xs font-regular text-secondary">
               <span className={TEXT_ISOLATE}>{recap.headers.base}</span>
             </th>
-            <th scope="col" className="py-1 ps-3 pe-0 text-end text-xs font-normal text-secondary">
+            <th scope="col" className="py-1 ps-3 pe-0 text-end text-xs font-regular text-secondary">
               <span className={TEXT_ISOLATE}>{recap.headers.rate}</span>
             </th>
-            <th scope="col" className="py-1 ps-3 pe-0 text-end text-xs font-normal text-secondary">
+            <th scope="col" className="py-1 ps-3 pe-0 text-end text-xs font-regular text-secondary">
               <span className={TEXT_ISOLATE}>{recap.headers.tax}</span>
             </th>
           </tr>
@@ -196,7 +196,7 @@ function RecapTable({ recap }: { recap: TaxRecap }) {
         <tbody>
           {recap.rows.map((row) => (
             <tr key={row.key}>
-              <th scope="row" className="px-0 py-1 text-start font-normal whitespace-nowrap">
+              <th scope="row" className="px-0 py-1 text-start font-regular whitespace-nowrap">
                 <span className={TEXT_ISOLATE}>{row.category}</span>
               </th>
               <td className={NUMBER_CELL}>

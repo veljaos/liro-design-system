@@ -787,7 +787,7 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
           <dl className="m-0 flex flex-col gap-0.5">
             {columns.slice(amountsFrom).map((column) => (
               <div key={column.id} className="flex items-baseline justify-between gap-4">
-                <dt className={cn('text-xs font-normal text-secondary', TEXT_DIRECTION)}>
+                <dt className={cn('text-xs font-regular text-secondary', TEXT_DIRECTION)}>
                   {column.header}
                 </dt>
                 <dd className="m-0 text-end tabular-nums">{column.cell(original)}</dd>

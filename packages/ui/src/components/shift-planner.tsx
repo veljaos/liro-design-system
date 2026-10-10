@@ -1361,7 +1361,7 @@ export function ShiftPlanner(props: ShiftPlannerProps) {
                       key={date}
                       scope="col"
                       {...(date === today ? { 'aria-current': 'date' as const } : {})}
-                      className="min-w-28 border-0 border-s border-b border-solid border-default border-s-subtle px-2 py-2 text-start align-bottom text-xs font-normal text-secondary"
+                      className="min-w-28 border-0 border-s border-b border-solid border-default border-s-subtle px-2 py-2 text-start align-bottom text-xs font-regular text-secondary"
                     >
                       <span className="flex flex-col">
                         <span className="font-semibold text-primary">
@@ -1394,7 +1394,7 @@ export function ShiftPlanner(props: ShiftPlannerProps) {
                       <th
                         scope="colgroup"
                         colSpan={columnCount}
-                        className="border-0 border-b border-solid border-default bg-surface-sunken px-3 py-1.5 text-start font-normal"
+                        className="border-0 border-b border-solid border-default bg-surface-sunken px-3 py-1.5 text-start font-regular"
                       >
                         {groupHeading(section.group, 'row')}
                       </th>
@@ -1409,7 +1409,7 @@ export function ShiftPlanner(props: ShiftPlannerProps) {
                         <tr key={row.id}>
                           <th
                             scope="row"
-                            className="sticky start-0 z-1 border-0 border-b border-solid border-subtle bg-surface-raised px-3 py-2 text-start align-top font-normal"
+                            className="sticky start-0 z-1 border-0 border-b border-solid border-subtle bg-surface-raised px-3 py-2 text-start align-top font-regular"
                           >
                             <span className={cn('block text-sm font-semibold', TEXT_DIRECTION)}>
                               {row.name}
