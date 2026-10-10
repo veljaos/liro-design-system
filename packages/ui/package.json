@@ -25,6 +25,10 @@
       "types": "./dist/charts.d.ts",
       "import": "./dist/charts.js"
     },
+    "./rich-text": {
+      "types": "./dist/rich-text.d.ts",
+      "import": "./dist/rich-text.js"
+    },
     "./styles.css": "./dist/styles.css",
     "./package.json": "./package.json"
   },
@@ -68,6 +72,20 @@
     "@shadcn/react": "0.3.1",
     "@tanstack/react-table": "9.2.4",
     "@tanstack/react-virtual": "3.14.13",
+    "@tiptap/core": "3.31.4",
+    "@tiptap/extension-bold": "3.31.4",
+    "@tiptap/extension-document": "3.31.4",
+    "@tiptap/extension-hard-break": "3.31.4",
+    "@tiptap/extension-heading": "3.31.4",
+    "@tiptap/extension-italic": "3.31.4",
+    "@tiptap/extension-link": "3.31.4",
+    "@tiptap/extension-list": "3.31.4",
+    "@tiptap/extension-paragraph": "3.31.4",
+    "@tiptap/extension-text": "3.31.4",
+    "@tiptap/extension-underline": "3.31.4",
+    "@tiptap/extensions": "3.31.4",
+    "@tiptap/pm": "3.31.4",
+    "@tiptap/react": "3.31.4",
     "clsx": "2.1.1",
     "cmdk": "1.1.1",
     "lucide-react": "1.48.0",

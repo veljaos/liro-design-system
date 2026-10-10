@@ -2,6 +2,7 @@ import { Button } from '@veljaos/ui'
 import { useState } from 'react'
 import { ChartsExample } from './ChartsExample'
 import { FormExample } from './FormExample'
+import { RichTextExample } from './RichTextExample'
 
 export function App() {
   const [clicks, setClicks] = useState(0)
@@ -17,6 +18,7 @@ export function App() {
       <p aria-live="polite">Clicked {clicks} times</p>
       <FormExample />
       <ChartsExample />
+      <RichTextExample />
     </main>
   )
 }

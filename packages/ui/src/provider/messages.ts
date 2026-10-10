@@ -1092,4 +1092,39 @@ export interface LiroMessages {
   'clock.timeInvalid': string
   'clock.reason': string
   'clock.save': string
+  // P5.22 ── RichTextField and RichText
+  /** Names the formatting toolbar of a rich text field. */
+  'richText.toolbar': string
+  /** The menu of block styles, and its three choices. */
+  'richText.textStyle': string
+  /** The style menu's button: "Text style: Normal text". */
+  'richText.textStyleCurrent': (style: string) => string
+  'richText.paragraph': string
+  'richText.heading': string
+  'richText.subheading': string
+  /** The toolbar's toggles (their names and tooltips). */
+  'richText.bold': string
+  'richText.italic': string
+  'richText.underline': string
+  'richText.bulletList': string
+  'richText.numberedList': string
+  'richText.link': string
+  'richText.clearFormatting': string
+  /** The menu of merge fields, and the list "{{" opens. */
+  'richText.insertMergeField': string
+  'richText.mergeFields': string
+  /** A merge field's pill, for assistive technology: "Merge field: Customer name". */
+  'richText.mergeField': (label: string) => string
+  /** The link dialog: its address field, hint, error and actions. */
+  'richText.linkAddress': string
+  'richText.linkHint': string
+  'richText.linkInvalid': string
+  'richText.linkApply': string
+  'richText.linkRemove': string
+  /** The counter under a field with `maxLength`: "120 / 2000"; the numbers written by `format.number`. */
+  'richText.count': (countText: string, limitText: string) => string
+  /** The counter for assistive technology: "120 of 2000 characters". */
+  'richText.countLabel': (countText: string, limitText: string) => string
+  /** Over the limit: "20 characters too many". */
+  'richText.overLimit': (count: number, countText: string) => string
 }

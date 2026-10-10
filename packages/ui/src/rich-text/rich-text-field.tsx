@@ -1,0 +1,700 @@
+import type { Editor } from '@tiptap/core'
+import type { EditorProps } from '@tiptap/pm/view'
+import { EditorContent, useEditor, useEditorState } from '@tiptap/react'
+import { Bot, CircleAlert } from 'lucide-react'
+import {
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from 'react'
+import { ComboboxPopover, optionId } from '../components/combobox-field'
+import {
+  filterChoices,
+  MOVE_KEYS,
+  moveActive,
+  useDebouncedCallback,
+  type MoveKey,
+} from '../components/combobox-logic'
+import { Field, fieldProps, type FieldBaseProps, type FieldControl } from '../components/field'
+import type { MentionCandidate } from '../components/mention-combobox'
+import { PersonAvatar } from '../components/person'
+import { OPTION, READ_ONLY, TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
+import { cn } from '../primitives/cn'
+import { Skeleton } from '../primitives/skeleton'
+import { useLiro } from '../provider/liro-provider'
+import { richTextExtensions } from './extensions'
+import { LinkDialog } from './link-dialog'
+import { RICH_CONTENT, RichText, type RichTextMergeField } from './rich-text'
+import {
+  EMPTY_RICH_TEXT,
+  isRichTextEmpty,
+  normalizeRichText,
+  richTextLength,
+  richTextValue,
+  sanitizeRichHtml,
+  suggestionAt,
+  type RichTextNode,
+  type RichTextSuggestion,
+  type RichTextValue,
+} from './rich-text-logic'
+import { IDLE_TOOLBAR, Toolbar, type ToolbarState } from './toolbar'
+
+/*
+ * RichTextField (P5.22): formatted text — a letter template, a note, a comment — on Tiptap's MIT
+ * packages only (no Pro or paid extension). A Field (label, description, error under it, required
+ * mark, read-only as RichText, disabled with its reason) around a framed editor: the formatting
+ * toolbar on top (toolbar.tsx), the text under it, the counter under the frame when `maxLength` is
+ * set.
+ *
+ * - **The text box** is a contenteditable `role="textbox"` with `aria-multiline`, named by the
+ *   label and described by the description, error, reason and counter. Its frame looks like an
+ *   input's: border.control, radius md, the focus colour while anything inside has the focus, the
+ *   danger colour when invalid, surface.disabled when disabled. Each paragraph takes its direction
+ *   from its text (`dir="auto"`).
+ * - **Shortcuts:** Ctrl/Cmd+B, I, U (bold, italic, underline), K (the link dialog), Z / Shift+Z
+ *   (undo, redo); Tiptap's own Ctrl/Cmd+Alt+2 / 3 (heading, subheading), Ctrl/Cmd+Shift+8 / 7
+ *   (lists). Tab leaves the field (lists are one level deep).
+ * - **Paste** keeps structure only: pasted HTML goes through `sanitizeRichHtml` first (Word's
+ *   styles, classes, colours and fonts go, its paragraphs, bold, italic, underline, lists and
+ *   links stay), and the schema knows nothing else.
+ * - **Merge fields** (`mergeFields`): inserted from the toolbar's menu or by typing "{{", which
+ *   offers the fields in a list under the text (the combobox pattern of MentionCombobox: the
+ *   focus stays in the text, `aria-activedescendant`, ArrowDown / ArrowUp, Home / End, Enter or
+ *   Tab chooses, Escape closes). A merge field is one atomic pill (neutral, never blue), read
+ *   "Merge field: <label>".
+ * - **Mentions** (`mentionCandidates`): "@" offers people as MentionCombobox does (P5.1): all of
+ *   them filtered by name, or the application's search (`onMentionSearch` after 300ms, with
+ *   `mentionsLoading`). A mention is one atomic node with the person's id.
+ * - **The value** is Tiptap's JSON (`value` / `defaultValue`); `onChange` reports the JSON, the
+ *   sanitized HTML, the mentions, the merge fields and the length (rich-text-logic.ts).
+ */
+
+export interface RichTextFieldProps extends FieldBaseProps {
+  /** Controlled value: Tiptap's JSON, as `onChange` reported it. */
+  value?: RichTextNode | null
+  /** Uncontrolled initial value. */
+  defaultValue?: RichTextNode | null
+  /** Called on every change with the JSON, the sanitized HTML, mentions, merge fields and length. */
+  onChange?: (value: RichTextValue) => void
+  /** Called when the focus leaves the text. */
+  onBlur?: () => void
+  /** The fields the text can refer to: the toolbar's menu and the "{{" list offer them. */
+  mergeFields?: readonly RichTextMergeField[]
+  /** Who "@" offers: everyone, or the results of the application's last search. */
+  mentionCandidates?: readonly MentionCandidate[]
+  /** The application searches (after `mentionSearchDelay`) and passes the results. */
+  onMentionSearch?: (query: string) => void
+  /** Milliseconds of quiet before `onMentionSearch`. Default: 300. */
+  mentionSearchDelay?: number
+  /** The application is searching for people. */
+  mentionsLoading?: boolean
+  /** Shown while the text is empty. From the application. */
+  placeholder?: string
+  /**
+   * The most characters the text may have (`richTextLength`: a merge field, mention or line break
+   * counts as one). A counter shows "120 / 2000"; beyond it the field says how many are too many
+   * and is invalid, but nothing typed is lost.
+   */
+  maxLength?: number
+  /** The value is still loading: lines of skeleton in place of the text. */
+  loading?: boolean
+  /** The text box's height in lines before it grows with its content. Default: 4. */
+  minRows?: number
+}
+
+/** The state the toolbar and the lists read after each change. */
+interface Snapshot {
+  toolbar: ToolbarState
+  suggestion: (RichTextSuggestion & { from: number; to: number }) | null
+  length: number
+  empty: boolean
+}
+
+function readSnapshot(editor: Editor): Snapshot {
+  const { selection } = editor.state
+  const { $from } = selection
+  let suggestion: Snapshot['suggestion'] = null
+  if (selection.empty && $from.parent.isTextblock) {
+    let before = ''
+    $from.parent.forEach((child, offset) => {
+      if (offset >= $from.parentOffset) return
+      before += child.isText ? (child.text ?? '').slice(0, $from.parentOffset - offset) : '￼'
+    })
+    const found = suggestionAt(before)
+    if (found !== null) {
+      suggestion = { ...found, from: $from.pos - (before.length - found.start), to: $from.pos }
+    }
+  }
+  let block: ToolbarState['block'] = 'paragraph'
+  if (editor.isActive('heading', { level: 2 })) block = 'heading'
+  else if (editor.isActive('heading', { level: 3 })) block = 'subheading'
+  return {
+    toolbar: {
+      bold: editor.isActive('bold'),
+      italic: editor.isActive('italic'),
+      underline: editor.isActive('underline'),
+      link: editor.isActive('link'),
+      bulletList: editor.isActive('bulletList'),
+      orderedList: editor.isActive('orderedList'),
+      block,
+    },
+    suggestion,
+    length: richTextLength(editor.getJSON() as RichTextNode),
+    empty: editor.isEmpty,
+  }
+}
+
+/** One choice of the "{{" or "@" list. */
+interface SuggestionOption {
+  value: string
+  label: string
+  group?: string
+  candidate?: MentionCandidate
+}
+
+/** A person in the "@" list: avatar (Bot square for an agent), name and the application's line. */
+function MentionOption({ candidate }: { candidate: MentionCandidate }) {
+  return (
+    <>
+      {candidate.agent === true ? (
+        <span
+          aria-hidden="true"
+          className="flex size-6.5 shrink-0 items-center justify-center rounded-xl bg-surface-sunken text-primary"
+        >
+          <Bot className="size-3.5" />
+        </span>
+      ) : (
+        <PersonAvatar
+          name={candidate.name}
+          size="sm"
+          {...(candidate.src === undefined ? {} : { src: candidate.src })}
+        />
+      )}
+      <span className="flex min-w-0 flex-col">
+        <span className={cn('truncate', TEXT_DIRECTION)}>{candidate.name}</span>
+        {candidate.description !== undefined && (
+          <span className={cn('truncate text-xs', TEXT_DIRECTION)}>{candidate.description}</span>
+        )}
+      </span>
+    </>
+  )
+}
+
+function joinIds(...ids: (string | undefined)[]): string | undefined {
+  const joined = ids.filter((id) => id !== undefined && id !== '').join(' ')
+  return joined === '' ? undefined : joined
+}
+
+/**
+ * A field for formatted text: paragraphs, headings, lists, bold, italic, underline, links, merge
+ * fields and mentions. Use it for templates, notes and comments that keep their formatting; for
+ * plain text use TextAreaField, for a chat message MessageComposer.
+ */
+export function RichTextField(props: RichTextFieldProps) {
+  const generated = useId()
+  const id = props.id ?? `rich-${generated}`
+  // The counter (not drawn when read-only) describes the text box, with the description, error and
+  // reason.
+  const counterId =
+    props.maxLength === undefined || props.readOnly === true ? undefined : `${id}-count`
+  const frame: RichTextFieldProps = { ...props, id }
+  const describedBy = joinIds(props.describedBy, counterId)
+  if (describedBy !== undefined) frame.describedBy = describedBy
+  return (
+    <Field {...fieldProps(frame)} group>
+      {(control) =>
+        control.readOnly ? (
+          // A group named by the label: its text stays selectable and its links usable (a
+          // textbox around them would hold links inside a text box).
+          <div
+            id={control.id}
+            role="group"
+            aria-labelledby={control.labelId}
+            aria-describedby={control.describedBy}
+            className={cn('rounded-md border border-solid px-3 py-2', READ_ONLY)}
+          >
+            <RichText
+              value={props.value ?? props.defaultValue ?? null}
+              {...(props.mergeFields === undefined ? {} : { mergeFields: props.mergeFields })}
+            />
+          </div>
+        ) : (
+          <RichTextEditor {...props} control={control} counterId={counterId} />
+        )
+      }
+    </Field>
+  )
+}
+
+/** What the editor's callbacks read; replaced after every render. */
+interface Live {
+  labelOf: (key: string) => string
+  nameOf: (label: string) => string
+  openLink: () => void
+  keyDown: (event: KeyboardEvent) => boolean
+  change: (json: RichTextNode) => void
+  blur: () => void
+  search: (query: string) => void
+  attributes: Record<string, string>
+}
+
+/** Holds the latest callbacks: the editor and its extensions are made once and call through it. */
+class LiveCallbacks {
+  value: Live = {
+    labelOf: (key) => key,
+    nameOf: (label) => label,
+    openLink: () => undefined,
+    keyDown: () => false,
+    change: () => undefined,
+    blur: () => undefined,
+    search: () => undefined,
+    attributes: {},
+  }
+
+  set(value: Live) {
+    this.value = value
+  }
+
+  search(query: string) {
+    this.value.search(query)
+  }
+}
+
+function RichTextEditor(
+  props: RichTextFieldProps & { control: FieldControl; counterId: string | undefined },
+) {
+  const { messages, locale, format } = useLiro()
+  const { control } = props
+  const disabled = control.disabled
+  const loading = props.loading === true
+  const mergeFields = props.mergeFields ?? []
+  const listId = `${control.id}-suggestions`
+
+  const [initial] = useState(() =>
+    normalizeRichText(props.value ?? props.defaultValue ?? EMPTY_RICH_TEXT),
+  )
+  const [linkOpen, setLinkOpen] = useState(false)
+  const [linkCurrent, setLinkCurrent] = useState<string | null>(null)
+  const [active, setActive] = useState(0)
+  const [dismissed, setDismissed] = useState<number | null>(null)
+  const lastEmitted = useRef<RichTextNode | null>(null)
+
+  const [live] = useState(() => new LiveCallbacks())
+  const [extensions] = useState(() =>
+    richTextExtensions({
+      labelOf: (key) => live.value.labelOf(key),
+      nameOf: (label) => live.value.nameOf(label),
+      openLink: () => {
+        live.value.openLink()
+      },
+    }),
+  )
+  const [editorProps] = useState<EditorProps>(() => ({
+    attributes: () => live.value.attributes,
+    handleKeyDown: (_view, event) => live.value.keyDown(event),
+    transformPastedHTML: (html) => sanitizeRichHtml(html),
+  }))
+  const editor = useEditor({
+    extensions,
+    editorProps,
+    content: initial,
+    editable: !disabled && !loading,
+    // The editor is made after the first render, so a server and the browser draw the same.
+    immediatelyRender: false,
+    // The look is ours (classes on the text), and no <style> element is added to the page.
+    injectCSS: false,
+    onUpdate: ({ editor: changed }) => {
+      live.value.change(changed.getJSON() as RichTextNode)
+    },
+    onBlur: () => {
+      live.value.blur()
+    },
+  })
+  const snapshot = useEditorState({
+    editor,
+    selector: ({ editor: current }) => (current === null ? null : readSnapshot(current)),
+  })
+  const toolbar = snapshot?.toolbar ?? IDLE_TOOLBAR
+  const suggestion = snapshot?.suggestion ?? null
+
+  // The list under the text: merge fields after "{{", people after "@".
+  let options: SuggestionOption[] = []
+  if (suggestion?.kind === 'mergeField') {
+    options = filterChoices(
+      mergeFields.map((field) => ({
+        value: field.key,
+        label: field.label,
+        ...(field.group === undefined ? {} : { group: field.group }),
+      })),
+      suggestion.query,
+      locale,
+    )
+  } else if (suggestion?.kind === 'mention' && props.mentionCandidates !== undefined) {
+    const people = props.mentionCandidates.map((candidate) => ({
+      value: candidate.id,
+      label: candidate.name,
+      candidate,
+    }))
+    options =
+      props.onMentionSearch === undefined ? filterChoices(people, suggestion.query, locale) : people
+  }
+  const offered =
+    suggestion !== null &&
+    (suggestion.kind === 'mergeField'
+      ? mergeFields.length > 0
+      : props.mentionCandidates !== undefined)
+  const open = offered && suggestion.from !== dismissed && !disabled
+  const searching = suggestion?.kind === 'mention' && props.mentionsLoading === true
+  const showEmpty = open && options.length === 0 && !searching
+  const visible = open && (options.length > 0 || searching || showEmpty)
+  const listShown = visible && options.length > 0
+
+  // A new query starts the list at its first option; a closed one forgets Escape.
+  const queryKey =
+    suggestion === null ? '' : `${suggestion.kind}:${String(suggestion.from)}:${suggestion.query}`
+  const [shownKey, setShownKey] = useState(queryKey)
+  if (queryKey !== shownKey) {
+    setShownKey(queryKey)
+    setActive(0)
+    if (suggestion === null) setDismissed(null)
+  }
+  const search = useDebouncedCallback(props.onMentionSearch, props.mentionSearchDelay ?? 300)
+  // The application's search runs when the text after "@" changes.
+  const mentionQuery = open && suggestion.kind === 'mention' ? suggestion.query : null
+  useEffect(() => {
+    if (mentionQuery !== null) live.search(mentionQuery)
+  }, [live, mentionQuery])
+
+  const choose = (index: number) => {
+    const option = options[index]
+    if (option === undefined || suggestion === null || editor === null) return
+    const range = { from: suggestion.from, to: suggestion.to }
+    if (suggestion.kind === 'mergeField') {
+      editor
+        .chain()
+        .focus()
+        .insertContentAt(range, { type: 'mergeField', attrs: { key: option.value } })
+        .run()
+    } else {
+      editor
+        .chain()
+        .focus()
+        .insertContentAt(range, [
+          { type: 'mention', attrs: { id: option.value, label: option.label } },
+          { type: 'text', text: ' ' },
+        ])
+        .run()
+    }
+  }
+
+  const length = snapshot?.length ?? richTextLength(initial)
+  const over = props.maxLength !== undefined && length > props.maxLength
+  const invalid = control.invalid || over
+  const autocomplete = mergeFields.length > 0 || props.mentionCandidates !== undefined
+  const minRows = props.minRows ?? 4
+
+  // The text box's attributes, read by ProseMirror (editorProps.attributes).
+  const attributes: Record<string, string> = {
+    id: control.id,
+    role: 'textbox',
+    'aria-multiline': 'true',
+    'aria-labelledby': control.labelId,
+    class: cn(
+      RICH_CONTENT,
+      'min-h-(--rich-min-height) px-3 py-2 whitespace-pre-wrap outline-none [font-variant-ligatures:none]',
+      '[&_img.ProseMirror-separator]:m-0 [&_img.ProseMirror-separator]:inline [&_img.ProseMirror-separator]:border-0',
+      // Disabled: every text in the disabled colour, the pills and links too.
+      disabled &&
+        'cursor-not-allowed text-disabled [&_[data-merge-field]]:text-disabled [&_[data-mention]]:text-disabled [&_a]:text-disabled',
+    ),
+  }
+  if (control.describedBy !== undefined) attributes['aria-describedby'] = control.describedBy
+  if (invalid) attributes['aria-invalid'] = 'true'
+  if (control.required) attributes['aria-required'] = 'true'
+  if (disabled) attributes['aria-disabled'] = 'true'
+  if (props.placeholder !== undefined) attributes['aria-placeholder'] = props.placeholder
+  if (autocomplete) attributes['aria-autocomplete'] = 'list'
+  if (listShown) {
+    attributes['aria-controls'] = listId
+    attributes['aria-activedescendant'] = optionId(listId, active)
+  }
+  const attributesKey = JSON.stringify(attributes)
+
+  useLayoutEffect(() => {
+    live.set({
+      labelOf: (key) => mergeFields.find((field) => field.key === key)?.label ?? key,
+      nameOf: (label) => messages['richText.mergeField'](label),
+      openLink: () => {
+        if (editor === null || disabled || loading) return
+        const href: unknown = editor.getAttributes('link').href
+        setLinkCurrent(typeof href === 'string' ? href : null)
+        setLinkOpen(true)
+      },
+      keyDown: (event) => {
+        if (!open) return false
+        if (listShown && (MOVE_KEYS as readonly string[]).includes(event.key)) {
+          event.preventDefault()
+          setActive(moveActive(event.key as MoveKey, active, options))
+          return true
+        }
+        if (listShown && (event.key === 'Enter' || event.key === 'Tab') && !event.shiftKey) {
+          event.preventDefault()
+          choose(active)
+          return true
+        }
+        if (event.key === 'Escape') {
+          event.preventDefault()
+          setDismissed(suggestion.from)
+          return true
+        }
+        return false
+      },
+      change: (json) => {
+        lastEmitted.current = json
+        props.onChange?.(richTextValue(json))
+      },
+      blur: () => {
+        props.onBlur?.()
+      },
+      search,
+      attributes,
+    })
+  })
+
+  // ProseMirror reads the attributes again when they change.
+  useLayoutEffect(() => {
+    if (editor !== null && editor.isInitialized && !editor.isDestroyed) editor.view.setProps({})
+  }, [editor, attributesKey])
+
+  useEffect(() => {
+    if (editor !== null && !editor.isDestroyed) editor.setEditable(!disabled && !loading, false)
+  }, [editor, disabled, loading])
+
+  // A controlled value set by the application (not the one this field just reported).
+  useEffect(() => {
+    const value = props.value
+    if (editor === null || editor.isDestroyed || value === undefined) return
+    if (value === lastEmitted.current) return
+    const next = normalizeRichText(value ?? EMPTY_RICH_TEXT)
+    if (
+      JSON.stringify(next) === JSON.stringify(normalizeRichText(editor.getJSON() as RichTextNode))
+    ) {
+      return
+    }
+    editor.commands.setContent(next, { emitUpdate: false })
+  }, [editor, props.value])
+
+  let listContent: ReactNode = null
+  if (options.length > 0) {
+    const grouped =
+      suggestion?.kind === 'mergeField' && options.some((option) => option.group !== undefined)
+    listContent = (
+      <div
+        id={listId}
+        role="listbox"
+        aria-label={
+          suggestion?.kind === 'mergeField'
+            ? messages['richText.mergeFields']
+            : messages['mention.list']
+        }
+        className="max-h-55 overflow-y-auto"
+      >
+        {options.map((option, index) => (
+          <div key={option.value}>
+            {grouped &&
+              option.group !== options[index - 1]?.group &&
+              option.group !== undefined && (
+                <div
+                  role="presentation"
+                  className={cn(
+                    'px-2.5 pt-2 pb-1 text-xs font-semibold text-secondary',
+                    TEXT_DIRECTION,
+                  )}
+                >
+                  {option.group}
+                </div>
+              )}
+            <div
+              id={optionId(listId, index)}
+              role="option"
+              aria-selected={index === active}
+              data-highlighted={index === active ? '' : undefined}
+              data-index={index}
+              tabIndex={-1}
+              className={cn(OPTION, option.candidate !== undefined && 'gap-3 px-2 py-1')}
+            >
+              {option.candidate === undefined ? (
+                <span className={cn('min-w-0 flex-1 truncate', TEXT_DIRECTION)}>
+                  {option.label}
+                </span>
+              ) : (
+                <MentionOption candidate={option.candidate} />
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    )
+  }
+
+  const textArea = (
+    <div
+      className="relative"
+      style={{ '--rich-min-height': `calc(${String(minRows)}lh + 16px)` } as CSSProperties}
+    >
+      {loading ? (
+        <div
+          aria-busy="true"
+          className="flex min-h-(--rich-min-height) flex-col gap-2.5 px-3 py-3 text-sm"
+        >
+          <span className="sr-only">{messages['field.loading']}</span>
+          <Skeleton className="h-3 w-11/12" />
+          <Skeleton className="h-3 w-full" />
+          <Skeleton className="h-3 w-3/5" />
+        </div>
+      ) : editor === null ? (
+        // Before the editor exists (the first render, or on a server): the same text, drawn.
+        <div className="min-h-(--rich-min-height) px-3 py-2">
+          <RichText value={initial} mergeFields={mergeFields} empty="" />
+        </div>
+      ) : (
+        <EditorContent editor={editor} />
+      )}
+      {!loading &&
+        props.placeholder !== undefined &&
+        (snapshot?.empty ?? isRichTextEmpty(initial)) && (
+          <p
+            aria-hidden="true"
+            className={cn(
+              'pointer-events-none absolute start-3 end-3 top-2 m-0 text-sm leading-normal text-tertiary',
+              TEXT_DIRECTION,
+            )}
+          >
+            {props.placeholder}
+          </p>
+        )}
+    </div>
+  )
+
+  return (
+    <>
+      <div
+        data-slot="rich-text-field"
+        className={cn(
+          'overflow-hidden rounded-md border border-solid font-sans transition-colors duration-(--liro-duration-fast) ease-standard',
+          disabled
+            ? 'border-default bg-surface-disabled'
+            : cn(
+                'border-control bg-surface-raised',
+                invalid ? 'border-status-danger-fg' : 'focus-within:border-focus',
+              ),
+        )}
+      >
+        <Toolbar
+          editor={editor}
+          state={toolbar}
+          controls={loading ? undefined : control.id}
+          disabled={disabled || loading}
+          mergeFields={mergeFields}
+          onLink={() => {
+            live.value.openLink()
+          }}
+          onInsertMergeField={(key) => {
+            editor?.chain().focus().insertContent({ type: 'mergeField', attrs: { key } }).run()
+          }}
+        />
+        {disabled ? (
+          textArea
+        ) : (
+          <ComboboxPopover
+            open={visible}
+            onOpenChange={(next) => {
+              if (!next && suggestion !== null) setDismissed(suggestion.from)
+            }}
+            onOptionHover={setActive}
+            onOptionClick={choose}
+            anchor={textArea}
+          >
+            {listContent}
+            {searching && (
+              <p
+                role="status"
+                className={cn('m-0 px-2.5 py-1.5 text-center text-sm text-secondary', TEXT_ISOLATE)}
+              >
+                {messages['field.loading']}
+              </p>
+            )}
+            {showEmpty && (
+              <p
+                role="status"
+                className={cn('m-0 px-2.5 py-1.5 text-center text-sm text-secondary', TEXT_ISOLATE)}
+              >
+                {messages['field.noResults']}
+              </p>
+            )}
+          </ComboboxPopover>
+        )}
+      </div>
+      {props.maxLength !== undefined && (
+        <p
+          id={props.counterId}
+          className={cn(
+            'm-0 mt-1 flex flex-wrap items-center justify-end gap-x-2 text-xs leading-tight tabular-nums',
+            over ? 'text-status-danger-fg' : 'text-secondary',
+          )}
+        >
+          {over && (
+            <span className="flex items-center gap-1">
+              <CircleAlert aria-hidden="true" className="size-3 shrink-0" />
+              <span className={TEXT_DIRECTION}>
+                {messages['richText.overLimit'](
+                  length - props.maxLength,
+                  format.number(String(length - props.maxLength)),
+                )}
+              </span>
+            </span>
+          )}
+          <span aria-hidden="true" className={TEXT_ISOLATE}>
+            {messages['richText.count'](
+              format.number(String(length)),
+              format.number(String(props.maxLength)),
+            )}
+          </span>
+          <span className="sr-only">
+            {messages['richText.countLabel'](
+              format.number(String(length)),
+              format.number(String(props.maxLength)),
+            )}
+          </span>
+        </p>
+      )}
+      <LinkDialog
+        open={linkOpen}
+        onOpenChange={setLinkOpen}
+        current={linkCurrent}
+        onApply={(href, typed) => {
+          if (editor === null) return
+          if (editor.state.selection.empty && !editor.isActive('link')) {
+            editor
+              .chain()
+              .insertContent({
+                type: 'text',
+                text: typed,
+                marks: [{ type: 'link', attrs: { href } }],
+              })
+              .run()
+          } else {
+            editor.chain().extendMarkRange('link').setLink({ href }).run()
+          }
+        }}
+        onRemove={() => {
+          editor?.chain().extendMarkRange('link').unsetLink().run()
+        }}
+      />
+    </>
+  )
+}
