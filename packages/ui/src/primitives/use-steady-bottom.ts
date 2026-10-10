@@ -14,7 +14,9 @@ import { useLayoutEffect, useRef, type RefObject } from 'react'
 
 /**
  * The spacer's height, in px, so that the view keeps its position: the part of the view's bottom
- * that the content (from `contentTop`, `contentHeight` high) no longer reaches. 0 when it does.
+ * that the content (from `contentTop`, `contentHeight` high) no longer reaches. 0 when it does,
+ * and never more than the scroll position it holds: at the top there is nothing to hold, so a
+ * content shorter than the view leaves no space after it.
  */
 export function steadySpacer(
   scrollTop: number,
@@ -22,7 +24,8 @@ export function steadySpacer(
   contentTop: number,
   contentHeight: number,
 ): number {
-  return Math.max(0, Math.ceil(scrollTop + viewHeight - (contentTop + contentHeight)))
+  const missing = Math.ceil(scrollTop + viewHeight - (contentTop + contentHeight))
+  return Math.max(0, Math.min(missing, Math.ceil(scrollTop)))
 }
 
 /** The nearest ancestor that scrolls vertically, or the document's scrolling element. */

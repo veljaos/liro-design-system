@@ -17,6 +17,10 @@ describe('steadySpacer', () => {
     expect(steadySpacer(290, 500, 0, 777)).toBe(13)
     expect(steadySpacer(277, 500, 0, 777)).toBe(0)
   })
+  it('adds nothing at the top, where there is no position to hold', () => {
+    expect(steadySpacer(0, 500, 0, 300)).toBe(0)
+    expect(steadySpacer(10, 500, 0, 300)).toBe(10)
+  })
   it('rounds up, so a fraction of a pixel never moves the view', () => {
     expect(steadySpacer(300.5, 500, 0, 800)).toBe(1)
   })

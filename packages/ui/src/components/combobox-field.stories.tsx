@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { useRef, useState } from 'react'
-import { expect, userEvent, within } from 'storybook/test'
+import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { settle } from '../primitives/story-helpers'
 import { ComboboxField, type ComboboxOption } from './combobox-field'
 import { filterChoices } from './combobox-logic'
@@ -86,7 +86,9 @@ export const Open: Story = {
     </div>
   ),
   play: async () => {
-    await expect(await within(document.body).findByRole('listbox')).toBeVisible()
+    const list = await within(document.body).findByRole('listbox')
+    // The list fades in (opacity counts as not visible): wait until it shows.
+    await waitFor(() => expect(list).toBeVisible())
     await settle()
   },
 }
@@ -115,7 +117,9 @@ export const Loading: Story = {
     </div>
   ),
   play: async () => {
-    await expect(await within(document.body).findByText('Loading…')).toBeVisible()
+    const text = await within(document.body).findByText('Loading…')
+    // The list fades in (opacity counts as not visible): wait until it shows.
+    await waitFor(() => expect(text).toBeVisible())
     await settle()
   },
 }
@@ -141,7 +145,9 @@ export const Empty: Story = {
     </div>
   ),
   play: async () => {
-    await expect(await within(document.body).findByText('Nothing found')).toBeVisible()
+    const text = await within(document.body).findByText('Nothing found')
+    // The list fades in (opacity counts as not visible): wait until it shows.
+    await waitFor(() => expect(text).toBeVisible())
     await settle()
   },
 }
