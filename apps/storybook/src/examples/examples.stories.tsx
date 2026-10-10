@@ -2108,3 +2108,349 @@ export const BankStatementLinePhone: Story = {
     await settle()
   },
 }
+
+// ── P5.17 group J: Learning and printouts ──
+
+import { J_ROUTES } from './data-J'
+
+/**
+ * The occupational-safety course "Bezbednost i zdravlje na radu" as Nikola Marković, a site
+ * worker of Kvadrat Gradnja d.o.o., left it: 5 of 8 lessons done, "Manual handling of loads"
+ * next; the lesson after it is locked until this one is done, the final test until every lesson
+ * is.
+ */
+export const SafetyCourseLesson: Story = {
+  name: 'Safety course, lesson',
+  render: () => <ExampleApp start={J_ROUTES.lesson} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { level: 1 })).toHaveTextContent(
+      'Bezbednost i zdravlje na radu',
+    )
+    await expect(canvas.getByText('5 of 8 lessons')).toBeVisible()
+    const outline = canvas.getByRole('navigation', { name: 'Course outline' })
+    const current = within(outline).getByRole('link', { current: 'page' })
+    await expect(current).toHaveTextContent('Manual handling of loads')
+    await expect(current).toHaveAttribute('data-state', 'todo')
+    await expect(
+      within(outline).getByText(
+        'Reading · 11 min · Locked: finish “Manual handling of loads” first',
+      ),
+    ).toBeVisible()
+    await expect(
+      within(outline).getByText('Quiz · 5 questions · Locked: finish every lesson first'),
+    ).toBeVisible()
+    await expect(within(outline).queryByRole('link', { name: /Final test/ })).toBeNull()
+    await expect(canvas.getByRole('button', { name: 'Mark as done' })).toBeEnabled()
+    // The next lesson is locked: the pager offers only the previous one.
+    const pager = canvas.getByRole('navigation', { name: 'Lessons' })
+    await expect(within(pager).queryByRole('link', { name: /Next lesson/ })).toBeNull()
+    await expect(within(pager).getByRole('link', { name: /Previous lesson/ })).toBeVisible()
+  },
+}
+
+/** Phone: the lesson first, the outline behind "Course outline". */
+export const SafetyCourseLessonPhone: Story = {
+  name: 'Safety course, lesson, phone',
+  render: () => <OnPhone start={J_ROUTES.lesson} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('button', { name: 'Course outline' })).toBeVisible()
+    await expect(canvas.queryByRole('navigation', { name: 'Course outline' })).toBeNull()
+    await expect(canvas.getByText('5 of 8 lessons')).toBeVisible()
+    const page = canvasElement.querySelector<HTMLElement>('[data-slot="course-page"]')
+    if (page === null) throw new Error('no course page')
+    await expect(page.scrollWidth).toBeLessThanOrEqual(page.clientWidth)
+  },
+}
+
+/** Phone, the outline open: done, to do, and the locked lessons with their reasons. */
+export const SafetyCourseOutlinePhone: Story = {
+  name: 'Safety course, outline, phone',
+  render: () => <OnPhone start={J_ROUTES.lessonOutline} />,
+  play: async () => {
+    const dialog = await within(document.body).findByRole('dialog', { name: 'Course outline' })
+    await settle()
+    await expect(within(dialog).getByRole('link', { current: 'page' })).toHaveTextContent(
+      'Manual handling of loads',
+    )
+    await expect(within(dialog).getByText(/Locked: finish every lesson first/)).toBeVisible()
+    await expect(within(dialog).getByText('2 of 2 done')).toBeVisible()
+  },
+}
+
+/** The final test on the general Questionnaire, resumed at the third of five questions. */
+export const SafetyCourseTest: Story = {
+  name: 'Safety course, final test',
+  render: () => <ExampleApp start={J_ROUTES.test} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('7 of 8 lessons')).toBeVisible()
+    await expect(canvas.getByText('2 of 5 answered')).toBeVisible()
+    await expect(
+      canvas.getByRole('group', { name: /Which equipment must every worker wear on the site\?/ }),
+    ).toBeVisible()
+    await expect(canvas.queryByRole('region', { name: 'Course completed' })).toBeNull()
+  },
+}
+
+/** The first attempt, not passed: 3 of 5, the answers with the correct ones, "Take the test again". */
+export const SafetyCourseTestNotPassed: Story = {
+  name: 'Safety course, test not passed',
+  render: () => <ExampleApp start={J_ROUTES.testNotPassed} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('Not passed')).toBeVisible()
+    await expect(canvas.getByText('3 of 5 correct')).toBeVisible()
+    await expect(canvas.getByText('You need 4 correct answers to pass.')).toBeVisible()
+    await expect(canvas.getByText('Correct answer: From 2 m')).toBeVisible()
+    await expect(
+      canvas.getByText('Correct answer: Safety helmet, Safety boots, High-visibility vest'),
+    ).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Take the test again' })).toBeEnabled()
+    await expect(canvas.getByText('7 of 8 lessons')).toBeVisible()
+  },
+}
+
+/** Passed: the course completed, "Download certificate" and the certificate's preview. */
+export const SafetyCourseCompleted: Story = {
+  name: 'Safety course, completed',
+  render: () => <ExampleApp start={J_ROUTES.completed} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('8 of 8 lessons')).toBeVisible()
+    const completion = canvas.getByRole('region', { name: 'Course completed' })
+    await expect(completion).toHaveTextContent(
+      'Completed on 06.10.2026. with 4 of 5 correct answers in the final test.',
+    )
+    await expect(
+      within(completion).getByRole('button', { name: 'Download certificate' }),
+    ).toBeEnabled()
+    await expect(
+      within(completion).getByRole('figure', { name: 'Certificate preview' }),
+    ).toHaveTextContent('Nikola Marković')
+    await expect(canvas.getByText('4 of 5 correct')).toBeVisible()
+    await expect(canvas.getByText('Passed')).toBeVisible()
+  },
+}
+
+export const SafetyCourseCompletedPhone: Story = {
+  name: 'Safety course, completed, phone',
+  render: () => <OnPhone start={J_ROUTES.completed} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('button', { name: 'Download certificate' })).toBeVisible()
+    const page = canvasElement.querySelector<HTMLElement>('[data-slot="course-page"]')
+    if (page === null) throw new Error('no course page')
+    await expect(page.scrollWidth).toBeLessThanOrEqual(page.clientWidth)
+  },
+}
+
+/**
+ * The course worked through: "Mark as done" saves and the next lesson opens; the final test
+ * not passed, taken again and passed; "Download certificate" opens the certificate's printout,
+ * and its back button returns to the course.
+ */
+export const SafetyCourseInteraction: Story = {
+  name: 'Safety course, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={J_ROUTES.lesson} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Mark as done' }))
+    await settle()
+    await expect(await canvas.findByText('6 of 8 lessons')).toBeVisible()
+    await expect(canvas.getByText('Lesson completed')).toBeVisible()
+    await userEvent.click(canvas.getByRole('link', { name: /Next lesson/ }))
+    await settle()
+    await expect(
+      await canvas.findByRole('heading', { level: 2, name: 'Cranes, slings and signals' }),
+    ).toBeVisible()
+    await userEvent.click(canvas.getByRole('button', { name: 'Mark as done' }))
+    await settle()
+    await expect(await canvas.findByText('7 of 8 lessons')).toBeVisible()
+    await userEvent.click(canvas.getByRole('link', { name: /Next lesson/ }))
+    await settle()
+    // The test resumes at the third question; two answers wrong.
+    await userEvent.click(await canvas.findByRole('checkbox', { name: /Safety helmet/ }))
+    await userEvent.click(canvas.getByRole('button', { name: 'Next' }))
+    await userEvent.click(await canvas.findByRole('radio', { name: /Loads up to 40 kg/ }))
+    await userEvent.click(canvas.getByRole('button', { name: 'Next' }))
+    await userEvent.click(await canvas.findByRole('radio', { name: /One signaller/ }))
+    await userEvent.click(canvas.getByRole('button', { name: 'Review answers' }))
+    await userEvent.click(await canvas.findByRole('button', { name: 'Submit answers' }))
+    await expect(await canvas.findByText('Not passed')).toBeVisible()
+    await expect(canvas.getByText('3 of 5 correct')).toBeVisible()
+    // Again, from the first question, every answer right.
+    await userEvent.click(canvas.getByRole('button', { name: 'Take the test again' }))
+    await userEvent.click(await canvas.findByRole('radio', { name: /From 2 m/ }))
+    await userEvent.click(canvas.getByRole('button', { name: 'Next' }))
+    await userEvent.click(await canvas.findByRole('radio', { name: /A competent person/ }))
+    await userEvent.click(canvas.getByRole('button', { name: 'Next' }))
+    for (const name of [/Safety helmet/, /Safety boots/, /High-visibility vest/]) {
+      await userEvent.click(await canvas.findByRole('checkbox', { name }))
+    }
+    await userEvent.click(canvas.getByRole('button', { name: 'Next' }))
+    await userEvent.click(await canvas.findByRole('radio', { name: /Loads up to 25 kg/ }))
+    await userEvent.click(canvas.getByRole('button', { name: 'Next' }))
+    await userEvent.click(await canvas.findByRole('radio', { name: /One signaller/ }))
+    await userEvent.click(canvas.getByRole('button', { name: 'Review answers' }))
+    await userEvent.click(await canvas.findByRole('button', { name: 'Submit answers' }))
+    await expect(await canvas.findByText('Passed')).toBeVisible()
+    await expect(canvas.getByText('5 of 5 correct')).toBeVisible()
+    await expect(canvas.getByText('8 of 8 lessons')).toBeVisible()
+    const completion = canvas.getByRole('region', { name: 'Course completed' })
+    await userEvent.click(within(completion).getByRole('button', { name: 'Download certificate' }))
+    await settle()
+    await expect(
+      await canvas.findByRole('article', { name: 'Certificate: Nikola Marković' }),
+    ).toBeVisible()
+    await userEvent.click(
+      canvas.getByRole('link', { name: 'Back to Bezbednost i zdravlje na radu' }),
+    )
+    await settle()
+    await expect(await canvas.findByText('8 of 8 lessons')).toBeVisible()
+  },
+}
+
+/** Invoice F-2026-0412 on paper: the lines and totals of its page, from the same data. */
+export const PrintoutInvoice: Story = {
+  name: 'Printout, invoice F-2026-0412',
+  render: () => <ExampleApp start={J_ROUTES.invoicePrint} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const sheet = canvas.getByRole('article', { name: `Invoice ${FEATURED}` })
+    await expect(sheet).toHaveAttribute('data-liro-theme', 'light')
+    await expect(canvas.getByRole('heading', { level: 1 })).toHaveTextContent(`Invoice ${FEATURED}`)
+    const lines = canvas.getByRole('table', { name: 'Lines' })
+    await expect(within(lines).getAllByRole('row')).toHaveLength(6)
+    const totals = sheet.querySelector('[data-slot="document-totals"]')
+    await expect(totals).toHaveAttribute('aria-label', 'Totals')
+    await expect(totals).toHaveTextContent('185.954,00')
+    await expect(totals).toHaveTextContent('135.954,00')
+    await expect(canvas.getByText('Novi Sad, 28.09.2026.')).toBeVisible()
+    await expect(canvas.getByRole('link', { name: `Back to ${FEATURED}` })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Print' })).toBeVisible()
+  },
+}
+
+export const PrintoutInvoicePhone: Story = {
+  name: 'Printout, invoice F-2026-0412, phone',
+  render: () => <OnPhone start={J_ROUTES.invoicePrint} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const page = canvasElement.querySelector<HTMLElement>('[data-slot="print-page"]')
+    if (page === null) throw new Error('no print page')
+    // The sheet is scaled down to the phone's width: nothing scrolls sideways.
+    await expect(page.scrollWidth).toBeLessThanOrEqual(page.clientWidth)
+  },
+}
+
+/** The invoice's "PDF" opens its printout; the back button returns to the invoice. */
+export const PrintoutInvoiceInteraction: Story = {
+  name: 'Printout, invoice from its page, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={ROUTES.invoice(FEATURED)} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'PDF' }))
+    await settle()
+    const sheet = await canvas.findByRole('article', { name: `Invoice ${FEATURED}` })
+    await expect(sheet.querySelector('[data-slot="document-totals"]')).toHaveTextContent(
+      '135.954,00',
+    )
+    await userEvent.click(canvas.getByRole('link', { name: `Back to ${FEATURED}` }))
+    await settle()
+    await expect(await canvas.findByRole('heading', { level: 1, name: FEATURED })).toBeVisible()
+  },
+}
+
+/** The course certificate, landscape, from "Download certificate". */
+export const PrintoutCertificate: Story = {
+  name: 'Printout, certificate',
+  render: () => <ExampleApp start={J_ROUTES.certificate} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const sheet = canvas.getByRole('article', { name: 'Certificate: Nikola Marković' })
+    await expect(sheet).toHaveAttribute('data-orientation', 'landscape')
+    await expect(canvas.getByText('Novi Sad, 06.10.2026.')).toBeVisible()
+    await expect(
+      canvas.getByRole('link', { name: 'Back to Bezbednost i zdravlje na radu' }),
+    ).toBeVisible()
+  },
+}
+
+export const PrintoutCertificatePhone: Story = {
+  name: 'Printout, certificate, phone',
+  render: () => <OnPhone start={J_ROUTES.certificate} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const page = canvasElement.querySelector<HTMLElement>('[data-slot="print-page"]')
+    if (page === null) throw new Error('no print page')
+    await expect(page.scrollWidth).toBeLessThanOrEqual(page.clientWidth)
+  },
+}
+
+/** A pupil's report card from OŠ „Jovan Popović“ Novi Sad; the average is the school's. */
+export const PrintoutReportCard: Story = {
+  name: 'Printout, school report',
+  render: () => <ExampleApp start={J_ROUTES.reportCard} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { level: 1 })).toHaveTextContent('Report card')
+    const table = canvas.getByRole('table', { name: 'Final grades by subject' })
+    await expect(within(table).getByRole('rowheader', { name: 'Average grade' })).toBeVisible()
+    await expect(table).toHaveTextContent('4,57')
+    await expect(canvas.getByRole('img', { name: 'OŠ „Jovan Popović“ Novi Sad' })).toBeVisible()
+  },
+}
+
+export const PrintoutReportCardPhone: Story = {
+  name: 'Printout, school report, phone',
+  render: () => <OnPhone start={J_ROUTES.reportCard} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const page = canvasElement.querySelector<HTMLElement>('[data-slot="print-page"]')
+    if (page === null) throw new Error('no print page')
+    await expect(page.scrollWidth).toBeLessThanOrEqual(page.clientWidth)
+  },
+}
+
+/** A specialist's finding from Dom zdravlja Novi Sad, confidential on every page. */
+export const PrintoutFinding: Story = {
+  name: 'Printout, medical finding',
+  render: () => <ExampleApp start={J_ROUTES.finding} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('region', { name: 'Patient' })).toHaveTextContent(
+      'Svetlana Đorđević',
+    )
+    await expect(
+      canvas.getByRole('table', { name: 'Laboratory results, 03.10.2026.' }),
+    ).toHaveTextContent('6,4')
+    await expect(canvasElement.querySelector('[data-slot="print-confidentiality"]')).not.toBeNull()
+  },
+}
+
+export const PrintoutFindingPhone: Story = {
+  name: 'Printout, medical finding, phone',
+  render: () => <OnPhone start={J_ROUTES.finding} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const page = canvasElement.querySelector<HTMLElement>('[data-slot="print-page"]')
+    if (page === null) throw new Error('no print page')
+    await expect(page.scrollWidth).toBeLessThanOrEqual(page.clientWidth)
+  },
+}

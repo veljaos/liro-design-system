@@ -488,7 +488,8 @@ const LINE_COLUMNS: DataTableColumn<ExampleLine>[] = [
   },
 ]
 
-const TOTAL_ROWS: TotalsRow[] = [
+/** The totals of F-2026-0412, on its page and on its printout (P5.17). */
+export const TOTAL_ROWS: TotalsRow[] = [
   { key: 'base20', label: 'Tax base S 20%', value: TOTALS.base20, currency: 'RSD' },
   { key: 'vat20', label: 'VAT S 20%', value: TOTALS.vat20, currency: 'RSD' },
   { key: 'base10', label: 'Tax base S 10%', value: TOTALS.base10, currency: 'RSD', group: true },
@@ -624,6 +625,7 @@ const PANELS: SidePanel[] = [
 ]
 
 export function Invoice({ phone, invoice }: { phone: boolean; invoice: ExampleInvoice }) {
+  const navigate = useContext(Navigate)
   const [open, setOpen] = useState<string[]>(['delivery', 'related'])
   const [hidden, setHidden] = useState(false)
   const reminder = <Button family="verify" icon={Send} label="Send reminder" />
@@ -653,7 +655,15 @@ export function Invoice({ phone, invoice }: { phone: boolean; invoice: ExampleIn
         ]}
         actions={
           <>
-            <Button intent="pdf" label="PDF" emphasis="secondary" />
+            <Button
+              intent="pdf"
+              label="PDF"
+              emphasis="secondary"
+              // The printout (P5.17): the browser prints it or saves it as a PDF.
+              onClick={() => {
+                navigate(`${ROUTES.invoice(invoice.number)}/print`)
+              }}
+            />
             {phone ? null : reminder}
           </>
         }

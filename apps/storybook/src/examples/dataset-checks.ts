@@ -78,3 +78,67 @@ export function checkDataset() {
 
 /** Run once, when the examples load. */
 export const DATASET = checkDataset()
+
+// ── P5.17 group J ──
+// Invoice F-2026-0412 on paper shows the lines and totals of its page (the same objects); they
+// must add up: each tax category's lines to its base, the bases, VAT and the exempt deposit to
+// the total, the total less the advance to the amount due, as in the invoice list. The report
+// card's average is the school's arithmetic: the mean of the final grades to two decimals, half
+// up; its hours absent add up to the subjects' and to excused and unexcused.
+import {
+  FIRST_ATTEMPT,
+  PASS_MARK,
+  PRINTED_INVOICE,
+  PRINTED_LINES,
+  PRINTED_TOTALS,
+  REPORT_TOTALS,
+  SECOND_ATTEMPT,
+  SUBJECTS,
+} from './data-J'
+
+function checkGroupJ() {
+  const base = (vat: string) =>
+    PRINTED_LINES.filter((line) => line.vat === vat).reduce(
+      (total, line) => total + paras(line.amount),
+      0n,
+    )
+  for (const line of PRINTED_LINES) {
+    if ((paras(line.price) * paras(line.quantity)) / 100n !== paras(line.amount)) {
+      fail(`${PRINTED_INVOICE.number}: line ${line.id} is not quantity × price`)
+    }
+  }
+  const totals = PRINTED_TOTALS
+  if (base('S 20%') !== paras(totals.base20)) fail(`${PRINTED_INVOICE.number}: base S 20% differs`)
+  if (base('S 10%') !== paras(totals.base10)) fail(`${PRINTED_INVOICE.number}: base S 10% differs`)
+  if (base('E') !== paras(totals.exempt)) fail(`${PRINTED_INVOICE.number}: exempt amount differs`)
+  if ((paras(totals.base20) * 20n) / 100n !== paras(totals.vat20)) fail('VAT S 20% differs')
+  if ((paras(totals.base10) * 10n) / 100n !== paras(totals.vat10)) fail('VAT S 10% differs')
+  const total =
+    paras(totals.base20) +
+    paras(totals.vat20) +
+    paras(totals.base10) +
+    paras(totals.vat10) +
+    paras(totals.exempt)
+  if (total !== paras(totals.total)) fail(`${PRINTED_INVOICE.number}: total differs from its rows`)
+  if (paras(PRINTED_INVOICE.total) !== total) fail(`${PRINTED_INVOICE.number}: list total differs`)
+  if (total + paras(totals.advance) !== paras(totals.due)) fail('amount due differs')
+  if (paras(PRINTED_INVOICE.open) !== paras(totals.due)) fail('list amount due differs')
+
+  // The report card: the mean of the grades in hundredths, half up.
+  const sum = SUBJECTS.reduce((total, row) => total + BigInt(row.grade), 0n)
+  const thousandths = (sum * 1000n) / BigInt(SUBJECTS.length)
+  if ((thousandths + 5n) / 10n !== paras(REPORT_TOTALS.average)) {
+    fail('report card: the average grade differs from the grades')
+  }
+  const absent = SUBJECTS.reduce((total, row) => total + BigInt(row.absences), 0n)
+  if (absent !== BigInt(REPORT_TOTALS.absences)) fail('report card: hours absent differ')
+  if (BigInt(REPORT_TOTALS.excused) + BigInt(REPORT_TOTALS.unexcused) !== absent) {
+    fail('report card: excused and unexcused hours differ from the total')
+  }
+
+  // The final test: the first attempt not passed, the second passed.
+  if (FIRST_ATTEMPT.passed || FIRST_ATTEMPT.correct >= PASS_MARK) fail('first attempt passes')
+  if (!SECOND_ATTEMPT.passed) fail('second attempt does not pass')
+}
+
+checkGroupJ()
