@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { settle } from '../primitives/story-helpers'
 import { Button } from './button'
+import { KeyValueList } from './cards'
 import { Dialog } from './dialog'
 import { ProgressBar } from './progress'
 import { Spinner } from './spinner'
@@ -207,6 +208,34 @@ export const EnglishInRtl: Story = {
         '3 invoices are ready to send. The customers receive them by e-mail.',
       ),
     )
+    await settle()
+  },
+}
+
+/** `size` 'wide' (720px) for a read-only view that needs the room: here a table of figures. */
+export const Wide: Story = {
+  render: () => (
+    <Dialog
+      defaultOpen
+      size="wide"
+      title="Statement 188, journal entry"
+      description="What posting the statement books."
+    >
+      <KeyValueList
+        columns={2}
+        items={[
+          { label: 'Debit', value: '4.472.028,40 RSD', numeric: true },
+          { label: 'Credit', value: '4.472.028,40 RSD', numeric: true },
+          { label: 'Lines', value: '22', numeric: true },
+          { label: 'Journal', value: 'Bank statements' },
+        ]}
+      />
+    </Dialog>
+  ),
+  play: async ({ canvasElement }) => {
+    const body = within(canvasElement.ownerDocument.body)
+    const dialog = await body.findByRole('dialog', { name: 'Statement 188, journal entry' })
+    await expect(dialog.getBoundingClientRect().width).toBeGreaterThan(440)
     await settle()
   },
 }

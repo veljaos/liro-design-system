@@ -1,11 +1,12 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { Button } from '../components/button'
+import { ArrowLeft, ArrowRight } from 'lucide-react'
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode, type SVGProps } from 'react'
+import { Button, IconButton } from '../components/button'
 import { Checkbox } from '../primitives/checkbox'
 import { useBelowMd } from '../components/use-phone'
 import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
-import { PageHeader } from './page-header'
+import { PageHeader, type PageBack } from './page-header'
 
 /*
  * WorklistPage (BUILD-PLAN P4.3; the owner's values, docs/decisions.md "Worklist"): a queue
@@ -13,8 +14,16 @@ import { PageHeader } from './page-header'
  * - From md (62em): the list 380px at the start, the detail fills the rest, a 1px border.default
  *   line between them; each scrolls on its own, the page filling the screen under the shell
  *   (AppShell's --liro-shell-top).
- * - Below md: the list; choosing an item shows its detail full width with "Back to list" and
- *   "Next item".
+ * - Below md: the list; choosing an item shows its detail full width (the whole screen, never a
+ *   second list under it), its top row "Back to list" at the start and the position ("3 of 11")
+ *   with Previous and Next at the end. The item's decisions go into AppShell's bottom bar (the
+ *   application passes them there; P4.9 rule 16).
+ * - One way to decide items one by one (P5.23, the owner's review): the position, Previous, Next
+ *   and the decisions — the main one last ("Confirm and next", "Approve") — stand in one bar at
+ *   the bottom of the detail pane from md, always in view; after a decision the application
+ *   opens the next item and confirms with a toast (Undo where the Core can take it back).
+ * - `summary` stands between the title and the list: the record the queue belongs to (a
+ *   statement's balances and progress); the title row takes `back`, `status` and `subtitle`.
  * - Rows (the old WorklistItem): the title (sm semibold), a subtitle (xs text.secondary), one
  *   deciding figure at the end (sm medium, tabular) with the status badge under it; rows
  *   separated by border.subtle, padding sm by md. The chosen row is surface.selected with a 3px
@@ -47,6 +56,17 @@ export interface WorklistPageProps {
   titleHidden?: boolean
   /** The page's actions at the end of the title row. */
   actions?: ReactNode
+  /** The back button at the start of the title (the record's list). */
+  back?: PageBack
+  /** After the title: a StatusBadge (the record's state). */
+  status?: ReactNode
+  /** A line under the title. */
+  subtitle?: ReactNode
+  /**
+   * Between the title and the list: what the queue belongs to (KeyFigures, a progress line).
+   * Below md it stands above the list and is not shown with an item's detail.
+   */
+  summary?: ReactNode
   /** Names the list for assistive technology ("Invoices to approve"). */
   label: string
   items: readonly WorklistItem[]
@@ -55,9 +75,17 @@ export interface WorklistPageProps {
   onSelect?: (id: string) => void
   /** The chosen item's detail. Optional: a worklist may be a list alone. */
   detail?: ReactNode
+  /**
+   * The chosen item's decisions, the main one last ("Leave for later", "Confirm and next"). From
+   * md they end the detail pane's bottom bar; below md WorklistPage does not show them: the
+   * application puts them into AppShell's `bottomBar`, within thumb reach.
+   */
+  detailActions?: ReactNode
   /** Below md: back from the detail to the list (the application clears `selected`). */
   onBack?: () => void
-  /** Below md: on to the next item. */
+  /** To the previous item (the application chooses it, and whether the queue wraps around). */
+  onPrevious?: () => void
+  /** On to the next item. */
   onNext?: () => void
   /** Above the list (a FilterBar or a count). */
   toolbar?: ReactNode
@@ -72,6 +100,23 @@ export interface WorklistPageProps {
   /** 'split' (list and detail side by side) or 'stacked'; default by the viewport (62em). */
   layout?: 'split' | 'stacked'
   className?: string
+}
+
+/** The arrows of Previous and Next, pointing along the reading direction (mirrored in rtl). */
+function ArrowStart(props: SVGProps<SVGSVGElement>) {
+  return <ArrowLeft {...props} className={cn(props.className, 'rtl:-scale-x-100')} />
+}
+function ArrowEnd(props: SVGProps<SVGSVGElement>) {
+  return <ArrowRight {...props} className={cn(props.className, 'rtl:-scale-x-100')} />
+}
+
+/** "3 of 11": the chosen item's place among the items, or null when none is chosen. */
+export function worklistPosition(
+  items: readonly { id: string }[],
+  selected: string | undefined,
+): { index: number; total: number } | null {
+  const index = selected === undefined ? -1 : items.findIndex((item) => item.id === selected)
+  return index < 0 ? null : { index: index + 1, total: items.length }
 }
 
 function Row({
@@ -170,19 +215,69 @@ function DetailPane({ label, children }: { label: string; children: ReactNode })
     <div
       ref={pane}
       {...(scrolls ? { tabIndex: 0, role: 'region', 'aria-label': label } : {})}
-      className="min-h-0 min-w-0 overflow-y-auto outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus"
+      className="min-h-0 min-w-0 flex-1 overflow-y-auto outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus"
     >
       <div>{children}</div>
     </div>
   )
 }
 
+/**
+ * The detail's bar from md. It publishes how far its top stands above the bottom of the window
+ * as --liro-shell-bottom on the provider's root (as AppShell's bottom bar does on phones,
+ * P4.9d), so the toast that confirms a decision stands above the bar and never covers "Next" or
+ * the next decision.
+ */
+function DetailBar({ children }: { children: ReactNode }) {
+  const bar = useRef<HTMLDivElement>(null)
+  useLayoutEffect(() => {
+    const element = bar.current
+    if (element === null) return
+    const owner = element.closest<HTMLElement>('[data-liro-theme]') ?? element
+    const measure = () => {
+      const distance = Math.max(0, window.innerHeight - element.getBoundingClientRect().top)
+      owner.style.setProperty('--liro-shell-bottom', `${String(Math.round(distance))}px`)
+    }
+    measure()
+    const observer = new ResizeObserver(measure)
+    observer.observe(element)
+    window.addEventListener('resize', measure)
+    return () => {
+      observer.disconnect()
+      window.removeEventListener('resize', measure)
+      owner.style.removeProperty('--liro-shell-bottom')
+    }
+  }, [])
+  return (
+    <div
+      ref={bar}
+      data-slot="worklist-detail-bar"
+      className="flex shrink-0 flex-wrap items-center gap-2 border-0 border-t border-solid border-default px-6 py-3"
+    >
+      {children}
+    </div>
+  )
+}
+
 /** A queue processed item by item: the list and the chosen item's detail. */
 export function WorklistPage(props: WorklistPageProps) {
-  const { messages } = useLiro()
+  const { messages, format } = useLiro()
   const viewportNarrow = useBelowMd()
   const stacked = props.layout === undefined ? viewportNarrow : props.layout === 'stacked'
   const showDetail = props.detail !== undefined && props.selected !== undefined
+
+  const place = worklistPosition(props.items, props.selected)
+  const position =
+    place === null ? null : (
+      <span data-slot="worklist-position" className="shrink-0 text-sm text-secondary tabular-nums">
+        {messages['worklist.position'](
+          place.index,
+          format.number(String(place.index)),
+          place.total,
+          format.number(String(place.total)),
+        )}
+      </span>
+    )
 
   const checked = props.checked ?? []
   const onChecked = props.onCheckedChange
@@ -225,6 +320,9 @@ export function WorklistPage(props: WorklistPageProps) {
     <PageHeader
       title={props.title}
       {...(props.titleHidden === undefined ? {} : { titleHidden: props.titleHidden })}
+      {...(props.back === undefined ? {} : { back: props.back })}
+      {...(props.status === undefined ? {} : { status: props.status })}
+      {...(props.subtitle === undefined ? {} : { subtitle: props.subtitle })}
       {...(props.actions === undefined ? {} : { actions: props.actions })}
     />
   )
@@ -237,24 +335,37 @@ export function WorklistPage(props: WorklistPageProps) {
       >
         {showDetail ? (
           <>
-            <div className="flex items-center justify-between gap-2">
+            {/* The detail's header: back to the list; the position, Previous and Next. */}
+            <div className="flex items-center gap-2">
               {props.onBack !== undefined && (
                 <Button intent="back" label={messages['worklist.back']} onClick={props.onBack} />
               )}
-              {props.onNext !== undefined && (
-                <Button
-                  intent="next"
-                  emphasis="secondary"
-                  label={messages['worklist.next']}
-                  onClick={props.onNext}
-                />
-              )}
+              <div className="ms-auto flex items-center gap-2">
+                {position}
+                {props.onPrevious !== undefined && (
+                  <IconButton
+                    family="neutral"
+                    icon={ArrowStart}
+                    label={messages['worklist.previous']}
+                    onClick={props.onPrevious}
+                  />
+                )}
+                {props.onNext !== undefined && (
+                  <IconButton
+                    family="neutral"
+                    icon={ArrowEnd}
+                    label={messages['worklist.next']}
+                    onClick={props.onNext}
+                  />
+                )}
+              </div>
             </div>
             <div className="min-w-0">{props.detail}</div>
           </>
         ) : (
           <>
             {header}
+            {props.summary}
             <div className="overflow-hidden rounded-lg border border-solid border-default bg-surface-raised">
               {list}
             </div>
@@ -264,6 +375,11 @@ export function WorklistPage(props: WorklistPageProps) {
     )
   }
 
+  const bar =
+    position !== null ||
+    props.onPrevious !== undefined ||
+    props.onNext !== undefined ||
+    props.detailActions !== undefined
   return (
     <div
       data-slot="worklist-page"
@@ -273,6 +389,7 @@ export function WorklistPage(props: WorklistPageProps) {
       )}
     >
       {header}
+      {props.summary}
       <div
         className={cn(
           'grid min-h-0 flex-1 overflow-hidden rounded-lg border border-solid border-default bg-surface-raised',
@@ -288,7 +405,33 @@ export function WorklistPage(props: WorklistPageProps) {
           {list}
         </div>
         {props.detail !== undefined && (
-          <DetailPane label={messages['worklist.detail']}>{props.detail}</DetailPane>
+          <div className="flex min-h-0 min-w-0 flex-col">
+            <DetailPane label={messages['worklist.detail']}>{props.detail}</DetailPane>
+            {bar && (
+              // The item's bar: where it stands, Previous and Next, then its decisions with the
+              // main one last — always in view under the scrolling detail.
+              <DetailBar>
+                <div className="me-auto">{position}</div>
+                {props.onPrevious !== undefined && (
+                  <Button
+                    family="neutral"
+                    icon={ArrowStart}
+                    label={messages['worklist.previous']}
+                    onClick={props.onPrevious}
+                  />
+                )}
+                {props.onNext !== undefined && (
+                  <Button
+                    family="neutral"
+                    icon={ArrowEnd}
+                    label={messages['worklist.next']}
+                    onClick={props.onNext}
+                  />
+                )}
+                {props.detailActions}
+              </DetailBar>
+            )}
+          </div>
         )}
       </div>
     </div>

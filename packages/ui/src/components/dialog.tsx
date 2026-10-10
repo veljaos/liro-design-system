@@ -43,7 +43,13 @@ interface OverlayProps {
   dismissible?: boolean
 }
 
-export type DialogProps = OverlayProps
+export interface DialogProps extends OverlayProps {
+  /**
+   * 'wide' (720px, at most 90% of the screen) for a read-only view that needs the room: a
+   * document in the viewer, a table. Default 440px.
+   */
+  size?: 'default' | 'wide'
+}
 
 /** The handlers that keep an overlay open while it is not dismissible. */
 function keepOpen(dismissible: boolean) {
@@ -95,6 +101,7 @@ export function Dialog(props: DialogProps) {
       <DialogContent
         {...keepOpen(props.dismissible ?? true)}
         {...(props.description === undefined ? { 'aria-describedby': undefined } : {})}
+        {...(props.size === 'wide' ? { className: 'w-180' } : {})}
       >
         <OverlayParts {...props} />
       </DialogContent>

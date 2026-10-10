@@ -35,7 +35,8 @@ const meta = {
           'the notifications (the bell’s "View all") and a page that does not exist; and from ' +
           'Phase 5: invoices with history and comments, a draft found line by line, complex and ' +
           'corrective documents, customers at scale with their import, the VAT return and the ' +
-          'work-injury register, bank statement matching, a journal entry, the payroll run, ' +
+          'work-injury register, a bank statement worked line by line, a journal entry, the ' +
+          'payroll run, ' +
           'users and roles, the first-run setup, a contract from questions to signatures and the ' +
           'tasks board — reached from the home page, the module tabs, the notifications, the user ' +
           'menu and the search (Ctrl K). Every link goes through the provider’s ' +
@@ -382,71 +383,10 @@ export const NotFoundPhone: Story = {
 
 // ── P5 group F ──
 // (Imports here, inside the group's block, so the groups' blocks merge without touching the top.)
-import { PAYROLL_TOTALS, STATEMENT_TOTALS } from './data-F'
+import { PAYROLL_TOTALS } from './data-F'
 import { F_ROUTES } from './screens-F'
 
 const SERBIAN = createFormat('sr-Latn-RS')
-
-/**
- * Bank statement 188 of 06.10.2026 (Banca Intesa) against the open invoices: three lines matched
- * at import, the Core's suggestions with their confidence, one partial payment (F-2026-0410), and
- * line 10 (a malformed reference) matched by hand after a search.
- */
-export const BankStatementScreen: Story = {
-  name: 'Bank statement matching',
-  render: () => <ExampleApp start={F_ROUTES.statement} />,
-  play: async ({ canvasElement }) => {
-    await settle()
-    const canvas = within(canvasElement)
-    await expect(canvas.getByRole('heading', { level: 1, name: 'Statement 188' })).toBeVisible()
-    await expect(canvasElement).toHaveTextContent(
-      SERBIAN.number(STATEMENT_TOTALS.closing, { decimals: 2 }),
-    )
-    // Three lines were matched at import.
-    const matched = canvas.getByRole('heading', { name: 'Matched' }).parentElement
-    if (matched === null) throw new Error('no matched section')
-    await expect(matched).toHaveTextContent('F-2026-0396')
-    await expect(matched).toHaveTextContent('Matched at import')
-    // The partial payment: F-2026-0410 stays open with what is left.
-    await userEvent.click(
-      canvas.getByRole('button', {
-        name: 'Match: Line 3, Medic Lab Niš d.o.o. with F-2026-0410',
-      }),
-    )
-    const invoices = canvas.getByRole('listbox', { name: 'Open invoices' })
-    await expect(within(invoices).getByRole('option', { name: /^F-2026-0410/ })).toHaveTextContent(
-      '17.762,75 RSD left',
-    )
-    // Line 10 by hand: search the invoice, select both, match.
-    await userEvent.type(canvas.getByRole('searchbox', { name: 'Search: Open invoices' }), '0399')
-    await userEvent.click(await within(invoices).findByRole('option', { name: /^F-2026-0399/ }))
-    const lines = canvas.getByRole('listbox', { name: 'Statement lines' })
-    await userEvent.click(within(lines).getByRole('option', { name: /Bojović i sinovi/ }))
-    await userEvent.click(canvas.getByRole('button', { name: 'Match' }))
-    await expect(matched).toHaveTextContent('Matched by Milica Petrović')
-    await expect(within(lines).queryByRole('option', { name: /Bojović i sinovi/ })).toBeNull()
-    await settle()
-  },
-}
-
-export const BankStatementPhone: Story = {
-  name: 'Bank statement matching, phone',
-  render: () => <OnPhone start={F_ROUTES.statement} />,
-  play: async ({ canvasElement }) => {
-    await settle()
-    const canvas = within(canvasElement)
-    await userEvent.click(canvas.getByRole('option', { name: /Bojović i sinovi/ }))
-    await userEvent.click(canvas.getByRole('radio', { name: /Open invoices/ }))
-    await userEvent.type(canvas.getByRole('searchbox', { name: 'Search: Open invoices' }), '0399')
-    await userEvent.click(await canvas.findByRole('option', { name: /^F-2026-0399/ }))
-    await userEvent.click(canvas.getByRole('button', { name: 'Match' }))
-    await expect(canvasElement).toHaveTextContent('Matched by Milica Petrović')
-    const view = canvasElement.querySelector('[data-slot="matching-view"]')
-    if (view === null) throw new Error('no view')
-    await expect(view.scrollWidth).toBeLessThanOrEqual(view.clientWidth)
-    await settle()
-  },
-}
 
 /** Journal entry NK-2026-0912, balanced: the supplier invoice UF-2026-1204 booked. */
 export const JournalEntryScreen: Story = {
@@ -1544,5 +1484,145 @@ export const D1SpecificationPhone: Story = {
     await expect(canvasElement).toHaveTextContent(rsd(fromParas(before.current)))
     const main = canvasElement.querySelector('main')
     await expect(main === null ? 0 : main.scrollWidth - main.clientWidth).toBeLessThanOrEqual(0)
+  },
+}
+
+// ── P5.23 bank statement, line by line ──
+// (Imports here, inside the block, so the blocks merge without touching the top.)
+import { STATEMENT_TOTALS } from './data-bank'
+import { BANK_ROUTES } from './screens-bank'
+
+const SERBIAN_BANK = createFormat('sr-Latn-RS')
+
+/** The detail bar's position text ("3 of 10"). */
+function position(canvasElement: HTMLElement): string {
+  return canvasElement.querySelector('[data-slot="worklist-position"]')?.textContent ?? ''
+}
+
+/**
+ * Bank statement 188 of 06.10.2026 (Banca Intesa), worked line by line as the supplier invoices
+ * are approved: the statement's balances (they check out), its file and progress; ten lines,
+ * two done, one left for later; line 3 (a partial payment) in focus. "Confirm and next" decides
+ * it, the toast offers Undo, and line 4 (a supplier invoice paid in full) opens.
+ */
+export const BankStatementScreen: Story = {
+  name: 'Bank statement 188',
+  render: () => <ExampleApp start={BANK_ROUTES.statement} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { level: 1, name: 'Statement 188' })).toBeVisible()
+    await expect(canvasElement).toHaveTextContent(
+      SERBIAN_BANK.number(STATEMENT_TOTALS.closing, { decimals: 2 }),
+    )
+    await expect(canvasElement).toHaveTextContent('Balance checks out')
+    await expect(canvasElement).toHaveTextContent('2 of 10 lines done')
+    await expect(position(canvasElement)).toBe('3 of 10')
+    // Posting waits for the lines, and says why.
+    await expect(canvasElement).toHaveTextContent(
+      '7 lines still need a decision, and 1 line is left for later.',
+    )
+    await expect(canvasElement).toHaveTextContent('17.762,75 RSD stays open')
+    await userEvent.click(canvas.getByRole('button', { name: 'Confirm and next' }))
+    await expect(
+      await within(document.body).findByText(/Line 3 done: Pays part of F-2026-0410/),
+    ).toBeInTheDocument()
+    await expect(position(canvasElement)).toBe('4 of 10')
+    await expect(
+      canvas.getByRole('heading', { level: 2, name: 'Gradska mehanizacija d.o.o.' }),
+    ).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('3 of 10 lines done')
+    await expect(canvasElement).toHaveTextContent('Closes UF-2026-1204 in full.')
+    await settle()
+  },
+}
+
+/**
+ * Line 3 in focus: Medic Lab Niš pays 50.000,00 RSD of F-2026-0410, which owes 67.762,75 RSD
+ * after its decrease; the result is shown before confirming, and the rest stays open (writing it
+ * off is offered only up to 100,00 RSD).
+ */
+export const BankStatementPartial: Story = {
+  name: 'Bank statement 188, partial payment',
+  render: () => <ExampleApp start={BANK_ROUTES.partial} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('checkbox', { name: /^F-2026-0410/ })).toBeChecked()
+    await expect(canvasElement).toHaveTextContent(
+      'Pays 50.000,00 RSD of F-2026-0410; 17.762,75 RSD stays open.',
+    )
+    const difference = canvas.getByRole('radiogroup', { name: /The difference of 17\.762,75\sRSD/ })
+    await expect(within(difference).getByRole('radio', { name: /Leave it open/ })).toBeChecked()
+    await expect(within(difference).getByRole('radio', { name: /Write it off/ })).toBeDisabled()
+    // A second open item of the customer closes too: the payment no longer covers both.
+    await userEvent.click(canvas.getByRole('checkbox', { name: /^F-2026-0381/ }))
+    await expect(canvasElement).toHaveTextContent('Nothing is left for F-2026-0381')
+    await userEvent.click(canvas.getByRole('checkbox', { name: /^F-2026-0381/ }))
+    await settle()
+  },
+}
+
+/**
+ * Every line decided: "Post statement" asks first, with the summary (lines that close open
+ * items, lines posted to accounts, money in and out) and the journal entry's preview, which
+ * balances.
+ */
+export const BankStatementPost: Story = {
+  name: 'Bank statement 188, posting',
+  render: () => <ExampleApp start={BANK_ROUTES.decided} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvasElement).toHaveTextContent('10 of 10 lines done')
+    await userEvent.click(canvas.getByRole('button', { name: 'Post statement' }))
+    const dialog = await within(document.body).findByRole('alertdialog', {
+      name: 'Post statement 188?',
+    })
+    await expect(dialog).toHaveTextContent('4 lines, 4 items')
+    await expect(dialog).toHaveTextContent('6 lines')
+    const bar = dialog.querySelector('[data-slot="balance-bar"]')
+    if (bar === null) throw new Error('no balance bar')
+    await expect(bar).toHaveTextContent('Balanced')
+    await expect(within(dialog).getByRole('button', { name: 'Cancel' })).toHaveFocus()
+    await settle()
+  },
+}
+
+/** Phone: the statement's summary, then the list of lines; the posting in the bottom bar. */
+export const BankStatementPhone: Story = {
+  name: 'Bank statement 188, phone',
+  render: () => <OnPhone start={BANK_ROUTES.statement} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('list', { name: 'Lines of statement 188' })).toBeVisible()
+    const page = canvasElement.querySelector('[data-slot="worklist-page"]')
+    if (page === null) throw new Error('no page')
+    await expect(page.scrollWidth).toBeLessThanOrEqual(page.clientWidth)
+    await settle()
+  },
+}
+
+/**
+ * Phone, one line full screen: Zlatibor Turs paid 0,40 RSD less than F-2026-0406; the
+ * difference is written off as the Core suggests; "7 of 10" in the header and "Confirm and next"
+ * in the bottom bar; no list beside or under it.
+ */
+export const BankStatementLinePhone: Story = {
+  name: 'Bank statement 188, phone, line in focus',
+  render: () => <OnPhone start={BANK_ROUTES.difference} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(position(canvasElement)).toBe('7 of 10')
+    await expect(canvas.queryByRole('list', { name: 'Lines of statement 188' })).toBeNull()
+    await expect(canvasElement).toHaveTextContent('Same customer, amount differs by 0,40 RSD')
+    await expect(canvasElement).toHaveTextContent('Closes F-2026-0406; 0,40 RSD is written off.')
+    await expect(canvas.getByRole('button', { name: 'Confirm and next' })).toBeVisible()
+    const page = canvasElement.querySelector('[data-slot="worklist-page"]')
+    if (page === null) throw new Error('no page')
+    await expect(page.scrollWidth).toBeLessThanOrEqual(page.clientWidth)
+    await settle()
   },
 }

@@ -193,7 +193,7 @@ const MODULES: LaunchpadModule[] = [
     description: 'Statements and payments',
     icon: Landmark,
     href: '#/banking/statements/188',
-    counter: '7 lines to check',
+    counter: '8 lines to decide',
   },
   {
     id: 'accounting',
@@ -827,36 +827,20 @@ function Decisions({ onApprove, onReject }: { onApprove: () => void; onReject: (
 }
 
 /**
- * The chosen supplier invoice, whole: its facts, its lines and its PDF, and the two decisions —
- * at the top of the pane on a desktop, in the bottom bar on a phone.
+ * The chosen supplier invoice, whole: its facts, its lines and its PDF. The two decisions stand
+ * in the worklist's bar under the detail on a desktop (after Previous and Next, P5.23) and in
+ * the bottom bar on a phone.
  */
-function ApprovalDetail({
-  row,
-  phone,
-  onApprove,
-  onReject,
-}: {
-  row: ExampleApproval
-  phone: boolean
-  onApprove: () => void
-  onReject: () => void
-}) {
+function ApprovalDetail({ row, phone }: { row: ExampleApproval; phone: boolean }) {
   const { linkComponent: Link } = useLiro()
   const detail = APPROVAL_DETAILS[row.id]
   return (
     <div className={phone ? 'flex flex-col gap-4' : 'flex flex-col gap-6 p-6'}>
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="flex min-w-0 flex-col gap-1">
-          <h2 className="bidi-content m-0 text-h2 text-primary">{row.supplier}</h2>
-          <p className="bidi-content m-0 text-sm text-secondary">
-            {row.number} · requested by {row.requester}
-          </p>
-        </div>
-        {!phone && (
-          <div className="flex gap-2">
-            <Decisions onApprove={onApprove} onReject={onReject} />
-          </div>
-        )}
+      <div className="flex min-w-0 flex-col gap-1">
+        <h2 className="bidi-content m-0 text-h2 text-primary">{row.supplier}</h2>
+        <p className="bidi-content m-0 text-sm text-secondary">
+          {row.number} · requested by {row.requester}
+        </p>
       </div>
       <KeyValueList
         items={[
@@ -1047,24 +1031,13 @@ export function Approvals({ phone }: { phone: boolean }) {
             description="New supplier invoices appear here when they arrive from SEF."
           />
         }
-        {...(row === undefined
-          ? {}
-          : {
-              detail: (
-                <ApprovalDetail
-                  row={row}
-                  phone={phone}
-                  onApprove={() => {
-                    approve([row.id])
-                  }}
-                  onReject={() => {
-                    reject([row.id])
-                  }}
-                />
-              ),
-            })}
+        {...(row === undefined ? {} : { detail: <ApprovalDetail row={row} phone={phone} /> })}
+        {...(decisions === undefined || phone ? {} : { detailActions: decisions })}
         onBack={() => {
           setSelected(undefined)
+        }}
+        onPrevious={() => {
+          setSelected(rows[(index - 1 + rows.length) % rows.length]?.id)
         }}
         onNext={() => {
           setSelected(rows[(index + 1) % rows.length]?.id)

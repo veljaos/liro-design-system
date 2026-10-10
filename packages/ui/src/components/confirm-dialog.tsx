@@ -104,6 +104,13 @@ interface ConfirmBase {
   icon?: IconComponent
   /** Default: the provider's `messages['dialog.cancel']`. */
   cancelLabel?: string
+  /**
+   * What the action will do, under the message, from the application: a summary of what is
+   * posted, a preview of the result (a read-only table). Use `size` 'wide' for a table.
+   */
+  preview?: ReactNode
+  /** 'wide' (720px, at most 90% of the screen) for a preview that needs the room. Default 440px. */
+  size?: 'default' | 'wide'
 }
 
 /** The action: an interface intent, or a family with its icon (as Button). */
@@ -181,7 +188,7 @@ function ConfirmFrame(
       {props.trigger !== undefined && <DialogTrigger asChild>{props.trigger}</DialogTrigger>}
       <DialogContent
         role="alertdialog"
-        className="inset-y-0 my-auto h-fit rounded-lg"
+        className={cn('inset-y-0 my-auto h-fit rounded-lg', props.size === 'wide' && 'w-180')}
         onOpenAutoFocus={(event) => {
           event.preventDefault()
           cancelRef.current?.focus()
@@ -206,12 +213,19 @@ function ConfirmFrame(
         </div>
         <div className="flex flex-col px-4 pb-4">
           {/* The text starts at the header row's start, under the icon (one inset, P4.9d). */}
-          {(props.message !== undefined || props.extra !== undefined) && (
+          {(props.message !== undefined ||
+            props.preview !== undefined ||
+            props.extra !== undefined) && (
             <div data-slot="confirm-body" className="flex flex-col">
               {props.message !== undefined && (
                 <DialogDescription className="text-sm text-secondary">
                   {props.message}
                 </DialogDescription>
+              )}
+              {props.preview !== undefined && (
+                <div data-slot="confirm-preview" className="mt-4 flex min-w-0 flex-col gap-4">
+                  {props.preview}
+                </div>
               )}
               {props.extra}
             </div>

@@ -27,21 +27,25 @@ function item(row: ApprovalRow): WorklistItem {
   }
 }
 
-/** The chosen invoice: its facts and the two decisions, Reject then Approve (the main one last). */
+/** The two decisions, Reject then Approve (the main one last). */
+function Decisions() {
+  return (
+    <>
+      <Button family="destructive" icon={CircleX} label="Reject" />
+      <Button family="positive" icon={CheckCheck} label="Approve" emphasis="primary" />
+    </>
+  )
+}
+
+/** The chosen invoice: its facts (the decisions stand in the bar under it). */
 function Detail({ row }: { row: ApprovalRow }) {
   return (
     <div className="flex flex-col gap-6 p-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="flex min-w-0 flex-col gap-1">
-          <h2 className="m-0 text-h2 text-primary">{row.supplier}</h2>
-          <p className="m-0 text-sm text-secondary">
-            {row.number} · requested by {row.requester}
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button family="destructive" icon={CircleX} label="Reject" />
-          <Button family="positive" icon={CheckCheck} label="Approve" emphasis="primary" />
-        </div>
+      <div className="flex min-w-0 flex-col gap-1">
+        <h2 className="m-0 text-h2 text-primary">{row.supplier}</h2>
+        <p className="m-0 text-sm text-secondary">
+          {row.number} · requested by {row.requester}
+        </p>
       </div>
       <dl className="m-0 flex flex-wrap gap-x-10 gap-y-3">
         <div className="flex flex-col gap-0.5">
@@ -130,8 +134,12 @@ function Approvals({
         {...(selected === undefined ? {} : { selected })}
         onSelect={setSelected}
         {...(row === undefined ? {} : { detail: <Detail row={row} /> })}
+        {...(stacked ? {} : { detailActions: <Decisions /> })}
         onBack={() => {
           setSelected(undefined)
+        }}
+        onPrevious={() => {
+          setSelected(APPROVALS[(index - 1 + APPROVALS.length) % APPROVALS.length]?.id)
         }}
         onNext={() => {
           setSelected(APPROVALS[(index + 1) % APPROVALS.length]?.id)
@@ -149,15 +157,21 @@ const meta = {
     docs: {
       description: {
         component:
-          '**What for:** a queue worked item by item (invoices to approve, statements to ' +
-          'post). From 62em the list (380px) and the chosen item’s detail side by side, each ' +
-          'scrolling on its own; below 62em the list, then the detail full width with "Back to ' +
-          'list" and "Next item". A row: title, subtitle, the one deciding figure, the status. ' +
-          'The decisions (Reject, then Approve — the main one last) stand only in the detail, ' +
-          'where the item is seen whole, never in every row; with `onCheckedChange` rows get ' +
-          'checkboxes and `bulkBar` (a BulkActionBar) decides for the checked ones.\n\n' +
-          '**How:** `items`, `selected` / `onSelect`, `detail` (optional), `onBack`, `onNext`; ' +
-          'the application decides and stores.\n\n' +
+          '**What for:** the one way to decide items one by one — supplier invoices to ' +
+          'approve, the lines of a bank statement. From 62em the list (380px) and the chosen ' +
+          'item’s detail side by side, each scrolling on its own, and under the detail one bar: ' +
+          'the position ("3 of 11"), Previous, Next, then the item’s decisions with the main one ' +
+          'last ("Approve", "Confirm and next"). Below 62em the list, then the item full screen ' +
+          'with "Back to list", the position, Previous and Next; the decisions go into AppShell’s ' +
+          'bottom bar. After a decision the application opens the next item and confirms with a ' +
+          'toast (Undo where the Core can take it back). A row: title, subtitle, the one ' +
+          'deciding figure, the status. Decisions never stand in every row; with ' +
+          '`onCheckedChange` rows get checkboxes and `bulkBar` (a BulkActionBar) decides for the ' +
+          'checked ones. `summary` shows what the queue belongs to (a statement’s balances and ' +
+          'progress) between the title — with `back`, `status`, `subtitle` — and the list.\n\n' +
+          '**How:** `items`, `selected` / `onSelect`, `detail` (optional), `detailActions`, ' +
+          '`onPrevious`, `onNext`, `onBack`; the application decides, stores and chooses the ' +
+          'next item.\n\n' +
           '**When not:** a list to search and filter (ListPage); a single record (DetailPage).',
       },
     },
@@ -199,6 +213,71 @@ export const CheckedRows: Story = {
     await expect(canvas.getByText('2 selected')).toBeVisible()
     await userEvent.click(canvas.getByRole('checkbox', { name: 'Select UF-2026-1187' }))
     await expect(canvas.getByText('3 selected')).toBeVisible()
+  },
+}
+
+/**
+ * The queue of a record (a bank statement's lines): back, status and subtitle in the title row,
+ * the record's summary above the list, and the position with Previous and Next under the detail.
+ */
+export const WithSummary: Story = {
+  name: 'Record summary and position',
+  render: () => (
+    <ExampleProvider>
+      <WorklistPage
+        layout="split"
+        title="Statement 188"
+        back={{ href: '#statements', label: 'Statements' }}
+        status={<StatusBadge label="In progress" tone="info" />}
+        subtitle="Banca Intesa · Statement date 06.10.2026."
+        summary={<p className="m-0 text-sm font-medium text-primary">2 of 4 lines done</p>}
+        label="Lines of statement 188"
+        items={[
+          {
+            id: 'b1',
+            title: 'Panonija Agro d.o.o.',
+            subtitle: '1 · F-2026-0412',
+            figure: <MoneyText value="135954.00" currency="RSD" />,
+            status: <StatusBadge label="Done" tone="success" />,
+          },
+          {
+            id: 'b2',
+            title: 'Banca Intesa a.d. Beograd',
+            subtitle: '2 · Account fee, September 2026',
+            figure: <MoneyText value="-1240.00" currency="RSD" />,
+            status: <StatusBadge label="Done" tone="success" />,
+          },
+          {
+            id: 'b3',
+            title: 'Medic Lab Niš d.o.o. — a long payer name that wraps onto a second line',
+            subtitle: '3 · F-2026-0410',
+            figure: <MoneyText value="50000.00" currency="RSD" />,
+            status: <StatusBadge label="Suggestion ready" tone="info" />,
+          },
+          {
+            id: 'b4',
+            title: 'Petar Jovanović',
+            subtitle: '4 · Uplata',
+            figure: <MoneyText value="12000.00" currency="RSD" />,
+            status: <StatusBadge label="Left for later" tone="neutral" />,
+          },
+        ]}
+        selected="b3"
+        detail={<p className="m-0 p-6 text-sm text-primary">Line 3 in focus.</p>}
+        detailActions={
+          <Button family="positive" icon={CheckCheck} label="Confirm and next" emphasis="primary" />
+        }
+        onPrevious={() => undefined}
+        onNext={() => undefined}
+      />
+    </ExampleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('3 of 4')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Previous item' })).toBeVisible()
+    await expect(canvas.getByRole('link', { name: 'Back to Statements' })).toBeVisible()
   },
 }
 
@@ -247,8 +326,10 @@ export const PhoneDetail: Story = {
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
+    await expect(canvas.getByText('1 of 5')).toBeVisible()
     await userEvent.click(canvas.getByRole('button', { name: 'Next item' }))
     await expect(canvas.getByRole('heading', { name: 'Telekom Srbija a.d.' })).toBeVisible()
+    await expect(canvas.getByText('2 of 5')).toBeVisible()
   },
 }
 
