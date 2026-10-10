@@ -281,10 +281,13 @@ export const PhoneWidth: Story = {
   },
 }
 
+/** A fixed today two days after the cards' due date, so the picture never changes with the date. */
+const OVERDUE_TODAY = '2026-10-09'
+
 /** Arabic cards in a right-to-left board: the first column at the right. */
 export const Arabic: Story = {
   render: () => (
-    <StoryProvider locale="ar">
+    <StoryProvider locale="ar" today={OVERDUE_TODAY}>
       <Board
         label="المهام"
         initial={[
@@ -312,7 +315,7 @@ export const Arabic: Story = {
 /** Japanese cards. */
 export const Japanese: Story = {
   render: () => (
-    <StoryProvider locale="ja">
+    <StoryProvider locale="ja" today={OVERDUE_TODAY}>
       <Board
         label="タスク"
         initial={[

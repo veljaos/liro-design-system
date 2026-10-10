@@ -1,5 +1,5 @@
 import { TriangleAlert } from 'lucide-react'
-import { useRef, useState, type ReactElement, type ReactNode } from 'react'
+import { useId, useRef, useState, type ReactElement, type ReactNode } from 'react'
 import { ButtonPrimitive, LoadingButtonPrimitive } from '../primitives/button'
 import { cn } from '../primitives/cn'
 import { TEXT_DIRECTION } from '../primitives/classes'
@@ -179,6 +179,7 @@ function ConfirmFrame(
       setOpen(false)
     }
   }
+  const titleId = useId()
   const keep = (event: Event) => {
     if (busy) event.preventDefault()
   }
@@ -188,7 +189,10 @@ function ConfirmFrame(
       {props.trigger !== undefined && <DialogTrigger asChild>{props.trigger}</DialogTrigger>}
       <DialogContent
         role="alertdialog"
-        className={cn('inset-y-0 my-auto h-fit rounded-lg', props.size === 'wide' && 'w-180')}
+        className={cn(
+          'inset-y-0 my-auto h-fit overflow-hidden rounded-lg',
+          props.size === 'wide' && 'w-180',
+        )}
         onOpenAutoFocus={(event) => {
           event.preventDefault()
           cancelRef.current?.focus()
@@ -199,7 +203,7 @@ function ConfirmFrame(
         {...(props.message === undefined ? { 'aria-describedby': undefined } : {})}
       >
         {/* One inset for the header, the text and the footer (P4.9d): 16px from every edge. */}
-        <div className="flex items-start justify-between gap-4 p-4">
+        <div className="flex shrink-0 items-start justify-between gap-4 p-4">
           <DialogTitle
             className={cn(
               'flex items-center gap-2 text-sm leading-tight font-bold',
@@ -207,15 +211,27 @@ function ConfirmFrame(
             )}
           >
             <TitleIcon aria-hidden="true" className="size-4.5 shrink-0" />
-            <span className={TEXT_DIRECTION}>{props.title}</span>
+            <span id={titleId} className={TEXT_DIRECTION}>
+              {props.title}
+            </span>
           </DialogTitle>
           {!busy && <DialogCloseButton label={messages['dialog.close']} />}
         </div>
-        <div className="flex flex-col px-4 pb-4">
-          {/* The text starts at the header row's start, under the icon (one inset, P4.9d). */}
-          {(props.message !== undefined ||
-            props.preview !== undefined ||
-            props.extra !== undefined) && (
+        {/*
+          The text starts at the header row's start, under the icon (one inset, P4.9d). Taller
+          than the screen (a preview), only the body scrolls: the title and the buttons stay in
+          view (P5.23). The scrolling body takes the focus for the keyboard, named by the title.
+        */}
+        {(props.message !== undefined ||
+          props.preview !== undefined ||
+          props.extra !== undefined) && (
+          <div
+            data-slot="confirm-scroll"
+            {...(props.preview === undefined
+              ? {}
+              : { tabIndex: 0, role: 'region', 'aria-labelledby': titleId })}
+            className="min-h-0 overflow-y-auto px-4 outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus"
+          >
             <div data-slot="confirm-body" className="flex flex-col">
               {props.message !== undefined && (
                 <DialogDescription className="text-sm text-secondary">
@@ -229,7 +245,9 @@ function ConfirmFrame(
               )}
               {props.extra}
             </div>
-          )}
+          </div>
+        )}
+        <div className="flex shrink-0 flex-col px-4 pb-4">
           <DialogFooter className="mt-4">
             <ButtonPrimitive
               ref={cancelRef}
