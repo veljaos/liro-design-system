@@ -4,7 +4,7 @@ import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 import { ActionButton, OverflowRow, UnavailableAction, type ActionItem } from './actions'
-import { CompactIconButton } from './button'
+import { IconButton } from './button'
 import { ConfirmDialog } from './confirm-dialog'
 import { INTENTS } from './intents'
 
@@ -12,14 +12,18 @@ import { INTENTS } from './intents'
  * BulkActionBar (BUILD-PLAN P2.7), the previous Design System's, carried over (owner's decision,
  * 2026-09-28, docs/decisions.md "Actions"):
  * - it appears, sliding down in 140ms, while at least one row is selected;
- * - a panel with a border.strong border, radius md, 10px (xs) padding, on surface.sunken —
- *   neutral since P3.6 (owner: blue is for actions, links and focus);
+ * - a panel with a border.strong border, radius md, on surface.sunken — neutral since P3.6
+ *   (owner: blue is for actions, links and focus);
+ * - P5.23 (owner's review): a row of its own with the filter row's height and padding — at least
+ *   60px high (16px + a 36px control line + 8px in the filter row), 16px at the sides, 10px at
+ *   the top and bottom — 12px between its items, standard-size (36px) buttons, and a vertical
+ *   line between the count and "Select all N"; the list keeps 12px above and below it;
  * - at the start a clear-selection icon button (the cancel intent), then "N selected" (13px,
  *   semibold, text.primary) in an aria-live="polite" region — the only way a screen reader hears
- *   the count change — and, when the whole result is larger, "Select all N" (a neutral subtle xs
+ *   the count change — and, when the whole result is larger, "Select all N" (a neutral subtle
  *   button, as "Clear all" in FilterBar);
- * - at the end the actions, small (Mantine 'xs'), each can be unavailable with a reason, all
- *   disabled while loading;
+ * - at the end the actions, 8px apart as in every button group, each can be unavailable with a
+ *   reason, all disabled while loading;
  * - an action that needs confirmation opens ONE ConfirmDialog for the whole selection, with the
  *   count in its title; confirmation does not scale (Appendix B.8);
  * - the row wraps on narrow screens; when the actions still do not fit, the ones before the
@@ -73,12 +77,12 @@ export function BulkActionBar(props: BulkActionBarProps) {
   return (
     <div
       className={cn(
-        'flex animate-liro-slide-down flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-md border border-solid border-strong bg-surface-sunken p-2.5 font-sans motion-reduce:animate-none',
+        'box-border flex min-h-15 animate-liro-slide-down flex-wrap items-center justify-between gap-3 rounded-md border border-solid border-strong bg-surface-sunken px-4 py-2.5 font-sans motion-reduce:animate-none',
         props.className,
       )}
     >
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-        <CompactIconButton intent="cancel" label={messages['bulk.clear']} onClick={props.onClear} />
+      <div className="flex flex-wrap items-center gap-3">
+        <IconButton intent="cancel" label={messages['bulk.clear']} onClick={props.onClear} />
         <span
           aria-live="polite"
           className={cn('text-sm font-semibold text-primary', TEXT_DIRECTION)}
@@ -88,27 +92,35 @@ export function BulkActionBar(props: BulkActionBarProps) {
         {props.total !== undefined &&
           props.total > props.count &&
           props.onSelectAll !== undefined && (
-            <ActionButton
-              small
-              action={{
-                family: 'neutral',
-                icon: ListChecks,
-                emphasis: 'menu',
-                label: messages['bulk.selectAll'](props.total, format.number(String(props.total))),
-              }}
-              onClick={props.onSelectAll}
-            />
+            <>
+              <span
+                aria-hidden="true"
+                data-slot="bulk-separator"
+                className="h-5 w-0 border-0 border-s border-solid border-strong"
+              />
+              <ActionButton
+                action={{
+                  family: 'neutral',
+                  icon: ListChecks,
+                  emphasis: 'menu',
+                  label: messages['bulk.selectAll'](
+                    props.total,
+                    format.number(String(props.total)),
+                  ),
+                }}
+                onClick={props.onSelectAll}
+              />
+            </>
           )}
       </div>
       <OverflowRow
         actions={props.actions}
         render={(action) =>
           action.unavailableReason !== undefined ? (
-            <UnavailableAction {...action} reason={action.unavailableReason} small />
+            <UnavailableAction {...action} reason={action.unavailableReason} />
           ) : (
             <ActionButton
               action={action}
-              small
               disabled={loading}
               onClick={() => {
                 run(action)
@@ -118,7 +130,6 @@ export function BulkActionBar(props: BulkActionBarProps) {
         }
         onMenuSelect={run}
         disabled={loading}
-        small
         align="end"
         className="grow"
       />

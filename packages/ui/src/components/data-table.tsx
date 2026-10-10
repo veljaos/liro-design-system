@@ -925,8 +925,13 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
           {props.exportAction}
         </div>
       )}
+      {/*
+        The bulk bar is a row of its own (P5.23, owner): 12px above it (the gap, or the card's
+        rule for the parts above the table; 12px from the FilterBar's 8px bottom when it comes
+        first) and 12px below it, never glued to the table's header.
+      */}
       {selectable && props.bulkActions !== undefined && (
-        <div className={cn('empty:hidden', edge)}>
+        <div className={cn('empty:hidden', props.inCard === true && 'mb-3 px-4 first:pt-1')}>
           <BulkActionBar
             count={selection?.length ?? 0}
             {...(props.count !== undefined && props.countIsExact !== false

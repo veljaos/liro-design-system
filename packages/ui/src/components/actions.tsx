@@ -20,7 +20,7 @@ import {
 } from '../primitives/tooltip'
 import { useLiro } from '../provider/liro-provider'
 import { visibleActions } from './action-logic'
-import { Button, CompactIconButton, IconButton } from './button'
+import { Button, IconButton } from './button'
 import { DropdownMenu, type MenuEntry } from './dropdown-menu'
 import { INTENTS, type Emphasis, type Family, type IconComponent, type Intent } from './intents'
 
@@ -113,17 +113,26 @@ export type UnavailableActionProps = DistributiveOmit<
 > & {
   /** Why it cannot be used now, from the application: shown as text and in a tooltip. */
   reason: string
-  /** Mantine size 'xs', for bars (BulkActionBar). */
-  small?: boolean
+  /**
+   * The id of an element where the flow shows the reason itself (`messages['action.unavailable']`)
+   * — a wizard's footer on phones puts it on one line under its row (P5.23). The button is then
+   * described by that element, and nothing is shown beside it.
+   */
+  reasonId?: string
 }
 
 /**
  * An action the user cannot use now, with the reason in words beside it (and in a tooltip): never
  * only a greyed-out button. Announced to assistive technology with its reason.
  */
-export function UnavailableAction({ reason, small = false, ...action }: UnavailableActionProps) {
+export function UnavailableAction({
+  reason,
+  reasonId: shownElsewhere,
+  ...action
+}: UnavailableActionProps) {
   const { messages } = useLiro()
-  const reasonId = `${useId()}-reason`
+  const ownId = `${useId()}-reason`
+  const reasonId = shownElsewhere ?? ownId
   const [open, setOpen] = useState(false)
   const touch = useRef(false)
   const onPointerDown = (event: PointerEvent) => {
@@ -147,14 +156,16 @@ export function UnavailableAction({ reason, small = false, ...action }: Unavaila
             onPointerDown={onPointerDown}
             onClick={onClick}
           >
-            <ActionButton action={action} small={small} />
+            <ActionButton action={action} />
           </TooltipTrigger>
           <TooltipContent className="w-60 whitespace-normal">{reason}</TooltipContent>
         </TooltipRoot>
       </TooltipProvider>
-      <span id={reasonId} className={cn('text-xs text-secondary', TEXT_DIRECTION)}>
-        {messages['action.unavailable'](reason)}
-      </span>
+      {shownElsewhere === undefined && (
+        <span id={reasonId} className={cn('text-xs text-secondary', TEXT_DIRECTION)}>
+          {messages['action.unavailable'](reason)}
+        </span>
+      )}
     </span>
   )
 }
@@ -205,8 +216,6 @@ interface OverflowRowProps<T extends ActionItem> {
   onMenuSelect: (action: T) => void
   /** A menu entry is disabled when its action is unavailable, or when this says so. */
   disabled?: boolean
-  /** The 28px "More" button, beside small actions (BulkActionBar). */
-  small?: boolean
   align: 'start' | 'end'
   className?: string
 }
@@ -221,7 +230,6 @@ export function OverflowRow<T extends ActionItem>({
   render,
   onMenuSelect,
   disabled = false,
-  small = false,
   align,
   className,
 }: OverflowRowProps<T>) {
@@ -256,11 +264,7 @@ export function OverflowRow<T extends ActionItem>({
     }
   }, [actions])
 
-  const more = small ? (
-    <CompactIconButton intent="more" label={messages['action.more']} />
-  ) : (
-    <IconButton intent="more" label={messages['action.more']} />
-  )
+  const more = <IconButton intent="more" label={messages['action.more']} />
   const hidden = actions.slice(0, actions.length - visible)
   const shown = actions.slice(actions.length - visible)
   const entries: MenuEntry[] = hidden.map((action) => {

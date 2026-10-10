@@ -542,7 +542,7 @@ export const PayrollPhone: Story = {
   render: () => <OnPhone start={F_ROUTES.payroll} />,
   play: async ({ canvasElement }) => {
     await settle()
-    await expect(canvasElement).toHaveTextContent('Step 3 of 5: Review')
+    await expect(canvasElement).toHaveTextContent('Step 3 of 5 · Review')
     const page = canvasElement.querySelector('[data-slot="periodic-run-page"]')
     if (page === null) throw new Error('no page')
     await expect(page.scrollWidth).toBeLessThanOrEqual(page.clientWidth)
@@ -902,7 +902,8 @@ async function noSidewaysScroll(canvasElement: HTMLElement) {
 /**
  * The customer catalogue: the dataset's customers and 50,000 generated ones, virtualised
  * (only the rows in view are drawn); views Active / Inactive / All with counts; inactive
- * customers are hidden, never deleted, and marked "Inactive" after the name.
+ * customers are hidden, never deleted, and marked "Inactive" after the name where the list mixes
+ * both (All) — not on the Inactive view, whose tab already says it (P5.23).
  */
 export const CustomersScreen: Story = {
   name: 'Customers',
@@ -915,7 +916,58 @@ export const CustomersScreen: Story = {
     await expect(canvasElement.querySelectorAll('tbody tr[aria-rowindex]').length).toBeLessThan(60)
     await userEvent.click(canvas.getByRole('button', { name: /^Inactive/ }))
     const rakic = await canvas.findByRole('row', { name: /Rakić Pekara SZR/ })
-    await expect(within(rakic).getByText('Inactive')).toBeVisible()
+    await expect(within(rakic).queryByText('Inactive')).toBeNull()
+    await userEvent.click(canvas.getByRole('button', { name: /^All/ }))
+    const mixed = await canvas.findByRole('row', { name: /Rakić Pekara SZR/ })
+    await expect(within(mixed).getByText('Inactive')).toBeVisible()
+  },
+}
+
+/**
+ * A catalogue list sorts by its columns and filters by several values (P5.23): customers in Kać
+ * or Niš, the largest open balance first; the application sorts (amounts exactly).
+ */
+export const CustomersSortAndFilter: Story = {
+  name: 'Customers, sort and filter',
+  render: () => <ExampleApp start={E_ROUTES.customers} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const city = await canvas.findByRole('combobox', { name: 'City' })
+    await userEvent.click(city)
+    await userEvent.type(city, 'Kać', { delay: 0 })
+    await userEvent.keyboard('{ArrowDown}{Enter}')
+    await userEvent.type(city, 'Niš', { delay: 0 })
+    await userEvent.keyboard('{ArrowDown}{Enter}{Escape}')
+    await waitFor(async () => {
+      await expect(canvas.queryByRole('row', { name: /Vojvođanka Mlin/ })).toBeNull()
+    })
+    await expect(canvas.getByRole('row', { name: /Panonija Agro d.o.o./ })).toBeVisible()
+    await userEvent.click(canvas.getByRole('button', { name: 'Open balance' }))
+    await userEvent.click(canvas.getByRole('button', { name: 'Open balance' }))
+    await waitFor(async () => {
+      await expect(canvas.getByRole('columnheader', { name: 'Open balance' })).toHaveAttribute(
+        'aria-sort',
+        'descending',
+      )
+    })
+    await settle()
+  },
+}
+
+/** Three customers selected: the bulk bar is a row of its own, 12px from the filters and the table. */
+export const CustomersSelected: Story = {
+  name: 'Customers, selected',
+  render: () => <ExampleApp start={E_ROUTES.customers} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    for (const name of ['Panonija Agro d.o.o.', 'Drina Prevoz d.o.o.', 'Medic Lab Niš d.o.o.']) {
+      await userEvent.click(await canvas.findByRole('checkbox', { name: `Select ${name}` }))
+    }
+    await expect(await canvas.findByText('3 selected')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: /^Select all/ })).toBeVisible()
+    await settle()
   },
 }
 

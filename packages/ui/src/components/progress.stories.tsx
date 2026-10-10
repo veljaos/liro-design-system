@@ -14,7 +14,8 @@ const meta = {
         component:
           '**Stepper** — the steps of a process and where the user is (a wizard, an onboarding); ' +
           'Mantine size sm with 32px icons in the primary colour (the old look). With ' +
-          '`onStepClick` the steps become buttons. **ProgressBar** — how far a task has come ' +
+          '`onStepClick` the steps become buttons. On phones (below 48em, or `layout="phone"`) ' +
+          'it is one line, "Step 2 of 4 · Users", over a thin bar (P5.23). **ProgressBar** — how far a task has come ' +
           '(an import, an upload); 5px, fully rounded, filling from the start side, so it flips ' +
           'in right-to-left; always named by `label`. **Skeleton** — placeholder shapes while ' +
           'content loads, radius md; mark the loading region `aria-busy`.\n\n' +
@@ -90,18 +91,33 @@ export const Skeletons: Story = {
   ),
 }
 
-/** Long labels at phone width: the steps wrap onto new lines. */
+/**
+ * Phones (P5.23): one line "Step 2 of 4 · Users" with the current step's description, over a thin
+ * bar filled to the current step — never a row of circles wrapping into two rows.
+ */
+export const StepperPhone: Story = {
+  name: 'Stepper, phone',
+  render: () => (
+    <div className="flex w-[390px] max-w-full flex-col gap-6">
+      <Stepper steps={STEPS} active={1} layout="phone" />
+      <Stepper steps={STEPS} active={STEPS.length} layout="phone" />
+    </div>
+  ),
+}
+
+/** Long labels at phone width: the one line wraps as words, the bar stays one bar. */
 export const LongTextPhone: Story = {
   name: 'Long text, phone width',
   render: () => (
     <div className="flex w-[390px] max-w-full flex-col gap-6">
       <Stepper
+        layout="phone"
         steps={[
           { label: LONG.label, description: LONG.description },
           { label: 'Review' },
           { label: 'Send' },
         ]}
-        active={1}
+        active={0}
       />
       <ProgressBar label={LONG.label} value={60} />
     </div>

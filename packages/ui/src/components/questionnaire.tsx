@@ -500,7 +500,8 @@ export function Questionnaire(props: QuestionnaireProps) {
         </section>
       )}
 
-      <div className="flex flex-wrap items-center gap-2">
+      {/* One row, never stacked (P5.23): a long label wraps inside its button (P2.7d). */}
+      <div className="flex flex-nowrap items-center gap-2 [&>*]:min-w-0">
         {previousStep(path, step) !== null && (
           <Button
             intent="back"
@@ -509,7 +510,7 @@ export function Questionnaire(props: QuestionnaireProps) {
             onClick={goBack}
           />
         )}
-        <span className="ms-auto flex items-center gap-2">
+        <span className="ms-auto flex min-w-0 items-center gap-2">
           {submitting && <Spinner size="sm" />}
           {step.kind === 'summary' ? (
             <Button

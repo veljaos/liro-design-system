@@ -268,6 +268,13 @@ const meta = {
           'passes it in; the DS only renders and reports. `ColumnChooser` shows, hides and ' +
           'reorders columns without dragging. `QuickPreview` opens from a row (click or Space, ' +
           'DataTable `onRowClick`); Enter opens the full page (`onRowOpen`).\n\n' +
+          '**Catalogues** (customers, suppliers, items, services, fixed assets, accounts; P5.19, ' +
+          'P5.23): every column is `sortable` (the application sorts — text by the language’s ' +
+          'collation, amounts exactly), each choice filter is a `multiSelect` (several cities ' +
+          'at once), the views are Active / Inactive / All, and the "Inactive" badge stands ' +
+          'only where the list mixes both (All, a lookup with "Show inactive"). The ' +
+          'BulkActionBar is a row of its own between the filters and the table, 12px from ' +
+          'each. See Examples / Customers.\n\n' +
           '**When not:** a queue worked item by item (WorklistPage); a single record ' +
           '(DetailPage, P4.4).',
       },

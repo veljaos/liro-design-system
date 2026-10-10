@@ -3,9 +3,18 @@ import { useCallback, useMemo, useState } from 'react'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { settle } from '../primitives/story-helpers'
 import { Button } from './button'
-import { pageOf, searchCustomers, storyCustomers, type StoryCustomer } from './catalog-story-data'
+import { useLiro } from '../provider/liro-provider'
+import {
+  matchesChoice,
+  pageOf,
+  searchCustomers,
+  sortRows,
+  storyCustomers,
+  type SortKey,
+  type StoryCustomer,
+} from './catalog-story-data'
 import type { DataTableColumn } from './data-table'
-import type { DataTableFilters } from './data-table-logic'
+import type { DataTableFilters, DataTableSort } from './data-table-logic'
 import { MoneyText } from './display-text'
 import { ARABIC, JAPANESE, LONG } from './field-story-data'
 import type { FilterDefinition } from './filter-logic'
@@ -16,25 +25,34 @@ import { ExampleProvider, PhoneFrame, StoryProvider } from './story-frames'
 const ALL = storyCustomers(4993)
 const PAGE = 25
 
+// A catalogue sorts by every column and filters by several values (P5.23).
 const COLUMNS: DataTableColumn<StoryCustomer>[] = [
-  { id: 'name', header: 'Name', cell: (row) => row.name },
-  { id: 'taxId', header: 'Tax number', numeric: true, cell: (row) => row.taxId },
-  { id: 'city', header: 'City', cell: (row) => row.city },
+  { id: 'name', header: 'Name', sortable: true, cell: (row) => row.name },
+  { id: 'taxId', header: 'Tax number', numeric: true, sortable: true, cell: (row) => row.taxId },
+  { id: 'city', header: 'City', sortable: true, cell: (row) => row.city },
   {
     id: 'balance',
     header: 'Open balance',
     align: 'end',
     numeric: true,
+    sortable: true,
     cell: (row) => <MoneyText value={row.balance} currency="RSD" />,
   },
 ]
+
+const SORT_KEYS: Record<string, SortKey<StoryCustomer>> = {
+  name: { kind: 'text', value: (row) => row.name },
+  taxId: { kind: 'decimal', value: (row) => row.taxId, places: 0 },
+  city: { kind: 'text', value: (row) => row.city },
+  balance: { kind: 'decimal', value: (row) => row.balance },
+}
 
 const FILTERS: FilterDefinition[] = [
   { id: 'inactive', label: 'Show inactive', type: 'boolean' },
   {
     id: 'city',
     label: 'City',
-    type: 'select',
+    type: 'multiSelect',
     options: ['Novi Sad', 'Zrenjanin', 'Niš', 'Subotica'].map((city) => ({
       value: city,
       label: city,
@@ -58,17 +76,19 @@ function Lookup({
 }) {
   const [open, setOpen] = useState(startOpen)
   const [query, setQuery] = useState(initialQuery)
+  const { locale } = useLiro()
   const [filters, setFilters] = useState<DataTableFilters>({})
+  const [sort, setSort] = useState<DataTableSort>(null)
   const [cursor, setCursor] = useState(0)
   const [chosen, setChosen] = useState<StoryCustomer | null>(null)
   const matches = useMemo(() => {
-    const found = searchCustomers(ALL, query)
-    return found.filter(
+    const found = searchCustomers(ALL, query).filter(
       (customer) =>
         (filters.inactive === true || customer.active) &&
-        (typeof filters.city !== 'string' || filters.city === '' || customer.city === filters.city),
+        matchesChoice(filters.city, customer.city),
     )
-  }, [query, filters])
+    return sortRows(found, sort, SORT_KEYS, locale)
+  }, [query, filters, sort, locale])
   const page = pageOf(matches, cursor, PAGE)
   const onSearch = useCallback((text: string) => {
     setQuery(text)
@@ -101,6 +121,11 @@ function Lookup({
           setCursor(0)
         }}
         columns={COLUMNS}
+        sort={sort}
+        onSortChange={(next) => {
+          setSort(next)
+          setCursor(0)
+        }}
         rows={loading ? [] : page.rows}
         getRowId={(row) => row.id}
         getRowLabel={(row) => row.name}
@@ -221,6 +246,33 @@ export const InitialQuery: Story = {
       'novi sad',
     )
     await expect(dialog.getByRole('row', { name: /Stanić Elektro STR/ })).toBeVisible()
+  },
+}
+
+/**
+ * A catalogue sorts by its columns (the application sorts its search, P5.23): Open balance
+ * descending puts the largest balance first.
+ */
+export const Sorted: Story = {
+  name: 'Sorted by a column',
+  render: () => (
+    <ExampleProvider>
+      <Lookup open />
+    </ExampleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const dialog = within(
+      await within(canvasElement.ownerDocument.body).findByRole('dialog', { name: 'Customers' }),
+    )
+    await userEvent.click(dialog.getByRole('button', { name: 'Open balance' }))
+    await userEvent.click(dialog.getByRole('button', { name: 'Open balance' }))
+    await waitFor(() =>
+      expect(dialog.getByRole('columnheader', { name: 'Open balance' })).toHaveAttribute(
+        'aria-sort',
+        'descending',
+      ),
+    )
   },
 }
 
