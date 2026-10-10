@@ -10,7 +10,13 @@ import { PeriodField } from '../components/period-field'
 import { ExampleProvider, PhoneFrame, StoryProvider } from '../components/story-frames'
 import { settle } from '../primitives/story-helpers'
 import { RegisterPage, type RegisterLock } from './register-page'
-import { manyTraining, TRAINING, type TrainingEntry } from './register-story-data'
+import {
+  expectCorrectionLink,
+  expectLocksMeetTable,
+  manyTraining,
+  TRAINING,
+  type TrainingEntry,
+} from './register-story-data'
 
 const COLUMNS: DataTableColumn<TrainingEntry>[] = [
   { id: 'date', header: 'Trained on', numeric: true, cell: (row) => <DateText value={row.date} /> },
@@ -117,11 +123,15 @@ const meta = {
           '**What for:** a chronological register for a period — VAT records, the work-injury ' +
           'register, the safety-training register. **Entries are never deleted:** a correction ' +
           'is a new entry that refers to the old one ("Corrects no. 4"), and the old one is ' +
-          'marked "Corrected by no. 9". **Locked periods** are marked with a lock and words where ' +
+          'marked "Corrected by no. 9" — both links of the same look that scroll to the other ' +
+          'entry and focus its number (also across 5,000 virtualized entries; `onGoToEntry` for ' +
+          'an entry on another page). **Locked periods** are marked with a lock and words where ' +
           'the list starts (the reason and who locked it, from the application) and on each ' +
           'entry; a locked entry’s menu says why it cannot be changed. The period is chosen in ' +
           'the first row; print and export are the page’s actions. `virtualize` keeps thousands ' +
-          'of entries responsive.\n\n' +
+          'of entries responsive. The page owns its spacing: the locks band meets the table’s ' +
+          'header, and the refetch loader stands at the end of the first row; the examples use ' +
+          'the same component and look the same.\n\n' +
           '**When:** a record the law or the company keeps in order and never rewrites.\n\n' +
           '**When not:** a list of records that are edited and deleted (ListPage); an official ' +
           'form with numbered fields (StatutoryFormPage). The registers’ contents in these ' +
@@ -159,8 +169,10 @@ export const Default: Story = {
     const canvas = within(canvasElement)
     const body = within(canvasElement.ownerDocument.body)
     await expect(canvas.getByText('January–June 2026 is locked')).toBeVisible()
-    await expect(canvas.getByText('Corrected by no. 9')).toBeVisible()
-    await expect(canvas.getByText('Corrects no. 4')).toBeVisible()
+    await expectLocksMeetTable(canvasElement)
+    // Both corrections are links to the other entry.
+    await expectCorrectionLink(canvasElement, 'Corrects no. 4', '4')
+    await expectCorrectionLink(canvasElement, 'Corrected by no. 9', '9')
     await userEvent.click(canvas.getByRole('button', { name: 'Actions: No. 4, Snežana Popović' }))
     const locked = await body.findByRole('menuitem', {
       name: 'Locked period: entries cannot be changed',
@@ -224,6 +236,9 @@ export const FiveThousand: Story = {
     await expect(rows.length).toBeGreaterThan(5)
     await expect(rows.length).toBeLessThan(60)
     await expect(canvasElement.querySelector('table')).toHaveAttribute('aria-rowcount', '5001')
+    // From no. 12 to no. 4990, thousands of rows down, and back.
+    await expectCorrectionLink(canvasElement, 'Corrected by no. 4990', '4990')
+    await expectCorrectionLink(canvasElement, 'Corrects no. 12', '12')
   },
 }
 

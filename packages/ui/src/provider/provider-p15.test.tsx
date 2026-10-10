@@ -141,6 +141,8 @@ describe('messages', () => {
       'document.rateDate',
       'document.rateLine',
       'document.showPanels',
+      'document.sourceDate',
+      'document.sourceTotal',
       'due.inDays',
       'due.overdue',
       'due.settled',

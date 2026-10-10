@@ -63,6 +63,7 @@ import {
   type SidePanel,
   type TotalsRow,
   type WorklistItem,
+  DESCRIPTION_MIN_WIDTH,
 } from '@veljaos/ui'
 import { BarChart, LineChart } from '../../../../packages/ui/src/charts'
 import { percentText } from '../../../../packages/ui/src/components/story-frames'
@@ -456,7 +457,12 @@ export function InvoiceList({ phone }: { phone: boolean }) {
 // ── Invoice (document) ────────────────────────────────────────────────────────────────────────
 
 const LINE_COLUMNS: DataTableColumn<ExampleLine>[] = [
-  { id: 'item', header: 'Item', cell: (line) => line.item },
+  {
+    id: 'item',
+    header: 'Item',
+    minWidth: DESCRIPTION_MIN_WIDTH,
+    cell: (line) => line.item,
+  },
   {
     id: 'quantity',
     header: 'Quantity',
@@ -788,7 +794,12 @@ export function Dashboard({ phone }: { phone: boolean }) {
 // ── Approvals (worklist) ──────────────────────────────────────────────────────────────────────
 
 const APPROVAL_LINE_COLUMNS: DataTableColumn<ApprovalLine>[] = [
-  { id: 'item', header: 'Item', cell: (line) => line.item },
+  {
+    id: 'item',
+    header: 'Item',
+    minWidth: DESCRIPTION_MIN_WIDTH,
+    cell: (line) => line.item,
+  },
   {
     id: 'quantity',
     header: 'Quantity',

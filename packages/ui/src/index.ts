@@ -95,11 +95,17 @@ export {
   wizardStepTarget,
 } from './components/form-logic'
 export type { StickyActions } from './components/form-logic'
-export type { DataTableColumn, DataTableMobile, DataTableProps } from './components/data-table'
+export type {
+  DataTableColumn,
+  DataTableHandle,
+  DataTableMobile,
+  DataTableProps,
+} from './components/data-table'
 export {
   ariaSort,
   clampWidth,
   COUNT_THRESHOLD,
+  DESCRIPTION_MIN_WIDTH,
   formatCount,
   hasActiveFilters,
   isActiveFilterValue,
@@ -610,6 +616,8 @@ export type {
   DocumentReferencesProps,
   DocumentSpecificationProps,
 } from './components/document-blocks'
+export { DocumentSource } from './components/document-source'
+export type { DocumentSourceProps, DocumentSourceItem } from './components/document-source'
 export { chosenNoteTexts, hasNotes } from './components/document-logic'
 export type { DocumentNotesValue, NoteTemplate } from './components/document-logic'
 export type {

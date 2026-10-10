@@ -20,6 +20,7 @@ import {
 } from './catalog-logic'
 import { CheckboxField } from './checkbox-field'
 import { ConfirmDialog } from './confirm-dialog'
+import { RefetchLoader } from './refetch-loader'
 import { DataTable, type DataTableColumn } from './data-table'
 import { FileDropzone } from './file-dropzone'
 import { JobProgress } from './job-progress'
@@ -416,6 +417,12 @@ export function ImportWizard(props: ImportWizardProps) {
           checked={props.skipInvalid}
           onChange={props.onSkipInvalidChange}
         />
+        {/* The refetch shows here, not as a strip between the line and the table (P5.23). */}
+        {(!phone || props.previewLoading === true) && (
+          <span className={cn('flex items-center', !phone && 'ms-auto')}>
+            <RefetchLoader active={props.previewLoading === true && props.previewRows.length > 0} />
+          </span>
+        )}
       </div>
       <div className="-mx-4 border-0 border-y border-solid border-default">
         {props.problemsOnly && props.previewRows.length === 0 && props.previewLoading !== true ? (
@@ -432,6 +439,7 @@ export function ImportWizard(props: ImportWizardProps) {
             getRowId={(row) => row.id}
             getRowLabel={(row) => `${messages['import.line']} ${count(row.line)}`}
             {...(props.previewLoading === undefined ? {} : { loading: props.previewLoading })}
+            loaderSlot={false}
             {...(props.previewRows.length > 100 ? { virtualize: true, maxHeight: '480px' } : {})}
             mobile={{
               title: (row) => `${messages['import.line']} ${count(row.line)}`,

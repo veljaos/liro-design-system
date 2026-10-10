@@ -89,7 +89,8 @@ export function lineClasses<Row extends RowData>(
     columns.map((column) =>
       cn(
         CELL,
-        'min-w-16',
+        // A column's own minimum width stands on its header cell (P5.23).
+        column.minWidth === undefined && 'min-w-16',
         rowLine,
         ALIGN[column.align ?? 'start'],
         column.numeric === true && 'tabular-nums',

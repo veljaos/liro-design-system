@@ -20,9 +20,10 @@ const meta = {
           'after the number as small text in its tone’s colour — the words carry it — and the ' +
           'link’s accessible name says all three ("Advance invoice A-2026-038, Paid"). The ' +
           'line wraps on narrow screens; a kind without numbers is left out.\n\n' +
-          '**When:** a final invoice (proforma, advances, contract, order, delivery notes); the ' +
-          'back-links of a cancellation ("Cancels") or a corrective document ("Corrects").\n\n' +
-          '**When not:** a side panel list of related documents with their badges ' +
+          '**When:** a final invoice (proforma, advances, contract, order, delivery notes).\n\n' +
+          '**When not:** the source of a correcting or cancelling document — it stands in the ' +
+          'header beside the customer (`DocumentSource`, DocumentPage `source`; P5.23), never ' +
+          'in this line; a side panel list of related documents with their badges ' +
           '(`RelatedDocuments`); a single link inside a sentence.',
       },
     },
@@ -56,28 +57,6 @@ export const Default: Story = {
       'href',
       '#sales/invoices/A-2026-044',
     )
-  },
-}
-
-/** The back-link of a cancellation document: "Cancels: Invoice F-2026-0407 Cancelled". */
-export const BackLink: Story = {
-  name: 'Back-link of a cancellation',
-  args: {
-    label: 'Cancels',
-    groups: [
-      {
-        key: 'invoice',
-        label: 'Invoice',
-        items: [
-          {
-            key: 'f',
-            number: 'F-2026-0407',
-            href: '#sales/invoices/F-2026-0407',
-            status: { label: 'Cancelled', tone: 'danger' },
-          },
-        ],
-      },
-    ],
   },
 }
 

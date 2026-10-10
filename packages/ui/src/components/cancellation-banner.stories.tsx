@@ -17,8 +17,8 @@ const meta = {
           '06.10.2026. at 11:20. Reason: …", then the link "Cancellation document ' +
           'ST-2026-0004" — the word said once (P5.23). Who and the reason are the ' +
           'application’s; the date and time are written by the provider’s `format` in the ' +
-          'tenant’s time; the cancellation document is a link (the cancellation document links ' +
-          'back with `DocumentReferences` "Cancels"). Danger by default — the tone of the ' +
+          'tenant’s time; the cancellation document is a link (the cancellation document shows the ' +
+          'cancelled invoice as its source, `DocumentSource` "Cancels", P5.23). Danger by default — the tone of the ' +
           '"Cancelled" badge in the application’s status map (P5.23, owner) — with the Ban ' +
           'icon, announced politely (`role="status"`: a state, not an interruption); ' +
           '`tone="neutral"` only where the application’s map says so. The marker on the PDF is ' +

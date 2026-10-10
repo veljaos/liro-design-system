@@ -11,6 +11,7 @@ import { ARABIC, JAPANESE, LONG } from './field-story-data'
 import { StatusBadge, toneFor, type Tone } from './status-badge'
 import type { LineType } from './line-types'
 import { ExampleProvider, expectContentDirection, PhoneFrame, StoryProvider } from './story-frames'
+import { DESCRIPTION_MIN_WIDTH } from './data-table-logic'
 
 const meta = {
   title: 'Components/Table/DataTable',
@@ -708,7 +709,12 @@ function LineAmount({ line }: { line: DocumentLine }) {
 }
 
 const LINE_TYPE_COLUMNS: DataTableColumn<DocumentLine>[] = [
-  { id: 'item', header: 'Item', cell: (line) => line.item },
+  {
+    id: 'item',
+    header: 'Item',
+    minWidth: DESCRIPTION_MIN_WIDTH,
+    cell: (line) => line.item,
+  },
   {
     id: 'quantity',
     header: 'Quantity',
