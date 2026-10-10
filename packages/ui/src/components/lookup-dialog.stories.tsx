@@ -207,6 +207,14 @@ type Story = StoryObj<typeof meta>
  * chooses one and the dialog closes.
  */
 export const Default: Story = {
+  play: async () => {
+    await settle()
+  },
+}
+
+export const DefaultInteraction: Story = {
+  name: 'Default, interaction',
+  tags: ['interaction'],
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
@@ -255,6 +263,7 @@ export const InitialQuery: Story = {
  */
 export const Sorted: Story = {
   name: 'Sorted by a column',
+  tags: ['interaction'],
   render: () => (
     <ExampleProvider>
       <Lookup open />
@@ -278,6 +287,7 @@ export const Sorted: Story = {
 
 /** Keyset paging: Next asks the application for the page after its cursor. */
 export const Paging: Story = {
+  tags: ['interaction'],
   render: () => (
     <ExampleProvider>
       <Lookup open />
@@ -299,6 +309,7 @@ export const Paging: Story = {
 /** Typing on a result goes back to the search field with the typed character. */
 export const TypingFromResults: Story = {
   name: 'Typing from the results',
+  tags: ['interaction'],
   render: () => (
     <ExampleProvider>
       <Lookup open />
@@ -321,6 +332,24 @@ export const TypingFromResults: Story = {
 /** Nothing found: "No rows match" with "Clear filters", which empties the search. */
 export const NothingFound: Story = {
   name: 'Nothing found',
+  render: () => (
+    <ExampleProvider>
+      <Lookup open initialQuery="Beogradska banka" />
+    </ExampleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const dialog = within(
+      await within(canvasElement.ownerDocument.body).findByRole('dialog', { name: 'Customers' }),
+    )
+    await expect(dialog.getByText('No rows match')).toBeVisible()
+    await settle()
+  },
+}
+
+export const NothingFoundInteraction: Story = {
+  name: 'Nothing found, interaction',
+  tags: ['interaction'],
   render: () => (
     <ExampleProvider>
       <Lookup open initialQuery="Beogradska banka" />
@@ -361,6 +390,27 @@ export const LongText: Story = {
 /** Phone width: a full-screen sheet, the results as a flat list; the keys work the same. */
 export const PhoneWidth: Story = {
   name: 'Phone width',
+  render: () => (
+    <PhoneFrame>
+      <ExampleProvider>
+        <Lookup open layout="phone" />
+      </ExampleProvider>
+    </PhoneFrame>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const dialog = await within(canvasElement.ownerDocument.body).findByRole('dialog', {
+      name: 'Customers',
+    })
+    // The sheet covers the frame and nothing scrolls sideways.
+    await expect(dialog.scrollWidth).toBeLessThanOrEqual(dialog.clientWidth)
+    await settle()
+  },
+}
+
+export const PhoneWidthInteraction: Story = {
+  name: 'Phone width, interaction',
+  tags: ['interaction'],
   render: () => (
     <PhoneFrame>
       <ExampleProvider>

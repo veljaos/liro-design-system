@@ -79,7 +79,7 @@ export interface ChartCardProps extends ChartStateProps {
 /** A chart's card: header, legend, plot or table, and the loading, empty and error states. */
 export function ChartCard(props: ChartCardProps) {
   const { messages } = useLiro()
-  const [asTable, setAsTable] = useState(false)
+  const [asTable, setAsTable] = useState(props.defaultView === 'table')
   const titleId = useId()
   const descriptionId = useId()
   const ready = props.loading !== true && props.error === undefined && props.empty !== true

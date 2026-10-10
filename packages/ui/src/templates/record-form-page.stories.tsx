@@ -141,6 +141,7 @@ export const Default: Story = {}
  */
 export const UnsavedChanges: Story = {
   name: 'Unsaved changes',
+  tags: ['interaction'],
   render: () => (
     <ExampleProvider>
       <NewEmployeeForm startDirty />

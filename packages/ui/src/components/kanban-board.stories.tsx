@@ -106,6 +106,19 @@ export const Default: Story = {
     const title = 'Send reminder for F-2026-0411'
     const handle = canvas.getByRole('button', { name: `Move: ${title}` })
     await expect(handle).toHaveAccessibleDescription(/Press Space to pick up the card/)
+    await settle()
+  },
+}
+
+export const DefaultInteraction: Story = {
+  name: 'Default, interaction',
+  tags: ['interaction'],
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const title = 'Send reminder for F-2026-0411'
+    const handle = canvas.getByRole('button', { name: `Move: ${title}` })
+    await expect(handle).toHaveAccessibleDescription(/Press Space to pick up the card/)
     handle.focus()
     await userEvent.keyboard(' ')
     await expect(handle).toHaveAttribute('aria-pressed', 'true')
@@ -131,6 +144,7 @@ export const Default: Story = {
 /** Escape puts a picked-up card back where it was. */
 export const KeyboardCancel: Story = {
   name: 'Keyboard, cancelled',
+  tags: ['interaction'],
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
@@ -149,6 +163,7 @@ export const KeyboardCancel: Story = {
 
 /** The menu: "Move to" another column (the card goes to its end), up and down. */
 export const Menu: Story = {
+  tags: ['interaction'],
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
@@ -164,6 +179,7 @@ export const Menu: Story = {
 
 /** Dragging with the pointer: drop a card into another column. */
 export const Dragging: Story = {
+  tags: ['interaction'],
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)

@@ -144,6 +144,11 @@ export interface LookupFieldProps extends FieldBaseProps {
   value?: LookupOption | null
   /** Uncontrolled initial choice. */
   defaultValue?: LookupOption | null
+  /**
+   * Text standing typed when the field first shows, with its list open (empty text: the recent
+   * records): a search the application restores, with its `results` already passed.
+   */
+  defaultQuery?: string
   /** Called with the chosen record (or a one-off entry), or null when the field is cleared. */
   onChange?: (option: LookupOption | null) => void
   /**
@@ -186,8 +191,8 @@ export function LookupField(props: LookupFieldProps) {
   const listId = `${id}-list`
   const [innerValue, setInnerValue] = useState(props.defaultValue ?? null)
   const value = props.value === undefined ? innerValue : props.value
-  const [query, setQuery] = useState<string | null>(null)
-  const [open, setOpen] = useState(false)
+  const [query, setQuery] = useState<string | null>(props.defaultQuery ?? null)
+  const [open, setOpen] = useState(props.defaultQuery !== undefined)
   const [active, setActive] = useState(-1)
   const search = useDebouncedCallback(props.onSearch, props.searchDelay ?? 300)
   const typed = query ?? ''

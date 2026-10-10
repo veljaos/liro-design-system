@@ -47,6 +47,17 @@ export const Default: Story = {
     await settle()
     const canvas = within(canvasElement)
     await expect(canvas.getByText('Based on:')).toBeVisible()
+    await settle()
+  },
+}
+
+export const DefaultInteraction: Story = {
+  name: 'Default, interaction',
+  tags: ['interaction'],
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('Based on:')).toBeVisible()
     await userEvent.tab()
     await expect(canvas.getByRole('link', { name: 'Proforma PR-2026-031, Accepted' })).toHaveFocus()
     await userEvent.tab()

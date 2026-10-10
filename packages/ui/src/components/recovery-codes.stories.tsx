@@ -55,6 +55,22 @@ type Story = StoryObj<typeof meta>
 
 /** Copy announces "Copied"; Continue is enabled only after the confirmation. */
 export const Default: Story = {
+  play: async ({ canvasElement }) => {
+    await settle()
+    stubClipboard(true)
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('list', { name: 'Recovery codes' })).toHaveTextContent(
+      'k7qm-3rtd',
+    )
+    const next = canvas.getByRole('button', { name: 'Continue' })
+    await expect(next).toBeDisabled()
+    await settle()
+  },
+}
+
+export const DefaultInteraction: Story = {
+  name: 'Default, interaction',
+  tags: ['interaction'],
   play: async ({ canvasElement, args }) => {
     await settle()
     stubClipboard(true)
@@ -79,6 +95,7 @@ export const Default: Story = {
 /** The browser refused to copy: the line says what to do instead. */
 export const CopyRefused: Story = {
   name: 'Copy refused',
+  tags: ['interaction'],
   play: async ({ canvasElement }) => {
     await settle()
     stubClipboard(false)
@@ -92,6 +109,7 @@ export const CopyRefused: Story = {
 
 /** Download makes the text file in the browser (`recoveryCodesText`) and reports it. */
 export const Download: Story = {
+  tags: ['interaction'],
   play: async ({ canvasElement, args }) => {
     await settle()
     const made: string[] = []

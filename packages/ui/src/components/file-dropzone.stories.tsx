@@ -91,6 +91,21 @@ type Story = StoryObj<typeof meta>
  * another type is named under the zone with the reason, and reported.
  */
 export const Default: Story = {
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const button = canvas.getByRole('button', { name: 'Choose files' })
+    await expect(button).toHaveAccessibleDescription('PDF, XML, JPG or PNG, up to 10 MB')
+    await expect(canvas.getByRole('group', { name: 'Attachments' })).toBeVisible()
+    const input = fileInput(canvasElement)
+    await expect(input).toHaveAttribute('accept', '.pdf,.xml,image/jpeg,image/png')
+    await settle()
+  },
+}
+
+export const DefaultInteraction: Story = {
+  name: 'Default, interaction',
+  tags: ['interaction'],
   play: async ({ canvasElement, args }) => {
     await settle()
     const canvas = within(canvasElement)
@@ -112,6 +127,7 @@ export const Default: Story = {
 
 /** Dropping files: the zone takes the neutral selection while files are over it. */
 export const Dropping: Story = {
+  tags: ['interaction'],
   play: async ({ canvasElement, args }) => {
     await settle()
     const zone = canvasElement.querySelector('[data-slot="file-dropzone"]')
@@ -143,6 +159,25 @@ export const SingleFile: Story = {
     accept: ['.pdf'],
     acceptText: 'PDF',
   },
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('button', { name: 'Choose a file' })).toBeVisible()
+    const zone = canvasElement.querySelector('[data-slot="file-dropzone"]')
+    if (zone === null) throw new Error('No zone')
+    await settle()
+  },
+}
+
+export const SingleFileInteraction: Story = {
+  name: 'One file, interaction',
+  tags: ['interaction'],
+  args: {
+    label: 'Signed contract',
+    multiple: false,
+    accept: ['.pdf'],
+    acceptText: 'PDF',
+  },
   play: async ({ canvasElement, args }) => {
     await settle()
     const canvas = within(canvasElement)
@@ -165,6 +200,18 @@ export const SingleFile: Story = {
 /** A limit counting the files already attached. */
 export const CountLimit: Story = {
   name: 'Count limit',
+  args: { maxFiles: 5, existing: 4, description: 'At most 5 files per document.' },
+  play: async ({ canvasElement }) => {
+    await settle()
+    const zone = canvasElement.querySelector('[data-slot="file-dropzone"]')
+    if (zone === null) throw new Error('No zone')
+    await settle()
+  },
+}
+
+export const CountLimitInteraction: Story = {
+  name: 'Count limit, interaction',
+  tags: ['interaction'],
   args: { maxFiles: 5, existing: 4, description: 'At most 5 files per document.' },
   play: async ({ canvasElement }) => {
     await settle()
@@ -206,6 +253,82 @@ export const Invalid: Story = {
  */
 export const WithList: Story = {
   name: 'With the attachment list',
+  render: function Render(args) {
+    const [files, setFiles] = useState<Attachment[]>([
+      {
+        id: 'contract',
+        name: 'Ugovor 12-2026 Vojvođanka Mlin.pdf',
+        sizeText: '1,8 MB',
+        state: 'available',
+      },
+    ])
+    const uploading = files.some((item) => item.state === 'uploading' || item.state === 'scanning')
+    useEffect(() => {
+      if (!uploading) return
+      const timer = window.setInterval(() => {
+        setFiles((current) =>
+          current.map((item) => {
+            if (item.state === 'uploading') {
+              const progress = Math.min((item.progress ?? 0) + 25, 100)
+              return progress === 100
+                ? { ...item, state: 'scanning', progress }
+                : { ...item, progress }
+            }
+            if (item.state === 'scanning') return { ...item, state: 'available' }
+            return item
+          }),
+        )
+      }, 120)
+      return () => {
+        window.clearInterval(timer)
+      }
+    }, [uploading])
+    return (
+      <ExampleProvider>
+        <div className="max-w-140">
+          <SectionCard title="Attachments" flush>
+            <div className="flex flex-col gap-3 px-4 pb-4">
+              <FileDropzone
+                {...args}
+                hideLabel
+                existing={files.length}
+                onFiles={(chosen) => {
+                  setFiles((current) => [
+                    ...current,
+                    ...chosen.map((item) => ({
+                      id: item.name,
+                      name: item.name,
+                      sizeText: '2,4 MB',
+                      state: 'uploading' as const,
+                      progress: 0,
+                    })),
+                  ])
+                }}
+              />
+            </div>
+            <AttachmentList
+              label="Attachments"
+              inCard
+              files={files}
+              onDownload={() => undefined}
+              canRemove={() => true}
+              onRemove={(removed) => {
+                setFiles((current) => current.filter((item) => item.id !== removed.id))
+              }}
+            />
+          </SectionCard>
+        </div>
+      </ExampleProvider>
+    )
+  },
+  play: async () => {
+    await settle()
+  },
+}
+
+export const WithListInteraction: Story = {
+  name: 'With the attachment list, interaction',
+  tags: ['interaction'],
   render: function Render(args) {
     const [files, setFiles] = useState<Attachment[]>([
       {
@@ -352,6 +475,23 @@ export const Japanese: Story = {
 /** English in a right-to-left page (P3.6): the rejection keeps its word order. */
 export const EnglishInRtl: Story = {
   name: 'English in RTL',
+  render: (args) => (
+    <StoryProvider locale="ar">
+      <ExampleProvider>
+        <div className="max-w-140">
+          <FileDropzone {...args} />
+        </div>
+      </ExampleProvider>
+    </StoryProvider>
+  ),
+  play: async () => {
+    await settle()
+  },
+}
+
+export const EnglishInRtlInteraction: Story = {
+  name: 'English in RTL, interaction',
+  tags: ['interaction'],
   render: (args) => (
     <StoryProvider locale="ar">
       <ExampleProvider>

@@ -102,6 +102,7 @@ export function RadarChart(props: RadarChartProps) {
       {...(props.controls === undefined ? {} : { controls: props.controls })}
       {...(props.className === undefined ? {} : { className: props.className })}
       {...(props.loading === undefined ? {} : { loading: props.loading })}
+      {...(props.defaultView === undefined ? {} : { defaultView: props.defaultView })}
       {...(props.error === undefined ? {} : { error: props.error })}
       empty={isEmptyChart(props.categories, props.series, props.values)}
       skeleton="round"
@@ -329,6 +330,7 @@ export function RadialChart(props: RadialChartProps) {
       {...(props.controls === undefined ? {} : { controls: props.controls })}
       {...(props.className === undefined ? {} : { className: props.className })}
       {...(props.loading === undefined ? {} : { loading: props.loading })}
+      {...(props.defaultView === undefined ? {} : { defaultView: props.defaultView })}
       {...(props.error === undefined ? {} : { error: props.error })}
       empty={empty}
       skeleton="round"

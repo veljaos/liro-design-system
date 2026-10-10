@@ -3,6 +3,7 @@ import { useId, useRef, useState, type ReactElement, type ReactNode } from 'reac
 import { ButtonPrimitive, LoadingButtonPrimitive } from '../primitives/button'
 import { cn } from '../primitives/cn'
 import { TEXT_DIRECTION } from '../primitives/classes'
+import { useSteadyBottom } from '../primitives/use-steady-bottom'
 import {
   Dialog as DialogRoot,
   DialogCloseButton,
@@ -156,6 +157,9 @@ function ConfirmFrame(
   // The safe action takes the focus when the dialog opens (P4.9d): a single Enter never confirms
   // a delete, a rejection or a discard, and the close button is not where typing starts.
   const cancelRef = useRef<HTMLButtonElement>(null)
+  // A message that comes and goes in the body (a reason's error) never moves what is in view.
+  const body = useRef<HTMLDivElement>(null)
+  const spacer = useSteadyBottom(body, open)
 
   const setOpen = (next: boolean) => {
     if (busy && !next) return
@@ -232,7 +236,7 @@ function ConfirmFrame(
               : { tabIndex: 0, role: 'region', 'aria-labelledby': titleId })}
             className="min-h-0 overflow-y-auto px-4 outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus"
           >
-            <div data-slot="confirm-body" className="flex flex-col">
+            <div ref={body} data-slot="confirm-body" className="flex flex-col">
               {props.message !== undefined && (
                 <DialogDescription className="text-sm text-secondary">
                   {props.message}
@@ -245,6 +249,7 @@ function ConfirmFrame(
               )}
               {props.extra}
             </div>
+            <div ref={spacer} aria-hidden="true" />
           </div>
         )}
         <div className="flex shrink-0 flex-col px-4 pb-4">

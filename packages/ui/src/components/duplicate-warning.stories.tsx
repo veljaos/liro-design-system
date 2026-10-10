@@ -97,6 +97,22 @@ export const Default: Story = {
       '#customers/104987265',
     )
     await expect(alert.getByRole('link', { name: 'Open existing' })).toBeVisible()
+    await settle()
+  },
+}
+
+export const DefaultInteraction: Story = {
+  name: 'Default, interaction',
+  tags: ['interaction'],
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const alert = within(canvas.getByRole('alert'))
+    await expect(alert.getByRole('link', { name: /Panonija Agro d.o.o./ })).toHaveAttribute(
+      'href',
+      '#customers/104987265',
+    )
+    await expect(alert.getByRole('link', { name: 'Open existing' })).toBeVisible()
     await userEvent.click(alert.getByRole('button', { name: 'Create anyway' }))
     await expect(canvas.getByText('Created anyway.')).toBeVisible()
   },
@@ -105,6 +121,7 @@ export const Default: Story = {
 /** The application asks why: Create anyway opens the reason dialog, Cancel focused first. */
 export const WithReason: Story = {
   name: 'With a reason',
+  tags: ['interaction'],
   render: () => (
     <ExampleProvider>
       <NewCustomer reasonRequired />

@@ -20,8 +20,10 @@ const CREATE: LookupCreateKind[] = [
 ]
 
 /** The application around the field: its search, its results and its loading state. */
-function useCatalogue(delay = 400) {
-  const [results, setResults] = useState<LookupOption[]>([])
+function useCatalogue(delay = 400, query?: string) {
+  const [results, setResults] = useState<LookupOption[]>(() =>
+    query === undefined || query === '' ? [] : searchCatalogue(query),
+  )
   const [loading, setLoading] = useState(false)
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const onSearch = (query: string) => {
@@ -41,7 +43,7 @@ type Args = Partial<ComponentProps<typeof LookupField>>
 function Lookup(extra: Args & { initial?: LookupOption | null }) {
   const { initial = null, ...props } = extra
   const [value, setValue] = useState<LookupOption | null>(initial)
-  const catalogue = useCatalogue()
+  const catalogue = useCatalogue(400, props.defaultQuery)
   return (
     <LookupField
       label="Item or service"
@@ -113,6 +115,25 @@ type Story = StoryObj<typeof meta>
 export const Default: Story = {
   render: () => (
     <Lookup
+      defaultQuery="armat"
+      description="Name, code or asset number"
+      create={CREATE}
+      onCreate={() => undefined}
+      onSearchAll={() => undefined}
+      name="record"
+    />
+  ),
+  play: async () => {
+    await expect(await within(document.body).findByRole('listbox')).toBeVisible()
+    await settle()
+  },
+}
+
+export const DefaultInteraction: Story = {
+  name: 'Default, interaction',
+  tags: ['interaction'],
+  render: () => (
+    <Lookup
       description="Name, code or asset number"
       create={CREATE}
       onCreate={() => undefined}
@@ -154,6 +175,16 @@ export const Default: Story = {
 /** Nothing typed: the recent records first; ArrowDown opens and walks them. */
 export const RecentFirst: Story = {
   name: 'Recent records first',
+  render: () => <Lookup defaultQuery="" onSearchAll={() => undefined} />,
+  play: async () => {
+    await expect(await within(document.body).findByRole('listbox')).toBeVisible()
+    await settle()
+  },
+}
+
+export const RecentFirstInteraction: Story = {
+  name: 'Recent records first, interaction',
+  tags: ['interaction'],
   render: () => <Lookup onSearchAll={() => undefined} />,
   play: async ({ canvasElement }) => {
     const input = within(canvasElement).getByRole('combobox')
@@ -229,6 +260,7 @@ function CreateFlow() {
 
 export const Create: Story = {
   name: 'Create from the typed text',
+  tags: ['interaction'],
   render: () => <CreateFlow />,
   play: async ({ canvasElement }) => {
     await search(canvasElement, 'Montaža skele')
@@ -297,6 +329,7 @@ function OneOffAndSearchAll() {
 
 export const OneOff: Story = {
   name: 'One-off line and Search all…',
+  tags: ['interaction'],
   render: () => <OneOffAndSearchAll />,
   play: async ({ canvasElement }) => {
     await search(canvasElement, 'Popravka kapije')
@@ -321,6 +354,26 @@ export const Loading: Story = {
       kinds={KINDS}
       results={searchCatalogue('cement')}
       loading
+      defaultQuery="cement"
+      onSearch={() => undefined}
+    />
+  ),
+  play: async () => {
+    await expect(await within(document.body).findByRole('listbox')).toBeVisible()
+    await settle()
+  },
+}
+
+export const LoadingInteraction: Story = {
+  name: 'Loading, interaction',
+  tags: ['interaction'],
+  render: () => (
+    <LookupField
+      label="Item or service"
+      className="max-w-120"
+      kinds={KINDS}
+      results={searchCatalogue('cement')}
+      loading
       onSearch={() => undefined}
     />
   ),
@@ -338,6 +391,7 @@ export const Loading: Story = {
  */
 export const ManyResults: Story = {
   name: 'Hundreds of results (virtualised)',
+  tags: ['interaction'],
   render: function Render() {
     const [value, setValue] = useState<LookupOption | null>(null)
     const [results, setResults] = useState<LookupOption[]>([])
@@ -413,6 +467,23 @@ export const Phone: Story = {
   render: () => (
     <PhoneFrame>
       <div style={{ padding: 16 }}>
+        <Lookup
+          defaultQuery="prevoz"
+          create={CREATE}
+          onCreate={() => undefined}
+          onSearchAll={() => undefined}
+        />
+      </div>
+    </PhoneFrame>
+  ),
+}
+
+export const PhoneInteraction: Story = {
+  name: 'Phone width, interaction',
+  tags: ['interaction'],
+  render: () => (
+    <PhoneFrame>
+      <div style={{ padding: 16 }}>
         <Lookup create={CREATE} onCreate={() => undefined} onSearchAll={() => undefined} />
       </div>
     </PhoneFrame>
@@ -434,6 +505,37 @@ export const Phone: Story = {
 
 /** Arabic sample text, right to left: the list's rows and their details follow the direction. */
 export const Arabic: Story = {
+  render: () => (
+    <StoryProvider locale="ar">
+      <LookupField
+        label={ARABIC.label}
+        description={ARABIC.description}
+        className="max-w-120"
+        kinds={[{ key: 'item', heading: ARABIC.options[0] ?? '', label: ARABIC.options[0] ?? '' }]}
+        results={[
+          {
+            value: 'a1',
+            label: ARABIC.value,
+            kind: 'item',
+            description: 'ART-0112',
+            detail: '240',
+          },
+        ]}
+        onSearch={() => undefined}
+        defaultQuery=""
+        recent={[{ value: 'a1', label: ARABIC.value, kind: 'item', description: 'ART-0112' }]}
+      />
+    </StoryProvider>
+  ),
+  play: async () => {
+    await expect(await within(document.body).findByRole('listbox')).toBeVisible()
+    await settle()
+  },
+}
+
+export const ArabicInteraction: Story = {
+  name: 'Arabic, interaction',
+  tags: ['interaction'],
   render: () => (
     <StoryProvider locale="ar">
       <LookupField
@@ -473,6 +575,30 @@ export const Japanese: Story = {
         defaultValue={{ value: 'j1', label: JAPANESE.value }}
         results={[]}
         onSearch={() => undefined}
+        defaultQuery=""
+        recent={[{ value: 'j1', label: JAPANESE.value, description: 'C-0042' }]}
+      />
+    </StoryProvider>
+  ),
+  play: async () => {
+    await expect(await within(document.body).findByRole('listbox')).toBeVisible()
+    await settle()
+  },
+}
+
+export const JapaneseInteraction: Story = {
+  name: 'Japanese, interaction',
+  tags: ['interaction'],
+  render: () => (
+    <StoryProvider locale="ja">
+      <LookupField
+        label={JAPANESE.label}
+        description={JAPANESE.description}
+        className="max-w-120"
+        placeholder={JAPANESE.placeholder}
+        defaultValue={{ value: 'j1', label: JAPANESE.value }}
+        results={[]}
+        onSearch={() => undefined}
         recent={[{ value: 'j1', label: JAPANESE.value, description: 'C-0042' }]}
       />
     </StoryProvider>
@@ -487,6 +613,16 @@ export const Japanese: Story = {
 /** An Arabic page whose texts fell back to English: each text keeps its own word order. */
 export const EnglishInRtl: Story = {
   name: 'English in RTL',
+  render: () => (
+    <StoryProvider locale="ar">
+      <Lookup defaultQuery="prevoz" create={CREATE} onCreate={() => undefined} />
+    </StoryProvider>
+  ),
+}
+
+export const EnglishInRtlInteraction: Story = {
+  name: 'English in RTL, interaction',
+  tags: ['interaction'],
   render: () => (
     <StoryProvider locale="ar">
       <Lookup create={CREATE} onCreate={() => undefined} />

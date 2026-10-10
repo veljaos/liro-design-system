@@ -82,6 +82,11 @@ export interface QuestionnaireProps {
   answers?: QuestionAnswers
   /** Uncontrolled initial answers. */
   defaultAnswers?: QuestionAnswers
+  /**
+   * Where it opens, for a questionnaire resumed: a question on the answers' path, or the
+   * summary. Default: the first question.
+   */
+  defaultStep?: QuestionnaireStep
   /** Called with all answers whenever one changes. */
   onAnswersChange?: (answers: QuestionAnswers) => void
   /**
@@ -285,9 +290,14 @@ export function Questionnaire(props: QuestionnaireProps) {
   const answers = props.answers ?? innerAnswers
   const path = questionPath(props.questions, answers)
   const first = path[0]
-  const [step, setStep] = useState<QuestionnaireStep>(
-    first === undefined ? { kind: 'summary' } : { kind: 'question', id: first.id },
-  )
+  const [step, setStep] = useState<QuestionnaireStep>(() => {
+    const start = props.defaultStep
+    if (start?.kind === 'summary' && props.summary !== false) return start
+    if (start?.kind === 'question' && path.some((question) => question.id === start.id)) {
+      return start
+    }
+    return first === undefined ? { kind: 'summary' } : { kind: 'question', id: first.id }
+  })
   const [fromSummary, setFromSummary] = useState(false)
   const [attempted, setAttempted] = useState<ReadonlySet<string>>(new Set())
   const [busy, setBusy] = useState(false)

@@ -40,6 +40,47 @@ type Story = StoryObj<typeof meta>
 /** Open from a button; Escape closes it and the focus returns to the button. */
 export const Default: Story = {
   render: function Render() {
+    const [open, setOpen] = useState(true)
+    return (
+      <Dialog
+        open={open}
+        onOpenChange={setOpen}
+        trigger={<Button intent="edit" label="Rename" />}
+        title="Rename the report"
+        description="The new name appears in the list of reports."
+        actions={
+          <>
+            <Button
+              intent="cancel"
+              label="Cancel"
+              onClick={() => {
+                setOpen(false)
+              }}
+            />
+            <Button
+              intent="save"
+              label="Save"
+              onClick={() => {
+                setOpen(false)
+              }}
+            />
+          </>
+        }
+      >
+        <TextField label="Name" defaultValue="Sales by region, Q3" />
+      </Dialog>
+    )
+  },
+  play: async () => {
+    await within(document.body).findByRole('dialog', { name: 'Rename the report' })
+    await settle()
+  },
+}
+
+export const DefaultInteraction: Story = {
+  name: 'Default, interaction',
+  tags: ['interaction'],
+  render: function Render() {
     const [open, setOpen] = useState(false)
     return (
       <Dialog
@@ -92,6 +133,26 @@ export const Default: Story = {
  */
 export const NotDismissible: Story = {
   name: 'Not dismissible',
+  render: () => (
+    <Dialog
+      defaultOpen
+      dismissible={false}
+      title="Sending 24 invoices"
+      description="The dialog closes when the invoices are sent."
+    >
+      <Spinner>Sent 8 of 24…</Spinner>
+    </Dialog>
+  ),
+  play: async ({ canvasElement }) => {
+    const body = within(canvasElement.ownerDocument.body)
+    await body.findByRole('dialog')
+    await settle()
+  },
+}
+
+export const NotDismissibleInteraction: Story = {
+  name: 'Not dismissible, interaction',
+  tags: ['interaction'],
   render: () => (
     <Dialog
       defaultOpen

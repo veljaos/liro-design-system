@@ -302,6 +302,20 @@ export const Default: Story = {
       'aria-pressed',
       'true',
     )
+    await settle()
+  },
+}
+
+export const DefaultInteraction: Story = {
+  name: 'Default, interaction',
+  tags: ['interaction'],
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('button', { name: /^All/ })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
     await userEvent.click(canvas.getByRole('button', { name: /^Overdue/ }))
     await expect(canvas.getByRole('button', { name: /^Overdue/ })).toHaveAttribute(
       'aria-pressed',
@@ -313,6 +327,14 @@ export const Default: Story = {
 /** The views that do not fit as tabs are under "More"; choosing one names it on the button. */
 export const MoreViews: Story = {
   name: 'More views',
+  play: async () => {
+    await settle()
+  },
+}
+
+export const MoreViewsInteraction: Story = {
+  name: 'More views, interaction',
+  tags: ['interaction'],
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
@@ -333,6 +355,21 @@ export const MoreViews: Story = {
 /** Phones: one select "View: All 1.284" with the counts; above 7 views a search field. */
 export const PhoneViews: Story = {
   name: 'Phone views',
+  render: () => (
+    <PhoneFrame>
+      <ExampleProvider>
+        <InvoiceList phone views={MANY_VIEWS} />
+      </ExampleProvider>
+    </PhoneFrame>
+  ),
+  play: async () => {
+    await settle()
+  },
+}
+
+export const PhoneViewsInteraction: Story = {
+  name: 'Phone views, interaction',
+  tags: ['interaction'],
   render: () => (
     <PhoneFrame>
       <ExampleProvider>
@@ -368,6 +405,7 @@ export const Preview: Story = {
 
 /** Space on a focused row opens the preview; the column chooser hides a column. */
 export const Keyboard: Story = {
+  tags: ['interaction'],
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)

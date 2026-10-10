@@ -59,6 +59,7 @@ function Controlled(props: {
   quarterBasis?: 'business' | 'calendar'
   clearable?: boolean
   label?: string
+  defaultOpen?: boolean
 }) {
   const [value, setValue] = useState(props.initial)
   return (
@@ -70,6 +71,7 @@ function Controlled(props: {
         {...(props.yearStartMonth === undefined ? {} : { yearStartMonth: props.yearStartMonth })}
         {...(props.quarterBasis === undefined ? {} : { quarterBasis: props.quarterBasis })}
         {...(props.clearable === undefined ? {} : { clearable: props.clearable })}
+        {...(props.defaultOpen === undefined ? {} : { defaultOpen: props.defaultOpen })}
       />
       <p className="m-0 text-sm text-secondary">
         Value: <code>{JSON.stringify(value)}</code>
@@ -85,6 +87,20 @@ export const Default: Story = {
 
 /** Open: presets on the start side ("This month" active), the range calendar beside them. */
 export const Open: Story = {
+  render: () => (
+    <div className="min-h-110">
+      <Controlled initial={{ start: '2026-09-01', end: '2026-09-30' }} clearable defaultOpen />
+    </div>
+  ),
+  play: async () => {
+    await within(document.body).findByRole('button', { name: 'This month' })
+    await settle()
+  },
+}
+
+export const OpenInteraction: Story = {
+  name: 'Open, interaction',
+  tags: ['interaction'],
   render: () => (
     <div className="min-h-110">
       <Controlled initial={{ start: '2026-09-01', end: '2026-09-30' }} clearable />
@@ -106,6 +122,7 @@ export const Open: Story = {
 /** A preset applies at once; two days in the calendar apply a custom range. */
 export const PresetAndRange: Story = {
   name: 'Preset, then a custom range',
+  tags: ['interaction'],
   render: () => (
     <div className="min-h-110">
       <Controlled initial={null} clearable />

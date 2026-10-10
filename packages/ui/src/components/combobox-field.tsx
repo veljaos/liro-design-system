@@ -190,6 +190,11 @@ export interface ComboboxFieldProps extends FieldBaseProps {
   value?: ComboboxOption | null
   /** Uncontrolled initial choice. */
   defaultValue?: ComboboxOption | null
+  /**
+   * Text standing typed when the field first shows, with its list open: a search the
+   * application restores (a form opened again where it was left).
+   */
+  defaultQuery?: string
   /** Called with the chosen option, or null when the field is cleared. */
   onChange?: (option: ComboboxOption | null) => void
   /**
@@ -218,8 +223,8 @@ export function ComboboxField(props: ComboboxFieldProps) {
   const listId = `${useId()}-list`
   const [innerValue, setInnerValue] = useState(props.defaultValue ?? null)
   const value = props.value === undefined ? innerValue : props.value
-  const [query, setQuery] = useState<string | null>(null)
-  const [open, setOpen] = useState(false)
+  const [query, setQuery] = useState<string | null>(props.defaultQuery ?? null)
+  const [open, setOpen] = useState(props.defaultQuery !== undefined)
   const [active, setActive] = useState(-1)
   const search = useDebouncedCallback(props.onSearch, props.searchDelay ?? 300)
 

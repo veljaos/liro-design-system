@@ -52,6 +52,22 @@ type Story = StoryObj<typeof meta>
 export const Delete: Story = {
   render: () => (
     <DeleteConfirmDialog
+      defaultOpen
+      trigger={<Button intent="delete" label="Delete" />}
+      onConfirm={() => undefined}
+    />
+  ),
+  play: async () => {
+    await within(document.body).findByRole('alertdialog')
+    await settle()
+  },
+}
+
+export const DeleteInteraction: Story = {
+  name: 'Delete, interaction',
+  tags: ['interaction'],
+  render: () => (
+    <DeleteConfirmDialog
       trigger={<Button intent="delete" label="Delete" />}
       onConfirm={() => undefined}
     />
@@ -76,6 +92,7 @@ export const Delete: Story = {
  */
 export const SafeInitialFocus: Story = {
   name: 'Initial focus on Cancel',
+  tags: ['interaction'],
   render: () => {
     const confirmed: string[] = []
     return (
@@ -188,6 +205,24 @@ export const Loading: Story = {
       onConfirm={() => new Promise<void>(() => undefined)}
     />
   ),
+  play: async () => {
+    await settle()
+  },
+}
+
+export const LoadingInteraction: Story = {
+  name: 'Loading, interaction',
+  tags: ['interaction'],
+  render: () => (
+    <ConfirmDialog
+      defaultOpen
+      intent="delete"
+      title="Delete invoice F-114?"
+      message="The invoice and its lines are deleted."
+      confirmLabel="Delete"
+      onConfirm={() => new Promise<void>(() => undefined)}
+    />
+  ),
   play: async ({ canvasElement }) => {
     const body = within(canvasElement.ownerDocument.body)
     const dialog = await body.findByRole('alertdialog')
@@ -206,6 +241,31 @@ export const Loading: Story = {
 
 /** Irreversible: the button enables only when the number is typed. */
 export const Irreversible: Story = {
+  render: () => (
+    <IrreversibleConfirmDialog
+      defaultOpen
+      family="caution"
+      actionIcon={Ban}
+      title="Void invoice F-114?"
+      message="A voided invoice cannot be restored; its number is not reused."
+      confirmLabel="Void the invoice"
+      confirmText="F-114"
+      onConfirm={() => undefined}
+    />
+  ),
+  play: async ({ canvasElement }) => {
+    const body = within(canvasElement.ownerDocument.body)
+    const dialog = await body.findByRole('alertdialog')
+    await settle()
+    const button = within(dialog).getByRole('button', { name: 'Void the invoice' })
+    await expect(button).toBeDisabled()
+    await settle()
+  },
+}
+
+export const IrreversibleInteraction: Story = {
+  name: 'Irreversible, interaction',
+  tags: ['interaction'],
   render: () => (
     <IrreversibleConfirmDialog
       defaultOpen
@@ -252,6 +312,31 @@ export const Reason: Story = {
     await settle()
     const button = within(dialog).getByRole('button', { name: 'Reject' })
     await expect(button).toBeDisabled()
+    await settle()
+  },
+}
+
+export const ReasonInteraction: Story = {
+  name: 'Reason, interaction',
+  tags: ['interaction'],
+  render: () => (
+    <ReasonConfirmDialog
+      defaultOpen
+      family="destructive"
+      actionIcon={CircleX}
+      title="Reject UF-2026-1187?"
+      message="EPS Snabdevanje d.o.o. is told the reason through SEF."
+      reasonLabel="Reason for rejection"
+      confirmLabel="Reject"
+      onConfirm={() => undefined}
+    />
+  ),
+  play: async ({ canvasElement }) => {
+    const body = within(canvasElement.ownerDocument.body)
+    const dialog = await body.findByRole('alertdialog')
+    await settle()
+    const button = within(dialog).getByRole('button', { name: 'Reject' })
+    await expect(button).toBeDisabled()
     await userEvent.type(
       within(dialog).getByRole('textbox', { name: /Reason for rejection/ }),
       'Wrong quantity on line 2',
@@ -263,6 +348,36 @@ export const Reason: Story = {
 /** Reject with a reason from the Core's list and optional details. */
 export const ReasonList: Story = {
   name: 'Reason from a list',
+  render: () => (
+    <ReasonConfirmDialog
+      defaultOpen
+      family="destructive"
+      actionIcon={CircleX}
+      title="Reject UF-2026-1187?"
+      reasonLabel="Reason for rejection"
+      reasons={[
+        { value: 'price', label: 'Price differs from the order' },
+        { value: 'quantity', label: 'Quantity differs from the delivery' },
+        { value: 'duplicate', label: 'Invoice already received' },
+        { value: 'other', label: 'Other' },
+      ]}
+      confirmLabel="Reject"
+      onConfirm={() => undefined}
+    />
+  ),
+  play: async ({ canvasElement }) => {
+    const body = within(canvasElement.ownerDocument.body)
+    const dialog = await body.findByRole('alertdialog')
+    await settle()
+    const button = within(dialog).getByRole('button', { name: 'Reject' })
+    await expect(button).toBeDisabled()
+    await settle()
+  },
+}
+
+export const ReasonListInteraction: Story = {
+  name: 'Reason from a list, interaction',
+  tags: ['interaction'],
   render: () => (
     <ReasonConfirmDialog
       defaultOpen
@@ -354,6 +469,32 @@ export const IrreversibleWithReason: Story = {
   name: 'Irreversible with a reason',
   render: () => (
     <IrreversibleConfirmDialog
+      defaultOpen
+      trigger={<Button family="caution" icon={Ban} label="Cancel invoice" />}
+      family="caution"
+      actionIcon={Ban}
+      title="Cancel invoice F-2026-0407?"
+      message="A cancellation document is issued and sent to SEF. This cannot be undone."
+      confirmLabel="Cancel invoice"
+      confirmText="F-2026-0407"
+      cancelLabel="Keep invoice"
+      reason={{ label: 'Reason for the cancellation' }}
+      onConfirm={(answer) => {
+        document.body.dataset.cancelReason = answer.text
+      }}
+    />
+  ),
+  play: async () => {
+    await within(document.body).findByRole('alertdialog')
+    await settle()
+  },
+}
+
+export const IrreversibleWithReasonInteraction: Story = {
+  name: 'Irreversible with a reason, interaction',
+  tags: ['interaction'],
+  render: () => (
+    <IrreversibleConfirmDialog
       trigger={<Button family="caution" icon={Ban} label="Cancel invoice" />}
       family="caution"
       actionIcon={Ban}
@@ -398,6 +539,35 @@ export const IrreversibleWithReason: Story = {
 /** With the Core's list of reasons: one must be chosen, the details are optional. */
 export const IrreversibleWithReasons: Story = {
   name: 'Irreversible with a list of reasons',
+  render: () => (
+    <IrreversibleConfirmDialog
+      defaultOpen
+      family="caution"
+      actionIcon={Ban}
+      title="Cancel invoice F-2026-0407?"
+      message="A cancellation document is issued and sent to SEF."
+      confirmLabel="Cancel invoice"
+      confirmText="F-2026-0407"
+      reason={{
+        reasons: [
+          { value: 'price', label: 'Wrong prices' },
+          { value: 'customer', label: 'Wrong customer' },
+          { value: 'duplicate', label: 'Issued twice' },
+        ],
+        label: 'Reason',
+        detailsLabel: 'Details for the cancellation document',
+      }}
+      onConfirm={() => undefined}
+    />
+  ),
+  play: async () => {
+    await settle()
+  },
+}
+
+export const IrreversibleWithReasonsInteraction: Story = {
+  name: 'Irreversible with a list of reasons, interaction',
+  tags: ['interaction'],
   render: () => (
     <IrreversibleConfirmDialog
       defaultOpen

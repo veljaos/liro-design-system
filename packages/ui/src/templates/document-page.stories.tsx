@@ -339,7 +339,7 @@ function Invoice({
   ...props
 }: Partial<DocumentPageProps> & { layout?: DocumentPageProps['layout']; bottomBar?: ReactNode }) {
   const [open, setOpen] = useState<string[]>(['delivery', 'related', 'attachments'])
-  const [hidden, setHidden] = useState(false)
+  const [hidden, setHidden] = useState(props.panelsHidden ?? false)
   return (
     <AppShell
       layout={layout === 'phone' ? 'phone' : 'desktop'}
@@ -675,6 +675,23 @@ export const Default: Story = {
       'href',
       '#sales/orders/N-2026-0157',
     )
+    await settle()
+  },
+}
+
+export const DefaultInteraction: Story = {
+  name: 'Default, interaction',
+  tags: ['interaction'],
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const bar = within(canvas.getByRole('list', { name: 'Invoice status' }))
+    await expect(bar.getByText('Sent to SEF').closest('li')).toHaveAttribute('aria-current', 'step')
+    // Related documents are links.
+    await expect(canvas.getByRole('link', { name: /N-2026-0157/ })).toHaveAttribute(
+      'href',
+      '#sales/orders/N-2026-0157',
+    )
     await userEvent.click(canvas.getByRole('button', { name: /^Comments/ }))
     await expect(canvas.getByRole('button', { name: /^Comments/ })).toHaveAttribute(
       'aria-expanded',
@@ -693,6 +710,20 @@ export const Default: Story = {
 /** "Hide panels": the document takes the full width. */
 export const PanelsHidden: Story = {
   name: 'Panels hidden',
+  render: () => (
+    <ExampleProvider>
+      <Invoice panelsHidden />
+    </ExampleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(within(canvasElement).getByRole('button', { name: 'Show panels' })).toBeVisible()
+  },
+}
+
+export const PanelsHiddenInteraction: Story = {
+  name: 'Panels hidden, interaction',
+  tags: ['interaction'],
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
@@ -729,6 +760,25 @@ export const Rejected: Story = {
  * follow the lines.
  */
 export const Draft: Story = {
+  render: () => (
+    <ExampleProvider>
+      <DraftInvoice />
+    </ExampleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.queryByRole('complementary', { name: 'Panels' })).toBeNull()
+    // 135.120,00 at 20% and 8.500,00 at 10%: VAT 27.024,00 and 850,00, total 171.494,00.
+    await expect(canvasElement).toHaveTextContent('27.024,00')
+    await expect(canvasElement).toHaveTextContent('171.494,00')
+    await settle()
+  },
+}
+
+export const DraftInteraction: Story = {
+  name: 'Draft, interaction',
+  tags: ['interaction'],
   render: () => (
     <ExampleProvider>
       <DraftInvoice />
@@ -984,6 +1034,25 @@ export const ComplexDocument: Story = {
       canvas.getByRole('link', { name: 'Advance invoice A-2026-044, Paid' }),
     ).toBeVisible()
     await expect(canvas.getByRole('table', { name: 'Recap by tax category' })).toBeVisible()
+    await settle()
+  },
+}
+
+export const ComplexDocumentInteraction: Story = {
+  name: 'Complex document, interaction',
+  tags: ['interaction'],
+  render: () => (
+    <ExampleProvider>
+      <ComplexInvoice />
+    </ExampleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(
+      canvas.getByRole('link', { name: 'Advance invoice A-2026-044, Paid' }),
+    ).toBeVisible()
+    await expect(canvas.getByRole('table', { name: 'Recap by tax category' })).toBeVisible()
     await userEvent.click(canvas.getByRole('button', { name: 'Edit notes' }))
     await expect(canvas.getByRole('textbox', { name: 'Note' })).toBeVisible()
     await userEvent.click(canvas.getByRole('button', { name: 'Done' }))
@@ -1021,6 +1090,77 @@ export const ComplexDocumentPhone: Story = {
  */
 export const CancelDocument: Story = {
   name: 'Cancel a document',
+  render: () => {
+    function Cancellable() {
+      const [reason, setReason] = useState<string | null>(
+        'Wrong prices: the September price list was not applied.',
+      )
+      return (
+        <Invoice
+          status={
+            reason === null ? (
+              <StatusBadge label="Overdue" tone="danger" />
+            ) : (
+              <StatusBadge label="Cancelled" tone="danger" />
+            )
+          }
+          {...(reason === null
+            ? {}
+            : {
+                banner: (
+                  <CancellationBanner
+                    by="Milica Petrović"
+                    at="2026-10-06T11:20:00+02:00"
+                    reason={reason}
+                    document={{
+                      kind: 'Cancellation document',
+                      number: 'ST-2026-0004',
+                      href: '#sales/invoices/ST-2026-0004',
+                    }}
+                  />
+                ),
+              })}
+          actions={
+            <>
+              <Button intent="pdf" label="PDF" emphasis="secondary" />
+              {reason === null && (
+                <IrreversibleConfirmDialog
+                  trigger={<Button family="caution" icon={Ban} label="Cancel invoice" />}
+                  family="caution"
+                  actionIcon={Ban}
+                  title="Cancel invoice F-2026-0412?"
+                  message="A cancellation document is issued and sent to SEF. This cannot be undone."
+                  confirmLabel="Cancel invoice"
+                  cancelLabel="Keep invoice"
+                  confirmText="F-2026-0412"
+                  reason={{ label: 'Reason for the cancellation' }}
+                  onConfirm={(answer) => {
+                    setReason(answer.text)
+                  }}
+                />
+              )}
+            </>
+          }
+        />
+      )
+    }
+    return (
+      <ExampleProvider>
+        <Cancellable />
+      </ExampleProvider>
+    )
+  },
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(
+      within(canvasElement).getByRole('link', { name: 'Cancellation document ST-2026-0004' }),
+    ).toBeVisible()
+  },
+}
+
+export const CancelDocumentInteraction: Story = {
+  name: 'Cancel a document, interaction',
+  tags: ['interaction'],
   render: () => {
     function Cancellable() {
       const [reason, setReason] = useState<string | null>(null)

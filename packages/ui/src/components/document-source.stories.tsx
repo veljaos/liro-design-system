@@ -58,6 +58,17 @@ export const Default: Story = {
     await settle()
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('list', { name: 'Corrects' })).toBeVisible()
+    await settle()
+  },
+}
+
+export const DefaultInteraction: Story = {
+  name: 'Default, interaction',
+  tags: ['interaction'],
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('list', { name: 'Corrects' })).toBeVisible()
     await userEvent.tab()
     await expect(canvas.getByRole('link', { name: 'Invoice F-2026-0410' })).toHaveFocus()
     await expect(canvasElement).toHaveTextContent(/Issued 25\.09\.2026\..*Total 186\.420,35 RSD/)

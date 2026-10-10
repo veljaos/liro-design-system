@@ -70,6 +70,23 @@ export const Default: Story = {
     signUp: <Line text="No account?" link="Ask your administrator" />,
     terms: <Line text="By continuing you accept the" link="terms of use and privacy policy" />,
   },
+  play: async ({ canvasElement }) => {
+    await ready()
+    const canvas = within(canvasElement)
+    const field = canvas.getByRole('textbox', { name: 'E-mail' })
+    await expect(field).toHaveAttribute('autocomplete', 'username')
+  },
+}
+
+export const DefaultInteraction: Story = {
+  name: 'Default, interaction',
+  tags: ['interaction'],
+  args: {
+    placeholder: 'name@company.rs',
+    providers: providers(),
+    signUp: <Line text="No account?" link="Ask your administrator" />,
+    terms: <Line text="By continuing you accept the" link="terms of use and privacy policy" />,
+  },
   play: async ({ canvasElement, args }) => {
     await ready()
     const canvas = within(canvasElement)
@@ -115,6 +132,22 @@ export const WithError: Story = {
 
 /** The address is being checked: Continue is busy and cannot be pressed again. */
 export const Loading: Story = {
+  args: {
+    defaultValue: 'milica.petrovic@kvadratgradnja.rs',
+    loading: true,
+    providers: providers(),
+  },
+  play: async ({ canvasElement }) => {
+    await ready()
+    const canvas = within(canvasElement)
+    const button = canvas.getByRole('button', { name: 'Continue' })
+    await expect(button).toHaveAttribute('aria-busy', 'true')
+  },
+}
+
+export const LoadingInteraction: Story = {
+  name: 'Loading, interaction',
+  tags: ['interaction'],
   args: {
     defaultValue: 'milica.petrovic@kvadratgradnja.rs',
     loading: true,

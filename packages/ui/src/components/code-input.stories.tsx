@@ -43,6 +43,23 @@ type Story = StoryObj<typeof meta>
 /** Typed: each digit moves on; the last one completes the code. */
 export const Default: Story = {
   args: { description: 'The six digits change every 30 seconds.' },
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(
+      canvas.getByRole('group', { name: 'Code from the authenticator app' }),
+    ).toBeVisible()
+    const first = canvas.getByRole('textbox', { name: 'Character 1 of 6' })
+    await expect(first).toHaveAttribute('autocomplete', 'one-time-code')
+    await expect(first).toHaveAttribute('inputmode', 'numeric')
+    await settle()
+  },
+}
+
+export const DefaultInteraction: Story = {
+  name: 'Default, interaction',
+  tags: ['interaction'],
+  args: { description: 'The six digits change every 30 seconds.' },
   play: async ({ canvasElement, args }) => {
     await settle()
     const canvas = within(canvasElement)
@@ -66,6 +83,7 @@ export const Default: Story = {
 /** The whole code pasted into the fourth box fills every box from the first. */
 export const PasteAnywhere: Story = {
   name: 'Paste into any box',
+  tags: ['interaction'],
   play: async ({ canvasElement, args }) => {
     await settle()
     const canvas = within(canvasElement)
@@ -79,6 +97,15 @@ export const PasteAnywhere: Story = {
 
 /** Backspace and the arrows move between the boxes; the code reads left to right. */
 export const Keyboard: Story = {
+  args: { defaultValue: '4829' },
+  play: async () => {
+    await settle()
+  },
+}
+
+export const KeyboardInteraction: Story = {
+  name: 'Keyboard, interaction',
+  tags: ['interaction'],
   args: { defaultValue: '4829' },
   play: async ({ canvasElement }) => {
     await settle()
@@ -102,6 +129,7 @@ export const Keyboard: Story = {
 
 /** A controlled code: the application keeps the value. */
 export const Controlled: Story = {
+  tags: ['interaction'],
   render: (args) => {
     function Example() {
       const [value, setValue] = useState('')
@@ -125,6 +153,24 @@ export const Controlled: Story = {
 
 /** Letters and digits: an e-mailed code, taken in upper case. */
 export const Alphanumeric: Story = {
+  args: {
+    label: 'Code from the e-mail',
+    kind: 'alphanumeric',
+    length: 8,
+    description: 'Sent to milica.petrovic@kvadratgradnja.rs at 10:42.',
+    autoFocus: true,
+  },
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('textbox', { name: 'Character 1 of 8' })).toHaveFocus()
+    await settle()
+  },
+}
+
+export const AlphanumericInteraction: Story = {
+  name: 'Alphanumeric, interaction',
+  tags: ['interaction'],
   args: {
     label: 'Code from the e-mail',
     kind: 'alphanumeric',

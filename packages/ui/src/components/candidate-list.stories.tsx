@@ -94,6 +94,17 @@ export const Default: Story = {
     await settle()
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('checkbox', { name: /^F-2026-0410/ })).toBeChecked()
+    await settle()
+  },
+}
+
+export const DefaultInteraction: Story = {
+  name: 'Default, interaction',
+  tags: ['interaction'],
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('checkbox', { name: /^F-2026-0410/ })).toBeChecked()
     await userEvent.click(canvas.getByText('F-2026-0381'))
     await expect(canvas.getByRole('checkbox', { name: /^F-2026-0381/ })).toBeChecked()
     canvas.getByRole('checkbox', { name: /^F-2026-0381/ }).focus()
@@ -104,6 +115,26 @@ export const Default: Story = {
 
 /** One may be chosen: radios, the arrows move the choice. */
 export const One: Story = {
+  render: () => (
+    <ExampleProvider>
+      <div className="max-w-xl">
+        <Controlled
+          label="Existing customer"
+          multiple={false}
+          start={['F-2026-0410']}
+          candidates={OPEN_ITEMS.slice(0, 2)}
+        />
+      </div>
+    </ExampleProvider>
+  ),
+  play: async () => {
+    await settle()
+  },
+}
+
+export const OneInteraction: Story = {
+  name: 'One, interaction',
+  tags: ['interaction'],
   render: () => (
     <ExampleProvider>
       <div className="max-w-xl">

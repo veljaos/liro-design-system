@@ -50,6 +50,20 @@ export const Default: Story = {
 export const Open: Story = {
   render: (args) => (
     <div className="flex min-h-80 max-w-100 flex-col">
+      <MultiSelectField {...args} defaultValue={['export']} defaultQuery="e" />
+    </div>
+  ),
+  play: async () => {
+    await expect(await within(document.body).findByRole('listbox')).toBeVisible()
+    await settle()
+  },
+}
+
+export const OpenInteraction: Story = {
+  name: 'Open, interaction',
+  tags: ['interaction'],
+  render: (args) => (
+    <div className="flex min-h-80 max-w-100 flex-col">
       <MultiSelectField {...args} defaultValue={['export']} />
     </div>
   ),
@@ -67,6 +81,7 @@ export const Open: Story = {
  * option is listed again, so the next one can be typed at once.
  */
 export const ChoosingClearsSearch: Story = {
+  tags: ['interaction'],
   render: (args) => (
     <div className="flex min-h-80 max-w-100 flex-col">
       <MultiSelectField {...args} />
@@ -85,6 +100,20 @@ export const ChoosingClearsSearch: Story = {
 
 /** Nothing matches. */
 export const Empty: Story = {
+  render: (args) => (
+    <div className="flex min-h-40 max-w-100 flex-col">
+      <MultiSelectField {...args} defaultQuery="zz" />
+    </div>
+  ),
+  play: async () => {
+    await expect(await within(document.body).findByText('Nothing found')).toBeVisible()
+    await settle()
+  },
+}
+
+export const EmptyInteraction: Story = {
+  name: 'Empty, interaction',
+  tags: ['interaction'],
   render: (args) => (
     <div className="flex min-h-40 max-w-100 flex-col">
       <MultiSelectField {...args} />

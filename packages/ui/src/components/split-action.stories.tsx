@@ -66,6 +66,43 @@ export const Open: Story = {
     return (
       <div className="flex min-h-60 flex-col items-start gap-3">
         <SplitAction
+          defaultOpen
+          intent="save"
+          label="Save"
+          onClick={() => {
+            setRan('Save')
+          }}
+          entries={ENTRIES.map((entry) =>
+            entry.type === undefined || entry.type === 'item'
+              ? {
+                  ...entry,
+                  onSelect: () => {
+                    setRan(entry.label)
+                  },
+                }
+              : entry,
+          )}
+        />
+        <p className="m-0 text-sm text-secondary">
+          Ran: <code>{ran}</code>
+        </p>
+      </div>
+    )
+  },
+  play: async () => {
+    await within(document.body).findByRole('menu')
+    await settle()
+  },
+}
+
+export const OpenInteraction: Story = {
+  name: 'Open, interaction',
+  tags: ['interaction'],
+  render: function Render() {
+    const [ran, setRan] = useState('nothing')
+    return (
+      <div className="flex min-h-60 flex-col items-start gap-3">
+        <SplitAction
           intent="save"
           label="Save"
           onClick={() => {
@@ -120,6 +157,27 @@ export const LongTextPhone: Story = {
 
 /** Arabic sample text, right to left: the chevron at the start side of the menu's anchor. */
 export const Arabic: Story = {
+  render: () => (
+    <StoryProvider locale="ar">
+      <div className="min-h-50">
+        <SplitAction
+          defaultOpen
+          intent="save"
+          label={ARABIC.options[0] ?? ''}
+          entries={ARABIC.options.map((label) => ({ label, icon: Save, onSelect: noop }))}
+        />
+      </div>
+    </StoryProvider>
+  ),
+  play: async () => {
+    await within(document.body).findByRole('menu')
+    await settle()
+  },
+}
+
+export const ArabicInteraction: Story = {
+  name: 'Arabic, interaction',
+  tags: ['interaction'],
   render: () => (
     <StoryProvider locale="ar">
       <div className="min-h-50">

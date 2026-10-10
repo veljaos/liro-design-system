@@ -190,6 +190,31 @@ export const ActiveFilters: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByText(/^Total: EUR\s1,000\.00 –$/)).toBeVisible()
+    await settle()
+  },
+}
+
+export const ActiveFiltersInteraction: Story = {
+  name: 'Active filters, interaction',
+  tags: ['interaction'],
+  render: () => (
+    <Controlled
+      inline={2}
+      layout="desktop"
+      search="F-2026"
+      initial={{
+        status: 'sent',
+        customer: ['alfa'],
+        issued: { start: '2026-09-01', end: '2026-09-30' },
+        total: { min: '1000', max: null },
+        paid: false,
+        reference: 'PO-77',
+      }}
+    />
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText(/^Total: EUR\s1,000\.00 –$/)).toBeVisible()
     await userEvent.click(canvas.getByRole('button', { name: 'Remove filter: Paid' }))
     await waitFor(() => expect(canvas.queryByText('Paid: No')).toBeNull())
     // An inline select is emptied in place by its clear button.
@@ -201,6 +226,17 @@ export const ActiveFilters: Story = {
 
 /** "Clear all" clears the bar's filters, not the search. */
 export const ClearAll: Story = {
+  render: () => (
+    <Controlled layout="desktop" search="F-2026" initial={{ status: 'paid', paid: true }} />
+  ),
+  play: async () => {
+    await settle()
+  },
+}
+
+export const ClearAllInteraction: Story = {
+  name: 'Clear all, interaction',
+  tags: ['interaction'],
   render: () => (
     <Controlled layout="desktop" search="F-2026" initial={{ status: 'paid', paid: true }} />
   ),
@@ -216,6 +252,23 @@ export const ClearAll: Story = {
 /** The drawer from the end side: every filter that is not inline, stacked. */
 export const DrawerOpen: Story = {
   name: 'Filters drawer',
+  render: () => (
+    <Controlled
+      inline={1}
+      layout="desktop"
+      defaultFiltersOpen
+      initial={{ total: { min: '10', max: '500' } }}
+    />
+  ),
+  play: async () => {
+    await within(document.body).findByRole('dialog', { name: 'Filters' })
+    await settle()
+  },
+}
+
+export const DrawerOpenInteraction: Story = {
+  name: 'Filters drawer, interaction',
+  tags: ['interaction'],
   render: () => (
     <Controlled inline={1} layout="desktop" initial={{ total: { min: '10', max: '500' } }} />
   ),
@@ -244,7 +297,7 @@ async function expectWholeAmounts(scope: HTMLElement) {
 }
 
 /** A long amount in the screen's own number format ("1.234.567,89"). */
-function LongAmount(props: { inline: number }) {
+function LongAmount(props: { inline: number; defaultFiltersOpen?: boolean }) {
   const { direction } = useLiro()
   return (
     <StoryProvider locale="sr-Latn-RS" direction={direction}>
@@ -252,6 +305,9 @@ function LongAmount(props: { inline: number }) {
         inline={props.inline}
         layout="desktop"
         initial={{ total: { min: '1234567.89', max: '9876543.21' } }}
+        {...(props.defaultFiltersOpen === undefined
+          ? {}
+          : { defaultFiltersOpen: props.defaultFiltersOpen })}
       />
     </StoryProvider>
   )
@@ -273,6 +329,16 @@ export const LongAmountInline: Story = {
 /** The same long amount in the Filters drawer, 320px wide: the pair wraps, nothing is cut. */
 export const LongAmountDrawer: Story = {
   name: 'Long amount in the drawer',
+  render: () => <LongAmount inline={1} defaultFiltersOpen />,
+  play: async () => {
+    await within(document.body).findByRole('dialog', { name: 'Filters' })
+    await settle()
+  },
+}
+
+export const LongAmountDrawerInteraction: Story = {
+  name: 'Long amount in the drawer, interaction',
+  tags: ['interaction'],
   render: () => <LongAmount inline={1} />,
   play: async ({ canvasElement }) => {
     const body = within(canvasElement.ownerDocument.body)
@@ -285,6 +351,18 @@ export const LongAmountDrawer: Story = {
 
 /** Search: the clear button appears with text and empties it at once. */
 export const Search: Story = {
+  render: () => <Controlled layout="desktop" filters={[]} search="Beta" />,
+  play: async ({ canvasElement }) => {
+    await expect(within(canvasElement).getByRole('textbox', { name: 'Search…' })).toHaveValue(
+      'Beta',
+    )
+    await settle()
+  },
+}
+
+export const SearchInteraction: Story = {
+  name: 'Search, interaction',
+  tags: ['interaction'],
   render: () => <Controlled layout="desktop" filters={[]} />,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -333,6 +411,7 @@ export const Phone: Story = {
 /** The phone's "⋯" menu with the list's actions (Export). */
 export const PhoneActions: Story = {
   name: 'Phone actions menu',
+  tags: ['interaction'],
   render: () => (
     <div className="w-[390px] max-w-full">
       <Controlled layout="phone" actions={ACTIONS} phoneMenu={PHONE_MENU} />
@@ -353,6 +432,7 @@ export const PhoneActions: Story = {
 /** The phone's sort menu: the sortable columns, then the two directions, with check marks. */
 export const PhoneSort: Story = {
   name: 'Phone sort menu',
+  tags: ['interaction'],
   render: () => (
     <div className="w-[390px] max-w-full">
       <Controlled layout="phone" />
@@ -375,6 +455,20 @@ export const PhoneSort: Story = {
 /** The drawer at phone width (a 390px frame): full width. */
 export const PhoneDrawer: Story = {
   name: 'Phone drawer',
+  render: () => (
+    <PhoneFrame>
+      <Controlled layout="phone" defaultFiltersOpen initial={{ customer: ['alfa', 'beta'] }} />
+    </PhoneFrame>
+  ),
+  play: async () => {
+    await within(document.body).findByRole('dialog', { name: 'Filters' })
+    await settle()
+  },
+}
+
+export const PhoneDrawerInteraction: Story = {
+  name: 'Phone drawer, interaction',
+  tags: ['interaction'],
   render: () => (
     <PhoneFrame>
       <Controlled layout="phone" initial={{ customer: ['alfa', 'beta'] }} />

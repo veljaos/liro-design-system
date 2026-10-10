@@ -191,6 +191,14 @@ type Story = StoryObj<typeof meta>
 
 /** List and detail side by side; choosing another row changes the detail. */
 export const Default: Story = {
+  play: async () => {
+    await settle()
+  },
+}
+
+export const DefaultInteraction: Story = {
+  name: 'Default, interaction',
+  tags: ['interaction'],
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
@@ -202,6 +210,22 @@ export const Default: Story = {
 /** Checked rows: the bulk bar above the list decides for all of them at once. */
 export const CheckedRows: Story = {
   name: 'Checked rows',
+  render: () => (
+    <ExampleProvider>
+      <Approvals checkable startChecked={['u2', 'u5']} />
+    </ExampleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('2 selected')).toBeVisible()
+    await settle()
+  },
+}
+
+export const CheckedRowsInteraction: Story = {
+  name: 'Checked rows, interaction',
+  tags: ['interaction'],
   render: () => (
     <ExampleProvider>
       <Approvals checkable startChecked={['u2', 'u5']} />
@@ -316,6 +340,24 @@ export const PhoneList: Story = {
 /** Below 62em: the chosen item full width, with Back and Next item. */
 export const PhoneDetail: Story = {
   name: 'Phone width, detail',
+  render: () => (
+    <PhoneFrame>
+      <ExampleProvider>
+        <Approvals stacked />
+      </ExampleProvider>
+    </PhoneFrame>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('1 of 5')).toBeVisible()
+    await settle()
+  },
+}
+
+export const PhoneDetailInteraction: Story = {
+  name: 'Phone width, detail, interaction',
+  tags: ['interaction'],
   render: () => (
     <PhoneFrame>
       <ExampleProvider>

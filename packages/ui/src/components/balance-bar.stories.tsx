@@ -295,6 +295,23 @@ export const InJournalEntry: Story = {
   ),
   play: async ({ canvasElement }) => {
     await settle()
+    const status = canvasElement.querySelector('[data-slot="balance-bar"] [role="status"]')
+    if (status === null) throw new Error('no status')
+    await expect(status).toHaveTextContent('Balanced')
+    await settle()
+  },
+}
+
+export const InJournalEntryInteraction: Story = {
+  name: 'In a journal entry, interaction',
+  tags: ['interaction'],
+  render: () => (
+    <ExampleProvider>
+      <JournalEntry layout="desktop" />
+    </ExampleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
     const canvas = within(canvasElement)
     const status = canvasElement.querySelector('[data-slot="balance-bar"] [role="status"]')
     if (status === null) throw new Error('no status')

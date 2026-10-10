@@ -133,6 +133,12 @@ export interface AppShellProps {
   agent?: ReactNode
   notifications?: ShellNotifications
   companies?: ShellCompanies
+  /**
+   * The header's menu that is open when the shell first shows (a page reopened where it was
+   * left): the search, the notifications, the companies (on phones, their sheet) or the user
+   * menu. None by default.
+   */
+  defaultOpenMenu?: 'search' | 'notifications' | 'companies' | 'user'
   user?: ShellUser
   /** The module's tabs: a second header row. */
   moduleTabs?: readonly ModuleTab[]
@@ -159,10 +165,16 @@ export interface AppShellProps {
 
 const SMALL_BUTTON = 'min-h-control-sm gap-2 px-3.5 text-xs'
 
-function NotificationsButton({ notifications }: { notifications: ShellNotifications }) {
+function NotificationsButton({
+  notifications,
+  defaultOpen,
+}: {
+  notifications: ShellNotifications
+  defaultOpen: boolean
+}) {
   const { messages, format } = useLiro()
   return (
-    <Popover>
+    <Popover defaultOpen={defaultOpen}>
       <PopoverTrigger asChild>
         <ButtonPrimitive
           family="neutral"
@@ -197,8 +209,10 @@ function UserMenu({
   companies,
   onSwitchCompany,
   triggerRef,
+  defaultOpen,
 }: {
   user: ShellUser
+  defaultOpen: boolean
   /** The menu's button, where the focus returns after the company sheet. */
   triggerRef?: RefObject<HTMLButtonElement | null>
   /** Phones: the company switcher moves into the user menu, as one entry. */
@@ -207,7 +221,7 @@ function UserMenu({
 }) {
   const { messages } = useLiro()
   return (
-    <DropdownMenu modal={false}>
+    <DropdownMenu modal={false} defaultOpen={defaultOpen}>
       <DropdownMenuTrigger asChild>
         <ButtonPrimitive
           family="neutral"
@@ -372,8 +386,8 @@ export function AppShell(props: AppShellProps) {
   const { messages } = useLiro()
   const viewportPhone = usePhone()
   const phone = props.layout === undefined ? viewportPhone : props.layout === 'phone'
-  const [searching, setSearching] = useState(false)
-  const [switching, setSwitching] = useState(false)
+  const [searching, setSearching] = useState(props.defaultOpenMenu === 'search')
+  const [switching, setSwitching] = useState(props.defaultOpenMenu === 'companies')
   const userButton = useRef<HTMLButtonElement>(null)
   const contentId = useId()
   const shortcut = props.searchShortcut ?? `${messages['grid.modifierKey']} K`
@@ -523,7 +537,10 @@ export function AppShell(props: AppShellProps) {
               <div className="flex items-center gap-2">
                 {props.agent}
                 {props.notifications !== undefined && (
-                  <NotificationsButton notifications={props.notifications} />
+                  <NotificationsButton
+                    notifications={props.notifications}
+                    defaultOpen={props.defaultOpenMenu === 'notifications'}
+                  />
                 )}
                 {!phone && props.companies !== undefined && (
                   <CompanySwitcher
@@ -536,6 +553,7 @@ export function AppShell(props: AppShellProps) {
                   <UserMenu
                     user={props.user}
                     triggerRef={userButton}
+                    defaultOpen={props.defaultOpenMenu === 'user'}
                     {...(phone && props.companies !== undefined
                       ? {
                           companies: props.companies,

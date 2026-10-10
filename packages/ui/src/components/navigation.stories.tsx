@@ -61,6 +61,12 @@ const TABS = [
 export const TabsDefault: Story = {
   name: 'Tabs',
   render: () => <Tabs items={TABS} label="Invoice F-114" />,
+}
+
+export const TabsDefaultInteraction: Story = {
+  name: 'Tabs, interaction',
+  tags: ['interaction'],
+  render: () => <Tabs items={TABS} label="Invoice F-114" />,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const general = canvas.getByRole('tab', { name: 'General' })
@@ -92,6 +98,32 @@ export const BreadcrumbsDefault: Story = {
 /** CursorPagination: previous and next with the count at the start. */
 export const Pagination: Story = {
   name: 'CursorPagination',
+  render: function Render() {
+    const [page, setPage] = useState(0)
+    return (
+      <CursorPagination
+        className="max-w-150"
+        hasPrevious={page > 0}
+        hasNext={page < 2}
+        onPrevious={() => {
+          setPage(page - 1)
+        }}
+        onNext={() => {
+          setPage(page + 1)
+        }}
+        count={`Rows ${String(page * 50 + 1)}–${String(page * 50 + 50)} of more than 100`}
+      />
+    )
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('button', { name: 'Previous' })).toBeDisabled()
+  },
+}
+
+export const PaginationInteraction: Story = {
+  name: 'CursorPagination, interaction',
+  tags: ['interaction'],
   render: function Render() {
     const [page, setPage] = useState(0)
     return (

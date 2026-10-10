@@ -127,6 +127,21 @@ export const Default: Story = {
     // Ivana's two messages within a minute form one run: one name shown, one for screen readers.
     await expect(within(log).getAllByText('Ivana Stojanović')).toHaveLength(2)
     await expect(within(log).getAllByText('You')[0]).toHaveClass('sr-only')
+    await settle()
+  },
+}
+
+export const DefaultInteraction: Story = {
+  name: 'Default, interaction',
+  tags: ['interaction'],
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const log = canvas.getByRole('log')
+    await expect(within(log).getByText('Yesterday')).toBeVisible()
+    await expect(within(log).getByText('Today')).toBeVisible()
+    // Ivana's two messages within a minute form one run: one name shown, one for screen readers.
+    await expect(within(log).getAllByText('Ivana Stojanović')).toHaveLength(2)
+    await expect(within(log).getAllByText('You')[0]).toHaveClass('sr-only')
     const field = canvas.getByRole('textbox', { name: 'Comment' })
     await userEvent.click(field)
     await userEvent.type(field, 'First line{Shift>}{Enter}{/Shift}second line')
@@ -140,6 +155,32 @@ export const Default: Story = {
 
 /** "@" offers people; arrows and Enter choose; the name is one token; Backspace removes it whole. */
 export const Mentions: Story = {
+  render: function Render() {
+    const [mentions, setMentions] = useState<Mention[]>([])
+    return (
+      <ExampleProvider>
+        <div className="flex max-w-120 flex-col gap-3">
+          <MentionCombobox
+            label="Task description"
+            candidates={PEOPLE}
+            onMentionsChange={setMentions}
+            placeholder="Describe the task"
+          />
+          <output className="text-xs text-secondary">
+            Mentioned: {mentions.map((mention) => mention.id).join(', ') || 'nobody'}
+          </output>
+        </div>
+      </ExampleProvider>
+    )
+  },
+  play: async () => {
+    await settle()
+  },
+}
+
+export const MentionsInteraction: Story = {
+  name: 'Mentions, interaction',
+  tags: ['interaction'],
   render: function Render() {
     const [mentions, setMentions] = useState<Mention[]>([])
     return (
@@ -189,6 +230,7 @@ export const Mentions: Story = {
 /** The application searches people (after 300ms, `loading` while it works). */
 export const MentionSearch: Story = {
   name: 'Mention search',
+  tags: ['interaction'],
   render: function Render() {
     const [candidates, setCandidates] = useState<MentionCandidate[]>([])
     const [loading, setLoading] = useState(false)
@@ -232,6 +274,7 @@ export const MentionSearch: Story = {
 /** Scrolled up while two messages arrive: "2 new messages"; pressing it goes to the latest. */
 export const JumpToLatest: Story = {
   name: 'Jump to latest',
+  tags: ['interaction'],
   render: function Render() {
     const [items, setItems] = useState(LONG_THREAD)
     return (
@@ -338,6 +381,58 @@ export const BubbleStates: Story = {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('alert')).toHaveTextContent('Not sent')
     await expect(canvas.getAllByText('Agent').length).toBeGreaterThan(0)
+  },
+}
+
+export const BubbleStatesInteraction: Story = {
+  name: 'Bubble states, interaction',
+  tags: ['interaction'],
+  render: function Render() {
+    const [retried, setRetried] = useState(false)
+    return (
+      <ExampleProvider>
+        <div className="flex max-w-180 flex-col gap-4">
+          <MessageBubble
+            author={{ name: 'Liro agent', agent: true }}
+            at={at(TODAY, '08:15')}
+            extra={
+              <p className="m-0 text-xs text-secondary">
+                Reminder draft: 86.420,35 RSD by 25.10.2026.
+              </p>
+            }
+          >
+            Medic Lab Niš d.o.o. has paid 100.000,00 RSD of F-2026-0410. Shall I send the reminder?
+          </MessageBubble>
+          <MessageBubble
+            author={{ name: 'Milica Petrović' }}
+            own
+            at={at(TODAY, '08:20')}
+            status="sending"
+          >
+            Not yet, wait until Friday.
+          </MessageBubble>
+          <MessageBubble
+            author={{ name: 'Milica Petrović' }}
+            own
+            at={at(TODAY, '08:21')}
+            {...(retried ? { status: 'sending' as const } : { status: 'failed' as const })}
+            onRetry={() => {
+              setRetried(true)
+            }}
+          >
+            @Dragan Ilić please call them.
+          </MessageBubble>
+          <MessageBubble author={{ name: 'Dragan Ilić' }} time="yesterday, 16:40">
+            The application may write the time itself.
+          </MessageBubble>
+        </div>
+      </ExampleProvider>
+    )
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('alert')).toHaveTextContent('Not sent')
+    await expect(canvas.getAllByText('Agent').length).toBeGreaterThan(0)
     await userEvent.click(canvas.getByRole('button', { name: 'Retry' }))
     await expect(canvas.queryByRole('alert')).toBeNull()
     await expect(canvas.getAllByText('Sending…')).toHaveLength(2)
@@ -346,6 +441,7 @@ export const BubbleStates: Story = {
 
 /** Sending takes a moment: the text stays with a spinner, then clears. */
 export const Sending: Story = {
+  tags: ['interaction'],
   render: () => (
     <ExampleProvider>
       <div className="max-w-180">

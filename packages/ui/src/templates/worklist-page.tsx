@@ -5,6 +5,7 @@ import { Checkbox } from '../primitives/checkbox'
 import { useBelowMd } from '../components/use-phone'
 import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
+import { useSteadyBottom } from '../primitives/use-steady-bottom'
 import { useLiro } from '../provider/liro-provider'
 import { PageHeader, type PageBack } from './page-header'
 
@@ -193,8 +194,18 @@ function Row({
  * The detail pane from md: it scrolls on its own and takes the focus only while it scrolls, so
  * the keyboard can scroll it (WCAG 2.1.1, axe scrollable-region-focusable), as DataTable's area.
  */
-function DetailPane({ label, children }: { label: string; children: ReactNode }) {
+function DetailPane({
+  label,
+  item,
+  children,
+}: {
+  label: string
+  item: string | undefined
+  children: ReactNode
+}) {
   const pane = useRef<HTMLDivElement>(null)
+  const content = useRef<HTMLDivElement>(null)
+  const spacer = useSteadyBottom(content, item)
   const [scrolls, setScrolls] = useState(false)
   useEffect(() => {
     const element = pane.current
@@ -217,7 +228,23 @@ function DetailPane({ label, children }: { label: string; children: ReactNode })
       {...(scrolls ? { tabIndex: 0, role: 'region', 'aria-label': label } : {})}
       className="min-h-0 min-w-0 flex-1 overflow-y-auto outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus"
     >
-      <div>{children}</div>
+      <div ref={content}>{children}</div>
+      <div ref={spacer} aria-hidden="true" />
+    </div>
+  )
+}
+
+/**
+ * The detail below md, in the page's own scroll: its view stays steady as the item's content
+ * shrinks, as the pane's does from md.
+ */
+function StackedDetail({ item, children }: { item: string | undefined; children: ReactNode }) {
+  const content = useRef<HTMLDivElement>(null)
+  const spacer = useSteadyBottom(content, item)
+  return (
+    <div className="min-w-0">
+      <div ref={content}>{children}</div>
+      <div ref={spacer} aria-hidden="true" />
     </div>
   )
 }
@@ -363,7 +390,7 @@ export function WorklistPage(props: WorklistPageProps) {
                 )}
               </div>
             </div>
-            <div className="min-w-0">{props.detail}</div>
+            <StackedDetail item={props.selected}>{props.detail}</StackedDetail>
           </>
         ) : (
           <>
@@ -409,7 +436,9 @@ export function WorklistPage(props: WorklistPageProps) {
         </div>
         {props.detail !== undefined && (
           <div className="flex min-h-0 min-w-0 flex-col">
-            <DetailPane label={messages['worklist.detail']}>{props.detail}</DetailPane>
+            <DetailPane label={messages['worklist.detail']} item={props.selected}>
+              {props.detail}
+            </DetailPane>
             {bar && (
               // The item's bar: where it stands, Previous and Next, then its decisions with the
               // main one last — always in view under the scrolling detail.

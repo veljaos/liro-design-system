@@ -351,6 +351,7 @@ export const Empty: Story = {
 /** The rerun asks for a reason; the run goes back to Calculate with its progress. */
 export const Rerun: Story = {
   name: 'Rerun with a reason',
+  tags: ['interaction'],
   render: function Render() {
     const [rerun, setRerun] = useState<string | null>(null)
     return (
@@ -414,6 +415,31 @@ export const Rerun: Story = {
 /** Earlier steps can be opened to look at their checks (the application shows them). */
 export const StepClick: Story = {
   name: 'Steps as buttons',
+  render: function Render() {
+    const [viewed, setViewed] = useState(2)
+    return (
+      <PayrollRun
+        onStepClick={setViewed}
+        checksTitle={`Checks: ${STEPS[viewed]?.label ?? ''}`}
+        checks={viewed === 2 ? CHECKS : CHECKS.slice(0, 2)}
+      />
+    )
+  },
+  decorators: [
+    (Story) => (
+      <ExampleProvider>
+        <Story />
+      </ExampleProvider>
+    ),
+  ],
+  play: async () => {
+    await settle()
+  },
+}
+
+export const StepClickInteraction: Story = {
+  name: 'Steps as buttons, interaction',
+  tags: ['interaction'],
   render: function Render() {
     const [viewed, setViewed] = useState(2)
     return (

@@ -60,6 +60,7 @@ type Story = StoryObj<typeof meta>
  */
 export const WalkThrough: Story = {
   name: 'Walk-through',
+  tags: ['interaction'],
   render: () => <ExampleApp start={ROUTES.signIn} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -141,6 +142,21 @@ export const HomePhone: Story = {
 /** The invoice list: views, filters, columns, quick preview (click), the page (Enter or Open). */
 export const InvoiceListScreen: Story = {
   name: 'Invoice list',
+  render: () => <ExampleApp start={ROUTES.invoices} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    // Cancelled by ST-2026-0004: shown as Cancelled, never overdue, owing nothing.
+    const cancelled = await canvas.findByRole('row', { name: /F-2026-0407/ })
+    await expect(cancelled).toHaveTextContent('Cancelled')
+    await expect(cancelled).not.toHaveTextContent(/overdue/i)
+    await settle()
+  },
+}
+
+export const InvoiceListScreenInteraction: Story = {
+  name: 'Invoice list, interaction',
+  tags: ['interaction'],
   render: () => <ExampleApp start={ROUTES.invoices} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -234,6 +250,7 @@ export const ApprovalsScreen: Story = {
  */
 export const ApprovalsDecide: Story = {
   name: 'Supplier invoices to approve, deciding',
+  tags: ['interaction'],
   render: () => <ExampleApp start={ROUTES.approvals} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -275,6 +292,7 @@ export const ApprovalsPhone: Story = {
 /** On a phone: the invoice full width, each label above its value, the decisions in the bottom bar. */
 export const ApprovalPhoneDetail: Story = {
   name: 'Supplier invoice to approve, phone',
+  tags: ['interaction'],
   render: () => <OnPhone start={ROUTES.approvals} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -300,6 +318,7 @@ function boxAround(element: Element | null): Element | null {
  */
 export const ApprovalPhoneToast: Story = {
   name: 'Supplier invoice to approve, phone, approved',
+  tags: ['interaction'],
   render: () => <OnPhone start={ROUTES.approvals} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -342,6 +361,7 @@ export const EmployeeScreen: Story = {
 /** Edit: the same sections as fields (Leave stays read-only), Cancel and Save in the bottom bar. */
 export const EmployeeEdit: Story = {
   name: 'Employee record, editing',
+  tags: ['interaction'],
   render: () => <ExampleApp start={ROUTES.employee} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -426,6 +446,23 @@ export const JournalEntryUnbalanced: Story = {
   render: () => <ExampleApp start={F_ROUTES.journalUnbalanced} />,
   play: async ({ canvasElement }) => {
     await settle()
+    const bar = canvasElement.querySelector('[data-slot="balance-bar"]')
+    if (bar === null) throw new Error('no balance bar')
+    await expect(bar).toHaveTextContent('Not balanced')
+    await expect(bar).toHaveTextContent('2.000,00 RSD')
+    await expect(canvasElement).toHaveTextContent(
+      'Unavailable: Debit and credit must be equal. The difference is 2.000,00 RSD.',
+    )
+    await settle()
+  },
+}
+
+export const JournalEntryUnbalancedInteraction: Story = {
+  name: 'Journal entry, unbalanced, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={F_ROUTES.journalUnbalanced} />,
+  play: async ({ canvasElement }) => {
+    await settle()
     const canvas = within(canvasElement)
     const bar = canvasElement.querySelector('[data-slot="balance-bar"]')
     if (bar === null) throw new Error('no balance bar')
@@ -492,6 +529,7 @@ export const PayrollPhone: Story = {
 /** The rerun asks for a reason, then the run goes back to Calculate. */
 export const PayrollRerun: Story = {
   name: 'Payroll run, rerun',
+  tags: ['interaction'],
   render: () => <ExampleApp start={F_ROUTES.payroll} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -522,6 +560,43 @@ const ROUTES_A = { invoice: '/sales/invoices/F-2026-0410', contract: '/hr/contra
  */
 export const InvoiceActivityScreen: Story = {
   name: 'Invoice with history, comments and presence',
+  render: () => <ExampleApp start={ROUTES_A.invoice} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: 'F-2026-0410' }),
+    ).toBeVisible()
+    // The same figures as the invoice list: 186.420,35 issued, decreased by KO-2026-0009 to
+    // 167.762,75, due 67.762,75 after 100.000,00.
+    const [label] = canvas.getAllByText('Amount due', { selector: 'dt' })
+    const figures = label?.closest('dl')
+    if (figures === null || figures === undefined) throw new Error('No key figures')
+    await expect(figures).toHaveTextContent('67.762,75 RSD')
+    await expect(figures).toHaveTextContent('167.762,75 RSD')
+    const totals = canvasElement.querySelector('[data-slot="document-totals"]')
+    await expect(totals).toHaveTextContent('186.420,35 RSD')
+    await expect(totals).toHaveTextContent('-18.657,60 RSD')
+    await expect(totals).toHaveTextContent('-100.000,00 RSD')
+    // Its correcting document (P5.23): in Related documents and as the totals row's link.
+    const related = within(canvas.getByRole('list', { name: 'Related documents' }))
+    await expect(related.getByRole('link', { name: /KO-2026-0009/ })).toHaveAttribute(
+      'href',
+      '#/sales/corrections/KO-2026-0009',
+    )
+    await expect(
+      within(totals as HTMLElement).getByRole('link', { name: 'Decrease KO-2026-0009' }),
+    ).toHaveAttribute('href', '#/sales/corrections/KO-2026-0009')
+    await expect(
+      canvas.getByRole('button', { name: 'Also here: Dragan Ilić, Liro agent (agent)' }),
+    ).toBeVisible()
+    await settle()
+  },
+}
+
+export const InvoiceActivityScreenInteraction: Story = {
+  name: 'Invoice with history, comments and presence, interaction',
+  tags: ['interaction'],
   render: () => <ExampleApp start={ROUTES_A.invoice} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -603,6 +678,15 @@ export const InvoiceActivityPhone: Story = {
  */
 export const ContractQuestionnaireScreen: Story = {
   name: 'Employment contract questionnaire',
+  render: () => <ExampleApp start={ROUTES_A.contract} />,
+  play: async () => {
+    await settle()
+  },
+}
+
+export const ContractQuestionnaireScreenInteraction: Story = {
+  name: 'Employment contract questionnaire, interaction',
+  tags: ['interaction'],
   render: () => <ExampleApp start={ROUTES_A.contract} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -686,6 +770,20 @@ export const UsersAndRoles: Story = {
     await expect(canvas.getByRole('row', { name: /Snežana Popović/ })).toHaveTextContent(
       'Site manager',
     )
+    await settle()
+  },
+}
+
+export const UsersAndRolesInteraction: Story = {
+  name: 'Users and roles, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={C_ROUTES.users} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('row', { name: /Snežana Popović/ })).toHaveTextContent(
+      'Site manager',
+    )
     await userEvent.click(canvas.getByRole('tab', { name: 'Roles' }))
     await settle()
     await expect(canvas.getByRole('heading', { name: 'Permissions: Site manager' })).toBeVisible()
@@ -705,6 +803,7 @@ export const UsersAndRoles: Story = {
 /** Inviting: the drawer, then the new invitation pending beside the others. */
 export const UsersInvite: Story = {
   name: 'Users and roles, inviting',
+  tags: ['interaction'],
   render: () => <ExampleApp start={C_ROUTES.users} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -779,6 +878,15 @@ export const ContractSigningPhone: Story = {
 export const ContractSignerLink: Story = {
   name: 'Contract signing, the employee signs',
   render: () => <ExampleApp start={C_ROUTES.signerLink} />,
+  play: async () => {
+    await settle()
+  },
+}
+
+export const ContractSignerLinkInteraction: Story = {
+  name: 'Contract signing, the employee signs, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={C_ROUTES.signerLink} />,
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
@@ -803,6 +911,23 @@ export const ContractSignerLinkPhone: Story = {
 /** The tasks board (P5.7): each card links to its record; the columns count their tasks. */
 export const TasksScreen: Story = {
   name: 'Tasks',
+  render: () => <ExampleApp start={C_ROUTES.tasks} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('link', { name: 'Contract RU-2026-017' })).toHaveAttribute(
+      'href',
+      `#${C_ROUTES.signing}`,
+    )
+    const todo = canvasElement.querySelector('[data-kanban-column="todo"]')
+    await expect(todo).toHaveTextContent('3 tasks')
+    await settle()
+  },
+}
+
+export const TasksScreenInteraction: Story = {
+  name: 'Tasks, interaction',
+  tags: ['interaction'],
   render: () => <ExampleApp start={C_ROUTES.tasks} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -860,6 +985,20 @@ export const CustomersScreen: Story = {
     const row = await canvas.findByRole('row', { name: /Panonija Agro d.o.o./ })
     await expect(row).toHaveTextContent('383.763,12')
     await expect(canvasElement.querySelectorAll('tbody tr[aria-rowindex]').length).toBeLessThan(60)
+    await settle()
+  },
+}
+
+export const CustomersScreenInteraction: Story = {
+  name: 'Customers, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={E_ROUTES.customers} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const row = await canvas.findByRole('row', { name: /Panonija Agro d.o.o./ })
+    await expect(row).toHaveTextContent('383.763,12')
+    await expect(canvasElement.querySelectorAll('tbody tr[aria-rowindex]').length).toBeLessThan(60)
     await userEvent.click(canvas.getByRole('button', { name: /^Inactive/ }))
     const rakic = await canvas.findByRole('row', { name: /Rakić Pekara SZR/ })
     await expect(within(rakic).queryByText('Inactive')).toBeNull()
@@ -875,6 +1014,7 @@ export const CustomersScreen: Story = {
  */
 export const CustomersSortAndFilter: Story = {
   name: 'Customers, sort and filter',
+  tags: ['interaction'],
   render: () => <ExampleApp start={E_ROUTES.customers} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -904,6 +1044,7 @@ export const CustomersSortAndFilter: Story = {
 /** Three customers selected: the bulk bar is a row of its own, 12px from the filters and the table. */
 export const CustomersSelected: Story = {
   name: 'Customers, selected',
+  tags: ['interaction'],
   render: () => <ExampleApp start={E_ROUTES.customers} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -930,6 +1071,7 @@ export const CustomersPhone: Story = {
 /** Bulk edit: two customers selected, "Edit 2 records", the payment term set to 30 days for both. */
 export const CustomersBulkEdit: Story = {
   name: 'Customers, bulk edit',
+  tags: ['interaction'],
   render: () => <ExampleApp start={E_ROUTES.customers} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -959,6 +1101,7 @@ export const CustomersBulkEdit: Story = {
 /** Deactivating hides a customer from Active and shows it under Inactive; nothing is deleted. */
 export const CustomersDeactivate: Story = {
   name: 'Customers, deactivate',
+  tags: ['interaction'],
   render: () => <ExampleApp start={E_ROUTES.customers} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -984,6 +1127,7 @@ export const CustomersDeactivate: Story = {
  */
 export const CustomersLookup: Story = {
   name: 'Customers, search all',
+  tags: ['interaction'],
   render: () => <ExampleApp start={E_ROUTES.customers} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -1024,6 +1168,18 @@ export const CustomerImportScreen: Story = {
   render: () => <ExampleApp start={E_ROUTES.customerImport} />,
   play: async ({ canvasElement }) => {
     await settle()
+    const input = canvasElement.querySelector<HTMLInputElement>('input[type="file"]')
+    if (input === null) throw new Error('no file input')
+    await settle()
+  },
+}
+
+export const CustomerImportScreenInteraction: Story = {
+  name: 'Customer import, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={E_ROUTES.customerImport} />,
+  play: async ({ canvasElement }) => {
+    await settle()
     const canvas = within(canvasElement)
     const input = canvasElement.querySelector<HTMLInputElement>('input[type="file"]')
     if (input === null) throw new Error('no file input')
@@ -1060,6 +1216,22 @@ export const CustomerImportPhone: Story = {
  */
 export const VatReturnScreen: Story = {
   name: 'VAT return',
+  render: () => <ExampleApp start={E_ROUTES.vatReturn} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('1 check failed · 4 checks passed')).toBeVisible()
+    await expect(canvas.getByText('By Ivana Stojanović on 05.10.2026. 14:12')).toBeVisible()
+    await expect(
+      canvas.getAllByText('Difference: 64.400,00 RSD', { exact: false })[0],
+    ).toBeVisible()
+    await settle()
+  },
+}
+
+export const VatReturnScreenInteraction: Story = {
+  name: 'VAT return, interaction',
+  tags: ['interaction'],
   render: () => <ExampleApp start={E_ROUTES.vatReturn} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -1109,6 +1281,20 @@ export const InjuryRegisterScreen: Story = {
     await expect(canvas.getByText('January–June 2026 is locked')).toBeVisible()
     // The same component and spacing as the template's stories (P5.23).
     await expectLocksMeetTable(canvasElement)
+    await settle()
+  },
+}
+
+export const InjuryRegisterScreenInteraction: Story = {
+  name: 'Work-injury register, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={E_ROUTES.injuryRegister} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('January–June 2026 is locked')).toBeVisible()
+    // The same component and spacing as the template's stories (P5.23).
+    await expectLocksMeetTable(canvasElement)
     await expectCorrectionLink(canvasElement, 'Corrects no. 4', '4')
     await expectCorrectionLink(canvasElement, 'Corrected by no. 7', '7')
     await userEvent.click(canvas.getByRole('button', { name: 'Actions: No. 3, Dejan Savić' }))
@@ -1133,6 +1319,18 @@ export const InjuryRegisterPhone: Story = {
 /** 5,000 generated entries stay responsive: only the rows in view are drawn. */
 export const InjuryRegisterMany: Story = {
   name: 'Work-injury register, 5,000 entries',
+  render: () => <ExampleApp start={E_ROUTES.injuryRegisterGenerated} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement.querySelector('table')).toHaveAttribute('aria-rowcount', '5001')
+    await expect(canvasElement.querySelectorAll('tbody tr[aria-rowindex]').length).toBeLessThan(60)
+    await settle()
+  },
+}
+
+export const InjuryRegisterManyInteraction: Story = {
+  name: 'Work-injury register, 5,000 entries, interaction',
+  tags: ['interaction'],
   render: () => <ExampleApp start={E_ROUTES.injuryRegisterGenerated} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -1254,6 +1452,37 @@ export const FinalInvoiceScreen: Story = {
     await expect(
       canvas.getByRole('link', { name: 'Advance invoice A-2026-044, Paid' }),
     ).toHaveAttribute('href', '#/sales/invoices/A-2026-044')
+    await settle()
+  },
+}
+
+export const FinalInvoiceScreenInteraction: Story = {
+  name: 'Final invoice with advances, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={D2_ROUTES.final} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const lines = canvas.getByRole('table', { name: 'Lines' })
+    const amounts = lineAmounts(lines)
+    const recap = recapRows(canvasElement)
+    // The lines add up to the bases of the recap; bases and taxes to the invoice total.
+    await expect(total(amounts)).toBe(total(recap.map((row) => row.base)))
+    const invoiceTotal = totalsAmount(canvasElement, 'Invoice total')
+    await expect(total(recap.map((row) => row.base + row.tax))).toBe(invoiceTotal)
+    // The section's lines add up to its subtotal.
+    const subtotal = within(lines).getByText('Total steel structure').closest('tr')
+    await expect(paras(subtotal?.textContent)).toBe(total(amounts.slice(0, 3)))
+    // The invoice total less both advances is the amount due, as the key figure says.
+    const due =
+      invoiceTotal +
+      totalsAmount(canvasElement, 'Advance A-2026-038') +
+      totalsAmount(canvasElement, 'Advance A-2026-044')
+    await expect(totalsAmount(canvasElement, 'Amount due')).toBe(due)
+    await expect(canvasElement).toHaveTextContent('5.003.678,22')
+    await expect(
+      canvas.getByRole('link', { name: 'Advance invoice A-2026-044, Paid' }),
+    ).toHaveAttribute('href', '#/sales/invoices/A-2026-044')
     // The attachments' flags change with a press.
     const flag = within(canvas.getByRole('group', { name: 'Otpremnice OTP-2026-0388–0402.pdf' }))
     await userEvent.click(flag.getByRole('checkbox', { name: 'Send with the e-invoice' }))
@@ -1279,6 +1508,17 @@ export const FinalInvoicePhone: Story = {
  */
 export const SituationScreen: Story = {
   name: 'Interim situation with a specification',
+  render: () => <ExampleApp start={D2_ROUTES.situation} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('Specification of works: 300 positions,')
+    await settle()
+  },
+}
+
+export const SituationScreenInteraction: Story = {
+  name: 'Interim situation with a specification, interaction',
+  tags: ['interaction'],
   render: () => <ExampleApp start={D2_ROUTES.situation} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -1406,6 +1646,7 @@ export const DecreasePhone: Story = {
  */
 export const CancelledScreen: Story = {
   name: 'Cancelled invoice and its cancellation document',
+  tags: ['interaction'],
   render: () => <ExampleApp start={D2_ROUTES.cancelled} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -1503,6 +1744,23 @@ export const D1InvoiceDraft: Story = {
       canvas.getByText('Only 36 pc of ART-0118 in stock: the rest goes on back order.'),
     ).toBeVisible()
     await expect(canvas.getByText('Internal')).toBeVisible()
+    await settle()
+  },
+}
+
+export const D1InvoiceDraftInteraction: Story = {
+  name: 'Invoice draft, lines by search, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={D1_ROUTES.draft} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const before = draftTotals(initialDraft())
+    await expect(canvasElement).toHaveTextContent(rsd(before.total.value ?? '0'))
+    await expect(
+      canvas.getByText('Only 36 pc of ART-0118 in stock: the rest goes on back order.'),
+    ).toBeVisible()
+    await expect(canvas.getByText('Internal')).toBeVisible()
     // The last line: search, nothing found, "+ Create service …" with the typed name.
     const item = canvas.getByRole('combobox', { name: 'Item, service or asset, line 13' })
     await userEvent.click(item)
@@ -1555,6 +1813,34 @@ export const D1InvoiceDraftPhone: Story = {
  */
 export const D1Specification: Story = {
   name: 'Interim situation, editing the specification',
+  render: () => <ExampleApp start={D1_ROUTES.specification} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const rows = specificationOf()
+    const before = specTotals(rows)
+    await expect(before.positions).toBe(300)
+    await expect(canvasElement).toHaveTextContent(rsd(fromParas(before.contract)))
+    await expect(canvasElement).toHaveTextContent(rsd(fromParas(before.current)))
+    // Cells found by their row and column (a query by name would name all 1,800 fields).
+    const cellOf = (rowId: string) =>
+      canvasElement.querySelector<HTMLInputElement>(
+        `[data-row-id="${rowId}"] [data-column-id="current"] input`,
+      )
+    // Every row is in the table's count (with the header and the totals); only the rows around
+    // the view are drawn.
+    const table = within(canvasElement).getByRole('table', { name: 'Specification of works' })
+    await expect(table).toHaveAttribute('aria-rowcount', String(rows.length + 2))
+    // Position 1.1 (line 2): 5 units this period; Enter goes to position 1.2.
+    const cell = cellOf('p1-1')
+    await expect(cell).toHaveAccessibleName('This period, line 2')
+    if (cell === null) return
+    await settle()
+  },
+}
+
+export const D1SpecificationInteraction: Story = {
+  name: 'Interim situation, editing the specification, interaction',
+  tags: ['interaction'],
   render: () => <ExampleApp start={D1_ROUTES.specification} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -1636,6 +1922,29 @@ export const BankStatementScreen: Story = {
       '7 lines still need a decision, and 1 line is left for later.',
     )
     await expect(canvasElement).toHaveTextContent('17.762,75 RSD stays open')
+    await settle()
+  },
+}
+
+export const BankStatementScreenInteraction: Story = {
+  name: 'Bank statement 188, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={BANK_ROUTES.statement} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { level: 1, name: 'Statement 188' })).toBeVisible()
+    await expect(canvasElement).toHaveTextContent(
+      SERBIAN_BANK.number(STATEMENT_TOTALS.closing, { decimals: 2 }),
+    )
+    await expect(canvasElement).toHaveTextContent('Balance checks out')
+    await expect(canvasElement).toHaveTextContent('2 of 10 lines done')
+    await expect(position(canvasElement)).toBe('3 of 10')
+    // Posting waits for the lines, and says why.
+    await expect(canvasElement).toHaveTextContent(
+      '7 lines still need a decision, and 1 line is left for later.',
+    )
+    await expect(canvasElement).toHaveTextContent('17.762,75 RSD stays open')
     await userEvent.click(canvas.getByRole('button', { name: 'Confirm and next' }))
     await expect(
       await within(document.body).findByText(/Line 3 done: Pays part of F-2026-0410/),
@@ -1668,19 +1977,41 @@ export const BankStatementPartial: Story = {
     const difference = canvas.getByRole('radiogroup', { name: /The difference of 17\.762,75\sRSD/ })
     await expect(within(difference).getByRole('radio', { name: /Leave it open/ })).toBeChecked()
     await expect(within(difference).getByRole('radio', { name: /Write it off/ })).toBeDisabled()
-    // A second open item of the customer closes too: the payment no longer covers both.
-    await userEvent.click(canvas.getByRole('checkbox', { name: /^F-2026-0381/ }))
+    await settle()
+  },
+}
+
+export const BankStatementPartialInteraction: Story = {
+  name: 'Bank statement 188, partial payment, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={BANK_ROUTES.partial} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('checkbox', { name: /^F-2026-0410/ })).toBeChecked()
+    await expect(canvasElement).toHaveTextContent(
+      'Pays 50.000,00 RSD of F-2026-0410; 17.762,75 RSD stays open.',
+    )
+    const difference = canvas.getByRole('radiogroup', { name: /The difference of 17\.762,75\sRSD/ })
+    await expect(within(difference).getByRole('radio', { name: /Leave it open/ })).toBeChecked()
+    await expect(within(difference).getByRole('radio', { name: /Write it off/ })).toBeDisabled()
+    // The detail scrolled to its end, as a user who reads down to the difference: ticking a
+    // second open item adds a result line, unticking it takes the line away again, and what is
+    // in view never moves (the pane keeps its scroll position, P5.23).
+    const second = canvas.getByRole('checkbox', { name: /^F-2026-0381/ })
+    const pane = second.closest<HTMLElement>('.overflow-y-auto')
+    if (pane === null) throw new Error('no scrolling detail')
+    pane.scrollTop = pane.scrollHeight
+    await settle()
+    const before = second.getBoundingClientRect().top
+    await userEvent.click(second)
     await expect(canvasElement).toHaveTextContent('Nothing is left for F-2026-0381')
-    await userEvent.click(canvas.getByRole('checkbox', { name: /^F-2026-0381/ }))
-    // The clicks scroll the detail by however far the browser moved them; end at one place, the
-    // result and the difference in view, so the picture is the same on every run — after the
-    // second item's line has gone (CI: scrolled first, it moved the content by that line).
+    await userEvent.click(second)
     await waitFor(async () => {
       await expect(canvasElement).not.toHaveTextContent('Nothing is left for F-2026-0381')
     })
     await settle()
-    difference.scrollIntoView({ block: 'end' })
-    await settle()
+    await expect(Math.abs(second.getBoundingClientRect().top - before)).toBeLessThan(1)
   },
 }
 
@@ -1691,6 +2022,17 @@ export const BankStatementPartial: Story = {
  */
 export const BankStatementPost: Story = {
   name: 'Bank statement 188, posting',
+  render: () => <ExampleApp start={BANK_ROUTES.decided} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('10 of 10 lines done')
+    await settle()
+  },
+}
+
+export const BankStatementPostInteraction: Story = {
+  name: 'Bank statement 188, posting, interaction',
+  tags: ['interaction'],
   render: () => <ExampleApp start={BANK_ROUTES.decided} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -1707,6 +2049,23 @@ export const BankStatementPost: Story = {
     await expect(bar).toHaveTextContent('Balanced')
     await expect(within(dialog).getByRole('button', { name: 'Cancel' })).toHaveFocus()
     await settle()
+  },
+}
+
+/**
+ * Phone: line 3 (the partial payment) on its own screen, the whole detail in one column: the
+ * bank's data, the open items, the result and the difference.
+ */
+export const BankStatementPartialPhone: Story = {
+  name: 'Bank statement 188, partial payment, phone',
+  render: () => <OnPhone start={BANK_ROUTES.partial} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('checkbox', { name: /^F-2026-0410/ })).toBeChecked()
+    await expect(canvasElement).toHaveTextContent(
+      'Pays 50.000,00 RSD of F-2026-0410; 17.762,75 RSD stays open.',
+    )
   },
 }
 

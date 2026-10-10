@@ -167,6 +167,18 @@ export const Default: Story = {
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
+    await expect(canvas.getByText('January–June 2026 is locked')).toBeVisible()
+    await expectLocksMeetTable(canvasElement)
+    await settle()
+  },
+}
+
+export const DefaultInteraction: Story = {
+  name: 'Default, interaction',
+  tags: ['interaction'],
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
     const body = within(canvasElement.ownerDocument.body)
     await expect(canvas.getByText('January–June 2026 is locked')).toBeVisible()
     await expectLocksMeetTable(canvasElement)
@@ -219,6 +231,30 @@ export const Empty: Story = {
  */
 export const FiveThousand: Story = {
   name: '5,000 entries (virtualized)',
+  render: () => {
+    function Many() {
+      const rows = useMemo(() => manyTraining(5000), [])
+      return <Register rows={rows} virtualize />
+    }
+    return (
+      <ExampleProvider>
+        <Many />
+      </ExampleProvider>
+    )
+  },
+  play: async ({ canvasElement }) => {
+    await settle()
+    const rows = canvasElement.querySelectorAll('tbody tr[aria-rowindex]')
+    await expect(rows.length).toBeGreaterThan(5)
+    await expect(rows.length).toBeLessThan(60)
+    await expect(canvasElement.querySelector('table')).toHaveAttribute('aria-rowcount', '5001')
+    await settle()
+  },
+}
+
+export const FiveThousandInteraction: Story = {
+  name: '5,000 entries (virtualized), interaction',
+  tags: ['interaction'],
   render: () => {
     function Many() {
       const rows = useMemo(() => manyTraining(5000), [])

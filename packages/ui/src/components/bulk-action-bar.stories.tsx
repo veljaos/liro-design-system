@@ -79,6 +79,42 @@ export const ConfirmOnce: Story = {
       </div>
     )
   },
+  play: async () => {
+    // The bar slides in (140ms): wait until it is shown before checking.
+    await settle()
+  },
+}
+
+export const ConfirmOnceInteraction: Story = {
+  name: 'Confirm once for the selection, interaction',
+  tags: ['interaction'],
+  render: function Render() {
+    const [count, setCount] = useState(3)
+    const [done, setDone] = useState('nothing')
+    return (
+      <div className="flex min-h-60 flex-col gap-3">
+        <BulkActionBar
+          count={count}
+          total={40}
+          onSelectAll={() => {
+            setCount(40)
+          }}
+          onClear={() => {
+            setCount(0)
+          }}
+          actions={ACTIONS.map((action) => ({
+            ...action,
+            onClick: () => {
+              setDone(action.label)
+            },
+          }))}
+        />
+        <p className="m-0 text-sm text-secondary">
+          Done: <code>{done}</code>
+        </p>
+      </div>
+    )
+  },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const body = within(canvasElement.ownerDocument.body)

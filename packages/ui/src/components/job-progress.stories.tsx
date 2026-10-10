@@ -82,6 +82,18 @@ type Story = StoryObj<typeof meta>
 
 /** Running, inline in a card: the bar, "312 of 1.284", the current item, Cancel. */
 export const Running: Story = {
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('progressbar', { name: 'Sending invoices to SEF' })).toBeVisible()
+    await expect(canvas.getByText('312 of 1.284')).toBeVisible()
+    await settle()
+  },
+}
+
+export const RunningInteraction: Story = {
+  name: 'Running, interaction',
+  tags: ['interaction'],
   play: async ({ canvasElement, args }) => {
     await settle()
     const canvas = within(canvasElement)
@@ -205,6 +217,71 @@ function useSimulatedJob(total: number, step: number) {
  */
 export const InADialog: Story = {
   name: 'In a dialog',
+  render: function Render(args: JobProgressProps) {
+    const [open, setOpen] = useState(false)
+    const job = useSimulatedJob(1284, 107)
+    const finished = job.state === 'finished'
+    return (
+      <ExampleProvider>
+        <Dialog
+          open={open}
+          onOpenChange={setOpen}
+          title="Send to SEF"
+          dismissible={finished}
+          trigger={
+            <Button
+              family="primary"
+              icon={Send}
+              label="Send 1.284 invoices"
+              onClick={() => {
+                job.start()
+              }}
+            />
+          }
+        >
+          <JobProgress
+            label={args.label}
+            state={job.state}
+            done={job.done}
+            total={1284}
+            onCancel={() => {
+              setOpen(false)
+            }}
+            {...(finished
+              ? {
+                  outcomes: [
+                    { key: 'sent', text: '1.270 invoices sent', tone: 'success' as const },
+                    { key: 'failed', text: '14 not sent', tone: 'danger' as const },
+                  ],
+                  failures: FAILURES.slice(0, 3),
+                  actions: (
+                    <>
+                      <Button family="document" icon={Download} label="Download report" />
+                      <Button
+                        family="primary"
+                        icon={RotateCcw}
+                        label="Retry failed"
+                        onClick={() => {
+                          setOpen(false)
+                        }}
+                      />
+                    </>
+                  ),
+                }
+              : {})}
+          />
+        </Dialog>
+      </ExampleProvider>
+    )
+  },
+  play: async () => {
+    await settle()
+  },
+}
+
+export const InADialogInteraction: Story = {
+  name: 'In a dialog, interaction',
+  tags: ['interaction'],
   render: function Render(args: JobProgressProps) {
     const [open, setOpen] = useState(false)
     const job = useSimulatedJob(1284, 107)

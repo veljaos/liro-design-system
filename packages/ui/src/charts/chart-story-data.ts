@@ -371,6 +371,17 @@ export function dailyTotal(store: 'beograd' | 'noviSad', days: number): string {
  * table view of every chart family has its pictures in the four modes (P4.9: it was wrong in
  * right-to-left and had no baseline).
  */
+/** A card that opens on its table (`defaultView: 'table'`) shows the table and "Show as chart". */
+export async function tableShown({ canvasElement }: { canvasElement: HTMLElement }) {
+  await settle()
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('table')).toBeVisible()
+  await expect(canvas.getAllByRole('button', { name: 'Show as chart' }).at(0)).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
+}
+
 export async function showTable({ canvasElement }: { canvasElement: HTMLElement }) {
   await settle()
   const canvas = within(canvasElement)

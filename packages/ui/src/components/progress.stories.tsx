@@ -52,6 +52,15 @@ export const StepperClickable: Story = {
     const [active, setActive] = useState(2)
     return <Stepper steps={STEPS} active={active} onStepClick={setActive} />
   },
+}
+
+export const StepperClickableInteraction: Story = {
+  name: 'Stepper, clickable, interaction',
+  tags: ['interaction'],
+  render: function Render() {
+    const [active, setActive] = useState(2)
+    return <Stepper steps={STEPS} active={active} onStepClick={setActive} />
+  },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await userEvent.click(canvas.getByRole('button', { name: /Company/ }))

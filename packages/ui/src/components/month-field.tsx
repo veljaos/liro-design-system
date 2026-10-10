@@ -24,6 +24,8 @@ import { controlAttributes, Field, fieldProps, type FieldBaseProps } from './fie
  */
 
 export interface MonthFieldProps extends FieldBaseProps {
+  /** Shows the calendar from the start (asked for at once). Closed by default. */
+  defaultOpen?: boolean
   /** Controlled month as YYYY-MM, or null for none. */
   value?: string | null
   /** Uncontrolled initial month. */
@@ -81,7 +83,7 @@ export function MonthField(props: MonthFieldProps) {
   const { messages, format, direction } = liro
   const [inner, setInner] = useState(props.defaultValue ?? null)
   const value = props.value === undefined ? inner : props.value
-  const { open, setOpen, openings } = useCalendarOpen()
+  const { open, setOpen, openings } = useCalendarOpen(props.defaultOpen)
   const current = value === null ? monthIndexOf(liro.today) : monthIndexOf(value)
   // The month that holds the focus in the grid; its year is the year shown.
   const [focused, setFocusedState] = useState(current)

@@ -191,6 +191,20 @@ export const Default: Story = {
     await expect(canvas.getByRole('button', { name: 'Next' })).toBeDisabled()
     const input = canvasElement.querySelector<HTMLInputElement>('input[type="file"]')
     if (input === null) throw new Error('no file input')
+    await settle()
+  },
+}
+
+export const DefaultInteraction: Story = {
+  name: 'Default, interaction',
+  tags: ['interaction'],
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText(/up to 10 MB/)).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Next' })).toBeDisabled()
+    const input = canvasElement.querySelector<HTMLInputElement>('input[type="file"]')
+    if (input === null) throw new Error('no file input')
     await userEvent.upload(input, new File([IMPORT_CSV], 'kupci.csv', { type: 'text/csv' }))
     await expect(await canvas.findByText('kupci.csv')).toBeVisible()
     await userEvent.click(canvas.getByRole('button', { name: 'Next' }))
@@ -203,6 +217,23 @@ export const Default: Story = {
  * and says why; choosing the column makes it available.
  */
 export const Columns: Story = {
+  render: () => (
+    <ExampleProvider>
+      <Import step="columns" chosen mapping={{ ...IMPORT_SUGGESTION, taxId: null }} />
+    </ExampleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText(/Choose a column for Tax number/)).toBeVisible()
+    await expect(canvas.getByText('Not imported: PIB, Napomena')).toBeVisible()
+    await settle()
+  },
+}
+
+export const ColumnsInteraction: Story = {
+  name: 'Columns, interaction',
+  tags: ['interaction'],
   render: () => (
     <ExampleProvider>
       <Import step="columns" chosen mapping={{ ...IMPORT_SUGGESTION, taxId: null }} />
@@ -229,6 +260,28 @@ export const Columns: Story = {
  * until the rows with errors are skipped; "Only rows with problems" narrows the table.
  */
 export const Check: Story = {
+  render: () => (
+    <ExampleProvider>
+      <Import step="check" chosen />
+    </ExampleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('1.198 rows ready')).toBeVisible()
+    await expect(canvas.getByText('12 with errors')).toBeVisible()
+    await expect(canvas.getByText('3 duplicates')).toBeVisible()
+    await expect(canvas.getByText('A tax number has 9 digits')).toBeVisible()
+    await expect(
+      canvas.getByText('Unavailable: Correct the rows with errors in the file, or skip them'),
+    ).toBeVisible()
+    await settle()
+  },
+}
+
+export const CheckInteraction: Story = {
+  name: 'Check, interaction',
+  tags: ['interaction'],
   render: () => (
     <ExampleProvider>
       <Import step="check" chosen />
@@ -348,6 +401,29 @@ async function oneFooterRow(canvasElement: HTMLElement) {
  */
 export const PhoneWidth: Story = {
   name: 'Phone width (Check)',
+  render: () => <OnPhone step="check" chosen />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const wizard = canvasElement.querySelector('[data-slot="import-wizard"]')
+    await expect(wizard?.scrollWidth).toBeLessThanOrEqual(wizard?.clientWidth ?? 0)
+    await expect(canvasElement.querySelector('[data-slot="stepper"]')).toHaveTextContent(
+      'Step 3 of 4 · Check',
+    )
+    await expect(canvas.queryByRole('button', { name: 'Cancel' })).toBeNull()
+    await oneFooterRow(canvasElement)
+    await expect(
+      canvas.getByRole('button', { name: 'Import 1.198 rows' }),
+    ).toHaveAccessibleDescription(
+      'Unavailable: Correct the rows with errors in the file, or skip them',
+    )
+    await settle()
+  },
+}
+
+export const PhoneWidthInteraction: Story = {
+  name: 'Phone width (Check), interaction',
+  tags: ['interaction'],
   render: () => <OnPhone step="check" chosen />,
   play: async ({ canvasElement }) => {
     await settle()
