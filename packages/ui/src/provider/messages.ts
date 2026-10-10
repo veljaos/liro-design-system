@@ -1161,4 +1161,115 @@ export interface LiroMessages {
   'timetable.now': string
   /** Timetable: the label of the phones' day switcher. */
   'timetable.day': string
+  // P5.10 / P5.11 touch, POS and warehouse
+  /** PosShell: the status strip (its region, the register and the cashier), the queue, products. */
+  'pos.status': string
+  'pos.register': string
+  'pos.cashier': string
+  'pos.queued': (count: number, countText: string) => string
+  'pos.products': string
+  /** ProductGrid: the categories, "All", and a category without products. */
+  'pos.categories': string
+  'pos.allProducts': string
+  'pos.noProducts': string
+  'pos.noProductsDescription': string
+  /** NumericKeypad: the group and the keys that are not digits. */
+  'keypad.label': string
+  'keypad.decimal': string
+  'keypad.backspace': string
+  'keypad.clear': string
+  'keypad.enter': string
+  /** CartPanel: the title, the count, the empty state, a line's controls, the total, the action. */
+  'cart.title': string
+  'cart.count': (count: number, countText: string) => string
+  'cart.empty': string
+  'cart.emptyDescription': string
+  'cart.quantity': (name: string) => string
+  'cart.remove': (name: string) => string
+  'cart.each': (priceText: string) => string
+  'cart.total': string
+  'cart.charge': (amountText: string) => string
+  /** PaymentDialog: the amounts, the methods, the card terminal and the end. */
+  'payment.title': string
+  'payment.due': string
+  'payment.method': string
+  'payment.cash': string
+  'payment.card': string
+  'payment.split': string
+  'payment.tendered': string
+  'payment.exact': string
+  'payment.quickAmounts': string
+  'payment.change': string
+  'payment.remaining': string
+  'payment.paid': string
+  'payment.part': string
+  'payment.addCash': string
+  'payment.addCard': string
+  'payment.cardStart': string
+  'payment.cardWaiting': string
+  'payment.cardWaitingHint': string
+  'payment.cardCancel': string
+  'payment.cardDeclined': string
+  'payment.cardRetry': string
+  'payment.cardApproved': string
+  'payment.complete': string
+  'payment.done': string
+  /** ReceiptPreview: its name. */
+  'receipt.title': string
+  /** ScanField: the camera button and the words before a result for assistive technology. */
+  'scan.camera': string
+  'scan.success': string
+  'scan.error': string
+  /** QuantityStepper: the buttons and the limits. */
+  'quantity.decrease': string
+  'quantity.increase': string
+  'quantity.belowMin': (minText: string) => string
+  'quantity.aboveMax': (maxText: string) => string
+  /** PickList and StockCount: changes kept on the device while offline. */
+  'queue.waiting': (count: number, countText: string) => string
+  /** PickList: progress, the current line and its steps, skipping, the route and its states. */
+  'pick.progress': (done: number, doneText: string, total: number, totalText: string) => string
+  'pick.progressLabel': string
+  'pick.current': string
+  'pick.location': string
+  'pick.item': string
+  'pick.toPick': string
+  'pick.pickedOf': (pickedText: string, totalText: string) => string
+  'pick.steps': string
+  'pick.stepLocation': string
+  'pick.stepItem': string
+  'pick.stepQuantity': string
+  'pick.stepDone': string
+  'pick.scanLocation': string
+  'pick.scanItem': string
+  'pick.quantity': string
+  'pick.confirm': string
+  'pick.skip': string
+  'pick.skipTitle': (item: string) => string
+  'pick.skipMessage': string
+  'pick.route': string
+  'pick.open': string
+  'pick.picked': string
+  'pick.short': string
+  'pick.skipped': string
+  'pick.allDone': string
+  'pick.allDoneDescription': string
+  'pick.finish': string
+  'pick.empty': string
+  'pick.emptyDescription': string
+  /** StockCount: the location, the item being counted, the counted items and their differences. */
+  'count.location': string
+  'count.scanLocation': string
+  'count.scanItem': string
+  'count.noLocation': string
+  'count.changeLocation': string
+  'count.current': string
+  'count.quantity': string
+  'count.counted': string
+  'count.expected': string
+  'count.difference': string
+  'count.items': string
+  'count.noItems': string
+  'count.noItemsDescription': string
+  'count.finish': string
 }

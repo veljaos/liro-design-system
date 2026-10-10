@@ -22,6 +22,7 @@ export function StoryProvider({
   direction,
   colorScheme,
   today,
+  density,
   children,
 }: {
   locale?: string
@@ -29,6 +30,8 @@ export function StoryProvider({
   colorScheme?: 'light' | 'dark'
   /** YYYY-MM-DD; default the story's (the device's date). */
   today?: string
+  /** 'touch' for the till and handheld stories (P5.10); default the story's. */
+  density?: 'default' | 'touch'
   children: ReactNode
 }) {
   const liro = useLiro()
@@ -40,6 +43,7 @@ export function StoryProvider({
       {...(dir === undefined ? {} : { direction: dir })}
       colorScheme={colorScheme ?? liro.colorScheme}
       today={today ?? liro.today}
+      {...(density === undefined ? {} : { density })}
     >
       {children}
     </LiroProvider>
@@ -87,14 +91,25 @@ export function ExampleProvider({
   )
 }
 
-/** A phone-sized frame (390 × 844px) whose overlays stay inside it. */
-export function PhoneFrame({ children }: { children: ReactNode }) {
+/**
+ * A phone-sized frame (390 × 844px) whose overlays stay inside it. A handheld scanner's screen is
+ * 360 × 740 (P5.11: `width={360} height={740}`).
+ */
+export function PhoneFrame({
+  width = 390,
+  height = 844,
+  children,
+}: {
+  width?: number
+  height?: number
+  children: ReactNode
+}) {
   return (
     <div
       style={{
         transform: 'translateZ(0)',
-        width: 390,
-        height: 844,
+        width,
+        height,
         maxWidth: '100%',
         overflow: 'hidden',
         outline: '1px solid var(--liro-border-default)',

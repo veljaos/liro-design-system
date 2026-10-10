@@ -812,3 +812,71 @@ export type {
   UnavailableTime,
 } from './components/schedule-logic'
 export { deviceTimeZone, localDateTimeIn } from './provider/format'
+// ── P5.10 / P5.11 touch, POS and warehouse ──
+export type { Density } from './provider/liro-provider'
+export { NumericKeypad } from './components/numeric-keypad'
+export type { NumericKeypadProps } from './components/numeric-keypad'
+export {
+  decimalSeparator,
+  entryFromValue,
+  KEYPAD_DIGITS,
+  KEYPAD_MAX_DIGITS,
+  keypadInput,
+  keypadKeyFor,
+  keypadText,
+  keypadValue,
+} from './components/keypad-logic'
+export type { KeypadDigit, KeypadKey, KeypadOptions } from './components/keypad-logic'
+export { ProductGrid, ProductTile } from './components/product-tile'
+export type {
+  PosProduct,
+  ProductCategory,
+  ProductGridProps,
+  ProductStock,
+  ProductTileProps,
+} from './components/product-tile'
+export { CartPanel } from './components/cart-panel'
+export type { CartAmount, CartLine, CartPanelProps } from './components/cart-panel'
+export { PaymentDialog } from './components/payment-dialog'
+export type {
+  CardState,
+  PaymentDialogProps,
+  PaymentMethod,
+  PaymentPart,
+} from './components/payment-dialog'
+export { ReceiptPreview } from './components/receipt-preview'
+export type {
+  ReceiptAmount,
+  ReceiptFact,
+  ReceiptItem,
+  ReceiptPreviewProps,
+} from './components/receipt-preview'
+export { PosShell } from './templates/pos-shell'
+export type { PosShellProps } from './templates/pos-shell'
+export { ScanField } from './components/scan-field'
+export type { ScanFeedback, ScanFieldProps } from './components/scan-field'
+export {
+  EMPTY_SCAN_BUFFER,
+  SCAN_MAX_INTERVAL,
+  SCAN_MIN_LENGTH,
+  scanDecision,
+  scanKey,
+} from './components/scan-logic'
+export type { ScanBuffer, ScanOptions } from './components/scan-logic'
+export { QuantityStepper } from './components/quantity-stepper'
+export type { QuantityStepperProps } from './components/quantity-stepper'
+export {
+  canStep,
+  compareDecimal,
+  isDecimal,
+  quantityRange,
+  stepDecimal,
+  stepQuantity,
+} from './components/quantity-logic'
+export type { StepOptions } from './components/quantity-logic'
+export { PickList } from './templates/pick-list'
+export type { PickLine, PickListProps } from './templates/pick-list'
+export { StockCount } from './templates/stock-count'
+export type { CountItem, StockCountProps } from './templates/stock-count'
+export { PICK_STEPS, pickProgress, pickStepState } from './components/warehouse-logic'
+export type { PickLineState, PickStep } from './components/warehouse-logic'

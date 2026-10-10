@@ -147,6 +147,7 @@ export function ButtonPrimitive({
     <button
       type={type}
       data-slot="button"
+      data-shape={shape}
       data-family={family}
       data-emphasis={emphasis}
       className={cn(buttonClassName({ family, emphasis, shape }), className)}

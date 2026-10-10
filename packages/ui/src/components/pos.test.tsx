@@ -1,0 +1,296 @@
+import { renderToStaticMarkup } from 'react-dom/server'
+import { describe, expect, it } from 'vitest'
+import { createFormat } from '../provider/format'
+import { LiroProvider, useLiro } from '../provider/liro-provider'
+import { PickList } from '../templates/pick-list'
+import { PosShell } from '../templates/pos-shell'
+import { StockCount } from '../templates/stock-count'
+import { CartPanel } from './cart-panel'
+import { NumericKeypad } from './numeric-keypad'
+import { ProductGrid } from './product-tile'
+import { QuantityStepper } from './quantity-stepper'
+import { ReceiptPreview } from './receipt-preview'
+import { ScanField } from './scan-field'
+
+const SERBIAN = createFormat('sr-Latn-RS')
+
+function render(node: React.ReactNode, density?: 'default' | 'touch') {
+  return renderToStaticMarkup(
+    <LiroProvider locale="en" format={SERBIAN} {...(density === undefined ? {} : { density })}>
+      {node}
+    </LiroProvider>,
+  )
+}
+
+function Density() {
+  return <span data-density={useLiro().density} />
+}
+
+describe('touch density', () => {
+  it('marks its scope and tells the components', () => {
+    const html = render(<Density />, 'touch')
+    expect(html).toContain('data-liro-density="touch"')
+    expect(html).toContain('data-density="touch"')
+  })
+
+  it('is the default without the prop, with no attribute', () => {
+    const html = render(<Density />)
+    expect(html).not.toContain('data-liro-density')
+    expect(html).toContain('data-density="default"')
+  })
+
+  it('is inherited, and never lowered, by a nested provider', () => {
+    const inherited = render(
+      <LiroProvider locale="ar">
+        <Density />
+      </LiroProvider>,
+      'touch',
+    )
+    expect(inherited).toContain('data-density="touch"')
+    const lowered = render(
+      <LiroProvider locale="en" density="default">
+        <Density />
+      </LiroProvider>,
+      'touch',
+    )
+    expect(lowered).toContain('data-density="touch"')
+  })
+})
+
+describe('NumericKeypad', () => {
+  it('writes the value and the separator through format, keys left to right', () => {
+    const html = render(
+      <NumericKeypad
+        label="Amount tendered"
+        currency="RSD"
+        defaultValue="1234.5"
+        onEnter={() => undefined}
+      />,
+    )
+    expect(html).toContain('value="1.234,5"')
+    expect(html).toContain('aria-label="Decimal separator"')
+    expect(html).toContain('>,</button>')
+    expect(html).toContain('dir="ltr"')
+    expect(html).toContain('inputMode="none"')
+    expect(html).toContain('data-key="enter"')
+  })
+
+  it('has no separator key without decimals, and no Enter without onEnter', () => {
+    const html = render(<NumericKeypad label="Quantity" maxDecimals={0} />)
+    expect(html).not.toContain('data-key="decimal"')
+    expect(html).not.toContain('data-key="enter"')
+  })
+})
+
+describe('CartPanel', () => {
+  it('shows the amounts it is given and computes none', () => {
+    const html = render(
+      <CartPanel
+        currency="RSD"
+        total="1234"
+        totals={[{ id: 'sub', label: 'Subtotal', value: '1300' }]}
+        lines={[{ id: 'a', name: 'Kifla', quantity: '3', unitPrice: '25', total: '999.99' }]}
+        onCharge={() => undefined}
+      />,
+    )
+    // The line total is the application's, not 3 × 25.
+    expect(html).toContain('999,99')
+    expect(html).not.toContain('75,00')
+    expect(html).toContain('Charge 1.234,00')
+    expect(html).toContain('1 item')
+  })
+
+  it('keeps the charge focusable with its reason while it cannot be done', () => {
+    const html = render(
+      <CartPanel
+        currency="RSD"
+        total="10"
+        lines={[{ id: 'a', name: 'Kifla', quantity: '1', unitPrice: '10', total: '10' }]}
+        onCharge={() => undefined}
+        chargeDisabledReason="The register is closed."
+      />,
+    )
+    expect(html).toContain('aria-disabled="true"')
+    expect(html).toContain('The register is closed.')
+  })
+})
+
+describe('QuantityStepper', () => {
+  it('shows an out-of-range quantity as an error, never changing it', () => {
+    const html = render(<QuantityStepper label="Quantity" value="15" max="12" unit="pc" />)
+    expect(html).toContain('value="15"')
+    expect(html).toContain('At most 12.')
+    expect(html).toContain('aria-invalid="true"')
+  })
+
+  it('names its buttons with the field, and stops at a limit', () => {
+    const html = render(<QuantityStepper label="Quantity" value="0" min="0" />)
+    expect(html).toMatch(/aria-labelledby="[^"]+ [^"]+"[^>]*disabled=""/)
+    expect(html).toContain('Decrease')
+  })
+})
+
+describe('ScanField', () => {
+  it('shows the feedback with words before it, and the camera button', () => {
+    const html = render(
+      <ScanField
+        label="Item code"
+        onScan={() => undefined}
+        onCameraScan={() => undefined}
+        feedback={{ id: 1, tone: 'error', text: 'Unknown code 8600123' }}
+      />,
+    )
+    expect(html).toContain('role="status"')
+    expect(html).toContain('Problem:')
+    expect(html).toContain('Unknown code 8600123')
+    expect(html).toContain('aria-label="Scan with camera"')
+  })
+})
+
+describe('ProductGrid', () => {
+  it('shows the chosen category, unavailable tiles focusable with their reason', () => {
+    const html = render(
+      <ProductGrid
+        currency="RSD"
+        onSelect={() => undefined}
+        categories={[
+          { id: 'bread', label: 'Bread' },
+          { id: 'cakes', label: 'Cakes' },
+        ]}
+        defaultCategory="bread"
+        products={[
+          { id: 'a', name: 'Kifla', price: '25', categoryId: 'bread' },
+          {
+            id: 'b',
+            name: 'Burek',
+            price: '180',
+            categoryId: 'bread',
+            unavailableReason: 'Sold out',
+          },
+          { id: 'c', name: 'Krempita', price: '220', categoryId: 'cakes' },
+        ]}
+      />,
+    )
+    expect(html).toContain('Kifla')
+    expect(html).not.toContain('Krempita')
+    expect(html).toContain('Unavailable: Sold out')
+    expect(html).toContain('aria-pressed="true"')
+    // One tile in the tab order.
+    expect(html.match(/tabindex="0"/gi)).toHaveLength(1)
+  })
+})
+
+describe('ReceiptPreview', () => {
+  it('writes every amount through format, never rounded', () => {
+    const html = render(
+      <ReceiptPreview
+        header={['Pekara Zlatni klas']}
+        items={[
+          {
+            id: 'a',
+            name: 'Hleb',
+            quantity: '0.75',
+            unit: 'kg',
+            unitPrice: '119.999',
+            total: '89.99925',
+          },
+        ]}
+        totals={[{ id: 't', label: 'Total', value: '89.99925', strong: true }]}
+        currency="RSD"
+      />,
+    )
+    expect(html).toContain('0,75 kg × 119,999')
+    expect(html).toContain('89,99925')
+  })
+})
+
+describe('PosShell', () => {
+  it('shows the queue while online and the offline strip while offline', () => {
+    const online = render(
+      <PosShell
+        brand="Zlatni klas"
+        register="Kasa 2"
+        cashier="Milica"
+        queued={3}
+        products={null}
+        cart={null}
+        layout="tablet"
+      />,
+    )
+    expect(online).toContain('3 sales waiting to be sent')
+    expect(online).toContain('Sending…')
+    const offline = render(
+      <PosShell
+        brand="Zlatni klas"
+        offline
+        queued={1}
+        products={null}
+        cart={null}
+        layout="tablet"
+      />,
+    )
+    expect(offline).toContain('Offline')
+    expect(offline).toContain('1 sale waiting to be sent')
+  })
+})
+
+describe('PickList and StockCount', () => {
+  it('shows progress, the current line and its step', () => {
+    const html = render(
+      <PickList
+        title="PL-1"
+        lines={[
+          {
+            id: 'a',
+            location: 'A-01-01',
+            item: 'Cement',
+            quantity: '10',
+            picked: '10',
+            state: 'picked',
+          },
+          {
+            id: 'b',
+            location: 'A-02-03',
+            item: 'Lepak',
+            quantity: '4',
+            picked: null,
+            state: 'open',
+          },
+        ]}
+        currentId="b"
+        step="item"
+        onScan={() => undefined}
+        onConfirm={() => undefined}
+      />,
+    )
+    expect(html).toContain('1 of 2')
+    expect(html).toContain('Item code')
+    expect(html).toContain('aria-current="step"')
+  })
+
+  it('shows a signed difference from the application', () => {
+    const html = render(
+      <StockCount
+        title="Count"
+        location="B-01"
+        items={[
+          {
+            id: 'a',
+            item: 'Cement',
+            counted: '8',
+            expected: '10',
+            difference: '-2',
+            differenceTone: 'danger',
+          },
+          { id: 'b', item: 'Lepak', counted: '5', difference: '2' },
+        ]}
+        currentId="a"
+        onScan={() => undefined}
+        onCountChange={() => undefined}
+      />,
+    )
+    expect(html).toContain('-2')
+    expect(html).toContain('+2')
+    expect(html).toContain('Expected')
+  })
+})

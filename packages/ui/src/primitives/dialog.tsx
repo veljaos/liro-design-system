@@ -119,6 +119,7 @@ export function DialogCloseButton({
   return (
     <DialogPrimitive.Close
       data-slot="dialog-close"
+      data-shape="compact"
       aria-label={label}
       title={label}
       className={cn(
