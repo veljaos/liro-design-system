@@ -13,12 +13,14 @@ import {
   Fragment,
   useCallback,
   useEffect,
+  useImperativeHandle,
   useLayoutEffect,
   useMemo,
   useRef,
   useState,
   type CSSProperties,
   type ReactNode,
+  type Ref,
 } from 'react'
 import { Checkbox } from '../primitives/checkbox'
 import { BUTTON_RESET, FOCUS_RING, TEXT_DIRECTION } from '../primitives/classes'
@@ -51,6 +53,7 @@ import {
 import { type MenuEntry } from './dropdown-menu'
 import { EmptyState, type EmptyAction } from './empty-state'
 import { CursorPagination } from './navigation'
+import { RefetchLoader } from './refetch-loader'
 import { usePhone } from './use-phone'
 import { keepFocusedRow, overscanRows, spacersBetween } from './virtual-rows'
 
@@ -108,7 +111,12 @@ export interface DataTableColumn<Row extends RowData> {
   sortable?: boolean
   /** With `resizable`: the starting width in pixels. Default: the width the content takes. */
   width?: number
-  /** With `resizable`: the narrowest it can be made. Default 64px. */
+  /**
+   * The narrowest the column gets, in pixels. Default 64px. With `resizable`, the narrowest it can
+   * be made; without, the table scrolls sideways before this column gets narrower (P5.23: a
+   * document's description column takes 240px, `DESCRIPTION_MIN_WIDTH`, so a name wraps to at most
+   * two lines).
+   */
   minWidth?: number
   /** With `resizable`: false keeps this column's width. Default true. */
   resizable?: boolean
@@ -197,6 +205,14 @@ export interface DataTableProps<Row extends RowData> {
   rowLimitMessage?: ReactNode
   /** An export button (the application runs the export as a job), above the table at the end. */
   exportAction?: ReactNode
+  /**
+   * False: no loader slot above the table — the container shows the refetch itself, in a row of
+   * its own (RegisterPage's first row, P5.23), so a band right above the table (the locked
+   * periods) meets its header without a white strip. Default true.
+   */
+  loaderSlot?: boolean
+  /** Scrolls the table to a row, drawing it first when virtualized (`DataTableHandle`). */
+  ref?: Ref<DataTableHandle>
 
   /** The header stays at the top while the rows scroll (inside `maxHeight`). */
   stickyHeader?: boolean
@@ -243,11 +259,23 @@ export interface DataTableProps<Row extends RowData> {
   className?: string
 }
 
+/** What a DataTable lets its container do. */
+export interface DataTableHandle {
+  /**
+   * Brings the row with this id into view (centred); when virtualized the row is drawn on the
+   * next frames. The container then focuses what it put in the row (RegisterPage's entry number).
+   */
+  revealRow: (id: string) => void
+}
+
 const features = tableFeatures({ rowSelectionFeature })
 
 /** A virtualized row (owner) and the estimated card (owner). */
 const ROW_HEIGHT = 44
 const CARD_HEIGHT = 104
+
+/** A cell's padding at both sides together (`CELL`'s px-4). */
+const CELL_PADDING_INLINE = 32
 
 /** The selection column (16px checkbox, 16px each side) and the menu column (28px, 8px each side). */
 const SELECT_WIDTH = 48
@@ -435,6 +463,19 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
     initialRect: { width: 0, height: 720 },
   })
 
+  useImperativeHandle(
+    props.ref,
+    () => ({
+      revealRow: (id: string) => {
+        // Drawn rows are all in the page: focusing in the row scrolls it into view.
+        if (!virtualize) return
+        const index = rows.findIndex((row) => getRowId(row) === id)
+        if (index >= 0) virtualizer.scrollToIndex(index, { align: 'center' })
+      },
+    }),
+    [rows, getRowId, virtualize, virtualizer],
+  )
+
   const byId = new Map(columns.map((column) => [column.id, column]))
   const tableRows = table.getRowModel().rows
   const firstLoad = props.loading === true && rows.length === 0
@@ -562,11 +603,19 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
         aria-sort={ariaSort(sort, column.id, sortable)}
         className={cn(
           CELL,
-          'group/header min-w-16 border-0 border-b border-solid border-default bg-surface-sunken font-bold text-primary',
+          'group/header border-0 border-b border-solid border-default bg-surface-sunken font-bold text-primary',
+          column.minWidth === undefined && 'min-w-16',
           ALIGN[align],
           sticky ? 'sticky top-0 z-10' : resizable && 'relative',
           oneLine && 'truncate',
         )}
+        // Without resizing, a column's minimum width holds in the automatic layout (P5.23); the
+        // cell's minimum width counts without its 16px side paddings.
+        style={
+          !resizable && column.minWidth !== undefined
+            ? { minWidth: Math.max(0, column.minWidth - CELL_PADDING_INLINE) }
+            : undefined
+        }
       >
         {sortable ? (
           <button
@@ -902,29 +951,15 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
         In a card (P4.5): the slot only where a refetch can happen (the application passes
         `loading`) or an export slot stands, so a document's lines start at the card's top.
       */}
-      {(props.inCard !== true ||
-        props.loading !== undefined ||
-        props.exportAction !== undefined) && (
-        <div className={cn('flex min-h-3.5 flex-wrap items-center justify-end gap-3', edge)}>
-          <span
-            role="status"
-            aria-live="polite"
-            data-slot="refetch-loader"
-            className="flex size-3.5 shrink-0 items-center justify-center"
-          >
-            {refetching && (
-              <>
-                <span
-                  aria-hidden="true"
-                  className="box-border size-3.5 animate-liro-spin rounded-full border-[1.75px] border-solid border-brand border-s-transparent motion-reduce:animate-none"
-                />
-                <span className="sr-only">{messages['table.updating']}</span>
-              </>
-            )}
-          </span>
-          {props.exportAction}
-        </div>
-      )}
+      {props.loaderSlot !== false &&
+        (props.inCard !== true ||
+          props.loading !== undefined ||
+          props.exportAction !== undefined) && (
+          <div className={cn('flex min-h-3.5 flex-wrap items-center justify-end gap-3', edge)}>
+            <RefetchLoader active={refetching} />
+            {props.exportAction}
+          </div>
+        )}
       {selectable && props.bulkActions !== undefined && (
         <div className={cn('empty:hidden', edge)}>
           <BulkActionBar

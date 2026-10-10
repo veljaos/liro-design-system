@@ -14,6 +14,7 @@ import { useLiro } from '../provider/liro-provider'
 import { Banner } from './alert'
 import { Button } from './button'
 import type { DataTableColumn } from './data-table'
+import { MIN_COLUMN_WIDTH } from './data-table-logic'
 import { MoneyText, NumberText } from './display-text'
 import { chosenNoteTexts, type DocumentNotesValue, type NoteTemplate } from './document-logic'
 import { MultiSelectField } from './multi-select-field'
@@ -59,8 +60,9 @@ export interface DocumentReferenceGroup {
 export interface DocumentReferencesProps {
   groups: readonly DocumentReferenceGroup[]
   /**
-   * The lead before the references: "Based on" by default (`messages['references.basedOn']`);
-   * "Cancels", "Corrects" for the back-links of a cancellation or a corrective document.
+   * The lead before the references: "Based on" by default (`messages['references.basedOn']`).
+   * A correcting or cancelling document's source is not a reference: it stands in the header
+   * (`DocumentSource`, P5.23).
    */
   label?: string
   className?: string
@@ -493,7 +495,9 @@ function CorrectionHeader({ part }: { part: 'original' | 'change' | 'new' }) {
  * The Original / Change / New columns of a corrective document's lines (P5.18): a decrease or an
  * increase against one document or several, each line's value before, its change (signed) and
  * after — all from the application, nothing computed. Use one call per corrected value (the
- * quantity, the amount) and give its headers when there are several.
+ * quantity, the amount) and give its headers when there are several. The columns may be as
+ * narrow as 64px (`minWidth`, their headers wrap), so six of them leave the description column
+ * its room (P5.23).
  */
 export function correctionColumns<Row extends RowData>(
   spec: CorrectionColumnSpec<Row>,
@@ -514,6 +518,7 @@ export function correctionColumns<Row extends RowData>(
   return [
     {
       id: `${spec.id}.original`,
+      minWidth: MIN_COLUMN_WIDTH,
       header: spec.headers?.original ?? <CorrectionHeader part="original" />,
       align: 'end',
       numeric: true,
@@ -521,6 +526,7 @@ export function correctionColumns<Row extends RowData>(
     },
     {
       id: `${spec.id}.change`,
+      minWidth: MIN_COLUMN_WIDTH,
       header: spec.headers?.change ?? <CorrectionHeader part="change" />,
       align: 'end',
       numeric: true,
@@ -534,6 +540,7 @@ export function correctionColumns<Row extends RowData>(
     },
     {
       id: `${spec.id}.new`,
+      minWidth: MIN_COLUMN_WIDTH,
       header: spec.headers?.next ?? <CorrectionHeader part="new" />,
       align: 'end',
       numeric: true,

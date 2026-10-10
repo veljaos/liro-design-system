@@ -5,7 +5,34 @@
  * src/index.ts imports this file. No classes here.
  */
 
+import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { decimal, paras } from '../components/amounts-story-data'
+
+/**
+ * The register's spacing (P5.23), checked in the template's and the examples' stories alike:
+ * the locks band meets the table's header, nothing between them.
+ */
+export async function expectLocksMeetTable(canvasElement: HTMLElement): Promise<void> {
+  const locks = canvasElement.querySelector('[data-slot="register-locks"]')
+  const header = canvasElement.querySelector('[data-slot="register-page"] thead')
+  if (locks === null || header === null) throw new Error('No locks band or table header')
+  const gap = header.getBoundingClientRect().top - locks.getBoundingClientRect().bottom
+  await expect(Math.round(gap)).toBe(0)
+}
+
+/**
+ * A correction link goes to the other entry (P5.23): pressing it focuses that entry's number,
+ * drawn first when the register is virtualized.
+ */
+export async function expectCorrectionLink(
+  canvasElement: HTMLElement,
+  link: string,
+  target: string,
+): Promise<void> {
+  await userEvent.click(within(canvasElement).getByRole('link', { name: link }))
+  await waitFor(() => expect(document.activeElement?.textContent).toBe(target))
+  await expect(document.activeElement?.closest('tr')).not.toBeNull()
+}
 
 export interface TrainingEntry {
   id: string
@@ -160,8 +187,12 @@ const COURSES = [
   'Securing loads',
 ]
 
-/** `count` generated entries over 2026 (the stress story); the first half of the year locked. */
+/**
+ * `count` generated entries over 2026 (the stress story); the first half of the year locked. The
+ * tenth from last corrects no. 12, so the correction links cross thousands of entries.
+ */
 export function manyTraining(count: number): TrainingEntry[] {
+  const corrector = String(count - 10)
   return Array.from({ length: count }, (_, index) => {
     const day = Math.floor((index * 365) / count)
     const date = new Date(Date.UTC(2026, 0, 1 + day)).toISOString().slice(0, 10)
@@ -176,6 +207,8 @@ export function manyTraining(count: number): TrainingEntry[] {
       instructor: OFFICER,
       validUntil: until,
       ...(date < '2026-07-01' ? { locked: true } : {}),
+      ...(index === 11 ? { correctedBy: corrector } : {}),
+      ...(String(index + 1) === corrector ? { corrects: '12' } : {}),
     }
   })
 }

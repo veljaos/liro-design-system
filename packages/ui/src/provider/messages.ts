@@ -653,6 +653,12 @@ export interface LiroMessages {
   'register.lockedEntry': string
   /** A locked period ("January–June 2026 is locked"); the period is the application's text. */
   'register.periodLocked': (period: string) => string
+  /**
+   * DocumentSource (P5.23): the labels of a source document's date and total in a correcting or
+   * cancelling document's header ("Issued 25.09.2026. · Total 186.420,35 RSD").
+   */
+  'document.sourceDate': string
+  'document.sourceTotal': string
   /** StatutoryFormPage: the field number and description headers. */
   'statutory.number': string
   'statutory.description': string

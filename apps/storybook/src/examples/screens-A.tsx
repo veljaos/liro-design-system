@@ -25,7 +25,7 @@ import {
   type ThreadMessage,
   type TotalsRow,
   StatusTimeline,
-  DocumentReferences,
+  DESCRIPTION_MIN_WIDTH,
 } from '@veljaos/ui'
 import type { ExampleRoute } from './example-app'
 import { HR_TABS, Navigate, SALES_TABS, Shell, statusBadge } from './example-shell'
@@ -64,7 +64,12 @@ export const ROUTES_A = {
 // ── Invoice F-2026-0410: history, comments and presence ───────────────────────────────────────
 
 const LINE_COLUMNS: DataTableColumn<LineA>[] = [
-  { id: 'item', header: 'Item', cell: (line) => line.item },
+  {
+    id: 'item',
+    header: 'Item',
+    minWidth: DESCRIPTION_MIN_WIDTH,
+    cell: (line) => line.item,
+  },
   {
     id: 'quantity',
     header: 'Quantity',
@@ -113,6 +118,8 @@ const TOTAL_ROWS: TotalsRow[] = [
     label: 'Decrease KO-2026-0009',
     value: TOTALS_0410.decrease,
     currency: 'RSD',
+    // The correction is a link, as in Related documents (P5.23).
+    href: '#/sales/corrections/KO-2026-0009',
   },
   {
     key: 'corrected',
@@ -241,11 +248,19 @@ export function InvoiceActivity({ phone }: { phone: boolean }) {
     {
       key: 'related',
       title: 'Related documents',
-      count: 2,
+      count: 3,
       content: (
         <RelatedDocuments
           label="Related documents"
           items={[
+            // Its correcting document first (P5.23): the source lists what corrects it.
+            {
+              key: 'decrease',
+              type: 'Decrease',
+              number: 'KO-2026-0009',
+              href: '#/sales/corrections/KO-2026-0009',
+              status: <StatusBadge label="Sent to SEF" tone="info" />,
+            },
             {
               key: 'order',
               type: 'Order',
@@ -318,25 +333,6 @@ export function InvoiceActivity({ phone }: { phone: boolean }) {
             <Button intent="pdf" label="PDF" emphasis="secondary" />
             {phone ? null : reminder}
           </>
-        }
-        references={
-          <DocumentReferences
-            label="Corrected by"
-            groups={[
-              {
-                key: 'decrease',
-                label: 'Decrease',
-                items: [
-                  {
-                    key: 'ko9',
-                    number: 'KO-2026-0009',
-                    href: '#/sales/corrections/KO-2026-0009',
-                    status: { label: 'Sent to SEF', tone: 'info' },
-                  },
-                ],
-              },
-            ]}
-          />
         }
         lines={
           <DataTable

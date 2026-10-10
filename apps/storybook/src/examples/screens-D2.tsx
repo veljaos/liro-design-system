@@ -10,13 +10,16 @@ import {
   correctionColumns,
   DataTable,
   DateText,
+  DESCRIPTION_MIN_WIDTH,
   DocumentCurrency,
   DocumentNotes,
   DocumentPage,
   DocumentReferences,
+  DocumentSource,
   DocumentSpecification,
   DocumentTotals,
   KeyValueList,
+  MIN_COLUMN_WIDTH,
   MoneyText,
   NumberText,
   RelatedDocuments,
@@ -33,7 +36,7 @@ import {
   type TotalsRow,
 } from '@veljaos/ui'
 import type { ExampleRoute } from './example-app'
-import { SALES_TABS, Shell } from './example-shell'
+import { SALES_TABS, Shell, statusBadge } from './example-shell'
 import {
   ADVANCES,
   BOJOVIC,
@@ -119,7 +122,7 @@ function linesTable(lines: readonly DocLine[], currency: string, phone: boolean,
   const money = (value: string | undefined) =>
     value === undefined ? null : <MoneyText value={value} currency={currency} />
   const columns: DataTableColumn<DocLine>[] = [
-    { id: 'item', header: 'Item', cell: (line) => line.text },
+    { id: 'item', header: 'Item', minWidth: DESCRIPTION_MIN_WIDTH, cell: (line) => line.text },
     {
       id: 'quantity',
       header: 'Quantity',
@@ -474,7 +477,7 @@ function FinalInvoice({ phone }: { phone: boolean }) {
 
 const SPEC_COLUMNS: DataTableColumn<SpecRow>[] = [
   { id: 'number', header: 'No.', cell: (row) => <span dir="ltr">{row.position?.number}</span> },
-  { id: 'text', header: 'Position', cell: (row) => row.text },
+  { id: 'text', header: 'Position', minWidth: DESCRIPTION_MIN_WIDTH, cell: (row) => row.text },
   { id: 'unit', header: 'Unit', cell: (row) => row.position?.unit },
   {
     id: 'quantity',
@@ -813,8 +816,9 @@ function EurInvoice({ phone }: { phone: boolean }) {
 // ── KO-2026-0009: decrease against F-2026-0410 ──────────────────────────────────────────────
 
 const DECREASE_COLUMNS: DataTableColumn<CorrectedLine>[] = [
-  { id: 'item', header: 'Item', cell: (line) => line.text },
-  { id: 'unit', header: 'Unit', cell: (line) => line.unit },
+  { id: 'item', header: 'Item', minWidth: DESCRIPTION_MIN_WIDTH, cell: (line) => line.text },
+  // Short codes give their room to the item's name (P5.23).
+  { id: 'unit', header: 'Unit', minWidth: MIN_COLUMN_WIDTH, cell: (line) => line.unit },
   ...correctionColumns<CorrectedLine>({
     id: 'quantity',
     original: (line) => line.quantity.original,
@@ -837,7 +841,13 @@ const DECREASE_COLUMNS: DataTableColumn<CorrectedLine>[] = [
     currency: 'RSD',
     headers: { original: 'Original amount', change: 'Change', next: 'New amount' },
   }),
-  { id: 'vat', header: 'VAT', cell: (line) => taxLabel(line.tax) },
+  {
+    id: 'vat',
+    header: 'VAT',
+    minWidth: MIN_COLUMN_WIDTH,
+    // A code never wraps ("S 20%").
+    cell: (line) => <span className="whitespace-nowrap">{taxLabel(line.tax)}</span>,
+  },
 ]
 
 function Decrease({ phone }: { phone: boolean }) {
@@ -854,34 +864,27 @@ function Decrease({ phone }: { phone: boolean }) {
         back={{ href: '#/sales/invoices', label: 'Invoices' }}
         status={badge('Sent to SEF', 'info')}
         counterparty={{ label: 'Customer', ...MEDIC_LAB }}
-        keyFigures={[
-          {
-            label: 'Original total',
-            value: <MoneyText value={MEDIC_TOTALS.total} currency="RSD" />,
-          },
-          { label: 'Change', value: <ChangeText value={DECREASE.change} currency="RSD" /> },
-          { label: 'New total', value: <MoneyText value={DECREASE.newTotal} currency="RSD" /> },
-        ]}
-        actions={<Button intent="pdf" label="PDF" emphasis="secondary" />}
-        references={
-          <DocumentReferences
+        source={
+          <DocumentSource
             label="Corrects"
-            groups={[
+            documents={[
               {
-                key: 'invoice',
-                label: 'Invoice',
-                items: [
-                  {
-                    key: 'f410',
-                    number: 'F-2026-0410',
-                    href: '#/sales/invoices/F-2026-0410',
-                    status: { label: 'Partially paid', tone: 'warning' },
-                  },
-                ],
+                key: 'f410',
+                kind: 'Invoice',
+                number: 'F-2026-0410',
+                href: '#/sales/invoices/F-2026-0410',
+                date: '2026-09-25',
+                total: { value: MEDIC_TOTALS.total, currency: 'RSD' },
+                status: statusBadge('Partially paid'),
               },
             ]}
           />
         }
+        keyFigures={[
+          { label: 'Change', value: <ChangeText value={DECREASE.change} currency="RSD" /> },
+          { label: 'New total', value: <MoneyText value={DECREASE.newTotal} currency="RSD" /> },
+        ]}
+        actions={<Button intent="pdf" label="PDF" emphasis="secondary" />}
         lines={
           <DataTable
             label="Corrected lines"
@@ -1027,6 +1030,22 @@ function CancellationDocument({ phone }: { phone: boolean }) {
         back={{ href: '#/sales/invoices', label: 'Invoices' }}
         status={badge('Sent to SEF', 'info')}
         counterparty={{ label: 'Customer', ...BOJOVIC }}
+        source={
+          <DocumentSource
+            label="Cancels"
+            documents={[
+              {
+                key: 'f407',
+                kind: 'Invoice',
+                number: CANCELLATION.invoice,
+                href: `#${D2_ROUTES.cancelled}`,
+                date: '2026-09-18',
+                total: { value: CANCELLED_TOTALS.total, currency: 'RSD' },
+                status: statusBadge('Cancelled'),
+              },
+            ]}
+          />
+        }
         keyFigures={[
           {
             label: 'Total',
@@ -1035,25 +1054,6 @@ function CancellationDocument({ phone }: { phone: boolean }) {
           { label: 'Issued', value: <DateText value="2026-10-06" /> },
         ]}
         actions={<Button intent="pdf" label="PDF" emphasis="secondary" />}
-        references={
-          <DocumentReferences
-            label="Cancels"
-            groups={[
-              {
-                key: 'invoice',
-                label: 'Invoice',
-                items: [
-                  {
-                    key: 'f407',
-                    number: CANCELLATION.invoice,
-                    href: `#${D2_ROUTES.cancelled}`,
-                    status: { label: 'Cancelled' },
-                  },
-                ],
-              },
-            ]}
-          />
-        }
         lines={linesTable(CANCELLATION_LINES, 'RSD', phone)}
         totals={{
           label: 'Totals',

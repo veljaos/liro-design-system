@@ -408,6 +408,8 @@ export const messagesEn: LiroMessages = {
   'register.locked': 'Locked',
   'register.lockedEntry': 'Locked period: entries cannot be changed',
   'register.periodLocked': (period) => `${period} is locked`,
+  'document.sourceDate': 'Issued',
+  'document.sourceTotal': 'Total',
   'statutory.number': 'No.',
   'statutory.description': 'Description',
   'statutory.showSources': (field, value) => `${value}, sources of ${field}`,

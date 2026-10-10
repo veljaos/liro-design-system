@@ -11,9 +11,12 @@ import { DateField } from '../components/date-field'
 import { DateText, MoneyText, NumberText } from '../components/display-text'
 import {
   CancellationBanner,
+  ChangeText,
+  correctionColumns,
   DocumentNotes,
   DocumentReferences,
 } from '../components/document-blocks'
+import { DocumentSource } from '../components/document-source'
 import type { DocumentNotesValue } from '../components/document-logic'
 import {
   FINAL_DEDUCTIONS,
@@ -40,6 +43,7 @@ import { AppShell } from './app-shell'
 import { DocumentPage, type DocumentPageProps } from './document-page'
 import { BRAND, COMMANDS, COMPANIES, SALES_TABS, USER } from './shell-story-data'
 import { fromUnits, toUnits } from '../components/amounts-story-data'
+import { DESCRIPTION_MIN_WIDTH, MIN_COLUMN_WIDTH } from '../components/data-table-logic'
 
 interface Line {
   id: string
@@ -93,7 +97,12 @@ const LINES: Line[] = [
 ]
 
 const COLUMNS: DataTableColumn<Line>[] = [
-  { id: 'item', header: 'Item', cell: (line) => line.item },
+  {
+    id: 'item',
+    header: 'Item',
+    minWidth: DESCRIPTION_MIN_WIDTH,
+    cell: (line) => line.item,
+  },
   {
     id: 'quantity',
     header: 'Quantity',
@@ -628,9 +637,15 @@ const meta = {
           'content is not rendered; phones keep the order. **Cancellation:** an ' +
           'IrreversibleConfirmDialog with `reason` (one dialog asks why and for the number), ' +
           'then the status "Cancelled" and the banner with who, when, why and the link to the ' +
-          'cancellation document, which links back ("Cancels"). **Corrective documents** are ' +
-          'DocumentPages too: "Corrects:" references and Original / Change / New lines ' +
-          '(`correctionColumns`).\n\n' +
+          'cancellation document. **Correcting and cancelling documents** (decrease, increase, ' +
+          'cancellation document, credit note, return) are DocumentPages too: their source ' +
+          'stands in the header beside the customer, at the same level (`source`, ' +
+          'DocumentSource: "Corrects" or "Cancels", the link with kind, number, state, date ' +
+          'and total), the lines as Original / Change / New (`correctionColumns`); the source ' +
+          'lists them in its Related documents. The "Based on" line never repeats the source. ' +
+          '**Wide tables:** the description column keeps `DESCRIPTION_MIN_WIDTH` (240px), so a ' +
+          'name wraps to at most two lines; short codes and correction columns may be 64px; ' +
+          'amounts never wrap.\n\n' +
           '**When not:** a record without lines (DetailPage); a list (ListPage).',
       },
     },
@@ -825,7 +840,12 @@ export const Japanese: Story = {
 }
 
 const FINAL_COLUMNS: DataTableColumn<FinalLine>[] = [
-  { id: 'item', header: 'Item', cell: (line) => line.item },
+  {
+    id: 'item',
+    header: 'Item',
+    minWidth: DESCRIPTION_MIN_WIDTH,
+    cell: (line) => line.item,
+  },
   {
     id: 'quantity',
     header: 'Quantity',
@@ -1081,4 +1101,173 @@ export const CancelDocument: Story = {
     await expect(canvas.queryByRole('button', { name: 'Cancel invoice' })).toBeNull()
     await settle()
   },
+}
+
+// ── A correcting document ─────────────────────────────────────────────────────────────────────
+
+interface CorrectedLine {
+  id: string
+  item: string
+  unit: string
+  price: string
+  quantity: [string, string, string]
+  amount: [string, string, string]
+}
+
+/** KO-2026-0012 against F-2026-0412: goods returned (values from the application). */
+const CORRECTED: CorrectedLine[] = [
+  {
+    id: '1',
+    item: 'Cement CEM II 42,5 R, 25 kg',
+    unit: 'bag',
+    price: '685.00',
+    quantity: ['120', '-10', '110'],
+    amount: ['82200.00', '-6850.00', '75350.00'],
+  },
+  {
+    id: '2',
+    item: 'Armature mesh Q188, 2,15 × 6 m',
+    unit: 'pc',
+    price: '2940.00',
+    quantity: ['18', '-2', '16'],
+    amount: ['52920.00', '-5880.00', '47040.00'],
+  },
+]
+
+const CORRECTED_COLUMNS: DataTableColumn<CorrectedLine>[] = [
+  { id: 'item', header: 'Item', minWidth: DESCRIPTION_MIN_WIDTH, cell: (line) => line.item },
+  { id: 'unit', header: 'Unit', minWidth: MIN_COLUMN_WIDTH, cell: (line) => line.unit },
+  ...correctionColumns<CorrectedLine>({
+    id: 'quantity',
+    original: (line) => line.quantity[0],
+    change: (line) => line.quantity[1],
+    next: (line) => line.quantity[2],
+    headers: { original: 'Original qty', change: 'Qty change', next: 'New qty' },
+  }),
+  {
+    id: 'price',
+    header: 'Price',
+    align: 'end',
+    numeric: true,
+    cell: (line) => <MoneyText value={line.price} currency="RSD" />,
+  },
+  ...correctionColumns<CorrectedLine>({
+    id: 'amount',
+    original: (line) => line.amount[0],
+    change: (line) => line.amount[1],
+    next: (line) => line.amount[2],
+    currency: 'RSD',
+    headers: { original: 'Original amount', change: 'Change', next: 'New amount' },
+  }),
+  {
+    id: 'vat',
+    header: 'VAT',
+    minWidth: MIN_COLUMN_WIDTH,
+    cell: () => <span className="whitespace-nowrap">S 20%</span>,
+  },
+]
+
+/** The decrease: its source beside the customer, the corrected lines, the totals of the change. */
+function CorrectiveInvoice({ layout = 'desktop' }: { layout?: 'desktop' | 'phone' }) {
+  const [open, setOpen] = useState<string[]>(['delivery'])
+  return (
+    <AppShell
+      layout={layout}
+      brand={BRAND}
+      breadcrumbs={[{ label: 'Invoices', href: '#sales/invoices' }, { label: 'KO-2026-0012' }]}
+      commands={{ items: COMMANDS }}
+      notifications={{ unread: 1, panel: <p className="m-0 text-sm">1 unread.</p> }}
+      companies={{ items: COMPANIES, current: 'kvadrat', onSelect: () => undefined }}
+      user={USER}
+      moduleTabs={SALES_TABS}
+    >
+      <DocumentPage
+        layout={layout}
+        title="KO-2026-0012"
+        back={{ href: '#sales/invoices', label: 'Invoices' }}
+        status={<StatusBadge label="Sent" tone="info" />}
+        counterparty={BASE.counterparty ?? { label: 'Customer', name: '' }}
+        source={
+          <DocumentSource
+            label="Corrects"
+            documents={[
+              {
+                key: 'f412',
+                kind: 'Invoice',
+                number: 'F-2026-0412',
+                href: '#sales/invoices/F-2026-0412',
+                date: '2026-09-28',
+                total: { value: '183254.00', currency: 'RSD' },
+                status: <StatusBadge label="Sent" tone="info" />,
+              },
+            ]}
+          />
+        }
+        keyFigures={[
+          { label: 'Change', value: <ChangeText value="-15276.00" currency="RSD" /> },
+          { label: 'New total', value: <MoneyText value="167978.00" currency="RSD" /> },
+        ]}
+        actions={<Button intent="pdf" label="PDF" emphasis="secondary" />}
+        lines={
+          <DataTable
+            label="Corrected lines"
+            layout={layout === 'phone' ? 'cards' : 'table'}
+            inCard
+            columns={CORRECTED_COLUMNS}
+            rows={CORRECTED}
+            getRowId={(line) => line.id}
+            getRowLabel={(line) => line.item}
+          />
+        }
+        totals={{
+          label: 'Totals of the change',
+          rows: [
+            { key: 'base', label: 'Change of tax base S 20%', value: '-12730.00', currency: 'RSD' },
+            { key: 'vat', label: 'Change of VAT S 20%', value: '-2546.00', currency: 'RSD' },
+          ],
+          total: { key: 'change', label: 'Total decrease', value: '-15276.00', currency: 'RSD' },
+        }}
+        panels={PANELS.filter((panel) => panel.key === 'delivery')}
+        panelsOpen={open}
+        onPanelsOpenChange={setOpen}
+      />
+    </AppShell>
+  )
+}
+
+/**
+ * A correcting document (P5.23): "Corrects" and the source invoice's link with its state, date
+ * and total stand beside the customer, at the same level; no "Corrects:" line repeats it. The
+ * item names wrap to at most two lines beside six correction columns.
+ */
+export const CorrectiveDocument: Story = {
+  name: 'Corrective document',
+  render: () => (
+    <ExampleProvider>
+      <CorrectiveInvoice />
+    </ExampleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const parties = canvasElement.querySelector('[data-slot="document-parties"]')
+    await expect(parties).toHaveTextContent('Panonija Agro d.o.o.')
+    await expect(
+      within(parties as HTMLElement).getByRole('link', { name: 'Invoice F-2026-0412' }),
+    ).toHaveAttribute('href', '#sales/invoices/F-2026-0412')
+    await expect(parties).toHaveTextContent(/Issued 28\.09\.2026\..*Total 183\.254,00 RSD/)
+    await expect(canvas.queryByText('Corrects:')).toBeNull()
+  },
+}
+
+/** The same on a phone: the source under the customer. */
+export const CorrectiveDocumentPhone: Story = {
+  name: 'Corrective document, phone',
+  render: () => (
+    <PhoneFrame>
+      <ExampleProvider>
+        <CorrectiveInvoice layout="phone" />
+      </ExampleProvider>
+    </PhoneFrame>
+  ),
 }

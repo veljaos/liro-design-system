@@ -6,6 +6,7 @@ import { DataTable, type DataTableColumn } from './data-table'
 import { MoneyText } from './display-text'
 import { ChangeText, correctionColumns } from './document-blocks'
 import { ExampleProvider, PhoneFrame, StoryProvider } from './story-frames'
+import { DESCRIPTION_MIN_WIDTH, MIN_COLUMN_WIDTH } from './data-table-logic'
 
 interface Corrected {
   id: string
@@ -67,8 +68,13 @@ function columns(withQuantity: boolean, withDocument: boolean): DataTableColumn<
           } satisfies DataTableColumn<Corrected>,
         ]
       : []),
-    { id: 'item', header: 'Item', cell: (row) => row.item },
-    { id: 'unit', header: 'Unit', cell: (row) => row.unit },
+    {
+      id: 'item',
+      header: 'Item',
+      minWidth: DESCRIPTION_MIN_WIDTH,
+      cell: (row) => row.item,
+    },
+    { id: 'unit', header: 'Unit', minWidth: MIN_COLUMN_WIDTH, cell: (row) => row.unit },
     ...(withQuantity
       ? correctionColumns<Corrected>({
           id: 'quantity',
@@ -95,7 +101,13 @@ function columns(withQuantity: boolean, withDocument: boolean): DataTableColumn<
         ? { headers: { original: 'Original amount', change: 'Change', next: 'New amount' } }
         : {}),
     }),
-    { id: 'vat', header: 'VAT', cell: (row) => row.vat },
+    {
+      id: 'vat',
+      header: 'VAT',
+      minWidth: MIN_COLUMN_WIDTH,
+      // A code never wraps ("S 20%").
+      cell: (row) => <span className="whitespace-nowrap">{row.vat}</span>,
+    },
   ]
 }
 
@@ -113,9 +125,14 @@ const meta = {
           '`messages` or the application’s; `ChangeText` writes a change with its sign ("+" for ' +
           'an increase, through the provider’s `format` with `sign: "always"`), never rounded. ' +
           'Every value comes from the application: nothing is computed.\n\n' +
-          '**A corrective document is a DocumentPage** (decided in P5.18): the back-link ' +
-          '"Corrects: Invoice F-2026-0410" (DocumentReferences), these lines, and the totals ' +
-          'of the change (DocumentTotals); no template of its own.\n\n' +
+          '**A corrective document is a DocumentPage** (decided in P5.18): its source in the ' +
+          'header beside the customer ("Corrects" with the invoice’s link, state, date and ' +
+          'total: `DocumentSource` in `source`, P5.23), these lines, and the totals of the ' +
+          'change (DocumentTotals); no template of its own.\n\n' +
+          '**Room for the item:** the item column keeps `DESCRIPTION_MIN_WIDTH` (240px), so a ' +
+          'name wraps to at most two lines; these columns, the unit and the tax category may ' +
+          'be 64px (their headers wrap); amounts and codes never wrap; a table wider than its ' +
+          'card scrolls sideways.\n\n' +
           '**When not:** a cancellation of the whole document (IrreversibleConfirmDialog with ' +
           '`reason`, then CancellationBanner).',
       },

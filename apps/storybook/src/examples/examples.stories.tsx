@@ -585,8 +585,14 @@ export const InvoiceActivityScreen: Story = {
     await expect(totals).toHaveTextContent('186.420,35 RSD')
     await expect(totals).toHaveTextContent('-18.657,60 RSD')
     await expect(totals).toHaveTextContent('-100.000,00 RSD')
+    // Its correcting document (P5.23): in Related documents and as the totals row's link.
+    const related = within(canvas.getByRole('list', { name: 'Related documents' }))
+    await expect(related.getByRole('link', { name: /KO-2026-0009/ })).toHaveAttribute(
+      'href',
+      '#/sales/corrections/KO-2026-0009',
+    )
     await expect(
-      canvas.getByRole('link', { name: 'Decrease KO-2026-0009, Sent to SEF' }),
+      within(totals as HTMLElement).getByRole('link', { name: 'Decrease KO-2026-0009' }),
     ).toHaveAttribute('href', '#/sales/corrections/KO-2026-0009')
     await expect(
       canvas.getByRole('button', { name: 'Also here: Dragan Ilić, Liro agent (agent)' }),
@@ -1094,8 +1100,10 @@ export const InjuryRegisterScreen: Story = {
     await settle()
     const canvas = within(canvasElement)
     await expect(canvas.getByText('January–June 2026 is locked')).toBeVisible()
-    await expect(canvas.getByText('Corrected by no. 7')).toBeVisible()
-    await expect(canvas.getByText('Corrects no. 4')).toBeVisible()
+    // The same component and spacing as the template's stories (P5.23).
+    await expectLocksMeetTable(canvasElement)
+    await expectCorrectionLink(canvasElement, 'Corrects no. 4', '4')
+    await expectCorrectionLink(canvasElement, 'Corrected by no. 7', '7')
     await userEvent.click(canvas.getByRole('button', { name: 'Actions: No. 3, Dejan Savić' }))
     await expect(
       await within(document.body).findByRole('menuitem', {
@@ -1123,11 +1131,17 @@ export const InjuryRegisterMany: Story = {
     await settle()
     await expect(canvasElement.querySelector('table')).toHaveAttribute('aria-rowcount', '5001')
     await expect(canvasElement.querySelectorAll('tbody tr[aria-rowindex]').length).toBeLessThan(60)
+    await expectCorrectionLink(canvasElement, 'Corrected by no. 4990', '4990')
+    await expectCorrectionLink(canvasElement, 'Corrects no. 12', '12')
   },
 }
 
 import { IMPORT_FILE } from './data-E'
 import { E_ROUTES } from './screens-E'
+import {
+  expectCorrectionLink,
+  expectLocksMeetTable,
+} from '../../../../packages/ui/src/templates/register-story-data'
 
 // ── P5 group D2 ──
 // Complex documents (P5.18): the play functions read the amounts the screens show and check
@@ -1174,6 +1188,27 @@ function recapRows(root: Element): { base: bigint; tax: bigint }[] {
 }
 
 /** Nothing on the page is wider than the phone frame. */
+/**
+ * A document table's description column wraps to at most two lines (P5.23): the lines of each
+ * cell's own text, not the line kind under it, counted by their boxes.
+ */
+async function expectAtMostTwoLines(table: HTMLElement, header: string) {
+  const headers = within(table)
+    .getAllByRole('columnheader')
+    .map((cell) => cell.textContent)
+  const column = headers.indexOf(header)
+  for (const row of table.querySelectorAll('tbody > tr')) {
+    const cell = row.querySelectorAll('td')[column]
+    if (cell === undefined) continue
+    const range = document.createRange()
+    range.selectNodeContents(cell)
+    const tops = new Set(
+      [...range.getClientRects()].filter((r) => r.width > 0).map((r) => Math.round(r.top / 6)),
+    )
+    await expect(tops.size).toBeLessThanOrEqual(2)
+  }
+}
+
 async function noSidewaysOverflow(canvasElement: HTMLElement) {
   const page = canvasElement.querySelector('[data-slot="document-page"]')
   await expect(page).not.toBeNull()
@@ -1309,9 +1344,10 @@ export const EurInvoicePhone: Story = {
 }
 
 /**
- * Decrease document KO-2026-0009 against F-2026-0410 (Medic Lab Niš d.o.o.): "Corrects" links
- * back, the lines as Original / Change / New, the totals of the change; original total plus the
- * change is the new total.
+ * Decrease document KO-2026-0009 against F-2026-0410 (Medic Lab Niš d.o.o.): the source in the
+ * header beside the customer ("Corrects" with the invoice's link, state, date and total; P5.23),
+ * the lines as Original / Change / New (item names on at most two lines), the totals of the
+ * change; original total plus the change is the new total.
  */
 export const DecreaseScreen: Story = {
   name: 'Decrease document',
@@ -1335,9 +1371,15 @@ export const DecreaseScreen: Story = {
     await expect(canvasElement).toHaveTextContent('186.420,35')
     await expect(paras('186.420,35') + decrease).toBe(paras('167.762,75'))
     await expect(canvasElement).toHaveTextContent('167.762,75')
-    await expect(
-      canvas.getByRole('link', { name: 'Invoice F-2026-0410, Partially paid' }),
-    ).toBeVisible()
+    // The source at the customer's level, before the key figures (P5.23).
+    const source = canvasElement.querySelector('[data-slot="document-source"]')
+    await expect(source?.closest('[data-slot="document-parties"]')).toHaveTextContent('Medic Lab')
+    const link = within(source as HTMLElement).getByRole('link', { name: 'Invoice F-2026-0410' })
+    await expect(link).toHaveAttribute('href', '#/sales/invoices/F-2026-0410')
+    await expect(source).toHaveTextContent('Partially paid')
+    await expect(source).toHaveTextContent('25.09.2026.')
+    await expect(canvas.queryByText('Corrects:')).toBeNull()
+    await expectAtMostTwoLines(table, 'Item')
   },
 }
 
@@ -1376,8 +1418,12 @@ export const CancelledScreen: Story = {
       await canvas.findByRole('heading', { level: 1, name: 'ST-2026-0004' }),
     ).toBeVisible()
     await expect(totalsAmount(canvasElement, 'Total')).toBe(-invoiceTotal)
-    // And back.
-    await userEvent.click(canvas.getByRole('link', { name: 'Invoice F-2026-0407, Cancelled' }))
+    // And back, from the source in its header (P5.23).
+    const source = canvasElement.querySelector('[data-slot="document-source"]')
+    await expect(source).toHaveTextContent('Cancels')
+    await userEvent.click(
+      within(source as HTMLElement).getByRole('link', { name: 'Invoice F-2026-0407' }),
+    )
     await settle()
     await expect(
       await canvas.findByRole('heading', { level: 1, name: 'F-2026-0407' }),

@@ -299,6 +299,25 @@ describe('DataTable on a phone', () => {
     expect(render({ layout: 'cards' })).toContain('rounded-md border border-solid p-3')
   })
 
+  it('leaves the loader slot out when the container shows the refetch (P5.23)', () => {
+    expect(render({ inCard: true, loading: false })).toContain('data-slot="refetch-loader"')
+    expect(render({ inCard: true, loading: false, loaderSlot: false })).not.toContain(
+      'data-slot="refetch-loader"',
+    )
+  })
+
+  it('keeps the minimum width of a column without resizing (P5.23)', () => {
+    const html = render({
+      columns: [
+        { id: 'name', header: 'Name', minWidth: 240, cell: (line) => line.name },
+        { id: 'amount', header: 'Amount', cell: (line) => line.amount },
+      ],
+    })
+    // The column's width, its 16px side paddings included.
+    expect(html).toContain('style="min-width:208px"')
+    expect(html.match(/min-width:/g)).toHaveLength(1)
+  })
+
   it('in a card, ends with the last row when nothing stands under it (P4.9)', () => {
     expect(render({ layout: 'table', inCard: true })).not.toContain('pb-3')
     expect(render({ layout: 'table', inCard: true, count: 3 })).toContain('pb-3')

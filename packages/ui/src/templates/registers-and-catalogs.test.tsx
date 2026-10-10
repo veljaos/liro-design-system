@@ -158,6 +158,50 @@ describe('RegisterPage', () => {
     expect(html).toContain('Corrects no. 14')
     expect(html).toContain('Locked')
   })
+
+  it('links both corrections to the other entry, the same way (P5.23)', () => {
+    const rows: Injury[] = [
+      { id: '14', no: '14', name: 'Marko Đorđević', correctedBy: '27' },
+      { id: '27', no: '27', name: 'Marko Đorđević', corrects: '14' },
+      { id: '30', no: '30', name: 'Ana Ilić', corrects: '3' },
+    ]
+    const page = (onGoToEntry?: (number: string) => void) =>
+      render(
+        <RegisterPage
+          layout="desktop"
+          title="Register"
+          columns={[{ id: 'name', header: 'Employee', cell: (row: Injury) => row.name }]}
+          rows={rows}
+          getRowId={(row) => row.id}
+          getRowLabel={(row) => row.no}
+          loading={false}
+          entry={(row) => ({
+            number: row.no,
+            ...(row.corrects === undefined ? {} : { corrects: row.corrects }),
+            ...(row.correctedBy === undefined ? {} : { correctedBy: row.correctedBy }),
+          })}
+          {...(onGoToEntry === undefined ? {} : { onGoToEntry })}
+        />,
+      )
+    const html = page()
+    const link = (name: string) =>
+      new RegExp(`<a href="#[^"]*-entry-([0-9]+)" class="([^"]*)">${name}</a>`).exec(html)
+    const corrects = link('Corrects no. 14')
+    const correctedBy = link('Corrected by no. 27')
+    expect(corrects?.[1]).toBe('14')
+    expect(correctedBy?.[1]).toBe('27')
+    // The same look for both: no badge.
+    expect(corrects?.[2]).toBe(correctedBy?.[2])
+    expect(html).not.toContain('data-tone=')
+    // Each number is the anchor the links go to.
+    expect(html).toMatch(/id="[^"]*-entry-14" tabindex="-1"/)
+    // An entry that is not among the rows: plain text, a link with `onGoToEntry`.
+    expect(html).toContain('<span class="text-secondary">Corrects no. 3</span>')
+    expect(page(() => undefined)).toMatch(/<a href="#[^"]*-entry-3"/)
+    // The refetch loader is in the first row; no slot between the locks and the table.
+    expect(html.match(/data-slot="refetch-loader"/g)).toHaveLength(1)
+    expect(html.indexOf('data-slot="refetch-loader"')).toBeLessThan(html.indexOf('<table'))
+  })
 })
 
 describe('StatutoryFormPage', () => {
