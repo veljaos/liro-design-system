@@ -648,3 +648,54 @@ export type {
   LookupDraft,
   LookupDraftErrors,
 } from './components/lookup-create-drawer'
+// ── P5.24 shifts ──
+export { ShiftPlanner } from './components/shift-planner'
+export type {
+  ShiftCoverage,
+  ShiftGroup,
+  ShiftGrouping,
+  ShiftPlannerProps,
+  ShiftPlannerRow,
+  ShiftPublishCounts,
+} from './components/shift-planner'
+export type { ShiftTemplate, ShiftTemplateTone } from './components/shift-parts'
+export {
+  assignChanges,
+  conflictList,
+  crossesMidnight,
+  moveChange,
+  removeChanges,
+  rotationAssignments,
+  shiftPeriod,
+  shiftSpan,
+  shiftsByWeek,
+  templateForKey,
+  templateKey,
+  todayPeriod,
+} from './components/shift-logic'
+export type {
+  RotationPattern,
+  ShiftAssignment,
+  ShiftCellRef,
+  ShiftChange,
+  ShiftConflict,
+  ShiftConflicts,
+  ShiftWeek,
+} from './components/shift-logic'
+export { MyShifts } from './components/my-shifts'
+export type { MyShift, MyShiftsProps } from './components/my-shifts'
+export { ShiftSwapDialog } from './components/shift-swap-dialog'
+export type {
+  ShiftSwapDialogProps,
+  ShiftSwapRequest,
+  SwapColleague,
+  SwapShift,
+} from './components/shift-swap-dialog'
+export { WorkingTimeBalance } from './components/working-time-balance'
+export type {
+  WorkingTimeBalanceProps,
+  WorkingTimePlan,
+  WorkingTimeRow,
+  WorkingTimeWarning,
+  WorkingTimeWeek,
+} from './components/working-time-balance'
