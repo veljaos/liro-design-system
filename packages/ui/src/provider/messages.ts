@@ -973,4 +973,41 @@ export interface LiroMessages {
   'workingTime.average': string
   'workingTime.warnings': string
   'workingTime.noWarnings': string
+  // P5.9 / P5.14 / P5.16
+  /** TreeView and TreeTable: the row under an opened node whose children are being loaded. */
+  'tree.loading': string
+  /** The error row under a node whose children could not be loaded (without the application's words). */
+  'tree.loadError': string
+  /** The error row's button that asks for the children again. */
+  'tree.retry': string
+  /** TreeTable: the label of the totals row. */
+  'tree.total': string
+  /** MaskedValue: the hidden value for assistive technology; `label` names the value ("Salary"). */
+  'masked.hidden': (label: string) => string
+  /** MaskedValue: the button that asks to see the value, and its full name. */
+  'masked.show': string
+  'masked.showLabel': (label: string) => string
+  /** MaskedValue: the button that hides the value again, and its full name. */
+  'masked.hide': string
+  'masked.hideLabel': (label: string) => string
+  /** MaskedValue: the reason dialog's title. */
+  'masked.revealTitle': (label: string) => string
+  /** MaskedValue: the label of the list of reasons, or of the reason's text without a list. */
+  'masked.reason': string
+  /** MaskedValue: the last option of the list, which asks for the reason in words. */
+  'masked.other': string
+  /** MaskedValue: the label of the text field of "Other". */
+  'masked.otherText': string
+  /** MaskedValue: the note in the dialog that the access is recorded. */
+  'masked.logged': string
+  /** MaskedValue: the value is on its way (after the reason was given). */
+  'masked.loading': (label: string) => string
+  /** MaskedValue: why the user may not see the value; `reason` is the application's. */
+  'masked.notAllowed': (reason: string) => string
+  /** PortalShell: names the sections' navigation (tabs, or the bottom bar on phones). */
+  'portal.sections': string
+  /** PortalShell: a section's name with its note ("Messages, 2 new"). */
+  'portal.sectionNote': (label: string, note: string) => string
+  /** PortalShell: the participant menu's button, named with the participant ("Account: Jovana Nikolić"). */
+  'portal.menu': (name: string) => string
 }

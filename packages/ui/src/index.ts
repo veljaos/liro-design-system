@@ -699,3 +699,26 @@ export type {
   WorkingTimeWarning,
   WorkingTimeWeek,
 } from './components/working-time-balance'
+// ── P5.9 Tree, P5.14 Sensitive fields, P5.16 Portal shell ──
+export { TreeView } from './components/tree-view'
+export type { TreeViewProps } from './components/tree-view'
+export { TreeTable } from './components/tree-table'
+export type { TreeTableColumn, TreeTableProps } from './components/tree-table'
+export type { TreeBaseProps, TreeSelectionMode } from './components/use-tree'
+export {
+  findTreeNode,
+  isExpandable,
+  needsChildren,
+  toggleTreeSelection,
+  treeAncestors,
+  treeCheckStates,
+  treeKeyAction,
+  typeAheadTarget,
+  TYPE_AHEAD_DELAY,
+  visibleTreeRows,
+} from './components/tree-logic'
+export type { TreeKeyAction, TreeNode, TreeRow } from './components/tree-logic'
+export { MaskedValue } from './components/masked-value'
+export type { MaskedValueProps, MaskedValueReason, RevealRequest } from './components/masked-value'
+export { PortalShell } from './templates/portal-shell'
+export type { PortalParticipant, PortalSection, PortalShellProps } from './templates/portal-shell'
