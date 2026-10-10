@@ -25,6 +25,8 @@ export default defineConfig(
     'apps/consumer-check/',
     // Fixtures of the Liro rules: they break the rules on purpose (packages/eslint-config/src/rules.test.ts).
     'packages/eslint-config/fixtures/',
+    // Agents' git worktrees: copies of the repository, checked in their own place.
+    '.claude/worktrees/',
   ]),
 
   {

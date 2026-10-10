@@ -313,6 +313,8 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P5.21a | TanStack Virtual for every list | P5.21 | done | 2026-10-09 | The company switcher, LookupField, MatchingView and EditableGrid's row window on `useVirtualizer` with the shared window rules (600px, the focused or active row kept); the custom virtualiser removed (measured) |
 | P5.23 | Owner's review of Phase 5 part 1 | P5.21a | done | 2026-10-10 | Bank statement worked line by line on WorklistPage (CandidateList; MatchingView removed); draft headers as the invoice draft's; one tab gap; bulk bar a row of its own; catalogue lists sort and multi-select; multi-step flows on phones; compact one-line alerts; Cancelled danger with one status map; one register pattern; a correcting document's source in the header; room for the description column; visual stories static (`interaction` tag, `scripts/static-stories.mjs`, initial-state props); a steady view when content shrinks (`useSteadyBottom`) |
 | P5.21b | Overscan per component | P5.21a | todo | | First step of Phase 5 part 2, before P5.8 (owner, 2026-10-09) |
+| P5.22 | Rich text | P2.2, P5.1 | todo | | Tiptap, MIT packages only (owner, 2026-10-10) |
+| P5.24 | Working time | P5.13, P4.3 | todo | | Built with P5.13 as one pattern (owner, 2026-10-10) |
 | P6.1 | Full language and direction matrix | Phases 1–5 | todo | | |
 | P6.2 | Manual WCAG 2.2 checks | P6.1 | todo | | |
 | P6.3 | Performance budget | P4.8 | todo | | |
@@ -693,6 +695,26 @@ A design question, not a list of business cases: the `DocumentPage` layout must 
 **The first step of Phase 5 part 2, before P5.8.** P5.21a put every list on TanStack Virtual with one overscan of 600px, and the EditableGrid's page jump on the 300-line specification became slower (409 → 568ms at 1×, 1,240 → 1,513ms at 4× CPU; docs/decisions.md). **Do** tune the overscan per component: keep it smaller for the EditableGrid, whose rows are heavy (a line of fields), so that the page jump on the 300-line specification is back to **about 400ms or less** (1×, the P5.21a method); keep 600px for the light lists (DataTable, the company switcher, LookupField, MatchingView). Re-measure every list with the P5.21a method and record the numbers in docs/decisions.md.
 
 **Done when** the specification's page jump is about 400ms or less at 1×, the light lists keep their P5.21a figures, the focused row is still kept drawn everywhere, and the numbers are recorded.
+
+### P5.22 — Rich text (owner, 2026-10-10)
+**Do** `RichTextField` and `RichText` (read-only view) on **Tiptap, MIT-licensed packages only** (no Pro or paid extensions): paragraphs, headings, bold, italic, underline, lists, links, a small toolbar reachable by keyboard; **merge fields as pills** (the list of fields and their labels from props, inserted from a menu or by typing "{{"); **@mentions** (candidates from props or `onSearch`, as MentionCombobox); the value is stored as **Tiptap JSON plus sanitized HTML** (both reported on change; the HTML sanitized before it leaves the component and before it is shown). Tokens only, right-to-left by content, paste kept as plain structure.
+
+### P5.24 — Working time (owner, 2026-10-10)
+Built together with P5.13 as **one pattern**: a grid of people × days whose cells hold a value and a code, entered from the keyboard. The rules, limits, codes and totals are the application's data; the Design System shows them and offers them for choice. **Legal limits are not encoded:** the application passes them as data; examples use illustrative values, labelled as such.
+
+**a) Monthly timesheet.** Employees × the days of a month; each cell holds hours and a code: regular work, night work, overtime, work on a public holiday, annual leave, sick leave, paid leave, unpaid leave, public holiday, business trip, absence (codes, short labels and meanings from props). Weekends and public holidays are shaded. Totals per type per employee and per day, from props. Keyboard entry like EditableGrid; fill a range; copy the previous week. A month locks after payroll: corrected, never deleted, like the registers (P5.20). Hand-off to payroll (an action and its state). Phone: one employee per screen, a list of days.
+
+**b) Shift schedule.** Shift templates (e.g. 06–14, 14–22, 22–06 crossing midnight), rotation patterns, a planner by employee and by team or site, assignment by keyboard and by drag (with a keyboard and menu alternative). Conflicts — too little rest between shifts, double booking, weekly hours over the limit — arrive as warnings from data. Publishing the schedule. The employee's view on a phone ("My shifts"). A shift swap request with approval, on the worklist / approval pattern (P4.3, P5.23).
+
+**c) Shift work.** Night hours shown separately; shift allowances indicated.
+
+**d) Working-time redistribution.** A plan for a period (start, end, planned hours per week), and per employee a balance of planned against worked hours and the running average; warnings when the plan breaks the limits (from data).
+
+**e) Clock-in / clock-out records** from terminals or a phone, with audited corrections (who, when, why; the original kept).
+
+**Examples:** Kvadrat Gradnja site workers; a retail store with shifts (POS); a 24/7 health facility with rotating shifts.
+
+**Done when** the timesheet, the shift planner, My shifts, the balance and the clock records have stories in light, dark, right-to-left and phone width, pass axe and the keyboard, and the three examples show them with one dataset each.
 
 **End of Phase 5:** `0.1.0-alpha.5`; report.
 
