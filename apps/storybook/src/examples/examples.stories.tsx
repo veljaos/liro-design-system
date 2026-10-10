@@ -459,6 +459,21 @@ export const JournalEntryScreen: Story = {
     await expect(bar).toHaveTextContent('144.720,00 RSD')
     await expect(bar).toHaveTextContent('Balanced')
     await expect(within(canvasElement).getByRole('button', { name: 'Post' })).toBeEnabled()
+    // The draft's header follows the invoice draft's (P5.23): three values on one row, the date
+    // and the journal changeable, "Based on" read-only; the lines' card has no title.
+    const canvas = within(canvasElement)
+    const values = Array.from(
+      canvasElement.querySelectorAll(
+        '[data-slot="document-details"] [data-slot="changeable-value"]',
+      ),
+    )
+    await expect(values).toHaveLength(3)
+    const tops = values.map((each) => Math.round(each.getBoundingClientRect().top))
+    await expect(new Set(tops).size).toBe(1)
+    await expect(canvas.getByRole('button', { name: 'Change Date' })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Change Journal' })).toBeVisible()
+    await expect(canvas.queryByRole('button', { name: 'Change Based on' })).toBeNull()
+    await expect(canvas.queryByRole('heading', { name: 'Lines' })).toBeNull()
   },
 }
 

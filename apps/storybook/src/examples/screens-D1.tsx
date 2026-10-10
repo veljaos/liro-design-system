@@ -1,5 +1,5 @@
 import { FileCheck } from 'lucide-react'
-import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import {
   Button,
   ChangeableValue,
@@ -10,7 +10,6 @@ import {
   LookupDialog,
   MoneyText,
   NumberText,
-  StatusBadge,
   TextField,
   useLiro,
   type DataTableColumn,
@@ -21,7 +20,7 @@ import {
   type LookupOption,
 } from '@veljaos/ui'
 import type { ExampleRoute } from './example-app'
-import { SALES_TABS, Shell } from './example-shell'
+import { SALES_TABS, Shell, statusBadge } from './example-shell'
 import {
   ACCOUNTS,
   addQuantities,
@@ -273,7 +272,7 @@ export function InvoiceDraft({ phone }: { phone: boolean }) {
         layout={phone ? 'phone' : 'desktop'}
         title="New invoice"
         back={{ href: '#/sales/invoices', label: 'Invoices' }}
-        status={<StatusBadge label="Draft" tone="neutral" />}
+        status={statusBadge('Draft')}
         lifecycle={{ steps: STEPS, current: 0, label: 'Invoice status' }}
         counterparty={{
           label: 'Customer',
@@ -393,16 +392,6 @@ export function InvoiceDraft({ phone }: { phone: boolean }) {
 
 // ── Interim situation, editing the specification ──────────────────────────────────────────────
 
-/** A value of the situation's header: the label above, the value under it. */
-function Detail({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div className="flex min-w-0 flex-col gap-0.5">
-      <span className="bidi-content text-xs text-secondary">{label}</span>
-      <span className="bidi-content min-h-7 text-sm font-medium text-primary">{children}</span>
-    </div>
-  )
-}
-
 export function SpecificationEditor({ phone }: { phone: boolean }) {
   const { format } = useLiro()
   const [rows, setRows] = useState<SpecRow[]>(specificationOf)
@@ -507,7 +496,7 @@ export function SpecificationEditor({ phone }: { phone: boolean }) {
         layout={phone ? 'phone' : 'desktop'}
         title={`${SITUATION.number}: specification of works`}
         back={{ href: `#${D1_ROUTES.situation}`, label: SITUATION.number }}
-        status={<StatusBadge label="Draft" tone="neutral" />}
+        status={statusBadge('Draft')}
         counterparty={{
           label: 'Investor',
           name: SITUATION.customer,
@@ -533,9 +522,9 @@ export function SpecificationEditor({ phone }: { phone: boolean }) {
         ]}
         details={
           <>
-            <Detail label="Contract">{SITUATION.contract}</Detail>
-            <Detail label="Site">{SITUATION.site}</Detail>
-            <Detail label="Period">{SITUATION.period}</Detail>
+            <ChangeableValue label="Contract" value={SITUATION.contract} />
+            <ChangeableValue label="Site" value={SITUATION.site} />
+            <ChangeableValue label="Period" value={SITUATION.period} />
           </>
         }
         actions={
@@ -544,7 +533,6 @@ export function SpecificationEditor({ phone }: { phone: boolean }) {
             {phone ? null : save}
           </>
         }
-        linesTitle="Specification of works"
         lines={
           <EditableGrid<SpecRow>
             label="Specification of works"

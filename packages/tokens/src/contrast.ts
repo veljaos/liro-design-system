@@ -153,6 +153,23 @@ export function contrastChecks(): ContrastCheck[] {
           toRgb(pick(parts.fg, theme), background),
           background,
         )
+        // An Alert's or Banner's message on the tone, and its links (P5.23: the cancellation
+        // banner is danger, with the link to the cancellation document). Links are measured on
+        // the surfaces a page's banner stands on; over a dark overlay the neutral tone gives a
+        // link 4.43:1, so an alert inside a dialog or drawer carries no link in the neutral tone
+        // (docs/decisions.md, P5.23).
+        add(
+          `${theme}: text.primary on tone ${tone} bg ${over}`,
+          toRgb(pick(MEANINGS.text.primary, theme), background),
+          background,
+        )
+        if (surfaceName !== 'overlay' || tone !== 'neutral') {
+          add(
+            `${theme}: text.link on tone ${tone} bg ${over}`,
+            toRgb(pick(MEANINGS.text.link, theme), background),
+            background,
+          )
+        }
       }
 
       // Every tone's text straight on the surface (a field's error, a due date's text) and on a

@@ -786,6 +786,7 @@ export interface LiroMessages {
   'document.rateLine': (rate: string, source: string) => string
   /** CancellationBanner (P5.18): the title, who and when (both written by `format`), the reason. */
   'document.cancelledTitle': string
+  /** Follows the title "Cancelled" (P5.23): "by Milica Petrović on 06.10.2026. at 11:20." */
   'document.cancelledBy': (name: string, dateText: string, timeText: string) => string
   'document.cancelReason': (reason: string) => string
   /** DocumentNotes (P5.18): the default labels of the template texts and the free note. */

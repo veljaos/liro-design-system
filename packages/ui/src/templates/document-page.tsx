@@ -84,12 +84,15 @@ export interface DocumentPageProps {
   keyFigures?: readonly KeyFigure[]
   /**
    * The document's own values under the counterparty — on a draft, the values the system filled
-   * in (number, issue date, due date) as ChangeableValues, in one wrapping row.
+   * in (number, issue date, due date) as ChangeableValues, in one wrapping row. Every draft's
+   * header is built this way (P5.23): changeable values with their field, read-only ones (a
+   * "Based on" link) as ChangeableValues without a field, so they align.
    */
   details?: ReactNode
   /**
    * A title over the lines' card. Default: none — the table's column headers say what it is,
-   * and the table starts at the card's top (owner, P4.5).
+   * and the table starts at the card's top (owner, P4.5). A card that holds the page's only
+   * table has no title (P5.23): pass one only when the page has more than one table.
    */
   linesTitle?: string
   /**

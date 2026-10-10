@@ -15,7 +15,6 @@ import {
   PresenceAvatars,
   Questionnaire,
   RelatedDocuments,
-  StatusBadge,
   useLiro,
   type DataTableColumn,
   type HistoryEntry,
@@ -28,7 +27,7 @@ import {
   DocumentReferences,
 } from '@veljaos/ui'
 import type { ExampleRoute } from './example-app'
-import { HR_TABS, Navigate, SALES_TABS, Shell, statusBadge } from './example-shell'
+import { HR_TABS, Navigate, SALES_TABS, Shell, statusBadge, toneOf } from './example-shell'
 import {
   AGENT_QUESTION_AT,
   at,
@@ -251,14 +250,14 @@ export function InvoiceActivity({ phone }: { phone: boolean }) {
               type: 'Order',
               number: 'N-2026-0149',
               href: '#/sales/orders/N-2026-0149',
-              status: <StatusBadge label="Completed" tone="neutral" />,
+              status: statusBadge('Completed'),
             },
             {
               key: 'statement',
               type: 'Bank statement',
               number: '187',
               href: '#/banking/statements/187',
-              status: <StatusBadge label="Booked" tone="success" />,
+              status: statusBadge('Booked'),
             },
           ]}
         />
@@ -331,7 +330,7 @@ export function InvoiceActivity({ phone }: { phone: boolean }) {
                     key: 'ko9',
                     number: 'KO-2026-0009',
                     href: '#/sales/corrections/KO-2026-0009',
-                    status: { label: 'Sent to SEF', tone: 'info' },
+                    status: { label: 'Sent to SEF', tone: toneOf('Sent to SEF') },
                   },
                 ],
               },

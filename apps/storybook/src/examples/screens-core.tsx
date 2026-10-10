@@ -49,7 +49,6 @@ import {
   RelatedDocuments,
   SectionCard,
   SelectField,
-  StatusBadge,
   TextField,
   Toaster,
   useLiro,
@@ -524,7 +523,7 @@ const PANELS: SidePanel[] = [
       <KeyValueList
         columns={1}
         items={[
-          { label: 'SEF', value: <StatusBadge label="Delivered" tone="success" /> },
+          { label: 'SEF', value: statusBadge('Delivered') },
           { label: 'Sent', value: <Time>28.09.2026. 10:42</Time>, numeric: true },
         ]}
       />
@@ -543,21 +542,21 @@ const PANELS: SidePanel[] = [
             type: 'Order',
             number: 'N-2026-0157',
             href: '#/sales/orders/N-2026-0157',
-            status: <StatusBadge label="Completed" tone="neutral" />,
+            status: statusBadge('Completed'),
           },
           {
             key: 'delivery',
             type: 'Delivery note',
             number: 'OTP-2026-0311',
             href: '#/sales/deliveries/OTP-2026-0311',
-            status: <StatusBadge label="Delivered" tone="success" />,
+            status: statusBadge('Delivered'),
           },
           {
             key: 'advance',
             type: 'Advance invoice',
             number: 'A-2026-031',
             href: '#/sales/invoices/A-2026-031',
-            status: <StatusBadge label="Paid" tone="success" />,
+            status: statusBadge('Paid'),
           },
         ]}
       />
@@ -1270,7 +1269,7 @@ export function Employee({ phone }: { phone: boolean }) {
         layout={phone ? 'phone' : 'desktop'}
         title={EMPLOYEE.name}
         back={{ href: '#/home', label: 'Home' }}
-        status={<StatusBadge label="Active" tone="success" />}
+        status={statusBadge('Active')}
         subtitle={`${values.position} · Finance`}
         keyFigures={[
           {

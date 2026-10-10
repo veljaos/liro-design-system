@@ -497,8 +497,7 @@ export const messagesEn: LiroMessages = {
     `1 ${currency} = ${rateText} ${homeCurrency}`,
   'document.rateLine': (rate, source) => `${rate}, ${source}`,
   'document.cancelledTitle': 'Cancelled',
-  'document.cancelledBy': (name, dateText, timeText) =>
-    `Cancelled by ${name} on ${dateText} at ${timeText}.`,
+  'document.cancelledBy': (name, dateText, timeText) => `by ${name} on ${dateText} at ${timeText}.`,
   'document.cancelReason': (reason) => `Reason: ${reason}`,
   'notes.templates': 'Standard texts',
   'notes.free': 'Note',

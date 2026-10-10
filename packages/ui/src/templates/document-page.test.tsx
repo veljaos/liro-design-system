@@ -213,4 +213,16 @@ describe('ChangeableValue (P4.9)', () => {
     )
     expect(html).toContain('<input aria-label="Due date"/>')
   })
+
+  it('without a field: the same value row, no pencil, never a field (P5.23)', () => {
+    const changeable = render(
+      <ChangeableValue label="Date" value="06.10.2026." field={<input aria-label="Date" />} />,
+    )
+    const fixed = render(<ChangeableValue label="Based on" value="UF-2026-1204" editing />)
+    expect(fixed).toContain('UF-2026-1204')
+    expect(fixed).not.toContain('Change Based on')
+    // Both value rows are as high as the pencil, so the header's values align.
+    expect(fixed).toContain('min-h-7')
+    expect(changeable).toContain('min-h-7')
+  })
 })

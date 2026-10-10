@@ -406,22 +406,28 @@ export interface CancellationBannerProps {
   document?: { kind: string; number: string; href: string }
   /** Default: `messages['document.cancelledTitle']`. */
   title?: string
-  /** Default 'neutral' (a state, not an error); 'danger' where the Core wants it louder. */
+  /**
+   * Default 'danger', the tone of the "Cancelled" badge (P5.23, the owner: Cancelled is red
+   * everywhere); 'neutral' only where the application's own status map says so.
+   */
   tone?: 'neutral' | 'danger'
   className?: string
 }
 
 /**
- * The marker of a cancelled document (P5.18), at the top of its page: "Cancelled. Cancelled by
- * Milica Petrović on 06.10.2026. at 11:20. Reason: … Cancellation document ST-2026-0004". The
- * date and time are the tenant's (`format.date`, `format.time`). The PDF's marker is the Core's.
+ * The marker of a cancelled document (P5.18), at the top of its page: the title "Cancelled", then
+ * "by Milica Petrović on 06.10.2026. at 11:20. Reason: …", then the link to the cancellation
+ * document (P5.23: the word is said once, the title carries it). The date and time are the
+ * tenant's (`format.date`, `format.time`). Danger, as the badge. The PDF's marker is the Core's.
  */
 export function CancellationBanner(props: CancellationBannerProps) {
   const { messages, format, linkComponent: Link } = useLiro()
   const date = /^\d{4}-\d{2}-\d{2}/.exec(props.at)?.[0] ?? props.at
   return (
     <Banner
-      tone={props.tone ?? 'neutral'}
+      tone={props.tone ?? 'danger'}
+      // A state shown when the page opens: announced politely, never as an interruption.
+      role="status"
       icon={Ban}
       title={props.title ?? messages['document.cancelledTitle']}
       {...(props.className === undefined ? {} : { className: props.className })}

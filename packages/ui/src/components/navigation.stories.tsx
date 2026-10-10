@@ -40,19 +40,19 @@ const TABS = [
     value: 'general',
     label: 'General',
     icon: FileText,
-    content: <p className="m-0 p-4 text-sm">General data of the invoice.</p>,
+    content: <p className="m-0 text-sm">General data of the invoice.</p>,
   },
   {
     value: 'lines',
     label: 'Lines',
     icon: List,
-    content: <p className="m-0 p-4 text-sm">Twelve lines.</p>,
+    content: <p className="m-0 text-sm">Twelve lines.</p>,
   },
   {
     value: 'files',
     label: 'Attachments',
     icon: Paperclip,
-    content: <p className="m-0 p-4 text-sm">Two files.</p>,
+    content: <p className="m-0 text-sm">Two files.</p>,
   },
   { value: 'history', label: 'History', disabled: true, content: null },
 ]
@@ -138,7 +138,7 @@ export const LongTextPhone: Story = {
           {
             value: 'a',
             label: 'Delivery address',
-            content: <p className="m-0 p-4 text-sm">{LONG.value}</p>,
+            content: <p className="m-0 text-sm">{LONG.value}</p>,
           },
           { value: 'b', label: 'Registered address', content: null },
           { value: 'c', label: 'Contacts', content: null },
@@ -168,7 +168,7 @@ export const Arabic: Story = {
         items={ARABIC.options.map((label) => ({
           value: label,
           label,
-          content: <p className="m-0 p-4 text-sm">{ARABIC.description}</p>,
+          content: <p className="m-0 text-sm">{ARABIC.description}</p>,
         }))}
       />
       <CursorPagination
@@ -195,7 +195,7 @@ export const Japanese: Story = {
         items={JAPANESE.options.map((label) => ({
           value: label,
           label,
-          content: <p className="m-0 p-4 text-sm">{JAPANESE.description}</p>,
+          content: <p className="m-0 text-sm">{JAPANESE.description}</p>,
         }))}
       />
       <ShortcutHint keys={['Ctrl', 'K']} />

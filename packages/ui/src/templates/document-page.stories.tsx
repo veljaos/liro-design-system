@@ -1010,7 +1010,7 @@ export const CancelDocument: Story = {
             reason === null ? (
               <StatusBadge label="Overdue" tone="danger" />
             ) : (
-              <StatusBadge label="Cancelled" tone="neutral" />
+              <StatusBadge label="Cancelled" tone="danger" />
             )
           }
           {...(reason === null

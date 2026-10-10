@@ -14,6 +14,7 @@ import {
   MoneyText,
   PageHeader,
   PeriodicRunPage,
+  SelectField,
   StatusBadge,
   Toaster,
   UnavailableAction,
@@ -35,7 +36,7 @@ import {
 } from '../../../../packages/ui/src/components/matching-story-data'
 import type { PayrollLine } from '../../../../packages/ui/src/templates/periodic-run-story-data'
 import type { ExampleRoute } from './example-app'
-import { hrTabs, Shell } from './example-shell'
+import { hrTabs, Shell, statusBadge } from './example-shell'
 import {
   ACCOUNTS,
   decimalOf,
@@ -388,20 +389,21 @@ const JOURNAL_COLUMNS: EditableGridColumn<JournalLine>[] = [
   },
 ]
 
-/** A value of the entry that the user does not change here, drawn as ChangeableValue's value. */
-function Fact({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div className="flex flex-col gap-0.5">
-      <span className="bidi-content text-xs text-secondary">{label}</span>
-      <span className="bidi-content text-sm font-medium text-primary">{children}</span>
-    </div>
-  )
-}
+/** The journals an entry can be written in (the Core's list). */
+const JOURNALS = [
+  { value: 'general', label: 'General journal' },
+  { value: 'purchases', label: 'Purchase journal' },
+  { value: 'sales', label: 'Sales journal' },
+  { value: 'bank', label: 'Bank journal' },
+]
 
 export function JournalEntry({ phone, unbalanced }: { phone: boolean; unbalanced: boolean }) {
   const { format, linkComponent: Link } = useLiro()
   const [lines, setLines] = useState(unbalanced ? JOURNAL_LINES_UNBALANCED : JOURNAL_LINES)
   const [date, setDate] = useState<string | null>(JOURNAL.date)
+  const [journal, setJournal] = useState(
+    JOURNALS.find((each) => each.label === JOURNAL.journal)?.value ?? 'general',
+  )
   const balance = journalBalance(lines)
   // The Core's messages under the lines.
   const messages: Record<string, GridMessage[]> = {}
@@ -456,7 +458,7 @@ export function JournalEntry({ phone, unbalanced }: { phone: boolean; unbalanced
         layout={phone ? 'phone' : 'desktop'}
         title={JOURNAL.number}
         back={{ href: '#/accounting/journal', label: 'Journal' }}
-        status={<StatusBadge label="Draft" tone="neutral" />}
+        status={statusBadge('Draft')}
         actions={
           <>
             <Button
@@ -470,6 +472,8 @@ export function JournalEntry({ phone, unbalanced }: { phone: boolean; unbalanced
             {phone ? null : post}
           </>
         }
+        // A draft's header as the invoice draft's (P5.23): every value a ChangeableValue on one
+        // row — the date and the journal changeable, "Based on" a read-only record link.
         details={
           <>
             <ChangeableValue
@@ -477,19 +481,38 @@ export function JournalEntry({ phone, unbalanced }: { phone: boolean; unbalanced
               value={<DateText value={date} />}
               field={<DateField label="Date" value={date} onChange={setDate} />}
             />
-            <Fact label="Journal">{JOURNAL.journal}</Fact>
-            <Fact label="Based on">
-              <Link
-                href="#/purchasing/approvals"
-                className="text-link no-underline hover:underline"
-              >
-                Supplier invoice <span dir="ltr">{JOURNAL.document}</span>
-              </Link>{' '}
-              <span className="text-xs font-normal text-secondary">Approved</span>
-            </Fact>
+            <ChangeableValue
+              label="Journal"
+              value={JOURNALS.find((each) => each.value === journal)?.label}
+              field={
+                <SelectField
+                  label="Journal"
+                  options={JOURNALS}
+                  value={journal}
+                  onChange={setJournal}
+                />
+              }
+            />
+            <ChangeableValue
+              label="Based on"
+              value={
+                <Link
+                  href="#/purchasing/approvals"
+                  className="text-link no-underline hover:underline"
+                >
+                  Supplier invoice <span dir="ltr">{JOURNAL.document}</span>
+                  <span className="sr-only">, Approved</span>
+                  <span
+                    aria-hidden="true"
+                    className="ms-1.5 text-xs font-medium text-status-success-fg"
+                  >
+                    Approved
+                  </span>
+                </Link>
+              }
+            />
           </>
         }
-        linesTitle="Lines"
         lines={
           <EditableGrid
             label={`Lines of ${JOURNAL.number}`}
@@ -621,13 +644,7 @@ export function PayrollRun({ phone }: { phone: boolean }) {
         layout={phone ? 'phone' : 'desktop'}
         title="Payroll September 2026"
         back={{ href: '#/hr/payroll', label: 'Payroll' }}
-        status={
-          running ? (
-            <StatusBadge label="Calculating" tone="info" />
-          ) : (
-            <StatusBadge label="In review" tone="warning" />
-          )
-        }
+        status={running ? statusBadge('Calculating') : statusBadge('In review')}
         subtitle={
           <>
             {`${count} employees · paid on `}
