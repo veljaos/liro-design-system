@@ -896,6 +896,7 @@ Phase 5 part 1 was built by seven groups in parallel (A: P5.1, P5.2; B: P5.3–P
 - **2026-10-10 — Found while reviewing the new baselines (P5.23).**
   1. **A confirmation keeps its title and buttons in view.** The "Post statement" confirmation (summary and journal-entry preview) is taller than a 720px screen; the whole dialog scrolled, and with the focus on Cancel its title was out of view. Now only ConfirmDialog's body scrolls (`confirm-scroll`, a focusable region named by the title when there is a preview); the title row and the buttons stay. Dialog and Drawer already keep their title row sticky.
   2. **A story whose text depends on today has a fixed today.** The KanbanBoard Arabic and Japanese stories read the device's date, so "2 days overdue" became "3 days overdue" a day later and their pictures changed with no change in the code. `StoryProvider` takes `today`; the two stories pass 2026-10-09 (their old pictures stand). The other stories with dates relative to today use ExampleProvider's fixed date; no other picture changed between two days.
+  3. **"3 of 10" in right-to-left (found by CI).** The worklist's position and the statement's "2 of 10 lines done" read "of 10 3" in a right-to-left page: a text that starts with a number and runs in English needs its direction from its content (`TEXT_DIRECTION`, D15). Both take it now; the compact Stepper and the other "N of M" texts already did. The partial-payment story ends at one scroll position, so its picture is the same on every run.
 
 ## Packaging
 
