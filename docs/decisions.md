@@ -902,6 +902,830 @@ Phase 5 part 1 was built by seven groups in parallel (A: P5.1, P5.2; B: P5.3–P
 - **2026-10-10 — Six parts per test suite on CI (P5.23).** The interaction twins added about 260 stories, and the first accessibility part ran out of its 25 minutes (Playwright's `globalTimeout`) with 86 tests not run. Each of the three suites (story tests, accessibility, visual) now runs in six parts instead of four (18 machines); the required check "Story tests, accessibility, visual" keeps its name and still passes only when every part passed. The spacer of the steady view never exceeds the scroll position it holds (at the top there is nothing to hold): a Drawer whose content was shorter than its sheet otherwise grew by the empty space.
 - **2026-10-10 — Baselines from the pinned image in this environment (P5.23).** The cloud session that finished P5.23 could not download CI artifacts (their storage host is outside its network policy), so the new and changed baselines were made with `scripts/update-baselines.mjs`'s method — the same Playwright image, pinned by digest, run locally with Docker — and CI's visual job confirmed them.
 
+## Liro patterns (Phase 5 part 2)
+
+### P5.8 — Calendar and scheduling (helper notes for the lead)
+
+- **2026-10-10 — The provider's time zone (P5.8).** `LiroProvider` takes `timeZone` (IANA,
+  e.g. "Europe/Belgrade"; default the browser's, `deviceTimeZone()`), carried in the context as
+  `timeZone`. `createFormat(locale, overrides, timeZone?)`: `dateTime` shows an instant with an
+  offset or "Z" in that zone (without one, the device's, as before); `time` converts an instant
+  with an offset into it **only when the provider was given a zone** — without one it keeps the
+  clock as the instant writes it, so every existing screen (notifications, history, StatusTimeline,
+  CancellationBanner, where the date part and the clock part of one instant are shown side by
+  side) is unchanged. A local date and time without an offset ("2026-10-12T09:30") is always shown
+  as written, by both. `localDateTimeIn(value, timeZone)` (exported) turns an instant into the
+  zone's local "YYYY-MM-DDTHH:mm"; the calendar uses it, so an event may come as an instant. A
+  `format` member the application passes replaces the default, zone included. Tested in
+  `provider/time-zone.test.tsx` (07:30Z is 09:30 in Belgrade and 16:30 in Tokyo; midnight is 00,
+  never 24; local values unchanged in every zone; the provider carries the zone).
+- **2026-10-10 — Calendar values are written local times (P5.8).** Days are "YYYY-MM-DD", times
+  local "YYYY-MM-DDTHH:mm", read as written and computed on whole days and minutes in UTC
+  arithmetic (`schedule-logic.ts`), never the device's clock or zone; "today" is the provider's
+  `today`. An all-day event's `end` is its last day (included); a timed event's `end` is excluded;
+  without `end` an event is one day, or a moment drawn one slot long.
+- **2026-10-10 — CalendarView (P5.8).**
+  1. **Views** day, week, month and agenda (the week's days that have events, as a list), `view` /
+     `defaultView` / `onViewChange`; `date` / `defaultDate` / `onDateChange` (default the
+     provider's today). The week starts on the provider's `weekStartsOn`; month and weekday names
+     from `format.monthName` / `format.weekdayName` (capitalised by CSS, as the calendar
+     primitive's caption); titles: `format.dateLong` (day), `calendar.monthTitle` (month),
+     `calendar.range` of two `format.date` (week, agenda).
+  2. **Toolbar:** Today (neutral default button), previous / next (36px icon buttons, chevrons
+     mirrored in right-to-left, named by the view: "Previous week"), the period title (h2 by
+     `headingLevel`, `aria-live="polite"`), and the view switcher at the end — the neutral
+     segmented control (the ToggleGroup primitive), never blue. Phones: the title on its own row.
+  3. **Day and week:** a time grid from `dayStart` to `dayEnd` (default 07:00–20:00) in
+     `slotMinutes` slots (15 / 30 / 60, default 30); **every slot 24px high** whatever its
+     minutes, so every slot is a target (WCAG 2.5.8); hour rows have a solid line, the others a
+     dotted one; a 72px gutter with the hour (`format.time`). Events are blocks over their day's
+     column; **overlapping events stand side by side** (`layoutDay`: the first free column; a group
+     of events that overlap one another shares one number of columns; an event shorter than a slot
+     is drawn a slot long and placed by that length, so short events never cover each other). A
+     block 64px or taller shows two title lines and the time, 40px or taller one line and the
+     time, shorter only the title. **A 24px strip at the end of every day column stays free of events**, so
+     every slot keeps a 24px target to press or focus beside a busy hour (WCAG 2.5.8; axe
+     target-size flagged the slot under an event). **All-day events, and timed events wholly outside the hours
+     shown** (with their start time), stand in a strip above the grid ("All day").
+  4. **Month:** whole weeks (`monthWeeks`: four to six rows); a day 112px at least; at most three
+     lines, else two and "+N more" (`cellEvents`), which opens **the day's list** in a popover
+     (every event with its time and description, then "Open the day", which switches to the day
+     view). Days of other months on surface.sunken, their number tertiary. A multi-day all-day
+     event is drawn in each of its days.
+  5. **Today:** the day number in a 28px (24px in the month) circle on surface.inverse — neutral,
+     not blue (D17: blue is for the selected day, and the calendar selects nothing); "Today" in
+     words for assistive technology, the agenda and the day list; `aria-current="date"`.
+  6. **Event look:** the tone's bg, fg text and border (StatusBadge's pairs, measured), a 3px bar
+     in the tone's fg at the start; neutral by default. No status `solid` (tone-usage test).
+  7. **Keyboard (role grid, one tab stop, roving tabindex):** `calendarKeyTarget` — the arrows
+     between days (from the leading edge, Appendix B.7) and slots; month: up/down a week, Home /
+     End the week's ends, Page Up / Page Down a month; week: Home / End the week's ends, Page Up /
+     Page Down a week; day: Home / End the first and last slot, Page Up / Page Down a day. Leaving
+     the period moves the calendar (`onDateChange`) and keeps the focus. Enter or Space on a slot
+     reports it (`onSlotSelect({ start, end })`, local values), on a month day opens its list (or
+     reports the day when it has none). A focused slot's ring is drawn above the events. Events are
+     buttons (`onSelect`) named "title, time, day" (`calendar.eventLabel`, with a tooltip); in the
+     time grid they follow the grid in the tab order; in a month cell they are pointer targets
+     (tabindex −1) and the keyboard reaches them through Enter (the day's list).
+  8. **Without `onSelect`** events are text, their names still read (sr-only).
+  9. **Phones** (below 48em or `layout="phone"`): Day and Agenda only, agenda by default; a week or
+     month asked for is shown as its agenda; the agenda's rows put the time above the title; nothing
+     scrolls sideways at 360px.
+  10. `loading`: the toolbar and a skeleton. An empty agenda says `calendar.noEvents` on
+      surface.sunken. `defaultOpenDay` opens a day's list from the start (a static picture).
+- **2026-10-10 — ResourceSchedule (P5.8).**
+  1. Rows of `resources` (name, description) against the time of one `date` or a few `days`
+     (consecutive segments, each with its date over it), `dayStart`–`dayEnd` (default
+     08:00–16:00), `slotMinutes` (default 30). **Desktop:** the names in a 200px sticky column at
+     the start; the time from the leading edge (right to left in right-to-left pages); the grid
+     fills its box with at least 2.5px a minute (a 30-minute booking 75px), else it scrolls
+     sideways inside its own region, which takes the focus only while it scrolls (as DataTable's
+     area; axe scrollable-region-focusable); a movable booking is at least 56px wide, so 24px stay
+     beside its 24px "Move to…" button; hour labels above, slot lines; rows 56px; overlapping
+     bookings share the row in lanes (`layoutDay`). A booking is drawn from the start of the hours
+     when it began before them; one outside the hours is not drawn.
+  2. **Unavailable times** (`unavailable`: all rows or one, start, end, reason) are hatched on
+     surface.sunken with a border.default line at the start, their reason as xs text.secondary
+     (tooltip: the reason), and "Unavailable: reason, time" for assistive technology. The
+     schedule never decides about a move: over an unavailable time the keyboard announcement adds
+     "Unavailable here: …" and the "Move to…" start list adds the reason, and the move is still
+     reported.
+  3. **Three ways to move (WCAG 2.5.7):** pointer drag (the KanbanBoard rule: pointer events, a
+     mouse after 4px, a touch after a 250ms press; the booking snaps to slots and rows, lifts with
+     shadow-lg and border.strong, a dashed neutral border.strong placeholder stays where it was;
+     Escape cancels; the click after a drag does not open the booking); the keyboard on the booking
+     (Space picks it up, the arrows move it — the time arrows by a slot from the leading edge, the
+     others a row; a booking stays inside one day of the axis: past the day's end it goes to the
+     next day's start, `fitOnAxis` —, Enter or Space drops, Escape or Tab cancels; every step
+     announced politely: "Picked up …", "…: Dr …, 09:30 – 10:30.", "Dropped …", "Move
+     cancelled…"); and the 24px "Move to…" button on the booking (a popover with the row, the day
+     over several days, and the start, then Move). `onMove({ id, resourceId, start, end })` with
+     local values; the schedule shows what it is given. `readOnly`, a booking's `locked`, or no
+     `onMove`: no moving; `onSelect` opens a booking (Enter or a press).
+  4. **Phones:** one row at a time, chosen in a SelectField (`resourceLabel`, default
+     `schedule.resource`); the time runs down (1.6px a minute, a 30-minute booking 48px); Left and
+     Right move a picked-up booking to the other rows and the select follows.
+- **2026-10-10 — SlotPicker (P5.8).** A Field around one radio group (Radix RadioGroup): the
+  application's free slots grouped by day (`format.dateLong`, "Today" marked) and, with
+  `resources`, by resource within a day; each slot a 36px chip with its start time; its name says
+  the time range, the day and the resource (`slots.slotLabel`; the visible time is in the name,
+  WCAG 2.5.3). The arrows move between all slots (Radix; a held arrow chooses as it goes), Space
+  chooses. The chosen chip is a checked radio: brand.solid (D17). `value` / `defaultValue` are
+  the slot's key (`slotKey`: its `id`, else `resourceId@start`); `onChange(slot)`. Loading:
+  skeleton chips in a busy group named `slots.loading`. Nothing free: EmptyState compact
+  (`slots.none`, `slots.noneDescription`) with an optional `emptyAction`. Error, required,
+  read-only and disabled with a reason come from the Field.
+- **2026-10-10 — Timetable (P5.8).** A table: caption (`label`), a corner header
+  (`timetable.period`), the weekdays (`days`, default Monday–Friday; `format.weekdayName`), today's
+  column marked in words and `aria-current="date"`; each row a period (label and time range); each
+  cell the period's lessons (subject sm semibold, teacher and room xs text.secondary, a note in the
+  tone's fg; the tone's colours with the 3px bar, neutral by default; several lessons stack). An
+  empty period shows "—" and says `timetable.free`. `now` ("HH:mm", the application's clock) marks
+  the period running today: a 2px border.selected outline and "Now" on surface.selected
+  (`aria-current="time"`) — neutral, never blue. `onSelect` makes lessons buttons. Phones: one day
+  at a time in the segmented control (today first, else the first day), periods as a list.
+- **2026-10-10 — Scheduling stories (P5.8).** Fictitious data: Health centre Liman in Novi Sad
+  (Dr Milica Jovanović's week 12–18 October 2026, four doctors and rooms on Wednesday 14 October,
+  free appointment slots) and OŠ Jovan Popović's class 7/2. A fixed today (2026-10-14) and Monday as
+  the week's first day through `ScheduleFrame` (`schedule-story-data.tsx`), so pictures never change
+  with the date. Every acting story is tagged `interaction`; the static ones render their state
+  directly (`defaultOpenDay`, `defaultValue`, `now`).
+
+### Notes for the lead: P5.9 Tree, P5.14 Sensitive fields, P5.16 Portal shell
+
+- **2026-10-10 — TreeView and TreeTable (P5.9).** `components/tree-view.tsx`, `tree-table.tsx`,
+  the shared state and keys in `use-tree.ts`, the pure logic in `tree-logic.ts` (tested:
+  `visibleTreeRows`, `treeKeyAction`, `typeAheadTarget`, `treeCheckStates`,
+  `toggleTreeSelection`, `treeAncestors`), the row window in `tree-window.ts`.
+  1. **The tree is data.** A node: `id`, `label`, optional `code` (tabular, left to right, before
+     the name), `description` (a second line), `children` or `hasChildren` (lazy), `loadError`,
+     `disabledReason`, `checked` (the application's own tri-state), `data` (TreeTable's figures).
+     Nothing in the component knows what a node means.
+  2. **A flat list of drawn rows that reads as a tree.** Only the visible rows are rendered, each a
+     `treeitem` (TreeTable: a `row` of a `treegrid`) with `aria-level`, `aria-setsize`,
+     `aria-posinset` and, when it has children, `aria-expanded`; no nested groups, so the rows can
+     be windowed. One row is in the tab order (roving focus): the focused one, else the first
+     selected one, else the first; when the application collapses the branch that holds it, its
+     nearest visible ancestor.
+  3. **Keys (WAI-ARIA tree pattern; Appendix B.7).** ArrowDown / ArrowUp, Home / End. The arrow
+     that points into the tree — toward the trailing side: ArrowRight in left-to-right, ArrowLeft
+     in right-to-left — opens a closed node, or moves to the first child of an open one; the other
+     arrow closes an open node or moves to the parent. `*` opens every closed sibling. Typing
+     moves to the next row whose name or code starts with the letters typed within 500ms
+     (`TYPE_AHEAD_DELAY`; the current row is tried first for a longer prefix; the same letter
+     repeated cycles; case ignored in the page's locale). Enter or Space selects (single), toggles
+     the checkbox (multiple), or opens and closes (no selection); on an error row it retries.
+     The chevron (24px, 32px on phones; ChevronRight / ChevronLeft by direction, turned down when
+     open, 150ms, none under reduced motion) is for the pointer only.
+  4. **Lazy children.** Expanding a node with `hasChildren` and no `children` calls
+     `onLoadChildren(id)` (also for each node `*` opens). Under it stands a loading row (the small
+     Spinner, "Loading…", `aria-busy`) until the application passes `children`; with `loadError`
+     an error row instead: CircleAlert and the application's words (or
+     `messages['tree.loadError']`), and "Try again" (a small neutral button for the pointer; the
+     row itself takes Enter and Space), which calls `onLoadChildren` again. The loading and error
+     rows are rows of the tree (level under their node), so the arrows reach them and Left goes
+     back to the node.
+  5. **Selection** (`selectionMode`): 'single' — `aria-selected`, the row on surface.selected with
+     the 3px border.selected bar at its start (as DataTable's selected row, D17: never blue);
+     'multiple' — a checkbox drawn in each row (the Checkbox primitive's look, 16px as DataTable's)
+     and `aria-checked` true / false / mixed on the row. A branch's state is computed from the
+     selected ids only (`treeCheckStates`: all children → checked, none → unchecked, otherwise
+     mixed), overridden by a node's own `checked`. Toggling (`toggleTreeSelection`) checks or
+     clears the node with its loaded descendants, then every ancestor is in the list exactly when
+     all its children are; nodes with `disabledReason` keep their state and say why under their
+     name. Expanded and selected ids are each controlled or not (`expanded` / `defaultExpanded` /
+     `onExpandedChange`, `selected` / `defaultSelected` / `onSelectedChange`).
+  6. **Rows.** 13px, at least 32px high (44px on phones), 20px of indent per level (16px on
+     phones) from the leading edge, hover surface.hover, the focus ring inside the row. TreeView's
+     `end` puts the application's content at a row's end (a figure, a StatusBadge).
+  7. **TreeTable.** The first column is the tree (`treeHeader`), the others DataTable-like
+     (`id`, `header`, `cell(node)`, `align`, `numeric` — end-aligned tabular by default,
+     `minWidth`); the figures are the application's, written through `format` (NumberText,
+     MoneyText); a branch's figures and the `totals` row are the application's (D4: the table never
+     adds). DataTable's look: header on surface.sunken in bold, a 1px border.default line under
+     each row, cells 8px / 16px; totals semibold on surface.sunken under a border.strong line,
+     sticky at the bottom. **A treegrid of `display: table` elements, not a `<table>`:**
+     `jsx-a11y/no-noninteractive-element-to-interactive-role` refuses `role="treegrid"` on a table;
+     the roles (`treegrid`, `rowgroup`, `row`, `columnheader`, `gridcell`, `rowheader`) are the same
+     and the layout is the table's. The rows take the focus (row focus, the tree's keys); cells hold
+     text only, so no cell focus mode.
+  8. **Thousands of nodes.** With `maxHeight` both scroll inside that height and draw only the rows
+     in view, on TanStack Virtual with the shared rules of `virtual-rows.ts` (600px overscan, the
+     focused row kept drawn, spacers between drawn rows that are not neighbours); rows are measured
+     once drawn (a description makes a row taller). TreeTable's header is sticky and the grid has
+     `aria-rowcount` / `aria-rowindex`. A key that moves the focus to an undrawn row scrolls to it
+     (`scrollToIndex`) and focuses it once drawn. Story: "Thousands of nodes" (5,110 accounts).
+  9. **Phones** (below 48em, or `layout`): TreeView is the same tree with 44px rows and 32px
+     chevrons. TreeTable becomes the tree with the main figure at each row's end (`mainColumn`,
+     default the first numeric column) and the total under it in a row of its own.
+- **2026-10-10 — MaskedValue (P5.14).** `components/masked-value.tsx` (tested:
+  `revealReady`, `revealRequest`, the masked markup).
+  1. **The value is never in the page while masked.** The application passes `value` only after
+     the reveal (D1: the component never fetches). Masked: "••••" (decorative) with "<label>:
+     hidden" for assistive technology, and a small neutral "Show" (Eye, 24px high, Mantine
+     compact-xs; named "Show <label>").
+  2. **The reason** in a Dialog (D14: one action with one outcome) titled "Show <label>": the
+     application's `reasons` as radio buttons, "Other" with a text field (`allowOther`), or, without
+     a list, the reason written; then the note that the access is logged (ScrollText icon,
+     `logNote` or `messages['masked.logged']`). Cancel, then "Show" (primary family, Eye), enabled
+     once a reason is given. `onReveal({ reason, text })`: `reason` is the chosen value, or null for
+     "Other" and a written reason; `text` trimmed. A returned promise keeps the dialog working (the
+     button busy, not dismissible), closes it when it resolves, keeps it open when it rejects; the
+     application's refusal (`error`) is a danger Alert in the dialog, and danger text beside the
+     mask when the dialog is closed.
+  3. **Hiding.** "Hide" (EyeOff) hides the value at once — even if the application still passes
+     it — and calls `onHide` so the application can drop it; `hideAfter` (ms) does the same by
+     itself; the focus that was on "Hide" goes to "Show". A new reveal shows the value again.
+  4. **States.** `loading` (the small Spinner, "Showing <label>…"); `notAllowedReason` — "Show"
+     stays focusable with `aria-disabled` and is described by "Not allowed: <reason>" in words
+     beside it (never only a greyed button); `readOnly` — the mask alone (a printout, a summary);
+     `defaultAsking` opens the reason dialog on first render (the static stories).
+- **2026-10-10 — PortalShell (P5.16).** `templates/portal-shell.tsx` (tested: skip link, tabs on
+  desktop, bottom bar on phones, banners and footer order).
+  1. **Simpler than AppShell:** no launchpad, company switcher, breadcrumbs or command palette.
+     The same header values: 56px on surface.header with a 1px border.default line, 16px sides on
+     phones with the safe-area insets, 24px from 48em, sticky under the top safe area; the
+     BrandLockup (the application's names as props, D18; compact on phones) at the start.
+  2. **The participant** at the end: on desktop a subtle button with the avatar, the name (13px
+     medium, cut with "…" when long) and a 14px chevron; on phones the avatar alone in a 36px
+     button. Named "Account: <name>". Its menu (220px, neutral as AppShell's user menu) shows the
+     name and the `detail` line ("Parent of Luka Jovanović"), then the application's `menu`
+     entries (details, language, sign out, switching child).
+  3. **Sections (up to five).** Desktop: a second header row of tabs, **start-aligned** (D16: only
+     AppShell's module tabs are centred), links with `aria-current="page"` and the 2px brand line;
+     a `note` ("2 new") as a small neutral pill after the name. Phones: a bottom navigation bar
+     within thumb reach (B.8): equal cells, a 20px icon over the 12px name, at least 56px high,
+     the current one text.primary semibold with the 2px brand line on top, others text.secondary;
+     a note is an 8px status.danger.solid dot on the icon (as the bell's) and is read with the name
+     ("Messages, 2 new", `messages['portal.sectionNote']`). The bar is surface.header with a 1px
+     line on top, the bottom and side safe-area insets, sticky at the bottom; its height is
+     published as `--liro-shell-bottom` like AppShell's bottom bar, so the Toaster stands above it.
+  4. **Slots:** `banners` at the top of the content (full width, square, scrolling, as AppShell's);
+     `footer` under the content (the institution's contact line, xs tertiary), above the bottom
+     bar; `defaultMenuOpen` for the static story of the open menu. A skip link first.
+
+### P5.10 and P5.11 — notes for the lead (fold in, then delete)
+
+- **2026-10-10 — Touch density (P5.10).** **The API:** one provider prop, `LiroProvider density="touch"` (`'default' | 'touch'`, type `Density`, exported), read by components as `useLiro().density`. Chosen over a `TouchDensity` wrapper because overlays (dialogs, sheets, menus, selects, tooltips) render into the provider's portal container, which sits inside the provider's wrapper: a provider-level attribute reaches them, a wrapper around the page would not. The wrapper gets `data-liro-density="touch"` (no attribute for the default). **Inheritance:** a nested provider without `density` takes its parent's; touch is never lowered inside a touch provider (a nested `density="default"` stays touch), so the CSS (which inherits) and the context always agree — StoryProvider, ExampleProvider and PhoneFrame need no change. **The CSS** (`packages/ui/src/styles.css`, unlayered so it wins over utilities): inside the scope `--liro-touch-target: 44px`, and the A.4 control heights `--liro-size-control-height` and `--liro-size-control-height-sm` are set to it, so every Button, field, select trigger and small bar button that uses `h-control` / `min-h-control` grows with no change to the component and no new token in `tokens.ts` (Appendix A stays 1:1); the icon shapes (`data-shape="icon"` / `"compact"`, now set by `ButtonPrimitive`, `Button`/`IconButton`/`CompactIconButton` and the dialog's close button) get a 44px minimum width and height; menu items, select items, command items, `[role=option]`, tabs, toggle-group items and the rows of checkboxes, radios and switches (`inline-field`) get a 44px minimum height. Nothing else changes: the same tokens and look. Buttons drawn with `buttonClassName` alone (the toast's close, PageHeader's back) are not marked and keep 28px; neither appears on a touch screen today. The POS and warehouse components are at least 44px in every density (keypad keys 56px, tiles ≥112px, stepper buttons 44px / 56px large, chips 44px). Shown in "Components/POS/Touch density" (the same controls default and touch, measured in the play function).
+- **2026-10-10 — Touch and POS (P5.10).** All in `components/` (NumericKeypad, ProductTile and ProductGrid, CartPanel, PaymentDialog, ReceiptPreview; logic `keypad-logic.ts`, `scan-logic.ts`, tested) and `templates/pos-shell.tsx`.
+  1. **PosShell:** fills its container (the application gives it 100dvh; `h-dvh` would overrun a phone frame, P4.9d); no application header and no navigation (a till is one task). **Kiosk-safe:** `overscroll-behavior: none` (no pull-to-refresh or swipe back), `touch-action: manipulation` (no double-tap zoom), `user-select: none` on the strip and the product area (and `-webkit-touch-callout: none` on tiles), the safe-area insets on every side. **The strip** (a `section` named "Register status", not a header: no links): the brand (a prop, D18), the register and the cashier (an xs label above each value), while online with a queue a neutral "Sending…" badge (CloudUpload) and "3 sales waiting to be sent" (`pos.queued`, or the application's `queuedText`), the application's actions at the end. **Offline:** the P5.3 OfflineIndicator under the strip with the queue as its `waiting` text and `offlineAction` — selling goes on. **Landscape tablet first:** products at the start (scrolling, 16px), the cart at the end (`min(26rem, 45%)`, full height, a 1px border at its start). **Phone portrait (below 48em or `layout="phone"`):** the cart first; "Products" (a 48px button above the cart) opens the product area as a bottom sheet (85% of the height, the dialog's header and close), `productsOpen` / `defaultProductsOpen` / `onProductsOpenChange`. **Scanner:** with `onScan`, a document-level listener (capture phase) feeds every key that does not go to a field into `scanKey`; a burst ending in Enter is reported and its Enter is prevented, so it never presses the focused tile or button. Keys typed into a field are left to that field (ScanField).
+  2. **NumericKeypad:** 0–9, the separator of the provider's format (`decimalSeparator`: read from `format.number('1.5')`), backspace (Delete icon, "Delete last digit"), Clear, and Enter when `onEnter` is given (`enterLabel`, `enterEmphasis` 'secondary' where the screen has another main action, D13). What is typed is an _entry_ in canonical form ("12." keeps a just-pressed separator) shown through `format` (`keypadText`) and reported as a decimal string or null (`keypadValue`); `maxDecimals` (default `format.moneyDecimals` with a `currency`) stops further digits — nothing is rounded; `maxDigits` 12. A controlled `value` from outside (a quick amount) replaces the entry; the value the keypad just reported keeps the entry as typed. **Laid out left to right in every direction** (the display and the keys, `dir="ltr"`), as calculators and card terminals are; the label follows the page. Keys 56px, 8px apart, raised surface with a border, 20px semibold digits. The display is a read-only input with `inputmode="none"` (no on-screen keyboard over the keypad), named by `label` (and the currency); **not a live region** — keys are not announced; a screen reader reads the value on focus. Hardware keys while the focus is in the keypad (`keypadKeyFor`): digits, "." and ",", Backspace, Delete (clear), Enter on the display; Escape is left to a dialog around it.
+  3. **ProductTile / ProductGrid:** a tile is a button (≥112px, radius lg, raised surface, 1px border): optional image slot (4:3, sunken, aria-hidden — the name says what it is), the name (sm semibold, wrapping), a detail line, the price (`MoneyText`, md semibold) and the stock in the application's words with a tone (neutral; warning with TriangleAlert; danger with CircleX — never colour alone). Unavailable: `aria-disabled` and still focusable, on the sunken surface with "Unavailable: <reason>" (Ban icon) linked by `aria-describedby`; a press does nothing. The grid: `repeat(auto-fill, minmax(9rem, 1fr))`, 12px gaps; **roving tab index** (one tile tabbable), arrows from the leading edge with `launchpadArrowTarget` (columns measured from the layout), Home / End. **Categories are pressed chips** (`aria-pressed`, 44px, radius sm, the neutral selection surface.selected with border.selected — never blue, D17), "All" first (`pos.allProducts`), wrapping; the grid shows the products of the chosen category (`categoryId`; a local filter, controlled or not). `toolbar` slot above (a ScanField). Loading: eight skeleton tiles; no products: the compact no-results EmptyState.
+  4. **CartPanel computes nothing (D4):** quantities, unit prices, line totals, discounts and totals are the application's decimal strings; a quantity change is reported (`onQuantityChange`) and the application sends the new figures; while it computes, `pending` keeps the totals still (SettlingValue). Header: title (h2, h4 size) and the count ("4 items", `cart.count`), `headerActions`. A line: name (semibold, wrapping) with its total at the end; detail and the line's discount in the application's words; a QuantityStepper named "Quantity, <name>" (label hidden), the unit price ("25,00 RSD each", `cart.each`), a 44px remove button ("Remove <name>"). Footer: the totals rows, the total (h3, under a border.strong line), `actions`, then **"Charge 1.011,00 RSD"** (`cart.charge` with `format.money`) — full width, 56px, primary, last, with the bottom safe area. `chargeDisabledReason` keeps it focusable (`aria-disabled`) with the reason under it. Without `onQuantityChange` the quantities are text (read-only). Empty: EmptyState with ShoppingCart.
+  5. **PaymentDialog never subtracts:** the change due, the remaining amount, the parts paid and whether it can be completed (`completeDisabledReason`) are the application's. Amount due on top (h2 size). The method as a segmented control (cash / card / split, the application's `methods`). **Cash:** "Exact amount" (sets the total itself, no arithmetic) and the application's `quickAmounts` as 44px pressed buttons, the NumericKeypad (without Enter: the footer's "Complete payment" is the one main action), the change due (h3) and, while short, the remaining amount. **Card:** the terminal's state from the application — `idle` ("Send to card terminal", primary secondary), `waiting` (a spinner, what the customer does, "Cancel card payment"; the dialog is not dismissible), `declined` (a danger Alert with the terminal's reason and "Try again"), `approved` (a success Alert). **Split:** the parts paid and the remaining amount, the keypad for the next part, "Add cash" / "Add card" (`onAddPart(method, amount)`). **Done:** a 48px success check, "Payment complete", the application's `doneText`, the change due large, `doneActions`. Footer: Cancel, then "Complete payment" (LoadingButtonPrimitive: `completing` keeps the dialog open; aria-disabled with the reason linked while it cannot be completed).
+  6. **ReceiptPreview:** an `article` named "Receipt"; 58mm (xs text) or 80mm (sm) wide on the raised surface with a border and the sm shadow; the header lines centred (the first bold), facts, items ("2 × 190,00" under the name, the amount at the end), totals (a `strong` row md bold), payments, the footer lines and a `code` slot (a fiscal QR image) — parts divided by dashed border.strong rules. Every amount through `format.number` with the money decimals (or `format.money` for totals and payments when a `currency` is given), never rounded, tabular digits. Print: no frame or shadow, never split (`break-inside: avoid`). The "×" is typography, like "—".
+- **2026-10-10 — Scanning and the warehouse (P5.11).** `ScanField`, `QuantityStepper` (components, logic `scan-logic.ts`, `quantity-logic.ts`, `warehouse-logic.ts`, tested) and `PickList`, `StockCount` — **templates** (`templates/`), because each is a whole handheld screen: the title row, the offline strip and one scrolling column (`HandheldFrame`, internal), 360px first, 16px sides, safe-area insets, touch-manipulation.
+  1. **Scan or typing:** a scanner is a keyboard that types the code in a burst and presses Enter. `scanDecision(times)` reads a burst as a scan when it has at least `SCAN_MIN_LENGTH` (4) characters each within `SCAN_MAX_INTERVAL` (50ms) of the one before (scanners send a character every few ms, people 100ms or more); `scanKey(buffer, key, time)` is the page-wide reducer (a pause starts a new burst, Shift is ignored, Enter ends it). Both take `{ maxInterval, minLength }`.
+  2. **ScanField:** a Field with a ScanBarcode icon, the code left to right; on Enter it reports `onScan(code, 'scanner' | 'keyboard')`, empties itself and **keeps the focus** for the next scan (`takeFocus` focuses it when it appears — the prop is not named `autoFocus`, which jsx-a11y refuses); typing by hand works the same. **Feedback is the application's:** `feedback` `{ id, tone: 'success' | 'error', text }` under the field — the tone's background and border, CircleCheck or CircleX, the words, and "Done:" / "Problem:" before them for assistive technology (never colour alone) — in a polite `role="status"` that is always in the page; `onFeedback` is called once for each new id (not for the one it appeared with: a restored screen is silent), the slot where the application plays a sound or vibrates. `onCameraScan` adds a camera IconButton ("Scan with camera"); no camera code here. `inputMode="none"` keeps the on-screen keyboard closed on a handheld whose scanner is its keyboard. `defaultValue` for a restored half-typed code.
+  3. **QuantityStepper:** − / the quantity / +, 44px (56px with `size="large"`); typed entry read by `format.parseNumber` on blur, Enter or a step (as NumberField: unreadable text kept with `field.invalidNumber`); ArrowUp / ArrowDown step; `min`, `max`, `step` are decimal strings compared and stepped **exactly** (`compareDecimal`, `stepDecimal`, `stepQuantity`, `canStep`, `quantityRange` on `bigint`s scaled by the decimals of both — never JavaScript numbers; quantities only, money is never stepped). A typed value outside the limits is **kept** and shown as an error ("At least 1." / "At most 12.") — never changed behind the user's back; − and + stop (disabled) at the limits; an empty value starts from `min`. The buttons are named "Decrease <label>" / "Increase <label>" (`aria-labelledby`), the unit describes the input. Read-only: the quantity and unit as text.
+  4. **PickList:** progress "4 of 12" (`pickProgress`: picked, short and skipped lines are done) with a ProgressBar in the title row; the **current line** large — the location (`BigCode`: h2, left to right, at the page's start), the item and its code, "To pick" (h2) and "Picked 4 of 6" — and its **steps** (`PICK_STEPS`, `pickStepState`: done with a check and "(done)" for assistive technology, current semibold with `aria-current="step"`, to do tertiary). By `step`: a ScanField for the location or the item (`onScan(code, step, source)`), or a large QuantityStepper (default the quantity to pick) with Skip and "Confirm quantity" (primary, last). **The application checks each scan** and moves `step` and `currentId`. Skip opens ReasonConfirmDialog (neutral, SkipForward; the application's `skipReasons`); `defaultSkipOpen` for pictures. **The route** under it: every line's location, item, note, "picked / to pick unit" and its state in words with an icon (open, picked, short in the warning tone, skipped); the current line is the neutral selection (surface.selected with the 3px border.selected bar); with `onSelectLine` each row is a button. No open line: "All lines are done" with Finish (`onFinish`). Loading: skeletons; no lines: EmptyState. Offline: the strip with "3 changes waiting to be sent" (`queue.waiting`); online with a queue, the same words under the title row.
+  5. **StockCount:** before a location: "Scan a location to start counting." with its ScanField; then the location (`BigCode`, its name, "Change location"), the item ScanField, the **item in front** (`currentId`: name, code, a large QuantityStepper "Counted quantity" reporting `onCountChange`, "Expected …" and the difference when the application gives them, its note), the list "Counted here" (counted quantity and difference per item; with `onSelectItem` each row is a button; the item in front selected as in PickList), and "Finish location" (primary, full width, last). **Differences are the application's** decimal strings, signed through `format.number(…, { sign: 'always' })` ("+2 pc", "-3 pc") with the label "Difference", an icon for warning (TriangleAlert) and danger (CircleAlert) and the tone's colour; a blind count passes no expected quantity or difference.
+- **2026-10-10 — Example data of P5.10 and P5.11 (stories).** Pekara Zlatni klas, Novi Sad (Kasa 2, Milica Jovanović; bread, pastries, cakes, drinks; a cart of four lines with a 10% loyalty discount: 1.055,00 − 44,00 = 1.011,00 RSD, VAT 20% included 168,50; cash 2.000,00, change 989,00; split 500,00 by card, 511,00 remaining) and Magacin Novi Sad picking PL-2026-0412 for Kvadrat Gradnja (12 lines: two picked, one short, one skipped, the current B-04-02 facade mesh) and counting Zone B (B-04-02, differences -1, 0, +2, -3). Every figure is a decimal string; the stories' sums use `amounts-story-data.ts`.
+
+### Notes for the lead: P5.13 and P5.24 a, c, e (AttendanceGrid, ClockRecordList)
+
+- **2026-10-10 — One grid for attendance, marks and timesheets (P5.13, P5.24 a and c; owner).**
+  `AttendanceGrid`: rows are people (`id`, `label`, `description`), columns days or lessons
+  (`label`, optional `date`, `kind` normal / weekend / holiday with a `note`), each cell a code
+  and, in the hours mode, hours. The codes (`code`, `label`, `short`, one `key`, optional `tone`)
+  are the application's data, as are the totals, marks, the lock, corrections and the hand-off;
+  the grid reports changes (`onChange` with a list of `AttendanceChange`: row, column, entry,
+  previous) and computes nothing. Hours are decimal strings read by `format.parseNumber`;
+  unreadable text stays in the cell (danger line inside the cell, "Enter a number" for assistive
+  technology), is never 0 and is never reported as a change; `onValidityChange(false)` tells the
+  application to block saving. Pure helpers, tested: `attendanceKeyAction`, `fillRange`,
+  `copyPreviousWeek`, `markColumn`, `markRow` (exported), and `cellRange`, `clearCells`,
+  `weekStart`, `weekdayOf`, `addDays`, `stepPerson` (internal).
+  1. **A WAI-ARIA grid** (`role="grid"`, `aria-rowcount` / `aria-colcount`, `aria-rowindex` /
+     `aria-colindex`, `aria-multiselectable`, `aria-selected` on the day cells; `aria-readonly`
+     when locked). It is built from `div`s with the grid roles and `display: table` (Tailwind
+     `table`, `table-row`, `table-cell`), not a `<table role="grid">`: jsx-a11y strict forbids
+     giving a `table` the grid role, and the roles on `div`s are the same grid to assistive
+     technology. Headers, row headers, day cells and totals are all cells the arrows reach (the
+     forward arrow in the reading direction, B.7); Home and End to the row's ends, Ctrl+Home and
+     Ctrl+End to the corners; one cell in the tab order. A column header and a row header are menu
+     buttons when the grid is editable (their text is their name, so the header is announced as
+     itself): "Mark everyone: <code>" and "Mark all: <code>"; a row's bulk mark leaves weekends and
+     holidays as they are. Keys are handled in the capture phase, so ArrowDown on a header moves
+     instead of opening its menu (Enter and Space open it).
+  2. **Code mode** (P5.13): a code's key marks the focused cell and moves on — `advance` 'down'
+     (default: the next pupil in the same lesson) or 'forward' —, or marks the whole selection
+     when one is selected (the focus stays). Shift with an arrow, or a press with Shift, selects a
+     range inside the day area. Delete or Backspace clears. Enter moves down and Shift+Enter up,
+     as EditableGrid.
+  3. **Hours mode** (P5.24a): a digit, separator or sign starts typing the hours in a plain input
+     over the cell (no mask, B.3); Enter or F2 edits the hours; while editing, Enter commits and
+     moves down, Shift+Enter up, Tab and Shift+Tab along the row, Escape cancels. A code's key
+     sets the code (the hours stay). Hours typed into a cell without a code take `defaultCode`
+     (regular work). **Fill the selection** (Ctrl/Cmd+D, and a toolbar button, unavailable with
+     its reason while only one cell is selected) gives every selected cell the entry of the cell
+     where the selection started. **Copy previous week** (toolbar) copies, for the selected rows,
+     each day of the focused cell's week (the provider's `weekStartsOn`) from the same weekday
+     seven days earlier — only between days of the same kind, so a holiday is not overwritten by a
+     working day's entry, nor a holiday's entry copied onto a working day; days whose week before
+     is outside the grid are left.
+  4. **Every key has a button** (pointer and touch users, WCAG 2.5.7 has nothing to drag): the
+     toolbar above the grid holds the codes (short form in its tone, label, the key as
+     ShortcutHint), Clear, Fill (with Ctrl+D shown) and Copy previous week; the hand-off at the
+     end.
+  5. **Look:** 44px rows and day columns, header row sticky at the top, row headers sticky at the
+     start (192–288px), 1px border.subtle lines, totals on surface.sunken (a border.strong line
+     above the totals rows, border.default before the total columns). Weekends and holidays are
+     shaded with surface.sunken and never by colour alone: a day column shows its weekday, a
+     holiday its mark ("H", `attendance.holidayMark`) with the note in the title and for assistive
+     technology ("Holiday: …"). A code's short form is a 20px chip in its tone (none: plain text);
+     the hours above it in the hours mode. The selection is neutral (D17): surface.selected and a
+     1px border.selected line inside each cell; the focused cell a 2px focus outline inside it.
+     **Marks** (P5.24c: a shift allowance) are a 6px filled neutral dot at the cell's top end;
+     **a corrected cell** an 8px hollow ring (border.strong) at its bottom end; both say what they
+     are in the cell's text for assistive technology and in a tooltip. Night hours are one more
+     total the application passes.
+  6. **Locked** (after payroll): a lock line above the grid (Lock icon, "Locked", the reason, who
+     locked it), the cells read-only, no toolbar marking. A change only through `onCorrect`: Enter
+     or F2 on a cell, a double press, or "Correct entry" opens a dialog — the current entry, the
+     code (SelectField), the hours (NumberField, hours mode) and a required reason; Cancel, then
+     Save correction; it waits while the application's promise runs. The application keeps the
+     original (`corrections`: original, by, at, reason); the grid shows it in the cell's
+     description and tooltip and lists every correction under the grid ("Corrections": person,
+     day, now, original, who, when, why). Never deleted.
+  7. **Hand-off** (`handOff`: state open / done, label, doneText, onHandOff, unavailableReason):
+     open is the confirm intent's button, unavailable the UnavailableAction rule (reason beside it
+     and in a tooltip), done a success StatusBadge with the application's text.
+  8. **Many rows:** from 100 rows (`virtualize`) only the rows in view are drawn, inside
+     `maxHeight` (default 70vh when virtualised), on TanStack Virtual with the shared window rules
+     (`overscanRows`, `keepFocusedRow`, `spacersBetween`); a move far away (Ctrl+End) draws the row
+     and then focuses the cell.
+  9. **Phones** (`layout="phone"`, or below 48em): one person per screen — Previous, a chooser
+     ("Show", with "3 of 12" as its description), Next —, the person's name, the person's totals
+     in a two-column block, the hand-off, then the days as a list: name and weekday (and the
+     kind's text) at the start, the hours (NumberField) and the code (SelectField, clearable) at
+     the end; locked: the entry as text and a 28px pencil "Correct entry: <weekday> 1"; marks and the
+     correction as xs lines under the day. `defaultRow` chooses the first person shown.
+  10. Static pictures: `defaultSelection` (a range shown selected) and `defaultCorrecting` (the
+      dialog open) render those states without a click (P5.23).
+- **2026-10-10 — Clock records with audited corrections (P5.24e).** `ClockRecordList` is a
+  DataTable (its phone cards and empty / loading states): name with a second line, date,
+  clock-in, clock-out, duration (the application's decimal hours through `format.number`, "8,20
+  h"), source with its place, correction. Times are the instants' clock times (`format.time`); a
+  clock-out on a later day adds "(next day)". A missing time is said in words in the warning
+  colour with an icon ("No clock-out", "No clock-in"), never 0 or a dash; a missing duration is
+  "—". "Correct" in the row's menu opens a Drawer at the end (D14) with Clock-in and Clock-out
+  (typed freely, left to right, read by `parseClockTime`: "7:30", "07.30", "0730", "7"; anything
+  else "Enter a time as hh:mm") and a required reason; Save correction reports `{ id, in, out,
+reason }` with "HH:MM" or null, and waits for a promise. A corrected time shows the new value,
+  then the original struck through with "was" for assistive technology; the correction column
+  says who, when and why. The application keeps the original.
+- **2026-10-10 — Story data (P5.13, P5.24).** One dataset, `attendance-story-data.ts`: class 6-2 of
+  OŠ "Jovan Popović" (14 pupils, Monday's six lessons, a gradebook of five assessments with marks
+  1–5 and the application's averages), the eight site workers of Kvadrat Gradnja (October 2026
+  open, Nenad Ilić's last week still to enter; September 2026 locked after payroll with one
+  correction) and their clock records. **October 2026 has no Serbian public holiday**: the
+  stories mark Tuesday 20 October as an _illustrative_ public holiday, labelled so in its note;
+  allowance names are labelled illustrative too (P5.24: legal limits are not encoded).
+
+### Notes for the lead: P5.15 Print templates, P5.12 Learning
+
+- **2026-10-10 — Print templates: one frame, four templates, generic names (P5.15).**
+  `templates/print-page.tsx` (PrintPage), `print-parts.tsx` (PrintTitle, PrintDetails,
+  PrintTable, PrintSection, PrintSignatures, PrintIssuedLine — exported, so an application can
+  compose a printout of its own), `print-templates.tsx` (the four templates), the pure logic in
+  `print-logic.ts` (tested). **Names, decided:** `PrintDocument` (a business document: an invoice,
+  a delivery note, an offer), `PrintCertificate`, `PrintGradeReport` (results by subject for a
+  period: a school report, a transcript), `PrintFinding` (a medical finding, an inspection's
+  finding). Every word comes from props (D1, D5); "Seller", "Patient", "Grade" are the stories'
+  data. **Fixed order per template:** PrintDocument — letterhead, title and number, parties side
+  by side, details (3 columns), the lines (PrintTable), the totals, notes, place and date,
+  signatures; PrintGradeReport — letterhead, title and period, the person's details, the table
+  (the average a `subtotal` row), summary, remarks, place and date, signatures and seal;
+  PrintFinding — letterhead, title and number, the person's block in a frame (`subjectTitle`),
+  details, titled sections, place and date, the signature (one stands at the end) and stamp, the
+  `confidentiality` note in the footer of every page; PrintCertificate — one page, landscape by
+  default, **centred** (the paper's convention, not the screen's start alignment), a double frame
+  line filling the page area, the emblem (an image, D18), the title, `lead` ("This certifies
+  that"), the recipient's name as the largest text over a line, the text, the number, place and
+  date, signatures with the seal between them; **no page number** unless `pageNumbers`.
+  **The totals reuse DocumentTotals** as they are on screen (recap, deductions, home currency,
+  footnotes; nothing computed); deductions on paper are passed without `href`. The lines reuse
+  P5.18's line types by typography (`lineType`, `lineText`: heading bold across, text small,
+  subtotal semibold under a strong rule). Amounts and dates in the stories go through MoneyText,
+  NumberText, DateText; `issued.date` through `format.date` ("Novi Sad, 10.10.2026.",
+  `messages['print.placeAndDate']`).
+- **2026-10-10 — Paper is always light (P5.15).** The sheet carries `data-liro-theme="light"`
+  and `color-scheme: light`, so every token resolves to its light meaning whatever the screen's
+  theme (tokens.css allows a theme on any element); on screen the sheet stands on surface.sunken
+  in the screen's theme. Tones are text and borders, never filled backgrounds: browsers leave
+  backgrounds out of a printout by default, so a fill would print as nothing. No raw colour: the
+  watermark uses `var(--liro-border-default)` (draft) and `var(--liro-status-danger-border)`
+  (cancelled).
+- **2026-10-10 — The sheet on screen (P5.15).** A4 at 96 CSS px per inch (210 × 297mm, 297 ×
+  210mm landscape) with the margins as its padding and a small shadow (`shadow-sm`), on
+  surface.sunken with 24px around it (16px at the sides on phones). **Narrow screens:**
+  `fit="width"` (default) scales the whole sheet down with CSS `zoom` (`fitZoom`, tested: never
+  above 1, never below 0.25, rounded down so it never overflows; measured with a ResizeObserver);
+  `fit="none"` keeps it at 100% in a named region that scrolls sideways (`role="region"`,
+  `tabIndex=0`, the focus ring inside). The page never scrolls sideways (checked in the phone
+  stories).
+- **2026-10-10 — CSS paged media in Chrome: what works (P5.15, measured in the pinned Playwright
+  image, Chromium 153, `page.pdf({ preferCSSPageSize: true })`, text checked with pdftotext and
+  the pages looked at).**
+  1. `@page <name> { size: A4 portrait|landscape; margin: … }` — works; PDF pages 595 × 842pt
+     (842 × 595pt landscape). Each PrintPage writes its own **named page** (`pageName(useId())`),
+     so two PrintPages (a docs page, the certificate preview inside CoursePage) never share one
+     rule. **Found:** a named page forces a page break before any following content with another
+     page name — Storybook's `#storybook-highlights-root` and the provider's portal after the
+     sheet produced an **empty last page**. Fix: the same `<style>` gives every ancestor of the
+     sheet the page name (`@media print { :has([data-print-page='<name>']) { page: <name> } }`),
+     so what follows is on the same named page; one page again (tested on every story printed).
+  2. **Page-margin boxes** (`@bottom-right { content: "Page " counter(page) " of "
+counter(pages) }`, Chrome 131+) — work: "Page 2 of 5" on every page, at the end side
+     (`@bottom-left` in right to left). The words come from `messages['print.pageNumber'](page,
+pages)`: `pageNumberContent` calls the message with two private-use marks and turns the text
+     around them into CSS strings, so a language that names the total first keeps its order
+     (tested). `var(--liro-…)` works inside the margin box (the font and the secondary colour).
+     The counters are Latin digits (`decimal`), as `format` writes dates and numbers.
+  3. **Repeating a header and a footer:** only a real `<thead>` / `<tfoot>` repeats on every page.
+     **Elements with `display: table-header-group` do not** (tested on divs, in a flex and a block
+     parent, with one cell and with rows: printed once). So the frame is a presentational
+     `<table role="presentation">` (block and flex on screen, a table on paper): the header in its
+     `<thead>` repeats at the top of every page. The footer is `position: fixed; bottom: 0` on
+     paper — **fixed elements repeat on every page** — and an invisible copy in the `<tfoot>` keeps
+     its room at the bottom of every page, so content never runs under it (before that copy the
+     last row of a page ran under the footer). The visible footer is also at the bottom of the
+     last page. Running elements (`position: running()`, `content: element()`) are not in Chrome.
+  4. A data table's `<thead>` repeats on every page (PrintTable; `display: table-header-group`
+     stated in styles.css as the plan asks); `break-inside: avoid` keeps a row whole (no row
+     was split in the printed stories); `break-after: avoid` on headings (and a table's heading
+     row) and `orphans` / `widows` 3 are set — no heading ended a page in the printed stories,
+     but these were not provoked separately. These rules live in styles.css under `[data-slot='print-sheet']`, so
+     they hold for any content an application puts in a PrintPage; the frame's own rows
+     (`data-slot="print-frame-row"`) are excluded, or the body could not break at all.
+  5. **The watermark** (Draft, Cancelled) is a fixed element on paper, so it is on every page; on
+     screen it is across the first page. It is drawn as generated content (`content:
+attr(data-text)`) of an `aria-hidden` element, a picture for the eye only; the marker block at
+     the top says it in words.
+  6. **An ancestor's `min-height: 100dvh`** (Storybook's frame, an application's full-height
+     wrapper) is taller than the printed page area and added an empty page: on paper every ancestor
+     of a PrintPage loses its minimum height (styles.css, `:has([data-slot='print-page'])`).
+  7. Measured page counts: the 98-line invoice 5 pages (the table header and the page header on
+     each), the long finding 4, the long letter 3, the certificate 1, every one-page story 1; dark
+     theme and right to left print the same light paper, mirrored.
+- **2026-10-10 — No application chrome (P5.15).** PrintPage brings none and hides its own screen
+  parts on paper (the backdrop, the shadow, the zoom, the padding — the `@page` margins take its
+  place). The application shows it alone on its print route (or a print window); the rules above
+  keep a full-height wrapper from adding pages. Printing a page that holds a PrintPage inside its
+  shell is not supported (the shell would print too).
+- **2026-10-10 — The printed marker of a draft and a cancelled document (P5.15; amends P5.18's
+  "The PDF's marker is the Core's").** `status` on every template: `{ kind: 'draft', note? }`
+  prints "Draft" (`messages['print.draft']`) in a 2px border.strong box at the top of the first
+  page, the note under it, and the word across every page; `{ kind: 'cancelled', by, at, reason,
+document? }` prints CancellationBanner's words (`document.cancelledTitle`,
+  `document.cancelledBy` with `format.date` and `format.time`, `document.cancelReason`, the
+  cancellation document's kind and number, left to right) in a 2px status.danger.fg box (danger,
+  as the badge, P5.23), and "Cancelled" across every page in the danger border colour. The Core
+  may print with these templates or keep its own PDFs; the marker is now available to both.
+- **2026-10-10 — CoursePage (P5.12).** `templates/course-page.tsx`, counting in `course-logic.ts`
+  (tested: `moduleProgress`, `courseProgress`, `findLesson`). The modules, lessons, their states
+  (`done` / `todo` / `locked` with `lockedReason`) and the content are the application's; the page
+  counts lessons for the progress and decides nothing.
+  1. **Header:** the course's title (h1, `text-h2`) and `subtitle` at the start; at the end the
+     progress, "7 of 12 lessons" (`course.progress`, numbers through `format.number`) over a
+     ProgressBar (max 320px); under the title on phones.
+  2. **Outline** (desktop: a 300px card at the start, sticky 16px from the top, "Course outline"
+     as its h2; phones: a Drawer from the start side opened by a neutral "Course outline" button
+     with ListTree, above the lesson — **the content first**; following a lesson closes it):
+     modules as h3 with "3 of 3 done" (xs, tabular), lessons as a list. **States in words:** each
+     lesson's second line joins its `detail` ("Video · 12 min") with "Done" or "Locked: <reason>";
+     icons CircleCheck in status.success (done), Circle (to do), Lock (locked) in text.tertiary. A
+     locked lesson is not a link (it cannot be opened; its reason is visible). **The lesson shown**
+     is the selection, neutral (D17): surface.selected, the 2px border.selected bar at the start,
+     semibold, `aria-current="page"`.
+  3. **Lesson:** its title (h2, `text-h3`) and detail, the application's content, then "Mark as
+     done" (the confirm intent, the page's one primary action, at the end) while the lesson is to
+     do — `markingDone` disables it while the application saves — or "Lesson completed" (success
+     text with CircleCheck) once done; then the **pager**, a `nav` "Lessons": the previous lesson
+     at the start and the next at the end, each a bordered link box (max 320px) with "Previous
+     lesson" / "Next lesson" (xs secondary) over the lesson's title in the link colour, the arrow
+     mirrored in right to left, `rel="prev"` / `rel="next"`.
+  4. **Completion** (`completion`): a card above the lesson — CircleCheck, "Course completed" (or
+     the application's title), the application's line, "Download certificate" (the download
+     intent, primary: the page's main action once the course is done; `downloading` disables it)
+     and the certificate's **preview**, a PrintCertificate in a figure "Certificate preview", at
+     most 640px wide (the sheet scaled to it). The certificate file is the application's.
+  5. **States:** `loading` — skeletons in the outline, the progress and the lesson, `aria-busy`;
+     no modules — an EmptyState ("No lessons yet", messages), no outline; `defaultOutlineOpen`
+     opens the phone's drawer for a page restored as it was left (and its static story).
+- **2026-10-10 — Quizzes are the Questionnaire; the outcome is QuizResult (P5.12).** No quiz
+  component: a quiz is a lesson whose content is the general Questionnaire (P5.1: single and
+  multiple choice, Back, summary, progress). The grading and the pass mark are the application's;
+  **`QuizResult`** (new, `components/quiz-result.tsx`) shows them: the outcome first in words and
+  a tone ("Passed" with CircleCheck in success, "Not passed" with CircleX in danger, `role=status`),
+  the score "8 of 10 correct" (`quiz.score`, 20px semibold, tabular, `format.number`), the
+  application's `requirement`, its `actions` (Retake, Continue) at the end, and an optional
+  `review`: each question with "Your answer: …", "Correct" / "Incorrect" in words with an icon,
+  and "Correct answer: …" under a wrong one.
+- **2026-10-10 — Found: `font-normal` is not a utility here (P5.15).** The theme resets
+  `--font-weight-*` and defines `regular`, `medium`, `semibold`, `bold`, so `font-normal` produces
+  no CSS (neither in `@veljaos/ui/styles.css` nor in Storybook's). PrintTable's first cell (a
+  `th`) printed bold until it used `font-regular`. **Not fixed here (outside the steps):** the same
+  class is in `document-totals.tsx` (the recap's header and category cells are bold), `data-table`,
+  `my-shifts`, `permission-matrix`, `signer-list`, `shift-planner` — each `th` meant to be regular
+  is bold. A one-line fix per file (`font-normal` → `font-regular`), with new baselines.
+
+### Notes for the lead: P5.22 Rich text
+
+- **2026-10-10 — RichTextField and RichText on Tiptap's MIT packages (P5.22, owner: "Tiptap,
+  MIT-licensed packages only — no Pro or paid extensions; merge fields as pills; @mention; the
+  value stored as Tiptap JSON plus sanitized HTML").** `packages/ui/src/rich-text/`:
+  `rich-text-field.tsx` (the field), `toolbar.tsx`, `link-dialog.tsx`, `extensions.ts` (the
+  schema), `rich-text.tsx` (the read-only view), and the pure logic in `rich-text-logic.ts`
+  (tested: `richTextToHtml`, `richTextFromHtml`, `sanitizeRichHtml`, `normalizeRichText`,
+  `safeHref`, `linkFromInput`, `richTextLength`, `richTextMentions`, `richTextMergeFields`,
+  `isRichTextEmpty`, `richTextValue`, `suggestionAt`, `toolbarKeyTarget`).
+  1. **`@veljaos/ui/rich-text`, a subpath of its own** (tsup entry `rich-text`,
+     `exports["./rich-text"]`), as `@veljaos/ui/charts`: only `dist/rich-text.js` names
+     `@tiptap/*` — `index.js` and the shared chunks do not — so an application without rich text
+     never loads Tiptap or ProseMirror. The Tiptap packages are dependencies of `@veljaos/ui`
+     (pinned exactly, 3.31.4, the latest stable on 2026-10-10). The consumer-check app imports
+     `RichTextField` from the packed subpath (`apps/consumer-check/src/RichTextExample.tsx`, not a
+     protected file; `check.mjs` is unchanged).
+  2. **Only MIT packages, each checked in its `package.json` and `LICENSE.md`:** `@tiptap/core`,
+     `@tiptap/pm`, `@tiptap/react`, `@tiptap/extension-document`, `-paragraph`, `-text`,
+     `-heading`, `-bold`, `-italic`, `-underline`, `-link`, `-list`, `-hard-break`,
+     `@tiptap/extensions` (UndoRedo only) — all MIT, © 2025 Tiptap GmbH. StarterKit is not used
+     (it would bring code, code block, blockquote, strike and horizontal rule, which the field does
+     not offer). Mention and Suggestion are not used either: the "@" and "{{" lists are our own
+     (point 5), so `@tiptap/extension-mention` and `@tiptap/suggestion` are not dependencies.
+     Their runtime dependencies are MIT as well: the ProseMirror packages through `@tiptap/pm`,
+     orderedmap, rope-sequence, w3c-keyname, linkifyjs, fast-equals, use-sync-external-store.
+  3. **The schema** (nothing else can enter the document): paragraph; heading levels **2 and 3
+     only**, named "Heading" and "Subheading" (the page has its h1; an h1 read from HTML becomes 2,
+     h4–h6 become 3); bold, italic, underline, link; bulleted and numbered lists **one level deep**
+     (Tab and Shift+Tab are not taken by the lists: in a form Tab moves to the next field, WCAG
+     2.1.2); line break (Shift+Enter); undo / redo; the **merge field** and the **mention** (our
+     own atomic inline nodes). Each paragraph and heading gets `dir="auto"` from a ProseMirror
+     decoration, so the JSON carries no direction attribute (Tiptap's own `textDirection` option
+     would write `dir` into every node of the value); text stays at the page's start side
+     (`text-align: match-parent`, as the fields' typing areas).
+  4. **The stored format** (the Core stores both; `onChange({ json, html, mentions, mergeFields,
+length })`):
+     - JSON: Tiptap's (`RichTextNode`, structurally Tiptap's `JSONContent`). A merge field is
+       `{ "type": "mergeField", "attrs": { "key": "customer.name" } }` (key: letters, digits, ".",
+       "_", "-", up to 64 — `MERGE_FIELD_KEY`); a mention is
+       `{ "type": "mention", "attrs": { "id": "u-7", "label": "Milica Petrović" } }`.
+     - HTML, always written by `richTextToHtml`: `<p dir="auto">`, `<h2 dir="auto">`,
+       `<h3 dir="auto">`, `<ul>`, `<ol start="N">`, `<li>`, `<br>`, `<strong>`, `<em>`, `<u>`,
+       `<a href="…" rel="noopener noreferrer">` (http, https and mailto only),
+       `<span data-merge-field="key">{{key}}</span>`, `<span data-mention="id">@Name</span>`.
+       Nothing else, every text and attribute escaped. **The Core fills a merge field** by
+       replacing each `span[data-merge-field]` (or the `mergeField` node) with its value; the
+       label is never stored, so renaming a field's label changes no document.
+  5. **"{{" and "@" lists:** our own, on the text before the caret in the current block
+     (`suggestionAt`: "{{" anywhere up to a "}" or a line end; "@" at the line's start or after a
+     space, at most two spaces in the name, as MentionCombobox's `mentionQueryAt`; merge fields and
+     mentions in the block count as one character "￼"). The list is MentionCombobox's: the
+     shared ComboboxPopover under the text, the focus stays in the text, `aria-activedescendant`,
+     `aria-autocomplete="list"`, `aria-controls` while open; ArrowDown / ArrowUp (wrapping), Home /
+     End, Enter or Tab chooses, Escape closes until the next trigger. Merge fields are filtered by
+     label (ignoring case and accents) and grouped by `group`; people as MentionCombobox (all,
+     filtered; or `onMentionSearch` after `mentionSearchDelay`, 300ms, with `mentionsLoading`);
+     "Nothing found" and "Loading…" as status lines. A chosen mention is followed by a space.
+  6. **Merge field pill:** inline-block, radius sm, a 1px border.default border on surface.sunken,
+     text.primary medium, 4px padding, no wrap — neutral, never blue (D17). Its text is the label
+     from `mergeFields` (the key when the application no longer has it); assistive technology
+     reads `richText.mergeField(label)` ("Merge field: Customer name"; a visually hidden span, the
+     visible label `aria-hidden`). Selected (arrows or click): the focus ring. A mention is
+     "@Name" semibold, as MentionText.
+  7. **Toolbar** (WAI-ARIA toolbar, `aria-controls` the text): text style (a menu with radio
+     items Normal text / Heading / Subheading; the button named "Text style: <current>"), Bold,
+     Italic, Underline | Bulleted list, Numbered list | Link, Insert merge field (a menu grouped by
+     `group`; only with `mergeFields`), Clear formatting (marks off, blocks to paragraphs). 28px
+     controls, radius sm, text.secondary; pressed toggles `aria-pressed` with the neutral selection
+     (surface.selected, border.selected border, text.primary); separators are 1px border.default
+     lines (decorative). One tab stop (the last control used); ArrowLeft / ArrowRight follow the
+     screen (mirrored in right-to-left) and wrap, Home / End (`toolbarKeyTarget`). A pointer press
+     keeps the focus and selection in the text; a key press keeps the focus in the toolbar (the
+     pattern's rich text example); a menu choice returns the focus to the text, Escape to the menu
+     button. Shortcuts: Ctrl/Cmd+B, I, U, K (link dialog), Z, Shift+Z; Tiptap's own
+     Ctrl/Cmd+Alt+2 / 3 and Ctrl/Cmd+Shift+7 / 8; `aria-keyshortcuts` on the toggles.
+  8. **Link dialog** (D14: a Dialog for one action): one "Address" field (left to right, focused
+     on open), Apply (submit, Enter), Cancel, and "Remove link" at the start when the caret is in a
+     link. `linkFromInput` completes "liro.rs/terms" → "https://liro.rs/terms" and "ana@firma.rs"
+     → "mailto:…" and refuses everything but http(s) and mailto (`richText.linkInvalid`). With no
+     selection the typed address is inserted as the link's text. The Link extension keeps
+     `openOnClick: false`, autolinks only addresses `linkFromInput` accepts, and its `isAllowedUri`
+     is `safeHref`, so no other scheme can enter through typing, paste or `value`. A link inside
+     the text being edited has `tabindex="-1"`: it is not a tab stop in a contenteditable anyway,
+     and so it is not a pointer target of its own (axe's target-size failed on a link alone on its
+     line inside the text box).
+  9. **The sanitizer is ours, pure and allow-list by construction** (`sanitizeRichHtml`, no
+     dependency): a small HTML tokenizer (comments, doctype, CDATA and processing instructions
+     dropped; Word's list bullets drawn as text between `<![if !supportLists]>` and `<![endif]>`
+     dropped; raw-text elements — script, style, textarea, title, iframe, noscript, xmp, noembed,
+     noframes — dropped with their content; template, svg, math, object, select, head, audio,
+     video, canvas dropped with their content; void elements except `<br>` dropped; character
+     references read, a named one in an attribute only with its ";") builds a tree of the kept
+     elements, which is read into the editor's JSON (`richTextFromHtml`: b → strong, i → em, h1 →
+     h2, h4–h6 → h3, div / td / blockquote … → paragraphs, whitespace collapsed as HTML shows it,
+     `<p>` closing an open `<p>` as HTML does) and written again by `richTextToHtml`. **Nothing of
+     the input is copied through**, so the output can only be the allowed tags with escaped text
+     and checked links; sanitizing its own output changes nothing (tested on the attack vectors of `rich-text-logic.test.ts` and
+     a Word fragment). **Why not DOMPurify:** the unit tests run without a DOM (Vitest's node
+     environment), RichText must render on a server, and DOMPurify returns its input unchanged
+     when no DOM is available (fail-open); and the output must be the editor's structure anyway,
+     which a general sanitizer does not produce. Used for: the HTML `onChange` reports, pasted and
+     dropped HTML (`transformPastedHTML`, so Word's styles, classes, colours, fonts and conditional
+     comments go and its paragraphs, lists, bold, italic, underline and links stay), and
+     `RichText`'s `html`.
+  10. **RichText** (read-only view, also the field's read-only state): React elements only, from
+      the JSON (normalized through the same reader: unknown nodes give their text, unsafe links
+      go) or from `html` (read by the sanitizer) — never `dangerouslySetInnerHTML`. The look is
+      the editor's (`RICH_CONTENT`): 13px, 8px between blocks, heading 16px and subheading 14px
+      semibold (the h3 and h4 sizes), lists indented 24px from the leading edge, links underlined
+      in the link colour; an empty line keeps its height; empty: "—" or `empty`. Blocks are 8px
+      apart through a flex gap (all margins reset: the package ships no reset). In the field's
+      read-only state it stands in a `role="group"` named by the label (not a `textbox`: a text box
+      holding links nests targets and confuses the roles), in the read-only look (no border or
+      background, the same padding).
+  11. **Field states:** the frame is an input's (border.control, radius md, focus colour while
+      anything inside has the focus, danger when invalid, surface.disabled and border.default when
+      disabled); the text box is a contenteditable `role="textbox"` with `aria-multiline`,
+      `aria-labelledby` the label (the Field's `group` label: a contenteditable is not labelable),
+      `aria-describedby` the description, error, reason and counter, `aria-invalid`,
+      `aria-required`, `aria-disabled`, `aria-placeholder`. `minRows` (default 4) sets the height
+      before it grows. Placeholder: text.tertiary over the empty text, `aria-hidden`. Loading:
+      three skeleton lines, `aria-busy`, "Loading…" for assistive technology, toolbar disabled.
+      Disabled: not editable, the toolbar's controls disabled, the reason under it.
+  12. **`maxLength`** counts `richTextLength`: characters as the reader counts them (code points),
+      a merge field, mention or line break one each, block boundaries none. Under the frame at the
+      end: "120 / 2,000" (`richText.count`, both through `format.number`, xs text.secondary,
+      tabular), for assistive technology "120 of 2,000 characters". **Beyond it nothing is cut or
+      blocked** (the GOV.UK character count pattern: a paste is never lost): the counter turns
+      danger with CircleAlert and "37 characters too many" (`richText.overLimit`), the text box is
+      `aria-invalid`; the application refuses to save. `onChange` reports `length`.
+  13. **Editor lifecycle:** Tiptap's `immediatelyRender: false`, so a server and the browser's
+      first render draw the same thing (the value as RichText inside the frame, the toolbar);
+      `injectCSS: false` (no `<style>` element; the needed ProseMirror rules — `white-space:
+pre-wrap`, the separator image — are classes). The extensions and editor props are made
+      once and call the latest props through a holder (`LiveCallbacks`); `editable` is applied
+      with `setEditable` (Tiptap's `useEditor` keeps the first value). A controlled `value` that
+      is not the JSON this field just reported (and differs from the editor's) replaces the
+      content without an `onChange`.
+  - **Messages:** `richText.toolbar`, `richText.textStyle`, `richText.textStyleCurrent`,
+    `richText.paragraph`, `richText.heading`, `richText.subheading`, `richText.bold`,
+    `richText.italic`, `richText.underline`, `richText.bulletList`, `richText.numberedList`,
+    `richText.link`, `richText.clearFormatting`, `richText.insertMergeField`,
+    `richText.mergeFields`, `richText.mergeField(label)`, `richText.linkAddress`,
+    `richText.linkHint`, `richText.linkInvalid`, `richText.linkApply`, `richText.linkRemove`,
+    `richText.count(countText, limitText)`, `richText.countLabel(countText, limitText)`,
+    `richText.overLimit(count, countText)`. Reused: `mention.list`, `field.loading`,
+    `field.noResults`, `dialog.cancel`.
+  - **Stories:** "Components/Rich text/RichTextField" (Offer letter template, Comment with
+    mentions, Empty, Read-only, Disabled with reason, Error, Over the limit, Loading, Long text,
+    Phone width, Pasted from Word cleaned, Arabic, Japanese; interaction: Typing and shortcuts
+    (with undo and the blur), Merge field from "{{", Merge field from the menu, Mention with "@",
+    Mention search by the application, Link dialog, Toolbar keyboard (both directions),
+    Controlled value) and "Components/Rich text/RichText" (Offer letter
+    template, From stored HTML, Comment with mentions, Pasted from Word cleaned, Empty, Long
+    text, Phone width, Arabic, Japanese). The field stories show what `onChange` reports (the
+    stored HTML, the mentions' ids, the merge fields' keys, the length) under the field.
+
+### P5.17 and P5.24 example screens — notes for the lead (fold in, then delete)
+
+- **2026-10-10 — Example screens of P5.24 (working time), three examples with one dataset each.** Built only from `@veljaos/ui`; data in `apps/storybook/src/examples/data-G.ts`, screens in `screens-G.tsx`, routes in `GROUP_G_ROUTES`. Every limit and allowance is labelled "illustrative"; no legal rule is encoded anywhere.
+  1. **Kvadrat Gradnja d.o.o., the site crew at Bulevar Evrope 24** (Milica Petrović's account, module tabs Timesheets / Clock records). **Timesheet, October 2026** (`/working-time/timesheets/2026-10`): eight workers × 31 days in AttendanceGrid's hours mode — regular work, night work (the guard, with the illustrative night-work allowance mark), overtime (Zoran Petrović's Thursdays: 10 h days, the hours over 8 counted as overtime by the application), work on the illustrative public holiday of Tuesday 20.10. (labelled "Illustrative public holiday" in its column; the guard works it with both allowance marks, the others have PH 8), sick leave, annual leave, a business trip, paid and unpaid leave, one absence, a 7,5 h day (Vladimir Tomić leaves early on 29.10.); totals per type per worker (worked, night, overtime, leave and holiday, total) and per day (worked, leave and holiday), and the crew's four key figures above. "Hand off to payroll" (`handOff`) turns into "Handed off to payroll on 02.11.2026." and the status into Submitted. **Locked after payroll** (`?state=locked`): the lock line ("Payroll for October 2026 has been calculated.", locked by Milica Petrović on 04.11.2026.), read-only, one correction — Vladimir Tomić's absence on 28.10. became sick leave (certificate after the payroll run), the original kept, who, when, why; his total and the crew's leave hours include it (+8 h). Phone: one worker per screen (the locked month opens on Vladimir Tomić, `&employee=w7`). **Clock records, Thursday 29.10.2026** (`/working-time/clock-records/2026-10-29`): the gate terminal (one record from a phone at the crane); Milan Jovanović's missing clock-out corrected by the foreman, the original kept; the guard's night ends "next day". Each record's hours are that day's hours in the timesheet (checked).
+  2. **Trgovine Bačka d.o.o., Prodavnica 12, Novi Sad** (the store manager Tamara Đukić's account; tabs Schedule / Swap requests). **Schedule** (`/shifts/prodavnica-12/2026-10-12`): ShiftPlanner, early 07–15 and late 15–23, eight people (by person, or by team); the week was published on 02.10. and changed since (two shifts marked Changed, "Publish changes" states 36 shifts for 8 people and 2 open conflicts); conflicts from the application — Luka Đorđević's 8 hours of rest between Wednesday's late and Thursday's early shift (illustrative 12 h), Sanja Vuković's approved leave on Sunday; coverage per day from the store's need (3 + 3 on weekdays, 2 + 2 Saturday, 1 + 1 Sunday): "One short in the late shift" on Thursday. The application works the hours and the coverage out again after every change. **My shifts** (`/me/shifts`, the cashier Stefan Lukić's account): his published shifts from today — this week and next; Thursday's changed shift ("Was Early, 07:00–15:00"); Saturday's swap request waiting; the planned week as published (Wednesday still Late: its change is not published yet). `?swap=p-stefan-2026-10-15` opens the swap dialog for Thursday 15.10. (MyShifts' `defaultSwapShift`). **Swap requests** (`/shifts/prodavnica-12/swap-requests`): WorklistPage as the supplier-invoice approvals (P5.23): three requests (Stefan's Saturday for Jelena Rakić's Sunday — no conflicts; Nemanja Pavlović's Friday to anyone qualified — Stefan is free; Sanja Vuković's Thursday to Nemanja — a warning: 24 h, above the illustrative 16 h of a students' contract, `?request=r3`); the detail with the shift, who takes it, the shift given back, the reason and the application's check (an Alert); Reject asks for a reason (ReasonConfirmDialog with the store's reasons), Approve is the main action; on a phone the decisions stand in the bottom bar.
+  3. **Dom zdravlja Novi Sad, the emergency department** (the head nurse Snežana Ilić's account; tabs Schedule / Working-time balance). **Schedule, week 05.–11.10.2026** (`/shifts/emergency/2026-10-05`): morning 06–14, afternoon 14–22, night 22–06 (+1); twelve people grouped by team (doctors; nurses and technicians, teams A and B); the illustrative 8-day rotation (2 morning, 2 afternoon, 2 night, 2 off) applied to every team of four two days apart (team B one day further on), so every shift has one doctor and two nurses; then the changes, said in an Alert above: Sonja Kovač's two shifts taken off (sick leave: "Nurses: One short in the morning shift" on 08.10. and 09.10.), two shifts added — and the application's conflicts: Nikola Ilić's afternoon 8 hours after his night (illustrative 11 h), Jelena Popović's Sunday morning straight after her night ("No rest") and her 56 hours (illustrative 48 h). Draft, Publish with the counts, "Apply rotation…" (`?rotation=open` pictures the dialog, `defaultRotationOpen`). **Working-time balance** (`/shifts/emergency/balance/2026-08-10`): the redistribution period 10.08.–04.10.2026, eight weeks of 48, 48, 40, 40, 32, 32, 40, 40 h (320 h, reference average 40 h, illustrative), per person planned, worked, signed difference and the exact running average (worked ÷ 8, at most three decimals); warnings from the application (average above 48 h, a 60 h week above 56 h, 36 h over plan, 24 h under plan — all illustrative); Miloš Todorović, who started on 05.10., has no figures ("—", never 0).
+  4. **The date.** The examples' today is 06.10.2026. The owner listed "the October 2026 monthly timesheet … locked after payroll", so the working-time example of Kvadrat Gradnja is read at the month's end (the hand-off on 02.11.2026., the lock on 04.11.2026., the correction on 05.11.2026.) — the one place where the examples look past their today. The store and the health facility use the week of today and the next one. If the owner prefers the month to agree with the rest, `OCTOBER` and the dates in `SITE` / `CORRECTION` / `CLOCK_DAY` in `data-G.ts` move it; September would contradict group F's payroll run (September in review, not locked).
+- **2026-10-10 — Example screens of P5.17 (industry examples: health and school).** Data in `data-H.ts`, screens in `screens-H.tsx`, routes in `GROUP_H_ROUTES`. POS checkout, warehouse picking and a course lesson are not built here (another helper, later).
+  1. **Health — appointment booking** (Dom zdravlja Novi Sad, Ambulanta Liman). **Patient portal** (PortalShell; the patient Jovana Nikolić; sections Appointments, Results, Messages; the institution's address in the footer): `/portal/health/book` — a Stepper (Service and doctor, Time, Confirm), the service (RadioGroupField) and the doctor (her chosen doctor, SelectField), Continue; `?step=time` — "Check-up with dr Marko Stanković" with Change, SlotPicker of his free times next week (12 times, 12.–16.10.), Book unavailable until a time is chosen ("Choose a time first."); `?step=confirm` — Wednesday 14.10. at 11:30 chosen, the appointment in words, Book; `?step=done` — "Your appointment is booked", the appointment with Confirmed, and a walk-through link to the clinic's schedule of that day. **Clinic** (the reception's account, Gordana Babić; tabs Schedule / Doctor's calendar / Patients): `/clinic/schedule/2026-10-14` — ResourceSchedule, three doctors and the laboratory, 07–13 in 30-minute appointments; the break and dr Vesna Lukić's annual leave hatched with their reasons, the laboratory's afternoon ("Samples go to the laboratory"); Jovana's appointment at 11:30 "booked online"; moving an appointment is applied by the application; opening hers shows her finding. `/clinic/calendar/stankovic/2026-10-12` — CalendarView, his week (44 appointments, the team meeting on Thursday), the patient first in each title. `/clinic/patients/jovana-nikolic/findings/IZ-2026-03417` — her last finding (DetailPage): the diagnosis and the finding are health data, MaskedValue with the clinic's reasons and Other (`?reveal=ask` pictures the reason dialog, `?reveal=shown` the diagnosis after a reason); the next appointment is the one she booked. **One dataset:** the free times are exactly the doctor's consulting slots that are neither booked nor on a break; her appointment is one of them, and the schedule, the calendar and the finding show it (checked).
+  2. **School — timetable and attendance** (OŠ „Jovan Popović“ Novi Sad, class 7/2, 2026/27; the class teacher Dragana Simić's account; tabs Timetable / Attendance / Gradebook). `/school/classes/7-2/timetable` — Timetable, six periods with their times, Wednesday's written test (warning tone, "Written test 2"), Thursday's substitute; lesson 3 running now (`now` 10:05 on Tuesday 06.10.) with a link "Mark attendance". `/school/classes/7-2/attendance/2026-10-06` — AttendanceGrid in the code mode, the day's six lessons: lessons 1 and 2 marked by their teachers (Luka Jovanović absent, Mila Lazarević late, Teodora Savić excused), lesson 3 to be marked from its first cell, one key per pupil; the application's counts per lesson and "Lessons missed today" per pupil. `/school/classes/7-2/gradebook/mathematics` — the gradebook (marks 1–5 one key each, the application's averages rounded half up to two decimals; Luka has no oral mark on 22.09., the day he was ill — checked against his absences). **Parents' portal** (`/portal/school/attendance`, PortalShell; Snežana Jovanović, parent of Luka): the counts (9 lessons missed, 7 excused, 2 not excused yet), today's two lessons not excused yet — the same two the grid shows (checked) — with "Excuse today's absences", and the term's absences as a table (cards on phones).
+- **2026-10-10 — Other accounts in the example shell (P5.17, P5.24).** The example `Shell` takes `account` (name, e-mail, the person's organisations, the screens their search goes to): a store manager, a cashier, a head nurse, a receptionist and a teacher are not Milica Petrović, so their user menu, company switcher and search are theirs, and there is no bell (Milica's notifications are not theirs). Kvadrat Gradnja's screens keep Milica's shell.
+- **2026-10-10 — The tenant's week start and time zone in the examples (P5.17, P5.24).** `ExampleProvider` leaves the week's first day to the story's locale ('en': Sunday) and shows instants in the device's zone. The new screens wrap themselves in `Tenant` (`screens-G.tsx`): a nested `LiroProvider` with `weekStartsOn={1}` (a Serbian tenant's Monday — the planner's Today, My shifts' weeks, the calendar), `timeZone="Europe/Belgrade"` and the Serbian format in that zone, so a clock-in or a correction made at 09:15+01:00 is shown at 09:15 on every machine. **Suggestion for the lead:** move both into `ExampleProvider` for every example (it would change the week start of the older examples' date pickers and the shown time of instants on non-Belgrade machines — a baseline change to review), then drop `Tenant`.
+- **2026-10-10 — Statuses added to the examples' tone map (P5.17).** `Confirmed` success (an appointment), `Excused` neutral and `Not excused` warning (a pupil's absence, waiting for the parent). For the list of statuses in "Cancelled is danger, everywhere".
+- **2026-10-10 — Dataset checks of P5.17 and P5.24** (`dataset-checks.ts`, run when the examples load; a disagreement throws): the timesheet's totals add up per worker and per day (worked, leave, total), the locked month differs from the open one only by the correction; every clock record's hours equal the timesheet's hours that day and its clock-out minus clock-in; the planners' hours are 8 per shift, their coverage counts the day's shifts, their publish counts the shifts; each swap request's shift is the person's and a colleague who gives a shift back is free that day; Stefan's swap states match the requests; the balance's difference is worked − planned and its average × 8 = worked; the portal offers only free times (no booking, break or leave), her booking is one of them, the finding's next appointment and the doctor's calendar show it; Luka's absences today are the grid's, and he has no mark on a day he was away.
+- **2026-10-10 — Found while building the examples (components, not changed here).** (a) ShiftPlanner's "Apply rotation…" opens with no people chosen and no offset ("0 assignments will be added."), so its picture (`defaultRotationOpen`) cannot show a filled-in rotation; a `defaultRotation` (pattern, people, offset) would let an application restore one. (b) MyShifts' swap dialog cannot be restored with a colleague chosen (`defaultSwapShift` only); ShiftSwapDialog has `defaultValue`, MyShifts does not pass one through. (c) ResourceSchedule's 30-minute bookings at 1280px show truncated names ("Jelena…") — expected at 2.5px a minute; noted, not a fault. None blocks the examples; no component was added or changed.
+
+### P5.24 b and d — notes for the lead (fold in, then delete)
+
+- **2026-10-10 — ShiftPlanner (P5.24 b).** With `assignChanges`, `removeChanges`, `moveChange`, `rotationAssignments`, `shiftSpan`, `crossesMidnight`, `templateKey`, `templateForKey`, `shiftPeriod`, `todayPeriod`, `shiftsByWeek`, `conflictList` (exported; with the internal `periodDays`, `weekStartOf`, `rangeCells`, `inRange`, `cellAtPoint`, `cellConflictTone`, `clockMinutes`, `hoursAndMinutes` tested in `shift-logic.test.ts`).
+  1. **What it is:** people × the days of a week or a period (up to 62 days, `MAX_PERIOD_DAYS`), each cell holding zero or more assignments of the application's **templates** (`id`, `label`, `start`/`end` HH:mm, `short`, optional `key` and `tone`). A template whose end is not after its start **crosses midnight**: shown "22:00–06:00 (+1)" (`shifts.nextDayMark`), read as "22:00 to 06:00 the next day" (`shifts.timeRange`). Its length (`shiftSpan`, minutes) is display only — the palette's tooltip "8 h" / "7 h 30 min" (`shifts.duration`), never a total or a limit. Template tones are `neutral`, `premium`, `success` only: never blue (D17), never warning or danger, which say "conflict".
+  2. **The planner never decides validity** and encodes no legal limit. It reports changes — `onChange(changes)` with `add` (row, date, template), `remove` (assignment, from) and `move` (assignment, from, to) — and shows what it is given. Rest between shifts, double booking and weekly hours arrive as `conflicts` (row → date → `{ tone, text }[]`): an icon in the cell (a triangle for a warning, an octagon for a problem), the words in the cell's name ("Warning: …", "Problem: …"), and a **Conflicts** summary above the grid (danger first within a cell) with "Go to", which opens a collapsed group, moves the focus to the cell, and on a phone switches the day. Never colour alone.
+  3. **Layout:** a toolbar — the period (previous, Today, next: `shiftPeriod` moves by the period's length, `todayPeriod` takes the same length from the first day of today's week, the provider's `weekStartsOn`), the dates; the view switch (the ToggleGroup primitive: "By person" and each of the application's `groupings`, e.g. By team, By site — a person may stand in two groups); at the end the state badge (Draft neutral, Published success, Changed since publishing warning with PenLine), "Apply rotation…" and **Publish**, the page's main action, last (D13). Then the palette (each template a chip with its times and its key, Kbd), the Conflicts summary, and the grid in a bordered box that scrolls sideways: the person column sticky at the start (name semibold, subtitle xs), a day per column (weekday short, date, "Today" in words; `aria-current="date"`), planned **hours** at the row's end (`format.number`, "38 h", null "—"; shown when any row has `hours`), **coverage** at the columns' foot ("5 of 6", the application's tone as an icon and its `note` in words). Rows grouped under collapsible headings (a band on surface.sunken, a chevron button with `aria-expanded`, the application's `note`); `collapsed` / `defaultCollapsed` / `onCollapsedChange`.
+  4. **Keyboard** (a table with roving focus, as PermissionMatrix — not `role="grid"`, which jsx-a11y refuses on a table; one cell button in the tab order, described by the instructions): the arrows move (`matrixKeyTarget`: the forward arrow in the reading direction to the next day, B.7), Home / End, Ctrl+Home / Ctrl+End; **Shift with an arrow selects a range** (neutral: surface.selected with a border.selected border; "selected" in each cell's name; "2 days selected." announced); a template's **key** (its `key`, else its position 1–9; without case) assigns it to the range or the cell — only where the cell does not already hold it (`assignChanges`); **Delete / Backspace** removes the cells' assignments; Escape clears the range; **Enter or Space opens the cell's menu**: "Assign" with every template (shortcut shown), then per assignment "Move … to…" (a dialog: person and day, `moveChange`) and "Remove …" (destructive). Each change is announced politely ("Late assigned to 2 days.", "2 assignments removed.", "Early moved to …").
+  5. **Pointer:** a click opens the cell's menu (the non-drag way, WCAG 2.5.7); Shift+click extends the range. **Dragging** follows "Launchpad dragging is live": pointer events, never HTML5 drag and drop; mouse after 4px, touch after a 250ms press without moving more than 8px; a template from the palette, or an assignment chip to another cell, lifts (shadow lg, border.strong, the raised layer, `cursor-grabbing`) and follows the pointer; the cell under the pointer (`cellAtPoint` on boxes measured when the drag starts — right to left needs no mirroring) shows a neutral 2px dashed border.strong placeholder on surface.sunken; Escape or a cancelled pointer puts it back; nothing animates, so nothing moves under reduced motion. A press on a chip without moving opens the menu.
+  6. **Publishing:** `status` ('draft' | 'published'), `changedSincePublishing`; Publish ("Publish changes" after publishing; none while published and unchanged, or read-only) opens a ConfirmDialog (family primary, Send) whose message states the application's `publishCounts` ("27 shifts for 6 people will be visible to them. 3 conflicts are still open."); `onPublish` may return a promise.
+  7. **Rotation:** `RotationPattern` (`id`, `label`, `steps`: template id or null for a day off). "Apply rotation…" (a Dialog): the pattern (its steps shown as chips, a dash for a day off, each named for assistive technology), the people (MultiSelectField; the rows of the selected range when it opens), From / To (the period by default), "Each next person starts later by" 0 … steps−1 days; a live line "10 assignments will be added."; Apply reports `rotationAssignments(pattern, people, start, end, offset)` as `add` changes. What happens to a cell's earlier assignments is the application's.
+  8. **Phones** (below 48em or `layout="phone"`): one day at a time — previous / next day, the day in words ("Today" marked), the day's coverage; the Conflicts summary for that day; then per group the people as cards (name, hours, subtitle, the day's shifts as chips with the template's name and times, conflicts in words) with a 28px menu "Change: <name>, <day>" (assign, move, remove). No palette and no dragging on phones. `day` / `onDayChange` make the day controlled.
+  9. Initial states for pictures (P5.23): `defaultSelection` (a range), `defaultRotationOpen`, `defaultGroupBy`, `defaultCollapsed`. `readOnly`: no palette, menus, dragging or Publish; the cells can still be walked and read. `loading`: skeletons. No rows: EmptyState ("No people in this plan").
+- **2026-10-10 — MyShifts and ShiftSwapDialog (P5.24 b).** **MyShifts** is the employee's own view, made for a phone: the heading ("My shifts" by default, h1), weeks by `shiftsByWeek` ("This week", "Next week" with their dates; later weeks by their dates), each shift a card — weekday and date ("Today" in words), the template's name and times (crossing midnight as in the planner), place · team, "Changed" (a warning StatusBadge with PenLine) followed by the application's words of what changed, a swap request's state in the application's words, and "Request swap" (neutral, ArrowLeftRight), offered when `onSwapSubmit` is given and the shift has no `swapState` (or `swappable`). **ShiftSwapDialog**: the shift on top (day in words, name, times, place), "Who takes it" (Anyone qualified / A colleague; `allowAnyone` false leaves only colleagues), the colleague (required when chosen), "Their shift you take instead" (optional, the colleague's `shifts`), the reason (`reasonRequired`); Cancel, then Send request; a returned promise keeps it working (LoadingButtonPrimitive, not dismissible) and closes it when it resolves. It reports `{ shiftId, colleagueId | null, takeShiftId | null, reason }`; who qualifies and the **approval are the application's** — the approval belongs on the worklist pattern (P4.3, P5.23) in the examples, not in this component. Each shift has its own dialog with its button as the trigger, so the focus returns to it.
+- **2026-10-10 — WorkingTimeBalance (P5.24 d, working-time redistribution).** A plan for a period — `plan.start`, `plan.end`, `plan.weeks` (each week's dates and planned hours), `plan.reference` (the average it is held to, with the application's label, "Reference average per week (illustrative)") — in a header card (radius lg) with the weeks as small tiles that wrap, start-aligned. Below, a DataTable per person: planned, worked, **difference signed through `format`** ("+36 h", "-2 h"), the running average per week, and the warnings, each with its icon and words ("Average above the illustrative limit of 48 h"); no warnings: "—" with "No warnings" for assistive technology. Every value is the application's (decimal strings; null "—", never 0); nothing is computed and no limit is encoded. Phones: DataTable's cards (`layout` passes through).
+- **2026-10-10 — Example data of P5.24 b and d (stories).** Prodavnica 12, Novi Sad (Early 07–15, Late 15–23, Inventory 21–05 with its own key "I"; Tills and Shelves and stock) and Dom zdravlja (Morning 06–14, Afternoon 14–22, Night 22–06 (+1), rotating 8 days; Emergency and General practice; by site: main building and Klisa clinic, a doctor in both). Every limit in the stories is labelled "illustrative" (11 or 12 hours of rest, 48 h weekly, 16 h for a students' contract) and comes in as data.
+
+### P5.17 — POS and warehouse example screens (helper notes for the lead)
+
+- **2026-10-10 — Example screens of P5.17: the till and the handheld.** Two devices of their own,
+  not pages of the back office: they stand without AppShell, full screen, and are not reached from
+  the home page or the module tabs (a till and a warehouse scanner are opened on their device,
+  not from Milica's desktop); the handheld's menu links into the examples (count the location,
+  sign out). Both run in the **touch density**: the screen wraps itself in a `LiroProvider` with
+  `density="touch"` that repeats the examples' provider (locale, direction, theme, messages,
+  format, today, time zone, link component) — how an application wraps its till; a nested
+  provider does not inherit the others, so each is passed. Files: `apps/storybook/src/examples/`
+  `data-I.ts`, `screens-I.tsx`, `GROUP_I_ROUTES` in `example-app.tsx`, a check block at the end of
+  `dataset-checks.ts`, a story block at the end of `examples.stories.tsx`. Only `@veljaos/ui`
+  entry points (and the stories' shared `amounts-story-data`, `PhoneFrame`).
+  1. **POS checkout — Pekara Zlatni klas, Novi Sad** (`/pos/zlatni-klas`, Kasa 1, Snežana
+     Kovačević, 06.10.2026.): PosShell on a landscape tablet (the canvas at 1280 × 720); 17
+     products in five categories (Hleb, Peciva, Slano, Kolači, Pića) with stock in words (low
+     stock warning, "1 left" danger, Raženi hleb sold out until 11:00 — unavailable with its
+     reason); a ScanField above the grid and the shell's scanner anywhere (`onScan`), both read by
+     the application's `productByCode`. The cart has six lines with the loyalty card's 10% on the
+     cakes: 1.995,00 − 88,00 = **1.907,00 RSD**, VAT included per category (E 10% 79,55; Đ 20%
+     172,00 — the categories and their labels illustrative), "Charge 1.907,00 RSD". **The
+     application's arithmetic** (`computeSale`): line = price × quantity in whole paras, the
+     discount and the tax included half up, the change or the remaining amount from what is
+     tendered (`cashOutcome`); the components add nothing. **One route per state** (P5.23):
+     `?step=cash` (PaymentDialog, cash, 2.000,00 tendered — the first banknote offered, pressed —
+     change 93,00), `?step=card-waiting` (the terminal waits; not dismissible),
+     `?step=card-approved` ("Visa •••• 4821 · authorisation 093214"; Complete payment enabled),
+     `?step=receipt` (receipt ZK-01-002318 in a Dialog: the header, facts, items with their tax
+     label and the discount under Krempita, total, tax per category and total VAT, cash and change,
+     the fiscal footer; Print again, New sale), `?offline` (the offline strip: "3 sales waiting to
+     be sent", Try now), `?products=open` (phones: the products sheet open). In the click-through
+     the example's terminal approves 1.2 s after the amount is sent. **Phone:** the cart first,
+     "Products" above it opening the bottom sheet.
+  2. **Warehouse picking on a handheld — Magacin Novi Sad, order NP-2026-0233 for Kvadrat Gradnja
+     d.o.o.** (`/warehouse/picking/PL-2026-0418`, 360 × 740): PickList at "4 of 12" — two lines
+     picked, A-02-03 short ("Only 7 on the shelf; the rest arrives on 08.10.2026."), A-04-01
+     skipped with its reason ("Skipped: Damaged — the rolls are wet.") — line 5 large (B-03-04,
+     Fasadni stiropor EPS 10 cm, 18 packs), its steps location → item → quantity. **The
+     application checks each scan** (a wrong location or a different item is a problem in words
+     naming where to go or to put it back), confirms (less than asked is "short" with "Picked x of
+     y"), skips with the warehouse's five reasons, and opens the next open line. Routes
+     `?step=item`, `?step=quantity`, `?step=skip` (the reason dialog open), `?offline` ("3 changes
+     waiting to be sent"). On a wide screen the same list stands in a 640px column (a tablet on a
+     cart, "Warehouse picking, tablet").
+  3. **Stock count** (`/warehouse/counts/CC-2026-0031`, "Cycle count CC-2026-0031", after
+     PL-2026-0418): location A-02-03 (Rack A2, shelf 3); in front the item just scanned,
+     Armaturna mreža Q188 — counted 14, the books 12, **difference +2** (warning: "Two sheets may
+     be Q131 stored with Q188."); counted here too Q131 — counted 0, the books 3, **difference −3**
+     (danger: "7 picked for PL-2026-0418; the books expected 10 here before the pick.") — and the
+     binding wire 0. The differences are the application's (`countItems`: counted − expected in
+     thousandths, so 1,5 t is exact; tone none / up to 2 warning / more danger); a changed count
+     updates its difference.
+  - **Checked when the examples load** (`checkGroupI` in `dataset-checks.ts`, throws otherwise):
+    the cart's 5–6 lines; subtotal, discount, total, the total = subtotal − discounts, the tax per
+    category; the change from the first banknote offered; the pick list at 4 of 12 with its
+    current line open and a skipped line with a reason; every stated count difference.
+
+### Notes for the lead: P5.17 example screens, Learning and printouts (group J)
+
+- **2026-10-10 — Example screens of P5.17: Learning and printouts.** Built only from
+  `@veljaos/ui` (`screens-J.tsx`, `data-J.ts`, `GROUP_J_ROUTES`). **The occupational-safety
+  course** "Bezbednost i zdravlje na radu" (`/learning/safety/<lesson>?done=<n>`), required for
+  Kvadrat Gradnja's site workers, as **Nikola Marković, a site worker, sees it in his own shell**
+  (AppShell with his user menu, crumbs Learning › the course, module tabs My courses /
+  Certificates; no company switcher — the precedent is the signer's link of P5.21): a CoursePage
+  with eight lessons in three modules, 5 of 8 done; "Manual handling of loads" to do; "Cranes,
+  slings and signals" locked ("Locked: finish “Manual handling of loads” first") and the final
+  test locked ("Locked: finish every lesson first"). The lessons are taken in order: "Mark as
+  done" saves and the page shows the lesson completed, the next lesson opens from the pager (the
+  pager never links to a locked lesson). **The final test** is the general Questionnaire (five
+  questions, one multiple choice, the summary before "Submit answers"); the application grades
+  it (`gradeQuiz`, 4 of 5 to pass) and shows a QuizResult: not passed (3 of 5, the answers with
+  the correct ones, "Take the test again", which starts a fresh questionnaire), then passed —
+  the course completed, "Completed on 06.10.2026. with 4 of 5 correct answers in the final test",
+  "Download certificate" and the certificate's preview (PrintCertificate). "Download certificate"
+  opens the certificate's printout. Phones: the lesson first, the outline in the drawer.
+  **Printouts** (each a print preview, below): invoice F-2026-0412 (`/sales/invoices/F-2026-0412/print`)
+  from the invoice page's "PDF" — the dataset's own `LINES`, `TOTALS` and the page's `TOTAL_ROWS`
+  (now exported from `screens-core.tsx`), never copied numbers; the course certificate
+  (`/learning/certificates/BZR-2026-0187`, landscape, emblem and seal as images, D18); a report
+  card of Mila Stojanović, 7/3, OŠ „Jovan Popović“ Novi Sad, end of the school year 2025/26
+  (`/school/pupils/2019-118/report-cards/2025-26`; average 4,57 as the school's subtotal row);
+  a specialist examination report from Dom zdravlja Novi Sad, internal medicine
+  (`/health/findings/IM-2026-14327`; the patient's block, a laboratory PrintTable inside a
+  section, ICD-10 codes left to right, the signature facsimile and stamp, the confidentiality
+  line on every page). **Dataset checks** (`dataset-checks.ts`, block "P5.17 group J"): every
+  line of F-2026-0412 is quantity × price; each tax category's lines make its base; VAT is 20%
+  and 10% of the bases; bases, VAT and the exempt deposit make the total; the list's total and
+  amount due equal the printout's; the report card's average is the mean of its grades in
+  hundredths, half up, and its hours absent add up (subjects = excused + unexcused); the first
+  attempt fails and the second passes. Desktop and phone; both themes and directions from the
+  toolbar.
+- **2026-10-10 — A printout opens as a print preview, without the shell (P5.17).** The
+  application opens a printout on a page of its own: a bar at the top with the way back (the
+  28px BackButton, "Back to F-2026-0412") at the start, the printout's name, and Print (the
+  print intent, `window.print()`) at the end; the bar is `print:hidden`, so the paper carries
+  only the sheet. The sheet is PrintPage's own (surface.sunken around it, scaled to the width on
+  phones). The bar is the example's markup, not a component: if the Core needs it on every
+  printout, it becomes a `PrintPreview` template (a later step), not a PrintPage prop — the
+  sheet stays free of interactive parts.
+- **2026-10-10 — A walk-through's saved state travels in the route (P5.17).** The examples keep
+  no store between screens (each screen starts fresh, as a page does), so the course's saved
+  progress is part of the route (`?done=6`), as the Core's would come from its server; every
+  open lesson at every progress from Nikola's (5) to completed (8) is registered, and the static
+  pictures restore their state from the route (`&result=not-passed`, `&outline=open`). The final
+  test's static picture resumes at the third question with two answers given (Questionnaire
+  `defaultAnswers` / `defaultStep`).
+- **2026-10-10 — styles.css after the P5.15 merge.** The merge of P5.15 into P5.10 left the
+  touch-density rule without its closing brace and the print comment without its opening
+  `/*`, so Tailwind failed ("Unterminated string") and `pnpm build` could not finish. Restored
+  (`}` and `/*`), nothing else changed. Commit "P5.17: close the touch-density rule …" on
+  `p2/ex3`.
+
+### Integration and lead decisions (2026-10-10)
+
+- **2026-10-10 — How Phase 5 part 2 was done.** On one branch (`bp/P5-part2`, from the P5.23 branch), by the lead and up to four helpers at a time, each in its own git worktree outside the repository: P5.8; P5.9 + P5.14 + P5.16; P5.10 + P5.11; P5.13 + P5.24 a, c, e; P5.24 b, d; P5.15 + P5.12; P5.22; and three example groups (G/H working time, health and school; I POS and warehouse; J learning and printouts). Each helper checked only its parts (types, lint, its unit tests, the static-story check, the story and accessibility tests of its titles in the pinned image); the lead merged and ran the full checks. Shared files (`index.ts`, the messages, their sorted key list, `example-app.tsx`, `examples.stories.tsx`, `dataset-checks.ts`) took each helper's block at the end. Two blocks that met at the same lines were merged by hand after a line-by-line union broke `styles.css` (the touch and print blocks); found by the next helper's build and by `pnpm build`.
+- **2026-10-10 — P5.21b: a smaller window for heavy rows (measured).** EditableGrid's lines are lines of fields, so its row window draws 240px above and below the view (`HEAVY_ROW_OVERSCAN`, `virtual-rows.ts`); the light lists (DataTable, the company switcher, LookupField, the trees, AttendanceGrid) keep 600px (`WINDOW_OVERSCAN`). **Measured** in the pinned Playwright image (Chromium of Playwright 1.63, this session's 4-core cloud machine, otherwise idle; built Storybook; from the event to the painted frame after the last DOM change; medians of six per run, runs interleaved): "Components/Table/EditableGrid / Specification, 300 positions", a 2,000px page jump at 1× **289–305 ms with 600px → 209–224 ms with 240px (−25%)**; at 4× CPU 1,815–1,937 → 1,301–1,682 ms (noisy). 160px brought no clear gain (192–225 ms), so 240px stays: fewer lines around the view would show blank rows on a fast scroll. DataTable's 1,000-row jump is unchanged (25–26 ms). The same jump measured 568 ms with 600px on the owner's laptop (P5.21a), so this machine is about twice as fast; scaled, 240px gives about 420 ms there — the old window's 409 ms, the owner's "about 400 ms". The focused line is still kept drawn (`keepFocusedRow`, unchanged).
+- **2026-10-10 — Confirmations are modal for assistive technology.** ConfirmDialog (and every preset on it) carries `aria-modal="true"` with its `alertdialog` role: axe counts a dialog as modal only by `role="dialog"`, `aria-modal` or a backdrop over most of the screen, and a confirmation inside a phone frame (PickList's skip) failed `aria-hidden-focus` without it.
+- **2026-10-10 — Text over a selection, everywhere.** The dark-theme text shades that pass over `surface.selected` (P4.3) now apply to any element painted with `bg-surface-selected`, not only to one marked `data-liro-surface="selected"` (tokens.css redeclares them for both). StockCount's item in front and PickList's current line used the background without the mark, and a danger difference failed contrast in dark; nine more components had the same pattern without tone text yet.
+- **2026-10-10 — Font weights only from the theme.** `font-normal` produced no CSS (the theme removes Tailwind's weight names: only regular, medium, semibold and bold exist), so table headers meant to be regular stayed bold in DocumentTotals' recap, DataTable cards, PermissionMatrix, SignerList, AttendanceGrid, ShiftPlanner and MyShifts. All are `font-regular` now, and `type-usage.test.ts` fails on any unknown weight class in the library or the stories.
+- **2026-10-10 — Two period helpers, two names.** The planner's and the calendar's "move the period" helpers were both called `shiftPeriod`; they are exported as `movePlannerPeriod` and `moveCalendarPeriod`.
+- **2026-10-10 — The timesheet example is read at the month's end.** The examples' "today" is 06.10.2026, but the owner asked for the October timesheet locked after payroll; the Kvadrat Gradnja timesheet is therefore shown as on 05.11.2026 (hand-off 02.11., lock 04.11., one correction 05.11.) — the only place the examples look past their today. September would contradict the payroll example, where September is still in review. The dates are constants in `data-G.ts`.
+- **2026-10-10 — The examples' week start and time zone stay as they were.** The working-time and school examples set Monday and Europe/Belgrade in their own wrapper; moving both into the shared `ExampleProvider` would change every older example picture without a reason the owner asked for. Left for the owner's review.
+- **2026-10-10 — Open after Phase 5 part 2.** ShiftPlanner's "Apply rotation…" dialog opens with no people chosen (an initial selection would need a prop); MyShifts cannot open the swap dialog with a colleague already chosen. Both are small additions, recorded rather than built.
+
 ## Packaging
 
 - **2026-09-24 — Consumers install tarballs.** `pnpm consumer-check` packs the three packages with `pnpm pack`, copies `apps/consumer-check` to a temporary folder outside the repository, installs the tarballs there and builds, typechecks and checks the app. `apps/consumer-check` is excluded from the workspace and from the root ESLint run, because its dependencies exist only in that temporary install (Appendix B.10).
