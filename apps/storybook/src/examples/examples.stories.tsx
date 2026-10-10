@@ -1646,6 +1646,17 @@ export const DecreasePhone: Story = {
  */
 export const CancelledScreen: Story = {
   name: 'Cancelled invoice and its cancellation document',
+  render: () => <ExampleApp start={D2_ROUTES.cancelled} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent(
+      'Cancelled by Milica Petrović on 06.10.2026. at 11:20.',
+    )
+  },
+}
+
+export const CancelledScreenInteraction: Story = {
+  name: 'Cancelled invoice and its cancellation document, interaction',
   tags: ['interaction'],
   render: () => <ExampleApp start={D2_ROUTES.cancelled} />,
   play: async ({ canvasElement }) => {
