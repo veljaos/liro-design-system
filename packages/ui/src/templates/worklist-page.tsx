@@ -269,7 +269,10 @@ export function WorklistPage(props: WorklistPageProps) {
   const place = worklistPosition(props.items, props.selected)
   const position =
     place === null ? null : (
-      <span data-slot="worklist-position" className="shrink-0 text-sm text-secondary tabular-nums">
+      <span
+        data-slot="worklist-position"
+        className={cn('shrink-0 text-sm text-secondary tabular-nums', TEXT_DIRECTION)}
+      >
         {messages['worklist.position'](
           place.index,
           format.number(String(place.index)),

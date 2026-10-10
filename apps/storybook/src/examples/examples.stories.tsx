@@ -1672,6 +1672,9 @@ export const BankStatementPartial: Story = {
     await userEvent.click(canvas.getByRole('checkbox', { name: /^F-2026-0381/ }))
     await expect(canvasElement).toHaveTextContent('Nothing is left for F-2026-0381')
     await userEvent.click(canvas.getByRole('checkbox', { name: /^F-2026-0381/ }))
+    // The clicks scroll the detail by however far the browser moved them; end at one place, the
+    // result and the difference in view, so the picture is the same on every run.
+    difference.scrollIntoView({ block: 'end' })
     await settle()
   },
 }

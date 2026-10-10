@@ -731,7 +731,7 @@ function StatementSummary({ phone, done }: { phone: boolean; done: number }) {
         ]}
       />
       <div className="flex min-w-60 flex-col gap-2">
-        <span className="text-sm font-medium text-primary">{progress}</span>
+        <span className="bidi-content text-sm font-medium text-primary">{progress}</span>
         <ProgressBar label={progress} value={done} max={total} />
         {STATEMENT_TOTALS.checksOut ? (
           <p className="m-0 flex items-center gap-1.5 text-xs font-medium text-status-success-fg">
