@@ -112,12 +112,14 @@ export default defineConfig(
     // the compiler would skip these components; the warning says only that. The package is not
     // built with the compiler (P3.2, docs/decisions.md "Table"). Every list that draws only its
     // rows in view calls it (P5.21a): DataTable, EditableGrid, LookupField and the company
-    // switcher (MatchingView was removed in P5.23), and the trees' row window (P5.9).
+    // switcher (MatchingView was removed in P5.23), the trees' row window (P5.9) and
+    // AttendanceGrid (P5.13).
     files: [
       'packages/ui/src/components/data-table.tsx',
       'packages/ui/src/components/editable-grid.tsx',
       'packages/ui/src/components/lookup-field.tsx',
       'packages/ui/src/components/tree-window.ts',
+      'packages/ui/src/components/attendance-grid.tsx',
       'packages/ui/src/templates/company-switcher.tsx',
     ],
     rules: { 'react-hooks/incompatible-library': 'off' },

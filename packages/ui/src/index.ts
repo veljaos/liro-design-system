@@ -722,3 +722,46 @@ export { MaskedValue } from './components/masked-value'
 export type { MaskedValueProps, MaskedValueReason, RevealRequest } from './components/masked-value'
 export { PortalShell } from './templates/portal-shell'
 export type { PortalParticipant, PortalSection, PortalShellProps } from './templates/portal-shell'
+// ── P5.13 / P5.24 AttendanceGrid and ClockRecordList ──
+export { AttendanceGrid, ATTENDANCE_VIRTUALIZE_FROM } from './components/attendance-grid'
+export type {
+  AttendanceCode,
+  AttendanceColumn,
+  AttendanceCorrection,
+  AttendanceCorrectionRequest,
+  AttendanceGridProps,
+  AttendanceHandOff,
+  AttendanceLock,
+  AttendanceMark,
+  AttendanceRow,
+  AttendanceTotal,
+  AttendanceTotals,
+} from './components/attendance-grid'
+export {
+  attendanceKeyAction,
+  copyPreviousWeek,
+  fillRange,
+  markColumn,
+  markRow,
+} from './components/attendance-logic'
+export type {
+  AttendanceChange,
+  AttendanceColumnKind,
+  AttendanceEntry,
+  AttendanceKey,
+  AttendanceKeyAction,
+  AttendanceKeyState,
+  AttendanceValue,
+  AttendanceCell,
+  AttendancePosition,
+  AttendanceRange,
+} from './components/attendance-logic'
+export { ClockRecordList } from './components/clock-record-list'
+export type {
+  ClockCorrection,
+  ClockCorrectionRequest,
+  ClockRecord,
+  ClockRecordListProps,
+  ClockSource,
+} from './components/clock-record-list'
+export { clockTimeOf, onLaterDay, parseClockTime } from './components/clock-record-logic'
