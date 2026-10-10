@@ -185,9 +185,11 @@ export function tokensCss(): string {
     '',
     block("[data-liro-theme='dark']", themed('dark')),
     '',
-    '/* P4.3 On a selected row or card, the dark-theme text colours that pass over the selection. */',
+    '/* P4.3 On a selected row or card, the dark-theme text colours that pass over the selection:',
+    '   marked with data-liro-surface="selected", or painted with the bg-surface-selected utility',
+    '   (P5 part 2: a row painted without the mark kept the shades that fail over it). */',
     block(
-      "[data-liro-theme='dark'] [data-liro-surface='selected'],\n[data-liro-theme='dark'][data-liro-surface='selected']",
+      "[data-liro-theme='dark'] [data-liro-surface='selected'],\n[data-liro-theme='dark'][data-liro-surface='selected'],\n[data-liro-theme='dark'] .bg-surface-selected,\n[data-liro-theme='dark'].bg-surface-selected",
       Object.entries(ON_SELECTED.dark).map(
         ([name, value]) => `--liro-${name}: ${cssValue(value)};`,
       ),
