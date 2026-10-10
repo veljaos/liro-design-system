@@ -35,7 +35,8 @@ import {
   type WorklistItem,
 } from '@veljaos/ui'
 import type { ExampleRoute } from './example-app'
-import { Shell } from './example-shell'
+import { Shell, statusBadge, toneOf, type ExampleStatus } from './example-shell'
+import type { Tone } from '@veljaos/ui'
 import {
   ACCOUNTS,
   accountOf,
@@ -218,15 +219,12 @@ function stateOf(line: BankLine, work: LineWork): LineState {
 }
 
 /** The line states in words; the tone only repeats them (To do needs a decision, Done is done). */
-const STATE_BADGE: Record<
-  LineState,
-  { label: string; tone: 'success' | 'neutral' | 'info' | 'warning' }
-> = {
-  done: { label: 'Done', tone: 'success' },
-  later: { label: 'Left for later', tone: 'neutral' },
-  suggestion: { label: 'Suggestion ready', tone: 'info' },
-  todo: { label: 'To do', tone: 'warning' },
-}
+const STATE_BADGE = {
+  done: { label: 'Done', tone: toneOf('Done') },
+  later: { label: 'Left for later', tone: toneOf('Left for later') },
+  suggestion: { label: 'Suggestion ready', tone: toneOf('Suggestion ready') },
+  todo: { label: 'To do', tone: toneOf('To do') },
+} satisfies Record<LineState, { label: ExampleStatus; tone: Tone }>
 
 function quickLabel(type: QuickType): string {
   return QUICK_TYPES.find((each) => each.value === type)?.label ?? ''
@@ -930,13 +928,7 @@ export function BankStatement({
         reason={postReason}
       />
     )
-  const statusBadge = posted ? (
-    <StatusBadge label="Posted" tone="success" />
-  ) : done === 0 ? (
-    <StatusBadge label="Imported" tone="neutral" />
-  ) : (
-    <StatusBadge label="In progress" tone="info" />
-  )
+  const statementStatus = statusBadge(posted ? 'Posted' : done === 0 ? 'Imported' : 'In progress')
 
   const confirm = () => {
     if (line === undefined || lineWork === undefined) return
@@ -1070,7 +1062,7 @@ export function BankStatement({
         layout={phone ? 'stacked' : 'split'}
         title={`Statement ${STATEMENT.number}`}
         back={{ href: '#/banking/statements', label: 'Statements' }}
-        status={statusBadge}
+        status={statementStatus}
         subtitle={
           <>
             {STATEMENT.bank} · <span dir="ltr">{STATEMENT.account}</span> · Statement date{' '}

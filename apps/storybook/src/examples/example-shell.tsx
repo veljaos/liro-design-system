@@ -220,7 +220,12 @@ export const TONES = {
   Checked: 'info',
   Submitted: 'success',
   Imported: 'neutral',
-  'In progress': 'warning',
+  'In progress': 'info',
+  // A bank statement's lines
+  'Suggestion ready': 'info',
+  'To do': 'warning',
+  'Left for later': 'neutral',
+  Done: 'success',
   // Records and access
   Active: 'success',
   Inactive: 'neutral',

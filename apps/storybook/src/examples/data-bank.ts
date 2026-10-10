@@ -261,6 +261,7 @@ export const ACCOUNTS = [
   { value: '1500', label: '1500 Advances paid to suppliers' },
   { value: '2040', label: '2040 Customers in the country' },
   { value: '2420', label: '2420 Current account, Raiffeisen banka' },
+  { value: '4140', label: '4140 Long-term bank loans' },
   { value: '4300', label: '4300 Advances received from customers' },
   { value: '4350', label: '4350 Suppliers in the country' },
   { value: '4500', label: '4500 Net salaries payable' },
@@ -286,13 +287,14 @@ export const COST_CENTRES = [
 
 /** The quick types: a common payment with its account filled in (the Core's settings). */
 export type QuickType =
-  'fee' | 'salaries' | 'tax' | 'transfer' | 'advanceReceived' | 'advancePaid' | 'other'
+  'fee' | 'salaries' | 'tax' | 'transfer' | 'loan' | 'advanceReceived' | 'advancePaid' | 'other'
 
 export const QUICK_TYPES: { value: QuickType; label: string; account: string | null }[] = [
   { value: 'fee', label: 'Bank fee', account: '5530' },
   { value: 'salaries', label: 'Salaries', account: '4500' },
   { value: 'tax', label: 'Tax or contribution payment', account: '4510' },
   { value: 'transfer', label: 'Transfer between own accounts', account: '2420' },
+  { value: 'loan', label: 'Loan repayment', account: '4140' },
   { value: 'advanceReceived', label: 'Advance received', account: '4300' },
   { value: 'advancePaid', label: 'Advance paid', account: '1500' },
   { value: 'other', label: 'Other', account: null },
@@ -302,7 +304,7 @@ export const QUICK_TYPES: { value: QuickType; label: string; account: string | n
 export function quickTypesFor(paras: bigint) {
   return QUICK_TYPES.filter((each) =>
     paras > 0n
-      ? each.value !== 'advancePaid' && each.value !== 'fee'
+      ? each.value !== 'advancePaid' && each.value !== 'fee' && each.value !== 'loan'
       : each.value !== 'advanceReceived',
   )
 }
