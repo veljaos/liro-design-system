@@ -648,3 +648,46 @@ export type {
   LookupDraft,
   LookupDraftErrors,
 } from './components/lookup-create-drawer'
+// ── P5.13 / P5.24 AttendanceGrid and ClockRecordList ──
+export { AttendanceGrid, ATTENDANCE_VIRTUALIZE_FROM } from './components/attendance-grid'
+export type {
+  AttendanceCode,
+  AttendanceColumn,
+  AttendanceCorrection,
+  AttendanceCorrectionRequest,
+  AttendanceGridProps,
+  AttendanceHandOff,
+  AttendanceLock,
+  AttendanceMark,
+  AttendanceRow,
+  AttendanceTotal,
+  AttendanceTotals,
+} from './components/attendance-grid'
+export {
+  attendanceKeyAction,
+  copyPreviousWeek,
+  fillRange,
+  markColumn,
+  markRow,
+} from './components/attendance-logic'
+export type {
+  AttendanceChange,
+  AttendanceColumnKind,
+  AttendanceEntry,
+  AttendanceKey,
+  AttendanceKeyAction,
+  AttendanceKeyState,
+  AttendanceValue,
+  AttendanceCell,
+  AttendancePosition,
+  AttendanceRange,
+} from './components/attendance-logic'
+export { ClockRecordList } from './components/clock-record-list'
+export type {
+  ClockCorrection,
+  ClockCorrectionRequest,
+  ClockRecord,
+  ClockRecordListProps,
+  ClockSource,
+} from './components/clock-record-list'
+export { clockTimeOf, onLaterDay, parseClockTime } from './components/clock-record-logic'

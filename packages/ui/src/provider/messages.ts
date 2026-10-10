@@ -839,4 +839,86 @@ export interface LiroMessages {
   'grid.addDeduction': string
   /** EditableGrid: the note before a line's detail that never reaches the customer's document. */
   'grid.internal': string
+  // P5.13 / P5.24 ── AttendanceGrid and ClockRecordList
+  /** AttendanceGrid: the header of the row headers' column, when the application gives none. */
+  'attendance.rows': string
+  /** The names of a weekend and of a holiday column, for assistive technology and the tooltip. */
+  'attendance.weekend': string
+  'attendance.holiday': string
+  /** The visible marks of a holiday column, and of a weekend column without a date. */
+  'attendance.holidayMark': string
+  'attendance.weekendMark': string
+  /** An empty cell, for assistive technology. */
+  'attendance.noEntry': string
+  /** Hours, already written by `format.number`: "8 h". */
+  'attendance.hours': (hoursText: string) => string
+  /** The bulk marks of a column ("Mark everyone: Present") and of a row ("Mark all: Present"). */
+  'attendance.markColumn': (code: string) => string
+  'attendance.markRow': (code: string) => string
+  /** The code buttons' group, which marks the selection. */
+  'attendance.markWith': string
+  /** The toolbar's commands. */
+  'attendance.clear': string
+  'attendance.fill': string
+  'attendance.fillKey': string
+  /** Why filling waits: a selection of one cell. */
+  'attendance.fillReason': string
+  'attendance.copyWeek': string
+  /** The number of selected cells, numbers already written by `format.number`. */
+  'attendance.selected': (count: number, countText: string) => string
+  /** The keyboard instructions, read with the grid. */
+  'attendance.instructions': string
+  /** A locked grid's line: the title before the application's reason. */
+  'attendance.locked': string
+  /** The correction of a locked cell: the button, the dialog and its fields. */
+  'attendance.correct': string
+  'attendance.correctTitle': (row: string, column: string) => string
+  'attendance.current': string
+  'attendance.code': string
+  'attendance.noCode': string
+  'attendance.hoursLabel': string
+  'attendance.reason': string
+  'attendance.saveCorrection': string
+  /** A corrected cell: who, when (already written by `format.dateTime`) and why. */
+  'attendance.corrected': (by: string, when: string, reason: string) => string
+  /** The entry before the correction, already written as text. */
+  'attendance.original': (entry: string) => string
+  /** The heading of the list of corrections under the grid. */
+  'attendance.corrections': string
+  /** Phones: one person per screen. */
+  'attendance.position': (
+    index: number,
+    indexText: string,
+    total: number,
+    totalText: string,
+  ) => string
+  'attendance.previousRow': string
+  'attendance.nextRow': string
+  'attendance.chooseRow': string
+  /** ClockRecordList: the column headers. */
+  'clock.person': string
+  'clock.date': string
+  'clock.in': string
+  'clock.out': string
+  'clock.duration': string
+  'clock.source': string
+  'clock.correction': string
+  /** A duration in hours, already written by `format.number`. */
+  'clock.hours': (hoursText: string) => string
+  /** A record without a clock-out or without a clock-in, in words (never 0). */
+  'clock.noClockOut': string
+  'clock.noClockIn': string
+  /** A clock-out on the day after the clock-in (a night shift). */
+  'clock.nextDay': string
+  /** Before a corrected record's original time, for assistive technology. */
+  'clock.was': string
+  /** Who corrected a record, when (already written by `format.dateTime`) and why. */
+  'clock.corrected': (by: string, when: string, reason: string) => string
+  /** The correction: the action, the drawer's title and its fields. */
+  'clock.correct': string
+  'clock.correctTitle': (person: string, date: string) => string
+  'clock.time': string
+  'clock.timeInvalid': string
+  'clock.reason': string
+  'clock.save': string
 }
