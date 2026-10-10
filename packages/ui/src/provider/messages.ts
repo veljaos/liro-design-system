@@ -1092,4 +1092,73 @@ export interface LiroMessages {
   'clock.timeInvalid': string
   'clock.reason': string
   'clock.save': string
+  // P5.8 Calendar and scheduling
+  /** CalendarView: the button that goes to the period holding the provider's `today`. */
+  'calendar.today': string
+  /** CalendarView: the names of the previous and next buttons, by the view shown. */
+  'calendar.previous': (view: 'day' | 'week' | 'month' | 'agenda') => string
+  'calendar.next': (view: 'day' | 'week' | 'month' | 'agenda') => string
+  /** CalendarView: the name of the view switcher, and of each view. */
+  'calendar.view': string
+  'calendar.day': string
+  'calendar.week': string
+  'calendar.month': string
+  'calendar.agenda': string
+  /** CalendarView: the month view's title from the month's name and the year ("October 2026"). */
+  'calendar.monthTitle': (monthName: string, yearText: string) => string
+  /** A range of dates or times: "12.10.2026. – 18.10.2026.", "09:00 – 09:30". */
+  'calendar.range': (startText: string, endText: string) => string
+  /** An event that lasts whole days. */
+  'calendar.allDay': string
+  /** A month cell's "+N more" line, and its accessible name with the day. */
+  'calendar.more': (count: number, countText: string) => string
+  'calendar.moreLabel': (count: number, countText: string, dateText: string) => string
+  /** The day list's button that shows the day in the day view. */
+  'calendar.openDay': string
+  /** The agenda when the period has no events. */
+  'calendar.noEvents': string
+  /** An event's accessible name: its title, its time ("09:00 – 09:30" or all day) and its day. */
+  'calendar.eventLabel': (title: string, timeText: string, dateText: string) => string
+  /** The time grid's description for keyboard users. */
+  'calendar.instructions': string
+  /** A day marked as today (the day list, the agenda, the timetable). */
+  'calendar.todayMark': string
+  /** ResourceSchedule: the label of the phones' row chooser. */
+  'schedule.resource': string
+  /** ResourceSchedule: a booking's accessible name: title, row and time. */
+  'schedule.bookingLabel': (title: string, resource: string, timeText: string) => string
+  /** ResourceSchedule: how to move a booking with the keyboard (each booking's description). */
+  'schedule.instructions': string
+  /** ResourceSchedule announcements while a booking is moved with the keyboard. */
+  'schedule.lifted': (title: string, resource: string, timeText: string) => string
+  'schedule.moved': (title: string, resource: string, timeText: string) => string
+  'schedule.dropped': (title: string, resource: string, timeText: string) => string
+  'schedule.cancelled': (title: string) => string
+  /** Added to an announcement when the place overlaps an unavailable time. */
+  'schedule.unavailableHere': (reason: string) => string
+  /** An unavailable time for assistive technology ("Unavailable: Lunch break, 12:00 – 12:30"). */
+  'schedule.unavailable': (reason: string, timeText: string) => string
+  /** The "Move to…" button of a booking (its name), the panel's title, its fields and button. */
+  'schedule.moveTo': (title: string) => string
+  'schedule.moveToTitle': string
+  'schedule.day': string
+  'schedule.start': string
+  'schedule.move': string
+  /** ResourceSchedule over several days: a booking's day and time ("Thu 15.10.2026., 09:00 – 09:30"). */
+  'schedule.when': (dateText: string, timeText: string) => string
+  /** A start time in the "Move to…" list that overlaps an unavailable time. */
+  'schedule.optionUnavailable': (timeText: string, reason: string) => string
+  /** SlotPicker: nothing free in the period. */
+  'slots.none': string
+  'slots.noneDescription': string
+  /** SlotPicker: the name of the skeleton while slots load. */
+  'slots.loading': string
+  /** SlotPicker: a slot's accessible name: its time, its day, and its resource when grouped. */
+  'slots.slotLabel': (timeText: string, dateText: string, resource: string | null) => string
+  /** Timetable: the corner header over the periods, a free period, the running period's mark. */
+  'timetable.period': string
+  'timetable.free': string
+  'timetable.now': string
+  /** Timetable: the label of the phones' day switcher. */
+  'timetable.day': string
 }
