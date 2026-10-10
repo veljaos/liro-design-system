@@ -1,10 +1,10 @@
 import { CircleCheck, CircleX, Copy, TriangleAlert, Upload } from 'lucide-react'
-import type { ReactNode } from 'react'
+import { useId, useState, type ReactNode } from 'react'
 import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 import { UnavailableAction } from './actions'
-import { Button } from './button'
+import { Button, CompactIconButton } from './button'
 import {
   assignColumn,
   importBlocked,
@@ -19,6 +19,7 @@ import {
   type ImportSourceColumn,
 } from './catalog-logic'
 import { CheckboxField } from './checkbox-field'
+import { ConfirmDialog } from './confirm-dialog'
 import { DataTable, type DataTableColumn } from './data-table'
 import { FileDropzone } from './file-dropzone'
 import { JobProgress } from './job-progress'
@@ -26,6 +27,7 @@ import { Stepper } from './progress'
 import { SelectField } from './select-field'
 import { Spinner } from './spinner'
 import { usePhone } from './use-phone'
+import { WizardFooter } from './wizard-footer'
 
 /*
  * ImportWizard (BUILD-PLAN P5.19, bulk work on catalogue lists): records from a CSV or Excel
@@ -51,6 +53,12 @@ import { usePhone } from './use-phone'
  *   said before choosing, the file checked again on the device (P5.5).
  * - **Import:** JobProgress while it runs ("312 of 1.284", P5.4), then the application's report.
  * The parsing and the checking are the application's; the wizard decides nothing about the data.
+ *
+ * Phones (P5.23, the owner's review): the Stepper is one line, "Step 3 of 4 · Check", over a thin
+ * bar; the counts are a list, one per line; the buttons are ONE row stuck to the bottom of the
+ * screen — Back, then the main action — and an unavailable action's reason is one line under it;
+ * Cancel becomes a close button (X) in the header. Leaving once a file is chosen asks first
+ * (ConfirmDialog "Leave the import?"), on phones and on desktop: the choices would be lost.
  */
 
 export type ImportStep = 'file' | 'columns' | 'check' | 'import'
@@ -121,7 +129,10 @@ export interface ImportWizardProps {
   progress?: ImportProgress
   /** The final report, from the application, when the import has ended. */
   result?: ReactNode
-  /** Offers Cancel at the start of the buttons (leaving the import; nothing has been saved). */
+  /**
+   * Offers Cancel (leaving the import; nothing has been saved): at the start of the buttons on
+   * desktop, a close button in the header on phones. Once a file is chosen it asks first.
+   */
   onCancel?: () => void
   /** 'phone' forces the phone layout (cards); default by the viewport (48em). */
   layout?: 'desktop' | 'phone'
@@ -186,6 +197,17 @@ export function ImportWizard(props: ImportWizardProps) {
   const go = (step: ImportStep) => {
     props.onStepChange(step)
   }
+  const reasonId = useId()
+  const [leaving, setLeaving] = useState(false)
+  const onCancel = props.onCancel
+  // Leaving loses the chosen file and the column choices: asked first once there are some.
+  const cancel =
+    onCancel === undefined || props.step === 'import'
+      ? undefined
+      : () => {
+          if (props.file !== undefined) setLeaving(true)
+          else onCancel()
+        }
 
   // ── The steps' content ──
   const fileStep = (
@@ -369,7 +391,12 @@ export function ImportWizard(props: ImportWizardProps) {
   ].filter((each) => each.shown)
   const checkStep = (
     <div className="flex flex-col gap-4">
-      <ul className="m-0 flex list-none flex-wrap gap-x-6 gap-y-1 p-0">
+      <ul
+        className={cn(
+          'm-0 flex list-none p-0',
+          phone ? 'flex-col gap-2' : 'flex-wrap gap-x-6 gap-y-1',
+        )}
+      >
         {tally.map(({ key, icon: Icon, tone, text }) => (
           <li key={key} className="flex items-center gap-1.5 text-sm font-medium text-primary">
             <Icon aria-hidden="true" className={cn('size-4 shrink-0', tone)} />
@@ -378,7 +405,7 @@ export function ImportWizard(props: ImportWizardProps) {
         ))}
       </ul>
       {props.previewNotice}
-      <div className="flex flex-wrap gap-x-6 gap-y-3">
+      <div className={cn('flex gap-x-6 gap-y-3', phone ? 'flex-col' : 'flex-wrap')}>
         <CheckboxField
           label={messages['import.problemsOnly']}
           checked={props.problemsOnly}
@@ -443,6 +470,8 @@ export function ImportWizard(props: ImportWizardProps) {
       />
     ) : null
   let main: ReactNode = null
+  // The main action's unavailable reason: beside it on desktop, under the row on phones.
+  let unavailable: string | undefined
   if (props.step === 'file') {
     main = (
       <Button
@@ -455,14 +484,17 @@ export function ImportWizard(props: ImportWizardProps) {
       />
     )
   } else if (props.step === 'columns') {
+    unavailable =
+      missing.length > 0
+        ? messages['import.missingRequired'](missing.map((field) => field.label).join(', '))
+        : undefined
     main =
-      missing.length > 0 ? (
+      unavailable !== undefined ? (
         <UnavailableAction
           intent="next"
           label={messages['wizard.next']}
-          reason={messages['import.missingRequired'](
-            missing.map((field) => field.label).join(', '),
-          )}
+          reason={unavailable}
+          {...(phone ? { reasonId } : {})}
         />
       ) : (
         <Button
@@ -476,24 +508,29 @@ export function ImportWizard(props: ImportWizardProps) {
   } else if (props.step === 'check') {
     // The rows that will be imported: the ready ones (with errors skipped, or none).
     const label = messages['import.run'](props.counts.ready, count(props.counts.ready))
-    main = importBlocked(props.counts, props.skipInvalid) ? (
-      <UnavailableAction
-        family="primary"
-        icon={Upload}
-        emphasis="primary"
-        label={label}
-        reason={messages['import.fixOrSkip']}
-      />
-    ) : (
-      <Button
-        family="primary"
-        icon={Upload}
-        emphasis="primary"
-        label={label}
-        disabled={props.previewLoading === true}
-        onClick={props.onImport}
-      />
-    )
+    unavailable = importBlocked(props.counts, props.skipInvalid)
+      ? messages['import.fixOrSkip']
+      : undefined
+    main =
+      unavailable !== undefined ? (
+        <UnavailableAction
+          family="primary"
+          icon={Upload}
+          emphasis="primary"
+          label={label}
+          reason={unavailable}
+          {...(phone ? { reasonId } : {})}
+        />
+      ) : (
+        <Button
+          family="primary"
+          icon={Upload}
+          emphasis="primary"
+          label={label}
+          disabled={props.previewLoading === true}
+          onClick={props.onImport}
+        />
+      )
   }
 
   return (
@@ -505,8 +542,16 @@ export function ImportWizard(props: ImportWizardProps) {
         props.className,
       )}
     >
-      <div className="border-0 border-b border-solid border-default p-4">
-        <Stepper steps={steps} active={index} />
+      <div className="flex items-start gap-3 border-0 border-b border-solid border-default p-4">
+        <Stepper
+          steps={steps}
+          active={index}
+          layout={phone ? 'phone' : 'desktop'}
+          className="min-w-0 flex-1"
+        />
+        {phone && cancel !== undefined && (
+          <CompactIconButton intent="cancel" label={messages['import.cancel']} onClick={cancel} />
+        )}
       </div>
       <div className="flex flex-col gap-4 p-4">
         {props.step === 'file' && fileStep}
@@ -514,16 +559,41 @@ export function ImportWizard(props: ImportWizardProps) {
         {props.step === 'check' && checkStep}
         {props.step === 'import' && importStep}
       </div>
-      {(back !== null || main !== null || props.onCancel !== undefined) && (
-        <div className="flex flex-wrap items-center gap-2 border-0 border-t border-solid border-default p-4">
-          {props.onCancel !== undefined && props.step !== 'import' && (
-            <Button intent="cancel" label={messages['dialog.cancel']} onClick={props.onCancel} />
+      {(back !== null || main !== null || (!phone && cancel !== undefined)) && (
+        <WizardFooter
+          phone={phone}
+          className={cn(
+            'border-0 border-t border-solid border-default',
+            phone ? 'rounded-b-lg px-4' : 'p-4',
           )}
-          <div className="ms-auto flex flex-wrap items-center justify-end gap-2">
-            {back}
-            {main}
-          </div>
-        </div>
+          {...(cancel === undefined
+            ? {}
+            : {
+                start: (
+                  <Button intent="cancel" label={messages['dialog.cancel']} onClick={cancel} />
+                ),
+              })}
+          {...(phone && unavailable !== undefined
+            ? { note: { id: reasonId, text: messages['action.unavailable'](unavailable) } }
+            : {})}
+        >
+          {back}
+          {main}
+        </WizardFooter>
+      )}
+      {onCancel !== undefined && (
+        <ConfirmDialog
+          open={leaving}
+          onOpenChange={setLeaving}
+          title={messages['import.leaveTitle']}
+          message={messages['import.leaveMessage']}
+          confirmLabel={messages['form.leave']}
+          cancelLabel={messages['form.stay']}
+          onConfirm={() => {
+            setLeaving(false)
+            onCancel()
+          }}
+        />
       )}
     </section>
   )

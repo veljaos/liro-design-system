@@ -106,6 +106,7 @@ export const messagesEn: LiroMessages = {
   'notice.close': 'Close',
   'notice.region': 'Notifications',
   'stepper.completed': 'Completed',
+  'stepper.step': (_step, stepText, _total, totalText) => `Step ${stepText} of ${totalText}`,
   'action.unavailable': (reason) => `Unavailable: ${reason}`,
   'grid.cell': (column, _line, text) => `${column}, line ${text}`,
   'grid.cellMessage': (column, text) => `${column}: ${text}`,
@@ -387,6 +388,10 @@ export const messagesEn: LiroMessages = {
   'import.noProblems': 'No row has a problem.',
   'import.run': (count, text) => (count === 1 ? `Import ${text} row` : `Import ${text} rows`),
   'import.progress': 'Import progress',
+  'import.cancel': 'Cancel the import',
+  'import.leaveTitle': 'Leave the import?',
+  'import.leaveMessage':
+    'Nothing has been imported yet. The file and the column choices are not kept.',
   'bulkEdit.title': (count, text) => (count === 1 ? `Edit ${text} record` : `Edit ${text} records`),
   'bulkEdit.unchanged': 'Leave unchanged',
   'bulkEdit.summary': 'What will change',

@@ -189,6 +189,11 @@ export interface LiroMessages {
   'notice.region': string
   /** Tells assistive technology that a step of a Stepper is completed. */
   'stepper.completed': string
+  /**
+   * Stepper on phones (P5.23): where the user is, "Step 3 of 4", before " · " and the step's name
+   * on the one line over its thin progress bar; the numbers already formatted.
+   */
+  'stepper.step': (step: number, stepText: string, total: number, totalText: string) => string
   /** An action that cannot be used, with the reason it is given. */
   'action.unavailable': (reason: string) => string
   /** EditableGrid: each cell's accessible name, its column and line: "Quantity, line 3". */
@@ -626,6 +631,11 @@ export interface LiroMessages {
   'import.run': (count: number, text: string) => string
   /** The import's progress: names its JobProgress. */
   'import.progress': string
+  /** The phone's close button in the wizard's header, in place of Cancel (P5.23). */
+  'import.cancel': string
+  /** Asked before leaving once a file is chosen: the title and the message (P5.23). */
+  'import.leaveTitle': string
+  'import.leaveMessage': string
   /** BulkEditDrawer: the title ("Edit 24 records"), a field left as it is, and the summary. */
   'bulkEdit.title': (count: number, text: string) => string
   'bulkEdit.unchanged': string

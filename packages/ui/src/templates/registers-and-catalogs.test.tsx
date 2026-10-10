@@ -87,6 +87,25 @@ describe('ImportWizard', () => {
     )
     expect(html).toContain('312 of 1.284')
   })
+
+  it('on phones: one line for the step, Cancel as the header X, the reason under the buttons', () => {
+    const html = render(<ImportWizard {...WIZARD} layout="phone" onCancel={() => undefined} />)
+    expect(text(html)).toContain('Step 3 of 4 · Check')
+    expect(html).not.toContain('<ol')
+    expect(html).toContain('aria-label="Cancel the import"')
+    expect(html).not.toMatch(/<button[^>]*>(<[^>]+>)*\s*Cancel\s*</)
+    // The reason is one line under the row, and it describes the Import button.
+    const note = /<p id="([^"]+)"[^>]*>Unavailable: Correct the rows/.exec(html)
+    expect(note).not.toBeNull()
+    expect(html).toContain(`aria-describedby="${note?.[1] ?? ''}"`)
+  })
+
+  it('on desktop: Cancel at the start of the buttons, the steps as a row', () => {
+    const html = render(<ImportWizard {...WIZARD} onCancel={() => undefined} />)
+    expect(html).toContain('<ol')
+    expect(text(html)).toContain(' Cancel ')
+    expect(html).not.toContain('Cancel the import')
+  })
 })
 
 describe('DuplicateWarning', () => {

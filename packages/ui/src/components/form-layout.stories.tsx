@@ -25,7 +25,7 @@ import {
 import { focusFirstInvalid } from './form-logic'
 import { NumberField } from './number-field'
 import { SelectField } from './select-field'
-import { expectContentDirection, StoryProvider } from './story-frames'
+import { ExampleProvider, expectContentDirection, PhoneFrame, StoryProvider } from './story-frames'
 import { TextAreaField, TextField } from './text-field'
 
 const meta = {
@@ -285,7 +285,7 @@ export const UnsavedChangesGuard: Story = {
   },
 }
 
-function Wizard() {
+function Wizard({ layout }: { layout?: 'desktop' | 'phone' }) {
   const [name, setName] = useState('')
   const [checked, setChecked] = useState(false)
   const [amount, setAmount] = useState<string | null>(null)
@@ -326,6 +326,7 @@ function Wizard() {
         onFinish={() => {
           setDone(true)
         }}
+        {...(layout === undefined ? {} : { layout })}
       />
       {done && <p className="m-0 text-sm">Created.</p>}
     </div>
@@ -345,6 +346,45 @@ export const WizardSteps: Story = {
     await canvas.findByRole('textbox', { name: 'Amount' })
     await userEvent.click(canvas.getByRole('button', { name: 'Back' }))
     await expect(await canvas.findByRole('textbox', { name: /^Name/ })).toHaveValue('Alfa')
+    await settle()
+  },
+}
+
+/**
+ * Phones (P5.23): "Step 1 of 3 · Customer" over a thin bar in place of the row of circles, and
+ * Back / Next as ONE row stuck to the bottom of the screen.
+ */
+export const WizardPhone: Story = {
+  name: 'Wizard, phone',
+  render: () => (
+    <PhoneFrame>
+      <ExampleProvider>
+        <div className="h-full overflow-y-auto p-4">
+          <Wizard layout="phone" />
+        </div>
+      </ExampleProvider>
+    </PhoneFrame>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvasElement.querySelector('[data-slot="stepper"]')).toHaveTextContent(
+      'Step 1 of 3 · Customer',
+    )
+    await userEvent.type(canvas.getByRole('textbox', { name: /^Name/ }), 'Alfa')
+    await userEvent.click(canvas.getByRole('button', { name: 'Next' }))
+    await waitFor(() =>
+      expect(canvasElement.querySelector('[data-slot="stepper"]')).toHaveTextContent(
+        'Step 2 of 3 · Amount',
+      ),
+    )
+    const tops = new Set(
+      [
+        ...(canvasElement
+          .querySelector('[data-slot="wizard-footer"]')
+          ?.querySelectorAll('button') ?? []),
+      ].map((button) => Math.round(button.getBoundingClientRect().top)),
+    )
+    await expect(tops.size).toBe(1)
     await settle()
   },
 }

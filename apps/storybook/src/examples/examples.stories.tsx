@@ -527,7 +527,7 @@ export const PayrollPhone: Story = {
   render: () => <OnPhone start={F_ROUTES.payroll} />,
   play: async ({ canvasElement }) => {
     await settle()
-    await expect(canvasElement).toHaveTextContent('Step 3 of 5: Review')
+    await expect(canvasElement).toHaveTextContent('Step 3 of 5 · Review')
     const page = canvasElement.querySelector('[data-slot="periodic-run-page"]')
     if (page === null) throw new Error('no page')
     await expect(page.scrollWidth).toBeLessThanOrEqual(page.clientWidth)

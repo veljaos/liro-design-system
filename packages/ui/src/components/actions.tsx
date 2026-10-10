@@ -113,15 +113,26 @@ export type UnavailableActionProps = DistributiveOmit<
 > & {
   /** Why it cannot be used now, from the application: shown as text and in a tooltip. */
   reason: string
+  /**
+   * The id of an element where the flow shows the reason itself (`messages['action.unavailable']`)
+   * — a wizard's footer on phones puts it on one line under its row (P5.23). The button is then
+   * described by that element, and nothing is shown beside it.
+   */
+  reasonId?: string
 }
 
 /**
  * An action the user cannot use now, with the reason in words beside it (and in a tooltip): never
  * only a greyed-out button. Announced to assistive technology with its reason.
  */
-export function UnavailableAction({ reason, ...action }: UnavailableActionProps) {
+export function UnavailableAction({
+  reason,
+  reasonId: shownElsewhere,
+  ...action
+}: UnavailableActionProps) {
   const { messages } = useLiro()
-  const reasonId = `${useId()}-reason`
+  const ownId = `${useId()}-reason`
+  const reasonId = shownElsewhere ?? ownId
   const [open, setOpen] = useState(false)
   const touch = useRef(false)
   const onPointerDown = (event: PointerEvent) => {
@@ -150,9 +161,11 @@ export function UnavailableAction({ reason, ...action }: UnavailableActionProps)
           <TooltipContent className="w-60 whitespace-normal">{reason}</TooltipContent>
         </TooltipRoot>
       </TooltipProvider>
-      <span id={reasonId} className={cn('text-xs text-secondary', TEXT_DIRECTION)}>
-        {messages['action.unavailable'](reason)}
-      </span>
+      {shownElsewhere === undefined && (
+        <span id={reasonId} className={cn('text-xs text-secondary', TEXT_DIRECTION)}>
+          {messages['action.unavailable'](reason)}
+        </span>
+      )}
     </span>
   )
 }
