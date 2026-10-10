@@ -57,7 +57,12 @@ import { SplitAction } from './split-action'
 import { TextField } from './text-field'
 import { EntryDraftSlot, type EntryDraft } from './use-entry'
 import { usePhone } from './use-phone'
-import { keepFocusedRow, overscanRows, spacersBetween } from './virtual-rows'
+import {
+  HEAVY_ROW_OVERSCAN,
+  keepFocusedRow,
+  overscanRows,
+  spacersBetween,
+} from './virtual-rows'
 
 /*
  * EditableGrid (BUILD-PLAN P3.4): a keyboard-first line editor for document lines and journal
@@ -1058,8 +1063,8 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
       return row === undefined ? lineEstimate : estimate(row)
     },
     getItemKey,
-    // 600px above and below the view (virtual-rows.ts), as lines.
-    overscan: overscanRows(lineEstimate),
+    // Lines of fields are heavy: 240px above and below the view (virtual-rows.ts), as lines.
+    overscan: overscanRows(lineEstimate, HEAVY_ROW_OVERSCAN),
     rangeExtractor,
     enabled: virtual,
     observeElementRect: observeViewport,
