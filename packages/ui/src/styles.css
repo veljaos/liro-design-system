@@ -256,6 +256,9 @@
     [role='option']
   ) {
   min-height: var(--liro-touch-target);
+}
+
+/*
  * Print (P5.15): inside a PrintPage's sheet, whatever the application puts in it. A table row, a
  * list item and an element marked data-print-keep are never split between pages; a heading, a
  * caption or a table's heading row never ends a page (it stays with its first line); a paragraph

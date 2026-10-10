@@ -57,12 +57,7 @@ import { SplitAction } from './split-action'
 import { TextField } from './text-field'
 import { EntryDraftSlot, type EntryDraft } from './use-entry'
 import { usePhone } from './use-phone'
-import {
-  HEAVY_ROW_OVERSCAN,
-  keepFocusedRow,
-  overscanRows,
-  spacersBetween,
-} from './virtual-rows'
+import { HEAVY_ROW_OVERSCAN, keepFocusedRow, overscanRows, spacersBetween } from './virtual-rows'
 
 /*
  * EditableGrid (BUILD-PLAN P3.4): a keyboard-first line editor for document lines and journal

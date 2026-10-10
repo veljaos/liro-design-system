@@ -120,7 +120,9 @@ export function PermissionMatrix(props: PermissionMatrixProps) {
             >
               {area.label}
               {area.description !== undefined && (
-                <span className="block text-xs font-regular text-secondary">{area.description}</span>
+                <span className="block text-xs font-regular text-secondary">
+                  {area.description}
+                </span>
               )}
             </legend>
             {props.actions.map((action) => {
