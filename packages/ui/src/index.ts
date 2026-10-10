@@ -722,3 +722,56 @@ export { MaskedValue } from './components/masked-value'
 export type { MaskedValueProps, MaskedValueReason, RevealRequest } from './components/masked-value'
 export { PortalShell } from './templates/portal-shell'
 export type { PortalParticipant, PortalSection, PortalShellProps } from './templates/portal-shell'
+// ── P5.15 Print templates, P5.12 Learning ──
+export { PrintPage } from './templates/print-page'
+export type { PrintFrameProps, PrintPageProps, PrintStatus } from './templates/print-page'
+export {
+  PrintDetails,
+  PrintIssuedLine,
+  PrintSection,
+  PrintSignatures,
+  PrintTable,
+  PrintTitle,
+} from './templates/print-parts'
+export type {
+  PrintColumn,
+  PrintDetail,
+  PrintDetailsProps,
+  PrintIssued,
+  PrintSectionProps,
+  PrintSignature,
+  PrintSignaturesProps,
+  PrintTableProps,
+} from './templates/print-parts'
+export {
+  PrintCertificate,
+  PrintDocument,
+  PrintFinding,
+  PrintGradeReport,
+} from './templates/print-templates'
+export type {
+  PrintCertificateProps,
+  PrintDocumentProps,
+  PrintFindingProps,
+  PrintFindingSection,
+  PrintGradeReportProps,
+  PrintParty,
+} from './templates/print-templates'
+export {
+  cssString,
+  fitZoom,
+  pageName,
+  pageNumberContent,
+  pageRules,
+  PRINT_MARGINS,
+  PX_PER_MM,
+  resolvedMargins,
+  sheetSize,
+} from './templates/print-logic'
+export type { PageRulesOptions, PrintMargins, PrintOrientation } from './templates/print-logic'
+export { CoursePage } from './templates/course-page'
+export type { CourseCompletion, CourseLessonLink, CoursePageProps } from './templates/course-page'
+export { courseProgress, findLesson, moduleProgress } from './templates/course-logic'
+export type { CourseLesson, CourseModule, LessonCount, LessonState } from './templates/course-logic'
+export { QuizResult } from './components/quiz-result'
+export type { QuizResultProps, QuizReviewItem } from './components/quiz-result'
