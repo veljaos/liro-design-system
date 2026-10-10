@@ -260,6 +260,7 @@ export const Loading: Story = {
 
 /** Long names, places and reasons wrap. */
 export const LongText: Story = {
+  name: 'Long text',
   render: () => (
     <ExampleProvider>
       <Records

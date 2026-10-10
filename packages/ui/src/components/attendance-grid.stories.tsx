@@ -721,6 +721,7 @@ export const Loading: Story = {
 
 /** Long names, descriptions, labels and reasons wrap; the hand-off is unavailable with its reason. */
 export const LongText: Story = {
+  name: 'Long text',
   render: () => (
     <ExampleProvider>
       <Timesheet
@@ -766,6 +767,7 @@ const MANY = Array.from({ length: 300 }, (_, index) => ({
 
 /** 300 people: only the rows in view are drawn; the grid still tells its whole size. */
 export const ManyRows: Story = {
+  name: 'Many rows',
   render: () => (
     <AttendanceGrid
       label="Attendance, all classes"
