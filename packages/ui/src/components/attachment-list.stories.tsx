@@ -101,6 +101,29 @@ type Story = StoryObj<typeof meta>
  * step; only available files download; the contract cannot be removed.
  */
 export const Default: Story = {
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const list = canvas.getByRole('list', { name: 'Attachments' })
+    await expect(within(list).getAllByRole('listitem')).toHaveLength(6)
+    await expect(canvas.getByRole('progressbar', { name: 'Fotografije hale B.zip' })).toBeVisible()
+    await expect(canvas.getByText('Uploading, 45%. It is checked for viruses next.')).toBeVisible()
+    await expect(canvas.getByText(/Checking for viruses/)).toBeVisible()
+    await expect(canvas.getByText(/a threat was found/)).toBeVisible()
+    // Only available files download.
+    await expect(canvas.getAllByRole('button', { name: /^Download / })).toHaveLength(2)
+    await expect(canvas.queryByRole('button', { name: 'Download Obracun.xlsm' })).toBeNull()
+    // The application's rule: the signed contract stays.
+    await expect(
+      canvas.queryByRole('button', { name: 'Remove Ugovor 12-2026 Vojvođanka Mlin.pdf' }),
+    ).toBeNull()
+    await settle()
+  },
+}
+
+export const DefaultInteraction: Story = {
+  name: 'Default, interaction',
+  tags: ['interaction'],
   play: async ({ canvasElement, args }) => {
     await settle()
     const canvas = within(canvasElement)
@@ -131,6 +154,7 @@ export const Default: Story = {
  * busy with a small spinner.
  */
 export const Download: Story = {
+  tags: ['interaction'],
   play: async ({ canvasElement, args }) => {
     await settle()
     const canvas = within(canvasElement)

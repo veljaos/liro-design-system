@@ -33,8 +33,8 @@ export default meta
 
 type Story = StoryObj<typeof meta>
 
-function EditContact({ side }: { side?: 'start' | 'end' }) {
-  const [open, setOpen] = useState(false)
+function EditContact({ side, start = false }: { side?: 'start' | 'end'; start?: boolean }) {
+  const [open, setOpen] = useState(start)
   return (
     <Drawer
       open={open}
@@ -82,6 +82,16 @@ async function openAndCheck(canvasElement: HTMLElement) {
 
 /** From the start side; Escape closes it and the focus returns to the button. */
 export const Start: Story = {
+  render: () => <EditContact start />,
+  play: async () => {
+    await within(document.body).findByRole('dialog', { name: 'Edit the contact' })
+    await settle()
+  },
+}
+
+export const StartInteraction: Story = {
+  name: 'Start, interaction',
+  tags: ['interaction'],
   render: () => <EditContact />,
   play: async ({ canvasElement }) => {
     await openAndCheck(canvasElement)
@@ -90,6 +100,16 @@ export const Start: Story = {
 
 /** From the end side. */
 export const End: Story = {
+  render: () => <EditContact side="end" start />,
+  play: async () => {
+    await within(document.body).findByRole('dialog', { name: 'Edit the contact' })
+    await settle()
+  },
+}
+
+export const EndInteraction: Story = {
+  name: 'End, interaction',
+  tags: ['interaction'],
   render: () => <EditContact side="end" />,
   play: async ({ canvasElement }) => {
     await openAndCheck(canvasElement)

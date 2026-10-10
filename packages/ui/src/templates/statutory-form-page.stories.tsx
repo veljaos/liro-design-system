@@ -347,6 +347,19 @@ export const Default: Story = {
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
+    await expect(canvas.getByText('1 check failed · 4 checks passed')).toBeVisible()
+    await expect(canvas.getByText('Changed manually')).toBeVisible()
+    await expect(canvas.getByText('By Ivana Stojanović on 05.10.2026. 14:12')).toBeVisible()
+    await settle()
+  },
+}
+
+export const DefaultInteraction: Story = {
+  name: 'Default, interaction',
+  tags: ['interaction'],
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
     const body = within(canvasElement.ownerDocument.body)
     await expect(canvas.getByText('1 check failed · 4 checks passed')).toBeVisible()
     await expect(canvas.getByText('Changed manually')).toBeVisible()
@@ -371,6 +384,7 @@ export const Default: Story = {
  */
 export const Override: Story = {
   name: 'Changing a value',
+  tags: ['interaction'],
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)

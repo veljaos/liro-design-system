@@ -25,7 +25,7 @@ import {
 import { focusFirstInvalid } from './form-logic'
 import { NumberField } from './number-field'
 import { SelectField } from './select-field'
-import { expectContentDirection, StoryProvider } from './story-frames'
+import { ExampleProvider, expectContentDirection, PhoneFrame, StoryProvider } from './story-frames'
 import { TextAreaField, TextField } from './text-field'
 
 const meta = {
@@ -101,6 +101,27 @@ export const Sections: Story = {
 
 /** Collapsible: closed by default; a second one opened with `defaultOpen`. Opening shows the fields. */
 export const Collapsible: Story = {
+  render: () => (
+    <div className="flex max-w-240 flex-col gap-4">
+      <FormSection title="More details" collapsible>
+        <TextField label="Reference" />
+        <TextField label="Cost centre" />
+      </FormSection>
+      <FormSection title="Bank" collapsible defaultOpen>
+        <TextField label="Account" />
+      </FormSection>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.queryByRole('textbox', { name: 'Reference' })).toBeNull()
+    await settle()
+  },
+}
+
+export const CollapsibleInteraction: Story = {
+  name: 'Collapsible, interaction',
+  tags: ['interaction'],
   render: () => (
     <div className="flex max-w-240 flex-col gap-4">
       <FormSection title="More details" collapsible>
@@ -202,6 +223,15 @@ function RecordForm(props: { stickyActions?: 'auto' | 'always' | 'never'; long?:
 export const TabsWithErrors: Story = {
   name: 'Tabs with errors',
   render: () => <RecordForm stickyActions="never" />,
+  play: async () => {
+    await settle()
+  },
+}
+
+export const TabsWithErrorsInteraction: Story = {
+  name: 'Tabs with errors, interaction',
+  tags: ['interaction'],
+  render: () => <RecordForm stickyActions="never" />,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await userEvent.click(canvas.getByRole('button', { name: 'Save' }))
@@ -220,6 +250,7 @@ export const TabsWithErrors: Story = {
  */
 export const BottomBarWhileScrolling: Story = {
   name: 'Bottom bar while scrolling',
+  tags: ['interaction'],
   render: () => (
     <div data-testid="scroller" className="h-130 overflow-y-auto">
       <RecordForm long />
@@ -274,6 +305,7 @@ function GuardedForm() {
 /** With unsaved changes, leaving asks first; "Stay" keeps the form. */
 export const UnsavedChangesGuard: Story = {
   name: 'Unsaved changes guard',
+  tags: ['interaction'],
   render: () => <GuardedForm />,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -285,7 +317,7 @@ export const UnsavedChangesGuard: Story = {
   },
 }
 
-function Wizard() {
+function Wizard({ layout }: { layout?: 'desktop' | 'phone' }) {
   const [name, setName] = useState('')
   const [checked, setChecked] = useState(false)
   const [amount, setAmount] = useState<string | null>(null)
@@ -326,6 +358,7 @@ function Wizard() {
         onFinish={() => {
           setDone(true)
         }}
+        {...(layout === undefined ? {} : { layout })}
       />
       {done && <p className="m-0 text-sm">Created.</p>}
     </div>
@@ -336,6 +369,15 @@ function Wizard() {
 export const WizardSteps: Story = {
   name: 'Wizard',
   render: () => <Wizard />,
+  play: async () => {
+    await settle()
+  },
+}
+
+export const WizardStepsInteraction: Story = {
+  name: 'Wizard, interaction',
+  tags: ['interaction'],
+  render: () => <Wizard />,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await userEvent.click(canvas.getByRole('button', { name: 'Next' }))
@@ -345,6 +387,65 @@ export const WizardSteps: Story = {
     await canvas.findByRole('textbox', { name: 'Amount' })
     await userEvent.click(canvas.getByRole('button', { name: 'Back' }))
     await expect(await canvas.findByRole('textbox', { name: /^Name/ })).toHaveValue('Alfa')
+    await settle()
+  },
+}
+
+/**
+ * Phones (P5.23): "Step 1 of 3 · Customer" over a thin bar in place of the row of circles, and
+ * Back / Next as ONE row stuck to the bottom of the screen.
+ */
+export const WizardPhone: Story = {
+  name: 'Wizard, phone',
+  render: () => (
+    <PhoneFrame>
+      <ExampleProvider>
+        <div className="h-full overflow-y-auto p-4">
+          <Wizard layout="phone" />
+        </div>
+      </ExampleProvider>
+    </PhoneFrame>
+  ),
+  play: async ({ canvasElement }) => {
+    await expect(canvasElement.querySelector('[data-slot="stepper"]')).toHaveTextContent(
+      'Step 1 of 3 · Customer',
+    )
+    await settle()
+  },
+}
+
+export const WizardPhoneInteraction: Story = {
+  name: 'Wizard, phone, interaction',
+  tags: ['interaction'],
+  render: () => (
+    <PhoneFrame>
+      <ExampleProvider>
+        <div className="h-full overflow-y-auto p-4">
+          <Wizard layout="phone" />
+        </div>
+      </ExampleProvider>
+    </PhoneFrame>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvasElement.querySelector('[data-slot="stepper"]')).toHaveTextContent(
+      'Step 1 of 3 · Customer',
+    )
+    await userEvent.type(canvas.getByRole('textbox', { name: /^Name/ }), 'Alfa')
+    await userEvent.click(canvas.getByRole('button', { name: 'Next' }))
+    await waitFor(() =>
+      expect(canvasElement.querySelector('[data-slot="stepper"]')).toHaveTextContent(
+        'Step 2 of 3 · Amount',
+      ),
+    )
+    const tops = new Set(
+      [
+        ...(canvasElement
+          .querySelector('[data-slot="wizard-footer"]')
+          ?.querySelectorAll('button') ?? []),
+      ].map((button) => Math.round(button.getBoundingClientRect().top)),
+    )
+    await expect(tops.size).toBe(1)
     await settle()
   },
 }
@@ -407,6 +508,7 @@ function BoundForm({ children }: { children?: ReactNode }) {
  */
 export const ReactHookForm: Story = {
   name: 'React Hook Form binding',
+  tags: ['interaction'],
   render: () => <BoundForm />,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)

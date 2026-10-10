@@ -87,6 +87,16 @@ export const Default: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('group', { name: 'Question from Liro agent' })).toBeVisible()
+    await settle()
+  },
+}
+
+export const DefaultInteraction: Story = {
+  name: 'Default, interaction',
+  tags: ['interaction'],
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('group', { name: 'Question from Liro agent' })).toBeVisible()
     await userEvent.type(
       canvas.getByRole('textbox', { name: 'Expected payment date' }),
       '20.10.2026{Enter}',
@@ -100,6 +110,32 @@ export const Default: Story = {
 /** Opened from a button, as the shell's agent button would (a Popover). */
 export const InPopover: Story = {
   name: 'In a popover',
+  render: () => (
+    <ExampleProvider>
+      <Popover
+        defaultOpen
+        label="Liro agent"
+        align="start"
+        trigger={<Button family="neutral" icon={Bot} label="Liro agent: 1 question" />}
+      >
+        <div className="w-96 max-w-full">
+          <PaymentQuestion />
+        </div>
+      </Popover>
+    </ExampleProvider>
+  ),
+  play: async () => {
+    const popover = await within(document.body).findByRole('dialog', { name: 'Liro agent' })
+    await settle()
+    await expect(
+      within(popover).getByRole('group', { name: 'Question from Liro agent' }),
+    ).toBeVisible()
+  },
+}
+
+export const InPopoverInteraction: Story = {
+  name: 'In a popover, interaction',
+  tags: ['interaction'],
   render: () => (
     <ExampleProvider>
       <Popover

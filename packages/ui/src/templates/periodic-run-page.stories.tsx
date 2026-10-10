@@ -351,6 +351,7 @@ export const Empty: Story = {
 /** The rerun asks for a reason; the run goes back to Calculate with its progress. */
 export const Rerun: Story = {
   name: 'Rerun with a reason',
+  tags: ['interaction'],
   render: function Render() {
     const [rerun, setRerun] = useState<string | null>(null)
     return (
@@ -431,6 +432,31 @@ export const StepClick: Story = {
       </ExampleProvider>
     ),
   ],
+  play: async () => {
+    await settle()
+  },
+}
+
+export const StepClickInteraction: Story = {
+  name: 'Steps as buttons, interaction',
+  tags: ['interaction'],
+  render: function Render() {
+    const [viewed, setViewed] = useState(2)
+    return (
+      <PayrollRun
+        onStepClick={setViewed}
+        checksTitle={`Checks: ${STEPS[viewed]?.label ?? ''}`}
+        checks={viewed === 2 ? CHECKS : CHECKS.slice(0, 2)}
+      />
+    )
+  },
+  decorators: [
+    (Story) => (
+      <ExampleProvider>
+        <Story />
+      </ExampleProvider>
+    ),
+  ],
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
@@ -480,7 +506,7 @@ export const PhoneWidth: Story = {
   ),
   play: async ({ canvasElement }) => {
     await settle()
-    await expect(canvasElement).toHaveTextContent('Step 3 of 5: Review')
+    await expect(canvasElement).toHaveTextContent('Step 3 of 5 · Review')
     const page = canvasElement.querySelector('[data-slot="periodic-run-page"]')
     if (page === null) throw new Error('no page')
     await expect(page.scrollWidth).toBeLessThanOrEqual(page.clientWidth)

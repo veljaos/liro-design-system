@@ -13,6 +13,7 @@ describe('protectedFiles', () => {
       'packages/ui/tsconfig.json',
       '.github/workflows/ci.yml',
       'scripts/protected-files.mjs',
+      'scripts/static-stories.mjs',
       'scripts/consumer-check.mjs',
       'apps/consumer-check/check.mjs',
       'apps/storybook/playwright.config.ts',

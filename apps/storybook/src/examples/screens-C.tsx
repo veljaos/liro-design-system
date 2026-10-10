@@ -35,7 +35,7 @@ import {
 } from '@veljaos/ui'
 import { CONTRACT_VIEWER } from '../../../../packages/ui/src/components/document-frame-story-data'
 import type { ExampleRoute } from './example-app'
-import { BRAND, HR_TABS, Navigate, ROUTES, Shell } from './example-shell'
+import { BRAND, HR_TABS, Navigate, ROUTES, Shell, statusBadge, toneOf } from './example-shell'
 import {
   ACTIONS,
   AREAS,
@@ -99,8 +99,6 @@ const SETTINGS_TABS: ModuleTab[] = [
   { key: 'integrations', label: 'Integrations', href: '#/settings/integrations' },
 ]
 
-const INVITATION_TONES = { Pending: 'info', Expired: 'warning' } as const
-
 function MembersTable({ phone, members }: { phone: boolean; members: ExampleMember[] }) {
   const { format } = useLiro()
   const columns: DataTableColumn<ExampleMember>[] = [
@@ -123,12 +121,7 @@ function MembersTable({ phone, members }: { phone: boolean; members: ExampleMemb
     {
       id: 'status',
       header: 'Status',
-      cell: (member) => (
-        <StatusBadge
-          label={member.status}
-          tone={member.status === 'Active' ? 'success' : 'neutral'}
-        />
-      ),
+      cell: (member) => <StatusBadge label={member.status} tone={toneOf(member.status)} />,
     },
     {
       id: 'last',
@@ -156,12 +149,7 @@ function MembersTable({ phone, members }: { phone: boolean; members: ExampleMemb
       mobile={{
         title: (member) => member.name,
         subtitle: (member) => member.roles.map(roleName).join(', '),
-        badge: (member) => (
-          <StatusBadge
-            label={member.status}
-            tone={member.status === 'Active' ? 'success' : 'neutral'}
-          />
-        ),
+        badge: (member) => <StatusBadge label={member.status} tone={toneOf(member.status)} />,
         details: ['last'],
       }}
     />
@@ -310,9 +298,7 @@ function InvitationsTable({
     {
       id: 'state',
       header: 'State',
-      cell: (invitation) => (
-        <StatusBadge label={invitation.state} tone={INVITATION_TONES[invitation.state]} />
-      ),
+      cell: (invitation) => statusBadge(invitation.state),
     },
   ]
   return (
@@ -339,9 +325,7 @@ function InvitationsTable({
       mobile={{
         title: (invitation) => invitation.email,
         subtitle: (invitation) => roleName(invitation.role),
-        badge: (invitation) => (
-          <StatusBadge label={invitation.state} tone={INVITATION_TONES[invitation.state]} />
-        ),
+        badge: (invitation) => statusBadge(invitation.state),
         details: ['by', 'sent', 'expires'],
       }}
     />
@@ -553,7 +537,7 @@ export function ContractSigningScreen({ phone }: { phone: boolean }) {
         layout={phone ? 'phone' : 'desktop'}
         title="RU-2026-017"
         back={{ href: '#/hr/contracts', label: 'Contracts' }}
-        status={<StatusBadge label="Awaiting signatures" tone="warning" />}
+        status={statusBadge('Awaiting signatures')}
         subtitle="Employment contract · Stefan Nikolić, site engineer"
         actions={
           <>
@@ -604,11 +588,9 @@ export function SignerLinkScreen({ phone }: { phone: boolean }) {
         layout={phone ? 'phone' : 'desktop'}
         title="RU-2026-017"
         status={
-          signers.find((each) => each.id === 'stefan')?.state === 'signed' ? (
-            <StatusBadge label="Signed by you" tone="success" />
-          ) : (
-            <StatusBadge label="Awaiting your signature" tone="warning" />
-          )
+          signers.find((each) => each.id === 'stefan')?.state === 'signed'
+            ? statusBadge('Signed by you')
+            : statusBadge('Awaiting your signature')
         }
         subtitle="Employment contract from Kvadrat Gradnja d.o.o."
         actions={<Button intent="download" label="Download PDF" />}

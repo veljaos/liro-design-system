@@ -40,19 +40,19 @@ const TABS = [
     value: 'general',
     label: 'General',
     icon: FileText,
-    content: <p className="m-0 p-4 text-sm">General data of the invoice.</p>,
+    content: <p className="m-0 text-sm">General data of the invoice.</p>,
   },
   {
     value: 'lines',
     label: 'Lines',
     icon: List,
-    content: <p className="m-0 p-4 text-sm">Twelve lines.</p>,
+    content: <p className="m-0 text-sm">Twelve lines.</p>,
   },
   {
     value: 'files',
     label: 'Attachments',
     icon: Paperclip,
-    content: <p className="m-0 p-4 text-sm">Two files.</p>,
+    content: <p className="m-0 text-sm">Two files.</p>,
   },
   { value: 'history', label: 'History', disabled: true, content: null },
 ]
@@ -60,6 +60,12 @@ const TABS = [
 /** Tabs: the arrow keys move between tabs; only the active panel is mounted. */
 export const TabsDefault: Story = {
   name: 'Tabs',
+  render: () => <Tabs items={TABS} label="Invoice F-114" />,
+}
+
+export const TabsDefaultInteraction: Story = {
+  name: 'Tabs, interaction',
+  tags: ['interaction'],
   render: () => <Tabs items={TABS} label="Invoice F-114" />,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -112,6 +118,32 @@ export const Pagination: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('button', { name: 'Previous' })).toBeDisabled()
+  },
+}
+
+export const PaginationInteraction: Story = {
+  name: 'CursorPagination, interaction',
+  tags: ['interaction'],
+  render: function Render() {
+    const [page, setPage] = useState(0)
+    return (
+      <CursorPagination
+        className="max-w-150"
+        hasPrevious={page > 0}
+        hasNext={page < 2}
+        onPrevious={() => {
+          setPage(page - 1)
+        }}
+        onNext={() => {
+          setPage(page + 1)
+        }}
+        count={`Rows ${String(page * 50 + 1)}–${String(page * 50 + 50)} of more than 100`}
+      />
+    )
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('button', { name: 'Previous' })).toBeDisabled()
     await userEvent.click(canvas.getByRole('button', { name: 'Next' }))
     await expect(canvas.getByRole('button', { name: 'Previous' })).toBeEnabled()
   },
@@ -138,7 +170,7 @@ export const LongTextPhone: Story = {
           {
             value: 'a',
             label: 'Delivery address',
-            content: <p className="m-0 p-4 text-sm">{LONG.value}</p>,
+            content: <p className="m-0 text-sm">{LONG.value}</p>,
           },
           { value: 'b', label: 'Registered address', content: null },
           { value: 'c', label: 'Contacts', content: null },
@@ -168,7 +200,7 @@ export const Arabic: Story = {
         items={ARABIC.options.map((label) => ({
           value: label,
           label,
-          content: <p className="m-0 p-4 text-sm">{ARABIC.description}</p>,
+          content: <p className="m-0 text-sm">{ARABIC.description}</p>,
         }))}
       />
       <CursorPagination
@@ -195,7 +227,7 @@ export const Japanese: Story = {
         items={JAPANESE.options.map((label) => ({
           value: label,
           label,
-          content: <p className="m-0 p-4 text-sm">{JAPANESE.description}</p>,
+          content: <p className="m-0 text-sm">{JAPANESE.description}</p>,
         }))}
       />
       <ShortcutHint keys={['Ctrl', 'K']} />

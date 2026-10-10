@@ -123,6 +123,45 @@ export const ForeignCurrency: Story = {
 export const Pending: Story = {
   render: (args) => {
     function Recomputing() {
+      const [pending, setPending] = useState(true)
+      return (
+        <div className="flex flex-col gap-4">
+          <div>
+            <Button
+              intent="refresh"
+              emphasis="secondary"
+              label="Recompute"
+              onClick={() => {
+                setPending(true)
+              }}
+            />
+          </div>
+          <DocumentTotals
+            {...args}
+            total={{ ...args.total, pending }}
+            deductions={FINAL_DEDUCTIONS.map((row) => ({ ...row, pending }))}
+          />
+        </div>
+      )
+    }
+    return (
+      <ExampleProvider>
+        <Recomputing />
+      </ExampleProvider>
+    )
+  },
+  play: async ({ canvasElement }) => {
+    await settle()
+    // The confirmed amount stays while the new one is computed.
+    await expect(canvasElement).toHaveTextContent('5.003.678,22')
+  },
+}
+
+export const PendingInteraction: Story = {
+  name: 'Pending, interaction',
+  tags: ['interaction'],
+  render: (args) => {
+    function Recomputing() {
       const [pending, setPending] = useState(false)
       return (
         <div className="flex flex-col gap-4">

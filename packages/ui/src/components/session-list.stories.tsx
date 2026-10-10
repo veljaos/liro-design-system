@@ -89,6 +89,47 @@ export const Default: Story = {
     await expect(canvasElement).toHaveTextContent('Last active 06.10.2026. 08:15')
     // The current device has no Sign out of its own.
     await expect(canvas.queryByRole('button', { name: 'Sign out: Chrome on Windows' })).toBeNull()
+    await settle()
+  },
+}
+
+export const DefaultInteraction: Story = {
+  name: 'Default, interaction',
+  tags: ['interaction'],
+  args: {
+    extraAction: (session) => (session.current === true ? null : <NotMe session={session} />),
+  },
+  render: (args) => {
+    function Example() {
+      const [sessions, setSessions] = useState(SESSIONS)
+      return (
+        <ExampleProvider>
+          <SectionCard title="Signed-in devices" headingLevel={2} className="max-w-160">
+            <SessionList
+              {...args}
+              sessions={sessions}
+              onRevoke={(session) =>
+                new Promise<void>((resolve) => {
+                  window.setTimeout(() => {
+                    setSessions((list) => list.filter((each) => each.id !== session.id))
+                    resolve()
+                  }, 300)
+                })
+              }
+            />
+          </SectionCard>
+        </ExampleProvider>
+      )
+    }
+    return <Example />
+  },
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('This device')).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('Last active 06.10.2026. 08:15')
+    // The current device has no Sign out of its own.
+    await expect(canvas.queryByRole('button', { name: 'Sign out: Chrome on Windows' })).toBeNull()
     const revoke = canvas.getByRole('button', { name: 'Sign out: Edge on Windows' })
     await userEvent.click(revoke)
     await expect(revoke).toHaveAttribute('aria-busy', 'true')
@@ -101,6 +142,7 @@ export const Default: Story = {
 /** Sign out all other devices. */
 export const RevokeOthers: Story = {
   name: 'Sign out all others',
+  tags: ['interaction'],
   play: async ({ canvasElement, args }) => {
     await settle()
     await userEvent.click(

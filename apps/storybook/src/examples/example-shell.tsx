@@ -139,7 +139,7 @@ export const NOTIFICATIONS: NotificationItem[] = [
   },
   {
     id: 'n6',
-    title: 'Bank statement 188 imported: 3 lines matched, 7 to check',
+    title: 'Bank statement 188 imported: 8 suggestions ready, 2 lines to check',
     company: 'Kvadrat Gradnja d.o.o.',
     companyId: 'kvadrat',
     type: 'system',
@@ -184,19 +184,68 @@ export function hrTabs(key: string): ModuleTab[] {
   return HR_TABS.map((tab) => ({ ...tab, current: tab.key === key }))
 }
 
+/**
+ * The application's status-to-tone map (BUILD-PLAN A.7, the application's data, never the
+ * Design System's): every status shown in the examples, one tone each, used by every screen
+ * (P5.23, the owner's review: "Cancelled" was neutral on some screens). docs/decisions.md lists
+ * them. Blue (info) is for a document on its way; red (danger) for what failed or ended badly —
+ * overdue, rejected, cancelled, suspended; warning for what waits on someone.
+ */
 export const TONES = {
+  // Documents
   Draft: 'neutral',
+  Issued: 'info',
   Sent: 'info',
+  'Sent to SEF': 'info',
+  Delivered: 'success',
+  Accepted: 'success',
   Paid: 'success',
-  Overdue: 'danger',
   'Partially paid': 'warning',
-  Cancelled: 'neutral',
+  Overdue: 'danger',
+  Cancelled: 'danger',
+  Booked: 'success',
+  Posted: 'success',
+  Completed: 'success',
+  // Approvals and signatures
   'To approve': 'warning',
   'Query sent': 'info',
+  Approved: 'success',
+  Rejected: 'danger',
+  'Awaiting signatures': 'warning',
+  'Awaiting your signature': 'warning',
+  'Signed by you': 'success',
+  // Runs, forms and statements
+  'In review': 'info',
+  Calculating: 'info',
+  Checked: 'info',
+  Submitted: 'success',
+  Imported: 'neutral',
+  'In progress': 'info',
+  // A bank statement's lines
+  'Suggestion ready': 'info',
+  'To do': 'warning',
+  'Left for later': 'neutral',
+  Done: 'success',
+  // Records and access
+  Active: 'success',
+  Inactive: 'neutral',
+  Deactivated: 'neutral',
+  Suspended: 'danger',
+  Pending: 'warning',
+  Expired: 'warning',
+  Locked: 'warning',
 } as const
 
-export function statusBadge(status: keyof typeof TONES) {
-  return <StatusBadge label={status} tone={toneFor(status, TONES)} />
+/** A status of the examples. */
+export type ExampleStatus = keyof typeof TONES
+
+/** The tone of a status in the application's map. */
+export function toneOf(status: ExampleStatus) {
+  return toneFor(status, TONES)
+}
+
+export function statusBadge(status: ExampleStatus) {
+  return <StatusBadge label={status} tone={toneOf(status)} />
 }
 
 /** Kvadrat Gradnja d.o.o.: the company of the walk-through. */

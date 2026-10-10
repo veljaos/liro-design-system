@@ -10,17 +10,19 @@ import {
   correctionColumns,
   DataTable,
   DateText,
+  DESCRIPTION_MIN_WIDTH,
   DocumentCurrency,
   DocumentNotes,
   DocumentPage,
   DocumentReferences,
+  DocumentSource,
   DocumentSpecification,
   DocumentTotals,
   KeyValueList,
+  MIN_COLUMN_WIDTH,
   MoneyText,
   NumberText,
   RelatedDocuments,
-  StatusBadge,
   ChangeText,
   type DataTableColumn,
   type DocumentNotesValue,
@@ -29,11 +31,10 @@ import {
   type NoteTemplate,
   type SidePanel,
   type TaxRecap,
-  type Tone,
   type TotalsRow,
 } from '@veljaos/ui'
 import type { ExampleRoute } from './example-app'
-import { SALES_TABS, Shell } from './example-shell'
+import { SALES_TABS, Shell, statusBadge, toneOf } from './example-shell'
 import {
   ADVANCES,
   BOJOVIC,
@@ -98,10 +99,6 @@ const STEPS: LifecycleStep[] = [
   { key: 'paid', label: 'Paid' },
 ]
 
-function badge(label: string, tone: Tone) {
-  return <StatusBadge label={label} tone={tone} />
-}
-
 /** The tax category as the lines show it: the code with the rate, the footnote marker after it. */
 function taxLabel(code: DocLine['tax']): ReactNode {
   if (code === undefined) return null
@@ -119,7 +116,7 @@ function linesTable(lines: readonly DocLine[], currency: string, phone: boolean,
   const money = (value: string | undefined) =>
     value === undefined ? null : <MoneyText value={value} currency={currency} />
   const columns: DataTableColumn<DocLine>[] = [
-    { id: 'item', header: 'Item', cell: (line) => line.text },
+    { id: 'item', header: 'Item', minWidth: DESCRIPTION_MIN_WIDTH, cell: (line) => line.text },
     {
       id: 'quantity',
       header: 'Quantity',
@@ -219,7 +216,7 @@ function deliveryPanel(sent: string): SidePanel {
       <KeyValueList
         columns={1}
         items={[
-          { label: 'SEF', value: badge('Delivered', 'success') },
+          { label: 'SEF', value: statusBadge('Delivered') },
           { label: 'Sent', value: <Time>{sent}</Time>, numeric: true },
         ]}
       />
@@ -266,7 +263,7 @@ const FINAL_REFERENCES: DocumentReferenceGroup[] = [
       key: advance.number,
       number: advance.number,
       href: `#/sales/invoices/${advance.number}`,
-      status: { label: 'Paid', tone: 'success' as const },
+      status: { label: 'Paid', tone: toneOf('Paid') },
     })),
   },
   {
@@ -356,7 +353,7 @@ function FinalInvoice({ phone }: { phone: boolean }) {
         layout={phone ? 'phone' : 'desktop'}
         title="F-2026-0418"
         back={{ href: '#/sales/invoices', label: 'Invoices' }}
-        status={badge('Sent', 'info')}
+        status={statusBadge('Sent')}
         lifecycle={{ steps: STEPS, current: 2, label: 'Invoice status' }}
         counterparty={{ label: 'Customer', ...VOJVODJANKA }}
         keyFigures={[
@@ -434,21 +431,21 @@ function FinalInvoice({ phone }: { phone: boolean }) {
                     type: 'Proforma',
                     number: 'PR-2026-031',
                     href: '#/sales/proformas/PR-2026-031',
-                    status: badge('Accepted', 'neutral'),
+                    status: statusBadge('Accepted'),
                   },
                   ...ADVANCES.map((advance) => ({
                     key: advance.number,
                     type: 'Advance invoice',
                     number: advance.number,
                     href: `#/sales/invoices/${advance.number}`,
-                    status: badge('Paid', 'success'),
+                    status: statusBadge('Paid'),
                   })),
                   {
                     key: 'is',
                     type: 'Interim situation',
                     number: 'IS-2026-007',
                     href: '#/projects/IS-2026-007',
-                    status: badge('Issued', 'info'),
+                    status: statusBadge('Issued'),
                   },
                 ]}
               />
@@ -474,7 +471,7 @@ function FinalInvoice({ phone }: { phone: boolean }) {
 
 const SPEC_COLUMNS: DataTableColumn<SpecRow>[] = [
   { id: 'number', header: 'No.', cell: (row) => <span dir="ltr">{row.position?.number}</span> },
-  { id: 'text', header: 'Position', cell: (row) => row.text },
+  { id: 'text', header: 'Position', minWidth: DESCRIPTION_MIN_WIDTH, cell: (row) => row.text },
   { id: 'unit', header: 'Unit', cell: (row) => row.position?.unit },
   {
     id: 'quantity',
@@ -549,7 +546,7 @@ function Situation({ phone }: { phone: boolean }) {
         layout={phone ? 'phone' : 'desktop'}
         title="IS-2026-007"
         back={{ href: '#/projects', label: 'Projects' }}
-        status={badge('Issued', 'info')}
+        status={statusBadge('Issued')}
         lifecycle={{ steps: STEPS, current: 1, label: 'Situation status' }}
         counterparty={{
           label: 'Investor',
@@ -592,7 +589,7 @@ function Situation({ phone }: { phone: boolean }) {
                     key: 'is6',
                     number: 'IS-2026-006',
                     href: '#/projects/IS-2026-006',
-                    status: { label: 'Paid', tone: 'success' },
+                    status: { label: 'Paid', tone: toneOf('Paid') },
                   },
                 ],
               },
@@ -677,14 +674,14 @@ function Situation({ phone }: { phone: boolean }) {
                     type: 'Interim situation',
                     number: 'IS-2026-006',
                     href: '#/projects/IS-2026-006',
-                    status: badge('Paid', 'success'),
+                    status: statusBadge('Paid'),
                   },
                   {
                     key: 'f418',
                     type: 'Final invoice',
                     number: 'F-2026-0418',
                     href: '#/sales/invoices/F-2026-0418',
-                    status: badge('Sent', 'info'),
+                    status: statusBadge('Sent'),
                   },
                 ]}
               />
@@ -720,7 +717,7 @@ function EurInvoice({ phone }: { phone: boolean }) {
         layout={phone ? 'phone' : 'desktop'}
         title="F-2026-0415"
         back={{ href: '#/sales/invoices', label: 'Invoices' }}
-        status={badge('Sent', 'info')}
+        status={statusBadge('Sent')}
         lifecycle={{ steps: STEPS, current: 2, label: 'Invoice status' }}
         counterparty={{ label: 'Customer', ...DONAU_BAU }}
         keyFigures={[
@@ -813,8 +810,9 @@ function EurInvoice({ phone }: { phone: boolean }) {
 // ── KO-2026-0009: decrease against F-2026-0410 ──────────────────────────────────────────────
 
 const DECREASE_COLUMNS: DataTableColumn<CorrectedLine>[] = [
-  { id: 'item', header: 'Item', cell: (line) => line.text },
-  { id: 'unit', header: 'Unit', cell: (line) => line.unit },
+  { id: 'item', header: 'Item', minWidth: DESCRIPTION_MIN_WIDTH, cell: (line) => line.text },
+  // Short codes give their room to the item's name (P5.23).
+  { id: 'unit', header: 'Unit', minWidth: MIN_COLUMN_WIDTH, cell: (line) => line.unit },
   ...correctionColumns<CorrectedLine>({
     id: 'quantity',
     original: (line) => line.quantity.original,
@@ -837,7 +835,13 @@ const DECREASE_COLUMNS: DataTableColumn<CorrectedLine>[] = [
     currency: 'RSD',
     headers: { original: 'Original amount', change: 'Change', next: 'New amount' },
   }),
-  { id: 'vat', header: 'VAT', cell: (line) => taxLabel(line.tax) },
+  {
+    id: 'vat',
+    header: 'VAT',
+    minWidth: MIN_COLUMN_WIDTH,
+    // A code never wraps ("S 20%").
+    cell: (line) => <span className="whitespace-nowrap">{taxLabel(line.tax)}</span>,
+  },
 ]
 
 function Decrease({ phone }: { phone: boolean }) {
@@ -852,36 +856,29 @@ function Decrease({ phone }: { phone: boolean }) {
         layout={phone ? 'phone' : 'desktop'}
         title="KO-2026-0009"
         back={{ href: '#/sales/invoices', label: 'Invoices' }}
-        status={badge('Sent to SEF', 'info')}
+        status={statusBadge('Sent to SEF')}
         counterparty={{ label: 'Customer', ...MEDIC_LAB }}
-        keyFigures={[
-          {
-            label: 'Original total',
-            value: <MoneyText value={MEDIC_TOTALS.total} currency="RSD" />,
-          },
-          { label: 'Change', value: <ChangeText value={DECREASE.change} currency="RSD" /> },
-          { label: 'New total', value: <MoneyText value={DECREASE.newTotal} currency="RSD" /> },
-        ]}
-        actions={<Button intent="pdf" label="PDF" emphasis="secondary" />}
-        references={
-          <DocumentReferences
+        source={
+          <DocumentSource
             label="Corrects"
-            groups={[
+            documents={[
               {
-                key: 'invoice',
-                label: 'Invoice',
-                items: [
-                  {
-                    key: 'f410',
-                    number: 'F-2026-0410',
-                    href: '#/sales/invoices/F-2026-0410',
-                    status: { label: 'Partially paid', tone: 'warning' },
-                  },
-                ],
+                key: 'f410',
+                kind: 'Invoice',
+                number: 'F-2026-0410',
+                href: '#/sales/invoices/F-2026-0410',
+                date: '2026-09-25',
+                total: { value: MEDIC_TOTALS.total, currency: 'RSD' },
+                status: statusBadge('Partially paid'),
               },
             ]}
           />
         }
+        keyFigures={[
+          { label: 'Change', value: <ChangeText value={DECREASE.change} currency="RSD" /> },
+          { label: 'New total', value: <MoneyText value={DECREASE.newTotal} currency="RSD" /> },
+        ]}
+        actions={<Button intent="pdf" label="PDF" emphasis="secondary" />}
         lines={
           <DataTable
             label="Corrected lines"
@@ -944,7 +941,7 @@ function Cancelled({ phone }: { phone: boolean }) {
         layout={phone ? 'phone' : 'desktop'}
         title="F-2026-0407"
         back={{ href: '#/sales/invoices', label: 'Invoices' }}
-        status={badge('Cancelled', 'neutral')}
+        status={statusBadge('Cancelled')}
         banner={
           <CancellationBanner
             by={CANCELLATION.by}
@@ -991,7 +988,7 @@ function Cancelled({ phone }: { phone: boolean }) {
                     type: 'Cancellation document',
                     number: CANCELLATION.number,
                     href: `#${D2_ROUTES.cancellation}`,
-                    status: badge('Sent to SEF', 'info'),
+                    status: statusBadge('Sent to SEF'),
                   },
                 ]}
               />
@@ -1025,8 +1022,24 @@ function CancellationDocument({ phone }: { phone: boolean }) {
         layout={phone ? 'phone' : 'desktop'}
         title={CANCELLATION.number}
         back={{ href: '#/sales/invoices', label: 'Invoices' }}
-        status={badge('Sent to SEF', 'info')}
+        status={statusBadge('Sent to SEF')}
         counterparty={{ label: 'Customer', ...BOJOVIC }}
+        source={
+          <DocumentSource
+            label="Cancels"
+            documents={[
+              {
+                key: 'f407',
+                kind: 'Invoice',
+                number: CANCELLATION.invoice,
+                href: `#${D2_ROUTES.cancelled}`,
+                date: '2026-09-18',
+                total: { value: CANCELLED_TOTALS.total, currency: 'RSD' },
+                status: statusBadge('Cancelled'),
+              },
+            ]}
+          />
+        }
         keyFigures={[
           {
             label: 'Total',
@@ -1035,25 +1048,6 @@ function CancellationDocument({ phone }: { phone: boolean }) {
           { label: 'Issued', value: <DateText value="2026-10-06" /> },
         ]}
         actions={<Button intent="pdf" label="PDF" emphasis="secondary" />}
-        references={
-          <DocumentReferences
-            label="Cancels"
-            groups={[
-              {
-                key: 'invoice',
-                label: 'Invoice',
-                items: [
-                  {
-                    key: 'f407',
-                    number: CANCELLATION.invoice,
-                    href: `#${D2_ROUTES.cancelled}`,
-                    status: { label: 'Cancelled' },
-                  },
-                ],
-              },
-            ]}
-          />
-        }
         lines={linesTable(CANCELLATION_LINES, 'RSD', phone)}
         totals={{
           label: 'Totals',

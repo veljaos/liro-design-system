@@ -1,4 +1,4 @@
-import type { ReactElement, ReactNode } from 'react'
+import { useRef, type ReactElement, type ReactNode } from 'react'
 import {
   DialogBody,
   DialogCloseButton,
@@ -11,6 +11,7 @@ import {
   DialogTrigger,
 } from '../primitives/dialog'
 import { Sheet, SheetContent, SheetTrigger } from '../primitives/sheet'
+import { useSteadyBottom } from '../primitives/use-steady-bottom'
 import { useLiro } from '../provider/liro-provider'
 
 /*
@@ -43,7 +44,13 @@ interface OverlayProps {
   dismissible?: boolean
 }
 
-export type DialogProps = OverlayProps
+export interface DialogProps extends OverlayProps {
+  /**
+   * 'wide' (720px, at most 90% of the screen) for a read-only view that needs the room: a
+   * document in the viewer, a table. Default 440px.
+   */
+  size?: 'default' | 'wide'
+}
 
 /** The handlers that keep an overlay open while it is not dismissible. */
 function keepOpen(dismissible: boolean) {
@@ -66,19 +73,23 @@ function rootProps(props: OverlayProps) {
 function OverlayParts(props: OverlayProps) {
   const { messages } = useLiro()
   const dismissible = props.dismissible ?? true
+  // A message that comes and goes in the body never moves what is in view (P5.23).
+  const body = useRef<HTMLDivElement>(null)
+  const spacer = useSteadyBottom(body, undefined)
   return (
     <>
       <DialogHeader>
         <DialogTitle>{props.title}</DialogTitle>
         {dismissible && <DialogCloseButton label={messages['dialog.close']} />}
       </DialogHeader>
-      <DialogBody>
+      <DialogBody ref={body}>
         {props.description !== undefined && (
           <DialogDescription>{props.description}</DialogDescription>
         )}
         {props.children}
         {props.actions !== undefined && <DialogFooter>{props.actions}</DialogFooter>}
       </DialogBody>
+      <div ref={spacer} aria-hidden="true" className="shrink-0" />
     </>
   )
 }
@@ -95,6 +106,7 @@ export function Dialog(props: DialogProps) {
       <DialogContent
         {...keepOpen(props.dismissible ?? true)}
         {...(props.description === undefined ? { 'aria-describedby': undefined } : {})}
+        {...(props.size === 'wide' ? { className: 'w-180' } : {})}
       >
         <OverlayParts {...props} />
       </DialogContent>

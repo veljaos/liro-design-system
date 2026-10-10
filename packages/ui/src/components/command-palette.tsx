@@ -56,6 +56,8 @@ export interface CommandPaletteProps {
   /** Controlled open state; by default Ctrl/Cmd+K and Ctrl/Cmd+P open it. */
   open?: boolean
   onOpenChange?: (open: boolean) => void
+  /** Text standing typed when the palette first opens: a search the application restores. */
+  defaultQuery?: string
   /**
    * Called with the text after typing pauses for `searchDelay`, for results from the server,
    * passed back as `items` with `loading` while it works. Without it, `items` are filtered here.
@@ -92,7 +94,7 @@ export function CommandPalette(props: CommandPaletteProps) {
   const { messages, locale } = useLiro()
   const [innerOpen, setInnerOpen] = useState(false)
   const open = props.open ?? innerOpen
-  const [query, setQuery] = useState('')
+  const [query, setQuery] = useState(props.defaultQuery ?? '')
   const search = useDebouncedCallback(props.onSearch, props.searchDelay ?? 300)
   const onOpenChange = props.onOpenChange
 

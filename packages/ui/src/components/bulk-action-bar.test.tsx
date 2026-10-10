@@ -25,6 +25,16 @@ describe('BulkActionBar', () => {
     expect(html).toContain('aria-label="Clear the selection"')
   })
 
+  it('separates the count from "select all" by a line, only when it is offered', () => {
+    const withAll = render(
+      <BulkActionBar count={3} total={40} onSelectAll={noop} onClear={noop} actions={[]} />,
+    )
+    expect(withAll).toContain('data-slot="bulk-separator"')
+    expect(render(<BulkActionBar count={3} onClear={noop} actions={[]} />)).not.toContain(
+      'bulk-separator',
+    )
+  })
+
   it('offers no "select all" when the selection is already everything', () => {
     expect(
       render(<BulkActionBar count={3} total={3} onSelectAll={noop} onClear={noop} actions={[]} />),

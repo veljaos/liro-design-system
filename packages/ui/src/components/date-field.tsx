@@ -50,6 +50,8 @@ interface DateInputProps {
   onBlur?: FocusEventHandler<HTMLInputElement>
   /** Shown while the field is empty. From the application. */
   placeholder?: string
+  /** Shows the calendar from the start (a date asked for at once). Closed by default. */
+  defaultOpen?: boolean
 }
 
 export interface DateFieldProps extends FieldBaseProps, EntryProps, DateInputProps {
@@ -160,9 +162,9 @@ function CalendarPopover({
  * that count, so it starts on the right month and day each time. Reopened quickly, the closing
  * popover is still mounted (it fades out) and the calendar kept the month it last showed.
  */
-export function useCalendarOpen() {
-  const [open, setOpenState] = useState(false)
-  const [openings, setOpenings] = useState(0)
+export function useCalendarOpen(defaultOpen = false) {
+  const [open, setOpenState] = useState(defaultOpen)
+  const [openings, setOpenings] = useState(defaultOpen ? 1 : 0)
   const setOpen = (next: boolean) => {
     if (next && !open) setOpenings((count) => count + 1)
     setOpenState(next)
@@ -189,7 +191,7 @@ export function DateField(props: DateFieldProps) {
   const labels = useCalendarLabels()
   const entry = useDateEntry(props)
   const error = entryError(props.error, entry.valid, messages['field.invalidDate'])
-  const { open, setOpen, openings } = useCalendarOpen()
+  const { open, setOpen, openings } = useCalendarOpen(props.defaultOpen)
   const inputRef = useRef<HTMLInputElement>(null)
 
   return (
@@ -329,7 +331,7 @@ export function DateRangeField(props: DateRangeFieldProps) {
       : messages['field.invalidRange']
   const error = entryError(props.error, ownError === undefined, ownError ?? '')
 
-  const { open, setOpen, openings } = useCalendarOpen()
+  const { open, setOpen, openings } = useCalendarOpen(props.defaultOpen)
   // Days picked since the calendar opened: the first is the start, the second the end.
   const [picked, setPicked] = useState<string | null>(null)
   const startRef = useRef<HTMLInputElement>(null)

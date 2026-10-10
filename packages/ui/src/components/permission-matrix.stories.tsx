@@ -95,6 +95,22 @@ export const Default: Story = {
       <Editable onChange={onChange} />
     </SectionCard>
   ),
+  play: settle,
+}
+
+export const DefaultInteraction: Story = {
+  name: 'Default, interaction',
+  tags: ['interaction'],
+  render: () => (
+    <SectionCard
+      title="Site manager"
+      description="Custom role · 1 member"
+      headingLevel={2}
+      className="max-w-200"
+    >
+      <Editable onChange={onChange} />
+    </SectionCard>
+  ),
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
@@ -128,6 +144,21 @@ export const Default: Story = {
 /** A cell the Core does not allow: focusable, its reason as the description; Space does nothing. */
 export const Unavailable: Story = {
   name: 'Unavailable with reason',
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const cell = canvas.getByRole('checkbox', { name: 'Edit: Company settings' })
+    await expect(cell).toHaveAttribute('aria-disabled', 'true')
+    await expect(cell).toHaveAccessibleDescription(
+      /Only the Administrator role can change company settings/,
+    )
+    await settle()
+  },
+}
+
+export const UnavailableInteraction: Story = {
+  name: 'Unavailable with reason, interaction',
+  tags: ['interaction'],
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
@@ -219,6 +250,28 @@ export const LongText: Story = {
 /** On a phone: each area with its actions one under the other. */
 export const PhoneWidth: Story = {
   name: 'Phone width',
+  render: () => (
+    <PhoneFrame>
+      <div className="p-4">
+        <SectionCard title="Site manager" headingLevel={2}>
+          <Editable layout="phone" />
+        </SectionCard>
+      </div>
+    </PhoneFrame>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('group', { name: /Sales invoices/ })).toBeVisible()
+    const [edit] = canvas.getAllByRole('checkbox', { name: 'Edit' })
+    if (edit === undefined) throw new Error('no Edit checkbox')
+    await settle()
+  },
+}
+
+export const PhoneWidthInteraction: Story = {
+  name: 'Phone width, interaction',
+  tags: ['interaction'],
   render: () => (
     <PhoneFrame>
       <div className="p-4">

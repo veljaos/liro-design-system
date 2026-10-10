@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { SelectField } from '../components/select-field'
 import { ExampleProvider, percentText, PhoneFrame, StoryProvider } from '../components/story-frames'
 import { settle } from '../primitives/story-helpers'
-import { showTable } from './chart-story-data'
+import { showTable, tableShown } from './chart-story-data'
 import { PieChart, type PieChartProps, type PieSlice } from './pie'
 
 /** Receivables by age on 6 October 2026, in RSD; the shares are the application's. */
@@ -76,6 +76,14 @@ type Story = StoryObj<typeof meta>
 /** "Show as table": the same values as a table; in right-to-left the columns follow the page. */
 export const AsTable: Story = {
   name: 'Show as table',
+  args: { defaultView: 'table' },
+  play: tableShown,
+}
+
+/** Pressing "Show as table" turns the chart into its table (no picture: the static story above). */
+export const AsTableInteraction: Story = {
+  name: 'Show as table, interaction',
+  tags: ['interaction'],
   play: showTable,
 }
 

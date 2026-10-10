@@ -11,6 +11,7 @@ import { ARABIC, JAPANESE, LONG } from './field-story-data'
 import { StatusBadge, toneFor, type Tone } from './status-badge'
 import type { LineType } from './line-types'
 import { ExampleProvider, expectContentDirection, PhoneFrame, StoryProvider } from './story-frames'
+import { DESCRIPTION_MIN_WIDTH } from './data-table-logic'
 
 const meta = {
   title: 'Components/Table/DataTable',
@@ -214,6 +215,18 @@ export const Default: Story = {
     const canvas = within(canvasElement)
     const header = canvas.getByRole('columnheader', { name: /Customer/ })
     await expect(header).toHaveAttribute('aria-sort', 'none')
+    await settle()
+  },
+}
+
+export const DefaultInteraction: Story = {
+  name: 'Default, interaction',
+  tags: ['interaction'],
+  render: () => <Interactive />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const header = canvas.getByRole('columnheader', { name: /Customer/ })
+    await expect(header).toHaveAttribute('aria-sort', 'none')
     await userEvent.click(canvas.getByRole('button', { name: /Customer/ }))
     await expect(header).toHaveAttribute('aria-sort', 'ascending')
     await userEvent.click(canvas.getByRole('button', { name: /Customer/ }))
@@ -302,6 +315,16 @@ function Filtered() {
 /** Filters match nothing: "no rows match" with "Clear filters", which clears them. */
 export const NoMatch: Story = {
   name: 'No match (clear filters)',
+  render: () => <Filtered />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('No rows match')).toBeVisible()
+  },
+}
+
+export const NoMatchInteraction: Story = {
+  name: 'No match (clear filters), interaction',
+  tags: ['interaction'],
   render: () => <Filtered />,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -482,6 +505,17 @@ export const ThousandRows: Story = {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('table')).toHaveAttribute('aria-rowcount', '1002')
     await expect(canvas.getAllByRole('row').length).toBeLessThan(60)
+  },
+}
+
+export const ThousandRowsInteraction: Story = {
+  name: '1,000 rows (virtualized), interaction',
+  tags: ['interaction'],
+  render: () => <LargeList cards={false} />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('table')).toHaveAttribute('aria-rowcount', '1002')
+    await expect(canvas.getAllByRole('row').length).toBeLessThan(60)
     await userEvent.click(canvas.getByRole('checkbox', { name: 'Select F-2026-1001' }))
     await expect(canvas.getByRole('checkbox', { name: 'Select F-2026-1001' })).toBeChecked()
   },
@@ -531,6 +565,21 @@ function Resizing() {
  */
 export const ResizableColumns: Story = {
   name: 'Resizable columns',
+  render: () => <Resizing />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    // The widths are measured again when the web fonts finish loading; resize after that.
+    await waitFor(() => expect(document.fonts.status).toBe('loaded'))
+    const handle = await canvas.findByRole('separator', { name: 'Resize column: Customer' })
+    // The arrow that widens points in the reading direction.
+    await expect(handle).toHaveAttribute('aria-valuenow', '140')
+    await settle()
+  },
+}
+
+export const ResizableColumnsInteraction: Story = {
+  name: 'Resizable columns, interaction',
+  tags: ['interaction'],
   render: () => <Resizing />,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -609,6 +658,22 @@ export const Japanese: Story = {
  * right to left.
  */
 export const EnglishInRtl: Story = {
+  render: () => (
+    <StoryProvider locale="ar">
+      <Interactive
+        layout="table"
+        columns={[...COLUMNS.slice(0, 4), { ...AMOUNT, header: 'Amount (EUR)' }]}
+      />
+    </StoryProvider>
+  ),
+  play: async () => {
+    await settle()
+  },
+}
+
+export const EnglishInRtlInteraction: Story = {
+  name: 'English in rtl, interaction',
+  tags: ['interaction'],
   render: () => (
     <StoryProvider locale="ar">
       <Interactive
@@ -708,7 +773,12 @@ function LineAmount({ line }: { line: DocumentLine }) {
 }
 
 const LINE_TYPE_COLUMNS: DataTableColumn<DocumentLine>[] = [
-  { id: 'item', header: 'Item', cell: (line) => line.item },
+  {
+    id: 'item',
+    header: 'Item',
+    minWidth: DESCRIPTION_MIN_WIDTH,
+    cell: (line) => line.item,
+  },
   {
     id: 'quantity',
     header: 'Quantity',

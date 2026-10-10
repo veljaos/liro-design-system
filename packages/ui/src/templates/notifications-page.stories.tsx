@@ -116,6 +116,19 @@ export const Default: Story = {
     await expect(canvas.getByRole('heading', { level: 2, name: 'Today' })).toBeVisible()
     await expect(canvas.getByRole('heading', { level: 2, name: 'Yesterday' })).toBeVisible()
     await expect(canvas.getByRole('link', { name: 'Notification settings' })).toBeVisible()
+    await settle()
+  },
+}
+
+export const DefaultInteraction: Story = {
+  name: 'Default, interaction',
+  tags: ['interaction'],
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { level: 2, name: 'Today' })).toBeVisible()
+    await expect(canvas.getByRole('heading', { level: 2, name: 'Yesterday' })).toBeVisible()
+    await expect(canvas.getByRole('link', { name: 'Notification settings' })).toBeVisible()
     await userEvent.click(
       canvas.getByRole('button', {
         name: 'Mark as read: UF-2026-1187 from EPS Snabdevanje waits for your approval',
@@ -150,6 +163,22 @@ export const Unread: Story = {
 /** Filtered by one company that has no unread notification: "Nothing matches" with Clear. */
 export const NoMatch: Story = {
   name: 'Nothing matches',
+  render: () => (
+    <ExampleProvider>
+      <Demo show="unread" companies={['panonija']} />
+    </ExampleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('No notification matches these filters')).toBeVisible()
+    await settle()
+  },
+}
+
+export const NoMatchInteraction: Story = {
+  name: 'Nothing matches, interaction',
+  tags: ['interaction'],
   render: () => (
     <ExampleProvider>
       <Demo show="unread" companies={['panonija']} />

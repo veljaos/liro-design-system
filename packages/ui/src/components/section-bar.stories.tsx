@@ -54,6 +54,7 @@ export const Default: Story = {}
 
 /** A press moves to the section and marks it. */
 export const Press: Story = {
+  tags: ['interaction'],
   play: async ({ canvasElement }) => {
     await settle()
     const nav = within(within(canvasElement).getByRole('navigation', { name: 'Sections' }))

@@ -1,12 +1,17 @@
 import type { RowData } from '@tanstack/react-table'
 import { Lock } from 'lucide-react'
-import type { ReactNode } from 'react'
-import { DataTable, type DataTableColumn, type DataTableMobile } from '../components/data-table'
+import { useId, useMemo, useRef, type MouseEvent, type ReactNode } from 'react'
+import {
+  DataTable,
+  type DataTableColumn,
+  type DataTableHandle,
+  type DataTableMobile,
+} from '../components/data-table'
 import type { MenuEntry } from '../components/dropdown-menu'
 import type { EmptyAction } from '../components/empty-state'
-import { StatusBadge } from '../components/status-badge'
+import { RefetchLoader } from '../components/refetch-loader'
 import { usePhone } from '../components/use-phone'
-import { TEXT_DIRECTION } from '../primitives/classes'
+import { FOCUS_RING, TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 import { PageHeader, type PageBack } from './page-header'
@@ -16,10 +21,11 @@ import { registerMenu } from './register-logic'
  * RegisterPage (BUILD-PLAN P5.20): a chronological register for a period — VAT records, the
  * work-injury register, the safety-training register. Its rules:
  * - **Entries are never deleted.** A correction is a new entry that refers to the one it
- *   corrects: the new one says "Corrects no. 14", the corrected one "Corrected by no. 27" (a
- *   neutral badge: its state), both in the Correction column the page adds after the
- *   application's columns. The application offers "Correct" in a row's menu; the page offers no
- *   delete.
+ *   corrects: the new one says "Corrects no. 14", the corrected one "Corrected by no. 27", both
+ *   in the Correction column the page adds after the application's columns, and both the same
+ *   kind of link (P5.23): it scrolls to the other entry — drawing it first in a virtualized
+ *   register — and focuses its number. An entry outside the rows shown goes to `onGoToEntry`.
+ *   The application offers "Correct" in a row's menu; the page offers no delete.
  * - **Locked periods** are marked where the list starts — a lock and words ("January–June 2026 is
  *   locked"), the reason and who locked it, from the application — and on each of their entries
  *   (a lock before the number, "Locked" for assistive technology); a locked entry is read-only:
@@ -32,6 +38,9 @@ import { registerMenu } from './register-logic'
  *   (docs/decisions.md "Liro patterns (Phase 5 part 1)").
  * Layout: the page header (visible title: no module tab names a register), then ONE card (as
  * ListPage): the period row, the locks, the table to the card's edges, count and paging under it.
+ * The page owns every space in the card (P5.23): the locks band meets the table's header with
+ * nothing between them, whatever the application passes; the refetch loader stands at the end of
+ * the first row, never in a slot of its own between the locks and the table.
  */
 
 /** What the page needs to know about an entry. */
@@ -86,6 +95,11 @@ export interface RegisterPageProps<Row extends RowData> {
   rowActions?: (row: Row) => readonly MenuEntry[]
   /** Pressing a row (opens the entry). */
   onRowClick?: (row: Row) => void
+  /**
+   * A correction link to an entry that is not among `rows` (another page or period): the
+   * application shows it. Without it, such a reference is plain text.
+   */
+  onGoToEntry?: (number: string) => void
   count?: number
   countIsExact?: boolean
   hasPrevious?: boolean
@@ -109,12 +123,52 @@ export interface RegisterPageProps<Row extends RowData> {
 const NUMBER = '__number'
 const CORRECTION = '__correction'
 
+/** Link colours named for every state (P4.4), as DocumentReferences' links. */
+const LINK =
+  'inline-flex min-h-6 items-center rounded-sm font-medium whitespace-nowrap text-link no-underline visited:text-link hover:text-link hover:underline active:text-link'
+
 /** A chronological register: entries corrected, never deleted; locked periods marked. */
 export function RegisterPage<Row extends RowData>(props: RegisterPageProps<Row>) {
   const { messages } = useLiro()
   const viewportPhone = usePhone()
   const phone = props.layout === undefined ? viewportPhone : props.layout === 'phone'
-  const { entry } = props
+  const { entry, rows, getRowId, onGoToEntry } = props
+  const table = useRef<DataTableHandle>(null)
+  // Each entry's number is an anchor the correction links go to (P5.23).
+  const anchorBase = useId().replace(/[^a-zA-Z0-9_-]/g, '')
+  const anchorOf = (number: string) => `${anchorBase}-entry-${number}`
+  const shown = useMemo(() => new Set(rows.map((row) => entry(row).number)), [rows, entry])
+  const goTo = (event: MouseEvent, number: string) => {
+    event.preventDefault()
+    const row = rows.find((each) => entry(each).number === number)
+    if (row === undefined) {
+      onGoToEntry?.(number)
+      return
+    }
+    table.current?.revealRow(getRowId(row))
+    // A virtualized row is drawn a frame or two after the scroll: wait for its number.
+    let frames = 0
+    const focus = () => {
+      const target = document.getElementById(anchorOf(number))
+      if (target !== null) target.focus()
+      else if (frames++ < 30) requestAnimationFrame(focus)
+    }
+    focus()
+  }
+  const reference = (text: string, number: string) =>
+    shown.has(number) || onGoToEntry !== undefined ? (
+      <a
+        href={`#${anchorOf(number)}`}
+        onClick={(event) => {
+          goTo(event, number)
+        }}
+        className={cn(LINK, FOCUS_RING)}
+      >
+        {text}
+      </a>
+    ) : (
+      <span className="text-secondary">{text}</span>
+    )
   const columns: DataTableColumn<Row>[] = [
     {
       id: NUMBER,
@@ -131,7 +185,15 @@ export function RegisterPage<Row extends RowData>(props: RegisterPageProps<Row>)
                 <span className="sr-only">{messages['register.locked']}</span>
               </>
             )}
-            <span dir="ltr">{info.number}</span>
+            <span
+              id={anchorOf(info.number)}
+              tabIndex={-1}
+              dir="ltr"
+              // Reached from a correction link: the ring shows where the focus landed.
+              className="rounded-sm outline-none focus:outline-2 focus:outline-offset-2 focus:outline-focus"
+            >
+              {info.number}
+            </span>
           </span>
         )
       },
@@ -144,16 +206,11 @@ export function RegisterPage<Row extends RowData>(props: RegisterPageProps<Row>)
       cell: (row) => {
         const info = entry(row)
         return (
-          <span className="inline-flex flex-wrap items-center gap-2">
-            {info.corrects !== undefined && (
-              <span className="text-secondary">{messages['register.corrects'](info.corrects)}</span>
-            )}
-            {info.correctedBy !== undefined && (
-              <StatusBadge
-                tone="neutral"
-                label={messages['register.correctedBy'](info.correctedBy)}
-              />
-            )}
+          <span className="inline-flex flex-wrap items-center gap-x-3">
+            {info.corrects !== undefined &&
+              reference(messages['register.corrects'](info.corrects), info.corrects)}
+            {info.correctedBy !== undefined &&
+              reference(messages['register.correctedBy'](info.correctedBy), info.correctedBy)}
           </span>
         )
       },
@@ -166,6 +223,12 @@ export function RegisterPage<Row extends RowData>(props: RegisterPageProps<Row>)
   }
   const { rowActions } = props
   const virtualize = props.virtualize === true
+  const loader =
+    props.loading === undefined ? null : (
+      <span className="flex h-control items-center">
+        <RefetchLoader active={props.loading && rows.length > 0} />
+      </span>
+    )
   return (
     <div
       data-slot="register-page"
@@ -186,11 +249,14 @@ export function RegisterPage<Row extends RowData>(props: RegisterPageProps<Row>)
         aria-label={props.title}
         className="box-border flex min-w-0 flex-col overflow-hidden rounded-lg border border-solid border-default bg-surface-raised"
       >
-        {(props.period !== undefined || props.tools !== undefined) && (
+        {(props.period !== undefined || props.tools !== undefined || loader !== null) && (
           <div className="flex flex-wrap items-end justify-between gap-3 p-4">
             {props.period}
-            {props.tools !== undefined && (
-              <div className="ms-auto flex flex-wrap items-end gap-3">{props.tools}</div>
+            {(props.tools !== undefined || loader !== null) && (
+              <div className="ms-auto flex flex-wrap items-end gap-3">
+                {props.tools}
+                {loader}
+              </div>
             )}
           </div>
         )}
@@ -221,12 +287,14 @@ export function RegisterPage<Row extends RowData>(props: RegisterPageProps<Row>)
           </ul>
         )}
         <DataTable
+          ref={table}
           label={props.title}
           layout={phone ? 'cards' : 'table'}
           inCard
           columns={columns}
-          rows={props.rows}
-          getRowId={props.getRowId}
+          rows={rows}
+          getRowId={getRowId}
+          loaderSlot={false}
           getRowLabel={props.getRowLabel}
           mobile={mobile}
           {...(rowActions === undefined

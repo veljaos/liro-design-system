@@ -44,6 +44,19 @@ export const Default: Story = {
     const field = canvas.getByLabelText('Password')
     await expect(field).toHaveAttribute('type', 'password')
     await expect(field).toHaveAttribute('autocomplete', 'current-password')
+    await settle()
+  },
+}
+
+export const DefaultInteraction: Story = {
+  name: 'Default, interaction',
+  tags: ['interaction'],
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const field = canvas.getByLabelText('Password')
+    await expect(field).toHaveAttribute('type', 'password')
+    await expect(field).toHaveAttribute('autocomplete', 'current-password')
     await userEvent.type(field, 'Kvadrat#2026')
     const toggle = canvas.getByRole('button', { name: 'Show password' })
     await expect(toggle).toHaveAttribute('aria-pressed', 'false')
@@ -62,6 +75,7 @@ export const Default: Story = {
 
 /** Pasting works: nothing blocks it. */
 export const Paste: Story = {
+  tags: ['interaction'],
   play: async ({ canvasElement }) => {
     await settle()
     const field = within(canvasElement).getByLabelText('Password')
@@ -74,6 +88,7 @@ export const Paste: Story = {
 /** Caps Lock on: the note under the field, announced politely. */
 export const CapsLock: Story = {
   name: 'Caps Lock on',
+  tags: ['interaction'],
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)

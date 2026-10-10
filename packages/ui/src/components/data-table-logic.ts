@@ -71,6 +71,13 @@ export function ariaSort(
 /** The narrowest a column can be resized to, unless the column sets its own minimum (owner). */
 export const MIN_COLUMN_WIDTH = 64
 
+/**
+ * The narrowest a document table's description column (the item or service name) gets (P5.23):
+ * at 13px a name of up to about 60 characters wraps to at most two lines; the table scrolls
+ * sideways before the column gets narrower. Amount columns never wrap (MoneyText, NumberText).
+ */
+export const DESCRIPTION_MIN_WIDTH = 240
+
 /** The widest a column can be resized to (owner). */
 export const MAX_COLUMN_WIDTH = 640
 

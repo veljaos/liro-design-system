@@ -91,6 +91,18 @@ export const Default: Story = {
     const canvas = within(canvasElement)
     await expect(canvas.getByText('1 of 3 signed')).toBeVisible()
     await expect(canvasElement).toHaveTextContent('Signed 05.10.2026. 14:12')
+    await settle()
+  },
+}
+
+export const DefaultInteraction: Story = {
+  name: 'Default, interaction',
+  tags: ['interaction'],
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('1 of 3 signed')).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('Signed 05.10.2026. 14:12')
     const sign = canvas.getByRole('button', { name: 'Sign' })
     await userEvent.click(sign)
     await expect(sign).toHaveAttribute('aria-busy', 'true')
@@ -104,6 +116,7 @@ export const Default: Story = {
 
 /** Decline asks for the reason first; Cancel has the focus; the row then says why. */
 export const Decline: Story = {
+  tags: ['interaction'],
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)

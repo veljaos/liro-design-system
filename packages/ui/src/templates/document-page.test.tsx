@@ -6,6 +6,7 @@ import { SidePanels } from '../components/side-panels'
 import { ActivityList, RelatedDocuments } from '../components/panel-lists'
 import { ChangeableValue } from '../components/changeable-value'
 import { LiroProvider } from '../provider/liro-provider'
+import { DocumentSource } from '../components/document-source'
 import { DocumentPage } from './document-page'
 
 function render(node: React.ReactNode) {
@@ -212,5 +213,71 @@ describe('ChangeableValue (P4.9)', () => {
       />,
     )
     expect(html).toContain('<input aria-label="Due date"/>')
+  })
+
+  it('without a field: the same value row, no pencil, never a field (P5.23)', () => {
+    const changeable = render(
+      <ChangeableValue label="Date" value="06.10.2026." field={<input aria-label="Date" />} />,
+    )
+    const fixed = render(<ChangeableValue label="Based on" value="UF-2026-1204" editing />)
+    expect(fixed).toContain('UF-2026-1204')
+    expect(fixed).not.toContain('Change Based on')
+    // Both value rows are as high as the pencil, so the header's values align.
+    expect(fixed).toContain('min-h-7')
+    expect(changeable).toContain('min-h-7')
+  })
+})
+
+describe('DocumentSource in the header (P5.23)', () => {
+  it('stands beside the counterparty, before the key figures and the references', () => {
+    const html = render(
+      <DocumentPage
+        layout="desktop"
+        title="KO-2026-0009"
+        counterparty={{ label: 'Customer', name: 'Medic Lab Niš d.o.o.' }}
+        source={
+          <DocumentSource
+            label="Corrects"
+            documents={[
+              {
+                key: 'f',
+                kind: 'Invoice',
+                number: 'F-2026-0410',
+                href: '#/f',
+                date: '2026-09-25',
+                total: { value: '186420.35', currency: 'RSD' },
+                status: <span>Partially paid</span>,
+              },
+            ]}
+          />
+        }
+        keyFigures={[{ label: 'Change', value: '-18.657,60' }]}
+        references={<p>Based on</p>}
+        lines={null}
+      />,
+    )
+    const parties = html.indexOf('data-slot="document-parties"')
+    expect(parties).toBeGreaterThan(-1)
+    expect(html.indexOf('Medic Lab')).toBeGreaterThan(parties)
+    expect(html.indexOf('data-slot="document-source"')).toBeGreaterThan(html.indexOf('Medic Lab'))
+    expect(html.indexOf('data-slot="document-source"')).toBeLessThan(html.indexOf('Change'))
+    expect(html.indexOf('Change')).toBeLessThan(html.indexOf('Based on'))
+    expect(html).toMatch(/<a href="#\/f"[^>]*>.*Invoice.*F-2026-0410.*<\/a>/)
+    expect(html).toContain('Issued')
+    expect(html).toContain('186.420,35')
+    expect(html).toContain('Partially paid')
+  })
+
+  it('leaves the counterparty as it was without a source; no documents render nothing', () => {
+    const html = render(
+      <DocumentPage
+        layout="desktop"
+        title="F-2026-0410"
+        counterparty={{ label: 'Customer', name: 'Medic Lab Niš d.o.o.' }}
+        lines={null}
+      />,
+    )
+    expect(html).not.toContain('document-parties')
+    expect(render(<DocumentSource label="Corrects" documents={[]} />)).not.toContain('Corrects')
   })
 })

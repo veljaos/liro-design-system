@@ -70,6 +70,20 @@ export const Default: Story = {
 export const Open: Story = {
   render: () => (
     <div className="min-h-80 max-w-100">
+      <MonthField label="Accounting period" defaultValue="2026-03" defaultOpen />
+    </div>
+  ),
+  play: async () => {
+    await within(document.body).findByRole('button', { name: 'March 2026' })
+    await settle()
+  },
+}
+
+export const OpenInteraction: Story = {
+  name: 'Open, interaction',
+  tags: ['interaction'],
+  render: () => (
+    <div className="min-h-80 max-w-100">
       <MonthField label="Accounting period" defaultValue="2026-03" />
     </div>
   ),
@@ -85,6 +99,7 @@ export const Open: Story = {
 
 /** Keyboard only: the arrows cross into the next year; Enter chooses; the focus returns. */
 export const Keyboard: Story = {
+  tags: ['interaction'],
   render: function Render() {
     const [value, setValue] = useState<string | null>('2026-11')
     return (

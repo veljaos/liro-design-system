@@ -63,17 +63,24 @@ export interface DropdownMenuProps {
   entries: readonly MenuEntry[]
   /** Where it lines up with its trigger. Default: 'start', as Mantine's position 'bottom-start'. */
   align?: 'start' | 'center' | 'end'
+  /** Shows the menu from the start (a menu the application opens at once). Closed by default. */
+  defaultOpen?: boolean
 }
 
 /**
  * A menu of actions opened from a button. The keyboard moves through the items with the arrows,
  * Enter chooses, Escape closes and returns the focus to the trigger.
  */
-export function DropdownMenu({ trigger, entries, align = 'start' }: DropdownMenuProps) {
+export function DropdownMenu({
+  trigger,
+  entries,
+  align = 'start',
+  defaultOpen,
+}: DropdownMenuProps) {
   return (
     // Not modal, as Mantine's Menu: the page is not hidden from assistive technology while the
     // menu is open, so the trigger never sits focusable inside aria-hidden content.
-    <MenuRoot modal={false}>
+    <MenuRoot modal={false} {...(defaultOpen === undefined ? {} : { defaultOpen })}>
       <DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
       <DropdownMenuContent align={align}>{menuItems(entries)}</DropdownMenuContent>
     </MenuRoot>

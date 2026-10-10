@@ -135,6 +135,50 @@ export const RetryMovesOn: Story = {
       </ExampleProvider>
     )
   },
+  play: async () => {
+    await settle()
+  },
+}
+
+export const RetryMovesOnInteraction: Story = {
+  name: 'Retry moves on, interaction',
+  tags: ['interaction'],
+  render: function Render(args) {
+    const [current, setCurrent] = useState(1)
+    const retry = fn()
+    return (
+      <ExampleProvider>
+        <div className="max-w-120">
+          <StatusTimeline
+            {...args}
+            current={current}
+            steps={DELIVERY.map((step, index) =>
+              index === 2 && current >= 2 ? { ...step, at: '2026-10-06T11:20:00+02:00' } : step,
+            )}
+            {...(current === 1
+              ? {
+                  next: {
+                    title: 'Delivery pending — action needed',
+                    tone: 'warning' as const,
+                    actions: (
+                      <Button
+                        family="primary"
+                        icon={RotateCcw}
+                        label="Retry"
+                        onClick={() => {
+                          retry()
+                          setCurrent(2)
+                        }}
+                      />
+                    ),
+                  },
+                }
+              : { next: { title: 'Waiting for the buyer to accept or reject' } })}
+          />
+        </div>
+      </ExampleProvider>
+    )
+  },
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)

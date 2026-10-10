@@ -21,6 +21,7 @@ import {
   SignIn,
 } from './screens-core'
 import { GROUP_F_ROUTES } from './screens-F'
+import { BANK_STATEMENT_ROUTES } from './screens-bank'
 import { GROUP_A_ROUTES } from './screens-A'
 import { GROUP_C_ROUTES } from './screens-C'
 import { GROUP_E_ROUTES } from './screens-E'
@@ -42,6 +43,7 @@ export interface ExampleRoute {
 const EXAMPLE_ROUTES: readonly ExampleRoute[] = [
   // ── P5 routes ──
   ...GROUP_F_ROUTES,
+  ...BANK_STATEMENT_ROUTES,
   ...GROUP_A_ROUTES,
   ...GROUP_C_ROUTES,
   ...GROUP_E_ROUTES,

@@ -79,6 +79,21 @@ export const Overflow: Story = {
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
+    await expect(canvas.getByRole('button', { name: 'Save' })).toBeVisible()
+    await settle()
+  },
+}
+
+export const OverflowInteraction: Story = {
+  name: 'Overflow into More, interaction',
+  tags: ['interaction'],
+  render: () => (
+    <div className="w-[300px] max-w-full rounded-md border border-default p-2">
+      <ActionGroup actions={FORM} />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
     const more = await canvas.findByRole('button', { name: 'More actions' })
     await expect(canvas.getByRole('button', { name: 'Save' })).toBeVisible()
     await userEvent.click(more)
@@ -140,6 +155,36 @@ export const LongTextPhone: Story = {
  */
 export const UnavailablePhone: Story = {
   name: 'Unavailable, phone width',
+  render: () => (
+    <div className="flex min-h-40 w-[390px] max-w-full flex-col gap-4">
+      <ActionGroup
+        align="start"
+        actions={[
+          { key: 'edit', intent: 'edit', label: 'Edit', onClick: noop },
+          {
+            key: 'post',
+            family: 'positive',
+            icon: Send,
+            emphasis: 'primary',
+            label: 'Post',
+            unavailableReason: 'The period August 2026 is closed.',
+          },
+        ]}
+      />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const post = canvas.getByRole('button', { name: 'Post' })
+    await expect(post).toHaveAttribute('aria-disabled', 'true')
+    await expect(post).toHaveAccessibleDescription(/The period August 2026 is closed/)
+    await settle()
+  },
+}
+
+export const UnavailablePhoneInteraction: Story = {
+  name: 'Unavailable, phone width, interaction',
+  tags: ['interaction'],
   render: () => (
     <div className="flex min-h-40 w-[390px] max-w-full flex-col gap-4">
       <ActionGroup

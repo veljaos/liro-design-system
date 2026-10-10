@@ -70,6 +70,29 @@ export const Failed: Story = {
   play: async ({ canvasElement }) => {
     await settle()
     await expect(within(canvasElement).getByRole('alert')).toHaveTextContent('could not be loaded')
+    await settle()
+  },
+}
+
+export const FailedInteraction: Story = {
+  name: 'Error, interaction',
+  tags: ['interaction'],
+  render: () => (
+    <ExampleProvider>
+      <div className="max-w-180">
+        <BarChart
+          {...REVENUE}
+          error={{
+            message: 'The revenue could not be loaded. Check the connection.',
+            onRetry: () => undefined,
+          }}
+        />
+      </div>
+    </ExampleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(within(canvasElement).getByRole('alert')).toHaveTextContent('could not be loaded')
     await userEvent.click(within(canvasElement).getByRole('button', { name: 'Retry' }))
   },
 }
