@@ -124,7 +124,9 @@ export const Default: Story = {
     />
   ),
   play: async () => {
-    await expect(await within(document.body).findByRole('listbox')).toBeVisible()
+    const list = await within(document.body).findByRole('listbox')
+    // The list fades in (opacity counts as not visible): wait until it shows.
+    await waitFor(() => expect(list).toBeVisible())
     await settle()
   },
 }
@@ -177,7 +179,9 @@ export const RecentFirst: Story = {
   name: 'Recent records first',
   render: () => <Lookup defaultQuery="" onSearchAll={() => undefined} />,
   play: async () => {
-    await expect(await within(document.body).findByRole('listbox')).toBeVisible()
+    const list = await within(document.body).findByRole('listbox')
+    // The list fades in (opacity counts as not visible): wait until it shows.
+    await waitFor(() => expect(list).toBeVisible())
     await settle()
   },
 }
@@ -359,7 +363,9 @@ export const Loading: Story = {
     />
   ),
   play: async () => {
-    await expect(await within(document.body).findByRole('listbox')).toBeVisible()
+    const list = await within(document.body).findByRole('listbox')
+    // The list fades in (opacity counts as not visible): wait until it shows.
+    await waitFor(() => expect(list).toBeVisible())
     await settle()
   },
 }
@@ -528,7 +534,9 @@ export const Arabic: Story = {
     </StoryProvider>
   ),
   play: async () => {
-    await expect(await within(document.body).findByRole('listbox')).toBeVisible()
+    const list = await within(document.body).findByRole('listbox')
+    // The list fades in (opacity counts as not visible): wait until it shows.
+    await waitFor(() => expect(list).toBeVisible())
     await settle()
   },
 }
@@ -581,7 +589,9 @@ export const Japanese: Story = {
     </StoryProvider>
   ),
   play: async () => {
-    await expect(await within(document.body).findByRole('listbox')).toBeVisible()
+    const list = await within(document.body).findByRole('listbox')
+    // The list fades in (opacity counts as not visible): wait until it shows.
+    await waitFor(() => expect(list).toBeVisible())
     await settle()
   },
 }
