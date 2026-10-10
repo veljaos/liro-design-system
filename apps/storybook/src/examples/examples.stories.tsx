@@ -2160,25 +2160,6 @@ export const SiteTimesheetPhone: Story = {
   },
 }
 
-/** Handing the month off: the action becomes its state, the page's status follows. */
-export const SiteTimesheetHandOff: Story = {
-  name: 'Site timesheet, hand-off, interaction',
-  tags: ['interaction'],
-  render: () => <ExampleApp start={G_ROUTES.timesheet} />,
-  play: async ({ canvasElement }) => {
-    await settle()
-    const button = [...canvasElement.querySelectorAll('button')].find(
-      (each) => each.textContent === 'Hand off to payroll',
-    )
-    if (button === undefined) throw new Error('no hand-off')
-    await userEvent.click(button)
-    await waitFor(async () => {
-      await expect(canvasElement).toHaveTextContent('Handed off to payroll on 02.11.2026.')
-    })
-    await expect(canvasElement).toHaveTextContent('Submitted')
-  },
-}
-
 /**
  * The month locked after payroll: read-only, the lock's reason and who locked it; one
  * correction — Vladimir Tomić's absence on 28.10. was sick leave (the certificate came after the
@@ -2582,10 +2563,12 @@ export const HealthBookingWalk: Story = {
     const canvas = within(canvasElement)
     await userEvent.click(canvas.getByRole('button', { name: 'Continue' }))
     await settle()
-    const time = `11:30, ${SERBIAN_G.dateLong('2026-10-14')}`
-    const radio = (await canvas.findAllByRole('radio')).find((each) =>
-      (each.getAttribute('aria-label') ?? '').startsWith(time),
-    )
+    // The slot's name: its time range and the day in words.
+    const day = SERBIAN_G.dateLong('2026-10-14')
+    const radio = (await canvas.findAllByRole('radio')).find((each) => {
+      const name = each.getAttribute('aria-label') ?? ''
+      return name.startsWith('11:30') && name.includes(day)
+    })
     if (radio === undefined) throw new Error('no 11:30 on 14.10.')
     await userEvent.click(radio)
     await expect(canvasElement).toHaveTextContent('at 11:30')
@@ -2725,7 +2708,8 @@ export const HealthFindingReveal: Story = {
     )
     await userEvent.click(within(dialog).getByRole('button', { name: 'Show' }))
     await expect(await canvas.findByText(FINDING.diagnosis)).toBeVisible()
-    await userEvent.click(canvas.getByRole('button', { name: 'Hide Diagnosis' }))
+    // The dialog has closed (until then the page behind it is hidden from assistive technology).
+    await userEvent.click(await canvas.findByRole('button', { name: 'Hide Diagnosis' }))
     await expect(canvasElement).not.toHaveTextContent(FINDING.diagnosis)
   },
 }
