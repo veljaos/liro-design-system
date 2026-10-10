@@ -2106,3 +2106,759 @@ export const BankStatementLinePhone: Story = {
     await settle()
   },
 }
+
+// ── P5.24 working time and P5.17 industry examples ──
+// (Imports here, inside the block, so the blocks merge without touching the top.)
+import { CLOCK_DAY, CREW, crewSum, SITE, STORE_PUBLISH, TOTALS_LOCKED, TOTALS_OPEN } from './data-G'
+import { ABSENCE_COUNTS, FINDING, JOVANA_BOOKING, PATIENT } from './data-H'
+import { G_ROUTES } from './screens-G'
+import { H_ROUTES } from './screens-H'
+
+const SERBIAN_G = createFormat('sr-Latn-RS')
+
+/** The page does not scroll sideways (the wide grids scroll inside their own box). */
+async function noPageOverflow(canvasElement: HTMLElement) {
+  const main = canvasElement.querySelector('main')
+  await expect(main === null ? 0 : main.scrollWidth - main.clientWidth).toBeLessThanOrEqual(0)
+}
+
+/**
+ * Kvadrat Gradnja's site crew, October 2026 (P5.24 a, c): ten workers × the month's days in
+ * hours and a code — regular work, night work with its allowance, overtime, the illustrative
+ * public holiday on 20.10. (labelled so), sick leave, annual leave, a business trip, paid and
+ * unpaid leave, an absence. Totals per type per worker and per day are the application's; the
+ * key figures above are the crew's. "Hand off to payroll" ends the month.
+ */
+export const SiteTimesheet: Story = {
+  name: 'Site timesheet, October 2026',
+  render: () => <ExampleApp start={G_ROUTES.timesheet} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    // Plain DOM queries: the grid has some 400 cells, and role queries walk all of them.
+    await expect(canvasElement.querySelector('h1')).toHaveTextContent('Timesheet, October 2026')
+    const headers = [...canvasElement.querySelectorAll('[role="columnheader"]')].map(
+      (header) => header.textContent,
+    )
+    await expect(headers.some((text) => text.includes('Illustrative public holiday'))).toBe(true)
+    await expect(headers.some((text) => text.includes('Night hours'))).toBe(true)
+    await expect(canvasElement).toHaveTextContent(
+      `${SERBIAN_G.number(crewSum(TOTALS_OPEN.rowTotals, 'worked'))} h`,
+    )
+    await expect(canvasElement).toHaveTextContent('Hand off to payroll')
+  },
+}
+
+export const SiteTimesheetPhone: Story = {
+  name: 'Site timesheet, October 2026, phone',
+  render: () => <OnPhone start={G_ROUTES.timesheet} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    // One worker per screen: the first, then Next.
+    await expect(canvas.getByRole('heading', { name: CREW[0]?.label ?? '' })).toBeVisible()
+    await noPageOverflow(canvasElement)
+  },
+}
+
+/** Handing the month off: the action becomes its state, the page's status follows. */
+export const SiteTimesheetHandOff: Story = {
+  name: 'Site timesheet, hand-off, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={G_ROUTES.timesheet} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const button = [...canvasElement.querySelectorAll('button')].find(
+      (each) => each.textContent === 'Hand off to payroll',
+    )
+    if (button === undefined) throw new Error('no hand-off')
+    await userEvent.click(button)
+    await waitFor(async () => {
+      await expect(canvasElement).toHaveTextContent('Handed off to payroll on 02.11.2026.')
+    })
+    await expect(canvasElement).toHaveTextContent('Submitted')
+  },
+}
+
+/**
+ * The month locked after payroll: read-only, the lock's reason and who locked it; one
+ * correction — Vladimir Tomić's absence on 28.10. was sick leave (the certificate came after the
+ * payroll run) — kept with the original, who, when and why. His total and the day's total
+ * include it.
+ */
+export const SiteTimesheetLocked: Story = {
+  name: 'Site timesheet, locked after payroll',
+  render: () => <ExampleApp start={G_ROUTES.timesheetLocked} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('Payroll for October 2026 has been calculated.')
+    await expect(canvasElement).toHaveTextContent(SITE.lockedDetail)
+    await expect(canvasElement).toHaveTextContent('Corrections')
+    await expect(canvasElement).toHaveTextContent('Sick-leave certificate for 28.10.')
+    await expect(canvasElement).toHaveTextContent(
+      `${SERBIAN_G.number(crewSum(TOTALS_LOCKED.rowTotals, 'leave'))} h`,
+    )
+  },
+}
+
+/** Phone: the locked month on Vladimir Tomić, whose day was corrected. */
+export const SiteTimesheetLockedPhone: Story = {
+  name: 'Site timesheet, locked after payroll, phone',
+  render: () => <OnPhone start={G_ROUTES.timesheetLockedWorker} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(
+      within(canvasElement).getByRole('heading', { name: 'Vladimir Tomić' }),
+    ).toBeVisible()
+    await noPageOverflow(canvasElement)
+  },
+}
+
+/**
+ * The clock records of Thursday 29.10.2026 from the site's gate terminal (one from a phone at
+ * the crane): each record's hours are that day's hours in the timesheet; Milan Jovanović's
+ * missing clock-out corrected by the foreman, the original kept; the guard's night ends the next
+ * day.
+ */
+export const SiteClockRecords: Story = {
+  name: 'Site clock records, 29.10.2026',
+  render: () => <ExampleApp start={G_ROUTES.clockRecords} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { level: 1, name: 'Clock records' })).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('Forgot to clock out')
+    await expect(canvasElement).toHaveTextContent('next day')
+    await expect(canvasElement).toHaveTextContent(SERBIAN_G.date(CLOCK_DAY))
+  },
+}
+
+export const SiteClockRecordsPhone: Story = {
+  name: 'Site clock records, 29.10.2026, phone',
+  render: () => <OnPhone start={G_ROUTES.clockRecords} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('Forgot to clock out')
+    await noPageOverflow(canvasElement)
+  },
+}
+
+/**
+ * Prodavnica 12, the week of 12.–18.10.2026 (P5.24 b): early 07–15 and late 15–23, by person
+ * (or by team); published, then changed (two shifts marked "Changed"); conflicts from the
+ * application — Luka Đorđević's 8 hours of rest between a late and an early shift, Sanja
+ * Vuković's approved leave — and the coverage per day ("One short in the late shift" on Thursday).
+ * "Publish changes" states the counts.
+ */
+export const StoreShifts: Story = {
+  name: 'Store shifts, Prodavnica 12',
+  render: () => <ExampleApp start={G_ROUTES.storePlanner} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvasElement).toHaveTextContent('Changed since publishing')
+    await expect(canvasElement).toHaveTextContent('Approved annual leave on 18.10.2026')
+    await expect(canvas.getByRole('button', { name: 'Publish changes' })).toBeVisible()
+  },
+}
+
+export const StoreShiftsPhone: Story = {
+  name: 'Store shifts, Prodavnica 12, phone',
+  render: () => <OnPhone start={G_ROUTES.storePlanner} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('Luka Đorđević')
+    await noPageOverflow(canvasElement)
+  },
+}
+
+export const StoreShiftsPublish: Story = {
+  name: 'Store shifts, publish, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={G_ROUTES.storePlanner} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Publish changes' }))
+    const dialog = await within(document.body).findByRole('alertdialog')
+    await expect(dialog).toHaveTextContent(
+      `${String(STORE_PUBLISH.shifts)} shifts for ${String(STORE_PUBLISH.people)} people`,
+    )
+    await userEvent.click(within(dialog).getByRole('button', { name: /^Publish/ }))
+    await expect(
+      await within(document.body).findByText(/Changes published\. 8 people were notified\./),
+    ).toBeInTheDocument()
+    await waitFor(async () => {
+      await expect(canvas.queryByText('Changed since publishing')).toBeNull()
+    })
+  },
+}
+
+/**
+ * The cashier Stefan Lukić's own shifts (P5.24 b), as published: this week and next; Thursday's
+ * changed shift says what it was; Saturday's swap request waits for the manager (it is the first
+ * of the swap requests).
+ */
+export const StoreMyShiftsPhone: Story = {
+  name: 'Store, my shifts, phone',
+  render: () => <OnPhone start={G_ROUTES.myShifts} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { name: /^This week/ })).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('Swap requested with Jelena Rakić')
+    await expect(canvasElement).toHaveTextContent('Was Early, 07:00–15:00')
+    await noPageOverflow(canvasElement)
+  },
+}
+
+export const StoreMyShifts: Story = {
+  name: 'Store, my shifts',
+  render: () => <ExampleApp start={G_ROUTES.myShifts} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('Swap requested with Jelena Rakić')
+  },
+}
+
+/** A swap request being written for Thursday 15.10., with the colleagues who may take it. */
+export const StoreSwapRequestPhone: Story = {
+  name: 'Store, my shifts, swap request, phone',
+  render: () => <OnPhone start={G_ROUTES.myShiftsSwap} />,
+  play: async () => {
+    await settle()
+    await expect(
+      within(document.body).getByRole('dialog', { name: 'Request a swap' }),
+    ).toHaveTextContent('07:00')
+  },
+}
+
+export const StoreSwapRequest: Story = {
+  name: 'Store, my shifts, swap request',
+  render: () => <ExampleApp start={G_ROUTES.myShiftsSwap} />,
+  play: async () => {
+    await settle()
+    await expect(
+      within(document.body).getByRole('dialog', { name: 'Request a swap' }),
+    ).toBeVisible()
+  },
+}
+
+/**
+ * The manager's swap requests (P5.24 b on the approvals pattern, P4.3 and P5.23): one at a time,
+ * the shift, who takes it and the shift given back, the reason and the application's check;
+ * Reject asks for a reason, Approve is the main action.
+ */
+export const StoreSwapRequests: Story = {
+  name: 'Store, swap requests',
+  render: () => <ExampleApp start={G_ROUTES.swapRequests} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { level: 2, name: 'Stefan Lukić' })).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('No conflicts for either of them.')
+    await expect(canvas.getByRole('button', { name: 'Approve' })).toBeVisible()
+  },
+}
+
+/** Sanja Vuković's request: the check warns that Nemanja would go over his contract's hours. */
+export const StoreSwapRequestWarning: Story = {
+  name: 'Store, swap requests, a warning',
+  render: () => <ExampleApp start={G_ROUTES.swapRequestWarning} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('above the illustrative 16 h')
+  },
+}
+
+export const StoreSwapRequestsPhone: Story = {
+  name: 'Store, swap requests, phone',
+  render: () => <OnPhone start={G_ROUTES.swapRequests} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(
+      within(canvasElement).getByRole('list', { name: 'Swap requests to approve' }),
+    ).toBeVisible()
+    await noPageOverflow(canvasElement)
+  },
+}
+
+export const StoreSwapRequestWarningPhone: Story = {
+  name: 'Store, swap requests, a warning, phone',
+  render: () => <OnPhone start={G_ROUTES.swapRequestWarning} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('above the illustrative 16 h')
+    await expect(within(canvasElement).getByRole('button', { name: 'Approve' })).toBeVisible()
+  },
+}
+
+export const StoreSwapRequestsReject: Story = {
+  name: 'Store, swap requests, reject, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={G_ROUTES.swapRequestWarning} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Reject' }))
+    const dialog = await within(document.body).findByRole('alertdialog')
+    await userEvent.click(
+      within(dialog).getByRole('radio', {
+        name: 'The colleague would go over the hours of their contract',
+      }),
+    )
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Reject' }))
+    await expect(
+      await within(document.body).findByText('Swap of Sanja Vuković rejected.'),
+    ).toBeInTheDocument()
+    await expect(canvas.queryByRole('heading', { level: 2, name: 'Sanja Vuković' })).toBeNull()
+  },
+}
+
+/**
+ * Dom zdravlja Novi Sad, the emergency department (P5.24 b, c): 06–14, 14–22 and 22–06 (the
+ * night crosses midnight), by team; the 8-day rotation applied to all twelve, then the changes —
+ * a nurse's sick leave, two shifts added to cover — and the conflicts the application found: 8
+ * hours of rest after a night, a morning straight after a night, 56 hours in a week (illustrative
+ * limits).
+ */
+export const EmergencyShifts: Story = {
+  name: 'Emergency shifts, rotation applied',
+  render: () => <ExampleApp start={G_ROUTES.erPlanner} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('Nurses and technicians, team A')
+    await expect(canvasElement).toHaveTextContent(
+      'No rest: the morning shift starts when the night shift ends',
+    )
+    await expect(canvasElement).toHaveTextContent('22:00–06:00')
+  },
+}
+
+export const EmergencyShiftsPhone: Story = {
+  name: 'Emergency shifts, rotation applied, phone',
+  render: () => <OnPhone start={G_ROUTES.erPlanner} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('Jelena Popović')
+    await noPageOverflow(canvasElement)
+  },
+}
+
+/** "Apply rotation…" open: the pattern, the people, the dates and the offset per person. */
+export const EmergencyRotation: Story = {
+  name: 'Emergency shifts, apply a rotation',
+  render: () => <ExampleApp start={G_ROUTES.erRotation} />,
+  play: async () => {
+    await settle()
+    await expect(
+      within(document.body).getByRole('dialog', { name: 'Apply a rotation' }),
+    ).toBeVisible()
+  },
+}
+
+/**
+ * The working-time redistribution of the eight weeks before (P5.24 d): the plan's weeks (48 to
+ * 32 hours, a reference average of 40, illustrative), per person planned, worked, the difference
+ * and the average; warnings from the application with illustrative limits; a new colleague
+ * without figures ("—", never 0).
+ */
+export const EmergencyBalance: Story = {
+  name: 'Emergency working-time balance',
+  render: () => <ExampleApp start={G_ROUTES.erBalance} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('Average above the illustrative limit of 48 h')
+    await expect(canvasElement).toHaveTextContent('Reference average per week (illustrative)')
+  },
+}
+
+export const EmergencyBalancePhone: Story = {
+  name: 'Emergency working-time balance, phone',
+  render: () => <OnPhone start={G_ROUTES.erBalance} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('Jelena Popović')
+    await noPageOverflow(canvasElement)
+  },
+}
+
+/**
+ * Health (P5.17): Jovana Nikolić books a check-up in Dom zdravlja Novi Sad's patient portal
+ * (PortalShell) — the service and her chosen doctor, then a free time (SlotPicker), then Book.
+ */
+export const HealthBooking: Story = {
+  name: 'Health, book an appointment',
+  render: () => <ExampleApp start={H_ROUTES.book} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(
+      canvas.getByRole('heading', { level: 1, name: 'Book an appointment' }),
+    ).toBeVisible()
+    await expect(canvas.getByRole('radio', { name: /Check-up/ })).toBeChecked()
+  },
+}
+
+export const HealthBookingPhone: Story = {
+  name: 'Health, book an appointment, phone',
+  render: () => <OnPhone start={H_ROUTES.book} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(within(canvasElement).getByRole('button', { name: 'Continue' })).toBeVisible()
+    await noPageOverflow(canvasElement)
+  },
+}
+
+/** The free times of dr Marko Stanković next week; nothing chosen, so Book says why it waits. */
+export const HealthBookingTime: Story = {
+  name: 'Health, book an appointment, choose a time',
+  render: () => <ExampleApp start={H_ROUTES.bookTime} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(within(canvasElement).getByRole('radiogroup')).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('Choose a time first.')
+  },
+}
+
+export const HealthBookingTimePhone: Story = {
+  name: 'Health, book an appointment, choose a time, phone',
+  render: () => <OnPhone start={H_ROUTES.bookTime} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(within(canvasElement).getByRole('radiogroup')).toBeVisible()
+    await noPageOverflow(canvasElement)
+  },
+}
+
+/** Wednesday 14.10. at 11:30 chosen: the appointment in words, then Book. */
+export const HealthBookingConfirm: Story = {
+  name: 'Health, book an appointment, confirm',
+  render: () => <ExampleApp start={H_ROUTES.bookConfirm} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('at 11:30')
+    await expect(within(canvasElement).getByRole('button', { name: 'Book' })).toBeVisible()
+  },
+}
+
+export const HealthBookingConfirmPhone: Story = {
+  name: 'Health, book an appointment, confirm, phone',
+  render: () => <OnPhone start={H_ROUTES.bookConfirm} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('at 11:30')
+    await noPageOverflow(canvasElement)
+  },
+}
+
+/** Booked: the confirmation, the appointment, and a link to the clinic's schedule of that day. */
+export const HealthBooked: Story = {
+  name: 'Health, appointment booked',
+  render: () => <ExampleApp start={H_ROUTES.booked} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('Your appointment is booked')
+    await expect(canvasElement).toHaveTextContent('Confirmed')
+  },
+}
+
+export const HealthBookedPhone: Story = {
+  name: 'Health, appointment booked, phone',
+  render: () => <OnPhone start={H_ROUTES.booked} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('Your appointment is booked')
+    await noPageOverflow(canvasElement)
+  },
+}
+
+/** The whole booking from the keyboard and pointer, then on to the clinic's schedule. */
+export const HealthBookingWalk: Story = {
+  name: 'Health, booking, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={H_ROUTES.book} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Continue' }))
+    await settle()
+    const time = `11:30, ${SERBIAN_G.dateLong('2026-10-14')}`
+    const radio = (await canvas.findAllByRole('radio')).find((each) =>
+      (each.getAttribute('aria-label') ?? '').startsWith(time),
+    )
+    if (radio === undefined) throw new Error('no 11:30 on 14.10.')
+    await userEvent.click(radio)
+    await expect(canvasElement).toHaveTextContent('at 11:30')
+    await userEvent.click(canvas.getByRole('button', { name: 'Book' }))
+    await settle()
+    await expect(await canvas.findByText('Your appointment is booked')).toBeVisible()
+    await userEvent.click(canvas.getByRole('link', { name: 'schedule of 14.10.2026' }))
+    await settle()
+    await expect(await canvas.findByRole('heading', { level: 1, name: 'Schedule' })).toBeVisible()
+  },
+}
+
+/**
+ * The clinic's schedule of Wednesday 14.10.2026 (ResourceSchedule): three doctors and the
+ * laboratory; the break and dr Vesna Lukić's annual leave hatched with their reasons; Jovana
+ * Nikolić's appointment booked online at 11:30. Opening it shows her finding.
+ */
+export const HealthClinicSchedule: Story = {
+  name: 'Health, clinic schedule',
+  render: () => <ExampleApp start={H_ROUTES.clinicSchedule} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent(PATIENT.name)
+    await expect(canvasElement).toHaveTextContent('Annual leave')
+  },
+}
+
+export const HealthClinicSchedulePhone: Story = {
+  name: 'Health, clinic schedule, phone',
+  render: () => <OnPhone start={H_ROUTES.clinicSchedule} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent(PATIENT.name)
+    await noPageOverflow(canvasElement)
+  },
+}
+
+/** dr Marko Stanković's week (CalendarView), his appointments and the team meeting. */
+export const HealthDoctorCalendar: Story = {
+  name: 'Health, doctor’s calendar',
+  render: () => <ExampleApp start={H_ROUTES.doctorCalendar} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(
+      within(canvasElement).getByRole('button', {
+        name: new RegExp(`${PATIENT.name}, Check-up`),
+      }),
+    ).toBeVisible()
+  },
+}
+
+export const HealthDoctorCalendarPhone: Story = {
+  name: 'Health, doctor’s calendar, phone',
+  render: () => <OnPhone start={H_ROUTES.doctorCalendar} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('dr Marko Stanković')
+    await noPageOverflow(canvasElement)
+  },
+}
+
+/**
+ * Jovana Nikolić's last finding: the diagnosis and the finding are health data, masked until the
+ * user says why (MaskedValue, P5.14); the next appointment is the one she booked.
+ */
+export const HealthFinding: Story = {
+  name: 'Health, finding',
+  render: () => <ExampleApp start={H_ROUTES.finding} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('button', { name: 'Show Diagnosis' })).toBeVisible()
+    await expect(canvasElement).not.toHaveTextContent(FINDING.diagnosis)
+    await expect(canvasElement).toHaveTextContent(
+      SERBIAN_G.dateLong(JOVANA_BOOKING.start.slice(0, 10)),
+    )
+  },
+}
+
+export const HealthFindingPhone: Story = {
+  name: 'Health, finding, phone',
+  render: () => <OnPhone start={H_ROUTES.finding} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).not.toHaveTextContent(FINDING.diagnosis)
+    await noPageOverflow(canvasElement)
+  },
+}
+
+/** "Show" asks why: the reasons from the application, Other, and the note that it is logged. */
+export const HealthFindingReason: Story = {
+  name: 'Health, finding, reason asked',
+  render: () => <ExampleApp start={H_ROUTES.findingAsk} />,
+  play: async () => {
+    await settle()
+    await expect(
+      within(document.body).getByRole('dialog', { name: 'Show Diagnosis' }),
+    ).toHaveTextContent('Access is logged')
+  },
+}
+
+export const HealthFindingReasonPhone: Story = {
+  name: 'Health, finding, reason asked, phone',
+  render: () => <OnPhone start={H_ROUTES.findingAsk} />,
+  play: async () => {
+    await settle()
+    await expect(
+      within(document.body).getByRole('dialog', { name: 'Show Diagnosis' }),
+    ).toBeVisible()
+  },
+}
+
+/** The diagnosis shown after a reason, with Hide. */
+export const HealthFindingShown: Story = {
+  name: 'Health, finding, diagnosis shown',
+  render: () => <ExampleApp start={H_ROUTES.findingShown} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent(FINDING.diagnosis)
+    await expect(
+      within(canvasElement).getByRole('button', { name: 'Hide Diagnosis' }),
+    ).toBeVisible()
+  },
+}
+
+export const HealthFindingReveal: Story = {
+  name: 'Health, finding, reveal, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={H_ROUTES.finding} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Show Diagnosis' }))
+    const dialog = await within(document.body).findByRole('dialog', { name: 'Show Diagnosis' })
+    await userEvent.click(
+      within(dialog).getByRole('radio', { name: 'I am treating the patient now' }),
+    )
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Show' }))
+    await expect(await canvas.findByText(FINDING.diagnosis)).toBeVisible()
+    await userEvent.click(canvas.getByRole('button', { name: 'Hide Diagnosis' }))
+    await expect(canvasElement).not.toHaveTextContent(FINDING.diagnosis)
+  },
+}
+
+/**
+ * School (P5.17): class 7/2 of OŠ "Jovan Popović", 2026/27 — the week by periods with their
+ * times, Wednesday's written test and Thursday's substitute; lesson 3 running now ("Now"), with
+ * a link to mark its attendance.
+ */
+export const SchoolTimetable: Story = {
+  name: 'School, timetable 7/2',
+  render: () => <ExampleApp start={H_ROUTES.timetable} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('Written test 2')
+    await expect(canvasElement).toHaveTextContent('Substitute')
+  },
+}
+
+export const SchoolTimetablePhone: Story = {
+  name: 'School, timetable 7/2, phone',
+  render: () => <OnPhone start={H_ROUTES.timetable} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('Mathematics')
+    await noPageOverflow(canvasElement)
+  },
+}
+
+/**
+ * Today's attendance (P5.13): lessons 1 and 2 marked by their teachers — Luka Jovanović absent,
+ * Mila Lazarević late, Teodora Savić excused —; lesson 3 to be marked now, from its first cell,
+ * one key per pupil (P present, A absent, L late, E excused), or "Mark everyone" in the column's
+ * menu. The counts are the application's.
+ */
+export const SchoolAttendance: Story = {
+  name: 'School, attendance of a lesson',
+  render: () => <ExampleApp start={H_ROUTES.attendance} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(
+      within(canvasElement).getByRole('grid', { name: /Attendance, class 7\/2/ }),
+    ).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('Lessons missed today')
+  },
+}
+
+export const SchoolAttendancePhone: Story = {
+  name: 'School, attendance of a lesson, phone',
+  render: () => <OnPhone start={H_ROUTES.attendance} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(
+      within(canvasElement).getByRole('heading', { name: 'Luka Jovanović' }),
+    ).toBeVisible()
+    await noPageOverflow(canvasElement)
+  },
+}
+
+export const SchoolAttendanceMarking: Story = {
+  name: 'School, attendance, marking, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={H_ROUTES.attendance} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const first = canvasElement.querySelector<HTMLElement>('[role="gridcell"][tabindex="0"]')
+    if (first === null) throw new Error('no focused cell')
+    first.focus()
+    // Down the third lesson's column: the first three present, Luka (the fourth) absent.
+    await userEvent.keyboard('pppa')
+    const luka = canvasElement.querySelector('[data-pos="4:3"]')
+    await expect(luka).toHaveTextContent('A')
+    await expect(canvasElement.querySelector('[data-pos="5:3"]')).toHaveFocus()
+  },
+}
+
+/** The mathematics gradebook (P5.13): marks one key each, the application's averages. */
+export const SchoolGradebook: Story = {
+  name: 'School, gradebook',
+  render: () => <ExampleApp start={H_ROUTES.gradebook} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(within(canvasElement).getByRole('columnheader', { name: 'Average' })).toBeVisible()
+  },
+}
+
+export const SchoolGradebookPhone: Story = {
+  name: 'School, gradebook, phone',
+  render: () => <OnPhone start={H_ROUTES.gradebook} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(
+      within(canvasElement).getByRole('heading', { name: 'Luka Jovanović' }),
+    ).toBeVisible()
+    await noPageOverflow(canvasElement)
+  },
+}
+
+/**
+ * The parents' portal (PortalShell): Luka Jovanović's absences this term — the counts, today's
+ * two lessons not excused yet (as the attendance grid has them), earlier ones excused.
+ */
+export const SchoolParentPortal: Story = {
+  name: 'School, parents’ portal, absences',
+  render: () => <ExampleApp start={H_ROUTES.parent} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('Today’s absences are not excused yet')
+    await expect(canvasElement).toHaveTextContent(String(ABSENCE_COUNTS.total))
+  },
+}
+
+export const SchoolParentPortalPhone: Story = {
+  name: 'School, parents’ portal, absences, phone',
+  render: () => <OnPhone start={H_ROUTES.parent} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('Today’s absences are not excused yet')
+    await noPageOverflow(canvasElement)
+  },
+}
+
+export const SchoolParentPortalExcuse: Story = {
+  name: 'School, parents’ portal, excuse, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={H_ROUTES.parent} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Excuse today’s absences' }))
+    await expect(
+      await within(document.body).findByText('Sent to the class teacher, Dragana Simić.'),
+    ).toBeInTheDocument()
+    await expect(canvasElement).not.toHaveTextContent('Today’s absences are not excused yet')
+  },
+}
