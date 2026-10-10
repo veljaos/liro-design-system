@@ -19,7 +19,6 @@ import {
   QuickPreview,
   RegisterPage,
   SelectField,
-  StatusBadge,
   StatutoryFormPage,
   useLiro,
   type BulkEditField,
@@ -92,7 +91,7 @@ const ACCOUNTING_TABS: ModuleTab[] = [
 
 // ── Customers ─────────────────────────────────────────────────────────────────────────────────
 
-const inactiveBadge = <StatusBadge label="Inactive" tone="neutral" />
+const inactiveBadge = statusBadge('Inactive')
 
 /**
  * The name, with "Inactive" after it only where the list mixes active and inactive customers
@@ -470,7 +469,7 @@ export function Customers({ phone }: { phone: boolean }) {
           items={[
             {
               label: 'Status',
-              value: preview.active ? <StatusBadge label="Active" tone="success" /> : inactiveBadge,
+              value: preview.active ? statusBadge('Active') : inactiveBadge,
             },
             { label: 'City', value: preview.city },
             { label: 'Group', value: preview.group },
@@ -643,7 +642,7 @@ export function CustomerImport({ phone }: { phone: boolean }) {
                   type: 'Customer',
                   number: 'Panonija Agro d.o.o.',
                   href: '#/sales/customers',
-                  status: <StatusBadge label="Active" tone="success" />,
+                  status: statusBadge('Active'),
                 },
               ]}
               onCreateAnyway={() => undefined}
@@ -938,7 +937,7 @@ export function VatReturn({ phone }: { phone: boolean }) {
         title="VAT return, September 2026"
         subtitle="PP PDV (illustrative) · due 15.10.2026."
         back={{ href: `#${E_ROUTES.vatReturn}`, label: 'VAT returns' }}
-        status={<StatusBadge label="Checked" tone="info" />}
+        status={statusBadge('Checked')}
         lifecycle={{ steps: VAT_STEPS, current: 1, label: 'Return status' }}
         actions={
           <>
