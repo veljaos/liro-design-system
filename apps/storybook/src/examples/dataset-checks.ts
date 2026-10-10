@@ -78,3 +78,58 @@ export function checkDataset() {
 
 /** Run once, when the examples load. */
 export const DATASET = checkDataset()
+
+// ── P5.17 group I: the till and the handheld ──
+// (Imports here, inside the block, so the blocks merge without touching the top.)
+import {
+  cashOutcome,
+  computeSale,
+  COUNT_DIFFERENCES,
+  COUNT_RECORDS,
+  countItems,
+  CURRENT_PICK,
+  PICK_LINES,
+  QUICK_AMOUNTS,
+  SALE,
+  SALE_FIGURES,
+} from './data-I'
+
+/**
+ * The till's sale and the handheld's figures (P5.17): what the screens compute from the lines
+ * equals what the data states — the subtotal, the loyalty discount, the total, the tax included
+ * per category, the change from the first banknote offered; the pick list at "4 of 12" with its
+ * current line open; every counted difference.
+ */
+export function checkGroupI() {
+  const sale = computeSale(SALE)
+  const vat = (category: string) =>
+    sale.vat.find((each) => each.category === category)?.vat ?? fail(`no VAT ${category}`)
+  if (SALE.length < 5 || SALE.length > 6) fail('the till’s cart has 5–6 lines')
+  if (sale.subtotal !== paras(SALE_FIGURES.subtotal)) fail('the till’s subtotal differs')
+  if (sale.discounts !== paras(SALE_FIGURES.discounts)) fail('the till’s discount differs')
+  if (sale.total !== paras(SALE_FIGURES.total)) fail('the till’s total differs')
+  if (sale.subtotal - sale.discounts !== sale.total) fail('the till’s total ignores the discount')
+  if (vat('E') !== paras(SALE_FIGURES.vatE)) fail('the till’s VAT 10% differs')
+  if (vat('Đ') !== paras(SALE_FIGURES.vatD)) fail('the till’s VAT 20% differs')
+  const first = QUICK_AMOUNTS[0] ?? fail('no banknote offered')
+  if (paras(first) !== paras(SALE_FIGURES.tendered)) fail('the cash tendered is not offered')
+  const cash = cashOutcome(sale.total, SALE_FIGURES.tendered)
+  if (cash.change === null || paras(cash.change) !== paras(SALE_FIGURES.change)) {
+    fail('the till’s change differs')
+  }
+  const done = PICK_LINES.filter((line) => line.state !== 'open').length
+  if (done !== 4 || PICK_LINES.length !== 12) fail('the pick list is not at 4 of 12')
+  if (PICK_LINES.find((line) => line.id === CURRENT_PICK)?.state !== 'open') {
+    fail('the current pick line is not open')
+  }
+  if (!PICK_LINES.some((line) => line.state === 'skipped' && line.note !== undefined)) {
+    fail('no skipped line with its reason')
+  }
+  for (const item of countItems(COUNT_RECORDS)) {
+    if (item.difference !== COUNT_DIFFERENCES[item.id]) fail(`count ${item.id}: difference differs`)
+  }
+  return { saleTotal: SALE_FIGURES.total, change: SALE_FIGURES.change }
+}
+
+/** Run once, when the examples load. */
+export const GROUP_I = checkGroupI()
