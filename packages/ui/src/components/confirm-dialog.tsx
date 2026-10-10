@@ -193,6 +193,9 @@ function ConfirmFrame(
       {props.trigger !== undefined && <DialogTrigger asChild>{props.trigger}</DialogTrigger>}
       <DialogContent
         role="alertdialog"
+        // An alertdialog is modal: said, so assistive technology (and axe) treat the page under
+        // it as inert also where the backdrop does not cover the screen (a phone frame, P5.11).
+        aria-modal="true"
         className={cn(
           'inset-y-0 my-auto h-fit overflow-hidden rounded-lg',
           props.size === 'wide' && 'w-180',
