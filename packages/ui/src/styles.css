@@ -223,3 +223,37 @@
 [data-slot='grid-card-cell'] [data-slot='field'] > p {
   display: none;
 }
+
+/*
+ * The touch density (P5.10; LiroProvider `density="touch"`): for a till, a kiosk or a handheld,
+ * every target is at least 44px (WCAG 2.5.5, Apple's and Material's finger size). The control
+ * heights of A.4 are raised inside the scope, so every button, field and select that uses
+ * `h-control` / `min-h-control` grows with no change to the component; the icon buttons, menu
+ * items, options, tabs, toggles and the rows of checkboxes, radios and switches get a 44px
+ * minimum. Overlays render inside the provider's wrapper, so they are touch-sized too. Unlayered,
+ * so it wins over the utilities.
+ */
+[data-liro-density='touch'] {
+  --liro-touch-target: 44px;
+  --liro-size-control-height: var(--liro-touch-target);
+  --liro-size-control-height-sm: var(--liro-touch-target);
+}
+[data-liro-density='touch'] :is([data-shape='icon'], [data-shape='compact']) {
+  min-width: var(--liro-touch-target);
+  min-height: var(--liro-touch-target);
+}
+[data-liro-density='touch']
+  :is(
+    [data-slot='dropdown-menu-item'],
+    [data-slot='dropdown-menu-checkbox-item'],
+    [data-slot='dropdown-menu-radio-item'],
+    [data-slot='dropdown-menu-sub-trigger'],
+    [data-slot='select-item'],
+    [data-slot='command-item'],
+    [data-slot='tabs-trigger'],
+    [data-slot='toggle-group-item'],
+    [data-slot='inline-field'],
+    [role='option']
+  ) {
+  min-height: var(--liro-touch-target);
+}

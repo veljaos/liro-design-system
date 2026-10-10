@@ -40,8 +40,18 @@ export interface LiroProviderProps {
   colorScheme?: 'light' | 'dark' | 'system'
   /** Router link component, so navigation stays client-side. Default: <a>. */
   linkComponent?: ElementType
+  /**
+   * 'touch' (P5.10): every control, list row and target inside — buttons, fields, menu items,
+   * options, tabs and toggles, overlays included — is at least 44px, for a till, a kiosk or a
+   * handheld. Default: the parent provider's, else 'default'. Touch is never lowered by a nested
+   * provider: a screen meant for fingers stays one.
+   */
+  density?: Density
   children: ReactNode
 }
+
+/** How large the targets are: the desktop sizes, or at least 44px for fingers (P5.10). */
+export type Density = 'default' | 'touch'
 
 export interface LiroContextValue {
   locale: string
@@ -54,6 +64,8 @@ export interface LiroContextValue {
   weekStartsOn: Weekday
   /** Renders links: the application's router link, or <a>. */
   linkComponent: ElementType
+  /** 'touch': targets of at least 44px (P5.10). */
+  density: Density
 }
 
 const RTL_SCRIPTS = new Set([
@@ -99,6 +111,7 @@ function defaultContext(): LiroContextValue {
       today,
       weekStartsOn: weekStartsOnForLocale(DEFAULT_LOCALE),
       linkComponent: 'a',
+      density: 'default',
     }
   } else if (fallback.today !== today) {
     fallback = { ...fallback, today }
@@ -138,8 +151,14 @@ export function LiroProvider({
   weekStartsOn,
   colorScheme = 'system',
   linkComponent = 'a',
+  density,
   children,
 }: LiroProviderProps) {
+  const parent = useContext(LiroContext)
+  // Touch is kept by every provider inside a touch one, so the CSS (which inherits) and the
+  // context always agree.
+  const resolvedDensity: Density =
+    parent?.density === 'touch' ? 'touch' : (density ?? parent?.density ?? 'default')
   const systemPrefersDark = useSystemPrefersDark()
   const resolvedScheme =
     colorScheme === 'system' ? (systemPrefersDark ? 'dark' : 'light') : colorScheme
@@ -161,6 +180,7 @@ export function LiroProvider({
       today: today ?? deviceToday,
       weekStartsOn: resolvedWeekStart,
       linkComponent,
+      density: resolvedDensity,
     }),
     [
       locale,
@@ -172,6 +192,7 @@ export function LiroProvider({
       deviceToday,
       resolvedWeekStart,
       linkComponent,
+      resolvedDensity,
     ],
   )
 
@@ -183,6 +204,7 @@ export function LiroProvider({
           dir={resolvedDirection}
           lang={locale}
           data-liro-theme={resolvedScheme}
+          data-liro-density={resolvedDensity === 'touch' ? 'touch' : undefined}
           style={{ display: 'contents' }}
         >
           <PortalContainerContext value={portalContainer}>{children}</PortalContainerContext>
