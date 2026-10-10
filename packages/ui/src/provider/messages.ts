@@ -839,4 +839,138 @@ export interface LiroMessages {
   'grid.addDeduction': string
   /** EditableGrid: the note before a line's detail that never reaches the customer's document. */
   'grid.internal': string
+  // P5.24 shifts
+  /** ShiftPlanner: the header of the people column, the hours column and the coverage row. */
+  'shifts.person': string
+  'shifts.hours': string
+  'shifts.coverage': string
+  /** Planned hours: `text` is already written by `format.number` ("38,5 h"). */
+  'shifts.hoursValue': (text: string) => string
+  /** A day's coverage at the column's foot ("5 of 6"); both written by `format.number`. */
+  'shifts.coverageValue': (plannedText: string, neededText: string | undefined) => string
+  /**
+   * A template's times for assistive technology ("22:00 to 06:00 the next day"); the times are
+   * already written by `format.time`. Shown as "22:00–06:00 (+1)".
+   */
+  'shifts.timeRange': (startText: string, endText: string, nextDay: boolean) => string
+  /** The visible mark after a time that ends the next day. */
+  'shifts.nextDayMark': string
+  /** A template's length, for display only ("8 h", "7 h 30 min"); texts from `format.number`. */
+  'shifts.duration': (
+    hours: number,
+    hoursText: string,
+    minutes: number,
+    minutesText: string,
+  ) => string
+  /** A cell without an assignment. */
+  'shifts.cellEmpty': string
+  /** A cell inside the selected range (after its contents, in its name). */
+  'shifts.inSelection': string
+  /** A cell's name: the person, the day and what it holds (assignments and conflicts). */
+  'shifts.cell': (name: string, dayText: string, contents: string) => string
+  /** An assignment changed since the schedule was published. */
+  'shifts.changed': string
+  /** A conflict from the application, by its tone, with its words. */
+  'shifts.conflictWarning': (text: string) => string
+  'shifts.conflictDanger': (text: string) => string
+  /** The summary of the conflicts shown, and its action that moves to the cell. */
+  'shifts.conflicts': string
+  'shifts.goTo': string
+  'shifts.goToCell': (name: string, dayText: string) => string
+  /** The palette of templates, its hint, and the grid's keyboard instructions. */
+  'shifts.templates': string
+  'shifts.paletteHint': string
+  'shifts.instructions': string
+  /** A template's key in the palette ("Key 1"), for assistive technology. */
+  'shifts.key': (key: string) => string
+  /** The cell menu: the heading over the templates, moving and removing one assignment. */
+  'shifts.assign': string
+  'shifts.moveTo': (label: string) => string
+  'shifts.remove': (label: string) => string
+  /** Announcements after a change (polite); counts written by `format.number`. */
+  'shifts.assigned': (label: string, count: number, countText: string) => string
+  'shifts.removed': (count: number, countText: string) => string
+  'shifts.moved': (label: string, name: string, dayText: string) => string
+  'shifts.selected': (count: number, countText: string) => string
+  /** The menu button of a person's day on a phone. */
+  'shifts.cellMenu': (name: string, dayText: string) => string
+  /** The period's navigation and the phone's day switcher. */
+  'shifts.previousPeriod': string
+  'shifts.nextPeriod': string
+  'shifts.today': string
+  'shifts.previousDay': string
+  'shifts.nextDay': string
+  'shifts.day': string
+  /** The view switch: one list of people, or grouped by one of the application's groupings. */
+  'shifts.view': string
+  'shifts.byPerson': string
+  /** The schedule's state. */
+  'shifts.draft': string
+  'shifts.published': string
+  'shifts.changedSincePublishing': string
+  /** Publishing: the button, its confirmation and the counts from the application. */
+  'shifts.publish': string
+  'shifts.publishChanges': string
+  'shifts.publishTitle': string
+  'shifts.publishMessage': (
+    shifts: number,
+    shiftsText: string,
+    people: number,
+    peopleText: string,
+  ) => string
+  'shifts.publishConflicts': (count: number, countText: string) => string
+  /** "Apply rotation…": the button and its dialog. */
+  'shifts.applyRotation': string
+  'shifts.rotationTitle': string
+  'shifts.rotationPattern': string
+  'shifts.rotationPeople': string
+  'shifts.rotationStart': string
+  'shifts.rotationEnd': string
+  'shifts.rotationOffset': string
+  'shifts.rotationOffsetValue': (days: number, daysText: string) => string
+  'shifts.rotationSteps': string
+  'shifts.dayOff': string
+  'shifts.rotationApply': string
+  'shifts.rotationSummary': (count: number, countText: string) => string
+  'shifts.rotationNoPeople': string
+  /** "Move to…": the dialog that moves one assignment without dragging. */
+  'shifts.moveTitle': (label: string) => string
+  'shifts.movePerson': string
+  'shifts.moveDay': string
+  'shifts.moveButton': string
+  /** A plan without people. */
+  'shifts.noPeople': string
+  'shifts.noPeopleDescription': string
+  /** MyShifts: the title, the weeks' headings, the swap action and the empty state. */
+  'shifts.myShifts': string
+  'shifts.thisWeek': string
+  'shifts.nextWeek': string
+  'shifts.week': (startText: string, endText: string) => string
+  'shifts.requestSwap': string
+  'shifts.noUpcoming': string
+  'shifts.noUpcomingDescription': string
+  /** ShiftSwapDialog: the request's title, fields, errors and button. */
+  'swap.title': string
+  'swap.shift': string
+  'swap.who': string
+  'swap.anyone': string
+  'swap.colleague': string
+  'swap.colleagueField': string
+  'swap.colleagueRequired': string
+  'swap.takeBack': string
+  'swap.takeNone': string
+  'swap.reason': string
+  'swap.reasonRequired': string
+  'swap.submit': string
+  /** WorkingTimeBalance (P5.24 d): the plan's header and the table's columns. */
+  'workingTime.period': string
+  'workingTime.weeks': string
+  'workingTime.week': (index: number, indexText: string) => string
+  'workingTime.person': string
+  'workingTime.planned': string
+  'workingTime.worked': string
+  'workingTime.difference': string
+  'workingTime.average': string
+  'workingTime.warnings': string
+  'workingTime.noWarnings': string
 }
