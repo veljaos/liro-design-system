@@ -1,5 +1,6 @@
 ---
 '@veljaos/ui': minor
+'@veljaos/tokens': patch
 ---
 
 Phase 5 part 2, Liro patterns.
@@ -17,3 +18,4 @@ Phase 5 part 2, Liro patterns.
 - P5.22: `@veljaos/ui/rich-text`, a new subpath: `RichTextField` (formatted text with a keyboard toolbar, merge fields as pills, @mentions; the value as Tiptap JSON plus sanitized HTML) and `RichText` (the read-only view), with `sanitizeRichHtml`, `richTextToHtml`, `richTextFromHtml` and the other helpers. New dependencies of `@veljaos/ui`, loaded only through the subpath: Tiptap 3.31.4 (MIT packages only).
 
 - P5.24 b and d, working time: `ShiftPlanner` (people × days of shift templates; keyboard, menu and drag assignment; conflicts, hours and coverage from data; publishing with a confirmation; "Apply rotation…"; one day at a time on phones) with `assignChanges`, `removeChanges`, `moveChange`, `rotationAssignments`, `shiftSpan`, `crossesMidnight`, `templateKey`, `templateForKey`, `movePlannerPeriod`, `todayPeriod`, `shiftsByWeek`, `conflictList`; `MyShifts`; `ShiftSwapDialog`; `WorkingTimeBalance`. New messages under `shifts.*`, `swap.*` and `workingTime.*`.
+- Tokens: the dark theme's text shades over a selection now apply to every `bg-surface-selected` element, also when the theme attribute sits on that element itself.
