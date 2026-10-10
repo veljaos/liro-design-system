@@ -3194,3 +3194,371 @@ export const SchoolParentPortalExcuse: Story = {
     await expect(canvasElement).not.toHaveTextContent('Today’s absences are not excused yet')
   },
 }
+
+// ── P5.17 group I: the till and the handheld ──
+// (Imports here, inside the block, so the blocks merge without touching the top.)
+import { PhoneFrame } from '../../../../packages/ui/src/components/story-frames'
+import { BAKERY, CARD_APPROVAL, COUNT, I_ROUTES, PICKING, SALE_FIGURES } from './data-I'
+
+const SERBIAN_I = createFormat('sr-Latn-RS')
+
+/**
+ * An amount of the till as the bakery sees it ("1.907,00 RSD"), as the text matchers read the
+ * page: every space (the no-break one too) as one.
+ */
+function tillText(value: string): string {
+  return SERBIAN_I.money(value, BAKERY.currency).replace(/\s+/g, ' ')
+}
+
+/** The cart's main action by its name, "Charge 1.907,00 RSD", whatever space the format writes. */
+function chargeName(value: string): RegExp {
+  const text = `Charge ${tillText(value)}`.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  return new RegExp(`^${text.replace(/ /g, '\\s')}$`)
+}
+
+/** A handheld scanner's screen: 360 × 740. */
+function OnHandheld({ start }: { start: string }) {
+  return (
+    <PhoneFrame width={360} height={740}>
+      <ExampleApp start={start} phone />
+    </PhoneFrame>
+  )
+}
+
+/** The payment dialog of the till. */
+function paymentDialog() {
+  return within(document.body).getByRole('dialog', { name: 'Payment' })
+}
+
+/** Nothing on the screen scrolls sideways. */
+async function expectNoSidewaysScroll(canvasElement: HTMLElement) {
+  for (const element of canvasElement.querySelectorAll<HTMLElement>(
+    '[data-slot="pos-shell"], [data-slot="pick-list"], [data-slot="stock-count"]',
+  )) {
+    await expect(element.scrollWidth).toBeLessThanOrEqual(element.clientWidth)
+  }
+}
+
+/**
+ * The till of Pekara Zlatni klas in Novi Sad (Kasa 1, Snežana Kovačević) on a landscape tablet,
+ * in the touch density: the products by category with a scan field above them, the cart of six
+ * lines with the loyalty card's 10% on the cakes (1.995,00 − 88,00 = 1.907,00 RSD, VAT included
+ * per category), "Charge 1.907,00 RSD" last. No application header: the till is one task.
+ */
+export const PosCheckout: Story = {
+  name: 'POS checkout, Pekara Zlatni klas',
+  render: () => <ExampleApp start={I_ROUTES.pos} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('region', { name: 'Register status' })).toHaveTextContent(
+      BAKERY.register,
+    )
+    await expect(canvasElement).toHaveTextContent('6 items')
+    await expect(canvas.getByRole('textbox', { name: 'Quantity, Krempita' })).toHaveValue('4')
+    await expect(canvasElement).toHaveTextContent(
+      `Loyalty discount 10%: ${tillText(`-${SALE_FIGURES.discounts}`)}`,
+    )
+    await expect(canvas.getByRole('button', { name: chargeName(SALE_FIGURES.total) })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: /^Raženi hleb/ })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    )
+    await expectNoSidewaysScroll(canvasElement)
+  },
+}
+
+/** Paying cash: 2.000,00 RSD tendered (the first banknote offered), the change 93,00 RSD. */
+export const PosCash: Story = {
+  name: 'POS checkout, paying cash',
+  render: () => <ExampleApp start={I_ROUTES.posCash} />,
+  play: async () => {
+    await settle()
+    const dialog = paymentDialog()
+    await expect(dialog).toHaveTextContent(tillText(SALE_FIGURES.total))
+    await expect(dialog).toHaveTextContent('Change due')
+    await expect(dialog).toHaveTextContent(tillText(SALE_FIGURES.change))
+    await expect(within(dialog).getByLabelText(/Amount tendered/)).toHaveValue('2.000')
+  },
+}
+
+/** Paying by card: the terminal waits for the customer; the dialog cannot be dismissed. */
+export const PosCardWaiting: Story = {
+  name: 'POS checkout, card waiting',
+  render: () => <ExampleApp start={I_ROUTES.posCardWaiting} />,
+  play: async () => {
+    await settle()
+    const dialog = paymentDialog()
+    await expect(dialog).toHaveTextContent('Waiting for the card terminal…')
+    await expect(within(dialog).queryByRole('button', { name: 'Close' })).toBeNull()
+  },
+}
+
+/** The terminal approved the card: "Complete payment" can be pressed. */
+export const PosCardApproved: Story = {
+  name: 'POS checkout, card approved',
+  render: () => <ExampleApp start={I_ROUTES.posCardApproved} />,
+  play: async () => {
+    await settle()
+    const dialog = paymentDialog()
+    await expect(dialog).toHaveTextContent('Card payment approved')
+    await expect(dialog).toHaveTextContent(CARD_APPROVAL)
+    await expect(
+      within(dialog).getByRole('button', { name: 'Complete payment' }),
+    ).not.toHaveAttribute('aria-disabled', 'true')
+  },
+}
+
+/** The sale paid in cash: receipt ZK-01-002318 with the tax per category, cash and change. */
+export const PosReceipt: Story = {
+  name: 'POS checkout, receipt',
+  render: () => <ExampleApp start={I_ROUTES.posReceipt} />,
+  play: async () => {
+    await settle()
+    const dialog = within(document.body).getByRole('dialog', { name: `Receipt ${BAKERY.receipt}` })
+    const receipt = within(dialog).getByRole('article', { name: 'Receipt' })
+    await expect(receipt).toHaveTextContent(BAKERY.name)
+    await expect(receipt).toHaveTextContent(tillText(SALE_FIGURES.total))
+    await expect(receipt).toHaveTextContent(tillText(SALE_FIGURES.vatE))
+    await expect(receipt).toHaveTextContent(tillText(SALE_FIGURES.change))
+  },
+}
+
+/** The connection lost: three sales wait on the till, selling goes on. */
+export const PosOffline: Story = {
+  name: 'POS checkout, offline',
+  render: () => <ExampleApp start={I_ROUTES.posOffline} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(within(canvasElement).getByText('3 sales waiting to be sent')).toBeVisible()
+    await expect(
+      within(canvasElement).getByRole('button', {
+        name: chargeName(SALE_FIGURES.total),
+      }),
+    ).toBeVisible()
+  },
+}
+
+/**
+ * A barcode read into the scan field adds the orange juice (the till sums: 2.057,00 RSD); a
+ * second kifla adds to its line; an unknown code is a problem in words.
+ */
+export const PosScanInteraction: Story = {
+  name: 'POS checkout, scanning, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={I_ROUTES.pos} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const field = canvas.getByRole('textbox', { name: 'Barcode or PLU' })
+    await userEvent.type(field, '8600417000528{Enter}')
+    await expect(await canvas.findByText('Sok od pomorandže added')).toBeVisible()
+    await expect(canvas.getByRole('textbox', { name: 'Quantity, Sok od pomorandže' })).toHaveValue(
+      '1',
+    )
+    await expect(canvas.getByRole('button', { name: chargeName('2057') })).toBeVisible()
+    await userEvent.type(field, '8600417000207{Enter}')
+    await waitFor(async () => {
+      await expect(canvas.getByRole('textbox', { name: 'Quantity, Kifla' })).toHaveValue('7')
+    })
+    await expect(canvas.getByRole('button', { name: chargeName('2082') })).toBeVisible()
+    await userEvent.type(field, '8600999999999{Enter}')
+    await expect(await canvas.findByText('Unknown code 8600999999999')).toBeVisible()
+  },
+}
+
+/** Charge, the 2.000,00 banknote, Complete payment, then the receipt. */
+export const PosPayInteraction: Story = {
+  name: 'POS checkout, paying cash, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={I_ROUTES.pos} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await userEvent.click(
+      within(canvasElement).getByRole('button', {
+        name: chargeName(SALE_FIGURES.total),
+      }),
+    )
+    const dialog = await within(document.body).findByRole('dialog', { name: 'Payment' })
+    await userEvent.click(within(dialog).getByRole('button', { name: /^2\.000/ }))
+    await expect(dialog).toHaveTextContent(tillText(SALE_FIGURES.change))
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Complete payment' }))
+    await expect(await within(dialog).findByText('Payment complete')).toBeVisible()
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Show receipt' }))
+    const receipt = await within(document.body).findByRole('dialog', {
+      name: `Receipt ${BAKERY.receipt}`,
+    })
+    await expect(receipt).toHaveTextContent(tillText(SALE_FIGURES.total))
+    await settle()
+  },
+}
+
+/** Phone: the cart first, "Products" above it opening the products as a bottom sheet. */
+export const PosPhone: Story = {
+  name: 'POS checkout, phone',
+  render: () => <OnPhone start={I_ROUTES.pos} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('button', { name: 'Products' })).toBeVisible()
+    await expect(
+      canvas.getByRole('button', { name: chargeName(SALE_FIGURES.total) }),
+    ).toBeInTheDocument()
+    await expectNoSidewaysScroll(canvasElement)
+  },
+}
+
+/** Phone: the products sheet open over the cart. */
+export const PosPhoneProducts: Story = {
+  name: 'POS checkout, phone, products',
+  render: () => <OnPhone start={I_ROUTES.posProducts} />,
+  play: async () => {
+    await settle()
+    const sheet = within(document.body).getByRole('dialog', { name: 'Products' })
+    await expect(within(sheet).getByRole('textbox', { name: 'Barcode or PLU' })).toBeVisible()
+    await expect(within(sheet).getByRole('button', { name: /^Kifla/ })).toBeVisible()
+  },
+}
+
+/** Phone: paying cash. */
+export const PosPhoneCash: Story = {
+  name: 'POS checkout, phone, paying cash',
+  render: () => <OnPhone start={I_ROUTES.posCash} />,
+  play: async () => {
+    await settle()
+    await expect(paymentDialog()).toHaveTextContent(tillText(SALE_FIGURES.change))
+  },
+}
+
+/**
+ * Picking order NP-2026-0233 for Kvadrat Gradnja d.o.o. at Magacin Novi Sad on a handheld:
+ * "4 of 12" (two picked, one short, one skipped with its reason), line 5 large — location
+ * B-03-04, the facade boards, 18 packs — and its steps; scan the location first.
+ */
+export const PickingHandheld: Story = {
+  name: 'Warehouse picking, handheld',
+  render: () => <OnHandheld start={I_ROUTES.picking} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('4 of 12')).toBeVisible()
+    await expect(canvas.getByRole('textbox', { name: 'Location code' })).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('B-03-04')
+    await expect(canvasElement).toHaveTextContent('Skipped: Damaged — the rolls are wet.')
+    await expect(canvasElement).toHaveTextContent(PICKING.customer)
+    await expectNoSidewaysScroll(canvasElement)
+  },
+}
+
+/** The location confirmed: scan the item. */
+export const PickingHandheldItem: Story = {
+  name: 'Warehouse picking, handheld, item',
+  render: () => <OnHandheld start={I_ROUTES.pickingItem} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('textbox', { name: 'Item code' })).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('Location B-03-04')
+  },
+}
+
+/** Both scanned: confirm the quantity, 18 packs by default. */
+export const PickingHandheldQuantity: Story = {
+  name: 'Warehouse picking, handheld, quantity',
+  render: () => <OnHandheld start={I_ROUTES.pickingQuantity} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('textbox', { name: 'Quantity picked' })).toHaveValue('18')
+    await expect(canvas.getByRole('button', { name: 'Confirm quantity' })).toBeVisible()
+  },
+}
+
+/** Skipping line 5: the reason asked from the warehouse's list. */
+export const PickingHandheldSkip: Story = {
+  name: 'Warehouse picking, handheld, skipping a line',
+  render: () => <OnHandheld start={I_ROUTES.pickingSkip} />,
+  play: async () => {
+    await settle()
+    await expect(
+      within(document.body).getByRole('alertdialog', { name: /^Skip Fasadni stiropor/ }),
+    ).toBeVisible()
+  },
+}
+
+/** Offline: three changes wait on the handheld; picking goes on. */
+export const PickingHandheldOffline: Story = {
+  name: 'Warehouse picking, handheld, offline',
+  render: () => <OnHandheld start={I_ROUTES.pickingOffline} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(within(canvasElement).getByText('3 changes waiting to be sent')).toBeVisible()
+  },
+}
+
+/** Scan B-03-04, scan the boards, confirm 18: "5 of 12", and line 6 opens at B-05-02. */
+export const PickingHandheldInteraction: Story = {
+  name: 'Warehouse picking, handheld, interaction',
+  tags: ['interaction'],
+  render: () => <OnHandheld start={I_ROUTES.picking} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.type(canvas.getByRole('textbox', { name: 'Location code' }), 'B-03-05{Enter}')
+    await expect(await canvas.findByText('Wrong location: B-03-05. Go to B-03-04.')).toBeVisible()
+    await userEvent.type(canvas.getByRole('textbox', { name: 'Location code' }), 'B-03-04{Enter}')
+    const item = await canvas.findByRole('textbox', { name: 'Item code' })
+    await userEvent.type(item, '8600981000149{Enter}')
+    await userEvent.click(await canvas.findByRole('button', { name: 'Confirm quantity' }))
+    await expect(await canvas.findByText('5 of 12')).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('B-05-02')
+    await expect(canvas.getByRole('textbox', { name: 'Location code' })).toBeVisible()
+  },
+}
+
+/** The same list on a tablet on a cart (640px). */
+export const PickingTablet: Story = {
+  name: 'Warehouse picking, tablet',
+  render: () => <ExampleApp start={I_ROUTES.pickingItem} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(within(canvasElement).getByText('4 of 12')).toBeVisible()
+    await expectNoSidewaysScroll(canvasElement)
+  },
+}
+
+/**
+ * Counting A-02-03, where the pick came up short: the mesh Q188 just scanned in front — counted
+ * 14, the books 12, difference +2 — and the other items counted here: Q131 counted 0 of 3
+ * (difference −3, danger), the binding wire 0.
+ */
+export const StockCountHandheld: Story = {
+  name: 'Stock count, handheld',
+  render: () => <OnHandheld start={I_ROUTES.count} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent(COUNT.location)
+    await expect(canvasElement).toHaveTextContent(SERBIAN_I.number('-3', { sign: 'always' }))
+    await expect(canvasElement).toHaveTextContent(SERBIAN_I.number('2', { sign: 'always' }))
+    await expect(
+      within(canvasElement).getByRole('button', { name: 'Finish location' }),
+    ).toBeVisible()
+    await expectNoSidewaysScroll(canvasElement)
+  },
+}
+
+/** One Q188 sheet less (it was a Q131): the count goes to 13 and the application's difference to +1. */
+export const StockCountHandheldInteraction: Story = {
+  name: 'Stock count, handheld, interaction',
+  tags: ['interaction'],
+  render: () => <OnHandheld start={I_ROUTES.count} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Decrease Counted quantity' }))
+    await expect(canvas.getByRole('textbox', { name: 'Counted quantity' })).toHaveValue('13')
+    await waitFor(async () => {
+      await expect(canvasElement).toHaveTextContent(SERBIAN_I.number('1', { sign: 'always' }))
+    })
+  },
+}
