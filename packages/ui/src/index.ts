@@ -648,3 +648,50 @@ export type {
   LookupDraft,
   LookupDraftErrors,
 } from './components/lookup-create-drawer'
+// ── P5.8 Calendar and scheduling ──
+export { CalendarView } from './components/calendar-view'
+export type { CalendarEvent, CalendarSlot, CalendarViewProps } from './components/calendar-view'
+export { ResourceSchedule } from './components/resource-schedule'
+export type {
+  ResourceScheduleProps,
+  ScheduleBooking,
+  ScheduleMove,
+  ScheduleResource,
+} from './components/resource-schedule'
+export { SlotPicker } from './components/slot-picker'
+export type { SlotPickerProps, SlotResource } from './components/slot-picker'
+export { Timetable } from './components/timetable'
+export type { TimetableLesson, TimetablePeriod, TimetableProps } from './components/timetable'
+export {
+  addDays,
+  addMonths,
+  calendarKeyTarget,
+  CALENDAR_VIEWS,
+  cellEvents,
+  currentPeriod,
+  dropPlace,
+  fitOnAxis,
+  groupSlots,
+  layoutDay,
+  monthWeeks,
+  periodDays,
+  readMoment,
+  scheduleKeyTarget,
+  shiftPeriod,
+  slotKey,
+  spanOf,
+  startOfWeek,
+  unavailableReason,
+  weekDays,
+} from './components/schedule-logic'
+export type {
+  CalendarViewName,
+  FreeSlot,
+  GridCell,
+  Placement,
+  ScheduleAxis,
+  SchedulePlace,
+  Span,
+  UnavailableTime,
+} from './components/schedule-logic'
+export { deviceTimeZone, localDateTimeIn } from './provider/format'

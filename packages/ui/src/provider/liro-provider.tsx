@@ -10,6 +10,7 @@ import {
 import { Direction } from 'radix-ui'
 import {
   createFormat,
+  deviceTimeZone,
   intlLocale,
   weekStartsOnForLocale,
   type LiroFormat,
@@ -36,6 +37,13 @@ export interface LiroProviderProps {
   today?: string
   /** 0 = Sunday … 6 = Saturday. Default: from the locale. */
   weekStartsOn?: Weekday
+  /**
+   * The IANA time zone instants are shown in ("Europe/Belgrade"), P5.8. Default: the browser's.
+   * The Core passes the tenant's. `format.dateTime` and `format.time` show an instant with an
+   * offset in it; a local date and time without an offset ("2026-10-12T09:30") is shown as
+   * written. Without this prop `format.time` keeps the clock as the instant writes it.
+   */
+  timeZone?: string
   /** Default: 'system', which follows the operating system. */
   colorScheme?: 'light' | 'dark' | 'system'
   /** Router link component, so navigation stays client-side. Default: <a>. */
@@ -52,6 +60,8 @@ export interface LiroContextValue {
   /** YYYY-MM-DD. */
   today: string
   weekStartsOn: Weekday
+  /** The IANA time zone instants are shown in: the provider's `timeZone`, else the browser's. */
+  timeZone: string
   /** Renders links: the application's router link, or <a>. */
   linkComponent: ElementType
 }
@@ -98,6 +108,7 @@ function defaultContext(): LiroContextValue {
       format: createFormat(DEFAULT_LOCALE),
       today,
       weekStartsOn: weekStartsOnForLocale(DEFAULT_LOCALE),
+      timeZone: deviceTimeZone(),
       linkComponent: 'a',
     }
   } else if (fallback.today !== today) {
@@ -136,6 +147,7 @@ export function LiroProvider({
   format,
   today,
   weekStartsOn,
+  timeZone,
   colorScheme = 'system',
   linkComponent = 'a',
   children,
@@ -144,7 +156,11 @@ export function LiroProvider({
   const resolvedScheme =
     colorScheme === 'system' ? (systemPrefersDark ? 'dark' : 'light') : colorScheme
   const resolvedDirection = direction ?? directionForLocale(locale)
-  const resolvedFormat = useMemo(() => createFormat(locale, format), [locale, format])
+  const resolvedFormat = useMemo(
+    () => createFormat(locale, format, timeZone),
+    [locale, format, timeZone],
+  )
+  const resolvedTimeZone = useMemo(() => timeZone ?? deviceTimeZone(), [timeZone])
   const resolvedMessages = useMemo(() => ({ ...messagesEn, ...messages }), [messages])
   // Read once: a page left open past midnight keeps its date until the application passes one.
   const [deviceToday] = useState(localToday)
@@ -160,6 +176,7 @@ export function LiroProvider({
       format: resolvedFormat,
       today: today ?? deviceToday,
       weekStartsOn: resolvedWeekStart,
+      timeZone: resolvedTimeZone,
       linkComponent,
     }),
     [
@@ -171,6 +188,7 @@ export function LiroProvider({
       today,
       deviceToday,
       resolvedWeekStart,
+      resolvedTimeZone,
       linkComponent,
     ],
   )
