@@ -398,6 +398,7 @@ describe('messages', () => {
       'floorPlan.itemActions',
       'floorPlan.itemName',
       'floorPlan.legend',
+      'floorPlan.level',
       'floorPlan.list',
       'floorPlan.move',
       'floorPlan.moveTitle',

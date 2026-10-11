@@ -1020,3 +1020,24 @@ export type {
   SeatingTable,
   SeatRef,
 } from './components/seating-logic'
+// ── P5.25a FloorPlan: background, polygon areas, level ──
+export type { FloorBackground } from './components/floor-plan'
+export {
+  areaBox,
+  areaContains,
+  areaLabelPoint,
+  isPolygonArea,
+  levelText,
+  levelWidth,
+  percentPoint,
+  pointInPolygon,
+  polygonBounds,
+  polygonCentroid,
+  svgPoints,
+} from './components/floor-plan-logic'
+export type {
+  FloorLevel,
+  FloorPoint,
+  FloorPolygonArea,
+  FloorRectArea,
+} from './components/floor-plan-logic'

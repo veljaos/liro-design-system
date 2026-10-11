@@ -1073,4 +1073,6 @@ export const messagesEn: LiroMessages = {
   'diagram.stepState': (label, state) => `${label}: ${state}`,
   'diagram.stepAction': (action, label) => `${action}: ${label}`,
   'diagram.defaultWay': 'Default way out, when no condition holds',
+  // P5.25a FloorPlan
+  'floorPlan.level': (percentText) => `${percentText} full`,
 }
