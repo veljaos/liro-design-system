@@ -13,9 +13,12 @@
  * moves to the right on the plan.
  */
 
-/** What an item is; the application names it (`label`). Fixtures are drawn, not chosen. */
+/**
+ * What an item is; the application names it (`label`). Fixtures are drawn, not chosen. `place`
+ * is any other place to choose (P5.25a): a storage bin, a bed, a desk, a parking space.
+ */
 export type FloorItemKind =
-  'table' | 'seat' | 'room' | 'bar' | 'counter' | 'stage' | 'wall' | 'door' | 'window'
+  'table' | 'seat' | 'room' | 'place' | 'bar' | 'counter' | 'stage' | 'wall' | 'door' | 'window'
 
 /** The kinds that are part of the building or the room: drawn, chosen only in edit mode. */
 export const FIXTURE_KINDS: readonly FloorItemKind[] = [
@@ -331,6 +334,18 @@ export interface FloorItem extends FloorGeometry {
   stateId?: string
   /** A note from the application ("By the window"), in the list and the name. */
   note?: string
+  /** How full it is (P5.25a): a percentage from the application, shown in words and a bar. */
+  level?: FloorLevel
+}
+
+/**
+ * How full an item is (a storage bin, a car park): `percent` is the application's percentage as a
+ * decimal string ("62.5"), never computed by the plan; the words default to
+ * `floorPlan.level` ("62,5% full"), or the application's own `label`.
+ */
+export interface FloorLevel {
+  percent: string
+  label?: string
 }
 
 /** A new item: everything but the id, which the application gives. */
@@ -426,4 +441,158 @@ export function addedPosition(
     snap((plan.height - size.height) / 2, grid),
     plan,
   )
+}
+
+// ── P5.25a: polygon areas, the level ─────────────────────────────────────────────────────────
+
+/** A point on the plan, in plan units. */
+export interface FloorPoint {
+  x: number
+  y: number
+}
+
+interface FloorAreaCommon {
+  id: string
+  /** The area's name, written on the plan and heading its group in the list. */
+  label: string
+}
+
+/** A rectangular area: its box in plan units; its name in its top-start corner. */
+export interface FloorRectArea extends FloorAreaCommon, FloorBox {
+  points?: undefined
+  labelAt?: undefined
+}
+
+/**
+ * An area of any outline (P5.25a: a room that is not a rectangle, a corridor): its corners in plan
+ * units, in order round it. Its name is centred on `labelAt`, else on the outline's centroid.
+ */
+export interface FloorPolygonArea extends FloorAreaCommon {
+  points: readonly FloorPoint[]
+  labelAt?: FloorPoint
+}
+
+/** A labelled region of the plan (a hall, the terrace, floor 2, a ward room), from the application. */
+export type FloorArea = FloorRectArea | FloorPolygonArea
+
+/** Whether an area is drawn by its outline. */
+export function isPolygonArea(area: FloorArea): area is FloorPolygonArea {
+  return area.points !== undefined
+}
+
+/** The smallest box round a polygon's corners (an empty polygon: a box of no size at 0, 0). */
+export function polygonBounds(points: readonly FloorPoint[]): FloorBox {
+  if (points.length === 0) return { x: 0, y: 0, width: 0, height: 0 }
+  const xs = points.map((point) => point.x)
+  const ys = points.map((point) => point.y)
+  const x = Math.min(...xs)
+  const y = Math.min(...ys)
+  return { x, y, width: Math.max(...xs) - x, height: Math.max(...ys) - y }
+}
+
+/**
+ * The centroid of a polygon (the centre of its surface, by the shoelace formula), where its name
+ * goes when the application gives no `labelAt`. A polygon of no surface (a line, one point):
+ * the mean of its corners.
+ */
+export function polygonCentroid(points: readonly FloorPoint[]): FloorPoint {
+  if (points.length === 0) return { x: 0, y: 0 }
+  let twiceArea = 0
+  let cx = 0
+  let cy = 0
+  points.forEach((a, index) => {
+    const b = points[(index + 1) % points.length] ?? a
+    const cross = a.x * b.y - b.x * a.y
+    twiceArea += cross
+    cx += (a.x + b.x) * cross
+    cy += (a.y + b.y) * cross
+  })
+  if (Math.abs(twiceArea) < 1e-9) {
+    const sum = points.reduce((total, point) => ({ x: total.x + point.x, y: total.y + point.y }), {
+      x: 0,
+      y: 0,
+    })
+    return { x: sum.x / points.length, y: sum.y / points.length }
+  }
+  return { x: cx / (3 * twiceArea), y: cy / (3 * twiceArea) }
+}
+
+/**
+ * Whether a point lies inside a polygon (even-odd rule; a point on an edge may count either way).
+ * For the application's own checks: a bed inside its room, a bin inside its zone.
+ */
+export function pointInPolygon(point: FloorPoint, points: readonly FloorPoint[]): boolean {
+  let inside = false
+  points.forEach((a, index) => {
+    const b = points[(index + points.length - 1) % points.length] ?? a
+    if (a.y > point.y !== b.y > point.y) {
+      const x = ((b.x - a.x) * (point.y - a.y)) / (b.y - a.y) + a.x
+      if (point.x < x) inside = !inside
+    }
+  })
+  return inside
+}
+
+/** The box an area covers: a rectangle's own, a polygon's bounds. */
+export function areaBox(area: FloorArea): FloorBox {
+  if (isPolygonArea(area)) return polygonBounds(area.points)
+  return { x: area.x, y: area.y, width: area.width, height: area.height }
+}
+
+/** Whether an area holds a point (the application's checks; edges may count either way). */
+export function areaContains(area: FloorArea, point: FloorPoint): boolean {
+  if (isPolygonArea(area)) return pointInPolygon(point, area.points)
+  return (
+    point.x >= area.x &&
+    point.x <= area.x + area.width &&
+    point.y >= area.y &&
+    point.y <= area.y + area.height
+  )
+}
+
+/** Where a polygon area's name is centred: `labelAt`, else the centroid. */
+export function areaLabelPoint(area: FloorPolygonArea): FloorPoint {
+  return area.labelAt ?? polygonCentroid(area.points)
+}
+
+/** A polygon's corners for SVG's `points` attribute, in plan units ("0,0 400,0 400,300"). */
+export function svgPoints(points: readonly FloorPoint[]): string {
+  return points.map((point) => `${String(point.x)},${String(point.y)}`).join(' ')
+}
+
+/** A point as percentages of the plan, for drawing. */
+export function percentPoint(
+  point: FloorPoint,
+  plan: { width: number; height: number },
+): { left: string; top: string } {
+  return {
+    left: `${String((point.x / plan.width) * 100)}%`,
+    top: `${String((point.y / plan.height) * 100)}%`,
+  }
+}
+
+/** A decimal string the level bar can draw: digits with an optional fraction, optionally signed. */
+const LEVEL_DECIMAL = /^[-+]?\d+(\.\d+)?$/
+
+/**
+ * The width of a level's bar as CSS: the percentage kept between 0% and 100% by CSS itself
+ * (`clamp(0%, 62.5%, 100%)`), so the plan never turns the application's decimal string into a
+ * number (D4). Null when the value is not a decimal string: then only the words show.
+ */
+export function levelWidth(percent: string): string | null {
+  const value = percent.trim()
+  if (!LEVEL_DECIMAL.test(value)) return null
+  return `clamp(0%, ${value.replace(/^\+/, '')}%, 100%)`
+}
+
+/**
+ * A level in words: the application's `label`, else `words` of the formatted percentage
+ * (`floorPlan.level`: "62,5% full").
+ */
+export function levelText(
+  level: FloorLevel,
+  percent: (value: string) => string,
+  words: (percentText: string) => string,
+): string {
+  return level.label ?? words(percent(level.percent))
 }
