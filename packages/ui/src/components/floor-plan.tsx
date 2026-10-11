@@ -32,12 +32,16 @@ import { Dialog } from './dialog'
 import { EmptyState } from './empty-state'
 import {
   addedPosition,
+  areaLabelPoint,
   dragPosition,
   duplicateDraft,
   footprint,
   isArrowKey,
   isFixture,
+  isPolygonArea,
   keepInside,
+  levelText,
+  levelWidth,
   listGroups,
   MIN_ITEM_SIZE,
   MIN_TARGET,
@@ -45,12 +49,14 @@ import {
   nearestItem,
   nudge,
   percentBox,
+  percentPoint,
   readingOrder,
   resizeFootprint,
   rotateChange,
   planZoomStep,
   PLAN_ZOOM_STEPS,
-  type FloorBox,
+  svgPoints,
+  type FloorArea,
   type FloorChange,
   type FloorItem,
   type FloorItemKind,
@@ -95,14 +101,49 @@ import { usePhone } from './use-phone'
  *   handle or "Size…"; turned 90°, duplicated, removed (also Delete). Every change goes to
  *   `onChange`; overlapping items are allowed and the application's `warnings` flag them.
  * - **Zoom:** in, out and fit (`PLAN_ZOOM_STEPS`, CSS widths, no measuring).
+ * - **P5.25a:** `background` draws the building's own plan (an image: a drawing, an SVG, a PDF
+ *   page rendered as an image) under the areas and items, placed and scaled in plan units, so it
+ *   stays aligned at every zoom; decorative unless it has `alt` (the plan is read through its
+ *   items and the list). In the dark theme it is `srcDark`, else the image inverted (a line
+ *   drawing then shows light lines). Areas may be polygons (`points`), drawn in an SVG layer whose
+ *   viewBox is the plan, their names HTML text at `labelAt` or the centroid. An item's `level`
+ *   (a percentage from the application) shows as words in its name and the list, and a bar.
  */
 
-export type { FloorChange, FloorItem, FloorItemDraft, FloorItemKind } from './floor-plan-logic'
+export type {
+  FloorArea,
+  FloorChange,
+  FloorItem,
+  FloorItemDraft,
+  FloorItemKind,
+  FloorLevel,
+  FloorPoint,
+  FloorPolygonArea,
+  FloorRectArea,
+} from './floor-plan-logic'
 
-/** A labelled region of the plan (a hall, the terrace, floor 2), from the application. */
-export interface FloorArea extends FloorBox {
-  id: string
-  label: string
+/**
+ * An image under the plan's areas and items (P5.25a): the building's own plan — a drawing, an
+ * SVG, a PDF page rendered as an image —, placed and scaled in plan units.
+ */
+export interface FloorBackground {
+  src: string
+  /**
+   * The image for the dark theme. Without it the dark theme shows `src` inverted (`invert`, hues
+   * turned back), which suits a line drawing — dark lines on white become light lines on the dark
+   * page; a photograph or a coloured plan needs its own dark image.
+   */
+  srcDark?: string
+  /** Its top-left corner on the plan; default 0, 0. */
+  x?: number
+  y?: number
+  /** Its size on the plan; default the plan's own (the image is stretched to it). */
+  width?: number
+  height?: number
+  /** Words for the image; default '' — decorative: the plan is read through its items and list. */
+  alt?: string
+  /** From 0 to 1, so the items stand out; default 1. */
+  opacity?: number
 }
 
 /** The tones a state may take: the status tones without info, which is blue (D17). */
@@ -152,7 +193,10 @@ export interface FloorPlanProps {
   /** The plan's size in plan units. */
   width: number
   height: number
+  /** Areas: rectangles, or polygons (`points`, P5.25a). */
   areas?: readonly FloorArea[]
+  /** The building's own plan under the areas and items (P5.25a). */
+  background?: FloorBackground
   states?: readonly FloorState[]
   /** Default 'single'. */
   selectionMode?: 'none' | 'single' | 'multiple'
@@ -211,6 +255,7 @@ const KIND_LOOK: Record<FloorItemKind, string> = {
   table: 'border border-solid border-strong bg-surface-raised text-primary',
   seat: 'border border-solid border-strong bg-surface-raised text-primary',
   room: 'border border-solid border-strong bg-surface-raised text-primary',
+  place: 'border border-solid border-strong bg-surface-raised text-primary',
   bar: 'border border-solid border-strong bg-surface-sunken text-primary',
   counter: 'border border-solid border-strong bg-surface-sunken text-secondary',
   stage: 'border border-dashed border-strong bg-surface-sunken text-secondary',
@@ -220,7 +265,15 @@ const KIND_LOOK: Record<FloorItemKind, string> = {
 }
 
 /** Kinds whose name is written on the plan (walls, doors and windows are only drawn). */
-const NAMED_ON_PLAN = new Set<FloorItemKind>(['table', 'seat', 'room', 'bar', 'counter', 'stage'])
+const NAMED_ON_PLAN = new Set<FloorItemKind>([
+  'table',
+  'seat',
+  'room',
+  'place',
+  'bar',
+  'counter',
+  'stage',
+])
 
 /** A move or resize by the pointer, shown live until it ends. */
 interface PointerEdit {
@@ -244,7 +297,7 @@ function wholeUnits(value: string | null): number | null {
 
 /** The plan of a place: items in areas, their states, choosing, a list, and edit mode. */
 export function FloorPlan(props: FloorPlanProps) {
-  const { messages, format } = useLiro()
+  const { messages, format, colorScheme } = useLiro()
   const viewportPhone = usePhone()
   const phone = props.layout === undefined ? viewportPhone : props.layout === 'phone'
   const baseId = useId()
@@ -277,6 +330,10 @@ export function FloorPlan(props: FloorPlanProps) {
   const stateOf = (item: FloorItem) => states.find((state) => state.id === item.stateId)
   const areaOf = (item: FloorItem) => areas.find((area) => area.id === item.areaId)
   const warningsOf = (id: string) => warnings.filter((warning) => warning.itemId === id)
+  const levelOf = (item: FloorItem) =>
+    item.level === undefined
+      ? undefined
+      : levelText(item.level, (value) => format.percent(value), messages['floorPlan.level'])
 
   // What is shown: an item picked up or dragged at its new place.
   const shown = props.items.map((item) => {
@@ -307,6 +364,8 @@ export function FloorPlan(props: FloorPlanProps) {
     if (item.detail !== undefined) parts.push(item.detail)
     const state = stateOf(item)
     if (state !== undefined) parts.push(state.label)
+    const level = levelOf(item)
+    if (level !== undefined) parts.push(level)
     if (item.capacity !== undefined) {
       parts.push(
         messages['floorPlan.capacity'](item.capacity, format.number(String(item.capacity))),
@@ -868,6 +927,7 @@ export function FloorPlan(props: FloorPlanProps) {
     const isChosen = selected.includes(item.id)
     const moving = lifted?.id === item.id || pointerEdit?.id === item.id
     const itemWarnings = warningsOf(item.id)
+    const barWidth = item.level === undefined ? null : levelWidth(item.level.percent)
     const worst = itemWarnings.some((warning) => warning.tone === 'danger')
       ? 'danger'
       : itemWarnings.length > 0
@@ -877,6 +937,7 @@ export function FloorPlan(props: FloorPlanProps) {
       'absolute box-border flex flex-col items-center justify-center overflow-visible p-0.5 text-center font-sans leading-tight select-none',
       round ? 'rounded-full' : item.kind === 'wall' ? 'rounded-none' : 'rounded-md',
       state === undefined ? KIND_LOOK[item.kind] : cn('border border-solid', TONE_ITEM[state.tone]),
+      barWidth !== null && 'pb-2.5',
       moving && 'z-(--liro-layer-raised) border-strong shadow-lg',
       props.dropTargetId === item.id &&
         'outline-2 outline-offset-2 outline-(--liro-border-strong) [outline-style:dashed]',
@@ -923,6 +984,7 @@ export function FloorPlan(props: FloorPlanProps) {
             )}
           </span>
         )}
+        {barWidth !== null && <LevelBar width={barWidth} onPlan />}
       </>
     )
     if (!isTarget || !interactive) {
@@ -998,6 +1060,12 @@ export function FloorPlan(props: FloorPlanProps) {
   }
 
   const fixtures = shown.filter((item) => !editing && isFixture(item))
+  // The building's own plan under everything, in plan units (P5.25a).
+  const background = props.background
+  const hasBackground = background !== undefined
+  const backgroundImage = background !== undefined && (
+    <BackgroundImage background={background} plan={plan} dark={colorScheme === 'dark'} />
+  )
   const planView = (
     <div
       ref={viewport}
@@ -1017,7 +1085,46 @@ export function FloorPlan(props: FloorPlanProps) {
         style={canvasStyle}
         className="relative box-border"
       >
+        {backgroundImage}
         {areas.map((area) => {
+          if (isPolygonArea(area)) {
+            const at = percentPoint(areaLabelPoint(area), plan)
+            return (
+              <Fragment key={area.id}>
+                <svg
+                  aria-hidden="true"
+                  data-floor-area={area.id}
+                  viewBox={`0 0 ${String(props.width)} ${String(props.height)}`}
+                  preserveAspectRatio="none"
+                  className="pointer-events-none absolute inset-0 size-full overflow-visible"
+                >
+                  <polygon
+                    points={svgPoints(area.points)}
+                    vectorEffect="non-scaling-stroke"
+                    strokeWidth={1}
+                    strokeDasharray="4 3"
+                    strokeLinejoin="round"
+                    className={cn(
+                      'stroke-(--liro-border-default)',
+                      hasBackground ? 'fill-none' : 'fill-(--liro-surface-sunken)',
+                    )}
+                  />
+                </svg>
+                <span
+                  aria-hidden="true"
+                  data-floor-area-label={area.id}
+                  style={{ insetInlineStart: at.left, top: at.top }}
+                  className={cn(
+                    'absolute -translate-x-1/2 -translate-y-1/2 px-2 py-1 text-xs font-semibold whitespace-nowrap text-secondary',
+                    hasBackground && 'rounded-sm bg-surface-raised px-1.5 py-0.5',
+                    TEXT_DIRECTION,
+                  )}
+                >
+                  {area.label}
+                </span>
+              </Fragment>
+            )
+          }
           const box = percentBox(area, plan)
           return (
             <div
@@ -1030,11 +1137,17 @@ export function FloorPlan(props: FloorPlanProps) {
                 width: box.width,
                 height: box.height,
               }}
-              className="absolute box-border rounded-md border border-dashed border-default bg-surface-sunken"
+              className={cn(
+                'absolute box-border rounded-md border border-dashed border-default',
+                hasBackground ? 'bg-transparent' : 'bg-surface-sunken',
+              )}
             >
               <span
                 className={cn(
-                  'block px-2 py-1 text-xs font-semibold text-secondary',
+                  'text-xs font-semibold text-secondary',
+                  hasBackground
+                    ? 'm-1 inline-block rounded-sm bg-surface-raised px-1.5 py-0.5'
+                    : 'block px-2 py-1',
                   TEXT_DIRECTION,
                 )}
               >
@@ -1095,6 +1208,8 @@ export function FloorPlan(props: FloorPlanProps) {
                           format.number(String(item.capacity)),
                         )
                   }
+                  levelText={levelOf(item)}
+                  barWidth={item.level === undefined ? null : levelWidth(item.level.percent)}
                   warnings={warningsOf(item.id)}
                   chosen={selected.includes(item.id)}
                   pressable={mode !== 'none'}
@@ -1157,6 +1272,73 @@ function groupedBy(
   return [...groups.values()]
 }
 
+/**
+ * The building's own plan (P5.25a): an image placed in percentages of the plan, so it scales and
+ * zooms with the items; never a target. The dark theme takes `srcDark`, else inverts the image.
+ */
+function BackgroundImage({
+  background,
+  plan,
+  dark,
+}: {
+  background: FloorBackground
+  plan: { width: number; height: number }
+  dark: boolean
+}) {
+  const box = percentBox(
+    {
+      x: background.x ?? 0,
+      y: background.y ?? 0,
+      width: background.width ?? plan.width,
+      height: background.height ?? plan.height,
+    },
+    plan,
+  )
+  const alt = background.alt ?? ''
+  const own = dark && background.srcDark !== undefined
+  return (
+    <img
+      src={own ? background.srcDark : background.src}
+      alt={alt}
+      {...(alt === '' ? { 'aria-hidden': true } : {})}
+      data-slot="floor-plan-background"
+      draggable={false}
+      decoding="sync"
+      loading="eager"
+      style={{
+        insetInlineStart: box.left,
+        top: box.top,
+        width: box.width,
+        height: box.height,
+        ...(background.opacity === undefined ? {} : { opacity: background.opacity }),
+      }}
+      className={cn(
+        'pointer-events-none absolute block max-w-none object-fill select-none',
+        dark && !own && 'invert hue-rotate-180',
+      )}
+    />
+  )
+}
+
+/**
+ * How full an item is, as a bar (P5.25a): drawn in the current colour (the state's tone on the
+ * plan, secondary text in the list); the words are in the item's name and the list.
+ */
+function LevelBar({ width, onPlan = false }: { width: string; onPlan?: boolean }) {
+  return (
+    <span
+      aria-hidden="true"
+      data-slot="floor-level"
+      className={cn(
+        'box-border block h-1.5 overflow-hidden rounded-full border border-solid border-current',
+        onPlan ? 'pointer-events-none absolute inset-x-1 bottom-1' : 'w-12 shrink-0',
+      )}
+    >
+      <span className="block h-full bg-current" style={{ width }} />
+    </span>
+  )
+}
+
 /** Where a moved item stood: a neutral dashed outline (KanbanBoard's placeholder). */
 function Placeholder({
   item,
@@ -1185,6 +1367,8 @@ function ListRow({
   item,
   state,
   capacityText,
+  levelText,
+  barWidth,
   warnings,
   chosen,
   pressable,
@@ -1194,6 +1378,8 @@ function ListRow({
   item: FloorItem
   state: FloorState | undefined
   capacityText: string | undefined
+  levelText: string | undefined
+  barWidth: string | null
   warnings: readonly FloorWarning[]
   chosen: boolean
   pressable: boolean
@@ -1230,6 +1416,12 @@ function ListRow({
       <span className="flex shrink-0 flex-col items-end gap-1">
         {state !== undefined && (
           <StatusBadge label={state.label} tone={state.tone} icon={state.icon} />
+        )}
+        {levelText !== undefined && (
+          <span className="flex items-center gap-1.5 text-xs text-secondary">
+            <span className={TEXT_ISOLATE}>{levelText}</span>
+            {barWidth !== null && <LevelBar width={barWidth} />}
+          </span>
         )}
         {capacityText !== undefined && (
           <span className={cn('text-xs text-secondary', TEXT_ISOLATE)}>{capacityText}</span>

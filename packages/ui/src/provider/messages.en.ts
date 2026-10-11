@@ -1187,4 +1187,6 @@ export const messagesEn: LiroMessages = {
   },
   'legalPanel.backToAct': 'Back to the whole act',
   'legalPrint.footnotes': 'Footnotes',
+  // P5.25a FloorPlan
+  'floorPlan.level': (percentText) => `${percentText} full`,
 }

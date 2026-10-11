@@ -1114,3 +1114,24 @@ export {
 export type { ArticleCounts } from './components/legal-panels-logic'
 export { PrintLegalAct } from './templates/print-legal-act'
 export type { PrintLegalActProps } from './templates/print-legal-act'
+// ── P5.25a FloorPlan: background, polygon areas, level ──
+export type { FloorBackground } from './components/floor-plan'
+export {
+  areaBox,
+  areaContains,
+  areaLabelPoint,
+  isPolygonArea,
+  levelText,
+  levelWidth,
+  percentPoint,
+  pointInPolygon,
+  polygonBounds,
+  polygonCentroid,
+  svgPoints,
+} from './components/floor-plan-logic'
+export type {
+  FloorLevel,
+  FloorPoint,
+  FloorPolygonArea,
+  FloorRectArea,
+} from './components/floor-plan-logic'

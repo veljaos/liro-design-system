@@ -4624,3 +4624,316 @@ export const IllustrativeDecisionPhone: Story = {
     await expect(within(canvasElement).getByText('Final')).toBeVisible()
   },
 }
+
+// ── P5.25a group N: a warehouse, a hospital ward, an office ──
+
+import { BEDS, N_ROUTES } from './data-N'
+
+/** A place on a floor plan by its id. */
+function placeOn(canvasElement: HTMLElement, id: string): HTMLElement {
+  const element = canvasElement.querySelector<HTMLElement>(`[data-floor-item="${id}"]`)
+  if (element === null) throw new Error(`no place ${id}`)
+  return element
+}
+
+/** The building's drawings under the plans are drawn (`data:` URIs decode at once). */
+async function drawingsShown(canvasElement: HTMLElement) {
+  await waitFor(async () => {
+    for (const image of canvasElement.querySelectorAll<HTMLImageElement>(
+      '[data-slot="floor-plan-background"]',
+    )) {
+      await expect(image.complete && image.naturalWidth > 0).toBe(true)
+    }
+  })
+}
+
+/** Nothing on the screen scrolls sideways (the plan scrolls inside its own box). */
+async function expectPlanFits(canvasElement: HTMLElement) {
+  for (const element of canvasElement.querySelectorAll<HTMLElement>('[data-slot="floor-plan"]')) {
+    await expect(element.scrollWidth).toBeLessThanOrEqual(element.clientWidth)
+  }
+}
+
+/**
+ * Magacin Novi Sad's hall on Tuesday 6 October 2026: four zones of racks and the bulk yard (a
+ * polygon round the dispatch dock), each bin with how full it is (a bar, and words in its name)
+ * and its state — in stock, low, empty, blocked, and A-02-03 where count CC-2026-0031 is open.
+ */
+export const WarehouseFloorPlan: Story = {
+  name: 'Warehouse floor plan, Magacin Novi Sad',
+  render: () => <ExampleApp start={N_ROUTES.warehouse} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(placeOn(canvasElement, 'A-02-03')).toHaveAccessibleName(
+      `A-02-03, Count open, 45% full, Zone A, Cycle count CC-2026-0031 is open: the pick of PL-2026-0418 came up short here.`,
+    )
+    await expect(placeOn(canvasElement, 'E-01-01')).toHaveAccessibleName(
+      /^E-01-01, In stock, 75% full, Bulk yard E/,
+    )
+    await expectPlanFits(canvasElement)
+  },
+}
+
+/** On a phone: the key figures, then the bins as a list by rack. */
+export const WarehouseFloorPlanPhone: Story = {
+  name: 'Warehouse floor plan, Magacin Novi Sad, phone',
+  render: () => <OnPhone start={N_ROUTES.warehouse} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(within(canvasElement).getByRole('heading', { name: 'Rack A2' })).toBeVisible()
+    await expectPlanFits(canvasElement)
+  },
+}
+
+/** A-02-03's record: what the books say it holds, and "Count now" (the handheld's count). */
+export const WarehouseBinCount: Story = {
+  name: 'Warehouse floor plan, a bin to count',
+  render: () => <ExampleApp start={N_ROUTES.warehouseBin} />,
+  play: async () => {
+    await settle()
+    const drawer = within(document.body).getByRole('dialog', { name: 'Bin A-02-03' })
+    await expect(drawer).toHaveTextContent('Armaturna mreža Q188, 2,15 × 6 m')
+    await expect(within(drawer).getByRole('button', { name: 'Count now' })).toBeVisible()
+  },
+}
+
+export const WarehouseBinCountPhone: Story = {
+  name: 'Warehouse floor plan, a bin to count, phone',
+  render: () => <OnPhone start={N_ROUTES.warehouseBin} />,
+  play: async () => {
+    await settle()
+    await expect(within(document.body).getByRole('dialog', { name: 'Bin A-02-03' })).toBeVisible()
+  },
+}
+
+/** B-03-04, the next line of pick list PL-2026-0418: "Pick here" opens the pick list. */
+export const WarehouseBinPick: Story = {
+  name: 'Warehouse floor plan, the next pick',
+  render: () => <ExampleApp start={N_ROUTES.warehousePick} />,
+  play: async () => {
+    await settle()
+    const drawer = within(document.body).getByRole('dialog', { name: 'Bin B-03-04' })
+    await expect(within(drawer).getByRole('button', { name: 'Pick here' })).toBeVisible()
+    await expect(drawer).toHaveTextContent('65% full')
+  },
+}
+
+export const WarehouseBinPickPhone: Story = {
+  name: 'Warehouse floor plan, the next pick, phone',
+  render: () => <OnPhone start={N_ROUTES.warehousePick} />,
+  play: async () => {
+    await settle()
+    await expect(within(document.body).getByRole('dialog', { name: 'Bin B-03-04' })).toBeVisible()
+  },
+}
+
+/** A bin opened from the plan, then "Count now": the handheld's count of A-02-03. */
+export const WarehouseFloorPlanInteraction: Story = {
+  name: 'Warehouse floor plan, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={N_ROUTES.warehouse} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await userEvent.click(placeOn(canvasElement, 'A-02-03'))
+    const drawer = await within(document.body).findByRole('dialog', { name: 'Bin A-02-03' })
+    await userEvent.click(within(drawer).getByRole('button', { name: 'Count now' }))
+    await expect(await within(canvasElement).findByText('Cycle count CC-2026-0031')).toBeVisible()
+  },
+}
+
+/**
+ * Interno odeljenje 3 over the building's drawing: rooms 1–6 and the anteroom rectangles, the
+ * corridor with its lobby, room 7 round it and the isolation room as polygons; 17 beds free,
+ * occupied, needing cleaning or blocked. No patient's name on the plan.
+ */
+export const HospitalWard: Story = {
+  name: 'Hospital ward, Interno odeljenje 3',
+  render: () => <ExampleApp start={N_ROUTES.ward} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await drawingsShown(canvasElement)
+    await expect(placeOn(canvasElement, 'b8')).toHaveAccessibleName(
+      'Bed 8, Blocked, Room 4, Oxygen outlet faulty; maintenance on 07.10.2026.',
+    )
+    for (const bed of BEDS) {
+      if (bed.patient !== undefined)
+        await expect(canvasElement).not.toHaveTextContent(bed.patient.name)
+    }
+    await expectPlanFits(canvasElement)
+  },
+}
+
+/** On a phone: the beds as a list by room. */
+export const HospitalWardPhone: Story = {
+  name: 'Hospital ward, Interno odeljenje 3, phone',
+  render: () => <OnPhone start={N_ROUTES.ward} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(within(canvasElement).getByRole('heading', { name: 'Isolation' })).toBeVisible()
+    await expectPlanFits(canvasElement)
+  },
+}
+
+/** Bed 9 in its drawer: the patient's name masked, admitted, the doctor, Transfer and Discharge. */
+export const HospitalWardBed: Story = {
+  name: 'Hospital ward, a bed',
+  render: () => <ExampleApp start={N_ROUTES.wardBed} />,
+  play: async () => {
+    await settle()
+    const drawer = within(within(document.body).getByRole('dialog', { name: 'Bed 9' }))
+    await expect(drawer.getByRole('button', { name: 'Show Patient’s name' })).toBeVisible()
+    await expect(within(document.body).queryByText('Vesna Radović')).toBeNull()
+    await expect(drawer.getByRole('button', { name: 'Discharge' })).toBeVisible()
+  },
+}
+
+export const HospitalWardBedPhone: Story = {
+  name: 'Hospital ward, a bed, phone',
+  render: () => <OnPhone start={N_ROUTES.wardBed} />,
+  play: async () => {
+    await settle()
+    await expect(within(document.body).getByRole('dialog', { name: 'Bed 9' })).toBeVisible()
+  },
+}
+
+/** Bed 9 opened, its patient's name shown for a reason, then discharged: it needs cleaning. */
+export const HospitalWardInteraction: Story = {
+  name: 'Hospital ward, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={N_ROUTES.ward} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const body = within(document.body)
+    await userEvent.click(placeOn(canvasElement, 'b9'))
+    const drawer = within(await body.findByRole('dialog', { name: 'Bed 9' }))
+    await userEvent.click(drawer.getByRole('button', { name: 'Show Patient’s name' }))
+    const dialog = await body.findByRole('dialog', { name: 'Show Patient’s name' })
+    await userEvent.click(within(dialog).getByRole('radio', { name: 'Shift handover' }))
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Show' }))
+    await expect(await body.findByText('Vesna Radović')).toBeVisible()
+    await userEvent.click(
+      within(await body.findByRole('dialog', { name: 'Bed 9' })).getByRole('button', {
+        name: 'Discharge',
+      }),
+    )
+    await waitFor(async () => {
+      await expect(placeOn(canvasElement, 'b9')).toHaveAccessibleName(
+        'Bed 9, Needs cleaning, Room 5, Discharged today',
+      )
+    })
+  },
+}
+
+/**
+ * Kvadrat Gradnja's office, floor 2, today (Tuesday 06.10.2026) over the architect's drawing:
+ * the open space (a polygon round the kitchen), two meeting rooms and the quiet room; 22 desks,
+ * free, booked (with the colleague's name), Milica's own, one out of use.
+ */
+export const OfficeDesks: Story = {
+  name: 'Office desks, Kvadrat Gradnja',
+  render: () => <ExampleApp start={N_ROUTES.office} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await drawingsShown(canvasElement)
+    const canvas = within(canvasElement)
+    // Interface text in English, dates as the Serbian tenant writes them.
+    await expect(canvas.getByRole('combobox', { name: 'Day' })).toHaveTextContent(
+      /^Today, \S+ 06\.10\.2026\.$/,
+    )
+    await expect(placeOn(canvasElement, 'd1')).toHaveAccessibleName(
+      'Desk 1, Stefan N., Booked, Open space',
+    )
+    await expect(placeOn(canvasElement, 'd3')).toHaveAccessibleName(
+      'Desk 3, Your booking, Open space',
+    )
+    await expectPlanFits(canvasElement)
+  },
+}
+
+/** On a phone: the day, then the desks as a list by area. */
+export const OfficeDesksPhone: Story = {
+  name: 'Office desks, Kvadrat Gradnja, phone',
+  render: () => <OnPhone start={N_ROUTES.office} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(within(canvasElement).getByRole('heading', { name: 'Quiet room' })).toBeVisible()
+    await expectPlanFits(canvasElement)
+  },
+}
+
+/** Desk 7, free today, chosen: its equipment and "Book". */
+export const OfficeDesksFree: Story = {
+  name: 'Office desks, a free desk',
+  render: () => <ExampleApp start={N_ROUTES.officeDesk} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await drawingsShown(canvasElement)
+    await expect(placeOn(canvasElement, 'd7')).toHaveAttribute('aria-pressed', 'true')
+    await expect(within(canvasElement).getByRole('button', { name: 'Book' })).toBeVisible()
+  },
+}
+
+export const OfficeDesksFreePhone: Story = {
+  name: 'Office desks, a free desk, phone',
+  render: () => <OnPhone start={N_ROUTES.officeDesk} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(within(canvasElement).getByRole('button', { name: 'Book' })).toBeVisible()
+  },
+}
+
+/** Milica's own desk today: "Cancel booking". */
+export const OfficeDesksOwn: Story = {
+  name: 'Office desks, your booking',
+  render: () => <ExampleApp start={N_ROUTES.officeOwn} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await drawingsShown(canvasElement)
+    await expect(
+      within(canvasElement).getByRole('button', { name: 'Cancel booking' }),
+    ).toBeVisible()
+  },
+}
+
+export const OfficeDesksOwnPhone: Story = {
+  name: 'Office desks, your booking, phone',
+  render: () => <OnPhone start={N_ROUTES.officeOwn} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(
+      within(canvasElement).getByRole('button', { name: 'Cancel booking' }),
+    ).toBeVisible()
+  },
+}
+
+/**
+ * Booking desk 7 today gives desk 3 back (one desk a person a day); on Thursday desk 3 is
+ * Milica's again.
+ */
+export const OfficeDesksInteraction: Story = {
+  name: 'Office desks, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={N_ROUTES.office} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(placeOn(canvasElement, 'd7'))
+    await userEvent.click(canvas.getByRole('button', { name: 'Book' }))
+    await expect(placeOn(canvasElement, 'd7')).toHaveAccessibleName(
+      'Desk 7, Your booking, Open space',
+    )
+    await expect(placeOn(canvasElement, 'd3')).toHaveAccessibleName('Desk 3, Free, Open space')
+    await userEvent.click(canvas.getByRole('combobox', { name: 'Day' }))
+    await userEvent.click(
+      await within(document.body).findByRole('option', { name: /08\.10\.2026\.$/ }),
+    )
+    await expect(placeOn(canvasElement, 'd3')).toHaveAccessibleName(
+      'Desk 3, Your booking, Open space',
+    )
+    notice.dismiss()
+    // The day's list has closed and given the page back to assistive technology.
+    await waitFor(async () => {
+      await expect(document.body.querySelector('[data-aria-hidden]')).toBeNull()
+    })
+  },
+}

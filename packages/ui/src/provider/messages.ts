@@ -1708,4 +1708,7 @@ export interface LiroMessages {
   'legalPanel.backToAct': string
   /** The printout's footnotes heading. */
   'legalPrint.footnotes': string
+  // P5.25a FloorPlan
+  /** An item's level in words, from the formatted percentage: "62,5% full". */
+  'floorPlan.level': (percentText: string) => string
 }

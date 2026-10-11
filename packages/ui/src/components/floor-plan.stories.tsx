@@ -19,6 +19,18 @@ import {
   RESTAURANT_SIZE,
   RESTAURANT_STATES,
 } from './floor-plan-story-data'
+import {
+  BIN_AREAS,
+  BIN_ITEMS,
+  BIN_SIZE,
+  BIN_STATES,
+  WARD_AREAS,
+  WARD_BACKGROUND,
+  WARD_BACKGROUND_DARK,
+  WARD_ITEMS,
+  WARD_SIZE,
+  WARD_STATES,
+} from './floor-plan-places-story-data'
 import { ExampleProvider, PhoneFrame, StoryProvider } from './story-frames'
 
 /**
@@ -741,6 +753,363 @@ export const Japanese: Story = {
           label: item.kind === 'table' ? `テーブル ${item.shortLabel ?? ''}` : 'バーカウンター',
           ...(item.note === undefined ? {} : { note: '窓際の席を希望' }),
         }))}
+      />
+    </StoryProvider>
+  ),
+}
+
+// ── P5.25a: the building's drawing under the plan, polygon areas, how full ──
+
+/** The building's drawing is drawn (a `data:` URI decodes at once; the play waits for it). */
+async function drawingShown(canvasElement: HTMLElement) {
+  await waitFor(async () => {
+    const image = canvasElement.querySelector<HTMLImageElement>(
+      '[data-slot="floor-plan-background"]',
+    )
+    await expect(image?.complete === true && image.naturalWidth > 0).toBe(true)
+  })
+}
+
+/** Ward 3B as its plan: the building's drawing, rooms (two of them polygons) and beds. */
+function Ward({ drawing = true, ...props }: Partial<FloorPlanProps> & { drawing?: boolean }) {
+  return (
+    <FloorPlan
+      label="Ward 3B, beds"
+      items={WARD_ITEMS}
+      width={WARD_SIZE.width}
+      height={WARD_SIZE.height}
+      areas={WARD_AREAS}
+      states={WARD_STATES}
+      {...(drawing ? { background: WARD_BACKGROUND } : {})}
+      onItemActivate={() => undefined}
+      {...props}
+    />
+  )
+}
+
+/**
+ * The building's own drawing under the plan (`background`, an image placed and scaled in plan
+ * units): a ward's walls, doors and windows under its rooms and beds. The rooms are areas — four
+ * rectangles, and the corridor with its lobby and room 5 round it as polygons; over a drawing the
+ * areas are outlines only and their names stand on a small raised tag. The image is decorative:
+ * the plan is read through its beds and the list. In the dark theme the drawing is inverted
+ * (light lines), as no dark image is given.
+ */
+export const Background: Story = {
+  render: () => (
+    <ExampleProvider>
+      <Ward />
+    </ExampleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    await drawingShown(canvasElement)
+    const image = canvasElement.querySelector('[data-slot="floor-plan-background"]')
+    await expect(image).toHaveAttribute('alt', '')
+    await expect(image).toHaveAttribute('aria-hidden', 'true')
+    await expect(
+      within(canvasElement).getByRole('button', {
+        name: 'Bed 10, Blocked, Room 4, Oxygen outlet faulty; maintenance on 07.10.',
+      }),
+    ).toBeVisible()
+    // Room 5's name is centred on its labelAt, the corridor's on its centroid.
+    await expect(canvasElement.querySelector('[data-floor-area-label="r5"]')).toHaveTextContent(
+      'Room 5',
+    )
+  },
+}
+
+/**
+ * The application's own image for the dark theme (`srcDark`, white lines), placed on part of the
+ * plan only (`x`, `y`, `width`, `height` in plan units) and faded (`opacity` 0.6); `alt` makes it
+ * an image with words.
+ */
+export const BackgroundOwnDark: Story = {
+  name: 'Background, own dark image',
+  render: () => (
+    <ExampleProvider>
+      <Ward
+        label="Ward 3B, beds (the drawing set in the plan)"
+        width={1300}
+        height={760}
+        background={{
+          ...WARD_BACKGROUND,
+          srcDark: WARD_BACKGROUND_DARK,
+          x: 50,
+          y: 30,
+          width: WARD_SIZE.width,
+          height: WARD_SIZE.height,
+          opacity: 0.6,
+          alt: 'Drawing of ward 3B: six rooms along a corridor',
+        }}
+        areas={[]}
+        items={WARD_ITEMS.map((item) => ({ ...item, x: item.x + 50, y: item.y + 30 }))}
+      />
+    </ExampleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    await drawingShown(canvasElement)
+    const image = canvasElement.querySelector<HTMLImageElement>(
+      '[data-slot="floor-plan-background"]',
+    )
+    await expect(image).toHaveAccessibleName('Drawing of ward 3B: six rooms along a corridor')
+    const dark = image?.closest('[data-liro-theme]')?.getAttribute('data-liro-theme') === 'dark'
+    await expect(image?.getAttribute('src')).toBe(dark ? WARD_BACKGROUND_DARK : WARD_BACKGROUND.src)
+    await expect(image?.style.opacity).toBe('0.6')
+  },
+}
+
+/** Zoomed in: the drawing grows and scrolls with the beds, aligned. */
+export const BackgroundZoomed: Story = {
+  name: 'Background, zoomed',
+  render: () => (
+    <ExampleProvider>
+      <Ward defaultZoom={2} />
+    </ExampleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    await drawingShown(canvasElement)
+    const canvas = canvasElement.querySelector<HTMLElement>('[data-slot="floor-plan-canvas"]')
+    const image = canvasElement.querySelector<HTMLElement>('[data-slot="floor-plan-background"]')
+    // The drawing covers the plan at every zoom.
+    await expect(image?.getBoundingClientRect().width).toBeCloseTo(
+      canvas?.getBoundingClientRect().width ?? 0,
+      0,
+    )
+  },
+}
+
+/** Edit mode over the drawing: the grid's dots over it, a bed chosen. */
+export const BackgroundEditing: Story = {
+  name: 'Background, editing',
+  render: () => (
+    <ExampleProvider>
+      <Plan
+        label="Ward 3B, beds"
+        initial={WARD_ITEMS}
+        width={WARD_SIZE.width}
+        height={WARD_SIZE.height}
+        areas={WARD_AREAS}
+        states={WARD_STATES}
+        background={WARD_BACKGROUND}
+        editing
+        palette={[{ id: 'bed', kind: 'place', label: 'Bed', width: 70, height: 140 }]}
+        defaultSelected={['b7']}
+      />
+    </ExampleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    await drawingShown(canvasElement)
+    await expect(within(canvasElement).getByRole('group', { name: 'Change Bed 7' })).toBeVisible()
+  },
+}
+
+/** Polygon areas without a drawing: filled like rectangles, names at labelAt or the centroid. */
+export const PolygonAreas: Story = {
+  name: 'Polygon areas',
+  render: () => (
+    <ExampleProvider>
+      <Ward drawing={false} />
+    </ExampleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement.querySelector('[data-slot="floor-plan-background"]')).toBeNull()
+    const corridor = canvasElement.querySelector('svg[data-floor-area="corridor"] polygon')
+    await expect(corridor?.getAttribute('points')).toBe(
+      '0,300 1200,300 1200,400 700,400 700,520 500,520 500,400 0,400',
+    )
+  },
+}
+
+/** The list groups the beds by room, polygons and rectangles alike. */
+export const PolygonAreasList: Story = {
+  name: 'Polygon areas, list',
+  render: () => (
+    <ExampleProvider>
+      <Ward defaultView="list" />
+    </ExampleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const headings = within(canvasElement)
+      .getAllByRole('heading', { level: 3 })
+      .map((heading) => heading.textContent)
+    await expect(headings).toEqual(['Room 1', 'Room 2', 'Room 3', 'Room 4', 'Room 5', 'Isolation'])
+  },
+}
+
+/** Bins of a store room with how full each is (`level`): a bar on the plan, words in the name. */
+export const Level: Story = {
+  render: () => (
+    <ExampleProvider>
+      <FloorPlan
+        label="Store room, bins"
+        items={BIN_ITEMS}
+        width={BIN_SIZE.width}
+        height={BIN_SIZE.height}
+        areas={BIN_AREAS}
+        states={BIN_STATES}
+        onItemActivate={() => undefined}
+        defaultSelected={['A-02-03']}
+      />
+    </ExampleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(
+      canvas.getByRole('button', { name: 'A-01-03, Low, 15% full, Zone A' }),
+    ).toBeVisible()
+    // The application's own words for a level.
+    await expect(
+      canvas.getByRole('button', {
+        name: 'B-02-04, Blocked, About 40% full, Zone B, Shelf damaged by a forklift',
+      }),
+    ).toBeVisible()
+    const bar = itemOf(canvasElement, 'B-BULK').querySelector<HTMLElement>(
+      '[data-slot="floor-level"] > span',
+    )
+    await expect(bar?.style.width).toBe('clamp(0%, 62.5%, 100%)')
+  },
+}
+
+/** The bins in the list: the level in words and a bar beside the state. */
+export const LevelList: Story = {
+  name: 'Level, list',
+  render: () => (
+    <ExampleProvider>
+      <FloorPlan
+        label="Store room, bins"
+        items={BIN_ITEMS}
+        width={BIN_SIZE.width}
+        height={BIN_SIZE.height}
+        areas={BIN_AREAS}
+        states={BIN_STATES}
+        onItemActivate={() => undefined}
+        defaultView="list"
+      />
+    </ExampleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('42,5% full')
+    await expect(canvasElement).toHaveTextContent('About 40% full')
+  },
+}
+
+/** On a phone: the ward's plan over its drawing, scrolling inside its box. */
+export const BackgroundPhone: Story = {
+  name: 'Background, phone width',
+  render: () => (
+    <PhoneFrame>
+      <ExampleProvider>
+        <div className="p-4">
+          <Ward layout="phone" defaultView="plan" />
+        </div>
+      </ExampleProvider>
+    </PhoneFrame>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    await drawingShown(canvasElement)
+    const plan = canvasElement.querySelector<HTMLElement>('[data-slot="floor-plan"]')
+    if (plan !== null) await expect(plan.scrollWidth).toBeLessThanOrEqual(plan.clientWidth)
+  },
+}
+
+/** On a phone: the bins as a list, with their levels. */
+export const LevelPhone: Story = {
+  name: 'Level, phone width',
+  render: () => (
+    <PhoneFrame>
+      <ExampleProvider>
+        <div className="p-4">
+          <FloorPlan
+            label="Store room, bins"
+            items={BIN_ITEMS}
+            width={BIN_SIZE.width}
+            height={BIN_SIZE.height}
+            areas={BIN_AREAS}
+            states={BIN_STATES}
+            onItemActivate={() => undefined}
+            layout="phone"
+          />
+        </div>
+      </ExampleProvider>
+    </PhoneFrame>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const plan = canvasElement.querySelector<HTMLElement>('[data-slot="floor-plan"]')
+    await expect(plan?.dataset.view).toBe('list')
+    if (plan !== null) await expect(plan.scrollWidth).toBeLessThanOrEqual(plan.clientWidth)
+  },
+}
+
+/** Arabic room names over the drawing in a right-to-left page: the plan is not mirrored. */
+export const BackgroundArabic: Story = {
+  name: 'Background, Arabic',
+  render: () => (
+    <StoryProvider locale="ar">
+      <Ward
+        label="الجناح 3ب، الأسرّة"
+        areas={WARD_AREAS.map((area, index) => ({
+          ...area,
+          label:
+            [
+              'الغرفة 1',
+              'الغرفة 2',
+              'الغرفة 3',
+              'محطة التمريض',
+              'الممر',
+              'الغرفة 4',
+              'الغرفة 5',
+              'العزل',
+            ][index] ?? area.label,
+        }))}
+        items={WARD_ITEMS.map((item) => ({ ...item, label: `سرير ${item.shortLabel ?? ''}` }))}
+        states={WARD_STATES.map((state, index) => ({
+          ...state,
+          label: ['متاح', 'مشغول', 'يحتاج إلى تنظيف', 'محظور'][index] ?? state.label,
+        }))}
+      />
+    </StoryProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    await drawingShown(canvasElement)
+    await expect(
+      canvasElement.querySelector('[data-slot="floor-plan-canvas"]')?.getAttribute('dir'),
+    ).toBe('ltr')
+  },
+}
+
+/** Japanese bin names and the level's words in the list. */
+export const LevelJapanese: Story = {
+  name: 'Level, Japanese',
+  render: () => (
+    <StoryProvider locale="ja">
+      <FloorPlan
+        label="倉庫、棚"
+        items={BIN_ITEMS.map((item) =>
+          item.id === 'B-BULK' ? { ...item, label: 'バルク置き場 B', detail: 'パレット 4' } : item,
+        )}
+        width={BIN_SIZE.width}
+        height={BIN_SIZE.height}
+        areas={BIN_AREAS.map((area, index) => ({
+          ...area,
+          label: ['ゾーン A', 'ゾーン B'][index] ?? area.label,
+        }))}
+        states={BIN_STATES.map((state, index) => ({
+          ...state,
+          label: ['在庫あり', '残りわずか', '空', '使用不可'][index] ?? state.label,
+        }))}
+        onItemActivate={() => undefined}
+        defaultView="list"
       />
     </StoryProvider>
   ),

@@ -317,6 +317,7 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P5.24 | Working time | P5.13, P4.3 | done | 2026-10-10 | AttendanceGrid timesheets, ClockRecordList, ShiftPlanner, MyShifts, ShiftSwapDialog, WorkingTimeBalance; examples Kvadrat Gradnja, Prodavnica 12, Dom zdravlja |
 | P5.24a | Working time: rotation and swap follow-up | P5.24 | done | 2026-10-11 | Apply rotation opens with people chosen, shows what it adds and the application's checks; MyShifts swap defaults |
 | P5.25 | Floor plans and seating | P5.10, P5.8 | done | 2026-10-11 | FloorPlan (plan and list, edit mode), SeatingChart, RoomRack, ResourceSchedule by days; restaurant, café, event and hotel examples |
+| P5.25a | Floor plans: background, polygons, three more places | P5.25 | done | 2026-10-11 | FloorPlan `background`, polygon areas, `level`, kind `place`; warehouse, hospital ward and office examples |
 | P5.26 | Diagrams | P2.1 | done | 2026-10-11 | `@veljaos/ui/diagram` on React Flow 12.12.0 and dagre 3.1.1 (MIT): view, edit, run; approval workflow and orchestrator run examples |
 | P5.27 | Legal information | P4.5, P4.3, P5.15 | in progress | 2026-10-11 | |
 | P6.1 | Full language and direction matrix | Phases 1–5 | todo | | |
@@ -730,6 +731,13 @@ Built together with P5.13 as **one pattern**: a grid of people × days whose cel
 - **RoomRack** for hotels: floors × rooms, each room with its number, type, occupancy and housekeeping state (in words), the guest, arrival and departure; filters by state; reservations over days stay on ResourceSchedule (P5.8).
 **Examples:** a restaurant (service: open a table, move guests, merge tables), a café terrace with the POS (P5.10), a hotel (room rack and the booking timeline), an event's seating.
 **Done when** every component has stories in light, dark, right-to-left and phone width, passes axe, the keyboard and the text-order check, and the four examples show them.
+
+### P5.25a — Floor plans: background, polygons, three more places (owner, 2026-10-11)
+**No new library:** FloorPlan stays on our own components (no Konva, tldraw, react-leaflet, react-planner, Excalidraw or three.js), and there is no second plan component. **Do,** inside FloorPlan:
+- **a) Background:** an optional layer under the items — an image, an SVG, or a PDF page the application has rendered as an image — placed and scaled in plan units, for a real building's plan; decorative, never the only way to read the plan.
+- **b) Polygon areas:** an area may be a polygon (its points in plan units) for rooms and zones that are not rectangles; its label, state and keyboard behaviour as a rectangular one.
+- **c) Three more examples:** a **warehouse** (zones, racks and bins with a fill level and a stock state; a bin opens its record; tied to the scanner flow of P5.11), a **hospital ward** (rooms and beds: free, occupied, needs cleaning, blocked; the patient's name is a sensitive field, masked as in P5.14), and an **office** (bookable desks).
+**Done when** the background and polygon areas have stories in light, dark, right-to-left and phone width, pass axe, the keyboard and the text-order check, and the three examples show them.
 
 ### P5.26 — Diagrams (owner, 2026-10-11)
 **Do** `@veljaos/ui/diagram` (its own subpath, loaded only there) on **React Flow (@xyflow/react, MIT)** with **dagre (MIT)** for automatic layout: a diagram of steps and connections for workflows and orchestrators, in a **BPMN-style notation** (start, end, task, user task, service task, timer and message events, exclusive and parallel gateways, sub-process, lanes) drawn by us with tokens; no bpmn-js, no BPMN XML (import and export are the application's). **View** (read-only, fit to view, zoom, minimap), **edit** (add a step from a palette or "Add step after…", connect by drag or by "Connect to…", label a connection, remove; changes reported, nothing saved) and **run state** (an instance: done, running, waiting, failed with its reason, skipped; the path taken). Validation messages from the application on their steps. Layout from the leading edge (mirrored in right-to-left), or top to bottom. Keyboard: every step and connection reachable; no drag-only action.
