@@ -1,6 +1,7 @@
 import { Button } from '@veljaos/ui'
 import { useState } from 'react'
 import { ChartsExample } from './ChartsExample'
+import { DiagramExample } from './DiagramExample'
 import { FormExample } from './FormExample'
 import { RichTextExample } from './RichTextExample'
 
@@ -19,6 +20,7 @@ export function App() {
       <FormExample />
       <ChartsExample />
       <RichTextExample />
+      <DiagramExample />
     </main>
   )
 }

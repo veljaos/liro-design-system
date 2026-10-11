@@ -1350,4 +1350,100 @@ export interface LiroMessages {
   'richText.countLabel': (countText: string, limitText: string) => string
   /** Over the limit: "20 characters too many". */
   'richText.overLimit': (count: number, countText: string) => string
+  // P5.26 ── Diagram
+  /** The kinds of step, as the palette, the steps list and the accessible names say them. */
+  'diagram.start': string
+  'diagram.end': string
+  'diagram.task': string
+  'diagram.userTask': string
+  'diagram.serviceTask': string
+  'diagram.subProcess': string
+  'diagram.timer': string
+  'diagram.message': string
+  'diagram.exclusive': string
+  'diagram.parallel': string
+  /** A step's states in a run, in words beside their icons. */
+  'diagram.done': string
+  'diagram.running': string
+  'diagram.waiting': string
+  'diagram.failed': string
+  'diagram.skipped': string
+  'diagram.notReached': string
+  /** A step's accessible name: "User task: Approve the invoice". */
+  'diagram.stepName': (kind: string, label: string) => string
+  /** The lane a step stands in: "Lane: Accounting". */
+  'diagram.inLane': (lane: string) => string
+  /** A connection's accessible name: "Connection from Check to Approve". */
+  'diagram.connectionName': (from: string, to: string) => string
+  /** The default flow out of a gateway. */
+  'diagram.defaultFlow': string
+  /** How the keyboard works, the steps' and the connections' description. */
+  'diagram.instructions': string
+  'diagram.editInstructions': string
+  'diagram.connectionInstructions': string
+  /** The view's controls. */
+  'diagram.zoomIn': string
+  'diagram.zoomOut': string
+  'diagram.fitView': string
+  'diagram.minimap': string
+  /** The switch between the diagram and its steps as a list. */
+  'diagram.showSteps': string
+  'diagram.showDiagram': string
+  /** The steps list: what follows a step ("Next: Approve, Reject"). */
+  'diagram.next': (steps: string) => string
+  /** The problems' heading ("3 problems") and the button that shows one. */
+  'diagram.problems': (count: number, countText: string) => string
+  'diagram.goTo': (label: string) => string
+  'diagram.goToButton': string
+  /** A step that follows, with its condition: "Approve (Above 100,000 RSD)". */
+  'diagram.nextStep': (label: string, condition: string | undefined) => string
+  /** A run's summary: "4 of 7 steps done"; the numbers written by `format.number`. */
+  'diagram.runSummary': (done: number, total: number, doneText: string, totalText: string) => string
+  'diagram.failedCount': (count: number, countText: string) => string
+  /** A diagram without steps; in edit, how to begin. */
+  'diagram.empty': string
+  'diagram.emptyEdit': string
+  'diagram.loading': string
+  'diagram.error': string
+  'diagram.retry': string
+  /** On a phone, in place of editing. */
+  'diagram.editOnLargerScreen': string
+  /** The palette of kinds and its hint. */
+  'diagram.palette': string
+  'diagram.paletteHint': string
+  /** The palette's entries: "Add: User task". */
+  'diagram.addKind': (kind: string) => string
+  /** What can be done with the chosen step or connection. */
+  'diagram.chooseHint': string
+  'diagram.addStepAfter': string
+  'diagram.connectTo': string
+  'diagram.rename': string
+  'diagram.labelConnection': string
+  'diagram.remove': string
+  /** The dialogs: rename a step, connect it, label a connection. */
+  'diagram.renameTitle': string
+  'diagram.name': string
+  'diagram.save': string
+  'diagram.connectTitle': (label: string) => string
+  'diagram.connectTarget': string
+  'diagram.connectLabel': string
+  'diagram.connect': string
+  'diagram.noTargets': string
+  'diagram.labelTitle': string
+  'diagram.condition': string
+  /** Announcements, after each change. */
+  'diagram.added': (label: string) => string
+  'diagram.removed': (label: string) => string
+  'diagram.connected': (from: string, to: string) => string
+  'diagram.chosen': (label: string) => string
+  'diagram.released': (label: string) => string
+  'diagram.moved': (label: string) => string
+  'diagram.renamed': (label: string) => string
+  'diagram.labelled': (label: string) => string
+  /** A run step's name with its state: "Import the savings account: Failed". */
+  'diagram.stepState': (label: string, state: string) => string
+  /** A run step's action, named with its step: "Retry: Import the savings account". */
+  'diagram.stepAction': (action: string, label: string) => string
+  /** The label dialog's checkbox for a decision's connection. */
+  'diagram.defaultWay': string
 }
