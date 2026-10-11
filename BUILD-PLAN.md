@@ -319,7 +319,7 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P5.25 | Floor plans and seating | P5.10, P5.8 | done | 2026-10-11 | FloorPlan (plan and list, edit mode), SeatingChart, RoomRack, ResourceSchedule by days; restaurant, café, event and hotel examples |
 | P5.25a | Floor plans: background, polygons, three more places | P5.25 | done | 2026-10-11 | FloorPlan `background`, polygon areas, `level`, kind `place`; warehouse, hospital ward and office examples |
 | P5.26 | Diagrams | P2.1 | done | 2026-10-11 | `@veljaos/ui/diagram` on React Flow 12.12.0 and dagre 3.1.1 (MIT): view, edit, run; approval workflow and orchestrator run examples |
-| P5.27 | Legal information | P4.5, P4.3, P5.15 | in progress | 2026-10-11 | |
+| P5.27 | Legal information | P4.5, P4.3, P5.15 | done | 2026-10-11 | LegalText, LegalContents, LegalCompare, LegalActPage with its panels, PrintLegalAct, LegalSearchPage, GazetteIssues, FilterBar tree kind; illustrative law, by-law, practice and Kvadrat Gradnja's rulebook |
 | P6.1 | Full language and direction matrix | Phases 1–5 | todo | | |
 | P6.2 | Manual WCAG 2.2 checks | P6.1 | todo | | |
 | P6.3 | Performance budget | P4.8 | todo | | |

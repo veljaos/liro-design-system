@@ -1135,3 +1135,24 @@ export type {
   FloorPolygonArea,
   FloorRectArea,
 } from './components/floor-plan-logic'
+
+// ── P5.27 legal model ──
+export type {
+  GazetteReference,
+  LegalAct,
+  LegalAmendment,
+  LegalArticle,
+  LegalArticleChange,
+  LegalFootnote,
+  LegalHeading,
+  LegalInline,
+  LegalNode,
+  LegalNote,
+  LegalParagraph,
+  LegalPoint,
+  LegalStatus,
+  LegalTarget,
+  LegalVersion,
+  PracticeItem,
+  RelatedAct,
+} from './components/legal-model'

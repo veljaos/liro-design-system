@@ -2066,6 +2066,267 @@ pre-wrap`, the separator image — are classes). The extensions and editor props
 - **2026-10-11 — React Flow's credit link is shown (P5.26, lead).** React Flow's MIT licence allows hiding its small "React Flow" link, but its authors ask that only React Flow Pro subscribers hide it. Diagram shows it by default — in the start-bottom corner, opposite the overview, small, text.secondary and underlined on a raised tag, a 24px target — and `hideAttribution` hides it for an application that has that subscription. Whether to buy one is the owner's call.
 - **2026-10-11 — "Failed" is danger in the examples' status map (P5.26).** `example-shell.tsx` TONES gains `Failed: 'danger'` for the orchestrator's run.
 
+### Legal information (P5.27)
+
+- **2026-10-11 — Legal information: the decisions the owner left open (P5.27, owner's request of
+  2026-10-11).** Laws, by-laws, court decisions, opinions and a company's internal acts, on the
+  invoice's DocumentPage layout, with nothing new where a component fits. Built on one shared
+  model (`components/legal-model.ts`: act, versions, amendments, headings and articles with
+  paragraphs, items and inline references, footnotes, related acts, practice, notes); every text,
+  date, status and reference is the application's, the library presents it. No new dependency.
+  1. **The table of contents is a start-side Drawer on every width** (LegalContents), opened by
+     "Contents" in the act's toolbar: one pattern for desktop and phone; the side panel keeps the
+     act's relations (versions, history, hierarchy, references, practice, notes), and a contents
+     tree of 300 articles would crowd it.
+  2. **Compare is inline, one column, on every width** (LegalCompare): the same view on a phone
+     and a desktop, the act keeps its reading width, and assistive technology reads one sequence.
+     Insertions are `ins` (underlined, with "Added:" for assistive technology), deletions `del`
+     (struck through, "Deleted:"), with a visible legend and a badge per article: never colour
+     alone.
+  3. **The library may compute a word diff** between two texts it is given (`wordDiff`, pure,
+     unit-tested, no dependency) and **transliterate Serbian Cyrillic to Latin**, one to one
+     (`transliterateCyrillicToLatin`); Latin to Cyrillic is the application's text, since that
+     direction is not one to one.
+  4. **A long act is windowed** (LegalText `maxHeight`, the trees' row window), and **the search
+     in the act runs on the data, not on the DOM**, so it counts and finds articles that are not
+     drawn (the 320-article story).
+  5. **The version picker is a SelectField of the application's versions**, named by their days
+     (not a date field that resolves a version): a choice names exactly one text.
+  6. **Invented data only:** the gazette itself is invented ("Illustrative Gazette"), so no real
+     gazette number is ever attached to invented text; every act page of the examples says
+     "Illustrative"; no text is taken from a legal database. Statuses in the examples: In force
+     success, Partly in force warning, Not yet in force neutral, No longer in force danger, Final
+     (a decision or an opinion) success — never blue.
+  7. **The examples are joined:** the act pages (group O) show LegalText with LegalContents in the
+     toolbar; "Compare versions" and "Compare with…" open a comparison page (two SelectFields for
+     the earlier and the later version, LegalCompare under them; every pair of the law's four
+     versions and the rulebook's two); the search's results (group P) link to the act pages'
+     routes.
+
+- **2026-10-11 — LegalText (P5.27 b).**
+  1. **The text as given:** `nodes` (headings and articles of `legal-model.ts`) and `footnotes`;
+     the library decides nothing legal. Reading width at most 70ch at the start side. Headings
+     are real headings from `headingLevel` (default 2) down by depth — the number of headings
+     above, not the data's `level`, so an act that skips a level keeps a valid outline; an
+     article's label and title are its heading (label sm secondary above the title md, or the
+     label md alone). Paragraphs with their label, items and sub-items as nested lists 24px in,
+     emphasis, footnote marks linking to the footnotes under the text. Every block
+     TEXT_DIRECTION; labels ("1)", "(1)") TEXT_ISOLATE.
+  2. **Article actions:** "Copy link to Article 5" (28px, desktop) calls `onCopyLink(article)`;
+     **without it** the library copies the article's `href`, made absolute against the page
+     (`new URL(href, location.href)`), with `navigator.clipboard` and confirms with
+     `notice.success(messages['legal.linkCopied'])` (error: `legal.copyFailed`) — the
+     application mounts the Toaster. The article's label is a toggle button (`aria-pressed`,
+     at least 24px high) when `onArticleSelect` is given: selected = surface.selected with the
+     border.selected bar (SELECTED_BAR) and `data-liro-surface="selected"` (D17). The
+     application's actions (`articleActions(article)`: a note, a bookmark) stand in a "⋯" menu
+     (with Select / Clear selection). **Phones:** one "Actions for Article 5" menu holds Copy
+     link, Select and the application's actions.
+  3. **Change marks** under the heading, xs: each change `messages['legal.change'](label, date)`
+     ("Amended by No. 47/2018 · applies from 01.07.2018.") in text.secondary with a History icon;
+     an article not yet in force "Applies from 01.01.2027." in status.premium.fg, medium, with a
+     CalendarClock icon. Never blue. **A deleted article** shows its words (`deleted`, data) in
+     text.secondary; when it still carries its earlier text, "Show text" (`aria-expanded`) opens
+     it muted behind a 2px border.default line at the start; `defaultShownDeleted` opens it at
+     first (a restored state). A search hit in its earlier text opens it, so every hit counted is shown.
+  4. **References** are links through `linkComponent` (text.link, underlined). With
+     `resolveTarget(target)` a 24px preview button (Eye, "Preview of Article 4") follows each
+     link and opens the target article in a Popover (label · title, paragraphs, items, "Open
+     Article 4"); "This text is not available here." when the application has no text. Not
+     modal: Escape returns the focus to the button, Tab leaves it, nothing traps the focus. Its
+     side is chosen once from where the button stands (`previewSide`, below unless the room
+     below is under 320px and there is more above; `avoidCollisions` off), so the picture never
+     flips. The button sits in the line (−4px block margin), so the line height does not change.
+     `defaultPreview` (an `href`) opens the first reference to it at first, without taking the
+     focus. **Not done:** opening on hover or on the link's focus (the brief allowed the button
+     instead; one way for every input).
+  5. **Search in the act** runs on the data (`legalSearchIndex` once per text, `searchLegalIndex`
+     per query; from 2 characters): case-, Latin-accent- and Serbian-script-insensitive (the
+     query and the text are folded: lower case, Cyrillic as Latin, accents of Latin letters
+     removed, đ as d; Japanese voiced kana and Arabic marks kept), in reading order, places in
+     the drawn text, so it finds articles that are not drawn. Searched: headings' and articles'
+     labels and titles, deletion words, paragraphs, items; not footnotes. Hits are `mark` on
+     status.warning.bg (as CommandPalette's), the current one also underlined 2px and
+     `aria-current` (more than colour). The field (`role="search"`, "Search in the text",
+     `dir="auto"`), previous / next (36px, disabled without hits), "3 of 12" / "No matches"
+     (`aria-live="polite"`). Enter next, Shift+Enter previous, going round. Typing and stepping
+     bring the current hit into view (`scrollIntoView` center; in a long act the window scrolls
+     to its article first). A restored search (`defaultSearch`, `defaultHit`) does not scroll
+     (stable pictures). Controlled through `search` / `onSearchChange`; `showSearch={false}`
+     hides it.
+  6. **Serbian:** `lang` sr-Cyrl… with `script` / `defaultScript` 'latin' shows every text of
+     the act (labels, titles, deletion and change words, paragraphs, footnotes, previews) in
+     Latin through `transliterateCyrillicToLatin`, and the text's `lang` becomes sr-Latn. The
+     switch (the neutral segmented control, "Latin" / "Cyrillic") stands at the toolbar's end
+     when the act is Cyrillic, or Latin with `onScriptChange` (Latin to Cyrillic is the
+     application's text).
+  7. **Long acts:** with `maxHeight` the text scrolls in its own region (focusable, named by
+     `label`) and draws only the entries in view — the trees' row window (`useTreeWindow`,
+     tree-window.ts, so `virtual-rows.ts`'s rules: 600px overscan, the focused entry kept drawn,
+     spacers), each entry measured once drawn (estimate `LEGAL_ENTRY_ESTIMATE` 160px). Without
+     `maxHeight` every entry is drawn (short acts, the page scrolls). The 320-article story draws
+     fewer than 40 articles.
+  8. `ref.revealNode(id)` brings a heading or article into view (drawing it first) and focuses
+     its heading (`tabIndex -1`); entries keep a scroll margin under the shell's sticky top.
+- **2026-10-11 — LegalContents (P5.27 b, f).** The contents in a **start-side Drawer** on every
+  width (the decision of P5.27), opened by a neutral "Contents" button (ListTree) or the page's
+  own trigger (`trigger`, `null` for none with `open`). Inside, TreeView: headings and articles
+  (`legalContentsTree`: the label as the row's name, the title — or a deleted article's words —
+  as its second line), every heading open, the current entry selected (`currentId`, the
+  neutral selection with its bar). Choosing an entry — the current one too, caught by a native
+  listener since the tree reports no change for it — closes the drawer; `onNavigate(id)` is
+  called from `onCloseAutoFocus` (the return of the focus to the trigger is prevented), so the
+  page can move the focus to the entry (LegalText `revealNode`). `lang` / `script` as
+  LegalText's.
+- **2026-10-11 — LegalCompare and the word diff (P5.27 d, f).** Inline, one column on every
+  width (the decision of P5.27). `before` / `after` (label and nodes); articles matched by id
+  (`compareArticles`: the newer order, an article only in the older version after the one it
+  followed there). Changed articles only by default; a run of unchanged articles between them is
+  one button "4 unchanged articles" (`aria-expanded`) that opens that run; "Show all" /
+  "Show changes only" (`showAll`, `defaultShowAll`, `onShowAllChange`). Per article a
+  StatusBadge "Changed" (neutral), "Added" (success), "Deleted" (danger) — an article the newer
+  version deletes reads "Deleted" and shows its deletion words; its earlier text counts as
+  removed. Paragraphs, items and sub-items as blocks (matched by id), each with the **word
+  diff** (`wordDiff`: longest common subsequence of words and the spaces between them,
+  punctuation with its word; a change of several words in a row joined into one deletion and one
+  insertion; an insertion's leading space moved to its end; above 1,000,000 word pairs the
+  changed middle is one deletion and one insertion). An insertion is `ins`, underlined 2px on
+  status.success.bg with an sr-only "Added:" before it; a deletion `del`, struck through on
+  status.danger.bg in text.secondary with "Deleted:"; a visible legend; the summary "Changed: 1 ·
+  Added: 1 · Deleted: 1" or "The two versions have the same text.". A changed title is diffed
+  too.
+- **2026-10-11 — Serbian Cyrillic to Latin (P5.27).** `transliterateCyrillicToLatin`: the 30
+  letters one to one (Љ Lj, Њ Nj, Џ Dž, Ђ Đ, Ћ Ć, Ж Ž, Ч Č, Ш Š); a capital digraph is written as
+  a title ("Љубав" → "Ljubav") unless the next letter is a capital, or the previous one is and
+  no letter follows ("ЉУБАВ" → "LJUBAV", "ПЉ." → "PLJ."); every other character as it is.
+  `serbianScript(lang)` (sr without a script is Latin), `latinTag`, `transliterates(lang,
+script)`, `mapLegalText` / `mapArticleText` / `mapFootnotesText` (every text through a map;
+  ids, addresses, dates as they are).
+
+- **2026-10-11 — LegalActPage: a thin template on DocumentPage's parts, not DocumentPage itself
+  (P5.27 a, c, f).** `templates/legal-act-page.tsx`. Same padding, maximum width, header row,
+  grid (`lg:grid-cols-[minmax(0,1fr)_300px]`), "Hide panels" / "Show panels" toggle (the same
+  messages `document.hidePanels` / `document.showPanels`, PanelRight mirrored, `aria-pressed`)
+  and `aside` named `document.panels`, BackButton and SidePanels. DocumentPage was not reused:
+  its `lines` card, totals and counterparty slots do not fit an act, its h1 cannot carry the
+  act's `lang`, and on phones it stacks the panels under the document — under a long act they
+  would be unreachable. The header is PageHeader's layout written out: back, the title (h1,
+  `lang` from `act.lang`, D15), the status (StatusBadge from the act's LegalStatus), a line
+  "type · issuer", then the gazette line (`gazetteName` — a page prop, the model has no gazette
+  name — and every reference, the original first, each a link when it has `href`; the links are
+  underlined, as links in a line of text, and 24px high, since the short numbers stand close
+  together — axe's link-in-text-block and target-size found both) and "Version
+  as of …" with the picker. `banner` above everything ("Illustrative", a repeal notice). The body
+  is one card: `toolbar` (the text components' Contents and search) on top with a border.subtle
+  line, then `text`; `loading` shows skeleton lines in it (`role=status`, `aria-busy`, "Loading
+  the act").
+- **2026-10-11 — The version picker is a SelectField over the versions (P5.27 a).** Options newest first (`versionsNewestFirst`), each named
+  by its days through `format.date` ("17.04.2021. – 09.02.2024.", the current one "From
+  10.02.2024. (current)"), label "Version" for assistive technology (the line beside it names
+  it). Not a DateField resolving a day: the versions are the application's discrete list, so a
+  choice names exactly one text and nothing has to be resolved in the library (D1); a date the
+  user types would also need "no version on that day" states. "Version as of" names `asOf`, else
+  the provider's `today` for the current version and an older version's first day
+  (`versionAsOf`, tested). Shown only with more than one version.
+- **2026-10-11 — The header's actions (P5.27 a).** One ActionGroup at the end: Compare versions
+  (GitCompare), Copy citation (Copy), Print / PDF (the print intent, secondary), Watch for
+  changes, Bookmark — each shown only when its callback is given; words from messages. **No
+  primary action** on a reading page (D13 allows none); Bookmark, the most used, is last, so it
+  stays in the row when the others move into "More". Watch and Bookmark say their state by the
+  label and icon (ActionGroup's items have no `aria-pressed`): "Stop watching" (BellOff) while
+  watching, "Remove bookmark" (BookmarkCheck) while bookmarked; `watching` / `bookmarked` are the
+  application's.
+- **2026-10-11 — Phones: the panels in a full-screen sheet (P5.27 f).** Below 48em (or
+  `layout="phone"`) the act is full width and "Details" (PanelRight, secondary) in the header
+  opens the panels in the P4.9d full-screen sheet (Sheet `side="full"`, as the company switcher,
+  DocumentSpecification and LookupDialog's phone form): the title "Details", the close button,
+  the narrowed summary and SidePanels scrolling on surface.page, safe areas inside; Escape and the
+  close button return the focus to "Details". `panelSheetOpen` / `defaultPanelSheetOpen` /
+  `onPanelSheetOpenChange` (a static story renders it open). Not an end Drawer: the panels are a
+  read-only view of a part of the page (D14), and the phone pattern for those is the sheet.
+  Between 48em and 75em the panels stand under the act, as DocumentPage's.
+- **2026-10-11 — The act's side panels (P5.27 c).** `components/legal-panels.tsx`:
+  `useLegalPanels(options)` returns SidePanel entries (keys `LEGAL_PANEL_KEYS`), titles from
+  messages, counts of what each shows; LegalActPage uses it (all open by default: `panelsOpen` /
+  `defaultPanelsOpen`). Rows follow the panel lists' rule (`data-slot="panel-row"`, 8px, a
+  border.subtle line between rows). Every link in a panel row is at least 24px high, its text
+  centred (WCAG 2.5.8: the short article links and the notes' xs links failed target-size).
+  1. **Versions:** every version, its days and the amending act ("Original text" without one), a
+     neutral "Current" tag on the one in force, its own status if the application gives one. The
+     version shown is the selection — surface.selected with the 3px border.selected bar,
+     semibold, `aria-current` (D17); a press on another reports `onVersionChange`. "Compare with…"
+     (GitCompare, secondary) opens a menu of the other versions, newest first → `onCompare(id)`.
+  2. **History of changes:** per amending act its name (a link with `href`), gazette number,
+     "Published …", "Applies from …", "Changed" and the articles — `articlesText` when the
+     application words them, else the articles' labels as links to them.
+  3. **Legal hierarchy** (Higher acts / Lower acts) and **References** (This act refers to /
+     Referred to by, each grouped by the related act's type, h3 and h4 in the panel): a row is
+     the title as a link, its StatusBadge, the application's note under it ("Based on Article 63
+     of this Law"). **RelatedDocuments was not reused:** it writes the number left to right as the
+     link and has no note line, and an act is named by a title.
+  4. **Court practice and opinions:** issuer (link), number (left to right) and date, the
+     articles concerned, the summary; a SelectField "Article" ("All articles", then the articles
+     some item concerns, in the act's order — `practiceArticles`), controlled
+     (`practiceArticleId` / `onPracticeArticleChange`) or not (`defaultPracticeArticleId`).
+  5. **My notes and bookmarks:** kind (icon and word), the article (link) or "Whole act", the
+     day, the text; "Add note" → `onAddNote(articleId | undefined)` (the article the panel is
+     narrowed to). Nothing is saved.
+  6. A panel without items says so (`legalPanel.no…`); a panel whose data is not passed is left
+     out (Versions and History of changes always show).
+- **2026-10-11 — Narrowing to an article (P5.27 c).** With `selectedArticleId` every panel but
+  Versions keeps only the items whose `articleIds` name the article (`itemsForArticle`,
+  `notesFor`, `amendmentsFor`; an item about the whole act names none, so it goes), the practice
+  filter is not shown, and `LegalArticleSummary` stands above the panels (a raised card):
+  "Article 57: changed twice, 2 court decisions, 1 opinion" (`legalPanel.articleSummary(article,
+counts, texts)` — the counts as numbers for the plural rules and as `format.number` writes
+  them; English says not changed / once / twice / n times) and "Back to the whole act" (the back
+  intent, secondary) → `onArticleClear`. The counts are the lengths of the same lists the
+  panels show (`articleCounts`, tested to agree). Changes are counted from
+  `LegalAmendment.articleIds`, not from `LegalArticle.changes`, so History of changes and the
+  summary always agree.
+- **2026-10-11 — PrintLegalAct (P5.27 a, "Print / PDF").** `templates/print-legal-act.tsx`, on
+  PrintPage (P5.15): the page header repeats the act's title and the gazette line on every page,
+  the page number at the bottom. First page: PrintTitle (title, "type · issuer"), the gazette
+  line, "Version as of …", the application's `note` in a bordered box. The text is drawn from
+  the model's nodes in the template itself (no windowing on paper; links and buttons are not
+  printed): parts and chapters as headings, articles' labels and titles semibold — **headings
+  and article labels centred**, as acts are set on paper (the certificate's precedent: the
+  paper's convention, not the screen's start alignment) —, paragraphs with their labels, items
+  and sub-items indented, references as plain text, emphasis italic, footnote marks raised; a
+  changed article's change labels small under its label; a deleted article its words only; an
+  article not yet in force "Applies from …"; footnotes at the end under "Footnotes". `lang` from
+  `act.lang` on the text.
+- **2026-10-11 — Examples O (P5.27 g).** `apps/storybook/src/examples/screens-O.tsx`, `data-O.ts`,
+  all invented and labelled "Illustrative" (a neutral Alert at the top of every act page, the
+  printout's note), **the same acts, numbers and dates as the search's examples (group P)**:
+  the Law on Illustrative Building Works (Illustrative Assembly; Illustrative Gazette No.
+  12/2016, amended 47/2018, 33/2021, 9/2024; In force; four versions whose texts differ — Article
+  12 amended in 2018, Article 20 deleted in 2021, Article 57 amended twice, Article 90 added in
+  2024), its Rulebook on Illustrative Site Records (No. 21/2016, 40/2021; based on Article 63),
+  two decisions (Illustrative Appellate Court, Gž 101/2022; Illustrative Supreme Court, Rev
+  202/2023), an opinion (Illustrative Ministry, opinion 011-00-55/2023), Milica's notes;
+  Kvadrat Gradnja d.o.o. — Work Rulebook (an internal act, no gazette; versions 2022 and 2025 by
+  Decision No. 3/2025; based on the illustrative law and the Law on Illustrative Safety at Work);
+  and short one-article pages for the search's other acts (site-signs, safety-at-work,
+  construction-fees) and the practice. **Routes, aligned with group P:** `/legal/acts/<id>`,
+  articles `/legal/acts/<id>/article-<n>` (each opens the act narrowed to it), practice
+  `/legal/practice/<id>`; the law's 2018 version `?version=v2`, its printout `/print`;
+  `O_ROUTES`, `actRoute`, `articleRoute`, `practiceRoute` exported from data-O (data-P has the
+  same `actRoute` / `articleRoute`: the lead keeps one). The crumb and back button lead to
+  `/legal/search`. Statuses come from example-shell's TONES map (the same five entries group P
+  added: In force success, Partly in force warning, Not yet in force neutral, No longer in force
+  danger, Final success; the lead resolves the duplicate when merging). **The act's text is LegalText**
+  (search in the act, reference previews resolved among the examples' acts, "Add note" as the
+  article's action, copy link answered with a toast) **with LegalContents in the page's toolbar**
+  (choosing an entry reveals it, `revealNode`). The examples' today is 06.10.2026, so the
+  act pages say "Version as of 06.10.2026." (the stories pass `asOf` 2026-10-11).
+
+- **2026-10-11 — The legal search is ListPage with a result list (P5.27 e).** `LegalSearchPage` is ListPage — the title and main action, then ONE card: saved views, the FilterBar (`inCard`) and the results — so the search looks and works like every other list. The results are a **list, not a DataTable**: a snippet needs the card's width, and a table would squeeze it into one column among six. Each result, 12px by 16px with a border.subtle line between results: the type and issuer (xs text.secondary) with the status at the end (StatusBadge, the application's tone, never blue); the title as a link (an h2, 16px semibold, the link colour; the page's title is the h1); the gazette references ("Illustrative Gazette No. 12/2016, 47/2018, 33/2021, 9/2024", xs, tabular; `legalSearch.gazette`); the snippet (sm text.secondary); "Found in Article 57" (xs link to the article, `legalSearch.foundIn`). Over the list a row with the count ("38 results", "More than 10.000 results"; `legalSearch.count` through `formatCount`, announced politely) and the refetch loader at the start, and "Sort: Relevance" at the end (a menu of the application's `sortOptions`; a list has no column headers to sort by, on desktop or phones). Cursor paging under the list (CursorPagination). States: skeleton results while the first page loads; the refetch loader while results stand; "Nothing matches" with "Clear filters" while a filter is set (only the words: no action); nothing yet (EmptyState) when nothing is searched or set; ErrorState with the case number and "Try again" (`legalSearch.retry`). Phones: the same rows in one column, every filter in FilterBar's drawer. The page computes nothing: the application searches, filters, sorts and pages, and gives each result its snippet.
+- **2026-10-11 — A search match is marked by weight as well as colour (P5.27).** The snippet's matches are `<mark>` on status.warning.bg (as CommandPalette's matched letters) **and semibold**, so a match is visible without colour (WCAG 1.4.1) and never blue (D17: blue is for actions and links; a snippet sits between two links). The application gives the snippet as marked segments (`LegalSnippet`: strings and `{ match }`) or as a text with the engine's ranges, which `snippetFromRanges` turns into segments (UTF-16 offsets, clamped, empty ranges dropped, overlapping or touching ranges joined, so nothing is marked twice; unit-tested). The snippet and the title carry `lang` when the act's language differs from the page's (`result.lang`, D15).
+- **2026-10-11 — FilterBar's tree filter kind (P5.27).** An act's area is a classification in levels, so FilterBar gained a seventh kind, `type: 'tree'` (`nodes`: TreeView's `TreeNode`s; `selection` 'multiple' (default) or 'single'; optional `defaultExpanded`). It stands **only in the drawer** — a tree needs the room — even when it is among the first `inline` filters (the row then holds the other inline filters). In the drawer: its label (sm semibold) over a TreeView, 4px apart, as a field's label over its control; checkboxes with tri-state branches (`toggleTreeSelection`: checking a branch checks its loaded descendants) or the single selection's surface.selected row with the border.selected bar (D17); it opens on the branches of the chosen nodes; on phones the tree has its touch rows (44px). Its value is a list of node ids (`emptyFilterValue` []), so `isFilterSet` and `clearFilters` need no change. The pill names the **highest chosen nodes** in the tree's order ("Area: Construction", not every child; `treeFilterLabels`, an id the tree does not hold shown as it is; unit-tested). The change is additive: no other kind's behaviour or look changed (the existing FilterBar stories are untouched).
+- **2026-10-11 — GazetteIssues (P5.27 e).** "New in the Official Gazette", issue by issue, newest first: a SectionCard (flush) titled by the application; each issue a section headed by its number (an h3 under the card's h2, a link with `href`), with "Published 15.02.2024. · 2 acts" (xs text.secondary, `gazette.published`, `gazette.acts`, the day through `format.date`); its acts as rows — the type with the status at the end, the title as a link (sm medium), the application's note ("Amends Articles 12, 57 and 90", xs text.secondary) — 8px rows with border.subtle lines (the side panels' lists), 16px between issues. Older issues page from the application ("Show more issues", `hasMore` / `onLoadMore`; a spinner in its place while `loading`, skeletons on the first load), as HistoryList. Empty "No new issues"; ErrorState with "Try again". The issue type is `GazetteIssue` (a `GazetteReference` with `published` required and `acts: RelatedAct[]`), the acts are the shared model's `RelatedAct` (`note` says what the act does).
+- **2026-10-11 — Example screens of P5.27, search (group P).** `apps/storybook/src/examples/screens-P.tsx` + `data-P.ts`: **Legal information** (`/legal/search`): the search for "site records" in "Building works" (a tree pill), in force on 06.10.2026. (the date range) — five results (the Law on Illustrative Building Works, Article 57; the Rulebook on Illustrative Site Records; Illustrative Appellate Court Gž 101/2022; Illustrative Supreme Court Rev 202/2023; Illustrative Ministry opinion 011-00-55/2023), four on the first page; the screen plays the application (`searchActs`: words in titles and articles, every filter, three sorts, pages of four). **New in the Illustrative Gazette** (`/legal/gazette`): issues 9/2024, 40/2021 and 33/2021 with their acts, then 47/2018 and 18/2017 with "Show more issues". Desktop and phone. The results link to the act page's routes `/legal/acts/<id>` and `/legal/acts/<id>/article-<n>` (group O) and to `/legal/practice/<id>` for decisions and the opinion. The examples' tone map gains the legal statuses: **In force → success, Partly in force → warning, Not yet in force → neutral, No longer in force → danger, Final → success** (a court decision or opinion) — to be aligned with the act page's examples.
+
 ## Packaging
 
 - **2026-09-24 — Consumers install tarballs.** `pnpm consumer-check` packs the three packages with `pnpm pack`, copies `apps/consumer-check` to a temporary folder outside the repository, installs the tarballs there and builds, typechecks and checks the app. `apps/consumer-check` is excluded from the workspace and from the root ESLint run, because its dependencies exist only in that temporary install (Appendix B.10).

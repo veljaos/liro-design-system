@@ -13,7 +13,15 @@ import {
   versionAsOf,
   versionsNewestFirst,
 } from './legal-panels-logic'
-import { HIGHER, LAW, LOWER, NOTES, PRACTICE, REFERS_TO, REFERRED_BY } from './legal-page-story-data'
+import {
+  HIGHER,
+  LAW,
+  LOWER,
+  NOTES,
+  PRACTICE,
+  REFERS_TO,
+  REFERRED_BY,
+} from './legal-page-story-data'
 
 describe('articlesOf and findArticle', () => {
   it('walks parts and chapters in the text’s order', () => {

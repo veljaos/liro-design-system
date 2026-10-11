@@ -1,24 +1,28 @@
-import { PanelRight } from 'lucide-react'
-import { useContext, useState, type ReactNode } from 'react'
+import { useContext, useRef, useState, type ReactNode } from 'react'
 import {
   Alert,
   BackButton,
   Button,
+  Card,
+  findLegalArticle,
   LegalActPage,
+  LegalCompare,
+  LegalContents,
+  LegalText,
   notice,
+  PageHeader,
   PrintLegalAct,
+  SelectField,
   Toaster,
   useLiro,
   type LegalActPageProps,
+  type LegalTextHandle,
   type PageBack,
 } from '@veljaos/ui'
-import type {
-  LegalAct,
-  LegalInline,
-  LegalNode,
-} from '../../../../packages/ui/src/components/legal-model'
+import type { LegalAct, LegalArticle, LegalNode, LegalTarget } from '@veljaos/ui'
 import type { ExampleRoute } from './example-app'
-import { Navigate, RouterLink, Shell } from './example-shell'
+import { Navigate, Shell } from './example-shell'
+import { Frame } from './screens-G'
 import {
   actRoute,
   articleRoute,
@@ -55,133 +59,84 @@ import {
  * application: it keeps the version, the chosen article, watching and the bookmark, and answers
  * the actions with a toast.
  *
- * The act's text is drawn by a minimal renderer of this file (`ActText`): the text components of
- * P5.27 (LegalText, its contents drawer, search and compare) replace it when the parts are joined.
+ * The act's text is LegalText (headings, articles, changes, references with their previews, the
+ * search in the act) with LegalContents' drawer in the page's toolbar; "Compare versions" and
+ * "Compare with…" open the comparison (LegalCompare) of the version shown with another.
  */
 
 export { O_ROUTES }
 
-function Inline({ content }: { content: readonly LegalInline[] }) {
-  return (
-    <>
-      {content.map((part, index) =>
-        typeof part === 'string' ? (
-          part
-        ) : part.kind === 'ref' ? (
-          <RouterLink
-            key={index}
-            href={part.target.href}
-            className="rounded-sm text-link underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--liro-border-focus)"
-          >
-            {part.text}
-          </RouterLink>
-        ) : part.kind === 'footnote' ? (
-          <sup key={index}>{part.mark}</sup>
-        ) : (
-          <em key={index}>{part.text}</em>
-        ),
-      )}
-    </>
-  )
+/** Where a reference leads, among the examples' acts: the article's text for its preview. */
+function resolveExampleTarget(target: LegalTarget): LegalArticle | undefined {
+  if (target.articleId === undefined) return undefined
+  const acts: Record<string, LegalAct> = {
+    'building-works': lawVersion('v4'),
+    'site-records': byLawVersion('s2'),
+    'work-rulebook': rulebookVersion('w2'),
+  }
+  for (const act of SHORT_ACTS) acts[act.id] = act
+  const act = acts[target.actId ?? 'building-works']
+  return act === undefined ? undefined : findLegalArticle(act.nodes, target.articleId)
 }
 
 /**
- * The act's text, minimal: headings, articles with their paragraphs, items and changes, and a
- * button per article that narrows the panels to it (the stand-in for LegalText's article actions).
+ * The act's text on its page: LegalText with the contents drawer in the page's toolbar, the
+ * search in the act, the reference previews, and the article's own actions (a note).
  */
-function ActText({
+function useActText({
   act,
   selected,
   onSelect,
+  onAddNote,
+  phone,
 }: {
   act: LegalAct
-  selected?: string | undefined
-  onSelect: (articleId: string) => void
+  selected: string | undefined
+  onSelect: (id: string | undefined) => void
+  onAddNote: (articleId: string) => void
+  phone: boolean
 }) {
-  const { format } = useLiro()
-  const nodes = (list: readonly LegalNode[], level: number): ReactNode =>
-    list.map((node) => {
-      const Heading = `h${String(Math.min(level, 6))}` as 'h2'
-      if (node.kind === 'heading') {
-        return (
-          <section key={node.id} className="flex flex-col gap-4">
-            <Heading className="bidi-content m-0 text-h3 text-primary">
-              {node.label}
-              {node.title === undefined ? '' : ` — ${node.title}`}
-            </Heading>
-            {nodes(node.children, level + 1)}
-          </section>
-        )
-      }
-      const chosen = selected === node.id
-      return (
-        <article
-          key={node.id}
-          id={node.id}
-          {...(chosen ? { 'data-liro-surface': 'selected' } : {})}
-          className={
-            chosen
-              ? 'flex flex-col gap-2 rounded-md border-0 border-s-[3px] border-solid border-selected bg-surface-selected p-3'
-              : 'flex flex-col gap-2'
-          }
-        >
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <Heading className="bidi-content m-0 text-h4 text-primary">
-              {node.label}
-              {node.title === undefined ? '' : ` — ${node.title}`}
-            </Heading>
-            <span className="contents rtl:[&_svg]:-scale-x-100">
-              <Button
-                family="neutral"
-                emphasis="menu"
-                icon={PanelRight}
-                label={`Details of ${node.label}`}
-                onClick={() => {
-                  onSelect(node.id)
-                }}
-              />
-            </span>
-          </div>
-          {node.changes !== undefined && node.changes.length > 0 && (
-            <p className="bidi-content m-0 text-xs text-secondary">
-              {node.changes
-                .map((change) => `${change.label}, applies from ${format.date(change.appliesFrom)}`)
-                .join(' · ')}
-            </p>
-          )}
-          {node.inForceFrom !== undefined && (
-            <p className="bidi-content m-0 text-xs font-medium text-status-warning-fg">
-              Not yet in force: applies from {format.date(node.inForceFrom)}
-            </p>
-          )}
-          {node.deleted !== undefined ? (
-            <p className="bidi-content m-0 text-sm text-secondary italic">{node.deleted}</p>
-          ) : (
-            node.paragraphs.map((paragraph) => (
-              <div key={paragraph.id} className="flex flex-col gap-1">
-                <p className="bidi-content m-0 text-md text-primary">
-                  {paragraph.label === undefined ? '' : `${paragraph.label} `}
-                  <Inline content={paragraph.content} />
-                </p>
-                {paragraph.points?.map((point) => (
-                  <div key={point.id} className="flex flex-col gap-1 ps-6">
-                    <p className="bidi-content m-0 text-md text-primary">
-                      {point.label} <Inline content={point.content} />
-                    </p>
-                    {point.points?.map((sub) => (
-                      <p key={sub.id} className="bidi-content m-0 ps-6 text-md text-primary">
-                        {sub.label} <Inline content={sub.content} />
-                      </p>
-                    ))}
-                  </div>
-                ))}
-              </div>
-            ))
-          )}
-        </article>
-      )
-    })
-  return <div className="flex max-w-[44rem] flex-col gap-6">{nodes(act.nodes, 2)}</div>
+  const text = useRef<LegalTextHandle>(null)
+  const layout = phone ? 'phone' : 'desktop'
+  return {
+    toolbar: (
+      <LegalContents
+        nodes={act.nodes}
+        currentId={selected ?? null}
+        onNavigate={(id) => {
+          text.current?.revealNode(id)
+        }}
+        {...(act.lang === undefined ? {} : { lang: act.lang })}
+        layout={layout}
+      />
+    ),
+    text: (
+      <LegalText
+        ref={text}
+        nodes={act.nodes}
+        {...(act.footnotes === undefined ? {} : { footnotes: act.footnotes })}
+        label={act.title}
+        {...(act.lang === undefined ? {} : { lang: act.lang })}
+        selectedArticleId={selected ?? null}
+        onArticleSelect={(id) => {
+          onSelect(id ?? undefined)
+        }}
+        onCopyLink={(article) => {
+          notice.success(`Link to ${article.label} copied.`)
+        }}
+        articleActions={(article) => [
+          {
+            label: 'Add note',
+            onSelect: () => {
+              onAddNote(article.id)
+            },
+          },
+        ]}
+        resolveTarget={resolveExampleTarget}
+        layout={layout}
+      />
+    ),
+  }
 }
 
 /** An article's label ("Article 57") by its id. */
@@ -263,6 +218,7 @@ function ActScreen({
   banner = ILLUSTRATIVE,
   citation,
   print,
+  compareRoute,
   panels,
 }: {
   phone: boolean
@@ -274,12 +230,36 @@ function ActScreen({
   banner?: string
   citation: string
   print?: string
+  /** The route comparing two of the act's versions, the earlier first. */
+  compareRoute?: (earlier: string, later: string) => string
   panels: PanelData
 }) {
   const [versionId, setVersionId] = useState(initialVersion)
   const [selected, setSelected] = useState<string | undefined>(articleId)
   const page = useActPage()
   const act = version(versionId)
+  const body = useActText({
+    act,
+    selected,
+    onSelect: setSelected,
+    onAddNote: (articleId) => {
+      page.common(act).onAddNote(articleId)
+    },
+    phone,
+  })
+  const compareWith = (other: string) => {
+    if (compareRoute === undefined) return
+    const order = act.versions.map((each) => each.id)
+    const [earlier, later] =
+      order.indexOf(other) < order.indexOf(versionId) ? [other, versionId] : [versionId, other]
+    page.navigate(compareRoute(earlier, later))
+  }
+  // "Compare versions": the version shown with the one before it (the first with the next).
+  const neighbour = (() => {
+    const order = act.versions.map((each) => each.id)
+    const at = order.indexOf(versionId)
+    return order[at > 0 ? at - 1 : at + 1]
+  })()
   return (
     <Shell phone={phone} crumbs={[LEGAL_CRUMB, { label: crumb }]}>
       <LegalActPage
@@ -289,6 +269,14 @@ function ActScreen({
         banner={<Alert tone="neutral" title={banner} />}
         layout={phone ? 'phone' : 'desktop'}
         {...page.common(act)}
+        {...(compareRoute === undefined || neighbour === undefined
+          ? {}
+          : {
+              onCompareVersions: () => {
+                compareWith(neighbour)
+              },
+              onCompare: compareWith,
+            })}
         onCopyCitation={() => {
           const label = selected === undefined ? undefined : articleLabel(act.nodes, selected)
           notice.success(
@@ -309,7 +297,8 @@ function ActScreen({
           setSelected(undefined)
         }}
         defaultPanelSheetOpen={phone && articleId !== undefined}
-        text={<ActText act={act} selected={selected} onSelect={setSelected} />}
+        toolbar={body.toolbar}
+        text={body.text}
       />
       <Toaster layout={phone ? 'phone' : 'desktop'} />
     </Shell>
@@ -336,6 +325,7 @@ export function LawScreen({
       crumb="Law on Illustrative Building Works"
       citation={LAW_CITATION}
       print={O_ROUTES.lawPrint}
+      compareRoute={compareRoute('building-works')}
       panels={{
         lower: LAW_LOWER,
         refersTo: LAW_REFERS_TO,
@@ -346,6 +336,112 @@ export function LawScreen({
       }}
     />
   )
+}
+
+// ── Compare versions ─────────────────────────────────────────────────────────────────────────
+
+/** The route comparing two versions of an act, the earlier first. */
+export function compareRoute(actId: string) {
+  return (earlier: string, later: string) => `${actRoute(actId)}/compare/${earlier}-${later}`
+}
+
+/**
+ * Two versions of an act side by side in time: LegalCompare inline (changed articles only, "Show
+ * all"), the two versions chosen above it.
+ */
+export function CompareScreen({
+  phone,
+  actId,
+  version,
+  earlier,
+  later,
+}: {
+  phone: boolean
+  actId: string
+  version: (versionId: string) => LegalAct
+  earlier: string
+  later: string
+}) {
+  const navigate = useContext(Navigate)
+  const { format } = useLiro()
+  const before = version(earlier)
+  const after = version(later)
+  const order = after.versions.map((each) => each.id)
+  const name = (id: string) => {
+    const found = after.versions.find((each) => each.id === id)
+    if (found === undefined) return id
+    return found.to === undefined
+      ? `From ${format.date(found.from)} (in force)`
+      : `${format.date(found.from)} – ${format.date(found.to)}`
+  }
+  const options = (keep: (at: number) => boolean) =>
+    order.filter((_, at) => keep(at)).map((id) => ({ value: id, label: name(id) }))
+  const route = compareRoute(actId)
+  const back: PageBack = { href: `#${actRoute(actId)}`, label: after.title }
+  return (
+    <Shell
+      phone={phone}
+      crumbs={[LEGAL_CRUMB, { label: after.title, href: back.href }, { label: 'Compare versions' }]}
+    >
+      <Frame phone={phone}>
+        <PageHeader title="Compare versions" subtitle={after.title} back={back} />
+        <Alert tone="neutral" title={ILLUSTRATIVE} />
+        <Card className="flex flex-col gap-4 p-4">
+          <div className="flex flex-wrap items-end gap-3">
+            <SelectField
+              label="Earlier version"
+              options={options((at) => at < order.indexOf(later))}
+              value={earlier}
+              onChange={(next) => {
+                navigate(route(next, later))
+              }}
+              className="w-full sm:w-64"
+            />
+            <SelectField
+              label="Later version"
+              options={options((at) => at > order.indexOf(earlier))}
+              value={later}
+              onChange={(next) => {
+                navigate(route(earlier, next))
+              }}
+              className="w-full sm:w-64"
+            />
+          </div>
+          <LegalCompare
+            before={{ label: name(earlier), nodes: before.nodes }}
+            after={{ label: name(later), nodes: after.nodes }}
+            {...(after.lang === undefined ? {} : { lang: after.lang })}
+          />
+        </Card>
+      </Frame>
+      <Toaster layout={phone ? 'phone' : 'desktop'} />
+    </Shell>
+  )
+}
+
+/** Every pair of an act's versions, the earlier first. */
+function compareRoutes(
+  actId: string,
+  version: (versionId: string) => LegalAct,
+  ids: readonly string[],
+): ExampleRoute[] {
+  const routes: ExampleRoute[] = []
+  ids.forEach((earlier, at) => {
+    for (const later of ids.slice(at + 1))
+      routes.push({
+        path: compareRoute(actId)(earlier, later),
+        render: (phone) => (
+          <CompareScreen
+            phone={phone}
+            actId={actId}
+            version={version}
+            earlier={earlier}
+            later={later}
+          />
+        ),
+      })
+  })
+  return routes
 }
 
 // ── 2. The law's printout ─────────────────────────────────────────────────────────────────────
@@ -415,6 +511,7 @@ export function RulebookScreen({ phone, articleId }: { phone: boolean; articleId
       crumb="Work Rulebook"
       banner="Illustrative: an invented internal act of Kvadrat Gradnja d.o.o., based on the illustrative law."
       citation="Kvadrat Gradnja d.o.o. — Work Rulebook (Decision No. 3/2025)"
+      compareRoute={compareRoute('work-rulebook')}
       panels={{
         higher: RULEBOOK_HIGHER,
         lower: [],
@@ -470,6 +567,8 @@ export const GROUP_O_ROUTES: ExampleRoute[] = [
   )),
   { path: O_ROUTES.lawVersion, render: (phone) => <LawScreen phone={phone} initialVersion="v2" /> },
   { path: O_ROUTES.lawPrint, render: () => <LawPrintScreen /> },
+  ...compareRoutes('building-works', lawVersion, ['v1', 'v2', 'v3', 'v4']),
+  ...compareRoutes('work-rulebook', rulebookVersion, ['w1', 'w2']),
   { path: O_ROUTES.byLaw, render: (phone) => <ByLawScreen phone={phone} /> },
   ...articleRoutes('site-records', byLawVersion('s2'), (phone, id) => (
     <ByLawScreen phone={phone} articleId={id} />

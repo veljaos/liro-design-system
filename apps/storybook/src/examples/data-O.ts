@@ -21,7 +21,7 @@ import type {
   LegalVersion,
   PracticeItem,
   RelatedAct,
-} from '../../../../packages/ui/src/components/legal-model'
+} from '@veljaos/ui'
 import { toneOf, type ExampleStatus } from './example-shell'
 
 // ── Routes ────────────────────────────────────────────────────────────────────────────────────
@@ -38,6 +38,10 @@ export const O_ROUTES = {
   lawArticle: articleRoute('building-works', '57'),
   /** The law as it stood from 30.06.2018. (the first amendment). */
   lawVersion: `${actRoute('building-works')}?version=v2`,
+  /** The 2021 version of the law compared with the version in force. */
+  lawCompare: `${actRoute('building-works')}/compare/v3-v4`,
+  /** The Work Rulebook's 2022 and 2025 versions compared. */
+  rulebookCompare: `${actRoute('work-rulebook')}/compare/w1-w2`,
   /** The law's printout (A4). */
   lawPrint: `${actRoute('building-works')}/print`,
   /** The law's by-law. */

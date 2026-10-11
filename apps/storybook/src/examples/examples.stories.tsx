@@ -4565,7 +4565,7 @@ export const IllustrativeLawInteraction: Story = {
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
-    await userEvent.click(canvas.getByRole('button', { name: 'Details of Article 12' }))
+    await userEvent.click(canvas.getByRole('button', { name: 'Article 12' }))
     await expect(
       canvas.getByText('Article 12: changed once, 1 court decision, 0 opinions'),
     ).toBeVisible()
@@ -4575,6 +4575,60 @@ export const IllustrativeLawInteraction: Story = {
     await expect(canvas.getByText('Version as of 10.04.2021.')).toBeVisible()
     await userEvent.click(canvas.getByRole('button', { name: 'Watch for changes' }))
     await expect(canvas.getByRole('button', { name: 'Stop watching' })).toBeVisible()
+  },
+}
+
+/**
+ * "Compare versions" from the law's page: the 2021 version against the version in force, inline,
+ * the changed articles only; insertions underlined, deletions struck through, each with its word.
+ */
+export const IllustrativeLawCompare: Story = {
+  name: 'Illustrative law, compare versions',
+  render: () => <ExampleApp start={O_ROUTES.lawCompare} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { level: 1, name: 'Compare versions' })).toBeVisible()
+    await expect(canvasElement.querySelector('ins')).not.toBeNull()
+  },
+}
+
+export const IllustrativeLawComparePhone: Story = {
+  name: 'Illustrative law, compare versions, phone',
+  render: () => <OnPhone start={O_ROUTES.lawCompare} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(
+      within(canvasElement).getByRole('heading', { level: 1, name: 'Compare versions' }),
+    ).toBeVisible()
+  },
+}
+
+/** Kvadrat Gradnja's Work Rulebook: the 2022 version against the 2025 version. */
+export const RulebookCompare: Story = {
+  name: 'Kvadrat Gradnja work rulebook, compare 2022 and 2025',
+  render: () => <ExampleApp start={O_ROUTES.rulebookCompare} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(
+      within(canvasElement).getByRole('heading', { level: 1, name: 'Compare versions' }),
+    ).toBeVisible()
+  },
+}
+
+/** From the act page: "Compare versions", then another earlier version. */
+export const IllustrativeLawCompareInteraction: Story = {
+  name: 'Illustrative law, compare versions, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={O_ROUTES.law} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Compare versions' }))
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: 'Compare versions' }),
+    ).toBeVisible()
+    await expect(canvasElement.querySelector('ins')).not.toBeNull()
   },
 }
 
