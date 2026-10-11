@@ -1634,4 +1634,78 @@ export interface LiroMessages {
   'legal.showChanges': string
   'legal.unchanged': (count: number, countText: string) => string
   'legal.noChanges': string
+  // P5.27 legal page
+  /** The header's version line: "Version as of 11.10.2026."; the date written by `format.date`. */
+  'legalPage.versionAsOf': (date: string) => string
+  /** The version picker's label (for assistive technology; the line above names it). */
+  'legalPage.version': string
+  /** A version in the picker: its from–to range, "(current)" after the version in force. */
+  'legalPage.versionOption': (range: string, current: boolean) => string
+  /** The header's actions. */
+  'legalPage.compareVersions': string
+  'legalPage.copyCitation': string
+  'legalPage.print': string
+  /** Watch for changes, and its "on" state's action. */
+  'legalPage.watch': string
+  'legalPage.unwatch': string
+  /** Bookmark the act, and its "on" state's action. */
+  'legalPage.bookmark': string
+  'legalPage.unbookmark': string
+  /** Phones: the button that opens the side panels as a sheet, and the sheet's title. */
+  'legalPage.details': string
+  /** The act's text region while it loads. */
+  'legalPage.loading': string
+  /** The panels' names. */
+  'legalPanel.versions': string
+  'legalPanel.history': string
+  'legalPanel.hierarchy': string
+  'legalPanel.references': string
+  'legalPanel.practice': string
+  'legalPanel.notes': string
+  /** A version's days: "01.07.2024. – 30.06.2026.", or "From 01.07.2024." for the current one. */
+  'legalPanel.versionRange': (from: string, to: string | undefined) => string
+  /** The marker of the version in force, and the words of a version without an amending act. */
+  'legalPanel.current': string
+  'legalPanel.original': string
+  /** Opens the list of the other versions to compare the shown one with. */
+  'legalPanel.compareWith': string
+  /** An amending act's days. */
+  'legalPanel.published': (date: string) => string
+  'legalPanel.appliesFrom': (date: string) => string
+  /** The label before the articles an amending act changed. */
+  'legalPanel.changedArticles': string
+  /** The hierarchy's two groups. */
+  'legalPanel.higher': string
+  'legalPanel.lower': string
+  /** The references' two directions. */
+  'legalPanel.refersTo': string
+  'legalPanel.referredBy': string
+  /** The practice filter: its label and the choice of every article. */
+  'legalPanel.filterByArticle': string
+  'legalPanel.allArticles': string
+  /** A note's kind, a note on the whole act, and the button that adds a note. */
+  'legalPanel.note': string
+  'legalPanel.bookmark': string
+  'legalPanel.wholeAct': string
+  'legalPanel.addNote': string
+  /** What a panel says when it has nothing to show. */
+  'legalPanel.noVersions': string
+  'legalPanel.noChanges': string
+  'legalPanel.noHierarchy': string
+  'legalPanel.noReferences': string
+  'legalPanel.noPractice': string
+  'legalPanel.noNotes': string
+  /**
+   * The panel narrowed to one article: "Article 57: changed twice, 3 court decisions, 1 opinion".
+   * The counts as numbers (for plural rules) and as `format.number` writes them.
+   */
+  'legalPanel.articleSummary': (
+    article: string,
+    counts: { changes: number; decisions: number; opinions: number },
+    texts: { changes: string; decisions: string; opinions: string },
+  ) => string
+  /** Leaves the narrowed panel. */
+  'legalPanel.backToAct': string
+  /** The printout's footnotes heading. */
+  'legalPrint.footnotes': string
 }

@@ -1126,4 +1126,65 @@ export const messagesEn: LiroMessages = {
   'legal.unchanged': (count, countText) =>
     count === 1 ? '1 unchanged article' : `${countText} unchanged articles`,
   'legal.noChanges': 'The two versions have the same text.',
+  // P5.27 legal page
+  'legalPage.versionAsOf': (date) => `Version as of ${date}`,
+  'legalPage.version': 'Version',
+  'legalPage.versionOption': (range, current) => (current ? `${range} (current)` : range),
+  'legalPage.compareVersions': 'Compare versions',
+  'legalPage.copyCitation': 'Copy citation',
+  'legalPage.print': 'Print / PDF',
+  'legalPage.watch': 'Watch for changes',
+  'legalPage.unwatch': 'Stop watching',
+  'legalPage.bookmark': 'Bookmark',
+  'legalPage.unbookmark': 'Remove bookmark',
+  'legalPage.details': 'Details',
+  'legalPage.loading': 'Loading the act',
+  'legalPanel.versions': 'Versions',
+  'legalPanel.history': 'History of changes',
+  'legalPanel.hierarchy': 'Legal hierarchy',
+  'legalPanel.references': 'References',
+  'legalPanel.practice': 'Court practice and opinions',
+  'legalPanel.notes': 'My notes and bookmarks',
+  'legalPanel.versionRange': (from, to) => (to === undefined ? `From ${from}` : `${from} – ${to}`),
+  'legalPanel.current': 'Current',
+  'legalPanel.original': 'Original text',
+  'legalPanel.compareWith': 'Compare with…',
+  'legalPanel.published': (date) => `Published ${date}`,
+  'legalPanel.appliesFrom': (date) => `Applies from ${date}`,
+  'legalPanel.changedArticles': 'Changed',
+  'legalPanel.higher': 'Higher acts',
+  'legalPanel.lower': 'Lower acts',
+  'legalPanel.refersTo': 'This act refers to',
+  'legalPanel.referredBy': 'Referred to by',
+  'legalPanel.filterByArticle': 'Article',
+  'legalPanel.allArticles': 'All articles',
+  'legalPanel.note': 'Note',
+  'legalPanel.bookmark': 'Bookmark',
+  'legalPanel.wholeAct': 'Whole act',
+  'legalPanel.addNote': 'Add note',
+  'legalPanel.noVersions': 'No versions',
+  'legalPanel.noChanges': 'No changes',
+  'legalPanel.noHierarchy': 'No higher or lower acts',
+  'legalPanel.noReferences': 'No references',
+  'legalPanel.noPractice': 'No court decisions or opinions',
+  'legalPanel.noNotes': 'No notes or bookmarks yet',
+  'legalPanel.articleSummary': (article, counts, texts) => {
+    const changes =
+      counts.changes === 0
+        ? 'not changed'
+        : counts.changes === 1
+          ? 'changed once'
+          : counts.changes === 2
+            ? 'changed twice'
+            : `changed ${texts.changes} times`
+    const decisions =
+      counts.decisions === 1
+        ? `${texts.decisions} court decision`
+        : `${texts.decisions} court decisions`
+    const opinions =
+      counts.opinions === 1 ? `${texts.opinions} opinion` : `${texts.opinions} opinions`
+    return `${article}: ${changes}, ${decisions}, ${opinions}`
+  },
+  'legalPanel.backToAct': 'Back to the whole act',
+  'legalPrint.footnotes': 'Footnotes',
 }

@@ -1085,3 +1085,32 @@ export type {
   LegalSearchIndex,
   LegalTextPart,
 } from './components/legal-logic'
+// ── P5.27 legal page ──
+export { LegalActPage } from './templates/legal-act-page'
+export type { LegalActPageProps } from './templates/legal-act-page'
+export {
+  LEGAL_PANEL_KEYS,
+  LegalArticleSummary,
+  useLegalPanels,
+  useVersionRange,
+} from './components/legal-panels'
+export type {
+  LegalArticleSummaryProps,
+  LegalPanelKey,
+  LegalPanelsOptions,
+} from './components/legal-panels'
+export {
+  amendmentsFor,
+  articleCounts,
+  groupRelatedByType,
+  itemsForArticle,
+  notesFor,
+  otherVersions,
+  practiceArticles,
+  shownVersion,
+  versionAsOf,
+  versionsNewestFirst,
+} from './components/legal-panels-logic'
+export type { ArticleCounts } from './components/legal-panels-logic'
+export { PrintLegalAct } from './templates/print-legal-act'
+export type { PrintLegalActProps } from './templates/print-legal-act'
