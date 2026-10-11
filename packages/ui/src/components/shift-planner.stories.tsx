@@ -3,7 +3,7 @@ import { useRef, useState } from 'react'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { settle } from '../primitives/story-helpers'
 import { createFormat } from '../provider/format'
-import type { ShiftAssignment, ShiftChange } from './shift-logic'
+import type { ShiftAssignment, ShiftChange, ShiftConflict, ShiftConflicts } from './shift-logic'
 import { ShiftPlanner, type ShiftPlannerProps } from './shift-planner'
 import {
   applyShiftChanges,
@@ -26,6 +26,39 @@ import {
   WEEK,
 } from './shift-story-data'
 import { ExampleProvider, PhoneFrame, StoryProvider } from './story-frames'
+
+/**
+ * The application's check of a rotation's shifts (illustrative): a day that already has a
+ * shift is a double booking; a students' contract may hold 16 hours a week.
+ */
+function storeRotationCheck(
+  additions: readonly { rowId: string; date: string; templateId: string }[],
+): ShiftConflicts {
+  const result: Record<string, Record<string, ShiftConflict[]>> = {}
+  const add = (rowId: string, date: string, conflict: ShiftConflict) => {
+    const row = (result[rowId] ??= {})
+    ;(row[date] ??= []).push(conflict)
+  }
+  for (const each of additions) {
+    const existing = STORE_ASSIGNMENTS.find(
+      (shift) => shift.rowId === each.rowId && shift.date === each.date,
+    )
+    if (existing !== undefined) {
+      add(each.rowId, each.date, { tone: 'danger', text: 'Already has a shift that day' })
+    }
+  }
+  const nemanja = additions.filter((each) => each.rowId === 'nemanja')
+  const first = nemanja[0]
+  if (first !== undefined) {
+    const hours =
+      (STORE_ASSIGNMENTS.filter((shift) => shift.rowId === 'nemanja').length + nemanja.length) * 8
+    add('nemanja', first.date, {
+      tone: 'warning',
+      text: `Students’ contract: ${String(hours)} h a week over the illustrative limit of 16 h`,
+    })
+  }
+  return result
+}
 
 /** The application around the planner: it applies each change and moves the period. */
 function Planner(props: Partial<ShiftPlannerProps>) {
@@ -564,13 +597,65 @@ export const Dragging: Story = {
   },
 }
 
+/**
+ * "Apply rotation…" with nobody selected: the application suggests the person
+ * (`rotationPeople`), the dialog shows what it will add, and the application's check of the
+ * added shifts (here an illustrative weekly limit of a students' contract) before Apply.
+ */
+export const ApplyRotationChecked: Story = {
+  name: "Apply rotation, the application's checks",
+  render: () => (
+    <ExampleProvider>
+      <Planner
+        status="draft"
+        defaultRotationOpen
+        rotationPeople={['nemanja']}
+        rotationConflicts={storeRotationCheck}
+      />
+    </ExampleProvider>
+  ),
+  play: async () => {
+    await settle()
+    const dialog = within(document.body).getByRole('dialog', { name: 'Apply a rotation' })
+    await expect(within(dialog).getByRole('status')).toHaveTextContent(
+      '5 assignments will be added.',
+    )
+    await expect(
+      within(dialog).getByRole('region', { name: 'What it will add' }),
+    ).toHaveTextContent('Nemanja Pavlović')
+    await expect(dialog).toHaveTextContent('The checks found 1 conflict')
+  },
+}
+
+/** "Apply rotation…" with nothing selected and no suggestion: everyone in view is chosen. */
+export const ApplyRotationEveryone: Story = {
+  name: 'Apply rotation, everyone in view',
+  render: () => (
+    <ExampleProvider>
+      <Planner
+        status="draft"
+        defaultRotationOpen
+        defaultGroupBy="team"
+        defaultCollapsed={['stock']}
+      />
+    </ExampleProvider>
+  ),
+  play: async () => {
+    await settle()
+    const dialog = within(document.body).getByRole('dialog', { name: 'Apply a rotation' })
+    const preview = within(dialog).getByRole('region', { name: 'What it will add' })
+    await expect(preview).toHaveTextContent('Stefan Nikolić')
+    await expect(preview).not.toHaveTextContent('Luka Đorđević')
+  },
+}
+
 /** "Apply rotation…": a pattern for two people over the week, reported as additions. */
 export const Rotation: Story = {
   name: 'Rotation, interaction',
   tags: ['interaction'],
   render: () => (
     <ExampleProvider>
-      <Planner status="draft" assignments={[]} conflicts={{}} />
+      <Planner status="draft" assignments={[]} conflicts={{}} rotationPeople={[]} />
     </ExampleProvider>
   ),
   play: async ({ canvasElement }) => {

@@ -14,6 +14,8 @@ import {
   rangeCells,
   removeChanges,
   rotationAssignments,
+  rotationDefaultPeople,
+  rotationPreview,
   shiftPeriod,
   shiftSpan,
   shiftsByWeek,
@@ -281,5 +283,44 @@ describe('shiftsByWeek', () => {
       ['2026-10-26', '2026-11-01', 'date'],
     ])
     expect(weeks[0]?.shifts.map((shift) => shift.id)).toEqual(['a', 'b'])
+  })
+})
+
+describe('rotationDefaultPeople', () => {
+  const shown = ['ana', 'ivan', 'mila']
+  it('takes the selected range first, each person once', () => {
+    expect(rotationDefaultPeople(['ivan', 'ivan', 'ana'], ['mila'], shown)).toEqual(['ivan', 'ana'])
+  })
+  it("then the application's choice, only people in view", () => {
+    expect(rotationDefaultPeople([], ['mila', 'zoran', 'ana'], shown)).toEqual(['mila', 'ana'])
+    expect(rotationDefaultPeople([], [], shown)).toEqual([])
+  })
+  it('else everyone in view', () => {
+    expect(rotationDefaultPeople([], undefined, ['ana', 'ivan', 'ana'])).toEqual(['ana', 'ivan'])
+  })
+})
+
+describe('rotationPreview', () => {
+  it('lists every day of the period per person, null for a day off', () => {
+    const additions = [
+      { rowId: 'ana', date: '2026-10-05', templateId: 'early' },
+      { rowId: 'ivan', date: '2026-10-06', templateId: 'late' },
+    ]
+    expect(rotationPreview(additions, ['ivan', 'ana'], ['2026-10-05', '2026-10-06'])).toEqual([
+      {
+        rowId: 'ivan',
+        days: [
+          { date: '2026-10-05', templateId: null },
+          { date: '2026-10-06', templateId: 'late' },
+        ],
+      },
+      {
+        rowId: 'ana',
+        days: [
+          { date: '2026-10-05', templateId: 'early' },
+          { date: '2026-10-06', templateId: null },
+        ],
+      },
+    ])
   })
 })

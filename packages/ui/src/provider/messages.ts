@@ -933,6 +933,11 @@ export interface LiroMessages {
   'shifts.rotationApply': string
   'shifts.rotationSummary': (count: number, countText: string) => string
   'shifts.rotationNoPeople': string
+  /** "Apply rotation…": the heading of what it will add, per person and day. */
+  'shifts.rotationPreview': string
+  /** The application's checks of the shifts it would add: "The checks found 2 conflicts". */
+  'shifts.rotationConflicts': (count: number, countText: string) => string
+  'shifts.rotationNoConflicts': string
   /** "Move to…": the dialog that moves one assignment without dragging. */
   'shifts.moveTitle': (label: string) => string
   'shifts.movePerson': string

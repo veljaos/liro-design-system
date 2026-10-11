@@ -588,6 +588,10 @@ export const messagesEn: LiroMessages = {
   'shifts.rotationSummary': (count, countText) =>
     `${countText} ${count === 1 ? 'assignment' : 'assignments'} will be added.`,
   'shifts.rotationNoPeople': 'Choose at least one person.',
+  'shifts.rotationPreview': 'What it will add',
+  'shifts.rotationConflicts': (count, countText) =>
+    count === 1 ? 'The checks found 1 conflict' : `The checks found ${countText} conflicts`,
+  'shifts.rotationNoConflicts': 'The checks found no conflicts.',
   'shifts.moveTitle': (label) => `Move ${label}`,
   'shifts.movePerson': 'Person',
   'shifts.moveDay': 'Day',
