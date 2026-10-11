@@ -1960,6 +1960,92 @@ pre-wrap`, the separator image — are classes). The extensions and editor props
   the drawer with Start cleaning and Mark clean; a departing room waits for check-out, with the
   reason). The states and tones are one map for the screens (`OCCUPANCY`, `HOUSEKEEPING`).
 
+- **2026-10-11 — FloorPlan's background, polygon areas and level (P5.25a, owner: "no new
+  library; only inside the existing FloorPlan").** `components/floor-plan.tsx`, the logic in
+  `floor-plan-logic.ts` (tested in `floor-plan-polygon.test.ts`: `polygonBounds`,
+  `polygonCentroid`, `pointInPolygon`, `isPolygonArea`, `areaBox`, `areaContains`,
+  `areaLabelPoint`, `svgPoints`, `percentPoint`, `levelWidth`, `levelText`; the list groups by
+  polygon areas as by rectangles). Every existing story keeps its look: nothing changes without
+  the new props.
+  1. **`background`** (`FloorBackground`: `src`, `srcDark`, `x`, `y`, `width`, `height` in plan
+     units — default the whole plan —, `alt`, `opacity`): the building's own plan (a drawing, an
+     SVG, a PDF page the application renders as an image) drawn as an `<img>` under the areas and
+     items, placed in percentages of the plan like everything else, so it scales, zooms and
+     scrolls with the items and stays aligned (no measuring). `decoding="sync"`, never a target,
+     not draggable. **Decorative by default** (`alt` ''; `aria-hidden`): the plan is read through
+     its items and the list; with `alt` it is an image with words. Over a drawing the areas are
+     outlines only (no fill, so the drawing shows) and their names stand on a small raised tag.
+  2. **Dark theme (decided here, kept simple):** the application may pass `srcDark`; without it
+     the dark theme shows `src` inverted with its hues turned back (`invert hue-rotate-180`), which
+     suits what a floor plan almost always is — dark lines on white or on nothing — and gives
+     light lines on the dark page. A photograph or a coloured plan needs its own `srcDark`. The
+     theme is read from the provider's `colorScheme` (no `dark:` variant, D6).
+  3. **Polygon areas:** `FloorArea` is now `FloorRectArea | FloorPolygonArea` — a rectangle (as
+     before) or `points` (corners in plan units, in order) with an optional `labelAt`. A polygon is
+     drawn in its own SVG layer over the canvas whose viewBox is the plan
+     (`preserveAspectRatio="none"`; the canvas keeps the plan's aspect ratio, so the units are
+     square), in the areas' order: a 1px dashed `border.default` outline that does not scale
+     (`vector-effect`), filled with `surface.sunken` (none over a background) — the rectangles'
+     look. Its name is HTML text (checked like any text, selectable) centred on `labelAt`, else
+     on the outline's **centroid** (`polygonCentroid`: the centre of the surface; the mean of the
+     corners for a polygon without one) — `labelAt` is for an L whose centroid falls under its
+     places. The list groups by polygon areas as by rectangles; the plan is still not mirrored in
+     right-to-left. `areaContains` / `pointInPolygon` are exported for the application's own
+     checks (a bed inside its room); the examples' dataset checks use them.
+  4. **`level` on an item** (`FloorLevel`: `percent`, a decimal string from the application, and
+     optional `label`): how full a bin, a car park or a tank is. Words in the item's name after its
+     state and in the list ("45% full", `floorPlan.level` with `format.percent`, or the
+     application's `label` — "About 40% full"), and a bar: 6px, rounded, in the current colour
+     (the state's tone on the plan, secondary text in the list), its width `clamp(0%, 45%, 100%)`
+     — CSS keeps it between 0 and 100, so the plan never turns the application's string into a
+     number (D4); a value that is not a decimal string draws no bar, only the words. The level is
+     not a state: the state (in stock, low, empty …) is the application's, by its own rule.
+  5. **Kind `place`**: any other place to choose — a bin, a bed, a desk, a parking space — drawn
+     like a table and named on the plan; not a fixture. Racks' signs in the warehouse are
+     `counter` fixtures.
+  - Message (new, at the end of `messages.ts` under "P5.25a FloorPlan"): `floorPlan.level`.
+  - Stories (Components/FloorPlan): "Background", "Background, own dark image", "Background,
+    zoomed", "Background, editing", "Background, phone width", "Background, Arabic", "Polygon
+    areas", "Polygon areas, list", "Level", "Level, list", "Level, phone width", "Level,
+    Japanese". The drawings are SVG built in the story data (`drawingUri` in
+    `floor-plan-places-story-data.ts`: wall lines, fittings, windows, `currentColor` lines) and
+    passed as `data:` URIs, so a picture never waits for the network; the plays wait until the
+    image is decoded.
+- **2026-10-11 — Example screens of P5.25a (group N).** `data-N.ts`, `screens-N.tsx`,
+  `GROUP_N_ROUTES`, `checkGroupN` at the end of `dataset-checks.ts`, a story block at the end of
+  `examples.stories.tsx`. Desktop and phone for every screen.
+  1. **Magacin Novi Sad's hall** (`/warehouse/plan`, Jelena Marković, the warehouse of group I's
+     handheld): zones A–D of racks (a sign "A2" at each rack's start), the bulk yard E as a
+     polygon round the dispatch dock, receiving and dispatch; 84 bins, each with the warehouse
+     system's percentage and its state (in stock, low under 20%, empty, count open, blocked);
+     key figures (bins, empty, low, blocked); the list by rack. A bin opens its record in an end
+     Drawer — state, fill level, note, the stock lines (item, code, quantity and unit) — and its
+     actions: **"Count now"** on A-02-03 goes to the handheld's count CC-2026-0031 (its stock is
+     what that count expects), **"Pick here"** on B-03-04 (line 5 of PL-2026-0418) to the pick
+     list; elsewhere "Count" starts a count, "Unblock" a blocked bin. The pick list's locations
+     hold its items (checked).
+  2. **Interno odeljenje 3, Opšta bolnica „Dunavski kej“** (`/ward/interno-3`, nurse Marija
+     Đorđević): the ward's drawing under the plan (decorative), rooms 1–6 and the anteroom as
+     rectangles, the corridor with its lobby, room 7 round it and the isolation room as polygons;
+     17 beds free, occupied, needing cleaning or blocked (the reason as the note). **The
+     patient's name is never on the plan or in the list**: a bed opens in an end Drawer where the
+     name is a MaskedValue (P5.14) with the hospital's reasons and "Other" — in the page only
+     after a reason, hidden again when the drawer closes —, the admission date and the doctor;
+     actions by state, the main last (Admit patient…; Transfer…, Discharge — which leaves the bed
+     needing cleaning; Mark clean; Unblock).
+  3. **Kvadrat Gradnja's office, floor 2** (`/office/desks`, Milica): the architect's drawing
+     (opacity 0.8) under the open space (a polygon round the kitchen), two meeting rooms, the
+     quiet room and the kitchen; 22 desks for a **day chosen from the provider's today** (the
+     next five working days, "Today, …" first); free, booked (the colleague's short name on the
+     desk: "Stefan N."), Milica's own, one out of use with its reason. A chosen desk's card
+     beside the plan (on phones above the list): day, area, equipment, booked by, and **Book**
+     (the office's rule: one desk a person a day — booking another gives the first back, said in
+     the toast) or **Cancel booking**.
+  - **Checked when the examples load:** every bin, bed and desk inside its zone, room or area
+    (polygons included, `areaContains`) and none overlapping; bin codes unique; the pick list's
+    locations hold its items; A-02-03 holds what the count expects; occupied beds and only they
+    have a patient; nobody has two desks a day, no booking on a desk out of use.
+
 ### Diagrams (P5.26)
 
 - **2026-10-11 — Diagram on React Flow and dagre, `@veljaos/ui/diagram` (P5.26, owner: "React Flow (MIT) with dagre (MIT), a BPMN-style notation drawn by us with tokens; no bpmn-js, no BPMN XML").** `packages/ui/src/diagram/`: `diagram.tsx` (the component and its state), `diagram-nodes.tsx` (a step, a lane, a connection, drawn inside React Flow), `diagram-parts.tsx` (run summary and attention, problems, the steps list, the three dialogs, the kinds' glyphs), `diagram-logic.ts` (pure, tested: `layoutDiagram`, `stepOrder`, `diagramKeyTarget`, `keyMoveDelta`, `addStepOperations`, `removeStepOperations`, `applyDiagramOperations`, `canConnect`, `connectionTargets`, `positionAfter`, `nextDiagramId`, `runCounts`, `problemsByTarget`, `drawnX`/`layoutX`), `diagram.css`.
