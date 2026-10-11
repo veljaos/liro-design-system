@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   absoluteMinutes,
   addDays,
+  dayListSide,
   addMonths,
   axisMinutes,
   axisMoment,
@@ -355,5 +356,14 @@ describe('Timetable', () => {
     expect(initialTimetableDay(days, '2026-10-14', undefined)).toBe(3)
     expect(initialTimetableDay(days, '2026-10-11', undefined)).toBe(1)
     expect(initialTimetableDay(days, '2026-10-14', 5)).toBe(5)
+  })
+})
+
+describe('dayListSide', () => {
+  it('opens below with room for a useful part of the list or as much room as above, else above', () => {
+    expect(dayListSide(320, 430, 720)).toBe('bottom')
+    expect(dayListSide(360, 360, 720)).toBe('bottom')
+    expect(dayListSide(60, 100, 180)).toBe('bottom')
+    expect(dayListSide(500, 580, 720)).toBe('top')
   })
 })

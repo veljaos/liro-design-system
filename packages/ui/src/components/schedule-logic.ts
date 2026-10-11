@@ -603,3 +603,22 @@ export function initialTimetableDay(
   if (days.includes(weekday)) return weekday
   return days[0] ?? 1
 }
+
+/** The room under a month cell, in px, from which its day list opens below it (dayListSide). */
+export const DAY_LIST_ROOM = 240
+
+/**
+ * The side a month cell's day list opens on: below the cell, as a list opens, when there is room
+ * for a useful part of it (DAY_LIST_ROOM) or at least as much room as above; else above. Chosen
+ * once when the list opens and then kept: letting the popover flip by its own height, while its
+ * height follows the room on its side, made it settle above or below depending on when it was
+ * measured (P5 part 2).
+ */
+export function dayListSide(
+  cellTop: number,
+  cellBottom: number,
+  viewportHeight: number,
+): 'top' | 'bottom' {
+  const below = viewportHeight - cellBottom
+  return below >= DAY_LIST_ROOM || below >= cellTop ? 'bottom' : 'top'
+}

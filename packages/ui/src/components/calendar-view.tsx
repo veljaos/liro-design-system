@@ -2,6 +2,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import {
   useEffect,
   useId,
+  useLayoutEffect,
   useRef,
   useState,
   type CSSProperties,
@@ -21,6 +22,7 @@ import {
   calendarKeyTarget,
   CALENDAR_VIEWS,
   cellEvents,
+  dayListSide,
   layoutDay,
   localDateTime,
   localOfAbsolute,
@@ -763,6 +765,17 @@ function MonthGrid(
   const [focus, setFocus] = useState<string>(props.date)
   const focusDay = days.includes(focus) ? focus : props.date
   const [openDay, setOpenDay] = useState<string | null>(props.defaultOpenDay ?? null)
+  // The side of the open day list, measured from its cell before it is shown (dayListSide).
+  const [openSide, setOpenSide] = useState<{ day: string; side: 'top' | 'bottom' } | null>(null)
+  useLayoutEffect(() => {
+    if (openDay === null) return
+    const cell = container.current?.querySelector<HTMLElement>(
+      `[data-cell="${CSS.escape(openDay)}"]`,
+    )
+    if (cell === null || cell === undefined) return
+    const box = cell.getBoundingClientRect()
+    setOpenSide({ day: openDay, side: dayListSide(box.top, box.bottom, window.innerHeight) })
+  }, [openDay, container])
 
   const ofDay = (day: string) => props.read.filter((each) => onDay(each.span, day))
 
@@ -919,8 +932,10 @@ function MonthGrid(
                 }}
               >
                 <PopoverAnchor asChild>{cell}</PopoverAnchor>
-                {openDay === day && (
+                {openDay === day && openSide?.day === day && (
                   <PopoverContent
+                    side={openSide.side}
+                    avoidCollisions={false}
                     align="start"
                     aria-label={dateText}
                     className="flex max-h-(--radix-popover-content-available-height) w-80 flex-col gap-2 overflow-y-auto"
