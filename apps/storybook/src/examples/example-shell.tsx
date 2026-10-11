@@ -240,6 +240,12 @@ export const TONES = {
   Confirmed: 'success',
   Excused: 'neutral',
   'Not excused': 'warning',
+  // Legal information (P5.27)
+  'In force': 'success',
+  'Partly in force': 'warning',
+  'Not yet in force': 'neutral',
+  'No longer in force': 'danger',
+  Final: 'success',
 } as const
 
 /** A status of the examples. */
