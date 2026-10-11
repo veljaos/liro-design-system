@@ -33,7 +33,9 @@ import {
  * completion is a PrintCertificate (P5.15) passed as its preview.
  * - Header: the course's title (h1) and a line under it at the start; the progress at the end
  *   on desktop, under the title on phones: "7 of 12 lessons" (`format.number`) over a ProgressBar.
- * - Outline (desktop: a 300px card at the start, sticky under the shell; phones: a Drawer from
+ * - Outline (desktop: a 300px card at the start that scrolls with the page — a course's outline is
+ *   taller than the view, so a sticky one hid its last lessons or needed a scroll of its own, and
+ *   the pager at the lesson's end leads on; phones: a Drawer from
  *   the start side, opened by "Course outline" above the lesson — the content first): the
  *   modules (h3, "3 of 4 done"), each a list of lessons. A lesson's state in words, with an icon:
  *   done (CircleCheck in success, "Done" in its line), to do (Circle), locked (Lock, "Locked:
@@ -474,7 +476,7 @@ export function CoursePage(props: CoursePageProps) {
           {!empty && (
             <nav
               aria-label={messages['course.outline']}
-              className="sticky top-4 box-border flex w-75 shrink-0 flex-col gap-3 rounded-lg border border-solid border-default bg-surface-raised py-3"
+              className="box-border flex w-75 shrink-0 flex-col gap-3 rounded-lg border border-solid border-default bg-surface-raised py-3"
             >
               <h2 className={cn('m-0 px-3 text-sm font-semibold text-secondary', TEXT_DIRECTION)}>
                 {messages['course.outline']}
