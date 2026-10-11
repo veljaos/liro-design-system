@@ -1034,3 +1034,54 @@ export type {
 export { GazetteIssues } from './components/gazette-issues'
 export type { GazetteIssue, GazetteIssuesProps } from './components/gazette-issues'
 export { treeFilterIds, treeFilterLabels } from './components/filter-logic'
+// ── P5.27 legal text ──
+export { LegalText } from './components/legal-text'
+export type { LegalTextHandle, LegalTextProps } from './components/legal-text'
+export { LegalContents } from './components/legal-contents'
+export type { LegalContentsProps } from './components/legal-contents'
+export { LegalCompare } from './components/legal-compare'
+export type { LegalCompareProps, LegalCompareVersion } from './components/legal-compare'
+export {
+  articleBlocks,
+  articleText,
+  compareArticles,
+  compareBlocks,
+  comparisonCounts,
+  findLegalArticle,
+  firstReference,
+  flattenLegalNodes,
+  foldForSearch,
+  inlineText,
+  latinTag,
+  legalAncestors,
+  legalArticles,
+  legalContentsTree,
+  legalHeadingIds,
+  legalSearchIndex,
+  legalTextParts,
+  LEGAL_ENTRY_ESTIMATE,
+  LEGAL_SEARCH_MIN_LENGTH,
+  mapArticleText,
+  mapFootnotesText,
+  mapLegalText,
+  mergeById,
+  paragraphText,
+  searchLegalIndex,
+  searchLegalText,
+  serbianScript,
+  stepHit,
+  transliterateCyrillicToLatin,
+  transliterates,
+  wordDiff,
+} from './components/legal-logic'
+export type {
+  ArticleBlock,
+  ArticleChangeKind,
+  ArticleComparison,
+  BlockComparison,
+  DiffSegment,
+  LegalEntry,
+  LegalSearchHit,
+  LegalSearchIndex,
+  LegalTextPart,
+} from './components/legal-logic'
