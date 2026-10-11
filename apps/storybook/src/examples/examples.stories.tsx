@@ -4319,3 +4319,100 @@ export const BankImportRunRetry: Story = {
     await diagramReady(canvasElement)
   },
 }
+
+// ── P5.27 group P: legal search and the gazette ──
+// (Imports here, inside the block, so the blocks merge without touching the top.)
+import { P_ROUTES } from './data-P'
+
+/**
+ * The legal search: "site records" in building works, in force today (06.10.2026.) — five
+ * illustrative acts and decisions, four on the first page, the best first; each match marked,
+ * with the article it is in. The area and the date in force are pills; the type, status and
+ * issuer stand in the row.
+ */
+export const LegalSearch: Story = {
+  name: 'Legal search',
+  render: () => <ExampleApp start={P_ROUTES.search} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('5 results')).toBeVisible()
+    await expect(canvas.getByText('Area: Building works')).toBeVisible()
+    await expect(canvas.getByText('In force between: 06.10.2026. – 06.10.2026.')).toBeVisible()
+    await expect(
+      canvas.getByRole('link', { name: 'Law on Illustrative Building Works' }),
+    ).toBeVisible()
+    await expect(canvas.getByRole('link', { name: 'Found in Article 57' })).toHaveAttribute(
+      'href',
+      '#/legal/acts/building-works/article-57',
+    )
+    await expect(canvas.getByRole('button', { name: 'Next' })).toBeEnabled()
+  },
+}
+
+export const LegalSearchPhone: Story = {
+  name: 'Legal search, phone',
+  render: () => <OnPhone start={P_ROUTES.search} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(within(canvasElement).getByText('5 results')).toBeVisible()
+  },
+}
+
+/** Searching other words, sorting, the next page and clearing the filters: the application answers. */
+export const LegalSearchInteraction: Story = {
+  name: 'Legal search, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={P_ROUTES.search} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const body = within(document.body)
+    await userEvent.click(canvas.getByRole('button', { name: 'Next' }))
+    const results = canvas.getByRole('list', { name: 'Search results' })
+    await expect(within(results).getAllByRole('listitem')).toHaveLength(1)
+    await userEvent.click(canvas.getByRole('button', { name: 'Sort: Relevance' }))
+    await userEvent.click(await body.findByRole('menuitemradio', { name: 'Title' }))
+    await waitFor(() => expect(canvas.getByRole('button', { name: 'Sort: Title' })).toBeVisible())
+    await userEvent.click(canvas.getByRole('button', { name: 'Clear all' }))
+    await expect(canvas.getByText('7 results')).toBeVisible()
+    const search = canvas.getByRole('textbox', { name: 'Search acts…' })
+    await userEvent.clear(search)
+    await userEvent.type(search, 'building permit')
+    await waitFor(() => expect(canvas.getByText('1 result')).toBeVisible())
+    await expect(
+      canvas.getByRole('link', { name: 'Decree on Illustrative Construction Fees' }),
+    ).toBeVisible()
+  },
+}
+
+/** "New in the Illustrative Gazette": three issues, newest first, with "Show more issues". */
+export const GazetteNews: Story = {
+  name: 'New in the Illustrative Gazette',
+  render: () => <ExampleApp start={P_ROUTES.gazette} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvasElement.querySelectorAll('[data-slot="gazette-issue"]')).toHaveLength(3)
+    await expect(canvas.getByRole('button', { name: 'Show more issues' })).toBeVisible()
+  },
+}
+
+export const GazetteNewsPhone: Story = {
+  name: 'New in the Illustrative Gazette, phone',
+  render: () => <OnPhone start={P_ROUTES.gazette} />,
+}
+
+/** "Show more issues" loads the two older issues. */
+export const GazetteNewsInteraction: Story = {
+  name: 'New in the Illustrative Gazette, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={P_ROUTES.gazette} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Show more issues' }))
+    await expect(canvasElement.querySelectorAll('[data-slot="gazette-issue"]')).toHaveLength(5)
+    await expect(canvas.queryByRole('button', { name: 'Show more issues' })).toBeNull()
+  },
+}

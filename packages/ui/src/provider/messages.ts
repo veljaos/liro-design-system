@@ -1566,4 +1566,23 @@ export interface LiroMessages {
   'diagram.stepAction': (action: string, label: string) => string
   /** The label dialog's checkbox for a decision's connection. */
   'diagram.defaultWay': string
+  // P5.27 legal search
+  /** The name of the search results' list. */
+  'legalSearch.results': string
+  /** How many acts were found: "128 results", "More than 10.000 results" (not exact). */
+  'legalSearch.count': (count: number, text: string, exact: boolean) => string
+  /** The sort button: "Sort: Relevance". */
+  'legalSearch.sortBy': (label: string) => string
+  /** The link to the article a result matched in: "Found in Article 57". */
+  'legalSearch.foundIn': (article: string) => string
+  /** A result's gazette references after the gazette's name: "Illustrative Gazette No. 12/2016, 47/2018". */
+  'legalSearch.gazette': (gazette: string, numbers: string) => string
+  /** "Try again" after the search failed. */
+  'legalSearch.retry': string
+  /** GazetteIssues: an issue's day, its number of acts, "Show more issues", the empty state. */
+  'gazette.published': (date: string) => string
+  'gazette.acts': (count: number, text: string) => string
+  'gazette.showMore': string
+  'gazette.emptyTitle': string
+  'gazette.emptyDescription': string
 }

@@ -29,12 +29,15 @@ import {
   type FilterDefinition,
   type FilterValue,
   type NumberRange,
+  treeFilterIds,
   type SortColumn,
 } from './filter-logic'
 import { MultiSelectField } from './multi-select-field'
 import { NumberField } from './number-field'
 import { SelectField } from './select-field'
 import { TextField } from './text-field'
+import { treeAncestors } from './tree-logic'
+import { TreeView } from './tree-view'
 import { usePhone } from './use-phone'
 
 /*
@@ -54,6 +57,8 @@ import { usePhone } from './use-phone'
  *   controls stacked 12px apart.
  * - Inline widths: select and text 180px, multiSelect 220px, dateRange 240px, boolean 140px,
  *   each end of a number range at least 140px, growing with its number (P3.6d).
+ * - A tree (P5.27: an act's area) is always in the drawer, counted among `inline` or not: its
+ *   label over a TreeView with checkboxes (or one choice), the chosen nodes' branches open.
  * - P3.6 (owner): an inline multiSelect keeps the control height, its choices summed up on one
  *   line ("Alfa Trade", "2 selected"); a number range has "From" and "To" labels (messages); the
  *   actions, when they do not fit beside search and filters, take their own line ABOVE them,
@@ -116,6 +121,7 @@ const INLINE_WIDTH: Record<FilterDefinition['type'], string> = {
   dateRange: 'w-60',
   boolean: 'w-35',
   numberRange: '',
+  tree: '',
 }
 
 interface ControlProps {
@@ -125,6 +131,8 @@ interface ControlProps {
   /** In the row (fixed widths) or in the drawer (full width). */
   inline: boolean
   delay: number
+  /** The bar's phone layout: a tree takes its touch rows (44px). */
+  phone?: boolean
 }
 
 /** A text filter, reported after typing pauses. */
@@ -203,6 +211,41 @@ function NumberRangeFilter({ filter, value, onChange, inline }: ControlProps) {
   )
 }
 
+/**
+ * A choice in a hierarchy (P5.27), in the drawer only: the filter's label over a TreeView, 4px
+ * apart, as a field's label stands over its control; checkboxes, or one node with `selection`
+ * 'single'. It opens on the branches of the chosen nodes (or the filter's `defaultExpanded`).
+ */
+function TreeFilter(props: {
+  filter: Extract<FilterDefinition, { type: 'tree' }>
+  value: unknown
+  onChange: (value: FilterValue) => void
+  phone: boolean
+}) {
+  const { filter } = props
+  const labelId = useId()
+  const chosen = treeFilterIds(props.value)
+  const expanded = filter.defaultExpanded ?? [
+    ...new Set(chosen.flatMap((id) => treeAncestors(filter.nodes, id))),
+  ]
+  return (
+    <div role="group" aria-labelledby={labelId} className="flex min-w-0 flex-col gap-1">
+      <span id={labelId} className={cn('text-sm font-semibold text-primary', TEXT_DIRECTION)}>
+        {filter.label}
+      </span>
+      <TreeView
+        nodes={filter.nodes}
+        label={filter.label}
+        selectionMode={filter.selection === 'single' ? 'single' : 'multiple'}
+        selected={chosen}
+        onSelectedChange={props.onChange}
+        defaultExpanded={expanded}
+        layout={props.phone ? 'phone' : 'desktop'}
+      />
+    </div>
+  )
+}
+
 /** One filter's control, by its kind. */
 function FilterControl(props: ControlProps) {
   const { messages } = useLiro()
@@ -267,6 +310,15 @@ function FilterControl(props: ControlProps) {
       return <NumberRangeFilter {...props} />
     case 'text':
       return <TextFilter {...props} />
+    case 'tree':
+      return (
+        <TreeFilter
+          filter={filter}
+          value={value}
+          onChange={onChange}
+          phone={props.phone === true}
+        />
+      )
   }
 }
 
@@ -432,8 +484,11 @@ export function FilterBar(props: FilterBarProps) {
   const phone = props.layout === undefined ? viewportPhone : props.layout === 'phone'
   const delay = props.searchDelay ?? 300
   const inlineCount = phone ? 0 : Math.max(0, props.inline ?? 0)
-  const inlineFilters = props.filters.slice(0, inlineCount)
-  const drawerFilters = props.filters.slice(inlineCount)
+  // A tree is never in the row (P5.27): among the first `inline` it stays in the drawer.
+  const inlineFilters: readonly FilterDefinition[] = props.filters
+    .slice(0, inlineCount)
+    .filter((filter) => filter.type !== 'tree')
+  const drawerFilters = props.filters.filter((filter) => !inlineFilters.includes(filter))
 
   const setValue = (filter: FilterDefinition, value: FilterValue) => {
     props.onValuesChange({ ...props.values, [filter.id]: value })
@@ -448,6 +503,7 @@ export function FilterBar(props: FilterBarProps) {
       }}
       inline={inline}
       delay={delay}
+      phone={phone}
     />
   )
   const pills = drawerFilters.flatMap((filter) => {

@@ -1073,4 +1073,19 @@ export const messagesEn: LiroMessages = {
   'diagram.stepState': (label, state) => `${label}: ${state}`,
   'diagram.stepAction': (action, label) => `${action}: ${label}`,
   'diagram.defaultWay': 'Default way out, when no condition holds',
+  // P5.27 legal search
+  'legalSearch.results': 'Search results',
+  'legalSearch.count': (count, text, exact) => {
+    if (!exact) return `More than ${text} results`
+    return count === 1 ? `${text} result` : `${text} results`
+  },
+  'legalSearch.sortBy': (label) => `Sort: ${label}`,
+  'legalSearch.foundIn': (article) => `Found in ${article}`,
+  'legalSearch.gazette': (gazette, numbers) => `${gazette} ${numbers}`,
+  'legalSearch.retry': 'Try again',
+  'gazette.published': (date) => `Published ${date}`,
+  'gazette.acts': (count, text) => (count === 1 ? `${text} act` : `${text} acts`),
+  'gazette.showMore': 'Show more issues',
+  'gazette.emptyTitle': 'No new issues',
+  'gazette.emptyDescription': 'New issues appear here when they are published.',
 }

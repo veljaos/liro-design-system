@@ -556,3 +556,122 @@ export const Japanese: Story = {
     </StoryProvider>
   ),
 }
+
+// ── P5.27: the tree filter ──
+
+/** An area of law as a tree (P5.27): a filter of the 'tree' kind, always in the drawer. */
+const AREA_FILTER: FilterDefinition = {
+  id: 'area',
+  label: 'Area',
+  type: 'tree',
+  nodes: [
+    {
+      id: 'construction',
+      label: 'Construction',
+      children: [
+        { id: 'permits', label: 'Building permits' },
+        { id: 'site', label: 'Site safety' },
+      ],
+    },
+    {
+      id: 'labour',
+      label: 'Labour',
+      children: [
+        { id: 'contracts', label: 'Employment contracts' },
+        { id: 'time', label: 'Working time' },
+      ],
+    },
+    { id: 'tax', label: 'Taxes' },
+  ],
+}
+
+/**
+ * A tree filter in the drawer (P5.27): the label over a TreeView with checkboxes, the chosen
+ * branch open; a checked branch's pill names only the branch ("Area: Construction"). Among the
+ * `inline` filters it still stands in the drawer.
+ */
+export const TreeFilter: Story = {
+  name: 'Tree filter',
+  render: () => (
+    <Controlled
+      inline={2}
+      layout="desktop"
+      defaultFiltersOpen
+      filters={[AREA_FILTER, ...FILTERS.slice(0, 1)]}
+      initial={{ area: ['construction', 'permits', 'site', 'time'] }}
+    />
+  ),
+  play: async ({ canvasElement }) => {
+    const drawer = await within(document.body).findByRole('dialog', { name: 'Filters' })
+    await settle()
+    const tree = within(drawer).getByRole('tree', { name: 'Area' })
+    await expect(within(tree).getByRole('treeitem', { name: 'Labour' })).toHaveAttribute(
+      'aria-checked',
+      'mixed',
+    )
+    await expect(
+      within(canvasElement).getByText('Area: Construction, Working time'),
+    ).toBeInTheDocument()
+  },
+}
+
+/** One choice (`selection` 'single'): the chosen node on the selected surface, no checkboxes. */
+export const TreeFilterSingle: Story = {
+  name: 'Tree filter, one choice',
+  render: () => (
+    <Controlled
+      layout="desktop"
+      defaultFiltersOpen
+      filters={[{ ...AREA_FILTER, selection: 'single' }]}
+      initial={{ area: ['contracts'] }}
+    />
+  ),
+  play: async () => {
+    const drawer = await within(document.body).findByRole('dialog', { name: 'Filters' })
+    await settle()
+    await expect(
+      within(drawer).getByRole('treeitem', { name: 'Employment contracts' }),
+    ).toHaveAttribute('aria-selected', 'true')
+  },
+}
+
+/** Phone: the drawer full width, the tree with touch rows. */
+export const TreeFilterPhone: Story = {
+  name: 'Tree filter, phone',
+  render: () => (
+    <PhoneFrame>
+      <Controlled
+        layout="phone"
+        defaultFiltersOpen
+        filters={[AREA_FILTER]}
+        initial={{ area: ['permits'] }}
+      />
+    </PhoneFrame>
+  ),
+  play: async () => {
+    await within(document.body).findByRole('dialog', { name: 'Filters' })
+    await settle()
+  },
+}
+
+/** Checking a branch from the keyboard checks its children; the pill names the branch. */
+export const TreeFilterInteraction: Story = {
+  name: 'Tree filter, interaction',
+  tags: ['interaction'],
+  render: () => <Controlled layout="desktop" filters={[AREA_FILTER]} />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Filters' }))
+    const drawer = await within(document.body).findByRole('dialog', { name: 'Filters' })
+    await settle()
+    const labour = within(drawer).getByRole('treeitem', { name: 'Labour' })
+    labour.focus()
+    await userEvent.keyboard(' ')
+    await expect(labour).toHaveAttribute('aria-checked', 'true')
+    await userEvent.keyboard('{Escape}')
+    await waitFor(() => expect(within(document.body).queryByRole('dialog')).toBeNull())
+    await expect(canvas.getByText('Area: Labour')).toBeVisible()
+    await userEvent.click(canvas.getByRole('button', { name: 'Remove filter: Area' }))
+    await expect(canvas.queryByText('Area: Labour')).toBeNull()
+  },
+}
