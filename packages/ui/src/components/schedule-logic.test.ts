@@ -12,6 +12,7 @@ import {
   clockOf,
   currentPeriod,
   dropPlace,
+  fitOnDays,
   fitOnAxis,
   groupSlots,
   initialTimetableDay,
@@ -306,6 +307,58 @@ describe('ResourceSchedule axis', () => {
     expect(unavailableReason(unavailable, 'r2', at(540), at(570), ZONE)).toBe('Surgery')
     expect(unavailableReason(unavailable, 'r2', at(600), at(630), ZONE)).toBeNull()
     expect(localOfAbsolute(at(570))).toBe('2026-10-12T09:30')
+  })
+})
+
+describe('ResourceSchedule days axis (P5.25)', () => {
+  // Fourteen days as one segment from the first day's midnight, a slot a day.
+  const axis = { days: ['2026-10-06'], dayStart: 0, dayEnd: 14 * 1440, slotMinutes: 1440 }
+  const days = { axis, resources: 3, scale: 'days' as const }
+
+  it('starts a stay on one of the days shown, whatever its length', () => {
+    expect(fitOnDays(axis, 2 * 1440)).toBe(2 * 1440)
+    expect(fitOnDays(axis, -1440)).toBe(0)
+    expect(fitOnDays(axis, 14 * 1440)).toBe(13 * 1440)
+  })
+
+  it('moves a stay by a day, from the leading edge, and never pushes it back to fit', () => {
+    const options = { ...days, direction: 'ltr' as const, orientation: 'horizontal' as const }
+    const place = { resource: 1, start: 11 * 1440 }
+    // Four nights from the twelfth day run past the last day shown: it still moves on.
+    expect(scheduleKeyTarget('ArrowRight', place, 4 * 1440, options)).toEqual({
+      resource: 1,
+      start: 12 * 1440,
+    })
+    expect(scheduleKeyTarget('ArrowLeft', place, 4 * 1440, options)).toEqual({
+      resource: 1,
+      start: 10 * 1440,
+    })
+    expect(
+      scheduleKeyTarget('ArrowLeft', place, 4 * 1440, { ...options, direction: 'rtl' }),
+    ).toEqual({ resource: 1, start: 12 * 1440 })
+    expect(scheduleKeyTarget('ArrowRight', { resource: 1, start: 13 * 1440 }, 1440, options)).toBe(
+      null,
+    )
+    expect(scheduleKeyTarget('ArrowLeft', { resource: 1, start: 0 }, 1440, options)).toBeNull()
+    expect(scheduleKeyTarget('ArrowDown', place, 1440, options)).toEqual({
+      resource: 2,
+      start: 11 * 1440,
+    })
+  })
+
+  it('drops a dragged stay on whole days, inside the days shown', () => {
+    expect(dropPlace({ resource: 0, start: 1440 }, 3, 1, 2 * 1440, days)).toEqual({
+      resource: 1,
+      start: 4 * 1440,
+    })
+    expect(dropPlace({ resource: 0, start: 1440 }, -5, 0, 2 * 1440, days)).toEqual({
+      resource: 0,
+      start: 0,
+    })
+    expect(dropPlace({ resource: 0, start: 12 * 1440 }, 4, 0, 3 * 1440, days)).toEqual({
+      resource: 0,
+      start: 13 * 1440,
+    })
   })
 })
 

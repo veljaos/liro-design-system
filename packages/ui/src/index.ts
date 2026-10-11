@@ -933,3 +933,22 @@ export { courseProgress, findLesson, moduleProgress } from './templates/course-l
 export type { CourseLesson, CourseModule, LessonCount, LessonState } from './templates/course-logic'
 export { QuizResult } from './components/quiz-result'
 export type { QuizResultProps, QuizReviewItem } from './components/quiz-result'
+// ── P5.25 RoomRack ──
+export { RoomRack } from './components/room-rack'
+export type {
+  RackFloor,
+  RackNote,
+  RackRoom,
+  RackState,
+  RoomRackProps,
+} from './components/room-rack'
+export {
+  EMPTY_RACK_FILTER,
+  rackCounts,
+  rackFilterActive,
+  rackKeyTarget,
+  rackMatches,
+  rackSearchText,
+} from './components/room-rack-logic'
+export type { RackFilter, RackPlace, RackSearchable } from './components/room-rack-logic'
+export { fitOnDays } from './components/schedule-logic'

@@ -3562,3 +3562,221 @@ export const StockCountHandheldInteraction: Story = {
     })
   },
 }
+
+// ── P5.25 group L: Hotel ──
+
+import { L_ROUTES } from './data-L'
+
+/**
+ * The rooms' tiles of the rack: their names start with the room number (hidden from assistive
+ * technology too while a drawer is open over the rack).
+ */
+function roomTile(canvasElement: HTMLElement, number: string): HTMLElement {
+  return within(canvasElement).getByRole('button', {
+    name: new RegExp(`^${number}, `),
+    hidden: true,
+  })
+}
+
+/**
+ * Hotel Fruška's front desk on Tuesday 6 October 2026: 6 arrivals, 5 departures, the room rack of
+ * four floors with today's occupancy and housekeeping, worked out from the stays.
+ */
+export const HotelRack: Story = {
+  name: 'Hotel, room rack',
+  render: () => <ExampleApp start={L_ROUTES.rack} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { level: 1, name: 'Room rack' })).toBeVisible()
+    await expect(canvas.getAllByRole('button', { name: /^\d{3}, / })).toHaveLength(40)
+    const occupancy = canvas.getByRole('group', { name: 'Occupancy' })
+    await expect(
+      within(occupancy).getByRole('button', { name: /^Arriving today/ }),
+    ).toHaveTextContent('Arriving today6')
+    await expect(
+      within(occupancy).getByRole('button', { name: /^Departing today/ }),
+    ).toHaveTextContent('Departing today5')
+    await expect(roomTile(canvasElement, '204')).toHaveAccessibleName(
+      /^204, TWN, Departing today, Dirty, Paolo Bianchi, 04\.10\.2026\. – 06\.10\.2026\.$/,
+    )
+    await expect(roomTile(canvasElement, '108')).toHaveAccessibleName(/Out of order.*Bathroom/)
+  },
+}
+
+export const HotelRackPhone: Story = {
+  name: 'Hotel, room rack, phone',
+  render: () => <OnPhone start={L_ROUTES.rack} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(roomTile(canvasElement, '101')).toBeVisible()
+    const rack = canvasElement.querySelector<HTMLElement>('[data-slot="room-rack"]')
+    if (rack === null) throw new Error('no rack')
+    await expect(rack.scrollWidth).toBeLessThanOrEqual(rack.clientWidth)
+  },
+}
+
+/** Room 204 in its drawer: Paolo Bianchi departs today, the folio's balance, Check out. */
+export const HotelDeparture: Story = {
+  name: 'Hotel, departing guest',
+  render: () => <ExampleApp start={L_ROUTES.rackRoom} />,
+  play: async ({ canvasElement }) => {
+    const drawer = await within(document.body).findByRole('dialog', { name: 'Room 204' })
+    await settle()
+    await expect(drawer).toHaveTextContent('Paolo Bianchi')
+    await expect(drawer).toHaveTextContent('21.250,00')
+    await expect(within(drawer).getByRole('button', { name: 'Check out' })).toBeVisible()
+    await expect(within(drawer).queryByRole('button', { name: 'Mark clean' })).toBeNull()
+    await expect(roomTile(canvasElement, '204')).toHaveAttribute('aria-current', 'true')
+  },
+}
+
+export const HotelDeparturePhone: Story = {
+  name: 'Hotel, departing guest, phone',
+  render: () => <OnPhone start={L_ROUTES.rackRoom} />,
+  play: async () => {
+    const drawer = await within(document.body).findByRole('dialog', { name: 'Room 204' })
+    await settle()
+    await expect(within(drawer).getByRole('button', { name: 'Check out' })).toBeVisible()
+  },
+}
+
+/** Room 104: a VIP arriving today, the room inspected and the stay prepaid; Check in. */
+export const HotelArrival: Story = {
+  name: 'Hotel, VIP arrival',
+  render: () => <ExampleApp start={L_ROUTES.rackArrival} />,
+  play: async () => {
+    const drawer = await within(document.body).findByRole('dialog', { name: 'Room 104' })
+    await settle()
+    await expect(drawer).toHaveTextContent('Jelena Stojanović')
+    await expect(drawer).toHaveTextContent('VIP')
+    await expect(within(drawer).getByRole('button', { name: 'Check in' })).toBeEnabled()
+  },
+}
+
+export const HotelArrivalPhone: Story = {
+  name: 'Hotel, VIP arrival, phone',
+  render: () => <OnPhone start={L_ROUTES.rackArrival} />,
+  play: async () => {
+    const drawer = await within(document.body).findByRole('dialog', { name: 'Room 104' })
+    await settle()
+    await expect(within(drawer).getByRole('button', { name: 'Check in' })).toBeVisible()
+  },
+}
+
+/** Checking out: the room turns vacant and dirty, the counts follow. */
+export const HotelCheckOutInteraction: Story = {
+  name: 'Hotel, check out, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={L_ROUTES.rackRoom} />,
+  play: async ({ canvasElement }) => {
+    const drawer = await within(document.body).findByRole('dialog', { name: 'Room 204' })
+    await settle()
+    await userEvent.click(within(drawer).getByRole('button', { name: 'Check out' }))
+    await waitFor(async () => {
+      await expect(
+        within(document.body).getByText('Paolo Bianchi checked out of room 204.'),
+      ).toBeVisible()
+    })
+    await expect(roomTile(canvasElement, '204')).toHaveAccessibleName(/^204, TWN, Vacant, Dirty$/)
+    // The drawer stays open over the rack, which is hidden from assistive technology meanwhile.
+    const occupancy = within(canvasElement).getByRole('group', { name: 'Occupancy', hidden: true })
+    await expect(
+      within(occupancy).getByRole('button', { name: /^Departing today/, hidden: true }),
+    ).toHaveTextContent('Departing today4')
+    notice.dismiss()
+  },
+}
+
+/** The coming two weeks on ResourceSchedule by days: floor 1's rooms, stays as bookings. */
+export const HotelBookings: Story = {
+  name: 'Hotel, bookings',
+  render: () => <ExampleApp start={L_ROUTES.timeline} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { level: 1, name: 'Bookings' })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: /^Claire Martin, Room 101, / })).toBeVisible()
+    await expect(canvas.getByText(/^Unavailable: Bathroom renovation/)).toBeInTheDocument()
+  },
+}
+
+export const HotelBookingsPhone: Story = {
+  name: 'Hotel, bookings, phone',
+  render: () => <OnPhone start={L_ROUTES.timeline} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('combobox', { name: 'Room' })).toHaveTextContent('Room 101')
+    const schedule = canvasElement.querySelector<HTMLElement>('[data-slot="resource-schedule"]')
+    if (schedule === null) throw new Error('no schedule')
+    await expect(schedule.scrollWidth).toBeLessThanOrEqual(schedule.clientWidth)
+  },
+}
+
+/** Housekeeping on floor 3: the rooms to clean (the Dirty chip pressed). */
+export const HotelHousekeeping: Story = {
+  name: 'Hotel, housekeeping',
+  render: () => <ExampleApp start={L_ROUTES.housekeeping} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('button', { name: /^Dirty/ })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    await expect(canvas.getAllByRole('button', { name: /^3\d\d, / })).toHaveLength(5)
+  },
+}
+
+export const HotelHousekeepingPhone: Story = {
+  name: 'Hotel, housekeeping, phone',
+  render: () => <OnPhone start={L_ROUTES.housekeeping} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(within(canvasElement).getByText('5 of 10 shown')).toBeVisible()
+  },
+}
+
+/** Room 306 open on the phone: Start cleaning, then Mark clean (the main action, last). */
+export const HotelMarkCleanPhone: Story = {
+  name: 'Hotel, housekeeping, room, phone',
+  render: () => <OnPhone start={L_ROUTES.housekeepingRoom} />,
+  play: async () => {
+    const drawer = await within(document.body).findByRole('dialog', { name: 'Room 306' })
+    await settle()
+    const buttons = within(drawer).getAllByRole('button', { name: /Start cleaning|Mark clean/ })
+    await expect(buttons.at(-1)).toHaveAccessibleName('Mark clean')
+  },
+}
+
+export const HotelMarkClean: Story = {
+  name: 'Hotel, housekeeping, room',
+  render: () => <ExampleApp start={L_ROUTES.housekeepingRoom} />,
+  play: async () => {
+    const drawer = await within(document.body).findByRole('dialog', { name: 'Room 306' })
+    await settle()
+    await expect(within(drawer).getByRole('button', { name: 'Mark clean' })).toBeVisible()
+  },
+}
+
+/** Mark clean: the room leaves the list of rooms to clean. */
+export const HotelMarkCleanInteraction: Story = {
+  name: 'Hotel, mark clean, interaction',
+  tags: ['interaction'],
+  render: () => <OnPhone start={L_ROUTES.housekeepingRoom} />,
+  play: async ({ canvasElement }) => {
+    const drawer = await within(document.body).findByRole('dialog', { name: 'Room 306' })
+    await settle()
+    await userEvent.click(within(drawer).getByRole('button', { name: 'Mark clean' }))
+    await waitFor(async () => {
+      await expect(
+        within(document.body).getByText('Room 306 is clean. The front desk sees it.'),
+      ).toBeVisible()
+    })
+    await waitFor(async () => {
+      await expect(within(canvasElement).getByText('4 of 10 shown')).toBeVisible()
+    })
+    notice.dismiss()
+  },
+}

@@ -17,9 +17,11 @@ import { useLiro, type LiroContextValue } from '../provider/liro-provider'
 import { toneClasses } from './calendar-view'
 import {
   absoluteMinutes,
+  addDays,
   axisMinutes,
   axisMoment,
   dayLength,
+  dayNumber,
   dayOfNumber,
   dropPlace,
   layoutDay,
@@ -28,6 +30,7 @@ import {
   scheduleKeyTarget,
   spanOf,
   unavailableReason,
+  weekdayOf,
   type ScheduleAxis,
   type SchedulePlace,
   type UnavailableTime,
@@ -55,6 +58,12 @@ import { usePhone } from './use-phone'
  *   the row, the day and the start, then Move).
  * - Phones (below 48em or `layout="phone"`): one row at a time, chosen in a select; the time runs
  *   down; Left and Right move a picked-up booking to the other rows.
+ * - `scale="days"` (P5.25): stays over days — rooms, vehicles, equipment. Each day of `days` is a
+ *   column (64px at least; 48px high on phones) under its weekday and date, today's date in the
+ *   neutral circle; bookings and unavailable times are read by their days (a day value's `end`
+ *   is its last day, included, as an all-day event's); a booking moves by whole days and keeps
+ *   its length; it may run past the last day shown (drawn up to it); "Move to…" offers every day
+ *   shown as its first day. `onMove` reports days (YYYY-MM-DD, the end included).
  */
 
 /** A row of the schedule, from the application. */
@@ -123,6 +132,12 @@ export interface ResourceScheduleProps {
   resourceLabel?: string
   /** 'phone' shows one row at a time with the time running down; default by the viewport. */
   layout?: 'desktop' | 'phone'
+  /**
+   * 'days' (P5.25): one column a day over `days` (stays of several days: rooms, vehicles);
+   * bookings are read by their days and moved by whole days, `dayStart`, `dayEnd` and
+   * `slotMinutes` do not apply. Default 'time'.
+   */
+  scale?: 'time' | 'days'
   className?: string
 }
 
@@ -142,6 +157,10 @@ const MIN_DRAWN = 15
 const MOVABLE_MIN_WIDTH = 56
 /** Under this height (px) a booking on a phone shows only its title. */
 const TWO_LINES = 40
+/** `scale="days"`: a day's width on the desktop (at least), and its height on a phone, px. */
+const DAY_WIDTH = 64
+const DAY_PHONE = 48
+const MINUTES_PER_DAY = 1440
 
 /** A booking read onto the axis. */
 interface Placed {
@@ -167,8 +186,36 @@ function placeTexts(
   resources: readonly ScheduleResource[],
   unavailable: readonly UnavailableTime[],
   liro: Pick<LiroContextValue, 'format' | 'messages' | 'timeZone'>,
+  byDay = false,
 ) {
   const { format, messages, timeZone } = liro
+  if (byDay) {
+    // A days axis is one segment from the first day's midnight: whole days after it.
+    const first = axis.days[0] ?? ''
+    const start = addDays(first, Math.floor(place.start / MINUTES_PER_DAY))
+    const end = addDays(first, Math.ceil((place.start + duration) / MINUTES_PER_DAY) - 1)
+    const resource = resources[place.resource]
+    return {
+      resource: resource?.name ?? '',
+      resourceId: resource?.id ?? '',
+      time:
+        start === end
+          ? format.date(start)
+          : messages['calendar.range'](format.date(start), format.date(end)),
+      start,
+      end,
+      reason:
+        resource === undefined
+          ? null
+          : unavailableReason(
+              unavailable,
+              resource.id,
+              absoluteMinutes(first, place.start),
+              absoluteMinutes(first, place.start + duration),
+              timeZone,
+            ),
+    }
+  }
   const moment = axisMoment(axis, place.start)
   const start = localDateTime(moment.day, moment.minutes)
   const end = localDateTime(moment.day, moment.minutes + duration)
@@ -226,21 +273,54 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
   }, [phone])
   const unavailable = props.unavailable ?? []
 
-  const axis: ScheduleAxis = {
-    days: props.days ?? [props.date ?? today],
-    dayStart: minutesOf(props.dayStart ?? '08:00') ?? 480,
-    dayEnd: minutesOf(props.dayEnd ?? '16:00') ?? 960,
-    slotMinutes: props.slotMinutes ?? 30,
-  }
+  const byDay = props.scale === 'days'
+  const shownDays = props.days ?? [props.date ?? today]
+  const firstDay = dayNumber(shownDays[0] ?? today)
+  // Days: one segment from the first day's midnight, a slot a day.
+  const axis: ScheduleAxis = byDay
+    ? {
+        days: [shownDays[0] ?? today],
+        dayStart: 0,
+        dayEnd: shownDays.length * MINUTES_PER_DAY,
+        slotMinutes: MINUTES_PER_DAY,
+      }
+    : {
+        days: shownDays,
+        dayStart: minutesOf(props.dayStart ?? '08:00') ?? 480,
+        dayEnd: minutesOf(props.dayEnd ?? '16:00') ?? 960,
+        slotMinutes: props.slotMinutes ?? 30,
+      }
   const length = dayLength(axis)
   const total = length * axis.days.length
   const editable = props.readOnly !== true && props.onMove !== undefined
+  const pxPhone = byDay ? DAY_PHONE / MINUTES_PER_DAY : PX_PHONE
+  const minDrawn = byDay ? MINUTES_PER_DAY : MIN_DRAWN
+  /** A span read by its days: the first day and the day after the last, from the first shown. */
+  const daysOf = (span: { start: number; end: number }) => {
+    const from = Math.floor(span.start / MINUTES_PER_DAY) - firstDay
+    const to = Math.max(from + 1, Math.ceil(span.end / MINUTES_PER_DAY) - firstDay)
+    return { from, to }
+  }
 
   const placed: Placed[] = []
   for (const booking of props.bookings) {
     const resource = props.resources.findIndex((each) => each.id === booking.resourceId)
     const span = spanOf(booking, timeZone)
-    if (resource === -1 || span === null || span.allDay) continue
+    if (resource === -1 || span === null) continue
+    if (byDay) {
+      // A stay that began before the first day is drawn from it; one after the last is not.
+      const { from, to } = daysOf(span)
+      if (to <= 0 || from >= shownDays.length) continue
+      const start = Math.max(0, from)
+      placed.push({
+        booking,
+        resource,
+        start: start * MINUTES_PER_DAY,
+        duration: (to - start) * MINUTES_PER_DAY,
+      })
+      continue
+    }
+    if (span.allDay) continue
     const day = Math.floor(span.start / 1440)
     const date = dayOfNumber(day)
     const start = axisMinutes(axis, date, span.start - day * 1440)
@@ -271,7 +351,7 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
   }
 
   const texts = (place: SchedulePlace, duration: number) =>
-    placeTexts(axis, place, duration, props.resources, unavailable, liro)
+    placeTexts(axis, place, duration, props.resources, unavailable, liro, byDay)
   const announce = (
     kind: 'schedule.lifted' | 'schedule.moved' | 'schedule.dropped',
     item: Placed,
@@ -341,6 +421,7 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
       resources: props.resources.length,
       direction,
       orientation: phone ? 'vertical' : 'horizontal',
+      scale: byDay ? 'days' : 'time',
     })
     if (target === null) {
       if (event.key.startsWith('Arrow')) event.preventDefault()
@@ -404,7 +485,7 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
         : direction === 'rtl'
           ? startX - move.clientX
           : move.clientX - startX
-      const perMinute = phone ? PX_PHONE : (rows[0]?.rect.width ?? total * PX_MIN) / total
+      const perMinute = phone ? pxPhone : (rows[0]?.rect.width ?? total * PX_MIN) / total
       const slots = Math.round(along / perMinute / axis.slotMinutes)
       let resource = from.resource
       if (!phone && rows.length > 0) {
@@ -421,6 +502,7 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
       current = dropPlace(from, slots, resource, item.duration, {
         axis,
         resources: props.resources.length,
+        scale: byDay ? 'days' : 'time',
       })
       setMoving({ id: item.booking.id, from, to: current, keys: false })
     }
@@ -462,9 +544,9 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
     if (!phone) return (value * 100) / total
     const index = Math.min(axis.days.length - 1, Math.max(0, Math.floor(value / length)))
     const header = axis.days.length > 1 ? DAY_HEADER : 0
-    return index * (header + length * PX_PHONE) + header + (value - index * length) * PX_PHONE
+    return index * (header + length * pxPhone) + header + (value - index * length) * pxPhone
   }
-  const extent = axis.days.length * ((axis.days.length > 1 ? DAY_HEADER : 0) + length * PX_PHONE)
+  const extent = axis.days.length * ((axis.days.length > 1 ? DAY_HEADER : 0) + length * pxPhone)
   /** A desktop length in percent of the track; a phone length in px. */
   const unit = (value: number): number | string => (phone ? value : `${String(value)}%`)
 
@@ -475,10 +557,10 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
     lanes: number,
   ): CSSProperties => {
     const from = along(Math.max(0, start))
-    const to = along(Math.min(total, start + Math.max(duration, MIN_DRAWN)))
+    const to = along(Math.min(total, start + Math.max(duration, minDrawn)))
     const size = Math.max(
       to - from,
-      phone ? Math.max(MIN_DRAWN * PX_PHONE, 24) : (MIN_DRAWN * 100) / total,
+      phone ? Math.max(minDrawn * pxPhone, 24) : (minDrawn * 100) / total,
     )
     if (phone) {
       return {
@@ -505,16 +587,29 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
       items.map((item) => ({
         id: item.booking.id,
         start: item.start,
-        end: item.start + Math.max(item.duration, MIN_DRAWN),
+        end: item.start + Math.max(item.duration, minDrawn),
       })),
       0,
       total,
-      MIN_DRAWN,
+      minDrawn,
     ).placed
     const blocked = unavailable.flatMap((each) => {
       if (each.resourceId !== undefined && each.resourceId !== resource.id) return []
       const span = spanOf(each, timeZone)
       if (span === null) return []
+      if (byDay) {
+        const days = daysOf(span)
+        const from = Math.max(0, days.from)
+        const to = Math.min(shownDays.length, days.to)
+        if (to <= from) return []
+        const first = addDays(shownDays[0] ?? today, from)
+        const last = addDays(shownDays[0] ?? today, to - 1)
+        const timeText =
+          first === last
+            ? format.date(first)
+            : messages['calendar.range'](format.date(first), format.date(last))
+        return [{ each, start: from * MINUTES_PER_DAY, end: to * MINUTES_PER_DAY, timeText }]
+      }
       const day = Math.floor(span.start / 1440)
       const date = dayOfNumber(day)
       const start = axisMinutes(axis, date, span.start - day * 1440)
@@ -523,7 +618,12 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
       const end = Math.min(start + (span.end - span.start), dayFrom + length)
       if (end <= dayFrom) return []
       const from = Math.max(start, dayFrom)
-      return [{ each, start: from, end, date, minutes: axis.dayStart + from - dayFrom }]
+      const minutes = axis.dayStart + from - dayFrom
+      const timeText = messages['calendar.range'](
+        format.time(localDateTime(date, minutes)),
+        format.time(localDateTime(date, minutes + (end - from))),
+      )
+      return [{ each, start: from, end, timeText }]
     })
     const placeholder =
       moving !== null && movingItem !== undefined && moving.from.resource === row
@@ -539,7 +639,7 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
                 height: extent,
                 ...(axis.days.length === 1
                   ? {
-                      backgroundImage: `repeating-linear-gradient(to bottom, var(--liro-border-subtle) 0 1px, transparent 1px ${String(axis.slotMinutes * PX_PHONE)}px)`,
+                      backgroundImage: `repeating-linear-gradient(to bottom, var(--liro-border-subtle) 0 1px, transparent 1px ${String(axis.slotMinutes * pxPhone)}px)`,
                     }
                   : {}),
               }
@@ -549,11 +649,7 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
               }
         }
       >
-        {blocked.map(({ each, start, end, date, minutes }, index) => {
-          const timeText = messages['calendar.range'](
-            format.time(localDateTime(date, minutes)),
-            format.time(localDateTime(date, minutes + (end - start))),
-          )
+        {blocked.map(({ each, start, end, timeText }, index) => {
           const style: CSSProperties = phone
             ? {
                 top: along(start),
@@ -689,6 +785,7 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
                 <MoveTo
                   item={item}
                   axis={axis}
+                  byDay={byDay}
                   resources={props.resources}
                   unavailable={unavailable}
                   onMove={(to) => {
@@ -721,6 +818,7 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
 
   const hours: { day: number; at: number; text: string }[] = []
   axis.days.forEach((day, index) => {
+    if (byDay) return
     for (let at = Math.ceil(axis.dayStart / 60) * 60; at < axis.dayEnd; at += 60) {
       hours.push({
         day: index,
@@ -731,6 +829,23 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
   })
 
   const resourceOf = props.resources[phoneRow]
+
+  /** `scale="days"`: a day's weekday and its date, today's in the neutral circle (CalendarView's). */
+  const dayLabel = (day: string) => (
+    <>
+      <span className={cn('block text-xs text-secondary first-letter:uppercase', TEXT_ISOLATE)}>
+        {format.weekdayName(weekdayOf(day), 'short')}
+      </span>
+      <span
+        className={cn(
+          'inline-flex h-6 min-w-6 items-center justify-center rounded-full px-1 text-sm tabular-nums',
+          day === today ? 'bg-surface-inverse font-semibold text-on-inverse' : 'text-primary',
+        )}
+      >
+        <bdi>{format.number(day.slice(8).replace(/^0/, ''))}</bdi>
+      </span>
+    </>
+  )
 
   return (
     <div
@@ -772,6 +887,17 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
                   <bdi>{format.date(day)}</bdi>
                 </span>
               ))}
+            {byDay &&
+              shownDays.map((day, index) => (
+                <span
+                  key={day}
+                  title={format.dateLong(day)}
+                  className="absolute inset-x-0 flex flex-col items-center gap-0.5 pt-1"
+                  style={{ top: along(index * MINUTES_PER_DAY) }}
+                >
+                  {dayLabel(day)}
+                </span>
+              ))}
             {hours.map((hour) => (
               <span
                 key={`${String(hour.day)}-${String(hour.at)}`}
@@ -802,7 +928,12 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
             FOCUS_RING,
           )}
         >
-          <div className="relative" style={{ minWidth: NAME_WIDTH + total * PX_MIN }}>
+          <div
+            className="relative"
+            style={{
+              minWidth: NAME_WIDTH + (byDay ? shownDays.length * DAY_WIDTH : total * PX_MIN),
+            }}
+          >
             {axis.days.length > 1 && (
               <div aria-hidden="true" className="flex border-0 border-b border-solid border-subtle">
                 <div
@@ -830,7 +961,18 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
                 className="sticky start-0 z-(--liro-layer-raised) shrink-0 bg-surface-raised"
                 style={{ width: NAME_WIDTH }}
               />
-              <div className="relative h-7 flex-1">
+              <div className={cn('relative flex-1', byDay ? 'flex' : 'h-7')}>
+                {byDay &&
+                  shownDays.map((day) => (
+                    <div
+                      key={day}
+                      title={format.dateLong(day)}
+                      className="box-border flex flex-col items-center gap-0.5 border-0 border-s border-solid border-subtle py-1"
+                      style={{ width: `${String(100 / shownDays.length)}%` }}
+                    >
+                      {dayLabel(day)}
+                    </div>
+                  ))}
                 {hours.map((hour) => (
                   <span
                     key={`${String(hour.day)}-${String(hour.at)}`}
@@ -885,12 +1027,15 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
 function MoveTo({
   item,
   axis,
+  byDay,
   resources,
   unavailable,
   onMove,
 }: {
   item: Placed
   axis: ScheduleAxis
+  /** A days axis: every day shown is a start, named by its date. */
+  byDay: boolean
   resources: readonly ScheduleResource[]
   unavailable: readonly UnavailableTime[]
   onMove: (to: SchedulePlace) => void
@@ -905,7 +1050,11 @@ function MoveTo({
   const day = axis.days[dayIndex] ?? axis.days[0] ?? ''
   const resourceId = resources[resource]?.id ?? ''
   const starts: number[] = []
-  for (let at = 0; at + Math.min(item.duration, length) <= length; at += axis.slotMinutes)
+  for (
+    let at = 0;
+    byDay ? at < length : at + Math.min(item.duration, length) <= length;
+    at += axis.slotMinutes
+  )
     starts.push(at)
   if (!starts.includes(offset)) starts.push(offset)
   starts.sort((a, b) => a - b)
@@ -965,7 +1114,9 @@ function MoveTo({
           value={String(offset)}
           options={starts.map((at) => {
             const minutes = axis.dayStart + at
-            const text = format.time(localDateTime(day, minutes))
+            const text = byDay
+              ? format.dateLong(addDays(day, at / MINUTES_PER_DAY))
+              : format.time(localDateTime(day, minutes))
             const reason = unavailableReason(
               unavailable,
               resourceId,
