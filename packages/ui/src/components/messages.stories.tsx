@@ -2,6 +2,8 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MessageSquarePlus, Paperclip } from 'lucide-react'
 import { useState } from 'react'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
+import { TEXT_DIRECTION } from '../primitives/classes'
+import { cn } from '../primitives/cn'
 import { settle } from '../primitives/story-helpers'
 import { Button, CompactIconButton } from './button'
 import { SectionCard } from './cards'
@@ -166,7 +168,7 @@ export const Mentions: Story = {
             onMentionsChange={setMentions}
             placeholder="Describe the task"
           />
-          <output className="text-xs text-secondary">
+          <output className={cn('text-xs text-secondary', TEXT_DIRECTION)}>
             Mentioned: {mentions.map((mention) => mention.id).join(', ') || 'nobody'}
           </output>
         </div>
@@ -192,7 +194,7 @@ export const MentionsInteraction: Story = {
             onMentionsChange={setMentions}
             placeholder="Describe the task"
           />
-          <output className="text-xs text-secondary">
+          <output className={cn('text-xs text-secondary', TEXT_DIRECTION)}>
             Mentioned: {mentions.map((mention) => mention.id).join(', ') || 'nobody'}
           </output>
         </div>
@@ -344,7 +346,7 @@ export const BubbleStates: Story = {
             author={{ name: 'Liro agent', agent: true }}
             at={at(TODAY, '08:15')}
             extra={
-              <p className="m-0 text-xs text-secondary">
+              <p className={cn('m-0 text-xs text-secondary', TEXT_DIRECTION)}>
                 Reminder draft: 86.420,35 RSD by 25.10.2026.
               </p>
             }
@@ -396,7 +398,7 @@ export const BubbleStatesInteraction: Story = {
             author={{ name: 'Liro agent', agent: true }}
             at={at(TODAY, '08:15')}
             extra={
-              <p className="m-0 text-xs text-secondary">
+              <p className={cn('m-0 text-xs text-secondary', TEXT_DIRECTION)}>
                 Reminder draft: 86.420,35 RSD by 25.10.2026.
               </p>
             }
@@ -499,7 +501,11 @@ export const ErrorAndAttachments: Story = {
           label="Comment"
           defaultValue="Signed delivery note attached."
           error="The file is larger than 10 MB."
-          attachments={<p className="m-0 text-xs text-secondary">otpremnica-0311.pdf · 12,4 MB</p>}
+          attachments={
+            <p className={cn('m-0 text-xs text-secondary', TEXT_DIRECTION)}>
+              otpremnica-0311.pdf · 12,4 MB
+            </p>
+          }
           tools={<CompactIconButton icon={Paperclip} label="Attach a file" />}
           onSend={() => undefined}
         />

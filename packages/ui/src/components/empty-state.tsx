@@ -1,7 +1,7 @@
 import { CloudAlert, Inbox, SearchX } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { ButtonPrimitive } from '../primitives/button'
-import { TEXT_DIRECTION } from '../primitives/classes'
+import { TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 import type { LiroMessages } from '../provider/messages'
@@ -145,7 +145,7 @@ export function EmptyState(props: EmptyStateProps) {
               {ActionIcon !== undefined && (
                 <ActionIcon aria-hidden="true" className="size-3.5 shrink-0" />
               )}
-              <span>{props.action.label}</span>
+              <span className={TEXT_ISOLATE}>{props.action.label}</span>
             </ButtonPrimitive>
           </div>
         )}

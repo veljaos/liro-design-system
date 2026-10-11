@@ -5,6 +5,8 @@ import { settle } from '../primitives/story-helpers'
 import { Accordion, type AccordionSection } from './accordion'
 import { ARABIC, JAPANESE, LONG } from './field-story-data'
 import { expectContentDirection, StoryProvider } from './story-frames'
+import { TEXT_DIRECTION } from '../primitives/classes'
+import { cn } from '../primitives/cn'
 
 const meta = {
   title: 'Components/Display/Accordion',
@@ -76,7 +78,7 @@ export const Multiple: Story = {
             { value: 'archive', title: 'Archive', content: null, disabled: true },
           ]}
         />
-        <p className="m-0 text-sm text-secondary" data-testid="open">
+        <p className={cn('m-0 text-sm text-secondary', TEXT_DIRECTION)} data-testid="open">
           Open: {open.join(', ')}
         </p>
       </div>
@@ -103,7 +105,7 @@ export const MultipleInteraction: Story = {
             { value: 'archive', title: 'Archive', content: null, disabled: true },
           ]}
         />
-        <p className="m-0 text-sm text-secondary" data-testid="open">
+        <p className={cn('m-0 text-sm text-secondary', TEXT_DIRECTION)} data-testid="open">
           Open: {open.join(', ')}
         </p>
       </div>

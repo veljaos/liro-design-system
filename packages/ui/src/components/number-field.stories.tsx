@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { TEXT_DIRECTION } from '../primitives/classes'
 import { useState, type ReactNode } from 'react'
 import { expect, userEvent, within } from 'storybook/test'
 import { settle } from '../primitives/story-helpers'
@@ -58,7 +59,7 @@ export const Default: Story = {
     return (
       <div className="flex max-w-100 flex-col gap-3">
         <NumberField {...args} value={value} onChange={setValue} onValidityChange={setValid} />
-        <p className="m-0 text-sm text-secondary">
+        <p className={`m-0 text-sm text-secondary ${TEXT_DIRECTION}`}>
           Value: <code>{value === null ? 'null' : `"${value}"`}</code>, valid:{' '}
           <code>{String(valid)}</code>
         </p>
@@ -81,7 +82,7 @@ export const Unreadable: Story = {
           onChange={setValue}
           onValidityChange={setValid}
         />
-        <p className="m-0 text-sm text-secondary">
+        <p className={`m-0 text-sm text-secondary ${TEXT_DIRECTION}`}>
           Value: <code>{value === null ? 'null' : `"${value}"`}</code>, valid:{' '}
           <code>{String(valid)}</code>
         </p>
@@ -111,7 +112,7 @@ export const ReadOnEnter: Story = {
     return (
       <div className="flex max-w-100 flex-col gap-3">
         <MoneyField label="Amount" currency="EUR" value={value} onChange={setValue} />
-        <p className="m-0 text-sm text-secondary">
+        <p className={`m-0 text-sm text-secondary ${TEXT_DIRECTION}`}>
           Value: <code>{value === null ? 'null' : `"${value}"`}</code>
         </p>
       </div>

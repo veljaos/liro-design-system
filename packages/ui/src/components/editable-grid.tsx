@@ -1421,7 +1421,7 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
               })}
             </dl>
           )}
-          {props.footer !== undefined && <div>{props.footer}</div>}
+          {props.footer !== undefined && <div className={TEXT_DIRECTION}>{props.footer}</div>}
         </div>
       )}
       <ul
@@ -1650,7 +1650,9 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
             </span>
           )}
         </div>
-        {!phone && props.footer !== undefined && <div className="ms-auto">{props.footer}</div>}
+        {!phone && props.footer !== undefined && (
+          <div className={cn('ms-auto', TEXT_DIRECTION)}>{props.footer}</div>
+        )}
       </div>
       {creating !== null && createConfig !== undefined && (
         <LookupCreateDrawer

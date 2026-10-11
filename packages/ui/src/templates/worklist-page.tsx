@@ -3,7 +3,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type ReactNode, type SVGP
 import { Button, IconButton } from '../components/button'
 import { Checkbox } from '../primitives/checkbox'
 import { useBelowMd } from '../components/use-phone'
-import { TEXT_DIRECTION } from '../primitives/classes'
+import { TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useSteadyBottom } from '../primitives/use-steady-bottom'
 import { useLiro } from '../provider/liro-provider'
@@ -180,7 +180,9 @@ function Row({
         {(item.figure !== undefined || item.status !== undefined) && (
           <div className="flex shrink-0 flex-col items-end gap-1">
             {item.figure !== undefined && (
-              <span className="text-sm font-medium text-primary tabular-nums">{item.figure}</span>
+              <span className={cn('text-sm font-medium text-primary tabular-nums', TEXT_ISOLATE)}>
+                {item.figure}
+              </span>
             )}
             {item.status}
           </div>

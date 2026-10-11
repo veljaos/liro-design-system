@@ -126,7 +126,7 @@ const PORTAL_MENU: MenuEntry[] = [
 function PortalPage({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div className="mx-auto box-border flex w-full max-w-3xl min-w-0 flex-col gap-4 p-4 sm:p-6">
-      <h1 className="m-0 text-h2 text-primary">{title}</h1>
+      <h1 className="bidi-content m-0 text-h2 text-primary">{title}</h1>
       {children}
     </div>
   )
@@ -270,11 +270,11 @@ export function Booking({
                 />
                 {chosen !== undefined && (
                   <section aria-labelledby="appointment-heading" className="flex flex-col gap-2">
-                    <h3 id="appointment-heading" className="m-0 text-h4 text-primary">
+                    <h3 id="appointment-heading" className="bidi-content m-0 text-h4 text-primary">
                       Your appointment
                     </h3>
                     {summary}
-                    <p className="m-0 text-sm text-secondary">
+                    <p className="bidi-content m-0 text-sm text-secondary">
                       Please come 10 minutes early with your health card.
                     </p>
                   </section>
@@ -311,7 +311,7 @@ export function Booking({
               <SectionCard title="Upcoming" headingLevel={2} actions={statusBadge('Confirmed')}>
                 {summary}
               </SectionCard>
-              <p className="m-0 text-sm text-secondary">
+              <p className="bidi-content m-0 text-sm text-secondary">
                 Walk-through: the appointment in the clinic’s{' '}
                 <Link href={`#${H_ROUTES.clinicSchedule}`} className={LINK_IN_TEXT}>
                   schedule of 14.10.2026
@@ -642,7 +642,7 @@ export function ClassTimetable({ phone }: { phone: boolean }) {
           title={`Timetable, class ${SCHOOL.className}`}
           subtitle={`${SCHOOL.name} · first term ${SCHOOL.year}`}
         />
-        <p className="m-0 text-sm text-secondary">
+        <p className="bidi-content m-0 text-sm text-secondary">
           Now: lesson 3, mathematics.{' '}
           <Link href={`#${H_ROUTES.attendance}`} className={LINK_IN_TEXT}>
             Mark attendance
@@ -679,7 +679,7 @@ export function LessonAttendance({ phone }: { phone: boolean }) {
           title={`Attendance, class ${SCHOOL.className}`}
           subtitle={`${format.dateLong(SCHOOL.day)} · lesson 3, mathematics, now`}
         />
-        <p className="m-0 text-sm text-secondary">
+        <p className="bidi-content m-0 text-sm text-secondary">
           Walk-through: what Luka Jovanović’s parent sees in the{' '}
           <Link href={`#${H_ROUTES.parent}`} className={LINK_IN_TEXT}>
             parents’ portal
@@ -823,7 +823,7 @@ export function ParentAttendance({ phone }: { phone: boolean }) {
           {open.length > 0 && (
             <Alert tone="warning" title="Today’s absences are not excused yet">
               <div className="flex flex-col items-start gap-2">
-                <span>
+                <span className="bidi-content">
                   {`Luka missed lessons 1 and 2 today (${open.map((each) => each.subject).join(', ')}). Excuse them within 8 days.`}
                 </span>
                 <Button

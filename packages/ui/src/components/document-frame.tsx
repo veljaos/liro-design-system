@@ -1,7 +1,7 @@
 import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from 'lucide-react'
 import { useEffect, useReducer, useRef, useState, type ReactNode } from 'react'
 import { ButtonPrimitive } from '../primitives/button'
-import { TEXT_DIRECTION } from '../primitives/classes'
+import { TEXT_ISOLATE } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 import {
@@ -189,7 +189,7 @@ export function DocumentFrame(props: DocumentFrameProps) {
             className={cn(
               'min-w-24 text-center text-xs whitespace-nowrap tabular-nums',
               ready ? 'text-primary' : 'text-tertiary',
-              TEXT_DIRECTION,
+              TEXT_ISOLATE,
             )}
           >
             {ready &&
@@ -224,6 +224,7 @@ export function DocumentFrame(props: DocumentFrameProps) {
             className={cn(
               'min-w-12 text-center text-xs whitespace-nowrap tabular-nums',
               ready ? 'text-primary' : 'text-tertiary',
+              TEXT_ISOLATE,
             )}
           >
             {ready && (

@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { useState } from 'react'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
+import { TEXT_DIRECTION } from '../primitives/classes'
+import { cn } from '../primitives/cn'
 import { settle } from '../primitives/story-helpers'
 import {
   ResourceSchedule,
@@ -45,7 +47,7 @@ function Schedule(
         }}
         {...rest}
       />
-      <output className="text-sm text-secondary">{said}</output>
+      <output className={cn('text-sm text-secondary', TEXT_DIRECTION)}>{said}</output>
     </div>
   )
 }

@@ -85,7 +85,7 @@ function Page({ title, intro, children }: { title: string; intro: string; childr
   return (
     <div className="flex max-w-content flex-col gap-4">
       <h2 className="m-0 text-h2">{title}</h2>
-      <p className="m-0 max-w-3xl text-secondary">{intro}</p>
+      <p className="bidi-content m-0 max-w-3xl text-secondary">{intro}</p>
       {children}
     </div>
   )
@@ -96,7 +96,7 @@ function ScriptRow({ sample }: { sample: Sample }) {
   return (
     <tr className="border-t border-subtle">
       <th scope="row" className="py-2 pe-4 text-start align-top font-regular text-secondary">
-        {sample.script}
+        <span className="bidi-isolate">{sample.script}</span>
         <br />
         <code dir="ltr" className="font-mono text-xs">
           lang=&quot;{sample.lang}&quot;
@@ -193,11 +193,11 @@ const AMOUNTS = ['1,111.11', '88,808.00', '404.40', '12,345.67']
 function Row({ label, value, children }: { label: string; value: string; children: ReactNode }) {
   return (
     <li className="flex flex-wrap items-baseline gap-x-4 gap-y-1 border-t border-subtle py-2">
-      <span className="w-32 text-sm text-secondary">{label}</span>
+      <span className="bidi-content w-32 text-sm text-secondary">{label}</span>
       <code dir="ltr" className="w-40 font-mono text-xs text-secondary">
         {value}
       </code>
-      <span className="min-w-0 flex-1">{children}</span>
+      <span className="bidi-content min-w-0 flex-1">{children}</span>
     </li>
   )
 }
@@ -247,7 +247,9 @@ function TypeScale() {
       <List title="Line heights">
         {Object.entries(LEADING).map(([name, value]) => (
           <Row key={name} label={name} value={value}>
-            <span className={`block max-w-md ${LEADING_CLASSES[name as keyof typeof LEADING]}`}>
+            <span
+              className={`bidi-content block max-w-md ${LEADING_CLASSES[name as keyof typeof LEADING]}`}
+            >
               Every screen in every module looks and behaves the same, so a person who learns one
               screen knows them all.
             </span>

@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, fn, userEvent, within } from 'storybook/test'
+import { TEXT_DIRECTION } from '../primitives/classes'
+import { cn } from '../primitives/cn'
 import { settle } from '../primitives/story-helpers'
 import { imagesReady, providers } from './group-c-story-data'
 import { ProviderSignInButtons } from './sign-in'
@@ -120,7 +122,7 @@ export const Disabled: Story = {
           provider.id === 'google' ? { ...provider, disabled: true } : provider,
         )}
       />
-      <p className="m-0 text-xs text-secondary">
+      <p className={cn('m-0 text-xs text-secondary', TEXT_DIRECTION)}>
         Kvadrat Gradnja d.o.o. allows only its Microsoft accounts.
       </p>
     </div>

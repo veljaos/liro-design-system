@@ -85,7 +85,7 @@ export function WorkingTimeBalance(props: WorkingTimeBalanceProps) {
   const hours = (value: string | null, sign: 'auto' | 'always' = 'auto') =>
     value === null ? '—' : messages['shifts.hoursValue'](format.number(value, { sign }))
   const amount = (value: string | null, sign: 'auto' | 'always' = 'auto'): ReactNode => (
-    <span className="whitespace-nowrap tabular-nums">{hours(value, sign)}</span>
+    <span className={cn('whitespace-nowrap tabular-nums', TEXT_ISOLATE)}>{hours(value, sign)}</span>
   )
 
   const columns: DataTableColumn<WorkingTimeRow>[] = [
@@ -187,7 +187,12 @@ export function WorkingTimeBalance(props: WorkingTimeBalanceProps) {
               <dt className={cn('text-xs text-secondary', TEXT_DIRECTION)}>
                 {props.plan.reference.label}
               </dt>
-              <dd className="m-0 text-sm font-semibold text-primary tabular-nums">
+              <dd
+                className={cn(
+                  'm-0 text-sm font-semibold text-primary tabular-nums',
+                  TEXT_DIRECTION,
+                )}
+              >
                 {hours(props.plan.reference.hours)}
               </dd>
             </div>
@@ -210,7 +215,9 @@ export function WorkingTimeBalance(props: WorkingTimeBalanceProps) {
                   <span className={cn('text-xs font-semibold text-secondary', TEXT_ISOLATE)}>
                     {messages['workingTime.week'](index + 1, format.number(String(index + 1)))}
                   </span>
-                  <span className="text-sm font-semibold text-primary tabular-nums">
+                  <span
+                    className={cn('text-sm font-semibold text-primary tabular-nums', TEXT_ISOLATE)}
+                  >
                     {hours(week.hours)}
                   </span>
                 </span>

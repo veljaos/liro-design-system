@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { useState } from 'react'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
+import { TEXT_DIRECTION } from '../primitives/classes'
+import { cn } from '../primitives/cn'
 import { settle } from '../primitives/story-helpers'
 import { EmptyState } from './empty-state'
 import { NumberText } from './display-text'
@@ -338,7 +340,9 @@ export const OrgUnitsInteraction: Story = {
           selected={selected}
           onSelectedChange={setSelected}
         />
-        <p className="text-xs text-secondary">Selected: {selected.join(', ')}</p>
+        <p className={cn('text-xs text-secondary', TEXT_DIRECTION)}>
+          Selected: {selected.join(', ')}
+        </p>
       </div>
     )
   },
@@ -397,7 +401,9 @@ export const Controlled: Story = {
           expanded={expanded}
           onExpandedChange={setExpanded}
         />
-        <p className="text-xs text-secondary">Expanded: {expanded.join(', ')}</p>
+        <p className={cn('text-xs text-secondary', TEXT_DIRECTION)}>
+          Expanded: {expanded.join(', ')}
+        </p>
       </div>
     )
   },

@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { TEXT_DIRECTION } from './classes'
 import { internal, settle } from './story-helpers'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './tabs'
 
@@ -40,7 +41,7 @@ function Example({ orientation }: { orientation: 'horizontal' | 'vertical' }) {
         ))}
       </TabsList>
       {TABS.map((tab) => (
-        <TabsContent key={tab.value} value={tab.value} className="text-sm">
+        <TabsContent key={tab.value} value={tab.value} className={`text-sm ${TEXT_DIRECTION}`}>
           The {tab.label.toLowerCase()} of the invoice.
         </TabsContent>
       ))}

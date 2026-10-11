@@ -2,6 +2,8 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, within } from 'storybook/test'
 import { SectionCard } from '../components/cards'
 import { PhoneFrame, StoryProvider } from '../components/story-frames'
+import { TEXT_DIRECTION } from '../primitives/classes'
+import { cn } from '../primitives/cn'
 import { settle } from '../primitives/story-helpers'
 import { RichText } from './rich-text'
 import { richTextToHtml, sanitizeRichHtml } from './rich-text-logic'
@@ -91,7 +93,7 @@ export const PastedWord: Story = {
     <div className="flex max-w-180 flex-col gap-4">
       <RichText value={null} html={WORD_FRAGMENT} />
       <section aria-label="Cleaned HTML" className="flex flex-col gap-1 text-xs text-secondary">
-        <span className="font-semibold">Cleaned HTML (sanitizeRichHtml)</span>
+        <span className={cn('font-semibold', TEXT_DIRECTION)}>Cleaned HTML (sanitizeRichHtml)</span>
         <code
           data-testid="cleaned"
           dir="ltr"

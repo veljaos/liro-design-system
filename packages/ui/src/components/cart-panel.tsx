@@ -1,7 +1,7 @@
 import { ShoppingCart, Trash2 } from 'lucide-react'
 import { useId, type ReactNode } from 'react'
 import { ButtonPrimitive } from '../primitives/button'
-import { TEXT_DIRECTION } from '../primitives/classes'
+import { TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 import { MoneyText, NumberText } from './display-text'
@@ -110,7 +110,7 @@ export function CartPanel(props: CartPanelProps) {
           {props.title ?? messages['cart.title']}
         </h2>
         {count > 0 && (
-          <span className="text-sm text-secondary">
+          <span className={cn('text-sm text-secondary', TEXT_ISOLATE)}>
             {messages['cart.count'](count, format.number(String(count)))}
           </span>
         )}
@@ -216,7 +216,7 @@ function CartLineRow({ line, cart }: { line: CartLine; cart: CartPanelProps }) {
       </div>
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
         {onQuantityChange === undefined ? (
-          <span className="text-sm text-primary">
+          <span className={cn('text-sm text-primary', TEXT_ISOLATE)}>
             <NumberText value={line.quantity} />
             {line.unit !== undefined && <span className="ms-1 text-secondary">{line.unit}</span>}
           </span>
@@ -235,7 +235,7 @@ function CartLineRow({ line, cart }: { line: CartLine; cart: CartPanelProps }) {
             {...(line.max === undefined ? {} : { max: line.max })}
           />
         )}
-        <span className="min-w-0 flex-1 text-xs text-secondary tabular-nums">
+        <span className={cn('min-w-0 flex-1 text-xs text-secondary tabular-nums', TEXT_DIRECTION)}>
           {messages['cart.each'](format.money(line.unitPrice, cart.currency))}
         </span>
         {cart.onRemove !== undefined && (

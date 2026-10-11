@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { useState } from 'react'
 import { expect, fn, userEvent, within } from 'storybook/test'
+import { TEXT_DIRECTION } from '../primitives/classes'
+import { cn } from '../primitives/cn'
 import { settle } from '../primitives/story-helpers'
 import { CodeInput } from './code-input'
 import { LONG } from './field-story-data'
@@ -136,7 +138,7 @@ export const Controlled: Story = {
       return (
         <div className="flex flex-col gap-2">
           <CodeInput {...args} value={value} onChange={setValue} name="code" />
-          <p className="m-0 text-xs text-secondary">Value: “{value}”</p>
+          <p className={cn('m-0 text-xs text-secondary', TEXT_DIRECTION)}>Value: “{value}”</p>
         </div>
       )
     }

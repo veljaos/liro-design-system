@@ -73,7 +73,7 @@ export function QuizResult(props: QuizResultProps) {
             {props.passed ? messages['quiz.passed'] : messages['quiz.failed']}
           </span>
         </p>
-        <p className="m-0 text-xl font-semibold tabular-nums">
+        <p className={cn('m-0 text-xl font-semibold tabular-nums', TEXT_DIRECTION)}>
           {messages['quiz.score'](
             props.correct,
             props.total,
@@ -114,7 +114,9 @@ export function QuizResult(props: QuizResultProps) {
                       )}
                     >
                       <ItemIcon aria-hidden="true" className="size-3.5 shrink-0" />
-                      {item.correct ? messages['quiz.correct'] : messages['quiz.incorrect']}
+                      <span className={TEXT_DIRECTION}>
+                        {item.correct ? messages['quiz.correct'] : messages['quiz.incorrect']}
+                      </span>
                     </span>
                   </span>
                   {!item.correct && item.correctAnswer !== undefined && (

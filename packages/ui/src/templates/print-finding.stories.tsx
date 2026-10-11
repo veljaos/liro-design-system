@@ -3,6 +3,8 @@ import { Stethoscope } from 'lucide-react'
 import { expect, within } from 'storybook/test'
 import { DateText } from '../components/display-text'
 import { ExampleProvider, PhoneFrame, StoryProvider } from '../components/story-frames'
+import { TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
+import { cn } from '../primitives/cn'
 import { settle } from '../primitives/story-helpers'
 import { FINDING_PARAGRAPHS } from './print-story-data'
 import { PrintFinding, type PrintFindingProps } from './print-templates'
@@ -14,10 +16,12 @@ function Letterhead() {
         <Stethoscope aria-hidden="true" className="size-6" />
       </span>
       <div className="flex flex-col">
-        <span className="text-md font-semibold text-primary">
+        <span className={cn('text-md font-semibold text-primary', TEXT_DIRECTION)}>
           Dom zdravlja Novi Sad · Occupational medicine
         </span>
-        <span className="text-xs text-secondary">Bulevar cara Lazara 75, 21000 Novi Sad</span>
+        <span className={cn('text-xs text-secondary', TEXT_DIRECTION)}>
+          Bulevar cara Lazara 75, 21000 Novi Sad
+        </span>
       </div>
     </div>
   )
@@ -46,7 +50,7 @@ const FINDING: PrintFindingProps = {
       key: 'history',
       title: 'History',
       content: FINDING_PARAGRAPHS.slice(0, 3).map((text) => (
-        <p key={text} className="m-0">
+        <p key={text} className={cn('m-0', TEXT_DIRECTION)}>
           {text}
         </p>
       )),
@@ -55,7 +59,7 @@ const FINDING: PrintFindingProps = {
       key: 'findings',
       title: 'Findings',
       content: FINDING_PARAGRAPHS.slice(3).map((text) => (
-        <p key={text} className="m-0">
+        <p key={text} className={cn('m-0', TEXT_DIRECTION)}>
           {text}
         </p>
       )),
@@ -64,7 +68,7 @@ const FINDING: PrintFindingProps = {
       key: 'conclusion',
       title: 'Conclusion',
       content: (
-        <p className="m-0">
+        <p className={cn('m-0', TEXT_DIRECTION)}>
           Fit for work at height and for handling loads, with a recommendation to use a lumbar
           support belt. Next periodic examination in 12 months.
         </p>
@@ -86,7 +90,7 @@ const FINDING: PrintFindingProps = {
         <span
           role="img"
           aria-label="Signature of dr Ana Lukić"
-          className="pb-1 text-lg text-secondary italic"
+          className={cn('pb-1 text-lg text-secondary italic', TEXT_ISOLATE)}
         >
           A. Lukić
         </span>
@@ -157,7 +161,7 @@ export const Long: Story = {
         key: title,
         title,
         content: FINDING_PARAGRAPHS.map((text) => (
-          <p key={text} className="m-0">
+          <p key={text} className={cn('m-0', TEXT_DIRECTION)}>
             {text}
           </p>
         )),
@@ -169,7 +173,7 @@ export const Long: Story = {
         aria-label="Stamp of dr Ana Lukić"
         className="flex size-24 items-center justify-center rounded-full border-2 border-double border-strong p-2 text-center text-xs text-secondary"
       >
-        dr Ana Lukić
+        <span className={TEXT_ISOLATE}>dr Ana Lukić</span>
       </span>
     ),
   },
@@ -226,9 +230,13 @@ export const Arabic: Story = {
           {
             key: 'f',
             title: 'النتائج',
-            content: <p className="m-0">ضغط الدم ١٣٥/٨٥، النبض منتظم.</p>,
+            content: <p className={cn('m-0', TEXT_DIRECTION)}>ضغط الدم ١٣٥/٨٥، النبض منتظم.</p>,
           },
-          { key: 'c', title: 'الخلاصة', content: <p className="m-0">لائقة للعمل.</p> },
+          {
+            key: 'c',
+            title: 'الخلاصة',
+            content: <p className={cn('m-0', TEXT_DIRECTION)}>لائقة للعمل.</p>,
+          },
         ]}
         confidentiality="سجل طبي سري."
         issued={{ date: '2026-10-08' }}
@@ -254,9 +262,13 @@ export const Japanese: Story = {
           {
             key: 'f',
             title: '所見',
-            content: <p className="m-0">血圧 135/85 mmHg、脈拍は規則的。</p>,
+            content: <p className={cn('m-0', TEXT_DIRECTION)}>血圧 135/85 mmHg、脈拍は規則的。</p>,
           },
-          { key: 'c', title: '結論', content: <p className="m-0">就業可。</p> },
+          {
+            key: 'c',
+            title: '結論',
+            content: <p className={cn('m-0', TEXT_DIRECTION)}>就業可。</p>,
+          },
         ]}
         confidentiality="機密の医療記録です。"
         issued={{ date: '2026-10-08' }}

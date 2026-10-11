@@ -150,7 +150,7 @@ export function QuestionnaireChoiceDescription({ className, ...props }: Componen
   return (
     <span
       data-slot="questionnaire-choice-description"
-      className={cn('text-xs text-secondary', className)}
+      className={cn('text-xs text-secondary', TEXT_DIRECTION, className)}
       {...props}
     />
   )

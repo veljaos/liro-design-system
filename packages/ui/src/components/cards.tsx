@@ -40,6 +40,7 @@ export function Card({ children, className }: CardProps) {
       data-slot="card"
       className={cn(
         'rounded-lg border border-solid border-default bg-surface-raised p-4 font-sans text-primary',
+        TEXT_DIRECTION,
         className,
       )}
     >

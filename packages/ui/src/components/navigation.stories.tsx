@@ -6,6 +6,8 @@ import { settle } from '../primitives/story-helpers'
 import { ARABIC, JAPANESE, LONG } from './field-story-data'
 import { Breadcrumbs, CursorPagination, ShortcutHint, Tabs } from './navigation'
 import { expectContentDirection, StoryProvider } from './story-frames'
+import { TEXT_DIRECTION } from '../primitives/classes'
+import { cn } from '../primitives/cn'
 
 const meta = {
   title: 'Components/Navigation',
@@ -40,19 +42,19 @@ const TABS = [
     value: 'general',
     label: 'General',
     icon: FileText,
-    content: <p className="m-0 text-sm">General data of the invoice.</p>,
+    content: <p className={cn('m-0 text-sm', TEXT_DIRECTION)}>General data of the invoice.</p>,
   },
   {
     value: 'lines',
     label: 'Lines',
     icon: List,
-    content: <p className="m-0 text-sm">Twelve lines.</p>,
+    content: <p className={cn('m-0 text-sm', TEXT_DIRECTION)}>Twelve lines.</p>,
   },
   {
     value: 'files',
     label: 'Attachments',
     icon: Paperclip,
-    content: <p className="m-0 text-sm">Two files.</p>,
+    content: <p className={cn('m-0 text-sm', TEXT_DIRECTION)}>Two files.</p>,
   },
   { value: 'history', label: 'History', disabled: true, content: null },
 ]
@@ -153,7 +155,7 @@ export const PaginationInteraction: Story = {
 export const Shortcut: Story = {
   name: 'ShortcutHint',
   render: () => (
-    <p className="m-0 flex items-center gap-2 text-sm">
+    <p className={cn('m-0 flex items-center gap-2 text-sm', TEXT_DIRECTION)}>
       Search: <ShortcutHint keys={['Ctrl', 'K']} /> or <ShortcutHint keys={['⌘', 'K']} />
     </p>
   ),
@@ -170,7 +172,7 @@ export const LongTextPhone: Story = {
           {
             value: 'a',
             label: 'Delivery address',
-            content: <p className="m-0 text-sm">{LONG.value}</p>,
+            content: <p className={cn('m-0 text-sm', TEXT_DIRECTION)}>{LONG.value}</p>,
           },
           { value: 'b', label: 'Registered address', content: null },
           { value: 'c', label: 'Contacts', content: null },
@@ -200,7 +202,7 @@ export const Arabic: Story = {
         items={ARABIC.options.map((label) => ({
           value: label,
           label,
-          content: <p className="m-0 text-sm">{ARABIC.description}</p>,
+          content: <p className={cn('m-0 text-sm', TEXT_DIRECTION)}>{ARABIC.description}</p>,
         }))}
       />
       <CursorPagination
@@ -227,7 +229,7 @@ export const Japanese: Story = {
         items={JAPANESE.options.map((label) => ({
           value: label,
           label,
-          content: <p className="m-0 text-sm">{JAPANESE.description}</p>,
+          content: <p className={cn('m-0 text-sm', TEXT_DIRECTION)}>{JAPANESE.description}</p>,
         }))}
       />
       <ShortcutHint keys={['Ctrl', 'K']} />
@@ -253,7 +255,11 @@ export const EnglishInRtl: Story = {
         <Tabs
           label="Invoice"
           items={[
-            { value: 'general', label: 'General', content: <p>3 fields are required.</p> },
+            {
+              value: 'general',
+              label: 'General',
+              content: <p className={TEXT_DIRECTION}>3 fields are required.</p>,
+            },
             { value: 'lines', label: 'Lines (12)', content: null },
           ]}
         />

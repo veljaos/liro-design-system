@@ -1,6 +1,6 @@
 import { Command as CommandPrimitive, useCommandState } from 'cmdk'
 import type { ComponentProps } from 'react'
-import { FOCUS_RING } from './classes'
+import { FOCUS_RING, TEXT_DIRECTION, TEXT_ISOLATE } from './classes'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from './dialog'
 import { cn } from './cn'
 
@@ -97,7 +97,7 @@ export function CommandEmpty({
   return (
     <CommandPrimitive.Empty
       data-slot="command-empty"
-      className={cn('px-2.5 py-1.5 text-center text-sm text-secondary', className)}
+      className={cn('px-2.5 py-1.5 text-center text-sm text-secondary', TEXT_ISOLATE, className)}
       {...props}
     />
   )
@@ -150,6 +150,7 @@ export function CommandItem({ className, ...props }: ComponentProps<typeof Comma
         'data-[selected=true]:bg-brand-solid data-[selected=true]:text-brand-on-solid',
         'data-[disabled=true]:cursor-not-allowed data-[disabled=true]:text-disabled',
         '[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*=size-])]:size-3.75',
+        TEXT_DIRECTION,
         className,
       )}
       {...props}

@@ -23,6 +23,8 @@ import { DateText, MoneyText } from '../components/display-text'
 import type { MenuEntry } from '../components/dropdown-menu'
 import { StatusBadge } from '../components/status-badge'
 import { ExampleProvider, PhoneFrame, StoryProvider } from '../components/story-frames'
+import { TEXT_DIRECTION } from '../primitives/classes'
+import { cn } from '../primitives/cn'
 import { settle } from '../primitives/story-helpers'
 import { PortalShell, type PortalSection, type PortalShellProps } from './portal-shell'
 
@@ -58,7 +60,7 @@ const PATIENT: PortalShellProps = {
 function Page({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div className="mx-auto box-border flex w-full max-w-3xl flex-col gap-4 p-4 sm:p-6">
-      <h1 className="m-0 text-h2 text-primary">{title}</h1>
+      <h1 className={cn('m-0 text-h2 text-primary', TEXT_DIRECTION)}>{title}</h1>
       {children}
     </div>
   )
@@ -94,11 +96,11 @@ function Appointments() {
               className="flex flex-wrap items-start justify-between gap-2 border-0 border-b border-solid border-default pb-3 last:border-b-0 last:pb-0"
             >
               <div className="flex min-w-0 flex-col gap-0.5">
-                <span className="text-sm font-semibold text-primary">
+                <span className={cn('text-sm font-semibold text-primary', TEXT_DIRECTION)}>
                   <DateText value={visit.date} /> · {visit.time}
                 </span>
-                <span className="text-sm text-primary">{visit.who}</span>
-                <span className="text-xs text-secondary">{visit.where}</span>
+                <span className={cn('text-sm text-primary', TEXT_DIRECTION)}>{visit.who}</span>
+                <span className={cn('text-xs text-secondary', TEXT_DIRECTION)}>{visit.where}</span>
               </div>
               {visit.state}
             </li>
@@ -186,8 +188,10 @@ function Invoices() {
               className="flex flex-wrap items-center justify-between gap-2 border-0 border-b border-solid border-default pb-3 last:border-b-0 last:pb-0"
             >
               <div className="flex min-w-0 flex-col gap-0.5">
-                <span className="text-sm font-semibold text-primary">{invoice.number}</span>
-                <span className="text-xs text-secondary">
+                <span className={cn('text-sm font-semibold text-primary', TEXT_DIRECTION)}>
+                  {invoice.number}
+                </span>
+                <span className={cn('text-xs text-secondary', TEXT_DIRECTION)}>
                   Due <DateText value={invoice.due} />
                 </span>
               </div>
@@ -454,7 +458,7 @@ export const Arabic: Story = {
           ]}
         >
           <div className="p-4">
-            <h1 className="m-0 text-h2 text-primary">المواعيد</h1>
+            <h1 className={cn('m-0 text-h2 text-primary', TEXT_DIRECTION)}>المواعيد</h1>
           </div>
         </PortalShell>
       </StoryProvider>
@@ -479,7 +483,7 @@ export const Japanese: Story = {
         footer="さくら学園 · 東京都"
       >
         <div className="p-6">
-          <h1 className="m-0 text-h2 text-primary">成績</h1>
+          <h1 className={cn('m-0 text-h2 text-primary', TEXT_DIRECTION)}>成績</h1>
         </div>
       </PortalShell>
     </StoryProvider>

@@ -2,6 +2,8 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { FileSignature } from 'lucide-react'
 import { useState } from 'react'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
+import { TEXT_DIRECTION } from '../primitives/classes'
+import { cn } from '../primitives/cn'
 import { settle } from '../primitives/story-helpers'
 import { CONTRACT_QUESTIONS } from './collaboration-story-data'
 import { Questionnaire, type QuestionnaireProps } from './questionnaire'
@@ -36,7 +38,7 @@ function Contract(props: Partial<QuestionnaireProps> & { delay?: number }) {
         />
       </div>
       {submitted !== null && (
-        <output className="text-xs text-secondary">
+        <output className={cn('text-xs text-secondary', TEXT_DIRECTION)}>
           Submitted: {Object.keys(submitted).join(', ')}
         </output>
       )}

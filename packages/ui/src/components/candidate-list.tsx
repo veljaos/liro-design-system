@@ -1,6 +1,6 @@
 import { useId, type ReactNode } from 'react'
 import { Checkbox } from '../primitives/checkbox'
-import { TEXT_DIRECTION } from '../primitives/classes'
+import { TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { RadioGroup, RadioGroupItem } from '../primitives/radio-group'
 import { useLiro } from '../provider/liro-provider'
@@ -88,7 +88,12 @@ function Body({ candidate }: { candidate: Candidate }) {
         )}
       </span>
       {candidate.figure !== undefined && (
-        <span className="shrink-0 text-sm font-medium whitespace-nowrap text-primary tabular-nums">
+        <span
+          className={cn(
+            'shrink-0 text-sm font-medium whitespace-nowrap text-primary tabular-nums',
+            TEXT_ISOLATE,
+          )}
+        >
           {candidate.figure}
         </span>
       )}

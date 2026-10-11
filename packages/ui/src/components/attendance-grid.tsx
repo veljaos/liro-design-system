@@ -1111,7 +1111,7 @@ function DesktopView(props: ViewProps) {
         />
       )}
       {editable && shown && ranged && (
-        <span aria-live="polite" className="text-xs text-secondary">
+        <span aria-live="polite" className={cn('text-xs text-secondary', TEXT_DIRECTION)}>
           {messages['attendance.selected'](
             rangeSize(range),
             format.number(String(rangeSize(range))),
@@ -1404,7 +1404,7 @@ function PhoneView(props: ViewProps) {
             >
               <div className="flex items-center gap-2">
                 <span className="flex w-20 shrink-0 flex-col">
-                  <span className="text-sm font-semibold">{name}</span>
+                  <span className={cn('text-sm font-semibold', TEXT_DIRECTION)}>{name}</span>
                   {extra !== null && (
                     <span className={cn('text-xs text-secondary', TEXT_DIRECTION)}>{extra}</span>
                   )}
@@ -1612,7 +1612,7 @@ function CorrectionDialog(
         </DialogHeader>
         <form noValidate onSubmit={submit} className="contents">
           <DialogBody>
-            <p className="m-0 text-sm text-secondary">
+            <p className={cn('m-0 text-sm text-secondary', TEXT_DIRECTION)}>
               <span className="font-semibold text-primary">{messages['attendance.current']}:</span>{' '}
               {entryText(previous, props.codes)}
             </p>

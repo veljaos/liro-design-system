@@ -123,7 +123,7 @@ function Paragraphs({ texts }: { texts: readonly string[] }) {
   return (
     <>
       {texts.map((text) => (
-        <p key={text} className="m-0">
+        <p key={text} className="bidi-content m-0">
           {text}
         </p>
       ))}
@@ -175,19 +175,23 @@ const LESSON_CONTENT: Readonly<Record<string, ReactNode>> = {
   ),
   handling: (
     <>
-      <p className="m-0">
+      <p className="bidi-content m-0">
         Most injuries on Kvadrat Gradnja’s sites in 2025 came from lifting and carrying, not from
         falls. A load is heavy for the back long before it is too heavy for the arms: plan the lift,
         use the crane or a trolley where you can, and ask a colleague for anything over 25 kg.
       </p>
-      <h3 className="m-0 text-h5 text-primary">Before you lift</h3>
+      <h3 className="bidi-content m-0 text-h5 text-primary">Before you lift</h3>
       <ul className="m-0 flex flex-col gap-1 ps-6">
-        <li>Check the weight on the label or the delivery note; test it by tipping one edge.</li>
-        <li>Clear the path to where the load goes, and find where you will set it down.</li>
-        <li>Wear gloves for sharp edges, and safety boots — always.</li>
+        <li className="bidi-content">
+          Check the weight on the label or the delivery note; test it by tipping one edge.
+        </li>
+        <li className="bidi-content">
+          Clear the path to where the load goes, and find where you will set it down.
+        </li>
+        <li className="bidi-content">Wear gloves for sharp edges, and safety boots — always.</li>
       </ul>
-      <h3 className="m-0 text-h5 text-primary">How to lift</h3>
-      <p className="m-0">
+      <h3 className="bidi-content m-0 text-h5 text-primary">How to lift</h3>
+      <p className="bidi-content m-0">
         Stand close to the load with your feet apart, bend your knees, keep your back straight and
         lift with your legs. Hold the load close to your body and turn with your feet, never with
         your back.
@@ -275,7 +279,7 @@ function Seal({ text, size = 'size-24' }: { text: string; size?: string }) {
       aria-label={text}
       className={`flex ${size} items-center justify-center rounded-full border-2 border-double border-strong p-2 text-center text-xs text-secondary`}
     >
-      {text}
+      <span className="bidi-isolate">{text}</span>
     </span>
   )
 }
@@ -322,7 +326,7 @@ export function FinalTestScreen({
   const content =
     attempt === null ? (
       <>
-        <p className="m-0">
+        <p className="bidi-content m-0">
           {`${format.number(String(QUIZ.length))} questions on the whole course. You need ${mark} correct answers to pass; you may take the test again.`}
         </p>
         <div
@@ -427,7 +431,9 @@ function PrintPreview({
     <div className="flex min-h-full w-full flex-col bg-surface-sunken font-sans">
       <header className="sticky top-0 z-10 box-border flex items-center gap-3 border-0 border-b border-solid border-default bg-surface-raised px-4 py-2 print:hidden">
         {back !== undefined && <BackButton back={back} />}
-        <p className="m-0 min-w-0 flex-1 text-sm font-semibold text-primary">{title}</p>
+        <p className="bidi-content m-0 min-w-0 flex-1 text-sm font-semibold text-primary">
+          {title}
+        </p>
         <Button
           intent="print"
           label="Print"
@@ -457,8 +463,8 @@ function Letterhead({
         <Icon aria-hidden="true" className="size-6" />
       </span>
       <div className="flex min-w-0 flex-col">
-        <span className="text-md font-semibold text-primary">{name}</span>
-        <span className="text-xs text-secondary">{line}</span>
+        <span className="bidi-content text-md font-semibold text-primary">{name}</span>
+        <span className="bidi-content text-xs text-secondary">{line}</span>
       </div>
     </div>
   )
@@ -549,8 +555,8 @@ export function InvoicePrintScreen() {
         }
         header={
           <div className="flex justify-between gap-4">
-            <span>{SELLER.name}</span>
-            <span>
+            <span className="bidi-isolate">{SELLER.name}</span>
+            <span className="bidi-isolate">
               Invoice <span dir="ltr">{invoice.number}</span>
             </span>
           </div>
@@ -708,7 +714,7 @@ export function ReportCardPrintScreen() {
         remarks={{
           title: 'Remarks',
           content: (
-            <p className="m-0">
+            <p className="bidi-content m-0">
               Mila is curious and reliable and helps her classmates. She took part in the municipal
               history competition and sings in the school choir.
             </p>
@@ -810,7 +816,7 @@ export function FindingPrintScreen() {
             key: 'reason',
             title: 'Reason for referral',
             content: (
-              <p className="m-0">
+              <p className="bidi-content m-0">
                 Raised blood pressure measured three times at the chosen doctor’s office; assessment
                 and therapy.
               </p>
@@ -832,7 +838,7 @@ export function FindingPrintScreen() {
             key: 'examination',
             title: 'Examination',
             content: (
-              <p className="m-0">
+              <p className="bidi-content m-0">
                 Conscious, oriented, eupnoeic. Blood pressure 158/96 mmHg on the right arm and
                 154/94 mmHg on the left, pulse 78/min, regular. Heart sounds clear, no murmurs.
                 Breathing vesicular on both sides. No oedema of the legs. ECG: sinus rhythm, 76/min,
@@ -858,13 +864,13 @@ export function FindingPrintScreen() {
             title: 'Diagnosis',
             content: (
               <ul className="m-0 flex flex-col gap-1 ps-5">
-                <li>
+                <li className="bidi-content">
                   <span dir="ltr">I10</span> Essential (primary) hypertension
                 </li>
-                <li>
+                <li className="bidi-content">
                   <span dir="ltr">E78.0</span> Pure hypercholesterolaemia
                 </li>
-                <li>
+                <li className="bidi-content">
                   <span dir="ltr">R73.9</span> Hyperglycaemia, unspecified
                 </li>
               </ul>
@@ -895,7 +901,7 @@ export function FindingPrintScreen() {
               <span
                 role="img"
                 aria-label="Signature of dr Jasmina Kovač"
-                className="pb-1 text-lg text-secondary italic"
+                className="bidi-isolate pb-1 text-lg text-secondary italic"
               >
                 J. Kovač
               </span>

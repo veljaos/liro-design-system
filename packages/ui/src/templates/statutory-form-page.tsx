@@ -9,7 +9,7 @@ import { DateText, MoneyText } from '../components/display-text'
 import { LifecycleBar, type LifecycleStep } from '../components/lifecycle-bar'
 import { StatusBadge } from '../components/status-badge'
 import { usePhone } from '../components/use-phone'
-import { BUTTON_RESET, FOCUS_RING, TEXT_DIRECTION } from '../primitives/classes'
+import { BUTTON_RESET, FOCUS_RING, TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 import { PageHeader, type PageBack } from './page-header'
@@ -278,7 +278,7 @@ export function StatutoryFormPage(props: StatutoryFormPageProps) {
             <span className={TEXT_DIRECTION}>
               {messages['statutory.overriddenBy'](field.override.by, field.override.at)}
             </span>
-            <span className="tabular-nums">
+            <span className={cn('tabular-nums', TEXT_DIRECTION)}>
               {messages['statutory.computed'](money(field, field.override.computed))}
             </span>
             {!readOnly && props.onUseComputed !== undefined && (
@@ -322,7 +322,9 @@ export function StatutoryFormPage(props: StatutoryFormPageProps) {
       header: messages['statutory.description'],
       cell: (field) => (
         <span className="flex min-w-48 flex-col gap-1 whitespace-normal">
-          <span className={cn(field.total === true && 'font-semibold')}>{field.label}</span>
+          <span className={cn(field.total === true && 'font-semibold', TEXT_DIRECTION)}>
+            {field.label}
+          </span>
           {fieldRules(rules, field.id).map((rule) => (
             <RuleLine key={rule.id} rule={rule} />
           ))}
@@ -412,6 +414,7 @@ export function StatutoryFormPage(props: StatutoryFormPageProps) {
                           BUTTON_RESET,
                           'min-h-6 cursor-pointer rounded-sm text-xs font-semibold text-link underline underline-offset-2',
                           FOCUS_RING,
+                          TEXT_ISOLATE,
                         )}
                       >
                         {messages['statutory.goToField'](number)}
@@ -444,7 +447,7 @@ export function StatutoryFormPage(props: StatutoryFormPageProps) {
             mobile={{
               title: (field) => (
                 <span className="flex flex-col gap-1 whitespace-normal">
-                  <span className={cn(field.total === true && 'font-semibold')}>
+                  <span className={cn(field.total === true && 'font-semibold', TEXT_DIRECTION)}>
                     <span dir="ltr">{field.number}</span> {field.label}
                   </span>
                   {fieldRules(rules, field.id).map((rule) => (
@@ -477,7 +480,9 @@ export function StatutoryFormPage(props: StatutoryFormPageProps) {
           }
         >
           {(drill.sources ?? []).length === 0 ? (
-            <p className="m-0 text-sm text-secondary">{messages['statutory.noSources']}</p>
+            <p className={cn('m-0 text-sm text-secondary', TEXT_DIRECTION)}>
+              {messages['statutory.noSources']}
+            </p>
           ) : (
             <ul
               aria-label={messages['statutory.sources']}

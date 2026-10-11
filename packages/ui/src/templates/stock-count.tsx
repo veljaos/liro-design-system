@@ -126,9 +126,9 @@ export function StockCount(props: StockCountProps) {
   const body =
     props.location === null ? (
       <section className="flex flex-col gap-4 rounded-lg border border-solid border-default bg-surface-raised p-4">
-        <p className={cn('m-0 flex items-start gap-2 text-md', TEXT_DIRECTION)}>
+        <p className="m-0 flex items-start gap-2 text-md">
           <MapPin aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-secondary" />
-          {messages['count.noLocation']}
+          <span className={TEXT_DIRECTION}>{messages['count.noLocation']}</span>
         </p>
         {scan('location')}
       </section>
@@ -191,7 +191,7 @@ export function StockCount(props: StockCountProps) {
             difference(current) !== null ? (
               <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
                 {current.expected !== undefined && current.expected !== null && (
-                  <span className="text-sm text-secondary">
+                  <span className={cn('text-sm text-secondary', TEXT_DIRECTION)}>
                     {messages['count.expected']}{' '}
                     <bdi className="font-semibold text-primary tabular-nums">
                       {quantity(current.expected, current.unit)}

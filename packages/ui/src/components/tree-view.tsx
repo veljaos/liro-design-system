@@ -221,10 +221,9 @@ export function TreeItemContent<Data>({
           className={cn(
             'flex shrink-0 items-center text-sm text-primary tabular-nums',
             phone ? 'min-h-8' : 'min-h-6',
-            TEXT_ISOLATE,
           )}
         >
-          {end}
+          <span className={TEXT_ISOLATE}>{end}</span>
         </span>
       )}
     </div>

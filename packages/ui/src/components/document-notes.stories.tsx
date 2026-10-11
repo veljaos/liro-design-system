@@ -7,6 +7,8 @@ import { hasNotes, type DocumentNotesValue } from './document-logic'
 import { NOTE_TEMPLATES } from './document-story-data'
 import { ExampleProvider, PhoneFrame, StoryProvider } from './story-frames'
 import { LONG } from './field-story-data'
+import { TEXT_DIRECTION } from '../primitives/classes'
+import { cn } from '../primitives/cn'
 
 /** The notes as the application keeps them: the value lives here. */
 function Notes(
@@ -111,7 +113,7 @@ export const Empty: Story = {
     const value = { templates: [], note: '' }
     return (
       <ExampleProvider>
-        <p className="m-0 text-sm text-secondary">
+        <p className={cn('m-0 text-sm text-secondary', TEXT_DIRECTION)}>
           {hasNotes(NOTE_TEMPLATES, value) ? 'Notes block shown.' : 'No notes: no block.'}
         </p>
         <DocumentNotes templates={NOTE_TEMPLATES} value={value} />

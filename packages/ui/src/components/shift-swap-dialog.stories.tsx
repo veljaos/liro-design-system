@@ -2,6 +2,8 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { ArrowLeftRight } from 'lucide-react'
 import { useState } from 'react'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
+import { TEXT_DIRECTION } from '../primitives/classes'
+import { cn } from '../primitives/cn'
 import { settle } from '../primitives/story-helpers'
 import { Button } from './button'
 import { MY_SHIFTS, SWAP_COLLEAGUES } from './shift-story-data'
@@ -193,7 +195,9 @@ function SwapAndReport() {
         }}
         trigger={<Button family="neutral" icon={ArrowLeftRight} label="Request swap" />}
       />
-      <output className="mt-4 block text-sm">{sent === null ? '' : JSON.stringify(sent)}</output>
+      <output className={cn('mt-4 block text-sm', TEXT_DIRECTION)}>
+        {sent === null ? '' : JSON.stringify(sent)}
+      </output>
     </ExampleProvider>
   )
 }

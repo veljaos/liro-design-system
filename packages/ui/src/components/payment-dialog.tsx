@@ -201,7 +201,7 @@ export function PaymentDialog(props: PaymentDialogProps) {
             setTendered(amount)
           }}
         >
-          {money(amount)}
+          <bdi>{money(amount)}</bdi>
         </ButtonPrimitive>
       ))}
     </div>
@@ -241,7 +241,9 @@ export function PaymentDialog(props: PaymentDialogProps) {
       )}
       {cardState === 'declined' && (
         <Alert tone="danger" title={messages['payment.cardDeclined']}>
-          {props.cardMessage !== undefined && <p className="m-0">{props.cardMessage}</p>}
+          {props.cardMessage !== undefined && (
+            <p className={cn('m-0', TEXT_DIRECTION)}>{props.cardMessage}</p>
+          )}
           {props.onCardStart !== undefined && (
             <ButtonPrimitive className="mt-3 min-h-11" onClick={props.onCardStart}>
               <span className={TEXT_DIRECTION}>{messages['payment.cardRetry']}</span>

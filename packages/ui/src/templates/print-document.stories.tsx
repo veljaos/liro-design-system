@@ -13,6 +13,8 @@ import {
   type FinalLine,
 } from '../components/document-story-data'
 import { ExampleProvider, PhoneFrame, StoryProvider } from '../components/story-frames'
+import { TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
+import { cn } from '../primitives/cn'
 import { settle } from '../primitives/story-helpers'
 import type { PrintColumn } from './print-parts'
 import { BUYER, SELLER, longInvoice, type PrintLine } from './print-story-data'
@@ -26,8 +28,10 @@ function Letterhead() {
         <Building2 aria-hidden="true" className="size-6" />
       </span>
       <div className="flex flex-col">
-        <span className="text-md font-semibold text-primary">Kvadrat Gradnja d.o.o.</span>
-        <span className="text-xs text-secondary">
+        <span className={cn('text-md font-semibold text-primary', TEXT_DIRECTION)}>
+          Kvadrat Gradnja d.o.o.
+        </span>
+        <span className={cn('text-xs text-secondary', TEXT_DIRECTION)}>
           Construction and engineering · Temerinski put 51, Novi Sad · office@kvadrat-gradnja.rs
         </span>
       </div>
@@ -37,8 +41,8 @@ function Letterhead() {
 
 const HEADER = (
   <div className="flex justify-between gap-4">
-    <span>Kvadrat Gradnja d.o.o.</span>
-    <span>
+    <span className={TEXT_ISOLATE}>Kvadrat Gradnja d.o.o.</span>
+    <span className={TEXT_ISOLATE}>
       Invoice <span dir="ltr">F-2026-0418</span>
     </span>
   </div>
@@ -214,8 +218,8 @@ export const Long: Story = {
         number="F-2026-0431"
         header={
           <div className="flex justify-between gap-4">
-            <span>Kvadrat Gradnja d.o.o.</span>
-            <span>
+            <span className={TEXT_ISOLATE}>Kvadrat Gradnja d.o.o.</span>
+            <span className={TEXT_ISOLATE}>
               Invoice <span dir="ltr">F-2026-0431</span>
             </span>
           </div>

@@ -619,7 +619,7 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
                 {item.booking.title}
               </span>
               {!short && (
-                <span className={cn('w-full truncate', TEXT_ISOLATE)}>
+                <span className={cn('w-full truncate', TEXT_DIRECTION)}>
                   {item.booking.description ?? text.time}
                 </span>
               )}
@@ -769,7 +769,7 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
                   className="absolute inset-x-0 truncate px-2 py-2 text-xs font-semibold text-primary"
                   style={{ top: index * (DAY_HEADER + length * PX_PHONE) }}
                 >
-                  {format.date(day)}
+                  <bdi>{format.date(day)}</bdi>
                 </span>
               ))}
             {hours.map((hour) => (
@@ -813,7 +813,10 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
                   {axis.days.map((day) => (
                     <div
                       key={day}
-                      className="box-border truncate border-0 border-s border-solid border-default px-2 py-1.5 text-xs font-semibold text-primary"
+                      className={cn(
+                        'box-border truncate border-0 border-s border-solid border-default px-2 py-1.5 text-xs font-semibold text-primary',
+                        TEXT_DIRECTION,
+                      )}
                       style={{ width: `${String((length * 100) / total)}%` }}
                     >
                       {format.dateLong(day)}

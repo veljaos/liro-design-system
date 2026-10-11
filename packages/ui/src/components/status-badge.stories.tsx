@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { TEXT_DIRECTION } from '../primitives/classes'
 import { CircleAlert, CircleCheck, Clock } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { StatusBadge, TONE_NAMES, toneFor, type Tone } from './status-badge'
@@ -143,11 +144,11 @@ export const PhoneWidth: Story = {
     <div className="w-[390px] max-w-full">
       <div className="flex flex-col gap-2 rounded-lg border border-default bg-surface-raised p-4">
         <div className="flex items-center justify-between gap-2">
-          <span className="text-h4">Order 2026-0142</span>
+          <span className={`text-h4 ${TEXT_DIRECTION}`}>Order 2026-0142</span>
           <StatusBadge label="Overdue" tone="danger" />
         </div>
         <div className="flex items-center justify-between gap-2">
-          <span className="text-h4">Order 2026-0143</span>
+          <span className={`text-h4 ${TEXT_DIRECTION}`}>Order 2026-0143</span>
           <StatusBadge label="Paid" tone="success" />
         </div>
       </div>

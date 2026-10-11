@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react'
-import { BUTTON_RESET, FOCUS_RING, TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
+import { BUTTON_RESET, FOCUS_RING, TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { Skeleton } from '../primitives/skeleton'
 import { ToggleGroup, ToggleGroupItem } from '../primitives/toggle-group'
@@ -143,7 +143,12 @@ export function Timetable(props: TimetableProps) {
         )}
       >
         {now && (
-          <span className="self-start rounded-xs bg-surface-selected px-1.5 py-0.5 text-xs font-semibold text-primary">
+          <span
+            className={cn(
+              'self-start rounded-xs bg-surface-selected px-1.5 py-0.5 text-xs font-semibold text-primary',
+              TEXT_DIRECTION,
+            )}
+          >
             {messages['timetable.now']}
           </span>
         )}
@@ -218,10 +223,10 @@ export function Timetable(props: TimetableProps) {
               className="flex gap-3 border-0 border-t border-solid border-subtle py-2 first:border-t-0"
             >
               <div className="flex w-24 shrink-0 flex-col gap-0.5">
-                <span className={cn('text-sm font-semibold text-primary', TEXT_ISOLATE)}>
+                <span className={cn('text-sm font-semibold text-primary', TEXT_DIRECTION)}>
                   {period.label}
                 </span>
-                <span className={cn('text-xs text-secondary tabular-nums', TEXT_ISOLATE)}>
+                <span className={cn('text-xs text-secondary tabular-nums', TEXT_DIRECTION)}>
                   {timeText(period)}
                 </span>
               </div>
@@ -242,13 +247,8 @@ export function Timetable(props: TimetableProps) {
       )}
     >
       <table className="w-full table-fixed border-collapse">
-        <caption
-          className={cn(
-            'px-3 pt-3 pb-2 text-start text-md font-semibold text-primary',
-            TEXT_DIRECTION,
-          )}
-        >
-          {props.label}
+        <caption className="px-3 pt-3 pb-2 text-start text-md font-semibold text-primary">
+          <span className={cn('block', TEXT_DIRECTION)}>{props.label}</span>
         </caption>
         <thead>
           <tr>
@@ -265,11 +265,11 @@ export function Timetable(props: TimetableProps) {
                 {...(day === todayWeekday ? { 'aria-current': 'date' as const } : {})}
                 className="border-0 border-b border-solid border-default px-2 py-2 text-start text-sm font-semibold text-primary"
               >
-                <span className="block first-letter:uppercase">
+                <span className={cn('block first-letter:uppercase', TEXT_DIRECTION)}>
                   {format.weekdayName(day, 'long')}
                 </span>
                 {day === todayWeekday && (
-                  <span className="block text-xs font-medium text-secondary">
+                  <span className={cn('block text-xs font-medium text-secondary', TEXT_DIRECTION)}>
                     {messages['calendar.todayMark']}
                   </span>
                 )}
@@ -284,13 +284,13 @@ export function Timetable(props: TimetableProps) {
                 scope="row"
                 className="border-0 border-t border-solid border-subtle px-3 py-2 text-start align-top"
               >
-                <span className={cn('block text-sm font-semibold text-primary', TEXT_ISOLATE)}>
+                <span className={cn('block text-sm font-semibold text-primary', TEXT_DIRECTION)}>
                   {period.label}
                 </span>
                 <span
                   className={cn(
                     'block text-xs font-regular text-secondary tabular-nums',
-                    TEXT_ISOLATE,
+                    TEXT_DIRECTION,
                   )}
                 >
                   {timeText(period)}

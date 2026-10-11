@@ -1,7 +1,7 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { DayPicker, type ChevronProps, type DayPickerProps } from 'react-day-picker'
 import { useLiro } from '../provider/liro-provider'
-import { BUTTON_RESET, FOCUS_RING } from './classes'
+import { BUTTON_RESET, FOCUS_RING, TEXT_ISOLATE } from './classes'
 import { cn } from './cn'
 
 /*
@@ -108,7 +108,7 @@ export function Calendar({ labels, className, classNames, today, ...props }: Cal
         button_previous: NAV_BUTTON,
         button_next: NAV_BUTTON,
         month_caption: 'mb-2.5 flex h-9 items-center justify-center px-9',
-        caption_label: 'text-sm font-semibold capitalize',
+        caption_label: cn('text-sm font-semibold capitalize', TEXT_ISOLATE),
         month_grid: 'border-collapse',
         weekday: 'pb-1.5 text-sm font-regular text-secondary capitalize',
         day: 'p-[0.5px] text-center',

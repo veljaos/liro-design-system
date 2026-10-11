@@ -13,7 +13,7 @@ import { Drawer } from '../components/dialog'
 import { EmptyState } from '../components/empty-state'
 import { ProgressBar, Skeleton } from '../components/progress'
 import { usePhone } from '../components/use-phone'
-import { FOCUS_RING, TEXT_DIRECTION } from '../primitives/classes'
+import { FOCUS_RING, TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 import {
@@ -192,7 +192,7 @@ function Outline({
               <h3 className={cn('m-0 text-sm font-semibold text-primary', TEXT_DIRECTION)}>
                 {module.title}
               </h3>
-              <span className="text-xs text-secondary tabular-nums">
+              <span className={cn('text-xs text-secondary tabular-nums', TEXT_DIRECTION)}>
                 {messages['course.moduleProgress'](
                   format.number(String(count.done)),
                   format.number(String(count.total)),
@@ -222,7 +222,7 @@ function Progress({ modules }: { modules: readonly CourseModule[] }) {
   const count = courseProgress(modules)
   return (
     <div data-slot="course-progress" className="flex w-full max-w-80 flex-col gap-1.5">
-      <span className="text-sm text-secondary tabular-nums">
+      <span className={cn('text-sm text-secondary tabular-nums', TEXT_DIRECTION)}>
         {messages['course.progress'](
           count.done,
           count.total,
@@ -265,10 +265,10 @@ function Pager({
           className="mt-0.5 size-4 shrink-0 text-secondary rtl:-scale-x-100"
         />
         <span className="flex min-w-0 flex-col">
-          <span className="text-xs text-secondary">
+          <span className={cn('text-xs text-secondary', TEXT_ISOLATE)}>
             {side === 'previous' ? messages['course.previous'] : messages['course.next']}
           </span>
-          <span className="text-sm font-medium text-link">{target.title}</span>
+          <span className={cn('text-sm font-medium text-link', TEXT_ISOLATE)}>{target.title}</span>
         </span>
       </Link>
     )

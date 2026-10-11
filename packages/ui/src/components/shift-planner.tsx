@@ -803,12 +803,13 @@ export function ShiftPlanner(props: ShiftPlannerProps) {
             )
           })}
         </div>
-        <p className={cn('m-0 flex flex-wrap gap-x-4 text-xs text-tertiary', TEXT_DIRECTION)}>
-          <span>{messages['shifts.paletteHint']}</span>
+        {/* A flex row's items are paragraphs of their own: each text carries its direction. */}
+        <p className="m-0 flex flex-wrap gap-x-4 text-xs text-tertiary">
+          <span className={TEXT_DIRECTION}>{messages['shifts.paletteHint']}</span>
           {anyChanged && (
             <span className="inline-flex items-center gap-1">
               <PenLine aria-hidden="true" className="size-3" />
-              {messages['shifts.changed']}
+              <span className={TEXT_DIRECTION}>{messages['shifts.changed']}</span>
             </span>
           )}
         </p>
@@ -816,7 +817,7 @@ export function ShiftPlanner(props: ShiftPlannerProps) {
     ) : anyChanged ? (
       <p className="m-0 inline-flex items-center gap-1 text-xs text-tertiary">
         <PenLine aria-hidden="true" className="size-3" />
-        {messages['shifts.changed']}
+        <span className={TEXT_DIRECTION}>{messages['shifts.changed']}</span>
       </p>
     ) : null
 
@@ -983,10 +984,14 @@ export function ShiftPlanner(props: ShiftPlannerProps) {
     )
   }
 
-  const hoursText = (row: ShiftPlannerRow) =>
-    row.hours === null || row.hours === undefined
-      ? '—'
-      : messages['shifts.hoursValue'](format.number(row.hours))
+  // Hours with their unit ("38 h") read in the text's own order in a right-to-left page.
+  const hoursText = (row: ShiftPlannerRow) => (
+    <span className={TEXT_ISOLATE}>
+      {row.hours === null || row.hours === undefined
+        ? '—'
+        : messages['shifts.hoursValue'](format.number(row.hours))}
+    </span>
+  )
 
   const coverageCell = (date: string): ReactNode => {
     const value = props.coverage?.[date]
@@ -994,7 +999,7 @@ export function ShiftPlanner(props: ShiftPlannerProps) {
     return (
       <span className="inline-flex items-center gap-1">
         {value.tone !== undefined && <ConflictIcon tone={value.tone} className="size-3.5" />}
-        <span className="tabular-nums">
+        <span className={cn('tabular-nums', TEXT_ISOLATE)}>
           {messages['shifts.coverageValue'](
             format.number(value.planned),
             value.needed === undefined ? undefined : format.number(value.needed),
@@ -1033,7 +1038,10 @@ export function ShiftPlanner(props: ShiftPlannerProps) {
           />
           <div className="flex min-w-0 flex-1 flex-col items-center text-center">
             <span className="text-xs text-secondary">{messages['shifts.day']}</span>
-            <span aria-live="polite" className="text-sm font-semibold text-primary">
+            <span
+              aria-live="polite"
+              className={cn('text-sm font-semibold text-primary', TEXT_ISOLATE)}
+            >
               {dayText(phoneDay)}
               {phoneDay === today && (
                 <span className={cn('ms-2', TODAY_TEXT)}>· {messages['shifts.today']}</span>
@@ -1364,10 +1372,12 @@ export function ShiftPlanner(props: ShiftPlannerProps) {
                       className="min-w-28 border-0 border-s border-b border-solid border-default border-s-subtle px-2 py-2 text-start align-bottom text-xs font-regular text-secondary"
                     >
                       <span className="flex flex-col">
-                        <span className="font-semibold text-primary">
+                        <span className={cn('font-semibold text-primary', TEXT_DIRECTION)}>
                           {format.weekdayName(weekday, 'short')}
                         </span>
-                        <span className="tabular-nums">{format.date(date)}</span>
+                        <span className={cn('tabular-nums', TEXT_DIRECTION)}>
+                          {format.date(date)}
+                        </span>
                         {date === today && (
                           <span className={TODAY_TEXT}>{messages['shifts.today']}</span>
                         )}

@@ -342,7 +342,7 @@ export function ClockRecords({ phone }: { phone: boolean }) {
             title="Clock records"
             subtitle={`${format.dateLong(CLOCK_DAY)} · site ${SITE.name}`}
           />
-          <p className="m-0 text-sm text-secondary">
+          <p className="bidi-content m-0 text-sm text-secondary">
             The hours each record gives are the day’s hours in the{' '}
             <Link href={`#${G_ROUTES.timesheet}`} className="text-link underline visited:text-link">
               October 2026 timesheet
@@ -777,7 +777,7 @@ export function EmergencyBalance({ phone }: { phone: boolean }) {
             title="Working-time redistribution"
             subtitle={`${ER.department} · ${format.date(ER_PLAN.start)}–${format.date(ER_PLAN.end)}`}
           />
-          <p className="m-0 text-sm text-secondary">
+          <p className="bidi-content m-0 text-sm text-secondary">
             The hours are spread unevenly over the eight weeks; the average over the period counts.
             The limits in the warnings are illustrative: the application passes its own.
           </p>

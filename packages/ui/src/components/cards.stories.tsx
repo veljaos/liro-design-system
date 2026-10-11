@@ -7,6 +7,8 @@ import { ARABIC, JAPANESE, LONG } from './field-story-data'
 import { PersonName } from './person'
 import { StatusBadge } from './status-badge'
 import { expectContentDirection, StoryProvider } from './story-frames'
+import { TEXT_DIRECTION } from '../primitives/classes'
+import { cn } from '../primitives/cn'
 
 const meta = {
   title: 'Components/Display/Cards',
@@ -117,7 +119,12 @@ export const Variants: Story = {
     <div className="flex max-w-180 flex-col gap-4">
       <Card>A plain card with its content.</Card>
       <SectionCard title="Flush body" actions={<Button intent="refresh" label="Refresh" />} flush>
-        <div className="border-0 border-t border-solid border-default px-4 py-2 text-sm">
+        <div
+          className={cn(
+            'border-0 border-t border-solid border-default px-4 py-2 text-sm',
+            TEXT_DIRECTION,
+          )}
+        >
           A table reaches the edges.
         </div>
       </SectionCard>

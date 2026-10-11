@@ -5,6 +5,8 @@ import { settle } from '../primitives/story-helpers'
 import { LiroProvider, useLiro } from '../provider/liro-provider'
 import { ARABIC, JAPANESE, LONG } from './field-story-data'
 import { MonthField } from './month-field'
+import { TEXT_DIRECTION } from '../primitives/classes'
+import { cn } from '../primitives/cn'
 
 /** A nested provider with a fixed "today", in the story's theme, locale and direction. */
 function Today({ today, children }: { today: string; children: ReactNode }) {
@@ -58,7 +60,7 @@ export const Default: Story = {
     return (
       <div className="flex max-w-100 flex-col gap-3">
         <MonthField {...args} value={value} onChange={setValue} />
-        <p className="m-0 text-sm text-secondary">
+        <p className={cn('m-0 text-sm text-secondary', TEXT_DIRECTION)}>
           Value: <code>{value ?? 'null'}</code>
         </p>
       </div>
@@ -105,7 +107,7 @@ export const Keyboard: Story = {
     return (
       <div className="flex min-h-80 max-w-100 flex-col gap-3">
         <MonthField label="Accounting period" value={value} onChange={setValue} />
-        <p className="m-0 text-sm text-secondary">
+        <p className={cn('m-0 text-sm text-secondary', TEXT_DIRECTION)}>
           Value: <code>{value ?? 'null'}</code>
         </p>
       </div>

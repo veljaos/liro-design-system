@@ -369,10 +369,15 @@ export function PrintFinding(props: PrintFindingProps) {
       props.footer
     ) : (
       <div className="flex flex-col gap-1">
-        <p data-slot="print-confidentiality" className="m-0 font-semibold text-primary">
+        <p
+          data-slot="print-confidentiality"
+          className={cn('m-0 font-semibold text-primary', TEXT_DIRECTION)}
+        >
           {props.confidentiality}
         </p>
-        {props.footer !== undefined && props.footer !== null && <div>{props.footer}</div>}
+        {props.footer !== undefined && props.footer !== null && (
+          <div className={TEXT_DIRECTION}>{props.footer}</div>
+        )}
       </div>
     )
   return (

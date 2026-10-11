@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { HardHat } from 'lucide-react'
 import { expect, within } from 'storybook/test'
 import { ExampleProvider, PhoneFrame, StoryProvider } from '../components/story-frames'
+import { TEXT_ISOLATE } from '../primitives/classes'
 import { settle } from '../primitives/story-helpers'
 import { SAFETY_CERTIFICATE } from './print-story-data'
 import { PrintCertificate } from './print-templates'
@@ -23,7 +24,7 @@ function Seal({ text }: { text: string }) {
       aria-label={text}
       className="flex size-26 items-center justify-center rounded-full border-2 border-double border-strong p-2 text-center text-xs text-secondary"
     >
-      {text}
+      <span className={TEXT_ISOLATE}>{text}</span>
     </span>
   )
 }

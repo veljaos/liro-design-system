@@ -1,6 +1,6 @@
 import { Check } from 'lucide-react'
 import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
-import { TEXT_DIRECTION } from '../primitives/classes'
+import { TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import {
   Questionnaire as QuestionnaireRoot,
@@ -200,9 +200,9 @@ function Answer({
                 onChange(chooseOption(question, answer, option.value, event.target.checked))
               }}
             >
-              <span>{option.label}</span>
+              <span className={TEXT_DIRECTION}>{option.label}</span>
               {option.description !== undefined && (
-                <QuestionnaireChoiceDescription>
+                <QuestionnaireChoiceDescription className={TEXT_DIRECTION}>
                   {option.description}
                 </QuestionnaireChoiceDescription>
               )}
@@ -425,7 +425,7 @@ export function Questionnaire(props: QuestionnaireProps) {
     >
       {props.progress !== false && (
         <div className="flex flex-col gap-1.5">
-          <p className="m-0 text-xs text-secondary tabular-nums">
+          <p className={cn('m-0 text-xs text-secondary tabular-nums', TEXT_DIRECTION)}>
             {messages['questionnaire.progress'](
               progress.answered,
               format.number(String(progress.answered)),
@@ -492,7 +492,7 @@ export function Questionnaire(props: QuestionnaireProps) {
                 label: question.title,
                 value: (
                   <span className="inline-flex items-center gap-1">
-                    <span className={text === null ? 'text-secondary' : undefined}>
+                    <span className={cn(text === null && 'text-secondary', TEXT_ISOLATE)}>
                       {text ?? messages['questionnaire.notAnswered']}
                     </span>
                     <CompactIconButton

@@ -11,6 +11,8 @@ import type { FilterDefinition } from './filter-logic'
 import { ARABIC, JAPANESE, LONG } from './field-story-data'
 import { useLiro } from '../provider/liro-provider'
 import { PhoneFrame, StoryProvider } from './story-frames'
+import { TEXT_DIRECTION } from '../primitives/classes'
+import { cn } from '../primitives/cn'
 
 const meta = {
   title: 'Components/Table/FilterBar',
@@ -382,7 +384,12 @@ export const InCard: Story = {
   render: () => (
     <Card className="max-w-240 p-0">
       <Controlled inline={2} actions={ACTIONS} layout="desktop" inCard />
-      <div className="border-0 border-t border-solid border-default px-4 py-3 text-sm">
+      <div
+        className={cn(
+          'border-0 border-t border-solid border-default px-4 py-3 text-sm',
+          TEXT_DIRECTION,
+        )}
+      >
         The table starts here.
       </div>
     </Card>

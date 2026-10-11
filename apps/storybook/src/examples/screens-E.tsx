@@ -101,7 +101,7 @@ const inactiveBadge = statusBadge('Inactive')
 function CustomerName({ customer, marked }: { customer: Customer; marked: boolean }) {
   return (
     <span className="inline-flex flex-wrap items-center gap-2">
-      <span>{customer.name}</span>
+      <span className="bidi-isolate">{customer.name}</span>
       {marked && !customer.active && inactiveBadge}
     </span>
   )

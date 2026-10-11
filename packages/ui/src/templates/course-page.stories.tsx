@@ -7,6 +7,8 @@ import { Button } from '../components/button'
 import { Questionnaire } from '../components/questionnaire'
 import { QuizResult } from '../components/quiz-result'
 import { ExampleProvider, PhoneFrame, StoryProvider } from '../components/story-frames'
+import { TEXT_DIRECTION } from '../primitives/classes'
+import { cn } from '../primitives/cn'
 import { settle } from '../primitives/story-helpers'
 import { CoursePage, type CoursePageProps } from './course-page'
 import { SAFETY_CERTIFICATE, SAFETY_QUIZ, safetyCourse } from './print-story-data'
@@ -18,19 +20,23 @@ const noop = () => undefined
 function HandlingLesson() {
   return (
     <>
-      <p className="m-0">
+      <p className={cn('m-0', TEXT_DIRECTION)}>
         Most injuries on Kvadrat Gradnja’s sites in 2025 came from lifting and carrying, not from
         falls. A load is heavy for the back long before it is too heavy for the arms: plan the lift,
         use the crane or a trolley where you can, and ask a colleague for anything over 25 kg.
       </p>
-      <h3 className="m-0 text-h5 text-primary">Before you lift</h3>
+      <h3 className={cn('m-0 text-h5 text-primary', TEXT_DIRECTION)}>Before you lift</h3>
       <ul className="m-0 flex flex-col gap-1 ps-6">
-        <li>Check the weight on the label or the delivery note; test it by tipping one edge.</li>
-        <li>Clear the path to where the load goes, and find where you will set it down.</li>
-        <li>Wear gloves for sharp edges, and safety boots — always.</li>
+        <li className={TEXT_DIRECTION}>
+          Check the weight on the label or the delivery note; test it by tipping one edge.
+        </li>
+        <li className={TEXT_DIRECTION}>
+          Clear the path to where the load goes, and find where you will set it down.
+        </li>
+        <li className={TEXT_DIRECTION}>Wear gloves for sharp edges, and safety boots — always.</li>
       </ul>
-      <h3 className="m-0 text-h5 text-primary">How to lift</h3>
-      <p className="m-0">
+      <h3 className={cn('m-0 text-h5 text-primary', TEXT_DIRECTION)}>How to lift</h3>
+      <p className={cn('m-0', TEXT_DIRECTION)}>
         Stand close to the load with your feet apart, bend your knees, keep your back straight and
         lift with your legs. Hold the load close to your body and turn with your feet, never with
         your back.
@@ -229,7 +235,7 @@ export const Quiz: Story = {
   render: () => (
     <ExampleProvider>
       <CoursePage {...FINAL} layout="desktop">
-        <p className="m-0">
+        <p className={cn('m-0', TEXT_DIRECTION)}>
           Ten questions on the whole course. You need 8 correct answers to pass; you may take the
           test again.
         </p>
@@ -479,7 +485,7 @@ export const Arabic: Story = {
         previous={{ title: 'الحقوق والواجبات', href: '#a' }}
         onMarkDone={noop}
       >
-        <p className="m-0">ارتدِ الخوذة وحذاء السلامة دائمًا في الموقع.</p>
+        <p className={cn('m-0', TEXT_DIRECTION)}>ارتدِ الخوذة وحذاء السلامة دائمًا في الموقع.</p>
       </CoursePage>
     </StoryProvider>
   ),
@@ -514,7 +520,9 @@ export const Japanese: Story = {
         next={{ title: '最終テスト', href: '#c' }}
         onMarkDone={noop}
       >
-        <p className="m-0">現場では常にヘルメットと安全靴を着用してください。</p>
+        <p className={cn('m-0', TEXT_DIRECTION)}>
+          現場では常にヘルメットと安全靴を着用してください。
+        </p>
       </CoursePage>
     </StoryProvider>
   ),

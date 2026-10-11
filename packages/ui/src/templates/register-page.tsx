@@ -11,7 +11,7 @@ import type { MenuEntry } from '../components/dropdown-menu'
 import type { EmptyAction } from '../components/empty-state'
 import { RefetchLoader } from '../components/refetch-loader'
 import { usePhone } from '../components/use-phone'
-import { FOCUS_RING, TEXT_DIRECTION } from '../primitives/classes'
+import { FOCUS_RING, TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 import { PageHeader, type PageBack } from './page-header'
@@ -162,12 +162,12 @@ export function RegisterPage<Row extends RowData>(props: RegisterPageProps<Row>)
         onClick={(event) => {
           goTo(event, number)
         }}
-        className={cn(LINK, FOCUS_RING)}
+        className={cn(LINK, FOCUS_RING, TEXT_ISOLATE)}
       >
         {text}
       </a>
     ) : (
-      <span className="text-secondary">{text}</span>
+      <span className={cn('text-secondary', TEXT_ISOLATE)}>{text}</span>
     )
   const columns: DataTableColumn<Row>[] = [
     {

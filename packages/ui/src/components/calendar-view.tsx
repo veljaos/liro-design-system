@@ -274,7 +274,7 @@ export function CalendarView(props: CalendarViewProps) {
           phone ? 'order-first basis-full' : 'order-4 me-auto ms-2',
         )}
       >
-        {title}
+        <bdi>{title}</bdi>
       </Heading>
       <ButtonPrimitive
         className="order-1 ps-4.5"
@@ -581,12 +581,9 @@ function TimeGrid(
         <div className="flex border-0 border-b border-solid border-default">
           <div
             style={{ width: GUTTER }}
-            className={cn(
-              'box-border shrink-0 px-1 py-1.5 text-end text-xs text-tertiary',
-              TEXT_ISOLATE,
-            )}
+            className="box-border shrink-0 px-1 py-1.5 text-end text-xs text-tertiary"
           >
-            {messages['calendar.allDay']}
+            <span className={TEXT_ISOLATE}>{messages['calendar.allDay']}</span>
           </div>
           {perDay.map(({ day, strip }) => (
             <ul
@@ -732,7 +729,7 @@ function TimeGrid(
                         {each.event.title}
                       </span>
                       {height >= 40 && (
-                        <span className={cn('w-full truncate tabular-nums', TEXT_ISOLATE)}>
+                        <span className={cn('w-full truncate tabular-nums', TEXT_DIRECTION)}>
                           {texts.time}
                         </span>
                       )}
@@ -1091,9 +1088,11 @@ function Agenda({
               TEXT_DIRECTION,
             )}
           >
-            <span className="inline-block first-letter:uppercase">{format.dateLong(day)}</span>
+            <span className={cn('inline-block first-letter:uppercase', TEXT_ISOLATE)}>
+              {format.dateLong(day)}
+            </span>
             {day === today && (
-              <span className="text-xs font-medium text-secondary">
+              <span className={cn('text-xs font-medium text-secondary', TEXT_ISOLATE)}>
                 {messages['calendar.todayMark']}
               </span>
             )}

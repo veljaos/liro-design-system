@@ -100,7 +100,9 @@ export function MyShifts(props: MyShiftsProps) {
               <SubHeading className="m-0 flex flex-wrap items-baseline gap-x-2 text-sm font-semibold text-primary">
                 <span className={TEXT_ISOLATE}>{heading}</span>
                 {week.kind !== 'date' && (
-                  <span className="text-xs font-regular text-secondary tabular-nums">
+                  <span
+                    className={cn('text-xs font-regular text-secondary tabular-nums', TEXT_ISOLATE)}
+                  >
                     {messages['shifts.week'](format.date(week.start), format.date(week.end))}
                   </span>
                 )}

@@ -2,6 +2,8 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { CakeSlice, Coffee, Croissant, Wheat } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { expect, userEvent, within } from 'storybook/test'
+import { TEXT_DIRECTION } from '../primitives/classes'
+import { cn } from '../primitives/cn'
 import { settle } from '../primitives/story-helpers'
 import { CATEGORIES, CURRENCY, PRODUCTS } from './pos-story-data'
 import { ProductGrid, ProductTile, type PosProduct } from './product-tile'
@@ -102,7 +104,11 @@ export const WithoutCategories: Story = {
   args: {
     products: PRODUCTS.slice(0, 6),
     categories: [],
-    toolbar: <p className="m-0 text-sm text-secondary">Scan a product, or press its tile.</p>,
+    toolbar: (
+      <p className={cn('m-0 text-sm text-secondary', TEXT_DIRECTION)}>
+        Scan a product, or press its tile.
+      </p>
+    ),
   },
 }
 

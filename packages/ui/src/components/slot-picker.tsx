@@ -130,9 +130,11 @@ export function SlotPicker(props: SlotPickerProps) {
                       TEXT_DIRECTION,
                     )}
                   >
-                    <span className="inline-block first-letter:uppercase">{dateText}</span>
+                    <span className={cn('inline-block first-letter:uppercase', TEXT_ISOLATE)}>
+                      {dateText}
+                    </span>
                     {day.day === today && (
-                      <span className="text-xs font-medium text-secondary">
+                      <span className={cn('text-xs font-medium text-secondary', TEXT_ISOLATE)}>
                         {messages['calendar.todayMark']}
                       </span>
                     )}

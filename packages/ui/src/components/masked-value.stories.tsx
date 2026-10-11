@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { useState, type ReactNode } from 'react'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
+import { TEXT_DIRECTION } from '../primitives/classes'
+import { cn } from '../primitives/cn'
 import { settle } from '../primitives/story-helpers'
 import { KeyValueList, SectionCard } from './cards'
 import { MoneyText } from './display-text'
@@ -162,7 +164,7 @@ export const RevealInteraction: Story = {
         <Record>
           <Salary onAsked={setAsked} />
         </Record>
-        <p className="text-xs text-secondary">
+        <p className={cn('text-xs text-secondary', TEXT_DIRECTION)}>
           Reported: {asked === null ? '—' : `${asked.reason ?? 'other'} ${asked.text}`}
         </p>
       </ExampleProvider>

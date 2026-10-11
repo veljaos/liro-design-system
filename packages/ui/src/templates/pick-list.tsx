@@ -160,7 +160,7 @@ export function PickList(props: PickListProps) {
 
   const progressRow = props.lines.length > 0 && (
     <div className="flex items-center gap-3">
-      <span className="shrink-0 text-sm font-semibold tabular-nums">
+      <span className={cn('shrink-0 text-sm font-semibold tabular-nums', TEXT_DIRECTION)}>
         {messages['pick.progress'](
           progress.done,
           format.number(String(progress.done)),
@@ -232,7 +232,7 @@ export function PickList(props: PickListProps) {
             {amount(current.quantity, current.unit)}
           </bdi>
         </div>
-        <span className="text-sm text-secondary tabular-nums">
+        <span className={cn('text-sm text-secondary tabular-nums', TEXT_DIRECTION)}>
           {messages['pick.pickedOf'](
             current.picked === null ? format.number('0') : format.number(current.picked),
             amount(current.quantity, current.unit),

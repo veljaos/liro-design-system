@@ -106,7 +106,9 @@ function StatusMarker({ status }: { status: PrintStatus }) {
         data-status="draft"
         className="mb-6 rounded-md border-2 border-solid border-strong px-4 py-3 break-inside-avoid"
       >
-        <p className="m-0 text-md font-semibold text-primary">{messages['print.draft']}</p>
+        <p className={cn('m-0 text-md font-semibold text-primary', TEXT_DIRECTION)}>
+          {messages['print.draft']}
+        </p>
         {status.note !== undefined && (
           <p className={cn('m-0 text-sm text-secondary', TEXT_DIRECTION)}>{status.note}</p>
         )}
@@ -120,7 +122,7 @@ function StatusMarker({ status }: { status: PrintStatus }) {
       data-status="cancelled"
       className="mb-6 rounded-md border-2 border-solid border-status-danger-fg px-4 py-3 break-inside-avoid"
     >
-      <p className="m-0 text-md font-semibold text-status-danger-fg">
+      <p className={cn('m-0 text-md font-semibold text-status-danger-fg', TEXT_DIRECTION)}>
         {messages['document.cancelledTitle']}
       </p>
       <p className={cn('m-0 text-sm text-primary', TEXT_DIRECTION)}>

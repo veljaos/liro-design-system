@@ -252,12 +252,14 @@ export function ImportWizard(props: ImportWizardProps) {
       header: messages['import.field'],
       cell: (field) => (
         <span className="flex flex-col gap-0.5 whitespace-normal">
-          <span className="font-semibold">
+          <span className={cn('font-semibold', TEXT_DIRECTION)}>
             {field.label}
             {field.required === true && <RequiredMark />}
           </span>
           {field.description !== undefined && (
-            <span className="text-xs text-secondary">{field.description}</span>
+            <span className={cn('text-xs text-secondary', TEXT_DIRECTION)}>
+              {field.description}
+            </span>
           )}
         </span>
       ),
@@ -283,7 +285,9 @@ export function ImportWizard(props: ImportWizardProps) {
               }}
             />
             {column !== null && suggested.has(field.id) && (
-              <span className="text-xs text-tertiary">{messages['import.suggested']}</span>
+              <span className={cn('text-xs text-tertiary', TEXT_DIRECTION)}>
+                {messages['import.suggested']}
+              </span>
             )}
           </span>
         )
@@ -343,7 +347,7 @@ export function ImportWizard(props: ImportWizardProps) {
       header: field.label,
       cell: (row) => (
         <span className="flex flex-col gap-0.5">
-          <span>{row.values[field.id] ?? ''}</span>
+          <span className={TEXT_DIRECTION}>{row.values[field.id] ?? ''}</span>
           <Issues issues={issuesOf(row, field.id)} />
         </span>
       ),

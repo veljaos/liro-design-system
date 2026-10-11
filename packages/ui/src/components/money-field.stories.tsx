@@ -4,6 +4,8 @@ import { settle } from '../primitives/story-helpers'
 import { LiroProvider, useLiro } from '../provider/liro-provider'
 import { ARABIC, JAPANESE, LONG } from './field-story-data'
 import { MoneyField } from './number-field'
+import { TEXT_DIRECTION } from '../primitives/classes'
+import { cn } from '../primitives/cn'
 
 /**
  * Right to left through a nested provider, as an application does it: number and money fields
@@ -54,7 +56,7 @@ export const Default: Story = {
     return (
       <div className="flex max-w-100 flex-col gap-3">
         <MoneyField {...args} value={value} onChange={setValue} />
-        <p className="m-0 text-sm text-secondary">
+        <p className={cn('m-0 text-sm text-secondary', TEXT_DIRECTION)}>
           Value: <code>{value === null ? 'null' : `"${value}"`}</code>
         </p>
       </div>

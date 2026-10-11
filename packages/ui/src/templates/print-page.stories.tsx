@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, within } from 'storybook/test'
 import { ExampleProvider, PhoneFrame, StoryProvider } from '../components/story-frames'
+import { TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
+import { cn } from '../primitives/cn'
 import { settle } from '../primitives/story-helpers'
 import { PrintPage } from './print-page'
 import { PrintSection, PrintSignatures, PrintTitle } from './print-parts'
@@ -23,7 +25,7 @@ function Letter({ sections = 1 }: { sections?: number }) {
       {Array.from({ length: sections }, (_, index) => (
         <PrintSection key={index} title={`${String(index + 1)}. Works and handover`}>
           {PARAGRAPHS.map((text) => (
-            <p key={text} className="m-0">
+            <p key={text} className={cn('m-0', TEXT_DIRECTION)}>
               {text}
             </p>
           ))}
@@ -45,7 +47,7 @@ function Letter({ sections = 1 }: { sections?: number }) {
 
 const HEADER = (
   <div className="flex justify-between gap-4">
-    <span>Kvadrat Gradnja d.o.o.</span>
+    <span className={TEXT_ISOLATE}>Kvadrat Gradnja d.o.o.</span>
     <span dir="ltr">KG-2026-117</span>
   </div>
 )
@@ -232,7 +234,7 @@ export const Arabic: Story = {
         <div className="flex flex-col gap-6">
           <PrintTitle title="تأكيد إنجاز الأعمال" number="KG-2026-117" />
           <PrintSection title="الأعمال والتسليم">
-            <p className="m-0">
+            <p className={cn('m-0', TEXT_DIRECTION)}>
               تؤكد الشركة أن أعمال صومعة الحبوب نُفذت وفقًا للعقد والتصميم المعتمد، وأن الموقع سُلّم
               إلى المستثمر في ٢٥ سبتمبر ٢٠٢٦.
             </p>
@@ -262,7 +264,7 @@ export const Japanese: Story = {
         <div className="flex flex-col gap-6">
           <PrintTitle title="工事完了確認書" number="KG-2026-117" />
           <PrintSection title="工事と引き渡し">
-            <p className="m-0">
+            <p className={cn('m-0', TEXT_DIRECTION)}>
               当社は、穀物サイロの工事が契約および承認された設計に従って実施され、2026年9月25日に現場が発注者に引き渡されたことを確認します。
             </p>
           </PrintSection>

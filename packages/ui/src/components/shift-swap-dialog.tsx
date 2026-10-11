@@ -173,7 +173,9 @@ function SwapForm(
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-1 rounded-md border border-solid border-default bg-surface-sunken p-3">
-        <span className="text-xs font-semibold text-secondary">{messages['swap.shift']}</span>
+        <span className={cn('text-xs font-semibold text-secondary', TEXT_DIRECTION)}>
+          {messages['swap.shift']}
+        </span>
         <span className={cn('text-sm font-semibold text-primary', TEXT_DIRECTION)}>
           {format.dateLong(props.shift.date)}
         </span>
@@ -251,7 +253,7 @@ function SwapForm(
           onClick={send}
         >
           <Send aria-hidden="true" className="size-3.75 shrink-0" />
-          <span>{messages['swap.submit']}</span>
+          <span className={TEXT_DIRECTION}>{messages['swap.submit']}</span>
         </LoadingButtonPrimitive>
       </DialogFooter>
     </div>

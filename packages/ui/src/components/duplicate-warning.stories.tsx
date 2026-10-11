@@ -7,6 +7,8 @@ import { ARABIC, JAPANESE, LONG } from './field-story-data'
 import { StatusBadge } from './status-badge'
 import { ExampleProvider, PhoneFrame, StoryProvider } from './story-frames'
 import { TextField } from './text-field'
+import { TEXT_DIRECTION } from '../primitives/classes'
+import { cn } from '../primitives/cn'
 
 const PANONIJA = {
   key: 'panonija',
@@ -49,7 +51,9 @@ function NewCustomer({ reasonRequired = false }: { reasonRequired?: boolean }) {
             }
           : {})}
       />
-      {created !== '' && <p className="m-0 text-sm text-secondary">{created}</p>}
+      {created !== '' && (
+        <p className={cn('m-0 text-sm text-secondary', TEXT_DIRECTION)}>{created}</p>
+      )}
     </div>
   )
 }

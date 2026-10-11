@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { useState } from 'react'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
+import { TEXT_DIRECTION } from '../primitives/classes'
+import { cn } from '../primitives/cn'
 import { settle } from '../primitives/story-helpers'
 import { CalendarView, type CalendarEvent, type CalendarViewProps } from './calendar-view'
 import type { CalendarViewName } from './schedule-logic'
@@ -33,7 +35,7 @@ function Calendar({
         date={date}
         onDateChange={setDate}
       />
-      <output className="text-sm text-secondary">{chosen}</output>
+      <output className={cn('text-sm text-secondary', TEXT_DIRECTION)}>{chosen}</output>
     </div>
   )
 }

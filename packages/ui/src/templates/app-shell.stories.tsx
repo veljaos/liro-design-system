@@ -9,6 +9,8 @@ import { DataTable, type DataTableColumn } from '../components/data-table'
 import { DateText, MoneyText } from '../components/display-text'
 import { EnvironmentMarker, ImpersonationBar, OfflineIndicator } from '../components/shell-markers'
 import { StatusBadge, toneFor } from '../components/status-badge'
+import { TEXT_DIRECTION } from '../primitives/classes'
+import { cn } from '../primitives/cn'
 import { settle } from '../primitives/story-helpers'
 import { ExampleProvider, PhoneFrame, StoryProvider } from '../components/story-frames'
 import { AppShell, type AppShellProps } from './app-shell'
@@ -214,7 +216,10 @@ export const Home: Story = {
     layout: 'desktop',
     breadcrumbs: [],
     moduleTabs: [],
-    notifications: { unread: 0, panel: <p className="m-0 text-sm">No notifications.</p> },
+    notifications: {
+      unread: 0,
+      panel: <p className={cn('m-0 text-sm', TEXT_DIRECTION)}>No notifications.</p>,
+    },
   },
   play: async ({ canvasElement }) => {
     await settle()

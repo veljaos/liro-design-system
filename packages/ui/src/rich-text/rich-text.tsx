@@ -166,7 +166,9 @@ export function RichText({ value, html, mergeFields, empty, className }: RichTex
   if (doc === null || isRichTextEmpty(doc)) {
     return (
       <div className={cn(RICH_CONTENT, className)}>
-        <p className="text-secondary">{empty ?? '—'}</p>
+        <p dir="auto" className="text-secondary">
+          {empty ?? '—'}
+        </p>
       </div>
     )
   }

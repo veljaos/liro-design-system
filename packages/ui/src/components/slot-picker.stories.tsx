@@ -2,6 +2,8 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { CalendarArrowUp } from 'lucide-react'
 import { useState } from 'react'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
+import { TEXT_DIRECTION } from '../primitives/classes'
+import { cn } from '../primitives/cn'
 import { settle } from '../primitives/story-helpers'
 import { slotKey } from './schedule-logic'
 import { CLINIC_RESOURCES, FREE_SLOTS, ScheduleFrame } from './schedule-story-data'
@@ -29,7 +31,7 @@ function Picker(props: Partial<SlotPickerProps>) {
           )
         }}
       />
-      <output className="text-sm text-secondary">{said}</output>
+      <output className={cn('text-sm text-secondary', TEXT_DIRECTION)}>{said}</output>
     </div>
   )
 }

@@ -3,6 +3,8 @@ import { School } from 'lucide-react'
 import { expect, within } from 'storybook/test'
 import { DateText } from '../components/display-text'
 import { ExampleProvider, PhoneFrame, StoryProvider } from '../components/story-frames'
+import { TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
+import { cn } from '../primitives/cn'
 import { settle } from '../primitives/story-helpers'
 import type { PrintColumn } from './print-parts'
 import { GRADES, type GradeRow } from './print-story-data'
@@ -15,8 +17,12 @@ function Letterhead() {
         <School aria-hidden="true" className="size-6" />
       </span>
       <div className="flex flex-col">
-        <span className="text-md font-semibold text-primary">OŠ „Jovan Popović“ Novi Sad</span>
-        <span className="text-xs text-secondary">Primary school · Braće Popović 1, Novi Sad</span>
+        <span className={cn('text-md font-semibold text-primary', TEXT_DIRECTION)}>
+          OŠ „Jovan Popović“ Novi Sad
+        </span>
+        <span className={cn('text-xs text-secondary', TEXT_DIRECTION)}>
+          Primary school · Braće Popović 1, Novi Sad
+        </span>
       </div>
     </div>
   )
@@ -64,7 +70,7 @@ const REPORT: PrintGradeReportProps<GradeRow> = {
   remarks: {
     title: 'Remarks',
     content: (
-      <p className="m-0">
+      <p className={cn('m-0', TEXT_DIRECTION)}>
         Luka is diligent and works well in a group. He took part in the school mathematics
         competition and won second place at the municipal level.
       </p>
@@ -81,7 +87,7 @@ const REPORT: PrintGradeReportProps<GradeRow> = {
       aria-label="School seal"
       className="flex size-24 items-center justify-center rounded-full border-2 border-double border-strong p-2 text-center text-xs text-secondary"
     >
-      OŠ „Jovan Popović“
+      <span className={TEXT_ISOLATE}>OŠ „Jovan Popović“</span>
     </span>
   ),
 }
@@ -147,7 +153,7 @@ export const LongText: Story = {
         remarks={{
           title: 'Remarks',
           content: Array.from({ length: 6 }, (_, index) => (
-            <p key={index} className="m-0">
+            <p key={index} className={cn('m-0', TEXT_DIRECTION)}>
               Luka is diligent and works well in a group; he helps classmates who missed lessons and
               prepares carefully for written tests. He took part in the school mathematics
               competition and won second place at the municipal level; his work on the class project

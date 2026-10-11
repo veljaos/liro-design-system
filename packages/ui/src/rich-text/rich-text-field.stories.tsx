@@ -6,6 +6,8 @@ import { Button } from '../components/button'
 import { LONG } from '../components/field-story-data'
 import type { MentionCandidate } from '../components/mention-combobox'
 import { PhoneFrame, StoryProvider } from '../components/story-frames'
+import { TEXT_DIRECTION } from '../primitives/classes'
+import { cn } from '../primitives/cn'
 import { settle } from '../primitives/story-helpers'
 import { RichTextField, type RichTextFieldProps } from './rich-text-field'
 import {
@@ -44,7 +46,7 @@ function Recorded(props: RichTextFieldProps) {
         }}
       />
       <section aria-label="Reported value" className="flex flex-col gap-1 text-xs text-secondary">
-        <span className="font-semibold">Stored HTML</span>
+        <span className={cn('font-semibold', TEXT_DIRECTION)}>Stored HTML</span>
         <code
           data-testid="stored-html"
           dir="ltr"
@@ -52,7 +54,7 @@ function Recorded(props: RichTextFieldProps) {
         >
           {value.html}
         </code>
-        <span data-testid="reported">
+        <span data-testid="reported" className={TEXT_DIRECTION}>
           Mentions: {value.mentions.map((mention) => mention.id).join(', ') || '—'} · Merge fields:{' '}
           {value.mergeFields.join(', ') || '—'} · Length: {value.length}
         </span>

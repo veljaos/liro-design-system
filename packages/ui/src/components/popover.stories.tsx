@@ -6,6 +6,8 @@ import { Button, IconButton } from './button'
 import { ARABIC, JAPANESE, LONG } from './field-story-data'
 import { Popover, Tooltip } from './popover'
 import { StoryProvider } from './story-frames'
+import { TEXT_DIRECTION } from '../primitives/classes'
+import { cn } from '../primitives/cn'
 
 const meta = {
   title: 'Components/Overlays/Popover',
@@ -33,8 +35,10 @@ type Story = StoryObj<typeof meta>
 
 const DETAILS = (
   <div className="flex max-w-64 flex-col gap-1">
-    <strong className="text-sm font-semibold">Alfa Trade d.o.o.</strong>
-    <span className="text-sm text-secondary">Customer since 2019, 214 invoices.</span>
+    <strong className={cn('text-sm font-semibold', TEXT_DIRECTION)}>Alfa Trade d.o.o.</strong>
+    <span className={cn('text-sm text-secondary', TEXT_DIRECTION)}>
+      Customer since 2019, 214 invoices.
+    </span>
   </div>
 )
 
@@ -106,7 +110,7 @@ export const LongTextPhone: Story = {
   render: () => (
     <div className="min-h-60 w-[390px] max-w-full">
       <Popover trigger={<Button intent="view" label={LONG.label} />} label="Details" defaultOpen>
-        <p className="m-0 max-w-80 text-sm">{LONG.description}</p>
+        <p className={cn('m-0 max-w-80 text-sm', TEXT_DIRECTION)}>{LONG.description}</p>
       </Popover>
     </div>
   ),
@@ -122,7 +126,7 @@ export const Arabic: Story = {
           label={ARABIC.label}
           defaultOpen
         >
-          <p className="m-0 text-sm">{ARABIC.description}</p>
+          <p className={cn('m-0 text-sm', TEXT_DIRECTION)}>{ARABIC.description}</p>
         </Popover>
       </div>
     </StoryProvider>
@@ -139,7 +143,7 @@ export const Japanese: Story = {
           label={JAPANESE.label}
           defaultOpen
         >
-          <p className="m-0 text-sm">{JAPANESE.description}</p>
+          <p className={cn('m-0 text-sm', TEXT_DIRECTION)}>{JAPANESE.description}</p>
         </Popover>
       </div>
     </StoryProvider>
