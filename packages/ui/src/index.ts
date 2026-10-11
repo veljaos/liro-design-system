@@ -1020,3 +1020,17 @@ export type {
   SeatingTable,
   SeatRef,
 } from './components/seating-logic'
+
+// ── P5.27 legal search ──
+export { LegalSearchPage } from './templates/legal-search-page'
+export type { LegalSearchPageProps } from './templates/legal-search-page'
+export { gazetteNumbers, snippetFromRanges, snippetText } from './templates/legal-search-logic'
+export type {
+  LegalSearchResult,
+  LegalSearchSort,
+  LegalSnippet,
+  LegalSnippetPart,
+} from './templates/legal-search-logic'
+export { GazetteIssues } from './components/gazette-issues'
+export type { GazetteIssue, GazetteIssuesProps } from './components/gazette-issues'
+export { treeFilterIds, treeFilterLabels } from './components/filter-logic'
