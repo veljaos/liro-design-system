@@ -623,7 +623,7 @@ export const EnglishInRtl: Story = {
     await expect(getComputedStyle(name).textAlign).toBe('right')
     await expect(canvas.getByDisplayValue('100123456')).toHaveAttribute('dir', 'ltr')
     await expect(
-      canvas.getAllByText('30 days').some((element) => element.getAttribute('dir') === 'auto'),
+      canvas.getAllByText('30 days').some((element) => element.closest('[dir="auto"]') !== null),
     ).toBe(true)
     await settle()
   },
