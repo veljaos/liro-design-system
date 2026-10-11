@@ -104,7 +104,10 @@ export function DialogFooter({ className, ...props }: ComponentProps<'div'>) {
   return (
     <div
       data-slot="dialog-footer"
-      className={cn('flex flex-wrap items-center justify-end gap-2', className)}
+      className={cn(
+        'flex flex-wrap items-center justify-end gap-2 *:data-[slot=action-row]:flex-1',
+        className,
+      )}
       {...props}
     />
   )
