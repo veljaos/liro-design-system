@@ -1350,4 +1350,102 @@ export interface LiroMessages {
   'richText.countLabel': (countText: string, limitText: string) => string
   /** Over the limit: "20 characters too many". */
   'richText.overLimit': (count: number, countText: string) => string
+  // P5.25 FloorPlan
+  /** The Plan / List switch, and its two choices. */
+  'floorPlan.view': string
+  'floorPlan.plan': string
+  'floorPlan.list': string
+  /** The zoom buttons' group and their names. */
+  'floorPlan.zoom': string
+  'floorPlan.zoomIn': string
+  'floorPlan.zoomOut': string
+  'floorPlan.zoomFit': string
+  /** Names the legend of the states. */
+  'floorPlan.legend': string
+  /** An item's capacity with its noun: "4 seats"; the number written by `format.number`. */
+  'floorPlan.capacity': (count: number, countText: string) => string
+  /** An item's accessible name: "Table 7, 19:30 · 4 guests, Reserved, 4 seats, Sala". */
+  'floorPlan.itemName': (label: string, details: readonly string[]) => string
+  /** A warning or a problem in words: "Warning: Overlaps Table 6". */
+  'floorPlan.warning': (text: string) => string
+  'floorPlan.problem': (text: string) => string
+  /** The warnings' summary, its "Go to" and that button's name. */
+  'floorPlan.warnings': string
+  'floorPlan.goTo': string
+  'floorPlan.goToItem': (label: string) => string
+  /** The list's group of items in no area. */
+  'floorPlan.noArea': string
+  /** How the keys work, for assistive technology: choosing, and edit mode. */
+  'floorPlan.instructions': string
+  'floorPlan.editInstructions': string
+  /** Announcements while an item is moved with the keys; x and y written by `format.number`. */
+  'floorPlan.picked': (label: string, x: string, y: string) => string
+  'floorPlan.moved': (label: string, x: string, y: string) => string
+  'floorPlan.dropped': (label: string, x: string, y: string) => string
+  'floorPlan.cancelled': (label: string) => string
+  /** Announced when the palette adds an item. */
+  'floorPlan.added': (label: string) => string
+  /** The palette's label. */
+  'floorPlan.add': string
+  /** The chosen item's actions: their group's name and the buttons. */
+  'floorPlan.itemActions': (label: string) => string
+  'floorPlan.chosen': (count: number, countText: string) => string
+  'floorPlan.moveTo': string
+  'floorPlan.size': string
+  'floorPlan.rotate': string
+  'floorPlan.duplicate': string
+  'floorPlan.remove': string
+  /** The "Move to…" and "Size…" dialogs: titles, hint, fields, buttons and the range error. */
+  'floorPlan.moveTitle': (label: string) => string
+  'floorPlan.sizeTitle': (label: string) => string
+  'floorPlan.unitsHint': string
+  'floorPlan.x': string
+  'floorPlan.y': string
+  'floorPlan.width': string
+  'floorPlan.height': string
+  'floorPlan.move': string
+  'floorPlan.apply': string
+  'floorPlan.outOfRange': (minText: string, maxText: string) => string
+  /** A plan without items. */
+  'floorPlan.empty': string
+  'floorPlan.emptyDescription': string
+  'floorPlan.emptyEditing': string
+  // P5.25 SeatingChart
+  /** The guest list's title, its count ("112 of 140 seated") and its search. */
+  'seating.guests': string
+  'seating.count': (seatedText: string, totalText: string) => string
+  'seating.search': string
+  /** The group of guests without a seat. */
+  'seating.notSeated': string
+  /** A table's taken seats: "8 of 10". */
+  'seating.tableCount': (takenText: string, seatsText: string) => string
+  /** A seat's name: "Table 3, seat 4". */
+  'seating.seatName': (table: string, seatText: string) => string
+  /** The seats' two states. */
+  'seating.free': string
+  'seating.taken': string
+  /** Announcements of a seating reported. */
+  'seating.seated': (name: string, seat: string) => string
+  'seating.unseated': (name: string) => string
+  /** An empty guest list, and a search that finds no one. */
+  'seating.noGuests': string
+  'seating.noGuestsDescription': string
+  'seating.noMatch': string
+  'seating.noMatchDescription': string
+  /** A guest's menu: its name and entries. */
+  'seating.guestActions': (name: string) => string
+  'seating.seatAt': string
+  'seating.unseat': string
+  /** A seat's dialog: who sits there, and the list to choose from. */
+  'seating.seatedHere': string
+  'seating.chooseGuest': string
+  /** "Seat at…": title, fields, the button, free seats and a full table. */
+  'seating.seatAtTitle': (name: string) => string
+  'seating.table': string
+  'seating.seat': string
+  'seating.seatButton': string
+  'seating.freeSeats': (count: number, countText: string) => string
+  'seating.tableFull': string
+  /** An empty seat in a table's list. */
+  'seating.emptySeat': string
 }

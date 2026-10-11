@@ -3562,3 +3562,381 @@ export const StockCountHandheldInteraction: Story = {
     })
   },
 }
+
+// ── P5.25 group K: floor plans and seating ──
+// (Imports here, inside the block, so the blocks merge without touching the top.)
+import { GALA_GUESTS, K_ROUTES, TABLE_3_FIGURES } from './data-K'
+
+const SERBIAN_K = createFormat('sr-Latn-RS')
+
+/** A table on a floor plan by its id. */
+function floorItem(canvasElement: HTMLElement, id: string): HTMLElement {
+  const element = canvasElement.querySelector<HTMLElement>(`[data-floor-item="${id}"]`)
+  if (element === null) throw new Error(`no item ${id}`)
+  return element
+}
+
+/** Nothing on the screen scrolls sideways (the plan scrolls inside its own box). */
+async function expectNoPageScroll(canvasElement: HTMLElement) {
+  for (const element of canvasElement.querySelectorAll<HTMLElement>(
+    '[data-slot="floor-plan"], [data-slot="seating-chart"], [data-slot="pos-shell"]',
+  )) {
+    await expect(element.scrollWidth).toBeLessThanOrEqual(element.clientWidth)
+  }
+}
+
+/**
+ * Bistro Dunav at 19:40 on a Tuesday: the hall, the terrace and the bar, each table in the
+ * restaurant's state — free, occupied (how many, since when), reserved (for when, how many),
+ * one waiting to be cleaned. Table 7 is chosen: its party and "Move to table…".
+ */
+export const RestaurantService: Story = {
+  name: 'Restaurant service, Bistro Dunav',
+  render: () => <ExampleApp start={K_ROUTES.floorTable} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(floorItem(canvasElement, 't7')).toHaveAttribute('aria-pressed', 'true')
+    await expect(floorItem(canvasElement, 't3')).toHaveAccessibleName(
+      'Table 3, 20:00 · 4 guests, Reserved, 4 seats, Sala',
+    )
+    await expect(canvas.getByRole('heading', { name: /^Table 7/ })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Move to table…' })).toBeVisible()
+    await expectNoPageScroll(canvasElement)
+  },
+}
+
+/** On a phone: the chosen table first, then the floor as a list by area. */
+export const RestaurantServicePhone: Story = {
+  name: 'Restaurant service, Bistro Dunav, phone',
+  render: () => <OnPhone start={K_ROUTES.floorTable} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(within(canvasElement).getByRole('heading', { name: 'Terasa' })).toBeInTheDocument()
+    await expectNoPageScroll(canvasElement)
+  },
+}
+
+/** Opening free table 4 for a walk-in party: how many guests. */
+export const RestaurantOpenTable: Story = {
+  name: 'Restaurant service, opening a table',
+  render: () => <ExampleApp start={K_ROUTES.floorOpen} />,
+  play: async () => {
+    await settle()
+    const dialog = within(document.body).getByRole('dialog', { name: 'Open Table 4' })
+    await expect(within(dialog).getByRole('textbox', { name: 'Guests' })).toHaveValue('2')
+  },
+}
+
+export const RestaurantOpenTablePhone: Story = {
+  name: 'Restaurant service, opening a table, phone',
+  render: () => <OnPhone start={K_ROUTES.floorOpen} />,
+  play: async () => {
+    await settle()
+    await expect(within(document.body).getByRole('dialog', { name: 'Open Table 4' })).toBeVisible()
+  },
+}
+
+/** Moving table 5's party of three: the free tables with seats enough. */
+export const RestaurantMoveGuests: Story = {
+  name: 'Restaurant service, moving guests',
+  render: () => <ExampleApp start={K_ROUTES.floorMove} />,
+  play: async () => {
+    await settle()
+    const dialog = within(document.body).getByRole('dialog', {
+      name: 'Move guests from Table 5',
+    })
+    await expect(within(dialog).getByRole('combobox', { name: 'To table' })).toHaveTextContent(
+      'Table 4 · Sala · 4 seats',
+    )
+  },
+}
+
+export const RestaurantMoveGuestsPhone: Story = {
+  name: 'Restaurant service, moving guests, phone',
+  render: () => <OnPhone start={K_ROUTES.floorMove} />,
+  play: async () => {
+    await settle()
+    await expect(
+      within(document.body).getByRole('dialog', { name: 'Move guests from Table 5' }),
+    ).toBeVisible()
+  },
+}
+
+/**
+ * The service by the keys and presses: Enter opens table 2, which is free — "Open table" for
+ * two; then table 5's party moves to table 10 and table 5 waits for cleaning.
+ */
+export const RestaurantServiceInteraction: Story = {
+  name: 'Restaurant service, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={K_ROUTES.floor} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const body = within(document.body)
+    await userEvent.click(floorItem(canvasElement, 't2'))
+    await userEvent.click(canvas.getByRole('button', { name: 'Open table' }))
+    let dialog = await body.findByRole('dialog', { name: 'Open Table 2' })
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Open table' }))
+    await waitFor(async () => {
+      await expect(floorItem(canvasElement, 't2')).toHaveAccessibleName(
+        'Table 2, 2 guests · 19:40, Occupied, 2 seats, Sala',
+      )
+    })
+    floorItem(canvasElement, 't2').focus()
+    await userEvent.keyboard('{ArrowDown}')
+    await expect(floorItem(canvasElement, 't6')).toHaveFocus()
+    await userEvent.keyboard('{ArrowLeft}')
+    await expect(floorItem(canvasElement, 't5')).toHaveFocus()
+    // The closed dialog leaves the page hidden from assistive technology until it has gone.
+    await userEvent.click(await canvas.findByRole('button', { name: 'Move to table…' }))
+    dialog = await body.findByRole('dialog', { name: 'Move guests from Table 5' })
+    await userEvent.click(within(dialog).getByRole('combobox', { name: 'To table' }))
+    await userEvent.click(await body.findByRole('option', { name: /^Table 10/ }))
+    // The select's list closes first; then the dialog is in use again.
+    await userEvent.click(await within(dialog).findByRole('button', { name: 'Move' }))
+    await waitFor(async () => {
+      await expect(floorItem(canvasElement, 't5')).toHaveAccessibleName(/Needs cleaning/)
+    })
+    await expect(floorItem(canvasElement, 't10')).toHaveAccessibleName(
+      /^Table 10, 3 guests · 19:20, Occupied/,
+    )
+  },
+}
+
+/**
+ * The floor plan in edit mode: terrace tables 11 and 12 chosen, "Merge Table 11 and Table 12"
+ * beside "Save floor plan"; the palette, the grid, the chosen items' frames.
+ */
+export const RestaurantFloorPlanEdit: Story = {
+  name: 'Restaurant floor plan, editing',
+  render: () => <ExampleApp start={K_ROUTES.floorEdit} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('button', { name: 'Merge Table 11 and Table 12' })).toBeVisible()
+    await expect(floorItem(canvasElement, 't11')).toHaveAttribute('aria-pressed', 'true')
+    await expect(canvas.getByRole('group', { name: 'Add' })).toBeVisible()
+    await expectNoPageScroll(canvasElement)
+  },
+}
+
+export const RestaurantFloorPlanEditPhone: Story = {
+  name: 'Restaurant floor plan, editing, phone',
+  render: () => <OnPhone start={K_ROUTES.floorEdit} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expectNoPageScroll(canvasElement)
+  },
+}
+
+/** Tables 11 and 12 merged into one table of eight for the evening. */
+export const RestaurantTablesMerged: Story = {
+  name: 'Restaurant floor plan, tables merged',
+  render: () => <ExampleApp start={K_ROUTES.floorMerged} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(floorItem(canvasElement, 't11+t12')).toHaveAccessibleName(
+      /^Table 11 \+ 12, Free, 8 seats, Terasa/,
+    )
+  },
+}
+
+export const RestaurantTablesMergedPhone: Story = {
+  name: 'Restaurant floor plan, tables merged, phone',
+  render: () => <OnPhone start={K_ROUTES.floorMerged} />,
+}
+
+/** Merging by pressing, then moving the merged table with the keys (Space, arrows, Space). */
+export const RestaurantMergeInteraction: Story = {
+  name: 'Restaurant floor plan, merging, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={K_ROUTES.floorEdit} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Merge Table 11 and Table 12' }))
+    const merged = floorItem(canvasElement, 't11+t12')
+    await expect(merged).toHaveAccessibleName(/8 seats/)
+    merged.focus()
+    await userEvent.keyboard(' {Shift>}{ArrowDown}{ArrowDown}{/Shift} ')
+    await expect(
+      canvasElement.querySelector('[data-slot="floor-plan-announcer"]'),
+    ).toHaveTextContent('Dropped Table 11 + 12 at 820, 70.')
+  },
+}
+
+/**
+ * Kafić Kod Mike's terrace on the bar's tablet (touch density): eight tables, the open ones with
+ * the time and their total; a table opens its order on the till.
+ */
+export const CafeTerrace: Story = {
+  name: 'Café terrace, Kafić Kod Mike',
+  render: () => <ExampleApp start={K_ROUTES.terrace} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(floorItem(canvasElement, 't3')).toHaveAccessibleName(
+      `Table 3, 18:15 · ${SERBIAN_K.money(TABLE_3_FIGURES.total, 'RSD')}, Order open, 4 seats`,
+    )
+    await expectNoPageScroll(canvasElement)
+  },
+}
+
+export const CafeTerracePhone: Story = {
+  name: 'Café terrace, Kafić Kod Mike, phone',
+  render: () => <OnPhone start={K_ROUTES.terrace} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expectNoPageScroll(canvasElement)
+  },
+}
+
+/** Table 3's order on the till: four lines, 1.200,00 RSD, "Bill" last. */
+export const CafeTableTill: Story = {
+  name: 'Café terrace, table 3 on the till',
+  render: () => <ExampleApp start={K_ROUTES.terraceTable} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { name: 'Table 3' })).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('4 items')
+    await expect(
+      canvas.getByRole('button', {
+        name: new RegExp(
+          `^Bill ${SERBIAN_K.money(TABLE_3_FIGURES.total, 'RSD').replace(/\./g, '\\.').replace(/\s/g, '\\s')}$`,
+        ),
+      }),
+    ).toBeVisible()
+  },
+}
+
+export const CafeTableTillPhone: Story = {
+  name: 'Café terrace, table 3 on the till, phone',
+  render: () => <OnPhone start={K_ROUTES.terraceTable} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expectNoPageScroll(canvasElement)
+  },
+}
+
+/** A press on table 3 opens its order; a kapućino more; back to the terrace. */
+export const CafeInteraction: Story = {
+  name: 'Café terrace, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={K_ROUTES.terrace} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(floorItem(canvasElement, 't3'))
+    await expect(await canvas.findByRole('heading', { name: 'Table 3' })).toBeVisible()
+    await userEvent.click(canvas.getByRole('button', { name: /^Kapućino/ }))
+    await expect(canvas.getByRole('textbox', { name: 'Quantity, Kapućino' })).toHaveValue('3')
+    await userEvent.click(canvas.getByRole('button', { name: 'Terrace' }))
+    await expect(await canvas.findByRole('heading', { name: 'Terrace' })).toBeVisible()
+  },
+}
+
+/**
+ * Konferencija Liro 2026's gala dinner: 14 tables of ten round the stage, 112 of 140 guests
+ * seated, the 28 not yet seated first in the list; two conflicts from the organiser.
+ */
+export const GalaSeatingScreen: Story = {
+  name: 'Event seating, gala dinner',
+  render: () => <ExampleApp start={K_ROUTES.seating} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('112 of 140 seated')).toBeVisible()
+    await expect(canvas.getByRole('heading', { name: 'Warnings' })).toBeVisible()
+    await expect(canvasElement.querySelectorAll('[data-floor-item*="#"]')).toHaveLength(140)
+    await expectNoPageScroll(canvasElement)
+  },
+}
+
+export const GalaSeatingPhone: Story = {
+  name: 'Event seating, gala dinner, phone',
+  render: () => <OnPhone start={K_ROUTES.seating} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(within(canvasElement).getByText('112 of 140 seated')).toBeVisible()
+    await expectNoPageScroll(canvasElement)
+  },
+}
+
+/** A free seat chosen (table 4, seat 9): the guests to seat there, those not seated first. */
+export const GalaSeatChosen: Story = {
+  name: 'Event seating, a seat chosen',
+  render: () => <ExampleApp start={K_ROUTES.seatingSeat} />,
+  play: async () => {
+    await settle()
+    await expect(
+      within(document.body).getByRole('dialog', { name: 'Table 4, seat 9' }),
+    ).toBeVisible()
+  },
+}
+
+export const GalaSeatChosenPhone: Story = {
+  name: 'Event seating, a seat chosen, phone',
+  render: () => <OnPhone start={K_ROUTES.seatingSeat} />,
+  play: async () => {
+    await settle()
+    await expect(
+      within(document.body).getByRole('dialog', { name: 'Table 4, seat 9' }),
+    ).toBeVisible()
+  },
+}
+
+/** "Seat at…" from a guest's menu: a table with its free seats, then a seat. */
+export const GalaSeatAt: Story = {
+  name: 'Event seating, Seat at…',
+  render: () => <ExampleApp start={K_ROUTES.seatingSeatAt} />,
+  play: async () => {
+    await settle()
+    const guest = GALA_GUESTS.find((each) => each.id === 'g113')
+    await expect(
+      within(document.body).getByRole('dialog', { name: `Seat ${guest?.name ?? ''}` }),
+    ).toBeVisible()
+  },
+}
+
+export const GalaSeatAtPhone: Story = {
+  name: 'Event seating, Seat at…, phone',
+  render: () => <OnPhone start={K_ROUTES.seatingSeatAt} />,
+}
+
+/** Table 6's guests in seat order, with the organiser's conflict. */
+export const GalaTableGuests: Story = {
+  name: 'Event seating, a table’s guests',
+  render: () => <ExampleApp start={K_ROUTES.seatingTable} />,
+  play: async () => {
+    await settle()
+    const dialog = within(document.body).getByRole('dialog', { name: 'Table 6' })
+    await expect(dialog).toHaveTextContent('Keep apart')
+  },
+}
+
+export const GalaTableGuestsPhone: Story = {
+  name: 'Event seating, a table’s guests, phone',
+  render: () => <OnPhone start={K_ROUTES.seatingTable} />,
+}
+
+/** The keyboard's way: Enter on table 4's seat 9, then the first guest not seated: 113 of 140. */
+export const GalaSeatingInteraction: Story = {
+  name: 'Event seating, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={K_ROUTES.seating} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    floorItem(canvasElement, 't4#9').focus()
+    await userEvent.keyboard('{Enter}')
+    const dialog = await within(document.body).findByRole('dialog', { name: 'Table 4, seat 9' })
+    const first = within(dialog).getAllByRole('button', { name: /Not seated/ })[0]
+    if (first === undefined) throw new Error('no guest to seat')
+    await userEvent.click(first)
+    await waitFor(async () => {
+      await expect(canvas.getByText('113 of 140 seated')).toBeVisible()
+    })
+  },
+}

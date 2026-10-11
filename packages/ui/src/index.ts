@@ -933,3 +933,71 @@ export { courseProgress, findLesson, moduleProgress } from './templates/course-l
 export type { CourseLesson, CourseModule, LessonCount, LessonState } from './templates/course-logic'
 export { QuizResult } from './components/quiz-result'
 export type { QuizResultProps, QuizReviewItem } from './components/quiz-result'
+// ── P5.25 FloorPlan, SeatingChart ──
+export { FloorPlan } from './components/floor-plan'
+export type {
+  FloorArea,
+  FloorListGroupKey,
+  FloorPaletteEntry,
+  FloorPlanProps,
+  FloorState,
+  FloorTone,
+  FloorWarning,
+} from './components/floor-plan'
+export {
+  addedPosition,
+  applyFloorChanges,
+  boxesOverlap,
+  dragPosition,
+  duplicateDraft,
+  FIXTURE_KINDS,
+  footprint,
+  isFixture,
+  keepInside,
+  listGroups,
+  MIN_ITEM_SIZE,
+  MIN_TARGET,
+  minimumPlanWidth,
+  nearestItem,
+  nextRotation,
+  NUDGE,
+  NUDGE_LARGE,
+  nudge,
+  overlappingItems,
+  readingOrder,
+  resizeFootprint,
+  rotateChange,
+  snap,
+  PLAN_ZOOM_STEPS,
+  planZoomStep,
+} from './components/floor-plan-logic'
+export type {
+  FloorBox,
+  FloorChange,
+  FloorGeometry,
+  FloorItem,
+  FloorItemDraft,
+  FloorItemKind,
+  FloorListGroup,
+  FloorRotation,
+} from './components/floor-plan-logic'
+export { SeatingChart } from './components/seating-chart'
+export type { SeatingChartProps } from './components/seating-chart'
+export {
+  freeSeats,
+  guestAt,
+  guestGroups,
+  guestMatches,
+  parseSeatId,
+  sameSeat,
+  seatCentres,
+  seatId,
+  seatingCounts,
+} from './components/seating-logic'
+export type {
+  GuestGroup,
+  SeatingConflict,
+  SeatingGuest,
+  SeatingTable,
+  SeatRef,
+} from './components/seating-logic'

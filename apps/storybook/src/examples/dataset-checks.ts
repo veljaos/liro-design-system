@@ -394,3 +394,63 @@ export function checkGroupI() {
 
 /** Run once, when the examples load. */
 export const GROUP_I = checkGroupI()
+
+// ── P5.25 group K: floor plans and seating ──
+// (Imports here, inside the block, so the blocks merge without touching the top.)
+import { seatingCounts } from '../../../../packages/ui/src/components/seating-logic'
+import { overlappingItems } from '../../../../packages/ui/src/components/floor-plan-logic'
+import {
+  BISTRO_TABLES,
+  bistroItems,
+  CAFE_TABLES,
+  computeOrder,
+  GALA_GUESTS,
+  GALA_SEATED,
+  GALA_TABLES,
+  mergedBox,
+  TABLE_3_FIGURES,
+} from './data-K'
+
+/**
+ * The floor plans' and the seating's figures (P5.25): no two tables of Bistro Dunav overlap, a
+ * party never exceeds its table, terrace tables 11 and 12 touch so they can be merged; table 3's
+ * order on the café's till totals what the data states, its VAT included too; the gala dinner
+ * seats 112 of 140, no seat twice and no seat a table does not have.
+ */
+export function checkGroupK() {
+  const items = bistroItems(BISTRO_TABLES, (value) => value).filter((item) => item.kind === 'table')
+  if (overlappingItems(items).length > 0) fail('Bistro Dunav: two tables overlap')
+  for (const table of BISTRO_TABLES) {
+    if (table.party !== undefined && table.party.size > table.seats) {
+      fail(`Bistro Dunav: table ${String(table.number)} has more guests than seats`)
+    }
+  }
+  const t11 = BISTRO_TABLES.find((table) => table.id === 't11')
+  const t12 = BISTRO_TABLES.find((table) => table.id === 't12')
+  if (t11 === undefined || t12 === undefined || mergedBox(t11, t12) === null) {
+    fail('Bistro Dunav: tables 11 and 12 cannot be merged')
+  }
+  const order = computeOrder(CAFE_TABLES.find((table) => table.id === 't3')?.order ?? [])
+  if (order.total !== paras(TABLE_3_FIGURES.total)) fail('Kod Mike: table 3’s total differs')
+  if (order.vat !== paras(TABLE_3_FIGURES.vat)) fail('Kod Mike: table 3’s VAT differs')
+  const counts = seatingCounts(GALA_GUESTS)
+  if (counts.seated !== GALA_SEATED.seated || counts.total !== GALA_SEATED.total) {
+    fail('the gala’s seated count differs')
+  }
+  const seats = new Set<string>()
+  for (const guest of GALA_GUESTS) {
+    if (guest.seat == null) continue
+    const key = `${guest.seat.tableId}#${String(guest.seat.seat)}`
+    if (seats.has(key)) fail(`the gala seats two guests on ${key}`)
+    seats.add(key)
+    const table = GALA_TABLES.find((each) => each.id === guest.seat?.tableId)
+    if (table === undefined || guest.seat.seat > table.seats) fail(`no seat ${key} at the gala`)
+  }
+  if (new Set(GALA_GUESTS.map((guest) => guest.name)).size !== GALA_GUESTS.length) {
+    fail('two gala guests share a name')
+  }
+  return counts
+}
+
+/** Run once, when the examples load. */
+export const GROUP_K = checkGroupK()
