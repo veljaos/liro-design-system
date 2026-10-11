@@ -1566,4 +1566,53 @@ export interface LiroMessages {
   'diagram.stepAction': (action: string, label: string) => string
   /** The label dialog's checkbox for a decision's connection. */
   'diagram.defaultWay': string
+  // P5.27 legal text
+  /** An article's copy-link button: "Copy link to Article 5"; the confirmation and the failure. */
+  'legal.copyLink': (label: string) => string
+  'legal.linkCopied': string
+  'legal.copyFailed': string
+  /** An article's menu (phones, or the application's actions): "Actions for Article 5". */
+  'legal.articleActions': (label: string) => string
+  /** The menu entries that select an article (the side panel narrows to it) and clear it. */
+  'legal.select': string
+  'legal.clearSelection': string
+  /** A change mark: "Amended by No. 47/2018 · applies from 01.07.2018."; the label is data. */
+  'legal.change': (label: string, date: string) => string
+  /** An article not yet in force: "Applies from 01.01.2027.". */
+  'legal.appliesFrom': (date: string) => string
+  /** A deleted article's earlier text, collapsed. */
+  'legal.showText': string
+  'legal.hideText': string
+  /** The footnotes' heading and a footnote mark's name: "Footnote 1". */
+  'legal.footnotes': string
+  'legal.footnote': (mark: string) => string
+  /** A reference's preview button ("Preview of Article 5"), its missing text, its link. */
+  'legal.preview': (text: string) => string
+  'legal.previewMissing': string
+  'legal.open': (label: string) => string
+  /** The in-act search: the field, "3 of 12", no matches, previous and next. */
+  'legal.search': string
+  'legal.hits': (current: number, total: number, currentText: string, totalText: string) => string
+  'legal.noHits': string
+  'legal.previousHit': string
+  'legal.nextHit': string
+  /** The script switch of a Serbian act. */
+  'legal.script': string
+  'legal.latin': string
+  'legal.cyrillic': string
+  /** The table of contents: its button, drawer title and tree. */
+  'legal.contents': string
+  /** Compare: the marks (legend and labels), and the words assistive technology hears before one. */
+  'legal.added': string
+  'legal.deleted': string
+  'legal.changed': string
+  'legal.addedMark': string
+  'legal.deletedMark': string
+  /** Compare: the title, the summary, all or only the changes, the unchanged articles' count. */
+  'legal.compareTitle': (from: string, to: string) => string
+  'legal.compareSummary': (changed: string, added: string, removed: string) => string
+  'legal.showAll': string
+  'legal.showChanges': string
+  'legal.unchanged': (count: number, countText: string) => string
+  'legal.noChanges': string
 }
