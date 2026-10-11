@@ -33,6 +33,7 @@ import { GROUP_H_ROUTES } from './screens-H'
 import { GROUP_I_ROUTES } from './screens-I'
 import { GROUP_L_ROUTES } from './screens-L'
 import { GROUP_K_ROUTES } from './screens-K'
+import { GROUP_M_ROUTES } from './screens-M'
 
 // ── Routes ────────────────────────────────────────────────────────────────────────────────
 
@@ -61,6 +62,7 @@ const EXAMPLE_ROUTES: readonly ExampleRoute[] = [
   ...GROUP_I_ROUTES,
   ...GROUP_L_ROUTES,
   ...GROUP_K_ROUTES,
+  ...GROUP_M_ROUTES,
 ]
 
 // ── The app ───────────────────────────────────────────────────────────────────────────────────

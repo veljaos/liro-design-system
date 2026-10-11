@@ -1,0 +1,205 @@
+/*
+ * Diagram (P5.26): the structure React Flow needs, in Liro tokens. React Flow's own style sheets
+ * (style.css and base.css) are not used: both carry raw colours. These rules are adapted from
+ * @xyflow/react 12.12.0's dist/base.css (MIT, © webkid GmbH; THIRD-PARTY-NOTICES.md), keeping
+ * only what positions and layers the parts; every colour is a Liro meaning. React Flow lays its
+ * canvas out in physical coordinates (`direction: ltr` on its root), so `left` and `top` here are
+ * the canvas's own axes, not page layout: Diagram mirrors the steps for a right-to-left page.
+ * Imported into the base layer of styles.css, so any utility class wins.
+ */
+.react-flow {
+  direction: ltr;
+}
+.react-flow__container {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+}
+.react-flow__pane {
+  z-index: 1;
+  touch-action: none;
+}
+.react-flow__pane.draggable {
+  cursor: grab;
+}
+.react-flow__pane.dragging {
+  cursor: grabbing;
+}
+.react-flow__viewport {
+  transform-origin: 0 0;
+  z-index: 2;
+  pointer-events: none;
+}
+.react-flow__renderer {
+  z-index: 4;
+}
+.react-flow .react-flow__edges {
+  position: absolute;
+}
+.react-flow .react-flow__edges svg {
+  overflow: visible;
+  position: absolute;
+  pointer-events: none;
+}
+.react-flow__edge {
+  pointer-events: visibleStroke;
+  outline: none;
+}
+.react-flow__edge.inactive {
+  pointer-events: none;
+}
+.react-flow__connection {
+  pointer-events: none;
+}
+.react-flow__connection-path {
+  stroke: var(--liro-border-focus);
+  stroke-width: 2;
+  stroke-dasharray: 6 4;
+  fill: none;
+}
+svg.react-flow__connectionline {
+  z-index: 1001;
+  overflow: visible;
+  position: absolute;
+}
+.react-flow__nodes {
+  pointer-events: none;
+  transform-origin: 0 0;
+}
+.react-flow__node {
+  position: absolute;
+  user-select: none;
+  pointer-events: all;
+  transform-origin: 0 0;
+  box-sizing: border-box;
+  cursor: default;
+}
+.react-flow__node.draggable {
+  cursor: grab;
+}
+.react-flow__node.draggable.dragging {
+  cursor: grabbing;
+}
+.react-flow__handle {
+  position: absolute;
+  pointer-events: none;
+}
+.react-flow__handle.connectingfrom,
+.react-flow__handle.connectionindicator {
+  pointer-events: all;
+  cursor: crosshair;
+}
+.react-flow__handle-bottom {
+  top: auto;
+  left: 50%;
+  bottom: 0;
+  transform: translate(-50%, 50%);
+}
+.react-flow__handle-top {
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.react-flow__handle-left {
+  top: 50%;
+  left: 0;
+  transform: translate(-50%, -50%);
+}
+.react-flow__handle-right {
+  top: 50%;
+  right: 0;
+  transform: translate(50%, -50%);
+}
+.react-flow__panel {
+  position: absolute;
+  z-index: 5;
+  margin: 8px;
+}
+.react-flow__panel.top {
+  top: 0;
+}
+.react-flow__panel.bottom {
+  bottom: 0;
+}
+.react-flow__panel.left {
+  left: 0;
+}
+.react-flow__panel.right {
+  right: 0;
+}
+.react-flow__edgelabel-renderer,
+.react-flow__viewport-portal {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+  pointer-events: none;
+  user-select: none;
+}
+/* The overview (minimap): a raised card; the steps in border.strong, the view's frame outlined. */
+.react-flow__minimap {
+  background: var(--liro-surface-raised);
+  border: 1px solid var(--liro-border-default);
+  border-radius: var(--liro-radius-md);
+  overflow: hidden;
+}
+.react-flow__minimap-svg {
+  display: block;
+}
+.react-flow__minimap-node {
+  fill: var(--liro-border-strong);
+  stroke: none;
+}
+.react-flow__minimap-mask {
+  fill: var(--liro-surface-backdrop);
+  fill-opacity: 0.12;
+  stroke: var(--liro-border-control);
+  stroke-width: 1px;
+}
+/* A connection's focus: a wide line in the focus colour under the drawn one. */
+.react-flow__edge:focus-visible [data-slot='diagram-edge-focus'] {
+  stroke: var(--liro-border-focus);
+}
+/*
+ * The handles a connection is dragged from (edit only): a 2px point on the step's edge, so a
+ * connection starts and ends at the shape itself; a 10px dot drawn around it and a 24px target
+ * (WCAG 2.5.8) around that, both pseudo-elements of the point.
+ */
+[data-slot='diagram-handle'] {
+  width: 2px;
+  height: 2px;
+  background: transparent;
+}
+[data-slot='diagram-handle']::before {
+  content: '';
+  position: absolute;
+  inset: -11px;
+  border-radius: 9999px;
+}
+[data-slot='diagram-handle']::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 9999px;
+  box-sizing: border-box;
+  border: 2px solid var(--liro-border-control);
+  background: var(--liro-surface-raised);
+  pointer-events: none;
+}
+[data-slot='diagram-handle'].connectionindicator:hover::after,
+[data-slot='diagram-handle'].connectingfrom::after,
+[data-slot='diagram-handle'].connectingto::after {
+  border-color: var(--liro-border-focus);
+  background: var(--liro-border-focus);
+}
+[data-slot='diagram-handle'][data-hidden='true'] {
+  visibility: hidden;
+}
+@media (prefers-reduced-motion: reduce) {
+  .react-flow__viewport {
+    transition: none;
+  }
+}

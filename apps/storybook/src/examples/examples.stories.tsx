@@ -4158,3 +4158,164 @@ export const GalaSeatingInteraction: Story = {
     })
   },
 }
+
+// ── P5.26 group M: Diagrams ──
+// (Imports here, inside the block, so the blocks merge without touching the top.)
+import { diagramReady, quiet } from '../../../../packages/ui/src/diagram/diagram-story-data'
+import { M_ROUTES } from './data-M'
+
+/** Whether the story's page runs right to left (the forward arrow is ArrowLeft there). */
+function pageRtl(canvasElement: HTMLElement): boolean {
+  const diagram = canvasElement.querySelector('[data-slot="diagram"]') ?? canvasElement
+  return getComputedStyle(diagram).direction === 'rtl'
+}
+
+/**
+ * "Odobravanje ulazne fakture", Kvadrat Gradnja's approval of an incoming invoice, version 3 as
+ * it runs: received from SEF, checked against the order and delivery, then by the amount the
+ * site manager (up to 500.000,00 RSD) or the director approves, posted, paid; a mismatch is
+ * rejected in SEF with the reason. Lanes say who does each step; the overview in the corner.
+ */
+export const IncomingInvoiceApproval: Story = {
+  name: 'Incoming invoice approval, workflow',
+  render: () => <ExampleApp start={M_ROUTES.approval} />,
+  play: async ({ canvasElement }) => {
+    await diagramReady(canvasElement)
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { level: 1 })).toHaveTextContent(
+      'Odobravanje ulazne fakture',
+    )
+    await expect(canvas.getByText('Above 500.000,00 RSD')).toBeVisible()
+    await expect(
+      canvas.getByRole('group', { name: 'User task: Director approves. Lane: Management' }),
+    ).toBeInTheDocument()
+    await expect(canvas.getByRole('button', { name: 'Edit a draft' })).toBeVisible()
+  },
+}
+
+/** Phone: the workflow fits the width; zoom or read it as a list. */
+export const IncomingInvoiceApprovalPhone: Story = {
+  name: 'Incoming invoice approval, workflow, phone',
+  render: () => <OnPhone start={M_ROUTES.approval} />,
+  play: async ({ canvasElement }) => {
+    await diagramReady(canvasElement)
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('button', { name: 'Show steps as a list' })).toBeVisible()
+    await expect(canvas.queryByRole('button', { name: 'Edit a draft' })).toBeNull()
+  },
+}
+
+/**
+ * The draft of version 4, being edited: a legal review for invoices under no contract, added
+ * after the director's approval. The application's check finds two problems — the review has
+ * no way out, and the new decision has no default way out — so Publish waits.
+ */
+export const IncomingInvoiceApprovalDraft: Story = {
+  name: 'Incoming invoice approval, draft with two problems',
+  render: () => <ExampleApp start={M_ROUTES.approvalEdit} />,
+  play: async ({ canvasElement }) => {
+    await diagramReady(canvasElement)
+    const canvas = within(canvasElement)
+    const problems = canvas.getByRole('region', { name: '2 problems' })
+    await expect(problems).toHaveTextContent('Legal reviews the terms: Has no way out')
+    await expect(problems).toHaveTextContent(
+      'Under a contract?: A decision needs a default way out',
+    )
+    await expect(canvas.getByRole('button', { name: 'Publish' })).toBeDisabled()
+  },
+}
+
+/** Solving both: Go to the review, connect it on; mark the decision's "Yes" as its default. */
+export const IncomingInvoiceApprovalDraftFixed: Story = {
+  name: 'Incoming invoice approval, draft fixed, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={M_ROUTES.approvalEdit} />,
+  play: async ({ canvasElement }) => {
+    await diagramReady(canvasElement)
+    const canvas = within(canvasElement)
+    const body = within(document.body)
+    await userEvent.click(canvas.getByRole('button', { name: 'Go to Legal reviews the terms' }))
+    await userEvent.click(await canvas.findByRole('button', { name: 'Connect to…' }))
+    const connect = await body.findByRole('dialog', {
+      name: 'Connect “Legal reviews the terms” to',
+    })
+    await quiet()
+    await userEvent.click(within(connect).getByRole('radio', { name: /Post to the ledger/ }))
+    await userEvent.click(within(connect).getByRole('button', { name: 'Connect' }))
+    await waitFor(async () => {
+      await expect(body.queryByRole('dialog')).toBeNull()
+    })
+    await expect(canvas.getByRole('region', { name: '1 problem' })).toBeVisible()
+    // The decision's first way out, from the keyboard; Enter chooses it.
+    canvas.getByRole('group', { name: /^Decision: Under a contract\?/ }).focus()
+    await userEvent.keyboard(pageRtl(canvasElement) ? '{ArrowLeft}' : '{ArrowRight}')
+    await userEvent.keyboard('{Enter}')
+    await userEvent.click(canvas.getByRole('button', { name: 'Label…' }))
+    const label = await body.findByRole('dialog', { name: 'Label the connection' })
+    await quiet()
+    await userEvent.click(within(label).getByRole('checkbox', { name: /Default way out/ }))
+    await userEvent.click(within(label).getByRole('button', { name: 'Save' }))
+    await waitFor(async () => {
+      await expect(body.queryByRole('dialog')).toBeNull()
+    })
+    await expect(canvas.queryByRole('region', { name: /problem/ })).toBeNull()
+    await expect(
+      canvas.getByText('The draft checks out. Publish it when you are ready.'),
+    ).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Publish' })).toBeEnabled()
+    await diagramReady(canvasElement)
+  },
+}
+
+/**
+ * The orchestrator's nightly bank-statement import of 6 October 2026, stopped at 02:01: the
+ * statements were fetched, Raiffeisen's imported, Banca Intesa's failed on a timeout. Skip this
+ * bank or Retry; matching and the morning report wait.
+ */
+export const BankImportRun: Story = {
+  name: 'Nightly bank-statement import, failed run',
+  render: () => <ExampleApp start={M_ROUTES.importRun} />,
+  play: async ({ canvasElement }) => {
+    await diagramReady(canvasElement)
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('4 of 10 steps done')).toBeVisible()
+    await expect(canvas.getByText('Started 02:00, stopped 02:01')).toBeVisible()
+    await expect(
+      canvas.getByRole('button', { name: 'Retry: Import Banca Intesa 160-0000000412-77' }),
+    ).toBeVisible()
+  },
+}
+
+export const BankImportRunPhone: Story = {
+  name: 'Nightly bank-statement import, failed run, phone',
+  render: () => <OnPhone start={M_ROUTES.importRun} />,
+  play: async ({ canvasElement }) => {
+    await diagramReady(canvasElement)
+    await expect(
+      within(canvasElement).getByRole('button', {
+        name: 'Retry: Import Banca Intesa 160-0000000412-77',
+      }),
+    ).toBeVisible()
+  },
+}
+
+/** Retry: the step runs again, the run is in progress again. */
+export const BankImportRunRetry: Story = {
+  name: 'Nightly bank-statement import, retry, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={M_ROUTES.importRun} />,
+  play: async ({ canvasElement }) => {
+    await diagramReady(canvasElement)
+    const canvas = within(canvasElement)
+    await userEvent.click(
+      canvas.getByRole('button', { name: 'Retry: Import Banca Intesa 160-0000000412-77' }),
+    )
+    await expect(
+      canvas.getByRole('group', {
+        name: 'Automatic task: Import Banca Intesa 160-0000000412-77. Running',
+      }),
+    ).toBeInTheDocument()
+    await expect(canvas.getByText('In progress')).toBeVisible()
+    await diagramReady(canvasElement)
+  },
+}
