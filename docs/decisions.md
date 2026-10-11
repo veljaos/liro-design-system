@@ -130,6 +130,13 @@ Not added: `class-variance-authority` (variants are typed maps, as in Button) an
 | ------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | @shadcn/react | 0.3.1   | Runtime dependency of @veljaos/ui: the unstyled Message Scroller and Questionnaire under the shadcn/ui primitives (P5.1). MIT, no dependencies of its own, peer React ≥ 19. **Pre-1.0** (published 2026-08-31): its API may change in a minor version; pinned exactly, re-checked on every update, and wrapped by our primitives so only primitives/message-scroller.tsx and primitives/questionnaire.tsx would change. |
 
+### P5.26 — Diagrams (2026-10-11)
+
+| Tool           | Version | Note                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| -------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| @xyflow/react  | 12.12.0 | Runtime dependency of `@veljaos/ui`, imported only by `@veljaos/ui/diagram` (React Flow: the canvas, pan and zoom, node dragging, connecting by drag). The npm `latest` on 2026-10-11 (published 2026-09-24; `next` is an old 12.0 prerelease). MIT, © webkid GmbH. Brings `@xyflow/system` 0.0.83, classcat 5.0.5 and zustand 4.5.7 (MIT), d3-drag 3.0.0, d3-zoom 3.0.0, d3-selection 3.0.0, d3-dispatch 3.0.1, d3-transition 3.0.1 (ISC); d3-interpolate, d3-color, d3-ease and d3-timer are the versions Recharts already brings. Its style sheets are not used (raw colours): `diagram/diagram.css` adapts the structural rules of its `base.css` with tokens. |
+| @dagrejs/dagre | 3.1.1   | Runtime dependency of `@veljaos/ui`, imported only by `@veljaos/ui/diagram`: the automatic layout (ranks along the flow). The npm `latest` on 2026-10-11. MIT, © Chris Pettitt; bundles `@dagrejs/graphlib` 4.0.5 (MIT). Chosen over elkjs (EPL-2.0) by the owner; bpmn-js is not MIT and BPMN XML is the application's.                                                                                                                                                                                                                                                                                                                                           |
+
 ### Release 0.1.0-alpha.1 (2026-09-25)
 
 | Tool            | Version | Note                                                                                                                          |
@@ -1729,6 +1736,249 @@ pre-wrap`, the separator image — are classes). The extensions and editor props
 - **2026-10-11 — A month cell's day list keeps its side (P5.8).** CalendarView's "+3 more" list let the popover flip by its own height while its height followed the room on its side, so it settled below or above the day depending on when it was measured: a picture that changed one run in three, and a list that could jump for a user. The side is now chosen once when the list opens (`dayListSide`): below the day when there are at least 240px under it (`DAY_LIST_ROOM`) or as much room as above, else above; the popover keeps it (`avoidCollisions` off) and scrolls inside the room it has.
 - **2026-10-11 — CoursePage's outline scrolls with the page (P5.12).** It was sticky 16px from the top. A course's outline is taller than the view, so a sticky outline either hid its last lessons until the page ended or needed a scroll of its own beside the page's; the pager at the end of the lesson already leads to the next one. Its picture also differed from run to run (a sticky element is a layer of its own, and the part of it below the first view was painted differently between captures: 2 of 4 runs failed, 16 of 16 passed without sticky). The outline is now an ordinary card.
 - **2026-10-10 — Open after Phase 5 part 2.** ShiftPlanner's "Apply rotation…" dialog opens with no people chosen (an initial selection would need a prop); MyShifts cannot open the swap dialog with a colleague already chosen. Both are small additions, recorded rather than built.
+
+### Working time follow-up (P5.24a)
+
+- **2026-10-11 — "Apply rotation…" as a whole flow (P5.24a, owner).** It opens with people chosen: the rows of a selected range, else the application's `rotationPeople` (only people in view), else everyone in view (`rotationDefaultPeople`). Before Apply it shows what it will add — one row per person, one column per day of the period, the template's short name, "–" for a day off — in a sideways-scrolling table that is a tab stop of its own, and the application's checks of those shifts (`rotationConflicts`, the same shape as `conflicts`: double booking, rest, weekly hours) as a count and a list in words; a day with a conflict carries its icon. Apply stays possible: the application decides. The planner checks nothing itself. The dialog is the wide one (720px).
+- **2026-10-11 — A swap request can start with a colleague (P5.24a).** MyShifts `swapDefaults(shift)` gives what the request starts with — a colleague the application suggests, a shift to take back, a reason — passed to ShiftSwapDialog's `defaultValue`.
+
+### Floor plans and seating (P5.25)
+
+- **2026-10-11 — FloorPlan (P5.25).** `components/floor-plan.tsx`, the pure logic in
+  `floor-plan-logic.ts` (tested: `footprint`, `nextRotation`, `rotateChange`, `nearestItem`,
+  `readingOrder`, `nudge`, `snap`, `keepInside`, `dragPosition`, `resizeFootprint`,
+  `boxesOverlap`, `overlappingItems`, `minimumPlanWidth`, `planZoomStep`, `percentBox`,
+  `listGroups`, `applyFloorChanges`, `duplicateDraft`, `addedPosition`).
+  1. **The plan is data.** Items (`kind`: table, seat, room, bar, counter, stage, wall, door,
+     window; `shape` round / rect; `label`, `shortLabel` written on the plan, `detail` — "19:30 ·
+     4 guests" —, position and size in the application's plan units, `rotation` 0/90/180/270,
+     `capacity`, `areaId`, `stateId`, `note`), `areas` (labelled regions), `states` (id, words,
+     tone, icon: the application's map — free, occupied, reserved, needs cleaning are only
+     examples in the stories). Walls, doors, windows, the stage and the counter are fixtures:
+     drawn, not targets, outside edit mode. Plan units are whole numbers the plan draws and moves
+     — positions, not figures: never added into a total (D4 is about amounts and quantities).
+  2. **A physical place, not mirrored.** x grows to the right and y downwards in every writing
+     direction: a right-to-left page does not turn the room round, the page around it is turned.
+     The viewport and the canvas are `dir="ltr"` (so a zoomed plan also scrolls from the left);
+     every label inside takes its direction from its own text (`TEXT_ISOLATE`). The arrow keys are
+     physical too (ArrowRight goes to the item on the right in both directions), unlike the
+     reading-order arrows of lists and grids (B.7), because they point at places on a picture.
+  3. **HTML boxes in percentages, not SVG.** Every item and area is an absolutely placed box in
+     percentages of the plan (`percentBox`; `inset-inline-start` inside the `ltr` canvas, as the
+     logical-properties rule asks), the canvas keeps the plan's `aspect-ratio`: the plan fits its
+     width with no measuring (stable pictures), and the labels are HTML text — selectable, read
+     in order, and checked by the text-order test like any other text (SVG text is left out of
+     it). A rotation turns the footprint (`footprint`: a quarter turn swaps width and height round
+     the same centre; a half turn keeps the box and turns what is drawn in it, e.g. the order of
+     the seats). **24px targets:** the canvas never gets narrower than `minimumPlanWidth` (the
+     smallest place's side at 24px); below that it scrolls sideways inside its own box (the page
+     never does, checked in the phone stories). Thin fixtures (a wall, a window) are chosen in
+     edit mode through a transparent target centred on them, `max(24px, its size)` each way.
+  4. **States never by colour alone:** each state has its tone (the status tones without `info`,
+     which is blue: `FloorTone`) and a required icon drawn in every item; the legend gives the
+     words; each item's name says them: "Table 3, 19:30 · 4 guests, Reserved, 4 seats, Hall,
+     Window seat asked for" (`floorPlan.itemName`: label, detail, state, capacity, area, note,
+     warnings).
+  5. **Choosing (D17):** `selectionMode` 'single' (default), 'multiple' or 'none'; `selected` /
+     `defaultSelected` / `onSelectionChange`. A chosen item keeps its state's tone and gets a 2px
+     border.selected frame 3px round it, and `aria-pressed` — neutral, never blue; the blue is
+     only the focus ring (5px out, so both show). In the list a chosen row is surface.selected with
+     the 3px border.selected bar.
+  6. **Keyboard:** one item in the tab order (roving: the focused, else the first chosen, else the
+     first in reading order), described by the instructions. Arrows: the nearest item in that
+     direction (`nearestItem`: along the arrow plus twice the distance across, so an item straight
+     ahead wins); Home / End: the first and last in reading order (rows from the top, then from
+     the left). Single mode: the choice follows the focus. Enter or Space activates
+     (`onItemActivate`, "open the table"; a press does the same); in multiple mode Space adds or
+     removes and Enter activates. Without selection, activation and edit mode the items are
+     named pictures (`role="img"`), not buttons.
+  7. **Plan / List** (the neutral segmented control): the list groups the places by area (in the
+     areas' order, the rest under "Other"), each row with its name, detail, note, warnings, the
+     state as a StatusBadge and the capacity — the accessible alternative and the phone's: below
+     48em (or `layout="phone"`) the plan opens on the list; the plan view stays one press away.
+     `listGroup` / `listed` let a component on the plan choose its groups (SeatingChart: seats by
+     table).
+  8. **Edit mode** (`editing` with `onChange`): the palette (the application's kinds, labels and
+     sizes; an item is added at the plan's centre on the grid, `addedPosition`), the chosen
+     item's actions — "Move to…" and "Size…" (dialogs with whole plan units of the drawn box, the
+     range checked and said: "Enter a whole number from 5 to 1025."), "Rotate 90°" (kept inside
+     the plan, `rotateChange`), Duplicate (one grid step down and right), Remove (also Delete on
+     the item); several chosen: their count and Remove. **Three ways to move (WCAG 2.5.7):** a
+     pointer drag (KanbanBoard's rule: a mouse after 4px, a touch after a 250ms press; the item
+     lifts with shadow-lg and border.strong, snapped to `grid` — default 10 units — while a neutral
+     dashed placeholder stays where it was; Escape cancels; the click after a drag is not a
+     press), the keys (Space picks the item up, the arrows move it 1 unit — Shift 5 —, Space
+     drops, Escape or Tab cancels, each step announced: "Picked up Table 4 at 580, 80.", "Table
+     4: 579, 85.", "Dropped …"), and "Move to…". Resizing: the corner handle (pointer) or
+     "Size…"; a quarter-turned item's drawn corner stays where it is (`resizeFootprint`). The grid
+     is drawn as dots. Every change is reported — `{ type: 'add' | 'move' | 'resize' | 'rotate' |
+'remove' }` (an added item has no id: the application gives it, `applyFloorChanges` helps) —
+     and nothing is saved. **Overlaps are allowed** and flagged only from the application's
+     `warnings` (`overlappingItems` is exported for it): an icon in the item, the words in its name
+     and a "Warnings" summary with "Go to" (also outside edit mode, e.g. "The party grew to 12").
+     The application's own buttons (Merge, Save) go into `toolbar`.
+  9. **Zoom:** out, in, fit (`PLAN_ZOOM_STEPS` 1, 1.5, 2, 3 — 1 is the plan at its width): the
+     canvas's CSS width; zoomed, the viewport scrolls inside at most `min(75vh, 52rem)`. Named
+     `PLAN_ZOOM_STEPS` / `planZoomStep`: `ZOOM_STEPS` / `zoomStep` are DocumentFrame's.
+  10. Initial states for pictures: `defaultView`, `defaultSelected`, `defaultZoom`,
+      `defaultDialog` ('move' | 'size'). `loading`: a skeleton of the plan's shape. No items:
+      EmptyState (in edit mode: "Add the first item from the palette above.").
+- **2026-10-11 — SeatingChart (P5.25).** `components/seating-chart.tsx` on FloorPlan, the logic
+  in `seating-logic.ts` (tested: `seatCentres`, `seatId` / `parseSeatId`, `sameSeat`, `guestAt`,
+  `seatingCounts`, `freeSeats`, `guestMatches`, `guestGroups`).
+  1. **Seats are drawn from the table:** round tables evenly round them, seat 1 at the top,
+     clockwise; rectangular ones along the long sides (seat 1 at the start of the first), an odd
+     seat at the far end, four round a square table one on each side, a table taller than wide
+     with its long sides left and right; the table's rotation turns the ring. `seatSize` (default
+     30 units) and `seatGap` (6). Each seat is a FloorPlan item and a target: "Table 3, seat 4,
+     Ana Petrović, Taken" — taken seats show the guest's initials (neutral), free ones their
+     number (success, CircleDashed); the table shows "8 of 10".
+  2. **The guest list beside the plan** (20rem at the end; on phones first, the plan's list of
+     seats by table after it): "112 of 140 seated", a search (name, group, notes; every word,
+     without case), the guests not seated first, then each table's guests in seat order; group
+     and notes (diet) as data; conflicts on the guest's row (icon and words).
+  3. **Seating, three ways (WCAG 2.5.7):** a seat activated (a press, Enter on the plan or in its
+     list) opens its dialog — who sits there with Unseat, and the guests to seat, searchable, the
+     ones not seated first: the keyboard's way; a guest dragged from the list onto a seat (the
+     seat under the pointer gets a neutral dashed outline; a name chip follows the pointer); "Seat
+     at…" in the guest's menu (a table with its free seats, then a free seat). "Unseat" in the
+     menu. Every change is `onSeat(guestId, seat | null)`; the chart never decides (who loses a
+     seat, whether a table may be over-full: the application's). A table activated opens its
+     guests in seat order, empty seats included (a read-only Dialog).
+  4. **Conflicts are data** (`conflicts`: tone, words, a table, guests): on the table through
+     FloorPlan's warnings (icon, name, the summary with "Go to"), on the guests' rows and in the
+     table's dialog. Without `onSeat` the chart is read-only (no menus, no dragging; a seat
+     opens its table). Pictures: `defaultSeatDialog`, `defaultSeatAt`, `defaultTableDialog`,
+     `defaultQuery`.
+- **2026-10-11 — Example screens of P5.25 (group K).** `data-K.ts`, `screens-K.tsx`,
+  `GROUP_K_ROUTES`, a check block at the end of `dataset-checks.ts` (`checkGroupK`), a story
+  block at the end of `examples.stories.tsx`.
+  1. **Bistro Dunav, Novi Sad, the evening service at 19:40** (`/restaurant/bistro-dunav/floor`,
+     Dragana Ilić's own shell with the tabs Floor and Floor plan): Sala, Terasa, Bar; tables free,
+     occupied ("5 guests · 18:50"), reserved ("20:00 · 4 guests", name and phone), one needing
+     cleaning. A chosen table's card beside the plan (on phones above the list): area, seats,
+     guests, since / reserved for, name, phone, note, and the actions by state, the main one last
+     — Open table (how many guests, QuantityStepper), Clear table and Move to table… (the free
+     tables with seats enough; the old table then needs cleaning), Seat guests, Mark as clean.
+     The floor plan in edit mode (`/floor/edit`): terrace tables 11 and 12 chosen, the
+     restaurant's "Merge Table 11 and Table 12" (its own merge: the box round both, 8 seats,
+     "11 + 12") beside "Save floor plan"; `?merged` shows the result. The application's warnings
+     are `overlappingItems` of the plan.
+  2. **Kafić Kod Mike's terrace** (`/cafe/kod-mike/terrace`) on the bar's tablet, touch density:
+     eight tables, an open one with its time and total ("18:15 · 1.200,00 RSD"), a bill asked
+     for, one not in use (umbrella broken); a table opens its order on the till
+     (`/cafe/kod-mike/terrace/t3`: PosShell, ProductGrid and CartPanel of P5.10; "Terrace" back,
+     the cart titled "Table 3", "Bill 1.200,00 RSD" last). Order totals are the application's
+     (`computeOrder`: price × quantity in paras, VAT 20% included half up).
+  3. **Konferencija Liro 2026, gala večera** (`/events/liro-2026/seating`, Teodora Jovanović of
+     Liro d.o.o.): the Master congress hall of the Novi Sad Fair, a stage, 14 round tables of ten
+     (five, five, four), 140 guests by company with their diets, 112 seated (eight a table), 28
+     not; two conflicts (two guests to keep apart at table 6; Panonija Agro's 12 places at table
+     12). Routes `?seat=t4-9`, `?seat-at=g113`, `?table=t6` for the pictures.
+  - **Checked when the examples load:** no two Bistro Dunav tables overlap; no party exceeds its
+    table; tables 11 and 12 touch (mergeable); table 3's total and VAT; the gala's 112 of 140, no
+    seat twice, no seat a table lacks, every guest's name its own.
+- **2026-10-11 — RoomRack (P5.25).** `components/room-rack.tsx`, the logic in
+  `room-rack-logic.ts` (tested: `rackMatches`, `rackSearchText`, `rackCounts`,
+  `rackFilterActive`, `rackKeyTarget`). The rooms of a place at a glance (a hotel front desk's
+  room rack; also beds of a ward, cabins of a ship). Nothing in it knows what a room is: every
+  fact and every state is the application's data, every text of its own is a `rack.*` message.
+  1. **Floors as sections**, one under another (`floors`: id, label, an optional description
+     written by the application, rooms), each a heading (`headingLevel`, default 2) over a grid
+     of tiles (`repeat(auto-fill, minmax(10.5rem, 1fr))`: every floor has the same columns).
+  2. **A tile** (raised, border.default, radius md, 12px; at least 112px high): the number (md
+     semibold, tabular) and the short type (xs secondary); the occupancy state as a StatusBadge
+     (its icon and words on its tone); the housekeeping state as its icon and words in its tone's
+     fg on the next line; the guest (sm); arrival – departure through `format.date` and
+     `calendar.range`; notes (`{ label, tone }`) as bordered StatusBadges. States are
+     `RackState { id, label, tone, icon?, count? }` in `occupancyStates` / `housekeepingStates`;
+     without an icon the tone's (CircleCheck, TriangleAlert, CircleX, Info, Circle, Star). Never
+     colour alone. A tile's name is its facts in words, comma-separated ("204, TWN, Departing
+     today, Dirty, Paolo Bianchi, 04.10.2026. – 06.10.2026.").
+  3. **Filters:** a search field (`rack.search`, number or name, without case and accents: "dorde"
+     finds "Đorđe") and one chip per state with its count — the state's `count` when the
+     application gives it, else the rooms given counted (counting rooms is the only arithmetic;
+     no amount is involved). One occupancy and one housekeeping state at a time; pressing the
+     pressed chip clears it; chips are toggle buttons with the neutral selection
+     (surface.selected, border.selected, D17). Floors without a match are not shown. While a
+     filter is set, "12 of 40 shown" (`rack.shown`, `role="status"`); nothing matches: EmptyState
+     "no results" with Clear filters. The filtering is local; `filter` / `defaultFilter` /
+     `onFilterChange` (controlled or not). `filters={false}` hides the bar.
+  4. **Keyboard: roving tiles, not a WAI-ARIA grid.** The tiles wrap with the width, so rows and
+     columns are not the room's place in the building; the rack is a list of buttons in lists
+     (one per floor) with one tile in the tab order (the focused, else the chosen, else the
+     first), described by `rack.instructions`. **The arrows follow the reading direction** (the
+     owner's question for this step): the rack is a list of rooms, not a map of the building, so
+     in right-to-left the forward arrow is ArrowLeft (Appendix B.7), unlike FloorPlan, whose plan
+     is a physical place and is not mirrored. Forward / back go to the next / previous room, on to
+     the next floor; ArrowDown / ArrowUp a line in the same column (the columns read from the
+     grid's computed `grid-template-columns`), into the next floor when the floor ends, to the
+     nearest room of a shorter line; Home / End the floor's ends, with Ctrl (Cmd) the rack's.
+     Enter or Space opens (`onRoomOpen`). Without `onRoomOpen`, or `readOnly`, tiles are text.
+  5. **The chosen room** (`selectedId`, e.g. the one open in a Drawer beside the rack):
+     surface.selected with the 3px border.selected bar at the start and a border.selected
+     border, `aria-current="true"`.
+  6. **`compact`** for 200 rooms and more: 80px tiles (`minmax(5rem, 1fr)`) with the number and
+     the occupancy icon on the occupancy tone (its fg on its bg), the housekeeping icon in its
+     tone's fg below, a Star when the room has notes. The words stay in the tile's name and its
+     `title`; the chips (icon, words, count) are the legend. 240 rooms on twelve floors render
+     and pass axe.
+  7. **Phones** (below 48em or `layout="phone"`): the search full width, the chips wrapping, each
+     floor a bordered list of rows (number and type in a 56px column at the start, then the
+     badge and housekeeping in one row, guest, stay, notes); the same keys with one column.
+  8. `loading`: skeleton floors; no rooms: EmptyState (`emptyTitle` / `emptyDescription`,
+     defaults `rack.empty*`).
+- **2026-10-11 — ResourceSchedule by days (P5.25).** The plan keeps reservations over days on
+  ResourceSchedule; its time axis (2.5px a minute, rows of hours) could not show two weeks
+  (50,400px). New prop **`scale="days"`** (default `'time'`, every existing story unchanged): one
+  column a day over `days` (at least 64px; 48px a day running down on phones), each under its
+  weekday (`format.weekdayName` short) and day number, today's in the neutral inverse circle
+  (CalendarView's, D17), the full date in the header's title. Bookings and unavailable times are
+  read **by their days** (a day value's `end` is its last day, included, as an all-day event's
+  — a hotel stay passes `end` = departure − 1; a timed value covers the days it touches). The
+  axis is one segment from the first day's midnight with a one-day slot, so the keys, the drag
+  and "Move to…" move by whole days; a stay keeps its length and may run past the last day shown
+  (`fitOnDays`, tested; it is drawn up to the last day and never pushed back to fit); a stay that
+  began before the first day is drawn from it. "Move to…" offers the row and every day shown as
+  the first day (no separate day select). `onMove` reports days (YYYY-MM-DD, the end included).
+  `dayStart`, `dayEnd` and `slotMinutes` do not apply. Stories: "Days, two weeks", "Days, phone
+  width", "Days keyboard, interaction", "Days move to, interaction".
+- **2026-10-11 — The hotel example (P5.25, group L).** `apps/storybook/src/examples/screens-L.tsx`,
+  one dataset `data-L.ts`: Hotel Fruška, Sremski Karlovci (fictitious), 4 floors × 10 rooms, on
+  6 October 2026. The stays are the data; each room's state today (arriving, departing,
+  occupied, vacant, out of order), the key figures (6 arrivals, 5 departures, 20 of 40 in house,
+  14 to clean) and the timeline's bookings are worked out from them, checked when the file loads
+  (counts, no overlapping stays). Screens, each desktop and phone: the front desk's room rack
+  (PageHeader, KeyFigures, RoomRack); a room in an end Drawer (states, guest, stay with its
+  nights, the folio as text — lines, total, paid, balance as decimal strings through MoneyText —
+  and the state's actions, the main last: Check in for an arrival, unavailable with its reason
+  while the room is not clean, and Mark clean before it; Check out for a departure, which makes
+  the room vacant and dirty; Mark clean for a vacant dirty room); the bookings of the coming two
+  weeks (ResourceSchedule `scale="days"`, one floor at a time chosen in a select, stays in the
+  house locked, out-of-order rooms hatched with their reason; a stay opens its room in the rack);
+  housekeeping on floor 3 as Dragana Milošević (the Dirty chip pressed from the start, a room in
+  the drawer with Start cleaning and Mark clean; a departing room waits for check-out, with the
+  reason). The states and tones are one map for the screens (`OCCUPANCY`, `HOUSEKEEPING`).
+
+### Diagrams (P5.26)
+
+- **2026-10-11 — Diagram on React Flow and dagre, `@veljaos/ui/diagram` (P5.26, owner: "React Flow (MIT) with dagre (MIT), a BPMN-style notation drawn by us with tokens; no bpmn-js, no BPMN XML").** `packages/ui/src/diagram/`: `diagram.tsx` (the component and its state), `diagram-nodes.tsx` (a step, a lane, a connection, drawn inside React Flow), `diagram-parts.tsx` (run summary and attention, problems, the steps list, the three dialogs, the kinds' glyphs), `diagram-logic.ts` (pure, tested: `layoutDiagram`, `stepOrder`, `diagramKeyTarget`, `keyMoveDelta`, `addStepOperations`, `removeStepOperations`, `applyDiagramOperations`, `canConnect`, `connectionTargets`, `positionAfter`, `nextDiagramId`, `runCounts`, `problemsByTarget`, `drawnX`/`layoutX`), `diagram.css`.
+  1. **A subpath of its own** (tsup entry `diagram`, `exports["./diagram"]`), as `@veljaos/ui/charts` and `@veljaos/ui/rich-text`: only `dist/diagram.js` names `@xyflow/react` and `@dagrejs/dagre` (checked in the build), so an application without diagrams never loads them. The root `@veljaos/ui` exports nothing of it. The consumer-check app renders an editing `Diagram` from the packed subpath (`apps/consumer-check/src/DiagramExample.tsx`, not a protected file; `check.mjs` is unchanged).
+  2. **React Flow's style sheets are not shipped** — both `style.css` and `base.css` carry raw colours. `diagram/diagram.css` keeps only what positions and layers React Flow's parts (adapted from `base.css`, MIT, noted in THIRD-PARTY-NOTICES.md) with Liro tokens for every colour, imported into the base layer of `styles.css` so any utility wins (checked: no hex, rgb or hsl in the shipped rules). React Flow lays its canvas out in physical coordinates (`direction: ltr` on its root), so `left`/`top` in that file are the canvas's axes, not page layout; the diagram mirrors itself for right-to-left. The attribution is hidden (`proOptions.hideAttribution`) — see "Open" below.
+  3. **The notation, drawn with tokens:** a task is a 176px box (radius md, 1.5px `border.control`, which keeps 3:1 against every surface, WCAG 1.4.11), at least 64px high, its name 13px medium centred and wrapping (never cut); a user task carries a person, an automatic (service) task a cog, a sub-process the BPMN + square. Events are 36px circles (start thin, end a 3px `text.primary` ring, timer and message a double ring with a clock or an envelope); decisions (exclusive) and parallel paths are 44px diamonds with X or +. An event's or a decision's name stands under it (start-to-end, 120px wide) or beside it at the end side (top-to-bottom). Connections are lines with rounded corners in `border.control` (3:1), an arrowhead, the default way out marked with the BPMN slash near its start, and a condition as an HTML label beside the last stretch before the arrow (so the branches of one decision never share a place). Lanes are labelled bands, every other one on `surface.hover`.
+  4. **Layout:** without positions, dagre places the ranks along the flow — `layout="start-to-end"` (the default; mirrored in right-to-left: x is measured from the leading edge and drawn as `-(x + width)`) or `"top-to-bottom"`; ranks 64px apart, steps 40px; a condition gets its room. A step with a `position` keeps it (positions are in the layout's coordinates, so a stored diagram is the same in both directions). With lanes, each lane becomes a band in the order of `lanes` (start-to-end one under another under a 40px label row, top-to-bottom side by side); its steps keep their place along the flow. **Two passes:** React Flow measures the steps after they are drawn; the layout runs again with the measured sizes, then the view is fitted (24px around, never above 100%; with the overview, room under it) — `data-ready` says when, and the canvas stays hidden only until that first fit. It is drawn once the fonts are ready (as the charts); a later font refits in place. **Found by the pictures:** a font arriving during Playwright's full-page capture hid the canvas for a moment (edges and labels inherit the hidden state, React Flow's nodes set their own visibility), so the hiding is for the first fit only and readiness does not depend on the font generation.
+  5. **Keyboard (view, run and edit):** every step is a Tab stop, in the flow's order (`stepOrder`), named by its kind, name, lane, state and problems ("User task: Director approves. Lane: Management"), described by the instructions. The arrow along the flow (forward in the reading direction, or down) goes to the connection out of a step and on to the step it leads to; the opposite arrow back; the other two arrows move between the connections out of one step (a decision's branches, ordered as drawn); Home and End go to the first and last step (`diagramKeyTarget`, tested in both directions and both layouts). Connections take the focus (tabindex −1), named "Connection from A to B. Condition. Default". React Flow's own keyboard handling, delete, selection and pan keys are off (`disableKeyboardA11y`, the key codes `null`); its role "application" stays, with the diagram's name. A focused step outside the view is brought into it.
+  6. **Edit** (`mode="edit"`, never on a phone): a palette of the kinds at the start (click adds after the chosen step; drag places it — pointer events, a lifted chip with `shadow-lg`, touch after a 250ms press, never HTML drag and drop); with a step chosen, the bar above offers "Add step after…" (a menu of kinds), "Connect to…" (a dialog listing the steps it may lead to, with an optional condition), "Rename…" and "Remove"; with a connection chosen, "Label…" (the condition, and for a decision's way out "Default way out, when no condition holds") and "Remove". Added after a step with exactly one way out, the new step goes in between (that connection's condition and default mark move to the first half). Connecting also by dragging between the handles (a 2px point on the shape, a 10px dot, a 24px target; blue only while connecting — the focus colour, D17). A step moves by dragging or, chosen with Enter, by the arrow keys (8px, Shift 40px, measured from the leading edge, `keyMoveDelta`), Escape lets go; F2 renames, Delete removes, a double click renames. A chosen step or connection is `surface.selected` with a 2px `border.selected` (neutral). **Every change is reported** through `onChange` as operations (`add-step`, `remove-step`, `rename-step`, `move-step`, `add-connection`, `remove-connection`, `label-connection`, `set-default-connection`); nothing is saved — `applyDiagramOperations` is what an application does with them. New ids from `newId` (default "step-1", "connection-1", the first free). Every change is announced in a polite status region. **Every drag has another way** (WCAG 2.5.7): palette by click, connection by "Connect to…", move by the keys.
+  7. **Problems** (`problems`, the application's validation messages): a step or connection with a problem is drawn in `status.danger.fg` (2px) with a danger badge (its count when more than one), and the list above the canvas ("3 problems", danger tone) names each with its target and a "Go to" (named "Go to <step>") that brings the step into view, gives it the keyboard and, in edit, chooses it.
+  8. **Run** (`mode="run"`, `run`): each step's state from the application as an icon, words and a status tone — done (success), running (neutral, 2px `text.primary` outline), waiting (warning), failed (danger, its reason under it), skipped and not reached (dashed, muted) — never blue for a state (D17). The connections the run went along (`run.path`) are drawn strong in `text.primary`, the others dashed. Above the canvas: the run's status (the application's label and tone), "5 of 11 steps done" and "1 failed" (counts through `format.number`), and the application's line; under it, each step with actions (a failed step's Skip and Retry, the main last) in a danger or neutral block with its name, state and reason — **not inside the canvas**, where they would shrink with the zoom below 24px (found by axe's target-size rule on a phone); the buttons are named "Retry: <step>". `onStepAction(stepId, key)`.
+  9. **Phones** (below 48em, or `screen="phone"`; the prop is not `layout`, which names the direction): view and run as on a desktop, the diagram fitted to the width (zoom with the buttons); edit shows "Open this diagram on a larger screen to change it." and the diagram as in view. **The steps list** ("Show steps as a list", `defaultView="steps"` restores it): the steps in the flow's order with kind, lane, state, reason, actions, problems and "Next: Manager approves (Up to 100.000,00 RSD), Director approves (…)" (an `Intl.ListFormat` of the locale) — the diagram's text alternative everywhere.
+  10. **States:** `loading` (a skeleton in the canvas's place, `aria-busy`), no steps ("No steps yet"; in edit, the palette and "Add the first step from the palette."), `error` (the message and Retry), as the charts.
+  - Messages (new, at the end of `messages.ts` under "P5.26 ── Diagram"): the kinds (`diagram.start` … `diagram.parallel`; "Automatic task", "Decision", "Parallel paths" in words a business user reads), the states, `diagram.stepName`, `inLane`, `connectionName`, `defaultFlow`, `defaultWay`, the instructions, zoom, list, problems, `goTo`, `goToButton`, `next`, `nextStep`, `runSummary`, `failedCount`, `stepState`, `stepAction`, empty / loading / error / retry, `editOnLargerScreen`, the palette, the edit actions, the dialogs and the announcements.
+- **2026-10-11 — Pictures of a diagram are stable (P5.26).** Checked by taking two full-page pictures of ten stories in separate page loads in the pinned image: byte-for-byte equal. What makes them so: the layout is deterministic (dagre, then the measured sizes); the view is fitted without animation; the canvas never refits on a resize (a full-page capture shrinks the viewport for a moment); stories wait for `data-ready` inside `waitFor` (`diagramReady` in `diagram-story-data.ts`, which only checks).
+- **2026-10-11 — Interaction stories and React's act() (P5.26).** React Flow measures with a ResizeObserver; its store updates outside a test's `act()` print "not wrapped in act(...)" errors, which fail the story tests. Storybook turns those warnings off only inside `waitFor`, so the diagram stories wait in `waitFor` (`diagramReady`, `quiet()`) after a dialog opens or closes, and a dialog is submitted with its button (user-event's implicit submit by Enter runs outside act).
+- **2026-10-11 — Example screens of P5.26 (group M).** `apps/storybook/src/examples/screens-M.tsx` + `data-M.ts`: **"Odobravanje ulazne fakture"** (`/settings/workflows/incoming-invoice-approval`), Kvadrat Gradnja's approval of an incoming invoice, version 3, read only with lanes (Accounting, Management, Finance) and the overview: received from SEF → checked against the order and delivery → matches? (no: rejected in SEF with the reason) → amount (up to 500.000,00 RSD the site manager, above it the director) → posted → paid in the next payment run; **its draft of version 4** (`…/edit`): a decision "Under a contract?" and a legal review added after the director; the application's check (`checkWorkflow`, run after every change) finds two problems — the review has no way out, the decision has no default way out — so Publish waits; the interaction story solves both (Go to, Connect to, Label… with the default). **The nightly bank-statement import** (`/automation/runs/bank-import-2026-10-06`): the orchestrator's run stopped at 02:01 — statements fetched, Raiffeisen's imported, Banca Intesa's failed on a timeout, Skip this bank or Retry (Retry: the step runs again, the run is "In progress"). Desktop and phone for the workflow and the run; editing is desktop only. The examples' tone map gains **Failed → danger** (a run's status, `example-shell.tsx`).
+- **2026-10-11 — React Flow's credit link is shown (P5.26, lead).** React Flow's MIT licence allows hiding its small "React Flow" link, but its authors ask that only React Flow Pro subscribers hide it. Diagram shows it by default — in the start-bottom corner, opposite the overview, small, text.secondary and underlined on a raised tag, a 24px target — and `hideAttribution` hides it for an application that has that subscription. Whether to buy one is the owner's call.
+- **2026-10-11 — "Failed" is danger in the examples' status map (P5.26).** `example-shell.tsx` TONES gains `Failed: 'danger'` for the orchestrator's run.
 
 ## Packaging
 

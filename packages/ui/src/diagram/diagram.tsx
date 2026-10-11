@@ -149,6 +149,12 @@ export interface DiagramProps {
   height?: number
   /** Shows the overview of the whole diagram in the canvas's end-bottom corner. */
   minimap?: boolean
+  /**
+   * Hides React Flow's small credit link ("React Flow", in the start-bottom corner). Its MIT
+   * licence allows hiding it, but React Flow's authors ask that only applications with a React
+   * Flow Pro subscription do (docs/decisions.md, P5.26). Default false: the link is shown.
+   */
+  hideAttribution?: boolean
   /** The instance to show in mode 'run'. */
   run?: DiagramRun
   /** The application's validation messages, on their steps and in the problems list. */
@@ -1056,7 +1062,8 @@ function DiagramBody(props: DiagramProps) {
               minZoom={0.2}
               maxZoom={2}
               connectionLineType={ConnectionLineType.SmoothStep}
-              proOptions={{ hideAttribution: true }}
+              proOptions={{ hideAttribution: props.hideAttribution === true }}
+              attributionPosition={rtl ? 'bottom-right' : 'bottom-left'}
               ariaLabelConfig={{
                 'node.a11yDescription.default': editable
                   ? messages['diagram.editInstructions']

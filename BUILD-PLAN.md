@@ -315,9 +315,9 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P5.21b | Overscan per component | P5.21a | done | 2026-10-10 | EditableGrid draws 240px around the view (page jump −25%, about 400ms on the owner's laptop), light lists keep 600px (measured) |
 | P5.22 | Rich text | P2.2, P5.1 | done | 2026-10-10 | `@veljaos/ui/rich-text` on Tiptap 3.31.4 (MIT packages only): RichTextField, RichText, merge-field pills, @mentions, JSON plus sanitized HTML |
 | P5.24 | Working time | P5.13, P4.3 | done | 2026-10-10 | AttendanceGrid timesheets, ClockRecordList, ShiftPlanner, MyShifts, ShiftSwapDialog, WorkingTimeBalance; examples Kvadrat Gradnja, Prodavnica 12, Dom zdravlja |
-| P5.24a | Working time: rotation and swap follow-up | P5.24 | in progress | | |
-| P5.25 | Floor plans and seating | P5.10, P5.8 | in progress | | |
-| P5.26 | Diagrams | P2.1 | in progress | | |
+| P5.24a | Working time: rotation and swap follow-up | P5.24 | done | 2026-10-11 | Apply rotation opens with people chosen, shows what it adds and the application's checks; MyShifts swap defaults |
+| P5.25 | Floor plans and seating | P5.10, P5.8 | done | 2026-10-11 | FloorPlan (plan and list, edit mode), SeatingChart, RoomRack, ResourceSchedule by days; restaurant, café, event and hotel examples |
+| P5.26 | Diagrams | P2.1 | done | 2026-10-11 | `@veljaos/ui/diagram` on React Flow 12.12.0 and dagre 3.1.1 (MIT): view, edit, run; approval workflow and orchestrator run examples |
 | P6.1 | Full language and direction matrix | Phases 1–5 | todo | | |
 | P6.2 | Manual WCAG 2.2 checks | P6.1 | todo | | |
 | P6.3 | Performance budget | P4.8 | todo | | |
