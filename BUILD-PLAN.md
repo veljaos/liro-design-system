@@ -315,6 +315,9 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P5.21b | Overscan per component | P5.21a | done | 2026-10-10 | EditableGrid draws 240px around the view (page jump −25%, about 400ms on the owner's laptop), light lists keep 600px (measured) |
 | P5.22 | Rich text | P2.2, P5.1 | done | 2026-10-10 | `@veljaos/ui/rich-text` on Tiptap 3.31.4 (MIT packages only): RichTextField, RichText, merge-field pills, @mentions, JSON plus sanitized HTML |
 | P5.24 | Working time | P5.13, P4.3 | done | 2026-10-10 | AttendanceGrid timesheets, ClockRecordList, ShiftPlanner, MyShifts, ShiftSwapDialog, WorkingTimeBalance; examples Kvadrat Gradnja, Prodavnica 12, Dom zdravlja |
+| P5.24a | Working time: rotation and swap follow-up | P5.24 | in progress | | |
+| P5.25 | Floor plans and seating | P5.10, P5.8 | in progress | | |
+| P5.26 | Diagrams | P2.1 | in progress | | |
 | P6.1 | Full language and direction matrix | Phases 1–5 | todo | | |
 | P6.2 | Manual WCAG 2.2 checks | P6.1 | todo | | |
 | P6.3 | Performance budget | P4.8 | todo | | |
@@ -715,6 +718,22 @@ Built together with P5.13 as **one pattern**: a grid of people × days whose cel
 **Examples:** Kvadrat Gradnja site workers; a retail store with shifts (POS); a 24/7 health facility with rotating shifts.
 
 **Done when** the timesheet, the shift planner, My shifts, the balance and the clock records have stories in light, dark, right-to-left and phone width, pass axe and the keyboard, and the three examples show them with one dataset each.
+
+### P5.24a — Working time follow-up (owner, 2026-10-11)
+**Do** "Apply rotation…" in ShiftPlanner as a complete flow: it opens with the people already chosen (the rows of the selected range, else everyone in view, or the application's `rotationPeople`), shows what it will create before Apply (shifts per person, the dates, conflicts it would cause, from data), and reports the assignments. My shifts can open a swap request with a colleague already chosen.
+
+### P5.25 — Floor plans and seating (owner, 2026-10-11)
+**Do** the plan of a place, for a restaurant, a café, a hotel floor and an event:
+- **FloorPlan:** tables, rooms, seats and fixtures placed on the plan (positions and sizes from the application, in plan units), areas (terrace, hall, floor 2) as labelled regions, each item's state in words and a tone (free, occupied, reserved, blocked, needs cleaning — the states and their tones are the application's data), capacity, a note; one item chosen at a time or several; arrow keys move between items by position; a list view of the same items (by area) as the accessible and phone alternative. **Edit mode:** add from a palette, move by drag, by arrow keys and by "Move to…" with numbers, resize, rotate in 90° steps, remove; the plan reports changes, it saves nothing. The plan is a physical place: it is not mirrored in a right-to-left page; the page around it is.
+- **SeatingChart** for events (weddings, conferences, gala dinners): tables with their seats, the guest list beside the plan (unseated first, groups and notes such as diet as data), seating a guest by choosing a seat and a guest (keyboard), by drag, and by "Seat at…"; "112 of 140 seated"; a table's guests in order; conflicts from data (a full table, guests to keep apart).
+- **RoomRack** for hotels: floors × rooms, each room with its number, type, occupancy and housekeeping state (in words), the guest, arrival and departure; filters by state; reservations over days stay on ResourceSchedule (P5.8).
+**Examples:** a restaurant (service: open a table, move guests, merge tables), a café terrace with the POS (P5.10), a hotel (room rack and the booking timeline), an event's seating.
+**Done when** every component has stories in light, dark, right-to-left and phone width, passes axe, the keyboard and the text-order check, and the four examples show them.
+
+### P5.26 — Diagrams (owner, 2026-10-11)
+**Do** `@veljaos/ui/diagram` (its own subpath, loaded only there) on **React Flow (@xyflow/react, MIT)** with **dagre (MIT)** for automatic layout: a diagram of steps and connections for workflows and orchestrators, in a **BPMN-style notation** (start, end, task, user task, service task, timer and message events, exclusive and parallel gateways, sub-process, lanes) drawn by us with tokens; no bpmn-js, no BPMN XML (import and export are the application's). **View** (read-only, fit to view, zoom, minimap), **edit** (add a step from a palette or "Add step after…", connect by drag or by "Connect to…", label a connection, remove; changes reported, nothing saved) and **run state** (an instance: done, running, waiting, failed with its reason, skipped; the path taken). Validation messages from the application on their steps. Layout from the leading edge (mirrored in right-to-left), or top to bottom. Keyboard: every step and connection reachable; no drag-only action.
+**Examples:** an approval workflow for a supplier invoice, an orchestrator's run with a failed step and Retry, editing a workflow.
+**Done when** the diagram has stories in light, dark, right-to-left and phone width (view on phones, editing on desktop), passes axe and the keyboard, and the examples show view, edit and run state.
 
 **End of Phase 5:** `0.1.0-alpha.5`; report.
 
