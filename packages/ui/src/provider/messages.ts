@@ -1355,4 +1355,21 @@ export interface LiroMessages {
   'richText.countLabel': (countText: string, limitText: string) => string
   /** Over the limit: "20 characters too many". */
   'richText.overLimit': (count: number, countText: string) => string
+  // P5.25 RoomRack
+  /** RoomRack: the search field's name and placeholder (it matches a number or a name). */
+  'rack.search': string
+  /** RoomRack: the names of the two groups of state chips. */
+  'rack.occupancy': string
+  'rack.housekeeping': string
+  /** RoomRack, while a filter is set: "12 of 40 shown"; the numbers written by `format.number`. */
+  'rack.shown': (shown: number, total: number, shownText: string, totalText: string) => string
+  /** RoomRack: nothing matches the filter, and its action. */
+  'rack.noMatches': string
+  'rack.noMatchesDescription': string
+  'rack.clearFilters': string
+  /** RoomRack: no rooms at all. */
+  'rack.empty': string
+  'rack.emptyDescription': string
+  /** RoomRack: how to move between the tiles (the description of the tile in the tab order). */
+  'rack.instructions': string
 }

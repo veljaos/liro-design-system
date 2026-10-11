@@ -488,3 +488,151 @@ export const Japanese: Story = {
     </ScheduleFrame>
   ),
 }
+
+// ── Days (P5.25): stays over two weeks ──
+
+const ROOMS = [
+  { id: 'r101', name: 'Room 101', description: 'Double' },
+  { id: 'r102', name: 'Room 102', description: 'Twin' },
+  { id: 'r103', name: 'Room 103', description: 'Single' },
+  { id: 'r104', name: 'Room 104', description: 'Suite' },
+]
+
+/** Fourteen days from Wednesday 14 October 2026 (the stories' today). */
+const FORTNIGHT = Array.from(
+  { length: 14 },
+  (_, index) => `2026-10-${String(14 + index).padStart(2, '0')}`,
+)
+
+/** Stays by their days: `end` is the last night, included. */
+const STAYS: ScheduleBooking[] = [
+  {
+    id: 's1',
+    resourceId: 'r101',
+    title: 'Marko Ilić',
+    start: '2026-10-12',
+    end: '2026-10-15',
+    tone: 'info',
+    locked: true,
+  },
+  { id: 's2', resourceId: 'r101', title: 'Ana Petrović', start: '2026-10-16', end: '2026-10-19' },
+  {
+    id: 's3',
+    resourceId: 'r102',
+    title: 'Thomas Becker',
+    description: '2 adults',
+    start: '2026-10-14',
+    end: '2026-10-20',
+  },
+  { id: 's4', resourceId: 'r103', title: 'Sofia Rossi', start: '2026-10-21', end: '2026-10-22' },
+  {
+    id: 's5',
+    resourceId: 'r104',
+    title: 'Jelena Stojanović',
+    description: 'VIP',
+    start: '2026-10-24',
+    end: '2026-10-30',
+    tone: 'premium',
+  },
+]
+
+const STAY_UNAVAILABLE = [
+  { resourceId: 'r103', start: '2026-10-15', end: '2026-10-17', reason: 'Out of order: new floor' },
+]
+
+function daysSchedule(phone = false) {
+  return (
+    <ScheduleFrame>
+      <Schedule
+        {...(phone ? { layout: 'phone' as const, className: 'p-4' } : {})}
+        scale="days"
+        days={FORTNIGHT}
+        resources={ROOMS}
+        initial={STAYS}
+        unavailable={STAY_UNAVAILABLE}
+        label="Rooms, 14 – 27 October 2026"
+        resourceLabel="Room"
+      />
+    </ScheduleFrame>
+  )
+}
+
+/**
+ * `scale="days"`: rooms over two weeks, one column a day under its weekday and date (today in the
+ * neutral circle); a stay that began before the first day is drawn from it, one that ends after
+ * the last runs to it; an out-of-order room is hatched with its reason.
+ */
+export const Days: Story = {
+  name: 'Days, two weeks',
+  render: () => daysSchedule(),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(booking(canvasElement, 'Thomas Becker')).toHaveAccessibleName(
+      /^Thomas Becker, Room 102, 10\/14\/2026 – 10\/20\/2026$/,
+    )
+    await expect(booking(canvasElement, 'Marko Ilić')).toHaveAccessibleName(
+      /^Marko Ilić, Room 101, 10\/14\/2026 – 10\/15\/2026$/,
+    )
+    await expect(canvas.queryByRole('button', { name: 'Move to…: Marko Ilić' })).toBeNull()
+    await expect(
+      canvas.getByText('Unavailable: Out of order: new floor, 10/15/2026 – 10/17/2026'),
+    ).toBeInTheDocument()
+  },
+}
+
+/** The keyboard moves a stay by whole days (from the leading edge) and to another room. */
+export const DaysKeyboardInteraction: Story = {
+  name: 'Days keyboard, interaction',
+  tags: ['interaction'],
+  render: () => daysSchedule(),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    booking(canvasElement, 'Sofia Rossi').focus()
+    await userEvent.keyboard(' ')
+    await userEvent.keyboard(rtl(canvasElement) ? '{ArrowLeft}' : '{ArrowRight}')
+    await userEvent.keyboard('{ArrowUp}')
+    await expect(liveRegion(canvasElement)).toHaveTextContent(
+      'Sofia Rossi: Room 102, 10/22/2026 – 10/23/2026.',
+    )
+    await userEvent.keyboard('{Enter}')
+    await expect(canvas.getByText('Moved s4 to r102 at 2026-10-22–2026-10-23')).toBeVisible()
+  },
+}
+
+/** "Move to…" offers every day shown as the stay's first day. */
+export const DaysMoveToInteraction: Story = {
+  name: 'Days move to, interaction',
+  tags: ['interaction'],
+  render: () => daysSchedule(),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const body = within(document.body)
+    await userEvent.click(canvas.getByRole('button', { name: 'Move to…: Ana Petrović' }))
+    const panel = await body.findByRole('dialog', { name: 'Move to…: Ana Petrović' })
+    await expect(within(panel).queryByRole('combobox', { name: 'Day' })).toBeNull()
+    await userEvent.click(within(panel).getByRole('combobox', { name: 'Start' }))
+    await userEvent.click(await body.findByRole('option', { name: /^Wednesday, October 21, 2026/ }))
+    await userEvent.click(await within(panel).findByRole('button', { name: 'Move' }))
+    await waitFor(async () => {
+      await expect(canvas.getByText('Moved s2 to r101 at 2026-10-21–2026-10-24')).toBeVisible()
+    })
+  },
+}
+
+/** Days on a phone: one room at a time, the days running down. */
+export const DaysPhone: Story = {
+  name: 'Days, phone width',
+  render: () => <PhoneFrame>{daysSchedule(true)}</PhoneFrame>,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('combobox', { name: 'Room' })).toHaveTextContent('Room 101')
+    await expect(booking(canvasElement, 'Ana Petrović')).toBeVisible()
+    const schedule = canvasElement.querySelector<HTMLElement>('[data-slot="resource-schedule"]')
+    if (schedule !== null)
+      await expect(schedule.scrollWidth).toBeLessThanOrEqual(schedule.clientWidth)
+  },
+}

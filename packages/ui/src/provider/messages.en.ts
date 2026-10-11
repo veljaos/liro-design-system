@@ -908,4 +908,15 @@ export const messagesEn: LiroMessages = {
   'richText.countLabel': (countText, limitText) => `${countText} of ${limitText} characters`,
   'richText.overLimit': (count, countText) =>
     count === 1 ? '1 character too many' : `${countText} characters too many`,
+  // P5.25 RoomRack
+  'rack.search': 'Search by number or name',
+  'rack.occupancy': 'Occupancy',
+  'rack.housekeeping': 'Housekeeping',
+  'rack.shown': (_shown, _total, shownText, totalText) => `${shownText} of ${totalText} shown`,
+  'rack.noMatches': 'Nothing matches',
+  'rack.noMatchesDescription': 'Change the search or clear the filters.',
+  'rack.clearFilters': 'Clear filters',
+  'rack.empty': 'No rooms yet',
+  'rack.emptyDescription': 'The rooms appear here once they are set up.',
+  'rack.instructions': 'Use the arrow keys to move between the rooms, and Enter to open one.',
 }

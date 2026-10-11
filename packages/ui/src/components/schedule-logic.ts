@@ -399,6 +399,16 @@ export function fitOnAxis(
   return Math.max(dayFrom, dayTo - duration)
 }
 
+/**
+ * Where a booking lands on a days axis (ResourceSchedule `scale="days"`, P5.25): a stay keeps its
+ * length and starts on one of the days shown; it may run on past the last day (it is drawn up to
+ * it), so it is never pushed back to fit.
+ */
+export function fitOnDays(axis: ScheduleAxis, value: number): number {
+  const total = dayLength(axis) * axis.days.length
+  return Math.min(Math.max(0, value), Math.max(0, total - axis.slotMinutes))
+}
+
 /** A booking's place while it is moved: its row, and its start on the axis. */
 export interface SchedulePlace {
   resource: number
@@ -420,6 +430,8 @@ export function scheduleKeyTarget(
     resources: number
     direction: 'ltr' | 'rtl'
     orientation: 'horizontal' | 'vertical'
+    /** 'days': one slot is a day and a booking may run past the axis (`fitOnDays`). */
+    scale?: 'time' | 'days'
   },
 ): SchedulePlace | null {
   const forward = options.direction === 'rtl' ? 'ArrowLeft' : 'ArrowRight'
@@ -432,7 +444,11 @@ export function scheduleKeyTarget(
   const step = options.axis.slotMinutes
   if (key === later || key === earlier) {
     const isLater = key === later
-    const start = fitOnAxis(options.axis, place.start + (isLater ? step : -step), duration, isLater)
+    const value = place.start + (isLater ? step : -step)
+    const start =
+      options.scale === 'days'
+        ? fitOnDays(options.axis, value)
+        : fitOnAxis(options.axis, value, duration, isLater)
     return start === place.start ? null : { ...place, start }
   }
   if (key === nextRow || key === previousRow) {
@@ -452,14 +468,13 @@ export function dropPlace(
   slots: number,
   resource: number,
   duration: number,
-  options: { axis: ScheduleAxis; resources: number },
+  options: { axis: ScheduleAxis; resources: number; scale?: 'time' | 'days' },
 ): SchedulePlace {
-  const start = fitOnAxis(
-    options.axis,
-    from.start + slots * options.axis.slotMinutes,
-    duration,
-    slots >= 0,
-  )
+  const value = from.start + slots * options.axis.slotMinutes
+  const start =
+    options.scale === 'days'
+      ? fitOnDays(options.axis, value)
+      : fitOnAxis(options.axis, value, duration, slots >= 0)
   return { resource: Math.min(options.resources - 1, Math.max(0, resource)), start }
 }
 
