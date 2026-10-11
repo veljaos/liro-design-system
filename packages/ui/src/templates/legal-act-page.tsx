@@ -41,7 +41,8 @@ import { BackButton, type PageBack } from './page-header'
  *   application's discrete list, so a choice names exactly one text and nothing has to be
  *   resolved; "as of" is `asOf`, or today for the current version and an older version's first
  *   day. The banner slot (`banner`) stands above everything ("Illustrative", a repeal notice).
- * - **Actions** (ActionGroup, at the end; narrow rows move the first ones into "More"): Compare
+ * - **Actions** (ActionGroup in a row of its own under the title, at the end, "Hide panels" or
+ *   "Details" last; narrow rows move the first ones into "More"): Compare
  *   versions, Copy citation, Print / PDF, Watch for changes, Bookmark — each shown when its
  *   callback is given, words from messages. A reading page has no main action, so every one is
  *   secondary (D13 allows none primary); Bookmark, the most used, is last and stays in the row.
@@ -291,7 +292,7 @@ export function LegalActPage(props: LegalActPageProps) {
 
   const hasActions = actions.length > 0 || toggle !== null || sheet !== null
   const header = (
-    <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
+    <div className="flex flex-col gap-3">
       <div className="flex min-w-0 flex-col gap-1">
         <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
           {props.back !== undefined && <BackButton back={props.back} />}
@@ -310,11 +311,14 @@ export function LegalActPage(props: LegalActPageProps) {
           {act.type} · {act.issuer}
         </p>
       </div>
+      {/* The actions have a row of their own and the ActionGroup fills it: a row as wide as what
+          it shows would stay folded once "More" took the others' place (P5.27). The panels'
+          controls come last, above the panels they open or hide. */}
       {hasActions && (
-        <div className="flex max-w-full min-w-0 flex-wrap items-center gap-2">
-          {toggle}
+        <div className="flex w-full min-w-0 items-center justify-end gap-2">
+          {actions.length > 0 && <ActionGroup actions={actions} className="flex-1" />}
           {sheet}
-          {actions.length > 0 && <ActionGroup actions={actions} />}
+          {toggle}
         </div>
       )}
     </div>

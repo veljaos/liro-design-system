@@ -67,7 +67,7 @@ const ALL: LegalPanelsOptions = {
 }
 
 const meta = {
-  title: 'Components/LegalPanels',
+  title: 'Components/Legal/LegalPanels',
   component: LegalArticleSummary,
   parameters: {
     docs: {

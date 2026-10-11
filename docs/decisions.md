@@ -2228,7 +2228,11 @@ script)`, `mapLegalText` / `mapArticleText` / `mapFootnotesText` (every text thr
   user types would also need "no version on that day" states. "Version as of" names `asOf`, else
   the provider's `today` for the current version and an older version's first day
   (`versionAsOf`, tested). Shown only with more than one version.
-- **2026-10-11 — The header's actions (P5.27 a).** One ActionGroup at the end: Compare versions
+- **2026-10-11 — The header's actions (P5.27 a).** One ActionGroup in **a row of its own under
+  the title**, filling it (the buttons at its end), then "Hide panels" (or "Details" on phones)
+  last, above the panels it controls: an ActionGroup as wide as what it shows stayed folded once
+  "More" had taken the others' place, so the pictures changed from run to run (the class of the
+  dialog footer's fix in P5.25: an action row is given its line). The actions: Compare versions
   (GitCompare), Copy citation (Copy), Print / PDF (the print intent, secondary), Watch for
   changes, Bookmark — each shown only when its callback is given; words from messages. **No
   primary action** on a reading page (D13 allows none); Bookmark, the most used, is last, so it
