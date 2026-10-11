@@ -374,6 +374,14 @@ export function CompareScreen({
       ? `From ${format.date(found.from)} (in force)`
       : `${format.date(found.from)} – ${format.date(found.to)}`
   }
+  // In the comparison's heading: "Changes from the version of … to the version in force since …".
+  const phrase = (id: string) => {
+    const found = after.versions.find((each) => each.id === id)
+    if (found === undefined) return id
+    return found.to === undefined
+      ? `the version in force since ${format.date(found.from)}`
+      : `the version of ${format.date(found.from)} – ${format.date(found.to)}`
+  }
   const options = (keep: (at: number) => boolean) =>
     order.filter((_, at) => keep(at)).map((id) => ({ value: id, label: name(id) }))
   const route = compareRoute(actId)
@@ -408,8 +416,8 @@ export function CompareScreen({
             />
           </div>
           <LegalCompare
-            before={{ label: name(earlier), nodes: before.nodes }}
-            after={{ label: name(later), nodes: after.nodes }}
+            before={{ label: phrase(earlier), nodes: before.nodes }}
+            after={{ label: phrase(later), nodes: after.nodes }}
             {...(after.lang === undefined ? {} : { lang: after.lang })}
           />
         </Card>
