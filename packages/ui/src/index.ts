@@ -1020,6 +1020,100 @@ export type {
   SeatingTable,
   SeatRef,
 } from './components/seating-logic'
+
+// ── P5.27 legal search ──
+export { LegalSearchPage } from './templates/legal-search-page'
+export type { LegalSearchPageProps } from './templates/legal-search-page'
+export { gazetteNumbers, snippetFromRanges, snippetText } from './templates/legal-search-logic'
+export type {
+  LegalSearchResult,
+  LegalSearchSort,
+  LegalSnippet,
+  LegalSnippetPart,
+} from './templates/legal-search-logic'
+export { GazetteIssues } from './components/gazette-issues'
+export type { GazetteIssue, GazetteIssuesProps } from './components/gazette-issues'
+export { treeFilterIds, treeFilterLabels } from './components/filter-logic'
+// ── P5.27 legal text ──
+export { LegalText } from './components/legal-text'
+export type { LegalTextHandle, LegalTextProps } from './components/legal-text'
+export { LegalContents } from './components/legal-contents'
+export type { LegalContentsProps } from './components/legal-contents'
+export { LegalCompare } from './components/legal-compare'
+export type { LegalCompareProps, LegalCompareVersion } from './components/legal-compare'
+export {
+  articleBlocks,
+  articleText,
+  compareArticles,
+  compareBlocks,
+  comparisonCounts,
+  findLegalArticle,
+  firstReference,
+  flattenLegalNodes,
+  foldForSearch,
+  inlineText,
+  latinTag,
+  legalAncestors,
+  legalArticles,
+  legalContentsTree,
+  legalHeadingIds,
+  legalSearchIndex,
+  legalTextParts,
+  LEGAL_ENTRY_ESTIMATE,
+  LEGAL_SEARCH_MIN_LENGTH,
+  mapArticleText,
+  mapFootnotesText,
+  mapLegalText,
+  mergeById,
+  paragraphText,
+  searchLegalIndex,
+  searchLegalText,
+  serbianScript,
+  stepHit,
+  transliterateCyrillicToLatin,
+  transliterates,
+  wordDiff,
+} from './components/legal-logic'
+export type {
+  ArticleBlock,
+  ArticleChangeKind,
+  ArticleComparison,
+  BlockComparison,
+  DiffSegment,
+  LegalEntry,
+  LegalSearchHit,
+  LegalSearchIndex,
+  LegalTextPart,
+} from './components/legal-logic'
+// ── P5.27 legal page ──
+export { LegalActPage } from './templates/legal-act-page'
+export type { LegalActPageProps } from './templates/legal-act-page'
+export {
+  LEGAL_PANEL_KEYS,
+  LegalArticleSummary,
+  useLegalPanels,
+  useVersionRange,
+} from './components/legal-panels'
+export type {
+  LegalArticleSummaryProps,
+  LegalPanelKey,
+  LegalPanelsOptions,
+} from './components/legal-panels'
+export {
+  amendmentsFor,
+  articleCounts,
+  groupRelatedByType,
+  itemsForArticle,
+  notesFor,
+  otherVersions,
+  practiceArticles,
+  shownVersion,
+  versionAsOf,
+  versionsNewestFirst,
+} from './components/legal-panels-logic'
+export type { ArticleCounts } from './components/legal-panels-logic'
+export { PrintLegalAct } from './templates/print-legal-act'
+export type { PrintLegalActProps } from './templates/print-legal-act'
 // ── P5.25a FloorPlan: background, polygon areas, level ──
 export type { FloorBackground } from './components/floor-plan'
 export {
@@ -1041,3 +1135,24 @@ export type {
   FloorPolygonArea,
   FloorRectArea,
 } from './components/floor-plan-logic'
+
+// ── P5.27 legal model ──
+export type {
+  GazetteReference,
+  LegalAct,
+  LegalAmendment,
+  LegalArticle,
+  LegalArticleChange,
+  LegalFootnote,
+  LegalHeading,
+  LegalInline,
+  LegalNode,
+  LegalNote,
+  LegalParagraph,
+  LegalPoint,
+  LegalStatus,
+  LegalTarget,
+  LegalVersion,
+  PracticeItem,
+  RelatedAct,
+} from './components/legal-model'

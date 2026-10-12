@@ -4,6 +4,7 @@ import type { ComboboxOption } from './combobox-field'
 import type { DataTableFilters, DataTableSort } from './data-table-logic'
 import type { DateRange } from './date-field'
 import type { SelectOption } from './select-field'
+import type { TreeNode } from './tree-logic'
 
 /*
  * FilterBar's logic, without React: which values count as set, how an active filter is written
@@ -38,12 +39,26 @@ export type FilterDefinition = FilterBase &
       }
     | { type: 'boolean' }
     | { type: 'text' }
+    | {
+        /**
+         * A choice in a hierarchy (P5.27: an act's area): a TreeView in the drawer, never in the
+         * row (a tree needs the room), with checkboxes (`selection` 'multiple', the default) or
+         * one node ('single'). Checking a branch checks its loaded descendants
+         * (`toggleTreeSelection`); the pill names the highest chosen nodes (`treeFilterLabels`).
+         */
+        type: 'tree'
+        nodes: readonly TreeNode[]
+        selection?: 'single' | 'multiple'
+        /** Branches open when the drawer opens; default the ancestors of the chosen nodes. */
+        defaultExpanded?: readonly string[]
+      }
   )
 
 /**
  * The value of each kind: select a string; multiSelect a list of strings; dateRange a DateRange
  * (YYYY-MM-DD ends); numberRange a NumberRange (decimal strings); boolean true or false; text a
- * string. Null, undefined, '' and an empty list mean "not set".
+ * string; tree a list of node ids (at most one with `selection` 'single'). Null, undefined, '' and
+ * an empty list mean "not set".
  */
 export type FilterValue = string | readonly string[] | DateRange | NumberRange | boolean | null
 
@@ -65,6 +80,7 @@ export function isFilterSet(value: unknown): boolean {
 export function emptyFilterValue(filter: FilterDefinition): FilterValue {
   switch (filter.type) {
     case 'multiSelect':
+    case 'tree':
       return []
     case 'dateRange':
       return { start: null, end: null }
@@ -138,7 +154,40 @@ export function filterValueText(
       return value === true ? messages['filter.yes'] : messages['filter.no']
     case 'text':
       return String(value)
+    case 'tree':
+      return treeFilterLabels(filter.nodes, treeFilterIds(value)).join(', ')
   }
+}
+
+/** A tree filter's value as a list of ids: a list stays, one id (text) becomes a list of one. */
+export function treeFilterIds(value: unknown): string[] {
+  if (Array.isArray(value)) return value.filter((id): id is string => typeof id === 'string')
+  return typeof value === 'string' && value !== '' ? [value] : []
+}
+
+/**
+ * The names a tree filter's pill shows: each chosen node whose parent is not chosen, in the
+ * tree's order (a checked branch stands for its descendants: "Construction", not "Construction,
+ * Building permits, Site safety"); a chosen id the tree does not hold (not loaded) as it is, at
+ * the end.
+ */
+export function treeFilterLabels(
+  nodes: readonly TreeNode<unknown>[],
+  chosen: readonly string[],
+): string[] {
+  const wanted = new Set(chosen)
+  const labels: string[] = []
+  const found = new Set<string>()
+  const walk = (list: readonly TreeNode<unknown>[], parentChosen: boolean) => {
+    for (const node of list) {
+      const isChosen = wanted.has(node.id)
+      if (isChosen) found.add(node.id)
+      if (isChosen && !parentChosen) labels.push(node.label)
+      if (node.children !== undefined) walk(node.children, parentChosen || isChosen)
+    }
+  }
+  walk(nodes, false)
+  return [...labels, ...chosen.filter((id) => !found.has(id))]
 }
 
 /** A sortable column, as the phone's sort menu lists it. */

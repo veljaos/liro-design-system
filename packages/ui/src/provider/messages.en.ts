@@ -1073,6 +1073,120 @@ export const messagesEn: LiroMessages = {
   'diagram.stepState': (label, state) => `${label}: ${state}`,
   'diagram.stepAction': (action, label) => `${action}: ${label}`,
   'diagram.defaultWay': 'Default way out, when no condition holds',
+  // P5.27 legal search
+  'legalSearch.results': 'Search results',
+  'legalSearch.count': (count, text, exact) => {
+    if (!exact) return `More than ${text} results`
+    return count === 1 ? `${text} result` : `${text} results`
+  },
+  'legalSearch.sortBy': (label) => `Sort: ${label}`,
+  'legalSearch.foundIn': (article) => `Found in ${article}`,
+  'legalSearch.gazette': (gazette, numbers) => `${gazette} ${numbers}`,
+  'legalSearch.retry': 'Try again',
+  'gazette.published': (date) => `Published ${date}`,
+  'gazette.acts': (count, text) => (count === 1 ? `${text} act` : `${text} acts`),
+  'gazette.showMore': 'Show more issues',
+  'gazette.emptyTitle': 'No new issues',
+  'gazette.emptyDescription': 'New issues appear here when they are published.',
+  // P5.27 legal text
+  'legal.copyLink': (label) => `Copy link to ${label}`,
+  'legal.linkCopied': 'Link copied',
+  'legal.copyFailed': 'The link could not be copied.',
+  'legal.articleActions': (label) => `Actions for ${label}`,
+  'legal.select': 'Select',
+  'legal.clearSelection': 'Clear selection',
+  'legal.change': (label, date) => `${label} · applies from ${date}`,
+  'legal.appliesFrom': (date) => `Applies from ${date}`,
+  'legal.showText': 'Show text',
+  'legal.hideText': 'Hide text',
+  'legal.footnotes': 'Footnotes',
+  'legal.footnote': (mark) => `Footnote ${mark}`,
+  'legal.preview': (text) => `Preview of ${text}`,
+  'legal.previewMissing': 'This text is not available here.',
+  'legal.open': (label) => `Open ${label}`,
+  'legal.search': 'Search in the text',
+  'legal.hits': (_current, _total, currentText, totalText) => `${currentText} of ${totalText}`,
+  'legal.noHits': 'No matches',
+  'legal.previousHit': 'Previous match',
+  'legal.nextHit': 'Next match',
+  'legal.script': 'Script',
+  'legal.latin': 'Latin',
+  'legal.cyrillic': 'Cyrillic',
+  'legal.contents': 'Contents',
+  'legal.added': 'Added',
+  'legal.deleted': 'Deleted',
+  'legal.changed': 'Changed',
+  'legal.addedMark': 'Added:',
+  'legal.deletedMark': 'Deleted:',
+  'legal.compareTitle': (from, to) => `Changes from ${from} to ${to}`,
+  'legal.compareSummary': (changed, added, removed) =>
+    `Changed: ${changed} · Added: ${added} · Deleted: ${removed}`,
+  'legal.showAll': 'Show all',
+  'legal.showChanges': 'Show changes only',
+  'legal.unchanged': (count, countText) =>
+    count === 1 ? '1 unchanged article' : `${countText} unchanged articles`,
+  'legal.noChanges': 'The two versions have the same text.',
+  // P5.27 legal page
+  'legalPage.versionAsOf': (date) => `Version as of ${date}`,
+  'legalPage.version': 'Version',
+  'legalPage.versionOption': (range, current) => (current ? `${range} (current)` : range),
+  'legalPage.compareVersions': 'Compare versions',
+  'legalPage.copyCitation': 'Copy citation',
+  'legalPage.print': 'Print / PDF',
+  'legalPage.watch': 'Watch for changes',
+  'legalPage.unwatch': 'Stop watching',
+  'legalPage.bookmark': 'Bookmark',
+  'legalPage.unbookmark': 'Remove bookmark',
+  'legalPage.details': 'Details',
+  'legalPage.loading': 'Loading the act',
+  'legalPanel.versions': 'Versions',
+  'legalPanel.history': 'History of changes',
+  'legalPanel.hierarchy': 'Legal hierarchy',
+  'legalPanel.references': 'References',
+  'legalPanel.practice': 'Court practice and opinions',
+  'legalPanel.notes': 'My notes and bookmarks',
+  'legalPanel.versionRange': (from, to) => (to === undefined ? `From ${from}` : `${from} – ${to}`),
+  'legalPanel.current': 'Current',
+  'legalPanel.original': 'Original text',
+  'legalPanel.compareWith': 'Compare with…',
+  'legalPanel.published': (date) => `Published ${date}`,
+  'legalPanel.appliesFrom': (date) => `Applies from ${date}`,
+  'legalPanel.changedArticles': 'Changed',
+  'legalPanel.higher': 'Higher acts',
+  'legalPanel.lower': 'Lower acts',
+  'legalPanel.refersTo': 'This act refers to',
+  'legalPanel.referredBy': 'Referred to by',
+  'legalPanel.filterByArticle': 'Article',
+  'legalPanel.allArticles': 'All articles',
+  'legalPanel.note': 'Note',
+  'legalPanel.bookmark': 'Bookmark',
+  'legalPanel.wholeAct': 'Whole act',
+  'legalPanel.addNote': 'Add note',
+  'legalPanel.noVersions': 'No versions',
+  'legalPanel.noChanges': 'No changes',
+  'legalPanel.noHierarchy': 'No higher or lower acts',
+  'legalPanel.noReferences': 'No references',
+  'legalPanel.noPractice': 'No court decisions or opinions',
+  'legalPanel.noNotes': 'No notes or bookmarks yet',
+  'legalPanel.articleSummary': (article, counts, texts) => {
+    const changes =
+      counts.changes === 0
+        ? 'not changed'
+        : counts.changes === 1
+          ? 'changed once'
+          : counts.changes === 2
+            ? 'changed twice'
+            : `changed ${texts.changes} times`
+    const decisions =
+      counts.decisions === 1
+        ? `${texts.decisions} court decision`
+        : `${texts.decisions} court decisions`
+    const opinions =
+      counts.opinions === 1 ? `${texts.opinions} opinion` : `${texts.opinions} opinions`
+    return `${article}: ${changes}, ${decisions}, ${opinions}`
+  },
+  'legalPanel.backToAct': 'Back to the whole act',
+  'legalPrint.footnotes': 'Footnotes',
   // P5.25a FloorPlan
   'floorPlan.level': (percentText) => `${percentText} full`,
 }

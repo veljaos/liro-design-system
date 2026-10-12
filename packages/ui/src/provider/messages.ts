@@ -1566,6 +1566,148 @@ export interface LiroMessages {
   'diagram.stepAction': (action: string, label: string) => string
   /** The label dialog's checkbox for a decision's connection. */
   'diagram.defaultWay': string
+  // P5.27 legal search
+  /** The name of the search results' list. */
+  'legalSearch.results': string
+  /** How many acts were found: "128 results", "More than 10.000 results" (not exact). */
+  'legalSearch.count': (count: number, text: string, exact: boolean) => string
+  /** The sort button: "Sort: Relevance". */
+  'legalSearch.sortBy': (label: string) => string
+  /** The link to the article a result matched in: "Found in Article 57". */
+  'legalSearch.foundIn': (article: string) => string
+  /** A result's gazette references after the gazette's name: "Illustrative Gazette No. 12/2016, 47/2018". */
+  'legalSearch.gazette': (gazette: string, numbers: string) => string
+  /** "Try again" after the search failed. */
+  'legalSearch.retry': string
+  /** GazetteIssues: an issue's day, its number of acts, "Show more issues", the empty state. */
+  'gazette.published': (date: string) => string
+  'gazette.acts': (count: number, text: string) => string
+  'gazette.showMore': string
+  'gazette.emptyTitle': string
+  'gazette.emptyDescription': string
+  // P5.27 legal text
+  /** An article's copy-link button: "Copy link to Article 5"; the confirmation and the failure. */
+  'legal.copyLink': (label: string) => string
+  'legal.linkCopied': string
+  'legal.copyFailed': string
+  /** An article's menu (phones, or the application's actions): "Actions for Article 5". */
+  'legal.articleActions': (label: string) => string
+  /** The menu entries that select an article (the side panel narrows to it) and clear it. */
+  'legal.select': string
+  'legal.clearSelection': string
+  /** A change mark: "Amended by No. 47/2018 · applies from 01.07.2018."; the label is data. */
+  'legal.change': (label: string, date: string) => string
+  /** An article not yet in force: "Applies from 01.01.2027.". */
+  'legal.appliesFrom': (date: string) => string
+  /** A deleted article's earlier text, collapsed. */
+  'legal.showText': string
+  'legal.hideText': string
+  /** The footnotes' heading and a footnote mark's name: "Footnote 1". */
+  'legal.footnotes': string
+  'legal.footnote': (mark: string) => string
+  /** A reference's preview button ("Preview of Article 5"), its missing text, its link. */
+  'legal.preview': (text: string) => string
+  'legal.previewMissing': string
+  'legal.open': (label: string) => string
+  /** The in-act search: the field, "3 of 12", no matches, previous and next. */
+  'legal.search': string
+  'legal.hits': (current: number, total: number, currentText: string, totalText: string) => string
+  'legal.noHits': string
+  'legal.previousHit': string
+  'legal.nextHit': string
+  /** The script switch of a Serbian act. */
+  'legal.script': string
+  'legal.latin': string
+  'legal.cyrillic': string
+  /** The table of contents: its button, drawer title and tree. */
+  'legal.contents': string
+  /** Compare: the marks (legend and labels), and the words assistive technology hears before one. */
+  'legal.added': string
+  'legal.deleted': string
+  'legal.changed': string
+  'legal.addedMark': string
+  'legal.deletedMark': string
+  /** Compare: the title, the summary, all or only the changes, the unchanged articles' count. */
+  'legal.compareTitle': (from: string, to: string) => string
+  'legal.compareSummary': (changed: string, added: string, removed: string) => string
+  'legal.showAll': string
+  'legal.showChanges': string
+  'legal.unchanged': (count: number, countText: string) => string
+  'legal.noChanges': string
+  // P5.27 legal page
+  /** The header's version line: "Version as of 11.10.2026."; the date written by `format.date`. */
+  'legalPage.versionAsOf': (date: string) => string
+  /** The version picker's label (for assistive technology; the line above names it). */
+  'legalPage.version': string
+  /** A version in the picker: its from–to range, "(current)" after the version in force. */
+  'legalPage.versionOption': (range: string, current: boolean) => string
+  /** The header's actions. */
+  'legalPage.compareVersions': string
+  'legalPage.copyCitation': string
+  'legalPage.print': string
+  /** Watch for changes, and its "on" state's action. */
+  'legalPage.watch': string
+  'legalPage.unwatch': string
+  /** Bookmark the act, and its "on" state's action. */
+  'legalPage.bookmark': string
+  'legalPage.unbookmark': string
+  /** Phones: the button that opens the side panels as a sheet, and the sheet's title. */
+  'legalPage.details': string
+  /** The act's text region while it loads. */
+  'legalPage.loading': string
+  /** The panels' names. */
+  'legalPanel.versions': string
+  'legalPanel.history': string
+  'legalPanel.hierarchy': string
+  'legalPanel.references': string
+  'legalPanel.practice': string
+  'legalPanel.notes': string
+  /** A version's days: "01.07.2024. – 30.06.2026.", or "From 01.07.2024." for the current one. */
+  'legalPanel.versionRange': (from: string, to: string | undefined) => string
+  /** The marker of the version in force, and the words of a version without an amending act. */
+  'legalPanel.current': string
+  'legalPanel.original': string
+  /** Opens the list of the other versions to compare the shown one with. */
+  'legalPanel.compareWith': string
+  /** An amending act's days. */
+  'legalPanel.published': (date: string) => string
+  'legalPanel.appliesFrom': (date: string) => string
+  /** The label before the articles an amending act changed. */
+  'legalPanel.changedArticles': string
+  /** The hierarchy's two groups. */
+  'legalPanel.higher': string
+  'legalPanel.lower': string
+  /** The references' two directions. */
+  'legalPanel.refersTo': string
+  'legalPanel.referredBy': string
+  /** The practice filter: its label and the choice of every article. */
+  'legalPanel.filterByArticle': string
+  'legalPanel.allArticles': string
+  /** A note's kind, a note on the whole act, and the button that adds a note. */
+  'legalPanel.note': string
+  'legalPanel.bookmark': string
+  'legalPanel.wholeAct': string
+  'legalPanel.addNote': string
+  /** What a panel says when it has nothing to show. */
+  'legalPanel.noVersions': string
+  'legalPanel.noChanges': string
+  'legalPanel.noHierarchy': string
+  'legalPanel.noReferences': string
+  'legalPanel.noPractice': string
+  'legalPanel.noNotes': string
+  /**
+   * The panel narrowed to one article: "Article 57: changed twice, 3 court decisions, 1 opinion".
+   * The counts as numbers (for plural rules) and as `format.number` writes them.
+   */
+  'legalPanel.articleSummary': (
+    article: string,
+    counts: { changes: number; decisions: number; opinions: number },
+    texts: { changes: string; decisions: string; opinions: string },
+  ) => string
+  /** Leaves the narrowed panel. */
+  'legalPanel.backToAct': string
+  /** The printout's footnotes heading. */
+  'legalPrint.footnotes': string
   // P5.25a FloorPlan
   /** An item's level in words, from the formatted percentage: "62,5% full". */
   'floorPlan.level': (percentText: string) => string

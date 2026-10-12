@@ -4320,6 +4320,365 @@ export const BankImportRunRetry: Story = {
   },
 }
 
+// ── P5.27 group P: legal search and the gazette ──
+// (Imports here, inside the block, so the blocks merge without touching the top.)
+import { P_ROUTES } from './data-P'
+
+/**
+ * The legal search: "site records" in building works, in force today (06.10.2026.) — five
+ * illustrative acts and decisions, four on the first page, the best first; each match marked,
+ * with the article it is in. The area and the date in force are pills; the type, status and
+ * issuer stand in the row.
+ */
+export const LegalSearch: Story = {
+  name: 'Legal search',
+  render: () => <ExampleApp start={P_ROUTES.search} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('5 results')).toBeVisible()
+    await expect(canvas.getByText('Area: Building works')).toBeVisible()
+    await expect(canvas.getByText('In force between: 06.10.2026. – 06.10.2026.')).toBeVisible()
+    await expect(
+      canvas.getByRole('link', { name: 'Law on Illustrative Building Works' }),
+    ).toBeVisible()
+    await expect(canvas.getByRole('link', { name: 'Found in Article 57' })).toHaveAttribute(
+      'href',
+      '#/legal/acts/building-works/article-57',
+    )
+    await expect(canvas.getByRole('button', { name: 'Next' })).toBeEnabled()
+  },
+}
+
+export const LegalSearchPhone: Story = {
+  name: 'Legal search, phone',
+  render: () => <OnPhone start={P_ROUTES.search} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(within(canvasElement).getByText('5 results')).toBeVisible()
+  },
+}
+
+/** Searching other words, sorting, the next page and clearing the filters: the application answers. */
+export const LegalSearchInteraction: Story = {
+  name: 'Legal search, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={P_ROUTES.search} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const body = within(document.body)
+    await userEvent.click(canvas.getByRole('button', { name: 'Next' }))
+    const results = canvas.getByRole('list', { name: 'Search results' })
+    await expect(within(results).getAllByRole('listitem')).toHaveLength(1)
+    await userEvent.click(canvas.getByRole('button', { name: 'Sort: Relevance' }))
+    await userEvent.click(await body.findByRole('menuitemradio', { name: 'Title' }))
+    await waitFor(() => expect(canvas.getByRole('button', { name: 'Sort: Title' })).toBeVisible())
+    await userEvent.click(canvas.getByRole('button', { name: 'Clear all' }))
+    await expect(canvas.getByText('7 results')).toBeVisible()
+    const search = canvas.getByRole('textbox', { name: 'Search acts…' })
+    await userEvent.clear(search)
+    await userEvent.type(search, 'building permit')
+    await waitFor(() => expect(canvas.getByText('1 result')).toBeVisible())
+    await expect(
+      canvas.getByRole('link', { name: 'Decree on Illustrative Construction Fees' }),
+    ).toBeVisible()
+  },
+}
+
+/** "New in the Illustrative Gazette": three issues, newest first, with "Show more issues". */
+export const GazetteNews: Story = {
+  name: 'New in the Illustrative Gazette',
+  render: () => <ExampleApp start={P_ROUTES.gazette} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvasElement.querySelectorAll('[data-slot="gazette-issue"]')).toHaveLength(3)
+    await expect(canvas.getByRole('button', { name: 'Show more issues' })).toBeVisible()
+  },
+}
+
+export const GazetteNewsPhone: Story = {
+  name: 'New in the Illustrative Gazette, phone',
+  render: () => <OnPhone start={P_ROUTES.gazette} />,
+}
+
+/** "Show more issues" loads the two older issues. */
+export const GazetteNewsInteraction: Story = {
+  name: 'New in the Illustrative Gazette, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={P_ROUTES.gazette} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Show more issues' }))
+    await expect(canvasElement.querySelectorAll('[data-slot="gazette-issue"]')).toHaveLength(5)
+    await expect(canvas.queryByRole('button', { name: 'Show more issues' })).toBeNull()
+  },
+}
+
+// ── P5.27 group O: legal information, the act page ──
+// (Imports here, inside the block, so the blocks merge without touching the top.)
+import { O_ROUTES } from './data-O'
+
+/**
+ * The Law on Illustrative Building Works (invented, labelled "Illustrative"), the version in
+ * force: its four gazette numbers, the panels — versions, history of changes, its by-law,
+ * references, two court decisions and an opinion, Milica's notes.
+ */
+export const IllustrativeLaw: Story = {
+  name: 'Illustrative law, act page',
+  render: () => <ExampleApp start={O_ROUTES.law} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(
+      canvas.getByRole('heading', { level: 1, name: 'Law on Illustrative Building Works' }),
+    ).toBeVisible()
+    await expect(canvas.getByText(/^Illustrative: the act, the gazette/)).toBeVisible()
+    await expect(canvas.getByText('Version as of 06.10.2026.')).toBeVisible()
+    await expect(canvas.getAllByText('In force').length).toBeGreaterThan(0)
+    await expect(canvas.getByRole('link', { name: 'Illustrative Supreme Court' })).toBeVisible()
+  },
+}
+
+export const IllustrativeLawPhone: Story = {
+  name: 'Illustrative law, act page, phone',
+  render: () => <OnPhone start={O_ROUTES.law} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(within(canvasElement).getByRole('button', { name: 'Details' })).toBeVisible()
+  },
+}
+
+/** Article 57 chosen: the panels narrowed to it — changed twice, two decisions, one opinion. */
+export const IllustrativeLawArticle: Story = {
+  name: 'Illustrative law, Article 57 selected',
+  render: () => <ExampleApp start={O_ROUTES.lawArticle} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(
+      canvas.getByText('Article 57: changed twice, 2 court decisions, 1 opinion'),
+    ).toBeVisible()
+    // Only what concerns Article 57: the act Article 90 refers to is not listed.
+    await expect(canvas.queryByText('Law on Illustrative Safety at Work')).toBeNull()
+  },
+}
+
+/** On a phone the article's panels open as a sheet. */
+export const IllustrativeLawArticlePhone: Story = {
+  name: 'Illustrative law, Article 57 selected, phone',
+  render: () => <OnPhone start={O_ROUTES.lawArticle} />,
+  play: async () => {
+    await settle()
+    const sheet = within(document.body).getByRole('dialog', { name: 'Details' })
+    await expect(
+      within(sheet).getByText('Article 57: changed twice, 2 court decisions, 1 opinion'),
+    ).toBeVisible()
+  },
+}
+
+/** The law as it stood from 30.06.2018.: Article 20 not yet deleted, no Article 90. */
+export const IllustrativeLawVersion: Story = {
+  name: 'Illustrative law, version of 2018',
+  render: () => <ExampleApp start={O_ROUTES.lawVersion} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('Version as of 30.06.2018.')).toBeVisible()
+    await expect(canvas.getAllByText('No longer in force').length).toBeGreaterThan(0)
+    await expect(canvas.queryByRole('heading', { name: /^Article 90/ })).toBeNull()
+  },
+}
+
+export const IllustrativeLawVersionPhone: Story = {
+  name: 'Illustrative law, version of 2018, phone',
+  render: () => <OnPhone start={O_ROUTES.lawVersion} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(within(canvasElement).getByText('Version as of 30.06.2018.')).toBeVisible()
+  },
+}
+
+/** The printout: A4, the title and gazette on every page, every article. */
+export const IllustrativeLawPrint: Story = {
+  name: 'Illustrative law, printout',
+  render: () => <ExampleApp start={O_ROUTES.lawPrint} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { name: /^Article 90/ })).toBeVisible()
+    await expect(canvas.getByText('Deleted (No. 33/2021)')).toBeVisible()
+  },
+}
+
+export const IllustrativeLawPrintPhone: Story = {
+  name: 'Illustrative law, printout, phone',
+  render: () => <OnPhone start={O_ROUTES.lawPrint} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const page = canvasElement.querySelector<HTMLElement>('[data-slot="print-page"]')
+    if (page === null) throw new Error('no page')
+    await expect(page.scrollWidth).toBeLessThanOrEqual(page.clientWidth)
+  },
+}
+
+/** Kvadrat Gradnja d.o.o.'s Work Rulebook, 2025 version, based on the illustrative law. */
+export const WorkRulebook: Story = {
+  name: 'Kvadrat Gradnja work rulebook',
+  render: () => <ExampleApp start={O_ROUTES.rulebook} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(
+      canvas.getByText('Based on Articles 12 and 57 of the Law on Illustrative Building Works'),
+    ).toBeVisible()
+    await expect(canvas.getByRole('combobox', { name: 'Version' })).toHaveTextContent(
+      'From 01.03.2025. (current)',
+    )
+  },
+}
+
+export const WorkRulebookPhone: Story = {
+  name: 'Kvadrat Gradnja work rulebook, phone',
+  render: () => <OnPhone start={O_ROUTES.rulebook} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(
+      within(canvasElement).getByRole('heading', {
+        level: 1,
+        name: 'Kvadrat Gradnja d.o.o. — Work Rulebook',
+      }),
+    ).toBeVisible()
+  },
+}
+
+/**
+ * Choosing Article 12 in the text narrows the panels; back to the whole act; the 2021 version
+ * from the Versions panel; watching the law.
+ */
+export const IllustrativeLawInteraction: Story = {
+  name: 'Illustrative law, an article and a version, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={O_ROUTES.law} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Article 12' }))
+    await expect(
+      canvas.getByText('Article 12: changed once, 1 court decision, 0 opinions'),
+    ).toBeVisible()
+    await userEvent.click(canvas.getByRole('button', { name: 'Back to the whole act' }))
+    const versions = canvas.getByRole('list', { name: 'Versions' })
+    await userEvent.click(within(versions).getByRole('button', { name: /^10\.04\.2021\./ }))
+    await expect(canvas.getByText('Version as of 10.04.2021.')).toBeVisible()
+    await userEvent.click(canvas.getByRole('button', { name: 'Watch for changes' }))
+    await expect(canvas.getByRole('button', { name: 'Stop watching' })).toBeVisible()
+  },
+}
+
+/**
+ * "Compare versions" from the law's page: the 2021 version against the version in force, inline,
+ * the changed articles only; insertions underlined, deletions struck through, each with its word.
+ */
+export const IllustrativeLawCompare: Story = {
+  name: 'Illustrative law, compare versions',
+  render: () => <ExampleApp start={O_ROUTES.lawCompare} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { level: 1, name: 'Compare versions' })).toBeVisible()
+    await expect(canvasElement.querySelector('ins')).not.toBeNull()
+  },
+}
+
+export const IllustrativeLawComparePhone: Story = {
+  name: 'Illustrative law, compare versions, phone',
+  render: () => <OnPhone start={O_ROUTES.lawCompare} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(
+      within(canvasElement).getByRole('heading', { level: 1, name: 'Compare versions' }),
+    ).toBeVisible()
+  },
+}
+
+/** Kvadrat Gradnja's Work Rulebook: the 2022 version against the 2025 version. */
+export const RulebookCompare: Story = {
+  name: 'Kvadrat Gradnja work rulebook, compare 2022 and 2025',
+  render: () => <ExampleApp start={O_ROUTES.rulebookCompare} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(
+      within(canvasElement).getByRole('heading', { level: 1, name: 'Compare versions' }),
+    ).toBeVisible()
+  },
+}
+
+/** From the act page: "Compare versions", then another earlier version. */
+export const IllustrativeLawCompareInteraction: Story = {
+  name: 'Illustrative law, compare versions, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={O_ROUTES.law} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Compare versions' }))
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: 'Compare versions' }),
+    ).toBeVisible()
+    await expect(canvasElement.querySelector('ins')).not.toBeNull()
+  },
+}
+
+/** The law's by-law: the Rulebook on Illustrative Site Records, based on Article 63. */
+export const IllustrativeByLaw: Story = {
+  name: 'Illustrative by-law',
+  render: () => <ExampleApp start={O_ROUTES.byLaw} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(
+      within(canvasElement).getByText(
+        'Based on Article 63 of the Law on Illustrative Building Works',
+      ),
+    ).toBeVisible()
+  },
+}
+
+export const IllustrativeByLawPhone: Story = {
+  name: 'Illustrative by-law, phone',
+  render: () => <OnPhone start={O_ROUTES.byLaw} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(within(canvasElement).getByRole('button', { name: 'Details' })).toBeVisible()
+  },
+}
+
+/** A court decision's short page: its holding and the law's articles it concerns. */
+export const IllustrativeDecision: Story = {
+  name: 'Illustrative court decision',
+  render: () => <ExampleApp start="/legal/practice/gz-101-2022" />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(
+      within(canvasElement).getByRole('heading', {
+        level: 1,
+        name: 'Illustrative Appellate Court, Gž 101/2022',
+      }),
+    ).toBeVisible()
+  },
+}
+
+export const IllustrativeDecisionPhone: Story = {
+  name: 'Illustrative court decision, phone',
+  render: () => <OnPhone start="/legal/practice/gz-101-2022" />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(within(canvasElement).getByText('Final')).toBeVisible()
+  },
+}
+
 // ── P5.25a group N: a warehouse, a hospital ward, an office ──
 
 import { BEDS, N_ROUTES } from './data-N'
