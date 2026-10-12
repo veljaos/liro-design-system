@@ -839,4 +839,515 @@ export interface LiroMessages {
   'grid.addDeduction': string
   /** EditableGrid: the note before a line's detail that never reaches the customer's document. */
   'grid.internal': string
+  // P5.24 shifts
+  /** ShiftPlanner: the header of the people column, the hours column and the coverage row. */
+  'shifts.person': string
+  'shifts.hours': string
+  'shifts.coverage': string
+  /** Planned hours: `text` is already written by `format.number` ("38,5 h"). */
+  'shifts.hoursValue': (text: string) => string
+  /** A day's coverage at the column's foot ("5 of 6"); both written by `format.number`. */
+  'shifts.coverageValue': (plannedText: string, neededText: string | undefined) => string
+  /**
+   * A template's times for assistive technology ("22:00 to 06:00 the next day"); the times are
+   * already written by `format.time`. Shown as "22:00–06:00 (+1)".
+   */
+  'shifts.timeRange': (startText: string, endText: string, nextDay: boolean) => string
+  /** The visible mark after a time that ends the next day. */
+  'shifts.nextDayMark': string
+  /** A template's length, for display only ("8 h", "7 h 30 min"); texts from `format.number`. */
+  'shifts.duration': (
+    hours: number,
+    hoursText: string,
+    minutes: number,
+    minutesText: string,
+  ) => string
+  /** A cell without an assignment. */
+  'shifts.cellEmpty': string
+  /** A cell inside the selected range (after its contents, in its name). */
+  'shifts.inSelection': string
+  /** A cell's name: the person, the day and what it holds (assignments and conflicts). */
+  'shifts.cell': (name: string, dayText: string, contents: string) => string
+  /** An assignment changed since the schedule was published. */
+  'shifts.changed': string
+  /** A conflict from the application, by its tone, with its words. */
+  'shifts.conflictWarning': (text: string) => string
+  'shifts.conflictDanger': (text: string) => string
+  /** The summary of the conflicts shown, and its action that moves to the cell. */
+  'shifts.conflicts': string
+  'shifts.goTo': string
+  'shifts.goToCell': (name: string, dayText: string) => string
+  /** The palette of templates, its hint, and the grid's keyboard instructions. */
+  'shifts.templates': string
+  'shifts.paletteHint': string
+  'shifts.instructions': string
+  /** A template's key in the palette ("Key 1"), for assistive technology. */
+  'shifts.key': (key: string) => string
+  /** The cell menu: the heading over the templates, moving and removing one assignment. */
+  'shifts.assign': string
+  'shifts.moveTo': (label: string) => string
+  'shifts.remove': (label: string) => string
+  /** Announcements after a change (polite); counts written by `format.number`. */
+  'shifts.assigned': (label: string, count: number, countText: string) => string
+  'shifts.removed': (count: number, countText: string) => string
+  'shifts.moved': (label: string, name: string, dayText: string) => string
+  'shifts.selected': (count: number, countText: string) => string
+  /** The menu button of a person's day on a phone. */
+  'shifts.cellMenu': (name: string, dayText: string) => string
+  /** The period's navigation and the phone's day switcher. */
+  'shifts.previousPeriod': string
+  'shifts.nextPeriod': string
+  'shifts.today': string
+  'shifts.previousDay': string
+  'shifts.nextDay': string
+  'shifts.day': string
+  /** The view switch: one list of people, or grouped by one of the application's groupings. */
+  'shifts.view': string
+  'shifts.byPerson': string
+  /** The schedule's state. */
+  'shifts.draft': string
+  'shifts.published': string
+  'shifts.changedSincePublishing': string
+  /** Publishing: the button, its confirmation and the counts from the application. */
+  'shifts.publish': string
+  'shifts.publishChanges': string
+  'shifts.publishTitle': string
+  'shifts.publishMessage': (
+    shifts: number,
+    shiftsText: string,
+    people: number,
+    peopleText: string,
+  ) => string
+  'shifts.publishConflicts': (count: number, countText: string) => string
+  /** "Apply rotation…": the button and its dialog. */
+  'shifts.applyRotation': string
+  'shifts.rotationTitle': string
+  'shifts.rotationPattern': string
+  'shifts.rotationPeople': string
+  'shifts.rotationStart': string
+  'shifts.rotationEnd': string
+  'shifts.rotationOffset': string
+  'shifts.rotationOffsetValue': (days: number, daysText: string) => string
+  'shifts.rotationSteps': string
+  'shifts.dayOff': string
+  'shifts.rotationApply': string
+  'shifts.rotationSummary': (count: number, countText: string) => string
+  'shifts.rotationNoPeople': string
+  /** "Move to…": the dialog that moves one assignment without dragging. */
+  'shifts.moveTitle': (label: string) => string
+  'shifts.movePerson': string
+  'shifts.moveDay': string
+  'shifts.moveButton': string
+  /** A plan without people. */
+  'shifts.noPeople': string
+  'shifts.noPeopleDescription': string
+  /** MyShifts: the title, the weeks' headings, the swap action and the empty state. */
+  'shifts.myShifts': string
+  'shifts.thisWeek': string
+  'shifts.nextWeek': string
+  'shifts.week': (startText: string, endText: string) => string
+  'shifts.requestSwap': string
+  'shifts.noUpcoming': string
+  'shifts.noUpcomingDescription': string
+  /** ShiftSwapDialog: the request's title, fields, errors and button. */
+  'swap.title': string
+  'swap.shift': string
+  'swap.who': string
+  'swap.anyone': string
+  'swap.colleague': string
+  'swap.colleagueField': string
+  'swap.colleagueRequired': string
+  'swap.takeBack': string
+  'swap.takeNone': string
+  'swap.reason': string
+  'swap.reasonRequired': string
+  'swap.submit': string
+  /** WorkingTimeBalance (P5.24 d): the plan's header and the table's columns. */
+  'workingTime.period': string
+  'workingTime.weeks': string
+  'workingTime.week': (index: number, indexText: string) => string
+  'workingTime.person': string
+  'workingTime.planned': string
+  'workingTime.worked': string
+  'workingTime.difference': string
+  'workingTime.average': string
+  'workingTime.warnings': string
+  'workingTime.noWarnings': string
+  // P5.9 / P5.14 / P5.16
+  /** TreeView and TreeTable: the row under an opened node whose children are being loaded. */
+  'tree.loading': string
+  /** The error row under a node whose children could not be loaded (without the application's words). */
+  'tree.loadError': string
+  /** The error row's button that asks for the children again. */
+  'tree.retry': string
+  /** TreeTable: the label of the totals row. */
+  'tree.total': string
+  /** MaskedValue: the hidden value for assistive technology; `label` names the value ("Salary"). */
+  'masked.hidden': (label: string) => string
+  /** MaskedValue: the button that asks to see the value, and its full name. */
+  'masked.show': string
+  'masked.showLabel': (label: string) => string
+  /** MaskedValue: the button that hides the value again, and its full name. */
+  'masked.hide': string
+  'masked.hideLabel': (label: string) => string
+  /** MaskedValue: the reason dialog's title. */
+  'masked.revealTitle': (label: string) => string
+  /** MaskedValue: the label of the list of reasons, or of the reason's text without a list. */
+  'masked.reason': string
+  /** MaskedValue: the last option of the list, which asks for the reason in words. */
+  'masked.other': string
+  /** MaskedValue: the label of the text field of "Other". */
+  'masked.otherText': string
+  /** MaskedValue: the note in the dialog that the access is recorded. */
+  'masked.logged': string
+  /** MaskedValue: the value is on its way (after the reason was given). */
+  'masked.loading': (label: string) => string
+  /** MaskedValue: why the user may not see the value; `reason` is the application's. */
+  'masked.notAllowed': (reason: string) => string
+  /** PortalShell: names the sections' navigation (tabs, or the bottom bar on phones). */
+  'portal.sections': string
+  /** PortalShell: a section's name with its note ("Messages, 2 new"). */
+  'portal.sectionNote': (label: string, note: string) => string
+  /** PortalShell: the participant menu's button, named with the participant ("Account: Jovana Nikolić"). */
+  'portal.menu': (name: string) => string
+  // P5.13 / P5.24 ── AttendanceGrid and ClockRecordList
+  /** AttendanceGrid: the header of the row headers' column, when the application gives none. */
+  'attendance.rows': string
+  /** The names of a weekend and of a holiday column, for assistive technology and the tooltip. */
+  'attendance.weekend': string
+  'attendance.holiday': string
+  /** The visible marks of a holiday column, and of a weekend column without a date. */
+  'attendance.holidayMark': string
+  'attendance.weekendMark': string
+  /** An empty cell, for assistive technology. */
+  'attendance.noEntry': string
+  /** Hours, already written by `format.number`: "8 h". */
+  'attendance.hours': (hoursText: string) => string
+  /** The bulk marks of a column ("Mark everyone: Present") and of a row ("Mark all: Present"). */
+  'attendance.markColumn': (code: string) => string
+  'attendance.markRow': (code: string) => string
+  /** The code buttons' group, which marks the selection. */
+  'attendance.markWith': string
+  /** The toolbar's commands. */
+  'attendance.clear': string
+  'attendance.fill': string
+  'attendance.fillKey': string
+  /** Why filling waits: a selection of one cell. */
+  'attendance.fillReason': string
+  'attendance.copyWeek': string
+  /** The number of selected cells, numbers already written by `format.number`. */
+  'attendance.selected': (count: number, countText: string) => string
+  /** The keyboard instructions, read with the grid. */
+  'attendance.instructions': string
+  /** A locked grid's line: the title before the application's reason. */
+  'attendance.locked': string
+  /** The correction of a locked cell: the button, the dialog and its fields. */
+  'attendance.correct': string
+  'attendance.correctTitle': (row: string, column: string) => string
+  'attendance.current': string
+  'attendance.code': string
+  'attendance.noCode': string
+  'attendance.hoursLabel': string
+  'attendance.reason': string
+  'attendance.saveCorrection': string
+  /** A corrected cell: who, when (already written by `format.dateTime`) and why. */
+  'attendance.corrected': (by: string, when: string, reason: string) => string
+  /** The entry before the correction, already written as text. */
+  'attendance.original': (entry: string) => string
+  /** The heading of the list of corrections under the grid. */
+  'attendance.corrections': string
+  /** Phones: one person per screen. */
+  'attendance.position': (
+    index: number,
+    indexText: string,
+    total: number,
+    totalText: string,
+  ) => string
+  'attendance.previousRow': string
+  'attendance.nextRow': string
+  'attendance.chooseRow': string
+  /** ClockRecordList: the column headers. */
+  'clock.person': string
+  'clock.date': string
+  'clock.in': string
+  'clock.out': string
+  'clock.duration': string
+  'clock.source': string
+  'clock.correction': string
+  /** A duration in hours, already written by `format.number`. */
+  'clock.hours': (hoursText: string) => string
+  /** A record without a clock-out or without a clock-in, in words (never 0). */
+  'clock.noClockOut': string
+  'clock.noClockIn': string
+  /** A clock-out on the day after the clock-in (a night shift). */
+  'clock.nextDay': string
+  /** Before a corrected record's original time, for assistive technology. */
+  'clock.was': string
+  /** Who corrected a record, when (already written by `format.dateTime`) and why. */
+  'clock.corrected': (by: string, when: string, reason: string) => string
+  /** The correction: the action, the drawer's title and its fields. */
+  'clock.correct': string
+  'clock.correctTitle': (person: string, date: string) => string
+  'clock.time': string
+  'clock.timeInvalid': string
+  'clock.reason': string
+  'clock.save': string
+  // P5.8 Calendar and scheduling
+  /** CalendarView: the button that goes to the period holding the provider's `today`. */
+  'calendar.today': string
+  /** CalendarView: the names of the previous and next buttons, by the view shown. */
+  'calendar.previous': (view: 'day' | 'week' | 'month' | 'agenda') => string
+  'calendar.next': (view: 'day' | 'week' | 'month' | 'agenda') => string
+  /** CalendarView: the name of the view switcher, and of each view. */
+  'calendar.view': string
+  'calendar.day': string
+  'calendar.week': string
+  'calendar.month': string
+  'calendar.agenda': string
+  /** CalendarView: the month view's title from the month's name and the year ("October 2026"). */
+  'calendar.monthTitle': (monthName: string, yearText: string) => string
+  /** A range of dates or times: "12.10.2026. – 18.10.2026.", "09:00 – 09:30". */
+  'calendar.range': (startText: string, endText: string) => string
+  /** An event that lasts whole days. */
+  'calendar.allDay': string
+  /** A month cell's "+N more" line, and its accessible name with the day. */
+  'calendar.more': (count: number, countText: string) => string
+  'calendar.moreLabel': (count: number, countText: string, dateText: string) => string
+  /** The day list's button that shows the day in the day view. */
+  'calendar.openDay': string
+  /** The agenda when the period has no events. */
+  'calendar.noEvents': string
+  /** An event's accessible name: its title, its time ("09:00 – 09:30" or all day) and its day. */
+  'calendar.eventLabel': (title: string, timeText: string, dateText: string) => string
+  /** The time grid's description for keyboard users. */
+  'calendar.instructions': string
+  /** A day marked as today (the day list, the agenda, the timetable). */
+  'calendar.todayMark': string
+  /** ResourceSchedule: the label of the phones' row chooser. */
+  'schedule.resource': string
+  /** ResourceSchedule: a booking's accessible name: title, row and time. */
+  'schedule.bookingLabel': (title: string, resource: string, timeText: string) => string
+  /** ResourceSchedule: how to move a booking with the keyboard (each booking's description). */
+  'schedule.instructions': string
+  /** ResourceSchedule announcements while a booking is moved with the keyboard. */
+  'schedule.lifted': (title: string, resource: string, timeText: string) => string
+  'schedule.moved': (title: string, resource: string, timeText: string) => string
+  'schedule.dropped': (title: string, resource: string, timeText: string) => string
+  'schedule.cancelled': (title: string) => string
+  /** Added to an announcement when the place overlaps an unavailable time. */
+  'schedule.unavailableHere': (reason: string) => string
+  /** An unavailable time for assistive technology ("Unavailable: Lunch break, 12:00 – 12:30"). */
+  'schedule.unavailable': (reason: string, timeText: string) => string
+  /** The "Move to…" button of a booking (its name), the panel's title, its fields and button. */
+  'schedule.moveTo': (title: string) => string
+  'schedule.moveToTitle': string
+  'schedule.day': string
+  'schedule.start': string
+  'schedule.move': string
+  /** ResourceSchedule over several days: a booking's day and time ("Thu 15.10.2026., 09:00 – 09:30"). */
+  'schedule.when': (dateText: string, timeText: string) => string
+  /** A start time in the "Move to…" list that overlaps an unavailable time. */
+  'schedule.optionUnavailable': (timeText: string, reason: string) => string
+  /** SlotPicker: nothing free in the period. */
+  'slots.none': string
+  'slots.noneDescription': string
+  /** SlotPicker: the name of the skeleton while slots load. */
+  'slots.loading': string
+  /** SlotPicker: a slot's accessible name: its time, its day, and its resource when grouped. */
+  'slots.slotLabel': (timeText: string, dateText: string, resource: string | null) => string
+  /** Timetable: the corner header over the periods, a free period, the running period's mark. */
+  'timetable.period': string
+  'timetable.free': string
+  'timetable.now': string
+  /** Timetable: the label of the phones' day switcher. */
+  'timetable.day': string
+  // P5.10 / P5.11 touch, POS and warehouse
+  /** PosShell: the status strip (its region, the register and the cashier), the queue, products. */
+  'pos.status': string
+  'pos.register': string
+  'pos.cashier': string
+  'pos.queued': (count: number, countText: string) => string
+  'pos.products': string
+  /** ProductGrid: the categories, "All", and a category without products. */
+  'pos.categories': string
+  'pos.allProducts': string
+  'pos.noProducts': string
+  'pos.noProductsDescription': string
+  /** NumericKeypad: the group and the keys that are not digits. */
+  'keypad.label': string
+  'keypad.decimal': string
+  'keypad.backspace': string
+  'keypad.clear': string
+  'keypad.enter': string
+  /** CartPanel: the title, the count, the empty state, a line's controls, the total, the action. */
+  'cart.title': string
+  'cart.count': (count: number, countText: string) => string
+  'cart.empty': string
+  'cart.emptyDescription': string
+  'cart.quantity': (name: string) => string
+  'cart.remove': (name: string) => string
+  'cart.each': (priceText: string) => string
+  'cart.total': string
+  'cart.charge': (amountText: string) => string
+  /** PaymentDialog: the amounts, the methods, the card terminal and the end. */
+  'payment.title': string
+  'payment.due': string
+  'payment.method': string
+  'payment.cash': string
+  'payment.card': string
+  'payment.split': string
+  'payment.tendered': string
+  'payment.exact': string
+  'payment.quickAmounts': string
+  'payment.change': string
+  'payment.remaining': string
+  'payment.paid': string
+  'payment.part': string
+  'payment.addCash': string
+  'payment.addCard': string
+  'payment.cardStart': string
+  'payment.cardWaiting': string
+  'payment.cardWaitingHint': string
+  'payment.cardCancel': string
+  'payment.cardDeclined': string
+  'payment.cardRetry': string
+  'payment.cardApproved': string
+  'payment.complete': string
+  'payment.done': string
+  /** ReceiptPreview: its name. */
+  'receipt.title': string
+  /** ScanField: the camera button and the words before a result for assistive technology. */
+  'scan.camera': string
+  'scan.success': string
+  'scan.error': string
+  /** QuantityStepper: the buttons and the limits. */
+  'quantity.decrease': string
+  'quantity.increase': string
+  'quantity.belowMin': (minText: string) => string
+  'quantity.aboveMax': (maxText: string) => string
+  /** PickList and StockCount: changes kept on the device while offline. */
+  'queue.waiting': (count: number, countText: string) => string
+  /** PickList: progress, the current line and its steps, skipping, the route and its states. */
+  'pick.progress': (done: number, doneText: string, total: number, totalText: string) => string
+  'pick.progressLabel': string
+  'pick.current': string
+  'pick.location': string
+  'pick.item': string
+  'pick.toPick': string
+  'pick.pickedOf': (pickedText: string, totalText: string) => string
+  'pick.steps': string
+  'pick.stepLocation': string
+  'pick.stepItem': string
+  'pick.stepQuantity': string
+  'pick.stepDone': string
+  'pick.scanLocation': string
+  'pick.scanItem': string
+  'pick.quantity': string
+  'pick.confirm': string
+  'pick.skip': string
+  'pick.skipTitle': (item: string) => string
+  'pick.skipMessage': string
+  'pick.route': string
+  'pick.open': string
+  'pick.picked': string
+  'pick.short': string
+  'pick.skipped': string
+  'pick.allDone': string
+  'pick.allDoneDescription': string
+  'pick.finish': string
+  'pick.empty': string
+  'pick.emptyDescription': string
+  /** StockCount: the location, the item being counted, the counted items and their differences. */
+  'count.location': string
+  'count.scanLocation': string
+  'count.scanItem': string
+  'count.noLocation': string
+  'count.changeLocation': string
+  'count.current': string
+  'count.quantity': string
+  'count.counted': string
+  'count.expected': string
+  'count.difference': string
+  'count.items': string
+  'count.noItems': string
+  'count.noItemsDescription': string
+  'count.finish': string
+  // P5.15 / P5.12
+  /** PrintPage: the page number in the bottom margin of every printed page ("Page 1 of 3"). */
+  'print.pageNumber': (page: string, pages: string) => string
+  /** PrintPage: the marker of a draft, at the top of the first page and across every page. */
+  'print.draft': string
+  /** PrintPage: a place and a date under a printed document ("Novi Sad, 10.10.2026."). */
+  'print.placeAndDate': (place: string, date: string) => string
+  /** CoursePage: names the outline (its navigation, the phone's button and drawer). */
+  'course.outline': string
+  /** CoursePage: the progress to completion ("7 of 12 lessons"). */
+  'course.progress': (done: number, total: number, doneText: string, totalText: string) => string
+  /** CoursePage: names the progress bar. */
+  'course.progressLabel': string
+  /** CoursePage: a module's lessons done ("3 of 4 done"). */
+  'course.moduleProgress': (doneText: string, totalText: string) => string
+  /** CoursePage: a lesson's state in the outline. */
+  'course.done': string
+  'course.locked': string
+  /** CoursePage: a locked lesson's reason after the state ("Locked: finish module 1 first"). */
+  'course.lockedReason': (reason: string) => string
+  /** CoursePage: the action under a lesson, and the state once done. */
+  'course.markDone': string
+  'course.lessonDone': string
+  /** CoursePage: the lesson pager at the bottom, and its navigation's name. */
+  'course.previous': string
+  'course.next': string
+  'course.pager': string
+  /** CoursePage: a course without lessons. */
+  'course.empty': string
+  'course.emptyDescription': string
+  /** CoursePage: the completion block and its certificate. */
+  'course.completed': string
+  'course.downloadCertificate': string
+  'course.certificatePreview': string
+  /** QuizResult: the score ("8 of 10 correct"), the outcome and the answers' review. */
+  'quiz.score': (correct: number, total: number, correctText: string, totalText: string) => string
+  'quiz.passed': string
+  'quiz.failed': string
+  'quiz.review': string
+  'quiz.correct': string
+  'quiz.incorrect': string
+  'quiz.yourAnswer': (answer: string) => string
+  'quiz.correctAnswer': (answer: string) => string
+  // P5.22 ── RichTextField and RichText
+  /** Names the formatting toolbar of a rich text field. */
+  'richText.toolbar': string
+  /** The menu of block styles, and its three choices. */
+  'richText.textStyle': string
+  /** The style menu's button: "Text style: Normal text". */
+  'richText.textStyleCurrent': (style: string) => string
+  'richText.paragraph': string
+  'richText.heading': string
+  'richText.subheading': string
+  /** The toolbar's toggles (their names and tooltips). */
+  'richText.bold': string
+  'richText.italic': string
+  'richText.underline': string
+  'richText.bulletList': string
+  'richText.numberedList': string
+  'richText.link': string
+  'richText.clearFormatting': string
+  /** The menu of merge fields, and the list "{{" opens. */
+  'richText.insertMergeField': string
+  'richText.mergeFields': string
+  /** A merge field's pill, for assistive technology: "Merge field: Customer name". */
+  'richText.mergeField': (label: string) => string
+  /** The link dialog: its address field, hint, error and actions. */
+  'richText.linkAddress': string
+  'richText.linkHint': string
+  'richText.linkInvalid': string
+  'richText.linkApply': string
+  'richText.linkRemove': string
+  /** The counter under a field with `maxLength`: "120 / 2000"; the numbers written by `format.number`. */
+  'richText.count': (countText: string, limitText: string) => string
+  /** The counter for assistive technology: "120 of 2000 characters". */
+  'richText.countLabel': (countText: string, limitText: string) => string
+  /** Over the limit: "20 characters too many". */
+  'richText.overLimit': (count: number, countText: string) => string
 }

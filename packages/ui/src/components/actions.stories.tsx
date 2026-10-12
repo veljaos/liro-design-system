@@ -5,6 +5,8 @@ import { settle } from '../primitives/story-helpers'
 import { ActionGroup, UnavailableAction, type ActionItem } from './actions'
 import { ARABIC, JAPANESE } from './field-story-data'
 import { expectContentDirection, StoryProvider } from './story-frames'
+import { TEXT_DIRECTION } from '../primitives/classes'
+import { cn } from '../primitives/cn'
 
 const meta = {
   title: 'Components/Actions/ActionGroup',
@@ -50,7 +52,9 @@ export const Default: Story = {
 export const Start: Story = {
   render: () => (
     <div className="flex flex-col gap-2">
-      <p className="m-0 text-sm text-secondary">3 invoices are ready to send.</p>
+      <p className={cn('m-0 text-sm text-secondary', TEXT_DIRECTION)}>
+        3 invoices are ready to send.
+      </p>
       <ActionGroup
         align="start"
         actions={[

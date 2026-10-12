@@ -215,7 +215,7 @@ describe('RegisterPage', () => {
     // Each number is the anchor the links go to.
     expect(html).toMatch(/id="[^"]*-entry-14" tabindex="-1"/)
     // An entry that is not among the rows: plain text, a link with `onGoToEntry`.
-    expect(html).toContain('<span class="text-secondary">Corrects no. 3</span>')
+    expect(html).toContain('<span class="text-secondary bidi-isolate">Corrects no. 3</span>')
     expect(page(() => undefined)).toMatch(/<a href="#[^"]*-entry-3"/)
     // The refetch loader is in the first row; no slot between the locks and the table.
     expect(html.match(/data-slot="refetch-loader"/g)).toHaveLength(1)

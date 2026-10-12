@@ -3,6 +3,8 @@ import { BookCheck, ShieldCheck, Signature } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Button, CompactIconButton, IconButton } from './button'
 import { FAMILY_NAMES, INTENT_NAMES, INTENTS, type Emphasis } from './intents'
+import { TEXT_DIRECTION } from '../primitives/classes'
+import { cn } from '../primitives/cn'
 
 const EMPHASES: readonly Emphasis[] = ['primary', 'secondary', 'menu']
 
@@ -163,11 +165,11 @@ export const CompactPlaces: Story = {
   render: () => (
     <Surface>
       <div className="flex items-center justify-between gap-3 border-b border-subtle pb-2">
-        <span>Order 2026-0142</span>
+        <span className={TEXT_DIRECTION}>Order 2026-0142</span>
         <CompactIconButton intent="more" label="Actions for order 2026-0142" />
       </div>
       <div className="flex items-center justify-between gap-3">
-        <span className="text-h4">Filters</span>
+        <span className={cn('text-h4', TEXT_DIRECTION)}>Filters</span>
         <CompactIconButton intent="cancel" label="Close" />
       </div>
     </Surface>

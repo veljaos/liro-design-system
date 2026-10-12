@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  HEAVY_ROW_OVERSCAN,
   keepFocusedRow,
   overscanRows,
   spacersBetween,
@@ -14,6 +15,10 @@ describe('the window rules for TanStack Virtual', () => {
     expect(overscanRows(104)).toBe(6)
     expect(overscanRows(0)).toBe(600)
     expect(overscanRows(1000)).toBe(1)
+  })
+  it('draws less around heavy rows (lines of fields)', () => {
+    expect(HEAVY_ROW_OVERSCAN).toBe(240)
+    expect(overscanRows(40, HEAVY_ROW_OVERSCAN)).toBe(6)
   })
   it('keeps the focused row, one before and two after it, drawn', () => {
     expect(withFocusedRow([10, 11, 12], null, 100)).toEqual([10, 11, 12])

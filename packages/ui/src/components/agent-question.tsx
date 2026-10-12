@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 import { MessageBubble } from './messages'
@@ -43,7 +44,12 @@ export function AgentQuestion({
   const { messages } = useLiro()
   const extra =
     answer !== undefined ? (
-      <p className="m-0 border-0 border-t border-solid border-subtle pt-3 text-sm font-medium text-primary">
+      <p
+        className={cn(
+          'm-0 border-0 border-t border-solid border-subtle pt-3 text-sm font-medium text-primary',
+          TEXT_DIRECTION,
+        )}
+      >
         {answer}
       </p>
     ) : (

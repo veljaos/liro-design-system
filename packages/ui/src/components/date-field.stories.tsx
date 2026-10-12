@@ -5,6 +5,8 @@ import { settle } from '../primitives/story-helpers'
 import { LiroProvider, useLiro } from '../provider/liro-provider'
 import { DateField } from './date-field'
 import { ARABIC, JAPANESE, LONG } from './field-story-data'
+import { TEXT_DIRECTION } from '../primitives/classes'
+import { cn } from '../primitives/cn'
 
 /** A nested provider with a fixed "today" (the tenant's date), in the story's theme and locale. */
 function Today({ today, children }: { today: string; children: ReactNode }) {
@@ -52,7 +54,7 @@ export const Default: Story = {
     return (
       <div className="flex max-w-100 flex-col gap-3">
         <DateField {...args} value={value} onChange={setValue} />
-        <p className="m-0 text-sm text-secondary">
+        <p className={cn('m-0 text-sm text-secondary', TEXT_DIRECTION)}>
           Value: <code>{value ?? 'null'}</code>
         </p>
       </div>
@@ -135,7 +137,7 @@ export const Unreadable: Story = {
     return (
       <div className="flex max-w-100 flex-col gap-3">
         <DateField label="Due date" value={value} onChange={setValue} onValidityChange={setValid} />
-        <p className="m-0 text-sm text-secondary">
+        <p className={cn('m-0 text-sm text-secondary', TEXT_DIRECTION)}>
           Value: <code>{value ?? 'null'}</code>, valid: <code>{String(valid)}</code>
         </p>
       </div>

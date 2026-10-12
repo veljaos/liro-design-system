@@ -109,7 +109,7 @@ function MembersTable({ phone, members }: { phone: boolean; members: ExampleMemb
         <span className="flex items-center gap-2">
           <PersonAvatar name={member.name} size="sm" />
           <span className="flex min-w-0 flex-col">
-            <span className="font-medium">{member.name}</span>
+            <span className="bidi-isolate font-medium">{member.name}</span>
             <span className="text-xs text-secondary" dir="ltr">
               {member.email}
             </span>
@@ -176,8 +176,10 @@ function RolesTab({ phone }: { phone: boolean }) {
       header: 'Role',
       cell: (each) => (
         <span className="flex flex-col">
-          <span className="font-medium">{each.name}</span>
-          <span className="text-xs text-secondary">{each.builtIn ? 'Built-in' : 'Custom'}</span>
+          <span className="bidi-isolate font-medium">{each.name}</span>
+          <span className="bidi-isolate text-xs text-secondary">
+            {each.builtIn ? 'Built-in' : 'Custom'}
+          </span>
         </span>
       ),
     },
@@ -456,7 +458,7 @@ export function SetupScreen({ phone }: { phone: boolean }) {
         <PageHeader
           title={STANIC.name}
           subtitle={
-            <span>
+            <span className="bidi-isolate">
               PIB <bdi>{STANIC.taxId}</bdi> · {STANIC.address}
             </span>
           }

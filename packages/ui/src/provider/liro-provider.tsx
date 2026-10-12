@@ -10,6 +10,7 @@ import {
 import { Direction } from 'radix-ui'
 import {
   createFormat,
+  deviceTimeZone,
   intlLocale,
   weekStartsOnForLocale,
   type LiroFormat,
@@ -36,12 +37,29 @@ export interface LiroProviderProps {
   today?: string
   /** 0 = Sunday … 6 = Saturday. Default: from the locale. */
   weekStartsOn?: Weekday
+  /**
+   * The IANA time zone instants are shown in ("Europe/Belgrade"), P5.8. Default: the browser's.
+   * The Core passes the tenant's. `format.dateTime` and `format.time` show an instant with an
+   * offset in it; a local date and time without an offset ("2026-10-12T09:30") is shown as
+   * written. Without this prop `format.time` keeps the clock as the instant writes it.
+   */
+  timeZone?: string
   /** Default: 'system', which follows the operating system. */
   colorScheme?: 'light' | 'dark' | 'system'
   /** Router link component, so navigation stays client-side. Default: <a>. */
   linkComponent?: ElementType
+  /**
+   * 'touch' (P5.10): every control, list row and target inside — buttons, fields, menu items,
+   * options, tabs and toggles, overlays included — is at least 44px, for a till, a kiosk or a
+   * handheld. Default: the parent provider's, else 'default'. Touch is never lowered by a nested
+   * provider: a screen meant for fingers stays one.
+   */
+  density?: Density
   children: ReactNode
 }
+
+/** How large the targets are: the desktop sizes, or at least 44px for fingers (P5.10). */
+export type Density = 'default' | 'touch'
 
 export interface LiroContextValue {
   locale: string
@@ -52,8 +70,12 @@ export interface LiroContextValue {
   /** YYYY-MM-DD. */
   today: string
   weekStartsOn: Weekday
+  /** The IANA time zone instants are shown in: the provider's `timeZone`, else the browser's. */
+  timeZone: string
   /** Renders links: the application's router link, or <a>. */
   linkComponent: ElementType
+  /** 'touch': targets of at least 44px (P5.10). */
+  density: Density
 }
 
 const RTL_SCRIPTS = new Set([
@@ -98,7 +120,9 @@ function defaultContext(): LiroContextValue {
       format: createFormat(DEFAULT_LOCALE),
       today,
       weekStartsOn: weekStartsOnForLocale(DEFAULT_LOCALE),
+      timeZone: deviceTimeZone(),
       linkComponent: 'a',
+      density: 'default',
     }
   } else if (fallback.today !== today) {
     fallback = { ...fallback, today }
@@ -136,15 +160,26 @@ export function LiroProvider({
   format,
   today,
   weekStartsOn,
+  timeZone,
   colorScheme = 'system',
   linkComponent = 'a',
+  density,
   children,
 }: LiroProviderProps) {
+  const parent = useContext(LiroContext)
+  // Touch is kept by every provider inside a touch one, so the CSS (which inherits) and the
+  // context always agree.
+  const resolvedDensity: Density =
+    parent?.density === 'touch' ? 'touch' : (density ?? parent?.density ?? 'default')
   const systemPrefersDark = useSystemPrefersDark()
   const resolvedScheme =
     colorScheme === 'system' ? (systemPrefersDark ? 'dark' : 'light') : colorScheme
   const resolvedDirection = direction ?? directionForLocale(locale)
-  const resolvedFormat = useMemo(() => createFormat(locale, format), [locale, format])
+  const resolvedFormat = useMemo(
+    () => createFormat(locale, format, timeZone),
+    [locale, format, timeZone],
+  )
+  const resolvedTimeZone = useMemo(() => timeZone ?? deviceTimeZone(), [timeZone])
   const resolvedMessages = useMemo(() => ({ ...messagesEn, ...messages }), [messages])
   // Read once: a page left open past midnight keeps its date until the application passes one.
   const [deviceToday] = useState(localToday)
@@ -160,7 +195,9 @@ export function LiroProvider({
       format: resolvedFormat,
       today: today ?? deviceToday,
       weekStartsOn: resolvedWeekStart,
+      timeZone: resolvedTimeZone,
       linkComponent,
+      density: resolvedDensity,
     }),
     [
       locale,
@@ -171,7 +208,9 @@ export function LiroProvider({
       today,
       deviceToday,
       resolvedWeekStart,
+      resolvedTimeZone,
       linkComponent,
+      resolvedDensity,
     ],
   )
 
@@ -183,6 +222,7 @@ export function LiroProvider({
           dir={resolvedDirection}
           lang={locale}
           data-liro-theme={resolvedScheme}
+          data-liro-density={resolvedDensity === 'touch' ? 'touch' : undefined}
           style={{ display: 'contents' }}
         >
           <PortalContainerContext value={portalContainer}>{children}</PortalContainerContext>

@@ -199,7 +199,7 @@ export function JournalEntry({ phone, unbalanced }: { phone: boolean; unbalanced
               value={
                 <Link
                   href="#/purchasing/approvals"
-                  className="text-link no-underline hover:underline"
+                  className="bidi-isolate text-link no-underline hover:underline"
                 >
                   Supplier invoice <span dir="ltr">{JOURNAL.document}</span>
                   <span className="sr-only">, Approved</span>

@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { TEXT_DIRECTION } from '../primitives/classes'
 import { FileDown, Mail, Save, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
@@ -83,7 +84,7 @@ export const Open: Story = {
               : entry,
           )}
         />
-        <p className="m-0 text-sm text-secondary">
+        <p className={`m-0 text-sm text-secondary ${TEXT_DIRECTION}`}>
           Ran: <code>{ran}</code>
         </p>
       </div>
@@ -119,7 +120,7 @@ export const OpenInteraction: Story = {
               : entry,
           )}
         />
-        <p className="m-0 text-sm text-secondary">
+        <p className={`m-0 text-sm text-secondary ${TEXT_DIRECTION}`}>
           Ran: <code>{ran}</code>
         </p>
       </div>

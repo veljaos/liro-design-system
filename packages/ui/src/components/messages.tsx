@@ -175,8 +175,8 @@ export function MessageBubble({
           className={extra === undefined ? undefined : 'w-full max-w-xl'}
         >
           <BubbleContent className={extra === undefined ? undefined : 'w-full'}>
-            <div className="whitespace-pre-wrap">{children}</div>
-            {extra !== undefined && <div className="mt-3">{extra}</div>}
+            <div className={cn('whitespace-pre-wrap', TEXT_DIRECTION)}>{children}</div>
+            {extra !== undefined && <div className={cn('mt-3', TEXT_DIRECTION)}>{extra}</div>}
           </BubbleContent>
         </Bubble>
         {status === 'sending' && (

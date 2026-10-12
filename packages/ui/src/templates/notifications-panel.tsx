@@ -101,7 +101,7 @@ export function NotificationsPanel(props: NotificationsPanelProps) {
             {messages['notifications.title']}
           </h2>
           {props.unread > 0 && (
-            <span className="text-xs text-secondary tabular-nums">
+            <span className={cn('text-xs text-secondary tabular-nums', TEXT_DIRECTION)}>
               {messages['notifications.unreadCount'](props.unread, unreadText)}
             </span>
           )}

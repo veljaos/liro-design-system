@@ -7,6 +7,8 @@ import { CommandPalette, type CommandItem } from './command-palette'
 import { ARABIC, JAPANESE, LONG } from './field-story-data'
 import { ShortcutHint } from './navigation'
 import { StoryProvider } from './story-frames'
+import { TEXT_DIRECTION } from '../primitives/classes'
+import { cn } from '../primitives/cn'
 
 const meta = {
   title: 'Components/Navigation/CommandPalette',
@@ -66,7 +68,7 @@ function items(onRun: (label: string) => void): CommandItem[] {
 export const Default: Story = {
   render: () => (
     <div className="flex min-h-110 flex-col items-start gap-3">
-      <p className="m-0 flex items-center gap-2 text-sm">
+      <p className={cn('m-0 flex items-center gap-2 text-sm', TEXT_DIRECTION)}>
         Press <ShortcutHint keys={['Ctrl', 'K']} /> to open.
       </p>
       <CommandPalette open defaultQuery="inv" items={items(() => undefined)} />
@@ -88,10 +90,10 @@ export const DefaultInteraction: Story = {
     const [ran, setRan] = useState('nothing')
     return (
       <div className="flex min-h-110 flex-col items-start gap-3">
-        <p className="m-0 flex items-center gap-2 text-sm">
+        <p className={cn('m-0 flex items-center gap-2 text-sm', TEXT_DIRECTION)}>
           Press <ShortcutHint keys={['Ctrl', 'K']} /> to open.
         </p>
-        <p className="m-0 text-sm text-secondary">
+        <p className={cn('m-0 text-sm text-secondary', TEXT_DIRECTION)}>
           Ran: <code>{ran}</code>
         </p>
         <CommandPalette items={items(setRan)} />

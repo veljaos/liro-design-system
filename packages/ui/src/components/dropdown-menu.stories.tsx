@@ -7,6 +7,8 @@ import { Button, IconButton } from './button'
 import { DropdownMenu, type MenuEntry } from './dropdown-menu'
 import { ARABIC, JAPANESE, LONG } from './field-story-data'
 import { StoryProvider } from './story-frames'
+import { TEXT_DIRECTION } from '../primitives/classes'
+import { cn } from '../primitives/cn'
 
 const meta = {
   title: 'Components/Overlays/DropdownMenu',
@@ -64,7 +66,7 @@ export const Default: Story = {
           trigger={<IconButton intent="more" label="More actions" />}
           entries={entries}
         />
-        <p className="m-0 text-sm text-secondary">
+        <p className={cn('m-0 text-sm text-secondary', TEXT_DIRECTION)}>
           Chosen: <code>{chosen}</code>
         </p>
       </div>
@@ -97,7 +99,7 @@ export const DefaultInteraction: Story = {
           trigger={<IconButton intent="more" label="More actions" />}
           entries={entries}
         />
-        <p className="m-0 text-sm text-secondary">
+        <p className={cn('m-0 text-sm text-secondary', TEXT_DIRECTION)}>
           Chosen: <code>{chosen}</code>
         </p>
       </div>

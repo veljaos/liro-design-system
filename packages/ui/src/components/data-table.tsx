@@ -23,7 +23,7 @@ import {
   type Ref,
 } from 'react'
 import { Checkbox } from '../primitives/checkbox'
-import { BUTTON_RESET, FOCUS_RING, TEXT_DIRECTION } from '../primitives/classes'
+import { BUTTON_RESET, FOCUS_RING, TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { Skeleton } from '../primitives/skeleton'
 import { useLiro } from '../provider/liro-provider'
@@ -636,7 +636,7 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
             />
           </button>
         ) : (
-          column.header
+          <span className={TEXT_ISOLATE}>{column.header}</span>
         )}
         {resizable && column.resizable !== false && width !== undefined && (
           <ResizeHandle
@@ -787,10 +787,12 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
           <dl className="m-0 flex flex-col gap-0.5">
             {columns.slice(amountsFrom).map((column) => (
               <div key={column.id} className="flex items-baseline justify-between gap-4">
-                <dt className={cn('text-xs font-normal text-secondary', TEXT_DIRECTION)}>
+                <dt className={cn('text-xs font-regular text-secondary', TEXT_DIRECTION)}>
                   {column.header}
                 </dt>
-                <dd className="m-0 text-end tabular-nums">{column.cell(original)}</dd>
+                <dd className="m-0 text-end tabular-nums">
+                  <span className={TEXT_ISOLATE}>{column.cell(original)}</span>
+                </dd>
               </div>
             ))}
           </dl>
@@ -901,7 +903,9 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
           flat ? 'px-4 py-3' : 'rounded-md p-3',
         )}
       >
-        {props.totalsLabel !== undefined && <div className="text-sm">{props.totalsLabel}</div>}
+        {props.totalsLabel !== undefined && (
+          <div className={cn('text-sm', TEXT_DIRECTION)}>{props.totalsLabel}</div>
+        )}
         {columns
           .filter((column) => totals[column.id] !== undefined)
           .map((column) => (

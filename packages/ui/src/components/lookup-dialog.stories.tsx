@@ -21,6 +21,8 @@ import type { FilterDefinition } from './filter-logic'
 import { LookupDialog } from './lookup-dialog'
 import { StatusBadge } from './status-badge'
 import { ExampleProvider, PhoneFrame, StoryProvider } from './story-frames'
+import { TEXT_DIRECTION } from '../primitives/classes'
+import { cn } from '../primitives/cn'
 
 const ALL = storyCustomers(4993)
 const PAGE = 25
@@ -104,7 +106,7 @@ function Lookup({
           setOpen(true)
         }}
       />
-      <p className="m-0 text-sm text-secondary">
+      <p className={cn('m-0 text-sm text-secondary', TEXT_DIRECTION)}>
         {chosen === null ? 'No customer chosen.' : `Chosen: ${chosen.name}`}
       </p>
       <LookupDialog

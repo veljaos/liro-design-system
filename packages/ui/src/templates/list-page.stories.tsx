@@ -10,6 +10,8 @@ import { FilterBar } from '../components/filter-bar'
 import type { FilterDefinition } from '../components/filter-logic'
 import { StatusBadge, toneFor } from '../components/status-badge'
 import { ExampleProvider, PhoneFrame, StoryProvider } from '../components/story-frames'
+import { TEXT_DIRECTION } from '../primitives/classes'
+import { cn } from '../primitives/cn'
 import { settle } from '../primitives/story-helpers'
 import { AppShell } from './app-shell'
 import {
@@ -157,7 +159,10 @@ function InvoiceList({
       brand={BRAND}
       breadcrumbs={[{ label: 'Sales', href: '#sales' }, { label: 'Invoices' }]}
       commands={{ items: COMMANDS }}
-      notifications={{ unread: 3, panel: <p className="m-0 text-sm">3 unread.</p> }}
+      notifications={{
+        unread: 3,
+        panel: <p className={cn('m-0 text-sm', TEXT_DIRECTION)}>3 unread.</p>,
+      }}
       companies={{ items: COMPANIES, current: 'kvadrat', onSelect: () => undefined }}
       user={USER}
       moduleTabs={SALES_TABS}

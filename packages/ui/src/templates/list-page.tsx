@@ -253,7 +253,10 @@ function SavedViewSelect(props: SavedViewsProps) {
               />
             )}
             {shown.length === 0 && (
-              <p role="status" className="m-0 px-2.5 py-1.5 text-sm text-secondary">
+              <p
+                role="status"
+                className={cn('m-0 px-2.5 py-1.5 text-sm text-secondary', TEXT_DIRECTION)}
+              >
                 {messages['field.noResults']}
               </p>
             )}
@@ -381,7 +384,10 @@ export function ColumnChooser({ columns, onChange }: ColumnChooserProps) {
         aria-labelledby={titleId}
         className="box-border flex w-70 flex-col gap-1 p-1 shadow-md"
       >
-        <p id={titleId} className="m-0 px-3 py-1.5 text-xs font-semibold text-secondary">
+        <p
+          id={titleId}
+          className={cn('m-0 px-3 py-1.5 text-xs font-semibold text-secondary', TEXT_DIRECTION)}
+        >
           {messages['columns.title']}
         </p>
         <ul className="m-0 flex list-none flex-col p-0">

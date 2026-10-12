@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react'
-import { FOCUS_RING, TEXT_DIRECTION } from '../primitives/classes'
+import { FOCUS_RING, TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 
@@ -121,6 +121,7 @@ export function ActivityList({ items, label, limit = 2, className }: ActivityLis
           className={cn(
             'min-h-6 cursor-pointer rounded-sm border-0 bg-transparent p-0 font-sans text-sm text-link hover:underline',
             FOCUS_RING,
+            TEXT_ISOLATE,
           )}
         >
           {all

@@ -2,7 +2,15 @@ import { Check, ChevronDown, ChevronUp } from 'lucide-react'
 import { Select as SelectPrimitive } from 'radix-ui'
 import { createContext, useContext, useState, type ComponentProps } from 'react'
 import { usePortalContainer } from '../provider/portal'
-import { BUTTON_RESET, FLOATING, FLOATING_MOTION, INPUT, OPTION, TEXT_DIRECTION } from './classes'
+import {
+  BUTTON_RESET,
+  FLOATING,
+  FLOATING_MOTION,
+  INPUT,
+  OPTION,
+  TEXT_DIRECTION,
+  TEXT_ISOLATE,
+} from './classes'
 import { cn } from './cn'
 
 /*
@@ -60,7 +68,7 @@ export function SelectTrigger({
       )}
       {...props}
     >
-      <span className="min-w-0 truncate">{children}</span>
+      <span className={cn('min-w-0 truncate', TEXT_ISOLATE)}>{children}</span>
       <SelectPrimitive.Icon asChild>
         <ChevronDown aria-hidden="true" className="size-4.5 shrink-0 text-secondary" />
       </SelectPrimitive.Icon>
@@ -110,7 +118,11 @@ export function SelectLabel({ className, ...props }: ComponentProps<typeof Selec
   return (
     <SelectPrimitive.Label
       data-slot="select-label"
-      className={cn('px-2.5 py-1.5 text-xs font-semibold text-secondary', className)}
+      className={cn(
+        'px-2.5 py-1.5 text-xs font-semibold text-secondary',
+        TEXT_DIRECTION,
+        className,
+      )}
       {...props}
     />
   )
@@ -128,7 +140,11 @@ export function SelectItem({
           <Check aria-hidden="true" className="size-[0.8em]" />
         </SelectPrimitive.ItemIndicator>
       </span>
-      <SelectPrimitive.ItemText className={TEXT_DIRECTION}>{children}</SelectPrimitive.ItemText>
+      {/* Radix drops ItemText's className, so the direction is on a span inside it; the span also
+          travels into the trigger when the option is chosen (SelectValue). */}
+      <SelectPrimitive.ItemText>
+        <span className={TEXT_ISOLATE}>{children}</span>
+      </SelectPrimitive.ItemText>
     </SelectPrimitive.Item>
   )
 }

@@ -97,7 +97,7 @@ describe('EmptyState and ErrorState', () => {
     const html = render(
       <EmptyState compact action={{ label: 'Create an invoice', onClick: () => undefined }} />,
     )
-    expect(html).toContain('<span>Create an invoice</span>')
+    expect(html).toContain('<span class="bidi-isolate">Create an invoice</span>')
     expect(html).toContain('h-control-sm')
     expect(html).toContain('size-6')
     expect(html).toContain('stroke-width="1.5"')

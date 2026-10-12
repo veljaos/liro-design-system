@@ -212,11 +212,16 @@ export function CommandPalette(props: CommandPaletteProps) {
                           <Icon aria-hidden="true" className="me-4 size-[17px] shrink-0" />
                         )}
                         <span className={cn('min-w-0 flex-1', TEXT_DIRECTION)}>
-                          <span className="block">
+                          <span className={cn('block', TEXT_DIRECTION)}>
                             <Label text={item.label} query={query} />
                           </span>
                           {item.description !== undefined && (
-                            <span className="block text-xs text-secondary group-data-[selected=true]:text-brand-on-solid">
+                            <span
+                              className={cn(
+                                'block text-xs text-secondary group-data-[selected=true]:text-brand-on-solid',
+                                TEXT_DIRECTION,
+                              )}
+                            >
                               {item.description}
                             </span>
                           )}

@@ -5,6 +5,8 @@ import { settle } from '../primitives/story-helpers'
 import { CandidateList, type Candidate, type CandidateListProps } from './candidate-list'
 import { DateText, MoneyText } from './display-text'
 import { ExampleProvider, PhoneFrame, StoryProvider } from './story-frames'
+import { TEXT_DIRECTION } from '../primitives/classes'
+import { cn } from '../primitives/cn'
 
 /** Open items a payment of Medic Lab Niš d.o.o. (50.000,00 RSD) may close, best first. */
 const OPEN_ITEMS: Candidate[] = [
@@ -165,7 +167,11 @@ export const Empty: Story = {
         <Controlled
           label="Open items"
           candidates={[]}
-          empty={<p className="m-0 text-sm text-secondary">No open item matches this payment.</p>}
+          empty={
+            <p className={cn('m-0 text-sm text-secondary', TEXT_DIRECTION)}>
+              No open item matches this payment.
+            </p>
+          }
         />
       </div>
     </ExampleProvider>

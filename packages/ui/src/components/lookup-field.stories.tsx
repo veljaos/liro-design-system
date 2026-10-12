@@ -8,6 +8,8 @@ import { LookupField } from './lookup-field'
 import type { LookupCreateKind, LookupOption } from './lookup-logic'
 import { KINDS, RECENT, searchCatalogue, TAX_CATEGORIES, UNITS } from './lookup-story-data'
 import { expectContentDirection, PhoneFrame, StoryProvider } from './story-frames'
+import { TEXT_DIRECTION } from '../primitives/classes'
+import { cn } from '../primitives/cn'
 
 /*
  * LookupField (BUILD-PLAN P5.19): stories over a catalogue of 20,011 records (the story data's),
@@ -323,7 +325,7 @@ function OneOffAndSearchAll() {
         searchDelay={200}
         onSearchAll={setAll}
       />
-      <p className="m-0 text-sm text-secondary" data-testid="outcome">
+      <p className={cn('m-0 text-sm text-secondary', TEXT_DIRECTION)} data-testid="outcome">
         {value?.oneOff === true ? `One-off line: ${value.label}. ` : ''}
         {all === null ? '' : `The application opens its full search for “${all}”.`}
       </p>

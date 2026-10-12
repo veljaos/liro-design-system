@@ -2,6 +2,8 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { RefreshCw } from 'lucide-react'
 import { useState } from 'react'
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test'
+import { TEXT_DIRECTION } from '../primitives/classes'
+import { cn } from '../primitives/cn'
 import { settle } from '../primitives/story-helpers'
 import { Button } from './button'
 import { ARABIC, JAPANESE, LONG } from './field-story-data'
@@ -244,7 +246,9 @@ export const ConnectionStates: Story = {
             }}
           />
           <ConnectionState status="failed" />
-          <output className="text-xs text-secondary">Sent again: {sent}</output>
+          <output className={cn('text-xs text-secondary', TEXT_DIRECTION)}>
+            Sent again: {sent}
+          </output>
         </div>
       </ExampleProvider>
     )
@@ -278,7 +282,9 @@ export const ConnectionStatesInteraction: Story = {
             }}
           />
           <ConnectionState status="failed" />
-          <output className="text-xs text-secondary">Sent again: {sent}</output>
+          <output className={cn('text-xs text-secondary', TEXT_DIRECTION)}>
+            Sent again: {sent}
+          </output>
         </div>
       </ExampleProvider>
     )

@@ -6,6 +6,8 @@ import { LiroProvider, useLiro } from '../provider/liro-provider'
 import type { DateRange } from './date-field'
 import { ARABIC, JAPANESE, LONG } from './field-story-data'
 import { PeriodField } from './period-field'
+import { TEXT_DIRECTION } from '../primitives/classes'
+import { cn } from '../primitives/cn'
 
 /** A nested provider with a fixed "today", in the story's theme, locale and direction. */
 function Today({ today, children }: { today: string; children: ReactNode }) {
@@ -73,7 +75,7 @@ function Controlled(props: {
         {...(props.clearable === undefined ? {} : { clearable: props.clearable })}
         {...(props.defaultOpen === undefined ? {} : { defaultOpen: props.defaultOpen })}
       />
-      <p className="m-0 text-sm text-secondary">
+      <p className={cn('m-0 text-sm text-secondary', TEXT_DIRECTION)}>
         Value: <code>{JSON.stringify(value)}</code>
       </p>
     </div>

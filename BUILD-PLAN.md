@@ -296,23 +296,25 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P5.5 | Files and document frame | P2.5 | done | 2026-10-09 | FileDropzone, AttachmentList (per-file control slot), DocumentFrame with its protocol in `docs/document-frame.md` |
 | P5.6 | Sign-in building blocks | P2.2 | done | 2026-10-09 | EmailFirstForm, ProviderSignInButtons (Microsoft and Google marks in `provider-marks.tsx`), PasswordField, CodeInput, RecoveryCodes, SessionList; Sign in example with providers |
 | P5.7 | Kanban board | P2.8 | done | 2026-10-09 | KanbanBoard with pointer drag, keyboard and menu moving, phones one column at a time; Tasks example |
-| P5.8 | Calendar and scheduling | P2.3 | todo | | |
-| P5.9 | Tree | P2.8 | todo | | |
-| P5.10 | Touch mode and POS | P5.3 | todo | | |
-| P5.11 | Scanner-first warehouse | P5.3 | todo | | |
-| P5.12 | Learning | P5.1, P5.15 | todo | | |
-| P5.13 | Attendance and quick marking | P3.4 | todo | | |
-| P5.14 | Sensitive fields | P2.8 | todo | | |
-| P5.15 | Print templates | P4.5 | todo | | |
-| P5.16 | Portal shell | P4.1 | todo | | |
-| P5.17 | Industry example screens | P5.8–P5.16 | todo | | |
+| P5.8 | Calendar and scheduling | P2.3 | done | 2026-10-10 | CalendarView (day, week, month, agenda), ResourceSchedule (drag, keyboard, "Move to…"), SlotPicker, Timetable; LiroProvider `timeZone` |
+| P5.9 | Tree | P2.8 | done | 2026-10-10 | TreeView and TreeTable: lazy children, WAI-ARIA tree keys mirrored in RTL, selection with tri-state, virtualised |
+| P5.10 | Touch mode and POS | P5.3 | done | 2026-10-10 | LiroProvider `density="touch"` (44px targets, overlays included), NumericKeypad, ProductGrid, CartPanel, PaymentDialog, ReceiptPreview, PosShell |
+| P5.11 | Scanner-first warehouse | P5.3 | done | 2026-10-10 | ScanField (scanner burst vs typing), QuantityStepper (exact decimal strings), PickList and StockCount at 360px, offline queue |
+| P5.12 | Learning | P5.1, P5.15 | done | 2026-10-10 | CoursePage (outline, progress, lessons, completion with the certificate), QuizResult; quizzes on Questionnaire |
+| P5.13 | Attendance and quick marking | P3.4 | done | 2026-10-10 | AttendanceGrid in code mode (one key per mark, bulk and range marking, gradebook); one pattern with P5.24 |
+| P5.14 | Sensitive fields | P2.8 | done | 2026-10-10 | MaskedValue: reveal with a reason, "access logged", auto-hide, not allowed with a reason |
+| P5.15 | Print templates | P4.5 | done | 2026-10-10 | PrintPage (A4, header and footer on every page, page numbers, paper always light) and PrintDocument, PrintCertificate, PrintGradeReport, PrintFinding |
+| P5.16 | Portal shell | P4.1 | done | 2026-10-10 | PortalShell for patients, parents, students and customers: tabs on desktop, bottom navigation on phones |
+| P5.17 | Industry example screens | P5.8–P5.16 | done | 2026-10-10 | Examples: appointment booking, POS checkout, warehouse picking and stock count, school timetable, attendance and gradebook, a safety course, printouts |
 | P5.18 | Complex documents | P4.5, P3.4 | done | 2026-10-09 | EditableGrid line types, "Add line ▾", lookup / tax category / unit columns, line details, LookupCreateDrawer, a row window for 300 positions (measured) (D1); DocumentPage block order, DocumentReferences, DataTable line types, DocumentTotals recap / deductions / exchange / footnotes, DocumentCurrency, DocumentNotes, DocumentSpecification, corrective documents, cancellation (D2); examples F-2026-0419, IS-2026-007, F-2026-0418, F-2026-0415, KO-2026-0009, F-2026-0407 + ST-2026-0004 |
 | P5.19 | Catalogs at scale | P3.1, P2.2 | done | 2026-10-09 | LookupField (recent, kinds, create, one-off, Search all…, virtualised) (D1); LookupDialog, ImportWizard, BulkEditDrawer, DuplicateWarning, inactive records by views and a neutral badge (E); customers example with 50,000 records and import |
 | P5.20 | Registers and official forms | P4.4, P5.1 | done | 2026-10-09 | RegisterPage and StatutoryFormPage; examples VAT return September 2026 and work-injury register 2026 (and 5,000 entries) |
 | P5.21 | Common business processes | P3.4, P4.3 | done | 2026-10-09 | PermissionMatrix (users and roles composed from DataTables), SetupChecklist, SignerList and SigningPage (C); MatchingView, BalanceBar, PeriodicRunPage (F); examples users and roles, setup, contract signing, bank statement 188, journal entry NK-2026-0912, payroll September 2026 |
 | P5.21a | TanStack Virtual for every list | P5.21 | done | 2026-10-09 | The company switcher, LookupField, MatchingView and EditableGrid's row window on `useVirtualizer` with the shared window rules (600px, the focused or active row kept); the custom virtualiser removed (measured) |
 | P5.23 | Owner's review of Phase 5 part 1 | P5.21a | done | 2026-10-10 | Bank statement worked line by line on WorklistPage (CandidateList; MatchingView removed); draft headers as the invoice draft's; one tab gap; bulk bar a row of its own; catalogue lists sort and multi-select; multi-step flows on phones; compact one-line alerts; Cancelled danger with one status map; one register pattern; a correcting document's source in the header; room for the description column; visual stories static (`interaction` tag, `scripts/static-stories.mjs`, initial-state props); a steady view when content shrinks (`useSteadyBottom`) |
-| P5.21b | Overscan per component | P5.21a | todo | | First step of Phase 5 part 2, before P5.8 (owner, 2026-10-09) |
+| P5.21b | Overscan per component | P5.21a | done | 2026-10-10 | EditableGrid draws 240px around the view (page jump −25%, about 400ms on the owner's laptop), light lists keep 600px (measured) |
+| P5.22 | Rich text | P2.2, P5.1 | done | 2026-10-10 | `@veljaos/ui/rich-text` on Tiptap 3.31.4 (MIT packages only): RichTextField, RichText, merge-field pills, @mentions, JSON plus sanitized HTML |
+| P5.24 | Working time | P5.13, P4.3 | done | 2026-10-10 | AttendanceGrid timesheets, ClockRecordList, ShiftPlanner, MyShifts, ShiftSwapDialog, WorkingTimeBalance; examples Kvadrat Gradnja, Prodavnica 12, Dom zdravlja |
 | P6.1 | Full language and direction matrix | Phases 1–5 | todo | | |
 | P6.2 | Manual WCAG 2.2 checks | P6.1 | todo | | |
 | P6.3 | Performance budget | P4.8 | todo | | |
@@ -693,6 +695,26 @@ A design question, not a list of business cases: the `DocumentPage` layout must 
 **The first step of Phase 5 part 2, before P5.8.** P5.21a put every list on TanStack Virtual with one overscan of 600px, and the EditableGrid's page jump on the 300-line specification became slower (409 → 568ms at 1×, 1,240 → 1,513ms at 4× CPU; docs/decisions.md). **Do** tune the overscan per component: keep it smaller for the EditableGrid, whose rows are heavy (a line of fields), so that the page jump on the 300-line specification is back to **about 400ms or less** (1×, the P5.21a method); keep 600px for the light lists (DataTable, the company switcher, LookupField, MatchingView). Re-measure every list with the P5.21a method and record the numbers in docs/decisions.md.
 
 **Done when** the specification's page jump is about 400ms or less at 1×, the light lists keep their P5.21a figures, the focused row is still kept drawn everywhere, and the numbers are recorded.
+
+### P5.22 — Rich text (owner, 2026-10-10)
+**Do** `RichTextField` and `RichText` (read-only view) on **Tiptap, MIT-licensed packages only** (no Pro or paid extensions): paragraphs, headings, bold, italic, underline, lists, links, a small toolbar reachable by keyboard; **merge fields as pills** (the list of fields and their labels from props, inserted from a menu or by typing "{{"); **@mentions** (candidates from props or `onSearch`, as MentionCombobox); the value is stored as **Tiptap JSON plus sanitized HTML** (both reported on change; the HTML sanitized before it leaves the component and before it is shown). Tokens only, right-to-left by content, paste kept as plain structure.
+
+### P5.24 — Working time (owner, 2026-10-10)
+Built together with P5.13 as **one pattern**: a grid of people × days whose cells hold a value and a code, entered from the keyboard. The rules, limits, codes and totals are the application's data; the Design System shows them and offers them for choice. **Legal limits are not encoded:** the application passes them as data; examples use illustrative values, labelled as such.
+
+**a) Monthly timesheet.** Employees × the days of a month; each cell holds hours and a code: regular work, night work, overtime, work on a public holiday, annual leave, sick leave, paid leave, unpaid leave, public holiday, business trip, absence (codes, short labels and meanings from props). Weekends and public holidays are shaded. Totals per type per employee and per day, from props. Keyboard entry like EditableGrid; fill a range; copy the previous week. A month locks after payroll: corrected, never deleted, like the registers (P5.20). Hand-off to payroll (an action and its state). Phone: one employee per screen, a list of days.
+
+**b) Shift schedule.** Shift templates (e.g. 06–14, 14–22, 22–06 crossing midnight), rotation patterns, a planner by employee and by team or site, assignment by keyboard and by drag (with a keyboard and menu alternative). Conflicts — too little rest between shifts, double booking, weekly hours over the limit — arrive as warnings from data. Publishing the schedule. The employee's view on a phone ("My shifts"). A shift swap request with approval, on the worklist / approval pattern (P4.3, P5.23).
+
+**c) Shift work.** Night hours shown separately; shift allowances indicated.
+
+**d) Working-time redistribution.** A plan for a period (start, end, planned hours per week), and per employee a balance of planned against worked hours and the running average; warnings when the plan breaks the limits (from data).
+
+**e) Clock-in / clock-out records** from terminals or a phone, with audited corrections (who, when, why; the original kept).
+
+**Examples:** Kvadrat Gradnja site workers; a retail store with shifts (POS); a 24/7 health facility with rotating shifts.
+
+**Done when** the timesheet, the shift planner, My shifts, the balance and the clock records have stories in light, dark, right-to-left and phone width, pass axe and the keyboard, and the three examples show them with one dataset each.
 
 **End of Phase 5:** `0.1.0-alpha.5`; report.
 

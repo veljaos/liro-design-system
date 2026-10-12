@@ -12,6 +12,8 @@ import { StatusBadge, toneFor, type Tone } from './status-badge'
 import type { LineType } from './line-types'
 import { ExampleProvider, expectContentDirection, PhoneFrame, StoryProvider } from './story-frames'
 import { DESCRIPTION_MIN_WIDTH } from './data-table-logic'
+import { TEXT_DIRECTION } from '../primitives/classes'
+import { cn } from '../primitives/cn'
 
 const meta = {
   title: 'Components/Table/DataTable',
@@ -198,7 +200,7 @@ function Interactive(props: Partial<ComponentProps<typeof DataTable<Invoice>>>) 
         exportAction={<Button intent="export" label="Export" />}
         {...props}
       />
-      <p className="m-0 text-sm text-secondary" data-testid="opened">
+      <p className={cn('m-0 text-sm text-secondary', TEXT_DIRECTION)} data-testid="opened">
         {opened === null ? 'No row opened.' : `Opened ${opened}.`}
       </p>
     </div>
@@ -547,7 +549,7 @@ function Resizing() {
         resizable
         onColumnWidthsChange={setWidths}
       />
-      <p className="m-0 text-sm text-secondary" data-testid="widths">
+      <p className={cn('m-0 text-sm text-secondary', TEXT_DIRECTION)} data-testid="widths">
         {Object.keys(widths).length === 0
           ? 'Not resized yet.'
           : `Customer: ${String(widths.customer)}px`}

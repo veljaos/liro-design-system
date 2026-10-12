@@ -2,7 +2,7 @@ import { CalendarDays, ChevronDown } from 'lucide-react'
 import { useId, useState } from 'react'
 import { ButtonPrimitive } from '../primitives/button'
 import { Calendar } from '../primitives/calendar'
-import { READ_ONLY } from '../primitives/classes'
+import { AUTO_DIRECTION, READ_ONLY, TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { Input } from '../primitives/input'
 import { Popover, PopoverContent, PopoverTrigger } from '../primitives/popover'
@@ -128,7 +128,8 @@ export function PeriodField(props: PeriodFieldProps) {
             <Input
               {...controlAttributes(control, messages['field.readOnly'])}
               value={text}
-              className={READ_ONLY}
+              dir={AUTO_DIRECTION.dir}
+              className={cn(AUTO_DIRECTION.className, READ_ONLY)}
             />
           )
         }
@@ -158,7 +159,7 @@ export function PeriodField(props: PeriodFieldProps) {
                   <CalendarDays aria-hidden="true" className="size-3.75 shrink-0" />
                   {/* 2px of room at the end, taken back by the margin: Chromium on Linux draws
                       hinted text wider than it lays it out, and `truncate` cut the last digit. */}
-                  <span id={textId} className="-me-0.5 truncate pe-0.5">
+                  <span id={textId} className={cn('-me-0.5 truncate pe-0.5', TEXT_DIRECTION)}>
                     {text}
                   </span>
                   <ChevronDown aria-hidden="true" className="size-3.5 shrink-0" />
@@ -183,7 +184,7 @@ export function PeriodField(props: PeriodFieldProps) {
                           choose(presetRange(preset, rules))
                         }}
                       >
-                        {messages[PRESET_MESSAGE[preset]]}
+                        <span className={TEXT_DIRECTION}>{messages[PRESET_MESSAGE[preset]]}</span>
                       </ButtonPrimitive>
                     )
                   })}
@@ -201,13 +202,18 @@ export function PeriodField(props: PeriodFieldProps) {
                           choose(null)
                         }}
                       >
-                        {messages['period.clear']}
+                        <span className={TEXT_DIRECTION}>{messages['period.clear']}</span>
                       </ButtonPrimitive>
                     </>
                   )}
                 </div>
                 <div className="flex flex-col px-4 py-3">
-                  <p className="m-0 px-3 py-[5px] text-xs font-semibold text-secondary">
+                  <p
+                    className={cn(
+                      'm-0 px-3 py-[5px] text-xs font-semibold text-secondary',
+                      TEXT_DIRECTION,
+                    )}
+                  >
                     {messages['period.customRange']}
                   </p>
                   <Calendar

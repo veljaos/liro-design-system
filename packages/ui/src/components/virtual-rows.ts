@@ -16,6 +16,13 @@ import { defaultRangeExtractor, type Range } from '@tanstack/react-virtual'
 /** Pixels drawn above and below the view: about fifteen 40px lines. */
 export const WINDOW_OVERSCAN = 600
 
+/**
+ * Pixels drawn above and below the view for heavy rows — a line of fields (EditableGrid): each
+ * drawn line mounts its editors, so the window stays small and a page jump stays near 400ms
+ * (P5.21b, measured; docs/decisions.md).
+ */
+export const HEAVY_ROW_OVERSCAN = 240
+
 /** The rows kept drawn before and after the focused row. */
 export const FOCUS_ROWS_BEFORE = 1
 export const FOCUS_ROWS_AFTER = 2

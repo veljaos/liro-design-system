@@ -11,6 +11,8 @@ import { PeriodField } from '../components/period-field'
 import { SelectField } from '../components/select-field'
 import { SwitchField } from '../components/checkbox-field'
 import { ExampleProvider, percentText, PhoneFrame, StoryProvider } from '../components/story-frames'
+import { TEXT_DIRECTION } from '../primitives/classes'
+import { cn } from '../primitives/cn'
 import { settle } from '../primitives/story-helpers'
 import { AppShell } from './app-shell'
 import { DashboardPage } from './dashboard-page'
@@ -30,7 +32,10 @@ function Shell({ phone = false, children }: { phone?: boolean; children: React.R
       layout={phone ? 'phone' : 'desktop'}
       brand={BRAND}
       commands={{ items: COMMANDS }}
-      notifications={{ unread: 0, panel: <p className="m-0 text-sm">No notifications.</p> }}
+      notifications={{
+        unread: 0,
+        panel: <p className={cn('m-0 text-sm', TEXT_DIRECTION)}>No notifications.</p>,
+      }}
       companies={{ items: COMPANIES, current: 'kvadrat', onSelect: () => undefined }}
       user={USER}
     >

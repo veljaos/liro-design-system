@@ -1,6 +1,6 @@
 import { Tabs as TabsPrimitive } from 'radix-ui'
 import type { ComponentProps } from 'react'
-import { BUTTON_RESET, FOCUS_RING } from './classes'
+import { BUTTON_RESET, FOCUS_RING, TEXT_ISOLATE } from './classes'
 import { cn } from './cn'
 
 /*
@@ -48,6 +48,7 @@ export function TabsTrigger({ className, ...props }: ComponentProps<typeof TabsP
         'enabled:hover:border-default enabled:hover:bg-surface-hover data-[state=active]:border-brand data-[state=active]:hover:border-brand',
         'disabled:cursor-not-allowed disabled:text-disabled',
         FOCUS_RING,
+        TEXT_ISOLATE,
         className,
       )}
       {...props}

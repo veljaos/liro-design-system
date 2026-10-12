@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { Button } from '../components/button'
+import { TEXT_DIRECTION } from '../primitives/classes'
 import { LiroProvider, useLiro } from './liro-provider'
 
 /** Typed input as a person might enter it, shown with what parseNumber and parseDate read. */
@@ -51,7 +52,7 @@ function ToolbarSample() {
       <dl className="m-0 grid grid-cols-2 gap-x-4 gap-y-1">
         {rows.map(([term, value], index) => (
           <div key={`${term}-${String(index)}`} className="contents">
-            <dt>{term}</dt>
+            <dt className={TEXT_DIRECTION}>{term}</dt>
             <dd className="m-0 text-end tabular-nums">
               {/* bdi keeps a value in its own direction: without it, right-to-left text moves
                   the minus sign and the currency to the wrong side. */}

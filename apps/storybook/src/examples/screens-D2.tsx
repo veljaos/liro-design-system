@@ -840,7 +840,7 @@ const DECREASE_COLUMNS: DataTableColumn<CorrectedLine>[] = [
     header: 'VAT',
     minWidth: MIN_COLUMN_WIDTH,
     // A code never wraps ("S 20%").
-    cell: (line) => <span className="whitespace-nowrap">{taxLabel(line.tax)}</span>,
+    cell: (line) => <span className="bidi-isolate whitespace-nowrap">{taxLabel(line.tax)}</span>,
   },
 ]
 

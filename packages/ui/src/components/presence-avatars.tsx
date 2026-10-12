@@ -1,6 +1,6 @@
 import { Bot } from 'lucide-react'
 import type { ReactNode } from 'react'
-import { BUTTON_RESET, FOCUS_RING, TEXT_DIRECTION } from '../primitives/classes'
+import { BUTTON_RESET, FOCUS_RING, TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { Popover, PopoverContent, PopoverTrigger } from '../primitives/popover'
 import {
@@ -107,7 +107,10 @@ export function PresenceAvatars({ people, max = 3, className }: PresenceAvatarsP
                 {hidden > 0 && (
                   <span
                     aria-hidden="true"
-                    className="flex h-6.5 min-w-6.5 shrink-0 items-center justify-center rounded-xl bg-surface-sunken px-1 text-xs font-semibold text-primary tabular-nums"
+                    className={cn(
+                      'flex h-6.5 min-w-6.5 shrink-0 items-center justify-center rounded-xl bg-surface-sunken px-1 text-xs font-semibold text-primary tabular-nums',
+                      TEXT_ISOLATE,
+                    )}
                   >
                     {messages['presence.more'](hidden, format.number(String(hidden)))}
                   </span>

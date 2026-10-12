@@ -9,6 +9,8 @@ import { DateText, DueDate, MoneyText } from '../components/display-text'
 import { EmptyState } from '../components/empty-state'
 import { StatusBadge, toneFor } from '../components/status-badge'
 import { ExampleProvider, PhoneFrame, StoryProvider } from '../components/story-frames'
+import { TEXT_DIRECTION } from '../primitives/classes'
+import { cn } from '../primitives/cn'
 import { settle } from '../primitives/story-helpers'
 import { AppShell } from './app-shell'
 import { APPROVALS, BRAND, COMMANDS, COMPANIES, USER, type ApprovalRow } from './shell-story-data'
@@ -42,20 +44,20 @@ function Detail({ row }: { row: ApprovalRow }) {
   return (
     <div className="flex flex-col gap-6 p-6">
       <div className="flex min-w-0 flex-col gap-1">
-        <h2 className="m-0 text-h2 text-primary">{row.supplier}</h2>
-        <p className="m-0 text-sm text-secondary">
+        <h2 className={cn('m-0 text-h2 text-primary', TEXT_DIRECTION)}>{row.supplier}</h2>
+        <p className={cn('m-0 text-sm text-secondary', TEXT_DIRECTION)}>
           {row.number} · requested by {row.requester}
         </p>
       </div>
       <dl className="m-0 flex flex-wrap gap-x-10 gap-y-3">
         <div className="flex flex-col gap-0.5">
-          <dt className="text-xs text-secondary">Amount</dt>
+          <dt className={cn('text-xs text-secondary', TEXT_DIRECTION)}>Amount</dt>
           <dd className="m-0 text-xl font-semibold text-primary tabular-nums">
             <MoneyText value={row.total} currency="RSD" />
           </dd>
         </div>
         <div className="flex flex-col gap-0.5">
-          <dt className="text-xs text-secondary">Due</dt>
+          <dt className={cn('text-xs text-secondary', TEXT_DIRECTION)}>Due</dt>
           <dd className="m-0 text-xl font-semibold text-primary tabular-nums">
             <DateText value={row.due} />
           </dd>
@@ -98,7 +100,10 @@ function Approvals({
       brand={BRAND}
       breadcrumbs={[{ label: 'Purchasing', href: '#p' }, { label: 'To approve' }]}
       commands={{ items: COMMANDS }}
-      notifications={{ unread: 0, panel: <p className="m-0 text-sm">No notifications.</p> }}
+      notifications={{
+        unread: 0,
+        panel: <p className={cn('m-0 text-sm', TEXT_DIRECTION)}>No notifications.</p>,
+      }}
       companies={{ items: COMPANIES, current: 'kvadrat', onSelect: () => undefined }}
       user={USER}
     >
@@ -254,7 +259,11 @@ export const WithSummary: Story = {
         back={{ href: '#statements', label: 'Statements' }}
         status={<StatusBadge label="In progress" tone="info" />}
         subtitle="Banca Intesa · Statement date 06.10.2026."
-        summary={<p className="m-0 text-sm font-medium text-primary">2 of 4 lines done</p>}
+        summary={
+          <p className={cn('m-0 text-sm font-medium text-primary', TEXT_DIRECTION)}>
+            2 of 4 lines done
+          </p>
+        }
         label="Lines of statement 188"
         items={[
           {
@@ -287,7 +296,9 @@ export const WithSummary: Story = {
           },
         ]}
         selected="b3"
-        detail={<p className="m-0 p-6 text-sm text-primary">Line 3 in focus.</p>}
+        detail={
+          <p className={cn('m-0 p-6 text-sm text-primary', TEXT_DIRECTION)}>Line 3 in focus.</p>
+        }
         detailActions={
           <Button family="positive" icon={CheckCheck} label="Confirm and next" emphasis="primary" />
         }

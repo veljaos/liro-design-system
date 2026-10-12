@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { TEXT_DIRECTION } from './classes'
 import { Label } from './label'
 import { RadioGroup, RadioGroupItem } from './radio-group'
 import { internal, settle } from './story-helpers'
@@ -35,7 +36,10 @@ export const States: Story = {
     <div className="flex flex-col gap-6">
       {[false, true].map((disabled) => (
         <div key={String(disabled)} className="flex flex-col gap-2">
-          <span id={`radio-heading-${String(disabled)}`} className="text-sm font-semibold">
+          <span
+            id={`radio-heading-${String(disabled)}`}
+            className={`text-sm font-semibold ${TEXT_DIRECTION}`}
+          >
             {disabled ? 'Reporting period (disabled)' : 'Reporting period'}
           </span>
           <RadioGroup

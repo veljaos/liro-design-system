@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
+import { TEXT_DIRECTION } from '../primitives/classes'
+import { cn } from '../primitives/cn'
 import { settle } from '../primitives/story-helpers'
 import { AgentMark } from './agent-mark'
 import { MANY_PRESENT, PRESENT } from './collaboration-story-data'
@@ -121,7 +123,9 @@ export const LongTextPhone: Story = {
   render: () => (
     <PhoneFrame>
       <div className="flex items-center justify-between gap-3 p-4">
-        <span className="text-sm font-semibold text-primary">F-2026-0410</span>
+        <span className={cn('text-sm font-semibold text-primary', TEXT_DIRECTION)}>
+          F-2026-0410
+        </span>
         <PresenceAvatars
           people={[
             {
@@ -146,7 +150,9 @@ export const LongTextPhoneInteraction: Story = {
   render: () => (
     <PhoneFrame>
       <div className="flex items-center justify-between gap-3 p-4">
-        <span className="text-sm font-semibold text-primary">F-2026-0410</span>
+        <span className={cn('text-sm font-semibold text-primary', TEXT_DIRECTION)}>
+          F-2026-0410
+        </span>
         <PresenceAvatars
           people={[
             {

@@ -32,11 +32,17 @@ export interface LiroFormat {
   parseNumber(text: string): string | null
   /** value is YYYY-MM-DD. */
   date(value: string): string
+  /**
+   * The date and time of an instant, in the provider's `timeZone` (P5.8; without one, the
+   * device's). A local date and time without an offset ("2026-10-12T09:30") is shown as written.
+   */
   dateTime(isoInstant: string): string
   /**
    * The clock time of an instant as it is written ("2026-10-06T09:42:00+02:00" → "09:42"): the
    * Core sends instants in the tenant's offset, so the time is the tenant's, beside a day the
-   * screen has already named (a notification under "Today"). Unreadable input is returned as is.
+   * screen has already named (a notification under "Today"). With the provider's `timeZone`
+   * (P5.8) an instant with an offset or "Z" is shown in that zone; a local time without an offset
+   * ("2026-10-12T09:30") is always shown as written. Unreadable input is returned as is.
    */
   time(isoInstant: string): string
   /** value is YYYY-MM-DD: the weekday and the date in words, e.g. "Monday, 28 September 2026". */
@@ -399,15 +405,68 @@ export function weekStartsOnForLocale(locale: string): Weekday {
   return (firstDay % 7) as Weekday
 }
 
-/** The default format for a locale; `overrides` replace any member. */
-export function createFormat(locale: string, overrides: Partial<LiroFormat> = {}): LiroFormat {
+/** An instant with its offset or "Z" ("2026-10-12T07:30:00Z", "…T09:30:00+02:00"). */
+const WITH_OFFSET = /T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:?\d{2})$/i
+
+/** A local date and time without an offset ("2026-10-12T09:30", seconds optional). */
+const LOCAL_DATE_TIME = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::\d{2}(?:\.\d+)?)?$/
+
+/** The IANA time zone of this device ("Europe/Belgrade"), or "UTC" when Intl cannot tell. */
+export function deviceTimeZone(): string {
+  return new Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
+}
+
+/**
+ * The local date and time ("YYYY-MM-DDTHH:mm") of an instant in an IANA time zone (P5.8): an
+ * instant with an offset or "Z" is converted; a local value without an offset is returned as
+ * written (minutes precision); anything unreadable is null.
+ */
+export function localDateTimeIn(value: string, timeZone: string): string | null {
+  if (LOCAL_DATE_TIME.test(value)) return value.slice(0, 16)
+  if (!WITH_OFFSET.test(value)) return null
+  const timestamp = Date.parse(value)
+  if (Number.isNaN(timestamp)) return null
+  const parts = cachedDateTimeFormat('en-US', {
+    calendar: 'gregory',
+    numberingSystem: 'latn',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+    timeZone,
+  }).formatToParts(timestamp)
+  const part = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((each) => each.type === type)?.value ?? ''
+  return `${part('year').padStart(4, '0')}-${part('month')}-${part('day')}T${part('hour')}:${part('minute')}`
+}
+
+/**
+ * The default format for a locale; `overrides` replace any member. `timeZone` (IANA, P5.8) is the
+ * zone instants are shown in; without it `dateTime` uses the device's and `time` shows the clock
+ * as written, as before.
+ */
+export function createFormat(
+  locale: string,
+  overrides: Partial<LiroFormat> = {},
+  timeZone?: string,
+): LiroFormat {
   const intl = intlLocale(locale)
   const dateFormat = cachedDateTimeFormat(intl, { ...NUMERIC_DATE, timeZone: 'UTC' })
-  // An instant is shown in the time zone of the device.
+  // An instant is shown in the provider's time zone, else the device's.
   const dateTimeFormat = cachedDateTimeFormat(intl, {
     ...NUMERIC_DATE,
     hour: '2-digit',
     minute: '2-digit',
+    ...(timeZone === undefined ? {} : { timeZone }),
+  })
+  // A local date and time without an offset is shown as written: read in UTC, never shifted.
+  const localDateTimeFormat = cachedDateTimeFormat(intl, {
+    ...NUMERIC_DATE,
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'UTC',
   })
   // A clock time as written in an instant (`time`): read in UTC, so it is never shifted.
   const timeFormat = cachedDateTimeFormat(intl, {
@@ -471,11 +530,26 @@ export function createFormat(locale: string, overrides: Partial<LiroFormat> = {}
       return timestamp === null ? value : dateFormat.format(timestamp)
     },
     dateTime(isoInstant) {
+      const local = LOCAL_DATE_TIME.exec(isoInstant)
+      if (local !== null) {
+        const [year, month, day, hour, minute] = local.slice(1).map(Number) as [
+          number,
+          number,
+          number,
+          number,
+          number,
+        ]
+        return localDateTimeFormat.format(Date.UTC(year, month - 1, day, hour, minute))
+      }
       const timestamp = Date.parse(isoInstant)
       return Number.isNaN(timestamp) ? isoInstant : dateTimeFormat.format(timestamp)
     },
     time(isoInstant) {
-      const clock = /T(\d{2}):(\d{2})/.exec(isoInstant)
+      const zoned =
+        timeZone !== undefined && WITH_OFFSET.test(isoInstant)
+          ? localDateTimeIn(isoInstant, timeZone)
+          : null
+      const clock = /T(\d{2}):(\d{2})/.exec(zoned ?? isoInstant)
       if (clock === null) return isoInstant
       return timeFormat.format(Date.UTC(2000, 0, 1, Number(clock[1]), Number(clock[2])))
     },

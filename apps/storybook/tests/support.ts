@@ -176,3 +176,57 @@ export async function sidewaysOverflow(page: Page): Promise<string[]> {
       })
   })
 }
+
+/**
+ * The visible texts of a right-to-left page whose word order the page's direction would break
+ * (D15, P5 part 2): a text without right-to-left letters that starts or ends with something
+ * other than a letter ("4 items", "40 h", "Alfa Trade d.o.o.", "05.10.2026. – 11.10.2026."),
+ * whose own element and inline ancestors set neither `unicode-bidi: plaintext` (TEXT_DIRECTION,
+ * TEXT_ISOLATE) nor `dir="auto"` nor `bdi`, nor a left-to-right direction. A paragraph's
+ * direction is its block's: `unicode-bidi` is not inherited, so a block child (a flex item
+ * included) of a text-direction element starts again from the page's direction. A bare number
+ * ("2026", "08:00") has nothing to reorder. Typed text (inputs, text areas) belongs to its field
+ * (`dir="auto"`, P3.6c), and charts draw their own SVG text; both are left out.
+ */
+export async function textOutOfOrder(page: Page): Promise<string[]> {
+  return page.evaluate(() => {
+    const rightToLeft = /[\u0590-\u08ff\u200f\ufb1d-\ufdff\ufe70-\ufeff]/
+    const letter = /\p{L}/u
+    const found = new Set<string>()
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT)
+    for (let node = walker.nextNode(); node !== null; node = walker.nextNode()) {
+      const text = (node.textContent ?? '').trim()
+      if (text === '' || rightToLeft.test(text) || !/[\p{L}\p{N}]/u.test(text)) continue
+      if (/^\p{N}+([.,:/-]\p{N}+)*$/u.test(text)) continue
+      if (letter.test(text.at(0) ?? '') && letter.test(text.at(-1) ?? '')) continue
+      const parent = node.parentElement
+      if (parent?.closest('textarea, input, svg, script, style') !== null) continue
+      const box = parent.getBoundingClientRect()
+      const style = getComputedStyle(parent)
+      if (box.width <= 2 || box.height <= 2 || style.visibility !== 'visible') continue
+      if (style.direction === 'ltr') continue
+      let ordered = false
+      for (
+        let element: Element | null = parent;
+        element !== null;
+        element = element.parentElement
+      ) {
+        const own = getComputedStyle(element)
+        if (
+          own.unicodeBidi.includes('plaintext') ||
+          element.getAttribute('dir') === 'auto' ||
+          element.tagName === 'BDI'
+        ) {
+          ordered = true
+          break
+        }
+        if (own.display !== 'inline' && own.display !== 'contents') break
+      }
+      if (!ordered) {
+        const name = `${parent.tagName.toLowerCase()}${parent.getAttribute('data-slot') === null ? '' : `[${parent.getAttribute('data-slot') ?? ''}]`}`
+        found.add(`"${text.slice(0, 60)}" in <${name}>`)
+      }
+    }
+    return [...found]
+  })
+}

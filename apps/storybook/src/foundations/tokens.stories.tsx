@@ -100,7 +100,7 @@ function Page({ title, intro, children }: { title: string; intro: string; childr
   return (
     <div className="flex max-w-content flex-col gap-4">
       <h2 className="m-0 text-xl font-semibold">{title}</h2>
-      <p className="m-0 max-w-3xl text-secondary">{intro}</p>
+      <p className="bidi-content m-0 max-w-3xl text-secondary">{intro}</p>
       {children}
     </div>
   )
@@ -161,7 +161,9 @@ function Meanings() {
         render={(theme) =>
           [...groups.entries()].map(([group, entries]) => (
             <table key={group} className="w-full table-fixed border-collapse text-sm">
-              <caption className="pb-1 text-start font-semibold">{group}</caption>
+              <caption className="pb-1 text-start font-semibold">
+                <span className="bidi-isolate">{group}</span>
+              </caption>
               <thead className="sr-only">
                 <tr>
                   <th scope="col">Colour</th>
@@ -269,7 +271,7 @@ function SpacingRadiusShadows() {
                 className="flex w-40 flex-col gap-1 rounded-md bg-surface-raised p-3"
                 style={{ boxShadow: `var(--liro-shadow-${name})` }}
               >
-                <span className="text-sm font-semibold">shadow-{name}</span>
+                <span className="bidi-content text-sm font-semibold">shadow-{name}</span>
                 <Code>{pair[theme === 'light' ? 0 : 1]}</Code>
               </li>
             ))}
@@ -283,16 +285,18 @@ function SpacingRadiusShadows() {
 function ValueTable({ caption, rows }: { caption: string; rows: [string, string, string][] }) {
   return (
     <table className="w-full max-w-3xl table-fixed border-collapse text-sm">
-      <caption className="pb-1 text-start font-semibold">{caption}</caption>
+      <caption className="pb-1 text-start font-semibold">
+        <span className="bidi-isolate">{caption}</span>
+      </caption>
       <thead>
         <tr className="text-start text-secondary">
-          <th scope="col" className="py-1 pe-2 text-start font-normal">
+          <th scope="col" className="py-1 pe-2 text-start font-regular">
             Name
           </th>
-          <th scope="col" className="py-1 pe-2 text-start font-normal">
+          <th scope="col" className="py-1 pe-2 text-start font-regular">
             Variable
           </th>
-          <th scope="col" className="py-1 text-start font-normal">
+          <th scope="col" className="py-1 text-start font-regular">
             Value
           </th>
         </tr>
@@ -300,7 +304,9 @@ function ValueTable({ caption, rows }: { caption: string; rows: [string, string,
       <tbody>
         {rows.map(([name, variable, value]) => (
           <tr key={variable} className="border-t border-subtle">
-            <td className="py-1 pe-2">{name}</td>
+            <td className="py-1 pe-2">
+              <span className="bidi-isolate">{name}</span>
+            </td>
             <td className="py-1 pe-2">
               <Code>{variable}</Code>
             </td>

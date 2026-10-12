@@ -121,6 +121,8 @@ function buttonParts(props: CompactIconButtonProps, shape: ButtonShape) {
       className,
       'data-family': family,
       'data-emphasis': emphasis,
+      // The touch density (P5.10) raises the icon shapes to 44px by this attribute.
+      'data-shape': shape,
       ...data,
     },
   }

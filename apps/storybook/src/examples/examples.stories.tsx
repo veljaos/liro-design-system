@@ -2108,3 +2108,1457 @@ export const BankStatementLinePhone: Story = {
     await settle()
   },
 }
+
+// ── P5.17 group J: Learning and printouts ──
+
+import { J_ROUTES } from './data-J'
+
+/**
+ * The occupational-safety course "Bezbednost i zdravlje na radu" as Nikola Marković, a site
+ * worker of Kvadrat Gradnja d.o.o., left it: 5 of 8 lessons done, "Manual handling of loads"
+ * next; the lesson after it is locked until this one is done, the final test until every lesson
+ * is.
+ */
+export const SafetyCourseLesson: Story = {
+  name: 'Safety course, lesson',
+  render: () => <ExampleApp start={J_ROUTES.lesson} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { level: 1 })).toHaveTextContent(
+      'Bezbednost i zdravlje na radu',
+    )
+    await expect(canvas.getByText('5 of 8 lessons')).toBeVisible()
+    const outline = canvas.getByRole('navigation', { name: 'Course outline' })
+    const current = within(outline).getByRole('link', { current: 'page' })
+    await expect(current).toHaveTextContent('Manual handling of loads')
+    await expect(current).toHaveAttribute('data-state', 'todo')
+    await expect(
+      within(outline).getByText(
+        'Reading · 11 min · Locked: finish “Manual handling of loads” first',
+      ),
+    ).toBeVisible()
+    await expect(
+      within(outline).getByText('Quiz · 5 questions · Locked: finish every lesson first'),
+    ).toBeVisible()
+    await expect(within(outline).queryByRole('link', { name: /Final test/ })).toBeNull()
+    await expect(canvas.getByRole('button', { name: 'Mark as done' })).toBeEnabled()
+    // The next lesson is locked: the pager offers only the previous one.
+    const pager = canvas.getByRole('navigation', { name: 'Lessons' })
+    await expect(within(pager).queryByRole('link', { name: /Next lesson/ })).toBeNull()
+    await expect(within(pager).getByRole('link', { name: /Previous lesson/ })).toBeVisible()
+  },
+}
+
+/** Phone: the lesson first, the outline behind "Course outline". */
+export const SafetyCourseLessonPhone: Story = {
+  name: 'Safety course, lesson, phone',
+  render: () => <OnPhone start={J_ROUTES.lesson} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('button', { name: 'Course outline' })).toBeVisible()
+    await expect(canvas.queryByRole('navigation', { name: 'Course outline' })).toBeNull()
+    await expect(canvas.getByText('5 of 8 lessons')).toBeVisible()
+    const page = canvasElement.querySelector<HTMLElement>('[data-slot="course-page"]')
+    if (page === null) throw new Error('no course page')
+    await expect(page.scrollWidth).toBeLessThanOrEqual(page.clientWidth)
+  },
+}
+
+/** Phone, the outline open: done, to do, and the locked lessons with their reasons. */
+export const SafetyCourseOutlinePhone: Story = {
+  name: 'Safety course, outline, phone',
+  render: () => <OnPhone start={J_ROUTES.lessonOutline} />,
+  play: async () => {
+    const dialog = await within(document.body).findByRole('dialog', { name: 'Course outline' })
+    await settle()
+    await expect(within(dialog).getByRole('link', { current: 'page' })).toHaveTextContent(
+      'Manual handling of loads',
+    )
+    await expect(within(dialog).getByText(/Locked: finish every lesson first/)).toBeVisible()
+    await expect(within(dialog).getByText('2 of 2 done')).toBeVisible()
+  },
+}
+
+/** The final test on the general Questionnaire, resumed at the third of five questions. */
+export const SafetyCourseTest: Story = {
+  name: 'Safety course, final test',
+  render: () => <ExampleApp start={J_ROUTES.test} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('7 of 8 lessons')).toBeVisible()
+    await expect(canvas.getByText('2 of 5 answered')).toBeVisible()
+    await expect(
+      canvas.getByRole('group', { name: /Which equipment must every worker wear on the site\?/ }),
+    ).toBeVisible()
+    await expect(canvas.queryByRole('region', { name: 'Course completed' })).toBeNull()
+  },
+}
+
+/** The first attempt, not passed: 3 of 5, the answers with the correct ones, "Take the test again". */
+export const SafetyCourseTestNotPassed: Story = {
+  name: 'Safety course, test not passed',
+  render: () => <ExampleApp start={J_ROUTES.testNotPassed} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('Not passed')).toBeVisible()
+    await expect(canvas.getByText('3 of 5 correct')).toBeVisible()
+    await expect(canvas.getByText('You need 4 correct answers to pass.')).toBeVisible()
+    await expect(canvas.getByText('Correct answer: From 2 m')).toBeVisible()
+    await expect(
+      canvas.getByText('Correct answer: Safety helmet, Safety boots, High-visibility vest'),
+    ).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Take the test again' })).toBeEnabled()
+    await expect(canvas.getByText('7 of 8 lessons')).toBeVisible()
+  },
+}
+
+/** Passed: the course completed, "Download certificate" and the certificate's preview. */
+export const SafetyCourseCompleted: Story = {
+  name: 'Safety course, completed',
+  render: () => <ExampleApp start={J_ROUTES.completed} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('8 of 8 lessons')).toBeVisible()
+    const completion = canvas.getByRole('region', { name: 'Course completed' })
+    await expect(completion).toHaveTextContent(
+      'Completed on 06.10.2026. with 4 of 5 correct answers in the final test.',
+    )
+    await expect(
+      within(completion).getByRole('button', { name: 'Download certificate' }),
+    ).toBeEnabled()
+    await expect(
+      within(completion).getByRole('figure', { name: 'Certificate preview' }),
+    ).toHaveTextContent('Nikola Marković')
+    await expect(canvas.getByText('4 of 5 correct')).toBeVisible()
+    await expect(canvas.getByText('Passed')).toBeVisible()
+  },
+}
+
+export const SafetyCourseCompletedPhone: Story = {
+  name: 'Safety course, completed, phone',
+  render: () => <OnPhone start={J_ROUTES.completed} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('button', { name: 'Download certificate' })).toBeVisible()
+    const page = canvasElement.querySelector<HTMLElement>('[data-slot="course-page"]')
+    if (page === null) throw new Error('no course page')
+    await expect(page.scrollWidth).toBeLessThanOrEqual(page.clientWidth)
+  },
+}
+
+/**
+ * The course worked through: "Mark as done" saves and the next lesson opens; the final test
+ * not passed, taken again and passed; "Download certificate" opens the certificate's printout,
+ * and its back button returns to the course.
+ */
+export const SafetyCourseInteraction: Story = {
+  name: 'Safety course, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={J_ROUTES.lesson} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Mark as done' }))
+    await settle()
+    await expect(await canvas.findByText('6 of 8 lessons')).toBeVisible()
+    await expect(canvas.getByText('Lesson completed')).toBeVisible()
+    await userEvent.click(canvas.getByRole('link', { name: /Next lesson/ }))
+    await settle()
+    await expect(
+      await canvas.findByRole('heading', { level: 2, name: 'Cranes, slings and signals' }),
+    ).toBeVisible()
+    await userEvent.click(canvas.getByRole('button', { name: 'Mark as done' }))
+    await settle()
+    await expect(await canvas.findByText('7 of 8 lessons')).toBeVisible()
+    await userEvent.click(canvas.getByRole('link', { name: /Next lesson/ }))
+    await settle()
+    // The test resumes at the third question; two answers wrong.
+    await userEvent.click(await canvas.findByRole('checkbox', { name: /Safety helmet/ }))
+    await userEvent.click(canvas.getByRole('button', { name: 'Next' }))
+    await userEvent.click(await canvas.findByRole('radio', { name: /Loads up to 40 kg/ }))
+    await userEvent.click(canvas.getByRole('button', { name: 'Next' }))
+    await userEvent.click(await canvas.findByRole('radio', { name: /One signaller/ }))
+    await userEvent.click(canvas.getByRole('button', { name: 'Review answers' }))
+    await userEvent.click(await canvas.findByRole('button', { name: 'Submit answers' }))
+    await expect(await canvas.findByText('Not passed')).toBeVisible()
+    await expect(canvas.getByText('3 of 5 correct')).toBeVisible()
+    // Again, from the first question, every answer right.
+    await userEvent.click(canvas.getByRole('button', { name: 'Take the test again' }))
+    await userEvent.click(await canvas.findByRole('radio', { name: /From 2 m/ }))
+    await userEvent.click(canvas.getByRole('button', { name: 'Next' }))
+    await userEvent.click(await canvas.findByRole('radio', { name: /A competent person/ }))
+    await userEvent.click(canvas.getByRole('button', { name: 'Next' }))
+    for (const name of [/Safety helmet/, /Safety boots/, /High-visibility vest/]) {
+      await userEvent.click(await canvas.findByRole('checkbox', { name }))
+    }
+    await userEvent.click(canvas.getByRole('button', { name: 'Next' }))
+    await userEvent.click(await canvas.findByRole('radio', { name: /Loads up to 25 kg/ }))
+    await userEvent.click(canvas.getByRole('button', { name: 'Next' }))
+    await userEvent.click(await canvas.findByRole('radio', { name: /One signaller/ }))
+    await userEvent.click(canvas.getByRole('button', { name: 'Review answers' }))
+    await userEvent.click(await canvas.findByRole('button', { name: 'Submit answers' }))
+    await expect(await canvas.findByText('Passed')).toBeVisible()
+    await expect(canvas.getByText('5 of 5 correct')).toBeVisible()
+    await expect(canvas.getByText('8 of 8 lessons')).toBeVisible()
+    const completion = canvas.getByRole('region', { name: 'Course completed' })
+    await userEvent.click(within(completion).getByRole('button', { name: 'Download certificate' }))
+    await settle()
+    await expect(
+      await canvas.findByRole('article', { name: 'Certificate: Nikola Marković' }),
+    ).toBeVisible()
+    await userEvent.click(
+      canvas.getByRole('link', { name: 'Back to Bezbednost i zdravlje na radu' }),
+    )
+    await settle()
+    await expect(await canvas.findByText('8 of 8 lessons')).toBeVisible()
+  },
+}
+
+/** Invoice F-2026-0412 on paper: the lines and totals of its page, from the same data. */
+export const PrintoutInvoice: Story = {
+  name: 'Printout, invoice F-2026-0412',
+  render: () => <ExampleApp start={J_ROUTES.invoicePrint} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const sheet = canvas.getByRole('article', { name: `Invoice ${FEATURED}` })
+    await expect(sheet).toHaveAttribute('data-liro-theme', 'light')
+    await expect(canvas.getByRole('heading', { level: 1 })).toHaveTextContent(`Invoice ${FEATURED}`)
+    const lines = canvas.getByRole('table', { name: 'Lines' })
+    await expect(within(lines).getAllByRole('row')).toHaveLength(6)
+    const totals = sheet.querySelector('[data-slot="document-totals"]')
+    await expect(totals).toHaveAttribute('aria-label', 'Totals')
+    await expect(totals).toHaveTextContent('185.954,00')
+    await expect(totals).toHaveTextContent('135.954,00')
+    await expect(canvas.getByText('Novi Sad, 28.09.2026.')).toBeVisible()
+    await expect(canvas.getByRole('link', { name: `Back to ${FEATURED}` })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Print' })).toBeVisible()
+  },
+}
+
+export const PrintoutInvoicePhone: Story = {
+  name: 'Printout, invoice F-2026-0412, phone',
+  render: () => <OnPhone start={J_ROUTES.invoicePrint} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const page = canvasElement.querySelector<HTMLElement>('[data-slot="print-page"]')
+    if (page === null) throw new Error('no print page')
+    // The sheet is scaled down to the phone's width: nothing scrolls sideways.
+    await expect(page.scrollWidth).toBeLessThanOrEqual(page.clientWidth)
+  },
+}
+
+/** The invoice's "PDF" opens its printout; the back button returns to the invoice. */
+export const PrintoutInvoiceInteraction: Story = {
+  name: 'Printout, invoice from its page, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={ROUTES.invoice(FEATURED)} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'PDF' }))
+    await settle()
+    const sheet = await canvas.findByRole('article', { name: `Invoice ${FEATURED}` })
+    await expect(sheet.querySelector('[data-slot="document-totals"]')).toHaveTextContent(
+      '135.954,00',
+    )
+    await userEvent.click(canvas.getByRole('link', { name: `Back to ${FEATURED}` }))
+    await settle()
+    await expect(await canvas.findByRole('heading', { level: 1, name: FEATURED })).toBeVisible()
+  },
+}
+
+/** The course certificate, landscape, from "Download certificate". */
+export const PrintoutCertificate: Story = {
+  name: 'Printout, certificate',
+  render: () => <ExampleApp start={J_ROUTES.certificate} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const sheet = canvas.getByRole('article', { name: 'Certificate: Nikola Marković' })
+    await expect(sheet).toHaveAttribute('data-orientation', 'landscape')
+    await expect(canvas.getByText('Novi Sad, 06.10.2026.')).toBeVisible()
+    await expect(
+      canvas.getByRole('link', { name: 'Back to Bezbednost i zdravlje na radu' }),
+    ).toBeVisible()
+  },
+}
+
+export const PrintoutCertificatePhone: Story = {
+  name: 'Printout, certificate, phone',
+  render: () => <OnPhone start={J_ROUTES.certificate} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const page = canvasElement.querySelector<HTMLElement>('[data-slot="print-page"]')
+    if (page === null) throw new Error('no print page')
+    await expect(page.scrollWidth).toBeLessThanOrEqual(page.clientWidth)
+  },
+}
+
+/** A pupil's report card from OŠ „Jovan Popović“ Novi Sad; the average is the school's. */
+export const PrintoutReportCard: Story = {
+  name: 'Printout, school report',
+  render: () => <ExampleApp start={J_ROUTES.reportCard} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { level: 1 })).toHaveTextContent('Report card')
+    const table = canvas.getByRole('table', { name: 'Final grades by subject' })
+    await expect(within(table).getByRole('rowheader', { name: 'Average grade' })).toBeVisible()
+    await expect(table).toHaveTextContent('4,57')
+    await expect(canvas.getByRole('img', { name: 'OŠ „Jovan Popović“ Novi Sad' })).toBeVisible()
+  },
+}
+
+export const PrintoutReportCardPhone: Story = {
+  name: 'Printout, school report, phone',
+  render: () => <OnPhone start={J_ROUTES.reportCard} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const page = canvasElement.querySelector<HTMLElement>('[data-slot="print-page"]')
+    if (page === null) throw new Error('no print page')
+    await expect(page.scrollWidth).toBeLessThanOrEqual(page.clientWidth)
+  },
+}
+
+/** A specialist's finding from Dom zdravlja Novi Sad, confidential on every page. */
+export const PrintoutFinding: Story = {
+  name: 'Printout, medical finding',
+  render: () => <ExampleApp start={J_ROUTES.finding} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('region', { name: 'Patient' })).toHaveTextContent(
+      'Svetlana Đorđević',
+    )
+    await expect(
+      canvas.getByRole('table', { name: 'Laboratory results, 03.10.2026.' }),
+    ).toHaveTextContent('6,4')
+    await expect(canvasElement.querySelector('[data-slot="print-confidentiality"]')).not.toBeNull()
+  },
+}
+
+export const PrintoutFindingPhone: Story = {
+  name: 'Printout, medical finding, phone',
+  render: () => <OnPhone start={J_ROUTES.finding} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const page = canvasElement.querySelector<HTMLElement>('[data-slot="print-page"]')
+    if (page === null) throw new Error('no print page')
+    await expect(page.scrollWidth).toBeLessThanOrEqual(page.clientWidth)
+  },
+}
+
+// ── P5.24 working time and P5.17 industry examples ──
+// (Imports here, inside the block, so the blocks merge without touching the top.)
+import { CLOCK_DAY, CREW, crewSum, SITE, STORE_PUBLISH, TOTALS_LOCKED, TOTALS_OPEN } from './data-G'
+import { ABSENCE_COUNTS, FINDING, JOVANA_BOOKING, PATIENT } from './data-H'
+import { G_ROUTES } from './screens-G'
+import { H_ROUTES } from './screens-H'
+
+const SERBIAN_G = createFormat('sr-Latn-RS')
+
+/** The page does not scroll sideways (the wide grids scroll inside their own box). */
+async function noPageOverflow(canvasElement: HTMLElement) {
+  const main = canvasElement.querySelector('main')
+  await expect(main === null ? 0 : main.scrollWidth - main.clientWidth).toBeLessThanOrEqual(0)
+}
+
+/**
+ * Kvadrat Gradnja's site crew, October 2026 (P5.24 a, c): ten workers × the month's days in
+ * hours and a code — regular work, night work with its allowance, overtime, the illustrative
+ * public holiday on 20.10. (labelled so), sick leave, annual leave, a business trip, paid and
+ * unpaid leave, an absence. Totals per type per worker and per day are the application's; the
+ * key figures above are the crew's. "Hand off to payroll" ends the month.
+ */
+export const SiteTimesheet: Story = {
+  name: 'Site timesheet, October 2026',
+  render: () => <ExampleApp start={G_ROUTES.timesheet} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    // Plain DOM queries: the grid has some 400 cells, and role queries walk all of them.
+    await expect(canvasElement.querySelector('h1')).toHaveTextContent('Timesheet, October 2026')
+    const headers = [...canvasElement.querySelectorAll('[role="columnheader"]')].map(
+      (header) => header.textContent,
+    )
+    await expect(headers.some((text) => text.includes('Illustrative public holiday'))).toBe(true)
+    await expect(headers.some((text) => text.includes('Night hours'))).toBe(true)
+    await expect(canvasElement).toHaveTextContent(
+      `${SERBIAN_G.number(crewSum(TOTALS_OPEN.rowTotals, 'worked'))} h`,
+    )
+    await expect(canvasElement).toHaveTextContent('Hand off to payroll')
+  },
+}
+
+export const SiteTimesheetPhone: Story = {
+  name: 'Site timesheet, October 2026, phone',
+  render: () => <OnPhone start={G_ROUTES.timesheet} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    // One worker per screen: the first, then Next.
+    await expect(canvas.getByRole('heading', { name: CREW[0]?.label ?? '' })).toBeVisible()
+    await noPageOverflow(canvasElement)
+  },
+}
+
+/**
+ * The month locked after payroll: read-only, the lock's reason and who locked it; one
+ * correction — Vladimir Tomić's absence on 28.10. was sick leave (the certificate came after the
+ * payroll run) — kept with the original, who, when and why. His total and the day's total
+ * include it.
+ */
+export const SiteTimesheetLocked: Story = {
+  name: 'Site timesheet, locked after payroll',
+  render: () => <ExampleApp start={G_ROUTES.timesheetLocked} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('Payroll for October 2026 has been calculated.')
+    await expect(canvasElement).toHaveTextContent(SITE.lockedDetail)
+    await expect(canvasElement).toHaveTextContent('Corrections')
+    await expect(canvasElement).toHaveTextContent('Sick-leave certificate for 28.10.')
+    await expect(canvasElement).toHaveTextContent(
+      `${SERBIAN_G.number(crewSum(TOTALS_LOCKED.rowTotals, 'leave'))} h`,
+    )
+  },
+}
+
+/** Phone: the locked month on Vladimir Tomić, whose day was corrected. */
+export const SiteTimesheetLockedPhone: Story = {
+  name: 'Site timesheet, locked after payroll, phone',
+  render: () => <OnPhone start={G_ROUTES.timesheetLockedWorker} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(
+      within(canvasElement).getByRole('heading', { name: 'Vladimir Tomić' }),
+    ).toBeVisible()
+    await noPageOverflow(canvasElement)
+  },
+}
+
+/**
+ * The clock records of Thursday 29.10.2026 from the site's gate terminal (one from a phone at
+ * the crane): each record's hours are that day's hours in the timesheet; Milan Jovanović's
+ * missing clock-out corrected by the foreman, the original kept; the guard's night ends the next
+ * day.
+ */
+export const SiteClockRecords: Story = {
+  name: 'Site clock records, 29.10.2026',
+  render: () => <ExampleApp start={G_ROUTES.clockRecords} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { level: 1, name: 'Clock records' })).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('Forgot to clock out')
+    await expect(canvasElement).toHaveTextContent('next day')
+    await expect(canvasElement).toHaveTextContent(SERBIAN_G.date(CLOCK_DAY))
+  },
+}
+
+export const SiteClockRecordsPhone: Story = {
+  name: 'Site clock records, 29.10.2026, phone',
+  render: () => <OnPhone start={G_ROUTES.clockRecords} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('Forgot to clock out')
+    await noPageOverflow(canvasElement)
+  },
+}
+
+/**
+ * Prodavnica 12, the week of 12.–18.10.2026 (P5.24 b): early 07–15 and late 15–23, by person
+ * (or by team); published, then changed (two shifts marked "Changed"); conflicts from the
+ * application — Luka Đorđević's 8 hours of rest between a late and an early shift, Sanja
+ * Vuković's approved leave — and the coverage per day ("One short in the late shift" on Thursday).
+ * "Publish changes" states the counts.
+ */
+export const StoreShifts: Story = {
+  name: 'Store shifts, Prodavnica 12',
+  render: () => <ExampleApp start={G_ROUTES.storePlanner} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvasElement).toHaveTextContent('Changed since publishing')
+    await expect(canvasElement).toHaveTextContent('Approved annual leave on 18.10.2026')
+    await expect(canvas.getByRole('button', { name: 'Publish changes' })).toBeVisible()
+  },
+}
+
+export const StoreShiftsPhone: Story = {
+  name: 'Store shifts, Prodavnica 12, phone',
+  render: () => <OnPhone start={G_ROUTES.storePlanner} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('Luka Đorđević')
+    await noPageOverflow(canvasElement)
+  },
+}
+
+export const StoreShiftsPublish: Story = {
+  name: 'Store shifts, publish, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={G_ROUTES.storePlanner} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Publish changes' }))
+    const dialog = await within(document.body).findByRole('alertdialog')
+    await expect(dialog).toHaveTextContent(
+      `${String(STORE_PUBLISH.shifts)} shifts for ${String(STORE_PUBLISH.people)} people`,
+    )
+    await userEvent.click(within(dialog).getByRole('button', { name: /^Publish/ }))
+    await expect(
+      await within(document.body).findByText(/Changes published\. 8 people were notified\./),
+    ).toBeInTheDocument()
+    await waitFor(async () => {
+      await expect(canvas.queryByText('Changed since publishing')).toBeNull()
+    })
+  },
+}
+
+/**
+ * The cashier Stefan Lukić's own shifts (P5.24 b), as published: this week and next; Thursday's
+ * changed shift says what it was; Saturday's swap request waits for the manager (it is the first
+ * of the swap requests).
+ */
+export const StoreMyShiftsPhone: Story = {
+  name: 'Store, my shifts, phone',
+  render: () => <OnPhone start={G_ROUTES.myShifts} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { name: /^This week/ })).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('Swap requested with Jelena Rakić')
+    await expect(canvasElement).toHaveTextContent('Was Early, 07:00–15:00')
+    await noPageOverflow(canvasElement)
+  },
+}
+
+export const StoreMyShifts: Story = {
+  name: 'Store, my shifts',
+  render: () => <ExampleApp start={G_ROUTES.myShifts} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('Swap requested with Jelena Rakić')
+  },
+}
+
+/** A swap request being written for Thursday 15.10., with the colleagues who may take it. */
+export const StoreSwapRequestPhone: Story = {
+  name: 'Store, my shifts, swap request, phone',
+  render: () => <OnPhone start={G_ROUTES.myShiftsSwap} />,
+  play: async () => {
+    await settle()
+    await expect(
+      within(document.body).getByRole('dialog', { name: 'Request a swap' }),
+    ).toHaveTextContent('07:00')
+  },
+}
+
+export const StoreSwapRequest: Story = {
+  name: 'Store, my shifts, swap request',
+  render: () => <ExampleApp start={G_ROUTES.myShiftsSwap} />,
+  play: async () => {
+    await settle()
+    await expect(
+      within(document.body).getByRole('dialog', { name: 'Request a swap' }),
+    ).toBeVisible()
+  },
+}
+
+/**
+ * The manager's swap requests (P5.24 b on the approvals pattern, P4.3 and P5.23): one at a time,
+ * the shift, who takes it and the shift given back, the reason and the application's check;
+ * Reject asks for a reason, Approve is the main action.
+ */
+export const StoreSwapRequests: Story = {
+  name: 'Store, swap requests',
+  render: () => <ExampleApp start={G_ROUTES.swapRequests} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { level: 2, name: 'Stefan Lukić' })).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('No conflicts for either of them.')
+    await expect(canvas.getByRole('button', { name: 'Approve' })).toBeVisible()
+  },
+}
+
+/** Sanja Vuković's request: the check warns that Nemanja would go over his contract's hours. */
+export const StoreSwapRequestWarning: Story = {
+  name: 'Store, swap requests, a warning',
+  render: () => <ExampleApp start={G_ROUTES.swapRequestWarning} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('above the illustrative 16 h')
+  },
+}
+
+export const StoreSwapRequestsPhone: Story = {
+  name: 'Store, swap requests, phone',
+  render: () => <OnPhone start={G_ROUTES.swapRequests} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(
+      within(canvasElement).getByRole('list', { name: 'Swap requests to approve' }),
+    ).toBeVisible()
+    await noPageOverflow(canvasElement)
+  },
+}
+
+export const StoreSwapRequestWarningPhone: Story = {
+  name: 'Store, swap requests, a warning, phone',
+  render: () => <OnPhone start={G_ROUTES.swapRequestWarning} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('above the illustrative 16 h')
+    await expect(within(canvasElement).getByRole('button', { name: 'Approve' })).toBeVisible()
+  },
+}
+
+export const StoreSwapRequestsReject: Story = {
+  name: 'Store, swap requests, reject, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={G_ROUTES.swapRequestWarning} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Reject' }))
+    const dialog = await within(document.body).findByRole('alertdialog')
+    await userEvent.click(
+      within(dialog).getByRole('radio', {
+        name: 'The colleague would go over the hours of their contract',
+      }),
+    )
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Reject' }))
+    await expect(
+      await within(document.body).findByText('Swap of Sanja Vuković rejected.'),
+    ).toBeInTheDocument()
+    await expect(canvas.queryByRole('heading', { level: 2, name: 'Sanja Vuković' })).toBeNull()
+  },
+}
+
+/**
+ * Dom zdravlja Novi Sad, the emergency department (P5.24 b, c): 06–14, 14–22 and 22–06 (the
+ * night crosses midnight), by team; the 8-day rotation applied to all twelve, then the changes —
+ * a nurse's sick leave, two shifts added to cover — and the conflicts the application found: 8
+ * hours of rest after a night, a morning straight after a night, 56 hours in a week (illustrative
+ * limits).
+ */
+export const EmergencyShifts: Story = {
+  name: 'Emergency shifts, rotation applied',
+  render: () => <ExampleApp start={G_ROUTES.erPlanner} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('Nurses and technicians, team A')
+    await expect(canvasElement).toHaveTextContent(
+      'No rest: the morning shift starts when the night shift ends',
+    )
+    await expect(canvasElement).toHaveTextContent('22:00–06:00')
+  },
+}
+
+export const EmergencyShiftsPhone: Story = {
+  name: 'Emergency shifts, rotation applied, phone',
+  render: () => <OnPhone start={G_ROUTES.erPlanner} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('Jelena Popović')
+    await noPageOverflow(canvasElement)
+  },
+}
+
+/** "Apply rotation…" open: the pattern, the people, the dates and the offset per person. */
+export const EmergencyRotation: Story = {
+  name: 'Emergency shifts, apply a rotation',
+  render: () => <ExampleApp start={G_ROUTES.erRotation} />,
+  play: async () => {
+    await settle()
+    await expect(
+      within(document.body).getByRole('dialog', { name: 'Apply a rotation' }),
+    ).toBeVisible()
+  },
+}
+
+/**
+ * The working-time redistribution of the eight weeks before (P5.24 d): the plan's weeks (48 to
+ * 32 hours, a reference average of 40, illustrative), per person planned, worked, the difference
+ * and the average; warnings from the application with illustrative limits; a new colleague
+ * without figures ("—", never 0).
+ */
+export const EmergencyBalance: Story = {
+  name: 'Emergency working-time balance',
+  render: () => <ExampleApp start={G_ROUTES.erBalance} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('Average above the illustrative limit of 48 h')
+    await expect(canvasElement).toHaveTextContent('Reference average per week (illustrative)')
+  },
+}
+
+export const EmergencyBalancePhone: Story = {
+  name: 'Emergency working-time balance, phone',
+  render: () => <OnPhone start={G_ROUTES.erBalance} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('Jelena Popović')
+    await noPageOverflow(canvasElement)
+  },
+}
+
+/**
+ * Health (P5.17): Jovana Nikolić books a check-up in Dom zdravlja Novi Sad's patient portal
+ * (PortalShell) — the service and her chosen doctor, then a free time (SlotPicker), then Book.
+ */
+export const HealthBooking: Story = {
+  name: 'Health, book an appointment',
+  render: () => <ExampleApp start={H_ROUTES.book} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(
+      canvas.getByRole('heading', { level: 1, name: 'Book an appointment' }),
+    ).toBeVisible()
+    await expect(canvas.getByRole('radio', { name: /Check-up/ })).toBeChecked()
+  },
+}
+
+export const HealthBookingPhone: Story = {
+  name: 'Health, book an appointment, phone',
+  render: () => <OnPhone start={H_ROUTES.book} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(within(canvasElement).getByRole('button', { name: 'Continue' })).toBeVisible()
+    await noPageOverflow(canvasElement)
+  },
+}
+
+/** The free times of dr Marko Stanković next week; nothing chosen, so Book says why it waits. */
+export const HealthBookingTime: Story = {
+  name: 'Health, book an appointment, choose a time',
+  render: () => <ExampleApp start={H_ROUTES.bookTime} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(within(canvasElement).getByRole('radiogroup')).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('Choose a time first.')
+  },
+}
+
+export const HealthBookingTimePhone: Story = {
+  name: 'Health, book an appointment, choose a time, phone',
+  render: () => <OnPhone start={H_ROUTES.bookTime} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(within(canvasElement).getByRole('radiogroup')).toBeVisible()
+    await noPageOverflow(canvasElement)
+  },
+}
+
+/** Wednesday 14.10. at 11:30 chosen: the appointment in words, then Book. */
+export const HealthBookingConfirm: Story = {
+  name: 'Health, book an appointment, confirm',
+  render: () => <ExampleApp start={H_ROUTES.bookConfirm} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('at 11:30')
+    await expect(within(canvasElement).getByRole('button', { name: 'Book' })).toBeVisible()
+  },
+}
+
+export const HealthBookingConfirmPhone: Story = {
+  name: 'Health, book an appointment, confirm, phone',
+  render: () => <OnPhone start={H_ROUTES.bookConfirm} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('at 11:30')
+    await noPageOverflow(canvasElement)
+  },
+}
+
+/** Booked: the confirmation, the appointment, and a link to the clinic's schedule of that day. */
+export const HealthBooked: Story = {
+  name: 'Health, appointment booked',
+  render: () => <ExampleApp start={H_ROUTES.booked} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('Your appointment is booked')
+    await expect(canvasElement).toHaveTextContent('Confirmed')
+  },
+}
+
+export const HealthBookedPhone: Story = {
+  name: 'Health, appointment booked, phone',
+  render: () => <OnPhone start={H_ROUTES.booked} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('Your appointment is booked')
+    await noPageOverflow(canvasElement)
+  },
+}
+
+/** The whole booking from the keyboard and pointer, then on to the clinic's schedule. */
+export const HealthBookingWalk: Story = {
+  name: 'Health, booking, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={H_ROUTES.book} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Continue' }))
+    await settle()
+    // The slot's name: its time range and the day in words.
+    const day = SERBIAN_G.dateLong('2026-10-14')
+    const radio = (await canvas.findAllByRole('radio')).find((each) => {
+      const name = each.getAttribute('aria-label') ?? ''
+      return name.startsWith('11:30') && name.includes(day)
+    })
+    if (radio === undefined) throw new Error('no 11:30 on 14.10.')
+    await userEvent.click(radio)
+    await expect(canvasElement).toHaveTextContent('at 11:30')
+    await userEvent.click(canvas.getByRole('button', { name: 'Book' }))
+    await settle()
+    await expect(await canvas.findByText('Your appointment is booked')).toBeVisible()
+    await userEvent.click(canvas.getByRole('link', { name: 'schedule of 14.10.2026' }))
+    await settle()
+    await expect(await canvas.findByRole('heading', { level: 1, name: 'Schedule' })).toBeVisible()
+  },
+}
+
+/**
+ * The clinic's schedule of Wednesday 14.10.2026 (ResourceSchedule): three doctors and the
+ * laboratory; the break and dr Vesna Lukić's annual leave hatched with their reasons; Jovana
+ * Nikolić's appointment booked online at 11:30. Opening it shows her finding.
+ */
+export const HealthClinicSchedule: Story = {
+  name: 'Health, clinic schedule',
+  render: () => <ExampleApp start={H_ROUTES.clinicSchedule} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent(PATIENT.name)
+    await expect(canvasElement).toHaveTextContent('Annual leave')
+  },
+}
+
+export const HealthClinicSchedulePhone: Story = {
+  name: 'Health, clinic schedule, phone',
+  render: () => <OnPhone start={H_ROUTES.clinicSchedule} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent(PATIENT.name)
+    await noPageOverflow(canvasElement)
+  },
+}
+
+/** dr Marko Stanković's week (CalendarView), his appointments and the team meeting. */
+export const HealthDoctorCalendar: Story = {
+  name: 'Health, doctor’s calendar',
+  render: () => <ExampleApp start={H_ROUTES.doctorCalendar} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(
+      within(canvasElement).getByRole('button', {
+        name: new RegExp(`${PATIENT.name}, Check-up`),
+      }),
+    ).toBeVisible()
+  },
+}
+
+export const HealthDoctorCalendarPhone: Story = {
+  name: 'Health, doctor’s calendar, phone',
+  render: () => <OnPhone start={H_ROUTES.doctorCalendar} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('dr Marko Stanković')
+    await noPageOverflow(canvasElement)
+  },
+}
+
+/**
+ * Jovana Nikolić's last finding: the diagnosis and the finding are health data, masked until the
+ * user says why (MaskedValue, P5.14); the next appointment is the one she booked.
+ */
+export const HealthFinding: Story = {
+  name: 'Health, finding',
+  render: () => <ExampleApp start={H_ROUTES.finding} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('button', { name: 'Show Diagnosis' })).toBeVisible()
+    await expect(canvasElement).not.toHaveTextContent(FINDING.diagnosis)
+    await expect(canvasElement).toHaveTextContent(
+      SERBIAN_G.dateLong(JOVANA_BOOKING.start.slice(0, 10)),
+    )
+  },
+}
+
+export const HealthFindingPhone: Story = {
+  name: 'Health, finding, phone',
+  render: () => <OnPhone start={H_ROUTES.finding} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).not.toHaveTextContent(FINDING.diagnosis)
+    await noPageOverflow(canvasElement)
+  },
+}
+
+/** "Show" asks why: the reasons from the application, Other, and the note that it is logged. */
+export const HealthFindingReason: Story = {
+  name: 'Health, finding, reason asked',
+  render: () => <ExampleApp start={H_ROUTES.findingAsk} />,
+  play: async () => {
+    await settle()
+    await expect(
+      within(document.body).getByRole('dialog', { name: 'Show Diagnosis' }),
+    ).toHaveTextContent('Access is logged')
+  },
+}
+
+export const HealthFindingReasonPhone: Story = {
+  name: 'Health, finding, reason asked, phone',
+  render: () => <OnPhone start={H_ROUTES.findingAsk} />,
+  play: async () => {
+    await settle()
+    await expect(
+      within(document.body).getByRole('dialog', { name: 'Show Diagnosis' }),
+    ).toBeVisible()
+  },
+}
+
+/** The diagnosis shown after a reason, with Hide. */
+export const HealthFindingShown: Story = {
+  name: 'Health, finding, diagnosis shown',
+  render: () => <ExampleApp start={H_ROUTES.findingShown} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent(FINDING.diagnosis)
+    await expect(
+      within(canvasElement).getByRole('button', { name: 'Hide Diagnosis' }),
+    ).toBeVisible()
+  },
+}
+
+export const HealthFindingReveal: Story = {
+  name: 'Health, finding, reveal, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={H_ROUTES.finding} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Show Diagnosis' }))
+    const dialog = await within(document.body).findByRole('dialog', { name: 'Show Diagnosis' })
+    await userEvent.click(
+      within(dialog).getByRole('radio', { name: 'I am treating the patient now' }),
+    )
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Show' }))
+    await expect(await canvas.findByText(FINDING.diagnosis)).toBeVisible()
+    // The dialog has closed (until then the page behind it is hidden from assistive technology).
+    await userEvent.click(await canvas.findByRole('button', { name: 'Hide Diagnosis' }))
+    await expect(canvasElement).not.toHaveTextContent(FINDING.diagnosis)
+  },
+}
+
+/**
+ * School (P5.17): class 7/2 of OŠ "Jovan Popović", 2026/27 — the week by periods with their
+ * times, Wednesday's written test and Thursday's substitute; lesson 3 running now ("Now"), with
+ * a link to mark its attendance.
+ */
+export const SchoolTimetable: Story = {
+  name: 'School, timetable 7/2',
+  render: () => <ExampleApp start={H_ROUTES.timetable} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('Written test 2')
+    await expect(canvasElement).toHaveTextContent('Substitute')
+  },
+}
+
+export const SchoolTimetablePhone: Story = {
+  name: 'School, timetable 7/2, phone',
+  render: () => <OnPhone start={H_ROUTES.timetable} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('Mathematics')
+    await noPageOverflow(canvasElement)
+  },
+}
+
+/**
+ * Today's attendance (P5.13): lessons 1 and 2 marked by their teachers — Luka Jovanović absent,
+ * Mila Lazarević late, Teodora Savić excused —; lesson 3 to be marked now, from its first cell,
+ * one key per pupil (P present, A absent, L late, E excused), or "Mark everyone" in the column's
+ * menu. The counts are the application's.
+ */
+export const SchoolAttendance: Story = {
+  name: 'School, attendance of a lesson',
+  render: () => <ExampleApp start={H_ROUTES.attendance} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(
+      within(canvasElement).getByRole('grid', { name: /Attendance, class 7\/2/ }),
+    ).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('Lessons missed today')
+  },
+}
+
+export const SchoolAttendancePhone: Story = {
+  name: 'School, attendance of a lesson, phone',
+  render: () => <OnPhone start={H_ROUTES.attendance} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(
+      within(canvasElement).getByRole('heading', { name: 'Luka Jovanović' }),
+    ).toBeVisible()
+    await noPageOverflow(canvasElement)
+  },
+}
+
+export const SchoolAttendanceMarking: Story = {
+  name: 'School, attendance, marking, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={H_ROUTES.attendance} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const first = canvasElement.querySelector<HTMLElement>('[role="gridcell"][tabindex="0"]')
+    if (first === null) throw new Error('no focused cell')
+    first.focus()
+    // Down the third lesson's column: the first three present, Luka (the fourth) absent.
+    await userEvent.keyboard('pppa')
+    const luka = canvasElement.querySelector('[data-pos="4:3"]')
+    await expect(luka).toHaveTextContent('A')
+    await expect(canvasElement.querySelector('[data-pos="5:3"]')).toHaveFocus()
+  },
+}
+
+/** The mathematics gradebook (P5.13): marks one key each, the application's averages. */
+export const SchoolGradebook: Story = {
+  name: 'School, gradebook',
+  render: () => <ExampleApp start={H_ROUTES.gradebook} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(within(canvasElement).getByRole('columnheader', { name: 'Average' })).toBeVisible()
+  },
+}
+
+export const SchoolGradebookPhone: Story = {
+  name: 'School, gradebook, phone',
+  render: () => <OnPhone start={H_ROUTES.gradebook} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(
+      within(canvasElement).getByRole('heading', { name: 'Luka Jovanović' }),
+    ).toBeVisible()
+    await noPageOverflow(canvasElement)
+  },
+}
+
+/**
+ * The parents' portal (PortalShell): Luka Jovanović's absences this term — the counts, today's
+ * two lessons not excused yet (as the attendance grid has them), earlier ones excused.
+ */
+export const SchoolParentPortal: Story = {
+  name: 'School, parents’ portal, absences',
+  render: () => <ExampleApp start={H_ROUTES.parent} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('Today’s absences are not excused yet')
+    await expect(canvasElement).toHaveTextContent(String(ABSENCE_COUNTS.total))
+  },
+}
+
+export const SchoolParentPortalPhone: Story = {
+  name: 'School, parents’ portal, absences, phone',
+  render: () => <OnPhone start={H_ROUTES.parent} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('Today’s absences are not excused yet')
+    await noPageOverflow(canvasElement)
+  },
+}
+
+export const SchoolParentPortalExcuse: Story = {
+  name: 'School, parents’ portal, excuse, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={H_ROUTES.parent} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Excuse today’s absences' }))
+    await expect(
+      await within(document.body).findByText('Sent to the class teacher, Dragana Simić.'),
+    ).toBeInTheDocument()
+    await expect(canvasElement).not.toHaveTextContent('Today’s absences are not excused yet')
+  },
+}
+
+// ── P5.17 group I: the till and the handheld ──
+// (Imports here, inside the block, so the blocks merge without touching the top.)
+import { PhoneFrame } from '../../../../packages/ui/src/components/story-frames'
+import { BAKERY, CARD_APPROVAL, COUNT, I_ROUTES, PICKING, SALE_FIGURES } from './data-I'
+
+const SERBIAN_I = createFormat('sr-Latn-RS')
+
+/**
+ * An amount of the till as the bakery sees it ("1.907,00 RSD"), as the text matchers read the
+ * page: every space (the no-break one too) as one.
+ */
+function tillText(value: string): string {
+  return SERBIAN_I.money(value, BAKERY.currency).replace(/\s+/g, ' ')
+}
+
+/** The cart's main action by its name, "Charge 1.907,00 RSD", whatever space the format writes. */
+function chargeName(value: string): RegExp {
+  const text = `Charge ${tillText(value)}`.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  return new RegExp(`^${text.replace(/ /g, '\\s')}$`)
+}
+
+/** A handheld scanner's screen: 360 × 740. */
+function OnHandheld({ start }: { start: string }) {
+  return (
+    <PhoneFrame width={360} height={740}>
+      <ExampleApp start={start} phone />
+    </PhoneFrame>
+  )
+}
+
+/** The payment dialog of the till. */
+function paymentDialog() {
+  return within(document.body).getByRole('dialog', { name: 'Payment' })
+}
+
+/** Nothing on the screen scrolls sideways. */
+async function expectNoSidewaysScroll(canvasElement: HTMLElement) {
+  for (const element of canvasElement.querySelectorAll<HTMLElement>(
+    '[data-slot="pos-shell"], [data-slot="pick-list"], [data-slot="stock-count"]',
+  )) {
+    await expect(element.scrollWidth).toBeLessThanOrEqual(element.clientWidth)
+  }
+}
+
+/**
+ * The till of Pekara Zlatni klas in Novi Sad (Kasa 1, Snežana Kovačević) on a landscape tablet,
+ * in the touch density: the products by category with a scan field above them, the cart of six
+ * lines with the loyalty card's 10% on the cakes (1.995,00 − 88,00 = 1.907,00 RSD, VAT included
+ * per category), "Charge 1.907,00 RSD" last. No application header: the till is one task.
+ */
+export const PosCheckout: Story = {
+  name: 'POS checkout, Pekara Zlatni klas',
+  render: () => <ExampleApp start={I_ROUTES.pos} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('region', { name: 'Register status' })).toHaveTextContent(
+      BAKERY.register,
+    )
+    await expect(canvasElement).toHaveTextContent('6 items')
+    await expect(canvas.getByRole('textbox', { name: 'Quantity, Krempita' })).toHaveValue('4')
+    await expect(canvasElement).toHaveTextContent(
+      `Loyalty discount 10%: ${tillText(`-${SALE_FIGURES.discounts}`)}`,
+    )
+    await expect(canvas.getByRole('button', { name: chargeName(SALE_FIGURES.total) })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: /^Raženi hleb/ })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    )
+    await expectNoSidewaysScroll(canvasElement)
+  },
+}
+
+/** Paying cash: 2.000,00 RSD tendered (the first banknote offered), the change 93,00 RSD. */
+export const PosCash: Story = {
+  name: 'POS checkout, paying cash',
+  render: () => <ExampleApp start={I_ROUTES.posCash} />,
+  play: async () => {
+    await settle()
+    const dialog = paymentDialog()
+    await expect(dialog).toHaveTextContent(tillText(SALE_FIGURES.total))
+    await expect(dialog).toHaveTextContent('Change due')
+    await expect(dialog).toHaveTextContent(tillText(SALE_FIGURES.change))
+    await expect(within(dialog).getByLabelText(/Amount tendered/)).toHaveValue('2.000')
+  },
+}
+
+/** Paying by card: the terminal waits for the customer; the dialog cannot be dismissed. */
+export const PosCardWaiting: Story = {
+  name: 'POS checkout, card waiting',
+  render: () => <ExampleApp start={I_ROUTES.posCardWaiting} />,
+  play: async () => {
+    await settle()
+    const dialog = paymentDialog()
+    await expect(dialog).toHaveTextContent('Waiting for the card terminal…')
+    await expect(within(dialog).queryByRole('button', { name: 'Close' })).toBeNull()
+  },
+}
+
+/** The terminal approved the card: "Complete payment" can be pressed. */
+export const PosCardApproved: Story = {
+  name: 'POS checkout, card approved',
+  render: () => <ExampleApp start={I_ROUTES.posCardApproved} />,
+  play: async () => {
+    await settle()
+    const dialog = paymentDialog()
+    await expect(dialog).toHaveTextContent('Card payment approved')
+    await expect(dialog).toHaveTextContent(CARD_APPROVAL)
+    await expect(
+      within(dialog).getByRole('button', { name: 'Complete payment' }),
+    ).not.toHaveAttribute('aria-disabled', 'true')
+  },
+}
+
+/** The sale paid in cash: receipt ZK-01-002318 with the tax per category, cash and change. */
+export const PosReceipt: Story = {
+  name: 'POS checkout, receipt',
+  render: () => <ExampleApp start={I_ROUTES.posReceipt} />,
+  play: async () => {
+    await settle()
+    const dialog = within(document.body).getByRole('dialog', { name: `Receipt ${BAKERY.receipt}` })
+    const receipt = within(dialog).getByRole('article', { name: 'Receipt' })
+    await expect(receipt).toHaveTextContent(BAKERY.name)
+    await expect(receipt).toHaveTextContent(tillText(SALE_FIGURES.total))
+    await expect(receipt).toHaveTextContent(tillText(SALE_FIGURES.vatE))
+    await expect(receipt).toHaveTextContent(tillText(SALE_FIGURES.change))
+  },
+}
+
+/** The connection lost: three sales wait on the till, selling goes on. */
+export const PosOffline: Story = {
+  name: 'POS checkout, offline',
+  render: () => <ExampleApp start={I_ROUTES.posOffline} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(within(canvasElement).getByText('3 sales waiting to be sent')).toBeVisible()
+    await expect(
+      within(canvasElement).getByRole('button', {
+        name: chargeName(SALE_FIGURES.total),
+      }),
+    ).toBeVisible()
+  },
+}
+
+/**
+ * A barcode read into the scan field adds the orange juice (the till sums: 2.057,00 RSD); a
+ * second kifla adds to its line; an unknown code is a problem in words.
+ */
+export const PosScanInteraction: Story = {
+  name: 'POS checkout, scanning, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={I_ROUTES.pos} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const field = canvas.getByRole('textbox', { name: 'Barcode or PLU' })
+    await userEvent.type(field, '8600417000528{Enter}')
+    await expect(await canvas.findByText('Sok od pomorandže added')).toBeVisible()
+    await expect(canvas.getByRole('textbox', { name: 'Quantity, Sok od pomorandže' })).toHaveValue(
+      '1',
+    )
+    await expect(canvas.getByRole('button', { name: chargeName('2057') })).toBeVisible()
+    await userEvent.type(field, '8600417000207{Enter}')
+    await waitFor(async () => {
+      await expect(canvas.getByRole('textbox', { name: 'Quantity, Kifla' })).toHaveValue('7')
+    })
+    await expect(canvas.getByRole('button', { name: chargeName('2082') })).toBeVisible()
+    await userEvent.type(field, '8600999999999{Enter}')
+    await expect(await canvas.findByText('Unknown code 8600999999999')).toBeVisible()
+  },
+}
+
+/** Charge, the 2.000,00 banknote, Complete payment, then the receipt. */
+export const PosPayInteraction: Story = {
+  name: 'POS checkout, paying cash, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={I_ROUTES.pos} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await userEvent.click(
+      within(canvasElement).getByRole('button', {
+        name: chargeName(SALE_FIGURES.total),
+      }),
+    )
+    const dialog = await within(document.body).findByRole('dialog', { name: 'Payment' })
+    await userEvent.click(within(dialog).getByRole('button', { name: /^2\.000/ }))
+    await expect(dialog).toHaveTextContent(tillText(SALE_FIGURES.change))
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Complete payment' }))
+    await expect(await within(dialog).findByText('Payment complete')).toBeVisible()
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Show receipt' }))
+    const receipt = await within(document.body).findByRole('dialog', {
+      name: `Receipt ${BAKERY.receipt}`,
+    })
+    await expect(receipt).toHaveTextContent(tillText(SALE_FIGURES.total))
+    await settle()
+  },
+}
+
+/** Phone: the cart first, "Products" above it opening the products as a bottom sheet. */
+export const PosPhone: Story = {
+  name: 'POS checkout, phone',
+  render: () => <OnPhone start={I_ROUTES.pos} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('button', { name: 'Products' })).toBeVisible()
+    await expect(
+      canvas.getByRole('button', { name: chargeName(SALE_FIGURES.total) }),
+    ).toBeInTheDocument()
+    await expectNoSidewaysScroll(canvasElement)
+  },
+}
+
+/** Phone: the products sheet open over the cart. */
+export const PosPhoneProducts: Story = {
+  name: 'POS checkout, phone, products',
+  render: () => <OnPhone start={I_ROUTES.posProducts} />,
+  play: async () => {
+    await settle()
+    const sheet = within(document.body).getByRole('dialog', { name: 'Products' })
+    await expect(within(sheet).getByRole('textbox', { name: 'Barcode or PLU' })).toBeVisible()
+    await expect(within(sheet).getByRole('button', { name: /^Kifla/ })).toBeVisible()
+  },
+}
+
+/** Phone: paying cash. */
+export const PosPhoneCash: Story = {
+  name: 'POS checkout, phone, paying cash',
+  render: () => <OnPhone start={I_ROUTES.posCash} />,
+  play: async () => {
+    await settle()
+    await expect(paymentDialog()).toHaveTextContent(tillText(SALE_FIGURES.change))
+  },
+}
+
+/**
+ * Picking order NP-2026-0233 for Kvadrat Gradnja d.o.o. at Magacin Novi Sad on a handheld:
+ * "4 of 12" (two picked, one short, one skipped with its reason), line 5 large — location
+ * B-03-04, the facade boards, 18 packs — and its steps; scan the location first.
+ */
+export const PickingHandheld: Story = {
+  name: 'Warehouse picking, handheld',
+  render: () => <OnHandheld start={I_ROUTES.picking} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('4 of 12')).toBeVisible()
+    await expect(canvas.getByRole('textbox', { name: 'Location code' })).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('B-03-04')
+    await expect(canvasElement).toHaveTextContent('Skipped: Damaged — the rolls are wet.')
+    await expect(canvasElement).toHaveTextContent(PICKING.customer)
+    await expectNoSidewaysScroll(canvasElement)
+  },
+}
+
+/** The location confirmed: scan the item. */
+export const PickingHandheldItem: Story = {
+  name: 'Warehouse picking, handheld, item',
+  render: () => <OnHandheld start={I_ROUTES.pickingItem} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('textbox', { name: 'Item code' })).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('Location B-03-04')
+  },
+}
+
+/** Both scanned: confirm the quantity, 18 packs by default. */
+export const PickingHandheldQuantity: Story = {
+  name: 'Warehouse picking, handheld, quantity',
+  render: () => <OnHandheld start={I_ROUTES.pickingQuantity} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('textbox', { name: 'Quantity picked' })).toHaveValue('18')
+    await expect(canvas.getByRole('button', { name: 'Confirm quantity' })).toBeVisible()
+  },
+}
+
+/** Skipping line 5: the reason asked from the warehouse's list. */
+export const PickingHandheldSkip: Story = {
+  name: 'Warehouse picking, handheld, skipping a line',
+  render: () => <OnHandheld start={I_ROUTES.pickingSkip} />,
+  play: async () => {
+    await settle()
+    await expect(
+      within(document.body).getByRole('alertdialog', { name: /^Skip Fasadni stiropor/ }),
+    ).toBeVisible()
+  },
+}
+
+/** Offline: three changes wait on the handheld; picking goes on. */
+export const PickingHandheldOffline: Story = {
+  name: 'Warehouse picking, handheld, offline',
+  render: () => <OnHandheld start={I_ROUTES.pickingOffline} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(within(canvasElement).getByText('3 changes waiting to be sent')).toBeVisible()
+  },
+}
+
+/** Scan B-03-04, scan the boards, confirm 18: "5 of 12", and line 6 opens at B-05-02. */
+export const PickingHandheldInteraction: Story = {
+  name: 'Warehouse picking, handheld, interaction',
+  tags: ['interaction'],
+  render: () => <OnHandheld start={I_ROUTES.picking} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.type(canvas.getByRole('textbox', { name: 'Location code' }), 'B-03-05{Enter}')
+    await expect(await canvas.findByText('Wrong location: B-03-05. Go to B-03-04.')).toBeVisible()
+    await userEvent.type(canvas.getByRole('textbox', { name: 'Location code' }), 'B-03-04{Enter}')
+    const item = await canvas.findByRole('textbox', { name: 'Item code' })
+    await userEvent.type(item, '8600981000149{Enter}')
+    await userEvent.click(await canvas.findByRole('button', { name: 'Confirm quantity' }))
+    await expect(await canvas.findByText('5 of 12')).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('B-05-02')
+    await expect(canvas.getByRole('textbox', { name: 'Location code' })).toBeVisible()
+  },
+}
+
+/** The same list on a tablet on a cart (640px). */
+export const PickingTablet: Story = {
+  name: 'Warehouse picking, tablet',
+  render: () => <ExampleApp start={I_ROUTES.pickingItem} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(within(canvasElement).getByText('4 of 12')).toBeVisible()
+    await expectNoSidewaysScroll(canvasElement)
+  },
+}
+
+/**
+ * Counting A-02-03, where the pick came up short: the mesh Q188 just scanned in front — counted
+ * 14, the books 12, difference +2 — and the other items counted here: Q131 counted 0 of 3
+ * (difference −3, danger), the binding wire 0.
+ */
+export const StockCountHandheld: Story = {
+  name: 'Stock count, handheld',
+  render: () => <OnHandheld start={I_ROUTES.count} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent(COUNT.location)
+    await expect(canvasElement).toHaveTextContent(SERBIAN_I.number('-3', { sign: 'always' }))
+    await expect(canvasElement).toHaveTextContent(SERBIAN_I.number('2', { sign: 'always' }))
+    await expect(
+      within(canvasElement).getByRole('button', { name: 'Finish location' }),
+    ).toBeVisible()
+    await expectNoSidewaysScroll(canvasElement)
+  },
+}
+
+/** One Q188 sheet less (it was a Q131): the count goes to 13 and the application's difference to +1. */
+export const StockCountHandheldInteraction: Story = {
+  name: 'Stock count, handheld, interaction',
+  tags: ['interaction'],
+  render: () => <OnHandheld start={I_ROUTES.count} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Decrease Counted quantity' }))
+    await expect(canvas.getByRole('textbox', { name: 'Counted quantity' })).toHaveValue('13')
+    await waitFor(async () => {
+      await expect(canvasElement).toHaveTextContent(SERBIAN_I.number('1', { sign: 'always' }))
+    })
+  },
+}

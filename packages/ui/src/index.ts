@@ -648,3 +648,288 @@ export type {
   LookupDraft,
   LookupDraftErrors,
 } from './components/lookup-create-drawer'
+// ── P5.24 shifts ──
+export { ShiftPlanner } from './components/shift-planner'
+export type {
+  ShiftCoverage,
+  ShiftGroup,
+  ShiftGrouping,
+  ShiftPlannerProps,
+  ShiftPlannerRow,
+  ShiftPublishCounts,
+} from './components/shift-planner'
+export type { ShiftTemplate, ShiftTemplateTone } from './components/shift-parts'
+export {
+  assignChanges,
+  conflictList,
+  crossesMidnight,
+  moveChange,
+  removeChanges,
+  rotationAssignments,
+  shiftPeriod as movePlannerPeriod,
+  shiftSpan,
+  shiftsByWeek,
+  templateForKey,
+  templateKey,
+  todayPeriod,
+} from './components/shift-logic'
+export type {
+  RotationPattern,
+  ShiftAssignment,
+  ShiftCellRef,
+  ShiftChange,
+  ShiftConflict,
+  ShiftConflicts,
+  ShiftWeek,
+} from './components/shift-logic'
+export { MyShifts } from './components/my-shifts'
+export type { MyShift, MyShiftsProps } from './components/my-shifts'
+export { ShiftSwapDialog } from './components/shift-swap-dialog'
+export type {
+  ShiftSwapDialogProps,
+  ShiftSwapRequest,
+  SwapColleague,
+  SwapShift,
+} from './components/shift-swap-dialog'
+export { WorkingTimeBalance } from './components/working-time-balance'
+export type {
+  WorkingTimeBalanceProps,
+  WorkingTimePlan,
+  WorkingTimeRow,
+  WorkingTimeWarning,
+  WorkingTimeWeek,
+} from './components/working-time-balance'
+// ── P5.9 Tree, P5.14 Sensitive fields, P5.16 Portal shell ──
+export { TreeView } from './components/tree-view'
+export type { TreeViewProps } from './components/tree-view'
+export { TreeTable } from './components/tree-table'
+export type { TreeTableColumn, TreeTableProps } from './components/tree-table'
+export type { TreeBaseProps, TreeSelectionMode } from './components/use-tree'
+export {
+  findTreeNode,
+  isExpandable,
+  needsChildren,
+  toggleTreeSelection,
+  treeAncestors,
+  treeCheckStates,
+  treeKeyAction,
+  typeAheadTarget,
+  TYPE_AHEAD_DELAY,
+  visibleTreeRows,
+} from './components/tree-logic'
+export type { TreeKeyAction, TreeNode, TreeRow } from './components/tree-logic'
+export { MaskedValue } from './components/masked-value'
+export type { MaskedValueProps, MaskedValueReason, RevealRequest } from './components/masked-value'
+export { PortalShell } from './templates/portal-shell'
+export type { PortalParticipant, PortalSection, PortalShellProps } from './templates/portal-shell'
+// ── P5.13 / P5.24 AttendanceGrid and ClockRecordList ──
+export { AttendanceGrid, ATTENDANCE_VIRTUALIZE_FROM } from './components/attendance-grid'
+export type {
+  AttendanceCode,
+  AttendanceColumn,
+  AttendanceCorrection,
+  AttendanceCorrectionRequest,
+  AttendanceGridProps,
+  AttendanceHandOff,
+  AttendanceLock,
+  AttendanceMark,
+  AttendanceRow,
+  AttendanceTotal,
+  AttendanceTotals,
+} from './components/attendance-grid'
+export {
+  attendanceKeyAction,
+  copyPreviousWeek,
+  fillRange,
+  markColumn,
+  markRow,
+} from './components/attendance-logic'
+export type {
+  AttendanceChange,
+  AttendanceColumnKind,
+  AttendanceEntry,
+  AttendanceKey,
+  AttendanceKeyAction,
+  AttendanceKeyState,
+  AttendanceValue,
+  AttendanceCell,
+  AttendancePosition,
+  AttendanceRange,
+} from './components/attendance-logic'
+export { ClockRecordList } from './components/clock-record-list'
+export type {
+  ClockCorrection,
+  ClockCorrectionRequest,
+  ClockRecord,
+  ClockRecordListProps,
+  ClockSource,
+} from './components/clock-record-list'
+export { clockTimeOf, onLaterDay, parseClockTime } from './components/clock-record-logic'
+// ── P5.8 Calendar and scheduling ──
+export { CalendarView } from './components/calendar-view'
+export type { CalendarEvent, CalendarSlot, CalendarViewProps } from './components/calendar-view'
+export { ResourceSchedule } from './components/resource-schedule'
+export type {
+  ResourceScheduleProps,
+  ScheduleBooking,
+  ScheduleMove,
+  ScheduleResource,
+} from './components/resource-schedule'
+export { SlotPicker } from './components/slot-picker'
+export type { SlotPickerProps, SlotResource } from './components/slot-picker'
+export { Timetable } from './components/timetable'
+export type { TimetableLesson, TimetablePeriod, TimetableProps } from './components/timetable'
+export {
+  addDays,
+  addMonths,
+  calendarKeyTarget,
+  CALENDAR_VIEWS,
+  cellEvents,
+  currentPeriod,
+  dropPlace,
+  fitOnAxis,
+  groupSlots,
+  layoutDay,
+  monthWeeks,
+  periodDays,
+  readMoment,
+  scheduleKeyTarget,
+  shiftPeriod as moveCalendarPeriod,
+  slotKey,
+  spanOf,
+  startOfWeek,
+  unavailableReason,
+  weekDays,
+} from './components/schedule-logic'
+export type {
+  CalendarViewName,
+  FreeSlot,
+  GridCell,
+  Placement,
+  ScheduleAxis,
+  SchedulePlace,
+  Span,
+  UnavailableTime,
+} from './components/schedule-logic'
+export { deviceTimeZone, localDateTimeIn } from './provider/format'
+// ── P5.10 / P5.11 touch, POS and warehouse ──
+export type { Density } from './provider/liro-provider'
+export { NumericKeypad } from './components/numeric-keypad'
+export type { NumericKeypadProps } from './components/numeric-keypad'
+export {
+  decimalSeparator,
+  entryFromValue,
+  KEYPAD_DIGITS,
+  KEYPAD_MAX_DIGITS,
+  keypadInput,
+  keypadKeyFor,
+  keypadText,
+  keypadValue,
+} from './components/keypad-logic'
+export type { KeypadDigit, KeypadKey, KeypadOptions } from './components/keypad-logic'
+export { ProductGrid, ProductTile } from './components/product-tile'
+export type {
+  PosProduct,
+  ProductCategory,
+  ProductGridProps,
+  ProductStock,
+  ProductTileProps,
+} from './components/product-tile'
+export { CartPanel } from './components/cart-panel'
+export type { CartAmount, CartLine, CartPanelProps } from './components/cart-panel'
+export { PaymentDialog } from './components/payment-dialog'
+export type {
+  CardState,
+  PaymentDialogProps,
+  PaymentMethod,
+  PaymentPart,
+} from './components/payment-dialog'
+export { ReceiptPreview } from './components/receipt-preview'
+export type {
+  ReceiptAmount,
+  ReceiptFact,
+  ReceiptItem,
+  ReceiptPreviewProps,
+} from './components/receipt-preview'
+export { PosShell } from './templates/pos-shell'
+export type { PosShellProps } from './templates/pos-shell'
+export { ScanField } from './components/scan-field'
+export type { ScanFeedback, ScanFieldProps } from './components/scan-field'
+export {
+  EMPTY_SCAN_BUFFER,
+  SCAN_MAX_INTERVAL,
+  SCAN_MIN_LENGTH,
+  scanDecision,
+  scanKey,
+} from './components/scan-logic'
+export type { ScanBuffer, ScanOptions } from './components/scan-logic'
+export { QuantityStepper } from './components/quantity-stepper'
+export type { QuantityStepperProps } from './components/quantity-stepper'
+export {
+  canStep,
+  compareDecimal,
+  isDecimal,
+  quantityRange,
+  stepDecimal,
+  stepQuantity,
+} from './components/quantity-logic'
+export type { StepOptions } from './components/quantity-logic'
+export { PickList } from './templates/pick-list'
+export type { PickLine, PickListProps } from './templates/pick-list'
+export { StockCount } from './templates/stock-count'
+export type { CountItem, StockCountProps } from './templates/stock-count'
+export { PICK_STEPS, pickProgress, pickStepState } from './components/warehouse-logic'
+export type { PickLineState, PickStep } from './components/warehouse-logic'
+// ── P5.15 Print templates, P5.12 Learning ──
+export { PrintPage } from './templates/print-page'
+export type { PrintFrameProps, PrintPageProps, PrintStatus } from './templates/print-page'
+export {
+  PrintDetails,
+  PrintIssuedLine,
+  PrintSection,
+  PrintSignatures,
+  PrintTable,
+  PrintTitle,
+} from './templates/print-parts'
+export type {
+  PrintColumn,
+  PrintDetail,
+  PrintDetailsProps,
+  PrintIssued,
+  PrintSectionProps,
+  PrintSignature,
+  PrintSignaturesProps,
+  PrintTableProps,
+} from './templates/print-parts'
+export {
+  PrintCertificate,
+  PrintDocument,
+  PrintFinding,
+  PrintGradeReport,
+} from './templates/print-templates'
+export type {
+  PrintCertificateProps,
+  PrintDocumentProps,
+  PrintFindingProps,
+  PrintFindingSection,
+  PrintGradeReportProps,
+  PrintParty,
+} from './templates/print-templates'
+export {
+  cssString,
+  fitZoom,
+  pageName,
+  pageNumberContent,
+  pageRules,
+  PRINT_MARGINS,
+  PX_PER_MM,
+  resolvedMargins,
+  sheetSize,
+} from './templates/print-logic'
+export type { PageRulesOptions, PrintMargins, PrintOrientation } from './templates/print-logic'
+export { CoursePage } from './templates/course-page'
+export type { CourseCompletion, CourseLessonLink, CoursePageProps } from './templates/course-page'
+export { courseProgress, findLesson, moduleProgress } from './templates/course-logic'
+export type { CourseLesson, CourseModule, LessonCount, LessonState } from './templates/course-logic'
+export { QuizResult } from './components/quiz-result'
+export type { QuizResultProps, QuizReviewItem } from './components/quiz-result'

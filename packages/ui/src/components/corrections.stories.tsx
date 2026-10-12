@@ -225,7 +225,9 @@ export const Increase: Story = {
           </div>
           <div className="flex gap-4">
             <dt className="text-secondary">Written by format</dt>
-            <dd className="m-0">{format.number('0.5', { sign: 'always' })}</dd>
+            <dd className="m-0">
+              <bdi>{format.number('0.5', { sign: 'always' })}</bdi>
+            </dd>
           </div>
         </dl>
       )

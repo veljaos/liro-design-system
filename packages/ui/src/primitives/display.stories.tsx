@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { ChevronDown, User } from 'lucide-react'
 import { Avatar, AvatarFallback } from './avatar'
 import { BUTTON_SHAPES, ButtonPrimitive } from './button'
+import { TEXT_DIRECTION } from './classes'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './collapsible'
 import { Progress } from './progress'
 import { ScrollArea } from './scroll-area'
@@ -37,14 +38,14 @@ export const SeparatorStory: Story = {
   name: 'Separator',
   render: () => (
     <div className="flex max-w-80 flex-col gap-3 text-sm">
-      <p className="m-0">Issued 25.09.2026</p>
+      <p className={`m-0 ${TEXT_DIRECTION}`}>Issued 25.09.2026</p>
       <Separator />
       <div className="flex h-5 items-center gap-3">
-        <span>Draft</span>
+        <span className={TEXT_DIRECTION}>Draft</span>
         <Separator orientation="vertical" />
-        <span>3 lines</span>
+        <span className={TEXT_DIRECTION}>3 lines</span>
         <Separator orientation="vertical" />
-        <span>EUR</span>
+        <span className={TEXT_DIRECTION}>EUR</span>
       </div>
     </div>
   ),
@@ -57,7 +58,7 @@ export const ScrollAreaStory: Story = {
     <ScrollArea type="always" className="h-40 w-64 rounded-md border border-default">
       <ul className="m-0 w-96 list-none p-3 text-sm">
         {Array.from({ length: 20 }, (_, index) => (
-          <li key={index} className="py-1">
+          <li key={index} className={`py-1 ${TEXT_DIRECTION}`}>
             Account {String(2000 + index)}: receivables from customers in the country
           </li>
         ))}
@@ -123,7 +124,7 @@ export const CollapsibleStory: Story = {
           <span>Payment terms</span>
         </ButtonPrimitive>
       </CollapsibleTrigger>
-      <CollapsibleContent className="text-sm">
+      <CollapsibleContent className={`text-sm ${TEXT_DIRECTION}`}>
         Payment within 15 days of the invoice date, by bank transfer.
       </CollapsibleContent>
     </Collapsible>

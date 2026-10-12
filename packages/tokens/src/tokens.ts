@@ -236,8 +236,8 @@ export type Tone = keyof typeof TONES
  * selection, a few dark-theme text colours fall below 4.5:1, so there they take the shade that
  * passes — the next lighter one, which their hover already uses. Keyed by the variable's name
  * after `--liro-`; the light theme needs none. An element marks the selection with
- * `data-liro-surface="selected"` (tokens.css redeclares these variables inside it), and
- * contrast.ts measures with them.
+ * `data-liro-surface="selected"`, or simply paints it with the `bg-surface-selected` utility
+ * (tokens.css redeclares these variables inside either), and contrast.ts measures with them.
  */
 export const ON_SELECTED: Record<Theme, Readonly<Record<string, string>>> = {
   light: {},

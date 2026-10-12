@@ -1,6 +1,13 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useRef, useState, type KeyboardEvent } from 'react'
-import { BUTTON_RESET, FOCUS_RING, INPUT, READ_ONLY } from '../primitives/classes'
+import {
+  AUTO_DIRECTION,
+  BUTTON_RESET,
+  FOCUS_RING,
+  INPUT,
+  READ_ONLY,
+  TEXT_DIRECTION,
+} from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { Input } from '../primitives/input'
 import { Popover, PopoverContent, PopoverTrigger } from '../primitives/popover'
@@ -130,7 +137,8 @@ export function MonthField(props: MonthFieldProps) {
             <Input
               {...controlAttributes(control, messages['field.readOnly'])}
               value={text ?? ''}
-              className={READ_ONLY}
+              dir={AUTO_DIRECTION.dir}
+              className={cn(AUTO_DIRECTION.className, READ_ONLY)}
             />
           )
         }
@@ -152,7 +160,9 @@ export function MonthField(props: MonthFieldProps) {
                   disabled={control.disabled}
                   className={cn(
                     INPUT,
-                    'cursor-pointer text-start enabled:hover:bg-surface-hover',
+                    // The month's name and year in their own order, at the page's start (P3.6).
+                    'cursor-pointer enabled:hover:bg-surface-hover',
+                    TEXT_DIRECTION,
                     // The month's name is capitalised; the placeholder is shown as given.
                     text === null ? 'text-tertiary' : 'capitalize',
                     // A button cannot be aria-invalid; the error is linked by aria-describedby.

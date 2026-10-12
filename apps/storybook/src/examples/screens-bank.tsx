@@ -416,12 +416,14 @@ function LineDetail({
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex min-w-0 flex-col gap-1">
           <h2 className="bidi-content m-0 text-h2 text-primary">{line.party}</h2>
-          <p className="m-0 text-sm text-secondary">
+          <p className="bidi-content m-0 text-sm text-secondary">
             Line {format.number(String(line.no))} of statement {STATEMENT.number}
           </p>
         </div>
         <div className="flex flex-col items-end gap-1">
-          <span className="text-xs text-secondary">{incoming ? 'Money in' : 'Money out'}</span>
+          <span className="bidi-isolate text-xs text-secondary">
+            {incoming ? 'Money in' : 'Money out'}
+          </span>
           <bdi className="text-xl font-semibold whitespace-nowrap text-primary tabular-nums">
             {format.money(decimal(line.paras), 'RSD', { sign: 'always' })}
           </bdi>
@@ -526,7 +528,7 @@ function LineDetail({
                     onChange({ close: { ...work.close, items } })
                   }}
                   empty={
-                    <p className="m-0 border-0 border-y border-solid border-subtle py-3 text-sm text-secondary">
+                    <p className="bidi-content m-0 border-0 border-y border-solid border-subtle py-3 text-sm text-secondary">
                       No open item matches this payment.
                     </p>
                   }
@@ -734,12 +736,12 @@ function StatementSummary({ phone, done }: { phone: boolean; done: number }) {
         <span className="bidi-content text-sm font-medium text-primary">{progress}</span>
         <ProgressBar label={progress} value={done} max={total} />
         {STATEMENT_TOTALS.checksOut ? (
-          <p className="m-0 flex items-center gap-1.5 text-xs font-medium text-status-success-fg">
+          <p className="bidi-content m-0 flex items-center gap-1.5 text-xs font-medium text-status-success-fg">
             <CircleCheck aria-hidden="true" className="size-3.5 shrink-0" />
             Balance checks out: opening + in − out = closing
           </p>
         ) : (
-          <p className="m-0 flex items-center gap-1.5 text-xs font-medium text-status-danger-fg">
+          <p className="bidi-content m-0 flex items-center gap-1.5 text-xs font-medium text-status-danger-fg">
             <CircleAlert aria-hidden="true" className="size-3.5 shrink-0" />
             Balance does not check out: opening + in − out differs from closing
           </p>
@@ -1017,12 +1019,12 @@ export function BankStatement({
       title: each.party,
       subtitle: (
         <>
-          <span className="block">
+          <span className="bidi-content block">
             {format.number(String(each.no))} ·{' '}
             {each.reference === '' ? each.purpose : each.reference}
           </span>
           {state === 'done' && decision !== null && (
-            <span className="block">{howText(each, decision, money)}</span>
+            <span className="bidi-content block">{howText(each, decision, money)}</span>
           )}
         </>
       ),

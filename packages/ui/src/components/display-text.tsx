@@ -98,10 +98,15 @@ export interface DateRangeTextProps {
   className?: string
 }
 
-/** Two dates as "from – to", with an en dash. */
+/**
+ * Two dates as "from – to", with an en dash. The range takes its direction from its content as a
+ * whole (dir="auto"), as each date does: dates of Latin digits read from – to left to right in a
+ * right-to-left page too, where the page's direction alone put the start on the right; a range
+ * Intl writes with right-to-left marks (Arabic) stays right to left.
+ */
 export function DateRangeText({ from, to, className }: DateRangeTextProps) {
   return (
-    <span className={cn('whitespace-nowrap', className)}>
+    <span dir="auto" className={cn('whitespace-nowrap', className)}>
       <DateText value={from ?? null} /> – <DateText value={to ?? null} />
     </span>
   )

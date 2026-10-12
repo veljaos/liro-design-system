@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { useEffect, useRef, useState } from 'react'
 import { expect } from 'storybook/test'
 import { ExampleProvider } from '../components/story-frames'
+import { TEXT_ISOLATE } from '../primitives/classes'
 import { settle } from '../primitives/story-helpers'
 import { useLiro } from '../provider/liro-provider'
 
@@ -93,17 +94,17 @@ function Palette() {
                         backgroundColor: `var(--liro-${colour.token.replace('.', '-')})`,
                       }}
                     />
-                    {colour.name}
+                    <span className={TEXT_ISOLATE}>{colour.name}</span>
                   </span>
                 </td>
                 <td className="border-0 border-b border-solid border-subtle py-1.5 font-mono text-xs text-secondary">
-                  {colour.token}
+                  <span className={TEXT_ISOLATE}>{colour.token}</span>
                 </td>
                 <td
                   data-ratio={colour.token}
                   className="border-0 border-b border-solid border-subtle py-1.5 text-end tabular-nums"
                 >
-                  {value === undefined ? '—' : `${format.number(value.toFixed(2))}:1`}
+                  <bdi>{value === undefined ? '—' : `${format.number(value.toFixed(2))}:1`}</bdi>
                 </td>
               </tr>
             )

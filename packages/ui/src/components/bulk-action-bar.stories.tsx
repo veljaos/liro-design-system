@@ -6,6 +6,8 @@ import { settle } from '../primitives/story-helpers'
 import { BulkActionBar, type BulkAction } from './bulk-action-bar'
 import { ARABIC, JAPANESE, LONG } from './field-story-data'
 import { StoryProvider } from './story-frames'
+import { TEXT_DIRECTION } from '../primitives/classes'
+import { cn } from '../primitives/cn'
 
 const meta = {
   title: 'Components/Actions/BulkActionBar',
@@ -73,7 +75,7 @@ export const ConfirmOnce: Story = {
             },
           }))}
         />
-        <p className="m-0 text-sm text-secondary">
+        <p className={cn('m-0 text-sm text-secondary', TEXT_DIRECTION)}>
           Done: <code>{done}</code>
         </p>
       </div>
@@ -109,7 +111,7 @@ export const ConfirmOnceInteraction: Story = {
             },
           }))}
         />
-        <p className="m-0 text-sm text-secondary">
+        <p className={cn('m-0 text-sm text-secondary', TEXT_DIRECTION)}>
           Done: <code>{done}</code>
         </p>
       </div>

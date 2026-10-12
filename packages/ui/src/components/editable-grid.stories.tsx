@@ -21,6 +21,8 @@ import { SwitchField } from './checkbox-field'
 import { ARABIC, JAPANESE, LONG } from './field-story-data'
 import { StoryProvider } from './story-frames'
 import { toUnits } from './amounts-story-data'
+import { TEXT_ISOLATE } from '../primitives/classes'
+import { cn } from '../primitives/cn'
 
 const meta = {
   title: 'Components/Table/EditableGrid',
@@ -431,7 +433,7 @@ export const WithDateAndFooter: Story = {
     <Lines
       initial={FILLED}
       columns={[...COLUMNS.slice(0, 1), DATE_COLUMN, ...COLUMNS.slice(2)]}
-      footer={<span className="text-sm text-secondary">Balance: 0.00</span>}
+      footer={<span className={cn('text-sm text-secondary', TEXT_ISOLATE)}>Balance: 0.00</span>}
     />
   ),
 }
@@ -449,7 +451,7 @@ export const Phone: Story = {
       <Lines
         initial={FILLED.slice(0, 2)}
         layout="phone"
-        footer={<span className="text-sm text-secondary">Balance: 0.00</span>}
+        footer={<span className={cn('text-sm text-secondary', TEXT_ISOLATE)}>Balance: 0.00</span>}
       />
     </div>
   ),
@@ -468,7 +470,7 @@ export const PhoneInteraction: Story = {
       <Lines
         initial={FILLED.slice(0, 2)}
         layout="phone"
-        footer={<span className="text-sm text-secondary">Balance: 0.00</span>}
+        footer={<span className={cn('text-sm text-secondary', TEXT_ISOLATE)}>Balance: 0.00</span>}
       />
     </div>
   ),

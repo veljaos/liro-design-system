@@ -4,6 +4,8 @@ import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { settle } from '../primitives/story-helpers'
 import { DateRangeField, type DateRange } from './date-field'
 import { ARABIC, JAPANESE, LONG } from './field-story-data'
+import { TEXT_DIRECTION } from '../primitives/classes'
+import { cn } from '../primitives/cn'
 
 const meta = {
   title: 'Components/Fields/DateRangeField',
@@ -39,7 +41,7 @@ export const Default: Story = {
     return (
       <div className="flex max-w-100 flex-col gap-3">
         <DateRangeField {...args} value={value} onChange={setValue} onValidityChange={setValid} />
-        <p className="m-0 text-sm text-secondary">
+        <p className={cn('m-0 text-sm text-secondary', TEXT_DIRECTION)}>
           Value: <code>{JSON.stringify(value)}</code>, valid: <code>{String(valid)}</code>
         </p>
       </div>
@@ -55,7 +57,7 @@ export const PickInCalendar: Story = {
     return (
       <div className="flex min-h-100 max-w-100 flex-col gap-3">
         <DateRangeField label="Period" value={value} onChange={setValue} defaultOpen />
-        <p className="m-0 text-sm text-secondary">
+        <p className={cn('m-0 text-sm text-secondary', TEXT_DIRECTION)}>
           Value: <code>{JSON.stringify(value)}</code>
         </p>
       </div>
@@ -75,7 +77,7 @@ export const PickInCalendarInteraction: Story = {
     return (
       <div className="flex min-h-100 max-w-100 flex-col gap-3">
         <DateRangeField label="Period" value={value} onChange={setValue} />
-        <p className="m-0 text-sm text-secondary">
+        <p className={cn('m-0 text-sm text-secondary', TEXT_DIRECTION)}>
           Value: <code>{JSON.stringify(value)}</code>
         </p>
       </div>

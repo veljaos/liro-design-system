@@ -1,6 +1,6 @@
 import type { KeyboardEvent, MouseEvent, ReactNode } from 'react'
 import { Checkbox } from '../primitives/checkbox'
-import { TEXT_DIRECTION } from '../primitives/classes'
+import { TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { CompactIconButton } from './button'
 import { rowKeyAction } from './data-table-logic'
@@ -142,7 +142,9 @@ export function DataTableCard(props: DataTableCardProps) {
           {props.details.map((detail) => (
             <div key={detail.key} className="flex items-baseline justify-between gap-4">
               <dt className={cn('text-xs text-tertiary', TEXT_DIRECTION)}>{detail.label}</dt>
-              <dd className="m-0 text-end text-xs font-medium tabular-nums">{detail.value}</dd>
+              <dd className="m-0 text-end text-xs font-medium tabular-nums">
+                <span className={TEXT_ISOLATE}>{detail.value}</span>
+              </dd>
             </div>
           ))}
         </dl>

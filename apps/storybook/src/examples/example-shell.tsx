@@ -234,6 +234,10 @@ export const TONES = {
   Pending: 'warning',
   Expired: 'warning',
   Locked: 'warning',
+  // Appointments and school (P5.17)
+  Confirmed: 'success',
+  Excused: 'neutral',
+  'Not excused': 'warning',
 } as const
 
 /** A status of the examples. */
@@ -252,6 +256,19 @@ export function statusBadge(status: ExampleStatus) {
 export const HOME_COMPANY = 'kvadrat'
 
 /**
+ * Another person signed in at another organisation (P5.17, P5.24: a store manager, a nurse, a
+ * teacher): the user menu shows them, the switcher only their organisations, the search their
+ * commands; Milica's notifications are not theirs, so there is no bell.
+ */
+export interface ExampleAccount {
+  name: string
+  email: string
+  companies: ShellCompany[]
+  /** The screens the search (Ctrl K) goes to: "Go to" entries. */
+  links?: { label: string; path: string }[]
+}
+
+/**
  * The shell around every signed-in screen. `company` is the current company (another one for
  * Stanić Elektro STR's setup; choosing Kvadrat Gradnja there goes home); `agent` is the agent
  * button (P5.3).
@@ -263,6 +280,7 @@ export function Shell({
   bottomBar,
   company = HOME_COMPANY,
   agent,
+  account,
   children,
 }: {
   phone: boolean
@@ -271,6 +289,8 @@ export function Shell({
   bottomBar?: ReactNode
   company?: string
   agent?: ReactNode
+  /** Someone else than Milica, at another organisation. */
+  account?: ExampleAccount
   children: ReactNode
 }) {
   const navigate = useContext(Navigate)
@@ -411,6 +431,45 @@ export function Shell({
         },
       },
     ],
+  }
+  if (account !== undefined) {
+    return (
+      <AppShell
+        layout={phone ? 'phone' : 'desktop'}
+        brand={BRAND}
+        {...(crumbs === undefined ? {} : { breadcrumbs: crumbs })}
+        commands={{
+          items: (account.links ?? []).map((link) => ({
+            id: link.path,
+            label: link.label,
+            group: 'navigation' as const,
+            onSelect: () => {
+              navigate(link.path)
+            },
+          })),
+        }}
+        companies={{ items: account.companies, current: company, onSelect: () => undefined }}
+        user={{
+          name: account.name,
+          email: account.email,
+          entries: [
+            { label: 'Profile', icon: UserRound, onSelect: () => undefined },
+            { type: 'separator' },
+            {
+              label: 'Sign out',
+              icon: LogOut,
+              onSelect: () => {
+                navigate(ROUTES.signIn)
+              },
+            },
+          ],
+        }}
+        {...(tabs === undefined ? {} : { moduleTabs: tabs })}
+        {...(bottomBar === undefined ? {} : { bottomBar })}
+      >
+        {children}
+      </AppShell>
+    )
   }
   return (
     <AppShell

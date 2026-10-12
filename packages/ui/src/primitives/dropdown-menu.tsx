@@ -2,7 +2,7 @@ import { Check, ChevronRight } from 'lucide-react'
 import { DropdownMenu as DropdownMenuPrimitive } from 'radix-ui'
 import type { ComponentProps } from 'react'
 import { usePortalContainer } from '../provider/portal'
-import { FLOATING, FLOATING_MOTION, MENU_ITEM } from './classes'
+import { FLOATING, FLOATING_MOTION, MENU_ITEM, TEXT_DIRECTION } from './classes'
 import { cn } from './cn'
 
 /*
@@ -53,7 +53,7 @@ export function DropdownMenuItem({
   return (
     <DropdownMenuPrimitive.Item
       data-slot="dropdown-menu-item"
-      className={cn(MENU_ITEM, 'gap-2.5', ICONS, className)}
+      className={cn(MENU_ITEM, 'gap-2.5', ICONS, TEXT_DIRECTION, className)}
       {...props}
     />
   )
@@ -70,7 +70,7 @@ export function DropdownMenuCheckboxItem({
   return (
     <DropdownMenuPrimitive.CheckboxItem
       data-slot="dropdown-menu-checkbox-item"
-      className={cn(MENU_ITEM, 'gap-2', ICONS, className)}
+      className={cn(MENU_ITEM, 'gap-2', ICONS, TEXT_DIRECTION, className)}
       {...props}
     >
       <span className={INDICATOR}>
@@ -93,7 +93,7 @@ export function DropdownMenuRadioItem({
   return (
     <DropdownMenuPrimitive.RadioItem
       data-slot="dropdown-menu-radio-item"
-      className={cn(MENU_ITEM, 'gap-2', ICONS, className)}
+      className={cn(MENU_ITEM, 'gap-2', ICONS, TEXT_DIRECTION, className)}
       {...props}
     >
       <span className={INDICATOR}>
@@ -118,7 +118,11 @@ export function DropdownMenuLabel({
   return (
     <DropdownMenuPrimitive.Label
       data-slot="dropdown-menu-label"
-      className={cn('px-3 py-[5px] text-xs font-semibold text-secondary', className)}
+      className={cn(
+        'px-3 py-[5px] text-xs font-semibold text-secondary',
+        TEXT_DIRECTION,
+        className,
+      )}
       {...props}
     />
   )
@@ -161,6 +165,7 @@ export function DropdownMenuSubTrigger({
         MENU_ITEM,
         'gap-2.5 pe-[5px] data-[state=open]:bg-surface-sunken',
         ICONS,
+        TEXT_DIRECTION,
         className,
       )}
       {...props}
