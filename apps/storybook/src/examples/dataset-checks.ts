@@ -394,3 +394,148 @@ export function checkGroupI() {
 
 /** Run once, when the examples load. */
 export const GROUP_I = checkGroupI()
+
+// ── P5.25 group K: floor plans and seating ──
+// (Imports here, inside the block, so the blocks merge without touching the top.)
+import { seatingCounts } from '../../../../packages/ui/src/components/seating-logic'
+import { overlappingItems } from '../../../../packages/ui/src/components/floor-plan-logic'
+import {
+  BISTRO_TABLES,
+  bistroItems,
+  CAFE_TABLES,
+  computeOrder,
+  GALA_GUESTS,
+  GALA_SEATED,
+  GALA_TABLES,
+  mergedBox,
+  TABLE_3_FIGURES,
+} from './data-K'
+
+/**
+ * The floor plans' and the seating's figures (P5.25): no two tables of Bistro Dunav overlap, a
+ * party never exceeds its table, terrace tables 11 and 12 touch so they can be merged; table 3's
+ * order on the café's till totals what the data states, its VAT included too; the gala dinner
+ * seats 112 of 140, no seat twice and no seat a table does not have.
+ */
+export function checkGroupK() {
+  const items = bistroItems(BISTRO_TABLES, (value) => value).filter((item) => item.kind === 'table')
+  if (overlappingItems(items).length > 0) fail('Bistro Dunav: two tables overlap')
+  for (const table of BISTRO_TABLES) {
+    if (table.party !== undefined && table.party.size > table.seats) {
+      fail(`Bistro Dunav: table ${String(table.number)} has more guests than seats`)
+    }
+  }
+  const t11 = BISTRO_TABLES.find((table) => table.id === 't11')
+  const t12 = BISTRO_TABLES.find((table) => table.id === 't12')
+  if (t11 === undefined || t12 === undefined || mergedBox(t11, t12) === null) {
+    fail('Bistro Dunav: tables 11 and 12 cannot be merged')
+  }
+  const order = computeOrder(CAFE_TABLES.find((table) => table.id === 't3')?.order ?? [])
+  if (order.total !== paras(TABLE_3_FIGURES.total)) fail('Kod Mike: table 3’s total differs')
+  if (order.vat !== paras(TABLE_3_FIGURES.vat)) fail('Kod Mike: table 3’s VAT differs')
+  const counts = seatingCounts(GALA_GUESTS)
+  if (counts.seated !== GALA_SEATED.seated || counts.total !== GALA_SEATED.total) {
+    fail('the gala’s seated count differs')
+  }
+  const seats = new Set<string>()
+  for (const guest of GALA_GUESTS) {
+    if (guest.seat == null) continue
+    const key = `${guest.seat.tableId}#${String(guest.seat.seat)}`
+    if (seats.has(key)) fail(`the gala seats two guests on ${key}`)
+    seats.add(key)
+    const table = GALA_TABLES.find((each) => each.id === guest.seat?.tableId)
+    if (table === undefined || guest.seat.seat > table.seats) fail(`no seat ${key} at the gala`)
+  }
+  if (new Set(GALA_GUESTS.map((guest) => guest.name)).size !== GALA_GUESTS.length) {
+    fail('two gala guests share a name')
+  }
+  return counts
+}
+
+/** Run once, when the examples load. */
+export const GROUP_K = checkGroupK()
+
+// ── P5.25a group N: a warehouse, a ward, an office ──
+import {
+  areaContains,
+  overlappingItems as overlappingN,
+  type FloorArea,
+  type FloorItem,
+} from '../../../../packages/ui/src/components/floor-plan-logic'
+import {
+  bedItems,
+  BEDS,
+  binItems,
+  BINS,
+  DESK_BOOKINGS,
+  deskItems,
+  DESKS,
+  OFFICE,
+  OFFICE_AREAS,
+  WARD_AREAS,
+  WAREHOUSE_AREAS,
+} from './data-N'
+import {
+  COUNT as COUNT_N,
+  COUNT_RECORDS as COUNT_RECORDS_N,
+  PICK_LINES as PICK_LINES_N,
+} from './data-I'
+
+/** Every place stands inside its own area (its centre), and no two places overlap. */
+function placesFit(what: string, items: readonly FloorItem[], areas: readonly FloorArea[]) {
+  for (const item of items) {
+    const area = areas.find((each) => each.id === item.areaId)
+    const centre = { x: item.x + item.width / 2, y: item.y + item.height / 2 }
+    if (area === undefined || !areaContains(area, centre)) {
+      fail(`${what}: ${item.label} is not inside its area`)
+    }
+  }
+  if (overlappingN(items).length > 0) fail(`${what}: two places overlap`)
+}
+
+/**
+ * The three plans of P5.25a: every bin, bed and desk inside its zone, room or area (polygons
+ * included) and none overlapping; the pick list's locations hold its items and A-02-03 holds
+ * what its count expects; occupied beds have a patient and only they; nobody books two desks a
+ * day, and no booking is on a desk out of use.
+ */
+export function checkGroupN() {
+  if (new Set(BINS.map((bin) => bin.code)).size !== BINS.length) fail('two bins share a code')
+  placesFit('Magacin Novi Sad', binItems(BINS), WAREHOUSE_AREAS)
+  for (const line of PICK_LINES_N) {
+    const bin = BINS.find((each) => each.code === line.location)
+    if (!bin?.stock.some((stock) => stock.itemCode === line.itemCode)) {
+      fail(`Magacin Novi Sad: ${line.location} does not hold ${line.item}`)
+    }
+  }
+  const counted = BINS.find((bin) => bin.code === COUNT_N.location)
+  for (const record of COUNT_RECORDS_N) {
+    const stock = counted?.stock.find((line) => line.itemCode === record.itemCode)
+    if (stock?.quantity !== record.expected) {
+      fail(`Magacin Novi Sad: ${COUNT_N.location} does not hold what the count expects`)
+    }
+  }
+  placesFit('Interno odeljenje 3', bedItems(BEDS), WARD_AREAS)
+  for (const bed of BEDS) {
+    if ((bed.state === 'occupied') !== (bed.patient !== undefined)) {
+      fail(`Interno odeljenje 3: bed ${String(bed.number)} and its patient disagree`)
+    }
+  }
+  placesFit('the office', deskItems(DESKS, {}), OFFICE_AREAS)
+  for (const [day, booked] of Object.entries(DESK_BOOKINGS)) {
+    if (Object.values(booked).filter((name) => name === OFFICE.me).length > 1) {
+      fail(`the office: two desks for ${OFFICE.me} on ${day}`)
+    }
+    if (new Set(Object.values(booked)).size !== Object.values(booked).length) {
+      fail(`the office: someone books two desks on ${day}`)
+    }
+    for (const id of Object.keys(booked)) {
+      const desk = DESKS.find((each) => each.id === id)
+      if (desk === undefined || desk.outOfUse !== undefined) fail(`the office: ${id} on ${day}`)
+    }
+  }
+  return { bins: BINS.length, beds: BEDS.length, desks: DESKS.length }
+}
+
+/** Run once, when the examples load. */
+export const GROUP_N = checkGroupN()

@@ -49,6 +49,7 @@ import {
   moveChange,
   periodDays,
   rangeCells,
+  rotationDefaultPeople,
   removeChanges,
   shiftPeriod,
   templateForKey,
@@ -204,6 +205,18 @@ export interface ShiftPlannerProps {
   rotations?: readonly RotationPattern[]
   /** Opens "Apply rotation…" from the start (a state an application restores). */
   defaultRotationOpen?: boolean
+  /**
+   * The people "Apply rotation…" opens with when no range is selected (a team the application
+   * suggests). Without it: everyone in view. A selected range's rows always come first.
+   */
+  rotationPeople?: readonly string[]
+  /**
+   * The application's checks of the shifts a rotation would add, shown before Apply (P5.24a):
+   * conflicts by person and day, as `conflicts`. The planner checks nothing itself.
+   */
+  rotationConflicts?: (
+    additions: readonly ({ templateId: string } & ShiftCellRef)[],
+  ) => ShiftConflicts
   /** A selected range from the start: its first corner and the focused cell. */
   defaultSelection?: { anchor: ShiftCellRef; focus: ShiftCellRef }
   /** Skeleton rows while the plan loads. */
@@ -667,16 +680,16 @@ export function ShiftPlanner(props: ShiftPlannerProps) {
   const publishLabel =
     props.status === 'published' ? messages['shifts.publishChanges'] : messages['shifts.publish']
   const rotationsOffered = editable && props.rotations !== undefined && props.rotations.length > 0
-  const defaultPeople = [
-    ...new Set(
-      anchorIndex === null
-        ? []
-        : rangeCells(anchorIndex, activeIndex).flatMap((cell) => {
-            const ref = refOf(cell)
-            return ref === null ? [] : [ref.rowId]
-          }),
-    ),
-  ]
+  const defaultPeople = rotationDefaultPeople(
+    anchorIndex === null
+      ? []
+      : rangeCells(anchorIndex, activeIndex).flatMap((cell) => {
+          const ref = refOf(cell)
+          return ref === null ? [] : [ref.rowId]
+        }),
+    props.rotationPeople,
+    shown.map((each) => each.row.id),
+  )
   const viewSwitch =
     props.groupings === undefined || props.groupings.length === 0 ? null : (
       <div className="flex flex-col gap-1">
@@ -723,6 +736,9 @@ export function ShiftPlanner(props: ShiftPlannerProps) {
             templates={props.templates}
             rows={props.rows}
             defaultPeople={defaultPeople}
+            {...(props.rotationConflicts === undefined
+              ? {}
+              : { checkConflicts: props.rotationConflicts })}
             start={props.start}
             end={props.end}
             onApply={(changes) => {

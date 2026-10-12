@@ -29,28 +29,30 @@ dependency, or copies third-party code (for example a shadcn/ui component) into 
 
 ## Copied into this repository
 
-| Software                                                        | Version    | License | Where                                                                                                                                                                                                                                         |
-| --------------------------------------------------------------- | ---------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| shadcn/ui (components generated with the `shadcn` CLI, adapted) | CLI 4.21.0 | MIT     | `packages/ui/src/primitives/` (P2.1; `accordion.tsx` P3.6; `chart.tsx` P4.7a; `bubble.tsx`, `marker.tsx`, `message.tsx`, `message-scroller.tsx`, `questionnaire.tsx` P5.1, from the shadcn registry); built into `@veljaos/ui`. Notice below. |
+| Software                                                                  | Version    | License | Where                                                                                                                                                                                                                                         |
+| ------------------------------------------------------------------------- | ---------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| shadcn/ui (components generated with the `shadcn` CLI, adapted)           | CLI 4.21.0 | MIT     | `packages/ui/src/primitives/` (P2.1; `accordion.tsx` P3.6; `chart.tsx` P4.7a; `bubble.tsx`, `marker.tsx`, `message.tsx`, `message-scroller.tsx`, `questionnaire.tsx` P5.1, from the shadcn registry); built into `@veljaos/ui`. Notice below. |
+| React Flow's structural styles (`@xyflow/react` `dist/base.css`, adapted) | 12.12.0    | MIT     | `packages/ui/src/diagram/diagram.css` (P5.26): positions and layers only, every colour a Liro token; built into `@veljaos/ui/styles.css`. Notice below (React Flow).                                                                          |
 
 ## Runtime and peer dependencies
 
-| Software                                                                                                                                                                                                                    | Version                 | License                                    | Used by                                                                                                                                              |
-| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- | ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| React                                                                                                                                                                                                                       | 19 (peer)               | MIT                                        | `@veljaos/ui`                                                                                                                                        |
-| Radix UI (`radix-ui`, and the `@radix-ui/*` packages it depends on)                                                                                                                                                         | 1.6.7                   | MIT                                        | `@veljaos/ui` (`LiroProvider` sets Radix's direction; the primitives of P2.1). Notice below.                                                         |
-| lucide-react                                                                                                                                                                                                                | 1.48.0                  | ISC (part derived from Feather, MIT)       | `@veljaos/ui` (the icons of the intents). Notice below.                                                                                              |
-| cmdk                                                                                                                                                                                                                        | 1.1.1                   | MIT                                        | `@veljaos/ui` (the command primitive, P2.1). Notice below.                                                                                           |
-| react-day-picker (with its dependencies date-fns 4.4.0 and @date-fns/tz 1.5.0, both MIT)                                                                                                                                    | 10.0.1                  | MIT                                        | `@veljaos/ui` (the calendar primitive, P2.1). Notices below.                                                                                         |
-| clsx                                                                                                                                                                                                                        | 2.1.1                   | MIT                                        | `@veljaos/ui` (joining class names, P2.1). Notice below.                                                                                             |
-| tailwind-merge                                                                                                                                                                                                              | 3.7.0                   | MIT                                        | `@veljaos/ui` (merging class names, P2.1). Notice below.                                                                                             |
-| sonner                                                                                                                                                                                                                      | 2.0.8                   | MIT                                        | `@veljaos/ui` (toasts, P2.5). Notice below.                                                                                                          |
-| TanStack Table (`@tanstack/react-table`, `@tanstack/table-core`), with TanStack Store (`@tanstack/react-store`, `@tanstack/store` 0.11.2)                                                                                   | 9.2.4                   | MIT                                        | `@veljaos/ui` (DataTable, P3.1). Notices below.                                                                                                      |
-| TanStack Virtual (`@tanstack/react-virtual` 3.14.13, with `@tanstack/virtual-core` 3.17.11)                                                                                                                                 | 3.14.13                 | MIT                                        | `@veljaos/ui` (DataTable virtual rows, P3.2). Notice below.                                                                                          |
-| React Hook Form (`react-hook-form`)                                                                                                                                                                                         | 7.89.0 (optional peer)  | MIT                                        | `@veljaos/ui/form` (P3.5): imported by the binding, installed by the application; not bundled. In the Storybook build. Notice below.                 |
-| Recharts (`recharts`, with the packages listed in its notice section), and `react-is` (its peer)                                                                                                                            | 3.10.1; react-is 19.3.0 | MIT (d3 modules ISC, d3-ease BSD-3-Clause) | `@veljaos/ui` (the charts of DashboardPage, P4.6). Notices below.                                                                                    |
-| @shadcn/react                                                                                                                                                                                                               | 0.3.1                   | MIT                                        | `@veljaos/ui` (the unstyled Message Scroller and Questionnaire under the P5.1 primitives). Pre-1.0. Notice below.                                    |
-| Tiptap (`@tiptap/core`, `pm`, `react`, `extensions` and the extensions document, paragraph, text, heading, bold, italic, underline, link, list, hard-break), with ProseMirror and the packages listed in its notice section | 3.31.4                  | MIT                                        | `@veljaos/ui/rich-text` (RichTextField, P5.22): MIT packages only, no Tiptap Pro or paid extension; loaded only through that subpath. Notices below. |
+| Software                                                                                                                                                                                                                    | Version                 | License                                    | Used by                                                                                                                                                                  |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| React                                                                                                                                                                                                                       | 19 (peer)               | MIT                                        | `@veljaos/ui`                                                                                                                                                            |
+| Radix UI (`radix-ui`, and the `@radix-ui/*` packages it depends on)                                                                                                                                                         | 1.6.7                   | MIT                                        | `@veljaos/ui` (`LiroProvider` sets Radix's direction; the primitives of P2.1). Notice below.                                                                             |
+| lucide-react                                                                                                                                                                                                                | 1.48.0                  | ISC (part derived from Feather, MIT)       | `@veljaos/ui` (the icons of the intents). Notice below.                                                                                                                  |
+| cmdk                                                                                                                                                                                                                        | 1.1.1                   | MIT                                        | `@veljaos/ui` (the command primitive, P2.1). Notice below.                                                                                                               |
+| react-day-picker (with its dependencies date-fns 4.4.0 and @date-fns/tz 1.5.0, both MIT)                                                                                                                                    | 10.0.1                  | MIT                                        | `@veljaos/ui` (the calendar primitive, P2.1). Notices below.                                                                                                             |
+| clsx                                                                                                                                                                                                                        | 2.1.1                   | MIT                                        | `@veljaos/ui` (joining class names, P2.1). Notice below.                                                                                                                 |
+| tailwind-merge                                                                                                                                                                                                              | 3.7.0                   | MIT                                        | `@veljaos/ui` (merging class names, P2.1). Notice below.                                                                                                                 |
+| sonner                                                                                                                                                                                                                      | 2.0.8                   | MIT                                        | `@veljaos/ui` (toasts, P2.5). Notice below.                                                                                                                              |
+| TanStack Table (`@tanstack/react-table`, `@tanstack/table-core`), with TanStack Store (`@tanstack/react-store`, `@tanstack/store` 0.11.2)                                                                                   | 9.2.4                   | MIT                                        | `@veljaos/ui` (DataTable, P3.1). Notices below.                                                                                                                          |
+| TanStack Virtual (`@tanstack/react-virtual` 3.14.13, with `@tanstack/virtual-core` 3.17.11)                                                                                                                                 | 3.14.13                 | MIT                                        | `@veljaos/ui` (DataTable virtual rows, P3.2). Notice below.                                                                                                              |
+| React Hook Form (`react-hook-form`)                                                                                                                                                                                         | 7.89.0 (optional peer)  | MIT                                        | `@veljaos/ui/form` (P3.5): imported by the binding, installed by the application; not bundled. In the Storybook build. Notice below.                                     |
+| Recharts (`recharts`, with the packages listed in its notice section), and `react-is` (its peer)                                                                                                                            | 3.10.1; react-is 19.3.0 | MIT (d3 modules ISC, d3-ease BSD-3-Clause) | `@veljaos/ui` (the charts of DashboardPage, P4.6). Notices below.                                                                                                        |
+| @shadcn/react                                                                                                                                                                                                               | 0.3.1                   | MIT                                        | `@veljaos/ui` (the unstyled Message Scroller and Questionnaire under the P5.1 primitives). Pre-1.0. Notice below.                                                        |
+| Tiptap (`@tiptap/core`, `pm`, `react`, `extensions` and the extensions document, paragraph, text, heading, bold, italic, underline, link, list, hard-break), with ProseMirror and the packages listed in its notice section | 3.31.4                  | MIT                                        | `@veljaos/ui/rich-text` (RichTextField, P5.22): MIT packages only, no Tiptap Pro or paid extension; loaded only through that subpath. Notices below.                     |
+| React Flow (`@xyflow/react`, with `@xyflow/system`, classcat, zustand and the d3 modules listed in its notice section) and dagre (`@dagrejs/dagre`, with `@dagrejs/graphlib`)                                               | 12.12.0; dagre 3.1.1    | MIT (d3 modules ISC, d3-ease BSD-3-Clause) | `@veljaos/ui/diagram` (Diagram, P5.26): the canvas and the automatic layout; loaded only through that subpath; React Flow's style sheets are not shipped. Notices below. |
 
 ## Storybook build
 
@@ -58,15 +60,15 @@ The static Storybook build (`apps/storybook/storybook-static`) is not hosted any
 only as a downloadable artifact of CI runs and of the publish workflow, and carries `LICENSE` and
 this file. Besides our own code it bundles:
 
-| Software                                                                                                                                                                                                                             | Version  | License  | Note                                                                                                                                         |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| Storybook (storybook, @storybook/addon-a11y, addon-docs, react-vite)                                                                                                                                                                 | 10.6.0   | MIT      | Notice below, from the upstream repository (tag v10.6.0); the npm package ships no LICENSE file.                                             |
-| React, React DOM                                                                                                                                                                                                                     | 19.3.0   | MIT      | Notice below (React DOM carries the same notice).                                                                                            |
-| scheduler                                                                                                                                                                                                                            | 0.28.0   | MIT      | Dependency of React DOM; same notice as React.                                                                                               |
-| axe-core                                                                                                                                                                                                                             | 4.13.0   | MPL-2.0  | Used by the accessibility addon. Unmodified; source: https://github.com/dequelabs/axe-core/tree/v4.13.0. Notices below.                      |
-| Radix UI (`@radix-ui/react-direction`, through `radix-ui`)                                                                                                                                                                           | 1.1.4    | MIT      | Used by `LiroProvider`. Notice below (Radix UI).                                                                                             |
-| `@veljaos/ui` runtime dependencies (lucide-react, cmdk, react-day-picker, date-fns, @date-fns/tz, clsx, tailwind-merge, sonner, TanStack Table, Store and Virtual, Radix UI, @shadcn/react, Tiptap and ProseMirror), React Hook Form | as above | MIT, ISC | Used by the components and primitives in the stories. Notices below.                                                                         |
-| Nunito Sans                                                                                                                                                                                                                          | —        | OFL-1.1  | Interface font of the Storybook manager, shipped inside the storybook package. Notice below, from https://github.com/googlefonts/NunitoSans. |
+| Software                                                                                                                                                                                                                                                   | Version  | License  | Note                                                                                                                                         |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Storybook (storybook, @storybook/addon-a11y, addon-docs, react-vite)                                                                                                                                                                                       | 10.6.0   | MIT      | Notice below, from the upstream repository (tag v10.6.0); the npm package ships no LICENSE file.                                             |
+| React, React DOM                                                                                                                                                                                                                                           | 19.3.0   | MIT      | Notice below (React DOM carries the same notice).                                                                                            |
+| scheduler                                                                                                                                                                                                                                                  | 0.28.0   | MIT      | Dependency of React DOM; same notice as React.                                                                                               |
+| axe-core                                                                                                                                                                                                                                                   | 4.13.0   | MPL-2.0  | Used by the accessibility addon. Unmodified; source: https://github.com/dequelabs/axe-core/tree/v4.13.0. Notices below.                      |
+| Radix UI (`@radix-ui/react-direction`, through `radix-ui`)                                                                                                                                                                                                 | 1.1.4    | MIT      | Used by `LiroProvider`. Notice below (Radix UI).                                                                                             |
+| `@veljaos/ui` runtime dependencies (lucide-react, cmdk, react-day-picker, date-fns, @date-fns/tz, clsx, tailwind-merge, sonner, TanStack Table, Store and Virtual, Radix UI, @shadcn/react, Tiptap and ProseMirror, React Flow and dagre), React Hook Form | as above | MIT, ISC | Used by the components and primitives in the stories. Notices below.                                                                         |
+| Nunito Sans                                                                                                                                                                                                                                                | —        | OFL-1.1  | Interface font of the Storybook manager, shipped inside the storybook package. Notice below, from https://github.com/googlefonts/NunitoSans. |
 
 The `storybook` package ships its own dependencies pre-bundled into its code, without separate
 notices; they are not listed here.
@@ -1375,6 +1377,238 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+```
+
+### React Flow, dagre and their dependencies
+
+The canvas and the automatic layout of `@veljaos/ui/diagram` (P5.26) and the packages they bring at runtime, each with its own notice; loaded only through that subpath. React Flow (`@xyflow/react` 12.12.0, MIT) with `@xyflow/system` 0.0.83, classcat 5.0.5 and zustand 4.5.7 (MIT; zustand uses use-sync-external-store 1.7.0, notice above under Recharts); the d3 modules React Flow pans, zooms and drags with: d3-drag 3.0.0, d3-zoom 3.0.0, d3-selection 3.0.0, d3-dispatch 3.0.1, d3-transition 3.0.1 (ISC), with d3-interpolate 3.0.1, d3-color 3.1.0, d3-timer 3.0.1 (ISC) and d3-ease 3.0.1 (BSD-3-Clause), whose notices stand above under Recharts. dagre (`@dagrejs/dagre` 3.1.1, MIT), which bundles `@dagrejs/graphlib` 4.0.5 (MIT). React Flow's style sheets are not shipped; `packages/ui/src/diagram/diagram.css` adapts the structural rules of `@xyflow/react`'s `dist/base.css` (same notice as `@xyflow/react`) with Liro tokens in place of its colours. The `@types/d3-*` packages that `@xyflow/system` depends on carry type declarations only (MIT) and are not part of any bundle. Not used: elkjs (EPL-2.0) and bpmn-js (not MIT).
+
+#### @xyflow/react 12.12.0 (MIT)
+
+```
+MIT License
+
+Copyright (c) 2019-2025 webkid GmbH
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+#### @xyflow/system 0.0.83 (MIT)
+
+```
+MIT License
+
+Copyright (c) 2019-2025 webkid GmbH
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+#### classcat 5.0.5 (MIT)
+
+```
+Copyright © Jorge Bucaran <<https://jorgebucaran.com>>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the 'Software'), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+```
+
+#### zustand 4.5.7 (MIT)
+
+```
+MIT License
+
+Copyright (c) 2019 Paul Henschel
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+#### d3-drag 3.0.0 (ISC)
+
+```
+Copyright 2010-2021 Mike Bostock
+
+Permission to use, copy, modify, and/or distribute this software for any purpose
+with or without fee is hereby granted, provided that the above copyright notice
+and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
+FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+THIS SOFTWARE.
+```
+
+#### d3-zoom 3.0.0 (ISC)
+
+```
+Copyright 2010-2021 Mike Bostock
+
+Permission to use, copy, modify, and/or distribute this software for any purpose
+with or without fee is hereby granted, provided that the above copyright notice
+and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
+FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+THIS SOFTWARE.
+```
+
+#### d3-selection 3.0.0 (ISC)
+
+```
+Copyright 2010-2021 Mike Bostock
+
+Permission to use, copy, modify, and/or distribute this software for any purpose
+with or without fee is hereby granted, provided that the above copyright notice
+and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
+FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+THIS SOFTWARE.
+```
+
+#### d3-dispatch 3.0.1 (ISC)
+
+```
+Copyright 2010-2021 Mike Bostock
+
+Permission to use, copy, modify, and/or distribute this software for any purpose
+with or without fee is hereby granted, provided that the above copyright notice
+and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
+FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+THIS SOFTWARE.
+```
+
+#### d3-transition 3.0.1 (ISC)
+
+```
+Copyright 2010-2021 Mike Bostock
+
+Permission to use, copy, modify, and/or distribute this software for any purpose
+with or without fee is hereby granted, provided that the above copyright notice
+and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
+FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+THIS SOFTWARE.
+```
+
+#### @dagrejs/dagre 3.1.1 (MIT)
+
+```
+Copyright (c) 2012-2014 Chris Pettitt
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+```
+
+#### @dagrejs/graphlib 4.0.5 (MIT)
+
+```
+Copyright (c) 2012-2014 Chris Pettitt
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
 ```
 
 ### Fonts

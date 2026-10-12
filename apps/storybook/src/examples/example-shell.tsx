@@ -221,6 +221,8 @@ export const TONES = {
   Submitted: 'success',
   Imported: 'neutral',
   'In progress': 'info',
+  // An orchestrator's run (P5.26)
+  Failed: 'danger',
   // A bank statement's lines
   'Suggestion ready': 'info',
   'To do': 'warning',

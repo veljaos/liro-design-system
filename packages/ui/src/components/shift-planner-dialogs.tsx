@@ -18,13 +18,19 @@ import { Dialog } from './dialog'
 import { MultiSelectField } from './multi-select-field'
 import { SelectField } from './select-field'
 import {
+  cellConflictTone,
+  conflictList,
   moveChange,
+  periodDays,
   rotationAssignments,
+  rotationPreview,
   type RotationPattern,
   type ShiftAssignment,
+  type ShiftCellRef,
   type ShiftChange,
+  type ShiftConflicts,
 } from './shift-logic'
-import { TEMPLATE_TONE, timeTexts, type ShiftTemplate } from './shift-parts'
+import { ConflictIcon, TEMPLATE_TONE, timeTexts, type ShiftTemplate } from './shift-parts'
 
 /*
  * The dialogs of ShiftPlanner (P5.24 b): "Apply rotation…" and "Move to…" — the planner's ways
@@ -50,8 +56,13 @@ export interface RotationDialogProps {
   rotations: readonly RotationPattern[]
   templates: readonly ShiftTemplate[]
   rows: readonly RowName[]
-  /** The people chosen when it opens (the rows of the selected range). */
+  /** The people chosen when it opens (`rotationDefaultPeople`). */
   defaultPeople: readonly string[]
+  /**
+   * The application's checks of the shifts the rotation would add (rest between shifts, double
+   * booking, weekly hours): conflicts by person and day, shown before Apply. Apply stays possible.
+   */
+  checkConflicts?: (additions: readonly ({ templateId: string } & ShiftCellRef)[]) => ShiftConflicts
   /** The period it fills by default. */
   start: string
   end: string
@@ -59,9 +70,10 @@ export interface RotationDialogProps {
 }
 
 /**
- * "Apply rotation…": a pattern, the people, the dates and an offset per person; Apply reports the
- * generated assignments (`rotationAssignments`) as additions. Its fields start afresh each time
- * it opens.
+ * "Apply rotation…": a pattern, the people, the dates and an offset per person; before Apply it
+ * shows what it will add (people × days) and the application's checks of it (P5.24a); Apply
+ * reports the generated assignments (`rotationAssignments`) as additions. Its fields start
+ * afresh each time it opens.
  */
 export function RotationDialog(props: RotationDialogProps) {
   const { messages } = useLiro()
@@ -75,6 +87,7 @@ export function RotationDialog(props: RotationDialogProps) {
       }}
       {...(props.trigger === undefined ? {} : { trigger: props.trigger })}
       title={messages['shifts.rotationTitle']}
+      size="wide"
     >
       <RotationForm key={round} {...props} />
     </Dialog>
@@ -95,6 +108,11 @@ function RotationForm(props: RotationDialogProps) {
       ? []
       : rotationAssignments(pattern, people, start, end, Number(offset))
   const templateOf = (id: string) => props.templates.find((template) => template.id === id)
+  const nameOf = (id: string) => props.rows.find((row) => row.id === id)?.name ?? ''
+  const days = start === null || end === null || end < start ? [] : periodDays(start, end)
+  const preview = rotationPreview(generated, people, days)
+  const checked = props.checkConflicts?.(generated)
+  const problems = checked === undefined ? [] : conflictList(checked, people, days)
   const noPeople = tried && people.length === 0
   const apply = () => {
     setTried(true)
@@ -177,6 +195,43 @@ function RotationForm(props: RotationDialogProps) {
           format.number(String(generated.length)),
         )}
       </p>
+      {preview.length > 0 && days.length > 0 && (
+        <RotationPreview
+          preview={preview}
+          days={days}
+          nameOf={nameOf}
+          templateOf={templateOf}
+          checked={checked}
+        />
+      )}
+      {checked !== undefined && people.length > 0 && (
+        <div className="flex flex-col gap-1.5">
+          <p className={cn('m-0 text-sm font-semibold text-primary', TEXT_DIRECTION)}>
+            {problems.length === 0
+              ? messages['shifts.rotationNoConflicts']
+              : messages['shifts.rotationConflicts'](
+                  problems.length,
+                  format.number(String(problems.length)),
+                )}
+          </p>
+          {problems.length > 0 && (
+            <ul className="m-0 flex list-none flex-col gap-1 p-0">
+              {problems.map((each, index) => (
+                <li key={index} className="flex items-start gap-2 text-sm text-primary">
+                  <ConflictIcon tone={each.conflict.tone} className="mt-0.5 size-4" />
+                  <span className={cn('min-w-0 flex-1', TEXT_DIRECTION)}>
+                    <span className="font-semibold">{nameOf(each.rowId)}</span>
+                    {', '}
+                    {format.date(each.date)}
+                    {': '}
+                    {each.conflict.text}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
       <DialogFooter>
         <Button
           intent="cancel"
@@ -193,6 +248,105 @@ function RotationForm(props: RotationDialogProps) {
           onClick={apply}
         />
       </DialogFooter>
+    </div>
+  )
+}
+
+/**
+ * A sideways-scrolling area is a tab stop of its own, so the keyboard can scroll it (WCAG 2.1.1;
+ * axe scrollable-region-focusable), as DataTable's scrolling body (P3.1).
+ */
+const SCROLL_REGION = { tabIndex: 0, role: 'region' } as const
+
+/** What the rotation will add: one row per person, one column per day, conflicts marked. */
+function RotationPreview(props: {
+  preview: ReturnType<typeof rotationPreview>
+  days: readonly string[]
+  nameOf: (id: string) => string
+  templateOf: (id: string) => ShiftTemplate | undefined
+  checked: ShiftConflicts | undefined
+}) {
+  const { messages, format } = useLiro()
+  const weekday = (date: string) =>
+    format.weekdayName(new Date(`${date}T00:00:00Z`).getUTCDay(), 'short')
+  return (
+    <div className="flex flex-col gap-1.5">
+      <span className={cn('text-xs font-semibold text-secondary', TEXT_DIRECTION)}>
+        {messages['shifts.rotationPreview']}
+      </span>
+      {/* Wider than the dialog for a long period: it scrolls sideways, reached by the keyboard. */}
+      <div
+        {...SCROLL_REGION}
+        aria-label={messages['shifts.rotationPreview']}
+        className="max-w-full overflow-x-auto rounded-md border border-solid border-subtle"
+      >
+        <table className="border-separate border-spacing-0 font-sans text-xs text-primary">
+          <thead>
+            <tr>
+              <th scope="col" className="sr-only">
+                {messages['shifts.rotationPeople']}
+              </th>
+              {props.days.map((date) => (
+                <th
+                  key={date}
+                  scope="col"
+                  className="border-0 border-b border-solid border-subtle px-0.5 py-1 font-regular text-secondary"
+                >
+                  <span className={cn('flex flex-col items-center', TEXT_ISOLATE)}>
+                    <span>{weekday(date)}</span>
+                    <span className="tabular-nums">
+                      {format.number(String(Number(date.slice(8))))}
+                    </span>
+                  </span>
+                  <span className="sr-only">{format.date(date)}</span>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {props.preview.map((person) => (
+              <tr key={person.rowId}>
+                <th
+                  scope="row"
+                  className="max-w-40 truncate border-0 border-b border-solid border-subtle px-2 py-1 text-start font-semibold"
+                >
+                  <span className={TEXT_ISOLATE}>{props.nameOf(person.rowId)}</span>
+                </th>
+                {person.days.map((day) => {
+                  const template =
+                    day.templateId === null ? undefined : props.templateOf(day.templateId)
+                  const tone = cellConflictTone(props.checked?.[person.rowId]?.[day.date])
+                  const spoken =
+                    template === undefined
+                      ? messages['shifts.dayOff']
+                      : `${template.label}, ${timeTexts(format, messages, template.start, template.end).spoken}`
+                  return (
+                    <td
+                      key={day.date}
+                      className="border-0 border-b border-solid border-subtle px-0.5 py-1 text-center"
+                    >
+                      <span
+                        className={cn(
+                          'box-border inline-flex min-w-6 items-center justify-center gap-0.5 rounded-sm border border-solid px-1 py-0.5',
+                          template === undefined
+                            ? 'border-transparent text-tertiary'
+                            : TEMPLATE_TONE[template.tone ?? 'neutral'],
+                        )}
+                      >
+                        <span aria-hidden="true" className={cn('font-semibold', TEXT_ISOLATE)}>
+                          {template === undefined ? '–' : template.short}
+                        </span>
+                        {tone !== null && <ConflictIcon tone={tone} className="size-3" />}
+                        <span className="sr-only">{spoken}</span>
+                      </span>
+                    </td>
+                  )
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   )
 }

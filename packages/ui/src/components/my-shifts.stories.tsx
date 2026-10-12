@@ -91,6 +91,25 @@ export const SwapOpen: Story = {
   },
 }
 
+/**
+ * "Request swap" opened from the application with a colleague already chosen (`swapDefaults`):
+ * the colleague who offered to take the night shift.
+ */
+export const SwapSuggested: Story = {
+  name: 'Request swap, a colleague suggested',
+  render: () => (
+    <OnPhone
+      defaultSwapShift="m3"
+      swapDefaults={(shift) => (shift.id === 'm3' ? { colleagueId: 'marko' } : undefined)}
+    />
+  ),
+  play: async () => {
+    await settle()
+    const dialog = within(document.body).getByRole('dialog', { name: 'Request a swap' })
+    await expect(dialog).toHaveTextContent('Marko Jovanović')
+  },
+}
+
 /** Without swapping (the application offers none): no buttons. */
 export const ReadOnly: Story = {
   name: 'Read-only',

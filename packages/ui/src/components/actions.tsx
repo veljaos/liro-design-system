@@ -284,7 +284,9 @@ export function OverflowRow<T extends ActionItem>({
   })
 
   return (
-    <div ref={row} className={cn('relative min-w-0', className)}>
+    // Inside a flex row (a dialog's footer) the row fills its line: a row as wide as what it
+    // shows would stay folded once "More" took its place (P5.26).
+    <div ref={row} data-slot="action-row" className={cn('relative min-w-0', className)}>
       {/* Every action and the "More" button, laid out once invisibly and unwrapped, to measure
           their widths. */}
       <div

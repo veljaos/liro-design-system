@@ -51,6 +51,11 @@ export interface MyShiftsProps {
   swapReasonRequired?: boolean
   /** The shift whose swap dialog is open from the start (a request being written, restored). */
   defaultSwapShift?: string
+  /**
+   * What a shift's swap request starts with (P5.24a): the colleague the application suggests (a
+   * colleague asked first, the one who offered), the shift to take back, a reason.
+   */
+  swapDefaults?: (shift: MyShift) => Partial<Omit<ShiftSwapRequest, 'shiftId'>> | undefined
   /** Skeleton cards while the shifts load. */
   loading?: boolean
   className?: string
@@ -59,6 +64,10 @@ export interface MyShiftsProps {
 /** A person's upcoming shifts by week, each with "Request swap". */
 export function MyShifts(props: MyShiftsProps) {
   const { messages, format, weekStartsOn, today } = useLiro()
+  const swapDefaultsOf = (shift: MyShift) => {
+    const defaultValue = props.swapDefaults?.(shift)
+    return defaultValue === undefined ? {} : { defaultValue }
+  }
   const Heading = `h${String(props.headingLevel ?? 1)}` as 'h1'
   const SubHeading = `h${String(Math.min(6, (props.headingLevel ?? 1) + 1))}` as 'h2'
   const title = props.title ?? messages['shifts.myShifts']
@@ -178,6 +187,7 @@ export function MyShifts(props: MyShiftsProps) {
                               {...(props.defaultSwapShift === shift.id
                                 ? { defaultOpen: true }
                                 : {})}
+                              {...swapDefaultsOf(shift)}
                               trigger={
                                 <Button
                                   family="neutral"

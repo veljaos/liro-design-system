@@ -6,6 +6,8 @@
 @import 'tailwindcss/theme.css' layer(theme);
 @import 'tailwindcss/utilities.css' layer(utilities) source(none);
 @import '@veljaos/tokens/theme.css';
+/* Diagram's canvas (P5.26): React Flow's structure in tokens, under every utility. */
+@import './diagram/diagram.css' layer(base);
 @source './';
 /* Stories and tests are not shipped; their classes stay out of the package CSS. */
 @source not './**/*.stories.tsx';

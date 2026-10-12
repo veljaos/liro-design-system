@@ -260,6 +260,42 @@ export function rotationAssignments(
   )
 }
 
+/**
+ * The people "Apply rotation…" opens with (P5.24a): the rows of the selected range, else the
+ * application's choice (`rotationPeople`, only rows it shows), else everyone in view — each once,
+ * in that order.
+ */
+export function rotationDefaultPeople(
+  rangeRowIds: readonly string[],
+  applicationIds: readonly string[] | undefined,
+  shownRowIds: readonly string[],
+): string[] {
+  const unique = (ids: readonly string[]) => [...new Set(ids)]
+  if (rangeRowIds.length > 0) return unique(rangeRowIds)
+  const chosen = (applicationIds ?? []).filter((id) => shownRowIds.includes(id))
+  if (applicationIds !== undefined) return unique(chosen)
+  return unique(shownRowIds)
+}
+
+/**
+ * What a rotation will add, per person (P5.24a): every day of the period with the template it
+ * gets, or null for a day off — in the order of the people chosen.
+ */
+export function rotationPreview(
+  additions: readonly ({ templateId: string } & ShiftCellRef)[],
+  peopleIds: readonly string[],
+  days: readonly string[],
+): { rowId: string; days: { date: string; templateId: string | null }[] }[] {
+  return peopleIds.map((rowId) => ({
+    rowId,
+    days: days.map((date) => ({
+      date,
+      templateId:
+        additions.find((each) => each.rowId === rowId && each.date === date)?.templateId ?? null,
+    })),
+  }))
+}
+
 /** A laid-out cell, measured when a drag starts: its place and its box. */
 export interface CellBox extends ShiftCellRef {
   x: number
