@@ -69,7 +69,7 @@ describe('PeriodicRunPage', () => {
       />,
     )
     expect(html).not.toContain('aria-current="step"')
-    expect(html).toContain('Step 3 of 5: Review')
+    expect(html.replace(/<[^>]+>/g, '')).toContain('Step 3 of 5 · Review')
     expect(html).toContain('Period locked')
   })
 

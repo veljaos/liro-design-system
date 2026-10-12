@@ -441,7 +441,7 @@ export const TASKS: KanbanColumn[] = [
         record: {
           kind: 'Bank statement',
           number: '188',
-          state: 'Matching',
+          state: 'In progress',
           href: '#/banking/statements/188',
         },
       },

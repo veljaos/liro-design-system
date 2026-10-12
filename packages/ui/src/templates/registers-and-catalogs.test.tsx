@@ -87,6 +87,25 @@ describe('ImportWizard', () => {
     )
     expect(html).toContain('312 of 1.284')
   })
+
+  it('on phones: one line for the step, Cancel as the header X, the reason under the buttons', () => {
+    const html = render(<ImportWizard {...WIZARD} layout="phone" onCancel={() => undefined} />)
+    expect(text(html)).toContain('Step 3 of 4 · Check')
+    expect(html).not.toContain('<ol')
+    expect(html).toContain('aria-label="Cancel the import"')
+    expect(html).not.toMatch(/<button[^>]*>(<[^>]+>)*\s*Cancel\s*</)
+    // The reason is one line under the row, and it describes the Import button.
+    const note = /<p id="([^"]+)"[^>]*>Unavailable: Correct the rows/.exec(html)
+    expect(note).not.toBeNull()
+    expect(html).toContain(`aria-describedby="${note?.[1] ?? ''}"`)
+  })
+
+  it('on desktop: Cancel at the start of the buttons, the steps as a row', () => {
+    const html = render(<ImportWizard {...WIZARD} onCancel={() => undefined} />)
+    expect(html).toContain('<ol')
+    expect(text(html)).toContain(' Cancel ')
+    expect(html).not.toContain('Cancel the import')
+  })
 })
 
 describe('DuplicateWarning', () => {
@@ -157,6 +176,50 @@ describe('RegisterPage', () => {
     expect(html).toContain('Corrected by no. 27')
     expect(html).toContain('Corrects no. 14')
     expect(html).toContain('Locked')
+  })
+
+  it('links both corrections to the other entry, the same way (P5.23)', () => {
+    const rows: Injury[] = [
+      { id: '14', no: '14', name: 'Marko Đorđević', correctedBy: '27' },
+      { id: '27', no: '27', name: 'Marko Đorđević', corrects: '14' },
+      { id: '30', no: '30', name: 'Ana Ilić', corrects: '3' },
+    ]
+    const page = (onGoToEntry?: (number: string) => void) =>
+      render(
+        <RegisterPage
+          layout="desktop"
+          title="Register"
+          columns={[{ id: 'name', header: 'Employee', cell: (row: Injury) => row.name }]}
+          rows={rows}
+          getRowId={(row) => row.id}
+          getRowLabel={(row) => row.no}
+          loading={false}
+          entry={(row) => ({
+            number: row.no,
+            ...(row.corrects === undefined ? {} : { corrects: row.corrects }),
+            ...(row.correctedBy === undefined ? {} : { correctedBy: row.correctedBy }),
+          })}
+          {...(onGoToEntry === undefined ? {} : { onGoToEntry })}
+        />,
+      )
+    const html = page()
+    const link = (name: string) =>
+      new RegExp(`<a href="#[^"]*-entry-([0-9]+)" class="([^"]*)">${name}</a>`).exec(html)
+    const corrects = link('Corrects no. 14')
+    const correctedBy = link('Corrected by no. 27')
+    expect(corrects?.[1]).toBe('14')
+    expect(correctedBy?.[1]).toBe('27')
+    // The same look for both: no badge.
+    expect(corrects?.[2]).toBe(correctedBy?.[2])
+    expect(html).not.toContain('data-tone=')
+    // Each number is the anchor the links go to.
+    expect(html).toMatch(/id="[^"]*-entry-14" tabindex="-1"/)
+    // An entry that is not among the rows: plain text, a link with `onGoToEntry`.
+    expect(html).toContain('<span class="text-secondary">Corrects no. 3</span>')
+    expect(page(() => undefined)).toMatch(/<a href="#[^"]*-entry-3"/)
+    // The refetch loader is in the first row; no slot between the locks and the table.
+    expect(html.match(/data-slot="refetch-loader"/g)).toHaveLength(1)
+    expect(html.indexOf('data-slot="refetch-loader"')).toBeLessThan(html.indexOf('<table'))
   })
 })
 

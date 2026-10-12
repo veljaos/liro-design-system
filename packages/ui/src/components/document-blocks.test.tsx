@@ -168,10 +168,13 @@ describe('CancellationBanner', () => {
       />,
     )
     expect(text(html)).toContain(
-      'Cancelled Cancelled by Milica Petrović on 06.10.2026. at 11:20. Reason: Wrong prices. Cancellation document ST-2026-0004',
+      'Cancelled by Milica Petrović on 06.10.2026. at 11:20. Reason: Wrong prices. Cancellation document ST-2026-0004',
     )
+    // The word is said once (P5.23), and the banner takes the badge's danger tone, politely.
+    expect(text(html)).not.toContain('Cancelled Cancelled')
     expect(html).toContain('href="#/st"')
     expect(html).toContain('role="status"')
+    expect(html).toContain('data-tone="danger"')
   })
 })
 

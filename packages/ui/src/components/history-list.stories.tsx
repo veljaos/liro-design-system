@@ -103,6 +103,39 @@ export const Paging: Story = {
       </ExampleProvider>
     )
   },
+  play: async () => {
+    await settle()
+  },
+}
+
+export const PagingInteraction: Story = {
+  name: 'Paging, interaction',
+  tags: ['interaction'],
+  render: function Render(args) {
+    const [entries, setEntries] = useState<HistoryEntry[]>(HISTORY)
+    const [loading, setLoading] = useState(false)
+    return (
+      <ExampleProvider>
+        <div className="max-w-160">
+          <SectionCard title="History">
+            <HistoryList
+              {...args}
+              entries={entries}
+              loading={loading}
+              hasMore={entries.length === HISTORY.length}
+              onLoadMore={() => {
+                setLoading(true)
+                setTimeout(() => {
+                  setEntries([...HISTORY, ...OLDER_HISTORY])
+                  setLoading(false)
+                }, 300)
+              }}
+            />
+          </SectionCard>
+        </div>
+      </ExampleProvider>
+    )
+  },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await userEvent.click(canvas.getByRole('button', { name: 'Show more' }))

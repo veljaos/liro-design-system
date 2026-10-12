@@ -104,6 +104,7 @@ export const Default: Story = {
 
 /** The bar's only way out: "Exit" ends the session (the application's). */
 export const Exit: Story = {
+  tags: ['interaction'],
   render: (args) => (
     <ExampleProvider>
       <SupportSession onExit={args.onExit} />
@@ -179,6 +180,41 @@ export const OfflineAndBack: Story = {
     await settle()
     const canvas = within(canvasElement)
     await expect(canvas.queryByText(/2 changes are kept/)).toBeNull()
+    await settle()
+  },
+}
+
+export const OfflineAndBackInteraction: Story = {
+  name: 'Offline and back, interaction',
+  tags: ['interaction'],
+  render: function Render() {
+    const [offline, setOffline] = useState(false)
+    return (
+      <ExampleProvider>
+        <div className="flex flex-col gap-4">
+          <div>
+            <Button
+              family="neutral"
+              icon={RefreshCw}
+              label={offline ? 'Simulate: connection returns' : 'Simulate: connection lost'}
+              onClick={() => {
+                setOffline(!offline)
+              }}
+            />
+          </div>
+          <OfflineIndicator
+            offline={offline}
+            waiting="2 changes are kept on this device and sent when the connection returns."
+            action={<Button intent="refresh" label="Try now" emphasis="secondary" />}
+          />
+        </div>
+      </ExampleProvider>
+    )
+  },
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.queryByText(/2 changes are kept/)).toBeNull()
     await userEvent.click(canvas.getByRole('button', { name: 'Simulate: connection lost' }))
     await expect(canvas.getByText(/2 changes are kept/)).toBeVisible()
     await expect(canvas.getByRole('button', { name: 'Try now' })).toBeVisible()
@@ -192,6 +228,40 @@ export const OfflineAndBack: Story = {
 /** Every state of a draft; "Send again" only after a failure, when the application can. */
 export const ConnectionStates: Story = {
   name: 'Connection states',
+  render: function Render() {
+    const [sent, setSent] = useState(0)
+    return (
+      <ExampleProvider>
+        <div className="flex flex-col items-start gap-3">
+          <ConnectionState status="local" />
+          <ConnectionState status="local" at="2026-10-06T14:12:00+02:00" />
+          <ConnectionState status="sending" />
+          <ConnectionState status="sent" at="2026-10-06T14:13:00+02:00" />
+          <ConnectionState
+            status="failed"
+            onRetry={() => {
+              setSent(sent + 1)
+            }}
+          />
+          <ConnectionState status="failed" />
+          <output className="text-xs text-secondary">Sent again: {sent}</output>
+        </div>
+      </ExampleProvider>
+    )
+  },
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('Saved on this device')).toBeVisible()
+    await expect(canvas.getByText('Sent at 14:13')).toBeVisible()
+    await expect(canvas.getAllByRole('button', { name: 'Send again' })).toHaveLength(1)
+    await settle()
+  },
+}
+
+export const ConnectionStatesInteraction: Story = {
+  name: 'Connection states, interaction',
+  tags: ['interaction'],
   render: function Render() {
     const [sent, setSent] = useState(0)
     return (

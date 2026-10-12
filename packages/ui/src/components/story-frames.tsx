@@ -12,16 +12,23 @@ import { LiroProvider, useLiro } from '../provider/liro-provider'
  * element with a transform is the containing block of its fixed descendants.
  */
 
-/** A nested provider in the story's theme; locale, direction and theme may be given. */
+/**
+ * A nested provider in the story's theme; locale, direction and theme may be given. A story whose
+ * text depends on "today" (a due date's "2 days overdue") passes a fixed `today`, so its picture
+ * does not change with the date (P5.23: the Kanban Arabic and Japanese stories did).
+ */
 export function StoryProvider({
   locale,
   direction,
   colorScheme,
+  today,
   children,
 }: {
   locale?: string
   direction?: 'ltr' | 'rtl'
   colorScheme?: 'light' | 'dark'
+  /** YYYY-MM-DD; default the story's (the device's date). */
+  today?: string
   children: ReactNode
 }) {
   const liro = useLiro()
@@ -32,7 +39,7 @@ export function StoryProvider({
       locale={locale ?? liro.locale}
       {...(dir === undefined ? {} : { direction: dir })}
       colorScheme={colorScheme ?? liro.colorScheme}
-      today={liro.today}
+      today={today ?? liro.today}
     >
       {children}
     </LiroProvider>

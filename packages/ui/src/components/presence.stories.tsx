@@ -66,6 +66,7 @@ export const Overflow: Story = {
 
 /** Keyboard: Tab focuses the row and shows the names; Enter opens the list with AgentMark. */
 export const Keyboard: Story = {
+  tags: ['interaction'],
   args: { people: MANY_PRESENT, max: 2 },
   play: async ({ canvasElement }) => {
     const button = within(canvasElement).getByRole('button')
@@ -134,6 +135,31 @@ export const LongTextPhone: Story = {
       </div>
     </PhoneFrame>
   ),
+  play: async () => {
+    await settle()
+  },
+}
+
+export const LongTextPhoneInteraction: Story = {
+  name: 'Long text, phone width, interaction',
+  tags: ['interaction'],
+  render: () => (
+    <PhoneFrame>
+      <div className="flex items-center justify-between gap-3 p-4">
+        <span className="text-sm font-semibold text-primary">F-2026-0410</span>
+        <PresenceAvatars
+          people={[
+            {
+              id: 'a',
+              name: 'Aleksandra Katarina Milošević-Vukadinović',
+              description: 'Head of accounting and financial reporting, viewing',
+            },
+            ...MANY_PRESENT,
+          ]}
+        />
+      </div>
+    </PhoneFrame>
+  ),
   play: async ({ canvasElement }) => {
     await userEvent.click(within(canvasElement).getByRole('button'))
     await within(document.body).findByRole('dialog', { name: 'Who is here' })
@@ -173,6 +199,19 @@ export const Japanese: Story = {
 /** English in a right-to-left page: the names in the list keep their order. */
 export const EnglishInRtl: Story = {
   name: 'English in RTL',
+  render: () => (
+    <StoryProvider locale="ar">
+      <PresenceAvatars people={PRESENT} />
+    </StoryProvider>
+  ),
+  play: async () => {
+    await settle()
+  },
+}
+
+export const EnglishInRtlInteraction: Story = {
+  name: 'English in RTL, interaction',
+  tags: ['interaction'],
   render: () => (
     <StoryProvider locale="ar">
       <PresenceAvatars people={PRESENT} />

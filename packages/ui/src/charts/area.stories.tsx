@@ -14,6 +14,7 @@ import {
   PAYMENT_METHODS,
   REVENUE,
   showTable,
+  tableShown,
 } from './chart-story-data'
 import { ChartSeriesToggle } from './series-toggle'
 
@@ -53,6 +54,14 @@ type Story = StoryObj<typeof meta>
 /** "Show as table": the same values as a table; in right-to-left the columns follow the page. */
 export const AsTable: Story = {
   name: 'Show as table',
+  args: { defaultView: 'table' },
+  play: tableShown,
+}
+
+/** Pressing "Show as table" turns the chart into its table (no picture: the static story above). */
+export const AsTableInteraction: Story = {
+  name: 'Show as table, interaction',
+  tags: ['interaction'],
   play: showTable,
 }
 
@@ -83,10 +92,16 @@ export const Axes: Story = {
   args: { ...REVENUE, valueAxis: false, grid: false },
 }
 
-function Interactive({ phone = false }: { phone?: boolean }) {
+function Interactive({
+  phone = false,
+  initialShown = ['beograd'],
+}: {
+  phone?: boolean
+  initialShown?: string[]
+}) {
   const { format } = useLiro()
   const [days, setDays] = useState('90')
-  const [shown, setShown] = useState(['beograd'])
+  const [shown, setShown] = useState(initialShown)
   const count = Number(days)
   const categories = DAILY.categories.slice(-count)
   const stores = [
@@ -136,6 +151,24 @@ function Interactive({ phone = false }: { phone?: boolean }) {
 /** A time-range select and a series toggle in the header; the application filters the data. */
 export const InteractiveStory: Story = {
   name: 'Interactive',
+  render: () => (
+    <ExampleProvider>
+      <div className="max-w-220">
+        <Interactive initialShown={['beograd', 'noviSad']} />
+      </div>
+    </ExampleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(
+      within(canvasElement).getByRole('button', { name: /Novi Sad store/ }),
+    ).toHaveAttribute('aria-pressed', 'true')
+  },
+}
+
+export const InteractiveStoryInteraction: Story = {
+  name: 'Interactive, interaction',
+  tags: ['interaction'],
   render: () => (
     <ExampleProvider>
       <div className="max-w-220">

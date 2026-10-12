@@ -5,7 +5,15 @@ import { SelectField } from '../components/select-field'
 import { ExampleProvider, PhoneFrame, StoryProvider } from '../components/story-frames'
 import { settle } from '../primitives/story-helpers'
 import { LineChart, type LineChartProps } from './cartesian'
-import { CASH, CASH_FLOW, CHANNELS, DAILY, POLICY_RATE, showTable } from './chart-story-data'
+import {
+  CASH,
+  CASH_FLOW,
+  CHANNELS,
+  DAILY,
+  POLICY_RATE,
+  showTable,
+  tableShown,
+} from './chart-story-data'
 
 const meta = {
   title: 'Charts/Line',
@@ -42,6 +50,14 @@ type Story = StoryObj<typeof meta>
 /** "Show as table": the same values as a table; in right-to-left the columns follow the page. */
 export const AsTable: Story = {
   name: 'Show as table',
+  args: { defaultView: 'table' },
+  play: tableShown,
+}
+
+/** Pressing "Show as table" turns the chart into its table (no picture: the static story above). */
+export const AsTableInteraction: Story = {
+  name: 'Show as table, interaction',
+  tags: ['interaction'],
   play: showTable,
 }
 
@@ -102,6 +118,24 @@ function Interactive({ phone = false }: { phone?: boolean }) {
 /** A time-range select in the header. */
 export const InteractiveStory: Story = {
   name: 'Interactive',
+  render: () => (
+    <ExampleProvider>
+      <div className="max-w-180">
+        <Interactive />
+      </div>
+    </ExampleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const plot = canvasElement.querySelector('.recharts-surface')
+    // The plot is reachable by keyboard; the arrows show the tooltip (WCAG 2.1.1).
+    await expect(plot).toHaveAttribute('tabindex', '0')
+  },
+}
+
+export const InteractiveStoryInteraction: Story = {
+  name: 'Interactive, interaction',
+  tags: ['interaction'],
   render: () => (
     <ExampleProvider>
       <div className="max-w-180">

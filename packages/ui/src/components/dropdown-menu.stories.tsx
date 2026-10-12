@@ -60,6 +60,40 @@ export const Default: Story = {
     return (
       <div className="flex min-h-70 flex-col items-start gap-3">
         <DropdownMenu
+          defaultOpen
+          trigger={<IconButton intent="more" label="More actions" />}
+          entries={entries}
+        />
+        <p className="m-0 text-sm text-secondary">
+          Chosen: <code>{chosen}</code>
+        </p>
+      </div>
+    )
+  },
+  play: async () => {
+    await within(document.body).findByRole('menu')
+    await settle()
+  },
+}
+
+export const DefaultInteraction: Story = {
+  name: 'Default, interaction',
+  tags: ['interaction'],
+  render: function Render() {
+    const [chosen, setChosen] = useState('nothing')
+    const entries = ENTRIES.map((entry) =>
+      entry.type === undefined || entry.type === 'item'
+        ? {
+            ...entry,
+            onSelect: () => {
+              setChosen(entry.label)
+            },
+          }
+        : entry,
+    )
+    return (
+      <div className="flex min-h-70 flex-col items-start gap-3">
+        <DropdownMenu
           trigger={<IconButton intent="more" label="More actions" />}
           entries={entries}
         />
@@ -88,6 +122,33 @@ export const Default: Story = {
 /** Long labels at phone width: the menu stays on screen and the labels wrap. */
 export const LongTextPhone: Story = {
   name: 'Long text, phone width',
+  render: () => (
+    <div className="min-h-60 w-[390px] max-w-full">
+      <DropdownMenu
+        defaultOpen
+        trigger={<Button intent="more" label="More" />}
+        entries={[
+          { label: LONG.label, onSelect: noop, icon: Pencil },
+          {
+            label: 'Switch company',
+            value: 'Građevinsko preduzeće Kvadrat Gradnja i partneri d.o.o. Novi Sad',
+            onSelect: noop,
+            icon: Building2,
+          },
+          { label: LONG.error, onSelect: noop, destructive: true, icon: Trash2 },
+        ]}
+      />
+    </div>
+  ),
+  play: async () => {
+    await within(document.body).findByRole('menu')
+    await settle()
+  },
+}
+
+export const LongTextPhoneInteraction: Story = {
+  name: 'Long text, phone width, interaction',
+  tags: ['interaction'],
   render: () => (
     <div className="min-h-60 w-[390px] max-w-full">
       <DropdownMenu
@@ -123,6 +184,31 @@ export const Arabic: Story = {
     <StoryProvider locale="ar">
       <div className="min-h-50">
         <DropdownMenu
+          defaultOpen
+          trigger={<Button intent="more" label={ARABIC.label} />}
+          entries={[
+            { type: 'label', label: ARABIC.description },
+            ...ARABIC.options.map((label) => ({ label, onSelect: noop, icon: Pencil })),
+            { type: 'separator' },
+            { label: ARABIC.error, onSelect: noop, destructive: true, icon: Trash2 },
+          ]}
+        />
+      </div>
+    </StoryProvider>
+  ),
+  play: async () => {
+    await within(document.body).findByRole('menu')
+    await settle()
+  },
+}
+
+export const ArabicInteraction: Story = {
+  name: 'Arabic, interaction',
+  tags: ['interaction'],
+  render: () => (
+    <StoryProvider locale="ar">
+      <div className="min-h-50">
+        <DropdownMenu
           trigger={<Button intent="more" label={ARABIC.label} />}
           entries={[
             { type: 'label', label: ARABIC.description },
@@ -143,6 +229,31 @@ export const Arabic: Story = {
 
 /** Japanese sample text. */
 export const Japanese: Story = {
+  render: () => (
+    <StoryProvider locale="ja">
+      <div className="min-h-50">
+        <DropdownMenu
+          defaultOpen
+          trigger={<Button intent="more" label={JAPANESE.label} />}
+          entries={[
+            { type: 'label', label: JAPANESE.description },
+            ...JAPANESE.options.map((label) => ({ label, onSelect: noop, icon: Pencil })),
+            { type: 'separator' },
+            { label: JAPANESE.error, onSelect: noop, destructive: true, icon: Trash2 },
+          ]}
+        />
+      </div>
+    </StoryProvider>
+  ),
+  play: async () => {
+    await within(document.body).findByRole('menu')
+    await settle()
+  },
+}
+
+export const JapaneseInteraction: Story = {
+  name: 'Japanese, interaction',
+  tags: ['interaction'],
   render: () => (
     <StoryProvider locale="ja">
       <div className="min-h-50">

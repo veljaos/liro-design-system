@@ -29,6 +29,11 @@ export interface MultiSelectFieldProps extends FieldBaseProps {
   value?: readonly string[]
   /** Uncontrolled initial values. */
   defaultValue?: readonly string[]
+  /**
+   * Text standing typed when the field first shows, with its list open: a search the
+   * application restores.
+   */
+  defaultQuery?: string
   onChange?: (values: string[]) => void
   /** Shown while nothing is chosen. From the application. */
   placeholder?: string
@@ -57,8 +62,8 @@ export function MultiSelectField(props: MultiSelectFieldProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [inner, setInner] = useState<readonly string[]>(props.defaultValue ?? [])
   const values = props.value ?? inner
-  const [query, setQuery] = useState('')
-  const [open, setOpen] = useState(false)
+  const [query, setQuery] = useState(props.defaultQuery ?? '')
+  const [open, setOpen] = useState(props.defaultQuery !== undefined)
   const [active, setActive] = useState(-1)
   const shown = filterChoices(props.options, query, locale)
   const chosen = values.flatMap((value) => {

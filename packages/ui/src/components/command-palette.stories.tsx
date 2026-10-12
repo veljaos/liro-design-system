@@ -64,6 +64,26 @@ function items(onRun: (label: string) => void): CommandItem[] {
 
 /** Ctrl+K opens it; typing filters and highlights; Enter runs the first result. */
 export const Default: Story = {
+  render: () => (
+    <div className="flex min-h-110 flex-col items-start gap-3">
+      <p className="m-0 flex items-center gap-2 text-sm">
+        Press <ShortcutHint keys={['Ctrl', 'K']} /> to open.
+      </p>
+      <CommandPalette open defaultQuery="inv" items={items(() => undefined)} />
+    </div>
+  ),
+  play: async () => {
+    const body = within(document.body)
+    await expect(await body.findByRole('combobox', { name: 'Search and commands' })).toHaveValue(
+      'inv',
+    )
+    await settle()
+  },
+}
+
+export const DefaultInteraction: Story = {
+  name: 'Default, interaction',
+  tags: ['interaction'],
   render: function Render() {
     const [ran, setRan] = useState('nothing')
     return (
@@ -97,6 +117,20 @@ export const Default: Story = {
 
 /** Nothing found. */
 export const NothingFound: Story = {
+  render: () => <CommandPalette open defaultQuery="xyz" items={items(() => undefined)} />,
+  play: async () => {
+    const body = within(document.body)
+    // The palette may still be fading in (opacity counts as not visible): wait until it shows.
+    await waitFor(async () => {
+      await expect(body.getByText('Nothing found')).toBeVisible()
+    })
+    await settle()
+  },
+}
+
+export const NothingFoundInteraction: Story = {
+  name: 'Nothing found, interaction',
+  tags: ['interaction'],
   render: () => <CommandPalette open items={items(() => undefined)} />,
   play: async ({ canvasElement }) => {
     const body = within(canvasElement.ownerDocument.body)

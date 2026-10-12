@@ -34,6 +34,8 @@ export type SplitActionProps = {
   disabled?: boolean
   /** The related actions in the menu. */
   entries: readonly MenuEntry[]
+  /** Shows the menu from the start (the application opens it at once). Closed by default. */
+  defaultOpen?: boolean
 } & (
   | { intent: Intent; family?: never; icon?: never }
   | { family: Family; icon: IconComponent; intent?: never }
@@ -67,7 +69,10 @@ export function SplitAction(props: SplitActionProps) {
         />
         <span>{props.label}</span>
       </ButtonPrimitive>
-      <MenuRoot modal={false}>
+      <MenuRoot
+        modal={false}
+        {...(props.defaultOpen === undefined ? {} : { defaultOpen: props.defaultOpen })}
+      >
         <DropdownMenuTrigger asChild>
           <ButtonPrimitive
             family={family}

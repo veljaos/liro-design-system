@@ -377,6 +377,19 @@ export const ReportStory: Story = {
       <Report />
     </ExampleProvider>
   ),
+  play: async () => {
+    await settle()
+  },
+}
+
+export const ReportStoryInteraction: Story = {
+  name: 'Report, interaction',
+  tags: ['interaction'],
+  render: () => (
+    <ExampleProvider>
+      <Report />
+    </ExampleProvider>
+  ),
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)

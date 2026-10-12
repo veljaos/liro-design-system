@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 import { LiroProvider } from '../provider/liro-provider'
-import { Alert, alertRole, Banner } from './alert'
+import { Alert, alertRole, Banner, hasMessage } from './alert'
 import { EmptyState, emptyIcon, ErrorState } from './empty-state'
 
 const render = (node: React.ReactNode) =>
@@ -38,6 +38,28 @@ describe('Alert and Banner', () => {
     expect(html).toContain('bg-status-danger-bg')
     expect(html).toContain('text-status-danger-fg')
     expect(html).toContain('The period is closed.')
+  })
+
+  it('are compact with only a title, and an empty message adds nothing (P5.23)', () => {
+    const titleOnly = render(<Alert tone="success" title="5 checks passed" />)
+    const emptyMessage = render(
+      <Alert tone="success" title="5 checks passed">
+        {false}
+      </Alert>,
+    )
+    const withMessage = render(<Alert title="Note">x</Alert>)
+    for (const html of [titleOnly, emptyMessage]) {
+      expect(html).toContain('data-compact=""')
+      expect(html).toContain('py-2.5')
+      expect(html).not.toContain('p-4')
+    }
+    expect(emptyMessage).not.toContain('break-words text-primary')
+    expect(withMessage).not.toContain('data-compact')
+    expect(withMessage).toContain('p-4')
+    expect(hasMessage('')).toBe(false)
+    expect(hasMessage([null, false])).toBe(false)
+    expect(hasMessage(['', 'x'])).toBe(true)
+    expect(render(<Banner>x</Banner>)).toContain('py-2.5')
   })
 
   it('show a close button named by messages only when dismissible', () => {

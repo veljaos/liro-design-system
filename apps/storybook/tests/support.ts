@@ -8,6 +8,20 @@ export interface Entry {
   title: string
   name: string
   type: 'story' | 'docs'
+  tags?: string[]
+}
+
+/**
+ * The tag of a story that reaches its state by clicking, typing, focusing or scrolling (P5.23):
+ * the story tests and the accessibility checks run it; the visual test takes no picture of it.
+ * The look it reaches has a static story that renders that state directly from its args or
+ * initial state (docs/decisions.md, "Visual stories are static").
+ */
+export const INTERACTION_TAG = 'interaction'
+
+/** Whether the visual test takes a picture of the entry: a story without the interaction tag. */
+export function isPictured(entry: Entry): boolean {
+  return entry.type === 'story' && !(entry.tags ?? []).includes(INTERACTION_TAG)
 }
 
 /** Every story and docs page of the built Storybook. Run `pnpm build-storybook` first. */

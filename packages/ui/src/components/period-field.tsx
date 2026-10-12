@@ -61,6 +61,8 @@ const PRESET_MESSAGE: Record<PeriodPreset, PresetMessage> = {
 }
 
 export interface PeriodFieldProps extends FieldBaseProps {
+  /** Shows the calendar from the start (asked for at once). Closed by default. */
+  defaultOpen?: boolean
   /** Controlled period; null is all periods. */
   value?: DateRange | null
   /** Uncontrolled initial period. */
@@ -103,7 +105,7 @@ export function PeriodField(props: PeriodFieldProps) {
   const presets = props.presets ?? PERIOD_PRESETS
   const [inner, setInner] = useState(props.defaultValue ?? null)
   const value = props.value === undefined ? inner : props.value
-  const { open, setOpen, openings } = useCalendarOpen()
+  const { open, setOpen, openings } = useCalendarOpen(props.defaultOpen)
   // The first day picked in the calendar since it opened; the second applies the range.
   const [picked, setPicked] = useState<string | null>(null)
   const textId = `${useId()}-text`

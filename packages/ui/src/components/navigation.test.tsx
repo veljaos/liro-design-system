@@ -24,6 +24,11 @@ describe('Tabs', () => {
     expect(html).not.toContain('Lines panel')
     expect(html).toContain('justify-start')
   })
+
+  it('puts the one gap token between the tab list and its panel (P5.23)', () => {
+    const html = render(<Tabs items={[{ value: 'a', label: 'Members', content: 'Panel' }]} />)
+    expect(html).toMatch(/data-slot="tabs-content" class="[^"]* pt-4"/)
+  })
 })
 
 describe('Breadcrumbs', () => {

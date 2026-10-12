@@ -215,6 +215,16 @@ type Story = StoryObj<typeof meta>
 export const Default: Story = {
   play: async ({ canvasElement }) => {
     await settle()
+    await expect(canvasElement).toHaveTextContent('Specification of works: 18 positions,')
+    await settle()
+  },
+}
+
+export const DefaultInteraction: Story = {
+  name: 'Default, interaction',
+  tags: ['interaction'],
+  play: async ({ canvasElement }) => {
+    await settle()
     const canvas = within(canvasElement)
     await expect(canvasElement).toHaveTextContent('Specification of works: 18 positions,')
     const open = canvas.getByRole('button', { name: 'Open' })
@@ -242,6 +252,25 @@ export const Opened: Story = {
  */
 export const ThreeHundred: Story = {
   name: '300 positions',
+  render: () => (
+    <ExampleProvider>
+      <Specification groups={12} size={25} defaultOpen />
+    </ExampleProvider>
+  ),
+  play: async () => {
+    const sheet = await within(document.body).findByRole('dialog', {
+      name: 'Specification of works',
+    })
+    await expect(
+      within(sheet).getByRole('table', { name: 'Specification of works' }),
+    ).toHaveAttribute('aria-rowcount', '325')
+    await settle()
+  },
+}
+
+export const ThreeHundredInteraction: Story = {
+  name: '300 positions, interaction',
+  tags: ['interaction'],
   render: () => (
     <ExampleProvider>
       <Specification groups={12} size={25} />

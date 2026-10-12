@@ -5,6 +5,7 @@ import { cn } from '../primitives/cn'
 import { Progress } from '../primitives/progress'
 import { Skeleton as SkeletonPrimitive } from '../primitives/skeleton'
 import { useLiro } from '../provider/liro-provider'
+import { usePhone } from './use-phone'
 
 /*
  * ProgressBar, Skeleton and Stepper (BUILD-PLAN P2.5), the previous Design System's (owner's
@@ -68,10 +69,23 @@ export interface StepperProps {
    * completed.
    */
   active: number
-  /** Makes each step a button that calls this with its index (going back, or on). */
+  /**
+   * Makes each step a button that calls this with its index (going back, or on). Desktop only:
+   * the phone's one line is not a control (its flow's Back goes back).
+   */
   onStepClick?: (index: number) => void
+  /**
+   * 'phone': one line "Step 3 of 4 · Check" over a thin progress bar, never a wrapping row of
+   * circles (P5.23). Default by the viewport (48em).
+   */
+  layout?: 'desktop' | 'phone'
   /** Layout classes. */
   className?: string
+}
+
+/** The step the phone's line names: the current one, or the last when all are completed. */
+export function compactStep(active: number, total: number): number {
+  return Math.max(1, Math.min(active + 1, total))
 }
 
 /** The state of step `index` when `active` is current. */
@@ -88,9 +102,50 @@ export function stepState(index: number, active: number): 'completed' | 'current
  * surface.disabled with a border.subtle ring (Mantine gray-2 for both) and the number in
  * text.secondary; 2px lines between steps in border.subtle, border.brand up to the current step; labels 13px weight 600 and descriptions 12px (Mantine 11px)
  * in text.secondary, 12px after the icon.
+ *
+ * Phones (P5.23, owner): a row of circles wraps into two rows with broken lines, so below 48em
+ * the Stepper is one line — "Step 3 of 4 · Check" (13px semibold, text.primary; the current
+ * step's description under it, 12px text.secondary) — over a 5px ProgressBar filled to the
+ * current step (hidden from assistive technology: the line says it). Every multi-step flow uses
+ * it: ImportWizard, FormWizard, PeriodicRunPage.
  */
-export function Stepper({ steps, active, onStepClick, className }: StepperProps) {
-  const { messages } = useLiro()
+export function Stepper({ steps, active, onStepClick, layout, className }: StepperProps) {
+  const { messages, format } = useLiro()
+  const viewportPhone = usePhone()
+  const phone = layout === undefined ? viewportPhone : layout === 'phone'
+  if (phone) {
+    const number = compactStep(active, steps.length)
+    const step = steps[number - 1]
+    const text = messages['stepper.step'](
+      number,
+      format.number(String(number)),
+      steps.length,
+      format.number(String(steps.length)),
+    )
+    return (
+      <div data-slot="stepper" className={cn('flex min-w-0 flex-col gap-2 font-sans', className)}>
+        <p className="m-0 flex min-w-0 flex-col gap-1">
+          <span className={cn('text-sm font-semibold text-primary', TEXT_DIRECTION)}>
+            {text}
+            {step !== undefined && (
+              <>
+                <span aria-hidden="true" className="text-secondary">
+                  {' · '}
+                </span>
+                {step.label}
+              </>
+            )}
+          </span>
+          {step?.description !== undefined && (
+            <span className={cn('text-xs text-secondary', TEXT_DIRECTION)}>{step.description}</span>
+          )}
+        </p>
+        <span aria-hidden="true" className="block">
+          <ProgressBar label={text} value={number} max={Math.max(steps.length, 1)} />
+        </span>
+      </div>
+    )
+  }
   return (
     <ol
       className={cn('m-0 flex list-none flex-wrap items-center gap-y-4 p-0 font-sans', className)}

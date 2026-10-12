@@ -214,7 +214,8 @@ export interface ToasterProps {
 /**
  * Where toasts appear: place it once, inside LiroProvider (usually beside the application's
  * layout). Bottom right, bottom left in right-to-left; at most 4 visible. Toasts stand 16px above
- * the AppShell's bottom action bar on phones (`--liro-shell-bottom`), never over its actions.
+ * the AppShell's bottom action bar on phones and WorklistPage's detail bar (`--liro-shell-bottom`),
+ * never over their actions.
  */
 export function Toaster({ layout }: ToasterProps = {}) {
   const { direction, messages } = useLiro()

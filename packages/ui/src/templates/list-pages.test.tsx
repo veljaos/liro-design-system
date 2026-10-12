@@ -4,7 +4,7 @@ import { rowKeyAction } from '../components/data-table-logic'
 import { LiroProvider } from '../provider/liro-provider'
 import { ListPage, splitViews } from './list-page'
 import { PageHeader } from './page-header'
-import { WorklistPage } from './worklist-page'
+import { WorklistPage, worklistPosition } from './worklist-page'
 
 function render(node: React.ReactNode) {
   return renderToStaticMarkup(
@@ -182,6 +182,86 @@ describe('WorklistPage', () => {
     )
     expect(one).toContain('BULK')
     expect(one).toContain('aria-label="Select UF-2026-1187"')
+  })
+  it('worklistPosition: the chosen item’s place, or null', () => {
+    expect(worklistPosition(ITEMS, 'b')).toEqual({ index: 2, total: 2 })
+    expect(worklistPosition(ITEMS, undefined)).toBeNull()
+    expect(worklistPosition(ITEMS, 'gone')).toBeNull()
+  })
+  it('split: one bar under the detail — position, Previous, Next, then the decisions', () => {
+    const html = render(
+      <WorklistPage
+        layout="split"
+        title="Statement 188"
+        back={{ href: '#s', label: 'Statements' }}
+        status={<span>STATUS</span>}
+        subtitle="SUBTITLE"
+        summary={<p>SUMMARY</p>}
+        label="Lines"
+        items={[...ITEMS, { id: 'c', title: 'Third' }]}
+        selected="b"
+        detail={<p>DETAIL</p>}
+        detailActions={<button type="button">CONFIRM</button>}
+        onPrevious={() => undefined}
+        onNext={() => undefined}
+      />,
+    )
+    expect(html).toContain('Back to Statements')
+    expect(html).toContain('STATUS')
+    expect(html).toContain('SUBTITLE')
+    expect(html.indexOf('SUMMARY')).toBeLessThan(html.indexOf('aria-label="Lines"'))
+    const bar = html.slice(html.indexOf('data-slot="worklist-detail-bar"'))
+    expect(bar).toContain('2 of 3')
+    expect(bar.indexOf('Previous item')).toBeLessThan(bar.indexOf('Next item'))
+    expect(bar.indexOf('Next item')).toBeLessThan(bar.indexOf('CONFIRM'))
+  })
+  it('stacked: the item full screen with the position, and its decisions left to the shell', () => {
+    const html = render(
+      <WorklistPage
+        layout="stacked"
+        title="T"
+        label="T"
+        items={ITEMS}
+        selected="a"
+        summary={<p>SUMMARY</p>}
+        detail={<p>DETAIL</p>}
+        detailActions={<button type="button">CONFIRM</button>}
+        onBack={() => undefined}
+        onPrevious={() => undefined}
+        onNext={() => undefined}
+      />,
+    )
+    expect(html).toContain('1 of 2')
+    expect(html).toContain('aria-label="Previous item"')
+    expect(html).toContain('aria-label="Next item"')
+    expect(html).not.toContain('CONFIRM')
+    expect(html).not.toContain('SUMMARY')
+    const list = render(
+      <WorklistPage layout="stacked" title="T" label="T" items={ITEMS} summary={<p>SUMMARY</p>} />,
+    )
+    expect(list).toContain('SUMMARY')
+  })
+  it('writes the position through the provider’s format and messages', () => {
+    const many = Array.from({ length: 1200 }, (_, index) => ({
+      id: String(index),
+      title: `Item ${String(index)}`,
+    }))
+    const html = renderToStaticMarkup(
+      <LiroProvider
+        locale="sr-Latn-RS"
+        messages={{ 'worklist.position': (_i, index, _t, total) => `${index} od ${total}` }}
+      >
+        <WorklistPage
+          layout="split"
+          title="T"
+          label="T"
+          items={many}
+          selected="1099"
+          detail={<p>D</p>}
+        />
+      </LiroProvider>,
+    )
+    expect(html).toContain('1.100 od 1.200')
   })
   it('shows the empty slot when there are no items', () => {
     const html = render(

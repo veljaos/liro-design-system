@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 import { LiroProvider } from '../provider/liro-provider'
-import { ProgressBar, Stepper, stepState } from './progress'
+import { compactStep, ProgressBar, Stepper, stepState } from './progress'
 
 const render = (node: React.ReactNode) =>
   renderToStaticMarkup(<LiroProvider locale="en">{node}</LiroProvider>)
@@ -31,6 +31,27 @@ describe('Stepper', () => {
     expect(render(<Stepper steps={steps} active={1} onStepClick={() => undefined} />)).toContain(
       '<button',
     )
+  })
+
+  it('is one line over a thin bar on phones, never a row of steps', () => {
+    const html = render(
+      <Stepper steps={steps} active={1} layout="phone" onStepClick={() => undefined} />,
+    )
+    expect(html.replace(/<[^>]+>/g, '')).toContain('Step 2 of 3 · Users')
+    expect(html).not.toContain('<ol')
+    expect(html).not.toContain('<button')
+    // The bar is filled to the current step and hidden: the line says it.
+    expect(html).toMatch(/aria-hidden="true"[^>]*><div[^>]*role="progressbar"/)
+    expect(html).toContain('aria-valuenow="2"')
+  })
+})
+
+describe('compactStep', () => {
+  it('names the current step, the last when all are completed', () => {
+    expect(compactStep(0, 4)).toBe(1)
+    expect(compactStep(2, 4)).toBe(3)
+    expect(compactStep(4, 4)).toBe(4)
+    expect(compactStep(0, 0)).toBe(1)
   })
 })
 

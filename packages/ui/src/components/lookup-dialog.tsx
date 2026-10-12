@@ -15,7 +15,7 @@ import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 import { isTypingKey, lookupDialogKeyTarget } from './catalog-logic'
 import { DataTable, type DataTableColumn, type DataTableMobile } from './data-table'
-import type { DataTableFilters } from './data-table-logic'
+import type { DataTableFilters, DataTableSort } from './data-table-logic'
 import { FilterBar } from './filter-bar'
 import type { FilterDefinition } from './filter-logic'
 import { usePhone } from './use-phone'
@@ -66,8 +66,14 @@ export interface LookupDialogProps<Row extends RowData> {
   onFilterValuesChange?: (values: DataTableFilters) => void
   /** How many filters stand beside the search on desktop. Default 2. */
   inlineFilters?: number
-  /** The columns the application chose for this catalogue. */
+  /** The columns the application chose for this catalogue; `sortable` ones sort (P5.23). */
   columns: readonly DataTableColumn<Row>[]
+  /**
+   * The current sort (the application sorts its search, P5.23): with `onSortChange` the sortable
+   * columns' headers sort, and phones get FilterBar's "Sort" menu.
+   */
+  sort?: DataTableSort
+  onSortChange?: (sort: DataTableSort) => void
   /** The current page of results, in the order to show. */
   rows: readonly Row[]
   getRowId: (row: Row) => string
@@ -93,6 +99,16 @@ export interface LookupDialogProps<Row extends RowData> {
 
 /** The search's key among the table's filters (it decides "no rows match"). */
 const SEARCH = '__search'
+
+/** The sortable columns with short labels, for the phone's "Sort" menu. */
+function sortColumnsOf<Row extends RowData>(columns: readonly DataTableColumn<Row>[]) {
+  return columns
+    .filter((column) => column.sortable === true)
+    .map((column) => ({
+      id: column.id,
+      label: column.label ?? (typeof column.header === 'string' ? column.header : column.id),
+    }))
+}
 
 /** The rows (desktop) or cards (phone) that take the focus, in order. */
 function resultElements(area: HTMLElement): HTMLElement[] {
@@ -184,6 +200,13 @@ function LookupBody<Row extends RowData>(props: LookupDialogProps<Row> & { phone
             values={props.filterValues ?? {}}
             onValuesChange={props.onFilterValuesChange ?? (() => undefined)}
             inline={props.inlineFilters ?? 2}
+            {...(props.onSortChange === undefined
+              ? {}
+              : {
+                  sort: props.sort ?? null,
+                  sortColumns: sortColumnsOf(props.columns),
+                  onSortChange: props.onSortChange,
+                })}
             search={query}
             onSearchChange={(text) => {
               setQuery(text)
@@ -201,6 +224,9 @@ function LookupBody<Row extends RowData>(props: LookupDialogProps<Row> & { phone
             rows={props.rows}
             getRowId={props.getRowId}
             getRowLabel={props.getRowLabel}
+            {...(props.onSortChange === undefined
+              ? {}
+              : { sort: props.sort ?? null, onSortChange: props.onSortChange })}
             // The search counts as a filter: nothing found says "No rows match" with "Clear
             // filters", which empties the search and the filters.
             filters={{ ...props.filterValues, [SEARCH]: query }}

@@ -43,6 +43,8 @@ export interface ChartStateProps {
   loading?: boolean
   /** A failed load: the message (default `messages['chart.error']`) and Retry. */
   error?: { message?: string; onRetry: () => void }
+  /** What the card shows first: the chart (default) or its values as a table. */
+  defaultView?: 'chart' | 'table'
 }
 
 const TONE_COLOUR: Record<ChartTone, string> = {

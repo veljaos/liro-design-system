@@ -49,7 +49,6 @@ import {
   RelatedDocuments,
   SectionCard,
   SelectField,
-  StatusBadge,
   TextField,
   Toaster,
   useLiro,
@@ -64,6 +63,7 @@ import {
   type SidePanel,
   type TotalsRow,
   type WorklistItem,
+  DESCRIPTION_MIN_WIDTH,
 } from '@veljaos/ui'
 import { BarChart, LineChart } from '../../../../packages/ui/src/charts'
 import { percentText } from '../../../../packages/ui/src/components/story-frames'
@@ -193,7 +193,7 @@ const MODULES: LaunchpadModule[] = [
     description: 'Statements and payments',
     icon: Landmark,
     href: '#/banking/statements/188',
-    counter: '7 lines to check',
+    counter: '8 lines to decide',
   },
   {
     id: 'accounting',
@@ -457,7 +457,12 @@ export function InvoiceList({ phone }: { phone: boolean }) {
 // ── Invoice (document) ────────────────────────────────────────────────────────────────────────
 
 const LINE_COLUMNS: DataTableColumn<ExampleLine>[] = [
-  { id: 'item', header: 'Item', cell: (line) => line.item },
+  {
+    id: 'item',
+    header: 'Item',
+    minWidth: DESCRIPTION_MIN_WIDTH,
+    cell: (line) => line.item,
+  },
   {
     id: 'quantity',
     header: 'Quantity',
@@ -524,7 +529,7 @@ const PANELS: SidePanel[] = [
       <KeyValueList
         columns={1}
         items={[
-          { label: 'SEF', value: <StatusBadge label="Delivered" tone="success" /> },
+          { label: 'SEF', value: statusBadge('Delivered') },
           { label: 'Sent', value: <Time>28.09.2026. 10:42</Time>, numeric: true },
         ]}
       />
@@ -543,21 +548,21 @@ const PANELS: SidePanel[] = [
             type: 'Order',
             number: 'N-2026-0157',
             href: '#/sales/orders/N-2026-0157',
-            status: <StatusBadge label="Completed" tone="neutral" />,
+            status: statusBadge('Completed'),
           },
           {
             key: 'delivery',
             type: 'Delivery note',
             number: 'OTP-2026-0311',
             href: '#/sales/deliveries/OTP-2026-0311',
-            status: <StatusBadge label="Delivered" tone="success" />,
+            status: statusBadge('Delivered'),
           },
           {
             key: 'advance',
             type: 'Advance invoice',
             number: 'A-2026-031',
             href: '#/sales/invoices/A-2026-031',
-            status: <StatusBadge label="Paid" tone="success" />,
+            status: statusBadge('Paid'),
           },
         ]}
       />
@@ -789,7 +794,12 @@ export function Dashboard({ phone }: { phone: boolean }) {
 // ── Approvals (worklist) ──────────────────────────────────────────────────────────────────────
 
 const APPROVAL_LINE_COLUMNS: DataTableColumn<ApprovalLine>[] = [
-  { id: 'item', header: 'Item', cell: (line) => line.item },
+  {
+    id: 'item',
+    header: 'Item',
+    minWidth: DESCRIPTION_MIN_WIDTH,
+    cell: (line) => line.item,
+  },
   {
     id: 'quantity',
     header: 'Quantity',
@@ -827,36 +837,20 @@ function Decisions({ onApprove, onReject }: { onApprove: () => void; onReject: (
 }
 
 /**
- * The chosen supplier invoice, whole: its facts, its lines and its PDF, and the two decisions —
- * at the top of the pane on a desktop, in the bottom bar on a phone.
+ * The chosen supplier invoice, whole: its facts, its lines and its PDF. The two decisions stand
+ * in the worklist's bar under the detail on a desktop (after Previous and Next, P5.23) and in
+ * the bottom bar on a phone.
  */
-function ApprovalDetail({
-  row,
-  phone,
-  onApprove,
-  onReject,
-}: {
-  row: ExampleApproval
-  phone: boolean
-  onApprove: () => void
-  onReject: () => void
-}) {
+function ApprovalDetail({ row, phone }: { row: ExampleApproval; phone: boolean }) {
   const { linkComponent: Link } = useLiro()
   const detail = APPROVAL_DETAILS[row.id]
   return (
     <div className={phone ? 'flex flex-col gap-4' : 'flex flex-col gap-6 p-6'}>
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="flex min-w-0 flex-col gap-1">
-          <h2 className="bidi-content m-0 text-h2 text-primary">{row.supplier}</h2>
-          <p className="bidi-content m-0 text-sm text-secondary">
-            {row.number} · requested by {row.requester}
-          </p>
-        </div>
-        {!phone && (
-          <div className="flex gap-2">
-            <Decisions onApprove={onApprove} onReject={onReject} />
-          </div>
-        )}
+      <div className="flex min-w-0 flex-col gap-1">
+        <h2 className="bidi-content m-0 text-h2 text-primary">{row.supplier}</h2>
+        <p className="bidi-content m-0 text-sm text-secondary">
+          {row.number} · requested by {row.requester}
+        </p>
       </div>
       <KeyValueList
         items={[
@@ -1047,24 +1041,13 @@ export function Approvals({ phone }: { phone: boolean }) {
             description="New supplier invoices appear here when they arrive from SEF."
           />
         }
-        {...(row === undefined
-          ? {}
-          : {
-              detail: (
-                <ApprovalDetail
-                  row={row}
-                  phone={phone}
-                  onApprove={() => {
-                    approve([row.id])
-                  }}
-                  onReject={() => {
-                    reject([row.id])
-                  }}
-                />
-              ),
-            })}
+        {...(row === undefined ? {} : { detail: <ApprovalDetail row={row} phone={phone} /> })}
+        {...(decisions === undefined || phone ? {} : { detailActions: decisions })}
         onBack={() => {
           setSelected(undefined)
+        }}
+        onPrevious={() => {
+          setSelected(rows[(index - 1 + rows.length) % rows.length]?.id)
         }}
         onNext={() => {
           setSelected(rows[(index + 1) % rows.length]?.id)
@@ -1270,7 +1253,7 @@ export function Employee({ phone }: { phone: boolean }) {
         layout={phone ? 'phone' : 'desktop'}
         title={EMPLOYEE.name}
         back={{ href: '#/home', label: 'Home' }}
-        status={<StatusBadge label="Active" tone="success" />}
+        status={statusBadge('Active')}
         subtitle={`${values.position} · Finance`}
         keyFigures={[
           {

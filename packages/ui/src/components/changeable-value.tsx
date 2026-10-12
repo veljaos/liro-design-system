@@ -21,8 +21,11 @@ export interface ChangeableValueProps {
   label: string
   /** The value as text: DateText, MoneyText, a number. */
   value: ReactNode
-  /** The field that changes it, with the same label (DateField, TextField …). */
-  field: ReactNode
+  /**
+   * The field that changes it, with the same label (DateField, SelectField, TextField …).
+   * Without it the value is read-only here: no pencil, the same alignment.
+   */
+  field?: ReactNode
   /** Shown as the field; default: uncontrolled, false until the pencil is pressed. */
   editing?: boolean
   onEditingChange?: (editing: boolean) => void
@@ -43,7 +46,7 @@ export function ChangeableValue(props: ChangeableValueProps) {
     fieldRef.current?.querySelector<HTMLElement>('input, textarea, button, select')?.focus()
   }, [editing])
 
-  if (editing) {
+  if (editing && props.field !== undefined) {
     return (
       <div ref={fieldRef} data-slot="changeable-value" className={cn('min-w-0', props.className)}>
         {props.field}
@@ -60,15 +63,17 @@ export function ChangeableValue(props: ChangeableValueProps) {
         <span className={cn('text-sm font-medium text-primary tabular-nums', TEXT_DIRECTION)}>
           {props.value}
         </span>
-        <CompactIconButton
-          intent="edit"
-          label={messages['value.change'](props.label)}
-          onClick={() => {
-            opened.current = true
-            setOwnEditing(true)
-            props.onEditingChange?.(true)
-          }}
-        />
+        {props.field !== undefined && (
+          <CompactIconButton
+            intent="edit"
+            label={messages['value.change'](props.label)}
+            onClick={() => {
+              opened.current = true
+              setOwnEditing(true)
+              props.onEditingChange?.(true)
+            }}
+          />
+        )}
       </span>
     </div>
   )

@@ -175,6 +175,19 @@ export const Default: Story = {
     const drawer = within(await body.findByRole('dialog', { name: 'Edit 24 records' }))
     await expect(drawer.getByText('Choose at least one field to change.')).toBeVisible()
     await expect(drawer.getByRole('button', { name: 'Apply to 24 records' })).toBeDisabled()
+    await settle()
+  },
+}
+
+export const DefaultInteraction: Story = {
+  name: 'Default, interaction',
+  tags: ['interaction'],
+  play: async ({ canvasElement }) => {
+    await settle()
+    const body = within(canvasElement.ownerDocument.body)
+    const drawer = within(await body.findByRole('dialog', { name: 'Edit 24 records' }))
+    await expect(drawer.getByText('Choose at least one field to change.')).toBeVisible()
+    await expect(drawer.getByRole('button', { name: 'Apply to 24 records' })).toBeDisabled()
     await userEvent.click(drawer.getByRole('checkbox', { name: 'Payment term' }))
     await expect(drawer.getByRole('combobox', { name: 'Payment term' })).toBeVisible()
     const summary = within(drawer.getByRole('region', { name: 'What will change' }))
@@ -204,6 +217,7 @@ export const SeveralFields: Story = {
 
 /** While the change is applied, the confirmation shows it is working and cannot be closed. */
 export const Applying: Story = {
+  tags: ['interaction'],
   render: () => (
     <ExampleProvider>
       <BulkEdit changing={['term']} slow />

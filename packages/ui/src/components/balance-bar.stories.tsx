@@ -10,7 +10,7 @@ import { BalanceBar, type BalanceState } from './balance-bar'
 import { Button } from './button'
 import { EditableGrid, type EditableGridColumn } from './editable-grid'
 import type { GridMessage } from './editable-grid-logic'
-import { decimalOf, parasOf, sumParas } from './matching-story-data'
+import { decimal as decimalOf, paras as parasOf, sumUnits as sumParas } from './amounts-story-data'
 import { ExampleProvider, PhoneFrame } from './story-frames'
 
 /** One line of a journal entry, as the application keeps it. */
@@ -288,6 +288,23 @@ export const LongText: Story = {
  */
 export const InJournalEntry: Story = {
   name: 'In a journal entry',
+  render: () => (
+    <ExampleProvider>
+      <JournalEntry layout="desktop" />
+    </ExampleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const status = canvasElement.querySelector('[data-slot="balance-bar"] [role="status"]')
+    if (status === null) throw new Error('no status')
+    await expect(status).toHaveTextContent('Balanced')
+    await settle()
+  },
+}
+
+export const InJournalEntryInteraction: Story = {
+  name: 'In a journal entry, interaction',
+  tags: ['interaction'],
   render: () => (
     <ExampleProvider>
       <JournalEntry layout="desktop" />

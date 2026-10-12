@@ -65,10 +65,11 @@ jobs:
           retention-days: 7
 
   # Story tests, accessibility and visual run on several machines at once (P3.0): each suite is
-  # split into four parts with Playwright's --shard, one machine per part. On one machine the
-  # three took about 37 minutes; see docs/decisions.md, CI.
+  # split into six parts with Playwright's --shard, one machine per part (four until P5.23, when
+  # the interaction stories took the accessibility parts past their 25 minutes). On one machine
+  # the three took about 37 minutes in P3.0; see docs/decisions.md, CI.
   storybook-tests-shard:
-    name: ${{ matrix.suite.name }} (${{ matrix.shard }}/4)
+    name: ${{ matrix.suite.name }} (${{ matrix.shard }}/6)
     needs: checks
     runs-on: ubuntu-24.04
     # Each Playwright run stops itself after 25 minutes (globalTimeout in playwright.config.ts),
@@ -93,8 +94,8 @@ jobs:
           - id: visual
             name: Visual (light/dark × ltr/rtl)
             script: test:visual
-        # The shard count (4) is also written in the job name and the run step.
-        shard: [1, 2, 3, 4]
+        # The shard count (6) is also written in the job name and the run step.
+        shard: [1, 2, 3, 4, 5, 6]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -114,10 +115,10 @@ jobs:
           path: apps/storybook/storybook-static
 
       # Starts its own server on the built Storybook (playwright.config.ts).
-      - name: ${{ matrix.suite.name }}, part ${{ matrix.shard }} of 4
+      - name: ${{ matrix.suite.name }}, part ${{ matrix.shard }} of 6
         env:
           DEBUG: pw:webserver
-        run: pnpm --filter liro-storybook ${{ matrix.suite.script }} --shard=${{ matrix.shard }}/4
+        run: pnpm --filter liro-storybook ${{ matrix.suite.script }} --shard=${{ matrix.shard }}/6
 
       # Each part's HTML report gets its own folder, so the parts can be joined below.
       - name: Name the report after the part

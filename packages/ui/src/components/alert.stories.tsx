@@ -78,6 +78,31 @@ export const Dismissible: Story = {
       </div>
     )
   },
+}
+
+export const DismissibleInteraction: Story = {
+  name: 'Dismissible, interaction',
+  tags: ['interaction'],
+  render: function Render() {
+    const [shown, setShown] = useState(true)
+    return (
+      <div className="min-h-30 max-w-150">
+        {shown ? (
+          <Alert
+            tone="warning"
+            title="Rate from yesterday"
+            onClose={() => {
+              setShown(false)
+            }}
+          >
+            Today&apos;s exchange rate is not published yet.
+          </Alert>
+        ) : (
+          <p className="m-0 text-sm text-secondary">Closed.</p>
+        )}
+      </div>
+    )
+  },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await userEvent.click(canvas.getByRole('button', { name: 'Close' }))

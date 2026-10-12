@@ -19,12 +19,12 @@ import {
   QuickPreview,
   RegisterPage,
   SelectField,
-  StatusBadge,
   StatutoryFormPage,
   useLiro,
   type BulkEditField,
   type DataTableColumn,
   type DataTableFilters,
+  type DataTableSort,
   type DateRange,
   type FilterDefinition,
   type ImportMapping,
@@ -55,6 +55,11 @@ import {
   type Injury,
 } from './data-E'
 import { decimal, paras } from '../../../../packages/ui/src/components/amounts-story-data'
+import {
+  matchesChoice,
+  sortRows,
+  type SortKey,
+} from '../../../../packages/ui/src/components/catalog-story-data'
 
 /*
  * Group E's example screens (P5.19 catalogues at scale, P5.20 registers and official forms):
@@ -86,37 +91,72 @@ const ACCOUNTING_TABS: ModuleTab[] = [
 
 // ── Customers ─────────────────────────────────────────────────────────────────────────────────
 
-const inactiveBadge = <StatusBadge label="Inactive" tone="neutral" />
+const inactiveBadge = statusBadge('Inactive')
 
-function CustomerName({ customer }: { customer: Customer }) {
+/**
+ * The name, with "Inactive" after it only where the list mixes active and inactive customers
+ * (the All view, the lookup with "Show inactive"): on the Inactive view the tab already says it
+ * (P5.23, owner).
+ */
+function CustomerName({ customer, marked }: { customer: Customer; marked: boolean }) {
   return (
     <span className="inline-flex flex-wrap items-center gap-2">
       <span>{customer.name}</span>
-      {!customer.active && inactiveBadge}
+      {marked && !customer.active && inactiveBadge}
     </span>
   )
 }
 
-const CUSTOMER_COLUMNS: DataTableColumn<Customer>[] = [
-  { id: 'name', header: 'Name', cell: (row) => <CustomerName customer={row} /> },
-  { id: 'taxId', header: 'Tax number', numeric: true, cell: (row) => row.taxId },
-  { id: 'city', header: 'City', cell: (row) => row.city },
-  { id: 'group', header: 'Group', cell: (row) => row.group },
-  {
-    id: 'term',
-    header: 'Payment term (days)',
-    align: 'end',
-    numeric: true,
-    cell: (row) => <NumberText value={row.paymentTerm} decimals={0} />,
-  },
-  {
-    id: 'balance',
-    header: 'Open balance',
-    align: 'end',
-    numeric: true,
-    cell: (row) => <MoneyText value={row.balance} currency="RSD" />,
-  },
-]
+/** The catalogue's columns, every one sortable (P5.23: a catalogue list sorts by its columns). */
+function customerColumns(markInactive: boolean): DataTableColumn<Customer>[] {
+  return [
+    {
+      id: 'name',
+      header: 'Name',
+      sortable: true,
+      cell: (row) => <CustomerName customer={row} marked={markInactive} />,
+    },
+    { id: 'taxId', header: 'Tax number', numeric: true, sortable: true, cell: (row) => row.taxId },
+    { id: 'city', header: 'City', sortable: true, cell: (row) => row.city },
+    { id: 'group', header: 'Group', sortable: true, cell: (row) => row.group },
+    {
+      id: 'term',
+      header: 'Payment term (days)',
+      label: 'Payment term',
+      align: 'end',
+      numeric: true,
+      sortable: true,
+      cell: (row) => <NumberText value={row.paymentTerm} decimals={0} />,
+    },
+    {
+      id: 'balance',
+      header: 'Open balance',
+      align: 'end',
+      numeric: true,
+      sortable: true,
+      cell: (row) => <MoneyText value={row.balance} currency="RSD" />,
+    },
+  ]
+}
+
+const LIST_COLUMNS = customerColumns(false)
+const MIXED_COLUMNS = customerColumns(true)
+
+/** How the application sorts each column: text by collation, numbers and amounts exactly. */
+const CUSTOMER_SORT: Record<string, SortKey<Customer>> = {
+  name: { kind: 'text', value: (row) => row.name },
+  taxId: { kind: 'decimal', value: (row) => row.taxId, places: 0 },
+  city: { kind: 'text', value: (row) => row.city },
+  group: { kind: 'text', value: (row) => row.group },
+  term: { kind: 'decimal', value: (row) => row.paymentTerm, places: 0 },
+  balance: { kind: 'decimal', value: (row) => row.balance },
+}
+
+/** The phone's "Sort" menu: the sortable columns with short labels. */
+const CUSTOMER_SORT_COLUMNS = LIST_COLUMNS.map((column) => ({
+  id: column.id,
+  label: column.label ?? (typeof column.header === 'string' ? column.header : column.id),
+}))
 
 const CITY_OPTIONS = ['Novi Sad', 'Zrenjanin', 'Kać', 'Subotica', 'Niš', 'Inđija'].map((city) => ({
   value: city,
@@ -131,9 +171,10 @@ const TERM_OPTIONS = ['7', '15', '30', '45', '60'].map((days) => ({
   label: `${days} days`,
 }))
 
+// Several cities or groups at once (P5.23: a catalogue's choice filters are multiSelect).
 const CUSTOMER_FILTERS: FilterDefinition[] = [
-  { id: 'city', label: 'City', type: 'select', options: CITY_OPTIONS },
-  { id: 'group', label: 'Group', type: 'select', options: GROUP_OPTIONS },
+  { id: 'city', label: 'City', type: 'multiSelect', options: CITY_OPTIONS },
+  { id: 'group', label: 'Group', type: 'multiSelect', options: GROUP_OPTIONS },
 ]
 
 /** The catalogue with the application's changes (activation, bulk edits) kept above the list. */
@@ -159,20 +200,18 @@ function useCatalogue() {
 
 /** Matches a customer to the list's filters. */
 function matchesFilters(customer: Customer, filters: DataTableFilters): boolean {
-  const city = filters.city
-  const group = filters.group
-  if (typeof city === 'string' && city !== '' && customer.city !== city) return false
-  if (typeof group === 'string' && group !== '' && customer.group !== group) return false
-  return true
+  return matchesChoice(filters.city, customer.city) && matchesChoice(filters.group, customer.group)
 }
 
 export function Customers({ phone }: { phone: boolean }) {
   const navigate = useContext(Navigate)
-  const { format } = useLiro()
+  const { format, locale } = useLiro()
   const { all, change } = useCatalogue()
   const [view, setView] = useState('active')
   const [search, setSearch] = useState('')
   const [filters, setFilters] = useState<DataTableFilters>({})
+  const [sort, setSort] = useState<DataTableSort>(null)
+  const [lookupSort, setLookupSort] = useState<DataTableSort>(null)
   const [selection, setSelection] = useState<string[]>([])
   const [preview, setPreview] = useState<Customer | null>(null)
   const [lookupOpen, setLookupOpen] = useState(false)
@@ -192,18 +231,26 @@ export function Customers({ phone }: { phone: boolean }) {
     const inView = all.filter((customer) =>
       view === 'all' ? true : view === 'active' ? customer.active : !customer.active,
     )
-    return searchCustomers(inView, search).filter((customer) => matchesFilters(customer, filters))
-  }, [all, view, search, filters])
+    const found = searchCustomers(inView, search).filter((customer) =>
+      matchesFilters(customer, filters),
+    )
+    return sortRows(found, sort, CUSTOMER_SORT, locale)
+  }, [all, view, search, filters, sort, locale])
 
   // The lookup's own search over the whole catalogue (the application's work), 25 per page.
   const found = useMemo(
     () =>
-      searchCustomers(all, lookupQuery).filter(
-        (customer) =>
-          (lookupFilters.inactive === true || customer.active) &&
-          matchesFilters(customer, lookupFilters),
+      sortRows(
+        searchCustomers(all, lookupQuery).filter(
+          (customer) =>
+            (lookupFilters.inactive === true || customer.active) &&
+            matchesFilters(customer, lookupFilters),
+        ),
+        lookupSort,
+        CUSTOMER_SORT,
+        locale,
       ),
-    [all, lookupQuery, lookupFilters],
+    [all, lookupQuery, lookupFilters, lookupSort, locale],
   )
   const onLookupSearch = useCallback((query: string) => {
     setLookupQuery(query)
@@ -297,6 +344,9 @@ export function Customers({ phone }: { phone: boolean }) {
             search={search}
             onSearchChange={setSearch}
             searchPlaceholder="Name, tax number or city"
+            sort={sort}
+            sortColumns={CUSTOMER_SORT_COLUMNS}
+            onSortChange={setSort}
             actions={
               <>
                 <Button
@@ -334,7 +384,9 @@ export function Customers({ phone }: { phone: boolean }) {
           inCard
           virtualize
           maxHeight={phone ? '520px' : '60dvh'}
-          columns={CUSTOMER_COLUMNS}
+          columns={view === 'all' ? MIXED_COLUMNS : LIST_COLUMNS}
+          sort={sort}
+          onSortChange={setSort}
           rows={rows}
           getRowId={(row) => row.id}
           getRowLabel={(row) => row.name}
@@ -401,7 +453,7 @@ export function Customers({ phone }: { phone: boolean }) {
           ]}
           mobile={{
             subtitle: (row) => `PIB ${row.taxId} · ${row.city}`,
-            badge: (row) => (row.active ? undefined : inactiveBadge),
+            badge: (row) => (view !== 'all' || row.active ? undefined : inactiveBadge),
             details: ['term', 'balance'],
           }}
         />
@@ -417,7 +469,7 @@ export function Customers({ phone }: { phone: boolean }) {
           items={[
             {
               label: 'Status',
-              value: preview.active ? <StatusBadge label="Active" tone="success" /> : inactiveBadge,
+              value: preview.active ? statusBadge('Active') : inactiveBadge,
             },
             { label: 'City', value: preview.city },
             { label: 'Group', value: preview.group },
@@ -450,7 +502,12 @@ export function Customers({ phone }: { phone: boolean }) {
           setLookupFilters(values)
           setLookupCursor(0)
         }}
-        columns={CUSTOMER_COLUMNS}
+        columns={MIXED_COLUMNS}
+        sort={lookupSort}
+        onSortChange={(next) => {
+          setLookupSort(next)
+          setLookupCursor(0)
+        }}
         rows={found.slice(lookupCursor, lookupCursor + 25)}
         getRowId={(row) => row.id}
         getRowLabel={(row) => row.name}
@@ -585,7 +642,7 @@ export function CustomerImport({ phone }: { phone: boolean }) {
                   type: 'Customer',
                   number: 'Panonija Agro d.o.o.',
                   href: '#/sales/customers',
-                  status: <StatusBadge label="Active" tone="success" />,
+                  status: statusBadge('Active'),
                 },
               ]}
               onCreateAnyway={() => undefined}
@@ -880,7 +937,7 @@ export function VatReturn({ phone }: { phone: boolean }) {
         title="VAT return, September 2026"
         subtitle="PP PDV (illustrative) · due 15.10.2026."
         back={{ href: `#${E_ROUTES.vatReturn}`, label: 'VAT returns' }}
-        status={<StatusBadge label="Checked" tone="info" />}
+        status={statusBadge('Checked')}
         lifecycle={{ steps: VAT_STEPS, current: 1, label: 'Return status' }}
         actions={
           <>

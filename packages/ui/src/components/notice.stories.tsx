@@ -77,6 +77,7 @@ export const WithAction: Story = {
 /** Loading, then its result; an error stays until closed with its button. */
 export const LoadingThenResult: Story = {
   name: 'Loading, then the result',
+  tags: ['interaction'],
   render: () => (
     <div className="flex min-h-100 flex-wrap items-start gap-3">
       <Button
@@ -108,6 +109,7 @@ export const LoadingThenResult: Story = {
 /** Close an error with its button (keyboard: Tab to it, Enter). */
 export const CloseWithButton: Story = {
   name: 'Close an error',
+  tags: ['interaction'],
   render: () => (
     <div className="flex min-h-60 items-start gap-3">
       <Button

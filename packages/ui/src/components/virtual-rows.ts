@@ -2,8 +2,7 @@ import { defaultRangeExtractor, type Range } from '@tanstack/react-virtual'
 
 /*
  * The shared row window of long lists. Every list that draws only its rows in view — DataTable,
- * EditableGrid (P5.18), LookupField (P5.19), the matching view (P5.20) and the company switcher
- * (P4.9) — runs on TanStack Virtual (`useVirtualizer`, the plan's choice; P5.21a) and applies
+ * EditableGrid (P5.18), LookupField (P5.19) and the company switcher (P4.9) — runs on TanStack Virtual (`useVirtualizer`, the plan's choice; P5.21a) and applies
  * the same rules through its overscan (`overscanRows`) and range extractor (`keepFocusedRow`):
  * - the rows in view and WINDOW_OVERSCAN pixels above and below them are drawn;
  * - the row that holds the focus (or the active option of a listbox, which

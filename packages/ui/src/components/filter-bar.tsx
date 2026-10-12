@@ -103,6 +103,8 @@ export interface FilterBarProps {
   inCard?: boolean
   /** Forces the desktop or the phone layout; default: by the viewport (48em). */
   layout?: 'desktop' | 'phone'
+  /** Shows the filters drawer from the start (the application restores it). Closed by default. */
+  defaultFiltersOpen?: boolean
   className?: string
 }
 
@@ -458,7 +460,11 @@ export function FilterBar(props: FilterBarProps) {
   const drawerControls = (
     <>
       {drawerFilters.length > 0 && (
-        <Sheet>
+        <Sheet
+          {...(props.defaultFiltersOpen === undefined
+            ? {}
+            : { defaultOpen: props.defaultFiltersOpen })}
+        >
           <SheetTrigger asChild>
             <ActionButton action={{ intent: 'filter', label: messages['filter.filters'] }} />
           </SheetTrigger>

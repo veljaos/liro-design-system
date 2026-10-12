@@ -74,6 +74,21 @@ export const Edit: Story = {
       </div>
     </ExampleProvider>
   ),
+  play: async () => {
+    await settle()
+  },
+}
+
+export const EditInteraction: Story = {
+  name: 'Edit, interaction',
+  tags: ['interaction'],
+  render: () => (
+    <ExampleProvider>
+      <div className="max-w-180">
+        <Notes mode="edit" templates={NOTE_TEMPLATES} start={START} />
+      </div>
+    </ExampleProvider>
+  ),
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)

@@ -363,6 +363,20 @@ export const Default: Story = {
  */
 export const EditMode: Story = {
   name: 'Edit mode',
+  render: () => (
+    <ExampleProvider>
+      <EmployeeRecord startMode="edit" />
+    </ExampleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(within(canvasElement).queryByRole('button', { name: 'Edit' })).toBeNull()
+  },
+}
+
+export const EditModeInteraction: Story = {
+  name: 'Edit mode, interaction',
+  tags: ['interaction'],
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
@@ -384,6 +398,7 @@ export const EditMode: Story = {
 /** Saving goes back to reading, with the new value. */
 export const EditAndSave: Story = {
   name: 'Edit and save',
+  tags: ['interaction'],
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
@@ -421,6 +436,7 @@ export const ReadOnlySection: Story = {
 /** Leaving with unsaved changes asks first: Stay, then Leave (the main action last). */
 export const UnsavedChanges: Story = {
   name: 'Unsaved changes',
+  tags: ['interaction'],
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
@@ -439,6 +455,17 @@ export const UnsavedChanges: Story = {
 /** A long record with the section bar: a press scrolls to the section and marks it current. */
 export const SectionBarStory: Story = {
   name: 'Section bar',
+  render: () => (
+    <ExampleProvider>
+      <EmployeeRecord frame={{ sectionBar: true }} />
+    </ExampleProvider>
+  ),
+  play: settle,
+}
+
+export const SectionBarStoryInteraction: Story = {
+  name: 'Section bar, interaction',
+  tags: ['interaction'],
   render: () => (
     <ExampleProvider>
       <EmployeeRecord frame={{ sectionBar: true }} />

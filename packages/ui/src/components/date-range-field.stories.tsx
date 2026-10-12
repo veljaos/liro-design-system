@@ -54,6 +54,26 @@ export const PickInCalendar: Story = {
     const [value, setValue] = useState<DateRange>({ start: '2026-03-01', end: null })
     return (
       <div className="flex min-h-100 max-w-100 flex-col gap-3">
+        <DateRangeField label="Period" value={value} onChange={setValue} defaultOpen />
+        <p className="m-0 text-sm text-secondary">
+          Value: <code>{JSON.stringify(value)}</code>
+        </p>
+      </div>
+    )
+  },
+  play: async () => {
+    await within(document.body).findByRole('grid')
+    await settle()
+  },
+}
+
+export const PickInCalendarInteraction: Story = {
+  name: 'Pick in the calendar, interaction',
+  tags: ['interaction'],
+  render: function Render() {
+    const [value, setValue] = useState<DateRange>({ start: '2026-03-01', end: null })
+    return (
+      <div className="flex min-h-100 max-w-100 flex-col gap-3">
         <DateRangeField label="Period" value={value} onChange={setValue} />
         <p className="m-0 text-sm text-secondary">
           Value: <code>{JSON.stringify(value)}</code>

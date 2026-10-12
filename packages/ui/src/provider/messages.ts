@@ -189,6 +189,11 @@ export interface LiroMessages {
   'notice.region': string
   /** Tells assistive technology that a step of a Stepper is completed. */
   'stepper.completed': string
+  /**
+   * Stepper on phones (P5.23): where the user is, "Step 3 of 4", before " · " and the step's name
+   * on the one line over its thin progress bar; the numbers already formatted.
+   */
+  'stepper.step': (step: number, stepText: string, total: number, totalText: string) => string
   /** An action that cannot be used, with the reason it is given. */
   'action.unavailable': (reason: string) => string
   /** EditableGrid: each cell's accessible name, its column and line: "Quantity, line 3". */
@@ -299,9 +304,20 @@ export interface LiroMessages {
   'columns.moveDown': (label: string) => string
   /** QuickPreview: opens the record's full page. */
   'preview.open': string
-  /** WorklistPage, below 62em: back to the list, and on to the next item. */
+  /** WorklistPage: back to the list (below 62em), and to the previous and the next item. */
   'worklist.back': string
+  'worklist.previous': string
   'worklist.next': string
+  /**
+   * WorklistPage: where the chosen item stands in the queue ("3 of 11"); the numbers already
+   * written by `format.number` (`indexText`, `totalText`), the numbers kept for plural rules.
+   */
+  'worklist.position': (
+    index: number,
+    indexText: string,
+    total: number,
+    totalText: string,
+  ) => string
   /** WorklistPage, from 62em: names the detail pane. */
   'worklist.detail': string
   /** PageHeader's back button: its name and tooltip (`list` is the list's name). */
@@ -369,35 +385,8 @@ export interface LiroMessages {
   /** The accessible name of a hidden module's "Show" button. */
   'launchpad.show': (name: string) => string
   // ── P5 group F ──
-  /** MatchingView (P5.21): the button that matches the selection of both lists. */
-  'matching.match': string
-  /** Why "Match" cannot be used yet: nothing selected in one of the lists. */
-  'matching.selectBoth': string
-  /** The heading of the suggested matches. */
-  'matching.suggestions': string
-  /** The accessible name of a suggestion's "Match" button; `label` is the suggestion's, from the application. */
-  'matching.acceptSuggestion': (label: string) => string
-  /** The accessible name of a suggestion's dismiss button. */
-  'matching.dismissSuggestion': (label: string) => string
-  /** The heading of the matches made. */
-  'matching.matched': string
-  /** The button that takes a match apart; its accessible name adds the match's label. */
-  'matching.unmatch': string
-  'matching.unmatchItem': (label: string) => string
-  /** For assistive technology, between the two sides of a match. */
-  'matching.matchedWith': string
-  /** The accessible name of a list's search field; `list` is the list's title. */
-  'matching.search': (list: string) => string
-  /** A list with nothing left in it. */
-  'matching.empty': string
-  /** The keys under the lists: Space selects, Enter matches, Escape clears. */
-  'matching.select': string
-  'matching.clear': string
-  'matching.spaceKey': string
-  'matching.enterKey': string
-  'matching.escapeKey': string
-  /** Phones: the accessible name of the switch between the two lists. */
-  'matching.showList': string
+  /** CandidateList (P5.23): shown when the application proposes nothing. */
+  'candidates.empty': string
   /** BalanceBar (P5.21): the three values of a balanced entry and its state. */
   'balance.label': string
   'balance.debit': string
@@ -626,6 +615,11 @@ export interface LiroMessages {
   'import.run': (count: number, text: string) => string
   /** The import's progress: names its JobProgress. */
   'import.progress': string
+  /** The phone's close button in the wizard's header, in place of Cancel (P5.23). */
+  'import.cancel': string
+  /** Asked before leaving once a file is chosen: the title and the message (P5.23). */
+  'import.leaveTitle': string
+  'import.leaveMessage': string
   /** BulkEditDrawer: the title ("Edit 24 records"), a field left as it is, and the summary. */
   'bulkEdit.title': (count: number, text: string) => string
   'bulkEdit.unchanged': string
@@ -653,6 +647,12 @@ export interface LiroMessages {
   'register.lockedEntry': string
   /** A locked period ("January–June 2026 is locked"); the period is the application's text. */
   'register.periodLocked': (period: string) => string
+  /**
+   * DocumentSource (P5.23): the labels of a source document's date and total in a correcting or
+   * cancelling document's header ("Issued 25.09.2026. · Total 186.420,35 RSD").
+   */
+  'document.sourceDate': string
+  'document.sourceTotal': string
   /** StatutoryFormPage: the field number and description headers. */
   'statutory.number': string
   'statutory.description': string
@@ -786,6 +786,7 @@ export interface LiroMessages {
   'document.rateLine': (rate: string, source: string) => string
   /** CancellationBanner (P5.18): the title, who and when (both written by `format`), the reason. */
   'document.cancelledTitle': string
+  /** Follows the title "Cancelled" (P5.23): "by Milica Petrović on 06.10.2026. at 11:20." */
   'document.cancelledBy': (name: string, dateText: string, timeText: string) => string
   'document.cancelReason': (reason: string) => string
   /** DocumentNotes (P5.18): the default labels of the template texts and the free note. */

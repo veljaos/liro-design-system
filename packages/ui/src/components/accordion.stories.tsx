@@ -82,6 +82,33 @@ export const Multiple: Story = {
       </div>
     )
   },
+  play: async () => {
+    await settle()
+  },
+}
+
+export const MultipleInteraction: Story = {
+  name: 'Multiple, interaction',
+  tags: ['interaction'],
+  render: function Render() {
+    const [open, setOpen] = useState<string[]>(['payment', 'delivery'])
+    return (
+      <div className="flex max-w-150 flex-col gap-2">
+        <Accordion
+          multiple
+          value={open}
+          onValueChange={setOpen}
+          items={[
+            ...SECTIONS,
+            { value: 'archive', title: 'Archive', content: null, disabled: true },
+          ]}
+        />
+        <p className="m-0 text-sm text-secondary" data-testid="open">
+          Open: {open.join(', ')}
+        </p>
+      </div>
+    )
+  },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await userEvent.click(canvas.getByRole('button', { name: 'Returns' }))
@@ -93,6 +120,7 @@ export const Multiple: Story = {
 
 /** Keyboard only: ArrowDown moves to the next header, Enter opens it and closes the other. */
 export const Keyboard: Story = {
+  tags: ['interaction'],
   render: () => (
     <div className="max-w-150">
       <Accordion items={SECTIONS} defaultValue={['payment']} headingLevel={4} />

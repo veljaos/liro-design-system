@@ -638,8 +638,12 @@ const INJURY_KINDS = [
   'Bruised shoulder',
 ] as const
 
-/** `count` generated entries over 2026, for the stress story; January–June locked. */
+/**
+ * `count` generated entries over 2026, for the stress story; January–June locked. The tenth from
+ * last corrects no. 12, so the correction links cross thousands of entries.
+ */
 export function manyInjuries(count: number): Injury[] {
+  const corrector = String(count - 10)
   return Array.from({ length: count }, (_, index) => {
     const day = Math.floor((index * 365) / count)
     const date = new Date(Date.UTC(2026, 0, 1 + day)).toISOString().slice(0, 10)
@@ -655,6 +659,8 @@ export function manyInjuries(count: number): Injury[] {
       severity: index % 9 === 0 ? 'Serious' : 'Light',
       daysOff: String(1 + (index % 14)),
       ...(date < '2026-07-01' ? { locked: true } : {}),
+      ...(index === 11 ? { correctedBy: corrector } : {}),
+      ...(String(index + 1) === corrector ? { corrects: '12' } : {}),
     }
   })
 }

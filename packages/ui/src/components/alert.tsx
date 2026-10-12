@@ -18,7 +18,25 @@ import type { IconComponent } from './intents'
  *
  * Mantine's close button is 16px; ours is 24px (the minimum target, Definition of done), with the
  * same 16px icon and no background.
+ *
+ * One line, one height (P5.23, the owner's review: "5 checks passed" was 62px for one line). An
+ * Alert with only a title — no message, or a message that renders nothing (`false`, null, '') —
+ * is compact: ONE_LINE padding (10px by 16px), the icon centred on the title's line, 42px high.
+ * A Banner is a one-row strip and always uses ONE_LINE. An empty message never adds the 10px gap.
  */
+
+/** The padding of every one-line alert or banner: 10px by 16px. */
+const ONE_LINE = 'px-4 py-2.5'
+
+/** Whether a message renders anything: `false`, null, undefined and '' do not. */
+export function hasMessage(children: ReactNode): boolean {
+  if (children === undefined || children === null || children === false || children === true) {
+    return false
+  }
+  if (typeof children === 'string') return children !== ''
+  if (Array.isArray(children)) return children.some((child: ReactNode) => hasMessage(child))
+  return true
+}
 
 /** The tones of an alert. */
 export type AlertTone = 'neutral' | 'info' | 'success' | 'warning' | 'danger'
@@ -96,19 +114,23 @@ function CloseButton({ onClose, fg }: { onClose: () => void; fg: string }) {
 export function Alert({ tone = 'neutral', title, icon, onClose, className, children }: AlertProps) {
   const look = TONES[tone]
   const Icon = icon ?? look.icon
+  const message = hasMessage(children)
+  const compact = !message
   return (
     <div
       role={alertRole(tone)}
       data-tone={tone}
+      data-compact={compact ? '' : undefined}
       className={cn(
-        'relative flex overflow-hidden rounded-md border border-solid border-transparent p-4 font-sans',
+        'relative flex overflow-hidden rounded-md border border-solid border-transparent font-sans',
+        compact ? cn(ONE_LINE, 'items-center') : 'p-4',
         look.box,
         className,
       )}
     >
       <span
         aria-hidden="true"
-        className={cn('me-4 mt-px flex size-5 shrink-0 items-center', look.fg)}
+        className={cn('me-4 flex size-5 shrink-0 items-center', !compact && 'mt-px', look.fg)}
       >
         <Icon className="size-5" />
       </span>
@@ -124,7 +146,7 @@ export function Alert({ tone = 'neutral', title, icon, onClose, className, child
             <span className={cn('min-w-0 break-words', TEXT_DIRECTION)}>{title}</span>
           </div>
         )}
-        {children !== undefined && (
+        {message && (
           <div className={cn('text-sm break-words text-primary', TEXT_DIRECTION)}>{children}</div>
         )}
       </div>
@@ -138,6 +160,11 @@ export interface BannerProps extends AlertBaseProps {
   children: ReactNode
   /** Actions at the end, e.g. a Button ("Reconnect", "Review"). */
   actions?: ReactNode
+  /**
+   * Default: by the tone (`alertRole`). 'status' for a banner that marks a state shown when the
+   * page opens — a cancelled document — which must not interrupt even in the danger tone.
+   */
+  role?: 'alert' | 'status'
 }
 
 /**
@@ -152,17 +179,19 @@ export function Banner({
   className,
   children,
   actions,
+  role,
 }: BannerProps) {
   const look = TONES[tone]
   const Icon = icon ?? look.icon
   return (
     <div
-      role={alertRole(tone)}
+      role={role ?? alertRole(tone)}
       data-tone={tone}
       className={cn(
         // Border-box: full width with its padding and border, in an application without a reset
         // (P4.1: it was 34px wider than its container).
-        'box-border flex w-full flex-wrap items-center gap-x-4 gap-y-2.5 rounded-md border border-solid border-transparent p-4 font-sans',
+        'box-border flex w-full flex-wrap items-center gap-x-4 gap-y-2.5 rounded-md border border-solid border-transparent font-sans',
+        ONE_LINE,
         look.box,
         className,
       )}

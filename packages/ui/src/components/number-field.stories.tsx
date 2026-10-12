@@ -69,6 +69,7 @@ export const Default: Story = {
 
 /** Unreadable text stays for correction; the field shows its own message; the value is null. */
 export const Unreadable: Story = {
+  tags: ['interaction'],
   render: function Render() {
     const [value, setValue] = useState<string | null>('12')
     const [valid, setValid] = useState(true)
@@ -104,6 +105,7 @@ export const Unreadable: Story = {
 /** A pasted number in another scheme is read on Enter; the value is the decimal string. */
 export const ReadOnEnter: Story = {
   name: 'Read on Enter',
+  tags: ['interaction'],
   render: function Render() {
     const [value, setValue] = useState<string | null>(null)
     return (
@@ -158,6 +160,21 @@ export const States: Story = {
  */
 export const StartText: Story = {
   name: 'Start text',
+  render: () => (
+    <div className="flex max-w-100 flex-col gap-6">
+      <NumberField label="Quantity from" startText="From" defaultValue="5" />
+      <MoneyField label="Total from" startText="From" currency="EUR" defaultValue="100" />
+      <MoneyField label="Total to" startText="To" currency="EUR" />
+    </div>
+  ),
+  play: async () => {
+    await settle()
+  },
+}
+
+export const StartTextInteraction: Story = {
+  name: 'Start text, interaction',
+  tags: ['interaction'],
   render: () => (
     <div className="flex max-w-100 flex-col gap-6">
       <NumberField label="Quantity from" startText="From" defaultValue="5" />

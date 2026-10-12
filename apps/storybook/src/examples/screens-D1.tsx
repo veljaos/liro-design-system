@@ -1,5 +1,5 @@
 import { FileCheck } from 'lucide-react'
-import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import {
   Button,
   ChangeableValue,
@@ -10,18 +10,25 @@ import {
   LookupDialog,
   MoneyText,
   NumberText,
-  StatusBadge,
   TextField,
   useLiro,
   type DataTableColumn,
+  type DataTableFilters,
+  type DataTableSort,
   type EditableGridColumn,
+  type FilterDefinition,
   type GridDetail,
   type GridMessage,
   type LifecycleStep,
   type LookupOption,
 } from '@veljaos/ui'
+import {
+  matchesChoice,
+  sortRows,
+  type SortKey,
+} from '../../../../packages/ui/src/components/catalog-story-data'
 import type { ExampleRoute } from './example-app'
-import { SALES_TABS, Shell } from './example-shell'
+import { SALES_TABS, Shell, statusBadge } from './example-shell'
 import {
   ACCOUNTS,
   addQuantities,
@@ -135,22 +142,44 @@ const KIND_NAMES: Record<CatalogueRecord['kind'], string> = {
   discount: 'Discount',
 }
 
+// A catalogue list sorts by its columns and filters by several values (P5.23).
 const CATALOGUE_COLUMNS: DataTableColumn<CatalogueRecord>[] = [
-  { id: 'code', header: 'Code', cell: (record) => <bdi>{record.value}</bdi> },
-  { id: 'name', header: 'Name', cell: (record) => record.label },
-  { id: 'kind', header: 'Kind', cell: (record) => KIND_NAMES[record.kind] },
+  { id: 'code', header: 'Code', sortable: true, cell: (record) => <bdi>{record.value}</bdi> },
+  { id: 'name', header: 'Name', sortable: true, cell: (record) => record.label },
+  { id: 'kind', header: 'Kind', sortable: true, cell: (record) => KIND_NAMES[record.kind] },
   {
     id: 'price',
     header: 'Price',
     numeric: true,
+    sortable: true,
     cell: (record) => <MoneyText value={record.price} currency="RSD" />,
+  },
+]
+
+/** How the application sorts each column: text by collation, prices exactly. */
+const CATALOGUE_SORT: Record<string, SortKey<CatalogueRecord>> = {
+  code: { kind: 'text', value: (record) => record.value },
+  name: { kind: 'text', value: (record) => record.label },
+  kind: { kind: 'text', value: (record) => KIND_NAMES[record.kind] },
+  price: { kind: 'decimal', value: (record) => record.price },
+}
+
+const CATALOGUE_FILTERS: FilterDefinition[] = [
+  {
+    id: 'kind',
+    label: 'Kind',
+    type: 'multiSelect',
+    options: (['item', 'service', 'asset', 'discount'] as const).map((kind) => ({
+      value: kind,
+      label: KIND_NAMES[kind],
+    })),
   },
 ]
 
 // ── Invoice draft, lines by search ──────────────────────────────────────────────────────────
 
 export function InvoiceDraft({ phone }: { phone: boolean }) {
-  const { format } = useLiro()
+  const { format, locale } = useLiro()
   const [lines, setLines] = useState<DraftLine[]>(initialDraft)
   const [number, setNumber] = useState(DRAFT.number)
   const [issued, setIssued] = useState<string | null>(DRAFT.issued)
@@ -159,7 +188,18 @@ export function InvoiceDraft({ phone }: { phone: boolean }) {
   const [searchAll, setSearchAll] = useState<{ rowId: string; query: string } | null>(null)
   const [allQuery, setAllQuery] = useState('')
   const [allCursor, setAllCursor] = useState(0)
-  const allFound = useMemo(() => findInCatalogue(allQuery), [allQuery])
+  const [allFilters, setAllFilters] = useState<DataTableFilters>({})
+  const [allSort, setAllSort] = useState<DataTableSort>(null)
+  const allFound = useMemo(
+    () =>
+      sortRows(
+        findInCatalogue(allQuery).filter((record) => matchesChoice(allFilters.kind, record.kind)),
+        allSort,
+        CATALOGUE_SORT,
+        locale,
+      ),
+    [allQuery, allFilters, allSort, locale],
+  )
   const subtotals = useMemo(() => draftSubtotals(lines), [lines])
   const totals = useMemo(() => draftTotals(lines), [lines])
 
@@ -273,7 +313,7 @@ export function InvoiceDraft({ phone }: { phone: boolean }) {
         layout={phone ? 'phone' : 'desktop'}
         title="New invoice"
         back={{ href: '#/sales/invoices', label: 'Invoices' }}
-        status={<StatusBadge label="Draft" tone="neutral" />}
+        status={statusBadge('Draft')}
         lifecycle={{ steps: STEPS, current: 0, label: 'Invoice status' }}
         counterparty={{
           label: 'Customer',
@@ -365,7 +405,18 @@ export function InvoiceDraft({ phone }: { phone: boolean }) {
           setAllCursor(0)
         }}
         searchPlaceholder="Name or code"
+        filters={CATALOGUE_FILTERS}
+        filterValues={allFilters}
+        onFilterValuesChange={(values) => {
+          setAllFilters(values)
+          setAllCursor(0)
+        }}
         columns={CATALOGUE_COLUMNS}
+        sort={allSort}
+        onSortChange={(next) => {
+          setAllSort(next)
+          setAllCursor(0)
+        }}
         rows={allFound.slice(allCursor, allCursor + 25)}
         getRowId={(record) => record.value}
         getRowLabel={(record) => `${record.label}, ${record.value}`}
@@ -392,16 +443,6 @@ export function InvoiceDraft({ phone }: { phone: boolean }) {
 }
 
 // ── Interim situation, editing the specification ──────────────────────────────────────────────
-
-/** A value of the situation's header: the label above, the value under it. */
-function Detail({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div className="flex min-w-0 flex-col gap-0.5">
-      <span className="bidi-content text-xs text-secondary">{label}</span>
-      <span className="bidi-content min-h-7 text-sm font-medium text-primary">{children}</span>
-    </div>
-  )
-}
 
 export function SpecificationEditor({ phone }: { phone: boolean }) {
   const { format } = useLiro()
@@ -507,7 +548,7 @@ export function SpecificationEditor({ phone }: { phone: boolean }) {
         layout={phone ? 'phone' : 'desktop'}
         title={`${SITUATION.number}: specification of works`}
         back={{ href: `#${D1_ROUTES.situation}`, label: SITUATION.number }}
-        status={<StatusBadge label="Draft" tone="neutral" />}
+        status={statusBadge('Draft')}
         counterparty={{
           label: 'Investor',
           name: SITUATION.customer,
@@ -533,9 +574,9 @@ export function SpecificationEditor({ phone }: { phone: boolean }) {
         ]}
         details={
           <>
-            <Detail label="Contract">{SITUATION.contract}</Detail>
-            <Detail label="Site">{SITUATION.site}</Detail>
-            <Detail label="Period">{SITUATION.period}</Detail>
+            <ChangeableValue label="Contract" value={SITUATION.contract} />
+            <ChangeableValue label="Site" value={SITUATION.site} />
+            <ChangeableValue label="Period" value={SITUATION.period} />
           </>
         }
         actions={
@@ -544,7 +585,6 @@ export function SpecificationEditor({ phone }: { phone: boolean }) {
             {phone ? null : save}
           </>
         }
-        linesTitle="Specification of works"
         lines={
           <EditableGrid<SpecRow>
             label="Specification of works"

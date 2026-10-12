@@ -42,6 +42,26 @@ const DETAILS = (
 export const Default: Story = {
   render: () => (
     <div className="flex min-h-40 justify-center">
+      <Popover
+        defaultOpen
+        trigger={<Button intent="view" label="Details" />}
+        label="Customer details"
+      >
+        {DETAILS}
+      </Popover>
+    </div>
+  ),
+  play: async () => {
+    await within(document.body).findByRole('dialog', { name: 'Customer details' })
+    await settle()
+  },
+}
+
+export const DefaultInteraction: Story = {
+  name: 'Default, interaction',
+  tags: ['interaction'],
+  render: () => (
+    <div className="flex min-h-40 justify-center">
       <Popover trigger={<Button intent="view" label="Details" />} label="Customer details">
         {DETAILS}
       </Popover>
@@ -136,6 +156,31 @@ export const TooltipOnFocus: Story = {
   name: 'Tooltip, on keyboard focus',
   render: () => (
     <div className="flex min-h-30 items-center justify-center gap-6">
+      <Tooltip label="Shows the payment terms" defaultOpen>
+        <IconButton family="neutral" icon={Info} label="Payment terms" />
+      </Tooltip>
+      <Tooltip label="Bottom" side="bottom">
+        <Button intent="view" label="Bottom" />
+      </Tooltip>
+      <Tooltip label="Start" side="start">
+        <Button intent="view" label="Start" />
+      </Tooltip>
+      <Tooltip label="End" side="end">
+        <Button intent="view" label="End" />
+      </Tooltip>
+    </div>
+  ),
+  play: async () => {
+    await within(document.body).findByRole('tooltip')
+    await settle()
+  },
+}
+
+export const TooltipOnFocusInteraction: Story = {
+  name: 'Tooltip, on keyboard focus, interaction',
+  tags: ['interaction'],
+  render: () => (
+    <div className="flex min-h-30 items-center justify-center gap-6">
       <Tooltip label="Shows the payment terms">
         <IconButton family="neutral" icon={Info} label="Payment terms" />
       </Tooltip>
@@ -165,6 +210,29 @@ export const TooltipOnFocus: Story = {
 /** Tooltip with Arabic and Japanese sample text. */
 export const TooltipScripts: Story = {
   name: 'Tooltip, Arabic and Japanese',
+  render: () => (
+    <div className="flex min-h-30 items-center justify-center gap-10">
+      <StoryProvider locale="ar">
+        <Tooltip label={ARABIC.description} defaultOpen>
+          <Button intent="view" label={ARABIC.label} />
+        </Tooltip>
+      </StoryProvider>
+      <StoryProvider locale="ja">
+        <Tooltip label={JAPANESE.description}>
+          <Button intent="view" label={JAPANESE.label} />
+        </Tooltip>
+      </StoryProvider>
+    </div>
+  ),
+  play: async () => {
+    await within(document.body).findByRole('tooltip')
+    await settle()
+  },
+}
+
+export const TooltipScriptsInteraction: Story = {
+  name: 'Tooltip, Arabic and Japanese, interaction',
+  tags: ['interaction'],
   render: () => (
     <div className="flex min-h-30 items-center justify-center gap-10">
       <StoryProvider locale="ar">

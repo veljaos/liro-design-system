@@ -65,6 +65,22 @@ export const Open: Story = {
   render: () => (
     <Today today="2031-07-15">
       <div className="min-h-100 max-w-100">
+        <DateField label="Due date" defaultOpen />
+      </div>
+    </Today>
+  ),
+  play: async () => {
+    await within(document.body).findByRole('grid')
+    await settle()
+  },
+}
+
+export const OpenInteraction: Story = {
+  name: 'Open, interaction',
+  tags: ['interaction'],
+  render: () => (
+    <Today today="2031-07-15">
+      <div className="min-h-100 max-w-100">
         <DateField label="Due date" />
       </div>
     </Today>
@@ -83,6 +99,7 @@ export const Open: Story = {
 
 /** Keyboard only: Alt+ArrowDown opens, the focus is in the calendar, Escape returns to the field. */
 export const Keyboard: Story = {
+  tags: ['interaction'],
   render: () => (
     <div className="max-w-100">
       <DateField label="Due date" defaultValue="2026-03-17" />
@@ -111,6 +128,7 @@ export const Keyboard: Story = {
 
 /** Unreadable text stays for correction; the field shows its own message; the value is null. */
 export const Unreadable: Story = {
+  tags: ['interaction'],
   render: function Render() {
     const [value, setValue] = useState<string | null>('2026-03-01')
     const [valid, setValid] = useState(true)

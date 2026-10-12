@@ -16,6 +16,8 @@ import {
   type StickyActions,
 } from './form-logic'
 import { Stepper } from './progress'
+import { usePhone } from './use-phone'
+import { WizardFooter } from './wizard-footer'
 
 /*
  * Form layout (BUILD-PLAN P3.5; owner's decisions, 2026-10-01, docs/decisions.md "Form layout"):
@@ -411,15 +413,23 @@ export interface FormWizardProps {
   onFinish: () => void | Promise<void>
   /** The last button's text. Default: `messages['wizard.finish']`. */
   finishLabel?: string
+  /**
+   * 'phone': the Stepper as one line over a thin bar and Back / Next as ONE row stuck to the
+   * bottom of the screen (P5.23). Default by the viewport (48em).
+   */
+  layout?: 'desktop' | 'phone'
   className?: string
 }
 
 /**
  * A form in steps: the Stepper on top, one step at a time, Back and Next (Finish on the last).
- * Each step is checked before the next; going back keeps what was entered.
+ * Each step is checked before the next; going back keeps what was entered. On phones the Stepper
+ * is one line, "Step 2 of 3 · Address", and Back / Next one sticky row (P5.23).
  */
 export function FormWizard(props: FormWizardProps) {
   const { messages } = useLiro()
+  const viewportPhone = usePhone()
+  const phone = props.layout === undefined ? viewportPhone : props.layout === 'phone'
   const [inner, setInner] = useState(0)
   const active = props.active ?? inner
   const [busy, setBusy] = useState(false)
@@ -463,6 +473,7 @@ export function FormWizard(props: FormWizardProps) {
           ...(one.description === undefined ? {} : { description: one.description }),
         }))}
         active={active}
+        layout={phone ? 'phone' : 'desktop'}
         onStepClick={(index) => {
           const target = wizardStepTarget(index, active)
           if (target === 'back') go(index)
@@ -472,7 +483,12 @@ export function FormWizard(props: FormWizardProps) {
       <div ref={bodyRef} key={active}>
         {step?.content}
       </div>
-      <div className="flex flex-wrap items-center justify-end gap-2">
+      <WizardFooter
+        phone={phone}
+        {...(phone
+          ? { className: 'border-0 border-t border-solid border-default bg-surface-page' }
+          : {})}
+      >
         {active > 0 && (
           <ActionButton
             action={{ intent: 'back', label: messages['wizard.back'] }}
@@ -493,7 +509,7 @@ export function FormWizard(props: FormWizardProps) {
             void forward()
           }}
         />
-      </div>
+      </WizardFooter>
     </div>
   )
 }

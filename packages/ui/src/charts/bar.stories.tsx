@@ -13,6 +13,7 @@ import {
   RESULT,
   REVENUE,
   showTable,
+  tableShown,
   TOP_CUSTOMERS,
 } from './chart-story-data'
 import { ChartSeriesToggle } from './series-toggle'
@@ -53,6 +54,14 @@ type Story = StoryObj<typeof meta>
 /** "Show as table": the same values as a table; in right-to-left the columns follow the page. */
 export const AsTable: Story = {
   name: 'Show as table',
+  args: { ...REVENUE, defaultView: 'table' },
+  play: tableShown,
+}
+
+/** Pressing "Show as table" turns the chart into its table (no picture: the static story above). */
+export const AsTableInteraction: Story = {
+  name: 'Show as table, interaction',
+  tags: ['interaction'],
   args: { ...REVENUE },
   play: showTable,
 }
@@ -102,9 +111,15 @@ export const Negative: Story = {
 /** A hue per region (categorical palette, named in the legend). */
 export const Mixed: Story = { args: { ...REGIONS, colorBy: 'category', palette: 'categorical' } }
 
-function Interactive({ phone = false }: { phone?: boolean }) {
+function Interactive({
+  phone = false,
+  initialStore = 'beograd',
+}: {
+  phone?: boolean
+  initialStore?: 'beograd' | 'noviSad'
+}) {
   const { format } = useLiro()
-  const [store, setStore] = useState<'beograd' | 'noviSad'>('beograd')
+  const [store, setStore] = useState(initialStore)
   const stores = [
     { key: 'beograd', label: 'Beograd store' },
     { key: 'noviSad', label: 'Novi Sad store' },
@@ -141,6 +156,24 @@ function Interactive({ phone = false }: { phone?: boolean }) {
 /** The series chosen in the header, with each one's total for the period. */
 export const InteractiveStory: Story = {
   name: 'Interactive',
+  render: () => (
+    <ExampleProvider>
+      <div className="max-w-220">
+        <Interactive initialStore="noviSad" />
+      </div>
+    </ExampleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(
+      within(canvasElement).getByRole('button', { name: /Novi Sad store/ }),
+    ).toHaveAttribute('aria-pressed', 'true')
+  },
+}
+
+export const InteractiveStoryInteraction: Story = {
+  name: 'Interactive, interaction',
+  tags: ['interaction'],
   render: () => (
     <ExampleProvider>
       <div className="max-w-220">

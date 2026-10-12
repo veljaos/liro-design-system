@@ -171,6 +171,16 @@ export const Default: Story = {
 
 /** The bell's panel: recent notifications, the unread count, Mark all as read, View all. */
 export const Notifications: Story = {
+  args: { layout: 'desktop', defaultOpenMenu: 'notifications' },
+  play: async () => {
+    await within(document.body).findByRole('dialog')
+    await settle()
+  },
+}
+
+export const NotificationsInteraction: Story = {
+  name: 'Notifications, interaction',
+  tags: ['interaction'],
   args: { layout: 'desktop' },
   play: async ({ canvasElement }) => {
     await settle()
@@ -217,6 +227,16 @@ export const Home: Story = {
 /** The company switcher open: the current company checked, the application's notes at the end. */
 export const CompanySwitcher: Story = {
   name: 'Company switcher',
+  args: { layout: 'desktop', defaultOpenMenu: 'companies' },
+  play: async () => {
+    await within(document.body).findByRole('listbox', { name: 'Companies' })
+    await settle()
+  },
+}
+
+export const CompanySwitcherInteraction: Story = {
+  name: 'Company switcher, interaction',
+  tags: ['interaction'],
   args: { layout: 'desktop' },
   play: async ({ canvasElement }) => {
     await settle()
@@ -236,6 +256,26 @@ export const CompanySwitcher: Story = {
  */
 export const ManyCompanies: Story = {
   name: 'Many companies',
+  args: {
+    defaultOpenMenu: 'companies',
+    layout: 'desktop',
+    companies: {
+      items: MANY_COMPANIES,
+      pinned: PINNED_COMPANIES,
+      recent: RECENT_COMPANIES,
+      current: 'kvadrat',
+      onSelect: () => undefined,
+    },
+  },
+  play: async () => {
+    await within(document.body).findByRole('listbox', { name: 'Companies' })
+    await settle()
+  },
+}
+
+export const ManyCompaniesInteraction: Story = {
+  name: 'Many companies, interaction',
+  tags: ['interaction'],
   args: {
     layout: 'desktop',
     companies: {
@@ -290,6 +330,26 @@ async function openCompanySheet(canvasElement: HTMLElement) {
 export const FiveThousandCompanies: Story = {
   name: '5,000 companies',
   args: {
+    defaultOpenMenu: 'companies',
+    layout: 'desktop',
+    companies: {
+      items: FIVE_THOUSAND_COMPANIES,
+      pinned: ['c17', 'c2048'],
+      recent: ['c311', 'c4020', 'c9'],
+      current: 'c311',
+      onSelect: () => undefined,
+    },
+  },
+  play: async () => {
+    await within(document.body).findByRole('listbox', { name: 'Companies' })
+    await settle()
+  },
+}
+
+export const FiveThousandCompaniesInteraction: Story = {
+  name: '5,000 companies, interaction',
+  tags: ['interaction'],
+  args: {
     layout: 'desktop',
     companies: {
       items: FIVE_THOUSAND_COMPANIES,
@@ -323,6 +383,16 @@ export const FiveThousandCompanies: Story = {
 /** The user menu: name and e-mail, then the entries. */
 export const UserMenu: Story = {
   name: 'User menu',
+  args: { layout: 'desktop', defaultOpenMenu: 'user' },
+  play: async () => {
+    await within(document.body).findByRole('menu')
+    await settle()
+  },
+}
+
+export const UserMenuInteraction: Story = {
+  name: 'User menu, interaction',
+  tags: ['interaction'],
   args: { layout: 'desktop' },
   play: async ({ canvasElement }) => {
     await settle()
@@ -335,6 +405,38 @@ export const UserMenu: Story = {
 /** The agent button before the bell (P5.3): it opens the agent's question in a Popover. */
 export const Agent: Story = {
   name: 'Agent button',
+  args: {
+    layout: 'desktop',
+    agent: (
+      <Popover
+        defaultOpen
+        label="Liro agent"
+        align="end"
+        trigger={
+          <IconButton family="neutral" emphasis="menu" icon={Bot} label="Liro agent, 1 question" />
+        }
+      >
+        <div className="w-96 max-w-full">
+          <AgentQuestion
+            agent="Liro agent"
+            at="2026-10-06T08:15:00+02:00"
+            question="Three supplier invoices arrived without an order number. Shall I ask the suppliers for it?"
+          >
+            <Button intent="confirm" label="Ask the suppliers" />
+          </AgentQuestion>
+        </div>
+      </Popover>
+    ),
+  },
+  play: async () => {
+    await within(document.body).findByRole('dialog', { name: 'Liro agent' })
+    await settle()
+  },
+}
+
+export const AgentInteraction: Story = {
+  name: 'Agent button, interaction',
+  tags: ['interaction'],
   args: {
     layout: 'desktop',
     agent: (
@@ -376,6 +478,16 @@ export const Agent: Story = {
 
 /** The search button opens the command palette; on a Mac the application gives "⌘K". */
 export const Search: Story = {
+  args: { layout: 'desktop', searchShortcut: '⌘K', defaultOpenMenu: 'search' },
+  play: async () => {
+    await within(document.body).findByRole('combobox', { name: 'Search and commands' })
+    await settle()
+  },
+}
+
+export const SearchInteraction: Story = {
+  name: 'Search, interaction',
+  tags: ['interaction'],
   args: { layout: 'desktop', searchShortcut: '⌘K' },
   play: async ({ canvasElement }) => {
     await settle()
@@ -540,6 +652,28 @@ export const PhoneWidth: Story = {
 /** Phone width, the user menu open: "Switch company" inside it, every entry neutral. */
 export const PhoneUserMenu: Story = {
   name: 'Phone user menu',
+  args: { defaultOpenMenu: 'user' },
+  render: (args) => (
+    <PhoneFrame>
+      <ExampleProvider>
+        <AppShell
+          {...args}
+          layout="phone"
+          bottomBar={<Button intent="create" label="New invoice" />}
+          children={<SamplePage phone />}
+        />
+      </ExampleProvider>
+    </PhoneFrame>
+  ),
+  play: async () => {
+    await within(document.body).findByRole('menu')
+    await settle()
+  },
+}
+
+export const PhoneUserMenuInteraction: Story = {
+  name: 'Phone user menu, interaction',
+  tags: ['interaction'],
   render: (args) => (
     <PhoneFrame>
       <ExampleProvider>
@@ -570,6 +704,37 @@ export const PhoneUserMenu: Story = {
 /** Phones: the company switcher is a full-screen sheet, the search field at the top. */
 export const PhoneCompanySheet: Story = {
   name: 'Phone company switcher',
+  args: {
+    defaultOpenMenu: 'companies',
+    companies: {
+      items: MANY_COMPANIES,
+      pinned: PINNED_COMPANIES,
+      recent: RECENT_COMPANIES,
+      current: 'kvadrat',
+      onSelect: () => undefined,
+    },
+  },
+  render: (args) => (
+    <PhoneFrame>
+      <ExampleProvider>
+        <AppShell
+          {...args}
+          layout="phone"
+          bottomBar={<Button intent="create" label="New invoice" />}
+          children={<SamplePage phone />}
+        />
+      </ExampleProvider>
+    </PhoneFrame>
+  ),
+  play: async () => {
+    await within(document.body).findByRole('dialog', { name: 'Switch company' })
+    await settle()
+  },
+}
+
+export const PhoneCompanySheetInteraction: Story = {
+  name: 'Phone company switcher, interaction',
+  tags: ['interaction'],
   args: {
     companies: {
       items: MANY_COMPANIES,
@@ -668,8 +833,9 @@ export const Japanese: Story = {
 
 /** Escape closes the phone company sheet and the focus returns to the user menu's button. */
 export const PhoneCompanySheetEscape: Story = {
-  ...PhoneCompanySheet,
+  ...PhoneCompanySheetInteraction,
   name: 'Phone company switcher, Escape',
+  tags: ['interaction'],
   play: async ({ canvasElement }) => {
     await openCompanySheet(canvasElement)
     await userEvent.keyboard('{Escape}')

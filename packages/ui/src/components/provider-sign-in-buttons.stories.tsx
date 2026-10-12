@@ -53,6 +53,15 @@ type Story = StoryObj<typeof meta>
 /** The two providers; a press starts that provider's sign-in. */
 export const Default: Story = {
   args: { providers: providers(undefined, onProvider) },
+  play: async () => {
+    await ready()
+  },
+}
+
+export const DefaultInteraction: Story = {
+  name: 'Default, interaction',
+  tags: ['interaction'],
+  args: { providers: providers(undefined, onProvider) },
   play: async ({ canvasElement }) => {
     await ready()
     const canvas = within(canvasElement)

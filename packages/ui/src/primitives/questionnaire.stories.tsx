@@ -69,6 +69,48 @@ export const Single: Story = {
       </Questionnaire>
     )
   },
+  play: async () => {
+    await settle()
+  },
+}
+
+export const SingleInteraction: Story = {
+  name: 'Single, interaction',
+  tags: ['interaction'],
+  render: function Render() {
+    const [value, setValue] = useState('office')
+    return (
+      <Questionnaire shortcuts="numbers" item="place" className="max-w-120">
+        <QuestionnaireItem name="place">
+          <QuestionnaireTitle>Where will the employee work?</QuestionnaireTitle>
+          <QuestionnaireDescription>Written into the contract.</QuestionnaireDescription>
+          <QuestionnaireChoices>
+            {[
+              { value: 'office', label: 'Office, Novi Sad' },
+              { value: 'remote', label: 'Remote' },
+              { value: 'hybrid', label: 'Hybrid', description: 'Some days in the office' },
+            ].map((option) => (
+              <QuestionnaireChoice
+                key={option.value}
+                value={option.value}
+                checked={value === option.value}
+                onChange={() => {
+                  setValue(option.value)
+                }}
+              >
+                <span>{option.label}</span>
+                {option.description !== undefined && (
+                  <QuestionnaireChoiceDescription>
+                    {option.description}
+                  </QuestionnaireChoiceDescription>
+                )}
+              </QuestionnaireChoice>
+            ))}
+          </QuestionnaireChoices>
+        </QuestionnaireItem>
+      </Questionnaire>
+    )
+  },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await userEvent.click(canvas.getByRole('radio', { name: 'Office, Novi Sad' }))

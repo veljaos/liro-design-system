@@ -61,6 +61,8 @@ export interface TooltipProps {
   children: ReactElement
   /** The side it appears on. Default: 'top', as Mantine's tooltip. */
   side?: 'top' | 'bottom' | 'start' | 'end'
+  /** Shown from the start, until the pointer or the focus leaves its target. Hidden by default. */
+  defaultOpen?: boolean
 }
 
 /** Radix sides are physical; 'start' and 'end' follow the direction. */
@@ -77,11 +79,11 @@ export function physicalSide(
  * A short hint on hover and keyboard focus, after 300ms. It adds a description to its target
  * (aria-describedby); anything the user needs to act must also be visible without it.
  */
-export function Tooltip({ label, children, side = 'top' }: TooltipProps) {
+export function Tooltip({ label, children, side = 'top', defaultOpen }: TooltipProps) {
   const { direction } = useLiro()
   return (
     <TooltipProvider>
-      <TooltipRoot>
+      <TooltipRoot {...(defaultOpen === undefined ? {} : { defaultOpen })}>
         <TooltipTrigger asChild>{children}</TooltipTrigger>
         <TooltipContent side={physicalSide(side, direction)}>{label}</TooltipContent>
       </TooltipRoot>

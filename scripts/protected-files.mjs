@@ -22,6 +22,7 @@ export const PROTECTED = [
   // CI, and the checks CI runs.
   '.github/**',
   'scripts/protected-files.mjs',
+  'scripts/static-stories.mjs',
   'scripts/consumer-check.mjs',
   'apps/consumer-check/check.mjs',
   // Playwright and Storybook test configuration, and the accessibility settings.

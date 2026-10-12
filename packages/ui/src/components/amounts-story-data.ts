@@ -29,3 +29,8 @@ export function paras(value: string): bigint {
 export function decimal(value: bigint): string {
   return fromUnits(value, 2)
 }
+
+/** The sum of whole units. */
+export function sumUnits(values: readonly bigint[]): bigint {
+  return values.reduce((total, value) => total + value, 0n)
+}

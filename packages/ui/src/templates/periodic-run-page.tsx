@@ -31,8 +31,9 @@ import { countChecks, type RunCheckResult } from './periodic-run-logic'
  *   "Period open" (sm semibold) and the application's who and when (xs text.secondary) —, then
  *   the key figures.
  * - The steps (prepare → calculate → review → post → send; names from the application) as the
- *   Stepper: done steps checked, the current one ringed. On phones "Step 3 of 5: Review" (the
- *   LifecycleBar's message) instead: five steps do not fit 360px.
+ *   Stepper: done steps checked, the current one ringed. On phones the Stepper's own phone form,
+ *   "Step 3 of 5 · Review" over a thin bar (P5.23; before, a line of its own with the
+ *   LifecycleBar's message): five steps do not fit 360px.
  * - The running step (`progress`): a SectionCard with JobProgress (P5.4): the bar, "23 of 46"
  *   through format and the item being worked on.
  * - "Checks" for the current step: a flush SectionCard of rows divided by lines — the result's
@@ -225,7 +226,6 @@ export function PeriodicRunPage(props: PeriodicRunPageProps) {
     (entry): entry is { result: 'passed' | 'warning' | 'failed'; count: number } =>
       entry.result !== 'notRun',
   )
-  const step = props.steps[Math.min(props.active, props.steps.length - 1)]
 
   return (
     <div
@@ -265,28 +265,15 @@ export function PeriodicRunPage(props: PeriodicRunPageProps) {
           <KeyFigures items={props.keyFigures} layout={phone ? 'phone' : 'desktop'} />
         )}
       </div>
-      {phone ? (
-        step !== undefined && (
-          <p className={cn('m-0 text-sm font-semibold text-primary', TEXT_DIRECTION)}>
-            {messages['lifecycle.step'](
-              Math.min(props.active + 1, props.steps.length),
-              format.number(String(Math.min(props.active + 1, props.steps.length))),
-              props.steps.length,
-              format.number(String(props.steps.length)),
-              step.label,
-            )}
-          </p>
-        )
-      ) : (
-        <Stepper
-          steps={props.steps.map((each) => ({
-            label: each.label,
-            ...(each.description === undefined ? {} : { description: each.description }),
-          }))}
-          active={props.active}
-          {...(props.onStepClick === undefined ? {} : { onStepClick: props.onStepClick })}
-        />
-      )}
+      <Stepper
+        steps={props.steps.map((each) => ({
+          label: each.label,
+          ...(each.description === undefined ? {} : { description: each.description }),
+        }))}
+        active={props.active}
+        layout={phone ? 'phone' : 'desktop'}
+        {...(props.onStepClick === undefined ? {} : { onStepClick: props.onStepClick })}
+      />
       {props.progress !== undefined && (
         <SectionCard title={props.progress.label} headingLevel={2}>
           <JobProgress

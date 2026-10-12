@@ -99,6 +99,7 @@ export const Default: Story = {
  * amount), "Other" moves into its text, the summary lists every answer.
  */
 export const Keyboard: Story = {
+  tags: ['interaction'],
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await userEvent.tab()
@@ -141,6 +142,32 @@ export const ChangeFromSummary: Story = {
   render: () => (
     <ExampleProvider>
       <Contract
+        defaultStep={{ kind: 'summary' }}
+        defaultAnswers={{
+          type: { value: 'indefinite' },
+          start: { value: '2026-11-02' },
+          place: { value: 'hybrid' },
+          days: { value: '3' },
+          salary: { value: '185000.00' },
+          end: { value: '2027-12-31' },
+        }}
+      />
+    </ExampleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { name: 'Check your answers' })).toBeVisible()
+    await expect(canvas.getByText('How many office days per week?')).toBeVisible()
+    await settle()
+  },
+}
+
+export const ChangeFromSummaryInteraction: Story = {
+  name: 'Change from the summary, interaction',
+  tags: ['interaction'],
+  render: () => (
+    <ExampleProvider>
+      <Contract
         defaultAnswers={{
           type: { value: 'indefinite' },
           start: { value: '2026-11-02' },
@@ -176,6 +203,7 @@ export const ChangeFromSummary: Story = {
 /** Back keeps the answers: the fixed-term branch's end date returns with the branch. */
 export const BackKeepsAnswers: Story = {
   name: 'Back keeps answers',
+  tags: ['interaction'],
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await userEvent.click(canvas.getByRole('radio', { name: /Fixed term/ }))
@@ -198,6 +226,7 @@ export const BackKeepsAnswers: Story = {
 
 /** Required answers, "Other" without its text, and the application's own check. */
 export const Validation: Story = {
+  tags: ['interaction'],
   render: () => (
     <ExampleProvider>
       <Contract
@@ -253,6 +282,19 @@ export const WithoutSummary: Story = {
       <Contract questions={AGENT_QUESTION} summary={false} submitLabel="Answer" delay={600} />
     </ExampleProvider>
   ),
+  play: async () => {
+    await settle()
+  },
+}
+
+export const WithoutSummaryInteraction: Story = {
+  name: 'Without summary, interaction',
+  tags: ['interaction'],
+  render: () => (
+    <ExampleProvider>
+      <Contract questions={AGENT_QUESTION} summary={false} submitLabel="Answer" delay={600} />
+    </ExampleProvider>
+  ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await userEvent.type(canvas.getByRole('textbox'), '20.10.2026{Enter}')
@@ -298,6 +340,21 @@ const ALL_TYPES: QuestionDefinition[] = [
 /** Several choices (one unavailable), an optional text, a number; the summary shows "Not answered". */
 export const AnswerTypes: Story = {
   name: 'Answer types',
+  render: () => (
+    <ExampleProvider>
+      <Contract questions={ALL_TYPES} />
+    </ExampleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('checkbox', { name: /Company car/ })).toBeDisabled()
+    await settle()
+  },
+}
+
+export const AnswerTypesInteraction: Story = {
+  name: 'Answer types, interaction',
+  tags: ['interaction'],
   render: () => (
     <ExampleProvider>
       <Contract questions={ALL_TYPES} />

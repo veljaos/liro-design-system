@@ -275,6 +275,7 @@ export const Default: Story = {
  */
 export const TenLinesByKeyboard: Story = {
   name: 'Ten lines by keyboard',
+  tags: ['interaction'],
   render: () => <Lines />,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -314,6 +315,7 @@ export const TenLinesByKeyboard: Story = {
 /** Enter goes down the column and adds a line after the last; Shift+Enter goes up. */
 export const EnterMovesDown: Story = {
   name: 'Enter moves down',
+  tags: ['interaction'],
   render: () => <Lines initial={FILLED} />,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -333,6 +335,7 @@ export const EnterMovesDown: Story = {
 /** Ctrl+Enter inserts a line below; Ctrl+Delete removes it; the focus stays in the column. */
 export const RowShortcuts: Story = {
   name: 'Row shortcuts',
+  tags: ['interaction'],
   render: () => <Lines initial={FILLED} />,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -367,6 +370,7 @@ export const Messages: Story = {
 
 /** An unreadable number stays in its cell, with the field's own message under the row. */
 export const Unreadable: Story = {
+  tags: ['interaction'],
   render: () => <Lines initial={FILLED} />,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -381,6 +385,7 @@ export const Unreadable: Story = {
 /** Totals settle later, as from a server: the last total stays, with the quiet dot. */
 export const SettlingTotals: Story = {
   name: 'Totals settling',
+  tags: ['interaction'],
   render: () => <Lines initial={FILLED} settleAfter={60_000} />,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -449,6 +454,25 @@ export const Phone: Story = {
     </div>
   ),
   play: async ({ canvasElement }) => {
+    const totals = canvasElement.querySelector('[data-slot="grid-totals"]')
+    await expect(totals === null ? '' : getComputedStyle(totals).position).toBe('sticky')
+    await settle()
+  },
+}
+
+export const PhoneInteraction: Story = {
+  name: 'Phone width, interaction',
+  tags: ['interaction'],
+  render: () => (
+    <div className="w-[390px] max-w-full">
+      <Lines
+        initial={FILLED.slice(0, 2)}
+        layout="phone"
+        footer={<span className="text-sm text-secondary">Balance: 0.00</span>}
+      />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const totals = canvasElement.querySelector('[data-slot="grid-totals"]')
     await expect(totals === null ? '' : getComputedStyle(totals).position).toBe('sticky')
@@ -485,6 +509,7 @@ function LayoutChange() {
  */
 export const LayoutChangeKeepsFocus: Story = {
   name: 'Layout change keeps typing and focus',
+  tags: ['interaction'],
   render: () => <LayoutChange />,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -913,6 +938,21 @@ export const LineTypes: Story = {
     await expect(getComputedStyle(heading).fontWeight).toBe('600')
     const text = canvas.getByRole('textbox', { name: 'Text, line 5' })
     await expect(getComputedStyle(text).fontSize).toBe('12px')
+    await settle()
+  },
+}
+
+export const LineTypesInteraction: Story = {
+  name: 'Line types and "Add line ▾", interaction',
+  tags: ['interaction'],
+  render: () => <DocumentLines layout="desktop" />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    // A heading is one field across the row, bold; a text line one field, 12px secondary.
+    const heading = canvas.getByRole('textbox', { name: 'Section heading, line 1' })
+    await expect(getComputedStyle(heading).fontWeight).toBe('600')
+    const text = canvas.getByRole('textbox', { name: 'Text, line 5' })
+    await expect(getComputedStyle(text).fontSize).toBe('12px')
     // Enter from the quantity of line 4 passes the text line (one cell), skips the subtotal …
     await userEvent.click(canvas.getByRole('textbox', { name: 'Quantity, line 4' }))
     await userEvent.keyboard('{Enter}')
@@ -952,6 +992,20 @@ export const LinesBySearch: Story = {
     await expect(
       canvas.getByText('Only 36 pc in stock (ART-0118); the rest will be ordered.'),
     ).toBeVisible()
+    await settle()
+  },
+}
+
+export const LinesBySearchInteraction: Story = {
+  name: 'Lines by search, interaction',
+  tags: ['interaction'],
+  render: () => <DocumentLines layout="desktop" initial={[DOC_LINES[2] ?? docLine(), docLine()]} />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    // The first line holds 48 pieces of an article with 36 in stock: a warning, in words.
+    await expect(
+      canvas.getByText('Only 36 pc in stock (ART-0118); the rest will be ordered.'),
+    ).toBeVisible()
     const item = canvas.getByRole('combobox', { name: 'Item, service or asset, line 2' })
     await userEvent.click(item)
     await userEvent.type(item, 'savijačica', { delay: 0 })
@@ -976,6 +1030,7 @@ export const LinesBySearch: Story = {
 /** "+ Create service …": the panel with the typed name; Create fills the line, the focus returns. */
 export const CreateFromLine: Story = {
   name: 'Create a service from a line',
+  tags: ['interaction'],
   render: () => <DocumentLines layout="desktop" initial={[docLine()]} />,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -1003,6 +1058,7 @@ export const CreateFromLine: Story = {
 /** A one-off line (allowed here): no catalogue record, so the account is the user's to choose. */
 export const OneOffLine: Story = {
   name: 'One-off line',
+  tags: ['interaction'],
   render: () => <DocumentLines layout="desktop" initial={[docLine()]} />,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -1027,6 +1083,21 @@ export const OneOffLine: Story = {
 /** Phones: the line types stay apart by typography in the flat list; "Add line ▾" under it. */
 export const LineTypesPhone: Story = {
   name: 'Line types, phone width',
+  render: () => (
+    <div className="w-[390px] max-w-full">
+      <DocumentLines layout="phone" initial={DOC_LINES.slice(0, 6)} />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('button', { name: 'More options: Add line' })).toBeVisible()
+    await settle()
+  },
+}
+
+export const LineTypesPhoneInteraction: Story = {
+  name: 'Line types, phone width, interaction',
+  tags: ['interaction'],
   render: () => (
     <div className="w-[390px] max-w-full">
       <DocumentLines layout="phone" initial={DOC_LINES.slice(0, 6)} />
@@ -1251,6 +1322,31 @@ function Specification({ layout }: { layout?: 'desktop' | 'phone' }) {
  */
 export const LongSpecification: Story = {
   name: 'Specification, 300 positions',
+  render: () => <Specification layout="desktop" />,
+  play: async ({ canvasElement }) => {
+    // Cells found by their row and column: a query by accessible name would compute the names
+    // of all 1,800 fields.
+    const cellOf = (rowId: string) =>
+      canvasElement.querySelector<HTMLInputElement>(
+        `[data-row-id="${rowId}"] [data-column-id="current"] input`,
+      )
+    // 312 rows (6 × heading, 50 positions, subtotal), the header and the totals: the table says
+    // so, while only the rows around the view are drawn.
+    const table = within(canvasElement).getByRole('table', { name: 'Specification of works' })
+    await expect(table).toHaveAttribute('aria-rowcount', '314')
+    await expect(
+      canvasElement.querySelectorAll('[data-column-id="current"] input:not([type="hidden"])')
+        .length,
+    ).toBeLessThan(100)
+    const cell = cellOf('p0-1')
+    await expect(cell).toHaveAccessibleName('This period, line 2')
+    await settle()
+  },
+}
+
+export const LongSpecificationInteraction: Story = {
+  name: 'Specification, 300 positions, interaction',
+  tags: ['interaction'],
   render: () => <Specification layout="desktop" />,
   play: async ({ canvasElement }) => {
     // Cells found by their row and column: a query by accessible name would compute the names

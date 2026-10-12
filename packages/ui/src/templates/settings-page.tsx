@@ -138,8 +138,10 @@ function Section({ section, phone }: { section: SettingsSection; phone: boolean 
 export function SettingsPage(props: SettingsPageProps) {
   const viewportPhone = usePhone()
   const phone = props.layout === undefined ? viewportPhone : props.layout === 'phone'
-  const sections = (group: SettingsGroup) => (
-    <div className="flex flex-col gap-4 pt-4">
+  // Under the tabs the gap is Tabs' own (TAB_PANEL_GAP, P5.23); a single group keeps 16px
+  // under the header.
+  const sections = (group: SettingsGroup, single = false) => (
+    <div className={cn('flex flex-col gap-4', single && 'pt-4')}>
       {group.sections.map((section) => (
         <Section key={section.key} section={section} phone={phone} />
       ))}
@@ -160,7 +162,7 @@ export function SettingsPage(props: SettingsPageProps) {
         {...(props.subtitle === undefined ? {} : { subtitle: props.subtitle })}
       />
       {only !== undefined ? (
-        sections(only)
+        sections(only, true)
       ) : (
         <Tabs
           label={props.title}

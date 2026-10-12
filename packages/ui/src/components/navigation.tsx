@@ -13,12 +13,20 @@ import type { IconComponent } from './intents'
  *   screens are start-aligned; it was centred until then); hidden panels are not kept mounted, so
  *   a dialog opened from a tab belongs at page level, outside the Tabs (AGENTS.md D14). Only the
  *   AppShell's module tabs are centred (P4.1), and they are not this component.
+ *   One gap between the tab list and its panel, md (16px), set here and nowhere else (P5.23, the
+ *   owner's review: Users and roles had none) — a panel's content adds no space of its own above.
+ *   These Tabs switch between DIFFERENT content (Members / Roles / Invitations) and stand above
+ *   it; views that filter ONE list (Active / Inactive / All) are not these Tabs but the list
+ *   card's saved views (ListPage), inside the card.
  * - Breadcrumbs: the separator "›", which mirrors in right-to-left by itself (a Unicode mirrored
  *   character), 10px (xs) on each side; links underlined only on hover; the last item not a link.
  * - CursorPagination: Mantine Pagination 'sm', radius md, no first/last buttons; only the
  *   previous and next controls, no page numbers.
  * - ShortcutHint: Mantine Kbd 'xs'.
  */
+
+/** The one gap between in-page tabs and their panel: spacing md (16px). */
+export const TAB_PANEL_GAP = 'pt-4'
 
 /** One tab. */
 export interface TabItem {
@@ -81,7 +89,7 @@ export function Tabs(props: TabsProps) {
         })}
       </TabsList>
       {props.items.map((item) => (
-        <TabsContent key={item.value} value={item.value}>
+        <TabsContent key={item.value} value={item.value} className={TAB_PANEL_GAP}>
           {item.content}
         </TabsContent>
       ))}

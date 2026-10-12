@@ -79,6 +79,7 @@ export const Default: Story = {
 /** Paging and zoom from the toolbar: the toolbar shows what the viewer reports back. */
 export const PagingAndZoom: Story = {
   name: 'Paging and zoom',
+  tags: ['interaction'],
   play: async ({ canvasElement }) => {
     const canvas = await ready(canvasElement)
     await userEvent.click(canvas.getByRole('button', { name: 'Next page' }))
@@ -113,6 +114,26 @@ export const Loading: Story = {
 /** The viewer reports an error (its own text): ErrorState with "Try again", which loads anew. */
 export const ViewerError: Story = {
   name: 'Error from the viewer',
+  args: {
+    srcDoc: viewer({
+      title: 'Error',
+      lang: 'en',
+      pages: [],
+      error:
+        'The file RU-2026-017.pdf was not found. It may have been replaced by a newer version.',
+    }),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(await canvas.findByText(/was not found/, {}, { timeout: 5000 })).toBeVisible()
+    await expect(canvas.getByText('The document could not be shown.')).toBeVisible()
+    await settle()
+  },
+}
+
+export const ViewerErrorInteraction: Story = {
+  name: 'Error from the viewer, interaction',
+  tags: ['interaction'],
   args: {
     srcDoc: viewer({
       title: 'Error',

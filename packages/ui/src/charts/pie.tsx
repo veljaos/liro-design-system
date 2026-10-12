@@ -250,6 +250,7 @@ export function PieChart(props: PieChartProps) {
       {...(props.controls === undefined ? {} : { controls: props.controls })}
       {...(props.className === undefined ? {} : { className: props.className })}
       {...(props.loading === undefined ? {} : { loading: props.loading })}
+      {...(props.defaultView === undefined ? {} : { defaultView: props.defaultView })}
       {...(props.error === undefined ? {} : { error: props.error })}
       empty={empty}
       skeleton="round"

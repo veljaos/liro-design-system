@@ -145,6 +145,7 @@ export const Default: Story = {
 
 /** The arrow keys move between cards; down moves by a row. */
 export const Keyboard: Story = {
+  tags: ['interaction'],
   play: async ({ canvasElement }) => {
     await settle()
     const grid = within(within(canvasElement).getByRole('list', { name: 'Modules' }))
@@ -161,6 +162,19 @@ export const Keyboard: Story = {
 /** Editing: move, hide and drag; hidden modules with "Show"; "Done" leaves. */
 export const EditingMode: Story = {
   name: 'Editing',
+  render: () => (
+    <ExampleProvider>
+      <Editing />
+    </ExampleProvider>
+  ),
+  play: async () => {
+    await settle()
+  },
+}
+
+export const EditingModeInteraction: Story = {
+  name: 'Editing, interaction',
+  tags: ['interaction'],
   render: () => (
     <ExampleProvider>
       <Editing />
@@ -190,6 +204,7 @@ function centreOf(element: Element) {
  * The move buttons stay the keyboard's way (WCAG 2.5.7).
  */
 export const Dragging: Story = {
+  tags: ['interaction'],
   render: () => (
     <ExampleProvider>
       <Editing />

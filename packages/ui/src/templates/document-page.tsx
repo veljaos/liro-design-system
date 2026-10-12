@@ -31,6 +31,11 @@ import { PageHeader, type PageBack } from './page-header'
  *   header shows — `counterparty` (the customer block), `keyFigures` (amount due, total, due date …,
  *   any two to four, or none), `details` (the values the system filled in on a draft, as
  *   ChangeableValues). A slot left out takes no room.
+ * - A correcting or cancelling document (decrease, increase, cancellation document, credit note,
+ *   return) shows its source in `source` (DocumentSource, P5.23): beside the counterparty, at its
+ *   level — "Corrects" and the source's link with kind, number, state, date and total. The
+ *   source lists its correcting documents in its Related documents panel; the "Based on"
+ *   `references` keep the documents this one is based on, never the back-link.
  * - A draft is as simple as possible (P4.9): the application passes no side panels (attachments
  *   only when there are some), two header actions (Preview, Issue invoice), the filled-in values as
  *   `details`, and an EditableGrid with unit, tax category and amount per line.
@@ -81,15 +86,23 @@ export interface DocumentPageProps {
   /** Where the document stands in its life. */
   lifecycle?: { steps: readonly LifecycleStep[]; current: number; label: string }
   counterparty?: Counterparty
+  /**
+   * The document a correcting or cancelling document refers to (`DocumentSource`, P5.23): beside
+   * the counterparty, at its level, never in the "Based on" `references`.
+   */
+  source?: ReactNode
   keyFigures?: readonly KeyFigure[]
   /**
    * The document's own values under the counterparty — on a draft, the values the system filled
-   * in (number, issue date, due date) as ChangeableValues, in one wrapping row.
+   * in (number, issue date, due date) as ChangeableValues, in one wrapping row. Every draft's
+   * header is built this way (P5.23): changeable values with their field, read-only ones (a
+   * "Based on" link) as ChangeableValues without a field, so they align.
    */
   details?: ReactNode
   /**
    * A title over the lines' card. Default: none — the table's column headers say what it is,
-   * and the table starts at the card's top (owner, P4.5).
+   * and the table starts at the card's top (owner, P4.5). A card that holds the page's only
+   * table has no title (P5.23): pass one only when the page has more than one table.
    */
   linesTitle?: string
   /**
@@ -112,7 +125,7 @@ export interface DocumentPageProps {
   currency?: ReactNode
   /**
    * The documents this one is based on (`DocumentReferences`), one line between the header and
-   * the lines; also the back-links of a cancellation or a corrective document.
+   * the lines. A correcting or cancelling document's source goes in `source` (P5.23).
    */
   references?: ReactNode
   /**
@@ -292,7 +305,16 @@ export function DocumentPage(props: DocumentPageProps) {
           {...(props.status === undefined ? {} : { status: props.status })}
           {...(actions === undefined ? {} : { actions })}
         />
-        {props.counterparty !== undefined && <CounterpartyBlock party={props.counterparty} />}
+        {props.source !== undefined && props.source !== null ? (
+          // The source at the counterparty's level (P5.23): side by side, one under the other
+          // where they do not fit.
+          <div data-slot="document-parties" className="flex flex-wrap items-start gap-x-12 gap-y-4">
+            {props.counterparty !== undefined && <CounterpartyBlock party={props.counterparty} />}
+            {props.source}
+          </div>
+        ) : (
+          props.counterparty !== undefined && <CounterpartyBlock party={props.counterparty} />
+        )}
         {props.details !== undefined && (
           <div data-slot="document-details" className="flex flex-wrap items-start gap-x-8 gap-y-3">
             {props.details}
