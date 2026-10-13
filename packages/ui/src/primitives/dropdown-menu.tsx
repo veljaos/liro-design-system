@@ -2,6 +2,8 @@ import { Check, ChevronRight } from 'lucide-react'
 import { DropdownMenu as DropdownMenuPrimitive } from 'radix-ui'
 import type { ComponentProps } from 'react'
 import { usePortalContainer } from '../provider/portal'
+import { usePhone } from '../components/use-phone'
+import { useCollision } from '../provider/screen'
 import { FLOATING, FLOATING_MOTION, MENU_ITEM, TEXT_DIRECTION } from './classes'
 import { cn } from './cn'
 
@@ -10,7 +12,10 @@ import { cn } from './cn'
  * 8px from its trigger, 4px padding, the floating surface. Items: MENU_ITEM, icons 15px (the
  * Liro icon size beside text) 10px before the label. A submenu opens towards the inline end: to
  * the right in left-to-right, to the left in right-to-left (Radix reads the provider's
- * direction), and its chevron is drawn mirrored in right-to-left.
+ * direction), and its chevron is drawn mirrored in right-to-left. A menu keeps 8px inside the
+ * screen (the viewport, or a phone frame) and is never wider than the room there; a long item
+ * wraps; on a phone it always moves to stay on the screen, whatever side a component chose (P5.28
+ * item 1).
  */
 
 export const DropdownMenu = DropdownMenuPrimitive.Root
@@ -25,19 +30,24 @@ export function DropdownMenuContent({
   className,
   sideOffset = 8,
   align = 'start',
+  avoidCollisions,
   ...props
 }: ComponentProps<typeof DropdownMenuPrimitive.Content>) {
   const container = usePortalContainer()
+  const collision = useCollision()
+  const phone = usePhone()
   return (
     <DropdownMenuPrimitive.Portal container={container}>
       <DropdownMenuPrimitive.Content
         data-slot="dropdown-menu-content"
         sideOffset={sideOffset}
         align={align}
+        {...collision}
+        avoidCollisions={phone || (avoidCollisions ?? true)}
         className={cn(
           FLOATING,
           FLOATING_MOTION,
-          'max-h-(--radix-dropdown-menu-content-available-height) min-w-40 overflow-x-hidden overflow-y-auto p-1',
+          'max-h-(--radix-dropdown-menu-content-available-height) max-w-(--radix-dropdown-menu-content-available-width) min-w-40 overflow-x-hidden overflow-y-auto p-1',
           className,
         )}
         {...props}
@@ -181,11 +191,18 @@ export function DropdownMenuSubContent({
   ...props
 }: ComponentProps<typeof DropdownMenuPrimitive.SubContent>) {
   const container = usePortalContainer()
+  const collision = useCollision()
   return (
     <DropdownMenuPrimitive.Portal container={container}>
       <DropdownMenuPrimitive.SubContent
         data-slot="dropdown-menu-sub-content"
-        className={cn(FLOATING, FLOATING_MOTION, 'min-w-40 p-1', className)}
+        {...collision}
+        className={cn(
+          FLOATING,
+          FLOATING_MOTION,
+          'max-w-(--radix-dropdown-menu-content-available-width) min-w-40 p-1',
+          className,
+        )}
         {...props}
       />
     </DropdownMenuPrimitive.Portal>

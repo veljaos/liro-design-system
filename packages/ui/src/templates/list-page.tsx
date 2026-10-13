@@ -235,10 +235,7 @@ function SavedViewSelect(props: SavedViewsProps) {
             <ChevronDown aria-hidden="true" className="size-3.5 shrink-0 text-secondary" />
           </ButtonPrimitive>
         </PopoverTrigger>
-        <PopoverContent
-          align="start"
-          className="box-border w-72 max-w-[calc(100vw-32px)] p-1 shadow-md"
-        >
+        <PopoverContent align="start" className="box-border w-72 p-1 shadow-md">
           <CommandPrimitive
             shouldFilter={false}
             label={searchable ? messages['list.findView'] : messages['list.views']}

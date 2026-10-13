@@ -126,7 +126,15 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
           const last = index === items.length - 1
           return (
             <Fragment key={index}>
-              <li className="leading-none whitespace-nowrap">
+              <li
+                className={cn(
+                  'leading-none whitespace-nowrap',
+                  // The current page's crumb, longer than the row, is cut with an ellipsis: a
+                  // trail never makes a phone's page scroll sideways (P5.28). 2px above and below
+                  // keep its descenders inside the cut.
+                  last && 'max-w-full min-w-0 truncate py-0.5 -my-0.5',
+                )}
+              >
                 {last || item.href === undefined ? (
                   <span
                     {...(last ? { 'aria-current': 'page' as const } : {})}

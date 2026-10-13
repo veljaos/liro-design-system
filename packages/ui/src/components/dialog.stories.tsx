@@ -206,7 +206,10 @@ export const KnownProgress: Story = {
   },
 }
 
-/** Long title and text at phone width (a 390px frame): 5% from the edges, the text wraps. */
+/**
+ * Long title and text on a phone (a 390 × 844 frame): a sheet across the screen's full width on
+ * its bottom edge, its top corners rounded, the text wrapping (P5.28 item 1).
+ */
 export const LongTextPhone: Story = {
   name: 'Long text, phone width',
   render: () => (
@@ -221,6 +224,58 @@ export const LongTextPhone: Story = {
       </Dialog>
     </PhoneFrame>
   ),
+}
+
+/**
+ * A long page on a phone, scrolled to its end, then a dialog (P5.28 items 5 and 11): the page
+ * scrolls inside the phone frame, and the backdrop covers the whole screen — never only a band
+ * of it — and the sheet stands on the screen's bottom edge.
+ */
+export const PhoneOverLongPage: Story = {
+  name: 'Phone, over a scrolled page, interaction',
+  tags: ['interaction'],
+  render: () => (
+    <PhoneFrame>
+      <div className="flex flex-col gap-4 p-4">
+        {Array.from({ length: 40 }, (_, index) => (
+          <p key={index} className="m-0 text-sm bidi-content">
+            {LONG.value}
+          </p>
+        ))}
+        <Dialog
+          trigger={<Button intent="edit" emphasis="secondary" label="Rename…" />}
+          title="Rename the report"
+          actions={<Button intent="save" label="Save" />}
+        >
+          <TextField label="Name" defaultValue="Sales by month" />
+        </Dialog>
+      </div>
+    </PhoneFrame>
+  ),
+  play: async ({ canvasElement }) => {
+    const frame = canvasElement.querySelector('[data-liro-phone-frame]')
+    const page = canvasElement.querySelector('[data-liro-phone-page]')
+    if (frame === null || page === null) throw new Error('no phone frame')
+    const screen = frame.getBoundingClientRect()
+    // The page scrolls inside the frame, to its end; the frame does not move.
+    page.scrollTop = page.scrollHeight
+    await expect(page.scrollTop).toBeGreaterThan(0)
+    await expect(frame.getBoundingClientRect().top).toBe(screen.top)
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Rename…' }))
+    const body = within(canvasElement.ownerDocument.body)
+    const dialog = await body.findByRole('dialog', { name: 'Rename the report' })
+    await settle()
+    // The window may scroll to the focused field (the frame is taller than a test's window);
+    // the backdrop and the sheet keep to the frame wherever it is.
+    const now = frame.getBoundingClientRect()
+    const backdrop = canvasElement.ownerDocument.querySelector('[data-slot="dialog-overlay"]')
+    const cover = backdrop?.getBoundingClientRect()
+    await expect(cover?.top).toBe(now.top)
+    await expect(cover?.height).toBe(now.height)
+    await expect(cover?.width).toBe(now.width)
+    await expect(Math.round(dialog.getBoundingClientRect().bottom)).toBe(Math.round(now.bottom))
+    await expect(dialog.getBoundingClientRect().width).toBe(now.width)
+  },
 }
 
 /** Arabic sample text, right to left: the close button at the inline end (left). */

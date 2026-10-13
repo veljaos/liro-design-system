@@ -405,7 +405,7 @@ export function LookupField(props: LookupFieldProps) {
                 if (!next) close()
                 else setOpen(true)
               }}
-              className="min-w-[min(20rem,calc(100vw-2rem))]"
+              className="min-w-[min(20rem,var(--radix-popover-content-available-width))]"
               onOptionHover={(index) => {
                 if (isChoosable(rows[index])) setActive(index)
               }}

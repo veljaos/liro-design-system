@@ -1,6 +1,7 @@
 import { Tooltip as TooltipPrimitive } from 'radix-ui'
 import type { ComponentProps } from 'react'
 import { usePortalContainer } from '../provider/portal'
+import { useCollision } from '../provider/screen'
 import { TEXT_DIRECTION } from './classes'
 import { cn } from './cn'
 
@@ -30,13 +31,16 @@ export function TooltipContent({
   ...props
 }: ComponentProps<typeof TooltipPrimitive.Content>) {
   const container = usePortalContainer()
+  const collision = useCollision()
   return (
     <TooltipPrimitive.Portal container={container}>
       <TooltipPrimitive.Content
         data-slot="tooltip-content"
         sideOffset={sideOffset}
+        {...collision}
         className={cn(
-          'z-(--liro-layer-tooltip) rounded-sm bg-surface-inverse px-2.5 py-[5px] font-sans text-xs whitespace-nowrap text-on-inverse data-[state=closed]:animate-liro-tooltip-out data-[state=delayed-open]:animate-liro-tooltip-in data-[state=instant-open]:animate-liro-tooltip-in',
+          // One line as wide as its text; a text longer than the screen's room wraps (P5.28).
+          'z-(--liro-layer-tooltip) w-max max-w-(--radix-tooltip-content-available-width) rounded-sm bg-surface-inverse px-2.5 py-[5px] font-sans text-xs text-on-inverse data-[state=closed]:animate-liro-tooltip-out data-[state=delayed-open]:animate-liro-tooltip-in data-[state=instant-open]:animate-liro-tooltip-in',
           TEXT_DIRECTION,
           className,
         )}

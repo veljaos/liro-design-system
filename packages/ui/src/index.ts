@@ -1211,3 +1211,6 @@ export type {
   ChangeLine,
   NotifyOption,
 } from './components/change-confirm-dialog'
+
+// ── P5.28 phone ──
+export { isSearchable, SEARCHABLE_FROM } from './components/select-field'

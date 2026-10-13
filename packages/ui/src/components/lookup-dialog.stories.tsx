@@ -146,7 +146,6 @@ function Lookup({
           subtitle: (row) => `${row.taxId} · ${row.city}`,
           badge: (row) =>
             row.active ? undefined : <StatusBadge label="Inactive" tone="neutral" />,
-          details: ['balance'],
         }}
         {...(layout === undefined ? {} : { layout })}
       />
@@ -389,7 +388,11 @@ export const LongText: Story = {
   ),
 }
 
-/** Phone width: a full-screen sheet, the results as a flat list; the keys work the same. */
+/**
+ * Phone width: a full-screen sheet, the results as a flat list of compact rows — name; tax number
+ * · city; a badge at the end — never every column as a detail card (P5.28 item 13); the keys work
+ * the same.
+ */
 export const PhoneWidth: Story = {
   name: 'Phone width',
   render: () => (
