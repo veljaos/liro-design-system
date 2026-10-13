@@ -949,8 +949,8 @@ export const messagesEn: LiroMessages = {
   'floorPlan.rotate': 'Rotate 90°',
   'floorPlan.duplicate': 'Duplicate',
   'floorPlan.remove': 'Remove',
-  'floorPlan.moveTitle': (label) => `Move ${label}`,
-  'floorPlan.sizeTitle': (label) => `Size of ${label}`,
+  'floorPlan.moveTitle': 'Move',
+  'floorPlan.sizeTitle': 'Resize',
   'floorPlan.unitsHint':
     'In plan units: x from the plan’s left edge, y from its top edge. The plan is not mirrored.',
   'floorPlan.x': 'X',
@@ -984,7 +984,7 @@ export const messagesEn: LiroMessages = {
   'seating.unseat': 'Unseat',
   'seating.seatedHere': 'Seated here:',
   'seating.chooseGuest': 'Choose a guest',
-  'seating.seatAtTitle': (name) => `Seat ${name}`,
+  'seating.seatAtTitle': 'Choose a seat',
   'seating.table': 'Table',
   'seating.seat': 'Seat',
   'seating.seatButton': 'Seat',
@@ -1260,4 +1260,9 @@ export const messagesEn: LiroMessages = {
   'receiptResult.sending': 'Sending…',
   'receiptResult.sent': 'Sent',
   'receiptResult.failed': 'Not sent',
+  // P5.28 floor
+  'floorPlan.area': 'Area',
+  'floorPlan.allAreas': 'All areas',
+  'floorPlan.editOnLarger': 'Edit the plan on a computer or tablet.',
+  'seating.seatTitle': 'Seat a guest',
 }

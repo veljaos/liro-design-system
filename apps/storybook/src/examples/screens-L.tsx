@@ -9,10 +9,11 @@ import {
   Sparkles,
   Timer,
 } from 'lucide-react'
-import { useContext, useState, type ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import {
   ActionGroup,
   addDays,
+  ChangeConfirmDialog,
   DateRangeText,
   Drawer,
   KeyFigures,
@@ -32,10 +33,12 @@ import {
   type RackRoom,
   type RackState,
   type ScheduleBooking,
+  type ScheduleMove,
   type ShellCompany,
 } from '@veljaos/ui'
 import type { ExampleRoute } from './example-app'
-import { Navigate, Shell, type ExampleAccount } from './example-shell'
+import { useExampleState } from './example-state'
+import { Shell, type ExampleAccount } from './example-shell'
 import { Frame, Tenant } from './screens-G'
 import {
   FOLIOS,
@@ -49,11 +52,14 @@ import {
   ROOM_TYPES,
   roomSpec,
   roomToday,
+  STAY_MOVE,
+  STAY_SHOWN,
   STAYS,
   stayBookings,
   todayFigures,
   type Housekeeping,
   type Occupancy,
+  type Stay,
 } from './data-L'
 
 /*
@@ -155,9 +161,17 @@ function HotelShell({
 }
 
 /** The rooms as the screen keeps them: the stays' state today, with what was done since. */
-function useHotelRooms(initial: Readonly<Record<string, Housekeeping>> = {}) {
-  const [housekeeping, setHousekeeping] = useState<Record<string, Housekeeping>>({ ...initial })
-  const [occupancy, setOccupancy] = useState<Record<string, Occupancy>>({})
+function useHotelRooms() {
+  // The hotel's record, kept above the screens (P5.28): what housekeeping marks clean, the front
+  // desk sees, and a checked-out room stays vacant after leaving the rack.
+  const [housekeeping, setHousekeeping] = useExampleState<Readonly<Record<string, Housekeeping>>>(
+    'hotel.housekeeping',
+    () => ({}),
+  )
+  const [occupancy, setOccupancy] = useExampleState<Readonly<Record<string, Occupancy>>>(
+    'hotel.occupancy',
+    () => ({}),
+  )
   const floors: RackFloor[] = rackFloors(housekeeping).map((floor) => ({
     ...floor,
     rooms: floor.rooms.map((room) => {
@@ -420,27 +434,114 @@ export function FrontDesk({ phone, room = null }: { phone: boolean; room?: strin
 
 // ── The booking timeline ──────────────────────────────────────────────────────────────────────
 
-export function Bookings({ phone }: { phone: boolean }) {
+/** A stay's dates as the front desk writes them: "06.10.2026. – 09.10.2026. · 3 nights". */
+function stayDates(
+  format: ReturnType<typeof useLiro>['format'],
+  start: string,
+  end: string,
+): string {
+  const departure = addDays(end, 1)
+  const count = nights({ arrival: start, departure })
+  return `${format.date(start)} – ${format.date(departure)} · ${format.number(String(count))} ${count === 1 ? 'night' : 'nights'}`
+}
+
+/**
+ * A booking opened in place (P5.28 item 17): a drawer over the same timeline — the guest, the
+ * room, the dates, the guests and the note. The user stays on the Bookings tab.
+ */
+function StayDrawer({
+  stay,
+  booking,
+  onClose,
+}: {
+  stay: Stay | undefined
+  booking: ScheduleBooking | undefined
+  onClose: () => void
+}) {
   const { format } = useLiro()
-  const navigate = useContext(Navigate)
+  const spec = booking === undefined ? undefined : roomSpec(booking.resourceId)
+  return (
+    <Drawer
+      side="end"
+      open={stay !== undefined && booking !== undefined}
+      onOpenChange={(open) => {
+        if (!open) onClose()
+      }}
+      title={stay?.guest ?? ''}
+      description={
+        booking === undefined || spec === undefined
+          ? undefined
+          : `Room ${booking.resourceId} · ${ROOM_TYPES[spec.type] ?? spec.type}`
+      }
+    >
+      {stay !== undefined && booking !== undefined && (
+        <KeyValueList
+          columns={1}
+          items={[
+            { label: 'Room', value: `Room ${booking.resourceId}`, numeric: true },
+            {
+              label: 'Stay',
+              numeric: true,
+              value: (
+                <span className="bidi-content">
+                  {stayDates(format, booking.start, booking.end)}
+                </span>
+              ),
+            },
+            {
+              label: 'Guests',
+              numeric: true,
+              value: `${format.number(String(stay.adults))} ${stay.adults === 1 ? 'adult' : 'adults'}`,
+            },
+            ...(stay.note === undefined ? [] : [{ label: 'Note', value: stay.note }]),
+            {
+              label: 'State',
+              value: booking.locked === true ? 'In the house: the stay no longer moves' : 'Booked',
+            },
+          ]}
+        />
+      )}
+    </Drawer>
+  )
+}
+
+export function Bookings({
+  phone,
+  stay: initialStay,
+  move: initialMove,
+}: {
+  phone: boolean
+  /** A booking open in its drawer (a picture). */
+  stay?: string
+  /** A move proposed and asked (a picture). */
+  move?: ScheduleMove
+}) {
+  const { format } = useLiro()
   const [floor, setFloor] = useState('1')
-  const [moved, setMoved] = useState<
-    Record<string, Pick<ScheduleBooking, 'resourceId' | 'start' | 'end'>>
-  >({})
+  // The stays' moves are the hotel's record, kept above the screens (P5.28).
+  const [moved, setMoved] = useExampleState<
+    Readonly<Record<string, Pick<ScheduleBooking, 'resourceId' | 'start' | 'end'>>>
+  >('hotel.moves', () => ({}))
+  const [open, setOpen] = useState<string | null>(initialStay ?? null)
+  const [proposed, setProposed] = useState<ScheduleMove | null>(initialMove ?? null)
   const resources = ROOM_SPECS.filter((room) => room.number.startsWith(floor)).map((room) => ({
     id: room.number,
     name: `Room ${room.number}`,
     description: ROOM_TYPES[room.type] ?? room.type,
   }))
-  const bookings = [1, 2, 3, 4]
+  const all = [1, 2, 3, 4]
     .flatMap((each) => stayBookings(each))
     .map((booking) => ({ ...booking, ...moved[booking.id] }))
-    .filter((booking) => booking.resourceId.startsWith(floor))
+  const bookings = all.filter((booking) => booking.resourceId.startsWith(floor))
   const first = FORTNIGHT[0] ?? HOTEL.today
   const last = FORTNIGHT.at(-1) ?? HOTEL.today
   const arriving = STAYS.filter(
     (stay) => stay.arrival >= first && stay.arrival <= last && stay.arrival > HOTEL.today,
   ).length
+  const openBooking = all.find((booking) => booking.id === open)
+  const openStay = STAYS.find((stay) => stay.id === open)
+  const before = all.find((booking) => booking.id === proposed?.id)
+  const movingStay = STAYS.find((stay) => stay.id === proposed?.id)
   return (
     <HotelShell phone={phone} tab="bookings" crumb="Bookings">
       <Frame phone={phone} wide>
@@ -465,21 +566,75 @@ export function Bookings({ phone }: { phone: boolean }) {
           unavailable={OUT_OF_ORDER}
           resourceLabel="Room"
           layout={phone ? 'phone' : 'desktop'}
-          onMove={(move) => {
-            setMoved((current) => ({
-              ...current,
-              [move.id]: { resourceId: move.resourceId, start: move.start, end: move.end },
-            }))
-            const stay = STAYS.find((each) => each.id === move.id)
-            notice.success(
-              `${stay?.guest ?? ''}: room ${move.resourceId}, ${format.date(move.start)} – ${format.date(addDays(move.end, 1))}. The guest gets an e-mail.`,
-            )
-          }}
+          // A drag, the keys or "Move to…" only propose; the front desk confirms (P5.28 item 9).
+          onMove={setProposed}
+          // A booking opens in place, over the same timeline (P5.28 item 17).
           onSelect={(booking) => {
-            navigate(`${L_ROUTES.rack}?room=${booking.resourceId}`)
+            setOpen(booking.id)
           }}
         />
       </Frame>
+      <StayDrawer
+        stay={openStay}
+        booking={openBooking}
+        onClose={() => {
+          setOpen(null)
+        }}
+      />
+      {proposed !== null && before !== undefined && movingStay !== undefined && (
+        <ChangeConfirmDialog
+          open
+          onOpenChange={(next) => {
+            if (!next) setProposed(null)
+          }}
+          title="Move stay"
+          subject={movingStay.guest}
+          changes={[
+            ...(proposed.resourceId === before.resourceId
+              ? []
+              : [
+                  {
+                    label: 'Room',
+                    from: `Room ${before.resourceId}`,
+                    to: `Room ${proposed.resourceId}`,
+                  },
+                ]),
+            ...(proposed.start === before.start && proposed.end === before.end
+              ? []
+              : [
+                  {
+                    label: 'Dates',
+                    from: stayDates(format, before.start, before.end),
+                    to: stayDates(format, proposed.start, proposed.end),
+                  },
+                ]),
+          ]}
+          affected={`${movingStay.guest} (guest), the front desk and housekeeping`}
+          notify={[
+            {
+              id: 'guest',
+              label: `Notify ${movingStay.guest} by e-mail`,
+              description: 'The new room and dates, with the booking confirmation.',
+              defaultChecked: true,
+            },
+          ]}
+          onConfirm={(answer) => {
+            setMoved((current) => ({
+              ...current,
+              [proposed.id]: {
+                resourceId: proposed.resourceId,
+                start: proposed.start,
+                end: proposed.end,
+              },
+            }))
+            notice.success(
+              answer.notify.includes('guest')
+                ? `Stay moved. ${movingStay.guest} gets an e-mail.`
+                : 'Stay moved. No message was sent.',
+            )
+          }}
+        />
+      )}
     </HotelShell>
   )
 }
@@ -573,6 +728,8 @@ export const GROUP_L_ROUTES: ExampleRoute[] = [
     render: (phone: boolean) => <FrontDesk phone={phone} room={each.number} />,
   })),
   { path: L_ROUTES.timeline, render: (phone) => <Bookings phone={phone} /> },
+  { path: L_ROUTES.timelineStay, render: (phone) => <Bookings phone={phone} stay={STAY_SHOWN} /> },
+  { path: L_ROUTES.timelineMove, render: (phone) => <Bookings phone={phone} move={STAY_MOVE} /> },
   { path: L_ROUTES.housekeeping, render: (phone) => <Housekeeping phone={phone} /> },
   {
     path: L_ROUTES.housekeepingRoom,

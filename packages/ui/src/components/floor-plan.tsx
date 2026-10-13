@@ -14,6 +14,7 @@ import {
   Fragment,
   useEffect,
   useId,
+  useLayoutEffect,
   useRef,
   useState,
   type CSSProperties,
@@ -27,12 +28,19 @@ import { cn } from '../primitives/cn'
 import { Skeleton } from '../primitives/skeleton'
 import { ToggleGroup, ToggleGroupItem } from '../primitives/toggle-group'
 import { useLiro } from '../provider/liro-provider'
+import { Alert } from './alert'
 import { Button, IconButton } from './button'
 import { Dialog } from './dialog'
 import { EmptyState } from './empty-state'
 import {
   addedPosition,
   areaLabelPoint,
+  areaSwitchKind,
+  inArea,
+  labelFit,
+  labelRoom,
+  planFrame,
+  switchableAreas,
   dragPosition,
   duplicateDraft,
   footprint,
@@ -64,15 +72,31 @@ import {
 } from './floor-plan-logic'
 import type { IconComponent } from './intents'
 import { NumberField } from './number-field'
+import { SelectField } from './select-field'
 import { ConflictIcon } from './shift-parts'
 import { StatusBadge, type Tone } from './status-badge'
 import { usePhone } from './use-phone'
 
 /*
  * FloorPlan (BUILD-PLAN P5.25; docs/decisions.md "Floor plans and seating"): the plan of a place
- * — a restaurant, a café terrace, a hotel floor, a hall — with its tables, rooms, seats and
- * fixtures where the application puts them. It shows what it is given and reports what the user
+ * — a restaurant, a café terrace, a hotel floor, a hall — with its areas, tables, rooms, seats and
+ * places where the application puts them. It shows what it is given and reports what the user
  * does; it decides nothing and saves nothing.
+ *
+ * P5.28 (the owner's review, items 23–27): simplicity first.
+ * - **No walls, doors or windows** (they confused): areas are plain labelled regions; the bar, a
+ *   counter or a stage are labelled furniture; a real building plan is the `background` image.
+ * - **A label is never cut:** the name (the number) and the state's icon, then `planDetail` (the
+ *   guests) on a second line; what does not fit an item is left out, measured at every width
+ *   (`labelFit`), never cut with "…" — the list and the item's name say everything, the time
+ *   (`detail`) is in the list and the application's drawer.
+ * - **One area at a time:** with two or more areas an area switcher (All + each area: a
+ *   segmented control up to four, a select beyond, searched from 11) draws only that area,
+ *   cropped and fitted to the width (`area` / `defaultArea` / `onAreaChange`, `areaChoices`).
+ * - **Phones** open on the list: a card per item by area (state, `detail`: the guests and the
+ *   time, note); the plan, when opened, fits the screen's width without scrolling sideways (the
+ *   list is the equivalent control of the small targets, WCAG 2.5.8); there is no edit mode on a
+ *   phone: `editing` shows "Edit the plan on a computer or tablet" instead.
  *
  * - **A physical place.** Positions and sizes are the application's plan units; x grows to the
  *   right and y downwards in every writing direction: the plan is not mirrored in a right-to-left
@@ -210,7 +234,20 @@ export interface FloorPlanProps {
   /** Default: 'list' on phones, else 'plan'. */
   defaultView?: 'plan' | 'list'
   onViewChange?: (view: 'plan' | 'list') => void
-  /** Edit mode: the palette, moving, resizing, turning and removing (with `onChange`). */
+  /** The one area shown (an id of `areas`), or null for all of them (controlled; P5.28). */
+  area?: string | null
+  /** The area shown when it appears; default null, all areas. */
+  defaultArea?: string | null
+  onAreaChange?: (area: string | null) => void
+  /**
+   * The areas the switcher offers, by id in the application's order; default every area that
+   * holds an item. An empty list hides the switcher.
+   */
+  areaChoices?: readonly string[]
+  /**
+   * Edit mode: the palette, moving, resizing, turning and removing (with `onChange`). Not on a
+   * phone (P5.28 item 27): there the plan shows `messages['floorPlan.editOnLarger']` instead.
+   */
   editing?: boolean
   palette?: readonly FloorPaletteEntry[]
   onChange?: (changes: FloorChange[]) => void
@@ -258,22 +295,40 @@ const KIND_LOOK: Record<FloorItemKind, string> = {
   place: 'border border-solid border-strong bg-surface-raised text-primary',
   bar: 'border border-solid border-strong bg-surface-sunken text-primary',
   counter: 'border border-solid border-strong bg-surface-sunken text-secondary',
-  stage: 'border border-dashed border-strong bg-surface-sunken text-secondary',
-  wall: 'border-0 bg-surface-inverse text-on-inverse',
-  door: 'border border-dashed border-strong bg-surface-raised text-secondary',
-  window: 'border-[3px] border-double border-strong bg-surface-raised text-secondary',
+  stage: 'border border-solid border-strong bg-surface-sunken text-secondary',
 }
 
-/** Kinds whose name is written on the plan (walls, doors and windows are only drawn). */
-const NAMED_ON_PLAN = new Set<FloorItemKind>([
-  'table',
-  'seat',
-  'room',
-  'place',
-  'bar',
-  'counter',
-  'stage',
-])
+/**
+ * Writes on every item's label how much of it fits (`labelFit`, P5.28 item 24): measured on the
+ * page after each drawing and each change of the plan's width; the CSS leaves out the rest.
+ */
+function fitLabels(root: HTMLElement | null) {
+  if (root === null) return
+  const size = (element: HTMLElement | null) =>
+    element === null
+      ? { width: 0, height: 0 }
+      : { width: element.offsetWidth, height: element.offsetHeight }
+  for (const label of root.querySelectorAll<HTMLElement>('[data-floor-label]')) {
+    const item = label.parentElement
+    if (item === null) continue
+    label.dataset.fit = 'all'
+    const detail = label.querySelector<HTMLElement>('[data-floor-line="detail"]')
+    label.dataset.fit = labelFit(
+      labelRoom(
+        item.clientWidth,
+        item.clientHeight,
+        label.dataset.round !== undefined,
+        label.dataset.bar !== undefined,
+      ),
+      size(label.querySelector<HTMLElement>('[data-floor-line="name"]')),
+      size(label.querySelector<HTMLElement>('[data-floor-number]')),
+      detail === null ? null : size(detail),
+    )
+  }
+}
+
+/** The area switcher's value for "All areas" (an area's id is the application's). */
+const ALL_AREAS = 'liro:all-areas'
 
 /** A move or resize by the pointer, shown live until it ends. */
 interface PointerEdit {
@@ -316,15 +371,28 @@ export function FloorPlan(props: FloorPlanProps) {
   const [pointerEdit, setPointerEdit] = useState<PointerEdit | null>(null)
   const [dialog, setDialog] = useState<'move' | 'size' | null>(props.defaultDialog ?? null)
   const [announcement, setAnnouncement] = useState('')
+  const [innerArea, setInnerArea] = useState<string | null>(props.defaultArea ?? null)
   const suppressClick = useRef(false)
   const focusAfter = useRef<string | null>(null)
 
   const plan = { width: props.width, height: props.height }
   const grid = props.grid ?? 10
   const mode = props.selectionMode ?? 'single'
-  const editing = props.editing === true && props.onChange !== undefined
+  // No edit mode on a phone (P5.28 item 27): the plan is changed on a computer or a tablet.
+  const editOnLarger = props.editing === true && props.onChange !== undefined && phone
+  const editing = props.editing === true && props.onChange !== undefined && !phone
   const interactive = editing || mode !== 'none' || props.onItemActivate !== undefined
   const areas = props.areas ?? []
+  // One area at a time (P5.28 item 26): the switcher's areas, the one shown and the part drawn.
+  const offered =
+    props.areaChoices?.length === 0 ? [] : switchableAreas(areas, props.items, props.areaChoices)
+  const areaId = props.area !== undefined ? props.area : innerArea
+  const currentArea =
+    areaId === null
+      ? undefined
+      : (offered.find((area) => area.id === areaId) ?? areas.find((area) => area.id === areaId))
+  const frame = planFrame(currentArea, plan)
+  const inView = (item: FloorItem) => currentArea === undefined || inArea(item, currentArea, areas)
   const states = props.states ?? []
   const warnings = props.warnings ?? []
   const stateOf = (item: FloorItem) => states.find((state) => state.id === item.stateId)
@@ -335,8 +403,8 @@ export function FloorPlan(props: FloorPlanProps) {
       ? undefined
       : levelText(item.level, (value) => format.percent(value), messages['floorPlan.level'])
 
-  // What is shown: an item picked up or dragged at its new place.
-  const shown = props.items.map((item) => {
+  // What is shown: the area's items (or all), one picked up or dragged at its new place.
+  const shown = props.items.filter(inView).map((item) => {
     if (lifted?.id === item.id) return { ...item, x: lifted.x, y: lifted.y }
     if (pointerEdit?.id === item.id) return { ...item, ...pointerEdit.box }
     return item
@@ -348,6 +416,22 @@ export function FloorPlan(props: FloorPlanProps) {
     targets.find((item) => item.id === focusId)?.id ??
     ordered.find((item) => selected.includes(item.id))?.id ??
     ordered[0]?.id
+
+  // How much of each label fits, after every drawing and whenever the plan's width changes.
+  useLayoutEffect(() => {
+    fitLabels(canvas.current)
+  })
+  useEffect(() => {
+    const element = canvas.current
+    if (element === null || typeof ResizeObserver === 'undefined') return
+    const observer = new ResizeObserver(() => {
+      fitLabels(element)
+    })
+    observer.observe(element)
+    return () => {
+      observer.disconnect()
+    }
+  }, [view, areaId, zoom])
 
   // The focus follows the keyboard to the item it went to (an item may be drawn anew).
   useEffect(() => {
@@ -413,7 +497,14 @@ export function FloorPlan(props: FloorPlanProps) {
     setInnerView(next)
     props.onViewChange?.(next)
   }
+  const changeArea = (next: string | null) => {
+    setInnerArea(next)
+    props.onAreaChange?.(next)
+  }
   const goTo = (id: string) => {
+    // An item of another area: back to all areas, so it can be reached.
+    const item = props.items.find((each) => each.id === id)
+    if (item !== undefined && !inView(item)) changeArea(null)
     setFocusId(id)
     focusAfter.current = id
   }
@@ -511,7 +602,7 @@ export function FloorPlan(props: FloorPlanProps) {
     const element = canvas.current
     if (element === null) return
     if (resize) event.stopPropagation()
-    const scale = element.getBoundingClientRect().width / props.width
+    const scale = element.getBoundingClientRect().width / frame.width
     if (scale <= 0) return
     const touch = event.pointerType === 'touch'
     const startX = event.clientX
@@ -668,9 +759,44 @@ export function FloorPlan(props: FloorPlanProps) {
       />
     </div>
   )
+  const areaSwitch =
+    offered.length < 2 ? null : areaSwitchKind(offered.length, phone) === 'segmented' ? (
+      <ToggleGroup
+        type="single"
+        value={currentArea?.id ?? ALL_AREAS}
+        aria-label={messages['floorPlan.area']}
+        onValueChange={(value) => {
+          if (value !== '') changeArea(value === ALL_AREAS ? null : value)
+        }}
+      >
+        <ToggleGroupItem value={ALL_AREAS}>
+          <span className={TEXT_DIRECTION}>{messages['floorPlan.allAreas']}</span>
+        </ToggleGroupItem>
+        {offered.map((area) => (
+          <ToggleGroupItem key={area.id} value={area.id}>
+            <span className={TEXT_DIRECTION}>{area.label}</span>
+          </ToggleGroupItem>
+        ))}
+      </ToggleGroup>
+    ) : (
+      <SelectField
+        label={messages['floorPlan.area']}
+        hideLabel
+        value={currentArea?.id ?? ALL_AREAS}
+        onChange={(value) => {
+          if (value !== '') changeArea(value === ALL_AREAS ? null : value)
+        }}
+        options={[
+          { value: ALL_AREAS, label: messages['floorPlan.allAreas'] },
+          ...offered.map((area) => ({ value: area.id, label: area.label })),
+        ]}
+        className={phone ? 'w-full' : 'w-56'}
+      />
+    )
   const toolbar = (
     <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
       {viewSwitch}
+      {areaSwitch}
       {zoomButtons}
       {props.toolbar !== undefined && (
         <div className="ms-auto flex flex-wrap items-center gap-2">{props.toolbar}</div>
@@ -724,7 +850,8 @@ export function FloorPlan(props: FloorPlanProps) {
           icon={entry.icon ?? Plus}
           label={entry.label}
           onClick={() => {
-            const at = addedPosition(entry, grid, plan)
+            // At the centre of what is drawn: the plan, or the area shown (and in it).
+            const at = addedPosition(entry, grid, frame)
             report([
               {
                 type: 'add',
@@ -733,7 +860,9 @@ export function FloorPlan(props: FloorPlanProps) {
                   label: entry.label,
                   width: entry.width,
                   height: entry.height,
-                  ...at,
+                  x: at.x + frame.x,
+                  y: at.y + frame.y,
+                  ...(currentArea === undefined ? {} : { areaId: currentArea.id }),
                   ...(entry.shape === undefined ? {} : { shape: entry.shape }),
                   ...(entry.capacity === undefined ? {} : { capacity: entry.capacity }),
                 },
@@ -895,25 +1024,34 @@ export function FloorPlan(props: FloorPlanProps) {
   )
 
   // ── The plan ──
-  const minWidth = minimumPlanWidth(
-    targets.filter((item) => !isFixture(item)),
-    props.width,
-  )
+  // On a phone the plan fits the screen's width (the list is the equivalent of its small targets,
+  // WCAG 2.5.8); elsewhere it scrolls in its own box below the width that keeps them 24px.
+  const minWidth = phone
+    ? 0
+    : minimumPlanWidth(
+        targets.filter((item) => !isFixture(item)),
+        frame.width,
+      )
+  const ratio = `${String(frame.width)} / ${String(frame.height)}`
   const canvasStyle: CSSProperties = {
     width: `${String(zoom * 100)}%`,
     minWidth: `${String(minWidth * zoom)}px`,
-    aspectRatio: `${String(props.width)} / ${String(props.height)}`,
+    aspectRatio: ratio,
+    // One area on a wide screen: no taller than the plan's box (a square hall stays in view).
+    ...(currentArea !== undefined && !phone && zoom === 1
+      ? { maxWidth: `calc(min(70vh, 44rem) * ${ratio})` }
+      : {}),
     ...(editing && grid > 0
       ? {
           backgroundImage:
             'radial-gradient(circle, var(--liro-border-default) 1px, transparent 1.5px)',
-          backgroundSize: `${String((grid / props.width) * 100)}% ${String((grid / props.height) * 100)}%`,
+          backgroundSize: `${String((grid / frame.width) * 100)}% ${String((grid / frame.height) * 100)}%`,
         }
       : {}),
   }
 
   const drawItem = (item: FloorItem) => {
-    const box = percentBox(footprint(item), plan)
+    const box = percentBox(footprint(item), frame)
     const style: CSSProperties = {
       insetInlineStart: box.left,
       top: box.top,
@@ -935,14 +1073,14 @@ export function FloorPlan(props: FloorPlanProps) {
         : null
     const look = cn(
       'absolute box-border flex flex-col items-center justify-center overflow-visible p-0.5 text-center font-sans leading-tight select-none',
-      round ? 'rounded-full' : item.kind === 'wall' ? 'rounded-none' : 'rounded-md',
+      round ? 'rounded-full' : 'rounded-md',
       state === undefined ? KIND_LOOK[item.kind] : cn('border border-solid', TONE_ITEM[state.tone]),
       barWidth !== null && 'pb-2.5',
       moving && 'z-(--liro-layer-raised) border-strong shadow-lg',
       props.dropTargetId === item.id &&
         'outline-2 outline-offset-2 outline-(--liro-border-strong) [outline-style:dashed]',
     )
-    const frame = (
+    const marks = (
       <>
         {isChosen && (
           <span
@@ -963,27 +1101,44 @@ export function FloorPlan(props: FloorPlanProps) {
         )}
       </>
     )
+    // The name and the state's icon, then the short second line; never cut (P5.28 item 24):
+    // `fitLabels` writes how much fits ('all', 'name', 'number', 'none') and the rest is left out.
     const label = (
       <>
-        {NAMED_ON_PLAN.has(item.kind) && (
-          <span
-            aria-hidden="true"
-            className="flex min-w-0 max-w-full flex-col items-center overflow-hidden"
-          >
-            <span className="flex max-w-full items-center gap-0.5">
-              {worst !== null && <ConflictIcon tone={worst} className="size-3.5" />}
-              {StateIcon !== undefined && item.kind !== 'seat' && (
-                <StateIcon className="size-3 shrink-0" />
-              )}
-              <span className={cn('truncate font-semibold', 'text-xs', TEXT_ISOLATE)}>
-                {item.shortLabel ?? item.label}
-              </span>
-            </span>
-            {item.detail !== undefined && item.kind !== 'seat' && (
-              <span className={cn('max-w-full truncate text-xs', TEXT_ISOLATE)}>{item.detail}</span>
+        <span
+          aria-hidden="true"
+          data-floor-label=""
+          data-fit="all"
+          data-round={round ? '' : undefined}
+          data-bar={barWidth !== null ? '' : undefined}
+          className="group/label flex flex-col items-center data-[fit=none]:invisible"
+        >
+          <span data-floor-line="name" className="flex items-center gap-0.5 whitespace-nowrap">
+            {worst !== null && (
+              <ConflictIcon
+                tone={worst}
+                className="size-3.5 group-data-[fit=number]/label:hidden"
+              />
             )}
+            {StateIcon !== undefined && item.kind !== 'seat' && (
+              <StateIcon className="size-3 shrink-0 group-data-[fit=number]/label:hidden" />
+            )}
+            <span data-floor-number="" className={cn('text-xs font-semibold', TEXT_ISOLATE)}>
+              {item.shortLabel ?? item.label}
+            </span>
           </span>
-        )}
+          {item.planDetail !== undefined && item.kind !== 'seat' && (
+            <span
+              data-floor-line="detail"
+              className={cn(
+                'text-xs whitespace-nowrap group-data-[fit=name]/label:hidden group-data-[fit=number]/label:hidden',
+                TEXT_ISOLATE,
+              )}
+            >
+              {item.planDetail}
+            </span>
+          )}
+        </span>
         {barWidth !== null && <LevelBar width={barWidth} onPlan />}
       </>
     )
@@ -1003,8 +1158,9 @@ export function FloorPlan(props: FloorPlanProps) {
     // A fixture is often thin (a wall, a window): in edit mode it is drawn as it is and chosen
     // through a target round it, at least 24px each way (WCAG 2.5.8), centred on it.
     const thin = isFixture(item)
-    const centreX = ((footprint(item).x + footprint(item).width / 2) / props.width) * 100
-    const centreY = ((footprint(item).y + footprint(item).height / 2) / props.height) * 100
+    const centreX = ((footprint(item).x + footprint(item).width / 2 - frame.x) / frame.width) * 100
+    const centreY =
+      ((footprint(item).y + footprint(item).height / 2 - frame.y) / frame.height) * 100
     const targetStyle: CSSProperties = thin
       ? {
           insetInlineStart: `calc(${String(centreX)}% - max(${String(MIN_TARGET / 2)}px, ${box.width} / 2))`,
@@ -1052,7 +1208,7 @@ export function FloorPlan(props: FloorPlanProps) {
             moving && 'cursor-grabbing',
           )}
         >
-          {frame}
+          {marks}
           {!thin && label}
         </button>
       </Fragment>
@@ -1064,7 +1220,12 @@ export function FloorPlan(props: FloorPlanProps) {
   const background = props.background
   const hasBackground = background !== undefined
   const backgroundImage = background !== undefined && (
-    <BackgroundImage background={background} plan={plan} dark={colorScheme === 'dark'} />
+    <BackgroundImage
+      background={background}
+      plan={plan}
+      frame={frame}
+      dark={colorScheme === 'dark'}
+    />
   )
   const planView = (
     <div
@@ -1083,18 +1244,18 @@ export function FloorPlan(props: FloorPlanProps) {
         aria-label={props.label}
         data-slot="floor-plan-canvas"
         style={canvasStyle}
-        className="relative box-border"
+        className="relative box-border overflow-clip"
       >
         {backgroundImage}
         {areas.map((area) => {
           if (isPolygonArea(area)) {
-            const at = percentPoint(areaLabelPoint(area), plan)
+            const at = percentPoint(areaLabelPoint(area), frame)
             return (
               <Fragment key={area.id}>
                 <svg
                   aria-hidden="true"
                   data-floor-area={area.id}
-                  viewBox={`0 0 ${String(props.width)} ${String(props.height)}`}
+                  viewBox={`${String(frame.x)} ${String(frame.y)} ${String(frame.width)} ${String(frame.height)}`}
                   preserveAspectRatio="none"
                   className="pointer-events-none absolute inset-0 size-full overflow-visible"
                 >
@@ -1125,7 +1286,7 @@ export function FloorPlan(props: FloorPlanProps) {
               </Fragment>
             )
           }
-          const box = percentBox(area, plan)
+          const box = percentBox(area, frame)
           return (
             <div
               key={area.id}
@@ -1157,10 +1318,10 @@ export function FloorPlan(props: FloorPlanProps) {
           )
         })}
         {lifted !== null && (
-          <Placeholder item={props.items.find((each) => each.id === lifted.id)} plan={plan} />
+          <Placeholder item={props.items.find((each) => each.id === lifted.id)} plan={frame} />
         )}
         {pointerEdit !== null && (
-          <Placeholder item={props.items.find((each) => each.id === pointerEdit.id)} plan={plan} />
+          <Placeholder item={props.items.find((each) => each.id === pointerEdit.id)} plan={frame} />
         )}
         {fixtures.map(drawItem)}
         {ordered.map(drawItem)}
@@ -1177,6 +1338,7 @@ export function FloorPlan(props: FloorPlanProps) {
       ? listGroups(listedItems, areas, messages['floorPlan.noArea'])
       : groupedBy(listedItems, props.listGroup, messages['floorPlan.noArea'])
   const Heading = `h${String(props.headingLevel ?? 3)}` as 'h3'
+  // On a phone every item is a card (P5.28 item 27): its state, the guests and the time.
   const listView = (
     <div data-slot="floor-plan-list" className="flex flex-col gap-4">
       {groups.map((group) => (
@@ -1191,11 +1353,22 @@ export function FloorPlan(props: FloorPlanProps) {
           >
             {group.label}
           </Heading>
-          <ul className="m-0 flex list-none flex-col overflow-hidden rounded-md border border-solid border-default bg-surface-raised p-0">
+          <ul
+            className={cn(
+              'm-0 flex list-none flex-col p-0',
+              phone
+                ? 'gap-2'
+                : 'overflow-hidden rounded-md border border-solid border-default bg-surface-raised',
+            )}
+          >
             {group.items.map((item) => (
               <li
                 key={item.id}
-                className="border-0 border-b border-solid border-default last:border-b-0"
+                className={
+                  phone
+                    ? 'overflow-hidden rounded-lg border border-solid border-default bg-surface-raised'
+                    : 'border-0 border-b border-solid border-default last:border-b-0'
+                }
               >
                 <ListRow
                   item={item}
@@ -1245,6 +1418,7 @@ export function FloorPlan(props: FloorPlanProps) {
       className={cn('flex min-w-0 flex-col gap-3 font-sans', props.className)}
     >
       {toolbar}
+      {editOnLarger && <Alert tone="neutral" title={messages['floorPlan.editOnLarger']} />}
       {palette}
       {chosenActions}
       {warningList}
@@ -1279,10 +1453,12 @@ function groupedBy(
 function BackgroundImage({
   background,
   plan,
+  frame,
   dark,
 }: {
   background: FloorBackground
   plan: { width: number; height: number }
+  frame: { x: number; y: number; width: number; height: number }
   dark: boolean
 }) {
   const box = percentBox(
@@ -1292,7 +1468,7 @@ function BackgroundImage({
       width: background.width ?? plan.width,
       height: background.height ?? plan.height,
     },
-    plan,
+    frame,
   )
   const alt = background.alt ?? ''
   const own = dark && background.srcDark !== undefined
@@ -1345,7 +1521,7 @@ function Placeholder({
   plan,
 }: {
   item: FloorItem | undefined
-  plan: { width: number; height: number }
+  plan: { x: number; y: number; width: number; height: number }
 }) {
   if (item === undefined) return null
   const box = percentBox(footprint(item), plan)
@@ -1529,11 +1705,9 @@ function EditDialog({
           label={kind === 'move' ? messages['floorPlan.moveTo'] : messages['floorPlan.size']}
         />
       }
-      title={
-        kind === 'move'
-          ? messages['floorPlan.moveTitle'](item.label)
-          : messages['floorPlan.sizeTitle'](item.label)
-      }
+      // The action, then the item on its own line (P5.28 item 6).
+      title={kind === 'move' ? messages['floorPlan.moveTitle'] : messages['floorPlan.sizeTitle']}
+      subject={item.label}
       description={messages['floorPlan.unitsHint']}
       actions={
         <>

@@ -3857,6 +3857,108 @@ export const HotelBookingsPhone: Story = {
   },
 }
 
+/**
+ * A booking opened in place (P5.28 item 17): Claire Martin's stay in a drawer over the same
+ * timeline; the Bookings tab stays current.
+ */
+export const HotelBookingOpen: Story = {
+  name: 'Hotel, bookings, a booking',
+  render: () => <ExampleApp start={L_ROUTES.timelineStay} />,
+  play: async ({ canvasElement }) => {
+    const drawer = await within(document.body).findByRole('dialog', { name: 'Claire Martin' })
+    await settle()
+    await expect(drawer).toHaveTextContent('Room 101')
+    await expect(drawer).toHaveTextContent('3 nights')
+    await expect(
+      within(canvasElement).getByRole('heading', { level: 1, name: 'Bookings', hidden: true }),
+    ).toBeInTheDocument()
+  },
+}
+
+export const HotelBookingOpenPhone: Story = {
+  name: 'Hotel, bookings, a booking, phone',
+  render: () => <OnPhone start={L_ROUTES.timelineStay} />,
+  play: async () => {
+    const dialog = await within(document.body).findByRole('dialog', { name: 'Claire Martin' })
+    await settle()
+    await expect(dialog).toBeVisible()
+  },
+}
+
+/**
+ * A stay moved on the timeline only proposes (P5.28 item 9): "Move stay" with the room and the
+ * dates old → new and the guest's e-mail as a choice, checked as the hotel sets it.
+ */
+export const HotelStayMove: Story = {
+  name: 'Hotel, bookings, moving a stay',
+  render: () => <ExampleApp start={L_ROUTES.timelineMove} />,
+  play: async () => {
+    const dialog = await within(document.body).findByRole('dialog', {
+      name: 'Move stay Dragan Lazić',
+    })
+    await settle()
+    const changes = within(dialog).getByRole('list', { name: 'Changes' })
+    await expect(changes).toHaveTextContent('Room 103After:Room 105')
+    await expect(within(changes).getAllByRole('listitem')).toHaveLength(2)
+    await expect(
+      within(dialog).getByRole('checkbox', { name: /^Notify Dragan Lazić by e-mail/ }),
+    ).toBeChecked()
+    await expect(within(dialog).getByRole('button', { name: 'Save and notify' })).toBeVisible()
+  },
+}
+
+export const HotelStayMovePhone: Story = {
+  name: 'Hotel, bookings, moving a stay, phone',
+  render: () => <OnPhone start={L_ROUTES.timelineMove} />,
+  play: async () => {
+    const dialog = await within(document.body).findByRole('dialog', {
+      name: 'Move stay Dragan Lazić',
+    })
+    await settle()
+    await expect(dialog).toBeVisible()
+  },
+}
+
+/**
+ * A booking opens in its drawer and closes again on the same tab; "Move to…" a stay asks first,
+ * and Save moves it and says the guest gets an e-mail.
+ */
+export const HotelBookingsInteraction: Story = {
+  name: 'Hotel, bookings, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={L_ROUTES.timeline} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const body = within(document.body)
+    await userEvent.click(canvas.getByRole('button', { name: /^Claire Martin, Room 101, / }))
+    const stay = await body.findByRole('dialog', { name: 'Claire Martin' })
+    await waitFor(async () => {
+      await expect(stay).toBeVisible()
+    })
+    await userEvent.keyboard('{Escape}')
+    await waitFor(async () => {
+      await expect(body.queryByRole('dialog')).toBeNull()
+    })
+    await expect(canvas.getByRole('heading', { level: 1, name: 'Bookings' })).toBeVisible()
+    await userEvent.click(canvas.getByRole('button', { name: 'Move to…: Dragan Lazić' }))
+    const panel = await body.findByRole('dialog', { name: 'Move to…: Dragan Lazić' })
+    // ResourceSchedule's "Move to…" names its select "Resource", not `resourceLabel` (see the notes).
+    await userEvent.click(within(panel).getByRole('combobox', { name: 'Resource' }))
+    await userEvent.click(await body.findByRole('option', { name: 'Room 105' }))
+    await userEvent.click(await within(panel).findByRole('button', { name: 'Move' }))
+    const dialog = await body.findByRole('dialog', { name: 'Move stay Dragan Lazić' })
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Save and notify' }))
+    await waitFor(async () => {
+      await expect(body.getByText('Stay moved. Dragan Lazić gets an e-mail.')).toBeVisible()
+    })
+    await waitFor(async () => {
+      await expect(canvas.getByRole('button', { name: /^Dragan Lazić, Room 105, / })).toBeVisible()
+    })
+    notice.dismiss()
+  },
+}
+
 /** Housekeeping on floor 3: the rooms to clean (the Dirty chip pressed). */
 export const HotelHousekeeping: Story = {
   name: 'Hotel, housekeeping',
@@ -3926,6 +4028,22 @@ export const HotelMarkCleanInteraction: Story = {
   },
 }
 
+/** Start cleaning on a phone: room 306 leaves the rooms to clean (P5.28 item 25). */
+export const HotelStartCleaningInteraction: Story = {
+  name: 'Hotel, start cleaning, interaction',
+  tags: ['interaction'],
+  render: () => <OnPhone start={L_ROUTES.housekeepingRoom} />,
+  play: async ({ canvasElement }) => {
+    const drawer = await within(document.body).findByRole('dialog', { name: 'Room 306' })
+    await settle()
+    await userEvent.click(within(drawer).getByRole('button', { name: 'Start cleaning' }))
+    await waitFor(async () => {
+      await expect(within(canvasElement).getByText('4 of 10 shown')).toBeInTheDocument()
+    })
+    notice.dismiss()
+  },
+}
+
 // ── P5.25 group K: floor plans and seating ──
 // (Imports here, inside the block, so the blocks merge without touching the top.)
 import { GALA_GUESTS, K_ROUTES, TABLE_3_FIGURES } from './data-K'
@@ -3987,7 +4105,8 @@ export const RestaurantOpenTable: Story = {
   render: () => <ExampleApp start={K_ROUTES.floorOpen} />,
   play: async () => {
     await settle()
-    const dialog = within(document.body).getByRole('dialog', { name: 'Open Table 4' })
+    // The action, then the table on its own line (P5.28 item 6).
+    const dialog = within(document.body).getByRole('dialog', { name: 'Open table Table 4' })
     await expect(within(dialog).getByRole('textbox', { name: 'Guests' })).toHaveValue('2')
   },
 }
@@ -3998,11 +4117,16 @@ export const RestaurantOpenTablePhone: Story = {
   render: () => <OnPhone start={K_ROUTES.floorOpen} />,
   play: async () => {
     await settle()
-    await expect(within(document.body).getByRole('dialog', { name: 'Open Table 4' })).toBeVisible()
+    await expect(
+      within(document.body).getByRole('dialog', { name: 'Open table Table 4' }),
+    ).toBeVisible()
   },
 }
 
-/** Moving table 5's party of three: the free tables with seats enough. */
+/**
+ * Moving table 5's party of three (P5.28 items 6, 9, 25): the free tables with seats enough,
+ * best first (the same area, the fewest seats left over), and the change old → new; Move.
+ */
 export const RestaurantMoveGuests: Story = {
   name: 'Restaurant service, moving guests',
   tags: ['!dev'],
@@ -4010,11 +4134,15 @@ export const RestaurantMoveGuests: Story = {
   play: async () => {
     await settle()
     const dialog = within(document.body).getByRole('dialog', {
-      name: 'Move guests from Table 5',
+      name: 'Move guests Table 5 · 3 guests',
     })
-    await expect(within(dialog).getByRole('combobox', { name: 'To table' })).toHaveTextContent(
-      'Table 4 · Sala · 4 seats',
+    const tables = within(dialog).getByRole('radiogroup', { name: 'Free tables with enough seats' })
+    await expect(within(tables).getAllByRole('radio')).toHaveLength(4)
+    await expect(within(tables).getByRole('radio', { name: /^Table 4/ })).toBeChecked()
+    await expect(within(dialog).getByRole('list', { name: 'Changes' })).toHaveTextContent(
+      'Table 5 · Sala · 4 seatsAfter:Table 4 · Sala · 4 seats',
     )
+    await expect(within(dialog).getByRole('button', { name: 'Move' })).toBeVisible()
   },
 }
 
@@ -4025,8 +4153,122 @@ export const RestaurantMoveGuestsPhone: Story = {
   play: async () => {
     await settle()
     await expect(
-      within(document.body).getByRole('dialog', { name: 'Move guests from Table 5' }),
+      within(document.body).getByRole('dialog', { name: 'Move guests Table 5 · 3 guests' }),
     ).toBeVisible()
+  },
+}
+
+/**
+ * Table 8's reservation for six (P5.28 item 25, the owner's case): no free table seats six, so the
+ * dialog says so and offers to merge tables — never an empty list.
+ */
+export const RestaurantMoveNoTable: Story = {
+  name: 'Restaurant service, no table for the party',
+  render: () => <ExampleApp start={K_ROUTES.floorMoveNone} />,
+  play: async () => {
+    await settle()
+    const dialog = within(document.body).getByRole('dialog', {
+      name: 'Move guests Table 8 · Kovačević, 6 guests',
+    })
+    await expect(dialog).toHaveTextContent('No free table seats 6 guests')
+    await expect(
+      within(dialog).getByRole('button', { name: 'Merge tables in the floor plan' }),
+    ).toBeVisible()
+  },
+}
+
+export const RestaurantMoveNoTablePhone: Story = {
+  name: 'Restaurant service, no table for the party, phone',
+  render: () => <OnPhone start={K_ROUTES.floorMoveNone} />,
+  play: async () => {
+    await settle()
+    await expect(
+      within(document.body).getByRole('dialog', {
+        name: 'Move guests Table 8 · Kovačević, 6 guests',
+      }),
+    ).toBeVisible()
+  },
+}
+
+/** One area at a time (P5.28 item 26): the terrace alone, fitted to the width. */
+export const RestaurantTerrace: Story = {
+  name: 'Restaurant service, the terrace',
+  render: () => <ExampleApp start={K_ROUTES.floorTerrace} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(within(canvasElement).getByRole('radio', { name: 'Terasa' })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    )
+    await expect(canvasElement.querySelector('[data-floor-item="t1"]')).toBeNull()
+    await expect(floorItem(canvasElement, 't13')).toHaveTextContent('132 guests')
+    await expectNoPageScroll(canvasElement)
+  },
+}
+
+export const RestaurantTerracePhone: Story = {
+  name: 'Restaurant service, the terrace, phone',
+  render: () => <OnPhone start={K_ROUTES.floorTerrace} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(within(canvasElement).queryByRole('heading', { name: 'Sala' })).toBeNull()
+    await expect(within(canvasElement).getByRole('heading', { name: 'Terasa' })).toBeVisible()
+    await expectNoPageScroll(canvasElement)
+  },
+}
+
+/**
+ * Takeaway and delivery are the till's order channels beside dine-in, not areas of the plan
+ * (P5.28 item 26): two takeaway orders, the next step on each.
+ */
+export const RestaurantTakeaway: Story = {
+  name: 'Restaurant service, takeaway orders',
+  render: () => <ExampleApp start={K_ROUTES.floorTakeaway} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('tab', { name: 'Takeaway (2)' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    )
+    await expect(canvas.getByRole('heading', { name: /^T-041/ })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Handed over' })).toBeVisible()
+  },
+}
+
+export const RestaurantTakeawayPhone: Story = {
+  name: 'Restaurant service, takeaway orders, phone',
+  render: () => <OnPhone start={K_ROUTES.floorTakeaway} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(within(canvasElement).getByRole('heading', { name: /^T-042/ })).toBeVisible()
+    await expectNoPageScroll(canvasElement)
+  },
+}
+
+/** A takeaway order made ready, then handed over: it leaves the list. */
+export const RestaurantTakeawayInteraction: Story = {
+  name: 'Restaurant service, takeaway, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={K_ROUTES.floorTakeaway} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Mark as ready' }))
+    await waitFor(async () => {
+      await expect(canvas.getAllByRole('button', { name: 'Handed over' })).toHaveLength(2)
+    })
+    const handed = canvas.getAllByRole('button', { name: 'Handed over' })[0]
+    if (handed === undefined) throw new Error('no order to hand over')
+    await userEvent.click(handed)
+    await waitFor(async () => {
+      await expect(canvas.getByRole('tab', { name: 'Takeaway (1)' })).toBeVisible()
+    })
+    await userEvent.click(canvas.getByRole('tab', { name: 'Delivery (1)' }))
+    await userEvent.click(await canvas.findByRole('button', { name: 'Mark as ready' }))
+    await userEvent.click(await canvas.findByRole('button', { name: 'Out for delivery' }))
+    await expect(await canvas.findByRole('button', { name: 'Delivered' })).toBeVisible()
+    notice.dismiss()
   },
 }
 
@@ -4044,7 +4286,7 @@ export const RestaurantServiceInteraction: Story = {
     const body = within(document.body)
     await userEvent.click(floorItem(canvasElement, 't2'))
     await userEvent.click(canvas.getByRole('button', { name: 'Open table' }))
-    let dialog = await body.findByRole('dialog', { name: 'Open Table 2' })
+    let dialog = await body.findByRole('dialog', { name: 'Open table Table 2' })
     await userEvent.click(within(dialog).getByRole('button', { name: 'Open table' }))
     await waitFor(async () => {
       await expect(floorItem(canvasElement, 't2')).toHaveAccessibleName(
@@ -4058,17 +4300,93 @@ export const RestaurantServiceInteraction: Story = {
     await expect(floorItem(canvasElement, 't5')).toHaveFocus()
     // The closed dialog leaves the page hidden from assistive technology until it has gone.
     await userEvent.click(await canvas.findByRole('button', { name: 'Move to table…' }))
-    dialog = await body.findByRole('dialog', { name: 'Move guests from Table 5' })
-    await userEvent.click(within(dialog).getByRole('combobox', { name: 'To table' }))
-    await userEvent.click(await body.findByRole('option', { name: /^Table 10/ }))
-    // The select's list closes first; then the dialog is in use again.
-    await userEvent.click(await within(dialog).findByRole('button', { name: 'Move' }))
+    dialog = await body.findByRole('dialog', { name: 'Move guests Table 5 · 3 guests' })
+    await userEvent.click(within(dialog).getByRole('radio', { name: /^Table 10/ }))
+    await expect(within(dialog).getByRole('list', { name: 'Changes' })).toHaveTextContent(
+      'After:Table 10',
+    )
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Move' }))
     await waitFor(async () => {
       await expect(floorItem(canvasElement, 't5')).toHaveAccessibleName(/Needs cleaning/)
     })
     await expect(floorItem(canvasElement, 't10')).toHaveAccessibleName(
       /^Table 10, 3 guests · 19:20, Occupied/,
     )
+    notice.dismiss()
+  },
+}
+
+/**
+ * The owner's case end to end (P5.28 item 25): table 8's party of six has no free table; "Merge
+ * tables in the floor plan" opens it, tables 11 and 12 are merged and saved, and back on the floor
+ * the party moves to table 11 (eight seats) — the reservation's SMS left unchecked.
+ */
+export const RestaurantMergeAndMoveInteraction: Story = {
+  name: 'Restaurant service, merge and move a party, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={K_ROUTES.floorMoveNone} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const body = within(document.body)
+    let dialog = body.getByRole('dialog', { name: /^Move guests Table 8/ })
+    await userEvent.click(
+      within(dialog).getByRole('button', { name: 'Merge tables in the floor plan' }),
+    )
+    await userEvent.click(
+      await canvas.findByRole('button', { name: 'Merge Table 11 and Table 12' }),
+    )
+    await userEvent.click(canvas.getByRole('button', { name: 'Save floor plan' }))
+    await userEvent.click(canvas.getByRole('link', { name: 'Floor' }))
+    await userEvent.click(await canvas.findByRole('button', { name: /^Table 8,/ }))
+    await userEvent.click(canvas.getByRole('button', { name: 'Move to table…' }))
+    dialog = await body.findByRole('dialog', { name: /^Move guests Table 8/ })
+    await expect(within(dialog).getByRole('radio', { name: /^Table 11/ })).toBeChecked()
+    await expect(
+      within(dialog).getByRole('checkbox', { name: /Notify Kovačević/ }),
+    ).not.toBeChecked()
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Move' }))
+    await waitFor(async () => {
+      await expect(floorItem(canvasElement, 't11')).toHaveAccessibleName(
+        /^Table 11, 20:30 · 6 guests, Reserved, 8 seats, Terasa/,
+      )
+    })
+    await waitFor(async () => {
+      await expect(
+        body.getByText('Guests moved from Table 8 to Table 11. No message was sent.'),
+      ).toBeVisible()
+    })
+    notice.dismiss()
+  },
+}
+
+/**
+ * Every table action of the service (P5.28 item 25): a reservation seated, a table cleared, a
+ * table cleaned — each state on the plan at once.
+ */
+export const RestaurantTableActionsInteraction: Story = {
+  name: 'Restaurant service, seat, clear and clean, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={K_ROUTES.floor} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(floorItem(canvasElement, 't3'))
+    await userEvent.click(canvas.getByRole('button', { name: 'Seat guests' }))
+    await waitFor(async () => {
+      await expect(floorItem(canvasElement, 't3')).toHaveAccessibleName(/^Table 3, .*Occupied/)
+    })
+    await userEvent.click(floorItem(canvasElement, 't7'))
+    await userEvent.click(canvas.getByRole('button', { name: 'Clear table' }))
+    await waitFor(async () => {
+      await expect(floorItem(canvasElement, 't7')).toHaveAccessibleName(/^Table 7, Needs cleaning/)
+    })
+    await userEvent.click(floorItem(canvasElement, 't6'))
+    await userEvent.click(canvas.getByRole('button', { name: 'Mark as clean' }))
+    await waitFor(async () => {
+      await expect(floorItem(canvasElement, 't6')).toHaveAccessibleName(/^Table 6, Free/)
+    })
+    notice.dismiss()
   },
 }
 
@@ -4089,11 +4407,15 @@ export const RestaurantFloorPlanEdit: Story = {
   },
 }
 
+/** On a phone the plan is not edited (P5.28 item 27): a note, no palette, no Save. */
 export const RestaurantFloorPlanEditPhone: Story = {
   name: 'Restaurant floor plan, editing, phone',
   render: () => <OnPhone start={K_ROUTES.floorEdit} />,
   play: async ({ canvasElement }) => {
     await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('Edit the plan on a computer or tablet.')).toBeVisible()
+    await expect(canvas.queryByRole('button', { name: 'Save floor plan' })).toBeNull()
     await expectNoPageScroll(canvasElement)
   },
 }
@@ -4244,7 +4566,7 @@ export const GalaSeatChosen: Story = {
   play: async () => {
     await settle()
     await expect(
-      within(document.body).getByRole('dialog', { name: 'Table 4, seat 9' }),
+      within(document.body).getByRole('dialog', { name: 'Seat a guest Table 4, seat 9' }),
     ).toBeVisible()
   },
 }
@@ -4256,7 +4578,7 @@ export const GalaSeatChosenPhone: Story = {
   play: async () => {
     await settle()
     await expect(
-      within(document.body).getByRole('dialog', { name: 'Table 4, seat 9' }),
+      within(document.body).getByRole('dialog', { name: 'Seat a guest Table 4, seat 9' }),
     ).toBeVisible()
   },
 }
@@ -4270,7 +4592,7 @@ export const GalaSeatAt: Story = {
     await settle()
     const guest = GALA_GUESTS.find((each) => each.id === 'g113')
     await expect(
-      within(document.body).getByRole('dialog', { name: `Seat ${guest?.name ?? ''}` }),
+      within(document.body).getByRole('dialog', { name: `Choose a seat ${guest?.name ?? ''}` }),
     ).toBeVisible()
   },
 }
@@ -4299,7 +4621,11 @@ export const GalaTableGuestsPhone: Story = {
   render: () => <OnPhone start={K_ROUTES.seatingTable} />,
 }
 
-/** The keyboard's way: Enter on table 4's seat 9, then the first guest not seated: 113 of 140. */
+/**
+ * The keyboard's way: Enter on table 4's seat 9, then the first guest not seated: 113 of 140,
+ * "1 change not saved"; "Save seating…" asks with the change and the guest's e-mail as a choice
+ * (P5.28 item 9), and Save keeps it.
+ */
 export const GalaSeatingInteraction: Story = {
   name: 'Event seating, interaction',
   tags: ['interaction', '!dev'],
@@ -4307,15 +4633,77 @@ export const GalaSeatingInteraction: Story = {
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
+    const body = within(document.body)
     floorItem(canvasElement, 't4#9').focus()
     await userEvent.keyboard('{Enter}')
-    const dialog = await within(document.body).findByRole('dialog', { name: 'Table 4, seat 9' })
+    let dialog = await body.findByRole('dialog', { name: 'Seat a guest Table 4, seat 9' })
     const first = within(dialog).getAllByRole('button', { name: /Not seated/ })[0]
     if (first === undefined) throw new Error('no guest to seat')
     await userEvent.click(first)
     await waitFor(async () => {
       await expect(canvas.getByText('113 of 140 seated')).toBeVisible()
     })
+    await expect(canvas.getByText('1 change not saved')).toBeVisible()
+    await userEvent.click(canvas.getByRole('button', { name: 'Save seating…' }))
+    dialog = await body.findByRole('dialog', { name: /^Save seating Gala dinner/ })
+    await expect(within(dialog).getByRole('list', { name: 'Changes' })).toHaveTextContent(
+      'Table 4, seat 9',
+    )
+    await expect(within(dialog).getByRole('checkbox', { name: /^E-mail / })).not.toBeChecked()
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Save' }))
+    await waitFor(async () => {
+      await expect(body.getByText('Seating saved. No message was sent.')).toBeVisible()
+    })
+    await waitFor(async () => {
+      await expect(canvas.queryByText('1 change not saved')).toBeNull()
+    })
+    notice.dismiss()
+  },
+}
+
+/** Three seatings pending, "Save seating…" asked: every guest's seat old → new (P5.28 item 9). */
+export const GalaSeatingPending: Story = {
+  name: 'Event seating, saving the changes',
+  render: () => <ExampleApp start={K_ROUTES.seatingPending} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(
+      within(canvasElement).getByText('3 changes not saved', { exact: true }),
+    ).toBeInTheDocument()
+    const dialog = within(document.body).getByRole('dialog', { name: /^Save seating Gala dinner/ })
+    await expect(
+      within(within(dialog).getByRole('list', { name: 'Changes' })).getAllByRole('listitem'),
+    ).toHaveLength(3)
+    await expect(
+      within(dialog).getByRole('checkbox', { name: 'E-mail the 3 guests their new seats' }),
+    ).not.toBeChecked()
+  },
+}
+
+export const GalaSeatingPendingPhone: Story = {
+  name: 'Event seating, saving the changes, phone',
+  render: () => <OnPhone start={K_ROUTES.seatingPending} />,
+  play: async () => {
+    await settle()
+    await expect(
+      within(document.body).getByRole('dialog', { name: /^Save seating Gala dinner/ }),
+    ).toBeVisible()
+  },
+}
+
+/** Pending seatings discarded: the dialog cancelled, then "Discard changes" (P5.28 item 9). */
+export const GalaSeatingDiscardInteraction: Story = {
+  name: 'Event seating, discarding the changes, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={K_ROUTES.seatingPending} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const dialog = within(document.body).getByRole('dialog', { name: /^Save seating/ })
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }))
+    await userEvent.click(await canvas.findByRole('button', { name: 'Discard changes' }))
+    await expect(canvas.getByText('112 of 140 seated')).toBeVisible()
+    await expect(canvas.queryByText('3 changes not saved')).toBeNull()
   },
 }
 
@@ -4965,6 +5353,30 @@ export const WarehouseFloorPlanInteraction: Story = {
   },
 }
 
+/** The other bin actions (P5.28 item 25): a count started, a blocked bin unblocked. */
+export const WarehouseBinActionsInteraction: Story = {
+  name: 'Warehouse floor plan, count and unblock, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={N_ROUTES.warehouse} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const body = within(document.body)
+    await userEvent.click(placeOn(canvasElement, 'B-05-02'))
+    let drawer = within(await body.findByRole('dialog', { name: 'Bin B-05-02' }))
+    await userEvent.click(drawer.getByRole('button', { name: 'Count' }))
+    await waitFor(async () => {
+      await expect(placeOn(canvasElement, 'B-05-02')).toHaveAccessibleName(/^B-05-02, Count open/)
+    })
+    await userEvent.click(placeOn(canvasElement, 'A-04-01'))
+    drawer = within(await body.findByRole('dialog', { name: 'Bin A-04-01' }))
+    await userEvent.click(drawer.getByRole('button', { name: 'Unblock' }))
+    await waitFor(async () => {
+      await expect(placeOn(canvasElement, 'A-04-01')).toHaveAccessibleName(/^A-04-01, In stock/)
+    })
+    notice.dismiss()
+  },
+}
+
 /**
  * Interno odeljenje 3 over the building's drawing: rooms 1–6 and the anteroom rectangles, the
  * corridor with its lobby, room 7 round it and the isolation room as polygons; 17 beds free,
@@ -5036,7 +5448,9 @@ export const HospitalWardInteraction: Story = {
     const dialog = await body.findByRole('dialog', { name: 'Show patient’s name Bed 9' })
     await userEvent.click(within(dialog).getByRole('radio', { name: 'Shift handover' }))
     await userEvent.click(within(dialog).getByRole('button', { name: 'Show' }))
-    await expect(await body.findByText('Vesna Radović')).toBeVisible()
+    await waitFor(async () => {
+      await expect(body.getByText('Vesna Radović')).toBeVisible()
+    })
     await userEvent.click(
       within(await body.findByRole('dialog', { name: 'Bed 9' })).getByRole('button', {
         name: 'Discharge',
@@ -5047,6 +5461,138 @@ export const HospitalWardInteraction: Story = {
         'Bed 9, Needs cleaning, Room 5, Discharged today',
       )
     })
+  },
+}
+
+/**
+ * "Transfer…" on bed 9 (P5.28 item 18): the free beds by room, the bed old → new, the doctor's
+ * message checked and the porters' a choice; the patient's name stays masked.
+ */
+export const HospitalWardTransfer: Story = {
+  name: 'Hospital ward, transferring a patient',
+  render: () => <ExampleApp start={N_ROUTES.wardTransfer} />,
+  play: async () => {
+    const dialog = await within(document.body).findByRole('dialog', {
+      name: 'Transfer patient Bed 9 · Room 5',
+    })
+    await settle()
+    await expect(
+      within(dialog).getByRole('radiogroup', { name: 'Free beds in Room 1' }),
+    ).toBeVisible()
+    await expect(within(dialog).getByRole('radio', { name: /^Bed 2/ })).toBeChecked()
+    await expect(
+      within(dialog).getByRole('checkbox', { name: /^Notify dr Ivana Lukić in Liro/ }),
+    ).toBeChecked()
+    await expect(within(document.body).queryByText('Vesna Radović')).toBeNull()
+  },
+}
+
+export const HospitalWardTransferPhone: Story = {
+  name: 'Hospital ward, transferring a patient, phone',
+  render: () => <OnPhone start={N_ROUTES.wardTransfer} />,
+  play: async () => {
+    const dialog = await within(document.body).findByRole('dialog', {
+      name: 'Transfer patient Bed 9 · Room 5',
+    })
+    await settle()
+    await expect(dialog).toBeVisible()
+  },
+}
+
+/** "Admit patient…" on free bed 2 (P5.28 item 18): the patients waiting, by case number. */
+export const HospitalWardAdmit: Story = {
+  name: 'Hospital ward, admitting a patient',
+  render: () => <ExampleApp start={N_ROUTES.wardAdmit} />,
+  play: async () => {
+    const dialog = await within(document.body).findByRole('dialog', {
+      name: 'Admit patient Bed 2 · Room 1',
+    })
+    await settle()
+    await expect(within(dialog).getByRole('radio', { name: /^P-2026-1187/ })).toBeChecked()
+    await expect(within(dialog).getByRole('button', { name: 'Admit' })).toBeVisible()
+  },
+}
+
+export const HospitalWardAdmitPhone: Story = {
+  name: 'Hospital ward, admitting a patient, phone',
+  render: () => <OnPhone start={N_ROUTES.wardAdmit} />,
+  play: async () => {
+    const dialog = await within(document.body).findByRole('dialog', {
+      name: 'Admit patient Bed 2 · Room 1',
+    })
+    await settle()
+    await expect(dialog).toBeVisible()
+  },
+}
+
+/**
+ * Transfer from bed 9 to bed 15 in room 7, the doctor told: bed 9 needs cleaning, bed 15 is
+ * occupied; then free bed 2 admits the next patient waiting.
+ */
+export const HospitalWardTransferInteraction: Story = {
+  name: 'Hospital ward, transfer and admit, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={N_ROUTES.ward} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const body = within(document.body)
+    await userEvent.click(placeOn(canvasElement, 'b9'))
+    let drawer = within(await body.findByRole('dialog', { name: 'Bed 9' }))
+    await userEvent.click(drawer.getByRole('button', { name: 'Transfer…' }))
+    const dialog = await body.findByRole('dialog', { name: 'Transfer patient Bed 9 · Room 5' })
+    await userEvent.click(within(dialog).getByRole('radio', { name: /^Bed 15/ }))
+    await expect(within(dialog).getByRole('list', { name: 'Changes' })).toHaveTextContent(
+      'After:Bed 15 · Room 7',
+    )
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Transfer' }))
+    await waitFor(async () => {
+      await expect(
+        body.getByText('Patient moved from Bed 9 to Bed 15. Sent to dr Ivana Lukić.'),
+      ).toBeVisible()
+    })
+    await waitFor(async () => {
+      await expect(placeOn(canvasElement, 'b9')).toHaveAccessibleName(
+        'Bed 9, Needs cleaning, Room 5, Patient moved to Bed 15',
+      )
+    })
+    await expect(placeOn(canvasElement, 'b15')).toHaveAccessibleName('Bed 15, Occupied, Room 7')
+    await userEvent.click(placeOn(canvasElement, 'b2'))
+    drawer = within(await body.findByRole('dialog', { name: 'Bed 2' }))
+    await userEvent.click(drawer.getByRole('button', { name: 'Admit patient…' }))
+    const admit = await body.findByRole('dialog', { name: 'Admit patient Bed 2 · Room 1' })
+    await userEvent.click(within(admit).getByRole('button', { name: 'Admit' }))
+    await waitFor(async () => {
+      await expect(body.getByText('P-2026-1187 admitted to Bed 2.')).toBeVisible()
+    })
+    notice.dismiss()
+  },
+}
+
+/** The other bed actions (P5.28 item 25): a bed cleaned, a blocked bed unblocked. */
+export const HospitalWardBedActionsInteraction: Story = {
+  name: 'Hospital ward, clean and unblock, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={N_ROUTES.ward} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const body = within(document.body)
+    await userEvent.click(placeOn(canvasElement, 'b5'))
+    let drawer = within(await body.findByRole('dialog', { name: 'Bed 5' }))
+    await userEvent.click(drawer.getByRole('button', { name: 'Mark clean' }))
+    await waitFor(async () => {
+      await expect(placeOn(canvasElement, 'b5')).toHaveAccessibleName(/^Bed 5, Free/)
+    })
+    await userEvent.keyboard('{Escape}')
+    await waitFor(async () => {
+      await expect(body.queryByRole('dialog')).toBeNull()
+    })
+    await userEvent.click(placeOn(canvasElement, 'b8'))
+    drawer = within(await body.findByRole('dialog', { name: 'Bed 8' }))
+    await userEvent.click(drawer.getByRole('button', { name: 'Unblock' }))
+    await waitFor(async () => {
+      await expect(placeOn(canvasElement, 'b8')).toHaveAccessibleName(/^Bed 8, Free/)
+    })
+    notice.dismiss()
   },
 }
 

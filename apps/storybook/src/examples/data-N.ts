@@ -32,6 +32,10 @@ export const N_ROUTES = {
   ward: '/ward/interno-3',
   /** Bed 9 in its drawer: the patient's name masked. */
   wardBed: '/ward/interno-3?bed=b9',
+  /** Bed 9: "Transfer patient" with the free beds by room (P5.28 item 18). */
+  wardTransfer: '/ward/interno-3?bed=b9&transfer',
+  /** Free bed 2: "Admit patient" with the patients waiting (P5.28 item 18). */
+  wardAdmit: '/ward/interno-3?bed=b2&admit',
   /** The office's desks today. */
   office: '/office/desks',
   /** Desk 7, free today, chosen. */
@@ -316,7 +320,10 @@ export function binItems(bins: readonly Bin[]): FloorItem[] {
   }))
 }
 
-/** Each rack's sign at its start ("A2"), and the dock doors in the outer wall: drawn, not chosen. */
+/**
+ * Each rack's sign at its start ("A2"): drawn, not chosen. No dock doors (P5.28 item 23: no
+ * walls, doors or windows): Receiving and Dispatch are the areas along the docks.
+ */
 export const WAREHOUSE_FIXTURES: FloorItem[] = [
   ...RACKS.map((rack): FloorItem => {
     const [aisle = '', number = ''] = rack.code.split('-')
@@ -332,10 +339,6 @@ export const WAREHOUSE_FIXTURES: FloorItem[] = [
       height: 60,
     }
   }),
-  { id: 'dock-1', kind: 'door', label: 'Dock 1', x: 120, y: 1376, width: 200, height: 24 },
-  { id: 'dock-2', kind: 'door', label: 'Dock 2', x: 440, y: 1376, width: 200, height: 24 },
-  { id: 'dock-3', kind: 'door', label: 'Dock 3', x: 980, y: 1376, width: 200, height: 24 },
-  { id: 'dock-4', kind: 'door', label: 'Dock 4', x: 1400, y: 1376, width: 200, height: 24 },
 ]
 
 // ── The hospital ward ─────────────────────────────────────────────────────────────────────────
@@ -558,6 +561,35 @@ export function bedItems(beds: readonly Bed[]): FloorItem[] {
     ...(bed.note === undefined ? {} : { note: bed.note }),
   }))
 }
+
+/**
+ * The patients waiting for a bed on the ward (the admissions office's list): by case number, where
+ * they come from and their doctor; the name is health data, written in the bed once admitted.
+ */
+export interface Admission {
+  id: string
+  number: string
+  from: string
+  since: string
+  patient: Patient
+}
+
+export const ADMISSIONS: readonly Admission[] = [
+  {
+    id: 'p1187',
+    number: 'P-2026-1187',
+    from: 'Emergency',
+    since: '09:40',
+    patient: patient('Milena Babić', '2026-10-06', 'dr Petar Ristić'),
+  },
+  {
+    id: 'p1192',
+    number: 'P-2026-1192',
+    from: 'Cardiology outpatients',
+    since: '11:15',
+    patient: patient('Đorđe Lazić', '2026-10-06', 'dr Ivana Lukić'),
+  },
+]
 
 /** The reasons a nurse may give to see a patient's name (the hospital's list). */
 export const NAME_REASONS = [

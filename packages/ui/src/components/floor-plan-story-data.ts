@@ -98,52 +98,44 @@ function rect(
   }
 }
 
+/**
+ * A party at a table, as the application words it: the list's `detail` ("2 guests · since
+ * 18:40") and the plan's short second line ("2 guests"; P5.28 item 24: the time is not on the plan).
+ */
+function party(guests: number, time: string, reserved = false): Partial<FloorItem> {
+  const count = guests === 1 ? '1 guest' : `${String(guests)} guests`
+  return {
+    detail: reserved ? `${count} · at ${time}` : `${count} · since ${time}`,
+    planDetail: count,
+  }
+}
+
+/** No walls, doors or windows (P5.28 item 23): the areas, the tables and the bar. */
 export const RESTAURANT_ITEMS: FloorItem[] = [
-  // The building.
-  {
-    id: 'wall-top',
-    kind: 'window',
-    label: 'Windows to the quay',
-    x: 40,
-    y: 0,
-    width: 700,
-    height: 14,
-  },
-  { id: 'wall-mid', kind: 'wall', label: 'Wall', x: 780, y: 0, width: 20, height: 620 },
-  { id: 'door-main', kind: 'door', label: 'Entrance', x: 560, y: 776, width: 120, height: 24 },
-  {
-    id: 'door-terrace',
-    kind: 'door',
-    label: 'Door to the terrace',
-    x: 780,
-    y: 640,
-    width: 20,
-    height: 100,
-  },
   // The hall.
   round('t1', 60, 80, 'hall', 2, 'free'),
-  round('t2', 220, 80, 'hall', 2, 'occupied', { detail: '2 · 18:40' }),
+  round('t2', 220, 80, 'hall', 2, 'occupied', party(2, '18:40')),
   rect('t3', 380, 80, 160, 90, 'hall', 4, 'reserved', {
-    detail: '19:30 · 4',
+    ...party(4, '19:30', true),
     note: 'Window seat asked for',
   }),
   rect('t4', 580, 80, 160, 90, 'hall', 4, 'free'),
-  round('t5', 60, 300, 'hall', 4, 'occupied', { detail: '4 · 19:05' }),
+  round('t5', 60, 300, 'hall', 4, 'occupied', party(4, '19:05')),
   round('t6', 240, 300, 'hall', 4, 'cleaning'),
-  rect('t7', 400, 300, 160, 100, 'hall', 6, 'reserved', { detail: '20:00 · 6' }),
+  rect('t7', 400, 300, 160, 100, 'hall', 6, 'reserved', party(6, '20:00', true)),
   rect('t8', 600, 300, 140, 100, 'hall', 6, 'blocked', {
     note: 'Broken leg, waiting for the carpenter',
   }),
   rect('t9', 60, 520, 340, 110, 'hall', 10, 'reserved', {
-    detail: '20:30 · 10',
+    ...party(10, '20:30', true),
     note: 'Birthday, cake at 22:00',
   }),
   round('t10', 480, 540, 'hall', 4, 'free'),
   // The terrace.
-  round('t11', 840, 60, 'terrace', 2, 'occupied', { detail: '2 · 18:55' }),
+  round('t11', 840, 60, 'terrace', 2, 'occupied', party(2, '18:55')),
   round('t12', 1020, 60, 'terrace', 2, 'free'),
   round('t13', 840, 220, 'terrace', 4, 'free'),
-  round('t14', 1020, 220, 'terrace', 4, 'reserved', { detail: '19:45 · 3' }),
+  round('t14', 1020, 220, 'terrace', 4, 'reserved', party(3, '19:45', true)),
   rect('t15', 840, 380, 280, 90, 'terrace', 6, 'free'),
   // The bar.
   {
@@ -157,7 +149,19 @@ export const RESTAURANT_ITEMS: FloorItem[] = [
     capacity: 6,
     areaId: 'bar',
     stateId: 'occupied',
-    detail: '4 of 6',
+    detail: '4 guests',
+    planDetail: '4 of 6',
+  },
+  // The piano: furniture people choose around (a fixture: drawn, chosen only in edit mode).
+  {
+    id: 'piano',
+    kind: 'stage',
+    label: 'Piano',
+    x: 600,
+    y: 680,
+    width: 140,
+    height: 80,
+    areaId: 'hall',
   },
   round('t16', 860, 580, 'bar', 2, 'free'),
   round('t17', 1060, 580, 'bar', 2, 'cleaning'),
@@ -185,7 +189,14 @@ export const RESTAURANT_PALETTE: FloorPaletteEntry[] = [
     capacity: 4,
     icon: Square,
   },
-  { id: 'wall', kind: 'wall', label: 'Wall', width: 200, height: 20, icon: Wrench },
+  {
+    id: 'counter',
+    kind: 'counter',
+    label: 'Service counter',
+    width: 200,
+    height: 50,
+    icon: Wrench,
+  },
 ]
 
 /** Table 10 pushed onto table 7 while the plan is edited: the application's warning. */
@@ -211,7 +222,6 @@ export const HOTEL_SIZE = { width: 1000, height: 460 }
 
 /** Floor 2: rooms 201–210 on both sides of the corridor. */
 export const HOTEL_ITEMS: FloorItem[] = [
-  { id: 'corridor', kind: 'stage', label: 'Corridor', x: 0, y: 210, width: 1000, height: 80 },
   { id: 'lift', kind: 'counter', label: 'Lift', x: 900, y: 40, width: 100, height: 160 },
   ...[201, 202, 203, 204, 205].map((number, index) => ({
     id: `r${String(number)}`,
@@ -244,6 +254,7 @@ export const HOTEL_ITEMS: FloorItem[] = [
 
 export const HOTEL_AREAS: FloorArea[] = [
   { id: 'floor-2', label: 'Floor 2', x: 0, y: 0, width: 1000, height: 460 },
+  { id: 'corridor', label: 'Corridor', x: 0, y: 210, width: 1000, height: 80 },
 ]
 
 // ── The wedding of Ana and Marko: seating ────────────────────────────────────────────────────
@@ -289,7 +300,6 @@ export const WEDDING_TABLES: SeatingTable[] = [
 
 export const WEDDING_FIXTURES: FloorItem[] = [
   { id: 'dance', kind: 'stage', label: 'Dance floor', x: 360, y: 380, width: 280, height: 60 },
-  { id: 'entrance', kind: 'door', label: 'Entrance', x: 440, y: 676, width: 120, height: 24 },
 ]
 
 const FIRST = [
@@ -380,3 +390,31 @@ export const WEDDING_CONFLICTS: SeatingConflict[] = [
     tableId: 'w8',
   },
 ]
+
+// ── Many areas (P5.28 item 26): a garden restaurant on two floors ───────────────────────────
+
+/** Seven areas: the switcher is a select (more than four). */
+const MANY: { id: string; label: string; x: number; y: number; width: number; height: number }[] = [
+  { id: 'hall', label: 'Hall', x: 0, y: 0, width: 600, height: 400 },
+  { id: 'terrace', label: 'Terrace', x: 600, y: 0, width: 400, height: 400 },
+  { id: 'garden', label: 'Garden', x: 1000, y: 0, width: 600, height: 400 },
+  { id: 'downstairs', label: 'Downstairs', x: 0, y: 400, width: 500, height: 400 },
+  { id: 'wine', label: 'Wine cellar', x: 500, y: 400, width: 300, height: 400 },
+  { id: 'floor-2', label: 'Floor 2', x: 800, y: 400, width: 500, height: 400 },
+  { id: 'winter', label: 'Winter garden', x: 1300, y: 400, width: 300, height: 400 },
+]
+
+export const MANY_AREAS: FloorArea[] = MANY
+
+export const MANY_AREAS_SIZE = { width: 1600, height: 800 }
+
+/** Two or three tables in every area, each table's state in turn. */
+export const MANY_AREAS_ITEMS: FloorItem[] = MANY.flatMap((area, index) =>
+  [0, 1, 2].slice(0, area.width >= 500 ? 3 : 2).map((column) => {
+    const id = `t${String(index * 3 + column + 1)}`
+    const state = ['free', 'occupied', 'reserved'][(index + column) % 3] ?? 'free'
+    const guests =
+      state === 'occupied' ? party(3, '19:20') : state === 'reserved' ? party(4, '20:00', true) : {}
+    return round(id, area.x + 40 + column * 150, area.y + 140, area.id, 4, state, guests)
+  }),
+)

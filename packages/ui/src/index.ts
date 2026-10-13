@@ -1247,3 +1247,17 @@ export type {
 } from './components/sale-logic'
 export type { CartLineState } from './components/cart-panel'
 export type { ReceiptRecap, ReceiptRecapColumn } from './components/receipt-preview'
+
+// ── P5.28 floor ──
+export {
+  AREA_SEGMENTS_UP_TO,
+  areaSwitchKind,
+  inArea,
+  labelFit,
+  labelRoom,
+  planFrame,
+  switchableAreas,
+} from './components/floor-plan-logic'
+export type { LabelFit, LabelSize } from './components/floor-plan-logic'
+export { seatingChanges } from './components/seating-logic'
+export type { SeatingChange } from './components/seating-logic'

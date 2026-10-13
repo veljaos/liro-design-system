@@ -6,6 +6,7 @@ import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { settle } from '../primitives/story-helpers'
 import { Button } from './button'
+import { CandidateList } from './candidate-list'
 import {
   ChangeConfirmDialog,
   type ChangeConfirmAnswer,
@@ -294,5 +295,65 @@ export const Confirm: Story = {
         '{"notify":["doctor"]}',
       )
     })
+  },
+}
+
+// P5.28 floor: the choice that makes the change, in the same dialog.
+const FREE_TABLES = [
+  { id: 't10', title: 'Table 10', label: 'Table 10, Hall, 6 seats', subtitle: 'Hall · 6 seats' },
+  {
+    id: 't15',
+    title: 'Table 15',
+    label: 'Table 15, Terrace, 6 seats',
+    subtitle: 'Terrace · 6 seats',
+  },
+]
+
+/** The application around the dialog: the free tables as a choice; the change follows it. */
+function MoveGuests() {
+  const [to, setTo] = useState('t10')
+  const chosen = FREE_TABLES.find((table) => table.id === to)
+  return (
+    <ExampleProvider>
+      <ChangeConfirmDialog
+        defaultOpen
+        title="Move guests"
+        subject="Table 8 · Kovačević, 6 guests"
+        changes={[{ label: 'Table', from: 'Table 8 · Hall', to: `${chosen?.title ?? ''} · Hall` }]}
+        notify={[{ id: 'guest', label: 'Notify Kovačević by SMS' }]}
+        onConfirm={() => undefined}
+      >
+        <CandidateList
+          label="Free tables with enough seats"
+          candidates={FREE_TABLES}
+          selected={[to]}
+          multiple={false}
+          onSelectedChange={(ids) => {
+            setTo(ids[0] ?? to)
+          }}
+        />
+      </ChangeConfirmDialog>
+    </ExampleProvider>
+  )
+}
+
+/**
+ * `children`: the application's own choice above the change (P5.28, the restaurant's free
+ * tables), so the move is chosen and confirmed in one dialog.
+ */
+export const WithChoice: Story = {
+  name: 'With a choice',
+  render: () => <MoveGuests />,
+  play: async () => {
+    await settle()
+    const dialog = within(document.body).getByRole('dialog', {
+      name: 'Move guests Table 8 · Kovačević, 6 guests',
+    })
+    await expect(
+      within(dialog).getByRole('radiogroup', { name: 'Free tables with enough seats' }),
+    ).toBeVisible()
+    await expect(within(dialog).getByRole('list', { name: 'Changes' })).toHaveTextContent(
+      'Table 10',
+    )
   },
 }
