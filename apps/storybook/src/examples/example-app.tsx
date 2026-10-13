@@ -1,6 +1,7 @@
 import { useCallback, useState, type ReactNode } from 'react'
 import { ExampleProvider, PhoneFrame } from '../../../../packages/ui/src/components/story-frames'
 import './dataset-checks'
+import { ExampleStateProvider } from './example-state'
 import { FEATURED, INVOICES } from './examples-story-data'
 import {
   Navigate,
@@ -108,8 +109,11 @@ export function ExampleApp({ start, phone = false }: { start: string; phone?: bo
     <Navigate.Provider value={navigate}>
       <Notifications.Provider value={{ items, setRead }}>
         <ExampleProvider linkComponent={RouterLink}>
-          {/* A new screen starts with fresh state, as a page of the application does. */}
-          <Screen key={path} path={path} phone={phone} />
+          {/* What must outlive a screen (an open tab, the till's journal) is kept above it. */}
+          <ExampleStateProvider>
+            {/* A new screen starts with fresh state, as a page of the application does. */}
+            <Screen key={path} path={path} phone={phone} />
+          </ExampleStateProvider>
         </ExampleProvider>
       </Notifications.Provider>
     </Navigate.Provider>

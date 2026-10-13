@@ -1,10 +1,9 @@
-import { ArrowLeft, ArrowRightLeft, Merge, Save, Sparkles, UsersRound } from 'lucide-react'
+import { ArrowRightLeft, Merge, ReceiptText, Save, Sparkles, UsersRound } from 'lucide-react'
 import { useContext, useState, type ReactNode } from 'react'
 import {
   Alert,
   BrandLockup,
   Button,
-  CartPanel,
   Dialog,
   EmptyState,
   FloorPlan,
@@ -13,8 +12,6 @@ import {
   notice,
   overlappingItems,
   PageHeader,
-  PosShell,
-  ProductGrid,
   QuantityStepper,
   SeatingChart,
   SectionCard,
@@ -43,14 +40,9 @@ import {
   BISTRO_TABLES,
   bistroItems,
   CAFE,
-  CAFE_CATEGORIES,
-  CAFE_PRODUCTS,
   CAFE_SIZE,
   CAFE_STATES,
   CAFE_TABLES,
-  cafeCartLines,
-  cafeCartTotals,
-  computeOrder,
   GALA,
   GALA_CONFLICTS,
   GALA_FIXTURES,
@@ -64,9 +56,21 @@ import {
   moveTargets,
   type BistroTable,
   type CafeTable,
-  type OrderLine,
 } from './data-K'
-import { decimal } from '../../../../packages/ui/src/components/amounts-story-data'
+import { BISTRO_VENUE, CAFE_VENUE, tabTotal, type Tab } from './data-K-tabs'
+import { TabTill, useTabs, type TabStart } from './screens-K-tabs'
+
+/** The states of a tab pictured on table 3 (P5.28 item 22). */
+const TAB_STARTS: readonly TabStart[] = [
+  'new',
+  'edit',
+  'discount',
+  'split',
+  'pay-part',
+  'move',
+  'bill',
+  'closed',
+]
 
 /*
  * Group K's example screens (P5.25): floor plans and seating, each played by the application
@@ -145,6 +149,8 @@ function TablePanel({
   onSeat,
   onClear,
   onClean,
+  onTab,
+  tabText,
 }: {
   table: BistroTable | undefined
   onOpen: () => void
@@ -152,6 +158,10 @@ function TablePanel({
   onSeat: () => void
   onClear: () => void
   onClean: () => void
+  /** Opens the table's tab on the till (P5.28 item 22). */
+  onTab: () => void
+  /** What the tab still has to pay, written; null without a tab. */
+  tabText: string | null
 }) {
   const { format } = useLiro()
   const number = (value: string) => format.number(value)
@@ -188,6 +198,7 @@ function TablePanel({
             ? []
             : [{ label: 'Note', value: party.note, fullWidth: true }]),
         ]),
+    ...(tabText === null ? [] : [{ label: 'Tab', value: tabText, numeric: true }]),
   ]
   const actions =
     table.state === 'free' ? (
@@ -201,6 +212,7 @@ function TablePanel({
     ) : table.state === 'occupied' ? (
       <>
         <Button family="neutral" icon={Sparkles} label="Clear table" onClick={onClear} />
+        <Button family="neutral" icon={ReceiptText} label="Tab" onClick={onTab} />
         <Button
           family="primary"
           emphasis="primary"
@@ -260,6 +272,7 @@ export function Service({
   dialog?: 'open' | 'move'
 }) {
   const { format } = useLiro()
+  const navigate = useContext(Navigate)
   const number = (value: string) => format.number(value)
   const [tables, setTables] = useState<readonly BistroTable[]>(BISTRO_TABLES)
   const [chosen, setChosen] = useState<string | undefined>(tableId)
@@ -280,6 +293,9 @@ export function Service({
     )
   }
   const items = bistroItems(tables, number)
+  const tabs = useTabs(BISTRO_VENUE)
+  const tab = chosen === undefined ? undefined : tabs[chosen]
+  const tabRest = tabTotal(BISTRO_VENUE, tab)
   const plan = (
     <FloorPlan
       label={`${BISTRO.name}, evening service`}
@@ -327,6 +343,10 @@ export function Service({
         update(table.id, { state: 'free' })
         notice.success(`${tableName(table)} is free.`)
       }}
+      onTab={() => {
+        if (table !== undefined) navigate(BISTRO_VENUE.tableRoute(table.id))
+      }}
+      tabText={tabRest === null ? null : format.money(tabRest, BISTRO_VENUE.currency)}
     />
   )
   const size = partySize === null ? null : Number.parseInt(partySize, 10)
@@ -587,13 +607,30 @@ function terraceTableRoute(id: string): string {
   return `/cafe/kod-mike/terrace/${id}`
 }
 
-/** The terrace as the plan draws it: each open table with since when and its total. */
-function terraceItems(tables: readonly CafeTable[], money: (value: string) => string): FloorItem[] {
+/**
+ * The terrace as the plan draws it: each open table with since when and what its tab still has to
+ * pay (P5.28 item 22: the tabs the application keeps, `useTabs`).
+ */
+function terraceItems(
+  tables: readonly CafeTable[],
+  tabs: Readonly<Record<string, Tab>>,
+  money: (value: string) => string,
+): FloorItem[] {
   return [
     { id: 'railing', kind: 'wall', label: 'Railing', x: 0, y: 500, width: 800, height: 20 },
     { id: 'door', kind: 'door', label: 'Door to the bar', x: 340, y: 0, width: 120, height: 20 },
     ...tables.map((table) => {
-      const total = computeOrder(table.order).total
+      const tab = tabs[table.id]
+      const total = tabTotal(CAFE_VENUE, tab)
+      const since = tab?.openedAt
+      const state =
+        tab === undefined
+          ? table.state === 'open'
+            ? 'free'
+            : table.state
+          : table.state === 'bill'
+            ? 'bill'
+            : 'open'
       return {
         id: table.id,
         kind: 'table' as const,
@@ -605,10 +642,8 @@ function terraceItems(tables: readonly CafeTable[], money: (value: string) => st
         width: 140,
         height: 140,
         capacity: 4,
-        stateId: table.state,
-        ...(table.since === undefined
-          ? {}
-          : { detail: `${table.since} · ${money(decimal(total))}` }),
+        stateId: state,
+        ...(since === undefined || total === null ? {} : { detail: `${since} · ${money(total)}` }),
         ...(table.note === undefined ? {} : { note: table.note }),
       }
     }),
@@ -619,6 +654,7 @@ function terraceItems(tables: readonly CafeTable[], money: (value: string) => st
 export function Terrace({ phone }: { phone: boolean }) {
   const { format } = useLiro()
   const navigate = useContext(Navigate)
+  const tabs = useTabs(CAFE_VENUE)
   return (
     <Touch>
       <div className="box-border flex min-h-full flex-col bg-surface-page">
@@ -632,7 +668,7 @@ export function Terrace({ phone }: { phone: boolean }) {
         <div className="p-4 sm:p-6">
           <FloorPlan
             label={`${CAFE.name}, terrace`}
-            items={terraceItems(CAFE_TABLES, (value) => format.money(value, CAFE.currency))}
+            items={terraceItems(CAFE_TABLES, tabs, (value) => format.money(value, CAFE.currency))}
             width={CAFE_SIZE.width}
             height={CAFE_SIZE.height}
             states={CAFE_STATES}
@@ -655,90 +691,23 @@ export function Terrace({ phone }: { phone: boolean }) {
   )
 }
 
-/** A terrace table's order on the till: add products, then the bill. */
-export function CafeTill({ phone, tableId }: { phone: boolean; tableId: string }) {
-  const { format } = useLiro()
-  const navigate = useContext(Navigate)
-  const table = CAFE_TABLES.find((each) => each.id === tableId)
-  const [order, setOrder] = useState<readonly OrderLine[]>(table?.order ?? [])
-  if (table === undefined) return null
-  const name = `Table ${String(table.number)}`
-  const computed = computeOrder(order)
-  const total = order.length === 0 ? null : decimal(computed.total)
-  const add = (id: string) => {
-    setOrder((current) =>
-      current.some((line) => line.productId === id)
-        ? current.map((line) =>
-            line.productId === id ? { ...line, quantity: line.quantity + 1 } : line,
-          )
-        : [...current, { productId: id, quantity: 1 }],
-    )
-  }
+/** A terrace table's open tab on the till (P5.28 item 22: screens-K-tabs.tsx). */
+export function CafeTill({
+  phone,
+  tableId,
+  start,
+}: {
+  phone: boolean
+  tableId: string
+  start?: TabStart
+}) {
   return (
-    <Touch>
-      <div className={phone ? 'h-full' : 'h-dvh'}>
-        <PosShell
-          layout={phone ? 'phone' : 'tablet'}
-          brand={<BrandLockup brandName="Kod Mike" productName="Kasa" compact={phone} />}
-          register={CAFE.register}
-          cashier={CAFE.waiter}
-          actions={
-            <Button
-              family="neutral"
-              icon={ArrowLeft}
-              label="Terrace"
-              onClick={() => {
-                navigate(K_ROUTES.terrace)
-              }}
-            />
-          }
-          products={
-            <ProductGrid
-              products={CAFE_PRODUCTS}
-              categories={CAFE_CATEGORIES}
-              currency={CAFE.currency}
-              onSelect={add}
-            />
-          }
-          cart={
-            <CartPanel
-              className="flex-1"
-              title={name}
-              lines={cafeCartLines(order)}
-              currency={CAFE.currency}
-              total={total}
-              totals={order.length === 0 ? [] : cafeCartTotals(order)}
-              onQuantityChange={(id, quantity) => {
-                if (quantity === null || !/^\d+$/.test(quantity)) return
-                const count = Number.parseInt(quantity, 10)
-                setOrder((current) =>
-                  count === 0
-                    ? current.filter((line) => line.productId !== id)
-                    : current.map((line) =>
-                        line.productId === id ? { ...line, quantity: count } : line,
-                      ),
-                )
-              }}
-              onRemove={(id) => {
-                setOrder((current) => current.filter((line) => line.productId !== id))
-              }}
-              {...(total === null
-                ? {}
-                : { chargeLabel: `Bill ${format.money(total, CAFE.currency)}` })}
-              onCharge={() => {
-                if (total === null) return
-                notice.success(
-                  `${name}: the bill for ${format.money(total, CAFE.currency)} is printing.`,
-                )
-              }}
-              emptyTitle={`${name} has no order yet`}
-              emptyDescription="Add products from the menu."
-            />
-          }
-        />
-        <Toaster layout={phone ? 'phone' : 'desktop'} />
-      </div>
-    </Touch>
+    <TabTill
+      phone={phone}
+      venue={CAFE_VENUE}
+      tableId={tableId}
+      {...(start === undefined ? {} : { start })}
+    />
   )
 }
 
@@ -849,6 +818,21 @@ export const GROUP_K_ROUTES: ExampleRoute[] = [
     path: terraceTableRoute(table.id),
     render: (phone: boolean) => <CafeTill phone={phone} tableId={table.id} />,
   })),
+  // P5.28 item 22: table 3's tab in each state; Bistro Dunav's tabs.
+  ...TAB_STARTS.map((start) => ({
+    path: `${terraceTableRoute('t3')}?${start}`,
+    render: (phone: boolean) => <CafeTill phone={phone} tableId="t3" start={start} />,
+  })),
+  ...BISTRO_VENUE.tables.map((table) => ({
+    path: BISTRO_VENUE.tableRoute(table.id),
+    render: (phone: boolean) => <TabTill phone={phone} venue={BISTRO_VENUE} tableId={table.id} />,
+  })),
+  {
+    path: `${BISTRO_VENUE.tableRoute('t7')}?paid-share`,
+    render: (phone: boolean) => (
+      <TabTill phone={phone} venue={BISTRO_VENUE} tableId="t7" start="paid-share" />
+    ),
+  },
   { path: K_ROUTES.seating, render: (phone) => <GalaSeating phone={phone} /> },
   { path: K_ROUTES.seatingSeat, render: (phone) => <GalaSeating phone={phone} seat="t4-9" /> },
   {

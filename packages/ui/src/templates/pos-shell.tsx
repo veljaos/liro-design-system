@@ -1,4 +1,4 @@
-import { CloudUpload, LayoutGrid } from 'lucide-react'
+import { CloudAlert, CloudUpload, LayoutGrid } from 'lucide-react'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Sheet, SheetContent, SheetTrigger } from '../primitives/sheet'
 import { ButtonPrimitive } from '../primitives/button'
@@ -30,6 +30,9 @@ import { usePhone } from '../components/use-phone'
  * - **Scanner:** with `onScan`, a burst of keys anywhere on the screen (not in a field, which has
  *   its own ScanField) is read as a scan (`scanKey`) and reported; the Enter that ends it never
  *   presses the focused button.
+ * - P5.28 (item 21): `banners` under the strip for a mode that must stay in view (training: a
+ *   persistent warning Banner, the application's words); the queue's state (`queueState`:
+ *   'sending', or 'failed' — a danger "Not sent" badge) and `queueAction` (open the journal).
  */
 
 export interface PosShellProps {
@@ -47,6 +50,15 @@ export interface PosShellProps {
   queuedText?: string
   /** An action at the end of the offline strip ("Try now"), from the application. */
   offlineAction?: ReactNode
+  /**
+   * The queue's state while online: 'sending' (default, a neutral badge) or 'failed' (a danger
+   * "Not sent" badge: the processor refused or did not answer; the application says why).
+   */
+  queueState?: 'sending' | 'failed'
+  /** An action after the queue's words ("Show receipts"), from the application. */
+  queueAction?: ReactNode
+  /** Banners under the strip that stay in view (a training mode), from the application. */
+  banners?: ReactNode
   /** Buttons at the end of the strip (lock the register, the menu), from the application. */
   actions?: ReactNode
   /** The product area: a ProductGrid, a search, a ScanField. */
@@ -155,13 +167,23 @@ export function PosShell(props: PosShellProps) {
         {fact(messages['pos.cashier'], props.cashier)}
         {!offline && queueText !== null && (
           <div className="flex min-w-0 flex-wrap items-center gap-2" data-slot="pos-queue">
-            <StatusBadge
-              tone="neutral"
-              withBorder
-              icon={CloudUpload}
-              label={messages['connection.sending']}
-            />
+            {props.queueState === 'failed' ? (
+              <StatusBadge
+                tone="danger"
+                withBorder
+                icon={CloudAlert}
+                label={messages['pos.queueFailed']}
+              />
+            ) : (
+              <StatusBadge
+                tone="neutral"
+                withBorder
+                icon={CloudUpload}
+                label={messages['connection.sending']}
+              />
+            )}
             <span className={cn('text-sm text-secondary', TEXT_DIRECTION)}>{queueText}</span>
+            {props.queueAction}
           </div>
         )}
         {props.actions !== undefined && (
@@ -174,6 +196,14 @@ export function PosShell(props: PosShellProps) {
         {...(queueText === null ? {} : { waiting: queueText })}
         {...(props.offlineAction === undefined ? {} : { action: props.offlineAction })}
       />
+      {props.banners !== undefined && (
+        <div
+          data-slot="pos-banners"
+          className="flex shrink-0 flex-col gap-2 bg-surface-page px-4 pt-2 ps-[max(16px,env(safe-area-inset-left))] pe-[max(16px,env(safe-area-inset-right))]"
+        >
+          {props.banners}
+        </div>
+      )}
       {phone ? (
         <div className="flex min-h-0 flex-1 flex-col">
           <Sheet

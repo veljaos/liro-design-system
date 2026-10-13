@@ -65,8 +65,8 @@ export const BAKERY = {
   register: 'Kasa 1',
   cashier: 'Snežana Kovačević',
   currency: 'RSD',
-  /** The receipt's number and time of the sale in the cart. */
-  receipt: 'ZK-01-002318',
+  /** The receipt's number (the processor's, invented; P5.28) and time of the sale in the cart. */
+  receipt: 'ZK7Q2M4P-ZK7Q2M4P-2318',
   time: '09:42',
   /** Sales kept on the till while the connection is lost. */
   queued: 3,
@@ -419,10 +419,8 @@ export function receiptTotals(sale: ComputedSale): ReceiptAmount[] {
   ]
 }
 
-export const RECEIPT_FOOTER: readonly string[] = [
-  'Thank you, see you tomorrow!',
-  '======== END OF FISCAL RECEIPT ========',
-]
+/** The footer's lines; the closing line is ReceiptPreview's `end` (P5.28), not "=====" text. */
+export const RECEIPT_FOOTER: readonly string[] = ['Thank you, see you tomorrow!']
 
 // ── The handheld: picking ─────────────────────────────────────────────────────────────────────
 

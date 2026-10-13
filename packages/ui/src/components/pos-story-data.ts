@@ -191,7 +191,7 @@ export const RECEIPT_PAYMENTS: readonly ReceiptAmount[] = [
   { id: 'change', label: 'Change', value: '989.00' },
 ]
 
-export const RECEIPT_FOOTER: readonly string[] = [
-  'Thank you, see you tomorrow!',
-  '======== END OF FISCAL RECEIPT ========',
-]
+export const RECEIPT_FOOTER: readonly string[] = ['Thank you, see you tomorrow!']
+
+/** The closing line, printed between double rules (P5.28: the `end` prop, not "=====" text). */
+export const RECEIPT_END = 'END OF FISCAL RECEIPT'

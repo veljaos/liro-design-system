@@ -4991,3 +4991,925 @@ export const OfficeDesksInteraction: Story = {
     })
   },
 }
+
+// ── P5.28 pos: the till's fiscal flows and the tabs on tables ──
+// (Imports here, inside the block, so the blocks merge without touching the top.)
+import { TILL_ROUTES, WEB_ORDER } from './data-I-fiscal'
+
+/** A landscape tablet's screen: 1024 × 768. */
+function OnTablet({ start }: { start: string }) {
+  return (
+    <PhoneFrame width={1024} height={768}>
+      <ExampleApp start={start} />
+    </PhoneFrame>
+  )
+}
+
+/** A dialog of the screen by its name. */
+function screenDialog(name: string | RegExp) {
+  return within(document.body).getByRole('dialog', { name })
+}
+
+/** A confirmation of the screen (an alertdialog) by its name. */
+function screenConfirm(name: string | RegExp) {
+  return within(document.body).getByRole('alertdialog', { name })
+}
+
+const TAB_3 = '/cafe/kod-mike/terrace/t3'
+const BISTRO_TAB_7 = '/restaurant/bistro-dunav/tables/t7'
+
+/** A static story's checks on the canvas (the desktop's 1280 × 720). */
+function deskPlay(
+  check: (canvasElement: HTMLElement) => Promise<void>,
+): NonNullable<Story['play']> {
+  return async ({ canvasElement }) => {
+    await settle()
+    await check(canvasElement)
+  }
+}
+
+/** The same checks on a phone, and nothing scrolls sideways. */
+function phonePlay(
+  check: (canvasElement: HTMLElement) => Promise<void>,
+): NonNullable<Story['play']> {
+  return async ({ canvasElement }) => {
+    await settle()
+    await check(canvasElement)
+    await expectNoSidewaysScroll(canvasElement)
+  }
+}
+
+/**
+ * The receipt kind (item 21a): two choices, type and transaction, from the application's data;
+ * Proforma chosen shows its marker — never chosen silently.
+ */
+const FISCAL_KIND_CHECK = async () => {
+  const dialog = screenDialog('Receipt kind')
+  await expect(within(dialog).getByRole('button', { name: 'Proforma' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
+  await expect(dialog).toHaveTextContent('Proforma — this is not a fiscal receipt')
+}
+
+export const FiscalKind: Story = {
+  name: 'POS fiscal, receipt kind',
+  render: () => <ExampleApp start={TILL_ROUTES.kind} />,
+  play: deskPlay(FISCAL_KIND_CHECK),
+}
+
+export const FiscalKindPhone: Story = {
+  name: 'POS fiscal, receipt kind, phone',
+  render: () => <OnPhone start={TILL_ROUTES.kind} />,
+  play: phonePlay(FISCAL_KIND_CHECK),
+}
+
+/** A proforma in the cart: the kind under the title and the marker above the lines. */
+const FISCAL_PROFORMA_CHECK = async (canvasElement: HTMLElement) => {
+  await expect(canvasElement).toHaveTextContent('Proforma · Sale')
+  await expect(canvasElement.querySelector('[data-slot="cart-marker"]')).toHaveTextContent(
+    'Proforma — this is not a fiscal receipt',
+  )
+}
+
+export const FiscalProforma: Story = {
+  name: 'POS fiscal, proforma',
+  render: () => <ExampleApp start={TILL_ROUTES.proforma} />,
+  play: deskPlay(FISCAL_PROFORMA_CHECK),
+}
+
+export const FiscalProformaPhone: Story = {
+  name: 'POS fiscal, proforma, phone',
+  render: () => <OnPhone start={TILL_ROUTES.proforma} />,
+  play: phonePlay(FISCAL_PROFORMA_CHECK),
+}
+
+/** Training mode: the persistent banner under the strip, the cart's marker. */
+const FISCAL_TRAINING_CHECK = async (canvasElement: HTMLElement) => {
+  await expect(canvasElement.querySelector('[data-slot="pos-banners"]')).toHaveTextContent(
+    'Training mode',
+  )
+  await expect(canvasElement.querySelector('[data-slot="cart-marker"]')).toHaveTextContent(
+    'Training — this is not a fiscal receipt',
+  )
+}
+
+export const FiscalTraining: Story = {
+  name: 'POS fiscal, training mode',
+  render: () => <ExampleApp start={TILL_ROUTES.training} />,
+  play: deskPlay(FISCAL_TRAINING_CHECK),
+}
+
+export const FiscalTrainingPhone: Story = {
+  name: 'POS fiscal, training mode, phone',
+  render: () => <OnPhone start={TILL_ROUTES.training} />,
+  play: phonePlay(FISCAL_TRAINING_CHECK),
+}
+
+export const FiscalTrainingTablet: Story = {
+  name: 'POS fiscal, training mode, tablet',
+  render: () => <OnTablet start={TILL_ROUTES.training} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expectNoSidewaysScroll(canvasElement)
+  },
+}
+
+/** The buyer (item 21c): the kind of ID (15, searchable), the ID, the optional corporate card. */
+const FISCAL_BUYER_CHECK = async () => {
+  const dialog = screenDialog('Buyer')
+  await expect(within(dialog).getByRole('combobox', { name: 'ID type' })).toBeVisible()
+  await expect(within(dialog).getByRole('textbox', { name: 'Buyer ID' })).toHaveValue('100100100')
+}
+
+export const FiscalBuyer: Story = {
+  name: 'POS fiscal, buyer',
+  render: () => <ExampleApp start={TILL_ROUTES.buyer} />,
+  play: deskPlay(FISCAL_BUYER_CHECK),
+}
+
+export const FiscalBuyerPhone: Story = {
+  name: 'POS fiscal, buyer, phone',
+  render: () => <OnPhone start={TILL_ROUTES.buyer} />,
+  play: phonePlay(FISCAL_BUYER_CHECK),
+}
+
+/**
+ * Several ways on one receipt (item 21b): a voucher of 500,00 and 1.000,00 by card taken, 407,00
+ * remaining, 500,00 cash tendered: the change 93,00 — every figure the application's.
+ */
+const FISCAL_MIXED_CHECK = async () => {
+  const dialog = paymentDialog()
+  await expect(dialog).toHaveTextContent('Paid so far')
+  await expect(dialog).toHaveTextContent(tillText('407'))
+  await expect(dialog).toHaveTextContent(tillText('93'))
+  await expect(
+    within(within(dialog).getByRole('group', { name: 'Payment method' })).getAllByRole('button'),
+  ).toHaveLength(7)
+}
+
+export const FiscalMixed: Story = {
+  name: 'POS fiscal, several payment methods',
+  render: () => <ExampleApp start={TILL_ROUTES.mixed} />,
+  play: deskPlay(FISCAL_MIXED_CHECK),
+}
+
+export const FiscalMixedPhone: Story = {
+  name: 'POS fiscal, several payment methods, phone',
+  render: () => <OnPhone start={TILL_ROUTES.mixed} />,
+  play: phonePlay(FISCAL_MIXED_CHECK),
+}
+
+export const FiscalMixedTablet: Story = {
+  name: 'POS fiscal, several payment methods, tablet',
+  render: () => <OnTablet start={TILL_ROUTES.mixed} />,
+  play: async () => {
+    await settle()
+    await expect(paymentDialog()).toHaveTextContent('Paid so far')
+  },
+}
+
+/** An instant payment: the code shown large to the customer, waiting. */
+const FISCAL_INSTANT_CHECK = async () => {
+  await expect(
+    within(paymentDialog()).getByRole('img', { name: 'Instant payment code' }),
+  ).toBeVisible()
+}
+
+export const FiscalInstant: Story = {
+  name: 'POS fiscal, instant payment',
+  render: () => <ExampleApp start={TILL_ROUTES.instant} />,
+  play: deskPlay(FISCAL_INSTANT_CHECK),
+}
+
+export const FiscalInstantPhone: Story = {
+  name: 'POS fiscal, instant payment, phone',
+  render: () => <OnPhone start={TILL_ROUTES.instant} />,
+  play: phonePlay(FISCAL_INSTANT_CHECK),
+}
+
+/** A wire transfer (deferred payment) without a buyer: the rule and the buyer's field. */
+const FISCAL_DEFERRED_CHECK = async () => {
+  const dialog = paymentDialog()
+  await expect(dialog).toHaveTextContent('A wire transfer needs the buyer’s tax number.')
+  await expect(within(dialog).getByRole('textbox', { name: /Buyer ID/ })).toBeVisible()
+}
+
+export const FiscalDeferred: Story = {
+  name: 'POS fiscal, deferred payment needs the buyer',
+  render: () => <ExampleApp start={TILL_ROUTES.deferred} />,
+  play: deskPlay(FISCAL_DEFERRED_CHECK),
+}
+
+export const FiscalDeferredPhone: Story = {
+  name: 'POS fiscal, deferred payment needs the buyer, phone',
+  render: () => <OnPhone start={TILL_ROUTES.deferred} />,
+  play: phonePlay(FISCAL_DEFERRED_CHECK),
+}
+
+/** A corporate card: the company as the buyer, its card in the optional field, approved. */
+export const FiscalCorporate: Story = {
+  name: 'POS fiscal, corporate card',
+  render: () => <ExampleApp start={TILL_ROUTES.corporate} />,
+  play: async () => {
+    await settle()
+    const dialog = paymentDialog()
+    await expect(dialog).toHaveTextContent('Corporate card •••• 7310')
+    await expect(
+      within(dialog).getByRole('button', { name: 'Complete payment' }),
+    ).not.toHaveAttribute('aria-disabled', 'true')
+  },
+}
+
+/** The receipt issued (item 21g): processor number and time, counter, code, link, delivery. */
+const FISCAL_ISSUED_CHECK = async () => {
+  const dialog = paymentDialog()
+  await expect(dialog).toHaveTextContent('ZK7Q2M4P-ZK7Q2M4P-2318')
+  await expect(dialog).toHaveTextContent('2289/2318ПП')
+  await expect(within(dialog).getByRole('img', { name: 'Receipt code' })).toBeVisible()
+  await expect(within(dialog).getByRole('button', { name: 'Send by e-mail' })).toBeVisible()
+}
+
+export const FiscalIssued: Story = {
+  name: 'POS fiscal, receipt issued',
+  render: () => <ExampleApp start={TILL_ROUTES.issued} />,
+  play: deskPlay(FISCAL_ISSUED_CHECK),
+}
+
+export const FiscalIssuedPhone: Story = {
+  name: 'POS fiscal, receipt issued, phone',
+  render: () => <OnPhone start={TILL_ROUTES.issued} />,
+  play: phonePlay(FISCAL_ISSUED_CHECK),
+}
+
+export const FiscalIssuedTablet: Story = {
+  name: 'POS fiscal, receipt issued, tablet',
+  render: () => <OnTablet start={TILL_ROUTES.issued} />,
+  play: async () => {
+    await settle()
+    await expect(paymentDialog()).toHaveTextContent('Receipt issued')
+  },
+}
+
+/** Issued offline (item 21h): a local number, "waiting to be sent", the queue in the strip. */
+const FISCAL_ISSUED_OFFLINE_CHECK = async (canvasElement: HTMLElement) => {
+  await expect(paymentDialog()).toHaveTextContent('Receipt issued, waiting to be sent')
+  await expect(canvasElement).toHaveTextContent('3 sales waiting to be sent')
+}
+
+export const FiscalIssuedOffline: Story = {
+  name: 'POS fiscal, receipt issued offline',
+  render: () => <ExampleApp start={TILL_ROUTES.issuedOffline} />,
+  play: deskPlay(FISCAL_ISSUED_OFFLINE_CHECK),
+}
+
+export const FiscalIssuedOfflinePhone: Story = {
+  name: 'POS fiscal, receipt issued offline, phone',
+  render: () => <OnPhone start={TILL_ROUTES.issuedOffline} />,
+  play: phonePlay(FISCAL_ISSUED_OFFLINE_CHECK),
+}
+
+/** Refund (item 21d): the original found by its total; one refunded already says so. */
+const FISCAL_REFUND_FIND_CHECK = async () => {
+  const dialog = screenDialog('Refund')
+  await expect(
+    within(dialog).getByRole('button', { name: /ZK7Q2M4P-ZK7Q2M4P-2315/ }),
+  ).toHaveAttribute('aria-pressed', 'true')
+}
+
+export const FiscalRefundFind: Story = {
+  name: 'POS fiscal, refund, find the receipt',
+  render: () => <ExampleApp start={TILL_ROUTES.refundFind} />,
+  play: deskPlay(FISCAL_REFUND_FIND_CHECK),
+}
+
+export const FiscalRefundFindPhone: Story = {
+  name: 'POS fiscal, refund, find the receipt, phone',
+  render: () => <OnPhone start={TILL_ROUTES.refundFind} />,
+  play: phonePlay(FISCAL_REFUND_FIND_CHECK),
+}
+
+export const FiscalRefundFindTablet: Story = {
+  name: 'POS fiscal, refund, find the receipt, tablet',
+  render: () => <OnTablet start={TILL_ROUTES.refundFind} />,
+  play: async () => {
+    await settle()
+    await expect(
+      within(screenDialog('Refund')).getByRole('button', { name: /ZK7Q2M4P-ZK7Q2M4P-2315/ }),
+    ).toBeVisible()
+  },
+}
+
+/** Refund: two kifle and a burek of the original (240,00), the buyer named by the rule. */
+const FISCAL_REFUND_LINES_CHECK = async () => {
+  const dialog = screenDialog(/^Refund from/)
+  await expect(within(dialog).getByRole('textbox', { name: 'Quantity, Kifla' })).toHaveValue('2')
+  await expect(dialog).toHaveTextContent('1 of 4 refunded already')
+  await expect(dialog).toHaveTextContent(tillText('240'))
+}
+
+export const FiscalRefundLines: Story = {
+  name: 'POS fiscal, refund, lines',
+  render: () => <ExampleApp start={TILL_ROUTES.refundLines} />,
+  play: deskPlay(FISCAL_REFUND_LINES_CHECK),
+}
+
+export const FiscalRefundLinesPhone: Story = {
+  name: 'POS fiscal, refund, lines, phone',
+  render: () => <OnPhone start={TILL_ROUTES.refundLines} />,
+  play: phonePlay(FISCAL_REFUND_LINES_CHECK),
+}
+
+/** The refund in the cart: "Pay out 240,00 RSD", the original's number. */
+const FISCAL_REFUND_CART_CHECK = async (canvasElement: HTMLElement) => {
+  await expect(canvasElement).toHaveTextContent('Normal · Refund')
+  await expect(canvasElement).toHaveTextContent('Refund of ZK7Q2M4P-ZK7Q2M4P-2315')
+}
+
+export const FiscalRefundCart: Story = {
+  name: 'POS fiscal, refund in the cart',
+  render: () => <ExampleApp start={TILL_ROUTES.refundCart} />,
+  play: deskPlay(FISCAL_REFUND_CART_CHECK),
+}
+
+export const FiscalRefundCartPhone: Story = {
+  name: 'POS fiscal, refund in the cart, phone',
+  render: () => <OnPhone start={TILL_ROUTES.refundCart} />,
+  play: phonePlay(FISCAL_REFUND_CART_CHECK),
+}
+
+/** The refund's receipt: the original's number and time carried over, the signature line. */
+const FISCAL_REFUND_RECEIPT_CHECK = async () => {
+  const receipt = within(screenDialog(/^Receipt /)).getByRole('article', { name: 'Receipt' })
+  await expect(receipt).toHaveTextContent('NORMAL REFUND')
+  await expect(receipt).toHaveTextContent('Original receipt')
+  await expect(receipt).toHaveTextContent('Buyer’s signature')
+}
+
+export const FiscalRefundReceipt: Story = {
+  name: 'POS fiscal, refund receipt',
+  render: () => <ExampleApp start={TILL_ROUTES.refundReceipt} />,
+  play: deskPlay(FISCAL_REFUND_RECEIPT_CHECK),
+}
+
+export const FiscalRefundReceiptPhone: Story = {
+  name: 'POS fiscal, refund receipt, phone',
+  render: () => <OnPhone start={TILL_ROUTES.refundReceipt} />,
+  play: phonePlay(FISCAL_REFUND_RECEIPT_CHECK),
+}
+
+/** A buyer's open advances (item 21e): one deducted, 707,00 to pay. */
+const FISCAL_ADVANCES_CHECK = async (canvasElement: HTMLElement) => {
+  await expect(canvasElement).toHaveTextContent('Open advances of Restoran Dunavski cvet d.o.o.')
+  await expect(canvasElement).toHaveTextContent('To pay')
+  await expect(canvasElement).toHaveTextContent(tillText('707'))
+}
+
+export const FiscalAdvances: Story = {
+  name: 'POS fiscal, advances',
+  render: () => <ExampleApp start={TILL_ROUTES.advances} />,
+  play: deskPlay(FISCAL_ADVANCES_CHECK),
+}
+
+export const FiscalAdvancesPhone: Story = {
+  name: 'POS fiscal, advances, phone',
+  render: () => <OnPhone start={TILL_ROUTES.advances} />,
+  play: phonePlay(FISCAL_ADVANCES_CHECK),
+}
+
+/** Taking an advance for a cake order: the buyer, the amount, what it is for. */
+const FISCAL_ADVANCE_TAKE_CHECK = async () => {
+  await expect(screenDialog('Take advance')).toHaveTextContent('12 krempite')
+}
+
+export const FiscalAdvanceTake: Story = {
+  name: 'POS fiscal, take an advance',
+  render: () => <ExampleApp start={TILL_ROUTES.advanceTake} />,
+  play: deskPlay(FISCAL_ADVANCE_TAKE_CHECK),
+}
+
+export const FiscalAdvanceTakePhone: Story = {
+  name: 'POS fiscal, take an advance, phone',
+  render: () => <OnPhone start={TILL_ROUTES.advanceTake} />,
+  play: phonePlay(FISCAL_ADVANCE_TAKE_CHECK),
+}
+
+/** Refunding an advance: the action as the title, the advance bold on its own line. */
+export const FiscalAdvanceRefund: Story = {
+  name: 'POS fiscal, refund an advance',
+  render: () => <ExampleApp start={TILL_ROUTES.advanceRefund} />,
+  play: async () => {
+    await settle()
+    await expect(screenConfirm('Refund advance')).toHaveTextContent('ZK7Q2M4P-ZK7Q2M4P-2265')
+  },
+}
+
+/** A sale without compensation: its kind under the title, paid only as Other cashless. */
+export const FiscalNoCompensation: Story = {
+  name: 'POS fiscal, sale without compensation',
+  render: () => <ExampleApp start={TILL_ROUTES.noCompensation} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('Without compensation')
+  },
+}
+
+/** Two receipts the processor did not accept: a danger "Not sent" in the strip. */
+export const FiscalQueueFailed: Story = {
+  name: 'POS fiscal, receipts not accepted',
+  render: () => <ExampleApp start={TILL_ROUTES.queueFailed} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(within(canvasElement).getByText('Not sent')).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('2 receipts were not accepted')
+  },
+}
+
+/** The journal of the day (item 21g): the receipts with their state, the last one shown. */
+const FISCAL_JOURNAL_CHECK = async (canvasElement: HTMLElement) => {
+  await expect(canvasElement).toHaveTextContent('ZK7Q2M4P-ZK7Q2M4P-2317')
+}
+
+export const FiscalJournal: Story = {
+  name: 'POS journal',
+  render: () => <ExampleApp start={TILL_ROUTES.journal} />,
+  play: deskPlay(FISCAL_JOURNAL_CHECK),
+}
+
+export const FiscalJournalPhone: Story = {
+  name: 'POS journal, phone',
+  render: () => <OnPhone start={TILL_ROUTES.journal} />,
+  play: phonePlay(FISCAL_JOURNAL_CHECK),
+}
+
+export const FiscalJournalTablet: Story = {
+  name: 'POS journal, tablet',
+  render: () => <OnTablet start={TILL_ROUTES.journal} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(
+      within(canvasElement).getByRole('heading', { name: 'Receipts today' }),
+    ).toBeVisible()
+  },
+}
+
+/** A copy: "THIS IS NOT A FISCAL RECEIPT" boxed at the top and the bottom. */
+const FISCAL_JOURNAL_COPY_CHECK = async () => {
+  const dialog = screenDialog(/^Copy of /)
+  await expect(dialog.querySelectorAll('[data-slot="receipt-marker"]')).toHaveLength(2)
+  await expect(dialog).toHaveTextContent('COPY SALE')
+}
+
+export const FiscalJournalCopy: Story = {
+  name: 'POS journal, copy',
+  render: () => <ExampleApp start={TILL_ROUTES.journalCopy} />,
+  play: deskPlay(FISCAL_JOURNAL_COPY_CHECK),
+}
+
+export const FiscalJournalCopyPhone: Story = {
+  name: 'POS journal, copy, phone',
+  render: () => <OnPhone start={TILL_ROUTES.journalCopy} />,
+  play: phonePlay(FISCAL_JOURNAL_COPY_CHECK),
+}
+
+/** Cancelling a receipt issued by mistake: the reason asked, the receipt bold on its own line. */
+const FISCAL_JOURNAL_CANCEL_CHECK = async () => {
+  await expect(screenConfirm('Cancel receipt issued by mistake')).toHaveTextContent(
+    'ZK7Q2M4P-ZK7Q2M4P-2317',
+  )
+}
+
+export const FiscalJournalCancel: Story = {
+  name: 'POS journal, cancel a receipt',
+  render: () => <ExampleApp start={TILL_ROUTES.journalCancel} />,
+  play: deskPlay(FISCAL_JOURNAL_CANCEL_CHECK),
+}
+
+export const FiscalJournalCancelPhone: Story = {
+  name: 'POS journal, cancel a receipt, phone',
+  render: () => <OnPhone start={TILL_ROUTES.journalCancel} />,
+  play: phonePlay(FISCAL_JOURNAL_CANCEL_CHECK),
+}
+
+/** The receipts not sent (item 21h): the reason and "Send again". */
+const FISCAL_JOURNAL_QUEUE_CHECK = async (canvasElement: HTMLElement) => {
+  await expect(canvasElement).toHaveTextContent('Two receipts were not accepted')
+}
+
+export const FiscalJournalQueue: Story = {
+  name: 'POS journal, not sent',
+  render: () => <ExampleApp start={TILL_ROUTES.journalQueue} />,
+  play: deskPlay(FISCAL_JOURNAL_QUEUE_CHECK),
+}
+
+export const FiscalJournalQueuePhone: Story = {
+  name: 'POS journal, not sent, phone',
+  render: () => <OnPhone start={TILL_ROUTES.journalQueue} />,
+  play: phonePlay(FISCAL_JOURNAL_QUEUE_CHECK),
+}
+
+/** The daily report: sales, refunds, by way of paying, the tax per label. */
+const FISCAL_DAILY_REPORT_CHECK = async () => {
+  const dialog = screenDialog('Daily report')
+  await expect(dialog).toHaveTextContent('DAILY REPORT')
+  await expect(dialog).toHaveTextContent('Refunds (1)')
+}
+
+export const FiscalDailyReport: Story = {
+  name: 'POS daily report',
+  render: () => <ExampleApp start={TILL_ROUTES.dailyReport} />,
+  play: deskPlay(FISCAL_DAILY_REPORT_CHECK),
+}
+
+export const FiscalDailyReportPhone: Story = {
+  name: 'POS daily report, phone',
+  render: () => <OnPhone start={TILL_ROUTES.dailyReport} />,
+  play: phonePlay(FISCAL_DAILY_REPORT_CHECK),
+}
+
+/** An online sale (item 21i): the web-shop order's receipt issued and e-mailed, link and code. */
+const WEB_SHOP_ORDER_CHECK = async (canvasElement: HTMLElement) => {
+  await expect(canvasElement).toHaveTextContent(WEB_ORDER.receipt.number)
+  await expect(canvasElement).toHaveTextContent(`Sent to ${WEB_ORDER.email}`)
+}
+
+export const WebShopOrder: Story = {
+  name: 'Web shop order, receipt delivered',
+  render: () => <ExampleApp start={TILL_ROUTES.webOrder} />,
+  play: deskPlay(WEB_SHOP_ORDER_CHECK),
+}
+
+export const WebShopOrderPhone: Story = {
+  name: 'Web shop order, receipt delivered, phone',
+  render: () => <OnPhone start={TILL_ROUTES.webOrder} />,
+  play: phonePlay(WEB_SHOP_ORDER_CHECK),
+}
+
+export const WebShopOrderTablet: Story = {
+  name: 'Web shop order, receipt delivered, tablet',
+  render: () => <OnTablet start={TILL_ROUTES.webOrder} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent(WEB_ORDER.receipt.number)
+  },
+}
+
+/**
+ * Several ways on one receipt, end to end: a voucher of 500,00, then 1.000,00 by card (the
+ * example's terminal approves), then cash for the remaining 407,00; the receipt is issued.
+ */
+export const FiscalMixedInteraction: Story = {
+  name: 'POS fiscal, several payment methods, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={I_ROUTES.pos} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await userEvent.click(
+      within(canvasElement).getByRole('button', { name: chargeName(SALE_FIGURES.total) }),
+    )
+    const dialog = await within(document.body).findByRole('dialog', { name: 'Payment' })
+    const body = within(dialog)
+    const amount = async (digits: string) => {
+      await userEvent.click(body.getByRole('button', { name: 'Clear' }))
+      for (const key of digits) await userEvent.click(body.getByRole('button', { name: key }))
+    }
+    await userEvent.click(body.getByRole('button', { name: 'Voucher' }))
+    await amount('500')
+    await userEvent.type(body.getByRole('textbox', { name: 'Voucher code' }), 'VC-2026-7741')
+    await userEvent.click(body.getByRole('button', { name: 'Add this payment' }))
+    await expect(dialog).toHaveTextContent('Paid so far')
+    await userEvent.click(body.getByRole('button', { name: 'Card' }))
+    await amount('1000')
+    await userEvent.click(body.getByRole('button', { name: 'Send to card terminal' }))
+    await expect(
+      await body.findByText('Card payment approved', {}, { timeout: 4000 }),
+    ).toBeVisible()
+    await expect(dialog).toHaveTextContent(tillText('407'))
+    await userEvent.click(body.getByRole('button', { name: 'Cash' }))
+    await userEvent.click(body.getByRole('button', { name: 'Exact amount' }))
+    await userEvent.click(body.getByRole('button', { name: 'Complete payment' }))
+    await expect(await body.findByText('Receipt issued')).toBeVisible()
+    await settle()
+  },
+}
+
+/** Refund end to end: the menu's Refund…, find by total, two kifle, pay out in cash. */
+export const FiscalRefundInteraction: Story = {
+  name: 'POS fiscal, refund, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={I_ROUTES.pos} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Till menu' }))
+    await userEvent.click(await within(document.body).findByRole('menuitem', { name: 'Refund…' }))
+    const find = await within(document.body).findByRole('dialog', { name: 'Refund' })
+    await userEvent.click(within(find).getByRole('button', { name: 'Search' }))
+    await userEvent.click(
+      await within(find).findByRole('button', { name: /ZK7Q2M4P-ZK7Q2M4P-2315/ }),
+    )
+    await userEvent.click(within(find).getByRole('button', { name: 'Choose lines' }))
+    const lines = await within(document.body).findByRole('dialog', { name: /^Refund from/ })
+    await userEvent.click(within(lines).getByRole('checkbox', { name: /^Jogurt/ }))
+    await userEvent.click(within(lines).getByRole('button', { name: /^Refund 135,00/ }))
+    await expect(await within(canvasElement).findByText('Normal · Refund')).toBeVisible()
+    await userEvent.click(await within(canvasElement).findByRole('button', { name: /^Pay out/ }))
+    const pay = await within(document.body).findByRole('dialog', { name: 'Refund payment' })
+    await userEvent.click(within(pay).getByRole('button', { name: 'Exact amount' }))
+    await userEvent.click(within(pay).getByRole('button', { name: 'Complete payment' }))
+    await expect(await within(pay).findByText('Receipt issued')).toBeVisible()
+    await settle()
+  },
+}
+
+/** The journal: a receipt cancelled with a reason becomes a refund in the list. */
+export const FiscalCancelInteraction: Story = {
+  name: 'POS journal, cancel a receipt, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={TILL_ROUTES.journalCancel} />,
+  play: async () => {
+    await settle()
+    const dialog = screenConfirm('Cancel receipt issued by mistake')
+    await userEvent.click(within(dialog).getByRole('radio', { name: 'Wrong way of paying' }))
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Cancel receipt' }))
+    await expect(
+      await within(document.body).findByText(/cancelled \(wrong way of paying\)/),
+    ).toBeVisible()
+  },
+}
+
+// ── P5.28 pos: open tabs on tables (item 22) ──
+
+/** Table 3's tab with two new items not sent yet: "Send order (2)" before the bill. */
+const CAFE_TAB_NEW_CHECK = async (canvasElement: HTMLElement) => {
+  await expect(
+    within(canvasElement).getByRole('button', { name: 'Send order (2)' }),
+  ).toBeInTheDocument()
+  await expect(canvasElement).toHaveTextContent('Oat milk')
+  await expect(canvasElement).toHaveTextContent('Sent to the bar · 18:15')
+}
+
+export const CafeTabNew: Story = {
+  name: 'Café tab, new items to send',
+  render: () => <ExampleApp start={`${TAB_3}?new`} />,
+  play: deskPlay(CAFE_TAB_NEW_CHECK),
+}
+
+export const CafeTabNewPhone: Story = {
+  name: 'Café tab, new items to send, phone',
+  render: () => <OnPhone start={`${TAB_3}?new`} />,
+  play: phonePlay(CAFE_TAB_NEW_CHECK),
+}
+
+/** Editing a line: quantity, a note for the kitchen, a discount from the venue's list. */
+const CAFE_TAB_EDIT_CHECK = async () => {
+  const dialog = screenDialog('Edit line')
+  await expect(within(dialog).getByRole('textbox', { name: /Note/ })).toHaveValue('Without walnuts')
+}
+
+export const CafeTabEdit: Story = {
+  name: 'Café tab, edit a line',
+  render: () => <ExampleApp start={`${TAB_3}?edit`} />,
+  play: deskPlay(CAFE_TAB_EDIT_CHECK),
+}
+
+export const CafeTabEditPhone: Story = {
+  name: 'Café tab, edit a line, phone',
+  render: () => <OnPhone start={`${TAB_3}?edit`} />,
+  play: phonePlay(CAFE_TAB_EDIT_CHECK),
+}
+
+/** A discount on the whole order; the promotions apply by themselves. */
+export const CafeTabDiscount: Story = {
+  name: 'Café tab, discount on the order',
+  render: () => <ExampleApp start={`${TAB_3}?discount`} />,
+  play: async () => {
+    await settle()
+    await expect(
+      within(screenDialog('Discount on the order')).getByRole('radio', {
+        name: 'Regular guest −10%',
+      }),
+    ).toBeChecked()
+  },
+}
+
+/** Split the bill equally among four: the shares from the application. */
+const CAFE_TAB_SPLIT_CHECK = async () => {
+  await expect(screenDialog('Split the bill')).toHaveTextContent('Share 4 of 4')
+}
+
+export const CafeTabSplit: Story = {
+  name: 'Café tab, split the bill',
+  render: () => <ExampleApp start={`${TAB_3}?split`} />,
+  play: deskPlay(CAFE_TAB_SPLIT_CHECK),
+}
+
+export const CafeTabSplitPhone: Story = {
+  name: 'Café tab, split the bill, phone',
+  render: () => <OnPhone start={`${TAB_3}?split`} />,
+  play: phonePlay(CAFE_TAB_SPLIT_CHECK),
+}
+
+/** Pay part by items: two cappuccinos chosen. */
+const CAFE_TAB_PAY_PART_CHECK = async () => {
+  const dialog = screenDialog('Pay part')
+  await expect(within(dialog).getByRole('textbox', { name: 'Quantity, Kapućino' })).toHaveValue('2')
+  await expect(dialog).toHaveTextContent(SERBIAN_K.money('440', 'RSD').replace(/\s+/g, ' '))
+}
+
+export const CafeTabPayPart: Story = {
+  name: 'Café tab, pay part',
+  render: () => <ExampleApp start={`${TAB_3}?pay-part`} />,
+  play: deskPlay(CAFE_TAB_PAY_PART_CHECK),
+}
+
+export const CafeTabPayPartPhone: Story = {
+  name: 'Café tab, pay part, phone',
+  render: () => <OnPhone start={`${TAB_3}?pay-part`} />,
+  play: phonePlay(CAFE_TAB_PAY_PART_CHECK),
+}
+
+/** Move the whole tab or some items to another table. */
+const CAFE_TAB_MOVE_CHECK = async () => {
+  await expect(screenDialog('Move to another table')).toHaveTextContent('Table 3')
+}
+
+export const CafeTabMove: Story = {
+  name: 'Café tab, move to another table',
+  render: () => <ExampleApp start={`${TAB_3}?move`} />,
+  play: deskPlay(CAFE_TAB_MOVE_CHECK),
+}
+
+export const CafeTabMovePhone: Story = {
+  name: 'Café tab, move to another table, phone',
+  render: () => <OnPhone start={`${TAB_3}?move`} />,
+  play: phonePlay(CAFE_TAB_MOVE_CHECK),
+}
+
+/** The bill: 1.200,00 RSD, 2.000,00 tendered, the change. */
+const CAFE_TAB_BILL_CHECK = async () => {
+  await expect(screenDialog(/^Table 3:/)).toHaveTextContent('Change due')
+}
+
+export const CafeTabBill: Story = {
+  name: 'Café tab, bill',
+  render: () => <ExampleApp start={`${TAB_3}?bill`} />,
+  play: deskPlay(CAFE_TAB_BILL_CHECK),
+}
+
+export const CafeTabBillPhone: Story = {
+  name: 'Café tab, bill, phone',
+  render: () => <OnPhone start={`${TAB_3}?bill`} />,
+  play: phonePlay(CAFE_TAB_BILL_CHECK),
+}
+
+/** Paid: the fiscal receipt issued, "Close table". */
+const CAFE_TAB_CLOSED_CHECK = async () => {
+  const dialog = screenDialog(/^Table 3:/)
+  await expect(dialog).toHaveTextContent('Receipt issued')
+  await expect(within(dialog).getByRole('button', { name: 'Close table' })).toBeVisible()
+}
+
+export const CafeTabClosed: Story = {
+  name: 'Café tab, closed with the receipt',
+  render: () => <ExampleApp start={`${TAB_3}?closed`} />,
+  play: deskPlay(CAFE_TAB_CLOSED_CHECK),
+}
+
+export const CafeTabClosedPhone: Story = {
+  name: 'Café tab, closed with the receipt, phone',
+  render: () => <OnPhone start={`${TAB_3}?closed`} />,
+  play: phonePlay(CAFE_TAB_CLOSED_CHECK),
+}
+
+/** Table 1: a third espresso, the venue's promotion "Espresso 3 for 2". */
+export const CafeTabPromotion: Story = {
+  name: 'Café tab, promotion 3 for 2',
+  render: () => <ExampleApp start="/cafe/kod-mike/terrace/t1" />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('Espresso 3 for 2')
+  },
+}
+
+export const CafeTabTablet: Story = {
+  name: 'Café tab, tablet',
+  render: () => <OnTablet start={`${TAB_3}?new`} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expectNoSidewaysScroll(canvasElement)
+  },
+}
+
+/** Bistro Dunav's table 7: food from the kitchen, drinks from the bar, the dessert promotion. */
+const RESTAURANT_TAB_CHECK = async (canvasElement: HTMLElement) => {
+  await expect(canvasElement).toHaveTextContent('Sent to the kitchen · 19:01')
+  await expect(canvasElement).toHaveTextContent('Dessert of the day −15%')
+  await expect(canvasElement).toHaveTextContent('One without onion')
+}
+
+export const RestaurantTab: Story = {
+  name: 'Restaurant tab, table 7',
+  render: () => <ExampleApp start={BISTRO_TAB_7} />,
+  play: deskPlay(RESTAURANT_TAB_CHECK),
+}
+
+export const RestaurantTabPhone: Story = {
+  name: 'Restaurant tab, table 7, phone',
+  render: () => <OnPhone start={BISTRO_TAB_7} />,
+  play: phonePlay(RESTAURANT_TAB_CHECK),
+}
+
+export const RestaurantTabTablet: Story = {
+  name: 'Restaurant tab, table 7, tablet',
+  render: () => <OnTablet start={BISTRO_TAB_7} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expectNoSidewaysScroll(canvasElement)
+  },
+}
+
+/** A share of three paid by card: Total, Paid and "To pay". */
+export const RestaurantTabPaidShare: Story = {
+  name: 'Restaurant tab, a share paid',
+  render: () => <ExampleApp start={`${BISTRO_TAB_7}?paid-share`} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('To pay')
+    await expect(canvasElement).toHaveTextContent('Paid')
+  },
+}
+
+/**
+ * The tab persists: on the terrace, free table 2 gets two espressos; Send order; back to the
+ * terrace, table 2 shows its total; back on table 2 the lines are there, sent.
+ */
+export const CafeTabPersistsInteraction: Story = {
+  name: 'Café tab, persists, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={K_ROUTES.terrace} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(floorItem(canvasElement, 't2'))
+    await expect(await canvas.findByRole('heading', { name: 'Table 2' })).toBeVisible()
+    await userEvent.click(canvas.getByRole('button', { name: /^Espresso/ }))
+    await userEvent.click(canvas.getByRole('button', { name: /^Espresso/ }))
+    await userEvent.click(canvas.getByRole('button', { name: 'Send order (2)' }))
+    await expect(await canvas.findByText('Sent to the bar · 18:40')).toBeVisible()
+    await userEvent.click(canvas.getByRole('button', { name: 'Terrace' }))
+    await expect(await canvas.findByRole('heading', { name: 'Terrace' })).toBeVisible()
+    await expect(floorItem(canvasElement, 't2')).toHaveAccessibleName(
+      new RegExp(
+        `^Table 2, 18:40 · ${SERBIAN_K.money('320', 'RSD').replace(/\./g, '\\.').replace(/\s/g, '\\s')}`,
+      ),
+    )
+    await userEvent.click(floorItem(canvasElement, 't2'))
+    await expect(await canvas.findByRole('textbox', { name: 'Quantity, Espresso' })).toHaveValue(
+      '2',
+    )
+  },
+}
+
+/** Move the whole tab of table 3 to table 2, bill it in cash, close the table. */
+export const CafeTabMoveCloseInteraction: Story = {
+  name: 'Café tab, move and close, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={TAB_3} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Move…' }))
+    const move = await within(document.body).findByRole('dialog', {
+      name: 'Move to another table',
+    })
+    await userEvent.click(within(move).getByRole('button', { name: 'Move tab' }))
+    await expect(await canvas.findByRole('heading', { name: 'Table 2' })).toBeVisible()
+    await userEvent.click(canvas.getByRole('button', { name: /^Bill / }))
+    const pay = await within(document.body).findByRole('dialog', { name: /^Table 2:/ })
+    await userEvent.click(within(pay).getByRole('button', { name: 'Exact amount' }))
+    await userEvent.click(within(pay).getByRole('button', { name: 'Complete payment' }))
+    await userEvent.click(await within(pay).findByRole('button', { name: 'Close table' }))
+    await expect(await canvas.findByRole('heading', { name: 'Terrace' })).toBeVisible()
+  },
+}
+
+/** Bistro Dunav: table 7's tab from the floor, a krempita added, back on the floor its total. */
+export const RestaurantTabInteraction: Story = {
+  name: 'Restaurant tab, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={K_ROUTES.floorTable} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Tab' }))
+    await expect(await canvas.findByRole('heading', { name: 'Table 7' })).toBeVisible()
+    await userEvent.click(canvas.getByRole('button', { name: /^Krempita/ }))
+    await expect(canvas.getByRole('button', { name: 'Send order (3)' })).toBeVisible()
+    await userEvent.click(canvas.getByRole('button', { name: 'Floor' }))
+    await userEvent.click(await waitFor(() => floorItem(canvasElement, 't7')))
+    await expect(await canvas.findByRole('button', { name: 'Tab' })).toBeVisible()
+    await expect(canvasElement).toHaveTextContent(
+      SERBIAN_K.money('9534', 'RSD').replace(/\s+/g, ' '),
+    )
+  },
+}

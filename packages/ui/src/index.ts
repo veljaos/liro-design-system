@@ -1156,3 +1156,36 @@ export type {
   PracticeItem,
   RelatedAct,
 } from './components/legal-model'
+
+// ── P5.28 pos ──
+export { ReceiptKindPicker } from './components/receipt-kind-picker'
+export type { ReceiptKindPickerProps } from './components/receipt-kind-picker'
+export { BuyerField, BUYER_TYPES_SEARCHABLE_FROM } from './components/buyer-field'
+export type { BuyerFieldProps, BuyerIdType, BuyerValue } from './components/buyer-field'
+export { ReceiptFinder } from './components/receipt-finder'
+export type { FoundReceipt, ReceiptFinderProps, ReceiptQuery } from './components/receipt-finder'
+export { LineQuantityPicker } from './components/line-quantity-picker'
+export type { ChoosableLine, LineQuantityPickerProps } from './components/line-quantity-picker'
+export { AdvanceList } from './components/advance-list'
+export type { AdvanceItem, AdvanceListProps } from './components/advance-list'
+export { ReceiptResult } from './components/receipt-result'
+export type { ReceiptDelivery, ReceiptResultProps } from './components/receipt-result'
+export {
+  allLinesChosen,
+  chooseAllLines,
+  chosenLineIds,
+  exceedsAvailable,
+  hasOwnOptions,
+  isChosen,
+  kindMarker,
+  paymentOptions,
+  toggleLine,
+} from './components/sale-logic'
+export type {
+  ChosenQuantities,
+  PaymentKind,
+  PaymentOption,
+  ReceiptKindOption,
+} from './components/sale-logic'
+export type { CartLineState } from './components/cart-panel'
+export type { ReceiptRecap, ReceiptRecapColumn } from './components/receipt-preview'

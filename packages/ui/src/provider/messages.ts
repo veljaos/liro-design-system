@@ -1711,4 +1711,65 @@ export interface LiroMessages {
   // P5.25a FloorPlan
   /** An item's level in words, from the formatted percentage: "62,5% full". */
   'floorPlan.level': (percentText: string) => string
+  // P5.28 pos
+  /** A way to pay by a code the customer scans (an instant payment): start, wait, outcome. */
+  'payment.qrStart': string
+  'payment.qrWaiting': string
+  'payment.qrHint': string
+  'payment.qrCancel': string
+  'payment.qrDeclined': string
+  'payment.qrApproved': string
+  /** The code's name for assistive technology. */
+  'payment.qrCode': string
+  /** Adds the keypad's amount as one more payment of the chosen way. */
+  'payment.addPart': string
+  /** Removes a part paid: "Remove Voucher". */
+  'payment.removePart': (label: string) => string
+  /** A cart line's edit button: "Edit Kapućino". */
+  'cart.edit': (name: string) => string
+  /** The till's queue could not be sent. */
+  'pos.queueFailed': string
+  /** ReceiptKindPicker's groups and a kind that cannot be chosen ("Copy: needs …"). */
+  'receiptKind.type': string
+  'receiptKind.transaction': string
+  'receiptKind.unavailable': (label: string, reason: string) => string
+  /** BuyerField's legend and parts. */
+  'buyer.title': string
+  'buyer.type': string
+  'buyer.id': string
+  'buyer.optionalType': string
+  'buyer.optional': string
+  /** ReceiptFinder: scan, search by number, date and total, the results. */
+  'receiptFinder.scan': string
+  'receiptFinder.searchBy': string
+  'receiptFinder.orSearchBy': string
+  'receiptFinder.number': string
+  'receiptFinder.date': string
+  'receiptFinder.total': string
+  'receiptFinder.search': string
+  'receiptFinder.results': string
+  'receiptFinder.none': string
+  'receiptFinder.noneDescription': string
+  /** LineQuantityPicker: every line, "of 3 pc", the figure for what is chosen. */
+  'lines.all': string
+  'lines.of': (quantityText: string) => string
+  'lines.chosenTotal': string
+  /** AdvanceList. */
+  'advances.title': string
+  'advances.count': (count: number, countText: string) => string
+  'advances.paidOn': (dateText: string) => string
+  'advances.open': string
+  'advances.paid': (amountText: string) => string
+  'advances.choose': (number: string) => string
+  'advances.refund': (number: string) => string
+  'advances.chosenTotal': string
+  'advances.empty': string
+  /** ReceiptResult. */
+  'receiptResult.title': string
+  'receiptResult.waiting': string
+  'receiptResult.code': string
+  'receiptResult.deliver': string
+  'receiptResult.sending': string
+  'receiptResult.sent': string
+  'receiptResult.failed': string
 }
