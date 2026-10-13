@@ -6,6 +6,13 @@ import { ARABIC, JAPANESE, LONG } from '../components/field-story-data'
 import { MoneyField } from '../components/number-field'
 import { StatusBadge } from '../components/status-badge'
 import { ExampleProvider, PhoneFrame, StoryProvider } from '../components/story-frames'
+import {
+  expectBelowShell,
+  expectFirstColumnStays,
+  nextFrames,
+  scrollUnderShell,
+  ShellPage,
+} from '../components/sticky-story-helpers'
 import { settle } from '../primitives/story-helpers'
 import { createFormat } from '../provider/format'
 import { PURCHASES_20, SALES_20 } from './register-story-data'
@@ -15,6 +22,7 @@ import {
   type StatutoryOverride,
   type StatutorySection,
 } from './statutory-form-page'
+import { statutoryCellId } from './statutory-logic'
 import {
   VAT_ENTERED,
   VAT_FORM_LANG,
@@ -558,7 +566,7 @@ export const LongText: Story = {
 
 /**
  * A card narrower than the grid: the grid scrolls sideways in its own region, the number and
- * label column stays at the start, the header sticks to the region's top.
+ * label column stays at the start, the header stays below the shell while the page scrolls.
  */
 export const Narrow: Story = {
   name: 'Narrow, scrolls sideways',
@@ -659,4 +667,187 @@ export const Japanese: Story = {
       />
     </StoryProvider>
   ),
+}
+
+/** Received invoice numbers of the long records part: UF-2026-1101 … UF-2026-1132. */
+const RECORD_COUNT = 32
+
+/**
+ * An illustrative input-VAT record of 32 rows (P5.28 item 4): one per received invoice, the 20%
+ * base from SEF, its VAT computed, the 10% columns typed in every fourth row.
+ */
+function recordsSection(
+  entered: VatEntered,
+  field: (cell: string, label: string) => ReactNode,
+): StatutorySection {
+  return {
+    key: 'records',
+    title: 'Део 5. Евиденција претходног пореза (илустративно)',
+    description: 'Примљене фактуре у пореском периоду, по једна у реду.',
+    columns: [
+      { id: 'base20', label: 'Основица', group: 'Општа стопа 20%' },
+      { id: 'vat20', label: 'ПДВ', group: 'Општа стопа 20%' },
+      { id: 'base10', label: 'Основица', group: 'Посебна стопа 10%' },
+      { id: 'vat10', label: 'ПДВ', group: 'Посебна стопа 10%' },
+    ],
+    items: Array.from({ length: RECORD_COUNT }, (_, index) => {
+      const number = `5.${String(index + 1)}`
+      const invoice = `UF-2026-${String(1101 + index)}`
+      // Story data: the bases are whole hundreds, so 20% of each is a whole number.
+      const base = 12000 + index * 300
+      const typed = index % 4 === 3
+      const cell10 = (column: string) => {
+        const id = statutoryCellId(number, column)
+        return {
+          kind: 'entered' as const,
+          value: entered[id] ?? null,
+          field: field(
+            id,
+            `${number} · Посебна стопа 10% · ${column === 'base10' ? 'Основица' : 'ПДВ'}`,
+          ),
+        }
+      }
+      return {
+        id: number,
+        number,
+        label: `Примљена фактура ${invoice}`,
+        cells: {
+          base20: {
+            kind: 'source' as const,
+            value: `${String(base)}.00`,
+            sources: [
+              {
+                key: invoice,
+                type: 'Received e-invoice',
+                number: invoice,
+                href: `#purchases/${invoice}`,
+                date: '2026-09-15',
+                amount: `${String(base)}.00`,
+              },
+            ],
+          },
+          vat20: { kind: 'computed' as const, value: `${String(base / 5)}.00` },
+          ...(typed ? { base10: cell10('base10'), vat10: cell10('vat10') } : {}),
+        },
+      }
+    }),
+  }
+}
+
+/** The records part on its own page, its typed cells kept by the application. */
+function Records({ layout }: { layout: 'desktop' | 'phone' }) {
+  const [entered, setEntered] = useState<VatEntered>({})
+  return (
+    <StatutoryFormPage
+      layout={layout}
+      title="Input tax records, September 2026"
+      subtitle="Kvadrat Gradnja d.o.o. · an illustrative form, not the authority's"
+      lang={VAT_FORM_LANG}
+      currency="RSD"
+      currentLabel="September 2026"
+      sections={[
+        recordsSection(entered, (cell, label) => (
+          <MoneyField
+            label={label}
+            hideLabel
+            currency="RSD"
+            value={entered[cell] ?? null}
+            onChange={(value) => {
+              setEntered((current) => ({ ...current, [cell]: value }))
+            }}
+          />
+        )),
+      ]}
+    />
+  )
+}
+
+/** The element's top stands at or below `edge` (px, viewport), never under what is above it. */
+async function expectTopAtLeast(element: Element, edge: number): Promise<void> {
+  await waitFor(async () => {
+    await expect(element.getBoundingClientRect().top).toBeGreaterThanOrEqual(edge - 1)
+  })
+}
+
+/**
+ * Thirty-two rows in a narrow card on a page under the shell (P5.28 item 4): while the page
+ * scrolls, both header rows stay right below the shell; while the grid scrolls sideways, the
+ * number and label column (and the corner) stay at the start; a field reached under the header
+ * is scrolled clear of it.
+ */
+export const UnderTheShell: Story = {
+  name: 'Thirty-two rows under the shell, interaction',
+  tags: ['interaction'],
+  render: () => (
+    <ExampleProvider>
+      <ShellPage>
+        <div className="max-w-[44rem]">
+          <Records layout="desktop" />
+        </div>
+      </ShellPage>
+    </ExampleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const region = within(canvasElement).getByRole('region', { name: /^Део 5\./ })
+    const table = region.querySelector('table')
+    const head = region.querySelector('[data-sticky-head]')
+    const corner = region.querySelector('[data-sticky-start]')
+    if (table === null || head === null || corner === null) throw new Error('no grid parts')
+    await expect(table.querySelectorAll('tbody tr[data-slot="statutory-row"]')).toHaveLength(
+      RECORD_COUNT,
+    )
+    await scrollUnderShell(canvasElement, table, 400)
+    await expectBelowShell(canvasElement, head)
+    await expectBelowShell(canvasElement, corner)
+    // A field hidden under the header is scrolled clear of it when focused.
+    const field = within(table).getByRole('textbox', {
+      name: /^5\.24 · Посебна стопа 10% · Основица/,
+    })
+    await scrollUnderShell(canvasElement, field, -8)
+    field.focus()
+    await nextFrames()
+    await expectTopAtLeast(field, head.getBoundingClientRect().bottom)
+    // The number and label stay at the start; the amounts move.
+    const rowHead = table.querySelectorAll('tbody th[scope="row"]')[20]
+    const amount = rowHead?.closest('tr')?.querySelector('td:last-child')
+    if (rowHead === undefined || amount === null || amount === undefined) {
+      throw new Error('no cells')
+    }
+    await expectFirstColumnStays(region, rowHead, amount, 120)
+    await expectBelowShell(canvasElement, corner)
+  },
+}
+
+/**
+ * The same records on a phone under the shell: the page scrolls in its frame, never sideways; a
+ * field reached under the shell is scrolled clear of it.
+ */
+export const UnderTheShellPhone: Story = {
+  name: 'Thirty-two rows under the shell, phone, interaction',
+  tags: ['interaction'],
+  render: () => (
+    <ExampleProvider>
+      <ShellPage width={390} height={720}>
+        <Records layout="phone" />
+      </ShellPage>
+    </ExampleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const page = canvasElement.querySelector('[data-slot="statutory-form-page"]')
+    const shell = canvasElement.querySelector('[data-slot="story-shell-bar"]')
+    if (page === null || shell === null) throw new Error('no page')
+    await expect(page.scrollWidth).toBeLessThanOrEqual(page.clientWidth)
+    await expect(canvasElement.querySelectorAll('[data-slot="statutory-row"]')).toHaveLength(
+      RECORD_COUNT,
+    )
+    const field = within(canvasElement).getByRole('textbox', {
+      name: /^5\.24 · Посебна стопа 10% · Основица/,
+    })
+    await scrollUnderShell(canvasElement, field, 0)
+    field.focus()
+    await nextFrames()
+    await expectTopAtLeast(field, shell.getBoundingClientRect().bottom)
+  },
 }

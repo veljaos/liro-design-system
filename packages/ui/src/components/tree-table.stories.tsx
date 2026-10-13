@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { useState } from 'react'
 import { expect, userEvent, within } from 'storybook/test'
 import { settle } from '../primitives/story-helpers'
+import { expectBelowShell, scrollUnderShell, ShellPage } from './sticky-story-helpers'
 import { NumberText } from './display-text'
 import { EmptyState } from './empty-state'
 import { ExampleProvider, PhoneFrame, StoryProvider } from './story-frames'
@@ -313,6 +314,32 @@ export const ThousandsKeyboard: Story = {
     canvas.getByRole('row', { name: /Klasa 0/ }).focus()
     await userEvent.keyboard('{End}')
     await expect(await canvas.findByRole('row', { name: /Konto 9949/ })).toHaveFocus()
+  },
+}
+
+/**
+ * Seventy rows on a page under the shell, without `maxHeight` (P5.28 item 4): the page scrolls,
+ * the header row stays right below the shell.
+ */
+export const UnderTheShell: Story = {
+  name: 'Seventy rows under the shell, interaction',
+  tags: ['interaction'],
+  args: { nodes: LONG_CHART, defaultExpanded: ['0', '00'] },
+  render: (args) => (
+    <ExampleProvider>
+      <ShellPage>
+        <TreeTable {...args} />
+      </ShellPage>
+    </ExampleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const grid = within(canvasElement).getByRole('treegrid')
+    await expect(within(grid).getAllByRole('row').length).toBeGreaterThan(60)
+    const header = within(grid).getAllByRole('columnheader')[1]
+    if (header === undefined) throw new Error('no header')
+    await scrollUnderShell(canvasElement, grid, 400)
+    await expectBelowShell(canvasElement, header)
   },
 }
 

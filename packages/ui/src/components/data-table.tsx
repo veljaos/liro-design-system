@@ -12,6 +12,7 @@ import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react'
 import {
   Fragment,
   useCallback,
+  useContext,
   useEffect,
   useImperativeHandle,
   useLayoutEffect,
@@ -54,7 +55,7 @@ import { type MenuEntry } from './dropdown-menu'
 import { EmptyState, type EmptyAction } from './empty-state'
 import { CursorPagination } from './navigation'
 import { RefetchLoader } from './refetch-loader'
-import { STICKY_CLEARANCE, STICKY_HEAD, useStickyHead } from './sticky-head'
+import { STICKY_CLEARANCE, STICKY_HEAD, StickyHeaderDefault, useStickyHead } from './sticky-head'
 import { usePhone } from './use-phone'
 import { keepFocusedRow, overscanRows, spacersBetween } from './virtual-rows'
 
@@ -217,7 +218,8 @@ export interface DataTableProps<Row extends RowData> {
 
   /**
    * The header stays in view while the rows scroll: below the shell's sticky top while the page
-   * scrolls (P5.28 item 4), and at the top inside `maxHeight`.
+   * scrolls (P5.28 item 4), and at the top inside `maxHeight`. Default true inside ListPage's card
+   * and RegisterPage, false elsewhere.
    */
   stickyHeader?: boolean
   /**
@@ -322,7 +324,9 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
   // with dividers instead.
   const flat = cards && props.inCard === true
   const virtualize = props.virtualize === true
-  const sticky = props.stickyHeader === true || virtualize
+  // Inside ListPage's card the header is sticky by default (P5.28 item 4).
+  const stickyDefault = useContext(StickyHeaderDefault)
+  const sticky = (props.stickyHeader ?? stickyDefault) || virtualize
   // In a card the first column stays at the start while the table scrolls sideways (P5.28 item 4).
   const stickyStart = props.inCard === true && !cards
   const resizable = props.resizable === true && !cards
@@ -606,6 +610,7 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
     return (
       <th
         key={column.id}
+        {...(corner ? { 'data-sticky-start': '' } : {})}
         ref={(element) => {
           if (element === null) headerCells.current.delete(column.id)
           else headerCells.current.set(column.id, element)
@@ -1053,6 +1058,7 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
                   {selectable && (
                     <th
                       scope="col"
+                      {...(stickyStart ? { 'data-sticky-start': '' } : {})}
                       className={cn(
                         CELL,
                         'w-px border-0 border-b border-solid border-default bg-surface-sunken',

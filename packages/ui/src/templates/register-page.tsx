@@ -36,6 +36,7 @@ import { registerMenu } from './register-logic'
  * - Long registers stay responsive: `virtualize` draws only the rows in view (DataTable's 44px
  *   rows inside `maxHeight`, default 70% of the screen's height); measured with 5,000 entries
  *   (docs/decisions.md "Liro patterns (Phase 5 part 1)").
+ * - The table's header stays below the shell while the page scrolls (`stickyHeader`, P5.28 item 4).
  * Layout: the page header (visible title: no module tab names a register), then ONE card (as
  * ListPage): the period row, the locks, the table to the card's edges, count and paging under it.
  * The page owns every space in the card (P5.23): the locks band meets the table's header with
@@ -291,6 +292,7 @@ export function RegisterPage<Row extends RowData>(props: RegisterPageProps<Row>)
           label={props.title}
           layout={phone ? 'cards' : 'table'}
           inCard
+          stickyHeader
           columns={columns}
           rows={rows}
           getRowId={getRowId}
