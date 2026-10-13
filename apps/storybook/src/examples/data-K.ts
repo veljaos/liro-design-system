@@ -14,8 +14,6 @@
  */
 import { Ban, CalendarClock, CircleCheck, Receipt, Sparkles, UsersRound } from 'lucide-react'
 import type {
-  CartAmount,
-  CartLine,
   FloorArea,
   FloorItem,
   FloorPaletteEntry,
@@ -510,21 +508,6 @@ export function computeOrder(order: readonly OrderLine[]): {
   // VAT 20% included: total × 20 / 120, half up to whole paras.
   const vat = (total * 20n * 2n + 120n) / (120n * 2n)
   return { lines, total, vat }
-}
-
-/** The order as the cart shows it. */
-export function cafeCartLines(order: readonly OrderLine[]): CartLine[] {
-  return computeOrder(order).lines.map((line) => ({
-    id: line.productId,
-    name: line.name,
-    quantity: String(line.quantity),
-    unitPrice: decimal(line.price),
-    total: decimal(line.total),
-  }))
-}
-
-export function cafeCartTotals(order: readonly OrderLine[]): CartAmount[] {
-  return [{ id: 'vat', label: 'VAT 20% included', value: decimal(computeOrder(order).vat) }]
 }
 
 /** Table 3's order as the till states it: 2 × 220 + 250 + 2 × 140 + 230 = 1.200,00 RSD. */

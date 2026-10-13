@@ -3863,6 +3863,7 @@ export const HotelBookingsPhone: Story = {
  */
 export const HotelBookingOpen: Story = {
   name: 'Hotel, bookings, a booking',
+  tags: ['!dev'],
   render: () => <ExampleApp start={L_ROUTES.timelineStay} />,
   play: async ({ canvasElement }) => {
     const drawer = await within(document.body).findByRole('dialog', { name: 'Claire Martin' })
@@ -3877,6 +3878,7 @@ export const HotelBookingOpen: Story = {
 
 export const HotelBookingOpenPhone: Story = {
   name: 'Hotel, bookings, a booking, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={L_ROUTES.timelineStay} />,
   play: async () => {
     const dialog = await within(document.body).findByRole('dialog', { name: 'Claire Martin' })
@@ -3891,6 +3893,7 @@ export const HotelBookingOpenPhone: Story = {
  */
 export const HotelStayMove: Story = {
   name: 'Hotel, bookings, moving a stay',
+  tags: ['!dev'],
   render: () => <ExampleApp start={L_ROUTES.timelineMove} />,
   play: async () => {
     const dialog = await within(document.body).findByRole('dialog', {
@@ -3909,6 +3912,7 @@ export const HotelStayMove: Story = {
 
 export const HotelStayMovePhone: Story = {
   name: 'Hotel, bookings, moving a stay, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={L_ROUTES.timelineMove} />,
   play: async () => {
     const dialog = await within(document.body).findByRole('dialog', {
@@ -3925,7 +3929,7 @@ export const HotelStayMovePhone: Story = {
  */
 export const HotelBookingsInteraction: Story = {
   name: 'Hotel, bookings, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={L_ROUTES.timeline} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -3943,8 +3947,7 @@ export const HotelBookingsInteraction: Story = {
     await expect(canvas.getByRole('heading', { level: 1, name: 'Bookings' })).toBeVisible()
     await userEvent.click(canvas.getByRole('button', { name: 'Move to…: Dragan Lazić' }))
     const panel = await body.findByRole('dialog', { name: 'Move to…: Dragan Lazić' })
-    // ResourceSchedule's "Move to…" names its select "Resource", not `resourceLabel` (see the notes).
-    await userEvent.click(within(panel).getByRole('combobox', { name: 'Resource' }))
+    await userEvent.click(within(panel).getByRole('combobox', { name: 'Room' }))
     await userEvent.click(await body.findByRole('option', { name: 'Room 105' }))
     await userEvent.click(await within(panel).findByRole('button', { name: 'Move' }))
     const dialog = await body.findByRole('dialog', { name: 'Move stay Dragan Lazić' })
@@ -4031,7 +4034,7 @@ export const HotelMarkCleanInteraction: Story = {
 /** Start cleaning on a phone: room 306 leaves the rooms to clean (P5.28 item 25). */
 export const HotelStartCleaningInteraction: Story = {
   name: 'Hotel, start cleaning, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <OnPhone start={L_ROUTES.housekeepingRoom} />,
   play: async ({ canvasElement }) => {
     const drawer = await within(document.body).findByRole('dialog', { name: 'Room 306' })
@@ -4164,6 +4167,7 @@ export const RestaurantMoveGuestsPhone: Story = {
  */
 export const RestaurantMoveNoTable: Story = {
   name: 'Restaurant service, no table for the party',
+  tags: ['!dev'],
   render: () => <ExampleApp start={K_ROUTES.floorMoveNone} />,
   play: async () => {
     await settle()
@@ -4179,6 +4183,7 @@ export const RestaurantMoveNoTable: Story = {
 
 export const RestaurantMoveNoTablePhone: Story = {
   name: 'Restaurant service, no table for the party, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={K_ROUTES.floorMoveNone} />,
   play: async () => {
     await settle()
@@ -4193,6 +4198,7 @@ export const RestaurantMoveNoTablePhone: Story = {
 /** One area at a time (P5.28 item 26): the terrace alone, fitted to the width. */
 export const RestaurantTerrace: Story = {
   name: 'Restaurant service, the terrace',
+  tags: ['!dev'],
   render: () => <ExampleApp start={K_ROUTES.floorTerrace} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -4208,6 +4214,7 @@ export const RestaurantTerrace: Story = {
 
 export const RestaurantTerracePhone: Story = {
   name: 'Restaurant service, the terrace, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={K_ROUTES.floorTerrace} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -4223,6 +4230,7 @@ export const RestaurantTerracePhone: Story = {
  */
 export const RestaurantTakeaway: Story = {
   name: 'Restaurant service, takeaway orders',
+  tags: ['!dev'],
   render: () => <ExampleApp start={K_ROUTES.floorTakeaway} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -4238,6 +4246,7 @@ export const RestaurantTakeaway: Story = {
 
 export const RestaurantTakeawayPhone: Story = {
   name: 'Restaurant service, takeaway orders, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={K_ROUTES.floorTakeaway} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -4249,7 +4258,7 @@ export const RestaurantTakeawayPhone: Story = {
 /** A takeaway order made ready, then handed over: it leaves the list. */
 export const RestaurantTakeawayInteraction: Story = {
   name: 'Restaurant service, takeaway, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={K_ROUTES.floorTakeaway} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -4323,7 +4332,7 @@ export const RestaurantServiceInteraction: Story = {
  */
 export const RestaurantMergeAndMoveInteraction: Story = {
   name: 'Restaurant service, merge and move a party, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={K_ROUTES.floorMoveNone} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -4366,7 +4375,7 @@ export const RestaurantMergeAndMoveInteraction: Story = {
  */
 export const RestaurantTableActionsInteraction: Story = {
   name: 'Restaurant service, seat, clear and clean, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={K_ROUTES.floor} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -4664,6 +4673,7 @@ export const GalaSeatingInteraction: Story = {
 /** Three seatings pending, "Save seating…" asked: every guest's seat old → new (P5.28 item 9). */
 export const GalaSeatingPending: Story = {
   name: 'Event seating, saving the changes',
+  tags: ['!dev'],
   render: () => <ExampleApp start={K_ROUTES.seatingPending} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -4682,6 +4692,7 @@ export const GalaSeatingPending: Story = {
 
 export const GalaSeatingPendingPhone: Story = {
   name: 'Event seating, saving the changes, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={K_ROUTES.seatingPending} />,
   play: async () => {
     await settle()
@@ -4694,7 +4705,7 @@ export const GalaSeatingPendingPhone: Story = {
 /** Pending seatings discarded: the dialog cancelled, then "Discard changes" (P5.28 item 9). */
 export const GalaSeatingDiscardInteraction: Story = {
   name: 'Event seating, discarding the changes, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={K_ROUTES.seatingPending} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -5356,7 +5367,7 @@ export const WarehouseFloorPlanInteraction: Story = {
 /** The other bin actions (P5.28 item 25): a count started, a blocked bin unblocked. */
 export const WarehouseBinActionsInteraction: Story = {
   name: 'Warehouse floor plan, count and unblock, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={N_ROUTES.warehouse} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -5470,6 +5481,7 @@ export const HospitalWardInteraction: Story = {
  */
 export const HospitalWardTransfer: Story = {
   name: 'Hospital ward, transferring a patient',
+  tags: ['!dev'],
   render: () => <ExampleApp start={N_ROUTES.wardTransfer} />,
   play: async () => {
     const dialog = await within(document.body).findByRole('dialog', {
@@ -5489,6 +5501,7 @@ export const HospitalWardTransfer: Story = {
 
 export const HospitalWardTransferPhone: Story = {
   name: 'Hospital ward, transferring a patient, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={N_ROUTES.wardTransfer} />,
   play: async () => {
     const dialog = await within(document.body).findByRole('dialog', {
@@ -5502,6 +5515,7 @@ export const HospitalWardTransferPhone: Story = {
 /** "Admit patient…" on free bed 2 (P5.28 item 18): the patients waiting, by case number. */
 export const HospitalWardAdmit: Story = {
   name: 'Hospital ward, admitting a patient',
+  tags: ['!dev'],
   render: () => <ExampleApp start={N_ROUTES.wardAdmit} />,
   play: async () => {
     const dialog = await within(document.body).findByRole('dialog', {
@@ -5515,6 +5529,7 @@ export const HospitalWardAdmit: Story = {
 
 export const HospitalWardAdmitPhone: Story = {
   name: 'Hospital ward, admitting a patient, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={N_ROUTES.wardAdmit} />,
   play: async () => {
     const dialog = await within(document.body).findByRole('dialog', {
@@ -5531,7 +5546,7 @@ export const HospitalWardAdmitPhone: Story = {
  */
 export const HospitalWardTransferInteraction: Story = {
   name: 'Hospital ward, transfer and admit, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={N_ROUTES.ward} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -5571,7 +5586,7 @@ export const HospitalWardTransferInteraction: Story = {
 /** The other bed actions (P5.28 item 25): a bed cleaned, a blocked bed unblocked. */
 export const HospitalWardBedActionsInteraction: Story = {
   name: 'Hospital ward, clean and unblock, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={N_ROUTES.ward} />,
   play: async ({ canvasElement }) => {
     await settle()

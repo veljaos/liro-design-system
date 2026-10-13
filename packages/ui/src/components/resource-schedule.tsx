@@ -807,6 +807,7 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
                   byDay={byDay}
                   resources={props.resources}
                   unavailable={unavailable}
+                  resourceLabel={props.resourceLabel}
                   onMove={(to) => {
                     report(item, to)
                     announce('schedule.moved', item, to)
@@ -1092,6 +1093,7 @@ function MoveTo({
   byDay,
   resources,
   unavailable,
+  resourceLabel,
   onMove,
 }: {
   item: Placed
@@ -1100,6 +1102,8 @@ function MoveTo({
   byDay: boolean
   resources: readonly ScheduleResource[]
   unavailable: readonly UnavailableTime[]
+  /** The resources' name, as the header names them ("Room"). */
+  resourceLabel: string | undefined
   onMove: (to: SchedulePlace) => void
 }) {
   const { messages, format, timeZone } = useLiro()
@@ -1161,7 +1165,7 @@ function MoveTo({
           </p>
         </div>
         <SelectField
-          label={messages['schedule.resource']}
+          label={resourceLabel ?? messages['schedule.resource']}
           value={resourceId}
           options={resources.map((each) => ({ value: each.id, label: each.name }))}
           onChange={(value) => {

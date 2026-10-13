@@ -283,7 +283,7 @@ export const MoveToInteraction: Story = {
     const panel = await body.findByRole('dialog', { name: 'Move to…: Marko Ilić' })
     // The action, then the booking it moves, bold on its own line (P5.28 item 6).
     await expect(panel.querySelector('[data-slot="move-subject"]')).toHaveTextContent('Marko Ilić')
-    await userEvent.click(within(panel).getByRole('combobox', { name: 'Resource' }))
+    await userEvent.click(within(panel).getByRole('combobox', { name: 'Doctor or room' }))
     await userEvent.click(await body.findByRole('option', { name: 'Dr Jelena Stojanović' }))
     // The panel is hidden from assistive technology while the select is open.
     await userEvent.click(await within(panel).findByRole('combobox', { name: 'Start' }))
