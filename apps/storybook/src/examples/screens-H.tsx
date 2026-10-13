@@ -907,7 +907,14 @@ function ExcuseDrawer({
         {...(tried && missingAbsence ? { error: 'Choose at least one absence.' } : {})}
       >
         {(control) => (
-          <div role="group" aria-labelledby={control.labelId} className="flex flex-col gap-2">
+          <div
+            role="group"
+            aria-labelledby={control.labelId}
+            {...(control.describedBy === undefined
+              ? {}
+              : { 'aria-describedby': control.describedBy })}
+            className="flex flex-col gap-2"
+          >
             {absences.map((each) => (
               <CheckboxField
                 key={each.id}
@@ -958,7 +965,6 @@ function ExcuseDrawer({
         maxSizeText={EXCUSE_FILES.maxSizeText}
         camera
         layout={phone ? 'phone' : 'desktop'}
-        existing={draft.files.length}
         onFiles={(files) => {
           setDraft((current) => ({
             ...current,
