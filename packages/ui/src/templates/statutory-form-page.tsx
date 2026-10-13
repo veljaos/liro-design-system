@@ -939,7 +939,13 @@ export function StatutoryFormPage(props: StatutoryFormPageProps) {
           onOpenChange={(isOpen) => {
             if (!isOpen) setDrill(null)
           }}
-          title={`${drill.row.number} ${drill.row.label}`}
+          // What it shows, then the row it belongs to, bold on its own line (P5.28 item 6).
+          title={messages['statutory.sources']}
+          subject={
+            <>
+              {drill.row.number} <span {...lang}>{drill.row.label}</span>
+            </>
+          }
           description={`${statutoryColumnLabel(drill.column)} · ${props.currentLabel}`}
           actions={
             <Button

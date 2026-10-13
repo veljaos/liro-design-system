@@ -437,7 +437,7 @@ export const DefaultInteraction: Story = {
     await userEvent.click(
       canvas.getByRole('button', { name: /sources of 1\.1\.1 · Општа стопа 20% · Основица$/ }),
     )
-    const drawer = within(await body.findByRole('dialog', { name: /^1\.1\.1 / }))
+    const drawer = within(await body.findByRole('dialog', { name: /^Source documents 1\.1\.1 / }))
     await settle()
     await expect(drawer.getAllByRole('listitem')).toHaveLength(6)
     await expect(drawer.getByRole('link', { name: /F-2026-0412/ })).toBeVisible()

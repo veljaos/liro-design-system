@@ -6,7 +6,6 @@ import { KeyValueList, type KeyValueGroup, type KeyValueItem } from '../componen
 import { commandMatches } from '../components/command-logic'
 import { Drawer } from '../components/dialog'
 import { usePhone } from '../components/use-phone'
-import { StickyHeaderDefault } from '../components/sticky-head'
 import { ButtonPrimitive } from '../primitives/button'
 import { Checkbox } from '../primitives/checkbox'
 import { FOCUS_RING, TEXT_DIRECTION } from '../primitives/classes'
@@ -31,8 +30,8 @@ import { PageHeader } from './page-header'
  *   (`titleHidden`, default true; PageHeader). Below them ONE card (the raised surface,
  *   border.default, radius lg, no shadow) holding the saved views as its first row, the FilterBar
  *   (inCard) and the table edge to edge. No other cards. The FilterBar keeps only the list's own
- *   actions (Export, Columns). A DataTable in the card keeps its header below the shell while the
- *   page scrolls (`stickyHeader` by default there, P5.28 item 4; `stickyHeader={false}` opts out).
+ *   actions (Export, Columns). The table's header stays below the shell while the page scrolls
+ *   (DataTable's `stickyHeader`, default true since P5.28 item 4).
  * - Saved views: the card's first row, start-aligned (list filters, not page tabs), the tab look
  *   with the blue line under the active one; the count after the label in xs text.tertiary,
  *   tabular (through `format.number`); the "Save view" slot at the end of the row. The DS only
@@ -344,10 +343,8 @@ export function ListPage(props: ListPageProps) {
         )}
         {props.filterBar}
         {/* The table to the card's edges; on phones the cards 16px inside (DataTable inCard). Its
-            header stays below the shell while the page scrolls (P5.28 item 4). */}
-        <StickyHeaderDefault.Provider value>
-          <div className="min-w-0">{props.children}</div>
-        </StickyHeaderDefault.Provider>
+            header stays below the shell while the page scrolls (DataTable's default, P5.28). */}
+        <div className="min-w-0">{props.children}</div>
       </section>
     </div>
   )

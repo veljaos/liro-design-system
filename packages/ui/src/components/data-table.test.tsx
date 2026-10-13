@@ -190,7 +190,8 @@ describe('DataTable', () => {
   })
 
   it('makes rows focusable and highlighted only when they can be pressed', () => {
-    expect(render()).not.toContain('tabindex')
+    // The attribute, not the sticky header's scroll-margin selector "tr[tabindex]" in a class.
+    expect(render()).not.toContain('tabindex="')
     expect(render()).not.toContain('hover:bg-surface-sunken')
     const html = render({ onRowClick: () => undefined })
     expect(html.match(/<tr tabindex="0"/g)).toHaveLength(3)

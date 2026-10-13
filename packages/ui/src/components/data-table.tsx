@@ -12,7 +12,6 @@ import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react'
 import {
   Fragment,
   useCallback,
-  useContext,
   useEffect,
   useImperativeHandle,
   useLayoutEffect,
@@ -55,7 +54,7 @@ import { type MenuEntry } from './dropdown-menu'
 import { EmptyState, type EmptyAction } from './empty-state'
 import { CursorPagination } from './navigation'
 import { RefetchLoader } from './refetch-loader'
-import { STICKY_CLEARANCE, STICKY_HEAD, StickyHeaderDefault, useStickyHead } from './sticky-head'
+import { STICKY_CLEARANCE, STICKY_HEAD, useStickyHead } from './sticky-head'
 import { usePhone } from './use-phone'
 import { keepFocusedRow, overscanRows, spacersBetween } from './virtual-rows'
 
@@ -66,7 +65,8 @@ import { keepFocusedRow, overscanRows, spacersBetween } from './virtual-rows'
  *
  * The previous Design System's values (the owner, 2026-09-30, docs/decisions.md "Table"):
  * - table font size sm (13px), cells 12px (sm) top and bottom and 16px (md) at the sides;
- * - the header row on surface.sunken; sticky when `stickyHeader`, always when virtualized;
+ * - the header row on surface.sunken; sticky below the shell's sticky top (`stickyHeader`, default
+ *   true since P5.28 item 4; always when virtualized);
  * - minimum column width 64px; below 640px the table scrolls sideways inside its container;
  *   resizable, the table is exactly as wide as its columns, so resizing one never moves another;
  * - rows highlight under the pointer only when they can be pressed;
@@ -218,8 +218,9 @@ export interface DataTableProps<Row extends RowData> {
 
   /**
    * The header stays in view while the rows scroll: below the shell's sticky top while the page
-   * scrolls (P5.28 item 4), and at the top inside `maxHeight`. Default true inside ListPage's card
-   * and RegisterPage, false elsewhere.
+   * scrolls (P5.28 item 4), and at the top inside `maxHeight`. Default true: every table's header
+   * stays below the shell; false only where the table is never taller than the screen and its
+   * header must not move (none in the library).
    */
   stickyHeader?: boolean
   /**
@@ -324,9 +325,8 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
   // with dividers instead.
   const flat = cards && props.inCard === true
   const virtualize = props.virtualize === true
-  // Inside ListPage's card the header is sticky by default (P5.28 item 4).
-  const stickyDefault = useContext(StickyHeaderDefault)
-  const sticky = (props.stickyHeader ?? stickyDefault) || virtualize
+  // Every table's header stays below the shell by default (P5.28 item 4).
+  const sticky = props.stickyHeader !== false || virtualize
   // In a card the first column stays at the start while the table scrolls sideways (P5.28 item 4).
   const stickyStart = props.inCard === true && !cards
   const resizable = props.resizable === true && !cards

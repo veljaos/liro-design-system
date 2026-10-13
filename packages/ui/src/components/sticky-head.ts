@@ -1,4 +1,4 @@
-import { createContext, useLayoutEffect, type RefObject } from 'react'
+import { useLayoutEffect, type RefObject } from 'react'
 
 /*
  * Table headers that stay in view below the shell (P5.28 item 4). A wide grid scrolls sideways in
@@ -25,12 +25,6 @@ import { createContext, useLayoutEffect, type RefObject } from 'react'
  * A header with no region of its own (a table that never scrolls sideways) may simply be
  * `sticky top-[var(--liro-shell-top,0px)]`; the hook gives the same result.
  */
-
-/**
- * True inside a container whose tables keep their header below the shell by default (ListPage's
- * card, P5.28 item 4): a DataTable there has `stickyHeader` unless it says `stickyHeader={false}`.
- */
-export const StickyHeaderDefault = createContext(false)
 
 /** The header cells: sticky at their region's top, then moved by the page's scroll. */
 export const STICKY_HEAD = 'sticky top-0 translate-y-[var(--liro-head-shift,0px)]'
