@@ -491,6 +491,10 @@ export const CorrectionDialog: Story = {
     const dialog = await within(canvasElement.ownerDocument.body).findByRole('dialog')
     // The weekday is in the interface's language, from the provider's locale ("Tue 29", P5.28).
     await expect(dialog).toHaveAccessibleName(/^Correct Ivan Stojanović, \S+ 29$/)
+    // The action is the title; the record stands bold on its own line under it (P5.28 item 6).
+    await expect(dialog.querySelector('[data-slot="dialog-subject"]')).toHaveTextContent(
+      /^Ivan Stojanović, \S+ 29$/,
+    )
     await expect(within(dialog).getByText('8 h, Regular work')).toBeVisible()
   },
 }

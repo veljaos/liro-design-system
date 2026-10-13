@@ -62,7 +62,12 @@ import { usePhone } from './use-phone'
  *   was; Escape cancels); the keyboard on the booking (Space picks it up, the arrows move it by a
  *   slot or a row — the time arrows from the leading edge —, Enter or Space drops it, Escape or
  *   leaving it cancels; every step announced politely); or its "Move to…" button (a popover with
- *   the row, the day and the start, then Move).
+ *   the action and the booking bold under it (P5.28 item 6), the row, the day and the start, then
+ *   Move).
+ * - A move only proposes (P5.28 item 9): `onMove` reports it and the schedule draws nothing new
+ *   until the application changes `bookings`. A booking other people rely on (an appointment, a
+ *   reservation) is confirmed by the application with ChangeConfirmDialog (old → new, "Notify …"
+ *   as a choice, Cancel / Save) before it is moved or anyone is messaged.
  * - Phones (below 48em or `layout="phone"`): one row at a time, chosen in a select; the time runs
  *   down; Left and Right move a picked-up booking to the other rows.
  * - `scale="days"` (P5.25): stays over days — rooms, vehicles, equipment. Each day of `days` is a
@@ -1143,9 +1148,18 @@ function MoveTo({
         </button>
       </PopoverTrigger>
       <PopoverContent align="end" aria-label={title} className="flex w-72 flex-col gap-3">
-        <p className={cn('m-0 text-sm font-semibold text-primary', TEXT_DIRECTION)}>
-          {messages['schedule.moveToTitle']}
-        </p>
+        {/* The action, then the booking it moves, bold on its own line (P5.28 item 6). */}
+        <div className="flex flex-col gap-1">
+          <p className={cn('m-0 text-sm font-semibold text-primary', TEXT_DIRECTION)}>
+            {messages['schedule.moveToTitle']}
+          </p>
+          <p
+            data-slot="move-subject"
+            className={cn('m-0 text-sm font-bold leading-snug text-primary', TEXT_DIRECTION)}
+          >
+            {item.booking.title}
+          </p>
+        </div>
         <SelectField
           label={messages['schedule.resource']}
           value={resourceId}

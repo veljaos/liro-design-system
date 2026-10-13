@@ -592,7 +592,6 @@ export const messagesEn: LiroMessages = {
   'shifts.rotationConflicts': (count, countText) =>
     count === 1 ? 'The checks found 1 conflict' : `The checks found ${countText} conflicts`,
   'shifts.rotationNoConflicts': 'The checks found no conflicts.',
-  'shifts.moveTitle': (label) => `Move ${label}`,
   'shifts.movePerson': 'Person',
   'shifts.moveDay': 'Day',
   'shifts.moveButton': 'Move',
@@ -669,7 +668,6 @@ export const messagesEn: LiroMessages = {
     'Arrow keys move between cells. Shift with an arrow selects a range. A mark’s key marks the selected cells, Delete clears them.',
   'attendance.locked': 'Locked',
   'attendance.correct': 'Correct entry',
-  'attendance.correctTitle': (row, column) => `Correct ${row}, ${column}`,
   'attendance.current': 'Current entry',
   'attendance.code': 'Code',
   'attendance.noCode': 'None',
@@ -824,7 +822,6 @@ export const messagesEn: LiroMessages = {
   'pick.quantity': 'Quantity picked',
   'pick.confirm': 'Confirm quantity',
   'pick.skip': 'Skip',
-  'pick.skipTitle': (item) => `Skip ${item}?`,
   'pick.skipMessage': 'The line stays open, with your reason, for someone to look at.',
   'pick.route': 'Route',
   'pick.open': 'To pick',
@@ -1210,4 +1207,8 @@ export const messagesEn: LiroMessages = {
   'attendance.correctSubject': (row, column) => `${row}, ${column}`,
   'shifts.moveAction': 'Move',
   'pick.skipAction': 'Skip line',
+  // P5.28 left
+  'shifts.moveSubject': (label, name, dayText) => `${label} · ${name}, ${dayText}`,
+  'shifts.publishAndNotify': 'Publish and notify',
+  'shifts.publishChangesAndNotify': 'Publish changes and notify',
 }

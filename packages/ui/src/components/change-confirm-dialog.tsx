@@ -152,6 +152,42 @@ function Line({ change }: { change: ChangeLine }) {
   )
 }
 
+/**
+ * The "Notify …" checkboxes, one per message the application can send, in a group named
+ * "Messages to send". Shared by ChangeConfirmDialog and ConfirmDialog's `notify` (P5.28 item 9);
+ * not exported from the package. Nothing when there are no options.
+ */
+export function NotifyChoices(props: {
+  options: readonly NotifyOption[]
+  checked: readonly string[]
+  disabled?: boolean
+  onChange: (checked: string[]) => void
+  className?: string
+}) {
+  const { messages } = useLiro()
+  if (props.options.length === 0) return null
+  return (
+    <div
+      role="group"
+      aria-label={messages['change.notifyGroup']}
+      className={cn('flex flex-col gap-3', props.className)}
+    >
+      {props.options.map((option) => (
+        <CheckboxField
+          key={option.id}
+          label={option.label}
+          {...(option.description === undefined ? {} : { description: option.description })}
+          checked={props.checked.includes(option.id)}
+          disabled={props.disabled === true}
+          onChange={(on) => {
+            props.onChange(toggleNotify(props.options, props.checked, option.id, on))
+          }}
+        />
+      ))}
+    </div>
+  )
+}
+
 /** Confirms a change others rely on: old → new, who it concerns, "Notify …" as a choice, Save. */
 export function ChangeConfirmDialog(props: ChangeConfirmDialogProps) {
   const [innerOpen, setInnerOpen] = useState(props.defaultOpen === true)
@@ -235,26 +271,12 @@ function ChangeForm(
         </p>
       )}
       {!isEmpty(props.warning) && <Alert tone="warning">{props.warning}</Alert>}
-      {options.length > 0 && (
-        <div
-          role="group"
-          aria-label={messages['change.notifyGroup']}
-          className="flex flex-col gap-3"
-        >
-          {options.map((option) => (
-            <CheckboxField
-              key={option.id}
-              label={option.label}
-              {...(option.description === undefined ? {} : { description: option.description })}
-              checked={checked.includes(option.id)}
-              disabled={props.working}
-              onChange={(on) => {
-                setChecked((current) => toggleNotify(options, current, option.id, on))
-              }}
-            />
-          ))}
-        </div>
-      )}
+      <NotifyChoices
+        options={options}
+        checked={checked}
+        disabled={props.working}
+        onChange={setChecked}
+      />
       <DialogFooter>
         <Button
           intent="cancel"

@@ -61,6 +61,7 @@ import {
   type AttendancePosition,
 } from './attendance-logic'
 import { Button, CompactIconButton, IconButton } from './button'
+import { DialogHeading, dialogHeaderClass } from './dialog'
 import { LazyDropdownMenu, type MenuEntry } from './dropdown-menu'
 import { EmptyState } from './empty-state'
 import { ShortcutHint } from './navigation'
@@ -1614,9 +1615,15 @@ function CorrectionDialog(
           if (pending) event.preventDefault()
         }}
       >
-        <DialogHeader>
+        <DialogHeader className={dialogHeaderClass(props.row.label)}>
           <DialogTitle>
-            {messages['attendance.correctTitle'](props.row.label, columnName(props.column))}
+            <DialogHeading
+              title={messages['attendance.correctAction']}
+              subject={messages['attendance.correctSubject'](
+                props.row.label,
+                columnName(props.column),
+              )}
+            />
           </DialogTitle>
           {!pending && <DialogCloseButton label={messages['dialog.close']} />}
         </DialogHeader>

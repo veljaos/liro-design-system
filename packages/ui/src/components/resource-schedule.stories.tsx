@@ -4,10 +4,13 @@ import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { settle } from '../primitives/story-helpers'
+import { useLiro } from '../provider/liro-provider'
+import { ChangeConfirmDialog } from './change-confirm-dialog'
 import {
   ResourceSchedule,
   type ResourceScheduleProps,
   type ScheduleBooking,
+  type ScheduleMove,
 } from './resource-schedule'
 import {
   CLINIC_BOOKINGS,
@@ -23,13 +26,31 @@ import {
   ShellPage,
 } from './sticky-story-helpers'
 
-/** The application around the schedule: it applies every move it is told about. */
+/**
+ * The application around the schedule. A move only proposes (P5.28 item 9): the application asks
+ * first with ChangeConfirmDialog — the booking, its row and time old → new, the person's message
+ * as a choice (unchecked) — and moves the booking on Save; Cancel leaves it where it was.
+ */
 function Schedule(
-  props: Partial<ResourceScheduleProps> & { initial?: readonly ScheduleBooking[] },
+  props: Partial<ResourceScheduleProps> & {
+    initial?: readonly ScheduleBooking[]
+    /** A move proposed when the story opens: the confirmation is shown at once. */
+    proposed?: ScheduleMove
+  },
 ) {
-  const { initial, ...rest } = props
+  const { initial, proposed: initialProposal, ...rest } = props
+  const { format } = useLiro()
+  const resources = props.resources ?? CLINIC_RESOURCES
   const [bookings, setBookings] = useState<readonly ScheduleBooking[]>(initial ?? CLINIC_BOOKINGS)
+  const [proposed, setProposed] = useState<ScheduleMove | null>(initialProposal ?? null)
   const [said, setSaid] = useState('')
+  const moving = proposed === null ? undefined : bookings.find((each) => each.id === proposed.id)
+  const rowName = (id: string) => resources.find((each) => each.id === id)?.name ?? id
+  // Days (YYYY-MM-DD) or times (YYYY-MM-DDTHH:mm), as the schedule reports them.
+  const when = (start: string, end: string) =>
+    start.length === 10
+      ? `${format.date(start)} – ${format.date(end)}`
+      : `${format.date(start.slice(0, 10))} ${format.time(start)}–${format.time(end)}`
   return (
     <div className="flex flex-col gap-3">
       <ResourceSchedule
@@ -38,25 +59,75 @@ function Schedule(
         label="Health centre Liman, Wednesday 14 October"
         resourceLabel="Doctor or room"
         bookings={bookings}
-        onMove={(move) => {
-          setBookings((current) =>
-            current.map((booking) =>
-              booking.id === move.id
-                ? { ...booking, resourceId: move.resourceId, start: move.start, end: move.end }
-                : booking,
-            ),
-          )
-          setSaid(`Moved ${move.id} to ${move.resourceId} at ${move.start}–${move.end}`)
-        }}
+        onMove={setProposed}
         onSelect={(booking) => {
           setSaid(`Opened: ${booking.title}`)
         }}
         now="10:20"
         {...rest}
       />
+      {proposed !== null && moving !== undefined && (
+        <ChangeConfirmDialog
+          open
+          onOpenChange={(open) => {
+            if (!open) setProposed(null)
+          }}
+          title="Move booking"
+          subject={moving.title}
+          changes={[
+            ...(proposed.resourceId === moving.resourceId
+              ? []
+              : [
+                  {
+                    label: props.resourceLabel ?? 'Doctor or room',
+                    from: rowName(moving.resourceId),
+                    to: rowName(proposed.resourceId),
+                  },
+                ]),
+            {
+              label: 'When',
+              from: when(moving.start, moving.end),
+              to: when(proposed.start, proposed.end),
+            },
+          ]}
+          notify={[
+            {
+              id: 'person',
+              label: `Notify ${moving.title}`,
+              description: 'The new place and time, as the application sends it.',
+            },
+          ]}
+          onConfirm={(answer) => {
+            setBookings((current) =>
+              current.map((booking) =>
+                booking.id === proposed.id
+                  ? {
+                      ...booking,
+                      resourceId: proposed.resourceId,
+                      start: proposed.start,
+                      end: proposed.end,
+                    }
+                  : booking,
+              ),
+            )
+            setSaid(
+              `Moved ${proposed.id} to ${proposed.resourceId} at ${proposed.start}–${proposed.end}; ` +
+                (answer.notify.length > 0 ? 'message sent' : 'no message'),
+            )
+          }}
+        />
+      )}
       <output className={cn('text-sm text-secondary', TEXT_DIRECTION)}>{said}</output>
     </div>
   )
+}
+
+/** Saves the move the schedule proposed (P5.28 item 9). */
+async function saveMove(subject: string) {
+  const dialog = await within(document.body).findByRole('dialog', {
+    name: `Move booking ${subject}`,
+  })
+  await userEvent.click(within(dialog).getByRole('button', { name: 'Save' }))
 }
 
 function rtl(canvasElement: HTMLElement): boolean {
@@ -96,7 +167,10 @@ const meta = {
           'drops it, Escape cancels; each step is announced, with the reason when the place is ' +
           'unavailable); or its "Move to…" button (row, day and start, then Move). The schedule ' +
           'only reports `onMove({ id, resourceId, start, end })`: whether the move is allowed is ' +
-          'the application’s decision.\n\n' +
+          'the application’s decision. A move of something other people rely on (an ' +
+          'appointment, a reservation) only proposes: the application confirms it with ' +
+          'ChangeConfirmDialog — old → new, "Notify …" as a choice, Cancel / Save — and changes ' +
+          '`bookings` on Save (P5.28 item 9; "Move asked").\n\n' +
           '**Phones:** one row at a time, chosen in a select; the time runs down.\n\n' +
           '**When:** planning shared people or rooms over one day or a few days.\n\n' +
           '**When not:** one person’s days and weeks (CalendarView); offering free slots to book ' +
@@ -161,8 +235,14 @@ export const KeyboardInteraction: Story = {
     )
     await expect(booking(canvasElement, 'Ana Petrović')).toHaveFocus()
     await userEvent.keyboard('{Enter}')
+    // The drop only proposes: nothing moves until the confirmation's Save (P5.28 item 9). The
+    // page under the open dialog is hidden from assistive technology.
     await expect(
-      canvas.getByText('Moved b2 to kovacevic at 2026-10-14T09:30–2026-10-14T10:30'),
+      within(canvasElement).getByRole('button', { name: /^Ana Petrović, /, hidden: true }),
+    ).toHaveAccessibleName(/Dr Milica Jovanović, 09:00\sAM – 10:00\sAM$/)
+    await saveMove('Ana Petrović')
+    await expect(
+      canvas.getByText('Moved b2 to kovacevic at 2026-10-14T09:30–2026-10-14T10:30; no message'),
     ).toBeVisible()
     await waitFor(async () => {
       await expect(booking(canvasElement, 'Ana Petrović')).toHaveAccessibleName(
@@ -201,14 +281,20 @@ export const MoveToInteraction: Story = {
     const body = within(document.body)
     await userEvent.click(canvas.getByRole('button', { name: 'Move to…: Marko Ilić' }))
     const panel = await body.findByRole('dialog', { name: 'Move to…: Marko Ilić' })
+    // The action, then the booking it moves, bold on its own line (P5.28 item 6).
+    await expect(panel.querySelector('[data-slot="move-subject"]')).toHaveTextContent('Marko Ilić')
     await userEvent.click(within(panel).getByRole('combobox', { name: 'Resource' }))
     await userEvent.click(await body.findByRole('option', { name: 'Dr Jelena Stojanović' }))
     // The panel is hidden from assistive technology while the select is open.
     await userEvent.click(await within(panel).findByRole('combobox', { name: 'Start' }))
     await userEvent.click(await body.findByRole('option', { name: /^11:00\sAM$/ }))
     await userEvent.click(await within(panel).findByRole('button', { name: 'Move' }))
+    // The confirmation: the message is a choice; checked, Save says so (P5.28 item 9).
+    const dialog = await body.findByRole('dialog', { name: 'Move booking Marko Ilić' })
+    await userEvent.click(within(dialog).getByRole('checkbox', { name: /^Notify Marko Ilić/ }))
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Save and notify' }))
     await expect(
-      canvas.getByText('Moved b1 to stojanovic at 2026-10-14T11:00–2026-10-14T11:30'),
+      canvas.getByText('Moved b1 to stojanovic at 2026-10-14T11:00–2026-10-14T11:30; message sent'),
     ).toBeVisible()
   },
 }
@@ -245,9 +331,43 @@ export const DraggingInteraction: Story = {
       target: document.elementFromPoint(end.x, end.y) ?? document.body,
       coords: { clientX: end.x, clientY: end.y },
     })
+    await saveMove('Marko Ilić')
     await expect(
-      canvas.getByText('Moved b1 to kovacevic at 2026-10-14T09:00–2026-10-14T09:30'),
+      canvas.getByText('Moved b1 to kovacevic at 2026-10-14T09:00–2026-10-14T09:30; no message'),
     ).toBeVisible()
+  },
+}
+
+/**
+ * A move proposed (by a drag, the keys or "Move to…"): the application asks first — the booking,
+ * its doctor and time old → new, the person's message as an unchecked choice — and moves it only
+ * on Save (P5.28 item 9). The schedule still shows the booking where it is.
+ */
+export const MoveAsked: Story = {
+  name: 'Move asked',
+  render: () => (
+    <ScheduleFrame>
+      <Schedule
+        proposed={{
+          id: 'b1',
+          resourceId: 'stojanovic',
+          start: '2026-10-14T11:00',
+          end: '2026-10-14T11:30',
+        }}
+      />
+    </ScheduleFrame>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const dialog = within(document.body).getByRole('dialog', { name: 'Move booking Marko Ilić' })
+    await expect(
+      within(dialog).getByRole('checkbox', { name: /^Notify Marko Ilić/ }),
+    ).not.toBeChecked()
+    await expect(within(dialog).getByRole('button', { name: 'Save' })).toBeVisible()
+    // Still in its place (the page under the dialog is hidden from assistive technology).
+    await expect(
+      within(canvasElement).getByRole('button', { name: /^Marko Ilić, /, hidden: true }),
+    ).toHaveAccessibleName(/Dr Milica Jovanović, 08:00\sAM – 08:30\sAM$/)
   },
 }
 
@@ -438,8 +558,9 @@ export const PhoneKeyboardInteraction: Story = {
     )
     await expect(booking(canvasElement, 'Marko Ilić')).toHaveFocus()
     await userEvent.keyboard('{Enter}')
+    await saveMove('Marko Ilić')
     await expect(
-      canvas.getByText('Moved b1 to kovacevic at 2026-10-14T08:30–2026-10-14T09:00'),
+      canvas.getByText('Moved b1 to kovacevic at 2026-10-14T08:30–2026-10-14T09:00; no message'),
     ).toBeVisible()
   },
 }
@@ -609,7 +730,10 @@ export const DaysKeyboardInteraction: Story = {
       'Sofia Rossi: Room 102, 10/22/2026 – 10/23/2026.',
     )
     await userEvent.keyboard('{Enter}')
-    await expect(canvas.getByText('Moved s4 to r102 at 2026-10-22–2026-10-23')).toBeVisible()
+    await saveMove('Sofia Rossi')
+    await expect(
+      canvas.getByText('Moved s4 to r102 at 2026-10-22–2026-10-23; no message'),
+    ).toBeVisible()
   },
 }
 
@@ -628,8 +752,11 @@ export const DaysMoveToInteraction: Story = {
     await userEvent.click(within(panel).getByRole('combobox', { name: 'Start' }))
     await userEvent.click(await body.findByRole('option', { name: /^Wednesday, October 21, 2026/ }))
     await userEvent.click(await within(panel).findByRole('button', { name: 'Move' }))
+    await saveMove('Ana Petrović')
     await waitFor(async () => {
-      await expect(canvas.getByText('Moved s2 to r101 at 2026-10-21–2026-10-24')).toBeVisible()
+      await expect(
+        canvas.getByText('Moved s2 to r101 at 2026-10-21–2026-10-24; no message'),
+      ).toBeVisible()
     })
   },
 }

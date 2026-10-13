@@ -2634,15 +2634,59 @@ export const StoreShiftsPublish: Story = {
     await expect(dialog).toHaveTextContent(
       `${String(STORE_PUBLISH.shifts)} shifts for ${String(STORE_PUBLISH.people)} people`,
     )
-    await userEvent.click(within(dialog).getByRole('button', { name: /^Publish/ }))
+    // The messages are a choice (P5.28 item 9): the app's checked by the store, the SMS not.
+    await expect(
+      within(dialog).getByRole('checkbox', { name: /^Notify 8 people in the app/ }),
+    ).toBeChecked()
+    await userEvent.click(
+      within(dialog).getByRole('checkbox', { name: /^Send an SMS to the 2 people/ }),
+    )
+    await userEvent.click(
+      within(dialog).getByRole('button', { name: 'Publish changes and notify' }),
+    )
     await expect(
       await within(document.body).findByText(
-        /Changes published\. 8 people see their shifts in the app\./,
+        'Changes published. 8 people get a message in the app. 2 also get an SMS.',
       ),
     ).toBeInTheDocument()
     await waitFor(async () => {
       await expect(canvas.queryByText('Changed since publishing')).toBeNull()
     })
+  },
+}
+
+/**
+ * "Publish changes" asked (P5.28 item 9): the counts and the open conflicts, then the messages as
+ * a choice — "Notify 8 people in the app" checked by the store, an SMS to the two people whose
+ * shifts changed not checked; the button says "Publish changes and notify" while one is checked.
+ */
+export const StoreShiftsPublishAsked: Story = {
+  name: 'Store shifts, publish asked',
+  render: () => <ExampleApp start={G_ROUTES.storePublish} />,
+  play: async () => {
+    await settle()
+    const dialog = within(
+      within(document.body).getByRole('alertdialog', { name: 'Publish the schedule?' }),
+    )
+    await expect(
+      dialog.getByRole('checkbox', { name: /^Notify 8 people in the app/ }),
+    ).toBeChecked()
+    await expect(
+      dialog.getByRole('checkbox', { name: /^Send an SMS to the 2 people/ }),
+    ).not.toBeChecked()
+    await expect(dialog.getByRole('button', { name: 'Publish changes and notify' })).toBeVisible()
+  },
+}
+
+export const StoreShiftsPublishAskedPhone: Story = {
+  name: 'Store shifts, publish asked, phone',
+  render: () => <OnPhone start={G_ROUTES.storePublish} />,
+  play: async () => {
+    await settle()
+    const dialog = within(
+      within(document.body).getByRole('alertdialog', { name: 'Publish the schedule?' }),
+    )
+    await expect(dialog.getByRole('button', { name: 'Publish changes and notify' })).toBeVisible()
   },
 }
 
@@ -3530,7 +3574,7 @@ export const PickingHandheldSkip: Story = {
   play: async () => {
     await settle()
     await expect(
-      within(document.body).getByRole('alertdialog', { name: /^Skip Fasadni stiropor/ }),
+      within(document.body).getByRole('alertdialog', { name: /^Skip line Fasadni stiropor/ }),
     ).toBeVisible()
   },
 }
@@ -4286,7 +4330,7 @@ export const IncomingInvoiceApprovalDraftFixed: Story = {
     await userEvent.click(canvas.getByRole('button', { name: 'Go to Legal reviews the terms' }))
     await userEvent.click(await canvas.findByRole('button', { name: 'Connect to…' }))
     const connect = await body.findByRole('dialog', {
-      name: 'Connect “Legal reviews the terms” to',
+      name: 'Connect to Legal reviews the terms',
     })
     await quiet()
     await userEvent.click(within(connect).getByRole('radio', { name: /Post to the ledger/ }))
@@ -4300,7 +4344,7 @@ export const IncomingInvoiceApprovalDraftFixed: Story = {
     await userEvent.keyboard(pageRtl(canvasElement) ? '{ArrowLeft}' : '{ArrowRight}')
     await userEvent.keyboard('{Enter}')
     await userEvent.click(canvas.getByRole('button', { name: 'Label…' }))
-    const label = await body.findByRole('dialog', { name: 'Label the connection' })
+    const label = await body.findByRole('dialog', { name: /^Label connection Connection from / })
     await quiet()
     await userEvent.click(within(label).getByRole('checkbox', { name: /Default way out/ }))
     await userEvent.click(within(label).getByRole('button', { name: 'Save' }))
