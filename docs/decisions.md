@@ -2437,6 +2437,120 @@ counts, texts)` — the counts as numbers for the plural rules and as `format.nu
 - **2026-10-13 — What the application keeps outlives the screen (class of P5.28 item 22).** In the examples, records the user changes on a screen and expects to find again are kept above the screens with `useExampleState(key, initial)`: the tabs, the till's sale and journal, the open advances, the pick list and the stock count (the count is reached from the pick list and returns to it). Pictures still start from their route's state.
 - **2026-10-13 — A scrolling area without controls takes the focus (P5.28, found by the tests).** A read-only CartPanel (a refund's lines, a cart without `onQuantityChange`, `onRemove`, `onEditLine`) makes its scrolling list one tab stop (`tabIndex` 0, a group named by the cart's title, the focus ring) so the keyboard can scroll it (WCAG 2.1.1; axe `scrollable-region-focusable`); the till's journal does the same for the printed receipt it shows. A dialog whose steps change (the refund: find, then lines) keeps its step while it closes, so its content does not change under the closing animation.
 
+### Floor plans and places (P5.28 items 23–27, 17, 18; 6, 8, 9 for places)
+
+- **2026-10-13 — No walls, doors or windows (P5.28 item 23, the owner: "they confuse; simplicity
+  first").** `FloorItemKind` loses `wall`, `door` and `window` (a breaking alpha change: an
+  application that passed them gets a type error). A plan is its areas — plain labelled regions,
+  dashed outline on surface.sunken, the name at the top start — and the things people choose or
+  choose around: tables, seats, rooms, places, the bar, a counter, a stage. Decided by me: `bar`,
+  `counter` and `stage` stay as labelled furniture (a stage, a dance floor, a piano, a lift, a
+  rack's sign); `FIXTURE_KINDS` is now `['stage', 'counter']` (drawn, chosen only in edit mode;
+  the stage's border is solid now, dashed was the door's look). A real building plan, when the
+  application has one, is the `background` image (P5.25a). Removed from every story and example:
+  the restaurant's windows, wall and doors (Restoran Kej, Bistro Dunav), the café's railing and
+  door, the wedding's and the gala's doors, the warehouse's dock doors (Receiving and Dispatch are
+  the areas along the docks); the palettes' "Wall" is a "Service counter"; the hotel floor's
+  corridor is an area, not a stage.
+- **2026-10-13 — A label on the plan is never cut (P5.28 item 24, the owner: "'2 guests ·
+  19:...'").** An item writes its number (`shortLabel`) with the state's icon, then a short
+  second line, `planDetail` (new on `FloorItem`: the guests, "2 guests"); `detail` (the time and
+  the guests, "2 guests · since 18:40") is no longer written on the plan — it is in the list, the
+  item's name and the application's panel or drawer. Nothing is cut with "…": after every
+  drawing and every change of the plan's width (ResizeObserver) the plan measures each label
+  (`labelFit`, `labelRoom`: the item's box less 2px padding, a round item's inner 78%, less the
+  level bar) and writes `data-fit` — 'all' (both lines), 'name' (the second line left out),
+  'number' (the icons left out too), 'none' (nothing written; the list and the name say it).
+  SeatingChart's tables write "8 of 10" as their second line. The examples give the guests as
+  `planDetail` (Bistro Dunav, Restoran Kej) or what the tab still has to pay (Kafić Kod Mike).
+- **2026-10-13 — One area at a time (P5.28 item 26).** FloorPlan with two or more areas that hold
+  items shows an area switcher in its toolbar: "All areas" and each area — a segmented control
+  up to four areas (`AREA_SEGMENTS_UP_TO`; two on a phone), a select beyond (SelectField, searched
+  by typing from 11, item 3's rule) — decided by me: one control that stays one line, rather than
+  chips that wrap into rows at 6+ areas. One area is drawn alone: the plan is cropped to the
+  area's box (`planFrame`) and fitted to the width (on a wide screen no taller than
+  min(70vh, 44rem)); its items are those of the area or, with no area of their own, whose centre
+  lies in it (`inArea`); the list shows that area's group only. `area` / `defaultArea` /
+  `onAreaChange` (null = all), `areaChoices` (the application's ids and order; default every
+  area that holds an item, so a corridor or a nurses' station is drawn but not offered; `[]`
+  hides the switcher). "Go to" a warning on an item of another area returns to all areas. In
+  edit mode a palette item is added at the centre of what is drawn and in the area shown.
+- **2026-10-13 — Takeaway and delivery are order channels, not areas (P5.28 item 26).** No
+  example drew them as plan areas; the rule is recorded and shown: Bistro Dunav's floor is one of
+  three page-level tabs — Dine-in (the plan), Takeaway (2), Delivery (1) — the takeaway and
+  delivery orders as cards with their state and the next step ("Mark as ready", "Handed over",
+  "Out for delivery", "Delivered"), kept above the screens (`useExampleState('bistro.orders')`).
+- **2026-10-13 — Phones open on the list; no editing on a phone (P5.28 item 27).** On a phone
+  FloorPlan opens on the list (as before), now a card per item (rounded, bordered, 8px apart) by
+  area, with the state badge, `detail` (the guests and the time), note, capacity. The plan, when
+  opened, fits the screen's width with no sideways scrolling: the 24px minimum width is not
+  applied on a phone — the list on the same page is the equivalent control of the small targets
+  (WCAG 2.5.8's exception) — and one area at a time draws it larger. With `editing` on a phone
+  the plan is not editable: no palette, no "Move to…", no dragging; a neutral note says
+  `floorPlan.editOnLarger` ("Edit the plan on a computer or tablet."). Bistro Dunav's floor plan
+  editor on a phone shows the note and no Merge or Save.
+- **2026-10-13 — Moving guests lists the free tables (P5.28 item 25, the owner: "'Move guests
+  from Table 8' does not work: the 'To table' select is empty").** Cause: table 8's party of six
+  had no free table with six seats, and the select showed nothing. Now "Move to table…" opens one
+  ChangeConfirmDialog: title "Move guests", the table and party bold under it ("Table 8 ·
+  Kovačević, 6 guests"), the free tables with seats enough as a CandidateList (one choice, best
+  first: the same area, then the fewest seats left over, then by number; "Same area" as the
+  reason), the change "Table 5 · Sala · 4 seats → Table 4 · Sala · 4 seats", for a reservation
+  "Notify Kovačević by SMS" (unchecked), and Cancel / Move. When no free table is big enough the
+  dialog says "No free table seats 6 guests" and offers "Merge tables in the floor plan" (it
+  opens the editor; not on a phone, where the plan is not edited);
+  the floor plan's Save now gives the tables their new places (`layoutTables`: a merged table is
+  the first with both tables' seats), so the party can then move to the merged table 11.
+  ChangeConfirmDialog gained `children` — the application's choice above the change — so a move
+  is chosen and confirmed in one dialog (story "With a choice").
+- **2026-10-13 — Every action of every floor-plan example works end to end (P5.28 item 25).**
+  Checked and covered by interaction stories: the restaurant (open, seat, clear, clean, move,
+  no table → merge → save → move, takeaway and delivery), the café (a table opens its tab), the
+  gala (seat by keys, pending, save, discard), the hotel (check in/out, mark clean, start
+  cleaning, a booking in place, a stay moved), the ward (reveal, discharge, transfer, admit,
+  clean, unblock), the warehouse (count now, count, unblock; Pick here opens the pick list) and
+  the office (book, cancel). Records the user changes are kept above the screens
+  (`useExampleState`): Bistro Dunav's tables and orders, the gala's saved seating, Hotel Fruška's
+  housekeeping, occupancy and stay moves (the housekeeper's "Mark clean" now reaches the front
+  desk, as its toast says), the ward's beds and admissions.
+- **2026-10-13 — A booking opens in place (P5.28 item 17).** Hotel Fruška's Bookings: a press on
+  a stay opens it in an end Drawer over the same timeline — the guest as the title, room and
+  type, the dates with the nights, the guests, the note, whether it can still move. The click no
+  longer switches to the Room rack tab. Rule: a click on a record never switches the user's tab;
+  it opens the record in place (Drawer, D14).
+- **2026-10-13 — A stay move is confirmed (P5.28 item 9).** The timeline's drag, keys and "Move
+  to…" only propose: ChangeConfirmDialog "Move stay" with the guest bold, Room and Dates old →
+  new (the dates with their nights), who it concerns, "Notify {guest} by e-mail" checked as the
+  hotel sets it; Save moves it and the toast says whether the e-mail goes ("Stay moved. Dragan
+  Lazić gets an e-mail." / "No message was sent.").
+- **2026-10-13 — The ward's Transfer and Admit (P5.28 items 8, 9, 18).** "Transfer…" (it only
+  showed a toast, "choose the bed in the transfer list") opens ChangeConfirmDialog "Transfer
+  patient" / "Bed 9 · Room 5" (the patient's name stays masked: the record is the bed): the free
+  beds by room (a heading and a one-choice CandidateList per room), the bed old → new, the doctor
+  in Liro (checked) and the porters (a choice) as messages, the isolation room's precautions as
+  the warning; Transfer moves the patient, the old bed needs cleaning ("Patient moved to Bed
+  15"). A free bed's "Admit patient…" (it only showed a toast) opens "Admit patient" / "Bed 2 ·
+  Room 1" with the patients waiting for a bed (by case number, where from, the doctor, "Waiting
+  since 09:40"; never the name), then Admit.
+- **2026-10-13 — A toast never asks for the next step (P5.28 item 8, class in the floor plans).**
+  Searched FloorPlan, SeatingChart, RoomRack and examples K, L, N: the ward's two toasts were the
+  only ones telling the user what to do; they are now the dialogs above. The rest report what
+  happened ("Table 6 is free.", "Count CC-2026-0032 started for B-05-02."); the café's closed
+  table says why it is closed. Every toast after a confirmed move says whether a message went.
+- **2026-10-13 — Seating changes are pending, saved together (P5.28 item 9).** SeatingChart keeps
+  reporting `onSeat`; the gala's application keeps the seating pending ("3 changes not saved",
+  Discard changes, Save seating…) and saves it through one ChangeConfirmDialog — each guest's seat
+  old → new ("—" for none), "E-mail the 3 guests their new seats" unchecked. New pure helper
+  `seatingChanges(saved, now)` (tested).
+- **2026-10-13 — The record on its own line (P5.28 item 6, floor plans).** FloorPlan's "Move to…"
+  and "Size…" dialogs: title "Move" / "Resize", the item as `subject`; SeatingChart's seat dialog
+  "Seat a guest" / "Table 4, seat 9" and "Seat at…" "Choose a seat" / the guest; Bistro Dunav's
+  "Open table" / "Table 4" and "Move guests" / "Table 8 · Kovačević, 6 guests". Messages
+  `floorPlan.moveTitle`, `floorPlan.sizeTitle` and `seating.seatAtTitle` are now strings (were
+  functions of the name); new `seating.seatTitle`. Record views (a room, a bed, a bin, a stay)
+  stay titled by the record.
+- **2026-10-13 — ResourceSchedule's "Move to…" names its select by `resourceLabel` (P5.28, C8, the lead).** The panel's resource select used `messages['schedule.resource']` ("Resource") whatever the schedule called its rows; it now takes `resourceLabel` as the header does ("Room", "Doctor or room"), the message only as the default. Found by the floor-plans helper (the hotel's Move to… said "Resource").
+
 ## Packaging
 
 - **2026-09-24 — Consumers install tarballs.** `pnpm consumer-check` packs the three packages with `pnpm pack`, copies `apps/consumer-check` to a temporary folder outside the repository, installs the tarballs there and builds, typechecks and checks the app. `apps/consumer-check` is excluded from the workspace and from the root ESLint run, because its dependencies exist only in that temporary install (Appendix B.10).
