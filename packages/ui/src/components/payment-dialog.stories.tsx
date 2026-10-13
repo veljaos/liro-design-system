@@ -5,7 +5,19 @@ import { expect, fn, userEvent, within } from 'storybook/test'
 import { settle } from '../primitives/story-helpers'
 import { Button } from './button'
 import { PaymentDialog } from './payment-dialog'
+import { BuyerField } from './buyer-field'
 import { CART_TOTAL, CURRENCY, QUICK_AMOUNTS, SPLIT_PAID } from './pos-story-data'
+import { ReceiptResult } from './receipt-result'
+import {
+  BUYER_ID_TYPES,
+  DELIVERIES,
+  ISSUED_FACTS,
+  MIXED_PAID,
+  PAYMENT_OPTIONS,
+  RECEIPT_LINK,
+  WIRE_WITHOUT_BUYER,
+} from './sale-story-data'
+import { StoryCode } from './story-code'
 import { ExampleProvider, PhoneFrame, StoryProvider } from './story-frames'
 
 function Till({ children }: { children: ReactNode }) {
@@ -39,7 +51,13 @@ const meta = {
           'application as decimal strings and words.\n\n' +
           '**When:** after “Charge” in CartPanel.\n\n' +
           '**When not:** an invoice’s payment in the books (a form); a refund (the application’s ' +
-          'own flow with a confirmation).',
+          'own flow with a confirmation).\n\n' +
+          '**The application’s own ways to pay (P5.28):** `methods` may hold `PaymentOption`s — ' +
+          'cash, card, cheque, wire transfer or deferred payment, voucher, instant payment (a code ' +
+          'the customer scans), other cashless; more than four wrap as a grid of pressed buttons. ' +
+          'With `onAddPart` several ways pay one sale: the parts paid and the remaining amount ' +
+          'stand on top. A way that needs something first (the buyer) shows the reason and the ' +
+          'application’s `extra` field.',
       },
     },
   },
@@ -51,7 +69,6 @@ const meta = {
     onComplete: () => undefined,
     onCardStart: () => undefined,
     onCardCancel: () => undefined,
-    onAddPart: () => undefined,
     trigger: <Button family="primary" icon={Plus} label="Charge" />,
   },
   render: (args) => (
@@ -126,6 +143,7 @@ export const CardApproved: Story = {
 export const Split: Story = {
   args: {
     defaultMethod: 'split',
+    onAddPart: () => undefined,
     paid: SPLIT_PAID,
     remaining: '511.00',
     defaultTendered: '511',
@@ -240,5 +258,188 @@ export const QuickAmount: Story = {
     await expect(body.getByLabelText(/Amount tendered/)).toHaveValue('5.000')
     await userEvent.click(body.getByRole('button', { name: 'Exact amount' }))
     await expect(args.onTenderedChange).toHaveBeenLastCalledWith('1011.00')
+  },
+}
+
+/** The receipt's code as the application draws it (a stand-in here). */
+const RECEIPT_CODE = (
+  <span className="flex text-primary">
+    <StoryCode text={RECEIPT_LINK.href} label="Receipt code" />
+  </span>
+)
+
+/** An instant payment's code shown to the customer (a stand-in here). */
+const PAYMENT_CODE = (
+  <span className="flex text-primary">
+    <StoryCode text="instant-payment-1011" label="Instant payment code" size={176} />
+  </span>
+)
+
+/** The seven ways to pay of the application, cash chosen: a wrapping grid of pressed buttons. */
+export const OwnMethods: Story = {
+  name: 'Own ways to pay',
+  args: {
+    methods: PAYMENT_OPTIONS,
+    defaultTendered: '2000',
+    change: '989.00',
+  },
+  play: async () => {
+    await settle()
+    const methods = within(dialog()).getByRole('group', { name: 'Payment method' })
+    await expect(within(methods).getAllByRole('button')).toHaveLength(7)
+    await expect(within(methods).getByRole('button', { name: 'Cash' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+  },
+}
+
+/** Several ways on one sale: a voucher and a card paid, 111,00 remaining, cash for the rest. */
+export const Mixed: Story = {
+  name: 'Several ways on one sale',
+  args: {
+    methods: PAYMENT_OPTIONS,
+    paid: MIXED_PAID,
+    remaining: '111.00',
+    defaultTendered: '200',
+    change: '89.00',
+    onRemovePart: () => undefined,
+    onAddPart: () => undefined,
+  },
+  play: async () => {
+    await settle()
+    const body = within(dialog())
+    await expect(dialog()).toHaveTextContent('Paid so far')
+    await expect(body.getByRole('button', { name: 'Remove Voucher' })).toBeVisible()
+    await expect(body.getByRole('button', { name: 'Add this payment' })).toBeVisible()
+  },
+}
+
+/** A voucher: the amount of this payment and its code, the application's rule under it. */
+export const Voucher: Story = {
+  args: {
+    methods: PAYMENT_OPTIONS,
+    defaultMethod: 'voucher',
+    defaultTendered: '500',
+    defaultReference: 'VC-2026-7741',
+    remaining: '1011.00',
+    onAddPart: () => undefined,
+  },
+  play: async () => {
+    await settle()
+    await expect(within(dialog()).getByRole('textbox', { name: 'Voucher code' })).toHaveValue(
+      'VC-2026-7741',
+    )
+  },
+}
+
+/** An instant payment: the code large for the customer, waiting; not dismissible meanwhile. */
+export const InstantWaiting: Story = {
+  name: 'Instant payment waiting',
+  args: {
+    methods: PAYMENT_OPTIONS,
+    defaultMethod: 'instant',
+    cardState: 'waiting',
+    qrCode: PAYMENT_CODE,
+  },
+  play: async () => {
+    await settle()
+    await expect(within(dialog()).getByRole('img', { name: 'Instant payment code' })).toBeVisible()
+    await expect(dialog()).toHaveTextContent('Waiting for the payment…')
+  },
+}
+
+/** An instant payment received. */
+export const InstantApproved: Story = {
+  name: 'Instant payment received',
+  args: {
+    methods: PAYMENT_OPTIONS,
+    defaultMethod: 'instant',
+    cardState: 'approved',
+    cardMessage: 'Paid from the account of Ana Petrović, reference 97 1234-5678',
+  },
+}
+
+/** A wire transfer without the buyer: the reason, and the buyer's field (the application's). */
+export const DeferredNeedsBuyer: Story = {
+  name: 'Deferred payment needs the buyer',
+  args: {
+    methods: [...PAYMENT_OPTIONS.filter((each) => each.id !== 'wire'), WIRE_WITHOUT_BUYER],
+    defaultMethod: 'wire',
+    completeDisabledReason: 'Enter the buyer first.',
+    extra: <BuyerField types={BUYER_ID_TYPES} required defaultValue={{ typeId: '10', id: '' }} />,
+  },
+  play: async () => {
+    await settle()
+    await expect(dialog()).toHaveTextContent('A wire transfer needs the buyer’s tax number.')
+    await expect(within(dialog()).getByRole('textbox', { name: /Buyer ID/ })).toBeVisible()
+  },
+}
+
+/** Done: the issued receipt with its code and the ways to give it. */
+export const DoneWithReceipt: Story = {
+  name: 'Done, receipt issued',
+  args: {
+    done: true,
+    change: '989.00',
+    doneActions: DONE_ACTIONS,
+    doneContent: (
+      <ReceiptResult
+        facts={ISSUED_FACTS}
+        code={RECEIPT_CODE}
+        link={RECEIPT_LINK}
+        deliveries={DELIVERIES}
+        onDeliver={() => undefined}
+      />
+    ),
+  },
+  play: async () => {
+    await settle()
+    await expect(dialog()).toHaveTextContent('2290/2318ПП')
+  },
+}
+
+/** On a phone: the seven ways wrap. */
+export const OwnMethodsPhone: Story = {
+  name: 'Own ways to pay, phone width',
+  render: (args) => (
+    <PhoneFrame>
+      <StoryProvider density="touch">
+        <ExampleProvider>
+          <PaymentDialog
+            {...args}
+            methods={PAYMENT_OPTIONS}
+            paid={MIXED_PAID}
+            remaining="111.00"
+            defaultTendered="200"
+            change="89.00"
+            onAddPart={() => undefined}
+          />
+        </ExampleProvider>
+      </StoryProvider>
+    </PhoneFrame>
+  ),
+}
+
+/** Choosing a way reports its id; a cheque part is added with the keypad's amount. */
+export const AddingParts: Story = {
+  name: 'Adding parts, interaction',
+  tags: ['interaction'],
+  args: {
+    methods: PAYMENT_OPTIONS,
+    remaining: '1011.00',
+    onMethodChange: fn(),
+    onAddPart: fn(),
+  },
+  play: async ({ args }) => {
+    await settle()
+    const body = within(dialog())
+    await userEvent.click(body.getByRole('button', { name: 'Cheque' }))
+    await expect(args.onMethodChange).toHaveBeenCalledWith('cheque')
+    await userEvent.click(body.getByRole('button', { name: '5' }))
+    await userEvent.click(body.getByRole('button', { name: '0' }))
+    await userEvent.click(body.getByRole('button', { name: '0' }))
+    await userEvent.click(body.getByRole('button', { name: 'Add this payment' }))
+    await expect(args.onAddPart).toHaveBeenCalledWith('cheque', '500')
   },
 }

@@ -539,3 +539,66 @@ export function checkGroupN() {
 
 /** Run once, when the examples load. */
 export const GROUP_N = checkGroupN()
+
+// ── P5.28 pos: the till's fiscal flows and the tabs on tables ──
+// (Imports here, inside the block, so the blocks merge without touching the top.)
+import {
+  advanceDeduction,
+  dailyFigures,
+  entryTotal,
+  JOURNAL,
+  MIXED_PARTS,
+  ORIGINAL_ID,
+  paymentFigures,
+  REFUND_CHOICE,
+  refundFigures,
+  WEB_ORDER,
+} from './data-I-fiscal'
+import { BISTRO_VENUE, CAFE_VENUE, computeTab, equalShares, initialTabs } from './data-K-tabs'
+import { computeSale as computeTill, SALE as TILL_SALE } from './data-I'
+
+/** The figures the P5.28 stories state, against the application's arithmetic. */
+export function checkFiscalAndTabs() {
+  const sale = computeTill(TILL_SALE).total
+  const mixed = paymentFigures(sale, MIXED_PARTS, '500', true)
+  if (mixed.remaining !== paras('407') || mixed.change !== '93.00') {
+    fail('the till: the mixed payment’s remaining amount or change differs')
+  }
+  for (const entry of JOURNAL) {
+    if (entry.type === 'proforma') continue
+    const paid = entry.payments.reduce((sum, part) => sum + paras(part.value), 0n)
+    const total = entryTotal(entry)
+    if (paid !== (total < 0n ? -total : total)) fail(`the journal: ${entry.number} is not paid`)
+  }
+  const original = JOURNAL.find((each) => each.id === ORIGINAL_ID)
+  if (original === undefined || refundFigures(original, REFUND_CHOICE).total !== paras('240')) {
+    fail('the refund example is not 240,00')
+  }
+  if (sale - advanceDeduction(sale, ['a2265']) !== paras('707')) {
+    fail('the advances example does not leave 707,00 to pay')
+  }
+  if (computeTill(WEB_ORDER.lines).total !== paras(WEB_ORDER.payment.value)) {
+    fail('the web order is not paid in full')
+  }
+  const day = dailyFigures(JOURNAL)
+  if (day.net !== day.sales - day.refunds) fail('the daily report does not add up')
+  const cafe = initialTabs(CAFE_VENUE)
+  const t3 = cafe.t3
+  if (t3 === undefined || computeTab(CAFE_VENUE, t3).total !== paras('1200')) {
+    fail('Kafić Kod Mike: table 3’s tab is not 1.200,00')
+  }
+  const t1 = cafe.t1
+  if (t1 === undefined || computeTab(CAFE_VENUE, t1).total !== paras('320')) {
+    fail('Kafić Kod Mike: table 1’s 3 for 2 is not 320,00')
+  }
+  const shares = equalShares(paras('1200'), 4)
+  if (shares.reduce((sum, each) => sum + each, 0n) !== paras('1200')) fail('the shares differ')
+  const t7 = initialTabs(BISTRO_VENUE).t7
+  if (t7 === undefined || computeTab(BISTRO_VENUE, t7).promotions.length !== 1) {
+    fail('Bistro Dunav: table 7’s dessert promotion is missing')
+  }
+  return { journal: JOURNAL.length }
+}
+
+/** Run once, when the examples load. */
+export const FISCAL_AND_TABS = checkFiscalAndTabs()

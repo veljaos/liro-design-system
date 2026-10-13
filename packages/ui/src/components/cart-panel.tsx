@@ -1,13 +1,16 @@
-import { ShoppingCart, Trash2 } from 'lucide-react'
+import { Pencil, ShoppingCart, Trash2 } from 'lucide-react'
 import { useId, type ReactNode } from 'react'
 import { ButtonPrimitive } from '../primitives/button'
-import { TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
+import { FOCUS_RING, TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 import { MoneyText, NumberText } from './display-text'
+import { Banner } from './alert'
 import { EmptyState } from './empty-state'
+import type { IconComponent } from './intents'
 import { QuantityStepper } from './quantity-stepper'
 import { SettlingValue } from './settling-value'
+import type { Tone } from './status-badge'
 
 /*
  * CartPanel (BUILD-PLAN P5.10; docs/decisions.md "Touch and POS"). What is being sold, for a
@@ -21,6 +24,15 @@ import { SettlingValue } from './settling-value'
  * discount in the application's words; then a QuantityStepper (44px targets, named "Quantity,
  * <name>"), the unit price ("25,00 RSD each") and a 44px remove button ("Remove <name>").
  * The list scrolls; the header (title and count) and the footer (totals and actions) stay.
+ *
+ * P5.28 (items 21 and 22): the sale's **kind** under the title (`kindLabel`, "Advance · Sale")
+ * and, for a kind that is not a real sale, its **marker** in a warning strip above the lines
+ * (`marker`, the application's words: "Proforma — not a fiscal receipt"); the application's
+ * `details` between the header and the lines (the buyer, open advances); a line's **note**
+ * ("No sugar"), its **state** in words with an icon and tone ("Sent to the bar · 18:20") and an
+ * **edit** button (`onEditLine`, the application's dialog: quantity, note, discount); the total's
+ * own words (`totalLabel`, "To pay" once advances are deducted). Promotions and an order discount
+ * are rows of `totals` and a line's `discount`, all computed by the application.
  */
 
 export interface CartLine {
@@ -44,6 +56,28 @@ export interface CartLine {
   min?: string
   /** The largest quantity (what is in stock). */
   max?: string
+  /** The line's note, in the customer's or the waiter's words ("No sugar", "Well done"). */
+  note?: string
+  /** Where the line stands, in the application's words ("Sent to the bar · 18:20"). */
+  state?: CartLineState
+}
+
+/** A line's state: words, an optional icon and a tone (never colour alone). */
+export interface CartLineState {
+  label: string
+  /** Default 'neutral'. */
+  tone?: Tone
+  icon?: IconComponent
+}
+
+/** Literal classes, so Tailwind finds them. */
+const STATE_TONE: Record<Tone, string> = {
+  neutral: 'text-secondary',
+  info: 'text-status-info-fg',
+  success: 'text-status-success-fg',
+  warning: 'text-status-warning-fg',
+  danger: 'text-status-danger-fg',
+  premium: 'text-status-premium-fg',
 }
 
 /** A row above the total: a subtotal, a discount, tax included; signed as the application sends. */
@@ -68,6 +102,19 @@ export interface CartPanelProps {
   onQuantityChange?: (id: string, quantity: string | null) => void
   /** Adds a remove button to each line. */
   onRemove?: (id: string) => void
+  /** Adds an edit button to each line (the application's dialog: quantity, note, discount). */
+  onEditLine?: (id: string) => void
+  /** The sale's kind under the title, in the application's words ("Normal · Sale"). */
+  kindLabel?: string
+  /**
+   * A kind that is not a real sale, marked in the application's words above the lines
+   * ("Training — not a fiscal receipt"): a warning Banner that does not interrupt (role status).
+   */
+  marker?: string
+  /** The application's content between the header and the lines (the buyer, open advances). */
+  details?: ReactNode
+  /** The total's words. Default: `messages['cart.total']`. */
+  totalLabel?: string
   /** The main action. Shown while there are lines. */
   onCharge?: () => void
   /** Default: `messages['cart.charge']` with the total ("Charge 1.234,00 RSD"). */
@@ -95,6 +142,10 @@ export function CartPanel(props: CartPanelProps) {
   const reasonId = useId()
   const count = props.lines.length
   const pending = props.pending === true
+  const readOnly =
+    props.onQuantityChange === undefined &&
+    props.onRemove === undefined &&
+    props.onEditLine === undefined
   const blocked = props.chargeDisabledReason !== undefined || props.total === null
   const chargeLabel =
     props.chargeLabel ??
@@ -117,8 +168,33 @@ export function CartPanel(props: CartPanelProps) {
         {props.headerActions !== undefined && (
           <div className="ms-auto flex flex-wrap gap-2">{props.headerActions}</div>
         )}
+        {props.kindLabel !== undefined && (
+          <p className={cn('m-0 w-full text-xs text-secondary', TEXT_DIRECTION)}>
+            {props.kindLabel}
+          </p>
+        )}
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto">
+      {props.marker !== undefined && (
+        <div data-slot="cart-marker" className="shrink-0 px-4 pt-3">
+          <Banner tone="warning" role="status">
+            {props.marker}
+          </Banner>
+        </div>
+      )}
+      {/* A read-only cart has no control inside: the list itself takes the focus so it can be
+          scrolled from the keyboard (WCAG 2.1.1, axe scrollable-region-focusable). */}
+      <div
+        className={cn('min-h-0 flex-1 overflow-y-auto', readOnly && FOCUS_RING)}
+        {...(readOnly ? { tabIndex: 0, role: 'group', 'aria-labelledby': titleId } : {})}
+      >
+        {props.details !== undefined && (
+          <div
+            data-slot="cart-details"
+            className="flex flex-col gap-3 border-0 border-b border-solid border-subtle px-4 py-3"
+          >
+            {props.details}
+          </div>
+        )}
         {count === 0 ? (
           <EmptyState
             compact
@@ -148,7 +224,7 @@ export function CartPanel(props: CartPanelProps) {
             ))}
             <div className="flex items-baseline justify-between gap-4 border-0 border-t border-solid border-strong pt-2">
               <dt className={cn('text-md font-semibold text-primary', TEXT_DIRECTION)}>
-                {messages['cart.total']}
+                {props.totalLabel ?? messages['cart.total']}
               </dt>
               <dd className="m-0 text-h3 font-semibold text-primary">
                 <SettlingValue value={props.total} currency={props.currency} pending={pending} />
@@ -207,6 +283,10 @@ function CartLineRow({ line, cart }: { line: CartLine; cart: CartPanelProps }) {
               {line.discount}
             </span>
           )}
+          {line.note !== undefined && (
+            <span className={cn('text-xs text-secondary', TEXT_DIRECTION)}>{line.note}</span>
+          )}
+          {line.state !== undefined && <LineState state={line.state} />}
         </div>
         <MoneyText
           value={line.total}
@@ -238,6 +318,21 @@ function CartLineRow({ line, cart }: { line: CartLine; cart: CartPanelProps }) {
         <span className={cn('min-w-0 flex-1 text-xs text-secondary tabular-nums', TEXT_DIRECTION)}>
           {messages['cart.each'](format.money(line.unitPrice, cart.currency))}
         </span>
+        {cart.onEditLine !== undefined && (
+          <ButtonPrimitive
+            family="neutral"
+            emphasis="menu"
+            shape="icon"
+            aria-label={messages['cart.edit'](line.name)}
+            title={messages['cart.edit'](line.name)}
+            className="size-11 shrink-0 px-0"
+            onClick={() => {
+              cart.onEditLine?.(line.id)
+            }}
+          >
+            <Pencil aria-hidden="true" className="size-4" />
+          </ButtonPrimitive>
+        )}
         {cart.onRemove !== undefined && (
           <ButtonPrimitive
             family="neutral"
@@ -255,5 +350,21 @@ function CartLineRow({ line, cart }: { line: CartLine; cart: CartPanelProps }) {
         )}
       </div>
     </li>
+  )
+}
+
+function LineState({ state }: { state: CartLineState }) {
+  const Icon = state.icon
+  return (
+    <span
+      data-slot="cart-line-state"
+      className={cn(
+        'flex items-center gap-1 text-xs font-medium',
+        STATE_TONE[state.tone ?? 'neutral'],
+      )}
+    >
+      {Icon !== undefined && <Icon aria-hidden="true" className="size-3.5 shrink-0" />}
+      <span className={TEXT_DIRECTION}>{state.label}</span>
+    </span>
   )
 }

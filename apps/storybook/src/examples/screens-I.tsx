@@ -1,40 +1,26 @@
-import { Lock, PauseCircle, RefreshCw } from 'lucide-react'
-import { useContext, useEffect, useState, type ReactNode } from 'react'
+import { RefreshCw } from 'lucide-react'
+import { useContext, useState, type ReactNode } from 'react'
 import {
-  BrandLockup,
   Button,
-  CartPanel,
-  Dialog,
   DropdownMenu,
   IconButton,
   LiroProvider,
   notice,
-  PaymentDialog,
   PickList,
-  PosShell,
-  ProductGrid,
-  ReceiptPreview,
-  ScanField,
   StockCount,
   Toaster,
   useLiro,
-  type CardState,
-  type PaymentMethod,
   type PickLine,
   type PickStep,
   type ScanFeedback,
 } from '@veljaos/ui'
-import { decimal } from '../../../../packages/ui/src/components/amounts-story-data'
 import type { ExampleRoute } from './example-app'
+import { TILL_ROUTES } from './data-I-fiscal'
+import { Journal, Till, type TillStart } from './screens-I-till'
+import { WebOrder } from './screens-I-web'
 import { Navigate, ROUTES } from './example-shell'
+import { useExampleState } from './example-state'
 import {
-  BAKERY,
-  CARD_APPROVAL,
-  cartLines,
-  cartTotals,
-  cashOutcome,
-  CATEGORIES,
-  computeSale,
   COUNT,
   COUNT_RECORDS,
   countItems,
@@ -43,17 +29,9 @@ import {
   I_ROUTES,
   PICK_LINES,
   PICKING,
-  productByCode,
-  PRODUCTS,
-  QUICK_AMOUNTS,
   quantityUnits,
-  RECEIPT_FOOTER,
-  receiptItems,
-  receiptTotals,
-  SALE,
   SKIP_REASONS,
   type CountRecord,
-  type SaleLine,
 } from './data-I'
 
 /*
@@ -97,311 +75,7 @@ function Touch({ children }: { children: ReactNode }) {
 }
 
 // ── The till: Pekara Zlatni klas ──────────────────────────────────────────────────────────────
-
-/** Where the sale stands when the screen opens (one route per state, P5.23). */
-export type TillStep = 'cart' | 'cash' | 'card-waiting' | 'card-approved' | 'receipt'
-
-/** How long the example's card terminal takes to approve (a real one answers the application). */
-const TERMINAL_DELAY = 1200
-
-function Till({
-  phone,
-  step = 'cart',
-  offline = false,
-  productsOpen = false,
-}: {
-  phone: boolean
-  step?: TillStep
-  offline?: boolean
-  productsOpen?: boolean
-}) {
-  const { format } = useLiro()
-  const [sale, setSale] = useState<readonly SaleLine[]>(SALE)
-  const [feedback, setFeedback] = useState<ScanFeedback | null>(null)
-  const [paying, setPaying] = useState(step !== 'cart' && step !== 'receipt')
-  const [method, setMethod] = useState<PaymentMethod>(step.startsWith('card') ? 'card' : 'cash')
-  const [tendered, setTendered] = useState<string | null>(
-    step === 'cash' || step === 'receipt' ? (QUICK_AMOUNTS[0] ?? null) : null,
-  )
-  const [cardState, setCardState] = useState<CardState>(
-    step === 'card-waiting' ? 'waiting' : step === 'card-approved' ? 'approved' : 'idle',
-  )
-  const [done, setDone] = useState(false)
-  const [receiptOpen, setReceiptOpen] = useState(step === 'receipt')
-  // The paid sale stays on the receipt after the cart is emptied for the next one.
-  const [paid, setPaid] = useState<{ lines: readonly SaleLine[]; tendered: string | null } | null>(
-    step === 'receipt' ? { lines: SALE, tendered: QUICK_AMOUNTS[0] ?? null } : null,
-  )
-
-  // The example's terminal: it approves a while after the cashier sent the amount (a restored
-  // "waiting" picture stays waiting).
-  const [sent, setSent] = useState(false)
-  useEffect(() => {
-    if (!paying || cardState !== 'waiting' || !sent) return
-    const timer = window.setTimeout(() => {
-      setCardState('approved')
-    }, TERMINAL_DELAY)
-    return () => {
-      window.clearTimeout(timer)
-    }
-  }, [paying, cardState, sent])
-
-  const computed = computeSale(sale)
-  const totalText = computed.lines.length === 0 ? null : decimal(computed.total)
-  const cash = cashOutcome(computed.total, method === 'cash' ? tendered : null)
-
-  const scan = (code: string) => {
-    const item = productByCode(code)
-    if (item === undefined) {
-      setFeedback((previous) => answer(previous, 'error', `Unknown code ${code}`))
-      return
-    }
-    add(item.id)
-  }
-  const add = (id: string) => {
-    const item = PRODUCTS.find((each) => each.id === id)
-    if (item === undefined) return
-    const reason = item.unavailableReason
-    if (reason !== undefined) {
-      setFeedback((previous) => answer(previous, 'error', `${item.name}: ${reason}`))
-      return
-    }
-    setFeedback((previous) => answer(previous, 'success', `${item.name} added`))
-    setSale((current) => {
-      const line = current.find((each) => each.productId === id)
-      return line === undefined
-        ? [...current, { productId: id, quantity: '1' }]
-        : current.map((each) =>
-            each.productId === id
-              ? { ...each, quantity: (BigInt(each.quantity) + 1n).toString() }
-              : each,
-          )
-    })
-  }
-
-  const completeDisabledReason =
-    method === 'card'
-      ? cardState === 'approved'
-        ? undefined
-        : 'Waiting for the card payment.'
-      : tendered === null
-        ? 'Enter the amount tendered.'
-        : cash.remaining !== null
-          ? 'The amount tendered is less than the amount due.'
-          : undefined
-
-  const newSale = () => {
-    setSale([])
-    setPaying(false)
-    setDone(false)
-    setReceiptOpen(false)
-    setTendered(null)
-    setCardState('idle')
-    setMethod('cash')
-    setFeedback(null)
-  }
-
-  const receiptSale = computeSale(paid?.lines ?? sale)
-  const paidCash = paid?.tendered ?? null
-  const receiptCash = cashOutcome(receiptSale.total, paidCash)
-  const signed = (amount: string) => format.number(amount, { decimals: 2 })
-
-  const products = (
-    <ProductGrid
-      products={PRODUCTS}
-      categories={CATEGORIES}
-      currency={BAKERY.currency}
-      onSelect={add}
-      toolbar={
-        <ScanField
-          label="Barcode or PLU"
-          hideLabel
-          placeholder="Scan or type a barcode"
-          onScan={scan}
-          feedback={feedback}
-        />
-      }
-    />
-  )
-
-  const cart = (
-    <CartPanel
-      className="flex-1"
-      lines={cartLines(
-        computed,
-        (reason, rate, amount) =>
-          `${reason} ${rate.toString()}%: ${format.money(amount, BAKERY.currency)}`,
-      )}
-      currency={BAKERY.currency}
-      total={totalText}
-      totals={computed.lines.length === 0 ? [] : cartTotals(computed)}
-      onQuantityChange={(id, quantity) => {
-        if (quantity === null || !/^[1-9]\d*$/.test(quantity)) return
-        setSale((current) =>
-          current.map((each) => (each.productId === id ? { ...each, quantity } : each)),
-        )
-      }}
-      onRemove={(id) => {
-        setSale((current) => current.filter((each) => each.productId !== id))
-      }}
-      onCharge={() => {
-        setPaying(true)
-      }}
-      actions={
-        <Button
-          family="neutral"
-          icon={PauseCircle}
-          label="Park sale"
-          onClick={() => {
-            notice.success('Sale parked. It waits under Parked sales.')
-            newSale()
-          }}
-        />
-      }
-    />
-  )
-
-  return (
-    <Touch>
-      <div className={phone ? 'h-full' : 'h-dvh'}>
-        <PosShell
-          layout={phone ? 'phone' : 'tablet'}
-          brand={<BrandLockup brandName="Zlatni klas" productName="Kasa" compact={phone} />}
-          register={BAKERY.register}
-          cashier={BAKERY.cashier}
-          offline={offline}
-          queued={offline ? BAKERY.queued : 0}
-          offlineAction={
-            <Button
-              family="neutral"
-              icon={RefreshCw}
-              label="Try now"
-              onClick={() => {
-                notice.info('Still offline. The sales stay on this register until it connects.')
-              }}
-            />
-          }
-          actions={
-            <IconButton
-              family="neutral"
-              icon={Lock}
-              label="Lock register"
-              onClick={() => {
-                notice.info('Register locked.')
-              }}
-            />
-          }
-          onScan={scan}
-          defaultProductsOpen={productsOpen}
-          products={products}
-          cart={cart}
-        />
-        {totalText !== null && (
-          <PaymentDialog
-            open={paying}
-            onOpenChange={(open) => {
-              setPaying(open)
-              if (!open) setDone(false)
-            }}
-            total={totalText}
-            currency={BAKERY.currency}
-            methods={['cash', 'card']}
-            method={method}
-            onMethodChange={setMethod}
-            tendered={tendered}
-            onTenderedChange={setTendered}
-            quickAmounts={QUICK_AMOUNTS}
-            change={method === 'cash' ? cash.change : null}
-            remaining={method === 'cash' ? cash.remaining : null}
-            cardState={cardState}
-            {...(cardState === 'approved' ? { cardMessage: CARD_APPROVAL } : {})}
-            onCardStart={() => {
-              setSent(true)
-              setCardState('waiting')
-            }}
-            onCardCancel={() => {
-              setCardState('idle')
-            }}
-            {...(completeDisabledReason === undefined ? {} : { completeDisabledReason })}
-            onComplete={() => {
-              setPaid({ lines: sale, tendered: method === 'cash' ? tendered : null })
-              setDone(true)
-            }}
-            done={done}
-            doneText={`Receipt ${BAKERY.receipt}`}
-            doneActions={
-              <>
-                <Button
-                  intent="print"
-                  emphasis="secondary"
-                  label="Show receipt"
-                  onClick={() => {
-                    setPaying(false)
-                    setDone(false)
-                    setReceiptOpen(true)
-                  }}
-                />
-                <Button intent="create" emphasis="primary" label="New sale" onClick={newSale} />
-              </>
-            }
-          />
-        )}
-        <Dialog
-          open={receiptOpen}
-          onOpenChange={setReceiptOpen}
-          title={`Receipt ${BAKERY.receipt}`}
-          description="Printed on the register's printer; the customer can ask for it by e-mail."
-          actions={
-            <>
-              <Button
-                intent="print"
-                emphasis="secondary"
-                label="Print again"
-                onClick={() => {
-                  notice.success('Receipt sent to the printer.')
-                }}
-              />
-              <Button intent="create" emphasis="primary" label="New sale" onClick={newSale} />
-            </>
-          }
-        >
-          <ReceiptPreview
-            className="mx-auto"
-            header={[BAKERY.name, BAKERY.address, BAKERY.taxId]}
-            facts={[
-              { id: 'number', label: 'Receipt', value: BAKERY.receipt },
-              {
-                id: 'time',
-                label: 'Date',
-                value: `${format.date('2026-10-06')} ${BAKERY.time}`,
-              },
-              { id: 'register', label: 'Register', value: BAKERY.register },
-              { id: 'cashier', label: 'Cashier', value: BAKERY.cashier },
-            ]}
-            items={receiptItems(
-              receiptSale,
-              (rate, amount) => `Discount ${rate.toString()}%: ${signed(amount)}`,
-            )}
-            totals={receiptTotals(receiptSale)}
-            payments={
-              paidCash === null
-                ? [{ id: 'card', label: 'Card', value: decimal(receiptSale.total) }]
-                : [
-                    { id: 'cash', label: 'Cash', value: paidCash },
-                    ...(receiptCash.change === null
-                      ? []
-                      : [{ id: 'change', label: 'Change', value: receiptCash.change }]),
-                  ]
-            }
-            footer={RECEIPT_FOOTER}
-            currency={BAKERY.currency}
-          />
-        </Dialog>
-        <Toaster layout={phone ? 'phone' : 'desktop'} />
-      </div>
-    </Touch>
-  )
-}
+// The till with its fiscal flows lives in screens-I-till.tsx (P5.28 item 21).
 
 // ── The handheld: picking PL-2026-0418 ───────────────────────────────────────────────────────
 
@@ -459,8 +133,12 @@ function Picking({
   offline?: boolean
 }) {
   const { format } = useLiro()
-  const [lines, setLines] = useState<readonly PickLine[]>(PICK_LINES)
-  const [currentId, setCurrentId] = useState<string | null>(CURRENT_PICK)
+  // The pick list outlives the screen (P5.28: what was picked is still there after the count).
+  const [lines, setLines] = useExampleState<readonly PickLine[]>('picking.lines', () => PICK_LINES)
+  const [currentId, setCurrentId] = useExampleState<string | null>(
+    'picking.current',
+    () => CURRENT_PICK,
+  )
   const [step, setStep] = useState<PickStep>(initialStep === 'skip' ? 'item' : initialStep)
   const current = lines.find((line) => line.id === currentId) ?? null
   const [feedback, setFeedback] = useState<ScanFeedback | null>(() => {
@@ -597,7 +275,10 @@ function Picking({
 function Counting({ phone }: { phone: boolean }) {
   const navigate = useContext(Navigate)
   const [location, setLocation] = useState<string | null>(COUNT.location)
-  const [records, setRecords] = useState<readonly CountRecord[]>(COUNT_RECORDS)
+  const [records, setRecords] = useExampleState<readonly CountRecord[]>(
+    'count.records',
+    () => COUNT_RECORDS,
+  )
   const [currentId, setCurrentId] = useState<string | null>(CURRENT_COUNT)
   const [feedback, setFeedback] = useState<ScanFeedback | null>(null)
   return (
@@ -658,20 +339,42 @@ function Counting({ phone }: { phone: boolean }) {
 
 // ── Routes ────────────────────────────────────────────────────────────────────────────────────
 
+const till = (start: TillStart) => (phone: boolean) => <Till phone={phone} start={start} />
+
 export const GROUP_I_ROUTES: ExampleRoute[] = [
-  { path: I_ROUTES.pos, render: (phone) => <Till phone={phone} /> },
-  { path: I_ROUTES.posCash, render: (phone) => <Till phone={phone} step="cash" /> },
-  {
-    path: I_ROUTES.posCardWaiting,
-    render: (phone) => <Till phone={phone} step="card-waiting" />,
-  },
-  {
-    path: I_ROUTES.posCardApproved,
-    render: (phone) => <Till phone={phone} step="card-approved" />,
-  },
-  { path: I_ROUTES.posReceipt, render: (phone) => <Till phone={phone} step="receipt" /> },
-  { path: I_ROUTES.posOffline, render: (phone) => <Till phone={phone} offline /> },
-  { path: I_ROUTES.posProducts, render: (phone) => <Till phone={phone} productsOpen /> },
+  { path: I_ROUTES.pos, render: till({}) },
+  { path: I_ROUTES.posCash, render: till({ step: 'cash' }) },
+  { path: I_ROUTES.posCardWaiting, render: till({ step: 'card-waiting' }) },
+  { path: I_ROUTES.posCardApproved, render: till({ step: 'card-approved' }) },
+  { path: I_ROUTES.posReceipt, render: till({ step: 'receipt' }) },
+  { path: I_ROUTES.posOffline, render: till({ offline: true }) },
+  { path: I_ROUTES.posProducts, render: till({ productsOpen: true }) },
+  // P5.28 item 21: the fiscal flows.
+  { path: TILL_ROUTES.kind, render: till({ kindDialog: 'proforma' }) },
+  { path: TILL_ROUTES.proforma, render: till({ type: 'proforma' }) },
+  { path: TILL_ROUTES.training, render: till({ type: 'training' }) },
+  { path: TILL_ROUTES.buyer, render: till({ buyerDialog: true }) },
+  { path: TILL_ROUTES.mixed, render: till({ step: 'mixed' }) },
+  { path: TILL_ROUTES.instant, render: till({ step: 'instant' }) },
+  { path: TILL_ROUTES.deferred, render: till({ step: 'deferred' }) },
+  { path: TILL_ROUTES.corporate, render: till({ step: 'corporate' }) },
+  { path: TILL_ROUTES.issued, render: till({ step: 'issued' }) },
+  { path: TILL_ROUTES.issuedOffline, render: till({ step: 'issued', offline: true }) },
+  { path: TILL_ROUTES.refundFind, render: till({ refund: 'find' }) },
+  { path: TILL_ROUTES.refundLines, render: till({ refund: 'lines' }) },
+  { path: TILL_ROUTES.refundCart, render: till({ refund: 'cart' }) },
+  { path: TILL_ROUTES.refundReceipt, render: till({ refund: 'receipt' }) },
+  { path: TILL_ROUTES.advances, render: till({ advances: true }) },
+  { path: TILL_ROUTES.advanceTake, render: till({ advance: 'take' }) },
+  { path: TILL_ROUTES.advanceRefund, render: till({ advance: 'refund' }) },
+  { path: TILL_ROUTES.noCompensation, render: till({ noCompensation: true }) },
+  { path: TILL_ROUTES.queueFailed, render: till({ queue: 'failed' }) },
+  { path: TILL_ROUTES.journal, render: (phone) => <Journal phone={phone} /> },
+  { path: TILL_ROUTES.journalCopy, render: (phone) => <Journal phone={phone} show="copy" /> },
+  { path: TILL_ROUTES.journalCancel, render: (phone) => <Journal phone={phone} show="cancel" /> },
+  { path: TILL_ROUTES.journalQueue, render: (phone) => <Journal phone={phone} show="queue" /> },
+  { path: TILL_ROUTES.dailyReport, render: (phone) => <Journal phone={phone} show="report" /> },
+  { path: TILL_ROUTES.webOrder, render: (phone) => <WebOrder phone={phone} /> },
   { path: I_ROUTES.picking, render: (phone) => <Picking phone={phone} /> },
   { path: I_ROUTES.pickingItem, render: (phone) => <Picking phone={phone} step="item" /> },
   {

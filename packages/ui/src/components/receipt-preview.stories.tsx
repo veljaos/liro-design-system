@@ -11,7 +11,17 @@ import {
   RECEIPT_ITEMS,
   RECEIPT_PAYMENTS,
   RECEIPT_TOTALS,
+  RECEIPT_END,
 } from './pos-story-data'
+import {
+  FISCAL_BANNER,
+  FISCAL_END,
+  ISSUED_FACTS,
+  NOT_FISCAL,
+  RECEIPT_LINK,
+  TAX_RECAP,
+} from './sale-story-data'
+import { StoryCode } from './story-code'
 import { ReceiptPreview } from './receipt-preview'
 import { ExampleProvider, PhoneFrame, StoryProvider } from './story-frames'
 
@@ -42,7 +52,12 @@ const meta = {
           'tabular digits.\n\n' +
           '**When:** before printing or sending a receipt, a copy of a past sale.\n\n' +
           '**When not:** an A4 document (the print templates of P5.15); a cart being sold ' +
-          '(CartPanel).',
+          '(CartPanel).\n\n' +
+          '**P5.28:** the printed parts of a fiscal receipt, every word the application’s: a ' +
+          'banner and an end line between double rules, the kind between dashed rules, a marker ' +
+          'printed boxed at the top and the bottom of a receipt that is not a real sale, the tax ' +
+          'per label as a table, the processor’s facts after it and a signature line where the ' +
+          'rules ask for one.',
       },
     },
   },
@@ -55,6 +70,7 @@ const meta = {
     footer: RECEIPT_FOOTER,
     currency: CURRENCY,
     code: CODE,
+    end: RECEIPT_END,
   },
   render: (args) => (
     <Shop>
@@ -180,4 +196,90 @@ export const Japanese: Story = {
       />
     </StoryProvider>
   ),
+}
+
+/** The fiscal receipt's code (a stand-in drawn from its link). */
+const FISCAL_CODE = (
+  <span className="flex text-primary">
+    <StoryCode text={RECEIPT_LINK.href} label="Fiscal receipt code" size={128} />
+  </span>
+)
+
+const FISCAL = {
+  banner: FISCAL_BANNER,
+  end: FISCAL_END,
+  kindLine: 'NORMAL SALE',
+  recap: TAX_RECAP,
+  issuedFacts: ISSUED_FACTS,
+  code: FISCAL_CODE,
+  totals: [{ id: 'total', label: 'Total', value: '1011.00', strong: true }],
+}
+
+/** A fiscal receipt: banner, kind, items, payments, the tax per label, the processor's facts. */
+export const Fiscal: Story = {
+  name: 'Fiscal receipt',
+  args: FISCAL,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const receipt = within(canvasElement).getByRole('article', { name: 'Receipt' })
+    await expect(receipt).toHaveTextContent('NORMAL SALE')
+    await expect(within(receipt).getByRole('columnheader', { name: 'Rate' })).toBeVisible()
+    await expect(receipt).toHaveTextContent('2290/2318ПП')
+  },
+}
+
+/** A proforma: the marker printed boxed under the facts and again at the bottom. */
+export const NotFiscal: Story = {
+  name: 'Not a fiscal receipt',
+  render: (args) => (
+    <Shop>
+      <ReceiptPreview
+        header={args.header ?? []}
+        facts={args.facts ?? []}
+        items={args.items}
+        totals={FISCAL.totals}
+        recap={TAX_RECAP}
+        currency={CURRENCY}
+        kindLine="PROFORMA SALE"
+        marker={NOT_FISCAL}
+        footer={['The offer is valid until 13.10.2026.']}
+      />
+    </Shop>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement.querySelectorAll('[data-slot="receipt-marker"]')).toHaveLength(2)
+  },
+}
+
+/** A refund: the original's number and time carried over, the buyer's signature line. */
+export const Refund: Story = {
+  args: {
+    ...FISCAL,
+    kindLine: 'NORMAL REFUND',
+    facts: [
+      ...RECEIPT_FACTS,
+      { id: 'ref', label: 'Original receipt', value: 'ZK7Q2M4P-ZK7Q2M4P-2318' },
+      { id: 'reftime', label: 'Original time', value: '06.10.2026. 09:42:17' },
+      { id: 'buyer', label: 'Buyer ID', value: '10:100000017' },
+    ],
+    items: [
+      { id: 'r1', name: 'Kifla 60 g (Đ)', quantity: '-2', unitPrice: '25.00', total: '-50.00' },
+      {
+        id: 'r2',
+        name: 'Burek sa mesom 250 g (Đ)',
+        quantity: '-1',
+        unitPrice: '190.00',
+        total: '-190.00',
+      },
+    ],
+    totals: [{ id: 'total', label: 'Refund total', value: '-240.00', strong: true }],
+    payments: [{ id: 'cash', label: 'Cash paid out', value: '240.00' }],
+    recap: {
+      ...TAX_RECAP,
+      rows: [{ id: 'd', cells: { label: 'Đ', name: 'VAT', rate: '20,00%', tax: '-40.00' } }],
+      totals: [{ id: 'all', label: 'Total tax', value: '-40.00' }],
+    },
+    signature: 'Buyer’s signature',
+  },
 }
