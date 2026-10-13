@@ -674,7 +674,9 @@ export function Ward({
     () => ADMISSIONS,
   )
   const [chosen, setChosen] = useState<string | undefined>(initial)
-  const [open, setOpen] = useState(initial !== undefined)
+  // A step pictured on its own opens over the plan (the drawer and the dialog opened together
+  // would hide each other from assistive technology).
+  const [open, setOpen] = useState(initial !== undefined && startStep === undefined)
   const [step, setStep] = useState<'transfer' | 'admit' | null>(startStep ?? null)
   const bed = open ? beds.find((each) => each.id === chosen) : undefined
   const stepBed = beds.find((each) => each.id === chosen)

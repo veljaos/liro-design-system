@@ -389,6 +389,7 @@ function ChannelOrders({
  * choice. When no free table is big enough the dialog says so and offers merging tables.
  */
 function MoveGuestsDialog({
+  phone,
   table,
   tables,
   open,
@@ -396,6 +397,7 @@ function MoveGuestsDialog({
   onMove,
   onMerge,
 }: {
+  phone: boolean
   table: BistroTable
   tables: readonly BistroTable[]
   open: boolean
@@ -422,25 +424,32 @@ function MoveGuestsDialog({
           <>
             <Button
               intent="cancel"
-              label="Cancel"
+              label={phone ? 'Close' : 'Cancel'}
               onClick={() => {
                 onOpenChange(false)
               }}
             />
-            <Button
-              family="primary"
-              emphasis="primary"
-              icon={Merge}
-              label="Merge tables…"
-              onClick={onMerge}
-            />
+            {/* The floor plan is edited on a computer or a tablet (P5.28 item 27). */}
+            {!phone && (
+              <Button
+                family="primary"
+                emphasis="primary"
+                icon={Merge}
+                label="Merge tables in the floor plan"
+                onClick={onMerge}
+              />
+            )}
           </>
         }
       >
         <EmptyState
           compact
           title={`No free table seats ${guestsText(party.size, number)}`}
-          description="Merge two free tables in the floor plan, or wait for a table to be cleared."
+          description={
+            phone
+              ? 'Merge two free tables in the floor plan on a computer or tablet, or wait for a table to be cleared.'
+              : 'Merge two free tables in the floor plan, or wait for a table to be cleared.'
+          }
         />
       </Dialog>
     )
@@ -708,6 +717,7 @@ export function Service({
         <MoveGuestsDialog
           // A new round of choosing each time it opens: the best table first.
           key={`${table.id}:${String(move)}`}
+          phone={phone}
           table={table}
           tables={tables}
           open={move}
@@ -922,7 +932,7 @@ function terraceItems(
         // (P5.28 item 24: the time is not on the plan).
         ...(since === undefined || total === null
           ? {}
-          : { detail: `Since ${since} · ${money(total)}`, planDetail: money(total) }),
+          : { detail: `${since} · ${money(total)}`, planDetail: money(total) }),
         ...(table.note === undefined ? {} : { note: table.note }),
       }
     }),
