@@ -808,7 +808,10 @@ export const UnderTheShell: Story = {
     field.focus()
     await nextFrames()
     await expectTopAtLeast(field, head.getBoundingClientRect().bottom)
-    // The number and label stay at the start; the amounts move.
+    // The number and label stay at the start; the amounts move. From the start again: focusing
+    // the field may have scrolled the grid sideways already.
+    region.scrollLeft = 0
+    await nextFrames()
     const rowHead = table.querySelectorAll('tbody th[scope="row"]')[20]
     const amount = rowHead?.closest('tr')?.querySelector('td:last-child')
     if (rowHead === undefined || amount === null || amount === undefined) {
