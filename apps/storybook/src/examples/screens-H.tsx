@@ -370,15 +370,18 @@ function ClinicShell({
   phone,
   tab,
   crumb,
+  today,
   children,
 }: {
   phone: boolean
   tab: 'schedule' | 'calendar' | 'patients'
   crumb: string
+  /** The schedule and the calendar are seen on the day of the appointment (P5.28 item 10). */
+  today?: string
   children: ReactNode
 }) {
   return (
-    <Tenant>
+    <Tenant {...(today === undefined ? {} : { today })}>
       <Shell
         phone={phone}
         account={RECEPTION}
@@ -398,7 +401,7 @@ export function ClinicSchedule({ phone }: { phone: boolean }) {
   const navigate = useContext(Navigate)
   const [bookings, setBookings] = useState<readonly ScheduleBooking[]>(DAY_BOOKINGS)
   return (
-    <ClinicShell phone={phone} tab="schedule" crumb="Schedule">
+    <ClinicShell phone={phone} tab="schedule" crumb="Schedule" today={CLINIC.day}>
       <Frame phone={phone} wide>
         <PageHeader title="Schedule" subtitle={`${CLINIC.name} · ${format.dateLong(CLINIC.day)}`} />
         <ResourceSchedule
@@ -410,6 +413,7 @@ export function ClinicSchedule({ phone }: { phone: boolean }) {
           dayStart="07:00"
           dayEnd="13:00"
           slotMinutes={30}
+          now={CLINIC.now}
           resourceLabel="Doctor"
           layout={phone ? 'phone' : 'desktop'}
           onMove={(move) => {
@@ -436,7 +440,7 @@ export function DoctorCalendar({ phone }: { phone: boolean }) {
   const count = BOOKINGS.filter((each) => each.resourceId === CHOSEN_DOCTOR).length
   const { format } = useLiro()
   return (
-    <ClinicShell phone={phone} tab="calendar" crumb={doctorName(CHOSEN_DOCTOR)}>
+    <ClinicShell phone={phone} tab="calendar" crumb={doctorName(CHOSEN_DOCTOR)} today={CLINIC.day}>
       <Frame phone={phone} wide>
         <PageHeader
           title={doctorName(CHOSEN_DOCTOR)}
@@ -450,6 +454,7 @@ export function DoctorCalendar({ phone }: { phone: boolean }) {
           dayStart="07:00"
           dayEnd="14:00"
           slotMinutes={30}
+          now={CLINIC.now}
           layout={phone ? 'phone' : 'desktop'}
           onSelect={(event) => {
             if (event.id === JOVANA_BOOKING.id) navigate(H_ROUTES.finding)

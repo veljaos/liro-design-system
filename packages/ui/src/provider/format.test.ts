@@ -6,6 +6,8 @@ import {
   formatDecimal,
   NUMBER_SCHEMES,
   numberSchemeForLocale,
+  numericFormat,
+  weekStartsOnForLocale,
 } from './format'
 
 const NBSP = '\u00A0'
@@ -169,5 +171,34 @@ describe('the formatter cache (P5.20)', () => {
     expect(sr.money('98765432109876543210.123456789', 'RSD', { decimals: 9 })).toBe(
       '98.765.432.109.876.543.210,123456789 RSD',
     )
+  })
+})
+
+describe('numericFormat (P5.28 item 2)', () => {
+  // An English interface for a Serbian company: English words, the tenant's digits.
+  const format = createFormat('en-RS', numericFormat('sr-Latn-RS'))
+
+  it('writes numbers, amounts and numeric dates as the tenant does', () => {
+    expect(format.number('12345.6', { decimals: 2 })).toBe('12.345,60')
+    expect(format.money('12345.6', 'RSD')).toBe('12.345,60 RSD')
+    expect(format.date('2026-10-06')).toBe('06.10.2026.')
+    expect(format.parseDate('6.10.2026')).toBe('2026-10-06')
+    expect(format.parseNumber('1.234,5')).toBe('1234.5')
+    expect(format.time('2026-10-06T09:42')).toBe('09:42')
+  })
+
+  it('keeps the words of the interface language, never the tenant’s', () => {
+    expect(format.monthName(1, 'long')).toBe('January')
+    expect(format.weekdayName(0, 'short')).toBe('Sun')
+    expect(format.dateLong('2026-10-06')).toBe('Tuesday, October 6, 2026')
+    expect(numericFormat('sr-Latn-RS')).not.toHaveProperty('monthName')
+    expect(numericFormat('sr-Latn-RS')).not.toHaveProperty('weekdayName')
+    expect(numericFormat('sr-Latn-RS')).not.toHaveProperty('dateLong')
+  })
+
+  it('takes the first day of the week from the locale’s region', () => {
+    expect(weekStartsOnForLocale('en')).toBe(0)
+    expect(weekStartsOnForLocale('en-RS')).toBe(1)
+    expect(weekStartsOnForLocale('sr-Latn-RS')).toBe(1)
   })
 })

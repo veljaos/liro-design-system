@@ -1195,3 +1195,6 @@ export {
   signatureFieldPlacement,
 } from './templates/print-logic'
 export type { PrintBodyArea, SheetBox, SignatureFieldPlacement } from './templates/print-logic'
+
+// ── P5.28 dates ──
+export { numericFormat } from './provider'

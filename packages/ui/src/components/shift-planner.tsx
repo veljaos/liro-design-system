@@ -74,6 +74,7 @@ import {
   type ShiftTemplate,
 } from './shift-parts'
 import { StatusBadge } from './status-badge'
+import { STICKY_CLEARANCE, STICKY_HEAD, useStickyHead } from './sticky-head'
 import { usePhone } from './use-phone'
 
 /*
@@ -258,6 +259,9 @@ export function ShiftPlanner(props: ShiftPlannerProps) {
   const baseId = useId()
   const grid = useRef<HTMLTableElement>(null)
   const root = useRef<HTMLDivElement>(null)
+  // The days row stays below the shell while the page scrolls (P5.28 item 4).
+  const region = useRef<HTMLDivElement>(null)
+  useStickyHead(region, !phone && props.loading !== true && props.rows.length > 0)
   const editable = props.readOnly !== true && props.onChange !== undefined
 
   const [innerGroupBy, setInnerGroupBy] = useState<string | null>(props.defaultGroupBy ?? null)
@@ -1363,18 +1367,28 @@ export function ShiftPlanner(props: ShiftPlannerProps) {
           description={messages['shifts.noPeopleDescription']}
         />
       ) : (
-        <div className="min-w-0 overflow-x-auto rounded-md border border-solid border-default bg-surface-raised">
+        <div
+          ref={region}
+          className={cn(
+            'min-w-0 overflow-x-auto rounded-md border border-solid border-default bg-surface-raised',
+            STICKY_CLEARANCE,
+          )}
+        >
           <table
             ref={grid}
             aria-label={props.label}
             aria-describedby={`${baseId}-instructions`}
             className="w-full border-separate border-spacing-0 font-sans text-sm text-primary"
           >
-            <thead>
+            <thead data-sticky-head="">
               <tr>
                 <th
                   scope="col"
-                  className="sticky start-0 z-1 min-w-48 border-0 border-b border-solid border-default bg-surface-raised px-3 py-2 text-start text-xs font-semibold text-secondary"
+                  data-sticky-start=""
+                  className={cn(
+                    STICKY_HEAD,
+                    'start-0 z-20 min-w-48 border-0 border-b border-solid border-default bg-surface-raised px-3 py-2 text-start text-xs font-semibold text-secondary',
+                  )}
                 >
                   <span className={TEXT_ISOLATE}>{messages['shifts.person']}</span>
                 </th>
@@ -1385,7 +1399,10 @@ export function ShiftPlanner(props: ShiftPlannerProps) {
                       key={date}
                       scope="col"
                       {...(date === today ? { 'aria-current': 'date' as const } : {})}
-                      className="min-w-28 border-0 border-s border-b border-solid border-default border-s-subtle px-2 py-2 text-start align-bottom text-xs font-regular text-secondary"
+                      className={cn(
+                        STICKY_HEAD,
+                        'z-10 min-w-28 border-0 border-s border-b border-solid border-default border-s-subtle bg-surface-raised px-2 py-2 text-start align-bottom text-xs font-regular text-secondary',
+                      )}
                     >
                       <span className="flex flex-col">
                         <span className={cn('font-semibold text-primary', TEXT_DIRECTION)}>
@@ -1404,7 +1421,10 @@ export function ShiftPlanner(props: ShiftPlannerProps) {
                 {showHours && (
                   <th
                     scope="col"
-                    className="min-w-20 border-0 border-s border-b border-solid border-default border-s-subtle px-3 py-2 text-end align-bottom text-xs font-semibold text-secondary"
+                    className={cn(
+                      STICKY_HEAD,
+                      'z-10 min-w-20 border-0 border-s border-b border-solid border-default border-s-subtle bg-surface-raised px-3 py-2 text-end align-bottom text-xs font-semibold text-secondary',
+                    )}
                   >
                     <span className={TEXT_ISOLATE}>{messages['shifts.hours']}</span>
                   </th>
@@ -1435,7 +1455,7 @@ export function ShiftPlanner(props: ShiftPlannerProps) {
                         <tr key={row.id}>
                           <th
                             scope="row"
-                            className="sticky start-0 z-1 border-0 border-b border-solid border-subtle bg-surface-raised px-3 py-2 text-start align-top font-regular"
+                            className="sticky start-0 z-[5] border-0 border-b border-solid border-subtle bg-surface-raised px-3 py-2 text-start align-top font-regular"
                           >
                             <span className={cn('block text-sm font-semibold', TEXT_DIRECTION)}>
                               {row.name}
@@ -1463,7 +1483,7 @@ export function ShiftPlanner(props: ShiftPlannerProps) {
                 <tr>
                   <th
                     scope="row"
-                    className="sticky start-0 z-1 border-0 border-t border-solid border-strong bg-surface-raised px-3 py-2 text-start text-xs font-semibold text-secondary"
+                    className="sticky start-0 z-[5] border-0 border-t border-solid border-strong bg-surface-raised px-3 py-2 text-start text-xs font-semibold text-secondary"
                   >
                     <span className={TEXT_ISOLATE}>{messages['shifts.coverage']}</span>
                   </th>

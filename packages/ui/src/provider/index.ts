@@ -5,6 +5,7 @@ export {
   intlLocale,
   NUMBER_SCHEMES,
   numberSchemeForLocale,
+  numericFormat,
   parseDateText,
   parseDecimal,
   weekStartsOnForLocale,

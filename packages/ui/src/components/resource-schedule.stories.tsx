@@ -16,6 +16,12 @@ import {
   ScheduleFrame,
 } from './schedule-story-data'
 import { PhoneFrame } from './story-frames'
+import {
+  expectBelowShell,
+  expectFirstColumnStays,
+  scrollUnderShell,
+  ShellPage,
+} from './sticky-story-helpers'
 
 /** The application around the schedule: it applies every move it is told about. */
 function Schedule(
@@ -45,6 +51,7 @@ function Schedule(
         onSelect={(booking) => {
           setSaid(`Opened: ${booking.title}`)
         }}
+        now="10:20"
         {...rest}
       />
       <output className={cn('text-sm text-secondary', TEXT_DIRECTION)}>{said}</output>
@@ -110,7 +117,10 @@ export default meta
 
 type Story = StoryObj<typeof meta>
 
-/** Four rows on Wednesday 14 October 2026: bookings, the lunch break for all, a service. */
+/**
+ * Four rows on Wednesday 14 October 2026: bookings, the lunch break for all, a service; "now"
+ * (10:20, the application's clock) marked across the rows.
+ */
 export const Default: Story = {
   play: async ({ canvasElement }) => {
     await settle()
@@ -124,6 +134,8 @@ export const Default: Story = {
       4,
     )
     await expect(canvas.getByRole('button', { name: 'Move to…: Ana Petrović' })).toBeVisible()
+    // The time grids' one "now" marker (P5.28 item 10), from the application's clock.
+    await expect(canvas.getByRole('img', { name: /^Now, 10:20\sAM$/ })).toBeInTheDocument()
   },
 }
 
@@ -634,5 +646,56 @@ export const DaysPhone: Story = {
     const schedule = canvasElement.querySelector<HTMLElement>('[data-slot="resource-schedule"]')
     if (schedule !== null)
       await expect(schedule.scrollWidth).toBeLessThanOrEqual(schedule.clientWidth)
+  },
+}
+
+/*
+ * P5.28 item 4: the hours row stays below the shell's sticky header while the page scrolls, and
+ * the names stay at the start while the schedule scrolls sideways.
+ */
+
+const THIRTY_ROOMS = Array.from({ length: 30 }, (_, index) => ({
+  id: `room${String(index + 1)}`,
+  name: `Room ${String(index + 1)}`,
+  description: index % 2 === 0 ? 'Examination' : 'Treatment',
+}))
+
+/** Thirty rooms over a long day, on a page under the shell; the page and the schedule scroll. */
+export const UnderTheShell: Story = {
+  name: 'Thirty rows under the shell, interaction',
+  tags: ['interaction'],
+  render: () => (
+    <ScheduleFrame>
+      <ShellPage>
+        <Schedule
+          resources={THIRTY_ROOMS}
+          unavailable={[]}
+          initial={[
+            {
+              id: 'r1',
+              resourceId: 'room13',
+              title: 'Marko Ilić',
+              start: '2026-10-14T09:00',
+              end: '2026-10-14T10:00',
+            },
+          ]}
+          dayStart="07:00"
+          dayEnd="20:00"
+        />
+      </ShellPage>
+    </ScheduleFrame>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const region = within(canvasElement).getByRole('region', {
+      name: 'Health centre Liman, Wednesday 14 October',
+    })
+    const head = region.querySelector('[data-sticky-head]')
+    if (head === null) throw new Error('no hours row')
+    await scrollUnderShell(canvasElement, region, 400)
+    await expectBelowShell(canvasElement, head)
+    const name = within(region).getByText('Room 13').parentElement
+    if (name === null) throw new Error('no name cell')
+    await expectFirstColumnStays(region, name, booking(canvasElement, 'Marko Ilić'))
   },
 }

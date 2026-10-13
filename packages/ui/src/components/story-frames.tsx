@@ -1,6 +1,6 @@
 import type { ElementType, ReactNode } from 'react'
 import { expect } from 'storybook/test'
-import { createFormat } from '../provider/format'
+import { createFormat, numericFormat } from '../provider/format'
 import { LiroProvider, useLiro } from '../provider/liro-provider'
 
 /*
@@ -64,9 +64,32 @@ export function percentText(value: string, sign: 'auto' | 'always' = 'auto'): st
 }
 
 /**
- * The template and example stories (Phase 4): the story's locale, direction and theme, the
- * English interface text, but numbers, amounts and dates written as a Serbian tenant sees them
- * (12.345,60 RSD, 06.10.2026.), and a fixed today.
+ * The examples' tenant is a Serbian company (P5.28 item 2): the story's language with the region
+ * RS ("en" → "en-RS"), so the words — month and weekday names, long dates — are the interface
+ * language's and the first day of the week is the region's (Monday). A locale that names its
+ * region keeps it.
+ */
+export function tenantLocale(locale: string): string {
+  const parsed = new Intl.Locale(locale)
+  return parsed.region === undefined
+    ? new Intl.Locale(parsed.baseName, { region: 'RS' }).toString()
+    : locale
+}
+
+/** How a Serbian tenant writes digits (12.345,60 RSD, 06.10.2026., 09:42), without its words. */
+const TENANT_DIGITS = numericFormat('sr-Latn-RS')
+
+/**
+ * The examples' format in the stories' English: English words, a Serbian tenant's digits. Story
+ * checks that expect a long date or a weekday name build them with it.
+ */
+export const EXAMPLE_FORMAT = createFormat('en-RS', TENANT_DIGITS)
+
+/**
+ * The template and example stories (Phase 4): the story's locale (with the tenant's region, see
+ * `tenantLocale`), direction and theme, the English interface text, but numbers, amounts and
+ * numeric dates written as a Serbian tenant writes them (12.345,60 RSD, 06.10.2026.) — never its
+ * month or weekday names (P5.28 item 2) — and a fixed today.
  */
 export function ExampleProvider({
   linkComponent,
@@ -79,10 +102,10 @@ export function ExampleProvider({
   const liro = useLiro()
   return (
     <LiroProvider
-      locale={liro.locale}
+      locale={tenantLocale(liro.locale)}
       direction={liro.direction}
       colorScheme={liro.colorScheme}
-      format={SERBIAN_FORMAT}
+      format={TENANT_DIGITS}
       today={EXAMPLE_TODAY}
       {...(linkComponent === undefined ? {} : { linkComponent })}
     >

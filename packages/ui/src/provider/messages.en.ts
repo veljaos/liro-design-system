@@ -747,7 +747,6 @@ export const messagesEn: LiroMessages = {
     resource === null ? `${timeText}, ${dateText}` : `${timeText}, ${dateText}, ${resource}`,
   'timetable.period': 'Period',
   'timetable.free': 'Free',
-  'timetable.now': 'Now',
   'timetable.day': 'Day',
   // P5.10 / P5.11 touch, POS and warehouse
   'pos.status': 'Register status',
@@ -1196,4 +1195,6 @@ export const messagesEn: LiroMessages = {
   'print.amountDue': (amount, date) =>
     date === undefined ? `${amount} due` : `${amount} due ${date}`,
   'print.signHere': 'Sign here',
+  // P5.28 dates
+  'schedule.now': (timeText) => `Now, ${timeText}`,
 }

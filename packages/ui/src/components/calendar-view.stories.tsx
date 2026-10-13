@@ -4,6 +4,7 @@ import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { settle } from '../primitives/story-helpers'
+import type { LiroMessages } from '../provider/messages'
 import { CalendarView, type CalendarEvent, type CalendarViewProps } from './calendar-view'
 import type { CalendarViewName } from './schedule-logic'
 import { CLINIC_EVENTS, LONG_EVENTS, SCHEDULE_TODAY, ScheduleFrame } from './schedule-story-data'
@@ -29,6 +30,7 @@ function Calendar({
         onSlotSelect={(slot) => {
           setChosen(`New appointment at ${slot.start}`)
         }}
+        now="10:20"
         {...rest}
         {...(view === undefined ? {} : { view })}
         onViewChange={setView}
@@ -95,7 +97,10 @@ export default meta
 
 type Story = StoryObj<typeof meta>
 
-/** The week of 12–18 October 2026: overlaps side by side, all-day events above, today marked. */
+/**
+ * The week of 12–18 October 2026: overlaps side by side, all-day events above, today marked, and
+ * "now" (10:20, the application's clock) on today's column.
+ */
 export const Default: Story = {
   play: async ({ canvasElement }) => {
     await settle()
@@ -107,6 +112,11 @@ export const Default: Story = {
     ).toBeVisible()
     await expect(canvas.getByRole('grid')).toBeVisible()
     await expect(canvas.getByRole('radio', { name: 'Week' })).toBeChecked()
+    // The time grids' one "now" marker (P5.28 item 10) on today's column, its slot current.
+    await expect(canvas.getByRole('img', { name: /^Now, 10:20\sAM$/ })).toBeInTheDocument()
+    await expect(canvasElement.querySelector('[aria-current="time"]')).toHaveAccessibleName(
+      /^Wednesday, October 14, 2026, 10:00\sAM$/,
+    )
     // Three events overlap at 10:00 on Wednesday: each a third of the column wide at most.
     const surgery = eventButton(canvasElement, 'Minor surgery: Stefan Đorđević')
     const consultation = eventButton(canvasElement, 'Consultation: Dragana Nikolić')
@@ -481,4 +491,83 @@ export const Japanese: Story = {
       />
     </ScheduleFrame>
   ),
+}
+
+/*
+ * P5.28 item 2: month and weekday names, dates and the week's first day come only from the
+ * provider's locale. An English interface never shows Serbian names; a Serbian week starts on
+ * Monday, a week in the United States on Sunday.
+ */
+
+/** English (United States): English names, weeks from Sunday. */
+export const MonthEnglishUnitedStates: Story = {
+  name: 'Month, English (United States), weeks from Sunday',
+  render: () => (
+    <ScheduleFrame locale="en-US">
+      <Calendar initialView="month" />
+    </ScheduleFrame>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { name: 'October 2026' })).toBeVisible()
+    await expect(canvas.getAllByRole('columnheader')[0]).toHaveTextContent('Sun')
+    await expect(canvas.getAllByRole('columnheader')[1]).toHaveTextContent('Mon')
+  },
+}
+
+/** Serbian texts for the calendar's own controls, as the Core would pass them. */
+const SERBIAN_CALENDAR = {
+  'calendar.today': 'Danas',
+  'calendar.previous': (view) =>
+    view === 'month' ? 'Prethodni mesec' : view === 'day' ? 'Prethodni dan' : 'Prethodna nedelja',
+  'calendar.next': (view) =>
+    view === 'month' ? 'Sledeći mesec' : view === 'day' ? 'Sledeći dan' : 'Sledeća nedelja',
+  'calendar.view': 'Prikaz',
+  'calendar.day': 'Dan',
+  'calendar.week': 'Nedelja',
+  'calendar.month': 'Mesec',
+  'calendar.agenda': 'Raspored',
+  'calendar.more': (_count, countText) => `još ${countText}`,
+  'calendar.moreLabel': (_count, countText, dateText) => `Još ${countText} za ${dateText}`,
+  'calendar.instructions':
+    'Strelice pomeraju fokus po danima, Enter otvara dan. Događaji slede posle kalendara.',
+  'calendar.todayMark': 'Danas',
+  'calendar.eventLabel': (title, timeText, dateText) => `${title}, ${timeText}, ${dateText}`,
+} satisfies Partial<LiroMessages>
+
+/** Serbian (Latin): Serbian names and texts, weeks from Monday. */
+export const MonthSerbian: Story = {
+  name: 'Month, Serbian (sr-Latn), weeks from Monday',
+  render: () => (
+    <ScheduleFrame locale="sr-Latn-RS" messages={SERBIAN_CALENDAR}>
+      <CalendarView
+        label="Zakazani pregledi"
+        defaultView="month"
+        events={[
+          {
+            id: 's1',
+            title: 'Pregled: Marko Ilić',
+            start: '2026-10-12T08:00',
+            end: '2026-10-12T08:30',
+          },
+          {
+            id: 's2',
+            title: 'Vakcinacija: Luka Popović',
+            start: '2026-10-14T09:00',
+            end: '2026-10-14T09:45',
+            tone: 'success',
+          },
+          { id: 's3', title: 'Godišnji odmor', start: '2026-10-21', end: '2026-10-23' },
+        ]}
+      />
+    </ScheduleFrame>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { name: 'oktobar 2026' })).toBeVisible()
+    await expect(canvas.getAllByRole('columnheader')[0]).toHaveTextContent('pon')
+    await expect(canvas.getAllByRole('columnheader')[6]).toHaveTextContent('ned')
+  },
 }
