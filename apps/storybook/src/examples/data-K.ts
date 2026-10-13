@@ -24,7 +24,7 @@ import type {
   SeatingGuest,
   SeatingTable,
 } from '@veljaos/ui'
-import { decimal, paras, sumUnits } from '../../../../packages/ui/src/components/amounts-story-data'
+import { paras, sumUnits } from '../../../../packages/ui/src/components/amounts-story-data'
 
 export const K_ROUTES = {
   /** The service: the floor with nothing chosen. */
