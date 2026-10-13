@@ -500,7 +500,6 @@ export type { RegisterEntry, RegisterLock, RegisterPageProps } from './templates
 export { StatutoryFormPage } from './templates/statutory-form-page'
 export type {
   SourceDocument,
-  StatutoryField,
   StatutoryFormPageProps,
   StatutoryOverride,
   StatutorySection,
@@ -1156,3 +1155,43 @@ export type {
   PracticeItem,
   RelatedAct,
 } from './components/legal-model'
+// ── P5.28 docs: the statutory form grid, simple printouts and electronic signature fields ──
+export {
+  statutoryRows,
+  statutoryColumnLabel,
+  findStatutoryPlace,
+  statutoryGridLines,
+  statutoryHeaderRows,
+  isStatutoryGroup,
+  statutoryRowRules,
+  statutoryCellId,
+  statutoryCellLabel,
+} from './templates/statutory-logic'
+export type {
+  StatutoryGridLine,
+  StatutoryHeaderCell,
+  StatutoryCell,
+  StatutoryCellKind,
+  StatutoryColumn,
+  StatutoryGroup,
+  StatutoryItem,
+  StatutoryPlace,
+  StatutoryRow,
+} from './templates/statutory-logic'
+export {
+  PrintAmountDueLine,
+  PrintPaymentDetails,
+  PrintSignatureField,
+} from './templates/print-parts'
+export type {
+  PrintAmountDue,
+  PrintPayment,
+  PrintSignatureFieldProps,
+} from './templates/print-parts'
+export {
+  lengthToMm,
+  printedPageCount,
+  PT_PER_MM,
+  signatureFieldPlacement,
+} from './templates/print-logic'
+export type { PrintBodyArea, SheetBox, SignatureFieldPlacement } from './templates/print-logic'

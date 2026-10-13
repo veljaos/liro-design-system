@@ -1711,4 +1711,18 @@ export interface LiroMessages {
   // P5.25a FloorPlan
   /** An item's level in words, from the formatted percentage: "62,5% full". */
   'floorPlan.level': (percentText: string) => string
+  // P5.28 docs
+  /** The switch that shows the previous period under each value: "Compare with August 2026". */
+  'statutory.compareWith': (period: string) => string
+  /** Beside the switch while comparing: "September 2026, with August 2026 under each amount". */
+  'statutory.comparing': (current: string, previous: string) => string
+  /** Names a previous value for assistive technology, before the amount: "August 2026:". */
+  'statutory.previousValue': (period: string) => string
+  /**
+   * A printed document's one prominent line, from the amount as `format.money` writes it and the
+   * due date as `format.date` writes it (none: no date): "5.003.678,22 RSD due 21.10.2026.".
+   */
+  'print.amountDue': (amount: string, date: string | undefined) => string
+  /** The button in an empty electronic signature field on screen (left off the paper). */
+  'print.signHere': string
 }

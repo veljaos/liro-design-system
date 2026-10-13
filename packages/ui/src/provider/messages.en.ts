@@ -1189,4 +1189,11 @@ export const messagesEn: LiroMessages = {
   'legalPrint.footnotes': 'Footnotes',
   // P5.25a FloorPlan
   'floorPlan.level': (percentText) => `${percentText} full`,
+  // P5.28 docs
+  'statutory.compareWith': (period) => `Compare with ${period}`,
+  'statutory.comparing': (current, previous) => `${current}, with ${previous} under each amount`,
+  'statutory.previousValue': (period) => `${period}:`,
+  'print.amountDue': (amount, date) =>
+    date === undefined ? `${amount} due` : `${amount} due ${date}`,
+  'print.signHere': 'Sign here',
 }

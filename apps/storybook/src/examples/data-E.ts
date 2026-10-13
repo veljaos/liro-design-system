@@ -441,51 +441,33 @@ export const SEPTEMBER_PURCHASES_20 = [
   },
 ] as const
 
-const base20 = addAmounts(...SEPTEMBER_SALES_20.map((sale) => sale.base))
-const vat20 = addAmounts(...SEPTEMBER_SALES_20.map((sale) => vatAt20(sale.base)))
 /** F-2026-0412's 10% line and its exempt deposit (P4.8 TOTALS). */
-const base10 = '8500.00'
-const vat10 = '850.00'
-const exempt = '2700.00'
-const outputVat = addAmounts(vat20, vat10)
-const inputBase = addAmounts(...SEPTEMBER_PURCHASES_20.map((purchase) => purchase.base))
-const inputVat = addAmounts(...SEPTEMBER_PURCHASES_20.map((purchase) => vatAt20(purchase.base)))
-/** Ivana Stojanović left UF-2026-1179 out of 8a.2: a query about its price is open. */
-const inputVatOverride = vatAt20('22788.00')
+export const SEPTEMBER_10 = { base: '8500.00', exempt: '2700.00' }
 
-/** August 2026, as filed. */
-const AUGUST = {
-  exempt: '1800.00',
-  base20: '468250.00',
-  vat20: '93650.00',
-  base10: '12400.00',
-  vat10: '1240.00',
-  inputBase: '301500.00',
-  inputVat: '60300.00',
-}
+/** September's advance e-invoice at 20% (the return's 1.2.1). */
+export const SEPTEMBER_ADVANCES = [
+  {
+    number: 'AV-2026-0031',
+    customer: 'Mlinpek d.o.o.',
+    date: '2026-09-15',
+    base: '50000.00',
+    status: 'Paid',
+  },
+] as const
 
-/** The return's values: this period, the computed value where overridden, and August. */
-export const VAT_RETURN = {
-  exempt: { current: exempt, previous: AUGUST.exempt },
-  base20: { current: base20, previous: AUGUST.base20 },
-  vat20: { current: vat20, previous: AUGUST.vat20 },
-  base10: { current: base10, previous: AUGUST.base10 },
-  vat10: { current: vat10, previous: AUGUST.vat10 },
-  totalBase: {
-    current: addAmounts(base20, base10),
-    previous: addAmounts(AUGUST.base20, AUGUST.base10),
+/** September's construction works invoiced with reverse charge (the return's 1.4: base only). */
+export const SEPTEMBER_REVERSE_CHARGE = [
+  {
+    number: 'F-2026-0405',
+    customer: 'Vojvođanka Mlin a.d.',
+    date: '2026-09-14',
+    base: '96000.00',
+    status: 'Sent',
   },
-  totalVat: { current: outputVat, previous: addAmounts(AUGUST.vat20, AUGUST.vat10) },
-  inputBase: { current: inputBase, previous: AUGUST.inputBase },
-  inputVat: { current: inputVatOverride, computed: inputVat, previous: AUGUST.inputVat },
-  inputTotal: { current: inputVat, previous: AUGUST.inputVat },
-  payable: {
-    current: subtractAmount(outputVat, inputVat),
-    previous: subtractAmount(addAmounts(AUGUST.vat20, AUGUST.vat10), AUGUST.inputVat),
-  },
-  /** What the failing check finds: 8e.6 (the books) less 8a.2 (overridden). */
-  difference: subtractAmount(inputVat, inputVatOverride),
-}
+] as const
+
+/** Ivana Stojanović left UF-2026-1179 out of 3.1.1's VAT: a query about its price is open. */
+export const VAT_INPUT_OVERRIDE = vatAt20('22788.00')
 
 // ── Work-injury register 2026 ─────────────────────────────────────────────────────────────────
 

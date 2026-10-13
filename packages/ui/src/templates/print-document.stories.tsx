@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { Building2 } from 'lucide-react'
 import { expect, within } from 'storybook/test'
 import { MoneyText, NumberText, DateText } from '../components/display-text'
 import {
@@ -13,43 +12,47 @@ import {
   type FinalLine,
 } from '../components/document-story-data'
 import { ExampleProvider, PhoneFrame, StoryProvider } from '../components/story-frames'
-import { TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
-import { cn } from '../primitives/cn'
+import { TEXT_ISOLATE } from '../primitives/classes'
 import { settle } from '../primitives/story-helpers'
 import type { PrintColumn } from './print-parts'
-import { BUYER, SELLER, longInvoice, type PrintLine } from './print-story-data'
+import { BUYER, illustrativeCode, longInvoice, SELLER, type PrintLine } from './print-story-data'
 import { PrintDocument, type PrintDocumentProps } from './print-templates'
 
-/** The issuer's block at the top of the first page; the "logo" is an icon passed as an image. */
-function Letterhead() {
+/**
+ * The issuer's logo, an image from the application (D18): a mark and the name in the logo colour,
+ * drawn here as an SVG.
+ */
+function Logo() {
   return (
-    <div className="flex items-center gap-3">
-      <span className="flex size-10 items-center justify-center rounded-md border border-solid border-strong text-primary">
-        <Building2 aria-hidden="true" className="size-6" />
-      </span>
-      <div className="flex flex-col">
-        <span className={cn('text-md font-semibold text-primary', TEXT_DIRECTION)}>
-          Kvadrat Gradnja d.o.o.
-        </span>
-        <span className={cn('text-xs text-secondary', TEXT_DIRECTION)}>
-          Construction and engineering · Temerinski put 51, Novi Sad · office@kvadrat-gradnja.rs
-        </span>
-      </div>
-    </div>
+    <svg
+      role="img"
+      aria-label="Kvadrat Gradnja d.o.o."
+      viewBox="0 0 172 32"
+      className="block h-8 w-auto text-logo"
+      fill="currentColor"
+    >
+      <rect
+        x="2.5"
+        y="4.5"
+        width="23"
+        height="23"
+        rx="3"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="5"
+      />
+      <text x="34" y="23" fontSize="18" fontWeight="700" fontFamily="var(--liro-font-brand)">
+        Kvadrat Gradnja
+      </text>
+    </svg>
   )
 }
 
-const HEADER = (
-  <div className="flex justify-between gap-4">
-    <span className={TEXT_ISOLATE}>Kvadrat Gradnja d.o.o.</span>
-    <span className={TEXT_ISOLATE}>
-      Invoice <span dir="ltr">F-2026-0418</span>
-    </span>
-  </div>
+const FOOTER = (
+  <span className={TEXT_ISOLATE}>
+    Invoice <span dir="ltr">F-2026-0418</span> · 5.003.678,22 RSD due 21.10.2026.
+  </span>
 )
-
-const FOOTER =
-  'Kvadrat Gradnja d.o.o. · Temerinski put 51, 21000 Novi Sad · PIB 109876543 · MB 21345678 · Account 160-0000000456789-12 (Banca Intesa)'
 
 const FINAL_COLUMNS: PrintColumn<FinalLine>[] = [
   { key: 'item', header: 'Item', cell: (line) => line.item },
@@ -97,28 +100,44 @@ const LONG_COLUMNS: PrintColumn<PrintLine>[] = [
   },
 ]
 
+/** The small key/value block: number, date of issue, date of supply, due date, place of issue. */
 const DETAILS = [
+  { key: 'number', label: 'Invoice number', value: <bdi>F-2026-0418</bdi>, numeric: true },
   { key: 'issued', label: 'Date of issue', value: <DateText value="2026-10-06" />, numeric: true },
   { key: 'supply', label: 'Date of supply', value: <DateText value="2026-09-25" />, numeric: true },
   { key: 'due', label: 'Due date', value: <DateText value="2026-10-21" />, numeric: true },
   { key: 'place', label: 'Place of issue', value: 'Novi Sad' },
-  { key: 'contract', label: 'Contract', value: '12/2026' },
-  { key: 'reference', label: 'Payment reference', value: '97 2026-0418', numeric: true },
 ]
 
-const SIGNATURES = [
-  { key: 'issued', label: 'Issued by', name: 'Milica Petrović', detail: 'Accounting' },
-  { key: 'received', label: 'Received by' },
-]
+const PAYMENT = {
+  title: 'Payment details',
+  details: [
+    { key: 'recipient', label: 'Recipient', value: 'Kvadrat Gradnja d.o.o., Novi Sad' },
+    { key: 'account', label: 'Account', value: <bdi>160-0000000456789-12</bdi>, numeric: true },
+    {
+      key: 'reference',
+      label: 'Model and reference number',
+      value: <bdi>97 41-2026-0418</bdi>,
+      numeric: true,
+    },
+    { key: 'purpose', label: 'Purpose of payment', value: 'Invoice F-2026-0418' },
+  ],
+  code: illustrativeCode(
+    'K:PR|V:01|C:1|R:160000000045678912|N:Kvadrat Gradnja d.o.o.|I:RSD5003678,22|SF:221|S:F-2026-0418|RO:974120260418',
+    'IPS QR code for the payment (illustrative)',
+  ),
+  codeCaption: 'IPS QR · illustrative',
+}
 
 const INVOICE: PrintDocumentProps<FinalLine> = {
   title: 'Invoice',
   number: 'F-2026-0418',
-  letterhead: <Letterhead />,
-  header: HEADER,
+  logo: <Logo />,
   footer: FOOTER,
-  parties: [SELLER, BUYER],
   details: DETAILS,
+  parties: [SELLER, BUYER],
+  amountDue: { value: FINAL_DUE.value ?? '0', currency: 'RSD', date: '2026-10-21' },
+  payment: PAYMENT,
   lines: {
     caption: 'Lines',
     columns: FINAL_COLUMNS,
@@ -142,8 +161,6 @@ const INVOICE: PrintDocumentProps<FinalLine> = {
   },
   notesTitle: 'Notes',
   notes: NOTE_TEMPLATES.slice(0, 3).map((template) => template.text),
-  issued: { place: 'Novi Sad', date: '2026-10-06' },
-  signatures: SIGNATURES,
 }
 
 const meta = {
@@ -155,17 +172,21 @@ const meta = {
       description: {
         component:
           '**What for:** a business document on paper — an invoice, a delivery note, an offer, ' +
-          'a proforma: the letterhead (the issuer’s block, a logo as an image), the title and ' +
-          'number, the parties side by side, the document’s details, the lines (a PrintTable: ' +
-          'line types by typography, the header row repeating on every page, a row never split), ' +
-          'the totals exactly as DocumentTotals shows them on screen (recap by tax category, ' +
-          'deductions, footnotes; nothing computed), notes, place and date, signatures. A ' +
-          'PrintPage: header and footer on every page, page numbers, paper always light; a ' +
-          'draft or a cancelled document prints its marker.\n\n' +
+          'a proforma — **as simple as a Stripe invoice**, in Liro’s design: the title at the ' +
+          'start and the logo at the end; a small key/value block (number, date of issue, date ' +
+          'of supply, due date, place of issue); seller and buyer side by side (name, address, ' +
+          'PIB, MB, e-mail); one prominent line "5.003.678,22 RSD due 21.10.2026."; the payment ' +
+          'details (account, model and reference number) with the **IPS QR slot** (the ' +
+          'application’s image); the lines with thin rules only; the totals at the end side, the ' +
+          'amount due bold, the recap by rate only when the data has it; notes; "Page 1 of 1" in ' +
+          'the footer. Black and grey, generous white space, A4; no stamps, seals, frames or ' +
+          'signature lines. Every word, legal note and amount is the application’s.\n\n' +
           '**When:** the printout or the PDF of a document the application has issued or is ' +
           'about to issue.\n\n' +
           '**When not:** the document on screen (DocumentPage); a certificate, a report of ' +
-          'results or a finding (their own templates); a list (print a ReportPage’s result).',
+          'results or a finding (their own templates, with signature fields); a list (print a ' +
+          'ReportPage’s result). The QR code in these stories is an illustrative picture, not a ' +
+          'code a bank app reads.',
       },
     },
   },
@@ -194,15 +215,58 @@ export const Default: Story = {
     const sheet = canvas.getByRole('article', { name: 'Invoice F-2026-0418' })
     await expect(sheet).toHaveAttribute('data-liro-theme', 'light')
     await expect(getComputedStyle(sheet).colorScheme).toBe('light')
-    await expect(canvas.getByRole('heading', { level: 1 })).toHaveTextContent('Invoice F-2026-0418')
+    await expect(canvas.getByRole('heading', { level: 1 })).toHaveTextContent(/^Invoice$/)
+    await expect(canvas.getByRole('img', { name: 'Kvadrat Gradnja d.o.o.' })).toBeVisible()
+    await expect(canvas.getByText('5.003.678,22 RSD due 21.10.2026.')).toBeVisible()
+    await expect(
+      canvas.getByRole('img', { name: 'IPS QR code for the payment (illustrative)' }),
+    ).toBeVisible()
     await expect(canvas.getByRole('table', { name: 'Lines' })).toBeVisible()
     await expect(canvas.getByRole('group', { name: 'Totals' })).toHaveTextContent('5.003.678,22')
-    await expect(canvas.getByText('Novi Sad, 06.10.2026.')).toBeVisible()
+    // No signature lines on a business document; "Page 2 of 2" ends the footer (the lines and
+    // the recap run onto a second page).
+    await expect(sheet.querySelector('[data-signature-field]')).toBeNull()
+    await expect(sheet.querySelector('[data-slot="print-page-number"]')).toHaveTextContent(
+      'Page 2 of 2',
+    )
+    // Thin rules only: no box around the lines, no shaded header.
+    const header = sheet.querySelector('[data-slot="print-table"] th')
+    await expect(header?.className).not.toMatch(/(^|\s)bg-/)
+    await expect(sheet.querySelector('[data-slot="print-table"]')?.className).not.toMatch(
+      /(^|\s)border(\s|$)/,
+    )
     const style = canvasElement.querySelector('[data-slot="print-page"] style')
     await expect(style?.textContent).toContain('size: A4 portrait')
     await expect(style?.textContent).toContain(
       'content: "Page " counter(page) " of " counter(pages)',
     )
+  },
+}
+
+/** Without the recap, the payment block or the notes: each part only when the data has it. */
+export const Minimal: Story = {
+  name: 'Invoice without recap and payment block',
+  render: () => (
+    <ExampleProvider>
+      <PrintDocument
+        title={INVOICE.title}
+        logo={INVOICE.logo}
+        details={DETAILS}
+        parties={[SELLER, BUYER]}
+        amountDue={{ value: '8003678.22', currency: 'RSD', date: '2026-10-21' }}
+        lines={INVOICE.lines}
+        totals={{
+          label: 'Totals',
+          rows: FINAL_ROWS.slice(0, 2),
+          total: { key: 'due', label: 'Amount due', value: '8003678.22', currency: 'RSD' },
+        }}
+      />
+    </ExampleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement.querySelector('[data-slot="tax-recap"]')).toBeNull()
+    await expect(canvasElement.querySelector('[data-slot="print-payment"]')).toBeNull()
   },
 }
 
@@ -217,13 +281,11 @@ export const Long: Story = {
         {...INVOICE}
         number="F-2026-0431"
         header={
-          <div className="flex justify-between gap-4">
-            <span className={TEXT_ISOLATE}>Kvadrat Gradnja d.o.o.</span>
-            <span className={TEXT_ISOLATE}>
-              Invoice <span dir="ltr">F-2026-0431</span>
-            </span>
-          </div>
+          <span className={TEXT_ISOLATE}>
+            Kvadrat Gradnja d.o.o. · Invoice <span dir="ltr">F-2026-0431</span>
+          </span>
         }
+        amountDue={{ value: LONG.total.value ?? '0', currency: 'RSD', date: '2026-10-28' }}
         lines={{
           caption: 'Lines',
           columns: LONG_COLUMNS,
@@ -380,8 +442,7 @@ export const Arabic: Story = {
           rows: [{ key: 'net', label: 'المجموع دون ضريبة', value: '3029880.00', currency: 'RSD' }],
           total: { key: 'due', label: 'المبلغ المستحق', value: '3635856.00', currency: 'RSD' },
         }}
-        issued={{ place: 'نوفي ساد', date: '2026-10-06' }}
-        signatures={[{ key: 'i', label: 'أصدرها', name: 'ميليتسا بتروفيتش' }]}
+        amountDue={{ value: '3635856.00', currency: 'RSD', date: '2026-10-21' }}
       />
     </StoryProvider>
   ),
@@ -428,8 +489,7 @@ export const Japanese: Story = {
           rows: [],
           total: { key: 'due', label: '請求金額', value: '3029880', currency: 'JPY', decimals: 0 },
         }}
-        issued={{ date: '2026-10-06' }}
-        signatures={[{ key: 'i', label: '発行者', name: '佐藤 花子' }]}
+        amountDue={{ value: '3029880', currency: 'JPY', date: '2026-10-21', decimals: 0 }}
       />
     </StoryProvider>
   ),

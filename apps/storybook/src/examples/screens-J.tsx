@@ -1,12 +1,4 @@
-import {
-  Building2,
-  ClipboardCheck,
-  HardHat,
-  LogOut,
-  RotateCcw,
-  School,
-  Stethoscope,
-} from 'lucide-react'
+import { ClipboardCheck, LogOut, RotateCcw } from 'lucide-react'
 import { useContext, useState, type ReactNode } from 'react'
 import {
   Alert,
@@ -30,6 +22,7 @@ import {
   type PrintColumn,
   type PrintParty,
 } from '@veljaos/ui'
+import { illustrativeCode } from '../../../../packages/ui/src/templates/print-story-data'
 import type { ExampleRoute } from './example-app'
 import { BRAND, Navigate, ROUTES } from './example-shell'
 import { TOTAL_ROWS } from './screens-core'
@@ -262,25 +255,40 @@ export function CourseLessonScreen({
   )
 }
 
-/** The company's emblem on the certificate (an image from the application, D18). */
-function Emblem() {
+/**
+ * An issuer's logo on a printout (an image from the application, D18): a mark and the name in the
+ * logo colour, drawn here as an SVG.
+ */
+function Logo({ name, mark }: { name: string; mark: 'square' | 'cross' | 'school' }) {
+  const shapes = {
+    square: (
+      <rect
+        x="2.5"
+        y="4.5"
+        width="23"
+        height="23"
+        rx="3"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="5"
+      />
+    ),
+    cross: <path d="M10 4h8v8h8v8h-8v8h-8v-8H2v-8h8z" />,
+    school: <path d="M14 3 2 9v3h24V9zM4 14h4v10H4zm8 0h4v10h-4zm8 0h4v10h-4zM2 26h24v3H2z" />,
+  }
   return (
-    <span className="flex size-16 items-center justify-center rounded-full border-2 border-solid border-strong text-primary">
-      <HardHat aria-hidden="true" className="size-8" />
-    </span>
-  )
-}
-
-/** A round seal, drawn here; the application passes its scanned seal as an image. */
-function Seal({ text, size = 'size-24' }: { text: string; size?: string }) {
-  return (
-    <span
+    <svg
       role="img"
-      aria-label={text}
-      className={`flex ${size} items-center justify-center rounded-full border-2 border-double border-strong p-2 text-center text-xs text-secondary`}
+      aria-label={name}
+      viewBox="0 0 220 32"
+      className="block h-8 w-auto text-logo"
+      fill="currentColor"
     >
-      <span className="bidi-isolate">{text}</span>
-    </span>
+      {shapes[mark]}
+      <text x="34" y="22" fontSize="16" fontWeight="700" fontFamily="var(--liro-font-brand)">
+        {name}
+      </text>
+    </svg>
   )
 }
 
@@ -296,8 +304,7 @@ function Certificate() {
       number={CERTIFICATE.number}
       issued={CERTIFICATE.issued}
       signatures={CERTIFICATE.signatures}
-      emblem={<Emblem />}
-      seal={<Seal text="Kvadrat Gradnja d.o.o. · Novi Sad" />}
+      logo={<Logo name="Kvadrat Gradnja" mark="square" />}
     />
   )
 }
@@ -447,29 +454,6 @@ function PrintPreview({
   )
 }
 
-/** An issuer's block at the top of a printout's first page; the "logo" is an icon image. */
-function Letterhead({
-  icon: Icon,
-  name,
-  line,
-}: {
-  icon: typeof Building2
-  name: string
-  line: string
-}) {
-  return (
-    <div className="flex items-center gap-3">
-      <span className="flex size-10 shrink-0 items-center justify-center rounded-md border border-solid border-strong text-primary">
-        <Icon aria-hidden="true" className="size-6" />
-      </span>
-      <div className="flex min-w-0 flex-col">
-        <span className="bidi-content text-md font-semibold text-primary">{name}</span>
-        <span className="bidi-content text-xs text-secondary">{line}</span>
-      </div>
-    </div>
-  )
-}
-
 const INVOICE_COLUMNS: PrintColumn<ExampleLine>[] = [
   { key: 'item', header: 'Item', cell: (line) => line.item },
   {
@@ -508,15 +492,11 @@ function FooterLine({ parts }: { parts: readonly string[] }) {
   )
 }
 
-const SELLER_FOOTER = [
-  SELLER.name,
-  `${SELLER.address}, ${SELLER.city}`,
-  `PIB ${SELLER.taxId}`,
-  `MB ${SELLER.registration}`,
-  `Account ${SELLER.account} (${SELLER.bank})`,
-]
-
-/** Invoice F-2026-0412 on paper: the lines and totals its page shows, from the same data. */
+/**
+ * Invoice F-2026-0412 on paper, as simple as a Stripe invoice (P5.28): the lines and totals its
+ * page shows, from the same data; the amount due, the payment details and the IPS QR code; no
+ * signatures.
+ */
 export function InvoicePrintScreen() {
   const { format } = useLiro()
   const invoice = PRINTED_INVOICE
@@ -526,9 +506,9 @@ export function InvoicePrintScreen() {
     name: SELLER.name,
     lines: [SELLER.address, SELLER.city],
     details: [
-      { key: 'pib', label: 'Tax number (PIB)', value: SELLER.taxId, numeric: true },
-      { key: 'mb', label: 'Registration number', value: SELLER.registration, numeric: true },
-      { key: 'account', label: 'Account', value: SELLER.account, numeric: true },
+      { key: 'pib', label: 'PIB', value: SELLER.taxId, numeric: true },
+      { key: 'mb', label: 'MB', value: SELLER.registration, numeric: true },
+      { key: 'email', label: 'E-mail', value: SELLER.email },
     ],
   }
   const buyer: PrintParty = {
@@ -536,8 +516,13 @@ export function InvoicePrintScreen() {
     label: 'Buyer',
     name: invoice.customer,
     lines: [invoice.address],
-    details: [{ key: 'pib', label: 'Tax number (PIB)', value: invoice.taxId, numeric: true }],
+    details: [
+      { key: 'pib', label: 'PIB', value: invoice.taxId, numeric: true },
+      { key: 'mb', label: 'MB', value: INVOICE_FACTS.buyerRegistration, numeric: true },
+      { key: 'email', label: 'E-mail', value: INVOICE_FACTS.buyerEmail },
+    ],
   }
+  const due = `${format.money(PRINTED_TOTALS.due, 'RSD')} due ${format.date(invoice.due)}`
   return (
     <PrintPreview
       title={`Invoice ${invoice.number}`}
@@ -546,24 +531,15 @@ export function InvoicePrintScreen() {
       <PrintDocument
         title="Invoice"
         number={invoice.number}
-        letterhead={
-          <Letterhead
-            icon={Building2}
-            name={SELLER.name}
-            line={`Construction materials · ${SELLER.address}, Novi Sad · ${SELLER.email}`}
-          />
-        }
-        header={
-          <div className="flex justify-between gap-4">
-            <span className="bidi-isolate">{SELLER.name}</span>
-            <span className="bidi-isolate">
-              Invoice <span dir="ltr">{invoice.number}</span>
-            </span>
-          </div>
-        }
-        footer={<FooterLine parts={SELLER_FOOTER} />}
-        parties={[seller, buyer]}
+        logo={<Logo name="Kvadrat Gradnja" mark="square" />}
+        footer={<FooterLine parts={[`Invoice ${invoice.number}`, due]} />}
         details={[
+          {
+            key: 'number',
+            label: 'Invoice number',
+            value: <bdi>{invoice.number}</bdi>,
+            numeric: true,
+          },
           {
             key: 'issued',
             label: 'Date of issue',
@@ -578,14 +554,33 @@ export function InvoicePrintScreen() {
           },
           { key: 'due', label: 'Due date', value: <DateText value={invoice.due} />, numeric: true },
           { key: 'place', label: 'Place of issue', value: INVOICE_FACTS.place },
-          {
-            key: 'reference',
-            label: 'Payment reference',
-            value: INVOICE_FACTS.reference,
-            numeric: true,
-          },
-          { key: 'advance', label: 'Advance invoice', value: INVOICE_FACTS.advance },
         ]}
+        parties={[seller, buyer]}
+        amountDue={{ value: PRINTED_TOTALS.due, currency: 'RSD', date: invoice.due }}
+        payment={{
+          title: 'Payment details',
+          details: [
+            { key: 'recipient', label: 'Recipient', value: `${SELLER.name}, Novi Sad` },
+            {
+              key: 'account',
+              label: 'Account',
+              value: <bdi>{`${SELLER.account} (${SELLER.bank})`}</bdi>,
+              numeric: true,
+            },
+            {
+              key: 'reference',
+              label: 'Model and reference number',
+              value: <bdi>{INVOICE_FACTS.reference}</bdi>,
+              numeric: true,
+            },
+            { key: 'purpose', label: 'Purpose of payment', value: `Invoice ${invoice.number}` },
+          ],
+          code: illustrativeCode(
+            INVOICE_FACTS.ipsPayload,
+            'IPS QR code for the payment (illustrative)',
+          ),
+          codeCaption: 'IPS QR · illustrative',
+        }}
         lines={{
           caption: 'Lines',
           columns: INVOICE_COLUMNS,
@@ -599,13 +594,8 @@ export function InvoicePrintScreen() {
         }}
         notesTitle="Notes"
         notes={[
-          `Payment to ${SELLER.account} (${SELLER.bank}) with reference ${INVOICE_FACTS.reference}, by ${format.date(invoice.due)}`,
+          `The advance ${INVOICE_FACTS.advance} is deducted from this invoice.`,
           `The pallet deposit of ${format.money(PRINTED_TOTALS.exempt, 'RSD')} is exempt from VAT and is returned when the pallets come back.`,
-        ]}
-        issued={{ place: INVOICE_FACTS.place, date: invoice.issued }}
-        signatures={[
-          { key: 'issued', label: 'Issued by', name: 'Milica Petrović', detail: 'Accounting' },
-          { key: 'received', label: 'Received by' },
         ]}
       />
     </PrintPreview>
@@ -659,13 +649,7 @@ export function ReportCardPrintScreen() {
       <PrintGradeReport
         title="Report card"
         period="End of the school year 2025/26 · 7th grade"
-        letterhead={
-          <Letterhead
-            icon={School}
-            name={school}
-            line="Primary school · Braće Popović 1, 21000 Novi Sad"
-          />
-        }
+        logo={<Logo name={school} mark="school" />}
         header={`${school} · Report card · ${PUPIL.name}, ${PUPIL.class}`}
         footer="OŠ „Jovan Popović“ · Braće Popović 1, 21000 Novi Sad · 021 6400 123"
         details={[
@@ -722,10 +706,9 @@ export function ReportCardPrintScreen() {
         }}
         issued={{ place: 'Novi Sad', date: '2026-06-26' }}
         signatures={[
-          { key: 'teacher', label: 'Class teacher', name: PUPIL.teacher },
-          { key: 'principal', label: 'Principal', name: PUPIL.principal },
+          { id: 'teacher', label: 'Class teacher', name: PUPIL.teacher },
+          { id: 'principal', label: 'Principal', name: PUPIL.principal },
         ]}
-        seal={<Seal text="OŠ „Jovan Popović“ Novi Sad" />}
       />
     </PrintPreview>
   )
@@ -770,13 +753,7 @@ export function FindingPrintScreen() {
       <PrintFinding
         title="Specialist examination report"
         number={number}
-        letterhead={
-          <Letterhead
-            icon={Stethoscope}
-            name="Dom zdravlja Novi Sad · Internal medicine"
-            line="Bulevar cara Lazara 75, 21000 Novi Sad · 021 4879 000"
-          />
-        }
+        logo={<Logo name="Dom zdravlja Novi Sad" mark="cross" />}
         header={`Dom zdravlja Novi Sad · Internal medicine · ${PATIENT.name}, ${number}`}
         footer="Dom zdravlja Novi Sad · Bulevar cara Lazara 75 · 021 4879 000"
         confidentiality="Confidential medical record. It may be shown only to the patient and to persons authorised by law."
@@ -892,7 +869,7 @@ export function FindingPrintScreen() {
         issued={{ place: 'Novi Sad', date: '2026-10-05' }}
         signatures={[
           {
-            key: 'doctor',
+            id: 'doctor',
             label: 'Specialist',
             name: 'dr Jasmina Kovač',
             detail: 'Specialist in internal medicine',
@@ -908,7 +885,6 @@ export function FindingPrintScreen() {
             ),
           },
         ]}
-        seal={<Seal text="Dom zdravlja Novi Sad" size="size-20" />}
       />
     </PrintPreview>
   )

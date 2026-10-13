@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { Stethoscope } from 'lucide-react'
 import { expect, within } from 'storybook/test'
 import { DateText } from '../components/display-text'
 import { ExampleProvider, PhoneFrame, StoryProvider } from '../components/story-frames'
@@ -9,28 +8,28 @@ import { settle } from '../primitives/story-helpers'
 import { FINDING_PARAGRAPHS } from './print-story-data'
 import { PrintFinding, type PrintFindingProps } from './print-templates'
 
-function Letterhead() {
+/** The institution's logo, an image from the application (D18). */
+function Logo() {
   return (
-    <div className="flex items-center gap-3">
-      <span className="flex size-10 items-center justify-center rounded-md border border-solid border-strong text-primary">
-        <Stethoscope aria-hidden="true" className="size-6" />
-      </span>
-      <div className="flex flex-col">
-        <span className={cn('text-md font-semibold text-primary', TEXT_DIRECTION)}>
-          Dom zdravlja Novi Sad · Occupational medicine
-        </span>
-        <span className={cn('text-xs text-secondary', TEXT_DIRECTION)}>
-          Bulevar cara Lazara 75, 21000 Novi Sad
-        </span>
-      </div>
-    </div>
+    <svg
+      role="img"
+      aria-label="Dom zdravlja Novi Sad"
+      viewBox="0 0 196 32"
+      className="block h-8 w-auto text-logo"
+      fill="currentColor"
+    >
+      <path d="M10 4h8v8h8v8h-8v8h-8v-8H2v-8h8z" />
+      <text x="34" y="22" fontSize="16" fontWeight="700" fontFamily="var(--liro-font-brand)">
+        Dom zdravlja Novi Sad
+      </text>
+    </svg>
   )
 }
 
 const FINDING: PrintFindingProps = {
   title: 'Periodic medical examination report',
   number: 'MR-2026-08812',
-  letterhead: <Letterhead />,
+  logo: <Logo />,
   header: 'Dom zdravlja Novi Sad · Occupational medicine · Nikola Marković, MR-2026-08812',
   subjectTitle: 'Patient',
   subject: [
@@ -81,7 +80,7 @@ const FINDING: PrintFindingProps = {
   issued: { place: 'Novi Sad', date: '2026-10-08' },
   signatures: [
     {
-      key: 'doctor',
+      id: 'doctor',
       label: 'Doctor',
       name: 'dr Ana Lukić',
       detail: 'Specialist in occupational medicine',
@@ -107,11 +106,13 @@ const meta = {
     docs: {
       description: {
         component:
-          '**What for:** a finding on paper — a medical finding, an inspection’s finding: the ' +
-          'institution’s letterhead, the title and number, the person’s block in a frame, the ' +
-          'finding’s details, its titled sections in order, place and date, the signature (one ' +
-          'stands at the end) with an optional stamp, and a **confidentiality note** printed in ' +
-          'the footer of every page. Every word comes from the application.\n\n' +
+          '**What for:** a finding on paper — a medical finding, an inspection’s finding — as ' +
+          'simple as the other printouts (P5.28): the title and number at the start, the ' +
+          'institution’s logo at the end, the person’s details (no frame), the finding’s ' +
+          'details, its titled sections in order, place and date, the **electronic signature ' +
+          'field** (a stable `id`, its place in the PDF reported by PrintPage; no stamp), and a ' +
+          '**confidentiality note** printed in the footer of every page. Every word comes from ' +
+          'the application.\n\n' +
           '**When:** a report the person or another institution receives on paper.\n\n' +
           '**When not:** the record on screen (DetailPage, with MaskedValue for sensitive ' +
           'values); a certificate (PrintCertificate).',
@@ -167,20 +168,17 @@ export const Long: Story = {
         )),
       })),
     ],
-    seal: (
-      <span
-        role="img"
-        aria-label="Stamp of dr Ana Lukić"
-        className="flex size-24 items-center justify-center rounded-full border-2 border-double border-strong p-2 text-center text-xs text-secondary"
-      >
-        <span className={TEXT_ISOLATE}>dr Ana Lukić</span>
-      </span>
-    ),
   },
   play: async ({ canvasElement }) => {
     await settle()
     const sheet = canvasElement.querySelector<HTMLElement>('[data-slot="print-sheet"]')
     await expect(sheet?.offsetHeight ?? 0).toBeGreaterThan(2 * 297 * (96 / 25.4))
+    // The signature field lands on a later page; the screen's footer counts the pages.
+    const field = sheet?.querySelector<HTMLElement>('[data-signature-field="doctor"]')
+    await expect(Number(field?.dataset.pdfPage)).toBeGreaterThanOrEqual(3)
+    const pages = sheet?.querySelector('[data-slot="print-page-number"]')?.textContent ?? ''
+    await expect(pages).toMatch(/^Page (\d) of \1$/)
+    await expect(Number(field?.dataset.pdfPage)).toBe(Number(/\d/.exec(pages)?.[0]))
   },
 }
 
@@ -240,7 +238,7 @@ export const Arabic: Story = {
         ]}
         confidentiality="سجل طبي سري."
         issued={{ date: '2026-10-08' }}
-        signatures={[{ key: 'd', label: 'الطبيبة', name: 'د. آنا لوكيتش' }]}
+        signatures={[{ id: 'doctor', label: 'الطبيبة', name: 'د. آنا لوكيتش' }]}
       />
     </StoryProvider>
   ),
@@ -272,7 +270,7 @@ export const Japanese: Story = {
         ]}
         confidentiality="機密の医療記録です。"
         issued={{ date: '2026-10-08' }}
-        signatures={[{ key: 'd', label: '医師', name: '鈴木 一郎' }]}
+        signatures={[{ id: 'doctor', label: '医師', name: '鈴木 一郎' }]}
       />
     </StoryProvider>
   ),

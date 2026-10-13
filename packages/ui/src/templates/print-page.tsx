@@ -1,16 +1,21 @@
 import { useId, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
-import { FOCUS_RING, TEXT_DIRECTION } from '../primitives/classes'
+import { FOCUS_RING, TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 import {
   fitZoom,
+  lengthToMm,
   pageName,
   pageNumberContent,
   pageRules,
+  printedPageCount,
   resolvedMargins,
   sheetSize,
+  signatureFieldPlacement,
+  type PrintBodyArea,
   type PrintMargins,
   type PrintOrientation,
+  type SignatureFieldPlacement,
 } from './print-logic'
 
 /*
@@ -44,6 +49,18 @@ import {
  *   across every page; a cancelled document prints the cancellation (who, when, why, the
  *   cancellation document, as CancellationBanner on screen) at the top and "Cancelled" across
  *   every page.
+ * - **As simple as a Stripe invoice** (P5.28 item 20, the owner): black and grey only (the brand
+ *   colour only in the application's logo and links), no frames, boxes, stamps or seals; the
+ *   header and the footer are plain small grey text without rules; the markers are words, the
+ *   watermark grey. The page number ("Page 1 of 1") ends the footer line: on paper in the bottom
+ *   margin box, on screen at the end of the footer (the count measured from the body's height,
+ *   `printedPageCount`).
+ * - **Electronic signature fields** (P5.28): every `PrintSignatureField` inside the sheet
+ *   (`data-signature-field="<id>"`) is measured after layout and on every resize; its page and
+ *   its rectangle in PDF points (A4 595 × 842pt, origin bottom-left, `signatureFieldPlacement`)
+ *   are written on the element (`data-pdf-page`, `data-pdf-rect="x y width height"`) and reported
+ *   through `onSignatureFields`, so the user clicks to sign there or Liro Bridge places the
+ *   visible signature itself.
  */
 
 /** A printed document's state: a draft, or cancelled (who, when, why). */
@@ -84,6 +101,12 @@ export interface PrintFrameProps {
    * in a region that scrolls sideways. No effect on paper.
    */
   fit?: 'width' | 'none'
+  /**
+   * The electronic signature fields of the sheet and where they land in the PDF (page, and a
+   * rectangle in points from the page's bottom-left corner), after layout and whenever it
+   * changes.
+   */
+  onSignatureFields?: (fields: SignatureFieldPlacement[]) => void
 }
 
 export interface PrintPageProps extends PrintFrameProps {
@@ -92,10 +115,12 @@ export interface PrintPageProps extends PrintFrameProps {
   children: ReactNode
 }
 
-/** The header and footer slots' look; the footer's invisible copy takes exactly the same room. */
-const HEADER_CLASS =
-  'mb-6 border-0 border-b border-solid border-default pb-2 text-xs text-secondary'
-const FOOTER_CLASS = 'border-0 border-t border-solid border-default pt-2 text-xs text-secondary'
+/**
+ * The header and footer slots' look: plain small grey text, no rules (P5.28); the footer's
+ * invisible copy takes exactly the same room.
+ */
+const HEADER_CLASS = 'mb-6 text-xs text-secondary'
+const FOOTER_CLASS = 'text-xs text-secondary'
 
 function StatusMarker({ status }: { status: PrintStatus }) {
   const { messages, format } = useLiro()
@@ -104,7 +129,7 @@ function StatusMarker({ status }: { status: PrintStatus }) {
       <div
         data-slot="print-status"
         data-status="draft"
-        className="mb-6 rounded-md border-2 border-solid border-strong px-4 py-3 break-inside-avoid"
+        className="mb-6 flex flex-col gap-0.5 break-inside-avoid"
       >
         <p className={cn('m-0 text-md font-semibold text-primary', TEXT_DIRECTION)}>
           {messages['print.draft']}
@@ -120,12 +145,12 @@ function StatusMarker({ status }: { status: PrintStatus }) {
     <div
       data-slot="print-status"
       data-status="cancelled"
-      className="mb-6 rounded-md border-2 border-solid border-status-danger-fg px-4 py-3 break-inside-avoid"
+      className="mb-6 flex flex-col gap-0.5 break-inside-avoid"
     >
-      <p className={cn('m-0 text-md font-semibold text-status-danger-fg', TEXT_DIRECTION)}>
+      <p className={cn('m-0 text-md font-semibold text-primary', TEXT_DIRECTION)}>
         {messages['document.cancelledTitle']}
       </p>
-      <p className={cn('m-0 text-sm text-primary', TEXT_DIRECTION)}>
+      <p className={cn('m-0 text-sm text-secondary', TEXT_DIRECTION)}>
         {messages['document.cancelledBy'](status.by, format.date(date), format.time(status.at))}{' '}
         {messages['document.cancelReason'](status.reason)}
         {status.document !== undefined && (
@@ -161,7 +186,7 @@ function Watermark({ status }: { status: PrintStatus }) {
           : 'before:[transform:rotate(-30deg)_scale(3.5)]',
         status.kind === 'draft'
           ? 'before:[color:var(--liro-border-default)]'
-          : 'before:[color:var(--liro-status-danger-border)]',
+          : 'before:[color:var(--liro-border-strong)]',
       )}
     />
   )
@@ -180,7 +205,14 @@ export function PrintPage(props: PrintPageProps) {
   const name = pageName(useId())
   const fit = props.fit ?? 'width'
   const backdrop = useRef<HTMLDivElement>(null)
+  const sheet = useRef<HTMLElement>(null)
   const [zoom, setZoom] = useState(1)
+  const [pages, setPages] = useState(1)
+  const reported = useRef('')
+  const onSignatureFields = useRef(props.onSignatureFields)
+  useLayoutEffect(() => {
+    onSignatureFields.current = props.onSignatureFields
+  })
 
   useLayoutEffect(() => {
     const element = backdrop.current
@@ -197,6 +229,62 @@ export function PrintPage(props: PrintPageProps) {
       observer.disconnect()
     }
   }, [fit, orientation])
+
+  // The printed pages and the signature fields' places, measured on the sheet in millimetres
+  // (the zoom cancels out: every length is a share of the sheet's own width).
+  const marginBottom = lengthToMm(margins.bottom)
+  const marginTop = lengthToMm(margins.top)
+  useLayoutEffect(() => {
+    const element = sheet.current
+    if (element === null) return
+    const measure = () => {
+      const box = element.getBoundingClientRect()
+      if (box.width === 0) return
+      const mm = size.width / box.width
+      const body = element.querySelector('[data-slot="print-body"]')?.getBoundingClientRect()
+      const footer = element.querySelector('[data-print-footer-room]')
+      const footerRoom = footer === null ? 0 : footer.getBoundingClientRect().height * mm
+      const top = body === undefined ? marginTop : (body.top - box.top) * mm
+      const area: PrintBodyArea = {
+        pageHeight: size.height,
+        top: Number.isFinite(top) ? top : 0,
+        bottom: size.height - (Number.isFinite(marginBottom) ? marginBottom : 0) - footerRoom,
+      }
+      const content = element.querySelector('[data-slot="print-content"]')?.getBoundingClientRect()
+      setPages(content === undefined ? 1 : printedPageCount((content.bottom - box.top) * mm, area))
+      const fields = [...element.querySelectorAll<HTMLElement>('[data-signature-field]')].map(
+        (field) => {
+          const rect = field.getBoundingClientRect()
+          const placement = signatureFieldPlacement(
+            field.dataset.signatureField ?? '',
+            {
+              x: (rect.left - box.left) * mm,
+              y: (rect.top - box.top) * mm,
+              width: rect.width * mm,
+              height: rect.height * mm,
+            },
+            area,
+          )
+          field.dataset.pdfPage = String(placement.page)
+          field.dataset.pdfRect = [placement.x, placement.y, placement.width, placement.height]
+            .map(String)
+            .join(' ')
+          return placement
+        },
+      )
+      const key = JSON.stringify(fields)
+      if (key !== reported.current) {
+        reported.current = key
+        onSignatureFields.current?.(fields)
+      }
+    }
+    measure()
+    const observer = new ResizeObserver(measure)
+    observer.observe(element)
+    return () => {
+      observer.disconnect()
+    }
+  }, [size.width, size.height, marginBottom, marginTop])
 
   const rules = pageRules({
     name,
@@ -218,6 +306,8 @@ export function PrintPage(props: PrintPageProps) {
     paddingInlineEnd: margins.end,
   } as CSSProperties
   const hasFooter = props.footer !== undefined && props.footer !== null
+  const pageNumber =
+    props.pageNumbers === false ? null : messages['print.pageNumber'](String(pages), String(pages))
 
   return (
     <div
@@ -237,6 +327,7 @@ export function PrintPage(props: PrintPageProps) {
     >
       <style>{rules}</style>
       <article
+        ref={sheet}
         data-slot="print-sheet"
         data-print-page={name}
         data-orientation={orientation}
@@ -268,8 +359,10 @@ export function PrintPage(props: PrintPageProps) {
           <tbody data-slot="print-body" className="flex flex-1 flex-col print:table-row-group">
             <tr data-slot="print-frame-row" className="flex flex-1 flex-col print:table-row">
               <td className="flex flex-1 flex-col p-0 align-top print:table-cell">
-                {props.status !== undefined && <StatusMarker status={props.status} />}
-                {props.children}
+                <div data-slot="print-content" className="flex flex-col">
+                  {props.status !== undefined && <StatusMarker status={props.status} />}
+                  {props.children}
+                </div>
               </td>
             </tr>
           </tbody>
@@ -285,12 +378,27 @@ export function PrintPage(props: PrintPageProps) {
             </tfoot>
           )}
         </table>
-        {hasFooter && (
+        {(hasFooter || pageNumber !== null) && (
           <footer
             data-slot="print-footer"
-            className="relative mt-auto pt-6 print:fixed print:inset-x-0 print:bottom-0 print:pt-0"
+            {...(hasFooter ? { 'data-print-footer-room': '' } : {})}
+            className={cn(
+              'relative mt-auto pt-6 print:fixed print:inset-x-0 print:bottom-0 print:pt-0',
+              !hasFooter && 'print:hidden',
+            )}
           >
-            <div className={cn(FOOTER_CLASS, TEXT_DIRECTION)}>{props.footer}</div>
+            <div className={cn('flex items-end justify-between gap-6', FOOTER_CLASS)}>
+              <div className={cn('min-w-0', TEXT_DIRECTION)}>{props.footer}</div>
+              {pageNumber !== null && (
+                // On paper the bottom margin box prints the page number of every page.
+                <span
+                  data-slot="print-page-number"
+                  className={cn('shrink-0 whitespace-nowrap print:hidden', TEXT_ISOLATE)}
+                >
+                  {pageNumber}
+                </span>
+              )}
+            </div>
           </footer>
         )}
       </article>

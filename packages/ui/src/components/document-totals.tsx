@@ -107,10 +107,23 @@ export interface DocumentTotalsProps {
   exchange?: TotalsExchange
   /** Exemption and reverse-charge reasons, once, under the totals (P5.18). */
   footnotes?: readonly TotalsFootnote[]
+  /**
+   * A thin border.subtle rule above every row (the final row keeps its border.strong line): the
+   * printed totals (P5.28, PrintDocument). Default false.
+   */
+  ruled?: boolean
   className?: string
 }
 
-function Row({ row, final = false }: { row: TotalsRow; final?: boolean }) {
+function Row({
+  row,
+  final = false,
+  ruled = false,
+}: {
+  row: TotalsRow
+  final?: boolean
+  ruled?: boolean
+}) {
   const { linkComponent: Link } = useLiro()
   return (
     <div
@@ -121,6 +134,7 @@ function Row({ row, final = false }: { row: TotalsRow; final?: boolean }) {
           ? 'mt-1 border-0 border-t border-solid border-strong pt-3 text-lg font-semibold'
           : 'text-sm',
         !final && row.group === true && 'mt-1 border-0 border-t border-solid border-subtle pt-3',
+        !final && ruled && 'border-0 border-t border-solid border-subtle pt-2',
       )}
     >
       <dt className={cn('min-w-0', final ? 'text-primary' : 'text-secondary', TEXT_DIRECTION)}>
@@ -250,6 +264,7 @@ export function DocumentTotals({
   deductions,
   exchange,
   footnotes,
+  ruled = false,
   className,
 }: DocumentTotalsProps) {
   const extended =
@@ -267,12 +282,12 @@ export function DocumentTotals({
         )}
       >
         {rows.map((row) => (
-          <Row key={row.key} row={row} />
+          <Row key={row.key} row={row} ruled={ruled} />
         ))}
         {deductionRows(deductions).map((row) => (
-          <Row key={row.key} row={row} />
+          <Row key={row.key} row={row} ruled={ruled} />
         ))}
-        <Row row={total} final />
+        <Row row={total} final ruled={ruled} />
       </dl>
     )
   }
@@ -292,16 +307,16 @@ export function DocumentTotals({
       {rows.length > 0 && (
         <dl className="m-0 flex flex-col gap-2">
           {rows.map((row) => (
-            <Row key={row.key} row={row} />
+            <Row key={row.key} row={row} ruled={ruled} />
           ))}
         </dl>
       )}
       {recap !== undefined && <RecapTable recap={recap} />}
       <dl className="m-0 flex flex-col gap-2">
         {deductionRows(deductions).map((row) => (
-          <Row key={row.key} row={row} />
+          <Row key={row.key} row={row} ruled={ruled} />
         ))}
-        <Row row={total} final />
+        <Row row={total} final ruled={ruled} />
       </dl>
       {exchange !== undefined && <ExchangeBlock exchange={exchange} />}
       {footnotes !== undefined && footnotes.length > 0 && (

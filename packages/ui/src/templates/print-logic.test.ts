@@ -3,12 +3,16 @@ import { messagesEn } from '../provider/messages.en'
 import {
   cssString,
   fitZoom,
+  lengthToMm,
   pageName,
   pageNumberContent,
   pageRules,
+  printedPageCount,
+  PT_PER_MM,
   PX_PER_MM,
   resolvedMargins,
   sheetSize,
+  signatureFieldPlacement,
 } from './print-logic'
 
 describe('sheetSize', () => {
@@ -118,5 +122,57 @@ describe('pageRules', () => {
         pageNumber: '""',
       }),
     ).toContain('@bottom-left {')
+  })
+})
+
+describe('lengthToMm', () => {
+  it('reads the absolute CSS lengths, NaN for any other', () => {
+    expect(lengthToMm('16mm')).toBe(16)
+    expect(lengthToMm('1.5cm')).toBe(15)
+    expect(lengthToMm('1in')).toBe(25.4)
+    expect(lengthToMm('72pt')).toBeCloseTo(25.4, 10)
+    expect(lengthToMm('96px')).toBeCloseTo(25.4, 10)
+    expect(lengthToMm('2em')).toBeNaN()
+    expect(lengthToMm('calc(10mm + 2px)')).toBeNaN()
+  })
+})
+
+describe('signatureFieldPlacement', () => {
+  // Portrait A4, 16mm top margin + an 8mm header, 20mm bottom margin + a 10mm footer.
+  const area = { pageHeight: 297, top: 24, bottom: 267 }
+  it('puts a field of the first page in PDF points from the bottom-left corner', () => {
+    const placement = signatureFieldPlacement(
+      'doctor',
+      { x: 18, y: 200, width: 64, height: 18 },
+      area,
+    )
+    expect(placement).toEqual({
+      id: 'doctor',
+      page: 1,
+      x: 51.02,
+      // (297 − 200 − 18) mm = 79mm = 223.94pt
+      y: 223.94,
+      width: 181.42,
+      height: 51.02,
+    })
+  })
+  it('cuts the screen’s long sheet into pages of the body’s height, under the repeated header', () => {
+    // 243mm of body per page: 24 + 243 + 100 = 367mm on screen is 100mm into page 2.
+    const placement = signatureFieldPlacement('x', { x: 18, y: 367, width: 64, height: 18 }, area)
+    expect(placement.page).toBe(2)
+    expect(placement.y).toBeCloseTo((297 - 124 - 18) * PT_PER_MM, 1)
+  })
+  it('moves a field that would cross a page end to the top of the next page', () => {
+    const placement = signatureFieldPlacement('x', { x: 0, y: 260, width: 64, height: 18 }, area)
+    expect(placement.page).toBe(2)
+    expect(placement.y).toBeCloseTo((297 - 24 - 18) * PT_PER_MM, 1)
+  })
+  it('counts the printed pages of the body', () => {
+    expect(printedPageCount(100, area)).toBe(1)
+    expect(printedPageCount(267, area)).toBe(1)
+    expect(printedPageCount(300, area)).toBe(2)
+    expect(printedPageCount(24 + 3 * 243, area)).toBe(3)
+    expect(printedPageCount(Number.NaN, area)).toBe(1)
+    expect(printedPageCount(500, { pageHeight: 297, top: 50, bottom: 40 })).toBe(1)
   })
 })

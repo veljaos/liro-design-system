@@ -226,73 +226,142 @@ describe('RegisterPage', () => {
 describe('StatutoryFormPage', () => {
   const sections: StatutorySection[] = [
     {
-      key: '5',
-      title: '5. Input tax',
-      fields: [
-        { id: '5.1', number: '5.1', label: 'Input tax, general rate', value: '120000.00' },
+      key: 'part3',
+      title: 'Part 3. Input tax',
+      columns: [
+        { id: 'base20', label: 'Base', group: 'General rate 20%' },
+        { id: 'vat20', label: 'VAT', group: 'General rate 20%' },
+        { id: 'base10', label: 'Base', group: 'Special rate 10%' },
+        { id: 'vat10', label: 'VAT', group: 'Special rate 10%' },
+      ],
+      items: [
         {
-          id: '5.4',
-          number: '5.4',
-          label: 'Total input tax',
-          value: '121200.00',
-          previous: '98000.00',
-          total: true,
-          override: { computed: '120000.00', by: 'Ivana Stojanović', at: '05.10.2026. 14:12' },
+          key: '3.1',
+          number: '3.1',
+          title: 'Purchases in the Republic',
+          items: [
+            {
+              id: '3.1.1',
+              number: '3.1.1',
+              label: 'Received e-invoices',
+              cells: {
+                base20: { kind: 'source', value: '600000.00', sources: [] },
+                vat20: {
+                  kind: 'source',
+                  value: '121200.00',
+                  previous: '98000.00',
+                  override: {
+                    computed: '120000.00',
+                    by: 'Ivana Stojanović',
+                    at: '05.10.2026. 14:12',
+                  },
+                },
+              },
+            },
+            {
+              id: '3.1.3',
+              number: '3.1.3',
+              label: 'Correction',
+              cells: {
+                vat20: { kind: 'entered', value: '12.00', field: <input aria-label="F" /> },
+              },
+            },
+          ],
         },
       ],
     },
   ]
-  it('shows the override with who, when and the computed value, and the checks', () => {
-    const html = text(
-      render(
-        <StatutoryFormPage
-          layout="desktop"
-          title="VAT return, September 2026"
-          currency="RSD"
-          currentLabel="September 2026"
-          previousLabel="August 2026"
-          sections={sections}
-          rules={[
-            {
-              id: 'r1',
-              text: '5.4 must equal 5.1 + 5.2 + 5.3',
-              fields: ['5.4'],
-              result: 'failed',
-              detail: 'Difference: 1.200,00 RSD',
-            },
-            { id: 'r2', text: '3.6 must equal 3.2 × 20%', fields: ['3.6'], result: 'passed' },
-          ]}
-          onUseComputed={() => undefined}
-        />,
-      ),
+  it('draws the groups over their columns, absent cells blank, the override and the checks', () => {
+    const html = render(
+      <StatutoryFormPage
+        layout="desktop"
+        title="VAT return, September 2026"
+        currency="RSD"
+        currentLabel="September 2026"
+        previousLabel="August 2026"
+        defaultCompare
+        lang="sr-Cyrl"
+        sections={sections}
+        rules={[
+          {
+            id: 'r1',
+            text: '3.1.4 must equal 3.1.1 + 3.1.2 − 3.1.3',
+            fields: ['3.1.1/vat20'],
+            result: 'failed',
+            detail: 'Difference: 1.200,00 RSD',
+          },
+          { id: 'r2', text: '2.3 must equal 2.1 + 2.2', fields: ['2.3'], result: 'passed' },
+        ]}
+        onUseComputed={() => undefined}
+      />,
     )
-    expect(html).toContain('1 check failed · 1 check passed')
-    expect(html).toContain(
-      'Check failed: 5.4 must equal 5.1 + 5.2 + 5.3 · Difference: 1.200,00 RSD',
+    const words = text(html)
+    expect(words).toContain('1 check failed · 1 check passed')
+    expect(words).toContain(
+      'Check failed: 3.1.4 must equal 3.1.1 + 3.1.2 − 3.1.3 · Difference: 1.200,00 RSD',
     )
-    expect(html).toContain('Go to 5.4')
-    expect(html).toContain('Changed manually')
-    expect(html).toContain('By Ivana Stojanović on 05.10.2026. 14:12')
-    expect(html).toContain('Computed: RSD 120.000,00')
-    expect(html).toContain('Use computed value')
-    expect(html).toContain('August 2026')
+    expect(words).toContain('Go to 3.1.1')
+    expect(words).toContain('Changed manually')
+    expect(words).toContain('By Ivana Stojanović on 05.10.2026. 14:12')
+    expect(words).toContain('Computed: RSD 120.000,00')
+    expect(words).toContain('Use computed value')
+    expect(words).toContain('Compare with August 2026')
+    expect(words).toContain('August 2026: RSD 98.000,00')
+    expect(html).toContain('colSpan="2"')
+    expect(html.match(/data-cell-kind="absent"/g)).toHaveLength(5)
+    expect(html).toContain('lang="sr-Cyrl"')
+    // An entered cell is the application's field.
+    expect(html).toContain('aria-label="F"')
   })
 
-  it('offers no way back on a submitted form', () => {
+  it('offers no way back and no fields on a submitted form', () => {
+    const html = render(
+      <StatutoryFormPage
+        layout="desktop"
+        title="VAT return, September 2026"
+        currency="RSD"
+        currentLabel="September 2026"
+        sections={sections}
+        onUseComputed={() => undefined}
+        readOnly
+      />,
+    )
+    expect(text(html)).toContain('Changed manually')
+    expect(text(html)).not.toContain('Use computed value')
+    expect(html).not.toContain('aria-label="F"')
+    expect(text(html)).toContain('RSD 12,00')
+    // No comparison without a previous period.
+    expect(text(html)).not.toContain('Compare with')
+  })
+
+  it('labels each value with its group and column on phones', () => {
     const html = text(
       render(
         <StatutoryFormPage
-          layout="desktop"
-          title="VAT return, September 2026"
+          layout="phone"
+          title="VAT return"
           currency="RSD"
           currentLabel="September 2026"
           sections={sections}
-          onUseComputed={() => undefined}
-          readOnly
+          defaultCollapsed={['3.1']}
         />,
       ),
     )
-    expect(html).toContain('Changed manually')
-    expect(html).not.toContain('Use computed value')
+    // The group is collapsed: its rows are not drawn.
+    expect(html).toContain('3.1 Purchases in the Republic')
+    expect(html).not.toContain('Received e-invoices')
+    const open = text(
+      render(
+        <StatutoryFormPage
+          layout="phone"
+          title="VAT return"
+          currency="RSD"
+          currentLabel="September 2026"
+          sections={sections}
+        />,
+      ),
+    )
+    expect(open).toContain('General rate 20% · Base')
+    expect(open).not.toContain('Special rate 10% · Base')
   })
 })

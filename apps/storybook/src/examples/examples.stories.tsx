@@ -1210,9 +1210,10 @@ export const CustomerImportPhone: Story = {
 }
 
 /**
- * The VAT return for September 2026 (an illustrative PP PDV-like form): prefilled from the
- * books, 3.2 drills down to the invoices (F-2026-0412 among them), 8a.2 overridden by Ivana
- * Stojanović, one failing check, August beside September, status Checked.
+ * The VAT return for September 2026 as its form grid (an illustrative PP PDV / POPDV-like form,
+ * P5.28 item 19): the rates over Base and VAT, nested numbered groups (1.2 collapsed), one-column
+ * parts, absent cells blank; 1.1.1 from SEF opens the invoices (F-2026-0412 among them); typed
+ * cells as fields; 3.1.1's VAT overridden by Ivana Stojanović, one failing check.
  */
 export const VatReturnScreen: Story = {
   name: 'VAT return',
@@ -1220,11 +1221,12 @@ export const VatReturnScreen: Story = {
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
-    await expect(canvas.getByText('1 check failed · 4 checks passed')).toBeVisible()
+    await expect(canvas.getByText('1 check failed · 3 checks passed')).toBeVisible()
     await expect(canvas.getByText('By Ivana Stojanović on 05.10.2026. 14:12')).toBeVisible()
     await expect(
       canvas.getAllByText('Difference: 64.400,00 RSD', { exact: false })[0],
     ).toBeVisible()
+    await expect(canvas.getAllByRole('columnheader', { name: 'Општа стопа 20%' })).toHaveLength(2)
     await settle()
   },
 }
@@ -1237,15 +1239,13 @@ export const VatReturnScreenInteraction: Story = {
     await settle()
     const canvas = within(canvasElement)
     const page = within(document.body)
-    await expect(canvas.getByText('1 check failed · 4 checks passed')).toBeVisible()
-    await expect(canvas.getByText('By Ivana Stojanović on 05.10.2026. 14:12')).toBeVisible()
-    await expect(
-      canvas.getAllByText('Difference: 64.400,00 RSD', { exact: false })[0],
-    ).toBeVisible()
+    await expect(canvas.getByText('1 check failed · 3 checks passed')).toBeVisible()
     await userEvent.click(
-      canvas.getByRole('button', { name: /^510\.809,60\sRSD, sources of 3\.2$/ }),
+      canvas.getByRole('button', {
+        name: /^510\.809,60\sRSD, sources of 1\.1\.1 · Општа стопа 20% · Основица$/,
+      }),
     )
-    const drawer = within(await page.findByRole('dialog', { name: '3.2 Tax base' }))
+    const drawer = within(await page.findByRole('dialog', { name: /^1\.1\.1 Промет/ }))
     await settle()
     await expect(drawer.getByRole('link', { name: /F-2026-0412/ })).toBeVisible()
     await expect(drawer.getByText('144.920,00 RSD')).toBeVisible()
@@ -1253,9 +1253,14 @@ export const VatReturnScreenInteraction: Story = {
     await waitFor(async () => {
       await expect(page.queryByRole('dialog')).toBeNull()
     })
-    // 5.2 = 3.6 + 4.6, and 10.1 = 5.2 − 8e.6, as the Core computed them.
-    await expect(canvasElement).toHaveTextContent('103.011,92')
-    await expect(canvasElement).toHaveTextContent('34.054,32')
+    // 4.1 = 1.1.6 + 1.2.1 and 4.3 = 4.1 − 4.2, as the Core computed them.
+    await expect(canvasElement).toHaveTextContent('122.551,92')
+    await expect(canvasElement).toHaveTextContent('49.904,32')
+    // "Go to" focuses the failing total.
+    await userEvent.click(canvas.getByRole('button', { name: 'Go to 3.1.4' }))
+    await waitFor(async () => {
+      await expect(document.activeElement).toHaveTextContent('72.647,60')
+    })
   },
 }
 
@@ -2320,7 +2325,11 @@ export const SafetyCourseInteraction: Story = {
   },
 }
 
-/** Invoice F-2026-0412 on paper: the lines and totals of its page, from the same data. */
+/**
+ * Invoice F-2026-0412 on paper, as simple as a Stripe invoice (P5.28): title and logo, the
+ * key/value block, seller and buyer, "135.954,00 RSD due …", the payment details with the IPS QR
+ * code, the lines and totals of its page from the same data; no signatures.
+ */
 export const PrintoutInvoice: Story = {
   name: 'Printout, invoice F-2026-0412',
   render: () => <ExampleApp start={J_ROUTES.invoicePrint} />,
@@ -2329,14 +2338,20 @@ export const PrintoutInvoice: Story = {
     const canvas = within(canvasElement)
     const sheet = canvas.getByRole('article', { name: `Invoice ${FEATURED}` })
     await expect(sheet).toHaveAttribute('data-liro-theme', 'light')
-    await expect(canvas.getByRole('heading', { level: 1 })).toHaveTextContent(`Invoice ${FEATURED}`)
+    await expect(canvas.getByRole('heading', { level: 1 })).toHaveTextContent(/^Invoice$/)
+    await expect(sheet.querySelector('[data-slot="print-amount-due"]')).toHaveTextContent(
+      /^135\.954,00 RSD due \d{2}\.\d{2}\.\d{4}\.$/,
+    )
+    await expect(
+      canvas.getByRole('img', { name: 'IPS QR code for the payment (illustrative)' }),
+    ).toBeVisible()
+    await expect(sheet.querySelector('[data-signature-field]')).toBeNull()
     const lines = canvas.getByRole('table', { name: 'Lines' })
     await expect(within(lines).getAllByRole('row')).toHaveLength(6)
     const totals = sheet.querySelector('[data-slot="document-totals"]')
     await expect(totals).toHaveAttribute('aria-label', 'Totals')
     await expect(totals).toHaveTextContent('185.954,00')
     await expect(totals).toHaveTextContent('135.954,00')
-    await expect(canvas.getByText('Novi Sad, 28.09.2026.')).toBeVisible()
     await expect(canvas.getByRole('link', { name: `Back to ${FEATURED}` })).toBeVisible()
     await expect(canvas.getByRole('button', { name: 'Print' })).toBeVisible()
   },
@@ -2384,6 +2399,13 @@ export const PrintoutCertificate: Story = {
     const sheet = canvas.getByRole('article', { name: 'Certificate: Nikola Marković' })
     await expect(sheet).toHaveAttribute('data-orientation', 'landscape')
     await expect(canvas.getByText('Novi Sad, 06.10.2026.')).toBeVisible()
+    // Two electronic signature fields with their places in the PDF, on the one page.
+    const fields = [...sheet.querySelectorAll<HTMLElement>('[data-signature-field]')]
+    await expect(fields.map((field) => field.dataset.signatureField)).toEqual([
+      'officer',
+      'director',
+    ])
+    await expect(fields.map((field) => field.dataset.pdfPage)).toEqual(['1', '1'])
     await expect(
       canvas.getByRole('link', { name: 'Back to Bezbednost i zdravlje na radu' }),
     ).toBeVisible()

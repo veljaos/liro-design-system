@@ -31,8 +31,6 @@ import {
   type ImportStep,
   type ModuleTab,
   type StatutoryOverride,
-  type StatutoryRule,
-  type StatutorySection,
 } from '@veljaos/ui'
 import type { ExampleRoute } from './example-app'
 import { hrTabs, Navigate, SALES_TABS, Shell, statusBadge } from './example-shell'
@@ -47,14 +45,24 @@ import {
   INJURIES,
   manyInjuries,
   searchCustomers,
+  SEPTEMBER_10,
+  SEPTEMBER_ADVANCES,
   SEPTEMBER_PURCHASES_20,
+  SEPTEMBER_REVERSE_CHARGE,
   SEPTEMBER_SALES_20,
-  vatAt20,
-  VAT_RETURN,
+  VAT_INPUT_OVERRIDE,
   type Customer,
   type Injury,
 } from './data-E'
-import { decimal, paras } from '../../../../packages/ui/src/components/amounts-story-data'
+import {
+  VAT_ENTERED,
+  VAT_FORM_LANG,
+  vatFormRules,
+  vatFormSections,
+  vatFormValues,
+  type VatEntered,
+  type VatFormDocuments,
+} from '../../../../packages/ui/src/templates/statutory-story-data'
 import {
   matchesChoice,
   sortRows,
@@ -693,221 +701,78 @@ const STATES: Record<string, ReactNode> = {
   'To approve': statusBadge('To approve'),
 }
 
+const invoiceRoute = (number: string) => `#/sales/invoices/${number}`
+
+/** September's e-invoices behind the source cells, from the dataset. */
+const VAT_DOCUMENTS: VatFormDocuments = {
+  sales20: SEPTEMBER_SALES_20.map((sale) => ({
+    key: sale.number,
+    type: `Invoice · ${sale.customer}`,
+    number: sale.number,
+    href: invoiceRoute(sale.number),
+    date: sale.date,
+    amount: sale.base,
+    status: STATES[sale.status],
+  })),
+  sales10: [
+    {
+      key: 'F-2026-0412',
+      type: 'Invoice · Panonija Agro d.o.o.',
+      number: 'F-2026-0412',
+      href: invoiceRoute('F-2026-0412'),
+      date: '2026-09-28',
+      amount: SEPTEMBER_10.base,
+      status: STATES.Sent,
+    },
+  ],
+  advances: SEPTEMBER_ADVANCES.map((advance) => ({
+    key: advance.number,
+    type: `Advance invoice · ${advance.customer}`,
+    number: advance.number,
+    href: '#/sales/invoices',
+    date: advance.date,
+    amount: advance.base,
+    status: STATES[advance.status],
+  })),
+  reverseCharge: SEPTEMBER_REVERSE_CHARGE.map((sale) => ({
+    key: sale.number,
+    type: `Invoice · ${sale.customer}`,
+    number: sale.number,
+    href: '#/sales/invoices',
+    date: sale.date,
+    amount: sale.base,
+    status: STATES[sale.status],
+  })),
+  exempt: [
+    {
+      key: 'F-2026-0412',
+      type: 'Invoice · Panonija Agro d.o.o.',
+      number: 'F-2026-0412',
+      href: invoiceRoute('F-2026-0412'),
+      date: '2026-09-28',
+      amount: SEPTEMBER_10.exempt,
+      status: STATES.Sent,
+    },
+  ],
+  purchases20: SEPTEMBER_PURCHASES_20.map((purchase) => ({
+    key: purchase.number,
+    type: `Supplier invoice · ${purchase.supplier}`,
+    number: purchase.number,
+    href: '#/purchasing/approvals',
+    date: purchase.date,
+    amount: purchase.base,
+    status: STATES[purchase.status],
+  })),
+}
+
+/** The books' values, with September's typed cells. */
+const VAT_BOOKS = vatFormValues(VAT_DOCUMENTS, VAT_ENTERED)
+
+/** Ivana Stojanović left UF-2026-1179 out of 3.1.1's VAT: a query about its price is open. */
 const IVANA: StatutoryOverride = {
-  computed: VAT_RETURN.inputVat.computed,
+  computed: VAT_BOOKS.inputVat,
   by: 'Ivana Stojanović',
   at: '05.10.2026. 14:12',
-}
-
-function vatRules(input: string, money: (value: string) => string): StatutoryRule[] {
-  const failed = input !== VAT_RETURN.inputTotal.current
-  return [
-    { id: 'r1', text: '5.1 must equal 3.2 + 4.2', fields: ['5.1'], result: 'passed' },
-    { id: 'r2', text: '5.2 must equal 3.6 + 4.6', fields: ['5.2'], result: 'passed' },
-    { id: 'r3', text: '3.6 must be 20% of 3.2', fields: ['3.6'], result: 'passed' },
-    {
-      id: 'r4',
-      text: '8e.6 must equal 8a.2 + 8b.2',
-      fields: ['8e.6', '8a.2'],
-      result: failed ? 'failed' : 'passed',
-      ...(failed
-        ? { detail: `Difference: ${money(subtract(VAT_RETURN.inputTotal.current, input))}` }
-        : {}),
-    },
-    { id: 'r5', text: '10.1 must equal 5.2 − 8e.6', fields: ['10.1'], result: 'passed' },
-  ]
-}
-
-/** One amount less another in whole paras (the Core's check, played here). */
-function subtract(value: string, less: string): string {
-  return decimal(paras(value) - paras(less))
-}
-
-function vatSections(
-  input: string,
-  override: StatutoryOverride | undefined,
-  editor: ReactNode,
-): StatutorySection[] {
-  const invoice = (number: string) => `#/sales/invoices/${number}`
-  return [
-    {
-      key: '2',
-      title: '2. Exempt supplies without the right to deduct',
-      fields: [
-        {
-          id: '2.1',
-          number: '2.1',
-          label: 'Exempt supplies (returnable deposits)',
-          value: VAT_RETURN.exempt.current,
-          previous: VAT_RETURN.exempt.previous,
-          sources: [
-            {
-              key: 'F-2026-0412',
-              type: 'Invoice · Panonija Agro d.o.o.',
-              number: 'F-2026-0412',
-              href: invoice('F-2026-0412'),
-              date: '2026-09-28',
-              amount: VAT_RETURN.exempt.current,
-              status: STATES.Sent,
-            },
-          ],
-        },
-      ],
-    },
-    {
-      key: '3',
-      title: '3. Taxable supplies at the general rate (20%)',
-      fields: [
-        {
-          id: '3.2',
-          number: '3.2',
-          label: 'Tax base',
-          value: VAT_RETURN.base20.current,
-          previous: VAT_RETURN.base20.previous,
-          sources: SEPTEMBER_SALES_20.map((sale) => ({
-            key: sale.number,
-            type: `Invoice · ${sale.customer}`,
-            number: sale.number,
-            href: invoice(sale.number),
-            date: sale.date,
-            amount: sale.base,
-            status: STATES[sale.status],
-          })),
-        },
-        {
-          id: '3.6',
-          number: '3.6',
-          label: 'VAT',
-          value: VAT_RETURN.vat20.current,
-          previous: VAT_RETURN.vat20.previous,
-          sources: SEPTEMBER_SALES_20.map((sale) => ({
-            key: sale.number,
-            type: `Invoice · ${sale.customer}`,
-            number: sale.number,
-            href: invoice(sale.number),
-            date: sale.date,
-            amount: vatAt20(sale.base),
-            status: STATES[sale.status],
-          })),
-        },
-      ],
-    },
-    {
-      key: '4',
-      title: '4. Taxable supplies at the special rate (10%)',
-      fields: [
-        {
-          id: '4.2',
-          number: '4.2',
-          label: 'Tax base',
-          value: VAT_RETURN.base10.current,
-          previous: VAT_RETURN.base10.previous,
-          sources: [
-            {
-              key: 'F-2026-0412',
-              type: 'Invoice · Panonija Agro d.o.o.',
-              number: 'F-2026-0412',
-              href: invoice('F-2026-0412'),
-              date: '2026-09-28',
-              amount: VAT_RETURN.base10.current,
-              status: STATES.Sent,
-            },
-          ],
-        },
-        {
-          id: '4.6',
-          number: '4.6',
-          label: 'VAT',
-          value: VAT_RETURN.vat10.current,
-          previous: VAT_RETURN.vat10.previous,
-        },
-      ],
-    },
-    {
-      key: '5',
-      title: '5. Total supplies and VAT',
-      fields: [
-        {
-          id: '5.1',
-          number: '5.1',
-          label: 'Total tax base (3.2 + 4.2)',
-          value: VAT_RETURN.totalBase.current,
-          previous: VAT_RETURN.totalBase.previous,
-          total: true,
-        },
-        {
-          id: '5.2',
-          number: '5.2',
-          label: 'Total VAT on supplies (3.6 + 4.6)',
-          value: VAT_RETURN.totalVat.current,
-          previous: VAT_RETURN.totalVat.previous,
-          total: true,
-        },
-      ],
-    },
-    {
-      key: '8',
-      title: '8. Input tax',
-      fields: [
-        {
-          id: '8a.1',
-          number: '8a.1',
-          label: 'Purchases at the general rate, tax base',
-          value: VAT_RETURN.inputBase.current,
-          previous: VAT_RETURN.inputBase.previous,
-          sources: SEPTEMBER_PURCHASES_20.map((purchase) => ({
-            key: purchase.number,
-            type: `Supplier invoice · ${purchase.supplier}`,
-            number: purchase.number,
-            href: '#/purchasing/approvals',
-            date: purchase.date,
-            amount: purchase.base,
-            status: STATES[purchase.status],
-          })),
-        },
-        {
-          id: '8a.2',
-          number: '8a.2',
-          label: 'Input tax at the general rate',
-          value: input,
-          previous: VAT_RETURN.inputVat.previous,
-          sources: SEPTEMBER_PURCHASES_20.map((purchase) => ({
-            key: purchase.number,
-            type: `Supplier invoice · ${purchase.supplier}`,
-            number: purchase.number,
-            href: '#/purchasing/approvals',
-            date: purchase.date,
-            amount: vatAt20(purchase.base),
-            status: STATES[purchase.status],
-          })),
-          editor,
-          ...(override === undefined ? {} : { override }),
-        },
-        {
-          id: '8e.6',
-          number: '8e.6',
-          label: 'Total input tax that may be deducted',
-          value: VAT_RETURN.inputTotal.current,
-          previous: VAT_RETURN.inputTotal.previous,
-          total: true,
-        },
-      ],
-    },
-    {
-      key: '10',
-      title: '10. Tax liability',
-      fields: [
-        {
-          id: '10.1',
-          number: '10.1',
-          label: 'VAT payable (5.2 − 8e.6)',
-          value: VAT_RETURN.payable.current,
-          previous: VAT_RETURN.payable.previous,
-          total: true,
-        },
-      ],
-    },
-  ]
 }
 
 const VAT_STEPS = [
@@ -918,8 +783,9 @@ const VAT_STEPS = [
 
 export function VatReturn({ phone }: { phone: boolean }) {
   const { format } = useLiro()
-  const [input, setInput] = useState(VAT_RETURN.inputVat.current)
-  const [draft, setDraft] = useState<string | null>(VAT_RETURN.inputVat.current)
+  const [entered, setEntered] = useState<VatEntered>(VAT_ENTERED)
+  const [input, setInput] = useState(VAT_INPUT_OVERRIDE)
+  const [draft, setDraft] = useState<string | null>(VAT_INPUT_OVERRIDE)
   const [override, setOverride] = useState<StatutoryOverride | undefined>(IVANA)
   const submit = <Button intent="confirm" label="Submit" />
   return (
@@ -935,7 +801,7 @@ export function VatReturn({ phone }: { phone: boolean }) {
       <StatutoryFormPage
         layout={phone ? 'phone' : 'desktop'}
         title="VAT return, September 2026"
-        subtitle="PP PDV (illustrative) · due 15.10.2026."
+        subtitle="Illustrative PP PDV-like form, not the authority's · due 15.10.2026."
         back={{ href: `#${E_ROUTES.vatReturn}`, label: 'VAT returns' }}
         status={statusBadge('Checked')}
         lifecycle={{ steps: VAT_STEPS, current: 1, label: 'Return status' }}
@@ -946,33 +812,50 @@ export function VatReturn({ phone }: { phone: boolean }) {
             {phone ? null : submit}
           </>
         }
+        lang={VAT_FORM_LANG}
         currency="RSD"
         currentLabel="September 2026"
         previousLabel="August 2026"
-        sections={vatSections(
-          input,
-          override,
-          <MoneyField
-            label="Input tax at the general rate"
-            hideLabel
-            currency="RSD"
-            value={draft}
-            onChange={setDraft}
-          />,
-        )}
-        rules={vatRules(input, (value) => format.money(value, 'RSD'))}
+        defaultCollapsed={['1.2']}
+        sections={vatFormSections({
+          documents: VAT_DOCUMENTS,
+          entered,
+          field: (cell, label) => (
+            <MoneyField
+              label={label}
+              hideLabel
+              currency="RSD"
+              value={entered[cell] ?? null}
+              onChange={(value) => {
+                setEntered((current) => ({ ...current, [cell]: value }))
+              }}
+            />
+          ),
+          inputVat: input,
+          ...(override === undefined ? {} : { override }),
+          editor: (
+            <MoneyField
+              label="3.1.1 · Општа стопа 20% · ПДВ"
+              hideLabel
+              currency="RSD"
+              value={draft}
+              onChange={setDraft}
+            />
+          ),
+        })}
+        rules={vatFormRules(VAT_DOCUMENTS, input, (value) => format.money(value, 'RSD'))}
         onSaveOverride={() => {
           if (draft === null) return
           setInput(draft)
           setOverride(
-            draft === VAT_RETURN.inputVat.computed
+            draft === VAT_BOOKS.inputVat
               ? undefined
               : { ...IVANA, by: 'Milica Petrović', at: '06.10.2026. 10:05' },
           )
         }}
         onUseComputed={() => {
-          setInput(VAT_RETURN.inputVat.computed)
-          setDraft(VAT_RETURN.inputVat.computed)
+          setInput(VAT_BOOKS.inputVat)
+          setDraft(VAT_BOOKS.inputVat)
           setOverride(undefined)
         }}
       />

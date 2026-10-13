@@ -267,37 +267,3 @@ export const PURCHASES_20 = [
   },
   { number: 'UF-2026-1176', supplier: 'NIS a.d. Novi Sad', date: '2026-09-26', base: '22788.00' },
 ]
-
-const base20 = addAmounts(...SALES_20.map((sale) => sale.base))
-const vat20 = addAmounts(...SALES_20.map((sale) => fifth(sale.base)))
-const outputVat = addAmounts(vat20, '850.00')
-const inputVat = addAmounts(...PURCHASES_20.map((purchase) => fifth(purchase.base)))
-/** Ivana Stojanović left out UF-2026-1179 (a query is open with the supplier). */
-const inputVatOverride = fifth('22788.00')
-const previousOutput = addAmounts('93650.00', '1240.00')
-
-/** The return's values, September and August 2026 (August as filed). */
-export const VAT_VALUES = {
-  exempt: { current: '2700.00', previous: '1800.00' },
-  base20: { current: base20, previous: '468250.00' },
-  vat20: { current: vat20, previous: '93650.00' },
-  base10: { current: '8500.00', previous: '12400.00' },
-  vat10: { current: '850.00', previous: '1240.00' },
-  totalBase: {
-    current: addAmounts(base20, '8500.00'),
-    previous: addAmounts('468250.00', '12400.00'),
-  },
-  totalVat: { current: outputVat, previous: previousOutput },
-  inputBase: {
-    current: addAmounts(...PURCHASES_20.map((purchase) => purchase.base)),
-    previous: '301500.00',
-  },
-  inputVat: { current: inputVatOverride, computed: inputVat, previous: '60300.00' },
-  inputTotal: { current: inputVat, previous: '60300.00' },
-  payable: {
-    current: subtractAmount(outputVat, inputVat),
-    previous: subtractAmount(previousOutput, '60300.00'),
-  },
-  /** The failing check: 8e.6 (the books) against 8a.2 (overridden). */
-  difference: subtractAmount(inputVat, inputVatOverride),
-}

@@ -18,6 +18,11 @@ function render(node: ReactNode, locale = 'en') {
   )
 }
 
+/** The text of the markup, tags removed. */
+function text(html: string): string {
+  return html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ')
+}
+
 const BASICS: CourseModule = {
   key: 'm1',
   title: 'Basics',
@@ -135,12 +140,28 @@ describe('PrintTable', () => {
 })
 
 describe('print templates', () => {
-  it('PrintDocument shows the parties, lines and the totals it is given, computing nothing', () => {
+  it('PrintDocument: title and logo, key/values, parties, the amount due, payment, totals; no signatures', () => {
     const html = render(
       <PrintDocument
         title="Invoice"
         number="F-1"
-        parties={[{ key: 's', label: 'Seller', name: 'Kvadrat Gradnja d.o.o.' }]}
+        logo={<span>LOGO</span>}
+        details={[{ key: 'n', label: 'Invoice number', value: 'F-1' }]}
+        parties={[
+          {
+            key: 's',
+            label: 'Seller',
+            name: 'Kvadrat Gradnja d.o.o.',
+            details: [{ key: 'pib', label: 'PIB', value: '109876543' }],
+          },
+        ]}
+        amountDue={{ value: '1234.5', currency: 'RSD', date: '2026-10-21' }}
+        payment={{
+          title: 'Payment details',
+          details: [{ key: 'a', label: 'Account', value: '160-1-12' }],
+          code: <span>QR</span>,
+          codeCaption: 'IPS QR',
+        }}
         lines={{
           caption: 'Lines',
           columns: [{ key: 'i', header: 'Item', cell: (row: { id: string }) => row.id }],
@@ -149,36 +170,43 @@ describe('print templates', () => {
         }}
         totals={{
           label: 'Totals',
-          rows: [],
+          rows: [{ key: 'n', label: 'Net', value: '1028.75', currency: 'RSD' }],
           total: { key: 't', label: 'Amount due', value: '1234.5', currency: 'RSD' },
         }}
         notes={['Pay in 15 days.']}
-        issued={{ place: 'Novi Sad', date: '2026-10-06' }}
       />,
     )
+    const words = text(html)
     expect(html).toContain('aria-label="Invoice F-1"')
-    expect(html).toContain('Kvadrat Gradnja d.o.o.')
-    expect(html).toContain('1.234,50')
-    expect(html).toContain('Pay in 15 days.')
-    expect(html).toContain('Novi Sad, 06.10.2026.')
+    expect(html).toMatch(/<h1[^>]*>Invoice<\/h1>/)
+    expect(html).toContain('data-slot="print-logo"')
+    expect(words).toContain('Kvadrat Gradnja d.o.o.')
+    expect(words).toContain('PIB 109876543')
+    expect(words).toContain('1.234,50 RSD due 21.10.2026.')
+    expect(words).toContain('Payment details Account 160-1-12')
+    expect(words).toContain('QR IPS QR')
+    expect(words).toContain('Pay in 15 days.')
+    expect(html).not.toContain('data-signature-field')
+    expect(words).toContain('Page 1 of 1')
   })
-  it('PrintCertificate is landscape by default with its emblem and seal from props', () => {
+  it('PrintCertificate is landscape by default, with its logo and signature fields, no seal', () => {
     const html = render(
       <PrintCertificate
         title="Certificate"
         recipient="Nikola Marković"
         text="has completed the course"
-        emblem={<span>EMBLEM</span>}
-        seal={<span>SEAL</span>}
-        signatures={[{ key: 'a', label: 'Officer' }]}
+        logo={<span>LOGO</span>}
+        signatures={[{ id: 'officer', label: 'Officer' }]}
+        onSign={() => undefined}
         issued={{ date: '2026-10-10' }}
       />,
     )
     expect(html).toContain('data-orientation="landscape"')
     expect(html).toContain('size: A4 landscape;')
     expect(html).not.toContain('counter(page)')
-    expect(html).toContain('EMBLEM')
-    expect(html).toContain('SEAL')
+    expect(html).toContain('LOGO')
+    expect(html).toContain('data-signature-field="officer"')
+    expect(html).toContain('Sign here')
     expect(html).toContain('10.10.2026.')
   })
   it('PrintFinding prints the confidentiality note in the footer', () => {
@@ -192,11 +220,16 @@ describe('print templates', () => {
         ]}
         sections={[{ key: 'c', title: 'Conclusion', content: 'Fit for work.' }]}
         confidentiality="Confidential."
+        signatures={[{ id: 'doctor', label: 'Doctor', image: <span>SIGNED</span> }]}
+        onSign={() => undefined}
       />,
     )
     expect(html).toContain('data-slot="print-confidentiality"')
     expect(html.match(/Confidential\./g)).toHaveLength(2)
     expect(html).toContain('—')
+    // A signed field shows the signature, not the button.
+    expect(html).toContain('SIGNED')
+    expect(html).not.toContain('Sign here')
   })
 })
 
