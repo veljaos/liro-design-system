@@ -320,7 +320,7 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P5.25a | Floor plans: background, polygons, three more places | P5.25 | done | 2026-10-11 | FloorPlan `background`, polygon areas, `level`, kind `place`; warehouse, hospital ward and office examples |
 | P5.26 | Diagrams | P2.1 | done | 2026-10-11 | `@veljaos/ui/diagram` on React Flow 12.12.0 and dagre 3.1.1 (MIT): view, edit, run; approval workflow and orchestrator run examples |
 | P5.27 | Legal information | P4.5, P4.3, P5.15 | done | 2026-10-11 | LegalText, LegalContents, LegalCompare, LegalActPage with its panels, PrintLegalAct, LegalSearchPage, GazetteIssues, FilterBar tree kind; illustrative law, by-law, practice and Kvadrat Gradnja's rulebook |
-| P5.28 | Owner's review of Phase 5 part 2 | P5.27 | in progress | 2026-10-13 | |
+| P5.28 | Owner's review of Phase 5 part 2 | P5.27 | done | 2026-10-13 | Phones never scroll sideways (PhoneFrame as the screen, dialogs as bottom sheets, `phone-overflow.spec.ts`); day and month names and week start only from the locale (`numericFormat`); selects over 10 options searched; table headers sticky below the shell, first column at the start (DataTable `stickyHeader` by default); one-record dialogs with `subject`; neutral actions on toned boxes; ChangeConfirmDialog and "Notify …" choices; one "now" marker; Examples sidebar two stories per screen; StatutoryFormPage as the real form grid; printouts as simple as a Stripe invoice with electronic signature fields; POS fiscal flows and open tabs on tables |
 | P6.1 | Full language and direction matrix | Phases 1–5 | todo | | |
 | P6.2 | Manual WCAG 2.2 checks | P6.1 | todo | | |
 | P6.3 | Performance budget | P4.8 | todo | | |
