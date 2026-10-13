@@ -24,6 +24,10 @@ export const L_ROUTES = {
   /** The rack with room 104 open: a VIP arriving today, the room ready. */
   rackArrival: '/hotel/rack?room=104',
   timeline: '/hotel/bookings',
+  /** Claire Martin's booking open in place, a drawer over the timeline (P5.28 item 17). */
+  timelineStay: '/hotel/bookings?stay',
+  /** Dragan Lazić's stay moved to room 105, a day later: the front desk asked (P5.28 item 9). */
+  timelineMove: '/hotel/bookings?move',
   housekeeping: '/hotel/housekeeping/floor-3',
   /** Floor 3's rooms to clean with room 306 open: Mark clean. */
   housekeepingRoom: '/hotel/housekeeping/floor-3?room=306',
@@ -266,7 +270,7 @@ export function roomSpec(number: string): RoomSpec {
 }
 
 /** Nights between arrival and departure (whole days; no amount involved). */
-export function nights(stay: Stay): number {
+export function nights(stay: Pick<Stay, 'arrival' | 'departure'>): number {
   const [ay = 0, am = 1, ad = 1] = stay.arrival.split('-').map(Number)
   const [dy = 0, dm = 1, dd = 1] = stay.departure.split('-').map(Number)
   return Math.round((Date.UTC(dy, dm - 1, dd) - Date.UTC(ay, am - 1, ad)) / 86_400_000)
@@ -333,6 +337,24 @@ export function stayBookings(floor: number): ScheduleBooking[] {
     ...(each.arrival <= HOTEL.today ? { locked: true } : {}),
   }))
 }
+
+/** The booking pictured open in place: Claire Martin's, room 101 (P5.28 item 17). */
+export const STAY_SHOWN = STAYS.find((each) => each.guest === 'Claire Martin')?.id ?? ''
+
+/**
+ * The move pictured (P5.28 item 9): Dragan Lazić's stay dragged to room 105, a day later (room 105
+ * is free from Thomas Becker's departure).
+ */
+export const STAY_MOVE = (() => {
+  const moving = STAYS.find((each) => each.guest === 'Dragan Lazić')
+  if (moving === undefined) throw new Error('no stay to move')
+  return {
+    id: moving.id,
+    resourceId: '105',
+    start: addDays(moving.arrival, 1),
+    end: moving.departure,
+  }
+})()
 
 /** Out-of-order rooms over the timeline. */
 export const OUT_OF_ORDER = ROOM_SPECS.flatMap((room) =>

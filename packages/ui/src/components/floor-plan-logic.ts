@@ -16,18 +16,19 @@
 /**
  * What an item is; the application names it (`label`). Fixtures are drawn, not chosen. `place`
  * is any other place to choose (P5.25a): a storage bin, a bed, a desk, a parking space.
+ *
+ * P5.28 item 23 (the owner: "walls, doors and windows confuse; simplicity first"): there are no
+ * walls, doors or windows. A plan is its areas (plain labelled regions) and the things people
+ * choose or choose around (tables, seats, rooms, places, the bar, a counter, a stage); a real
+ * building plan, when the application has one, is the `background` image (P5.25a).
  */
-export type FloorItemKind =
-  'table' | 'seat' | 'room' | 'place' | 'bar' | 'counter' | 'stage' | 'wall' | 'door' | 'window'
+export type FloorItemKind = 'table' | 'seat' | 'room' | 'place' | 'bar' | 'counter' | 'stage'
 
-/** The kinds that are part of the building or the room: drawn, chosen only in edit mode. */
-export const FIXTURE_KINDS: readonly FloorItemKind[] = [
-  'wall',
-  'door',
-  'window',
-  'stage',
-  'counter',
-]
+/**
+ * The kinds drawn as labelled furniture people choose around (a stage, a counter): drawn, chosen
+ * only in edit mode.
+ */
+export const FIXTURE_KINDS: readonly FloorItemKind[] = ['stage', 'counter']
 
 /** Quarter turns, clockwise. */
 export type FloorRotation = 0 | 90 | 180 | 270
@@ -46,7 +47,7 @@ export interface FloorGeometry extends FloorBox {
   rotation?: FloorRotation
 }
 
-/** Whether an item is a fixture (a wall, a door, a stage …). */
+/** Whether an item is a fixture (a stage, a counter). */
 export function isFixture(item: { kind: FloorItemKind }): boolean {
   return FIXTURE_KINDS.includes(item.kind)
 }
@@ -299,15 +300,18 @@ export function listGroups<Item extends FloorGeometry & { areaId?: string | unde
   return groups.filter((group) => group.items.length > 0)
 }
 
-/** A box as percentages of the plan, for drawing (the plan scales to its width). */
+/**
+ * A box as percentages of the part of the plan drawn (the whole plan, or one area's `frame` with
+ * its own corner, P5.28), for drawing: the plan scales to its width.
+ */
 export function percentBox(
   box: FloorBox,
-  plan: { width: number; height: number },
+  plan: { x?: number; y?: number; width: number; height: number },
 ): { left: string; top: string; width: string; height: string } {
   const percent = (value: number, of: number) => `${String((value / of) * 100)}%`
   return {
-    left: percent(box.x, plan.width),
-    top: percent(box.y, plan.height),
+    left: percent(box.x - (plan.x ?? 0), plan.width),
+    top: percent(box.y - (plan.y ?? 0), plan.height),
     width: percent(box.width, plan.width),
     height: percent(box.height, plan.height),
   }
@@ -324,8 +328,17 @@ export interface FloorItem extends FloorGeometry {
   label: string
   /** What is written on the plan when the name is long ("7"). Default: `label`. */
   shortLabel?: string
-  /** A short line from the application under the name ("19:30 · 4 guests"). */
+  /**
+   * A line from the application about the item now ("19:30 · 4 guests"): in the list and the
+   * item's name. Not written on the plan (P5.28 item 24: a label on the plan is never cut).
+   */
   detail?: string
+  /**
+   * The short second line written on the plan under the name and state (P5.28 item 24: the
+   * guests, "4 guests"). Never cut: where the item is too small for it, the plan leaves it out
+   * (the list and the name say `detail`). Default none.
+   */
+  planDetail?: string
   /** How many people it takes; shown with its noun ("4 seats"). */
   capacity?: number
   /** The area it stands in (an id of `areas`). */
@@ -560,14 +573,14 @@ export function svgPoints(points: readonly FloorPoint[]): string {
   return points.map((point) => `${String(point.x)},${String(point.y)}`).join(' ')
 }
 
-/** A point as percentages of the plan, for drawing. */
+/** A point as percentages of the part of the plan drawn (see `percentBox`), for drawing. */
 export function percentPoint(
   point: FloorPoint,
-  plan: { width: number; height: number },
+  plan: { x?: number; y?: number; width: number; height: number },
 ): { left: string; top: string } {
   return {
-    left: `${String((point.x / plan.width) * 100)}%`,
-    top: `${String((point.y / plan.height) * 100)}%`,
+    left: `${String(((point.x - (plan.x ?? 0)) / plan.width) * 100)}%`,
+    top: `${String(((point.y - (plan.y ?? 0)) / plan.height) * 100)}%`,
   }
 }
 
@@ -595,4 +608,103 @@ export function levelText(
   words: (percentText: string) => string,
 ): string {
   return level.label ?? words(percent(level.percent))
+}
+
+// ── P5.28: one area at a time ────────────────────────────────────────────────────────────────
+
+/**
+ * Up to this many areas the area switcher is a segmented control (All + each area); more, or
+ * more than two on a phone, a select (searched by typing from 11 options, SelectField's rule).
+ */
+export const AREA_SEGMENTS_UP_TO = 4
+
+/** How the area switcher is drawn for `count` areas: 'segmented' or 'select'. */
+export function areaSwitchKind(count: number, phone: boolean): 'segmented' | 'select' {
+  return count <= (phone ? 2 : AREA_SEGMENTS_UP_TO) ? 'segmented' : 'select'
+}
+
+/**
+ * The areas the switcher offers: `choices` (the application's ids, in its order) when given,
+ * else every area that holds an item (a corridor or a nurses' station without items is drawn,
+ * not offered).
+ */
+export function switchableAreas<Area extends { id: string }>(
+  areas: readonly Area[],
+  items: readonly { areaId?: string | undefined }[],
+  choices?: readonly string[],
+): Area[] {
+  if (choices !== undefined) {
+    return choices.flatMap((id) => areas.filter((area) => area.id === id))
+  }
+  return areas.filter((area) => items.some((item) => item.areaId === area.id))
+}
+
+/** The part of the plan drawn: the whole plan, or one area's box kept inside the plan. */
+export function planFrame(area: FloorArea | undefined, plan: { width: number; height: number }) {
+  if (area === undefined) return { x: 0, y: 0, width: plan.width, height: plan.height }
+  const box = areaBox(area)
+  const x = Math.max(0, box.x)
+  const y = Math.max(0, box.y)
+  const width = Math.max(1, Math.min(plan.width, box.x + box.width) - x)
+  const height = Math.max(1, Math.min(plan.height, box.y + box.height) - y)
+  return { x, y, width, height }
+}
+
+/**
+ * Whether an item is shown when one area is: it stands in that area (`areaId`), or, with no
+ * known area of its own, its centre lies inside it (a stage, a counter, a bin of no zone).
+ */
+export function inArea(
+  item: FloorGeometry & { areaId?: string | undefined },
+  area: FloorArea,
+  areas: readonly { id: string }[],
+): boolean {
+  if (item.areaId !== undefined && areas.some((each) => each.id === item.areaId)) {
+    return item.areaId === area.id
+  }
+  return areaContains(area, centreOf(item))
+}
+
+/** How much of a label fits on its item: both lines, the name with its state icon, the number, none. */
+export type LabelFit = 'all' | 'name' | 'number' | 'none'
+
+/** A width and a height, in pixels. */
+export interface LabelSize {
+  width: number
+  height: number
+}
+
+/**
+ * The room a label has inside an item of `width` × `height` pixels: 2px of padding each side, a
+ * round item's inner square (about 78% of its box), less the level bar's 10px at the bottom.
+ */
+export function labelRoom(width: number, height: number, round: boolean, bar: boolean): LabelSize {
+  const factor = round ? 0.78 : 1
+  return {
+    width: Math.max(0, width * factor - 4),
+    height: Math.max(0, height * factor - 4 - (bar ? 10 : 0)),
+  }
+}
+
+/**
+ * How much of an item's label is written on the plan (P5.28 item 24: never cut): both lines
+ * when they fit, else the name line (state icon and name), else the name alone, else nothing —
+ * the list and the item's name always say everything.
+ */
+export function labelFit(
+  room: LabelSize,
+  name: LabelSize,
+  number: LabelSize,
+  detail: LabelSize | null,
+): LabelFit {
+  const fits = (size: LabelSize) => size.width <= room.width && size.height <= room.height
+  if (
+    detail !== null &&
+    fits({ width: Math.max(name.width, detail.width), height: name.height + detail.height })
+  ) {
+    return 'all'
+  }
+  if (fits(name)) return 'name'
+  if (fits(number)) return 'number'
+  return 'none'
 }

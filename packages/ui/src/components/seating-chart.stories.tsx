@@ -83,6 +83,9 @@ const meta = {
           'in a taken seat’s dialog. Every change is reported as `onSeat(guestId, seat | null)`; ' +
           'the chart never decides. A table opens its guests in order. Conflicts — a full table, ' +
           'guests to keep apart — are the application’s: on the table and on the guests.\n\n' +
+          '**Others rely on the seating (P5.28):** the application keeps the changes pending (“3 ' +
+          'changes not saved”) and saves them together through ChangeConfirmDialog — each guest’s ' +
+          'seat old → new (`seatingChanges`), the guests’ e-mail as a choice (the gala example).\n\n' +
           '**When:** seated events with tables. **When not:** a restaurant’s service (FloorPlan ' +
           'with table states); booking times (ResourceSchedule); a list of attendees without seats ' +
           '(DataTable).',
@@ -135,7 +138,9 @@ export const SeatDialog: Story = {
   ),
   play: async () => {
     await settle()
-    const dialog = within(document.body).getByRole('dialog', { name: 'Table 3, seat 7' })
+    const dialog = within(document.body).getByRole('dialog', {
+      name: 'Seat a guest Table 3, seat 7',
+    })
     const list = within(dialog).getByRole('list', { name: 'Choose a guest' })
     await expect(within(list).getAllByRole('button')[0]).toHaveTextContent(/Not seated/)
   },
@@ -151,7 +156,9 @@ export const TakenSeatDialog: Story = {
   ),
   play: async () => {
     await settle()
-    const dialog = within(document.body).getByRole('dialog', { name: 'Head table, seat 2' })
+    const dialog = within(document.body).getByRole('dialog', {
+      name: 'Seat a guest Head table, seat 2',
+    })
     await expect(dialog).toHaveTextContent('Seated here: Ana Petrović')
     await expect(within(dialog).getByRole('button', { name: 'Unseat' })).toBeVisible()
   },
@@ -167,7 +174,7 @@ export const SeatAt: Story = {
   ),
   play: async () => {
     await settle()
-    const dialog = within(document.body).getByRole('dialog', { name: /^Seat / })
+    const dialog = within(document.body).getByRole('dialog', { name: /^Choose a seat / })
     await expect(within(dialog).getByRole('combobox', { name: 'Table' })).toHaveTextContent(
       'Head table · 2 free',
     )
@@ -230,7 +237,9 @@ export const KeyboardSeating: Story = {
     const canvas = within(canvasElement)
     seatOf(canvasElement, 'w3', 7).focus()
     await userEvent.keyboard('{Enter}')
-    const dialog = await within(document.body).findByRole('dialog', { name: 'Table 3, seat 7' })
+    const dialog = await within(document.body).findByRole('dialog', {
+      name: 'Seat a guest Table 3, seat 7',
+    })
     const first = within(dialog).getAllByRole('button', { name: /Not seated/ })[0]
     if (first === undefined) throw new Error('no guest')
     const name = first.querySelector('span')?.textContent ?? ''
@@ -259,7 +268,7 @@ export const SeatAtMenu: Story = {
     if (guest === undefined) throw new Error('no guest')
     await userEvent.click(canvas.getByRole('button', { name: `Actions: ${guest.name}` }))
     await userEvent.click(await body.findByRole('menuitem', { name: 'Seat at…' }))
-    const dialog = await body.findByRole('dialog', { name: `Seat ${guest.name}` })
+    const dialog = await body.findByRole('dialog', { name: `Choose a seat ${guest.name}` })
     await userEvent.click(within(dialog).getByRole('button', { name: 'Seat' }))
     await waitFor(async () => {
       await expect(canvas.getByText('53 of 60 seated')).toBeVisible()

@@ -1414,8 +1414,9 @@ export interface LiroMessages {
   'floorPlan.duplicate': string
   'floorPlan.remove': string
   /** The "Move to…" and "Size…" dialogs: titles, hint, fields, buttons and the range error. */
-  'floorPlan.moveTitle': (label: string) => string
-  'floorPlan.sizeTitle': (label: string) => string
+  /** The "Move to…" and "Size…" dialogs' titles: the action; the item is their subject (P5.28). */
+  'floorPlan.moveTitle': string
+  'floorPlan.sizeTitle': string
   'floorPlan.unitsHint': string
   'floorPlan.x': string
   'floorPlan.y': string
@@ -1458,7 +1459,8 @@ export interface LiroMessages {
   'seating.seatedHere': string
   'seating.chooseGuest': string
   /** "Seat at…": title, fields, the button, free seats and a full table. */
-  'seating.seatAtTitle': (name: string) => string
+  /** "Seat at…": the action; the guest is the dialog's subject (P5.28). */
+  'seating.seatAtTitle': string
   'seating.table': string
   'seating.seat': string
   'seating.seatButton': string
@@ -1814,4 +1816,12 @@ export interface LiroMessages {
   'receiptResult.sending': string
   'receiptResult.sent': string
   'receiptResult.failed': string
+  // P5.28 floor
+  /** FloorPlan's area switcher (P5.28 item 26). */
+  'floorPlan.area': string
+  'floorPlan.allAreas': string
+  /** FloorPlan with `editing` on a phone (P5.28 item 27). */
+  'floorPlan.editOnLarger': string
+  /** SeatingChart's seat dialog: the action; the seat is its subject (P5.28 item 6). */
+  'seating.seatTitle': string
 }

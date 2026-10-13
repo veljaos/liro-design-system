@@ -46,7 +46,11 @@ import { usePhone } from './use-phone'
  * under the pointer is marked with a neutral dashed outline; Escape cancels); or "Seat at…" from
  * the guest's menu (a table, then a free seat). "Unseat" in the menu and in a taken seat's
  * dialog. Every change is reported as `onSeat(guestId, seat | null)`; the chart never decides:
- * the application seats the guest (or not) and passes the guests again. A table opens its guests
+ * the application seats the guest (or not) and passes the guests again. Others rely on a seating
+ * plan (P5.28 item 9): the application keeps the changes pending and saves them together through
+ * ChangeConfirmDialog (`seatingChanges`: each guest's seat old → new; the guests' e-mail a choice).
+ * The seat and "Seat at…" dialogs are titled by the action with the seat or the guest under it
+ * (item 6). A table opens its guests
  * in order. Conflicts are the application's: on the table (an icon, the words in its name and the
  * plan's warnings) and on the guests (an icon and the words in their rows).
  */
@@ -172,6 +176,8 @@ export function SeatingChart(props: SeatingChartProps) {
       height: table.height,
       ...(table.rotation === undefined ? {} : { rotation: table.rotation }),
       detail: messages['seating.tableCount'](number(taken), number(table.seats)),
+      // "8 of 10" under the table's number on the plan too (P5.28 item 24: dropped, never cut).
+      planDetail: messages['seating.tableCount'](number(taken), number(table.seats)),
       ...(table.areaId === undefined ? {} : { areaId: table.areaId }),
       ...(table.note === undefined ? {} : { note: table.note }),
     })
@@ -435,7 +441,7 @@ export function SeatingChart(props: SeatingChartProps) {
       {seatDialog !== null && editable && (
         <SeatDialog
           seatRef={seatDialog}
-          title={seatName(seatDialog)}
+          seatName={seatName(seatDialog)}
           guests={props.guests}
           tables={props.tables}
           onClose={() => {
@@ -570,14 +576,14 @@ function GuestRow({
 /** A seat chosen: who sits there (Unseat), and the guests to seat on it, searchable. */
 function SeatDialog({
   seatRef,
-  title,
+  seatName,
   guests,
   tables,
   onClose,
   onSeat,
 }: {
   seatRef: SeatRef
-  title: string
+  seatName: string
   guests: readonly SeatingGuest[]
   tables: readonly SeatingTable[]
   onClose: () => void
@@ -597,7 +603,9 @@ function SeatDialog({
       onOpenChange={(open) => {
         if (!open) onClose()
       }}
-      title={title}
+      // The action, then the seat on its own line (P5.28 item 6).
+      title={messages['seating.seatTitle']}
+      subject={seatName}
       actions={<Button intent="cancel" label={messages['dialog.cancel']} onClick={onClose} />}
     >
       <div className="flex flex-col gap-3">
@@ -708,7 +716,8 @@ function SeatAtDialog({
       onOpenChange={(open) => {
         if (!open) onClose()
       }}
-      title={messages['seating.seatAtTitle'](guest.name)}
+      title={messages['seating.seatAtTitle']}
+      subject={guest.name}
       actions={
         <>
           <Button intent="cancel" label={messages['dialog.cancel']} onClick={onClose} />

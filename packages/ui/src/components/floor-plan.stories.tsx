@@ -7,6 +7,9 @@ import { Button } from './button'
 import { FloorPlan, type FloorPlanProps } from './floor-plan'
 import { applyFloorChanges, footprint, type FloorChange, type FloorItem } from './floor-plan-logic'
 import {
+  MANY_AREAS,
+  MANY_AREAS_ITEMS,
+  MANY_AREAS_SIZE,
   HOTEL_AREAS,
   HOTEL_ITEMS,
   HOTEL_SIZE,
@@ -102,6 +105,21 @@ function itemOf(canvasElement: HTMLElement, id: string): HTMLElement {
   return element
 }
 
+/**
+ * Every label written on the plan lies inside its item (P5.28 item 24: never cut); what does not
+ * fit is left out (`data-fit`), not clipped.
+ */
+async function labelsFit(canvasElement: HTMLElement) {
+  for (const label of canvasElement.querySelectorAll<HTMLElement>('[data-floor-label]')) {
+    if (label.dataset.fit === 'none') continue
+    const item = label.parentElement?.getBoundingClientRect()
+    const box = label.getBoundingClientRect()
+    if (item === undefined) continue
+    await expect(box.width).toBeLessThanOrEqual(item.width + 0.5)
+    await expect(box.height).toBeLessThanOrEqual(item.height + 0.5)
+  }
+}
+
 const meta = {
   title: 'Components/FloorPlan',
   component: FloorPlan,
@@ -110,16 +128,25 @@ const meta = {
       description: {
         component:
           '**What for:** the plan of a place — a restaurant, a café terrace, a hotel floor, a ' +
-          'hall — with its tables, rooms, seats and fixtures where the application puts them (plan ' +
-          'units), areas as labelled regions, and each item’s state in words, tone and icon (the ' +
+          'hall — with its tables, rooms, seats and places where the application puts them (plan ' +
+          'units), areas as plain labelled regions (no walls, doors or windows: a real building ' +
+          'plan is the `background` image), and each item’s state in words, tone and icon (the ' +
           'states are the application’s map: free, occupied, reserved, needs cleaning are only ' +
           'examples). One item chosen or several; Enter or a press opens it (`onItemActivate`).\n\n' +
           '**A physical place:** the plan is not mirrored in a right-to-left page — the room does ' +
           'not turn round —, the page around it is. The arrow keys go to the nearest item in that ' +
-          'direction on the plan. It scales to its width (HTML boxes placed in percentages), never ' +
-          'draws a target under 24px (it scrolls sideways instead), and zooms in steps.\n\n' +
+          'direction on the plan. It scales to its width (HTML boxes placed in percentages), keeps ' +
+          'its targets at least 24px on a wide screen (it scrolls in its box instead), and zooms ' +
+          'in steps.\n\n' +
+          '**Labels are never cut:** the number and the state’s icon, then the guests ' +
+          '(`planDetail`) on a second line; what does not fit an item is left out (measured at ' +
+          'every width), and the list and the name say everything — the time is in the list.\n\n' +
+          '**Areas:** with two or more, “All areas” or one at a time (a segmented control up to ' +
+          'four, a select beyond); one area is drawn alone, fitted to the width. Takeaway and ' +
+          'delivery are order channels of the till, not areas.\n\n' +
           '**List:** "Plan / List" shows the same items grouped by area with state, capacity and ' +
-          'note — the accessible and the phone alternative; phones open on it.\n\n' +
+          'note — the accessible and the phone alternative. Phones open on it, a card per item; ' +
+          'the plan, when opened, fits the screen’s width; there is no edit mode on a phone.\n\n' +
           '**Edit mode:** add from the palette; move by dragging (snapped to the grid), by the ' +
           'keys (Space picks up, arrows 1 unit, Shift 5, Space drops) or "Move to…"; resize by the ' +
           'corner or "Size…"; rotate 90°, duplicate, remove. The plan reports every change ' +
@@ -156,16 +183,25 @@ export const Default: Story = {
     const canvas = within(canvasElement)
     await expect(
       canvas.getByRole('button', {
-        name: 'Table 3, 19:30 · 4, Reserved, 4 seats, Hall, Window seat asked for',
+        name: 'Table 3, 4 guests · at 19:30, Reserved, 4 seats, Hall, Window seat asked for',
       }),
     ).toBeVisible()
+    // On the plan: the number and the state, then the guests; the time is in the list (P5.28).
+    await expect(itemOf(canvasElement, 't3')).toHaveTextContent('34 guests')
+    await expect(itemOf(canvasElement, 't3')).not.toHaveTextContent('19:30')
+    await labelsFit(canvasElement)
+    // All areas, or one at a time (P5.28 item 26).
+    await expect(canvas.getByRole('radio', { name: 'All areas' })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    )
     await expect(canvas.getByRole('list', { name: 'States' })).toHaveTextContent('Needs cleaning')
     // The plan is a physical place: never mirrored.
     await expect(
       canvasElement.querySelector('[data-slot="floor-plan-canvas"]')?.getAttribute('dir'),
     ).toBe('ltr')
-    // Fixtures are drawn, not targets, outside edit mode.
-    await expect(itemOf(canvasElement, 'door-main')).toHaveAttribute('aria-hidden', 'true')
+    // Fixtures are drawn, not targets, outside edit mode; no walls, doors or windows (P5.28).
+    await expect(itemOf(canvasElement, 'piano')).toHaveAttribute('aria-hidden', 'true')
   },
 }
 
@@ -260,7 +296,7 @@ export const ListView: Story = {
       'true',
     )
     await expect(canvasElement).toHaveTextContent('Broken leg, waiting for the carpenter')
-    await expect(canvas.queryByText('Entrance')).toBeNull()
+    await expect(canvas.queryByText('Piano')).toBeNull()
   },
 }
 
@@ -277,6 +313,99 @@ export const SwitchingViews: Story = {
     await expect(canvas.getByTestId('opened')).toHaveTextContent('Opened: Table 14')
     await userEvent.click(canvas.getByRole('radio', { name: 'Plan' }))
     await expect(itemOf(canvasElement, 't14')).toHaveAttribute('aria-pressed', 'true')
+  },
+}
+
+/** One area at a time (P5.28 item 26): the terrace alone, cropped and fitted. */
+export const OneArea: Story = {
+  name: 'One area',
+  render: () => (
+    <ExampleProvider>
+      <Plan defaultArea="terrace" />
+    </ExampleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('radio', { name: 'Terrace' })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    )
+    await expect(canvasElement.querySelector('[data-floor-item="t1"]')).toBeNull()
+    await expect(itemOf(canvasElement, 't15')).toBeVisible()
+    await labelsFit(canvasElement)
+  },
+}
+
+/** The switcher: the bar alone, its tables in the list too, then all areas again. */
+export const ChoosingAnArea: Story = {
+  name: 'Choosing an area, interaction',
+  tags: ['interaction'],
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('radio', { name: 'Bar' }))
+    await expect(canvasElement.querySelector('[data-floor-item="t3"]')).toBeNull()
+    await expect(itemOf(canvasElement, 't16')).toBeVisible()
+    await userEvent.click(canvas.getByRole('radio', { name: 'List' }))
+    await expect(canvas.queryByRole('heading', { name: 'Hall' })).toBeNull()
+    await expect(canvas.getByRole('heading', { name: 'Bar' })).toBeVisible()
+    await userEvent.click(canvas.getByRole('radio', { name: 'All areas' }))
+    await expect(canvas.getByRole('heading', { name: 'Hall' })).toBeVisible()
+  },
+}
+
+/** Seven areas: the switcher is a select, usable with many areas (P5.28 item 26). */
+export const ManyAreas: Story = {
+  name: 'Many areas',
+  render: () => (
+    <ExampleProvider>
+      <Plan
+        label="Vila Dunav, dinner service"
+        initial={MANY_AREAS_ITEMS}
+        areas={MANY_AREAS}
+        width={MANY_AREAS_SIZE.width}
+        height={MANY_AREAS_SIZE.height}
+        defaultArea="garden"
+      />
+    </ExampleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const area = within(canvasElement).getByRole('combobox', { name: 'Area' })
+    await expect(area).toHaveTextContent('Garden')
+    await expect(canvasElement.querySelector('[data-floor-item="t1"]')).toBeNull()
+    await labelsFit(canvasElement)
+  },
+}
+
+/** Seven areas on a phone: the list by area, the switcher a select across the width. */
+export const ManyAreasPhone: Story = {
+  name: 'Many areas, phone width',
+  render: () => (
+    <PhoneFrame>
+      <ExampleProvider>
+        <div className="p-4">
+          <Plan
+            layout="phone"
+            label="Vila Dunav, dinner service"
+            initial={MANY_AREAS_ITEMS}
+            areas={MANY_AREAS}
+            width={MANY_AREAS_SIZE.width}
+            height={MANY_AREAS_SIZE.height}
+          />
+        </div>
+      </ExampleProvider>
+    </PhoneFrame>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(within(canvasElement).getByRole('combobox', { name: 'Area' })).toHaveTextContent(
+      'All areas',
+    )
+    await expect(
+      within(canvasElement).getByRole('heading', { name: 'Winter garden' }),
+    ).toBeVisible()
   },
 }
 
@@ -342,7 +471,7 @@ export const Editing: Story = {
       }),
     ).toBeVisible()
     // In edit mode the fixtures can be chosen too.
-    await expect(itemOf(canvasElement, 'door-main').tagName).toBe('BUTTON')
+    await expect(itemOf(canvasElement, 'piano').tagName).toBe('BUTTON')
     await expect(canvasElement.querySelector('[data-slot="floor-resize"]')).not.toBeNull()
   },
 }
@@ -373,7 +502,8 @@ export const SizeDialog: Story = {
   ),
   play: async () => {
     await settle()
-    const dialog = within(document.body).getByRole('dialog', { name: 'Size of Table 9' })
+    // The action, then the item on its own line (P5.28 item 6).
+    const dialog = within(document.body).getByRole('dialog', { name: 'Resize Table 9' })
     await expect(within(dialog).getByRole('textbox', { name: 'Width' })).toHaveValue('340')
   },
 }
@@ -463,7 +593,7 @@ export const EditingActions: Story = {
     )
     await userEvent.click(canvas.getByRole('button', { name: 'Duplicate' }))
     await userEvent.click(canvas.getByRole('button', { name: 'Size…' }))
-    const dialog = await body.findByRole('dialog', { name: 'Size of Table 9' })
+    const dialog = await body.findByRole('dialog', { name: 'Resize Table 9' })
     const width = within(dialog).getByRole('textbox', { name: 'Width' })
     await userEvent.clear(width)
     await userEvent.type(width, '5000')
@@ -564,7 +694,9 @@ export const ReadOnly: Story = {
     await settle()
     const canvas = within(canvasElement)
     await expect(canvas.queryByRole('button', { name: /^Table/ })).toBeNull()
-    await expect(canvas.getByRole('img', { name: /^Table 7, 20:00 · 6, Reserved/ })).toBeVisible()
+    await expect(
+      canvas.getByRole('img', { name: /^Table 7, 6 guests · at 20:00, Reserved/ }),
+    ).toBeVisible()
     await expect(canvas.queryByRole('list', { name: 'States' })).toBeNull()
   },
 }
@@ -597,7 +729,7 @@ export const EmptyEditing: Story = {
   ),
 }
 
-/** Long names, notes and details: cut on the plan, whole in the list and in every name. */
+/** Long names, notes and details: whole in the list and in every name. */
 export const LongText: Story = {
   name: 'Long text',
   render: () => (
@@ -619,7 +751,10 @@ export const LongText: Story = {
   ),
 }
 
-/** The same plan with long names drawn: names are cut on the plan, whole in its name. */
+/**
+ * The same plan with long second lines: a line that does not fit its table is left out on the
+ * plan, never cut (P5.28 item 24); the list and the name say it whole.
+ */
 export const LongTextPlan: Story = {
   name: 'Long text, plan',
   render: () => (
@@ -629,14 +764,24 @@ export const LongTextPlan: Story = {
           item.kind === 'table'
             ? {
                 ...item,
-                shortLabel: `${item.shortLabel ?? ''} by the window`,
-                detail: item.detail ?? 'Walk-in, 2 guests',
+                planDetail: 'Walk-in, 2 guests by the window',
+                detail: item.detail ?? 'Walk-in, 2 guests by the window',
               }
             : item,
         )}
       />
     </ExampleProvider>
   ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    await labelsFit(canvasElement)
+    await expect(
+      canvasElement.querySelector('[data-floor-item="t9"] [data-floor-label]'),
+    ).toHaveAttribute('data-fit', 'all')
+    await expect(
+      canvasElement.querySelector('[data-floor-item="t1"] [data-floor-label]'),
+    ).toHaveAttribute('data-fit', 'name')
+  },
 }
 
 /** A hotel floor: rooms in their housekeeping states. */
@@ -685,7 +830,11 @@ export const PhoneWidth: Story = {
   },
 }
 
-/** On a phone, the plan view: it keeps every target at least 24px and scrolls inside its box. */
+/**
+ * On a phone, the plan view when opened: it fits the screen's width, no sideways scrolling
+ * (P5.28 item 27); a label that does not fit its table leaves out its second line or its icon,
+ * never cut. The list is the equivalent of the small targets (WCAG 2.5.8).
+ */
 export const PhonePlan: Story = {
   name: 'Phone width, plan',
   render: () => (
@@ -699,14 +848,51 @@ export const PhonePlan: Story = {
   ),
   play: async ({ canvasElement }) => {
     await settle()
-    const smallest = Math.min(
-      ...[...canvasElement.querySelectorAll<HTMLElement>('button[data-floor-item]')].map((item) =>
-        Math.min(item.getBoundingClientRect().width, item.getBoundingClientRect().height),
-      ),
-    )
-    await expect(smallest).toBeGreaterThanOrEqual(24)
-    const plan = canvasElement.querySelector<HTMLElement>('[data-slot="floor-plan"]')
-    if (plan !== null) await expect(plan.scrollWidth).toBeLessThanOrEqual(plan.clientWidth)
+    const viewport = canvasElement.querySelector<HTMLElement>('[data-slot="floor-plan-viewport"]')
+    if (viewport === null) throw new Error('no viewport')
+    await expect(viewport.scrollWidth).toBeLessThanOrEqual(viewport.clientWidth)
+    await labelsFit(canvasElement)
+  },
+}
+
+/** On a phone, one area: the terrace alone fills the width, its tables larger. */
+export const PhoneArea: Story = {
+  name: 'Phone width, one area',
+  render: () => (
+    <PhoneFrame>
+      <ExampleProvider>
+        <div className="p-4">
+          <Plan layout="phone" defaultView="plan" defaultArea="terrace" />
+        </div>
+      </ExampleProvider>
+    </PhoneFrame>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement.querySelector('[data-floor-item="t1"]')).toBeNull()
+    await expect(itemOf(canvasElement, 't14')).toBeVisible()
+    await labelsFit(canvasElement)
+  },
+}
+
+/** Edit mode is not offered on a phone (P5.28 item 27): a note says where to edit. */
+export const PhoneEditing: Story = {
+  name: 'Phone width, editing',
+  render: () => (
+    <PhoneFrame>
+      <ExampleProvider>
+        <div className="p-4">
+          <Plan layout="phone" editing palette={RESTAURANT_PALETTE} defaultSelected={['t4']} />
+        </div>
+      </ExampleProvider>
+    </PhoneFrame>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('Edit the plan on a computer or tablet.')).toBeVisible()
+    await expect(canvas.queryByRole('group', { name: 'Add' })).toBeNull()
+    await expect(canvas.queryByRole('button', { name: 'Move to…' })).toBeNull()
   },
 }
 
@@ -725,7 +911,7 @@ export const Arabic: Story = {
               ? `طاولة ${item.shortLabel ?? ''}`
               : item.label === 'Bar counter'
                 ? 'منضدة البار'
-                : 'مدخل',
+                : 'بيانو',
           ...(item.note === undefined ? {} : { note: 'ملاحظة من النادل' }),
         }))}
       />
@@ -750,7 +936,12 @@ export const Japanese: Story = {
         defaultView="list"
         initial={RESTAURANT_ITEMS.map((item) => ({
           ...item,
-          label: item.kind === 'table' ? `テーブル ${item.shortLabel ?? ''}` : 'バーカウンター',
+          label:
+            item.kind === 'table'
+              ? `テーブル ${item.shortLabel ?? ''}`
+              : item.kind === 'bar'
+                ? 'バーカウンター'
+                : 'ピアノ',
           ...(item.note === undefined ? {} : { note: '窓際の席を希望' }),
         }))}
       />

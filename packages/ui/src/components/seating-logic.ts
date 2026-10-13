@@ -212,3 +212,31 @@ export function guestGroups<Guest extends SeatingGuest>(
   }
   return groups.filter((group) => group.guests.length > 0)
 }
+
+/** One guest's seat before and after (P5.28 item 9: a seating plan's pending changes). */
+export interface SeatingChange {
+  guestId: string
+  /** The seat saved; null when the guest was not seated. */
+  from: SeatRef | null
+  /** The seat now; null when the guest is unseated. */
+  to: SeatRef | null
+}
+
+/**
+ * The changes between the seating saved and the seating now, in the order of `now`: every guest
+ * whose seat differs (seated, moved or unseated). A seating plan edited in several steps keeps
+ * them pending and saves them together through one confirmation (ChangeConfirmDialog).
+ */
+export function seatingChanges(
+  saved: readonly SeatingGuest[],
+  now: readonly SeatingGuest[],
+): SeatingChange[] {
+  const before = new Map(saved.map((guest) => [guest.id, guest.seat ?? null]))
+  return now.flatMap((guest) => {
+    const from = before.get(guest.id) ?? null
+    const to = guest.seat ?? null
+    if (from === null && to === null) return []
+    if (sameSeat(from, to)) return []
+    return [{ guestId: guest.id, from, to }]
+  })
+}

@@ -1,24 +1,39 @@
-import { ArrowRightLeft, Merge, ReceiptText, Save, Sparkles, UsersRound } from 'lucide-react'
+import {
+  ArrowRightLeft,
+  Bike,
+  CircleCheck,
+  HandPlatter,
+  Merge,
+  ReceiptText,
+  RotateCcw,
+  Save,
+  Sparkles,
+  UsersRound,
+} from 'lucide-react'
 import { useContext, useState, type ReactNode } from 'react'
 import {
   Alert,
   BrandLockup,
   Button,
+  CandidateList,
+  ChangeConfirmDialog,
   Dialog,
   EmptyState,
   FloorPlan,
   KeyValueList,
   LiroProvider,
+  MoneyText,
   notice,
   overlappingItems,
   PageHeader,
   QuantityStepper,
   SeatingChart,
   SectionCard,
-  SelectField,
   StatusBadge,
+  Tabs,
   Toaster,
   applyFloorChanges,
+  seatingChanges,
   useLiro,
   type FloorItem,
   type FloorWarning,
@@ -29,11 +44,13 @@ import {
   type ShellCompany,
 } from '@veljaos/ui'
 import type { ExampleRoute } from './example-app'
+import { useExampleState } from './example-state'
 import { Navigate, Shell, type ExampleAccount } from './example-shell'
 import { Frame } from './screens-G'
 import {
   BISTRO,
   BISTRO_AREAS,
+  BISTRO_ORDERS,
   BISTRO_PALETTE,
   BISTRO_SIZE,
   BISTRO_STATES,
@@ -52,10 +69,12 @@ import {
   GALA_TABLES,
   guestsText,
   K_ROUTES,
+  layoutTables,
   mergedBox,
   moveTargets,
   type BistroTable,
   type CafeTable,
+  type ChannelOrder,
 } from './data-K'
 import { BISTRO_VENUE, CAFE_VENUE, tabTotal, type Tab } from './data-K-tabs'
 import { TabTill, useTabs, type TabStart } from './screens-K-tabs'
@@ -261,27 +280,254 @@ function TablePanel({
   )
 }
 
-/** Bistro Dunav's evening service: the floor, the chosen table, open and move. */
+/** "Sala · 4 seats": where a table stands and how many it seats. */
+function tablePlace(table: BistroTable, number: (value: string) => string): string {
+  const area = BISTRO_AREAS.find((each) => each.id === table.areaId)?.label ?? ''
+  return `${area} · ${number(String(table.seats))} seats`
+}
+
+/** An order of a channel (takeaway, delivery) as the host sees it, with its next step. */
+function ChannelOrders({
+  channel,
+  orders,
+  onAdvance,
+}: {
+  channel: ChannelOrder['channel']
+  orders: readonly ChannelOrder[]
+  onAdvance: (order: ChannelOrder) => void
+}) {
+  const shown = orders.filter((order) => order.channel === channel && order.state !== 'done')
+  if (shown.length === 0) {
+    return (
+      <EmptyState
+        compact
+        title={channel === 'takeaway' ? 'No takeaway orders' : 'No deliveries'}
+        description="New orders from the till appear here."
+      />
+    )
+  }
+  const STATE: Record<
+    ChannelOrder['state'],
+    { label: string; tone: 'neutral' | 'success' | 'warning' }
+  > = {
+    preparing: { label: 'Preparing', tone: 'neutral' },
+    ready: { label: channel === 'takeaway' ? 'Ready for pick-up' : 'Ready to go', tone: 'success' },
+    out: { label: 'Out for delivery', tone: 'warning' },
+    done: { label: 'Done', tone: 'neutral' },
+  }
+  const next = (order: ChannelOrder) =>
+    order.state === 'preparing'
+      ? 'Mark as ready'
+      : order.state === 'ready'
+        ? channel === 'takeaway'
+          ? 'Handed over'
+          : 'Out for delivery'
+        : 'Delivered'
+  return (
+    <ul className="m-0 flex list-none flex-col gap-3 p-0">
+      {shown.map((order) => (
+        <li key={order.id}>
+          <SectionCard
+            title={
+              <span className="flex flex-wrap items-center gap-2">
+                <span dir="ltr" className="bidi-isolate">
+                  {order.number}
+                </span>
+                <StatusBadge label={STATE[order.state].label} tone={STATE[order.state].tone} />
+              </span>
+            }
+            headingLevel={3}
+            actions={
+              <Button
+                family="neutral"
+                icon={
+                  order.state === 'preparing'
+                    ? CircleCheck
+                    : order.channel === 'delivery'
+                      ? Bike
+                      : HandPlatter
+                }
+                label={next(order)}
+                onClick={() => {
+                  onAdvance(order)
+                }}
+              />
+            }
+          >
+            <KeyValueList
+              columns={1}
+              items={[
+                { label: 'Name', value: order.name },
+                {
+                  label: channel === 'takeaway' ? 'Pick-up' : 'Delivery',
+                  value: order.time,
+                  numeric: true,
+                },
+                ...(order.address === undefined
+                  ? []
+                  : [{ label: 'Address', value: order.address }]),
+                ...(order.phone === undefined
+                  ? []
+                  : [{ label: 'Phone', value: <span dir="ltr">{order.phone}</span> }]),
+                {
+                  label: 'Total',
+                  value: <MoneyText value={order.total} currency={BISTRO_VENUE.currency} />,
+                  numeric: true,
+                },
+              ]}
+            />
+          </SectionCard>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+/**
+ * Moving a party (P5.28 items 6, 9, 25): the free tables with seats enough, best first, chosen and
+ * confirmed in one dialog — the table old → new and, for a reservation, the guest's SMS as a
+ * choice. When no free table is big enough the dialog says so and offers merging tables.
+ */
+function MoveGuestsDialog({
+  table,
+  tables,
+  open,
+  onOpenChange,
+  onMove,
+  onMerge,
+}: {
+  table: BistroTable
+  tables: readonly BistroTable[]
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  onMove: (to: BistroTable, notify: readonly string[]) => void
+  onMerge: () => void
+}) {
+  const { format } = useLiro()
+  const number = (value: string) => format.number(value)
+  const party = table.party
+  const targets = moveTargets(tables, table)
+  const [target, setTarget] = useState(targets[0]?.id ?? '')
+  const to = targets.find((each) => each.id === target) ?? targets[0]
+  if (party === undefined) return null
+  const subject = `${tableName(table)} · ${party.name === undefined ? '' : `${party.name}, `}${guestsText(party.size, number)}`
+  if (to === undefined) {
+    return (
+      <Dialog
+        open={open}
+        onOpenChange={onOpenChange}
+        title="Move guests"
+        subject={subject}
+        actions={
+          <>
+            <Button
+              intent="cancel"
+              label="Cancel"
+              onClick={() => {
+                onOpenChange(false)
+              }}
+            />
+            <Button
+              family="primary"
+              emphasis="primary"
+              icon={Merge}
+              label="Merge tables…"
+              onClick={onMerge}
+            />
+          </>
+        }
+      >
+        <EmptyState
+          compact
+          title={`No free table seats ${guestsText(party.size, number)}`}
+          description="Merge two free tables in the floor plan, or wait for a table to be cleared."
+        />
+      </Dialog>
+    )
+  }
+  return (
+    <ChangeConfirmDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Move guests"
+      subject={subject}
+      changes={[
+        {
+          label: 'Table',
+          from: `${tableName(table)} · ${tablePlace(table, number)}`,
+          to: `${tableName(to)} · ${tablePlace(to, number)}`,
+        },
+      ]}
+      {...(table.state === 'reserved' && party.phone !== undefined
+        ? {
+            affected: `${party.name ?? ''} (reservation for ${party.time})`,
+            notify: [
+              {
+                id: 'guest',
+                label: `Notify ${party.name ?? ''} by SMS`,
+                description: `To ${party.phone}: the new table for ${party.time}.`,
+              },
+            ],
+          }
+        : {
+            affected: 'The waiter and the kitchen see the new table at once.',
+          })}
+      confirmLabel="Move"
+      onConfirm={(answer) => {
+        onMove(to, answer.notify)
+      }}
+    >
+      <CandidateList
+        label="Free tables with enough seats"
+        multiple={false}
+        selected={[to.id]}
+        onSelectedChange={(ids) => {
+          setTarget(ids[0] ?? to.id)
+        }}
+        candidates={targets.map((each) => ({
+          id: each.id,
+          title: tableName(each),
+          label: `${tableName(each)}, ${tablePlace(each, number)}`,
+          subtitle: tablePlace(each, number),
+          ...(each.areaId === table.areaId ? { reason: 'Same area' } : {}),
+        }))}
+      />
+    </ChangeConfirmDialog>
+  )
+}
+
+/** Bistro Dunav's evening service: the floor (dine-in), takeaway and delivery; open and move. */
 export function Service({
   phone,
   tableId,
   dialog,
+  channel: initialChannel = 'dine-in',
+  area,
 }: {
   phone: boolean
   tableId?: string
   dialog?: 'open' | 'move'
+  channel?: 'dine-in' | 'takeaway' | 'delivery'
+  area?: string
 }) {
   const { format } = useLiro()
   const navigate = useContext(Navigate)
   const number = (value: string) => format.number(value)
-  const [tables, setTables] = useState<readonly BistroTable[]>(BISTRO_TABLES)
+  // The tables and the orders are the restaurant's records: kept above the screens (P5.28).
+  const [tables, setTables] = useExampleState<readonly BistroTable[]>(
+    'bistro.tables',
+    () => BISTRO_TABLES,
+  )
+  const [orders, setOrders] = useExampleState<readonly ChannelOrder[]>(
+    'bistro.orders',
+    () => BISTRO_ORDERS,
+  )
+  const [channel, setChannel] = useState(initialChannel)
   const [chosen, setChosen] = useState<string | undefined>(tableId)
   const [open, setOpen] = useState(dialog === 'open')
   const [move, setMove] = useState(dialog === 'move')
   const [partySize, setPartySize] = useState<string | null>('2')
   const table = tables.find((each) => each.id === chosen)
-  const targets = table === undefined ? [] : moveTargets(tables, table)
-  const [target, setTarget] = useState(targets[0]?.id ?? '')
   const update = (id: string, change: Partial<BistroTable>, drop?: 'party') => {
     setTables((current) =>
       current.map((each) => {
@@ -304,6 +550,7 @@ export function Service({
       height={BISTRO_SIZE.height}
       areas={BISTRO_AREAS}
       states={BISTRO_STATES}
+      {...(area === undefined ? {} : { defaultArea: area })}
       selected={chosen === undefined ? [] : [chosen]}
       onSelectionChange={(selected) => {
         setChosen(selected[0])
@@ -322,7 +569,6 @@ export function Service({
         setOpen(true)
       }}
       onMove={() => {
-        setTarget(targets[0]?.id ?? '')
         setMove(true)
       }}
       onSeat={() => {
@@ -354,6 +600,37 @@ export function Service({
     table !== undefined && (size === null || Number.isNaN(size) || size < 1 || size > table.seats)
       ? `From 1 to ${number(String(table.seats))} guests.`
       : undefined
+  const waiting = (kind: ChannelOrder['channel']) =>
+    orders.filter((order) => order.channel === kind && order.state !== 'done').length
+  const floor = phone ? (
+    <div className="flex flex-col gap-4">
+      {table !== undefined && panel}
+      {plan}
+    </div>
+  ) : (
+    <div className="grid grid-cols-[minmax(0,1fr)_20rem] items-start gap-6">
+      {plan}
+      {panel}
+    </div>
+  )
+  const advance = (order: ChannelOrder) => {
+    const next: ChannelOrder['state'] =
+      order.state === 'preparing'
+        ? 'ready'
+        : order.state === 'ready' && order.channel === 'delivery'
+          ? 'out'
+          : 'done'
+    setOrders((current) =>
+      current.map((each) => (each.id === order.id ? { ...each, state: next } : each)),
+    )
+    notice.success(
+      next === 'ready'
+        ? `${order.number} is ready.`
+        : next === 'out'
+          ? `${order.number} is out for delivery.`
+          : `${order.number} is done.`,
+    )
+  }
   return (
     <BistroShell phone={phone} tab="floor">
       <Frame phone={phone} wide>
@@ -362,108 +639,99 @@ export function Service({
           titleHidden
           subtitle={`${format.dateLong('2026-10-06')} · ${BISTRO.now}`}
         />
-        {phone ? (
-          <div className="flex flex-col gap-4">
-            {table !== undefined && panel}
-            {plan}
-          </div>
-        ) : (
-          <div className="grid grid-cols-[minmax(0,1fr)_20rem] items-start gap-6">
-            {plan}
-            {panel}
-          </div>
-        )}
-        {table !== undefined && (
-          <Dialog
-            open={open}
-            onOpenChange={setOpen}
-            title={`Open ${tableName(table)}`}
-            description={`${number(String(table.seats))} seats, from ${BISTRO.now}.`}
-            actions={
-              <>
-                <Button
-                  intent="cancel"
-                  label="Cancel"
-                  onClick={() => {
-                    setOpen(false)
-                  }}
-                />
-                <Button
-                  family="primary"
-                  emphasis="primary"
-                  icon={UsersRound}
-                  label="Open table"
-                  onClick={() => {
-                    if (sizeError !== undefined || size === null) return
-                    update(table.id, { state: 'occupied', party: { size, time: BISTRO.now } })
-                    setOpen(false)
-                    notice.success(`${tableName(table)} opened for ${guestsText(size, number)}.`)
-                  }}
-                />
-              </>
-            }
-          >
-            <QuantityStepper
-              label="Guests"
-              value={partySize}
-              onChange={setPartySize}
-              min="1"
-              max={String(table.seats)}
-              {...(sizeError === undefined ? {} : { error: sizeError })}
-            />
-          </Dialog>
-        )}
-        {table?.party !== undefined && (
-          <Dialog
-            open={move}
-            onOpenChange={setMove}
-            title={`Move guests from ${tableName(table)}`}
-            description={`${guestsText(table.party.size, number)}: free tables with seats enough.`}
-            actions={
-              <>
-                <Button
-                  intent="cancel"
-                  label="Cancel"
-                  onClick={() => {
-                    setMove(false)
-                  }}
-                />
-                <Button
-                  family="primary"
-                  emphasis="primary"
-                  icon={ArrowRightLeft}
-                  label="Move"
-                  disabled={target === ''}
-                  onClick={() => {
-                    const to = tables.find((each) => each.id === target)
-                    const party = table.party
-                    if (to === undefined || party === undefined) return
-                    update(to.id, { state: table.state, party })
-                    update(
-                      table.id,
-                      { state: table.state === 'occupied' ? 'cleaning' : 'free' },
-                      'party',
-                    )
-                    setChosen(to.id)
-                    setMove(false)
-                    notice.success(`Guests moved from ${tableName(table)} to ${tableName(to)}.`)
-                  }}
-                />
-              </>
-            }
-          >
-            <SelectField
-              label="To table"
-              value={target}
-              onChange={setTarget}
-              options={targets.map((each) => ({
-                value: each.id,
-                label: `${tableName(each)} · ${BISTRO_AREAS.find((area) => area.id === each.areaId)?.label ?? ''} · ${number(String(each.seats))} seats`,
-              }))}
-            />
-          </Dialog>
-        )}
+        {/* P5.28 item 26: takeaway and delivery are the till's order channels, not plan areas. */}
+        <Tabs
+          label="Orders"
+          value={channel}
+          onValueChange={(value) => {
+            if (value === 'dine-in' || value === 'takeaway' || value === 'delivery')
+              setChannel(value)
+          }}
+          items={[
+            { value: 'dine-in', label: 'Dine-in', content: floor },
+            {
+              value: 'takeaway',
+              label: `Takeaway (${number(String(waiting('takeaway')))})`,
+              content: <ChannelOrders channel="takeaway" orders={orders} onAdvance={advance} />,
+            },
+            {
+              value: 'delivery',
+              label: `Delivery (${number(String(waiting('delivery')))})`,
+              content: <ChannelOrders channel="delivery" orders={orders} onAdvance={advance} />,
+            },
+          ]}
+        />
       </Frame>
+      {/* At page level, outside the Tabs (D16). */}
+      {table !== undefined && (
+        <Dialog
+          open={open}
+          onOpenChange={setOpen}
+          title="Open table"
+          subject={tableName(table)}
+          description={`${number(String(table.seats))} seats, from ${BISTRO.now}.`}
+          actions={
+            <>
+              <Button
+                intent="cancel"
+                label="Cancel"
+                onClick={() => {
+                  setOpen(false)
+                }}
+              />
+              <Button
+                family="primary"
+                emphasis="primary"
+                icon={UsersRound}
+                label="Open table"
+                onClick={() => {
+                  if (sizeError !== undefined || size === null) return
+                  update(table.id, { state: 'occupied', party: { size, time: BISTRO.now } })
+                  setOpen(false)
+                  notice.success(`${tableName(table)} opened for ${guestsText(size, number)}.`)
+                }}
+              />
+            </>
+          }
+        >
+          <QuantityStepper
+            label="Guests"
+            value={partySize}
+            onChange={setPartySize}
+            min="1"
+            max={String(table.seats)}
+            {...(sizeError === undefined ? {} : { error: sizeError })}
+          />
+        </Dialog>
+      )}
+      {table?.party !== undefined && (
+        <MoveGuestsDialog
+          // A new round of choosing each time it opens: the best table first.
+          key={`${table.id}:${String(move)}`}
+          table={table}
+          tables={tables}
+          open={move}
+          onOpenChange={setMove}
+          onMerge={() => {
+            navigate(K_ROUTES.floorEdit)
+          }}
+          onMove={(to, notify) => {
+            const party = table.party
+            if (party === undefined) return
+            update(to.id, { state: table.state, party })
+            update(table.id, { state: table.state === 'occupied' ? 'cleaning' : 'free' }, 'party')
+            setChosen(to.id)
+            const moved = `Guests moved from ${tableName(table)} to ${tableName(to)}.`
+            notice.success(
+              table.state !== 'reserved' || party.phone === undefined
+                ? moved
+                : notify.includes('guest')
+                  ? `${moved} ${party.name ?? ''} gets an SMS.`
+                  : `${moved} No message was sent.`,
+            )
+          }}
+        />
+      )}
     </BistroShell>
   )
 }
@@ -496,7 +764,12 @@ function withMerge(items: readonly FloorItem[], a: string, b: string): FloorItem
 export function FloorEditor({ phone, merged }: { phone: boolean; merged: boolean }) {
   const { format } = useLiro()
   const number = (value: string) => format.number(value)
-  const initial = bistroItems(BISTRO_TABLES, number)
+  // The plan starts from the tables the service keeps, and Save gives them their new places.
+  const [tables, setTables] = useExampleState<readonly BistroTable[]>(
+    'bistro.tables',
+    () => BISTRO_TABLES,
+  )
+  const initial = bistroItems(tables, number)
   const [items, setItems] = useState<readonly FloorItem[]>(
     merged ? withMerge(initial, 't11', 't12') : initial,
   )
@@ -548,30 +821,34 @@ export function FloorEditor({ phone, merged }: { phone: boolean; merged: boolean
             )
             setNext((value) => value + changes.length)
           }}
+          // On a phone the plan is not edited (P5.28 item 27): nothing to merge or save there.
           toolbar={
-            <>
-              {canMerge && (
+            phone ? undefined : (
+              <>
+                {canMerge && (
+                  <Button
+                    family="neutral"
+                    icon={Merge}
+                    label={`Merge ${a.label} and ${b.label}`}
+                    onClick={() => {
+                      setItems((current) => withMerge(current, a.id, b.id))
+                      setSelected([`${a.id}+${b.id}`])
+                      notice.success(`${a.label} and ${b.label} merged.`)
+                    }}
+                  />
+                )}
                 <Button
-                  family="neutral"
-                  icon={Merge}
-                  label={`Merge ${a.label} and ${b.label}`}
+                  family="primary"
+                  emphasis="primary"
+                  icon={Save}
+                  label="Save floor plan"
                   onClick={() => {
-                    setItems((current) => withMerge(current, a.id, b.id))
-                    setSelected([`${a.id}+${b.id}`])
-                    notice.success(`${a.label} and ${b.label} merged.`)
+                    setTables((current) => layoutTables(current, items))
+                    notice.success('Floor plan saved. The service sees it at once.')
                   }}
                 />
-              )}
-              <Button
-                family="primary"
-                emphasis="primary"
-                icon={Save}
-                label="Save floor plan"
-                onClick={() => {
-                  notice.success('Floor plan saved. The service sees it at once.')
-                }}
-              />
-            </>
+              </>
+            )
           }
         />
       </Frame>
@@ -617,8 +894,6 @@ function terraceItems(
   money: (value: string) => string,
 ): FloorItem[] {
   return [
-    { id: 'railing', kind: 'wall', label: 'Railing', x: 0, y: 500, width: 800, height: 20 },
-    { id: 'door', kind: 'door', label: 'Door to the bar', x: 340, y: 0, width: 120, height: 20 },
     ...tables.map((table) => {
       const tab = tabs[table.id]
       const total = tabTotal(CAFE_VENUE, tab)
@@ -643,7 +918,11 @@ function terraceItems(
         height: 140,
         capacity: 4,
         stateId: state,
-        ...(since === undefined || total === null ? {} : { detail: `${since} · ${money(total)}` }),
+        // The list and the name: since when and the rest to pay; the plan: the rest to pay
+        // (P5.28 item 24: the time is not on the plan).
+        ...(since === undefined || total === null
+          ? {}
+          : { detail: `Since ${since} · ${money(total)}`, planDetail: money(total) }),
         ...(table.note === undefined ? {} : { note: table.note }),
       }
     }),
@@ -729,21 +1008,46 @@ function seatFromRoute(value: string | undefined): SeatRef | undefined {
   return { tableId: value.slice(0, at), seat: Number(value.slice(at + 1)) }
 }
 
-/** The gala dinner's seating: the organiser seats the guests the conference registered. */
+/** "Table 4, seat 9", or null for no seat. */
+function seatText(seat: SeatRef | null, number: (value: string) => string): string | null {
+  if (seat === null) return null
+  const table = GALA_TABLES.find((each) => each.id === seat.tableId)
+  return `${table?.label ?? seat.tableId}, seat ${number(String(seat.seat))}`
+}
+
+/**
+ * The gala dinner's seating: the organiser seats the guests the conference registered. Every
+ * seating stays pending until "Save seating…" confirms them together (P5.28 item 9): the changes
+ * guest by guest, the guests' e-mail as a choice.
+ */
 export function GalaSeating({
   phone,
   seat,
   seatAt,
   table,
+  pending: startPending = false,
 }: {
   phone: boolean
   seat?: string
   seatAt?: string
   table?: string
+  pending?: boolean
 }) {
   const { format } = useLiro()
-  const [guests, setGuests] = useState<readonly SeatingGuest[]>(GALA_GUESTS)
+  const number = (value: string) => format.number(value)
+  // The seating saved is the conference's record (kept above the screens); the changes are pending.
+  const [saved, setSaved] = useExampleState<readonly SeatingGuest[]>(
+    'gala.guests',
+    () => GALA_GUESTS,
+  )
+  const [guests, setGuests] = useState<readonly SeatingGuest[]>(() =>
+    startPending ? withPendingExample(saved) : saved,
+  )
+  const [confirm, setConfirm] = useState(startPending)
+  const changes = seatingChanges(saved, guests)
   const chosenSeat = seatFromRoute(seat)
+  const seatedCount = saved.filter((guest) => guest.seat != null).length
+  const nameOf = (id: string) => guests.find((guest) => guest.id === id)?.name ?? id
   return (
     <Shell
       phone={phone}
@@ -763,11 +1067,41 @@ export function GalaSeating({
               intent="export"
               label="Export place cards"
               onClick={() => {
-                notice.success('Place cards exported for 112 seated guests.')
+                notice.success(
+                  `Place cards exported for ${number(String(seatedCount))} seated guests.`,
+                )
               }}
             />
           }
         />
+        {changes.length > 0 && (
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border border-solid border-default bg-surface-raised px-4 py-3">
+            <p className="bidi-content m-0 min-w-0 flex-1 text-sm font-semibold text-primary">
+              {changes.length === 1
+                ? '1 change not saved'
+                : `${number(String(changes.length))} changes not saved`}
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                family="neutral"
+                icon={RotateCcw}
+                label="Discard changes"
+                onClick={() => {
+                  setGuests(saved)
+                }}
+              />
+              <Button
+                family="primary"
+                emphasis="primary"
+                icon={Save}
+                label="Save seating…"
+                onClick={() => {
+                  setConfirm(true)
+                }}
+              />
+            </div>
+          </div>
+        )}
         <SeatingChart
           label={`${GALA.hall}, gala dinner`}
           tables={GALA_TABLES}
@@ -784,20 +1118,65 @@ export function GalaSeating({
           layout={phone ? 'phone' : 'desktop'}
           onSeat={(guestId, to) => {
             // The application's rule: a seat holds one guest; whoever sat there is not seated now.
-            setGuests((current) =>
-              current.map((guest) => {
-                if (guest.id === guestId) return { ...guest, seat: to }
-                const taken =
-                  to !== null && guest.seat?.tableId === to.tableId && guest.seat.seat === to.seat
-                return taken ? { ...guest, seat: null } : guest
-              }),
-            )
+            setGuests((current) => seatGuest(current, guestId, to))
           }}
         />
       </Frame>
+      <ChangeConfirmDialog
+        open={confirm && changes.length > 0}
+        onOpenChange={setConfirm}
+        title="Save seating"
+        subject={`Gala dinner, ${format.date(GALA.date)}`}
+        changes={changes.map((change) => ({
+          key: change.guestId,
+          label: nameOf(change.guestId),
+          from: seatText(change.from, number),
+          to: seatText(change.to, number),
+        }))}
+        affected={changes.length === 1 ? '1 guest' : `${number(String(changes.length))} guests`}
+        notify={[
+          {
+            id: 'guests',
+            label:
+              changes.length === 1
+                ? `E-mail ${nameOf(changes[0]?.guestId ?? '')} the new seat`
+                : `E-mail the ${number(String(changes.length))} guests their new seats`,
+            description: 'The table and the seat, with the place card.',
+          },
+        ]}
+        onConfirm={(answer) => {
+          const count = changes.length
+          setSaved(guests)
+          notice.success(
+            answer.notify.includes('guests')
+              ? `Seating saved. ${count === 1 ? '1 guest gets' : `${number(String(count))} guests get`} an e-mail.`
+              : 'Seating saved. No message was sent.',
+          )
+        }}
+      />
       <Toaster layout={phone ? 'phone' : 'desktop'} />
     </Shell>
   )
+}
+
+/** A guest seated (or unseated) by the application's rule: one guest a seat. */
+function seatGuest(
+  guests: readonly SeatingGuest[],
+  guestId: string,
+  to: SeatRef | null,
+): SeatingGuest[] {
+  return guests.map((guest) => {
+    if (guest.id === guestId) return { ...guest, seat: to }
+    const taken = to !== null && guest.seat?.tableId === to.tableId && guest.seat.seat === to.seat
+    return taken ? { ...guest, seat: null } : guest
+  })
+}
+
+/** The pictured pending changes: two guests not seated yet seated at table 4, one moved apart. */
+function withPendingExample(guests: readonly SeatingGuest[]): SeatingGuest[] {
+  let next = seatGuest(guests, 'g113', { tableId: 't4', seat: 9 })
+  next = seatGuest(next, 'g114', { tableId: 't4', seat: 10 })
+  return seatGuest(next, 'g45', { tableId: 't13', seat: 9 })
 }
 
 export const GROUP_K_ROUTES: ExampleRoute[] = [
@@ -811,6 +1190,15 @@ export const GROUP_K_ROUTES: ExampleRoute[] = [
     path: K_ROUTES.floorMove,
     render: (phone) => <Service phone={phone} tableId="t5" dialog="move" />,
   },
+  {
+    path: K_ROUTES.floorMoveNone,
+    render: (phone) => <Service phone={phone} tableId="t8" dialog="move" />,
+  },
+  {
+    path: K_ROUTES.floorTakeaway,
+    render: (phone) => <Service phone={phone} channel="takeaway" />,
+  },
+  { path: K_ROUTES.floorTerrace, render: (phone) => <Service phone={phone} area="terasa" /> },
   { path: K_ROUTES.floorEdit, render: (phone) => <FloorEditor phone={phone} merged={false} /> },
   { path: K_ROUTES.floorMerged, render: (phone) => <FloorEditor phone={phone} merged /> },
   { path: K_ROUTES.terrace, render: (phone) => <Terrace phone={phone} /> },
@@ -840,4 +1228,5 @@ export const GROUP_K_ROUTES: ExampleRoute[] = [
     render: (phone) => <GalaSeating phone={phone} seatAt="g113" />,
   },
   { path: K_ROUTES.seatingTable, render: (phone) => <GalaSeating phone={phone} table="t6" /> },
+  { path: K_ROUTES.seatingPending, render: (phone) => <GalaSeating phone={phone} pending /> },
 ]

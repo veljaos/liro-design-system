@@ -29,6 +29,9 @@ import { Dialog } from './dialog'
  * - Cancel, then Save (primary, last). Cancel changes nothing: the record stays where it was.
  *   A returned promise keeps the dialog working (Save busy, Cancel disabled, not dismissible); it
  *   closes when the promise resolves and stays open when it rejects.
+ * - `children` (P5.28, floor plans): the application's own choice that makes the change, above
+ *   it — the free tables a party can move to, the free beds by room —, so the move is chosen and
+ *   confirmed in one dialog; the changes follow the choice.
  * - Pending changes: where the user makes several changes before deciding (a seating plan, a week
  *   of shifts), the application keeps them pending on the page ("3 changes not saved") and opens
  *   this dialog from its Save with every change as a line (the record in the line's label).
@@ -78,6 +81,11 @@ export interface ChangeConfirmDialogProps {
   subject?: ReactNode
   /** A line under the title, from the application. */
   description?: ReactNode
+  /**
+   * The application's choice that makes the change, above it (P5.28: the free tables with
+   * enough seats as a CandidateList); the application keeps `changes` in step with it.
+   */
+  children?: ReactNode
   /** The change, old → new, one line per field. */
   changes: readonly ChangeLine[]
   /** Who the change concerns, in the application's words ("Jovana Nikolić, patient; dr …"). */
@@ -255,6 +263,7 @@ function ChangeForm(
   const label = changeConfirmLabel(messages, checked.length, props.confirmLabel)
   return (
     <div data-slot="change-confirm" className="flex flex-col gap-4">
+      {props.children}
       <ul
         aria-label={messages['change.changes']}
         // The labels' column as wide as the longest, up to 40%; the values take the rest.

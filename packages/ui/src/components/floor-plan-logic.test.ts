@@ -5,8 +5,17 @@ import {
   boxesOverlap,
   dragPosition,
   duplicateDraft,
+  areaSwitchKind,
+  AREA_SEGMENTS_UP_TO,
+  FIXTURE_KINDS,
   footprint,
+  inArea,
   isFixture,
+  labelFit,
+  labelRoom,
+  percentPoint,
+  planFrame,
+  switchableAreas,
   keepInside,
   listGroups,
   minimumPlanWidth,
@@ -74,8 +83,9 @@ describe('footprint and rotation', () => {
 })
 
 describe('fixtures', () => {
-  it('tells the building from the places', () => {
-    expect(isFixture({ kind: 'wall' })).toBe(true)
+  it('tells the furniture people choose around from the places (no walls, doors or windows)', () => {
+    expect(FIXTURE_KINDS).toEqual(['stage', 'counter'])
+    expect(isFixture({ kind: 'counter' })).toBe(true)
     expect(isFixture({ kind: 'stage' })).toBe(true)
     expect(isFixture({ kind: 'table' })).toBe(false)
     expect(isFixture({ kind: 'bar' })).toBe(false)
@@ -330,5 +340,102 @@ describe('changes', () => {
   it('adds from the palette at the plan’s centre, on the grid', () => {
     expect(addedPosition({ width: 80, height: 80 }, 10, PLAN)).toEqual({ x: 460, y: 260 })
     expect(addedPosition({ width: 2000, height: 80 }, 10, PLAN)).toEqual({ x: 0, y: 260 })
+  })
+})
+
+describe('one area at a time (P5.28 item 26)', () => {
+  const AREAS = [
+    { id: 'hall', label: 'Hall', x: 0, y: 0, width: 600, height: 600 },
+    { id: 'terrace', label: 'Terrace', x: 600, y: 0, width: 400, height: 300 },
+    { id: 'corridor', label: 'Corridor', x: 600, y: 300, width: 400, height: 300 },
+  ]
+  const ITEMS: FloorItem[] = [
+    { ...A, areaId: 'hall' },
+    { ...B, id: 't', x: 700, y: 100, areaId: 'terrace' },
+    // A counter of no area, standing in the terrace.
+    { id: 'c', kind: 'counter', label: 'Counter', x: 650, y: 200, width: 100, height: 40 },
+  ]
+
+  it('offers the areas that hold an item, or the application’s choice in its order', () => {
+    expect(switchableAreas(AREAS, ITEMS).map((area) => area.id)).toEqual(['hall', 'terrace'])
+    expect(switchableAreas(AREAS, ITEMS, ['terrace', 'nope', 'hall']).map((a) => a.id)).toEqual([
+      'terrace',
+      'hall',
+    ])
+    expect(switchableAreas(AREAS, ITEMS, [])).toEqual([])
+  })
+
+  it('is a segmented control up to four areas (two on a phone), else a select', () => {
+    expect(AREA_SEGMENTS_UP_TO).toBe(4)
+    expect(areaSwitchKind(4, false)).toBe('segmented')
+    expect(areaSwitchKind(5, false)).toBe('select')
+    expect(areaSwitchKind(7, false)).toBe('select')
+    expect(areaSwitchKind(2, true)).toBe('segmented')
+    expect(areaSwitchKind(3, true)).toBe('select')
+  })
+
+  it('draws the whole plan, or the area’s box kept inside the plan', () => {
+    expect(planFrame(undefined, PLAN)).toEqual({ x: 0, y: 0, width: 1000, height: 600 })
+    expect(planFrame(AREAS[1], PLAN)).toEqual({ x: 600, y: 0, width: 400, height: 300 })
+    expect(
+      planFrame({ id: 'out', label: 'Out', x: 900, y: -50, width: 300, height: 200 }, PLAN),
+    ).toEqual({ x: 900, y: 0, width: 100, height: 150 })
+    const polygon = {
+      id: 'p',
+      label: 'P',
+      points: [
+        { x: 100, y: 100 },
+        { x: 300, y: 100 },
+        { x: 200, y: 400 },
+      ],
+    }
+    expect(planFrame(polygon, PLAN)).toEqual({ x: 100, y: 100, width: 200, height: 300 })
+  })
+
+  it('shows an area’s own items, and those of no area whose centre lies in it', () => {
+    const terrace = AREAS[1]
+    if (terrace === undefined) throw new Error('no terrace')
+    expect(ITEMS.filter((item) => inArea(item, terrace, AREAS)).map((item) => item.id)).toEqual([
+      't',
+      'c',
+    ])
+    const hall = AREAS[0]
+    if (hall === undefined) throw new Error('no hall')
+    expect(ITEMS.filter((item) => inArea(item, hall, AREAS)).map((item) => item.id)).toEqual(['a'])
+  })
+
+  it('places boxes and points in percentages of the part drawn', () => {
+    const frame = { x: 600, y: 0, width: 400, height: 300 }
+    expect(percentBox({ x: 700, y: 150, width: 100, height: 30 }, frame)).toEqual({
+      left: '25%',
+      top: '50%',
+      width: '25%',
+      height: '10%',
+    })
+    expect(percentPoint({ x: 800, y: 75 }, frame)).toEqual({ left: '50%', top: '25%' })
+  })
+})
+
+describe('labels are never cut (P5.28 item 24)', () => {
+  const NAME = { width: 30, height: 16 }
+  const NUMBER = { width: 14, height: 16 }
+  const GUESTS = { width: 48, height: 16 }
+
+  it('gives a label the item’s box less padding, a round item’s inner square, less the bar', () => {
+    expect(labelRoom(100, 60, false, false)).toEqual({ width: 96, height: 56 })
+    expect(labelRoom(100, 100, true, false)).toEqual({ width: 74, height: 74 })
+    expect(labelRoom(100, 60, false, true)).toEqual({ width: 96, height: 46 })
+    expect(labelRoom(2, 2, false, false)).toEqual({ width: 0, height: 0 })
+  })
+
+  it('writes both lines, else the name, else the number, else nothing', () => {
+    expect(labelFit({ width: 60, height: 40 }, NAME, NUMBER, GUESTS)).toBe('all')
+    // Too narrow for "4 guests", or too low for two lines.
+    expect(labelFit({ width: 40, height: 40 }, NAME, NUMBER, GUESTS)).toBe('name')
+    expect(labelFit({ width: 60, height: 20 }, NAME, NUMBER, GUESTS)).toBe('name')
+    expect(labelFit({ width: 20, height: 20 }, NAME, NUMBER, GUESTS)).toBe('number')
+    expect(labelFit({ width: 10, height: 20 }, NAME, NUMBER, GUESTS)).toBe('none')
+    // No second line: the name when it fits.
+    expect(labelFit({ width: 60, height: 40 }, NAME, NUMBER, null)).toBe('name')
   })
 })
