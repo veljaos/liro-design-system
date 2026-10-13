@@ -28,6 +28,7 @@ import {
   localOfAbsolute,
   minutesOf,
   monthWeeks,
+  nowMoment,
   onDay,
   periodDays,
   shiftPeriod,
@@ -38,7 +39,9 @@ import {
   type GridCell,
   type Span,
 } from './schedule-logic'
+import { NowMarker } from './now-marker'
 import type { Tone } from './status-badge'
+import { STICKY_HEAD, useStickyHead } from './sticky-head'
 import { usePhone } from './use-phone'
 
 /*
@@ -54,7 +57,9 @@ import { usePhone } from './use-phone'
  * - Day and week: a grid of time slots (`slotMinutes`, 24px each, so every slot is a target) from
  *   `dayStart` to `dayEnd`; events as blocks over their day's column, overlapping events side by
  *   side (`layoutDay`); all-day events, and timed events outside the hours shown, in a strip
- *   above. Month: whole weeks, at most three lines a day, then "+N more", which opens the day's
+ *   above. The days row stays below the shell while the page scrolls (P5.28 item 4). `now` (the
+ *   application's clock) draws the time grids' one "now" marker (P5.28 item 10, NowMarker: a
+ *   neutral line with a dot) across today's column, and its slot is `aria-current="time"`. Month: whole weeks, at most three lines a day, then "+N more", which opens the day's
  *   list (a popover with every event and "Open the day"). Agenda: the week's days that have
  *   events, each event a row with its time.
  * - Tones: an event's optional status tone (neutral by default) colours its block — the tone's
@@ -124,6 +129,11 @@ export interface CalendarViewProps {
   layout?: 'desktop' | 'phone'
   /** The period title's heading level; the agenda's days are one below. Default 2. */
   headingLevel?: 2 | 3
+  /**
+   * The application's clock (P5.28 item 10): "HH:mm" (a time of the provider's today), or an
+   * instant shown in the provider's time zone. The day and week views mark it on its day.
+   */
+  now?: string
   className?: string
 }
 
@@ -373,6 +383,7 @@ export function CalendarView(props: CalendarViewProps) {
         dayStart={minutesOf(props.dayStart ?? '07:00') ?? 420}
         dayEnd={minutesOf(props.dayEnd ?? '20:00') ?? 1200}
         slotMinutes={props.slotMinutes ?? 30}
+        now={props.now === undefined ? null : nowMoment(props.now, today, timeZone)}
         onSelect={props.onSelect}
         onSlotSelect={props.onSlotSelect}
         onLeave={changeDate}
@@ -508,12 +519,16 @@ function TimeGrid(
     dayStart: number
     dayEnd: number
     slotMinutes: number
+    /** The application's clock, read (P5.28 item 10). */
+    now: { day: string; minutes: number } | null
   },
 ) {
   const liro = useLiro()
   const { format, messages, direction, weekStartsOn, today } = liro
   const container = useRef<HTMLDivElement>(null)
   const focusLater = useCellFocus(container)
+  // The days row stays below the shell while the page scrolls (P5.28 item 4).
+  useStickyHead(container)
   const slotMinutes = props.slotMinutes
   const from = props.dayStart
   const to = Math.max(props.dayEnd, from + slotMinutes)
@@ -522,6 +537,22 @@ function TimeGrid(
   const [focus, setFocus] = useState<GridCell>({ day: firstDay, slot: 0 })
   const focusCell = props.days.includes(focus.day) ? focus : { day: firstDay, slot: focus.slot }
   const compact = props.days.length > 1
+  // "Now" on the grid: its day's column and its slot, within the hours shown.
+  const now =
+    props.now !== null &&
+    props.days.includes(props.now.day) &&
+    props.now.minutes >= from &&
+    props.now.minutes < to
+      ? {
+          column: props.days.indexOf(props.now.day),
+          day: props.now.day,
+          slot: Math.floor((props.now.minutes - from) / slotMinutes),
+          top: ((props.now.minutes - from) / slotMinutes) * SLOT_HEIGHT,
+          label: messages['schedule.now'](
+            format.time(localDateTime(props.now.day, props.now.minutes)),
+          ),
+        }
+      : null
 
   const perDay = props.days.map((day) => {
     const ofDay = props.read.filter((each) => onDay(each.span, day))
@@ -571,9 +602,16 @@ function TimeGrid(
   return (
     <div
       ref={container}
-      className="flex min-w-0 flex-col rounded-md border border-solid border-default bg-surface-raised"
+      // A region of its own (overflow), so its days row sticks under the shell (useStickyHead).
+      className="flex min-w-0 flex-col overflow-x-auto rounded-md border border-solid border-default bg-surface-raised"
     >
-      <div className="flex border-0 border-b border-solid border-default">
+      <div
+        data-sticky-head=""
+        className={cn(
+          STICKY_HEAD,
+          'z-(--liro-layer-raised) flex shrink-0 border-0 border-b border-solid border-default bg-surface-raised',
+        )}
+      >
         <div style={{ width: GUTTER }} className="shrink-0" />
         {props.days.map((day) => (
           <DayHeader key={day} day={day} compact={compact} />
@@ -657,6 +695,9 @@ function TimeGrid(
                     <div
                       key={day}
                       role="gridcell"
+                      {...(now !== null && now.day === day && now.slot === slot
+                        ? { 'aria-current': 'time' as const }
+                        : {})}
                       data-cell={`${day}|${String(slot)}`}
                       tabIndex={focused ? 0 : -1}
                       onKeyDown={onKeyDown}
@@ -741,6 +782,17 @@ function TimeGrid(
               })}
             </ul>
           ))}
+          {now !== null && (
+            <NowMarker
+              orientation="horizontal"
+              label={now.label}
+              style={{
+                top: now.top,
+                insetInlineStart: `${String((now.column * 100) / props.days.length)}%`,
+                width: `${String(100 / props.days.length)}%`,
+              }}
+            />
+          )}
         </div>
       </div>
     </div>
@@ -804,6 +856,8 @@ function MonthGrid(
   }
 
   const weekdays = weeks[0] ?? []
+  // The weekdays row stays below the shell while the page scrolls (P5.28 item 4).
+  useStickyHead(container)
 
   return (
     <div
@@ -813,7 +867,11 @@ function MonthGrid(
       aria-describedby={props.instructionsId}
       className="flex min-w-0 flex-col overflow-hidden rounded-md border border-solid border-default bg-surface-raised"
     >
-      <div role="row" className="flex">
+      <div
+        role="row"
+        data-sticky-head=""
+        className={cn(STICKY_HEAD, 'z-(--liro-layer-raised) flex bg-surface-raised')}
+      >
         {weekdays.map((day) => (
           <div
             key={day}

@@ -27,6 +27,8 @@ import {
   layoutDay,
   localDateTime,
   minutesOf,
+  nowMoment,
+  nowOnAxis,
   scheduleKeyTarget,
   spanOf,
   unavailableReason,
@@ -36,7 +38,9 @@ import {
   type UnavailableTime,
 } from './schedule-logic'
 import { SelectField } from './select-field'
+import { NowMarker } from './now-marker'
 import type { Tone } from './status-badge'
+import { STICKY_HEAD, useStickyHead } from './sticky-head'
 import { usePhone } from './use-phone'
 
 /*
@@ -47,7 +51,10 @@ import { usePhone } from './use-phone'
  * words, and announced when a booking is moved over them.
  * - Desktop: the names in a sticky column at the start (200px), the time running from the leading
  *   edge (right to left in right-to-left pages), 2px a minute, hour labels above, slot lines;
- *   the grid scrolls sideways inside its own box. Rows 56px; bookings that overlap share the row
+ *   the grid scrolls sideways inside its own box; the hours (and days) above stay below the
+ *   shell while the page scrolls (P5.28 item 4, `useStickyHead`).
+ * - Now (`now`, the application's clock, P5.28 item 10): the time grids' one marker, a neutral
+ *   line with a dot (NowMarker), across the rows at the current time, named "Now, 09:40". Rows 56px; bookings that overlap share the row
  *   in lanes. A booking: the tone's colours (neutral by default) with a 3px bar at the start,
  *   its title and its description or time.
  * - Three ways to move a booking (WCAG 2.5.7): drag it (pointer events; a mouse after 4px, a touch
@@ -138,6 +145,11 @@ export interface ResourceScheduleProps {
    * `slotMinutes` do not apply. Default 'time'.
    */
   scale?: 'time' | 'days'
+  /**
+   * The application's clock (P5.28 item 10): "HH:mm" (a time of the provider's today), or an
+   * instant shown in the provider's time zone. Draws the "now" marker where the axis shows it.
+   */
+  now?: string
   className?: string
 }
 
@@ -271,6 +283,8 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
       observer.disconnect()
     }
   }, [phone])
+  // The hours row stays below the shell while the page scrolls (P5.28 item 4).
+  useStickyHead(grid, !phone && props.loading !== true)
   const unavailable = props.unavailable ?? []
 
   const byDay = props.scale === 'days'
@@ -830,6 +844,17 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
 
   const resourceOf = props.resources[phoneRow]
 
+  // The application's clock on the axis (P5.28 item 10).
+  const moment = props.now === undefined ? null : nowMoment(props.now, today, timeZone)
+  const nowPlace = moment === null ? null : nowOnAxis(axis, moment)
+  const nowAt =
+    moment === null || nowPlace === null
+      ? null
+      : {
+          at: nowPlace,
+          label: messages['schedule.now'](format.time(localDateTime(moment.day, moment.minutes))),
+        }
+
   /** `scale="days"`: a day's weekday and its date, today's in the neutral circle (CalendarView's). */
   const dayLabel = (day: string) => (
     <>
@@ -913,6 +938,14 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
           </div>
           <div className="relative min-w-0 flex-1 border-0 border-s border-solid border-subtle">
             {renderTrack(phoneRow)}
+            {nowAt !== null && (
+              <NowMarker
+                orientation="horizontal"
+                label={nowAt.label}
+                className="z-[1]"
+                style={{ top: along(nowAt.at), insetInlineStart: 0, insetInlineEnd: 0 }}
+              />
+            )}
           </div>
         </div>
       ) : (
@@ -934,88 +967,112 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
               minWidth: NAME_WIDTH + (byDay ? shownDays.length * DAY_WIDTH : total * PX_MIN),
             }}
           >
-            {axis.days.length > 1 && (
-              <div aria-hidden="true" className="flex border-0 border-b border-solid border-subtle">
+            <div data-sticky-head="" className={cn(STICKY_HEAD, 'z-10 bg-surface-raised')}>
+              {axis.days.length > 1 && (
                 <div
-                  className="sticky start-0 shrink-0 bg-surface-raised"
-                  style={{ width: NAME_WIDTH }}
-                />
-                <div className="flex min-w-0 flex-1">
-                  {axis.days.map((day) => (
-                    <div
-                      key={day}
-                      className={cn(
-                        'box-border truncate border-0 border-s border-solid border-default px-2 py-1.5 text-xs font-semibold text-primary',
-                        TEXT_DIRECTION,
-                      )}
-                      style={{ width: `${String((length * 100) / total)}%` }}
-                    >
-                      {format.dateLong(day)}
-                    </div>
-                  ))}
+                  aria-hidden="true"
+                  className="flex border-0 border-b border-solid border-subtle"
+                >
+                  <div
+                    data-sticky-start=""
+                    className="sticky start-0 shrink-0 bg-surface-raised"
+                    style={{ width: NAME_WIDTH }}
+                  />
+                  <div className="flex min-w-0 flex-1">
+                    {axis.days.map((day) => (
+                      <div
+                        key={day}
+                        className={cn(
+                          'box-border truncate border-0 border-s border-solid border-default px-2 py-1.5 text-xs font-semibold text-primary',
+                          TEXT_DIRECTION,
+                        )}
+                        style={{ width: `${String((length * 100) / total)}%` }}
+                      >
+                        {format.dateLong(day)}
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
-            <div aria-hidden="true" className="flex border-0 border-b border-solid border-default">
+              )}
               <div
-                className="sticky start-0 z-(--liro-layer-raised) shrink-0 bg-surface-raised"
-                style={{ width: NAME_WIDTH }}
-              />
-              <div className={cn('relative flex-1', byDay ? 'flex' : 'h-7')}>
-                {byDay &&
-                  shownDays.map((day) => (
-                    <div
-                      key={day}
-                      title={format.dateLong(day)}
-                      className="box-border flex flex-col items-center gap-0.5 border-0 border-s border-solid border-subtle py-1"
-                      style={{ width: `${String(100 / shownDays.length)}%` }}
-                    >
-                      {dayLabel(day)}
-                    </div>
-                  ))}
-                {hours.map((hour) => (
-                  <span
-                    key={`${String(hour.day)}-${String(hour.at)}`}
-                    className={cn(
-                      'absolute top-1.5 ps-1 text-xs whitespace-nowrap text-tertiary tabular-nums',
-                      TEXT_ISOLATE,
-                    )}
-                    style={{ insetInlineStart: `${String(along(hour.at))}%` }}
-                  >
-                    {hour.text}
-                  </span>
-                ))}
-              </div>
-            </div>
-            {props.resources.map((resource, row) => (
-              <div
-                key={resource.id}
-                role="group"
-                aria-labelledby={`${instructionsId}-${resource.id}`}
-                className={cn(
-                  'flex border-0 border-t border-solid border-subtle',
-                  row === 0 && 'border-t-0',
-                )}
+                aria-hidden="true"
+                className="flex border-0 border-b border-solid border-default"
               >
                 <div
-                  className="sticky start-0 z-(--liro-layer-raised) box-border flex shrink-0 flex-col justify-center gap-0.5 border-0 border-e border-solid border-default bg-surface-raised px-3"
-                  style={{ width: NAME_WIDTH, height: ROW_HEIGHT }}
-                >
-                  <span
-                    id={`${instructionsId}-${resource.id}`}
-                    className={cn('truncate text-sm font-semibold text-primary', TEXT_DIRECTION)}
-                  >
-                    {resource.name}
-                  </span>
-                  {resource.description !== undefined && (
-                    <span className={cn('truncate text-xs text-secondary', TEXT_DIRECTION)}>
-                      {resource.description}
+                  {...(axis.days.length > 1 ? {} : { 'data-sticky-start': '' })}
+                  className="sticky start-0 z-(--liro-layer-raised) shrink-0 bg-surface-raised"
+                  style={{ width: NAME_WIDTH }}
+                />
+                <div className={cn('relative flex-1', byDay ? 'flex' : 'h-7')}>
+                  {byDay &&
+                    shownDays.map((day) => (
+                      <div
+                        key={day}
+                        title={format.dateLong(day)}
+                        className="box-border flex flex-col items-center gap-0.5 border-0 border-s border-solid border-subtle py-1"
+                        style={{ width: `${String(100 / shownDays.length)}%` }}
+                      >
+                        {dayLabel(day)}
+                      </div>
+                    ))}
+                  {hours.map((hour) => (
+                    <span
+                      key={`${String(hour.day)}-${String(hour.at)}`}
+                      className={cn(
+                        'absolute top-1.5 ps-1 text-xs whitespace-nowrap text-tertiary tabular-nums',
+                        TEXT_ISOLATE,
+                      )}
+                      style={{ insetInlineStart: `${String(along(hour.at))}%` }}
+                    >
+                      {hour.text}
                     </span>
-                  )}
+                  ))}
                 </div>
-                {renderTrack(row)}
               </div>
-            ))}
+            </div>
+            <div className="relative">
+              {props.resources.map((resource, row) => (
+                <div
+                  key={resource.id}
+                  role="group"
+                  aria-labelledby={`${instructionsId}-${resource.id}`}
+                  className={cn(
+                    'flex border-0 border-t border-solid border-subtle',
+                    row === 0 && 'border-t-0',
+                  )}
+                >
+                  <div
+                    className="sticky start-0 z-[5] box-border flex shrink-0 flex-col justify-center gap-0.5 border-0 border-e border-solid border-default bg-surface-raised px-3"
+                    style={{ width: NAME_WIDTH, height: ROW_HEIGHT }}
+                  >
+                    <span
+                      id={`${instructionsId}-${resource.id}`}
+                      className={cn('truncate text-sm font-semibold text-primary', TEXT_DIRECTION)}
+                    >
+                      {resource.name}
+                    </span>
+                    {resource.description !== undefined && (
+                      <span className={cn('truncate text-xs text-secondary', TEXT_DIRECTION)}>
+                        {resource.description}
+                      </span>
+                    )}
+                  </div>
+                  {renderTrack(row)}
+                </div>
+              ))}
+              {nowAt !== null && (
+                <div
+                  className="pointer-events-none absolute inset-y-0 z-[1]"
+                  style={{ insetInlineStart: NAME_WIDTH, insetInlineEnd: 0 }}
+                >
+                  <NowMarker
+                    orientation="vertical"
+                    label={nowAt.label}
+                    style={{ insetInlineStart: `${String(along(nowAt.at))}%`, top: 0, bottom: 0 }}
+                  />
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}

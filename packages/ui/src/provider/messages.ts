@@ -1160,10 +1160,9 @@ export interface LiroMessages {
   'slots.loading': string
   /** SlotPicker: a slot's accessible name: its time, its day, and its resource when grouped. */
   'slots.slotLabel': (timeText: string, dateText: string, resource: string | null) => string
-  /** Timetable: the corner header over the periods, a free period, the running period's mark. */
+  /** Timetable: the corner header over the periods, a free period. */
   'timetable.period': string
   'timetable.free': string
-  'timetable.now': string
   /** Timetable: the label of the phones' day switcher. */
   'timetable.day': string
   // P5.10 / P5.11 touch, POS and warehouse
@@ -1711,4 +1710,7 @@ export interface LiroMessages {
   // P5.25a FloorPlan
   /** An item's level in words, from the formatted percentage: "62,5% full". */
   'floorPlan.level': (percentText: string) => string
+  // P5.28 dates
+  /** The "now" marker of the time grids (CalendarView, ResourceSchedule, Timetable): "Now, 10:05". */
+  'schedule.now': (timeText: string) => string
 }

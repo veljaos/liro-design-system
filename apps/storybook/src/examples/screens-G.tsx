@@ -5,7 +5,6 @@ import {
   AttendanceGrid,
   Button,
   ClockRecordList,
-  createFormat,
   EmptyState,
   KeyFigures,
   KeyValueList,
@@ -18,6 +17,7 @@ import {
   WorkingTimeBalance,
   WorklistPage,
   notice,
+  numericFormat,
   useLiro,
   type AttendanceChange,
   type AttendanceCorrection,
@@ -105,16 +105,20 @@ export const G_ROUTES = {
 
 // ── Shared pieces ─────────────────────────────────────────────────────────────────────────────
 
-/** The tenant's formats in its own time zone (instants with an offset are shown there). */
-const TENANT_FORMAT = createFormat('sr-Latn-RS', {}, 'Europe/Belgrade')
+/**
+ * The tenant's digits in its own time zone (instants with an offset are shown there): numbers and
+ * numeric dates as a Serbian company writes them, never its month or weekday names (P5.28 item 2).
+ */
+const TENANT_DIGITS = numericFormat('sr-Latn-RS', 'Europe/Belgrade')
 
 /**
- * The tenant's settings these screens need beyond the examples' provider: a Serbian tenant's week
- * starts on Monday (the planner's Today, My shifts' weeks, the calendars count from it), and its
- * instants — clock-ins, corrections, requests — are shown in Europe/Belgrade, whatever the
- * device's zone. The Core passes both from the tenant's settings.
+ * The tenant's settings these screens need beyond the examples' provider: its instants —
+ * clock-ins, corrections, requests — are shown in Europe/Belgrade, whatever the device's zone, and
+ * `today` may be the day a screen is set on (the clinic's). The week starts on Monday because the
+ * examples' locale names the tenant's region ("en-RS", `tenantLocale`); the planner's Today, My
+ * shifts' weeks and the calendars count from it. The Core passes both from the tenant's settings.
  */
-export function Tenant({ children }: { children: ReactNode }) {
+export function Tenant({ today, children }: { today?: string; children: ReactNode }) {
   const liro = useLiro()
   return (
     <LiroProvider
@@ -122,9 +126,8 @@ export function Tenant({ children }: { children: ReactNode }) {
       direction={liro.direction}
       colorScheme={liro.colorScheme}
       messages={liro.messages}
-      format={TENANT_FORMAT}
-      today={liro.today}
-      weekStartsOn={1}
+      format={TENANT_DIGITS}
+      today={today ?? liro.today}
       timeZone="Europe/Belgrade"
       linkComponent={liro.linkComponent}
     >

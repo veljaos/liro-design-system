@@ -1156,3 +1156,6 @@ export type {
   PracticeItem,
   RelatedAct,
 } from './components/legal-model'
+
+// ── P5.28 dates ──
+export { numericFormat } from './provider'

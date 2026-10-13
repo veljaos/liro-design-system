@@ -54,6 +54,7 @@ import { NumberField } from './number-field'
 import { SelectField, type SelectOption } from './select-field'
 import { SettlingMemory, SettlingValue, type SettlingMemoryValue } from './settling-value'
 import { SplitAction } from './split-action'
+import { STICKY_CLEARANCE, STICKY_HEAD, useStickyHead } from './sticky-head'
 import { TextField } from './text-field'
 import { EntryDraftSlot, type EntryDraft } from './use-entry'
 import { usePhone } from './use-phone'
@@ -342,6 +343,16 @@ export interface EditableGridProps<Row> {
 
 /** Literal classes, so Tailwind finds them. */
 const CELL_BORDER = 'border border-solid border-default'
+
+/*
+ * The grid's lines are collapsed borders, which the table draws where the cells were: a sticky
+ * cell that moves leaves them behind (P5.28 item 4). The header redraws its top and bottom lines as
+ * shadows, which move with it; the sticky first column redraws its end line.
+ */
+const MOVING_HEAD_LINES =
+  'shadow-[0_-1px_0_var(--liro-border-default),0_1px_0_var(--liro-border-default)]'
+const MOVING_END_LINE =
+  "after:pointer-events-none after:absolute after:inset-y-0 after:-end-px after:border-0 after:border-e after:border-solid after:border-default after:content-['']"
 const MESSAGE_TONE = {
   danger: { text: 'text-status-danger-fg', Icon: CircleAlert },
   warning: { text: 'text-status-warning-fg', Icon: TriangleAlert },
@@ -714,6 +725,11 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
   const phone = props.layout === undefined ? viewportPhone : props.layout === 'phone'
   const inCard = props.inCard === true
   const rootRef = useRef<HTMLDivElement>(null)
+  // The header row stays below the shell while the page scrolls; in a card the first column
+  // stays at the start while the lines scroll sideways (P5.28 item 4).
+  const region = useRef<HTMLDivElement>(null)
+  useStickyHead(region, !phone)
+  const stickyFirst = inCard ? cn('sticky start-0 z-[5]', MOVING_END_LINE) : undefined
   const idBase = useId()
   const pending = useRef<{ row: number; column: number } | null>(null)
   const [unreadable, setUnreadable] = useState<Readonly<Record<string, boolean>>>({})
@@ -1123,7 +1139,7 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
   const labelSpan = firstDisplay <= 0 ? columns.length : firstDisplay
 
   const table = () => (
-    <div className="overflow-x-auto">
+    <div ref={region} className={cn('overflow-x-auto', STICKY_CLEARANCE)}>
       <table
         aria-label={props.label}
         {...(aria === undefined ? {} : { 'aria-rowcount': aria.count })}
@@ -1139,14 +1155,18 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
           ))}
           <col style={{ width: 44 }} />
         </colgroup>
-        <thead>
+        <thead data-sticky-head="">
           <tr {...(aria === undefined ? {} : { 'aria-rowindex': 1 })}>
-            {columns.map((column) => (
+            {columns.map((column, index) => (
               <th
                 key={column.id}
                 scope="col"
+                {...(index === 0 ? { 'data-sticky-start': '' } : {})}
                 className={cn(
                   CELL_BORDER,
+                  STICKY_HEAD,
+                  MOVING_HEAD_LINES,
+                  index === 0 && inCard ? ['start-0 z-20', MOVING_END_LINE] : 'z-10',
                   'bg-surface-sunken px-2 py-2 align-bottom font-semibold break-words',
                   column.type === 'number' || (column.type === 'display' && column.align === 'end')
                     ? 'text-end'
@@ -1156,7 +1176,9 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
                 <span className={TEXT_ISOLATE}>{column.header}</span>
               </th>
             ))}
-            <td className={cn(CELL_BORDER, 'bg-surface-sunken')} />
+            <td
+              className={cn(CELL_BORDER, STICKY_HEAD, MOVING_HEAD_LINES, 'z-10 bg-surface-sunken')}
+            />
           </tr>
         </thead>
         <tbody ref={setBody}>
@@ -1263,12 +1285,14 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
                   (() => {
                     let editIndex = -1
                     return columns.map((column) => {
+                      const first = stickyFirst !== undefined && column === columns[0]
                       if (column.type === 'display') {
                         return (
                           <td
                             key={column.id}
                             className={cn(
                               CELL_BORDER,
+                              first && [stickyFirst, 'bg-surface-raised'],
                               'px-2 py-1 align-middle break-words',
                               column.align === 'end' ? 'text-end' : 'text-start',
                               column.numeric === true && 'tabular-nums',
@@ -1288,7 +1312,11 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
                           data-grid-column={at}
                           data-column-id={column.id}
                           data-align={column.type === 'number' ? 'end' : 'start'}
-                          className={cn(CELL_BORDER, 'p-1 align-middle')}
+                          className={cn(
+                            CELL_BORDER,
+                            first && [stickyFirst, 'bg-surface-raised'],
+                            'p-1 align-middle',
+                          )}
                           {...cellKeys(rowIndex, at)}
                         >
                           {editor(column, row, rowIndex, describedBy)}
@@ -1331,6 +1359,7 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
                     key={column.id}
                     className={cn(
                       CELL_BORDER,
+                      index === 0 && stickyFirst,
                       'border-t-2 border-t-strong bg-surface-sunken px-2 py-2 font-semibold',
                       total === undefined ? 'text-start' : 'text-end',
                     )}
@@ -1391,7 +1420,8 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
         <div
           data-slot="grid-totals"
           className={cn(
-            'sticky top-0 z-(--liro-layer-sticky) flex flex-col gap-1 bg-surface-raised text-sm',
+            // Below the shell's sticky top (P5.28 item 4), as every sticky part of a page.
+            'sticky top-[var(--liro-shell-top,0px)] z-(--liro-layer-sticky) flex flex-col gap-1 bg-surface-raised text-sm',
             inCard
               ? 'border-0 border-b border-solid border-default px-4 py-2'
               : 'rounded-md border border-solid border-default p-2',

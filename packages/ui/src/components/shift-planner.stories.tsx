@@ -2,7 +2,6 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { useRef, useState } from 'react'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { settle } from '../primitives/story-helpers'
-import { createFormat } from '../provider/format'
 import type { ShiftAssignment, ShiftChange, ShiftConflict, ShiftConflicts } from './shift-logic'
 import { ShiftPlanner, type ShiftPlannerProps } from './shift-planner'
 import {
@@ -25,7 +24,13 @@ import {
   STORE_TEMPLATES,
   WEEK,
 } from './shift-story-data'
-import { ExampleProvider, PhoneFrame, StoryProvider } from './story-frames'
+import { EXAMPLE_FORMAT, ExampleProvider, PhoneFrame, StoryProvider } from './story-frames'
+import {
+  expectBelowShell,
+  expectFirstColumnStays,
+  scrollUnderShell,
+  ShellPage,
+} from './sticky-story-helpers'
 
 /**
  * The application's check of a rotation's shifts (illustrative): a day that already has a
@@ -108,10 +113,12 @@ function Planner(props: Partial<ShiftPlannerProps>) {
   )
 }
 
-/** A day as the cells name it in the example stories: the Serbian tenant's long date. */
-const SERBIAN = createFormat('sr-Latn-RS')
+/**
+ * A day as the cells name it in the example stories: the long date in the interface's language
+ * (English), never the tenant's (P5.28 item 2).
+ */
 function day(date: string): string {
-  return SERBIAN.dateLong(date)
+  return EXAMPLE_FORMAT.dateLong(date)
 }
 
 /** The cell button of a person's day, by its name's start. */
@@ -722,5 +729,53 @@ export const GoToAndPeriod: Story = {
     await expect(canvas.getAllByText('05.10.2026.').length).toBeGreaterThan(0)
     await userEvent.click(canvas.getByRole('radio', { name: 'By person' }))
     await expect(canvas.queryByRole('button', { name: 'Tills' })).toBeNull()
+  },
+}
+
+/*
+ * P5.28 item 4: the days row stays below the shell's sticky header while the page scrolls, and
+ * the people column stays at the start while the planner scrolls sideways.
+ */
+
+const THIRTY = Array.from({ length: 30 }, (_, index) => ({
+  id: `p${String(index + 1)}`,
+  name: `${['Ana', 'Marko', 'Jelena', 'Nikola', 'Ivana', 'Stefan'][index % 6] ?? ''} ${
+    ['Petrović', 'Jovanović', 'Ilić', 'Nikolić', 'Marković'][index % 5] ?? ''
+  }`,
+  subtitle: index % 3 === 0 ? 'Cashier' : 'Stock',
+}))
+
+/** Thirty people over two weeks, on a page under the shell; the page and the planner scroll. */
+export const UnderTheShell: Story = {
+  name: 'Thirty people under the shell, interaction',
+  tags: ['interaction'],
+  render: () => (
+    <ExampleProvider>
+      <ShellPage>
+        <Planner
+          rows={THIRTY}
+          assignments={[]}
+          conflicts={{}}
+          coverage={{}}
+          groupings={[]}
+          start="2026-10-05"
+          end="2026-10-18"
+        />
+      </ShellPage>
+    </ExampleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const table = within(canvasElement).getByRole('table')
+    const corner = table.querySelector('[data-sticky-start]')
+    const region = table.parentElement
+    if (corner === null || region === null) throw new Error('no planner parts')
+    await scrollUnderShell(canvasElement, table, 400)
+    await expectBelowShell(canvasElement, corner)
+    await expectBelowShell(canvasElement, within(table).getAllByRole('columnheader')[9] ?? corner)
+    const person = within(table).getAllByRole('rowheader')[12]
+    const day = table.querySelectorAll('tbody td')[150]
+    if (person === undefined || day === undefined) throw new Error('no cells')
+    await expectFirstColumnStays(region, person, day)
   },
 }

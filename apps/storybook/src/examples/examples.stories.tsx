@@ -2912,7 +2912,7 @@ export const HealthBookingWalk: Story = {
     await userEvent.click(canvas.getByRole('button', { name: 'Continue' }))
     await settle()
     // The slot's name: its time range and the day in words.
-    const day = SERBIAN_G.dateLong('2026-10-14')
+    const day = EXAMPLE_FORMAT.dateLong('2026-10-14')
     const radio = (await canvas.findAllByRole('radio')).find((each) => {
       const name = each.getAttribute('aria-label') ?? ''
       return name.startsWith('11:30') && name.includes(day)
@@ -2932,7 +2932,8 @@ export const HealthBookingWalk: Story = {
 /**
  * The clinic's schedule of Wednesday 14.10.2026 (ResourceSchedule): three doctors and the
  * laboratory; the break and dr Vesna Lukić's annual leave hatched with their reasons; Jovana
- * Nikolić's appointment booked online at 11:30. Opening it shows her finding.
+ * Nikolić's appointment booked online at 11:30; "now" (09:40) marked across the rows. Opening it
+ * shows her finding.
  */
 export const HealthClinicSchedule: Story = {
   name: 'Health, clinic schedule',
@@ -2941,6 +2942,8 @@ export const HealthClinicSchedule: Story = {
     await settle()
     await expect(canvasElement).toHaveTextContent(PATIENT.name)
     await expect(canvasElement).toHaveTextContent('Annual leave')
+    // The time grids' one "now" marker at the clinic's clock (P5.28 item 10).
+    await expect(within(canvasElement).getByRole('img', { name: 'Now, 09:40' })).toBeInTheDocument()
   },
 }
 
@@ -2954,7 +2957,10 @@ export const HealthClinicSchedulePhone: Story = {
   },
 }
 
-/** dr Marko Stanković's week (CalendarView), his appointments and the team meeting. */
+/**
+ * dr Marko Stanković's week (CalendarView), his appointments and the team meeting, seen on the
+ * day of Jovana's appointment at 09:40: the week from Monday, "now" on Wednesday's column.
+ */
 export const HealthDoctorCalendar: Story = {
   name: 'Health, doctor’s calendar',
   render: () => <ExampleApp start={H_ROUTES.doctorCalendar} />,
@@ -2965,6 +2971,12 @@ export const HealthDoctorCalendar: Story = {
         name: new RegExp(`${PATIENT.name}, Check-up`),
       }),
     ).toBeVisible()
+    // English names, the tenant's digits, the week from Monday (P5.28 item 2); "now" marked.
+    await expect(canvasElement.querySelector('[data-slot="calendar-view"] h2')).toHaveTextContent(
+      '12.10.2026. – 18.10.2026.',
+    )
+    await expect(canvasElement).toHaveTextContent('Wednesday, October 14, 2026')
+    await expect(within(canvasElement).getByRole('img', { name: 'Now, 09:40' })).toBeInTheDocument()
   },
 }
 
@@ -2991,7 +3003,7 @@ export const HealthFinding: Story = {
     await expect(canvas.getByRole('button', { name: 'Show Diagnosis' })).toBeVisible()
     await expect(canvasElement).not.toHaveTextContent(FINDING.diagnosis)
     await expect(canvasElement).toHaveTextContent(
-      SERBIAN_G.dateLong(JOVANA_BOOKING.start.slice(0, 10)),
+      EXAMPLE_FORMAT.dateLong(JOVANA_BOOKING.start.slice(0, 10)),
     )
   },
 }
@@ -3064,8 +3076,8 @@ export const HealthFindingReveal: Story = {
 
 /**
  * School (P5.17): class 7/2 of OŠ "Jovan Popović", 2026/27 — the week by periods with their
- * times, Wednesday's written test and Thursday's substitute; lesson 3 running now ("Now"), with
- * a link to mark its attendance.
+ * times, Wednesday's written test and Thursday's substitute; lesson 3 running now (the "now"
+ * marker at 10:05), with a link to mark its attendance.
  */
 export const SchoolTimetable: Story = {
   name: 'School, timetable 7/2',
@@ -4989,5 +5001,44 @@ export const OfficeDesksInteraction: Story = {
     await waitFor(async () => {
       await expect(document.body.querySelector('[data-aria-hidden]')).toBeNull()
     })
+  },
+}
+
+// ── P5.28 dates ──
+// (Imports here, inside the block, so the blocks merge without touching the top.)
+// Long dates and weekday names in the interface's language, the tenant's digits (P5.28 item 2).
+import { EXAMPLE_FORMAT } from '../../../../packages/ui/src/components/story-frames'
+import { nextFrames } from '../../../../packages/ui/src/components/sticky-story-helpers'
+
+/** The bottom edge of AppShell's sticky top (the header with the module tabs). */
+function shellEdge(canvasElement: HTMLElement): number {
+  const header = canvasElement.querySelector('[data-slot="app-shell"] header')
+  const top = header?.parentElement
+  if (top === null || top === undefined) throw new Error('no shell header')
+  return top.getBoundingClientRect().bottom
+}
+
+/**
+ * The gradebook of 30 pupils (P5.28 item 4): scrolled down the page, the assessments row stays
+ * right below the shell's header (it disappeared under it), and the pupils stay at the start.
+ */
+export const SchoolGradebookUnderTheShell: Story = {
+  name: 'School, gradebook, header under the shell, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={H_ROUTES.gradebook} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const grid = within(canvasElement).getByRole('grid')
+    const corner = grid.querySelector('[data-sticky-start]')
+    if (corner === null) throw new Error('no corner')
+    const scroller = document.scrollingElement ?? document.documentElement
+    scroller.scrollTop += grid.getBoundingClientRect().top - shellEdge(canvasElement) + 500
+    await nextFrames()
+    await waitFor(async () => {
+      await expect(
+        Math.abs(corner.getBoundingClientRect().top - shellEdge(canvasElement)),
+      ).toBeLessThanOrEqual(1)
+    })
+    await expect(within(grid).getAllByRole('rowheader')).toHaveLength(30)
   },
 }

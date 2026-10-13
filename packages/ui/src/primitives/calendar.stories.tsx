@@ -1,4 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { expect, within } from 'storybook/test'
+import { StoryProvider } from '../components/story-frames'
 import { Calendar, type CalendarLabels } from './calendar'
 import { internal, settle } from './story-helpers'
 
@@ -63,4 +65,71 @@ export const Range: Story = {
       />
     </div>
   ),
+}
+
+/*
+ * P5.28 item 2: the names and the week's first day come only from the provider's locale. An
+ * English interface never shows Serbian names; a Serbian one starts its weeks on Monday.
+ */
+
+/** English (United States): English names, weeks from Sunday. */
+export const EnglishUnitedStates: Story = {
+  name: 'English (United States), weeks from Sunday',
+  args: { labels: LABELS },
+  render: (args) => (
+    <StoryProvider locale="en-US">
+      <div className="inline-block rounded-md border border-default bg-surface-raised p-4">
+        <Calendar labels={args.labels} mode="single" defaultMonth={SEPTEMBER} today={TODAY} />
+      </div>
+    </StoryProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    // The weekdays row is hidden from assistive technology (each day says its date).
+    const headers = canvasElement.querySelectorAll('thead th')
+    await expect(headers[0]).toHaveAttribute('aria-label', 'Sunday')
+    await expect(within(canvasElement).getByText('September 2026')).toBeVisible()
+  },
+}
+
+/** English for a Serbian company ("en-RS"): English names, weeks from Monday (the region's). */
+export const EnglishSerbia: Story = {
+  name: 'English for a Serbian company (en-RS), weeks from Monday',
+  args: { labels: LABELS },
+  render: (args) => (
+    <StoryProvider locale="en-RS">
+      <div className="inline-block rounded-md border border-default bg-surface-raised p-4">
+        <Calendar labels={args.labels} mode="single" defaultMonth={SEPTEMBER} today={TODAY} />
+      </div>
+    </StoryProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    // The weekdays row is hidden from assistive technology (each day says its date).
+    const headers = canvasElement.querySelectorAll('thead th')
+    await expect(headers[0]).toHaveAttribute('aria-label', 'Monday')
+    await expect(within(canvasElement).getByText('September 2026')).toBeVisible()
+  },
+}
+
+/** Serbian (Latin): Serbian names, weeks from Monday; the controls' names in Serbian too. */
+export const SerbianLatin: Story = {
+  name: 'Serbian (sr-Latn), weeks from Monday',
+  args: {
+    labels: { previousMonth: 'Prethodni mesec', nextMonth: 'Sledeći mesec', navigation: 'Meseci' },
+  },
+  render: (args) => (
+    <StoryProvider locale="sr-Latn-RS">
+      <div className="inline-block rounded-md border border-default bg-surface-raised p-4">
+        <Calendar labels={args.labels} mode="single" defaultMonth={SEPTEMBER} today={TODAY} />
+      </div>
+    </StoryProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    // The weekdays row is hidden from assistive technology (each day says its date).
+    const headers = canvasElement.querySelectorAll('thead th')
+    await expect(headers[0]).toHaveAttribute('aria-label', 'ponedeljak')
+    await expect(within(canvasElement).getByText('septembar 2026')).toBeVisible()
+  },
 }

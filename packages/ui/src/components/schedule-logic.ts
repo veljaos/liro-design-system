@@ -637,3 +637,52 @@ export function dayListSide(
   const below = viewportHeight - cellBottom
   return below >= DAY_LIST_ROOM || below >= cellTop ? 'bottom' : 'top'
 }
+
+/**
+ * The day and minute of "now" (P5.28 item 10): the application's clock, never the device's. `now`
+ * is "HH:mm" (a time of the provider's `today`) or an instant with an offset (shown in
+ * `timeZone`), or a local "YYYY-MM-DDTHH:mm". Null when unreadable.
+ */
+export function nowMoment(
+  now: string,
+  today: string,
+  timeZone: string,
+): { day: string; minutes: number } | null {
+  const clock = minutesOf(now)
+  if (clock !== null) return { day: today, minutes: clock }
+  const local = localDateTimeIn(now, timeZone)
+  if (local === null) return null
+  const minutes = minutesOf(local.slice(11, 16))
+  return minutes === null ? null : { day: local.slice(0, 10), minutes }
+}
+
+/**
+ * Where "now" stands inside a span of the day, from 0 (its start) to 1 (its end), or null when it
+ * is outside it (P5.28 item 10: Timetable's running period).
+ */
+export function nowWithin(minutes: number, start: string, end: string): number | null {
+  const from = minutesOf(start)
+  const to = minutesOf(end)
+  if (from === null || to === null || to <= from || minutes < from || minutes >= to) return null
+  return (minutes - from) / (to - from)
+}
+
+/**
+ * Where "now" stands on a schedule's axis (P5.28 item 10), or null when the axis does not show
+ * it: a day of the axis within its hours, or — on a days axis, one segment from its first day's
+ * midnight — any moment of the days shown.
+ */
+export function nowOnAxis(
+  axis: ScheduleAxis,
+  moment: { day: string; minutes: number },
+): number | null {
+  const first = axis.days[0]
+  if (first === undefined) return null
+  const listed = axis.days.includes(moment.day)
+  const day = listed ? moment.day : first
+  const minutes = listed
+    ? moment.minutes
+    : (dayNumber(moment.day) - dayNumber(first)) * MINUTES_PER_DAY + moment.minutes
+  if (minutes < axis.dayStart || minutes >= axis.dayStart + dayLength(axis)) return null
+  return axisMinutes(axis, day, minutes)
+}

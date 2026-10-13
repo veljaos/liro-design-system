@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
-import { createFormat } from '../provider/format'
+import { createFormat, numericFormat } from '../provider/format'
 import { LiroProvider } from '../provider/liro-provider'
 import { messagesEn } from '../provider/messages.en'
 import { MyShifts } from './my-shifts'
@@ -18,11 +18,12 @@ import {
 } from './shift-story-data'
 import { WorkingTimeBalance } from './working-time-balance'
 
-const SERBIAN = createFormat('sr-Latn-RS')
+// An English interface for a Serbian tenant: English words, the tenant's digits (P5.28 item 2).
+const SERBIAN = createFormat('en-RS', numericFormat('sr-Latn-RS'))
 
 function render(node: React.ReactNode) {
   return renderToStaticMarkup(
-    <LiroProvider locale="en" format={SERBIAN} today="2026-10-06" weekStartsOn={1}>
+    <LiroProvider locale="en-RS" format={numericFormat('sr-Latn-RS')} today="2026-10-06">
       {node}
     </LiroProvider>,
   )
@@ -69,9 +70,9 @@ describe('ShiftPlanner', () => {
   it('names each cell by person, day, assignments in words and conflicts', () => {
     const html = planner()
     expect(html).toContain(
-      'aria-label="Jelena Popović, petak, 9. oktobar 2026.: Morning, 06:00 to 14:00; Morning, 06:00 to 14:00, Changed; Problem: Double booking: Morning at Emergency and at Klisa clinic; Warning: Weekly hours above the illustrative limit of 48 h"',
+      'aria-label="Jelena Popović, Friday, October 9, 2026: Morning, 06:00 to 14:00; Morning, 06:00 to 14:00, Changed; Problem: Double booking: Morning at Emergency and at Klisa clinic; Warning: Weekly hours above the illustrative limit of 48 h"',
     )
-    expect(html).toContain('aria-label="Marko Jovanović, ponedeljak, 5. oktobar 2026.: No shift"')
+    expect(html).toContain('aria-label="Marko Jovanović, Monday, October 5, 2026: No shift"')
   })
 
   it('puts one cell in the tab order and shows planned hours, null as "—"', () => {
@@ -83,7 +84,7 @@ describe('ShiftPlanner', () => {
 
   it('lists the conflicts with "Go to", and offers the palette with keys', () => {
     const html = planner()
-    expect(html).toContain('Go to Nikola Ilić, sreda, 7. oktobar 2026.')
+    expect(html).toContain('Go to Nikola Ilić, Wednesday, October 7, 2026')
     expect(text(html)).toContain('Night 22:00–06:00 (+1)')
     expect(html).toContain('Key 3')
   })
@@ -98,8 +99,8 @@ describe('ShiftPlanner', () => {
 
   it('shows one day as a list on phones', () => {
     const html = planner({ layout: 'phone', day: '2026-10-09' })
-    expect(text(html)).toContain('petak, 9. oktobar 2026.')
-    expect(html).toContain('Change: Jelena Popović, petak, 9. oktobar 2026.')
+    expect(text(html)).toContain('Friday, October 9, 2026')
+    expect(html).toContain('Change: Jelena Popović, Friday, October 9, 2026')
     expect(html).not.toContain('<table')
   })
 })

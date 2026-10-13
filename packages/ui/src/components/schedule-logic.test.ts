@@ -21,6 +21,9 @@ import {
   localOfAbsolute,
   minutesOf,
   monthWeeks,
+  nowMoment,
+  nowOnAxis,
+  nowWithin,
   onDay,
   periodDays,
   readMoment,
@@ -418,5 +421,53 @@ describe('dayListSide', () => {
     expect(dayListSide(360, 360, 720)).toBe('bottom')
     expect(dayListSide(60, 100, 180)).toBe('bottom')
     expect(dayListSide(500, 580, 720)).toBe('top')
+  })
+})
+
+describe('now (P5.28 item 10)', () => {
+  it('reads the application’s clock: a time of today, a local value or an instant', () => {
+    expect(nowMoment('10:05', '2026-10-06', ZONE)).toEqual({ day: '2026-10-06', minutes: 605 })
+    expect(nowMoment('2026-10-14T09:40', '2026-10-06', ZONE)).toEqual({
+      day: '2026-10-14',
+      minutes: 580,
+    })
+    // 07:40 UTC is 09:40 in Belgrade (summer time).
+    expect(nowMoment('2026-10-14T07:40:00Z', '2026-10-06', ZONE)).toEqual({
+      day: '2026-10-14',
+      minutes: 580,
+    })
+    expect(nowMoment('later', '2026-10-06', ZONE)).toBeNull()
+    expect(nowMoment('25:00', '2026-10-06', ZONE)).toBeNull()
+  })
+
+  it('places now inside a span of the day, or nowhere', () => {
+    expect(nowWithin(605, '09:55', '10:40')).toBeCloseTo(10 / 45)
+    expect(nowWithin(595, '09:55', '10:40')).toBe(0)
+    expect(nowWithin(640, '09:55', '10:40')).toBeNull()
+    expect(nowWithin(590, '09:55', '10:40')).toBeNull()
+    expect(nowWithin(600, '10:40', '09:55')).toBeNull()
+  })
+
+  it('places now on a schedule’s axis, or nowhere', () => {
+    const hours: ScheduleAxis = {
+      days: ['2026-10-14', '2026-10-15'],
+      dayStart: 420,
+      dayEnd: 780,
+      slotMinutes: 30,
+    }
+    expect(nowOnAxis(hours, { day: '2026-10-14', minutes: 580 })).toBe(160)
+    expect(nowOnAxis(hours, { day: '2026-10-15', minutes: 420 })).toBe(360)
+    expect(nowOnAxis(hours, { day: '2026-10-14', minutes: 400 })).toBeNull()
+    expect(nowOnAxis(hours, { day: '2026-10-14', minutes: 780 })).toBeNull()
+    expect(nowOnAxis(hours, { day: '2026-10-16', minutes: 500 })).toBeNull()
+    const days: ScheduleAxis = {
+      days: ['2026-10-12'],
+      dayStart: 0,
+      dayEnd: 14 * 1440,
+      slotMinutes: 1440,
+    }
+    expect(nowOnAxis(days, { day: '2026-10-14', minutes: 720 })).toBe(2 * 1440 + 720)
+    expect(nowOnAxis(days, { day: '2026-10-11', minutes: 720 })).toBeNull()
+    expect(nowOnAxis(days, { day: '2026-10-26', minutes: 0 })).toBeNull()
   })
 })
