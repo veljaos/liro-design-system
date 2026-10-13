@@ -86,7 +86,7 @@ export const SwapOpen: Story = {
   play: async () => {
     await settle()
     await expect(
-      within(document.body).getByRole('dialog', { name: 'Request a swap' }),
+      within(document.body).getByRole('dialog', { name: /^Request a swap / }),
     ).toHaveTextContent('22:00 to 06:00 the next day')
   },
 }
@@ -105,7 +105,7 @@ export const SwapSuggested: Story = {
   ),
   play: async () => {
     await settle()
-    const dialog = within(document.body).getByRole('dialog', { name: 'Request a swap' })
+    const dialog = within(document.body).getByRole('dialog', { name: /^Request a swap / })
     await expect(dialog).toHaveTextContent('Marko Jovanović')
   },
 }
@@ -235,7 +235,7 @@ export const RequestSwap: Story = {
     const first = within(canvasElement).getAllByRole('button', { name: 'Request swap' })[0]
     if (first === undefined) throw new Error('no swap button')
     await userEvent.click(first)
-    const dialog = await within(document.body).findByRole('dialog', { name: 'Request a swap' })
+    const dialog = await within(document.body).findByRole('dialog', { name: /^Request a swap / })
     await expect(dialog).toHaveTextContent('06:00 to 14:00')
     await userEvent.click(within(dialog).getByRole('button', { name: 'Send request' }))
     await waitFor(async () => {

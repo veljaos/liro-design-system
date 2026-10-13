@@ -188,7 +188,8 @@ export function PickList(props: PickListProps) {
     <ReasonConfirmDialog
       family="neutral"
       actionIcon={SkipForward}
-      title={messages['pick.skipTitle'](current.item)}
+      title={messages['pick.skipAction']}
+      subject={current.item}
       message={messages['pick.skipMessage']}
       confirmLabel={messages['pick.skip']}
       {...(props.skipReasons === undefined ? {} : { reasons: props.skipReasons })}

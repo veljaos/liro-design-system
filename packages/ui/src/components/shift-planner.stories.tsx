@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { useRef, useState } from 'react'
-import { expect, userEvent, waitFor, within } from 'storybook/test'
+import { expect, fn, userEvent, waitFor, within } from 'storybook/test'
 import { settle } from '../primitives/story-helpers'
 import type { ShiftAssignment, ShiftChange, ShiftConflict, ShiftConflicts } from './shift-logic'
 import { ShiftPlanner, type ShiftPlannerProps } from './shift-planner'
@@ -65,6 +65,24 @@ function storeRotationCheck(
   return result
 }
 
+/** What the application was asked to publish with (the messages chosen). */
+const published = fn()
+
+/** The messages a store can send with publishing (P5.28 item 9), as the application offers them. */
+const PUBLISH_NOTIFY = [
+  {
+    id: 'app',
+    label: 'Notify 6 people in the app',
+    description: 'Each gets a message with their shifts for the week.',
+    defaultChecked: true,
+  },
+  {
+    id: 'sms',
+    label: 'Send an SMS to the 2 people whose shifts changed',
+    description: 'To the number in their record: the changed days and times.',
+  },
+] as const
+
 /** The application around the planner: it applies each change and moves the period. */
 function Planner(props: Partial<ShiftPlannerProps>) {
   const counter = useRef(0)
@@ -94,7 +112,8 @@ function Planner(props: Partial<ShiftPlannerProps>) {
       onPeriodChange={setPeriod}
       {...(status === undefined ? {} : { status })}
       {...(changed === undefined ? {} : { changedSincePublishing: changed })}
-      onPublish={async () => {
+      onPublish={async (answer) => {
+        published(answer)
         await new Promise((resolve) => setTimeout(resolve, 400))
         setStatus('published')
         setChanged(false)
@@ -149,7 +168,9 @@ const meta = {
           'whose end is not after its start crosses midnight: “22:00–06:00 (+1)”, read as “… ' +
           'the next day”). Rows grouped by team or site under collapsible headings; planned ' +
           'hours at the row’s end, coverage at the column’s foot; the schedule’s state and ' +
-          'Publish (with a confirmation that states the application’s counts); “Apply ' +
+          'Publish (with a confirmation that states the application’s counts and offers its ' +
+          'messages — `publishNotify` — as “Notify …” checkboxes: publishing messages nobody ' +
+          'the user has not chosen, P5.28 item 9); “Apply ' +
           'rotation…” fills days from a rotation pattern.\n\n' +
           '**Assigning — three ways (WCAG 2.5.7):** the keyboard (arrows, Shift+arrows for a ' +
           'range, a template’s key assigns it, Delete removes, Enter opens the cell’s menu); the ' +
@@ -542,7 +563,7 @@ export const MenuAndMove: Story = {
     cell(canvasElement, 'Teodora Kovačević', day('2026-10-11')).focus()
     await userEvent.keyboard('{Enter}')
     await userEvent.click(await body.findByRole('menuitem', { name: 'Move Early to…' }))
-    const dialog = await body.findByRole('dialog', { name: 'Move Early' })
+    const dialog = await body.findByRole('dialog', { name: /^Move Early · Teodora Kovačević, / })
     await userEvent.click(within(dialog).getByRole('combobox', { name: 'Day' }))
     await userEvent.click(await body.findByRole('option', { name: day('2026-10-10') }))
     await userEvent.click(await within(dialog).findByRole('button', { name: 'Move' }))
@@ -707,6 +728,61 @@ export const Publishing: Story = {
       await expect(canvas.getByText('Published')).toBeVisible()
     })
     await expect(canvas.queryByRole('button', { name: 'Publish' })).toBeNull()
+  },
+}
+
+/**
+ * The publish confirmation with the application's messages as a choice (P5.28 item 9): the app's
+ * message checked by the application, the SMS not; while one is checked the button says "Publish
+ * changes and notify".
+ */
+export const PublishWithMessages: Story = {
+  name: 'Publish with messages',
+  render: () => (
+    <ExampleProvider>
+      <Planner
+        status="published"
+        changedSincePublishing
+        publishNotify={PUBLISH_NOTIFY}
+        defaultPublishOpen
+      />
+    </ExampleProvider>
+  ),
+  play: async () => {
+    await settle()
+    const dialog = within(
+      within(document.body).getByRole('alertdialog', { name: 'Publish the schedule?' }),
+    )
+    await expect(dialog.getByRole('group', { name: 'Messages to send' })).toBeVisible()
+    await expect(
+      dialog.getByRole('checkbox', { name: /^Notify 6 people in the app/ }),
+    ).toBeChecked()
+    await expect(dialog.getByRole('checkbox', { name: /^Send an SMS/ })).not.toBeChecked()
+    await expect(dialog.getByRole('button', { name: 'Publish changes and notify' })).toBeVisible()
+  },
+}
+
+/** Unchecking every message: the button says "Publish", and nobody is messaged. */
+export const PublishWithoutMessages: Story = {
+  name: 'Publish without messages, interaction',
+  tags: ['interaction'],
+  render: () => (
+    <ExampleProvider>
+      <Planner publishNotify={PUBLISH_NOTIFY} status="draft" />
+    </ExampleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    published.mockClear()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Publish' }))
+    const dialog = within(await within(document.body).findByRole('alertdialog'))
+    await userEvent.click(dialog.getByRole('checkbox', { name: /^Notify 6 people in the app/ }))
+    await userEvent.click(dialog.getByRole('button', { name: 'Publish' }))
+    await waitFor(async () => {
+      await expect(canvas.getByText('Published')).toBeVisible()
+    })
+    await expect(published).toHaveBeenCalledWith({ notify: [] })
   },
 }
 

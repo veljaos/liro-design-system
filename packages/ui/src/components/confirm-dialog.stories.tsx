@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { Ban, BookCheck, CheckCheck, CircleX } from 'lucide-react'
-import { expect, userEvent, waitFor, within } from 'storybook/test'
+import { expect, fn, userEvent, waitFor, within } from 'storybook/test'
 import { settle } from '../primitives/story-helpers'
 import { Button } from './button'
 import { KeyValueList } from './cards'
@@ -39,6 +39,11 @@ const meta = {
           'invoice”) and `subject` the record, bold on its own line under it (“UF-2026-1187 · ' +
           'Medic Lab Niš d.o.o.”); both name the dialog. About several records or none, the ' +
           'title stays a question (“Approve 12 invoices?”).\n\n' +
+          '**Messages are a choice** (P5.28 item 9): `notify` lists the messages the ' +
+          'application can send with the action (“Notify 8 people in the app”) as checkboxes, ' +
+          'checked as the application sets them; while one is checked the button says ' +
+          '`notifyConfirmLabel`, and `onConfirm` receives `{ notify }` with the checked ids. ' +
+          'A move or change of one record others rely on is ChangeConfirmDialog.\n\n' +
           '**When not:** an action that can be undone (just do it, and offer undo); a bulk ' +
           'action asks once, with the count, not per item (Appendix B.8).',
       },
@@ -51,6 +56,9 @@ const meta = {
 export default meta
 
 type Story = StoryObj<typeof meta>
+
+/** What `onConfirm` received (the messages chosen). */
+const confirmed = fn()
 
 /** The delete preset from its button; Escape closes it and the focus returns. */
 export const Delete: Story = {
@@ -659,5 +667,74 @@ export const WithPreview: Story = {
     await expect(within(dialog).getByRole('button', { name: 'Cancel' })).toHaveFocus()
     await expect(dialog.getBoundingClientRect().width).toBeGreaterThan(440)
     await settle()
+  },
+}
+
+/**
+ * `notify`: the messages the application can send with the action, each an explicit choice
+ * (P5.28 item 9); checked as the application sets them, and the button says so.
+ */
+export const WithMessages: Story = {
+  name: 'With messages',
+  render: () => (
+    <ConfirmDialog
+      defaultOpen
+      family="primary"
+      actionIcon={CheckCheck}
+      title="Publish the timetable?"
+      message="The timetable for the week of 19 October is shown to 24 teachers and 412 students."
+      notify={[
+        {
+          id: 'teachers',
+          label: 'Notify 24 teachers in the app',
+          description: 'A message with their lessons for the week.',
+          defaultChecked: true,
+        },
+        { id: 'parents', label: 'Send an e-mail to 380 parents' },
+      ]}
+      confirmLabel="Publish"
+      notifyConfirmLabel="Publish and notify"
+      onConfirm={() => undefined}
+    />
+  ),
+  play: async ({ canvasElement }) => {
+    const body = within(canvasElement.ownerDocument.body)
+    const dialog = within(await body.findByRole('alertdialog'))
+    await expect(dialog.getByRole('checkbox', { name: /^Notify 24 teachers/ })).toBeChecked()
+    await expect(dialog.getByRole('checkbox', { name: /^Send an e-mail/ })).not.toBeChecked()
+    await expect(dialog.getByRole('button', { name: 'Publish and notify' })).toBeVisible()
+    await settle()
+  },
+}
+
+/** Unchecked, the button is the plain action and `onConfirm` receives no messages. */
+export const WithMessagesInteraction: Story = {
+  name: 'With messages, interaction',
+  tags: ['interaction'],
+  render: () => (
+    <ConfirmDialog
+      defaultOpen
+      family="primary"
+      actionIcon={CheckCheck}
+      title="Publish the timetable?"
+      notify={[
+        { id: 'teachers', label: 'Notify 24 teachers in the app', defaultChecked: true },
+        { id: 'parents', label: 'Send an e-mail to 380 parents' },
+      ]}
+      confirmLabel="Publish"
+      notifyConfirmLabel="Publish and notify"
+      onConfirm={confirmed}
+    />
+  ),
+  play: async ({ canvasElement }) => {
+    confirmed.mockClear()
+    const body = within(canvasElement.ownerDocument.body)
+    const dialog = within(await body.findByRole('alertdialog'))
+    await settle()
+    await userEvent.click(dialog.getByRole('checkbox', { name: 'Notify 24 teachers in the app' }))
+    await expect(dialog.getByRole('button', { name: 'Publish' })).toBeVisible()
+    await userEvent.click(dialog.getByRole('checkbox', { name: 'Send an e-mail to 380 parents' }))
+    await userEvent.click(dialog.getByRole('button', { name: 'Publish and notify' }))
+    await expect(confirmed).toHaveBeenCalledWith({ notify: ['parents'] })
   },
 }

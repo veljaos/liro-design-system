@@ -36,6 +36,7 @@ import { useLiro } from '../provider/liro-provider'
 import { matrixKeyTarget } from './admin-logic'
 import { Button, CompactIconButton, IconButton } from './button'
 import { ConfirmDialog } from './confirm-dialog'
+import type { ChangeConfirmAnswer, NotifyOption } from './change-confirm-dialog'
 import { DateRangeText } from './display-text'
 import { DropdownMenu, type MenuEntry } from './dropdown-menu'
 import { EmptyState } from './empty-state'
@@ -86,7 +87,9 @@ import { usePhone } from './use-phone'
  * - Toolbar: the period (previous, Today, next; the dates), the view (by person, or by one of the
  *   application's groupings: team, site), then at the end the schedule's state (Draft /
  *   Published / Changed since publishing), "Apply rotation…" and Publish, the page's main action,
- *   last (D13), with a confirmation that states the application's counts.
+ *   last (D13), with a confirmation that states the application's counts and offers the
+ *   application's messages (`publishNotify`) as "Notify …" checkboxes: publishing messages
+ *   nobody unless the user checks it (P5.28 item 9; "Publish and notify").
  * - The palette: the templates as chips with their times ("22:00–06:00 (+1)", read as "… the next
  *   day") and their key. Drag one onto a day, or press it (or its key) to assign it to the
  *   selected days.
@@ -198,8 +201,19 @@ export interface ShiftPlannerProps {
   status?: 'draft' | 'published'
   /** Published, then changed (from the application): "Changed since publishing". */
   changedSincePublishing?: boolean
-  /** Publishes the schedule, after the confirmation. A returned promise keeps it working. */
-  onPublish?: () => void | Promise<void>
+  /**
+   * Publishes the schedule, after the confirmation, with the ids of the messages the user chose
+   * in `publishNotify` (empty without it). A returned promise keeps it working.
+   */
+  onPublish?: (answer: ChangeConfirmAnswer) => void | Promise<void>
+  /**
+   * The messages the application can send with publishing ("Notify 8 people in the app"), each
+   * an explicit choice in the confirmation, checked as the application sets it (P5.28 item 9).
+   * Without it publishing makes the shifts visible and messages nobody.
+   */
+  publishNotify?: readonly NotifyOption[]
+  /** Opens the publish confirmation from the start (a state an application restores). */
+  defaultPublishOpen?: boolean
   /** The counts the confirmation states. */
   publishCounts?: ShiftPublishCounts
   /** The application's rotation patterns; with `onChange`, "Apply rotation…" is offered. */
@@ -683,6 +697,10 @@ export function ShiftPlanner(props: ShiftPlannerProps) {
     )
   const publishLabel =
     props.status === 'published' ? messages['shifts.publishChanges'] : messages['shifts.publish']
+  const publishNotifyLabel =
+    props.status === 'published'
+      ? messages['shifts.publishChangesAndNotify']
+      : messages['shifts.publishAndNotify']
   const rotationsOffered = editable && props.rotations !== undefined && props.rotations.length > 0
   const defaultPeople = rotationDefaultPeople(
     anchorIndex === null
@@ -757,7 +775,13 @@ export function ShiftPlanner(props: ShiftPlannerProps) {
             title={messages['shifts.publishTitle']}
             {...(publishMessage === undefined ? {} : { message: publishMessage })}
             confirmLabel={publishLabel}
-            onConfirm={() => props.onPublish?.()}
+            {...(props.publishNotify === undefined
+              ? {}
+              : { notify: props.publishNotify, notifyConfirmLabel: publishNotifyLabel })}
+            {...(props.defaultPublishOpen === undefined
+              ? {}
+              : { defaultOpen: props.defaultPublishOpen })}
+            onConfirm={(answer) => props.onPublish?.(answer)}
             trigger={
               <Button family="primary" icon={Send} emphasis="primary" label={publishLabel} />
             }

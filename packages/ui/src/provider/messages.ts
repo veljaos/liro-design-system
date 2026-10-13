@@ -939,7 +939,6 @@ export interface LiroMessages {
   'shifts.rotationConflicts': (count: number, countText: string) => string
   'shifts.rotationNoConflicts': string
   /** "Move to…": the dialog that moves one assignment without dragging. */
-  'shifts.moveTitle': (label: string) => string
   'shifts.movePerson': string
   'shifts.moveDay': string
   'shifts.moveButton': string
@@ -1048,7 +1047,6 @@ export interface LiroMessages {
   'attendance.locked': string
   /** The correction of a locked cell: the button, the dialog and its fields. */
   'attendance.correct': string
-  'attendance.correctTitle': (row: string, column: string) => string
   'attendance.current': string
   'attendance.code': string
   'attendance.noCode': string
@@ -1249,7 +1247,6 @@ export interface LiroMessages {
   'pick.quantity': string
   'pick.confirm': string
   'pick.skip': string
-  'pick.skipTitle': (item: string) => string
   'pick.skipMessage': string
   'pick.route': string
   'pick.open': string
@@ -1750,4 +1747,10 @@ export interface LiroMessages {
   'shifts.moveAction': string
   /** PickList: the skip dialog's action; the item goes under it (P5.28 item 6). */
   'pick.skipAction': string
+  // P5.28 left
+  /** ShiftPlanner's move dialog: the shift it moves, under the action ("Morning · Ana Petrović, …"). */
+  'shifts.moveSubject': (label: string, name: string, dayText: string) => string
+  /** ShiftPlanner: the publish button while a message is checked (P5.28 item 9). */
+  'shifts.publishAndNotify': string
+  'shifts.publishChangesAndNotify': string
 }

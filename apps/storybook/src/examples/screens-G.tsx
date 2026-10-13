@@ -94,6 +94,8 @@ export const G_ROUTES = {
   timesheetLockedWorker: `/working-time/timesheets/2026-10?state=locked&employee=${CORRECTED.row}`,
   clockRecords: `/working-time/clock-records/${CLOCK_DAY}`,
   storePlanner: `/shifts/prodavnica-12/${STORE.start}`,
+  /** "Publish changes" asked (P5.28 item 9): the counts and the messages as a choice. */
+  storePublish: `/shifts/prodavnica-12/${STORE.start}?publish=open`,
   myShifts: '/me/shifts',
   myShiftsSwap: `/me/shifts?swap=${STEFAN_SWAP_SHIFT}`,
   swapRequests: '/shifts/prodavnica-12/swap-requests',
@@ -430,10 +432,19 @@ const STORE_TABS = (current: 'schedule' | 'swaps'): ModuleTab[] => [
   },
 ]
 
-export function StorePlanner({ phone }: { phone: boolean }) {
+/**
+ * Prodavnica 12's schedule. Publishing makes the shifts visible in the app; a message is the
+ * manager's choice in the confirmation (P5.28 item 9): everyone in the app (checked by the
+ * store), an SMS to those whose shifts changed (not checked). The toast says what went.
+ */
+export function StorePlanner({ phone, publish }: { phone: boolean; publish?: boolean }) {
   const { format } = useLiro()
   const [assignments, setAssignments] = useState<ShiftAssignment[]>(STORE_ASSIGNMENTS)
   const [changed, setChanged] = useState(true)
+  const people = format.number(String(STORE_PUBLISH.people))
+  const changedPeople = new Set(
+    assignments.filter((each) => each.changed === true).map((each) => each.rowId),
+  ).size
   // The application works the hours and the coverage out again after each change.
   const rows = STORE_PEOPLE.map((person) => ({
     id: person.id,
@@ -470,15 +481,41 @@ export function StorePlanner({ phone }: { phone: boolean }) {
             status="published"
             changedSincePublishing={changed}
             publishCounts={STORE_PUBLISH}
+            publishNotify={[
+              {
+                id: 'app',
+                label: `Notify ${people} people in the app`,
+                description: 'Each gets a message with their shifts for the week.',
+                defaultChecked: true,
+              },
+              ...(changedPeople === 0
+                ? []
+                : [
+                    {
+                      id: 'sms',
+                      label: `Send an SMS to the ${format.number(String(changedPeople))} ${changedPeople === 1 ? 'person' : 'people'} whose shifts changed`,
+                      description: 'To the number in their record: the changed days and times.',
+                    },
+                  ]),
+            ]}
+            {...(publish === true ? { defaultPublishOpen: true } : {})}
             onChange={(changes) => {
               setAssignments((current) => applyShiftChanges(current, changes))
               setChanged(true)
             }}
-            onPublish={() => {
+            onPublish={({ notify }) => {
               setAssignments((current) => current.map((each) => ({ ...each, changed: false })))
               setChanged(false)
               notice.success(
-                `Changes published. ${format.number(String(STORE_PUBLISH.people))} people see their shifts in the app.`,
+                [
+                  'Changes published.',
+                  notify.includes('app')
+                    ? `${people} people get a message in the app.`
+                    : `${people} people see their shifts in the app; no message was sent.`,
+                  ...(notify.includes('sms')
+                    ? [`${format.number(String(changedPeople))} also get an SMS.`]
+                    : []),
+                ].join(' '),
               )
             }}
           />
@@ -794,13 +831,25 @@ export function EmergencyPlanner({ phone, rotation }: { phone: boolean; rotation
             defaultRotationOpen={rotation}
             status={published ? 'published' : 'draft'}
             publishCounts={ER_PUBLISH}
+            // A message is the head nurse's choice (P5.28 item 9), checked by the department.
+            publishNotify={[
+              {
+                id: 'app',
+                label: `Notify ${format.number(String(ER_PUBLISH.people))} people in the app`,
+                description: 'Each gets a message with their shifts for the week.',
+                defaultChecked: true,
+              },
+            ]}
             onChange={(changes) => {
               setAssignments((current) => applyShiftChanges(current, changes))
             }}
-            onPublish={() => {
+            onPublish={({ notify }) => {
               setPublished(true)
+              const people = format.number(String(ER_PUBLISH.people))
               notice.success(
-                `Schedule published. ${format.number(String(ER_PUBLISH.people))} people see their shifts in the app.`,
+                notify.includes('app')
+                  ? `Schedule published. ${people} people get a message in the app.`
+                  : `Schedule published. ${people} people see their shifts in the app; no message was sent.`,
               )
             }}
           />
@@ -861,6 +910,7 @@ export const GROUP_G_ROUTES: ExampleRoute[] = [
   },
   { path: G_ROUTES.clockRecords, render: (phone) => <ClockRecords phone={phone} /> },
   { path: G_ROUTES.storePlanner, render: (phone) => <StorePlanner phone={phone} /> },
+  { path: G_ROUTES.storePublish, render: (phone) => <StorePlanner phone={phone} publish /> },
   { path: G_ROUTES.myShifts, render: (phone) => <StefanShifts phone={phone} /> },
   {
     path: G_ROUTES.myShiftsSwap,
