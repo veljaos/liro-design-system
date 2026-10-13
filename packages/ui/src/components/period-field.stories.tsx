@@ -6,6 +6,7 @@ import { LiroProvider, useLiro } from '../provider/liro-provider'
 import type { DateRange } from './date-field'
 import { ARABIC, JAPANESE, LONG } from './field-story-data'
 import { PeriodField } from './period-field'
+import { PhoneFrame } from './story-frames'
 import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 
@@ -96,6 +97,32 @@ export const Open: Story = {
   ),
   play: async () => {
     await within(document.body).findByRole('button', { name: 'This month' })
+    await settle()
+  },
+}
+
+/**
+ * Open on a phone (P5.28 item 1): a sheet on the screen's bottom edge, titled by the field's
+ * label — the presets first in two columns, then "Custom range" with one month across the
+ * sheet's full width. Nothing runs off the screen.
+ */
+export const OpenPhone: Story = {
+  name: 'Open, phone',
+  render: () => (
+    <PhoneFrame>
+      <div className="p-4">
+        <Controlled initial={{ start: '2026-09-01', end: '2026-09-30' }} clearable defaultOpen />
+      </div>
+    </PhoneFrame>
+  ),
+  play: async ({ canvasElement }) => {
+    const body = within(canvasElement.ownerDocument.body)
+    const sheet = await body.findByRole('dialog', { name: 'Period' })
+    await expect(within(sheet).getByRole('button', { name: 'This month' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    await expect(within(sheet).getByRole('grid')).toBeInTheDocument()
     await settle()
   },
 }

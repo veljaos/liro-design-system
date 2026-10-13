@@ -1,7 +1,8 @@
-import { Check, ChevronDown, ChevronUp } from 'lucide-react'
+import { Check, ChevronDown } from 'lucide-react'
 import { Select as SelectPrimitive } from 'radix-ui'
 import { createContext, useContext, useState, type ComponentProps } from 'react'
 import { usePortalContainer } from '../provider/portal'
+import { useCollision } from '../provider/screen'
 import {
   BUTTON_RESET,
   FLOATING,
@@ -20,6 +21,11 @@ import { cn } from './cn'
  * padding (Combobox dropdown). Options mark the chosen one with a check before the text
  * (checkIconPosition 'left', 0.8em, 8px gap); at most 220px of options show at once
  * (OptionsDropdown).
+ *
+ * On every screen (P5.28 items 1 and 3): the list keeps 8px inside the screen (the viewport, or a
+ * phone frame) and is never wider than the room there — a long option wraps; it never makes the
+ * page scroll sideways. The list scrolls natively (wheel, finger, keys) with a thin scrollbar;
+ * Radix's scroll-up and scroll-down buttons are not used (on touch they stood in the finger's way).
  *
  * While the list is open, Radix hides everything outside it from assistive technology
  * (aria-hidden), the trigger included; the trigger then also leaves the tab order, so nothing
@@ -84,27 +90,27 @@ export function SelectContent({
   ...props
 }: ComponentProps<typeof SelectPrimitive.Content>) {
   const container = usePortalContainer()
+  const collision = useCollision()
   return (
     <SelectPrimitive.Portal container={container}>
       <SelectPrimitive.Content
         data-slot="select-content"
         position={position}
         sideOffset={sideOffset}
+        {...collision}
         className={cn(
           FLOATING,
           FLOATING_MOTION,
-          'relative max-h-(--radix-select-content-available-height) min-w-(--radix-select-trigger-width) overflow-hidden',
+          'relative max-h-(--radix-select-content-available-height) max-w-(--radix-select-content-available-width) min-w-(--radix-select-trigger-width) overflow-hidden',
           className,
         )}
         {...props}
       >
-        <SelectPrimitive.ScrollUpButton className="flex h-6 cursor-default items-center justify-center text-secondary">
-          <ChevronUp aria-hidden="true" className="size-4" />
-        </SelectPrimitive.ScrollUpButton>
-        <SelectPrimitive.Viewport className="max-h-55 p-1">{children}</SelectPrimitive.Viewport>
-        <SelectPrimitive.ScrollDownButton className="flex h-6 cursor-default items-center justify-center text-secondary">
-          <ChevronDown aria-hidden="true" className="size-4" />
-        </SelectPrimitive.ScrollDownButton>
+        {/* Radix hides the viewport's scrollbar for its scroll buttons; the list shows a thin one
+            instead (P5.28 item 3). */}
+        <SelectPrimitive.Viewport className="max-h-55 p-1 [scrollbar-width:thin]!">
+          {children}
+        </SelectPrimitive.Viewport>
       </SelectPrimitive.Content>
     </SelectPrimitive.Portal>
   )
@@ -143,7 +149,7 @@ export function SelectItem({
       {/* Radix drops ItemText's className, so the direction is on a span inside it; the span also
           travels into the trigger when the option is chosen (SelectValue). */}
       <SelectPrimitive.ItemText>
-        <span className={TEXT_ISOLATE}>{children}</span>
+        <span className={cn('min-w-0 [overflow-wrap:anywhere]', TEXT_ISOLATE)}>{children}</span>
       </SelectPrimitive.ItemText>
     </SelectPrimitive.Item>
   )

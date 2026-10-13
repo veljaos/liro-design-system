@@ -435,7 +435,11 @@ export function InvoiceDraft({ phone }: { phone: boolean }) {
           setAllCursor(Math.max(0, allCursor - 25))
         }}
         count={allFound.length}
-        mobile={{ subtitle: (record) => `${record.value} · ${KIND_NAMES[record.kind]}` }}
+        // One compact row a result on a phone (P5.28): name; code · kind; the price at the end.
+        mobile={{
+          subtitle: (record) => `${record.value} · ${KIND_NAMES[record.kind]}`,
+          badge: (record) => <MoneyText value={record.price} currency="RSD" />,
+        }}
         layout={phone ? 'phone' : 'desktop'}
       />
     </Shell>

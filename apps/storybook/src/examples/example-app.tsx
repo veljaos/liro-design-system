@@ -96,6 +96,10 @@ export function ExampleApp({ start, phone = false }: { start: string; phone?: bo
   const navigate = useCallback((next: string) => {
     setPath(next)
     window.scrollTo(0, 0)
+    // On a phone the page scrolls inside the phone frame (P5.28): a new screen starts at its top.
+    document.querySelectorAll('[data-liro-phone-page]').forEach((page) => {
+      page.scrollTo(0, 0)
+    })
   }, [])
   // The notifications' read state lives above the screens, as the Core keeps it.
   const [items, setItems] = useState(NOTIFICATIONS)

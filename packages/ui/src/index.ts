@@ -1156,3 +1156,6 @@ export type {
   PracticeItem,
   RelatedAct,
 } from './components/legal-model'
+
+// ── P5.28 phone ──
+export { isSearchable, SEARCHABLE_FROM } from './components/select-field'

@@ -529,7 +529,6 @@ export function Customers({ phone }: { phone: boolean }) {
         mobile={{
           subtitle: (row) => `PIB ${row.taxId} · ${row.city}`,
           badge: (row) => (row.active ? undefined : inactiveBadge),
-          details: ['balance'],
         }}
         layout={phone ? 'phone' : 'desktop'}
       />

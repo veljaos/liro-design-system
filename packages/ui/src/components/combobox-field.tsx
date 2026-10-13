@@ -1,5 +1,5 @@
 import { Check } from 'lucide-react'
-import { useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
+import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
 import {
   AUTO_DIRECTION,
   READ_ONLY,
@@ -51,6 +51,27 @@ interface ListProps {
   multiple: boolean
   loading: boolean
   showEmpty: boolean
+  /**
+   * An option's group heading (SelectField's searchable list, P5.28): consecutive options of one
+   * group stand under its heading, in a listbox group. Default: no groups.
+   */
+  groupOf?: (option: ComboboxOption) => string | undefined
+}
+
+/** Consecutive options of one group, with their positions in the list. */
+function runsOf(
+  options: readonly ComboboxOption[],
+  groupOf: ((option: ComboboxOption) => string | undefined) | undefined,
+) {
+  const runs: { group: string | undefined; items: { option: ComboboxOption; index: number }[] }[] =
+    []
+  options.forEach((option, index) => {
+    const group = groupOf?.(option)
+    const last = runs.at(-1)
+    if (last !== undefined && last.group === group) last.items.push({ option, index })
+    else runs.push({ group, items: [{ option, index }] })
+  })
+  return runs
 }
 
 export function optionId(listId: string, index: number): string {
@@ -59,6 +80,19 @@ export function optionId(listId: string, index: number): string {
 
 export function ComboboxList(props: ListProps) {
   const { messages } = useLiro()
+  const { listId, active } = props
+  // The active option stays in view as the keys move through a long list (P5.28): the focus
+  // stays in the input, so the browser does not scroll to it.
+  // Only the list scrolls, never the page around it.
+  useEffect(() => {
+    const list = document.getElementById(listId)
+    const option = document.getElementById(optionId(listId, active))
+    if (active < 0 || list === null || option === null) return
+    const box = list.getBoundingClientRect()
+    const item = option.getBoundingClientRect()
+    if (item.top < box.top) list.scrollTop -= box.top - item.top
+    else if (item.bottom > box.bottom) list.scrollTop += item.bottom - box.bottom
+  }, [listId, active])
   return (
     <>
       {props.options.length > 0 && (
@@ -69,25 +103,54 @@ export function ComboboxList(props: ListProps) {
           aria-multiselectable={props.multiple || undefined}
           className="max-h-55 overflow-y-auto"
         >
-          {props.options.map((option, index) => (
-            <div
-              key={option.value}
-              id={optionId(props.listId, index)}
-              role="option"
-              aria-selected={props.isChosen(option)}
-              aria-disabled={option.disabled === true || undefined}
-              data-highlighted={index === props.active ? '' : undefined}
-              data-disabled={option.disabled === true ? '' : undefined}
-              className={OPTION}
-              data-index={index}
-              tabIndex={-1}
-            >
-              <span className="flex size-[0.8em] shrink-0 items-center justify-center">
-                {props.isChosen(option) && <Check aria-hidden="true" className="size-[0.8em]" />}
-              </span>
-              <span className={cn('min-w-0 break-words', TEXT_DIRECTION)}>{option.label}</span>
-            </div>
-          ))}
+          {runsOf(props.options, props.groupOf).map((run, runIndex) => {
+            const items = run.items.map(({ option, index }) => (
+              <div
+                key={option.value}
+                id={optionId(props.listId, index)}
+                role="option"
+                aria-selected={props.isChosen(option)}
+                aria-disabled={option.disabled === true || undefined}
+                data-highlighted={index === props.active ? '' : undefined}
+                data-disabled={option.disabled === true ? '' : undefined}
+                className={OPTION}
+                data-index={index}
+                tabIndex={-1}
+              >
+                <span className="flex size-[0.8em] shrink-0 items-center justify-center">
+                  {props.isChosen(option) && <Check aria-hidden="true" className="size-[0.8em]" />}
+                </span>
+                <span className={cn('min-w-0 [overflow-wrap:anywhere]', TEXT_DIRECTION)}>
+                  {option.label}
+                </span>
+              </div>
+            ))
+            if (run.group === undefined) return items
+            const headingId = `${props.listId}-group-${String(runIndex)}`
+            return (
+              // SelectField's group heading and line (SelectLabel, SelectSeparator).
+              <div
+                key={headingId}
+                role="group"
+                aria-labelledby={headingId}
+                className={cn(
+                  runIndex > 0 && 'mt-1 border-0 border-t border-solid border-default pt-1',
+                )}
+              >
+                <div
+                  id={headingId}
+                  role="presentation"
+                  className={cn(
+                    'px-2.5 py-1.5 text-xs font-semibold text-secondary',
+                    TEXT_DIRECTION,
+                  )}
+                >
+                  {run.group}
+                </div>
+                {items}
+              </div>
+            )
+          })}
         </div>
       )}
       {props.loading && (
@@ -304,6 +367,10 @@ export function ComboboxField(props: ComboboxFieldProps) {
                     search(text)
                   }}
                   onKeyDown={onKeyDown}
+                  // A press shows the list (P5.28): the options known so far, or the search's.
+                  onClick={() => {
+                    setOpen(true)
+                  }}
                   onBlur={() => {
                     if (query === '') choose(null)
                     else setQuery(null)
