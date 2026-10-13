@@ -700,10 +700,10 @@ export const WithMessages: Story = {
   play: async ({ canvasElement }) => {
     const body = within(canvasElement.ownerDocument.body)
     const dialog = within(await body.findByRole('alertdialog'))
+    await settle()
     await expect(dialog.getByRole('checkbox', { name: /^Notify 24 teachers/ })).toBeChecked()
     await expect(dialog.getByRole('checkbox', { name: /^Send an e-mail/ })).not.toBeChecked()
     await expect(dialog.getByRole('button', { name: 'Publish and notify' })).toBeVisible()
-    await settle()
   },
 }
 

@@ -235,10 +235,11 @@ export const KeyboardInteraction: Story = {
     )
     await expect(booking(canvasElement, 'Ana Petrović')).toHaveFocus()
     await userEvent.keyboard('{Enter}')
-    // The drop only proposes: nothing moves until the confirmation's Save (P5.28 item 9).
-    await expect(booking(canvasElement, 'Ana Petrović')).toHaveAccessibleName(
-      /Dr Milica Jovanović, 09:00\sAM – 10:00\sAM$/,
-    )
+    // The drop only proposes: nothing moves until the confirmation's Save (P5.28 item 9). The
+    // page under the open dialog is hidden from assistive technology.
+    await expect(
+      within(canvasElement).getByRole('button', { name: /^Ana Petrović, /, hidden: true }),
+    ).toHaveAccessibleName(/Dr Milica Jovanović, 09:00\sAM – 10:00\sAM$/)
     await saveMove('Ana Petrović')
     await expect(
       canvas.getByText('Moved b2 to kovacevic at 2026-10-14T09:30–2026-10-14T10:30; no message'),
@@ -363,9 +364,10 @@ export const MoveAsked: Story = {
       within(dialog).getByRole('checkbox', { name: /^Notify Marko Ilić/ }),
     ).not.toBeChecked()
     await expect(within(dialog).getByRole('button', { name: 'Save' })).toBeVisible()
-    await expect(booking(canvasElement, 'Marko Ilić')).toHaveAccessibleName(
-      /Dr Milica Jovanović, 08:00\sAM – 08:30\sAM$/,
-    )
+    // Still in its place (the page under the dialog is hidden from assistive technology).
+    await expect(
+      within(canvasElement).getByRole('button', { name: /^Marko Ilić, /, hidden: true }),
+    ).toHaveAccessibleName(/Dr Milica Jovanović, 08:00\sAM – 08:30\sAM$/)
   },
 }
 
