@@ -10,6 +10,10 @@ import { fileURLToPath } from 'node:url'
 import ts from 'typescript'
 
 export const INTERACTION_TAG = 'interaction'
+/** Storybook's tag that keeps a story out of the sidebar; the tests still run it. */
+export const HIDDEN_TAG = '!dev'
+/** The sidebar folder that shows each screen twice, desktop and phone (P5.28). */
+export const EXAMPLES_TITLE = 'Examples'
 
 /** Objects whose every call acts on the page. */
 const ACTING_OBJECTS = new Set(['userEvent', 'fireEvent', 'user'])
@@ -199,10 +203,11 @@ function playOf(object) {
 }
 
 /**
- * The stories of one file: export name, whether its play acts on the page, and whether it is
- * tagged "interaction" (on the story or the file's meta).
+ * The stories of one file: export name, whether its play acts on the page, whether it is tagged
+ * "interaction" and whether it is hidden from the sidebar (on the story or the file's meta), and
+ * the file's title.
  * @param {string} file
- * @returns {{ name: string, acts: boolean, tagged: boolean }[]}
+ * @returns {{ name: string, title: string, acts: boolean, tagged: boolean, hidden: boolean }[]}
  */
 export function storiesOf(file) {
   const source = ts.createSourceFile(file, readFileSync(file, 'utf8'), ts.ScriptTarget.Latest, true)
@@ -211,6 +216,7 @@ export function storiesOf(file) {
   const objects = new Map()
   /** @type {string[]} */
   let metaTags = []
+  let title = ''
   /**
    * @param {ts.Expression | undefined} expression
    * @returns {ts.ObjectLiteralExpression | undefined}
@@ -234,7 +240,11 @@ export function storiesOf(file) {
   for (const statement of source.statements) {
     if (ts.isExportAssignment(statement)) {
       const meta = metaObject(statement.expression)
-      if (meta !== undefined) metaTags = stringArray(property(meta, 'tags')?.initializer)
+      if (meta !== undefined) {
+        metaTags = stringArray(property(meta, 'tags')?.initializer)
+        const titleNode = property(meta, 'title')?.initializer
+        if (titleNode !== undefined && ts.isStringLiteralLike(titleNode)) title = titleNode.text
+      }
     }
     if (
       !ts.isVariableStatement(statement) ||
@@ -318,7 +328,13 @@ export function storiesOf(file) {
     .filter((name) => name !== 'default')
     .map((name) => {
       const tags = [...metaTags, ...tagsOf(name)]
-      return { name, acts: acts(name), tagged: tags.includes(INTERACTION_TAG) }
+      return {
+        name,
+        title,
+        acts: acts(name),
+        tagged: tags.includes(INTERACTION_TAG),
+        hidden: tags.includes(HIDDEN_TAG),
+      }
     })
 }
 
@@ -338,6 +354,25 @@ export function storyFiles(root) {
     .filter((file) => file !== '' && !file.startsWith('.claude/'))
     .map((file) => join(root, file))
     .filter((file) => existsSync(file))
+}
+
+/**
+ * The Examples stories tagged "interaction" that the sidebar still shows, as "file: Story": the
+ * Examples show each screen on a desktop and on a phone, and hide the tests (P5.28).
+ * @param {string} root
+ * @returns {string[]}
+ */
+export function shownExampleTests(root) {
+  /** @type {string[]} */
+  const found = []
+  for (const file of storyFiles(root)) {
+    for (const story of storiesOf(file)) {
+      if (story.title === EXAMPLES_TITLE && story.tagged && !story.hidden) {
+        found.push(`${relative(root, file)}: ${story.name}`)
+      }
+    }
+  }
+  return found
 }
 
 /**
@@ -368,5 +403,12 @@ if (
     )
     process.exit(1)
   }
-  console.log('Every pictured story is static.')
+  const shown = shownExampleTests(root)
+  if (shown.length > 0) {
+    console.error(
+      `${String(shown.length)} Examples interaction stories are in the sidebar; add the tag "${HIDDEN_TAG}":\n${shown.join('\n')}`,
+    )
+    process.exit(1)
+  }
+  console.log('Every pictured story is static; the Examples sidebar hides its tests.')
 }

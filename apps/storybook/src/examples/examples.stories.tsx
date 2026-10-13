@@ -42,7 +42,9 @@ const meta = {
           'menu and the search (Ctrl K). Every link goes through the provider’s ' +
           '`linkComponent`, as the Core’s router will; the screens use only `@veljaos/ui` and ' +
           '`@veljaos/ui/charts`. The interface text is English; numbers and dates are written as ' +
-          'a Serbian tenant sees them. Start with "Walk-through" and click.',
+          'a Serbian tenant sees them. Start with "Sign in" and click. The sidebar shows each ' +
+          'screen twice, on a desktop and on a phone; the steps in between and the interaction ' +
+          'tests are hidden from it and still run in the tests (P5.28).',
       },
     },
   },
@@ -60,7 +62,7 @@ type Story = StoryObj<typeof meta>
  */
 export const WalkThrough: Story = {
   name: 'Walk-through',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={ROUTES.signIn} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -156,7 +158,7 @@ export const InvoiceListScreen: Story = {
 
 export const InvoiceListScreenInteraction: Story = {
   name: 'Invoice list, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={ROUTES.invoices} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -250,7 +252,7 @@ export const ApprovalsScreen: Story = {
  */
 export const ApprovalsDecide: Story = {
   name: 'Supplier invoices to approve, deciding',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={ROUTES.approvals} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -292,7 +294,7 @@ export const ApprovalsPhone: Story = {
 /** On a phone: the invoice full width, each label above its value, the decisions in the bottom bar. */
 export const ApprovalPhoneDetail: Story = {
   name: 'Supplier invoice to approve, phone',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <OnPhone start={ROUTES.approvals} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -318,7 +320,7 @@ function boxAround(element: Element | null): Element | null {
  */
 export const ApprovalPhoneToast: Story = {
   name: 'Supplier invoice to approve, phone, approved',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <OnPhone start={ROUTES.approvals} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -361,7 +363,7 @@ export const EmployeeScreen: Story = {
 /** Edit: the same sections as fields (Leave stays read-only), Cancel and Save in the bottom bar. */
 export const EmployeeEdit: Story = {
   name: 'Employee record, editing',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={ROUTES.employee} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -443,6 +445,7 @@ export const JournalEntryScreen: Story = {
  */
 export const JournalEntryUnbalanced: Story = {
   name: 'Journal entry, unbalanced',
+  tags: ['!dev'],
   render: () => <ExampleApp start={F_ROUTES.journalUnbalanced} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -459,7 +462,7 @@ export const JournalEntryUnbalanced: Story = {
 
 export const JournalEntryUnbalancedInteraction: Story = {
   name: 'Journal entry, unbalanced, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={F_ROUTES.journalUnbalanced} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -529,7 +532,7 @@ export const PayrollPhone: Story = {
 /** The rerun asks for a reason, then the run goes back to Calculate. */
 export const PayrollRerun: Story = {
   name: 'Payroll run, rerun',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={F_ROUTES.payroll} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -596,7 +599,7 @@ export const InvoiceActivityScreen: Story = {
 
 export const InvoiceActivityScreenInteraction: Story = {
   name: 'Invoice with history, comments and presence, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={ROUTES_A.invoice} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -686,7 +689,7 @@ export const ContractQuestionnaireScreen: Story = {
 
 export const ContractQuestionnaireScreenInteraction: Story = {
   name: 'Employment contract questionnaire, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={ROUTES_A.contract} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -745,6 +748,7 @@ export const ContractQuestionnairePhone: Story = {
 /** Sign in with the providers (P5.6): the e-mail first, then "or" and Microsoft and Google. */
 export const SignInProviders: Story = {
   name: 'Sign in, providers',
+  tags: ['!dev'],
   render: () => <ExampleApp start={ROUTES.signIn} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -776,7 +780,7 @@ export const UsersAndRoles: Story = {
 
 export const UsersAndRolesInteraction: Story = {
   name: 'Users and roles, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={C_ROUTES.users} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -803,7 +807,7 @@ export const UsersAndRolesInteraction: Story = {
 /** Inviting: the drawer, then the new invitation pending beside the others. */
 export const UsersInvite: Story = {
   name: 'Users and roles, inviting',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={C_ROUTES.users} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -885,7 +889,7 @@ export const ContractSignerLink: Story = {
 
 export const ContractSignerLinkInteraction: Story = {
   name: 'Contract signing, the employee signs, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={C_ROUTES.signerLink} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -927,7 +931,7 @@ export const TasksScreen: Story = {
 
 export const TasksScreenInteraction: Story = {
   name: 'Tasks, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={C_ROUTES.tasks} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -991,7 +995,7 @@ export const CustomersScreen: Story = {
 
 export const CustomersScreenInteraction: Story = {
   name: 'Customers, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={E_ROUTES.customers} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -1014,7 +1018,7 @@ export const CustomersScreenInteraction: Story = {
  */
 export const CustomersSortAndFilter: Story = {
   name: 'Customers, sort and filter',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={E_ROUTES.customers} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -1044,7 +1048,7 @@ export const CustomersSortAndFilter: Story = {
 /** Three customers selected: the bulk bar is a row of its own, 12px from the filters and the table. */
 export const CustomersSelected: Story = {
   name: 'Customers, selected',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={E_ROUTES.customers} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -1071,7 +1075,7 @@ export const CustomersPhone: Story = {
 /** Bulk edit: two customers selected, "Edit 2 records", the payment term set to 30 days for both. */
 export const CustomersBulkEdit: Story = {
   name: 'Customers, bulk edit',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={E_ROUTES.customers} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -1101,7 +1105,7 @@ export const CustomersBulkEdit: Story = {
 /** Deactivating hides a customer from Active and shows it under Inactive; nothing is deleted. */
 export const CustomersDeactivate: Story = {
   name: 'Customers, deactivate',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={E_ROUTES.customers} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -1127,7 +1131,7 @@ export const CustomersDeactivate: Story = {
  */
 export const CustomersLookup: Story = {
   name: 'Customers, search all',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={E_ROUTES.customers} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -1176,7 +1180,7 @@ export const CustomerImportScreen: Story = {
 
 export const CustomerImportScreenInteraction: Story = {
   name: 'Customer import, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={E_ROUTES.customerImport} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -1233,7 +1237,7 @@ export const VatReturnScreen: Story = {
 
 export const VatReturnScreenInteraction: Story = {
   name: 'VAT return, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={E_ROUTES.vatReturn} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -1294,7 +1298,7 @@ export const InjuryRegisterScreen: Story = {
 
 export const InjuryRegisterScreenInteraction: Story = {
   name: 'Work-injury register, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={E_ROUTES.injuryRegister} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -1326,6 +1330,7 @@ export const InjuryRegisterPhone: Story = {
 /** 5,000 generated entries stay responsive: only the rows in view are drawn. */
 export const InjuryRegisterMany: Story = {
   name: 'Work-injury register, 5,000 entries',
+  tags: ['!dev'],
   render: () => <ExampleApp start={E_ROUTES.injuryRegisterGenerated} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -1337,7 +1342,7 @@ export const InjuryRegisterMany: Story = {
 
 export const InjuryRegisterManyInteraction: Story = {
   name: 'Work-injury register, 5,000 entries, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={E_ROUTES.injuryRegisterGenerated} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -1465,7 +1470,7 @@ export const FinalInvoiceScreen: Story = {
 
 export const FinalInvoiceScreenInteraction: Story = {
   name: 'Final invoice with advances, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={D2_ROUTES.final} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -1525,7 +1530,7 @@ export const SituationScreen: Story = {
 
 export const SituationScreenInteraction: Story = {
   name: 'Interim situation with a specification, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={D2_ROUTES.situation} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -1664,7 +1669,7 @@ export const CancelledScreen: Story = {
 
 export const CancelledScreenInteraction: Story = {
   name: 'Cancelled invoice and its cancellation document, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={D2_ROUTES.cancelled} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -1768,7 +1773,7 @@ export const D1InvoiceDraft: Story = {
 
 export const D1InvoiceDraftInteraction: Story = {
   name: 'Invoice draft, lines by search, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={D1_ROUTES.draft} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -1849,7 +1854,7 @@ export const D1Specification: Story = {
 
 export const D1SpecificationInteraction: Story = {
   name: 'Interim situation, editing the specification, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={D1_ROUTES.specification} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -1937,7 +1942,7 @@ export const BankStatementScreen: Story = {
 
 export const BankStatementScreenInteraction: Story = {
   name: 'Bank statement 188, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={BANK_ROUTES.statement} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -1975,6 +1980,7 @@ export const BankStatementScreenInteraction: Story = {
  */
 export const BankStatementPartial: Story = {
   name: 'Bank statement 188, partial payment',
+  tags: ['!dev'],
   render: () => <ExampleApp start={BANK_ROUTES.partial} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -1992,7 +1998,7 @@ export const BankStatementPartial: Story = {
 
 export const BankStatementPartialInteraction: Story = {
   name: 'Bank statement 188, partial payment, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={BANK_ROUTES.partial} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -2031,6 +2037,7 @@ export const BankStatementPartialInteraction: Story = {
  */
 export const BankStatementPost: Story = {
   name: 'Bank statement 188, posting',
+  tags: ['!dev'],
   render: () => <ExampleApp start={BANK_ROUTES.decided} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -2041,7 +2048,7 @@ export const BankStatementPost: Story = {
 
 export const BankStatementPostInteraction: Story = {
   name: 'Bank statement 188, posting, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={BANK_ROUTES.decided} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -2067,6 +2074,7 @@ export const BankStatementPostInteraction: Story = {
  */
 export const BankStatementPartialPhone: Story = {
   name: 'Bank statement 188, partial payment, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={BANK_ROUTES.partial} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -2100,6 +2108,7 @@ export const BankStatementPhone: Story = {
  */
 export const BankStatementLinePhone: Story = {
   name: 'Bank statement 188, phone, line in focus',
+  tags: ['!dev'],
   render: () => <OnPhone start={BANK_ROUTES.difference} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -2176,6 +2185,7 @@ export const SafetyCourseLessonPhone: Story = {
 /** Phone, the outline open: done, to do, and the locked lessons with their reasons. */
 export const SafetyCourseOutlinePhone: Story = {
   name: 'Safety course, outline, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={J_ROUTES.lessonOutline} />,
   play: async () => {
     const dialog = await within(document.body).findByRole('dialog', { name: 'Course outline' })
@@ -2191,6 +2201,7 @@ export const SafetyCourseOutlinePhone: Story = {
 /** The final test on the general Questionnaire, resumed at the third of five questions. */
 export const SafetyCourseTest: Story = {
   name: 'Safety course, final test',
+  tags: ['!dev'],
   render: () => <ExampleApp start={J_ROUTES.test} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -2207,6 +2218,7 @@ export const SafetyCourseTest: Story = {
 /** The first attempt, not passed: 3 of 5, the answers with the correct ones, "Take the test again". */
 export const SafetyCourseTestNotPassed: Story = {
   name: 'Safety course, test not passed',
+  tags: ['!dev'],
   render: () => <ExampleApp start={J_ROUTES.testNotPassed} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -2226,6 +2238,7 @@ export const SafetyCourseTestNotPassed: Story = {
 /** Passed: the course completed, "Download certificate" and the certificate's preview. */
 export const SafetyCourseCompleted: Story = {
   name: 'Safety course, completed',
+  tags: ['!dev'],
   render: () => <ExampleApp start={J_ROUTES.completed} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -2248,6 +2261,7 @@ export const SafetyCourseCompleted: Story = {
 
 export const SafetyCourseCompletedPhone: Story = {
   name: 'Safety course, completed, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={J_ROUTES.completed} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -2266,7 +2280,7 @@ export const SafetyCourseCompletedPhone: Story = {
  */
 export const SafetyCourseInteraction: Story = {
   name: 'Safety course, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={J_ROUTES.lesson} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -2374,7 +2388,7 @@ export const PrintoutInvoicePhone: Story = {
 /** The invoice's "PDF" opens its printout; the back button returns to the invoice. */
 export const PrintoutInvoiceInteraction: Story = {
   name: 'Printout, invoice from its page, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={ROUTES.invoice(FEATURED)} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -2540,6 +2554,7 @@ export const SiteTimesheetPhone: Story = {
  */
 export const SiteTimesheetLocked: Story = {
   name: 'Site timesheet, locked after payroll',
+  tags: ['!dev'],
   render: () => <ExampleApp start={G_ROUTES.timesheetLocked} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -2556,6 +2571,7 @@ export const SiteTimesheetLocked: Story = {
 /** Phone: the locked month on Vladimir Tomić, whose day was corrected. */
 export const SiteTimesheetLockedPhone: Story = {
   name: 'Site timesheet, locked after payroll, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={G_ROUTES.timesheetLockedWorker} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -2626,7 +2642,7 @@ export const StoreShiftsPhone: Story = {
 
 export const StoreShiftsPublish: Story = {
   name: 'Store shifts, publish, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={G_ROUTES.storePlanner} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -2664,6 +2680,7 @@ export const StoreShiftsPublish: Story = {
  */
 export const StoreShiftsPublishAsked: Story = {
   name: 'Store shifts, publish asked',
+  tags: ['!dev'],
   render: () => <ExampleApp start={G_ROUTES.storePublish} />,
   play: async () => {
     await settle()
@@ -2682,6 +2699,7 @@ export const StoreShiftsPublishAsked: Story = {
 
 export const StoreShiftsPublishAskedPhone: Story = {
   name: 'Store shifts, publish asked, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={G_ROUTES.storePublish} />,
   play: async () => {
     await settle()
@@ -2722,6 +2740,7 @@ export const StoreMyShifts: Story = {
 /** A swap request being written for Thursday 15.10., with the colleagues who may take it. */
 export const StoreSwapRequestPhone: Story = {
   name: 'Store, my shifts, swap request, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={G_ROUTES.myShiftsSwap} />,
   play: async () => {
     await settle()
@@ -2733,6 +2752,7 @@ export const StoreSwapRequestPhone: Story = {
 
 export const StoreSwapRequest: Story = {
   name: 'Store, my shifts, swap request',
+  tags: ['!dev'],
   render: () => <ExampleApp start={G_ROUTES.myShiftsSwap} />,
   play: async () => {
     await settle()
@@ -2762,6 +2782,7 @@ export const StoreSwapRequests: Story = {
 /** Sanja Vuković's request: the check warns that Nemanja would go over his contract's hours. */
 export const StoreSwapRequestWarning: Story = {
   name: 'Store, swap requests, a warning',
+  tags: ['!dev'],
   render: () => <ExampleApp start={G_ROUTES.swapRequestWarning} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -2783,6 +2804,7 @@ export const StoreSwapRequestsPhone: Story = {
 
 export const StoreSwapRequestWarningPhone: Story = {
   name: 'Store, swap requests, a warning, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={G_ROUTES.swapRequestWarning} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -2793,7 +2815,7 @@ export const StoreSwapRequestWarningPhone: Story = {
 
 export const StoreSwapRequestsReject: Story = {
   name: 'Store, swap requests, reject, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={G_ROUTES.swapRequestWarning} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -2846,6 +2868,7 @@ export const EmergencyShiftsPhone: Story = {
 /** "Apply rotation…" open: the pattern, the people, the dates and the offset per person. */
 export const EmergencyRotation: Story = {
   name: 'Emergency shifts, apply a rotation',
+  tags: ['!dev'],
   render: () => <ExampleApp start={G_ROUTES.erRotation} />,
   play: async () => {
     await settle()
@@ -2911,6 +2934,7 @@ export const HealthBookingPhone: Story = {
 /** The free times of dr Marko Stanković next week; nothing chosen, so Book says why it waits. */
 export const HealthBookingTime: Story = {
   name: 'Health, book an appointment, choose a time',
+  tags: ['!dev'],
   render: () => <ExampleApp start={H_ROUTES.bookTime} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -2921,6 +2945,7 @@ export const HealthBookingTime: Story = {
 
 export const HealthBookingTimePhone: Story = {
   name: 'Health, book an appointment, choose a time, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={H_ROUTES.bookTime} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -2932,6 +2957,7 @@ export const HealthBookingTimePhone: Story = {
 /** Wednesday 14.10. at 11:30 chosen: the appointment in words, then Book. */
 export const HealthBookingConfirm: Story = {
   name: 'Health, book an appointment, confirm',
+  tags: ['!dev'],
   render: () => <ExampleApp start={H_ROUTES.bookConfirm} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -2942,6 +2968,7 @@ export const HealthBookingConfirm: Story = {
 
 export const HealthBookingConfirmPhone: Story = {
   name: 'Health, book an appointment, confirm, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={H_ROUTES.bookConfirm} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -2953,6 +2980,7 @@ export const HealthBookingConfirmPhone: Story = {
 /** Booked: the confirmation, the appointment, and a link to the clinic's schedule of that day. */
 export const HealthBooked: Story = {
   name: 'Health, appointment booked',
+  tags: ['!dev'],
   render: () => <ExampleApp start={H_ROUTES.booked} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -2963,6 +2991,7 @@ export const HealthBooked: Story = {
 
 export const HealthBookedPhone: Story = {
   name: 'Health, appointment booked, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={H_ROUTES.booked} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -2974,7 +3003,7 @@ export const HealthBookedPhone: Story = {
 /** The whole booking from the keyboard and pointer, then on to the clinic's schedule. */
 export const HealthBookingWalk: Story = {
   name: 'Health, booking, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={H_ROUTES.book} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -3091,6 +3120,7 @@ export const HealthFindingPhone: Story = {
 /** "Show" asks why: the reasons from the application, Other, and the note that it is logged. */
 export const HealthFindingReason: Story = {
   name: 'Health, finding, reason asked',
+  tags: ['!dev'],
   render: () => <ExampleApp start={H_ROUTES.findingAsk} />,
   play: async () => {
     await settle()
@@ -3102,6 +3132,7 @@ export const HealthFindingReason: Story = {
 
 export const HealthFindingReasonPhone: Story = {
   name: 'Health, finding, reason asked, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={H_ROUTES.findingAsk} />,
   play: async () => {
     await settle()
@@ -3114,6 +3145,7 @@ export const HealthFindingReasonPhone: Story = {
 /** The diagnosis shown after a reason, with Hide. */
 export const HealthFindingShown: Story = {
   name: 'Health, finding, diagnosis shown',
+  tags: ['!dev'],
   render: () => <ExampleApp start={H_ROUTES.findingShown} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -3126,7 +3158,7 @@ export const HealthFindingShown: Story = {
 
 export const HealthFindingReveal: Story = {
   name: 'Health, finding, reveal, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={H_ROUTES.finding} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -3201,7 +3233,7 @@ export const SchoolAttendancePhone: Story = {
 
 export const SchoolAttendanceMarking: Story = {
   name: 'School, attendance, marking, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={H_ROUTES.attendance} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -3264,7 +3296,7 @@ export const SchoolParentPortalPhone: Story = {
 
 export const SchoolParentPortalExcuse: Story = {
   name: 'School, parents’ portal, excuse, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={H_ROUTES.parent} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -3366,6 +3398,7 @@ export const PosCheckout: Story = {
 /** Paying cash: 2.000,00 RSD tendered (the first banknote offered), the change 93,00 RSD. */
 export const PosCash: Story = {
   name: 'POS checkout, paying cash',
+  tags: ['!dev'],
   render: () => <ExampleApp start={I_ROUTES.posCash} />,
   play: async () => {
     await settle()
@@ -3380,6 +3413,7 @@ export const PosCash: Story = {
 /** Paying by card: the terminal waits for the customer; the dialog cannot be dismissed. */
 export const PosCardWaiting: Story = {
   name: 'POS checkout, card waiting',
+  tags: ['!dev'],
   render: () => <ExampleApp start={I_ROUTES.posCardWaiting} />,
   play: async () => {
     await settle()
@@ -3392,6 +3426,7 @@ export const PosCardWaiting: Story = {
 /** The terminal approved the card: "Complete payment" can be pressed. */
 export const PosCardApproved: Story = {
   name: 'POS checkout, card approved',
+  tags: ['!dev'],
   render: () => <ExampleApp start={I_ROUTES.posCardApproved} />,
   play: async () => {
     await settle()
@@ -3407,6 +3442,7 @@ export const PosCardApproved: Story = {
 /** The sale paid in cash: receipt ZK-01-002318 with the tax per category, cash and change. */
 export const PosReceipt: Story = {
   name: 'POS checkout, receipt',
+  tags: ['!dev'],
   render: () => <ExampleApp start={I_ROUTES.posReceipt} />,
   play: async () => {
     await settle()
@@ -3423,6 +3459,7 @@ export const PosReceipt: Story = {
 /** The connection lost: three sales wait on the till, selling goes on. */
 export const PosOffline: Story = {
   name: 'POS checkout, offline',
+  tags: ['!dev'],
   render: () => <ExampleApp start={I_ROUTES.posOffline} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -3441,7 +3478,7 @@ export const PosOffline: Story = {
  */
 export const PosScanInteraction: Story = {
   name: 'POS checkout, scanning, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={I_ROUTES.pos} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -3466,7 +3503,7 @@ export const PosScanInteraction: Story = {
 /** Charge, the 2.000,00 banknote, Complete payment, then the receipt. */
 export const PosPayInteraction: Story = {
   name: 'POS checkout, paying cash, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={I_ROUTES.pos} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -3507,6 +3544,7 @@ export const PosPhone: Story = {
 /** Phone: the products sheet open over the cart. */
 export const PosPhoneProducts: Story = {
   name: 'POS checkout, phone, products',
+  tags: ['!dev'],
   render: () => <OnPhone start={I_ROUTES.posProducts} />,
   play: async () => {
     await settle()
@@ -3519,6 +3557,7 @@ export const PosPhoneProducts: Story = {
 /** Phone: paying cash. */
 export const PosPhoneCash: Story = {
   name: 'POS checkout, phone, paying cash',
+  tags: ['!dev'],
   render: () => <OnPhone start={I_ROUTES.posCash} />,
   play: async () => {
     await settle()
@@ -3549,6 +3588,7 @@ export const PickingHandheld: Story = {
 /** The location confirmed: scan the item. */
 export const PickingHandheldItem: Story = {
   name: 'Warehouse picking, handheld, item',
+  tags: ['!dev'],
   render: () => <OnHandheld start={I_ROUTES.pickingItem} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -3561,6 +3601,7 @@ export const PickingHandheldItem: Story = {
 /** Both scanned: confirm the quantity, 18 packs by default. */
 export const PickingHandheldQuantity: Story = {
   name: 'Warehouse picking, handheld, quantity',
+  tags: ['!dev'],
   render: () => <OnHandheld start={I_ROUTES.pickingQuantity} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -3573,6 +3614,7 @@ export const PickingHandheldQuantity: Story = {
 /** Skipping line 5: the reason asked from the warehouse's list. */
 export const PickingHandheldSkip: Story = {
   name: 'Warehouse picking, handheld, skipping a line',
+  tags: ['!dev'],
   render: () => <OnHandheld start={I_ROUTES.pickingSkip} />,
   play: async () => {
     await settle()
@@ -3585,6 +3627,7 @@ export const PickingHandheldSkip: Story = {
 /** Offline: three changes wait on the handheld; picking goes on. */
 export const PickingHandheldOffline: Story = {
   name: 'Warehouse picking, handheld, offline',
+  tags: ['!dev'],
   render: () => <OnHandheld start={I_ROUTES.pickingOffline} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -3595,7 +3638,7 @@ export const PickingHandheldOffline: Story = {
 /** Scan B-03-04, scan the boards, confirm 18: "5 of 12", and line 6 opens at B-05-02. */
 export const PickingHandheldInteraction: Story = {
   name: 'Warehouse picking, handheld, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <OnHandheld start={I_ROUTES.picking} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -3646,7 +3689,7 @@ export const StockCountHandheld: Story = {
 /** One Q188 sheet less (it was a Q131): the count goes to 13 and the application's difference to +1. */
 export const StockCountHandheldInteraction: Story = {
   name: 'Stock count, handheld, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <OnHandheld start={I_ROUTES.count} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -3715,6 +3758,7 @@ export const HotelRackPhone: Story = {
 /** Room 204 in its drawer: Paolo Bianchi departs today, the folio's balance, Check out. */
 export const HotelDeparture: Story = {
   name: 'Hotel, departing guest',
+  tags: ['!dev'],
   render: () => <ExampleApp start={L_ROUTES.rackRoom} />,
   play: async ({ canvasElement }) => {
     const drawer = await within(document.body).findByRole('dialog', { name: 'Room 204' })
@@ -3729,6 +3773,7 @@ export const HotelDeparture: Story = {
 
 export const HotelDeparturePhone: Story = {
   name: 'Hotel, departing guest, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={L_ROUTES.rackRoom} />,
   play: async () => {
     const drawer = await within(document.body).findByRole('dialog', { name: 'Room 204' })
@@ -3740,6 +3785,7 @@ export const HotelDeparturePhone: Story = {
 /** Room 104: a VIP arriving today, the room inspected and the stay prepaid; Check in. */
 export const HotelArrival: Story = {
   name: 'Hotel, VIP arrival',
+  tags: ['!dev'],
   render: () => <ExampleApp start={L_ROUTES.rackArrival} />,
   play: async () => {
     const drawer = await within(document.body).findByRole('dialog', { name: 'Room 104' })
@@ -3752,6 +3798,7 @@ export const HotelArrival: Story = {
 
 export const HotelArrivalPhone: Story = {
   name: 'Hotel, VIP arrival, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={L_ROUTES.rackArrival} />,
   play: async () => {
     const drawer = await within(document.body).findByRole('dialog', { name: 'Room 104' })
@@ -3763,7 +3810,7 @@ export const HotelArrivalPhone: Story = {
 /** Checking out: the room turns vacant and dirty, the counts follow. */
 export const HotelCheckOutInteraction: Story = {
   name: 'Hotel, check out, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={L_ROUTES.rackRoom} />,
   play: async ({ canvasElement }) => {
     const drawer = await within(document.body).findByRole('dialog', { name: 'Room 204' })
@@ -3837,6 +3884,7 @@ export const HotelHousekeepingPhone: Story = {
 /** Room 306 open on the phone: Start cleaning, then Mark clean (the main action, last). */
 export const HotelMarkCleanPhone: Story = {
   name: 'Hotel, housekeeping, room, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={L_ROUTES.housekeepingRoom} />,
   play: async () => {
     const drawer = await within(document.body).findByRole('dialog', { name: 'Room 306' })
@@ -3848,6 +3896,7 @@ export const HotelMarkCleanPhone: Story = {
 
 export const HotelMarkClean: Story = {
   name: 'Hotel, housekeeping, room',
+  tags: ['!dev'],
   render: () => <ExampleApp start={L_ROUTES.housekeepingRoom} />,
   play: async () => {
     const drawer = await within(document.body).findByRole('dialog', { name: 'Room 306' })
@@ -3859,7 +3908,7 @@ export const HotelMarkClean: Story = {
 /** Mark clean: the room leaves the list of rooms to clean. */
 export const HotelMarkCleanInteraction: Story = {
   name: 'Hotel, mark clean, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <OnPhone start={L_ROUTES.housekeepingRoom} />,
   play: async ({ canvasElement }) => {
     const drawer = await within(document.body).findByRole('dialog', { name: 'Room 306' })
@@ -3934,6 +3983,7 @@ export const RestaurantServicePhone: Story = {
 /** Opening free table 4 for a walk-in party: how many guests. */
 export const RestaurantOpenTable: Story = {
   name: 'Restaurant service, opening a table',
+  tags: ['!dev'],
   render: () => <ExampleApp start={K_ROUTES.floorOpen} />,
   play: async () => {
     await settle()
@@ -3944,6 +3994,7 @@ export const RestaurantOpenTable: Story = {
 
 export const RestaurantOpenTablePhone: Story = {
   name: 'Restaurant service, opening a table, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={K_ROUTES.floorOpen} />,
   play: async () => {
     await settle()
@@ -3954,6 +4005,7 @@ export const RestaurantOpenTablePhone: Story = {
 /** Moving table 5's party of three: the free tables with seats enough. */
 export const RestaurantMoveGuests: Story = {
   name: 'Restaurant service, moving guests',
+  tags: ['!dev'],
   render: () => <ExampleApp start={K_ROUTES.floorMove} />,
   play: async () => {
     await settle()
@@ -3968,6 +4020,7 @@ export const RestaurantMoveGuests: Story = {
 
 export const RestaurantMoveGuestsPhone: Story = {
   name: 'Restaurant service, moving guests, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={K_ROUTES.floorMove} />,
   play: async () => {
     await settle()
@@ -3983,7 +4036,7 @@ export const RestaurantMoveGuestsPhone: Story = {
  */
 export const RestaurantServiceInteraction: Story = {
   name: 'Restaurant service, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={K_ROUTES.floor} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -4048,6 +4101,7 @@ export const RestaurantFloorPlanEditPhone: Story = {
 /** Tables 11 and 12 merged into one table of eight for the evening. */
 export const RestaurantTablesMerged: Story = {
   name: 'Restaurant floor plan, tables merged',
+  tags: ['!dev'],
   render: () => <ExampleApp start={K_ROUTES.floorMerged} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -4059,13 +4113,14 @@ export const RestaurantTablesMerged: Story = {
 
 export const RestaurantTablesMergedPhone: Story = {
   name: 'Restaurant floor plan, tables merged, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={K_ROUTES.floorMerged} />,
 }
 
 /** Merging by pressing, then moving the merged table with the keys (Space, arrows, Space). */
 export const RestaurantMergeInteraction: Story = {
   name: 'Restaurant floor plan, merging, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={K_ROUTES.floorEdit} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -4109,6 +4164,7 @@ export const CafeTerracePhone: Story = {
 /** Table 3's order on the till: four lines, 1.200,00 RSD, "Bill" last. */
 export const CafeTableTill: Story = {
   name: 'Café terrace, table 3 on the till',
+  tags: ['!dev'],
   render: () => <ExampleApp start={K_ROUTES.terraceTable} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -4127,6 +4183,7 @@ export const CafeTableTill: Story = {
 
 export const CafeTableTillPhone: Story = {
   name: 'Café terrace, table 3 on the till, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={K_ROUTES.terraceTable} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -4137,7 +4194,7 @@ export const CafeTableTillPhone: Story = {
 /** A press on table 3 opens its order; a kapućino more; back to the terrace. */
 export const CafeInteraction: Story = {
   name: 'Café terrace, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={K_ROUTES.terrace} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -4182,6 +4239,7 @@ export const GalaSeatingPhone: Story = {
 /** A free seat chosen (table 4, seat 9): the guests to seat there, those not seated first. */
 export const GalaSeatChosen: Story = {
   name: 'Event seating, a seat chosen',
+  tags: ['!dev'],
   render: () => <ExampleApp start={K_ROUTES.seatingSeat} />,
   play: async () => {
     await settle()
@@ -4193,6 +4251,7 @@ export const GalaSeatChosen: Story = {
 
 export const GalaSeatChosenPhone: Story = {
   name: 'Event seating, a seat chosen, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={K_ROUTES.seatingSeat} />,
   play: async () => {
     await settle()
@@ -4205,6 +4264,7 @@ export const GalaSeatChosenPhone: Story = {
 /** "Seat at…" from a guest's menu: a table with its free seats, then a seat. */
 export const GalaSeatAt: Story = {
   name: 'Event seating, Seat at…',
+  tags: ['!dev'],
   render: () => <ExampleApp start={K_ROUTES.seatingSeatAt} />,
   play: async () => {
     await settle()
@@ -4217,12 +4277,14 @@ export const GalaSeatAt: Story = {
 
 export const GalaSeatAtPhone: Story = {
   name: 'Event seating, Seat at…, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={K_ROUTES.seatingSeatAt} />,
 }
 
 /** Table 6's guests in seat order, with the organiser's conflict. */
 export const GalaTableGuests: Story = {
   name: 'Event seating, a table’s guests',
+  tags: ['!dev'],
   render: () => <ExampleApp start={K_ROUTES.seatingTable} />,
   play: async () => {
     await settle()
@@ -4233,13 +4295,14 @@ export const GalaTableGuests: Story = {
 
 export const GalaTableGuestsPhone: Story = {
   name: 'Event seating, a table’s guests, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={K_ROUTES.seatingTable} />,
 }
 
 /** The keyboard's way: Enter on table 4's seat 9, then the first guest not seated: 113 of 140. */
 export const GalaSeatingInteraction: Story = {
   name: 'Event seating, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={K_ROUTES.seating} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -4309,6 +4372,7 @@ export const IncomingInvoiceApprovalPhone: Story = {
  */
 export const IncomingInvoiceApprovalDraft: Story = {
   name: 'Incoming invoice approval, draft with two problems',
+  tags: ['!dev'],
   render: () => <ExampleApp start={M_ROUTES.approvalEdit} />,
   play: async ({ canvasElement }) => {
     await diagramReady(canvasElement)
@@ -4325,7 +4389,7 @@ export const IncomingInvoiceApprovalDraft: Story = {
 /** Solving both: Go to the review, connect it on; mark the decision's "Yes" as its default. */
 export const IncomingInvoiceApprovalDraftFixed: Story = {
   name: 'Incoming invoice approval, draft fixed, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={M_ROUTES.approvalEdit} />,
   play: async ({ canvasElement }) => {
     await diagramReady(canvasElement)
@@ -4399,7 +4463,7 @@ export const BankImportRunPhone: Story = {
 /** Retry: the step runs again, the run is in progress again. */
 export const BankImportRunRetry: Story = {
   name: 'Nightly bank-statement import, retry, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={M_ROUTES.importRun} />,
   play: async ({ canvasElement }) => {
     await diagramReady(canvasElement)
@@ -4459,7 +4523,7 @@ export const LegalSearchPhone: Story = {
 /** Searching other words, sorting, the next page and clearing the filters: the application answers. */
 export const LegalSearchInteraction: Story = {
   name: 'Legal search, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={P_ROUTES.search} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -4503,7 +4567,7 @@ export const GazetteNewsPhone: Story = {
 /** "Show more issues" loads the two older issues. */
 export const GazetteNewsInteraction: Story = {
   name: 'New in the Illustrative Gazette, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={P_ROUTES.gazette} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -4551,6 +4615,7 @@ export const IllustrativeLawPhone: Story = {
 /** Article 57 chosen: the panels narrowed to it — changed twice, two decisions, one opinion. */
 export const IllustrativeLawArticle: Story = {
   name: 'Illustrative law, Article 57 selected',
+  tags: ['!dev'],
   render: () => <ExampleApp start={O_ROUTES.lawArticle} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -4566,6 +4631,7 @@ export const IllustrativeLawArticle: Story = {
 /** On a phone the article's panels open as a sheet. */
 export const IllustrativeLawArticlePhone: Story = {
   name: 'Illustrative law, Article 57 selected, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={O_ROUTES.lawArticle} />,
   play: async () => {
     await settle()
@@ -4579,6 +4645,7 @@ export const IllustrativeLawArticlePhone: Story = {
 /** The law as it stood from 30.06.2018.: Article 20 not yet deleted, no Article 90. */
 export const IllustrativeLawVersion: Story = {
   name: 'Illustrative law, version of 2018',
+  tags: ['!dev'],
   render: () => <ExampleApp start={O_ROUTES.lawVersion} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -4591,6 +4658,7 @@ export const IllustrativeLawVersion: Story = {
 
 export const IllustrativeLawVersionPhone: Story = {
   name: 'Illustrative law, version of 2018, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={O_ROUTES.lawVersion} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -4657,7 +4725,7 @@ export const WorkRulebookPhone: Story = {
  */
 export const IllustrativeLawInteraction: Story = {
   name: 'Illustrative law, an article and a version, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={O_ROUTES.law} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -4704,6 +4772,7 @@ export const IllustrativeLawComparePhone: Story = {
 /** Kvadrat Gradnja's Work Rulebook: the 2022 version against the 2025 version. */
 export const RulebookCompare: Story = {
   name: 'Kvadrat Gradnja work rulebook, compare 2022 and 2025',
+  tags: ['!dev'],
   render: () => <ExampleApp start={O_ROUTES.rulebookCompare} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -4716,7 +4785,7 @@ export const RulebookCompare: Story = {
 /** From the act page: "Compare versions", then another earlier version. */
 export const IllustrativeLawCompareInteraction: Story = {
   name: 'Illustrative law, compare versions, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={O_ROUTES.law} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -4839,6 +4908,7 @@ export const WarehouseFloorPlanPhone: Story = {
 /** A-02-03's record: what the books say it holds, and "Count now" (the handheld's count). */
 export const WarehouseBinCount: Story = {
   name: 'Warehouse floor plan, a bin to count',
+  tags: ['!dev'],
   render: () => <ExampleApp start={N_ROUTES.warehouseBin} />,
   play: async () => {
     await settle()
@@ -4850,6 +4920,7 @@ export const WarehouseBinCount: Story = {
 
 export const WarehouseBinCountPhone: Story = {
   name: 'Warehouse floor plan, a bin to count, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={N_ROUTES.warehouseBin} />,
   play: async () => {
     await settle()
@@ -4860,6 +4931,7 @@ export const WarehouseBinCountPhone: Story = {
 /** B-03-04, the next line of pick list PL-2026-0418: "Pick here" opens the pick list. */
 export const WarehouseBinPick: Story = {
   name: 'Warehouse floor plan, the next pick',
+  tags: ['!dev'],
   render: () => <ExampleApp start={N_ROUTES.warehousePick} />,
   play: async () => {
     await settle()
@@ -4871,6 +4943,7 @@ export const WarehouseBinPick: Story = {
 
 export const WarehouseBinPickPhone: Story = {
   name: 'Warehouse floor plan, the next pick, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={N_ROUTES.warehousePick} />,
   play: async () => {
     await settle()
@@ -4881,7 +4954,7 @@ export const WarehouseBinPickPhone: Story = {
 /** A bin opened from the plan, then "Count now": the handheld's count of A-02-03. */
 export const WarehouseFloorPlanInteraction: Story = {
   name: 'Warehouse floor plan, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={N_ROUTES.warehouse} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -4928,6 +5001,7 @@ export const HospitalWardPhone: Story = {
 /** Bed 9 in its drawer: the patient's name masked, admitted, the doctor, Transfer and Discharge. */
 export const HospitalWardBed: Story = {
   name: 'Hospital ward, a bed',
+  tags: ['!dev'],
   render: () => <ExampleApp start={N_ROUTES.wardBed} />,
   play: async () => {
     await settle()
@@ -4940,6 +5014,7 @@ export const HospitalWardBed: Story = {
 
 export const HospitalWardBedPhone: Story = {
   name: 'Hospital ward, a bed, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={N_ROUTES.wardBed} />,
   play: async () => {
     await settle()
@@ -4950,7 +5025,7 @@ export const HospitalWardBedPhone: Story = {
 /** Bed 9 opened, its patient's name shown for a reason, then discharged: it needs cleaning. */
 export const HospitalWardInteraction: Story = {
   name: 'Hospital ward, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={N_ROUTES.ward} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -5015,6 +5090,7 @@ export const OfficeDesksPhone: Story = {
 /** Desk 7, free today, chosen: its equipment and "Book". */
 export const OfficeDesksFree: Story = {
   name: 'Office desks, a free desk',
+  tags: ['!dev'],
   render: () => <ExampleApp start={N_ROUTES.officeDesk} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -5026,6 +5102,7 @@ export const OfficeDesksFree: Story = {
 
 export const OfficeDesksFreePhone: Story = {
   name: 'Office desks, a free desk, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={N_ROUTES.officeDesk} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -5036,6 +5113,7 @@ export const OfficeDesksFreePhone: Story = {
 /** Milica's own desk today: "Cancel booking". */
 export const OfficeDesksOwn: Story = {
   name: 'Office desks, your booking',
+  tags: ['!dev'],
   render: () => <ExampleApp start={N_ROUTES.officeOwn} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -5048,6 +5126,7 @@ export const OfficeDesksOwn: Story = {
 
 export const OfficeDesksOwnPhone: Story = {
   name: 'Office desks, your booking, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={N_ROUTES.officeOwn} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -5063,7 +5142,7 @@ export const OfficeDesksOwnPhone: Story = {
  */
 export const OfficeDesksInteraction: Story = {
   name: 'Office desks, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={N_ROUTES.office} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -5109,7 +5188,7 @@ function shellEdge(canvasElement: HTMLElement): number {
  */
 export const SchoolGradebookUnderTheShell: Story = {
   name: 'School, gradebook, header under the shell, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={H_ROUTES.gradebook} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -5138,6 +5217,7 @@ export const SchoolGradebookUnderTheShell: Story = {
  */
 export const HealthClinicScheduleMove: Story = {
   name: 'Health, clinic schedule, move asked',
+  tags: ['!dev'],
   render: () => <ExampleApp start={H_ROUTES.clinicScheduleMove} />,
   play: async () => {
     await settle()
@@ -5156,6 +5236,7 @@ export const HealthClinicScheduleMove: Story = {
 
 export const HealthClinicScheduleMovePhone: Story = {
   name: 'Health, clinic schedule, move asked, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={H_ROUTES.clinicScheduleMove} />,
   play: async () => {
     await settle()
@@ -5168,7 +5249,7 @@ export const HealthClinicScheduleMovePhone: Story = {
 /** Unchecking the SMS makes the button plain Save; the move is made and nobody is messaged. */
 export const HealthClinicScheduleMoveConfirm: Story = {
   name: 'Health, clinic schedule, move, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={H_ROUTES.clinicScheduleMove} />,
   play: async () => {
     await settle()
@@ -5191,6 +5272,7 @@ export const HealthClinicScheduleMoveConfirm: Story = {
  */
 export const StoreSwapApprove: Story = {
   name: 'Store, swap requests, approve asked',
+  tags: ['!dev'],
   render: () => <ExampleApp start={G_ROUTES.swapRequestApprove} />,
   play: async () => {
     await settle()
@@ -5205,6 +5287,7 @@ export const StoreSwapApprove: Story = {
 
 export const StoreSwapApprovePhone: Story = {
   name: 'Store, swap requests, approve asked, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={G_ROUTES.swapRequestApprove} />,
   play: async () => {
     await settle()
@@ -5214,7 +5297,7 @@ export const StoreSwapApprovePhone: Story = {
 
 export const StoreSwapApproveConfirm: Story = {
   name: 'Store, swap requests, approve, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={G_ROUTES.swapRequests} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -5238,6 +5321,7 @@ export const StoreSwapApproveConfirm: Story = {
  */
 export const SchoolParentExcuse: Story = {
   name: 'School, parents’ portal, excuse',
+  tags: ['!dev'],
   render: () => <ExampleApp start={H_ROUTES.parentExcuse} />,
   play: async () => {
     await settle()
@@ -5252,6 +5336,7 @@ export const SchoolParentExcuse: Story = {
 
 export const SchoolParentExcusePhone: Story = {
   name: 'School, parents’ portal, excuse, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={H_ROUTES.parentExcuse} />,
   play: async () => {
     await settle()
@@ -5263,6 +5348,7 @@ export const SchoolParentExcusePhone: Story = {
 /** Sent: today's absences say "Excuse sent", and the page says it waits for the class teacher. */
 export const SchoolParentExcuseSent: Story = {
   name: 'School, parents’ portal, excuse sent',
+  tags: ['!dev'],
   render: () => <ExampleApp start={H_ROUTES.parentExcuseSent} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -5273,6 +5359,7 @@ export const SchoolParentExcuseSent: Story = {
 
 export const SchoolParentExcuseSentPhone: Story = {
   name: 'School, parents’ portal, excuse sent, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={H_ROUTES.parentExcuseSent} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -5363,12 +5450,14 @@ const FISCAL_PROFORMA_CHECK = async (canvasElement: HTMLElement) => {
 
 export const FiscalProforma: Story = {
   name: 'POS fiscal, proforma',
+  tags: ['!dev'],
   render: () => <ExampleApp start={TILL_ROUTES.proforma} />,
   play: deskPlay(FISCAL_PROFORMA_CHECK),
 }
 
 export const FiscalProformaPhone: Story = {
   name: 'POS fiscal, proforma, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={TILL_ROUTES.proforma} />,
   play: phonePlay(FISCAL_PROFORMA_CHECK),
 }
@@ -5385,18 +5474,21 @@ const FISCAL_TRAINING_CHECK = async (canvasElement: HTMLElement) => {
 
 export const FiscalTraining: Story = {
   name: 'POS fiscal, training mode',
+  tags: ['!dev'],
   render: () => <ExampleApp start={TILL_ROUTES.training} />,
   play: deskPlay(FISCAL_TRAINING_CHECK),
 }
 
 export const FiscalTrainingPhone: Story = {
   name: 'POS fiscal, training mode, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={TILL_ROUTES.training} />,
   play: phonePlay(FISCAL_TRAINING_CHECK),
 }
 
 export const FiscalTrainingTablet: Story = {
   name: 'POS fiscal, training mode, tablet',
+  tags: ['!dev'],
   render: () => <OnTablet start={TILL_ROUTES.training} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -5413,12 +5505,14 @@ const FISCAL_BUYER_CHECK = async () => {
 
 export const FiscalBuyer: Story = {
   name: 'POS fiscal, buyer',
+  tags: ['!dev'],
   render: () => <ExampleApp start={TILL_ROUTES.buyer} />,
   play: deskPlay(FISCAL_BUYER_CHECK),
 }
 
 export const FiscalBuyerPhone: Story = {
   name: 'POS fiscal, buyer, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={TILL_ROUTES.buyer} />,
   play: phonePlay(FISCAL_BUYER_CHECK),
 }
@@ -5439,18 +5533,21 @@ const FISCAL_MIXED_CHECK = async () => {
 
 export const FiscalMixed: Story = {
   name: 'POS fiscal, several payment methods',
+  tags: ['!dev'],
   render: () => <ExampleApp start={TILL_ROUTES.mixed} />,
   play: deskPlay(FISCAL_MIXED_CHECK),
 }
 
 export const FiscalMixedPhone: Story = {
   name: 'POS fiscal, several payment methods, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={TILL_ROUTES.mixed} />,
   play: phonePlay(FISCAL_MIXED_CHECK),
 }
 
 export const FiscalMixedTablet: Story = {
   name: 'POS fiscal, several payment methods, tablet',
+  tags: ['!dev'],
   render: () => <OnTablet start={TILL_ROUTES.mixed} />,
   play: async () => {
     await settle()
@@ -5467,12 +5564,14 @@ const FISCAL_INSTANT_CHECK = async () => {
 
 export const FiscalInstant: Story = {
   name: 'POS fiscal, instant payment',
+  tags: ['!dev'],
   render: () => <ExampleApp start={TILL_ROUTES.instant} />,
   play: deskPlay(FISCAL_INSTANT_CHECK),
 }
 
 export const FiscalInstantPhone: Story = {
   name: 'POS fiscal, instant payment, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={TILL_ROUTES.instant} />,
   play: phonePlay(FISCAL_INSTANT_CHECK),
 }
@@ -5486,12 +5585,14 @@ const FISCAL_DEFERRED_CHECK = async () => {
 
 export const FiscalDeferred: Story = {
   name: 'POS fiscal, deferred payment needs the buyer',
+  tags: ['!dev'],
   render: () => <ExampleApp start={TILL_ROUTES.deferred} />,
   play: deskPlay(FISCAL_DEFERRED_CHECK),
 }
 
 export const FiscalDeferredPhone: Story = {
   name: 'POS fiscal, deferred payment needs the buyer, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={TILL_ROUTES.deferred} />,
   play: phonePlay(FISCAL_DEFERRED_CHECK),
 }
@@ -5499,6 +5600,7 @@ export const FiscalDeferredPhone: Story = {
 /** A corporate card: the company as the buyer, its card in the optional field, approved. */
 export const FiscalCorporate: Story = {
   name: 'POS fiscal, corporate card',
+  tags: ['!dev'],
   render: () => <ExampleApp start={TILL_ROUTES.corporate} />,
   play: async () => {
     await settle()
@@ -5521,18 +5623,21 @@ const FISCAL_ISSUED_CHECK = async () => {
 
 export const FiscalIssued: Story = {
   name: 'POS fiscal, receipt issued',
+  tags: ['!dev'],
   render: () => <ExampleApp start={TILL_ROUTES.issued} />,
   play: deskPlay(FISCAL_ISSUED_CHECK),
 }
 
 export const FiscalIssuedPhone: Story = {
   name: 'POS fiscal, receipt issued, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={TILL_ROUTES.issued} />,
   play: phonePlay(FISCAL_ISSUED_CHECK),
 }
 
 export const FiscalIssuedTablet: Story = {
   name: 'POS fiscal, receipt issued, tablet',
+  tags: ['!dev'],
   render: () => <OnTablet start={TILL_ROUTES.issued} />,
   play: async () => {
     await settle()
@@ -5548,12 +5653,14 @@ const FISCAL_ISSUED_OFFLINE_CHECK = async (canvasElement: HTMLElement) => {
 
 export const FiscalIssuedOffline: Story = {
   name: 'POS fiscal, receipt issued offline',
+  tags: ['!dev'],
   render: () => <ExampleApp start={TILL_ROUTES.issuedOffline} />,
   play: deskPlay(FISCAL_ISSUED_OFFLINE_CHECK),
 }
 
 export const FiscalIssuedOfflinePhone: Story = {
   name: 'POS fiscal, receipt issued offline, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={TILL_ROUTES.issuedOffline} />,
   play: phonePlay(FISCAL_ISSUED_OFFLINE_CHECK),
 }
@@ -5568,18 +5675,21 @@ const FISCAL_REFUND_FIND_CHECK = async () => {
 
 export const FiscalRefundFind: Story = {
   name: 'POS fiscal, refund, find the receipt',
+  tags: ['!dev'],
   render: () => <ExampleApp start={TILL_ROUTES.refundFind} />,
   play: deskPlay(FISCAL_REFUND_FIND_CHECK),
 }
 
 export const FiscalRefundFindPhone: Story = {
   name: 'POS fiscal, refund, find the receipt, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={TILL_ROUTES.refundFind} />,
   play: phonePlay(FISCAL_REFUND_FIND_CHECK),
 }
 
 export const FiscalRefundFindTablet: Story = {
   name: 'POS fiscal, refund, find the receipt, tablet',
+  tags: ['!dev'],
   render: () => <OnTablet start={TILL_ROUTES.refundFind} />,
   play: async () => {
     await settle()
@@ -5599,12 +5709,14 @@ const FISCAL_REFUND_LINES_CHECK = async () => {
 
 export const FiscalRefundLines: Story = {
   name: 'POS fiscal, refund, lines',
+  tags: ['!dev'],
   render: () => <ExampleApp start={TILL_ROUTES.refundLines} />,
   play: deskPlay(FISCAL_REFUND_LINES_CHECK),
 }
 
 export const FiscalRefundLinesPhone: Story = {
   name: 'POS fiscal, refund, lines, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={TILL_ROUTES.refundLines} />,
   play: phonePlay(FISCAL_REFUND_LINES_CHECK),
 }
@@ -5617,12 +5729,14 @@ const FISCAL_REFUND_CART_CHECK = async (canvasElement: HTMLElement) => {
 
 export const FiscalRefundCart: Story = {
   name: 'POS fiscal, refund in the cart',
+  tags: ['!dev'],
   render: () => <ExampleApp start={TILL_ROUTES.refundCart} />,
   play: deskPlay(FISCAL_REFUND_CART_CHECK),
 }
 
 export const FiscalRefundCartPhone: Story = {
   name: 'POS fiscal, refund in the cart, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={TILL_ROUTES.refundCart} />,
   play: phonePlay(FISCAL_REFUND_CART_CHECK),
 }
@@ -5637,12 +5751,14 @@ const FISCAL_REFUND_RECEIPT_CHECK = async () => {
 
 export const FiscalRefundReceipt: Story = {
   name: 'POS fiscal, refund receipt',
+  tags: ['!dev'],
   render: () => <ExampleApp start={TILL_ROUTES.refundReceipt} />,
   play: deskPlay(FISCAL_REFUND_RECEIPT_CHECK),
 }
 
 export const FiscalRefundReceiptPhone: Story = {
   name: 'POS fiscal, refund receipt, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={TILL_ROUTES.refundReceipt} />,
   play: phonePlay(FISCAL_REFUND_RECEIPT_CHECK),
 }
@@ -5656,12 +5772,14 @@ const FISCAL_ADVANCES_CHECK = async (canvasElement: HTMLElement) => {
 
 export const FiscalAdvances: Story = {
   name: 'POS fiscal, advances',
+  tags: ['!dev'],
   render: () => <ExampleApp start={TILL_ROUTES.advances} />,
   play: deskPlay(FISCAL_ADVANCES_CHECK),
 }
 
 export const FiscalAdvancesPhone: Story = {
   name: 'POS fiscal, advances, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={TILL_ROUTES.advances} />,
   play: phonePlay(FISCAL_ADVANCES_CHECK),
 }
@@ -5673,12 +5791,14 @@ const FISCAL_ADVANCE_TAKE_CHECK = async () => {
 
 export const FiscalAdvanceTake: Story = {
   name: 'POS fiscal, take an advance',
+  tags: ['!dev'],
   render: () => <ExampleApp start={TILL_ROUTES.advanceTake} />,
   play: deskPlay(FISCAL_ADVANCE_TAKE_CHECK),
 }
 
 export const FiscalAdvanceTakePhone: Story = {
   name: 'POS fiscal, take an advance, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={TILL_ROUTES.advanceTake} />,
   play: phonePlay(FISCAL_ADVANCE_TAKE_CHECK),
 }
@@ -5686,6 +5806,7 @@ export const FiscalAdvanceTakePhone: Story = {
 /** Refunding an advance: the action as the title, the advance bold on its own line. */
 export const FiscalAdvanceRefund: Story = {
   name: 'POS fiscal, refund an advance',
+  tags: ['!dev'],
   render: () => <ExampleApp start={TILL_ROUTES.advanceRefund} />,
   play: async () => {
     await settle()
@@ -5696,6 +5817,7 @@ export const FiscalAdvanceRefund: Story = {
 /** A sale without compensation: its kind under the title, paid only as Other cashless. */
 export const FiscalNoCompensation: Story = {
   name: 'POS fiscal, sale without compensation',
+  tags: ['!dev'],
   render: () => <ExampleApp start={TILL_ROUTES.noCompensation} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -5706,6 +5828,7 @@ export const FiscalNoCompensation: Story = {
 /** Two receipts the processor did not accept: a danger "Not sent" in the strip. */
 export const FiscalQueueFailed: Story = {
   name: 'POS fiscal, receipts not accepted',
+  tags: ['!dev'],
   render: () => <ExampleApp start={TILL_ROUTES.queueFailed} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -5733,6 +5856,7 @@ export const FiscalJournalPhone: Story = {
 
 export const FiscalJournalTablet: Story = {
   name: 'POS journal, tablet',
+  tags: ['!dev'],
   render: () => <OnTablet start={TILL_ROUTES.journal} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -5751,12 +5875,14 @@ const FISCAL_JOURNAL_COPY_CHECK = async () => {
 
 export const FiscalJournalCopy: Story = {
   name: 'POS journal, copy',
+  tags: ['!dev'],
   render: () => <ExampleApp start={TILL_ROUTES.journalCopy} />,
   play: deskPlay(FISCAL_JOURNAL_COPY_CHECK),
 }
 
 export const FiscalJournalCopyPhone: Story = {
   name: 'POS journal, copy, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={TILL_ROUTES.journalCopy} />,
   play: phonePlay(FISCAL_JOURNAL_COPY_CHECK),
 }
@@ -5770,12 +5896,14 @@ const FISCAL_JOURNAL_CANCEL_CHECK = async () => {
 
 export const FiscalJournalCancel: Story = {
   name: 'POS journal, cancel a receipt',
+  tags: ['!dev'],
   render: () => <ExampleApp start={TILL_ROUTES.journalCancel} />,
   play: deskPlay(FISCAL_JOURNAL_CANCEL_CHECK),
 }
 
 export const FiscalJournalCancelPhone: Story = {
   name: 'POS journal, cancel a receipt, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={TILL_ROUTES.journalCancel} />,
   play: phonePlay(FISCAL_JOURNAL_CANCEL_CHECK),
 }
@@ -5787,12 +5915,14 @@ const FISCAL_JOURNAL_QUEUE_CHECK = async (canvasElement: HTMLElement) => {
 
 export const FiscalJournalQueue: Story = {
   name: 'POS journal, not sent',
+  tags: ['!dev'],
   render: () => <ExampleApp start={TILL_ROUTES.journalQueue} />,
   play: deskPlay(FISCAL_JOURNAL_QUEUE_CHECK),
 }
 
 export const FiscalJournalQueuePhone: Story = {
   name: 'POS journal, not sent, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={TILL_ROUTES.journalQueue} />,
   play: phonePlay(FISCAL_JOURNAL_QUEUE_CHECK),
 }
@@ -5836,6 +5966,7 @@ export const WebShopOrderPhone: Story = {
 
 export const WebShopOrderTablet: Story = {
   name: 'Web shop order, receipt delivered, tablet',
+  tags: ['!dev'],
   render: () => <OnTablet start={TILL_ROUTES.webOrder} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -5849,7 +5980,7 @@ export const WebShopOrderTablet: Story = {
  */
 export const FiscalMixedInteraction: Story = {
   name: 'POS fiscal, several payment methods, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={I_ROUTES.pos} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -5885,7 +6016,7 @@ export const FiscalMixedInteraction: Story = {
 /** Refund end to end: the menu's Refund…, find by total, two kifle, pay out in cash. */
 export const FiscalRefundInteraction: Story = {
   name: 'POS fiscal, refund, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={I_ROUTES.pos} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -5913,7 +6044,7 @@ export const FiscalRefundInteraction: Story = {
 /** The journal: a receipt cancelled with a reason becomes a refund in the list. */
 export const FiscalCancelInteraction: Story = {
   name: 'POS journal, cancel a receipt, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={TILL_ROUTES.journalCancel} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -5959,12 +6090,14 @@ const CAFE_TAB_EDIT_CHECK = async () => {
 
 export const CafeTabEdit: Story = {
   name: 'Café tab, edit a line',
+  tags: ['!dev'],
   render: () => <ExampleApp start={`${TAB_3}?edit`} />,
   play: deskPlay(CAFE_TAB_EDIT_CHECK),
 }
 
 export const CafeTabEditPhone: Story = {
   name: 'Café tab, edit a line, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={`${TAB_3}?edit`} />,
   play: phonePlay(CAFE_TAB_EDIT_CHECK),
 }
@@ -5972,6 +6105,7 @@ export const CafeTabEditPhone: Story = {
 /** A discount on the whole order; the promotions apply by themselves. */
 export const CafeTabDiscount: Story = {
   name: 'Café tab, discount on the order',
+  tags: ['!dev'],
   render: () => <ExampleApp start={`${TAB_3}?discount`} />,
   play: async () => {
     await settle()
@@ -5990,12 +6124,14 @@ const CAFE_TAB_SPLIT_CHECK = async () => {
 
 export const CafeTabSplit: Story = {
   name: 'Café tab, split the bill',
+  tags: ['!dev'],
   render: () => <ExampleApp start={`${TAB_3}?split`} />,
   play: deskPlay(CAFE_TAB_SPLIT_CHECK),
 }
 
 export const CafeTabSplitPhone: Story = {
   name: 'Café tab, split the bill, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={`${TAB_3}?split`} />,
   play: phonePlay(CAFE_TAB_SPLIT_CHECK),
 }
@@ -6009,12 +6145,14 @@ const CAFE_TAB_PAY_PART_CHECK = async () => {
 
 export const CafeTabPayPart: Story = {
   name: 'Café tab, pay part',
+  tags: ['!dev'],
   render: () => <ExampleApp start={`${TAB_3}?pay-part`} />,
   play: deskPlay(CAFE_TAB_PAY_PART_CHECK),
 }
 
 export const CafeTabPayPartPhone: Story = {
   name: 'Café tab, pay part, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={`${TAB_3}?pay-part`} />,
   play: phonePlay(CAFE_TAB_PAY_PART_CHECK),
 }
@@ -6026,12 +6164,14 @@ const CAFE_TAB_MOVE_CHECK = async () => {
 
 export const CafeTabMove: Story = {
   name: 'Café tab, move to another table',
+  tags: ['!dev'],
   render: () => <ExampleApp start={`${TAB_3}?move`} />,
   play: deskPlay(CAFE_TAB_MOVE_CHECK),
 }
 
 export const CafeTabMovePhone: Story = {
   name: 'Café tab, move to another table, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={`${TAB_3}?move`} />,
   play: phonePlay(CAFE_TAB_MOVE_CHECK),
 }
@@ -6043,12 +6183,14 @@ const CAFE_TAB_BILL_CHECK = async () => {
 
 export const CafeTabBill: Story = {
   name: 'Café tab, bill',
+  tags: ['!dev'],
   render: () => <ExampleApp start={`${TAB_3}?bill`} />,
   play: deskPlay(CAFE_TAB_BILL_CHECK),
 }
 
 export const CafeTabBillPhone: Story = {
   name: 'Café tab, bill, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={`${TAB_3}?bill`} />,
   play: phonePlay(CAFE_TAB_BILL_CHECK),
 }
@@ -6062,12 +6204,14 @@ const CAFE_TAB_CLOSED_CHECK = async () => {
 
 export const CafeTabClosed: Story = {
   name: 'Café tab, closed with the receipt',
+  tags: ['!dev'],
   render: () => <ExampleApp start={`${TAB_3}?closed`} />,
   play: deskPlay(CAFE_TAB_CLOSED_CHECK),
 }
 
 export const CafeTabClosedPhone: Story = {
   name: 'Café tab, closed with the receipt, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={`${TAB_3}?closed`} />,
   play: phonePlay(CAFE_TAB_CLOSED_CHECK),
 }
@@ -6075,6 +6219,7 @@ export const CafeTabClosedPhone: Story = {
 /** Table 1: a third espresso, the venue's promotion "Espresso 3 for 2". */
 export const CafeTabPromotion: Story = {
   name: 'Café tab, promotion 3 for 2',
+  tags: ['!dev'],
   render: () => <ExampleApp start="/cafe/kod-mike/terrace/t1" />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -6084,6 +6229,7 @@ export const CafeTabPromotion: Story = {
 
 export const CafeTabTablet: Story = {
   name: 'Café tab, tablet',
+  tags: ['!dev'],
   render: () => <OnTablet start={`${TAB_3}?new`} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -6112,6 +6258,7 @@ export const RestaurantTabPhone: Story = {
 
 export const RestaurantTabTablet: Story = {
   name: 'Restaurant tab, table 7, tablet',
+  tags: ['!dev'],
   render: () => <OnTablet start={BISTRO_TAB_7} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -6122,6 +6269,7 @@ export const RestaurantTabTablet: Story = {
 /** A share of three paid by card: Total, Paid and "To pay". */
 export const RestaurantTabPaidShare: Story = {
   name: 'Restaurant tab, a share paid',
+  tags: ['!dev'],
   render: () => <ExampleApp start={`${BISTRO_TAB_7}?paid-share`} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -6136,7 +6284,7 @@ export const RestaurantTabPaidShare: Story = {
  */
 export const CafeTabPersistsInteraction: Story = {
   name: 'Café tab, persists, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={K_ROUTES.terrace} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -6164,7 +6312,7 @@ export const CafeTabPersistsInteraction: Story = {
 /** Move the whole tab of table 3 to table 2, bill it in cash, close the table. */
 export const CafeTabMoveCloseInteraction: Story = {
   name: 'Café tab, move and close, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={TAB_3} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -6187,7 +6335,7 @@ export const CafeTabMoveCloseInteraction: Story = {
 /** Bistro Dunav: table 7's tab from the floor, a krempita added, back on the floor its total. */
 export const RestaurantTabInteraction: Story = {
   name: 'Restaurant tab, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={K_ROUTES.floorTable} />,
   play: async ({ canvasElement }) => {
     await settle()
