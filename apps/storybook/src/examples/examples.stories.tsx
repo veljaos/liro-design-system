@@ -3225,6 +3225,10 @@ export const SchoolParentPortalExcuse: Story = {
     ).toBeInTheDocument()
     await expect(canvasElement).toHaveTextContent('Excuse sent, waiting for the class teacher')
     await expect(canvasElement).not.toHaveTextContent('Today’s absences are not excused yet')
+    // The drawer has closed (until then the page behind it is hidden from assistive technology).
+    await waitFor(async () => {
+      await expect(body.queryByRole('dialog')).toBeNull()
+    })
   },
 }
 
