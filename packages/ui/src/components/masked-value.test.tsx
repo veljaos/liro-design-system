@@ -31,6 +31,14 @@ describe('revealRequest', () => {
 })
 
 describe('MaskedValue', () => {
+  it('names its actions in sentence case with sentenceLabel, the mask with the label', () => {
+    const html = render(
+      <MaskedValue label="Diagnosis" sentenceLabel="diagnosis" onReveal={() => undefined} />,
+    )
+    expect(html).toContain('aria-label="Show diagnosis"')
+    expect(html).toContain('Diagnosis: hidden')
+  })
+
   it('keeps the value out of the page while masked, and names it for assistive technology', () => {
     const html = render(<MaskedValue label="Salary" onReveal={() => undefined} />)
     expect(html).toContain('Salary: hidden')

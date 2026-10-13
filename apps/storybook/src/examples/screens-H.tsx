@@ -14,12 +14,18 @@ import {
 import { useContext, useState, type ReactNode } from 'react'
 import {
   Alert,
+  AttachmentList,
   AttendanceGrid,
   Button,
   CalendarView,
+  ChangeConfirmDialog,
+  CheckboxField,
   DataTable,
   DateText,
   DetailPage,
+  Drawer,
+  Field,
+  FileDropzone,
   KeyFigures,
   KeyValueList,
   MaskedValue,
@@ -31,6 +37,7 @@ import {
   SelectField,
   SlotPicker,
   Stepper,
+  TextAreaField,
   Timetable,
   Toaster,
   UnavailableAction,
@@ -43,7 +50,9 @@ import {
   type MenuEntry,
   type ModuleTab,
   type PortalSection,
+  type Attachment,
   type ScheduleBooking,
+  type ScheduleMove,
   type ShellCompany,
 } from '@veljaos/ui'
 import type { ExampleRoute } from './example-app'
@@ -62,17 +71,21 @@ import {
   DAY_BOOKINGS,
   DOCTOR_EVENTS,
   DOCTORS,
+  EXCUSE_FILES,
+  EXCUSE_REASONS,
   FINDING,
   FREE_SLOTS,
   GRADEBOOK_VALUE,
   gradebookTotals,
   JOVANA_BOOKING,
+  JOVANA_MOVE,
   JOVANA_SLOT,
   LESSONS,
   LUKA,
   MARK_CODES,
   PARENT,
   PATIENT,
+  PATIENT_PHONE,
   PERIODS,
   PUPILS,
   REVEAL_REASONS,
@@ -101,6 +114,8 @@ export const H_ROUTES = {
   bookConfirm: '/portal/health/book?step=confirm',
   booked: '/portal/health/book?step=done',
   clinicSchedule: `/clinic/schedule/${CLINIC.day}`,
+  /** The schedule with a dragged appointment waiting for its confirmation (P5.28 item 9). */
+  clinicScheduleMove: `/clinic/schedule/${CLINIC.day}?move=${JOVANA_MOVE.id}`,
   doctorCalendar: `/clinic/calendar/${CHOSEN_DOCTOR}/${CLINIC.week.start}`,
   finding: `/clinic/patients/jovana-nikolic/findings/${FINDING.number}`,
   findingAsk: `/clinic/patients/jovana-nikolic/findings/${FINDING.number}?reveal=ask`,
@@ -109,6 +124,10 @@ export const H_ROUTES = {
   attendance: `/school/classes/7-2/attendance/${SCHOOL.day}`,
   gradebook: '/school/classes/7-2/gradebook/mathematics',
   parent: '/portal/school/attendance',
+  /** The excuse form open, today's absences chosen (P5.28 item 16). */
+  parentExcuse: '/portal/school/attendance?excuse=open',
+  /** The excuse sent, waiting for the class teacher. */
+  parentExcuseSent: '/portal/school/attendance?excuse=sent',
 }
 
 const LINK = 'text-link no-underline visited:text-link hover:underline'
@@ -393,10 +412,20 @@ function ClinicShell({
   )
 }
 
-export function ClinicSchedule({ phone }: { phone: boolean }) {
+/**
+ * The clinic's schedule. A drag (or the keyboard, or "Move to…") only proposes a move: the
+ * application asks first — the change, who it concerns, the patient's SMS as a choice — and moves
+ * the appointment on Save (P5.28 item 9). Cancel leaves it where it was.
+ */
+export function ClinicSchedule({ phone, moving }: { phone: boolean; moving?: ScheduleMove }) {
   const { format } = useLiro()
   const navigate = useContext(Navigate)
   const [bookings, setBookings] = useState<readonly ScheduleBooking[]>(DAY_BOOKINGS)
+  const [proposed, setProposed] = useState<ScheduleMove | null>(moving ?? null)
+  const booking = proposed === null ? undefined : bookings.find((each) => each.id === proposed.id)
+  const times = (start: string, end: string) =>
+    `${format.date(start.slice(0, 10))} ${format.time(start)}–${format.time(end)}`
+  const service = (each: ScheduleBooking) => (each.description?.split(' · ')[0] ?? '').toLowerCase()
   return (
     <ClinicShell phone={phone} tab="schedule" crumb="Schedule">
       <Frame phone={phone} wide>
@@ -412,20 +441,70 @@ export function ClinicSchedule({ phone }: { phone: boolean }) {
           slotMinutes={30}
           resourceLabel="Doctor"
           layout={phone ? 'phone' : 'desktop'}
-          onMove={(move) => {
-            setBookings((current) =>
-              current.map((each) =>
-                each.id === move.id
-                  ? { ...each, resourceId: move.resourceId, start: move.start, end: move.end }
-                  : each,
-              ),
-            )
-            notice.success('Appointment moved. The patient gets a message.')
-          }}
-          onSelect={(booking) => {
-            if (booking.id === JOVANA_BOOKING.id) navigate(H_ROUTES.finding)
+          onMove={setProposed}
+          onSelect={(each) => {
+            if (each.id === JOVANA_BOOKING.id) navigate(H_ROUTES.finding)
           }}
         />
+        {proposed !== null && booking !== undefined && (
+          <ChangeConfirmDialog
+            open
+            onOpenChange={(open) => {
+              if (!open) setProposed(null)
+            }}
+            title="Move appointment"
+            subject={`${booking.title}, ${service(booking)}`}
+            changes={[
+              ...(proposed.resourceId === booking.resourceId
+                ? []
+                : [
+                    {
+                      label: 'Doctor',
+                      from: doctorName(booking.resourceId),
+                      to: doctorName(proposed.resourceId),
+                    },
+                  ]),
+              {
+                label: 'Time',
+                from: times(booking.start, booking.end),
+                to: times(proposed.start, proposed.end),
+              },
+            ]}
+            affected={[
+              `${booking.title} (patient)`,
+              ...new Set([doctorName(booking.resourceId), doctorName(proposed.resourceId)]),
+            ].join(', ')}
+            notify={[
+              {
+                id: 'patient',
+                label: `Notify ${booking.title} by SMS`,
+                ...(booking.id === JOVANA_BOOKING.id
+                  ? { description: `To ${PATIENT_PHONE}: the new doctor and time.` }
+                  : { description: 'The new doctor and time, to the number in the record.' }),
+                defaultChecked: true,
+              },
+            ]}
+            onConfirm={(answer) => {
+              setBookings((current) =>
+                current.map((each) =>
+                  each.id === proposed.id
+                    ? {
+                        ...each,
+                        resourceId: proposed.resourceId,
+                        start: proposed.start,
+                        end: proposed.end,
+                      }
+                    : each,
+                ),
+              )
+              notice.success(
+                answer.notify.includes('patient')
+                  ? `Appointment moved. ${booking.title} gets an SMS.`
+                  : 'Appointment moved. No message was sent.',
+              )
+            }}
+          />
+        )}
       </Frame>
     </ClinicShell>
   )
@@ -505,6 +584,8 @@ export function Finding({ phone, reveal }: { phone: boolean; reveal: 'none' | 'a
                     value: (
                       <MaskedValue
                         label="Diagnosis"
+                        sentenceLabel="diagnosis"
+                        subject={`${PATIENT.name}, finding ${FINDING.number}`}
                         reasons={REVEAL_REASONS}
                         allowOther
                         defaultAsking={reveal === 'ask'}
@@ -523,6 +604,8 @@ export function Finding({ phone, reveal }: { phone: boolean; reveal: 'none' | 'a
                     value: (
                       <MaskedValue
                         label="Finding and advice"
+                        sentenceLabel="finding and advice"
+                        subject={`${PATIENT.name}, finding ${FINDING.number}`}
                         reasons={REVEAL_REASONS}
                         allowOther
                         {...(text ? { value: FINDING.text } : {})}
@@ -752,11 +835,178 @@ const PARENT_SECTIONS: PortalSection[] = [
   { key: 'messages', label: 'Messages', href: '#/portal/school/messages', icon: MessageSquare },
 ]
 
-export function ParentAttendance({ phone }: { phone: boolean }) {
+/** What the parent sends with an excuse; the school's application records it. */
+interface ExcuseDraft {
+  absences: string[]
+  reason: string | undefined
+  text: string
+  files: Attachment[]
+}
+
+/**
+ * The excuse, asked first (P5.28 item 16): which absences (today's chosen), the reason (the
+ * school's list, "Other" with words) and the doctor's note (a photo from the camera on phones, or
+ * a PDF), then Send. A Drawer at the end: a short form with the absences still in view (D14).
+ */
+function ExcuseDrawer({
+  phone,
+  open,
+  absences,
+  onOpenChange,
+  onSend,
+}: {
+  phone: boolean
+  open: boolean
+  absences: readonly Absence[]
+  onOpenChange: (open: boolean) => void
+  onSend: (draft: ExcuseDraft) => void
+}) {
   const { format } = useLiro()
-  const [absences, setAbsences] = useState<readonly Absence[]>(ABSENCES)
-  const open = absences.filter((each) => !each.excused)
-  const excused = absences.length - open.length
+  const [draft, setDraft] = useState<ExcuseDraft>({
+    absences: absences.filter((each) => each.date === SCHOOL.day).map((each) => each.id),
+    reason: undefined,
+    text: '',
+    files: [],
+  })
+  const [tried, setTried] = useState(false)
+  const missingAbsence = draft.absences.length === 0
+  const missingReason = draft.reason === undefined
+  const missingText = draft.reason === 'other' && draft.text.trim() === ''
+  const send = () => {
+    setTried(true)
+    if (missingAbsence || missingReason || missingText) return
+    onSend(draft)
+  }
+  const absenceText = (each: Absence) =>
+    `${format.date(each.date)}, lesson ${format.number(String(each.lesson))}, ${each.subject}`
+  return (
+    <Drawer
+      side="end"
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Excuse absences"
+      subject={`Luka Jovanović, class ${SCHOOL.className}`}
+      description={`The class teacher, ${SCHOOL.teacher}, accepts the excuse.`}
+      actions={
+        <>
+          <Button
+            intent="cancel"
+            label="Cancel"
+            onClick={() => {
+              onOpenChange(false)
+            }}
+          />
+          <Button family="primary" icon={Send} emphasis="primary" label="Send" onClick={send} />
+        </>
+      }
+    >
+      <Field
+        label="Absences to excuse"
+        required
+        group
+        {...(tried && missingAbsence ? { error: 'Choose at least one absence.' } : {})}
+      >
+        {(control) => (
+          <div role="group" aria-labelledby={control.labelId} className="flex flex-col gap-2">
+            {absences.map((each) => (
+              <CheckboxField
+                key={each.id}
+                label={absenceText(each)}
+                checked={draft.absences.includes(each.id)}
+                onChange={(checked) => {
+                  setDraft((current) => ({
+                    ...current,
+                    absences: absences
+                      .map((one) => one.id)
+                      .filter((id) => (id === each.id ? checked : current.absences.includes(id))),
+                  }))
+                }}
+              />
+            ))}
+          </div>
+        )}
+      </Field>
+      <RadioGroupField
+        label="Reason"
+        required
+        options={EXCUSE_REASONS}
+        {...(draft.reason === undefined ? {} : { value: draft.reason })}
+        onChange={(reason) => {
+          setDraft((current) => ({ ...current, reason }))
+        }}
+        {...(tried && missingReason ? { error: 'Choose a reason.' } : {})}
+      />
+      {draft.reason === 'other' && (
+        <TextAreaField
+          label="Describe the reason"
+          required
+          rows={3}
+          value={draft.text}
+          onChange={(text) => {
+            setDraft((current) => ({ ...current, text }))
+          }}
+          {...(tried && missingText ? { error: 'Write the reason.' } : {})}
+        />
+      )}
+      <FileDropzone
+        label="Doctor’s note"
+        description="Optional for a family reason; the class teacher may ask for it."
+        multiple={false}
+        accept={EXCUSE_FILES.accept}
+        acceptText={EXCUSE_FILES.acceptText}
+        maxSize={EXCUSE_FILES.maxSize}
+        maxSizeText={EXCUSE_FILES.maxSizeText}
+        camera
+        layout={phone ? 'phone' : 'desktop'}
+        existing={draft.files.length}
+        onFiles={(files) => {
+          setDraft((current) => ({
+            ...current,
+            files: files.map((file, index) => ({
+              id: `note-${String(index)}`,
+              name: file.name,
+              sizeText: `${format.number(String(Math.max(1, Math.round(file.size / 1024))))} KB`,
+              state: 'available',
+            })),
+          }))
+        }}
+      />
+      {draft.files.length > 0 && (
+        <AttachmentList
+          label="Doctor’s note"
+          files={draft.files}
+          canRemove={() => true}
+          onRemove={() => {
+            setDraft((current) => ({ ...current, files: [] }))
+          }}
+        />
+      )}
+    </Drawer>
+  )
+}
+
+export function ParentAttendance({
+  phone,
+  excuse,
+}: {
+  phone: boolean
+  /** The page as left: the excuse form open, or the excuse just sent. */
+  excuse?: 'open' | 'sent'
+}) {
+  const { format } = useLiro()
+  const [absences, setAbsences] = useState<readonly Absence[]>(() =>
+    excuse === 'sent'
+      ? ABSENCES.map((each) =>
+          each.excused ? each : { ...each, excuseSent: true, note: 'Doctor’s appointment' },
+        )
+      : ABSENCES,
+  )
+  const [excusing, setExcusing] = useState(excuse === 'open')
+  const open = absences.filter((each) => !each.excused && each.excuseSent !== true)
+  const waiting = absences.filter((each) => !each.excused && each.excuseSent === true)
+  const excused = absences.length - open.length - waiting.length
+  const state = (row: Absence) =>
+    row.excused ? 'Excused' : row.excuseSent === true ? 'Excuse sent' : 'Not excused'
   const columns: DataTableColumn<Absence>[] = [
     {
       id: 'date',
@@ -771,13 +1021,11 @@ export function ParentAttendance({ phone }: { phone: boolean }) {
       cell: (row) => `${format.number(String(row.lesson))}.`,
     },
     { id: 'subject', header: 'Subject', cell: (row) => row.subject },
-    {
-      id: 'state',
-      header: 'State',
-      cell: (row) => statusBadge(row.excused ? 'Excused' : 'Not excused'),
-    },
+    { id: 'state', header: 'State', cell: (row) => statusBadge(state(row)) },
     { id: 'note', header: 'Note', cell: (row) => row.note ?? '—' },
   ]
+  const lessons = (list: readonly Absence[]) =>
+    list.map((each) => format.number(String(each.lesson))).join(' and ')
   return (
     <Tenant>
       <PortalShell
@@ -811,6 +1059,15 @@ export function ParentAttendance({ phone }: { phone: boolean }) {
                   value: format.number(String(absences.length)),
                 },
                 { key: 'excused', label: 'Excused', value: format.number(String(excused)) },
+                ...(waiting.length > 0
+                  ? [
+                      {
+                        key: 'waiting',
+                        label: 'Waiting for the class teacher',
+                        value: format.number(String(waiting.length)),
+                      },
+                    ]
+                  : []),
                 {
                   key: 'open',
                   label: 'Not excused yet',
@@ -821,27 +1078,27 @@ export function ParentAttendance({ phone }: { phone: boolean }) {
             />
           </SectionCard>
           {open.length > 0 && (
-            <Alert tone="warning" title="Today’s absences are not excused yet">
-              <div className="flex flex-col items-start gap-2">
-                <span className="bidi-content">
-                  {`Luka missed lessons 1 and 2 today (${open.map((each) => each.subject).join(', ')}). Excuse them within 8 days.`}
-                </span>
+            <Alert
+              tone="warning"
+              title="Today’s absences are not excused yet"
+              actions={
                 <Button
-                  family="primary"
+                  family="neutral"
                   icon={Send}
-                  label="Excuse today’s absences"
+                  emphasis="secondary"
+                  label="Excuse absences…"
                   onClick={() => {
-                    setAbsences((current) =>
-                      current.map((each) =>
-                        each.excused
-                          ? each
-                          : { ...each, excused: true, note: 'Dentist, note from the parent' },
-                      ),
-                    )
-                    notice.success('Sent to the class teacher, Dragana Simić.')
+                    setExcusing(true)
                   }}
                 />
-              </div>
+              }
+            >
+              {`Luka missed lessons ${lessons(open)} today (${open.map((each) => each.subject).join(', ')}). Excuse them within 8 days.`}
+            </Alert>
+          )}
+          {open.length === 0 && waiting.length > 0 && (
+            <Alert title="Excuse sent, waiting for the class teacher">
+              {`Lessons ${lessons(waiting)} on ${format.date(SCHOOL.day)}. ${SCHOOL.teacher} accepts the excuse; its state is shown here.`}
             </Alert>
           )}
           <SectionCard title="Absences" headingLevel={2} flush>
@@ -857,12 +1114,34 @@ export function ParentAttendance({ phone }: { phone: boolean }) {
                 title: (row) =>
                   `${format.date(row.date)} · lesson ${format.number(String(row.lesson))}`,
                 subtitle: (row) => row.subject,
-                badge: (row) => statusBadge(row.excused ? 'Excused' : 'Not excused'),
+                badge: (row) => statusBadge(state(row)),
                 details: ['note'],
               }}
             />
           </SectionCard>
         </PortalPage>
+        {open.length > 0 && (
+          <ExcuseDrawer
+            phone={phone}
+            open={excusing}
+            absences={open}
+            onOpenChange={setExcusing}
+            onSend={(draft) => {
+              const reason = EXCUSE_REASONS.find((each) => each.value === draft.reason)
+              const note = [
+                draft.reason === 'other' ? draft.text.trim() : (reason?.label ?? ''),
+                ...(draft.files.length > 0 ? ['note attached'] : []),
+              ].join(', ')
+              setAbsences((current) =>
+                current.map((each) =>
+                  draft.absences.includes(each.id) ? { ...each, excuseSent: true, note } : each,
+                ),
+              )
+              setExcusing(false)
+              notice.success(`Excuse sent to the class teacher, ${SCHOOL.teacher}.`)
+            }}
+          />
+        )}
         <Toaster layout={phone ? 'phone' : 'desktop'} />
       </PortalShell>
     </Tenant>
@@ -877,6 +1156,10 @@ export const GROUP_H_ROUTES: ExampleRoute[] = [
   { path: H_ROUTES.bookConfirm, render: (phone) => <Booking phone={phone} step="confirm" /> },
   { path: H_ROUTES.booked, render: (phone) => <Booking phone={phone} step="done" /> },
   { path: H_ROUTES.clinicSchedule, render: (phone) => <ClinicSchedule phone={phone} /> },
+  {
+    path: H_ROUTES.clinicScheduleMove,
+    render: (phone) => <ClinicSchedule phone={phone} moving={JOVANA_MOVE} />,
+  },
   { path: H_ROUTES.doctorCalendar, render: (phone) => <DoctorCalendar phone={phone} /> },
   { path: H_ROUTES.finding, render: (phone) => <Finding phone={phone} reveal="none" /> },
   { path: H_ROUTES.findingAsk, render: (phone) => <Finding phone={phone} reveal="ask" /> },
@@ -885,4 +1168,12 @@ export const GROUP_H_ROUTES: ExampleRoute[] = [
   { path: H_ROUTES.attendance, render: (phone) => <LessonAttendance phone={phone} /> },
   { path: H_ROUTES.gradebook, render: (phone) => <Gradebook phone={phone} /> },
   { path: H_ROUTES.parent, render: (phone) => <ParentAttendance phone={phone} /> },
+  {
+    path: H_ROUTES.parentExcuse,
+    render: (phone) => <ParentAttendance phone={phone} excuse="open" />,
+  },
+  {
+    path: H_ROUTES.parentExcuseSent,
+    render: (phone) => <ParentAttendance phone={phone} excuse="sent" />,
+  },
 ]

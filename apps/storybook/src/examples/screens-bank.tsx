@@ -1126,7 +1126,8 @@ export function BankStatement({
         tone="info"
         icon={BookCheck}
         size="wide"
-        title={`Post statement ${STATEMENT.number}?`}
+        title="Post statement"
+        subject={`Statement ${STATEMENT.number} · ${STATEMENT.bank}`}
         message="The journal entry below is posted and the open items are closed. A posted statement can only be corrected by a reversal."
         preview={<PostPreview work={work} phone={phone} />}
         confirmLabel="Post statement"

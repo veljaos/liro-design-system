@@ -23,6 +23,12 @@ import type { IconComponent } from './intents'
  * Alert with only a title — no message, or a message that renders nothing (`false`, null, '') —
  * is compact: ONE_LINE padding (10px by 16px), the icon centred on the title's line, 42px high.
  * A Banner is a one-row strip and always uses ONE_LINE. An empty message never adds the 10px gap.
+ *
+ * Actions on a toned background are neutral (P5.28 item 7, the owner's review: a blue "Excuse
+ * today's absences" inside a yellow warning). An Alert's `actions` stand under its message, a
+ * Banner's at the end; both take neutral secondary Buttons only (`family="neutral"` or a neutral
+ * intent, `emphasis="secondary"`), never a family colour: the tone already carries the meaning,
+ * and two colours in one box fight. The main action of the page stays outside the alert.
  */
 
 /** The padding of every one-line alert or banner: 10px by 16px. */
@@ -85,6 +91,11 @@ interface AlertBaseProps {
 export interface AlertProps extends AlertBaseProps {
   /** The message, from the application. */
   children?: ReactNode
+  /**
+   * Actions under the message, from the application, in one row at the start: neutral secondary
+   * Buttons only (P5.28 item 7), the main one last.
+   */
+  actions?: ReactNode
 }
 
 function CloseButton({ onClose, fg }: { onClose: () => void; fg: string }) {
@@ -111,11 +122,20 @@ function CloseButton({ onClose, fg }: { onClose: () => void; fg: string }) {
  * A message in the page about its content: information, success, a warning or a danger. It stays
  * until the user closes it (when `onClose` is given) or the page changes.
  */
-export function Alert({ tone = 'neutral', title, icon, onClose, className, children }: AlertProps) {
+export function Alert({
+  tone = 'neutral',
+  title,
+  icon,
+  onClose,
+  className,
+  children,
+  actions,
+}: AlertProps) {
   const look = TONES[tone]
   const Icon = icon ?? look.icon
   const message = hasMessage(children)
-  const compact = !message
+  const hasActions = hasMessage(actions)
+  const compact = !message && !hasActions
   return (
     <div
       role={alertRole(tone)}
@@ -149,6 +169,11 @@ export function Alert({ tone = 'neutral', title, icon, onClose, className, child
         {message && (
           <div className={cn('text-sm break-words text-primary', TEXT_DIRECTION)}>{children}</div>
         )}
+        {hasActions && (
+          <div data-slot="alert-actions" className="flex flex-wrap items-center gap-2">
+            {actions}
+          </div>
+        )}
       </div>
       {onClose !== undefined && <CloseButton onClose={onClose} fg={look.fg} />}
     </div>
@@ -158,7 +183,10 @@ export function Alert({ tone = 'neutral', title, icon, onClose, className, child
 export interface BannerProps extends AlertBaseProps {
   /** The message, from the application: one or two lines. */
   children: ReactNode
-  /** Actions at the end, e.g. a Button ("Reconnect", "Review"). */
+  /**
+   * Actions at the end, e.g. a Button ("Reconnect", "Review"): neutral secondary Buttons only
+   * (P5.28 item 7).
+   */
   actions?: ReactNode
   /**
    * Default: by the tone (`alertRole`). 'status' for a banner that marks a state shown when the

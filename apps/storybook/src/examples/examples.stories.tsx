@@ -2047,7 +2047,7 @@ export const BankStatementPostInteraction: Story = {
     await expect(canvasElement).toHaveTextContent('10 of 10 lines done')
     await userEvent.click(canvas.getByRole('button', { name: 'Post statement' }))
     const dialog = await within(document.body).findByRole('alertdialog', {
-      name: 'Post statement 188?',
+      name: 'Post statement Statement 188 · Banca Intesa',
     })
     await expect(dialog).toHaveTextContent('4 lines, 4 items')
     await expect(dialog).toHaveTextContent('6 lines')
@@ -2636,7 +2636,9 @@ export const StoreShiftsPublish: Story = {
     )
     await userEvent.click(within(dialog).getByRole('button', { name: /^Publish/ }))
     await expect(
-      await within(document.body).findByText(/Changes published\. 8 people were notified\./),
+      await within(document.body).findByText(
+        /Changes published\. 8 people see their shifts in the app\./,
+      ),
     ).toBeInTheDocument()
     await waitFor(async () => {
       await expect(canvas.queryByText('Changed since publishing')).toBeNull()
@@ -2678,7 +2680,7 @@ export const StoreSwapRequestPhone: Story = {
   play: async () => {
     await settle()
     await expect(
-      within(document.body).getByRole('dialog', { name: 'Request a swap' }),
+      within(document.body).getByRole('dialog', { name: /^Request a swap / }),
     ).toHaveTextContent('07:00')
   },
 }
@@ -2689,7 +2691,7 @@ export const StoreSwapRequest: Story = {
   play: async () => {
     await settle()
     await expect(
-      within(document.body).getByRole('dialog', { name: 'Request a swap' }),
+      within(document.body).getByRole('dialog', { name: /^Request a swap / }),
     ).toBeVisible()
   },
 }
@@ -3010,7 +3012,7 @@ export const HealthFinding: Story = {
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('button', { name: 'Show Diagnosis' })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Show diagnosis' })).toBeVisible()
     await expect(canvasElement).not.toHaveTextContent(FINDING.diagnosis)
     await expect(canvasElement).toHaveTextContent(
       SERBIAN_G.dateLong(JOVANA_BOOKING.start.slice(0, 10)),
@@ -3035,7 +3037,7 @@ export const HealthFindingReason: Story = {
   play: async () => {
     await settle()
     await expect(
-      within(document.body).getByRole('dialog', { name: 'Show Diagnosis' }),
+      within(document.body).getByRole('dialog', { name: /^Show diagnosis Jovana Nikolić/ }),
     ).toHaveTextContent('Access is logged')
   },
 }
@@ -3046,7 +3048,7 @@ export const HealthFindingReasonPhone: Story = {
   play: async () => {
     await settle()
     await expect(
-      within(document.body).getByRole('dialog', { name: 'Show Diagnosis' }),
+      within(document.body).getByRole('dialog', { name: /^Show diagnosis Jovana Nikolić/ }),
     ).toBeVisible()
   },
 }
@@ -3059,7 +3061,7 @@ export const HealthFindingShown: Story = {
     await settle()
     await expect(canvasElement).toHaveTextContent(FINDING.diagnosis)
     await expect(
-      within(canvasElement).getByRole('button', { name: 'Hide Diagnosis' }),
+      within(canvasElement).getByRole('button', { name: 'Hide diagnosis' }),
     ).toBeVisible()
   },
 }
@@ -3071,15 +3073,15 @@ export const HealthFindingReveal: Story = {
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
-    await userEvent.click(canvas.getByRole('button', { name: 'Show Diagnosis' }))
-    const dialog = await within(document.body).findByRole('dialog', { name: 'Show Diagnosis' })
+    await userEvent.click(canvas.getByRole('button', { name: 'Show diagnosis' }))
+    const dialog = await within(document.body).findByRole('dialog', { name: /^Show diagnosis/ })
     await userEvent.click(
       within(dialog).getByRole('radio', { name: 'I am treating the patient now' }),
     )
     await userEvent.click(within(dialog).getByRole('button', { name: 'Show' }))
     await expect(await canvas.findByText(FINDING.diagnosis)).toBeVisible()
     // The dialog has closed (until then the page behind it is hidden from assistive technology).
-    await userEvent.click(await canvas.findByRole('button', { name: 'Hide Diagnosis' }))
+    await userEvent.click(await canvas.findByRole('button', { name: 'Hide diagnosis' }))
     await expect(canvasElement).not.toHaveTextContent(FINDING.diagnosis)
   },
 }
@@ -3209,10 +3211,19 @@ export const SchoolParentPortalExcuse: Story = {
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
-    await userEvent.click(canvas.getByRole('button', { name: 'Excuse today’s absences' }))
+    const body = within(document.body)
+    await userEvent.click(canvas.getByRole('button', { name: 'Excuse absences…' }))
+    const drawer = await body.findByRole('dialog', { name: /^Excuse absences Luka Jovanović/ })
+    // Today's absences are chosen; the reason is asked before anything is sent.
+    await expect(within(drawer).getAllByRole('checkbox', { checked: true })).toHaveLength(2)
+    await userEvent.click(within(drawer).getByRole('button', { name: 'Send' }))
+    await expect(drawer).toHaveTextContent('Choose a reason.')
+    await userEvent.click(within(drawer).getByRole('radio', { name: 'Doctor’s appointment' }))
+    await userEvent.click(within(drawer).getByRole('button', { name: 'Send' }))
     await expect(
-      await within(document.body).findByText('Sent to the class teacher, Dragana Simić.'),
+      await body.findByText('Excuse sent to the class teacher, Dragana Simić.'),
     ).toBeInTheDocument()
+    await expect(canvasElement).toHaveTextContent('Excuse sent, waiting for the class teacher')
     await expect(canvasElement).not.toHaveTextContent('Today’s absences are not excused yet')
   },
 }
@@ -4857,7 +4868,7 @@ export const HospitalWardBed: Story = {
   play: async () => {
     await settle()
     const drawer = within(within(document.body).getByRole('dialog', { name: 'Bed 9' }))
-    await expect(drawer.getByRole('button', { name: 'Show Patient’s name' })).toBeVisible()
+    await expect(drawer.getByRole('button', { name: 'Show patient’s name' })).toBeVisible()
     await expect(within(document.body).queryByText('Vesna Radović')).toBeNull()
     await expect(drawer.getByRole('button', { name: 'Discharge' })).toBeVisible()
   },
@@ -4882,8 +4893,8 @@ export const HospitalWardInteraction: Story = {
     const body = within(document.body)
     await userEvent.click(placeOn(canvasElement, 'b9'))
     const drawer = within(await body.findByRole('dialog', { name: 'Bed 9' }))
-    await userEvent.click(drawer.getByRole('button', { name: 'Show Patient’s name' }))
-    const dialog = await body.findByRole('dialog', { name: 'Show Patient’s name' })
+    await userEvent.click(drawer.getByRole('button', { name: 'Show patient’s name' }))
+    const dialog = await body.findByRole('dialog', { name: 'Show patient’s name Bed 9' })
     await userEvent.click(within(dialog).getByRole('radio', { name: 'Shift handover' }))
     await userEvent.click(within(dialog).getByRole('button', { name: 'Show' }))
     await expect(await body.findByText('Vesna Radović')).toBeVisible()
@@ -5011,5 +5022,158 @@ export const OfficeDesksInteraction: Story = {
     await waitFor(async () => {
       await expect(document.body.querySelector('[data-aria-hidden]')).toBeNull()
     })
+  },
+}
+
+// ── P5.28 screens: moves are confirmed, the excuse asks first ──
+
+/**
+ * The clinic's schedule after a drag (P5.28): Jovana Nikolić's appointment dragged to dr Nada
+ * Grujić's free 12:30. Nothing has moved yet: the confirmation shows the change (doctor and time,
+ * old → new), who it concerns, and her SMS as a choice, checked as the clinic sets it; Cancel
+ * leaves it where it was.
+ */
+export const HealthClinicScheduleMove: Story = {
+  name: 'Health, clinic schedule, move asked',
+  render: () => <ExampleApp start={H_ROUTES.clinicScheduleMove} />,
+  play: async () => {
+    await settle()
+    const dialog = within(document.body).getByRole('dialog', {
+      name: 'Move appointment Jovana Nikolić, check-up',
+    })
+    await expect(within(dialog).getByRole('list', { name: 'Changes' })).toHaveTextContent(
+      'dr Nada Grujić',
+    )
+    await expect(
+      within(dialog).getByRole('checkbox', { name: /Notify Jovana Nikolić by SMS/ }),
+    ).toBeChecked()
+    await expect(within(dialog).getByRole('button', { name: 'Save and notify' })).toBeVisible()
+  },
+}
+
+export const HealthClinicScheduleMovePhone: Story = {
+  name: 'Health, clinic schedule, move asked, phone',
+  render: () => <OnPhone start={H_ROUTES.clinicScheduleMove} />,
+  play: async () => {
+    await settle()
+    await expect(
+      within(document.body).getByRole('dialog', { name: /^Move appointment/ }),
+    ).toBeVisible()
+  },
+}
+
+/** Unchecking the SMS makes the button plain Save; the move is made and nobody is messaged. */
+export const HealthClinicScheduleMoveConfirm: Story = {
+  name: 'Health, clinic schedule, move, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={H_ROUTES.clinicScheduleMove} />,
+  play: async () => {
+    await settle()
+    const body = within(document.body)
+    const dialog = body.getByRole('dialog', { name: /^Move appointment/ })
+    await userEvent.click(within(dialog).getByRole('checkbox', { name: /Notify Jovana Nikolić/ }))
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Save' }))
+    await expect(
+      await body.findByText('Appointment moved. No message was sent.'),
+    ).toBeInTheDocument()
+    await waitFor(async () => {
+      await expect(body.queryByRole('dialog')).toBeNull()
+    })
+  },
+}
+
+/**
+ * Approving a swap moves shifts two people rely on (P5.28): the change (Saturday's shift from
+ * Stefan Lukić to Jelena Rakić, Sunday's back), and each of them told as a choice; Approve last.
+ */
+export const StoreSwapApprove: Story = {
+  name: 'Store, swap requests, approve asked',
+  render: () => <ExampleApp start={G_ROUTES.swapRequestApprove} />,
+  play: async () => {
+    await settle()
+    const dialog = within(document.body).getByRole('dialog', { name: /^Approve swap Stefan Lukić/ })
+    await expect(within(dialog).getAllByRole('listitem')).toHaveLength(2)
+    await expect(
+      within(dialog).getByRole('checkbox', { name: 'Notify Jelena Rakić' }),
+    ).toBeChecked()
+    await expect(within(dialog).getByRole('button', { name: 'Approve' })).toBeVisible()
+  },
+}
+
+export const StoreSwapApprovePhone: Story = {
+  name: 'Store, swap requests, approve asked, phone',
+  render: () => <OnPhone start={G_ROUTES.swapRequestApprove} />,
+  play: async () => {
+    await settle()
+    await expect(within(document.body).getByRole('dialog', { name: /^Approve swap/ })).toBeVisible()
+  },
+}
+
+export const StoreSwapApproveConfirm: Story = {
+  name: 'Store, swap requests, approve, interaction',
+  tags: ['interaction'],
+  render: () => <ExampleApp start={G_ROUTES.swapRequests} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Approve' }))
+    const dialog = await within(document.body).findByRole('dialog', { name: /^Approve swap/ })
+    await userEvent.click(within(dialog).getByRole('checkbox', { name: 'Notify Stefan Lukić' }))
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Approve' }))
+    await expect(
+      await within(document.body).findByText(
+        'Swap of Stefan Lukić approved. Jelena Rakić notified.',
+      ),
+    ).toBeInTheDocument()
+  },
+}
+
+/**
+ * The excuse asks first (P5.28): Luka's two absences of today chosen, the reason (illness,
+ * doctor, family reason, other with words), the doctor's note as a photo or a PDF — on a phone the
+ * camera — then Send.
+ */
+export const SchoolParentExcuse: Story = {
+  name: 'School, parents’ portal, excuse',
+  render: () => <ExampleApp start={H_ROUTES.parentExcuse} />,
+  play: async () => {
+    await settle()
+    const drawer = within(document.body).getByRole('dialog', {
+      name: /^Excuse absences Luka Jovanović/,
+    })
+    await expect(within(drawer).getAllByRole('checkbox', { checked: true })).toHaveLength(2)
+    await expect(within(drawer).getByRole('radiogroup', { name: /Reason/ })).toBeVisible()
+    await expect(within(drawer).getByRole('button', { name: 'Choose a file' })).toBeVisible()
+  },
+}
+
+export const SchoolParentExcusePhone: Story = {
+  name: 'School, parents’ portal, excuse, phone',
+  render: () => <OnPhone start={H_ROUTES.parentExcuse} />,
+  play: async () => {
+    await settle()
+    const drawer = within(document.body).getByRole('dialog', { name: /^Excuse absences/ })
+    await expect(within(drawer).getByRole('button', { name: 'Take a photo' })).toBeVisible()
+  },
+}
+
+/** Sent: today's absences say "Excuse sent", and the page says it waits for the class teacher. */
+export const SchoolParentExcuseSent: Story = {
+  name: 'School, parents’ portal, excuse sent',
+  render: () => <ExampleApp start={H_ROUTES.parentExcuseSent} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('Excuse sent, waiting for the class teacher')
+    await expect(within(canvasElement).getAllByText('Excuse sent')).toHaveLength(2)
+  },
+}
+
+export const SchoolParentExcuseSentPhone: Story = {
+  name: 'School, parents’ portal, excuse sent, phone',
+  render: () => <OnPhone start={H_ROUTES.parentExcuseSent} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('Excuse sent, waiting for the class teacher')
+    await noPageOverflow(canvasElement)
   },
 }

@@ -91,8 +91,10 @@ export interface RunProgress {
 
 /** The rerun: a reason first, then the application runs again. */
 export interface RunRerun {
-  /** The question ("Rerun payroll for September 2026?"). */
+  /** The action ("Rerun payroll"). */
   title: ReactNode
+  /** The run it acts on, bold on its own line under the title ("September 2026"; P5.28 item 6). */
+  subject?: ReactNode
   /** What will happen ("The calculated results are replaced. Payslips are not sent yet."). */
   message?: ReactNode
   /** The dialog's confirm button ("Rerun"). */
@@ -330,6 +332,7 @@ export function PeriodicRunPage(props: PeriodicRunPageProps) {
           family="caution"
           actionIcon={RotateCcw}
           title={rerun.title}
+          {...(rerun.subject === undefined ? {} : { subject: rerun.subject })}
           {...(rerun.message === undefined ? {} : { message: rerun.message })}
           confirmLabel={rerun.confirmLabel}
           {...(rerun.reasons === undefined ? {} : { reasons: rerun.reasons })}

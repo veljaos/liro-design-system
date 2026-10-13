@@ -113,7 +113,7 @@ export const CorrectionDrawer: Story = {
   play: async ({ canvasElement }) => {
     await settle()
     const drawer = await within(canvasElement.ownerDocument.body).findByRole('dialog')
-    await expect(drawer).toHaveAccessibleName('Correct the record of Stefan Nikolić, 05.10.2026.')
+    await expect(drawer).toHaveAccessibleName('Correct clock record Stefan Nikolić, 05.10.2026.')
     await expect(within(drawer).getByRole('textbox', { name: 'Clock-in' })).toHaveValue('07:01')
     await expect(within(drawer).getByRole('textbox', { name: 'Clock-out' })).toHaveValue('')
   },

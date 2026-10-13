@@ -1003,7 +1003,7 @@ export interface LiroMessages {
   'masked.other': string
   /** MaskedValue: the label of the text field of "Other". */
   'masked.otherText': string
-  /** MaskedValue: the note in the dialog that the access is recorded. */
+  /** MaskedValue: the note in the dialog that the access is recorded, under `masked.loggedTitle`. */
   'masked.logged': string
   /** MaskedValue: the value is on its way (after the reason was given). */
   'masked.loading': (label: string) => string
@@ -1092,7 +1092,7 @@ export interface LiroMessages {
   'clock.corrected': (by: string, when: string, reason: string) => string
   /** The correction: the action, the drawer's title and its fields. */
   'clock.correct': string
-  'clock.correctTitle': (person: string, date: string) => string
+  'clock.correctTitle': string
   'clock.time': string
   'clock.timeInvalid': string
   'clock.reason': string
@@ -1544,7 +1544,7 @@ export interface LiroMessages {
   'diagram.renameTitle': string
   'diagram.name': string
   'diagram.save': string
-  'diagram.connectTitle': (label: string) => string
+  'diagram.connectTitle': string
   'diagram.connectTarget': string
   'diagram.connectLabel': string
   'diagram.connect': string
@@ -1725,4 +1725,27 @@ export interface LiroMessages {
   'print.amountDue': (amount: string, date: string | undefined) => string
   /** The button in an empty electronic signature field on screen (left off the paper). */
   'print.signHere': string
+  // P5.28 screens
+  /** MaskedValue: the bold start of the note that the access is recorded ("Access is logged"). */
+  'masked.loggedTitle': string
+  /** ClockRecordList: the correction drawer's record, under its title: "Nenad Ilić, 07.10.2026.". */
+  'clock.correctSubject': (person: string, date: string) => string
+  /** ChangeConfirmDialog: its Save button, and the same while a message is checked. */
+  'change.save': string
+  'change.saveAndNotify': string
+  /** ChangeConfirmDialog: names the list of changes (old → new). */
+  'change.changes': string
+  /** ChangeConfirmDialog: before who the change concerns ("Concerns:"). */
+  'change.affected': string
+  /** ChangeConfirmDialog: names the group of "Notify …" checkboxes. */
+  'change.notifyGroup': string
+  /** FileDropzone on phones: the button that takes a photo with the camera. */
+  'file.takePhoto': string
+  /** AttendanceGrid: the correction dialog's action and record, "Nenad Ilić, Wed 7" (P5.28 item 6). */
+  'attendance.correctAction': string
+  'attendance.correctSubject': (row: string, column: string) => string
+  /** ShiftPlanner: the move dialog's action; the shift goes under it (P5.28 item 6). */
+  'shifts.moveAction': string
+  /** PickList: the skip dialog's action; the item goes under it (P5.28 item 6). */
+  'pick.skipAction': string
 }

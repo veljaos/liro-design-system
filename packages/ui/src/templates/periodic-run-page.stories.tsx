@@ -137,7 +137,8 @@ function previewOf(phone: boolean) {
 }
 
 const RERUN: RunRerun = {
-  title: 'Rerun payroll for September 2026?',
+  title: 'Rerun payroll',
+  subject: 'September 2026',
   message: 'The calculated figures are replaced. Nothing has been posted or sent yet.',
   confirmLabel: 'Rerun',
   reasonLabel: 'Reason for the rerun',
@@ -372,7 +373,8 @@ export const Rerun: Story = {
               },
             })}
         rerun={{
-          title: 'Rerun payroll for September 2026?',
+          title: 'Rerun payroll',
+          subject: 'September 2026',
           message: 'The calculated figures are replaced. Nothing has been posted or sent yet.',
           confirmLabel: 'Rerun',
           reasonLabel: 'Reason for the rerun',

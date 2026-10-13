@@ -2,7 +2,6 @@ import { Send } from 'lucide-react'
 import { useState, type ReactElement } from 'react'
 import { LoadingButtonPrimitive } from '../primitives/button'
 import { TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
-import { cn } from '../primitives/cn'
 import { DialogFooter } from '../primitives/dialog'
 import { useLiro } from '../provider/liro-provider'
 import { Button } from './button'
@@ -17,8 +16,9 @@ import { TextAreaField } from './text-field'
  * from the application's list (who may give one of their shifts back) or to anyone qualified —
  * with a reason. It reports the request (`onSubmit`); who may take the shift, and the approval,
  * are the application's (the approval is a worklist, P4.3).
- * - The shift on top as text (its day in words, name, times — "22:00–06:00 (+1)" read as "… the
- *   next day" —, place); then "Who takes it" (Anyone qualified / A colleague), the colleague
+ * - The shift is the record the dialog acts on (P5.28 item 6): bold under the title "Request a
+ *   swap", on its own line — its day in words, name, times ("22:00–06:00 (+1)" read as "… the
+ *   next day") —, its place under it as the description; then "Who takes it" (Anyone qualified / A colleague), the colleague
  *   (required when chosen), their shift taken instead (optional), the reason.
  * - Cancel, then Send request (the main action, last). A returned promise keeps the dialog working
  *   and open until it settles (closed when it resolves, open when it rejects).
@@ -80,7 +80,7 @@ export interface ShiftSwapDialogProps {
 
 /** The dialog that asks to swap a shift. */
 export function ShiftSwapDialog(props: ShiftSwapDialogProps) {
-  const { messages } = useLiro()
+  const { messages, format } = useLiro()
   const [innerOpen, setInnerOpen] = useState(props.defaultOpen === true)
   const [round, setRound] = useState(0)
   const [busy, setBusy] = useState(false)
@@ -100,6 +100,15 @@ export function ShiftSwapDialog(props: ShiftSwapDialogProps) {
       {...(props.trigger === undefined ? {} : { trigger: props.trigger })}
       dismissible={!working}
       title={messages['swap.title']}
+      subject={
+        <>
+          <span className={TEXT_ISOLATE}>{format.dateLong(props.shift.date)}</span>
+          {' · '}
+          <span className={TEXT_ISOLATE}>{props.shift.label}</span>{' '}
+          <ShiftTime start={props.shift.start} end={props.shift.end} />
+        </>
+      }
+      {...(props.shift.place === undefined ? {} : { description: props.shift.place })}
     >
       <SwapForm
         key={round}
@@ -172,21 +181,6 @@ function SwapForm(
   }
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-col gap-1 rounded-md border border-solid border-default bg-surface-sunken p-3">
-        <span className={cn('text-xs font-semibold text-secondary', TEXT_DIRECTION)}>
-          {messages['swap.shift']}
-        </span>
-        <span className={cn('text-sm font-semibold text-primary', TEXT_DIRECTION)}>
-          {format.dateLong(props.shift.date)}
-        </span>
-        <span className="flex flex-wrap items-baseline gap-x-2 text-sm text-primary">
-          <span className={TEXT_ISOLATE}>{props.shift.label}</span>
-          <ShiftTime start={props.shift.start} end={props.shift.end} />
-        </span>
-        {props.shift.place !== undefined && (
-          <span className={cn('text-xs text-secondary', TEXT_DIRECTION)}>{props.shift.place}</span>
-        )}
-      </div>
       {allowAnyone && (
         <RadioGroupField
           label={messages['swap.who']}

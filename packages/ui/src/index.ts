@@ -1195,3 +1195,17 @@ export {
   signatureFieldPlacement,
 } from './templates/print-logic'
 export type { PrintBodyArea, SheetBox, SignatureFieldPlacement } from './templates/print-logic'
+
+// ── P5.28 screens ──
+export {
+  ChangeConfirmDialog,
+  changeConfirmLabel,
+  initialNotify,
+  toggleNotify,
+} from './components/change-confirm-dialog'
+export type {
+  ChangeConfirmAnswer,
+  ChangeConfirmDialogProps,
+  ChangeLine,
+  NotifyOption,
+} from './components/change-confirm-dialog'
