@@ -448,6 +448,38 @@ export const PhoneWidth: Story = {
   },
 }
 
+/**
+ * A photo from the camera on a phone (P5.28): "Take a photo" beside "Choose a file", for a paper
+ * note; the photo is checked as any file. Desktops show only "Choose a file".
+ */
+export const PhoneCamera: Story = {
+  name: 'Phone width, camera',
+  args: {
+    label: 'Doctor’s note',
+    multiple: false,
+    accept: ['image/*', '.pdf'],
+    acceptText: 'A photo or a PDF',
+    maxSizeText: '10 MB',
+    camera: true,
+  },
+  render: (args) => (
+    <PhoneFrame>
+      <ExampleProvider>
+        <div className="box-border p-4">
+          <FileDropzone {...args} layout="phone" />
+        </div>
+      </ExampleProvider>
+    </PhoneFrame>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('button', { name: 'Take a photo' })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Choose a file' })).toBeVisible()
+    await expect(canvasElement.querySelector('input[capture="environment"]')).not.toBeNull()
+  },
+}
+
 /** Arabic sample text, right to left. */
 export const Arabic: Story = {
   args: { label: ARABIC.label, description: ARABIC.description, acceptText: ARABIC.value },

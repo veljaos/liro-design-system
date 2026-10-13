@@ -4,6 +4,7 @@ import {
   Alert,
   AttendanceGrid,
   Button,
+  ChangeConfirmDialog,
   ClockRecordList,
   EmptyState,
   KeyFigures,
@@ -98,6 +99,8 @@ export const G_ROUTES = {
   swapRequests: '/shifts/prodavnica-12/swap-requests',
   /** The swap requests with Sanja Vuković's (the one with a warning) in focus. */
   swapRequestWarning: '/shifts/prodavnica-12/swap-requests?request=r3',
+  /** Stefan Lukić's request with its approval asked (P5.28 item 9): the change and who is told. */
+  swapRequestApprove: '/shifts/prodavnica-12/swap-requests?request=r1&approve=open',
   erPlanner: `/shifts/emergency/${ER.start}`,
   erRotation: `/shifts/emergency/${ER.start}?rotation=open`,
   erBalance: `/shifts/emergency/balance/${ER_PLAN.start}`,
@@ -475,7 +478,7 @@ export function StorePlanner({ phone }: { phone: boolean }) {
               setAssignments((current) => current.map((each) => ({ ...each, changed: false })))
               setChanged(false)
               notice.success(
-                `Changes published. ${format.number(String(STORE_PUBLISH.people))} people were notified.`,
+                `Changes published. ${format.number(String(STORE_PUBLISH.people))} people see their shifts in the app.`,
               )
             }}
           />
@@ -568,13 +571,23 @@ function SwapDetail({ request, phone }: { request: SwapRequest; phone: boolean }
   )
 }
 
-export function SwapRequests({ phone, focus }: { phone: boolean; focus?: string }) {
+export function SwapRequests({
+  phone,
+  focus,
+  approve = false,
+}: {
+  phone: boolean
+  focus?: string
+  /** The approval's confirmation open on the request in focus. */
+  approve?: boolean
+}) {
   const shiftText = useShiftText()
   const [rows, setRows] = useState<readonly SwapRequest[]>(SWAP_REQUESTS)
   const [selected, setSelected] = useState<string | undefined>(
     focus ?? (phone ? undefined : SWAP_REQUESTS[0]?.id),
   )
   const [asking, setAsking] = useState(false)
+  const [approving, setApproving] = useState(approve)
   const row = rows.find((each) => each.id === selected)
   const index = rows.findIndex((each) => each.id === selected)
   const decide = (id: string, done: string) => {
@@ -609,7 +622,7 @@ export function SwapRequests({ phone, focus }: { phone: boolean; focus?: string 
           label="Approve"
           emphasis="primary"
           onClick={() => {
-            decide(row.id, `Swap of ${row.from} approved. Both were notified.`)
+            setApproving(true)
           }}
         />
       </>
@@ -660,7 +673,8 @@ export function SwapRequests({ phone, focus }: { phone: boolean; focus?: string 
           onOpenChange={setAsking}
           family="destructive"
           actionIcon={CircleX}
-          title={`Reject the swap of ${row?.from ?? ''}?`}
+          title="Reject swap request"
+          subject={row === undefined ? '' : `${row.from} · ${shiftText(row.shift)}`}
           message="The reason is sent to the person who asked."
           reasonLabel="Reason for rejection"
           reasons={SWAP_REJECT_REASONS}
@@ -669,6 +683,42 @@ export function SwapRequests({ phone, focus }: { phone: boolean; focus?: string 
             if (row !== undefined) decide(row.id, `Swap of ${row.from} rejected.`)
           }}
         />
+        {/* Approving moves shifts two people rely on: the change first, who is told a choice. */}
+        {row !== undefined && (
+          <ChangeConfirmDialog
+            open={approving}
+            onOpenChange={setApproving}
+            title="Approve swap"
+            subject={`${row.from} · ${shiftText(row.shift)}`}
+            changes={[
+              {
+                key: 'shift',
+                label: shiftText(row.shift),
+                from: row.from,
+                to: row.to ?? 'Anyone qualified',
+              },
+              ...(row.back === null || row.to === null
+                ? []
+                : [{ key: 'back', label: shiftText(row.back), from: row.to, to: row.from }]),
+            ]}
+            {...(row.check.tone === 'warning' ? { warning: row.check.text } : {})}
+            notify={[row.from, ...(row.to === null ? [] : [row.to])].map((name) => ({
+              id: name,
+              label: `Notify ${name}`,
+              description: 'In the app and by e-mail: the shift and who takes it.',
+              defaultChecked: true,
+            }))}
+            confirmLabel="Approve"
+            onConfirm={(answer) => {
+              decide(
+                row.id,
+                answer.notify.length === 0
+                  ? `Swap of ${row.from} approved. No message was sent.`
+                  : `Swap of ${row.from} approved. ${answer.notify.join(' and ')} notified.`,
+              )
+            }}
+          />
+        )}
         <Toaster layout={phone ? 'phone' : 'desktop'} />
       </Shell>
     </Tenant>
@@ -750,7 +800,7 @@ export function EmergencyPlanner({ phone, rotation }: { phone: boolean; rotation
             onPublish={() => {
               setPublished(true)
               notice.success(
-                `Schedule published. ${format.number(String(ER_PUBLISH.people))} people were notified.`,
+                `Schedule published. ${format.number(String(ER_PUBLISH.people))} people see their shifts in the app.`,
               )
             }}
           />
@@ -820,6 +870,10 @@ export const GROUP_G_ROUTES: ExampleRoute[] = [
   {
     path: G_ROUTES.swapRequestWarning,
     render: (phone) => <SwapRequests phone={phone} focus="r3" />,
+  },
+  {
+    path: G_ROUTES.swapRequestApprove,
+    render: (phone) => <SwapRequests phone={phone} focus="r1" approve />,
   },
   {
     path: G_ROUTES.erPlanner,

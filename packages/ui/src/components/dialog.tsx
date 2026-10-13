@@ -11,6 +11,8 @@ import {
   DialogTrigger,
 } from '../primitives/dialog'
 import { Sheet, SheetContent, SheetTrigger } from '../primitives/sheet'
+import { TEXT_DIRECTION } from '../primitives/classes'
+import { cn } from '../primitives/cn'
 import { useSteadyBottom } from '../primitives/use-steady-bottom'
 import { useLiro } from '../provider/liro-provider'
 
@@ -19,7 +21,43 @@ import { useLiro } from '../provider/liro-provider'
  * Drawer). When to use which (Appendix B.8, AGENTS.md D14): a **dialog** for one action with one
  * outcome, or a read-only view; a **drawer** for a short edit with the list still visible; a full
  * page for anything with more than about ten fields, tabs or attachments.
+ *
+ * A dialog that acts on one record (P5.28 item 6, the owner's review) names the action as its
+ * title ("Correct", "Reject swap request", "Show diagnosis") and the record, bold, on its own line
+ * under it (`subject`: "Nenad Ilić, Wed 7"). Both are inside the title element, so the dialog's
+ * accessible name says what is done to what. Components that draw their own header from the
+ * primitives put `DialogHeading` inside their DialogTitle.
  */
+
+/** Whether a subject renders anything. */
+function hasSubject(subject: ReactNode): boolean {
+  return subject !== undefined && subject !== null && subject !== false && subject !== ''
+}
+
+/**
+ * A dialog's title and, on its own line, the record it acts on, bold (P5.28 item 6). Goes inside a
+ * DialogTitle; without a subject it is the title alone. The space between the two keeps the
+ * accessible name's words apart ("Correct Nenad Ilić, Wed 7").
+ */
+export function DialogHeading({ title, subject }: { title: ReactNode; subject?: ReactNode }) {
+  if (!hasSubject(subject)) return <>{title}</>
+  return (
+    <span data-slot="dialog-heading" className="flex min-w-0 flex-col gap-1.5">
+      <span className={TEXT_DIRECTION}>{title}</span>{' '}
+      <span
+        data-slot="dialog-subject"
+        className={cn('font-bold leading-snug text-primary', TEXT_DIRECTION)}
+      >
+        {subject}
+      </span>
+    </span>
+  )
+}
+
+/** The header row's alignment: a two-line heading keeps the close button on its first line. */
+export function dialogHeaderClass(subject: ReactNode): string {
+  return hasSubject(subject) ? 'items-start' : ''
+}
 
 /** What Dialog and Drawer share. */
 interface OverlayProps {
@@ -30,8 +68,16 @@ interface OverlayProps {
   onOpenChange?: (open: boolean) => void
   /** The element that opens it, usually a Button. Optional when `open` is controlled. */
   trigger?: ReactElement
-  /** The title, from the application. Names the dialog for assistive technology. */
+  /**
+   * The title, from the application. Names the dialog for assistive technology. On a dialog that
+   * acts on one record, the action ("Correct", "Move appointment"); the record goes in `subject`.
+   */
   title: ReactNode
+  /**
+   * The one record the dialog acts on, from the application ("Nenad Ilić, Wed 7"): bold, on its
+   * own line under the title, and part of the dialog's name (P5.28 item 6).
+   */
+  subject?: ReactNode
   /** A line under the title, from the application. */
   description?: ReactNode
   children?: ReactNode
@@ -78,8 +124,10 @@ function OverlayParts(props: OverlayProps) {
   const spacer = useSteadyBottom(body, undefined)
   return (
     <>
-      <DialogHeader>
-        <DialogTitle>{props.title}</DialogTitle>
+      <DialogHeader className={dialogHeaderClass(props.subject)}>
+        <DialogTitle>
+          <DialogHeading title={props.title} subject={props.subject} />
+        </DialogTitle>
         {dismissible && <DialogCloseButton label={messages['dialog.close']} />}
       </DialogHeader>
       <DialogBody ref={body}>

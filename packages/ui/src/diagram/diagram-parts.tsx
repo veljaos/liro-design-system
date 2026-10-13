@@ -629,12 +629,18 @@ export function EditDialog({
   const connection =
     dialog?.type === 'label' ? model.connections.find((each) => each.id === dialog.id) : undefined
   const open = dialog !== null && (step !== undefined || connection !== undefined)
+  // The action as the title, the step or connection it acts on bold under it (P5.28 item 6).
   const title =
     dialog?.type === 'rename'
       ? messages['diagram.renameTitle']
       : dialog?.type === 'label'
         ? messages['diagram.labelTitle']
-        : messages['diagram.connectTitle'](step?.label ?? '')
+        : messages['diagram.connectTitle']
+  const stepLabel = (id: string) => model.steps.find((each) => each.id === id)?.label ?? ''
+  const subject =
+    connection !== undefined
+      ? messages['diagram.connectionName'](stepLabel(connection.from), stepLabel(connection.to))
+      : (step?.label ?? '')
   const submit = dialog?.type === 'connect' ? messages['diagram.connect'] : messages['diagram.save']
   const canSubmit = dialog?.type !== 'connect' || targets.length > 0
   return (
@@ -644,6 +650,7 @@ export function EditDialog({
         if (!next) onClose()
       }}
       title={title}
+      subject={subject}
       actions={
         <DialogActions formId={formId} submit={canSubmit ? submit : null} onCancel={onClose} />
       }

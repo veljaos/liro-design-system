@@ -603,6 +603,7 @@ export function SignerLinkScreen({ phone }: { phone: boolean }) {
             signers={signers}
             declineReasons={DECLINE_REASONS}
             declineMessage="The contract goes back to Jelena Marković (HR) with your reason."
+            declineSubject="Employment contract RU-2026-017"
             onSign={() =>
               new Promise<void>((resolve) => {
                 window.setTimeout(() => {

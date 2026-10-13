@@ -14,6 +14,7 @@ function Signing(props: Partial<SignerListProps> & { initial?: Signer[] }) {
     <SignerList
       declineReasons={DECLINE_REASONS}
       declineMessage="RU-2026-017 goes back to Jelena Marković (HR) with your reason."
+      declineSubject="Employment contract RU-2026-017"
       {...props}
       signers={signers}
       onSign={(signer) =>
@@ -122,7 +123,11 @@ export const Decline: Story = {
     const canvas = within(canvasElement)
     const page = within(document.body)
     await userEvent.click(canvas.getByRole('button', { name: 'Decline' }))
-    const dialog = within(await page.findByRole('alertdialog', { name: 'Decline to sign?' }))
+    const dialog = within(
+      await page.findByRole('alertdialog', {
+        name: 'Decline to sign Employment contract RU-2026-017',
+      }),
+    )
     await expect(dialog.getByRole('button', { name: 'Cancel' })).toHaveFocus()
     const confirm = dialog.getByRole('button', { name: 'Decline' })
     await expect(confirm).toBeDisabled()

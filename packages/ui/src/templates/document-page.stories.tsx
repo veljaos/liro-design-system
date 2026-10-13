@@ -1128,7 +1128,8 @@ export const CancelDocument: Story = {
                   trigger={<Button family="caution" icon={Ban} label="Cancel invoice" />}
                   family="caution"
                   actionIcon={Ban}
-                  title="Cancel invoice F-2026-0412?"
+                  title="Cancel invoice"
+                  subject="F-2026-0412 · Panonija Agro d.o.o."
                   message="A cancellation document is issued and sent to SEF. This cannot be undone."
                   confirmLabel="Cancel invoice"
                   cancelLabel="Keep invoice"
@@ -1197,7 +1198,8 @@ export const CancelDocumentInteraction: Story = {
                   trigger={<Button family="caution" icon={Ban} label="Cancel invoice" />}
                   family="caution"
                   actionIcon={Ban}
-                  title="Cancel invoice F-2026-0412?"
+                  title="Cancel invoice"
+                  subject="F-2026-0412 · Panonija Agro d.o.o."
                   message="A cancellation document is issued and sent to SEF. This cannot be undone."
                   confirmLabel="Cancel invoice"
                   cancelLabel="Keep invoice"

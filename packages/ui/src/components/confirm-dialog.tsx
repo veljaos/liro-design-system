@@ -14,6 +14,7 @@ import {
   DialogTrigger,
 } from '../primitives/dialog'
 import { useLiro } from '../provider/liro-provider'
+import { DialogHeading } from './dialog'
 import { INTENTS, type Family, type IconComponent, type Intent } from './intents'
 import type { Tone } from './status-badge'
 import { RadioGroupField } from './radio-group-field'
@@ -36,6 +37,9 @@ import { TextAreaField, TextField } from './text-field'
  *   (warning → caution, danger → destructive, info → primary, success → positive, neutral →
  *   neutral, premium → document), so a confirmation without an action, or with a `tone` that
  *   overrides the action's, never shows a warning title over a blue button.
+ * - On one record (P5.28 item 6): the title is the action ("Reject invoice") and `subject` the
+ *   record, bold in text.primary on its own line under it ("UF-2026-1187 · Medic Lab Niš"); both
+ *   name the dialog. A confirmation about several records or none keeps a question as its title.
  * - Centred on the screen, radius lg (12px).
  * - While confirming, the confirm button shows a loader, Cancel is disabled, and neither Escape
  *   nor a press outside closes it.
@@ -105,6 +109,11 @@ interface ConfirmBase {
   icon?: IconComponent
   /** Default: the provider's `messages['dialog.cancel']`. */
   cancelLabel?: string
+  /**
+   * The one record the action is on, from the application ("UF-2026-1187 · Medic Lab Niš"): bold,
+   * on its own line under the title, which then names the action ("Reject invoice").
+   */
+  subject?: ReactNode
   /**
    * What the action will do, under the message, from the application: a summary of what is
    * posted, a preview of the result (a read-only table). Use `size` 'wide' for a table.
@@ -213,13 +222,13 @@ function ConfirmFrame(
         <div className="flex shrink-0 items-start justify-between gap-4 p-4">
           <DialogTitle
             className={cn(
-              'flex items-center gap-2 text-sm leading-tight font-bold',
+              'flex items-start gap-2 text-sm leading-tight font-bold',
               TONE_TEXT[tone],
             )}
           >
             <TitleIcon aria-hidden="true" className="size-4.5 shrink-0" />
-            <span id={titleId} className={TEXT_DIRECTION}>
-              {props.title}
+            <span id={titleId} className={cn('min-w-0 pt-px', TEXT_DIRECTION)}>
+              <DialogHeading title={props.title} subject={props.subject} />
             </span>
           </DialogTitle>
           {!busy && <DialogCloseButton label={messages['dialog.close']} />}

@@ -55,6 +55,11 @@ export interface SignerListProps {
   declineReasons?: readonly ConfirmReason[]
   /** The decline dialog's text, from the application ("RU-2026-017 goes back to HR."). */
   declineMessage?: ReactNode
+  /**
+   * The document being declined, bold under the decline dialog's title ("Employment contract
+   * RU-2026-017"; P5.28 item 6).
+   */
+  declineSubject?: ReactNode
   /** Sign's text. Default: `messages['signing.sign']`. */
   signLabel?: string
   className?: string
@@ -178,6 +183,9 @@ export function SignerList(props: SignerListProps) {
                         family="destructive"
                         actionIcon={X}
                         title={messages['signing.declineTitle']}
+                        {...(props.declineSubject === undefined
+                          ? {}
+                          : { subject: props.declineSubject })}
                         confirmLabel={messages['signing.declineConfirm']}
                         {...(props.declineMessage === undefined
                           ? {}

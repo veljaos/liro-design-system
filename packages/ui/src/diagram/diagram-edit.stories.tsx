@@ -259,7 +259,7 @@ export const ConnectTo: Story = {
     const canvas = within(canvasElement)
     await userEvent.click(canvas.getByRole('button', { name: 'Connect to…' }))
     const dialog = await within(document.body).findByRole('dialog', {
-      name: 'Connect “Tell the employee” to',
+      name: 'Connect to Tell the employee',
     })
     await quiet()
     await userEvent.click(within(dialog).getByRole('radio', { name: /Done/ }))
@@ -283,7 +283,7 @@ export const Rename: Story = {
     const canvas = within(canvasElement)
     canvas.getByRole('group', { name: 'Task: Archive the request' }).focus()
     await userEvent.keyboard('{F2}')
-    const dialog = await within(document.body).findByRole('dialog', { name: 'Rename the step' })
+    const dialog = await within(document.body).findByRole('dialog', { name: /^Rename step / })
     await quiet()
     const name = within(dialog).getByRole('textbox', { name: 'Name' })
     await userEvent.clear(name)

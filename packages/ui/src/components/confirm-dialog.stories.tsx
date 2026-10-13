@@ -35,6 +35,10 @@ const meta = {
           'the same dialog also asks why — a required text, or a choice from `reason.reasons` ' +
           'with optional details — and `onConfirm` receives the answer: one dialog, never two ' +
           'in a row.\n\n' +
+          '**On one record** (P5.28, the owner’s review): the title is the action (“Reject ' +
+          'invoice”) and `subject` the record, bold on its own line under it (“UF-2026-1187 · ' +
+          'Medic Lab Niš d.o.o.”); both name the dialog. About several records or none, the ' +
+          'title stays a question (“Approve 12 invoices?”).\n\n' +
           '**When not:** an action that can be undone (just do it, and offer undo); a bulk ' +
           'action asks once, with the count, not per item (Appendix B.8).',
       },
@@ -108,7 +112,8 @@ export const SafeInitialFocus: Story = {
           trigger={<Button family="destructive" icon={CircleX} label="Reject" />}
           family="destructive"
           actionIcon={CircleX}
-          title="Reject UF-2026-1187?"
+          title="Reject invoice"
+          subject="UF-2026-1187 · Medic Lab Niš d.o.o."
           confirmLabel="Reject"
           reasons={[{ value: 'price', label: 'Price differs from the order' }]}
           onConfirm={() => {
@@ -120,7 +125,8 @@ export const SafeInitialFocus: Story = {
           trigger={<Button family="caution" icon={Ban} label="Void" />}
           family="caution"
           actionIcon={Ban}
-          title="Void F-2026-0412?"
+          title="Void invoice"
+          subject="F-2026-0412 · Panonija Agro d.o.o."
           confirmLabel="Void"
           confirmText="F-2026-0412"
           onConfirm={() => {
@@ -199,7 +205,8 @@ export const Loading: Story = {
     <ConfirmDialog
       defaultOpen
       intent="delete"
-      title="Delete invoice F-114?"
+      title="Delete invoice"
+      subject="F-114 · Kvadrat Gradnja d.o.o."
       message="The invoice and its lines are deleted."
       confirmLabel="Delete"
       onConfirm={() => new Promise<void>(() => undefined)}
@@ -217,7 +224,8 @@ export const LoadingInteraction: Story = {
     <ConfirmDialog
       defaultOpen
       intent="delete"
-      title="Delete invoice F-114?"
+      title="Delete invoice"
+      subject="F-114 · Kvadrat Gradnja d.o.o."
       message="The invoice and its lines are deleted."
       confirmLabel="Delete"
       onConfirm={() => new Promise<void>(() => undefined)}
@@ -246,7 +254,8 @@ export const Irreversible: Story = {
       defaultOpen
       family="caution"
       actionIcon={Ban}
-      title="Void invoice F-114?"
+      title="Void invoice"
+      subject="F-114 · Kvadrat Gradnja d.o.o."
       message="A voided invoice cannot be restored; its number is not reused."
       confirmLabel="Void the invoice"
       confirmText="F-114"
@@ -271,7 +280,8 @@ export const IrreversibleInteraction: Story = {
       defaultOpen
       family="caution"
       actionIcon={Ban}
-      title="Void invoice F-114?"
+      title="Void invoice"
+      subject="F-114 · Kvadrat Gradnja d.o.o."
       message="A voided invoice cannot be restored; its number is not reused."
       confirmLabel="Void the invoice"
       confirmText="F-114"
@@ -299,7 +309,8 @@ export const Reason: Story = {
       defaultOpen
       family="destructive"
       actionIcon={CircleX}
-      title="Reject UF-2026-1187?"
+      title="Reject invoice"
+      subject="UF-2026-1187 · Medic Lab Niš d.o.o."
       message="EPS Snabdevanje d.o.o. is told the reason through SEF."
       reasonLabel="Reason for rejection"
       confirmLabel="Reject"
@@ -324,7 +335,8 @@ export const ReasonInteraction: Story = {
       defaultOpen
       family="destructive"
       actionIcon={CircleX}
-      title="Reject UF-2026-1187?"
+      title="Reject invoice"
+      subject="UF-2026-1187 · Medic Lab Niš d.o.o."
       message="EPS Snabdevanje d.o.o. is told the reason through SEF."
       reasonLabel="Reason for rejection"
       confirmLabel="Reject"
@@ -353,7 +365,8 @@ export const ReasonList: Story = {
       defaultOpen
       family="destructive"
       actionIcon={CircleX}
-      title="Reject UF-2026-1187?"
+      title="Reject invoice"
+      subject="UF-2026-1187 · Medic Lab Niš d.o.o."
       reasonLabel="Reason for rejection"
       reasons={[
         { value: 'price', label: 'Price differs from the order' },
@@ -383,7 +396,8 @@ export const ReasonListInteraction: Story = {
       defaultOpen
       family="destructive"
       actionIcon={CircleX}
-      title="Reject UF-2026-1187?"
+      title="Reject invoice"
+      subject="UF-2026-1187 · Medic Lab Niš d.o.o."
       reasonLabel="Reason for rejection"
       reasons={[
         { value: 'price', label: 'Price differs from the order' },
@@ -473,7 +487,8 @@ export const IrreversibleWithReason: Story = {
       trigger={<Button family="caution" icon={Ban} label="Cancel invoice" />}
       family="caution"
       actionIcon={Ban}
-      title="Cancel invoice F-2026-0407?"
+      title="Cancel invoice"
+      subject="F-2026-0407 · Medic Lab Niš d.o.o."
       message="A cancellation document is issued and sent to SEF. This cannot be undone."
       confirmLabel="Cancel invoice"
       confirmText="F-2026-0407"
@@ -498,7 +513,8 @@ export const IrreversibleWithReasonInteraction: Story = {
       trigger={<Button family="caution" icon={Ban} label="Cancel invoice" />}
       family="caution"
       actionIcon={Ban}
-      title="Cancel invoice F-2026-0407?"
+      title="Cancel invoice"
+      subject="F-2026-0407 · Medic Lab Niš d.o.o."
       message="A cancellation document is issued and sent to SEF. This cannot be undone."
       confirmLabel="Cancel invoice"
       confirmText="F-2026-0407"
@@ -544,7 +560,8 @@ export const IrreversibleWithReasons: Story = {
       defaultOpen
       family="caution"
       actionIcon={Ban}
-      title="Cancel invoice F-2026-0407?"
+      title="Cancel invoice"
+      subject="F-2026-0407 · Medic Lab Niš d.o.o."
       message="A cancellation document is issued and sent to SEF."
       confirmLabel="Cancel invoice"
       confirmText="F-2026-0407"
@@ -573,7 +590,8 @@ export const IrreversibleWithReasonsInteraction: Story = {
       defaultOpen
       family="caution"
       actionIcon={Ban}
-      title="Cancel invoice F-2026-0407?"
+      title="Cancel invoice"
+      subject="F-2026-0407 · Medic Lab Niš d.o.o."
       message="A cancellation document is issued and sent to SEF."
       confirmLabel="Cancel invoice"
       confirmText="F-2026-0407"
@@ -614,7 +632,8 @@ export const WithPreview: Story = {
       actionIcon={BookCheck}
       tone="info"
       size="wide"
-      title="Post statement 188?"
+      title="Post statement"
+      subject="Statement 188 · Banca Intesa"
       message="The journal entry is posted and the open items are closed."
       preview={
         <KeyValueList
@@ -633,7 +652,9 @@ export const WithPreview: Story = {
   ),
   play: async ({ canvasElement }) => {
     const body = within(canvasElement.ownerDocument.body)
-    const dialog = await body.findByRole('alertdialog', { name: 'Post statement 188?' })
+    const dialog = await body.findByRole('alertdialog', {
+      name: 'Post statement Statement 188 · Banca Intesa',
+    })
     await expect(dialog).toHaveTextContent('4 lines, 4 items')
     await expect(within(dialog).getByRole('button', { name: 'Cancel' })).toHaveFocus()
     await expect(dialog.getBoundingClientRect().width).toBeGreaterThan(440)

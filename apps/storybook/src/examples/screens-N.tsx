@@ -415,6 +415,8 @@ function BedDrawer({
                   value: (
                     <MaskedValue
                       label="Patient’s name"
+                      sentenceLabel="patient’s name"
+                      subject={`Bed ${String(bed.number)}`}
                       reasons={NAME_REASONS}
                       allowOther
                       {...(revealed === null ? {} : { value: revealed })}
