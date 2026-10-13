@@ -109,7 +109,7 @@ export function AdvanceList(props: AdvanceListProps) {
       >
         <span className={TEXT_DIRECTION}>{props.title ?? messages['advances.title']}</span>
         {props.loading !== true && count > 0 && (
-          <span className={cn('text-xs font-normal text-secondary', TEXT_ISOLATE)}>
+          <span className={cn('text-xs font-regular text-secondary', TEXT_ISOLATE)}>
             {messages['advances.count'](count, format.number(String(count)))}
           </span>
         )}
