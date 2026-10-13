@@ -3319,7 +3319,8 @@ export const PosReceipt: Story = {
     const receipt = within(dialog).getByRole('article', { name: 'Receipt' })
     await expect(receipt).toHaveTextContent(BAKERY.name)
     await expect(receipt).toHaveTextContent(tillText(SALE_FIGURES.total))
-    await expect(receipt).toHaveTextContent(tillText(SALE_FIGURES.vatE))
+    // The tax per label is a recap table of amounts without the currency (P5.28).
+    await expect(receipt).toHaveTextContent(SERBIAN_I.number(SALE_FIGURES.vatE, { decimals: 2 }))
     await expect(receipt).toHaveTextContent(tillText(SALE_FIGURES.change))
   },
 }
@@ -4049,7 +4050,8 @@ export const CafeInteraction: Story = {
     await userEvent.click(floorItem(canvasElement, 't3'))
     await expect(await canvas.findByRole('heading', { name: 'Table 3' })).toBeVisible()
     await userEvent.click(canvas.getByRole('button', { name: /^Kapućino/ }))
-    await expect(canvas.getByRole('textbox', { name: 'Quantity, Kapućino' })).toHaveValue('3')
+    // P5.28: a sent line stays as it was sent; the new kapućino waits to be sent.
+    await expect(canvas.getByRole('button', { name: 'Send order (1)' })).toBeVisible()
     await userEvent.click(canvas.getByRole('button', { name: 'Terrace' }))
     await expect(await canvas.findByRole('heading', { name: 'Terrace' })).toBeVisible()
   },
@@ -5626,14 +5628,16 @@ export const FiscalCancelInteraction: Story = {
   name: 'POS journal, cancel a receipt, interaction',
   tags: ['interaction'],
   render: () => <ExampleApp start={TILL_ROUTES.journalCancel} />,
-  play: async () => {
+  play: async ({ canvasElement }) => {
     await settle()
     const dialog = screenConfirm('Cancel receipt issued by mistake')
     await userEvent.click(within(dialog).getByRole('radio', { name: 'Wrong way of paying' }))
     await userEvent.click(within(dialog).getByRole('button', { name: 'Cancel receipt' }))
+    // The refund that cancels it is issued and shown: the next receipt of the journal.
     await expect(
-      await within(document.body).findByText(/cancelled \(wrong way of paying\)/),
+      await within(canvasElement).findByRole('heading', { name: 'ZK7Q2M4P-ZK7Q2M4P-2318' }),
     ).toBeVisible()
+    await settle()
   },
 }
 
