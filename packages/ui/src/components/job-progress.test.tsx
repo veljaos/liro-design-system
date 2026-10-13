@@ -1,13 +1,13 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
-import { createFormat } from '../provider/format'
+import { numericFormat } from '../provider/format'
 import { LiroProvider } from '../provider/liro-provider'
 import { clampedDone, JobProgress, jobOutcome, type JobProgressProps } from './job-progress'
 import { StatusTimeline } from './status-timeline'
 
 function render(node: React.ReactNode) {
   return renderToStaticMarkup(
-    <LiroProvider locale="en" format={createFormat('sr-Latn-RS')}>
+    <LiroProvider locale="en-RS" format={numericFormat('sr-Latn-RS')}>
       {node}
     </LiroProvider>,
   )

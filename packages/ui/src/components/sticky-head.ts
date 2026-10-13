@@ -14,7 +14,8 @@ import { useLayoutEffect, type RefObject } from 'react'
  *   the top of the scrolling container when there is no shell. The header never leaves its
  *   region: it stops at the region's last row.
  * - The header group (thead, or the header row's element) carries `data-sticky-head`, so its
- *   height is known; the corner cell carries `data-sticky-start`, so the first column's width is.
+ *   height is known; the corner cell carries `data-sticky-start`, so the first column's width is
+ *   (with a selection column before it, both carry it: the cover runs to the farthest end).
  * - The region carries `STICKY_CLEARANCE`, so a cell the keyboard reaches is scrolled clear of
  *   the shell, the header and the first column.
  * - The first column (the row headers: names, people, resources) is `sticky start-0` inside the
@@ -76,6 +77,37 @@ function stickyEdge(element: HTMLElement): number {
 }
 
 /**
+ * How much of the region's start the sticky first column covers, px: from the region's inner start
+ * edge (`start`: its left inside the border, or its right in right to left) to the farthest end of
+ * the cells marked `data-sticky-start` (the corner; with a selection column before it, both).
+ */
+export function startCover(
+  start: number,
+  cells: readonly { left: number; right: number }[],
+  rtl: boolean,
+): number {
+  let width = 0
+  for (const cell of cells) {
+    width = Math.max(width, Math.round(rtl ? start - cell.left : cell.right - start))
+  }
+  return width
+}
+
+/** `startCover` measured: borders on both sides are the same; a vertical scrollbar stands at the end. */
+function startWidth(region: HTMLElement): number {
+  const cells = [...region.querySelectorAll<HTMLElement>('[data-sticky-start]')]
+  if (cells.length === 0) return 0
+  const box = region.getBoundingClientRect()
+  const rtl = getComputedStyle(region).direction === 'rtl'
+  const start = rtl ? box.right - region.clientLeft : box.left + region.clientLeft
+  return startCover(
+    start,
+    cells.map((cell) => cell.getBoundingClientRect()),
+    rtl,
+  )
+}
+
+/**
  * Keeps `--liro-head-shift` on the region (P5.28 item 4): the header cells (`STICKY_HEAD`) of a
  * region that scrolls sideways stay below the shell while the page scrolls. Updated once a frame
  * on any scroll (the page, a phone frame's page, an application's container) and on resize.
@@ -101,10 +133,7 @@ export function useStickyHead(region: RefObject<HTMLElement | null>, enabled = t
         headShift(rect.top + element.clientTop, stickyEdge(element), element.clientHeight - height),
       )
       write('--liro-head-height', height)
-      write(
-        '--liro-start-width',
-        element.querySelector<HTMLElement>('[data-sticky-start]')?.offsetWidth ?? 0,
-      )
+      write('--liro-start-width', startWidth(element))
     }
     const schedule = () => {
       if (frame === 0) frame = requestAnimationFrame(update)

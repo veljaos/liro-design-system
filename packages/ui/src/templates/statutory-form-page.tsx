@@ -3,6 +3,7 @@ import {
   ChevronRight,
   CircleCheck,
   CircleX,
+  LocateFixed,
   PencilLine,
   TriangleAlert,
   Undo2,
@@ -20,6 +21,7 @@ import { BUTTON_RESET, FOCUS_RING, TEXT_DIRECTION, TEXT_ISOLATE } from '../primi
 import { cn } from '../primitives/cn'
 import { useLangAttribute } from '../provider/lang'
 import { useLiro } from '../provider/liro-provider'
+import { STICKY_CLEARANCE, STICKY_HEAD, useStickyHead } from '../components/sticky-head'
 import { PageHeader, type PageBack } from './page-header'
 import { fieldElementId, ruleCounts, rulesTone, type StatutoryRule } from './register-logic'
 import {
@@ -63,12 +65,11 @@ export type {
  *   `computed` (read-only text: a total), `source` (read-only, the value a link-coloured button
  *   that opens its documents — e-invoices, customs declarations — in an end Drawer: each a link
  *   with kind, number, state, date and amount, P4.9 rule 7).
- * - **Sticky** (P5.28 item 4): the header rows stick below the shell's sticky top
- *   (`top-[var(--liro-shell-top,0px)]`) while the page scrolls. A grid wider than its card
- *   scrolls sideways inside a named, focusable region with its first column (number and label)
- *   sticky at the start; the region is then at most the viewport's height under the shell and
- *   its header sticks to its own top (a sideways scroller cannot pass the page's vertical
- *   position to a sticky header).
+ * - **Sticky** (P5.28 item 4, the shared rule of `components/sticky-head.ts`, as AttendanceGrid):
+ *   the header rows stay right below the shell's sticky top while the page scrolls (`useStickyHead`
+ *   moves them), also when the grid scrolls sideways; a grid wider than its card scrolls sideways
+ *   in a named, focusable region with its first column (number and label) sticky at the start.
+ *   The page scrolls the rows, never a box of its own.
  * - **The previous period** is a comparison, never a replacement of the columns: "Compare with
  *   August 2026" (a switch, `compare` / `defaultCompare`) shows each cell's previous value under
  *   it, smaller, named for assistive technology.
@@ -78,7 +79,8 @@ export type {
  *   column, who and when, the computed value and "Use computed value" (the way back).
  * - **Rule checks** ("3.1.4 must equal 3.1.1 + 3.1.2 + 3.1.3", results from the Core): under
  *   each row they concern (a rule names rows or cells), failed in danger, warnings in warning,
- *   with icon and words; a summary Alert above the parts with "Go to 3.1.4" (opening the part
+ *   with icon and words; a summary Alert above the parts with "Go to 3.1.4" (a neutral secondary
+ *   button, never a link colour on the toned Alert, P5.28 item 7; opening the part
  *   and the groups around it first).
  * - **Phones:** each row is a card (number and label, its checks), each value in it labelled
  *   with its group and column; absent cells are left out.
@@ -437,7 +439,9 @@ const BODY_CELL = 'border-0 border-b border-solid border-subtle px-3 py-2 align-
 
 /**
  * A part's grid on wider screens: two header rows (groups over columns), group headings and rows.
- * It scrolls sideways only when it does not fit its card (then in a focusable region).
+ * It scrolls sideways only when it does not fit its card (then a named, focusable region). The
+ * header rows move as one group (`STICKY_HEAD` on the `thead`: the two rows stay together) below
+ * the shell while the page scrolls; the number and label column and the corner stay at the start.
  */
 function DesktopGrid({ section, context }: { section: StatutorySection; context: GridContext }) {
   const { messages } = useLiro()
@@ -461,6 +465,7 @@ function DesktopGrid({ section, context }: { section: StatutorySection; context:
       observer.disconnect()
     }
   }, [])
+  useStickyHead(wrapper)
   const { first, second } = statutoryHeaderRows(section.columns)
   const grouped = second.length > 0
   const lines = statutoryGridLines(section.items, context.collapsed)
@@ -477,13 +482,11 @@ function DesktopGrid({ section, context }: { section: StatutorySection; context:
       }
       {...(overflowing ? { role: 'region', 'aria-label': section.title, tabIndex: 0 } : {})}
       className={cn(
-        'w-full',
-        overflowing &&
-          cn(
-            'max-h-[calc(100dvh-var(--liro-shell-top,0px)-2rem)] overflow-auto rounded-b-lg',
-            FOCUS_RING,
-            '-outline-offset-2',
-          ),
+        'w-full overflow-x-auto rounded-b-lg',
+        STICKY_CLEARANCE,
+        // The grid's own controls (fields, pencils, source buttons) are scrolled clear too.
+        '[&_tbody_:is(input,button,[tabindex])]:scroll-mt-[calc(var(--liro-shell-top,0px)+var(--liro-head-height,0px))] [&_tbody_td_:is(input,button)]:scroll-ms-[var(--liro-start-width,0px)]',
+        overflowing && cn(FOCUS_RING, '-outline-offset-2'),
       )}
     >
       <table
@@ -491,17 +494,13 @@ function DesktopGrid({ section, context }: { section: StatutorySection; context:
         aria-label={section.title}
         className="w-full border-separate border-spacing-0 font-sans text-sm text-primary"
       >
-        <thead
-          className={cn(
-            'sticky z-(--liro-layer-sticky)',
-            overflowing ? 'top-0' : 'top-[var(--liro-shell-top,0px)]',
-          )}
-        >
+        <thead data-sticky-head="" className={cn(STICKY_HEAD, 'z-10')}>
           <tr>
             <th
               scope="col"
               rowSpan={grouped ? 2 : 1}
-              className={cn(HEADER_CELL, 'sticky start-0 z-[1] min-w-64 text-start')}
+              data-sticky-start=""
+              className={cn(HEADER_CELL, 'sticky start-0 z-20 min-w-64 text-start')}
             >
               <span className="flex gap-3">
                 <span className={cn('w-14 shrink-0', TEXT_ISOLATE)}>
@@ -585,7 +584,7 @@ function DesktopGrid({ section, context }: { section: StatutorySection; context:
                   scope="row"
                   className={cn(
                     BODY_CELL,
-                    'sticky start-0 z-[1] bg-surface-raised text-start font-regular',
+                    'sticky start-0 z-[5] bg-surface-raised text-start font-regular',
                     row.total === true && 'font-semibold',
                   )}
                 >
@@ -626,7 +625,14 @@ function DesktopGrid({ section, context }: { section: StatutorySection; context:
 function PhoneGrid({ section, context }: { section: StatutorySection; context: GridContext }) {
   const lines = statutoryGridLines(section.items, context.collapsed)
   return (
-    <div data-slot="statutory-grid" className="flex flex-col gap-2 px-3 pb-3">
+    <div
+      data-slot="statutory-grid"
+      className={cn(
+        'flex flex-col gap-2 px-3 pb-3',
+        // A field reached by the keyboard is scrolled clear of the shell's sticky top (WCAG 2.4.11).
+        '[&_:is(input,button,[tabindex])]:scroll-mt-[calc(var(--liro-shell-top,0px)+0.5rem)]',
+      )}
+    >
       {lines.map((line) => {
         if (line.kind === 'group') {
           return (
@@ -884,20 +890,16 @@ export function StatutoryFormPage(props: StatutoryFormPageProps) {
                   <li key={rule.id} className="flex flex-wrap items-center gap-x-3 gap-y-1">
                     <RuleLine rule={rule} />
                     {first !== undefined && place !== undefined && (
-                      <button
-                        type="button"
+                      // An action on a toned Alert is a neutral secondary button (P5.28 item 7).
+                      <Button
+                        family="neutral"
+                        emphasis="secondary"
+                        icon={LocateFixed}
+                        label={messages['statutory.goToField'](place.row.number)}
                         onClick={() => {
                           goTo(first)
                         }}
-                        className={cn(
-                          BUTTON_RESET,
-                          'min-h-6 cursor-pointer rounded-sm text-xs font-semibold text-link underline underline-offset-2',
-                          FOCUS_RING,
-                          TEXT_ISOLATE,
-                        )}
-                      >
-                        {messages['statutory.goToField'](place.row.number)}
-                      </button>
+                      />
                     )}
                   </li>
                 )
@@ -937,7 +939,13 @@ export function StatutoryFormPage(props: StatutoryFormPageProps) {
           onOpenChange={(isOpen) => {
             if (!isOpen) setDrill(null)
           }}
-          title={`${drill.row.number} ${drill.row.label}`}
+          // What it shows, then the row it belongs to, bold on its own line (P5.28 item 6).
+          title={messages['statutory.sources']}
+          subject={
+            <>
+              {drill.row.number} <span {...lang}>{drill.row.label}</span>
+            </>
+          }
           description={`${statutoryColumnLabel(drill.column)} · ${props.currentLabel}`}
           actions={
             <Button

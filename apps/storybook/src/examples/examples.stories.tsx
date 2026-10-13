@@ -1245,7 +1245,9 @@ export const VatReturnScreenInteraction: Story = {
         name: /^510\.809,60\sRSD, sources of 1\.1\.1 · Општа стопа 20% · Основица$/,
       }),
     )
-    const drawer = within(await page.findByRole('dialog', { name: /^1\.1\.1 Промет/ }))
+    const drawer = within(
+      await page.findByRole('dialog', { name: /^Source documents 1\.1\.1 Промет/ }),
+    )
     await settle()
     await expect(drawer.getByRole('link', { name: /F-2026-0412/ })).toBeVisible()
     await expect(drawer.getByText('144.920,00 RSD')).toBeVisible()
