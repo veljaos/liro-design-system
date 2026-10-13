@@ -41,7 +41,9 @@ import {
  *   done (CircleCheck in success, "Done" in its line), to do (Circle), locked (Lock, "Locked:
  *   <the application's reason>" in its line; not a link). The lesson being shown is the selected
  *   one: surface.selected with the border.selected bar at the start, semibold,
- *   `aria-current="page"` — neutral, never blue (D17).
+ *   `aria-current="page"` — neutral, never blue (D17). Every lesson row is square and full width,
+ *   flush with the card's (or the drawer's) edges, and the card ends at its last row: no empty
+ *   strip under it (P5.28 item 14, the owner's review).
  * - Lesson (h2, its detail line), the application's content, then "Mark as done" (the page's
  *   one primary action) while the lesson is to do, or "Lesson completed" once it is done; then
  *   the pager: the previous lesson at the start, the next at the end, each a link with its
@@ -105,14 +107,19 @@ const STATE_ICON: Record<LessonState, LucideIcon> = {
   locked: Lock,
 }
 
+/** The outline's inset: 12px in the desktop card, 16px in the phone's drawer (its own inset). */
+const INSET = { card: 'px-3', drawer: 'px-4' } as const
+
 function LessonItem({
   lesson,
   current,
   onFollow,
+  inset,
 }: {
   lesson: CourseLesson
   current: boolean
   onFollow?: (() => void) | undefined
+  inset: keyof typeof INSET
 }) {
   const { messages, linkComponent: Link } = useLiro()
   const Icon = STATE_ICON[lesson.state]
@@ -144,8 +151,11 @@ function LessonItem({
       </span>
     </>
   )
-  const box =
-    'flex min-h-10 items-start gap-2 rounded-md border-0 border-s-2 border-solid px-3 py-2'
+  // Square and full width: the selected row's background and bar meet the container's edges.
+  const box = cn(
+    'flex min-h-10 items-start gap-2 border-0 border-s-2 border-solid py-2',
+    INSET[inset],
+  )
   if (lesson.state === 'locked') {
     return (
       <div data-state="locked" className={cn(box, 'border-transparent text-secondary')}>
@@ -178,19 +188,25 @@ function Outline({
   modules,
   currentKey,
   onFollow,
+  inset,
 }: {
   modules: readonly CourseModule[]
   currentKey: string | undefined
   onFollow?: (() => void) | undefined
+  inset: keyof typeof INSET
 }) {
   const { messages, format } = useLiro()
   return (
-    <ol data-slot="course-outline" className="m-0 flex list-none flex-col gap-4 p-0">
+    <ol
+      data-slot="course-outline"
+      // In the drawer the rows reach its edges: out of its 16px inset.
+      className={cn('m-0 flex list-none flex-col gap-4 p-0', inset === 'drawer' && '-mx-4')}
+    >
       {modules.map((module) => {
         const count = moduleProgress(module)
         return (
           <li key={module.key} className="flex flex-col gap-1">
-            <div className="flex flex-col px-3">
+            <div className={cn('flex flex-col', INSET[inset])}>
               <h3 className={cn('m-0 text-sm font-semibold text-primary', TEXT_DIRECTION)}>
                 {module.title}
               </h3>
@@ -208,6 +224,7 @@ function Outline({
                     lesson={lesson}
                     current={lesson.key === currentKey}
                     onFollow={onFollow}
+                    inset={inset}
                   />
                 </li>
               ))}
@@ -349,7 +366,7 @@ function LessonSkeleton() {
 
 function OutlineSkeleton() {
   return (
-    <div className="flex flex-col gap-2 px-3">
+    <div className="flex flex-col gap-2 px-3 pb-3">
       <Skeleton className="h-4 w-1/2" />
       {[0, 1, 2, 3, 4].map((index) => (
         <Skeleton key={index} className="h-8 w-full" />
@@ -460,6 +477,7 @@ export function CoursePage(props: CoursePageProps) {
                     <Outline
                       modules={props.modules}
                       currentKey={props.currentKey}
+                      inset="drawer"
                       onFollow={() => {
                         setOutlineOpen(false)
                       }}
@@ -476,7 +494,8 @@ export function CoursePage(props: CoursePageProps) {
           {!empty && (
             <nav
               aria-label={messages['course.outline']}
-              className="box-border flex w-75 shrink-0 flex-col gap-3 rounded-lg border border-solid border-default bg-surface-raised py-3"
+              // No padding under the last row (P5.28 item 14); the card clips the square rows.
+              className="box-border flex w-75 shrink-0 flex-col gap-3 overflow-hidden rounded-lg border border-solid border-default bg-surface-raised pt-3"
             >
               <h2 className={cn('m-0 px-3 text-sm font-semibold text-secondary', TEXT_DIRECTION)}>
                 {messages['course.outline']}
@@ -484,7 +503,7 @@ export function CoursePage(props: CoursePageProps) {
               {loading ? (
                 <OutlineSkeleton />
               ) : (
-                <Outline modules={props.modules} currentKey={props.currentKey} />
+                <Outline modules={props.modules} currentKey={props.currentKey} inset="card" />
               )}
             </nav>
           )}

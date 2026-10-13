@@ -41,7 +41,8 @@ function EditContact({ side, start = false }: { side?: 'start' | 'end'; start?: 
       onOpenChange={setOpen}
       {...(side === undefined ? {} : { side })}
       trigger={<Button intent="edit" label="Edit the contact" />}
-      title="Edit the contact"
+      title="Edit contact"
+      subject="Ana Jovanović"
       actions={
         <>
           <Button
@@ -71,7 +72,7 @@ async function openAndCheck(canvasElement: HTMLElement) {
   const body = within(canvasElement.ownerDocument.body)
   const trigger = body.getByRole('button', { name: 'Edit the contact' })
   await userEvent.click(trigger)
-  await body.findByRole('dialog', { name: 'Edit the contact' })
+  await body.findByRole('dialog', { name: 'Edit contact Ana Jovanović' })
   await userEvent.keyboard('{Escape}')
   await waitFor(() => expect(body.queryByRole('dialog')).toBeNull())
   await waitFor(() => expect(trigger).toHaveFocus())
@@ -84,7 +85,7 @@ async function openAndCheck(canvasElement: HTMLElement) {
 export const Start: Story = {
   render: () => <EditContact start />,
   play: async () => {
-    await within(document.body).findByRole('dialog', { name: 'Edit the contact' })
+    await within(document.body).findByRole('dialog', { name: 'Edit contact Ana Jovanović' })
     await settle()
   },
 }
@@ -102,7 +103,7 @@ export const StartInteraction: Story = {
 export const End: Story = {
   render: () => <EditContact side="end" start />,
   play: async () => {
-    await within(document.body).findByRole('dialog', { name: 'Edit the contact' })
+    await within(document.body).findByRole('dialog', { name: 'Edit contact Ana Jovanović' })
     await settle()
   },
 }

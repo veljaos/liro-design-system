@@ -1198,3 +1198,16 @@ export type { PrintBodyArea, SheetBox, SignatureFieldPlacement } from './templat
 
 // ── P5.28 dates ──
 export { numericFormat } from './provider'
+// ── P5.28 screens ──
+export {
+  ChangeConfirmDialog,
+  changeConfirmLabel,
+  initialNotify,
+  toggleNotify,
+} from './components/change-confirm-dialog'
+export type {
+  ChangeConfirmAnswer,
+  ChangeConfirmDialogProps,
+  ChangeLine,
+  NotifyOption,
+} from './components/change-confirm-dialog'

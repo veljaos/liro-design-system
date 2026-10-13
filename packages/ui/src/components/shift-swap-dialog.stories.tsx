@@ -27,8 +27,9 @@ const meta = {
         component:
           '**What for:** a person asks to hand one of their shifts over — to anyone qualified, or ' +
           'to a colleague from the application’s list, who may give one of their own shifts ' +
-          'back — with a reason. The shift is shown on top (day, name, times: “22:00–06:00 ' +
-          '(+1)”, read as “… the next day”, place). It reports the request (`onSubmit`); who ' +
+          'back — with a reason. The shift is the record the dialog acts on: bold on its own ' +
+          'line under the title (day, name, times: “22:00–06:00 (+1)”, read as “… the next ' +
+          'day”), its place under it. It reports the request (`onSubmit`); who ' +
           'qualifies and the approval are the application’s (the approval is a worklist).\n\n' +
           '**When:** from MyShifts’ “Request swap”, or a shift’s menu in the application.\n\n' +
           '**When not:** changing the plan itself (ShiftPlanner); approving a request ' +
@@ -57,7 +58,7 @@ type Story = StoryObj<typeof meta>
 export const Default: Story = {
   play: async () => {
     await settle()
-    const dialog = within(document.body).getByRole('dialog', { name: 'Request a swap' })
+    const dialog = within(document.body).getByRole('dialog', { name: /^Request a swap / })
     await expect(dialog).toHaveTextContent('22:00 to 06:00 the next day')
     await expect(within(dialog).getByRole('radio', { name: 'Anyone qualified' })).toBeChecked()
   },
@@ -81,7 +82,7 @@ export const WithColleague: Story = {
   ),
   play: async () => {
     await settle()
-    const dialog = within(document.body).getByRole('dialog', { name: 'Request a swap' })
+    const dialog = within(document.body).getByRole('dialog', { name: /^Request a swap / })
     await expect(within(dialog).getByRole('radio', { name: 'A colleague' })).toBeChecked()
     await expect(
       within(dialog).getByRole('combobox', { name: 'Their shift you take instead' }),
@@ -211,7 +212,7 @@ export const Request: Story = {
     await settle()
     const body = within(document.body)
     await userEvent.click(within(canvasElement).getByRole('button', { name: 'Request swap' }))
-    const dialog = await body.findByRole('dialog', { name: 'Request a swap' })
+    const dialog = await body.findByRole('dialog', { name: /^Request a swap / })
     await userEvent.click(within(dialog).getByRole('radio', { name: 'A colleague' }))
     await userEvent.click(within(dialog).getByRole('button', { name: 'Send request' }))
     await expect(dialog).toHaveTextContent('Choose a colleague.')

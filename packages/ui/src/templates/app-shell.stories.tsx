@@ -531,7 +531,9 @@ function shellMarkers(phone: boolean): Partial<AppShellProps> {
     banners: (
       <Banner
         title="Trial ends on 15.10.2026."
-        actions={<Button family="primary" icon={CreditCard} label="Choose a plan" />}
+        actions={
+          <Button family="neutral" icon={CreditCard} emphasis="secondary" label="Choose a plan" />
+        }
       >
         Choose a plan to keep your data and your invoices in SEF.
       </Banner>

@@ -25,7 +25,10 @@ const meta = {
           'button close it, unless `dismissible` is false (while an action runs).\n\n' +
           '**When not:** a short edit with the list still visible (Drawer); anything with more ' +
           'than about ten fields, tabs or attachments (a full page); asking before a ' +
-          'destructive action (ConfirmDialog).',
+          'destructive action (ConfirmDialog).\n\n' +
+          '**On one record** (P5.28, the owner’s review): the title is the action (“Rename ' +
+          'report”, “Correct”) and `subject` the record, bold on its own line under it; both ' +
+          'name the dialog. The same holds for Drawer.',
       },
     },
   },
@@ -46,7 +49,8 @@ export const Default: Story = {
         open={open}
         onOpenChange={setOpen}
         trigger={<Button intent="edit" label="Rename" />}
-        title="Rename the report"
+        title="Rename report"
+        subject="Sales by region, Q3"
         description="The new name appears in the list of reports."
         actions={
           <>
@@ -72,7 +76,7 @@ export const Default: Story = {
     )
   },
   play: async () => {
-    await within(document.body).findByRole('dialog', { name: 'Rename the report' })
+    await within(document.body).findByRole('dialog', { name: 'Rename report Sales by region, Q3' })
     await settle()
   },
 }
@@ -87,7 +91,8 @@ export const DefaultInteraction: Story = {
         open={open}
         onOpenChange={setOpen}
         trigger={<Button intent="edit" label="Rename" />}
-        title="Rename the report"
+        title="Rename report"
+        subject="Sales by region, Q3"
         description="The new name appears in the list of reports."
         actions={
           <>
@@ -116,7 +121,7 @@ export const DefaultInteraction: Story = {
     const body = within(canvasElement.ownerDocument.body)
     const trigger = body.getByRole('button', { name: 'Rename' })
     await userEvent.click(trigger)
-    const dialog = await body.findByRole('dialog', { name: 'Rename the report' })
+    const dialog = await body.findByRole('dialog', { name: 'Rename report Sales by region, Q3' })
     await expect(dialog).toHaveAccessibleDescription('The new name appears in the list of reports.')
     await userEvent.keyboard('{Escape}')
     await waitFor(() => expect(body.queryByRole('dialog')).toBeNull())

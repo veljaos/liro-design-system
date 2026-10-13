@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { Download, Send } from 'lucide-react'
 import { useState } from 'react'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { TEXT_DIRECTION } from '../primitives/classes'
@@ -24,6 +25,9 @@ const meta = {
           'announced at once (`role="alert"`), the others politely. `onClose` makes it ' +
           'dismissible. `Banner` is the same look in one row across its container, with actions ' +
           'at the end, for something about the whole page or application.\n\n' +
+          '**Actions inside** (`actions`: under the message in an Alert, at the end of a ' +
+          'Banner) are neutral secondary buttons, never a family colour on the toned background ' +
+          "(P5.28, the owner's review): the tone already says what it is about.\n\n" +
           "**When not:** a result of the user's action that needs no staying (Toast); a problem " +
           'with one field (its error under the field); a question (ConfirmDialog).',
       },
@@ -56,6 +60,49 @@ export const Tones: Story = {
       <Alert>Without a title or a tone: the message alone, neutral.</Alert>
     </div>
   ),
+}
+
+/**
+ * Actions inside an alert (P5.28): under the message, neutral secondary buttons — the tone gives
+ * the meaning, so a blue or green button would be a second colour in one box. What the action
+ * asks for (here: which absences, a reason, a note) opens from it.
+ */
+export const WithActions: Story = {
+  name: 'With actions',
+  render: () => (
+    <div className="flex max-w-150 flex-col gap-4">
+      <Alert
+        tone="warning"
+        title="Two absences are not excused yet"
+        actions={
+          <Button family="neutral" icon={Send} emphasis="secondary" label="Excuse absences…" />
+        }
+      >
+        Lessons 1 and 2 on 06.10.2026. Excuse them within 8 days.
+      </Alert>
+      <Alert
+        tone="danger"
+        title="The bank statement could not be read"
+        actions={
+          <>
+            <Button
+              family="neutral"
+              icon={Download}
+              emphasis="secondary"
+              label="Download the file"
+            />
+            <Button intent="refresh" emphasis="secondary" label="Try again" />
+          </>
+        }
+      />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('button', { name: 'Excuse absences…' })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Try again' })).toBeVisible()
+  },
 }
 
 /** Dismissible: the close button (24px) removes it. */
@@ -120,7 +167,7 @@ export const Banners: Story = {
       <Banner
         tone="danger"
         title="Offline."
-        actions={<Button intent="refresh" label="Reconnect" />}
+        actions={<Button intent="refresh" emphasis="secondary" label="Reconnect" />}
       >
         Changes are kept on this device until the connection returns.
       </Banner>
@@ -140,7 +187,11 @@ export const LongTextPhone: Story = {
       <Alert tone="danger" title={LONG.label} onClose={() => undefined}>
         {LONG.error}
       </Alert>
-      <Banner tone="warning" title={LONG.label} actions={<Button intent="edit" label="Review" />}>
+      <Banner
+        tone="warning"
+        title={LONG.label}
+        actions={<Button intent="edit" emphasis="secondary" label="Review" />}
+      >
         {LONG.description}
       </Banner>
     </div>
@@ -157,7 +208,7 @@ export const Arabic: Story = {
       <Banner
         tone="danger"
         title={ARABIC.label}
-        actions={<Button intent="refresh" label={ARABIC.value} />}
+        actions={<Button intent="refresh" emphasis="secondary" label={ARABIC.value} />}
       >
         {ARABIC.error}
       </Banner>
@@ -191,7 +242,10 @@ export const EnglishInRtl: Story = {
         <Alert tone="info" title="Ready (3)" onClose={() => undefined}>
           3 invoices are ready to send.
         </Alert>
-        <Banner tone="warning" actions={<Button intent="refresh" label="Reload" />}>
+        <Banner
+          tone="warning"
+          actions={<Button intent="refresh" emphasis="secondary" label="Reload" />}
+        >
           Today&apos;s exchange rate is not published yet.
         </Banner>
         <EmptyState compact />

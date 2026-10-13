@@ -17,11 +17,14 @@ import { TextAreaField } from './text-field'
  * - Masked: "••••" (decorative) with the value's name and "hidden" for assistive technology, and
  *   a small neutral "Show" button (Eye, 24px). The real value is never in the page while masked:
  *   the application passes `value` only after `onReveal`.
- * - "Show" opens a Dialog: the reasons from the application as radio buttons, with "Other" and its
- *   own text (`allowOther`); without a list the reason is written. Under them the note that the
- *   access is logged (`logNote`, default from messages), with a ScrollText icon. The Show button
- *   enables once a reason is given; `onReveal({ reason, text })` — `reason` the chosen value, or
- *   null for "Other" and for a written reason. A returned promise keeps the dialog working (the
+ * - "Show" opens a Dialog titled with the action in sentence case ("Show diagnosis": the label as
+ *   it reads in a sentence, `sentenceLabel`) and the record the value belongs to, bold, on its own
+ *   line (`subject`, P5.28 item 6). Under it, 24px down, "Why do you need to see it?": the reasons
+ *   from the application as radio buttons, with "Other" and its own text (`allowOther`); without a
+ *   list the reason is written. Under them a deliberate note (P5.28 item 15): a neutral Alert with
+ *   the ScrollText icon, "Access is logged" bold, then what is recorded (`logNote`, default from
+ *   messages). The Show button enables once a reason is given; `onReveal({ reason, text })` —
+ *   `reason` the chosen value, or null for "Other" and for a written reason. A returned promise keeps the dialog working (the
  *   button busy, not dismissible); it closes when the promise resolves and stays open when it
  *   rejects, with the application's `error` in a danger Alert.
  * - Revealed: the value, and "Hide" (EyeOff), which hides it at once and calls `onHide` so the
@@ -49,6 +52,17 @@ export interface MaskedValueProps {
   /** What the value is, from the application ("Salary", "Diagnosis"): names the controls. */
   label: string
   /**
+   * The label as it reads inside a sentence, from the application ("diagnosis"): "Show
+   * diagnosis", "Hide diagnosis", "Showing diagnosis…". Default: `label`. Casing is the
+   * language's, so the application gives it (German keeps "Diagnose").
+   */
+  sentenceLabel?: string
+  /**
+   * The record the value belongs to, from the application ("Jovana Nikolić, finding
+   * IZ-2026-03417"): bold under the dialog's title (P5.28 item 6).
+   */
+  subject?: ReactNode
+  /**
    * The value, passed by the application only after the reveal (D1: the component never fetches
    * it). Without it the value is masked.
    */
@@ -70,7 +84,10 @@ export interface MaskedValueProps {
   loading?: boolean
   /** The application refused to show it, in its words: in the dialog, or beside the mask. */
   error?: ReactNode
-  /** The note that the access is logged. Default: `messages['masked.logged']`. */
+  /**
+   * What is recorded, under the bold "Access is logged" (`messages['masked.loggedTitle']`).
+   * Default: `messages['masked.logged']`.
+   */
   logNote?: ReactNode
   /** The user may not see the value, and why (shown in words beside the unavailable "Show"). */
   notAllowedReason?: string
@@ -114,6 +131,7 @@ export function MaskedValue(props: MaskedValueProps) {
   const showButton = useRef<HTMLButtonElement>(null)
   const refocus = useRef(false)
   const shown = props.value !== undefined && props.value !== null && !hidden
+  const named = props.sentenceLabel ?? props.label
   const reasons = props.reasons ?? []
   const hasList = reasons.length > 0
   const options = [
@@ -205,7 +223,7 @@ export function MaskedValue(props: MaskedValueProps) {
             family="neutral"
             emphasis="menu"
             className={SMALL_BUTTON}
-            aria-label={messages['masked.hideLabel'](props.label)}
+            aria-label={messages['masked.hideLabel'](named)}
             onClick={hide}
           >
             <EyeOff aria-hidden="true" className="size-3.5 shrink-0" />
@@ -218,7 +236,7 @@ export function MaskedValue(props: MaskedValueProps) {
     content = (
       <>
         {mask}
-        <Spinner size="sm" label={messages['masked.loading'](props.label)} />
+        <Spinner size="sm" label={messages['masked.loading'](named)} />
       </>
     )
   } else {
@@ -235,7 +253,7 @@ export function MaskedValue(props: MaskedValueProps) {
               SMALL_BUTTON,
               notAllowed && 'cursor-not-allowed text-disabled hover:bg-transparent',
             )}
-            aria-label={messages['masked.showLabel'](props.label)}
+            aria-label={messages['masked.showLabel'](named)}
             {...(notAllowed ? { 'aria-disabled': true, 'aria-describedby': reasonId } : {})}
             onClick={() => {
               if (!notAllowed) setOpen(true)
@@ -276,7 +294,8 @@ export function MaskedValue(props: MaskedValueProps) {
           open={asking}
           onOpenChange={setOpen}
           dismissible={!busy}
-          title={messages['masked.revealTitle'](props.label)}
+          title={messages['masked.revealTitle'](named)}
+          {...(props.subject === undefined ? {} : { subject: props.subject })}
           actions={
             <>
               <ButtonPrimitive
@@ -302,7 +321,8 @@ export function MaskedValue(props: MaskedValueProps) {
             </>
           }
         >
-          <div className="flex flex-col gap-4">
+          {/* 24px under the title (the header's 16px and 8px more): the question starts apart. */}
+          <div className="mt-2 flex flex-col gap-4">
             {props.error !== undefined && props.error !== null && (
               <Alert tone="danger">{props.error}</Alert>
             )}
@@ -324,10 +344,9 @@ export function MaskedValue(props: MaskedValueProps) {
                 onChange={setText}
               />
             )}
-            <p className="m-0 flex items-start gap-2 text-xs text-secondary">
-              <ScrollText aria-hidden="true" className="mt-px size-3.5 shrink-0" />
-              <span className={TEXT_DIRECTION}>{props.logNote ?? messages['masked.logged']}</span>
-            </p>
+            <Alert icon={ScrollText} title={messages['masked.loggedTitle']}>
+              {props.logNote ?? messages['masked.logged']}
+            </Alert>
           </div>
         </Dialog>
       )}

@@ -41,6 +41,8 @@ function Salary(
   return (
     <MaskedValue
       label="Gross salary"
+      sentenceLabel="gross salary"
+      subject="Milica Petrović, site engineer"
       reasons={SALARY_REASONS}
       allowOther
       {...(value === undefined ? {} : { value })}
@@ -93,8 +95,10 @@ const meta = {
       description: {
         component:
           '**What for:** a sensitive value — a salary, a diagnosis, a personal number — that is ' +
-          'shown only after the user says why. "Show" asks for a reason (the application’s list, ' +
-          'optionally "Other" with words) with the note that the access is logged; ' +
+          'shown only after the user says why. "Show" asks for a reason in a dialog titled with ' +
+          'the action in sentence case (“Show gross salary”: `sentenceLabel`) and the record ' +
+          'bold under it (`subject`); then the application’s reasons (optionally "Other" with ' +
+          'words) and a note, “Access is logged”, saying what is recorded; ' +
           '`onReveal({ reason, text })` reports it, the application records it and passes ' +
           '`value`. A returned promise keeps the dialog working; a refusal (`error`) is shown in ' +
           'it. "Hide" (or `hideAfter`) masks the value again and calls `onHide`.\n\n' +
@@ -130,7 +134,7 @@ export const Default: Story = {
     await settle()
     const canvas = within(canvasElement)
     await expect(canvas.getByText('Gross salary: hidden')).toBeInTheDocument()
-    await expect(canvas.getByRole('button', { name: 'Show Gross salary' })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Show gross salary' })).toBeVisible()
     // The real value is not in the page.
     await expect(canvasElement.textContent).not.toContain('184.250')
   },
@@ -141,7 +145,12 @@ export const Shown: Story = {
   render: () => (
     <ExampleProvider>
       <Record>
-        <MaskedValue label="Gross salary" value={SALARY} onHide={() => undefined} />
+        <MaskedValue
+          label="Gross salary"
+          sentenceLabel="gross salary"
+          value={SALARY}
+          onHide={() => undefined}
+        />
       </Record>
     </ExampleProvider>
   ),
@@ -149,7 +158,7 @@ export const Shown: Story = {
     await settle()
     const canvas = within(canvasElement)
     await expect(canvas.getByText('184.250,00 RSD')).toBeVisible()
-    await expect(canvas.getByRole('button', { name: 'Hide Gross salary' })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Hide gross salary' })).toBeVisible()
   },
 }
 
@@ -174,8 +183,10 @@ export const RevealInteraction: Story = {
     await settle()
     const canvas = within(canvasElement)
     const body = within(document.body)
-    await userEvent.click(canvas.getByRole('button', { name: 'Show Gross salary' }))
-    const dialog = await body.findByRole('dialog', { name: 'Show Gross salary' })
+    await userEvent.click(canvas.getByRole('button', { name: 'Show gross salary' }))
+    const dialog = await body.findByRole('dialog', {
+      name: 'Show gross salary Milica Petrović, site engineer',
+    })
     const show = within(dialog).getByRole('button', { name: 'Show' })
     await expect(show).toBeDisabled()
     await userEvent.click(within(dialog).getByRole('radio', { name: 'Other' }))
@@ -183,11 +194,11 @@ export const RevealInteraction: Story = {
     await userEvent.click(show)
     await expect(await canvas.findByText('184.250,00 RSD')).toBeVisible()
     await expect(canvas.getByText('Reported: other Bank loan certificate')).toBeVisible()
-    const hide = await canvas.findByRole('button', { name: 'Hide Gross salary' })
+    const hide = await canvas.findByRole('button', { name: 'Hide gross salary' })
     await userEvent.click(hide)
     await expect(canvas.queryByText('184.250,00 RSD')).toBeNull()
     await waitFor(async () => {
-      await expect(canvas.getByRole('button', { name: 'Show Gross salary' })).toHaveFocus()
+      await expect(canvas.getByRole('button', { name: 'Show gross salary' })).toHaveFocus()
     })
   },
 }
@@ -207,11 +218,13 @@ export const Diagnosis: Story = {
                 value: (
                   <MaskedValue
                     label="Diagnosis"
+                    sentenceLabel="diagnosis"
+                    subject="Jovana Nikolić, finding IZ-2026-03417"
                     reasons={DIAGNOSIS_REASONS}
                     allowOther
                     onReveal={() => undefined}
                     defaultAsking
-                    logNote="Access is logged in the patient’s record: your name, the time and the reason. The patient can see it."
+                    logNote="In the patient’s record: your name, the time and the reason. The patient can see it."
                   />
                 ),
               },
@@ -222,7 +235,9 @@ export const Diagnosis: Story = {
     </ExampleProvider>
   ),
   play: async () => {
-    const dialog = await within(document.body).findByRole('dialog', { name: 'Show Diagnosis' })
+    const dialog = await within(document.body).findByRole('dialog', {
+      name: 'Show diagnosis Jovana Nikolić, finding IZ-2026-03417',
+    })
     await settle()
     await expect(within(dialog).getAllByRole('radio')).toHaveLength(4)
     await expect(within(dialog).getByText(/The patient can see it/)).toBeVisible()
@@ -234,12 +249,17 @@ export const WrittenReason: Story = {
   name: 'Written reason',
   render: () => (
     <ExampleProvider>
-      <MaskedValue label="Personal number" onReveal={() => undefined} defaultAsking />
+      <MaskedValue
+        label="Personal number"
+        sentenceLabel="personal number"
+        onReveal={() => undefined}
+        defaultAsking
+      />
     </ExampleProvider>
   ),
   play: async () => {
     const dialog = await within(document.body).findByRole('dialog', {
-      name: 'Show Personal number',
+      name: 'Show personal number',
     })
     await settle()
     await expect(within(dialog).getByRole('textbox', { name: /Why do you need/ })).toBeVisible()
@@ -252,14 +272,14 @@ export const Loading: Story = {
   render: () => (
     <ExampleProvider>
       <Record>
-        <MaskedValue label="Gross salary" loading />
+        <MaskedValue label="Gross salary" sentenceLabel="gross salary" loading />
       </Record>
     </ExampleProvider>
   ),
   play: async ({ canvasElement }) => {
     await settle()
     await expect(
-      within(canvasElement).getByRole('status', { name: 'Showing Gross salary…' }),
+      within(canvasElement).getByRole('status', { name: 'Showing gross salary…' }),
     ).toBeInTheDocument()
   },
 }
@@ -272,6 +292,7 @@ export const Refused: Story = {
       <Record>
         <MaskedValue
           label="Gross salary"
+          sentenceLabel="gross salary"
           reasons={SALARY_REASONS}
           onReveal={() => undefined}
           error="Your role may see salaries only during the payroll period."
@@ -288,6 +309,7 @@ export const RefusedInDialog: Story = {
     <ExampleProvider>
       <MaskedValue
         label="Gross salary"
+        sentenceLabel="gross salary"
         reasons={SALARY_REASONS}
         onReveal={() => undefined}
         error="Your role may see salaries only during the payroll period."
@@ -315,7 +337,7 @@ export const RefusedInteraction: Story = {
   ),
   play: async ({ canvasElement }) => {
     await settle()
-    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Show Gross salary' }))
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Show gross salary' }))
     const dialog = await within(document.body).findByRole('dialog')
     await userEvent.click(
       within(dialog).getByRole('radio', { name: 'Preparing this month’s payroll' }),
@@ -332,14 +354,18 @@ export const NotAllowed: Story = {
   render: () => (
     <ExampleProvider>
       <Record>
-        <MaskedValue label="Gross salary" notAllowedReason="only payroll staff can see salaries." />
+        <MaskedValue
+          label="Gross salary"
+          sentenceLabel="gross salary"
+          notAllowedReason="only payroll staff can see salaries."
+        />
       </Record>
     </ExampleProvider>
   ),
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
-    const show = canvas.getByRole('button', { name: 'Show Gross salary' })
+    const show = canvas.getByRole('button', { name: 'Show gross salary' })
     await expect(show).toHaveAttribute('aria-disabled', 'true')
     await expect(show).toHaveAccessibleDescription(
       'Not allowed: only payroll staff can see salaries.',
@@ -353,7 +379,7 @@ export const ReadOnly: Story = {
   render: () => (
     <ExampleProvider>
       <Record>
-        <MaskedValue label="Gross salary" readOnly />
+        <MaskedValue label="Gross salary" sentenceLabel="gross salary" readOnly />
       </Record>
     </ExampleProvider>
   ),
@@ -377,7 +403,7 @@ export const HideAfter: Story = {
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
-    await userEvent.click(canvas.getByRole('button', { name: 'Show Gross salary' }))
+    await userEvent.click(canvas.getByRole('button', { name: 'Show gross salary' }))
     const dialog = await within(document.body).findByRole('dialog')
     await userEvent.click(
       within(dialog).getByRole('radio', { name: 'Preparing this month’s payroll' }),
@@ -427,6 +453,7 @@ export const PhoneWidth: Story = {
           <Record>
             <MaskedValue
               label="Gross salary"
+              sentenceLabel="gross salary"
               reasons={SALARY_REASONS}
               allowOther
               onReveal={() => undefined}

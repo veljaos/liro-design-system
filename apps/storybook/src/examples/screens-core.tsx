@@ -1068,7 +1068,9 @@ export function Approvals({ phone }: { phone: boolean }) {
         onOpenChange={setAsking}
         family="destructive"
         actionIcon={CircleX}
-        title={`Reject ${rejecting.name}?`}
+        {...(rejecting.ids.length === 1
+          ? { title: 'Reject invoice', subject: rejecting.name }
+          : { title: `Reject ${rejecting.name}?` })}
         message="The supplier sees the reason on SEF. A rejection cannot be taken back."
         reasonLabel="Reason for rejection"
         reasons={REJECT_REASONS}

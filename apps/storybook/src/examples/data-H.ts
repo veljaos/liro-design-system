@@ -550,6 +550,8 @@ export interface Absence {
   subject: string
   excused: boolean
   note?: string
+  /** The parent's excuse is sent and waits for the class teacher (P5.28). */
+  excuseSent?: boolean
 }
 
 function subjectOf(date: string, lesson: number): string {
@@ -589,4 +591,36 @@ export const ABSENCE_COUNTS = {
   total: ABSENCES.length,
   excused: ABSENCES.filter((each) => each.excused).length,
   open: ABSENCES.filter((each) => !each.excused).length,
+}
+
+// ── P5.28 screens ──────────────────────────────────────────────────────────────────────────────
+
+/** Where the patient's messages go (illustrative). */
+export const PATIENT_PHONE = '064 123 4567'
+
+/**
+ * A move of Jovana's appointment proposed on the schedule (a drag to dr Nada Grujić's free 12:30):
+ * the confirmation open on it, as the reception would see it before anything changes.
+ */
+export const JOVANA_MOVE = {
+  id: JOVANA_BOOKING.id,
+  resourceId: 'grujic',
+  start: `${CLINIC.day}T12:30`,
+  end: `${CLINIC.day}T13:00`,
+}
+
+/** The reasons a parent gives when excusing an absence (the school's list). */
+export const EXCUSE_REASONS = [
+  { value: 'illness', label: 'Illness' },
+  { value: 'doctor', label: 'Doctor’s appointment' },
+  { value: 'family', label: 'Family reason' },
+  { value: 'other', label: 'Other' },
+]
+
+/** The kinds of note the school accepts with an excuse. */
+export const EXCUSE_FILES = {
+  accept: ['image/*', '.pdf'],
+  acceptText: 'A photo or a PDF of the doctor’s note',
+  maxSize: 10 * 1024 * 1024,
+  maxSizeText: '10 MB',
 }
