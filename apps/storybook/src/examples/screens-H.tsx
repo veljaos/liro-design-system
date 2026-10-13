@@ -1104,7 +1104,7 @@ export function ParentAttendance({
           )}
           {open.length === 0 && waiting.length > 0 && (
             <Alert title="Excuse sent, waiting for the class teacher">
-              {`Lessons ${lessons(waiting)} on ${format.date(SCHOOL.day)}. ${SCHOOL.teacher} accepts the excuse; its state is shown here.`}
+              {`${SCHOOL.teacher} decides on lessons ${lessons(waiting)} of ${format.date(SCHOOL.day)}`}
             </Alert>
           )}
           <SectionCard title="Absences" headingLevel={2} flush>

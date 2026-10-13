@@ -131,8 +131,9 @@ function isEmpty(value: ReactNode): boolean {
 function Line({ change }: { change: ChangeLine }) {
   const { messages } = useLiro()
   return (
-    <li className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5 text-sm">
-      <span className={cn('min-w-24 text-secondary', TEXT_DIRECTION)}>{change.label}</span>
+    // One row of the list's two columns (subgrid): the labels line up, the values beside them.
+    <li className="col-span-2 grid min-w-0 grid-cols-subgrid items-baseline text-sm">
+      <span className={cn('min-w-0 text-secondary', TEXT_DIRECTION)}>{change.label}</span>
       <span className="inline-flex min-w-0 flex-wrap items-baseline gap-x-1.5">
         <span className="sr-only">{messages['history.before']}</span>
         <bdi className="text-secondary tabular-nums">
@@ -220,7 +221,8 @@ function ChangeForm(
     <div data-slot="change-confirm" className="flex flex-col gap-4">
       <ul
         aria-label={messages['change.changes']}
-        className="m-0 flex list-none flex-col gap-1.5 rounded-md border border-solid border-default p-3"
+        // The labels' column as wide as the longest, up to 40%; the values take the rest.
+        className="m-0 grid list-none grid-cols-[fit-content(40%)_minmax(0,1fr)] gap-x-4 gap-y-1.5 rounded-md border border-solid border-default p-3"
       >
         {props.changes.map((change) => (
           <Line key={change.key ?? change.label} change={change} />
