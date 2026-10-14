@@ -1,0 +1,198 @@
+/*
+ * Maps (P5.41): the structure Leaflet needs, in Liro tokens. Leaflet's own `leaflet.css` is not
+ * used (raw colours, its controls' images). These rules are adapted from Leaflet 1.9.4's
+ * `dist/leaflet.css` (BSD-2-Clause, © Volodymyr Agafonkin and CloudMade; THIRD-PARTY-NOTICES.md),
+ * keeping only what positions and layers the panes, tiles and SVG shapes; Leaflet's controls,
+ * popups, tooltips and markers are not used. Leaflet lays its panes out in physical pixels
+ * (`left`, `top`, `dir="ltr"` on the map): a map is never mirrored for a right-to-left page.
+ * Every colour of a shape is a Liro meaning, set here by class (CSS wins over the attributes
+ * Leaflet writes), so the shapes follow the theme. Imported into the base layer of styles.css.
+ */
+.liro-map {
+  position: relative;
+  overflow: hidden;
+  outline-offset: 2px;
+  background: var(--liro-surface-sunken);
+  font-family: var(--liro-font-sans);
+  -webkit-tap-highlight-color: transparent;
+}
+.liro-map:focus-visible {
+  outline: 2px solid var(--liro-border-focus);
+}
+.liro-map .leaflet-pane,
+.liro-map .leaflet-tile,
+.liro-map .leaflet-tile-container,
+.liro-map .leaflet-pane > svg,
+.liro-map .leaflet-zoom-box,
+.liro-map .leaflet-layer {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+.liro-map .leaflet-tile {
+  user-select: none;
+  -webkit-user-drag: none;
+  filter: inherit;
+  visibility: hidden;
+}
+.liro-map .leaflet-tile-loaded {
+  visibility: inherit;
+}
+.liro-map .leaflet-tile,
+.liro-map .leaflet-tile-pane img {
+  max-width: none !important;
+  max-height: none !important;
+  width: auto;
+  padding: 0;
+}
+.liro-map .leaflet-overlay-pane svg {
+  max-width: none !important;
+  max-height: none !important;
+  user-select: none;
+}
+.liro-map.leaflet-touch-zoom {
+  touch-action: pan-x pan-y;
+}
+.liro-map.leaflet-touch-drag {
+  touch-action: pinch-zoom;
+}
+.liro-map.leaflet-touch-drag.leaflet-touch-zoom {
+  touch-action: none;
+}
+.liro-map .leaflet-zoom-box {
+  width: 0;
+  height: 0;
+  box-sizing: border-box;
+  z-index: 800;
+  border: 2px dotted var(--liro-border-focus);
+}
+.liro-map .leaflet-pane {
+  z-index: 400;
+}
+.liro-map .leaflet-tile-pane {
+  z-index: 200;
+}
+.liro-map .leaflet-overlay-pane {
+  z-index: 400;
+}
+.liro-map .leaflet-map-pane svg {
+  z-index: 200;
+}
+.liro-map .leaflet-zoom-animated {
+  transform-origin: 0 0;
+}
+.liro-map .leaflet-grab {
+  cursor: grab;
+}
+.liro-map.leaflet-dragging .leaflet-grab,
+.liro-map.leaflet-dragging .leaflet-interactive {
+  cursor: grabbing;
+}
+.liro-map .leaflet-pane > svg path {
+  pointer-events: none;
+}
+.liro-map .leaflet-pane > svg path.leaflet-interactive {
+  pointer-events: auto;
+  cursor: pointer;
+}
+/* A dark theme's tiles are the application's (`urlDark`); ours are only dimmed a little. */
+[data-liro-theme='dark'] .liro-map .liro-map-tiles {
+  opacity: 0.85;
+}
+
+/* Areas: a line in their tone, a light fill; the chosen one neutral and strong (D17). */
+.liro-map path.liro-map-area {
+  stroke-width: 2;
+  stroke-linejoin: round;
+  fill-opacity: 0.14;
+}
+.liro-map path.liro-map-tone-neutral {
+  stroke: var(--liro-border-strong);
+  fill: var(--liro-border-strong);
+}
+.liro-map path.liro-map-tone-category1 {
+  stroke: var(--liro-chart-category1);
+  fill: var(--liro-chart-category1);
+}
+.liro-map path.liro-map-tone-category2 {
+  stroke: var(--liro-chart-category2);
+  fill: var(--liro-chart-category2);
+}
+.liro-map path.liro-map-tone-category3 {
+  stroke: var(--liro-chart-category3);
+  fill: var(--liro-chart-category3);
+}
+.liro-map path.liro-map-tone-category4 {
+  stroke: var(--liro-chart-category4);
+  fill: var(--liro-chart-category4);
+}
+.liro-map path.liro-map-tone-category5 {
+  stroke: var(--liro-chart-category5);
+  fill: var(--liro-chart-category5);
+}
+.liro-map path.liro-map-area.is-selected {
+  stroke: var(--liro-border-selected);
+  stroke-width: 4;
+  fill: var(--liro-surface-selected);
+  fill-opacity: 0.55;
+}
+.liro-map path.liro-map-area.leaflet-interactive:hover {
+  fill-opacity: 0.26;
+}
+
+/* A workplace's allowed area: a dashed neutral line (3:1 on every surface) round a light fill. */
+.liro-map path.liro-map-allowed {
+  stroke: var(--liro-text-secondary);
+  stroke-width: 2;
+  stroke-dasharray: 6 4;
+  fill: var(--liro-border-strong);
+  fill-opacity: 0.16;
+}
+/* A position's accuracy: a faint circle round it. */
+.liro-map path.liro-map-accuracy {
+  stroke: var(--liro-text-secondary);
+  stroke-width: 1;
+  fill: var(--liro-text-secondary);
+  fill-opacity: 0.12;
+}
+/* A point (an address) and a person's position: a dot with a ring of the surface. */
+.liro-map path.liro-map-point,
+.liro-map path.liro-map-position {
+  stroke: var(--liro-surface-raised);
+  stroke-width: 3;
+  fill: var(--liro-text-primary);
+  fill-opacity: 1;
+}
+
+/*
+ * A region chart (P5.41): areas filled by their value's step (the fill is set per area: a ramp's
+ * meaning at an opacity, on the card's own surface, or the "No data" hatching), with a thin line
+ * between neighbours; the chosen area keeps its fill and takes the neutral selected line (D17);
+ * the area the keys reached a strong line in the text colour.
+ */
+.liro-map.liro-map-raised {
+  background: var(--liro-surface-raised);
+}
+.liro-map path.liro-map-value {
+  stroke: var(--liro-border-strong);
+  stroke-width: 1;
+}
+.liro-map path.liro-map-value.leaflet-interactive:hover {
+  stroke: var(--liro-text-secondary);
+  stroke-width: 2;
+}
+.liro-map path.liro-map-area.liro-map-value.is-selected {
+  stroke: var(--liro-border-selected);
+  stroke-width: 3;
+}
+.liro-map path.liro-map-area.is-active {
+  stroke: var(--liro-text-primary);
+  stroke-width: 3;
+}
+/* A place's bubble: neutral, its area by the value, the areas' colours showing through. */
+.liro-map path.liro-map-bubble {
+  stroke: var(--liro-text-primary);
+  stroke-width: 1.5;
+  fill: var(--liro-text-primary);
+  fill-opacity: 0.22;
+}
