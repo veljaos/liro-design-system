@@ -1316,6 +1316,58 @@ export type {
   SatisfactionAnswer,
   SatisfactionOption,
 } from './components/help-logic'
+// ── P5.34 ai: the assistant (P5.34), e-mail preview (P5.38), reading (P5.39) ──
+export { AssistantAnswer } from './components/assistant-answer'
+export type { AssistantAnswerProps } from './components/assistant-answer'
+export { AssistantComposer } from './components/assistant-composer'
+export type { AssistantComposerProps } from './components/assistant-composer'
+export { AskedQuestion, AssistantPanel, QuestionList } from './components/assistant-panel'
+export type { AssistantPanelProps, AssistantTurn } from './components/assistant-panel'
+export { ProposedAction } from './components/proposed-action'
+export type { ProposedActionProps } from './components/proposed-action'
+export {
+  actionOffers,
+  actionSettled,
+  ANSWER_STATES,
+  answerBusy,
+  answerSources,
+  canReport,
+  followUpsShown,
+  questionKey,
+  questionReady,
+  shownBlocks,
+} from './components/assistant-logic'
+export type {
+  AnswerBlock,
+  AnswerChartBlock,
+  AnswerColumn,
+  AnswerHeadingBlock,
+  AnswerListBlock,
+  AnswerRow,
+  AnswerSource,
+  AnswerSourcesBlock,
+  AnswerState,
+  AnswerTableBlock,
+  AnswerTextBlock,
+  ProposedActionState,
+} from './components/assistant-logic'
+export { AskPage } from './templates/ask-page'
+export type { AskPageProps } from './templates/ask-page'
+export { EmailPreview, emailPreviewWidth } from './components/email-preview'
+export type {
+  EmailPreviewProps,
+  EmailPreviewScheme,
+  EmailPreviewWidth,
+} from './components/email-preview'
+export { ArticleList } from './components/article-list'
+export type { ArticleListProps, ArticleSummary } from './components/article-list'
+export { NewsletterSignup } from './components/newsletter-signup'
+export type { NewsletterSignupProps } from './components/newsletter-signup'
+export { opensOutside, ShareLinks } from './components/share-links'
+export type { ShareLinksProps, ShareTarget } from './components/share-links'
+export { articlePlaces, bylineText, emailProblem, looksLikeEmail } from './components/blog-logic'
+export { ArticlePage } from './templates/article-page'
+export type { ArticleAuthor, ArticlePageProps, ArticleTag } from './templates/article-page'
 
 // ── P5.40 QR code, IPS QR and payment orders ──
 export { QrCode, qrModules, qrPath } from './components/qr-code'

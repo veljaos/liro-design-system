@@ -1904,6 +1904,75 @@ export interface LiroMessages {
   /** SearchResultList (P5.30 e): the count over the results, and Try again. */
   'searchResults.count': (count: number, countText: string) => string
   'searchResults.retry': string
+  // P5.34 ai
+  /** The assistant (P5.34): the AI-generated mark on every answer. */
+  'assistant.generated': string
+  /** An answer's states: nothing written yet, being written, Stop, stopped, Try again. */
+  'assistant.thinking': string
+  'assistant.writing': string
+  'assistant.stop': string
+  'assistant.stopped': string
+  'assistant.retry': string
+  /** The records an answer came from. */
+  'assistant.sources': string
+  /** The suggested follow-up questions under an answer. */
+  'assistant.followUps': string
+  /** Reporting a wrong answer: the button, the dialog's title, text and button, the thanks. */
+  'assistant.report': string
+  'assistant.reportTitle': string
+  'assistant.reportMessage': string
+  'assistant.reportSend': string
+  'assistant.reported': string
+  /** A proposed action: its mark, the note that it waits, its buttons and its outcomes. */
+  'assistant.proposed': string
+  'assistant.waits': string
+  'assistant.confirm': string
+  'assistant.dismiss': string
+  'assistant.running': string
+  'assistant.dismissed': string
+  /** The question box: its name, the ask button and the keys. */
+  'assistant.question': string
+  'assistant.ask': string
+  'assistant.askHint': string
+  /** The user's question in a conversation, for assistive technology. */
+  'assistant.youAsked': string
+  /** The conversation's name, suggested and recent questions. */
+  'assistant.conversation': string
+  'assistant.suggested': string
+  'assistant.recent': string
+  /** The panel's and the page's buttons. */
+  'assistant.newConversation': string
+  'assistant.openPage': string
+  'assistant.newQuestion': string
+  /** The question box under an answer on the "Ask" page. */
+  'assistant.followUp': string
+  /** EmailPreview (P5.38): its name, the width and mail-client switches, the header's labels. */
+  'emailPreview.label': string
+  'emailPreview.width': string
+  'emailPreview.desktop': string
+  'emailPreview.phone': string
+  'emailPreview.client': string
+  'emailPreview.light': string
+  'emailPreview.dark': string
+  'emailPreview.from': string
+  'emailPreview.to': string
+  'emailPreview.subject': string
+  /** ArticlePage (P5.39): the related articles, the tags, the date of the last change. */
+  'article.related': string
+  'article.tags': string
+  'article.updated': (dateText: string) => string
+  /** ShareLinks (P5.39). */
+  'share.label': string
+  'share.copy': string
+  'share.copied': string
+  'share.copyFailed': string
+  /** NewsletterSignup (P5.39). */
+  'newsletter.email': string
+  'newsletter.subscribe': string
+  'newsletter.required': string
+  'newsletter.invalid': string
+  'newsletter.sending': string
+  'newsletter.thanks': string
   // P5.31 merge values
   /** A merge field without a value (the values were given): its pill's name. */
   'richText.mergeFieldMissing': (label: string) => string

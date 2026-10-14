@@ -285,6 +285,8 @@ export const TONES = {
   'Waiting for setup': 'warning',
   Critical: 'danger',
   Warning: 'warning',
+  // P5.34 ai: a blog post on the blog (a draft and a scheduled post are neutral, as above)
+  Published: 'success',
 } as const
 
 /** A status of the examples. */
