@@ -8596,3 +8596,345 @@ export const ProjectTimelineMoveInteraction: Story = {
     notice.dismiss()
   },
 }
+
+// ── P5.35 gantt ──
+// (Imports here, inside the block, so the blocks merge without touching the top.)
+import { Y_ROUTES } from './data-Y'
+
+/** An employee portal story's checks, and on a phone that nothing scrolls sideways. */
+function employeePlay(
+  check: (canvasElement: HTMLElement) => Promise<void>,
+  phone = false,
+): NonNullable<Story['play']> {
+  return async ({ canvasElement }) => {
+    await settle()
+    await check(canvasElement)
+    if (phone) {
+      for (const page of canvasElement.querySelectorAll<HTMLElement>('[data-liro-phone-page]')) {
+        await expect(page.scrollWidth).toBeLessThanOrEqual(page.clientWidth)
+      }
+    }
+  }
+}
+
+/**
+ * The employee portal of Kvadrat Gradnja d.o.o. (P5.35, PortalShell) as Nikola Marković, a site
+ * worker on Liman 4, sees it on 14.10.2026: the annex waiting for his signature, his latest
+ * payslip, the leave left, his next shift (changed to a night pour) and his details.
+ */
+const EMPLOYEE_HOME_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Hello, Nikola' })).toBeVisible()
+  await expect(canvas.getByRole('link', { name: 'September 2026' })).toBeVisible()
+  await expect(canvas.getByRole('button', { name: 'Open the annex' })).toBeVisible()
+}
+
+export const EmployeePortal: Story = {
+  name: 'Employee portal',
+  render: () => <ExampleApp start={Y_ROUTES.home} />,
+  play: employeePlay(EMPLOYEE_HOME_CHECK),
+}
+
+export const EmployeePortalPhone: Story = {
+  name: 'Employee portal, phone',
+  render: () => <OnPhone start={Y_ROUTES.home} />,
+  play: employeePlay(EMPLOYEE_HOME_CHECK, true),
+}
+
+/** His payslips of 2026, newest first; September is new. */
+const PAYSLIPS_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Payslips' })).toBeVisible()
+  await expect(canvasElement).toHaveTextContent('85.330,37')
+}
+
+export const EmployeePayslips: Story = {
+  name: 'Employee portal, payslips',
+  render: () => <ExampleApp start={Y_ROUTES.payslips} />,
+  play: employeePlay(PAYSLIPS_CHECK),
+}
+
+export const EmployeePayslipsPhone: Story = {
+  name: 'Employee portal, payslips, phone',
+  render: () => <OnPhone start={Y_ROUTES.payslips} />,
+  play: employeePlay(PAYSLIPS_CHECK, true),
+}
+
+/** September's payslip: net, gross, hours, every earning and deduction, what the employer adds. */
+const PAYSLIP_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(
+    canvas.getByRole('heading', { level: 1, name: 'Payslip for September 2026' }),
+  ).toBeVisible()
+  await expect(canvasElement).toHaveTextContent('117.672,00')
+  await expect(canvasElement).toHaveTextContent('32.341,63')
+  await expect(canvas.getByRole('button', { name: 'View PDF' })).toBeVisible()
+}
+
+export const EmployeePayslip: Story = {
+  name: 'Employee portal, payslip',
+  render: () => <ExampleApp start={Y_ROUTES.payslip('2026-09')} />,
+  play: employeePlay(PAYSLIP_CHECK),
+}
+
+export const EmployeePayslipPhone: Story = {
+  name: 'Employee portal, payslip, phone',
+  render: () => <OnPhone start={Y_ROUTES.payslip('2026-09')} />,
+  play: employeePlay(PAYSLIP_CHECK, true),
+}
+
+/** The payslip's PDF as the application renders it: one A4 sheet. */
+const PAYSLIP_PDF_CHECK = async (canvasElement: HTMLElement) => {
+  await expect(canvasElement).toHaveTextContent('Net pay 85.330,37 RSD')
+  await expect(
+    within(canvasElement).getByRole('button', { name: 'Back to the payslip' }),
+  ).toBeVisible()
+}
+
+export const EmployeePayslipPdf: Story = {
+  name: 'Employee portal, payslip PDF',
+  render: () => <ExampleApp start={Y_ROUTES.payslipPdf('2026-09')} />,
+  play: employeePlay(PAYSLIP_PDF_CHECK),
+}
+
+export const EmployeePayslipPdfPhone: Story = {
+  name: 'Employee portal, payslip PDF, phone',
+  render: () => <OnPhone start={Y_ROUTES.payslipPdf('2026-09')} />,
+  play: employeePlay(PAYSLIP_PDF_CHECK, true),
+}
+
+/** Leave: 22 days, 11 taken, 5 waiting for HR, 6 left; the requests with their state. */
+const LEAVE_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Leave' })).toBeVisible()
+  await expect(canvasElement).toHaveTextContent('Waiting for HR')
+  await expect(canvasElement).toHaveTextContent('The foundation slab of Liman 4 is poured')
+}
+
+export const EmployeeLeave: Story = {
+  name: 'Employee portal, leave',
+  render: () => <ExampleApp start={Y_ROUTES.leave} />,
+  play: employeePlay(LEAVE_CHECK),
+}
+
+export const EmployeeLeavePhone: Story = {
+  name: 'Employee portal, leave, phone',
+  render: () => <OnPhone start={Y_ROUTES.leave} />,
+  play: employeePlay(LEAVE_CHECK, true),
+}
+
+/** LR-2026-031: submitted, approved by the site manager, waiting for HR (Jelena Marković). */
+const LEAVE_REQUEST_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'LR-2026-031' })).toBeVisible()
+  await expect(canvasElement).toHaveTextContent('Approved by the site manager')
+  await expect(canvas.getByRole('button', { name: 'Withdraw request' })).toBeVisible()
+}
+
+export const EmployeeLeaveRequest: Story = {
+  name: 'Employee portal, leave request',
+  render: () => <ExampleApp start={Y_ROUTES.leaveRequest('LR-2026-031')} />,
+  play: employeePlay(LEAVE_REQUEST_CHECK),
+}
+
+export const EmployeeLeaveRequestPhone: Story = {
+  name: 'Employee portal, leave request, phone',
+  render: () => <OnPhone start={Y_ROUTES.leaveRequest('LR-2026-031')} />,
+  play: employeePlay(LEAVE_REQUEST_CHECK, true),
+}
+
+/** A rejected request: the site manager's reason on its step. */
+export const EmployeeLeaveRejected: Story = {
+  name: 'Employee portal, leave request, rejected',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={Y_ROUTES.leaveRequest('LR-2026-027')} />,
+  play: employeePlay(async (canvasElement) => {
+    await expect(canvasElement).toHaveTextContent('Rejected by the site manager')
+    await expect(
+      within(canvasElement).queryByRole('button', { name: 'Withdraw request' }),
+    ).toBeNull()
+  }),
+}
+
+/** A new request half written: 21.–28.12.2026., the application counts 6 working days. */
+const NEW_LEAVE_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Request leave' })).toBeVisible()
+  await expect(canvasElement).toHaveTextContent('6 working days · 6 left this year')
+}
+
+export const EmployeeNewLeave: Story = {
+  name: 'Employee portal, new leave request',
+  render: () => <ExampleApp start={Y_ROUTES.newLeaveDraft} />,
+  play: employeePlay(NEW_LEAVE_CHECK),
+}
+
+export const EmployeeNewLeavePhone: Story = {
+  name: 'Employee portal, new leave request, phone',
+  render: () => <OnPhone start={Y_ROUTES.newLeaveDraft} />,
+  play: employeePlay(NEW_LEAVE_CHECK, true),
+}
+
+/** The request sent: it waits for the site manager; nothing left to take. */
+export const EmployeeLeaveSent: Story = {
+  name: 'Employee portal, leave, request sent',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={`${Y_ROUTES.leave}?sent`} />,
+  play: employeePlay(async (canvasElement) => {
+    await expect(canvasElement).toHaveTextContent('Waiting for site manager')
+  }),
+}
+
+/** Sending: Send with no dates names them; with the dates the request goes and the list shows it. */
+export const EmployeeRequestLeaveInteraction: Story = {
+  name: 'Employee portal, request leave, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={Y_ROUTES.newLeave} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Send request' }))
+    await expect(canvasElement).toHaveTextContent('Choose the first and the last day.')
+    const [from, to] = canvas.getAllByRole('textbox', { name: /Dates/ })
+    if (from === undefined || to === undefined) throw new Error('The dates are missing.')
+    await userEvent.type(from, '21.12.2026.')
+    await userEvent.type(to, '28.12.2026.')
+    await userEvent.tab()
+    await expect(canvasElement).toHaveTextContent('6 working days')
+    await userEvent.click(canvas.getByRole('button', { name: 'Send request' }))
+    await waitFor(async () => {
+      await expect(canvasElement).toHaveTextContent('Request sent')
+    })
+    notice.dismiss()
+  },
+}
+
+/** His shifts by week: Thursday's changed to a night pour, a swap waiting for the site manager. */
+const SHIFTS_CHECK = async (canvasElement: HTMLElement) => {
+  await expect(canvasElement).toHaveTextContent('Night pour')
+  await expect(canvasElement).toHaveTextContent('Swap requested with Marko Ilić')
+}
+
+export const EmployeeShifts: Story = {
+  name: 'Employee portal, shifts',
+  render: () => <ExampleApp start={Y_ROUTES.shifts} />,
+  play: employeePlay(SHIFTS_CHECK),
+}
+
+export const EmployeeShiftsPhone: Story = {
+  name: 'Employee portal, shifts, phone',
+  render: () => <OnPhone start={Y_ROUTES.shifts} />,
+  play: employeePlay(SHIFTS_CHECK, true),
+}
+
+/** What waits for his signature and what he signed. */
+const DOCUMENTS_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(
+    canvas.getByRole('link', {
+      name: 'Annex 2 to the employment contract — night work on Liman 4',
+    }),
+  ).toBeVisible()
+  await expect(canvasElement).toHaveTextContent('sign by 16.10.2026.')
+}
+
+export const EmployeeDocuments: Story = {
+  name: 'Employee portal, documents',
+  render: () => <ExampleApp start={Y_ROUTES.documents} />,
+  play: employeePlay(DOCUMENTS_CHECK),
+}
+
+export const EmployeeDocumentsPhone: Story = {
+  name: 'Employee portal, documents, phone',
+  render: () => <OnPhone start={Y_ROUTES.documents} />,
+  play: employeePlay(DOCUMENTS_CHECK, true),
+}
+
+/** The annex: its text first, the signers with his Decline and Sign. */
+const ANNEX_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'ANX-2026-014' })).toBeVisible()
+  await expect(canvas.getByRole('button', { name: 'Sign' })).toBeVisible()
+  await expect(canvasElement).toHaveTextContent('Article 1')
+}
+
+export const EmployeeAnnex: Story = {
+  name: 'Employee portal, document to sign',
+  render: () => <ExampleApp start={Y_ROUTES.document('ANX-2026-014')} />,
+  play: employeePlay(ANNEX_CHECK),
+}
+
+export const EmployeeAnnexPhone: Story = {
+  name: 'Employee portal, document to sign, phone',
+  render: () => <OnPhone start={Y_ROUTES.document('ANX-2026-014')} />,
+  play: employeePlay(ANNEX_CHECK, true),
+}
+
+/** Sign: his state becomes Signed, the director signs next. */
+export const EmployeeSignInteraction: Story = {
+  name: 'Employee portal, sign the annex, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={Y_ROUTES.document('ANX-2026-014')} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Sign' }))
+    await waitFor(async () => {
+      await expect(canvas.getByText('Signed by you')).toBeVisible()
+    })
+    notice.dismiss()
+  },
+}
+
+/** What HR has, and the change of his phone number waiting for HR. */
+const DETAILS_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'My details' })).toBeVisible()
+  await expect(canvasElement).toHaveTextContent('Waiting for HR')
+  await expect(canvas.getByRole('button', { name: 'Request a change' })).toBeVisible()
+}
+
+export const EmployeeDetails: Story = {
+  name: 'Employee portal, my details',
+  render: () => <ExampleApp start={Y_ROUTES.details} />,
+  play: employeePlay(DETAILS_CHECK),
+}
+
+export const EmployeeDetailsPhone: Story = {
+  name: 'Employee portal, my details, phone',
+  render: () => <OnPhone start={Y_ROUTES.details} />,
+  play: employeePlay(DETAILS_CHECK, true),
+}
+
+/** The change request open on the address (a Drawer, D14), as the application restores it. */
+export const EmployeeDetailsChange: Story = {
+  name: 'Employee portal, my details, change',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={Y_ROUTES.detailsChange} />,
+  play: employeePlay(async () => {
+    const drawer = await within(document.body).findByRole('dialog', { name: 'Request a change' })
+    await expect(drawer).toHaveTextContent('HR will ask for proof')
+  }),
+}
+
+/** Asking for a change: the new value goes to HR and waits in the list. */
+export const EmployeeDetailsChangeInteraction: Story = {
+  name: 'Employee portal, request a change, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={Y_ROUTES.details} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const page = within(document.body)
+    await userEvent.click(canvas.getByRole('button', { name: 'Request a change' }))
+    const drawer = await page.findByRole('dialog', { name: 'Request a change' })
+    await userEvent.click(within(drawer).getByRole('button', { name: 'Send to HR' }))
+    await expect(drawer).toHaveTextContent('Write the new value.')
+    await userEvent.type(within(drawer).getByRole('textbox', { name: /New value/ }), '065 555 0999')
+    await userEvent.click(within(drawer).getByRole('button', { name: 'Send to HR' }))
+    await waitFor(async () => {
+      await expect(canvasElement).toHaveTextContent('CR-2026-010')
+    })
+    notice.dismiss()
+  },
+}
