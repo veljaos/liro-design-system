@@ -1320,4 +1320,18 @@ export const messagesEn: LiroMessages = {
   'pageContents.title': 'On this page',
   'searchResults.count': (count, countText) => `${countText} ${count === 1 ? 'result' : 'results'}`,
   'searchResults.retry': 'Try again',
+  // P5.31 docs
+  'recognized.confidence': (text) => `Confidence: ${text}`,
+  'recognized.low': 'Low confidence',
+  'recognized.changed': 'Changed by you',
+  'recognized.showSource': 'Show where it was read',
+  'viewer.highlighted': (label, pageText) => `Highlighted: ${label}, ${pageText.toLowerCase()}`,
+  // P5.33 docs
+  'comparison.count': (count, countText, _total, totalText) =>
+    count === 0 ? 'No differences' : `${countText} of ${totalText} differ`,
+  'comparison.same': 'Same',
+  'comparison.differs': 'Differs',
+  'comparison.item': 'Item',
+  'comparison.result': 'Result',
+  'comparison.empty': 'Nothing to compare',
 }

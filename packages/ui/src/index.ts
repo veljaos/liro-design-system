@@ -1316,3 +1316,13 @@ export type {
   SatisfactionAnswer,
   SatisfactionOption,
 } from './components/help-logic'
+// ── P5.31 docs ──
+export { PageViewer } from './components/page-viewer'
+export type { PageViewerProps } from './components/page-viewer'
+export { clampPage, labelSide, regionBox, regionPage } from './components/page-viewer-logic'
+export type { PageRegion, RegionBox, ViewerPage } from './components/page-viewer-logic'
+export { RecognizedField } from './components/recognized-field'
+export type { RecognizedFieldProps } from './components/recognized-field'
+// ── P5.33 docs ──
+export { ValueComparison, valueComparisonCounts } from './components/value-comparison'
+export type { ComparisonRow, ValueComparisonProps } from './components/value-comparison'
