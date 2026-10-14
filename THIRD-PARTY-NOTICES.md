@@ -55,6 +55,7 @@ dependency, or copies third-party code (for example a shadcn/ui component) into 
 | Tiptap (`@tiptap/core`, `pm`, `react`, `extensions` and the extensions document, paragraph, text, heading, bold, italic, underline, link, list, hard-break), with ProseMirror and the packages listed in its notice section | 3.31.4                  | MIT                                        | `@veljaos/ui/rich-text` (RichTextField, P5.22): MIT packages only, no Tiptap Pro or paid extension; loaded only through that subpath. Notices below.                                        |
 | React Flow (`@xyflow/react`, with `@xyflow/system`, classcat, zustand and the d3 modules listed in its notice section) and dagre (`@dagrejs/dagre`, with `@dagrejs/graphlib`)                                               | 12.12.0; dagre 3.1.1    | MIT (d3 modules ISC, d3-ease BSD-3-Clause) | `@veljaos/ui/diagram` (Diagram, P5.26): the canvas and the automatic layout; loaded only through that subpath; React Flow's style sheets are not shipped. Notices below.                    |
 | SVAR React Gantt, MIT edition (`@svar-ui/react-gantt`, with the `@svar-ui/*` packages listed in its notice section and date-fns 3.6.0)                                                                                      | 2.7.3                   | MIT                                        | `@veljaos/ui/gantt` (Gantt, P5.37): the timeline's bars, links, drag and scale; loaded only through that subpath; SVAR's style sheets, themes and icon font are not shipped. Notices below. |
+| qr (`qr`, Paul Miller)                                                                                                                                                                                                      | 0.7.2                   | MIT OR Apache-2.0 (used under MIT)         | QrCode (P5.40): encodes a text as a QR code in the browser; no dependencies. Notice below.                                                                                                  |
 
 ## Storybook build
 
@@ -62,15 +63,15 @@ The static Storybook build (`apps/storybook/storybook-static`) is not hosted any
 only as a downloadable artifact of CI runs and of the publish workflow, and carries `LICENSE` and
 this file. Besides our own code it bundles:
 
-| Software                                                                                                                                                                                                                                                                     | Version  | License  | Note                                                                                                                                         |
-| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| Storybook (storybook, @storybook/addon-a11y, addon-docs, react-vite)                                                                                                                                                                                                         | 10.6.0   | MIT      | Notice below, from the upstream repository (tag v10.6.0); the npm package ships no LICENSE file.                                             |
-| React, React DOM                                                                                                                                                                                                                                                             | 19.3.0   | MIT      | Notice below (React DOM carries the same notice).                                                                                            |
-| scheduler                                                                                                                                                                                                                                                                    | 0.28.0   | MIT      | Dependency of React DOM; same notice as React.                                                                                               |
-| axe-core                                                                                                                                                                                                                                                                     | 4.13.0   | MPL-2.0  | Used by the accessibility addon. Unmodified; source: https://github.com/dequelabs/axe-core/tree/v4.13.0. Notices below.                      |
-| Radix UI (`@radix-ui/react-direction`, through `radix-ui`)                                                                                                                                                                                                                   | 1.1.4    | MIT      | Used by `LiroProvider`. Notice below (Radix UI).                                                                                             |
-| `@veljaos/ui` runtime dependencies (lucide-react, cmdk, react-day-picker, date-fns, @date-fns/tz, clsx, tailwind-merge, sonner, TanStack Table, Store and Virtual, Radix UI, @shadcn/react, Tiptap and ProseMirror, React Flow and dagre, SVAR React Gantt), React Hook Form | as above | MIT, ISC | Used by the components and primitives in the stories. Notices below.                                                                         |
-| Nunito Sans                                                                                                                                                                                                                                                                  | —        | OFL-1.1  | Interface font of the Storybook manager, shipped inside the storybook package. Notice below, from https://github.com/googlefonts/NunitoSans. |
+| Software                                                                                                                                                                                                                                                                         | Version  | License  | Note                                                                                                                                         |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Storybook (storybook, @storybook/addon-a11y, addon-docs, react-vite)                                                                                                                                                                                                             | 10.6.0   | MIT      | Notice below, from the upstream repository (tag v10.6.0); the npm package ships no LICENSE file.                                             |
+| React, React DOM                                                                                                                                                                                                                                                                 | 19.3.0   | MIT      | Notice below (React DOM carries the same notice).                                                                                            |
+| scheduler                                                                                                                                                                                                                                                                        | 0.28.0   | MIT      | Dependency of React DOM; same notice as React.                                                                                               |
+| axe-core                                                                                                                                                                                                                                                                         | 4.13.0   | MPL-2.0  | Used by the accessibility addon. Unmodified; source: https://github.com/dequelabs/axe-core/tree/v4.13.0. Notices below.                      |
+| Radix UI (`@radix-ui/react-direction`, through `radix-ui`)                                                                                                                                                                                                                       | 1.1.4    | MIT      | Used by `LiroProvider`. Notice below (Radix UI).                                                                                             |
+| `@veljaos/ui` runtime dependencies (lucide-react, cmdk, react-day-picker, date-fns, @date-fns/tz, clsx, tailwind-merge, sonner, TanStack Table, Store and Virtual, Radix UI, @shadcn/react, Tiptap and ProseMirror, React Flow and dagre, SVAR React Gantt, qr), React Hook Form | as above | MIT, ISC | Used by the components and primitives in the stories. Notices below.                                                                         |
+| Nunito Sans                                                                                                                                                                                                                                                                      | —        | OFL-1.1  | Interface font of the Storybook manager, shipped inside the storybook package. Notice below, from https://github.com/googlefonts/NunitoSans. |
 
 The `storybook` package ships its own dependencies pre-bundled into its code, without separate
 notices; they are not listed here.
@@ -1675,6 +1676,36 @@ SOFTWARE.
 #### @svar-ui/comments-locales 2.6.1, @svar-ui/core-locales 2.6.1, @svar-ui/editor-locales 2.6.1, @svar-ui/filter-locales 2.6.1, @svar-ui/grid-data-provider 2.7.3, @svar-ui/grid-locales 2.7.3, @svar-ui/lib-data-provider 1.7.1, @svar-ui/lib-data-provider 1.7.2, @svar-ui/lib-data-provider 1.7.3, @svar-ui/lib-dom 0.11.1, @svar-ui/lib-dom 0.12.1, @svar-ui/lib-dom 0.12.2, @svar-ui/lib-dom 0.14.0, @svar-ui/lib-react 1.2.2, @svar-ui/lib-react 1.3.0, @svar-ui/lib-state 1.9.6, @svar-ui/lib-state 1.9.7, @svar-ui/tasklist-locales 2.6.1 (MIT)
 
 These packages ship no licence file; their `package.json` declares `"license": "MIT"` (and `lib-state`'s readme says "MIT"). They are XB Software's, published with the packages above under the same MIT terms (the text of `@svar-ui/gantt-store` above).
+
+### qr
+
+The QR code encoder of QrCode (P5.40): `qr` 0.7.2 by Paul Miller, dual-licensed MIT OR Apache-2.0; the Design System uses it under the MIT licence. No dependencies.
+
+#### qr 0.7.2 (MIT)
+
+```
+The MIT License (MIT)
+
+Copyright (c) 2023 Paul Miller (https://paulmillr.com)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the “Software”), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+```
 
 ### Fonts
 
