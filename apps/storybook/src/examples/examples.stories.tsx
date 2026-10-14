@@ -8963,7 +8963,7 @@ export const EmailTemplateSendTest: Story = {
 
 /** The preview at a phone's width in a dark mail client. */
 export const EmailTemplateDarkPhone: Story = {
-  name: 'E-mail template, dark phone preview',
+  name: 'E-mail template, dark mail client at 360px',
   tags: ['!dev'],
   render: () => <ExampleApp start={AB_ROUTES.darkPhone} />,
   play: async ({ canvasElement }) => {
