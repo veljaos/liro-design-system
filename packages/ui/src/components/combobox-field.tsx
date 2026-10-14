@@ -89,7 +89,9 @@ export function ComboboxList(props: ListProps) {
     const option = document.getElementById(optionId(listId, active))
     if (active < 0 || list === null || option === null) return
     // Layout positions, not the screen's: an overlay still opening (scaled or sliding in) would
-    // give a different scroll on every run.
+    // give a different scroll on every run. The list sets its own scroll, so the browser's scroll
+    // anchoring is off on it (`overflow-anchor: none`): a relayout (a full-page screenshot was
+    // one) let the browser move it to the end of the list.
     let top = 0
     for (let node: Element | null = option; node !== null && node !== list;) {
       if (!(node instanceof HTMLElement)) break
@@ -109,7 +111,7 @@ export function ComboboxList(props: ListProps) {
           role="listbox"
           aria-labelledby={props.labelId}
           aria-multiselectable={props.multiple || undefined}
-          className="relative max-h-55 overflow-y-auto"
+          className="relative max-h-55 overflow-y-auto [overflow-anchor:none]"
         >
           {runsOf(props.options, props.groupOf).map((run, runIndex) => {
             const items = run.items.map(({ option, index }) => (

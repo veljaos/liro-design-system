@@ -118,7 +118,7 @@ function LookupList({
       id={listId}
       role="listbox"
       aria-labelledby={labelledBy}
-      className={cn('max-h-80 overflow-y-auto', hidden && 'hidden')}
+      className={cn('max-h-80 overflow-y-auto [overflow-anchor:none]', hidden && 'hidden')}
     >
       <div className="relative w-full" style={{ height: virtualizer.getTotalSize() }}>
         {virtualizer.getVirtualItems().map((item) => {
