@@ -48,24 +48,38 @@ export const MERGE_FIELDS: RichTextMergeField[] = [
   { key: 'code.value', label: 'Code', group: 'Kvadrat Gradnja' },
 ]
 
+/** A sample value of a merge field, typed: the provider's `format` writes it. */
+export type SampleValue =
+  | { type: 'text'; value: string }
+  | { type: 'number'; value: string }
+  | { type: 'date'; value: string }
+  | { type: 'money'; value: string; currency: string }
+
 /** The sample the preview fills in: Gradska toplana Novi Sad and invoice F-2026-0423. */
+export const SAMPLE_VALUES: Record<string, SampleValue> = {
+  'customer.name': { type: 'text', value: 'Gradska toplana Novi Sad' },
+  'customer.contact': { type: 'text', value: 'Petar Simić' },
+  'invoice.number': { type: 'text', value: 'F-2026-0423' },
+  'invoice.date': { type: 'date', value: '2026-09-30' },
+  'invoice.total': { type: 'money', value: '1284600.00', currency: 'RSD' },
+  'invoice.due': { type: 'date', value: '2026-10-30' },
+  'invoice.daysLate': { type: 'number', value: '14' },
+  'payment.account': { type: 'text', value: '160-0000012345678-21' },
+  'payment.reference': { type: 'text', value: '97 2026-0423' },
+  'statement.date': { type: 'date', value: '2026-09-30' },
+  'statement.balance': { type: 'money', value: '1697100.00', currency: 'RSD' },
+  'user.name': { type: 'text', value: 'Milica Petrović' },
+  'user.email': { type: 'text', value: 'petar.simic@example.com' },
+  'company.name': { type: 'text', value: 'Kvadrat Gradnja d.o.o.' },
+  'link.url': { type: 'text', value: 'https://kvadrat.example.com/i/F-2026-0423' },
+  'code.value': { type: 'text', value: '482 913' },
+}
+
+/** The sample's names, for the preview's line and the recipient. */
 export const SAMPLE = {
   customer: 'Gradska toplana Novi Sad',
-  contact: 'Petar Simić',
   invoice: 'F-2026-0423',
-  invoiceDate: '2026-09-30',
-  total: '1284600.00',
-  due: '2026-10-30',
-  daysLate: '14',
-  account: '160-0000012345678-21',
-  reference: '97 2026-0423',
-  statementDate: '2026-09-30',
-  balance: '1697100.00',
-  user: 'Milica Petrović',
   email: 'petar.simic@example.com',
-  company: 'Kvadrat Gradnja d.o.o.',
-  link: 'https://kvadrat.example.com/i/F-2026-0423',
-  code: '482 913',
 }
 
 /** The other sample for "Send test". */

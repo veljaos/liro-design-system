@@ -23,12 +23,7 @@ import {
   type EmailPreviewScheme,
   type EmailPreviewWidth,
 } from '@veljaos/ui'
-import {
-  fillMergeFields,
-  fillMergeText,
-  RichText,
-  RichTextField,
-} from '../../../../packages/ui/src/rich-text'
+import { RichText, RichTextField } from '../../../../packages/ui/src/rich-text'
 import type { ExampleRoute } from './example-app'
 import { Navigate, Shell, statusBadge } from './example-shell'
 import { useExampleState } from './example-state'
@@ -92,29 +87,6 @@ function LanguagesText({ template }: { template: Template }) {
         .join(' · ')}
     </span>
   )
-}
-
-/** The sample values of the merge fields, written through the provider's format. */
-function useSampleValues(): Record<string, string> {
-  const { format } = useLiro()
-  return {
-    'customer.name': SAMPLE.customer,
-    'customer.contact': SAMPLE.contact,
-    'invoice.number': SAMPLE.invoice,
-    'invoice.date': format.date(SAMPLE.invoiceDate),
-    'invoice.total': format.money(SAMPLE.total, 'RSD'),
-    'invoice.due': format.date(SAMPLE.due),
-    'invoice.daysLate': format.number(SAMPLE.daysLate),
-    'payment.account': SAMPLE.account,
-    'payment.reference': SAMPLE.reference,
-    'statement.date': format.date(SAMPLE.statementDate),
-    'statement.balance': format.money(SAMPLE.balance, 'RSD'),
-    'user.name': SAMPLE.user,
-    'user.email': SAMPLE.email,
-    'company.name': SAMPLE.company,
-    'link.url': SAMPLE.link,
-    'code.value': SAMPLE.code,
-  }
 }
 
 // ── 1. The list ──────────────────────────────────────────────────────────────────────────────
@@ -229,7 +201,6 @@ function VariantEditor({
   width: EmailPreviewWidth
   scheme: EmailPreviewScheme
 }) {
-  const values = useSampleValues()
   const [previewWidth, setPreviewWidth] = useState(width)
   const [previewScheme, setPreviewScheme] = useState(scheme)
   return (
@@ -266,7 +237,7 @@ function VariantEditor({
           lang={lang}
           from={`${SENDER.name} <${SENDER.address}>`}
           to={`${SAMPLE.customer} <${SAMPLE.email}>`}
-          subject={fillMergeText(variant.subject, values)}
+          subject={variant.subject}
           logo={<SenderLogo />}
           footer={SENDER.footer}
           width={previewWidth}
@@ -275,7 +246,7 @@ function VariantEditor({
           onSchemeChange={setPreviewScheme}
         >
           <RichText
-            value={fillMergeFields(variant.body, values)}
+            value={variant.body}
             mergeFields={MERGE_FIELDS}
             className="flex flex-col gap-4 text-sm"
           />
