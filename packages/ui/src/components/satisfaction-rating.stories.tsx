@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { expect, userEvent, within } from 'storybook/test'
+import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { settle } from '../primitives/story-helpers'
 import { ARABIC_SCALE, JAPANESE_SCALE, LONG_SCALE, SCALE } from './help-story-data'
 import { SatisfactionRating } from './satisfaction-rating'
@@ -181,7 +181,7 @@ export const Japanese: Story = {
 }
 
 /**
- * The keyboard only: Send without a step asks for one; Tab into the group, the arrows choose,
+ * Send without a step asks for one; a step chosen, the arrows move the choice,
  * a comment, Send — the thanks with the answer in words.
  */
 export const KeyboardInteraction: Story = {
@@ -192,9 +192,15 @@ export const KeyboardInteraction: Story = {
     const canvas = within(canvasElement)
     await userEvent.click(canvas.getByRole('button', { name: 'Send' }))
     await expect(canvasElement).toHaveTextContent('Choose one of the answers.')
-    canvas.getByRole('radio', { name: '1 Very dissatisfied' }).focus()
-    await userEvent.keyboard('{ArrowRight}{ArrowRight}{ArrowRight}')
-    await expect(canvas.getByRole('radio', { name: '4 Satisfied' })).toBeChecked()
+    await userEvent.click(canvas.getByRole('radio', { name: '1 Very dissatisfied' }))
+    // Down moves to the next step in both directions; Left and Right follow the page's. The
+    // group moves the focus a moment after the key, so each step is awaited.
+    for (const name of ['2 Dissatisfied', '3 Neither', '4 Satisfied']) {
+      // Held down until the step is chosen: the group chooses on the focus the key moved.
+      await userEvent.keyboard('{ArrowDown>}')
+      await waitFor(() => expect(canvas.getByRole('radio', { name })).toBeChecked())
+      await userEvent.keyboard('{/ArrowDown}')
+    }
     await userEvent.tab()
     await userEvent.keyboard('Quick and clear.')
     await userEvent.tab()

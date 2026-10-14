@@ -16,7 +16,7 @@ function ReadingPage({ entries = ENTRIES }: { entries?: readonly ContentsEntry[]
     <div className="grid grid-cols-[14rem_minmax(0,40rem)] gap-8">
       <PageContents entries={entries} layout="desktop" sticky />
       <article className="flex flex-col gap-4">
-        <h1 className="m-0 text-h2 text-primary">Why was my SEF invoice rejected?</h1>
+        <h1 className="bidi-content m-0 text-h2 text-primary">Why was my SEF invoice rejected?</h1>
         <RichText value={ARTICLE} headingIds="article" className="text-md" />
       </article>
     </div>
@@ -109,7 +109,7 @@ const ON_PHONE: Story['decorators'] = [
 function PhonePage() {
   return (
     <div className="flex flex-col gap-4 p-4">
-      <h1 className="m-0 text-h2 text-primary">Why was my SEF invoice rejected?</h1>
+      <h1 className="bidi-content m-0 text-h2 text-primary">Why was my SEF invoice rejected?</h1>
       <PageContents entries={ENTRIES} layout="phone" />
       <RichText value={ARTICLE} headingIds="article" />
     </div>

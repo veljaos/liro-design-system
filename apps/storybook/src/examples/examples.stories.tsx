@@ -7037,7 +7037,7 @@ export const SupportPortalSubmitInteraction: Story = {
 const MY_TICKETS_CHECK = async (canvasElement: HTMLElement) => {
   const canvas = within(canvasElement)
   await expect(canvas.getByRole('heading', { level: 1, name: 'My tickets' })).toBeVisible()
-  await expect(canvas.getAllByText('Waiting for your answer').length).toBeGreaterThan(0)
+  await expect(canvasElement).toHaveTextContent('Waiting for your answer')
   await expect(canvas.getAllByText('SEF invoice rejected')[0]).toBeVisible()
 }
 
@@ -7154,7 +7154,7 @@ export const SupportPortalRatingSent: Story = {
   }),
 }
 
-/** Rating with the keyboard: the arrows choose, Tab to the comment and Send. */
+/** Rating: a step, the arrows to the last, a comment and Send. */
 export const SupportPortalRatingInteraction: Story = {
   name: 'Support portal, rating, interaction',
   tags: ['interaction', '!dev'],
@@ -7162,9 +7162,14 @@ export const SupportPortalRatingInteraction: Story = {
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
-    canvas.getByRole('radio', { name: '1 Very dissatisfied' }).focus()
-    await userEvent.keyboard('{End}')
-    await expect(canvas.getByRole('radio', { name: '5 Very satisfied' })).toBeChecked()
+    await userEvent.click(canvas.getByRole('radio', { name: '1 Very dissatisfied' }))
+    // The group moves the focus a moment after each key, so each step is awaited.
+    for (const name of ['2 Dissatisfied', '3 Neither', '4 Satisfied', '5 Very satisfied']) {
+      // Held down until the step is chosen: the group chooses on the focus the key moved.
+      await userEvent.keyboard('{ArrowDown>}')
+      await waitFor(() => expect(canvas.getByRole('radio', { name })).toBeChecked())
+      await userEvent.keyboard('{/ArrowDown}')
+    }
     await userEvent.type(
       canvas.getByRole('textbox', { name: 'Comment (optional)' }),
       'Quick and clear.',
