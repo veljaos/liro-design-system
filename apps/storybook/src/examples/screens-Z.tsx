@@ -90,15 +90,7 @@ export { Z_ROUTES }
 
 /** The administration's module tabs and "Subscription" after them, current. */
 function billingTabs(): ModuleTab[] {
-  return [
-    ...adminTabs('overview').map((tab) => ({ ...tab, current: false })),
-    {
-      key: 'subscription',
-      label: 'Subscription',
-      href: `#${Z_ROUTES.subscription}`,
-      current: true,
-    },
-  ]
+  return adminTabs('subscription')
 }
 
 /** What the application keeps about the subscription above its screens. */

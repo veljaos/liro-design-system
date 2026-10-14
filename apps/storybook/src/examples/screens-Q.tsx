@@ -1,3 +1,4 @@
+import { Z_ROUTES } from './data-Z'
 import { SuperadminShell } from './screens-R'
 import {
   ArrowRight,
@@ -106,7 +107,8 @@ export { Q_ROUTES }
 
 // ── Shared: the administration's and the platform's shells ────────────────────────────────────
 
-type AdminTab = 'overview' | 'users' | 'signIns' | 'audit' | 'security' | 'integrations'
+export type AdminTab =
+  'overview' | 'users' | 'signIns' | 'audit' | 'security' | 'integrations' | 'subscription'
 
 const ADMIN_TAB_LIST: { key: AdminTab; label: string; path: string }[] = [
   { key: 'overview', label: 'Overview', path: Q_ROUTES.adminOverview },
@@ -115,6 +117,7 @@ const ADMIN_TAB_LIST: { key: AdminTab; label: string; path: string }[] = [
   { key: 'audit', label: 'Audit log', path: Q_ROUTES.audit },
   { key: 'security', label: 'Security', path: Q_ROUTES.security },
   { key: 'integrations', label: 'Integrations', path: Q_ROUTES.integrations },
+  { key: 'subscription', label: 'Subscription', path: Z_ROUTES.subscription },
 ]
 
 /** The administration's module tabs with `current` marked. */
