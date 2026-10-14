@@ -72,6 +72,22 @@ describe('ImpersonationBar', () => {
     expect(html).not.toContain('Close')
   })
 
+  it('adds the application’s note after the reason (P5.29: an audited view of a tenant)', () => {
+    const html = render(
+      <ImpersonationBar
+        person="Kvadrat Gradnja d.o.o. administrator"
+        mode="Read-only"
+        reason="Support ticket 4821"
+        note="Every page you open is recorded in the audit log"
+        onExit={() => undefined}
+      />,
+    )
+    expect(html).toContain('data-part="note"')
+    expect(html.indexOf('Reason: Support ticket 4821')).toBeLessThan(
+      html.indexOf('Every page you open is recorded in the audit log'),
+    )
+  })
+
   it('writes the minutes left through the provider, and "Time is up" after the end', () => {
     const later = new Date(Date.now() + 1_234 * 60_000 - 5_000).toISOString()
     expect(

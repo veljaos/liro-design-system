@@ -6913,3 +6913,492 @@ export const RestaurantTabInteraction: Story = {
     )
   },
 }
+
+// ── P5.29 superadmin ──
+// (Imports here, inside the block, so the blocks merge without touching the top.)
+import { OPEN_INCIDENT, RESOLVED_INCIDENT } from './data-R'
+import { EDITED_ROUTE, R_ROUTES } from './screens-R'
+
+/** Dialogs close with an animation: on a busy machine that takes longer than waitFor's 1s. */
+const WAIT = { timeout: 5000 }
+
+/** The phone frame's page never scrolls sideways (P5.28 item 1). */
+async function expectPhonePageFits(canvasElement: HTMLElement) {
+  for (const page of canvasElement.querySelectorAll<HTMLElement>('[data-liro-phone-page]')) {
+    await expect(page.scrollWidth).toBeLessThanOrEqual(page.clientWidth)
+  }
+}
+
+/** The first of the elements found (the top one of a form's two action rows). */
+function firstOf(elements: HTMLElement[]): HTMLElement {
+  const [first] = elements
+  if (first === undefined) throw new Error('Nothing found')
+  return first
+}
+
+/** A phone story's checks, then nothing scrolls sideways. */
+function superadminPhonePlay(
+  check: (canvasElement: HTMLElement) => Promise<void>,
+): NonNullable<Story['play']> {
+  return async ({ canvasElement }) => {
+    await settle()
+    await check(canvasElement)
+    await expectPhonePageFits(canvasElement)
+  }
+}
+
+/**
+ * The Superadmin's incidents: every incident across the tenants, the open one first among them —
+ * state, severity, the services and how many tenants, when it started and how long it lasted.
+ */
+const SA_INCIDENTS_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('button', { name: /^All/ })).toHaveAttribute('aria-pressed', 'true')
+  await expect(canvasElement).toHaveTextContent('INC-2026-042')
+  await expect(canvasElement).toHaveTextContent('SEF submissions delayed')
+  await expect(canvasElement).toHaveTextContent('Monitoring')
+}
+
+export const SaIncidents: Story = {
+  name: 'Superadmin incidents',
+  render: () => <ExampleApp start={R_ROUTES.incidents} />,
+  play: deskPlay(SA_INCIDENTS_CHECK),
+}
+
+export const SaIncidentsPhone: Story = {
+  name: 'Superadmin incidents, phone',
+  render: () => <OnPhone start={R_ROUTES.incidents} />,
+  play: superadminPhonePlay(async (canvasElement) => {
+    await expect(canvasElement).toHaveTextContent('SEF submissions delayed')
+  }),
+}
+
+/**
+ * The open incident INC-2026-042 (DocumentPage): its stage, severity, start and duration, the
+ * status-page message, the timeline of updates with "Not acknowledged" under the latest, the
+ * affected tenants and the postmortem to come; people, services and a related incident in the
+ * side panels. Acknowledge is the main action while the on-call engineer has not taken it.
+ */
+const SA_INCIDENT_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(
+    canvas.getByRole('heading', { level: 1, name: `${OPEN_INCIDENT} · SEF submissions delayed` }),
+  ).toBeVisible()
+  await expect(canvas.getByRole('list', { name: 'Timeline' })).toHaveTextContent('Not acknowledged')
+  await expect(canvasElement).toHaveTextContent('Invoices are taking longer to reach SEF')
+  await expect(canvasElement).toHaveTextContent('Written after the incident is resolved.')
+}
+
+export const SaIncident: Story = {
+  name: 'Superadmin incident',
+  render: () => <ExampleApp start={R_ROUTES.incident(OPEN_INCIDENT)} />,
+  play: deskPlay(async (canvasElement) => {
+    await SA_INCIDENT_CHECK(canvasElement)
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('button', { name: 'Post update…' })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Acknowledge' })).toBeVisible()
+  }),
+}
+
+/** On a phone the incident is read and acknowledged (the bottom bar); updates need a computer. */
+export const SaIncidentPhone: Story = {
+  name: 'Superadmin incident, phone',
+  render: () => <OnPhone start={R_ROUTES.incident(OPEN_INCIDENT)} />,
+  play: superadminPhonePlay(async (canvasElement) => {
+    await SA_INCIDENT_CHECK(canvasElement)
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('button', { name: 'Acknowledge' })).toBeVisible()
+    await expect(canvas.queryByRole('button', { name: 'Post update…' })).toBeNull()
+  }),
+}
+
+/** "Post update" asked: the stage, the message and the status page as an explicit choice. */
+export const SaIncidentUpdateAsked: Story = {
+  name: 'Superadmin incident, post update',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={R_ROUTES.incidentUpdate} />,
+  play: deskPlay(async () => {
+    const dialog = screenDialog(/Post update/)
+    await expect(within(dialog).getByRole('radio', { name: /Identified/ })).toBeChecked()
+    await expect(
+      within(dialog).getByRole('checkbox', { name: /Also post it to the status page/ }),
+    ).toBeChecked()
+  }),
+}
+
+/** "Resolve" asked: the incident as the subject, the messages as choices. */
+export const SaIncidentResolveAsked: Story = {
+  name: 'Superadmin incident, resolve',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={R_ROUTES.incidentResolve} />,
+  play: deskPlay(async () => {
+    const dialog = screenConfirm(/Resolve incident/)
+    await expect(dialog).toHaveTextContent(`${OPEN_INCIDENT} · SEF submissions delayed`)
+    await expect(
+      within(dialog).getByRole('checkbox', { name: /Post “Resolved” to the status page/ }),
+    ).toBeChecked()
+    await expect(within(dialog).getByRole('button', { name: 'Resolve and notify' })).toBeVisible()
+  }),
+}
+
+/** A resolved incident with its postmortem (RichText). */
+const SA_RESOLVED_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 3, name: 'What we changed' })).toBeVisible()
+  await expect(canvas.queryByRole('button', { name: 'Acknowledge' })).toBeNull()
+}
+
+export const SaIncidentResolved: Story = {
+  name: 'Superadmin incident, resolved with postmortem',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={R_ROUTES.incident(RESOLVED_INCIDENT)} />,
+  play: deskPlay(SA_RESOLVED_CHECK),
+}
+
+export const SaIncidentResolvedPhone: Story = {
+  name: 'Superadmin incident, resolved with postmortem, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={R_ROUTES.incident(RESOLVED_INCIDENT)} />,
+  play: superadminPhonePlay(SA_RESOLVED_CHECK),
+}
+
+/**
+ * Acknowledge, post an update, resolve with the status page, and the list shows it resolved: the
+ * application keeps the incident above its screens.
+ */
+export const SaIncidentInteraction: Story = {
+  name: 'Superadmin incident, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={R_ROUTES.incidents} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('row', { name: /INC-2026-042/ }))
+    await settle()
+    await userEvent.click(await canvas.findByRole('button', { name: 'Acknowledge' }))
+    await waitFor(
+      () => expect(canvas.queryByRole('button', { name: 'Acknowledge' })).toBeNull(),
+      WAIT,
+    )
+    const timeline = canvas.getByRole('list', { name: 'Timeline' })
+    await expect(timeline).toHaveTextContent('Acknowledged')
+    await expect(timeline).not.toHaveTextContent('Not acknowledged')
+    await userEvent.click(canvas.getByRole('button', { name: 'Post update…' }))
+    const dialog = screenDialog(/Post update/)
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Post update' }))
+    await expect(dialog).toHaveTextContent('Write what changed.')
+    await userEvent.click(within(dialog).getByRole('radio', { name: /Identified/ }))
+    await userEvent.type(
+      within(dialog).getByRole('textbox', { name: /Message/ }),
+      'SEF confirmed a slowdown on their side.',
+    )
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Post update' }))
+    await waitFor(
+      () => expect(within(document.body).queryByRole('dialog', { name: /Post update/ })).toBeNull(),
+      WAIT,
+    )
+    await expect(canvas.getByRole('list', { name: 'Timeline' })).toHaveTextContent(
+      'SEF confirmed a slowdown on their side.',
+    )
+    await userEvent.click(canvas.getByRole('button', { name: 'Resolve…' }))
+    const confirm = screenConfirm(/Resolve incident/)
+    await userEvent.click(within(confirm).getByRole('button', { name: 'Resolve and notify' }))
+    await waitFor(() => expect(within(document.body).queryByRole('alertdialog')).toBeNull(), WAIT)
+    await expect(canvas.queryByRole('button', { name: 'Resolve…' })).toBeNull()
+    await expect(canvasElement).toHaveTextContent('Due by 21.10.2026.')
+    await userEvent.click(canvas.getByRole('link', { name: 'Back to Incidents' }))
+    await settle()
+    await expect(await canvas.findByRole('row', { name: /INC-2026-042/ })).toHaveTextContent(
+      'Resolved',
+    )
+  },
+}
+
+/** On a phone: Acknowledge in the bottom bar, then the bar is gone. */
+export const SaIncidentPhoneInteraction: Story = {
+  name: 'Superadmin incident, phone, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <OnPhone start={R_ROUTES.incident(OPEN_INCIDENT)} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Acknowledge' }))
+    await waitFor(
+      () => expect(canvas.queryByRole('button', { name: 'Acknowledge' })).toBeNull(),
+      WAIT,
+    )
+    await expect(canvas.getByRole('list', { name: 'Timeline' })).toHaveTextContent(
+      'Acknowledged; paging stopped.',
+    )
+  },
+}
+
+/**
+ * Security events, decided one by one (WorklistPage): the events not closed yet, the most severe
+ * first; the first one open with its facts, the action taken so far and its history; Start
+ * investigating, then Close… with the action taken.
+ */
+const SA_SECURITY_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('list', { name: 'Security events' })).toBeVisible()
+  await expect(canvasElement).toHaveTextContent('Failed sign-in burst')
+}
+
+export const SaSecurity: Story = {
+  name: 'Superadmin security events',
+  render: () => <ExampleApp start={R_ROUTES.security} />,
+  play: deskPlay(async (canvasElement) => {
+    await SA_SECURITY_CHECK(canvasElement)
+    const canvas = within(canvasElement)
+    await expect(
+      canvas.getByRole('heading', { level: 2, name: 'Failed sign-in burst' }),
+    ).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('203.0.113.24')
+    await expect(canvas.getByRole('button', { name: 'Close…' })).toBeVisible()
+  }),
+}
+
+export const SaSecurityPhone: Story = {
+  name: 'Superadmin security events, phone',
+  render: () => <OnPhone start={R_ROUTES.security} />,
+  play: superadminPhonePlay(SA_SECURITY_CHECK),
+}
+
+/** Close asked: the event as the subject, the action taken chosen from the Core's list. */
+export const SaSecurityCloseAsked: Story = {
+  name: 'Superadmin security events, close',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={R_ROUTES.securityClose} />,
+  play: deskPlay(async () => {
+    const dialog = screenConfirm(/Close security event/)
+    await expect(dialog).toHaveTextContent('Failed sign-in burst · Pekara Zlatni klas')
+    await expect(dialog).toHaveTextContent('Action taken')
+  }),
+}
+
+/** Start investigating, then close with the action taken: the next event opens in its place. */
+export const SaSecurityInteraction: Story = {
+  name: 'Superadmin security events, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={R_ROUTES.security} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const body = within(document.body)
+    await userEvent.click(canvas.getByRole('button', { name: 'Start investigating' }))
+    await waitFor(
+      () => expect(canvas.queryByRole('button', { name: 'Start investigating' })).toBeNull(),
+      WAIT,
+    )
+    await userEvent.click(canvas.getByRole('button', { name: 'Close…' }))
+    const dialog = screenConfirm(/Close security event/)
+    await userEvent.click(within(dialog).getByRole('radio', { name: 'Address or range blocked' }))
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Close event' }))
+    await waitFor(
+      () => expect(body.queryByRole('alertdialog', { name: /Close security event/ })).toBeNull(),
+      WAIT,
+    )
+    // The closed event leaves the queue; the next most severe one is open.
+    await expect(
+      canvas.getByRole('heading', { level: 2, name: 'Suspicious IP address' }),
+    ).toBeVisible()
+  },
+}
+
+/**
+ * The tenants: plan, users, health (with the reason when it is not good) and the last activity.
+ * A row opens "View as admin", which asks why first; the row menu also sends an announcement.
+ */
+const SA_TENANTS_CHECK = async (canvasElement: HTMLElement) => {
+  await expect(canvasElement).toHaveTextContent('Kvadrat Gradnja d.o.o.')
+  await expect(canvasElement).toHaveTextContent('Degraded')
+}
+
+export const SaTenants: Story = {
+  name: 'Superadmin tenants',
+  render: () => <ExampleApp start={R_ROUTES.tenants} />,
+  play: deskPlay(async (canvasElement) => {
+    await SA_TENANTS_CHECK(canvasElement)
+    await expect(canvasElement).toHaveTextContent('Bank statements not imported since 13.10.2026.')
+  }),
+}
+
+export const SaTenantsPhone: Story = {
+  name: 'Superadmin tenants, phone',
+  render: () => <OnPhone start={R_ROUTES.tenants} />,
+  play: superadminPhonePlay(SA_TENANTS_CHECK),
+}
+
+/** "View as admin" asked: the tenant as the subject, the reason before anything opens. */
+export const SaTenantsViewAsAsked: Story = {
+  name: 'Superadmin tenants, view as admin',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={R_ROUTES.tenantsViewAs} />,
+  play: deskPlay(async () => {
+    const dialog = screenConfirm(/View as admin/)
+    await expect(dialog).toHaveTextContent('Kvadrat Gradnja d.o.o.')
+    await expect(dialog).toHaveTextContent('recorded in the audit log')
+    await expect(within(dialog).getByRole('button', { name: 'View as admin' })).toBeDisabled()
+  }),
+}
+
+/**
+ * The tenant's administration, read-only, behind the audited ImpersonationBar: whose view, the
+ * mode, the reason given, that every page is recorded, and "Exit view".
+ */
+const SA_VIEW_AS_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  const bar = canvas.getByRole('region', { name: 'Session as another user' })
+  await expect(bar).toHaveTextContent('Viewing as Kvadrat Gradnja d.o.o. administrator')
+  await expect(bar).toHaveTextContent('Read-only')
+  await expect(bar).toHaveTextContent('Reason: Support ticket 4821 — SEF invoice rejected')
+  await expect(bar).toHaveTextContent('Every page you open is recorded in the audit log')
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Administration' })).toBeVisible()
+}
+
+export const SaViewAs: Story = {
+  name: 'Superadmin view as tenant admin',
+  render: () => <ExampleApp start={R_ROUTES.viewAs('kvadrat')} />,
+  play: deskPlay(SA_VIEW_AS_CHECK),
+}
+
+export const SaViewAsPhone: Story = {
+  name: 'Superadmin view as tenant admin, phone',
+  render: () => <OnPhone start={R_ROUTES.viewAs('kvadrat')} />,
+  play: superadminPhonePlay(SA_VIEW_AS_CHECK),
+}
+
+/** From the tenants: a row, the reason, the view with that reason; Exit view returns. */
+export const SaViewAsInteraction: Story = {
+  name: 'Superadmin view as tenant admin, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={R_ROUTES.tenants} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('row', { name: /Hotel Fruška/ }))
+    const dialog = screenConfirm(/View as admin/)
+    await userEvent.click(within(dialog).getByRole('radio', { name: 'Incident' }))
+    await userEvent.type(
+      within(dialog).getByRole('textbox', { name: /Ticket or incident number/ }),
+      'INC-2026-042',
+    )
+    await userEvent.click(within(dialog).getByRole('button', { name: 'View as admin' }))
+    await settle()
+    const bar = await canvas.findByRole('region', { name: 'Session as another user' })
+    await expect(bar).toHaveTextContent('Viewing as Hotel Fruška administrator')
+    await expect(bar).toHaveTextContent('Reason: Incident INC-2026-042')
+    await userEvent.click(within(bar).getByRole('button', { name: 'Exit view' }))
+    await settle()
+    await expect(await canvas.findByRole('row', { name: /Hotel Fruška/ })).toBeVisible()
+  },
+}
+
+/** The announcements: banners and status messages, to all tenants or chosen ones, by state. */
+const SA_ANNOUNCEMENTS_CHECK = async (canvasElement: HTMLElement) => {
+  await expect(canvasElement).toHaveTextContent('Planned maintenance on 20 October')
+  await expect(canvasElement).toHaveTextContent('Scheduled')
+}
+
+export const SaAnnouncements: Story = {
+  name: 'Superadmin announcements',
+  render: () => <ExampleApp start={R_ROUTES.announcements} />,
+  play: deskPlay(async (canvasElement) => {
+    await SA_ANNOUNCEMENTS_CHECK(canvasElement)
+    await expect(
+      within(canvasElement).getByRole('button', { name: 'New announcement' }),
+    ).toBeVisible()
+  }),
+}
+
+export const SaAnnouncementsPhone: Story = {
+  name: 'Superadmin announcements, phone',
+  render: () => <OnPhone start={R_ROUTES.announcements} />,
+  play: superadminPhonePlay(SA_ANNOUNCEMENTS_CHECK),
+}
+
+/**
+ * The editor (RecordFormPage) of a scheduled banner to four chosen tenants: the message, its
+ * preview as tenants will see it, the audience as a searchable choice, the start and the end.
+ */
+const SA_EDITOR_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(
+    canvas.getByRole('heading', { level: 1, name: 'Fiscal receipts: new rules from 1 November' }),
+  ).toBeVisible()
+  await expect(canvasElement.querySelector('[data-tone="warning"]')).toHaveTextContent(
+    'From 1 November every refund must name the original receipt.',
+  )
+  await expect(canvasElement).toHaveTextContent('Pekara Zlatni klas')
+  await expect(canvasElement).toHaveTextContent('As tenants will see it')
+}
+
+export const SaAnnouncementEditor: Story = {
+  name: 'Superadmin announcement editor',
+  render: () => <ExampleApp start={EDITED_ROUTE} />,
+  play: deskPlay(SA_EDITOR_CHECK),
+}
+
+export const SaAnnouncementEditorPhone: Story = {
+  name: 'Superadmin announcement editor, phone',
+  render: () => <OnPhone start={EDITED_ROUTE} />,
+  play: superadminPhonePlay(SA_EDITOR_CHECK),
+}
+
+/** A live status message: "End now…" beside "Save changes". */
+export const SaAnnouncementLive: Story = {
+  name: 'Superadmin announcement editor, live',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={R_ROUTES.announcement('an-6')} />,
+  play: deskPlay(async (canvasElement) => {
+    await expect(
+      within(canvasElement).getAllByRole('button', { name: 'End now…' })[0],
+    ).toBeVisible()
+  }),
+}
+
+/** An ended banner: read only, "Duplicate as new". */
+export const SaAnnouncementEnded: Story = {
+  name: 'Superadmin announcement editor, ended',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={R_ROUTES.announcement('an-1')} />,
+  play: deskPlay(async (canvasElement) => {
+    await expect(
+      within(canvasElement).getAllByRole('button', { name: 'Duplicate as new' })[0],
+    ).toBeVisible()
+  }),
+}
+
+/**
+ * A new announcement: Schedule without a message asks for it; then written, started and
+ * scheduled, it stands in the list as Scheduled.
+ */
+export const SaAnnouncementInteraction: Story = {
+  name: 'Superadmin announcement editor, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={R_ROUTES.announcements} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'New announcement' }))
+    await settle()
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: 'New announcement' }),
+    ).toBeVisible()
+    await userEvent.click(firstOf(canvas.getAllByRole('button', { name: 'Schedule' })))
+    await expect(canvasElement).toHaveTextContent('Write the announcement’s title.')
+    await userEvent.type(canvas.getByRole('textbox', { name: /Title/ }), 'Holiday support hours')
+    await userEvent.type(
+      canvas.getByRole('textbox', { name: /Message/ }),
+      'Support answers from 9:00 to 13:00 on 11 November.',
+    )
+    await expect(canvasElement).toHaveTextContent('Holiday support hours')
+    const start = canvas.getByRole('textbox', { name: /Starts on/ })
+    await userEvent.type(start, '10.11.2026.{Enter}')
+    await userEvent.click(firstOf(canvas.getAllByRole('button', { name: 'Schedule' })))
+    await settle()
+    await expect(
+      await canvas.findByRole('row', { name: /Holiday support hours/ }),
+    ).toHaveTextContent('Scheduled')
+  },
+}

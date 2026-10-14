@@ -30,7 +30,8 @@ export type { ConnectionStatus } from './shell-markers-logic'
  *   part of the shell and must cost as little height as possible while they stay.
  * - ImpersonationBar: the warning tone (status.warning bg, its fg for the icon and the lead),
  *   never dismissible, above the header and sticky with it. Whose account (lead, semibold), the
- *   mode, the reason and the minutes left, then "Exit" at the end.
+ *   mode, the reason, the application's note (P5.29: that the session is audited) and the minutes
+ *   left, then "Exit" at the end.
  * - OfflineIndicator: the neutral tone (status.neutral bg with its border, as the neutral
  *   Banner), under the header, while offline only; what is waiting is the application's text.
  *   Going offline and coming back are announced politely ("Offline", "Back online").
@@ -81,6 +82,12 @@ export interface ImpersonationBarProps {
   /** Why, from the application ("Support request 4821"). */
   reason?: string
   /**
+   * What else the person must know about the session, from the application, after the reason
+   * (P5.29: "Every page you open is recorded in the audit log" for a team member's audited view
+   * of a tenant).
+   */
+  note?: string
+  /**
    * When the session ends, an instant (ISO 8601 with its offset). The bar shows the whole minutes
    * left (rounded up), redrawn as each minute passes; ending the session is the Core's.
    */
@@ -108,6 +115,7 @@ export function ImpersonationBar(props: ImpersonationBarProps) {
   if (props.reason !== undefined) {
     parts.push({ key: 'reason', text: messages['impersonation.reason'](props.reason) })
   }
+  if (props.note !== undefined) parts.push({ key: 'note', text: props.note })
   if (minutes !== null) {
     parts.push({
       key: 'time',
