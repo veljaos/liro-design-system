@@ -8602,9 +8602,13 @@ export const DocumentInboxUpload: Story = {
     ])
     await expect(await canvas.findByText('Racun_DP-344.pdf')).toBeVisible()
     await expect(canvas.getByText('Otpremnica_7790.pdf')).toBeVisible()
-    await expect(
-      await within(document.body).findByText('2 documents are being recognised.'),
-    ).toBeInTheDocument()
+    await waitFor(async () => {
+      await expect(
+        within(document.body).getByText('2 documents are being recognised.'),
+      ).toBeVisible()
+    })
+    // The toast and the dialogs finish moving before the checks of the page.
+    await settle()
   },
 }
 
@@ -8782,6 +8786,8 @@ export const DocumentReviewShowSource: Story = {
     await expect(canvas.getByText('Highlighted: Total, page 1 of 1')).toBeInTheDocument()
     await userEvent.click(show)
     await expect(show).toHaveAttribute('aria-pressed', 'false')
+    // The toast and the dialogs finish moving before the checks of the page.
+    await settle()
   },
 }
 
@@ -8795,13 +8801,17 @@ export const DocumentReviewEnter: Story = {
     const canvas = within(canvasElement)
     await userEvent.click(canvas.getByRole('textbox', { name: 'Number' }))
     await userEvent.keyboard('{Enter}')
-    await expect(
-      await within(document.body).findByText('Supplier invoice 2026-1187 posted as UF-2026-1236.'),
-    ).toBeInTheDocument()
+    await waitFor(async () => {
+      await expect(
+        within(document.body).getByText('Supplier invoice 2026-1187 posted as UF-2026-1236.'),
+      ).toBeVisible()
+    })
     await waitFor(async () => {
       await expect(canvas.getByRole('heading', { level: 2 })).toHaveTextContent('Beton Mix d.o.o.')
       await expect(canvas.getByText('This may be a duplicate')).toBeVisible()
     })
+    // The toast and the dialogs finish moving before the checks of the page.
+    await settle()
   },
 }
 
@@ -8817,12 +8827,16 @@ export const DocumentReviewRejectFlow: Story = {
     const dialog = await within(document.body).findByRole('alertdialog', { name: /^Reject/ })
     await userEvent.click(within(dialog).getByRole('radio', { name: 'Not addressed to us' }))
     await userEvent.click(within(dialog).getByRole('button', { name: 'Reject' }))
-    await expect(
-      await within(document.body).findByText('Supplier invoice AR-2026-077 rejected.'),
-    ).toBeInTheDocument()
+    await waitFor(async () => {
+      await expect(
+        within(document.body).getByText('Supplier invoice AR-2026-077 rejected.'),
+      ).toBeVisible()
+    })
     await waitFor(async () => {
       await expect(canvas.getAllByText('Rejected').length).toBeGreaterThan(0)
     })
+    // The toast and the dialogs finish moving before the checks of the page.
+    await settle()
   },
 }
 
@@ -8837,6 +8851,8 @@ export const DocumentReviewByHand: Story = {
     await userEvent.click(canvas.getByRole('button', { name: 'Enter by hand' }))
     await expect(await canvas.findByRole('textbox', { name: 'Number' })).toBeVisible()
     await expect(canvasElement).toHaveTextContent('Enter the supplier, the number and the total.')
+    // The toast and the dialogs finish moving before the checks of the page.
+    await settle()
   },
 }
 
@@ -8958,10 +8974,14 @@ export const IosPartnersSend: Story = {
       ).toBeVisible()
     })
     await userEvent.click(within(dialog).getByRole('button', { name: 'Send 4 statements' }))
-    await expect(await within(document.body).findByText('4 statements sent.')).toBeInTheDocument()
+    await waitFor(async () => {
+      await expect(within(document.body).getByText('4 statements sent.')).toBeVisible()
+    })
     await waitFor(async () => {
       await expect(canvas.getByRole('button', { name: /^Not sent/ })).toHaveTextContent('0')
     })
+    // The toast and the dialogs finish moving before the checks of the page.
+    await settle()
   },
 }
 
@@ -9053,6 +9073,8 @@ export const IosReconciliationResolve: Story = {
     })
     await userEvent.click(within(dialog).getByRole('button', { name: 'Send our answer' }))
     await expect(await canvas.findByText('Reconciled')).toBeVisible()
+    // The toast and the dialogs finish moving before the checks of the page.
+    await settle()
   },
 }
 
@@ -9138,7 +9160,9 @@ export const IosPartnerPortalDisputeFlow: Story = {
     await userEvent.click(canvas.getByRole('button', { name: 'Dispute…' }))
     const drawer = await within(document.body).findByRole('dialog', { name: /^Dispute/ })
     await userEvent.click(within(drawer).getByRole('button', { name: 'Send dispute' }))
-    await expect(within(drawer).getByText('Enter your balance.')).toBeVisible()
+    await waitFor(async () => {
+      await expect(within(drawer).getByText('Enter your balance.')).toBeVisible()
+    })
     const balance = within(drawer).getByRole('textbox', { name: /^Balance in your books/ })
     await userEvent.type(balance, '300000{Enter}')
     await userEvent.type(
@@ -9150,5 +9174,7 @@ export const IosPartnerPortalDisputeFlow: Story = {
       await expect(canvas.getByText('You disputed this statement')).toBeVisible()
     })
     await expect(canvasElement).toHaveTextContent('300.000,00')
+    // The toast and the dialogs finish moving before the checks of the page.
+    await settle()
   },
 }
