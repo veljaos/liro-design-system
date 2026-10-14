@@ -1,3 +1,5 @@
+import type { IpsProblemCode } from '../components/ips-qr'
+
 /**
  * The Design System's own strings: every text a component shows on its own, and nothing else
  * (BUILD-PLAN section 5). All other text comes in through props. A value is a string, or a
@@ -1976,4 +1978,9 @@ export interface LiroMessages {
   'richText.mergeFieldMissing': (label: string) => string
   /** Under the text: the fields that still have no value, by their labels. */
   'richText.missingValues': (labels: readonly string[]) => string
+  // P5.40 QR code and IPS QR
+  /** QrCode: a text too long for any QR code. */
+  'qr.tooLong': string
+  /** An IPS QR problem of a field, by its label (`ipsQrText`'s problems). */
+  'ips.problem': (code: IpsProblemCode, label: string, limit?: number) => string
 }

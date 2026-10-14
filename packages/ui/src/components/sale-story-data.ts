@@ -7,6 +7,7 @@ import {
   Ticket,
   WalletCards,
 } from 'lucide-react'
+import { ipsQrText } from './ips-qr'
 import type { AdvanceItem } from './advance-list'
 import type { BuyerIdType } from './buyer-field'
 import type { CartLine } from './cart-panel'
@@ -341,3 +342,35 @@ export const TAB_LINES: readonly CartLine[] = [
     state: { label: 'Not sent yet', tone: 'warning' },
   },
 ]
+
+/** A point of sale's account, name and merchant category, for instant payment codes (P5.40). */
+export interface InstantPayee {
+  name: string
+  account: string
+  merchantCategory: string
+}
+
+/** Pekara Zlatni klas's till (a bakery, MCC 5462); the account is invented, its control valid. */
+export const BAKERY_PAYEE: InstantPayee = {
+  name: 'Pekara Zlatni klas, Novi Sad',
+  account: '205-0000000111222-05',
+  merchantCategory: '5462',
+}
+
+/**
+ * The IPS QR text a till shows for an instant payment (kind PT, P5.40): the payee, the amount
+ * due and the sale's 19-digit point-of-sale reference.
+ */
+export function instantPaymentCode(payee: InstantPayee, amount: string, reference: string): string {
+  return (
+    ipsQrText({
+      kind: 'PT',
+      payeeAccount: payee.account,
+      payeeName: payee.name,
+      amount,
+      paymentCode: '221',
+      merchantCategory: payee.merchantCategory,
+      paymentReference: reference.padStart(19, '0'),
+    }).text ?? ''
+  )
+}

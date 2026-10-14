@@ -284,7 +284,7 @@ const NOTE_TEMPLATES: NoteTemplate[] = [
   {
     value: 'payment',
     label: 'Payment terms',
-    text: 'Payment within 15 days to account 160-0000000456789-12 (Banca Intesa), reference 97 2026-0418.',
+    text: 'Payment within 15 days to account 160-0000000456789-28 (Banca Intesa), reference 97 2026-0418.',
   },
   {
     value: 'advances',

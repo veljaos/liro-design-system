@@ -1368,3 +1368,30 @@ export type { ShareLinksProps, ShareTarget } from './components/share-links'
 export { articlePlaces, bylineText, emailProblem, looksLikeEmail } from './components/blog-logic'
 export { ArticlePage } from './templates/article-page'
 export type { ArticleAuthor, ArticlePageProps, ArticleTag } from './templates/article-page'
+
+// ── P5.40 QR code, IPS QR and payment orders ──
+export { QrCode, qrModules, qrPath } from './components/qr-code'
+export type { QrCodeProps, QrErrorCorrection } from './components/qr-code'
+export {
+  ipsAccountText,
+  ipsAccountValid,
+  ipsAmount,
+  ipsProblemsOf,
+  ipsQrText,
+  ipsReferenceValid,
+  normalizeIpsAccount,
+} from './components/ips-qr'
+export type {
+  IpsPayment,
+  IpsProblem,
+  IpsProblemCode,
+  IpsQrKind,
+  IpsQrResult,
+} from './components/ips-qr'
+export { PaymentOrderForm } from './templates/payment-order'
+export type {
+  PaymentOrderAccount,
+  PaymentOrderField,
+  PaymentOrderFormProps,
+  PaymentOrderParty,
+} from './templates/payment-order'

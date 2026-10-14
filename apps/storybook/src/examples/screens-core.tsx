@@ -690,7 +690,7 @@ export function Invoice({ phone, invoice }: { phone: boolean; invoice: ExampleIn
             title: 'Payment',
             content: (
               <p className="bidi-content m-0 text-sm text-primary">
-                Payment to 160-0000012345678-21 with reference 97 2026-0412, by 13.10.2026.
+                Payment to 160-0000012345678-67 with reference 97 32-2026-0412, by 13.10.2026.
               </p>
             ),
           },

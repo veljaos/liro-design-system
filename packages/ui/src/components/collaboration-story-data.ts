@@ -90,7 +90,7 @@ export const HISTORY: HistoryEntry[] = [
     id: 'h7',
     at: at(TODAY, '09:02'),
     actor: { name: 'Ivana Stojanović' },
-    changes: [{ field: 'Payment reference', from: '97 2026-0410', to: '97 41-2026-0410' }],
+    changes: [{ field: 'Payment reference', from: '97 2026-0410', to: '97 38-2026-0410' }],
   },
 ]
 

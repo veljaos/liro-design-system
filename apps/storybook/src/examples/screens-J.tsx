@@ -22,7 +22,7 @@ import {
   type PrintColumn,
   type PrintParty,
 } from '@veljaos/ui'
-import { illustrativeCode } from '../../../../packages/ui/src/templates/print-story-data'
+import { QrCode } from '../../../../packages/ui/src/components/qr-code'
 import type { ExampleRoute } from './example-app'
 import { BRAND, Navigate, ROUTES } from './example-shell'
 import { TOTAL_ROWS } from './screens-core'
@@ -575,11 +575,14 @@ export function InvoicePrintScreen() {
             },
             { key: 'purpose', label: 'Purpose of payment', value: `Invoice ${invoice.number}` },
           ],
-          code: illustrativeCode(
-            INVOICE_FACTS.ipsPayload,
-            'IPS QR code for the payment (illustrative)',
+          code: (
+            <QrCode
+              value={INVOICE_FACTS.ipsPayload}
+              label="IPS QR code for the payment"
+              size="fill"
+            />
           ),
-          codeCaption: 'IPS QR · illustrative',
+          codeCaption: 'IPS QR',
         }}
         lines={{
           caption: 'Lines',
