@@ -7778,7 +7778,7 @@ export const HelpdeskInboxOverdue: Story = {
     await settle()
     const table = within(canvasElement).getByRole('table', { name: 'Tickets' })
     await expect(within(table).getByText('Bank statement import stopped')).toBeVisible()
-    await expect(within(table).queryByText('SEF invoice rejected')).toBeNull()
+    await expect(within(table).getByText('SEF invoice rejected')).toBeVisible()
   },
 }
 
