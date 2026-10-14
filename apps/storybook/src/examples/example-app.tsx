@@ -45,6 +45,10 @@ import { GROUP_Q_ROUTES } from './screens-Q'
 import { GROUP_S_ROUTES } from './screens-S'
 // ── P5.29 portal ──
 import { GROUP_T_ROUTES } from './screens-T'
+// ── P5.31 docs ──
+import { GROUP_U_ROUTES } from './screens-U'
+// ── P5.33 docs ──
+import { GROUP_W_ROUTES } from './screens-W'
 
 // ── Routes ────────────────────────────────────────────────────────────────────────────────
 
@@ -84,6 +88,10 @@ const EXAMPLE_ROUTES: readonly ExampleRoute[] = [
   ...GROUP_S_ROUTES,
   // ── P5.29 portal ──
   ...GROUP_T_ROUTES,
+  // ── P5.31 docs ──
+  ...GROUP_U_ROUTES,
+  // ── P5.33 docs ──
+  ...GROUP_W_ROUTES,
 ]
 
 // ── The app ───────────────────────────────────────────────────────────────────────────────────

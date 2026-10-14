@@ -8499,3 +8499,656 @@ export const KnowledgeBaseAgentsSearch: Story = {
     ).toBeVisible()
   }),
 }
+
+// ── P5.31 docs ──
+// (Imports here, inside the block, so the blocks merge without touching the top.)
+import { U_ROUTES } from './data-U'
+
+/** A story's checks on the desktop, and on a phone that nothing scrolls sideways. */
+function docsPlay(
+  check: (canvasElement: HTMLElement) => Promise<void>,
+  phone = false,
+): NonNullable<Story['play']> {
+  return async ({ canvasElement }) => {
+    await settle()
+    await check(canvasElement)
+    if (phone) {
+      for (const page of canvasElement.querySelectorAll<HTMLElement>('[data-liro-phone-page]')) {
+        await expect(page.scrollWidth).toBeLessThanOrEqual(page.clientWidth)
+      }
+    }
+  }
+}
+
+/**
+ * Kvadrat Gradnja d.o.o.'s document inbox on 14.10.2026 at 09:40: eleven documents to review —
+ * uploaded, e-mailed to the inbox address, scanned at the office or received through SEF — with
+ * their type, sender, time and state, a new document's condition in words (recognising, not
+ * recognised, locked with a password, scan cannot be read); "Add documents" above the list.
+ */
+const INBOX_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('button', { name: /^To review/ })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
+  await expect(canvas.getByRole('button', { name: 'Choose files' })).toBeVisible()
+  await expect(canvas.getAllByText('Beton Mix d.o.o.').length).toBeGreaterThan(0)
+  await expect(canvas.getByText('Locked with a password')).toBeVisible()
+  await expect(canvas.getByText('Recognising…')).toBeVisible()
+}
+
+export const DocumentInbox: Story = {
+  name: 'Document inbox',
+  render: () => <ExampleApp start={U_ROUTES.inbox} />,
+  play: docsPlay(async (canvasElement) => {
+    await INBOX_CHECK(canvasElement)
+    await expect(
+      within(canvasElement).getByRole('button', { name: 'Review 11 documents' }),
+    ).toBeVisible()
+  }),
+}
+
+export const DocumentInboxPhone: Story = {
+  name: 'Document inbox, phone',
+  render: () => <OnPhone start={U_ROUTES.inbox} />,
+  play: docsPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('button', { name: 'Take a photo' })).toBeVisible()
+    await expect(canvas.getAllByText('Beton Mix d.o.o.').length).toBeGreaterThan(0)
+  }, true),
+}
+
+/** Every document: posted, rejected (with the reason) and the duplicates too. */
+export const DocumentInboxAll: Story = {
+  name: 'Document inbox, all',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={U_ROUTES.inboxAll} />,
+  play: docsPlay(async (canvasElement) => {
+    const table = within(canvasElement).getByRole('table', { name: 'Documents' })
+    await expect(within(table).getAllByText('Posted').length).toBeGreaterThan(0)
+    await expect(within(table).getAllByText('Rejected').length).toBe(2)
+    await expect(within(table).getByText('Duplicate')).toBeVisible()
+  }),
+}
+
+/** Three documents checked: "Review" and "Reject…" on the bulk bar. */
+export const DocumentInboxChecked: Story = {
+  name: 'Document inbox, three checked',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={U_ROUTES.inboxChecked} />,
+  play: docsPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('button', { name: 'Reject…' })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Review' })).toBeVisible()
+  }),
+}
+
+/** Two files chosen: they arrive as new documents, being recognised. */
+export const DocumentInboxUpload: Story = {
+  name: 'Document inbox, upload, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={U_ROUTES.inbox} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const input = canvasElement.querySelector<HTMLInputElement>(
+      '[data-slot="list-page"] input[type="file"]',
+    )
+    if (input === null) throw new Error('The file input is missing')
+    await userEvent.upload(input, [
+      new File(['%PDF-1.7'], 'Racun_DP-344.pdf', { type: 'application/pdf' }),
+      new File(['%PDF-1.7'], 'Otpremnica_7790.pdf', { type: 'application/pdf' }),
+    ])
+    await expect(await canvas.findByText('Racun_DP-344.pdf')).toBeVisible()
+    await expect(canvas.getByText('Otpremnica_7790.pdf')).toBeVisible()
+    await expect(
+      await within(document.body).findByText('2 documents are being recognised.'),
+    ).toBeInTheDocument()
+  },
+}
+
+/**
+ * The review of Beton Mix d.o.o.'s invoice 2026-1187 (12.10.2026, 294.000,00 RSD): the page beside
+ * the recognised fields — the supplier matched by its tax number, the number, the dates (the due
+ * date's reading uncertain: "Low confidence"), VAT by rate, the three lines with their suggested
+ * accounts (the pump's quantity uncertain) — each with the service's confidence and "Show where it
+ * was read". Save for later, Mark as duplicate, Reject and Confirm and post, the main one last.
+ */
+const REVIEW_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 2, name: 'Beton Mix d.o.o.' })).toBeVisible()
+  await expect(canvas.getByRole('textbox', { name: 'Due date' })).toHaveAccessibleDescription(
+    /Low confidence/,
+  )
+  await expect(canvas.getByRole('textbox', { name: 'Number' })).toHaveValue('2026-1187')
+  await expect(
+    canvas.getAllByRole('button', { name: 'Show where it was read' }).length,
+  ).toBeGreaterThan(5)
+  await expect(canvasElement).toHaveTextContent(
+    'Matched in your suppliers by tax number 106543218.',
+  )
+}
+
+export const DocumentReview: Story = {
+  name: 'Document review',
+  render: () => <ExampleApp start={U_ROUTES.review} />,
+  play: docsPlay(async (canvasElement) => {
+    await REVIEW_CHECK(canvasElement)
+    await expect(
+      within(canvasElement).getByRole('button', { name: 'Confirm and post' }),
+    ).toBeVisible()
+  }),
+}
+
+export const DocumentReviewPhone: Story = {
+  name: 'Document review, phone',
+  render: () => <OnPhone start={U_ROUTES.reviewOf('u1')} />,
+  play: docsPlay(REVIEW_CHECK, true),
+}
+
+/** The due date's region shown on the page: the marker and its name. */
+export const DocumentReviewSource: Story = {
+  name: 'Document review, where it was read',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={U_ROUTES.reviewSource} />,
+  play: docsPlay(async (canvasElement) => {
+    await expect(
+      within(canvasElement).getByText('Highlighted: Due date, page 1 of 1'),
+    ).toBeInTheDocument()
+  }),
+}
+
+/** A scan the service is still recognising: the page, and the fields still to come. */
+export const DocumentReviewProcessing: Story = {
+  name: 'Document review, recognising',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={U_ROUTES.reviewOf('u8')} />,
+  play: docsPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('Recognising the document')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Confirm and file' })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    )
+  }),
+}
+
+/** Recognition failed: the fields to enter by hand from the page. */
+export const DocumentReviewFailed: Story = {
+  name: 'Document review, recognition failed',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={U_ROUTES.reviewOf('u9')} />,
+  play: docsPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('The document could not be recognised')).toBeVisible()
+    await expect(canvas.getByRole('textbox', { name: 'Number' })).toHaveValue('')
+    await expect(canvas.queryByText(/^Confidence/)).toBeNull()
+  }),
+}
+
+/** A PDF locked with a password: "Enter the password…" in place of the page. */
+export const DocumentReviewPassword: Story = {
+  name: 'Document review, locked PDF',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={U_ROUTES.reviewOf('u5')} />,
+  play: docsPlay(async (canvasElement) => {
+    await expect(
+      within(canvasElement).getByRole('button', { name: 'Enter the password…' }),
+    ).toBeVisible()
+  }),
+}
+
+export const DocumentReviewPasswordPhone: Story = {
+  name: 'Document review, locked PDF, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={U_ROUTES.reviewOf('u5')} />,
+  play: docsPlay(async (canvasElement) => {
+    await expect(
+      within(canvasElement).getByRole('button', { name: 'Enter the password…' }),
+    ).toBeVisible()
+  }, true),
+}
+
+/** A photo out of focus: upload a better copy, or enter it by hand. */
+export const DocumentReviewUnreadable: Story = {
+  name: 'Document review, unreadable scan',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={U_ROUTES.reviewOf('u7')} />,
+  play: docsPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('The scan cannot be read')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Enter by hand' })).toBeVisible()
+  }),
+}
+
+/** A photo of 2026-1187 uploaded the next day: the application suspects a duplicate. */
+export const DocumentReviewDuplicate: Story = {
+  name: 'Document review, possible duplicate',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={U_ROUTES.reviewOf('u6')} />,
+  play: docsPlay(async (canvasElement) => {
+    await expect(within(canvasElement).getByText('This may be a duplicate')).toBeVisible()
+  }),
+}
+
+/** "Mark as duplicate…" asked for the photo: the original chosen. */
+export const DocumentReviewMarkDuplicate: Story = {
+  name: 'Document review, mark as duplicate',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={U_ROUTES.reviewDuplicate} />,
+  play: docsPlay(async () => {
+    const dialog = within(document.body).getByRole('dialog', { name: /^Mark as duplicate/ })
+    await expect(within(dialog).getByRole('radio')).toBeChecked()
+  }),
+}
+
+/** "Reject…" asked for 2026-1187: the reasons. */
+export const DocumentReviewReject: Story = {
+  name: 'Document review, reject',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={U_ROUTES.reviewReject} />,
+  play: docsPlay(async () => {
+    const dialog = within(document.body).getByRole('alertdialog', { name: /^Reject/ })
+    await expect(within(dialog).getByText('Not addressed to us')).toBeVisible()
+  }),
+}
+
+/** A supplier the catalog does not have: its tax number read, "+ Create supplier" offered. */
+export const DocumentReviewNewSupplier: Story = {
+  name: 'Document review, new supplier',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={U_ROUTES.reviewOf('u17')} />,
+  play: docsPlay(async (canvasElement) => {
+    await expect(canvasElement).toHaveTextContent('Not in your suppliers: tax number 109876543')
+  }),
+}
+
+/** "Show where it was read" on the total marks it on the page; pressed again, it goes. */
+export const DocumentReviewShowSource: Story = {
+  name: 'Document review, show where it was read, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={U_ROUTES.review} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const field = canvas
+      .getByRole('textbox', { name: /^Total/ })
+      .closest<HTMLElement>('[data-slot="recognized-field"]')
+    if (field === null) throw new Error('The total is not a recognised field')
+    const show = within(field).getByRole('button', { name: 'Show where it was read' })
+    await userEvent.click(show)
+    await expect(show).toHaveAttribute('aria-pressed', 'true')
+    await expect(canvas.getByText('Highlighted: Total, page 1 of 1')).toBeInTheDocument()
+    await userEvent.click(show)
+    await expect(show).toHaveAttribute('aria-pressed', 'false')
+  },
+}
+
+/** Keyboard first: Enter in a field confirms and posts, and the next document opens. */
+export const DocumentReviewEnter: Story = {
+  name: 'Document review, Enter confirms, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={U_ROUTES.review} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('textbox', { name: 'Number' }))
+    await userEvent.keyboard('{Enter}')
+    await expect(
+      await within(document.body).findByText('Supplier invoice 2026-1187 posted as UF-2026-1236.'),
+    ).toBeInTheDocument()
+    await waitFor(async () => {
+      await expect(canvas.getByRole('heading', { level: 2 })).toHaveTextContent('Beton Mix d.o.o.')
+      await expect(canvas.getByText('This may be a duplicate')).toBeVisible()
+    })
+  },
+}
+
+/** Rejected with a reason: the next document opens, the list says Rejected. */
+export const DocumentReviewRejectFlow: Story = {
+  name: 'Document review, reject, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={U_ROUTES.reviewOf('u17')} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Reject…' }))
+    const dialog = await within(document.body).findByRole('alertdialog', { name: /^Reject/ })
+    await userEvent.click(within(dialog).getByRole('radio', { name: 'Not addressed to us' }))
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Reject' }))
+    await expect(
+      await within(document.body).findByText('Supplier invoice AR-2026-077 rejected.'),
+    ).toBeInTheDocument()
+    await waitFor(async () => {
+      await expect(canvas.getAllByText('Rejected').length).toBeGreaterThan(0)
+    })
+  },
+}
+
+/** An unreadable scan entered by hand: the fields appear, Confirm waits for what is missing. */
+export const DocumentReviewByHand: Story = {
+  name: 'Document review, enter by hand, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={U_ROUTES.reviewOf('u7')} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Enter by hand' }))
+    await expect(await canvas.findByRole('textbox', { name: 'Number' })).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('Enter the supplier, the number and the total.')
+  },
+}
+
+// ── P5.33 docs ──
+// (Imports here, inside the block, so the blocks merge without touching the top.)
+import { W_ROUTES } from './data-W'
+
+/**
+ * Kvadrat Gradnja d.o.o.'s statements of open items at the cut-off date 30.09.2026, on
+ * 14.10.2026: fourteen partners with their balance in our books and the statement's state — four
+ * not sent, four waiting for an answer, Elektro Sistem d.o.o. disputed (their balance
+ * 300.000,00 RSD), two without an answer after a reminder, three confirmed.
+ */
+const IOS_LIST_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('button', { name: /^All/ })).toHaveAttribute('aria-pressed', 'true')
+  await expect(canvas.getAllByText('Elektro Sistem d.o.o.').length).toBeGreaterThan(0)
+  await expect(canvas.getAllByText('Disputed').length).toBeGreaterThan(0)
+  await expect(canvas.getAllByText('No answer').length).toBeGreaterThan(0)
+}
+
+export const IosPartners: Story = {
+  name: 'IOS partners',
+  render: () => <ExampleApp start={W_ROUTES.list} />,
+  play: docsPlay(async (canvasElement) => {
+    await IOS_LIST_CHECK(canvasElement)
+    await expect(canvasElement).toHaveTextContent('Their balance 300.000,00 RSD')
+  }),
+}
+
+export const IosPartnersPhone: Story = {
+  name: 'IOS partners, phone',
+  render: () => <OnPhone start={W_ROUTES.list} />,
+  play: docsPlay(async (canvasElement) => {
+    await expect(
+      within(canvasElement).getAllByText('Elektro Sistem d.o.o.').length,
+    ).toBeGreaterThan(0)
+  }, true),
+}
+
+/** The four partners not sent yet, and "Prepare statements…": the cut-off date, how they go. */
+export const IosPartnersPrepare: Story = {
+  name: 'IOS partners, prepare',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={W_ROUTES.prepare} />,
+  play: docsPlay(async () => {
+    const dialog = within(document.body).getByRole('dialog', { name: 'Send 4 statements?' })
+    await expect(within(dialog).getByRole('textbox', { name: /^Cut-off date/ })).toHaveValue(
+      '30.09.2026.',
+    )
+    await expect(
+      within(dialog).getByText('2 of 4 partners have Liro Bridge; the others get an e-mail.'),
+    ).toBeVisible()
+  }),
+}
+
+export const IosPartnersPreparePhone: Story = {
+  name: 'IOS partners, prepare, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={W_ROUTES.prepare} />,
+  play: docsPlay(async () => {
+    await expect(
+      within(document.body).getByRole('dialog', { name: 'Send 4 statements?' }),
+    ).toBeVisible()
+  }, true),
+}
+
+/** The preview of the first statement, as the partner receives it. */
+export const IosPartnersPreview: Story = {
+  name: 'IOS partners, preview',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={W_ROUTES.preview} />,
+  play: docsPlay(async () => {
+    const dialog = within(document.body).getByRole('dialog', { name: /^Send 4 statements\?/ })
+    await expect(
+      within(dialog).getByRole('heading', { name: 'Statement of open items' }),
+    ).toBeVisible()
+    await expect(within(dialog).getByRole('combobox', { name: 'Partner' })).toBeVisible()
+  }),
+}
+
+/** Three partners waiting for an answer checked, and "Send reminder…" asked. */
+export const IosPartnersRemind: Story = {
+  name: 'IOS partners, reminder',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={W_ROUTES.remind} />,
+  play: docsPlay(async () => {
+    await expect(
+      within(document.body).getByRole('alertdialog', { name: 'Send a reminder to 3 partners?' }),
+    ).toBeVisible()
+  }),
+}
+
+/** The Disputed view. */
+export const IosPartnersDisputed: Story = {
+  name: 'IOS partners, disputed',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={W_ROUTES.disputed} />,
+  play: docsPlay(async (canvasElement) => {
+    const table = within(canvasElement).getByRole('table', { name: 'Partners' })
+    await expect(within(table).getByText('Elektro Sistem d.o.o.')).toBeVisible()
+  }),
+}
+
+/** Four partners chosen, previewed and sent: they wait for an answer. */
+export const IosPartnersSend: Story = {
+  name: 'IOS partners, prepare and send, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={W_ROUTES.list} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Prepare statements…' }))
+    const dialog = await within(document.body).findByRole('dialog', { name: 'Send 4 statements?' })
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Preview…' }))
+    await waitFor(async () => {
+      await expect(
+        within(dialog).getByRole('heading', { name: 'Statement of open items' }),
+      ).toBeVisible()
+    })
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Send 4 statements' }))
+    await expect(await within(document.body).findByText('4 statements sent.')).toBeInTheDocument()
+    await waitFor(async () => {
+      await expect(canvas.getByRole('button', { name: /^Not sent/ })).toHaveTextContent('0')
+    })
+  },
+}
+
+/**
+ * Elektro Sistem d.o.o.'s dispute worked line by line (the bank statement's pattern): our books
+ * 180.000,00, theirs 300.000,00. Our payment of ES-2026-0498 (84.000,00) left on 30.09.2026 and
+ * they booked it on 01.10.2026; ES-2026-0533 (36.000,00, 28.09.2026) is theirs only — it reached
+ * our document inbox through SEF on 13.10.2026. Our open items beside theirs, the differences
+ * marked; the suggestion preselected; "Send our answer" once nothing is left.
+ */
+const RECONCILE_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1 })).toHaveTextContent('IOS-2026-0042')
+  await expect(canvas.getByText('0 of 2 differences resolved')).toBeVisible()
+  await expect(canvas.getByRole('heading', { level: 2 })).toHaveTextContent('ES-2026-0498')
+  await expect(canvas.getAllByText('Dates differ').length).toBeGreaterThan(0)
+}
+
+export const IosReconciliation: Story = {
+  name: 'IOS reconciliation',
+  render: () => <ExampleApp start={W_ROUTES.reconcile} />,
+  play: docsPlay(async (canvasElement) => {
+    await RECONCILE_CHECK(canvasElement)
+    await expect(within(canvasElement).getByRole('radio', { name: /^Timing/ })).toBeChecked()
+  }),
+}
+
+export const IosReconciliationPhone: Story = {
+  name: 'IOS reconciliation, phone',
+  render: () => <OnPhone start={W_ROUTES.reconcileItem('r2')} />,
+  play: docsPlay(async (canvasElement) => {
+    await expect(within(canvasElement).getByRole('heading', { level: 2 })).toHaveTextContent(
+      'ES-2026-0498',
+    )
+  }, true),
+}
+
+/** The invoice only in their statement, and where it is: the document inbox. */
+export const IosReconciliationMissing: Story = {
+  name: 'IOS reconciliation, invoice only in theirs',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={W_ROUTES.reconcileItem('r4')} />,
+  play: docsPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getAllByText('Only in their statement').length).toBeGreaterThan(0)
+    await expect(canvas.getByRole('button', { name: 'Open in the document inbox' })).toBeVisible()
+  }),
+}
+
+/** A line both sides have the same. */
+export const IosReconciliationMatch: Story = {
+  name: 'IOS reconciliation, a match',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={W_ROUTES.reconcileItem('r1')} />,
+  play: docsPlay(async (canvasElement) => {
+    await expect(within(canvasElement).getByText('No differences')).toBeVisible()
+  }),
+}
+
+/** Both differences resolved: nothing is left unexplained, "Send our answer" can be used. */
+export const IosReconciliationResolved: Story = {
+  name: 'IOS reconciliation, resolved',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={W_ROUTES.resolved} />,
+  play: docsPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('2 of 2 differences resolved')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Send our answer' })).toBeEnabled()
+  }),
+}
+
+/** Both differences resolved one after the other, then our answer sent. */
+export const IosReconciliationResolve: Story = {
+  name: 'IOS reconciliation, resolve and answer, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={W_ROUTES.reconcile} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Resolve and next' }))
+    await waitFor(async () => {
+      await expect(canvas.getByRole('heading', { level: 2 })).toHaveTextContent('ES-2026-0533')
+    })
+    await userEvent.click(canvas.getByRole('button', { name: 'Resolve and next' }))
+    await expect(await canvas.findByText('2 of 2 differences resolved')).toBeVisible()
+    await userEvent.click(canvas.getByRole('button', { name: 'Send our answer' }))
+    const dialog = await within(document.body).findByRole('alertdialog', {
+      name: /^Send our answer/,
+    })
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Send our answer' }))
+    await expect(await canvas.findByText('Reconciled')).toBeVisible()
+  },
+}
+
+/**
+ * The partner's side: Jelena Popović of Elektro Sistem d.o.o. in Liro's partner portal sees
+ * Kvadrat Gradnja d.o.o.'s statement — its open items, the balance 180.000,00 RSD — before she
+ * answers: Confirm, or Dispute with her figures and a note.
+ */
+const PORTAL_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(
+    canvas.getByRole('heading', { level: 1, name: 'Statement of open items' }),
+  ).toBeVisible()
+  await expect(canvas.getByRole('button', { name: 'Confirm' })).toBeVisible()
+  await expect(canvasElement).toHaveTextContent('180.000,00')
+}
+
+export const IosPartnerPortal: Story = {
+  name: 'IOS partner portal',
+  render: () => <ExampleApp start={W_ROUTES.portal} />,
+  play: docsPlay(PORTAL_CHECK),
+}
+
+export const IosPartnerPortalPhone: Story = {
+  name: 'IOS partner portal, phone',
+  render: () => <OnPhone start={W_ROUTES.portal} />,
+  play: docsPlay(PORTAL_CHECK, true),
+}
+
+/** "Dispute…": their balance, what differs and their open items. */
+export const IosPartnerPortalDispute: Story = {
+  name: 'IOS partner portal, dispute',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={W_ROUTES.portalDispute} />,
+  play: docsPlay(async () => {
+    const drawer = within(document.body).getByRole('dialog', { name: /^Dispute/ })
+    await expect(within(drawer).getByRole('button', { name: 'Send dispute' })).toBeVisible()
+    await expect(
+      within(drawer).getByText('Elektro_Sistem_otvorene_stavke_30-09-2026.pdf'),
+    ).toBeVisible()
+  }),
+}
+
+export const IosPartnerPortalDisputePhone: Story = {
+  name: 'IOS partner portal, dispute, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={W_ROUTES.portalDispute} />,
+  play: docsPlay(async () => {
+    await expect(within(document.body).getByRole('dialog', { name: /^Dispute/ })).toBeVisible()
+  }, true),
+}
+
+/** After the dispute: their answer, and that Kvadrat Gradnja answers here. */
+export const IosPartnerPortalDisputed: Story = {
+  name: 'IOS partner portal, disputed',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={W_ROUTES.portalDisputed} />,
+  play: docsPlay(async (canvasElement) => {
+    await expect(within(canvasElement).getByText('You disputed this statement')).toBeVisible()
+  }),
+}
+
+/** "Confirm" asked. */
+export const IosPartnerPortalConfirm: Story = {
+  name: 'IOS partner portal, confirm',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={W_ROUTES.portalConfirm} />,
+  play: docsPlay(async () => {
+    await expect(
+      within(document.body).getByRole('alertdialog', { name: /^Confirm the balance/ }),
+    ).toBeVisible()
+  }),
+}
+
+/** The dispute written and sent: the statement says Disputed, with her answer. */
+export const IosPartnerPortalDisputeFlow: Story = {
+  name: 'IOS partner portal, dispute, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={W_ROUTES.portal} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Dispute…' }))
+    const drawer = await within(document.body).findByRole('dialog', { name: /^Dispute/ })
+    await userEvent.click(within(drawer).getByRole('button', { name: 'Send dispute' }))
+    await expect(within(drawer).getByText('Enter your balance.')).toBeVisible()
+    const balance = within(drawer).getByRole('textbox', { name: /^Balance in your books/ })
+    await userEvent.type(balance, '300000{Enter}')
+    await userEvent.type(
+      within(drawer).getByRole('textbox', { name: /^What differs/ }),
+      'ES-2026-0533 and ES-2026-0498 are open in our books.',
+    )
+    await userEvent.click(within(drawer).getByRole('button', { name: 'Send dispute' }))
+    await waitFor(async () => {
+      await expect(canvas.getByText('You disputed this statement')).toBeVisible()
+    })
+    await expect(canvasElement).toHaveTextContent('300.000,00')
+  },
+}
