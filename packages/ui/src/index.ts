@@ -1316,3 +1316,17 @@ export type {
   SatisfactionAnswer,
   SatisfactionOption,
 } from './components/help-logic'
+// ── P5.36 acct ──
+export { PlanComparison } from './components/plan-comparison'
+export type { PlanComparisonProps } from './components/plan-comparison'
+export { choosablePlan, comparisonRows, featureCell } from './components/plan-logic'
+export type {
+  ComparedFeature,
+  ComparedPlan,
+  ComparisonRow,
+  FeatureCell,
+  FeatureOffer,
+} from './components/plan-logic'
+export { UsageMeter } from './components/usage-meter'
+export type { UsageMeterProps } from './components/usage-meter'
+export { meterShare, usageAmount, usageWords } from './components/usage-logic'

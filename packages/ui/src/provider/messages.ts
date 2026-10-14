@@ -1902,4 +1902,14 @@ export interface LiroMessages {
   /** SearchResultList (P5.30 e): the count over the results, and Try again. */
   'searchResults.count': (count: number, countText: string) => string
   'searchResults.retry': string
+  // P5.36 acct
+  /** PlanComparison (P5.36): the current plan's mark, the feature column, included or not. */
+  'plan.current': string
+  'plan.feature': string
+  'plan.included': string
+  'plan.notIncluded': string
+  /** UsageMeter (P5.36): an amount with its unit, "24 of 30", and an amount without a limit. */
+  'usage.amount': (number: string, unit: string) => string
+  'usage.ofLimit': (usedText: string, limitText: string) => string
+  'usage.noLimit': (usedText: string) => string
 }

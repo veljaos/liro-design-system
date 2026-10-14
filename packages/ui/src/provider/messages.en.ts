@@ -1320,4 +1320,12 @@ export const messagesEn: LiroMessages = {
   'pageContents.title': 'On this page',
   'searchResults.count': (count, countText) => `${countText} ${count === 1 ? 'result' : 'results'}`,
   'searchResults.retry': 'Try again',
+  // P5.36 acct
+  'plan.current': 'Current plan',
+  'plan.feature': 'Feature',
+  'plan.included': 'Included',
+  'plan.notIncluded': 'Not included',
+  'usage.amount': (number, unit) => `${number} ${unit}`,
+  'usage.ofLimit': (usedText, limitText) => `${usedText} of ${limitText}`,
+  'usage.noLimit': (usedText) => `${usedText} used, no limit`,
 }
