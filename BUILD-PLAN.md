@@ -321,6 +321,8 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P5.26 | Diagrams | P2.1 | done | 2026-10-11 | `@veljaos/ui/diagram` on React Flow 12.12.0 and dagre 3.1.1 (MIT): view, edit, run; approval workflow and orchestrator run examples |
 | P5.27 | Legal information | P4.5, P4.3, P5.15 | done | 2026-10-11 | LegalText, LegalContents, LegalCompare, LegalActPage with its panels, PrintLegalAct, LegalSearchPage, GazetteIssues, FilterBar tree kind; illustrative law, by-law, practice and Kvadrat Gradnja's rulebook |
 | P5.28 | Owner's review of Phase 5 part 2 | P5.27 | done | 2026-10-13 | Phones never scroll sideways (PhoneFrame as the screen, dialogs as bottom sheets, `phone-overflow.spec.ts`); day and month names and week start only from the locale (`numericFormat`); selects over 10 options searched; table headers sticky below the shell, first column at the start (DataTable `stickyHeader` by default); one-record dialogs with `subject`; neutral actions on toned boxes; ChangeConfirmDialog and "Notify …" choices; one "now" marker; Examples sidebar two stories per screen; StatutoryFormPage as the real form grid; printouts as simple as a Stripe invoice with electronic signature fields; POS fiscal flows and open tabs on tables; floor plans without walls, labels never cut, one area at a time, phones on the list, moves confirmed with the free tables or beds |
+| P5.29 | Admin and Superadmin views | P5.28 | in progress | | |
+| P5.30 | Helpdesk | P5.28 | in progress | | |
 | P6.1 | Full language and direction matrix | Phases 1–5 | todo | | |
 | P6.2 | Manual WCAG 2.2 checks | P6.1 | todo | | |
 | P6.3 | Performance budget | P4.8 | todo | | |
@@ -789,6 +791,22 @@ Fix every finding in one branch and fix its **class**: search the library, stori
 27. Phones open on the list (cards by area with state, guests and time); the plan readable without sideways scroll; no editing on phones ("Edit the plan on a computer or tablet").
 
 **Done when** every item and its class are fixed and recorded, CI is green, and the report names the stories to check on desktop and phone.
+
+### P5.29 — Admin and Superadmin views (owner, 2026-10-13)
+Built only from our components and templates (ListPage, DocumentPage, DetailPage, WorklistPage, DashboardPage, StatusTimeline, the charts); every figure, state and text is the application's; examples invented and labelled illustrative (documentation IP ranges).
+- **a) Admin** (a customer company's administrator, inside one tenant): **Overview** (users and active sessions, failed sign-ins today, accounts without two-factor sign-in, integrations with errors, licences / seats used); **Sign-in activity** (who, when, from where — device, browser, approximate location, IP masked by default —, success / failed / blocked; filters by user, result, period); **Audit log** (who changed what and when: record, field, old → new; filterable, exportable; never edited or deleted); **Security** (two-factor status per user, sessions and devices with "Sign out", API keys and tokens — created, last used, revoke —, password and session policy from data); **Integrations health** (each connection — SEF, bank, e-mail, Liro Bridge … — with state, last success, last error and Retry).
+- **b) Superadmin** (the Liro team, across tenants): **System status** (services up / degraded / down, uptime, response time and error rate as charts, queues, database, storage, backups with the last good backup and restore test, certificate expiry, scheduled maintenance); **Incidents** (a list: open / monitoring / resolved, severity, affected services and tenants, started, duration; an incident page on DocumentPage: timeline of updates, assignee and on-call, affected tenants, the status-page message, acknowledge / update / resolve, the postmortem; phones: see and acknowledge); **Security events** (failed-sign-in bursts, suspicious IPs, blocked attempts, privilege changes, MFA resets, data exports; severity, state new / investigating / closed, the action taken); **Network and infrastructure** (nodes and regions with health, latency, alerts); **Tenants** (plan, users, health, last activity; one tenant's admin view read-only behind an audited "view as" banner); **Announcements** (a banner or status message to all or chosen tenants, scheduled).
+**Done when** every view has desktop and phone stories in light, dark and right-to-left, passes axe, the keyboard and the text-order check, and the examples show them.
+
+### P5.30 — Helpdesk (owner, 2026-10-13)
+In the spirit of Frappe Helpdesk — sleek, modern, calm — built only from our components; data from the application.
+- **a) Agent inbox** (ListPage): subject, customer, status (Open / Replied / Paused / Resolved / Closed), priority, type, team, assignee, SLA (first response due / resolution due, overdue in danger tone); saved views (My open, Unassigned, Overdue, All); bulk assign / change status; keyboard navigation.
+- **b) Ticket page:** the conversation as a thread (customer messages, agent replies, internal notes distinct and marked "Internal"); the composer on RichTextField (reply / internal note, canned responses, attachments, @mentions in notes); the side panel with the contact and company (their other tickets), properties changed in place (status, priority, type, team, agent), SLA timers, the activity log. Phones: the thread full width, properties in a sheet, the composer at the bottom.
+- **c) Agent dashboard:** open, unassigned, overdue, first-response time, resolution time, satisfaction (charts).
+- **d) Customer portal** (PortalShell): submit a ticket (type, subject, description, attachments), "My tickets" with status, the thread with replies, a satisfaction rating after resolution.
+- **e) Knowledge base:** categories, articles (RichText), search; agents insert an article link into a reply; the portal suggests articles while the customer types a new ticket.
+**Examples:** Liro support for customer companies ("SEF invoice rejected", "Cannot sign in", "Payroll export question").
+**Done when** every view has desktop and phone stories in light, dark and right-to-left, passes axe, the keyboard and the text-order check, and the examples show them.
 
 **End of Phase 5:** `0.1.0-alpha.5`; report.
 
