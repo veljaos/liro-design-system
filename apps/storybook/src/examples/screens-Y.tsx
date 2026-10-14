@@ -102,7 +102,7 @@ import {
 
 const LINK = 'text-link no-underline visited:text-link hover:underline'
 
-type SectionKey = 'home' | 'payslips' | 'leave' | 'shifts' | 'documents' | 'details'
+export type SectionKey = 'home' | 'payslips' | 'leave' | 'shifts' | 'documents' | 'details'
 
 const SECTIONS: PortalSection[] = [
   { key: 'home', label: 'Home', href: `#${Y_ROUTES.home}`, icon: House },
@@ -140,7 +140,7 @@ function portalMenu(navigate: (path: string) => void): MenuEntry[] {
 }
 
 /** The portal's frame: PortalShell with the five sections, the tenant's digits and today. */
-function EmployeePortal({
+export function EmployeePortal({
   phone,
   current,
   children,
@@ -174,7 +174,7 @@ function EmployeePortal({
 }
 
 /** A portal page: one column, centred on wide screens. */
-function Page({ wide = false, children }: { wide?: boolean; children: ReactNode }) {
+export function Page({ wide = false, children }: { wide?: boolean; children: ReactNode }) {
   return (
     <div
       className={`mx-auto box-border flex w-full min-w-0 flex-col gap-4 p-4 sm:gap-6 sm:p-6 ${wide ? 'max-w-6xl' : 'max-w-3xl'}`}
