@@ -1,19 +1,25 @@
 import { X } from 'lucide-react'
 import { Dialog as DialogPrimitive } from 'radix-ui'
 import type { ComponentProps } from 'react'
+import { usePhone } from '../components/use-phone'
 import { usePortalContainer } from '../provider/portal'
 import { buttonClassName, BUTTON_SHAPES } from './button'
-import { BACKDROP, TEXT_DIRECTION } from './classes'
+import { BACKDROP, PHONE_DIALOG, TEXT_DIRECTION } from './classes'
 import { cn } from './cn'
 
 /*
  * A modal dialog (shadcn/ui dialog, adapted; Mantine Modal.css, ModalBase.css and defaults):
- * 440px wide (size 'md'), 5dvh from the top and at least 5% of the width from each side, radius md, shadow xl,
- * on the overlay surface over surface.backdrop; it fades down 30px in 200ms. Header: at least
+ * 440px wide (size 'md'), 5% of the screen's height from the top and at least 5% of the width
+ * from each side, radius md, shadow xl, on the overlay surface over surface.backdrop; it fades
+ * down 30px in 200ms. Header: at least
  * 60px, 16px padding on every side — one inset with the body and footer (P4.9d) — sticky while the body
  * scrolls; title 14px regular. Body: 16px padding, none on top under a header. The close button
  * is the CompactIconButton look ("Two icon-only buttons" in docs/decisions.md); its label is
  * required, because the Design System has no text of its own.
+ *
+ * On a phone (usePhone: below 48em, or a phone frame) a dialog is a sheet across the screen's
+ * full width on its bottom edge (PHONE_DIALOG, P5.28 item 1); the backdrop covers the whole
+ * screen (item 5).
  */
 
 export const Dialog = DialogPrimitive.Root
@@ -27,15 +33,18 @@ export function DialogContent({
   ...props
 }: ComponentProps<typeof DialogPrimitive.Content>) {
   const container = usePortalContainer()
+  const phone = usePhone()
   return (
     <DialogPrimitive.Portal container={container}>
       <DialogPrimitive.Overlay data-slot="dialog-overlay" className={BACKDROP} />
       <DialogPrimitive.Content
         data-slot="dialog-content"
+        data-phone={phone ? '' : undefined}
         className={cn(
-          'fixed inset-x-0 top-[5dvh] z-(--liro-layer-modal) mx-auto flex max-h-[90dvh] w-110 max-w-[90%] flex-col overflow-y-auto rounded-md bg-surface-overlay font-sans text-primary shadow-xl outline-none',
+          'fixed inset-x-0 top-[5%] z-(--liro-layer-modal) mx-auto flex max-h-[90%] w-110 max-w-[90%] flex-col overflow-y-auto rounded-md bg-surface-overlay font-sans text-primary shadow-xl outline-none',
           'data-[state=open]:animate-liro-modal-in data-[state=closed]:animate-liro-modal-out motion-reduce:animate-none',
           className,
+          phone && PHONE_DIALOG,
         )}
         {...props}
       >

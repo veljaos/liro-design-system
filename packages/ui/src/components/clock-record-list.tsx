@@ -12,6 +12,7 @@ import {
 import { Sheet, SheetContent } from '../primitives/sheet'
 import { useLiro } from '../provider/liro-provider'
 import { Button } from './button'
+import { DialogHeading, dialogHeaderClass } from './dialog'
 import { clockTimeOf, onLaterDay, parseClockTime } from './clock-record-logic'
 import { DataTable, type DataTableColumn } from './data-table'
 import type { EmptyAction } from './empty-state'
@@ -27,7 +28,8 @@ import { TextAreaField, TextField } from './text-field'
  *   clock-out is said in words ("No clock-out", warning text with an icon), never 0 or a dash; a
  *   missing duration is "—".
  * - Corrections are audited, never silent: "Correct" in a row's menu opens a Drawer at the end
- *   (D14: a short edit, the list still visible) with the new clock-in and clock-out (typed freely,
+ *   (D14: a short edit, the list still visible), titled "Correct clock record" with the person
+ *   and the day bold under it (P5.28 item 6), with the new clock-in and clock-out (typed freely,
  *   read as hh:mm) and a required reason. The application keeps the original; a corrected record
  *   shows the new time, then the original struck through ("was" for assistive technology), and
  *   who corrected it, when and why.
@@ -374,9 +376,13 @@ function CorrectionDrawer({
         onPointerDownOutside={keep}
         onInteractOutside={keep}
       >
-        <DialogHeader>
+        <DialogHeader className={dialogHeaderClass(record.person)}>
+          {/* The action, then the record bold on its own line (P5.28 item 6). */}
           <DialogTitle>
-            {messages['clock.correctTitle'](record.person, format.date(record.date))}
+            <DialogHeading
+              title={messages['clock.correctTitle']}
+              subject={messages['clock.correctSubject'](record.person, format.date(record.date))}
+            />
           </DialogTitle>
           {!pending && <DialogCloseButton label={messages['dialog.close']} />}
         </DialogHeader>

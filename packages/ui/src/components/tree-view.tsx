@@ -364,7 +364,7 @@ export function TreeView<Data = undefined>(props: TreeViewProps<Data>) {
       data-slot="tree-view"
       className={cn(
         'flex min-w-0 flex-col font-sans',
-        windowed && 'overflow-auto',
+        windowed && 'overflow-auto [overflow-anchor:none]',
         props.className,
       )}
       style={windowed ? { maxHeight: props.maxHeight } : undefined}

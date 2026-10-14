@@ -6,7 +6,16 @@ import { ToggleGroup, ToggleGroupItem } from '../primitives/toggle-group'
 import type { Weekday } from '../provider/format'
 import { useLiro } from '../provider/liro-provider'
 import { toneClasses } from './calendar-view'
-import { currentPeriod, initialTimetableDay, weekdayOf } from './schedule-logic'
+import { NowMarker } from './now-marker'
+import {
+  clockOf,
+  currentPeriod,
+  initialTimetableDay,
+  localDateTime,
+  nowMoment,
+  nowWithin,
+  weekdayOf,
+} from './schedule-logic'
 import type { Tone } from './status-badge'
 import { usePhone } from './use-phone'
 
@@ -20,8 +29,9 @@ import { usePhone } from './use-phone'
  *   class is split): the subject (sm semibold), the teacher and the room (xs), a note in the
  *   tone's colour; the tone's colours (neutral by default) with a 3px bar at the start. An empty
  *   period shows "—" and says `timetable.free` to assistive technology.
- * - The running period: today's cell has a 2px border.selected outline and "Now" (neutral, D17),
- *   `aria-current="time"`.
+ * - The running period: today's cell is `aria-current="time"` and carries the time grids' one
+ *   "now" marker (P5.28 item 10, NowMarker: a neutral line with a dot) where `now` stands inside
+ *   the period, named "Now, 10:05". The cell keeps its look: no outline and no badge.
  * - Phones (below 48em or `layout="phone"`): one day at a time, chosen in a segmented control
  *   (today's day first by default); the periods as a list.
  */
@@ -58,7 +68,10 @@ export interface TimetableProps {
   label: string
   /** The weekdays shown, in order. Default Monday to Friday. */
   days?: readonly Weekday[]
-  /** The application's clock, "HH:mm": marks the period running today. */
+  /**
+   * The application's clock: "HH:mm" (a time of the provider's today), or an instant shown in the
+   * provider's time zone. Marks the period running today with the "now" marker.
+   */
   now?: string
   /** A lesson was opened (pressed, or Enter). Without it lessons are text. */
   onSelect?: (lesson: TimetableLesson) => void
@@ -77,13 +90,28 @@ const SCHOOL_WEEK: readonly Weekday[] = [1, 2, 3, 4, 5]
 
 /** The weekly grid of periods and lessons. */
 export function Timetable(props: TimetableProps) {
-  const { format, messages, today } = useLiro()
+  const { format, messages, today, timeZone } = useLiro()
   const viewportPhone = usePhone()
   const phone = props.layout === undefined ? viewportPhone : props.layout === 'phone'
   const days = props.days ?? SCHOOL_WEEK
   const [innerDay, setInnerDay] = useState<Weekday | undefined>(props.defaultDay)
   const todayWeekday = weekdayOf(today)
-  const running = props.now === undefined ? null : currentPeriod(props.periods, props.now)
+  const moment = props.now === undefined ? null : nowMoment(props.now, today, timeZone)
+  const running =
+    moment?.day === today ? currentPeriod(props.periods, clockOf(moment.minutes)) : null
+  /** The "now" marker in the running period's cell for today, at its place in the period. */
+  const nowMarker = (day: Weekday, period: TimetablePeriod): ReactNode => {
+    if (moment === null || running !== period.id || day !== todayWeekday) return null
+    const at = nowWithin(moment.minutes, period.start, period.end)
+    if (at === null) return null
+    return (
+      <NowMarker
+        orientation="horizontal"
+        label={messages['schedule.now'](format.time(localDateTime(today, moment.minutes)))}
+        style={{ top: `${String(at * 100)}%`, insetInlineStart: 0, insetInlineEnd: 0 }}
+      />
+    )
+  }
   const shownDay = initialTimetableDay(days, today, props.day ?? innerDay)
 
   const timeText = (period: TimetablePeriod) =>
@@ -133,25 +161,8 @@ export function Timetable(props: TimetableProps) {
 
   const cell = (day: Weekday, period: TimetablePeriod) => {
     const lessons = lessonsAt(day, period.id)
-    const now = running === period.id && day === todayWeekday
     return (
-      <div
-        className={cn(
-          'relative flex flex-col gap-1',
-          now &&
-            'rounded-md outline-2 outline-offset-1 outline-(--liro-border-selected) [outline-style:solid]',
-        )}
-      >
-        {now && (
-          <span
-            className={cn(
-              'self-start rounded-xs bg-surface-selected px-1.5 py-0.5 text-xs font-semibold text-primary',
-              TEXT_DIRECTION,
-            )}
-          >
-            {messages['timetable.now']}
-          </span>
-        )}
+      <div className="flex flex-col gap-1">
         {lessons.length === 0 ? (
           <span className="px-3 py-1.5 text-sm text-tertiary">
             <span aria-hidden="true">—</span>
@@ -220,8 +231,9 @@ export function Timetable(props: TimetableProps) {
               {...(running === period.id && shownDay === todayWeekday
                 ? { 'aria-current': 'time' as const }
                 : {})}
-              className="flex gap-3 border-0 border-t border-solid border-subtle py-2 first:border-t-0"
+              className="relative flex gap-3 border-0 border-t border-solid border-subtle py-2 first:border-t-0"
             >
+              {nowMarker(shownDay, period)}
               <div className="flex w-24 shrink-0 flex-col gap-0.5">
                 <span className={cn('text-sm font-semibold text-primary', TEXT_DIRECTION)}>
                   {period.label}
@@ -302,9 +314,10 @@ export function Timetable(props: TimetableProps) {
                   {...(running === period.id && day === todayWeekday
                     ? { 'aria-current': 'time' as const }
                     : {})}
-                  className="border-0 border-t border-s border-solid border-subtle p-1.5 align-top"
+                  className="relative border-0 border-t border-s border-solid border-subtle p-1.5 align-top"
                 >
                   {cell(day, period)}
+                  {nowMarker(day, period)}
                 </td>
               ))}
             </tr>

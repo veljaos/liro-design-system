@@ -61,6 +61,7 @@ import {
   type AttendancePosition,
 } from './attendance-logic'
 import { Button, CompactIconButton, IconButton } from './button'
+import { DialogHeading, dialogHeaderClass } from './dialog'
 import { LazyDropdownMenu, type MenuEntry } from './dropdown-menu'
 import { EmptyState } from './empty-state'
 import { ShortcutHint } from './navigation'
@@ -69,6 +70,7 @@ import { Tooltip } from './popover'
 import { Skeleton } from './progress'
 import { SelectField } from './select-field'
 import { StatusBadge, type Tone } from './status-badge'
+import { STICKY_CLEARANCE, STICKY_HEAD, useStickyHead } from './sticky-head'
 import { TextAreaField } from './text-field'
 import { usePhone } from './use-phone'
 import { keepFocusedRow, overscanRows, spacersBetween } from './virtual-rows'
@@ -501,6 +503,8 @@ function DesktopView(props: ViewProps) {
   const [scheduledFocus, setScheduledFocus] = useState(0)
   const table = useRef<HTMLDivElement>(null)
   const scroller = useRef<HTMLDivElement>(null)
+  // The header row stays below the shell while the page scrolls (P5.28 item 4).
+  useStickyHead(scroller)
 
   // Rows and columns may change under the focus: keep it inside.
   const safeDay: AttendanceCell = {
@@ -727,7 +731,8 @@ function DesktopView(props: ViewProps) {
         aria-colindex={index + 2}
         {...(focusable ? { 'data-pos': pos(cell), tabIndex: tabIndex(cell) } : {})}
         className={cn(
-          'sticky top-0 z-10 h-11 w-11 min-w-11 p-0 text-center align-middle font-sans',
+          STICKY_HEAD,
+          'z-10 h-11 w-11 min-w-11 p-0 text-center align-middle font-sans',
           CELL_LINES,
           'border-b-default',
           shaded ? 'bg-surface-sunken' : 'bg-surface-raised',
@@ -1132,7 +1137,10 @@ function DesktopView(props: ViewProps) {
       <div
         ref={scroller}
         data-slot="attendance-scroll"
-        className="w-fit max-w-full min-w-0 self-start overflow-auto rounded-md border border-solid border-default"
+        className={cn(
+          'w-fit max-w-full min-w-0 self-start overflow-auto rounded-md border border-solid border-default',
+          STICKY_CLEARANCE,
+        )}
         {...(maxHeight === undefined ? {} : { style: { maxHeight } })}
       >
         <div
@@ -1147,15 +1155,17 @@ function DesktopView(props: ViewProps) {
           onFocus={onFocus}
           className="table border-separate border-spacing-0 font-sans text-sm text-primary [&_[role=columnheader]]:table-cell [&_[role=gridcell]]:table-cell [&_[role=row]]:table-row [&_[role=rowheader]]:table-cell"
         >
-          <div role="rowgroup" className="table-header-group">
+          <div role="rowgroup" data-sticky-head="" className="table-header-group">
             <div role="row" aria-rowindex={1}>
               <div
                 role="columnheader"
                 aria-colindex={1}
                 data-pos="0:0"
+                data-sticky-start=""
                 tabIndex={tabIndex({ row: 0, column: 0 })}
                 className={cn(
-                  'sticky start-0 top-0 z-20 bg-surface-raised px-3 text-start align-bottom text-xs font-semibold text-secondary',
+                  STICKY_HEAD,
+                  'start-0 z-20 bg-surface-raised px-3 text-start align-bottom text-xs font-semibold text-secondary',
                   CELL_LINES,
                   'border-e-default border-b-default',
                   FOCUS_CELL,
@@ -1177,7 +1187,8 @@ function DesktopView(props: ViewProps) {
                     tabIndex={tabIndex(cell)}
                     title={total.short === undefined ? undefined : total.label}
                     className={cn(
-                      'sticky top-0 z-10 min-w-16 bg-surface-sunken px-2 text-end align-middle text-xs font-semibold text-secondary',
+                      STICKY_HEAD,
+                      'z-10 min-w-16 bg-surface-sunken px-2 text-end align-middle text-xs font-semibold text-secondary',
                       CELL_LINES,
                       'border-b-default',
                       index === 0 && 'border-s border-s-default',
@@ -1604,9 +1615,15 @@ function CorrectionDialog(
           if (pending) event.preventDefault()
         }}
       >
-        <DialogHeader>
+        <DialogHeader className={dialogHeaderClass(props.row.label)}>
           <DialogTitle>
-            {messages['attendance.correctTitle'](props.row.label, columnName(props.column))}
+            <DialogHeading
+              title={messages['attendance.correctAction']}
+              subject={messages['attendance.correctSubject'](
+                props.row.label,
+                columnName(props.column),
+              )}
+            />
           </DialogTitle>
           {!pending && <DialogCloseButton label={messages['dialog.close']} />}
         </DialogHeader>

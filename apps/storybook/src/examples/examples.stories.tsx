@@ -42,7 +42,9 @@ const meta = {
           'menu and the search (Ctrl K). Every link goes through the provider’s ' +
           '`linkComponent`, as the Core’s router will; the screens use only `@veljaos/ui` and ' +
           '`@veljaos/ui/charts`. The interface text is English; numbers and dates are written as ' +
-          'a Serbian tenant sees them. Start with "Walk-through" and click.',
+          'a Serbian tenant sees them. Start with "Sign in" and click. The sidebar shows each ' +
+          'screen twice, on a desktop and on a phone; the steps in between and the interaction ' +
+          'tests are hidden from it and still run in the tests (P5.28).',
       },
     },
   },
@@ -60,7 +62,7 @@ type Story = StoryObj<typeof meta>
  */
 export const WalkThrough: Story = {
   name: 'Walk-through',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={ROUTES.signIn} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -156,7 +158,7 @@ export const InvoiceListScreen: Story = {
 
 export const InvoiceListScreenInteraction: Story = {
   name: 'Invoice list, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={ROUTES.invoices} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -250,7 +252,7 @@ export const ApprovalsScreen: Story = {
  */
 export const ApprovalsDecide: Story = {
   name: 'Supplier invoices to approve, deciding',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={ROUTES.approvals} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -292,7 +294,7 @@ export const ApprovalsPhone: Story = {
 /** On a phone: the invoice full width, each label above its value, the decisions in the bottom bar. */
 export const ApprovalPhoneDetail: Story = {
   name: 'Supplier invoice to approve, phone',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <OnPhone start={ROUTES.approvals} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -318,7 +320,7 @@ function boxAround(element: Element | null): Element | null {
  */
 export const ApprovalPhoneToast: Story = {
   name: 'Supplier invoice to approve, phone, approved',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <OnPhone start={ROUTES.approvals} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -361,7 +363,7 @@ export const EmployeeScreen: Story = {
 /** Edit: the same sections as fields (Leave stays read-only), Cancel and Save in the bottom bar. */
 export const EmployeeEdit: Story = {
   name: 'Employee record, editing',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={ROUTES.employee} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -443,6 +445,7 @@ export const JournalEntryScreen: Story = {
  */
 export const JournalEntryUnbalanced: Story = {
   name: 'Journal entry, unbalanced',
+  tags: ['!dev'],
   render: () => <ExampleApp start={F_ROUTES.journalUnbalanced} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -459,7 +462,7 @@ export const JournalEntryUnbalanced: Story = {
 
 export const JournalEntryUnbalancedInteraction: Story = {
   name: 'Journal entry, unbalanced, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={F_ROUTES.journalUnbalanced} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -529,7 +532,7 @@ export const PayrollPhone: Story = {
 /** The rerun asks for a reason, then the run goes back to Calculate. */
 export const PayrollRerun: Story = {
   name: 'Payroll run, rerun',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={F_ROUTES.payroll} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -596,7 +599,7 @@ export const InvoiceActivityScreen: Story = {
 
 export const InvoiceActivityScreenInteraction: Story = {
   name: 'Invoice with history, comments and presence, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={ROUTES_A.invoice} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -686,7 +689,7 @@ export const ContractQuestionnaireScreen: Story = {
 
 export const ContractQuestionnaireScreenInteraction: Story = {
   name: 'Employment contract questionnaire, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={ROUTES_A.contract} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -745,6 +748,7 @@ export const ContractQuestionnairePhone: Story = {
 /** Sign in with the providers (P5.6): the e-mail first, then "or" and Microsoft and Google. */
 export const SignInProviders: Story = {
   name: 'Sign in, providers',
+  tags: ['!dev'],
   render: () => <ExampleApp start={ROUTES.signIn} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -776,7 +780,7 @@ export const UsersAndRoles: Story = {
 
 export const UsersAndRolesInteraction: Story = {
   name: 'Users and roles, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={C_ROUTES.users} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -803,7 +807,7 @@ export const UsersAndRolesInteraction: Story = {
 /** Inviting: the drawer, then the new invitation pending beside the others. */
 export const UsersInvite: Story = {
   name: 'Users and roles, inviting',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={C_ROUTES.users} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -885,7 +889,7 @@ export const ContractSignerLink: Story = {
 
 export const ContractSignerLinkInteraction: Story = {
   name: 'Contract signing, the employee signs, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={C_ROUTES.signerLink} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -927,7 +931,7 @@ export const TasksScreen: Story = {
 
 export const TasksScreenInteraction: Story = {
   name: 'Tasks, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={C_ROUTES.tasks} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -991,7 +995,7 @@ export const CustomersScreen: Story = {
 
 export const CustomersScreenInteraction: Story = {
   name: 'Customers, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={E_ROUTES.customers} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -1014,7 +1018,7 @@ export const CustomersScreenInteraction: Story = {
  */
 export const CustomersSortAndFilter: Story = {
   name: 'Customers, sort and filter',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={E_ROUTES.customers} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -1044,7 +1048,7 @@ export const CustomersSortAndFilter: Story = {
 /** Three customers selected: the bulk bar is a row of its own, 12px from the filters and the table. */
 export const CustomersSelected: Story = {
   name: 'Customers, selected',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={E_ROUTES.customers} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -1071,7 +1075,7 @@ export const CustomersPhone: Story = {
 /** Bulk edit: two customers selected, "Edit 2 records", the payment term set to 30 days for both. */
 export const CustomersBulkEdit: Story = {
   name: 'Customers, bulk edit',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={E_ROUTES.customers} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -1101,7 +1105,7 @@ export const CustomersBulkEdit: Story = {
 /** Deactivating hides a customer from Active and shows it under Inactive; nothing is deleted. */
 export const CustomersDeactivate: Story = {
   name: 'Customers, deactivate',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={E_ROUTES.customers} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -1127,7 +1131,7 @@ export const CustomersDeactivate: Story = {
  */
 export const CustomersLookup: Story = {
   name: 'Customers, search all',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={E_ROUTES.customers} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -1176,7 +1180,7 @@ export const CustomerImportScreen: Story = {
 
 export const CustomerImportScreenInteraction: Story = {
   name: 'Customer import, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={E_ROUTES.customerImport} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -1210,9 +1214,10 @@ export const CustomerImportPhone: Story = {
 }
 
 /**
- * The VAT return for September 2026 (an illustrative PP PDV-like form): prefilled from the
- * books, 3.2 drills down to the invoices (F-2026-0412 among them), 8a.2 overridden by Ivana
- * Stojanović, one failing check, August beside September, status Checked.
+ * The VAT return for September 2026 as its form grid (an illustrative PP PDV / POPDV-like form,
+ * P5.28 item 19): the rates over Base and VAT, nested numbered groups (1.2 collapsed), one-column
+ * parts, absent cells blank; 1.1.1 from SEF opens the invoices (F-2026-0412 among them); typed
+ * cells as fields; 3.1.1's VAT overridden by Ivana Stojanović, one failing check.
  */
 export const VatReturnScreen: Story = {
   name: 'VAT return',
@@ -1220,32 +1225,33 @@ export const VatReturnScreen: Story = {
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
-    await expect(canvas.getByText('1 check failed · 4 checks passed')).toBeVisible()
+    await expect(canvas.getByText('1 check failed · 3 checks passed')).toBeVisible()
     await expect(canvas.getByText('By Ivana Stojanović on 05.10.2026. 14:12')).toBeVisible()
     await expect(
       canvas.getAllByText('Difference: 64.400,00 RSD', { exact: false })[0],
     ).toBeVisible()
+    await expect(canvas.getAllByRole('columnheader', { name: 'Општа стопа 20%' })).toHaveLength(2)
     await settle()
   },
 }
 
 export const VatReturnScreenInteraction: Story = {
   name: 'VAT return, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={E_ROUTES.vatReturn} />,
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
     const page = within(document.body)
-    await expect(canvas.getByText('1 check failed · 4 checks passed')).toBeVisible()
-    await expect(canvas.getByText('By Ivana Stojanović on 05.10.2026. 14:12')).toBeVisible()
-    await expect(
-      canvas.getAllByText('Difference: 64.400,00 RSD', { exact: false })[0],
-    ).toBeVisible()
+    await expect(canvas.getByText('1 check failed · 3 checks passed')).toBeVisible()
     await userEvent.click(
-      canvas.getByRole('button', { name: /^510\.809,60\sRSD, sources of 3\.2$/ }),
+      canvas.getByRole('button', {
+        name: /^510\.809,60\sRSD, sources of 1\.1\.1 · Општа стопа 20% · Основица$/,
+      }),
     )
-    const drawer = within(await page.findByRole('dialog', { name: '3.2 Tax base' }))
+    const drawer = within(
+      await page.findByRole('dialog', { name: /^Source documents 1\.1\.1 Промет/ }),
+    )
     await settle()
     await expect(drawer.getByRole('link', { name: /F-2026-0412/ })).toBeVisible()
     await expect(drawer.getByText('144.920,00 RSD')).toBeVisible()
@@ -1253,9 +1259,14 @@ export const VatReturnScreenInteraction: Story = {
     await waitFor(async () => {
       await expect(page.queryByRole('dialog')).toBeNull()
     })
-    // 5.2 = 3.6 + 4.6, and 10.1 = 5.2 − 8e.6, as the Core computed them.
-    await expect(canvasElement).toHaveTextContent('103.011,92')
-    await expect(canvasElement).toHaveTextContent('34.054,32')
+    // 4.1 = 1.1.6 + 1.2.1 and 4.3 = 4.1 − 4.2, as the Core computed them.
+    await expect(canvasElement).toHaveTextContent('122.551,92')
+    await expect(canvasElement).toHaveTextContent('49.904,32')
+    // "Go to" focuses the failing total.
+    await userEvent.click(canvas.getByRole('button', { name: 'Go to 3.1.4' }))
+    await waitFor(async () => {
+      await expect(document.activeElement).toHaveTextContent('72.647,60')
+    })
   },
 }
 
@@ -1287,7 +1298,7 @@ export const InjuryRegisterScreen: Story = {
 
 export const InjuryRegisterScreenInteraction: Story = {
   name: 'Work-injury register, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={E_ROUTES.injuryRegister} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -1319,6 +1330,7 @@ export const InjuryRegisterPhone: Story = {
 /** 5,000 generated entries stay responsive: only the rows in view are drawn. */
 export const InjuryRegisterMany: Story = {
   name: 'Work-injury register, 5,000 entries',
+  tags: ['!dev'],
   render: () => <ExampleApp start={E_ROUTES.injuryRegisterGenerated} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -1330,7 +1342,7 @@ export const InjuryRegisterMany: Story = {
 
 export const InjuryRegisterManyInteraction: Story = {
   name: 'Work-injury register, 5,000 entries, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={E_ROUTES.injuryRegisterGenerated} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -1458,7 +1470,7 @@ export const FinalInvoiceScreen: Story = {
 
 export const FinalInvoiceScreenInteraction: Story = {
   name: 'Final invoice with advances, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={D2_ROUTES.final} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -1518,7 +1530,7 @@ export const SituationScreen: Story = {
 
 export const SituationScreenInteraction: Story = {
   name: 'Interim situation with a specification, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={D2_ROUTES.situation} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -1657,7 +1669,7 @@ export const CancelledScreen: Story = {
 
 export const CancelledScreenInteraction: Story = {
   name: 'Cancelled invoice and its cancellation document, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={D2_ROUTES.cancelled} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -1761,7 +1773,7 @@ export const D1InvoiceDraft: Story = {
 
 export const D1InvoiceDraftInteraction: Story = {
   name: 'Invoice draft, lines by search, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={D1_ROUTES.draft} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -1842,7 +1854,7 @@ export const D1Specification: Story = {
 
 export const D1SpecificationInteraction: Story = {
   name: 'Interim situation, editing the specification, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={D1_ROUTES.specification} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -1930,7 +1942,7 @@ export const BankStatementScreen: Story = {
 
 export const BankStatementScreenInteraction: Story = {
   name: 'Bank statement 188, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={BANK_ROUTES.statement} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -1968,6 +1980,7 @@ export const BankStatementScreenInteraction: Story = {
  */
 export const BankStatementPartial: Story = {
   name: 'Bank statement 188, partial payment',
+  tags: ['!dev'],
   render: () => <ExampleApp start={BANK_ROUTES.partial} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -1985,7 +1998,7 @@ export const BankStatementPartial: Story = {
 
 export const BankStatementPartialInteraction: Story = {
   name: 'Bank statement 188, partial payment, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={BANK_ROUTES.partial} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -2024,6 +2037,7 @@ export const BankStatementPartialInteraction: Story = {
  */
 export const BankStatementPost: Story = {
   name: 'Bank statement 188, posting',
+  tags: ['!dev'],
   render: () => <ExampleApp start={BANK_ROUTES.decided} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -2034,7 +2048,7 @@ export const BankStatementPost: Story = {
 
 export const BankStatementPostInteraction: Story = {
   name: 'Bank statement 188, posting, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={BANK_ROUTES.decided} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -2042,7 +2056,7 @@ export const BankStatementPostInteraction: Story = {
     await expect(canvasElement).toHaveTextContent('10 of 10 lines done')
     await userEvent.click(canvas.getByRole('button', { name: 'Post statement' }))
     const dialog = await within(document.body).findByRole('alertdialog', {
-      name: 'Post statement 188?',
+      name: 'Post statement Statement 188 · Banca Intesa',
     })
     await expect(dialog).toHaveTextContent('4 lines, 4 items')
     await expect(dialog).toHaveTextContent('6 lines')
@@ -2060,6 +2074,7 @@ export const BankStatementPostInteraction: Story = {
  */
 export const BankStatementPartialPhone: Story = {
   name: 'Bank statement 188, partial payment, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={BANK_ROUTES.partial} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -2093,6 +2108,7 @@ export const BankStatementPhone: Story = {
  */
 export const BankStatementLinePhone: Story = {
   name: 'Bank statement 188, phone, line in focus',
+  tags: ['!dev'],
   render: () => <OnPhone start={BANK_ROUTES.difference} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -2169,6 +2185,7 @@ export const SafetyCourseLessonPhone: Story = {
 /** Phone, the outline open: done, to do, and the locked lessons with their reasons. */
 export const SafetyCourseOutlinePhone: Story = {
   name: 'Safety course, outline, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={J_ROUTES.lessonOutline} />,
   play: async () => {
     const dialog = await within(document.body).findByRole('dialog', { name: 'Course outline' })
@@ -2184,6 +2201,7 @@ export const SafetyCourseOutlinePhone: Story = {
 /** The final test on the general Questionnaire, resumed at the third of five questions. */
 export const SafetyCourseTest: Story = {
   name: 'Safety course, final test',
+  tags: ['!dev'],
   render: () => <ExampleApp start={J_ROUTES.test} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -2200,6 +2218,7 @@ export const SafetyCourseTest: Story = {
 /** The first attempt, not passed: 3 of 5, the answers with the correct ones, "Take the test again". */
 export const SafetyCourseTestNotPassed: Story = {
   name: 'Safety course, test not passed',
+  tags: ['!dev'],
   render: () => <ExampleApp start={J_ROUTES.testNotPassed} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -2219,6 +2238,7 @@ export const SafetyCourseTestNotPassed: Story = {
 /** Passed: the course completed, "Download certificate" and the certificate's preview. */
 export const SafetyCourseCompleted: Story = {
   name: 'Safety course, completed',
+  tags: ['!dev'],
   render: () => <ExampleApp start={J_ROUTES.completed} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -2241,6 +2261,7 @@ export const SafetyCourseCompleted: Story = {
 
 export const SafetyCourseCompletedPhone: Story = {
   name: 'Safety course, completed, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={J_ROUTES.completed} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -2259,7 +2280,7 @@ export const SafetyCourseCompletedPhone: Story = {
  */
 export const SafetyCourseInteraction: Story = {
   name: 'Safety course, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={J_ROUTES.lesson} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -2320,7 +2341,11 @@ export const SafetyCourseInteraction: Story = {
   },
 }
 
-/** Invoice F-2026-0412 on paper: the lines and totals of its page, from the same data. */
+/**
+ * Invoice F-2026-0412 on paper, as simple as a Stripe invoice (P5.28): title and logo, the
+ * key/value block, seller and buyer, "135.954,00 RSD due …", the payment details with the IPS QR
+ * code, the lines and totals of its page from the same data; no signatures.
+ */
 export const PrintoutInvoice: Story = {
   name: 'Printout, invoice F-2026-0412',
   render: () => <ExampleApp start={J_ROUTES.invoicePrint} />,
@@ -2329,14 +2354,20 @@ export const PrintoutInvoice: Story = {
     const canvas = within(canvasElement)
     const sheet = canvas.getByRole('article', { name: `Invoice ${FEATURED}` })
     await expect(sheet).toHaveAttribute('data-liro-theme', 'light')
-    await expect(canvas.getByRole('heading', { level: 1 })).toHaveTextContent(`Invoice ${FEATURED}`)
+    await expect(canvas.getByRole('heading', { level: 1 })).toHaveTextContent(/^Invoice$/)
+    await expect(sheet.querySelector('[data-slot="print-amount-due"]')).toHaveTextContent(
+      /^135\.954,00 RSD due \d{2}\.\d{2}\.\d{4}\.$/,
+    )
+    await expect(
+      canvas.getByRole('img', { name: 'IPS QR code for the payment (illustrative)' }),
+    ).toBeVisible()
+    await expect(sheet.querySelector('[data-signature-field]')).toBeNull()
     const lines = canvas.getByRole('table', { name: 'Lines' })
     await expect(within(lines).getAllByRole('row')).toHaveLength(6)
     const totals = sheet.querySelector('[data-slot="document-totals"]')
     await expect(totals).toHaveAttribute('aria-label', 'Totals')
     await expect(totals).toHaveTextContent('185.954,00')
     await expect(totals).toHaveTextContent('135.954,00')
-    await expect(canvas.getByText('Novi Sad, 28.09.2026.')).toBeVisible()
     await expect(canvas.getByRole('link', { name: `Back to ${FEATURED}` })).toBeVisible()
     await expect(canvas.getByRole('button', { name: 'Print' })).toBeVisible()
   },
@@ -2357,7 +2388,7 @@ export const PrintoutInvoicePhone: Story = {
 /** The invoice's "PDF" opens its printout; the back button returns to the invoice. */
 export const PrintoutInvoiceInteraction: Story = {
   name: 'Printout, invoice from its page, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={ROUTES.invoice(FEATURED)} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -2384,6 +2415,13 @@ export const PrintoutCertificate: Story = {
     const sheet = canvas.getByRole('article', { name: 'Certificate: Nikola Marković' })
     await expect(sheet).toHaveAttribute('data-orientation', 'landscape')
     await expect(canvas.getByText('Novi Sad, 06.10.2026.')).toBeVisible()
+    // Two electronic signature fields with their places in the PDF, on the one page.
+    const fields = [...sheet.querySelectorAll<HTMLElement>('[data-signature-field]')]
+    await expect(fields.map((field) => field.dataset.signatureField)).toEqual([
+      'officer',
+      'director',
+    ])
+    await expect(fields.map((field) => field.dataset.pdfPage)).toEqual(['1', '1'])
     await expect(
       canvas.getByRole('link', { name: 'Back to Bezbednost i zdravlje na radu' }),
     ).toBeVisible()
@@ -2516,6 +2554,7 @@ export const SiteTimesheetPhone: Story = {
  */
 export const SiteTimesheetLocked: Story = {
   name: 'Site timesheet, locked after payroll',
+  tags: ['!dev'],
   render: () => <ExampleApp start={G_ROUTES.timesheetLocked} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -2532,6 +2571,7 @@ export const SiteTimesheetLocked: Story = {
 /** Phone: the locked month on Vladimir Tomić, whose day was corrected. */
 export const SiteTimesheetLockedPhone: Story = {
   name: 'Site timesheet, locked after payroll, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={G_ROUTES.timesheetLockedWorker} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -2602,7 +2642,7 @@ export const StoreShiftsPhone: Story = {
 
 export const StoreShiftsPublish: Story = {
   name: 'Store shifts, publish, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={G_ROUTES.storePlanner} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -2612,13 +2652,61 @@ export const StoreShiftsPublish: Story = {
     await expect(dialog).toHaveTextContent(
       `${String(STORE_PUBLISH.shifts)} shifts for ${String(STORE_PUBLISH.people)} people`,
     )
-    await userEvent.click(within(dialog).getByRole('button', { name: /^Publish/ }))
+    // The messages are a choice (P5.28 item 9): the app's checked by the store, the SMS not.
     await expect(
-      await within(document.body).findByText(/Changes published\. 8 people were notified\./),
+      within(dialog).getByRole('checkbox', { name: /^Notify 8 people in the app/ }),
+    ).toBeChecked()
+    await userEvent.click(
+      within(dialog).getByRole('checkbox', { name: /^Send an SMS to the 2 people/ }),
+    )
+    await userEvent.click(
+      within(dialog).getByRole('button', { name: 'Publish changes and notify' }),
+    )
+    await expect(
+      await within(document.body).findByText(
+        'Changes published. 8 people get a message in the app. 2 also get an SMS.',
+      ),
     ).toBeInTheDocument()
     await waitFor(async () => {
       await expect(canvas.queryByText('Changed since publishing')).toBeNull()
     })
+  },
+}
+
+/**
+ * "Publish changes" asked (P5.28 item 9): the counts and the open conflicts, then the messages as
+ * a choice — "Notify 8 people in the app" checked by the store, an SMS to the two people whose
+ * shifts changed not checked; the button says "Publish changes and notify" while one is checked.
+ */
+export const StoreShiftsPublishAsked: Story = {
+  name: 'Store shifts, publish asked',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={G_ROUTES.storePublish} />,
+  play: async () => {
+    await settle()
+    const dialog = within(
+      within(document.body).getByRole('alertdialog', { name: 'Publish the schedule?' }),
+    )
+    await expect(
+      dialog.getByRole('checkbox', { name: /^Notify 8 people in the app/ }),
+    ).toBeChecked()
+    await expect(
+      dialog.getByRole('checkbox', { name: /^Send an SMS to the 2 people/ }),
+    ).not.toBeChecked()
+    await expect(dialog.getByRole('button', { name: 'Publish changes and notify' })).toBeVisible()
+  },
+}
+
+export const StoreShiftsPublishAskedPhone: Story = {
+  name: 'Store shifts, publish asked, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={G_ROUTES.storePublish} />,
+  play: async () => {
+    await settle()
+    const dialog = within(
+      within(document.body).getByRole('alertdialog', { name: 'Publish the schedule?' }),
+    )
+    await expect(dialog.getByRole('button', { name: 'Publish changes and notify' })).toBeVisible()
   },
 }
 
@@ -2652,22 +2740,24 @@ export const StoreMyShifts: Story = {
 /** A swap request being written for Thursday 15.10., with the colleagues who may take it. */
 export const StoreSwapRequestPhone: Story = {
   name: 'Store, my shifts, swap request, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={G_ROUTES.myShiftsSwap} />,
   play: async () => {
     await settle()
     await expect(
-      within(document.body).getByRole('dialog', { name: 'Request a swap' }),
+      within(document.body).getByRole('dialog', { name: /^Request a swap / }),
     ).toHaveTextContent('07:00')
   },
 }
 
 export const StoreSwapRequest: Story = {
   name: 'Store, my shifts, swap request',
+  tags: ['!dev'],
   render: () => <ExampleApp start={G_ROUTES.myShiftsSwap} />,
   play: async () => {
     await settle()
     await expect(
-      within(document.body).getByRole('dialog', { name: 'Request a swap' }),
+      within(document.body).getByRole('dialog', { name: /^Request a swap / }),
     ).toBeVisible()
   },
 }
@@ -2692,6 +2782,7 @@ export const StoreSwapRequests: Story = {
 /** Sanja Vuković's request: the check warns that Nemanja would go over his contract's hours. */
 export const StoreSwapRequestWarning: Story = {
   name: 'Store, swap requests, a warning',
+  tags: ['!dev'],
   render: () => <ExampleApp start={G_ROUTES.swapRequestWarning} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -2713,6 +2804,7 @@ export const StoreSwapRequestsPhone: Story = {
 
 export const StoreSwapRequestWarningPhone: Story = {
   name: 'Store, swap requests, a warning, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={G_ROUTES.swapRequestWarning} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -2723,7 +2815,7 @@ export const StoreSwapRequestWarningPhone: Story = {
 
 export const StoreSwapRequestsReject: Story = {
   name: 'Store, swap requests, reject, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={G_ROUTES.swapRequestWarning} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -2776,6 +2868,7 @@ export const EmergencyShiftsPhone: Story = {
 /** "Apply rotation…" open: the pattern, the people, the dates and the offset per person. */
 export const EmergencyRotation: Story = {
   name: 'Emergency shifts, apply a rotation',
+  tags: ['!dev'],
   render: () => <ExampleApp start={G_ROUTES.erRotation} />,
   play: async () => {
     await settle()
@@ -2841,6 +2934,7 @@ export const HealthBookingPhone: Story = {
 /** The free times of dr Marko Stanković next week; nothing chosen, so Book says why it waits. */
 export const HealthBookingTime: Story = {
   name: 'Health, book an appointment, choose a time',
+  tags: ['!dev'],
   render: () => <ExampleApp start={H_ROUTES.bookTime} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -2851,6 +2945,7 @@ export const HealthBookingTime: Story = {
 
 export const HealthBookingTimePhone: Story = {
   name: 'Health, book an appointment, choose a time, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={H_ROUTES.bookTime} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -2862,6 +2957,7 @@ export const HealthBookingTimePhone: Story = {
 /** Wednesday 14.10. at 11:30 chosen: the appointment in words, then Book. */
 export const HealthBookingConfirm: Story = {
   name: 'Health, book an appointment, confirm',
+  tags: ['!dev'],
   render: () => <ExampleApp start={H_ROUTES.bookConfirm} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -2872,6 +2968,7 @@ export const HealthBookingConfirm: Story = {
 
 export const HealthBookingConfirmPhone: Story = {
   name: 'Health, book an appointment, confirm, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={H_ROUTES.bookConfirm} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -2883,6 +2980,7 @@ export const HealthBookingConfirmPhone: Story = {
 /** Booked: the confirmation, the appointment, and a link to the clinic's schedule of that day. */
 export const HealthBooked: Story = {
   name: 'Health, appointment booked',
+  tags: ['!dev'],
   render: () => <ExampleApp start={H_ROUTES.booked} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -2893,6 +2991,7 @@ export const HealthBooked: Story = {
 
 export const HealthBookedPhone: Story = {
   name: 'Health, appointment booked, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={H_ROUTES.booked} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -2904,7 +3003,7 @@ export const HealthBookedPhone: Story = {
 /** The whole booking from the keyboard and pointer, then on to the clinic's schedule. */
 export const HealthBookingWalk: Story = {
   name: 'Health, booking, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={H_ROUTES.book} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -2912,7 +3011,7 @@ export const HealthBookingWalk: Story = {
     await userEvent.click(canvas.getByRole('button', { name: 'Continue' }))
     await settle()
     // The slot's name: its time range and the day in words.
-    const day = SERBIAN_G.dateLong('2026-10-14')
+    const day = EXAMPLE_FORMAT.dateLong('2026-10-14')
     const radio = (await canvas.findAllByRole('radio')).find((each) => {
       const name = each.getAttribute('aria-label') ?? ''
       return name.startsWith('11:30') && name.includes(day)
@@ -2932,7 +3031,8 @@ export const HealthBookingWalk: Story = {
 /**
  * The clinic's schedule of Wednesday 14.10.2026 (ResourceSchedule): three doctors and the
  * laboratory; the break and dr Vesna Lukić's annual leave hatched with their reasons; Jovana
- * Nikolić's appointment booked online at 11:30. Opening it shows her finding.
+ * Nikolić's appointment booked online at 11:30; "now" (09:40) marked across the rows. Opening it
+ * shows her finding.
  */
 export const HealthClinicSchedule: Story = {
   name: 'Health, clinic schedule',
@@ -2941,6 +3041,8 @@ export const HealthClinicSchedule: Story = {
     await settle()
     await expect(canvasElement).toHaveTextContent(PATIENT.name)
     await expect(canvasElement).toHaveTextContent('Annual leave')
+    // The time grids' one "now" marker at the clinic's clock (P5.28 item 10).
+    await expect(within(canvasElement).getByRole('img', { name: 'Now, 09:40' })).toBeInTheDocument()
   },
 }
 
@@ -2954,7 +3056,10 @@ export const HealthClinicSchedulePhone: Story = {
   },
 }
 
-/** dr Marko Stanković's week (CalendarView), his appointments and the team meeting. */
+/**
+ * dr Marko Stanković's week (CalendarView), his appointments and the team meeting, seen on the
+ * day of Jovana's appointment at 09:40: the week from Monday, "now" on Wednesday's column.
+ */
 export const HealthDoctorCalendar: Story = {
   name: 'Health, doctor’s calendar',
   render: () => <ExampleApp start={H_ROUTES.doctorCalendar} />,
@@ -2965,6 +3070,12 @@ export const HealthDoctorCalendar: Story = {
         name: new RegExp(`${PATIENT.name}, Check-up`),
       }),
     ).toBeVisible()
+    // English names, the tenant's digits, the week from Monday (P5.28 item 2); "now" marked.
+    await expect(canvasElement.querySelector('[data-slot="calendar-view"] h2')).toHaveTextContent(
+      '12.10.2026. – 18.10.2026.',
+    )
+    await expect(canvasElement).toHaveTextContent('Wednesday, October 14, 2026')
+    await expect(within(canvasElement).getByRole('img', { name: 'Now, 09:40' })).toBeInTheDocument()
   },
 }
 
@@ -2988,10 +3099,10 @@ export const HealthFinding: Story = {
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('button', { name: 'Show Diagnosis' })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Show diagnosis' })).toBeVisible()
     await expect(canvasElement).not.toHaveTextContent(FINDING.diagnosis)
     await expect(canvasElement).toHaveTextContent(
-      SERBIAN_G.dateLong(JOVANA_BOOKING.start.slice(0, 10)),
+      EXAMPLE_FORMAT.dateLong(JOVANA_BOOKING.start.slice(0, 10)),
     )
   },
 }
@@ -3009,22 +3120,24 @@ export const HealthFindingPhone: Story = {
 /** "Show" asks why: the reasons from the application, Other, and the note that it is logged. */
 export const HealthFindingReason: Story = {
   name: 'Health, finding, reason asked',
+  tags: ['!dev'],
   render: () => <ExampleApp start={H_ROUTES.findingAsk} />,
   play: async () => {
     await settle()
     await expect(
-      within(document.body).getByRole('dialog', { name: 'Show Diagnosis' }),
+      within(document.body).getByRole('dialog', { name: /^Show diagnosis Jovana Nikolić/ }),
     ).toHaveTextContent('Access is logged')
   },
 }
 
 export const HealthFindingReasonPhone: Story = {
   name: 'Health, finding, reason asked, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={H_ROUTES.findingAsk} />,
   play: async () => {
     await settle()
     await expect(
-      within(document.body).getByRole('dialog', { name: 'Show Diagnosis' }),
+      within(document.body).getByRole('dialog', { name: /^Show diagnosis Jovana Nikolić/ }),
     ).toBeVisible()
   },
 }
@@ -3032,40 +3145,41 @@ export const HealthFindingReasonPhone: Story = {
 /** The diagnosis shown after a reason, with Hide. */
 export const HealthFindingShown: Story = {
   name: 'Health, finding, diagnosis shown',
+  tags: ['!dev'],
   render: () => <ExampleApp start={H_ROUTES.findingShown} />,
   play: async ({ canvasElement }) => {
     await settle()
     await expect(canvasElement).toHaveTextContent(FINDING.diagnosis)
     await expect(
-      within(canvasElement).getByRole('button', { name: 'Hide Diagnosis' }),
+      within(canvasElement).getByRole('button', { name: 'Hide diagnosis' }),
     ).toBeVisible()
   },
 }
 
 export const HealthFindingReveal: Story = {
   name: 'Health, finding, reveal, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={H_ROUTES.finding} />,
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
-    await userEvent.click(canvas.getByRole('button', { name: 'Show Diagnosis' }))
-    const dialog = await within(document.body).findByRole('dialog', { name: 'Show Diagnosis' })
+    await userEvent.click(canvas.getByRole('button', { name: 'Show diagnosis' }))
+    const dialog = await within(document.body).findByRole('dialog', { name: /^Show diagnosis/ })
     await userEvent.click(
       within(dialog).getByRole('radio', { name: 'I am treating the patient now' }),
     )
     await userEvent.click(within(dialog).getByRole('button', { name: 'Show' }))
     await expect(await canvas.findByText(FINDING.diagnosis)).toBeVisible()
     // The dialog has closed (until then the page behind it is hidden from assistive technology).
-    await userEvent.click(await canvas.findByRole('button', { name: 'Hide Diagnosis' }))
+    await userEvent.click(await canvas.findByRole('button', { name: 'Hide diagnosis' }))
     await expect(canvasElement).not.toHaveTextContent(FINDING.diagnosis)
   },
 }
 
 /**
  * School (P5.17): class 7/2 of OŠ "Jovan Popović", 2026/27 — the week by periods with their
- * times, Wednesday's written test and Thursday's substitute; lesson 3 running now ("Now"), with
- * a link to mark its attendance.
+ * times, Wednesday's written test and Thursday's substitute; lesson 3 running now (the "now"
+ * marker at 10:05), with a link to mark its attendance.
  */
 export const SchoolTimetable: Story = {
   name: 'School, timetable 7/2',
@@ -3119,7 +3233,7 @@ export const SchoolAttendancePhone: Story = {
 
 export const SchoolAttendanceMarking: Story = {
   name: 'School, attendance, marking, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={H_ROUTES.attendance} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -3182,16 +3296,29 @@ export const SchoolParentPortalPhone: Story = {
 
 export const SchoolParentPortalExcuse: Story = {
   name: 'School, parents’ portal, excuse, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={H_ROUTES.parent} />,
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
-    await userEvent.click(canvas.getByRole('button', { name: 'Excuse today’s absences' }))
+    const body = within(document.body)
+    await userEvent.click(canvas.getByRole('button', { name: 'Excuse absences…' }))
+    const drawer = await body.findByRole('dialog', { name: /^Excuse absences Luka Jovanović/ })
+    // Today's absences are chosen; the reason is asked before anything is sent.
+    await expect(within(drawer).getAllByRole('checkbox', { checked: true })).toHaveLength(2)
+    await userEvent.click(within(drawer).getByRole('button', { name: 'Send' }))
+    await expect(drawer).toHaveTextContent('Choose a reason.')
+    await userEvent.click(within(drawer).getByRole('radio', { name: 'Doctor’s appointment' }))
+    await userEvent.click(within(drawer).getByRole('button', { name: 'Send' }))
     await expect(
-      await within(document.body).findByText('Sent to the class teacher, Dragana Simić.'),
+      await body.findByText('Excuse sent to the class teacher, Dragana Simić.'),
     ).toBeInTheDocument()
+    await expect(canvasElement).toHaveTextContent('Excuse sent, waiting for the class teacher')
     await expect(canvasElement).not.toHaveTextContent('Today’s absences are not excused yet')
+    // The drawer has closed (until then the page behind it is hidden from assistive technology).
+    await waitFor(async () => {
+      await expect(body.queryByRole('dialog')).toBeNull()
+    })
   },
 }
 
@@ -3271,6 +3398,7 @@ export const PosCheckout: Story = {
 /** Paying cash: 2.000,00 RSD tendered (the first banknote offered), the change 93,00 RSD. */
 export const PosCash: Story = {
   name: 'POS checkout, paying cash',
+  tags: ['!dev'],
   render: () => <ExampleApp start={I_ROUTES.posCash} />,
   play: async () => {
     await settle()
@@ -3285,6 +3413,7 @@ export const PosCash: Story = {
 /** Paying by card: the terminal waits for the customer; the dialog cannot be dismissed. */
 export const PosCardWaiting: Story = {
   name: 'POS checkout, card waiting',
+  tags: ['!dev'],
   render: () => <ExampleApp start={I_ROUTES.posCardWaiting} />,
   play: async () => {
     await settle()
@@ -3297,6 +3426,7 @@ export const PosCardWaiting: Story = {
 /** The terminal approved the card: "Complete payment" can be pressed. */
 export const PosCardApproved: Story = {
   name: 'POS checkout, card approved',
+  tags: ['!dev'],
   render: () => <ExampleApp start={I_ROUTES.posCardApproved} />,
   play: async () => {
     await settle()
@@ -3312,6 +3442,7 @@ export const PosCardApproved: Story = {
 /** The sale paid in cash: receipt ZK-01-002318 with the tax per category, cash and change. */
 export const PosReceipt: Story = {
   name: 'POS checkout, receipt',
+  tags: ['!dev'],
   render: () => <ExampleApp start={I_ROUTES.posReceipt} />,
   play: async () => {
     await settle()
@@ -3319,7 +3450,8 @@ export const PosReceipt: Story = {
     const receipt = within(dialog).getByRole('article', { name: 'Receipt' })
     await expect(receipt).toHaveTextContent(BAKERY.name)
     await expect(receipt).toHaveTextContent(tillText(SALE_FIGURES.total))
-    await expect(receipt).toHaveTextContent(tillText(SALE_FIGURES.vatE))
+    // The tax per label is a recap table of amounts without the currency (P5.28).
+    await expect(receipt).toHaveTextContent(SERBIAN_I.number(SALE_FIGURES.vatE, { decimals: 2 }))
     await expect(receipt).toHaveTextContent(tillText(SALE_FIGURES.change))
   },
 }
@@ -3327,6 +3459,7 @@ export const PosReceipt: Story = {
 /** The connection lost: three sales wait on the till, selling goes on. */
 export const PosOffline: Story = {
   name: 'POS checkout, offline',
+  tags: ['!dev'],
   render: () => <ExampleApp start={I_ROUTES.posOffline} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -3345,7 +3478,7 @@ export const PosOffline: Story = {
  */
 export const PosScanInteraction: Story = {
   name: 'POS checkout, scanning, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={I_ROUTES.pos} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -3370,7 +3503,7 @@ export const PosScanInteraction: Story = {
 /** Charge, the 2.000,00 banknote, Complete payment, then the receipt. */
 export const PosPayInteraction: Story = {
   name: 'POS checkout, paying cash, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={I_ROUTES.pos} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -3411,6 +3544,7 @@ export const PosPhone: Story = {
 /** Phone: the products sheet open over the cart. */
 export const PosPhoneProducts: Story = {
   name: 'POS checkout, phone, products',
+  tags: ['!dev'],
   render: () => <OnPhone start={I_ROUTES.posProducts} />,
   play: async () => {
     await settle()
@@ -3423,6 +3557,7 @@ export const PosPhoneProducts: Story = {
 /** Phone: paying cash. */
 export const PosPhoneCash: Story = {
   name: 'POS checkout, phone, paying cash',
+  tags: ['!dev'],
   render: () => <OnPhone start={I_ROUTES.posCash} />,
   play: async () => {
     await settle()
@@ -3453,6 +3588,7 @@ export const PickingHandheld: Story = {
 /** The location confirmed: scan the item. */
 export const PickingHandheldItem: Story = {
   name: 'Warehouse picking, handheld, item',
+  tags: ['!dev'],
   render: () => <OnHandheld start={I_ROUTES.pickingItem} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -3465,6 +3601,7 @@ export const PickingHandheldItem: Story = {
 /** Both scanned: confirm the quantity, 18 packs by default. */
 export const PickingHandheldQuantity: Story = {
   name: 'Warehouse picking, handheld, quantity',
+  tags: ['!dev'],
   render: () => <OnHandheld start={I_ROUTES.pickingQuantity} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -3477,11 +3614,12 @@ export const PickingHandheldQuantity: Story = {
 /** Skipping line 5: the reason asked from the warehouse's list. */
 export const PickingHandheldSkip: Story = {
   name: 'Warehouse picking, handheld, skipping a line',
+  tags: ['!dev'],
   render: () => <OnHandheld start={I_ROUTES.pickingSkip} />,
   play: async () => {
     await settle()
     await expect(
-      within(document.body).getByRole('alertdialog', { name: /^Skip Fasadni stiropor/ }),
+      within(document.body).getByRole('alertdialog', { name: /^Skip line Fasadni stiropor/ }),
     ).toBeVisible()
   },
 }
@@ -3489,6 +3627,7 @@ export const PickingHandheldSkip: Story = {
 /** Offline: three changes wait on the handheld; picking goes on. */
 export const PickingHandheldOffline: Story = {
   name: 'Warehouse picking, handheld, offline',
+  tags: ['!dev'],
   render: () => <OnHandheld start={I_ROUTES.pickingOffline} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -3499,7 +3638,7 @@ export const PickingHandheldOffline: Story = {
 /** Scan B-03-04, scan the boards, confirm 18: "5 of 12", and line 6 opens at B-05-02. */
 export const PickingHandheldInteraction: Story = {
   name: 'Warehouse picking, handheld, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <OnHandheld start={I_ROUTES.picking} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -3550,7 +3689,7 @@ export const StockCountHandheld: Story = {
 /** One Q188 sheet less (it was a Q131): the count goes to 13 and the application's difference to +1. */
 export const StockCountHandheldInteraction: Story = {
   name: 'Stock count, handheld, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <OnHandheld start={I_ROUTES.count} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -3619,6 +3758,7 @@ export const HotelRackPhone: Story = {
 /** Room 204 in its drawer: Paolo Bianchi departs today, the folio's balance, Check out. */
 export const HotelDeparture: Story = {
   name: 'Hotel, departing guest',
+  tags: ['!dev'],
   render: () => <ExampleApp start={L_ROUTES.rackRoom} />,
   play: async ({ canvasElement }) => {
     const drawer = await within(document.body).findByRole('dialog', { name: 'Room 204' })
@@ -3633,6 +3773,7 @@ export const HotelDeparture: Story = {
 
 export const HotelDeparturePhone: Story = {
   name: 'Hotel, departing guest, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={L_ROUTES.rackRoom} />,
   play: async () => {
     const drawer = await within(document.body).findByRole('dialog', { name: 'Room 204' })
@@ -3644,6 +3785,7 @@ export const HotelDeparturePhone: Story = {
 /** Room 104: a VIP arriving today, the room inspected and the stay prepaid; Check in. */
 export const HotelArrival: Story = {
   name: 'Hotel, VIP arrival',
+  tags: ['!dev'],
   render: () => <ExampleApp start={L_ROUTES.rackArrival} />,
   play: async () => {
     const drawer = await within(document.body).findByRole('dialog', { name: 'Room 104' })
@@ -3656,6 +3798,7 @@ export const HotelArrival: Story = {
 
 export const HotelArrivalPhone: Story = {
   name: 'Hotel, VIP arrival, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={L_ROUTES.rackArrival} />,
   play: async () => {
     const drawer = await within(document.body).findByRole('dialog', { name: 'Room 104' })
@@ -3667,7 +3810,7 @@ export const HotelArrivalPhone: Story = {
 /** Checking out: the room turns vacant and dirty, the counts follow. */
 export const HotelCheckOutInteraction: Story = {
   name: 'Hotel, check out, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={L_ROUTES.rackRoom} />,
   play: async ({ canvasElement }) => {
     const drawer = await within(document.body).findByRole('dialog', { name: 'Room 204' })
@@ -3714,6 +3857,111 @@ export const HotelBookingsPhone: Story = {
   },
 }
 
+/**
+ * A booking opened in place (P5.28 item 17): Claire Martin's stay in a drawer over the same
+ * timeline; the Bookings tab stays current.
+ */
+export const HotelBookingOpen: Story = {
+  name: 'Hotel, bookings, a booking',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={L_ROUTES.timelineStay} />,
+  play: async ({ canvasElement }) => {
+    const drawer = await within(document.body).findByRole('dialog', { name: 'Claire Martin' })
+    await settle()
+    await expect(drawer).toHaveTextContent('Room 101')
+    await expect(drawer).toHaveTextContent('3 nights')
+    await expect(
+      within(canvasElement).getByRole('heading', { level: 1, name: 'Bookings', hidden: true }),
+    ).toBeInTheDocument()
+  },
+}
+
+export const HotelBookingOpenPhone: Story = {
+  name: 'Hotel, bookings, a booking, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={L_ROUTES.timelineStay} />,
+  play: async () => {
+    const dialog = await within(document.body).findByRole('dialog', { name: 'Claire Martin' })
+    await settle()
+    await expect(dialog).toBeVisible()
+  },
+}
+
+/**
+ * A stay moved on the timeline only proposes (P5.28 item 9): "Move stay" with the room and the
+ * dates old → new and the guest's e-mail as a choice, checked as the hotel sets it.
+ */
+export const HotelStayMove: Story = {
+  name: 'Hotel, bookings, moving a stay',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={L_ROUTES.timelineMove} />,
+  play: async () => {
+    const dialog = await within(document.body).findByRole('dialog', {
+      name: 'Move stay Dragan Lazić',
+    })
+    await settle()
+    const changes = within(dialog).getByRole('list', { name: 'Changes' })
+    await expect(changes).toHaveTextContent('Room 103After:Room 105')
+    await expect(within(changes).getAllByRole('listitem')).toHaveLength(2)
+    await expect(
+      within(dialog).getByRole('checkbox', { name: /^Notify Dragan Lazić by e-mail/ }),
+    ).toBeChecked()
+    await expect(within(dialog).getByRole('button', { name: 'Save and notify' })).toBeVisible()
+  },
+}
+
+export const HotelStayMovePhone: Story = {
+  name: 'Hotel, bookings, moving a stay, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={L_ROUTES.timelineMove} />,
+  play: async () => {
+    const dialog = await within(document.body).findByRole('dialog', {
+      name: 'Move stay Dragan Lazić',
+    })
+    await settle()
+    await expect(dialog).toBeVisible()
+  },
+}
+
+/**
+ * A booking opens in its drawer and closes again on the same tab; "Move to…" a stay asks first,
+ * and Save moves it and says the guest gets an e-mail.
+ */
+export const HotelBookingsInteraction: Story = {
+  name: 'Hotel, bookings, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={L_ROUTES.timeline} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const body = within(document.body)
+    await userEvent.click(canvas.getByRole('button', { name: /^Claire Martin, Room 101, / }))
+    const stay = await body.findByRole('dialog', { name: 'Claire Martin' })
+    await waitFor(async () => {
+      await expect(stay).toBeVisible()
+    })
+    await userEvent.keyboard('{Escape}')
+    await waitFor(async () => {
+      await expect(body.queryByRole('dialog')).toBeNull()
+    })
+    await expect(canvas.getByRole('heading', { level: 1, name: 'Bookings' })).toBeVisible()
+    await userEvent.click(canvas.getByRole('button', { name: 'Move to…: Dragan Lazić' }))
+    const panel = await body.findByRole('dialog', { name: 'Move to…: Dragan Lazić' })
+    await userEvent.click(within(panel).getByRole('combobox', { name: 'Room' }))
+    await userEvent.click(await body.findByRole('option', { name: 'Room 105' }))
+    await userEvent.click(await within(panel).findByRole('button', { name: 'Move' }))
+    const dialog = await body.findByRole('dialog', { name: 'Move stay Dragan Lazić' })
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Save and notify' }))
+    await waitFor(async () => {
+      await expect(body.getByText('Stay moved. Dragan Lazić gets an e-mail.')).toBeVisible()
+    })
+    await waitFor(async () => {
+      await expect(canvas.getByRole('button', { name: /^Dragan Lazić, Room 105, / })).toBeVisible()
+    })
+    notice.dismiss()
+  },
+}
+
 /** Housekeeping on floor 3: the rooms to clean (the Dirty chip pressed). */
 export const HotelHousekeeping: Story = {
   name: 'Hotel, housekeeping',
@@ -3741,6 +3989,7 @@ export const HotelHousekeepingPhone: Story = {
 /** Room 306 open on the phone: Start cleaning, then Mark clean (the main action, last). */
 export const HotelMarkCleanPhone: Story = {
   name: 'Hotel, housekeeping, room, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={L_ROUTES.housekeepingRoom} />,
   play: async () => {
     const drawer = await within(document.body).findByRole('dialog', { name: 'Room 306' })
@@ -3752,6 +4001,7 @@ export const HotelMarkCleanPhone: Story = {
 
 export const HotelMarkClean: Story = {
   name: 'Hotel, housekeeping, room',
+  tags: ['!dev'],
   render: () => <ExampleApp start={L_ROUTES.housekeepingRoom} />,
   play: async () => {
     const drawer = await within(document.body).findByRole('dialog', { name: 'Room 306' })
@@ -3763,7 +4013,7 @@ export const HotelMarkClean: Story = {
 /** Mark clean: the room leaves the list of rooms to clean. */
 export const HotelMarkCleanInteraction: Story = {
   name: 'Hotel, mark clean, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <OnPhone start={L_ROUTES.housekeepingRoom} />,
   play: async ({ canvasElement }) => {
     const drawer = await within(document.body).findByRole('dialog', { name: 'Room 306' })
@@ -3776,6 +4026,22 @@ export const HotelMarkCleanInteraction: Story = {
     })
     await waitFor(async () => {
       await expect(within(canvasElement).getByText('4 of 10 shown')).toBeVisible()
+    })
+    notice.dismiss()
+  },
+}
+
+/** Start cleaning on a phone: room 306 leaves the rooms to clean (P5.28 item 25). */
+export const HotelStartCleaningInteraction: Story = {
+  name: 'Hotel, start cleaning, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <OnPhone start={L_ROUTES.housekeepingRoom} />,
+  play: async ({ canvasElement }) => {
+    const drawer = await within(document.body).findByRole('dialog', { name: 'Room 306' })
+    await settle()
+    await userEvent.click(within(drawer).getByRole('button', { name: 'Start cleaning' }))
+    await waitFor(async () => {
+      await expect(within(canvasElement).getByText('4 of 10 shown')).toBeInTheDocument()
     })
     notice.dismiss()
   },
@@ -3838,46 +4104,180 @@ export const RestaurantServicePhone: Story = {
 /** Opening free table 4 for a walk-in party: how many guests. */
 export const RestaurantOpenTable: Story = {
   name: 'Restaurant service, opening a table',
+  tags: ['!dev'],
   render: () => <ExampleApp start={K_ROUTES.floorOpen} />,
   play: async () => {
     await settle()
-    const dialog = within(document.body).getByRole('dialog', { name: 'Open Table 4' })
+    // The action, then the table on its own line (P5.28 item 6).
+    const dialog = within(document.body).getByRole('dialog', { name: 'Open table Table 4' })
     await expect(within(dialog).getByRole('textbox', { name: 'Guests' })).toHaveValue('2')
   },
 }
 
 export const RestaurantOpenTablePhone: Story = {
   name: 'Restaurant service, opening a table, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={K_ROUTES.floorOpen} />,
   play: async () => {
     await settle()
-    await expect(within(document.body).getByRole('dialog', { name: 'Open Table 4' })).toBeVisible()
+    await expect(
+      within(document.body).getByRole('dialog', { name: 'Open table Table 4' }),
+    ).toBeVisible()
   },
 }
 
-/** Moving table 5's party of three: the free tables with seats enough. */
+/**
+ * Moving table 5's party of three (P5.28 items 6, 9, 25): the free tables with seats enough,
+ * best first (the same area, the fewest seats left over), and the change old → new; Move.
+ */
 export const RestaurantMoveGuests: Story = {
   name: 'Restaurant service, moving guests',
+  tags: ['!dev'],
   render: () => <ExampleApp start={K_ROUTES.floorMove} />,
   play: async () => {
     await settle()
     const dialog = within(document.body).getByRole('dialog', {
-      name: 'Move guests from Table 5',
+      name: 'Move guests Table 5 · 3 guests',
     })
-    await expect(within(dialog).getByRole('combobox', { name: 'To table' })).toHaveTextContent(
-      'Table 4 · Sala · 4 seats',
+    const tables = within(dialog).getByRole('radiogroup', { name: 'Free tables with enough seats' })
+    await expect(within(tables).getAllByRole('radio')).toHaveLength(4)
+    await expect(within(tables).getByRole('radio', { name: /^Table 4/ })).toBeChecked()
+    await expect(within(dialog).getByRole('list', { name: 'Changes' })).toHaveTextContent(
+      'Table 5 · Sala · 4 seatsAfter:Table 4 · Sala · 4 seats',
     )
+    await expect(within(dialog).getByRole('button', { name: 'Move' })).toBeVisible()
   },
 }
 
 export const RestaurantMoveGuestsPhone: Story = {
   name: 'Restaurant service, moving guests, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={K_ROUTES.floorMove} />,
   play: async () => {
     await settle()
     await expect(
-      within(document.body).getByRole('dialog', { name: 'Move guests from Table 5' }),
+      within(document.body).getByRole('dialog', { name: 'Move guests Table 5 · 3 guests' }),
     ).toBeVisible()
+  },
+}
+
+/**
+ * Table 8's reservation for six (P5.28 item 25, the owner's case): no free table seats six, so the
+ * dialog says so and offers to merge tables — never an empty list.
+ */
+export const RestaurantMoveNoTable: Story = {
+  name: 'Restaurant service, no table for the party',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={K_ROUTES.floorMoveNone} />,
+  play: async () => {
+    await settle()
+    const dialog = within(document.body).getByRole('dialog', {
+      name: 'Move guests Table 8 · Kovačević, 6 guests',
+    })
+    await expect(dialog).toHaveTextContent('No free table seats 6 guests')
+    await expect(
+      within(dialog).getByRole('button', { name: 'Merge tables in the floor plan' }),
+    ).toBeVisible()
+  },
+}
+
+export const RestaurantMoveNoTablePhone: Story = {
+  name: 'Restaurant service, no table for the party, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={K_ROUTES.floorMoveNone} />,
+  play: async () => {
+    await settle()
+    await expect(
+      within(document.body).getByRole('dialog', {
+        name: 'Move guests Table 8 · Kovačević, 6 guests',
+      }),
+    ).toBeVisible()
+  },
+}
+
+/** One area at a time (P5.28 item 26): the terrace alone, fitted to the width. */
+export const RestaurantTerrace: Story = {
+  name: 'Restaurant service, the terrace',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={K_ROUTES.floorTerrace} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(within(canvasElement).getByRole('radio', { name: 'Terasa' })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    )
+    await expect(canvasElement.querySelector('[data-floor-item="t1"]')).toBeNull()
+    await expect(floorItem(canvasElement, 't13')).toHaveTextContent('132 guests')
+    await expectNoPageScroll(canvasElement)
+  },
+}
+
+export const RestaurantTerracePhone: Story = {
+  name: 'Restaurant service, the terrace, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={K_ROUTES.floorTerrace} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(within(canvasElement).queryByRole('heading', { name: 'Sala' })).toBeNull()
+    await expect(within(canvasElement).getByRole('heading', { name: 'Terasa' })).toBeVisible()
+    await expectNoPageScroll(canvasElement)
+  },
+}
+
+/**
+ * Takeaway and delivery are the till's order channels beside dine-in, not areas of the plan
+ * (P5.28 item 26): two takeaway orders, the next step on each.
+ */
+export const RestaurantTakeaway: Story = {
+  name: 'Restaurant service, takeaway orders',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={K_ROUTES.floorTakeaway} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('tab', { name: 'Takeaway (2)' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    )
+    await expect(canvas.getByRole('heading', { name: /^T-041/ })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Handed over' })).toBeVisible()
+  },
+}
+
+export const RestaurantTakeawayPhone: Story = {
+  name: 'Restaurant service, takeaway orders, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={K_ROUTES.floorTakeaway} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(within(canvasElement).getByRole('heading', { name: /^T-042/ })).toBeVisible()
+    await expectNoPageScroll(canvasElement)
+  },
+}
+
+/** A takeaway order made ready, then handed over: it leaves the list. */
+export const RestaurantTakeawayInteraction: Story = {
+  name: 'Restaurant service, takeaway, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={K_ROUTES.floorTakeaway} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Mark as ready' }))
+    await waitFor(async () => {
+      await expect(canvas.getAllByRole('button', { name: 'Handed over' })).toHaveLength(2)
+    })
+    const handed = canvas.getAllByRole('button', { name: 'Handed over' })[0]
+    if (handed === undefined) throw new Error('no order to hand over')
+    await userEvent.click(handed)
+    await waitFor(async () => {
+      await expect(canvas.getByRole('tab', { name: 'Takeaway (1)' })).toBeVisible()
+    })
+    await userEvent.click(canvas.getByRole('tab', { name: 'Delivery (1)' }))
+    await userEvent.click(await canvas.findByRole('button', { name: 'Mark as ready' }))
+    await userEvent.click(await canvas.findByRole('button', { name: 'Out for delivery' }))
+    await expect(await canvas.findByRole('button', { name: 'Delivered' })).toBeVisible()
+    notice.dismiss()
   },
 }
 
@@ -3887,7 +4287,7 @@ export const RestaurantMoveGuestsPhone: Story = {
  */
 export const RestaurantServiceInteraction: Story = {
   name: 'Restaurant service, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={K_ROUTES.floor} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -3895,7 +4295,7 @@ export const RestaurantServiceInteraction: Story = {
     const body = within(document.body)
     await userEvent.click(floorItem(canvasElement, 't2'))
     await userEvent.click(canvas.getByRole('button', { name: 'Open table' }))
-    let dialog = await body.findByRole('dialog', { name: 'Open Table 2' })
+    let dialog = await body.findByRole('dialog', { name: 'Open table Table 2' })
     await userEvent.click(within(dialog).getByRole('button', { name: 'Open table' }))
     await waitFor(async () => {
       await expect(floorItem(canvasElement, 't2')).toHaveAccessibleName(
@@ -3909,17 +4309,93 @@ export const RestaurantServiceInteraction: Story = {
     await expect(floorItem(canvasElement, 't5')).toHaveFocus()
     // The closed dialog leaves the page hidden from assistive technology until it has gone.
     await userEvent.click(await canvas.findByRole('button', { name: 'Move to table…' }))
-    dialog = await body.findByRole('dialog', { name: 'Move guests from Table 5' })
-    await userEvent.click(within(dialog).getByRole('combobox', { name: 'To table' }))
-    await userEvent.click(await body.findByRole('option', { name: /^Table 10/ }))
-    // The select's list closes first; then the dialog is in use again.
-    await userEvent.click(await within(dialog).findByRole('button', { name: 'Move' }))
+    dialog = await body.findByRole('dialog', { name: 'Move guests Table 5 · 3 guests' })
+    await userEvent.click(within(dialog).getByRole('radio', { name: /^Table 10/ }))
+    await expect(within(dialog).getByRole('list', { name: 'Changes' })).toHaveTextContent(
+      'After:Table 10',
+    )
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Move' }))
     await waitFor(async () => {
       await expect(floorItem(canvasElement, 't5')).toHaveAccessibleName(/Needs cleaning/)
     })
     await expect(floorItem(canvasElement, 't10')).toHaveAccessibleName(
       /^Table 10, 3 guests · 19:20, Occupied/,
     )
+    notice.dismiss()
+  },
+}
+
+/**
+ * The owner's case end to end (P5.28 item 25): table 8's party of six has no free table; "Merge
+ * tables in the floor plan" opens it, tables 11 and 12 are merged and saved, and back on the floor
+ * the party moves to table 11 (eight seats) — the reservation's SMS left unchecked.
+ */
+export const RestaurantMergeAndMoveInteraction: Story = {
+  name: 'Restaurant service, merge and move a party, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={K_ROUTES.floorMoveNone} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const body = within(document.body)
+    let dialog = body.getByRole('dialog', { name: /^Move guests Table 8/ })
+    await userEvent.click(
+      within(dialog).getByRole('button', { name: 'Merge tables in the floor plan' }),
+    )
+    await userEvent.click(
+      await canvas.findByRole('button', { name: 'Merge Table 11 and Table 12' }),
+    )
+    await userEvent.click(canvas.getByRole('button', { name: 'Save floor plan' }))
+    await userEvent.click(canvas.getByRole('link', { name: 'Floor' }))
+    await userEvent.click(await canvas.findByRole('button', { name: /^Table 8,/ }))
+    await userEvent.click(canvas.getByRole('button', { name: 'Move to table…' }))
+    dialog = await body.findByRole('dialog', { name: /^Move guests Table 8/ })
+    await expect(within(dialog).getByRole('radio', { name: /^Table 11/ })).toBeChecked()
+    await expect(
+      within(dialog).getByRole('checkbox', { name: /Notify Kovačević/ }),
+    ).not.toBeChecked()
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Move' }))
+    await waitFor(async () => {
+      await expect(floorItem(canvasElement, 't11')).toHaveAccessibleName(
+        /^Table 11, 20:30 · 6 guests, Reserved, 8 seats, Terasa/,
+      )
+    })
+    await waitFor(async () => {
+      await expect(
+        body.getByText('Guests moved from Table 8 to Table 11. No message was sent.'),
+      ).toBeVisible()
+    })
+    notice.dismiss()
+  },
+}
+
+/**
+ * Every table action of the service (P5.28 item 25): a reservation seated, a table cleared, a
+ * table cleaned — each state on the plan at once.
+ */
+export const RestaurantTableActionsInteraction: Story = {
+  name: 'Restaurant service, seat, clear and clean, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={K_ROUTES.floor} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(floorItem(canvasElement, 't3'))
+    await userEvent.click(canvas.getByRole('button', { name: 'Seat guests' }))
+    await waitFor(async () => {
+      await expect(floorItem(canvasElement, 't3')).toHaveAccessibleName(/^Table 3, .*Occupied/)
+    })
+    await userEvent.click(floorItem(canvasElement, 't7'))
+    await userEvent.click(canvas.getByRole('button', { name: 'Clear table' }))
+    await waitFor(async () => {
+      await expect(floorItem(canvasElement, 't7')).toHaveAccessibleName(/^Table 7, Needs cleaning/)
+    })
+    await userEvent.click(floorItem(canvasElement, 't6'))
+    await userEvent.click(canvas.getByRole('button', { name: 'Mark as clean' }))
+    await waitFor(async () => {
+      await expect(floorItem(canvasElement, 't6')).toHaveAccessibleName(/^Table 6, Free/)
+    })
+    notice.dismiss()
   },
 }
 
@@ -3940,11 +4416,15 @@ export const RestaurantFloorPlanEdit: Story = {
   },
 }
 
+/** On a phone the plan is not edited (P5.28 item 27): a note, no palette, no Save. */
 export const RestaurantFloorPlanEditPhone: Story = {
   name: 'Restaurant floor plan, editing, phone',
   render: () => <OnPhone start={K_ROUTES.floorEdit} />,
   play: async ({ canvasElement }) => {
     await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('Edit the plan on a computer or tablet.')).toBeVisible()
+    await expect(canvas.queryByRole('button', { name: 'Save floor plan' })).toBeNull()
     await expectNoPageScroll(canvasElement)
   },
 }
@@ -3952,6 +4432,7 @@ export const RestaurantFloorPlanEditPhone: Story = {
 /** Tables 11 and 12 merged into one table of eight for the evening. */
 export const RestaurantTablesMerged: Story = {
   name: 'Restaurant floor plan, tables merged',
+  tags: ['!dev'],
   render: () => <ExampleApp start={K_ROUTES.floorMerged} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -3963,13 +4444,14 @@ export const RestaurantTablesMerged: Story = {
 
 export const RestaurantTablesMergedPhone: Story = {
   name: 'Restaurant floor plan, tables merged, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={K_ROUTES.floorMerged} />,
 }
 
 /** Merging by pressing, then moving the merged table with the keys (Space, arrows, Space). */
 export const RestaurantMergeInteraction: Story = {
   name: 'Restaurant floor plan, merging, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={K_ROUTES.floorEdit} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -4013,6 +4495,7 @@ export const CafeTerracePhone: Story = {
 /** Table 3's order on the till: four lines, 1.200,00 RSD, "Bill" last. */
 export const CafeTableTill: Story = {
   name: 'Café terrace, table 3 on the till',
+  tags: ['!dev'],
   render: () => <ExampleApp start={K_ROUTES.terraceTable} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -4031,6 +4514,7 @@ export const CafeTableTill: Story = {
 
 export const CafeTableTillPhone: Story = {
   name: 'Café terrace, table 3 on the till, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={K_ROUTES.terraceTable} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -4041,7 +4525,7 @@ export const CafeTableTillPhone: Story = {
 /** A press on table 3 opens its order; a kapućino more; back to the terrace. */
 export const CafeInteraction: Story = {
   name: 'Café terrace, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={K_ROUTES.terrace} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -4049,7 +4533,8 @@ export const CafeInteraction: Story = {
     await userEvent.click(floorItem(canvasElement, 't3'))
     await expect(await canvas.findByRole('heading', { name: 'Table 3' })).toBeVisible()
     await userEvent.click(canvas.getByRole('button', { name: /^Kapućino/ }))
-    await expect(canvas.getByRole('textbox', { name: 'Quantity, Kapućino' })).toHaveValue('3')
+    // P5.28: a sent line stays as it was sent; the new kapućino waits to be sent.
+    await expect(canvas.getByRole('button', { name: 'Send order (1)' })).toBeVisible()
     await userEvent.click(canvas.getByRole('button', { name: 'Terrace' }))
     await expect(await canvas.findByRole('heading', { name: 'Terrace' })).toBeVisible()
   },
@@ -4085,22 +4570,24 @@ export const GalaSeatingPhone: Story = {
 /** A free seat chosen (table 4, seat 9): the guests to seat there, those not seated first. */
 export const GalaSeatChosen: Story = {
   name: 'Event seating, a seat chosen',
+  tags: ['!dev'],
   render: () => <ExampleApp start={K_ROUTES.seatingSeat} />,
   play: async () => {
     await settle()
     await expect(
-      within(document.body).getByRole('dialog', { name: 'Table 4, seat 9' }),
+      within(document.body).getByRole('dialog', { name: 'Seat a guest Table 4, seat 9' }),
     ).toBeVisible()
   },
 }
 
 export const GalaSeatChosenPhone: Story = {
   name: 'Event seating, a seat chosen, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={K_ROUTES.seatingSeat} />,
   play: async () => {
     await settle()
     await expect(
-      within(document.body).getByRole('dialog', { name: 'Table 4, seat 9' }),
+      within(document.body).getByRole('dialog', { name: 'Seat a guest Table 4, seat 9' }),
     ).toBeVisible()
   },
 }
@@ -4108,24 +4595,27 @@ export const GalaSeatChosenPhone: Story = {
 /** "Seat at…" from a guest's menu: a table with its free seats, then a seat. */
 export const GalaSeatAt: Story = {
   name: 'Event seating, Seat at…',
+  tags: ['!dev'],
   render: () => <ExampleApp start={K_ROUTES.seatingSeatAt} />,
   play: async () => {
     await settle()
     const guest = GALA_GUESTS.find((each) => each.id === 'g113')
     await expect(
-      within(document.body).getByRole('dialog', { name: `Seat ${guest?.name ?? ''}` }),
+      within(document.body).getByRole('dialog', { name: `Choose a seat ${guest?.name ?? ''}` }),
     ).toBeVisible()
   },
 }
 
 export const GalaSeatAtPhone: Story = {
   name: 'Event seating, Seat at…, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={K_ROUTES.seatingSeatAt} />,
 }
 
 /** Table 6's guests in seat order, with the organiser's conflict. */
 export const GalaTableGuests: Story = {
   name: 'Event seating, a table’s guests',
+  tags: ['!dev'],
   render: () => <ExampleApp start={K_ROUTES.seatingTable} />,
   play: async () => {
     await settle()
@@ -4136,26 +4626,95 @@ export const GalaTableGuests: Story = {
 
 export const GalaTableGuestsPhone: Story = {
   name: 'Event seating, a table’s guests, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={K_ROUTES.seatingTable} />,
 }
 
-/** The keyboard's way: Enter on table 4's seat 9, then the first guest not seated: 113 of 140. */
+/**
+ * The keyboard's way: Enter on table 4's seat 9, then the first guest not seated: 113 of 140,
+ * "1 change not saved"; "Save seating…" asks with the change and the guest's e-mail as a choice
+ * (P5.28 item 9), and Save keeps it.
+ */
 export const GalaSeatingInteraction: Story = {
   name: 'Event seating, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={K_ROUTES.seating} />,
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
+    const body = within(document.body)
     floorItem(canvasElement, 't4#9').focus()
     await userEvent.keyboard('{Enter}')
-    const dialog = await within(document.body).findByRole('dialog', { name: 'Table 4, seat 9' })
+    let dialog = await body.findByRole('dialog', { name: 'Seat a guest Table 4, seat 9' })
     const first = within(dialog).getAllByRole('button', { name: /Not seated/ })[0]
     if (first === undefined) throw new Error('no guest to seat')
     await userEvent.click(first)
     await waitFor(async () => {
       await expect(canvas.getByText('113 of 140 seated')).toBeVisible()
     })
+    await expect(canvas.getByText('1 change not saved')).toBeVisible()
+    await userEvent.click(canvas.getByRole('button', { name: 'Save seating…' }))
+    dialog = await body.findByRole('dialog', { name: /^Save seating Gala dinner/ })
+    await expect(within(dialog).getByRole('list', { name: 'Changes' })).toHaveTextContent(
+      'Table 4, seat 9',
+    )
+    await expect(within(dialog).getByRole('checkbox', { name: /^E-mail / })).not.toBeChecked()
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Save' }))
+    await waitFor(async () => {
+      await expect(body.getByText('Seating saved. No message was sent.')).toBeVisible()
+    })
+    await waitFor(async () => {
+      await expect(canvas.queryByText('1 change not saved')).toBeNull()
+    })
+    notice.dismiss()
+  },
+}
+
+/** Three seatings pending, "Save seating…" asked: every guest's seat old → new (P5.28 item 9). */
+export const GalaSeatingPending: Story = {
+  name: 'Event seating, saving the changes',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={K_ROUTES.seatingPending} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(
+      within(canvasElement).getByText('3 changes not saved', { exact: true }),
+    ).toBeInTheDocument()
+    const dialog = within(document.body).getByRole('dialog', { name: /^Save seating Gala dinner/ })
+    await expect(
+      within(within(dialog).getByRole('list', { name: 'Changes' })).getAllByRole('listitem'),
+    ).toHaveLength(3)
+    await expect(
+      within(dialog).getByRole('checkbox', { name: 'E-mail the 3 guests their new seats' }),
+    ).not.toBeChecked()
+  },
+}
+
+export const GalaSeatingPendingPhone: Story = {
+  name: 'Event seating, saving the changes, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={K_ROUTES.seatingPending} />,
+  play: async () => {
+    await settle()
+    await expect(
+      within(document.body).getByRole('dialog', { name: /^Save seating Gala dinner/ }),
+    ).toBeVisible()
+  },
+}
+
+/** Pending seatings discarded: the dialog cancelled, then "Discard changes" (P5.28 item 9). */
+export const GalaSeatingDiscardInteraction: Story = {
+  name: 'Event seating, discarding the changes, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={K_ROUTES.seatingPending} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const dialog = within(document.body).getByRole('dialog', { name: /^Save seating/ })
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }))
+    await userEvent.click(await canvas.findByRole('button', { name: 'Discard changes' }))
+    await expect(canvas.getByText('112 of 140 seated')).toBeVisible()
+    await expect(canvas.queryByText('3 changes not saved')).toBeNull()
   },
 }
 
@@ -4212,6 +4771,7 @@ export const IncomingInvoiceApprovalPhone: Story = {
  */
 export const IncomingInvoiceApprovalDraft: Story = {
   name: 'Incoming invoice approval, draft with two problems',
+  tags: ['!dev'],
   render: () => <ExampleApp start={M_ROUTES.approvalEdit} />,
   play: async ({ canvasElement }) => {
     await diagramReady(canvasElement)
@@ -4228,7 +4788,7 @@ export const IncomingInvoiceApprovalDraft: Story = {
 /** Solving both: Go to the review, connect it on; mark the decision's "Yes" as its default. */
 export const IncomingInvoiceApprovalDraftFixed: Story = {
   name: 'Incoming invoice approval, draft fixed, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={M_ROUTES.approvalEdit} />,
   play: async ({ canvasElement }) => {
     await diagramReady(canvasElement)
@@ -4237,7 +4797,7 @@ export const IncomingInvoiceApprovalDraftFixed: Story = {
     await userEvent.click(canvas.getByRole('button', { name: 'Go to Legal reviews the terms' }))
     await userEvent.click(await canvas.findByRole('button', { name: 'Connect to…' }))
     const connect = await body.findByRole('dialog', {
-      name: 'Connect “Legal reviews the terms” to',
+      name: 'Connect to Legal reviews the terms',
     })
     await quiet()
     await userEvent.click(within(connect).getByRole('radio', { name: /Post to the ledger/ }))
@@ -4251,7 +4811,7 @@ export const IncomingInvoiceApprovalDraftFixed: Story = {
     await userEvent.keyboard(pageRtl(canvasElement) ? '{ArrowLeft}' : '{ArrowRight}')
     await userEvent.keyboard('{Enter}')
     await userEvent.click(canvas.getByRole('button', { name: 'Label…' }))
-    const label = await body.findByRole('dialog', { name: 'Label the connection' })
+    const label = await body.findByRole('dialog', { name: /^Label connection Connection from / })
     await quiet()
     await userEvent.click(within(label).getByRole('checkbox', { name: /Default way out/ }))
     await userEvent.click(within(label).getByRole('button', { name: 'Save' }))
@@ -4302,7 +4862,7 @@ export const BankImportRunPhone: Story = {
 /** Retry: the step runs again, the run is in progress again. */
 export const BankImportRunRetry: Story = {
   name: 'Nightly bank-statement import, retry, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={M_ROUTES.importRun} />,
   play: async ({ canvasElement }) => {
     await diagramReady(canvasElement)
@@ -4362,7 +4922,7 @@ export const LegalSearchPhone: Story = {
 /** Searching other words, sorting, the next page and clearing the filters: the application answers. */
 export const LegalSearchInteraction: Story = {
   name: 'Legal search, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={P_ROUTES.search} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -4406,7 +4966,7 @@ export const GazetteNewsPhone: Story = {
 /** "Show more issues" loads the two older issues. */
 export const GazetteNewsInteraction: Story = {
   name: 'New in the Illustrative Gazette, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={P_ROUTES.gazette} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -4454,6 +5014,7 @@ export const IllustrativeLawPhone: Story = {
 /** Article 57 chosen: the panels narrowed to it — changed twice, two decisions, one opinion. */
 export const IllustrativeLawArticle: Story = {
   name: 'Illustrative law, Article 57 selected',
+  tags: ['!dev'],
   render: () => <ExampleApp start={O_ROUTES.lawArticle} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -4469,6 +5030,7 @@ export const IllustrativeLawArticle: Story = {
 /** On a phone the article's panels open as a sheet. */
 export const IllustrativeLawArticlePhone: Story = {
   name: 'Illustrative law, Article 57 selected, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={O_ROUTES.lawArticle} />,
   play: async () => {
     await settle()
@@ -4482,6 +5044,7 @@ export const IllustrativeLawArticlePhone: Story = {
 /** The law as it stood from 30.06.2018.: Article 20 not yet deleted, no Article 90. */
 export const IllustrativeLawVersion: Story = {
   name: 'Illustrative law, version of 2018',
+  tags: ['!dev'],
   render: () => <ExampleApp start={O_ROUTES.lawVersion} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -4494,6 +5057,7 @@ export const IllustrativeLawVersion: Story = {
 
 export const IllustrativeLawVersionPhone: Story = {
   name: 'Illustrative law, version of 2018, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={O_ROUTES.lawVersion} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -4560,7 +5124,7 @@ export const WorkRulebookPhone: Story = {
  */
 export const IllustrativeLawInteraction: Story = {
   name: 'Illustrative law, an article and a version, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={O_ROUTES.law} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -4607,6 +5171,7 @@ export const IllustrativeLawComparePhone: Story = {
 /** Kvadrat Gradnja's Work Rulebook: the 2022 version against the 2025 version. */
 export const RulebookCompare: Story = {
   name: 'Kvadrat Gradnja work rulebook, compare 2022 and 2025',
+  tags: ['!dev'],
   render: () => <ExampleApp start={O_ROUTES.rulebookCompare} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -4619,7 +5184,7 @@ export const RulebookCompare: Story = {
 /** From the act page: "Compare versions", then another earlier version. */
 export const IllustrativeLawCompareInteraction: Story = {
   name: 'Illustrative law, compare versions, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={O_ROUTES.law} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -4742,6 +5307,7 @@ export const WarehouseFloorPlanPhone: Story = {
 /** A-02-03's record: what the books say it holds, and "Count now" (the handheld's count). */
 export const WarehouseBinCount: Story = {
   name: 'Warehouse floor plan, a bin to count',
+  tags: ['!dev'],
   render: () => <ExampleApp start={N_ROUTES.warehouseBin} />,
   play: async () => {
     await settle()
@@ -4753,6 +5319,7 @@ export const WarehouseBinCount: Story = {
 
 export const WarehouseBinCountPhone: Story = {
   name: 'Warehouse floor plan, a bin to count, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={N_ROUTES.warehouseBin} />,
   play: async () => {
     await settle()
@@ -4763,6 +5330,7 @@ export const WarehouseBinCountPhone: Story = {
 /** B-03-04, the next line of pick list PL-2026-0418: "Pick here" opens the pick list. */
 export const WarehouseBinPick: Story = {
   name: 'Warehouse floor plan, the next pick',
+  tags: ['!dev'],
   render: () => <ExampleApp start={N_ROUTES.warehousePick} />,
   play: async () => {
     await settle()
@@ -4774,6 +5342,7 @@ export const WarehouseBinPick: Story = {
 
 export const WarehouseBinPickPhone: Story = {
   name: 'Warehouse floor plan, the next pick, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={N_ROUTES.warehousePick} />,
   play: async () => {
     await settle()
@@ -4784,7 +5353,7 @@ export const WarehouseBinPickPhone: Story = {
 /** A bin opened from the plan, then "Count now": the handheld's count of A-02-03. */
 export const WarehouseFloorPlanInteraction: Story = {
   name: 'Warehouse floor plan, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={N_ROUTES.warehouse} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -4792,6 +5361,30 @@ export const WarehouseFloorPlanInteraction: Story = {
     const drawer = await within(document.body).findByRole('dialog', { name: 'Bin A-02-03' })
     await userEvent.click(within(drawer).getByRole('button', { name: 'Count now' }))
     await expect(await within(canvasElement).findByText('Cycle count CC-2026-0031')).toBeVisible()
+  },
+}
+
+/** The other bin actions (P5.28 item 25): a count started, a blocked bin unblocked. */
+export const WarehouseBinActionsInteraction: Story = {
+  name: 'Warehouse floor plan, count and unblock, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={N_ROUTES.warehouse} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const body = within(document.body)
+    await userEvent.click(placeOn(canvasElement, 'B-05-02'))
+    let drawer = within(await body.findByRole('dialog', { name: 'Bin B-05-02' }))
+    await userEvent.click(drawer.getByRole('button', { name: 'Count' }))
+    await waitFor(async () => {
+      await expect(placeOn(canvasElement, 'B-05-02')).toHaveAccessibleName(/^B-05-02, Count open/)
+    })
+    await userEvent.click(placeOn(canvasElement, 'A-04-01'))
+    drawer = within(await body.findByRole('dialog', { name: 'Bin A-04-01' }))
+    await userEvent.click(drawer.getByRole('button', { name: 'Unblock' }))
+    await waitFor(async () => {
+      await expect(placeOn(canvasElement, 'A-04-01')).toHaveAccessibleName(/^A-04-01, In stock/)
+    })
+    notice.dismiss()
   },
 }
 
@@ -4831,11 +5424,12 @@ export const HospitalWardPhone: Story = {
 /** Bed 9 in its drawer: the patient's name masked, admitted, the doctor, Transfer and Discharge. */
 export const HospitalWardBed: Story = {
   name: 'Hospital ward, a bed',
+  tags: ['!dev'],
   render: () => <ExampleApp start={N_ROUTES.wardBed} />,
   play: async () => {
     await settle()
     const drawer = within(within(document.body).getByRole('dialog', { name: 'Bed 9' }))
-    await expect(drawer.getByRole('button', { name: 'Show Patient’s name' })).toBeVisible()
+    await expect(drawer.getByRole('button', { name: 'Show patient’s name' })).toBeVisible()
     await expect(within(document.body).queryByText('Vesna Radović')).toBeNull()
     await expect(drawer.getByRole('button', { name: 'Discharge' })).toBeVisible()
   },
@@ -4843,6 +5437,7 @@ export const HospitalWardBed: Story = {
 
 export const HospitalWardBedPhone: Story = {
   name: 'Hospital ward, a bed, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={N_ROUTES.wardBed} />,
   play: async () => {
     await settle()
@@ -4853,18 +5448,20 @@ export const HospitalWardBedPhone: Story = {
 /** Bed 9 opened, its patient's name shown for a reason, then discharged: it needs cleaning. */
 export const HospitalWardInteraction: Story = {
   name: 'Hospital ward, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={N_ROUTES.ward} />,
   play: async ({ canvasElement }) => {
     await settle()
     const body = within(document.body)
     await userEvent.click(placeOn(canvasElement, 'b9'))
     const drawer = within(await body.findByRole('dialog', { name: 'Bed 9' }))
-    await userEvent.click(drawer.getByRole('button', { name: 'Show Patient’s name' }))
-    const dialog = await body.findByRole('dialog', { name: 'Show Patient’s name' })
+    await userEvent.click(drawer.getByRole('button', { name: 'Show patient’s name' }))
+    const dialog = await body.findByRole('dialog', { name: 'Show patient’s name Bed 9' })
     await userEvent.click(within(dialog).getByRole('radio', { name: 'Shift handover' }))
     await userEvent.click(within(dialog).getByRole('button', { name: 'Show' }))
-    await expect(await body.findByText('Vesna Radović')).toBeVisible()
+    await waitFor(async () => {
+      await expect(body.getByText('Vesna Radović')).toBeVisible()
+    })
     await userEvent.click(
       within(await body.findByRole('dialog', { name: 'Bed 9' })).getByRole('button', {
         name: 'Discharge',
@@ -4875,6 +5472,142 @@ export const HospitalWardInteraction: Story = {
         'Bed 9, Needs cleaning, Room 5, Discharged today',
       )
     })
+  },
+}
+
+/**
+ * "Transfer…" on bed 9 (P5.28 item 18): the free beds by room, the bed old → new, the doctor's
+ * message checked and the porters' a choice; the patient's name stays masked.
+ */
+export const HospitalWardTransfer: Story = {
+  name: 'Hospital ward, transferring a patient',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={N_ROUTES.wardTransfer} />,
+  play: async () => {
+    const dialog = await within(document.body).findByRole('dialog', {
+      name: 'Transfer patient Bed 9 · Room 5',
+    })
+    await settle()
+    await expect(
+      within(dialog).getByRole('radiogroup', { name: 'Free beds in Room 1' }),
+    ).toBeVisible()
+    await expect(within(dialog).getByRole('radio', { name: /^Bed 2/ })).toBeChecked()
+    await expect(
+      within(dialog).getByRole('checkbox', { name: /^Notify dr Ivana Lukić in Liro/ }),
+    ).toBeChecked()
+    await expect(within(document.body).queryByText('Vesna Radović')).toBeNull()
+  },
+}
+
+export const HospitalWardTransferPhone: Story = {
+  name: 'Hospital ward, transferring a patient, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={N_ROUTES.wardTransfer} />,
+  play: async () => {
+    const dialog = await within(document.body).findByRole('dialog', {
+      name: 'Transfer patient Bed 9 · Room 5',
+    })
+    await settle()
+    await expect(dialog).toBeVisible()
+  },
+}
+
+/** "Admit patient…" on free bed 2 (P5.28 item 18): the patients waiting, by case number. */
+export const HospitalWardAdmit: Story = {
+  name: 'Hospital ward, admitting a patient',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={N_ROUTES.wardAdmit} />,
+  play: async () => {
+    const dialog = await within(document.body).findByRole('dialog', {
+      name: 'Admit patient Bed 2 · Room 1',
+    })
+    await settle()
+    await expect(within(dialog).getByRole('radio', { name: /^P-2026-1187/ })).toBeChecked()
+    await expect(within(dialog).getByRole('button', { name: 'Admit' })).toBeVisible()
+  },
+}
+
+export const HospitalWardAdmitPhone: Story = {
+  name: 'Hospital ward, admitting a patient, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={N_ROUTES.wardAdmit} />,
+  play: async () => {
+    const dialog = await within(document.body).findByRole('dialog', {
+      name: 'Admit patient Bed 2 · Room 1',
+    })
+    await settle()
+    await expect(dialog).toBeVisible()
+  },
+}
+
+/**
+ * Transfer from bed 9 to bed 15 in room 7, the doctor told: bed 9 needs cleaning, bed 15 is
+ * occupied; then free bed 2 admits the next patient waiting.
+ */
+export const HospitalWardTransferInteraction: Story = {
+  name: 'Hospital ward, transfer and admit, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={N_ROUTES.ward} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const body = within(document.body)
+    await userEvent.click(placeOn(canvasElement, 'b9'))
+    let drawer = within(await body.findByRole('dialog', { name: 'Bed 9' }))
+    await userEvent.click(drawer.getByRole('button', { name: 'Transfer…' }))
+    const dialog = await body.findByRole('dialog', { name: 'Transfer patient Bed 9 · Room 5' })
+    await userEvent.click(within(dialog).getByRole('radio', { name: /^Bed 15/ }))
+    await expect(within(dialog).getByRole('list', { name: 'Changes' })).toHaveTextContent(
+      'After:Bed 15 · Room 7',
+    )
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Transfer' }))
+    await waitFor(async () => {
+      await expect(
+        body.getByText('Patient moved from Bed 9 to Bed 15. Sent to dr Ivana Lukić.'),
+      ).toBeVisible()
+    })
+    await waitFor(async () => {
+      await expect(placeOn(canvasElement, 'b9')).toHaveAccessibleName(
+        'Bed 9, Needs cleaning, Room 5, Patient moved to Bed 15',
+      )
+    })
+    await expect(placeOn(canvasElement, 'b15')).toHaveAccessibleName('Bed 15, Occupied, Room 7')
+    await userEvent.click(placeOn(canvasElement, 'b2'))
+    drawer = within(await body.findByRole('dialog', { name: 'Bed 2' }))
+    await userEvent.click(drawer.getByRole('button', { name: 'Admit patient…' }))
+    const admit = await body.findByRole('dialog', { name: 'Admit patient Bed 2 · Room 1' })
+    await userEvent.click(within(admit).getByRole('button', { name: 'Admit' }))
+    await waitFor(async () => {
+      await expect(body.getByText('P-2026-1187 admitted to Bed 2.')).toBeVisible()
+    })
+    notice.dismiss()
+  },
+}
+
+/** The other bed actions (P5.28 item 25): a bed cleaned, a blocked bed unblocked. */
+export const HospitalWardBedActionsInteraction: Story = {
+  name: 'Hospital ward, clean and unblock, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={N_ROUTES.ward} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const body = within(document.body)
+    await userEvent.click(placeOn(canvasElement, 'b5'))
+    let drawer = within(await body.findByRole('dialog', { name: 'Bed 5' }))
+    await userEvent.click(drawer.getByRole('button', { name: 'Mark clean' }))
+    await waitFor(async () => {
+      await expect(placeOn(canvasElement, 'b5')).toHaveAccessibleName(/^Bed 5, Free/)
+    })
+    await userEvent.keyboard('{Escape}')
+    await waitFor(async () => {
+      await expect(body.queryByRole('dialog')).toBeNull()
+    })
+    await userEvent.click(placeOn(canvasElement, 'b8'))
+    drawer = within(await body.findByRole('dialog', { name: 'Bed 8' }))
+    await userEvent.click(drawer.getByRole('button', { name: 'Unblock' }))
+    await waitFor(async () => {
+      await expect(placeOn(canvasElement, 'b8')).toHaveAccessibleName(/^Bed 8, Free/)
+    })
+    notice.dismiss()
   },
 }
 
@@ -4918,6 +5651,7 @@ export const OfficeDesksPhone: Story = {
 /** Desk 7, free today, chosen: its equipment and "Book". */
 export const OfficeDesksFree: Story = {
   name: 'Office desks, a free desk',
+  tags: ['!dev'],
   render: () => <ExampleApp start={N_ROUTES.officeDesk} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -4929,6 +5663,7 @@ export const OfficeDesksFree: Story = {
 
 export const OfficeDesksFreePhone: Story = {
   name: 'Office desks, a free desk, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={N_ROUTES.officeDesk} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -4939,6 +5674,7 @@ export const OfficeDesksFreePhone: Story = {
 /** Milica's own desk today: "Cancel booking". */
 export const OfficeDesksOwn: Story = {
   name: 'Office desks, your booking',
+  tags: ['!dev'],
   render: () => <ExampleApp start={N_ROUTES.officeOwn} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -4951,6 +5687,7 @@ export const OfficeDesksOwn: Story = {
 
 export const OfficeDesksOwnPhone: Story = {
   name: 'Office desks, your booking, phone',
+  tags: ['!dev'],
   render: () => <OnPhone start={N_ROUTES.officeOwn} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -4966,7 +5703,7 @@ export const OfficeDesksOwnPhone: Story = {
  */
 export const OfficeDesksInteraction: Story = {
   name: 'Office desks, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={N_ROUTES.office} />,
   play: async ({ canvasElement }) => {
     await settle()
@@ -4989,5 +5726,1190 @@ export const OfficeDesksInteraction: Story = {
     await waitFor(async () => {
       await expect(document.body.querySelector('[data-aria-hidden]')).toBeNull()
     })
+  },
+}
+
+// ── P5.28 dates ──
+// (Imports here, inside the block, so the blocks merge without touching the top.)
+// Long dates and weekday names in the interface's language, the tenant's digits (P5.28 item 2).
+import { EXAMPLE_FORMAT } from '../../../../packages/ui/src/components/story-frames'
+import { nextFrames } from '../../../../packages/ui/src/components/sticky-story-helpers'
+
+/** The bottom edge of AppShell's sticky top (the header with the module tabs). */
+function shellEdge(canvasElement: HTMLElement): number {
+  const header = canvasElement.querySelector('[data-slot="app-shell"] header')
+  const top = header?.parentElement
+  if (top === null || top === undefined) throw new Error('no shell header')
+  return top.getBoundingClientRect().bottom
+}
+
+/**
+ * The gradebook of 30 pupils (P5.28 item 4): scrolled down the page, the assessments row stays
+ * right below the shell's header (it disappeared under it), and the pupils stay at the start.
+ */
+export const SchoolGradebookUnderTheShell: Story = {
+  name: 'School, gradebook, header under the shell, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={H_ROUTES.gradebook} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const grid = within(canvasElement).getByRole('grid')
+    const corner = grid.querySelector('[data-sticky-start]')
+    if (corner === null) throw new Error('no corner')
+    const scroller = document.scrollingElement ?? document.documentElement
+    scroller.scrollTop += grid.getBoundingClientRect().top - shellEdge(canvasElement) + 500
+    await nextFrames()
+    await waitFor(async () => {
+      await expect(
+        Math.abs(corner.getBoundingClientRect().top - shellEdge(canvasElement)),
+      ).toBeLessThanOrEqual(1)
+    })
+    await expect(within(grid).getAllByRole('rowheader')).toHaveLength(30)
+  },
+}
+
+// ── P5.28 screens: moves are confirmed, the excuse asks first ──
+
+/**
+ * The clinic's schedule after a drag (P5.28): Jovana Nikolić's appointment dragged to dr Nada
+ * Grujić's free 12:30. Nothing has moved yet: the confirmation shows the change (doctor and time,
+ * old → new), who it concerns, and her SMS as a choice, checked as the clinic sets it; Cancel
+ * leaves it where it was.
+ */
+export const HealthClinicScheduleMove: Story = {
+  name: 'Health, clinic schedule, move asked',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={H_ROUTES.clinicScheduleMove} />,
+  play: async () => {
+    await settle()
+    const dialog = within(document.body).getByRole('dialog', {
+      name: 'Move appointment Jovana Nikolić, check-up',
+    })
+    await expect(within(dialog).getByRole('list', { name: 'Changes' })).toHaveTextContent(
+      'dr Nada Grujić',
+    )
+    await expect(
+      within(dialog).getByRole('checkbox', { name: /Notify Jovana Nikolić by SMS/ }),
+    ).toBeChecked()
+    await expect(within(dialog).getByRole('button', { name: 'Save and notify' })).toBeVisible()
+  },
+}
+
+export const HealthClinicScheduleMovePhone: Story = {
+  name: 'Health, clinic schedule, move asked, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={H_ROUTES.clinicScheduleMove} />,
+  play: async () => {
+    await settle()
+    await expect(
+      within(document.body).getByRole('dialog', { name: /^Move appointment/ }),
+    ).toBeVisible()
+  },
+}
+
+/** Unchecking the SMS makes the button plain Save; the move is made and nobody is messaged. */
+export const HealthClinicScheduleMoveConfirm: Story = {
+  name: 'Health, clinic schedule, move, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={H_ROUTES.clinicScheduleMove} />,
+  play: async () => {
+    await settle()
+    const body = within(document.body)
+    const dialog = body.getByRole('dialog', { name: /^Move appointment/ })
+    await userEvent.click(within(dialog).getByRole('checkbox', { name: /Notify Jovana Nikolić/ }))
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Save' }))
+    await expect(
+      await body.findByText('Appointment moved. No message was sent.'),
+    ).toBeInTheDocument()
+    await waitFor(async () => {
+      await expect(body.queryByRole('dialog')).toBeNull()
+    })
+  },
+}
+
+/**
+ * Approving a swap moves shifts two people rely on (P5.28): the change (Saturday's shift from
+ * Stefan Lukić to Jelena Rakić, Sunday's back), and each of them told as a choice; Approve last.
+ */
+export const StoreSwapApprove: Story = {
+  name: 'Store, swap requests, approve asked',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={G_ROUTES.swapRequestApprove} />,
+  play: async () => {
+    await settle()
+    const dialog = within(document.body).getByRole('dialog', { name: /^Approve swap Stefan Lukić/ })
+    await expect(within(dialog).getAllByRole('listitem')).toHaveLength(2)
+    await expect(
+      within(dialog).getByRole('checkbox', { name: 'Notify Jelena Rakić' }),
+    ).toBeChecked()
+    await expect(within(dialog).getByRole('button', { name: 'Approve' })).toBeVisible()
+  },
+}
+
+export const StoreSwapApprovePhone: Story = {
+  name: 'Store, swap requests, approve asked, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={G_ROUTES.swapRequestApprove} />,
+  play: async () => {
+    await settle()
+    await expect(within(document.body).getByRole('dialog', { name: /^Approve swap/ })).toBeVisible()
+  },
+}
+
+export const StoreSwapApproveConfirm: Story = {
+  name: 'Store, swap requests, approve, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={G_ROUTES.swapRequests} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Approve' }))
+    const dialog = await within(document.body).findByRole('dialog', { name: /^Approve swap/ })
+    await userEvent.click(within(dialog).getByRole('checkbox', { name: 'Notify Stefan Lukić' }))
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Approve' }))
+    await expect(
+      await within(document.body).findByText(
+        'Swap of Stefan Lukić approved. Jelena Rakić notified.',
+      ),
+    ).toBeInTheDocument()
+  },
+}
+
+/**
+ * The excuse asks first (P5.28): Luka's two absences of today chosen, the reason (illness,
+ * doctor, family reason, other with words), the doctor's note as a photo or a PDF — on a phone the
+ * camera — then Send.
+ */
+export const SchoolParentExcuse: Story = {
+  name: 'School, parents’ portal, excuse',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={H_ROUTES.parentExcuse} />,
+  play: async () => {
+    await settle()
+    const drawer = within(document.body).getByRole('dialog', {
+      name: /^Excuse absences Luka Jovanović/,
+    })
+    await expect(within(drawer).getAllByRole('checkbox', { checked: true })).toHaveLength(2)
+    await expect(within(drawer).getByRole('radiogroup', { name: /Reason/ })).toBeVisible()
+    await expect(within(drawer).getByRole('button', { name: 'Choose a file' })).toBeVisible()
+  },
+}
+
+export const SchoolParentExcusePhone: Story = {
+  name: 'School, parents’ portal, excuse, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={H_ROUTES.parentExcuse} />,
+  play: async () => {
+    await settle()
+    const drawer = within(document.body).getByRole('dialog', { name: /^Excuse absences/ })
+    await expect(within(drawer).getByRole('button', { name: 'Take a photo' })).toBeVisible()
+  },
+}
+
+/** Sent: today's absences say "Excuse sent", and the page says it waits for the class teacher. */
+export const SchoolParentExcuseSent: Story = {
+  name: 'School, parents’ portal, excuse sent',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={H_ROUTES.parentExcuseSent} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('Excuse sent, waiting for the class teacher')
+    await expect(within(canvasElement).getAllByText('Excuse sent')).toHaveLength(2)
+  },
+}
+
+export const SchoolParentExcuseSentPhone: Story = {
+  name: 'School, parents’ portal, excuse sent, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={H_ROUTES.parentExcuseSent} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('Excuse sent, waiting for the class teacher')
+    await noPageOverflow(canvasElement)
+  },
+}
+
+// ── P5.28 pos: the till's fiscal flows and the tabs on tables ──
+// (Imports here, inside the block, so the blocks merge without touching the top.)
+import { TILL_ROUTES, WEB_ORDER } from './data-I-fiscal'
+
+/** A landscape tablet's screen: 1024 × 768. */
+function OnTablet({ start }: { start: string }) {
+  return (
+    <PhoneFrame width={1024} height={768}>
+      <ExampleApp start={start} />
+    </PhoneFrame>
+  )
+}
+
+/** A dialog of the screen by its name. */
+function screenDialog(name: string | RegExp) {
+  return within(document.body).getByRole('dialog', { name })
+}
+
+/** A confirmation of the screen (an alertdialog) by its name. */
+function screenConfirm(name: string | RegExp) {
+  return within(document.body).getByRole('alertdialog', { name })
+}
+
+const TAB_3 = '/cafe/kod-mike/terrace/t3'
+const BISTRO_TAB_7 = '/restaurant/bistro-dunav/tables/t7'
+
+/** A static story's checks on the canvas (the desktop's 1280 × 720). */
+function deskPlay(
+  check: (canvasElement: HTMLElement) => Promise<void>,
+): NonNullable<Story['play']> {
+  return async ({ canvasElement }) => {
+    await settle()
+    await check(canvasElement)
+  }
+}
+
+/** The same checks on a phone, and nothing scrolls sideways. */
+function phonePlay(
+  check: (canvasElement: HTMLElement) => Promise<void>,
+): NonNullable<Story['play']> {
+  return async ({ canvasElement }) => {
+    await settle()
+    await check(canvasElement)
+    await expectNoSidewaysScroll(canvasElement)
+  }
+}
+
+/**
+ * The receipt kind (item 21a): two choices, type and transaction, from the application's data;
+ * Proforma chosen shows its marker — never chosen silently.
+ */
+const FISCAL_KIND_CHECK = async () => {
+  const dialog = screenDialog('Receipt kind')
+  await expect(within(dialog).getByRole('button', { name: 'Proforma' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
+  await expect(dialog).toHaveTextContent('Proforma — this is not a fiscal receipt')
+}
+
+export const FiscalKind: Story = {
+  name: 'POS fiscal, receipt kind',
+  render: () => <ExampleApp start={TILL_ROUTES.kind} />,
+  play: deskPlay(FISCAL_KIND_CHECK),
+}
+
+export const FiscalKindPhone: Story = {
+  name: 'POS fiscal, receipt kind, phone',
+  render: () => <OnPhone start={TILL_ROUTES.kind} />,
+  play: phonePlay(FISCAL_KIND_CHECK),
+}
+
+/** A proforma in the cart: the kind under the title and the marker above the lines. */
+const FISCAL_PROFORMA_CHECK = async (canvasElement: HTMLElement) => {
+  await expect(canvasElement).toHaveTextContent('Proforma · Sale')
+  await expect(canvasElement.querySelector('[data-slot="cart-marker"]')).toHaveTextContent(
+    'Proforma — this is not a fiscal receipt',
+  )
+}
+
+export const FiscalProforma: Story = {
+  name: 'POS fiscal, proforma',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={TILL_ROUTES.proforma} />,
+  play: deskPlay(FISCAL_PROFORMA_CHECK),
+}
+
+export const FiscalProformaPhone: Story = {
+  name: 'POS fiscal, proforma, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={TILL_ROUTES.proforma} />,
+  play: phonePlay(FISCAL_PROFORMA_CHECK),
+}
+
+/** Training mode: the persistent banner under the strip, the cart's marker. */
+const FISCAL_TRAINING_CHECK = async (canvasElement: HTMLElement) => {
+  await expect(canvasElement.querySelector('[data-slot="pos-banners"]')).toHaveTextContent(
+    'Training mode',
+  )
+  await expect(canvasElement.querySelector('[data-slot="cart-marker"]')).toHaveTextContent(
+    'Training — this is not a fiscal receipt',
+  )
+}
+
+export const FiscalTraining: Story = {
+  name: 'POS fiscal, training mode',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={TILL_ROUTES.training} />,
+  play: deskPlay(FISCAL_TRAINING_CHECK),
+}
+
+export const FiscalTrainingPhone: Story = {
+  name: 'POS fiscal, training mode, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={TILL_ROUTES.training} />,
+  play: phonePlay(FISCAL_TRAINING_CHECK),
+}
+
+export const FiscalTrainingTablet: Story = {
+  name: 'POS fiscal, training mode, tablet',
+  tags: ['!dev'],
+  render: () => <OnTablet start={TILL_ROUTES.training} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expectNoSidewaysScroll(canvasElement)
+  },
+}
+
+/** The buyer (item 21c): the kind of ID (15, searchable), the ID, the optional corporate card. */
+const FISCAL_BUYER_CHECK = async () => {
+  const dialog = screenDialog('Buyer')
+  await expect(within(dialog).getByRole('combobox', { name: 'ID type' })).toBeVisible()
+  await expect(within(dialog).getByRole('textbox', { name: 'Buyer ID' })).toHaveValue('100100100')
+}
+
+export const FiscalBuyer: Story = {
+  name: 'POS fiscal, buyer',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={TILL_ROUTES.buyer} />,
+  play: deskPlay(FISCAL_BUYER_CHECK),
+}
+
+export const FiscalBuyerPhone: Story = {
+  name: 'POS fiscal, buyer, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={TILL_ROUTES.buyer} />,
+  play: phonePlay(FISCAL_BUYER_CHECK),
+}
+
+/**
+ * Several ways on one receipt (item 21b): a voucher of 500,00 and 1.000,00 by card taken, 407,00
+ * remaining, 500,00 cash tendered: the change 93,00 — every figure the application's.
+ */
+const FISCAL_MIXED_CHECK = async () => {
+  const dialog = paymentDialog()
+  await expect(dialog).toHaveTextContent('Paid so far')
+  await expect(dialog).toHaveTextContent(tillText('407'))
+  await expect(dialog).toHaveTextContent(tillText('93'))
+  await expect(
+    within(within(dialog).getByRole('group', { name: 'Payment method' })).getAllByRole('button'),
+  ).toHaveLength(7)
+}
+
+export const FiscalMixed: Story = {
+  name: 'POS fiscal, several payment methods',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={TILL_ROUTES.mixed} />,
+  play: deskPlay(FISCAL_MIXED_CHECK),
+}
+
+export const FiscalMixedPhone: Story = {
+  name: 'POS fiscal, several payment methods, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={TILL_ROUTES.mixed} />,
+  play: phonePlay(FISCAL_MIXED_CHECK),
+}
+
+export const FiscalMixedTablet: Story = {
+  name: 'POS fiscal, several payment methods, tablet',
+  tags: ['!dev'],
+  render: () => <OnTablet start={TILL_ROUTES.mixed} />,
+  play: async () => {
+    await settle()
+    await expect(paymentDialog()).toHaveTextContent('Paid so far')
+  },
+}
+
+/** An instant payment: the code shown large to the customer, waiting. */
+const FISCAL_INSTANT_CHECK = async () => {
+  await expect(
+    within(paymentDialog()).getByRole('img', { name: 'Instant payment code' }),
+  ).toBeVisible()
+}
+
+export const FiscalInstant: Story = {
+  name: 'POS fiscal, instant payment',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={TILL_ROUTES.instant} />,
+  play: deskPlay(FISCAL_INSTANT_CHECK),
+}
+
+export const FiscalInstantPhone: Story = {
+  name: 'POS fiscal, instant payment, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={TILL_ROUTES.instant} />,
+  play: phonePlay(FISCAL_INSTANT_CHECK),
+}
+
+/** A wire transfer (deferred payment) without a buyer: the rule and the buyer's field. */
+const FISCAL_DEFERRED_CHECK = async () => {
+  const dialog = paymentDialog()
+  await expect(dialog).toHaveTextContent('A wire transfer needs the buyer’s tax number.')
+  await expect(within(dialog).getByRole('textbox', { name: /Buyer ID/ })).toBeVisible()
+}
+
+export const FiscalDeferred: Story = {
+  name: 'POS fiscal, deferred payment needs the buyer',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={TILL_ROUTES.deferred} />,
+  play: deskPlay(FISCAL_DEFERRED_CHECK),
+}
+
+export const FiscalDeferredPhone: Story = {
+  name: 'POS fiscal, deferred payment needs the buyer, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={TILL_ROUTES.deferred} />,
+  play: phonePlay(FISCAL_DEFERRED_CHECK),
+}
+
+/** A corporate card: the company as the buyer, its card in the optional field, approved. */
+export const FiscalCorporate: Story = {
+  name: 'POS fiscal, corporate card',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={TILL_ROUTES.corporate} />,
+  play: async () => {
+    await settle()
+    const dialog = paymentDialog()
+    await expect(dialog).toHaveTextContent('Corporate card •••• 7310')
+    await expect(
+      within(dialog).getByRole('button', { name: 'Complete payment' }),
+    ).not.toHaveAttribute('aria-disabled', 'true')
+  },
+}
+
+/** The receipt issued (item 21g): processor number and time, counter, code, link, delivery. */
+const FISCAL_ISSUED_CHECK = async () => {
+  const dialog = paymentDialog()
+  await expect(dialog).toHaveTextContent('ZK7Q2M4P-ZK7Q2M4P-2318')
+  await expect(dialog).toHaveTextContent('2289/2318ПП')
+  await expect(within(dialog).getByRole('img', { name: 'Receipt code' })).toBeVisible()
+  await expect(within(dialog).getByRole('button', { name: 'Send by e-mail' })).toBeVisible()
+}
+
+export const FiscalIssued: Story = {
+  name: 'POS fiscal, receipt issued',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={TILL_ROUTES.issued} />,
+  play: deskPlay(FISCAL_ISSUED_CHECK),
+}
+
+export const FiscalIssuedPhone: Story = {
+  name: 'POS fiscal, receipt issued, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={TILL_ROUTES.issued} />,
+  play: phonePlay(FISCAL_ISSUED_CHECK),
+}
+
+export const FiscalIssuedTablet: Story = {
+  name: 'POS fiscal, receipt issued, tablet',
+  tags: ['!dev'],
+  render: () => <OnTablet start={TILL_ROUTES.issued} />,
+  play: async () => {
+    await settle()
+    await expect(paymentDialog()).toHaveTextContent('Receipt issued')
+  },
+}
+
+/** Issued offline (item 21h): a local number, "waiting to be sent", the queue in the strip. */
+const FISCAL_ISSUED_OFFLINE_CHECK = async (canvasElement: HTMLElement) => {
+  await expect(paymentDialog()).toHaveTextContent('Receipt issued, waiting to be sent')
+  await expect(canvasElement).toHaveTextContent('3 sales waiting to be sent')
+}
+
+export const FiscalIssuedOffline: Story = {
+  name: 'POS fiscal, receipt issued offline',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={TILL_ROUTES.issuedOffline} />,
+  play: deskPlay(FISCAL_ISSUED_OFFLINE_CHECK),
+}
+
+export const FiscalIssuedOfflinePhone: Story = {
+  name: 'POS fiscal, receipt issued offline, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={TILL_ROUTES.issuedOffline} />,
+  play: phonePlay(FISCAL_ISSUED_OFFLINE_CHECK),
+}
+
+/** Refund (item 21d): the original found by its total; one refunded already says so. */
+const FISCAL_REFUND_FIND_CHECK = async () => {
+  const dialog = screenDialog('Refund')
+  await expect(
+    within(dialog).getByRole('button', { name: /ZK7Q2M4P-ZK7Q2M4P-2315/ }),
+  ).toHaveAttribute('aria-pressed', 'true')
+}
+
+export const FiscalRefundFind: Story = {
+  name: 'POS fiscal, refund, find the receipt',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={TILL_ROUTES.refundFind} />,
+  play: deskPlay(FISCAL_REFUND_FIND_CHECK),
+}
+
+export const FiscalRefundFindPhone: Story = {
+  name: 'POS fiscal, refund, find the receipt, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={TILL_ROUTES.refundFind} />,
+  play: phonePlay(FISCAL_REFUND_FIND_CHECK),
+}
+
+export const FiscalRefundFindTablet: Story = {
+  name: 'POS fiscal, refund, find the receipt, tablet',
+  tags: ['!dev'],
+  render: () => <OnTablet start={TILL_ROUTES.refundFind} />,
+  play: async () => {
+    await settle()
+    await expect(
+      within(screenDialog('Refund')).getByRole('button', { name: /ZK7Q2M4P-ZK7Q2M4P-2315/ }),
+    ).toBeVisible()
+  },
+}
+
+/** Refund: two kifle and a burek of the original (240,00), the buyer named by the rule. */
+const FISCAL_REFUND_LINES_CHECK = async () => {
+  const dialog = screenDialog(/^Refund from/)
+  await expect(within(dialog).getByRole('textbox', { name: 'Quantity, Kifla' })).toHaveValue('2')
+  await expect(dialog).toHaveTextContent('1 of 4 refunded already')
+  await expect(dialog).toHaveTextContent(tillText('240'))
+}
+
+export const FiscalRefundLines: Story = {
+  name: 'POS fiscal, refund, lines',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={TILL_ROUTES.refundLines} />,
+  play: deskPlay(FISCAL_REFUND_LINES_CHECK),
+}
+
+export const FiscalRefundLinesPhone: Story = {
+  name: 'POS fiscal, refund, lines, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={TILL_ROUTES.refundLines} />,
+  play: phonePlay(FISCAL_REFUND_LINES_CHECK),
+}
+
+/** The refund in the cart: "Pay out 240,00 RSD", the original's number. */
+const FISCAL_REFUND_CART_CHECK = async (canvasElement: HTMLElement) => {
+  await expect(canvasElement).toHaveTextContent('Normal · Refund')
+  await expect(canvasElement).toHaveTextContent('Refund of ZK7Q2M4P-ZK7Q2M4P-2315')
+}
+
+export const FiscalRefundCart: Story = {
+  name: 'POS fiscal, refund in the cart',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={TILL_ROUTES.refundCart} />,
+  play: deskPlay(FISCAL_REFUND_CART_CHECK),
+}
+
+export const FiscalRefundCartPhone: Story = {
+  name: 'POS fiscal, refund in the cart, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={TILL_ROUTES.refundCart} />,
+  play: phonePlay(FISCAL_REFUND_CART_CHECK),
+}
+
+/** The refund's receipt: the original's number and time carried over, the signature line. */
+const FISCAL_REFUND_RECEIPT_CHECK = async () => {
+  const receipt = within(screenDialog(/^Receipt /)).getByRole('article', { name: 'Receipt' })
+  await expect(receipt).toHaveTextContent('NORMAL REFUND')
+  await expect(receipt).toHaveTextContent('Original receipt')
+  await expect(receipt).toHaveTextContent('Buyer’s signature')
+}
+
+export const FiscalRefundReceipt: Story = {
+  name: 'POS fiscal, refund receipt',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={TILL_ROUTES.refundReceipt} />,
+  play: deskPlay(FISCAL_REFUND_RECEIPT_CHECK),
+}
+
+export const FiscalRefundReceiptPhone: Story = {
+  name: 'POS fiscal, refund receipt, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={TILL_ROUTES.refundReceipt} />,
+  play: phonePlay(FISCAL_REFUND_RECEIPT_CHECK),
+}
+
+/** A buyer's open advances (item 21e): one deducted, 707,00 to pay. */
+const FISCAL_ADVANCES_CHECK = async (canvasElement: HTMLElement) => {
+  await expect(canvasElement).toHaveTextContent('Open advances of Restoran Dunavski cvet d.o.o.')
+  await expect(canvasElement).toHaveTextContent('To pay')
+  await expect(canvasElement).toHaveTextContent(tillText('707'))
+}
+
+export const FiscalAdvances: Story = {
+  name: 'POS fiscal, advances',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={TILL_ROUTES.advances} />,
+  play: deskPlay(FISCAL_ADVANCES_CHECK),
+}
+
+export const FiscalAdvancesPhone: Story = {
+  name: 'POS fiscal, advances, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={TILL_ROUTES.advances} />,
+  play: phonePlay(FISCAL_ADVANCES_CHECK),
+}
+
+/** Taking an advance for a cake order: the buyer, the amount, what it is for. */
+const FISCAL_ADVANCE_TAKE_CHECK = async () => {
+  await expect(screenDialog('Take advance')).toHaveTextContent('12 krempite')
+}
+
+export const FiscalAdvanceTake: Story = {
+  name: 'POS fiscal, take an advance',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={TILL_ROUTES.advanceTake} />,
+  play: deskPlay(FISCAL_ADVANCE_TAKE_CHECK),
+}
+
+export const FiscalAdvanceTakePhone: Story = {
+  name: 'POS fiscal, take an advance, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={TILL_ROUTES.advanceTake} />,
+  play: phonePlay(FISCAL_ADVANCE_TAKE_CHECK),
+}
+
+/** Refunding an advance: the action as the title, the advance bold on its own line. */
+export const FiscalAdvanceRefund: Story = {
+  name: 'POS fiscal, refund an advance',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={TILL_ROUTES.advanceRefund} />,
+  play: async () => {
+    await settle()
+    await expect(screenConfirm('Refund advance')).toHaveTextContent('ZK7Q2M4P-ZK7Q2M4P-2265')
+  },
+}
+
+/** A sale without compensation: its kind under the title, paid only as Other cashless. */
+export const FiscalNoCompensation: Story = {
+  name: 'POS fiscal, sale without compensation',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={TILL_ROUTES.noCompensation} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('Without compensation')
+  },
+}
+
+/** Two receipts the processor did not accept: a danger "Not sent" in the strip. */
+export const FiscalQueueFailed: Story = {
+  name: 'POS fiscal, receipts not accepted',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={TILL_ROUTES.queueFailed} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(within(canvasElement).getByText('Not sent')).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('2 receipts were not accepted')
+  },
+}
+
+/** The journal of the day (item 21g): the receipts with their state, the last one shown. */
+const FISCAL_JOURNAL_CHECK = async (canvasElement: HTMLElement) => {
+  await expect(canvasElement).toHaveTextContent('ZK7Q2M4P-ZK7Q2M4P-2317')
+}
+
+export const FiscalJournal: Story = {
+  name: 'POS journal',
+  render: () => <ExampleApp start={TILL_ROUTES.journal} />,
+  play: deskPlay(FISCAL_JOURNAL_CHECK),
+}
+
+export const FiscalJournalPhone: Story = {
+  name: 'POS journal, phone',
+  render: () => <OnPhone start={TILL_ROUTES.journal} />,
+  play: phonePlay(FISCAL_JOURNAL_CHECK),
+}
+
+export const FiscalJournalTablet: Story = {
+  name: 'POS journal, tablet',
+  tags: ['!dev'],
+  render: () => <OnTablet start={TILL_ROUTES.journal} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(
+      within(canvasElement).getByRole('heading', { name: 'Receipts today' }),
+    ).toBeVisible()
+  },
+}
+
+/** A copy: "THIS IS NOT A FISCAL RECEIPT" boxed at the top and the bottom. */
+const FISCAL_JOURNAL_COPY_CHECK = async () => {
+  const dialog = screenDialog(/^Copy of /)
+  await expect(dialog.querySelectorAll('[data-slot="receipt-marker"]')).toHaveLength(2)
+  await expect(dialog).toHaveTextContent('COPY SALE')
+}
+
+export const FiscalJournalCopy: Story = {
+  name: 'POS journal, copy',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={TILL_ROUTES.journalCopy} />,
+  play: deskPlay(FISCAL_JOURNAL_COPY_CHECK),
+}
+
+export const FiscalJournalCopyPhone: Story = {
+  name: 'POS journal, copy, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={TILL_ROUTES.journalCopy} />,
+  play: phonePlay(FISCAL_JOURNAL_COPY_CHECK),
+}
+
+/** Cancelling a receipt issued by mistake: the reason asked, the receipt bold on its own line. */
+const FISCAL_JOURNAL_CANCEL_CHECK = async () => {
+  await expect(screenConfirm('Cancel receipt issued by mistake')).toHaveTextContent(
+    'ZK7Q2M4P-ZK7Q2M4P-2317',
+  )
+}
+
+export const FiscalJournalCancel: Story = {
+  name: 'POS journal, cancel a receipt',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={TILL_ROUTES.journalCancel} />,
+  play: deskPlay(FISCAL_JOURNAL_CANCEL_CHECK),
+}
+
+export const FiscalJournalCancelPhone: Story = {
+  name: 'POS journal, cancel a receipt, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={TILL_ROUTES.journalCancel} />,
+  play: phonePlay(FISCAL_JOURNAL_CANCEL_CHECK),
+}
+
+/** The receipts not sent (item 21h): the reason and "Send again". */
+const FISCAL_JOURNAL_QUEUE_CHECK = async (canvasElement: HTMLElement) => {
+  await expect(canvasElement).toHaveTextContent('Two receipts were not accepted')
+}
+
+export const FiscalJournalQueue: Story = {
+  name: 'POS journal, not sent',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={TILL_ROUTES.journalQueue} />,
+  play: deskPlay(FISCAL_JOURNAL_QUEUE_CHECK),
+}
+
+export const FiscalJournalQueuePhone: Story = {
+  name: 'POS journal, not sent, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={TILL_ROUTES.journalQueue} />,
+  play: phonePlay(FISCAL_JOURNAL_QUEUE_CHECK),
+}
+
+/** The daily report: sales, refunds, by way of paying, the tax per label. */
+const FISCAL_DAILY_REPORT_CHECK = async () => {
+  const dialog = screenDialog('Daily report')
+  await expect(dialog).toHaveTextContent('DAILY REPORT')
+  await expect(dialog).toHaveTextContent('Refunds (1)')
+}
+
+export const FiscalDailyReport: Story = {
+  name: 'POS daily report',
+  render: () => <ExampleApp start={TILL_ROUTES.dailyReport} />,
+  play: deskPlay(FISCAL_DAILY_REPORT_CHECK),
+}
+
+export const FiscalDailyReportPhone: Story = {
+  name: 'POS daily report, phone',
+  render: () => <OnPhone start={TILL_ROUTES.dailyReport} />,
+  play: phonePlay(FISCAL_DAILY_REPORT_CHECK),
+}
+
+/** An online sale (item 21i): the web-shop order's receipt issued and e-mailed, link and code. */
+const WEB_SHOP_ORDER_CHECK = async (canvasElement: HTMLElement) => {
+  await expect(canvasElement).toHaveTextContent(WEB_ORDER.receipt.number)
+  await expect(canvasElement).toHaveTextContent(`Sent to ${WEB_ORDER.email}`)
+}
+
+export const WebShopOrder: Story = {
+  name: 'Web shop order, receipt delivered',
+  render: () => <ExampleApp start={TILL_ROUTES.webOrder} />,
+  play: deskPlay(WEB_SHOP_ORDER_CHECK),
+}
+
+export const WebShopOrderPhone: Story = {
+  name: 'Web shop order, receipt delivered, phone',
+  render: () => <OnPhone start={TILL_ROUTES.webOrder} />,
+  play: phonePlay(WEB_SHOP_ORDER_CHECK),
+}
+
+export const WebShopOrderTablet: Story = {
+  name: 'Web shop order, receipt delivered, tablet',
+  tags: ['!dev'],
+  render: () => <OnTablet start={TILL_ROUTES.webOrder} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent(WEB_ORDER.receipt.number)
+  },
+}
+
+/**
+ * Several ways on one receipt, end to end: a voucher of 500,00, then 1.000,00 by card (the
+ * example's terminal approves), then cash for the remaining 407,00; the receipt is issued.
+ */
+export const FiscalMixedInteraction: Story = {
+  name: 'POS fiscal, several payment methods, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={I_ROUTES.pos} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await userEvent.click(
+      within(canvasElement).getByRole('button', { name: chargeName(SALE_FIGURES.total) }),
+    )
+    const dialog = await within(document.body).findByRole('dialog', { name: 'Payment' })
+    const body = within(dialog)
+    const amount = async (digits: string) => {
+      await userEvent.click(body.getByRole('button', { name: 'Clear' }))
+      for (const key of digits) await userEvent.click(body.getByRole('button', { name: key }))
+    }
+    await userEvent.click(body.getByRole('button', { name: 'Voucher' }))
+    await amount('500')
+    await userEvent.type(body.getByRole('textbox', { name: 'Voucher code' }), 'VC-2026-7741')
+    await userEvent.click(body.getByRole('button', { name: 'Add this payment' }))
+    await expect(dialog).toHaveTextContent('Paid so far')
+    await userEvent.click(body.getByRole('button', { name: 'Card' }))
+    await amount('1000')
+    await userEvent.click(body.getByRole('button', { name: 'Send to card terminal' }))
+    await expect(
+      await body.findByText('Card payment approved', {}, { timeout: 4000 }),
+    ).toBeVisible()
+    await expect(dialog).toHaveTextContent(tillText('407'))
+    await userEvent.click(body.getByRole('button', { name: 'Cash' }))
+    await userEvent.click(body.getByRole('button', { name: 'Exact amount' }))
+    await userEvent.click(body.getByRole('button', { name: 'Complete payment' }))
+    await expect(await body.findByText('Receipt issued')).toBeVisible()
+    await settle()
+  },
+}
+
+/** Refund end to end: the menu's Refund…, find by total, two kifle, pay out in cash. */
+export const FiscalRefundInteraction: Story = {
+  name: 'POS fiscal, refund, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={I_ROUTES.pos} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Till menu' }))
+    await userEvent.click(await within(document.body).findByRole('menuitem', { name: 'Refund…' }))
+    const find = await within(document.body).findByRole('dialog', { name: 'Refund' })
+    await userEvent.click(within(find).getByRole('button', { name: 'Search' }))
+    await userEvent.click(
+      await within(find).findByRole('button', { name: /ZK7Q2M4P-ZK7Q2M4P-2315/ }),
+    )
+    await userEvent.click(within(find).getByRole('button', { name: 'Choose lines' }))
+    const lines = await within(document.body).findByRole('dialog', { name: /^Refund from/ })
+    await userEvent.click(within(lines).getByRole('checkbox', { name: /^Jogurt/ }))
+    await userEvent.click(within(lines).getByRole('button', { name: /^Refund 135,00/ }))
+    await expect(await within(canvasElement).findByText('Normal · Refund')).toBeVisible()
+    await userEvent.click(await within(canvasElement).findByRole('button', { name: /^Pay out/ }))
+    const pay = await within(document.body).findByRole('dialog', { name: 'Refund payment' })
+    await userEvent.click(within(pay).getByRole('button', { name: 'Exact amount' }))
+    await userEvent.click(within(pay).getByRole('button', { name: 'Complete payment' }))
+    await expect(await within(pay).findByText('Receipt issued')).toBeVisible()
+    await settle()
+  },
+}
+
+/** The journal: a receipt cancelled with a reason becomes a refund in the list. */
+export const FiscalCancelInteraction: Story = {
+  name: 'POS journal, cancel a receipt, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={TILL_ROUTES.journalCancel} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const dialog = screenConfirm('Cancel receipt issued by mistake')
+    await userEvent.click(within(dialog).getByRole('radio', { name: 'Wrong way of paying' }))
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Cancel receipt' }))
+    // The refund that cancels it is issued and shown: the next receipt of the journal.
+    await expect(
+      await within(canvasElement).findByRole('heading', { name: 'ZK7Q2M4P-ZK7Q2M4P-2318' }),
+    ).toBeVisible()
+    await settle()
+  },
+}
+
+// ── P5.28 pos: open tabs on tables (item 22) ──
+
+/** Table 3's tab with two new items not sent yet: "Send order (2)" before the bill. */
+const CAFE_TAB_NEW_CHECK = async (canvasElement: HTMLElement) => {
+  await expect(
+    within(canvasElement).getByRole('button', { name: 'Send order (2)' }),
+  ).toBeInTheDocument()
+  await expect(canvasElement).toHaveTextContent('Oat milk')
+  await expect(canvasElement).toHaveTextContent('Sent to the bar · 18:15')
+}
+
+export const CafeTabNew: Story = {
+  name: 'Café tab, new items to send',
+  render: () => <ExampleApp start={`${TAB_3}?new`} />,
+  play: deskPlay(CAFE_TAB_NEW_CHECK),
+}
+
+export const CafeTabNewPhone: Story = {
+  name: 'Café tab, new items to send, phone',
+  render: () => <OnPhone start={`${TAB_3}?new`} />,
+  play: phonePlay(CAFE_TAB_NEW_CHECK),
+}
+
+/** Editing a line: quantity, a note for the kitchen, a discount from the venue's list. */
+const CAFE_TAB_EDIT_CHECK = async () => {
+  const dialog = screenDialog('Edit line')
+  await expect(within(dialog).getByRole('textbox', { name: /Note/ })).toHaveValue('Without walnuts')
+}
+
+export const CafeTabEdit: Story = {
+  name: 'Café tab, edit a line',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={`${TAB_3}?edit`} />,
+  play: deskPlay(CAFE_TAB_EDIT_CHECK),
+}
+
+export const CafeTabEditPhone: Story = {
+  name: 'Café tab, edit a line, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={`${TAB_3}?edit`} />,
+  play: phonePlay(CAFE_TAB_EDIT_CHECK),
+}
+
+/** A discount on the whole order; the promotions apply by themselves. */
+export const CafeTabDiscount: Story = {
+  name: 'Café tab, discount on the order',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={`${TAB_3}?discount`} />,
+  play: async () => {
+    await settle()
+    await expect(
+      within(screenDialog('Discount on the order')).getByRole('radio', {
+        name: 'Regular guest −10%',
+      }),
+    ).toBeChecked()
+  },
+}
+
+/** Split the bill equally among four: the shares from the application. */
+const CAFE_TAB_SPLIT_CHECK = async () => {
+  await expect(screenDialog('Split the bill')).toHaveTextContent('Share 4 of 4')
+}
+
+export const CafeTabSplit: Story = {
+  name: 'Café tab, split the bill',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={`${TAB_3}?split`} />,
+  play: deskPlay(CAFE_TAB_SPLIT_CHECK),
+}
+
+export const CafeTabSplitPhone: Story = {
+  name: 'Café tab, split the bill, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={`${TAB_3}?split`} />,
+  play: phonePlay(CAFE_TAB_SPLIT_CHECK),
+}
+
+/** Pay part by items: two cappuccinos chosen. */
+const CAFE_TAB_PAY_PART_CHECK = async () => {
+  const dialog = screenDialog('Pay part')
+  await expect(within(dialog).getByRole('textbox', { name: 'Quantity, Kapućino' })).toHaveValue('2')
+  await expect(dialog).toHaveTextContent(SERBIAN_K.money('440', 'RSD').replace(/\s+/g, ' '))
+}
+
+export const CafeTabPayPart: Story = {
+  name: 'Café tab, pay part',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={`${TAB_3}?pay-part`} />,
+  play: deskPlay(CAFE_TAB_PAY_PART_CHECK),
+}
+
+export const CafeTabPayPartPhone: Story = {
+  name: 'Café tab, pay part, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={`${TAB_3}?pay-part`} />,
+  play: phonePlay(CAFE_TAB_PAY_PART_CHECK),
+}
+
+/** Move the whole tab or some items to another table. */
+const CAFE_TAB_MOVE_CHECK = async () => {
+  await expect(screenDialog('Move to another table')).toHaveTextContent('Table 3')
+}
+
+export const CafeTabMove: Story = {
+  name: 'Café tab, move to another table',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={`${TAB_3}?move`} />,
+  play: deskPlay(CAFE_TAB_MOVE_CHECK),
+}
+
+export const CafeTabMovePhone: Story = {
+  name: 'Café tab, move to another table, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={`${TAB_3}?move`} />,
+  play: phonePlay(CAFE_TAB_MOVE_CHECK),
+}
+
+/** The bill: 1.200,00 RSD, 2.000,00 tendered, the change. */
+const CAFE_TAB_BILL_CHECK = async () => {
+  await expect(screenDialog(/^Table 3:/)).toHaveTextContent('Change due')
+}
+
+export const CafeTabBill: Story = {
+  name: 'Café tab, bill',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={`${TAB_3}?bill`} />,
+  play: deskPlay(CAFE_TAB_BILL_CHECK),
+}
+
+export const CafeTabBillPhone: Story = {
+  name: 'Café tab, bill, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={`${TAB_3}?bill`} />,
+  play: phonePlay(CAFE_TAB_BILL_CHECK),
+}
+
+/** Paid: the fiscal receipt issued, "Close table". */
+const CAFE_TAB_CLOSED_CHECK = async () => {
+  const dialog = screenDialog(/^Table 3:/)
+  await expect(dialog).toHaveTextContent('Receipt issued')
+  await expect(within(dialog).getByRole('button', { name: 'Close table' })).toBeVisible()
+}
+
+export const CafeTabClosed: Story = {
+  name: 'Café tab, closed with the receipt',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={`${TAB_3}?closed`} />,
+  play: deskPlay(CAFE_TAB_CLOSED_CHECK),
+}
+
+export const CafeTabClosedPhone: Story = {
+  name: 'Café tab, closed with the receipt, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={`${TAB_3}?closed`} />,
+  play: phonePlay(CAFE_TAB_CLOSED_CHECK),
+}
+
+/** Table 1: a third espresso, the venue's promotion "Espresso 3 for 2". */
+export const CafeTabPromotion: Story = {
+  name: 'Café tab, promotion 3 for 2',
+  tags: ['!dev'],
+  render: () => <ExampleApp start="/cafe/kod-mike/terrace/t1" />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('Espresso 3 for 2')
+  },
+}
+
+export const CafeTabTablet: Story = {
+  name: 'Café tab, tablet',
+  tags: ['!dev'],
+  render: () => <OnTablet start={`${TAB_3}?new`} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expectNoSidewaysScroll(canvasElement)
+  },
+}
+
+/** Bistro Dunav's table 7: food from the kitchen, drinks from the bar, the dessert promotion. */
+const RESTAURANT_TAB_CHECK = async (canvasElement: HTMLElement) => {
+  await expect(canvasElement).toHaveTextContent('Sent to the kitchen · 19:01')
+  await expect(canvasElement).toHaveTextContent('Dessert of the day −15%')
+  await expect(canvasElement).toHaveTextContent('One without onion')
+}
+
+export const RestaurantTab: Story = {
+  name: 'Restaurant tab, table 7',
+  render: () => <ExampleApp start={BISTRO_TAB_7} />,
+  play: deskPlay(RESTAURANT_TAB_CHECK),
+}
+
+export const RestaurantTabPhone: Story = {
+  name: 'Restaurant tab, table 7, phone',
+  render: () => <OnPhone start={BISTRO_TAB_7} />,
+  play: phonePlay(RESTAURANT_TAB_CHECK),
+}
+
+export const RestaurantTabTablet: Story = {
+  name: 'Restaurant tab, table 7, tablet',
+  tags: ['!dev'],
+  render: () => <OnTablet start={BISTRO_TAB_7} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expectNoSidewaysScroll(canvasElement)
+  },
+}
+
+/** A share of three paid by card: Total, Paid and "To pay". */
+export const RestaurantTabPaidShare: Story = {
+  name: 'Restaurant tab, a share paid',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={`${BISTRO_TAB_7}?paid-share`} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('To pay')
+    await expect(canvasElement).toHaveTextContent('Paid')
+  },
+}
+
+/**
+ * The tab persists: on the terrace, free table 2 gets two espressos; Send order; back to the
+ * terrace, table 2 shows its total; back on table 2 the lines are there, sent.
+ */
+export const CafeTabPersistsInteraction: Story = {
+  name: 'Café tab, persists, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={K_ROUTES.terrace} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(floorItem(canvasElement, 't2'))
+    await expect(await canvas.findByRole('heading', { name: 'Table 2' })).toBeVisible()
+    await userEvent.click(canvas.getByRole('button', { name: /^Espresso/ }))
+    await userEvent.click(canvas.getByRole('button', { name: /^Espresso/ }))
+    await userEvent.click(canvas.getByRole('button', { name: 'Send order (2)' }))
+    await expect(await canvas.findByText('Sent to the bar · 18:40')).toBeVisible()
+    await userEvent.click(canvas.getByRole('button', { name: 'Terrace' }))
+    await expect(await canvas.findByRole('heading', { name: 'Terrace' })).toBeVisible()
+    await expect(floorItem(canvasElement, 't2')).toHaveAccessibleName(
+      new RegExp(
+        `^Table 2, 18:40 · ${SERBIAN_K.money('320', 'RSD').replace(/\./g, '\\.').replace(/\s/g, '\\s')}`,
+      ),
+    )
+    await userEvent.click(floorItem(canvasElement, 't2'))
+    await expect(await canvas.findByRole('textbox', { name: 'Quantity, Espresso' })).toHaveValue(
+      '2',
+    )
+  },
+}
+
+/** Move the whole tab of table 3 to table 2, bill it in cash, close the table. */
+export const CafeTabMoveCloseInteraction: Story = {
+  name: 'Café tab, move and close, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={TAB_3} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Move…' }))
+    const move = await within(document.body).findByRole('dialog', {
+      name: 'Move to another table',
+    })
+    await userEvent.click(within(move).getByRole('button', { name: 'Move tab' }))
+    await expect(await canvas.findByRole('heading', { name: 'Table 2' })).toBeVisible()
+    await userEvent.click(canvas.getByRole('button', { name: /^Bill / }))
+    const pay = await within(document.body).findByRole('dialog', { name: /^Table 2:/ })
+    await userEvent.click(within(pay).getByRole('button', { name: 'Exact amount' }))
+    await userEvent.click(within(pay).getByRole('button', { name: 'Complete payment' }))
+    await userEvent.click(await within(pay).findByRole('button', { name: 'Close table' }))
+    await expect(await canvas.findByRole('heading', { name: 'Terrace' })).toBeVisible()
+  },
+}
+
+/** Bistro Dunav: table 7's tab from the floor, a krempita added, back on the floor its total. */
+export const RestaurantTabInteraction: Story = {
+  name: 'Restaurant tab, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={K_ROUTES.floorTable} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Tab' }))
+    await expect(await canvas.findByRole('heading', { name: 'Table 7' })).toBeVisible()
+    await userEvent.click(canvas.getByRole('button', { name: /^Krempita/ }))
+    await expect(canvas.getByRole('button', { name: 'Send order (3)' })).toBeVisible()
+    await userEvent.click(canvas.getByRole('button', { name: 'Floor' }))
+    await userEvent.click(await waitFor(() => floorItem(canvasElement, 't7')))
+    await expect(await canvas.findByRole('button', { name: 'Tab' })).toBeVisible()
+    await expect(canvasElement).toHaveTextContent(
+      SERBIAN_K.money('9534', 'RSD').replace(/\s+/g, ' '),
+    )
   },
 }

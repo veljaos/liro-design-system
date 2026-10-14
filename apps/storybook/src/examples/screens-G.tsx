@@ -4,8 +4,8 @@ import {
   Alert,
   AttendanceGrid,
   Button,
+  ChangeConfirmDialog,
   ClockRecordList,
-  createFormat,
   EmptyState,
   KeyFigures,
   KeyValueList,
@@ -18,6 +18,7 @@ import {
   WorkingTimeBalance,
   WorklistPage,
   notice,
+  numericFormat,
   useLiro,
   type AttendanceChange,
   type AttendanceCorrection,
@@ -93,11 +94,15 @@ export const G_ROUTES = {
   timesheetLockedWorker: `/working-time/timesheets/2026-10?state=locked&employee=${CORRECTED.row}`,
   clockRecords: `/working-time/clock-records/${CLOCK_DAY}`,
   storePlanner: `/shifts/prodavnica-12/${STORE.start}`,
+  /** "Publish changes" asked (P5.28 item 9): the counts and the messages as a choice. */
+  storePublish: `/shifts/prodavnica-12/${STORE.start}?publish=open`,
   myShifts: '/me/shifts',
   myShiftsSwap: `/me/shifts?swap=${STEFAN_SWAP_SHIFT}`,
   swapRequests: '/shifts/prodavnica-12/swap-requests',
   /** The swap requests with Sanja Vuković's (the one with a warning) in focus. */
   swapRequestWarning: '/shifts/prodavnica-12/swap-requests?request=r3',
+  /** Stefan Lukić's request with its approval asked (P5.28 item 9): the change and who is told. */
+  swapRequestApprove: '/shifts/prodavnica-12/swap-requests?request=r1&approve=open',
   erPlanner: `/shifts/emergency/${ER.start}`,
   erRotation: `/shifts/emergency/${ER.start}?rotation=open`,
   erBalance: `/shifts/emergency/balance/${ER_PLAN.start}`,
@@ -105,16 +110,20 @@ export const G_ROUTES = {
 
 // ── Shared pieces ─────────────────────────────────────────────────────────────────────────────
 
-/** The tenant's formats in its own time zone (instants with an offset are shown there). */
-const TENANT_FORMAT = createFormat('sr-Latn-RS', {}, 'Europe/Belgrade')
+/**
+ * The tenant's digits in its own time zone (instants with an offset are shown there): numbers and
+ * numeric dates as a Serbian company writes them, never its month or weekday names (P5.28 item 2).
+ */
+const TENANT_DIGITS = numericFormat('sr-Latn-RS', 'Europe/Belgrade')
 
 /**
- * The tenant's settings these screens need beyond the examples' provider: a Serbian tenant's week
- * starts on Monday (the planner's Today, My shifts' weeks, the calendars count from it), and its
- * instants — clock-ins, corrections, requests — are shown in Europe/Belgrade, whatever the
- * device's zone. The Core passes both from the tenant's settings.
+ * The tenant's settings these screens need beyond the examples' provider: its instants —
+ * clock-ins, corrections, requests — are shown in Europe/Belgrade, whatever the device's zone, and
+ * `today` may be the day a screen is set on (the clinic's). The week starts on Monday because the
+ * examples' locale names the tenant's region ("en-RS", `tenantLocale`); the planner's Today, My
+ * shifts' weeks and the calendars count from it. The Core passes both from the tenant's settings.
  */
-export function Tenant({ children }: { children: ReactNode }) {
+export function Tenant({ today, children }: { today?: string; children: ReactNode }) {
   const liro = useLiro()
   return (
     <LiroProvider
@@ -122,9 +131,8 @@ export function Tenant({ children }: { children: ReactNode }) {
       direction={liro.direction}
       colorScheme={liro.colorScheme}
       messages={liro.messages}
-      format={TENANT_FORMAT}
-      today={liro.today}
-      weekStartsOn={1}
+      format={TENANT_DIGITS}
+      today={today ?? liro.today}
       timeZone="Europe/Belgrade"
       linkComponent={liro.linkComponent}
     >
@@ -424,10 +432,19 @@ const STORE_TABS = (current: 'schedule' | 'swaps'): ModuleTab[] => [
   },
 ]
 
-export function StorePlanner({ phone }: { phone: boolean }) {
+/**
+ * Prodavnica 12's schedule. Publishing makes the shifts visible in the app; a message is the
+ * manager's choice in the confirmation (P5.28 item 9): everyone in the app (checked by the
+ * store), an SMS to those whose shifts changed (not checked). The toast says what went.
+ */
+export function StorePlanner({ phone, publish }: { phone: boolean; publish?: boolean }) {
   const { format } = useLiro()
   const [assignments, setAssignments] = useState<ShiftAssignment[]>(STORE_ASSIGNMENTS)
   const [changed, setChanged] = useState(true)
+  const people = format.number(String(STORE_PUBLISH.people))
+  const changedPeople = new Set(
+    assignments.filter((each) => each.changed === true).map((each) => each.rowId),
+  ).size
   // The application works the hours and the coverage out again after each change.
   const rows = STORE_PEOPLE.map((person) => ({
     id: person.id,
@@ -464,15 +481,41 @@ export function StorePlanner({ phone }: { phone: boolean }) {
             status="published"
             changedSincePublishing={changed}
             publishCounts={STORE_PUBLISH}
+            publishNotify={[
+              {
+                id: 'app',
+                label: `Notify ${people} people in the app`,
+                description: 'Each gets a message with their shifts for the week.',
+                defaultChecked: true,
+              },
+              ...(changedPeople === 0
+                ? []
+                : [
+                    {
+                      id: 'sms',
+                      label: `Send an SMS to the ${format.number(String(changedPeople))} ${changedPeople === 1 ? 'person' : 'people'} whose shifts changed`,
+                      description: 'To the number in their record: the changed days and times.',
+                    },
+                  ]),
+            ]}
+            {...(publish === true ? { defaultPublishOpen: true } : {})}
             onChange={(changes) => {
               setAssignments((current) => applyShiftChanges(current, changes))
               setChanged(true)
             }}
-            onPublish={() => {
+            onPublish={({ notify }) => {
               setAssignments((current) => current.map((each) => ({ ...each, changed: false })))
               setChanged(false)
               notice.success(
-                `Changes published. ${format.number(String(STORE_PUBLISH.people))} people were notified.`,
+                [
+                  'Changes published.',
+                  notify.includes('app')
+                    ? `${people} people get a message in the app.`
+                    : `${people} people see their shifts in the app; no message was sent.`,
+                  ...(notify.includes('sms')
+                    ? [`${format.number(String(changedPeople))} also get an SMS.`]
+                    : []),
+                ].join(' '),
               )
             }}
           />
@@ -565,13 +608,23 @@ function SwapDetail({ request, phone }: { request: SwapRequest; phone: boolean }
   )
 }
 
-export function SwapRequests({ phone, focus }: { phone: boolean; focus?: string }) {
+export function SwapRequests({
+  phone,
+  focus,
+  approve = false,
+}: {
+  phone: boolean
+  focus?: string
+  /** The approval's confirmation open on the request in focus. */
+  approve?: boolean
+}) {
   const shiftText = useShiftText()
   const [rows, setRows] = useState<readonly SwapRequest[]>(SWAP_REQUESTS)
   const [selected, setSelected] = useState<string | undefined>(
     focus ?? (phone ? undefined : SWAP_REQUESTS[0]?.id),
   )
   const [asking, setAsking] = useState(false)
+  const [approving, setApproving] = useState(approve)
   const row = rows.find((each) => each.id === selected)
   const index = rows.findIndex((each) => each.id === selected)
   const decide = (id: string, done: string) => {
@@ -606,7 +659,7 @@ export function SwapRequests({ phone, focus }: { phone: boolean; focus?: string 
           label="Approve"
           emphasis="primary"
           onClick={() => {
-            decide(row.id, `Swap of ${row.from} approved. Both were notified.`)
+            setApproving(true)
           }}
         />
       </>
@@ -657,7 +710,8 @@ export function SwapRequests({ phone, focus }: { phone: boolean; focus?: string 
           onOpenChange={setAsking}
           family="destructive"
           actionIcon={CircleX}
-          title={`Reject the swap of ${row?.from ?? ''}?`}
+          title="Reject swap request"
+          subject={row === undefined ? '' : `${row.from} · ${shiftText(row.shift)}`}
           message="The reason is sent to the person who asked."
           reasonLabel="Reason for rejection"
           reasons={SWAP_REJECT_REASONS}
@@ -666,6 +720,42 @@ export function SwapRequests({ phone, focus }: { phone: boolean; focus?: string 
             if (row !== undefined) decide(row.id, `Swap of ${row.from} rejected.`)
           }}
         />
+        {/* Approving moves shifts two people rely on: the change first, who is told a choice. */}
+        {row !== undefined && (
+          <ChangeConfirmDialog
+            open={approving}
+            onOpenChange={setApproving}
+            title="Approve swap"
+            subject={`${row.from} · ${shiftText(row.shift)}`}
+            changes={[
+              {
+                key: 'shift',
+                label: shiftText(row.shift),
+                from: row.from,
+                to: row.to ?? 'Anyone qualified',
+              },
+              ...(row.back === null || row.to === null
+                ? []
+                : [{ key: 'back', label: shiftText(row.back), from: row.to, to: row.from }]),
+            ]}
+            {...(row.check.tone === 'warning' ? { warning: row.check.text } : {})}
+            notify={[row.from, ...(row.to === null ? [] : [row.to])].map((name) => ({
+              id: name,
+              label: `Notify ${name}`,
+              description: 'In the app and by e-mail: the shift and who takes it.',
+              defaultChecked: true,
+            }))}
+            confirmLabel="Approve"
+            onConfirm={(answer) => {
+              decide(
+                row.id,
+                answer.notify.length === 0
+                  ? `Swap of ${row.from} approved. No message was sent.`
+                  : `Swap of ${row.from} approved. ${answer.notify.join(' and ')} notified.`,
+              )
+            }}
+          />
+        )}
         <Toaster layout={phone ? 'phone' : 'desktop'} />
       </Shell>
     </Tenant>
@@ -741,13 +831,25 @@ export function EmergencyPlanner({ phone, rotation }: { phone: boolean; rotation
             defaultRotationOpen={rotation}
             status={published ? 'published' : 'draft'}
             publishCounts={ER_PUBLISH}
+            // A message is the head nurse's choice (P5.28 item 9), checked by the department.
+            publishNotify={[
+              {
+                id: 'app',
+                label: `Notify ${format.number(String(ER_PUBLISH.people))} people in the app`,
+                description: 'Each gets a message with their shifts for the week.',
+                defaultChecked: true,
+              },
+            ]}
             onChange={(changes) => {
               setAssignments((current) => applyShiftChanges(current, changes))
             }}
-            onPublish={() => {
+            onPublish={({ notify }) => {
               setPublished(true)
+              const people = format.number(String(ER_PUBLISH.people))
               notice.success(
-                `Schedule published. ${format.number(String(ER_PUBLISH.people))} people were notified.`,
+                notify.includes('app')
+                  ? `Schedule published. ${people} people get a message in the app.`
+                  : `Schedule published. ${people} people see their shifts in the app; no message was sent.`,
               )
             }}
           />
@@ -808,6 +910,7 @@ export const GROUP_G_ROUTES: ExampleRoute[] = [
   },
   { path: G_ROUTES.clockRecords, render: (phone) => <ClockRecords phone={phone} /> },
   { path: G_ROUTES.storePlanner, render: (phone) => <StorePlanner phone={phone} /> },
+  { path: G_ROUTES.storePublish, render: (phone) => <StorePlanner phone={phone} publish /> },
   { path: G_ROUTES.myShifts, render: (phone) => <StefanShifts phone={phone} /> },
   {
     path: G_ROUTES.myShiftsSwap,
@@ -817,6 +920,10 @@ export const GROUP_G_ROUTES: ExampleRoute[] = [
   {
     path: G_ROUTES.swapRequestWarning,
     render: (phone) => <SwapRequests phone={phone} focus="r3" />,
+  },
+  {
+    path: G_ROUTES.swapRequestApprove,
+    render: (phone) => <SwapRequests phone={phone} focus="r1" approve />,
   },
   {
     path: G_ROUTES.erPlanner,

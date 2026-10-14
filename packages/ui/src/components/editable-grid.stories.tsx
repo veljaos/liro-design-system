@@ -20,6 +20,12 @@ import {
 import { SwitchField } from './checkbox-field'
 import { ARABIC, JAPANESE, LONG } from './field-story-data'
 import { StoryProvider } from './story-frames'
+import {
+  expectBelowShell,
+  expectFirstColumnStays,
+  scrollUnderShell,
+  ShellPage,
+} from './sticky-story-helpers'
 import { toUnits } from './amounts-story-data'
 import { TEXT_ISOLATE } from '../primitives/classes'
 import { cn } from '../primitives/cn'
@@ -1373,5 +1379,62 @@ export const LongSpecificationInteraction: Story = {
     await expect(cellOf('p0-2')).toHaveFocus()
     await expect(cell).toHaveValue('12')
     await settle()
+  },
+}
+
+/*
+ * P5.28 item 4: the header row stays below the shell's sticky header while the page scrolls; in a
+ * card the first column stays at the start while the lines scroll sideways; on phones the totals
+ * card sticks below the shell, never under it.
+ */
+
+const THIRTY_LINES: Line[] = Array.from({ length: 30 }, (_, index) => {
+  const base = FILLED[index % FILLED.length] ?? emptyLine()
+  return { ...base, id: `t${String(index + 1)}` }
+})
+
+/** Thirty lines in a narrow card, on a page under the shell; the page and the grid scroll. */
+export const UnderTheShell: Story = {
+  name: 'Thirty lines under the shell, interaction',
+  tags: ['interaction'],
+  render: () => (
+    <ShellPage>
+      <div className="max-w-120 rounded-md border border-solid border-default bg-surface-raised">
+        <Lines initial={THIRTY_LINES} inCard layout="desktop" />
+      </div>
+    </ShellPage>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const table = within(canvasElement).getByRole('table')
+    const region = table.parentElement
+    if (region === null) throw new Error('no region')
+    await scrollUnderShell(canvasElement, table, 300)
+    await expectBelowShell(canvasElement, within(table).getAllByRole('columnheader')[1] ?? table)
+    const rows = table.querySelectorAll('tbody tr')
+    const first = rows[12]?.querySelector('td')
+    const last = rows[12]?.querySelector('td:nth-last-child(2)')
+    if (first === null || first === undefined || last === null || last === undefined) {
+      throw new Error('no cells')
+    }
+    await expectFirstColumnStays(region, first, last, 120)
+  },
+}
+
+/** A phone: the page scrolls in its frame; the totals card stays right below the shell. */
+export const UnderTheShellPhone: Story = {
+  name: 'Thirty lines under the shell, phone, interaction',
+  tags: ['interaction'],
+  render: () => (
+    <ShellPage width={390} height={720}>
+      <Lines initial={THIRTY_LINES} layout="phone" />
+    </ShellPage>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const totals = canvasElement.querySelector('[data-slot="grid-totals"]')
+    if (totals === null) throw new Error('no totals')
+    await scrollUnderShell(canvasElement, totals, 600)
+    await expectBelowShell(canvasElement, totals)
   },
 }

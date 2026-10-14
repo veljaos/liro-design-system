@@ -84,7 +84,7 @@ const COMPLETED: CoursePageProps = {
   completion: {
     description: 'Completed on 10.10.2026. with 9 of 10 correct answers in the final test.',
     onDownload: noop,
-    certificate: <PrintCertificate {...SAFETY_CERTIFICATE} emblem={<Emblem />} />,
+    certificate: <PrintCertificate {...SAFETY_CERTIFICATE} logo={<Emblem />} />,
   },
 }
 

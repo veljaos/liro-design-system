@@ -1,30 +1,29 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { School } from 'lucide-react'
 import { expect, within } from 'storybook/test'
 import { DateText } from '../components/display-text'
 import { ExampleProvider, PhoneFrame, StoryProvider } from '../components/story-frames'
-import { TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
+import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { settle } from '../primitives/story-helpers'
 import type { PrintColumn } from './print-parts'
 import { GRADES, type GradeRow } from './print-story-data'
 import { PrintGradeReport, type PrintGradeReportProps } from './print-templates'
 
-function Letterhead() {
+/** The school's logo, an image from the application (D18). */
+function Logo() {
   return (
-    <div className="flex items-center gap-3">
-      <span className="flex size-10 items-center justify-center rounded-md border border-solid border-strong text-primary">
-        <School aria-hidden="true" className="size-6" />
-      </span>
-      <div className="flex flex-col">
-        <span className={cn('text-md font-semibold text-primary', TEXT_DIRECTION)}>
-          OŠ „Jovan Popović“ Novi Sad
-        </span>
-        <span className={cn('text-xs text-secondary', TEXT_DIRECTION)}>
-          Primary school · Braće Popović 1, Novi Sad
-        </span>
-      </div>
-    </div>
+    <svg
+      role="img"
+      aria-label="OŠ „Jovan Popović“ Novi Sad"
+      viewBox="0 0 188 32"
+      className="block h-8 w-auto text-logo"
+      fill="currentColor"
+    >
+      <path d="M14 3 2 9v3h24V9zM4 14h4v10H4zm8 0h4v10h-4zm8 0h4v10h-4zM2 26h24v3H2z" />
+      <text x="34" y="22" fontSize="16" fontWeight="700" fontFamily="var(--liro-font-brand)">
+        OŠ Jovan Popović
+      </text>
+    </svg>
   )
 }
 
@@ -44,7 +43,7 @@ const COLUMNS: PrintColumn<GradeRow>[] = [
 const REPORT: PrintGradeReportProps<GradeRow> = {
   title: 'Report card',
   period: 'First term, school year 2026/27',
-  letterhead: <Letterhead />,
+  logo: <Logo />,
   header: 'OŠ „Jovan Popović“ Novi Sad · Report card · Luka Jovanović, 6/2',
   footer: 'OŠ „Jovan Popović“ · Braće Popović 1, 21000 Novi Sad · 021 6400 123',
   details: [
@@ -78,18 +77,9 @@ const REPORT: PrintGradeReportProps<GradeRow> = {
   },
   issued: { place: 'Novi Sad', date: '2026-12-23' },
   signatures: [
-    { key: 'teacher', label: 'Class teacher', name: 'Marija Kovačević' },
-    { key: 'principal', label: 'Principal', name: 'Zoran Stojanović' },
+    { id: 'teacher', label: 'Class teacher', name: 'Marija Kovačević' },
+    { id: 'principal', label: 'Principal', name: 'Zoran Stojanović' },
   ],
-  seal: (
-    <span
-      role="img"
-      aria-label="School seal"
-      className="flex size-24 items-center justify-center rounded-full border-2 border-double border-strong p-2 text-center text-xs text-secondary"
-    >
-      <span className={TEXT_ISOLATE}>OŠ „Jovan Popović“</span>
-    </span>
-  ),
 }
 
 const meta = {
@@ -101,10 +91,11 @@ const meta = {
       description: {
         component:
           '**What for:** a report of results by subject for a period — a school report, a ' +
-          'course transcript: the institution’s letterhead, the title and the period, the ' +
-          'person’s details, the results as a PrintTable (the average as a subtotal row, ' +
-          'semibold under a rule), a summary, remarks, place and date, signatures with an ' +
-          'optional seal. The grades, the average and the outcome are the application’s; ' +
+          'course transcript — as simple as the other printouts (P5.28): the title and the ' +
+          'period at the start, the institution’s logo at the end, the person’s details as a ' +
+          'small key/value block, the results as a PrintTable with thin rules (the average as a ' +
+          'subtotal row), a summary, remarks, place and date, the **electronic signature ' +
+          'fields** (no seal). The grades, the average and the outcome are the application’s; ' +
           'nothing is computed.\n\n' +
           '**When:** a term’s or a year’s report, a transcript of records.\n\n' +
           '**When not:** a certificate (PrintCertificate); grades entered on screen ' +
@@ -212,7 +203,7 @@ export const Arabic: Story = {
           lineType: (row) => row.type,
         }}
         issued={{ date: '2026-12-23' }}
-        signatures={[{ key: 't', label: 'المعلمة', name: 'مريم حسن' }]}
+        signatures={[{ id: 'teacher', label: 'المعلمة', name: 'مريم حسن' }]}
       />
     </StoryProvider>
   ),
@@ -241,7 +232,7 @@ export const Japanese: Story = {
           ],
           rowKey: (row) => row.id,
         }}
-        signatures={[{ key: 't', label: '担任', name: '鈴木 花子' }]}
+        signatures={[{ id: 'teacher', label: '担任', name: '鈴木 花子' }]}
       />
     </StoryProvider>
   ),

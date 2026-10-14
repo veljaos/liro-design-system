@@ -234,6 +234,10 @@ export function MultiSelectField(props: MultiSelectFieldProps) {
                       setActive(-1)
                     }}
                     onKeyDown={onKeyDown}
+                    // A press shows the list (P5.28), as in ComboboxField and SelectField.
+                    onClick={() => {
+                      setOpen(true)
+                    }}
                     onBlur={() => {
                       setOpen(false)
                       setQuery('')

@@ -11,6 +11,12 @@ import { ARABIC, JAPANESE, LONG } from './field-story-data'
 import { StatusBadge, toneFor, type Tone } from './status-badge'
 import type { LineType } from './line-types'
 import { ExampleProvider, expectContentDirection, PhoneFrame, StoryProvider } from './story-frames'
+import {
+  expectBelowShell,
+  expectFirstColumnStays,
+  scrollUnderShell,
+  ShellPage,
+} from './sticky-story-helpers'
 import { DESCRIPTION_MIN_WIDTH } from './data-table-logic'
 import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
@@ -942,4 +948,49 @@ export const LineTypesJapanese: Story = {
       </ExampleProvider>
     </StoryProvider>
   ),
+}
+
+/*
+ * P5.28 item 4: a sticky header stays below the shell's sticky header while the page scrolls (no
+ * `maxHeight` needed), and in a card the first column stays at the start while the table scrolls
+ * sideways.
+ */
+
+/** Thirty rows in a narrow card, on a page under the shell; the page and the table scroll. */
+export const UnderTheShell: Story = {
+  name: 'Thirty rows under the shell, interaction',
+  tags: ['interaction'],
+  render: () => (
+    <ShellPage>
+      <div className="max-w-120 rounded-md border border-solid border-default bg-surface-raised">
+        <DataTable
+          {...BASE}
+          rows={MANY}
+          inCard
+          stickyHeader
+          selection={[]}
+          onSelectionChange={noop}
+          totals={{ amount: <MoneyText value="102482.10" currency="EUR" /> }}
+          totalsLabel="Total"
+        />
+      </div>
+    </ShellPage>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const table = within(canvasElement).getByRole('table')
+    const head = table.querySelector('thead')
+    const region = table.parentElement
+    if (head === null || region === null) throw new Error('no table parts')
+    await scrollUnderShell(canvasElement, table, 300)
+    await expectBelowShell(
+      canvasElement,
+      within(table).getByRole('columnheader', { name: /Customer/ }),
+    )
+    // The checkbox and the number stay at the start; the amounts move.
+    const number = within(table).getByRole('cell', { name: 'F-2026-190' })
+    const amount = table.querySelectorAll('tbody tr')[10]?.querySelector('td:last-child')
+    if (amount === null || amount === undefined) throw new Error('no amount cell')
+    await expectFirstColumnStays(region, number, amount, 120)
+  },
 }

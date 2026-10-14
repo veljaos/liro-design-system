@@ -24,6 +24,12 @@ import {
 } from './attendance-story-data'
 import { SectionCard } from './cards'
 import { ExampleProvider, PhoneFrame, StoryProvider } from './story-frames'
+import {
+  expectBelowShell,
+  expectFirstColumnStays,
+  scrollUnderShell,
+  ShellPage,
+} from './sticky-story-helpers'
 
 /** Applies the reported changes, as the application would. */
 function apply(value: AttendanceValue, changes: readonly AttendanceChange[]): AttendanceValue {
@@ -483,8 +489,12 @@ export const CorrectionDialog: Story = {
   play: async ({ canvasElement }) => {
     await settle()
     const dialog = await within(canvasElement.ownerDocument.body).findByRole('dialog')
-    // The weekday is the provider's format's (a Serbian tenant: "uto 29").
+    // The weekday is in the interface's language, from the provider's locale ("Tue 29", P5.28).
     await expect(dialog).toHaveAccessibleName(/^Correct Ivan Stojanović, \S+ 29$/)
+    // The action is the title; the record stands bold on its own line under it (P5.28 item 6).
+    await expect(dialog.querySelector('[data-slot="dialog-subject"]')).toHaveTextContent(
+      /^Ivan Stojanović, \S+ 29$/,
+    )
     await expect(within(dialog).getByText('8 h, Regular work')).toBeVisible()
   },
 }
@@ -810,5 +820,51 @@ export const ManyRowsKeyboard: Story = {
     await waitFor(async () => {
       await expect(cellAt(canvasElement, 300, 6)).toHaveFocus()
     })
+  },
+}
+
+/*
+ * P5.28 item 4: the header row (the days) stays below the shell's sticky header while the page
+ * scrolls, and the first column (the people) stays at the start while the grid scrolls sideways.
+ */
+
+/**
+ * A crew of 30 over ten days of October in a 480px box, on a page under the shell; the page and
+ * the grid scroll.
+ */
+export const UnderTheShell: Story = {
+  name: 'Thirty people under the shell, interaction',
+  tags: ['interaction'],
+  render: () => (
+    <ExampleProvider>
+      <ShellPage>
+        <div className="max-w-120">
+          <AttendanceGrid
+            label="Timesheet, October 2026"
+            rows={MANY.slice(0, 30)}
+            columns={OCTOBER.slice(0, 10)}
+            codes={TIME_CODES}
+            value={{}}
+            onChange={onChange}
+          />
+        </div>
+      </ShellPage>
+    </ExampleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const grid = within(canvasElement).getByRole('grid')
+    const head = grid.querySelector('[data-sticky-head]')
+    const corner = grid.querySelector('[data-sticky-start]')
+    const region = canvasElement.querySelector<HTMLElement>('[data-slot="attendance-scroll"]')
+    if (head === null || corner === null || region === null) throw new Error('no grid parts')
+    await scrollUnderShell(canvasElement, grid, 400)
+    await expectBelowShell(canvasElement, corner)
+    await expectBelowShell(canvasElement, within(grid).getAllByRole('columnheader')[10] ?? head)
+    // The people stay at the start; the days move.
+    const person = within(grid).getAllByRole('rowheader')[12]
+    const day = within(grid).getAllByRole('gridcell')[128]
+    if (person === undefined || day === undefined) throw new Error('no cells')
+    await expectFirstColumnStays(region, person, day, 120)
   },
 }

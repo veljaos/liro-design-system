@@ -587,3 +587,31 @@ export function createFormat(
   }
   return format
 }
+
+/**
+ * The numbers, amounts and numeric dates of another locale, without its words (P5.28 item 2), for
+ * a provider whose interface language differs from the tenant's conventions: an English
+ * interface for a Serbian company passes `locale="en-RS"` and `format={numericFormat('sr-Latn-RS')}`
+ * and shows "12.345,60 RSD" and "06.10.2026." with English month and weekday names, English long
+ * dates ("Tuesday, October 6, 2026") and the region's first day of the week (Monday in Serbia).
+ *
+ * The rule: month and weekday names, long dates and the week's first day come only from the
+ * provider's `locale`; `format` may replace how digits are written, never the words. That is why
+ * this returns no `monthName`, `weekdayName`, `dateLong` or `businessYear`. `timeZone` is the zone
+ * instants are shown in, as `createFormat`'s.
+ */
+export function numericFormat(locale: string, timeZone?: string): Partial<LiroFormat> {
+  const full = createFormat(locale, {}, timeZone)
+  return {
+    numberScheme: full.numberScheme,
+    moneyDecimals: full.moneyDecimals,
+    number: (value, options) => full.number(value, options),
+    money: (value, currency, options) => full.money(value, currency, options),
+    percent: (value, options) => full.percent(value, options),
+    parseNumber: (text) => full.parseNumber(text),
+    date: (value) => full.date(value),
+    dateTime: (isoInstant) => full.dateTime(isoInstant),
+    time: (isoInstant) => full.time(isoInstant),
+    parseDate: (text) => full.parseDate(text),
+  }
+}

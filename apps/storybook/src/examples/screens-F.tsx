@@ -422,7 +422,8 @@ export function PayrollRun({ phone }: { phone: boolean }) {
               },
             })}
         rerun={{
-          title: 'Rerun payroll for September 2026?',
+          title: 'Rerun payroll',
+          subject: 'September 2026',
           message:
             'The calculated figures of all 46 employees are replaced. Nothing has been posted or sent yet.',
           confirmLabel: 'Rerun',

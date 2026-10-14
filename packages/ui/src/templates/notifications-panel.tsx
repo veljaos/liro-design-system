@@ -90,10 +90,7 @@ export function NotificationsPanel(props: NotificationsPanelProps) {
   return (
     <div
       data-slot="notifications-panel"
-      className={cn(
-        'flex w-90 max-w-[calc(100vw-32px)] flex-col font-sans text-primary',
-        props.className,
-      )}
+      className={cn('flex w-90 max-w-full flex-col font-sans text-primary', props.className)}
     >
       <div className="flex min-h-10 items-center justify-between gap-3 border-0 border-b border-solid border-subtle px-3 pb-2">
         <div className="flex min-w-0 items-baseline gap-2">

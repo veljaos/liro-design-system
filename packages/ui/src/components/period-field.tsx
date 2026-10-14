@@ -5,7 +5,9 @@ import { Calendar } from '../primitives/calendar'
 import { AUTO_DIRECTION, READ_ONLY, TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { Input } from '../primitives/input'
+import { DialogBody, DialogCloseButton, DialogHeader, DialogTitle } from '../primitives/dialog'
 import { Popover, PopoverContent, PopoverTrigger } from '../primitives/popover'
+import { Sheet, SheetContent, SheetTrigger } from '../primitives/sheet'
 import { useLiro } from '../provider/liro-provider'
 import { useCalendarOpen, type DateRange } from './date-field'
 import { fromLocalDate, openingMonth, toLocalDate } from './date-logic'
@@ -19,6 +21,7 @@ import {
   type PeriodRules,
   type QuarterBasis,
 } from './period-logic'
+import { usePhone } from './use-phone'
 
 /*
  * PeriodField (BUILD-PLAN P2.3), carried over from the previous Design System's PeriodPicker
@@ -35,7 +38,11 @@ import {
  *
  * Small buttons: Mantine Button size 'xs' (Button.css: 30px high, 14px horizontal padding, 12px
  * text), our small control height. The caption: Mantine Menu.label (12px, weight 600, dimmed,
- * padding 5px 12px). On a narrow screen the two parts stack, presets first.
+ * padding 5px 12px).
+ *
+ * On a phone (P5.28 item 1) the popover would run off the screen: the field opens a sheet on the
+ * screen's bottom edge instead, titled by the field's label, with the presets first — two columns
+ * of the same buttons — then "Custom range" with one month across the sheet's full width.
  */
 
 /** The message of each preset: text keys only, so the name is always a string. */
@@ -109,6 +116,7 @@ export function PeriodField(props: PeriodFieldProps) {
   // The first day picked in the calendar since it opened; the second applies the range.
   const [picked, setPicked] = useState<string | null>(null)
   const textId = `${useId()}-text`
+  const phone = usePhone()
 
   const choose = (next: DateRange | null) => {
     setInner(next)
@@ -133,120 +141,148 @@ export function PeriodField(props: PeriodFieldProps) {
             />
           )
         }
+        const openChange = (next: boolean) => {
+          if (next) setPicked(null)
+          setOpen(next)
+        }
+        const trigger = (
+          <ButtonPrimitive
+            id={control.id}
+            family="neutral"
+            emphasis="secondary"
+            aria-labelledby={`${control.labelId} ${textId}`}
+            aria-describedby={control.describedBy}
+            disabled={control.disabled}
+            className={cn(
+              'max-w-full pe-3 font-regular',
+              // A button cannot be aria-invalid; the error is linked by aria-describedby.
+              control.invalid && 'border-status-danger-fg',
+            )}
+          >
+            <CalendarDays aria-hidden="true" className="size-3.75 shrink-0" />
+            {/* 2px of room at the end, taken back by the margin: Chromium on Linux draws
+                hinted text wider than it lays it out, and `truncate` cut the last digit. */}
+            <span id={textId} className={cn('-me-0.5 truncate pe-0.5', TEXT_DIRECTION)}>
+              {text}
+            </span>
+            <ChevronDown aria-hidden="true" className="size-3.5 shrink-0" />
+          </ButtonPrimitive>
+        )
+        /** The presets and "Clear" in `className`'s layout. */
+        const presetButtons = (className: string) => (
+          <div className={className}>
+            {presets.map((preset) => {
+              const isActive = preset === active
+              return (
+                <ButtonPrimitive
+                  key={preset}
+                  family={isActive ? 'primary' : 'neutral'}
+                  emphasis={isActive ? 'secondary' : 'menu'}
+                  aria-pressed={isActive}
+                  className={cn(PRESET, isActive ? 'font-semibold' : 'font-regular')}
+                  onClick={() => {
+                    choose(presetRange(preset, rules))
+                  }}
+                >
+                  <span className={TEXT_DIRECTION}>{messages[PRESET_MESSAGE[preset]]}</span>
+                </ButtonPrimitive>
+              )
+            })}
+            {props.clearable === true && (
+              <>
+                <div
+                  role="separator"
+                  className="col-span-full my-1 border-0 border-t border-solid border-subtle"
+                />
+                <ButtonPrimitive
+                  family="neutral"
+                  emphasis="menu"
+                  className={cn(PRESET, 'font-regular')}
+                  onClick={() => {
+                    choose(null)
+                  }}
+                >
+                  <span className={TEXT_DIRECTION}>{messages['period.clear']}</span>
+                </ButtonPrimitive>
+              </>
+            )}
+          </div>
+        )
+        /** "Custom range" and the month; `fill`: across the sheet's width (phones). */
+        const calendar = (fill: boolean) => (
+          <>
+            <p
+              className={cn(
+                'm-0 px-3 py-[5px] text-xs font-semibold text-secondary',
+                TEXT_DIRECTION,
+              )}
+            >
+              {messages['period.customRange']}
+            </p>
+            <Calendar
+              key={openings}
+              fullWidth={fill}
+              mode="range"
+              labels={{
+                previousMonth: messages['calendar.previousMonth'],
+                nextMonth: messages['calendar.nextMonth'],
+                navigation: messages['calendar.navigation'],
+              }}
+              defaultMonth={openingMonth(start, liro.today)}
+              selected={
+                picked === null
+                  ? {
+                      from: start === null ? undefined : toLocalDate(start),
+                      to: end === null ? undefined : toLocalDate(end),
+                    }
+                  : { from: toLocalDate(picked), to: undefined }
+              }
+              onSelect={(_range, day: Date) => {
+                const iso = fromLocalDate(day)
+                if (picked === null) {
+                  setPicked(iso)
+                  return
+                }
+                choose(iso < picked ? { start: iso, end: picked } : { start: picked, end: iso })
+              }}
+            />
+          </>
+        )
         return (
           <>
-            <Popover
-              open={open}
-              onOpenChange={(next) => {
-                if (next) setPicked(null)
-                setOpen(next)
-              }}
-            >
-              <PopoverTrigger asChild>
-                <ButtonPrimitive
-                  id={control.id}
-                  family="neutral"
-                  emphasis="secondary"
-                  aria-labelledby={`${control.labelId} ${textId}`}
-                  aria-describedby={control.describedBy}
-                  disabled={control.disabled}
-                  className={cn(
-                    'max-w-full pe-3 font-regular',
-                    // A button cannot be aria-invalid; the error is linked by aria-describedby.
-                    control.invalid && 'border-status-danger-fg',
-                  )}
+            {phone ? (
+              <Sheet open={open} onOpenChange={openChange}>
+                <SheetTrigger asChild>{trigger}</SheetTrigger>
+                <SheetContent
+                  side="bottom"
+                  aria-describedby={undefined}
+                  className="h-auto max-h-[calc(100%-40px)] rounded-t-lg pb-[env(safe-area-inset-bottom)]"
                 >
-                  <CalendarDays aria-hidden="true" className="size-3.75 shrink-0" />
-                  {/* 2px of room at the end, taken back by the margin: Chromium on Linux draws
-                      hinted text wider than it lays it out, and `truncate` cut the last digit. */}
-                  <span id={textId} className={cn('-me-0.5 truncate pe-0.5', TEXT_DIRECTION)}>
-                    {text}
-                  </span>
-                  <ChevronDown aria-hidden="true" className="size-3.5 shrink-0" />
-                </ButtonPrimitive>
-              </PopoverTrigger>
-              <PopoverContent
-                align="start"
-                aria-labelledby={control.labelId}
-                className="flex w-auto flex-col p-0 shadow-md sm:flex-row"
-              >
-                <div className="flex w-full flex-col gap-0.5 border-0 border-b border-solid border-subtle p-1 sm:w-[190px] sm:border-e sm:border-b-0">
-                  {presets.map((preset) => {
-                    const isActive = preset === active
-                    return (
-                      <ButtonPrimitive
-                        key={preset}
-                        family={isActive ? 'primary' : 'neutral'}
-                        emphasis={isActive ? 'secondary' : 'menu'}
-                        aria-pressed={isActive}
-                        className={cn(PRESET, isActive ? 'font-semibold' : 'font-regular')}
-                        onClick={() => {
-                          choose(presetRange(preset, rules))
-                        }}
-                      >
-                        <span className={TEXT_DIRECTION}>{messages[PRESET_MESSAGE[preset]]}</span>
-                      </ButtonPrimitive>
-                    )
-                  })}
-                  {props.clearable === true && (
-                    <>
-                      <div
-                        role="separator"
-                        className="my-1 border-0 border-t border-solid border-subtle"
-                      />
-                      <ButtonPrimitive
-                        family="neutral"
-                        emphasis="menu"
-                        className={cn(PRESET, 'font-regular')}
-                        onClick={() => {
-                          choose(null)
-                        }}
-                      >
-                        <span className={TEXT_DIRECTION}>{messages['period.clear']}</span>
-                      </ButtonPrimitive>
-                    </>
+                  <DialogHeader>
+                    <DialogTitle>{props.label}</DialogTitle>
+                    <DialogCloseButton label={messages['dialog.close']} />
+                  </DialogHeader>
+                  <DialogBody className="gap-3">
+                    {presetButtons('grid grid-cols-2 gap-1')}
+                    {calendar(true)}
+                  </DialogBody>
+                </SheetContent>
+              </Sheet>
+            ) : (
+              <Popover open={open} onOpenChange={openChange}>
+                <PopoverTrigger asChild>{trigger}</PopoverTrigger>
+                <PopoverContent
+                  align="start"
+                  aria-labelledby={control.labelId}
+                  className="flex w-auto flex-row p-0 shadow-md"
+                >
+                  {presetButtons(
+                    'flex w-[190px] flex-col gap-0.5 border-0 border-e border-solid border-subtle p-1',
                   )}
-                </div>
-                <div className="flex flex-col px-4 py-3">
-                  <p
-                    className={cn(
-                      'm-0 px-3 py-[5px] text-xs font-semibold text-secondary',
-                      TEXT_DIRECTION,
-                    )}
-                  >
-                    {messages['period.customRange']}
-                  </p>
-                  <Calendar
-                    key={openings}
-                    mode="range"
-                    labels={{
-                      previousMonth: messages['calendar.previousMonth'],
-                      nextMonth: messages['calendar.nextMonth'],
-                      navigation: messages['calendar.navigation'],
-                    }}
-                    defaultMonth={openingMonth(start, liro.today)}
-                    selected={
-                      picked === null
-                        ? {
-                            from: start === null ? undefined : toLocalDate(start),
-                            to: end === null ? undefined : toLocalDate(end),
-                          }
-                        : { from: toLocalDate(picked), to: undefined }
-                    }
-                    onSelect={(_range, day: Date) => {
-                      const iso = fromLocalDate(day)
-                      if (picked === null) {
-                        setPicked(iso)
-                        return
-                      }
-                      choose(
-                        iso < picked ? { start: iso, end: picked } : { start: picked, end: iso },
-                      )
-                    }}
-                  />
-                </div>
-              </PopoverContent>
-            </Popover>
+                  <div className="flex flex-col px-4 py-3">{calendar(false)}</div>
+                </PopoverContent>
+              </Popover>
+            )}
             {props.startName !== undefined && (
               <input type="hidden" name={props.startName} value={start ?? ''} />
             )}

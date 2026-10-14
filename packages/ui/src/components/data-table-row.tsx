@@ -27,9 +27,10 @@ export const CELL = 'px-4 py-3'
 /**
  * A selected row (P3.6, owner): besides its neutral background, a 3px bar in border.selected on
  * the row's start edge, drawn by the first cell, so selected differs from hovered by shape too.
+ * A sticky first cell (in a card, P5.28) is positioned already and stays sticky.
  */
 const SELECTED_ROW =
-  "[&>td:first-child]:relative [&>td:first-child]:before:absolute [&>td:first-child]:before:inset-y-0 [&>td:first-child]:before:start-0 [&>td:first-child]:before:border-0 [&>td:first-child]:before:border-s-[3px] [&>td:first-child]:before:border-solid [&>td:first-child]:before:border-selected [&>td:first-child]:before:content-['']"
+  "[&>td:first-child:not(.sticky)]:relative [&>td:first-child]:before:absolute [&>td:first-child]:before:inset-y-0 [&>td:first-child]:before:start-0 [&>td:first-child]:before:border-0 [&>td:first-child]:before:border-s-[3px] [&>td:first-child]:before:border-solid [&>td:first-child]:before:border-selected [&>td:first-child]:before:content-['']"
 
 /**
  * A subtotal's cells (P5.18): the rule above in border.strong (line-types' SUBTOTAL_RULE), the
@@ -75,6 +76,20 @@ export interface LineClasses {
   cells: readonly [readonly string[], readonly string[]]
   select: readonly [string, string]
   actions: readonly [string, string]
+  /** The row's own surface when its first column is sticky (P5.28 item 4), else ''. */
+  row: string
+}
+
+/**
+ * The sticky first column (P5.28 item 4): in a card the selection column and the first column stay
+ * at the start while the table scrolls sideways, on the row's surface (`bg-inherit`: the row is
+ * raised, sunken under the pointer, selected when selected), under the header and over the cells.
+ * The selection column is 48px wide (16px padding, the 16px checkbox), so the first column stands
+ * 48px from the start after it.
+ */
+export const STICKY_START_SELECT = 'sticky start-0 z-[5]'
+export function stickyStartFirst(selectable: boolean): string {
+  return selectable ? 'sticky start-12 z-[5]' : 'sticky start-0 z-[5]'
 }
 
 const ROW_LINE = ['border-0 border-b border-solid border-default', 'border-0'] as const
@@ -84,11 +99,14 @@ export function lineClasses<Row extends RowData>(
   columns: readonly DataTableColumn<Row>[],
   virtualize: boolean,
   oneLine: boolean,
+  stickyStart: { selectable: boolean } | null = null,
 ): LineClasses {
   const cells = (rowLine: string) =>
-    columns.map((column) =>
+    columns.map((column, index) =>
       cn(
         CELL,
+        stickyStart !== null &&
+          index === 0 && [stickyStartFirst(stickyStart.selectable), 'bg-inherit'],
         // A column's own minimum width stands on its header cell (P5.23).
         column.minWidth === undefined && 'min-w-16',
         rowLine,
@@ -98,12 +116,20 @@ export function lineClasses<Row extends RowData>(
         oneLine && 'truncate',
       ),
     )
-  const select = (rowLine: string) => cn(CELL, 'w-px', rowLine, virtualize && 'py-0')
+  const select = (rowLine: string) =>
+    cn(
+      CELL,
+      'w-px',
+      rowLine,
+      virtualize && 'py-0',
+      stickyStart !== null && [STICKY_START_SELECT, 'bg-inherit'],
+    )
   const actions = (rowLine: string) => cn('w-px px-2 py-0 text-end', rowLine)
   return {
     cells: [cells(ROW_LINE[0]), cells(ROW_LINE[1])],
     select: [select(ROW_LINE[0]), select(ROW_LINE[1])],
     actions: [actions(ROW_LINE[0]), actions(ROW_LINE[1])],
+    row: stickyStart === null ? '' : 'bg-surface-raised',
   }
 }
 
@@ -232,7 +258,7 @@ function TableRowView<Row extends RowData>({
         : {})}
       className={cn(
         virtualize && 'h-11',
-        selected && [SELECTED_ROW, 'bg-surface-selected'],
+        selected ? [SELECTED_ROW, 'bg-surface-selected'] : shared.classes.row,
         shared.clickable &&
           'cursor-pointer outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus',
         shared.clickable && !selected && 'hover:bg-surface-sunken',

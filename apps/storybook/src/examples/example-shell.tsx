@@ -246,6 +246,8 @@ export const TONES = {
   'Not yet in force': 'neutral',
   'No longer in force': 'danger',
   Final: 'success',
+  // P5.28 screens: an excuse sent, waiting for the class teacher
+  'Excuse sent': 'neutral',
 } as const
 
 /** A status of the examples. */

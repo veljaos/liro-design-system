@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react'
+import { useScreen } from '../provider/screen'
 
 /** Phones are narrower than the sm breakpoint (48em): DataTable, KeyValueList, FilterBar (owner). */
 const WIDE_QUERY = '(min-width: 48em)'
@@ -68,13 +69,18 @@ export const phoneStore = phone
 /**
  * Whether the viewport is a phone's, for components that render a different layout there (real
  * branching, Appendix B.5). It changes only after the viewport has stayed across 48em for
- * LAYOUT_SETTLE. On the server: not.
+ * LAYOUT_SETTLE. On the server: not. Inside a frame that stands for a phone's screen (the stories'
+ * PhoneFrame, provider/screen.ts) it is a phone whatever the window's width (P5.28).
  */
 export function usePhone(): boolean {
-  return useSyncExternalStore(phone.subscribe, phone.read, () => false)
+  const screen = useScreen()
+  const viewport = useSyncExternalStore(phone.subscribe, phone.read, () => false)
+  return screen?.phone ?? viewport
 }
 
 /** Whether the viewport is narrower than md (62em), settled as usePhone. On the server: not. */
 export function useBelowMd(): boolean {
-  return useSyncExternalStore(belowMd.subscribe, belowMd.read, () => false)
+  const screen = useScreen()
+  const viewport = useSyncExternalStore(belowMd.subscribe, belowMd.read, () => false)
+  return screen?.phone === true || viewport
 }

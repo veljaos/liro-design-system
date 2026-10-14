@@ -118,7 +118,7 @@ function LookupList({
       id={listId}
       role="listbox"
       aria-labelledby={labelledBy}
-      className={cn('max-h-80 overflow-y-auto', hidden && 'hidden')}
+      className={cn('max-h-80 overflow-y-auto [overflow-anchor:none]', hidden && 'hidden')}
     >
       <div className="relative w-full" style={{ height: virtualizer.getTotalSize() }}>
         {virtualizer.getVirtualItems().map((item) => {
@@ -405,7 +405,7 @@ export function LookupField(props: LookupFieldProps) {
                 if (!next) close()
                 else setOpen(true)
               }}
-              className="min-w-[min(20rem,calc(100vw-2rem))]"
+              className="min-w-[min(20rem,var(--radix-popover-content-available-width))]"
               onOptionHover={(index) => {
                 if (isChoosable(rows[index])) setActive(index)
               }}

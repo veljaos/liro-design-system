@@ -1,11 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { Ban, PauseCircle, UserRound } from 'lucide-react'
+import { Ban, ChefHat, PauseCircle, Percent, Receipt, UserRound } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { expect, fn, userEvent, within } from 'storybook/test'
 import { settle } from '../primitives/story-helpers'
 import { Button } from './button'
 import { CartPanel } from './cart-panel'
+import { AdvanceList } from './advance-list'
 import { CART_LINES, CART_TOTAL, CART_TOTALS, CURRENCY } from './pos-story-data'
+import { ADVANCES, TAB_LINES } from './sale-story-data'
 import { ExampleProvider, PhoneFrame, StoryProvider } from './story-frames'
 
 function Till({ children }: { children: ReactNode }) {
@@ -38,7 +40,11 @@ const meta = {
           'application as a decimal string; a quantity change is reported, and the new totals ' +
           'settle in place (`pending`).\n\n' +
           '**When:** the cart of PosShell; a kiosk’s order.\n\n' +
-          '**When not:** document lines (EditableGrid); a read-only receipt (ReceiptPreview).',
+          '**When not:** document lines (EditableGrid); a read-only receipt (ReceiptPreview).\n\n' +
+          '**P5.28:** the sale’s kind under the title and a marker for a kind that is not a real ' +
+          'sale; the application’s details (the buyer, open advances); a line’s note, its state ' +
+          '(“Sent to the bar · 18:15”) and an edit button; the total’s own words (“To pay”). ' +
+          'Promotions and an order discount are rows and line texts the application computes.',
       },
     },
   },
@@ -226,5 +232,76 @@ export const Stepping: Story = {
     await expect(args.onQuantityChange).toHaveBeenCalledWith('c3', '2')
     // The quantity and the line total are the application's: unchanged until it sends new ones.
     await expect(quantity).toHaveValue('1')
+  },
+}
+
+/** Training: the kind under the title and the marker above the lines. */
+export const Training: Story = {
+  args: {
+    kindLabel: 'Training · Sale',
+    marker: 'Training — this is not a fiscal receipt',
+  },
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement.querySelector('[data-slot="cart-marker"]')).toHaveTextContent(
+      'Training — this is not a fiscal receipt',
+    )
+  },
+}
+
+/**
+ * An open tab: two lines sent to the bar, one new with a note; a 3-for-2 promotion, happy hour and
+ * an order discount, all computed by the application; Send order before Bill.
+ */
+export const OpenTab: Story = {
+  name: 'Open tab',
+  args: {
+    title: 'Table 3',
+    lines: TAB_LINES,
+    total: '990.00',
+    totals: [
+      { id: 'subtotal', label: 'Subtotal', value: '1100.00' },
+      { id: 'order', label: 'Regular guest −10%', value: '-110.00' },
+      { id: 'vat', label: 'VAT 20% included', value: '165.00' },
+    ],
+    onEditLine: () => undefined,
+    chargeLabel: 'Bill 990,00 RSD',
+    actions: (
+      <>
+        <Button family="neutral" icon={Percent} label="Discount" />
+        <Button family="primary" icon={ChefHat} label="Send order" />
+      </>
+    ),
+  },
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('button', { name: 'Edit Baklava' })).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('Not sent yet')
+    await expect(canvasElement).toHaveTextContent('One without walnuts')
+  },
+}
+
+/** A buyer's advances deducted on the final sale: the rest to pay. */
+export const AdvancesDeducted: Story = {
+  name: 'Advances deducted',
+  args: {
+    kindLabel: 'Normal · Sale',
+    total: '0.00',
+    totalLabel: 'To pay',
+    totals: [
+      { id: 'sale', label: 'Sale', value: '1011.00' },
+      { id: 'advances', label: 'Advances deducted', value: '-1011.00' },
+    ],
+    details: (
+      <AdvanceList
+        advances={ADVANCES.slice(0, 1)}
+        currency={CURRENCY}
+        defaultSelected={['a2201']}
+        onSelectionChange={() => undefined}
+        chosenTotal="1011.00"
+      />
+    ),
+    headerActions: <Button family="neutral" icon={Receipt} label="Receipt kind" />,
   },
 }

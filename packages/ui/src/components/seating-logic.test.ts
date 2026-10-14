@@ -8,6 +8,7 @@ import {
   sameSeat,
   seatCentres,
   seatId,
+  seatingChanges,
   seatingCounts,
   type SeatingGuest,
   type SeatingTable,
@@ -187,5 +188,35 @@ describe('the guest list', () => {
   it('leaves out an empty group of guests not seated', () => {
     const seated = GUESTS.filter((guest) => guest.seat?.tableId === 't1')
     expect(guestGroups(seated, [ROUND]).map((group) => group.id)).toEqual(['t1'])
+  })
+})
+
+describe('seatingChanges (P5.28 item 9)', () => {
+  const SAVED: SeatingGuest[] = [
+    { id: 'a', name: 'Ana', seat: { tableId: 't1', seat: 1 } },
+    { id: 'b', name: 'Ivan', seat: null },
+    { id: 'c', name: 'Mila', seat: { tableId: 't2', seat: 3 } },
+    { id: 'd', name: 'Uroš', seat: { tableId: 't2', seat: 4 } },
+  ]
+
+  it('lists every guest seated, moved or unseated since the plan was saved', () => {
+    const now: SeatingGuest[] = [
+      { id: 'a', name: 'Ana', seat: { tableId: 't3', seat: 2 } },
+      { id: 'b', name: 'Ivan', seat: { tableId: 't1', seat: 1 } },
+      { id: 'c', name: 'Mila', seat: null },
+      { id: 'd', name: 'Uroš', seat: { tableId: 't2', seat: 4 } },
+    ]
+    expect(seatingChanges(SAVED, now)).toEqual([
+      { guestId: 'a', from: { tableId: 't1', seat: 1 }, to: { tableId: 't3', seat: 2 } },
+      { guestId: 'b', from: null, to: { tableId: 't1', seat: 1 } },
+      { guestId: 'c', from: { tableId: 't2', seat: 3 }, to: null },
+    ])
+  })
+
+  it('is empty when nothing changed, and counts a new guest as seated', () => {
+    expect(seatingChanges(SAVED, SAVED)).toEqual([])
+    expect(
+      seatingChanges(SAVED, [{ id: 'e', name: 'Vuk', seat: { tableId: 't4', seat: 1 } }]),
+    ).toEqual([{ guestId: 'e', from: null, to: { tableId: 't4', seat: 1 } }])
   })
 })

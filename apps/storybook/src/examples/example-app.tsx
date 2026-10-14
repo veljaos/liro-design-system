@@ -1,6 +1,7 @@
 import { useCallback, useState, type ReactNode } from 'react'
 import { ExampleProvider, PhoneFrame } from '../../../../packages/ui/src/components/story-frames'
 import './dataset-checks'
+import { ExampleStateProvider } from './example-state'
 import { FEATURED, INVOICES } from './examples-story-data'
 import {
   Navigate,
@@ -96,6 +97,10 @@ export function ExampleApp({ start, phone = false }: { start: string; phone?: bo
   const navigate = useCallback((next: string) => {
     setPath(next)
     window.scrollTo(0, 0)
+    // On a phone the page scrolls inside the phone frame (P5.28): a new screen starts at its top.
+    document.querySelectorAll('[data-liro-phone-page]').forEach((page) => {
+      page.scrollTo(0, 0)
+    })
   }, [])
   // The notifications' read state lives above the screens, as the Core keeps it.
   const [items, setItems] = useState(NOTIFICATIONS)
@@ -108,8 +113,11 @@ export function ExampleApp({ start, phone = false }: { start: string; phone?: bo
     <Navigate.Provider value={navigate}>
       <Notifications.Provider value={{ items, setRead }}>
         <ExampleProvider linkComponent={RouterLink}>
-          {/* A new screen starts with fresh state, as a page of the application does. */}
-          <Screen key={path} path={path} phone={phone} />
+          {/* What must outlive a screen (an open tab, the till's journal) is kept above it. */}
+          <ExampleStateProvider>
+            {/* A new screen starts with fresh state, as a page of the application does. */}
+            <Screen key={path} path={path} phone={phone} />
+          </ExampleStateProvider>
         </ExampleProvider>
       </Notifications.Provider>
     </Navigate.Provider>

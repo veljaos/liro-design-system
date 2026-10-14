@@ -54,6 +54,7 @@ import { type MenuEntry } from './dropdown-menu'
 import { EmptyState, type EmptyAction } from './empty-state'
 import { CursorPagination } from './navigation'
 import { RefetchLoader } from './refetch-loader'
+import { STICKY_CLEARANCE, STICKY_HEAD, useStickyHead } from './sticky-head'
 import { usePhone } from './use-phone'
 import { keepFocusedRow, overscanRows, spacersBetween } from './virtual-rows'
 
@@ -64,7 +65,8 @@ import { keepFocusedRow, overscanRows, spacersBetween } from './virtual-rows'
  *
  * The previous Design System's values (the owner, 2026-09-30, docs/decisions.md "Table"):
  * - table font size sm (13px), cells 12px (sm) top and bottom and 16px (md) at the sides;
- * - the header row on surface.sunken; sticky when `stickyHeader`, always when virtualized;
+ * - the header row on surface.sunken; sticky below the shell's sticky top (`stickyHeader`, default
+ *   true since P5.28 item 4; always when virtualized);
  * - minimum column width 64px; below 640px the table scrolls sideways inside its container;
  *   resizable, the table is exactly as wide as its columns, so resizing one never moves another;
  * - rows highlight under the pointer only when they can be pressed;
@@ -214,7 +216,12 @@ export interface DataTableProps<Row extends RowData> {
   /** Scrolls the table to a row, drawing it first when virtualized (`DataTableHandle`). */
   ref?: Ref<DataTableHandle>
 
-  /** The header stays at the top while the rows scroll (inside `maxHeight`). */
+  /**
+   * The header stays in view while the rows scroll: below the shell's sticky top while the page
+   * scrolls (P5.28 item 4), and at the top inside `maxHeight`. Default true: every table's header
+   * stays below the shell; false only where the table is never taller than the screen and its
+   * header must not move (none in the library).
+   */
   stickyHeader?: boolean
   /**
    * The table sits in a card (ListPage, P4.3): the table reaches the card's edges, the parts above
@@ -318,7 +325,10 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
   // with dividers instead.
   const flat = cards && props.inCard === true
   const virtualize = props.virtualize === true
-  const sticky = props.stickyHeader === true || virtualize
+  // Every table's header stays below the shell by default (P5.28 item 4).
+  const sticky = props.stickyHeader !== false || virtualize
+  // In a card the first column stays at the start while the table scrolls sideways (P5.28 item 4).
+  const stickyStart = props.inCard === true && !cards
   const resizable = props.resizable === true && !cards
   // Line types (P5.18): every row a normal line unless the application says otherwise.
   const typeOf = (row: Row): LineType => props.lineType?.(row) ?? 'line'
@@ -356,6 +366,8 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
   // The scroll area takes the focus only while it scrolls, so the keyboard can scroll it (WCAG
   // 2.1.1; axe scrollable-region-focusable) and a table that fits adds no tab stop.
   const scroller = useRef<HTMLDivElement>(null)
+  // The header stays below the shell while the page scrolls (P5.28 item 4).
+  useStickyHead(scroller, sticky && !cards)
   const [scrolls, setScrolls] = useState(false)
   useEffect(() => {
     const element = scroller.current
@@ -525,7 +537,7 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
       lineText,
       lineKind,
       latest,
-      classes: lineClasses(columns, virtualize, oneLine),
+      classes: lineClasses(columns, virtualize, oneLine, stickyStart ? { selectable } : null),
     }),
     [
       columns,
@@ -540,6 +552,7 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
       rowActions,
       lineText,
       lineKind,
+      stickyStart,
     ],
   )
 
@@ -586,7 +599,9 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
     })
   }
 
-  const header = (column: DataTableColumn<Row>) => {
+  const header = (column: DataTableColumn<Row>, index: number) => {
+    // The corner (the first column's header) stays at the start too (P5.28 item 4).
+    const corner = stickyStart && index === 0
     const align = column.align ?? 'start'
     const sortable = column.sortable === true && onSortChange !== undefined
     const sorted = sort?.column === column.id ? sort.direction : null
@@ -595,6 +610,7 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
     return (
       <th
         key={column.id}
+        {...(corner ? { 'data-sticky-start': '' } : {})}
         ref={(element) => {
           if (element === null) headerCells.current.delete(column.id)
           else headerCells.current.set(column.id, element)
@@ -606,7 +622,9 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
           'group/header border-0 border-b border-solid border-default bg-surface-sunken font-bold text-primary',
           column.minWidth === undefined && 'min-w-16',
           ALIGN[align],
-          sticky ? 'sticky top-0 z-10' : resizable && 'relative',
+          sticky ? STICKY_HEAD : resizable && 'relative',
+          corner && ['sticky', selectable ? 'start-12' : 'start-0'],
+          sticky || corner ? (corner ? 'z-20' : 'z-10') : undefined,
           oneLine && 'truncate',
         )}
         // Without resizing, a column's minimum width holds in the automatic layout (P5.23); the
@@ -723,7 +741,11 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
     totals !== undefined && rows.length > 0 ? (
       <tfoot>
         <tr aria-rowindex={virtualize ? rows.length + 2 : undefined}>
-          {selectable && <td className={cn(CELL, 'bg-surface-sunken', TOTALS_LINE)} />}
+          {selectable && (
+            <td
+              className={cn(CELL, 'bg-surface-sunken', TOTALS_LINE, stickyStart && 'start-0 z-20')}
+            />
+          )}
           {columns.map((column, index) => {
             const value = totals[column.id] ?? (index === 0 ? props.totalsLabel : undefined) ?? null
             return (
@@ -733,6 +755,7 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
                   CELL,
                   'min-w-16 bg-surface-sunken font-semibold text-primary',
                   TOTALS_LINE,
+                  stickyStart && index === 0 && (selectable ? 'start-12 z-20' : 'start-0 z-20'),
                   ALIGN[column.align ?? 'start'],
                   column.numeric === true && 'tabular-nums',
                   oneLine && 'truncate',
@@ -992,6 +1015,7 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
           aria-busy={cards && props.loading === true ? true : undefined}
           className={cn(
             'overflow-auto',
+            !cards && sticky && STICKY_CLEARANCE,
             // In a card, phone cards stand 16px inside its edges, as the rows' text does.
             cards && !flat && edge,
             FOCUS_RING,
@@ -1029,15 +1053,18 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
                   {hasActions && <col style={{ width: ACTIONS_WIDTH }} />}
                 </colgroup>
               )}
-              <thead>
+              <thead data-sticky-head="">
                 <tr aria-rowindex={virtualize ? 1 : undefined}>
                   {selectable && (
                     <th
                       scope="col"
+                      {...(stickyStart ? { 'data-sticky-start': '' } : {})}
                       className={cn(
                         CELL,
                         'w-px border-0 border-b border-solid border-default bg-surface-sunken',
-                        sticky && 'sticky top-0 z-10',
+                        sticky && STICKY_HEAD,
+                        stickyStart && 'sticky start-0',
+                        stickyStart ? 'z-20' : sticky && 'z-10',
                       )}
                     >
                       <Checkbox
@@ -1056,7 +1083,7 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
                     <td
                       className={cn(
                         'w-px border-0 border-b border-solid border-default bg-surface-sunken',
-                        sticky && 'sticky top-0 z-10',
+                        sticky && [STICKY_HEAD, 'z-10'],
                       )}
                     />
                   )}

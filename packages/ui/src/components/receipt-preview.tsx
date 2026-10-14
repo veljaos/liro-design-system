@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { TEXT_DIRECTION } from '../primitives/classes'
+import { TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 
@@ -12,6 +12,15 @@ import { useLiro } from '../provider/liro-provider'
  * Everything comes from props; every amount is a decimal string written by `format` (never
  * rounded) with tabular digits, so the columns line up as on a printed receipt. Dashed rules
  * divide the parts. For print the strip loses its frame and shadow and is never split.
+ *
+ * P5.28 (item 21): the parts a fiscal receipt prints, every word the application's data — a
+ * `banner` on top and an `end` line at the bottom between double rules ("FISCAL RECEIPT", "END OF
+ * FISCAL RECEIPT"), the receipt's kind as a `kindLine` between dashed rules above the items
+ * ("NORMAL SALE"), a `marker` for a kind that is not a real sale, printed boxed and bold under
+ * the facts and again above the footer ("THIS IS NOT A FISCAL RECEIPT"), a `recap` table (the tax
+ * per label: label, name, rate, amount — columns and rows from the application), `issuedFacts`
+ * after it (the processor's number and time, the counter) and a `signature` line where the
+ * application's rules ask for one.
  */
 
 export interface ReceiptItem {
@@ -38,6 +47,22 @@ export interface ReceiptAmount {
   strong?: boolean
 }
 
+/** A column of the recap table; an `amount` column holds decimal strings, written by `format`. */
+export interface ReceiptRecapColumn {
+  id: string
+  label: string
+  amount?: boolean
+}
+
+/** A table under the totals (the tax per label), from the application. */
+export interface ReceiptRecap {
+  columns: readonly ReceiptRecapColumn[]
+  /** Each row's cells by column id: text, or a decimal string in an amount column. */
+  rows: readonly { id: string; cells: Readonly<Record<string, string>> }[]
+  /** Rows under the table ("Total tax"). */
+  totals?: readonly ReceiptAmount[]
+}
+
 /** A fact of the receipt: its number, the date and time, the cashier (text, as given). */
 export interface ReceiptFact {
   id: string
@@ -60,12 +85,30 @@ export interface ReceiptPreviewProps {
   currency?: string
   /** The paper's width. Default '80mm'. */
   paper?: '58mm' | '80mm'
+  /** A line on top between double rules ("FISCAL RECEIPT"), from the application. */
+  banner?: string
+  /** The last line between double rules ("END OF FISCAL RECEIPT"), from the application. */
+  end?: string
+  /** The receipt's kind between dashed rules above the items ("NORMAL SALE"). */
+  kindLine?: string
+  /**
+   * The words that mark a receipt that is not a real sale ("THIS IS NOT A FISCAL RECEIPT"),
+   * printed boxed under the facts and again above the footer.
+   */
+  marker?: string
+  /** A table under the payments: the tax per label. */
+  recap?: ReceiptRecap
+  /** Facts after the recap: the processor's number and time, the counter (text, as given). */
+  issuedFacts?: readonly ReceiptFact[]
+  /** A line to sign under these words ("Buyer's signature"), where the rules ask for one. */
+  signature?: string
   /** The receipt's name for assistive technology. Default: `messages['receipt.title']`. */
   label?: string
   className?: string
 }
 
 const RULE = 'border-0 border-t border-dashed border-strong'
+const DOUBLE = 'border-0 border-y-[3px] border-double border-strong'
 
 /** A till receipt from props, as it prints: narrow, monospaced figures, nothing computed. */
 export function ReceiptPreview(props: ReceiptPreviewProps) {
@@ -96,6 +139,34 @@ export function ReceiptPreview(props: ReceiptPreviewProps) {
         ))}
       </dl>
     )
+  const factRows = (rows: readonly ReceiptFact[] | undefined) =>
+    rows !== undefined &&
+    rows.length > 0 && (
+      <dl className={cn('m-0 flex flex-col gap-0.5 pt-2', RULE)}>
+        {rows.map((fact) => (
+          <div key={fact.id} className="flex items-baseline justify-between gap-3">
+            <dt className={TEXT_DIRECTION}>{fact.label}</dt>
+            <dd className="m-0 text-end tabular-nums">
+              <bdi>{fact.value}</bdi>
+            </dd>
+          </div>
+        ))}
+      </dl>
+    )
+  const marker = (repeat: boolean) =>
+    props.marker !== undefined && (
+      <p
+        data-slot="receipt-marker"
+        aria-hidden={repeat || undefined}
+        className={cn(
+          'm-0 border-2 border-solid border-strong px-2 py-1 text-center font-bold break-words',
+          TEXT_ISOLATE,
+        )}
+      >
+        {props.marker}
+      </p>
+    )
+  const recap = props.recap
   return (
     <article
       aria-label={props.label ?? messages['receipt.title']}
@@ -107,6 +178,11 @@ export function ReceiptPreview(props: ReceiptPreviewProps) {
         props.className,
       )}
     >
+      {props.banner !== undefined && (
+        <p className={cn('m-0 py-1 text-center font-bold break-words', DOUBLE, TEXT_ISOLATE)}>
+          {props.banner}
+        </p>
+      )}
       {props.header !== undefined && props.header.length > 0 && (
         <div className="flex flex-col items-center gap-0.5 text-center">
           {props.header.map((line, index) => (
@@ -119,17 +195,16 @@ export function ReceiptPreview(props: ReceiptPreviewProps) {
           ))}
         </div>
       )}
-      {props.facts !== undefined && props.facts.length > 0 && (
-        <dl className={cn('m-0 flex flex-col gap-0.5 pt-2', RULE)}>
-          {props.facts.map((fact) => (
-            <div key={fact.id} className="flex items-baseline justify-between gap-3">
-              <dt className={TEXT_DIRECTION}>{fact.label}</dt>
-              <dd className="m-0 text-end tabular-nums">
-                <bdi>{fact.value}</bdi>
-              </dd>
-            </div>
-          ))}
-        </dl>
+      {factRows(props.facts)}
+      {marker(false)}
+      {props.kindLine !== undefined && (
+        <p className="m-0 flex items-center gap-2 pt-2">
+          <span aria-hidden="true" className={cn('h-0 min-w-4 flex-1', RULE)} />
+          <span className={cn('text-center font-semibold break-words', TEXT_ISOLATE)}>
+            {props.kindLine}
+          </span>
+          <span aria-hidden="true" className={cn('h-0 min-w-4 flex-1', RULE)} />
+        </p>
       )}
       <ul className={cn('m-0 flex list-none flex-col gap-1.5 p-0 pt-2', RULE)}>
         {props.items.map((item) => (
@@ -150,6 +225,70 @@ export function ReceiptPreview(props: ReceiptPreviewProps) {
       </ul>
       {amountRows(props.totals)}
       {amountRows(props.payments)}
+      {recap !== undefined && recap.rows.length > 0 && (
+        <div className={cn('flex flex-col gap-0.5 pt-2', RULE)}>
+          <table className="w-full border-collapse text-xs">
+            <thead>
+              <tr>
+                {recap.columns.map((column) => (
+                  <th
+                    key={column.id}
+                    scope="col"
+                    className={cn(
+                      'p-0 pb-0.5 font-semibold text-secondary',
+                      column.amount === true ? 'text-end' : 'text-start',
+                      TEXT_ISOLATE,
+                    )}
+                  >
+                    {column.label}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {recap.rows.map((row) => (
+                <tr key={row.id}>
+                  {recap.columns.map((column) => {
+                    const cell = row.cells[column.id] ?? ''
+                    return (
+                      <td
+                        key={column.id}
+                        className={cn(
+                          'p-0',
+                          column.amount === true ? 'text-end tabular-nums' : 'text-start',
+                          TEXT_ISOLATE,
+                        )}
+                      >
+                        {column.amount === true && cell !== '' ? <bdi>{amount(cell)}</bdi> : cell}
+                      </td>
+                    )
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {recap.totals !== undefined && recap.totals.length > 0 && (
+            <dl className="m-0 flex flex-col gap-0.5">
+              {recap.totals.map((row) => (
+                <div key={row.id} className="flex items-baseline justify-between gap-3">
+                  <dt className={TEXT_DIRECTION}>{row.label}</dt>
+                  <dd className="m-0 shrink-0 tabular-nums">
+                    <bdi>{total(row.value)}</bdi>
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          )}
+        </div>
+      )}
+      {factRows(props.issuedFacts)}
+      {props.signature !== undefined && (
+        <div data-slot="receipt-signature" className="flex flex-col gap-1 pt-8">
+          <span aria-hidden="true" className="h-0 border-0 border-t border-solid border-strong" />
+          <span className={cn('text-xs text-secondary', TEXT_DIRECTION)}>{props.signature}</span>
+        </div>
+      )}
+      {marker(true)}
       {((props.footer !== undefined && props.footer.length > 0) || props.code !== undefined) && (
         <div className={cn('flex flex-col items-center gap-1 pt-2 text-center', RULE)}>
           {props.footer?.map((line, index) => (
@@ -159,6 +298,11 @@ export function ReceiptPreview(props: ReceiptPreviewProps) {
           ))}
           {props.code !== undefined && <div className="mt-1 flex justify-center">{props.code}</div>}
         </div>
+      )}
+      {props.end !== undefined && (
+        <p className={cn('m-0 py-1 text-center font-bold break-words', DOUBLE, TEXT_ISOLATE)}>
+          {props.end}
+        </p>
       )}
     </article>
   )

@@ -36,6 +36,7 @@ import { useLiro } from '../provider/liro-provider'
 import { matrixKeyTarget } from './admin-logic'
 import { Button, CompactIconButton, IconButton } from './button'
 import { ConfirmDialog } from './confirm-dialog'
+import type { ChangeConfirmAnswer, NotifyOption } from './change-confirm-dialog'
 import { DateRangeText } from './display-text'
 import { DropdownMenu, type MenuEntry } from './dropdown-menu'
 import { EmptyState } from './empty-state'
@@ -74,6 +75,7 @@ import {
   type ShiftTemplate,
 } from './shift-parts'
 import { StatusBadge } from './status-badge'
+import { STICKY_CLEARANCE, STICKY_HEAD, useStickyHead } from './sticky-head'
 import { usePhone } from './use-phone'
 
 /*
@@ -85,7 +87,9 @@ import { usePhone } from './use-phone'
  * - Toolbar: the period (previous, Today, next; the dates), the view (by person, or by one of the
  *   application's groupings: team, site), then at the end the schedule's state (Draft /
  *   Published / Changed since publishing), "Apply rotation…" and Publish, the page's main action,
- *   last (D13), with a confirmation that states the application's counts.
+ *   last (D13), with a confirmation that states the application's counts and offers the
+ *   application's messages (`publishNotify`) as "Notify …" checkboxes: publishing messages
+ *   nobody unless the user checks it (P5.28 item 9; "Publish and notify").
  * - The palette: the templates as chips with their times ("22:00–06:00 (+1)", read as "… the next
  *   day") and their key. Drag one onto a day, or press it (or its key) to assign it to the
  *   selected days.
@@ -197,8 +201,19 @@ export interface ShiftPlannerProps {
   status?: 'draft' | 'published'
   /** Published, then changed (from the application): "Changed since publishing". */
   changedSincePublishing?: boolean
-  /** Publishes the schedule, after the confirmation. A returned promise keeps it working. */
-  onPublish?: () => void | Promise<void>
+  /**
+   * Publishes the schedule, after the confirmation, with the ids of the messages the user chose
+   * in `publishNotify` (empty without it). A returned promise keeps it working.
+   */
+  onPublish?: (answer: ChangeConfirmAnswer) => void | Promise<void>
+  /**
+   * The messages the application can send with publishing ("Notify 8 people in the app"), each
+   * an explicit choice in the confirmation, checked as the application sets it (P5.28 item 9).
+   * Without it publishing makes the shifts visible and messages nobody.
+   */
+  publishNotify?: readonly NotifyOption[]
+  /** Opens the publish confirmation from the start (a state an application restores). */
+  defaultPublishOpen?: boolean
   /** The counts the confirmation states. */
   publishCounts?: ShiftPublishCounts
   /** The application's rotation patterns; with `onChange`, "Apply rotation…" is offered. */
@@ -258,6 +273,9 @@ export function ShiftPlanner(props: ShiftPlannerProps) {
   const baseId = useId()
   const grid = useRef<HTMLTableElement>(null)
   const root = useRef<HTMLDivElement>(null)
+  // The days row stays below the shell while the page scrolls (P5.28 item 4).
+  const region = useRef<HTMLDivElement>(null)
+  useStickyHead(region, !phone && props.loading !== true && props.rows.length > 0)
   const editable = props.readOnly !== true && props.onChange !== undefined
 
   const [innerGroupBy, setInnerGroupBy] = useState<string | null>(props.defaultGroupBy ?? null)
@@ -679,6 +697,10 @@ export function ShiftPlanner(props: ShiftPlannerProps) {
     )
   const publishLabel =
     props.status === 'published' ? messages['shifts.publishChanges'] : messages['shifts.publish']
+  const publishNotifyLabel =
+    props.status === 'published'
+      ? messages['shifts.publishChangesAndNotify']
+      : messages['shifts.publishAndNotify']
   const rotationsOffered = editable && props.rotations !== undefined && props.rotations.length > 0
   const defaultPeople = rotationDefaultPeople(
     anchorIndex === null
@@ -753,7 +775,13 @@ export function ShiftPlanner(props: ShiftPlannerProps) {
             title={messages['shifts.publishTitle']}
             {...(publishMessage === undefined ? {} : { message: publishMessage })}
             confirmLabel={publishLabel}
-            onConfirm={() => props.onPublish?.()}
+            {...(props.publishNotify === undefined
+              ? {}
+              : { notify: props.publishNotify, notifyConfirmLabel: publishNotifyLabel })}
+            {...(props.defaultPublishOpen === undefined
+              ? {}
+              : { defaultOpen: props.defaultPublishOpen })}
+            onConfirm={(answer) => props.onPublish?.(answer)}
             trigger={
               <Button family="primary" icon={Send} emphasis="primary" label={publishLabel} />
             }
@@ -1363,18 +1391,28 @@ export function ShiftPlanner(props: ShiftPlannerProps) {
           description={messages['shifts.noPeopleDescription']}
         />
       ) : (
-        <div className="min-w-0 overflow-x-auto rounded-md border border-solid border-default bg-surface-raised">
+        <div
+          ref={region}
+          className={cn(
+            'min-w-0 overflow-x-auto rounded-md border border-solid border-default bg-surface-raised',
+            STICKY_CLEARANCE,
+          )}
+        >
           <table
             ref={grid}
             aria-label={props.label}
             aria-describedby={`${baseId}-instructions`}
             className="w-full border-separate border-spacing-0 font-sans text-sm text-primary"
           >
-            <thead>
+            <thead data-sticky-head="">
               <tr>
                 <th
                   scope="col"
-                  className="sticky start-0 z-1 min-w-48 border-0 border-b border-solid border-default bg-surface-raised px-3 py-2 text-start text-xs font-semibold text-secondary"
+                  data-sticky-start=""
+                  className={cn(
+                    STICKY_HEAD,
+                    'start-0 z-20 min-w-48 border-0 border-b border-solid border-default bg-surface-raised px-3 py-2 text-start text-xs font-semibold text-secondary',
+                  )}
                 >
                   <span className={TEXT_ISOLATE}>{messages['shifts.person']}</span>
                 </th>
@@ -1385,7 +1423,10 @@ export function ShiftPlanner(props: ShiftPlannerProps) {
                       key={date}
                       scope="col"
                       {...(date === today ? { 'aria-current': 'date' as const } : {})}
-                      className="min-w-28 border-0 border-s border-b border-solid border-default border-s-subtle px-2 py-2 text-start align-bottom text-xs font-regular text-secondary"
+                      className={cn(
+                        STICKY_HEAD,
+                        'z-10 min-w-28 border-0 border-s border-b border-solid border-default border-s-subtle bg-surface-raised px-2 py-2 text-start align-bottom text-xs font-regular text-secondary',
+                      )}
                     >
                       <span className="flex flex-col">
                         <span className={cn('font-semibold text-primary', TEXT_DIRECTION)}>
@@ -1404,7 +1445,10 @@ export function ShiftPlanner(props: ShiftPlannerProps) {
                 {showHours && (
                   <th
                     scope="col"
-                    className="min-w-20 border-0 border-s border-b border-solid border-default border-s-subtle px-3 py-2 text-end align-bottom text-xs font-semibold text-secondary"
+                    className={cn(
+                      STICKY_HEAD,
+                      'z-10 min-w-20 border-0 border-s border-b border-solid border-default border-s-subtle bg-surface-raised px-3 py-2 text-end align-bottom text-xs font-semibold text-secondary',
+                    )}
                   >
                     <span className={TEXT_ISOLATE}>{messages['shifts.hours']}</span>
                   </th>
@@ -1435,7 +1479,7 @@ export function ShiftPlanner(props: ShiftPlannerProps) {
                         <tr key={row.id}>
                           <th
                             scope="row"
-                            className="sticky start-0 z-1 border-0 border-b border-solid border-subtle bg-surface-raised px-3 py-2 text-start align-top font-regular"
+                            className="sticky start-0 z-[5] border-0 border-b border-solid border-subtle bg-surface-raised px-3 py-2 text-start align-top font-regular"
                           >
                             <span className={cn('block text-sm font-semibold', TEXT_DIRECTION)}>
                               {row.name}
@@ -1463,7 +1507,7 @@ export function ShiftPlanner(props: ShiftPlannerProps) {
                 <tr>
                   <th
                     scope="row"
-                    className="sticky start-0 z-1 border-0 border-t border-solid border-strong bg-surface-raised px-3 py-2 text-start text-xs font-semibold text-secondary"
+                    className="sticky start-0 z-[5] border-0 border-t border-solid border-strong bg-surface-raised px-3 py-2 text-start text-xs font-semibold text-secondary"
                   >
                     <span className={TEXT_ISOLATE}>{messages['shifts.coverage']}</span>
                   </th>

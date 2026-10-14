@@ -185,7 +185,7 @@ export const Skip: Story = {
   play: async () => {
     await settle()
     await expect(
-      within(document.body).getByRole('alertdialog', { name: /^Skip Fasadna mrežica/ }),
+      within(document.body).getByRole('alertdialog', { name: /^Skip line Fasadna mrežica/ }),
     ).toBeVisible()
   },
 }

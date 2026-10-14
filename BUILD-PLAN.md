@@ -320,6 +320,7 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P5.25a | Floor plans: background, polygons, three more places | P5.25 | done | 2026-10-11 | FloorPlan `background`, polygon areas, `level`, kind `place`; warehouse, hospital ward and office examples |
 | P5.26 | Diagrams | P2.1 | done | 2026-10-11 | `@veljaos/ui/diagram` on React Flow 12.12.0 and dagre 3.1.1 (MIT): view, edit, run; approval workflow and orchestrator run examples |
 | P5.27 | Legal information | P4.5, P4.3, P5.15 | done | 2026-10-11 | LegalText, LegalContents, LegalCompare, LegalActPage with its panels, PrintLegalAct, LegalSearchPage, GazetteIssues, FilterBar tree kind; illustrative law, by-law, practice and Kvadrat Gradnja's rulebook |
+| P5.28 | Owner's review of Phase 5 part 2 | P5.27 | done | 2026-10-13 | Phones never scroll sideways (PhoneFrame as the screen, dialogs as bottom sheets, `phone-overflow.spec.ts`); day and month names and week start only from the locale (`numericFormat`); selects over 10 options searched; table headers sticky below the shell, first column at the start (DataTable `stickyHeader` by default); one-record dialogs with `subject`; neutral actions on toned boxes; ChangeConfirmDialog and "Notify …" choices; one "now" marker; Examples sidebar two stories per screen; StatutoryFormPage as the real form grid; printouts as simple as a Stripe invoice with electronic signature fields; POS fiscal flows and open tabs on tables; floor plans without walls, labels never cut, one area at a time, phones on the list, moves confirmed with the free tables or beds |
 | P6.1 | Full language and direction matrix | Phases 1–5 | todo | | |
 | P6.2 | Manual WCAG 2.2 checks | P6.1 | todo | | |
 | P6.3 | Performance budget | P4.8 | todo | | |
@@ -754,6 +755,40 @@ Laws, regulations, by-laws, court decisions, official opinions and a company's i
 - **f) Phone:** the act full width, the contents in a drawer, the panel through a button as a sheet, article actions in a menu, compare in one column with inline changes.
 - **g) Data:** examples use **invented** acts, numbers and gazette references, labelled "Illustrative": the gazette itself is invented ("Illustrative Gazette"), so no real gazette number is ever attached to invented text; nothing is copied from commercial legal databases (consolidated texts, editorial notes, commentary). Examples: an illustrative law with three amendments, its by-law, two court decisions and an opinion; Kvadrat Gradnja d.o.o.'s internal work rulebook with two versions and its legal basis.
 **Done when** the act page, compare, the search page and the gazette list have stories in light, dark, right-to-left and phone width, pass axe, the keyboard and the text-order check, a 300-article act stays fast, and the examples show them.
+
+### P5.28 — Owner's review of Phase 5 part 2 (owner, 2026-10-13)
+Fix every finding in one branch and fix its **class**: search the library, stories and examples for the same fault, fix every occurrence, write the rule down (`docs/decisions.md`, AGENTS.md where it is a rule).
+
+**A. Across the library**
+1. **Phones never scroll sideways.** Select and combobox lists fit the viewport (long options wrap) or open as a bottom sheet; dialogs on phones are full-width sheets; popovers that do not fit open as a sheet. PeriodField on phones: presets first, then "Custom range" with one month full width. An automated check: no horizontal overflow in any phone story, with every select, menu, popover and dialog opened.
+2. **Locale:** day and month names, date formats and the first day of the week come only from the LiroProvider locale (an English UI never shows "Januar, Ned Pon Uto", "sre 7", "utorak, 6. oktobar 2026."; `sr` weeks start on Monday). Every calendar, date and period display.
+3. **Selects with more than about 10 options become searchable comboboxes**; no scroll-arrow buttons in lists on touch.
+4. **Sticky table headers stick below the shell's sticky header, and the first column stays sticky** when scrolling sideways: DataTable, AttendanceGrid, ShiftPlanner, ResourceSchedule, RoomRack, EditableGrid, statutory forms; desktop and phone.
+5. **Overlays on phones cover the whole screen.**
+6. **A dialog that acts on one record** shows the action as its title and the record, bold, on its own line.
+7. **An action inside an Alert or banner is a neutral (secondary) button**, never a tinted family on a toned background.
+8. **A toast never tells the user what to do next;** the next step opens what it needs.
+9. **Moving something other people rely on** (appointments, shifts, reservations, seating, room or bed moves) is never final and never messages anyone without confirmation: the change (old → new, who), "Notify …" as an explicit choice, Cancel / Save (primary last), or pending changes with Save.
+10. **One "now" marker** everywhere (CalendarView, clinic schedule, Timetable).
+11. **Phone stories scroll like a real phone** (the frame scrolls its page; sticky header and bottom bar stay); visual tests keep their fixed 390×844 picture.
+12. **Examples sidebar: two stories per screen,** desktop and phone; interaction and intermediate-state stories hidden from the sidebar and kept for the tests.
+
+**B. Screens:** 13 LookupField "Search all…" on phones opens LookupDialog full screen with compact rows; 14 the course outline without the empty strip, the selected item square and flush; 15 the sensitive-field reveal ("Show diagnosis" sentence case, space above the question, "Access is logged" as an info note); 16 the parents' portal excuse flow (absences, reason, attachment with the camera on phones, Send, then "Excuse sent, waiting for the class teacher"); 17 hotel bookings open a booking in place (a drawer over the timeline), never switch tabs; 18 the hospital ward's "Transfer…" dialog with free beds by room, and "Admit patient" on a free bed.
+
+**C. Bigger pieces**
+19. **StatutoryFormPage as the real form grid** (PP PDV, POPDV, the input-VAT records): two-level column headers (a group over sub-columns), a cell that does not apply is absent, three kinds of cells (entered, computed, from a source that opens its documents), nested numbered collapsible sections with long wrapping labels, one-column sections, the previous period as a comparison that does not replace the rate columns; phones one field per card labelled with group and column. Rows, columns, codes and texts are the application's.
+20. **Printouts as simple as a Stripe invoice,** in Liro's design: title at the start and logo at the end; a small key/value block; seller and buyer side by side; one prominent "X RSD due DD.MM.YYYY." line and the payment details with an IPS QR slot; the lines with thin rules only; totals at the end side; the VAT recap by rate only when given; notes; "Page 1 of 1". Black and grey, brand colour only for the logo and links; no stamps, seals or frames; signature lines only where required (certificate, finding). Every template that can be signed has an **electronic signature field** with a stable id and its position on the page (PDF coordinates). The same simplicity for the certificate, grade report and finding.
+21. **POS and Serbian fiscalisation** (all codes, rules and texts are data): receipt kind = invoice type × transaction, non-fiscal kinds marked, training banner; several payment methods with the remaining amount (cash, card, cheque, wire / deferred with a buyer, voucher, instant payment QR, other cashless); buyer ID with its type and the optional buyer field; refund (find the original, choose lines and quantities, the reference carried over); advances (take, list, close on the final sale, refund); cancelling a receipt issued by mistake, a copy, sale without compensation, corporate card; the result (PFR number and time, counter, QR, delivery by print / e-mail / SMS, the journal, the daily report); offline count and state; an online sale delivered electronically. Today's look kept. Desktop, tablet and phone.
+22. **Open tabs on tables:** a tab persists; Send order to the kitchen or bar; edit lines; discounts per line and per order; promotions from data; split the bill; move items or the tab; pay part; close with the fiscal receipt.
+
+**D. Floor plans**
+23. Walls, doors and windows removed from FloorPlan; areas are plain labelled regions; a real plan is the background image.
+24. Labels on the plan are never cut: number and state, guests on a second line; the time in the drawer and the list.
+25. "Move guests" lists the free tables with enough seats; every action of every floor-plan example works end to end.
+26. An area switcher (all areas or one) usable with 6+ areas; takeaway and delivery are POS order channels, not plan areas.
+27. Phones open on the list (cards by area with state, guests and time); the plan readable without sideways scroll; no editing on phones ("Edit the plan on a computer or tablet").
+
+**Done when** every item and its class are fixed and recorded, CI is green, and the report names the stories to check on desktop and phone.
 
 **End of Phase 5:** `0.1.0-alpha.5`; report.
 

@@ -37,6 +37,8 @@ export const CLINIC = {
   week: { start: '2026-10-12', end: '2026-10-16' },
   /** The day the schedule shows: the day of Jovana's appointment. */
   day: '2026-10-14',
+  /** The clinic's clock on that day, for the "now" marker (P5.28 item 10). */
+  now: '09:40',
 }
 
 export const PATIENT = {
@@ -341,23 +343,38 @@ export const ATTENDANCE_CODES: readonly AttendanceCode[] = [
   { code: 'excused', label: 'Excused', short: 'E', key: 'e', tone: 'neutral' },
 ]
 
+/** A class of 30, in the register's order (by surname); Luka is the fourth. */
 export const PUPILS: readonly AttendanceRow[] = [
   'Aleksa Babić',
   'Ana Đurić',
   'Petar Ilić',
   'Luka Jovanović',
   'Jovana Kostić',
+  'Stefan Kovačević',
   'Mila Lazarević',
+  'Ivana Lukić',
+  'Marko Marić',
   'Nikola Marković',
   'Sara Milošević',
+  'Katarina Mitrović',
+  'Vuk Nedeljković',
   'Đorđe Nikolić',
+  'Milica Obradović',
   'Tamara Pavlović',
+  'Filip Pešić',
   'Uroš Popović',
+  'Anđela Radović',
   'Vasilije Ristić',
   'Teodora Savić',
+  'Ognjen Simić',
+  'Jelena Stanković',
   'Dunja Stojanović',
+  'Mihajlo Todorović',
   'Lazar Tomić',
+  'Nina Vasić',
   'Hana Vuković',
+  'Lena Zorić',
+  'Andrej Živković',
 ].map((label, index) => ({ id: `u${String(index + 1)}`, label }))
 
 /** Luka Jovanović: the child of the parent portal. */
@@ -452,17 +469,31 @@ const MARKS: readonly string[] = [
   '332-',
   '4-43',
   '2312',
+  '3443',
   '4443',
+  '5455',
+  '3323',
   '3434',
   '5545',
+  '4434',
+  '2332',
   '435-',
+  '5554',
   '5454',
+  '343-',
   '2222',
+  '4544',
   '344-',
   '4554',
+  '3232',
+  '5445',
   '5455',
+  '4343',
   '3-33',
+  '2423',
   '4445',
+  '5544',
+  '3334',
 ]
 
 export const GRADEBOOK_VALUE: AttendanceValue = Object.fromEntries(
@@ -519,6 +550,8 @@ export interface Absence {
   subject: string
   excused: boolean
   note?: string
+  /** The parent's excuse is sent and waits for the class teacher (P5.28). */
+  excuseSent?: boolean
 }
 
 function subjectOf(date: string, lesson: number): string {
@@ -558,4 +591,36 @@ export const ABSENCE_COUNTS = {
   total: ABSENCES.length,
   excused: ABSENCES.filter((each) => each.excused).length,
   open: ABSENCES.filter((each) => !each.excused).length,
+}
+
+// ── P5.28 screens ──────────────────────────────────────────────────────────────────────────────
+
+/** Where the patient's messages go (illustrative). */
+export const PATIENT_PHONE = '064 123 4567'
+
+/**
+ * A move of Jovana's appointment proposed on the schedule (a drag to dr Nada Grujić's free 12:30):
+ * the confirmation open on it, as the reception would see it before anything changes.
+ */
+export const JOVANA_MOVE = {
+  id: JOVANA_BOOKING.id,
+  resourceId: 'grujic',
+  start: `${CLINIC.day}T12:30`,
+  end: `${CLINIC.day}T13:00`,
+}
+
+/** The reasons a parent gives when excusing an absence (the school's list). */
+export const EXCUSE_REASONS = [
+  { value: 'illness', label: 'Illness' },
+  { value: 'doctor', label: 'Doctor’s appointment' },
+  { value: 'family', label: 'Family reason' },
+  { value: 'other', label: 'Other' },
+]
+
+/** The kinds of note the school accepts with an excuse. */
+export const EXCUSE_FILES = {
+  accept: ['image/*', '.pdf'],
+  acceptText: 'A photo or a PDF of the doctor’s note',
+  maxSize: 10 * 1024 * 1024,
+  maxSizeText: '10 MB',
 }

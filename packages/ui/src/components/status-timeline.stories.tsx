@@ -61,7 +61,7 @@ const meta = {
       actions: (
         <>
           <Button family="neutral" icon={Download} label="Export for manual upload" />
-          <Button family="primary" icon={RotateCcw} label="Retry" />
+          <Button family="neutral" icon={RotateCcw} label="Retry" />
         </>
       ),
     },
@@ -118,7 +118,7 @@ export const RetryMovesOn: Story = {
                     tone: 'warning' as const,
                     actions: (
                       <Button
-                        family="primary"
+                        family="neutral"
                         icon={RotateCcw}
                         label="Retry"
                         onClick={() => {
@@ -162,7 +162,7 @@ export const RetryMovesOnInteraction: Story = {
                     tone: 'warning' as const,
                     actions: (
                       <Button
-                        family="primary"
+                        family="neutral"
                         icon={RotateCcw}
                         label="Retry"
                         onClick={() => {

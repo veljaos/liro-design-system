@@ -19,7 +19,9 @@ import { PrintSection, PrintTitle } from './print-parts'
  * PrintPage (P5.15): the paper is light, the page header repeats on every page (the act's title
  * and its gazette references), the page number "Page 2 of 5" in the bottom margin.
  * - **First page:** the title (h1), "Law · Illustrative National Assembly", the gazette line,
- *   "Version as of …", and the application's `note` (an "Illustrative" line) in a bordered box.
+ *   "Version as of …", and the application's `note` (an "Illustrative" line) as plain grey text
+ *   (P5.28 item 20: printouts as simple as a Stripe invoice — no boxes or frames, black and
+ *   grey, thin rules only; the header repeats as plain small text).
  * - **The text, drawn from the model's nodes here** (no windowing on paper — every article is
  *   printed; the screen's text component is not used, so the printout has no buttons or links):
  *   parts, chapters and sections as headings, centred, as acts are set on paper; each article's
@@ -180,6 +182,9 @@ export function PrintLegalAct(props: PrintLegalActProps) {
       {...(props.pageNumbers === undefined ? {} : { pageNumbers: props.pageNumbers })}
       {...(props.status === undefined ? {} : { status: props.status })}
       {...(props.fit === undefined ? {} : { fit: props.fit })}
+      {...(props.onSignatureFields === undefined
+        ? {}
+        : { onSignatureFields: props.onSignatureFields })}
     >
       <div data-slot="print-legal-act" className="flex flex-col gap-4">
         <div {...lang}>
@@ -193,10 +198,8 @@ export function PrintLegalAct(props: PrintLegalActProps) {
         </div>
         {props.note !== undefined && (
           <p
-            className={cn(
-              'm-0 rounded-md border border-solid border-strong px-3 py-2 text-sm text-primary break-inside-avoid',
-              TEXT_DIRECTION,
-            )}
+            data-slot="print-legal-note"
+            className={cn('m-0 text-sm text-secondary break-inside-avoid', TEXT_DIRECTION)}
           >
             {props.note}
           </p>

@@ -48,7 +48,14 @@ export type CalendarProps = DistributiveOmit<
   | 'dir'
   | 'locale'
   | 'weekStartsOn'
-> & { labels: CalendarLabels }
+> & {
+  labels: CalendarLabels
+  /**
+   * The month across its container's full width (PeriodField's sheet on a phone, P5.28): the
+   * seven columns share the width, the days keep their 36px height. Default: 36px days.
+   */
+  fullWidth?: boolean
+}
 
 /** YYYY-MM-DD of a local date. */
 function isoDate(date: Date): string {
@@ -73,7 +80,14 @@ const NAV_BUTTON = cn(
   FOCUS_RING,
 )
 
-export function Calendar({ labels, className, classNames, today, ...props }: CalendarProps) {
+export function Calendar({
+  labels,
+  className,
+  classNames,
+  today,
+  fullWidth = false,
+  ...props
+}: CalendarProps) {
   const liro = useLiro()
   const { format } = liro
   const caption = (month: Date) =>
@@ -100,21 +114,22 @@ export function Calendar({ labels, className, classNames, today, ...props }: Cal
         labelDayButton: (date) => format.date(isoDate(date)),
         labelWeekday: (date) => format.weekdayName(date.getDay(), 'long'),
       }}
-      className={cn('relative w-fit font-sans text-primary', className)}
+      className={cn('relative font-sans text-primary', fullWidth ? 'w-full' : 'w-fit', className)}
       classNames={{
         months: 'relative flex flex-col gap-4 md:flex-row',
-        month: 'flex flex-col',
+        month: cn('flex flex-col', fullWidth && 'w-full'),
         nav: 'absolute inset-x-0 top-0 flex items-center justify-between',
         button_previous: NAV_BUTTON,
         button_next: NAV_BUTTON,
         month_caption: 'mb-2.5 flex h-9 items-center justify-center px-9',
         caption_label: cn('text-sm font-semibold capitalize', TEXT_ISOLATE),
-        month_grid: 'border-collapse',
+        month_grid: cn('border-collapse', fullWidth && 'w-full table-fixed'),
         weekday: 'pb-1.5 text-sm font-regular text-secondary capitalize',
         day: 'p-[0.5px] text-center',
         day_button: cn(
           BUTTON_RESET,
-          'inline-flex size-9 cursor-pointer items-center justify-center rounded-md text-sm text-primary hover:bg-surface-hover',
+          'inline-flex h-9 cursor-pointer items-center justify-center rounded-md text-sm text-primary hover:bg-surface-hover',
+          fullWidth ? 'w-full' : 'w-9',
           FOCUS_RING,
         ),
         selected:

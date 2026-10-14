@@ -14,7 +14,7 @@ import {
 import { useLiro } from '../provider/liro-provider'
 import { Button } from './button'
 import { DateField } from './date-field'
-import { Dialog } from './dialog'
+import { Dialog, DialogHeading, dialogHeaderClass } from './dialog'
 import { MultiSelectField } from './multi-select-field'
 import { SelectField } from './select-field'
 import {
@@ -366,7 +366,17 @@ export interface MoveDialogProps {
 
 /** "Move to…": a person and a day for one assignment, without dragging. */
 export function MoveDialog(props: MoveDialogProps) {
-  const { messages } = useLiro()
+  const { messages, format } = useLiro()
+  // The record it acts on (P5.28 item 6): the shift, whose it is and its day.
+  const from = props.assignment
+  const subject =
+    from === null
+      ? ''
+      : messages['shifts.moveSubject'](
+          props.label,
+          props.rows.find((row) => row.id === from.rowId)?.name ?? '',
+          format.dateLong(from.date),
+        )
   return (
     <DialogRoot
       open={props.assignment !== null}
@@ -381,8 +391,10 @@ export function MoveDialog(props: MoveDialogProps) {
           props.onCloseFocus()
         }}
       >
-        <DialogHeader>
-          <DialogTitle>{messages['shifts.moveTitle'](props.label)}</DialogTitle>
+        <DialogHeader className={dialogHeaderClass(subject)}>
+          <DialogTitle>
+            <DialogHeading title={messages['shifts.moveAction']} subject={subject} />
+          </DialogTitle>
           <DialogCloseButton label={messages['dialog.close']} />
         </DialogHeader>
         <DialogBody>

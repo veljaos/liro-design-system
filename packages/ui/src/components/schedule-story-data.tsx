@@ -1,8 +1,10 @@
 import type { ReactNode } from 'react'
 import type { Weekday } from '../provider/format'
 import { LiroProvider, useLiro } from '../provider/liro-provider'
+import type { LiroMessages } from '../provider/messages'
 import type { CalendarEvent } from './calendar-view'
 import type { FreeSlot, UnavailableTime } from './schedule-logic'
+import { tenantLocale } from './story-frames'
 
 /*
  * Fictitious data for the scheduling stories (P5.8): a health clinic in Novi Sad and the timetable
@@ -15,7 +17,9 @@ export const SCHEDULE_TODAY = '2026-10-14'
 
 /**
  * A provider in the story's theme and direction with a fixed today, so pictures never change with
- * the date; locale, week start and time zone may be given.
+ * the date; locale, week start and time zone may be given. The tenant is a Serbian clinic or
+ * school: the story's language with the region RS ("en-RS", `tenantLocale`), so the names are the
+ * interface's and the week starts on Monday, from the locale (P5.28 item 2).
  */
 export function ScheduleFrame({
   locale,
@@ -23,9 +27,12 @@ export function ScheduleFrame({
   weekStartsOn,
   timeZone,
   today = SCHEDULE_TODAY,
+  messages,
   children,
 }: {
   locale?: string
+  /** The interface's own texts in the story's language (a Serbian story speaks Serbian). */
+  messages?: Partial<LiroMessages>
   direction?: 'ltr' | 'rtl'
   weekStartsOn?: Weekday
   timeZone?: string
@@ -34,15 +41,15 @@ export function ScheduleFrame({
 }) {
   const liro = useLiro()
   const dir = direction ?? (locale === undefined ? liro.direction : undefined)
-  // A Serbian tenant's week starts on Monday, whatever the story's format locale.
   return (
     <LiroProvider
-      locale={locale ?? liro.locale}
+      locale={tenantLocale(locale ?? liro.locale)}
       {...(dir === undefined ? {} : { direction: dir })}
       colorScheme={liro.colorScheme}
       today={today}
-      weekStartsOn={weekStartsOn ?? 1}
+      {...(weekStartsOn === undefined ? {} : { weekStartsOn })}
       timeZone={timeZone ?? 'Europe/Belgrade'}
+      {...(messages === undefined ? {} : { messages })}
     >
       {children}
     </LiroProvider>

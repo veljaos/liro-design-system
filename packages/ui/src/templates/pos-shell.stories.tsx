@@ -1,9 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { Lock, PauseCircle, RefreshCw } from 'lucide-react'
+import { GraduationCap, ListChecks, Lock, LogOut, PauseCircle, RefreshCw } from 'lucide-react'
 import { useState } from 'react'
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test'
 import { settle } from '../primitives/story-helpers'
 import { decimal, paras, sumUnits } from '../components/amounts-story-data'
+import { Banner } from '../components/alert'
 import { BrandLockup } from '../components/brand-lockup'
 import { Button, IconButton } from '../components/button'
 import { CartPanel, type CartLine } from '../components/cart-panel'
@@ -149,7 +150,9 @@ const meta = {
           'screen (`onScan`).\n\n' +
           '**When:** a point of sale, a kiosk, a self-service order screen.\n\n' +
           '**When not:** the back office of a shop (AppShell); a handheld’s warehouse work ' +
-          '(PickList, StockCount).',
+          '(PickList, StockCount).\n\n' +
+          '**P5.28:** `banners` under the strip stay in view (a training mode); the queue’s ' +
+          'state (`queueState` “failed”: a danger “Not sent” badge) and `queueAction`.',
       },
     },
   },
@@ -179,6 +182,60 @@ export const Default: Story = {
 export const Sending: Story = {
   name: 'Sending the queue',
   render: () => <Till queued={2} />,
+}
+
+/** Training: a persistent warning banner, and the cart's marker. */
+export const Training: Story = {
+  render: () => (
+    <Till
+      banners={
+        <Banner
+          tone="warning"
+          icon={GraduationCap}
+          title="Training mode"
+          role="status"
+          actions={<Button family="neutral" icon={LogOut} label="Leave training" />}
+        >
+          Nothing is reported; every receipt says it is not a fiscal receipt.
+        </Banner>
+      }
+      cart={
+        <CartPanel
+          className="flex-1"
+          lines={CART_LINES}
+          currency={CURRENCY}
+          total={CART_TOTAL}
+          totals={CART_TOTALS}
+          kindLabel="Training · Sale"
+          marker="Training — this is not a fiscal receipt"
+          onCharge={() => undefined}
+        />
+      }
+    />
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement.querySelector('[data-slot="pos-banners"]')).toHaveTextContent(
+      'Training mode',
+    )
+  },
+}
+
+/** Receipts the processor refused: a danger "Not sent" badge and the journal. */
+export const QueueFailed: Story = {
+  name: 'Queue not sent',
+  render: () => (
+    <Till
+      queued={2}
+      queuedText="2 receipts were not accepted"
+      queueState="failed"
+      queueAction={<Button family="neutral" icon={ListChecks} label="Show receipts" />}
+    />
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(within(canvasElement).getByText('Not sent')).toBeVisible()
+  },
 }
 
 /** Offline: the strip with the queue and "Try now"; selling goes on. */

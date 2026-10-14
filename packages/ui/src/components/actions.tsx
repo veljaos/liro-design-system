@@ -288,17 +288,22 @@ export function OverflowRow<T extends ActionItem>({
     // shows would stay folded once "More" took its place (P5.26).
     <div ref={row} data-slot="action-row" className={cn('relative min-w-0', className)}>
       {/* Every action and the "More" button, laid out once invisibly and unwrapped, to measure
-          their widths. */}
+          their widths. Inside a box of no height that clips it: the copy, wider than a phone,
+          must not make the page scroll sideways (P5.28). */}
       <div
-        ref={measure}
         aria-hidden="true"
-        inert
-        className="pointer-events-none invisible absolute flex w-max gap-2 **:whitespace-nowrap"
+        className="pointer-events-none absolute inset-x-0 top-0 h-0 overflow-clip"
       >
-        {actions.map((action) => (
-          <Fragment key={action.key}>{render(action)}</Fragment>
-        ))}
-        {more}
+        <div
+          ref={measure}
+          inert
+          className="invisible absolute flex w-max gap-2 **:whitespace-nowrap"
+        >
+          {actions.map((action) => (
+            <Fragment key={action.key}>{render(action)}</Fragment>
+          ))}
+          {more}
+        </div>
       </div>
       <div
         className={cn(

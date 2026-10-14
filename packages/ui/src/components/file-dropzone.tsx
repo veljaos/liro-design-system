@@ -1,4 +1,4 @@
-import { FileUp, Upload } from 'lucide-react'
+import { Camera, FileUp, Upload } from 'lucide-react'
 import { useEffect, useId, useLayoutEffect, useRef, useState, type ChangeEvent } from 'react'
 import { ButtonPrimitive } from '../primitives/button'
 import { TEXT_DIRECTION } from '../primitives/classes'
@@ -31,6 +31,8 @@ export type { FileFacts, FileRejection, FileRules, RejectionReason } from './fil
  *   Accepted files go to `onFiles`; rejected ones to `onReject` and, in the provider's words
  *   (`file.rejectedType`, `file.rejectedSize`, `file.rejectedCount`), under the zone in
  *   status.danger.fg until the next choice (`role="alert"`).
+ * - `camera` (P5.28): on phones a second neutral button, "Take a photo", opens the camera (an
+ *   input with `capture="environment"`); the photo goes through the same checks.
  * - The files themselves (upload, scan, list) are the application's: AttachmentList shows them.
  */
 
@@ -61,6 +63,11 @@ export interface FileDropzoneProps extends Omit<FieldBaseProps, 'readOnly'> {
   onReject?: (rejections: FileRejection[]) => void
   /** 'phone' hides the drop text; default by the viewport (48em). */
   layout?: 'desktop' | 'phone'
+  /**
+   * On phones, "Take a photo" beside "Choose files": it opens the camera (an input with
+   * `capture`), for a paper note or a receipt. The photo is checked as any other file. P5.28.
+   */
+  camera?: boolean
 }
 
 /** Choose files with a button, or drop them; what is accepted is said before choosing. */
@@ -71,6 +78,8 @@ export function FileDropzone(props: FileDropzoneProps) {
   const multiple = props.multiple ?? true
   const disabled = props.disabled === true
   const input = useRef<HTMLInputElement>(null)
+  const cameraInput = useRef<HTMLInputElement>(null)
+  const camera = props.camera === true && phone
   const hintId = useId()
   const [dragging, setDragging] = useState(false)
   const depth = useRef(0)
@@ -199,6 +208,17 @@ export function FileDropzone(props: FileDropzoneProps) {
               <FileUp aria-hidden="true" className="size-3.75 shrink-0" />
               <span className={TEXT_DIRECTION}>{messages['file.choose'](multiple)}</span>
             </ButtonPrimitive>
+            {camera && (
+              <ButtonPrimitive
+                family="neutral"
+                emphasis="secondary"
+                disabled={disabled}
+                onClick={() => cameraInput.current?.click()}
+              >
+                <Camera aria-hidden="true" className="size-3.75 shrink-0" />
+                <span className={TEXT_DIRECTION}>{messages['file.takePhoto']}</span>
+              </ButtonPrimitive>
+            )}
             {!phone && (
               <span className={cn('text-sm', 'text-secondary', TEXT_DIRECTION)}>
                 {messages['file.drop'](multiple)}
@@ -234,6 +254,18 @@ export function FileDropzone(props: FileDropzoneProps) {
               {...(accept === undefined ? {} : { accept })}
               onChange={onChange}
             />
+            {camera && (
+              <input
+                ref={cameraInput}
+                type="file"
+                hidden
+                tabIndex={-1}
+                accept="image/*"
+                capture="environment"
+                disabled={disabled}
+                onChange={onChange}
+              />
+            )}
           </div>
           {/* Always in the page, so a rejection is announced when it appears. */}
           <div role="alert" className="flex flex-col gap-1 empty:hidden">

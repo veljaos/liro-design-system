@@ -310,12 +310,12 @@ export const CERTIFICATE = {
   issued: { place: 'Novi Sad', date: '2026-10-06' },
   signatures: [
     {
-      key: 'officer',
+      id: 'officer',
       label: 'Occupational safety officer',
       name: 'Jelena Savić',
       detail: 'Licence BZR-0457',
     },
-    { key: 'director', label: 'Director', name: 'Vladimir Kostić' },
+    { id: 'director', label: 'Director', name: 'Vladimir Kostić' },
   ],
 }
 
@@ -350,6 +350,13 @@ export const INVOICE_FACTS = {
   place: 'Novi Sad',
   reference: '97 2026-0412',
   advance: 'A-2026-031',
+  /** The buyer's address for invoices (the printout's buyer block). */
+  buyerEmail: 'racuni@panonija-agro.rs',
+  /** The buyer's registration number (MB). */
+  buyerRegistration: '20945112',
+  /** What the IPS QR code carries (the application makes the image; here an illustrative one). */
+  ipsPayload:
+    'K:PR|V:01|C:1|R:160000001234567821|N:Kvadrat Gradnja d.o.o.|I:RSD135954,00|SF:221|S:F-2026-0412|RO:9720260412',
 }
 
 // ── Report card ───────────────────────────────────────────────────────────────────────────────

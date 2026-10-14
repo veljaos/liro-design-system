@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { after, describe, it } from 'node:test'
 import { fileURLToPath } from 'node:url'
-import { storiesOf, violations } from './static-stories.mjs'
+import { shownExampleTests, storiesOf, violations } from './static-stories.mjs'
 
 const folder = mkdtempSync(join(tmpdir(), 'static-stories-'))
 after(() => {
@@ -78,10 +78,30 @@ export const Clicks = { play: async () => { await userEvent.click(button) } }
     )
     assert.equal(found.Clicks?.tagged, true)
   })
+
+  it('reads the title and whether a story is hidden from the sidebar', () => {
+    const found = stories(
+      'hidden',
+      `const meta = { title: 'Examples' } satisfies Meta
+export default meta
+export const Shown = { tags: ['interaction'] }
+export const Hidden = { tags: ['interaction', '!dev'] }
+`,
+    )
+    assert.equal(found.Shown?.title, 'Examples')
+    assert.equal(found.Shown?.hidden, false)
+    assert.equal(found.Hidden?.hidden, true)
+  })
 })
 
 describe('violations', () => {
   it('finds none in this repository: every pictured story is static', () => {
     assert.deepEqual(violations(fileURLToPath(new URL('..', import.meta.url))), [])
+  })
+})
+
+describe('shownExampleTests', () => {
+  it('finds none in this repository: the Examples sidebar hides its interaction stories', () => {
+    assert.deepEqual(shownExampleTests(fileURLToPath(new URL('..', import.meta.url))), [])
   })
 })

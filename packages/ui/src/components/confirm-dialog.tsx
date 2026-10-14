@@ -14,6 +14,13 @@ import {
   DialogTrigger,
 } from '../primitives/dialog'
 import { useLiro } from '../provider/liro-provider'
+import {
+  initialNotify,
+  NotifyChoices,
+  type ChangeConfirmAnswer,
+  type NotifyOption,
+} from './change-confirm-dialog'
+import { DialogHeading } from './dialog'
 import { INTENTS, type Family, type IconComponent, type Intent } from './intents'
 import type { Tone } from './status-badge'
 import { RadioGroupField } from './radio-group-field'
@@ -36,6 +43,13 @@ import { TextAreaField, TextField } from './text-field'
  *   (warning → caution, danger → destructive, info → primary, success → positive, neutral →
  *   neutral, premium → document), so a confirmation without an action, or with a `tone` that
  *   overrides the action's, never shows a warning title over a blue button.
+ * - On one record (P5.28 item 6): the title is the action ("Reject invoice") and `subject` the
+ *   record, bold in text.primary on its own line under it ("UF-2026-1187 · Medic Lab Niš"); both
+ *   name the dialog. A confirmation about several records or none keeps a question as its title.
+ * - Messages are a choice (P5.28 item 9): with `notify`, the messages the application can send
+ *   with the action stand as "Notify …" checkboxes (as ChangeConfirmDialog's) above the buttons,
+ *   each as the application sets it; with any checked the button says `notifyConfirmLabel`, and
+ *   `onConfirm` receives the checked ids. ConfirmDialog and DeleteConfirmDialog only.
  * - Centred on the screen, radius lg (12px).
  * - While confirming, the confirm button shows a loader, Cancel is disabled, and neither Escape
  *   nor a press outside closes it.
@@ -94,9 +108,17 @@ interface ConfirmBase {
   trigger?: ReactElement
   /**
    * Runs the action. While a returned promise is pending the dialog shows it is working and
-   * cannot be closed; it closes when the promise resolves and stays open when it rejects.
+   * cannot be closed; it closes when the promise resolves and stays open when it rejects. It
+   * receives the ids of the messages checked in `notify` (empty without it).
    */
-  onConfirm: () => void | Promise<void>
+  onConfirm: (answer: ChangeConfirmAnswer) => void | Promise<void>
+  /**
+   * The messages the application can send with the action ("Notify 8 people in the app"), each
+   * an explicit choice, checked as the application sets it (P5.28 item 9).
+   */
+  notify?: readonly NotifyOption[]
+  /** The confirm button's text while a message is checked ("Publish and notify"). */
+  notifyConfirmLabel?: string
   /** The application is running the action (when it does not return a promise). */
   loading?: boolean
   /** Overrides the tone the action's family gives. */
@@ -105,6 +127,11 @@ interface ConfirmBase {
   icon?: IconComponent
   /** Default: the provider's `messages['dialog.cancel']`. */
   cancelLabel?: string
+  /**
+   * The one record the action is on, from the application ("UF-2026-1187 · Medic Lab Niš"): bold,
+   * on its own line under the title, which then names the action ("Reject invoice").
+   */
+  subject?: ReactNode
   /**
    * What the action will do, under the message, from the application: a summary of what is
    * posted, a preview of the result (a read-only table). Use `size` 'wide' for a table.
@@ -151,6 +178,12 @@ function ConfirmFrame(
   const open = props.open ?? innerOpen
   const [pending, setPending] = useState(false)
   const busy = pending || props.loading === true
+  const options = props.notify ?? []
+  const [checked, setChecked] = useState<string[]>(() => initialNotify(options))
+  const confirmLabel =
+    checked.length > 0 && props.notifyConfirmLabel !== undefined
+      ? props.notifyConfirmLabel
+      : props.confirmLabel
   const { family, icon: ActionIcon } = actionOf(props)
   const tone = confirmTone(props.tone, family)
   const TitleIcon = props.icon ?? TriangleAlert
@@ -163,11 +196,13 @@ function ConfirmFrame(
 
   const setOpen = (next: boolean) => {
     if (busy && !next) return
+    // Each time it opens, the messages start as the application sets them.
+    if (next) setChecked(initialNotify(options))
     setInnerOpen(next)
     props.onOpenChange?.(next)
   }
   const confirm = () => {
-    const result = props.onConfirm()
+    const result = props.onConfirm({ notify: checked })
     if (result instanceof Promise) {
       setPending(true)
       result.then(
@@ -213,13 +248,13 @@ function ConfirmFrame(
         <div className="flex shrink-0 items-start justify-between gap-4 p-4">
           <DialogTitle
             className={cn(
-              'flex items-center gap-2 text-sm leading-tight font-bold',
+              'flex items-start gap-2 text-sm leading-tight font-bold',
               TONE_TEXT[tone],
             )}
           >
             <TitleIcon aria-hidden="true" className="size-4.5 shrink-0" />
-            <span id={titleId} className={TEXT_DIRECTION}>
-              {props.title}
+            <span id={titleId} className={cn('min-w-0 pt-px', TEXT_DIRECTION)}>
+              <DialogHeading title={props.title} subject={props.subject} />
             </span>
           </DialogTitle>
           {!busy && <DialogCloseButton label={messages['dialog.close']} />}
@@ -231,6 +266,7 @@ function ConfirmFrame(
         */}
         {(props.message !== undefined ||
           props.preview !== undefined ||
+          options.length > 0 ||
           props.extra !== undefined) && (
           <div
             data-slot="confirm-scroll"
@@ -250,6 +286,13 @@ function ConfirmFrame(
                   {props.preview}
                 </div>
               )}
+              <NotifyChoices
+                className="mt-4"
+                options={options}
+                checked={checked}
+                disabled={busy}
+                onChange={setChecked}
+              />
               {props.extra}
             </div>
             <div ref={spacer} aria-hidden="true" />
@@ -280,7 +323,7 @@ function ConfirmFrame(
               {ActionIcon !== undefined && (
                 <ActionIcon aria-hidden="true" className="size-3.75 shrink-0" />
               )}
-              <span>{props.confirmLabel}</span>
+              <span>{confirmLabel}</span>
             </LoadingButtonPrimitive>
           </DialogFooter>
         </div>
@@ -347,7 +390,7 @@ export interface IrreversibleReason {
 }
 
 export type IrreversibleConfirmDialogProps = ConfirmAction &
-  Omit<ConfirmBase, 'onConfirm'> & {
+  Omit<ConfirmBase, 'onConfirm' | 'notify' | 'notifyConfirmLabel'> & {
     /** The question, from the application: "Cancel invoice F-2026-0407?". */
     title: ReactNode
     /** What will happen, from the application. */
@@ -444,7 +487,7 @@ export function IrreversibleConfirmDialog(props: IrreversibleConfirmDialogProps)
 }
 
 export type ReasonConfirmDialogProps = ConfirmAction &
-  Omit<ConfirmBase, 'onConfirm'> & {
+  Omit<ConfirmBase, 'onConfirm' | 'notify' | 'notifyConfirmLabel'> & {
     /** The question, from the application: "Reject UF-2026-1187?". */
     title: ReactNode
     /** What will happen, from the application. */

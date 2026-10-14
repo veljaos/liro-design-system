@@ -15,7 +15,7 @@ import {
   UserRound,
 } from 'lucide-react'
 import type { ReactNode } from 'react'
-import { expect, userEvent, within } from 'storybook/test'
+import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { Banner } from '../components/alert'
 import { Button } from '../components/button'
 import { KeyValueList, SectionCard } from '../components/cards'
@@ -259,6 +259,18 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 /** A patient portal: appointments, results, messages. */
+/** The shell publishes its sticky header's height as --liro-shell-top (P5.28 item 4). */
+async function expectShellTop(canvasElement: HTMLElement): Promise<void> {
+  const shell = canvasElement.querySelector<HTMLElement>('[data-slot="portal-shell"]')
+  const header = shell?.querySelector<HTMLElement>('header')
+  if (shell === null || header === undefined || header === null) throw new Error('no shell')
+  await waitFor(async () => {
+    await expect(shell.style.getPropertyValue('--liro-shell-top')).toBe(
+      `${String(header.offsetHeight)}px`,
+    )
+  })
+}
+
 export const Default: Story = {
   name: 'Patient portal',
   play: async ({ canvasElement }) => {
@@ -275,6 +287,8 @@ export const Default: Story = {
     )
     await expect(canvas.getByRole('link', { name: 'Skip to content' })).toBeInTheDocument()
     await expect(canvas.getByRole('contentinfo')).toHaveTextContent('Bulevar cara Lazara 75')
+    // The header's height, for sticky parts of the page (as AppShell's).
+    await expectShellTop(canvasElement)
   },
 }
 
@@ -302,6 +316,7 @@ export const PatientPhone: Story = {
     }
     await expect(within(bar).getByRole('link', { name: 'Messages, 2 new' })).toBeVisible()
     await expect(canvas.queryByRole('button', { name: /Account/ })).toBeVisible()
+    await expectShellTop(canvasElement)
   },
 }
 

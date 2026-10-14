@@ -1,8 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { useRef, useState } from 'react'
-import { expect, userEvent, waitFor, within } from 'storybook/test'
+import { expect, fn, userEvent, waitFor, within } from 'storybook/test'
 import { settle } from '../primitives/story-helpers'
-import { createFormat } from '../provider/format'
 import type { ShiftAssignment, ShiftChange, ShiftConflict, ShiftConflicts } from './shift-logic'
 import { ShiftPlanner, type ShiftPlannerProps } from './shift-planner'
 import {
@@ -25,7 +24,13 @@ import {
   STORE_TEMPLATES,
   WEEK,
 } from './shift-story-data'
-import { ExampleProvider, PhoneFrame, StoryProvider } from './story-frames'
+import { EXAMPLE_FORMAT, ExampleProvider, PhoneFrame, StoryProvider } from './story-frames'
+import {
+  expectBelowShell,
+  expectFirstColumnStays,
+  scrollUnderShell,
+  ShellPage,
+} from './sticky-story-helpers'
 
 /**
  * The application's check of a rotation's shifts (illustrative): a day that already has a
@@ -60,6 +65,24 @@ function storeRotationCheck(
   return result
 }
 
+/** What the application was asked to publish with (the messages chosen). */
+const published = fn()
+
+/** The messages a store can send with publishing (P5.28 item 9), as the application offers them. */
+const PUBLISH_NOTIFY = [
+  {
+    id: 'app',
+    label: 'Notify 6 people in the app',
+    description: 'Each gets a message with their shifts for the week.',
+    defaultChecked: true,
+  },
+  {
+    id: 'sms',
+    label: 'Send an SMS to the 2 people whose shifts changed',
+    description: 'To the number in their record: the changed days and times.',
+  },
+] as const
+
 /** The application around the planner: it applies each change and moves the period. */
 function Planner(props: Partial<ShiftPlannerProps>) {
   const counter = useRef(0)
@@ -89,7 +112,8 @@ function Planner(props: Partial<ShiftPlannerProps>) {
       onPeriodChange={setPeriod}
       {...(status === undefined ? {} : { status })}
       {...(changed === undefined ? {} : { changedSincePublishing: changed })}
-      onPublish={async () => {
+      onPublish={async (answer) => {
+        published(answer)
         await new Promise((resolve) => setTimeout(resolve, 400))
         setStatus('published')
         setChanged(false)
@@ -108,10 +132,12 @@ function Planner(props: Partial<ShiftPlannerProps>) {
   )
 }
 
-/** A day as the cells name it in the example stories: the Serbian tenant's long date. */
-const SERBIAN = createFormat('sr-Latn-RS')
+/**
+ * A day as the cells name it in the example stories: the long date in the interface's language
+ * (English), never the tenant's (P5.28 item 2).
+ */
 function day(date: string): string {
-  return SERBIAN.dateLong(date)
+  return EXAMPLE_FORMAT.dateLong(date)
 }
 
 /** The cell button of a person's day, by its name's start. */
@@ -142,7 +168,9 @@ const meta = {
           'whose end is not after its start crosses midnight: “22:00–06:00 (+1)”, read as “… ' +
           'the next day”). Rows grouped by team or site under collapsible headings; planned ' +
           'hours at the row’s end, coverage at the column’s foot; the schedule’s state and ' +
-          'Publish (with a confirmation that states the application’s counts); “Apply ' +
+          'Publish (with a confirmation that states the application’s counts and offers its ' +
+          'messages — `publishNotify` — as “Notify …” checkboxes: publishing messages nobody ' +
+          'the user has not chosen, P5.28 item 9); “Apply ' +
           'rotation…” fills days from a rotation pattern.\n\n' +
           '**Assigning — three ways (WCAG 2.5.7):** the keyboard (arrows, Shift+arrows for a ' +
           'range, a template’s key assigns it, Delete removes, Enter opens the cell’s menu); the ' +
@@ -535,7 +563,7 @@ export const MenuAndMove: Story = {
     cell(canvasElement, 'Teodora Kovačević', day('2026-10-11')).focus()
     await userEvent.keyboard('{Enter}')
     await userEvent.click(await body.findByRole('menuitem', { name: 'Move Early to…' }))
-    const dialog = await body.findByRole('dialog', { name: 'Move Early' })
+    const dialog = await body.findByRole('dialog', { name: /^Move Early · Teodora Kovačević, / })
     await userEvent.click(within(dialog).getByRole('combobox', { name: 'Day' }))
     await userEvent.click(await body.findByRole('option', { name: day('2026-10-10') }))
     await userEvent.click(await within(dialog).findByRole('button', { name: 'Move' }))
@@ -703,6 +731,61 @@ export const Publishing: Story = {
   },
 }
 
+/**
+ * The publish confirmation with the application's messages as a choice (P5.28 item 9): the app's
+ * message checked by the application, the SMS not; while one is checked the button says "Publish
+ * changes and notify".
+ */
+export const PublishWithMessages: Story = {
+  name: 'Publish with messages',
+  render: () => (
+    <ExampleProvider>
+      <Planner
+        status="published"
+        changedSincePublishing
+        publishNotify={PUBLISH_NOTIFY}
+        defaultPublishOpen
+      />
+    </ExampleProvider>
+  ),
+  play: async () => {
+    await settle()
+    const dialog = within(
+      within(document.body).getByRole('alertdialog', { name: 'Publish the schedule?' }),
+    )
+    await expect(dialog.getByRole('group', { name: 'Messages to send' })).toBeVisible()
+    await expect(
+      dialog.getByRole('checkbox', { name: /^Notify 6 people in the app/ }),
+    ).toBeChecked()
+    await expect(dialog.getByRole('checkbox', { name: /^Send an SMS/ })).not.toBeChecked()
+    await expect(dialog.getByRole('button', { name: 'Publish changes and notify' })).toBeVisible()
+  },
+}
+
+/** Unchecking every message: the button says "Publish", and nobody is messaged. */
+export const PublishWithoutMessages: Story = {
+  name: 'Publish without messages, interaction',
+  tags: ['interaction'],
+  render: () => (
+    <ExampleProvider>
+      <Planner publishNotify={PUBLISH_NOTIFY} status="draft" />
+    </ExampleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    published.mockClear()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Publish' }))
+    const dialog = within(await within(document.body).findByRole('alertdialog'))
+    await userEvent.click(dialog.getByRole('checkbox', { name: /^Notify 6 people in the app/ }))
+    await userEvent.click(dialog.getByRole('button', { name: 'Publish' }))
+    await waitFor(async () => {
+      await expect(canvas.getByText('Published')).toBeVisible()
+    })
+    await expect(published).toHaveBeenCalledWith({ notify: [] })
+  },
+}
+
 /** "Go to" in the conflicts summary moves the focus to the cell; the period moves a week. */
 export const GoToAndPeriod: Story = {
   name: 'Go to and period, interaction',
@@ -722,5 +805,53 @@ export const GoToAndPeriod: Story = {
     await expect(canvas.getAllByText('05.10.2026.').length).toBeGreaterThan(0)
     await userEvent.click(canvas.getByRole('radio', { name: 'By person' }))
     await expect(canvas.queryByRole('button', { name: 'Tills' })).toBeNull()
+  },
+}
+
+/*
+ * P5.28 item 4: the days row stays below the shell's sticky header while the page scrolls, and
+ * the people column stays at the start while the planner scrolls sideways.
+ */
+
+const THIRTY = Array.from({ length: 30 }, (_, index) => ({
+  id: `p${String(index + 1)}`,
+  name: `${['Ana', 'Marko', 'Jelena', 'Nikola', 'Ivana', 'Stefan'][index % 6] ?? ''} ${
+    ['Petrović', 'Jovanović', 'Ilić', 'Nikolić', 'Marković'][index % 5] ?? ''
+  }`,
+  subtitle: index % 3 === 0 ? 'Cashier' : 'Stock',
+}))
+
+/** Thirty people over two weeks, on a page under the shell; the page and the planner scroll. */
+export const UnderTheShell: Story = {
+  name: 'Thirty people under the shell, interaction',
+  tags: ['interaction'],
+  render: () => (
+    <ExampleProvider>
+      <ShellPage>
+        <Planner
+          rows={THIRTY}
+          assignments={[]}
+          conflicts={{}}
+          coverage={{}}
+          groupings={[]}
+          start="2026-10-05"
+          end="2026-10-18"
+        />
+      </ShellPage>
+    </ExampleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const table = within(canvasElement).getByRole('table')
+    const corner = table.querySelector('[data-sticky-start]')
+    const region = table.parentElement
+    if (corner === null || region === null) throw new Error('no planner parts')
+    await scrollUnderShell(canvasElement, table, 400)
+    await expectBelowShell(canvasElement, corner)
+    await expectBelowShell(canvasElement, within(table).getAllByRole('columnheader')[9] ?? corner)
+    const person = within(table).getAllByRole('rowheader')[12]
+    const day = table.querySelectorAll('tbody td')[150]
+    if (person === undefined || day === undefined) throw new Error('no cells')
+    await expectFirstColumnStays(region, person, day)
   },
 }

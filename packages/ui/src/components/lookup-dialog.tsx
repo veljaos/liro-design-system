@@ -40,7 +40,8 @@ import { usePhone } from './use-phone'
  *
  * Size: a 960px dialog (at most 90% of the width) with the table scrolling inside 55% of the
  * screen's height under a sticky header; on phones (below 48em, or `layout`) a full-screen sheet
- * with the results as a flat list (the P4.9d sheet, `side="full"`).
+ * with the results as a flat list of compact rows (the P4.9d sheet, `side="full"`; P5.28 item 13:
+ * name, "code · kind" and the price, never every column as a detail card).
  */
 
 export interface LookupDialogProps<Row extends RowData> {
@@ -91,7 +92,11 @@ export interface LookupDialogProps<Row extends RowData> {
   countIsExact?: boolean
   /** The application is searching: skeletons on the first load, a small loader after. */
   loading?: boolean
-  /** The result's card on a phone (DataTable's). */
+  /**
+   * A result on a phone (DataTable's card, P5.28 item 13): one compact row — the title (default
+   * `getRowLabel`), the `subtitle` ("code · kind") and the `badge` at its end (the price) — and
+   * under it only the columns `details` names (default none, where DataTable shows every column).
+   */
   mobile?: DataTableMobile<Row>
   /** 'phone' forces the full-screen sheet; default by the viewport (48em). */
   layout?: 'desktop' | 'phone'
@@ -243,7 +248,11 @@ function LookupBody<Row extends RowData>(props: LookupDialogProps<Row> & { phone
             {...(props.count === undefined ? {} : { count: props.count })}
             {...(props.countIsExact === undefined ? {} : { countIsExact: props.countIsExact })}
             {...(props.loading === undefined ? {} : { loading: props.loading })}
-            {...(props.mobile === undefined ? {} : { mobile: props.mobile })}
+            {...(phone
+              ? { mobile: { ...props.mobile, details: props.mobile?.details ?? [] } }
+              : props.mobile === undefined
+                ? {}
+                : { mobile: props.mobile })}
             {...(phone ? {} : { stickyHeader: true, maxHeight: '55dvh' })}
           />
           <p

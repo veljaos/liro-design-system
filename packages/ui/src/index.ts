@@ -500,7 +500,6 @@ export type { RegisterEntry, RegisterLock, RegisterPageProps } from './templates
 export { StatutoryFormPage } from './templates/statutory-form-page'
 export type {
   SourceDocument,
-  StatutoryField,
   StatutoryFormPageProps,
   StatutoryOverride,
   StatutorySection,
@@ -1156,3 +1155,109 @@ export type {
   PracticeItem,
   RelatedAct,
 } from './components/legal-model'
+// ── P5.28 docs: the statutory form grid, simple printouts and electronic signature fields ──
+export {
+  statutoryRows,
+  statutoryColumnLabel,
+  findStatutoryPlace,
+  statutoryGridLines,
+  statutoryHeaderRows,
+  isStatutoryGroup,
+  statutoryRowRules,
+  statutoryCellId,
+  statutoryCellLabel,
+} from './templates/statutory-logic'
+export type {
+  StatutoryGridLine,
+  StatutoryHeaderCell,
+  StatutoryCell,
+  StatutoryCellKind,
+  StatutoryColumn,
+  StatutoryGroup,
+  StatutoryItem,
+  StatutoryPlace,
+  StatutoryRow,
+} from './templates/statutory-logic'
+export {
+  PrintAmountDueLine,
+  PrintPaymentDetails,
+  PrintSignatureField,
+} from './templates/print-parts'
+export type {
+  PrintAmountDue,
+  PrintPayment,
+  PrintSignatureFieldProps,
+} from './templates/print-parts'
+export {
+  lengthToMm,
+  printedPageCount,
+  PT_PER_MM,
+  signatureFieldPlacement,
+} from './templates/print-logic'
+export type { PrintBodyArea, SheetBox, SignatureFieldPlacement } from './templates/print-logic'
+
+// ── P5.28 dates ──
+export { numericFormat } from './provider'
+// ── P5.28 screens ──
+export {
+  ChangeConfirmDialog,
+  changeConfirmLabel,
+  initialNotify,
+  toggleNotify,
+} from './components/change-confirm-dialog'
+export type {
+  ChangeConfirmAnswer,
+  ChangeConfirmDialogProps,
+  ChangeLine,
+  NotifyOption,
+} from './components/change-confirm-dialog'
+
+// ── P5.28 phone ──
+export { isSearchable, SEARCHABLE_FROM } from './components/select-field'
+
+// ── P5.28 pos ──
+export { ReceiptKindPicker } from './components/receipt-kind-picker'
+export type { ReceiptKindPickerProps } from './components/receipt-kind-picker'
+export { BuyerField, BUYER_TYPES_SEARCHABLE_FROM } from './components/buyer-field'
+export type { BuyerFieldProps, BuyerIdType, BuyerValue } from './components/buyer-field'
+export { ReceiptFinder } from './components/receipt-finder'
+export type { FoundReceipt, ReceiptFinderProps, ReceiptQuery } from './components/receipt-finder'
+export { LineQuantityPicker } from './components/line-quantity-picker'
+export type { ChoosableLine, LineQuantityPickerProps } from './components/line-quantity-picker'
+export { AdvanceList } from './components/advance-list'
+export type { AdvanceItem, AdvanceListProps } from './components/advance-list'
+export { ReceiptResult } from './components/receipt-result'
+export type { ReceiptDelivery, ReceiptResultProps } from './components/receipt-result'
+export {
+  allLinesChosen,
+  chooseAllLines,
+  chosenLineIds,
+  exceedsAvailable,
+  hasOwnOptions,
+  isChosen,
+  kindMarker,
+  paymentOptions,
+  toggleLine,
+} from './components/sale-logic'
+export type {
+  ChosenQuantities,
+  PaymentKind,
+  PaymentOption,
+  ReceiptKindOption,
+} from './components/sale-logic'
+export type { CartLineState } from './components/cart-panel'
+export type { ReceiptRecap, ReceiptRecapColumn } from './components/receipt-preview'
+
+// ── P5.28 floor ──
+export {
+  AREA_SEGMENTS_UP_TO,
+  areaSwitchKind,
+  inArea,
+  labelFit,
+  labelRoom,
+  planFrame,
+  switchableAreas,
+} from './components/floor-plan-logic'
+export type { LabelFit, LabelSize } from './components/floor-plan-logic'
+export { seatingChanges } from './components/seating-logic'
+export type { SeatingChange } from './components/seating-logic'

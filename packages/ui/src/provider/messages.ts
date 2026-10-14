@@ -939,7 +939,6 @@ export interface LiroMessages {
   'shifts.rotationConflicts': (count: number, countText: string) => string
   'shifts.rotationNoConflicts': string
   /** "Move to…": the dialog that moves one assignment without dragging. */
-  'shifts.moveTitle': (label: string) => string
   'shifts.movePerson': string
   'shifts.moveDay': string
   'shifts.moveButton': string
@@ -1003,7 +1002,7 @@ export interface LiroMessages {
   'masked.other': string
   /** MaskedValue: the label of the text field of "Other". */
   'masked.otherText': string
-  /** MaskedValue: the note in the dialog that the access is recorded. */
+  /** MaskedValue: the note in the dialog that the access is recorded, under `masked.loggedTitle`. */
   'masked.logged': string
   /** MaskedValue: the value is on its way (after the reason was given). */
   'masked.loading': (label: string) => string
@@ -1048,7 +1047,6 @@ export interface LiroMessages {
   'attendance.locked': string
   /** The correction of a locked cell: the button, the dialog and its fields. */
   'attendance.correct': string
-  'attendance.correctTitle': (row: string, column: string) => string
   'attendance.current': string
   'attendance.code': string
   'attendance.noCode': string
@@ -1092,7 +1090,7 @@ export interface LiroMessages {
   'clock.corrected': (by: string, when: string, reason: string) => string
   /** The correction: the action, the drawer's title and its fields. */
   'clock.correct': string
-  'clock.correctTitle': (person: string, date: string) => string
+  'clock.correctTitle': string
   'clock.time': string
   'clock.timeInvalid': string
   'clock.reason': string
@@ -1160,10 +1158,9 @@ export interface LiroMessages {
   'slots.loading': string
   /** SlotPicker: a slot's accessible name: its time, its day, and its resource when grouped. */
   'slots.slotLabel': (timeText: string, dateText: string, resource: string | null) => string
-  /** Timetable: the corner header over the periods, a free period, the running period's mark. */
+  /** Timetable: the corner header over the periods, a free period. */
   'timetable.period': string
   'timetable.free': string
-  'timetable.now': string
   /** Timetable: the label of the phones' day switcher. */
   'timetable.day': string
   // P5.10 / P5.11 touch, POS and warehouse
@@ -1250,7 +1247,6 @@ export interface LiroMessages {
   'pick.quantity': string
   'pick.confirm': string
   'pick.skip': string
-  'pick.skipTitle': (item: string) => string
   'pick.skipMessage': string
   'pick.route': string
   'pick.open': string
@@ -1418,8 +1414,9 @@ export interface LiroMessages {
   'floorPlan.duplicate': string
   'floorPlan.remove': string
   /** The "Move to…" and "Size…" dialogs: titles, hint, fields, buttons and the range error. */
-  'floorPlan.moveTitle': (label: string) => string
-  'floorPlan.sizeTitle': (label: string) => string
+  /** The "Move to…" and "Size…" dialogs' titles: the action; the item is their subject (P5.28). */
+  'floorPlan.moveTitle': string
+  'floorPlan.sizeTitle': string
   'floorPlan.unitsHint': string
   'floorPlan.x': string
   'floorPlan.y': string
@@ -1462,7 +1459,8 @@ export interface LiroMessages {
   'seating.seatedHere': string
   'seating.chooseGuest': string
   /** "Seat at…": title, fields, the button, free seats and a full table. */
-  'seating.seatAtTitle': (name: string) => string
+  /** "Seat at…": the action; the guest is the dialog's subject (P5.28). */
+  'seating.seatAtTitle': string
   'seating.table': string
   'seating.seat': string
   'seating.seatButton': string
@@ -1544,7 +1542,7 @@ export interface LiroMessages {
   'diagram.renameTitle': string
   'diagram.name': string
   'diagram.save': string
-  'diagram.connectTitle': (label: string) => string
+  'diagram.connectTitle': string
   'diagram.connectTarget': string
   'diagram.connectLabel': string
   'diagram.connect': string
@@ -1711,4 +1709,119 @@ export interface LiroMessages {
   // P5.25a FloorPlan
   /** An item's level in words, from the formatted percentage: "62,5% full". */
   'floorPlan.level': (percentText: string) => string
+  // P5.28 docs
+  /** The switch that shows the previous period under each value: "Compare with August 2026". */
+  'statutory.compareWith': (period: string) => string
+  /** Beside the switch while comparing: "September 2026, with August 2026 under each amount". */
+  'statutory.comparing': (current: string, previous: string) => string
+  /** Names a previous value for assistive technology, before the amount: "August 2026:". */
+  'statutory.previousValue': (period: string) => string
+  /**
+   * A printed document's one prominent line, from the amount as `format.money` writes it and the
+   * due date as `format.date` writes it (none: no date): "5.003.678,22 RSD due 21.10.2026.".
+   */
+  'print.amountDue': (amount: string, date: string | undefined) => string
+  /** The button in an empty electronic signature field on screen (left off the paper). */
+  'print.signHere': string
+  // P5.28 dates
+  /** The "now" marker of the time grids (CalendarView, ResourceSchedule, Timetable): "Now, 10:05". */
+  'schedule.now': (timeText: string) => string
+  // P5.28 screens
+  /** MaskedValue: the bold start of the note that the access is recorded ("Access is logged"). */
+  'masked.loggedTitle': string
+  /** ClockRecordList: the correction drawer's record, under its title: "Nenad Ilić, 07.10.2026.". */
+  'clock.correctSubject': (person: string, date: string) => string
+  /** ChangeConfirmDialog: its Save button, and the same while a message is checked. */
+  'change.save': string
+  'change.saveAndNotify': string
+  /** ChangeConfirmDialog: names the list of changes (old → new). */
+  'change.changes': string
+  /** ChangeConfirmDialog: before who the change concerns ("Concerns:"). */
+  'change.affected': string
+  /** ChangeConfirmDialog: names the group of "Notify …" checkboxes. */
+  'change.notifyGroup': string
+  /** FileDropzone on phones: the button that takes a photo with the camera. */
+  'file.takePhoto': string
+  /** AttendanceGrid: the correction dialog's action and record, "Nenad Ilić, Wed 7" (P5.28 item 6). */
+  'attendance.correctAction': string
+  'attendance.correctSubject': (row: string, column: string) => string
+  /** ShiftPlanner: the move dialog's action; the shift goes under it (P5.28 item 6). */
+  'shifts.moveAction': string
+  /** PickList: the skip dialog's action; the item goes under it (P5.28 item 6). */
+  'pick.skipAction': string
+  // P5.28 left
+  /** ShiftPlanner's move dialog: the shift it moves, under the action ("Morning · Ana Petrović, …"). */
+  'shifts.moveSubject': (label: string, name: string, dayText: string) => string
+  /** ShiftPlanner: the publish button while a message is checked (P5.28 item 9). */
+  'shifts.publishAndNotify': string
+  'shifts.publishChangesAndNotify': string
+  // P5.28 pos
+  /** A way to pay by a code the customer scans (an instant payment): start, wait, outcome. */
+  'payment.qrStart': string
+  'payment.qrWaiting': string
+  'payment.qrHint': string
+  'payment.qrCancel': string
+  'payment.qrDeclined': string
+  'payment.qrApproved': string
+  /** The code's name for assistive technology. */
+  'payment.qrCode': string
+  /** Adds the keypad's amount as one more payment of the chosen way. */
+  'payment.addPart': string
+  /** Removes a part paid: "Remove Voucher". */
+  'payment.removePart': (label: string) => string
+  /** A cart line's edit button: "Edit Kapućino". */
+  'cart.edit': (name: string) => string
+  /** The till's queue could not be sent. */
+  'pos.queueFailed': string
+  /** ReceiptKindPicker's groups and a kind that cannot be chosen ("Copy: needs …"). */
+  'receiptKind.type': string
+  'receiptKind.transaction': string
+  'receiptKind.unavailable': (label: string, reason: string) => string
+  /** BuyerField's legend and parts. */
+  'buyer.title': string
+  'buyer.type': string
+  'buyer.id': string
+  'buyer.optionalType': string
+  'buyer.optional': string
+  /** ReceiptFinder: scan, search by number, date and total, the results. */
+  'receiptFinder.scan': string
+  'receiptFinder.searchBy': string
+  'receiptFinder.orSearchBy': string
+  'receiptFinder.number': string
+  'receiptFinder.date': string
+  'receiptFinder.total': string
+  'receiptFinder.search': string
+  'receiptFinder.results': string
+  'receiptFinder.none': string
+  'receiptFinder.noneDescription': string
+  /** LineQuantityPicker: every line, "of 3 pc", the figure for what is chosen. */
+  'lines.all': string
+  'lines.of': (quantityText: string) => string
+  'lines.chosenTotal': string
+  /** AdvanceList. */
+  'advances.title': string
+  'advances.count': (count: number, countText: string) => string
+  'advances.paidOn': (dateText: string) => string
+  'advances.open': string
+  'advances.paid': (amountText: string) => string
+  'advances.choose': (number: string) => string
+  'advances.refund': (number: string) => string
+  'advances.chosenTotal': string
+  'advances.empty': string
+  /** ReceiptResult. */
+  'receiptResult.title': string
+  'receiptResult.waiting': string
+  'receiptResult.code': string
+  'receiptResult.deliver': string
+  'receiptResult.sending': string
+  'receiptResult.sent': string
+  'receiptResult.failed': string
+  // P5.28 floor
+  /** FloorPlan's area switcher (P5.28 item 26). */
+  'floorPlan.area': string
+  'floorPlan.allAreas': string
+  /** FloorPlan with `editing` on a phone (P5.28 item 27). */
+  'floorPlan.editOnLarger': string
+  /** SeatingChart's seat dialog: the action; the seat is its subject (P5.28 item 6). */
+  'seating.seatTitle': string
 }

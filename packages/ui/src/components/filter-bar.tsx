@@ -399,7 +399,7 @@ function FilterPill({
       data-slot="filter-pill"
       className="box-border inline-flex h-[22px] max-w-full items-center rounded-full border border-solid border-default bg-surface-raised ps-[0.8em] text-xs leading-none text-primary"
     >
-      <span className={cn('truncate', TEXT_DIRECTION)}>{text}</span>
+      <span className={cn('min-w-0 truncate', TEXT_DIRECTION)}>{text}</span>
       <button
         type="button"
         aria-label={messages['filter.remove'](label)}
@@ -613,7 +613,9 @@ export function FilterBar(props: FilterBarProps) {
       )}
       {pills.length > 0 && (
         <div className="flex flex-wrap items-center gap-2">
-          <ul className="m-0 flex list-none flex-wrap items-center gap-2 p-0">
+          {/* A pill longer than the row is cut with an ellipsis, never wider than the screen
+              (P5.28): the list and the pill's text may shrink. */}
+          <ul className="m-0 flex max-w-full min-w-0 list-none flex-wrap items-center gap-2 p-0">
             {pills.map(({ filter, text }) => (
               <FilterPill
                 key={filter.id}

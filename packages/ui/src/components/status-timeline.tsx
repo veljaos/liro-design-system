@@ -21,7 +21,8 @@ import { lifecycleState, StepDot, type StepState } from './lifecycle-bar'
  * - The next step: under the current state, an inset block (not a card: radius md, 12px padding,
  *   the tone's subtle background, no border) with its title (13px semibold in the tone's fg), a
  *   description and the application's actions, 8px apart. Neutral by default, warning or danger
- *   when the application says the user must act.
+ *   when the application says the user must act. The actions are neutral secondary buttons on
+ *   every tone (P5.28 item 7: never a family colour on a toned background).
  * - Which one: StatusTimeline for one process's states with what comes next (delivery, a payment
  *   order, an import); LifecycleBar for the dots above a document; HistoryList (P5.1) for the
  *   full record of who changed what; ActivityList for the compact side-panel list.
@@ -48,7 +49,10 @@ export interface StatusNextStep {
   /** From the application: "Delivery pending — action needed". */
   title: ReactNode
   description?: ReactNode
-  /** The application's buttons (Retry, "Export for manual upload"), the main one last. */
+  /**
+   * The application's buttons (Retry, "Export for manual upload"), the main one last: neutral
+   * secondary Buttons only (P5.28 item 7).
+   */
   actions?: ReactNode
   /** Default 'neutral'; 'warning' or 'danger' when the user must act. Never blue. */
   tone?: 'neutral' | 'warning' | 'danger'

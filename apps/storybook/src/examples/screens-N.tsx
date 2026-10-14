@@ -2,6 +2,7 @@ import {
   ArrowRightLeft,
   Armchair,
   ClipboardList,
+  LogIn,
   LogOut,
   ScanLine,
   Sparkles,
@@ -12,6 +13,9 @@ import {
   ActionGroup,
   addDays,
   Button,
+  CandidateList,
+  ChangeConfirmDialog,
+  Dialog,
   DateText,
   Drawer,
   EmptyState,
@@ -33,10 +37,12 @@ import {
   type ShellCompany,
 } from '@veljaos/ui'
 import type { ExampleRoute } from './example-app'
+import { useExampleState } from './example-state'
 import { Navigate, Shell, type ExampleAccount } from './example-shell'
 import { Frame } from './screens-G'
 import { I_ROUTES } from './data-I'
 import {
+  ADMISSIONS,
   BED_STATES,
   bedItems,
   BEDS,
@@ -62,6 +68,7 @@ import {
   WAREHOUSE_AREAS,
   WAREHOUSE_FIXTURES,
   WAREHOUSE_SIZE,
+  type Admission,
   type Bed,
   type Bin,
 } from './data-N'
@@ -330,10 +337,16 @@ function BedDrawer({
   bed,
   onClose,
   onChange,
+  onAdmit,
+  onTransfer,
 }: {
   bed: Bed | undefined
   onClose: () => void
   onChange: (bed: Bed, change: Partial<Bed>, message: string) => void
+  /** Opens "Admit patient" for this free bed (P5.28 item 18). */
+  onAdmit: (bed: Bed) => void
+  /** Opens "Transfer patient" with the free beds (P5.28 items 8, 9, 18). */
+  onTransfer: (bed: Bed) => void
 }) {
   // The name is in the page only after a reason (the application logs it); hidden again on close.
   const [revealed, setRevealed] = useState<string | null>(null)
@@ -349,7 +362,7 @@ function BedDrawer({
         icon: ArrowRightLeft,
         emphasis: 'primary',
         onClick: () => {
-          notice.info(`Admission to ${name} opened in the admissions office’s list.`)
+          onAdmit(bed)
         },
       })
     } else if (bed.state === 'occupied') {
@@ -360,7 +373,7 @@ function BedDrawer({
           family: 'neutral',
           icon: ArrowRightLeft,
           onClick: () => {
-            notice.info(`Transfer from ${name}: choose the bed in the transfer list.`)
+            onTransfer(bed)
           },
         },
         {
@@ -415,6 +428,8 @@ function BedDrawer({
                   value: (
                     <MaskedValue
                       label="Patient’s name"
+                      sentenceLabel="patient’s name"
+                      subject={`Bed ${String(bed.number)}`}
                       reasons={NAME_REASONS}
                       allowOther
                       {...(revealed === null ? {} : { value: revealed })}
@@ -455,13 +470,227 @@ function BedDrawer({
   )
 }
 
+/** "Bed 9 · Room 5". */
+function bedPlace(bed: Bed): string {
+  return `Bed ${String(bed.number)} · ${WARD_AREAS.find((area) => area.id === bed.room)?.label ?? ''}`
+}
+
+/**
+ * "Transfer…" (P5.28 items 8, 9, 18): the free beds by room, chosen and confirmed in one dialog —
+ * the bed old → new, who it concerns, the doctor's and the porters' messages as choices. The
+ * patient's name stays masked: the record is the bed.
+ */
+function TransferDialog({
+  bed,
+  beds,
+  onOpenChange,
+  onTransfer,
+}: {
+  bed: Bed
+  beds: readonly Bed[]
+  onOpenChange: (open: boolean) => void
+  onTransfer: (to: Bed, notify: readonly string[]) => void
+}) {
+  const free = beds.filter((each) => each.state === 'free')
+  const [target, setTarget] = useState(free[0]?.id ?? '')
+  const to = free.find((each) => each.id === target) ?? free[0]
+  const doctor = bed.patient?.doctor ?? ''
+  const rooms = WARD_AREAS.filter((area) => free.some((each) => each.room === area.id))
+  if (to === undefined) {
+    return (
+      <Dialog
+        open
+        onOpenChange={onOpenChange}
+        title="Transfer patient"
+        subject={bedPlace(bed)}
+        actions={
+          <Button
+            intent="cancel"
+            label="Close"
+            onClick={() => {
+              onOpenChange(false)
+            }}
+          />
+        }
+      >
+        <EmptyState
+          compact
+          title="No free bed on the ward"
+          description="A bed is free again once it is cleaned or unblocked."
+        />
+      </Dialog>
+    )
+  }
+  return (
+    <ChangeConfirmDialog
+      open
+      onOpenChange={onOpenChange}
+      title="Transfer patient"
+      subject={bedPlace(bed)}
+      changes={[{ label: 'Bed', from: bedPlace(bed), to: bedPlace(to) }]}
+      affected={`The patient, ${doctor}`}
+      notify={[
+        {
+          id: 'doctor',
+          label: `Notify ${doctor} in Liro`,
+          description: 'The new bed, in the patient’s record.',
+          defaultChecked: true,
+        },
+        {
+          id: 'porters',
+          label: 'Ask the porters to move the patient',
+          description: 'The porters’ desk gets both beds.',
+        },
+      ]}
+      {...(to.room === 's8'
+        ? { warning: 'Isolation: contact precautions apply; gown and gloves in the anteroom.' }
+        : {})}
+      confirmLabel="Transfer"
+      onConfirm={(answer) => {
+        onTransfer(to, answer.notify)
+      }}
+    >
+      <div className="flex flex-col gap-3">
+        {rooms.map((room) => (
+          <section
+            key={room.id}
+            aria-labelledby={`transfer-${room.id}`}
+            className="flex flex-col gap-1"
+          >
+            <h3
+              id={`transfer-${room.id}`}
+              className="bidi-content m-0 text-sm font-semibold text-primary"
+            >
+              {room.label}
+            </h3>
+            <CandidateList
+              label={`Free beds in ${room.label}`}
+              multiple={false}
+              selected={to.room === room.id ? [to.id] : []}
+              onSelectedChange={(ids) => {
+                setTarget(ids[0] ?? to.id)
+              }}
+              candidates={free
+                .filter((each) => each.room === room.id)
+                .map((each) => ({
+                  id: each.id,
+                  title: `Bed ${String(each.number)}`,
+                  label: bedPlace(each),
+                  ...(each.note === undefined ? {} : { subtitle: each.note }),
+                }))}
+            />
+          </section>
+        ))}
+      </div>
+    </ChangeConfirmDialog>
+  )
+}
+
+/** "Admit patient…" on a free bed (P5.28 item 18): the patients waiting for a bed, then Admit. */
+function AdmitDialog({
+  bed,
+  waiting,
+  onOpenChange,
+  onAdmit,
+}: {
+  bed: Bed
+  waiting: readonly Admission[]
+  onOpenChange: (open: boolean) => void
+  onAdmit: (admission: Admission) => void
+}) {
+  const [chosen, setChosen] = useState(waiting[0]?.id ?? '')
+  const admission = waiting.find((each) => each.id === chosen)
+  return (
+    <Dialog
+      open
+      onOpenChange={onOpenChange}
+      title="Admit patient"
+      subject={bedPlace(bed)}
+      actions={
+        <>
+          <Button
+            intent="cancel"
+            label="Cancel"
+            onClick={() => {
+              onOpenChange(false)
+            }}
+          />
+          {admission !== undefined && (
+            <Button
+              family="primary"
+              emphasis="primary"
+              icon={LogIn}
+              label="Admit"
+              onClick={() => {
+                onAdmit(admission)
+              }}
+            />
+          )}
+        </>
+      }
+    >
+      <CandidateList
+        label="Waiting for a bed"
+        multiple={false}
+        selected={admission === undefined ? [] : [admission.id]}
+        onSelectedChange={(ids) => {
+          setChosen(ids[0] ?? chosen)
+        }}
+        empty={
+          <EmptyState
+            compact
+            title="Nobody is waiting for a bed"
+            description="The admissions office’s list is empty."
+          />
+        }
+        candidates={waiting.map((each) => ({
+          id: each.id,
+          title: <span dir="ltr">{each.number}</span>,
+          label: `${each.number}, ${each.from}, ${each.patient.doctor}`,
+          subtitle: `${each.from} · ${each.patient.doctor}`,
+          reason: `Waiting since ${each.since}`,
+        }))}
+      />
+    </Dialog>
+  )
+}
+
 /** Interno odeljenje 3: rooms and beds over the building's drawing; a bed opens in a drawer. */
-export function Ward({ phone, bed: initial }: { phone: boolean; bed?: string }) {
+export function Ward({
+  phone,
+  bed: initial,
+  step: startStep,
+}: {
+  phone: boolean
+  bed?: string
+  /** "Transfer patient" or "Admit patient" open for the bed (a picture). */
+  step?: 'transfer' | 'admit'
+}) {
   const { format } = useLiro()
-  const [beds, setBeds] = useState<readonly Bed[]>(BEDS)
+  // The beds are the ward's record: kept above the screens (P5.28).
+  const [beds, setBeds] = useExampleState<readonly Bed[]>('ward.beds', () => BEDS)
+  const [waiting, setWaiting] = useExampleState<readonly Admission[]>(
+    'ward.admissions',
+    () => ADMISSIONS,
+  )
   const [chosen, setChosen] = useState<string | undefined>(initial)
-  const [open, setOpen] = useState(initial !== undefined)
+  // A step pictured on its own opens over the plan (the drawer and the dialog opened together
+  // would hide each other from assistive technology).
+  const [open, setOpen] = useState(initial !== undefined && startStep === undefined)
+  const [step, setStep] = useState<'transfer' | 'admit' | null>(startStep ?? null)
   const bed = open ? beds.find((each) => each.id === chosen) : undefined
+  const stepBed = beds.find((each) => each.id === chosen)
+  const change = (id: string, next: Partial<Bed>, drop?: 'patient') => {
+    setBeds((current) =>
+      current.map((one) => {
+        if (one.id !== id) return one
+        const changed = { ...one, ...next }
+        if (drop === 'patient') delete changed.patient
+        if (next.note === undefined) delete changed.note
+        return changed
+      }),
+    )
+  }
   const count = (state: string) =>
     format.number(String(beds.filter((each) => each.state === state).length))
   return (
@@ -508,13 +737,64 @@ export function Ward({ phone, bed: initial }: { phone: boolean; bed?: string }) 
           onClose={() => {
             setOpen(false)
           }}
-          onChange={(each, change, message) => {
+          onChange={(each, next, message) => {
             setBeds((current) =>
-              current.map((one) => (one.id === each.id ? { ...one, ...change } : one)),
+              current.map((one) => (one.id === each.id ? { ...one, ...next } : one)),
             )
             notice.success(message)
           }}
+          onAdmit={() => {
+            setStep('admit')
+          }}
+          onTransfer={() => {
+            setStep('transfer')
+          }}
         />
+        {stepBed !== undefined && step === 'transfer' && stepBed.patient !== undefined && (
+          <TransferDialog
+            bed={stepBed}
+            beds={beds}
+            onOpenChange={(next) => {
+              if (!next) setStep(null)
+            }}
+            onTransfer={(to, notify) => {
+              const patient = stepBed.patient
+              if (patient === undefined) return
+              change(to.id, { state: 'occupied', patient })
+              change(
+                stepBed.id,
+                { state: 'cleaning', note: `Patient moved to Bed ${String(to.number)}` },
+                'patient',
+              )
+              setOpen(false)
+              setChosen(to.id)
+              const told = [
+                ...(notify.includes('doctor') ? [patient.doctor] : []),
+                ...(notify.includes('porters') ? ['the porters'] : []),
+              ]
+              notice.success(
+                `Patient moved from Bed ${String(stepBed.number)} to Bed ${String(to.number)}. ${
+                  told.length === 0 ? 'No message was sent.' : `Sent to ${told.join(' and ')}.`
+                }`,
+              )
+            }}
+          />
+        )}
+        {stepBed !== undefined && step === 'admit' && stepBed.state === 'free' && (
+          <AdmitDialog
+            bed={stepBed}
+            waiting={waiting}
+            onOpenChange={(next) => {
+              if (!next) setStep(null)
+            }}
+            onAdmit={(admission) => {
+              change(stepBed.id, { state: 'occupied', patient: admission.patient })
+              setWaiting((current) => current.filter((each) => each.id !== admission.id))
+              setStep(null)
+              notice.success(`${admission.number} admitted to Bed ${String(stepBed.number)}.`)
+            }}
+          />
+        )}
       </Frame>
       <Toaster layout={phone ? 'phone' : 'desktop'} />
     </Shell>
@@ -715,6 +995,11 @@ export const GROUP_N_ROUTES: ExampleRoute[] = [
   },
   { path: N_ROUTES.ward, render: (phone) => <Ward phone={phone} /> },
   { path: N_ROUTES.wardBed, render: (phone) => <Ward phone={phone} bed="b9" /> },
+  {
+    path: N_ROUTES.wardTransfer,
+    render: (phone) => <Ward phone={phone} bed="b9" step="transfer" />,
+  },
+  { path: N_ROUTES.wardAdmit, render: (phone) => <Ward phone={phone} bed="b2" step="admit" /> },
   { path: N_ROUTES.office, render: (phone) => <OfficeDesks phone={phone} /> },
   { path: N_ROUTES.officeDesk, render: (phone) => <OfficeDesks phone={phone} desk="d7" /> },
   { path: N_ROUTES.officeOwn, render: (phone) => <OfficeDesks phone={phone} desk="d3" /> },

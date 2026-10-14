@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
-import { createFormat } from '../provider/format'
+import { numericFormat } from '../provider/format'
 import { LiroProvider, useLiro } from '../provider/liro-provider'
 import { PickList } from '../templates/pick-list'
 import { PosShell } from '../templates/pos-shell'
@@ -12,11 +12,11 @@ import { QuantityStepper } from './quantity-stepper'
 import { ReceiptPreview } from './receipt-preview'
 import { ScanField } from './scan-field'
 
-const SERBIAN = createFormat('sr-Latn-RS')
+const SERBIAN = numericFormat('sr-Latn-RS')
 
 function render(node: React.ReactNode, density?: 'default' | 'touch') {
   return renderToStaticMarkup(
-    <LiroProvider locale="en" format={SERBIAN} {...(density === undefined ? {} : { density })}>
+    <LiroProvider locale="en-RS" format={SERBIAN} {...(density === undefined ? {} : { density })}>
       {node}
     </LiroProvider>,
   )

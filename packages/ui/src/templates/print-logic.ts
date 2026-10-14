@@ -147,3 +147,106 @@ export function pageRules(options: PageRulesOptions): string {
   )
   return lines.join('\n')
 }
+
+// ── P5.28: electronic signature fields and the page count on screen ─────────────────────────
+
+/** PDF points per millimetre (72 points per inch). */
+export const PT_PER_MM = 72 / 25.4
+
+/**
+ * A CSS length in millimetres ("16mm", "1.5cm", "0.5in", "12pt", "40px"); NaN for any other unit
+ * (percentages, `em`, `calc()`), which the caller then measures instead.
+ */
+export function lengthToMm(length: string): number {
+  const match = /^\s*(-?\d+(?:\.\d+)?)\s*(mm|cm|in|pt|px)\s*$/.exec(length)
+  if (match === null) return Number.NaN
+  const value = Number(match[1])
+  switch (match[2]) {
+    case 'cm':
+      return value * 10
+    case 'in':
+      return value * 25.4
+    case 'pt':
+      return value / PT_PER_MM
+    case 'px':
+      return value / PX_PER_MM
+    default:
+      return value
+  }
+}
+
+/** Where the body of every printed page is, in millimetres from the top of the page. */
+export interface PrintBodyArea {
+  /** The page's height (297 portrait, 210 landscape). */
+  pageHeight: number
+  /** The top of the body: the top margin and the header that repeats on every page. */
+  top: number
+  /** The bottom of the body: the page less the bottom margin and the footer's room. */
+  bottom: number
+}
+
+/** A box on the sheet as the screen draws it, in millimetres from the sheet's top-left corner. */
+export interface SheetBox {
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
+/**
+ * Where a signature field lands in the PDF: the page (from 1) and its rectangle in points, origin
+ * at the bottom-left corner of the page, as PDF tools and Liro Bridge place a visible signature.
+ */
+export interface SignatureFieldPlacement {
+  /** The field's stable id (`PrintSignatureField`'s `id`). */
+  id: string
+  page: number
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
+const points = (mm: number) => Math.round(mm * PT_PER_MM * 100) / 100
+
+/**
+ * A field's place on paper from its place on the screen's sheet. The screen draws the body as one
+ * long column; paper cuts it into pages of `bottom − top` millimetres, each starting under the
+ * repeated header. A field never splits (`break-inside: avoid`): one that would cross a page's
+ * end starts the next page. Exact for a field on the first page and wherever the content before
+ * it breaks only between lines; a row or a heading kept whole moves what follows a little down.
+ */
+export function signatureFieldPlacement(
+  id: string,
+  box: SheetBox,
+  area: PrintBodyArea,
+): SignatureFieldPlacement {
+  const usable = area.bottom - area.top
+  let page = 0
+  let top = box.y
+  if (usable > 0 && box.y > area.top) {
+    const offset = box.y - area.top
+    page = Math.floor(offset / usable)
+    let within = offset - page * usable
+    if (within + box.height > usable && box.height <= usable) {
+      page += 1
+      within = 0
+    }
+    top = area.top + within
+  }
+  return {
+    id,
+    page: page + 1,
+    x: points(box.x),
+    y: points(area.pageHeight - top - box.height),
+    width: points(box.width),
+    height: points(box.height),
+  }
+}
+
+/** How many pages the body fills on paper: its height on screen over each page's body. */
+export function printedPageCount(bodyBottom: number, area: PrintBodyArea): number {
+  const usable = area.bottom - area.top
+  if (!(usable > 0) || !Number.isFinite(bodyBottom)) return 1
+  return Math.max(1, Math.ceil((bodyBottom - area.top - 0.5) / usable))
+}

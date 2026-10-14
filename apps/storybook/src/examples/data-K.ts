@@ -14,8 +14,6 @@
  */
 import { Ban, CalendarClock, CircleCheck, Receipt, Sparkles, UsersRound } from 'lucide-react'
 import type {
-  CartAmount,
-  CartLine,
   FloorArea,
   FloorItem,
   FloorPaletteEntry,
@@ -26,7 +24,7 @@ import type {
   SeatingGuest,
   SeatingTable,
 } from '@veljaos/ui'
-import { decimal, paras, sumUnits } from '../../../../packages/ui/src/components/amounts-story-data'
+import { paras, sumUnits } from '../../../../packages/ui/src/components/amounts-story-data'
 
 export const K_ROUTES = {
   /** The service: the floor with nothing chosen. */
@@ -37,6 +35,12 @@ export const K_ROUTES = {
   floorOpen: '/restaurant/bistro-dunav/floor?table=t4&open',
   /** Occupied table 5: "Move to table…" open. */
   floorMove: '/restaurant/bistro-dunav/floor?table=t5&move',
+  /** Reserved table 8 (six guests): "Move to table…" open; no free table has six seats. */
+  floorMoveNone: '/restaurant/bistro-dunav/floor?table=t8&move',
+  /** The takeaway orders (P5.28 item 26: a channel, not an area). */
+  floorTakeaway: '/restaurant/bistro-dunav/floor?channel=takeaway',
+  /** The floor on one area: the terrace (P5.28 item 26). */
+  floorTerrace: '/restaurant/bistro-dunav/floor?area=terasa',
   /** The floor plan in edit mode, terrace tables 11 and 12 chosen to merge. */
   floorEdit: '/restaurant/bistro-dunav/floor/edit',
   /** Tables 11 and 12 merged into one. */
@@ -53,6 +57,8 @@ export const K_ROUTES = {
   seatingSeatAt: '/events/liro-2026/seating?seat-at=g113',
   /** Table 6's guests in seat order. */
   seatingTable: '/events/liro-2026/seating?table=t6',
+  /** Three seating changes pending, "Save seating…" asked (P5.28 item 9). */
+  seatingPending: '/events/liro-2026/seating?pending',
 }
 
 // ── Bistro Dunav ──────────────────────────────────────────────────────────────────────────────
@@ -185,29 +191,21 @@ export const BISTRO_TABLES: BistroTable[] = [
   table(18, 'round', [1000, 560, 80, 80], 'bar', 2, 'occupied', { size: 1, time: '19:35' }),
 ]
 
-/** The building: windows to the quay, the wall to the terrace, the doors, the bar counter. */
+/**
+ * What else stands on the floor: the bar counter (P5.28 item 23: no walls, doors or windows; the
+ * areas are the hall, the terrace and the bar).
+ */
 export const BISTRO_FIXTURES: FloorItem[] = [
   {
-    id: 'windows',
-    kind: 'window',
-    label: 'Windows to the quay',
-    x: 40,
-    y: 0,
-    width: 680,
-    height: 14,
+    id: 'counter',
+    kind: 'counter',
+    label: 'Bar counter',
+    x: 820,
+    y: 680,
+    width: 340,
+    height: 60,
+    areaId: 'bar',
   },
-  { id: 'wall', kind: 'wall', label: 'Wall', x: 760, y: 0, width: 20, height: 600 },
-  { id: 'door', kind: 'door', label: 'Entrance', x: 560, y: 736, width: 120, height: 24 },
-  {
-    id: 'door-terrace',
-    kind: 'door',
-    label: 'Door to the terrace',
-    x: 760,
-    y: 620,
-    width: 20,
-    height: 100,
-  },
-  { id: 'counter', kind: 'counter', label: 'Bar counter', x: 820, y: 680, width: 340, height: 50 },
 ]
 
 /** The palette of the floor plan's edit mode. */
@@ -230,7 +228,7 @@ export const BISTRO_PALETTE: FloorPaletteEntry[] = [
     height: 90,
     capacity: 4,
   },
-  { id: 'wall', kind: 'wall', label: 'Wall', width: 200, height: 20 },
+  { id: 'counter', kind: 'counter', label: 'Service counter', width: 200, height: 50 },
 ]
 
 /** "4 guests", the party with its noun. */
@@ -239,8 +237,9 @@ export function guestsText(size: number, number: (value: string) => string): str
 }
 
 /**
- * The tables as the plan draws them: the state's words come from the map; the detail says since
- * when and how many (occupied) or for when and how many (reserved).
+ * The tables as the plan draws them: the state's words come from the map; the detail (the list and
+ * the name) says since when and how many (occupied) or for when and how many (reserved); the plan
+ * writes only the guests under the number (P5.28 item 24: the time is in the list and the panel).
  */
 export function bistroItems(
   tables: readonly BistroTable[],
@@ -270,18 +269,81 @@ export function bistroItems(
         capacity: each.seats,
         areaId: each.areaId,
         stateId: each.state,
-        ...(detail === undefined ? {} : { detail }),
+        ...(detail === undefined || party === undefined
+          ? {}
+          : { detail, planDetail: guestsText(party.size, number) }),
         ...(party?.note === undefined ? {} : { note: party.note }),
       }
     }),
   ]
 }
 
-/** The tables a party can move to: free, with seats enough. */
+/**
+ * The tables a party can move to, best first (the restaurant's rule): free, with seats enough; in
+ * the party's area first, then the fewest seats left over, then by number.
+ */
 export function moveTargets(tables: readonly BistroTable[], from: BistroTable): BistroTable[] {
   const size = from.party?.size ?? 0
-  return tables.filter((each) => each.state === 'free' && each.seats >= size && each.id !== from.id)
+  return tables
+    .filter((each) => each.state === 'free' && each.seats >= size && each.id !== from.id)
+    .sort(
+      (a, b) =>
+        Number(b.areaId === from.areaId) - Number(a.areaId === from.areaId) ||
+        a.seats - b.seats ||
+        a.number - b.number,
+    )
 }
+
+/**
+ * Orders that are not at a table (P5.28 item 26): takeaway and delivery are the till's order
+ * channels beside dine-in, never areas of the floor plan.
+ */
+export interface ChannelOrder {
+  id: string
+  channel: 'takeaway' | 'delivery'
+  number: string
+  name: string
+  /** Pick-up or delivery time (HH:mm). */
+  time: string
+  state: 'preparing' | 'ready' | 'out' | 'done'
+  /** The order's total, computed by the till. */
+  total: string
+  address?: string
+  phone?: string
+}
+
+export const BISTRO_ORDERS: ChannelOrder[] = [
+  {
+    id: 'o41',
+    channel: 'takeaway',
+    number: 'T-041',
+    name: 'Marko Pavlović',
+    time: '19:55',
+    state: 'preparing',
+    total: '1540.00',
+    phone: '064 222 3344',
+  },
+  {
+    id: 'o42',
+    channel: 'takeaway',
+    number: 'T-042',
+    name: 'Ivana Simić',
+    time: '20:10',
+    state: 'ready',
+    total: '890.00',
+  },
+  {
+    id: 'o17',
+    channel: 'delivery',
+    number: 'D-017',
+    name: 'Stefan Ilić',
+    time: '20:15',
+    state: 'preparing',
+    total: '2380.00',
+    address: 'Bulevar oslobođenja 46, Novi Sad',
+    phone: '063 441 9087',
+  },
+]
 
 /** A box on the plan. */
 export interface Box {
@@ -448,21 +510,6 @@ export function computeOrder(order: readonly OrderLine[]): {
   return { lines, total, vat }
 }
 
-/** The order as the cart shows it. */
-export function cafeCartLines(order: readonly OrderLine[]): CartLine[] {
-  return computeOrder(order).lines.map((line) => ({
-    id: line.productId,
-    name: line.name,
-    quantity: String(line.quantity),
-    unitPrice: decimal(line.price),
-    total: decimal(line.total),
-  }))
-}
-
-export function cafeCartTotals(order: readonly OrderLine[]): CartAmount[] {
-  return [{ id: 'vat', label: 'VAT 20% included', value: decimal(computeOrder(order).vat) }]
-}
-
 /** Table 3's order as the till states it: 2 × 220 + 250 + 2 × 140 + 230 = 1.200,00 RSD. */
 export const TABLE_3_FIGURES = { total: '1200.00', vat: '200.00' }
 
@@ -497,10 +544,9 @@ export const GALA_TABLES: SeatingTable[] = Array.from({ length: 14 }, (_, index)
   }
 })
 
+/** The stage (P5.28 item 23: no doors). */
 export const GALA_FIXTURES: FloorItem[] = [
   { id: 'stage', kind: 'stage', label: 'Stage', x: 350, y: 20, width: 500, height: 90 },
-  { id: 'entrance', kind: 'door', label: 'Entrance', x: 540, y: 916, width: 120, height: 24 },
-  { id: 'service', kind: 'door', label: 'Service door', x: 0, y: 40, width: 24, height: 120 },
 ]
 
 const FIRST = [
@@ -593,3 +639,74 @@ export const GALA_CONFLICTS: SeatingConflict[] = [
 
 /** The seating's count as the page states it: 112 of 140. */
 export const GALA_SEATED = { seated: 112, total: 140 }
+
+/**
+ * The tables after the floor plan is saved (P5.28 item 25: the service sees the saved plan):
+ * the restaurant's rules — a table keeps its party and state and takes its new place and size;
+ * two merged tables ("11+12") are the first one with both tables' seats; a table removed from the
+ * plan is gone; a table added from the palette is a free table with the next number, in the area
+ * it stands in.
+ */
+export function layoutTables(
+  tables: readonly BistroTable[],
+  items: readonly FloorItem[],
+): BistroTable[] {
+  const placed = (table: BistroTable, item: FloorItem, seats = table.seats): BistroTable => {
+    const next: BistroTable = {
+      ...table,
+      x: item.x,
+      y: item.y,
+      width: item.width,
+      height: item.height,
+      shape: item.shape ?? table.shape,
+      seats,
+    }
+    if (item.rotation === 90) next.rotation = 90
+    else delete next.rotation
+    return next
+  }
+  const result: BistroTable[] = []
+  for (const table of tables) {
+    const own = items.find((item) => item.id === table.id)
+    if (own !== undefined) {
+      result.push(placed(table, own))
+      continue
+    }
+    const merged = items.find((item) => item.id.split('+')[0] === table.id)
+    if (merged !== undefined) {
+      const seats = merged.id
+        .split('+')
+        .map((id) => tables.find((each) => each.id === id)?.seats ?? 0)
+        .reduce((sum, value) => sum + value, 0)
+      result.push(placed(table, merged, seats))
+    }
+  }
+  let next = Math.max(...tables.map((table) => table.number)) + 1
+  for (const item of items) {
+    if (item.kind !== 'table' || item.id.includes('+')) continue
+    if (tables.some((table) => table.id === item.id)) continue
+    const centre = { x: item.x + item.width / 2, y: item.y + item.height / 2 }
+    const area = BISTRO_AREAS.find(
+      (each) =>
+        each.points === undefined &&
+        centre.x >= each.x &&
+        centre.x <= each.x + each.width &&
+        centre.y >= each.y &&
+        centre.y <= each.y + each.height,
+    )
+    result.push({
+      id: `t${String(next)}`,
+      number: next,
+      shape: item.shape ?? 'rect',
+      x: item.x,
+      y: item.y,
+      width: item.width,
+      height: item.height,
+      seats: item.capacity ?? 2,
+      areaId: area?.id ?? 'sala',
+      state: 'free',
+    })
+    next += 1
+  }
+  return result
+}

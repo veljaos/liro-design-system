@@ -1126,7 +1126,8 @@ export function BankStatement({
         tone="info"
         icon={BookCheck}
         size="wide"
-        title={`Post statement ${STATEMENT.number}?`}
+        title="Post statement"
+        subject={`Statement ${STATEMENT.number} · ${STATEMENT.bank}`}
         message="The journal entry below is posted and the open items are closed. A posted statement can only be corrected by a reversal."
         preview={<PostPreview work={work} phone={phone} />}
         confirmLabel="Post statement"
@@ -1179,7 +1180,16 @@ export function BankStatement({
         hasNext={false}
         onNext={() => undefined}
         count={found.length}
-        mobile={{ subtitle: (item) => item.partner, details: ['due', 'open'] }}
+        // One compact row an item on a phone (P5.28): number; partner · due date; open amount.
+        mobile={{
+          title: (item) => <span dir="ltr">{item.id}</span>,
+          subtitle: (item) => (
+            <>
+              {item.partner} · <DateText value={item.due} />
+            </>
+          ),
+          badge: (item) => <MoneyText value={decimal(item.paras)} currency="RSD" />,
+        }}
         layout={phone ? 'phone' : 'desktop'}
       />
       <Toaster layout={phone ? 'phone' : 'desktop'} />

@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { Ban, BookCheck, CheckCheck, CircleX } from 'lucide-react'
-import { expect, userEvent, waitFor, within } from 'storybook/test'
+import { expect, fn, userEvent, waitFor, within } from 'storybook/test'
 import { settle } from '../primitives/story-helpers'
 import { Button } from './button'
 import { KeyValueList } from './cards'
@@ -35,6 +35,15 @@ const meta = {
           'the same dialog also asks why — a required text, or a choice from `reason.reasons` ' +
           'with optional details — and `onConfirm` receives the answer: one dialog, never two ' +
           'in a row.\n\n' +
+          '**On one record** (P5.28, the owner’s review): the title is the action (“Reject ' +
+          'invoice”) and `subject` the record, bold on its own line under it (“UF-2026-1187 · ' +
+          'Medic Lab Niš d.o.o.”); both name the dialog. About several records or none, the ' +
+          'title stays a question (“Approve 12 invoices?”).\n\n' +
+          '**Messages are a choice** (P5.28 item 9): `notify` lists the messages the ' +
+          'application can send with the action (“Notify 8 people in the app”) as checkboxes, ' +
+          'checked as the application sets them; while one is checked the button says ' +
+          '`notifyConfirmLabel`, and `onConfirm` receives `{ notify }` with the checked ids. ' +
+          'A move or change of one record others rely on is ChangeConfirmDialog.\n\n' +
           '**When not:** an action that can be undone (just do it, and offer undo); a bulk ' +
           'action asks once, with the count, not per item (Appendix B.8).',
       },
@@ -47,6 +56,9 @@ const meta = {
 export default meta
 
 type Story = StoryObj<typeof meta>
+
+/** What `onConfirm` received (the messages chosen). */
+const confirmed = fn()
 
 /** The delete preset from its button; Escape closes it and the focus returns. */
 export const Delete: Story = {
@@ -108,7 +120,8 @@ export const SafeInitialFocus: Story = {
           trigger={<Button family="destructive" icon={CircleX} label="Reject" />}
           family="destructive"
           actionIcon={CircleX}
-          title="Reject UF-2026-1187?"
+          title="Reject invoice"
+          subject="UF-2026-1187 · Medic Lab Niš d.o.o."
           confirmLabel="Reject"
           reasons={[{ value: 'price', label: 'Price differs from the order' }]}
           onConfirm={() => {
@@ -120,7 +133,8 @@ export const SafeInitialFocus: Story = {
           trigger={<Button family="caution" icon={Ban} label="Void" />}
           family="caution"
           actionIcon={Ban}
-          title="Void F-2026-0412?"
+          title="Void invoice"
+          subject="F-2026-0412 · Panonija Agro d.o.o."
           confirmLabel="Void"
           confirmText="F-2026-0412"
           onConfirm={() => {
@@ -199,7 +213,8 @@ export const Loading: Story = {
     <ConfirmDialog
       defaultOpen
       intent="delete"
-      title="Delete invoice F-114?"
+      title="Delete invoice"
+      subject="F-114 · Kvadrat Gradnja d.o.o."
       message="The invoice and its lines are deleted."
       confirmLabel="Delete"
       onConfirm={() => new Promise<void>(() => undefined)}
@@ -217,7 +232,8 @@ export const LoadingInteraction: Story = {
     <ConfirmDialog
       defaultOpen
       intent="delete"
-      title="Delete invoice F-114?"
+      title="Delete invoice"
+      subject="F-114 · Kvadrat Gradnja d.o.o."
       message="The invoice and its lines are deleted."
       confirmLabel="Delete"
       onConfirm={() => new Promise<void>(() => undefined)}
@@ -246,7 +262,8 @@ export const Irreversible: Story = {
       defaultOpen
       family="caution"
       actionIcon={Ban}
-      title="Void invoice F-114?"
+      title="Void invoice"
+      subject="F-114 · Kvadrat Gradnja d.o.o."
       message="A voided invoice cannot be restored; its number is not reused."
       confirmLabel="Void the invoice"
       confirmText="F-114"
@@ -271,7 +288,8 @@ export const IrreversibleInteraction: Story = {
       defaultOpen
       family="caution"
       actionIcon={Ban}
-      title="Void invoice F-114?"
+      title="Void invoice"
+      subject="F-114 · Kvadrat Gradnja d.o.o."
       message="A voided invoice cannot be restored; its number is not reused."
       confirmLabel="Void the invoice"
       confirmText="F-114"
@@ -299,7 +317,8 @@ export const Reason: Story = {
       defaultOpen
       family="destructive"
       actionIcon={CircleX}
-      title="Reject UF-2026-1187?"
+      title="Reject invoice"
+      subject="UF-2026-1187 · Medic Lab Niš d.o.o."
       message="EPS Snabdevanje d.o.o. is told the reason through SEF."
       reasonLabel="Reason for rejection"
       confirmLabel="Reject"
@@ -324,7 +343,8 @@ export const ReasonInteraction: Story = {
       defaultOpen
       family="destructive"
       actionIcon={CircleX}
-      title="Reject UF-2026-1187?"
+      title="Reject invoice"
+      subject="UF-2026-1187 · Medic Lab Niš d.o.o."
       message="EPS Snabdevanje d.o.o. is told the reason through SEF."
       reasonLabel="Reason for rejection"
       confirmLabel="Reject"
@@ -353,7 +373,8 @@ export const ReasonList: Story = {
       defaultOpen
       family="destructive"
       actionIcon={CircleX}
-      title="Reject UF-2026-1187?"
+      title="Reject invoice"
+      subject="UF-2026-1187 · Medic Lab Niš d.o.o."
       reasonLabel="Reason for rejection"
       reasons={[
         { value: 'price', label: 'Price differs from the order' },
@@ -383,7 +404,8 @@ export const ReasonListInteraction: Story = {
       defaultOpen
       family="destructive"
       actionIcon={CircleX}
-      title="Reject UF-2026-1187?"
+      title="Reject invoice"
+      subject="UF-2026-1187 · Medic Lab Niš d.o.o."
       reasonLabel="Reason for rejection"
       reasons={[
         { value: 'price', label: 'Price differs from the order' },
@@ -473,7 +495,8 @@ export const IrreversibleWithReason: Story = {
       trigger={<Button family="caution" icon={Ban} label="Cancel invoice" />}
       family="caution"
       actionIcon={Ban}
-      title="Cancel invoice F-2026-0407?"
+      title="Cancel invoice"
+      subject="F-2026-0407 · Medic Lab Niš d.o.o."
       message="A cancellation document is issued and sent to SEF. This cannot be undone."
       confirmLabel="Cancel invoice"
       confirmText="F-2026-0407"
@@ -498,7 +521,8 @@ export const IrreversibleWithReasonInteraction: Story = {
       trigger={<Button family="caution" icon={Ban} label="Cancel invoice" />}
       family="caution"
       actionIcon={Ban}
-      title="Cancel invoice F-2026-0407?"
+      title="Cancel invoice"
+      subject="F-2026-0407 · Medic Lab Niš d.o.o."
       message="A cancellation document is issued and sent to SEF. This cannot be undone."
       confirmLabel="Cancel invoice"
       confirmText="F-2026-0407"
@@ -544,7 +568,8 @@ export const IrreversibleWithReasons: Story = {
       defaultOpen
       family="caution"
       actionIcon={Ban}
-      title="Cancel invoice F-2026-0407?"
+      title="Cancel invoice"
+      subject="F-2026-0407 · Medic Lab Niš d.o.o."
       message="A cancellation document is issued and sent to SEF."
       confirmLabel="Cancel invoice"
       confirmText="F-2026-0407"
@@ -573,7 +598,8 @@ export const IrreversibleWithReasonsInteraction: Story = {
       defaultOpen
       family="caution"
       actionIcon={Ban}
-      title="Cancel invoice F-2026-0407?"
+      title="Cancel invoice"
+      subject="F-2026-0407 · Medic Lab Niš d.o.o."
       message="A cancellation document is issued and sent to SEF."
       confirmLabel="Cancel invoice"
       confirmText="F-2026-0407"
@@ -614,7 +640,8 @@ export const WithPreview: Story = {
       actionIcon={BookCheck}
       tone="info"
       size="wide"
-      title="Post statement 188?"
+      title="Post statement"
+      subject="Statement 188 · Banca Intesa"
       message="The journal entry is posted and the open items are closed."
       preview={
         <KeyValueList
@@ -633,10 +660,81 @@ export const WithPreview: Story = {
   ),
   play: async ({ canvasElement }) => {
     const body = within(canvasElement.ownerDocument.body)
-    const dialog = await body.findByRole('alertdialog', { name: 'Post statement 188?' })
+    const dialog = await body.findByRole('alertdialog', {
+      name: 'Post statement Statement 188 · Banca Intesa',
+    })
     await expect(dialog).toHaveTextContent('4 lines, 4 items')
     await expect(within(dialog).getByRole('button', { name: 'Cancel' })).toHaveFocus()
     await expect(dialog.getBoundingClientRect().width).toBeGreaterThan(440)
     await settle()
+  },
+}
+
+/**
+ * `notify`: the messages the application can send with the action, each an explicit choice
+ * (P5.28 item 9); checked as the application sets them, and the button says so.
+ */
+export const WithMessages: Story = {
+  name: 'With messages',
+  render: () => (
+    <ConfirmDialog
+      defaultOpen
+      family="primary"
+      actionIcon={CheckCheck}
+      title="Publish the timetable?"
+      message="The timetable for the week of 19 October is shown to 24 teachers and 412 students."
+      notify={[
+        {
+          id: 'teachers',
+          label: 'Notify 24 teachers in the app',
+          description: 'A message with their lessons for the week.',
+          defaultChecked: true,
+        },
+        { id: 'parents', label: 'Send an e-mail to 380 parents' },
+      ]}
+      confirmLabel="Publish"
+      notifyConfirmLabel="Publish and notify"
+      onConfirm={() => undefined}
+    />
+  ),
+  play: async ({ canvasElement }) => {
+    const body = within(canvasElement.ownerDocument.body)
+    const dialog = within(await body.findByRole('alertdialog'))
+    await settle()
+    await expect(dialog.getByRole('checkbox', { name: /^Notify 24 teachers/ })).toBeChecked()
+    await expect(dialog.getByRole('checkbox', { name: /^Send an e-mail/ })).not.toBeChecked()
+    await expect(dialog.getByRole('button', { name: 'Publish and notify' })).toBeVisible()
+  },
+}
+
+/** Unchecked, the button is the plain action and `onConfirm` receives no messages. */
+export const WithMessagesInteraction: Story = {
+  name: 'With messages, interaction',
+  tags: ['interaction'],
+  render: () => (
+    <ConfirmDialog
+      defaultOpen
+      family="primary"
+      actionIcon={CheckCheck}
+      title="Publish the timetable?"
+      notify={[
+        { id: 'teachers', label: 'Notify 24 teachers in the app', defaultChecked: true },
+        { id: 'parents', label: 'Send an e-mail to 380 parents' },
+      ]}
+      confirmLabel="Publish"
+      notifyConfirmLabel="Publish and notify"
+      onConfirm={confirmed}
+    />
+  ),
+  play: async ({ canvasElement }) => {
+    confirmed.mockClear()
+    const body = within(canvasElement.ownerDocument.body)
+    const dialog = within(await body.findByRole('alertdialog'))
+    await settle()
+    await userEvent.click(dialog.getByRole('checkbox', { name: 'Notify 24 teachers in the app' }))
+    await expect(dialog.getByRole('button', { name: 'Publish' })).toBeVisible()
+    await userEvent.click(dialog.getByRole('checkbox', { name: 'Send an e-mail to 380 parents' }))
+    await userEvent.click(dialog.getByRole('button', { name: 'Publish and notify' }))
+    await expect(confirmed).toHaveBeenCalledWith({ notify: ['parents'] })
   },
 }

@@ -34,7 +34,7 @@ function Letter({ sections = 1 }: { sections?: number }) {
       <PrintSignatures
         signatures={[
           {
-            key: 'director',
+            id: 'director',
             label: 'For Kvadrat Gradnja d.o.o.',
             name: 'Dragan Ilić',
             detail: 'Director',
@@ -46,10 +46,9 @@ function Letter({ sections = 1 }: { sections?: number }) {
 }
 
 const HEADER = (
-  <div className="flex justify-between gap-4">
-    <span className={TEXT_ISOLATE}>Kvadrat Gradnja d.o.o.</span>
-    <span dir="ltr">KG-2026-117</span>
-  </div>
+  <span className={TEXT_ISOLATE}>
+    Kvadrat Gradnja d.o.o. · <span dir="ltr">KG-2026-117</span>
+  </span>
 )
 const FOOTER =
   'Kvadrat Gradnja d.o.o. · Temerinski put 51, 21000 Novi Sad · office@kvadrat-gradnja.rs'
@@ -64,7 +63,8 @@ const meta = {
         component:
           '**What for:** the frame of every printed page: an A4 sheet (portrait or landscape) ' +
           'with its margins, a `header` and a `footer` repeated on every printed page, the page ' +
-          'number ("Page 1 of 3", from messages) in the bottom margin, no application chrome. ' +
+          'number ("Page 1 of 3", from messages) in the bottom margin and at the end of the ' +
+          'footer on screen, no application chrome. ' +
           '**Paper is always light**: the sheet keeps the light tokens whatever the screen’s ' +
           'theme. On screen it is a sheet on surface.sunken, scaled to a narrow screen ' +
           '(`fit="width"`) or scrolling sideways at 100% (`fit="none"`). Printed, its own ' +
@@ -74,8 +74,14 @@ const meta = {
           'page.\n\n' +
           '**When:** a printout or a PDF the application makes from the browser: a document, a ' +
           'certificate, a report, a letter — the four templates are built on it, and an ' +
-          'application can compose its own from the print parts (PrintTitle, PrintDetails, ' +
-          'PrintTable, PrintSection, PrintSignatures, PrintIssuedLine).\n\n' +
+          'application can compose its own from the print parts (PrintTitle with the logo at ' +
+          'the end, PrintDetails, PrintTable, PrintSection, PrintAmountDueLine, ' +
+          'PrintPaymentDetails with the IPS QR slot, PrintSignatures and PrintSignatureField, ' +
+          'PrintIssuedLine). **As simple as a Stripe invoice** (P5.28): black and grey, thin ' +
+          'rules only, no frames, stamps or seals; "Page 1 of 1" ends the footer. Every ' +
+          '**electronic signature field** on the sheet is measured after layout: its page and ' +
+          'rectangle in PDF points (origin bottom-left) are written on it (`data-pdf-page`, ' +
+          '`data-pdf-rect`) and reported through `onSignatureFields`.\n\n' +
           '**When not:** a screen (DocumentPage, DetailPage); a list to print (the browser ' +
           'prints a ReportPage’s result). Show it alone on the application’s print route, ' +
           'outside the shell.',
@@ -123,9 +129,19 @@ export const Default: Story = {
     const rules = canvasElement.querySelector('[data-slot="print-page"] style')?.textContent ?? ''
     await expect(rules).toContain('size: A4 portrait;')
     await expect(rules).toContain('margin: 16mm 18mm 20mm 18mm;')
-    // The page number at the end side of the bottom margin.
+    // The page number at the end side of the bottom margin; on screen it ends the footer.
     const rtl = getComputedStyle(sheet).direction === 'rtl'
     await expect(rules).toContain(rtl ? '@bottom-left' : '@bottom-right')
+    await expect(sheet.querySelector('[data-slot="print-page-number"]')).toHaveTextContent(
+      'Page 1 of 1',
+    )
+    // The signature field's place in the PDF: page 1, inside the A4 page (595 × 842pt).
+    const field = sheet.querySelector<HTMLElement>('[data-signature-field="director"]')
+    await expect(field?.dataset.pdfPage).toBe('1')
+    const [x = -1, y = -1] = (field?.dataset.pdfRect ?? '').split(' ').map(Number)
+    await expect(x).toBeGreaterThan(0)
+    await expect(y).toBeGreaterThan(0)
+    await expect(y).toBeLessThan(842)
   },
 }
 
@@ -165,6 +181,11 @@ export const Long: Story = {
     await settle()
     const sheet = canvasElement.querySelector<HTMLElement>('[data-slot="print-sheet"]')
     await expect(sheet?.offsetHeight ?? 0).toBeGreaterThan(297 * (96 / 25.4))
+    const pages = sheet?.querySelector('[data-slot="print-page-number"]')?.textContent ?? ''
+    await expect(pages).toMatch(/^Page ([2-9]) of \1$/)
+    // The signature at the end lands on the last page.
+    const field = sheet?.querySelector<HTMLElement>('[data-signature-field="director"]')
+    await expect(field?.dataset.pdfPage).toBe(/\d/.exec(pages)?.[0])
   },
 }
 
@@ -239,7 +260,9 @@ export const Arabic: Story = {
               إلى المستثمر في ٢٥ سبتمبر ٢٠٢٦.
             </p>
           </PrintSection>
-          <PrintSignatures signatures={[{ key: 'd', label: 'عن الشركة', name: 'دراغان إيليتش' }]} />
+          <PrintSignatures
+            signatures={[{ id: 'director', label: 'عن الشركة', name: 'دراغان إيليتش' }]}
+          />
         </div>
       </PrintPage>
     </StoryProvider>
@@ -268,7 +291,9 @@ export const Japanese: Story = {
               当社は、穀物サイロの工事が契約および承認された設計に従って実施され、2026年9月25日に現場が発注者に引き渡されたことを確認します。
             </p>
           </PrintSection>
-          <PrintSignatures signatures={[{ key: 'd', label: '会社代表', name: '佐藤 太郎' }]} />
+          <PrintSignatures
+            signatures={[{ id: 'director', label: '会社代表', name: '佐藤 太郎' }]}
+          />
         </div>
       </PrintPage>
     </StoryProvider>

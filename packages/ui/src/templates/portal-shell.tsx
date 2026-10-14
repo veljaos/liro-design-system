@@ -42,6 +42,8 @@ import { useLiro } from '../provider/liro-provider'
  * - `banners` at the top of the content, full width and square, scrolling with the page (P5.3);
  *   `footer` under the content (the institution's address and hours), never under the bottom bar.
  * - A skip link to the content first, as AppShell's.
+ * - The sticky header's height is published as --liro-shell-top on the shell (as AppShell's,
+ *   P5.28 item 4), so table headers and anything sticky in a portal's page stand below it.
  */
 
 /** A section of the portal: a link to one of its few pages. */
@@ -291,6 +293,25 @@ export function PortalShell(props: PortalShellProps) {
   const root = useRef<HTMLDivElement>(null)
   const sections = props.sections ?? []
 
+  // The sticky header's height as --liro-shell-top on the shell (as AppShell's, P5.28 item 4), so
+  // a table's header, a phone's totals or any part sticky at a page's top stands below it.
+  const top = useRef<HTMLElement>(null)
+  useLayoutEffect(() => {
+    const header = top.current
+    const shell = root.current
+    if (header === null || shell === null) return
+    const measure = () => {
+      shell.style.setProperty('--liro-shell-top', `${String(header.offsetHeight)}px`)
+    }
+    measure()
+    const observer = new ResizeObserver(measure)
+    observer.observe(header)
+    return () => {
+      observer.disconnect()
+      shell.style.removeProperty('--liro-shell-top')
+    }
+  }, [])
+
   // The bottom bar's height as --liro-shell-bottom on the provider's root (as AppShell's), so the
   // Toaster stands above the bar and never covers it.
   const [bottom, setBottom] = useState<HTMLElement | null>(null)
@@ -325,7 +346,10 @@ export function PortalShell(props: PortalShellProps) {
       >
         {messages['shell.skipToContent']}
       </a>
-      <header className="sticky top-0 z-(--liro-layer-header) border-0 border-b border-solid border-default bg-surface-header pt-[env(safe-area-inset-top)]">
+      <header
+        ref={top}
+        className="sticky top-0 z-(--liro-layer-header) border-0 border-b border-solid border-default bg-surface-header pt-[env(safe-area-inset-top)]"
+      >
         <div className={cn('flex h-header items-center gap-4', phone ? SIDES_PHONE : 'px-6')}>
           <div className="flex min-w-0 flex-1 items-center">
             <BrandLockup {...props.brand} compact={phone} />

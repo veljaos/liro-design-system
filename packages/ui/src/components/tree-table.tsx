@@ -13,6 +13,7 @@ import {
   TreeView,
   useTreeRows,
 } from './tree-view'
+import { STICKY_CLEARANCE, STICKY_HEAD, useStickyHead } from './sticky-head'
 import { usePhone } from './use-phone'
 import { useTree, type TreeBaseProps } from './use-tree'
 
@@ -32,6 +33,8 @@ import { useTree, type TreeBaseProps } from './use-tree'
  *   border.strong line above it, sticky at the bottom while the table scrolls.
  * - Thousands of nodes: with `maxHeight` the table scrolls inside it with a sticky header and
  *   draws only the rows in view (TanStack Virtual, `tree-window.ts`).
+ * - The header row stays below the shell's sticky top while the page scrolls (P5.28 item 4,
+ *   `useStickyHead`), also without `maxHeight`.
  * - Phones (below 48em, or `layout`): the tree (TreeView's phone rows) with the main figure
  *   (`mainColumn`) at each row's end, and the total under it.
  */
@@ -162,7 +165,10 @@ function DesktopTreeTable<Data>(props: TreeTableProps<Data>) {
   const windowed = props.maxHeight !== undefined
   const view = useTreeRows(tree, scrollerRef, revealRef, windowed, false)
   const hasTotals = props.totals !== undefined
-  const sticky = windowed ? 'sticky top-0 z-10' : undefined
+  // The header row stays below the shell while the page scrolls, and at the top inside
+  // `maxHeight` (P5.28 item 4).
+  const sticky = cn(STICKY_HEAD, 'z-10')
+  useStickyHead(scrollerRef, props.loading !== true && props.nodes.length > 0)
 
   if (props.nodes.length === 0 && props.loading !== true) {
     return (
@@ -270,7 +276,12 @@ function DesktopTreeTable<Data>(props: TreeTableProps<Data>) {
     <div data-slot="tree-table" className={cn('flex min-w-0 flex-col font-sans', props.className)}>
       <div
         ref={scrollerRef}
-        className="min-w-0 overflow-auto"
+        className={cn(
+          'min-w-0 overflow-auto',
+          STICKY_CLEARANCE,
+          // The rows take the focus: one reached by the keyboard is scrolled clear of the header.
+          '[&_[role=row][tabindex]]:scroll-mt-[calc(var(--liro-shell-top,0px)+var(--liro-head-height,0px))]',
+        )}
         style={windowed ? { maxHeight: props.maxHeight } : undefined}
       >
         <div
@@ -280,7 +291,7 @@ function DesktopTreeTable<Data>(props: TreeTableProps<Data>) {
           aria-rowcount={windowed ? tree.rows.length + 1 + (hasTotals ? 1 : 0) : undefined}
           className="table w-full border-separate border-spacing-0 text-sm text-primary"
         >
-          <div role="rowgroup" className="table-header-group">
+          <div role="rowgroup" data-sticky-head="" className="table-header-group">
             {headerRow}
           </div>
           {props.loading === true ? (

@@ -70,6 +70,17 @@ export const BACKDROP =
   'fixed inset-0 z-(--liro-layer-modal) bg-surface-backdrop data-[state=open]:animate-liro-overlay-in data-[state=closed]:animate-liro-overlay-out motion-reduce:animate-none'
 
 /**
+ * A dialog on a phone (P5.28 item 1): a sheet across the screen's full width, standing on its
+ * bottom edge, as high as its content up to the screen's height less 40px (the page above it
+ * shows that it is a sheet over the page), radius lg on its top corners, sliding up 200ms; the
+ * safe area under it is padding. Percentages, not dvh or vw: its containing block is the screen —
+ * the viewport, or a phone frame in a story — never the window. Comes after the dialog's own
+ * classes, so a caller's width ('wide') does not apply on a phone.
+ */
+export const PHONE_DIALOG =
+  'inset-x-0 top-auto bottom-0 mx-0 w-full max-w-full max-h-[calc(100%-40px)] rounded-none rounded-t-lg pb-[env(safe-area-inset-bottom)] [--liro-slide-from:translateY(100%)] data-[state=open]:animate-liro-slide-in data-[state=closed]:animate-liro-slide-out motion-reduce:animate-none'
+
+/**
  * A block of text takes its direction from its own content, while the layout keeps the page's
  * (P3.6, owner): an English sentence in a right-to-left page — a message the application has not
  * translated yet — keeps its word order (".Unavailable: The period …" was broken), and an

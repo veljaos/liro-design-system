@@ -30,7 +30,8 @@ import { PageHeader } from './page-header'
  *   (`titleHidden`, default true; PageHeader). Below them ONE card (the raised surface,
  *   border.default, radius lg, no shadow) holding the saved views as its first row, the FilterBar
  *   (inCard) and the table edge to edge. No other cards. The FilterBar keeps only the list's own
- *   actions (Export, Columns).
+ *   actions (Export, Columns). The table's header stays below the shell while the page scrolls
+ *   (DataTable's `stickyHeader`, default true since P5.28 item 4).
  * - Saved views: the card's first row, start-aligned (list filters, not page tabs), the tab look
  *   with the blue line under the active one; the count after the label in xs text.tertiary,
  *   tabular (through `format.number`); the "Save view" slot at the end of the row. The DS only
@@ -235,10 +236,7 @@ function SavedViewSelect(props: SavedViewsProps) {
             <ChevronDown aria-hidden="true" className="size-3.5 shrink-0 text-secondary" />
           </ButtonPrimitive>
         </PopoverTrigger>
-        <PopoverContent
-          align="start"
-          className="box-border w-72 max-w-[calc(100vw-32px)] p-1 shadow-md"
-        >
+        <PopoverContent align="start" className="box-border w-72 p-1 shadow-md">
           <CommandPrimitive
             shouldFilter={false}
             label={searchable ? messages['list.findView'] : messages['list.views']}
@@ -341,7 +339,8 @@ export function ListPage(props: ListPageProps) {
           />
         )}
         {props.filterBar}
-        {/* The table to the card's edges; on phones the cards 16px inside (DataTable inCard). */}
+        {/* The table to the card's edges; on phones the cards 16px inside (DataTable inCard). Its
+            header stays below the shell while the page scrolls (DataTable's default, P5.28). */}
         <div className="min-w-0">{props.children}</div>
       </section>
     </div>
