@@ -21,7 +21,7 @@ export const Y_ROUTES = {
   newLeave: '/me/leave/new',
   /** The new request half written, the application's count of working days shown. */
   newLeaveDraft: '/me/leave/new?draft=december',
-  shifts: '/me/shifts',
+  shifts: '/me/my-shifts',
   documents: '/me/documents',
   document: (id: string) => `/me/documents/${id}`,
   details: '/me/details',
