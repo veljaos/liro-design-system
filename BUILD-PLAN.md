@@ -323,6 +323,15 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P5.28 | Owner's review of Phase 5 part 2 | P5.27 | done | 2026-10-13 | Phones never scroll sideways (PhoneFrame as the screen, dialogs as bottom sheets, `phone-overflow.spec.ts`); day and month names and week start only from the locale (`numericFormat`); selects over 10 options searched; table headers sticky below the shell, first column at the start (DataTable `stickyHeader` by default); one-record dialogs with `subject`; neutral actions on toned boxes; ChangeConfirmDialog and "Notify …" choices; one "now" marker; Examples sidebar two stories per screen; StatutoryFormPage as the real form grid; printouts as simple as a Stripe invoice with electronic signature fields; POS fiscal flows and open tabs on tables; floor plans without walls, labels never cut, one area at a time, phones on the list, moves confirmed with the free tables or beds |
 | P5.29 | Admin and Superadmin views | P5.28 | done | 2026-10-14 | HealthList; ImpersonationBar `note`; a tenant's administration (overview, sign-in activity with masked addresses, audit log, security, integrations) and the Superadmin in one shell (system status, network, incidents on DocumentPage, security events on WorklistPage, tenants with an audited read-only "view as", announcements with a Banner preview); `numericFormat` follows the provider's time zone |
 | P5.30 | Helpdesk | P5.28 | done | 2026-10-14 | SlaTimer, ReplyComposer (reply or internal note, saved replies, files, article links), internal notes in a conversation, RichTextField `ref` handle, DataTable rows by the arrows; SatisfactionRating, HelpfulFeedback, LinkSuggestions, PageContents, SearchResultList, CategoryGrid, RichText `headingIds`; the agents' inbox, ticket and overview under `/helpdesk`, the customer portal under `/support` and the knowledge base in both |
+| P5.31 | Document inbox with recognition | P5.30 | todo | | |
+| P5.32 | Accountant's workspace for many clients | P5.30 | todo | | |
+| P5.33 | IOS: statements of open items | P5.30 | todo | | |
+| P5.34 | Liro Assistant (AI) | P5.30 | todo | | |
+| P5.35 | Employee portal | P5.30 | todo | | |
+| P5.36 | Subscription and billing | P5.30 | todo | | |
+| P5.37 | Project timeline (Gantt) | P5.30 | todo | | |
+| P5.38 | E-mail and notification templates | P5.30 | todo | | |
+| P5.39 | Blog | P5.30 | todo | | |
 | P6.1 | Full language and direction matrix | Phases 1–5 | todo | | |
 | P6.2 | Manual WCAG 2.2 checks | P6.1 | todo | | |
 | P6.3 | Performance budget | P4.8 | todo | | |
@@ -807,6 +816,48 @@ In the spirit of Frappe Helpdesk — sleek, modern, calm — built only from our
 - **e) Knowledge base:** categories, articles (RichText), search; agents insert an article link into a reply; the portal suggests articles while the customer types a new ticket.
 **Examples:** Liro support for customer companies ("SEF invoice rejected", "Cannot sign in", "Payroll export question").
 **Done when** every view has desktop and phone stories in light, dark and right-to-left, passes axe, the keyboard and the text-order check, and the examples show them.
+
+### P5.31–P5.39 — Workflows of the accounting product (owner, 2026-10-13)
+A design system: screens, components and states only. All data, rules, AI answers, OCR results and permissions arrive through props; nothing calls a backend or an AI model. Reuse our components and templates; desktop and phone (tablet where noted), light / dark, right-to-left, axe, keyboard, "fix the class"; examples illustrative.
+
+### P5.31 — Document inbox with recognition
+- **Inbox** (ListPage): documents by upload, e-mail, scan or SEF; type (supplier invoice, bank statement, receipt, contract, other), sender, received, state (New / Recognised / Needs review / Posted / Rejected / Duplicate); bulk actions; drag-and-drop upload; the camera on phones.
+- **Review:** the document (PDF / image viewer, zoom, pages) beside the recognised fields (supplier with PIB matched to the catalog or "+ Create", number, dates, amounts, VAT by rate, lines, account suggestions); each field with its confidence, low confidence marked; a field shows where it was read on the document; Confirm and post / Save for later / Reject (reason) / Mark as duplicate (link to the original); keyboard-first (Tab through fields, Enter confirms, next document).
+- **States:** processing, failed recognition (enter by hand), password-protected PDF, unreadable scan.
+
+### P5.32 — Accountant's workspace for many clients
+- **Clients overview:** upcoming deadlines (VAT return by the 15th, payroll tax returns, annual accounts — from data), missing documents, open tasks, last activity, health; filters by accountant, deadline and problem; sorted by urgency.
+- A **deadlines calendar** across clients; a **per-client checklist** for closing the month.
+- **Fast client switching** (the company switcher at 200+ clients) and **"Ask the client"** (a request for documents or answers, sent to the client's portal).
+
+### P5.33 — IOS: statements of open items
+- Partners with balance and IOS state (Not sent / Sent / Opened / Confirmed / Disputed / No answer); choose partners and a cut-off date; preview; send (e-mail, signed PDF via Liro Bridge); reminders.
+- **Partner side** (PortalShell): the statement, Confirm or Dispute with their figures and a note.
+- **Reconciling a disputed IOS:** our open items beside theirs, differences highlighted, resolved line by line (the bank statement's pattern).
+
+### P5.34 — Liro Assistant (AI)
+- A **side panel** on every page: ask in plain words; answers with text, small tables or charts and **links to the records** they come from; suggested follow-ups; proposed actions that **always wait for confirmation**; states thinking, streaming, stopped, error, no access ("You do not have permission to see salaries").
+- A full **"Ask" page:** one large centred question box, suggested and recent questions under it; the answer as a calm, readable page (headings, text, tables, charts, sources); nothing else on the page.
+- Answers **labelled as AI-generated**, with a way to report a wrong answer.
+
+### P5.35 — Employee portal (PortalShell, phone-first)
+My payslips (list, payslip view, PDF), leave balance and requests (approval state), my documents to sign (Signing), my shifts (MyShifts), my details (change requests to HR for approval).
+
+### P5.36 — Subscription and billing
+Plan and modules, seats used / available, usage, next invoice, Liro's invoices (list, PDF), payment method, change plan (compare, confirm, proration from data), cancel with a clear confirmation; trial and past-due banners.
+
+### P5.37 — Project timeline (Gantt)
+- `@veljaos/ui/gantt` (its own subpath) on an **MIT** library: evaluate SVAR React Gantt (MIT edition, never PRO) and Frappe Gantt against our rules (React 19, tokens-only theming, keyboard and screen reader, right-to-left, phones, size); pick one, pin it, add its notice, record why.
+- Phases and tasks, dependencies, milestones, the one "now" marker, progress, assignees; drag with a keyboard / menu alternative; budget against actual per phase beside the timeline. Phones: a list by phase with dates, the timeline view-only. Example: a Kvadrat Gradnja construction project.
+
+### P5.38 — E-mail and notification templates
+A template list (invoice e-mail, IOS, payment reminder, welcome, password reset …); the editor on RichTextField with merge fields as pills, subject, preview with sample data (desktop and phone widths, light and dark mail clients), "Send test", versions, per-language variants; the e-mail layout as simple as the printouts.
+
+### P5.39 — Blog
+- Public list (cover, title, excerpt, category, author, date, reading time), categories and tags, search; the article page as a reading layout (RichText, contents for long articles, related articles, share, newsletter sign-up).
+- Authoring on RichTextField: cover, slug, SEO title and description, category and tags, Draft / Scheduled / Published, preview, schedule.
+
+**Done when** every item has desktop and phone stories (tablet where noted) in light, dark and right-to-left, passes axe, the keyboard and the text-order check, the examples show them, and CI is green.
 
 **End of Phase 5:** `0.1.0-alpha.5`; report.
 
