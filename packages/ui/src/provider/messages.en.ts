@@ -1301,4 +1301,23 @@ export const messagesEn: LiroMessages = {
   'composer.findSavedReply': 'Find a saved reply',
   'composer.attach': 'Attach files',
   'composer.insertLink': 'Insert a link',
+  // P5.29 portal
+  'rating.comment': 'Comment (optional)',
+  'rating.send': 'Send',
+  'rating.required': 'Choose one of the answers.',
+  'rating.thanks': 'Thank you for your feedback.',
+  'rating.given': (valueText, label) => `Your answer: ${valueText}, ${label}`,
+  'helpful.question': 'Was this helpful?',
+  'helpful.yes': 'Yes',
+  'helpful.no': 'No',
+  'helpful.thanks': 'Thank you for telling us.',
+  'helpful.why': 'What was missing?',
+  'helpful.send': 'Send',
+  'helpful.commentThanks': 'Thank you. Your comment was sent.',
+  'suggestions.count': (count, countText) =>
+    count === 0 ? 'No suggestions' : `${countText} ${count === 1 ? 'suggestion' : 'suggestions'}`,
+  'suggestions.searching': 'Looking for suggestions…',
+  'pageContents.title': 'On this page',
+  'searchResults.count': (count, countText) => `${countText} ${count === 1 ? 'result' : 'results'}`,
+  'searchResults.retry': 'Try again',
 }

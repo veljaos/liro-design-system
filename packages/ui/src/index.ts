@@ -1286,3 +1286,33 @@ export {
 } from './components/sla-logic'
 export type { DurationParts, SlaOptions, SlaReading, SlaState } from './components/sla-logic'
 export { rowFocusTarget } from './components/data-table-logic'
+// ── P5.29 portal ──
+export { SatisfactionRating } from './components/satisfaction-rating'
+export type { SatisfactionRatingProps } from './components/satisfaction-rating'
+export { HelpfulFeedback } from './components/helpful-feedback'
+export type { HelpfulFeedbackProps } from './components/helpful-feedback'
+export { LinkSuggestions } from './components/link-suggestions'
+export type { LinkSuggestion, LinkSuggestionsProps } from './components/link-suggestions'
+export { PageContents } from './components/page-contents'
+export type { PageContentsProps } from './components/page-contents'
+export { HighlightedText, SearchResultList } from './components/search-result-list'
+export type { SearchResult, SearchResultListProps } from './components/search-result-list'
+export { CategoryGrid } from './components/category-grid'
+export type { CategoryCard, CategoryGridProps } from './components/category-grid'
+export {
+  asksWhy,
+  currentEntry,
+  highlightMatches,
+  highlightText,
+  ratingAnswer,
+  ratingOption,
+  scaleValueText,
+} from './components/help-logic'
+export type {
+  ContentsEntry,
+  HelpfulAnswer,
+  Highlight,
+  HighlightPart,
+  SatisfactionAnswer,
+  SatisfactionOption,
+} from './components/help-logic'

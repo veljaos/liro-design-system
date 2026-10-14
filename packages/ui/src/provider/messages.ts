@@ -1879,4 +1879,27 @@ export interface LiroMessages {
   'composer.attach': string
   /** Asking the application for a link to insert (its own search). */
   'composer.insertLink': string
+  // P5.29 portal
+  /** SatisfactionRating (P5.30 d): the comment, Send, the missing choice and the thanks. */
+  'rating.comment': string
+  'rating.send': string
+  'rating.required': string
+  'rating.thanks': string
+  'rating.given': (valueText: string, label: string) => string
+  /** HelpfulFeedback (P5.30 e): "Was this helpful?", the answers, what was missing, the thanks. */
+  'helpful.question': string
+  'helpful.yes': string
+  'helpful.no': string
+  'helpful.thanks': string
+  'helpful.why': string
+  'helpful.send': string
+  'helpful.commentThanks': string
+  /** LinkSuggestions (P5.30 d): the count announced while the user types, and the search. */
+  'suggestions.count': (count: number, countText: string) => string
+  'suggestions.searching': string
+  /** PageContents (P5.30 e). */
+  'pageContents.title': string
+  /** SearchResultList (P5.30 e): the count over the results, and Try again. */
+  'searchResults.count': (count: number, countText: string) => string
+  'searchResults.retry': string
 }

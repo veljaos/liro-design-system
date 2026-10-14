@@ -37,3 +37,7 @@ export type {
   ReplyComposerProps,
   SavedReply,
 } from './reply-composer'
+
+// ── P5.29 portal ──
+export { headingSlug, richTextHeadings } from './rich-text-headings'
+export type { RichTextHeading } from './rich-text-headings'
