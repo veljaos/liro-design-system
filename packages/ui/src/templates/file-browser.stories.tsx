@@ -169,6 +169,8 @@ function Demo(props: DemoProps) {
   const [scope, setScope] = useState(props.searchScope ?? 'folder')
   const [sort, setSort] = useState<DataTableSort>({ column: 'name', direction: 'asc' })
   const [filters, setFilters] = useState(props.filterValues ?? {})
+  // Finance's folders load when it is opened, as the application loads them.
+  const [folders, setFolders] = useState(props.folders ?? [])
   return (
     <FileBrowser
       {...rest}
@@ -182,6 +184,16 @@ function Demo(props: DemoProps) {
       onSortChange={setSort}
       filterValues={filters}
       onFilterValuesChange={setFilters}
+      folders={folders}
+      onLoadChildren={(id) => {
+        setFolders((list) =>
+          list.map((node) =>
+            node.id === id
+              ? { ...node, children: [{ id: `${id}-2026`, label: '2026', children: [] }] }
+              : node,
+          ),
+        )
+      }}
       detailsOpen={detailsOpen}
       onDetailsOpenChange={setDetailsOpen}
       details={
@@ -231,6 +243,7 @@ const meta = {
     entries: HARBOUR,
     filters: TYPE_FILTER,
     sortColumns: SORT_COLUMNS,
+    inlineFilters: 1,
     actions: itemMenu,
     bulkActions: BULK,
     onOpen: () => undefined,
@@ -331,11 +344,24 @@ export const Details: Story = {
 
 /** Photos being uploaded: uploading, being checked, done, blocked. */
 export const Uploading: Story = {
-  args: { uploads: UPLOADS, onClearUploads: () => undefined },
+  args: {
+    uploads: [
+      ...UPLOADS,
+      {
+        id: 'up-5',
+        name: 'Drone survey.mp4',
+        sizeText: '412 MB',
+        state: 'failed',
+        error: 'The connection was lost.',
+      },
+    ],
+    onClearUploads: () => undefined,
+    onRetryUpload: () => undefined,
+  },
   play: async ({ canvasElement }) => {
     await settle()
     const uploads = within(canvasElement).getByRole('region', { name: 'Uploads' })
-    await expect(within(uploads).getByText('1 of 4 uploaded')).toBeVisible()
+    await expect(within(uploads).getByText('1 of 5 uploaded')).toBeVisible()
     await expect(within(uploads).getByText(/^Blocked/)).toBeVisible()
   },
 }
@@ -501,6 +527,8 @@ export const Trash: Story = {
 export const LongText: Story = {
   name: 'Long text',
   args: {
+    subtitle:
+      'Owned by Grace Lin-Fairweather, project manager for the northern sites; shared with Harbour Homes Ltd.',
     title: 'Harbour Road site, phase two: residential blocks C and D with the underground car park',
     entries: [
       {

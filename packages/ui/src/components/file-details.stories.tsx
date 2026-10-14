@@ -14,6 +14,7 @@ const FULL = {
   created: '2026-10-01T09:00:00+02:00',
   retention: 'Keep until 2036',
   tags: ['Handover', 'Harbour Road'],
+  facts: [{ key: 'pages', label: 'Pages', value: '4', numeric: true }],
   actions: (
     <>
       <Button intent="download" label="Download" />

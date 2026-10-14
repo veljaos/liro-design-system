@@ -55,6 +55,7 @@ export const Rename: Story = {
   args: {
     title: 'Rename',
     subject: 'Concrete pour schedule.xlsx',
+    label: 'File name',
     defaultValue: 'Concrete pour schedule.xlsx',
     confirmLabel: 'Rename',
     confirmIcon: Pencil,

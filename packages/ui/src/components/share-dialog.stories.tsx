@@ -60,6 +60,7 @@ type Story = StoryObj<typeof meta>
 
 /** Four with access (the owner, a role from the folder, a person, a client portal) and a link. */
 export const Default: Story = {
+  args: { description: 'Harbour Homes Ltd. sees it in its client portal.' },
   play: async () => {
     await settle()
     const dialog = within(document.body).getByRole('dialog', {
@@ -139,6 +140,7 @@ export const Phone: Story = {
 /** Arabic. */
 export const Arabic: Story = {
   args: {
+    title: 'مشاركة',
     subject: 'محضر التسليم.pdf',
     levels: [
       { value: 'view', label: 'عرض' },
@@ -165,6 +167,7 @@ export const Arabic: Story = {
 /** Japanese. */
 export const Japanese: Story = {
   args: {
+    title: '共有',
     subject: '引き渡し記録.pdf',
     levels: [
       { value: 'view', label: '閲覧' },

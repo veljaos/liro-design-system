@@ -11258,7 +11258,7 @@ export const CompanyDocumentsPhone: Story = {
   }, true),
 }
 
-/** The delivery note of F-2026-0412 in the preview: the third of the folder's four files. */
+/** The delivery note of F-2026-0412 in the preview: the first of the folder's four files. */
 const PREVIEW_CHECK = async () => {
   const sheet = within(document.body).getByRole('dialog', {
     name: /Otpremnica_uz_F-2026-0412\.pdf/,
@@ -11531,8 +11531,9 @@ export const CompanyDocumentsUploadFlow: Story = {
     await userEvent.click(within(conflict).getByRole('button', { name: 'Continue' }))
     await waitFor(
       async () => {
-        await expect(canvas.getByText('IMG_2026-10-14_0712 (1).jpg')).toBeVisible()
-        await expect(canvas.getByText('IMG_2026-10-14_0935.jpg')).toBeVisible()
+        const table = canvas.getByRole('table', { name: 'Site photos' })
+        await expect(within(table).getByText('IMG_2026-10-14_0712 (1).jpg')).toBeVisible()
+        await expect(within(table).getByText('IMG_2026-10-14_0935.jpg')).toBeVisible()
       },
       { timeout: 5000 },
     )
@@ -11759,7 +11760,10 @@ export const ClientPortalUploadFlow: Story = {
     ])
     await waitFor(
       async () => {
-        await expect(canvas.getByText('Elektro_Sistem_odobrenje_2026-0933.pdf')).toBeVisible()
+        const table = canvas.getByRole('table', { name: 'October 2026' })
+        await expect(
+          within(table).getByText('Elektro_Sistem_odobrenje_2026-0933.pdf'),
+        ).toBeVisible()
         await expect(canvas.getByText('1 of 1 uploaded')).toBeVisible()
       },
       { timeout: 5000 },
