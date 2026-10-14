@@ -119,6 +119,32 @@ export const Exit: Story = {
   },
 }
 
+/**
+ * A team member's audited, read-only view of a tenant (P5.29, the Superadmin): the application's
+ * `note` after the reason says that every page is recorded.
+ */
+export const ImpersonationAudited: Story = {
+  name: 'Impersonation, audited view of a tenant',
+  render: () => (
+    <ExampleProvider>
+      <ImpersonationBar
+        person="Kvadrat Gradnja d.o.o. administrator"
+        mode="Read-only"
+        reason="Support ticket 4821 — SEF invoice rejected"
+        note="Every page you open is recorded in the audit log"
+        exitLabel="Exit view"
+        onExit={() => undefined}
+      />
+    </ExampleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(
+      within(canvasElement).getByText('Every page you open is recorded in the audit log'),
+    ).toBeVisible()
+  },
+}
+
 /** No reason, no end time; and a session whose time is up (the Core ends it). */
 export const ImpersonationVariants: Story = {
   name: 'Impersonation, without reason and time is up',

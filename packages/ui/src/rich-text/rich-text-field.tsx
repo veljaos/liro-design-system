@@ -5,11 +5,13 @@ import { Bot, CircleAlert } from 'lucide-react'
 import {
   useEffect,
   useId,
+  useImperativeHandle,
   useLayoutEffect,
   useRef,
   useState,
   type CSSProperties,
   type ReactNode,
+  type Ref,
 } from 'react'
 import { ComboboxPopover, optionId } from '../components/combobox-field'
 import {
@@ -71,7 +73,24 @@ import { IDLE_TOOLBAR, Toolbar, type ToolbarState } from './toolbar'
  *   `mentionsLoading`). A mention is one atomic node with the person's id.
  * - **The value** is Tiptap's JSON (`value` / `defaultValue`); `onChange` reports the JSON, the
  *   sanitized HTML, the mentions, the merge fields and the length (rich-text-logic.ts).
+ * - **From outside** (P5.30): `ref` gives a handle that inserts content at the caret (where the
+ *   caret was before a menu or dialog took the focus: a saved reply, a link the application
+ *   found), puts the focus back into the text and empties it (after sending). `surface` 'sunken'
+ *   draws the text box on surface.sunken (ReplyComposer's internal note).
  */
+
+/** What a RichTextField's `ref` can do (P5.30). */
+export interface RichTextFieldHandle {
+  /**
+   * Inserts content at the caret, replacing the selected text: a whole document (its blocks), a
+   * list of nodes or plain text. The focus goes back into the text.
+   */
+  insert: (content: RichTextNode | readonly RichTextNode[] | string) => void
+  /** Puts the focus into the text, keeping the caret where it was. */
+  focus: () => void
+  /** Empties the text (reported through `onChange`). */
+  clear: () => void
+}
 
 export interface RichTextFieldProps extends FieldBaseProps {
   /** Controlled value: Tiptap's JSON, as `onChange` reported it. */
@@ -104,6 +123,27 @@ export interface RichTextFieldProps extends FieldBaseProps {
   loading?: boolean
   /** The text box's height in lines before it grows with its content. Default: 4. */
   minRows?: number
+  /** The text box's surface: 'raised' (default) or 'sunken' (a note only the team sees). */
+  surface?: 'raised' | 'sunken'
+  /** A handle to insert content at the caret, focus and empty the text (P5.30). */
+  ref?: Ref<RichTextFieldHandle>
+}
+
+/**
+ * What the handle's `insert` gives Tiptap: a document's blocks (a saved reply is a whole document),
+ * a list of nodes, or plain text as one text node.
+ */
+export function insertable(
+  content: RichTextNode | readonly RichTextNode[] | string,
+): RichTextNode | RichTextNode[] {
+  if (typeof content === 'string') return content === '' ? [] : { type: 'text', text: content }
+  if (Array.isArray(content)) return [...(content as readonly RichTextNode[])]
+  const node = content as RichTextNode
+  if (node.type !== 'doc') return node
+  const blocks = node.content ?? []
+  // One paragraph goes into the line at the caret, not as a paragraph of its own.
+  const only = blocks.length === 1 ? blocks[0] : undefined
+  return only?.type === 'paragraph' ? (only.content ?? []) : blocks
 }
 
 /** The state the toolbar and the lists read after each change. */
@@ -194,7 +234,7 @@ function joinIds(...ids: (string | undefined)[]): string | undefined {
  * fields and mentions. Use it for templates, notes and comments that keep their formatting; for
  * plain text use TextAreaField, for a chat message MessageComposer.
  */
-export function RichTextField(props: RichTextFieldProps) {
+export function RichTextField({ ref, ...props }: RichTextFieldProps) {
   const generated = useId()
   const id = props.id ?? `rich-${generated}`
   // The counter (not drawn when read-only) describes the text box, with the description, error and
@@ -223,7 +263,7 @@ export function RichTextField(props: RichTextFieldProps) {
             />
           </div>
         ) : (
-          <RichTextEditor {...props} control={control} counterId={counterId} />
+          <RichTextEditor {...props} handleRef={ref} control={control} counterId={counterId} />
         )
       }
     </Field>
@@ -264,9 +304,14 @@ class LiveCallbacks {
   }
 }
 
-function RichTextEditor(
-  props: RichTextFieldProps & { control: FieldControl; counterId: string | undefined },
-) {
+function RichTextEditor({
+  handleRef,
+  ...props
+}: Omit<RichTextFieldProps, 'ref'> & {
+  handleRef: Ref<RichTextFieldHandle> | undefined
+  control: FieldControl
+  counterId: string | undefined
+}) {
   const { messages, locale, format } = useLiro()
   const { control } = props
   const disabled = control.disabled
@@ -314,6 +359,22 @@ function RichTextEditor(
       live.value.blur()
     },
   })
+  useImperativeHandle(
+    handleRef,
+    () => ({
+      insert: (content) => {
+        if (editor === null || editor.isDestroyed) return
+        editor.chain().focus().insertContent(insertable(content)).run()
+      },
+      focus: () => {
+        if (editor !== null && !editor.isDestroyed) editor.commands.focus()
+      },
+      clear: () => {
+        if (editor !== null && !editor.isDestroyed) editor.commands.clearContent(true)
+      },
+    }),
+    [editor],
+  )
   const snapshot = useEditorState({
     editor,
     selector: ({ editor: current }) => (current === null ? null : readSnapshot(current)),
@@ -589,7 +650,8 @@ function RichTextEditor(
           disabled
             ? 'border-default bg-surface-disabled'
             : cn(
-                'border-control bg-surface-raised',
+                'border-control',
+                props.surface === 'sunken' ? 'bg-surface-sunken' : 'bg-surface-raised',
                 invalid ? 'border-status-danger-fg' : 'focus-within:border-focus',
               ),
         )}

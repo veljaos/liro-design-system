@@ -5,7 +5,7 @@ import { TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import type { LiroMessages } from '../provider/messages'
 import { CompactIconButton } from './button'
-import { fromControl } from './data-table-card'
+import { focusNeighbourRow, fromControl } from './data-table-card'
 import { rowKeyAction } from './data-table-logic'
 import type { DataTableColumn } from './data-table'
 import { LazyDropdownMenu, type MenuEntry } from './dropdown-menu'
@@ -242,11 +242,12 @@ function TableRowView<Row extends RowData>({
       {...(shared.clickable
         ? {
             tabIndex: 0,
+            'data-pressable': '',
             onClick: (event: MouseEvent) => {
               if (!fromControl(event)) press()
             },
             onKeyDown: (event: KeyboardEvent) => {
-              if (fromControl(event)) return
+              if (fromControl(event) || focusNeighbourRow(event)) return
               const open = latest.current.onRowOpen
               const action = rowKeyAction(event.key, open !== undefined)
               if (action === null) return

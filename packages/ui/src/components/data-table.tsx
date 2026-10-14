@@ -176,7 +176,8 @@ export interface DataTableProps<Row extends RowData> {
 
   /**
    * Pressing a row (pointer, or Space or Enter on the focused row). The application decides what
-   * opens.
+   * opens. Pressable rows (and cards) are reached with Tab, and from one to the next with
+   * ArrowDown / ArrowUp, Home and End (P5.30: a list worked from the keyboard).
    */
   onRowClick?: (row: Row) => void
   /**
@@ -1011,6 +1012,7 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
       <div className="relative min-w-0" {...(flat ? { 'data-flat': '' } : {})}>
         <div
           ref={scroller}
+          data-slot="data-table-rows"
           {...(scrolls ? { tabIndex: 0, role: 'region', 'aria-label': props.label } : {})}
           aria-busy={cards && props.loading === true ? true : undefined}
           className={cn(

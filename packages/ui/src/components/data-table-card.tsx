@@ -3,7 +3,7 @@ import { Checkbox } from '../primitives/checkbox'
 import { TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { CompactIconButton } from './button'
-import { rowKeyAction } from './data-table-logic'
+import { rowFocusTarget, rowKeyAction } from './data-table-logic'
 import { DropdownMenu, type MenuEntry } from './dropdown-menu'
 
 /*
@@ -56,6 +56,22 @@ export function fromControl(event: MouseEvent | KeyboardEvent): boolean {
   return target.closest('button, a, input, select, textarea, [role="checkbox"]') !== null
 }
 
+/**
+ * Moves the focus from a pressable row or card to its neighbour (`rowFocusTarget`): the arrows,
+ * Home and End among the rows drawn in the same table (P5.30). True when it moved.
+ */
+export function focusNeighbourRow(event: KeyboardEvent): boolean {
+  const current = event.currentTarget as HTMLElement
+  const root = current.closest('[data-slot="data-table-rows"]')
+  if (root === null) return false
+  const rows = [...root.querySelectorAll<HTMLElement>('[data-pressable]')]
+  const target = rowFocusTarget(event.key, rows.indexOf(current), rows.length)
+  if (target === null) return false
+  event.preventDefault()
+  rows[target]?.focus()
+  return true
+}
+
 /** A row of a DataTable on a phone. */
 export function DataTableCard(props: DataTableCardProps) {
   const { onPress } = props
@@ -67,11 +83,12 @@ export function DataTableCard(props: DataTableCardProps) {
         ? {}
         : {
             tabIndex: 0,
+            'data-pressable': '',
             onClick: (event: MouseEvent) => {
               if (!fromControl(event)) onPress()
             },
             onKeyDown: (event: KeyboardEvent) => {
-              if (fromControl(event)) return
+              if (fromControl(event) || focusNeighbourRow(event)) return
               const action = rowKeyAction(event.key, props.onOpen !== undefined)
               if (action === null) return
               event.preventDefault()

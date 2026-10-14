@@ -248,6 +248,43 @@ export const TONES = {
   Final: 'success',
   // P5.28 screens: an excuse sent, waiting for the class teacher
   'Excuse sent': 'neutral',
+  // P5.29 superadmin: incidents, security events, tenants' health, announcements. An incident
+  // still open is red, one being watched waits (warning); a security event not yet looked at
+  // waits on someone (warning), one being investigated is on its way (info). Severity: the worst
+  // red, the middle warning, the least neutral. An announcement on screen now is success.
+  Open: 'danger',
+  Monitoring: 'warning',
+  Resolved: 'success',
+  New: 'warning',
+  Investigating: 'info',
+  Closed: 'neutral',
+  'SEV-1': 'danger',
+  'SEV-2': 'warning',
+  'SEV-3': 'neutral',
+  High: 'danger',
+  Medium: 'warning',
+  Low: 'neutral',
+  Healthy: 'success',
+  Degraded: 'warning',
+  Failing: 'danger',
+  Scheduled: 'neutral',
+  Live: 'success',
+  Ended: 'neutral',
+  // P5.29 admin: sign-ins, monitored things, keys, certificates, two-factor sign-in, alerts
+  Success: 'success',
+  Blocked: 'danger',
+  Up: 'success',
+  Down: 'danger',
+  'In maintenance': 'neutral',
+  'No report': 'neutral',
+  Revoked: 'neutral',
+  'Expires soon': 'warning',
+  Valid: 'success',
+  On: 'success',
+  Off: 'warning',
+  'Waiting for setup': 'warning',
+  Critical: 'danger',
+  Warning: 'warning',
 } as const
 
 /** A status of the examples. */

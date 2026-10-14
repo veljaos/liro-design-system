@@ -1261,3 +1261,58 @@ export {
 export type { LabelFit, LabelSize } from './components/floor-plan-logic'
 export { seatingChanges } from './components/seating-logic'
 export type { SeatingChange } from './components/seating-logic'
+
+// ── P5.29 admin ──
+export { HealthList, healthIcon } from './components/health-list'
+export type {
+  HealthAction,
+  HealthItem,
+  HealthListProps,
+  HealthMetric,
+  HealthState,
+} from './components/health-list'
+export { HEALTH_KINDS, healthFacts } from './components/health-logic'
+export type { HealthFact, HealthKind, HealthTimes } from './components/health-logic'
+
+// ── P5.29 agent: SlaTimer and the helpdesk's keys (P5.30) ──
+export { durationText, SlaTimer, slaText } from './components/sla-timer'
+export type { SlaTimerProps } from './components/sla-timer'
+export {
+  durationParts,
+  millisecondsBetween,
+  SLA_TONES,
+  slaReading,
+  slaUrgency,
+} from './components/sla-logic'
+export type { DurationParts, SlaOptions, SlaReading, SlaState } from './components/sla-logic'
+export { rowFocusTarget } from './components/data-table-logic'
+// ── P5.29 portal ──
+export { SatisfactionRating } from './components/satisfaction-rating'
+export type { SatisfactionRatingProps } from './components/satisfaction-rating'
+export { HelpfulFeedback } from './components/helpful-feedback'
+export type { HelpfulFeedbackProps } from './components/helpful-feedback'
+export { LinkSuggestions } from './components/link-suggestions'
+export type { LinkSuggestion, LinkSuggestionsProps } from './components/link-suggestions'
+export { PageContents } from './components/page-contents'
+export type { PageContentsProps } from './components/page-contents'
+export { HighlightedText, SearchResultList } from './components/search-result-list'
+export type { SearchResult, SearchResultListProps } from './components/search-result-list'
+export { CategoryGrid } from './components/category-grid'
+export type { CategoryCard, CategoryGridProps } from './components/category-grid'
+export {
+  asksWhy,
+  currentEntry,
+  highlightMatches,
+  highlightText,
+  ratingAnswer,
+  ratingOption,
+  scaleValueText,
+} from './components/help-logic'
+export type {
+  ContentsEntry,
+  HelpfulAnswer,
+  Highlight,
+  HighlightPart,
+  SatisfactionAnswer,
+  SatisfactionOption,
+} from './components/help-logic'
