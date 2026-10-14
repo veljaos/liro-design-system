@@ -2096,4 +2096,145 @@ export interface LiroMessages {
   'comparison.result': string
   /** No rows to compare. */
   'comparison.empty': string
+  // P5.43 files
+  /** FileBrowser (P5.43): the quick places and the folder tree, and showing or hiding them. */
+  'files.places': string
+  'files.folders': string
+  'files.showFolders': string
+  'files.hideFolders': string
+  /** The list and grid views, and the grid's sort menu. */
+  'files.view': string
+  'files.listView': string
+  'files.gridView': string
+  'files.sort': string
+  /** The columns and facts of a file. */
+  'files.name': string
+  'files.owner': string
+  'files.modified': string
+  'files.created': string
+  'files.size': string
+  'files.type': string
+  'files.links': string
+  'files.location': string
+  'files.retention': string
+  'files.tags': string
+  /** A folder's type, and its number of items ("12 items"). */
+  'files.folder': string
+  'files.items': (count: number, countText: string) => string
+  /** After a name: shared with others, a favourite. */
+  'files.shared': string
+  'files.favourite': string
+  /** The actions of the view. */
+  'files.upload': string
+  'files.uploadTitle': string
+  'files.chooseFolder': string
+  'files.newFolder': string
+  'files.details': string
+  'files.download': string
+  /** One item: its checkbox, its menu, the phone's bottom sheet of actions. */
+  'files.select': (name: string) => string
+  'files.selectAll': string
+  'files.actions': (name: string) => string
+  'files.actionsTitle': string
+  /** The way back to the parent folder on a phone ("Back to Contracts"). */
+  'files.backTo': (folder: string) => string
+  /** While searching: in this folder or everywhere. */
+  'files.searchScope': string
+  'files.searchEverywhere': string
+  /** The states. */
+  'files.empty': string
+  'files.emptyDescription': string
+  'files.noResults': string
+  'files.noResultsDescription': string
+  'files.noAccess': string
+  'files.offline': string
+  'files.offlineDescription': string
+  'files.offlineReason': string
+  'files.loadError': string
+  'files.retry': string
+  /** Dropping files from the computer onto the view. */
+  'files.dropHere': (folder: string) => string
+  /** Dragging items onto a folder: what moves, where it would land, a cancelled drag. */
+  'files.dragging': (count: number, countText: string) => string
+  'files.dropInto': (folder: string) => string
+  'files.dragCancelled': string
+  /** The uploads: "2 of 5 uploaded", clear the finished ones. */
+  'files.uploads': string
+  'files.uploadCounts': (done: number, doneText: string, total: number, totalText: string) => string
+  'files.clearUploads': string
+  /** The name of a new folder or a renamed item. */
+  'files.nameLabel': string
+  /** FilePreview: "3 of 12", the previous and next file, a file without a preview. */
+  'files.position': (index: number, indexText: string, total: number, totalText: string) => string
+  'files.previous': string
+  'files.next': string
+  'files.noPreview': string
+  'files.noPreviewDescription': string
+  /** FileDetails: the panels. */
+  'files.versions': string
+  'files.activity': string
+  'files.signing': string
+  'files.sharing': string
+  /** FolderPickerDialog: the chosen destination, nothing chosen, and why a folder cannot be. */
+  'folderPicker.destination': (path: string) => string
+  'folderPicker.none': string
+  'folderPicker.moving': string
+  'folderPicker.here': string
+  /** NameConflictDialog: the question, the three answers, "Apply to all", the progress. */
+  'conflict.title': string
+  'conflict.message': (folder: string) => string
+  'conflict.choice': string
+  'conflict.replace': string
+  'conflict.replaceHint': string
+  'conflict.keepBoth': string
+  'conflict.keepBothHint': (name: string) => string
+  'conflict.skip': string
+  'conflict.skipHint': string
+  'conflict.existing': string
+  'conflict.incoming': string
+  'conflict.applyToAll': (count: number, countText: string) => string
+  'conflict.progress': (
+    index: number,
+    indexText: string,
+    total: number,
+    totalText: string,
+  ) => string
+  'conflict.continue': string
+  'conflict.cancel': string
+  /** ShareDialog: adding people, who has access, the link. */
+  'sharing.title': string
+  'sharing.add': string
+  'sharing.level': string
+  'sharing.addButton': string
+  'sharing.who': string
+  'sharing.onlyYou': string
+  'sharing.owner': string
+  'sharing.levelOf': (name: string) => string
+  'sharing.remove': (name: string) => string
+  'sharing.link': string
+  'sharing.linkNone': string
+  'sharing.createLink': string
+  'sharing.linkAddress': string
+  'sharing.expires': string
+  'sharing.never': string
+  'sharing.expiresTooSoon': string
+  'sharing.password': string
+  'sharing.passwordSet': string
+  'sharing.revokeLink': string
+  'sharing.revokeTitle': string
+  'sharing.revokeMessage': string
+  'sharing.done': string
+  /** VersionList: the current version, restore, download, upload a new one, none. */
+  'versions.current': string
+  'versions.restore': string
+  'versions.restoreOf': (label: string) => string
+  'versions.restoreTitle': string
+  'versions.restoreMessage': string
+  'versions.download': (label: string) => string
+  'versions.upload': string
+  'versions.empty': string
+  /** FileNameDialog: an empty name. */
+  'files.nameRequired': string
+  /** ShareDialog: saves the link's password. */
+  'sharing.setPassword': string
 }

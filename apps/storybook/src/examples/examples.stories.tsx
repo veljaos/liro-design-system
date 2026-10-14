@@ -11193,3 +11193,577 @@ export const IosPartnerPortalDisputeFlow: Story = {
     await settle()
   },
 }
+
+// ── P5.43 files ──
+// (Imports here, inside the block, so the blocks merge without touching the top.)
+import { AH_ROUTES } from './data-AH'
+import { AI_ROUTES } from './data-AI'
+
+/** A files story's checks, and on a phone that nothing scrolls sideways. */
+function filesPlay(
+  check: (canvasElement: HTMLElement) => Promise<void>,
+  phone = false,
+): NonNullable<Story['play']> {
+  return async ({ canvasElement }) => {
+    await settle()
+    await check(canvasElement)
+    if (phone) {
+      for (const page of canvasElement.querySelectorAll<HTMLElement>('[data-liro-phone-page]')) {
+        await expect(page.scrollWidth).toBeLessThanOrEqual(page.clientWidth)
+      }
+    }
+  }
+}
+
+/**
+ * Kvadrat Gradnja d.o.o.'s company documents on 14.10.2026 at 09:40, as Milica Petrović sees
+ * them: "Residential building Liman 4" in the site documentation — its folders, the delivery note
+ * linked to invoice F-2026-0412, the interim situation, the plan of works; the folder tree with
+ * Contracts, Employee files, Site documentation, Finance and Company records; Recent, Favourites,
+ * Shared with me and Trash; 38,4 GB of 50 GB used.
+ */
+const COMPANY_DOCUMENTS_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(
+    canvas.getByRole('heading', { level: 1, name: 'Residential building Liman 4' }),
+  ).toBeVisible()
+  await expect(canvas.getByText('Otpremnica_uz_F-2026-0412.pdf')).toBeVisible()
+  await expect(canvas.getAllByRole('link', { name: 'Invoice F-2026-0412' }).length).toBeGreaterThan(
+    0,
+  )
+}
+
+export const CompanyDocuments: Story = {
+  name: 'Company documents',
+  render: () => <ExampleApp start={AH_ROUTES.liman4} />,
+  play: filesPlay(async (canvasElement) => {
+    await COMPANY_DOCUMENTS_CHECK(canvasElement)
+    const canvas = within(canvasElement)
+    await expect(
+      canvas.getByRole('treeitem', { name: 'Residential building Liman 4' }),
+    ).toHaveAttribute('aria-selected', 'true')
+    await expect(canvas.getByText('38,4 GB of 50 GB')).toBeVisible()
+  }),
+}
+
+export const CompanyDocumentsPhone: Story = {
+  name: 'Company documents, phone',
+  render: () => <OnPhone start={AH_ROUTES.liman4} />,
+  play: filesPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('link', { name: 'Back to Site documentation' })).toBeVisible()
+    await expect(
+      canvas.getByRole('button', { name: 'Actions: Otpremnica_uz_F-2026-0412.pdf' }),
+    ).toBeVisible()
+  }, true),
+}
+
+/** The delivery note of F-2026-0412 in the preview: the third of the folder's four files. */
+const PREVIEW_CHECK = async () => {
+  const sheet = within(document.body).getByRole('dialog', {
+    name: /Otpremnica_uz_F-2026-0412\.pdf/,
+  })
+  await expect(within(sheet).getByRole('button', { name: 'Next file' })).toBeVisible()
+  await expect(within(sheet).getByRole('button', { name: 'Download' })).toBeVisible()
+}
+
+export const CompanyDocumentPreview: Story = {
+  name: 'Company document preview',
+  render: () => <ExampleApp start={AH_ROUTES.preview} />,
+  play: filesPlay(PREVIEW_CHECK),
+}
+
+export const CompanyDocumentPreviewPhone: Story = {
+  name: 'Company document preview, phone',
+  render: () => <OnPhone start={AH_ROUTES.preview} />,
+  play: filesPlay(PREVIEW_CHECK, true),
+}
+
+/** A drawing the browser cannot show: Download instead. */
+export const CompanyDocumentNoPreview: Story = {
+  name: 'Company document preview, no preview',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AH_ROUTES.previewDrawing} />,
+  play: filesPlay(async () => {
+    await expect(within(document.body).getByText('This file cannot be previewed')).toBeVisible()
+  }),
+}
+
+/** The site photos as a grid of pictures. */
+export const CompanyDocumentsGrid: Story = {
+  name: 'Company documents, photos as a grid',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AH_ROUTES.photosGrid} />,
+  play: filesPlay(async (canvasElement) => {
+    const grid = within(canvasElement).getByRole('list', { name: 'Site photos' })
+    await expect(grid.querySelectorAll('[data-file-tile]')).toHaveLength(6)
+  }),
+}
+
+/** Two files checked: Download as ZIP, Move to…, Move to Trash. */
+export const CompanyDocumentsChecked: Story = {
+  name: 'Company documents, two checked',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AH_ROUTES.liman4Checked} />,
+  play: filesPlay(async (canvasElement) => {
+    await expect(within(canvasElement).getByText('2 selected')).toBeVisible()
+  }),
+}
+
+/** The delivery note's details: linked to F-2026-0412, kept until 2036, two versions. */
+export const CompanyDocumentDetails: Story = {
+  name: 'Company documents, details',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AH_ROUTES.deliveryNote} />,
+  play: filesPlay(async (canvasElement) => {
+    const details = within(canvasElement).getByRole('complementary', { name: 'Details' })
+    await expect(within(details).getByText('Keep until 2036')).toBeVisible()
+    await expect(within(details).getByRole('link', { name: 'Invoice F-2026-0412' })).toBeVisible()
+    await expect(within(details).getByText('Version 2')).toBeVisible()
+  }),
+}
+
+export const CompanyDocumentDetailsPhone: Story = {
+  name: 'Company documents, details, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={AH_ROUTES.deliveryNote} />,
+  play: filesPlay(async () => {
+    const drawer = within(document.body).getByRole('dialog', { name: /Otpremnica_uz_F-2026-0412/ })
+    await expect(within(drawer).getByText('Keep until 2036')).toBeVisible()
+  }, true),
+}
+
+/** Nikola Marković's employee file: his contract, safety certificate, medical certificate. */
+export const CompanyDocumentsEmployeeFile: Story = {
+  name: 'Company documents, employee file',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AH_ROUTES.employee} />,
+  play: filesPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { level: 1, name: 'Nikola Marković' })).toBeVisible()
+    await expect(
+      canvas.getByText('Employee files hold personal data: every opening is recorded.'),
+    ).toBeVisible()
+  }),
+}
+
+/** The director's file: no access, with the application's reason. */
+export const CompanyDocumentsNoAccess: Story = {
+  name: 'Company documents, no access',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AH_ROUTES.director} />,
+  play: filesPlay(async (canvasElement) => {
+    await expect(
+      within(canvasElement).getByText('You do not have access to this folder'),
+    ).toBeVisible()
+  }),
+}
+
+/** The site's inspections: an empty folder. */
+export const CompanyDocumentsEmpty: Story = {
+  name: 'Company documents, empty folder',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AH_ROUTES.inspections} />,
+  play: filesPlay(async (canvasElement) => {
+    await expect(within(canvasElement).getByText('This folder is empty')).toBeVisible()
+  }),
+}
+
+/** "Upload" in the site photos: what is accepted, files or a whole folder. */
+export const CompanyDocumentsUpload: Story = {
+  name: 'Company documents, upload',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AH_ROUTES.upload} />,
+  play: filesPlay(async () => {
+    const dialog = within(document.body).getByRole('dialog', { name: /^Upload files/ })
+    await expect(within(dialog).getByRole('button', { name: 'Choose a folder' })).toBeVisible()
+  }),
+}
+
+/** Photos uploading: uploading, checked for viruses, done, blocked. */
+export const CompanyDocumentsUploading: Story = {
+  name: 'Company documents, uploading',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AH_ROUTES.uploading} />,
+  play: filesPlay(async (canvasElement) => {
+    await expect(within(canvasElement).getByText('1 of 4 uploaded')).toBeVisible()
+  }),
+}
+
+/** Three photos whose names are taken: Replace / Keep both / Skip, "Apply to all". */
+export const CompanyDocumentsConflict: Story = {
+  name: 'Company documents, name conflict',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AH_ROUTES.conflict} />,
+  play: filesPlay(async () => {
+    const dialog = within(document.body).getByRole('dialog', {
+      name: /^A file with this name exists/,
+    })
+    await expect(within(dialog).getByText('Conflict 1 of 3')).toBeVisible()
+  }),
+}
+
+export const CompanyDocumentsConflictPhone: Story = {
+  name: 'Company documents, name conflict, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={AH_ROUTES.conflict} />,
+  play: filesPlay(async () => {
+    await expect(
+      within(document.body).getByRole('dialog', { name: /^A file with this name exists/ }),
+    ).toBeVisible()
+  }, true),
+}
+
+/** "Move to…" for the plan of works: the folder picker. */
+export const CompanyDocumentsMove: Story = {
+  name: 'Company documents, move to',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AH_ROUTES.move} />,
+  play: filesPlay(async () => {
+    const dialog = within(document.body).getByRole('dialog', {
+      name: 'Move to Plan_radova_Liman_4.xlsx',
+    })
+    await expect(within(dialog).getByRole('tree', { name: 'Folders' })).toBeVisible()
+  }),
+}
+
+/** "Share…" for the site documentation: the site manager, the office, the customer's portal. */
+export const CompanyDocumentsShare: Story = {
+  name: 'Company documents, share',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AH_ROUTES.share} />,
+  play: filesPlay(async () => {
+    const dialog = within(document.body).getByRole('dialog', {
+      name: 'Share Site documentation',
+    })
+    await expect(within(dialog).getByText('Stanogradnja Plus d.o.o.')).toBeVisible()
+  }),
+}
+
+/** The maintenance contract with Gradska toplana waits for Milica's signature. */
+export const CompanyDocumentsSign: Story = {
+  name: 'Company documents, sign',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AH_ROUTES.sign} />,
+  play: filesPlay(async (canvasElement) => {
+    const details = within(canvasElement).getByRole('complementary', { name: 'Details' })
+    await expect(within(details).getByText('1 of 3 signed')).toBeVisible()
+    await expect(within(details).getByRole('button', { name: 'Sign' })).toBeVisible()
+  }),
+}
+
+/** "liman" searched everywhere: results with their folders. */
+export const CompanyDocumentsSearch: Story = {
+  name: 'Company documents, search everywhere',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AH_ROUTES.search} />,
+  play: filesPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { level: 1, name: 'Search results' })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Everywhere' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+  }),
+}
+
+/** Trash: where each item was, when it was deleted, Restore, and "Empty Trash…". */
+export const CompanyDocumentsTrash: Story = {
+  name: 'Company documents, Trash',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AH_ROUTES.trash} />,
+  play: filesPlay(async (canvasElement) => {
+    await expect(
+      within(canvasElement).getByText('Zapisnik_primopredaje_lokacije_stari.pdf'),
+    ).toBeVisible()
+  }),
+}
+
+export const CompanyDocumentsEmptyTrash: Story = {
+  name: 'Company documents, empty Trash',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AH_ROUTES.emptyTrash} />,
+  play: filesPlay(async () => {
+    const dialog = within(document.body).getByRole('alertdialog', { name: /^Empty Trash/ })
+    await expect(within(dialog).getByText('Type Trash to confirm')).toBeVisible()
+  }),
+}
+
+/** Offline: the files as last loaded; Upload and New folder wait. */
+export const CompanyDocumentsOffline: Story = {
+  name: 'Company documents, offline',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AH_ROUTES.offline} />,
+  play: filesPlay(async (canvasElement) => {
+    await expect(within(canvasElement).getByText('You are offline')).toBeVisible()
+  }),
+}
+
+export const CompanyDocumentsOfflinePhone: Story = {
+  name: 'Company documents, offline, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={AH_ROUTES.offline} />,
+  play: filesPlay(async (canvasElement) => {
+    await expect(within(canvasElement).getByText('You are offline')).toBeVisible()
+  }, true),
+}
+
+/** Photos uploaded; one name is taken: Keep both; they arrive checked in the folder. */
+export const CompanyDocumentsUploadFlow: Story = {
+  name: 'Company documents, upload, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AH_ROUTES.folder('liman4-photos')} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Upload' }))
+    const dialog = await within(document.body).findByRole('dialog', { name: /^Upload files/ })
+    const input = dialog.querySelector<HTMLInputElement>('[data-slot="file-dropzone"] input')
+    if (input === null) throw new Error('The file input is missing')
+    await userEvent.upload(input, [
+      new File(['jpeg'], 'IMG_2026-10-14_0712.jpg', { type: 'image/jpeg' }),
+      new File(['jpeg'], 'IMG_2026-10-14_0935.jpg', { type: 'image/jpeg' }),
+    ])
+    const conflict = await within(document.body).findByRole('dialog', {
+      name: /^A file with this name exists/,
+    })
+    await expect(within(conflict).getByRole('radio', { name: /^Keep both/ })).toBeChecked()
+    await userEvent.click(within(conflict).getByRole('button', { name: 'Continue' }))
+    await waitFor(
+      async () => {
+        await expect(canvas.getByText('IMG_2026-10-14_0712 (1).jpg')).toBeVisible()
+        await expect(canvas.getByText('IMG_2026-10-14_0935.jpg')).toBeVisible()
+      },
+      { timeout: 5000 },
+    )
+    await settle()
+  },
+}
+
+/** "Move to…" from the menu: the plan of works into Site diary; it leaves the folder. */
+export const CompanyDocumentsMoveFlow: Story = {
+  name: 'Company documents, move, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AH_ROUTES.liman4} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Actions: Plan_radova_Liman_4.xlsx' }))
+    await userEvent.click(await within(document.body).findByRole('menuitem', { name: 'Move to…' }))
+    const dialog = await within(document.body).findByRole('dialog', { name: /^Move to/ })
+    await userEvent.click(within(dialog).getByRole('treeitem', { name: 'Site diary' }))
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Move here' }))
+    await waitFor(async () => {
+      await expect(canvas.queryByText('Plan_radova_Liman_4.xlsx')).toBeNull()
+    })
+    await settle()
+  },
+}
+
+/** Milica signs the maintenance contract from its details: signed through Liro Bridge. */
+export const CompanyDocumentsSignFlow: Story = {
+  name: 'Company documents, sign, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AH_ROUTES.sign} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const details = within(canvasElement).getByRole('complementary', { name: 'Details' })
+    await userEvent.click(within(details).getByRole('button', { name: 'Sign' }))
+    await waitFor(async () => {
+      await expect(within(details).getByText('2 of 3 signed')).toBeVisible()
+    })
+    await settle()
+  },
+}
+
+/** Empty Trash: the typed word enables the button; Trash is empty after it. */
+export const CompanyDocumentsEmptyTrashFlow: Story = {
+  name: 'Company documents, empty Trash, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AH_ROUTES.trash} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Empty Trash…' }))
+    const dialog = await within(document.body).findByRole('alertdialog', { name: /^Empty Trash/ })
+    await userEvent.type(within(dialog).getByRole('textbox'), 'Trash')
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Empty Trash' }))
+    await waitFor(async () => {
+      await expect(canvas.queryByText('Zapisnik_primopredaje_lokacije_stari.pdf')).toBeNull()
+    })
+    await settle()
+  },
+}
+
+/**
+ * Knjigovodstvo Jelić's client folders on 14.10.2026 at 09:40, as Snežana Jelić sees them:
+ * Kvadrat Gradnja d.o.o.'s "Sent to the accountant / October 2026" — what Milica Petrović
+ * uploaded in the client portal this morning for request REQ-2026-118 (Beton Mix's invoice,
+ * Banca Intesa's statement 189, a photo still being checked), each linked to the month-end
+ * checklist and to Kvadrat Gradnja's document inbox.
+ */
+const CLIENT_FOLDERS_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'October 2026' })).toBeVisible()
+  await expect(canvas.getByText('Beton_Mix_racun_2026-1187.pdf')).toBeVisible()
+  await expect(
+    canvas.getByText(
+      'Milica Petrović uploads to this folder from Kvadrat Gradnja d.o.o.’s client portal.',
+    ),
+  ).toBeVisible()
+}
+
+export const ClientFolders: Story = {
+  name: 'Client folders',
+  render: () => <ExampleApp start={AI_ROUTES.clientUploads} />,
+  play: filesPlay(async (canvasElement) => {
+    await CLIENT_FOLDERS_CHECK(canvasElement)
+    await expect(
+      within(canvasElement).getAllByRole('link', {
+        name: 'Document inbox: Beton Mix d.o.o., invoice 2026-1187',
+      }).length,
+    ).toBeGreaterThan(0)
+  }),
+}
+
+export const ClientFoldersPhone: Story = {
+  name: 'Client folders, phone',
+  render: () => <OnPhone start={AI_ROUTES.clientUploads} />,
+  play: filesPlay(CLIENT_FOLDERS_CHECK, true),
+}
+
+/** The invoice's details: the request it answers, the document inbox, its activity. */
+export const ClientFoldersDetails: Story = {
+  name: 'Client folders, details',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AI_ROUTES.clientUploadDetails} />,
+  play: filesPlay(async (canvasElement) => {
+    const details = within(canvasElement).getByRole('complementary', { name: 'Details' })
+    await expect(
+      within(details).getByRole('link', { name: 'Month-end checklist: Kvadrat Gradnja d.o.o.' }),
+    ).toBeVisible()
+  }),
+}
+
+/** Kvadrat Gradnja's folder shared with Marko Jelić and the client's portal; never by link. */
+export const ClientFoldersShare: Story = {
+  name: 'Client folders, share',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AI_ROUTES.clientShare} />,
+  play: filesPlay(async () => {
+    const dialog = within(document.body).getByRole('dialog', {
+      name: 'Share Kvadrat Gradnja d.o.o.',
+    })
+    await expect(
+      within(dialog).getByText('Client documents are never shared by link.'),
+    ).toBeVisible()
+  }),
+}
+
+/** Marko Jelić's client: no access, with the way to ask. */
+export const ClientFoldersNoAccess: Story = {
+  name: 'Client folders, no access',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AI_ROUTES.otherClient} />,
+  play: filesPlay(async (canvasElement) => {
+    await expect(
+      within(canvasElement).getByText('You do not have access to this folder'),
+    ).toBeVisible()
+  }),
+}
+
+/**
+ * Kvadrat Gradnja d.o.o.'s client portal, Files: Milica Petrović's "Sent to the accountant /
+ * October 2026" with what she uploaded for REQ-2026-118; Upload is the main action.
+ */
+const PORTAL_FILES_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'October 2026' })).toBeVisible()
+  await expect(canvas.getByRole('button', { name: 'Upload' })).toBeVisible()
+  await expect(canvas.getByText('Izvod_189_Banca_Intesa.pdf')).toBeVisible()
+}
+
+export const ClientPortalFiles: Story = {
+  name: 'Client portal files',
+  render: () => <ExampleApp start={AI_ROUTES.portalUploads} />,
+  play: filesPlay(PORTAL_FILES_CHECK),
+}
+
+export const ClientPortalFilesPhone: Story = {
+  name: 'Client portal files, phone',
+  render: () => <OnPhone start={AI_ROUTES.portalUploads} />,
+  play: filesPlay(PORTAL_FILES_CHECK, true),
+}
+
+/** "Upload" on the phone: Take a photo or Choose files. */
+export const ClientPortalUploadPhone: Story = {
+  name: 'Client portal files, upload, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={AI_ROUTES.portalUpload} />,
+  play: filesPlay(async () => {
+    const dialog = within(document.body).getByRole('dialog', { name: /^Upload files/ })
+    await expect(within(dialog).getByRole('button', { name: 'Take a photo' })).toBeVisible()
+  }, true),
+}
+
+/** Photos uploading in the portal. */
+export const ClientPortalUploading: Story = {
+  name: 'Client portal files, uploading',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AI_ROUTES.portalUploading} />,
+  play: filesPlay(async (canvasElement) => {
+    await expect(within(canvasElement).getByText('1 of 4 uploaded')).toBeVisible()
+  }),
+}
+
+/** "Sent by the accountant": read only; Upload says why not. */
+export const ClientPortalFromFirm: Story = {
+  name: 'Client portal files, sent by the accountant',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AI_ROUTES.portalFromFirm} />,
+  play: filesPlay(async (canvasElement) => {
+    await expect(
+      within(canvasElement).getAllByText('Only Knjigovodstvo Jelić adds files here.').length,
+    ).toBeGreaterThan(0)
+  }),
+}
+
+export const ClientPortalOfflinePhone: Story = {
+  name: 'Client portal files, offline, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={AI_ROUTES.portalOffline} />,
+  play: filesPlay(async (canvasElement) => {
+    await expect(within(canvasElement).getByText('You are offline')).toBeVisible()
+  }, true),
+}
+
+/**
+ * Milica uploads the credit note asked in REQ-2026-118: uploading, checked, then in the folder
+ * (the firm's "Sent to the accountant / October 2026" reads the same files).
+ */
+export const ClientPortalUploadFlow: Story = {
+  name: 'Client portal files, upload reaches the accountant, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AI_ROUTES.portalUploads} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Upload' }))
+    const dialog = await within(document.body).findByRole('dialog', { name: /^Upload files/ })
+    const input = dialog.querySelector<HTMLInputElement>('[data-slot="file-dropzone"] input')
+    if (input === null) throw new Error('The file input is missing')
+    await userEvent.upload(input, [
+      new File(['%PDF-1.7'], 'Elektro_Sistem_odobrenje_2026-0933.pdf', {
+        type: 'application/pdf',
+      }),
+    ])
+    await waitFor(
+      async () => {
+        await expect(canvas.getByText('Elektro_Sistem_odobrenje_2026-0933.pdf')).toBeVisible()
+        await expect(canvas.getByText('1 of 1 uploaded')).toBeVisible()
+      },
+      { timeout: 5000 },
+    )
+    await settle()
+  },
+}
