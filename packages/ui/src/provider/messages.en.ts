@@ -1265,4 +1265,33 @@ export const messagesEn: LiroMessages = {
   'floorPlan.allAreas': 'All areas',
   'floorPlan.editOnLarger': 'Edit the plan on a computer or tablet.',
   'seating.seatTitle': 'Seat a guest',
+  // P5.29 agent
+  'sla.dueIn': (durationText) => `Due in ${durationText}`,
+  'sla.overdueBy': (durationText) => `Overdue by ${durationText}`,
+  'sla.overdue': 'Overdue',
+  'sla.paused': 'Paused',
+  'sla.met': 'Met',
+  'sla.missedBy': (durationText) => `Missed by ${durationText}`,
+  'sla.duration': (days, daysText, hours, hoursText, minutes, minutesText) =>
+    [
+      days > 0 ? `${daysText} d` : '',
+      hours > 0 ? `${hoursText} h` : '',
+      minutes > 0 || (days === 0 && hours === 0) ? `${minutesText} min` : '',
+    ]
+      .filter((part) => part !== '')
+      .join(' '),
+  'sla.dueAt': (text) => `Due ${text}`,
+  'sla.labelled': (label) => `${label}:`,
+  'message.internal': 'Internal',
+  'composer.modes': 'Message type',
+  'composer.reply': 'Reply',
+  'composer.note': 'Internal note',
+  'composer.noteHint': 'Only your team sees internal notes.',
+  'composer.send': 'Send',
+  'composer.addNote': 'Add note',
+  'composer.sendHint': 'Ctrl+Enter sends',
+  'composer.savedReplies': 'Saved replies',
+  'composer.findSavedReply': 'Find a saved reply',
+  'composer.attach': 'Attach files',
+  'composer.insertLink': 'Insert a link',
 }

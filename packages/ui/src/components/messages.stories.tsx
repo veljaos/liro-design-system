@@ -649,3 +649,59 @@ export const EnglishInRtl: Story = {
     )
   },
 }
+
+/**
+ * Internal notes among the replies (P5.30): a note only the team sees stands on its author's side
+ * on the sunken surface with a dashed line and starts with "Internal" — different from a reply by
+ * its line and its word, never by colour alone. A run of one author keeps the mark on each note.
+ */
+export const InternalNotes: Story = {
+  name: 'Internal notes',
+  render: () => (
+    <ExampleProvider>
+      <div className="max-w-180">
+        <MessageList
+          label="Conversation on request 4821"
+          className="h-[30rem]"
+          messages={[
+            {
+              id: 'c1',
+              author: { id: 'u-milica', name: 'Milica Petrović' },
+              at: at(TODAY, '08:12'),
+              text: 'Our invoice F-2026-0412 came back from SEF as rejected. What is wrong with it?',
+            },
+            {
+              id: 'n1',
+              author: { id: 'u-ana', name: 'Ana Kovač' },
+              at: at(TODAY, '08:30'),
+              internal: true,
+              text: '@Dragan Ilić the buyer’s tax number does not match the register. Can you check?',
+              mentions: [{ id: 'u-dragan', name: 'Dragan Ilić' }],
+            },
+            {
+              id: 'r1',
+              author: { id: 'u-dragan', name: 'Dragan Ilić' },
+              own: true,
+              at: at(TODAY, '08:41'),
+              text: 'The buyer’s tax number on the invoice is wrong. Correct it and send the invoice again.',
+            },
+            {
+              id: 'n2',
+              author: { id: 'u-dragan', name: 'Dragan Ilić' },
+              own: true,
+              at: at(TODAY, '08:42'),
+              internal: true,
+              text: 'Checked: the register has the new number since 01.10.2026.',
+            },
+          ]}
+        />
+      </div>
+    </ExampleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const log = within(canvasElement).getByRole('log')
+    await expect(within(log).getAllByText('Internal')).toHaveLength(2)
+    await expect(log.querySelectorAll('[data-internal]')).toHaveLength(2)
+  },
+}

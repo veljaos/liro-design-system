@@ -1261,3 +1261,16 @@ export {
 export type { LabelFit, LabelSize } from './components/floor-plan-logic'
 export { seatingChanges } from './components/seating-logic'
 export type { SeatingChange } from './components/seating-logic'
+
+// ── P5.29 agent: SlaTimer and the helpdesk's keys (P5.30) ──
+export { durationText, SlaTimer, slaText } from './components/sla-timer'
+export type { SlaTimerProps } from './components/sla-timer'
+export {
+  durationParts,
+  millisecondsBetween,
+  SLA_TONES,
+  slaReading,
+  slaUrgency,
+} from './components/sla-logic'
+export type { DurationParts, SlaOptions, SlaReading, SlaState } from './components/sla-logic'
+export { rowFocusTarget } from './components/data-table-logic'
