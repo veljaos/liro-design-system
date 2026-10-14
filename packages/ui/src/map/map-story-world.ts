@@ -5,8 +5,8 @@
  * (a real application passes its own). Not exported from `@veljaos/ui/map`.
  *
  * Natural Earth draws Kosovo as a polygon of its own; here it is merged into Serbia's area, so the
- * map has no gap (docs/notes/P5.41-map.md asks the owner to confirm; the geometry is always the
- * application's).
+ * map has no gap (docs/decisions.md, "Maps (P5.41)", asks the owner to confirm; the geometry is
+ * always the application's).
  */
 import { feature, merge } from 'topojson-client'
 import world from 'world-atlas/countries-110m.json'
