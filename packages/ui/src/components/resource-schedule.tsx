@@ -40,7 +40,7 @@ import {
 import { SelectField } from './select-field'
 import { NowMarker } from './now-marker'
 import type { Tone } from './status-badge'
-import { STICKY_HEAD, useStickyHead } from './sticky-head'
+import { STICKY_HEAD, STICKY_START, useStickyHead } from './sticky-head'
 import { usePhone } from './use-phone'
 
 /*
@@ -981,7 +981,7 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
                 >
                   <div
                     data-sticky-start=""
-                    className="sticky start-0 shrink-0 bg-surface-raised"
+                    className={cn(STICKY_START, 'shrink-0 bg-surface-raised')}
                     style={{ width: NAME_WIDTH }}
                   />
                   <div className="flex min-w-0 flex-1">
@@ -1006,7 +1006,7 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
               >
                 <div
                   {...(axis.days.length > 1 ? {} : { 'data-sticky-start': '' })}
-                  className="sticky start-0 z-(--liro-layer-raised) shrink-0 bg-surface-raised"
+                  className={cn(STICKY_START, 'z-(--liro-layer-raised) shrink-0 bg-surface-raised')}
                   style={{ width: NAME_WIDTH }}
                 />
                 <div className={cn('relative flex-1', byDay ? 'flex' : 'h-7')}>
@@ -1048,7 +1048,10 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
                   )}
                 >
                   <div
-                    className="sticky start-0 z-[5] box-border flex shrink-0 flex-col justify-center gap-0.5 border-0 border-e border-solid border-default bg-surface-raised px-3"
+                    className={cn(
+                      STICKY_START,
+                      'z-[5] box-border flex shrink-0 flex-col justify-center gap-0.5 border-0 border-e border-solid border-default bg-surface-raised px-3',
+                    )}
                     style={{ width: NAME_WIDTH, height: ROW_HEIGHT }}
                   >
                     <span
