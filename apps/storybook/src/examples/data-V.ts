@@ -418,9 +418,19 @@ function generated(index: number): AccountingClient {
   const name = `${FIRST[index % FIRST.length] ?? ''} ${SECOND[Math.floor(index / FIRST.length) % SECOND.length] ?? ''} ${FORMS[index % FORMS.length] ?? ''}`
   const vatPayer = index % 5 !== 4
   const employs = index % 3 !== 2
-  const vatState: DeadlineState = (['Submitted', 'Prepared', 'Submitted', 'Not started'] as const)[
-    index % 4
-  ] as DeadlineState
+  const vatState: DeadlineState =
+    (
+      [
+        'Submitted',
+        'Prepared',
+        'Submitted',
+        'Not started',
+        'Submitted',
+        'Prepared',
+        'Submitted',
+        'Submitted',
+      ] as const
+    )[index % 8] ?? 'Submitted'
   const payrollDue = ['2026-10-15', '2026-10-20', '2026-10-30'][(index >> 1) % 3] ?? '2026-10-15'
   const payrollState: DeadlineState =
     payrollDue === '2026-10-15' && index % 2 === 0 ? 'Submitted' : 'Not started'
@@ -429,7 +439,7 @@ function generated(index: number): AccountingClient {
     ...(employs ? [payroll(payrollDue, payrollState)] : []),
     ...(index % 23 === 0 ? [annual('Prepared')] : []),
   ].sort((a, b) => a.due.localeCompare(b.due))
-  const missing = [0, 0, 0, 1, 0, 2, 0, 0, 3, 0][index % 10] ?? 0
+  const missing = [0, 0, 0, 0, 0, 2, 0, 0, 1, 0][index % 10] ?? 0
   const openTasks = index % 7 === 0 ? 2 : index % 4 === 0 ? 1 : 0
   const day = 14 - (index % 9)
   const time =

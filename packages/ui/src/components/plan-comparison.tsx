@@ -72,24 +72,13 @@ export interface PlanComparisonProps {
 }
 
 /** A feature's offer for one plan: a check, a dash or the application's words. */
-function Offer({
-  feature,
-  planId,
-  muted,
-}: {
-  feature: ComparedFeature
-  planId: string
-  muted: boolean
-}) {
+function Offer({ feature, planId }: { feature: ComparedFeature; planId: string }) {
   const { messages } = useLiro()
   const cell = featureCell(feature, planId)
   if (cell.kind === 'included') {
     return (
       <span className="inline-flex items-center">
-        <Check
-          aria-hidden="true"
-          className={cn('size-4', muted ? 'text-disabled' : 'text-primary')}
-        />
+        <Check aria-hidden="true" className={'size-4 text-primary'} />
         <span className="sr-only">{messages['plan.included']}</span>
       </span>
     )
@@ -102,13 +91,7 @@ function Offer({
       </span>
     )
   }
-  return (
-    <span
-      className={cn('text-sm break-words', muted ? 'text-disabled' : 'text-primary', TEXT_ISOLATE)}
-    >
-      {cell.value}
-    </span>
-  )
+  return <span className={cn('text-sm break-words text-primary', TEXT_ISOLATE)}>{cell.value}</span>
 }
 
 /** The plan's facts under its name: price, note, description, the current mark, the reason. */
@@ -131,7 +114,7 @@ function PlanFacts({
     <span
       id={id}
       className={cn(
-        'flex min-w-0 flex-col gap-1 font-normal',
+        'flex min-w-0 flex-col gap-1 font-regular',
         centred ? 'items-center text-center' : 'items-start',
       )}
     >
@@ -267,7 +250,7 @@ export function PlanComparison(props: PlanComparisonProps) {
                             {row.feature.label}
                           </span>
                           <span className="shrink-0 text-end">
-                            <Offer feature={row.feature} planId={plan.id} muted={false} />
+                            <Offer feature={row.feature} planId={plan.id} />
                           </span>
                         </li>
                       ),
@@ -355,7 +338,7 @@ export function PlanComparison(props: PlanComparisonProps) {
                       <tr key={row.feature.id}>
                         <th
                           scope="row"
-                          className="border-0 border-b border-solid border-default px-3 py-2.5 text-start align-top font-normal"
+                          className="border-0 border-b border-solid border-default px-3 py-2.5 text-start align-top font-regular"
                         >
                           <span className={cn('block text-sm text-primary', TEXT_DIRECTION)}>
                             {row.feature.label}
@@ -375,11 +358,7 @@ export function PlanComparison(props: PlanComparisonProps) {
                               plan.id === value && 'bg-surface-selected',
                             )}
                           >
-                            <Offer
-                              feature={row.feature}
-                              planId={plan.id}
-                              muted={control.disabled}
-                            />
+                            <Offer feature={row.feature} planId={plan.id} />
                           </td>
                         ))}
                       </tr>

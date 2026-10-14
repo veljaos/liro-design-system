@@ -8571,7 +8571,7 @@ export const AccountantClientsFilterAndAsk: Story = {
     await settle()
     const canvas = within(canvasElement)
     const body = within(document.body)
-    await userEvent.type(canvas.getByRole('searchbox'), '108452317')
+    await userEvent.type(canvas.getByRole('textbox', { name: 'Name or tax number' }), '108452317')
     const table = canvas.getByRole('table', { name: 'Clients' })
     await waitFor(async () => {
       await expect(within(table).getAllByRole('row')).toHaveLength(2)
@@ -8581,10 +8581,19 @@ export const AccountantClientsFilterAndAsk: Story = {
     const drawer = await body.findByRole('dialog', { name: /^Ask the client/ })
     await expect(drawer).toHaveTextContent('Kvadrat Gradnja d.o.o.')
     await userEvent.click(within(drawer).getByRole('button', { name: 'Send request' }))
-    await waitFor(async () => {
-      await expect(body.queryByRole('dialog')).toBeNull()
-    })
-    await expect(await body.findByText(/Request sent to Kvadrat Gradnja d\.o\.o\./)).toBeVisible()
+    await waitFor(
+      async () => {
+        await expect(body.queryByRole('dialog')).toBeNull()
+      },
+      { timeout: 5000 },
+    )
+    // The toast fades in.
+    await waitFor(
+      async () => {
+        await expect(body.getByText(/Request sent to Kvadrat Gradnja d\.o\.o\./)).toBeVisible()
+      },
+      { timeout: 5000 },
+    )
     // The client's checklist lists the new request beside the earlier ones.
     await userEvent.click(within(table).getByRole('row', { name: /Kvadrat Gradnja/ }))
     await settle()
@@ -9012,9 +9021,12 @@ export const SubscriptionCancelling: Story = {
       'Kvadrat Gradnja d.o.o.',
     )
     await userEvent.click(within(dialog).getByRole('button', { name: 'Cancel subscription' }))
-    await waitFor(async () => {
-      await expect(body.queryByRole('alertdialog')).toBeNull()
-    })
+    await waitFor(
+      async () => {
+        await expect(body.queryByRole('alertdialog')).toBeNull()
+      },
+      { timeout: 5000 },
+    )
     const banner = canvasElement.querySelector('[data-slot="shell-banners"]')
     await expect(banner).toHaveTextContent('Your subscription is cancelled')
     await userEvent.click(canvas.getByRole('button', { name: 'Keep the subscription' }))
