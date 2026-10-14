@@ -13,11 +13,11 @@ import {
   type ModuleTab,
 } from '@veljaos/ui'
 import type { ExampleRoute } from './example-app'
-import { HR_TABS, Shell } from './example-shell'
+import { Shell } from './example-shell'
 import { Frame, Tenant } from './screens-G'
 import {
-  AG_ROUTES,
-  AG_TODAY,
+  AJ_ROUTES,
+  AJ_TODAY,
   COMPANIES,
   emailOf,
   GROUP_NODES,
@@ -28,26 +28,34 @@ import {
   personOf,
   SECONDARY,
   UNIT_NODES,
-} from './data-AG'
+} from './data-AJ'
 
 /*
- * Group AG's example screens (P5.42): Kvadrat Gradnja d.o.o.'s organisation in HR on 14 October
+ * Group AJ's example screens (P5.42): Kvadrat Gradnja d.o.o.'s organisation (Company) on 14 October
  * 2026 — the people by their reporting lines and the same company by its units (HierarchyChart,
  * a tab each), a person's card (a Drawer: position, unit, manager, e-mail, since when, and the
  * secondary relations, which the chart never draws) — and Kvadrat group: the holding, its
  * companies and the ownership shares on the lines, a company's card with its other owners. The
- * screens play the application with data-AG.ts; the chart only shows and reports.
+ * screens play the application with data-AJ.ts; the chart only shows and reports.
  */
 
-export { AG_ROUTES }
+export { AJ_ROUTES }
 
-/** HR's module tabs with Organisation after Employees (the lead may fold it into HR_TABS). */
-function organisationTabs(): ModuleTab[] {
-  const [first, ...rest] = HR_TABS.map((tab) => ({ ...tab, current: false }))
+/** The company module's tabs: its organisation and its group. */
+function companyTabs(current: 'organisation' | 'group'): ModuleTab[] {
   return [
-    ...(first === undefined ? [] : [first]),
-    { key: 'organisation', label: 'Organisation', href: `#${AG_ROUTES.chart}`, current: true },
-    ...rest,
+    {
+      key: 'organisation',
+      label: 'Organisation',
+      href: `#${AJ_ROUTES.chart}`,
+      current: current === 'organisation',
+    },
+    {
+      key: 'group',
+      label: 'Kvadrat group',
+      href: `#${AJ_ROUTES.group}`,
+      current: current === 'group',
+    },
   ]
 }
 
@@ -79,11 +87,11 @@ export function Organisation({ phone, start }: { phone: boolean; start: Organisa
   const vacancies = PEOPLE.filter((each) => each.vacant === true).length
 
   return (
-    <Tenant today={AG_TODAY}>
+    <Tenant today={AJ_TODAY}>
       <Shell
         phone={phone}
-        crumbs={[{ label: 'Human resources', href: '#/hr/employees' }, { label: 'Organisation' }]}
-        tabs={organisationTabs()}
+        crumbs={[{ label: 'Company', href: `#${AJ_ROUTES.chart}` }, { label: 'Organisation' }]}
+        tabs={companyTabs('organisation')}
       >
         <Frame phone={phone} wide>
           <PageHeader title="Organisation" titleHidden />
@@ -153,28 +161,21 @@ export function Organisation({ phone, start }: { phone: boolean; start: Organisa
           }}
           title={person?.name ?? ''}
           description={person?.vacant === true ? 'Open position' : (person?.position ?? '')}
-          actions={
-            <>
-              {person !== undefined && reports > 0 && (
-                <Button
-                  family="neutral"
-                  icon={ScanSearch}
-                  label="Show only this unit"
-                  onClick={() => {
-                    setUnit(person.id)
-                    setCard(null)
-                  }}
-                />
-              )}
-              <Button
-                intent="cancel"
-                label="Close"
-                onClick={() => {
-                  setCard(null)
-                }}
-              />
-            </>
-          }
+          {...(person !== undefined && reports > 0
+            ? {
+                actions: (
+                  <Button
+                    family="neutral"
+                    icon={ScanSearch}
+                    label="Show only this unit"
+                    onClick={() => {
+                      setUnit(person.id)
+                      setCard(null)
+                    }}
+                  />
+                ),
+              }
+            : {})}
         >
           {person !== undefined && (
             <div className="flex flex-col gap-6">
@@ -242,15 +243,6 @@ export function Organisation({ phone, start }: { phone: boolean; start: Organisa
           }}
           title={unitNode?.title ?? ''}
           description={unitNode?.subtitle ?? ''}
-          actions={
-            <Button
-              intent="cancel"
-              label="Close"
-              onClick={() => {
-                setUnitCard(null)
-              }}
-            />
-          }
         >
           {unitNode !== undefined && (
             <KeyValueList
@@ -273,10 +265,11 @@ export function CompanyGroup({ phone, start }: { phone: boolean; start: { card?:
   const company = COMPANIES.find((each) => each.id === card)
   const parent = COMPANIES.find((each) => each.id === company?.parent)
   return (
-    <Tenant today={AG_TODAY}>
+    <Tenant today={AJ_TODAY}>
       <Shell
         phone={phone}
-        crumbs={[{ label: 'Company', href: '#/company' }, { label: 'Kvadrat group' }]}
+        crumbs={[{ label: 'Company', href: `#${AJ_ROUTES.chart}` }, { label: 'Kvadrat group' }]}
+        tabs={companyTabs('group')}
       >
         <Frame phone={phone} wide>
           <PageHeader
@@ -301,15 +294,6 @@ export function CompanyGroup({ phone, start }: { phone: boolean; start: { card?:
           }}
           title={company?.name ?? ''}
           description={company?.activity ?? ''}
-          actions={
-            <Button
-              intent="cancel"
-              label="Close"
-              onClick={() => {
-                setCard(null)
-              }}
-            />
-          }
         >
           {company !== undefined && (
             <KeyValueList
@@ -336,30 +320,30 @@ export function CompanyGroup({ phone, start }: { phone: boolean; start: { card?:
   )
 }
 
-export const GROUP_AG_ROUTES: ExampleRoute[] = [
+export const GROUP_AJ_ROUTES: ExampleRoute[] = [
   {
-    path: AG_ROUTES.chart,
+    path: AJ_ROUTES.chart,
     render: (phone) => <Organisation phone={phone} start={{ view: 'people' }} />,
   },
   {
-    path: AG_ROUTES.units,
+    path: AJ_ROUTES.units,
     render: (phone) => <Organisation phone={phone} start={{ view: 'units' }} />,
   },
   {
-    path: AG_ROUTES.card,
+    path: AJ_ROUTES.card,
     render: (phone) => <Organisation phone={phone} start={{ view: 'people', card: 'fin' }} />,
   },
   {
-    path: AG_ROUTES.search,
+    path: AJ_ROUTES.search,
     render: (phone) => <Organisation phone={phone} start={{ view: 'people', query: 'Marković' }} />,
   },
   {
-    path: AG_ROUTES.unit,
+    path: AJ_ROUTES.unit,
     render: (phone) => <Organisation phone={phone} start={{ view: 'people', unit: 'liman' }} />,
   },
-  { path: AG_ROUTES.group, render: (phone) => <CompanyGroup phone={phone} start={{}} /> },
+  { path: AJ_ROUTES.group, render: (phone) => <CompanyGroup phone={phone} start={{}} /> },
   {
-    path: AG_ROUTES.groupCard,
+    path: AJ_ROUTES.groupCard,
     render: (phone) => <CompanyGroup phone={phone} start={{ card: 'beton' }} />,
   },
 ]

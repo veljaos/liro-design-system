@@ -291,10 +291,13 @@ export const SearchAndUnit: Story = {
       canvas.getByRole('searchbox', { name: 'Find a person or unit' }),
       'foreman',
     )
-    await expect(canvas.getByRole('status')).toHaveTextContent('1 of 2 found')
-    await expect(canvas.getByText('Opened: s1a')).toBeVisible()
+    await expect(canvas.getByText('1 of 2 found')).toBeVisible()
+    await expect(canvas.getByRole('treeitem', { name: 'Gina Moll, Foreman' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    )
     await userEvent.keyboard('{Enter}')
-    await expect(canvas.getByRole('status')).toHaveTextContent('2 of 2 found')
+    await expect(canvas.getByText('2 of 2 found')).toBeVisible()
     const eva = canvas
       .getByRole('treeitem', { name: 'Eva Novak, Head of operations' })
       .querySelector<HTMLElement>('[data-slot="hierarchy-node"]')

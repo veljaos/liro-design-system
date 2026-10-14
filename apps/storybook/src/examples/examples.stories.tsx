@@ -7566,7 +7566,7 @@ export const AdminAuditLogEntry: Story = {
       name: /^Invoice: F-2026-0412/,
     })
     await expect(drawer).toHaveTextContent('req_7Q2M4P9W')
-    await userEvent.click(within(drawer).getByRole('button', { name: 'Close' }))
+    await userEvent.keyboard('{Escape}')
     await waitFor(async () => {
       await expect(within(document.body).queryByRole('dialog')).toBeNull()
     })
@@ -10517,7 +10517,7 @@ export const BlogPostPublishInteraction: Story = {
 
 // ── P5.42 org ──
 // (Imports here, inside the block, so the blocks merge without touching the top.)
-import { AG_ROUTES } from './data-AG'
+import { AJ_ROUTES } from './data-AJ'
 
 /** A story's checks, and on a phone that nothing scrolls sideways. */
 function orgPlay(
@@ -10546,14 +10546,12 @@ const ORG_CHECK = async (canvasElement: HTMLElement) => {
   const canvas = within(canvasElement)
   await expect(canvas.getByRole('tab', { name: 'People' })).toHaveAttribute('aria-selected', 'true')
   await expect(canvas.getByRole('treeitem', { name: /^Nenad Kovačević/ })).toBeVisible()
-  await expect(
-    canvas.getByRole('treeitem', { name: /^Snežana Popović/ }),
-  ).toBeVisible()
+  await expect(canvas.getByRole('treeitem', { name: /^Snežana Popović/ })).toBeVisible()
 }
 
 export const OrganisationChart: Story = {
   name: 'Organisation chart',
-  render: () => <ExampleApp start={AG_ROUTES.chart} />,
+  render: () => <ExampleApp start={AJ_ROUTES.chart} />,
   play: orgPlay(async (canvasElement) => {
     await ORG_CHECK(canvasElement)
     await expect(
@@ -10564,7 +10562,7 @@ export const OrganisationChart: Story = {
 
 export const OrganisationChartPhone: Story = {
   name: 'Organisation chart, phone',
-  render: () => <OnPhone start={AG_ROUTES.chart} />,
+  render: () => <OnPhone start={AJ_ROUTES.chart} />,
   play: orgPlay(ORG_CHECK, true),
 }
 
@@ -10572,7 +10570,7 @@ export const OrganisationChartPhone: Story = {
 export const OrganisationChartUnits: Story = {
   name: 'Organisation chart, units',
   tags: ['!dev'],
-  render: () => <ExampleApp start={AG_ROUTES.units} />,
+  render: () => <ExampleApp start={AJ_ROUTES.units} />,
   play: orgPlay(async (canvasElement) => {
     const canvas = within(canvasElement)
     await expect(
@@ -10586,7 +10584,7 @@ export const OrganisationChartUnits: Story = {
 export const OrganisationChartCard: Story = {
   name: 'Organisation chart, a person’s card',
   tags: ['!dev'],
-  render: () => <ExampleApp start={AG_ROUTES.card} />,
+  render: () => <ExampleApp start={AJ_ROUTES.card} />,
   play: orgPlay(async () => {
     const drawer = within(document.body).getByRole('dialog', { name: /^Milica Petrović/ })
     await expect(within(drawer).getByText('Snežana Jelić, Knjigovodstvo Jelić')).toBeVisible()
@@ -10596,7 +10594,7 @@ export const OrganisationChartCard: Story = {
 export const OrganisationChartCardPhone: Story = {
   name: 'Organisation chart, a person’s card, phone',
   tags: ['!dev'],
-  render: () => <OnPhone start={AG_ROUTES.card} />,
+  render: () => <OnPhone start={AJ_ROUTES.card} />,
   play: orgPlay(async () => {
     await expect(
       within(document.body).getByRole('dialog', { name: /^Milica Petrović/ }),
@@ -10608,7 +10606,7 @@ export const OrganisationChartCardPhone: Story = {
 export const OrganisationChartSearch: Story = {
   name: 'Organisation chart, search',
   tags: ['!dev'],
-  render: () => <ExampleApp start={AG_ROUTES.search} />,
+  render: () => <ExampleApp start={AJ_ROUTES.search} />,
   play: orgPlay(async (canvasElement) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByText('1 of 3 found')).toBeVisible()
@@ -10619,7 +10617,7 @@ export const OrganisationChartSearch: Story = {
 export const OrganisationChartUnit: Story = {
   name: 'Organisation chart, one site',
   tags: ['!dev'],
-  render: () => <ExampleApp start={AG_ROUTES.unit} />,
+  render: () => <ExampleApp start={AJ_ROUTES.unit} />,
   play: orgPlay(async (canvasElement) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('navigation', { name: 'Path to the unit' })).toBeVisible()
@@ -10630,7 +10628,7 @@ export const OrganisationChartUnit: Story = {
 export const OrganisationChartUnitPhone: Story = {
   name: 'Organisation chart, one site, phone',
   tags: ['!dev'],
-  render: () => <OnPhone start={AG_ROUTES.unit} />,
+  render: () => <OnPhone start={AJ_ROUTES.unit} />,
   play: orgPlay(async (canvasElement) => {
     await expect(within(canvasElement).queryByText('Dragan Ilić')).toBeNull()
   }, true),
@@ -10640,7 +10638,7 @@ export const OrganisationChartUnitPhone: Story = {
 export const OrganisationChartFlow: Story = {
   name: 'Organisation chart, search and card, interaction',
   tags: ['interaction', '!dev'],
-  render: () => <ExampleApp start={AG_ROUTES.chart} />,
+  render: () => <ExampleApp start={AJ_ROUTES.chart} />,
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
@@ -10648,14 +10646,17 @@ export const OrganisationChartFlow: Story = {
       canvas.getByRole('searchbox', { name: 'Find a person or position' }),
       'Nikola Mar',
     )
-    const drawer = await within(document.body).findByRole('dialog', { name: /^Nikola Marković/ })
-    await expect(within(drawer).getByText('Residential building Liman 4')).toBeVisible()
-    await userEvent.click(within(drawer).getByRole('button', { name: 'Close' }))
+    const nikola = canvas.getByRole('treeitem', { name: 'Nikola Marković, Site worker' })
     await waitFor(async () => {
-      await expect(
-        canvas.getByRole('treeitem', { name: 'Nikola Marković, Site worker' }),
-      ).toHaveAttribute('aria-selected', 'true')
+      await expect(nikola).toHaveAttribute('aria-selected', 'true')
     })
+    const box = nikola.querySelector<HTMLElement>('[data-slot="hierarchy-node"]') ?? nikola
+    await userEvent.click(box)
+    const drawer = await within(document.body).findByRole('dialog', { name: /^Nikola Marković/ })
+    await waitFor(async () => {
+      await expect(within(drawer).getByText('Residential building Liman 4')).toBeVisible()
+    })
+    await userEvent.keyboard('{Escape}')
     await settle()
   },
 }
@@ -10674,7 +10675,7 @@ const GROUP_CHECK = async (canvasElement: HTMLElement) => {
 
 export const CompanyGroup: Story = {
   name: 'Company group',
-  render: () => <ExampleApp start={AG_ROUTES.group} />,
+  render: () => <ExampleApp start={AJ_ROUTES.group} />,
   play: orgPlay(async (canvasElement) => {
     await GROUP_CHECK(canvasElement)
     await expect(within(canvasElement).getByText('Associate')).toBeVisible()
@@ -10683,7 +10684,7 @@ export const CompanyGroup: Story = {
 
 export const CompanyGroupPhone: Story = {
   name: 'Company group, phone',
-  render: () => <OnPhone start={AG_ROUTES.group} />,
+  render: () => <OnPhone start={AJ_ROUTES.group} />,
   play: orgPlay(GROUP_CHECK, true),
 }
 
@@ -10691,7 +10692,7 @@ export const CompanyGroupPhone: Story = {
 export const CompanyGroupCard: Story = {
   name: 'Company group, a company’s card',
   tags: ['!dev'],
-  render: () => <ExampleApp start={AG_ROUTES.groupCard} />,
+  render: () => <ExampleApp start={AJ_ROUTES.groupCard} />,
   play: orgPlay(async () => {
     const drawer = within(document.body).getByRole('dialog', { name: /^Kvadrat Beton/ })
     await expect(within(drawer).getByText('Kvadrat Holding d.o.o., 60%')).toBeVisible()

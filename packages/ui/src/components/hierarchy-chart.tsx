@@ -78,7 +78,8 @@ export type {
  *   of buttons ("›" between them) and "Show the whole chart".
  * - Search (`search`): the application's matches (`onSearch` and `matches`) or a filter on the
  *   titles, subtitles and details here; the first match is revealed (its path opened), chosen and
- *   scrolled into view; Enter in the field goes to the next; "2 of 5 found" is announced politely.
+ *   scrolled into view — not opened: its card waits for a press or Enter on it; Enter in the field
+ *   goes to the next; "2 of 5 found" is announced politely.
  * - Choosing: a press or Enter on a node chooses it (the neutral selection, surface.selected and a
  *   border.selected border; D17) and calls `onOpen(id)` — the application opens its card or page.
  *   Secondary (dotted-line) relations are the application's: listed in its card, never drawn.
@@ -554,7 +555,6 @@ export function HierarchyChart(props: HierarchyChartProps) {
     setInnerChosen(id)
     setFocus(id)
     pendingScroll.current = id
-    props.onOpen?.(id)
   }
   const find = (text: string) => {
     setQuery(text)
@@ -814,7 +814,7 @@ export function HierarchyChart(props: HierarchyChartProps) {
       </div>
     )
   } else if (props.nodes.length === 0) {
-    body = <div className="p-6">{props.empty ?? <EmptyState compact />}</div>
+    body = <div className={cn('p-6', TEXT_DIRECTION)}>{props.empty ?? <EmptyState compact />}</div>
   } else if (phone) {
     const toTree = (node: HierarchyNode): TreeNode<HierarchyNode> => {
       const kids = index.children.get(node.id) ?? []

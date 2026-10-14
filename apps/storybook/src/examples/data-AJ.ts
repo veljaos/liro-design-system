@@ -1,5 +1,5 @@
 /*
- * Group AG's example data (P5.42, the organisation chart and similar hierarchies): Kvadrat
+ * Group AJ's example data (P5.42, the organisation chart and similar hierarchies): Kvadrat
  * Gradnja d.o.o. on 14 October 2026 — forty people by their reporting lines, the director Nenad
  * Kovačević (as in groups A and C), Finance and administration, Human resources, Sales,
  * Procurement and warehouse with one vacant position, and Construction with the site managers of
@@ -13,17 +13,17 @@
  */
 import type { HierarchyNode, Tone } from '@veljaos/ui'
 
-export const AG_TODAY = '2026-10-14'
+export const AJ_TODAY = '2026-10-14'
 
-export const AG_ROUTES = {
-  chart: '/hr/organisation',
-  units: '/hr/organisation?view=units',
+export const AJ_ROUTES = {
+  chart: '/company/organisation',
+  units: '/company/organisation?view=units',
   /** Milica Petrović's card open. */
-  card: '/hr/organisation?card=fin',
+  card: '/company/organisation?card=fin',
   /** The search for "Marković": three people. */
-  search: '/hr/organisation?q=Marković',
+  search: '/company/organisation?q=Marković',
   /** The Liman 4 site shown alone. */
-  unit: '/hr/organisation?unit=liman',
+  unit: '/company/organisation?unit=liman',
   group: '/company/group',
   /** Kvadrat Beton d.o.o.'s card open. */
   groupCard: '/company/group?card=beton',
