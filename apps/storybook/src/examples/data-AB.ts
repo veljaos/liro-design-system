@@ -1,4 +1,8 @@
-import type { RichTextMergeField, RichTextNode } from '../../../../packages/ui/src/rich-text'
+import type {
+  MergeValues,
+  RichTextMergeField,
+  RichTextNode,
+} from '../../../../packages/ui/src/rich-text'
 
 /*
  * Group AB (P5.38): Kvadrat Gradnja d.o.o.'s e-mail and notification templates on 14.10.2026,
@@ -17,6 +21,8 @@ export const AB_ROUTES = {
   sendTest: '/settings/email-templates/invoice/send-test',
   darkPhone: '/settings/email-templates/invoice/preview-dark-phone',
   cyrillic: '/settings/email-templates/invoice/sr-Cyrl',
+  /** The invoice e-mail with a sample that leaves fields without a value. */
+  noValue: '/settings/email-templates/invoice/sample-without-reference',
   /** The welcome e-mail on its missing Cyrillic variant. */
   missing: '/settings/email-templates/welcome/sr-Cyrl',
 }
@@ -33,59 +39,84 @@ export const MERGE_FIELDS: RichTextMergeField[] = [
   { key: 'customer.name', label: 'Customer name', group: 'Customer' },
   { key: 'customer.contact', label: 'Contact person', group: 'Customer' },
   { key: 'invoice.number', label: 'Invoice number', group: 'Invoice' },
-  { key: 'invoice.date', label: 'Invoice date', group: 'Invoice' },
-  { key: 'invoice.total', label: 'Amount due', group: 'Invoice' },
-  { key: 'invoice.due', label: 'Due date', group: 'Invoice' },
-  { key: 'invoice.daysLate', label: 'Days late', group: 'Invoice' },
+  { key: 'invoice.date', label: 'Invoice date', group: 'Invoice', kind: 'date' },
+  { key: 'invoice.total', label: 'Amount due', group: 'Invoice', kind: 'money', currency: 'RSD' },
+  { key: 'invoice.due', label: 'Due date', group: 'Invoice', kind: 'date' },
+  { key: 'invoice.daysLate', label: 'Days late', group: 'Invoice', kind: 'number' },
   { key: 'payment.account', label: 'Payment account', group: 'Payment' },
   { key: 'payment.reference', label: 'Payment reference', group: 'Payment' },
-  { key: 'statement.date', label: 'Statement date', group: 'Statement' },
-  { key: 'statement.balance', label: 'Balance', group: 'Statement' },
+  { key: 'statement.date', label: 'Statement date', group: 'Statement', kind: 'date' },
+  {
+    key: 'statement.balance',
+    label: 'Balance',
+    group: 'Statement',
+    kind: 'money',
+    currency: 'RSD',
+  },
   { key: 'user.name', label: 'Sender name', group: 'Kvadrat Gradnja' },
   { key: 'user.email', label: 'Recipient e-mail', group: 'Kvadrat Gradnja' },
   { key: 'company.name', label: 'Company name', group: 'Kvadrat Gradnja' },
   { key: 'link.url', label: 'Link', group: 'Kvadrat Gradnja' },
   { key: 'code.value', label: 'Code', group: 'Kvadrat Gradnja' },
+  // Computed from the provider's today: no value needed (P5.31 merge values).
+  { key: 'date_now', label: 'Today', group: 'Dates', computed: 'today' },
 ]
 
-/** A sample value of a merge field, typed: the provider's `format` writes it. */
-export type SampleValue =
-  | { type: 'text'; value: string }
-  | { type: 'number'; value: string }
-  | { type: 'date'; value: string }
-  | { type: 'money'; value: string; currency: string }
-
-/** The sample the preview fills in: Gradska toplana Novi Sad and invoice F-2026-0423. */
-export const SAMPLE_VALUES: Record<string, SampleValue> = {
-  'customer.name': { type: 'text', value: 'Gradska toplana Novi Sad' },
-  'customer.contact': { type: 'text', value: 'Petar Simić' },
-  'invoice.number': { type: 'text', value: 'F-2026-0423' },
-  'invoice.date': { type: 'date', value: '2026-09-30' },
-  'invoice.total': { type: 'money', value: '1284600.00', currency: 'RSD' },
-  'invoice.due': { type: 'date', value: '2026-10-30' },
-  'invoice.daysLate': { type: 'number', value: '14' },
-  'payment.account': { type: 'text', value: '160-0000012345678-21' },
-  'payment.reference': { type: 'text', value: '97 2026-0423' },
-  'statement.date': { type: 'date', value: '2026-09-30' },
-  'statement.balance': { type: 'money', value: '1697100.00', currency: 'RSD' },
-  'user.name': { type: 'text', value: 'Milica Petrović' },
-  'user.email': { type: 'text', value: 'petar.simic@example.com' },
-  'company.name': { type: 'text', value: 'Kvadrat Gradnja d.o.o.' },
-  'link.url': { type: 'text', value: 'https://kvadrat.example.com/i/F-2026-0423' },
-  'code.value': { type: 'text', value: '482 913' },
+/** The samples the preview fills in, by id: the application's values, written through `format`. */
+export const SAMPLE_VALUES: Record<string, MergeValues> = {
+  /** Gradska toplana Novi Sad and invoice F-2026-0423: every field has a value. */
+  toplana: {
+    'customer.name': 'Gradska toplana Novi Sad',
+    'customer.contact': 'Petar Simić',
+    'invoice.number': 'F-2026-0423',
+    'invoice.date': '2026-09-30',
+    'invoice.total': '1284600.00',
+    'invoice.due': '2026-10-30',
+    'invoice.daysLate': '14',
+    'payment.account': '160-0000012345678-21',
+    'payment.reference': '97 2026-0423',
+    'statement.date': '2026-09-30',
+    'statement.balance': '1697100.00',
+    'user.name': 'Milica Petrović',
+    'user.email': 'petar.simic@example.com',
+    'company.name': 'Kvadrat Gradnja d.o.o.',
+    'link.url': 'https://kvadrat.example.com/i/F-2026-0423',
+    'code.value': '482 913',
+  },
+  /**
+   * Stanogradnja Plus d.o.o. and invoice F-2026-0428: no contact person and no payment reference
+   * yet, so those fields stay pills marked "No value".
+   */
+  stanogradnja: {
+    'customer.name': 'Stanogradnja Plus d.o.o.',
+    'invoice.number': 'F-2026-0428',
+    'invoice.date': '2026-10-07',
+    'invoice.total': '322800.00',
+    'invoice.due': '2026-11-06',
+    'invoice.daysLate': '0',
+    'payment.account': '160-0000012345678-21',
+    'statement.date': '2026-09-30',
+    'statement.balance': '648400.00',
+    'user.name': 'Milica Petrović',
+    'user.email': 'nabavka@example.com',
+    'company.name': 'Kvadrat Gradnja d.o.o.',
+    'link.url': 'https://kvadrat.example.com/i/F-2026-0428',
+    'code.value': '730 205',
+  },
 }
 
-/** The sample's names, for the preview's line and the recipient. */
-export const SAMPLE = {
-  customer: 'Gradska toplana Novi Sad',
-  invoice: 'F-2026-0423',
-  email: 'petar.simic@example.com',
-}
-
-/** The other sample for "Send test". */
+/** The samples to choose from, with the recipient each is shown to. */
 export const SAMPLES = [
-  { value: 'toplana', label: 'Gradska toplana Novi Sad, invoice F-2026-0423' },
-  { value: 'stanogradnja', label: 'Stanogradnja Plus d.o.o., invoice F-2026-0428' },
+  {
+    value: 'toplana',
+    label: 'Gradska toplana Novi Sad, invoice F-2026-0423',
+    to: 'Gradska toplana Novi Sad <petar.simic@example.com>',
+  },
+  {
+    value: 'stanogradnja',
+    label: 'Stanogradnja Plus d.o.o., invoice F-2026-0428 (no reference yet)',
+    to: 'Stanogradnja Plus d.o.o. <nabavka@example.com>',
+  },
 ]
 
 export const TEST_ADDRESS = 'milica.petrovic@example.com'
@@ -266,11 +297,13 @@ export const TEMPLATES: readonly Template[] = [
         body: doc(
           p('Dear ', f('customer.name'), ','),
           p(
-            'invoice ',
+            'on ',
+            f('date_now'),
+            ' invoice ',
             f('invoice.number'),
-            ' was due on ',
+            ' (due ',
             f('invoice.due'),
-            ' and is still open.',
+            ') is still open.',
           ),
           strong(f('invoice.total'), ' is due now.'),
           p('If you have already paid, please ignore this e-mail.'),
@@ -281,7 +314,15 @@ export const TEMPLATES: readonly Template[] = [
         subject: 'Podsetnik: račun {{invoice.number}} kasni {{invoice.daysLate}} dana',
         body: doc(
           p('Poštovani ', f('customer.name'), ','),
-          p('račun ', f('invoice.number'), ' dospeo je ', f('invoice.due'), ' i još je otvoren.'),
+          p(
+            'na dan ',
+            f('date_now'),
+            ' račun ',
+            f('invoice.number'),
+            ' (dospeo ',
+            f('invoice.due'),
+            ') još je otvoren.',
+          ),
           strong(f('invoice.total'), ' dospeva odmah.'),
           p('Ako ste već platili, zanemarite ovu poruku.'),
           SIGNATURE_LATN,

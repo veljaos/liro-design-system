@@ -8974,6 +8974,23 @@ export const EmailTemplateDarkPhone: Story = {
   },
 }
 
+/**
+ * A sample without a payment reference (Stanogradnja Plus d.o.o., F-2026-0428): the field stays a
+ * pill marked "No value"; the others are filled in through the provider's format.
+ */
+export const EmailTemplateNoValue: Story = {
+  name: 'E-mail template, a field without a value',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AB_ROUTES.noValue} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const preview = within(canvasElement).getByRole('region', { name: 'E-mail preview' })
+    await expect(preview).toHaveTextContent('322.800,00 RSD due 06.11.2026.')
+    await expect(preview).toHaveTextContent('No value: Payment reference')
+    await expect(preview.querySelectorAll('[data-missing]')).toHaveLength(1)
+  },
+}
+
 /** The Serbian Cyrillic variant: the message carries its language (D12, D15). */
 export const EmailTemplateCyrillic: Story = {
   name: 'E-mail template, Serbian Cyrillic',

@@ -23,7 +23,7 @@ import {
   type EmailPreviewScheme,
   type EmailPreviewWidth,
 } from '@veljaos/ui'
-import { RichText, RichTextField } from '../../../../packages/ui/src/rich-text'
+import { resolveMergeText, RichText, RichTextField } from '../../../../packages/ui/src/rich-text'
 import type { ExampleRoute } from './example-app'
 import { Navigate, Shell, statusBadge } from './example-shell'
 import { useExampleState } from './example-state'
@@ -35,7 +35,7 @@ import {
   INVOICE_VERSIONS,
   LANGS,
   MERGE_FIELDS,
-  SAMPLE,
+  SAMPLE_VALUES,
   SAMPLES,
   SENDER,
   TEMPLATES,
@@ -193,6 +193,8 @@ function VariantEditor({
   onChange,
   width,
   scheme,
+  sample,
+  onSampleChange,
 }: {
   phone: boolean
   lang: Lang
@@ -200,7 +202,13 @@ function VariantEditor({
   onChange: (variant: Variant) => void
   width: EmailPreviewWidth
   scheme: EmailPreviewScheme
+  /** The sample the preview fills in (an id of SAMPLE_VALUES). */
+  sample: string
+  onSampleChange: (sample: string) => void
 }) {
+  const { format, today } = useLiro()
+  const values = SAMPLE_VALUES[sample] ?? {}
+  const recipient = SAMPLES.find((each) => each.value === sample)
   const [previewWidth, setPreviewWidth] = useState(width)
   const [previewScheme, setPreviewScheme] = useState(scheme)
   return (
@@ -229,15 +237,24 @@ function VariantEditor({
       </SectionCard>
       <SectionCard
         title="Preview"
-        description={`With sample data: ${SAMPLE.customer}, invoice ${SAMPLE.invoice}`}
+        description="With the sample's data; a field without a value is marked “No value”."
         headingLevel={2}
       >
+        <SelectField
+          label="Sample data"
+          options={SAMPLES}
+          value={sample}
+          onChange={onSampleChange}
+          className="mb-4"
+        />
         <EmailPreview
           layout={phone ? 'phone' : 'desktop'}
           lang={lang}
           from={`${SENDER.name} <${SENDER.address}>`}
-          to={`${SAMPLE.customer} <${SAMPLE.email}>`}
-          subject={variant.subject}
+          to={recipient?.to ?? ''}
+          subject={
+            resolveMergeText(variant.subject, { fields: MERGE_FIELDS, values, format, today }).text
+          }
           logo={<SenderLogo />}
           footer={SENDER.footer}
           width={previewWidth}
@@ -248,6 +265,7 @@ function VariantEditor({
           <RichText
             value={variant.body}
             mergeFields={MERGE_FIELDS}
+            mergeValues={values}
             className="flex flex-col gap-4 text-sm"
           />
         </EmailPreview>
@@ -298,9 +316,12 @@ export function TemplateEditor({
   open,
   width,
   scheme = 'light',
+  sample: startSample = 'toplana',
 }: {
   phone: boolean
   id: string
+  /** The sample the preview and the test use at first. */
+  sample?: string
   lang?: Lang
   /** A part of the page open at first: the versions or the test dialog. */
   open?: 'versions' | 'test'
@@ -314,7 +335,7 @@ export function TemplateEditor({
   const [versionsOpen, setVersionsOpen] = useState(open === 'versions')
   const [testOpen, setTestOpen] = useState(open === 'test')
   const [testAddress, setTestAddress] = useState(TEST_ADDRESS)
-  const [sample, setSample] = useState('toplana')
+  const [sample, setSample] = useState(startSample)
   const [restoring, setRestoring] = useState<number | null>(null)
   if (template === undefined) {
     return (
@@ -406,6 +427,8 @@ export function TemplateEditor({
                     variant={variant}
                     width={preview}
                     scheme={scheme}
+                    sample={sample}
+                    onSampleChange={setSample}
                     onChange={(next) => {
                       setVariants({ ...variants, [each.code]: next })
                     }}
@@ -506,6 +529,10 @@ export const GROUP_AB_ROUTES: ExampleRoute[] = [
   {
     path: AB_ROUTES.darkPhone,
     render: (phone) => <TemplateEditor phone={phone} id="invoice" width="phone" scheme="dark" />,
+  },
+  {
+    path: AB_ROUTES.noValue,
+    render: (phone) => <TemplateEditor phone={phone} id="invoice" sample="stanogradnja" />,
   },
   {
     path: AB_ROUTES.cyrillic,
