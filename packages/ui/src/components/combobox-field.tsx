@@ -88,10 +88,18 @@ export function ComboboxList(props: ListProps) {
     const list = document.getElementById(listId)
     const option = document.getElementById(optionId(listId, active))
     if (active < 0 || list === null || option === null) return
-    const box = list.getBoundingClientRect()
-    const item = option.getBoundingClientRect()
-    if (item.top < box.top) list.scrollTop -= box.top - item.top
-    else if (item.bottom > box.bottom) list.scrollTop += item.bottom - box.bottom
+    // Layout positions, not the screen's: an overlay still opening (scaled or sliding in) would
+    // give a different scroll on every run.
+    let top = 0
+    for (let node: Element | null = option; node !== null && node !== list;) {
+      if (!(node instanceof HTMLElement)) break
+      top += node.offsetTop
+      node = node.offsetParent
+    }
+    const bottom = top + option.offsetHeight
+    if (top < list.scrollTop) list.scrollTop = top
+    else if (bottom > list.scrollTop + list.clientHeight)
+      list.scrollTop = bottom - list.clientHeight
   }, [listId, active])
   return (
     <>
@@ -101,7 +109,7 @@ export function ComboboxList(props: ListProps) {
           role="listbox"
           aria-labelledby={props.labelId}
           aria-multiselectable={props.multiple || undefined}
-          className="max-h-55 overflow-y-auto"
+          className="relative max-h-55 overflow-y-auto"
         >
           {runsOf(props.options, props.groupOf).map((run, runIndex) => {
             const items = run.items.map(({ option, index }) => (
