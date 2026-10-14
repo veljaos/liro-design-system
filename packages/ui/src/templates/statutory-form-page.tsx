@@ -21,7 +21,12 @@ import { BUTTON_RESET, FOCUS_RING, TEXT_DIRECTION, TEXT_ISOLATE } from '../primi
 import { cn } from '../primitives/cn'
 import { useLangAttribute } from '../provider/lang'
 import { useLiro } from '../provider/liro-provider'
-import { STICKY_CLEARANCE, STICKY_HEAD, useStickyHead } from '../components/sticky-head'
+import {
+  STICKY_CLEARANCE,
+  STICKY_HEAD,
+  STICKY_START,
+  useStickyHead,
+} from '../components/sticky-head'
 import { PageHeader, type PageBack } from './page-header'
 import { fieldElementId, ruleCounts, rulesTone, type StatutoryRule } from './register-logic'
 import {
@@ -500,7 +505,7 @@ function DesktopGrid({ section, context }: { section: StatutorySection; context:
               scope="col"
               rowSpan={grouped ? 2 : 1}
               data-sticky-start=""
-              className={cn(HEADER_CELL, 'sticky start-0 z-20 min-w-64 text-start')}
+              className={cn(HEADER_CELL, STICKY_START, 'z-20 min-w-64 text-start')}
             >
               <span className="flex gap-3">
                 <span className={cn('w-14 shrink-0', TEXT_ISOLATE)}>
@@ -584,7 +589,8 @@ function DesktopGrid({ section, context }: { section: StatutorySection; context:
                   scope="row"
                   className={cn(
                     BODY_CELL,
-                    'sticky start-0 z-[5] bg-surface-raised text-start font-regular',
+                    STICKY_START,
+                    'z-[5] bg-surface-raised text-start font-regular',
                     row.total === true && 'font-semibold',
                   )}
                 >

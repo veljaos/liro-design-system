@@ -36,6 +36,13 @@ export const STICKY_HEAD =
   'sticky top-0 translate-y-[var(--liro-head-shift,0px)] will-change-transform'
 
 /**
+ * A first column's cells (and the corner): sticky at the region's start, always on a layer of
+ * their own for the same reason as `STICKY_HEAD` — without it the statutory grid's labels were
+ * antialiased one way or the other from run to run (P5.29).
+ */
+export const STICKY_START = 'sticky start-0 will-change-transform'
+
+/**
  * On the region: a cell reached by the keyboard is scrolled clear of the shell, the header and the
  * sticky first column (focus never hidden, WCAG 2.4.11). The hook keeps `--liro-head-height` (the
  * header's height) and `--liro-start-width` (the width of the cell marked `data-sticky-start`, the
