@@ -584,8 +584,31 @@ export function createFormat(
       }).format(Date.UTC(2023, 0, 1 + weekday))
     },
     ...overrides,
+    // A numericFormat made without a zone shows instants in the provider's (P5.29): its date
+    // and time functions are rebuilt for this zone, so `timeZone` is never lost to `format`.
+    ...zonedNumericInstants(overrides, timeZone),
   }
   return format
+}
+
+/** The locale and zone each `numericFormat` result was made for. */
+const numericSources = new WeakMap<object, { locale: string; timeZone: string | undefined }>()
+
+/**
+ * `dateTime` and `time` of a `numericFormat` result made without a zone, rebuilt for the
+ * provider's `timeZone`; nothing for any other override.
+ */
+function zonedNumericInstants(
+  overrides: Partial<LiroFormat>,
+  timeZone: string | undefined,
+): Partial<LiroFormat> {
+  const source = numericSources.get(overrides)
+  if (source === undefined || source.timeZone !== undefined || timeZone === undefined) return {}
+  const zoned = createFormat(source.locale, {}, timeZone)
+  return {
+    dateTime: (isoInstant) => zoned.dateTime(isoInstant),
+    time: (isoInstant) => zoned.time(isoInstant),
+  }
 }
 
 /**
@@ -598,11 +621,11 @@ export function createFormat(
  * The rule: month and weekday names, long dates and the week's first day come only from the
  * provider's `locale`; `format` may replace how digits are written, never the words. That is why
  * this returns no `monthName`, `weekdayName`, `dateLong` or `businessYear`. `timeZone` is the zone
- * instants are shown in, as `createFormat`'s.
+ * instants are shown in, as `createFormat`'s; without it they follow the provider's `timeZone`.
  */
 export function numericFormat(locale: string, timeZone?: string): Partial<LiroFormat> {
   const full = createFormat(locale, {}, timeZone)
-  return {
+  const digits: Partial<LiroFormat> = {
     numberScheme: full.numberScheme,
     moneyDecimals: full.moneyDecimals,
     number: (value, options) => full.number(value, options),
@@ -614,4 +637,6 @@ export function numericFormat(locale: string, timeZone?: string): Partial<LiroFo
     time: (isoInstant) => full.time(isoInstant),
     parseDate: (text) => full.parseDate(text),
   }
+  numericSources.set(digits, { locale, timeZone })
+  return digits
 }

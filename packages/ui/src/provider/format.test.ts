@@ -187,6 +187,18 @@ describe('numericFormat (P5.28 item 2)', () => {
     expect(format.time('2026-10-06T09:42')).toBe('09:42')
   })
 
+  it('shows instants in the provider’s time zone when made without one (P5.29)', () => {
+    const zoned = createFormat('en-RS', numericFormat('sr-Latn-RS'), 'Europe/Belgrade')
+    expect(zoned.dateTime('2026-10-14T06:30:00Z')).toBe(
+      createFormat('sr-Latn-RS', {}, 'Europe/Belgrade').dateTime('2026-10-14T06:30:00Z'),
+    )
+    expect(zoned.dateTime('2026-10-14T06:30:00Z')).toContain('08:30')
+    expect(zoned.time('2026-10-14T06:30:00Z')).toBe('08:30')
+    // A zone named by numericFormat itself is kept.
+    const own = createFormat('en-RS', numericFormat('sr-Latn-RS', 'UTC'), 'Europe/Belgrade')
+    expect(own.time('2026-10-14T06:30:00Z')).toBe('06:30')
+  })
+
   it('keeps the words of the interface language, never the tenant’s', () => {
     expect(format.monthName(1, 'long')).toBe('January')
     expect(format.weekdayName(0, 'short')).toBe('Sun')
