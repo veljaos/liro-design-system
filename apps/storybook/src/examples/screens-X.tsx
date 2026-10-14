@@ -84,10 +84,22 @@ function turn(key: AnswerKey, state?: AnswerState, id = key): Turn {
 }
 
 /** A link to one of the records the answers name, through the provider's link. */
-function RecordLink({ id, children }: { id: string; children: ReactNode }) {
+function RecordLink({
+  id,
+  inText = false,
+  children,
+}: {
+  id: string
+  /** In a sentence: underlined, so it is told from the text without its colour. */
+  inText?: boolean
+  children: ReactNode
+}) {
   const { linkComponent: Link } = useLiro()
   return (
-    <Link href={`#${X_ROUTES.record(id)}`} className={LINK}>
+    <Link
+      href={`#${X_ROUTES.record(id)}`}
+      className={inText ? 'text-link underline visited:text-link' : LINK}
+    >
       {children}
     </Link>
   )
@@ -287,7 +299,9 @@ function PostAction({
       result={
         <>
           Posted on {format.date(X_TODAY)} as entry {BETON_MIX.entry}.{' '}
-          <RecordLink id={BETON_MIX.id}>Open the invoice</RecordLink>
+          <RecordLink id={BETON_MIX.id} inText>
+            Open the invoice
+          </RecordLink>
         </>
       }
       onConfirm={() => {

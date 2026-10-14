@@ -296,7 +296,7 @@ export function BlogHome({
             {tag !== undefined ? (
               <>
                 {`Articles tagged “${tagLabel(tag)}”. `}
-                <Link href={`#${AC_ROUTES.home}`} className={LINK}>
+                <Link href={`#${AC_ROUTES.home}`} className="text-link underline visited:text-link">
                   All articles
                 </Link>
               </>

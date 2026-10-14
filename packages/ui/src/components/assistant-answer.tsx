@@ -274,7 +274,8 @@ function AnswerSources({ block, level }: { block: AnswerSourcesBlock; level: Lev
               <Link
                 href={item.href}
                 className={cn(
-                  'self-start rounded-sm text-link no-underline hover:underline',
+                  // At least 24px high, so two sources in a row are targets of their own.
+                  'inline-flex min-h-6 items-center self-start rounded-sm text-link no-underline hover:underline',
                   FOCUS_RING,
                   TEXT_DIRECTION,
                 )}
