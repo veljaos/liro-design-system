@@ -8499,3 +8499,100 @@ export const KnowledgeBaseAgentsSearch: Story = {
     ).toBeVisible()
   }),
 }
+
+// ── P5.37 gantt ──
+// (Imports here, inside the block, so the blocks merge without touching the top.)
+import { ganttReady } from '../../../../packages/ui/src/gantt/gantt-story-data'
+import { AA_ROUTES } from './data-AA'
+
+/**
+ * Kvadrat Gradnja's "Residential building Liman 4" on 14.10.2026 (P5.37): the figures, then the
+ * plan — nine phases with their tasks and milestones, each phase's budget and what was spent
+ * beside the timeline, today's marker, Floors 3–4 at risk. Every row has its Change menu.
+ */
+const PROJECT_TIMELINE_CHECK = async (canvasElement: HTMLElement) => {
+  await ganttReady(canvasElement)
+  const canvas = within(canvasElement)
+  await expect(
+    canvas.getByRole('heading', { level: 1, name: 'Residential building Liman 4' }),
+  ).toBeVisible()
+  await expect(canvasElement).toHaveTextContent('249.000.000,00')
+}
+
+export const ProjectTimeline: Story = {
+  name: 'Project timeline',
+  render: () => <ExampleApp start={AA_ROUTES.timeline} />,
+  play: async ({ canvasElement }) => {
+    await PROJECT_TIMELINE_CHECK(canvasElement)
+    const canvas = within(canvasElement)
+    await expect(
+      canvas.getByRole('rowheader', { name: /^Task: Floors 3–4, in Structure, .*At risk/ }),
+    ).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Change Floors 3–4' })).toBeVisible()
+    await expect(
+      canvas.getByRole('img', { name: /^Now, 14\.10\.2026\. 09:40$/ }),
+    ).toBeInTheDocument()
+  },
+}
+
+export const ProjectTimelinePhone: Story = {
+  name: 'Project timeline, phone',
+  render: () => <OnPhone start={AA_ROUTES.timeline} />,
+  play: async ({ canvasElement }) => {
+    await PROJECT_TIMELINE_CHECK(canvasElement)
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { name: 'Structure' })).toBeVisible()
+    await expect(canvas.getByText('Open this plan on a larger screen to change it.')).toBeVisible()
+  },
+}
+
+/** A column a day: today in view, the fourth floor's slab at risk. */
+export const ProjectTimelineDays: Story = {
+  name: 'Project timeline, days',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AA_ROUTES.days} />,
+  play: async ({ canvasElement }) => {
+    await PROJECT_TIMELINE_CHECK(canvasElement)
+  },
+}
+
+/** Move… open on Floors 3–4, as the application restores it: the action, the task bold. */
+export const ProjectTimelineMove: Story = {
+  name: 'Project timeline, move',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AA_ROUTES.move} />,
+  play: async ({ canvasElement }) => {
+    await ganttReady(canvasElement)
+    const dialog = await within(document.body).findByRole('dialog', { name: /Move\s*Floors 3–4/ })
+    await expect(dialog).toHaveTextContent('The length stays the same.')
+  },
+}
+
+/**
+ * The keyboard way of a drag: Change → Move…, a new start two weeks later, Move. The application
+ * applies it (Structure still ends on 27.11.) and confirms it.
+ */
+export const ProjectTimelineMoveInteraction: Story = {
+  name: 'Project timeline, move by keyboard, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AA_ROUTES.timeline} />,
+  play: async ({ canvasElement }) => {
+    await ganttReady(canvasElement)
+    const canvas = within(canvasElement)
+    const page = within(document.body)
+    await userEvent.click(canvas.getByRole('button', { name: 'Change Floors 3–4' }))
+    await userEvent.click(await page.findByRole('menuitem', { name: 'Move…' }))
+    const dialog = await page.findByRole('dialog', { name: /Move\s*Floors 3–4/ })
+    const start = within(dialog).getByRole('textbox', { name: /New start/ })
+    await userEvent.clear(start)
+    await userEvent.type(start, '19.10.2026.')
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Move' }))
+    await page.findByText(/^Floors 3–4 now runs 19\.10\.2026\. – 13\.11\.2026\.$/)
+    await waitFor(async () => {
+      await expect(
+        canvas.getByRole('rowheader', { name: /^Task: Floors 3–4, in Structure, 19\.10\.2026\./ }),
+      ).toBeInTheDocument()
+    })
+    notice.dismiss()
+  },
+}
