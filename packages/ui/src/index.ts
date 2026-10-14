@@ -1402,10 +1402,20 @@ export { choosablePlan, comparisonRows, featureCell } from './components/plan-lo
 export type {
   ComparedFeature,
   ComparedPlan,
-  ComparisonRow,
   FeatureCell,
   FeatureOffer,
+  PlanComparisonRow,
 } from './components/plan-logic'
 export { UsageMeter } from './components/usage-meter'
 export type { UsageMeterProps } from './components/usage-meter'
 export { meterShare, usageAmount, usageWords } from './components/usage-logic'
+// ── P5.31 docs ──
+export { PageViewer } from './components/page-viewer'
+export type { PageViewerProps } from './components/page-viewer'
+export { clampPage, labelSide, regionBox, regionPage } from './components/page-viewer-logic'
+export type { PageRegion, RegionBox, ViewerPage } from './components/page-viewer-logic'
+export { RecognizedField } from './components/recognized-field'
+export type { RecognizedFieldProps } from './components/recognized-field'
+// ── P5.33 docs ──
+export { ValueComparison, valueComparisonCounts } from './components/value-comparison'
+export type { ComparisonRow, ValueComparisonProps } from './components/value-comparison'

@@ -63,15 +63,15 @@ export function featureCell(feature: ComparedFeature, planId: string): FeatureCe
 }
 
 /** A row of the comparison: a group's heading or a feature. */
-export type ComparisonRow =
+export type PlanComparisonRow =
   { kind: 'group'; key: string; label: string } | { kind: 'feature'; feature: ComparedFeature }
 
 /**
  * The rows in order: a heading before the first feature of each group (where `group` changes
  * from the previous feature's), then the feature. Features without a group get no heading.
  */
-export function comparisonRows(features: readonly ComparedFeature[]): ComparisonRow[] {
-  const rows: ComparisonRow[] = []
+export function comparisonRows(features: readonly ComparedFeature[]): PlanComparisonRow[] {
+  const rows: PlanComparisonRow[] = []
   let previous: string | undefined
   features.forEach((feature, index) => {
     if (feature.group !== undefined && feature.group !== previous) {

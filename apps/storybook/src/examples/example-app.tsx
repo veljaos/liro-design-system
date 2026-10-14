@@ -57,6 +57,10 @@ import { GROUP_Z_ROUTES } from './screens-Z'
 import { GROUP_X_ROUTES } from './screens-X'
 import { GROUP_AB_ROUTES } from './screens-AB'
 import { GROUP_AC_ROUTES } from './screens-AC'
+// ── P5.31 docs ──
+import { GROUP_U_ROUTES } from './screens-U'
+// ── P5.33 docs ──
+import { GROUP_W_ROUTES } from './screens-W'
 
 // ── Routes ────────────────────────────────────────────────────────────────────────────────
 
@@ -108,6 +112,10 @@ const EXAMPLE_ROUTES: readonly ExampleRoute[] = [
   ...GROUP_X_ROUTES,
   ...GROUP_AB_ROUTES,
   ...GROUP_AC_ROUTES,
+  // ── P5.31 docs ──
+  ...GROUP_U_ROUTES,
+  // ── P5.33 docs ──
+  ...GROUP_W_ROUTES,
 ]
 
 // ── The app ───────────────────────────────────────────────────────────────────────────────────

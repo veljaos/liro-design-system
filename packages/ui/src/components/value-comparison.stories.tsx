@@ -1,0 +1,229 @@
+import type { Meta, StoryObj } from '@storybook/react-vite'
+import { expect, within } from 'storybook/test'
+import { settle } from '../primitives/story-helpers'
+import { DateText, MoneyText } from './display-text'
+import { ExampleProvider, PhoneFrame, StoryProvider } from './story-frames'
+import { ValueComparison, type ComparisonRow } from './value-comparison'
+
+const money = (value: string) => <MoneyText value={value} currency="GBP" />
+
+/** A supplier's open items as both sides keep them; two differ (fictitious). */
+const OPEN_ITEMS: ComparisonRow[] = [
+  {
+    id: 'inv-1001',
+    label: 'INV-1001 · 06.08.2026',
+    values: [money('720.00'), money('720.00')],
+    numeric: true,
+  },
+  {
+    id: 'inv-1017',
+    label: 'INV-1017 · 15.09.2026',
+    values: [money('310.00'), money('310.00')],
+    numeric: true,
+  },
+  {
+    id: 'inv-1022',
+    label: 'INV-1022 · 02.09.2026',
+    values: ['Paid 30.09.2026', money('480.00')],
+    numeric: true,
+    differs: true,
+    note: 'Paid by us, open in theirs',
+  },
+  {
+    id: 'inv-1031',
+    label: 'INV-1031 · 28.09.2026',
+    values: ['Not in our books', money('96.00')],
+    numeric: true,
+    differs: true,
+    note: 'Only in their statement',
+  },
+]
+
+/** One payment's facts as both sides recorded them. */
+const PAYMENT: ComparisonRow[] = [
+  { id: 'document', label: 'Document', values: ['INV-1022', 'INV-1022'] },
+  { id: 'amount', label: 'Amount', values: [money('480.00'), money('480.00')], numeric: true },
+  {
+    id: 'date',
+    label: 'Payment booked',
+    values: [
+      <DateText key="ours" value="2026-09-30" />,
+      <DateText key="theirs" value="2026-10-01" />,
+    ],
+    numeric: true,
+    differs: true,
+    note: 'Dates differ',
+  },
+  { id: 'reference', label: 'Reference', values: ['97 12-1022', null] },
+]
+
+const meta = {
+  title: 'Components/Display/ValueComparison',
+  component: ValueComparison,
+  parameters: {
+    docs: {
+      description: {
+        component:
+          '**What for:** the same things as two sources record them, side by side, the ' +
+          'differences marked in words with an icon on the warning background — our open items ' +
+          'beside a partner’s statement, a payment as each side booked it. It compares nothing: ' +
+          'which rows differ, and why, is the application’s (`differs`, `note`). Phones show one ' +
+          'card per row, each value labelled with its source.\n\n' +
+          '**When to use:** reconciling two records of the same things, where the user must see ' +
+          'both. **When not:** a change from an old to a new value (ChangeConfirmDialog, ' +
+          'ChangeText); two versions of a text (LegalCompare); choosing which record a line ' +
+          'closes (CandidateList).',
+      },
+    },
+  },
+  args: {
+    label: 'Open items at 30.09.2026',
+    columns: ['Our books', 'Their statement'],
+    rows: OPEN_ITEMS,
+    rowHeader: 'Document',
+    layout: 'desktop',
+  },
+  decorators: [
+    (Story) => (
+      <ExampleProvider>
+        <div className="max-w-3xl">
+          <Story />
+        </div>
+      </ExampleProvider>
+    ),
+  ],
+  play: settle,
+} satisfies Meta<typeof ValueComparison>
+
+export default meta
+
+type Story = StoryObj<typeof meta>
+
+/** Four open items; two differ, each with the application's words. */
+export const Default: Story = {
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('status')).toHaveTextContent('2 of 4 differ')
+    const table = canvas.getByRole('table', { name: 'Open items at 30.09.2026' })
+    await expect(within(table).getByText('Only in their statement')).toBeVisible()
+    await expect(table.querySelectorAll('[data-differs="true"]')).toHaveLength(2)
+  },
+}
+
+/** One record's facts as both sides keep them. */
+export const Details: Story = {
+  name: 'One record’s details',
+  args: { label: 'Payment for INV-1022', rows: PAYMENT, rowHeader: undefined },
+}
+
+/** Nothing differs. */
+export const NoDifferences: Story = {
+  name: 'No differences',
+  args: { rows: OPEN_ITEMS.slice(0, 2) },
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(within(canvasElement).getByRole('status')).toHaveTextContent('No differences')
+  },
+}
+
+/** The application is gathering the values. */
+export const Loading: Story = {
+  args: { loading: true },
+}
+
+/** Nothing to compare: the application's words. */
+export const Empty: Story = {
+  args: { rows: [], empty: 'Neither side has open items at 30.09.2026.' },
+}
+
+/** Long names and notes. */
+export const LongText: Story = {
+  name: 'Long text',
+  args: {
+    columns: ['Our books (purchase ledger, account 4350)', 'Their statement as they sent it'],
+    rows: OPEN_ITEMS.map((row) =>
+      row.id === 'inv-1031'
+        ? {
+            ...row,
+            label: 'INV-1031 · 28.09.2026 · Timber delivery to the Harbour Road site, second half',
+            note: 'Only in their statement: we have not received this invoice by post or e-mail',
+          }
+        : row,
+    ),
+  },
+}
+
+/** Phone width: one card per row. */
+export const Phone: Story = {
+  args: { layout: 'phone' },
+  decorators: [
+    (Story) => (
+      <PhoneFrame>
+        <ExampleProvider>
+          <div className="p-4">
+            <Story />
+          </div>
+        </ExampleProvider>
+      </PhoneFrame>
+    ),
+  ],
+}
+
+/** Arabic. */
+export const Arabic: Story = {
+  args: {
+    label: 'البنود المفتوحة',
+    columns: ['دفاترنا', 'كشفهم'],
+    rowHeader: 'المستند',
+    rows: [
+      { id: 'a', label: 'فاتورة 1001', values: [money('720.00'), money('720.00')], numeric: true },
+      {
+        id: 'b',
+        label: 'فاتورة 1031',
+        values: ['غير موجودة في دفاترنا', money('96.00')],
+        numeric: true,
+        differs: true,
+        note: 'في كشفهم فقط',
+      },
+    ],
+  },
+  decorators: [
+    (Story) => (
+      <StoryProvider locale="ar">
+        <ExampleProvider>
+          <Story />
+        </ExampleProvider>
+      </StoryProvider>
+    ),
+  ],
+}
+
+/** Japanese. */
+export const Japanese: Story = {
+  args: {
+    label: '未決済項目',
+    columns: ['当社帳簿', '先方明細'],
+    rowHeader: '書類',
+    rows: [
+      { id: 'a', label: '請求書 1001', values: [money('720.00'), money('720.00')], numeric: true },
+      {
+        id: 'b',
+        label: '請求書 1031',
+        values: ['当社帳簿になし', money('96.00')],
+        numeric: true,
+        differs: true,
+        note: '先方明細のみ',
+      },
+    ],
+  },
+  decorators: [
+    (Story) => (
+      <StoryProvider locale="ja">
+        <ExampleProvider>
+          <Story />
+        </ExampleProvider>
+      </StoryProvider>
+    ),
+  ],
+}

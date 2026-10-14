@@ -2074,4 +2074,26 @@ export interface LiroMessages {
   'usage.amount': (number: string, unit: string) => string
   'usage.ofLimit': (usedText: string, limitText: string) => string
   'usage.noLimit': (usedText: string) => string
+  // P5.31 docs
+  /** RecognizedField (P5.31): the application's confidence ("Confidence: 98%"). */
+  'recognized.confidence': (text: string) => string
+  /** A reading the application marks as uncertain. */
+  'recognized.low': string
+  /** The user changed a value that was read. */
+  'recognized.changed': string
+  /** The button that highlights where the value was read. */
+  'recognized.showSource': string
+  /** PageViewer (P5.31): the highlighted region, announced ("Highlighted: Total, page 1 of 2"). */
+  'viewer.highlighted': (label: string, pageText: string) => string
+  // P5.33 docs
+  /** ValueComparison (P5.33): "2 of 5 differ" over the rows. */
+  'comparison.count': (count: number, countText: string, total: number, totalText: string) => string
+  /** A row's result: the two values are the same, or differ. */
+  'comparison.same': string
+  'comparison.differs': string
+  /** The headings of the first and the last column. */
+  'comparison.item': string
+  'comparison.result': string
+  /** No rows to compare. */
+  'comparison.empty': string
 }
