@@ -26,8 +26,14 @@ import { useLayoutEffect, type RefObject } from 'react'
  * `sticky top-[var(--liro-shell-top,0px)]`; the hook gives the same result.
  */
 
-/** The header cells: sticky at their region's top, then moved by the page's scroll. */
-export const STICKY_HEAD = 'sticky top-0 translate-y-[var(--liro-head-shift,0px)]'
+/**
+ * The header cells: sticky at their region's top, then moved by the page's scroll. Always on a
+ * layer of their own (`will-change-transform`): Chromium otherwise decides from frame to frame
+ * whether a sticky cell gets one, and its text was drawn with one antialiasing or the other — the
+ * same story gave two pictures (P5.28).
+ */
+export const STICKY_HEAD =
+  'sticky top-0 translate-y-[var(--liro-head-shift,0px)] will-change-transform'
 
 /**
  * On the region: a cell reached by the keyboard is scrolled clear of the shell, the header and the
