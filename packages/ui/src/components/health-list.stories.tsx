@@ -131,7 +131,9 @@ export const HeaderActions: Story = {
   name: 'Header actions',
   args: {
     headerActions: (
-      <span className="text-xs text-secondary">Checked every minute, last at 09:40</span>
+      <span className="bidi-content text-xs text-secondary">
+        Checked every minute, last at 09:40
+      </span>
     ),
   },
 }

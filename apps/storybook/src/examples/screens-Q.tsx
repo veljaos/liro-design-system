@@ -250,6 +250,15 @@ function When({ at }: { at: string | null }) {
   )
 }
 
+/** A figure written by the application: its own direction (D15), "10 of 12" never "12 of 10". */
+function Figure({ children }: { children: ReactNode }) {
+  return (
+    <span dir="auto" className="bidi-isolate">
+      {children}
+    </span>
+  )
+}
+
 /** A name with a second line (an e-mail, a reason, a kind). */
 function TwoLines({ first, second }: { first: ReactNode; second?: ReactNode }) {
   return (
@@ -317,25 +326,25 @@ export function AdminOverview({ phone }: { phone: boolean }) {
           {
             key: 'users',
             label: 'Users',
-            value: count(ADMIN_FIGURES.users),
+            value: <Figure>{count(ADMIN_FIGURES.users)}</Figure>,
             comparison: `${count(ADMIN_FIGURES.invited)} invitations pending`,
           },
           {
             key: 'sessions',
             label: 'Active sessions',
-            value: count(ADMIN_FIGURES.activeSessions),
+            value: <Figure>{count(ADMIN_FIGURES.activeSessions)}</Figure>,
             comparison: `On ${count(ADMIN_FIGURES.devices)} devices`,
           },
           {
             key: 'failed',
             label: 'Failed sign-ins today',
-            value: count(ADMIN_FIGURES.failedToday),
+            value: <Figure>{count(ADMIN_FIGURES.failedToday)}</Figure>,
             comparison: `${count(ADMIN_FIGURES.failedYesterday)} yesterday`,
           },
           {
             key: 'twoFactor',
             label: 'Without two-factor sign-in',
-            value: count(ADMIN_FIGURES.withoutTwoFactor),
+            value: <Figure>{count(ADMIN_FIGURES.withoutTwoFactor)}</Figure>,
             comparison: `Of ${count(ADMIN_FIGURES.users)} users`,
           },
         ]}
@@ -767,7 +776,6 @@ function AuditEntryDrawer({ entry, onClose }: { entry: AuditEntry; onClose: () =
       }}
       title={`${entry.kind}: ${entry.record}`}
       description={entry.field}
-      actions={<Button intent="cancel" label="Close" onClick={onClose} />}
     >
       <KeyValueList
         items={[
@@ -1156,25 +1164,27 @@ export function SystemStatus({ phone, loading = false }: { phone: boolean; loadi
           {
             key: 'services',
             label: 'Services up',
-            value: `${count(PLATFORM_FIGURES.servicesUp)} of ${count(PLATFORM_FIGURES.services)}`,
+            value: (
+              <Figure>{`${count(PLATFORM_FIGURES.servicesUp)} of ${count(PLATFORM_FIGURES.services)}`}</Figure>
+            ),
             comparison: '1 degraded, 1 down',
           },
           {
             key: 'uptime',
             label: 'Uptime, 30 days',
-            value: format.percent(PLATFORM_FIGURES.uptime),
+            value: <Figure>{format.percent(PLATFORM_FIGURES.uptime)}</Figure>,
             comparison: `Target ${format.percent('99.9')}`,
           },
           {
             key: 'response',
             label: 'Response time, p95',
-            value: `${format.number(PLATFORM_FIGURES.responseP95)} ms`,
+            value: <Figure>{`${format.number(PLATFORM_FIGURES.responseP95)} ms`}</Figure>,
             comparison: 'The last hour',
           },
           {
             key: 'errors',
             label: 'Error rate',
-            value: format.percent(PLATFORM_FIGURES.errorRate),
+            value: <Figure>{format.percent(PLATFORM_FIGURES.errorRate)}</Figure>,
             comparison: 'The last hour',
           },
         ]}
