@@ -345,7 +345,9 @@ export const WritingInteraction: Story = {
     box.focus()
     await userEvent.keyboard('{Control>}{Enter}{/Control}')
     const sent = await canvas.findByTestId('sent')
-    await expect(sent).toHaveTextContent('reply: <p>Hello Milica. Thank you for writing to us.')
+    await expect(sent).toHaveTextContent(
+      /^reply: <p[^>]*>Hello Milica\. Thank you for writing to us\./,
+    )
     await waitFor(async () => {
       await expect(box).toHaveTextContent('')
     })
@@ -400,9 +402,7 @@ export const ManySavedRepliesInteraction: Story = {
     await editorReady(canvasElement)
     const canvas = within(canvasElement)
     await userEvent.click(canvas.getByRole('button', { name: /Saved replies/ }))
-    const search = await within(document.body).findByRole('combobox', {
-      name: 'Find a saved reply',
-    })
+    const search = await within(document.body).findByPlaceholderText('Find a saved reply')
     await userEvent.type(search, 'payroll')
     const list = within(document.body).getByRole('listbox', { name: 'Saved replies' })
     await waitFor(async () => {

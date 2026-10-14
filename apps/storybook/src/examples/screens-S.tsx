@@ -10,6 +10,7 @@ import {
   Dialog,
   Drawer,
   durationText,
+  instantText,
   FilterBar,
   KeyValueList,
   ListPage,
@@ -598,7 +599,13 @@ export function SupportTicket({
           ],
   )
   const [files, setFiles] = useState<Attachment[]>([])
-  const [panels, setPanels] = useState<string[]>(['properties', 'sla', 'contact', 'other'])
+  const [panels, setPanels] = useState<string[]>([
+    'properties',
+    'sla',
+    'contact',
+    'other',
+    'activity',
+  ])
   const [details, setDetails] = useState(start.detailsOpen === true)
   const [articleOpen, setArticleOpen] = useState(start.articleOpen === true)
   const [articleQuery, setArticleQuery] = useState('')
@@ -879,7 +886,9 @@ export function SupportTicket({
           items={[...activity].reverse().map((entry) => ({
             key: entry.key,
             author: entry.author,
-            time: <span className="bidi-isolate tabular-nums">{format.dateTime(entry.at)}</span>,
+            time: (
+              <span className="bidi-isolate tabular-nums">{instantText(format, entry.at)}</span>
+            ),
             text: entry.text,
           }))}
         />
@@ -963,7 +972,7 @@ export function SupportTicket({
         subtitle={
           <span className="bidi-content">
             #{ticket.number} · {ticket.customer} · {ticket.type} · opened{' '}
-            {format.dateTime(ticket.opened)}
+            {instantText(format, ticket.opened)}
           </span>
         }
         {...(phone
@@ -1055,6 +1064,11 @@ function TicketLink({ ticket }: { ticket: Ticket }) {
   )
 }
 
+/** A figure written by the application, its digits in their own order (D15). */
+function figure(text: string) {
+  return <span className="bidi-isolate tabular-nums">{text}</span>
+}
+
 export function SupportDashboard({ phone }: { phone: boolean }) {
   const { format, messages } = useLiro()
   const [tickets] = useTickets()
@@ -1083,39 +1097,39 @@ export function SupportDashboard({ phone }: { phone: boolean }) {
           {
             key: 'open',
             label: 'Open tickets',
-            value: number(open.length),
+            value: figure(number(open.length)),
             change: { text: number(4), direction: 'up', sentiment: 'bad' },
             comparison: 'since yesterday',
           },
           {
             key: 'unassigned',
             label: 'Unassigned',
-            value: number(unassigned.length),
+            value: figure(number(unassigned.length)),
             comparison: 'waiting for an agent',
           },
           {
             key: 'overdue',
             label: 'Overdue',
-            value: number(overdue.length),
+            value: figure(number(overdue.length)),
             comparison: 'a service level broken',
           },
           {
             key: 'first',
             label: 'First response, median',
-            value: durationText(MEDIANS.firstResponse, messages, format),
+            value: figure(durationText(MEDIANS.firstResponse, messages, format)),
             comparison: 'last 30 days',
             trend: FIRST_RESPONSE_MINUTES,
           },
           {
             key: 'resolution',
             label: 'Resolution, median',
-            value: durationText(MEDIANS.resolution, messages, format),
+            value: figure(durationText(MEDIANS.resolution, messages, format)),
             comparison: 'last 30 days',
           },
           {
             key: 'satisfaction',
             label: 'Satisfaction',
-            value: format.percent(RATINGS.share),
+            value: figure(format.percent(RATINGS.share)),
             comparison: `${number(Number(RATINGS.good) + Number(RATINGS.okay) + Number(RATINGS.bad))} ratings, last 30 days`,
           },
         ]}

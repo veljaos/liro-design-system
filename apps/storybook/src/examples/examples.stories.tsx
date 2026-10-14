@@ -7047,10 +7047,14 @@ export const HelpdeskInboxBulkAssign: Story = {
     await userEvent.click(canvas.getByRole('button', { name: 'Assign…' }))
     const dialog = await within(document.body).findByRole('dialog', { name: 'Assign 2 tickets?' })
     await userEvent.click(within(dialog).getByRole('button', { name: 'Assign' }))
-    await expect(
-      await within(document.body).findByText('2 tickets assigned to Ana Kovač.'),
-    ).toBeVisible()
-    await expect(canvas.getByRole('button', { name: /^Unassigned/ })).toHaveTextContent('3')
+    await waitFor(async () => {
+      await expect(
+        within(document.body).getByText('2 tickets assigned to Ana Kovač.'),
+      ).toBeVisible()
+    })
+    await waitFor(async () => {
+      await expect(canvas.getByRole('button', { name: /^Unassigned/ })).toHaveTextContent('3')
+    })
   },
 }
 
@@ -7150,9 +7154,9 @@ export const HelpdeskTicketReply: Story = {
       within(list).getByRole('option', { name: 'SEF rejected: the buyer’s tax number' }),
     )
     await userEvent.click(canvas.getByRole('button', { name: 'Send' }))
-    await expect(
-      await within(document.body).findByText('Reply sent to Milica Petrović.'),
-    ).toBeVisible()
+    await waitFor(async () => {
+      await expect(within(document.body).getByText('Reply sent to Milica Petrović.')).toBeVisible()
+    })
     await expect(canvas.getByRole('log')).toHaveTextContent(
       'Send the corrected invoice to SEF again.',
     )
@@ -7189,7 +7193,10 @@ export const HelpdeskTicketPriority: Story = {
     const canvas = within(canvasElement)
     await userEvent.click(canvas.getByRole('combobox', { name: 'Priority' }))
     await userEvent.click(await within(document.body).findByRole('option', { name: 'Urgent' }))
-    await expect(canvas.getByRole('combobox', { name: 'Priority' })).toHaveTextContent('Urgent')
+    // The list closes first; the field is in the accessibility tree again after it.
+    await waitFor(async () => {
+      await expect(canvas.getByRole('combobox', { name: 'Priority' })).toHaveTextContent('Urgent')
+    })
     await expect(canvasElement).toHaveTextContent('Priority: High → Urgent')
   },
 }

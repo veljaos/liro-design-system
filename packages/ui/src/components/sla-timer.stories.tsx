@@ -47,7 +47,7 @@ export const Default: Story = {
     <KeyValueList
       className="max-w-120"
       items={[
-        { key: 'running', label: 'Running', value: <SlaTimer due={at('11:55')} now={NOW} /> },
+        { key: 'running', label: 'Later today', value: <SlaTimer due={at('11:55')} now={NOW} /> },
         {
           key: 'days',
           label: 'A day away',
@@ -58,20 +58,20 @@ export const Default: Story = {
           label: 'Soon (30 min)',
           value: <SlaTimer due={at('10:05')} now={NOW} warnWithin={30} />,
         },
-        { key: 'overdue', label: 'Overdue', value: <SlaTimer due={at('09:00')} now={NOW} /> },
+        { key: 'overdue', label: 'Late', value: <SlaTimer due={at('09:00')} now={NOW} /> },
         {
           key: 'paused',
-          label: 'Paused',
+          label: 'Waiting for the customer',
           value: <SlaTimer due={at('09:00')} now={NOW} paused />,
         },
         {
           key: 'met',
-          label: 'Met',
+          label: 'Done on time',
           value: <SlaTimer due={at('09:00')} now={NOW} completedAt={at('08:31')} />,
         },
         {
           key: 'missed',
-          label: 'Missed',
+          label: 'Done late',
           value: <SlaTimer due={at('09:00')} now={NOW} completedAt={at('09:25')} />,
         },
       ]}
