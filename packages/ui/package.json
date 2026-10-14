@@ -33,6 +33,10 @@
       "types": "./dist/diagram.d.ts",
       "import": "./dist/diagram.js"
     },
+    "./gantt": {
+      "types": "./dist/gantt.d.ts",
+      "import": "./dist/gantt.js"
+    },
     "./styles.css": "./dist/styles.css",
     "./package.json": "./package.json"
   },
@@ -75,6 +79,7 @@
   "dependencies": {
     "@dagrejs/dagre": "3.1.1",
     "@shadcn/react": "0.3.1",
+    "@svar-ui/react-gantt": "2.7.3",
     "@tanstack/react-table": "9.2.4",
     "@tanstack/react-virtual": "3.14.13",
     "@tiptap/core": "3.31.4",

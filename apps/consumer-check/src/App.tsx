@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { ChartsExample } from './ChartsExample'
 import { DiagramExample } from './DiagramExample'
 import { FormExample } from './FormExample'
+import { GanttExample } from './GanttExample'
 import { RichTextExample } from './RichTextExample'
 
 export function App() {
@@ -21,6 +22,7 @@ export function App() {
       <ChartsExample />
       <RichTextExample />
       <DiagramExample />
+      <GanttExample />
     </main>
   )
 }

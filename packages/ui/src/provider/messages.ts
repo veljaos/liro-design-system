@@ -1914,4 +1914,85 @@ export interface LiroMessages {
   'qr.tooLong': string
   /** An IPS QR problem of a field, by its label (`ipsQrText`'s problems). */
   'ips.problem': (code: IpsProblemCode, label: string, limit?: number) => string
+  // P5.37 gantt
+  /** Gantt (P5.37): the kinds of a row, before its name ("Phase: Structure"). */
+  'gantt.kindPhase': string
+  'gantt.kindTask': string
+  'gantt.kindMilestone': string
+  /** A row's accessible name: its kind and name. */
+  'gantt.rowName': (kind: string, label: string) => string
+  /** The phase a task stands in, after its name for assistive technology. */
+  'gantt.inPhase': (phase: string) => string
+  /** A row's progress in words ("60% done"); `percentText` is through `format.percent`. */
+  'gantt.done': (percentText: string) => string
+  /** The rows a row follows: "After: Excavation, Foundation slab". */
+  'gantt.after': (names: string) => string
+  /** The table's column headers. */
+  'gantt.task': string
+  'gantt.progress': string
+  'gantt.planned': string
+  'gantt.actual': string
+  /** A row's menu of edits, named with the row. */
+  'gantt.actions': (label: string) => string
+  'gantt.move': string
+  'gantt.changeDates': string
+  'gantt.setProgress': string
+  'gantt.dependencies': string
+  /** The dialogs' titles: the action; the row goes bold under it (D22). */
+  'gantt.moveTitle': string
+  'gantt.datesTitle': string
+  'gantt.progressTitle': string
+  'gantt.dependenciesTitle': string
+  /** Move: the new start, and where it will end. */
+  'gantt.newStart': string
+  'gantt.keepsLength': (endText: string) => string
+  /** Change dates: the range of a task, the day of a milestone. */
+  'gantt.dates': string
+  'gantt.date': string
+  /** Set progress: the field and its check. */
+  'gantt.doneField': string
+  'gantt.progressRange': string
+  /** Dependencies: the rows it follows, the new one and how, Add, Remove, the empty lists. */
+  'gantt.follows': string
+  'gantt.followsNothing': string
+  'gantt.addFollows': string
+  'gantt.dependencyHow': string
+  'gantt.addDependency': string
+  'gantt.removeDependency': (name: string) => string
+  'gantt.noCandidates': string
+  /** The four kinds of dependency in a business user's words. */
+  'gantt.finishToStart': string
+  'gantt.startToStart': string
+  'gantt.finishToFinish': string
+  'gantt.startToFinish': string
+  /** The dialogs' buttons. */
+  'gantt.save': string
+  'gantt.moveButton': string
+  'gantt.close': string
+  /** What was reported, announced politely. */
+  'gantt.changedDates': (label: string, datesText: string) => string
+  'gantt.changedProgress': (label: string, doneText: string) => string
+  'gantt.addedDependency': (to: string, from: string) => string
+  'gantt.removedDependency': (to: string, from: string) => string
+  /** The views and the scale. */
+  'gantt.view': string
+  'gantt.timelineView': string
+  'gantt.listView': string
+  'gantt.scale': string
+  'gantt.scaleDays': string
+  'gantt.scaleMonths': string
+  /** The top row of the days scale: "October 2026". */
+  'gantt.monthYear': (month: string, year: string) => string
+  /** The timeline's region and how to use it. */
+  'gantt.timeline': (label: string) => string
+  'gantt.timelineHint': string
+  'gantt.dragHint': string
+  /** The one "now" marker (D25): "Now, 14.10.2026. 09:40". */
+  'gantt.now': (text: string) => string
+  /** States. */
+  'gantt.empty': string
+  'gantt.loading': string
+  'gantt.error': string
+  'gantt.retry': string
+  'gantt.editOnLargerScreen': string
 }
