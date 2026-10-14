@@ -242,7 +242,9 @@ function Pointing() {
         onPageChange={setPage}
         className="h-[26rem]"
       />
-      <output>{page === null ? '' : `Reported page ${String(page)}`}</output>
+      <output className="bidi-isolate">
+        {page === null ? '' : `Reported page ${String(page)}`}
+      </output>
     </div>
   )
 }

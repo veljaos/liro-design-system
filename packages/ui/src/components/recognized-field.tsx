@@ -73,10 +73,10 @@ export function RecognizedField(props: RecognizedFieldProps) {
               <span className={TEXT_DIRECTION}>
                 <span className="font-medium">{props.lowLabel ?? messages['recognized.low']}</span>
                 {confidence !== null && (
-                  <span className="text-secondary">
-                    {' · '}
-                    {confidence}
-                  </span>
+                  <>
+                    {' '}
+                    <span className="text-secondary">· {confidence}</span>
+                  </>
                 )}
               </span>
             </>
