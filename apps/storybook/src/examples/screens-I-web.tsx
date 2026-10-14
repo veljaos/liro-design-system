@@ -17,7 +17,7 @@ import {
 } from '@veljaos/ui'
 import { decimal } from '../../../../packages/ui/src/components/amounts-story-data'
 import { FISCAL_BANNER, FISCAL_END } from '../../../../packages/ui/src/components/sale-story-data'
-import { StoryCode } from '../../../../packages/ui/src/components/story-code'
+import { QrCode } from '../../../../packages/ui/src/components/qr-code'
 import { Shell, type ExampleAccount } from './example-shell'
 import { BAKERY, computeSale, RECEIPT_FOOTER } from './data-I'
 import {
@@ -60,7 +60,7 @@ export function WebOrder({ phone }: { phone: boolean }) {
   const link = `${FISCAL.linkBase}${WEB_ORDER.receipt.number}`
   const code = (size: number) => (
     <span className="flex text-primary">
-      <StoryCode text={link} label="Receipt code" size={size} />
+      <QrCode value={link} label="Receipt code" size={size} />
     </span>
   )
   return (

@@ -9,6 +9,7 @@
  * them. Not part of the package. No classes here.
  */
 import type { CourseLesson, CourseModule, QuestionAnswer, QuestionDefinition } from '@veljaos/ui'
+import { ipsQrText } from '@veljaos/ui'
 import { FEATURED, INVOICES, LINES, TOTALS, type ExampleInvoice } from './examples-story-data'
 
 // ── Routes ────────────────────────────────────────────────────────────────────────────────────
@@ -339,7 +340,7 @@ export const SELLER = {
   city: '21000 Novi Sad, Serbia',
   taxId: '108452317',
   registration: '21045873',
-  account: '160-0000012345678-21',
+  account: '160-0000012345678-67',
   bank: 'Banca Intesa',
   email: 'office@kvadratgradnja.rs',
 }
@@ -348,15 +349,23 @@ export const SELLER = {
 export const INVOICE_FACTS = {
   supplied: '2026-09-26',
   place: 'Novi Sad',
-  reference: '97 2026-0412',
+  reference: '97 32-2026-0412',
   advance: 'A-2026-031',
   /** The buyer's address for invoices (the printout's buyer block). */
   buyerEmail: 'racuni@panonija-agro.rs',
   /** The buyer's registration number (MB). */
   buyerRegistration: '20945112',
-  /** What the IPS QR code carries (the application makes the image; here an illustrative one). */
+  /** What the IPS QR code carries (P5.40): the payment, written by `ipsQrText`. */
   ipsPayload:
-    'K:PR|V:01|C:1|R:160000001234567821|N:Kvadrat Gradnja d.o.o.|I:RSD135954,00|SF:221|S:F-2026-0412|RO:9720260412',
+    ipsQrText({
+      payeeAccount: '160-0000012345678-67',
+      payeeName: 'Kvadrat Gradnja d.o.o., Novi Sad',
+      amount: '135954.00',
+      paymentCode: '221',
+      purpose: 'Invoice F-2026-0412',
+      model: '97',
+      reference: '32-2026-0412',
+    }).text ?? '',
 }
 
 // ── Report card ───────────────────────────────────────────────────────────────────────────────

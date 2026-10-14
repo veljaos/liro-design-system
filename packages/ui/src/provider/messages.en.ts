@@ -1324,4 +1324,28 @@ export const messagesEn: LiroMessages = {
   'richText.mergeFieldMissing': (label) => `No value: ${label}`,
   'richText.missingValues': (labels) =>
     `No value yet for ${labels.join(', ')}. Fill ${labels.length === 1 ? 'it' : 'them'} in or remove ${labels.length === 1 ? 'it' : 'them'}.`,
+  // P5.40 QR code and IPS QR
+  'qr.tooLong': 'The text is too long for a QR code.',
+  'ips.problem': (code, label, limit) => {
+    switch (code) {
+      case 'required':
+        return `Enter the ${label.toLowerCase()}.`
+      case 'account':
+        return `${label}: not a valid account number (18 digits, the last two the control number).`
+      case 'amount':
+        return `${label}: an amount from 0.01 with at most two decimals.`
+      case 'tooLong':
+        return `${label}: at most ${String(limit ?? 0)} characters.`
+      case 'tooManyLines':
+        return `${label}: at most ${String(limit ?? 0)} lines.`
+      case 'characters':
+        return `${label}: use Latin letters, digits and common punctuation; never "|".`
+      case 'digits':
+        return `${label}: exactly ${String(limit ?? 0)} digits.`
+      case 'paymentCode':
+        return `${label}: three digits, the first 1 or 2.`
+      case 'reference':
+        return `${label}: the control number does not match the model.`
+    }
+  },
 }

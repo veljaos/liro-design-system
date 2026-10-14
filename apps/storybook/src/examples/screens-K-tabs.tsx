@@ -34,8 +34,12 @@ import {
   type ChoosableLine,
 } from '@veljaos/ui'
 import { decimal, paras } from '../../../../packages/ui/src/components/amounts-story-data'
-import { PAYMENT_OPTIONS } from '../../../../packages/ui/src/components/sale-story-data'
-import { StoryCode } from '../../../../packages/ui/src/components/story-code'
+import {
+  PAYMENT_OPTIONS,
+  instantPaymentCode,
+  type InstantPayee,
+} from '../../../../packages/ui/src/components/sale-story-data'
+import { QrCode } from '../../../../packages/ui/src/components/qr-code'
 import { Navigate } from './example-shell'
 import { useExampleState } from './example-state'
 import {
@@ -72,6 +76,20 @@ const TERMINAL_DELAY = 1200
 
 /** The ways a tab is paid at the table (the application's choice of the seven). */
 const TAB_PAYMENTS = PAYMENT_OPTIONS.filter((each) => ['cash', 'card', 'instant'].includes(each.id))
+
+/** Where each venue's instant payments go (P5.40): invented accounts with valid control numbers. */
+const VENUE_PAYEES: Record<Venue['id'], InstantPayee> = {
+  cafe: {
+    name: 'Kafić Kod Mike, Novi Sad',
+    account: '840-0000000742311-24',
+    merchantCategory: '5814',
+  },
+  bistro: {
+    name: 'Bistro Dunav, Novi Sad',
+    account: '170-0000000987654-14',
+    merchantCategory: '5812',
+  },
+}
 
 /** The tabs when the examples start, with a picture's state applied to one table. */
 function seed(venue: Venue, tableId: string, start: TabStart | undefined): Record<string, Tab> {
@@ -861,9 +879,13 @@ export function TabTill({
             }}
             qrCode={
               <span className="flex text-primary">
-                <StoryCode
-                  text={`tab-${tableId}-${decimal(paying.amount)}`}
-                  label="Instant payment code"
+                <QrCode
+                  value={instantPaymentCode(
+                    VENUE_PAYEES[venue.id],
+                    decimal(paying.amount),
+                    `20261014${String(tab.payments.length + 1).padStart(3, '0')}`,
+                  )}
+                  label="IPS QR code for the payment"
                   size={176}
                 />
               </span>
@@ -909,7 +931,7 @@ export function TabTill({
                       ]}
                       code={
                         <span className="flex text-primary">
-                          <StoryCode text={receipt} label="Receipt code" size={112} />
+                          <QrCode value={receipt} label="Receipt code" size={112} />
                         </span>
                       }
                       deliveries={[{ id: 'print', label: 'Print', icon: Receipt }]}

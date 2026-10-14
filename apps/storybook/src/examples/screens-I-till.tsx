@@ -57,8 +57,10 @@ import {
   FISCAL_BANNER,
   FISCAL_END,
   NOT_FISCAL,
+  BAKERY_PAYEE,
+  instantPaymentCode,
 } from '../../../../packages/ui/src/components/sale-story-data'
-import { StoryCode } from '../../../../packages/ui/src/components/story-code'
+import { QrCode } from '../../../../packages/ui/src/components/qr-code'
 import { Navigate } from './example-shell'
 import { useExampleState } from './example-state'
 import {
@@ -193,7 +195,7 @@ function buyerCode(buyer: BuyerValue): string {
 function receiptCode(number: string, size = 128) {
   return (
     <span className="flex text-primary">
-      <StoryCode text={`${FISCAL.linkBase}${number}`} label="Receipt code" size={size} />
+      <QrCode value={`${FISCAL.linkBase}${number}`} label="Receipt code" size={size} />
     </span>
   )
 }
@@ -1266,9 +1268,13 @@ export function Till({ phone, start = {} }: { phone: boolean; start?: TillStart 
             onReferenceChange={setReference}
             qrCode={
               <span className="flex text-primary">
-                <StoryCode
-                  text={`instant-${sentAmount ?? decimal(due)}`}
-                  label="Instant payment code"
+                <QrCode
+                  value={instantPaymentCode(
+                    BAKERY_PAYEE,
+                    sentAmount ?? decimal(due),
+                    '20261014000412',
+                  )}
+                  label="IPS QR code for the payment"
                   size={176}
                 />
               </span>

@@ -7,7 +7,6 @@
  * src/index.ts imports this file. No classes here: Storybook compiles classes only from
  * *.stories.tsx files.
  */
-import { createElement, type ReactElement } from 'react'
 import { decimal, paras, sumUnits } from '../components/amounts-story-data'
 import type { TaxRecap, TotalsRow } from '../components/document-totals'
 import type { LineType } from '../components/line-types'
@@ -398,69 +397,3 @@ export const SAFETY_QUIZ = [
     ],
   },
 ]
-
-// ── P5.28 The payment slip's IPS QR code, illustrative ──
-
-/**
- * The modules of an illustrative QR-like code (29 × 29, the size of a version 3 code): the three
- * finder patterns and the timing lines of a real code, the rest from a hash of `text`. **It does
- * not scan:** the application makes the real IPS QR image from the payment's data; the stories
- * only need a stable picture in the slot.
- */
-export function illustrativeCodeModules(text: string, size = 29): boolean[][] {
-  let hash = 2166136261
-  const next = () => {
-    hash ^= hash << 13
-    hash ^= hash >>> 17
-    hash ^= hash << 5
-    return (hash >>> 0) % 100
-  }
-  for (const character of text) hash = Math.imul(hash ^ character.charCodeAt(0), 16777619)
-  const finder = (row: number, column: number) => {
-    for (const [top, start] of [
-      [0, 0],
-      [0, size - 7],
-      [size - 7, 0],
-    ] as const) {
-      const r = row - top
-      const c = column - start
-      if (r >= -1 && r <= 7 && c >= -1 && c <= 7) {
-        if (r < 0 || r > 6 || c < 0 || c > 6) return false
-        const ring = Math.min(r, c, 6 - r, 6 - c)
-        return ring !== 1
-      }
-    }
-    return undefined
-  }
-  return Array.from({ length: size }, (_, row) =>
-    Array.from({ length: size }, (_, column) => {
-      const pattern = finder(row, column)
-      if (pattern !== undefined) return pattern
-      if (row === 6) return column % 2 === 0
-      if (column === 6) return row % 2 === 0
-      return next() < 48
-    }),
-  )
-}
-
-/** The illustrative code as an SVG image named by `label` (no classes: it takes the text colour). */
-export function illustrativeCode(text: string, label: string): ReactElement {
-  const modules = illustrativeCodeModules(text)
-  const path = modules
-    .flatMap((row, y) => row.map((on, x) => (on ? `M${String(x)} ${String(y)}h1v1h-1z` : '')))
-    .join('')
-  const size = modules.length
-  return createElement(
-    'svg',
-    {
-      role: 'img',
-      'aria-label': label,
-      viewBox: `-2 -2 ${String(size + 4)} ${String(size + 4)}`,
-      width: '100%',
-      height: '100%',
-      shapeRendering: 'crispEdges',
-      fill: 'currentColor',
-    },
-    createElement('path', { d: path }),
-  )
-}

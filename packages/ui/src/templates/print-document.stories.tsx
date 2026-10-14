@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, within } from 'storybook/test'
 import { MoneyText, NumberText, DateText } from '../components/display-text'
+import { ipsQrText } from '../components/ips-qr'
+import { QrCode } from '../components/qr-code'
 import {
   FINAL_DEDUCTIONS,
   FINAL_DUE,
@@ -15,7 +17,7 @@ import { ExampleProvider, PhoneFrame, StoryProvider } from '../components/story-
 import { TEXT_ISOLATE } from '../primitives/classes'
 import { settle } from '../primitives/story-helpers'
 import type { PrintColumn } from './print-parts'
-import { BUYER, illustrativeCode, longInvoice, SELLER, type PrintLine } from './print-story-data'
+import { BUYER, longInvoice, SELLER, type PrintLine } from './print-story-data'
 import { PrintDocument, type PrintDocumentProps } from './print-templates'
 
 /**
@@ -113,20 +115,33 @@ const PAYMENT = {
   title: 'Payment details',
   details: [
     { key: 'recipient', label: 'Recipient', value: 'Kvadrat Gradnja d.o.o., Novi Sad' },
-    { key: 'account', label: 'Account', value: <bdi>160-0000000456789-12</bdi>, numeric: true },
+    { key: 'account', label: 'Account', value: <bdi>160-0000000456789-28</bdi>, numeric: true },
     {
       key: 'reference',
       label: 'Model and reference number',
-      value: <bdi>97 41-2026-0418</bdi>,
+      value: <bdi>97 14-2026-0418</bdi>,
       numeric: true,
     },
     { key: 'purpose', label: 'Purpose of payment', value: 'Invoice F-2026-0418' },
   ],
-  code: illustrativeCode(
-    'K:PR|V:01|C:1|R:160000000045678912|N:Kvadrat Gradnja d.o.o.|I:RSD5003678,22|SF:221|S:F-2026-0418|RO:974120260418',
-    'IPS QR code for the payment (illustrative)',
+  code: (
+    <QrCode
+      value={
+        ipsQrText({
+          payeeAccount: '160-0000000456789-28',
+          payeeName: 'Kvadrat Gradnja d.o.o., Novi Sad',
+          amount: '5003678.22',
+          paymentCode: '221',
+          purpose: 'Invoice F-2026-0418',
+          model: '97',
+          reference: '14-2026-0418',
+        }).text ?? ''
+      }
+      label="IPS QR code for the payment"
+      size="fill"
+    />
   ),
-  codeCaption: 'IPS QR · illustrative',
+  codeCaption: 'IPS QR',
 }
 
 const INVOICE: PrintDocumentProps<FinalLine> = {
