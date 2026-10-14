@@ -41,3 +41,6 @@ export type {
 // ── P5.29 portal ──
 export { headingSlug, richTextHeadings } from './rich-text-headings'
 export type { RichTextHeading } from './rich-text-headings'
+
+// ── P5.34 ai: merge fields filled for a preview (P5.38) ──
+export { fillMergeFields, fillMergeText, mergeTextKeys } from './merge-fill'
