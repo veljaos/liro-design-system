@@ -9052,9 +9052,10 @@ export const EmailTemplateSendInteraction: Story = {
       name: 'Send test Invoice e-mail · English',
     })
     await userEvent.click(within(dialog).getByRole('button', { name: 'Send test' }))
-    await expect(
-      await within(document.body).findByText('Test e-mail sent to milica.petrovic@example.com'),
-    ).toBeVisible()
+    // The toast reports where it went (it slides in, so its words are checked, not its place).
+    await waitFor(() =>
+      expect(document.body).toHaveTextContent('Test e-mail sent to milica.petrovic@example.com'),
+    )
   },
 }
 
