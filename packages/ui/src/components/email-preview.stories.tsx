@@ -131,7 +131,9 @@ export const Cyrillic: Story = {
       <div className="flex flex-col gap-4">
         <p className="bidi-content m-0">Поштовани,</p>
         <p className="bidi-content m-0">у прилогу вам шаљемо рачун F-2026-0431 од 14.10.2026.</p>
-        <p className="bidi-content m-0 text-md font-semibold">1.284.600,00 RSD доспева 13.11.2026.</p>
+        <p className="bidi-content m-0 text-md font-semibold">
+          1.284.600,00 RSD доспева 13.11.2026.
+        </p>
       </div>
     ),
   },
@@ -148,6 +150,7 @@ export const Cyrillic: Story = {
 export const LongText: Story = {
   name: 'Long text',
   args: {
+    label: 'Preview of the invoice e-mail for residential construction customers',
     from: 'Kvadrat Gradnja d.o.o., accounting department for residential construction projects <residential.projects.accounting@example.com>',
     subject:
       'Invoice F-2026-0431 for the works on the heating substation in the residential building Liman 4, phase three, with the interim situation attached',

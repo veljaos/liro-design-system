@@ -155,16 +155,19 @@ export const Japanese: Story = {
 
 function Asking() {
   const [asked, setAsked] = useState<string[]>([])
+  const [text, setText] = useState('')
   return (
     <div className="flex flex-col gap-3">
       <AssistantComposer
+        value={text}
+        onChange={setText}
         onAsk={(question) => {
           setAsked([...asked, question])
         }}
       />
       <ul aria-label="Asked" className="m-0 ps-4 text-sm">
         {asked.map((question) => (
-          <li key={question} className="whitespace-pre-line">
+          <li key={question} dir="auto" className="whitespace-pre-line">
             {question}
           </li>
         ))}

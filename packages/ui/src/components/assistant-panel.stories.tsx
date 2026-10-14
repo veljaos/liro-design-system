@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { Sparkles } from 'lucide-react'
 import { useState } from 'react'
-import { expect, userEvent, within } from 'storybook/test'
+import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { settle } from '../primitives/story-helpers'
 import { AssistantAnswer } from './assistant-answer'
 import { AssistantPanel, type AssistantPanelProps, type AssistantTurn } from './assistant-panel'
@@ -197,6 +197,10 @@ export const Arabic: Story = {
     ],
     note: 'تعتمد الإجابات على البيانات المسموح لك برؤيتها.',
   },
+  play: async () => {
+    await within(document.body).findByRole('dialog', { name: 'المساعد' })
+    await settle()
+  },
   decorators: [
     (Story) => (
       <StoryProvider locale="ar">
@@ -221,6 +225,10 @@ export const Japanese: Story = {
     ],
     note: '回答はあなたが閲覧できるデータのみに基づきます。',
   },
+  play: async () => {
+    await within(document.body).findByRole('dialog', { name: 'アシスタント' })
+    await settle()
+  },
   decorators: [
     (Story) => (
       <StoryProvider locale="ja">
@@ -235,6 +243,7 @@ export const Japanese: Story = {
 /** The application's side: a question asked adds a turn with its (fixed) answer. */
 function Conversation(props: Partial<AssistantPanelProps>) {
   const [turns, setTurns] = useState<AssistantTurn[]>([])
+  const [open, setOpen] = useState(false)
   const ask = (question: string) => {
     setTurns((list) => [
       ...list,
@@ -254,6 +263,8 @@ function Conversation(props: Partial<AssistantPanelProps>) {
     <AssistantPanel
       title="Liro Assistant"
       trigger={trigger}
+      open={open}
+      onOpenChange={setOpen}
       turns={turns}
       suggestions={SUGGESTIONS}
       onAsk={ask}
@@ -289,6 +300,7 @@ export const AskInteraction: Story = {
     await userEvent.click(within(panel).getByRole('button', { name: 'New conversation' }))
     await expect(within(panel).queryByRole('log')).toBeNull()
     await userEvent.keyboard('{Escape}')
-    await expect(opener).toHaveFocus()
+    // The focus returns once the sheet has finished closing.
+    await waitFor(() => expect(opener).toHaveFocus())
   },
 }

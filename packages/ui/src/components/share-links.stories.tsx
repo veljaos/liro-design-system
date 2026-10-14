@@ -140,6 +140,7 @@ export const Japanese: Story = {
 export const CopyInteraction: Story = {
   name: 'Copy link, interaction',
   tags: ['interaction'],
+  args: { onCopy: () => undefined },
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)

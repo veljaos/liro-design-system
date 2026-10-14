@@ -154,20 +154,28 @@ export function NewsletterSignup(props: NewsletterSignupProps) {
                 : { disabledReason: props.disabledReason })}
               className="min-w-0 flex-1"
             />
-            <div className={cn('flex items-center gap-3', !phone && 'pt-6')}>
-              <Button
-                family="primary"
-                icon={Mail}
-                type="submit"
-                emphasis={props.emphasis ?? 'secondary'}
-                label={props.subscribeLabel ?? messages['newsletter.subscribe']}
-                disabled={sending || props.disabled === true}
-              />
-              {sending && (
-                <Spinner size="sm">
-                  <span className="text-xs text-secondary">{messages['newsletter.sending']}</span>
-                </Spinner>
+            <div className="flex flex-col">
+              {/* As tall as the field's label, so the button stands beside the field's box. */}
+              {!phone && (
+                <span aria-hidden="true" className="invisible text-sm font-semibold">
+                  {'\u00a0'}
+                </span>
               )}
+              <div className={cn('flex items-center gap-3', !phone && 'mt-1')}>
+                <Button
+                  family="primary"
+                  icon={Mail}
+                  type="submit"
+                  emphasis={props.emphasis ?? 'secondary'}
+                  label={props.subscribeLabel ?? messages['newsletter.subscribe']}
+                  disabled={sending || props.disabled === true}
+                />
+                {sending && (
+                  <Spinner size="sm">
+                    <span className="text-xs text-secondary">{messages['newsletter.sending']}</span>
+                  </Spinner>
+                )}
+              </div>
             </div>
           </div>
           {props.error !== undefined && <Alert tone="danger">{props.error}</Alert>}

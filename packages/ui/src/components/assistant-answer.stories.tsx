@@ -267,7 +267,9 @@ function FollowUps() {
         followUps={OVERDUE_FOLLOW_UPS}
         onFollowUp={setAsked}
       />
-      <output className="text-sm">{asked}</output>
+      <output dir="auto" className="text-sm">
+        {asked}
+      </output>
     </div>
   )
 }

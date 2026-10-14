@@ -287,3 +287,53 @@ describe('reading', () => {
     expect(html).toContain('Tags')
   })
 })
+
+describe('every prop does something (C8)', () => {
+  it('sets the heading level of an answer and of a newsletter band', () => {
+    expect(render(<AssistantAnswer blocks={BLOCKS} headingLevel={4} />)).toContain('<h4')
+    expect(render(<NewsletterSignup title="News" headingLevel={3} onSubscribe={noop} />)).toContain(
+      '<h3',
+    )
+  })
+
+  it('shows a controlled question', () => {
+    expect(render(<AssistantComposer onAsk={noop} value="Which invoices?" />)).toContain(
+      'Which invoices?</textarea>',
+    )
+  })
+
+  it("names the preview, and shows the application's empty list and an article's language", () => {
+    expect(
+      render(
+        <EmailPreview from="A" subject="S" label="Preview, English">
+          B
+        </EmailPreview>,
+      ),
+    ).toContain('aria-label="Preview, English"')
+    expect(
+      render(<ArticleList label="L" articles={[]} empty={<p>No articles yet</p>} />),
+    ).toContain('No articles yet')
+    expect(
+      render(
+        <ArticleList
+          label="L"
+          articles={[{ id: 'a', title: 'Članak', href: '#/a', lang: 'sr-Latn' }]}
+        />,
+      ),
+    ).toContain('lang="sr-Latn"')
+  })
+
+  it("draws an author's photo and the article's language", () => {
+    const html = render(
+      <ArticlePage
+        title="Članak"
+        lang="sr-Latn"
+        author={{ name: 'Jelena Stanković', avatarSrc: 'https://example.com/j.png' }}
+      >
+        <p>Tekst</p>
+      </ArticlePage>,
+    )
+    expect(html).toContain('lang="sr-Latn"')
+    expect(html).toContain('JS')
+  })
+})
