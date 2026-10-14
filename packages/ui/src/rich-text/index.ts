@@ -28,3 +28,7 @@ export type {
   RichTextSuggestion,
   RichTextValue,
 } from './rich-text-logic'
+
+// ── P5.29 portal ──
+export { headingSlug, richTextHeadings } from './rich-text-headings'
+export type { RichTextHeading } from './rich-text-headings'

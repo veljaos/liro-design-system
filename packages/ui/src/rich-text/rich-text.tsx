@@ -2,6 +2,7 @@ import { Fragment, useMemo, type ReactNode } from 'react'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 import { MENTION_TEXT, MERGE_FIELD_PILL } from './extensions'
+import { headingIdsByBlock, type RichTextHeading } from './rich-text-headings'
 import {
   headingLevel,
   isRichTextEmpty,
@@ -25,6 +26,11 @@ import {
  * edge, links underlined in the link colour, merge fields as neutral pills with their label (read
  * "Merge field: Customer name"), mentions semibold. Each paragraph and heading takes its direction
  * from its text (`dir="auto"`) and stays at the page's start side (`text-align: match-parent`).
+ *
+ * `headingIds` (P5.30 e, a long reading page): every h2 and h3 gets a stable id from its words
+ * (`richTextHeadings`, the same ids a page's contents list), `tabIndex={-1}` so a contents link can
+ * move the focus to it, and a scroll margin under the shell's sticky top (`--liro-shell-top` +
+ * 16px), so a heading reached from the contents is never hidden under the shell (WCAG 2.4.11).
  */
 
 /** One field the text can refer to: the Core fills it in when the document is made. */
@@ -56,9 +62,17 @@ export interface RichTextProps {
   mergeFields?: readonly RichTextMergeField[]
   /** Shown when there is nothing to read. Default "—". */
   empty?: ReactNode
+  /**
+   * Gives every heading an id that starts with this prefix ("article"), for a page's contents
+   * (`richTextHeadings(value, prefix)` lists the same ids).
+   */
+  headingIds?: string
   /** Layout classes (width, margins). */
   className?: string
 }
+
+/** A heading's anchor: reached from a page's contents below the shell's sticky top. */
+const HEADING_ANCHOR = 'scroll-mt-[calc(var(--liro-shell-top,0px)+16px)] outline-none'
 
 function wrapMarks(content: ReactNode, marks: readonly RichTextMark[] | undefined): ReactNode {
   const has = (type: string) => marks?.some((mark) => mark.type === type) === true
@@ -116,7 +130,16 @@ function Inline({ node, labels }: { node: RichTextNode; labels: ReadonlyMap<stri
   }
 }
 
-function Block({ node, labels }: { node: RichTextNode; labels: ReadonlyMap<string, string> }) {
+function Block({
+  node,
+  labels,
+  heading,
+}: {
+  node: RichTextNode
+  labels: ReadonlyMap<string, string>
+  /** A top-level heading's id (RichText's `headingIds`). */
+  heading?: RichTextHeading | undefined
+}) {
   const children = (node.content ?? []).map((child, index) => (
     <Fragment key={index}>
       {node.type === 'paragraph' || node.type === 'heading' ? (
@@ -130,12 +153,19 @@ function Block({ node, labels }: { node: RichTextNode; labels: ReadonlyMap<strin
     case 'paragraph':
       // An empty line keeps its height, as in the editor.
       return <p dir="auto">{children.length === 0 ? <br /> : children}</p>
-    case 'heading':
+    case 'heading': {
+      const anchor =
+        heading === undefined ? {} : { id: heading.id, tabIndex: -1, className: HEADING_ANCHOR }
       return headingLevel(node.attrs?.level) === 2 ? (
-        <h2 dir="auto">{children}</h2>
+        <h2 dir="auto" {...anchor}>
+          {children}
+        </h2>
       ) : (
-        <h3 dir="auto">{children}</h3>
+        <h3 dir="auto" {...anchor}>
+          {children}
+        </h3>
       )
+    }
     case 'bulletList':
       return <ul>{children}</ul>
     case 'orderedList': {
@@ -153,7 +183,14 @@ function Block({ node, labels }: { node: RichTextNode; labels: ReadonlyMap<strin
  * Rich text, read-only: a stored note, letter or comment, from its JSON or its HTML. Use it to
  * show what a RichTextField wrote; never to show HTML from anywhere else as it is.
  */
-export function RichText({ value, html, mergeFields, empty, className }: RichTextProps) {
+export function RichText({
+  value,
+  html,
+  mergeFields,
+  empty,
+  headingIds,
+  className,
+}: RichTextProps) {
   const doc = useMemo(() => {
     if (value !== undefined && value !== null) return normalizeRichText(value)
     if (typeof html === 'string') return richTextFromHtml(html)
@@ -162,6 +199,13 @@ export function RichText({ value, html, mergeFields, empty, className }: RichTex
   const labels = useMemo(
     () => new Map((mergeFields ?? []).map((field) => [field.key, field.label])),
     [mergeFields],
+  )
+  const headings = useMemo(
+    () =>
+      doc === null || headingIds === undefined
+        ? new Map<number, RichTextHeading>()
+        : headingIdsByBlock(doc, headingIds),
+    [doc, headingIds],
   )
   if (doc === null || isRichTextEmpty(doc)) {
     return (
@@ -175,7 +219,7 @@ export function RichText({ value, html, mergeFields, empty, className }: RichTex
   return (
     <div data-slot="rich-text" className={cn(RICH_CONTENT, className)}>
       {(doc.content ?? []).map((block, index) => (
-        <Block key={index} node={block} labels={labels} />
+        <Block key={index} node={block} labels={labels} heading={headings.get(index)} />
       ))}
     </div>
   )
