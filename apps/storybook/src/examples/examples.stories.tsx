@@ -7442,7 +7442,7 @@ export const AdminOverviewScreen: Story = {
     const canvas = within(canvasElement)
     const failed = canvas.getByText('Failed sign-ins today').closest('[data-slot="stat-card"]')
     await expect(failed).toHaveTextContent('7')
-    await expect(canvas.getByText('24 of 30 seats used')).toBeVisible()
+    await expect(canvas.getByText(/^24 of 30/)).toBeVisible()
     const errors = canvas.getByRole('list', { name: 'Integrations with errors' })
     await expect(errors).toHaveTextContent('SEF (e-invoicing)')
     await expect(errors).toHaveTextContent('Banca Intesa, statements')

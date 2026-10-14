@@ -23,7 +23,7 @@ import {
   ListPage,
   MaskedValue,
   PageHeader,
-  ProgressBar,
+  UsageMeter,
   SectionCard,
   SelectField,
   SessionList,
@@ -342,16 +342,11 @@ export function AdminOverview({ phone }: { phone: boolean }) {
           }
         >
           <div className="flex flex-col gap-4">
-            <div className="flex flex-col gap-2">
-              <p className="bidi-content m-0 text-sm text-primary">
-                {`${count(ADMIN_FIGURES.seatsUsed)} of ${count(ADMIN_FIGURES.seats)} seats used`}
-              </p>
-              <ProgressBar
-                label="Seats used"
-                value={ADMIN_FIGURES.seatsUsed}
-                max={ADMIN_FIGURES.seats}
-              />
-            </div>
+            <UsageMeter
+              label="Seats"
+              used={String(ADMIN_FIGURES.seatsUsed)}
+              limit={String(ADMIN_FIGURES.seats)}
+            />
             <KeyValueList
               items={[
                 { key: 'plan', label: 'Plan', value: ADMIN_FIGURES.plan },

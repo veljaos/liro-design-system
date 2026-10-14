@@ -137,7 +137,7 @@ export const ADMIN_FIGURES = {
   integrations: 7,
   seatsUsed: 24,
   seats: 30,
-  plan: 'Liro Business',
+  plan: 'Business',
   renews: '2027-01-01',
 } as const
 
