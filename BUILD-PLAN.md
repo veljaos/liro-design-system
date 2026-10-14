@@ -334,6 +334,7 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P5.39 | Blog | P5.30 | todo | | |
 | P5.40 | IPS NBS QR and payment orders | P5.10, P5.15 | todo | | |
 | P5.41 | Maps | P5.24 | todo | | |
+| P5.42 | Organisation chart and hierarchies | P5.9 | todo | | |
 | P6.1 | Full language and direction matrix | Phases 1–5 | todo | | |
 | P6.2 | Manual WCAG 2.2 checks | P6.1 | todo | | |
 | P6.3 | Performance budget | P4.8 | todo | | |
@@ -872,7 +873,14 @@ A template list (invoice e-mail, IOS, payment reminder, welcome, password reset 
 On open-source software only; the map's background (tiles) and every shape are the application's data, nothing is fetched by the library.
 - **Areas on a map:** municipalities, city zones (for example the zones of a local property tax), service areas — their boundaries drawn as lines and fills with tokens, labelled, chosen from the map or from a list beside it; a point (an address) shown with the area it falls in; the legend in the application's words.
 - **Location check:** a workplace's allowed area (a circle or a shape) and the person's reported position with its accuracy; inside, outside or unknown in words, as the application decides; "Use my location" asks the application, which asks the browser; a check-in disabled with its reason when the position is outside.
+- **Maps in charts:** values by country or region (a choropleth with steps of one meaning, points or bubbles), for a company working in several countries or watching its regions; areas without a value say "No data", never 0; legend, tooltip and "Show as table" as the other charts.
 - Keyboard and screen readers: the list of areas and the position in words are the way; zoom and pan by buttons and keys; nothing only by dragging. Maps are never mirrored in right-to-left. Phones: the list first, the map full width.
+**Done when** every view has desktop and phone stories in light, dark and right-to-left, passes axe, the keyboard and the text-order check, and the examples show them.
+
+### P5.42 — Organisation chart and hierarchies (owner, 2026-10-14)
+- **Organisation chart:** people and positions by their reporting lines (avatar, name, position, unit, headcount), vacant positions, collapse and expand, show one unit with the way back up, search that reveals a person's place, a person's card from the application; secondary (dotted-line) relations listed, not drawn across the chart.
+- **Similar hierarchies on the same component:** units (departments with their head and headcount), a group of companies with ownership shares on the lines, cost centres.
+- Keyboard and screen readers: a WAI-ARIA tree, arrows by the chart's direction (mirrored in right-to-left); phones: an indented list; print on a landscape sheet. The data and every word are the application's.
 **Done when** every view has desktop and phone stories in light, dark and right-to-left, passes axe, the keyboard and the text-order check, and the examples show them.
 
 **End of Phase 5:** `0.1.0-alpha.5`; report.
