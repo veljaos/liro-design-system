@@ -335,6 +335,7 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P5.40 | IPS NBS QR and payment orders | P5.10, P5.15 | todo | | |
 | P5.41 | Maps | P5.24 | todo | | |
 | P5.42 | Organisation chart and hierarchies | P5.9 | todo | | |
+| P5.43 | Files and folders | P5.5, P5.9 | todo | | |
 | P6.1 | Full language and direction matrix | Phases 1–5 | todo | | |
 | P6.2 | Manual WCAG 2.2 checks | P6.1 | todo | | |
 | P6.3 | Performance budget | P4.8 | todo | | |
@@ -881,6 +882,21 @@ On open-source software only; the map's background (tiles) and every shape are t
 - **Organisation chart:** people and positions by their reporting lines (avatar, name, position, unit, headcount), vacant positions, collapse and expand, show one unit with the way back up, search that reveals a person's place, a person's card from the application; secondary (dotted-line) relations listed, not drawn across the chart.
 - **Similar hierarchies on the same component:** units (departments with their head and headcount), a group of companies with ownership shares on the lines, cost centres.
 - Keyboard and screen readers: a WAI-ARIA tree, arrows by the chart's direction (mirrored in right-to-left); phones: an indented list; print on a landscape sheet. The data and every word are the application's.
+**Done when** every view has desktop and phone stories in light, dark and right-to-left, passes axe, the keyboard and the text-order check, and the examples show them.
+
+### P5.43 — Files and folders (owner, 2026-10-14)
+A full files-and-folders view beside FileDropzone and AttachmentList (P5.5). Design system only: files, folders, permissions and storage come from the application; reuse TreeView (P5.9), Breadcrumbs, DataTable, DocumentFrame, FileDropzone, BulkActionBar, Drawer and Signing.
+- **Layout:** a folder tree at the start (collapsible), breadcrumbs, the content as a list (name, owner, modified, size, linked record) or a grid of thumbnails; sort, filter by type, search in the folder or everywhere. Quick places: Recent, Favourites, Shared with me, Trash.
+- **Actions:** upload (files and whole folders, drag-and-drop, progress per file; uploading / scanning / available / quarantined from P5.5), new folder, rename, move or copy (a dialog with a folder picker; drag to a folder with a keyboard and menu alternative), download (one file or a zip of the selection), delete to Trash with Restore and empty Trash (irreversible confirm), bulk actions on a selection.
+- **Conflicts:** "A file with this name exists": Replace / Keep both / Skip, with "Apply to all".
+- **Preview:** PDF, images and office files in DocumentFrame, with next and previous through the folder.
+- **Details panel:** type, size, owner, created and modified, versions (list, restore an older version, upload a new version), tags, the records the file is linked to (invoice F-2026-0412, an employee file), the retention label from data ("Keep until 2036"), activity.
+- **Sharing:** with people, roles or a client's portal (view / edit), an external link with an expiry date and optional password, who has access, revoke.
+- **Signing:** sign a document from here (Signing / Liro Bridge) and show its signed state.
+- **Storage** used against the quota.
+- **States:** empty folder, no results, no permission ("You do not have access to this folder"), offline.
+- **Phone:** the list view, folders as rows, actions in a bottom sheet, upload from the camera or the phone's files, preview full screen.
+- **Examples:** Kvadrat Gradnja's company documents (contracts, employee files, site documentation), and an accounting firm's client folders where the client uploads through the portal (tied to P5.31's document inbox and P5.32's accountant's workspace).
 **Done when** every view has desktop and phone stories in light, dark and right-to-left, passes axe, the keyboard and the text-order check, and the examples show them.
 
 **End of Phase 5:** `0.1.0-alpha.5`; report.
