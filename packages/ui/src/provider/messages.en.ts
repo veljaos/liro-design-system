@@ -1411,4 +1411,12 @@ export const messagesEn: LiroMessages = {
   'gantt.error': 'The plan could not be loaded.',
   'gantt.retry': 'Try again',
   'gantt.editOnLargerScreen': 'Open this plan on a larger screen to change it.',
+  // P5.36 acct
+  'plan.current': 'Current plan',
+  'plan.feature': 'Feature',
+  'plan.included': 'Included',
+  'plan.notIncluded': 'Not included',
+  'usage.amount': (number, unit) => `${number} ${unit}`,
+  'usage.ofLimit': (usedText, limitText) => `${usedText} of ${limitText}`,
+  'usage.noLimit': (usedText) => `${usedText} used, no limit`,
 }

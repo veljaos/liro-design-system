@@ -50,6 +50,9 @@ import { GROUP_AA_ROUTES } from './screens-AA'
 // P5.35 gantt
 import { GROUP_Y_ROUTES } from './screens-Y'
 import { GROUP_AD_ROUTES } from './screens-AD'
+// ── P5.32 acct ──
+import { GROUP_V_ROUTES } from './screens-V'
+import { GROUP_Z_ROUTES } from './screens-Z'
 
 // ── Routes ────────────────────────────────────────────────────────────────────────────────
 
@@ -94,6 +97,9 @@ const EXAMPLE_ROUTES: readonly ExampleRoute[] = [
   // P5.35 gantt
   ...GROUP_Y_ROUTES,
   ...GROUP_AD_ROUTES,
+  // ── P5.32 acct ──
+  ...GROUP_V_ROUTES,
+  ...GROUP_Z_ROUTES,
 ]
 
 // ── The app ───────────────────────────────────────────────────────────────────────────────────
