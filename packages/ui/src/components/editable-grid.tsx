@@ -54,7 +54,7 @@ import { NumberField } from './number-field'
 import { SelectField, type SelectOption } from './select-field'
 import { SettlingMemory, SettlingValue, type SettlingMemoryValue } from './settling-value'
 import { SplitAction } from './split-action'
-import { STICKY_CLEARANCE, STICKY_HEAD, useStickyHead } from './sticky-head'
+import { STICKY_CLEARANCE, STICKY_HEAD, STICKY_START, useStickyHead } from './sticky-head'
 import { TextField } from './text-field'
 import { EntryDraftSlot, type EntryDraft } from './use-entry'
 import { usePhone } from './use-phone'
@@ -729,7 +729,7 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
   // stays at the start while the lines scroll sideways (P5.28 item 4).
   const region = useRef<HTMLDivElement>(null)
   useStickyHead(region, !phone)
-  const stickyFirst = inCard ? cn('sticky start-0 z-[5]', MOVING_END_LINE) : undefined
+  const stickyFirst = inCard ? cn(STICKY_START, 'z-[5]', MOVING_END_LINE) : undefined
   const idBase = useId()
   const pending = useRef<{ row: number; column: number } | null>(null)
   const [unreadable, setUnreadable] = useState<Readonly<Record<string, boolean>>>({})

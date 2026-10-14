@@ -30,7 +30,9 @@ const meta = {
           'comment — on a record, in a side panel or in a read-only form. From the value’s JSON ' +
           '(`value`, preferred) or from stored HTML (`html`), which is read through the sanitizer ' +
           'into the same structure: nothing of the HTML is inserted as it is. Merge fields show ' +
-          'their labels (`mergeFields`) as neutral pills; mentions are semibold; links are ' +
+          'their labels (`mergeFields`) as neutral pills — or, with `mergeValues` (a preview with ' +
+          'sample data, a letter to one recipient), their values written through `format`, a ' +
+          'field without a value marked "No value" (P5.31); mentions are semibold; links are ' +
           'underlined and only to http(s) or mailto. Empty: "—" or `empty`.\n\n' +
           '**When:** formatted text from the application’s own editor.\n\n' +
           '**When not:** plain text (show it as text); HTML from anywhere else that must keep ' +
@@ -65,6 +67,37 @@ export const OfferLetter: Story = {
       'rel',
       'noopener noreferrer',
     )
+  },
+}
+
+/**
+ * The same template previewed with sample values (P5.31): text as given, the due date and the
+ * total written through `format`; the invoice number has no value, so it stays a pill marked
+ * "No value".
+ */
+export const WithValues: Story = {
+  name: 'Offer letter with values',
+  args: {
+    mergeFields: OFFER_FIELDS.map((field) =>
+      field.key === 'invoice.dueDate'
+        ? { ...field, kind: 'date' as const }
+        : field.key === 'invoice.total'
+          ? { ...field, kind: 'money' as const, currency: 'RSD' }
+          : field,
+    ),
+    mergeValues: {
+      'customer.contact': 'Milica Petrović',
+      'customer.name': 'Kvadrat Gradnja d.o.o.',
+      'invoice.total': '294000.00',
+      'invoice.dueDate': '2026-11-11',
+    },
+  },
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText(/Dear Milica Petrović/)).toBeVisible()
+    await expect(canvas.getByText('No value: Invoice number')).toBeInTheDocument()
+    await expect(canvasElement.querySelectorAll('[data-merge-field]')).toHaveLength(1)
   },
 }
 

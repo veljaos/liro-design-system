@@ -7975,6 +7975,36 @@ export const HelpdeskTicketReply: Story = {
   },
 }
 
+/**
+ * A saved reply with merge fields (P5.31): it goes in with this ticket's values — the contact's
+ * first name, the ticket, the day it was reported — and today and "in three days" computed from
+ * the provider's day; nothing is left to fill in.
+ */
+export const HelpdeskTicketSavedReplyValues: Story = {
+  name: 'Helpdesk ticket, saved reply with values, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={S_ROUTES.ticket('4821')} />,
+  play: async ({ canvasElement }) => {
+    await composerReady(canvasElement)
+    const canvas = within(canvasElement)
+    const reply = canvas.getByRole('textbox', { name: 'Reply' })
+    await userEvent.click(reply)
+    await userEvent.keyboard('{Control>}a{/Control}{Backspace}')
+    await userEvent.click(canvas.getByRole('button', { name: /Saved replies/ }))
+    const list = await within(document.body).findByRole('listbox', { name: 'Saved replies' })
+    await userEvent.click(within(list).getByRole('option', { name: 'After a phone call' }))
+    await waitFor(async () => {
+      await expect(reply).toHaveTextContent('Dear Milica,')
+    })
+    await expect(reply).toHaveTextContent('about ticket #4821, reported on 14.10.2026.')
+    await expect(reply).toHaveTextContent(
+      'today, 14.10.2026., and will write to you by 17.10.2026.',
+    )
+    await expect(reply).toHaveTextContent('Nikola Ilić')
+    await expect(reply.querySelector('[data-merge-field]')).toBeNull()
+  },
+}
+
 /** "Insert article": the knowledge base, an article chosen, its link in the reply. */
 export const HelpdeskTicketInsertArticle: Story = {
   name: 'Helpdesk ticket, insert article, interaction',

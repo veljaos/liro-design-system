@@ -1971,4 +1971,9 @@ export interface LiroMessages {
   'newsletter.invalid': string
   'newsletter.sending': string
   'newsletter.thanks': string
+  // P5.31 merge values
+  /** A merge field without a value (the values were given): its pill's name. */
+  'richText.mergeFieldMissing': (label: string) => string
+  /** Under the text: the fields that still have no value, by their labels. */
+  'richText.missingValues': (labels: readonly string[]) => string
 }

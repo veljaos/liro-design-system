@@ -1,7 +1,8 @@
 import { Fragment, useMemo, type ReactNode } from 'react'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
-import { MENTION_TEXT, MERGE_FIELD_PILL } from './extensions'
+import { MENTION_TEXT, MERGE_FIELD_MISSING, MERGE_FIELD_PILL } from './extensions'
+import { resolveMergeFields, type MergeValueKind, type MergeValues } from './merge-values'
 import { headingIdsByBlock, type RichTextHeading } from './rich-text-headings'
 import {
   headingLevel,
@@ -41,6 +42,22 @@ export interface RichTextMergeField {
   label: string
   /** A heading the menu and the list group it under ("Customer"). */
   group?: string
+  /**
+   * How a value given as plain text is written (P5.31): 'text' (default), 'date' (YYYY-MM-DD),
+   * 'dateTime' or 'time' (an instant), 'number' or 'money' (decimal strings), through `format`.
+   */
+  kind?: MergeValueKind
+  /** For 'money': the currency `format.money` writes. */
+  currency?: string
+  /** For 'number' and 'money': the decimals shown (never rounded, D4). */
+  decimals?: number
+  /**
+   * A field that needs no value (P5.31): 'today' is the provider's `today`, 'now' the
+   * application's `now` (date and time; the time with `kind: 'time'`).
+   */
+  computed?: 'today' | 'now'
+  /** For `computed: 'today'`: whole days later (7) or earlier (-1). */
+  offsetDays?: number
 }
 
 /** The look of rich text content, in the editor and in the view. */
@@ -60,6 +77,14 @@ export interface RichTextProps {
   html?: string | null
   /** The merge fields' labels, so their pills show names instead of keys. */
   mergeFields?: readonly RichTextMergeField[]
+  /**
+   * The merge fields' values (P5.31): each field with a value is shown as its text, written
+   * through `format`; a field without one stays a pill marked "No value". Fields computed from
+   * 'today' or 'now' need none. Without `mergeValues`, every field is a pill.
+   */
+  mergeValues?: MergeValues
+  /** The application's "now" (an instant), for fields computed from it. */
+  now?: string
   /** Shown when there is nothing to read. Default "—". */
   empty?: ReactNode
   /**
@@ -97,18 +122,44 @@ function attr(node: RichTextNode, name: string): string {
   return typeof value === 'string' ? value : ''
 }
 
-/** A merge field's pill: its label shown, "Merge field: <label>" read. */
-export function MergeFieldPill({ fieldKey, label }: { fieldKey: string; label: string }) {
+/**
+ * A merge field's pill: its label shown, "Merge field: <label>" read. `missing` (the values were
+ * given, this one has none): dashed in the warning tone, "No value: <label>" read (P5.31).
+ */
+export function MergeFieldPill({
+  fieldKey,
+  label,
+  missing = false,
+}: {
+  fieldKey: string
+  label: string
+  missing?: boolean
+}) {
   const { messages } = useLiro()
   return (
-    <span data-merge-field={fieldKey} className={MERGE_FIELD_PILL}>
-      <span className="sr-only">{messages['richText.mergeField'](label)}</span>
+    <span
+      data-merge-field={fieldKey}
+      {...(missing ? { 'data-missing': '' } : {})}
+      className={missing ? MERGE_FIELD_MISSING : MERGE_FIELD_PILL}
+    >
+      <span className="sr-only">
+        {missing
+          ? messages['richText.mergeFieldMissing'](label)
+          : messages['richText.mergeField'](label)}
+      </span>
       <span aria-hidden="true">{label}</span>
     </span>
   )
 }
 
-function Inline({ node, labels }: { node: RichTextNode; labels: ReadonlyMap<string, string> }) {
+/** The merge fields' labels, and whether a field still in the text has no value. */
+interface Pills {
+  labels: ReadonlyMap<string, string>
+  /** The values were filled in: every field left has none. */
+  missing: boolean
+}
+
+function Inline({ node, labels }: { node: RichTextNode; labels: Pills }) {
   switch (node.type) {
     case 'text':
       return wrapMarks(node.text ?? '', node.marks)
@@ -116,7 +167,14 @@ function Inline({ node, labels }: { node: RichTextNode; labels: ReadonlyMap<stri
       return <br />
     case 'mergeField': {
       const key = attr(node, 'key')
-      return wrapMarks(<MergeFieldPill fieldKey={key} label={labels.get(key) ?? key} />, node.marks)
+      return wrapMarks(
+        <MergeFieldPill
+          fieldKey={key}
+          label={labels.labels.get(key) ?? key}
+          missing={labels.missing}
+        />,
+        node.marks,
+      )
     }
     case 'mention':
       return wrapMarks(
@@ -136,7 +194,7 @@ function Block({
   heading,
 }: {
   node: RichTextNode
-  labels: ReadonlyMap<string, string>
+  labels: Pills
   /** A top-level heading's id (RichText's `headingIds`). */
   heading?: RichTextHeading | undefined
 }) {
@@ -187,18 +245,32 @@ export function RichText({
   value,
   html,
   mergeFields,
+  mergeValues,
+  now,
   empty,
   headingIds,
   className,
 }: RichTextProps) {
+  const { format, today } = useLiro()
   const doc = useMemo(() => {
-    if (value !== undefined && value !== null) return normalizeRichText(value)
-    if (typeof html === 'string') return richTextFromHtml(html)
-    return null
-  }, [value, html])
-  const labels = useMemo(
-    () => new Map((mergeFields ?? []).map((field) => [field.key, field.label])),
-    [mergeFields],
+    let read: RichTextNode | null = null
+    if (value !== undefined && value !== null) read = normalizeRichText(value)
+    else if (typeof html === 'string') read = richTextFromHtml(html)
+    if (read === null || mergeValues === undefined) return read
+    return resolveMergeFields(read, {
+      fields: mergeFields,
+      values: mergeValues,
+      format,
+      today,
+      now,
+    }).doc
+  }, [value, html, mergeFields, mergeValues, format, today, now])
+  const labels = useMemo<Pills>(
+    () => ({
+      labels: new Map((mergeFields ?? []).map((field) => [field.key, field.label])),
+      missing: mergeValues !== undefined,
+    }),
+    [mergeFields, mergeValues],
   )
   const headings = useMemo(
     () =>

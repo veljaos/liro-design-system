@@ -54,7 +54,13 @@ import { type MenuEntry } from './dropdown-menu'
 import { EmptyState, type EmptyAction } from './empty-state'
 import { CursorPagination } from './navigation'
 import { RefetchLoader } from './refetch-loader'
-import { STICKY_CLEARANCE, STICKY_HEAD, useStickyHead } from './sticky-head'
+import {
+  STICKY_CLEARANCE,
+  STICKY_HEAD,
+  STICKY_START,
+  STICKY_START_AFTER_SELECT,
+  useStickyHead,
+} from './sticky-head'
 import { usePhone } from './use-phone'
 import { keepFocusedRow, overscanRows, spacersBetween } from './virtual-rows'
 
@@ -624,7 +630,7 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
           column.minWidth === undefined && 'min-w-16',
           ALIGN[align],
           sticky ? STICKY_HEAD : resizable && 'relative',
-          corner && ['sticky', selectable ? 'start-12' : 'start-0'],
+          corner && (selectable ? STICKY_START_AFTER_SELECT : STICKY_START),
           sticky || corner ? (corner ? 'z-20' : 'z-10') : undefined,
           oneLine && 'truncate',
         )}
@@ -1065,7 +1071,7 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
                         CELL,
                         'w-px border-0 border-b border-solid border-default bg-surface-sunken',
                         sticky && STICKY_HEAD,
-                        stickyStart && 'sticky start-0',
+                        stickyStart && STICKY_START,
                         stickyStart ? 'z-20' : sticky && 'z-10',
                       )}
                     >

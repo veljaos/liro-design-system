@@ -12,6 +12,7 @@ import {
   ARABIC_REPLY,
   ARABIC_SAVED,
   ARTICLE,
+  CALL_REPLY,
   DRAFT,
   JAPANESE_REPLY,
   JAPANESE_SAVED,
@@ -19,6 +20,9 @@ import {
   MANY_SAVED_REPLIES,
   SAVED_REPLIES,
   TEAM,
+  TICKET_FIELDS,
+  TICKET_VALUES,
+  VALUE_REPLIES,
 } from './reply-composer-story-data'
 
 const FILE: Attachment = {
@@ -126,6 +130,12 @@ const meta = {
           'the composer is the shortcut) with the files in `attachments` (an AttachmentList); ' +
           '`onInsertLink`: the application opens its own search (a knowledge base in ' +
           'LookupDialog) and resolves with `{ text, href }`, inserted as a link at the caret. ' +
+          '**Merge values** (P5.31): a saved reply may use merge fields ("Dear ' +
+          '{{contact.firstName}}, … today, {{date_now}}"); with `mergeValues` (this ' +
+          'conversation’s values) they are written in as it is inserted — dates and amounts ' +
+          "through `format`, fields `computed` from 'today' or 'now' from the provider’s day " +
+          'and the application’s `now` — and a field without a value stays a pill marked "No ' +
+          'value", named under the text. ' +
           '**Send** (or Ctrl/Cmd+Enter): `onSend({ mode, value })`; a promise keeps the text ' +
           'with a spinner until it resolves.\n\n' +
           '**When not:** a chat message or comment without formatting (MessageComposer); a long ' +
@@ -431,5 +441,66 @@ export const AttachInteraction: Story = {
     await expect(
       await canvas.findByRole('list', { name: 'Files of this reply' }),
     ).toHaveTextContent('Screenshot.pdf')
+  },
+}
+
+/**
+ * A reply started from a saved reply with merge fields (P5.31): the contact's name, the ticket,
+ * the incident date (through `format`) and today and today + 7 (computed from the provider's
+ * `today`) are written in; the invoice number has no value yet — a pill marked "No value",
+ * named under the text.
+ */
+export const WithValues: Story = {
+  name: 'Merge values, one missing',
+  render: () => (
+    <Composer
+      savedReplies={VALUE_REPLIES}
+      mergeFields={TICKET_FIELDS}
+      mergeValues={TICKET_VALUES}
+      defaultValue={CALL_REPLY.content}
+    />
+  ),
+  play: async ({ canvasElement }) => {
+    await editorReady(canvasElement)
+    const canvas = within(canvasElement)
+    const box = canvas.getByRole('textbox', { name: 'Reply' })
+    await expect(box).toHaveTextContent('Dear Milica,')
+    await expect(box).toHaveTextContent('ticket 4821.')
+    await expect(box).not.toHaveTextContent('{{')
+    await expect(canvas.getByText('No value: Invoice number')).toBeInTheDocument()
+    await expect(
+      canvas.getByText('No value yet for Invoice number. Fill it in or remove it.'),
+    ).toBeVisible()
+  },
+}
+
+/** Choosing a saved reply with merge fields: it goes in with this conversation's values. */
+export const SavedReplyValuesInteraction: Story = {
+  name: 'Saved reply with values, interaction',
+  tags: ['interaction'],
+  render: () => (
+    <Composer
+      savedReplies={VALUE_REPLIES}
+      mergeFields={TICKET_FIELDS}
+      mergeValues={{ ...TICKET_VALUES, 'invoice.number': 'F-2026-0412' }}
+    />
+  ),
+  play: async ({ canvasElement }) => {
+    await editorReady(canvasElement)
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: /Saved replies/ }))
+    const list = await within(document.body).findByRole('listbox', { name: 'Saved replies' })
+    await userEvent.click(within(list).getByRole('option', { name: /After a phone call/ }))
+    const box = canvas.getByRole('textbox', { name: 'Reply' })
+    await waitFor(async () => {
+      await expect(box).toHaveTextContent('Dear Milica,')
+    })
+    await expect(box).toHaveTextContent('invoice F-2026-0412 was rejected')
+    await expect(box.querySelector('[data-merge-field]')).toBeNull()
+    await expect(canvasElement.querySelector('[data-slot="merge-missing"]')).toBeNull()
+    await userEvent.click(canvas.getByRole('button', { name: 'Send' }))
+    await waitFor(async () => {
+      await expect(canvas.getByTestId('sent')).toHaveTextContent('Dear Milica')
+    })
   },
 }

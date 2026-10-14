@@ -75,7 +75,7 @@ import {
   type ShiftTemplate,
 } from './shift-parts'
 import { StatusBadge } from './status-badge'
-import { STICKY_CLEARANCE, STICKY_HEAD, useStickyHead } from './sticky-head'
+import { STICKY_CLEARANCE, STICKY_HEAD, STICKY_START, useStickyHead } from './sticky-head'
 import { usePhone } from './use-phone'
 
 /*
@@ -1479,7 +1479,10 @@ export function ShiftPlanner(props: ShiftPlannerProps) {
                         <tr key={row.id}>
                           <th
                             scope="row"
-                            className="sticky start-0 z-[5] border-0 border-b border-solid border-subtle bg-surface-raised px-3 py-2 text-start align-top font-regular"
+                            className={cn(
+                              STICKY_START,
+                              'z-[5] border-0 border-b border-solid border-subtle bg-surface-raised px-3 py-2 text-start align-top font-regular',
+                            )}
                           >
                             <span className={cn('block text-sm font-semibold', TEXT_DIRECTION)}>
                               {row.name}
@@ -1507,7 +1510,10 @@ export function ShiftPlanner(props: ShiftPlannerProps) {
                 <tr>
                   <th
                     scope="row"
-                    className="sticky start-0 z-[5] border-0 border-t border-solid border-strong bg-surface-raised px-3 py-2 text-start text-xs font-semibold text-secondary"
+                    className={cn(
+                      STICKY_START,
+                      'z-[5] border-0 border-t border-solid border-strong bg-surface-raised px-3 py-2 text-start text-xs font-semibold text-secondary',
+                    )}
                   >
                     <span className={TEXT_ISOLATE}>{messages['shifts.coverage']}</span>
                   </th>

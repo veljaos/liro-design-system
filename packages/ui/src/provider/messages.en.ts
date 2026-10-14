@@ -1374,4 +1374,8 @@ export const messagesEn: LiroMessages = {
   'newsletter.invalid': 'Enter an e-mail address such as name@example.com.',
   'newsletter.sending': 'Subscribing…',
   'newsletter.thanks': 'Thank you. Check your inbox to confirm.',
+  // P5.31 merge values
+  'richText.mergeFieldMissing': (label) => `No value: ${label}`,
+  'richText.missingValues': (labels) =>
+    `No value yet for ${labels.join(', ')}. Fill ${labels.length === 1 ? 'it' : 'them'} in or remove ${labels.length === 1 ? 'it' : 'them'}.`,
 }

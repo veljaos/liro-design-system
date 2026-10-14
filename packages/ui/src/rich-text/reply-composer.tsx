@@ -26,6 +26,7 @@ import { BUTTON_RESET, FOCUS_RING, TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { Popover, PopoverContent, PopoverTrigger } from '../primitives/popover'
 import { useLiro } from '../provider/liro-provider'
+import type { MergeValues } from './merge-values'
 import type { RichTextMergeField } from './rich-text'
 import { RichTextField, type RichTextFieldHandle } from './rich-text-field'
 import {
@@ -53,7 +54,11 @@ import {
  * - **Mentions** ("@") only in the note mode: a reply goes to someone outside the team.
  * - **Saved replies** (`savedReplies`, the application's texts): a "Saved replies" button opening
  *   a list, grouped, searched by typing from 11 replies (D20); the one chosen is inserted at the
- *   caret, replacing a selection (a reply of one paragraph joins the line).
+ *   caret, replacing a selection (a reply of one paragraph joins the line). A saved reply may use
+ *   merge fields ("Dear {{contact.firstName}}, … on {{incident_date}} … from {{date_now}}"): with
+ *   `mergeValues` (this conversation's values) they are written in as it is inserted, dates and
+ *   amounts through `format`, fields computed from 'today' or 'now' from the provider's day and
+ *   the application's `now`; a field without a value stays a pill marked "No value" (P5.31).
  * - **Attachments:** the paperclip opens the file chooser (`accept`); the files go to `onAttach`,
  *   which checks and uploads them, and shows them in `attachments` (an AttachmentList) under the
  *   text. Dropping files on the composer is the shortcut.
@@ -136,6 +141,15 @@ export interface ReplyComposerProps {
   mentionsLoading?: boolean
   /** Merge fields the text can use ("{{"), the application fills them in. */
   mergeFields?: readonly RichTextMergeField[]
+  /**
+   * The values of the merge fields for this conversation (P5.31): a saved reply, or a field
+   * chosen from "{{", is inserted with its values written in ("Dear Milica, … on 12.10.2026.");
+   * a field without a value stays a pill marked "No value" and a line names it. Fields computed
+   * from 'today' or 'now' need none.
+   */
+  mergeValues?: MergeValues
+  /** The application's "now" (an instant), for fields computed from it. */
+  now?: string
   /** The application's saved replies. */
   savedReplies?: readonly SavedReply[]
   /** Files chosen or dropped; the application checks, uploads and lists them. */
@@ -475,6 +489,8 @@ export function ReplyComposer({ ref: outer, ...props }: ReplyComposerProps) {
         }}
         {...(placeholder === undefined ? {} : { placeholder })}
         {...(props.mergeFields === undefined ? {} : { mergeFields: props.mergeFields })}
+        {...(props.mergeValues === undefined ? {} : { mergeValues: props.mergeValues })}
+        {...(props.now === undefined ? {} : { now: props.now })}
         {...(note && props.mentionCandidates !== undefined
           ? { mentionCandidates: props.mentionCandidates }
           : {})}
