@@ -1273,3 +1273,16 @@ export type {
 } from './components/health-list'
 export { HEALTH_KINDS, healthFacts } from './components/health-logic'
 export type { HealthFact, HealthKind, HealthTimes } from './components/health-logic'
+
+// ── P5.29 agent: SlaTimer and the helpdesk's keys (P5.30) ──
+export { durationText, SlaTimer, slaText } from './components/sla-timer'
+export type { SlaTimerProps } from './components/sla-timer'
+export {
+  durationParts,
+  millisecondsBetween,
+  SLA_TONES,
+  slaReading,
+  slaUrgency,
+} from './components/sla-logic'
+export type { DurationParts, SlaOptions, SlaReading, SlaState } from './components/sla-logic'
+export { rowFocusTarget } from './components/data-table-logic'

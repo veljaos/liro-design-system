@@ -1832,4 +1832,51 @@ export interface LiroMessages {
   'health.never': string
   'health.empty': string
   'health.actionNamed': (actionText: string, name: string) => string
+  // P5.29 agent
+  /**
+   * SlaTimer (P5.30): a deadline in words. The texts are already written: `durationText` by
+   * `sla.duration`, the numbers by `format.number`.
+   */
+  'sla.dueIn': (durationText: string) => string
+  'sla.overdueBy': (durationText: string) => string
+  /** Overdue, less than a minute after the deadline. */
+  'sla.overdue': string
+  'sla.paused': string
+  'sla.met': string
+  'sla.missedBy': (durationText: string) => string
+  /**
+   * A duration for display ("2 h 15 min", "40 min", "1 d 3 h"): the parts `durationParts` keeps,
+   * the others are 0.
+   */
+  'sla.duration': (
+    days: number,
+    daysText: string,
+    hours: number,
+    hoursText: string,
+    minutes: number,
+    minutesText: string,
+  ) => string
+  /** The due instant under the words; `text` is the date and time ("14.10.2026. 10:30"). */
+  'sla.dueAt': (text: string) => string
+  /** The deadline's name before its words ("First response:"). */
+  'sla.labelled': (label: string) => string
+  /** A message only the team sees (MessageBubble `internal`): its visible mark. */
+  'message.internal': string
+  /** ReplyComposer (P5.30): its two modes, their group and the note's hint. */
+  'composer.modes': string
+  'composer.reply': string
+  'composer.note': string
+  'composer.noteHint': string
+  /** The send button in each mode. */
+  'composer.send': string
+  'composer.addNote': string
+  /** Ctrl/Cmd+Enter sends. */
+  'composer.sendHint': string
+  /** The saved replies' button, its search and its empty list. */
+  'composer.savedReplies': string
+  'composer.findSavedReply': string
+  /** Attaching files to the message. */
+  'composer.attach': string
+  /** Asking the application for a link to insert (its own search). */
+  'composer.insertLink': string
 }

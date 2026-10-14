@@ -8,9 +8,10 @@ import { cn } from './cn'
  *
  * Adapted:
  * - **No blue bubbles (D17).** shadcn's variants (default = the primary colour, secondary, muted,
- *   tinted, outline, ghost, destructive) are replaced by three neutral surfaces: `raised` (the
+ *   tinted, outline, ghost, destructive) are replaced by four neutral surfaces: `raised` (the
  *   raised surface with a border.default line: other people's messages), `sunken`
- *   (surface.sunken: the user's own messages) and `ghost` (no box: a message whose content is a
+ *   (surface.sunken: the user's own messages), `note` (surface.sunken with a dashed
+ *   border.strong line: an internal note only the team sees, P5.30) and `ghost` (no box: a message whose content is a
  *   larger part, such as a questionnaire). Own and others' messages differ by their side and
  *   surface, never by colour alone; the author is always named for assistive technology.
  * - Radius lg (12px, shadcn's rounded-xl is 12px too), padding 8px 12px, 13px text (sm), the
@@ -32,13 +33,16 @@ export function BubbleGroup({ className, ...props }: ComponentProps<'div'>) {
 }
 
 /** The bubble's surface: the others' raised box, the user's own sunken one, or none. */
-export type BubbleSurface = 'raised' | 'sunken' | 'ghost'
+export type BubbleSurface = 'raised' | 'sunken' | 'note' | 'ghost'
 
 const SURFACES: Record<BubbleSurface, string> = {
   raised:
     '*:data-[slot=bubble-content]:border-default *:data-[slot=bubble-content]:bg-surface-raised',
   sunken:
     '*:data-[slot=bubble-content]:border-transparent *:data-[slot=bubble-content]:bg-surface-sunken',
+  // An internal note (P5.30): sunken with a dashed border.strong line, distinct from both the
+  // others' and the user's own messages by its line and its "Internal" mark, never by colour.
+  note: '*:data-[slot=bubble-content]:border-dashed *:data-[slot=bubble-content]:border-strong *:data-[slot=bubble-content]:bg-surface-sunken',
   ghost:
     'max-w-full *:data-[slot=bubble-content]:rounded-none *:data-[slot=bubble-content]:border-transparent *:data-[slot=bubble-content]:bg-transparent *:data-[slot=bubble-content]:p-0',
 }

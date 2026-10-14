@@ -148,3 +148,30 @@ export function rowKeyAction(key: string, canOpen: boolean): 'press' | 'open' | 
   if (key === 'Enter') return canOpen ? 'open' : 'press'
   return null
 }
+
+/**
+ * Where the focus goes from a focused row or card that can be pressed (P5.30, an inbox worked from
+ * the keyboard): ArrowDown and ArrowUp to the next and previous one, Home and End to the first and
+ * last drawn. Null when the key does not move it (another key, or already at that end).
+ */
+export function rowFocusTarget(key: string, index: number, count: number): number | null {
+  if (index < 0 || index >= count) return null
+  let target: number
+  switch (key) {
+    case 'ArrowDown':
+      target = Math.min(index + 1, count - 1)
+      break
+    case 'ArrowUp':
+      target = Math.max(index - 1, 0)
+      break
+    case 'Home':
+      target = 0
+      break
+    case 'End':
+      target = count - 1
+      break
+    default:
+      return null
+  }
+  return target === index ? null : target
+}

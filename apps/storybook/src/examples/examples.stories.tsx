@@ -7723,3 +7723,316 @@ export const PlatformNetworkAcknowledge: Story = {
     )
   },
 }
+
+// ── P5.29 agent ──
+// (Imports here, inside the block, so the blocks merge without touching the top.)
+import { S_ROUTES } from './data-S'
+
+/** Waits until the reply composer's editor has replaced its first drawing. */
+async function composerReady(canvasElement: HTMLElement) {
+  await waitFor(async () => {
+    await expect(
+      canvasElement.querySelector('[data-slot="reply-composer"] .ProseMirror'),
+    ).not.toBeNull()
+  })
+  await settle()
+}
+
+/**
+ * Liro support's inbox, seen by Nikola Ilić (E-invoicing) on 14.10.2026 at 09:40: "My open",
+ * the tickets ordered by their service level — the first response and the resolution, overdue in
+ * the danger tone and in words. Views Unassigned, Overdue and All with their counts; ArrowDown and
+ * ArrowUp move between rows, Enter opens a ticket; checked rows are assigned or set together.
+ */
+export const HelpdeskInbox: Story = {
+  name: 'Helpdesk inbox',
+  render: () => <ExampleApp start={S_ROUTES.inbox} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('button', { name: /^My open/ })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    const table = canvas.getByRole('table', { name: 'Tickets' })
+    await expect(within(table).getByText('SEF invoice rejected')).toBeVisible()
+    await expect(within(table).getAllByText(/^Overdue by /).length).toBeGreaterThan(0)
+  },
+}
+
+export const HelpdeskInboxPhone: Story = {
+  name: 'Helpdesk inbox, phone',
+  render: () => <OnPhone start={S_ROUTES.inbox} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(within(canvasElement).getByText('SEF invoice rejected')).toBeVisible()
+  },
+}
+
+/** The Overdue view: every ticket whose first response or resolution is late. */
+export const HelpdeskInboxOverdue: Story = {
+  name: 'Helpdesk inbox, overdue',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={S_ROUTES.overdue} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const table = within(canvasElement).getByRole('table', { name: 'Tickets' })
+    await expect(within(table).getByText('Bank statement import stopped')).toBeVisible()
+    await expect(within(table).queryByText('SEF invoice rejected')).toBeNull()
+  },
+}
+
+/** The Unassigned view. */
+export const HelpdeskInboxUnassigned: Story = {
+  name: 'Helpdesk inbox, unassigned',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={S_ROUTES.unassigned} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const table = within(canvasElement).getByRole('table', { name: 'Tickets' })
+    await expect(within(table).getAllByText('Unassigned').length).toBe(5)
+  },
+}
+
+/** All tickets, three checked: the bulk bar with "Change status…" and "Assign…". */
+export const HelpdeskInboxSelected: Story = {
+  name: 'Helpdesk inbox, three checked',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={S_ROUTES.selected} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('button', { name: 'Assign…' })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Change status…' })).toBeVisible()
+  },
+}
+
+/** "Assign…" asked for the three checked tickets. */
+export const HelpdeskInboxAssign: Story = {
+  name: 'Helpdesk inbox, assign three',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={S_ROUTES.assign} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(
+      within(document.body).getByRole('dialog', { name: 'Assign 3 tickets?' }),
+    ).toBeVisible()
+    await expect(canvasElement).toBeInTheDocument()
+  },
+}
+
+/** The keyboard: the first row, ArrowDown to the next, Enter opens that ticket. */
+export const HelpdeskInboxKeyboard: Story = {
+  name: 'Helpdesk inbox, keyboard, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={S_ROUTES.inbox} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const table = canvas.getByRole('table', { name: 'Tickets' })
+    const rows = within(table)
+      .getAllByRole('row')
+      .filter((row) => row.hasAttribute('data-pressable'))
+    const [first, second] = rows
+    if (first === undefined || second === undefined) throw new Error('Two rows expected')
+    first.focus()
+    await userEvent.keyboard('{ArrowDown}')
+    await expect(second).toHaveFocus()
+    const subject = second.querySelector('.font-medium')?.textContent ?? ''
+    await userEvent.keyboard('{Enter}')
+    await expect(await canvas.findByRole('heading', { level: 1, name: subject })).toBeVisible()
+  },
+}
+
+/** Two tickets checked and assigned to Ana Kovač; the inbox says so. */
+export const HelpdeskInboxBulkAssign: Story = {
+  name: 'Helpdesk inbox, bulk assign, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={S_ROUTES.unassigned} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const boxes = canvas.getAllByRole('checkbox', { name: /^Select #/ })
+    for (const box of boxes.slice(0, 2)) await userEvent.click(box)
+    await userEvent.click(canvas.getByRole('button', { name: 'Assign…' }))
+    const dialog = await within(document.body).findByRole('dialog', { name: 'Assign 2 tickets?' })
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Assign' }))
+    await waitFor(async () => {
+      await expect(
+        within(document.body).getByText('2 tickets assigned to Ana Kovač.'),
+      ).toBeVisible()
+    })
+    await waitFor(async () => {
+      await expect(canvas.getByRole('button', { name: /^Unassigned/ })).toHaveTextContent('3')
+    })
+  },
+}
+
+/**
+ * Ticket #4821 "SEF invoice rejected": Milica Petrović's message with the rejection notice,
+ * Nikola's internal note asking Ana Kovač and her answer — both marked "Internal" — and Nikola's
+ * reply started in the composer (saved replies, files, "Insert article"). Beside it the
+ * properties, changed in place, the service levels (first response due 10:30), the contact and
+ * company with their other tickets, and the activity.
+ */
+export const HelpdeskTicket: Story = {
+  name: 'Helpdesk ticket',
+  render: () => <ExampleApp start={S_ROUTES.ticket('4821')} />,
+  play: async ({ canvasElement }) => {
+    await composerReady(canvasElement)
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { level: 1 })).toHaveTextContent(
+      'SEF invoice rejected',
+    )
+    const log = canvas.getByRole('log')
+    await expect(within(log).getAllByText('Internal')).toHaveLength(2)
+    await expect(canvas.getByRole('textbox', { name: 'Reply' })).toHaveTextContent('Dear Milica,')
+    await expect(canvas.getByRole('combobox', { name: 'Priority' })).toBeVisible()
+  },
+}
+
+export const HelpdeskTicketPhone: Story = {
+  name: 'Helpdesk ticket, phone',
+  render: () => <OnPhone start={S_ROUTES.ticket('4821')} />,
+  play: async ({ canvasElement }) => {
+    await composerReady(canvasElement)
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('button', { name: 'Details' })).toBeVisible()
+    await expect(canvas.queryByRole('combobox', { name: 'Priority' })).toBeNull()
+  },
+}
+
+/** The composer in the internal-note mode. */
+export const HelpdeskTicketNote: Story = {
+  name: 'Helpdesk ticket, internal note',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={S_ROUTES.ticketNote} />,
+  play: async ({ canvasElement }) => {
+    await composerReady(canvasElement)
+    await expect(
+      within(canvasElement).getByText('Only your team sees internal notes.'),
+    ).toBeVisible()
+  },
+}
+
+/** "Insert article" asked: the knowledge base in a LookupDialog. */
+export const HelpdeskTicketArticle: Story = {
+  name: 'Helpdesk ticket, insert article',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={S_ROUTES.ticketArticle} />,
+  play: async ({ canvasElement }) => {
+    await composerReady(canvasElement)
+    const dialog = within(document.body).getByRole('dialog', { name: 'Knowledge base' })
+    await expect(within(dialog).getByText('Why was my SEF invoice rejected?')).toBeVisible()
+  },
+}
+
+/** On a phone, "Details" opens the side panels in a sheet. */
+export const HelpdeskTicketDetailsPhone: Story = {
+  name: 'Helpdesk ticket, details, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={S_ROUTES.ticketDetails} />,
+  play: async ({ canvasElement }) => {
+    await composerReady(canvasElement)
+    const sheet = within(document.body).getByRole('dialog', { name: /^Details/ })
+    await expect(within(sheet).getByRole('combobox', { name: 'Status' })).toBeVisible()
+  },
+}
+
+/** #4823, paused while the customer sends the bank's specification. */
+export const HelpdeskTicketPaused: Story = {
+  name: 'Helpdesk ticket, paused',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={S_ROUTES.ticket('4823')} />,
+  play: async ({ canvasElement }) => {
+    await composerReady(canvasElement)
+    await expect(within(canvasElement).getAllByText('Paused').length).toBeGreaterThan(0)
+  },
+}
+
+/** A reply sent: it joins the conversation, the ticket is Replied and its first response met. */
+export const HelpdeskTicketReply: Story = {
+  name: 'Helpdesk ticket, reply, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={S_ROUTES.ticket('4821')} />,
+  play: async ({ canvasElement }) => {
+    await composerReady(canvasElement)
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: /Saved replies/ }))
+    const list = await within(document.body).findByRole('listbox', { name: 'Saved replies' })
+    await userEvent.click(
+      within(list).getByRole('option', { name: 'SEF rejected: the buyer’s tax number' }),
+    )
+    await userEvent.click(canvas.getByRole('button', { name: 'Send' }))
+    await waitFor(async () => {
+      await expect(within(document.body).getByText('Reply sent to Milica Petrović.')).toBeVisible()
+    })
+    await expect(canvas.getByRole('log')).toHaveTextContent(
+      'Send the corrected invoice to SEF again.',
+    )
+    await expect(canvas.getAllByText('Replied').length).toBeGreaterThan(0)
+    await expect(canvas.getByText('Met')).toBeVisible()
+  },
+}
+
+/** "Insert article": the knowledge base, an article chosen, its link in the reply. */
+export const HelpdeskTicketInsertArticle: Story = {
+  name: 'Helpdesk ticket, insert article, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={S_ROUTES.ticket('4821')} />,
+  play: async ({ canvasElement }) => {
+    await composerReady(canvasElement)
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Insert article' }))
+    const dialog = await within(document.body).findByRole('dialog', { name: 'Knowledge base' })
+    await userEvent.click(within(dialog).getByRole('row', { name: /Update a buyer’s tax number/ }))
+    const reply = canvas.getByRole('textbox', { name: 'Reply' })
+    await expect(
+      await within(reply).findByRole('link', { name: 'Update a buyer’s tax number' }),
+    ).toHaveAttribute('href', 'https://support.example.com/kb/buyer-tax-number')
+  },
+}
+
+/** A property changed in place: the priority, and the activity log says so. */
+export const HelpdeskTicketPriority: Story = {
+  name: 'Helpdesk ticket, priority changed, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={S_ROUTES.ticket('4821')} />,
+  play: async ({ canvasElement }) => {
+    await composerReady(canvasElement)
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('combobox', { name: 'Priority' }))
+    await userEvent.click(await within(document.body).findByRole('option', { name: 'Urgent' }))
+    // The list closes first; the field is in the accessibility tree again after it.
+    await waitFor(async () => {
+      await expect(canvas.getByRole('combobox', { name: 'Priority' })).toHaveTextContent('Urgent')
+    })
+    await expect(canvasElement).toHaveTextContent('Priority: High → Urgent')
+  },
+}
+
+/**
+ * Liro support's overview: open, unassigned and overdue tickets (the same figures as the inbox's
+ * views), the median first response and resolution, satisfaction; tickets opened and resolved,
+ * the first response by day, open tickets by team, the ratings and the overdue tickets.
+ */
+export const HelpdeskOverview: Story = {
+  name: 'Helpdesk overview',
+  render: () => <ExampleApp start={S_ROUTES.dashboard} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { level: 1 })).toHaveTextContent('Support overview')
+    await expect(canvas.getByText('1 h 12 min')).toBeVisible()
+    await expect(canvas.getByRole('table', { name: 'Overdue tickets' })).toBeVisible()
+  },
+}
+
+export const HelpdeskOverviewPhone: Story = {
+  name: 'Helpdesk overview, phone',
+  render: () => <OnPhone start={S_ROUTES.dashboard} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(within(canvasElement).getByText('Support overview')).toBeVisible()
+  },
+}

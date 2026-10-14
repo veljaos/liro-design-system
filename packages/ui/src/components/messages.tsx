@@ -1,4 +1,4 @@
-import { Bot, CircleAlert, SendHorizontal } from 'lucide-react'
+import { Bot, CircleAlert, LockKeyhole, SendHorizontal } from 'lucide-react'
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
 import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
@@ -43,6 +43,10 @@ import { Spinner } from './spinner'
  *   **No blue bubbles (D17):** others' messages stand at the start on the raised surface with a
  *   border, the user's own at the end on surface.sunken, without the avatar and name (the word
  *   "You" for assistive technology). Side and surface tell them apart, never colour alone.
+ *   **Internal notes** (`internal`, P5.30): a message only the team sees stands on its author's
+ *   side on the `note` surface — sunken with a dashed border.strong line — and starts with a
+ *   visible "Internal" mark (a lock and the word, read first by assistive technology), so it
+ *   differs from a reply by its line and its word, never by colour alone.
  *   A message being sent says so in its footer (a spinner and "Sending…"); a failed one says
  *   "Not sent" in the danger colour with an icon, and Retry.
  * - **MessageList:** the messages oldest first, as a conversation reads, on Message Scroller: it
@@ -93,6 +97,8 @@ export interface MessageBubbleProps {
   status?: 'sending' | 'failed'
   /** Sends a failed message again. */
   onRetry?: () => void
+  /** Only the team sees it: the note surface and the "Internal" mark (P5.30). */
+  internal?: boolean
   /** Shows the avatar, the name and the time. Default: true (MessageList hides them inside a run). */
   showAuthor?: boolean
   className?: string
@@ -127,6 +133,7 @@ export function MessageBubble({
   extra,
   status,
   onRetry,
+  internal = false,
   showAuthor = true,
   className,
 }: MessageBubbleProps) {
@@ -144,7 +151,12 @@ export function MessageBubble({
     )
   const name = own ? messages['message.you'] : author.name
   return (
-    <Message align={own ? 'end' : 'start'} data-own={own || undefined} className={className}>
+    <Message
+      align={own ? 'end' : 'start'}
+      data-own={own || undefined}
+      data-internal={internal || undefined}
+      className={className}
+    >
       {!own &&
         (showAuthor ? (
           <AuthorAvatar author={author} />
@@ -170,11 +182,20 @@ export function MessageBubble({
           <span className="sr-only">{name}</span>
         )}
         <Bubble
-          surface={own ? 'sunken' : 'raised'}
+          surface={internal ? 'note' : own ? 'sunken' : 'raised'}
           align={own ? 'end' : 'start'}
           className={extra === undefined ? undefined : 'w-full max-w-xl'}
         >
           <BubbleContent className={extra === undefined ? undefined : 'w-full'}>
+            {internal && (
+              <span
+                data-slot="message-internal"
+                className="mb-1 flex items-center gap-1 text-xs font-semibold text-secondary"
+              >
+                <LockKeyhole aria-hidden="true" className="size-3 shrink-0" />
+                <span className={TEXT_DIRECTION}>{messages['message.internal']}</span>
+              </span>
+            )}
             <div className={cn('whitespace-pre-wrap', TEXT_DIRECTION)}>{children}</div>
             {extra !== undefined && <div className={cn('mt-3', TEXT_DIRECTION)}>{extra}</div>}
           </BubbleContent>
@@ -249,6 +270,8 @@ export interface ThreadMessage {
   /** A part inside the bubble under the text (an agent's questionnaire, files). */
   extra?: ReactNode
   status?: 'sending' | 'failed'
+  /** Only the team sees it: an internal note (P5.30). */
+  internal?: boolean
   /**
    * The whole message drawn by the application instead of a bubble — an AgentQuestion, which
    * draws the agent's bubble itself. It always shows its author.
@@ -372,6 +395,7 @@ export function MessageList({
                       own={item.own === true}
                       at={item.at}
                       showAuthor={run}
+                      internal={item.internal === true}
                       {...(item.extra === undefined ? {} : { extra: item.extra })}
                       {...(item.status === undefined ? {} : { status: item.status })}
                       {...(onRetry === undefined
