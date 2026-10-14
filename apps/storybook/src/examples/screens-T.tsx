@@ -1,3 +1,4 @@
+import { SupportShell } from './screens-S'
 import {
   BookOpen,
   House,
@@ -45,7 +46,7 @@ import {
 } from '@veljaos/ui'
 import { RichText, richTextHeadings } from '../../../../packages/ui/src/rich-text'
 import type { ExampleRoute } from './example-app'
-import { Navigate, ROUTES, Shell, type ExampleAccount } from './example-shell'
+import { Navigate, ROUTES } from './example-shell'
 import { useExampleState } from './example-state'
 import { Frame, Tenant } from './screens-G'
 import {
@@ -248,17 +249,6 @@ function PortalPage({ wide = false, children }: { wide?: boolean; children: Reac
   )
 }
 
-/** Nikola Ilić of Liro support, in the agents' AppShell. */
-const AGENT_ACCOUNT: ExampleAccount = {
-  name: AGENTS.nikola.name,
-  email: 'nikola.ilic@example.com',
-  companies: [{ id: 'liro', name: 'Liro support', description: 'Helpdesk' }],
-  links: [
-    { label: 'Knowledge base', path: T_ROUTES.agentKb },
-    { label: 'Search the knowledge base', path: AGENT_KB.search },
-  ],
-}
-
 function AgentFrame({
   phone,
   crumbs,
@@ -268,18 +258,11 @@ function AgentFrame({
   crumbs: { label: string; href?: string }[]
   children: ReactNode
 }) {
+  // The agents' knowledge base is a tab of the helpdesk's own shell (group S).
   return (
-    <Tenant today={T_TODAY}>
-      <Shell
-        phone={phone}
-        account={AGENT_ACCOUNT}
-        company="liro"
-        crumbs={[{ label: 'Helpdesk' }, ...crumbs]}
-      >
-        <Frame phone={phone}>{children}</Frame>
-        <Toaster layout={phone ? 'phone' : 'desktop'} />
-      </Shell>
-    </Tenant>
+    <SupportShell phone={phone} tab="kb" crumbs={[{ label: 'Helpdesk' }, ...crumbs]}>
+      <Frame phone={phone}>{children}</Frame>
+    </SupportShell>
   )
 }
 

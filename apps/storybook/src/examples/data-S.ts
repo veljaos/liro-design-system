@@ -15,22 +15,22 @@ import type { RichTextNode, SavedReply } from '../../../../packages/ui/src/rich-
 
 export const S_ROUTES = {
   /** The agent's inbox, "My open". */
-  inbox: '/support/tickets',
-  unassigned: '/support/tickets?view=unassigned',
-  overdue: '/support/tickets?view=overdue',
-  all: '/support/tickets?view=all',
+  inbox: '/helpdesk/tickets',
+  unassigned: '/helpdesk/tickets?view=unassigned',
+  overdue: '/helpdesk/tickets?view=overdue',
+  all: '/helpdesk/tickets?view=all',
   /** "All" with three tickets checked: the bulk bar. */
-  selected: '/support/tickets?view=all&selected=3',
+  selected: '/helpdesk/tickets?view=all&selected=3',
   /** The same with "Assign…" asked. */
-  assign: '/support/tickets?view=all&selected=3&assign=open',
-  ticket: (number: string) => `/support/tickets/${number}`,
+  assign: '/helpdesk/tickets?view=all&selected=3&assign=open',
+  ticket: (number: string) => `/helpdesk/tickets/${number}`,
   /** #4821 with the composer in the note mode. */
-  ticketNote: '/support/tickets/4821?compose=note',
+  ticketNote: '/helpdesk/tickets/4821?compose=note',
   /** #4821 with "Insert article" asked: the knowledge base in a dialog. */
-  ticketArticle: '/support/tickets/4821?article=open',
+  ticketArticle: '/helpdesk/tickets/4821?article=open',
   /** #4821 on a phone with its details open in a sheet. */
-  ticketDetails: '/support/tickets/4821?details=open',
-  dashboard: '/support/dashboard',
+  ticketDetails: '/helpdesk/tickets/4821?details=open',
+  dashboard: '/helpdesk/dashboard',
 } as const
 
 // ── Now ───────────────────────────────────────────────────────────────────────────────────────
@@ -164,7 +164,7 @@ function emailOf(contact: string, customer: string): string {
 // prettier-ignore
 const ROWS: Row[] = [
   // The shared three (helper brief, round 6).
-  ['4821', 'SEF invoice rejected', 'Kvadrat Gradnja d.o.o.', 'Milica Petrović', 'Open', 'High', 'Problem', 'einvoicing', 'nikola', at('14', '08:30'), at('14', '10:30'), null, at('15', '08:30'), null],
+  ['4821', 'SEF invoice rejected', 'Kvadrat Gradnja d.o.o.', 'Milica Petrović', 'Open', 'High', 'Problem', 'einvoicing', 'nikola', at('14', '08:30'), at('14', '09:10'), null, at('15', '08:30'), null],
   ['4822', 'Cannot sign in', 'Pekara Zlatni klas', 'Jovana Marković', 'Replied', 'Urgent', 'Access', 'accounts', 'ana', at('14', '07:55'), at('14', '08:55'), at('14', '08:20'), at('14', '15:55'), null],
   ['4823', 'Payroll export question', 'Dom zdravlja Novi Sad', 'Dragan Lazić', 'Paused', 'Normal', 'Question', 'payroll', 'stefan', at('13', '11:10'), at('13', '15:10'), at('13', '12:02'), at('16', '11:10'), null],
   // New this morning.
@@ -298,7 +298,7 @@ export interface TicketMessage {
 
 /**
  * #4821: Milica's message with the rejection notice, Nikola's internal note asking Ana, Ana's
- * answer. No reply to the customer yet: the first response is due at 10:30.
+ * answer. No reply to the customer yet: the first response was due at 09:10, so it is overdue.
  */
 const THREAD_4821: TicketMessage[] = [
   {

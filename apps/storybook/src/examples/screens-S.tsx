@@ -132,7 +132,10 @@ const NIKOLA: ExampleAccount = {
   ],
 }
 
-function supportTabs(current: 'tickets' | 'dashboard'): ModuleTab[] {
+/** The agents' knowledge base (group T's pages inside this shell). */
+const AGENT_KB_PATH = '/helpdesk/kb'
+
+function supportTabs(current: SupportTab): ModuleTab[] {
   return [
     {
       key: 'tickets',
@@ -146,18 +149,27 @@ function supportTabs(current: 'tickets' | 'dashboard'): ModuleTab[] {
       href: `#${S_ROUTES.dashboard}`,
       current: current === 'dashboard',
     },
+    {
+      key: 'kb',
+      label: 'Knowledge base',
+      href: `#${AGENT_KB_PATH}`,
+      current: current === 'kb',
+    },
   ]
 }
 
+/** The support module's tabs. */
+export type SupportTab = 'tickets' | 'dashboard' | 'kb'
+
 /** Liro support's shell around every screen: Nikola signed in, the support module's tabs. */
-function SupportShell({
+export function SupportShell({
   phone,
   tab,
   crumbs,
   children,
 }: {
   phone: boolean
-  tab: 'tickets' | 'dashboard'
+  tab: SupportTab
   crumbs: { label: string; href?: string }[]
   children: ReactNode
 }) {

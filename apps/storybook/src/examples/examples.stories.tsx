@@ -7872,7 +7872,7 @@ export const HelpdeskInboxBulkAssign: Story = {
  * Ticket #4821 "SEF invoice rejected": Milica Petrović's message with the rejection notice,
  * Nikola's internal note asking Ana Kovač and her answer — both marked "Internal" — and Nikola's
  * reply started in the composer (saved replies, files, "Insert article"). Beside it the
- * properties, changed in place, the service levels (first response due 10:30), the contact and
+ * properties, changed in place, the service levels (the first response overdue since 09:10), the contact and
  * company with their other tickets, and the activity.
  */
 export const HelpdeskTicket: Story = {
