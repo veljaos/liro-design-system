@@ -190,7 +190,11 @@ export const JAPANESE_TASKS: GanttTask[] = relabel(JAPANESE_LABELS, '施工チ�
 
 /** Waits until the plan has drawn its timeline (the "now" marker placed, today in view). */
 export async function ganttReady(canvasElement: HTMLElement): Promise<void> {
-  await waitFor(async () => {
-    await expect(canvasElement.querySelector('[data-slot="gantt"][data-ready]')).not.toBeNull()
-  })
+  // SVAR measures its chart after the first paint; a loaded machine may take seconds.
+  await waitFor(
+    async () => {
+      await expect(canvasElement.querySelector('[data-slot="gantt"][data-ready]')).not.toBeNull()
+    },
+    { timeout: 10_000 },
+  )
 }

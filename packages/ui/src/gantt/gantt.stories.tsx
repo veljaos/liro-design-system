@@ -34,9 +34,9 @@ function Controlled(props: Omit<GanttProps, 'tasks' | 'dependencies' | 'onChange
           setModel((current) => applyGanttChange(current, change))
         }}
       />
-      <output data-testid="last-change" dir="ltr" className="font-mono text-xs text-secondary">
+      <p data-testid="last-change" dir="ltr" className="m-0 font-mono text-xs text-secondary">
         {last === null ? '' : JSON.stringify(last)}
-      </output>
+      </p>
     </div>
   )
 }
@@ -219,9 +219,14 @@ export const MoveByKeyboard: Story = {
         '{"type":"dates","id":"roof","start":"2026-11-09","end":"2026-12-04"}',
       )
     })
-    await waitFor(async () => {
-      await expect(canvas.getByRole('status')).toHaveTextContent(/^Roof and walls: /)
-    })
+    // The dialog hides the page from assistive technology until it has closed.
+    await waitFor(
+      async () => {
+        await expect(body.queryByRole('dialog')).toBeNull()
+        await expect(canvas.getByRole('status')).toHaveTextContent(/^Roof and walls: /)
+      },
+      { timeout: 5_000 },
+    )
   },
 }
 

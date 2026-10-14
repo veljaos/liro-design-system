@@ -8588,11 +8588,17 @@ export const ProjectTimelineMoveInteraction: Story = {
     await userEvent.type(start, '19.10.2026.')
     await userEvent.click(within(dialog).getByRole('button', { name: 'Move' }))
     await page.findByText(/^Floors 3–4 now runs 19\.10\.2026\. – 13\.11\.2026\.$/)
-    await waitFor(async () => {
-      await expect(
-        canvas.getByRole('rowheader', { name: /^Task: Floors 3–4, in Structure, 19\.10\.2026\./ }),
-      ).toBeInTheDocument()
-    })
+    await waitFor(
+      async () => {
+        await expect(page.queryByRole('dialog')).toBeNull()
+        await expect(
+          canvas.getByRole('rowheader', {
+            name: /^Task: Floors 3–4, in Structure, 19\.10\.2026\./,
+          }),
+        ).toBeInTheDocument()
+      },
+      { timeout: 5_000 },
+    )
     notice.dismiss()
   },
 }

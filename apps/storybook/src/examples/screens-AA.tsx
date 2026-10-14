@@ -43,7 +43,7 @@ function ProjectTimeline({
     setModel((current) => applyPlanChange(current, change))
     if (change.type === 'dates') {
       notice.success(
-        `${label(change.id)} now runs ${format.date(change.start)} – ${format.date(change.end)}.`,
+        `${label(change.id)} now runs ${format.date(change.start)} – ${format.date(change.end)}`,
       )
     }
   }
