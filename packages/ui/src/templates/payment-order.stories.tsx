@@ -161,7 +161,7 @@ export const LongText: Story = {
           formOf({
             ...TRANSFER,
             payer:
-              'Kvadrat Gradnja d.o.o. za građevinarstvo i inženjering\nBulevar oslobođenja 12\n21000 Novi Sad',
+              'Kvadrat Gradnja d.o.o. za građevinarstvo i inženjering\nBulevar oslobođenja 102\n21000 Novi Sad',
             purpose: 'Plaćanje po računu 2026-1187 i 2026-1188',
           }),
         ]}

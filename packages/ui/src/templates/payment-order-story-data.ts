@@ -145,7 +145,7 @@ export function orderFormProps(
 /** Kvadrat Gradnja pays Beton Mix's invoice 2026-1187 (form 3, a transfer). */
 export const TRANSFER: OrderData = {
   kind: 'transfer',
-  payer: 'Kvadrat Gradnja d.o.o.\nBulevar oslobođenja 12, Novi Sad',
+  payer: 'Kvadrat Gradnja d.o.o.\nBulevar oslobođenja 102, Novi Sad',
   purpose: 'Plaćanje po računu 2026-1187',
   payee: 'Beton Mix d.o.o.\nRumenački put 40, Novi Sad',
   paymentCode: '221',
@@ -162,7 +162,7 @@ export const PAYMENT: OrderData = {
   kind: 'payment',
   payer: 'Gradska toplana Novi Sad\nVladimira Nikolića 1, Novi Sad',
   purpose: 'Uplata po računu F-2026-0412',
-  payee: 'Kvadrat Gradnja d.o.o.\nBulevar oslobođenja 12, Novi Sad',
+  payee: 'Kvadrat Gradnja d.o.o.\nBulevar oslobođenja 102, Novi Sad',
   paymentCode: '289',
   currency: 'RSD',
   amount: '5003678.22',
@@ -174,7 +174,7 @@ export const PAYMENT: OrderData = {
 /** Kvadrat Gradnja withdraws cash for the site's petty cash (form 2, a withdrawal). */
 export const WITHDRAWAL: OrderData = {
   kind: 'withdrawal',
-  payer: 'Kvadrat Gradnja d.o.o.\nBulevar oslobođenja 12, Novi Sad',
+  payer: 'Kvadrat Gradnja d.o.o.\nBulevar oslobođenja 102, Novi Sad',
   purpose: 'Isplata gotovine za blagajnu gradilišta Liman 4',
   payee: 'Nikola Marković\nNovi Sad',
   paymentCode: '166',
