@@ -6119,7 +6119,7 @@ export const FiscalMixedTablet: Story = {
 /** An instant payment: the code shown large to the customer, waiting. */
 const FISCAL_INSTANT_CHECK = async () => {
   await expect(
-    within(paymentDialog()).getByRole('img', { name: 'Instant payment code' }),
+    within(paymentDialog()).getByRole('img', { name: 'IPS QR code for the payment' }),
   ).toBeVisible()
 }
 
@@ -6135,6 +6135,29 @@ export const FiscalInstantPhone: Story = {
   tags: ['!dev'],
   render: () => <OnPhone start={TILL_ROUTES.instant} />,
   play: phonePlay(FISCAL_INSTANT_CHECK),
+}
+
+/**
+ * The other way of an instant payment (P5.40): the cashier stops showing the till's code and
+ * scans the buyer's IPS QR code from their bank's app; the bank asks the buyer to confirm.
+ */
+export const FiscalInstantBuyerCode: Story = {
+  name: 'POS fiscal, instant payment, buyer’s code, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={TILL_ROUTES.instant} />,
+  play: deskPlay(async () => {
+    await FISCAL_INSTANT_CHECK()
+    const dialog = within(paymentDialog())
+    await userEvent.click(dialog.getByRole('button', { name: 'Cancel this payment' }))
+    const scan = await dialog.findByRole('textbox', { name: 'Or scan the buyer’s code' })
+    await userEvent.type(scan, 'K:PK|V:01|C:1|R:205000000011122205{Enter}')
+    await waitFor(async () => {
+      await expect(paymentDialog()).toHaveTextContent(
+        'The buyer’s code is read; the bank is asking the buyer to confirm.',
+      )
+    })
+    await expect(dialog.queryByRole('img', { name: 'IPS QR code for the payment' })).toBeNull()
+  }),
 }
 
 /** A wire transfer (deferred payment) without a buyer: the rule and the buyer's field. */

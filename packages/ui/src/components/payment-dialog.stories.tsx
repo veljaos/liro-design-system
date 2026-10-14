@@ -350,7 +350,7 @@ export const InstantWaiting: Story = {
   },
   play: async () => {
     await settle()
-    await expect(within(dialog()).getByRole('img', { name: 'Instant payment code' })).toBeVisible()
+    await expect(within(dialog()).getByRole('img', { name: 'IPS QR code for the payment' })).toBeVisible()
     await expect(dialog()).toHaveTextContent('Waiting for the payment…')
   },
 }
