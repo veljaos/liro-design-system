@@ -328,6 +328,7 @@ export function Shell({
   company = HOME_COMPANY,
   agent,
   account,
+  banners,
   children,
 }: {
   phone: boolean
@@ -338,6 +339,8 @@ export function Shell({
   agent?: ReactNode
   /** Someone else than Milica, at another organisation. */
   account?: ExampleAccount
+  /** P5.36 acct: application-wide banners (a trial ending, a payment past due). */
+  banners?: ReactNode
   children: ReactNode
 }) {
   const navigate = useContext(Navigate)
@@ -553,6 +556,7 @@ export function Shell({
       {...(tabs === undefined ? {} : { moduleTabs: tabs })}
       {...(bottomBar === undefined ? {} : { bottomBar })}
       {...(agent === undefined ? {} : { agent })}
+      {...(banners === undefined ? {} : { banners })}
     >
       {children}
     </AppShell>

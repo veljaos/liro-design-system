@@ -8499,3 +8499,636 @@ export const KnowledgeBaseAgentsSearch: Story = {
     ).toBeVisible()
   }),
 }
+
+// ── P5.32 acct ──
+// (Imports here, inside the block, so the blocks merge without touching the top.)
+import { V_ROUTES } from './data-V'
+import { Z_ROUTES } from './data-Z'
+
+/** The first file input inside an element (FileDropzone's). */
+function firstFileInput(element: HTMLElement): HTMLInputElement {
+  const input = element.querySelector<HTMLInputElement>('input[type="file"]')
+  if (input === null) throw new Error('No file input')
+  return input
+}
+
+/**
+ * Knjigovodstvo Jelić's clients on 14 October 2026, Snežana Jelić signed in: her clients in the
+ * application's order of urgency — at risk first, then the nearest open deadline —, each with
+ * its next deadline, missing documents, open tasks, last activity and health in words.
+ */
+export const AccountantClients: Story = {
+  name: 'Accountant clients',
+  render: () => <ExampleApp start={V_ROUTES.clients} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const table = canvas.getByRole('table', { name: 'Clients' })
+    const kvadrat = within(table).getByRole('row', { name: /Kvadrat Gradnja d\.o\.o\./ })
+    await expect(kvadrat).toHaveTextContent('PIB 108452317')
+    await expect(kvadrat).toHaveTextContent('At risk')
+    await expect(kvadrat).toHaveTextContent('3 documents')
+    // At risk first: the overdue payroll tax return of Rakić Pekara leads.
+    const first = within(table).getAllByRole('row')[1]
+    await expect(first).toHaveTextContent('Rakić Pekara SZR')
+    await expect(canvas.getByRole('button', { name: /All clients/ })).toHaveTextContent('214')
+    // 25 a page, in the application's order; the next page from the pager.
+    await expect(within(table).getAllByRole('row')).toHaveLength(26)
+  },
+}
+
+export const AccountantClientsPhone: Story = {
+  name: 'Accountant clients, phone',
+  render: () => <OnPhone start={V_ROUTES.clients} />,
+}
+
+/** Every client who needs attention, both accountants'. */
+export const AccountantClientsAttention: Story = {
+  name: 'Accountant clients, needs attention',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={V_ROUTES.attention} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const table = within(canvasElement).getByRole('table', { name: 'Clients' })
+    await expect(table).toHaveTextContent('Medija Print d.o.o.')
+    await expect(table).not.toHaveTextContent('On track')
+  },
+}
+
+/** All 214 clients, both accountants', 25 a page. */
+export const AccountantClientsAll: Story = {
+  name: 'Accountant clients, all',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={V_ROUTES.allClients} />,
+}
+
+/** Filtered to overdue deadlines, then a row's menu asks the client; Send adds the request. */
+export const AccountantClientsFilterAndAsk: Story = {
+  name: 'Accountant clients, filter and ask, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={V_ROUTES.clients} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const body = within(document.body)
+    await userEvent.type(canvas.getByRole('searchbox'), '108452317')
+    const table = canvas.getByRole('table', { name: 'Clients' })
+    await waitFor(async () => {
+      await expect(within(table).getAllByRole('row')).toHaveLength(2)
+    })
+    await userEvent.click(within(table).getByRole('button', { name: /Kvadrat Gradnja/ }))
+    await userEvent.click(await body.findByRole('menuitem', { name: 'Ask the client…' }))
+    const drawer = await body.findByRole('dialog', { name: /^Ask the client/ })
+    await expect(drawer).toHaveTextContent('Kvadrat Gradnja d.o.o.')
+    await userEvent.click(within(drawer).getByRole('button', { name: 'Send request' }))
+    await waitFor(async () => {
+      await expect(body.queryByRole('dialog')).toBeNull()
+    })
+    await expect(await body.findByText(/Request sent to Kvadrat Gradnja d\.o\.o\./)).toBeVisible()
+    // The client's checklist lists the new request beside the earlier ones.
+    await userEvent.click(within(table).getByRole('row', { name: /Kvadrat Gradnja/ }))
+    await settle()
+    await expect(
+      await canvas.findByRole('heading', { name: 'Requests to the client' }),
+    ).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('Documents asked on 14.10.2026.')
+  },
+}
+
+/**
+ * The company switcher at 214 clients (AppShell's, virtualised): pinned, recent, then every
+ * client; the tax number on the second line; a suspended account marked; the application's note.
+ */
+export const AccountantSwitcher: Story = {
+  name: 'Accountant client switcher',
+  render: () => <ExampleApp start={V_ROUTES.switcher} />,
+  play: async () => {
+    const list = await within(document.body).findByRole('listbox', { name: 'Companies' })
+    await settle()
+    // The list opens at the current company, the firm's own books, among all 214.
+    const current = within(list).getByRole('option', { name: /Knjigovodstvo Jelić/ })
+    await expect(current).toHaveAttribute('aria-selected', 'true')
+    await expect(current).toHaveAttribute('aria-setsize', '214')
+    // A virtualised list: far fewer rows in the page than clients.
+    await expect(within(list).getAllByRole('option').length).toBeLessThan(60)
+  },
+}
+
+export const AccountantSwitcherPhone: Story = {
+  name: 'Accountant client switcher, phone',
+  render: () => <OnPhone start={V_ROUTES.switcher} />,
+  play: async () => {
+    const sheet = await within(document.body).findByRole('dialog', { name: 'Switch company' })
+    await settle()
+    await expect(within(sheet).getByRole('combobox', { name: 'Find company' })).toBeVisible()
+  },
+}
+
+/** A tax number finds its client among 214; Enter opens that client's month-end checklist. */
+export const AccountantSwitcherSearch: Story = {
+  name: 'Accountant client switcher, search by tax number, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={V_ROUTES.switcher} />,
+  play: async ({ canvasElement }) => {
+    const body = within(document.body)
+    const search = await body.findByRole('combobox', { name: 'Find company' })
+    await settle()
+    await userEvent.type(search, '107819450')
+    const list = body.getByRole('listbox', { name: 'Companies' })
+    await waitFor(async () => {
+      await expect(within(list).getAllByRole('option')).toHaveLength(1)
+    })
+    await expect(within(list).getByRole('option')).toHaveTextContent('Medic Lab Niš d.o.o.')
+    // Without accents and in parts: "vojvodanka mlin".
+    await userEvent.clear(search)
+    await userEvent.type(search, 'vojvodjanka mlin')
+    await userEvent.clear(search)
+    await userEvent.type(search, 'mlin vojvo')
+    await waitFor(async () => {
+      await expect(within(list).getAllByRole('option')[0]).toHaveTextContent('Vojvođanka Mlin a.d.')
+    })
+    await userEvent.clear(search)
+    await userEvent.type(search, '108452317{Enter}')
+    await expect(
+      await within(canvasElement).findByRole('heading', {
+        level: 1,
+        name: 'Kvadrat Gradnja d.o.o.: September 2026',
+      }),
+    ).toBeVisible()
+  },
+}
+
+/** On a phone: the full-screen sheet, searched by name; choosing opens the client. */
+export const AccountantSwitcherPhoneSearch: Story = {
+  name: 'Accountant client switcher, phone, search, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <OnPhone start={V_ROUTES.switcher} />,
+  play: async ({ canvasElement }) => {
+    const body = within(document.body)
+    const sheet = await body.findByRole('dialog', { name: 'Switch company' })
+    await settle()
+    await userEvent.type(
+      within(sheet).getByRole('combobox', { name: 'Find company' }),
+      'zlatni klas',
+    )
+    const option = await within(sheet).findByRole('option', { name: /Pekara Zlatni klas/ })
+    await userEvent.click(option)
+    await expect(
+      await within(canvasElement).findByRole('heading', {
+        level: 1,
+        name: 'Pekara Zlatni klas d.o.o.: September 2026',
+      }),
+    ).toBeVisible()
+  },
+}
+
+/**
+ * The deadlines across Snežana's clients in October: the VAT returns for September on the 15th,
+ * the payroll tax returns, an annual account; each in its state's words and tone.
+ */
+export const AccountantDeadlines: Story = {
+  name: 'Accountant deadlines',
+  render: () => <ExampleApp start={V_ROUTES.deadlines} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { level: 1, name: 'Deadlines' })).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('Payroll tax return · Rakić Pekara SZR')
+  },
+}
+
+export const AccountantDeadlinesPhone: Story = {
+  name: 'Accountant deadlines, phone',
+  render: () => <OnPhone start={V_ROUTES.deadlines} />,
+}
+
+/** The agenda on a desktop: day by day. */
+export const AccountantDeadlinesAgenda: Story = {
+  name: 'Accountant deadlines, agenda',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={V_ROUTES.deadlinesAgenda} />,
+}
+
+/** The 15th's list open: every deadline of that day. */
+export const AccountantDeadlinesDay: Story = {
+  name: 'Accountant deadlines, 15 October',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={V_ROUTES.deadlinesDay} />,
+}
+
+/**
+ * Kvadrat Gradnja d.o.o.'s September (SetupChecklist): purchase invoices wait for three missing
+ * documents ("Ask the client…"), the VAT return and the lock wait for them; beside it the
+ * deadlines, the requests sent to the client and its facts.
+ */
+export const AccountantMonthClose: Story = {
+  name: 'Accountant month close',
+  render: () => <ExampleApp start={V_ROUTES.close('kvadrat')} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvasElement).toHaveTextContent('3 of 7 done')
+    await expect(canvas.getByRole('button', { name: 'Ask the client…' })).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('Waits for the purchase invoices (step 3).')
+    await expect(canvasElement).toHaveTextContent('Documents for the VAT return, September 2026')
+  },
+}
+
+export const AccountantMonthClosePhone: Story = {
+  name: 'Accountant month close, phone',
+  render: () => <OnPhone start={V_ROUTES.close('kvadrat')} />,
+}
+
+/** Another client's checklist, from its state: Medic Lab Niš waits for its bank statements. */
+export const AccountantMonthCloseMedic: Story = {
+  name: 'Accountant month close, Medic Lab Niš',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={V_ROUTES.close('medic')} />,
+}
+
+/**
+ * "Ask the client" (an end Drawer, the list still visible): documents or answers, the items, the
+ * due date, a message and the e-mail as a choice; the client answers in the portal.
+ */
+export const AccountantAsk: Story = {
+  name: 'Accountant ask the client',
+  render: () => <ExampleApp start={V_ROUTES.ask} />,
+  play: async () => {
+    const drawer = await within(document.body).findByRole('dialog', { name: /^Ask the client/ })
+    await settle()
+    await expect(within(drawer).getByRole('radio', { name: /Documents/ })).toBeChecked()
+    await expect(within(drawer).getByRole('textbox', { name: 'Document 1' })).toHaveValue(
+      'Contract with Elektro Sistem d.o.o. for the excavator rental',
+    )
+    await expect(
+      within(drawer).getByRole('checkbox', { name: 'Notify Milica Petrović by e-mail' }),
+    ).toBeChecked()
+  },
+}
+
+export const AccountantAskPhone: Story = {
+  name: 'Accountant ask the client, phone',
+  render: () => <OnPhone start={V_ROUTES.ask} />,
+  play: async () => {
+    await within(document.body).findByRole('dialog', { name: /^Ask the client/ })
+    await settle()
+  },
+}
+
+/** Send with nothing asked and no due date: the checks say what is missing. */
+export const AccountantAskErrors: Story = {
+  name: 'Accountant ask the client, errors',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={V_ROUTES.askErrors} />,
+  play: async () => {
+    const drawer = await within(document.body).findByRole('dialog', { name: /^Ask the client/ })
+    await settle()
+    await expect(drawer).toHaveTextContent('Write at least one question.')
+    await expect(drawer).toHaveTextContent('Choose the day the answer is due.')
+  },
+}
+
+/**
+ * Kvadrat Gradnja's client portal (Milica Petrović): the firm's open requests — three documents
+ * for the VAT return and two payments to explain — and the earlier ones, done.
+ */
+export const ClientPortalRequests: Story = {
+  name: 'Client portal requests',
+  render: () => <ExampleApp start={V_ROUTES.portal} />,
+  play: portalPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(
+      canvas.getByRole('heading', { level: 1, name: 'Requests from your accountant' }),
+    ).toBeVisible()
+    await expect(canvas.getByRole('table', { name: 'Open requests' })).toHaveTextContent(
+      'Two payments to explain',
+    )
+  }),
+}
+
+export const ClientPortalRequestsPhone: Story = {
+  name: 'Client portal requests, phone',
+  render: () => <OnPhone start={V_ROUTES.portal} />,
+  play: portalPlay(async (canvasElement) => {
+    await expect(canvasElement).toHaveTextContent('Documents for the VAT return, September 2026')
+  }, true),
+}
+
+/** One request: the accountant's message, a drop zone per document, Send. */
+export const ClientPortalRequest: Story = {
+  name: 'Client portal request',
+  render: () => <ExampleApp start={V_ROUTES.request('REQ-2026-118')} />,
+  play: portalPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getAllByRole('button', { name: 'Choose files' })).toHaveLength(3)
+    await expect(canvas.getByRole('button', { name: 'Send to Snežana Jelić' })).toBeVisible()
+  }),
+}
+
+export const ClientPortalRequestPhone: Story = {
+  name: 'Client portal request, phone',
+  render: () => <OnPhone start={V_ROUTES.request('REQ-2026-118')} />,
+  play: portalPlay(async (canvasElement) => {
+    await expect(
+      within(canvasElement).getAllByRole('button', { name: 'Take a photo' }).length,
+    ).toBeGreaterThan(0)
+  }, true),
+}
+
+/** The first document uploaded: the file in its place, removable until sent; "1 of 3 given". */
+export const ClientPortalRequestUploaded: Story = {
+  name: 'Client portal request, one document uploaded',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={V_ROUTES.requestUploaded} />,
+  play: portalPlay(async (canvasElement) => {
+    await expect(canvasElement).toHaveTextContent('beton-mix-2026-1187.pdf')
+    await expect(canvasElement).toHaveTextContent('1 of 3 given')
+  }),
+}
+
+/** The questions answered and sent: the answers read only, "Sent to Snežana Jelić on …". */
+export const ClientPortalRequestSent: Story = {
+  name: 'Client portal request, answers sent',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={V_ROUTES.requestSent} />,
+  play: portalPlay(async (canvasElement) => {
+    await expect(canvasElement).toHaveTextContent('Sent to Snežana Jelić on')
+    await expect(within(canvasElement).queryByRole('textbox')).toBeNull()
+  }),
+}
+
+/** Upload a document, Send: the request is answered and leaves the open list. */
+export const ClientPortalUpload: Story = {
+  name: 'Client portal request, upload and send, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={V_ROUTES.request('REQ-2026-118')} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Send to Snežana Jelić' }))
+    await expect(canvasElement).toHaveTextContent('Upload at least one document before you send.')
+    await userEvent.upload(
+      firstFileInput(canvasElement),
+      new File(['%PDF-1.7'], 'beton-mix-2026-1187.pdf', { type: 'application/pdf' }),
+    )
+    await expect(await canvas.findByText('beton-mix-2026-1187.pdf')).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('1 of 3 given')
+    await userEvent.click(canvas.getByRole('button', { name: 'Send to Snežana Jelić' }))
+    await expect(await canvas.findByText(/^Sent to Snežana Jelić on/)).toBeVisible()
+    await userEvent.click(canvas.getByRole('link', { name: 'Back to Requests' }))
+    await settle()
+    await expect(canvas.getByRole('table', { name: 'Open requests' })).not.toHaveTextContent(
+      'Documents for the VAT return',
+    )
+  },
+}
+
+/** What Kvadrat Gradnja sent the firm earlier. */
+export const ClientPortalDocuments: Story = {
+  name: 'Client portal documents',
+  render: () => <ExampleApp start={V_ROUTES.documents} />,
+}
+
+export const ClientPortalDocumentsPhone: Story = {
+  name: 'Client portal documents, phone',
+  render: () => <OnPhone start={V_ROUTES.documents} />,
+}
+
+/**
+ * Kvadrat Gradnja d.o.o.'s Liro subscription (Milica Petrović, administrator): Business with the
+ * Projects module, 24 of 30 users and the other allowances (UsageMeter; the assistant near its
+ * limit in the application's words), the next invoice, the card and the latest invoices.
+ */
+export const SubscriptionOverview: Story = {
+  name: 'Subscription',
+  render: () => <ExampleApp start={Z_ROUTES.subscription} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('progressbar', { name: 'Users' })).toHaveAttribute(
+      'aria-valuetext',
+      '24 of 30',
+    )
+    await expect(canvasElement).toHaveTextContent('Near the limit')
+    await expect(canvasElement).toHaveTextContent('20.760,00')
+    await expect(canvas.getByRole('button', { name: 'Change plan' })).toBeVisible()
+  },
+}
+
+export const SubscriptionOverviewPhone: Story = {
+  name: 'Subscription, phone',
+  render: () => <OnPhone start={Z_ROUTES.subscription} />,
+}
+
+/** A company on its trial: the trial Banner in the shell, no invoices, no payment method yet. */
+export const SubscriptionTrial: Story = {
+  name: 'Subscription, trial',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={Z_ROUTES.trial} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const banner = canvasElement.querySelector('[data-slot="shell-banners"]')
+    await expect(banner).toHaveTextContent('Your trial ends in 9 days')
+    await expect(canvasElement).toHaveTextContent('No payment method yet.')
+  },
+}
+
+export const SubscriptionTrialPhone: Story = {
+  name: 'Subscription, trial, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={Z_ROUTES.trial} />,
+}
+
+/** October's card payment failed: the danger Banner in the shell, the invoice overdue. */
+export const SubscriptionPastDue: Story = {
+  name: 'Subscription, payment past due',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={Z_ROUTES.pastDue} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const banner = canvasElement.querySelector('[data-slot="shell-banners"]')
+    await expect(banner).toHaveTextContent('Payment past due')
+    await expect(
+      within(canvasElement).getByRole('button', { name: 'Update payment method' }),
+    ).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('Overdue')
+  },
+}
+
+export const SubscriptionPastDuePhone: Story = {
+  name: 'Subscription, payment past due, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={Z_ROUTES.pastDue} />,
+}
+
+/** Cancelled: it runs to the end of the term; "Keep the subscription" in the banner. */
+export const SubscriptionCancelled: Story = {
+  name: 'Subscription, cancelled',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={Z_ROUTES.cancelled} />,
+}
+
+/** "Change" on the payment method: the card, a transfer, or a new card at the provider. */
+export const SubscriptionPayment: Story = {
+  name: 'Subscription, payment method',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={Z_ROUTES.payment} />,
+  play: async () => {
+    const drawer = await within(document.body).findByRole('dialog', {
+      name: /^Change payment method/,
+    })
+    await settle()
+    await expect(within(drawer).getByRole('radio', { name: /Visa ending in 4242/ })).toBeChecked()
+  },
+}
+
+/** Cancelling asks why and the company's name: what happens to access and data, in words. */
+export const SubscriptionCancel: Story = {
+  name: 'Subscription, cancel',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={Z_ROUTES.cancel} />,
+  play: async () => {
+    const dialog = await within(document.body).findByRole('alertdialog')
+    await settle()
+    await expect(dialog).toHaveTextContent('Kvadrat Gradnja d.o.o. · Business')
+    await expect(within(dialog).getByRole('button', { name: 'Cancel subscription' })).toBeDisabled()
+  },
+}
+
+/** Cancel, a reason, the name typed: the cancelled banner; "Keep the subscription" undoes it. */
+export const SubscriptionCancelling: Story = {
+  name: 'Subscription, cancel and keep, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={Z_ROUTES.subscription} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const body = within(document.body)
+    await userEvent.click(canvas.getByRole('button', { name: 'Cancel subscription' }))
+    const dialog = await body.findByRole('alertdialog')
+    await userEvent.click(within(dialog).getByRole('radio', { name: 'It costs too much' }))
+    await userEvent.type(
+      within(dialog).getByRole('textbox', { name: /Kvadrat Gradnja/ }),
+      'Kvadrat Gradnja d.o.o.',
+    )
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Cancel subscription' }))
+    await waitFor(async () => {
+      await expect(body.queryByRole('alertdialog')).toBeNull()
+    })
+    const banner = canvasElement.querySelector('[data-slot="shell-banners"]')
+    await expect(banner).toHaveTextContent('Your subscription is cancelled')
+    await userEvent.click(canvas.getByRole('button', { name: 'Keep the subscription' }))
+    await expect(canvasElement.querySelector('[data-slot="shell-banners"]')).toBeNull()
+  },
+}
+
+/** Liro's invoices, newest first; a row opens the PDF. */
+export const SubscriptionInvoicesList: Story = {
+  name: 'Subscription invoices',
+  render: () => <ExampleApp start={Z_ROUTES.invoices} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const table = within(canvasElement).getByRole('table', { name: 'Liro’s invoices' })
+    await expect(within(table).getAllByRole('row')[1]).toHaveTextContent('LB-2026-0934')
+  },
+}
+
+export const SubscriptionInvoicesListPhone: Story = {
+  name: 'Subscription invoices, phone',
+  render: () => <OnPhone start={Z_ROUTES.invoices} />,
+}
+
+/** October's invoice as its PDF (PrintDocument): paid by card, no amount due. */
+export const SubscriptionInvoicePdf: Story = {
+  name: 'Subscription invoice PDF',
+  render: () => <ExampleApp start={Z_ROUTES.invoice('LB-2026-0934')} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent(
+      'Paid on 01.10.2026. with the card ending in 4242.',
+    )
+    await expect(canvasElement).toHaveTextContent('20.760,00')
+  },
+}
+
+export const SubscriptionInvoicePdfPhone: Story = {
+  name: 'Subscription invoice PDF, phone',
+  render: () => <OnPhone start={Z_ROUTES.invoice('LB-2026-0934')} />,
+}
+
+/**
+ * Change plan: Start, Business and Pro side by side (PlanComparison), Business current; Start
+ * cannot hold 24 users and says so.
+ */
+export const SubscriptionChangePlan: Story = {
+  name: 'Subscription change plan',
+  render: () => <ExampleApp start={Z_ROUTES.changePlan} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('radio', { name: 'Business' })).toBeChecked()
+    await expect(canvas.getByRole('radio', { name: 'Start' })).toBeDisabled()
+    await expect(canvas.getByRole('button', { name: 'Change plan' })).toBeDisabled()
+  },
+}
+
+export const SubscriptionChangePlanPhone: Story = {
+  name: 'Subscription change plan, phone',
+  render: () => <OnPhone start={Z_ROUTES.changePlan} />,
+}
+
+/** Pro chosen: what changes and the billing service's proration, "Due today 8.779,36 RSD". */
+export const SubscriptionChangePlanPro: Story = {
+  name: 'Subscription change plan, Pro chosen',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={Z_ROUTES.changePlanPro} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('8.779,36')
+    await expect(canvasElement).toHaveTextContent('-8.651,61')
+  },
+}
+
+export const SubscriptionChangePlanProPhone: Story = {
+  name: 'Subscription change plan, Pro chosen, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={Z_ROUTES.changePlanPro} />,
+}
+
+/** "Change to Pro" asks first: the action, Business → Pro, the charge and the proration. */
+export const SubscriptionChangePlanConfirm: Story = {
+  name: 'Subscription change plan, confirm',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={Z_ROUTES.changePlanConfirm} />,
+  play: async () => {
+    const dialog = await within(document.body).findByRole('alertdialog')
+    await settle()
+    await expect(dialog).toHaveTextContent('Business → Pro')
+    await expect(within(dialog).getByRole('button', { name: 'Change to Pro' })).toBeVisible()
+  },
+}
+
+/** Choose Pro, confirm: the subscription page shows Pro with its limits and next invoice. */
+export const SubscriptionChangingPlan: Story = {
+  name: 'Subscription change plan, to Pro, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={Z_ROUTES.changePlan} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByText('Pro', { selector: 'span' }))
+    await expect(canvas.getByRole('radio', { name: 'Pro' })).toBeChecked()
+    await expect(canvasElement).toHaveTextContent('8.779,36')
+    await userEvent.click(canvas.getByRole('button', { name: 'Change to Pro' }))
+    const dialog = await within(document.body).findByRole('alertdialog')
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Change to Pro' }))
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: 'Subscription' }),
+    ).toBeVisible()
+    await expect(canvas.getByRole('progressbar', { name: 'Users' })).toHaveAttribute(
+      'aria-valuetext',
+      '24 of 100',
+    )
+    await expect(canvasElement).toHaveTextContent('35.880,00')
+  },
+}
