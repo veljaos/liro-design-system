@@ -11193,3 +11193,219 @@ export const IosPartnerPortalDisputeFlow: Story = {
     await settle()
   },
 }
+
+// ── P5.41 map ──
+// (Imports here, inside the block, so the blocks merge without touching the top.)
+import { mapReady } from '../../../../packages/ui/src/map/map-story-data'
+import { AE_ROUTES, AF_ROUTES } from './data-AE'
+import { AG_ROUTES } from './data-AG'
+
+/**
+ * Kvadrat Gradnja's property-tax view (P5.41): the illustrative zones of Novi Sad on AreaMap, its
+ * three properties, and the zone the chosen one falls in.
+ */
+const ZONES_CHECK = async (canvasElement: HTMLElement, zone: string) => {
+  await mapReady(canvasElement)
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Property tax zones' })).toBeVisible()
+  await expect(canvasElement).toHaveTextContent(`Falls in: ${zone}`)
+  await expect(
+    canvas.getByRole('region', { name: 'Map: Illustrative zones of Novi Sad' }),
+  ).toBeVisible()
+}
+
+export const PropertyTaxZones: Story = {
+  name: 'Property tax zones',
+  render: () => <ExampleApp start={AE_ROUTES.zones} />,
+  play: async ({ canvasElement }) => {
+    await ZONES_CHECK(canvasElement, 'Zone II')
+  },
+}
+
+export const PropertyTaxZonesPhone: Story = {
+  name: 'Property tax zones, phone',
+  render: () => <OnPhone start={AE_ROUTES.zones} />,
+  play: async ({ canvasElement }) => {
+    await ZONES_CHECK(canvasElement, 'Zone II')
+  },
+}
+
+/** The warehouse chosen, as the application restores it: Zone III. */
+export const PropertyTaxZonesWarehouse: Story = {
+  name: 'Property tax zones, warehouse',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AE_ROUTES.warehouse} />,
+  play: async ({ canvasElement }) => {
+    await ZONES_CHECK(canvasElement, 'Zone III')
+  },
+}
+
+/** Choosing a property moves the point and marks its zone. */
+export const PropertyTaxZonesInteraction: Story = {
+  name: 'Property tax zones, choose a property, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AE_ROUTES.zones} />,
+  play: async ({ canvasElement }) => {
+    await mapReady(canvasElement)
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('radio', { name: /Head office/ }))
+    await expect(canvasElement).toHaveTextContent('Falls in: Zone I')
+    await expect(canvas.getByRole('option', { name: /Zone I\b/ })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    )
+  },
+}
+
+/**
+ * Nikola Marković checks in at Site Liman 4 from his phone (P5.41): inside 150 m of the gate, so
+ * Check in is available.
+ */
+const CHECK_IN_CHECK = async (canvasElement: HTMLElement, state: string) => {
+  await mapReady(canvasElement)
+  await expect(canvasElement).toHaveTextContent(state)
+  await expect(
+    within(canvasElement).getByRole('region', { name: 'Map: Site Liman 4' }),
+  ).toBeVisible()
+}
+
+export const SiteCheckIn: Story = {
+  name: 'Site check-in',
+  render: () => <ExampleApp start={AF_ROUTES.checkIn} />,
+  play: async ({ canvasElement }) => {
+    await CHECK_IN_CHECK(canvasElement, 'Inside the allowed area')
+    await expect(
+      within(canvasElement).getByRole('button', { name: 'Check in' }),
+    ).not.toHaveAttribute('aria-disabled')
+  },
+}
+
+export const SiteCheckInPhone: Story = {
+  name: 'Site check-in, phone',
+  render: () => <OnPhone start={AF_ROUTES.checkIn} />,
+  play: async ({ canvasElement }) => {
+    await CHECK_IN_CHECK(canvasElement, 'Inside the allowed area')
+  },
+}
+
+/** On the tram, about 800 m away: the check-in waits, with its reason. */
+export const SiteCheckInOutside: Story = {
+  name: 'Site check-in, outside',
+  tags: ['!dev'],
+  render: () => <OnPhone start={AF_ROUTES.outside} />,
+  play: async ({ canvasElement }) => {
+    await CHECK_IN_CHECK(canvasElement, 'Outside the allowed area')
+    await expect(canvasElement).toHaveTextContent('Check in when you are at the site.')
+  },
+}
+
+export const SiteCheckInUnknown: Story = {
+  name: 'Site check-in, unknown',
+  tags: ['!dev'],
+  render: () => <OnPhone start={AF_ROUTES.unknown} />,
+  play: async ({ canvasElement }) => {
+    await CHECK_IN_CHECK(canvasElement, 'Location not known yet')
+  },
+}
+
+export const SiteCheckInDenied: Story = {
+  name: 'Site check-in, location off',
+  tags: ['!dev'],
+  render: () => <OnPhone start={AF_ROUTES.denied} />,
+  play: async ({ canvasElement }) => {
+    await CHECK_IN_CHECK(canvasElement, 'Location access is off')
+  },
+}
+
+/** Use my location: the application answers, decides "inside", and Check in works. */
+export const SiteCheckInInteraction: Story = {
+  name: 'Site check-in, use my location, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <OnPhone start={AF_ROUTES.unknown} />,
+  play: async ({ canvasElement }) => {
+    await mapReady(canvasElement)
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Use my location' }))
+    // Unavailable is aria-disabled, which toBeEnabled does not see: wait for the verdict.
+    await waitFor(
+      async () => {
+        await expect(canvas.getByRole('button', { name: 'Check in' })).not.toHaveAttribute(
+          'aria-disabled',
+          'true',
+        )
+      },
+      { timeout: 5_000 },
+    )
+    await userEvent.click(canvas.getByRole('button', { name: 'Check in' }))
+    await waitFor(async () => {
+      await expect(canvasElement).toHaveTextContent('Checked in at')
+    })
+    notice.dismiss()
+  },
+}
+
+/**
+ * Kvadrat Gradnja group's revenue by country (P5.41, maps in charts): seven countries in shades of
+ * the main blue, Albania hatched with "No data", the subsidiaries' seats as points.
+ */
+const REGION_CHART_CHECK = async (canvasElement: HTMLElement, heading: string, map: string) => {
+  await mapReady(canvasElement)
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: heading })).toBeVisible()
+  await expect(canvas.getByRole('region', { name: `Map: ${map}` })).toBeVisible()
+}
+
+export const GroupRevenueByCountry: Story = {
+  name: 'Group revenue by country',
+  render: () => <ExampleApp start={AG_ROUTES.countries} />,
+  play: async ({ canvasElement }) => {
+    await REGION_CHART_CHECK(canvasElement, 'Group revenue by country', 'Revenue by country')
+    await expect(canvasElement).toHaveTextContent('No data')
+  },
+}
+
+export const GroupRevenueByCountryPhone: Story = {
+  name: 'Group revenue by country, phone',
+  render: () => <OnPhone start={AG_ROUTES.countries} />,
+  play: async ({ canvasElement }) => {
+    await REGION_CHART_CHECK(canvasElement, 'Group revenue by country', 'Revenue by country')
+  },
+}
+
+/** Sales by illustrative region of Serbia, the sales offices as bubbles. */
+export const SalesByRegion: Story = {
+  name: 'Sales by region',
+  render: () => <ExampleApp start={AG_ROUTES.regions} />,
+  play: async ({ canvasElement }) => {
+    await REGION_CHART_CHECK(canvasElement, 'Sales by region', 'Sales by illustrative region')
+    await expect(canvasElement).toHaveTextContent('Illustrative regions')
+  },
+}
+
+export const SalesByRegionPhone: Story = {
+  name: 'Sales by region, phone',
+  render: () => <OnPhone start={AG_ROUTES.regions} />,
+  play: async ({ canvasElement }) => {
+    await REGION_CHART_CHECK(canvasElement, 'Sales by region', 'Sales by illustrative region')
+  },
+}
+
+/** The keys move over the regions and Enter shows the chosen one's figures under the chart. */
+export const SalesByRegionInteraction: Story = {
+  name: 'Sales by region, choose a region, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AG_ROUTES.regions} />,
+  play: async ({ canvasElement }) => {
+    await mapReady(canvasElement)
+    const canvas = within(canvasElement)
+    canvas.getByRole('region', { name: 'Map: Sales by illustrative region' }).focus()
+    await userEvent.keyboard('{ArrowRight}')
+    await waitFor(async () => {
+      await expect(
+        canvasElement.querySelector('[data-slot="region-chart-tooltip"]'),
+      ).toHaveTextContent('North')
+    })
+    await userEvent.keyboard('{Enter}')
+    await expect(canvas.getByRole('heading', { level: 2, name: 'North' })).toBeVisible()
+  },
+}

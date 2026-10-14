@@ -2096,4 +2096,52 @@ export interface LiroMessages {
   'comparison.result': string
   /** No rows to compare. */
   'comparison.empty': string
+  // P5.41 map
+  /** AreaMap and LocationCheck (P5.41): how the keyboard moves the map (its description). */
+  'map.keys': string
+  /** The map's buttons. */
+  'map.zoomIn': string
+  'map.zoomOut': string
+  'map.showAll': string
+  /** The map's name for assistive technology: "Map: Illustrative zones of Novi Sad". */
+  'map.name': (label: string) => string
+  /** The list of areas beside the map, and the legend. */
+  'map.areas': string
+  'map.legend': string
+  /** The area a point falls in: "Falls in: Zone II"; or none. */
+  'map.fallsIn': (area: string) => string
+  'map.fallsInNone': string
+  /** The chosen area, announced. */
+  'map.chosen': (area: string) => string
+  /** States. */
+  'map.empty': string
+  'map.loading': string
+  'map.error': string
+  'map.retry': string
+  /** LocationCheck: the four states, as the application decides them. */
+  'location.inside': string
+  'location.outside': string
+  'location.unknown': string
+  'location.denied': string
+  /** Asking the application for the position, and while it answers. */
+  'location.locate': string
+  'location.locating': string
+  /** The position's facts: its accuracy in metres and when it was taken. */
+  'location.accuracy': (metresText: string) => string
+  'location.takenAt': (timeText: string) => string
+  /** The allowed area and the position, named on the map's list of shapes. */
+  'location.allowed': string
+  'location.position': string
+  /** RegionChart (P5.41, maps in charts): how the keys move between the areas (its description). */
+  'map.regionKeys': string
+  /** An area without a value (hatched): never 0. */
+  'map.noData': string
+  /** A legend step's range, the numbers written by `format`: below the first break … */
+  'map.stepBelow': (toText: string) => string
+  /** … between two breaks … */
+  'map.stepBetween': (fromText: string, toText: string) => string
+  /** … and from the last break up. */
+  'map.stepFrom': (fromText: string) => string
+  /** The area the keys reached, announced: "Serbia: 412.000.000 RSD". */
+  'map.areaValue': (area: string, valueText: string) => string
 }

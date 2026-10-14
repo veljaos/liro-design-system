@@ -61,6 +61,10 @@ import { GROUP_AC_ROUTES } from './screens-AC'
 import { GROUP_U_ROUTES } from './screens-U'
 // ── P5.33 docs ──
 import { GROUP_W_ROUTES } from './screens-W'
+// P5.41 map
+import { GROUP_AE_ROUTES } from './screens-AE'
+import { GROUP_AF_ROUTES } from './screens-AF'
+import { GROUP_AG_ROUTES } from './screens-AG'
 
 // ── Routes ────────────────────────────────────────────────────────────────────────────────
 
@@ -116,6 +120,10 @@ const EXAMPLE_ROUTES: readonly ExampleRoute[] = [
   ...GROUP_U_ROUTES,
   // ── P5.33 docs ──
   ...GROUP_W_ROUTES,
+  // P5.41 map
+  ...GROUP_AE_ROUTES,
+  ...GROUP_AF_ROUTES,
+  ...GROUP_AG_ROUTES,
 ]
 
 // ── The app ───────────────────────────────────────────────────────────────────────────────────

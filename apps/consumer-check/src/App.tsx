@@ -4,6 +4,7 @@ import { ChartsExample } from './ChartsExample'
 import { DiagramExample } from './DiagramExample'
 import { FormExample } from './FormExample'
 import { GanttExample } from './GanttExample'
+import { MapExample } from './MapExample'
 import { RichTextExample } from './RichTextExample'
 
 export function App() {
@@ -23,6 +24,7 @@ export function App() {
       <RichTextExample />
       <DiagramExample />
       <GanttExample />
+      <MapExample />
     </main>
   )
 }

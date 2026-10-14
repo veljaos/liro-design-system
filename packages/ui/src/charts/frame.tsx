@@ -19,12 +19,15 @@ import type { ChartCategory, ChartSeries, ChartStateProps, ChartValues } from '.
  * height in every state, so nothing moves when the data arrives.
  */
 
-export type ChartSkeletonShape = 'columns' | 'bars' | 'round'
+export type ChartSkeletonShape = 'columns' | 'bars' | 'round' | 'block'
 
 const COLUMN_HEIGHTS = [46, 62, 54, 78, 66, 88, 72, 58, 80, 70, 92, 64]
 
-/** A chart-shaped placeholder: columns, bars (horizontal) or a ring. */
+/** A chart-shaped placeholder: columns, bars (horizontal), a ring, or one block (a map, P5.41). */
 function ChartSkeleton({ shape, height }: { shape: ChartSkeletonShape; height: number }) {
+  if (shape === 'block') {
+    return <Skeleton className="w-full rounded-md" style={{ height }} />
+  }
   if (shape === 'round') {
     const size = Math.min(height - 16, 200)
     return (
