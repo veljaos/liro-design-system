@@ -1409,3 +1409,23 @@ export type {
 export { UsageMeter } from './components/usage-meter'
 export type { UsageMeterProps } from './components/usage-meter'
 export { meterShare, usageAmount, usageWords } from './components/usage-logic'
+// ── P5.42 org ──
+export { HierarchyChart } from './components/hierarchy-chart'
+export type { HierarchyChartProps } from './components/hierarchy-chart'
+export {
+  descendantCount,
+  hierarchyKeyAction,
+  hierarchyPath,
+  indexHierarchy,
+  initiallyExpanded,
+  matchHierarchy,
+  revealNode,
+  stacksChildren,
+  visibleHierarchy,
+} from './components/hierarchy-logic'
+export type {
+  HierarchyIndex,
+  HierarchyItem,
+  HierarchyKeyAction,
+  HierarchyNode,
+} from './components/hierarchy-logic'

@@ -2074,4 +2074,27 @@ export interface LiroMessages {
   'usage.amount': (number: string, unit: string) => string
   'usage.ofLimit': (usedText: string, limitText: string) => string
   'usage.noLimit': (usedText: string) => string
+  // P5.42 org
+  /** HierarchyChart (P5.42): a position without a person. */
+  'hierarchy.vacant': string
+  /** The toggle under a closed node, and under an open one. */
+  'hierarchy.expand': (count: number, countText: string, name: string) => string
+  'hierarchy.collapse': (name: string) => string
+  /** The search field, and what it found ("2 of 5 found", "5 found", "Nothing found"). */
+  'hierarchy.search': string
+  'hierarchy.found': (index: number, indexText: string, count: number, countText: string) => string
+  'hierarchy.foundCount': (count: number, countText: string) => string
+  'hierarchy.notFound': string
+  /** Showing one unit alone, the reasons it cannot be, the trail back and the whole chart. */
+  'hierarchy.showUnit': string
+  'hierarchy.unitReason': string
+  'hierarchy.unitShown': string
+  'hierarchy.path': string
+  'hierarchy.showAll': string
+  /** The size buttons. */
+  'hierarchy.size': string
+  'hierarchy.fit': string
+  'hierarchy.actual': string
+  /** Loading failed. */
+  'hierarchy.retry': string
 }
