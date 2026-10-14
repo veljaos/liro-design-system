@@ -67,7 +67,7 @@ export const OPERATOR = {
 
 // ── Tenants ───────────────────────────────────────────────────────────────────────────────────
 
-export type TenantPlan = 'Starter' | 'Business' | 'Enterprise' | 'Trial'
+export type TenantPlan = 'Start' | 'Business' | 'Pro' | 'Trial'
 export type TenantHealth = 'Healthy' | 'Degraded' | 'Failing' | 'Suspended'
 
 export interface SaTenant {
@@ -100,7 +100,7 @@ export const TENANTS: SaTenant[] = [
     id: 'zlatni-klas',
     name: 'Pekara Zlatni klas',
     taxId: '112307845',
-    plan: 'Starter',
+    plan: 'Start',
     users: 9,
     seats: 10,
     health: 'Healthy',
@@ -110,7 +110,7 @@ export const TENANTS: SaTenant[] = [
     id: 'dom-zdravlja',
     name: 'Dom zdravlja Novi Sad',
     taxId: '100725418',
-    plan: 'Enterprise',
+    plan: 'Pro',
     users: 318,
     seats: 350,
     health: 'Healthy',
@@ -131,7 +131,7 @@ export const TENANTS: SaTenant[] = [
     id: 'dunav',
     name: 'Bistro Dunav',
     taxId: '111540392',
-    plan: 'Starter',
+    plan: 'Start',
     users: 12,
     seats: 15,
     health: 'Healthy',
@@ -141,7 +141,7 @@ export const TENANTS: SaTenant[] = [
     id: 'kod-mike',
     name: 'Kafić Kod Mike',
     taxId: '112893014',
-    plan: 'Starter',
+    plan: 'Start',
     users: 4,
     seats: 5,
     health: 'Healthy',
@@ -202,7 +202,7 @@ export const TENANTS: SaTenant[] = [
     id: 'panonija',
     name: 'Panonija Agro d.o.o.',
     taxId: '104987265',
-    plan: 'Enterprise',
+    plan: 'Pro',
     users: 64,
     seats: 80,
     health: 'Healthy',
@@ -212,7 +212,7 @@ export const TENANTS: SaTenant[] = [
     id: 'rakic',
     name: 'Rakić Pekara SZR',
     taxId: '111296603',
-    plan: 'Starter',
+    plan: 'Start',
     users: 3,
     seats: 5,
     health: 'Suspended',
@@ -233,7 +233,7 @@ export const TENANTS: SaTenant[] = [
     id: 'vojvodjanka',
     name: 'Vojvođanka Mlin a.d.',
     taxId: '100421987',
-    plan: 'Enterprise',
+    plan: 'Pro',
     users: 112,
     seats: 120,
     health: 'Healthy',
@@ -266,7 +266,7 @@ export const TENANT_VIEWS = [
   },
 ] satisfies SavedView[]
 
-const PLANS: TenantPlan[] = ['Starter', 'Business', 'Enterprise', 'Trial']
+const PLANS: TenantPlan[] = ['Start', 'Business', 'Pro', 'Trial']
 const HEALTHS: TenantHealth[] = ['Healthy', 'Degraded', 'Failing', 'Suspended']
 
 export const TENANT_FILTERS: FilterDefinition[] = [
