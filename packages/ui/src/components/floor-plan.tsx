@@ -428,8 +428,19 @@ export function FloorPlan(props: FloorPlanProps) {
       fitLabels(element)
     })
     observer.observe(element)
+    // A font that arrives after the first drawing changes every label's size, not the plan's:
+    // measure again then, so the fit never depends on how fast the fonts loaded.
+    let live = true
+    const refit = () => {
+      if (live) fitLabels(element)
+    }
+    const fonts = element.ownerDocument.fonts
+    void fonts.ready.then(refit)
+    fonts.addEventListener('loadingdone', refit)
     return () => {
+      live = false
       observer.disconnect()
+      fonts.removeEventListener('loadingdone', refit)
     }
   }, [view, areaId, zoom])
 
