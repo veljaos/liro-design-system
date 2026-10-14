@@ -7971,7 +7971,7 @@ export const HelpdeskTicketReply: Story = {
       'Send the corrected invoice to SEF again.',
     )
     await expect(canvas.getAllByText('Replied').length).toBeGreaterThan(0)
-    await expect(canvas.getByText('Met')).toBeVisible()
+    await expect(canvas.getByText(/^Missed by /)).toBeVisible()
   },
 }
 
