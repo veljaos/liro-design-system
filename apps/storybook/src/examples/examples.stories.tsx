@@ -6913,3 +6913,461 @@ export const RestaurantTabInteraction: Story = {
     )
   },
 }
+
+// ── P5.29 portal ──
+// (Imports here, inside the block, so the blocks merge without touching the top.)
+import { T_ROUTES } from './screens-T'
+
+/** Every check of a portal story also holds on a phone: nothing scrolls sideways. */
+async function expectPortalFits(canvasElement: HTMLElement) {
+  for (const page of canvasElement.querySelectorAll<HTMLElement>('[data-liro-phone-page]')) {
+    await expect(page.scrollWidth).toBeLessThanOrEqual(page.clientWidth)
+  }
+}
+
+/** A portal story's checks on the desktop, and the same on a phone. */
+function portalPlay(
+  check: (canvasElement: HTMLElement) => Promise<void>,
+  phone = false,
+): NonNullable<Story['play']> {
+  return async ({ canvasElement }) => {
+    await settle()
+    await check(canvasElement)
+    if (phone) await expectPortalFits(canvasElement)
+  }
+}
+
+/**
+ * The support portal's home (PortalShell, Milica Petrović of Kvadrat Gradnja d.o.o., 14.10.2026):
+ * the search, her four tickets that are not closed — 4821 "SEF invoice rejected" open, 4807
+ * waiting for her answer, 4796 resolved and asking for a rating — and the knowledge base's five
+ * categories with their counts.
+ */
+const PORTAL_HOME_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(
+    canvas.getByRole('heading', { level: 1, name: 'How can we help, Milica?' }),
+  ).toBeVisible()
+  await expect(canvas.getByRole('link', { name: 'SEF invoice rejected' })).toBeVisible()
+  await expect(canvas.getByRole('link', { name: 'E-invoicing' })).toHaveAccessibleDescription(
+    /^5 articles/,
+  )
+}
+
+export const SupportPortalHome: Story = {
+  name: 'Support portal',
+  render: () => <ExampleApp start={T_ROUTES.home} />,
+  play: portalPlay(PORTAL_HOME_CHECK),
+}
+
+export const SupportPortalHomePhone: Story = {
+  name: 'Support portal, phone',
+  render: () => <OnPhone start={T_ROUTES.home} />,
+  play: portalPlay(PORTAL_HOME_CHECK, true),
+}
+
+/**
+ * A new ticket half written ("SEF rejected our invoice"): the application proposed three
+ * articles — "Why was my SEF invoice rejected?" first — beside the form; Submit stays usable.
+ */
+const NEW_TICKET_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { name: 'These articles may help' })).toBeVisible()
+  await expect(canvas.getByRole('link', { name: 'Why was my SEF invoice rejected?' })).toBeVisible()
+  await expect(canvas.getByRole('button', { name: 'Submit ticket' })).toBeEnabled()
+  await expect(canvasElement).toHaveTextContent('Problem')
+}
+
+export const SupportPortalNewTicket: Story = {
+  name: 'Support portal, new ticket',
+  render: () => <ExampleApp start={T_ROUTES.newTicketDraft} />,
+  play: portalPlay(NEW_TICKET_CHECK),
+}
+
+export const SupportPortalNewTicketPhone: Story = {
+  name: 'Support portal, new ticket, phone',
+  render: () => <OnPhone start={T_ROUTES.newTicketDraft} />,
+  play: portalPlay(NEW_TICKET_CHECK, true),
+}
+
+/** The empty form: nothing proposed yet. */
+export const SupportPortalNewTicketEmpty: Story = {
+  name: 'Support portal, new ticket, empty',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={T_ROUTES.newTicket} />,
+  play: portalPlay(async (canvasElement) => {
+    await expect(
+      within(canvasElement).queryByRole('heading', { name: 'These articles may help' }),
+    ).toBeNull()
+  }),
+}
+
+/**
+ * Submitting: Submit with nothing names the missing fields; the subject brings the articles
+ * (the application's search after 300ms); Submit opens the new ticket 4824 with the message.
+ */
+export const SupportPortalSubmitInteraction: Story = {
+  name: 'Support portal, submit a ticket, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={T_ROUTES.newTicket} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Submit ticket' }))
+    await expect(canvasElement).toHaveTextContent('Choose what kind of help you need.')
+    await expect(canvasElement).toHaveTextContent('Write a subject.')
+    await userEvent.click(canvas.getByRole('radio', { name: /^Access/ }))
+    await userEvent.type(canvas.getByRole('textbox', { name: /^Subject/ }), 'Reset two-factor')
+    await expect(
+      await canvas.findByRole('link', { name: 'Reset two-factor sign-in' }),
+    ).toBeVisible()
+    await userEvent.type(
+      canvas.getByRole('textbox', { name: /^Description/ }),
+      'I lost my phone and have no recovery codes.',
+    )
+    await userEvent.click(canvas.getByRole('button', { name: 'Submit ticket' }))
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: 'Reset two-factor' }),
+    ).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('I lost my phone and have no recovery codes.')
+  },
+}
+
+/** My tickets: six, the latest change first, each status in words and tone. */
+const MY_TICKETS_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'My tickets' })).toBeVisible()
+  await expect(canvas.getAllByText('Waiting for your answer').length).toBeGreaterThan(0)
+  await expect(canvas.getAllByText('SEF invoice rejected')[0]).toBeVisible()
+}
+
+export const SupportPortalMyTickets: Story = {
+  name: 'Support portal, my tickets',
+  render: () => <ExampleApp start={T_ROUTES.tickets} />,
+  play: portalPlay(MY_TICKETS_CHECK),
+}
+
+export const SupportPortalMyTicketsPhone: Story = {
+  name: 'Support portal, my tickets, phone',
+  render: () => <OnPhone start={T_ROUTES.tickets} />,
+  play: portalPlay(MY_TICKETS_CHECK, true),
+}
+
+/**
+ * Ticket 4807, waiting for Milica's answer: her question, Ana Kovač's two replies and her file,
+ * the reply field at the bottom. The agents' internal notes are not in what the portal gets.
+ */
+const TICKET_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(
+    canvas.getByRole('heading', {
+      level: 1,
+      name: 'Bank statement import shows the wrong value dates',
+    }),
+  ).toBeVisible()
+  await expect(canvas.getByRole('log')).toHaveTextContent('Ana Kovač')
+  await expect(canvas.getByRole('textbox', { name: 'Reply' })).toBeVisible()
+}
+
+export const SupportPortalTicket: Story = {
+  name: 'Support portal, ticket',
+  render: () => <ExampleApp start={T_ROUTES.ticket('4807')} />,
+  play: portalPlay(TICKET_CHECK),
+}
+
+export const SupportPortalTicketPhone: Story = {
+  name: 'Support portal, ticket, phone',
+  render: () => <OnPhone start={T_ROUTES.ticket('4807')} />,
+  play: portalPlay(TICKET_CHECK, true),
+}
+
+/** Ticket 4821, "SEF invoice rejected": Milica's message and its two files, no answer yet. */
+export const SupportPortalTicketOpen: Story = {
+  name: 'Support portal, ticket, open',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={T_ROUTES.ticket('4821')} />,
+  play: portalPlay(async (canvasElement) => {
+    await expect(within(canvasElement).getByRole('log')).toHaveTextContent('sef-rejection.png')
+  }),
+}
+
+/** A closed ticket: the reply field disabled with its reason. */
+export const SupportPortalTicketClosed: Story = {
+  name: 'Support portal, ticket, closed',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={T_ROUTES.ticket('4772')} />,
+  play: portalPlay(async (canvasElement) => {
+    await expect(canvasElement).toHaveTextContent('This ticket is closed.')
+  }),
+}
+
+/** A reply: it joins the conversation as Milica's own, and the ticket is open again. */
+export const SupportPortalReplyInteraction: Story = {
+  name: 'Support portal, reply, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={T_ROUTES.ticket('4807')} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.type(
+      canvas.getByRole('textbox', { name: 'Reply' }),
+      'I imported it again; the dates match now.{Enter}',
+    )
+    await expect(canvas.getByRole('log')).toHaveTextContent('the dates match now')
+    await expect(canvas.getAllByText('Open').length).toBeGreaterThan(0)
+  },
+}
+
+/**
+ * Ticket 4796, resolved by Ana Kovač: "Rate the help you got" — five steps with words, an
+ * optional comment and Send — above the conversation.
+ */
+const RATING_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  const group = canvas.getByRole('radiogroup', {
+    name: 'How satisfied are you with how we solved this ticket?',
+  })
+  await expect(within(group).getAllByRole('radio')).toHaveLength(5)
+  const rating = canvasElement.querySelector<HTMLElement>('[data-slot="satisfaction-rating"]')
+  await expect(within(rating ?? canvasElement).getByRole('button', { name: 'Send' })).toBeVisible()
+}
+
+export const SupportPortalRating: Story = {
+  name: 'Support portal, rating',
+  render: () => <ExampleApp start={T_ROUTES.ticket('4796')} />,
+  play: portalPlay(RATING_CHECK),
+}
+
+export const SupportPortalRatingPhone: Story = {
+  name: 'Support portal, rating, phone',
+  render: () => <OnPhone start={T_ROUTES.ticket('4796')} />,
+  play: portalPlay(RATING_CHECK, true),
+}
+
+/** The rating sent: the thanks and the answer in words. */
+export const SupportPortalRatingSent: Story = {
+  name: 'Support portal, rating sent',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={T_ROUTES.rated} />,
+  play: portalPlay(async (canvasElement) => {
+    await expect(canvasElement).toHaveTextContent('Your answer: 4, Satisfied')
+  }),
+}
+
+/** Rating with the keyboard: the arrows choose, Tab to the comment and Send. */
+export const SupportPortalRatingInteraction: Story = {
+  name: 'Support portal, rating, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={T_ROUTES.ticket('4796')} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    canvas.getByRole('radio', { name: '1 Very dissatisfied' }).focus()
+    await userEvent.keyboard('{End}')
+    await expect(canvas.getByRole('radio', { name: '5 Very satisfied' })).toBeChecked()
+    await userEvent.type(
+      canvas.getByRole('textbox', { name: 'Comment (optional)' }),
+      'Quick and clear.',
+    )
+    const rating = canvasElement.querySelector<HTMLElement>('[data-slot="satisfaction-rating"]')
+    await userEvent.click(within(rating ?? canvasElement).getByRole('button', { name: 'Send' }))
+    await expect(canvasElement).toHaveTextContent('Your answer: 5, Very satisfied')
+  },
+}
+
+/** The knowledge base: search, five categories with their counts, the most read articles. */
+const KB_HOME_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Knowledge base' })).toBeVisible()
+  await expect(
+    within(canvas.getByRole('list', { name: 'Categories' })).getAllByRole('link'),
+  ).toHaveLength(5)
+}
+
+export const KnowledgeBase: Story = {
+  name: 'Knowledge base',
+  render: () => <ExampleApp start={T_ROUTES.kb} />,
+  play: portalPlay(KB_HOME_CHECK),
+}
+
+export const KnowledgeBasePhone: Story = {
+  name: 'Knowledge base, phone',
+  render: () => <OnPhone start={T_ROUTES.kb} />,
+  play: portalPlay(KB_HOME_CHECK, true),
+}
+
+/** E-invoicing's five articles, each with its summary and date. */
+const KB_CATEGORY_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'E-invoicing' })).toBeVisible()
+  await expect(
+    canvas.getByRole('link', { name: 'Connect Liro to SEF with an API key' }),
+  ).toBeVisible()
+}
+
+export const KnowledgeBaseCategory: Story = {
+  name: 'Knowledge base, category',
+  render: () => <ExampleApp start={T_ROUTES.kbCategory('e-invoicing')} />,
+  play: portalPlay(KB_CATEGORY_CHECK),
+}
+
+export const KnowledgeBaseCategoryPhone: Story = {
+  name: 'Knowledge base, category, phone',
+  render: () => <OnPhone start={T_ROUTES.kbCategory('e-invoicing')} />,
+  play: portalPlay(KB_CATEGORY_CHECK, true),
+}
+
+/**
+ * "Why was my SEF invoice rejected?": a calm reading column, the contents at the start (on
+ * phones a disclosure above the text), "Was this helpful?" and the related articles.
+ */
+const KB_ARTICLE_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(
+    canvas.getByRole('heading', { level: 1, name: 'Why was my SEF invoice rejected?' }),
+  ).toBeVisible()
+  await expect(canvas.getByRole('navigation', { name: 'On this page' })).toBeVisible()
+  await expect(canvas.getByRole('group', { name: 'Was this helpful?' })).toBeVisible()
+  await expect(canvas.getByRole('heading', { name: 'Related articles' })).toBeVisible()
+}
+
+export const KnowledgeBaseArticle: Story = {
+  name: 'Knowledge base, article',
+  render: () => <ExampleApp start={T_ROUTES.kbArticle('sef-rejected')} />,
+  play: portalPlay(KB_ARTICLE_CHECK),
+}
+
+export const KnowledgeBaseArticlePhone: Story = {
+  name: 'Knowledge base, article, phone',
+  render: () => <OnPhone start={T_ROUTES.kbArticle('sef-rejected')} />,
+  play: portalPlay(KB_ARTICLE_CHECK, true),
+}
+
+/** "Was this helpful?" No, what was missing, Send: the thanks. */
+export const KnowledgeBaseHelpfulInteraction: Story = {
+  name: 'Knowledge base, was this helpful, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={T_ROUTES.kbArticle('sef-rejected')} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'No' }))
+    await userEvent.type(
+      canvas.getByRole('textbox', { name: 'What was missing?' }),
+      'A buyer from abroad.',
+    )
+    await userEvent.click(canvas.getByRole('button', { name: 'Send' }))
+    await expect(canvasElement).toHaveTextContent('Thank you. Your comment was sent.')
+  },
+}
+
+/** "rejected": two articles, the matches marked in the titles and the snippets. */
+const KB_SEARCH_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('searchbox', { name: /^Search words/ })).toHaveValue('rejected')
+  await expect(canvasElement).toHaveTextContent('2 articles for “rejected”')
+  await expect(canvas.getByRole('link', { name: 'Why was my SEF invoice rejected?' })).toBeVisible()
+  await expect(canvasElement.querySelectorAll('mark').length).toBeGreaterThan(2)
+}
+
+export const KnowledgeBaseSearch: Story = {
+  name: 'Knowledge base, search',
+  render: () => <ExampleApp start={T_ROUTES.kbSearchRejected} />,
+  play: portalPlay(KB_SEARCH_CHECK),
+}
+
+export const KnowledgeBaseSearchPhone: Story = {
+  name: 'Knowledge base, search, phone',
+  render: () => <OnPhone start={T_ROUTES.kbSearchRejected} />,
+  play: portalPlay(KB_SEARCH_CHECK, true),
+}
+
+/** Nothing found: "Submit a ticket" from the empty state. */
+export const KnowledgeBaseSearchNothing: Story = {
+  name: 'Knowledge base, search without results',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={T_ROUTES.kbSearchNothing} />,
+  play: portalPlay(async (canvasElement) => {
+    await expect(
+      within(canvasElement).getByRole('button', { name: 'Submit a ticket' }),
+    ).toBeVisible()
+  }),
+}
+
+/** From the home page: the query goes to the search; typing changes the results. */
+export const KnowledgeBaseSearchInteraction: Story = {
+  name: 'Knowledge base, search, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={T_ROUTES.home} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.type(
+      canvas.getByRole('searchbox', { name: 'Search the knowledge base' }),
+      'payroll{Enter}',
+    )
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: 'Search the knowledge base' }),
+    ).toBeVisible()
+    await expect(canvas.getByRole('link', { name: 'Export payroll to your bank' })).toBeVisible()
+    const field = canvas.getByRole('searchbox', { name: /^Search words/ })
+    await userEvent.clear(field)
+    await userEvent.type(field, 'two-factor')
+    await expect(
+      await canvas.findByRole('link', { name: 'Reset two-factor sign-in' }),
+    ).toBeVisible()
+  },
+}
+
+/**
+ * The knowledge base for agents: the same pages inside the agents' AppShell (Nikola Ilić, Liro
+ * support), each article with its author and how helpful readers found it.
+ */
+const AGENT_KB_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Knowledge base' })).toBeVisible()
+  await expect(canvasElement).toHaveTextContent('by Nikola Ilić')
+}
+
+export const KnowledgeBaseAgents: Story = {
+  name: 'Knowledge base for agents',
+  render: () => <ExampleApp start={T_ROUTES.agentKb} />,
+  play: portalPlay(AGENT_KB_CHECK),
+}
+
+export const KnowledgeBaseAgentsPhone: Story = {
+  name: 'Knowledge base for agents, phone',
+  render: () => <OnPhone start={T_ROUTES.agentKb} />,
+  play: portalPlay(AGENT_KB_CHECK, true),
+}
+
+/** An article for agents: "Copy link" in the header. */
+export const KnowledgeBaseAgentsArticle: Story = {
+  name: 'Knowledge base for agents, article',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={T_ROUTES.agentArticle('reset-2fa')} />,
+  play: portalPlay(async (canvasElement) => {
+    await expect(within(canvasElement).getByRole('button', { name: 'Copy link' })).toBeVisible()
+  }),
+}
+
+export const KnowledgeBaseAgentsArticlePhone: Story = {
+  name: 'Knowledge base for agents, article, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={T_ROUTES.agentArticle('reset-2fa')} />,
+  play: portalPlay(async (canvasElement) => {
+    await expect(within(canvasElement).getByRole('button', { name: 'Copy link' })).toBeVisible()
+  }, true),
+}
+
+/** The agents' search: "two-factor". */
+export const KnowledgeBaseAgentsSearch: Story = {
+  name: 'Knowledge base for agents, search',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={T_ROUTES.agentSearch} />,
+  play: portalPlay(async (canvasElement) => {
+    await expect(
+      within(canvasElement).getByRole('link', { name: 'Reset two-factor sign-in' }),
+    ).toBeVisible()
+  }),
+}

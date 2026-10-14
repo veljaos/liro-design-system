@@ -116,7 +116,7 @@ export function LinkSuggestions(props: LinkSuggestionsProps) {
                         props.onOpen?.(suggestion, event)
                       }}
                       className={cn(
-                        'self-start rounded-sm text-sm font-medium break-words text-link no-underline visited:text-link hover:underline',
+                        'self-start rounded-sm py-0.5 text-sm font-medium break-words text-link no-underline visited:text-link hover:underline',
                         FOCUS_RING,
                         TEXT_DIRECTION,
                       )}
