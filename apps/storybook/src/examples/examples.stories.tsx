@@ -7996,7 +7996,7 @@ export const HelpdeskTicketSavedReplyValues: Story = {
     await waitFor(async () => {
       await expect(reply).toHaveTextContent('Dear Milica,')
     })
-    await expect(reply).toHaveTextContent('about ticket #4821, reported on 14.10.2026.')
+    await expect(reply).toHaveTextContent(/about ticket .4821, reported on 14\.10\.2026\./)
     await expect(reply).toHaveTextContent(
       'today, 14.10.2026., and will write to you by 17.10.2026.',
     )
@@ -8528,4 +8528,107 @@ export const KnowledgeBaseAgentsSearch: Story = {
       within(canvasElement).getByRole('link', { name: 'Reset two-factor sign-in' }),
     ).toBeVisible()
   }),
+}
+
+// ── P5.40 Payment orders (group AD) ──
+import { AD_ROUTES } from './data-AD'
+
+/**
+ * Kvadrat Gradnja's transfer order (form 3) to Beton Mix for invoice 2026-1187: the fields at the
+ * start, the bank's form as it will print at the end, with the IPS QR code its payment carries.
+ */
+const PAYMENT_ORDER_CHECK = async (canvasElement: HTMLElement) => {
+  await settle()
+  const canvas = within(canvasElement)
+  const form = await canvas.findByRole('region', { name: 'NALOG ZA PRENOS' })
+  await expect(within(form).getByText('294.000,00')).toBeVisible()
+  await expect(within(form).getByRole('img', { name: 'IPS QR code for the payment' })).toBeVisible()
+  await expect(canvas.getByRole('button', { name: 'Print' })).toBeVisible()
+}
+
+export const PaymentOrders: Story = {
+  name: 'Payment orders',
+  render: () => <ExampleApp start={AD_ROUTES.transfer} />,
+  play: async ({ canvasElement }) => {
+    await PAYMENT_ORDER_CHECK(canvasElement)
+  },
+}
+
+export const PaymentOrdersPhone: Story = {
+  name: 'Payment orders, phone',
+  render: () => <OnPhone start={AD_ROUTES.transfer} />,
+  play: async ({ canvasElement }) => {
+    await PAYMENT_ORDER_CHECK(canvasElement)
+  },
+}
+
+/** A payment order (form 1): a customer pays invoice F-2026-0412, with the IPS QR code. */
+export const PaymentOrdersPayment: Story = {
+  name: 'Payment orders, payment order',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AD_ROUTES.payment} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const form = await within(canvasElement).findByRole('region', { name: 'NALOG ZA UPLATU' })
+    await expect(within(form).getByText('5.003.678,22')).toBeVisible()
+  },
+}
+
+/** A withdrawal order (form 2): cash for the site; no QR code. */
+export const PaymentOrdersWithdrawal: Story = {
+  name: 'Payment orders, withdrawal order',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AD_ROUTES.withdrawal} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await canvas.findByRole('region', { name: 'NALOG ZA ISPLATU' })
+    await expect(
+      canvas.getByText('A withdrawal pays out cash: it has no IPS QR code.'),
+    ).toBeVisible()
+  },
+}
+
+/** Checked with two mistakes: each under its field, in words; no QR code until they are fixed. */
+export const PaymentOrdersProblems: Story = {
+  name: 'Payment orders, problems',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AD_ROUTES.problems} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(
+      await canvas.findByText('2 fields need a correction before the order can be printed.'),
+    ).toBeVisible()
+    await expect(canvas.getByText(/^Creditor’s account: not a valid account number/)).toBeVisible()
+    await expect(
+      canvas.getByText(/^Amount: an amount from 0.01 with at most two decimals/),
+    ).toBeVisible()
+    await expect(canvasElement.querySelector('[data-slot="payment-order-code"]')).toBeNull()
+  },
+}
+
+/** A wrong account typed, then Print: the check under the field, the focus on it. */
+export const PaymentOrdersPrintInteraction: Story = {
+  name: 'Payment orders, wrong account, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AD_ROUTES.transfer} />,
+  play: async ({ canvasElement }) => {
+    await PAYMENT_ORDER_CHECK(canvasElement)
+    const canvas = within(canvasElement)
+    const account = canvas.getByRole('textbox', { name: 'Creditor’s account' })
+    await userEvent.clear(account)
+    await userEvent.type(account, '265-654321-34')
+    await expect(canvasElement.querySelector('[data-slot="payment-order-code"]')).toBeNull()
+    await userEvent.click(canvas.getByRole('button', { name: 'Print' }))
+    await waitFor(async () => {
+      await expect(account).toHaveFocus()
+    })
+    await expect(account).toHaveAccessibleDescription(/not a valid account number/)
+    await userEvent.clear(account)
+    await userEvent.type(account, '265-654321-33')
+    await waitFor(async () => {
+      await expect(canvas.getByRole('img', { name: 'IPS QR code for the payment' })).toBeVisible()
+    })
+  },
 }

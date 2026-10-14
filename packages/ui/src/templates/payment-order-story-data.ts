@@ -177,7 +177,7 @@ export const WITHDRAWAL: OrderData = {
   payer: 'Kvadrat Gradnja d.o.o.\nBulevar oslobođenja 12, Novi Sad',
   purpose: 'Isplata gotovine za blagajnu gradilišta Liman 4',
   payee: 'Nikola Marković\nNovi Sad',
-  paymentCode: '165',
+  paymentCode: '166',
   currency: 'RSD',
   amount: '40000.00',
   payerAccount: '160000000012345654',

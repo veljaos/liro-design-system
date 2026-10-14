@@ -332,6 +332,7 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P5.37 | Project timeline (Gantt) | P5.30 | todo | | |
 | P5.38 | E-mail and notification templates | P5.30 | todo | | |
 | P5.39 | Blog | P5.30 | todo | | |
+| P5.40 | IPS NBS QR and payment orders | P5.10, P5.15 | todo | | |
 | P6.1 | Full language and direction matrix | Phases 1–5 | todo | | |
 | P6.2 | Manual WCAG 2.2 checks | P6.1 | todo | | |
 | P6.3 | Performance budget | P4.8 | todo | | |
@@ -858,6 +859,13 @@ A template list (invoice e-mail, IOS, payment reminder, welcome, password reset 
 - Authoring on RichTextField: cover, slug, SEO title and description, category and tags, Draft / Scheduled / Published, preview, schedule.
 
 **Done when** every item has desktop and phone stories (tablet where noted) in light, dark and right-to-left, passes axe, the keyboard and the text-order check, the examples show them, and CI is green.
+
+### P5.40 — IPS NBS QR and payment orders (owner, 2026-10-14)
+- **IPS QR at the till:** an instant payment shows the merchant's IPS QR code (kind PT: the amount, the merchant category, the sale's reference) for the buyer's bank app; or the cashier scans the buyer's code (PK). The bank's answer is the application's.
+- **Payment orders:** a screen that fills in and prints the Serbian payment order (nalog za uplatu, form 1), withdrawal order (nalog za isplatu, form 2) and transfer order (nalog za prenos, form 3) as their real forms, with the IPS QR code (forms 1 and 3) written to the IPS NBS rules (tags, order, account and reference control numbers, amount format) and checked field by field; print or download.
+- **Everywhere a code is shown** (invoices' payment details, receipts, tills) the QR code is real and readable.
+- References: ips.nbs.rs — "QR validacija i generisanje", "Zašto instant plaćanja na prodajnim mestima", "Smernice Generator Validator".
+**Done when** the codes scan, every order has desktop and phone stories in light, dark and right-to-left, passes axe, the keyboard and the text-order check, and the examples show them.
 
 **End of Phase 5:** `0.1.0-alpha.5`; report.
 
