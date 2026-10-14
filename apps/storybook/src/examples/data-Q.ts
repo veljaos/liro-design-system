@@ -30,17 +30,6 @@ export const Q_ROUTES = {
   network: '/superadmin/network',
 } as const
 
-/**
- * The superadmin views another group builds (examples R, P5.29 b): their paths, for the shared
- * navigation. The lead aligns them with group R's routes when the two are merged.
- */
-export const R_PATHS = {
-  incidents: '/superadmin/incidents',
-  securityEvents: '/superadmin/security',
-  tenants: '/superadmin/tenants',
-  announcements: '/superadmin/announcements',
-} as const
-
 /** The examples' day and clock for these screens. */
 export const Q_TODAY = '2026-10-14'
 export const Q_NOW = '2026-10-14T09:40:00+02:00'

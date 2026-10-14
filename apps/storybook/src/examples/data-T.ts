@@ -120,9 +120,9 @@ const TICKET_4821: Ticket = {
   type: 'Problem',
   team: 'E-invoicing',
   agent: 'nikola',
-  opened: '2026-10-14T08:52:00+02:00',
+  opened: '2026-10-14T08:30:00+02:00',
   updated: '2026-10-14T09:05:00+02:00',
-  firstResponseDue: '2026-10-14T10:30:00+02:00',
+  firstResponseDue: '2026-10-14T09:10:00+02:00',
   overdue: true,
 }
 

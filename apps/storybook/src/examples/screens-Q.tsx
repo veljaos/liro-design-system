@@ -39,7 +39,7 @@ import {
 } from '@veljaos/ui'
 import { BarChart, LineChart } from '../../../../packages/ui/src/charts'
 import type { ExampleRoute } from './example-app'
-import { Shell, statusBadge, toneOf, type ExampleAccount } from './example-shell'
+import { Shell, statusBadge, toneOf } from './example-shell'
 import { C_ROUTES } from './data-C'
 import {
   ADDRESS_REASONS,
@@ -69,7 +69,6 @@ import {
   Q_ROUTES,
   Q_TODAY,
   QUEUES,
-  R_PATHS,
   REGIONS,
   RESPONSE_TIME,
   SERVICES,
@@ -98,9 +97,9 @@ import { Frame, Tenant } from './screens-G'
  * status and its network. Every screen plays the application: it filters its lists, answers
  * Retry, revokes a key and keeps what was revealed; the components only show and report.
  *
- * The administration's tabs and the platform's tabs (ADMIN_TABS, PLATFORM_TABS, AdminShell,
- * PlatformShell) are shared with group R (incidents, security events, tenants, announcements):
- * the lead joins the platform's routes (R_PATHS).
+ * The administration's tabs (AdminShell); the platform's screens use group R's SuperadminShell
+ * (PlatformShell wraps it), whose module tabs join them with the incidents, security events,
+ * tenants and announcements.
  */
 
 export { Q_ROUTES }
@@ -157,33 +156,6 @@ export function AdminShell({
 
 export type PlatformTab =
   'status' | 'incidents' | 'securityEvents' | 'network' | 'tenants' | 'announcements'
-
-const PLATFORM_TAB_LIST: { key: PlatformTab; label: string; path: string }[] = [
-  { key: 'status', label: 'System status', path: Q_ROUTES.systemStatus },
-  { key: 'incidents', label: 'Incidents', path: R_PATHS.incidents },
-  { key: 'securityEvents', label: 'Security events', path: R_PATHS.securityEvents },
-  { key: 'network', label: 'Network and infrastructure', path: Q_ROUTES.network },
-  { key: 'tenants', label: 'Tenants', path: R_PATHS.tenants },
-  { key: 'announcements', label: 'Announcements', path: R_PATHS.announcements },
-]
-
-/** The platform's module tabs with `current` marked. */
-export function platformTabs(current: PlatformTab): ModuleTab[] {
-  return PLATFORM_TAB_LIST.map((tab) => ({
-    key: tab.key,
-    label: tab.label,
-    href: `#${tab.path}`,
-    current: tab.key === current,
-  }))
-}
-
-/** The Liro team's account: the platform, not a tenant. */
-export const OPERATOR_ACCOUNT: ExampleAccount = {
-  name: OPERATOR.name,
-  email: OPERATOR.email,
-  companies: [{ id: 'liro-platform', name: 'Liro platform', description: 'Operations' }],
-  links: PLATFORM_TAB_LIST.map((tab) => ({ label: tab.label, path: tab.path })),
-}
 
 /**
  * Vuk Stojanović's view of the platform, across every tenant, on 14 October 2026: the one
