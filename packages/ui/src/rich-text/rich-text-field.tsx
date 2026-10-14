@@ -1,7 +1,7 @@
 import type { Editor } from '@tiptap/core'
 import type { EditorProps } from '@tiptap/pm/view'
 import { EditorContent, useEditor, useEditorState } from '@tiptap/react'
-import { Bot, CircleAlert } from 'lucide-react'
+import { AlertTriangle, Bot, CircleAlert } from 'lucide-react'
 import {
   useEffect,
   useId,
@@ -30,12 +30,20 @@ import { Skeleton } from '../primitives/skeleton'
 import { useLiro } from '../provider/liro-provider'
 import { richTextExtensions } from './extensions'
 import { LinkDialog } from './link-dialog'
+import {
+  mergeFieldText,
+  missingMergeFields,
+  resolveMergeFields,
+  type MergeContext,
+  type MergeValues,
+} from './merge-values'
 import { RICH_CONTENT, RichText, type RichTextMergeField } from './rich-text'
 import {
   EMPTY_RICH_TEXT,
   isRichTextEmpty,
   normalizeRichText,
   richTextLength,
+  richTextMergeFields,
   richTextValue,
   sanitizeRichHtml,
   suggestionAt,
@@ -103,6 +111,16 @@ export interface RichTextFieldProps extends FieldBaseProps {
   onBlur?: () => void
   /** The fields the text can refer to: the toolbar's menu and the "{{" list offer them. */
   mergeFields?: readonly RichTextMergeField[]
+  /**
+   * The merge fields' values, for a text written to one recipient (a reply, a message) rather
+   * than a template (P5.31): a field in the first value, one chosen from the menu or "{{", and
+   * every field in content inserted through the handle (a saved reply), is written in as its value; a field without one
+   * stays a pill marked "No value", and a line under the text names them. Fields computed from
+   * 'today' or 'now' need no value. Without `mergeValues` the fields stay pills (a template).
+   */
+  mergeValues?: MergeValues
+  /** The application's "now" (an instant), for fields computed from it. */
+  now?: string
   /** Who "@" offers: everyone, or the results of the application's last search. */
   mentionCandidates?: readonly MentionCandidate[]
   /** The application searches (after `mentionSearchDelay`) and passes the results. */
@@ -152,6 +170,8 @@ interface Snapshot {
   suggestion: (RichTextSuggestion & { from: number; to: number }) | null
   length: number
   empty: boolean
+  /** The keys of the merge fields in the text, each once, as a string (a stable selector value). */
+  mergeKeys: string
 }
 
 function readSnapshot(editor: Editor): Snapshot {
@@ -185,6 +205,7 @@ function readSnapshot(editor: Editor): Snapshot {
     suggestion,
     length: richTextLength(editor.getJSON() as RichTextNode),
     empty: editor.isEmpty,
+    mergeKeys: richTextMergeFields(editor.getJSON() as RichTextNode).join(' '),
   }
 }
 
@@ -274,6 +295,8 @@ export function RichTextField({ ref, ...props }: RichTextFieldProps) {
 interface Live {
   labelOf: (key: string) => string
   nameOf: (label: string) => string
+  missingOf: (key: string) => boolean
+  missingNameOf: (label: string) => string
   openLink: () => void
   keyDown: (event: KeyboardEvent) => boolean
   change: (json: RichTextNode) => void
@@ -287,6 +310,8 @@ class LiveCallbacks {
   value: Live = {
     labelOf: (key) => key,
     nameOf: (label) => label,
+    missingOf: () => false,
+    missingNameOf: (label) => label,
     openLink: () => undefined,
     keyDown: () => false,
     change: () => undefined,
@@ -312,16 +337,35 @@ function RichTextEditor({
   control: FieldControl
   counterId: string | undefined
 }) {
-  const { messages, locale, format } = useLiro()
+  const { messages, locale, format, today } = useLiro()
   const { control } = props
   const disabled = control.disabled
   const loading = props.loading === true
   const mergeFields = props.mergeFields ?? []
   const listId = `${control.id}-suggestions`
+  // Values given: fields are written in as they are inserted (P5.31).
+  const merge: MergeContext | null =
+    props.mergeValues === undefined
+      ? null
+      : { fields: props.mergeFields, values: props.mergeValues, format, today, now: props.now }
+  // The handle reads the latest values (it is made once per editor).
+  const mergeRef = useRef(merge)
+  useLayoutEffect(() => {
+    mergeRef.current = merge
+  })
+  /** A merge field as it goes into the text: its value as text, or the field. */
+  const mergeNode = (key: string): RichTextNode => {
+    const text = merge === null ? null : mergeFieldText(key, merge)
+    return text === null ? { type: 'mergeField', attrs: { key } } : { type: 'text', text }
+  }
+  const missingId = `${control.id}-missing`
 
-  const [initial] = useState(() =>
-    normalizeRichText(props.value ?? props.defaultValue ?? EMPTY_RICH_TEXT),
-  )
+  // The first text, with the values written in when they are given (a reply started from a
+  // saved reply).
+  const [initial] = useState(() => {
+    const first = normalizeRichText(props.value ?? props.defaultValue ?? EMPTY_RICH_TEXT)
+    return merge === null ? first : resolveMergeFields(first, merge).doc
+  })
   const [linkOpen, setLinkOpen] = useState(false)
   const [linkCurrent, setLinkCurrent] = useState<string | null>(null)
   const [active, setActive] = useState(0)
@@ -333,6 +377,8 @@ function RichTextEditor({
     richTextExtensions({
       labelOf: (key) => live.value.labelOf(key),
       nameOf: (label) => live.value.nameOf(label),
+      missingOf: (key) => live.value.missingOf(key),
+      missingNameOf: (label) => live.value.missingNameOf(label),
       openLink: () => {
         live.value.openLink()
       },
@@ -364,7 +410,17 @@ function RichTextEditor({
     () => ({
       insert: (content) => {
         if (editor === null || editor.isDestroyed) return
-        editor.chain().focus().insertContent(insertable(content)).run()
+        const merge = mergeRef.current
+        const filled =
+          merge === null || typeof content === 'string'
+            ? content
+            : Array.isArray(content)
+              ? (resolveMergeFields(
+                  { type: 'doc', content: [...(content as readonly RichTextNode[])] },
+                  merge,
+                ).doc.content ?? [])
+              : resolveMergeFields(content as RichTextNode, merge).doc
+        editor.chain().focus().insertContent(insertable(filled)).run()
       },
       focus: () => {
         if (editor !== null && !editor.isDestroyed) editor.commands.focus()
@@ -435,11 +491,7 @@ function RichTextEditor({
     if (option === undefined || suggestion === null || editor === null) return
     const range = { from: suggestion.from, to: suggestion.to }
     if (suggestion.kind === 'mergeField') {
-      editor
-        .chain()
-        .focus()
-        .insertContentAt(range, { type: 'mergeField', attrs: { key: option.value } })
-        .run()
+      editor.chain().focus().insertContentAt(range, mergeNode(option.value)).run()
     } else {
       editor
         .chain()
@@ -452,6 +504,19 @@ function RichTextEditor({
     }
   }
 
+  // The fields in the text that have no value (values given): named under the text.
+  const missingKeys =
+    merge === null
+      ? []
+      : missingMergeFields(
+          (snapshot?.mergeKeys ?? richTextMergeFields(initial).join(' '))
+            .split(' ')
+            .filter((key) => key !== ''),
+          merge,
+        )
+  const missingLabels = missingKeys.map(
+    (key) => mergeFields.find((field) => field.key === key)?.label ?? key,
+  )
   const length = snapshot?.length ?? richTextLength(initial)
   const over = props.maxLength !== undefined && length > props.maxLength
   const invalid = control.invalid || over
@@ -473,7 +538,8 @@ function RichTextEditor({
         'cursor-not-allowed text-disabled [&_[data-merge-field]]:text-disabled [&_[data-mention]]:text-disabled [&_a]:text-disabled',
     ),
   }
-  if (control.describedBy !== undefined) attributes['aria-describedby'] = control.describedBy
+  const describedBy = joinIds(control.describedBy, missingKeys.length > 0 ? missingId : undefined)
+  if (describedBy !== undefined) attributes['aria-describedby'] = describedBy
   if (invalid) attributes['aria-invalid'] = 'true'
   if (control.required) attributes['aria-required'] = 'true'
   if (disabled) attributes['aria-disabled'] = 'true'
@@ -489,6 +555,8 @@ function RichTextEditor({
     live.set({
       labelOf: (key) => mergeFields.find((field) => field.key === key)?.label ?? key,
       nameOf: (label) => messages['richText.mergeField'](label),
+      missingOf: (key) => merge !== null && mergeFieldText(key, merge) === null,
+      missingNameOf: (label) => messages['richText.mergeFieldMissing'](label),
       openLink: () => {
         if (editor === null || disabled || loading) return
         const href: unknown = editor.getAttributes('link').href
@@ -620,7 +688,13 @@ function RichTextEditor({
       ) : editor === null ? (
         // Before the editor exists (the first render, or on a server): the same text, drawn.
         <div className="min-h-(--rich-min-height) px-3 py-2">
-          <RichText value={initial} mergeFields={mergeFields} empty="" />
+          <RichText
+            value={initial}
+            mergeFields={mergeFields}
+            empty=""
+            {...(props.mergeValues === undefined ? {} : { mergeValues: props.mergeValues })}
+            {...(props.now === undefined ? {} : { now: props.now })}
+          />
         </div>
       ) : (
         <EditorContent editor={editor} />
@@ -666,7 +740,7 @@ function RichTextEditor({
             live.value.openLink()
           }}
           onInsertMergeField={(key) => {
-            editor?.chain().focus().insertContent({ type: 'mergeField', attrs: { key } }).run()
+            editor?.chain().focus().insertContent(mergeNode(key)).run()
           }}
         />
         {disabled ? (
@@ -701,6 +775,18 @@ function RichTextEditor({
           </ComboboxPopover>
         )}
       </div>
+      {missingKeys.length > 0 && (
+        <p
+          id={missingId}
+          data-slot="merge-missing"
+          className="m-0 mt-1 flex items-start gap-1 text-xs leading-tight text-status-warning-fg"
+        >
+          <AlertTriangle aria-hidden="true" className="mt-px size-3 shrink-0" />
+          <span className={TEXT_DIRECTION}>
+            {messages['richText.missingValues'](missingLabels)}
+          </span>
+        </p>
+      )}
       {props.maxLength !== undefined && (
         <p
           id={props.counterId}

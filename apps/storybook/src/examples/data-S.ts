@@ -8,7 +8,7 @@
  */
 import type { MentionCandidate } from '@veljaos/ui'
 import { slaReading } from '@veljaos/ui'
-import type { RichTextMergeField } from '../../../../packages/ui/src/rich-text'
+import type { MergeValues, RichTextMergeField } from '../../../../packages/ui/src/rich-text'
 import type { RichTextNode, SavedReply } from '../../../../packages/ui/src/rich-text'
 
 // ── Routes ────────────────────────────────────────────────────────────────────────────────────
@@ -428,12 +428,34 @@ const bullets = (...items: string[]): RichTextNode => ({
   content: items.map((item) => ({ type: 'listItem', content: [p(text(item))] })),
 })
 
-/** The fields a reply can use; the application fills them in when it sends. */
+/**
+ * The fields a reply can use. The composer writes this ticket's values in as a saved reply is
+ * inserted (`replyValues`); today and "in three days" are computed from the provider's day (P5.31).
+ */
 export const REPLY_FIELDS: RichTextMergeField[] = [
   { key: 'contact.firstName', label: 'Contact’s first name', group: 'Contact' },
   { key: 'ticket.number', label: 'Ticket number', group: 'Ticket' },
+  { key: 'ticket.opened', label: 'Date reported', group: 'Ticket', kind: 'date' },
   { key: 'agent.name', label: 'Your name', group: 'Ticket' },
+  { key: 'date_now', label: 'Today', group: 'Dates', computed: 'today' },
+  {
+    key: 'in_three_days',
+    label: 'In three days',
+    group: 'Dates',
+    computed: 'today',
+    offsetDays: 3,
+  },
 ]
+
+/** One ticket's values for the reply's merge fields. */
+export function replyValues(ticket: Ticket): MergeValues {
+  return {
+    'contact.firstName': ticket.contact.split(' ')[0] ?? ticket.contact,
+    'ticket.number': ticket.number,
+    'ticket.opened': ticket.opened.slice(0, 10),
+    'agent.name': AGENTS[ME].name,
+  }
+}
 
 /** The team's saved replies (canned responses). */
 export const SAVED: SavedReply[] = [
@@ -441,6 +463,26 @@ export const SAVED: SavedReply[] = [
     id: 'hello',
     label: 'Greeting',
     content: doc(p(text('Dear '), field('contact.firstName'), text(','))),
+  },
+  {
+    id: 'after-call',
+    label: 'After a phone call',
+    content: doc(
+      p(text('Dear '), field('contact.firstName'), text(',')),
+      p(
+        text('thank you for calling about ticket #'),
+        field('ticket.number'),
+        text(', reported on '),
+        field('ticket.opened'),
+        text('. We start working on it today, '),
+        field('date_now'),
+        text(', and will write to you by '),
+        field('in_three_days'),
+        text(' at the latest.'),
+      ),
+      p(text('Kind regards,')),
+      p(field('agent.name')),
+    ),
   },
   {
     id: 'sef-buyer',

@@ -3,7 +3,9 @@
  * in src/rich-text/index.ts imports this file.
  */
 import type { MentionCandidate } from '../components/mention-combobox'
+import type { MergeValues } from './merge-values'
 import type { ComposerLink, SavedReply } from './reply-composer'
+import type { RichTextMergeField } from './rich-text'
 import type { RichTextNode } from './rich-text-logic'
 
 const text = (value: string): RichTextNode => ({ type: 'text', text: value })
@@ -122,3 +124,48 @@ export const JAPANESE_SAVED: SavedReply[] = [
     content: doc(p(text('お問い合わせありがとうございます。'))),
   },
 ]
+
+/** Merge fields of a support conversation (P5.31): values from the ticket, two computed. */
+export const TICKET_FIELDS: RichTextMergeField[] = [
+  { key: 'contact.firstName', label: 'Contact first name', group: 'Contact' },
+  { key: 'ticket.number', label: 'Ticket number', group: 'Ticket' },
+  { key: 'incident.date', label: 'Incident date', group: 'Ticket', kind: 'date' },
+  { key: 'invoice.number', label: 'Invoice number', group: 'Ticket' },
+  { key: 'date_now', label: 'Today', group: 'Dates', computed: 'today' },
+  { key: 'reply_by', label: 'In 7 days', group: 'Dates', computed: 'today', offsetDays: 7 },
+]
+
+/** This ticket's values; the invoice number is not known yet. */
+export const TICKET_VALUES: MergeValues = {
+  'contact.firstName': 'Milica',
+  'ticket.number': '4821',
+  'incident.date': '2026-10-12',
+}
+
+const field = (key: string): RichTextNode => ({ type: 'mergeField', attrs: { key } })
+
+/** A saved reply with merge fields: "Dear {{contact.firstName}}, … {{date_now}} …". */
+export const CALL_REPLY: SavedReply = {
+  id: 'after-call',
+  label: 'After a phone call',
+  group: 'Calls',
+  content: doc(
+    p(text('Dear '), field('contact.firstName'), text(',')),
+    p(
+      text('thank you for calling about ticket '),
+      field('ticket.number'),
+      text('. On '),
+      field('incident.date'),
+      text(' invoice '),
+      field('invoice.number'),
+      text(' was rejected. We start working on it today, '),
+      field('date_now'),
+      text(', and will reply by '),
+      field('reply_by'),
+      text('.'),
+    ),
+  ),
+}
+
+/** The saved replies with the one that uses merge fields first. */
+export const VALUE_REPLIES: SavedReply[] = [CALL_REPLY, ...SAVED_REPLIES]

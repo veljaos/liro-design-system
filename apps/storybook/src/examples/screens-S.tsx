@@ -67,6 +67,7 @@ import {
   PRIORITIES,
   RATINGS,
   REPLY_FIELDS,
+  replyValues,
   S_ROUTES,
   SAVED,
   SUPPORT_TODAY,
@@ -925,6 +926,8 @@ export function SupportTicket({
         {...(number === '4821' ? { defaultValue: DRAFT_4821 } : {})}
         mentionCandidates={TEAM_MENTIONS.filter((person) => person.id !== ME)}
         mergeFields={REPLY_FIELDS}
+        mergeValues={replyValues(ticket)}
+        now={NOW}
         savedReplies={SAVED}
         accept={['.pdf', '.png', '.jpg', '.xml', '.txt']}
         onAttach={(added) => {

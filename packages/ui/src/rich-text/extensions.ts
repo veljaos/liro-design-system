@@ -24,8 +24,16 @@ import { HEADING_LEVELS, linkFromInput, MERGE_FIELD_KEY, safeHref } from './rich
  */
 
 /** Class names of the pills, shared with RichText (rich-text.tsx). */
-export const MERGE_FIELD_PILL =
-  'inline-block rounded-sm border border-solid border-default bg-surface-sunken px-1 font-medium leading-tight text-primary whitespace-nowrap'
+const MERGE_FIELD_SHAPE =
+  'inline-block rounded-sm border border-solid px-1 font-medium leading-tight whitespace-nowrap'
+
+export const MERGE_FIELD_PILL = `${MERGE_FIELD_SHAPE} border-default bg-surface-sunken text-primary`
+
+/**
+ * A merge field without a value where the values were given (P5.31): dashed, in the warning tone;
+ * its name says "No value" too, never the look alone.
+ */
+export const MERGE_FIELD_MISSING = `${MERGE_FIELD_SHAPE} border-dashed border-status-warning-border bg-status-warning-bg text-status-warning-fg`
 
 /** A mention: the name after "@", semibold, as MentionText (P5.1). */
 export const MENTION_TEXT = 'font-semibold text-primary'
@@ -39,6 +47,10 @@ export interface MergeFieldOptions {
   labelOf: (key: string) => string
   /** The name assistive technology reads: "Merge field: Customer name". */
   nameOf: (label: string) => string
+  /** The values were given and this key has none: drawn and read as "No value" (P5.31). */
+  missingOf?: (key: string) => boolean
+  /** The name read for a field without a value: "No value: Incident date". */
+  missingNameOf?: (label: string) => string
 }
 
 /**
@@ -86,12 +98,17 @@ export const MergeField = Node.create<MergeFieldOptions>({
     return ({ node }) => {
       const key = String(node.attrs.key)
       const label = this.options.labelOf(key)
+      const missing = this.options.missingOf?.(key) === true
       const dom = document.createElement('span')
       dom.setAttribute('data-merge-field', key)
-      dom.className = `${MERGE_FIELD_PILL} ${SELECTED_NODE}`
+      if (missing) dom.setAttribute('data-missing', '')
+      dom.className = `${missing ? MERGE_FIELD_MISSING : MERGE_FIELD_PILL} ${SELECTED_NODE}`
       const name = document.createElement('span')
       name.className = 'sr-only'
-      name.textContent = this.options.nameOf(label)
+      name.textContent =
+        missing && this.options.missingNameOf !== undefined
+          ? this.options.missingNameOf(label)
+          : this.options.nameOf(label)
       const shown = document.createElement('span')
       shown.setAttribute('aria-hidden', 'true')
       shown.textContent = label
@@ -231,7 +248,12 @@ export function richTextExtensions(
     FlatListItem,
     HardBreak,
     UndoRedo,
-    MergeField.configure({ labelOf: options.labelOf, nameOf: options.nameOf }),
+    MergeField.configure({
+      labelOf: options.labelOf,
+      nameOf: options.nameOf,
+      ...(options.missingOf === undefined ? {} : { missingOf: options.missingOf }),
+      ...(options.missingNameOf === undefined ? {} : { missingNameOf: options.missingNameOf }),
+    }),
     Mention,
     BlockDirection,
     LinkShortcut.configure({ open: options.openLink }),
