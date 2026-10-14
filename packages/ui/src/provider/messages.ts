@@ -1824,4 +1824,12 @@ export interface LiroMessages {
   'floorPlan.editOnLarger': string
   /** SeatingChart's seat dialog: the action; the seat is its subject (P5.28 item 6). */
   'seating.seatTitle': string
+  // P5.29 admin
+  /** HealthList: the times under a monitored thing's figures, an action's name, nothing. */
+  'health.lastSuccess': string
+  'health.lastError': string
+  'health.errorMessage': string
+  'health.never': string
+  'health.empty': string
+  'health.actionNamed': (actionText: string, name: string) => string
 }

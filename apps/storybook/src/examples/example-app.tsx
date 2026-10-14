@@ -38,6 +38,7 @@ import { GROUP_M_ROUTES } from './screens-M'
 import { GROUP_P_ROUTES } from './screens-P'
 import { GROUP_O_ROUTES } from './screens-O'
 import { GROUP_N_ROUTES } from './screens-N'
+import { GROUP_Q_ROUTES } from './screens-Q'
 
 // ── Routes ────────────────────────────────────────────────────────────────────────────────
 
@@ -70,6 +71,7 @@ const EXAMPLE_ROUTES: readonly ExampleRoute[] = [
   ...GROUP_P_ROUTES,
   ...GROUP_O_ROUTES,
   ...GROUP_N_ROUTES,
+  ...GROUP_Q_ROUTES,
 ]
 
 // ── The app ───────────────────────────────────────────────────────────────────────────────────

@@ -1261,3 +1261,15 @@ export {
 export type { LabelFit, LabelSize } from './components/floor-plan-logic'
 export { seatingChanges } from './components/seating-logic'
 export type { SeatingChange } from './components/seating-logic'
+
+// ── P5.29 admin ──
+export { HealthList, healthIcon } from './components/health-list'
+export type {
+  HealthAction,
+  HealthItem,
+  HealthListProps,
+  HealthMetric,
+  HealthState,
+} from './components/health-list'
+export { HEALTH_KINDS, healthFacts } from './components/health-logic'
+export type { HealthFact, HealthKind, HealthTimes } from './components/health-logic'
