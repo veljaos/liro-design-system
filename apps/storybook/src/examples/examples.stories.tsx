@@ -7402,3 +7402,324 @@ export const SaAnnouncementInteraction: Story = {
     ).toHaveTextContent('Scheduled')
   },
 }
+
+// ── P5.29 admin ──
+// (Imports here, inside the block, so the blocks merge without touching the top.)
+import { Q_ROUTES } from './data-Q'
+
+/**
+ * Kvadrat Gradnja d.o.o.'s administration on 14 October 2026: users and sessions, failed sign-ins
+ * today, accounts without two-factor sign-in, licences, and the two integrations with errors.
+ */
+export const AdminOverviewScreen: Story = {
+  name: 'Admin overview',
+  render: () => <ExampleApp start={Q_ROUTES.adminOverview} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const failed = canvas.getByText('Failed sign-ins today').closest('[data-slot="stat-card"]')
+    await expect(failed).toHaveTextContent('7')
+    await expect(canvas.getByText('24 of 30 seats used')).toBeVisible()
+    const errors = canvas.getByRole('list', { name: 'Integrations with errors' })
+    await expect(errors).toHaveTextContent('SEF (e-invoicing)')
+    await expect(errors).toHaveTextContent('Banca Intesa, statements')
+    await expect(errors).not.toHaveTextContent('Outgoing e-mail')
+  },
+}
+
+export const AdminOverviewPhone: Story = {
+  name: 'Admin overview, phone',
+  render: () => <OnPhone start={Q_ROUTES.adminOverview} />,
+}
+
+/**
+ * Who signed in, when and from where: device, browser, approximate place; the address masked
+ * until the administrator says why. Dragan Ilić's account was blocked at 09:35 after three wrong
+ * passwords from Amsterdam.
+ */
+export const AdminSignIns: Story = {
+  name: 'Admin sign-in activity',
+  render: () => <ExampleApp start={Q_ROUTES.signIns} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getAllByText('Blocked').length).toBeGreaterThan(0)
+    await expect(canvas.queryByText('192.0.2.77')).toBeNull()
+    await expect(canvas.getAllByRole('button', { name: 'Show IP address' }).length).toBeGreaterThan(
+      0,
+    )
+  },
+}
+
+export const AdminSignInsPhone: Story = {
+  name: 'Admin sign-in activity, phone',
+  render: () => <OnPhone start={Q_ROUTES.signIns} />,
+}
+
+/** The saved view "Failed and blocked": only the attempts that did not succeed. */
+export const AdminSignInsFailed: Story = {
+  name: 'Admin sign-in activity, failed and blocked',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={Q_ROUTES.signInsFailed} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const table = within(canvasElement).getByRole('table', { name: 'Sign-in activity' })
+    await expect(within(table).queryByText('Success')).toBeNull()
+  },
+}
+
+/** Showing an address: a reason first (the access is logged), then the address; Hide again. */
+export const AdminSignInsAddress: Story = {
+  name: 'Admin sign-in activity, address shown, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={Q_ROUTES.signIns} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const body = within(document.body)
+    const first = canvas.getAllByRole('button', { name: 'Show IP address' })[0]
+    if (first === undefined) throw new Error('No masked address')
+    await userEvent.click(first)
+    const dialog = await body.findByRole('dialog', { name: /^Show IP address Dragan Ilić/ })
+    await userEvent.click(
+      within(dialog).getByRole('radio', { name: 'Investigating a failed or blocked sign-in' }),
+    )
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Show' }))
+    await expect(await canvas.findByText('192.0.2.77')).toBeVisible()
+    await waitFor(async () => {
+      await expect(body.queryByRole('dialog')).toBeNull()
+    })
+    await userEvent.click(canvas.getByRole('button', { name: 'Hide IP address' }))
+    await expect(canvas.queryByText('192.0.2.77')).toBeNull()
+  },
+}
+
+/**
+ * Who changed what and when: the record, the field, old → new. Filtered and exported; never
+ * edited or deleted (no row actions). A click shows the whole entry.
+ */
+export const AdminAuditLog: Story = {
+  name: 'Admin audit log',
+  render: () => <ExampleApp start={Q_ROUTES.audit} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const row = canvas.getByRole('row', { name: /F-2026-0412/ })
+    await expect(row).toHaveTextContent('05.10.2026.')
+    await expect(row).toHaveTextContent('12.10.2026.')
+    await expect(canvas.queryByRole('button', { name: /^Actions/ })).toBeNull()
+    await expect(canvas.getByRole('button', { name: 'Export' })).toBeVisible()
+  },
+}
+
+export const AdminAuditLogPhone: Story = {
+  name: 'Admin audit log, phone',
+  render: () => <OnPhone start={Q_ROUTES.audit} />,
+}
+
+/** The view "Access and settings", narrowed to Milica Petrović's changes. */
+export const AdminAuditLogFiltered: Story = {
+  name: 'Admin audit log, one person’s access changes',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={Q_ROUTES.auditFiltered} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const table = within(canvasElement).getByRole('table', { name: 'Audit log' })
+    await expect(table).toHaveTextContent('Two-factor sign-in')
+    await expect(table).not.toHaveTextContent('Nenad Kovačević')
+    await expect(table).not.toHaveTextContent('F-2026-0412')
+  },
+}
+
+/** A row opens the whole entry, read only: before, after, the address and the request. */
+export const AdminAuditLogEntry: Story = {
+  name: 'Admin audit log, an entry, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={Q_ROUTES.audit} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await userEvent.click(within(canvasElement).getByRole('row', { name: /F-2026-0412/ }))
+    const drawer = await within(document.body).findByRole('dialog', {
+      name: /^Invoice: F-2026-0412/,
+    })
+    await expect(drawer).toHaveTextContent('req_7Q2M4P9W')
+    await userEvent.click(within(drawer).getByRole('button', { name: 'Close' }))
+    await waitFor(async () => {
+      await expect(within(document.body).queryByRole('dialog')).toBeNull()
+    })
+  },
+}
+
+/**
+ * Security: two-factor sign-in per user, a user's devices with Sign out, the API keys with
+ * Revoke (confirmed), and the password and session policy as the Core stores it.
+ */
+export const AdminSecurityScreen: Story = {
+  name: 'Admin security',
+  render: () => <ExampleApp start={Q_ROUTES.security} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('list', { name: 'Devices of Dragan Ilić' })).toHaveTextContent(
+      'Firefox 131 on Linux',
+    )
+    await expect(canvas.getByRole('table', { name: 'API keys and tokens' })).toHaveTextContent(
+      'Revoked',
+    )
+    await expect(canvas.getByText('5 attempts, for 15 minutes')).toBeVisible()
+  },
+}
+
+export const AdminSecurityPhone: Story = {
+  name: 'Admin security, phone',
+  render: () => <OnPhone start={Q_ROUTES.security} />,
+}
+
+/** Revoking a key asks first: the action as the title, the key bold under it. */
+export const AdminSecurityRevoke: Story = {
+  name: 'Admin security, revoke an API key',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={Q_ROUTES.securityRevoke} />,
+  play: async () => {
+    await settle()
+    const dialog = within(document.body).getByRole('alertdialog')
+    await expect(dialog).toHaveTextContent('Reports for the bank (read only)')
+    await expect(within(dialog).getByRole('button', { name: 'Revoke key' })).toBeVisible()
+  },
+}
+
+/** Revoke from the row's menu, confirmed: the key is revoked and stays in the list. */
+export const AdminSecurityRevoking: Story = {
+  name: 'Admin security, revoking a key, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={Q_ROUTES.security} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const body = within(document.body)
+    const table = canvas.getByRole('table', { name: 'API keys and tokens' })
+    await userEvent.click(within(table).getByRole('button', { name: /Payroll export to the bank/ }))
+    await userEvent.click(await body.findByRole('menuitem', { name: 'Revoke' }))
+    const dialog = await body.findByRole('alertdialog')
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Revoke key' }))
+    await waitFor(async () => {
+      await expect(body.queryByRole('alertdialog')).toBeNull()
+    })
+    await expect(within(table).getByRole('row', { name: /Payroll export/ })).toHaveTextContent(
+      'Revoked',
+    )
+  },
+}
+
+/** Each connection with its state, last success, last error and Retry. */
+export const AdminIntegrationsScreen: Story = {
+  name: 'Admin integrations health',
+  render: () => <ExampleApp start={Q_ROUTES.integrations} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('button', { name: 'Retry: SEF (e-invoicing)' })).toBeVisible()
+    await expect(
+      canvas.getByText('The service did not answer within 30 seconds (attempt 6 of 10).'),
+    ).toBeVisible()
+  },
+}
+
+export const AdminIntegrationsPhone: Story = {
+  name: 'Admin integrations health, phone',
+  render: () => <OnPhone start={Q_ROUTES.integrations} />,
+}
+
+/** Retry: the button is busy while the application tries; SEF answers and is up again. */
+export const AdminIntegrationsRetry: Story = {
+  name: 'Admin integrations health, retry, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={Q_ROUTES.integrations} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const retry = canvas.getByRole('button', { name: 'Retry: SEF (e-invoicing)' })
+    await userEvent.click(retry)
+    await expect(retry).toHaveAttribute('aria-busy', 'true')
+    await waitFor(async () => {
+      await expect(canvas.queryByRole('button', { name: 'Retry: SEF (e-invoicing)' })).toBeNull()
+    })
+    const sef = canvasElement.querySelector('[data-slot="health-item"][data-kind="up"]')
+    await expect(sef).toHaveTextContent('SEF (e-invoicing)')
+  },
+}
+
+/**
+ * The Liro team's system status across every tenant: services, response time and error rate,
+ * queues, databases and storage, backups with the restore test, certificates and maintenance.
+ */
+export const PlatformStatus: Story = {
+  name: 'Superadmin system status',
+  render: () => <ExampleApp start={Q_ROUTES.systemStatus} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(
+      canvas.getByRole('heading', { name: 'Response time, last 24 hours' }),
+    ).toBeVisible()
+    await expect(canvas.getByRole('list', { name: 'Services' })).toHaveTextContent(
+      'E-invoicing gateway',
+    )
+    await expect(canvas.getByRole('list', { name: 'Backups' })).toHaveTextContent(
+      'Restore test, weekly',
+    )
+    await expect(canvas.getByRole('table', { name: 'Certificates' })).toHaveTextContent(
+      'Expires soon',
+    )
+  },
+}
+
+export const PlatformStatusPhone: Story = {
+  name: 'Superadmin system status, phone',
+  render: () => <OnPhone start={Q_ROUTES.systemStatus} />,
+}
+
+/** While the monitoring answers: skeletons for the numbers, charts, lists and tables. */
+export const PlatformStatusLoading: Story = {
+  name: 'Superadmin system status, loading',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={Q_ROUTES.systemStatusLoading} />,
+}
+
+/** Regions and nodes with their health, latency and alerts. */
+export const PlatformNetwork: Story = {
+  name: 'Superadmin network and infrastructure',
+  render: () => <ExampleApp start={Q_ROUTES.network} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('list', { name: 'Regions' })).toHaveTextContent('Belgrade')
+    await expect(canvas.getByRole('table', { name: 'Nodes' })).toHaveTextContent('stor-beg-3')
+    await expect(canvas.getByRole('table', { name: 'Open alerts' })).toHaveTextContent(
+      'Disk latency above 200 ms',
+    )
+  },
+}
+
+export const PlatformNetworkPhone: Story = {
+  name: 'Superadmin network and infrastructure, phone',
+  render: () => <OnPhone start={Q_ROUTES.network} />,
+}
+
+/** Acknowledging an alert from its row's menu: the operator's name in "Acknowledged by". */
+export const PlatformNetworkAcknowledge: Story = {
+  name: 'Superadmin network and infrastructure, acknowledge an alert, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={Q_ROUTES.network} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const table = within(canvasElement).getByRole('table', { name: 'Open alerts' })
+    await userEvent.click(within(table).getByRole('button', { name: /worker-fra-1/ }))
+    await userEvent.click(
+      await within(document.body).findByRole('menuitem', { name: 'Acknowledge' }),
+    )
+    await expect(within(table).getByRole('row', { name: /worker-fra-1/ })).toHaveTextContent(
+      'Vuk Stojanović',
+    )
+  },
+}

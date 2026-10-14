@@ -1265,4 +1265,11 @@ export const messagesEn: LiroMessages = {
   'floorPlan.allAreas': 'All areas',
   'floorPlan.editOnLarger': 'Edit the plan on a computer or tablet.',
   'seating.seatTitle': 'Seat a guest',
+  // P5.29 admin
+  'health.lastSuccess': 'Last success',
+  'health.lastError': 'Last error',
+  'health.errorMessage': 'Error message',
+  'health.never': 'Never',
+  'health.empty': 'Nothing is monitored here yet.',
+  'health.actionNamed': (actionText, name) => `${actionText}: ${name}`,
 }

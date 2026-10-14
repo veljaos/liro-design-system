@@ -40,6 +40,7 @@ import { GROUP_O_ROUTES } from './screens-O'
 import { GROUP_N_ROUTES } from './screens-N'
 // P5.29 superadmin
 import { GROUP_R_ROUTES } from './screens-R'
+import { GROUP_Q_ROUTES } from './screens-Q'
 
 // ── Routes ────────────────────────────────────────────────────────────────────────────────
 
@@ -74,6 +75,7 @@ const EXAMPLE_ROUTES: readonly ExampleRoute[] = [
   ...GROUP_N_ROUTES,
   // P5.29 superadmin
   ...GROUP_R_ROUTES,
+  ...GROUP_Q_ROUTES,
 ]
 
 // ── The app ───────────────────────────────────────────────────────────────────────────────────

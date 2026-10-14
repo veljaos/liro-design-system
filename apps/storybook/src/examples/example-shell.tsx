@@ -267,9 +267,24 @@ export const TONES = {
   Healthy: 'success',
   Degraded: 'warning',
   Failing: 'danger',
-  Scheduled: 'info',
+  Scheduled: 'neutral',
   Live: 'success',
   Ended: 'neutral',
+  // P5.29 admin: sign-ins, monitored things, keys, certificates, two-factor sign-in, alerts
+  Success: 'success',
+  Blocked: 'danger',
+  Up: 'success',
+  Down: 'danger',
+  'In maintenance': 'neutral',
+  'No report': 'neutral',
+  Revoked: 'neutral',
+  'Expires soon': 'warning',
+  Valid: 'success',
+  On: 'success',
+  Off: 'warning',
+  'Waiting for setup': 'warning',
+  Critical: 'danger',
+  Warning: 'warning',
 } as const
 
 /** A status of the examples. */

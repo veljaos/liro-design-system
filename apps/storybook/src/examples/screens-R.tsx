@@ -166,7 +166,7 @@ function durationText(format: LiroFormat, minutes: number): string {
  * The Superadmin's shell: the Liro team's own product, the module tabs across the top, the
  * signed-in team member; the tenant's day and time zone (Belgrade, 14.10.2026).
  */
-function SuperadminShell({
+export function SuperadminShell({
   phone,
   tab,
   crumbs,
