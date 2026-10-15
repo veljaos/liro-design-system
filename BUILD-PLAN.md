@@ -337,6 +337,7 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P5.42 | Organisation chart and hierarchies | P5.9 | done | 2026-10-14 | HierarchyChart (HTML, CSS-border lines, mirrored in right to left; "+N" toggles, stacked leaves, a unit alone, search, a WAI-ARIA tree, Fit to width, TreeView on phones, a paper mode); Kvadrat Gradnja's organisation of forty people and Kvadrat group's ownership |
 | P5.43 | Files and folders | P5.5, P5.9 | done | 2026-10-14 | FileBrowser with FileGrid, FolderPickerDialog, NameConflictDialog, FileNameDialog, ShareDialog, VersionList, FilePreview and FileDetails (upload of files and folders, drag onto a folder with the menu's way, list only on phones); Kvadrat Gradnja's company documents and Knjigovodstvo Jelić's client folders shared with the client portal; ActivityList isolates its times |
 | P5.31a | The owner's decisions after P5.31–P5.43 | P5.41 | done | 2026-10-15 | Maps follow the law of the Republic of Serbia (Kosovo and Metohija within Serbia, tested); the phone test no longer waits on a trigger whose dialog closed |
+| P5.31b | IPS QR codes checked with the NBS validator | P5.31a | done | 2026-10-15 | Every IPS code the stories and examples show accepted by the National Bank of Serbia's validator; the accepted texts locked in a unit test |
 | P6.1 | Full language and direction matrix | Phases 1–5 | todo | | |
 | P6.2 | Manual WCAG 2.2 checks | P6.1 | todo | | |
 | P6.3 | Performance budget | P4.8 | todo | | |
@@ -908,6 +909,11 @@ The three questions left in P5.31's report, answered by the owner:
 - **Found on the way: map labels and late fonts.** The maps measure their labels again when web fonts finish loading, so which names fit no longer depends on how fast the fonts arrived (as FloorPlan since P5.28).
 
 **Done when** the map test and the phone test pass in CI, and the decisions are in `docs/decisions.md`.
+
+### P5.31b — IPS QR codes checked with the NBS validator (owner, 2026-10-15)
+The owner allowed `ips.nbs.rs`. Every IPS QR text the stories and examples show is sent to the National Bank of Serbia's validator (`https://nbs.rs/QRcode/api/qr/v1/validate`), and the texts it accepts are locked in `ips-qr.test.ts`, so a change to `ipsQrText` that writes them differently fails until it is checked there again.
+
+**Done when** every code is "OK." at the NBS validator, the unit test passes in CI, and the result is in `docs/decisions.md`.
 
 **End of Phase 5:** `0.1.0-alpha.5`; report.
 
