@@ -180,6 +180,12 @@ export function MapCanvas(props: MapCanvasProps) {
   const [placed, setPlaced] = useState<PlacedLabel[]>([])
   const [shown, setShown] = useState<ReadonlySet<string> | null>(null)
   const [, setView] = useState(0)
+  // Fonts that arrive after the first drawing change every label's size: the labels are measured
+  // again then, and the map is ready only once the fonts are (FloorPlan does the same).
+  const [fonts, setFonts] = useState<{ settled: boolean; loads: number }>({
+    settled: false,
+    loads: 0,
+  })
   const latest = useRef(props)
   useLayoutEffect(() => {
     latest.current = props
@@ -343,6 +349,20 @@ export function MapCanvas(props: MapCanvasProps) {
     }
   }, [map, labels])
 
+  useEffect(() => {
+    let live = true
+    const fontSet = document.fonts
+    const settle = () => {
+      if (live) setFonts((current) => ({ settled: true, loads: current.loads + 1 }))
+    }
+    void fontSet.ready.then(settle)
+    fontSet.addEventListener('loadingdone', settle)
+    return () => {
+      live = false
+      fontSet.removeEventListener('loadingdone', settle)
+    }
+  }, [])
+
   // Measured: a label is shown only where it fits inside its area.
   useLayoutEffect(() => {
     const element = overlay.current
@@ -366,7 +386,7 @@ export function MapCanvas(props: MapCanvasProps) {
       }
       return next
     })
-  }, [placed])
+  }, [placed, fonts.loads])
 
   // The place the keys reached stays in view.
   const reveal = props.reveal
@@ -387,7 +407,7 @@ export function MapCanvas(props: MapCanvasProps) {
   const mapSize = map?.getSize()
   const size = { width: mapSize?.x ?? 0, height: mapSize?.y ?? 0 }
 
-  const ready = map !== null && shown !== null
+  const ready = map !== null && shown !== null && fonts.settled
   useEffect(() => {
     if (ready) latest.current.onReady?.()
   }, [ready])

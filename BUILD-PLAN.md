@@ -905,6 +905,7 @@ The three questions left in P5.31's report, answered by the owner:
 - **Maps follow the law of the Republic of Serbia.** Kosovo and Metohija is part of the Republic of Serbia: every map of the stories and examples draws it within Serbia's area, with no shape, border or name of its own. A test fails if a change draws it apart.
 - **IPS QR against the NBS validator.** Every IPS code of the stories and examples is checked with the National Bank of Serbia's validator once `ips.nbs.rs` is reachable from the environment (the owner allows the domain); until then the rules stay those of the two public implementations P5.40 used.
 - **The phone test (`phone-overflow.spec.ts`).** A trigger that closes its own dialog no longer makes the test wait until its timeout: a trigger no longer on the page is skipped at once, and a dialog's pass ends when that dialog has closed.
+- **Found on the way: map labels and late fonts.** The maps measure their labels again when web fonts finish loading, so which names fit no longer depends on how fast the fonts arrived (as FloorPlan since P5.28).
 
 **Done when** the map test and the phone test pass in CI, and the decisions are in `docs/decisions.md`.
 
