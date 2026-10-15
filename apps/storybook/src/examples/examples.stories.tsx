@@ -5960,6 +5960,9 @@ function deskPlay(
   return async ({ canvasElement }) => {
     await settle()
     await check(canvasElement)
+    // The page at rest before the accessibility check: a hover or a fade that the last step
+    // started is measured at its end, not halfway (P5.31).
+    await settle()
   }
 }
 
@@ -5971,6 +5974,7 @@ function phonePlay(
     await settle()
     await check(canvasElement)
     await expectNoSidewaysScroll(canvasElement)
+    await settle()
   }
 }
 
