@@ -376,6 +376,13 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P5.79 | Merging duplicates | P5.19 | todo | | |
 | P5.80 | Scheduled reports | P4.6 | todo | | |
 | P5.81 | Customizable dashboard | P4.6 | todo | | |
+| P5.82 | AML client risk assessment | P5.1 | todo | | |
+| P5.83 | Know your customer (client file) | P5.42 | todo | | |
+| P5.84 | Screening | P5.33 | todo | | |
+| P5.85 | Transaction monitoring alerts | P4.3 | todo | | |
+| P5.86 | AML case management | P5.18 | todo | | |
+| P5.87 | Suspicious transaction report | P5.66 | todo | | |
+| P5.88 | AML overview and obligations | P4.6 | todo | | |
 | P6.1 | Full language and direction matrix | Phases 1–5 | todo | | |
 | P6.2 | Manual WCAG 2.2 checks | P6.1 | todo | | |
 | P6.3 | Performance budget | P4.8 | todo | | |
@@ -954,7 +961,7 @@ The owner allowed `ips.nbs.rs`. Every IPS QR text the stories and examples show 
 **Done when** every code is "OK." at the NBS validator, the unit test passes in CI, and the result is in `docs/decisions.md`.
 
 ### P5.44–P5.81 — The last batch of Phase 5 (owner, 2026-10-15)
-A design system: screens and states only. All data, numbers, rules, codes, legal texts and calculations come from the application through props; examples are illustrative. **Assemble from what exists first** (TreeView / TreeTable, DataTable, ReportPage, the StatutoryFormPage grid with two-level headers, DocumentPage with "Based on" and RelatedDocuments, the Original / Change / New pattern, EditableGrid, RegisterPage, PeriodicRunPage, DetailPage, RecordFormPage, WorklistPage, KanbanBoard, CalendarView, ResourceSchedule, Gantt, FileBrowser, Signing, QrCode, SettingsPage, SessionList, CodeInput, RecoveryCodes, AuthShell, EmailFirstForm, PasswordField, PortalShell, charts, maps); a new component only when something is truly missing, each listed in the report with the reason. Examples: one desktop and one phone story per screen, every intermediate state and interaction story `'!dev'`. Tokens only, the provider's formats and locale, right to left, light / dark, axe, keyboard, no sideways scroll on phones, "fix the class", decisions in `docs/decisions.md`. Four branches and pull requests in the order A, B, C, D; the next starts when the previous is green; a report in Serbian on each pull request. No release, no Phase 6.
+A design system: screens and states only. All data, numbers, rules, codes, legal texts and calculations come from the application through props; examples are illustrative. **Assemble from what exists first** (TreeView / TreeTable, DataTable, ReportPage, the StatutoryFormPage grid with two-level headers, DocumentPage with "Based on" and RelatedDocuments, the Original / Change / New pattern, EditableGrid, RegisterPage, PeriodicRunPage, DetailPage, RecordFormPage, WorklistPage, KanbanBoard, CalendarView, ResourceSchedule, Gantt, FileBrowser, Signing, QrCode, SettingsPage, SessionList, CodeInput, RecoveryCodes, AuthShell, EmailFirstForm, PasswordField, PortalShell, charts, maps); a new component only when something is truly missing, each listed in the report with the reason. Examples: one desktop and one phone story per screen, every intermediate state and interaction story `'!dev'`. Tokens only, the provider's formats and locale, right to left, light / dark, axe, keyboard, no sideways scroll on phones, "fix the class", decisions in `docs/decisions.md`. Five branches and pull requests in the order A, B, C, D, E (E added by the owner the same day); the next starts when the previous is green; a report in Serbian on each pull request. No release, no Phase 6.
 
 #### Group A — Accounting and trade
 - **P5.44 Chart of accounts and the account card.** The chart as a tree (classes, groups, synthetic and analytic accounts), search, an account's details; the account card: opening balance, entries with a running balance, period totals, drill-down to the source document.
@@ -1001,6 +1008,16 @@ A design system: screens and states only. All data, numbers, rules, codes, legal
 - **P5.79 Merging duplicates.** Two partners or items side by side, choose the values to keep, merge, the result.
 - **P5.80 Scheduled reports.** A report sent by e-mail on a schedule, recipients, format, the last runs.
 - **P5.81 Customizable dashboard.** The user adds, removes, resizes and rearranges cards (a keyboard alternative to dragging), saved layouts.
+
+#### Group E — AML compliance (owner, 2026-10-15)
+Anti-money laundering in the spirit of Napier AI, for an accounting firm as an obligated entity and for companies monitoring their own transactions. Same rules as the batch: assemble from what exists first; desktop and phone; design system only — every rule, threshold, list, score and legal text comes from the application; examples illustrative (Knjigovodstvo Jelić's clients and a trading company's transaction monitoring; every name, list and match invented). A fifth branch and pull request after Group D, with the report in Serbian; then stop.
+- **P5.82 Client risk assessment.** A questionnaire (client type, activity, country, ownership, products, delivery channels), the resulting risk (low / medium / high) with the factors that drove it, an override with a reason, the next review date.
+- **P5.83 Know your customer (client file).** Identification and documents (with expiry), beneficial owners as a tree (HierarchyChart) with ownership shares, PEP status, the source of funds, the review history; "Review due" states.
+- **P5.84 Screening.** Results of checks against sanctions, PEP and watch lists (from the application); each potential match side by side with the client (name, date of birth, country, score); the decision True match / False positive with a reason; the re-screening history.
+- **P5.85 Transaction monitoring alerts.** An alert queue (rule triggered, client, amount, risk, age, assignee; WorklistPage); an alert's detail with the transactions that triggered it and the client's profile; close with a reason, escalate to a case.
+- **P5.86 Case management.** The case page (DocumentPage) with a timeline, linked alerts, transactions and documents, notes, tasks, the decision (no suspicion / report), four-eyes approval.
+- **P5.87 Suspicious transaction report.** The report form for the authority (generated from JSON as in P5.66), review and submission states, the record of what was sent and when; confidentiality marked clearly (the client must not be informed).
+- **P5.88 AML overview and obligations.** A dashboard (clients by risk, reviews due, open alerts and cases, ageing), the compliance officer and deputy, staff training records, internal procedures (documents), retention of records, the audit trail.
 
 **Done when** each group's pull request is green in CI with every item's screens (desktop and phone stories), new components with their stories and tests, the decisions in `docs/decisions.md`, and the report in Serbian on the pull request.
 
