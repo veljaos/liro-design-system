@@ -221,6 +221,17 @@ interface OverflowRowProps<T extends ActionItem> {
 }
 
 /**
+ * An element's laid-out width, unrounded: offsetWidth rounds each button, and the rounded sum can
+ * exceed the row by a pixel where the row is as wide as its buttons (P5.31). The used width, not
+ * the bounding box: a transform (a dialog's opening zoom) must not change what fits.
+ */
+function layoutWidth(element: HTMLElement | undefined): number {
+  if (element === undefined) return 0
+  const width = Number.parseFloat(getComputedStyle(element).width)
+  return Number.isFinite(width) ? width : element.offsetWidth
+}
+
+/**
  * The row of ActionGroup and BulkActionBar. When the actions do not fit on one line, the ones
  * before the main action move into a "More" menu first; a label wraps (P2.7d) only when the main
  * action alone is still too wide. Widths are measured unwrapped, in an invisible copy of the row.
@@ -246,12 +257,7 @@ export function OverflowRow<T extends ActionItem>({
       const children = [...measureElement.children] as HTMLElement[]
       const more = children.pop()
       setVisible(
-        visibleActions(
-          children.map((child) => child.offsetWidth),
-          more?.offsetWidth ?? 0,
-          8,
-          rowElement.clientWidth,
-        ),
+        visibleActions(children.map(layoutWidth), layoutWidth(more), 8, layoutWidth(rowElement)),
       )
     }
     update()
