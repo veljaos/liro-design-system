@@ -4,9 +4,10 @@
  * by `topojson-client` 3.1.0 (ISC) — development dependencies only: the package ships no geometry
  * (a real application passes its own). Not exported from `@veljaos/ui/map`.
  *
- * Natural Earth draws Kosovo as a polygon of its own; here it is merged into Serbia's area, so the
- * map has no gap (docs/decisions.md, "Maps (P5.41)", asks the owner to confirm; the geometry is
- * always the application's).
+ * The maps follow the law of the Republic of Serbia (P5.31a): Kosovo and Metohija is part of
+ * Serbia. Natural Earth draws it as a polygon of its own; here it is merged into Serbia's area, with
+ * no shape, border or name of its own (`map-story-world.test.ts`). A real application passes its
+ * own geometry.
  */
 import { feature, merge } from 'topojson-client'
 import world from 'world-atlas/countries-110m.json'
@@ -60,7 +61,7 @@ function country(name: string): MapAreaGeometry {
   return asArea(result.geometry)
 }
 
-/** Serbia with Kosovo's polygon merged in (see the note above). */
+/** Serbia, Kosovo and Metohija within it (see the note above). */
 function serbia(): MapAreaGeometry {
   const parts = [named('Serbia'), named('Kosovo')] as unknown as Parameters<typeof merge>[1]
   return asArea(merge(topology, parts))
