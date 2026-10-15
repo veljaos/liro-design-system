@@ -175,19 +175,17 @@ export function PaymentOrderForm(props: PaymentOrderFormProps) {
           <Box field={{ label: props.amount.label, value: amount }} numeric />
         </dl>
         {props.accounts.map((account, index) => (
-          <dl key={index} className="m-0 flex flex-col gap-1">
-            <Box field={account.account} numeric />
-            {(account.model !== undefined || account.reference !== undefined) && (
-              <div className="grid grid-cols-[3rem_minmax(0,1fr)] gap-2">
-                {account.model !== undefined && <Box field={account.model} numeric />}
-                {account.reference !== undefined && (
-                  <Box
-                    field={account.reference}
-                    numeric
-                    className={account.model === undefined ? 'col-span-2' : undefined}
-                  />
-                )}
-              </div>
+          // One list per account: the account, then its model and reference side by side (a
+          // definition list holds only its groups, D-list rule).
+          <dl key={index} className="m-0 grid grid-cols-[3rem_minmax(0,1fr)] gap-x-2 gap-y-1">
+            <Box field={account.account} numeric className="col-span-2" />
+            {account.model !== undefined && <Box field={account.model} numeric />}
+            {account.reference !== undefined && (
+              <Box
+                field={account.reference}
+                numeric
+                className={account.model === undefined ? 'col-span-2' : undefined}
+              />
             )}
           </dl>
         ))}

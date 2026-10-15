@@ -234,7 +234,7 @@ export const Default: Story = {
     await expect(canvas.getByRole('img', { name: 'Kvadrat Gradnja d.o.o.' })).toBeVisible()
     await expect(canvas.getByText('5.003.678,22 RSD due 21.10.2026.')).toBeVisible()
     await expect(
-      canvas.getByRole('img', { name: 'IPS QR code for the payment (illustrative)' }),
+      canvas.getByRole('img', { name: 'IPS QR code for the payment' }),
     ).toBeVisible()
     await expect(canvas.getByRole('table', { name: 'Lines' })).toBeVisible()
     await expect(canvas.getByRole('group', { name: 'Totals' })).toHaveTextContent('5.003.678,22')

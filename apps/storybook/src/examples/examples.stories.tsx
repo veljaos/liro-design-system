@@ -2359,7 +2359,7 @@ export const PrintoutInvoice: Story = {
       /^135\.954,00 RSD due \d{2}\.\d{2}\.\d{4}\.$/,
     )
     await expect(
-      canvas.getByRole('img', { name: 'IPS QR code for the payment (illustrative)' }),
+      canvas.getByRole('img', { name: 'IPS QR code for the payment' }),
     ).toBeVisible()
     await expect(sheet.querySelector('[data-signature-field]')).toBeNull()
     const lines = canvas.getByRole('table', { name: 'Lines' })

@@ -90,6 +90,7 @@ export const WithValues: Story = {
       'customer.name': 'Kvadrat Gradnja d.o.o.',
       'invoice.total': '294000.00',
       'invoice.dueDate': '2026-11-11',
+      'company.name': 'Enterijer Plus d.o.o.',
     },
   },
   play: async ({ canvasElement }) => {
