@@ -1,5 +1,6 @@
 import {
   Fragment,
+  useCallback,
   useId,
   useLayoutEffect,
   useRef,
@@ -9,6 +10,7 @@ import {
   type PointerEvent,
   type ReactNode,
 } from 'react'
+import { flushSync } from 'react-dom'
 import { BUTTON_SHAPES, ButtonPrimitive } from '../primitives/button'
 import { cn } from '../primitives/cn'
 import { TEXT_DIRECTION } from '../primitives/classes'
@@ -232,6 +234,31 @@ function layoutWidth(element: HTMLElement | undefined): number {
 }
 
 /**
+ * The nearest box whose width does not follow its content: a block in normal flow that is not
+ * a flex or grid item. Its width is the room the row's line can have; the row's own width is not
+ * where the row is sized by its content.
+ */
+function placeOf(element: HTMLElement): HTMLElement {
+  let current = element.parentElement
+  while (current !== null && current !== document.body) {
+    const style = getComputedStyle(current)
+    const parent = current.parentElement
+    const parentDisplay = parent === null ? 'block' : getComputedStyle(parent).display
+    if (
+      (style.display === 'block' || style.display === 'flow-root') &&
+      style.position !== 'absolute' &&
+      style.position !== 'fixed' &&
+      style.float === 'none' &&
+      !/flex|grid/.test(parentDisplay)
+    ) {
+      return current
+    }
+    current = parent
+  }
+  return document.body
+}
+
+/**
  * The row of ActionGroup and BulkActionBar. When the actions do not fit on one line, the ones
  * before the main action move into a "More" menu first; a label wraps (P2.7d) only when the main
  * action alone is still too wide. Widths are measured unwrapped, in an invisible copy of the row.
@@ -248,27 +275,79 @@ export function OverflowRow<T extends ActionItem>({
   const row = useRef<HTMLDivElement>(null)
   const measure = useRef<HTMLDivElement>(null)
   const [visible, setVisible] = useState(actions.length)
+  const shownCount = useRef(visible)
+  useLayoutEffect(() => {
+    shownCount.current = visible
+  }, [visible])
+
+  const update = useCallback(() => {
+    const rowElement = row.current
+    const measureElement = measure.current
+    if (rowElement === null || measureElement === null) return
+    const children = [...measureElement.children] as HTMLElement[]
+    const more = children.pop()
+    setVisible(
+      visibleActions(children.map(layoutWidth), layoutWidth(more), 8, layoutWidth(rowElement)),
+    )
+  }, [])
+
+  // A row sized by its content (a page header's actions, a worklist's bar) is as wide as what it
+  // shows: once folded it never sees the room it would have, and stays folded (P5.31). So it
+  // decides with every action laid out — on mount, when the actions change, when their widths
+  // change (a font arrives) and when the nearest box whose width does not follow its content
+  // resizes — and folds only then. The same actions in a new array (a parent's re-render) are
+  // not a change: showing them all again would close an open "More" menu.
+  const signature = actions
+    .map((action) => `${action.key}\u0000${action.label}\u0000${action.unavailableReason ?? ''}`)
+    .join('\u0001')
+  const [shownFor, setShownFor] = useState(signature)
+  if (shownFor !== signature) {
+    setShownFor(signature)
+    setVisible(actions.length)
+  }
+  const retry = useCallback(() => {
+    if (shownCount.current === actions.length) {
+      update()
+    } else {
+      // Laid out before paint, then measured by the effect below.
+      flushSync(() => {
+        setVisible(actions.length)
+      })
+    }
+  }, [actions.length, update])
+
+  // With every action laid out, before paint: measure, and fold what does not fit.
+  useLayoutEffect(() => {
+    if (visible === actions.length) update()
+  }, [visible, actions.length, signature, update])
 
   useLayoutEffect(() => {
     const rowElement = row.current
     const measureElement = measure.current
     if (rowElement === null || measureElement === null) return
-    const update = () => {
-      const children = [...measureElement.children] as HTMLElement[]
-      const more = children.pop()
-      setVisible(
-        visibleActions(children.map(layoutWidth), layoutWidth(more), 8, layoutWidth(rowElement)),
-      )
-    }
-    update()
-    const observer = new ResizeObserver(update)
-    observer.observe(rowElement)
-    // The copy's width changes when a font arrives after the first measurement.
-    observer.observe(measureElement)
+    // The row's own size: a narrower place folds more (the row's width follows its place there).
+    const rowObserver = new ResizeObserver(update)
+    rowObserver.observe(rowElement)
+    // The copy's width changes when a font arrives after the first measurement; the place's
+    // width when the page or a panel beside it resizes.
+    // Widths only: folding changes the place's height, and a trial on that would never end.
+    const widths = new Map<Element, number>()
+    const trialObserver = new ResizeObserver((entries) => {
+      let changed = false
+      for (const entry of entries) {
+        const width = entry.contentRect.width
+        if (widths.get(entry.target) !== width) changed = true
+        widths.set(entry.target, width)
+      }
+      if (changed) retry()
+    })
+    trialObserver.observe(measureElement)
+    trialObserver.observe(placeOf(rowElement))
     return () => {
-      observer.disconnect()
+      rowObserver.disconnect()
+      trialObserver.disconnect()
     }
-  }, [actions])
+  }, [retry, update])
 
   const more = <IconButton intent="more" label={messages['action.more']} />
   const hidden = actions.slice(0, actions.length - visible)
