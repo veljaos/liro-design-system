@@ -41,3 +41,18 @@ export type {
 // ── P5.29 portal ──
 export { headingSlug, richTextHeadings } from './rich-text-headings'
 export type { RichTextHeading } from './rich-text-headings'
+
+// ── P5.31 merge values ──
+export {
+  mergeFieldText,
+  missingMergeFields,
+  resolveMergeFields,
+  resolveMergeText,
+} from './merge-values'
+export type {
+  MergeContext,
+  MergeResult,
+  MergeValue,
+  MergeValueKind,
+  MergeValues,
+} from './merge-values'

@@ -42,6 +42,9 @@ export const STICKY_HEAD =
  */
 export const STICKY_START = 'sticky start-0 will-change-transform'
 
+/** The first column after DataTable's 48px selection column. */
+export const STICKY_START_AFTER_SELECT = 'sticky start-12 will-change-transform'
+
 /**
  * On the region: a cell reached by the keyboard is scrolled clear of the shell, the header and the
  * sticky first column (focus never hidden, WCAG 2.4.11). The hook keeps `--liro-head-height` (the

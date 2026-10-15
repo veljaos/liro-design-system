@@ -9,15 +9,17 @@ import { BuyerField } from './buyer-field'
 import { CART_TOTAL, CURRENCY, QUICK_AMOUNTS, SPLIT_PAID } from './pos-story-data'
 import { ReceiptResult } from './receipt-result'
 import {
+  BAKERY_PAYEE,
   BUYER_ID_TYPES,
   DELIVERIES,
+  instantPaymentCode,
   ISSUED_FACTS,
   MIXED_PAID,
   PAYMENT_OPTIONS,
   RECEIPT_LINK,
   WIRE_WITHOUT_BUYER,
 } from './sale-story-data'
-import { StoryCode } from './story-code'
+import { QrCode } from './qr-code'
 import { ExampleProvider, PhoneFrame, StoryProvider } from './story-frames'
 
 function Till({ children }: { children: ReactNode }) {
@@ -264,14 +266,18 @@ export const QuickAmount: Story = {
 /** The receipt's code as the application draws it (a stand-in here). */
 const RECEIPT_CODE = (
   <span className="flex text-primary">
-    <StoryCode text={RECEIPT_LINK.href} label="Receipt code" />
+    <QrCode value={RECEIPT_LINK.href} label="Receipt code" />
   </span>
 )
 
 /** An instant payment's code shown to the customer (a stand-in here). */
 const PAYMENT_CODE = (
   <span className="flex text-primary">
-    <StoryCode text="instant-payment-1011" label="Instant payment code" size={176} />
+    <QrCode
+      value={instantPaymentCode(BAKERY_PAYEE, '1011.00', '1011')}
+      label="IPS QR code for the payment"
+      size={176}
+    />
   </span>
 )
 
@@ -344,7 +350,9 @@ export const InstantWaiting: Story = {
   },
   play: async () => {
     await settle()
-    await expect(within(dialog()).getByRole('img', { name: 'Instant payment code' })).toBeVisible()
+    await expect(
+      within(dialog()).getByRole('img', { name: 'IPS QR code for the payment' }),
+    ).toBeVisible()
     await expect(dialog()).toHaveTextContent('Waiting for the payment…')
   },
 }

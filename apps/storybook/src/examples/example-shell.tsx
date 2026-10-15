@@ -285,6 +285,8 @@ export const TONES = {
   'Waiting for setup': 'warning',
   Critical: 'danger',
   Warning: 'warning',
+  // P5.34 ai: a blog post on the blog (a draft and a scheduled post are neutral, as above)
+  Published: 'success',
 } as const
 
 /** A status of the examples. */
@@ -328,6 +330,7 @@ export function Shell({
   company = HOME_COMPANY,
   agent,
   account,
+  banners,
   children,
 }: {
   phone: boolean
@@ -338,6 +341,8 @@ export function Shell({
   agent?: ReactNode
   /** Someone else than Milica, at another organisation. */
   account?: ExampleAccount
+  /** P5.36 acct: application-wide banners (a trial ending, a payment past due). */
+  banners?: ReactNode
   children: ReactNode
 }) {
   const navigate = useContext(Navigate)
@@ -553,6 +558,7 @@ export function Shell({
       {...(tabs === undefined ? {} : { moduleTabs: tabs })}
       {...(bottomBar === undefined ? {} : { bottomBar })}
       {...(agent === undefined ? {} : { agent })}
+      {...(banners === undefined ? {} : { banners })}
     >
       {children}
     </AppShell>

@@ -16,6 +16,12 @@ describe('visibleActions', () => {
     expect(visibleActions([80, 90, 100], 36, 8, 150)).toBe(1)
   })
 
+  it('fits buttons whose unrounded widths add up to the row, as a row sized by its content', () => {
+    // 80.4 + 90.4 + 100.4 + 16 = 287.2, the row 287.2 measured with a difference in the decimals.
+    expect(visibleActions([80.4, 90.4, 100.4], 36, 8, 287.19999)).toBe(3)
+    expect(visibleActions([80.4, 90.4, 100.4], 36, 8, 286.5)).toBe(2)
+  })
+
   it('never hides the main action, even when nothing fits', () => {
     expect(visibleActions([80, 90, 100], 36, 8, 10)).toBe(1)
     expect(visibleActions([], 36, 8, 10)).toBe(0)

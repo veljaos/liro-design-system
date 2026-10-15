@@ -1316,3 +1316,186 @@ export type {
   SatisfactionAnswer,
   SatisfactionOption,
 } from './components/help-logic'
+// ── P5.34 ai: the assistant (P5.34), e-mail preview (P5.38), reading (P5.39) ──
+export { AssistantAnswer } from './components/assistant-answer'
+export type { AssistantAnswerProps } from './components/assistant-answer'
+export { AssistantComposer } from './components/assistant-composer'
+export type { AssistantComposerProps } from './components/assistant-composer'
+export { AskedQuestion, AssistantPanel, QuestionList } from './components/assistant-panel'
+export type { AssistantPanelProps, AssistantTurn } from './components/assistant-panel'
+export { ProposedAction } from './components/proposed-action'
+export type { ProposedActionProps } from './components/proposed-action'
+export {
+  actionOffers,
+  actionSettled,
+  ANSWER_STATES,
+  answerBusy,
+  answerSources,
+  canReport,
+  followUpsShown,
+  questionKey,
+  questionReady,
+  shownBlocks,
+} from './components/assistant-logic'
+export type {
+  AnswerBlock,
+  AnswerChartBlock,
+  AnswerColumn,
+  AnswerHeadingBlock,
+  AnswerListBlock,
+  AnswerRow,
+  AnswerSource,
+  AnswerSourcesBlock,
+  AnswerState,
+  AnswerTableBlock,
+  AnswerTextBlock,
+  ProposedActionState,
+} from './components/assistant-logic'
+export { AskPage } from './templates/ask-page'
+export type { AskPageProps } from './templates/ask-page'
+export { EmailPreview, emailPreviewWidth } from './components/email-preview'
+export type {
+  EmailPreviewProps,
+  EmailPreviewScheme,
+  EmailPreviewWidth,
+} from './components/email-preview'
+export { ArticleList } from './components/article-list'
+export type { ArticleListProps, ArticleSummary } from './components/article-list'
+export { NewsletterSignup } from './components/newsletter-signup'
+export type { NewsletterSignupProps } from './components/newsletter-signup'
+export { opensOutside, ShareLinks } from './components/share-links'
+export type { ShareLinksProps, ShareTarget } from './components/share-links'
+export { articlePlaces, bylineText, emailProblem, looksLikeEmail } from './components/blog-logic'
+export { ArticlePage } from './templates/article-page'
+export type { ArticleAuthor, ArticlePageProps, ArticleTag } from './templates/article-page'
+
+// ── P5.40 QR code, IPS QR and payment orders ──
+export { QrCode, qrModules, qrPath } from './components/qr-code'
+export type { QrCodeProps, QrErrorCorrection } from './components/qr-code'
+export {
+  ipsAccountText,
+  ipsAccountValid,
+  ipsAmount,
+  ipsProblemsOf,
+  ipsQrText,
+  ipsReferenceValid,
+  normalizeIpsAccount,
+} from './components/ips-qr'
+export type {
+  IpsPayment,
+  IpsProblem,
+  IpsProblemCode,
+  IpsQrKind,
+  IpsQrResult,
+} from './components/ips-qr'
+export { PaymentOrderForm } from './templates/payment-order'
+export type {
+  PaymentOrderAccount,
+  PaymentOrderField,
+  PaymentOrderFormProps,
+  PaymentOrderParty,
+} from './templates/payment-order'
+// ── P5.36 acct ──
+export { PlanComparison } from './components/plan-comparison'
+export type { PlanComparisonProps } from './components/plan-comparison'
+export { choosablePlan, comparisonRows, featureCell } from './components/plan-logic'
+export type {
+  ComparedFeature,
+  ComparedPlan,
+  FeatureCell,
+  FeatureOffer,
+  PlanComparisonRow,
+} from './components/plan-logic'
+export { UsageMeter } from './components/usage-meter'
+export type { UsageMeterProps } from './components/usage-meter'
+export { meterShare, usageAmount, usageWords } from './components/usage-logic'
+// ── P5.31 docs ──
+export { PageViewer } from './components/page-viewer'
+export type { PageViewerProps } from './components/page-viewer'
+export { clampPage, labelSide, regionBox, regionPage } from './components/page-viewer-logic'
+export type { PageRegion, RegionBox, ViewerPage } from './components/page-viewer-logic'
+export { RecognizedField } from './components/recognized-field'
+export type { RecognizedFieldProps } from './components/recognized-field'
+// ── P5.33 docs ──
+export { ValueComparison, valueComparisonCounts } from './components/value-comparison'
+export type { ComparisonRow, ValueComparisonProps } from './components/value-comparison'
+// ── P5.42 org ──
+export { HierarchyChart } from './components/hierarchy-chart'
+export type { HierarchyChartProps } from './components/hierarchy-chart'
+export {
+  descendantCount,
+  hierarchyKeyAction,
+  hierarchyPath,
+  indexHierarchy,
+  initiallyExpanded,
+  matchHierarchy,
+  revealNode,
+  stacksChildren,
+  visibleHierarchy,
+} from './components/hierarchy-logic'
+export type {
+  HierarchyIndex,
+  HierarchyItem,
+  HierarchyKeyAction,
+  HierarchyNode,
+} from './components/hierarchy-logic'
+// ── P5.43 files ──
+export { FileBrowser } from './templates/file-browser'
+export type {
+  FileBrowserProps,
+  FileColumn,
+  FilePlace,
+  FileUploadRules,
+} from './templates/file-browser'
+export {
+  blockedFolders,
+  canDropInto,
+  expiresTooSoon,
+  fileIconKind,
+  folderPath,
+  momentText,
+  pickerTree,
+  resolveConflicts,
+  selectRange,
+  sizeText,
+  toggleSelection,
+  uploadCounts,
+  withPaths,
+} from './components/file-browser-logic'
+export type {
+  ConflictChoice,
+  ConflictResolution,
+  FileEntry,
+  FileIconKind,
+  FileLink,
+  UploadCounts,
+  UploadedFile,
+} from './components/file-browser-logic'
+export { FileIcon } from './components/file-entry-parts'
+export { FileGrid } from './components/file-grid'
+export type { FileGridProps } from './components/file-grid'
+export { FolderPicker, FolderPickerDialog, folderPathText } from './components/folder-picker'
+export type { FolderPickerDialogProps, FolderPickerProps } from './components/folder-picker'
+export { NameConflictDialog } from './components/name-conflict-dialog'
+export type {
+  ConflictFile,
+  NameConflict,
+  NameConflictDialogProps,
+} from './components/name-conflict-dialog'
+export { FileNameDialog } from './components/file-name-dialog'
+export type { FileNameDialogProps } from './components/file-name-dialog'
+export { ShareDialog } from './components/share-dialog'
+export type {
+  ShareAccess,
+  ShareCandidate,
+  ShareDialogProps,
+  ShareKind,
+  ShareLevel,
+  ShareLinkState,
+} from './components/share-dialog'
+export { VersionList } from './components/version-list'
+export type { FileVersion, VersionListProps } from './components/version-list'
+export { FilePreview } from './components/file-preview'
+export type { FilePreviewProps } from './components/file-preview'
+export { FileDetails } from './components/file-details'
+export type { FileDetailsProps } from './components/file-details'

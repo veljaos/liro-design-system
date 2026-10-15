@@ -306,7 +306,7 @@ export function PaymentDialog(props: PaymentDialogProps) {
       )}
       {waiting && (
         <div className="flex flex-col items-center gap-3 rounded-lg bg-surface-sunken px-4 py-6 text-center">
-          {qr && props.qrCode !== undefined && (
+          {qr && props.qrCode !== undefined && props.qrCode !== null && (
             <figure
               aria-label={messages['payment.qrCode']}
               className="m-0 flex justify-center rounded-md border border-solid border-default bg-surface-raised p-3"

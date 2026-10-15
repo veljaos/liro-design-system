@@ -4,7 +4,7 @@ import { expect, fn, userEvent, within } from 'storybook/test'
 import { settle } from '../primitives/story-helpers'
 import { ReceiptResult } from './receipt-result'
 import { DELIVERED, DELIVERIES, ISSUED_FACTS, RECEIPT_LINK } from './sale-story-data'
-import { StoryCode } from './story-code'
+import { QrCode } from './qr-code'
 import { ExampleProvider, PhoneFrame, StoryProvider } from './story-frames'
 
 function Till({ children }: { children: ReactNode }) {
@@ -20,7 +20,7 @@ function Till({ children }: { children: ReactNode }) {
 /** The receipt's code (a stand-in drawn from its link; the application draws the real one). */
 const CODE = (
   <span className="flex text-primary">
-    <StoryCode text={RECEIPT_LINK.href} label="Receipt code" />
+    <QrCode value={RECEIPT_LINK.href} label="Receipt code" />
   </span>
 )
 

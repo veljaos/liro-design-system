@@ -1,3 +1,5 @@
+import type { IpsProblemCode } from '../components/ips-qr'
+
 /**
  * The Design System's own strings: every text a component shows on its own, and nothing else
  * (BUILD-PLAN section 5). All other text comes in through props. A value is a string, or a
@@ -1902,4 +1904,408 @@ export interface LiroMessages {
   /** SearchResultList (P5.30 e): the count over the results, and Try again. */
   'searchResults.count': (count: number, countText: string) => string
   'searchResults.retry': string
+  // P5.34 ai
+  /** The assistant (P5.34): the AI-generated mark on every answer. */
+  'assistant.generated': string
+  /** An answer's states: nothing written yet, being written, Stop, stopped, Try again. */
+  'assistant.thinking': string
+  'assistant.writing': string
+  'assistant.stop': string
+  'assistant.stopped': string
+  'assistant.retry': string
+  /** The records an answer came from. */
+  'assistant.sources': string
+  /** The suggested follow-up questions under an answer. */
+  'assistant.followUps': string
+  /** Reporting a wrong answer: the button, the dialog's title, text and button, the thanks. */
+  'assistant.report': string
+  'assistant.reportTitle': string
+  'assistant.reportMessage': string
+  'assistant.reportSend': string
+  'assistant.reported': string
+  /** A proposed action: its mark, the note that it waits, its buttons and its outcomes. */
+  'assistant.proposed': string
+  'assistant.waits': string
+  'assistant.confirm': string
+  'assistant.dismiss': string
+  'assistant.running': string
+  'assistant.dismissed': string
+  /** The question box: its name, the ask button and the keys. */
+  'assistant.question': string
+  'assistant.ask': string
+  'assistant.askHint': string
+  /** The user's question in a conversation, for assistive technology. */
+  'assistant.youAsked': string
+  /** The conversation's name, suggested and recent questions. */
+  'assistant.conversation': string
+  'assistant.suggested': string
+  'assistant.recent': string
+  /** The panel's and the page's buttons. */
+  'assistant.newConversation': string
+  'assistant.openPage': string
+  'assistant.newQuestion': string
+  /** The question box under an answer on the "Ask" page. */
+  'assistant.followUp': string
+  /** EmailPreview (P5.38): its name, the width and mail-client switches, the header's labels. */
+  'emailPreview.label': string
+  'emailPreview.width': string
+  'emailPreview.desktop': string
+  'emailPreview.phone': string
+  'emailPreview.client': string
+  'emailPreview.light': string
+  'emailPreview.dark': string
+  'emailPreview.from': string
+  'emailPreview.to': string
+  'emailPreview.subject': string
+  /** ArticlePage (P5.39): the related articles, the tags, the date of the last change. */
+  'article.related': string
+  'article.tags': string
+  'article.updated': (dateText: string) => string
+  /** ShareLinks (P5.39). */
+  'share.label': string
+  'share.copy': string
+  'share.copied': string
+  'share.copyFailed': string
+  /** NewsletterSignup (P5.39). */
+  'newsletter.email': string
+  'newsletter.subscribe': string
+  'newsletter.required': string
+  'newsletter.invalid': string
+  'newsletter.sending': string
+  'newsletter.thanks': string
+  // P5.31 merge values
+  /** A merge field without a value (the values were given): its pill's name. */
+  'richText.mergeFieldMissing': (label: string) => string
+  /** Under the text: the fields that still have no value, by their labels. */
+  'richText.missingValues': (labels: readonly string[]) => string
+  // P5.40 QR code and IPS QR
+  /** QrCode: a text too long for any QR code. */
+  'qr.tooLong': string
+  /** An IPS QR problem of a field, by its label (`ipsQrText`'s problems). */
+  'ips.problem': (code: IpsProblemCode, label: string, limit?: number) => string
+  // P5.37 gantt
+  /** Gantt (P5.37): the kinds of a row, before its name ("Phase: Structure"). */
+  'gantt.kindPhase': string
+  'gantt.kindTask': string
+  'gantt.kindMilestone': string
+  /** A row's accessible name: its kind and name. */
+  'gantt.rowName': (kind: string, label: string) => string
+  /** The phase a task stands in, after its name for assistive technology. */
+  'gantt.inPhase': (phase: string) => string
+  /** A row's progress in words ("60% done"); `percentText` is through `format.percent`. */
+  'gantt.done': (percentText: string) => string
+  /** The rows a row follows: "After: Excavation, Foundation slab". */
+  'gantt.after': (names: string) => string
+  /** The table's column headers. */
+  'gantt.task': string
+  'gantt.progress': string
+  'gantt.planned': string
+  'gantt.actual': string
+  /** A row's menu of edits, named with the row. */
+  'gantt.actions': (label: string) => string
+  'gantt.move': string
+  'gantt.changeDates': string
+  'gantt.setProgress': string
+  'gantt.dependencies': string
+  /** The dialogs' titles: the action; the row goes bold under it (D22). */
+  'gantt.moveTitle': string
+  'gantt.datesTitle': string
+  'gantt.progressTitle': string
+  'gantt.dependenciesTitle': string
+  /** Move: the new start, and where it will end. */
+  'gantt.newStart': string
+  'gantt.keepsLength': (endText: string) => string
+  /** Change dates: the range of a task, the day of a milestone. */
+  'gantt.dates': string
+  'gantt.date': string
+  /** Set progress: the field and its check. */
+  'gantt.doneField': string
+  'gantt.progressRange': string
+  /** Dependencies: the rows it follows, the new one and how, Add, Remove, the empty lists. */
+  'gantt.follows': string
+  'gantt.followsNothing': string
+  'gantt.addFollows': string
+  'gantt.dependencyHow': string
+  'gantt.addDependency': string
+  'gantt.removeDependency': (name: string) => string
+  'gantt.noCandidates': string
+  /** The four kinds of dependency in a business user's words. */
+  'gantt.finishToStart': string
+  'gantt.startToStart': string
+  'gantt.finishToFinish': string
+  'gantt.startToFinish': string
+  /** The dialogs' buttons. */
+  'gantt.save': string
+  'gantt.moveButton': string
+  'gantt.close': string
+  /** What was reported, announced politely. */
+  'gantt.changedDates': (label: string, datesText: string) => string
+  'gantt.changedProgress': (label: string, doneText: string) => string
+  'gantt.addedDependency': (to: string, from: string) => string
+  'gantt.removedDependency': (to: string, from: string) => string
+  /** The views and the scale. */
+  'gantt.view': string
+  'gantt.timelineView': string
+  'gantt.listView': string
+  'gantt.scale': string
+  'gantt.scaleDays': string
+  'gantt.scaleMonths': string
+  /** The top row of the days scale: "October 2026". */
+  'gantt.monthYear': (month: string, year: string) => string
+  /** The timeline's region and how to use it. */
+  'gantt.timeline': (label: string) => string
+  'gantt.timelineHint': string
+  'gantt.dragHint': string
+  /** The one "now" marker (D25): "Now, 14.10.2026. 09:40". */
+  'gantt.now': (text: string) => string
+  /** States. */
+  'gantt.empty': string
+  'gantt.loading': string
+  'gantt.error': string
+  'gantt.retry': string
+  'gantt.editOnLargerScreen': string
+  // P5.36 acct
+  /** PlanComparison (P5.36): the current plan's mark, the feature column, included or not. */
+  'plan.current': string
+  'plan.feature': string
+  'plan.included': string
+  'plan.notIncluded': string
+  /** UsageMeter (P5.36): an amount with its unit, "24 of 30", and an amount without a limit. */
+  'usage.amount': (number: string, unit: string) => string
+  'usage.ofLimit': (usedText: string, limitText: string) => string
+  'usage.noLimit': (usedText: string) => string
+  // P5.31 docs
+  /** RecognizedField (P5.31): the application's confidence ("Confidence: 98%"). */
+  'recognized.confidence': (text: string) => string
+  /** A reading the application marks as uncertain. */
+  'recognized.low': string
+  /** The user changed a value that was read. */
+  'recognized.changed': string
+  /** The button that highlights where the value was read. */
+  'recognized.showSource': string
+  /** PageViewer (P5.31): the highlighted region, announced ("Highlighted: Total, page 1 of 2"). */
+  'viewer.highlighted': (label: string, pageText: string) => string
+  // P5.33 docs
+  /** ValueComparison (P5.33): "2 of 5 differ" over the rows. */
+  'comparison.count': (count: number, countText: string, total: number, totalText: string) => string
+  /** A row's result: the two values are the same, or differ. */
+  'comparison.same': string
+  'comparison.differs': string
+  /** The headings of the first and the last column. */
+  'comparison.item': string
+  'comparison.result': string
+  /** No rows to compare. */
+  'comparison.empty': string
+  // P5.41 map
+  /** AreaMap and LocationCheck (P5.41): how the keyboard moves the map (its description). */
+  'map.keys': string
+  /** The map's buttons. */
+  'map.zoomIn': string
+  'map.zoomOut': string
+  'map.showAll': string
+  /** The map's name for assistive technology: "Map: Illustrative zones of Novi Sad". */
+  'map.name': (label: string) => string
+  /** The list of areas beside the map, and the legend. */
+  'map.areas': string
+  'map.legend': string
+  /** The area a point falls in: "Falls in: Zone II"; or none. */
+  'map.fallsIn': (area: string) => string
+  'map.fallsInNone': string
+  /** The chosen area, announced. */
+  'map.chosen': (area: string) => string
+  /** States. */
+  'map.empty': string
+  'map.loading': string
+  'map.error': string
+  'map.retry': string
+  /** LocationCheck: the four states, as the application decides them. */
+  'location.inside': string
+  'location.outside': string
+  'location.unknown': string
+  'location.denied': string
+  /** Asking the application for the position, and while it answers. */
+  'location.locate': string
+  'location.locating': string
+  /** The position's facts: its accuracy in metres and when it was taken. */
+  'location.accuracy': (metresText: string) => string
+  'location.takenAt': (timeText: string) => string
+  /** The allowed area and the position, named on the map's list of shapes. */
+  'location.allowed': string
+  'location.position': string
+  /** RegionChart (P5.41, maps in charts): how the keys move between the areas (its description). */
+  'map.regionKeys': string
+  /** An area without a value (hatched): never 0. */
+  'map.noData': string
+  /** A legend step's range, the numbers written by `format`: below the first break … */
+  'map.stepBelow': (toText: string) => string
+  /** … between two breaks … */
+  'map.stepBetween': (fromText: string, toText: string) => string
+  /** … and from the last break up. */
+  'map.stepFrom': (fromText: string) => string
+  /** The area the keys reached, announced: "Serbia: 412.000.000 RSD". */
+  'map.areaValue': (area: string, valueText: string) => string
+  // P5.42 org
+  /** HierarchyChart (P5.42): a position without a person. */
+  'hierarchy.vacant': string
+  /** The toggle under a closed node, and under an open one. */
+  'hierarchy.expand': (count: number, countText: string, name: string) => string
+  'hierarchy.collapse': (name: string) => string
+  /** The search field, and what it found ("2 of 5 found", "5 found", "Nothing found"). */
+  'hierarchy.search': string
+  'hierarchy.found': (index: number, indexText: string, count: number, countText: string) => string
+  'hierarchy.foundCount': (count: number, countText: string) => string
+  'hierarchy.notFound': string
+  /** Showing one unit alone, the reasons it cannot be, the trail back and the whole chart. */
+  'hierarchy.showUnit': string
+  'hierarchy.unitReason': string
+  'hierarchy.unitShown': string
+  'hierarchy.path': string
+  'hierarchy.showAll': string
+  /** The size buttons. */
+  'hierarchy.size': string
+  'hierarchy.fit': string
+  'hierarchy.actual': string
+  /** Loading failed. */
+  'hierarchy.retry': string
+  // P5.43 files
+  /** FileBrowser (P5.43): the quick places and the folder tree, and showing or hiding them. */
+  'files.places': string
+  'files.folders': string
+  'files.showFolders': string
+  'files.hideFolders': string
+  /** The list and grid views, and the grid's sort menu. */
+  'files.view': string
+  'files.listView': string
+  'files.gridView': string
+  'files.sort': string
+  /** The columns and facts of a file. */
+  'files.name': string
+  'files.owner': string
+  'files.modified': string
+  'files.created': string
+  'files.size': string
+  'files.type': string
+  'files.links': string
+  'files.location': string
+  'files.retention': string
+  'files.tags': string
+  /** A folder's type, and its number of items ("12 items"). */
+  'files.folder': string
+  'files.items': (count: number, countText: string) => string
+  /** After a name: shared with others, a favourite. */
+  'files.shared': string
+  'files.favourite': string
+  /** The actions of the view. */
+  'files.upload': string
+  'files.uploadTitle': string
+  'files.chooseFolder': string
+  'files.newFolder': string
+  'files.details': string
+  'files.download': string
+  /** One item: its checkbox, its menu, the phone's bottom sheet of actions. */
+  'files.select': (name: string) => string
+  'files.selectAll': string
+  'files.actions': (name: string) => string
+  'files.actionsTitle': string
+  /** The way back to the parent folder on a phone ("Back to Contracts"). */
+  'files.backTo': (folder: string) => string
+  /** While searching: in this folder or everywhere. */
+  'files.searchScope': string
+  'files.searchEverywhere': string
+  /** The states. */
+  'files.empty': string
+  'files.emptyDescription': string
+  'files.noResults': string
+  'files.noResultsDescription': string
+  'files.noAccess': string
+  'files.offline': string
+  'files.offlineDescription': string
+  'files.offlineReason': string
+  'files.loadError': string
+  'files.retry': string
+  /** Dropping files from the computer onto the view. */
+  'files.dropHere': (folder: string) => string
+  /** Dragging items onto a folder: what moves, where it would land, a cancelled drag. */
+  'files.dragging': (count: number, countText: string) => string
+  'files.dropInto': (folder: string) => string
+  'files.dragCancelled': string
+  /** The uploads: "2 of 5 uploaded", clear the finished ones. */
+  'files.uploads': string
+  'files.uploadCounts': (done: number, doneText: string, total: number, totalText: string) => string
+  'files.clearUploads': string
+  /** The name of a new folder or a renamed item. */
+  'files.nameLabel': string
+  /** FilePreview: "3 of 12", the previous and next file, a file without a preview. */
+  'files.position': (index: number, indexText: string, total: number, totalText: string) => string
+  'files.previous': string
+  'files.next': string
+  'files.noPreview': string
+  'files.noPreviewDescription': string
+  /** FileDetails: the panels. */
+  'files.versions': string
+  'files.activity': string
+  'files.signing': string
+  'files.sharing': string
+  /** FolderPickerDialog: the chosen destination, nothing chosen, and why a folder cannot be. */
+  'folderPicker.destination': (path: string) => string
+  'folderPicker.none': string
+  'folderPicker.moving': string
+  'folderPicker.here': string
+  /** NameConflictDialog: the question, the three answers, "Apply to all", the progress. */
+  'conflict.title': string
+  'conflict.message': (folder: string) => string
+  'conflict.choice': string
+  'conflict.replace': string
+  'conflict.replaceHint': string
+  'conflict.keepBoth': string
+  'conflict.keepBothHint': (name: string) => string
+  'conflict.skip': string
+  'conflict.skipHint': string
+  'conflict.existing': string
+  'conflict.incoming': string
+  'conflict.applyToAll': (count: number, countText: string) => string
+  'conflict.progress': (
+    index: number,
+    indexText: string,
+    total: number,
+    totalText: string,
+  ) => string
+  'conflict.continue': string
+  'conflict.cancel': string
+  /** ShareDialog: adding people, who has access, the link. */
+  'sharing.title': string
+  'sharing.add': string
+  'sharing.level': string
+  'sharing.addButton': string
+  'sharing.who': string
+  'sharing.onlyYou': string
+  'sharing.owner': string
+  'sharing.levelOf': (name: string) => string
+  'sharing.remove': (name: string) => string
+  'sharing.link': string
+  'sharing.linkNone': string
+  'sharing.createLink': string
+  'sharing.linkAddress': string
+  'sharing.expires': string
+  'sharing.never': string
+  'sharing.expiresTooSoon': string
+  'sharing.password': string
+  'sharing.passwordSet': string
+  'sharing.revokeLink': string
+  'sharing.revokeTitle': string
+  'sharing.revokeMessage': string
+  'sharing.done': string
+  /** VersionList: the current version, restore, download, upload a new one, none. */
+  'versions.current': string
+  'versions.restore': string
+  'versions.restoreOf': (label: string) => string
+  'versions.restoreTitle': string
+  'versions.restoreMessage': string
+  'versions.download': (label: string) => string
+  'versions.upload': string
+  'versions.empty': string
+  /** FileNameDialog: an empty name. */
+  'files.nameRequired': string
+  /** ShareDialog: saves the link's password. */
+  'sharing.setPassword': string
 }

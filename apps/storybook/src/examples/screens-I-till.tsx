@@ -57,8 +57,10 @@ import {
   FISCAL_BANNER,
   FISCAL_END,
   NOT_FISCAL,
+  BAKERY_PAYEE,
+  instantPaymentCode,
 } from '../../../../packages/ui/src/components/sale-story-data'
-import { StoryCode } from '../../../../packages/ui/src/components/story-code'
+import { QrCode } from '../../../../packages/ui/src/components/qr-code'
 import { Navigate } from './example-shell'
 import { useExampleState } from './example-state'
 import {
@@ -193,7 +195,7 @@ function buyerCode(buyer: BuyerValue): string {
 function receiptCode(number: string, size = 128) {
   return (
     <span className="flex text-primary">
-      <StoryCode text={`${FISCAL.linkBase}${number}`} label="Receipt code" size={size} />
+      <QrCode value={`${FISCAL.linkBase}${number}`} label="Receipt code" size={size} />
     </span>
   )
 }
@@ -423,6 +425,8 @@ export function Till({ phone, start = {} }: { phone: boolean; start?: TillStart 
         : null,
   )
   const [reference, setReference] = useState('')
+  // The buyer showed their own IPS QR code (kind PK) and the cashier scanned it (P5.40).
+  const [buyerCode, setBuyerCode] = useState(false)
   const [cardState, setCardState] = useState<CardState>(
     step === 'card-waiting' || step === 'instant'
       ? 'waiting'
@@ -1265,20 +1269,31 @@ export function Till({ phone, start = {} }: { phone: boolean; start?: TillStart 
             reference={reference}
             onReferenceChange={setReference}
             qrCode={
-              <span className="flex text-primary">
-                <StoryCode
-                  text={`instant-${sentAmount ?? decimal(due)}`}
-                  label="Instant payment code"
-                  size={176}
-                />
-              </span>
+              buyerCode ? null : (
+                <span className="flex text-primary">
+                  <QrCode
+                    value={instantPaymentCode(
+                      BAKERY_PAYEE,
+                      sentAmount ?? decimal(due),
+                      '20261014000412',
+                    )}
+                    label="IPS QR code for the payment"
+                    size={176}
+                  />
+                </span>
+              )
             }
             cardState={cardState}
             {...(cardState === 'approved' && parts.length > 0
               ? {
                   cardMessage: `${amountShown(parts[parts.length - 1]?.value ?? '0')} · ${parts[parts.length - 1]?.detail ?? ''}`,
                 }
-              : {})}
+              : cardState === 'waiting' && buyerCode
+                ? {
+                    cardMessage:
+                      'The buyer’s code is read; the bank is asking the buyer to confirm.',
+                  }
+                : {})}
             onCardStart={() => {
               setSentAmount(
                 tendered === null ? decimal(figures.remaining) : decimal(paras(tendered)),
@@ -1287,6 +1302,7 @@ export function Till({ phone, start = {} }: { phone: boolean; start?: TillStart 
             }}
             onCardCancel={() => {
               setSentAmount(null)
+              setBuyerCode(false)
               setCardState('idle')
             }}
             {...(step === 'deferred' || option?.unavailableReason !== undefined
@@ -1303,15 +1319,36 @@ export function Till({ phone, start = {} }: { phone: boolean; start?: TillStart 
                     />
                   ),
                 }
-              : buyer !== null && step === 'corporate'
+              : option?.kind === 'qr' && cardState === 'idle'
                 ? {
+                    // The other way of an instant payment: the buyer shows their bank app's code
+                    // (IPS QR, kind PK) and the cashier scans it.
                     extra: (
-                      <p className="m-0 text-sm text-secondary bidi-content">
-                        {`Buyer: ${buyerText(buyer)}`}
-                      </p>
+                      <ScanField
+                        label="Or scan the buyer’s code"
+                        description="The buyer shows the IPS QR code from their bank’s app."
+                        placeholder="Scan the buyer’s IPS QR code"
+                        onScan={() => {
+                          setSentAmount(
+                            tendered === null
+                              ? decimal(figures.remaining)
+                              : decimal(paras(tendered)),
+                          )
+                          setBuyerCode(true)
+                          setCardState('waiting')
+                        }}
+                      />
                     ),
                   }
-                : {})}
+                : buyer !== null && step === 'corporate'
+                  ? {
+                      extra: (
+                        <p className="m-0 text-sm text-secondary bidi-content">
+                          {`Buyer: ${buyerText(buyer)}`}
+                        </p>
+                      ),
+                    }
+                  : {})}
             {...(completeDisabledReason === undefined ? {} : { completeDisabledReason })}
             onComplete={complete}
             done={done}

@@ -70,7 +70,7 @@ import { Tooltip } from './popover'
 import { Skeleton } from './progress'
 import { SelectField } from './select-field'
 import { StatusBadge, type Tone } from './status-badge'
-import { STICKY_CLEARANCE, STICKY_HEAD, useStickyHead } from './sticky-head'
+import { STICKY_CLEARANCE, STICKY_HEAD, STICKY_START, useStickyHead } from './sticky-head'
 import { TextAreaField } from './text-field'
 import { usePhone } from './use-phone'
 import { keepFocusedRow, overscanRows, spacersBetween } from './virtual-rows'
@@ -791,7 +791,7 @@ function DesktopView(props: ViewProps) {
       </span>
     )
     const base = cn(
-      'sticky start-0 z-[5] w-48 min-w-48 max-w-72 bg-surface-raised p-0 text-start align-middle font-regular',
+      `${STICKY_START} z-[5] w-48 min-w-48 max-w-72 bg-surface-raised p-0 text-start align-middle font-regular`,
       CELL_LINES,
       'border-e-default',
     )
@@ -1229,7 +1229,7 @@ function DesktopView(props: ViewProps) {
                       data-pos={pos(head)}
                       tabIndex={tabIndex(head)}
                       className={cn(
-                        'sticky start-0 z-[5] bg-surface-sunken px-3 py-2 text-start text-xs font-semibold text-secondary',
+                        `${STICKY_START} z-[5] bg-surface-sunken px-3 py-2 text-start text-xs font-semibold text-secondary`,
                         CELL_LINES,
                         'border-e-default',
                         totalIndex === 0 && 'border-t border-t-strong',

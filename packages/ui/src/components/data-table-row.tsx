@@ -10,6 +10,7 @@ import { rowKeyAction } from './data-table-logic'
 import type { DataTableColumn } from './data-table'
 import { LazyDropdownMenu, type MenuEntry } from './dropdown-menu'
 import { LINE_TYPE_TEXT, spansRow, type LineType } from './line-types'
+import { STICKY_START, STICKY_START_AFTER_SELECT } from './sticky-head'
 
 /*
  * One row of DataTable's table layout, memoised (P5.20: long lists stay responsive). A row draws
@@ -87,9 +88,9 @@ export interface LineClasses {
  * The selection column is 48px wide (16px padding, the 16px checkbox), so the first column stands
  * 48px from the start after it.
  */
-export const STICKY_START_SELECT = 'sticky start-0 z-[5]'
+export const STICKY_START_SELECT = `${STICKY_START} z-[5]`
 export function stickyStartFirst(selectable: boolean): string {
-  return selectable ? 'sticky start-12 z-[5]' : 'sticky start-0 z-[5]'
+  return selectable ? `${STICKY_START_AFTER_SELECT} z-[5]` : `${STICKY_START} z-[5]`
 }
 
 const ROW_LINE = ['border-0 border-b border-solid border-default', 'border-0'] as const

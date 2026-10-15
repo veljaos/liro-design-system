@@ -45,6 +45,31 @@ import { GROUP_Q_ROUTES } from './screens-Q'
 import { GROUP_S_ROUTES } from './screens-S'
 // ── P5.29 portal ──
 import { GROUP_T_ROUTES } from './screens-T'
+// ── P5.42 org ──
+import { GROUP_AJ_ROUTES } from './screens-AJ'
+// P5.37 gantt
+import { GROUP_AA_ROUTES } from './screens-AA'
+// P5.35 gantt
+import { GROUP_Y_ROUTES } from './screens-Y'
+import { GROUP_AD_ROUTES } from './screens-AD'
+// ── P5.32 acct ──
+import { GROUP_V_ROUTES } from './screens-V'
+import { GROUP_Z_ROUTES } from './screens-Z'
+// P5.34 ai
+import { GROUP_X_ROUTES } from './screens-X'
+import { GROUP_AB_ROUTES } from './screens-AB'
+import { GROUP_AC_ROUTES } from './screens-AC'
+// ── P5.31 docs ──
+import { GROUP_U_ROUTES } from './screens-U'
+// ── P5.33 docs ──
+import { GROUP_W_ROUTES } from './screens-W'
+// P5.41 map
+import { GROUP_AE_ROUTES } from './screens-AE'
+import { GROUP_AF_ROUTES } from './screens-AF'
+import { GROUP_AG_ROUTES } from './screens-AG'
+// ── P5.43 files ──
+import { GROUP_AH_ROUTES } from './screens-AH'
+import { GROUP_AI_ROUTES } from './screens-AI'
 
 // ── Routes ────────────────────────────────────────────────────────────────────────────────
 
@@ -84,6 +109,31 @@ const EXAMPLE_ROUTES: readonly ExampleRoute[] = [
   ...GROUP_S_ROUTES,
   // ── P5.29 portal ──
   ...GROUP_T_ROUTES,
+  // P5.37 gantt
+  ...GROUP_AA_ROUTES,
+  // P5.35 gantt
+  ...GROUP_Y_ROUTES,
+  ...GROUP_AD_ROUTES,
+  // ── P5.32 acct ──
+  ...GROUP_V_ROUTES,
+  ...GROUP_Z_ROUTES,
+  // P5.34 ai
+  ...GROUP_X_ROUTES,
+  ...GROUP_AB_ROUTES,
+  ...GROUP_AC_ROUTES,
+  // ── P5.31 docs ──
+  ...GROUP_U_ROUTES,
+  // ── P5.33 docs ──
+  ...GROUP_W_ROUTES,
+  // P5.41 map
+  ...GROUP_AE_ROUTES,
+  ...GROUP_AF_ROUTES,
+  ...GROUP_AG_ROUTES,
+  // ── P5.42 org ──
+  ...GROUP_AJ_ROUTES,
+  // ── P5.43 files ──
+  ...GROUP_AH_ROUTES,
+  ...GROUP_AI_ROUTES,
 ]
 
 // ── The app ───────────────────────────────────────────────────────────────────────────────────

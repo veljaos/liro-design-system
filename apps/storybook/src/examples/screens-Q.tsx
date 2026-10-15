@@ -1,3 +1,4 @@
+import { Z_ROUTES } from './data-Z'
 import { SuperadminShell } from './screens-R'
 import {
   ArrowRight,
@@ -23,7 +24,7 @@ import {
   ListPage,
   MaskedValue,
   PageHeader,
-  ProgressBar,
+  UsageMeter,
   SectionCard,
   SelectField,
   SessionList,
@@ -106,7 +107,8 @@ export { Q_ROUTES }
 
 // ── Shared: the administration's and the platform's shells ────────────────────────────────────
 
-type AdminTab = 'overview' | 'users' | 'signIns' | 'audit' | 'security' | 'integrations'
+export type AdminTab =
+  'overview' | 'users' | 'signIns' | 'audit' | 'security' | 'integrations' | 'subscription'
 
 const ADMIN_TAB_LIST: { key: AdminTab; label: string; path: string }[] = [
   { key: 'overview', label: 'Overview', path: Q_ROUTES.adminOverview },
@@ -115,6 +117,7 @@ const ADMIN_TAB_LIST: { key: AdminTab; label: string; path: string }[] = [
   { key: 'audit', label: 'Audit log', path: Q_ROUTES.audit },
   { key: 'security', label: 'Security', path: Q_ROUTES.security },
   { key: 'integrations', label: 'Integrations', path: Q_ROUTES.integrations },
+  { key: 'subscription', label: 'Subscription', path: Z_ROUTES.subscription },
 ]
 
 /** The administration's module tabs with `current` marked. */
@@ -342,16 +345,11 @@ export function AdminOverview({ phone }: { phone: boolean }) {
           }
         >
           <div className="flex flex-col gap-4">
-            <div className="flex flex-col gap-2">
-              <p className="bidi-content m-0 text-sm text-primary">
-                {`${count(ADMIN_FIGURES.seatsUsed)} of ${count(ADMIN_FIGURES.seats)} seats used`}
-              </p>
-              <ProgressBar
-                label="Seats used"
-                value={ADMIN_FIGURES.seatsUsed}
-                max={ADMIN_FIGURES.seats}
-              />
-            </div>
+            <UsageMeter
+              label="Seats"
+              used={String(ADMIN_FIGURES.seatsUsed)}
+              limit={String(ADMIN_FIGURES.seats)}
+            />
             <KeyValueList
               items={[
                 { key: 'plan', label: 'Plan', value: ADMIN_FIGURES.plan },

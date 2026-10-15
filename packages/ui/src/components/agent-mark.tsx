@@ -22,13 +22,18 @@ import { useLiro } from '../provider/liro-provider'
 export interface AgentMarkProps {
   /** Writes the word beside the icon. Default: the icon only (the word for assistive technology). */
   showLabel?: boolean
+  /**
+   * The word, from the application or a message. Default `messages['agent.mark']` ("Agent");
+   * an assistant's answer says "AI-generated" (P5.34).
+   */
+  label?: string
   className?: string
 }
 
 /** The marker after an agent's name: an icon, its word for assistive technology and a tooltip. */
-export function AgentMark({ showLabel = false, className }: AgentMarkProps) {
+export function AgentMark({ showLabel = false, label, className }: AgentMarkProps) {
   const { messages } = useLiro()
-  const word = messages['agent.mark']
+  const word = label ?? messages['agent.mark']
   return (
     <TooltipProvider>
       <TooltipRoot>

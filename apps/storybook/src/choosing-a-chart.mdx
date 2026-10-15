@@ -18,8 +18,17 @@ Pick the chart by what the numbers must show. Charts come from `@veljaos/ui/char
 | A few scores of one or two things               | **RadarChart**                                                    |
 | Progress to a goal                              | **RadialChart** with `max`                                        |
 | One number that matters                         | **StatCard**, not a chart                                         |
+| One figure across places: countries, regions    | **RegionChart** (`@veljaos/ui/map`), see "Maps of values" below   |
 
 **Never:** radar or radial charts for money over time; a pie for parts that do not add up to one whole; two value axes in one chart.
+
+## Maps of values
+
+**RegionChart** comes from `@veljaos/ui/map` (Leaflet, drawn with SVG), not from `@veljaos/ui/charts`, but it stands in the same card with the same title, legend, tooltip and **Show as table**. Each area is coloured by the step its value falls in. The steps are the application's `breaks`, at most five, in shades of one meaning: the main blue, or neutral grey.
+
+- **Use it** when _where_ matters: one figure for each country, region or municipality, and the reader looks for neighbours, clusters or the places that stand out ("revenue by country", "sales by region"). Add points or bubbles for places inside the areas (offices, shops).
+- **Not** for exact comparison: a bar chart ranks places better, because large areas look important whatever their value. Not for a trend over time. Not for parts of a whole. Not for more than five steps of precision: those need the table. Not for choosing an area (**AreaMap**).
+- An area without a value is hatched and says "No data", never 0. The map is never mirrored in right-to-left. The geometry (GeoJSON) is the application's; the stories use Natural Earth's 1:110m countries.
 
 ## Colour
 

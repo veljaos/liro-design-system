@@ -8,6 +8,10 @@
 @import '@veljaos/tokens/theme.css';
 /* Diagram's canvas (P5.26): React Flow's structure in tokens, under every utility. */
 @import './diagram/diagram.css' layer(base);
+/* Gantt's timeline (P5.37): SVAR's structure in tokens, under every utility. */
+@import './gantt/gantt.css' layer(base);
+/* Maps (P5.41): Leaflet's structure in tokens, under every utility. */
+@import './map/map.css' layer(base);
 @source './';
 /* Stories and tests are not shipped; their classes stay out of the package CSS. */
 @source not './**/*.stories.tsx';

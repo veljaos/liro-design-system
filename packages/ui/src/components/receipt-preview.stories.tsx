@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { QrCode } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { expect, within } from 'storybook/test'
 import { settle } from '../primitives/story-helpers'
@@ -21,7 +20,7 @@ import {
   RECEIPT_LINK,
   TAX_RECAP,
 } from './sale-story-data'
-import { StoryCode } from './story-code'
+import { QrCode } from './qr-code'
 import { ReceiptPreview } from './receipt-preview'
 import { ExampleProvider, PhoneFrame, StoryProvider } from './story-frames'
 
@@ -33,10 +32,8 @@ function Shop({ children }: { children: ReactNode }) {
   )
 }
 
-/** The fiscal QR code the application draws (an icon stands in for its image here). */
-const CODE = (
-  <QrCode role="img" aria-label="Fiscal verification code" className="size-24 text-primary" />
-)
+/** The fiscal QR code: the receipt's verification link (QrCode). */
+const CODE = <QrCode value={RECEIPT_LINK.href} label="Fiscal verification code" size={96} />
 
 const meta = {
   title: 'Components/POS/ReceiptPreview',
@@ -201,7 +198,7 @@ export const Japanese: Story = {
 /** The fiscal receipt's code (a stand-in drawn from its link). */
 const FISCAL_CODE = (
   <span className="flex text-primary">
-    <StoryCode text={RECEIPT_LINK.href} label="Fiscal receipt code" size={128} />
+    <QrCode value={RECEIPT_LINK.href} label="Fiscal receipt code" size={128} />
   </span>
 )
 

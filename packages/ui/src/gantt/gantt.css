@@ -1,0 +1,375 @@
+/*
+ * Gantt (P5.37): the structure SVAR React Gantt needs, in Liro tokens. SVAR's own style sheets
+ * (style.css and all.css) and its themes (Willow, Material) are not used: the themes carry raw
+ * colours and load an icon font from SVAR's CDN. These rules are adapted from
+ * @svar-ui/react-gantt 2.7.3's dist/index.css (MIT, © XB Software Sp. z o.o; THIRD-PARTY-NOTICES.md),
+ * keeping only what positions and layers the chart's parts (the grid, the editor, the menus and the
+ * PRO parts are not drawn); every colour is a Liro meaning, through the `--wx-*` variables SVAR's
+ * components read, set in the `.liro-gantt` scope only. SVAR lays its chart out in physical
+ * coordinates (`left`, `top`, `dir="ltr"` on the chart), so `left` and `right` here are the time
+ * axis, not page layout: Gantt mirrors the whole chart for a right-to-left page
+ * (`data-mirrored`) and turns its texts back. The class names SVAR hashes (`wx-GKbcLEGA`) are not
+ * used, so a version bump keeps these rules; check them again on every bump.
+ * Imported into the base layer of styles.css, so any utility class wins.
+ */
+.liro-gantt {
+  --wx-background: var(--liro-surface-raised);
+  --wx-color-font: var(--liro-text-primary);
+  --wx-color-primary: var(--liro-border-focus);
+  --wx-color-danger: var(--liro-status-danger-fg);
+  --wx-gantt-border-color: var(--liro-border-subtle);
+  /* CellGrid reads this once to paint its grid; that picture is hidden below (the grid is ours). */
+  --wx-gantt-border: 1px solid var(--liro-border-subtle);
+  --wx-timescale-border: 1px solid var(--liro-border-subtle);
+  --wx-timescale-font: var(--liro-font-weight-medium) var(--liro-font-size-xs) / 1.4
+    var(--liro-font-sans);
+  --wx-timescale-font-color: var(--liro-text-secondary);
+  --wx-timescale-shadow: none;
+  --wx-gantt-bar-font: var(--liro-font-weight-medium) var(--liro-font-size-xs) / 1.4
+    var(--liro-font-sans);
+  --wx-gantt-bar-border-radius: var(--liro-radius-sm);
+  --wx-gantt-milestone-border-radius: 2px;
+  --wx-gantt-link-color: var(--liro-border-control);
+  --wx-gantt-link-color-hovered: var(--liro-text-primary);
+  --wx-gantt-link-marker-color: var(--liro-border-control);
+  --wx-gantt-link-marker-background: var(--liro-surface-raised);
+  --wx-gantt-select-color: var(--liro-surface-selected);
+  --wx-gantt-milestone-color: var(--liro-text-primary);
+  --wx-gantt-progress-marker-height: 26px;
+  --wx-gantt-progress-border-color: var(--liro-border-control);
+  --wx-icon-size: 20px;
+  --wx-font-size-sm: var(--liro-font-size-xs);
+  font-family: var(--liro-font-sans);
+  color: var(--liro-text-primary);
+}
+
+/* The layout: one scroll box; Gantt gives it the height of every row, so it never scrolls down. */
+.liro-gantt .wx-gantt {
+  height: 100%;
+  width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.liro-gantt .wx-pseudo-rows {
+  width: 100%;
+  height: auto;
+  min-height: 100%;
+}
+.liro-gantt .wx-stuck {
+  position: sticky;
+  top: 0;
+  height: 100%;
+  width: 100%;
+  max-height: 100%;
+}
+.liro-gantt .wx-layout {
+  position: relative;
+  display: flex;
+  max-height: 100%;
+  max-width: 100%;
+  height: 100%;
+  background-color: var(--wx-background);
+  overflow: hidden;
+  outline: none;
+}
+.liro-gantt .wx-layout > .wx-content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* The chart: it scrolls sideways inside its card, never the page (D19). */
+.liro-gantt .wx-chart {
+  position: relative;
+  flex: 1 1 auto;
+  overflow-x: auto;
+  overflow-y: hidden;
+  outline: none;
+}
+.liro-gantt .wx-chart:focus-visible {
+  outline: 2px solid var(--liro-border-focus);
+  outline-offset: -2px;
+}
+.liro-gantt .wx-area {
+  position: relative;
+  overflow-y: hidden;
+  /* The grid: a line at the end of every column, one under every row (sizes from Gantt). */
+  background-image:
+    linear-gradient(to right, transparent calc(100% - 1px), var(--liro-border-subtle) 0),
+    linear-gradient(to bottom, transparent calc(100% - 1px), var(--liro-border-subtle) 0);
+  background-size:
+    var(--liro-gantt-column, 72px) 100%,
+    100% var(--liro-gantt-row, 44px);
+}
+/* SVAR's CellGrid paints the grid into a canvas image; ours (above) follows the theme instead. */
+.liro-gantt .wx-area > div:not([class]) {
+  background: none !important;
+}
+.liro-gantt .wx-area > .wx-selected {
+  position: absolute;
+  box-sizing: border-box;
+  left: 0;
+  width: 100%;
+  background: var(--wx-gantt-select-color);
+}
+
+/* The time scale: two rows, sticky in the chart and moved below the shell (Gantt's head shift). */
+.liro-gantt .wx-scale {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background-color: var(--wx-background);
+  border-bottom: 1px solid var(--liro-border-default);
+  transform: translateY(var(--liro-head-shift, 0px));
+  will-change: transform;
+}
+.liro-gantt .wx-scale .wx-row,
+.liro-gantt .wx-scale .wx-cell {
+  display: flex;
+  box-sizing: border-box;
+}
+.liro-gantt .wx-scale .wx-row:not(:last-child) {
+  border-bottom: 1px solid var(--liro-border-subtle);
+}
+.liro-gantt .wx-scale .wx-cell {
+  justify-content: center;
+  align-items: center;
+  white-space: nowrap;
+  border-right: var(--wx-timescale-border);
+  font: var(--wx-timescale-font);
+  color: var(--wx-timescale-font-color);
+}
+.liro-gantt .wx-scale .wx-cell-value {
+  position: sticky;
+  left: 0;
+  right: 0;
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+/* The bars. Gantt draws each bar's look itself (its template); SVAR keeps the place and the drag. */
+.liro-gantt .wx-bars {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+.liro-gantt .wx-bar {
+  pointer-events: all;
+  box-sizing: border-box;
+  position: absolute;
+  border-radius: var(--wx-gantt-bar-border-radius);
+  font: var(--wx-gantt-bar-font);
+  white-space: nowrap;
+  line-height: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.liro-gantt[data-readonly] .wx-bar {
+  cursor: default;
+}
+.liro-gantt .wx-bar.wx-touch {
+  opacity: 0.5;
+}
+.liro-gantt .wx-bar:not(.wx-milestone):focus {
+  outline: 2px solid var(--liro-border-focus);
+  outline-offset: 1px;
+}
+/* SVAR's own fill of a bar's progress: the template draws progress itself. */
+.liro-gantt .wx-bar .wx-progress-wrapper {
+  display: none;
+}
+.liro-gantt .wx-milestone {
+  border-color: var(--wx-gantt-milestone-color);
+}
+.liro-gantt .wx-milestone .wx-content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  background-color: var(--wx-gantt-milestone-color);
+  transform: rotate(45deg) scale(0.6);
+  border-radius: var(--wx-gantt-milestone-border-radius);
+}
+.liro-gantt .wx-milestone:focus {
+  outline: none;
+}
+.liro-gantt .wx-milestone:focus .wx-content {
+  outline: 2px solid var(--liro-border-focus);
+  outline-offset: 2px;
+}
+
+/* Dragging a bar's progress: a small tab under the bar, shown on hover (edit only). */
+.liro-gantt .wx-progress-marker {
+  opacity: 0;
+  position: absolute;
+  top: 80%;
+  width: var(--wx-icon-size);
+  height: var(--wx-gantt-progress-marker-height);
+  background: var(--wx-gantt-progress-border-color);
+  clip-path: polygon(50% 0, 100% 30%, 100% 100%, 0 100%, 0 30%);
+  z-index: 3;
+  font-size: 0;
+  border-radius: 4px;
+  cursor: ew-resize;
+}
+.liro-gantt .wx-progress-marker::before {
+  content: '';
+  display: block;
+  position: absolute;
+  width: calc(var(--wx-icon-size) - 2px);
+  height: calc(var(--wx-gantt-progress-marker-height) - 2px);
+  clip-path: polygon(50% 0, 100% 30%, 100% 100%, 0 100%, 0 30%);
+  top: 1px;
+  left: 1px;
+  background: var(--wx-gantt-link-marker-background);
+  z-index: -1;
+  border-radius: 4px;
+}
+.liro-gantt .wx-bar:hover .wx-progress-marker,
+.liro-gantt .wx-progress-marker.wx-progress-in-drag {
+  opacity: 1;
+}
+
+/* A dependency's ends, to drag a new one from (edit only): a 16px ring, shown on hover. */
+.liro-gantt .wx-link {
+  position: absolute;
+  z-index: 4;
+  top: 50%;
+  transform: translateY(-50%);
+  box-sizing: border-box;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid var(--wx-gantt-link-marker-color);
+  background-color: var(--wx-gantt-link-marker-background);
+  opacity: 0;
+  cursor: default;
+}
+.liro-gantt .wx-link .wx-inner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  box-sizing: border-box;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 4px solid var(--wx-gantt-link-marker-color);
+  pointer-events: none;
+}
+.liro-gantt .wx-link.wx-left,
+.liro-gantt .wx-bar .wx-delete-button.wx-left {
+  left: -18px;
+}
+.liro-gantt .wx-link.wx-right,
+.liro-gantt .wx-bar .wx-delete-button.wx-right {
+  right: -18px;
+}
+.liro-gantt .wx-link.wx-target:hover,
+.liro-gantt .wx-link.wx-selected,
+.liro-gantt .wx-bar:hover .wx-link.wx-target,
+.liro-gantt .wx-link.wx-visible.wx-target {
+  opacity: 1;
+  cursor: pointer;
+}
+.liro-gantt .wx-link.wx-selected,
+.liro-gantt .wx-link.wx-selected .wx-inner {
+  border-color: var(--liro-border-focus);
+}
+
+/* Removing a chosen dependency: SVAR's button, its icon font replaced by lucide's X as a mask. */
+.liro-gantt .wx-bar .wx-delete-button {
+  position: absolute;
+  z-index: 4;
+  top: 50%;
+  transform: translateY(-50%);
+  box-sizing: border-box;
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--liro-status-danger-border);
+  border-radius: 50%;
+  background: var(--liro-status-danger-bg);
+  color: var(--liro-status-danger-fg);
+  cursor: pointer;
+}
+.liro-gantt .wx-bar .wx-delete-button:focus-visible {
+  outline: 2px solid var(--liro-border-focus);
+  outline-offset: 1px;
+}
+.liro-gantt .wxi-close {
+  display: block;
+  width: 14px;
+  height: 14px;
+  margin: auto;
+  background-color: currentColor;
+  -webkit-mask: var(--liro-gantt-x-icon) center / contain no-repeat;
+  mask: var(--liro-gantt-x-icon) center / contain no-repeat;
+  /* lucide-react 1.48.0 "x" (ISC), as a mask: its strokes take the button's colour. */
+  --liro-gantt-x-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 6 6 18'/%3E%3Cpath d='m6 6 12 12'/%3E%3C/svg%3E");
+}
+
+/* Dependencies: lines in border.control (3:1 against every surface), strong on hover. */
+.liro-gantt .wx-links {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+.liro-gantt .wx-line {
+  pointer-events: none;
+}
+.liro-gantt .wx-line > .wx-line-draw {
+  pointer-events: none;
+  stroke: var(--wx-gantt-link-color);
+  stroke-width: 1.5;
+  fill: transparent;
+}
+.liro-gantt .wx-line > .wx-line-hitbox {
+  pointer-events: stroke;
+  stroke: transparent;
+  stroke-width: 20;
+  fill: transparent;
+}
+.liro-gantt .wx-line-selectable {
+  cursor: pointer;
+}
+.liro-gantt .wx-line-selectable:hover > .wx-line-draw {
+  stroke: var(--wx-gantt-link-color-hovered);
+}
+.liro-gantt .wx-line.wx-line-selected > .wx-line-draw {
+  stroke: var(--wx-color-danger);
+  stroke-width: 2;
+}
+
+/*
+ * Right to left (D9): the chart is mirrored, so time runs from the leading edge; every text in it
+ * is turned back. Dragging is off there (SVAR measures the pointer in physical pixels); the rows'
+ * dialogs edit instead.
+ */
+.liro-gantt[data-mirrored] .wx-chart {
+  transform: scaleX(-1);
+}
+.liro-gantt[data-mirrored] .wx-scale .wx-cell > span,
+.liro-gantt[data-mirrored] [data-gantt-text] {
+  display: inline-block;
+  transform: scaleX(-1);
+}
+/* A scale label fills its cell and is centred in it: turned back about the cell's own middle, it
+   stands on whole pixels. Turned about its own middle at a fractional place, in the scale's layer
+   of its own, its text was drawn a pixel apart from run to run (P5.31). */
+.liro-gantt[data-mirrored] .wx-scale .wx-cell > span {
+  flex: 1 1 100%;
+  min-width: 0;
+  text-align: center;
+}

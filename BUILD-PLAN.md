@@ -323,6 +323,19 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P5.28 | Owner's review of Phase 5 part 2 | P5.27 | done | 2026-10-13 | Phones never scroll sideways (PhoneFrame as the screen, dialogs as bottom sheets, `phone-overflow.spec.ts`); day and month names and week start only from the locale (`numericFormat`); selects over 10 options searched; table headers sticky below the shell, first column at the start (DataTable `stickyHeader` by default); one-record dialogs with `subject`; neutral actions on toned boxes; ChangeConfirmDialog and "Notify …" choices; one "now" marker; Examples sidebar two stories per screen; StatutoryFormPage as the real form grid; printouts as simple as a Stripe invoice with electronic signature fields; POS fiscal flows and open tabs on tables; floor plans without walls, labels never cut, one area at a time, phones on the list, moves confirmed with the free tables or beds |
 | P5.29 | Admin and Superadmin views | P5.28 | done | 2026-10-14 | HealthList; ImpersonationBar `note`; a tenant's administration (overview, sign-in activity with masked addresses, audit log, security, integrations) and the Superadmin in one shell (system status, network, incidents on DocumentPage, security events on WorklistPage, tenants with an audited read-only "view as", announcements with a Banner preview); `numericFormat` follows the provider's time zone |
 | P5.30 | Helpdesk | P5.28 | done | 2026-10-14 | SlaTimer, ReplyComposer (reply or internal note, saved replies, files, article links), internal notes in a conversation, RichTextField `ref` handle, DataTable rows by the arrows; SatisfactionRating, HelpfulFeedback, LinkSuggestions, PageContents, SearchResultList, CategoryGrid, RichText `headingIds`; the agents' inbox, ticket and overview under `/helpdesk`, the customer portal under `/support` and the knowledge base in both |
+| P5.31 | Document inbox with recognition | P5.30 | done | 2026-10-14 | PageViewer (pages as images, a highlighted region in page units), RecognizedField (the application's confidence, "Show where it was read"); the document inbox and its review document by document (Enter confirms; recognising, failed, locked PDF, unreadable scan, duplicate, new supplier); merge values filled in by RichText, RichTextField and ReplyComposer; every sticky first column on its own layer |
+| P5.32 | Accountant's workspace for many clients | P5.30 | done | 2026-10-14 | Built from the library: 214 clients by urgency, the deadlines calendar (CalendarView), a client's month close (SetupChecklist), the company switcher at 214 clients, "Ask the client" in a Drawer and the client portal's request page |
+| P5.33 | IOS: statements of open items | P5.30 | done | 2026-10-14 | ValueComparison; the partners' statements (prepare, Liro Bridge or e-mail, preview, reminders), the partner's side in Liro's partner portal (confirm or dispute), a disputed statement reconciled line by line |
+| P5.34 | Liro Assistant (AI) | P5.30 | done | 2026-10-14 | AssistantAnswer, ProposedAction, AssistantComposer, AssistantPanel and AskPage: answers as the application's data (never a model), labelled AI-generated, tables, a chart slot, sources, a proposed action that waits for Confirm, no access in the application's words; AgentMark `label` |
+| P5.35 | Employee portal | P5.30 | done | 2026-10-14 | Built from the library (PortalShell): home, payslips and the payslip's PDF, leave with its approval and a new request, shifts, documents to sign, my details with change requests |
+| P5.36 | Subscription and billing | P5.30 | done | 2026-10-14 | PlanComparison and UsageMeter; the subscription (plan, usage, next invoice, payment method, invoices and their PDF), change plan with the proration, cancel; trial, past-due and cancelled banners; one set of plan names (Start, Business, Pro) |
+| P5.37 | Project timeline (Gantt) | P5.30 | done | 2026-10-14 | `@veljaos/ui/gantt` on SVAR React Gantt 2.7.3 (MIT edition): phases, tasks, milestones, dependencies, budget against spent, the one now marker; drag and the rows' dialogs reported through `onChange`; mirrored in right to left; phones a list by phase |
+| P5.38 | E-mail and notification templates | P5.30 | done | 2026-10-14 | EmailPreview (Desktop / Phone width, Light / Dark mail client); the template editor in three languages with the merge values' preview, versions and send test |
+| P5.39 | Blog | P5.30 | done | 2026-10-14 | ArticleList, NewsletterSignup, ShareLinks and ArticlePage; Liro's public blog (categories, tags, search, an article with its contents) and its authoring (posts, editor, schedule, publish, preview) |
+| P5.40 | IPS NBS QR and payment orders | P5.10, P5.15 | done | 2026-10-14 | QrCode on `qr` 0.7.2 (every illustrative code now real), the IPS NBS QR text with its problems by field, PaymentOrderForm (Serbian forms 1, 2, 3); payment orders and the till's instant payment (PT shown, PK scanned) |
+| P5.41 | Maps | P5.24 | done | 2026-10-14 | `@veljaos/ui/map` on Leaflet 1.9.4 (SVG, no tiles needed): AreaMap (areas, the list, "Falls in: …"), LocationCheck (the application's verdict, "Use my location" through `onLocate`), RegionChart (a choropleth in the charts' card, "No data" hatched); property-tax zones, a site check-in, revenue by country and by illustrative region |
+| P5.42 | Organisation chart and hierarchies | P5.9 | done | 2026-10-14 | HierarchyChart (HTML, CSS-border lines, mirrored in right to left; "+N" toggles, stacked leaves, a unit alone, search, a WAI-ARIA tree, Fit to width, TreeView on phones, a paper mode); Kvadrat Gradnja's organisation of forty people and Kvadrat group's ownership |
+| P5.43 | Files and folders | P5.5, P5.9 | done | 2026-10-14 | FileBrowser with FileGrid, FolderPickerDialog, NameConflictDialog, FileNameDialog, ShareDialog, VersionList, FilePreview and FileDetails (upload of files and folders, drag onto a folder with the menu's way, list only on phones); Kvadrat Gradnja's company documents and Knjigovodstvo Jelić's client folders shared with the client portal; ActivityList isolates its times |
 | P6.1 | Full language and direction matrix | Phases 1–5 | todo | | |
 | P6.2 | Manual WCAG 2.2 checks | P6.1 | todo | | |
 | P6.3 | Performance budget | P4.8 | todo | | |
@@ -806,6 +819,84 @@ In the spirit of Frappe Helpdesk — sleek, modern, calm — built only from our
 - **d) Customer portal** (PortalShell): submit a ticket (type, subject, description, attachments), "My tickets" with status, the thread with replies, a satisfaction rating after resolution.
 - **e) Knowledge base:** categories, articles (RichText), search; agents insert an article link into a reply; the portal suggests articles while the customer types a new ticket.
 **Examples:** Liro support for customer companies ("SEF invoice rejected", "Cannot sign in", "Payroll export question").
+**Done when** every view has desktop and phone stories in light, dark and right-to-left, passes axe, the keyboard and the text-order check, and the examples show them.
+
+### P5.31–P5.39 — Workflows of the accounting product (owner, 2026-10-13)
+A design system: screens, components and states only. All data, rules, AI answers, OCR results and permissions arrive through props; nothing calls a backend or an AI model. Reuse our components and templates; desktop and phone (tablet where noted), light / dark, right-to-left, axe, keyboard, "fix the class"; examples illustrative.
+
+### P5.31 — Document inbox with recognition
+- **Inbox** (ListPage): documents by upload, e-mail, scan or SEF; type (supplier invoice, bank statement, receipt, contract, other), sender, received, state (New / Recognised / Needs review / Posted / Rejected / Duplicate); bulk actions; drag-and-drop upload; the camera on phones.
+- **Review:** the document (PDF / image viewer, zoom, pages) beside the recognised fields (supplier with PIB matched to the catalog or "+ Create", number, dates, amounts, VAT by rate, lines, account suggestions); each field with its confidence, low confidence marked; a field shows where it was read on the document; Confirm and post / Save for later / Reject (reason) / Mark as duplicate (link to the original); keyboard-first (Tab through fields, Enter confirms, next document).
+- **States:** processing, failed recognition (enter by hand), password-protected PDF, unreadable scan.
+
+### P5.32 — Accountant's workspace for many clients
+- **Clients overview:** upcoming deadlines (VAT return by the 15th, payroll tax returns, annual accounts — from data), missing documents, open tasks, last activity, health; filters by accountant, deadline and problem; sorted by urgency.
+- A **deadlines calendar** across clients; a **per-client checklist** for closing the month.
+- **Fast client switching** (the company switcher at 200+ clients) and **"Ask the client"** (a request for documents or answers, sent to the client's portal).
+
+### P5.33 — IOS: statements of open items
+- Partners with balance and IOS state (Not sent / Sent / Opened / Confirmed / Disputed / No answer); choose partners and a cut-off date; preview; send (e-mail, signed PDF via Liro Bridge); reminders.
+- **Partner side** (PortalShell): the statement, Confirm or Dispute with their figures and a note.
+- **Reconciling a disputed IOS:** our open items beside theirs, differences highlighted, resolved line by line (the bank statement's pattern).
+
+### P5.34 — Liro Assistant (AI)
+- A **side panel** on every page: ask in plain words; answers with text, small tables or charts and **links to the records** they come from; suggested follow-ups; proposed actions that **always wait for confirmation**; states thinking, streaming, stopped, error, no access ("You do not have permission to see salaries").
+- A full **"Ask" page:** one large centred question box, suggested and recent questions under it; the answer as a calm, readable page (headings, text, tables, charts, sources); nothing else on the page.
+- Answers **labelled as AI-generated**, with a way to report a wrong answer.
+
+### P5.35 — Employee portal (PortalShell, phone-first)
+My payslips (list, payslip view, PDF), leave balance and requests (approval state), my documents to sign (Signing), my shifts (MyShifts), my details (change requests to HR for approval).
+
+### P5.36 — Subscription and billing
+Plan and modules, seats used / available, usage, next invoice, Liro's invoices (list, PDF), payment method, change plan (compare, confirm, proration from data), cancel with a clear confirmation; trial and past-due banners.
+
+### P5.37 — Project timeline (Gantt)
+- `@veljaos/ui/gantt` (its own subpath) on an **MIT** library: evaluate SVAR React Gantt (MIT edition, never PRO) and Frappe Gantt against our rules (React 19, tokens-only theming, keyboard and screen reader, right-to-left, phones, size); pick one, pin it, add its notice, record why.
+- Phases and tasks, dependencies, milestones, the one "now" marker, progress, assignees; drag with a keyboard / menu alternative; budget against actual per phase beside the timeline. Phones: a list by phase with dates, the timeline view-only. Example: a Kvadrat Gradnja construction project.
+
+### P5.38 — E-mail and notification templates
+A template list (invoice e-mail, IOS, payment reminder, welcome, password reset …); the editor on RichTextField with merge fields as pills, subject, preview with sample data (desktop and phone widths, light and dark mail clients), "Send test", versions, per-language variants; the e-mail layout as simple as the printouts.
+
+### P5.39 — Blog
+- Public list (cover, title, excerpt, category, author, date, reading time), categories and tags, search; the article page as a reading layout (RichText, contents for long articles, related articles, share, newsletter sign-up).
+- Authoring on RichTextField: cover, slug, SEO title and description, category and tags, Draft / Scheduled / Published, preview, schedule.
+
+**Done when** every item has desktop and phone stories (tablet where noted) in light, dark and right-to-left, passes axe, the keyboard and the text-order check, the examples show them, and CI is green.
+
+### P5.40 — IPS NBS QR and payment orders (owner, 2026-10-14)
+- **IPS QR at the till:** an instant payment shows the merchant's IPS QR code (kind PT: the amount, the merchant category, the sale's reference) for the buyer's bank app; or the cashier scans the buyer's code (PK). The bank's answer is the application's.
+- **Payment orders:** a screen that fills in and prints the Serbian payment order (nalog za uplatu, form 1), withdrawal order (nalog za isplatu, form 2) and transfer order (nalog za prenos, form 3) as their real forms, with the IPS QR code (forms 1 and 3) written to the IPS NBS rules (tags, order, account and reference control numbers, amount format) and checked field by field; print or download.
+- **Everywhere a code is shown** (invoices' payment details, receipts, tills) the QR code is real and readable.
+- References: ips.nbs.rs — "QR validacija i generisanje", "Zašto instant plaćanja na prodajnim mestima", "Smernice Generator Validator".
+**Done when** the codes scan, every order has desktop and phone stories in light, dark and right-to-left, passes axe, the keyboard and the text-order check, and the examples show them.
+
+### P5.41 — Maps (owner, 2026-10-14)
+On open-source software only; the map's background (tiles) and every shape are the application's data, nothing is fetched by the library.
+- **Areas on a map:** municipalities, city zones (for example the zones of a local property tax), service areas — their boundaries drawn as lines and fills with tokens, labelled, chosen from the map or from a list beside it; a point (an address) shown with the area it falls in; the legend in the application's words.
+- **Location check:** a workplace's allowed area (a circle or a shape) and the person's reported position with its accuracy; inside, outside or unknown in words, as the application decides; "Use my location" asks the application, which asks the browser; a check-in disabled with its reason when the position is outside.
+- **Maps in charts:** values by country or region (a choropleth with steps of one meaning, points or bubbles), for a company working in several countries or watching its regions; areas without a value say "No data", never 0; legend, tooltip and "Show as table" as the other charts.
+- Keyboard and screen readers: the list of areas and the position in words are the way; zoom and pan by buttons and keys; nothing only by dragging. Maps are never mirrored in right-to-left. Phones: the list first, the map full width.
+**Done when** every view has desktop and phone stories in light, dark and right-to-left, passes axe, the keyboard and the text-order check, and the examples show them.
+
+### P5.42 — Organisation chart and hierarchies (owner, 2026-10-14)
+- **Organisation chart:** people and positions by their reporting lines (avatar, name, position, unit, headcount), vacant positions, collapse and expand, show one unit with the way back up, search that reveals a person's place, a person's card from the application; secondary (dotted-line) relations listed, not drawn across the chart.
+- **Similar hierarchies on the same component:** units (departments with their head and headcount), a group of companies with ownership shares on the lines, cost centres.
+- Keyboard and screen readers: a WAI-ARIA tree, arrows by the chart's direction (mirrored in right-to-left); phones: an indented list; print on a landscape sheet. The data and every word are the application's.
+**Done when** every view has desktop and phone stories in light, dark and right-to-left, passes axe, the keyboard and the text-order check, and the examples show them.
+
+### P5.43 — Files and folders (owner, 2026-10-14)
+A full files-and-folders view beside FileDropzone and AttachmentList (P5.5). Design system only: files, folders, permissions and storage come from the application; reuse TreeView (P5.9), Breadcrumbs, DataTable, DocumentFrame, FileDropzone, BulkActionBar, Drawer and Signing.
+- **Layout:** a folder tree at the start (collapsible), breadcrumbs, the content as a list (name, owner, modified, size, linked record) or a grid of thumbnails; sort, filter by type, search in the folder or everywhere. Quick places: Recent, Favourites, Shared with me, Trash.
+- **Actions:** upload (files and whole folders, drag-and-drop, progress per file; uploading / scanning / available / quarantined from P5.5), new folder, rename, move or copy (a dialog with a folder picker; drag to a folder with a keyboard and menu alternative), download (one file or a zip of the selection), delete to Trash with Restore and empty Trash (irreversible confirm), bulk actions on a selection.
+- **Conflicts:** "A file with this name exists": Replace / Keep both / Skip, with "Apply to all".
+- **Preview:** PDF, images and office files in DocumentFrame, with next and previous through the folder.
+- **Details panel:** type, size, owner, created and modified, versions (list, restore an older version, upload a new version), tags, the records the file is linked to (invoice F-2026-0412, an employee file), the retention label from data ("Keep until 2036"), activity.
+- **Sharing:** with people, roles or a client's portal (view / edit), an external link with an expiry date and optional password, who has access, revoke.
+- **Signing:** sign a document from here (Signing / Liro Bridge) and show its signed state.
+- **Storage** used against the quota.
+- **States:** empty folder, no results, no permission ("You do not have access to this folder"), offline.
+- **Phone:** the list view, folders as rows, actions in a bottom sheet, upload from the camera or the phone's files, preview full screen.
+- **Examples:** Kvadrat Gradnja's company documents (contracts, employee files, site documentation), and an accounting firm's client folders where the client uploads through the portal (tied to P5.31's document inbox and P5.32's accountant's workspace).
 **Done when** every view has desktop and phone stories in light, dark and right-to-left, passes axe, the keyboard and the text-order check, and the examples show them.
 
 **End of Phase 5:** `0.1.0-alpha.5`; report.

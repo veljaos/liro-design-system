@@ -21,7 +21,7 @@ export const STATEMENT = {
   number: '188',
   date: '2026-10-06',
   bank: 'Banca Intesa',
-  account: '160-0000000456789-12',
+  account: '160-0000000456789-28',
   /** The balance before the statement, from the bank. */
   opening: 5_284_550_17n,
   /** The balance after it, as the bank reports it (checked against the lines below). */
@@ -101,7 +101,7 @@ export const BANK_LINES: BankLine[] = [
   }),
   line(5, {
     party: 'Zbirni nalog, 46 primalaca',
-    partyAccount: '160-0000000456789-12',
+    partyAccount: '160-0000000456789-28',
     paras: -2_208_000_00n,
     code: '240',
     model: '',

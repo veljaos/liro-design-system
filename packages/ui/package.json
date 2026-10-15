@@ -33,6 +33,14 @@
       "types": "./dist/diagram.d.ts",
       "import": "./dist/diagram.js"
     },
+    "./gantt": {
+      "types": "./dist/gantt.d.ts",
+      "import": "./dist/gantt.js"
+    },
+    "./map": {
+      "types": "./dist/map.d.ts",
+      "import": "./dist/map.js"
+    },
     "./styles.css": "./dist/styles.css",
     "./package.json": "./package.json"
   },
@@ -47,6 +55,7 @@
   "peerDependencies": {
     "@veljaos/tokens": "workspace:*",
     "react": "^19.0.0",
+    "react-dom": "^19.0.0",
     "react-hook-form": "7.89.0"
   },
   "peerDependenciesMeta": {
@@ -57,17 +66,21 @@
   "devDependencies": {
     "@storybook/react-vite": "10.6.0",
     "@tailwindcss/cli": "4.3.3",
+    "@types/leaflet": "1.9.22",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
+    "@types/topojson-client": "3.1.5",
     "@veljaos/tokens": "workspace:*",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "react-hook-form": "7.89.0",
     "storybook": "10.6.0",
     "tailwindcss": "4.3.3",
+    "topojson-client": "3.1.0",
     "tsup": "8.5.1",
     "vite": "8.3.0",
-    "vitest": "5.0.1"
+    "vitest": "5.0.1",
+    "world-atlas": "2.0.2"
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
@@ -75,6 +88,7 @@
   "dependencies": {
     "@dagrejs/dagre": "3.1.1",
     "@shadcn/react": "0.3.1",
+    "@svar-ui/react-gantt": "2.7.3",
     "@tanstack/react-table": "9.2.4",
     "@tanstack/react-virtual": "3.14.13",
     "@tiptap/core": "3.31.4",
@@ -94,7 +108,9 @@
     "@xyflow/react": "12.12.0",
     "clsx": "2.1.1",
     "cmdk": "1.1.1",
+    "leaflet": "1.9.4",
     "lucide-react": "1.48.0",
+    "qr": "0.7.2",
     "radix-ui": "1.6.7",
     "react-day-picker": "10.0.1",
     "react-is": "19.3.0",

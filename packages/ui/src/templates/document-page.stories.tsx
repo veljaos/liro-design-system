@@ -324,7 +324,7 @@ const BASE: DocumentPageProps = {
       title: 'Payment',
       content: (
         <p className={cn('m-0 text-sm text-primary', TEXT_DIRECTION)}>
-          Payment to 160-0000012345678-21 with reference 97 2026-0412, within 15 days.
+          Payment to 160-0000012345678-67 with reference 97 32-2026-0412, within 15 days.
         </p>
       ),
     },
