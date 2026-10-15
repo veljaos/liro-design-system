@@ -22,7 +22,10 @@ import { PageHeader, type PageBack } from './page-header'
  *   before the actions.
  * - The counterparty only (the user's own company is in the AppShell header): a label from the
  *   application ("Customer", "Supplier") in xs text.secondary, the name sm semibold, the tax number
- *   and the address xs text.secondary; then the key figures (KeyFigures).
+ *   and the address xs text.secondary; then the key figures (KeyFigures). A document among three
+ *   parties (a cession: the assignee and the debtor; an assignment: the paying and the receiving
+ *   party; P5.55) passes the others in `counterparties`: every block side by side at the same
+ *   level, one under the other where they do not fit.
  * - The lines (an EditableGrid or a read-only DataTable, from the application) in one card, edge
  *   to edge, without a title by default (the column headers say what it is), the table header at
  *   the card's top; the totals (DocumentTotals) under them at the end, inside the same card.
@@ -86,6 +89,12 @@ export interface DocumentPageProps {
   /** Where the document stands in its life. */
   lifecycle?: { steps: readonly LifecycleStep[]; current: number; label: string }
   counterparty?: Counterparty
+  /**
+   * Further parties after `counterparty`, for a document among three parties (P5.55: a cession's
+   * debtor, an assignment's receiving party), each with its role as `label`: side by side with
+   * the counterparty.
+   */
+  counterparties?: readonly Counterparty[]
   /**
    * The document a correcting or cancelling document refers to (`DocumentSource`, P5.23): beside
    * the counterparty, at its level, never in the "Based on" `references`.
@@ -185,6 +194,11 @@ export function DocumentPage(props: DocumentPageProps) {
   // document; below 75em CSS puts them under it (`layout` 'narrow' forces that in a frame).
   const beside = layout === 'desktop'
   const hidden = beside && props.panelsHidden === true
+  // The counterparty and any further parties (P5.55), in the application's order.
+  const parties = [
+    ...(props.counterparty === undefined ? [] : [props.counterparty]),
+    ...(props.counterparties ?? []),
+  ]
 
   const toggle =
     hasPanels && beside && props.onPanelsHiddenChange !== undefined ? (
@@ -305,15 +319,17 @@ export function DocumentPage(props: DocumentPageProps) {
           {...(props.status === undefined ? {} : { status: props.status })}
           {...(actions === undefined ? {} : { actions })}
         />
-        {props.source !== undefined && props.source !== null ? (
-          // The source at the counterparty's level (P5.23): side by side, one under the other
-          // where they do not fit.
+        {(props.source !== undefined && props.source !== null) || parties.length > 1 ? (
+          // The source (P5.23) and further parties (P5.55) at the counterparty's level: side by
+          // side, one under the other where they do not fit.
           <div data-slot="document-parties" className="flex flex-wrap items-start gap-x-12 gap-y-4">
-            {props.counterparty !== undefined && <CounterpartyBlock party={props.counterparty} />}
+            {parties.map((party, index) => (
+              <CounterpartyBlock key={index} party={party} />
+            ))}
             {props.source}
           </div>
         ) : (
-          props.counterparty !== undefined && <CounterpartyBlock party={props.counterparty} />
+          parties[0] !== undefined && <CounterpartyBlock party={parties[0]} />
         )}
         {props.details !== undefined && (
           <div data-slot="document-details" className="flex flex-wrap items-start gap-x-8 gap-y-3">
