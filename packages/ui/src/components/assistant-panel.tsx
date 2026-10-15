@@ -139,14 +139,33 @@ function Conversation(props: AssistantPanelProps) {
   const { messages } = useLiro()
   const body = useRef<HTMLDivElement>(null)
   const count = props.turns.length
-  // On opening and on each new turn: the last question at the top of the view.
+  // On opening and on each new turn: the last question at the top of the view, and kept there
+  // until the reader scrolls — a font that arrives or a turn above that grows moves the question
+  // after the first placing (P5.31). An answer growing below it moves nothing.
   useLayoutEffect(() => {
     const element = body.current
     if (element === null) return
-    const turns = element.querySelectorAll<HTMLElement>('[data-slot="assistant-turn"]')
-    const last = turns[turns.length - 1]
-    if (last === undefined) return
-    element.scrollTop = Math.max(0, last.offsetTop - 16)
+    let pinned = true
+    const pin = () => {
+      if (!pinned) return
+      const turns = element.querySelectorAll<HTMLElement>('[data-slot="assistant-turn"]')
+      const last = turns[turns.length - 1]
+      if (last === undefined) return
+      element.scrollTop = Math.max(0, last.offsetTop - 16)
+    }
+    const release = () => {
+      pinned = false
+    }
+    pin()
+    const observer = new ResizeObserver(pin)
+    observer.observe(element)
+    for (const child of element.children) observer.observe(child)
+    const reader = ['wheel', 'touchstart', 'keydown', 'pointerdown'] as const
+    for (const type of reader) element.addEventListener(type, release, { passive: true })
+    return () => {
+      observer.disconnect()
+      for (const type of reader) element.removeEventListener(type, release)
+    }
   }, [count])
   return (
     <div

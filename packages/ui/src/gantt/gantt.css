@@ -365,3 +365,11 @@
   display: inline-block;
   transform: scaleX(-1);
 }
+/* A scale label fills its cell and is centred in it: turned back about the cell's own middle, it
+   stands on whole pixels. Turned about its own middle at a fractional place, in the scale's layer
+   of its own, its text was drawn a pixel apart from run to run (P5.31). */
+.liro-gantt[data-mirrored] .wx-scale .wx-cell > span {
+  flex: 1 1 100%;
+  min-width: 0;
+  text-align: center;
+}
