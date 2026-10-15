@@ -169,7 +169,9 @@ export const Restore: Story = {
             setRestored(version.label)
           }}
         />
-        <p data-testid="restored">{restored}</p>
+        <p data-testid="restored" dir="auto">
+          {restored}
+        </p>
       </>
     )
   },

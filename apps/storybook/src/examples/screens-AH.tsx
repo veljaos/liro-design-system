@@ -1117,11 +1117,7 @@ export function DriveScreen({
               : {})}
             {...(place === 'trash'
               ? {
-                  notice: (
-                    <p className="bidi-content m-0 text-sm text-secondary">
-                      Items in Trash are deleted for good after 30 days.
-                    </p>
-                  ),
+                  notice: 'Items in Trash are deleted for good after 30 days.',
                   toolbarActions: (
                     <Button
                       intent="delete"
@@ -1136,9 +1132,7 @@ export function DriveScreen({
               : rules.notice === undefined
                 ? {}
                 : {
-                    notice: (
-                      <p className="bidi-content m-0 text-sm text-secondary">{rules.notice}</p>
-                    ),
+                    notice: rules.notice,
                   })}
             uploads={uploads}
             onClearUploads={() => {

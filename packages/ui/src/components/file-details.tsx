@@ -1,6 +1,6 @@
 import { Archive, Link2, X } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
-import { FOCUS_RING, TEXT_DIRECTION } from '../primitives/classes'
+import { FOCUS_RING, TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 import { CompactIconButton } from './button'
@@ -201,7 +201,16 @@ export function FileDetails(props: FileDetailsProps) {
             key: 'activity',
             title: messages['files.activity'],
             content: (
-              <ActivityList items={props.activity} label={messages['files.activity']} limit={3} />
+              <ActivityList
+                // A time written as text keeps its own order in a right-to-left page (D15).
+                items={props.activity.map((entry) =>
+                  typeof entry.time === 'string'
+                    ? { ...entry, time: <span className={TEXT_ISOLATE}>{entry.time}</span> }
+                    : entry,
+                )}
+                label={messages['files.activity']}
+                limit={3}
+              />
             ),
           },
         ]),

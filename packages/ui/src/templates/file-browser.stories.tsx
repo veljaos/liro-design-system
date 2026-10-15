@@ -456,7 +456,9 @@ export const Offline: Story = {
   play: async ({ canvasElement }) => {
     await settle()
     await expect(within(canvasElement).getByText('You are offline')).toBeVisible()
-    await expect(within(canvasElement).getAllByText('Not available while offline.')).toHaveLength(2)
+    await expect(within(canvasElement).getAllByText(/Not available while offline\./)).toHaveLength(
+      2,
+    )
   },
 }
 
@@ -760,7 +762,10 @@ export const PhoneActions: Story = {
     const sheet = await within(document.body).findByRole('dialog', {
       name: /^Actions Site handover protocol\.pdf/,
     })
-    await expect(within(sheet).getByRole('button', { name: 'Move to…' })).toBeVisible()
+    // The sheet fades in before its entries are visible.
+    await waitFor(async () => {
+      await expect(within(sheet).getByRole('button', { name: 'Move to…' })).toBeVisible()
+    })
     await userEvent.click(within(sheet).getByRole('button', { name: 'Download' }))
     await waitFor(async () => {
       await expect(within(document.body).queryByRole('dialog')).toBeNull()

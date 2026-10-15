@@ -1349,7 +1349,9 @@ export function FileBrowser(props: FileBrowserProps) {
           {messages['files.offlineDescription']}
         </Alert>
       )}
-      {props.notice}
+      {props.notice !== undefined && (
+        <div className={cn('text-sm text-secondary', TEXT_DIRECTION)}>{props.notice}</div>
+      )}
       <div className="flex min-w-0 items-start gap-6">
         {startColumn}
         <section

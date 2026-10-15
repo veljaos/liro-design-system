@@ -83,9 +83,9 @@ export const Default: Story = {
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('heading', { level: 2 })).toHaveTextContent(
-      'Site handover protocol.pdf',
-    )
+    await expect(
+      canvas.getByRole('heading', { level: 2, name: 'Site handover protocol.pdf' }),
+    ).toBeVisible()
     await expect(canvas.getByText('Keep until 2036')).toBeVisible()
     await expect(canvas.getByRole('link', { name: 'Order SO-2026-118' })).toBeVisible()
     await expect(canvas.getByText('1 of 2 signed')).toBeVisible()

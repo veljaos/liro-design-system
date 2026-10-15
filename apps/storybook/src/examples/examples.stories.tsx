@@ -11724,7 +11724,7 @@ export const ClientPortalFromFirm: Story = {
   render: () => <ExampleApp start={AI_ROUTES.portalFromFirm} />,
   play: filesPlay(async (canvasElement) => {
     await expect(
-      within(canvasElement).getAllByText('Only Knjigovodstvo Jelić adds files here.').length,
+      within(canvasElement).getAllByText(/Only Knjigovodstvo Jelić adds files here\./).length,
     ).toBeGreaterThan(0)
   }),
 }
