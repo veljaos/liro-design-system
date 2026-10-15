@@ -1263,7 +1263,8 @@ export function DriveScreen({
             })}
             moving={moving.copy ? [] : moving.ids}
             from={moving.copy ? null : movingFolder}
-            defaultValue={movingFolder === null ? null : (byId(movingFolder)?.parent ?? null)}
+            // The picker opens where the items are, that folder open.
+            defaultExpanded={pathOf(items, movingFolder).map((item) => item.id)}
             onConfirm={(target) => {
               move(moving.ids, target, moving.copy)
               setMoving(null)

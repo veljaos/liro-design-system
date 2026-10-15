@@ -764,9 +764,9 @@ export const PhoneActions: Story = {
     })
     // The sheet fades in before its entries are visible.
     await waitFor(async () => {
-      await expect(within(sheet).getByRole('button', { name: 'Move to…' })).toBeVisible()
+      await expect(within(sheet).getByRole('menuitem', { name: 'Move to…' })).toBeVisible()
     })
-    await userEvent.click(within(sheet).getByRole('button', { name: 'Download' }))
+    await userEvent.click(within(sheet).getByRole('menuitem', { name: 'Download' }))
     await waitFor(async () => {
       await expect(within(document.body).queryByRole('dialog')).toBeNull()
     })

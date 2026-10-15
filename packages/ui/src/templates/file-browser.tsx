@@ -595,40 +595,107 @@ function Places(props: {
   )
 }
 
-/** One action of the phone's bottom sheet. */
-function SheetEntry({ entry, close }: { entry: MenuEntry; close: () => void }) {
-  if (entry.type === 'separator') {
-    return <li aria-hidden="true" className="my-1 border-0 border-t border-solid border-subtle" />
+/**
+ * The phone's bottom sheet of one item's actions: a WAI-ARIA menu (the item's menu, drawn as a
+ * sheet): 44px entries, ArrowDown / ArrowUp (wrapping), Home / End, Enter or Space chooses;
+ * separators and labels between them; a destructive entry in danger fg; a disabled one stays
+ * focusable and does nothing. Choosing closes the sheet, then runs the entry.
+ */
+function ActionSheetMenu({
+  label,
+  entries,
+  close,
+}: {
+  label: string
+  entries: readonly MenuEntry[]
+  close: () => void
+}) {
+  const items = entries.filter(
+    (entry): entry is Extract<MenuEntry, { label: string; onSelect: () => void }> =>
+      entry.type === undefined || entry.type === 'item',
+  )
+  const [focus, setFocus] = useState(0)
+  const list = useRef<HTMLDivElement>(null)
+  const move = (index: number) => {
+    const count = items.length
+    const next = ((index % count) + count) % count
+    setFocus(next)
+    list.current?.querySelectorAll<HTMLElement>('[role="menuitem"]')[next]?.focus()
   }
-  if (entry.type === 'label') {
-    return (
-      <li className={cn('px-2 pt-2 pb-1 text-xs font-medium text-secondary', TEXT_DIRECTION)}>
-        {entry.label}
-      </li>
-    )
+  const choose = (entry: (typeof items)[number]) => {
+    if (entry.disabled === true) return
+    close()
+    entry.onSelect()
   }
-  const Icon = entry.icon
+  // Each entry's place among the items (the separators and labels are not items).
+  const positions = entries.map(
+    (_, index) =>
+      entries.slice(0, index).filter((entry) => entry.type === undefined || entry.type === 'item')
+        .length,
+  )
   return (
-    <li>
-      <button
-        type="button"
-        disabled={entry.disabled}
-        onClick={() => {
-          close()
-          entry.onSelect()
-        }}
-        className={cn(
-          BUTTON_RESET,
-          'box-border flex min-h-11 w-full cursor-pointer items-center gap-3 rounded-md px-2 text-start text-md',
-          entry.destructive === true ? 'text-status-danger-fg' : 'text-primary',
-          'hover:bg-surface-hover disabled:cursor-not-allowed disabled:text-disabled',
-          FOCUS_RING,
-        )}
-      >
-        {Icon !== undefined && <Icon aria-hidden="true" className="size-4.5 shrink-0" />}
-        <span className={TEXT_DIRECTION}>{entry.label}</span>
-      </button>
-    </li>
+    <div ref={list} role="menu" aria-label={label} className="flex flex-col">
+      {entries.map((entry, index) => {
+        if (entry.type === 'separator') {
+          return (
+            <div
+              key={index}
+              role="separator"
+              className="my-1 border-0 border-t border-solid border-subtle"
+            />
+          )
+        }
+        if (entry.type === 'label') {
+          return (
+            <div
+              key={index}
+              role="presentation"
+              className={cn('px-2 pt-2 pb-1 text-xs font-medium text-secondary', TEXT_DIRECTION)}
+            >
+              {entry.label}
+            </div>
+          )
+        }
+        const at = positions[index] ?? 0
+        const Icon = entry.icon
+        return (
+          <div
+            key={index}
+            role="menuitem"
+            tabIndex={at === focus ? 0 : -1}
+            aria-disabled={entry.disabled === true || undefined}
+            onClick={() => {
+              choose(entry)
+            }}
+            onFocus={() => {
+              setFocus(at)
+            }}
+            onKeyDown={(event) => {
+              if (event.key === 'ArrowDown') move(at + 1)
+              else if (event.key === 'ArrowUp') move(at - 1)
+              else if (event.key === 'Home') move(0)
+              else if (event.key === 'End') move(items.length - 1)
+              else if (event.key === 'Enter' || event.key === ' ') choose(entry)
+              else return
+              event.preventDefault()
+            }}
+            className={cn(
+              'box-border flex min-h-11 w-full cursor-pointer items-center gap-3 rounded-md px-2 text-start text-md select-none',
+              entry.disabled === true
+                ? 'cursor-not-allowed text-disabled'
+                : entry.destructive === true
+                  ? 'text-status-danger-fg hover:bg-surface-hover'
+                  : 'text-primary hover:bg-surface-hover',
+              FOCUS_RING,
+              'focus-visible:-outline-offset-2',
+            )}
+          >
+            {Icon !== undefined && <Icon aria-hidden="true" className="size-4.5 shrink-0" />}
+            <span className={TEXT_DIRECTION}>{entry.label}</span>
+          </div>
+        )
+      })}
+    </div>
   )
 }
 
@@ -751,17 +818,13 @@ function PhoneList(props: {
         title={messages['files.actionsTitle']}
         {...(sheetFor === null ? {} : { subject: <bdi dir="auto">{sheetFor.name}</bdi> })}
       >
-        <ul className="m-0 flex list-none flex-col p-0">
-          {sheetEntries.map((entry, index) => (
-            <SheetEntry
-              key={index}
-              entry={entry}
-              close={() => {
-                setSheetFor(null)
-              }}
-            />
-          ))}
-        </ul>
+        <ActionSheetMenu
+          label={sheetFor === null ? '' : messages['files.actions'](sheetFor.name)}
+          entries={sheetEntries}
+          close={() => {
+            setSheetFor(null)
+          }}
+        />
       </Dialog>
     </>
   )
