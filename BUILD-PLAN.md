@@ -334,8 +334,8 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P5.39 | Blog | P5.30 | done | 2026-10-14 | ArticleList, NewsletterSignup, ShareLinks and ArticlePage; Liro's public blog (categories, tags, search, an article with its contents) and its authoring (posts, editor, schedule, publish, preview) |
 | P5.40 | IPS NBS QR and payment orders | P5.10, P5.15 | done | 2026-10-14 | QrCode on `qr` 0.7.2 (every illustrative code now real), the IPS NBS QR text with its problems by field, PaymentOrderForm (Serbian forms 1, 2, 3); payment orders and the till's instant payment (PT shown, PK scanned) |
 | P5.41 | Maps | P5.24 | done | 2026-10-14 | `@veljaos/ui/map` on Leaflet 1.9.4 (SVG, no tiles needed): AreaMap (areas, the list, "Falls in: …"), LocationCheck (the application's verdict, "Use my location" through `onLocate`), RegionChart (a choropleth in the charts' card, "No data" hatched); property-tax zones, a site check-in, revenue by country and by illustrative region |
-| P5.42 | Organisation chart and hierarchies | P5.9 | todo | | |
-| P5.43 | Files and folders | P5.5, P5.9 | todo | | |
+| P5.42 | Organisation chart and hierarchies | P5.9 | done | 2026-10-14 | HierarchyChart (HTML, CSS-border lines, mirrored in right to left; "+N" toggles, stacked leaves, a unit alone, search, a WAI-ARIA tree, Fit to width, TreeView on phones, a paper mode); Kvadrat Gradnja's organisation of forty people and Kvadrat group's ownership |
+| P5.43 | Files and folders | P5.5, P5.9 | done | 2026-10-14 | FileBrowser with FileGrid, FolderPickerDialog, NameConflictDialog, FileNameDialog, ShareDialog, VersionList, FilePreview and FileDetails (upload of files and folders, drag onto a folder with the menu's way, list only on phones); Kvadrat Gradnja's company documents and Knjigovodstvo Jelić's client folders shared with the client portal; ActivityList isolates its times |
 | P6.1 | Full language and direction matrix | Phases 1–5 | todo | | |
 | P6.2 | Manual WCAG 2.2 checks | P6.1 | todo | | |
 | P6.3 | Performance budget | P4.8 | todo | | |

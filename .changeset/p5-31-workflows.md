@@ -2,7 +2,7 @@
 '@veljaos/ui': minor
 ---
 
-P5.31 to P5.41, the workflows of the accounting product.
+P5.31 to P5.43, the workflows of the accounting product.
 
 - `PageViewer` (P5.31): a document's pages as the application's images, with pages, zoom and one region highlighted in the page's units (helpers `regionBox`, `regionPage`, `clampPage`, `labelSide`); light in both themes, never mirrored; loading, error and `unavailable` (a locked PDF).
 - `RecognizedField` (P5.31): the application's confidence under any field, an uncertain reading marked with an icon and words, "Changed by you" and "Show where it was read".
@@ -21,6 +21,9 @@ P5.31 to P5.41, the workflows of the accounting product.
   - `RegionChart`: a choropleth in the charts' card. Areas take the colour of their value's step (decimal strings compared exactly with the application's breaks; at most five steps of the main blue or neutral). Areas without a value are hatched with "No data". The legend writes its ranges through `format`. Places are points or bubbles. The keyboard and "Show as table" work as in the other charts.
   - The base map's tiles are optional and the application's.
   - Helpers `pointInArea`, `areaAt`, `labelPoint`, `labelFits`, `distanceMeters`, `withinRadius`, `circleBounds`, `geometryBounds`, `unionBounds`, `regionStep`, `regionStepRanges`, `rampShade`, `regionReadingOrder`, `regionKeyTarget`, `bubbleRadius`; its CSS is in `styles.css`.
+- `HierarchyChart` (P5.42): an organisation chart, units, a group of companies or cost centres drawn top-down in HTML (lines by CSS borders, mirrored in right-to-left), with collapse and expand, stacked leaves, a unit shown alone, search, `onOpen`, a WAI-ARIA tree with roving focus, Fit to width, TreeView on phones and a paper mode; pure helpers `indexHierarchy`, `hierarchyPath`, `descendantCount`, `initiallyExpanded`, `revealNode`, `stacksChildren`, `matchHierarchy`, `visibleHierarchy`, `hierarchyKeyAction`.
+- Files and folders (P5.43): the template `FileBrowser` (tree, quick places, path, list or grid, search in the folder or everywhere, upload of files and folders with progress, drag onto a folder, details, storage; empty, no results, no access and offline states), `FileGrid`, `FolderPicker` and `FolderPickerDialog`, `NameConflictDialog`, `FileNameDialog`, `ShareDialog`, `VersionList`, `FilePreview`, `FileDetails`, `FileIcon`; helpers `fileIconKind`, `sizeText`, `momentText`, `folderPath`, `canDropInto`, `blockedFolders`, `pickerTree`, `toggleSelection`, `selectRange`, `withPaths`, `uploadCounts`, `resolveConflicts`, `expiresTooSoon`, `folderPathText`.
+- ActivityList keeps a time given as text in its own order in a right-to-left page (D15), for every caller.
 - Messages: new
   - `richText.mergeFieldMissing`, `richText.missingValues` (merge values)
   - `recognized.*`, `viewer.highlighted`, `comparison.*` (P5.31, P5.33)
@@ -31,3 +34,5 @@ P5.31 to P5.41, the workflows of the accounting product.
   - `article.*`, `share.*`, `newsletter.*` (P5.39)
   - `qr.tooLong`, `ips.problem` (P5.40)
   - `map.*` and `location.*` (P5.41)
+  - `hierarchy.*` (P5.42)
+  - `files.*`, `folderPicker.*`, `conflict.*`, `sharing.*`, `versions.*` (P5.43)
