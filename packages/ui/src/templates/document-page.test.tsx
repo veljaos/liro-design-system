@@ -280,4 +280,33 @@ describe('DocumentSource in the header (P5.23)', () => {
     expect(html).not.toContain('document-parties')
     expect(render(<DocumentSource label="Corrects" documents={[]} />)).not.toContain('Corrects')
   })
+
+  it('puts further parties beside the counterparty (P5.55)', () => {
+    const html = render(
+      <DocumentPage
+        layout="desktop"
+        title="CES-2026-0003"
+        counterparty={{ label: 'Assignee', name: 'Beton Mix d.o.o.', taxId: 'PIB 106543218' }}
+        counterparties={[{ label: 'Debtor', name: 'Stanogradnja Plus d.o.o.' }]}
+        keyFigures={[{ label: 'Assigned', value: '186.000,00' }]}
+        lines={null}
+      />,
+    )
+    const parties = html.indexOf('data-slot="document-parties"')
+    expect(parties).toBeGreaterThan(-1)
+    expect(html.indexOf('Assignee')).toBeGreaterThan(parties)
+    expect(html.indexOf('Debtor')).toBeGreaterThan(html.indexOf('Beton Mix'))
+    expect(html.indexOf('Stanogradnja')).toBeLessThan(html.indexOf('Assigned'))
+    // Further parties alone (no counterparty) still stand in the row; one party alone does not.
+    const alone = render(
+      <DocumentPage
+        layout="desktop"
+        title="X"
+        counterparties={[{ label: 'Debtor', name: 'Stanogradnja Plus d.o.o.' }]}
+        lines={null}
+      />,
+    )
+    expect(alone).toContain('Stanogradnja Plus d.o.o.')
+    expect(alone).not.toContain('document-parties')
+  })
 })

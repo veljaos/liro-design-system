@@ -70,6 +70,11 @@ import { GROUP_AG_ROUTES } from './screens-AG'
 // ── P5.43 files ──
 import { GROUP_AH_ROUTES } from './screens-AH'
 import { GROUP_AI_ROUTES } from './screens-AI'
+// ── P5.49 trade ──
+import { GROUP_AU_ROUTES } from './screens-AU'
+import { GROUP_AV_ROUTES } from './screens-AV'
+import { GROUP_AW_ROUTES } from './screens-AW'
+import { GROUP_AX_ROUTES } from './screens-AX'
 
 // ── Routes ────────────────────────────────────────────────────────────────────────────────
 
@@ -134,6 +139,11 @@ const EXAMPLE_ROUTES: readonly ExampleRoute[] = [
   // ── P5.43 files ──
   ...GROUP_AH_ROUTES,
   ...GROUP_AI_ROUTES,
+  // ── P5.49 trade ──
+  ...GROUP_AU_ROUTES,
+  ...GROUP_AV_ROUTES,
+  ...GROUP_AW_ROUTES,
+  ...GROUP_AX_ROUTES,
 ]
 
 // ── The app ───────────────────────────────────────────────────────────────────────────────────

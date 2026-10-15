@@ -12181,3 +12181,648 @@ export const ClientPortalUploadFlow: Story = {
     await settle()
   },
 }
+
+// ── P5.49 trade ──
+// (Imports here, inside the block, so the blocks merge without touching the top.)
+import { AU_ROUTES } from './data-AU'
+
+/** A trade story's checks; on a phone also that nothing scrolls sideways. */
+function tradePlay(
+  check: (canvasElement: HTMLElement) => Promise<void>,
+  phone = false,
+): NonNullable<Story['play']> {
+  return async ({ canvasElement }) => {
+    await settle()
+    await check(canvasElement)
+    if (phone) {
+      for (const page of canvasElement.querySelectorAll<HTMLElement>('[data-liro-phone-page]')) {
+        await expect(page.scrollWidth).toBeLessThanOrEqual(page.clientWidth)
+      }
+    }
+  }
+}
+
+/**
+ * Kvadrat Gradnja d.o.o.'s purchase order NB-2026-0087 to Beton Mix d.o.o. on 14.10.2026: ready-
+ * mix concrete, a pump and transport for Site Liman 4, received on 12.10.2026 and waiting for its
+ * invoice to be matched; the chain (goods receipt, supplier invoice 2026-1187) in the related
+ * documents, "Match invoice 2026-1187" the main action.
+ */
+export const TradePurchaseOrder: Story = {
+  name: 'Purchase order',
+  render: () => <ExampleApp start={AU_ROUTES.order} />,
+  play: tradePlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { level: 1, name: 'NB-2026-0087' })).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('294.840,00')
+    await expect(canvas.getByRole('link', { name: /PRI-2026-0213/ })).toBeVisible()
+    await expect(canvas.getByRole('link', { name: /2026-1187/ })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Match invoice 2026-1187' })).toBeVisible()
+  }),
+}
+
+export const TradePurchaseOrderPhone: Story = {
+  name: 'Purchase order, phone',
+  render: () => <OnPhone start={AU_ROUTES.order} />,
+  play: tradePlay(async (canvasElement) => {
+    await expect(
+      within(canvasElement).getByRole('button', { name: 'Match invoice 2026-1187' }),
+    ).toBeVisible()
+  }, true),
+}
+
+/**
+ * Goods receipt PRI-2026-0213 at Site Liman 4, based on the order: each line received against
+ * ordered (Ordered / Difference / Received) with the receiver's reason — 35 m³ of concrete
+ * instead of 36, 4 pump hours instead of 3; the received value and the difference against the
+ * order from the application.
+ */
+export const TradeGoodsReceipt: Story = {
+  name: 'Goods receipt',
+  render: () => <ExampleApp start={AU_ROUTES.receipt} />,
+  play: tradePlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { level: 1, name: 'PRI-2026-0213' })).toBeVisible()
+    const table = canvas.getByRole('table', { name: 'Received lines' })
+    await expect(within(table).getByRole('columnheader', { name: 'Difference' })).toBeVisible()
+    await expect(within(table).getByRole('row', { name: /Concrete pump/ })).toHaveTextContent('+1')
+    await expect(
+      canvas.getByRole('link', { name: 'Purchase order NB-2026-0087, Awaiting match' }),
+    ).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('245.000,00')
+  }),
+}
+
+export const TradeGoodsReceiptPhone: Story = {
+  name: 'Goods receipt, phone',
+  render: () => <OnPhone start={AU_ROUTES.receipt} />,
+  play: tradePlay(async (canvasElement) => {
+    await expect(
+      within(canvasElement).getByRole('heading', { level: 1, name: 'PRI-2026-0213' }),
+    ).toBeVisible()
+  }, true),
+}
+
+/**
+ * The three-way match of Beton Mix d.o.o.'s invoice 2026-1187: the order, the receipt and the
+ * invoice side by side, line by line and in total; the application's verdict on each row —
+ * "Invoiced as received", "More than ordered: needs approval" for the extra pump hour.
+ */
+export const TradeThreeWayMatch: Story = {
+  name: 'Three-way match',
+  render: () => <ExampleApp start={AU_ROUTES.match} />,
+  play: tradePlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { level: 1, name: 'Match 2026-1187' })).toBeVisible()
+    const table = canvas.getByRole('table', { name: /^Order NB-2026-0087/ })
+    await expect(within(table).getAllByRole('columnheader')).toHaveLength(5)
+    await expect(within(table).getByText('More than ordered: needs approval')).toBeVisible()
+    await expect(canvas.getByText('1 of 8 differ')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Accept the difference' })).toBeVisible()
+  }),
+}
+
+export const TradeThreeWayMatchPhone: Story = {
+  name: 'Three-way match, phone',
+  render: () => <OnPhone start={AU_ROUTES.match} />,
+  play: tradePlay(async (canvasElement) => {
+    await expect(within(canvasElement).getByText('More than ordered: needs approval')).toBeVisible()
+  }, true),
+}
+
+/** The extra pump hour accepted: every row matches, the invoice may be posted in the inbox. */
+export const TradeThreeWayMatchAccepted: Story = {
+  name: 'Three-way match, accepted',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AU_ROUTES.matchAccepted} />,
+  play: tradePlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('No differences')).toBeVisible()
+    await expect(canvas.getByText('Accepted by Milica Petrović')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Post in the document inbox' })).toBeVisible()
+  }),
+}
+
+/**
+ * From the order to the match in one click, the difference accepted, then the order shows the
+ * invoice matched and the invoice opens in the document inbox (group U).
+ */
+export const TradePurchaseChainFlow: Story = {
+  name: 'Purchase order, match the invoice, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AU_ROUTES.order} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Match invoice 2026-1187' }))
+    await settle()
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: 'Match 2026-1187' }),
+    ).toBeVisible()
+    await userEvent.click(canvas.getByRole('button', { name: 'Accept the difference' }))
+    await settle()
+    await expect(canvas.getByText('No differences')).toBeVisible()
+    await userEvent.click(canvas.getByRole('link', { name: /NB-2026-0087/ }))
+    await settle()
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: 'NB-2026-0087' }),
+    ).toBeVisible()
+    await expect(canvas.queryByRole('button', { name: 'Match invoice 2026-1187' })).toBeNull()
+    await userEvent.click(canvas.getByRole('link', { name: /2026-1187/ }))
+    await settle()
+    await expect(await canvas.findByRole('button', { name: 'Confirm and post' })).toBeVisible()
+  },
+}
+
+// ── P5.50 trade ──
+// (Imports here, inside the block, so the blocks merge without touching the top.)
+import { AV_ROUTES } from './data-AV'
+
+/** The sales chain's pages: the h1, and the chain so far in the related documents. */
+async function chainCheck(canvasElement: HTMLElement, number: string, related: string[]) {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: number })).toBeVisible()
+  const list = canvas.queryByRole('list', { name: 'Related documents' })
+  if (related.length === 0) {
+    await expect(list).toBeNull()
+    return
+  }
+  if (list === null) throw new Error('The related documents are missing')
+  await expect(within(list).getAllByRole('link')).toHaveLength(related.length)
+  for (const each of related) {
+    await expect(within(list).getByRole('link', { name: new RegExp(each) })).toBeVisible()
+  }
+}
+
+/**
+ * Kvadrat Gradnja d.o.o.'s quotes on 14.10.2026: the open ones (draft, sent, accepted) with their
+ * customer, subject, validity, total and state; Ordered, Declined or expired, All as views.
+ */
+export const TradeSalesQuotes: Story = {
+  name: 'Sales quotes',
+  render: () => <ExampleApp start={AV_ROUTES.quotes} />,
+  play: tradePlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    const table = canvas.getByRole('table', { name: 'Quotes' })
+    await expect(within(table).getByRole('row', { name: /PON-2026-0031/ })).toHaveTextContent(
+      'Accepted',
+    )
+    await expect(within(table).getAllByRole('row')).toHaveLength(5)
+  }),
+}
+
+export const TradeSalesQuotesPhone: Story = {
+  name: 'Sales quotes, phone',
+  render: () => <OnPhone start={AV_ROUTES.quotes} />,
+  play: tradePlay(async (canvasElement) => {
+    await expect(
+      within(canvasElement).getAllByText('Stanogradnja Plus d.o.o.').length,
+    ).toBeGreaterThan(0)
+  }, true),
+}
+
+/**
+ * Quote PON-2026-0031 to Stanogradnja Plus d.o.o., accepted on 01.10.2026: "Create order" is the
+ * main action — one click, the application creates the order; its menu holds the proforma and
+ * advance invoice.
+ */
+export const TradeSalesQuote: Story = {
+  name: 'Sales quote',
+  render: () => <ExampleApp start={AV_ROUTES.quote} />,
+  play: tradePlay(async (canvasElement) => {
+    await chainCheck(canvasElement, 'PON-2026-0031', [])
+    await expect(within(canvasElement).getByRole('button', { name: 'Create order' })).toBeVisible()
+  }),
+}
+
+export const TradeSalesQuotePhone: Story = {
+  name: 'Sales quote, phone',
+  render: () => <OnPhone start={AV_ROUTES.quote} />,
+  play: tradePlay(async (canvasElement) => {
+    await expect(within(canvasElement).getByRole('button', { name: 'Create order' })).toBeVisible()
+  }, true),
+}
+
+/** The quote once the whole chain exists: the order, the delivery note and the invoice. */
+export const TradeSalesQuoteDone: Story = {
+  name: 'Sales quote, whole chain',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AV_ROUTES.quoteDone} />,
+  play: tradePlay(async (canvasElement) => {
+    await chainCheck(canvasElement, 'PON-2026-0031', [
+      'NAR-2026-0024',
+      'OTP-2026-0058',
+      'F-2026-0430',
+    ])
+    await expect(within(canvasElement).queryByRole('button', { name: 'Create order' })).toBeNull()
+  }),
+}
+
+/** Order NAR-2026-0024, based on the quote: "Create delivery note" next. */
+export const TradeSalesOrder: Story = {
+  name: 'Sales order',
+  render: () => <ExampleApp start={AV_ROUTES.order} />,
+  play: tradePlay(async (canvasElement) => {
+    await chainCheck(canvasElement, 'NAR-2026-0024', ['PON-2026-0031'])
+    await expect(
+      within(canvasElement).getByRole('button', { name: 'Create delivery note' }),
+    ).toBeVisible()
+  }),
+}
+
+export const TradeSalesOrderPhone: Story = {
+  name: 'Sales order, phone',
+  render: () => <OnPhone start={AV_ROUTES.order} />,
+  play: tradePlay(async (canvasElement) => {
+    await expect(
+      within(canvasElement).getByRole('button', { name: 'Create delivery note' }),
+    ).toBeVisible()
+  }, true),
+}
+
+/** Delivery note OTP-2026-0058 from the Central warehouse: "Create invoice" next. */
+export const TradeDeliveryNote: Story = {
+  name: 'Delivery note',
+  render: () => <ExampleApp start={AV_ROUTES.delivery} />,
+  play: tradePlay(async (canvasElement) => {
+    await chainCheck(canvasElement, 'OTP-2026-0058', ['PON-2026-0031', 'NAR-2026-0024'])
+    await expect(
+      within(canvasElement).getByRole('button', { name: 'Create invoice' }),
+    ).toBeVisible()
+  }),
+}
+
+export const TradeDeliveryNotePhone: Story = {
+  name: 'Delivery note, phone',
+  render: () => <OnPhone start={AV_ROUTES.delivery} />,
+  play: tradePlay(async (canvasElement) => {
+    await expect(
+      within(canvasElement).getByRole('button', { name: 'Create invoice' }),
+    ).toBeVisible()
+  }, true),
+}
+
+/** Invoice F-2026-0430, the end of the chain: the three documents before it, "Send to SEF". */
+export const TradeSalesInvoice: Story = {
+  name: 'Sales invoice',
+  render: () => <ExampleApp start={AV_ROUTES.invoice} />,
+  play: tradePlay(async (canvasElement) => {
+    await chainCheck(canvasElement, 'F-2026-0430', [
+      'PON-2026-0031',
+      'NAR-2026-0024',
+      'OTP-2026-0058',
+    ])
+    await expect(canvasElement).toHaveTextContent('549.120,00')
+  }),
+}
+
+export const TradeSalesInvoicePhone: Story = {
+  name: 'Sales invoice, phone',
+  render: () => <OnPhone start={AV_ROUTES.invoice} />,
+  play: tradePlay(async (canvasElement) => {
+    await expect(within(canvasElement).getByRole('button', { name: 'Send to SEF' })).toBeVisible()
+  }, true),
+}
+
+/** From the quote to the invoice, each next document in one click; the chain grows on each page. */
+export const TradeSalesChainFlow: Story = {
+  name: 'Sales quote, create the chain, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AV_ROUTES.quotes} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('row', { name: /PON-2026-0031/ }))
+    await settle()
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: 'PON-2026-0031' }),
+    ).toBeVisible()
+    for (const [action, number] of [
+      ['Create order', 'NAR-2026-0024'],
+      ['Create delivery note', 'OTP-2026-0058'],
+      ['Create invoice', 'F-2026-0430'],
+    ] as const) {
+      await userEvent.click(canvas.getByRole('button', { name: action }))
+      await settle()
+      await expect(await canvas.findByRole('heading', { level: 1, name: number })).toBeVisible()
+    }
+    await chainCheck(canvasElement, 'F-2026-0430', [
+      'PON-2026-0031',
+      'NAR-2026-0024',
+      'OTP-2026-0058',
+    ])
+    // Back to the quote: the whole chain, nothing left to create.
+    await userEvent.click(canvas.getByRole('link', { name: /PON-2026-0031/ }))
+    await settle()
+    await chainCheck(canvasElement, 'PON-2026-0031', [
+      'NAR-2026-0024',
+      'OTP-2026-0058',
+      'F-2026-0430',
+    ])
+  },
+}
+
+// ── P5.55 trade ──
+// (Imports here, inside the block, so the blocks merge without touching the top.)
+import { AW_ROUTES } from './data-AW'
+
+/** An offset document's checks: its parties, the sides' headings, the signatures. */
+async function offsetCheck(
+  canvasElement: HTMLElement,
+  number: string,
+  parties: string[],
+  signed: string,
+) {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: number })).toBeVisible()
+  for (const party of parties) {
+    await expect(canvas.getAllByText(party).length).toBeGreaterThan(0)
+  }
+  await expect(canvas.getByRole('heading', { name: 'What remains' })).toBeVisible()
+  await expect(canvas.getByText(signed)).toBeVisible()
+}
+
+/**
+ * Kvadrat Gradnja d.o.o.'s offsets and assignments on 14.10.2026: a compensation and a cession
+ * waiting for signatures, an assignment signed; "New compensation" with cession and assignment
+ * in its menu.
+ */
+export const TradeOffsets: Story = {
+  name: 'Offsets and assignments',
+  render: () => <ExampleApp start={AW_ROUTES.list} />,
+  play: tradePlay(async (canvasElement) => {
+    const table = within(canvasElement).getByRole('table', { name: 'Offsets and assignments' })
+    await expect(within(table).getAllByRole('row')).toHaveLength(4)
+    await expect(within(table).getByRole('row', { name: /CES-2026-0003/ })).toHaveTextContent(
+      'Awaiting signatures',
+    )
+  }),
+}
+
+export const TradeOffsetsPhone: Story = {
+  name: 'Offsets and assignments, phone',
+  render: () => <OnPhone start={AW_ROUTES.list} />,
+  play: tradePlay(async (canvasElement) => {
+    await expect(within(canvasElement).getByText('Compensation KMP-2026-0007')).toBeVisible()
+  }, true),
+}
+
+/**
+ * Compensation KMP-2026-0007 with Beton Mix d.o.o., based on the confirmed statement of open
+ * items IOS-2026-0040: crane rental F-2026-0398 (156.000,00) offset against part of Beton Mix's
+ * invoice 2026-1102; 138.000,00 RSD remains; Kvadrat Gradnja's director signed, Beton Mix's not
+ * yet.
+ */
+export const TradeCompensation: Story = {
+  name: 'Compensation',
+  render: () => <ExampleApp start={AW_ROUTES.compensation} />,
+  play: tradePlay(async (canvasElement) => {
+    await offsetCheck(canvasElement, 'KMP-2026-0007', ['Beton Mix d.o.o.'], '1 of 2 signed')
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('link', { name: /IOS-2026-0040/ })).toBeVisible()
+    const table = canvas.getByRole('table', { name: 'Items' })
+    await expect(within(table).getByRole('row', { name: /2026-1102/ })).toHaveTextContent(
+      '138.000,00',
+    )
+    await expect(canvas.getByRole('button', { name: 'Send reminder' })).toBeVisible()
+  }),
+}
+
+export const TradeCompensationPhone: Story = {
+  name: 'Compensation, phone',
+  render: () => <OnPhone start={AW_ROUTES.compensation} />,
+  play: tradePlay(async (canvasElement) => {
+    await expect(within(canvasElement).getByText('1 of 2 signed')).toBeVisible()
+  }, true),
+}
+
+/** Both directors signed: Post is the main action. */
+export const TradeCompensationSigned: Story = {
+  name: 'Compensation, signed',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AW_ROUTES.compensationSigned} />,
+  play: tradePlay(async (canvasElement) => {
+    await expect(within(canvasElement).getByText('2 of 2 signed')).toBeVisible()
+    await expect(within(canvasElement).getByRole('button', { name: 'Post' })).toBeVisible()
+  }),
+}
+
+/**
+ * Cession CES-2026-0003: Kvadrat Gradnja d.o.o. assigns 186.000,00 RSD of its claim on
+ * Stanogradnja Plus d.o.o. to Beton Mix d.o.o., paying Beton Mix's invoice 2026-1131; the
+ * assignee and the debtor beside each other; the debtor's acknowledgement is still missing.
+ */
+export const TradeCession: Story = {
+  name: 'Cession',
+  render: () => <ExampleApp start={AW_ROUTES.cession} />,
+  play: tradePlay(async (canvasElement) => {
+    await offsetCheck(
+      canvasElement,
+      'CES-2026-0003',
+      ['Assignee', 'Debtor', 'Stanogradnja Plus d.o.o.'],
+      '2 of 3 signed',
+    )
+  }),
+}
+
+export const TradeCessionPhone: Story = {
+  name: 'Cession, phone',
+  render: () => <OnPhone start={AW_ROUTES.cession} />,
+  play: tradePlay(async (canvasElement) => {
+    await expect(within(canvasElement).getByText('Debtor')).toBeVisible()
+  }, true),
+}
+
+/**
+ * Assignment ASG-2026-0002: Kvadrat Gradnja d.o.o. instructs Gradska toplana Novi Sad to pay
+ * 120.000,00 RSD to Elektro Sistem d.o.o.; signed by all three, ready to post.
+ */
+export const TradeAssignment: Story = {
+  name: 'Assignment',
+  render: () => <ExampleApp start={AW_ROUTES.assignment} />,
+  play: tradePlay(async (canvasElement) => {
+    await offsetCheck(
+      canvasElement,
+      'ASG-2026-0002',
+      ['Paying party', 'Receiving party', 'Elektro Sistem d.o.o.'],
+      '3 of 3 signed',
+    )
+    await expect(within(canvasElement).getByRole('button', { name: 'Post' })).toBeVisible()
+  }),
+}
+
+export const TradeAssignmentPhone: Story = {
+  name: 'Assignment, phone',
+  render: () => <OnPhone start={AW_ROUTES.assignment} />,
+  play: tradePlay(async (canvasElement) => {
+    await expect(within(canvasElement).getByText('Receiving party')).toBeVisible()
+  }, true),
+}
+
+/** From the list to the signed assignment, posted. */
+export const TradeAssignmentPost: Story = {
+  name: 'Assignment, post, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AW_ROUTES.list} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('row', { name: /ASG-2026-0002/ }))
+    await settle()
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: 'ASG-2026-0002' }),
+    ).toBeVisible()
+    await userEvent.click(canvas.getByRole('button', { name: 'Post' }))
+    await settle()
+    await expect(canvas.queryByRole('button', { name: 'Post' })).toBeNull()
+    await expect(canvas.getAllByText('Posted').length).toBeGreaterThan(0)
+    // The toast reports it, then leaves on its own before the checks of the page (a toast
+    // fading out under the checks would be read at half its contrast).
+    await within(document.body).findByText('ASG-2026-0002 is posted.')
+    await waitFor(
+      async () => {
+        await expect(within(document.body).queryByText('ASG-2026-0002 is posted.')).toBeNull()
+      },
+      { timeout: 15000 },
+    )
+    await settle()
+  },
+}
+
+// ── P5.54 trade ──
+// (Imports here, inside the block, so the blocks merge without touching the top.)
+import { AX_ROUTES } from './data-AX'
+
+/**
+ * Pekara Zlatni klas's price lists on 14.10.2026: the shop's retail list, wholesale for shops
+ * (valid until 31.10.2026) and for cafés and restaurants, and the shops' list scheduled from
+ * 01.11.2026 — who each applies to, with or without VAT, validity, items and state.
+ */
+export const TradePriceLists: Story = {
+  name: 'Price lists',
+  render: () => <ExampleApp start={AX_ROUTES.lists} />,
+  play: tradePlay(async (canvasElement) => {
+    const table = within(canvasElement).getByRole('table', { name: 'Price lists' })
+    await expect(within(table).getAllByRole('row')).toHaveLength(5)
+    await expect(within(table).getByRole('row', { name: /CN-04/ })).toHaveTextContent('Scheduled')
+  }),
+}
+
+export const TradePriceListsPhone: Story = {
+  name: 'Price lists, phone',
+  render: () => <OnPhone start={AX_ROUTES.lists} />,
+  play: tradePlay(async (canvasElement) => {
+    await expect(within(canvasElement).getByText('Wholesale, shops')).toBeVisible()
+  }, true),
+}
+
+/**
+ * CN-02 Wholesale, shops: eleven prices without VAT with the previous price where it changed,
+ * two customers' own prices, and the six shops of the group it applies to.
+ */
+export const TradePriceList: Story = {
+  name: 'Price list',
+  render: () => <ExampleApp start={AX_ROUTES.list} />,
+  play: tradePlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(
+      canvas.getByRole('heading', { level: 1, name: 'CN-02 Wholesale, shops' }),
+    ).toBeVisible()
+    const prices = canvas.getByRole('table', { name: 'Prices' })
+    await expect(within(prices).getByRole('row', { name: /Kroasan/ })).toHaveTextContent('88,00')
+    await expect(
+      within(canvas.getByRole('table', { name: 'Customers’ own prices' })).getAllByText(
+        'Market Sunce d.o.o.',
+      ),
+    ).toHaveLength(2)
+    await expect(canvas.getByRole('table', { name: 'Customers' })).toBeVisible()
+  }),
+}
+
+export const TradePriceListPhone: Story = {
+  name: 'Price list, phone',
+  render: () => <OnPhone start={AX_ROUTES.list} />,
+  play: tradePlay(async (canvasElement) => {
+    await expect(within(canvasElement).getByText('Kroasan sa čokoladom, 80 g')).toBeVisible()
+  }, true),
+}
+
+/** Promotions with their validity: active, scheduled and ended, the rule in words. */
+export const TradePromotions: Story = {
+  name: 'Promotions',
+  render: () => <ExampleApp start={AX_ROUTES.promotions} />,
+  play: tradePlay(async (canvasElement) => {
+    const table = within(canvasElement).getByRole('table', { name: 'Promotions' })
+    await expect(within(table).getAllByRole('row')).toHaveLength(7)
+    await expect(within(table).getByRole('row', { name: /Croissant 2 \+ 1/ })).toHaveTextContent(
+      'Buy 2, get 1 free',
+    )
+  }),
+}
+
+export const TradePromotionsPhone: Story = {
+  name: 'Promotions, phone',
+  render: () => <OnPhone start={AX_ROUTES.promotions} />,
+  play: tradePlay(async (canvasElement) => {
+    await expect(within(canvasElement).getByText('Wholesale bread week')).toBeVisible()
+  }, true),
+}
+
+/** The discount rules in the application's order, on or off, and how they combine. */
+export const TradeDiscountRules: Story = {
+  name: 'Discount rules',
+  render: () => <ExampleApp start={AX_ROUTES.rules} />,
+  play: tradePlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    const table = canvas.getByRole('table', { name: 'Discount rules' })
+    await expect(within(table).getByRole('row', { name: /Damaged packaging/ })).toHaveTextContent(
+      'Off',
+    )
+    await expect(
+      canvas.getByText(/A line in a promotion takes no further discount\./),
+    ).toBeVisible()
+  }),
+}
+
+export const TradeDiscountRulesPhone: Story = {
+  name: 'Discount rules, phone',
+  render: () => <OnPhone start={AX_ROUTES.rules} />,
+  play: tradePlay(async (canvasElement) => {
+    await expect(within(canvasElement).getByText('Quantity discount')).toBeVisible()
+  }, true),
+}
+
+/** From the price lists to CN-02, and a discount rule turned on from its row menu. */
+export const TradePricingFlow: Story = {
+  name: 'Price lists, open and turn a rule on, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AX_ROUTES.lists} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('row', { name: /CN-02/ }))
+    await settle()
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: 'CN-02 Wholesale, shops' }),
+    ).toBeVisible()
+    await userEvent.click(canvas.getByRole('link', { name: 'Discount rules' }))
+    await settle()
+    const table = await canvas.findByRole('table', { name: 'Discount rules' })
+    await userEvent.click(within(table).getByRole('button', { name: /Damaged packaging/ }))
+    await userEvent.click(await within(document.body).findByRole('menuitem', { name: 'Turn on' }))
+    await settle()
+    await expect(within(table).getByRole('row', { name: /Damaged packaging/ })).toHaveTextContent(
+      'On',
+    )
+    // The toast reports it, then leaves on its own before the checks of the page (a toast
+    // fading out under the checks would be read at half its contrast).
+    await within(document.body).findByText('Damaged packaging is on.')
+    await waitFor(
+      async () => {
+        await expect(within(document.body).queryByText('Damaged packaging is on.')).toBeNull()
+      },
+      { timeout: 15000 },
+    )
+    await settle()
+  },
+}
