@@ -45,6 +45,8 @@ import { GROUP_Q_ROUTES } from './screens-Q'
 import { GROUP_S_ROUTES } from './screens-S'
 // ── P5.29 portal ──
 import { GROUP_T_ROUTES } from './screens-T'
+// ── P5.42 org ──
+import { GROUP_AJ_ROUTES } from './screens-AJ'
 // P5.37 gantt
 import { GROUP_AA_ROUTES } from './screens-AA'
 // P5.35 gantt
@@ -124,6 +126,8 @@ const EXAMPLE_ROUTES: readonly ExampleRoute[] = [
   ...GROUP_AE_ROUTES,
   ...GROUP_AF_ROUTES,
   ...GROUP_AG_ROUTES,
+  // ── P5.42 org ──
+  ...GROUP_AJ_ROUTES,
 ]
 
 // ── The app ───────────────────────────────────────────────────────────────────────────────────

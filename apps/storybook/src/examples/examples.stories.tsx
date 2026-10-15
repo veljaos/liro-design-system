@@ -7566,7 +7566,7 @@ export const AdminAuditLogEntry: Story = {
       name: /^Invoice: F-2026-0412/,
     })
     await expect(drawer).toHaveTextContent('req_7Q2M4P9W')
-    await userEvent.click(within(drawer).getByRole('button', { name: 'Close' }))
+    await userEvent.keyboard('{Escape}')
     await waitFor(async () => {
       await expect(within(document.body).queryByRole('dialog')).toBeNull()
     })
@@ -11408,4 +11408,188 @@ export const SalesByRegionInteraction: Story = {
     await userEvent.keyboard('{Enter}')
     await expect(canvas.getByRole('heading', { level: 2, name: 'North' })).toBeVisible()
   },
+}
+
+// ── P5.42 org ──
+// (Imports here, inside the block, so the blocks merge without touching the top.)
+import { AJ_ROUTES } from './data-AJ'
+
+/** A story's checks, and on a phone that nothing scrolls sideways. */
+function orgPlay(
+  check: (canvasElement: HTMLElement) => Promise<void>,
+  phone = false,
+): NonNullable<Story['play']> {
+  return async ({ canvasElement }) => {
+    await settle()
+    await check(canvasElement)
+    if (phone) {
+      for (const page of canvasElement.querySelectorAll<HTMLElement>('[data-liro-phone-page]')) {
+        await expect(page.scrollWidth).toBeLessThanOrEqual(page.clientWidth)
+      }
+    }
+  }
+}
+
+/**
+ * Kvadrat Gradnja d.o.o.'s organisation on 14.10.2026: forty people under the director Nenad
+ * Kovačević — Finance and administration (Milica Petrović), Human resources, Sales, Procurement
+ * and warehouse with an open Buyer position, and Construction with the site managers of Liman 4,
+ * Bulevar Evrope 24 and Hall B extension; three levels open, a crew as a list, "+N" on the
+ * closed nodes.
+ */
+const ORG_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('tab', { name: 'People' })).toHaveAttribute('aria-selected', 'true')
+  await expect(canvas.getByRole('treeitem', { name: /^Nenad Kovačević/ })).toBeVisible()
+  await expect(canvas.getByRole('treeitem', { name: /^Snežana Popović/ })).toBeVisible()
+}
+
+export const OrganisationChart: Story = {
+  name: 'Organisation chart',
+  render: () => <ExampleApp start={AJ_ROUTES.chart} />,
+  play: orgPlay(async (canvasElement) => {
+    await ORG_CHECK(canvasElement)
+    await expect(
+      within(canvasElement).getByRole('treeitem', { name: /^Buyer, construction materials/ }),
+    ).toBeVisible()
+  }),
+}
+
+export const OrganisationChartPhone: Story = {
+  name: 'Organisation chart, phone',
+  render: () => <OnPhone start={AJ_ROUTES.chart} />,
+  play: orgPlay(ORG_CHECK, true),
+}
+
+/** The same company by its units: the head and the headcount, the open position counted. */
+export const OrganisationChartUnits: Story = {
+  name: 'Organisation chart, units',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AJ_ROUTES.units} />,
+  play: orgPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(
+      canvas.getByRole('treeitem', { name: /^Construction, Head: Goran Medić/ }),
+    ).toBeVisible()
+    await expect(canvas.getByText('1 vacant')).toBeVisible()
+  }),
+}
+
+/** Milica Petrović's card: the external accountant is a secondary relation, listed, not drawn. */
+export const OrganisationChartCard: Story = {
+  name: 'Organisation chart, a person’s card',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AJ_ROUTES.card} />,
+  play: orgPlay(async () => {
+    const drawer = within(document.body).getByRole('dialog', { name: /^Milica Petrović/ })
+    await expect(within(drawer).getByText('Snežana Jelić, Knjigovodstvo Jelić')).toBeVisible()
+  }),
+}
+
+export const OrganisationChartCardPhone: Story = {
+  name: 'Organisation chart, a person’s card, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={AJ_ROUTES.card} />,
+  play: orgPlay(async () => {
+    await expect(
+      within(document.body).getByRole('dialog', { name: /^Milica Petrović/ }),
+    ).toBeVisible()
+  }, true),
+}
+
+/** "Marković": three people; the first revealed and chosen. */
+export const OrganisationChartSearch: Story = {
+  name: 'Organisation chart, search',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AJ_ROUTES.search} />,
+  play: orgPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('1 of 3 found')).toBeVisible()
+  }),
+}
+
+/** The Liman 4 site alone, with its way back up. */
+export const OrganisationChartUnit: Story = {
+  name: 'Organisation chart, one site',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AJ_ROUTES.unit} />,
+  play: orgPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('navigation', { name: 'Path to the unit' })).toBeVisible()
+    await expect(canvas.queryByText('Dragan Ilić')).toBeNull()
+  }),
+}
+
+export const OrganisationChartUnitPhone: Story = {
+  name: 'Organisation chart, one site, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={AJ_ROUTES.unit} />,
+  play: orgPlay(async (canvasElement) => {
+    await expect(within(canvasElement).queryByText('Dragan Ilić')).toBeNull()
+  }, true),
+}
+
+/** Search for a worker, open the card, show the site alone and back. */
+export const OrganisationChartFlow: Story = {
+  name: 'Organisation chart, search and card, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AJ_ROUTES.chart} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.type(
+      canvas.getByRole('searchbox', { name: 'Find a person or position' }),
+      'Nikola Mar',
+    )
+    const nikola = canvas.getByRole('treeitem', { name: 'Nikola Marković, Site worker' })
+    await waitFor(async () => {
+      await expect(nikola).toHaveAttribute('aria-selected', 'true')
+    })
+    const box = nikola.querySelector<HTMLElement>('[data-slot="hierarchy-node"]') ?? nikola
+    await userEvent.click(box)
+    const drawer = await within(document.body).findByRole('dialog', { name: /^Nikola Marković/ })
+    await waitFor(async () => {
+      await expect(within(drawer).getByText('Residential building Liman 4')).toBeVisible()
+    })
+    await userEvent.keyboard('{Escape}')
+    await settle()
+  },
+}
+
+/**
+ * Kvadrat group: Kvadrat Holding d.o.o. owns Kvadrat Gradnja d.o.o. (100%), Kvadrat Beton d.o.o.
+ * (60%) and a quarter of Novosadske fasade d.o.o. (25%, an associate); Kvadrat Gradnja owns
+ * Liman 4 Stanovi d.o.o. (51%) and Kvadrat Nekretnine d.o.o. (100%).
+ */
+const GROUP_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getAllByText('Kvadrat Beton d.o.o.').length).toBeGreaterThan(0)
+  await expect(canvasElement).toHaveTextContent('60%')
+  await expect(canvasElement).toHaveTextContent('51%')
+}
+
+export const CompanyGroup: Story = {
+  name: 'Company group',
+  render: () => <ExampleApp start={AJ_ROUTES.group} />,
+  play: orgPlay(async (canvasElement) => {
+    await GROUP_CHECK(canvasElement)
+    await expect(within(canvasElement).getByText('Associate')).toBeVisible()
+  }),
+}
+
+export const CompanyGroupPhone: Story = {
+  name: 'Company group, phone',
+  render: () => <OnPhone start={AJ_ROUTES.group} />,
+  play: orgPlay(GROUP_CHECK, true),
+}
+
+/** Kvadrat Beton d.o.o.'s card: the share and the other owner. */
+export const CompanyGroupCard: Story = {
+  name: 'Company group, a company’s card',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AJ_ROUTES.groupCard} />,
+  play: orgPlay(async () => {
+    const drawer = within(document.body).getByRole('dialog', { name: /^Kvadrat Beton/ })
+    await expect(within(drawer).getByText('Kvadrat Holding d.o.o., 60%')).toBeVisible()
+  }),
 }

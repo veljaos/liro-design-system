@@ -456,7 +456,7 @@ export function annexSigners(nikola: 'waiting' | 'signed' | 'declined', reason?:
       ...(nikola === 'waiting' ? {} : { at: '2026-10-14T09:42:00+02:00' }),
       ...(reason === undefined ? {} : { reason }),
     },
-    { id: 'director', name: 'Vladimir Kostić', role: 'Director', state: 'waiting' },
+    { id: 'director', name: 'Nenad Kovačević', role: 'Director', state: 'waiting' },
   ]
 }
 
@@ -464,7 +464,7 @@ export function annexSigners(nikola: 'waiting' | 'signed' | 'declined', reason?:
 export const ANNEX = {
   title: 'Annex 2 to employment contract RU-2025-088',
   parties:
-    'Kvadrat Gradnja d.o.o., Novi Sad (the employer), represented by director Vladimir Kostić, and Nikola Marković, site worker (the employee).',
+    'Kvadrat Gradnja d.o.o., Novi Sad (the employer), represented by director Nenad Kovačević, and Nikola Marković, site worker (the employee).',
   articles: [
     {
       heading: 'Article 1',

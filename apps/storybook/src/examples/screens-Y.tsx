@@ -1018,7 +1018,7 @@ export function AnnexScreen({ phone }: { phone: boolean }) {
               declineSubject={ANNEX.title}
               onSign={() => {
                 update({ state: 'signed', at: '2026-10-14T09:42:00+02:00' })
-                notice.success('Annex signed. Vladimir Kostić signs next.')
+                notice.success('Annex signed. Nenad Kovačević signs next.')
               }}
               onDecline={(_signer, answer) => {
                 const reason = DECLINE_REASONS.find((each) => each.value === answer.reason)?.label

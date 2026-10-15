@@ -316,7 +316,7 @@ export const CERTIFICATE = {
       name: 'Jelena Savić',
       detail: 'Licence BZR-0457',
     },
-    { id: 'director', label: 'Director', name: 'Vladimir Kostić' },
+    { id: 'director', label: 'Director', name: 'Nenad Kovačević' },
   ],
 }
 

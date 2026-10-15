@@ -1419,3 +1419,23 @@ export type { RecognizedFieldProps } from './components/recognized-field'
 // ── P5.33 docs ──
 export { ValueComparison, valueComparisonCounts } from './components/value-comparison'
 export type { ComparisonRow, ValueComparisonProps } from './components/value-comparison'
+// ── P5.42 org ──
+export { HierarchyChart } from './components/hierarchy-chart'
+export type { HierarchyChartProps } from './components/hierarchy-chart'
+export {
+  descendantCount,
+  hierarchyKeyAction,
+  hierarchyPath,
+  indexHierarchy,
+  initiallyExpanded,
+  matchHierarchy,
+  revealNode,
+  stacksChildren,
+  visibleHierarchy,
+} from './components/hierarchy-logic'
+export type {
+  HierarchyIndex,
+  HierarchyItem,
+  HierarchyKeyAction,
+  HierarchyNode,
+} from './components/hierarchy-logic'
