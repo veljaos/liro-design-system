@@ -6159,6 +6159,14 @@ export const FiscalInstantBuyerCode: Story = {
       )
     })
     await expect(dialog.queryByRole('img', { name: 'IPS QR code for the payment' })).toBeNull()
+    // The bank answers a moment later: the story ends on the approval, so nothing changes after
+    // the play (the accessibility check measured the dialog while the answer arrived, P5.31).
+    await waitFor(
+      async () => {
+        await expect(paymentDialog()).toHaveTextContent('Reference 97 0612-0942')
+      },
+      { timeout: 5000 },
+    )
   }),
 }
 
