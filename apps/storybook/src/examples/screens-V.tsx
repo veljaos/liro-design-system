@@ -1,6 +1,8 @@
+import { AI_ROUTES } from './data-AI'
 import {
   ClipboardCheck,
   FileText,
+  Folder,
   Inbox,
   Languages,
   LogOut,
@@ -106,11 +108,12 @@ export { V_ROUTES }
 
 // ── Shared: the accountant's shell ────────────────────────────────────────────────────────────
 
-type AccountantTab = 'clients' | 'deadlines'
+type AccountantTab = 'clients' | 'deadlines' | 'files'
 
 const TABS: { key: AccountantTab; label: string; path: string }[] = [
   { key: 'clients', label: 'Clients', path: V_ROUTES.clients },
   { key: 'deadlines', label: 'Deadlines', path: V_ROUTES.deadlines },
+  { key: 'files', label: 'Files', path: AI_ROUTES.root },
 ]
 
 const ME_PERSON = ACCOUNTANTS[ME]
@@ -1031,6 +1034,7 @@ function ClientPortal({
       ...(open > 0 ? { note: `${String(open)} open` } : {}),
     },
     { key: 'documents', label: 'Documents', href: `#${V_ROUTES.documents}`, icon: FileText },
+    { key: 'files', label: 'Files', href: `#${AI_ROUTES.portalRoot}`, icon: Folder },
   ]
   return (
     <Tenant today={V_TODAY}>

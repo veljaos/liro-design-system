@@ -1439,3 +1439,63 @@ export type {
   HierarchyKeyAction,
   HierarchyNode,
 } from './components/hierarchy-logic'
+// ── P5.43 files ──
+export { FileBrowser } from './templates/file-browser'
+export type {
+  FileBrowserProps,
+  FileColumn,
+  FilePlace,
+  FileUploadRules,
+} from './templates/file-browser'
+export {
+  blockedFolders,
+  canDropInto,
+  expiresTooSoon,
+  fileIconKind,
+  folderPath,
+  momentText,
+  pickerTree,
+  resolveConflicts,
+  selectRange,
+  sizeText,
+  toggleSelection,
+  uploadCounts,
+  withPaths,
+} from './components/file-browser-logic'
+export type {
+  ConflictChoice,
+  ConflictResolution,
+  FileEntry,
+  FileIconKind,
+  FileLink,
+  UploadCounts,
+  UploadedFile,
+} from './components/file-browser-logic'
+export { FileIcon } from './components/file-entry-parts'
+export { FileGrid } from './components/file-grid'
+export type { FileGridProps } from './components/file-grid'
+export { FolderPicker, FolderPickerDialog, folderPathText } from './components/folder-picker'
+export type { FolderPickerDialogProps, FolderPickerProps } from './components/folder-picker'
+export { NameConflictDialog } from './components/name-conflict-dialog'
+export type {
+  ConflictFile,
+  NameConflict,
+  NameConflictDialogProps,
+} from './components/name-conflict-dialog'
+export { FileNameDialog } from './components/file-name-dialog'
+export type { FileNameDialogProps } from './components/file-name-dialog'
+export { ShareDialog } from './components/share-dialog'
+export type {
+  ShareAccess,
+  ShareCandidate,
+  ShareDialogProps,
+  ShareKind,
+  ShareLevel,
+  ShareLinkState,
+} from './components/share-dialog'
+export { VersionList } from './components/version-list'
+export type { FileVersion, VersionListProps } from './components/version-list'
+export { FilePreview } from './components/file-preview'
+export type { FilePreviewProps } from './components/file-preview'
+export { FileDetails } from './components/file-details'
+export type { FileDetailsProps } from './components/file-details'

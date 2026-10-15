@@ -105,7 +105,10 @@ export function ActivityList({ items, label, limit = 2, className }: ActivityLis
               <span className={cn('text-sm font-semibold text-primary', TEXT_DIRECTION)}>
                 {item.author}
               </span>
-              <span className="text-xs text-tertiary tabular-nums">{item.time}</span>
+              {/* A time keeps its own order in a right-to-left page (D15). */}
+              <span className={cn('text-xs text-tertiary tabular-nums', TEXT_ISOLATE)}>
+                {item.time}
+              </span>
             </p>
             <div className={cn('text-sm text-primary', TEXT_DIRECTION)}>{item.text}</div>
           </li>
