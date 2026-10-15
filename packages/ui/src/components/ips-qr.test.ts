@@ -94,6 +94,53 @@ describe('ipsQrText', () => {
     )
   })
 
+  // Texts the stories and examples show, each accepted by the National Bank of Serbia's validator
+  // (https://nbs.rs/QRcode/api/qr/v1/validate, "OK.") on 2026-10-15 (P5.31b): a change that writes
+  // them differently must be checked there again.
+  it('writes the texts the NBS validator accepted', () => {
+    expect(
+      ipsQrText({
+        payeeAccount: '265-0000000654321-33',
+        payeeName: 'Beton Mix d.o.o., Novi Sad',
+        amount: '294000.00',
+        payerName: 'Kvadrat Gradnja d.o.o.',
+        paymentCode: '221',
+        purpose: 'Plaćanje po računu 2026-1187',
+        model: '97',
+        reference: '3520261187',
+      }).text,
+    ).toBe(
+      'K:PR|V:01|C:1|R:265000000065432133|N:Beton Mix d.o.o., Novi Sad|I:RSD294000,00|P:Kvadrat Gradnja d.o.o.|SF:221|S:Plaćanje po računu 2026-1187|RO:973520261187',
+    )
+    expect(
+      ipsQrText({
+        payeeAccount: '160-0000000123456-54',
+        payeeName: 'Kvadrat Gradnja d.o.o.\nBulevar oslobođenja 102, Novi Sad',
+        amount: '5003678.22',
+        payerName: 'Gradska toplana Novi Sad\nVladimira Nikolića 1, Novi Sad',
+        paymentCode: '289',
+        purpose: 'Uplata po računu F-2026-0412',
+        model: '97',
+        reference: '942026041200',
+      }).text,
+    ).toBe(
+      'K:PR|V:01|C:1|R:160000000012345654|N:Kvadrat Gradnja d.o.o.\nBulevar oslobođenja 102, Novi Sad|I:RSD5003678,22|P:Gradska toplana Novi Sad\nVladimira Nikolića 1, Novi Sad|SF:289|S:Uplata po računu F-2026-0412|RO:97942026041200',
+    )
+    expect(
+      ipsQrText({
+        kind: 'PT',
+        payeeAccount: '205-0000000111222-05',
+        payeeName: 'Pekara Zlatni klas, Novi Sad',
+        amount: '1011.00',
+        paymentCode: '221',
+        merchantCategory: '5462',
+        paymentReference: '0000020261014000412',
+      }).text,
+    ).toBe(
+      'K:PT|V:01|C:1|R:205000000011122205|N:Pekara Zlatni klas, Novi Sad|I:RSD1011,00|SF:221|M:5462|RP:0000020261014000412',
+    )
+  })
+
   it('names every problem by field and gives no text', () => {
     const result = ipsQrText({
       kind: 'PT',
