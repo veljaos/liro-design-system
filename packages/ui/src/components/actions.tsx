@@ -306,6 +306,12 @@ export function OverflowRow<T extends ActionItem>({
     setVisible(actions.length)
   }
   const retry = useCallback(() => {
+    // Never while "More" is open: an open menu can widen the page (a scrollbar appears), and
+    // laying every action out would hide its trigger and close it.
+    const rowElement = row.current
+    if (rowElement?.querySelector('[aria-expanded="true"]') != null) return
+    // Nor while the focus is in the row: an action moving into "More" would drop it.
+    if (rowElement?.contains(rowElement.ownerDocument.activeElement) === true) return
     if (shownCount.current === actions.length) {
       update()
     } else {
@@ -396,7 +402,13 @@ export function OverflowRow<T extends ActionItem>({
           align === 'end' ? 'justify-end' : 'justify-start',
         )}
       >
-        {hidden.length > 0 && <DropdownMenu trigger={more} entries={entries} align="end" />}
+        {/* "More" stays mounted while every action is laid out to measure (hidden then): a
+            remounted button would lose a press that was on its way, and the focus. */}
+        {actions.length > 1 && (
+          <span className={hidden.length > 0 ? 'contents' : 'hidden'}>
+            <DropdownMenu trigger={more} entries={entries} align="end" />
+          </span>
+        )}
         {shown.map((action) => (
           <Fragment key={action.key}>{render(action)}</Fragment>
         ))}

@@ -364,7 +364,7 @@ function PaymentOrders({
           {...(phone ? {} : { actions })}
         />
         {checked && problems.length > 0 && (
-          <p role="alert" className="m-0 text-sm text-status-danger-fg">
+          <p role="alert" dir="auto" className="m-0 text-sm text-status-danger-fg">
             {problems.length === 1
               ? 'One field needs a correction before the order can be printed.'
               : `${String(problems.length)} fields need a correction before the order can be printed.`}
