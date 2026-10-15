@@ -36,3 +36,5 @@ P5.31 to P5.43, the workflows of the accounting product.
   - `map.*` and `location.*` (P5.41)
   - `hierarchy.*` (P5.42)
   - `files.*`, `folderPicker.*`, `conflict.*`, `sharing.*`, `versions.*` (P5.43)
+- `react-dom` (`^19.0.0`) is now a peer dependency, as `react` is: the package imports it, and a bundled copy failed at import time.
+- ActionGroup and BulkActionBar: a row that folded its actions into "More" unfolds again when there is room (a row sized by its content stayed folded).
