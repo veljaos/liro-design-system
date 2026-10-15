@@ -12676,6 +12676,16 @@ export const TradeAssignmentPost: Story = {
     await settle()
     await expect(canvas.queryByRole('button', { name: 'Post' })).toBeNull()
     await expect(canvas.getAllByText('Posted').length).toBeGreaterThan(0)
+    // The toast reports it, then leaves on its own before the checks of the page (a toast
+    // fading out under the checks would be read at half its contrast).
+    await within(document.body).findByText('ASG-2026-0002 is posted.')
+    await waitFor(
+      async () => {
+        await expect(within(document.body).queryByText('ASG-2026-0002 is posted.')).toBeNull()
+      },
+      { timeout: 15000 },
+    )
+    await settle()
   },
 }
 
@@ -12804,5 +12814,15 @@ export const TradePricingFlow: Story = {
     await expect(within(table).getByRole('row', { name: /Damaged packaging/ })).toHaveTextContent(
       'On',
     )
+    // The toast reports it, then leaves on its own before the checks of the page (a toast
+    // fading out under the checks would be read at half its contrast).
+    await within(document.body).findByText('Damaged packaging is on.')
+    await waitFor(
+      async () => {
+        await expect(within(document.body).queryByText('Damaged packaging is on.')).toBeNull()
+      },
+      { timeout: 15000 },
+    )
+    await settle()
   },
 }
