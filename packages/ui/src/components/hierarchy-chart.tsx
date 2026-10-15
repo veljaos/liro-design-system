@@ -628,7 +628,15 @@ export function HierarchyChart(props: HierarchyChartProps) {
       return
     }
     const measure = () => {
+      // The chart's own width at actual size, whatever scale it has now: measured with the zoom
+      // and the minimum width set aside for the reading, so the scale never feeds back into
+      // itself (a sheet that fits itself to the page would otherwise never settle).
+      const { zoom: shownZoom, minWidth } = inner.style
+      inner.style.zoom = '1'
+      inner.style.minWidth = '0'
       const natural = inner.scrollWidth
+      inner.style.zoom = shownZoom
+      inner.style.minWidth = minWidth
       const room = outer.clientWidth - 32
       setScale(natural > 0 && room > 0 ? Math.min(1, Math.floor((room / natural) * 100) / 100) : 1)
     }
