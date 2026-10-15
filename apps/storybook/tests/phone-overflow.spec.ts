@@ -207,8 +207,12 @@ async function settled(page: Page): Promise<void> {
   })
 }
 
-/** Opens a trigger: a press, and for a text field that is a combobox also ArrowDown. */
+/**
+ * Opens a trigger: a press, and for a text field that is a combobox also ArrowDown. A trigger no
+ * longer on the page (its dialog closed) is skipped at once rather than waited for.
+ */
 async function open(page: Page, trigger: Locator): Promise<boolean> {
+  if ((await trigger.count()) === 0) return false
   try {
     await trigger.click({ timeout: 1_000 })
     if ((await trigger.evaluate((element) => element.tagName)) === 'INPUT') {
@@ -258,10 +262,16 @@ async function markDialog(page: Page): Promise<boolean> {
   })
 }
 
-/** A trigger's name for the report. */
+/**
+ * A trigger's name for the report; "(gone)" for one no longer on the page (its dialog closed), read
+ * at once rather than waited for until the test's timeout.
+ */
 async function describe(trigger: Locator): Promise<string> {
-  const text = await trigger.evaluate((element) =>
-    (element.getAttribute('aria-label') ?? element.textContent).trim().slice(0, 40),
+  if ((await trigger.count()) === 0) return '(gone)'
+  const text = await trigger.evaluate(
+    (element) => (element.getAttribute('aria-label') ?? element.textContent).trim().slice(0, 40),
+    undefined,
+    { timeout: 1_000 },
   )
   return `"${text}"`
 }
@@ -287,15 +297,28 @@ for (const entry of entries) {
           if (!drawn.has(fault)) report.push(`${step}: ${fault}`)
         }
       }
-      /** The triggers of the open dialog, each opened and closed again with one Escape. */
+      /**
+       * The triggers of the open dialog, each opened and closed again with one Escape. A trigger
+       * that closes its own dialog ("Rename…" in a phone's actions sheet, which opens the rename
+       * dialog in its place) ends the pass: the dialog's other triggers left the page with it.
+       */
       const nested = async (step: string) => {
         if (!(await markDialog(page))) return
+        const scope = page.locator('[data-liro-trigger-scope]')
+        const scopeHandle = await scope.elementHandle()
         for (const trigger of await triggersIn(page, true, 10_000)) {
           const label = `${step} › ${await describe(trigger)}`
           if (!(await open(page, trigger))) continue
           await record(label)
           await page.keyboard.press('Escape')
           await settled(page)
+          const closed = await scopeHandle.evaluate(
+            (element) => !element.isConnected || element.getBoundingClientRect().width <= 2,
+          )
+          if (closed) {
+            await closeAll(page)
+            return
+          }
           if (!(await markDialog(page))) return
         }
       }

@@ -336,6 +336,7 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P5.41 | Maps | P5.24 | done | 2026-10-14 | `@veljaos/ui/map` on Leaflet 1.9.4 (SVG, no tiles needed): AreaMap (areas, the list, "Falls in: …"), LocationCheck (the application's verdict, "Use my location" through `onLocate`), RegionChart (a choropleth in the charts' card, "No data" hatched); property-tax zones, a site check-in, revenue by country and by illustrative region |
 | P5.42 | Organisation chart and hierarchies | P5.9 | done | 2026-10-14 | HierarchyChart (HTML, CSS-border lines, mirrored in right to left; "+N" toggles, stacked leaves, a unit alone, search, a WAI-ARIA tree, Fit to width, TreeView on phones, a paper mode); Kvadrat Gradnja's organisation of forty people and Kvadrat group's ownership |
 | P5.43 | Files and folders | P5.5, P5.9 | done | 2026-10-14 | FileBrowser with FileGrid, FolderPickerDialog, NameConflictDialog, FileNameDialog, ShareDialog, VersionList, FilePreview and FileDetails (upload of files and folders, drag onto a folder with the menu's way, list only on phones); Kvadrat Gradnja's company documents and Knjigovodstvo Jelić's client folders shared with the client portal; ActivityList isolates its times |
+| P5.31a | The owner's decisions after P5.31–P5.43 | P5.41 | done | 2026-10-15 | Maps follow the law of the Republic of Serbia (Kosovo and Metohija within Serbia, tested); the phone test no longer waits on a trigger whose dialog closed |
 | P6.1 | Full language and direction matrix | Phases 1–5 | todo | | |
 | P6.2 | Manual WCAG 2.2 checks | P6.1 | todo | | |
 | P6.3 | Performance budget | P4.8 | todo | | |
@@ -898,6 +899,14 @@ A full files-and-folders view beside FileDropzone and AttachmentList (P5.5). Des
 - **Phone:** the list view, folders as rows, actions in a bottom sheet, upload from the camera or the phone's files, preview full screen.
 - **Examples:** Kvadrat Gradnja's company documents (contracts, employee files, site documentation), and an accounting firm's client folders where the client uploads through the portal (tied to P5.31's document inbox and P5.32's accountant's workspace).
 **Done when** every view has desktop and phone stories in light, dark and right-to-left, passes axe, the keyboard and the text-order check, and the examples show them.
+
+### P5.31a — The owner's decisions after P5.31–P5.43 (owner, 2026-10-15)
+The three questions left in P5.31's report, answered by the owner:
+- **Maps follow the law of the Republic of Serbia.** Kosovo and Metohija is part of the Republic of Serbia: every map of the stories and examples draws it within Serbia's area, with no shape, border or name of its own. A test fails if a change draws it apart.
+- **IPS QR against the NBS validator.** Every IPS code of the stories and examples is checked with the National Bank of Serbia's validator once `ips.nbs.rs` is reachable from the environment (the owner allows the domain); until then the rules stay those of the two public implementations P5.40 used.
+- **The phone test (`phone-overflow.spec.ts`).** A trigger that closes its own dialog no longer makes the test wait until its timeout: a trigger no longer on the page is skipped at once, and a dialog's pass ends when that dialog has closed.
+
+**Done when** the map test and the phone test pass in CI, and the decisions are in `docs/decisions.md`.
 
 **End of Phase 5:** `0.1.0-alpha.5`; report.
 
