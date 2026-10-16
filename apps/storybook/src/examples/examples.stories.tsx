@@ -56,8 +56,9 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 /**
- * The whole path: sign in, open Sales from the home page, preview and open F-2026-0412, back
- * to the list, the notifications, bank statement 188 from its notification, home, the tasks.
+ * The whole path: sign in (the e-mail, the password and the two-factor code), open Sales from
+ * the home page, preview and open F-2026-0412, back to the list, the notifications, bank
+ * statement 188 from its notification, home, the tasks.
  * The same invoice shows the same total in the list and on its page.
  */
 export const WalkThrough: Story = {
@@ -68,6 +69,12 @@ export const WalkThrough: Story = {
     await settle()
     const canvas = within(canvasElement)
     await userEvent.click(canvas.getByRole('button', { name: 'Continue' }))
+    // P5.63: the password, then the two-factor code (group BD).
+    await userEvent.type(await canvas.findByLabelText('Password'), 'correct horse battery')
+    await userEvent.click(canvas.getByRole('button', { name: 'Sign in' }))
+    await userEvent.click(await canvas.findByRole('textbox', { name: /Character 1 of 6/ }))
+    await userEvent.keyboard('314159')
+    await userEvent.click(canvas.getByRole('button', { name: 'Verify' }))
     await settle()
     await userEvent.click(await canvas.findByRole('link', { name: /Sales/ }))
     await settle()
@@ -14439,5 +14446,646 @@ export const ExchangeDifferencesPostFlow: Story = {
       },
       { timeout: 5000 },
     )
+  },
+}
+
+// ── P5.62 identity ──
+
+import { BC_ROUTES } from './data-BC'
+import { BD_ROUTES } from './data-BD'
+
+/** Settles, checks, and on a phone checks that no page scrolls sideways. */
+function identityPlay(
+  check: (canvasElement: HTMLElement) => Promise<void>,
+  phone = false,
+): NonNullable<Story['play']> {
+  return async ({ canvasElement }) => {
+    await settle()
+    await check(canvasElement)
+    if (phone) {
+      for (const page of canvasElement.querySelectorAll<HTMLElement>('[data-liro-phone-page]')) {
+        await expect(page.scrollWidth).toBeLessThanOrEqual(page.clientWidth)
+      }
+    }
+  }
+}
+
+/** Waits until every toast is gone, so the checks never end on one fading. */
+async function noToasts() {
+  notice.dismiss()
+  await waitFor(
+    async () => {
+      await expect(document.querySelector('[data-sonner-toast]')).toBeNull()
+    },
+    { timeout: 5000 },
+  )
+}
+
+/** Types a whole code into CodeInput's boxes from the first. */
+async function typeCode(root: HTMLElement, code: string) {
+  await userEvent.click(within(root).getByRole('textbox', { name: /Character 1 of 6/ }))
+  await userEvent.keyboard(code)
+}
+
+/**
+ * P5.62: Milica Petrović's own profile (SettingsPage, opened from the user menu's "Profile"):
+ * Preferences — her name and e-mail as the administrator set them, the interface language (each
+ * language in its own name, `lang` on the option) and the theme, saved at once.
+ */
+const PROFILE_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'My profile' })).toBeVisible()
+  await expect(canvas.getByRole('tab', { name: 'Preferences', selected: true })).toBeVisible()
+  await expect(canvas.getByRole('combobox', { name: 'Language' })).toHaveTextContent('English')
+}
+
+export const MyProfile: Story = {
+  name: 'My profile',
+  render: () => <ExampleApp start={BC_ROUTES.preferences} />,
+  play: identityPlay(PROFILE_CHECK),
+}
+
+export const MyProfilePhone: Story = {
+  name: 'My profile, phone',
+  render: () => <OnPhone start={BC_ROUTES.preferences} />,
+  play: identityPlay(PROFILE_CHECK, true),
+}
+
+/**
+ * Sign-in and security: the password, two-factor sign-in with an authenticator app (on: new
+ * recovery codes, Turn off), the passkeys with created and last used, "Add a passkey".
+ */
+const SECURITY_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(
+    canvas.getByRole('tab', { name: 'Sign-in and security', selected: true }),
+  ).toBeVisible()
+  await expect(canvas.getByText('On since 02.03.2026. · 8 of 10 recovery codes left')).toBeVisible()
+  await expect(canvas.getByText('YubiKey 5C NFC')).toBeVisible()
+  await expect(canvas.getByRole('button', { name: 'Add a passkey' })).toBeVisible()
+}
+
+export const MyProfileSecurity: Story = {
+  name: 'My profile, sign-in and security',
+  render: () => <ExampleApp start={BC_ROUTES.security} />,
+  play: identityPlay(SECURITY_CHECK),
+}
+
+export const MyProfileSecurityPhone: Story = {
+  name: 'My profile, sign-in and security, phone',
+  render: () => <OnPhone start={BC_ROUTES.security} />,
+  play: identityPlay(SECURITY_CHECK, true),
+}
+
+/** Devices: the e-mail about a new device, and SessionList in the section's block. */
+const DEVICES_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  const list = canvas.getByRole('list', { name: 'Signed-in devices' })
+  await expect(within(list).getByText('This device')).toBeVisible()
+  await expect(canvas.getByRole('button', { name: 'Sign out all other devices' })).toBeVisible()
+}
+
+export const MyProfileDevices: Story = {
+  name: 'My profile, devices',
+  render: () => <ExampleApp start={BC_ROUTES.devices} />,
+  play: identityPlay(DEVICES_CHECK),
+}
+
+export const MyProfileDevicesPhone: Story = {
+  name: 'My profile, devices, phone',
+  render: () => <OnPhone start={BC_ROUTES.devices} />,
+  play: identityPlay(DEVICES_CHECK, true),
+}
+
+/** Two-factor sign-in off: the state in words and "Turn on". */
+export const MyProfileTwoFactorOff: Story = {
+  name: 'My profile, two-factor sign-in off',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BC_ROUTES.twoFactorOff} />,
+  play: identityPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('Off')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Turn on' })).toBeVisible()
+  }),
+}
+
+const TURN_ON_CHECK = async () => {
+  const dialog = within(document.body).getByRole('dialog', { name: 'Turn on two-factor sign-in' })
+  await expect(
+    within(dialog).getByRole('img', { name: 'QR code for your authenticator app' }),
+  ).toBeVisible()
+  await expect(within(dialog).getByText('JBSW Y3DP EHPK 3PXP KVQW 4ZLT NRXW')).toBeVisible()
+  await expect(within(dialog).getByRole('group', { name: 'Code from the app' })).toBeVisible()
+}
+
+/** Turning it on: the QR code of the Core's otpauth text, the key to type, the code. */
+export const MyProfileTurnOn: Story = {
+  name: 'My profile, turning on two-factor sign-in',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BC_ROUTES.turnOn} />,
+  play: identityPlay(TURN_ON_CHECK),
+}
+
+/** On a phone the same dialog is a bottom sheet, with the link that opens the phone's own app. */
+export const MyProfileTurnOnPhone: Story = {
+  name: 'My profile, turning on two-factor sign-in, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={BC_ROUTES.turnOn} />,
+  play: identityPlay(async () => {
+    await TURN_ON_CHECK()
+    await expect(
+      within(document.body).getByRole('link', {
+        name: 'Open in the authenticator app on this phone',
+      }),
+    ).toBeVisible()
+  }),
+}
+
+/** The code is wrong: the Core's answer under the boxes. */
+export const MyProfileCodeWrong: Story = {
+  name: 'My profile, two-factor code wrong',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BC_ROUTES.codeWrong} />,
+  play: identityPlay(async () => {
+    const dialog = within(document.body).getByRole('dialog', {
+      name: 'Turn on two-factor sign-in',
+    })
+    await expect(within(dialog).getByText(/The code is wrong/)).toBeVisible()
+  }),
+}
+
+/** The code was right: the recovery codes, shown once; Continue only after "I have saved". */
+export const MyProfileRecoveryCodes: Story = {
+  name: 'My profile, recovery codes',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BC_ROUTES.recoveryCodes} />,
+  play: identityPlay(async () => {
+    const dialog = within(document.body).getByRole('dialog', { name: 'Save your recovery codes' })
+    await expect(within(dialog).getByText('7KQ2-M9XD')).toBeVisible()
+    await expect(within(dialog).getByRole('button', { name: 'Continue' })).toBeDisabled()
+  }),
+}
+
+/** The browser's step gave no passkey: the Core's words in the row. */
+export const MyProfilePasskeyFailed: Story = {
+  name: 'My profile, passkey not added',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BC_ROUTES.passkeyFailed} />,
+  play: identityPlay(async (canvasElement) => {
+    await expect(within(canvasElement).getByRole('alert')).toHaveTextContent(
+      'The passkey was not added',
+    )
+  }),
+}
+
+/** The browser made a passkey: it is named before it joins the list. */
+export const MyProfilePasskeyAdded: Story = {
+  name: 'My profile, passkey added',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BC_ROUTES.passkeyAdded} />,
+  play: identityPlay(async () => {
+    const dialog = within(document.body).getByRole('dialog', { name: 'Passkey added' })
+    await expect(within(dialog).getByRole('textbox', { name: 'Name' })).toHaveValue(
+      'Windows Hello on this computer',
+    )
+  }),
+}
+
+/** Changing the password: the current one, the new one with the Core's rules, twice. */
+export const MyProfileChangePassword: Story = {
+  name: 'My profile, change password',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BC_ROUTES.changePassword} />,
+  play: identityPlay(async () => {
+    const dialog = within(document.body).getByRole('dialog', { name: 'Change password' })
+    await expect(within(dialog).getByText(/At least 12 characters/)).toBeVisible()
+  }),
+}
+
+/** From the user menu: Profile opens My profile. */
+export const MyProfileFromMenu: Story = {
+  name: 'My profile, from the user menu, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={ROUTES.home} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Account' }))
+    await userEvent.click(await within(document.body).findByRole('menuitem', { name: 'Profile' }))
+    await expect(await canvas.findByRole('heading', { level: 1, name: 'My profile' })).toBeVisible()
+    // A language chosen saves at once.
+    await userEvent.click(canvas.getByRole('combobox', { name: 'Language' }))
+    await userEvent.click(
+      await within(document.body).findByRole('option', { name: 'Srpski (latinica)' }),
+    )
+    await expect(await canvas.findByText('Saved')).toBeVisible()
+    await settle()
+  },
+}
+
+/** Off → Turn on → the code → the recovery codes kept → on. */
+export const MyProfileTurnOnFlow: Story = {
+  name: 'My profile, turn on two-factor sign-in, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BC_ROUTES.twoFactorOff} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const body = within(document.body)
+    await userEvent.click(canvas.getByRole('button', { name: 'Turn on' }))
+    const dialog = await body.findByRole('dialog', { name: 'Turn on two-factor sign-in' })
+    // An incomplete code is refused.
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Turn on' }))
+    // The message comes in under the boxes; the check waits for it to arrive.
+    await waitFor(async () => {
+      await expect(within(dialog).getByText(/The code is wrong/)).toBeVisible()
+    })
+    await typeCode(dialog, '314159')
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Turn on' }))
+    const codes = await body.findByRole('dialog', { name: 'Save your recovery codes' })
+    await userEvent.click(within(codes).getByRole('checkbox', { name: 'I have saved these codes' }))
+    await userEvent.click(within(codes).getByRole('button', { name: 'Continue' }))
+    await waitFor(async () => {
+      await expect(canvas.getByText(/On since/)).toBeVisible()
+    })
+    await noToasts()
+  },
+}
+
+/** Add a passkey (the browser's step is the Core's), name it, then remove another. */
+export const MyProfilePasskeysFlow: Story = {
+  name: 'My profile, add and remove a passkey, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BC_ROUTES.security} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const body = within(document.body)
+    await userEvent.click(canvas.getByRole('button', { name: 'Add a passkey' }))
+    const dialog = await body.findByRole('dialog', { name: 'Passkey added' })
+    const name = within(dialog).getByRole('textbox', { name: 'Name' })
+    await userEvent.clear(name)
+    await userEvent.type(name, 'Office computer')
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Save' }))
+    await expect(await canvas.findByText('Office computer')).toBeVisible()
+    const removes = canvas.getAllByRole('button', { name: 'Remove' })
+    const first = removes[0]
+    if (first === undefined) throw new Error('No passkey to remove')
+    await userEvent.click(first)
+    const confirm = await body.findByRole('alertdialog', { name: /Remove passkey/ })
+    await expect(confirm).toHaveTextContent('YubiKey 5C NFC')
+    await userEvent.click(within(confirm).getByRole('button', { name: 'Remove' }))
+    await waitFor(async () => {
+      await expect(canvas.queryByText('YubiKey 5C NFC')).toBeNull()
+    })
+    await noToasts()
+  },
+}
+
+/** Sign out one device, then every other one: only this device stays. */
+export const MyProfileDevicesFlow: Story = {
+  name: 'My profile, sign out devices, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BC_ROUTES.devices} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Sign out: Safari on iPad' }))
+    await waitFor(async () => {
+      await expect(canvas.queryByText('Safari on iPad')).toBeNull()
+    })
+    await userEvent.click(canvas.getByRole('button', { name: 'Sign out all other devices' }))
+    await expect(await canvas.findByText('No other device is signed in.')).toBeVisible()
+    await noToasts()
+  },
+}
+
+/**
+ * P5.63: the sign-in flows, from the sign-in building blocks only. The password step follows
+ * the sign-in screen's e-mail (its Continue): who is signing in, the password, "Forgot your
+ * password?".
+ */
+const PASSWORD_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Sign in' })).toBeVisible()
+  await expect(canvas.getByText('milica.petrovic@kvadratgradnja.rs')).toBeVisible()
+  await expect(canvas.getByRole('link', { name: 'Forgot your password?' })).toBeVisible()
+}
+
+export const SignInPassword: Story = {
+  name: 'Sign-in password',
+  render: () => <ExampleApp start={BD_ROUTES.password} />,
+  play: identityPlay(PASSWORD_CHECK),
+}
+
+export const SignInPasswordPhone: Story = {
+  name: 'Sign-in password, phone',
+  render: () => <OnPhone start={BD_ROUTES.password} />,
+  play: identityPlay(PASSWORD_CHECK, true),
+}
+
+/** A wrong password: the Core's answer with the tries left before the lock. */
+export const SignInPasswordWrong: Story = {
+  name: 'Sign-in password, wrong',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BD_ROUTES.passwordWrong} />,
+  play: identityPlay(async (canvasElement) => {
+    await expect(within(canvasElement).getByText(/After 2 more wrong tries/)).toBeVisible()
+  }),
+}
+
+/** The two-factor code: CodeInput, a trusted device, the recovery code when the phone is lost. */
+const CODE_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Two-factor sign-in' })).toBeVisible()
+  await expect(canvas.getByRole('group', { name: 'Code from the app' })).toBeVisible()
+  await expect(canvas.getByRole('link', { name: 'Use a recovery code' })).toBeVisible()
+}
+
+export const TwoFactorCode: Story = {
+  name: 'Two-factor code',
+  render: () => <ExampleApp start={BD_ROUTES.code} />,
+  play: identityPlay(CODE_CHECK),
+}
+
+export const TwoFactorCodePhone: Story = {
+  name: 'Two-factor code, phone',
+  render: () => <OnPhone start={BD_ROUTES.code} />,
+  play: identityPlay(CODE_CHECK, true),
+}
+
+export const TwoFactorCodeWrong: Story = {
+  name: 'Two-factor code, wrong',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BD_ROUTES.codeWrong} />,
+  play: identityPlay(async (canvasElement) => {
+    await expect(within(canvasElement).getByText(/The code is wrong or has expired/)).toBeVisible()
+  }),
+}
+
+export const TwoFactorRecoveryCode: Story = {
+  name: 'Two-factor code, recovery code',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BD_ROUTES.recovery} />,
+  play: identityPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('textbox', { name: 'Recovery code' })).toBeVisible()
+    await expect(canvas.getByRole('link', { name: 'Use the code from the app' })).toBeVisible()
+  }),
+}
+
+/** "Forgot your password?": the e-mail, then "Check your e-mail". */
+const FORGOT_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Reset your password' })).toBeVisible()
+  await expect(canvas.getByRole('button', { name: 'Send the link' })).toBeVisible()
+}
+
+export const ForgotPassword: Story = {
+  name: 'Forgot password',
+  render: () => <ExampleApp start={BD_ROUTES.forgot} />,
+  play: identityPlay(FORGOT_CHECK),
+}
+
+export const ForgotPasswordPhone: Story = {
+  name: 'Forgot password, phone',
+  render: () => <OnPhone start={BD_ROUTES.forgot} />,
+  play: identityPlay(FORGOT_CHECK, true),
+}
+
+/** The Core says the same whether or not an account uses the address. */
+export const ForgotPasswordSent: Story = {
+  name: 'Forgot password, check your e-mail',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BD_ROUTES.forgotSent} />,
+  play: identityPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { level: 1, name: 'Check your e-mail' })).toBeVisible()
+    await expect(canvas.getByText(/The link works for 60 minutes/)).toBeVisible()
+  }),
+}
+
+export const ForgotPasswordSentPhone: Story = {
+  name: 'Forgot password, check your e-mail, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={BD_ROUTES.forgotSent} />,
+  play: identityPlay(async (canvasElement) => {
+    await expect(
+      within(canvasElement).getByRole('heading', { level: 1, name: 'Check your e-mail' }),
+    ).toBeVisible()
+  }, true),
+}
+
+/** The e-mail's link: the new password twice, the company's rules under the first field. */
+const NEW_PASSWORD_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(
+    canvas.getByRole('heading', { level: 1, name: 'Choose a new password' }),
+  ).toBeVisible()
+  await expect(canvas.getByText(/At least 12 characters/)).toBeVisible()
+  await expect(canvas.getByLabelText('Repeat the new password')).toBeVisible()
+}
+
+export const NewPassword: Story = {
+  name: 'New password',
+  render: () => <ExampleApp start={BD_ROUTES.newPassword} />,
+  play: identityPlay(NEW_PASSWORD_CHECK),
+}
+
+export const NewPasswordPhone: Story = {
+  name: 'New password, phone',
+  render: () => <OnPhone start={BD_ROUTES.newPassword} />,
+  play: identityPlay(NEW_PASSWORD_CHECK, true),
+}
+
+export const NewPasswordMismatch: Story = {
+  name: 'New password, passwords differ',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BD_ROUTES.newPasswordMismatch} />,
+  play: identityPlay(async (canvasElement) => {
+    await expect(
+      within(canvasElement).getByText('The two passwords are not the same.'),
+    ).toBeVisible()
+  }),
+}
+
+export const NewPasswordRule: Story = {
+  name: 'New password, a rule broken',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BD_ROUTES.newPasswordRules} />,
+  play: identityPlay(async (canvasElement) => {
+    await expect(within(canvasElement).getByText(/was one of your last 5/)).toBeVisible()
+  }),
+}
+
+export const NewPasswordExpired: Story = {
+  name: 'New password, link expired',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BD_ROUTES.newPasswordExpired} />,
+  play: identityPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('alert')).toHaveTextContent('This link has expired')
+    await expect(canvas.getByRole('button', { name: 'Send a new link' })).toBeVisible()
+  }),
+}
+
+/** Ivan Lukić's invitation: the company, who invited and the role; a password, or a provider. */
+const INVITATION_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(
+    canvas.getByRole('heading', { level: 1, name: 'Join Kvadrat Gradnja d.o.o.' }),
+  ).toBeVisible()
+  await expect(
+    canvas.getByText('Milica Petrović, Head of finance and administration'),
+  ).toBeVisible()
+  await expect(canvas.getByRole('textbox', { name: 'E-mail' })).toHaveValue(
+    'ivan.lukic@kvadratgradnja.rs',
+  )
+}
+
+export const AcceptInvitation: Story = {
+  name: 'Accept invitation',
+  render: () => <ExampleApp start={BD_ROUTES.invitation} />,
+  play: identityPlay(INVITATION_CHECK),
+}
+
+export const AcceptInvitationPhone: Story = {
+  name: 'Accept invitation, phone',
+  render: () => <OnPhone start={BD_ROUTES.invitation} />,
+  play: identityPlay(INVITATION_CHECK, true),
+}
+
+export const AcceptInvitationExpired: Story = {
+  name: 'Accept invitation, expired',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BD_ROUTES.invitationExpired} />,
+  play: identityPlay(async (canvasElement) => {
+    await expect(within(canvasElement).getByRole('alert')).toHaveTextContent(
+      'Ask Milica Petrović to send a new one.',
+    )
+  }),
+}
+
+/** Too many wrong passwords: until when, in the Core's words, and the way in that does not wait. */
+const LOCKED_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Account locked' })).toBeVisible()
+  await expect(canvas.getByRole('alert')).toHaveTextContent('until 10:10 today')
+}
+
+export const AccountLocked: Story = {
+  name: 'Account locked',
+  render: () => <ExampleApp start={BD_ROUTES.locked} />,
+  play: identityPlay(LOCKED_CHECK),
+}
+
+export const AccountLockedPhone: Story = {
+  name: 'Account locked, phone',
+  render: () => <OnPhone start={BD_ROUTES.locked} />,
+  play: identityPlay(LOCKED_CHECK, true),
+}
+
+/** The session ended on invoice F-2026-0412: only the password, then back there. */
+const SESSION_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(
+    canvas.getByRole('heading', { level: 1, name: 'Your session has expired' }),
+  ).toBeVisible()
+  await expect(canvas.getByText(/return to Invoice F-2026-0412/)).toBeVisible()
+}
+
+export const SessionExpired: Story = {
+  name: 'Session expired',
+  render: () => <ExampleApp start={BD_ROUTES.sessionExpired} />,
+  play: identityPlay(SESSION_CHECK),
+}
+
+export const SessionExpiredPhone: Story = {
+  name: 'Session expired, phone',
+  render: () => <OnPhone start={BD_ROUTES.sessionExpired} />,
+  play: identityPlay(SESSION_CHECK, true),
+}
+
+/** E-mail → password → a wrong, then a right code → the home page. */
+export const SignInTwoFactorFlow: Story = {
+  name: 'Sign in with two-factor, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={ROUTES.signIn} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Continue' }))
+    await userEvent.type(await canvas.findByLabelText('Password'), 'correct horse battery')
+    await userEvent.click(canvas.getByRole('button', { name: 'Sign in' }))
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: 'Two-factor sign-in' }),
+    ).toBeVisible()
+    await userEvent.click(canvas.getByRole('button', { name: 'Verify' }))
+    await expect(canvas.getByText(/The code is wrong or has expired/)).toBeVisible()
+    await typeCode(canvasElement, '314159')
+    await userEvent.click(canvas.getByRole('button', { name: 'Verify' }))
+    await expect(await canvas.findByRole('link', { name: /Sales/ })).toBeVisible()
+    await settle()
+  },
+}
+
+/** Forgot password → the e-mail → "Check your e-mail" → the link → a new password → sign in. */
+export const ForgotPasswordFlow: Story = {
+  name: 'Forgot password, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BD_ROUTES.password} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('link', { name: 'Forgot your password?' }))
+    await userEvent.click(await canvas.findByRole('button', { name: 'Send the link' }))
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: 'Check your e-mail' }),
+    ).toBeVisible()
+    await userEvent.click(canvas.getByRole('button', { name: 'Open the link from the e-mail' }))
+    await userEvent.type(await canvas.findByLabelText('New password'), 'Liman4-gradiliste')
+    await userEvent.type(canvas.getByLabelText('Repeat the new password'), 'Liman4-gradilist')
+    await userEvent.click(canvas.getByRole('button', { name: 'Save the password' }))
+    await expect(canvas.getByText('The two passwords are not the same.')).toBeVisible()
+    await userEvent.type(canvas.getByLabelText('Repeat the new password'), 'e')
+    await userEvent.click(canvas.getByRole('button', { name: 'Save the password' }))
+    await expect(await canvas.findByRole('heading', { level: 1, name: 'Sign in' })).toBeVisible()
+    await settle()
+  },
+}
+
+/** The session expired on the invoice: the password, and back on F-2026-0412. */
+export const SessionExpiredFlow: Story = {
+  name: 'Session expired, sign in and return, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BD_ROUTES.sessionExpired} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.type(canvas.getByLabelText('Password'), 'correct horse battery')
+    await userEvent.click(canvas.getByRole('button', { name: 'Sign in and return' }))
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: 'F-2026-0412' }),
+    ).toBeVisible()
+    await settle()
+  },
+}
+
+/** Ivan Lukić joins: a short password is refused with the Core's words, then the home page. */
+export const AcceptInvitationFlow: Story = {
+  name: 'Accept invitation, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BD_ROUTES.invitation} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.type(canvas.getByLabelText('Choose a password'), 'short')
+    await userEvent.click(canvas.getByRole('button', { name: 'Accept and join' }))
+    await expect(canvas.getByText(/too short/)).toBeVisible()
+    await userEvent.type(canvas.getByLabelText('Choose a password'), '-but-longer-now')
+    await userEvent.type(canvas.getByLabelText('Repeat the password'), 'short-but-longer-now')
+    await userEvent.click(canvas.getByRole('button', { name: 'Accept and join' }))
+    await expect(await canvas.findByRole('link', { name: /Sales/ })).toBeVisible()
+    await settle()
   },
 }

@@ -258,3 +258,36 @@ export const LongOptionsPhone: Story = {
     await expect(box.right).toBeLessThanOrEqual((screen?.right ?? 0) - 7)
   },
 }
+
+/**
+ * Languages in their own names (P5.62, D15): each option carries its language (`lang`), in the
+ * list and once chosen, so a screen reader reads "Srpski" as Serbian in an English page.
+ */
+export const OwnLanguages: Story = {
+  name: 'Languages in their own names, open',
+  render: () => (
+    <div className="flex max-w-100 flex-col gap-6">
+      <SelectField
+        label="Language"
+        defaultValue="sr-Latn"
+        defaultOpen
+        options={[
+          { value: 'en', label: 'English' },
+          { value: 'sr-Latn', label: 'Srpski (latinica)', lang: 'sr-Latn' },
+          { value: 'sr-Cyrl', label: 'Српски (ћирилица)', lang: 'sr-Cyrl' },
+        ]}
+      />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const body = within(canvasElement.ownerDocument.body)
+    const option = await body.findByRole('option', { name: 'Српски (ћирилица)' })
+    await expect(option.querySelector('[lang="sr-Cyrl"]')).not.toBeNull()
+    // The chosen option's text in the trigger keeps its language.
+    // The open list hides the rest of the page from assistive technology (Radix), the trigger too.
+    const trigger = canvas.getByRole('combobox', { name: 'Language', hidden: true })
+    await expect(trigger.querySelector('[lang="sr-Latn"]')).not.toBeNull()
+    await settle()
+  },
+}

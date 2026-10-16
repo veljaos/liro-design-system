@@ -99,8 +99,27 @@ import {
   statusBadge,
 } from './example-shell'
 import { signInProviders } from './data-C'
+import { BD_ROUTES } from './data-BD'
 
 // ── Sign in ───────────────────────────────────────────────────────────────────────────────────
+
+/** Under every sign-in card: the language switch, terms and privacy (P5.63 shares it). */
+export function AuthFooter() {
+  const { linkComponent: Link } = useLiro()
+  return (
+    <>
+      {['English', 'Terms', 'Privacy'].map((item) => (
+        <Link
+          key={item}
+          href={`#/${item.toLowerCase()}`}
+          className="text-tertiary no-underline visited:text-tertiary hover:text-secondary hover:underline"
+        >
+          {item}
+        </Link>
+      ))}
+    </>
+  )
+}
 
 export function SignIn({ phone }: { phone: boolean }) {
   const navigate = useContext(Navigate)
@@ -111,19 +130,7 @@ export function SignIn({ phone }: { phone: boolean }) {
       layout={phone ? 'phone' : 'desktop'}
       title="Sign in"
       description="Use the e-mail address your company gave you."
-      footer={
-        <>
-          {['English', 'Terms', 'Privacy'].map((item) => (
-            <Link
-              key={item}
-              href={`#/${item.toLowerCase()}`}
-              className="text-tertiary no-underline visited:text-tertiary hover:text-secondary hover:underline"
-            >
-              {item}
-            </Link>
-          ))}
-        </>
-      }
+      footer={<AuthFooter />}
     >
       {/* P5.6 (group C): the e-mail first, then the "or" divider and the providers' buttons. */}
       <EmailFirstForm
@@ -131,7 +138,8 @@ export function SignIn({ phone }: { phone: boolean }) {
         placeholder="name@company.rs"
         defaultValue="milica.petrovic@kvadratgradnja.rs"
         onSubmit={() => {
-          navigate(ROUTES.home)
+          // P5.63: the Core asks this account for its password next (group BD), then the code.
+          navigate(BD_ROUTES.password)
         }}
         providers={signInProviders(() => {
           navigate(ROUTES.home)

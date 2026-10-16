@@ -33,6 +33,11 @@ export interface SelectOption {
   label: string
   /** Shown, but cannot be chosen. */
   disabled?: boolean
+  /**
+   * The label's language when it differs from the page's (D15): a language written in its own name
+   * ("Srpski (latinica)" in an English page) carries `lang="sr-Latn"`, in the list and once chosen.
+   */
+  lang?: string
   /** Options with the same group are listed together under this heading, in order of first use. */
   group?: string
 }
@@ -86,6 +91,12 @@ export function groupOptions(options: readonly SelectOption[]) {
   return { ungrouped, groups: [...groups.entries()] as [string, SelectOption[]][] }
 }
 
+/** An option's text, in its own language when it has one (it travels into the trigger too). */
+function OptionLabel({ option }: { option: SelectOption }) {
+  if (option.lang === undefined) return option.label
+  return <span lang={option.lang}>{option.label}</span>
+}
+
 /**
  * A choice from a known list (Mantine Select look). From SEARCHABLE_FROM options it is searched
  * by typing (Mantine Select `searchable`); for a list searched on the server, use ComboboxField.
@@ -101,7 +112,8 @@ export function SelectField(props: SelectFieldProps) {
     props.onChange?.(next)
   }
   const chosen = props.value ?? props.defaultValue
-  const chosenLabel = props.options.find((option) => option.value === chosen)?.label ?? ''
+  const chosenOption = props.options.find((option) => option.value === chosen)
+  const chosenLabel = chosenOption?.label ?? ''
   return (
     <Field {...fieldProps(props)}>
       {(control) => {
@@ -110,6 +122,7 @@ export function SelectField(props: SelectFieldProps) {
             <Input
               {...controlAttributes(control, messages['field.readOnly'])}
               value={chosenLabel}
+              {...(chosenOption?.lang === undefined ? {} : { lang: chosenOption.lang })}
               className={READ_ONLY}
             />
           )
@@ -156,7 +169,7 @@ export function SelectField(props: SelectFieldProps) {
                     value={option.value}
                     disabled={option.disabled === true}
                   >
-                    {option.label}
+                    <OptionLabel option={option} />
                   </SelectItem>
                 ))}
                 {groups.map(([heading, members], index) => (
@@ -169,7 +182,7 @@ export function SelectField(props: SelectFieldProps) {
                         value={option.value}
                         disabled={option.disabled === true}
                       >
-                        {option.label}
+                        <OptionLabel option={option} />
                       </SelectItem>
                     ))}
                   </SelectGroup>
@@ -278,6 +291,7 @@ function SearchableSelect(
             dir={AUTO_DIRECTION.dir}
             className={cn(AUTO_DIRECTION.className, 'pe-9')}
             value={query ?? chosen?.label ?? ''}
+            {...(query === null && chosen?.lang !== undefined ? { lang: chosen.lang } : {})}
             {...(props.placeholder === undefined ? {} : { placeholder: props.placeholder })}
             onChange={(event) => {
               setQuery(event.target.value)
