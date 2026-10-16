@@ -184,13 +184,13 @@ export function NewTravelOrder({ phone }: { phone: boolean }) {
     <TravelShell
       phone={phone}
       account={SITE_MANAGER}
-      crumbs={[{ label: 'Travel orders' }, { label: 'New travel order' }]}
+      crumbs={[{ label: 'Travel' }, { label: 'New travel order' }]}
     >
       <RecordFormPage
         layout={phone ? 'phone' : 'desktop'}
         title="New travel order"
         subtitle={<bdi>{NEW_ORDER.number}</bdi>}
-        back={{ href: '#/travel/orders', label: 'Travel orders' }}
+        back={{ href: '#/home', label: 'Home' }}
         dirty={dirty}
         actions={<ActionGroup actions={actions} />}
       >
@@ -546,7 +546,7 @@ export function TravelSettlement({ phone, ready = false }: { phone: boolean; rea
       <DetailPage
         layout={phone ? 'phone' : 'desktop'}
         title={`Settlement ${settlement.number}`}
-        back={{ href: '#/travel/my-orders', label: 'My travel orders' }}
+        back={{ href: '#/home', label: 'Home' }}
         status={stateBadge(settlement.state)}
         subtitle={
           <span className="bidi-content">{`${settlement.destination} · ${settlement.duration}`}</span>

@@ -501,11 +501,7 @@ export function AssetCard({
                               {
                                 key: 'invoice',
                                 label: 'Sales invoice',
-                                value: (
-                                  <RecordLink href={`#/sales/invoices/${asset.disposal.invoice}`}>
-                                    {asset.disposal.invoice}
-                                  </RecordLink>
-                                ),
+                                value: <bdi>{asset.disposal.invoice}</bdi>,
                               },
                             ]),
                         {
@@ -543,11 +539,7 @@ export function AssetCard({
                   {
                     key: 'document',
                     label: 'Supplier’s document',
-                    value: (
-                      <RecordLink href={`#/purchasing/documents/${asset.document}`}>
-                        {asset.document}
-                      </RecordLink>
-                    ),
+                    value: <bdi>{asset.document}</bdi>,
                   },
                   {
                     key: 'value',

@@ -252,7 +252,7 @@ export const ASSETS: readonly FixedAsset[] = [
       text: 'Sold to Stanogradnja Plus d.o.o.',
       detail:
         'Sold for 1.150.000,00 RSD without VAT; book value 575.520,57 RSD; gain 574.479,43 RSD.',
-      invoice: 'F-2026-0430',
+      invoice: 'F-2026-0429',
     },
   }),
   asset({

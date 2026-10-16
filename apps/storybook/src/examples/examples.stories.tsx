@@ -13418,7 +13418,7 @@ export const FixedAssetSold: Story = {
   render: () => <ExampleApp start={AP_ROUTES.sold} />,
   play: async ({ canvasElement }) => {
     await assetsHeading(canvasElement, 'Van Fiat Ducato NS-482-KG')
-    await expect(within(canvasElement).getByRole('link', { name: 'F-2026-0430' })).toBeVisible()
+    await expect(within(canvasElement).getByText('F-2026-0429')).toBeVisible()
   },
 }
 
