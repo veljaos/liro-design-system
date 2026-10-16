@@ -9,6 +9,7 @@ import { DateText, MoneyText } from '../components/display-text'
 import { EmptyState } from '../components/empty-state'
 import { PeriodField } from '../components/period-field'
 import { SelectField } from '../components/select-field'
+import { SessionList } from '../components/session-list'
 import { SwitchField } from '../components/checkbox-field'
 import { ExampleProvider, percentText, PhoneFrame, StoryProvider } from '../components/story-frames'
 import { TEXT_DIRECTION } from '../primitives/classes'
@@ -452,6 +453,72 @@ export const SettingsPhone: Story = {
       </ExampleProvider>
     </PhoneFrame>
   ),
+}
+
+/**
+ * A section with a block after its rows (`content`, P5.62): a list the rows cannot hold, here the
+ * devices signed in to the account, under the same line as a row.
+ */
+export const SettingsWithBlock: Story = {
+  name: 'Settings, a section with a block',
+  render: () => (
+    <ExampleProvider>
+      <SettingsPage
+        layout="desktop"
+        title="Sign-in and security"
+        groups={[
+          {
+            key: 'security',
+            label: 'Security',
+            sections: [
+              {
+                key: 'devices',
+                title: 'Devices',
+                rows: [
+                  {
+                    key: 'notify',
+                    label: 'Tell me about a new device',
+                    description:
+                      'An e-mail when the account is used on a device for the first time.',
+                    control: (
+                      <SwitchField label="Tell me about a new device" hideLabel defaultChecked />
+                    ),
+                  },
+                ],
+                content: (
+                  <SessionList
+                    label="Signed-in devices"
+                    sessions={[
+                      {
+                        id: 'this',
+                        device: 'Chrome on Windows',
+                        place: 'Novi Sad, Serbia',
+                        lastActive: '2026-10-14T09:40:00+02:00',
+                        current: true,
+                      },
+                      {
+                        id: 'phone',
+                        device: 'Liro app on iPhone',
+                        kind: 'phone',
+                        place: 'Novi Sad, Serbia',
+                        lastActive: '2026-10-13T19:02:00+02:00',
+                      },
+                    ]}
+                    onRevoke={() => undefined}
+                  />
+                ),
+              },
+            ],
+          },
+        ]}
+      />
+    </ExampleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('list', { name: 'Signed-in devices' })).toBeVisible()
+  },
 }
 
 /** Arabic settings in a right-to-left page. */

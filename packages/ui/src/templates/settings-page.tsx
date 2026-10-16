@@ -23,6 +23,8 @@ import { PageHeader } from './page-header'
  *   (`role="status"`); an error appears in the row in status.danger.fg with its icon
  *   (`role="alert"`, announced at once).
  * - Several groups of sections: tabs at the top, never a side navigation.
+ * - A section may also hold a block after its rows (`content`, P5.62): a list the rows cannot
+ *   hold, such as the signed-in devices, separated from the rows by the same line.
  * - The column (at most 960px) stands at the page's start, aligned with the header, and so do its
  *   tabs (P4.7, owner: business screens are start-aligned).
  */
@@ -47,7 +49,13 @@ export interface SettingRow {
 export interface SettingsSection {
   key: string
   title: string
+  /** The section's settings; may be empty when the section holds only `content`. */
   rows: readonly SettingRow[]
+  /**
+   * A block after the rows (or instead of them), inside the same card, 16px around: a list the
+   * rows cannot hold, such as the devices signed in to the account (SessionList) (P5.62).
+   */
+  content?: ReactNode
 }
 
 /** A group of sections shown as one tab. */
@@ -125,11 +133,24 @@ function Section({ section, phone }: { section: SettingsSection; phone: boolean 
       >
         {section.title}
       </h2>
-      <ul className="m-0 list-none p-0">
-        {section.rows.map((row) => (
-          <Row key={row.key} row={row} phone={phone} />
-        ))}
-      </ul>
+      {section.rows.length > 0 && (
+        <ul className="m-0 list-none p-0">
+          {section.rows.map((row) => (
+            <Row key={row.key} row={row} phone={phone} />
+          ))}
+        </ul>
+      )}
+      {section.content !== undefined && (
+        <div
+          data-slot="settings-section-content"
+          className={cn(
+            'px-4 pb-4',
+            section.rows.length > 0 && 'border-0 border-t border-solid border-subtle pt-3',
+          )}
+        >
+          {section.content}
+        </div>
+      )}
     </section>
   )
 }
