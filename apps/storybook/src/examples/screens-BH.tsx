@@ -23,7 +23,7 @@ import {
 } from '@veljaos/ui'
 import type { ExampleRoute } from './example-app'
 import { Navigate } from './example-shell'
-import { RECORD_LINK, RecordsShell } from './screens-BE'
+import { RECORD_LINK, RecordsShell, Words } from './screens-BE'
 import {
   AGENDA,
   AGENDA_VOTING,
@@ -67,9 +67,9 @@ export function meetingBadge(state: MeetingState) {
 
 function DateTime({ date, time }: { date: string; time: string }) {
   return (
-    <span className="whitespace-nowrap">
-      <DateText value={date} /> <bdi>{time}</bdi>
-    </span>
+    <bdi dir="ltr" className="whitespace-nowrap">
+      <DateText value={date} /> {time}
+    </bdi>
   )
 }
 
@@ -81,7 +81,7 @@ const LIST_COLUMNS: DataTableColumn<Meeting>[] = [
     cell: (meeting) => (
       <span className="flex flex-col gap-0.5">
         <span className="bidi-content font-medium">{meeting.title}</span>
-        <span className="text-xs text-secondary">{meeting.body}</span>
+        <span className="bidi-content text-xs text-secondary">{meeting.body}</span>
       </span>
     ),
   },
@@ -91,8 +91,17 @@ const LIST_COLUMNS: DataTableColumn<Meeting>[] = [
     numeric: true,
     cell: (meeting) => <DateTime date={meeting.date} time={meeting.time} />,
   },
-  { id: 'place', header: 'Place', minWidth: 200, cell: (meeting) => meeting.place },
-  { id: 'attendance', header: 'Attendance', cell: (meeting) => meeting.attendance },
+  {
+    id: 'place',
+    header: 'Place',
+    minWidth: 200,
+    cell: (meeting) => <Words>{meeting.place}</Words>,
+  },
+  {
+    id: 'attendance',
+    header: 'Attendance',
+    cell: (meeting) => <Words>{meeting.attendance}</Words>,
+  },
   { id: 'state', header: 'State', cell: (meeting) => meetingBadge(meeting.state) },
 ]
 
@@ -161,7 +170,7 @@ function Agenda({ items }: { items: readonly AgendaItem[] }) {
         <li key={item.number} className="flex flex-col gap-2">
           <span className="flex flex-col gap-0.5">
             <span className="bidi-content font-medium">{`${item.number}. ${item.title}`}</span>
-            <span className="text-xs text-secondary">{`Presented by ${item.presenter}`}</span>
+            <span className="bidi-content text-xs text-secondary">{`Presented by ${item.presenter}`}</span>
           </span>
           <AttachmentList
             label={`Materials for item ${item.number}`}
@@ -269,8 +278,8 @@ function BoardMeeting({ phone, mode }: { phone: boolean; mode: 'held' | 'voting'
         }
         actions={<ActionGroup actions={actions} />}
         keyFigures={[
-          { key: 'present', label: 'Present', value: '4 of 5' },
-          { key: 'quorum', label: 'Quorum', value: 'Yes, at least 3' },
+          { key: 'present', label: 'Present', value: <Words>{'4 of 5'}</Words> },
+          { key: 'quorum', label: 'Quorum', value: <Words>{'Yes, at least 3'}</Words> },
           { key: 'items', label: 'Agenda items', value: '4' },
         ]}
         sections={[
@@ -317,7 +326,7 @@ function BoardMeeting({ phone, mode }: { phone: boolean; mode: 'held' | 'voting'
                     details: ['attendance'],
                   }}
                 />
-                <p className="m-0 text-sm text-secondary">
+                <p className="bidi-content m-0 text-sm text-secondary">
                   Also present: Nenad Kovačević, Director, invited; Ana Marić, taking the minutes.
                 </p>
               </div>
@@ -429,7 +438,7 @@ function BoardMeeting({ phone, mode }: { phone: boolean; mode: 'held' | 'voting'
                 }
               })}
             />
-            <p className="m-0 text-sm text-secondary">{shownVotes.result}</p>
+            <p className="bidi-content m-0 text-sm text-secondary">{shownVotes.result}</p>
           </div>
         )}
       </Dialog>
@@ -544,8 +553,12 @@ function NextMeeting({ phone }: { phone: boolean }) {
           />
         }
         keyFigures={[
-          { key: 'confirmed', label: 'Confirmed', value: '3 of 5' },
-          { key: 'quorum', label: 'Quorum', value: 'Expected: 3 confirmed, at least 3 needed' },
+          { key: 'confirmed', label: 'Confirmed', value: <Words>{'3 of 5'}</Words> },
+          {
+            key: 'quorum',
+            label: 'Quorum',
+            value: <Words>{'Expected: 3 confirmed, at least 3 needed'}</Words>,
+          },
         ]}
         sections={[
           {

@@ -20,7 +20,7 @@ import {
 } from '@veljaos/ui'
 import type { ExampleRoute } from './example-app'
 import { Navigate } from './example-shell'
-import { RECORD_LINK, RecordsShell } from './screens-BE'
+import { IN_TEXT_LINK, RecordsShell } from './screens-BE'
 import {
   BI_ROUTES,
   CONTRACT_TONES,
@@ -59,7 +59,7 @@ export function contractBadge(state: ContractState) {
 
 function Term({ contract }: { contract: Contract }) {
   return contract.end === null ? (
-    <span>
+    <span className="bidi-isolate">
       From <DateText value={contract.start} />, indefinite
     </span>
   ) : (
@@ -75,7 +75,7 @@ const COLUMNS: DataTableColumn<Contract>[] = [
     cell: (contract) => (
       <span className="flex flex-col gap-0.5">
         <span className="bidi-content font-medium">{contract.subject}</span>
-        <span className="text-xs text-secondary">
+        <span className="bidi-content text-xs text-secondary">
           <bdi dir="ltr">{contract.number}</bdi>
           {` · ${contract.kind}`}
         </span>
@@ -292,9 +292,9 @@ function ContractPage({ phone, renewed: startRenewed }: { phone: boolean; renewe
             content: (
               <div className="flex flex-col gap-3">
                 <RelatedDocuments label="Linked documents" items={UGO_044_LINKED} />
-                <p className="m-0 text-sm text-secondary">
+                <p className="bidi-content m-0 text-sm text-secondary">
                   The facade contract for the same site waits for the{' '}
-                  <Link href={`#${UGO_027_MEETING}`} className={RECORD_LINK}>
+                  <Link href={`#${UGO_027_MEETING}`} className={IN_TEXT_LINK}>
                     supervisory board
                   </Link>
                   .

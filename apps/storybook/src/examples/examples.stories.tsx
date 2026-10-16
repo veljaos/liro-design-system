@@ -14628,10 +14628,11 @@ export const RecordsDocumentBoardMinutes: Story = {
   tags: ['!dev'],
   render: () => <ExampleApp start={BE_ROUTES.boardMinutes} />,
   play: recordsPlay(async (canvasElement) => {
-    await expect(canvasElement).toHaveTextContent('4 of 5 members present')
-    await expect(
-      within(canvasElement).getByRole('textbox', { name: /Auditor’s representative/ }),
-    ).toBeVisible()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('textbox', { name: /Quorum/ })).toHaveValue(
+      '4 of 5 members present: the board may decide (at least 3).',
+    )
+    await expect(canvas.getByRole('textbox', { name: /Auditor’s representative/ })).toBeVisible()
   }),
 }
 

@@ -170,10 +170,12 @@ export const Custom: Story = {
     defaultValues: { supplier: 'Northwind Supplies Ltd.', lines: ['Paper A4', 'Toner'] },
     renderCustom: (field, control) => (
       <fieldset className="m-0 rounded-md border border-solid border-default p-3">
-        <legend className="px-1 text-sm font-semibold">{field.label}</legend>
+        <legend className="bidi-content px-1 text-sm font-semibold">{field.label}</legend>
         <ul className="m-0 ps-5 text-sm">
           {(Array.isArray(control.value) ? (control.value as string[]) : []).map((line) => (
-            <li key={line}>{line}</li>
+            <li key={line} className="bidi-content">
+              {line}
+            </li>
           ))}
         </ul>
       </fieldset>
@@ -251,7 +253,7 @@ function Sending({ start }: { start?: DefinedValues }) {
     <div className="flex flex-col gap-4">
       <DefinedForm ref={form} sections={REQUEST} values={values} onChange={setValues} />
       <div className="flex items-center justify-end gap-3">
-        <p role="status" className="m-0 text-sm text-secondary">
+        <p role="status" className="bidi-content m-0 text-sm text-secondary">
           {result}
         </p>
         <Button

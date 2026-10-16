@@ -21,7 +21,7 @@ import {
 } from '@veljaos/ui'
 import type { ExampleRoute } from './example-app'
 import { Navigate } from './example-shell'
-import { RECORD_LINK, RecordsShell } from './screens-BE'
+import { IN_TEXT_LINK, RecordsShell, Words } from './screens-BE'
 import {
   ARCHIVE,
   ARCHIVE_COUNT,
@@ -70,10 +70,9 @@ function ContentCell({ unit }: { unit: ArchiveUnit }) {
   return (
     <span className="flex flex-col gap-0.5">
       <span className="bidi-content">{unit.content}</span>
-      <span className="text-xs text-secondary">
-        <bdi dir="ltr">{unit.classification}</bdi>
-        {` · ${unit.years}`}
-        {unit.note === undefined ? '' : ` · ${unit.note}`}
+      {/* Codes and years: written left to right, on the page's start side. */}
+      <span dir="ltr" className="bidi-content text-xs text-secondary">
+        {`${unit.classification} · ${unit.years}${unit.note === undefined ? '' : ` · ${unit.note}`}`}
       </span>
     </span>
   )
@@ -87,11 +86,16 @@ const BOOK_COLUMNS: DataTableColumn<ArchiveUnit>[] = [
     cell: (unit) => <DateText value={unit.entered} />,
   },
   { id: 'content', header: 'Content', minWidth: 260, cell: (unit) => <ContentCell unit={unit} /> },
-  { id: 'quantity', header: 'Quantity', cell: (unit) => unit.quantity },
+  { id: 'quantity', header: 'Quantity', cell: (unit) => <Words>{unit.quantity}</Words> },
   { id: 'medium', header: 'Medium', cell: (unit) => unit.medium },
-  { id: 'retention', header: 'Retention', cell: (unit) => unit.retention },
+  { id: 'retention', header: 'Retention', cell: (unit) => <Words>{unit.retention}</Words> },
   { id: 'keptUntil', header: 'Kept until', cell: (unit) => <KeptUntil unit={unit} /> },
-  { id: 'location', header: 'Location', minWidth: 160, cell: (unit) => unit.location },
+  {
+    id: 'location',
+    header: 'Location',
+    minWidth: 160,
+    cell: (unit) => <Words>{unit.location}</Words>,
+  },
   { id: 'state', header: 'State', cell: (unit) => archiveBadge(unit.state) },
 ]
 
@@ -148,7 +152,7 @@ function ArchiveBook({ phone }: { phone: boolean }) {
         count={ARCHIVE.length}
         mobile={{
           title: (unit) => unit.content,
-          subtitle: (unit) => `${unit.classification} · ${unit.years}`,
+          subtitle: (unit) => <bdi dir="ltr">{`${unit.classification} · ${unit.years}`}</bdi>,
           badge: (unit) => archiveBadge(unit.state),
           details: ['quantity', 'retention', 'keptUntil', 'location'],
         }}
@@ -171,9 +175,9 @@ const RETENTION_COLUMNS: DataTableColumn<RetentionPeriod>[] = [
     minWidth: 280,
     cell: (row) => <span className="bidi-content">{row.category}</span>,
   },
-  { id: 'retention', header: 'Retention', cell: (row) => row.retention },
-  { id: 'from', header: 'Runs from', minWidth: 200, cell: (row) => row.from },
-  { id: 'basis', header: 'Basis', minWidth: 200, cell: (row) => row.basis },
+  { id: 'retention', header: 'Retention', cell: (row) => <Words>{row.retention}</Words> },
+  { id: 'from', header: 'Runs from', minWidth: 200, cell: (row) => <Words>{row.from}</Words> },
+  { id: 'basis', header: 'Basis', minWidth: 200, cell: (row) => <Words>{row.basis}</Words> },
 ]
 
 type RetentionView = 'all' | 'permanent' | 'limited'
@@ -212,7 +216,7 @@ function RetentionPeriods({ phone }: { phone: boolean }) {
           setView(id as RetentionView)
         }}
       >
-        <div className="px-4 pt-3 text-sm text-secondary">
+        <div className="bidi-content px-4 pt-3 text-sm text-secondary">
           The classification plan with the list of categories and their retention, adopted on
           01.03.2024 with the archive’s consent (illustrative). The periods are the plan’s; the
           application gives each unit its day.
@@ -247,8 +251,8 @@ const EXPIRING_COLUMNS: DataTableColumn<ArchiveUnit>[] = [
     cell: (unit) => <bdi>{unit.number}</bdi>,
   },
   { id: 'content', header: 'Content', minWidth: 260, cell: (unit) => <ContentCell unit={unit} /> },
-  { id: 'quantity', header: 'Quantity', cell: (unit) => unit.quantity },
-  { id: 'retention', header: 'Retention', cell: (unit) => unit.retention },
+  { id: 'quantity', header: 'Quantity', cell: (unit) => <Words>{unit.quantity}</Words> },
+  { id: 'retention', header: 'Retention', cell: (unit) => <Words>{unit.retention}</Words> },
   { id: 'keptUntil', header: 'Kept until', cell: (unit) => <KeptUntil unit={unit} /> },
   { id: 'state', header: 'State', cell: (unit) => archiveBadge(unit.state) },
 ]
@@ -333,7 +337,7 @@ function Expiring({ phone, chosen }: { phone: boolean; chosen: boolean }) {
           ]}
           mobile={{
             title: (unit) => unit.content,
-            subtitle: (unit) => `No. ${unit.number} · ${unit.years}`,
+            subtitle: (unit) => <Words>{`No. ${unit.number} · ${unit.years}`}</Words>,
             badge: (unit) => archiveBadge(unit.state),
             details: ['retention', 'keptUntil'],
           }}
@@ -355,9 +359,9 @@ const LIST_COLUMNS: DataTableColumn<ArchiveUnit>[] = [
     cell: (unit) => <bdi>{unit.number}</bdi>,
   },
   { id: 'content', header: 'Content', minWidth: 260, cell: (unit) => <ContentCell unit={unit} /> },
-  { id: 'quantity', header: 'Quantity', cell: (unit) => unit.quantity },
+  { id: 'quantity', header: 'Quantity', cell: (unit) => <Words>{unit.quantity}</Words> },
   { id: 'keptUntil', header: 'Kept until', cell: (unit) => <KeptUntil unit={unit} /> },
-  { id: 'location', header: 'Location', cell: (unit) => unit.location },
+  { id: 'location', header: 'Location', cell: (unit) => <Words>{unit.location}</Words> },
 ]
 
 function DisposalList({ phone, disposed: startDisposed }: { phone: boolean; disposed: boolean }) {
@@ -405,7 +409,7 @@ function DisposalList({ phone, disposed: startDisposed }: { phone: boolean; disp
           {
             key: 'units',
             label: 'Units',
-            value: `${format.number(String(units.length))}, ${DISPOSAL.quantity}`,
+            value: <Words>{`${format.number(String(units.length))}, ${DISPOSAL.quantity}`}</Words>,
           },
           { key: 'proposed', label: 'Proposed', value: <DateText value={DISPOSAL.proposed} /> },
           { key: 'consent', label: 'Consent', value: <DateText value={DISPOSAL.consentDate} /> },
@@ -436,7 +440,7 @@ function DisposalList({ phone, disposed: startDisposed }: { phone: boolean; disp
             getRowLabel={(unit) => `No. ${unit.number}, ${unit.content}`}
             mobile={{
               title: (unit) => unit.content,
-              subtitle: (unit) => `No. ${unit.number} · ${unit.years}`,
+              subtitle: (unit) => <Words>{`No. ${unit.number} · ${unit.years}`}</Words>,
               details: ['quantity', 'keptUntil', 'location'],
             }}
           />
@@ -478,9 +482,9 @@ function DisposalList({ phone, disposed: startDisposed }: { phone: boolean; disp
                 ]}
               />
             ) : (
-              <p className="m-0 text-sm text-secondary">
+              <p className="bidi-content m-0 text-sm text-secondary">
                 Made when the units are disposed of, from the{' '}
-                <Link href={`#${DISPOSAL_MINUTES_ROUTE}`} className={RECORD_LINK}>
+                <Link href={`#${DISPOSAL_MINUTES_ROUTE}`} className={IN_TEXT_LINK}>
                   minutes template
                 </Link>
                 , and numbered from the registry book.

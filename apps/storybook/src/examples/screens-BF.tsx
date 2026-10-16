@@ -92,7 +92,7 @@ function SubjectCell({ entry }: { entry: RegistryEntry }) {
   return (
     <span className="flex flex-col gap-0.5">
       <span className="bidi-content">{entry.subject}</span>
-      <span className="text-xs text-secondary">
+      <span className="bidi-content text-xs text-secondary">
         <bdi dir="ltr">{entry.actNumber}</bdi>
         {' · '}
         <DateText value={entry.actDate} />
@@ -119,7 +119,7 @@ function LinkedCell({ entry }: { entry: RegistryEntry }) {
           '—'
         ) : null
       ) : (
-        <span className="text-xs text-secondary">{files}</span>
+        <span className="bidi-content text-xs text-secondary">{files}</span>
       )}
     </span>
   )
@@ -384,7 +384,9 @@ function Entry({ phone, number }: { phone: boolean; number: string }) {
             label: 'Linked documents',
             content:
               related.length === 0 ? (
-                <p className="m-0 text-sm text-secondary">No document is linked yet.</p>
+                <p className="bidi-content m-0 text-sm text-secondary">
+                  No document is linked yet.
+                </p>
               ) : (
                 <RelatedDocuments label="Linked documents" items={related} />
               ),
@@ -399,7 +401,7 @@ function Entry({ phone, number }: { phone: boolean; number: string }) {
                 inCard
                 files={entry.number === '405' ? ENTRY_405_FILES : []}
                 onDownload={() => undefined}
-                empty={<p className="m-0 p-4 text-sm text-secondary">No files.</p>}
+                empty={<p className="bidi-content m-0 p-4 text-sm text-secondary">No files.</p>}
               />
             ),
           },

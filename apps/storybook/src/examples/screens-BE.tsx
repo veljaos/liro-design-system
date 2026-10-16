@@ -72,7 +72,15 @@ import { BI_ROUTES } from './data-BI'
 export { BE_ROUTES }
 
 /** An inline link's classes (every state named, as the other examples). */
-export const RECORD_LINK = 'text-link no-underline visited:text-link hover:underline'
+export const RECORD_LINK = 'bidi-isolate text-link no-underline visited:text-link hover:underline'
+
+/** A link inside a sentence: underlined, so it is not told by colour alone (WCAG 1.4.1). */
+export const IN_TEXT_LINK = 'bidi-isolate text-link underline visited:text-link'
+
+/** A short text in a cell or a figure, its word order its own (D15). */
+export function Words({ children }: { children: ReactNode }) {
+  return <span className="bidi-isolate">{children}</span>
+}
 
 /** The Records module's tabs (groups BE–BI). */
 export function recordsTabs(
