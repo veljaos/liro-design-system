@@ -338,24 +338,24 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P5.43 | Files and folders | P5.5, P5.9 | done | 2026-10-14 | FileBrowser with FileGrid, FolderPickerDialog, NameConflictDialog, FileNameDialog, ShareDialog, VersionList, FilePreview and FileDetails (upload of files and folders, drag onto a folder with the menu's way, list only on phones); Kvadrat Gradnja's company documents and Knjigovodstvo Jelić's client folders shared with the client portal; ActivityList isolates its times |
 | P5.31a | The owner's decisions after P5.31–P5.43 | P5.41 | done | 2026-10-15 | Maps follow the law of the Republic of Serbia (Kosovo and Metohija within Serbia, tested); the phone test no longer waits on a trigger whose dialog closed |
 | P5.31b | IPS QR codes checked with the NBS validator | P5.31a | done | 2026-10-15 | Every IPS code the stories and examples show accepted by the National Bank of Serbia's validator; the accepted texts locked in a unit test |
-| P5.44 | Chart of accounts and the account card | P5.9 | todo | | |
-| P5.45 | Trial balance and financial statements | P5.20, P5.44 | todo | | |
-| P5.46 | Cash book | P5.20 | todo | | |
-| P5.47 | Fixed assets | P5.21 | todo | | |
-| P5.48 | Travel orders | P5.5 | todo | | |
-| P5.49 | Purchasing chain | P5.18 | todo | | |
-| P5.50 | Sales chain | P5.18 | todo | | |
-| P5.51 | Item card and transfers | P5.11 | todo | | |
-| P5.52 | Production | P5.9, P5.37 | todo | | |
-| P5.53 | Retail price calculation (kalkulacija) | P3.4 | todo | | |
-| P5.54 | Price lists, discounts and promotions | P4.3 | todo | | |
-| P5.55 | Compensation, cession and assignment | P5.21 | todo | | |
-| P5.56 | Late-payment interest | P4.6 | todo | | |
-| P5.57 | Stocktaking lists | P5.11 | todo | | |
-| P5.58 | Budget and cost centres | P5.9 | todo | | |
-| P5.59 | Foreign currency | P5.18 | todo | | |
-| P5.60 | Loans and leasing | P4.4 | todo | | |
-| P5.61 | Service and author contracts | P5.21 | todo | | |
+| P5.44 | Chart of accounts and the account card | P5.9 | done | 2026-10-16 | ListPage + TreeTable chart of accounts (search, details in a Drawer); the account card on ReportPage + DataTable (opening and turnover lines, running balance, every document a link) |
+| P5.45 | Trial balance and financial statements | P5.20, P5.44 | done | 2026-10-16 | The trial balance and the balance sheet / income statement on the StatutoryFormPage grid (Opening / Turnover / Closing × Debit / Credit, compare with 2025, the previous year beside, notes through `StatutoryCell.content`); drill-down trial balance → card → document |
+| P5.46 | Cash book | P5.20 | done | 2026-10-16 | Cash book by day (DataTable line types), cash receipt and payment slips, the application's cash-limit warning |
+| P5.47 | Fixed assets | P5.21 | done | 2026-10-16 | Register (ListPage), asset card (DetailPage: value history, schedule), September depreciation run (PeriodicRunPage), disposal (IrreversibleConfirmDialog) and sale |
+| P5.48 | Travel orders | P5.5 | done | 2026-10-16 | Travel order (RecordFormPage), settlement with receipt photos (FileDropzone `camera`), per-diems and DocumentTotals, approval (WorklistPage) |
+| P5.49 | Purchasing chain | P5.18 | done | 2026-10-16 | Purchase order, goods receipt (Ordered / Difference / Received), three-way match (ValueComparison with three sources) linked to the document inbox |
+| P5.50 | Sales chain | P5.18 | done | 2026-10-16 | Quote → order → delivery note → invoice, the next one in one click (SplitAction), the chain in RelatedDocuments |
+| P5.51 | Item card and transfers | P5.11 | done | 2026-10-16 | Item card (balance per warehouse, movements with running balance and value) and transfer MP-2026-0031 |
+| P5.52 | Production | P5.9, P5.37 | done | 2026-10-16 | Bill of materials (TreeTable, a semi-finished good with its own bill), work order (planned / used, good and scrap), the production plan on Gantt |
+| P5.53 | Retail price calculation (kalkulacija) | P3.4 | done | 2026-10-16 | Retail price calculation on EditableGrid (only the retail price editable), DocumentTotals with VAT by rate, the price change |
+| P5.54 | Price lists, discounts and promotions | P4.3 | done | 2026-10-16 | Price lists, customers' own prices, promotions with their validity, discount rules |
+| P5.55 | Compensation, cession and assignment | P5.21 | done | 2026-10-16 | Compensation, cession and assignment as one DocumentPage pattern (`counterparties`), both sides' items, what remains, each party's signature |
+| P5.56 | Late-payment interest | P4.6 | done | 2026-10-16 | Interest per invoice and rate period, the illustrative rate table, the interest note |
+| P5.57 | Stocktaking lists | P5.11 | done | 2026-10-16 | Stocktaking list (Book / Difference / Counted), the count on group I's handheld, the commission's signatures, posting the differences |
+| P5.58 | Budget and cost centres | P5.9 | done | 2026-10-16 | Plan against actual by cost centre and project (TreeTable, bar chart, state in words), drill-down to the entries |
+| P5.59 | Foreign currency | P5.18 | done | 2026-10-16 | Illustrative NBS middle rates, FX accounts, exchange-rate differences posted (the foreign-currency invoice is group D2's F-2026-0415) |
+| P5.60 | Loans and leasing | P4.4 | done | 2026-10-16 | Loans and leases (ListPage), a loan with KeyFigures, the outstanding principal chart and the repayment schedule |
+| P5.61 | Service and author contracts | P5.21 | done | 2026-10-16 | Service and author contracts (RecordFormPage) with the application's calculation, the monthly run (PeriodicRunPage) |
 | P5.62 | My profile | P5.6 | todo | | |
 | P5.63 | Sign-in flows | P5.6 | todo | | |
 | P5.64 | Recruitment | P5.7 | todo | | |
