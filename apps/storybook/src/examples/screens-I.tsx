@@ -80,7 +80,7 @@ function Touch({ children }: { children: ReactNode }) {
 // ── The handheld: picking PL-2026-0418 ───────────────────────────────────────────────────────
 
 /** A handheld's screen at its own width; on a wide screen, a tablet on a cart (640px). */
-function Handheld({ phone, children }: { phone: boolean; children: ReactNode }) {
+export function Handheld({ phone, children }: { phone: boolean; children: ReactNode }) {
   return (
     <Touch>
       <div
