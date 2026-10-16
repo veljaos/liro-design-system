@@ -1502,3 +1502,34 @@ export type { FileDetailsProps } from './components/file-details'
 
 // ── P5.49 trade ──
 export type { ComparisonValues } from './components/value-comparison'
+
+// ── P5.66 records ──
+export {
+  definedConditionFields,
+  definedConditionHolds,
+  DEFINED_FIELD_TYPES,
+  DefinedForm,
+  definedFormState,
+  definedFormProblems,
+  definedEmptyValue,
+  definedFieldIds,
+  definedFieldRequired,
+  definedValueFilled,
+  definedMissingKind,
+} from './components/defined-form'
+export type {
+  DefinedCondition,
+  DefinedCustomControl,
+  DefinedField,
+  DefinedFieldState,
+  DefinedFieldType,
+  DefinedFormCheck,
+  DefinedFormHandle,
+  DefinedFormProps,
+  DefinedFormState,
+  DefinedOption,
+  DefinedSection,
+  DefinedSectionState,
+  DefinedValue,
+  DefinedValues,
+} from './components/defined-form'

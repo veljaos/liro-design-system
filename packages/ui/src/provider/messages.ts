@@ -2308,4 +2308,9 @@ export interface LiroMessages {
   'files.nameRequired': string
   /** ShareDialog: saves the link's password. */
   'sharing.setPassword': string
+  // ── P5.66 records ──
+  /** DefinedForm: a required value missing — a value to write, an option to choose, a box to tick. */
+  'definedForm.fill': string
+  'definedForm.choose': string
+  'definedForm.tick': string
 }
