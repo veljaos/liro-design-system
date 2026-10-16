@@ -12587,7 +12587,14 @@ export const LatePaymentInterestIssueFlow: Story = {
     await expect(
       await canvas.findByRole('heading', { level: 1, name: 'KM-2026-0007' }),
     ).toBeVisible()
+    // The success toast is closed and gone before the checks end (axe never catches it fading).
     notice.dismiss()
+    await waitFor(
+      async () => {
+        await expect(document.querySelector('[data-sonner-toast]')).toBeNull()
+      },
+      { timeout: 5000 },
+    )
   },
 }
 
@@ -12702,6 +12709,13 @@ export const ExchangeDifferencesPostFlow: Story = {
     })
     await userEvent.click(within(dialog).getByRole('button', { name: 'Post' }))
     await expect(await canvas.findByText('Posted as NK-2026-0951')).toBeVisible()
+    // The success toast is closed and gone before the checks end (axe never catches it fading).
     notice.dismiss()
+    await waitFor(
+      async () => {
+        await expect(document.querySelector('[data-sonner-toast]')).toBeNull()
+      },
+      { timeout: 5000 },
+    )
   },
 }
