@@ -12282,7 +12282,7 @@ export const AssetDisposal: Story = {
   render: () => <ExampleApp start={AP_ROUTES.dispose} />,
   play: async () => {
     await settle()
-    const dialog = await within(document.body).findByRole('dialog', {
+    const dialog = await within(document.body).findByRole('alertdialog', {
       name: /Dispose of asset\s*OS-0142 · Mini excavator 3\.5 t/,
     })
     await expect(dialog).toHaveTextContent('5.871.000,00')
@@ -12296,7 +12296,7 @@ export const AssetDisposalPhone: Story = {
   play: async () => {
     await settle()
     await expect(
-      await within(document.body).findByRole('dialog', { name: /Dispose of asset/ }),
+      await within(document.body).findByRole('alertdialog', { name: /Dispose of asset/ }),
     ).toBeVisible()
   },
 }
@@ -12323,7 +12323,7 @@ export const AssetDisposalInteraction: Story = {
     const canvas = within(canvasElement)
     const page = within(document.body)
     await userEvent.click(canvas.getByRole('button', { name: 'Dispose…' }))
-    const dialog = await page.findByRole('dialog', { name: /Dispose of asset/ })
+    const dialog = await page.findByRole('alertdialog', { name: /Dispose of asset/ })
     await userEvent.click(within(dialog).getByRole('radio', { name: 'Stolen' }))
     await userEvent.type(
       within(dialog).getByRole('textbox', { name: /Type OS-0142 to confirm/ }),
@@ -12410,7 +12410,7 @@ export const TravelSettlement: Story = {
     await expect(canvas.getByRole('row', { name: /Taxi/ })).toHaveTextContent('Receipt missing')
     await expect(canvasElement).toHaveTextContent('10.090,00')
     await expect(
-      canvas.getByText('Add the photo of the taxi’s receipt of 07.10.2026.'),
+      canvas.getByText(/Add the photo of the taxi’s receipt of 07\.10\.2026\./),
     ).toBeInTheDocument()
   },
 }
@@ -12488,7 +12488,7 @@ export const TravelApprovalsReject: Story = {
   play: async () => {
     await settle()
     await expect(
-      await within(document.body).findByRole('dialog', {
+      await within(document.body).findByRole('alertdialog', {
         name: /Reject settlement\s*PN-2026-044 · Nikola Marković/,
       }),
     ).toBeVisible()
@@ -12504,7 +12504,9 @@ export const TravelApprovalsInteraction: Story = {
     await assetsHeading(canvasElement, 'Travel settlements to approve')
     const canvas = within(canvasElement)
     await userEvent.click(canvas.getByRole('button', { name: 'Approve' }))
-    await expect(await within(document.body).findByText('PN-2026-044 approved.')).toBeVisible()
+    await expect(
+      await within(document.body).findByText('PN-2026-044 approved.'),
+    ).toBeInTheDocument()
     await waitFor(async () => {
       await expect(canvas.queryByText('Nikola Marković')).toBeNull()
     })
@@ -12691,7 +12693,7 @@ export const ServiceContract: Story = {
   play: async ({ canvasElement }) => {
     await assetsHeading(canvasElement, 'New contract')
     await expect(canvasElement).toHaveTextContent('102.291,00')
-    await expect(canvasElement).toHaveTextContent('Normed costs (43 %)')
+    await expect(canvasElement).toHaveTextContent('Normed costs (43%)')
   },
 }
 

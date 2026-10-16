@@ -32,10 +32,10 @@ export const KIND_LABELS: Record<ContractKind, string> = {
 /** The normed costs' shares by kind (illustrative), as the application offers them. */
 export const NORMED_SHARES: Record<ContractKind, { value: string; label: string }[]> = {
   author: [
-    { value: '43', label: '43 % — author’s work' },
-    { value: '50', label: '50 % — fine art, photography, design' },
+    { value: '43', label: '43% — author’s work' },
+    { value: '50', label: '50% — fine art, photography, design' },
   ],
-  service: [{ value: '20', label: '20 % — contract for services' }],
+  service: [{ value: '20', label: '20% — contract for services' }],
 }
 
 /** The rates the calculation uses (illustrative), in the application's words. */

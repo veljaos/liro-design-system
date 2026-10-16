@@ -668,7 +668,7 @@ export function AssetCard({
                 {...(schedule.length === 0
                   ? {}
                   : {
-                      totalsLabel: 'Total 2026',
+                      totalsLabel: <span className="bidi-isolate">Total 2026</span>,
                       totals: { depreciation: money(SCHEDULE_TOTALS[asset.number] ?? null) },
                     })}
                 mobile={{
@@ -832,7 +832,7 @@ export function DepreciationRun({ phone, rerun: startRerun }: { phone: boolean; 
       action: (
         <Link
           href={`#${AP_ROUTES.asset('OS-0151')}`}
-          className="text-sm text-link no-underline hover:underline"
+          className="bidi-isolate text-sm text-link no-underline hover:underline"
         >
           Open OS-0151
         </Link>
