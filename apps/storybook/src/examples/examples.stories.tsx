@@ -12206,6 +12206,20 @@ function stockPlay(
 }
 
 /**
+ * Dismisses the notices and waits until none is left on the page: on a loaded machine axe could
+ * otherwise read a success toast while it fades out.
+ */
+async function toastsGone() {
+  notice.dismiss()
+  await waitFor(
+    async () => {
+      await expect(document.querySelectorAll('[data-sonner-toast]').length).toBe(0)
+    },
+    { timeout: 5_000 },
+  )
+}
+
+/**
  * Kvadrat Gradnja d.o.o.'s card of cement CEM II/A-M 42,5R on 14.10.2026 (P5.51): 515 bags in
  * the two warehouses worth 360.200,00 RSD — 460 in Central warehouse, 55 at Site Liman 4 —, then
  * Central warehouse's movements of October with the running balance and value (a goods receipt
@@ -12354,7 +12368,7 @@ export const TransferSend: Story = {
     await waitFor(async () => {
       await expect(canvasElement).toHaveTextContent('Waiting for Snežana Popović at Site Liman 4')
     })
-    notice.dismiss()
+    await toastsGone()
     await settle()
   },
 }
@@ -12485,7 +12499,7 @@ export const WorkOrderPost: Story = {
       await expect(canvas.queryByRole('button', { name: 'Post to stock' })).toBeNull()
       await expect(canvas.getByRole('heading', { level: 1, name: 'RN-2026-0158' })).toBeVisible()
     })
-    notice.dismiss()
+    await toastsGone()
     await settle()
   },
 }
@@ -12629,7 +12643,7 @@ export const StocktakingSignAndPost: Story = {
     })
     await userEvent.click(within(dialog).getByRole('button', { name: 'Post differences' }))
     await expect(await canvas.findByText('Stocktaking shortage MA-2026-004')).toBeVisible()
-    notice.dismiss()
+    await toastsGone()
     await settle()
   },
 }
