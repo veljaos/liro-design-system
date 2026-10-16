@@ -2325,6 +2325,17 @@ export function PortalHome({ phone }: { phone: boolean }) {
         <PageHeader
           title="My home"
           subtitle={`${buildingOf(RESIDENT_UNIT).name}, flat ${RESIDENT.unit}`}
+          actions={
+            <Button
+              family="primary"
+              icon={Wrench}
+              emphasis="primary"
+              label="Report a problem"
+              onClick={() => {
+                navigate(BQ_ROUTES.portalNew)
+              }}
+            />
+          }
         />
         <Alert
           tone={renewed ? 'neutral' : 'warning'}
@@ -2377,21 +2388,7 @@ export function PortalHome({ phone }: { phone: boolean }) {
             ]}
           />
         </SectionCard>
-        <SectionCard
-          title="Repairs"
-          headingLevel={2}
-          actions={
-            <Button
-              family="primary"
-              icon={Wrench}
-              emphasis="primary"
-              label="Report a problem"
-              onClick={() => {
-                navigate(BQ_ROUTES.portalNew)
-              }}
-            />
-          }
-        >
+        <SectionCard title="Repairs" headingLevel={2}>
           {open.length === 0 ? (
             <p className="bidi-content m-0 text-sm text-secondary">Nothing open.</p>
           ) : (
