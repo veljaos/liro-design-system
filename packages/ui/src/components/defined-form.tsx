@@ -67,8 +67,8 @@ export type {
  *   fields, before a missing value's words.
  * - `readOnly` shows the whole form as text (a document numbered or sent for signature).
  * - `lang`: the language of the definitions' texts when it is not the page's ("sr-Latn" on an
- *   English page): labels, hints, section titles and radio options carry it (D15); select options
- *   are plain strings and are not marked.
+ *   English page): labels, hints, section titles and every option carry it (D15), select and
+ *   multiselect options through their `lang`.
  * Nothing is computed, saved or rendered as a document here: the preview of the document is the
  * application's (DocumentFrame beside the form).
  */
@@ -308,6 +308,7 @@ export function DefinedForm({ ref, ...props }: DefinedFormProps) {
                       label: option.label,
                       ...(option.disabled === true ? { disabled: true } : {}),
                       ...(option.group === undefined ? {} : { group: option.group }),
+                      ...(lang.lang === undefined ? {} : { lang: lang.lang }),
                     }))}
                     value={asText(value) ?? ''}
                     clearable={!required}
@@ -326,6 +327,7 @@ export function DefinedForm({ ref, ...props }: DefinedFormProps) {
                       value: option.value,
                       label: option.label,
                       ...(option.disabled === true ? { disabled: true } : {}),
+                      ...(lang.lang === undefined ? {} : { lang: lang.lang }),
                     }))}
                     value={asList(value)}
                     onChange={set}
