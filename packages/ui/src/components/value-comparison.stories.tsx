@@ -66,7 +66,8 @@ const meta = {
         component:
           '**What for:** the same things as two sources record them, side by side, the ' +
           'differences marked in words with an icon on the warning background — our open items ' +
-          'beside a partner’s statement, a payment as each side booked it. It compares nothing: ' +
+          'beside a partner’s statement, a payment as each side booked it; or three sources — ' +
+          'an order, its receipt and the invoice (the three-way match). It compares nothing: ' +
           'which rows differ, and why, is the application’s (`differs`, `note`). Phones show one ' +
           'card per row, each value labelled with its source.\n\n' +
           '**When to use:** reconciling two records of the same things, where the user must see ' +
@@ -157,6 +158,72 @@ export const LongText: Story = {
 /** Phone width: one card per row. */
 export const Phone: Story = {
   args: { layout: 'phone' },
+  decorators: [
+    (Story) => (
+      <PhoneFrame>
+        <ExampleProvider>
+          <div className="p-4">
+            <Story />
+          </div>
+        </ExampleProvider>
+      </PhoneFrame>
+    ),
+  ],
+}
+
+/** One order line as the order, the receipt and the invoice record it (fictitious). */
+const THREE_WAY: ComparisonRow[] = [
+  {
+    id: 'timber-qty',
+    label: 'Timber 45 × 95, quantity',
+    values: ['40 m', '38 m', '38 m'],
+    numeric: true,
+    note: 'Invoiced as received',
+  },
+  {
+    id: 'timber-price',
+    label: 'Timber 45 × 95, price',
+    values: [money('4.20'), null, money('4.20')],
+    numeric: true,
+  },
+  {
+    id: 'delivery',
+    label: 'Delivery, quantity',
+    values: ['1', '1', '2'],
+    numeric: true,
+    differs: true,
+    note: 'Invoiced twice, received once',
+  },
+]
+
+/** Three sources: an order, its receipt and the invoice (the three-way match, P5.49). */
+export const ThreeSources: Story = {
+  name: 'Three sources',
+  args: {
+    label: 'Order PO-118, receipt GR-204, invoice INV-1040',
+    columns: ['Order', 'Receipt', 'Invoice'],
+    rows: THREE_WAY,
+    rowHeader: 'Line',
+  },
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('status')).toHaveTextContent('1 of 3 differ')
+    const table = canvas.getByRole('table', { name: /^Order PO-118/ })
+    await expect(within(table).getAllByRole('columnheader')).toHaveLength(5)
+    await expect(within(table).getByText('Invoiced twice, received once')).toBeVisible()
+  },
+}
+
+/** Three sources on a phone: three labelled values per card. */
+export const ThreeSourcesPhone: Story = {
+  name: 'Three sources, phone',
+  args: {
+    label: 'Order PO-118, receipt GR-204, invoice INV-1040',
+    columns: ['Order', 'Receipt', 'Invoice'],
+    rows: THREE_WAY,
+    layout: 'phone',
+  },
   decorators: [
     (Story) => (
       <PhoneFrame>

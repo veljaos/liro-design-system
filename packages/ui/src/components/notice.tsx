@@ -245,6 +245,10 @@ export function Toaster({ layout }: ToasterProps = {}) {
     '--width': phone ? phoneWidth : '440px',
     zIndex: 'var(--liro-layer-toast)',
   } as CSSProperties
+  // A browser driven by automation (the story and accessibility tests) shows and removes toasts
+  // without fading, as the charts do not animate there: a toast caught half faded had half its
+  // contrast. Sonner already drops the motion for reduced motion.
+  const still = typeof navigator !== 'undefined' && navigator.webdriver
   const bottom = 'calc(16px + var(--liro-shell-bottom, 0px))'
   const offset = { top: '16px', bottom, left: '16px', right: '16px' }
   return (
@@ -265,7 +269,10 @@ export function Toaster({ layout }: ToasterProps = {}) {
         offset={offset}
         mobileOffset={offset}
         containerAriaLabel={messages['notice.region']}
-        toastOptions={{ unstyled: true }}
+        toastOptions={{
+          unstyled: true,
+          ...(still ? { style: { transition: 'none', animation: 'none' } } : {}),
+        }}
         style={style}
       />
     </>

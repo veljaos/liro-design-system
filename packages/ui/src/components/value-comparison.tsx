@@ -18,16 +18,22 @@ import { usePhone } from './use-phone'
  *   the words, never colour alone. Above it "2 of 5 differ", politely announced as rows change.
  * - Phones (`layout`, default below 48em): one card per row, each value labelled with its
  *   source's name, the result under them.
+ * - Two sources, or three (P5.49: a purchase order, its goods receipt and the supplier's invoice
+ *   side by side — the three-way match); every row has one value per source.
  * - A value the source does not have is the application's words ("Not in our books"); `null`
  *   shows "—". Loading: three skeleton rows; no rows: `empty` ("Nothing to compare").
  */
+
+/** The sources' names or values: two, or three (P5.49). */
+export type ComparisonValues =
+  readonly [ReactNode, ReactNode] | readonly [ReactNode, ReactNode, ReactNode]
 
 export interface ComparisonRow {
   id: string
   /** The thing compared ("ES-2026-0412, invoice of 05.08.2026"). From the application. */
   label: ReactNode
-  /** The two sources' values, in the order of `columns`; null shows "—". */
-  values: readonly [ReactNode, ReactNode]
+  /** One value per source, in the order of `columns`; null shows "—". */
+  values: ComparisonValues
   /** The application says the two differ. */
   differs?: boolean
   /** The result in the application's words ("Only in their statement"), in place of "Differs". */
@@ -39,8 +45,11 @@ export interface ComparisonRow {
 export interface ValueComparisonProps {
   /** Names the comparison ("Open items at 30.09.2026"). */
   label: string
-  /** The two sources' names ("Our books", "Their statement"). */
-  columns: readonly [ReactNode, ReactNode]
+  /**
+   * The sources' names ("Our books", "Their statement"): two, or three ("Order", "Receipt",
+   * "Invoice"; P5.49). Each row gives a value for every source.
+   */
+  columns: ComparisonValues
   rows: readonly ComparisonRow[]
   /** The first column's heading. Default `messages['comparison.item']`. */
   rowHeader?: ReactNode
@@ -83,7 +92,7 @@ function Result({ row }: { row: ComparisonRow }) {
   )
 }
 
-/** Two sources' values side by side, the differences the application found marked in words. */
+/** Two or three sources' values side by side, the differences the application found marked in words. */
 export function ValueComparison(props: ValueComparisonProps) {
   const { messages, format } = useLiro()
   const viewportPhone = usePhone()
@@ -95,7 +104,7 @@ export function ValueComparison(props: ValueComparisonProps) {
     counts.total,
     format.number(String(counts.total)),
   )
-  const [first, second] = props.columns
+  const sources = props.columns
   // The sources' headings stand over their values: at the end when every row holds figures.
   const numericColumns = props.rows.length > 0 && props.rows.every((row) => row.numeric === true)
 
@@ -144,8 +153,13 @@ export function ValueComparison(props: ValueComparisonProps) {
               <span className={cn('text-sm font-medium text-primary', TEXT_DIRECTION)}>
                 {row.label}
               </span>
-              <dl className="m-0 grid grid-cols-2 gap-x-4 gap-y-1">
-                {[first, second].map((source, index) => (
+              <dl
+                className={cn(
+                  'm-0 grid gap-x-4 gap-y-1',
+                  sources.length === 3 ? 'grid-cols-3' : 'grid-cols-2',
+                )}
+              >
+                {sources.map((source, index) => (
                   <div key={index} className="flex min-w-0 flex-col gap-0.5">
                     <dt className={cn('text-xs text-secondary', TEXT_DIRECTION)}>{source}</dt>
                     <dd
@@ -170,7 +184,7 @@ export function ValueComparison(props: ValueComparisonProps) {
             <caption className="sr-only">{props.label}</caption>
             <thead>
               <tr className="border-0 border-b border-solid border-default">
-                {[props.rowHeader ?? messages['comparison.item'], first, second].map(
+                {[props.rowHeader ?? messages['comparison.item'], ...sources].map(
                   (heading, index) => (
                     <th
                       key={index}

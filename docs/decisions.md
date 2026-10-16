@@ -2791,6 +2791,7 @@ counts, texts)` — the counts as numbers for the plural rules and as `format.nu
 - **2026-10-15 — Gantt's mirrored scale labels stand on whole pixels (P5.37).** In right to left each month label was turned back about its own middle, at a fractional place, inside the scale's own compositing layer (the sticky head's `will-change`); its text was drawn a pixel apart from run to run. A label now fills its cell and is centred in it, so the two turns land on whole pixels.
 - **2026-10-15 — An interaction story ends where nothing more happens (P5.31).** The till's "instant payment, buyer's code" story stopped while the example's bank was still to answer (a timer of 1.2 s); on a busy CI machine the answer arrived while axe measured the dialog, and the contrast of a button was read halfway through its change. The story now waits for the approval, and every example interaction settles again after its checks (`deskPlay`, `phonePlay`), so the accessibility check measures a page at rest.
 - **2026-10-15 — Twenty-four parts per test suite on CI (P5.31).** The round's stories (about 2,100 new pictures' worth) took four story and accessibility parts past their 25 minutes: the first story part ran 788 of 840 tests, the first accessibility part 584 of 773; none failed. As in P3.0 and P5.27, the count is raised: each suite runs in twenty-four parts (`ci.yml`, a protected file, so the owner merges this pull request). The required check keeps its name and still passes only when every part passed; the Baselines workflow keeps its twelve parts.
+- **2026-10-16 — Thirty-two parts per test suite on CI (P5.44).** The accounting and trade examples (desktop and phone stories, each screen also checked by the phone test) took the first story part past its 25 minutes on pull request #82: 574 tests passed and 16 did not run (none failed). As in P3.0, P5.27 and P5.31, the count is raised rather than the limit: each suite runs in thirty-two parts (`ci.yml`, a protected file, so the owner merges this pull request), in one step for the whole batch P5.44–P5.88, whose later groups add more stories. The required check keeps its name and still passes only when every part passed. The Baselines workflow (`baselines.yml`, also protected) now runs in twenty-four parts instead of twelve: on Group B's branch its fourth part reached the 25 minutes with 39 of 941 pictures not taken (charts, unaffected by that change, so the set was still complete).
 
 ### The owner's decisions after P5.31–P5.43 (P5.31a, 2026-10-15)
 
@@ -2799,6 +2800,257 @@ counts, texts)` — the counts as numbers for the plural rules and as `format.nu
 - **2026-10-15 — The phone test no longer waits on a trigger whose dialog closed (P5.31a, the owner).** `phone-overflow.spec.ts` lists a dialog's triggers, then opens them one by one; a trigger that closed its own dialog while another stayed open (one that cannot be dismissed while it works) left the rest of the list off the page, and reading the next one's name (`locator.evaluate`, no timeout) waited until the test's 120 seconds. Reproduced with a throwaway story (a dialog of "…" buttons, each closing it and opening a dialog that stays): the old test timed out in both directions, the new one passes in under 4 seconds. A trigger no longer on the page is now skipped at once (its name "(gone)", read with a 1-second limit), and a dialog's pass ends when that dialog has closed. Locally 365 phone tests passed with it (none failed) before one machine's 25-minute limit; CI runs all of them in its parts. FileBrowser's phone sheet stays a WAI-ARIA menu (P5.43): the right semantics either way.
 - **2026-10-15 — Map labels are measured again when the fonts arrive (P5.31a).** CI pictured "Group revenue by country" with 425 pixels different in light, left to right and right to left, on a commit that does not change maps; locally the same pictures passed 12 times of 12. The map decides which names fit inside their areas by measuring each label once, when the labels are placed: a web font that arrived after that measurement changed every label's width, and the decision stayed the old one. The class is the one FloorPlan fixed in P5.28 ("labels measured and never cut"): MapCanvas, under AreaMap, LocationCheck and RegionChart, now measures again on `document.fonts.ready` and on every `loadingdone`, and reports itself ready (`data-ready`, which the stories wait for) only once the fonts are settled. Every map picture then passed three times of three in the pinned image, the failing two and Property tax zones five times of five.
 - **2026-10-15 — IPS QR codes checked with the NBS validator (P5.31b, the owner).** With `ips.nbs.rs` allowed, every IPS text the stories and examples show went to the National Bank of Serbia's validation API (`https://nbs.rs/QRcode/api/qr/v1/validate`, the method of its "Smernice Generator / Validator"); its own example answered "OK." first. All eleven answered "OK.": the bills (PR) of QrCode, PrintDocument, the invoice printout (data-J) and payment orders forms 1 and 3, and the tills' instant payments (PT) of QrCode, PaymentDialog, the bakery's till and both cafés' tabs; so did the three codes of `ips-qr.test.ts`. Not checked there: the buyer's code (PK) the till scans, which the validator does not take ("Uneta identifikacija IPS QR kôda nije podržana."; the guide names PR, PT and EK) and which the buyer's bank writes, not the design system; and the UTF-8 sample of `qr-code.test.tsx`, which tests the QR encoder with a dash outside the IPS characters on purpose. `ips-qr.test.ts` now holds three accepted texts exactly (a bill with a payer and model 97, form 1 with names on two lines, a till's PT), so a change to `ipsQrText` that writes them differently fails until it is checked there again. A scan with a banking application stays a good last check.
+
+## Accounting and trade (P5.44–P5.61)
+
+### The ledger (P5.44–P5.46, P5.56, P5.59)
+
+- **2026-10-15 — The ledger is assembled, not new (P5.44–P5.46, P5.56, P5.59).** The chart of
+  accounts is ListPage + FilterBar + TreeTable (`selectionMode` 'single': a press on an account
+  opens its details in an end Drawer with a KeyValueList and "Open account card"; a press on a
+  level opens or closes it); an inactive account and a class that is not kept say why
+  (`disabledReason`). The search is the application's: an account matches by the start of its
+  code or by its name, a level's match brings its accounts, every level above a match is opened.
+  The account card, the cash book, late-payment interest, exchange rates and exchange-rate
+  differences are ReportPage (parameters collapsed to their summary) with DataTable in a flush
+  SectionCard; the trial balance and the statements are StatutoryFormPage; the slips and the
+  interest note are DocumentPage.
+- **2026-10-15 — An account card's summary rows and a cash journal's days are DataTable's line
+  types (P5.44, P5.46).** "Opening balance on 01.01.2026." and "Turnover 01.01.–31.08.2026." are
+  `subtotal` lines above the entries (their label before the amounts); the period's turnover and
+  the closing balance are the totals row. The cash journal groups its slips by day: the day (and
+  its number in the cash journal) a `heading` line, then the opening balance, the slips with the
+  running cash, the day's receipts and payments, the closing balance as `subtotal` lines. The
+  running balance is the application's figure on each row; a credit balance is negative.
+- **2026-10-15 — The trial balance is the statutory grid (P5.45).** One part per class, the
+  synthetic accounts as numbered groups, the analytic accounts as rows, a total row per class and
+  a last part "Total of all classes"; groups Opening / Turnover / Closing over Debit / Credit (the
+  grid's two header rows); a side without an amount is blank. Every figure is a `source` cell
+  whose drawer links to the account's card: trial balance → account card → the document (the
+  invoice, the cancellation, the decrease, the bank statement, the journal entry, the cash slip).
+  "Compare with 14.10.2025." puts last year's figure under each value (D28). The three checks
+  ("Opening / Turnover / Closing: debit equals credit") are the Core's rules, read-only.
+- **2026-10-15 — The financial statements on the same grid, the previous year beside (P5.45).**
+  The balance sheet and the income statement are the form's grid with illustrative position
+  codes as row numbers, "A. / B." groups, a total line per group and part; their columns are
+  Note, this year, the previous year — the previous year is a column of the statement itself, not
+  a comparison. The Note column's cell (`StatutoryCell.content`) opens the note in an end Drawer
+  (title "Note 8", the note's name as subject; the text and its figures for both years). Labelled
+  "illustrative positions and codes, not the official form".
+- **2026-10-15 — The cash limit is the application's warning (P5.46).** A warning Alert on the cash
+  book in the application's words and figures ("The cash desk holds …, above its limit of …
+  (illustrative) since the end of 13.10.2026. Deposit … with the bank by the end of the day."),
+  the cash key figure in the warning tone, and on the receipt that crossed it a warning `banner`.
+  The limit and the excess are data.
+- **2026-10-15 — Late-payment interest splits where the rate changes (P5.56).** One line per
+  invoice and rate period: due date, payment date ("Not paid" in words), the late days counted
+  (first and last), the rate, the amount late, the interest; why a line ends where it does in
+  small text under the invoice ("The rate changed on 01.07.2026.", "500.000,00 RSD paid on
+  15.09.2026.", "Still open: interest runs until it is paid."). The rate table is data in a card
+  of its own ("Illustrative statutory default interest rates", invented). "Issue interest note"
+  confirms (`family` document) and opens the note (DocumentPage, "Based on" the calculation).
+- **2026-10-15 — Foreign currency (P5.59).** "Illustrative NBS middle rates" (invented values,
+  list no. and "Applies from …") as a table with buying / middle / selling and the unit (JPY,
+  HUF per 100). The foreign-currency accounts: balance in the currency, the day's middle rate, the
+  value in dinars, the ledger's dinars and the difference; totals in RSD only. The invoice in a
+  foreign currency is group D2's F-2026-0415 (DocumentPage with DocumentCurrency, EUR and RSD),
+  linked from the differences, not drawn again. Exchange-rate differences: each open item and FX
+  account with its booked dinars (and booked rate), its value at the day's rate, a positive or a
+  negative difference; "Post differences" confirms with the journal entry as the dialog's
+  `preview` (`size` 'wide'), then a success Alert and the button unavailable with its reason.
+- **2026-10-15 — The ledger's figures are the data's (P5.44).** `data-AK.ts` plays the Core as
+  data-F and data-bank do: it holds the opening of 01.01.2026, January–August as a summary of
+  postings, and every posting since September (the invoice list's September invoices, statement
+  188 as worked line by line — its line 10 left for later is not posted —, ST-2026-0004,
+  KO-2026-0009, NK-2026-0912, F-2026-0415, the cash slips), and works out the cards, running
+  balances and trial balance in whole paras; it throws when a posting, the opening or a pair of
+  trial-balance columns does not balance. The screens add nothing (D4).
+
+### Fixed assets, travel orders, budget, loans and service contracts (P5.47, P5.48, P5.58, P5.60, P5.61)
+
+- **2026-10-15 — Fixed assets assembled from the register, the record and the run (P5.47).** The
+  register is a ListPage (views "In the register", "Disposed and sold", "All"; search and a
+  depreciation-group filter; the state in words: In use, Not yet in use, Fully depreciated,
+  Disposed, Sold). The asset card is a DetailPage: key figures (acquisition value, accumulated
+  depreciation, book value, the rate), Acquisition (the supplier's document, the loan or lease
+  that financed it as a link to group AS), Location and responsibility, Depreciation (group,
+  illustrative rate, useful life, monthly amount, account), and two flush DataTables from data —
+  the value history (date, event, signed change, accumulated, book value) and the year's
+  schedule month by month (Posted / In review / Planned in words, the year's total from data).
+  The monthly run is PeriodicRunPage (lock line, Prepare → Calculate → Review → Post, checks in
+  words, the preview: figures and every asset's line with totals, Rerun with a reason). Disposal
+  is IrreversibleConfirmDialog with `reason` (a list) and the asset's number typed — one dialog;
+  a sale is a Dialog (buyer, date, price without VAT) after which the application makes a draft
+  sales invoice, linked from the sold asset's "Sale" section. A disposed or sold asset keeps its
+  card; its book value reads "—" in the register.
+- **2026-10-15 — Travel orders: the order a form, the settlement a record, the approval a
+  worklist (P5.48).** The new order is a RecordFormPage (traveller, destination, purpose, dates,
+  how they travel — a company vehicle chosen from the fleet, own car, bus or train —, cost centre,
+  advance; who approves). The settlement is a DetailPage the traveller fills on a phone first: the
+  Expenses section starts with FileDropzone `camera` ("Take a photo" on phones), the expenses as a
+  DataTable whose Receipt column names the photo or says "Receipt missing" (warning, words), the
+  receipts as an AttachmentList; Per-diems as a DataTable from data under the application's rule
+  in words; the Settlement as DocumentTotals (expenses, per-diems, costs, advance; the final row
+  "To pay to …" or "To return by …"). "Submit for approval" is an UnavailableAction with the
+  reason while a receipt is missing. The approval is WorklistPage (the figure "to pay" / "to
+  return" under the amount), the same sections in the detail, Reject with ReasonConfirmDialog
+  (the record as `subject`), Approve last.
+- **2026-10-15 — Budget against actual on TreeTable; drill-down by choosing a line (P5.58).**
+  The StatutoryFormPage grid was considered and not used: its cells are amounts only (no "Used
+  %" column, no state in words per row) and it is the grid of an official form. TreeTable carries
+  plan, actual, the signed variance, the share used and the state as a StatusBadge in the
+  application's words ("Over budget" danger, "Within budget" success, "Under budget" neutral —
+  words always, never colour alone), with totals from data; by cost centre and by project (cost
+  types under each project) as two page-level Tabs, each with a horizontal BarChart of plan
+  (comparison, grey) against actual (main). TreeTable has no "open a row" event: the drill-down
+  is its single selection (neutral) and "Show entries of <code>" in the card's header — an
+  UnavailableAction "Choose a line first." while none is chosen. The entries page shows the line's
+  figures and its latest entries from the books (a document links to its page where the examples
+  have one — a depreciation to the asset card, group AP), the totals row the line's actual with
+  the application's count ("Actual, 236 entries") and `rowLimitMessage` "The latest 3 of 236
+  entries."
+- **2026-10-15 — Loans and leases: a list and a record with its schedule (P5.60).** ListPage
+  (lender, kind, principal, rate, term, outstanding, the next instalment with its date, the state
+  in words: Active, Overdue, Repaid; views Active / Repaid / All) and DetailPage with KeyFigures
+  (principal, rate, term, outstanding — danger when overdue), the contract (what it financed links
+  to the asset card), an AreaChart of the outstanding principal after each instalment, and the
+  repayment schedule as a DataTable (no., due date, instalment, principal, interest, balance
+  after, Paid / Due / Overdue / Upcoming in words) with the totals from data. An overdue lease says
+  so in a danger Alert above its contract.
+- **2026-10-15 — Service and author contracts: the calculation is the application's answer
+  (P5.61).** The new contract is a RecordFormPage (person, kind as radios with what each is for,
+  work, period, project; the amount agreed as gross or net, the amount, the normed costs' share
+  the application offers for the kind — read-only when there is one); the Calculation section is
+  DocumentTotals (gross, normed costs, tax base, tax, pension and disability insurance, health
+  insurance; the final row "Net to <person>"), every figure from the application for the inputs
+  given. For an amount the application has not calculated the figures read "—" with a neutral
+  Alert "Calculated when the draft is saved" — the screen never computes a tax. The monthly run
+  of such contracts is PeriodicRunPage (checks in words — a payment held for a missing bank
+  account —, KeyFigures and every contract's calculation with totals, Post and pay).
+
+### Purchasing and sales chains, price lists, offsets (P5.49, P5.50, P5.54, P5.55)
+
+- **2026-10-15 — The purchasing chain is three pages and one match (P5.49).** Purchase order
+  NB-2026-0087 and goods receipt PRI-2026-0213 are DocumentPages; the receipt is "Based on" the
+  order (DocumentReferences) and shows each line received against ordered in the Original /
+  Change / New pattern — `correctionColumns` with the headers Ordered / Difference / Received —
+  with the receiver's reason in its own column; the received value and the difference against
+  the order are the application's figures (key figures and totals). The three-way match is a
+  DetailPage of the supplier invoice ("Match 2026-1187") built on ValueComparison with three
+  sources (order, receipt, invoice): one row per quantity, price and total, the application's
+  verdict in words ("Invoiced as received", "More than ordered: needs approval"), "1 of 8
+  differ". The invoice itself is still reviewed and posted in the document inbox (P5.31): the
+  match and the inbox link to each other through the chain (RelatedDocuments on every page). The
+  match's actions: Open in the document inbox, Ask for a credit note (neutral), Accept the
+  difference (the main one, last); once accepted, "Post in the document inbox".
+- **2026-10-15 — The next document of a sales chain is the page's main action, in one click
+  (P5.50).** Quote → order → delivery note → invoice, each a DocumentPage "Based on" the one
+  before it. The next document is a SplitAction (`intent="create"`: "Create order", "Create
+  delivery note", "Create invoice"), its menu the other documents the application can make from
+  this one (a proforma, an advance invoice, one invoice for several delivery notes); one click
+  and the application creates it — its page opens. On a phone the SplitAction is in the bottom
+  bar. The chain so far is the Related documents panel of every page, in the chain's order; a
+  document with nothing after or before it yet (a new quote) has no panel. Once the next
+  document exists the create action is gone (the document is in the panel instead).
+- **2026-10-15 — Price lists, promotions and discount rules are lists of data (P5.54).** Price
+  lists on ListPage (who each applies to — a customer group or the own shop —, with or without
+  VAT, valid from / until, items, state); one price list on DetailPage with three flush tables:
+  its prices (with the previous price where it changed), the customers' own prices on it, and
+  the group's customers. Promotions on ListPage with views Active / Scheduled / Ended / All: the
+  rule is the application's sentence ("Buy 2, get 1 free"), never composed by the library. The
+  discount rules in the application's order, On / Off from their row menu, how they combine as
+  the application's sentence under the table (`rowLimitMessage`). The states (Active, Scheduled,
+  Ended) are the application's words: no date is compared on the screen.
+- **2026-10-15 — Compensation, cession and assignment are one document pattern (P5.55).** One
+  DocumentPage for all three kinds: the other parties with their roles at the counterparty's
+  level ("Partner"; "Assignee" and "Debtor"; "Paying party" and "Receiving party" — the new
+  `counterparties` prop), what the document does in one sentence (`details`), "Based on" the
+  confirmed statement of open items for a compensation; the items of both sides in ONE table — a
+  heading row per side ("Beton Mix d.o.o. owes Kvadrat Gradnja d.o.o."), each item with Open /
+  the settled column (Offset, Assigned, Paid on instruction) / Remains, a subtotal row per side
+  (DataTable line types) —, the amount settled in the totals; "What remains" as the
+  application's sentences; "Signatures": SignerList with `sequential={false}` (each party signs
+  in any order; a cession's debtor acknowledges). Send reminder while signatures are missing,
+  Post once all have signed.
+
+### Stock and production (P5.51–P5.53, P5.57)
+
+- **2026-10-15 — The item card and transfers are assembled, not new (P5.51).** The item card is a
+  DetailPage: four key figures (on hand, available, stock value, average cost), "Balance by
+  warehouse" (DataTable: on hand, reserved, available, average cost, value, and the application's
+  totals of both warehouses; pressing a warehouse shows its movements), "Movements" (DataTable:
+  date, the document as a link, the partner or purpose, in, out, the running balance, the signed
+  value and the running value; the opening balance as the first row; the period's totals in the
+  totals row; a SelectField with a hidden label chooses the warehouse) and "Details". Every
+  balance, value and average is the application's; nothing is added on the screen. Every
+  movement's document opens (drill-down): the transfers their own page, a goods receipt, a
+  delivery note and an issue a small read-only stock document (DocumentPage). A transfer is a
+  DocumentPage with Draft → In transit → Received in the application's words; while it is a draft,
+  its lines are an EditableGrid whose "Available" column is what the source warehouse can give,
+  from the application, and the application's check says under a line when it asks for more
+  ("Only 3 roll available in Central warehouse.") — Send is an UnavailableAction with the reason
+  until every line passes. Received transfers show Sent and Received.
+- **2026-10-15 — Production on TreeTable, the correction columns and Gantt (P5.52).** A bill of
+  materials is TreeTable inside a DetailPage: the components with their quantity and unit (one
+  cell, the phone's main figure), kind and cost for a batch; a semi-finished good (the rye
+  sourdough starter) is a branch whose children are its own bill, open at first, and its bill is a
+  page of its own linked from the section's description. The work order's material is the
+  Original / Change / New pattern with the headers Planned / Difference / Used and each
+  difference's value; its output (good, scrap with the reasons) a second table, so the lines'
+  card carries a title ("Material"). The production plan is Gantt: each production line or oven a
+  phase, each work order a task with its shift as "who", a delivery a milestone, the starter before
+  the bread a dependency, "now" from the application. Moving an order is reported and applied by
+  the example as group AA does (`applyPlanChange`).
+- **2026-10-15 — The retail price calculation: one editable column (P5.53).** The kalkulacija's
+  lines are an EditableGrid whose only editable cell is the retail price (with VAT), the shop's
+  choice; purchase price, dependent costs, cost price, margin % and amount, price without VAT,
+  VAT rate and amount and the line's retail value are `display` columns — the application's
+  answer. Prices per piece are written with two decimals and the currency named once in the
+  header ("Currency: RSD"), so thirteen columns fit; values are in DocumentTotals (purchase value,
+  dependent costs, cost value, margin, value without VAT, VAT, retail value) with the VAT by rate
+  as its `recap`. A margin below cost is the application's warning under the line. The price
+  change it causes on the shelf is the Original / Change / New pattern (Old price / Change / New
+  price) with the value of each change, on the calculation and as its own document
+  (NIV-2026-0012). In the example the application's calculation is played in whole paras in
+  `data-BA.ts` (VAT out of the retail price, half up to the para; margin % of the cost price,
+  half up to two decimals), as data-I plays the till; the stated figures are checked in
+  `dataset-checks.ts`.
+- **2026-10-15 — Stocktaking lists (P5.57).** The list is a DocumentPage: per line the location,
+  the item with the commission's note, Book / Difference / Counted (`correctionColumns`), the
+  average cost and the difference's value; key figures and DocumentTotals (book value, counted
+  value, surplus, shortage, net difference) from the application; the commission's signatures
+  as SignerList (in order; the current member's Sign); "Post differences" an UnavailableAction
+  with "2 of 3 signed" until all have signed, then a ConfirmDialog titled by the action with the
+  list as its subject and what will be posted as its preview. Posting is the application's (it
+  writes the surplus and shortage documents). The count itself is group I's handheld (StockCount
+  in `Handheld`), counting **blind**: the books' quantities and differences are not passed
+  while the commission counts.
+- **2026-10-15 — Example screens of P5.51, P5.52, P5.53, P5.57 (groups AY, AZ, BA, BB).**
+  `screens-AY.tsx` + `data-AY.ts`: Kvadrat Gradnja d.o.o.'s Inventory module (tabs Items,
+  Transfers, Stocktaking): cement CEM II/A-M 42,5R (the code of group I's pick list) in Central
+  warehouse (Primorska 88, Goran Babić) and Site Liman 4 (Snežana Popović) — 515 bags worth
+  360.200,00 RSD on 14.10.2026; goods receipt PRI-2026-0207 from Beton Mix d.o.o., delivery note
+  OT-2026-0077 to Stanogradnja Plus d.o.o., issues IZ-2026-0139/0141/0144, transfers
+  MP-2026-0028 and MP-2026-0030 (received) and MP-2026-0031 (a draft for the fourth floor's slab
+  of 15.10., group AA and Y). `screens-AZ.tsx` + `data-AZ.ts`: Pekara Zlatni klas's back office as
+  Jovana Marković (tabs Bills of materials, Work orders, Production plan, Shop prices): bill
+  SAS-0012 Raženi hleb, 400 g (200 loaves, 7.007,00 RSD) with the starter SAS-0004, work order
+  RN-2026-0158 (400 planned, 386 good, 14 scrap), the plan of 12.–25.10.2026 on three lines.
+  `screens-BA.tsx` + `data-BA.ts`: calculation KLK-2026-0047 from Mlekara Ravnica d.o.o.'s invoice
+  2026-4471 (five lines, 30.246,00 RSD retail value) and price change NIV-2026-0012. `screens-BB.tsx`
+  - `data-BB.ts`: stocktaking POP-2026-02 of Central warehouse at 13.10.2026 (eight lines, four
+    differences, net −3.490,00 RSD; the commission Dragan Ilić, Marija Đurić, Milica Petrović) and
+    the count of location A-02 on the handheld. Desktop and phone for each view; other states and
+    the interaction stories `'!dev'`.
+
+### Integration of Group A (2026-10-16)
+
+- **2026-10-16 — Group A is assembled: no new component (P5.44–P5.61).** Eighteen items, about forty views, built from ListPage, ReportPage, DataTable (its line types), TreeTable, the StatutoryFormPage grid, DocumentPage, DetailPage, RecordFormPage, PeriodicRunPage, WorklistPage, EditableGrid, Gantt, the charts, StockCount and the confirmations. Three optional props were added where an existing component lacked one thing, each with a story and a unit test: `StatutoryCell.content` (a statement's Note column), ValueComparison's third source (`ComparisonValues`, the three-way match) and DocumentPage `counterparties` (a document among three parties). Considered and not added: a row-open event on TreeTable (the budget opens a line by choosing it and "Show entries of …"), a tax or per-diem calculator (the figures are the application's).
+- **2026-10-16 — Toasts do not fade in a browser driven by automation (P5.44, fix the class).** Under load the accessibility test read a success toast while it faded and found half its contrast. The Toaster now shows and removes toasts without the fade when `navigator.webdriver` is set, as the charts do not animate there; Sonner already drops the motion for reduced motion. Every interaction story that ends on a toast is covered, not only the ones the helpers changed.
+- **2026-10-16 — One document per number across the examples (P5.44, fix the class).** F-2026-0405 was three invoices (Rakić Pekara SZR in the invoice list and the ledger, a reverse-charge invoice in the VAT return, an open item in the statements of open items); the VAT return's is now F-2026-0426 and the open item F-2026-0427. F-2026-0430 was both the sales chain's invoice and a sold van's; the van's is F-2026-0429. Pekara Zlatni klas had two tax numbers; it has 112374905 everywhere. A new example takes its numbers from what is unused.
+- **2026-10-16 — No link to a page the examples do not have (P5.47, P5.48).** A fixed asset's supplier document and its sale invoice are shown as their numbers; the travel screens go back to Home. A link in the examples opens a screen; "page not found" is not a destination.
+- **2026-10-16 — One accounting module, one tab list (P5.55).** The document inbox, the statements of open items and the offsets are one module with the same three tabs on each of their pages (`accountingTabs` in `screens-U.tsx`); the ledger (chart of accounts to foreign currency) is a module of its own with its seven tabs.
+- **2026-10-16 — An example plays the application, so it may compute what the application would (P5.44, P5.53).** The ledger's cards, running balances and trial balance, and the retail price calculation's repricing when the shop types a new retail price, are worked out in the examples' data files in whole paras (as data-F and data-bank already did) and checked against the stated figures (`dataset-checks.ts`); the screens and the library add nothing (D4).
 
 ## Packaging
 

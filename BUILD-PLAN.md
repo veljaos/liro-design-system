@@ -338,6 +338,51 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P5.43 | Files and folders | P5.5, P5.9 | done | 2026-10-14 | FileBrowser with FileGrid, FolderPickerDialog, NameConflictDialog, FileNameDialog, ShareDialog, VersionList, FilePreview and FileDetails (upload of files and folders, drag onto a folder with the menu's way, list only on phones); Kvadrat Gradnja's company documents and Knjigovodstvo Jelić's client folders shared with the client portal; ActivityList isolates its times |
 | P5.31a | The owner's decisions after P5.31–P5.43 | P5.41 | done | 2026-10-15 | Maps follow the law of the Republic of Serbia (Kosovo and Metohija within Serbia, tested); the phone test no longer waits on a trigger whose dialog closed |
 | P5.31b | IPS QR codes checked with the NBS validator | P5.31a | done | 2026-10-15 | Every IPS code the stories and examples show accepted by the National Bank of Serbia's validator; the accepted texts locked in a unit test |
+| P5.44 | Chart of accounts and the account card | P5.9 | done | 2026-10-16 | ListPage + TreeTable chart of accounts (search, details in a Drawer); the account card on ReportPage + DataTable (opening and turnover lines, running balance, every document a link) |
+| P5.45 | Trial balance and financial statements | P5.20, P5.44 | done | 2026-10-16 | The trial balance and the balance sheet / income statement on the StatutoryFormPage grid (Opening / Turnover / Closing × Debit / Credit, compare with 2025, the previous year beside, notes through `StatutoryCell.content`); drill-down trial balance → card → document |
+| P5.46 | Cash book | P5.20 | done | 2026-10-16 | Cash book by day (DataTable line types), cash receipt and payment slips, the application's cash-limit warning |
+| P5.47 | Fixed assets | P5.21 | done | 2026-10-16 | Register (ListPage), asset card (DetailPage: value history, schedule), September depreciation run (PeriodicRunPage), disposal (IrreversibleConfirmDialog) and sale |
+| P5.48 | Travel orders | P5.5 | done | 2026-10-16 | Travel order (RecordFormPage), settlement with receipt photos (FileDropzone `camera`), per-diems and DocumentTotals, approval (WorklistPage) |
+| P5.49 | Purchasing chain | P5.18 | done | 2026-10-16 | Purchase order, goods receipt (Ordered / Difference / Received), three-way match (ValueComparison with three sources) linked to the document inbox |
+| P5.50 | Sales chain | P5.18 | done | 2026-10-16 | Quote → order → delivery note → invoice, the next one in one click (SplitAction), the chain in RelatedDocuments |
+| P5.51 | Item card and transfers | P5.11 | done | 2026-10-16 | Item card (balance per warehouse, movements with running balance and value) and transfer MP-2026-0031 |
+| P5.52 | Production | P5.9, P5.37 | done | 2026-10-16 | Bill of materials (TreeTable, a semi-finished good with its own bill), work order (planned / used, good and scrap), the production plan on Gantt |
+| P5.53 | Retail price calculation (kalkulacija) | P3.4 | done | 2026-10-16 | Retail price calculation on EditableGrid (only the retail price editable), DocumentTotals with VAT by rate, the price change |
+| P5.54 | Price lists, discounts and promotions | P4.3 | done | 2026-10-16 | Price lists, customers' own prices, promotions with their validity, discount rules |
+| P5.55 | Compensation, cession and assignment | P5.21 | done | 2026-10-16 | Compensation, cession and assignment as one DocumentPage pattern (`counterparties`), both sides' items, what remains, each party's signature |
+| P5.56 | Late-payment interest | P4.6 | done | 2026-10-16 | Interest per invoice and rate period, the illustrative rate table, the interest note |
+| P5.57 | Stocktaking lists | P5.11 | done | 2026-10-16 | Stocktaking list (Book / Difference / Counted), the count on group I's handheld, the commission's signatures, posting the differences |
+| P5.58 | Budget and cost centres | P5.9 | done | 2026-10-16 | Plan against actual by cost centre and project (TreeTable, bar chart, state in words), drill-down to the entries |
+| P5.59 | Foreign currency | P5.18 | done | 2026-10-16 | Illustrative NBS middle rates, FX accounts, exchange-rate differences posted (the foreign-currency invoice is group D2's F-2026-0415) |
+| P5.60 | Loans and leasing | P4.4 | done | 2026-10-16 | Loans and leases (ListPage), a loan with KeyFigures, the outstanding principal chart and the repayment schedule |
+| P5.61 | Service and author contracts | P5.21 | done | 2026-10-16 | Service and author contracts (RecordFormPage) with the application's calculation, the monthly run (PeriodicRunPage) |
+| P5.62 | My profile | P5.6 | todo | | |
+| P5.63 | Sign-in flows | P5.6 | todo | | |
+| P5.64 | Recruitment | P5.7 | todo | | |
+| P5.65 | Onboarding a new employee | P5.21 | todo | | |
+| P5.66 | A document from a JSON definition | P5.5, P5.21 | todo | | |
+| P5.67 | CRM | P5.7 | todo | | |
+| P5.68 | Registry book (delovodnik) | P5.20 | todo | | |
+| P5.69 | Archive book and retention | P5.20 | todo | | |
+| P5.70 | Meetings of company bodies | P5.66 | todo | | |
+| P5.71 | Contracts | P5.20 | todo | | |
+| P5.72 | Patient chart | P5.14 | todo | | |
+| P5.73 | University | P5.17 | todo | | |
+| P5.74 | Field service and maintenance | P5.11 | todo | | |
+| P5.75 | Fleet | P4.3 | todo | | |
+| P5.76 | Property management | P4.3 | todo | | |
+| P5.77 | Pivot analysis | P3.1 | todo | | |
+| P5.78 | Automation rules | P5.26 | todo | | |
+| P5.79 | Merging duplicates | P5.19 | todo | | |
+| P5.80 | Scheduled reports | P4.6 | todo | | |
+| P5.81 | Customizable dashboard | P4.6 | todo | | |
+| P5.82 | AML client risk assessment | P5.1 | todo | | |
+| P5.83 | Know your customer (client file) | P5.42 | todo | | |
+| P5.84 | Screening | P5.33 | todo | | |
+| P5.85 | Transaction monitoring alerts | P4.3 | todo | | |
+| P5.86 | AML case management | P5.18 | todo | | |
+| P5.87 | Suspicious transaction report | P5.66 | todo | | |
+| P5.88 | AML overview and obligations | P4.6 | todo | | |
 | P6.1 | Full language and direction matrix | Phases 1–5 | todo | | |
 | P6.2 | Manual WCAG 2.2 checks | P6.1 | todo | | |
 | P6.3 | Performance budget | P4.8 | todo | | |
@@ -914,6 +959,67 @@ The three questions left in P5.31's report, answered by the owner:
 The owner allowed `ips.nbs.rs`. Every IPS QR text the stories and examples show is sent to the National Bank of Serbia's validator (`https://nbs.rs/QRcode/api/qr/v1/validate`), and the texts it accepts are locked in `ips-qr.test.ts`, so a change to `ipsQrText` that writes them differently fails until it is checked there again.
 
 **Done when** every code is "OK." at the NBS validator, the unit test passes in CI, and the result is in `docs/decisions.md`.
+
+### P5.44–P5.81 — The last batch of Phase 5 (owner, 2026-10-15)
+A design system: screens and states only. All data, numbers, rules, codes, legal texts and calculations come from the application through props; examples are illustrative. **Assemble from what exists first** (TreeView / TreeTable, DataTable, ReportPage, the StatutoryFormPage grid with two-level headers, DocumentPage with "Based on" and RelatedDocuments, the Original / Change / New pattern, EditableGrid, RegisterPage, PeriodicRunPage, DetailPage, RecordFormPage, WorklistPage, KanbanBoard, CalendarView, ResourceSchedule, Gantt, FileBrowser, Signing, QrCode, SettingsPage, SessionList, CodeInput, RecoveryCodes, AuthShell, EmailFirstForm, PasswordField, PortalShell, charts, maps); a new component only when something is truly missing, each listed in the report with the reason. Examples: one desktop and one phone story per screen, every intermediate state and interaction story `'!dev'`. Tokens only, the provider's formats and locale, right to left, light / dark, axe, keyboard, no sideways scroll on phones, "fix the class", decisions in `docs/decisions.md`. Five branches and pull requests in the order A, B, C, D, E (E added by the owner the same day); the next starts when the previous is green; a report in Serbian on each pull request. No release, no Phase 6.
+
+#### Group A — Accounting and trade
+- **P5.44 Chart of accounts and the account card.** The chart as a tree (classes, groups, synthetic and analytic accounts), search, an account's details; the account card: opening balance, entries with a running balance, period totals, drill-down to the source document.
+- **P5.45 Trial balance and financial statements.** Opening / turnover / closing × debit / credit, by class and synthetic account, a period comparison, drill-down to the account card; the balance sheet and the income statement with the previous year beside and a notes slot.
+- **P5.46 Cash book.** Cash receipt and payment slips, the daily cash journal with the balance per day, the cash limit warning from data.
+- **P5.47 Fixed assets.** The asset card (acquisition, location, responsible person, depreciation group), the monthly depreciation run (PeriodicRunPage), disposal and sale.
+- **P5.48 Travel orders.** The order, expenses with receipt photos, per-diems, the settlement, approval.
+- **P5.49 Purchasing chain.** Purchase order → goods receipt (received against ordered, differences, the Original / Change / New pattern) → the link to the supplier invoice (three-way match).
+- **P5.50 Sales chain.** Quote → order → delivery note → invoice; "Create … from" in one click; the chain visible in RelatedDocuments.
+- **P5.51 Item card and transfers.** Receipts, issues, the balance per warehouse and its value; a transfer between warehouses.
+- **P5.52 Production.** A bill of materials (a tree with quantities and units), the work order (planned against used material, finished goods, scrap), the production plan on the Gantt.
+- **P5.53 Retail price calculation (kalkulacija).** Purchase price, dependent costs, margin, VAT and retail price per line; computed columns and totals from the application.
+- **P5.54 Price lists, discounts and promotions.** Several price lists, prices per customer or group, promotions with their validity.
+- **P5.55 Compensation, cession and assignment.** The parties, the items offset, each party's signature.
+- **P5.56 Late-payment interest.** The calculation per partner and period; the rate table from data.
+- **P5.57 Stocktaking lists.** The count (the existing scanner count), surpluses and shortages, posting the differences.
+- **P5.58 Budget and cost centres.** Plan against actual by cost centre and project, variances.
+- **P5.59 Foreign currency.** The NBS exchange-rate list, FX accounts, invoices in foreign currency, exchange-rate differences.
+- **P5.60 Loans and leasing.** The repayment schedule, instalments, interest, the outstanding balance.
+- **P5.61 Service and author contracts.** Taxes and contributions calculated by the application (a small payroll run).
+
+#### Group B — Users, HR, documents and governance
+- **P5.62 My profile.** Language, theme, turning on two-factor sign-in (a QR code for an authenticator app, the code, recovery codes), passkeys, my devices and sessions.
+- **P5.63 Sign-in flows.** Forgot password, new password, the two-factor code, accepting an invitation, account locked, session expired — from the existing building blocks.
+- **P5.64 Recruitment.** A job posting, candidates on a Kanban (applied → interview → offer → hired / rejected), scorecards, interview scheduling.
+- **P5.65 Onboarding a new employee.** A checklist (equipment, accounts, training, documents to sign) with owners and due dates.
+- **P5.66 A document from a JSON definition.** The documents are rendered by liro-core-pdf, not by the design system: choose the document type, a form generated from the JSON field definitions (field types, required, sections, conditions), a live preview of the PDF the application returns (DocumentFrame), the number from the registry (P5.68), send for signature. Several types as data only: decision (rešenje / odluka), conclusion, letter, business letter, proforma, invoice or advance invoice outside SEF or for abroad, rulebook, minutes, report, minutes of the general assembly, supervisory or management board.
+- **P5.67 CRM.** Lead → opportunity → quote pipeline on a Kanban, the contact's timeline, activities.
+- **P5.68 Registry book (delovodnik).** Incoming and outgoing acts (number, date, sender or recipient, subject, assignee, due date), linked to documents and files.
+- **P5.69 Archive book and retention.** Retention periods per document type (from data), what expires, disposal with minutes.
+- **P5.70 Meetings of company bodies.** The schedule, an invitation with materials, attendance and quorum, voting per agenda item, minutes and decisions (P5.66 and Signing).
+- **P5.71 Contracts.** A register with expiry and renewal reminders, versions, linked documents.
+
+#### Group C — Health, university, field service, fleet, property
+- **P5.72 Patient chart.** A timeline of visits, findings, therapy, lab results with reference ranges and a small trend chart; sensitive fields as in P5.14.
+- **P5.73 University.** Exam periods, exam registration, the exam record (zapisnik) with grades, ECTS, the student portal.
+- **P5.74 Field service and maintenance.** A technician's work order on the phone (checklist, photos, parts used, the customer's signature); the preventive maintenance plan for machines.
+- **P5.75 Fleet.** Vehicles, registration, services, fuel, reminders.
+- **P5.76 Property management.** Units, tenants, leases, rent invoicing, maintenance requests.
+
+#### Group D — Analytics and automation
+- **P5.77 Pivot analysis.** The user chooses rows, columns, values and aggregations, filters, drill-down to records, export. An MIT library if a maintained, accessible, themeable one exists, otherwise built on TanStack Table (MIT, already ours); in its own subpath, loaded only there; the evaluation recorded.
+- **P5.78 Automation rules.** A "When X happens, if Y, do Z" builder (triggers, conditions and actions from data), a run log, enable and disable.
+- **P5.79 Merging duplicates.** Two partners or items side by side, choose the values to keep, merge, the result.
+- **P5.80 Scheduled reports.** A report sent by e-mail on a schedule, recipients, format, the last runs.
+- **P5.81 Customizable dashboard.** The user adds, removes, resizes and rearranges cards (a keyboard alternative to dragging), saved layouts.
+
+#### Group E — AML compliance (owner, 2026-10-15)
+Anti-money laundering in the spirit of Napier AI, for an accounting firm as an obligated entity and for companies monitoring their own transactions. Same rules as the batch: assemble from what exists first; desktop and phone; design system only — every rule, threshold, list, score and legal text comes from the application; examples illustrative (Knjigovodstvo Jelić's clients and a trading company's transaction monitoring; every name, list and match invented). A fifth branch and pull request after Group D, with the report in Serbian; then stop.
+- **P5.82 Client risk assessment.** A questionnaire (client type, activity, country, ownership, products, delivery channels), the resulting risk (low / medium / high) with the factors that drove it, an override with a reason, the next review date.
+- **P5.83 Know your customer (client file).** Identification and documents (with expiry), beneficial owners as a tree (HierarchyChart) with ownership shares, PEP status, the source of funds, the review history; "Review due" states.
+- **P5.84 Screening.** Results of checks against sanctions, PEP and watch lists (from the application); each potential match side by side with the client (name, date of birth, country, score); the decision True match / False positive with a reason; the re-screening history.
+- **P5.85 Transaction monitoring alerts.** An alert queue (rule triggered, client, amount, risk, age, assignee; WorklistPage); an alert's detail with the transactions that triggered it and the client's profile; close with a reason, escalate to a case.
+- **P5.86 Case management.** The case page (DocumentPage) with a timeline, linked alerts, transactions and documents, notes, tasks, the decision (no suspicion / report), four-eyes approval.
+- **P5.87 Suspicious transaction report.** The report form for the authority (generated from JSON as in P5.66), review and submission states, the record of what was sent and when; confidentiality marked clearly (the client must not be informed).
+- **P5.88 AML overview and obligations.** A dashboard (clients by risk, reviews due, open alerts and cases, ageing), the compliance officer and deputy, staff training records, internal procedures (documents), retention of records, the audit trail.
+
+**Done when** each group's pull request is green in CI with every item's screens (desktop and phone stories), new components with their stories and tests, the decisions in `docs/decisions.md`, and the report in Serbian on the pull request.
 
 **End of Phase 5:** `0.1.0-alpha.5`; report.
 

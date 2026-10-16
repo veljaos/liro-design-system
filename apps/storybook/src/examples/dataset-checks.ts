@@ -602,3 +602,73 @@ export function checkFiscalAndTabs() {
 
 /** Run once, when the examples load. */
 export const FISCAL_AND_TABS = checkFiscalAndTabs()
+
+// ── P5.51 stock ──
+// The item card's, the stocktaking's and the retail price calculation's stated figures (groups
+// AY, BA, BB) against each other and against the application's calculation.
+import { paras as stockParas } from '../../../../packages/ui/src/components/amounts-story-data'
+import { BALANCE_TOTALS, BALANCES, MOVEMENT_TOTALS, MOVEMENTS } from './data-AY'
+import {
+  CALCULATION_INPUTS,
+  CALCULATION_TOTALS,
+  calculationTotals,
+  PRICE_CHANGE_LINES,
+  PRICE_CHANGE_TOTALS,
+  priceChanges,
+  priceLine,
+  VAT_RECAP,
+  vatRecap,
+} from './data-BA'
+import { STOCKTAKING_LINES, STOCKTAKING_TOTALS } from './data-BB'
+
+function checkStock() {
+  const stop = (what: string) => {
+    throw new Error(`The stock examples disagree: ${what}.`)
+  }
+  const sum = (values: readonly string[]) =>
+    values.reduce((total, value) => total + stockParas(value), 0n)
+  // The balances add up, and each warehouse's last movement is its balance.
+  if (sum(BALANCES.map((each) => each.value)) !== stockParas(BALANCE_TOTALS.value)) {
+    stop('the warehouses’ values do not make the total')
+  }
+  for (const balance of BALANCES) {
+    const movements = MOVEMENTS[balance.id]
+    const last = movements[movements.length - 1]
+    if (last?.balance !== balance.onHand || last.balanceValue !== balance.value) {
+      stop(`${balance.id}'s movements do not end at its balance`)
+    }
+    const values = movements.flatMap((each) => (each.value === null ? [] : [each.value]))
+    if (sum(values) !== stockParas(MOVEMENT_TOTALS[balance.id].value)) {
+      stop(`${balance.id}'s movements do not make the period's change`)
+    }
+  }
+  // The stocktaking's differences make its totals.
+  const differences = STOCKTAKING_LINES.map((line) => line.differenceValue)
+  if (sum(differences) !== stockParas(STOCKTAKING_TOTALS.difference)) {
+    stop('the stocktaking’s differences do not make the net difference')
+  }
+  if (
+    stockParas(STOCKTAKING_TOTALS.bookValue) + stockParas(STOCKTAKING_TOTALS.difference) !==
+    stockParas(STOCKTAKING_TOTALS.countedValue)
+  ) {
+    stop('the stocktaking’s counted value is not the book value with the difference')
+  }
+  // The calculation as stated is the application's.
+  const lines = CALCULATION_INPUTS.map(priceLine)
+  if (JSON.stringify(calculationTotals(lines)) !== JSON.stringify(CALCULATION_TOTALS)) {
+    stop('KLK-2026-0047’s totals are not its lines’')
+  }
+  if (JSON.stringify(vatRecap(lines)) !== JSON.stringify(VAT_RECAP)) {
+    stop('KLK-2026-0047’s VAT by rate is not its lines’')
+  }
+  if (JSON.stringify(priceChanges(lines)) !== JSON.stringify(PRICE_CHANGE_LINES)) {
+    stop('NIV-2026-0012 is not the price change of KLK-2026-0047')
+  }
+  if (sum(PRICE_CHANGE_LINES.map((line) => line.value)) !== stockParas(PRICE_CHANGE_TOTALS.total)) {
+    stop('NIV-2026-0012’s lines do not make its total')
+  }
+  return { lines: lines.length }
+}
+
+/** Run once, when the examples load. */
+export const STOCK = checkStock()

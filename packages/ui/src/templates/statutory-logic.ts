@@ -82,6 +82,12 @@ export interface StatutoryCell {
   override?: StatutoryOverride
   /** `computed` or `source`: the application's field to type a value over the computed one. */
   editor?: ReactNode
+  /**
+   * The application's own content in place of an amount, read-only (P5.45): a column that holds
+   * no figure, such as a financial statement's "Note" column with a link to the note. `value`
+   * is then ignored (keep it null).
+   */
+  content?: ReactNode
 }
 
 /** One numbered row of the form ("1.1.2"). */
