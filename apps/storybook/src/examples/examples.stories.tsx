@@ -12826,3 +12826,494 @@ export const TradePricingFlow: Story = {
     await settle()
   },
 }
+
+// ── P5.51 stock ──
+// (Imports here, inside the block, so the blocks merge without touching the top.)
+import { AY_ROUTES } from './data-AY'
+import { AZ_ROUTES } from './data-AZ'
+import { BA_ROUTES } from './data-BA'
+import { BB_ROUTES } from './data-BB'
+
+/** A stock or production story's checks, and on a phone that nothing scrolls sideways. */
+function stockPlay(
+  check: (canvasElement: HTMLElement) => Promise<void>,
+  phone = false,
+): NonNullable<Story['play']> {
+  return async ({ canvasElement }) => {
+    await settle()
+    await check(canvasElement)
+    if (phone) {
+      for (const page of canvasElement.querySelectorAll<HTMLElement>('[data-liro-phone-page]')) {
+        await expect(page.scrollWidth).toBeLessThanOrEqual(page.clientWidth)
+      }
+    }
+  }
+}
+
+/**
+ * Dismisses the notices and waits until none is left on the page: on a loaded machine axe could
+ * otherwise read a success toast while it fades out.
+ */
+async function toastsGone() {
+  notice.dismiss()
+  await waitFor(
+    async () => {
+      await expect(document.querySelectorAll('[data-sonner-toast]').length).toBe(0)
+    },
+    { timeout: 5_000 },
+  )
+}
+
+/**
+ * Kvadrat Gradnja d.o.o.'s card of cement CEM II/A-M 42,5R on 14.10.2026 (P5.51): 515 bags in
+ * the two warehouses worth 360.200,00 RSD — 460 in Central warehouse, 55 at Site Liman 4 —, then
+ * Central warehouse's movements of October with the running balance and value (a goods receipt
+ * from Beton Mix, two transfers to the site, a delivery note, an issue), each document a link.
+ */
+const ITEM_CARD_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(
+    canvas.getByRole('heading', { level: 1, name: 'Cement CEM II/A-M 42,5R, 25 kg' }),
+  ).toBeVisible()
+  await expect(canvasElement).toHaveTextContent('360.200,00')
+  await expect(canvas.getAllByRole('link', { name: 'Transfer out MP-2026-0030' }).length).toBe(1)
+}
+
+export const ItemCard: Story = {
+  name: 'Item card',
+  render: () => <ExampleApp start={AY_ROUTES.item} />,
+  play: stockPlay(async (canvasElement) => {
+    await ITEM_CARD_CHECK(canvasElement)
+    await expect(canvasElement).toHaveTextContent('322.000,00')
+  }),
+}
+
+export const ItemCardPhone: Story = {
+  name: 'Item card, phone',
+  render: () => <OnPhone start={AY_ROUTES.item} />,
+  play: stockPlay(ITEM_CARD_CHECK, true),
+}
+
+/** The same card with Site Liman 4's movements: two transfers in, two issues to the works. */
+export const ItemCardSite: Story = {
+  name: 'Item card, Site Liman 4',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AY_ROUTES.itemSite} />,
+  play: stockPlay(async (canvasElement) => {
+    await expect(
+      within(canvasElement).getByRole('link', { name: 'Issue to works IZ-2026-0141' }),
+    ).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('38.200,00')
+  }),
+}
+
+/** Drill-down: the card's goods receipt opens its document, a press on a balance row switches. */
+export const ItemCardDrillDown: Story = {
+  name: 'Item card, drill-down, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AY_ROUTES.item} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('row', { name: /^Site Liman 4/ }))
+    await expect(
+      await canvas.findByRole('table', { name: 'Movements in Site Liman 4' }),
+    ).toBeVisible()
+    await userEvent.click(canvas.getByRole('link', { name: 'Issue to works IZ-2026-0141' }))
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: 'IZ-2026-0141' }),
+    ).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('76.400,00')
+    await settle()
+  },
+}
+
+/**
+ * Transfer MP-2026-0031 from Central warehouse to Site Liman 4, a draft (P5.51): four lines with
+ * what Central warehouse can give; the waterproofing tape asks for 6 rolls where 3 are available,
+ * the application says so under the line, and Send waits until it is fixed.
+ */
+const TRANSFER_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'MP-2026-0031' })).toBeVisible()
+  // On a phone the grid's line card and its row both carry the message.
+  await expect(canvasElement).toHaveTextContent('Only 3 roll available in Central warehouse.')
+  await expect(canvas.getByRole('button', { name: /^Send/ })).toHaveAttribute(
+    'aria-disabled',
+    'true',
+  )
+}
+
+export const Transfer: Story = {
+  name: 'Transfer',
+  render: () => <ExampleApp start={AY_ROUTES.transfer} />,
+  play: stockPlay(TRANSFER_CHECK),
+}
+
+export const TransferPhone: Story = {
+  name: 'Transfer, phone',
+  render: () => <OnPhone start={AY_ROUTES.transfer} />,
+  play: stockPlay(TRANSFER_CHECK, true),
+}
+
+/** Sent: on its way to Site Liman 4, waiting for Snežana Popović. */
+export const TransferInTransit: Story = {
+  name: 'Transfer, in transit',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AY_ROUTES.transferSent} />,
+  play: stockPlay(async (canvasElement) => {
+    await expect(canvasElement).toHaveTextContent('Waiting for Snežana Popović at Site Liman 4')
+  }),
+}
+
+/** MP-2026-0030, received in full on 12.10.2026. */
+export const TransferReceived: Story = {
+  name: 'Transfer, received',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AY_ROUTES.transferOf('MP-2026-0030')} />,
+  play: stockPlay(async (canvasElement) => {
+    await expect(
+      within(canvasElement).getByRole('columnheader', { name: 'Received' }),
+    ).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('Received 12.10.2026. 08:40 by Snežana Popović')
+  }),
+}
+
+/** The goods receipt behind the card's 480 bags (drill-down). */
+export const StockDocumentReceipt: Story = {
+  name: 'Stock document, goods receipt',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AY_ROUTES.documentOf('PRI-2026-0207')} />,
+  play: stockPlay(async (canvasElement) => {
+    await expect(canvasElement).toHaveTextContent('Beton Mix d.o.o.')
+    await expect(canvasElement).toHaveTextContent('391.800,00')
+  }),
+}
+
+/** Three rolls instead of six: the application's check is satisfied, Send sends. */
+export const TransferSend: Story = {
+  name: 'Transfer, send, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AY_ROUTES.transfer} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const cell = canvas.getByRole('textbox', { name: 'Quantity, line 4' })
+    await userEvent.clear(cell)
+    // Tab, not Enter: Enter on the last line adds a new one (EditableGrid).
+    await userEvent.type(cell, '3{Tab}')
+    await waitFor(async () => {
+      await expect(canvas.queryByText('Only 3 roll available in Central warehouse.')).toBeNull()
+      await expect(canvas.getByRole('button', { name: 'Send' })).not.toHaveAttribute(
+        'aria-disabled',
+        'true',
+      )
+    })
+    await userEvent.click(canvas.getByRole('button', { name: 'Send' }))
+    await waitFor(async () => {
+      await expect(canvasElement).toHaveTextContent('Waiting for Snežana Popović at Site Liman 4')
+    })
+    await toastsGone()
+    await settle()
+  },
+}
+
+/**
+ * Pekara Zlatni klas's bill of materials for its rye bread (P5.52): a batch of 200 loaves, the
+ * components with quantities, units and costs (7.007,00 RSD a batch, 35,04 a loaf), the rye
+ * sourdough starter a semi-finished good whose own bill opens under it; the steps, the work orders.
+ */
+const BOM_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Raženi hleb, 400 g' })).toBeVisible()
+  await expect(canvas.getByRole('treegrid', { name: 'Components of SAS-0012' })).toBeVisible()
+  await expect(canvasElement).toHaveTextContent('7.007,00')
+}
+
+export const BillOfMaterials: Story = {
+  name: 'Bill of materials',
+  render: () => <ExampleApp start={AZ_ROUTES.bom} />,
+  play: stockPlay(async (canvasElement) => {
+    await BOM_CHECK(canvasElement)
+    await expect(
+      within(canvasElement).getByRole('row', { name: /Kiselo testo, raženo/ }),
+    ).toHaveAttribute('aria-expanded', 'true')
+  }),
+}
+
+export const BillOfMaterialsPhone: Story = {
+  name: 'Bill of materials, phone',
+  render: () => <OnPhone start={AZ_ROUTES.bom} />,
+  play: stockPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(
+      canvas.getByRole('heading', { level: 1, name: 'Raženi hleb, 400 g' }),
+    ).toBeVisible()
+    await expect(canvas.getByRole('tree', { name: 'Components of SAS-0012' })).toBeVisible()
+  }, true),
+}
+
+/** The starter's own bill: rye flour and water, used in SAS-0012. */
+export const BillOfMaterialsStarter: Story = {
+  name: 'Bill of materials, starter',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AZ_ROUTES.starter} />,
+  play: stockPlay(async (canvasElement) => {
+    await expect(
+      within(canvasElement).getByRole('heading', { level: 1, name: 'Kiselo testo, raženo' }),
+    ).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('942,00')
+  }),
+}
+
+/**
+ * Work order RN-2026-0158, baked last night (P5.52): 400 loaves planned, 386 good, 14 scrap;
+ * the material planned against used, each difference with its value (2,5 kg more rye flour, 14
+ * bags fewer), 14.166,00 RSD used against 14.014,00 planned; the output and the scrap's reasons.
+ */
+const WORK_ORDER_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'RN-2026-0158' })).toBeVisible()
+  await expect(canvasElement).toHaveTextContent('14.166,00')
+  await expect(canvasElement).toHaveTextContent('386 pc')
+}
+
+export const WorkOrder: Story = {
+  name: 'Work order',
+  render: () => <ExampleApp start={AZ_ROUTES.workOrder} />,
+  play: stockPlay(async (canvasElement) => {
+    await WORK_ORDER_CHECK(canvasElement)
+    await expect(within(canvasElement).getByRole('columnheader', { name: 'Planned' })).toBeVisible()
+  }),
+}
+
+export const WorkOrderPhone: Story = {
+  name: 'Work order, phone',
+  render: () => <OnPhone start={AZ_ROUTES.workOrder} />,
+  play: stockPlay(WORK_ORDER_CHECK, true),
+}
+
+/**
+ * The bakery's production plan of 12.–25.10.2026 (P5.52) on Gantt: the work orders on the bread
+ * line, the pastry line and the cakes' oven, the starter before the rye bread, the croissants
+ * waiting for chocolate, the cakes for Hotel Fruška; now 14.10. 09:40.
+ */
+const PLAN_CHECK = async (canvasElement: HTMLElement) => {
+  await ganttReady(canvasElement)
+  await expect(
+    within(canvasElement).getByRole('heading', { level: 1, name: 'Production plan' }),
+  ).toBeVisible()
+}
+
+export const ProductionPlan: Story = {
+  name: 'Production plan',
+  render: () => <ExampleApp start={AZ_ROUTES.plan} />,
+  play: async ({ canvasElement }) => {
+    await PLAN_CHECK(canvasElement)
+    const canvas = within(canvasElement)
+    await expect(
+      canvas.getByRole('rowheader', { name: /^Task: RN-2026-0159 .*Waiting for chocolate/ }),
+    ).toBeVisible()
+    await expect(
+      canvas.getByRole('img', { name: /^Now, 14\.10\.2026\. 09:40$/ }),
+    ).toBeInTheDocument()
+  },
+}
+
+export const ProductionPlanPhone: Story = {
+  name: 'Production plan, phone',
+  render: () => <OnPhone start={AZ_ROUTES.plan} />,
+  play: async ({ canvasElement }) => {
+    await PLAN_CHECK(canvasElement)
+    await expect(
+      within(canvasElement).getByRole('heading', { name: 'Pastry line · Oven 2' }),
+    ).toBeVisible()
+  },
+}
+
+/** The work order posted: the good loaves into stock, the material out of it. */
+export const WorkOrderPost: Story = {
+  name: 'Work order, post, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AZ_ROUTES.workOrder} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Post to stock' }))
+    await waitFor(async () => {
+      await expect(canvas.queryByRole('button', { name: 'Post to stock' })).toBeNull()
+      await expect(canvas.getByRole('heading', { level: 1, name: 'RN-2026-0158' })).toBeVisible()
+    })
+    await toastsGone()
+    await settle()
+  },
+}
+
+/**
+ * Pekara Zlatni klas's retail price calculation KLK-2026-0047 (P5.53) from Mlekara Ravnica's
+ * invoice 2026-4471: per line the purchase price, the dependent costs, the cost price, the margin,
+ * the price without VAT, the VAT, the retail price the shop sets and the retail value; 30.246,00
+ * RSD in all; four prices on the shelf change.
+ */
+const CALCULATION_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'KLK-2026-0047' })).toBeVisible()
+  await expect(canvasElement).toHaveTextContent('30.246,00')
+  await expect(canvasElement).toHaveTextContent('Mlekara Ravnica d.o.o.')
+}
+
+export const RetailPriceCalculation: Story = {
+  name: 'Retail price calculation',
+  render: () => <ExampleApp start={BA_ROUTES.calculation} />,
+  play: stockPlay(async (canvasElement) => {
+    await CALCULATION_CHECK(canvasElement)
+    await expect(canvasElement).toHaveTextContent('19,05')
+  }),
+}
+
+export const RetailPriceCalculationPhone: Story = {
+  name: 'Retail price calculation, phone',
+  render: () => <OnPhone start={BA_ROUTES.calculation} />,
+  play: stockPlay(CALCULATION_CHECK, true),
+}
+
+/** The yoghurt at 169,00: the application prices the line again and the totals follow. */
+export const RetailPriceCalculationChange: Story = {
+  name: 'Retail price calculation, change a price, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BA_ROUTES.calculation} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const cell = canvas.getByRole('textbox', { name: 'Retail price, line 1' })
+    await userEvent.clear(cell)
+    await userEvent.type(cell, '169,00{Enter}')
+    await waitFor(async () => {
+      await expect(canvasElement).toHaveTextContent('30.486,00')
+      await expect(canvasElement).toHaveTextContent('21,94')
+    })
+    await settle()
+  },
+}
+
+/** Price change NIV-2026-0012: what the new prices do to the pieces already on the shelf. */
+const PRICE_CHANGE_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'NIV-2026-0012' })).toBeVisible()
+  await expect(canvasElement).toHaveTextContent('156,06')
+}
+
+export const PriceChange: Story = {
+  name: 'Price change',
+  render: () => <ExampleApp start={BA_ROUTES.priceChange} />,
+  play: stockPlay(PRICE_CHANGE_CHECK),
+}
+
+export const PriceChangePhone: Story = {
+  name: 'Price change, phone',
+  render: () => <OnPhone start={BA_ROUTES.priceChange} />,
+  play: stockPlay(PRICE_CHANGE_CHECK, true),
+}
+
+/**
+ * Stocktaking POP-2026-02 of Central warehouse, counted on 13.10.2026 (P5.57): eight lines, four
+ * with a difference — a surplus of 2.900,00 and a shortage of 6.390,00 RSD —, the commission's
+ * signatures (two of three; Milica's Sign), and "Post differences" waiting for them.
+ */
+const STOCKTAKING_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'POP-2026-02' })).toBeVisible()
+  await expect(canvasElement).toHaveTextContent('-3.490,00')
+  await expect(canvas.getByRole('button', { name: /^Post differences/ })).toHaveAttribute(
+    'aria-disabled',
+    'true',
+  )
+}
+
+export const StocktakingList: Story = {
+  name: 'Stocktaking list',
+  render: () => <ExampleApp start={BB_ROUTES.list} />,
+  play: stockPlay(async (canvasElement) => {
+    await STOCKTAKING_CHECK(canvasElement)
+    await expect(within(canvasElement).getByRole('button', { name: 'Sign' })).toBeVisible()
+  }),
+}
+
+export const StocktakingListPhone: Story = {
+  name: 'Stocktaking list, phone',
+  render: () => <OnPhone start={BB_ROUTES.list} />,
+  play: stockPlay(STOCKTAKING_CHECK, true),
+}
+
+/** Every member signed and "Post differences" asked: what is posted, the confirm button last. */
+export const StocktakingPost: Story = {
+  name: 'Stocktaking list, post differences',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BB_ROUTES.post} />,
+  play: stockPlay(async () => {
+    const dialog = within(document.body).getByRole('alertdialog', { name: /Post differences/ })
+    await expect(dialog).toHaveTextContent('6.390,00')
+    await expect(within(dialog).getByRole('button', { name: 'Post differences' })).toBeVisible()
+  }),
+}
+
+/** Posted: the surplus and shortage documents the application wrote. */
+export const StocktakingPosted: Story = {
+  name: 'Stocktaking list, posted',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BB_ROUTES.posted} />,
+  play: stockPlay(async (canvasElement) => {
+    await expect(canvasElement).toHaveTextContent('Stocktaking shortage MA-2026-004')
+  }),
+}
+
+/** Milica signs, then posts the differences. */
+export const StocktakingSignAndPost: Story = {
+  name: 'Stocktaking list, sign and post, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BB_ROUTES.list} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Sign' }))
+    await waitFor(async () => {
+      await expect(canvas.getByRole('button', { name: 'Post differences' })).not.toHaveAttribute(
+        'aria-disabled',
+        'true',
+      )
+    })
+    await userEvent.click(canvas.getByRole('button', { name: 'Post differences' }))
+    const dialog = await within(document.body).findByRole('alertdialog', {
+      name: /Post differences/,
+    })
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Post differences' }))
+    await expect(await canvas.findByText('Stocktaking shortage MA-2026-004')).toBeVisible()
+    await toastsGone()
+    await settle()
+  },
+}
+
+/**
+ * The count itself (P5.57): the commission at location A-02 with group I's handheld, counting
+ * blind — 88 sheets of Q188 just counted, Q131 none, the binding wire still to count.
+ */
+const STOCKTAKING_COUNT_CHECK = async (canvasElement: HTMLElement) => {
+  await expect(canvasElement).toHaveTextContent('Stocktaking POP-2026-02')
+  await expect(canvasElement).toHaveTextContent('A-02')
+  await expect(within(canvasElement).getByRole('button', { name: 'Finish location' })).toBeVisible()
+}
+
+export const StocktakingCount: Story = {
+  name: 'Stocktaking count',
+  render: () => <ExampleApp start={BB_ROUTES.count} />,
+  play: stockPlay(STOCKTAKING_COUNT_CHECK),
+}
+
+export const StocktakingCountPhone: Story = {
+  name: 'Stocktaking count, phone',
+  render: () => <OnHandheld start={BB_ROUTES.count} />,
+  play: stockPlay(async (canvasElement) => {
+    await STOCKTAKING_COUNT_CHECK(canvasElement)
+    await expectNoSidewaysScroll(canvasElement)
+  }, true),
+}

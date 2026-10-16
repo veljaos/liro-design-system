@@ -207,7 +207,7 @@ const FEATURED: AccountingClient[] = [
   {
     id: 'zlatni-klas',
     name: 'Pekara Zlatni klas d.o.o.',
-    taxId: '109338271',
+    taxId: '112374905',
     accountant: 'snezana',
     deadlines: [vat('Not started'), payroll('2026-10-15', 'Prepared')],
     missing: 1,
