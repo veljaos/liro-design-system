@@ -107,6 +107,9 @@ import { GROUP_BH_ROUTES } from './screens-BH'
 import { GROUP_BI_ROUTES } from './screens-BI'
 // ── P5.72 health ──
 import { GROUP_BM_ROUTES } from './screens-BM'
+// ── P5.74 field ──
+import { GROUP_BO_ROUTES } from './screens-BO'
+import { GROUP_BP_ROUTES } from './screens-BP'
 
 // ── Routes ────────────────────────────────────────────────────────────────────────────────
 
@@ -208,6 +211,9 @@ const EXAMPLE_ROUTES: readonly ExampleRoute[] = [
   ...GROUP_BI_ROUTES,
   // ── P5.72 health ──
   ...GROUP_BM_ROUTES,
+  // ── P5.74 field ──
+  ...GROUP_BO_ROUTES,
+  ...GROUP_BP_ROUTES,
 ]
 
 // ── The app ───────────────────────────────────────────────────────────────────────────────────

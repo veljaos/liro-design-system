@@ -16725,3 +16725,425 @@ export const HealthLabResultsChoose: Story = {
     await settle()
   },
 }
+// ── P5.74 field ──
+// (Imports here, inside the block, so the blocks merge without touching the top.)
+import { BO_ROUTES } from './data-BO'
+import { BP_ROUTES } from './data-BP'
+
+/** Settles a screen and finds its h1. */
+const boHeading = async (canvasElement: HTMLElement, name: string | RegExp) => {
+  await settle()
+  await expect(
+    await within(canvasElement).findByRole('heading', { level: 1, name }),
+  ).toBeInTheDocument()
+}
+
+/** Closes the success toasts and waits until they are gone (axe never catches one fading). */
+const boToastsGone = async () => {
+  notice.dismiss()
+  await waitFor(
+    async () => {
+      await expect(document.querySelector('[data-sonner-toast]')).toBeNull()
+    },
+    { timeout: 5000 },
+  )
+}
+
+/**
+ * Field service (P5.74): Kvadrat Gradnja's work orders for its machines on 14.10.2026, dispatched
+ * by Marko Đorđević — the machine, the fault or the task, the technician, the day, the state.
+ */
+export const BoFieldWorkOrders: Story = {
+  name: 'Field work orders',
+  render: () => <ExampleApp start={BO_ROUTES.orders} />,
+  play: async ({ canvasElement }) => {
+    await boHeading(canvasElement, 'Work orders')
+    const canvas = within(canvasElement)
+    const row = canvas.getByRole('row', { name: /SN-2026-0143/ })
+    await expect(row).toHaveTextContent('Mini excavator 3.5 t')
+    await expect(row).toHaveTextContent('In progress')
+    await expect(canvas.getByRole('row', { name: /SN-2026-0145/ })).toHaveTextContent('Unassigned')
+  },
+}
+
+export const BoFieldWorkOrdersPhone: Story = {
+  name: 'Field work orders, phone',
+  render: () => <OnPhone start={BO_ROUTES.orders} />,
+  play: async ({ canvasElement }) => {
+    await boHeading(canvasElement, 'Work orders')
+    await expect(within(canvasElement).getByText('Mini excavator 3.5 t')).toBeVisible()
+  },
+}
+
+/** The "Unassigned" view: the bender's fault reported this morning. */
+export const BoFieldWorkOrdersUnassigned: Story = {
+  name: 'Field work orders, unassigned',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BO_ROUTES.unassigned} />,
+  play: async ({ canvasElement }) => {
+    await boHeading(canvasElement, 'Work orders')
+    await expect(
+      within(canvasElement).getByRole('row', { name: /SN-2026-0145/ }),
+    ).toHaveTextContent('The motor stops under load')
+  },
+}
+
+/** "Assign…" from the row's menu: the technician and the day; the order becomes Scheduled. */
+export const BoFieldWorkOrdersAssign: Story = {
+  name: 'Field work orders, assign, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BO_ROUTES.unassigned} />,
+  play: async ({ canvasElement }) => {
+    await boHeading(canvasElement, 'Work orders')
+    const canvas = within(canvasElement)
+    const page = within(document.body)
+    await userEvent.click(canvas.getByRole('button', { name: /^Actions: SN-2026-0145/ }))
+    await userEvent.click(await page.findByRole('menuitem', { name: 'Assign…' }))
+    const dialog = await page.findByRole('dialog', { name: /Assign work order/ })
+    await userEvent.click(within(dialog).getByRole('combobox', { name: /Technician/ }))
+    await userEvent.click(await page.findByRole('option', { name: /Saša Vukadinović/ }))
+    await userEvent.click(await within(dialog).findByRole('button', { name: 'Assign' }))
+    await waitFor(async () => {
+      await expect(page.queryByRole('dialog')).toBeNull()
+    })
+    await userEvent.click(canvas.getByRole('button', { name: /^Open/ }))
+    await expect(await canvas.findByRole('row', { name: /SN-2026-0145/ })).toHaveTextContent(
+      'Scheduled',
+    )
+    await boToastsGone()
+  },
+}
+
+/**
+ * The excavator's work order SN-2026-0143 as the office sees it: the fault, the service due,
+ * the machine, the checklist (5 of 9), the photos, the parts issued and used, the time, the
+ * signatures still waiting.
+ */
+export const BoFieldWorkOrder: Story = {
+  name: 'Field work order',
+  render: () => <ExampleApp start={BO_ROUTES.featured} />,
+  play: async ({ canvasElement }) => {
+    await boHeading(canvasElement, 'SN-2026-0143')
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('5 of 9 done')).toBeVisible()
+    await expect(canvas.getByRole('row', { name: /Engine oil 15W-40/ })).toHaveTextContent('8 l')
+    await expect(canvas.getByRole('link', { name: 'Mini excavator 3.5 t (OS-0142)' })).toBeVisible()
+  },
+}
+
+/**
+ * On the technician's phone (Saša Vukadinović): the checklist to tick, "Take a photo", the parts
+ * used stepped, Stop work, and "Finish and sign" saying why it cannot be used yet.
+ */
+export const BoFieldWorkOrderPhone: Story = {
+  name: 'Field work order, phone',
+  render: () => <OnPhone start={BO_ROUTES.featured} />,
+  play: async ({ canvasElement }) => {
+    await boHeading(canvasElement, 'SN-2026-0143')
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('checkbox', { name: /Track tension checked/ })).not.toBeChecked()
+    await expect(canvas.getByText(/Tick the 4 remaining checks first\./)).toBeInTheDocument()
+    await expect(canvas.getByText('Sent at 09:38')).toBeInTheDocument()
+  },
+}
+
+/** Without a connection: the offline strip, what waits on the phone, saved on this phone. */
+export const BoFieldWorkOrderOffline: Story = {
+  name: 'Field work order, offline',
+  tags: ['!dev'],
+  render: () => <OnPhone start={BO_ROUTES.offline} />,
+  play: async ({ canvasElement }) => {
+    await boHeading(canvasElement, 'SN-2026-0143')
+    await expect(canvasElement).toHaveTextContent('4 changes and 1 photo are kept on this phone.')
+    await expect(within(canvasElement).getByRole('button', { name: 'Try now' })).toBeVisible()
+  },
+}
+
+/** Sending failed: "Not sent" with Send again. */
+export const BoFieldWorkOrderNotSent: Story = {
+  name: 'Field work order, not sent',
+  tags: ['!dev'],
+  render: () => <OnPhone start={BO_ROUTES.notSent} />,
+  play: async ({ canvasElement }) => {
+    await boHeading(canvasElement, 'SN-2026-0143')
+    await expect(within(canvasElement).getByRole('button', { name: 'Send again' })).toBeVisible()
+  },
+}
+
+/** The phone handed to the site manager: what was done first, then her Sign or Decline. */
+export const BoFieldWorkOrderHandover: Story = {
+  name: 'Field work order, site manager signs',
+  tags: ['!dev'],
+  render: () => <OnPhone start={BO_ROUTES.handover} />,
+  play: async ({ canvasElement }) => {
+    await boHeading(canvasElement, 'SN-2026-0143')
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('1 of 2 signed')).toBeInTheDocument()
+    await expect(canvas.getByRole('button', { name: 'Sign the work order' })).toBeInTheDocument()
+  },
+}
+
+/** Both signed: done and sent. */
+export const BoFieldWorkOrderDone: Story = {
+  name: 'Field work order, done',
+  tags: ['!dev'],
+  render: () => <OnPhone start={BO_ROUTES.done} />,
+  play: async ({ canvasElement }) => {
+    await boHeading(canvasElement, 'SN-2026-0143')
+    await expect(within(canvasElement).getByText('2 of 2 signed')).toBeInTheDocument()
+  },
+}
+
+/**
+ * The technician's flow: the remaining checks ticked, a photo taken, less engine oil used,
+ * Finish and sign, the site manager signs; the order is done.
+ */
+export const BoFieldWorkOrderFlow: Story = {
+  name: 'Field work order, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <OnPhone start={BO_ROUTES.featured} />,
+  play: async ({ canvasElement }) => {
+    await boHeading(canvasElement, 'SN-2026-0143')
+    const canvas = within(canvasElement)
+    for (const name of [
+      /Air filter cleaned/,
+      /Every greasing point/,
+      /Track tension checked/,
+      /Test run under load/,
+    ]) {
+      await userEvent.click(canvas.getByRole('checkbox', { name }))
+    }
+    await expect(canvas.getByText('9 of 9 done')).toBeInTheDocument()
+    await userEvent.click(
+      canvas.getByRole('button', { name: /Decrease.*Engine oil|Engine oil.*decrease/i }),
+    )
+    const camera = canvasElement.querySelector<HTMLInputElement>('input[capture]')
+    if (camera === null) throw new Error('No camera input')
+    await userEvent.upload(camera, new File(['photo'], 'track.jpg', { type: 'image/jpeg' }))
+    await expect(await canvas.findByText('Track_tension_check.jpg')).toBeInTheDocument()
+    await userEvent.click(canvas.getByRole('button', { name: 'Finish and sign' }))
+    await userEvent.click(await canvas.findByRole('button', { name: 'Sign the work order' }))
+    await expect(await canvas.findByText('2 of 2 signed')).toBeInTheDocument()
+    await expect(canvas.getAllByText('Done')[0]).toBeInTheDocument()
+    await boToastsGone()
+  },
+}
+
+/**
+ * The preventive maintenance plan: every machine's tasks by interval, last done, next due (a date
+ * or a reading), the state in words, the work order or "Create work order".
+ */
+export const BoMaintenancePlan: Story = {
+  name: 'Maintenance plan',
+  render: () => <ExampleApp start={BO_ROUTES.plan} />,
+  play: async ({ canvasElement }) => {
+    await boHeading(canvasElement, 'Maintenance plan')
+    const canvas = within(canvasElement)
+    const generator = canvas.getByRole('row', { name: /Generator set 60 kVA/ })
+    await expect(generator).toHaveTextContent('38 h overdue')
+    await expect(within(generator).getByRole('button', { name: 'Create work order' })).toBeVisible()
+    await expect(canvas.getByRole('link', { name: 'SN-2026-0143' })).toBeVisible()
+  },
+}
+
+export const BoMaintenancePlanPhone: Story = {
+  name: 'Maintenance plan, phone',
+  render: () => <OnPhone start={BO_ROUTES.plan} />,
+  play: async ({ canvasElement }) => {
+    await boHeading(canvasElement, 'Maintenance plan')
+    await expect(within(canvasElement).getByText('Generator set 60 kVA')).toBeVisible()
+  },
+}
+
+/** "Create work order" asked for the generator's 500-hour service. */
+export const BoMaintenancePlanCreate: Story = {
+  name: 'Maintenance plan, create work order',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BO_ROUTES.planCreate} />,
+  play: async () => {
+    await settle()
+    const dialog = await within(document.body).findByRole('dialog', {
+      name: /Create work order\s*Generator set 60 kVA · 500-hour service/,
+    })
+    await expect(dialog).toHaveTextContent('SN-2026-0146')
+  },
+}
+
+/** Created: the plan links SN-2026-0146, and it waits in the work orders. */
+export const BoMaintenancePlanCreateFlow: Story = {
+  name: 'Maintenance plan, create, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BO_ROUTES.planCreate} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const page = within(document.body)
+    const dialog = await page.findByRole('dialog', { name: /Create work order/ })
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Create work order' }))
+    await waitFor(async () => {
+      await expect(page.queryByRole('dialog')).toBeNull()
+    })
+    await expect(await canvas.findByRole('link', { name: 'SN-2026-0146' })).toBeVisible()
+    await userEvent.click(canvas.getByRole('link', { name: 'Work orders' }))
+    await boHeading(canvasElement, 'Work orders')
+    await expect(await canvas.findByRole('row', { name: /SN-2026-0146/ })).toHaveTextContent(
+      'Scheduled',
+    )
+    await boToastsGone()
+  },
+}
+
+/**
+ * Fleet (P5.75): Kvadrat Gradnja's vehicles — plate and model, driver, mileage, the registration's
+ * expiry and the next service in the application's words, the state.
+ */
+export const BpFleetVehicles: Story = {
+  name: 'Vehicles',
+  render: () => <ExampleApp start={BP_ROUTES.vehicles} />,
+  play: async ({ canvasElement }) => {
+    await boHeading(canvasElement, 'Vehicles')
+    const canvas = within(canvasElement)
+    const van = canvas.getByRole('row', { name: /NS-123-AB/ })
+    await expect(van).toHaveTextContent('Expires in 5 days')
+    await expect(van).toHaveTextContent('Overdue by 2.880 km')
+    await expect(canvas.getByRole('row', { name: /NS-552-KG/ })).toHaveTextContent(
+      'In the workshop',
+    )
+  },
+}
+
+export const BpFleetVehiclesPhone: Story = {
+  name: 'Vehicles, phone',
+  render: () => <OnPhone start={BP_ROUTES.vehicles} />,
+  play: async ({ canvasElement }) => {
+    await boHeading(canvasElement, 'Vehicles')
+    await expect(within(canvasElement).getByText('NS-123-AB')).toBeVisible()
+  },
+}
+
+/** "Sold and returned": the van Fiat Ducato sold on 30.09.2026. */
+export const BpFleetVehiclesGone: Story = {
+  name: 'Vehicles, sold and returned',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BP_ROUTES.gone} />,
+  play: async ({ canvasElement }) => {
+    await boHeading(canvasElement, 'Vehicles')
+    await expect(within(canvasElement).getByRole('row', { name: /NS-482-KG/ })).toHaveTextContent(
+      'Sold',
+    )
+  },
+}
+
+/**
+ * The site van NS-123-AB: mileage, the application's consumption, the registration and insurance
+ * expiring, its reminders, the services with their invoices, the fuel entries paid from the cash
+ * book or by the fuel card.
+ */
+export const BpFleetVehicle: Story = {
+  name: 'Vehicle',
+  render: () => <ExampleApp start={BP_ROUTES.featured} />,
+  play: async ({ canvasElement }) => {
+    await boHeading(canvasElement, 'NS-123-AB')
+    const canvas = within(canvasElement)
+    const papers = canvas.getByRole('table', { name: 'Registration and insurance of NS-123-AB' })
+    await expect(
+      within(papers).getByRole('row', { name: /Compulsory motor insurance/ }),
+    ).toHaveTextContent('Expires in 5 days')
+    await expect(canvas.getByRole('link', { name: 'Cash, CP-2026-0214' })).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('178,30 l')
+  },
+}
+
+export const BpFleetVehiclePhone: Story = {
+  name: 'Vehicle, phone',
+  render: () => <OnPhone start={BP_ROUTES.featured} />,
+  play: async ({ canvasElement }) => {
+    await boHeading(canvasElement, 'NS-123-AB')
+    await expect(within(canvasElement).getAllByText('Overdue by 2.880 km')[0]).toBeInTheDocument()
+  },
+}
+
+/** "Add fuel entry" asked: the receipt's figures proposed. */
+export const BpFleetVehicleFuel: Story = {
+  name: 'Vehicle, add fuel entry',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BP_ROUTES.addFuel} />,
+  play: async () => {
+    await settle()
+    const dialog = await within(document.body).findByRole('dialog', {
+      name: /Add fuel entry\s*NS-123-AB/,
+    })
+    await expect(within(dialog).getByRole('textbox', { name: /Litres/ })).toHaveValue('40,10')
+  },
+}
+
+/** Added: the fill heads the list with the application's consumption; the mileage follows it. */
+export const BpFleetVehicleFuelFlow: Story = {
+  name: 'Vehicle, add fuel entry, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BP_ROUTES.featured} />,
+  play: async ({ canvasElement }) => {
+    await boHeading(canvasElement, 'NS-123-AB')
+    const canvas = within(canvasElement)
+    const page = within(document.body)
+    await userEvent.click(canvas.getByRole('button', { name: 'Add fuel entry' }))
+    const dialog = await page.findByRole('dialog', { name: /Add fuel entry/ })
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Add fuel entry' }))
+    await waitFor(async () => {
+      await expect(page.queryByRole('dialog')).toBeNull()
+    })
+    await expect(canvasElement).toHaveTextContent('40,10 l')
+    await expect(canvasElement).toHaveTextContent('143.260 km')
+    await boToastsGone()
+  },
+}
+
+/** Every vehicle's reminders: registration, insurance, service, tyres — due and overdue first. */
+export const BpFleetReminders: Story = {
+  name: 'Vehicle reminders',
+  render: () => <ExampleApp start={BP_ROUTES.reminders} />,
+  play: async ({ canvasElement }) => {
+    await boHeading(canvasElement, 'Reminders')
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('row', { name: /Service at 140\.000 km/ })).toHaveTextContent(
+      'Overdue by 2.880 km',
+    )
+    await expect(canvas.getByRole('row', { name: /Comprehensive insurance/ })).toHaveTextContent(
+      'In 8 days',
+    )
+  },
+}
+
+export const BpFleetRemindersPhone: Story = {
+  name: 'Vehicle reminders, phone',
+  render: () => <OnPhone start={BP_ROUTES.reminders} />,
+  play: async ({ canvasElement }) => {
+    await boHeading(canvasElement, 'Reminders')
+    await expect(within(canvasElement).getAllByText('Registration')[0]).toBeVisible()
+  },
+}
+
+/** "Mark as done…" for the van's registration: when, a note; it moves to Done. */
+export const BpFleetRemindersDone: Story = {
+  name: 'Vehicle reminders, mark as done, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BP_ROUTES.remindersDone} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const page = within(document.body)
+    const dialog = await page.findByRole('dialog', {
+      name: /Mark as done\s*Renew the registration/,
+    })
+    await userEvent.type(within(dialog).getByRole('textbox', { name: 'Note' }), 'Until 19.10.2027.')
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Mark as done' }))
+    await waitFor(async () => {
+      await expect(page.queryByRole('dialog')).toBeNull()
+    })
+    await userEvent.click(canvas.getByRole('button', { name: /^Done/ }))
+    await expect(
+      await canvas.findByRole('row', { name: /Renew the registration NS-123-AB/ }),
+    ).toHaveTextContent('Done on 14.10.2026. · Until 19.10.2027.')
+    await boToastsGone()
+  },
+}
