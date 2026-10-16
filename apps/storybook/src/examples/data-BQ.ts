@@ -24,9 +24,6 @@ export const FEATURED_TENANT = 'radovic'
 export const FEATURED_REQUEST = 'MR-2026-0047'
 export const NEW_REQUEST = 'MR-2026-0049'
 
-/** A field-service work order (group C, P5.74): the agreed route; the screen is theirs. */
-export const workOrderRoute = (number: string) => `/service/work-orders/${number}`
-
 export const BQ_ROUTES = {
   units: '/property/units',
   unitsList: '/property/units?view=list',

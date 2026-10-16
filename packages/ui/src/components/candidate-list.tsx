@@ -119,10 +119,14 @@ export function CandidateList(props: CandidateListProps) {
   if (props.candidates.length === 0) {
     return (
       <div data-slot="candidate-list" className={props.className}>
-        {props.empty ?? (
+        {/* Text (the default or the application's words) takes its direction from its content
+            (D15); an element is the application's own. */}
+        {props.empty === undefined || typeof props.empty === 'string' ? (
           <p className={cn('m-0 py-3 text-sm text-secondary', TEXT_DIRECTION)}>
-            {messages['candidates.empty']}
+            {props.empty ?? messages['candidates.empty']}
           </p>
+        ) : (
+          props.empty
         )}
       </div>
     )

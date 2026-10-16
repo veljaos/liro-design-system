@@ -17817,7 +17817,7 @@ export const BqPropertyMaintenance: Story = {
     await bqHeading(canvasElement, 'Maintenance requests')
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('row', { name: /MR-2026-0048/ })).toHaveTextContent('Nobody yet')
-    await expect(canvas.getByRole('link', { name: 'SN-2026-0087' })).toBeVisible()
+    await expect(canvas.getByRole('row', { name: /SN-2026-0087/ })).toBeVisible()
   },
 }
 
@@ -17841,7 +17841,7 @@ export const BqPropertyMaintenanceOpen: Story = {
     })
     await settle()
     await expect(drawer).toHaveTextContent('Under the sink.jpg')
-    await expect(within(drawer).getByRole('link', { name: 'SN-2026-0087' })).toBeVisible()
+    await expect(drawer).toHaveTextContent('SN-2026-0087')
   },
 }
 

@@ -120,7 +120,6 @@ import {
   UNIT_TONES,
   UNITS,
   unitPlace,
-  workOrderRoute,
   type Building,
   type Lease,
   type LeaseView,
@@ -1953,7 +1952,8 @@ function requestMatches(
 
 function WorkOrderLink({ number }: { number: string | undefined }) {
   if (number === undefined) return <span className="text-secondary">—</span>
-  return <RecordLink href={workOrderRoute(number)}>{number}</RecordLink>
+  // The maintenance company's work orders are not among the examples: the number, no link.
+  return <bdi className="tabular-nums">{number}</bdi>
 }
 
 const REQUEST_COLUMNS: DataTableColumn<MaintenanceRequest>[] = [
