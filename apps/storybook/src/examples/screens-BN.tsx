@@ -407,7 +407,7 @@ export function ExamRegistration({
           subtitle={`${OPEN_PERIOD.name} · ${STUDENT.name}, ${STUDENT.index}`}
         />
         <Alert title={`Open until ${format.date(OPEN_PERIOD.registrationTo)} at 23:59`}>
-          {`The exams run ${format.date(OPEN_PERIOD.examsFrom)} – ${format.date(OPEN_PERIOD.examsTo)}. A registration can be withdrawn until the deadline; fees are charged to your student account.`}
+          {`The exams run ${format.date(OPEN_PERIOD.examsFrom)} – ${format.date(OPEN_PERIOD.examsTo)}. You can withdraw until the deadline.`}
         </Alert>
         <SectionCard title="Registered" headingLevel={2} flush>
           <DataTable
