@@ -99,6 +99,12 @@ import { GROUP_BD_ROUTES } from './screens-BD'
 import { GROUP_BJ_ROUTES } from './screens-BJ'
 import { GROUP_BK_ROUTES } from './screens-BK'
 import { GROUP_BL_ROUTES } from './screens-BL'
+// ── P5.66 records ──
+import { GROUP_BE_ROUTES } from './screens-BE'
+import { GROUP_BF_ROUTES } from './screens-BF'
+import { GROUP_BG_ROUTES } from './screens-BG'
+import { GROUP_BH_ROUTES } from './screens-BH'
+import { GROUP_BI_ROUTES } from './screens-BI'
 
 // ── Routes ────────────────────────────────────────────────────────────────────────────────
 
@@ -192,6 +198,12 @@ const EXAMPLE_ROUTES: readonly ExampleRoute[] = [
   ...GROUP_BJ_ROUTES,
   ...GROUP_BK_ROUTES,
   ...GROUP_BL_ROUTES,
+  // ── P5.66 records ──
+  ...GROUP_BE_ROUTES,
+  ...GROUP_BF_ROUTES,
+  ...GROUP_BG_ROUTES,
+  ...GROUP_BH_ROUTES,
+  ...GROUP_BI_ROUTES,
 ]
 
 // ── The app ───────────────────────────────────────────────────────────────────────────────────

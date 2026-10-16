@@ -14450,6 +14450,7 @@ export const ExchangeDifferencesPostFlow: Story = {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 // ── P5.62 identity ──
 
 import { BC_ROUTES } from './data-BC'
@@ -14467,6 +14468,18 @@ import { BL_ROUTES } from './data-BL'
 /** Settles, checks, and on a phone checks that no page scrolls sideways. */
 function peoplePlay(
 >>>>>>> p9/people
+=======
+// ── P5.66 records ──
+
+import { BE_ROUTES } from './data-BE'
+import { BF_ROUTES } from './data-BF'
+import { BG_ROUTES } from './data-BG'
+import { BH_ROUTES } from './data-BH'
+import { BI_ROUTES } from './data-BI'
+
+/** Settles, checks, and on a phone checks that no page scrolls sideways. */
+function recordsPlay(
+>>>>>>> p9/records
   check: (canvasElement: HTMLElement) => Promise<void>,
   phone = false,
 ): NonNullable<Story['play']> {
@@ -14482,11 +14495,26 @@ function peoplePlay(
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 /** Waits until every toast is gone, so the checks never end on one fading. */
 =======
 /** Closes the toasts an interaction left and waits until they are gone. */
 >>>>>>> p9/people
 async function noToasts() {
+=======
+/** Waits until the application's viewer reports its pages (DocumentFrame's toolbar). */
+async function viewerReady(canvasElement: HTMLElement, pages: string) {
+  await waitFor(
+    async () => {
+      await expect(canvasElement).toHaveTextContent(`Page 1 of ${pages}`)
+    },
+    { timeout: 5000 },
+  )
+}
+
+/** The toast is closed and gone before the checks end (axe never catches it fading). */
+async function recordsToastGone() {
+>>>>>>> p9/records
   notice.dismiss()
   await waitFor(
     async () => {
@@ -14496,6 +14524,7 @@ async function noToasts() {
   )
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 /** Types a whole code into CodeInput's boxes from the first. */
 async function typeCode(root: HTMLElement, code: string) {
@@ -14948,10 +14977,243 @@ export const RecruitmentPostingEdit: Story = {
       'Buyer, construction materials',
     )
     await expect(canvas.getByRole('button', { name: 'Save' })).toBeVisible()
+=======
+/**
+ * P5.66: a new document — the application's types by group, each made from its template's field
+ * definitions (decisions, letters, commercial documents outside SEF, internal acts, the minutes
+ * of company bodies).
+ */
+const TYPES_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'New document' })).toBeVisible()
+  await expect(canvas.getByRole('heading', { name: 'Company bodies' })).toBeVisible()
+  await expect(canvas.getByRole('link', { name: /Decision on annual leave/ })).toBeVisible()
+}
+
+export const RecordsNewDocument: Story = {
+  name: 'New document',
+  render: () => <ExampleApp start={BE_ROUTES.types} />,
+  play: recordsPlay(TYPES_CHECK),
+}
+
+export const RecordsNewDocumentPhone: Story = {
+  name: 'New document, phone',
+  render: () => <OnPhone start={BE_ROUTES.types} />,
+  play: recordsPlay(TYPES_CHECK, true),
+}
+
+/**
+ * P5.66: the decision on Nikola Marković's annual leave — the form drawn from the type's JSON
+ * definitions (DefinedForm: the second part's dates show because the leave is in two parts),
+ * the preview the application's renderer returns beside it (DocumentFrame), "Assign number" from
+ * the registry book.
+ */
+const DRAFT_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(
+    canvas.getByRole('heading', { level: 1, name: 'New decision on annual leave' }),
+  ).toBeVisible()
+  await expect(canvas.getByRole('textbox', { name: /Second part from/ })).toBeVisible()
+  await viewerReady(canvasElement, '2')
+}
+
+export const RecordsDocumentDraft: Story = {
+  name: 'Document draft',
+  render: () => <ExampleApp start={BE_ROUTES.leave} />,
+  play: recordsPlay(DRAFT_CHECK),
+}
+
+export const RecordsDocumentDraftPhone: Story = {
+  name: 'Document draft, phone',
+  render: () => <OnPhone start={BE_ROUTES.leave} />,
+  play: recordsPlay(DRAFT_CHECK, true),
+}
+
+/** The second part's dates missing: said in words under each field. */
+export const RecordsDocumentDraftMissing: Story = {
+  name: 'Document draft, values missing',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BE_ROUTES.leaveMissing} />,
+  play: recordsPlay(async (canvasElement) => {
+    await expect(within(canvasElement).getAllByText('Fill in this field.')).toHaveLength(2)
+  }),
+}
+
+/** The application is rendering the preview: the page-shaped skeleton. */
+export const RecordsDocumentDraftLoading: Story = {
+  name: 'Document draft, preview loading',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BE_ROUTES.leaveLoading} />,
+  play: recordsPlay(async (canvasElement) => {
+    await expect(canvasElement.querySelector('[aria-busy="true"]')).not.toBeNull()
+  }),
+}
+
+/** The renderer failed: its words and "Try again"; the values are kept. */
+export const RecordsDocumentDraftFailed: Story = {
+  name: 'Document draft, preview failed',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BE_ROUTES.leaveFailed} />,
+  play: recordsPlay(async (canvasElement) => {
+    await waitFor(async () => {
+      await expect(canvasElement).toHaveTextContent(/The template could not be rendered/)
+    })
+    await expect(within(canvasElement).getByRole('button', { name: 'Try again' })).toBeVisible()
+  }),
+}
+
+/** Numbered from the registry book: the form read-only, "Send for signature" the next step. */
+export const RecordsDocumentNumbered: Story = {
+  name: 'Document draft, numbered',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BE_ROUTES.leaveNumbered} />,
+  play: recordsPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { level: 1, name: '01-412/2026' })).toBeVisible()
+    await expect(canvas.getAllByRole('button', { name: 'Send for signature' }).length).toBe(1)
+    await viewerReady(canvasElement, '2')
+  }),
+}
+
+/** Other types, data only: their definitions drawn by the same form. */
+export const RecordsDocumentBusinessLetter: Story = {
+  name: 'Document draft, business letter',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BE_ROUTES.businessLetter} />,
+  play: recordsPlay(async (canvasElement) => {
+    await expect(
+      within(canvasElement).getByRole('heading', { level: 1, name: 'New business letter' }),
+    ).toBeVisible()
+    await viewerReady(canvasElement, '1')
+  }),
+}
+
+/** A buyer abroad: the VAT number and the exemption are asked for; the lines are the application's. */
+export const RecordsDocumentProforma: Story = {
+  name: 'Document draft, proforma invoice',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BE_ROUTES.proforma} />,
+  play: recordsPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('textbox', { name: /Valid until/ })).toBeVisible()
+    await expect(canvas.queryByRole('textbox', { name: /Date of supply/ })).toBeNull()
+    await expect(canvas.getByRole('table', { name: 'Lines' })).toBeVisible()
+  }),
+}
+
+/** The same definition as an invoice: the date of supply instead of "Valid until". */
+export const RecordsDocumentInvoiceAbroad: Story = {
+  name: 'Document draft, invoice for abroad',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BE_ROUTES.invoiceAbroad} />,
+  play: recordsPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('textbox', { name: /Date of supply/ })).toBeVisible()
+    await expect(canvas.queryByRole('textbox', { name: /Valid until/ })).toBeNull()
+  }),
+}
+
+/** The minutes of the supervisory board: present and quorum from the meeting (group BH). */
+export const RecordsDocumentBoardMinutes: Story = {
+  name: 'Document draft, minutes of the supervisory board',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BE_ROUTES.boardMinutes} />,
+  play: recordsPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('textbox', { name: /Quorum/ })).toHaveValue(
+      '4 of 5 members present: the board may decide (at least 3).',
+    )
+    await expect(canvas.getByRole('textbox', { name: /Auditor’s representative/ })).toBeVisible()
+  }),
+}
+
+/** Leave at once: the second part's fields go; delivery by e-mail asks for the address. */
+export const RecordsDocumentConditions: Story = {
+  name: 'Document draft, conditions, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BE_ROUTES.leave} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('radio', { name: 'At once' }))
+    await waitFor(async () => {
+      await expect(canvas.queryByRole('textbox', { name: /Second part from/ })).toBeNull()
+    })
+    await userEvent.click(canvas.getByRole('radio', { name: /By e-mail/ }))
+    await expect(await canvas.findByRole('textbox', { name: /Employee’s e-mail/ })).toBeVisible()
+    await expect(
+      canvas.getByText('The preview shows the values before your last change.'),
+    ).toBeVisible()
+  },
+}
+
+/** Update the preview (the e-mail missing first), number it, send it for signature. */
+export const RecordsDocumentNumberFlow: Story = {
+  name: 'Document draft, preview and number, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BE_ROUTES.leave} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('radio', { name: /By e-mail/ }))
+    await userEvent.click(canvas.getByRole('button', { name: 'Update preview' }))
+    const email = await canvas.findByRole('textbox', { name: /Employee’s e-mail/ })
+    await waitFor(async () => {
+      await expect(email).toHaveFocus()
+    })
+    await expect(email).toHaveAccessibleDescription('Fill in this field.')
+    await userEvent.type(email, 'nikola.markovic@example.com')
+    await userEvent.click(canvas.getByRole('button', { name: 'Update preview' }))
+    await waitFor(async () => {
+      await expect(
+        canvas.queryByText('The preview shows the values before your last change.'),
+      ).toBeNull()
+    })
+    await viewerReady(canvasElement, '2')
+    await userEvent.click(firstOf(canvas.getAllByRole('button', { name: 'Assign number' })))
+    const dialog = await within(document.body).findByRole('alertdialog', { name: /Assign number/ })
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Assign number' }))
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: '01-412/2026' }),
+    ).toBeVisible()
+    await recordsToastGone()
+    await userEvent.click(canvas.getByRole('button', { name: 'Send for signature' }))
+    await expect(await canvas.findByText('0 of 2 signed')).toBeVisible()
+  },
+}
+
+/** Sent for signature: the director signs first, then the employee confirms receipt. */
+const SIGNING_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: '01-412/2026' })).toBeVisible()
+  await expect(canvasElement).toHaveTextContent('0 of 2 signed')
+  await viewerReady(canvasElement, '2')
+}
+
+export const RecordsDocumentSigning: Story = {
+  name: 'Document signing',
+  render: () => <ExampleApp start={BE_ROUTES.leaveSigning} />,
+  play: recordsPlay(SIGNING_CHECK),
+}
+
+export const RecordsDocumentSigningPhone: Story = {
+  name: 'Document signing, phone',
+  render: () => <OnPhone start={BE_ROUTES.leaveSigning} />,
+  play: recordsPlay(SIGNING_CHECK, true),
+}
+
+export const RecordsDocumentSigned: Story = {
+  name: 'Document signing, signed',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BE_ROUTES.leaveSigned} />,
+  play: recordsPlay(async (canvasElement) => {
+    await expect(canvasElement).toHaveTextContent('2 of 2 signed')
+>>>>>>> p9/records
   }),
 }
 
 /**
+<<<<<<< HEAD
  * The candidates on a board: applied, interview, offer, hired, rejected. Moves are reported; the
  * application asks why before Rejected and refuses Hired until an offer is accepted.
  */
@@ -14979,10 +15241,36 @@ export const RecruitmentCandidatesPhone: Story = {
     await expect(
       within(canvasElement).getByRole('heading', { level: 1, name: 'Candidates' }),
 >>>>>>> p9/people
+=======
+ * P5.68: the registry book for 2026 — incoming, outgoing and internal acts with the number from
+ * the book, the sender or recipient, the subject, who works on it, the due date ("2 days overdue"
+ * in words), the state and the linked document; no. 409 corrected by no. 411.
+ */
+const REGISTRY_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Registry book 2026' })).toBeVisible()
+  await expect(canvas.getAllByText('Overdue').length).toBeGreaterThan(0)
+  await expect(canvasElement).toHaveTextContent('Corrected by no. 411')
+}
+
+export const RecordsRegistryBook: Story = {
+  name: 'Registry book',
+  render: () => <ExampleApp start={BF_ROUTES.book} />,
+  play: recordsPlay(REGISTRY_CHECK),
+}
+
+export const RecordsRegistryBookPhone: Story = {
+  name: 'Registry book, phone',
+  render: () => <OnPhone start={BF_ROUTES.book} />,
+  play: recordsPlay(async (canvasElement) => {
+    await expect(
+      within(canvasElement).getByRole('heading', { level: 1, name: 'Registry book 2026' }),
+>>>>>>> p9/records
     ).toBeVisible()
   }, true),
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 /** The e-mail's link: the new password twice, the company's rules under the first field. */
 const NEW_PASSWORD_CHECK = async (canvasElement: HTMLElement) => {
@@ -15240,10 +15528,74 @@ export const RecruitmentCandidatesFlow: Story = {
       '0 candidates',
     )
     await noToasts()
+=======
+export const RecordsRegistryOpen: Story = {
+  name: 'Registry book, not done',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BF_ROUTES.open} />,
+}
+
+/** An incoming act: the labour inspection's request, two days overdue, with its reply and files. */
+const ENTRY_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'No. 405' })).toBeVisible()
+  await expect(canvasElement).toHaveTextContent('2 days overdue')
+  await expect(canvas.getByRole('link', { name: /Reply, draft letter/ })).toBeVisible()
+}
+
+export const RecordsRegistryEntry: Story = {
+  name: 'Registry entry',
+  render: () => <ExampleApp start={BF_ROUTES.entry} />,
+  play: recordsPlay(ENTRY_CHECK),
+}
+
+export const RecordsRegistryEntryPhone: Story = {
+  name: 'Registry entry, phone',
+  render: () => <OnPhone start={BF_ROUTES.entry} />,
+  play: recordsPlay(ENTRY_CHECK, true),
+}
+
+const NEW_ENTRY_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'New entry' })).toBeVisible()
+  await expect(canvasElement).toHaveTextContent('Number 415 is given when the entry is saved')
+}
+
+export const RecordsNewRegistryEntry: Story = {
+  name: 'New registry entry',
+  render: () => <ExampleApp start={BF_ROUTES.newEntry} />,
+  play: recordsPlay(NEW_ENTRY_CHECK),
+}
+
+export const RecordsNewRegistryEntryPhone: Story = {
+  name: 'New registry entry, phone',
+  render: () => <OnPhone start={BF_ROUTES.newEntry} />,
+  play: recordsPlay(NEW_ENTRY_CHECK, true),
+}
+
+/** Saving without a subject says what is missing; with it, the book gives no. 415. */
+export const RecordsNewRegistryEntrySave: Story = {
+  name: 'New registry entry, saved, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BF_ROUTES.newEntry} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(firstOf(canvas.getAllByRole('button', { name: 'Save entry' })))
+    await expect(await canvas.findByText('Write what the act is about.')).toBeVisible()
+    await userEvent.type(
+      canvas.getByRole('textbox', { name: /Subject/ }),
+      'Invitation to the opening of the Liman 4 site office',
+    )
+    await userEvent.click(firstOf(canvas.getAllByRole('button', { name: 'Save entry' })))
+    await expect(await within(document.body).findByText('Entered as no. 415.')).toBeVisible()
+    await recordsToastGone()
+>>>>>>> p9/records
   },
 }
 
 /**
+<<<<<<< HEAD
  * Tijana Babić after her first interview: the application, her CV and documents, the interviews,
  * two scorecards of three side by side, the history; Reject, Schedule interview, Make an offer.
  */
@@ -15284,10 +15636,128 @@ export const RecruitmentOfferFlow: Story = {
       'Tijana Babić',
     )
     await noToasts()
+=======
+ * P5.69: the archive book — units with their years, content and classification, quantity,
+ * retention, the day each may be disposed of (the application's), place and state; the oldest
+ * entries locked.
+ */
+const ARCHIVE_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Archive book' })).toBeVisible()
+  await expect(canvas.getAllByText('Permanently').length).toBeGreaterThan(0)
+}
+
+export const RecordsArchiveBook: Story = {
+  name: 'Archive book',
+  render: () => <ExampleApp start={BG_ROUTES.book} />,
+  play: recordsPlay(ARCHIVE_CHECK),
+}
+
+export const RecordsArchiveBookPhone: Story = {
+  name: 'Archive book, phone',
+  render: () => <OnPhone start={BG_ROUTES.book} />,
+  play: recordsPlay(ARCHIVE_CHECK, true),
+}
+
+/** The retention period of each category: the classification plan's data. */
+const RETENTION_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Retention periods' })).toBeVisible()
+  await expect(canvasElement).toHaveTextContent('Leave decisions and leave plans')
+}
+
+export const RecordsRetention: Story = {
+  name: 'Retention periods',
+  render: () => <ExampleApp start={BG_ROUTES.retention} />,
+  play: recordsPlay(RETENTION_CHECK),
+}
+
+export const RecordsRetentionPhone: Story = {
+  name: 'Retention periods, phone',
+  render: () => <OnPhone start={BG_ROUTES.retention} />,
+  play: recordsPlay(RETENTION_CHECK, true),
+}
+
+/** What expires: units whose retention ended or ends this year; chosen ones are proposed. */
+const EXPIRING_CHECK = async (canvasElement: HTMLElement) => {
+  await expect(
+    within(canvasElement).getByRole('heading', { level: 1, name: 'What expires' }),
+  ).toBeVisible()
+  await expect(canvasElement).toHaveTextContent('Offers sent and received')
+}
+
+export const RecordsExpiring: Story = {
+  name: 'What expires',
+  render: () => <ExampleApp start={BG_ROUTES.expiring} />,
+  play: recordsPlay(EXPIRING_CHECK),
+}
+
+export const RecordsExpiringPhone: Story = {
+  name: 'What expires, phone',
+  render: () => <OnPhone start={BG_ROUTES.expiring} />,
+  play: recordsPlay(EXPIRING_CHECK, true),
+}
+
+export const RecordsExpiringChosen: Story = {
+  name: 'What expires, units chosen',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BG_ROUTES.expiringChosen} />,
+  play: recordsPlay(async (canvasElement) => {
+    await expect(
+      within(canvasElement).getByRole('button', { name: 'Propose for disposal' }),
+    ).toBeVisible()
+  }),
+}
+
+/** Disposal list LB-2026-01: signed by the commission, the archive consented; "Dispose" asks first. */
+const DISPOSAL_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'LB-2026-01' })).toBeVisible()
+  await expect(canvasElement).toHaveTextContent('3 of 3 signed')
+}
+
+export const RecordsDisposal: Story = {
+  name: 'Disposal list',
+  render: () => <ExampleApp start={BG_ROUTES.disposal} />,
+  play: recordsPlay(DISPOSAL_CHECK),
+}
+
+export const RecordsDisposalPhone: Story = {
+  name: 'Disposal list, phone',
+  render: () => <OnPhone start={BG_ROUTES.disposal} />,
+  play: recordsPlay(DISPOSAL_CHECK, true),
+}
+
+export const RecordsDisposed: Story = {
+  name: 'Disposal list, disposed',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BG_ROUTES.disposed} />,
+  play: recordsPlay(async (canvasElement) => {
+    await expect(within(canvasElement).getByRole('link', { name: /01-416\/2026/ })).toBeVisible()
+  }),
+}
+
+export const RecordsDisposeFlow: Story = {
+  name: 'Disposal list, dispose, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BG_ROUTES.disposal} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Dispose' }))
+    const dialog = await within(document.body).findByRole('alertdialog', {
+      name: /Dispose of the units/,
+    })
+    await userEvent.type(within(dialog).getByRole('textbox'), 'LB-2026-01')
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Dispose' }))
+    await expect(await canvas.findByText(/Disposed on/)).toBeVisible()
+    await recordsToastGone()
+>>>>>>> p9/records
   },
 }
 
 /**
+<<<<<<< HEAD
  * The second interview scheduled from the candidate's page: the format, the slots when the
  * director and the hiring manager are both free (the application's), the invitation a choice.
  */
@@ -15799,3 +16269,189 @@ export const CrmCalendarPhone: Story = {
   play: peoplePlay(CALENDAR_CHECK, true),
 >>>>>>> p9/people
 }
+=======
+ * P5.70: the meetings of the general assembly and the supervisory board; the 4th meeting of the
+ * board (invitation and materials, attendance and quorum in the application's words, the votes
+ * on each item and their result, the minutes and decisions to sign); the 5th meeting's answers.
+ */
+const MEETINGS_CHECK = async (canvasElement: HTMLElement) => {
+  await expect(
+    within(canvasElement).getByRole('heading', { level: 1, name: 'Meetings of company bodies' }),
+  ).toBeVisible()
+  await expect(canvasElement).toHaveTextContent('3 of 5 confirmed')
+}
+
+export const RecordsMeetings: Story = {
+  name: 'Meetings',
+  render: () => <ExampleApp start={BH_ROUTES.list} />,
+  play: recordsPlay(MEETINGS_CHECK),
+}
+
+export const RecordsMeetingsPhone: Story = {
+  name: 'Meetings, phone',
+  render: () => <OnPhone start={BH_ROUTES.list} />,
+  play: recordsPlay(MEETINGS_CHECK, true),
+}
+
+const MEETING_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(
+    canvas.getByRole('heading', { level: 1, name: '4th meeting of the supervisory board' }),
+  ).toBeVisible()
+  await expect(canvasElement).toHaveTextContent('the board may decide')
+  await expect(canvasElement).toHaveTextContent('Not adopted: 2 of 4 present for')
+}
+
+export const RecordsMeeting: Story = {
+  name: 'Meeting',
+  render: () => <ExampleApp start={BH_ROUTES.held} />,
+  play: recordsPlay(MEETING_CHECK),
+}
+
+export const RecordsMeetingPhone: Story = {
+  name: 'Meeting, phone',
+  render: () => <OnPhone start={BH_ROUTES.held} />,
+  play: recordsPlay(MEETING_CHECK, true),
+}
+
+export const RecordsMeetingInSession: Story = {
+  name: 'Meeting, in session',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BH_ROUTES.voting} />,
+  play: recordsPlay(async (canvasElement) => {
+    await expect(canvasElement).toHaveTextContent('Not voted on yet')
+  }),
+}
+
+export const RecordsMeetingRecording: Story = {
+  name: 'Meeting, recording votes',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BH_ROUTES.recording} />,
+  play: recordsPlay(async () => {
+    await expect(within(document.body).getByRole('dialog', { name: /Record votes/ })).toBeVisible()
+  }),
+}
+
+export const RecordsMeetingVote: Story = {
+  name: 'Meeting, votes recorded, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BH_ROUTES.voting} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Record votes on item 4' }))
+    const dialog = within(
+      await within(document.body).findByRole('dialog', { name: /Record votes/ }),
+    )
+    const votes: [string, string][] = [
+      ['Vesna Radović', 'For'],
+      ['Bojan Kovač', 'For'],
+      ['Jasmina Lukić', 'For'],
+      ['Đorđe Pantić', 'Abstain'],
+    ]
+    for (const [member, vote] of votes) {
+      await userEvent.click(
+        within(dialog.getByRole('radiogroup', { name: member })).getByRole('radio', { name: vote }),
+      )
+    }
+    await userEvent.click(dialog.getByRole('button', { name: 'Save votes' }))
+    await expect(await canvas.findByText('Adopted: 3 of 4 present for')).toBeVisible()
+    await recordsToastGone()
+  },
+}
+
+const NEXT_MEETING_CHECK = async (canvasElement: HTMLElement) => {
+  await expect(
+    within(canvasElement).getByRole('heading', {
+      level: 1,
+      name: '5th meeting of the supervisory board',
+    }),
+  ).toBeVisible()
+  await expect(canvasElement).toHaveTextContent('Not answered')
+}
+
+export const RecordsNextMeeting: Story = {
+  name: 'Next meeting',
+  render: () => <ExampleApp start={BH_ROUTES.invited} />,
+  play: recordsPlay(NEXT_MEETING_CHECK),
+}
+
+export const RecordsNextMeetingPhone: Story = {
+  name: 'Next meeting, phone',
+  render: () => <OnPhone start={BH_ROUTES.invited} />,
+  play: recordsPlay(NEXT_MEETING_CHECK, true),
+}
+
+/**
+ * P5.71: the contracts register with the application's reminders in words; the framework
+ * contract with Beton Mix d.o.o. — notice due, its versions and linked documents.
+ */
+const CONTRACTS_CHECK = async (canvasElement: HTMLElement) => {
+  await expect(
+    within(canvasElement).getByRole('heading', { level: 1, name: 'Contracts' }),
+  ).toBeVisible()
+  await expect(canvasElement).toHaveTextContent('Give notice by 16.10.2026')
+}
+
+export const RecordsContracts: Story = {
+  name: 'Contracts',
+  render: () => <ExampleApp start={BI_ROUTES.list} />,
+  play: recordsPlay(CONTRACTS_CHECK),
+}
+
+export const RecordsContractsPhone: Story = {
+  name: 'Contracts, phone',
+  render: () => <OnPhone start={BI_ROUTES.list} />,
+  play: recordsPlay(CONTRACTS_CHECK, true),
+}
+
+export const RecordsContractsAttention: Story = {
+  name: 'Contracts, need attention',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BI_ROUTES.attention} />,
+  play: recordsPlay(async (canvasElement) => {
+    await expect(canvasElement).toHaveTextContent('Expired on 30.09.2026')
+  }),
+}
+
+const CONTRACT_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'UGO-2025-044' })).toBeVisible()
+  await expect(canvas.getByRole('button', { name: 'Let it renew' })).toBeVisible()
+  await expect(canvas.getByRole('link', { name: /NB-2026-0087/ })).toBeVisible()
+}
+
+export const RecordsContract: Story = {
+  name: 'Contract',
+  render: () => <ExampleApp start={BI_ROUTES.contract} />,
+  play: recordsPlay(CONTRACT_CHECK),
+}
+
+export const RecordsContractPhone: Story = {
+  name: 'Contract, phone',
+  render: () => <OnPhone start={BI_ROUTES.contract} />,
+  play: recordsPlay(CONTRACT_CHECK, true),
+}
+
+export const RecordsContractRenews: Story = {
+  name: 'Contract, renews',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BI_ROUTES.renewed} />,
+  play: recordsPlay(async (canvasElement) => {
+    await expect(canvasElement).toHaveTextContent('Renews on 01.11.2026')
+  }),
+}
+
+export const RecordsContractRenewFlow: Story = {
+  name: 'Contract, let it renew, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BI_ROUTES.contract} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Let it renew' }))
+    await expect(await canvas.findByText(/Renews on 01\.11\.2026/)).toBeVisible()
+    await recordsToastGone()
+  },
+}
+>>>>>>> p9/records
