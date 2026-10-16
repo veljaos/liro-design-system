@@ -14694,7 +14694,9 @@ export const UniversityExamRecordSign: Story = {
 const BN_LOCKED_CHECK = async (canvasElement: HTMLElement) => {
   const canvas = within(canvasElement)
   await expect(canvasElement).toHaveTextContent('Signed by Prof. Milan Radović on 14.10.2026.')
-  await expect(canvas.queryByRole('textbox', { name: /Exam points/ })).toBeNull()
+  for (const cell of canvas.getAllByRole('textbox', { name: /Exam points/ })) {
+    await expect(cell).toHaveAttribute('readonly')
+  }
 }
 
 export const UniversityExamRecordLocked: Story = {
@@ -14726,8 +14728,14 @@ export const UniversityExamRecordEntry: Story = {
       await expect(canvasElement).toHaveTextContent('84,5')
     })
     const choose = async (line: number, option: string) => {
-      await userEvent.click(canvas.getByRole('combobox', { name: `Grade, line ${String(line)}` }))
+      await userEvent.click(
+        await canvas.findByRole('combobox', { name: `Grade, line ${String(line)}` }),
+      )
       await userEvent.click(await body.findByRole('option', { name: option }))
+      // The list closes before the next cell is reached (the page is inert while it is open).
+      await waitFor(async () => {
+        await expect(body.queryByRole('listbox')).toBeNull()
+      })
     }
     await choose(12, '9 · excellent (B)')
     await choose(11, '8 · very good (C)')
@@ -14754,7 +14762,9 @@ export const UniversityExamRecordSigning: Story = {
     })
     await userEvent.click(within(dialog).getByRole('button', { name: 'Sign' }))
     await waitFor(async () => {
-      await expect(canvas.queryByRole('textbox', { name: /Exam points/ })).toBeNull()
+      await expect(
+        canvas.getByRole('textbox', { name: 'Exam points (of 60), line 1' }),
+      ).toHaveAttribute('readonly')
     })
     await expect(canvasElement).toHaveTextContent('Signed by Prof. Milan Radović')
     await bnToastGone()
