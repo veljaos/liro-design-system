@@ -92,6 +92,12 @@ import { GROUP_AL_ROUTES } from './screens-AL'
 import { GROUP_AM_ROUTES } from './screens-AM'
 import { GROUP_AN_ROUTES } from './screens-AN'
 import { GROUP_AO_ROUTES } from './screens-AO'
+// ── P5.66 records ──
+import { GROUP_BE_ROUTES } from './screens-BE'
+import { GROUP_BF_ROUTES } from './screens-BF'
+import { GROUP_BG_ROUTES } from './screens-BG'
+import { GROUP_BH_ROUTES } from './screens-BH'
+import { GROUP_BI_ROUTES } from './screens-BI'
 
 // ── Routes ────────────────────────────────────────────────────────────────────────────────
 
@@ -178,6 +184,12 @@ const EXAMPLE_ROUTES: readonly ExampleRoute[] = [
   ...GROUP_AM_ROUTES,
   ...GROUP_AN_ROUTES,
   ...GROUP_AO_ROUTES,
+  // ── P5.66 records ──
+  ...GROUP_BE_ROUTES,
+  ...GROUP_BF_ROUTES,
+  ...GROUP_BG_ROUTES,
+  ...GROUP_BH_ROUTES,
+  ...GROUP_BI_ROUTES,
 ]
 
 // ── The app ───────────────────────────────────────────────────────────────────────────────────
