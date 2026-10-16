@@ -95,6 +95,7 @@ import {
   UNAVAILABLE,
   type Absence,
 } from './data-H'
+import { BM_ROUTES } from './data-BM'
 
 /*
  * Group H's example screens (P5.17, industry examples), one dataset each (data-H.ts).
@@ -361,6 +362,8 @@ const RECEPTION: ExampleAccount = {
     { label: 'Schedule', path: H_ROUTES.clinicSchedule },
     { label: 'Calendar of dr Marko Stanković', path: H_ROUTES.doctorCalendar },
     { label: `Finding ${FINDING.number}, ${PATIENT.name}`, path: H_ROUTES.finding },
+    { label: `Chart of ${PATIENT.name}`, path: BM_ROUTES.chart },
+    { label: `Lab results of ${PATIENT.name}`, path: BM_ROUTES.lab },
   ],
 }
 
@@ -380,12 +383,12 @@ const CLINIC_TABS = (current: 'schedule' | 'calendar' | 'patients'): ModuleTab[]
   {
     key: 'patients',
     label: 'Patients',
-    href: `#${H_ROUTES.finding}`,
+    href: `#${BM_ROUTES.chart}`,
     current: current === 'patients',
   },
 ]
 
-function ClinicShell({
+export function ClinicShell({
   phone,
   tab,
   crumb,
@@ -446,8 +449,9 @@ export function ClinicSchedule({ phone, moving }: { phone: boolean; moving?: Sch
           resourceLabel="Doctor"
           layout={phone ? 'phone' : 'desktop'}
           onMove={setProposed}
+          // Opening Jovana's appointment opens her chart (P5.72).
           onSelect={(each) => {
-            if (each.id === JOVANA_BOOKING.id) navigate(H_ROUTES.finding)
+            if (each.id === JOVANA_BOOKING.id) navigate(BM_ROUTES.chart)
           }}
         />
         {proposed !== null && booking !== undefined && (
@@ -536,7 +540,7 @@ export function DoctorCalendar({ phone }: { phone: boolean }) {
           now={CLINIC.now}
           layout={phone ? 'phone' : 'desktop'}
           onSelect={(event) => {
-            if (event.id === JOVANA_BOOKING.id) navigate(H_ROUTES.finding)
+            if (event.id === JOVANA_BOOKING.id) navigate(BM_ROUTES.chart)
           }}
         />
       </Frame>
@@ -554,7 +558,7 @@ export function Finding({ phone, reveal }: { phone: boolean; reveal: 'none' | 'a
       <DetailPage
         layout={phone ? 'phone' : 'desktop'}
         title={`Finding ${FINDING.number}`}
-        back={{ href: `#${H_ROUTES.doctorCalendar}`, label: 'Doctor’s calendar' }}
+        back={{ href: `#${BM_ROUTES.chart}`, label: PATIENT.name }}
         subtitle={`${PATIENT.name} · ${FINDING.kind}`}
         sections={[
           {

@@ -105,6 +105,8 @@ import { GROUP_BF_ROUTES } from './screens-BF'
 import { GROUP_BG_ROUTES } from './screens-BG'
 import { GROUP_BH_ROUTES } from './screens-BH'
 import { GROUP_BI_ROUTES } from './screens-BI'
+// ── P5.72 health ──
+import { GROUP_BM_ROUTES } from './screens-BM'
 
 // ── Routes ────────────────────────────────────────────────────────────────────────────────
 
@@ -204,6 +206,8 @@ const EXAMPLE_ROUTES: readonly ExampleRoute[] = [
   ...GROUP_BG_ROUTES,
   ...GROUP_BH_ROUTES,
   ...GROUP_BI_ROUTES,
+  // ── P5.72 health ──
+  ...GROUP_BM_ROUTES,
 ]
 
 // ── The app ───────────────────────────────────────────────────────────────────────────────────
