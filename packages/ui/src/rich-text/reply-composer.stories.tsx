@@ -452,13 +452,17 @@ export const AttachInteraction: Story = {
  */
 export const WithValues: Story = {
   name: 'Merge values, one missing',
+  // Today and today + 7 are written into the text: a fixed day keeps the picture from changing
+  // with the date (C6).
   render: () => (
-    <Composer
-      savedReplies={VALUE_REPLIES}
-      mergeFields={TICKET_FIELDS}
-      mergeValues={TICKET_VALUES}
-      defaultValue={CALL_REPLY.content}
-    />
+    <StoryProvider today="2026-10-15">
+      <Composer
+        savedReplies={VALUE_REPLIES}
+        mergeFields={TICKET_FIELDS}
+        mergeValues={TICKET_VALUES}
+        defaultValue={CALL_REPLY.content}
+      />
+    </StoryProvider>
   ),
   play: async ({ canvasElement }) => {
     await editorReady(canvasElement)
