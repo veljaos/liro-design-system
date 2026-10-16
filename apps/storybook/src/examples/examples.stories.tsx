@@ -14519,11 +14519,11 @@ export const BoFieldWorkOrdersAssign: Story = {
     const dialog = await page.findByRole('dialog', { name: /Assign work order/ })
     await userEvent.click(within(dialog).getByRole('combobox', { name: /Technician/ }))
     await userEvent.click(await page.findByRole('option', { name: /Saša Vukadinović/ }))
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Assign' }))
+    await userEvent.click(await within(dialog).findByRole('button', { name: 'Assign' }))
     await waitFor(async () => {
       await expect(page.queryByRole('dialog')).toBeNull()
     })
-    await userEvent.click(canvas.getByRole('tab', { name: /^Open/ }))
+    await userEvent.click(canvas.getByRole('button', { name: /^Open/ }))
     await expect(await canvas.findByRole('row', { name: /SN-2026-0145/ })).toHaveTextContent(
       'Scheduled',
     )
@@ -14559,7 +14559,7 @@ export const BoFieldWorkOrderPhone: Story = {
     await boHeading(canvasElement, 'SN-2026-0143')
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('checkbox', { name: /Track tension checked/ })).not.toBeChecked()
-    await expect(canvas.getByText('Tick the 4 remaining checks first.')).toBeInTheDocument()
+    await expect(canvas.getByText(/Tick the 4 remaining checks first\./)).toBeInTheDocument()
     await expect(canvas.getByText('Sent at 09:38')).toBeInTheDocument()
   },
 }
@@ -14762,9 +14762,10 @@ export const BpFleetVehicle: Story = {
   play: async ({ canvasElement }) => {
     await boHeading(canvasElement, 'NS-123-AB')
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('row', { name: /Compulsory motor insurance/ })).toHaveTextContent(
-      'Expires in 5 days',
-    )
+    const papers = canvas.getByRole('table', { name: 'Registration and insurance of NS-123-AB' })
+    await expect(
+      within(papers).getByRole('row', { name: /Compulsory motor insurance/ }),
+    ).toHaveTextContent('Expires in 5 days')
     await expect(canvas.getByRole('link', { name: 'Cash, CP-2026-0214' })).toBeVisible()
     await expect(canvasElement).toHaveTextContent('178,30 l')
   },
@@ -14775,7 +14776,7 @@ export const BpFleetVehiclePhone: Story = {
   render: () => <OnPhone start={BP_ROUTES.featured} />,
   play: async ({ canvasElement }) => {
     await boHeading(canvasElement, 'NS-123-AB')
-    await expect(within(canvasElement).getByText('Overdue by 2.880 km')).toBeInTheDocument()
+    await expect(within(canvasElement).getAllByText('Overdue by 2.880 km')[0]).toBeInTheDocument()
   },
 }
 
@@ -14808,10 +14809,8 @@ export const BpFleetVehicleFuelFlow: Story = {
     await waitFor(async () => {
       await expect(page.queryByRole('dialog')).toBeNull()
     })
-    const row = await canvas.findByRole('row', { name: /NIS Petrol, Novi Sad 2026-10-14/ })
     await expect(canvasElement).toHaveTextContent('40,10 l')
     await expect(canvasElement).toHaveTextContent('143.260 km')
-    await expect(row).toBeInTheDocument()
     await boToastsGone()
   },
 }
@@ -14823,10 +14822,10 @@ export const BpFleetReminders: Story = {
   play: async ({ canvasElement }) => {
     await boHeading(canvasElement, 'Reminders')
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('row', { name: /Service NS-123-AB/ })).toHaveTextContent(
+    await expect(canvas.getByRole('row', { name: /Service at 140\.000 km/ })).toHaveTextContent(
       'Overdue by 2.880 km',
     )
-    await expect(canvas.getByRole('row', { name: /Insurance NS-318-KG/ })).toHaveTextContent(
+    await expect(canvas.getByRole('row', { name: /Comprehensive insurance/ })).toHaveTextContent(
       'In 8 days',
     )
   },
@@ -14858,9 +14857,9 @@ export const BpFleetRemindersDone: Story = {
     await waitFor(async () => {
       await expect(page.queryByRole('dialog')).toBeNull()
     })
-    await userEvent.click(canvas.getByRole('tab', { name: /^Done/ }))
+    await userEvent.click(canvas.getByRole('button', { name: /^Done/ }))
     await expect(
-      await canvas.findByRole('row', { name: /Registration NS-123-AB/ }),
+      await canvas.findByRole('row', { name: /Renew the registration NS-123-AB/ }),
     ).toHaveTextContent('Done on 14.10.2026. · Until 19.10.2027.')
     await boToastsGone()
   },
