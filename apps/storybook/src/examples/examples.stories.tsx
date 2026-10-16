@@ -14446,7 +14446,7 @@ export const ExchangeDifferencesPostFlow: Story = {
 import { BN_ROUTES } from './data-BN'
 
 /** The University's stories: the screen's checks, and on a phone no page scrolls sideways. */
-function campusPlay(
+function bnPlay(
   check: (canvasElement: HTMLElement) => Promise<void>,
   phone = false,
 ): NonNullable<Story['play']> {
@@ -14462,7 +14462,7 @@ function campusPlay(
 }
 
 /** A success toast closed and gone before the checks end (axe never catches it fading). */
-async function campusToastGone() {
+async function bnToastGone() {
   notice.dismiss()
   await waitFor(
     async () => {
@@ -14478,7 +14478,7 @@ async function campusToastGone() {
  * registration open, her average, ECTS and exams passed (the application's), the exam she is
  * registered for and her latest results. Made for a phone first.
  */
-const CAMPUS_HOME_CHECK = async (canvasElement: HTMLElement) => {
+const BN_HOME_CHECK = async (canvasElement: HTMLElement) => {
   const canvas = within(canvasElement)
   await expect(canvas.getByRole('heading', { level: 1, name: 'My exams' })).toBeVisible()
   await expect(canvasElement).toHaveTextContent('8,72')
@@ -14490,13 +14490,13 @@ const CAMPUS_HOME_CHECK = async (canvasElement: HTMLElement) => {
 export const UniversityStudentPortal: Story = {
   name: 'University, student portal',
   render: () => <ExampleApp start={BN_ROUTES.portal} />,
-  play: campusPlay(CAMPUS_HOME_CHECK),
+  play: bnPlay(BN_HOME_CHECK),
 }
 
 export const UniversityStudentPortalPhone: Story = {
   name: 'University, student portal, phone',
   render: () => <OnPhone start={BN_ROUTES.portal} />,
-  play: campusPlay(CAMPUS_HOME_CHECK, true),
+  play: bnPlay(BN_HOME_CHECK, true),
 }
 
 /**
@@ -14504,7 +14504,7 @@ export const UniversityStudentPortalPhone: Story = {
  * and fee (a CandidateList), the total to pay, the exams registered (Withdraw in the row's menu)
  * and the exams not open to her with the reason in words.
  */
-const CAMPUS_REGISTRATION_CHECK = async (canvasElement: HTMLElement) => {
+const BN_REGISTRATION_CHECK = async (canvasElement: HTMLElement) => {
   const canvas = within(canvasElement)
   await expect(canvas.getByRole('heading', { level: 1, name: 'Exam registration' })).toBeVisible()
   await expect(canvas.getByRole('checkbox', { name: 'Electronics' })).toBeVisible()
@@ -14517,13 +14517,13 @@ const CAMPUS_REGISTRATION_CHECK = async (canvasElement: HTMLElement) => {
 export const UniversityExamRegistration: Story = {
   name: 'University, exam registration',
   render: () => <ExampleApp start={BN_ROUTES.registration} />,
-  play: campusPlay(CAMPUS_REGISTRATION_CHECK),
+  play: bnPlay(BN_REGISTRATION_CHECK),
 }
 
 export const UniversityExamRegistrationPhone: Story = {
   name: 'University, exam registration, phone',
   render: () => <OnPhone start={BN_ROUTES.registration} />,
-  play: campusPlay(CAMPUS_REGISTRATION_CHECK, true),
+  play: bnPlay(BN_REGISTRATION_CHECK, true),
 }
 
 /** Two exams chosen; the confirmation names them and the application's fee. */
@@ -14531,7 +14531,7 @@ export const UniversityExamRegistrationConfirm: Story = {
   name: 'University, exam registration, confirm',
   tags: ['!dev'],
   render: () => <ExampleApp start={BN_ROUTES.registrationConfirm} />,
-  play: campusPlay(async () => {
+  play: bnPlay(async () => {
     const dialog = within(document.body).getByRole('alertdialog', {
       name: /Register for 2 exams/,
     })
@@ -14540,7 +14540,7 @@ export const UniversityExamRegistrationConfirm: Story = {
 }
 
 /** Both registered: nothing left to choose. */
-const CAMPUS_REGISTERED_CHECK = async (canvasElement: HTMLElement) => {
+const BN_REGISTERED_CHECK = async (canvasElement: HTMLElement) => {
   const canvas = within(canvasElement)
   await expect(canvasElement).toHaveTextContent('Every exam open to you is registered.')
   const table = canvas.getAllByRole('table', { name: 'Exams registered for October 2 2026' })[0]
@@ -14551,14 +14551,14 @@ export const UniversityExamRegistrationDone: Story = {
   name: 'University, exam registration, registered',
   tags: ['!dev'],
   render: () => <ExampleApp start={BN_ROUTES.registrationDone} />,
-  play: campusPlay(CAMPUS_REGISTERED_CHECK),
+  play: bnPlay(BN_REGISTERED_CHECK),
 }
 
 export const UniversityExamRegistrationDonePhone: Story = {
   name: 'University, exam registration, registered, phone',
   tags: ['!dev'],
   render: () => <OnPhone start={BN_ROUTES.registrationDone} />,
-  play: campusPlay(async () => {
+  play: bnPlay(async () => {
     await expect(document.body).toHaveTextContent('Every exam open to you is registered.')
   }, true),
 }
@@ -14579,12 +14579,12 @@ export const UniversityExamRegistrationFlow: Story = {
     })
     await userEvent.click(within(dialog).getByRole('button', { name: 'Register' }))
     await expect(await canvas.findByText('Every exam open to you is registered.')).toBeVisible()
-    await campusToastGone()
+    await bnToastGone()
   },
 }
 
 /** Her grades: 18 exams passed, 102 ECTS of 240, the average 8,72 — all the application's. */
-const CAMPUS_GRADES_CHECK = async (canvasElement: HTMLElement) => {
+const BN_GRADES_CHECK = async (canvasElement: HTMLElement) => {
   const canvas = within(canvasElement)
   await expect(canvas.getByRole('heading', { level: 1, name: 'Grades' })).toBeVisible()
   await expect(canvasElement).toHaveTextContent('102 of 240')
@@ -14594,17 +14594,17 @@ const CAMPUS_GRADES_CHECK = async (canvasElement: HTMLElement) => {
 export const UniversityGrades: Story = {
   name: 'University, grades',
   render: () => <ExampleApp start={BN_ROUTES.grades} />,
-  play: campusPlay(CAMPUS_GRADES_CHECK),
+  play: bnPlay(BN_GRADES_CHECK),
 }
 
 export const UniversityGradesPhone: Story = {
   name: 'University, grades, phone',
   render: () => <OnPhone start={BN_ROUTES.grades} />,
-  play: campusPlay(CAMPUS_GRADES_CHECK, true),
+  play: bnPlay(BN_GRADES_CHECK, true),
 }
 
 /** The faculty's exam periods, newest first, with their dates and state in words. */
-const CAMPUS_PERIODS_CHECK = async (canvasElement: HTMLElement) => {
+const BN_PERIODS_CHECK = async (canvasElement: HTMLElement) => {
   const canvas = within(canvasElement)
   await expect(canvas.getByRole('heading', { level: 1, name: 'Exam periods' })).toBeVisible()
   await expect(canvasElement).toHaveTextContent('Registration open')
@@ -14614,17 +14614,17 @@ const CAMPUS_PERIODS_CHECK = async (canvasElement: HTMLElement) => {
 export const UniversityExamPeriods: Story = {
   name: 'University, exam periods',
   render: () => <ExampleApp start={BN_ROUTES.periods} />,
-  play: campusPlay(CAMPUS_PERIODS_CHECK),
+  play: bnPlay(BN_PERIODS_CHECK),
 }
 
 export const UniversityExamPeriodsPhone: Story = {
   name: 'University, exam periods, phone',
   render: () => <OnPhone start={BN_ROUTES.periods} />,
-  play: campusPlay(CAMPUS_PERIODS_CHECK, true),
+  play: bnPlay(BN_PERIODS_CHECK, true),
 }
 
 /** Prof. Milan Radović's exam records: two drafts of October, the older ones locked. */
-const CAMPUS_RECORDS_CHECK = async (canvasElement: HTMLElement) => {
+const BN_RECORDS_CHECK = async (canvasElement: HTMLElement) => {
   const canvas = within(canvasElement)
   await expect(canvas.getByRole('heading', { level: 1, name: 'My exam records' })).toBeVisible()
   await expect(canvas.getAllByRole('link', { name: 'ZI-2026-0417' }).length).toBeGreaterThan(0)
@@ -14634,13 +14634,13 @@ const CAMPUS_RECORDS_CHECK = async (canvasElement: HTMLElement) => {
 export const UniversityExamRecords: Story = {
   name: 'University, exam records',
   render: () => <ExampleApp start={BN_ROUTES.records} />,
-  play: campusPlay(CAMPUS_RECORDS_CHECK),
+  play: bnPlay(BN_RECORDS_CHECK),
 }
 
 export const UniversityExamRecordsPhone: Story = {
   name: 'University, exam records, phone',
   render: () => <OnPhone start={BN_ROUTES.records} />,
-  play: campusPlay(CAMPUS_RECORDS_CHECK, true),
+  play: bnPlay(BN_RECORDS_CHECK, true),
 }
 
 /**
@@ -14648,7 +14648,7 @@ export const UniversityExamRecordsPhone: Story = {
  * and the grade entered from the keyboard, the total and ECTS from the application; two grades
  * missing, one grade the application's scale questions; the scale and the signers beside.
  */
-const CAMPUS_RECORD_CHECK = async (canvasElement: HTMLElement) => {
+const BN_RECORD_CHECK = async (canvasElement: HTMLElement) => {
   const canvas = within(canvasElement)
   await expect(canvas.getByRole('heading', { level: 1, name: 'ZI-2026-0417' })).toBeVisible()
   await expect(canvasElement).toHaveTextContent('77 points is grade 8 on the faculty’s scale.')
@@ -14659,13 +14659,13 @@ const CAMPUS_RECORD_CHECK = async (canvasElement: HTMLElement) => {
 export const UniversityExamRecord: Story = {
   name: 'University, exam record',
   render: () => <ExampleApp start={BN_ROUTES.record} />,
-  play: campusPlay(CAMPUS_RECORD_CHECK),
+  play: bnPlay(BN_RECORD_CHECK),
 }
 
 export const UniversityExamRecordPhone: Story = {
   name: 'University, exam record, phone',
   render: () => <OnPhone start={BN_ROUTES.record} />,
-  play: campusPlay(CAMPUS_RECORD_CHECK, true),
+  play: bnPlay(BN_RECORD_CHECK, true),
 }
 
 /** Every grade entered: the examiner may sign. */
@@ -14673,7 +14673,7 @@ export const UniversityExamRecordReady: Story = {
   name: 'University, exam record, ready to sign',
   tags: ['!dev'],
   render: () => <ExampleApp start={BN_ROUTES.recordReady} />,
-  play: campusPlay(async (canvasElement) => {
+  play: bnPlay(async (canvasElement) => {
     await expect(canvasElement).toHaveTextContent('14 of 14')
     await expect(within(canvasElement).getByRole('button', { name: 'Sign record' })).toBeVisible()
   }),
@@ -14684,14 +14684,14 @@ export const UniversityExamRecordSign: Story = {
   name: 'University, exam record, sign',
   tags: ['!dev'],
   render: () => <ExampleApp start={BN_ROUTES.recordSign} />,
-  play: campusPlay(async () => {
+  play: bnPlay(async () => {
     const dialog = within(document.body).getByRole('alertdialog', { name: /Sign exam record/ })
     await expect(dialog).toHaveTextContent('ZI-2026-0417 · Operating Systems')
   }),
 }
 
 /** Signed by the examiner: every cell plain text, the lock in words. */
-const CAMPUS_LOCKED_CHECK = async (canvasElement: HTMLElement) => {
+const BN_LOCKED_CHECK = async (canvasElement: HTMLElement) => {
   const canvas = within(canvasElement)
   await expect(canvasElement).toHaveTextContent('Signed by Prof. Milan Radović on 14.10.2026.')
   await expect(canvas.queryByRole('textbox', { name: /Exam points/ })).toBeNull()
@@ -14701,14 +14701,14 @@ export const UniversityExamRecordLocked: Story = {
   name: 'University, exam record, locked',
   tags: ['!dev'],
   render: () => <ExampleApp start={BN_ROUTES.recordLocked} />,
-  play: campusPlay(CAMPUS_LOCKED_CHECK),
+  play: bnPlay(BN_LOCKED_CHECK),
 }
 
 export const UniversityExamRecordLockedPhone: Story = {
   name: 'University, exam record, locked, phone',
   tags: ['!dev'],
   render: () => <OnPhone start={BN_ROUTES.recordLocked} />,
-  play: campusPlay(CAMPUS_LOCKED_CHECK, true),
+  play: bnPlay(BN_LOCKED_CHECK, true),
 }
 
 export const UniversityExamRecordEntry: Story = {
@@ -14757,6 +14757,6 @@ export const UniversityExamRecordSigning: Story = {
       await expect(canvas.queryByRole('textbox', { name: /Exam points/ })).toBeNull()
     })
     await expect(canvasElement).toHaveTextContent('Signed by Prof. Milan Radović')
-    await campusToastGone()
+    await bnToastGone()
   },
 }
