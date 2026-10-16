@@ -2308,4 +2308,38 @@ export interface LiroMessages {
   'files.nameRequired': string
   /** ShareDialog: saves the link's password. */
   'sharing.setPassword': string
+  // P5.77 pivot
+  /** Pivot: the field chooser, its areas and the field's actions. */
+  'pivot.fields': string
+  'pivot.areaFilters': string
+  'pivot.areaColumns': string
+  'pivot.areaRows': string
+  'pivot.areaValues': string
+  'pivot.available': string
+  'pivot.areaEmpty': string
+  'pivot.allUsed': string
+  'pivot.fieldMenu': (field: string) => string
+  'pivot.moveUp': string
+  'pivot.moveDown': string
+  'pivot.moveTo': (area: string) => string
+  'pivot.remove': string
+  'pivot.addField': (field: string) => string
+  'pivot.addTo': (field: string, area: string) => string
+  'pivot.addToArea': (area: string) => string
+  'pivot.aggregationOf': (field: string) => string
+  'pivot.filterOf': (field: string) => string
+  'pivot.allValues': string
+  'pivot.done': string
+  /** Pivot: the grid's states, its keys and its actions. */
+  'pivot.chooseValueTitle': string
+  'pivot.chooseValueDescription': string
+  'pivot.chooseFields': string
+  'pivot.noDataTitle': string
+  'pivot.noDataDescription': string
+  'pivot.retry': string
+  'pivot.expandAll': string
+  'pivot.collapseAll': string
+  'pivot.export': string
+  'pivot.drillHint': string
+  'pivot.gridHint': string
 }
