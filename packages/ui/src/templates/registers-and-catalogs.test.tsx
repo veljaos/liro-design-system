@@ -365,3 +365,45 @@ describe('StatutoryFormPage', () => {
     expect(open).not.toContain('Special rate 10% · Base')
   })
 })
+
+// P5.45 ledger: a column without figures (a financial statement's "Note") shows the content.
+describe('StatutoryFormPage content cells', () => {
+  it('shows the application content in place of an amount, on desktop and on phones', () => {
+    const sections: StatutorySection[] = [
+      {
+        key: 'assets',
+        title: 'Assets',
+        columns: [
+          { id: 'note', label: 'Note' },
+          { id: 'current', label: '30.09.2026.' },
+        ],
+        items: [
+          {
+            id: '0010',
+            number: '0010',
+            label: 'Property, plant and equipment',
+            cells: {
+              note: { kind: 'computed', value: null, content: <a href="#note-5">Note 5</a> },
+              current: { kind: 'computed', value: '74390400.00' },
+            },
+          },
+        ],
+      },
+    ]
+    for (const layout of ['desktop', 'phone'] as const) {
+      const html = render(
+        <StatutoryFormPage
+          layout={layout}
+          title="Balance sheet"
+          currency="RSD"
+          currentLabel="30.09.2026."
+          sections={sections}
+        />,
+      )
+      expect(html).toContain('<a href="#note-5">Note 5</a>')
+      // The content takes the amount's place: no "—" for the empty value.
+      expect(text(html)).not.toContain('—')
+      expect(text(html)).toContain('RSD 74.390.400,00')
+    }
+  })
+})

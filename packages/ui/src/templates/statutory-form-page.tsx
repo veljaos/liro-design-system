@@ -69,7 +69,9 @@ export type {
  *   **Three kinds of cells:** `entered` (the application's field; plain text when read-only),
  *   `computed` (read-only text: a total), `source` (read-only, the value a link-coloured button
  *   that opens its documents — e-invoices, customs declarations — in an end Drawer: each a link
- *   with kind, number, state, date and amount, P4.9 rule 7).
+ *   with kind, number, state, date and amount, P4.9 rule 7). A column that holds no figure (a
+ *   financial statement's "Note") takes the application's `content` (a link or button to the
+ *   note, P5.45) in place of an amount.
  * - **Sticky** (P5.28 item 4, the shared rule of `components/sticky-head.ts`, as AttendanceGrid):
  *   the header rows stay right below the shell's sticky top while the page scrolls (`useStickyHead`
  *   moves them), also when the grid scrolls sideways; a grid wider than its card scrolls sideways
@@ -252,7 +254,9 @@ function CellContent({
     )
   }
   let value: ReactNode
-  if (cell.kind === 'entered' && cell.field !== undefined && !context.readOnly) {
+  if (cell.content !== undefined) {
+    value = cell.content
+  } else if (cell.kind === 'entered' && cell.field !== undefined && !context.readOnly) {
     value = <span className="block min-w-36 flex-1">{cell.field}</span>
   } else if (cell.kind === 'source' && cell.sources !== undefined && cell.value !== null) {
     value = (

@@ -70,6 +70,12 @@ import { GROUP_AG_ROUTES } from './screens-AG'
 // ── P5.43 files ──
 import { GROUP_AH_ROUTES } from './screens-AH'
 import { GROUP_AI_ROUTES } from './screens-AI'
+// ── P5.44 ledger ──
+import { GROUP_AK_ROUTES } from './screens-AK'
+import { GROUP_AL_ROUTES } from './screens-AL'
+import { GROUP_AM_ROUTES } from './screens-AM'
+import { GROUP_AN_ROUTES } from './screens-AN'
+import { GROUP_AO_ROUTES } from './screens-AO'
 
 // ── Routes ────────────────────────────────────────────────────────────────────────────────
 
@@ -134,6 +140,12 @@ const EXAMPLE_ROUTES: readonly ExampleRoute[] = [
   // ── P5.43 files ──
   ...GROUP_AH_ROUTES,
   ...GROUP_AI_ROUTES,
+  // ── P5.44 ledger ──
+  ...GROUP_AK_ROUTES,
+  ...GROUP_AL_ROUTES,
+  ...GROUP_AM_ROUTES,
+  ...GROUP_AN_ROUTES,
+  ...GROUP_AO_ROUTES,
 ]
 
 // ── The app ───────────────────────────────────────────────────────────────────────────────────
