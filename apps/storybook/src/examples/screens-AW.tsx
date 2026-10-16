@@ -1,3 +1,4 @@
+import { accountingTabs } from './screens-U'
 import { Send } from 'lucide-react'
 import { useContext, useState } from 'react'
 import {
@@ -30,15 +31,7 @@ import {
   type OffsetRow,
   type OffsetState,
 } from './data-AW'
-import { W_ROUTES } from './data-W'
-import {
-  counterpartyOf,
-  historyPanel,
-  moduleTabs,
-  TradeShell,
-  tradeBadge,
-  usePanels,
-} from './screens-AU'
+import { counterpartyOf, historyPanel, TradeShell, tradeBadge, usePanels } from './screens-AU'
 
 /*
  * Group AW's example screens (P5.55): compensation, cession and assignment at Kvadrat Gradnja
@@ -55,12 +48,6 @@ import {
  */
 
 export { AW_ROUTES }
-
-const ACCOUNTING = [
-  { key: 'inbox', label: 'Document inbox', path: '/accounting/inbox' },
-  { key: 'ios', label: 'Statements of open items', path: W_ROUTES.list },
-  { key: 'offsets', label: 'Offsets and assignments', path: AW_ROUTES.list },
-]
 
 const money = (value: string | null) => <MoneyText value={value} currency="RSD" />
 
@@ -169,7 +156,7 @@ export function OffsetScreen({ phone, document }: { phone: boolean; document: Of
   return (
     <TradeShell
       phone={phone}
-      tabs={moduleTabs(ACCOUNTING, 'offsets')}
+      tabs={accountingTabs('offsets')}
       crumbs={[
         { label: 'Offsets and assignments', href: `#${AW_ROUTES.list}` },
         { label: document.number },
@@ -338,7 +325,7 @@ export function OffsetsScreen({ phone }: { phone: boolean }) {
   return (
     <TradeShell
       phone={phone}
-      tabs={moduleTabs(ACCOUNTING, 'offsets')}
+      tabs={accountingTabs('offsets')}
       crumbs={[{ label: 'Accounting' }, { label: 'Offsets and assignments' }]}
     >
       <ListPage
