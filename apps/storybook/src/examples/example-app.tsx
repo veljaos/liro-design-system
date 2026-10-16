@@ -86,6 +86,12 @@ import { GROUP_AQ_ROUTES } from './screens-AQ'
 import { GROUP_AR_ROUTES } from './screens-AR'
 import { GROUP_AS_ROUTES } from './screens-AS'
 import { GROUP_AT_ROUTES } from './screens-AT'
+// ── P5.44 ledger ──
+import { GROUP_AK_ROUTES } from './screens-AK'
+import { GROUP_AL_ROUTES } from './screens-AL'
+import { GROUP_AM_ROUTES } from './screens-AM'
+import { GROUP_AN_ROUTES } from './screens-AN'
+import { GROUP_AO_ROUTES } from './screens-AO'
 
 // ── Routes ────────────────────────────────────────────────────────────────────────────────
 
@@ -166,6 +172,12 @@ const EXAMPLE_ROUTES: readonly ExampleRoute[] = [
   ...GROUP_AR_ROUTES,
   ...GROUP_AS_ROUTES,
   ...GROUP_AT_ROUTES,
+  // ── P5.44 ledger ──
+  ...GROUP_AK_ROUTES,
+  ...GROUP_AL_ROUTES,
+  ...GROUP_AM_ROUTES,
+  ...GROUP_AN_ROUTES,
+  ...GROUP_AO_ROUTES,
 ]
 
 // ── The app ───────────────────────────────────────────────────────────────────────────────────

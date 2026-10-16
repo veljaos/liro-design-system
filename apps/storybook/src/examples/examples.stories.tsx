@@ -13903,3 +13903,541 @@ export const ServiceContractRunPhone: Story = {
     await expect(canvasElement).toHaveTextContent('285.058,20')
   },
 }
+
+// ── P5.44 ledger ──
+
+import { AK_ROUTES } from './data-AK'
+import { AL_ROUTES } from './data-AL'
+import { AM_ROUTES } from './data-AM'
+import { AN_ROUTES } from './data-AN'
+import { AO_ROUTES } from './data-AO'
+
+/** Settles, checks, and on a phone checks that no page scrolls sideways. */
+function ledgerPlay(
+  check: (canvasElement: HTMLElement) => Promise<void>,
+  phone = false,
+): NonNullable<Story['play']> {
+  return async ({ canvasElement }) => {
+    await settle()
+    await check(canvasElement)
+    if (phone) {
+      for (const page of canvasElement.querySelectorAll<HTMLElement>('[data-liro-phone-page]')) {
+        await expect(page.scrollWidth).toBeLessThanOrEqual(page.clientWidth)
+      }
+    }
+  }
+}
+
+/**
+ * P5.44: Kvadrat Gradnja d.o.o.'s chart of accounts on 14.10.2026 (illustrative, in the shape of
+ * the Serbian chart): classes 0–9, groups, synthetic and analytic accounts in a TreeTable with
+ * each account's kind, normal side, required analytics and balance; an inactive account and a
+ * class that is not kept say why. A press on an account opens its details; "Account card" opens
+ * its card.
+ */
+const CHART_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  // A treegrid on a desktop, TreeView's tree on a phone.
+  const tree =
+    canvas.queryByRole('treegrid', { name: 'Chart of accounts' }) ??
+    canvas.getByRole('tree', { name: 'Chart of accounts' })
+  await expect(within(tree).getByText('Main cash desk')).toBeVisible()
+  await expect(
+    within(tree).getByText('Inactive: the account was closed on 30.06.2025.'),
+  ).toBeVisible()
+}
+
+export const ChartOfAccounts: Story = {
+  name: 'Chart of accounts',
+  render: () => <ExampleApp start={AK_ROUTES.chart} />,
+  play: ledgerPlay(CHART_CHECK),
+}
+
+export const ChartOfAccountsPhone: Story = {
+  name: 'Chart of accounts, phone',
+  render: () => <OnPhone start={AK_ROUTES.chart} />,
+  play: ledgerPlay(CHART_CHECK, true),
+}
+
+/** The search "customers": the matching accounts and every level above them, opened. */
+export const ChartOfAccountsSearch: Story = {
+  name: 'Chart of accounts, search',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AK_ROUTES.chartSearch} />,
+  play: ledgerPlay(async (canvasElement) => {
+    const tree = within(canvasElement).getByRole('treegrid', { name: /accounts found$/ })
+    await expect(within(tree).getAllByText('Customers abroad')).toHaveLength(2)
+    await expect(within(tree).queryByText('Main cash desk')).toBeNull()
+  }),
+}
+
+/** Account 2040's details: place in the chart, kind, side, analytics, tax category, balance. */
+export const ChartOfAccountsDetails: Story = {
+  name: 'Chart of accounts, account details',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AK_ROUTES.chartDetails('2040')} />,
+  play: ledgerPlay(async () => {
+    const drawer = within(document.body).getByRole('dialog', { name: /Account details/ })
+    await expect(within(drawer).getByText('Partner')).toBeVisible()
+    await expect(within(drawer).getByRole('button', { name: 'Open account card' })).toBeVisible()
+  }),
+}
+
+/** Typing a code finds the account and opens the levels above it; a press opens its details. */
+export const ChartOfAccountsSearchFlow: Story = {
+  name: 'Chart of accounts, search and details, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AK_ROUTES.chart} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.type(canvas.getByRole('textbox', { name: 'Account number or name' }), '4350')
+    const tree = await canvas.findByRole(
+      'treegrid',
+      { name: /, 1 account found$/ },
+      { timeout: 3000 },
+    )
+    // The synthetic account 435 has the same name: the analytic account 4350 is the last.
+    const names = within(tree).getAllByText('Suppliers in the country')
+    const account = names[names.length - 1]
+    if (account === undefined) throw new Error('Account 4350 is missing')
+    await userEvent.click(account)
+    const drawer = await within(document.body).findByRole('dialog', { name: /4350/ })
+    await userEvent.click(within(drawer).getByRole('button', { name: 'Open account card' }))
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: 'Account card 4350' }),
+    ).toBeVisible()
+  },
+}
+
+/**
+ * Account card 2040 for 01.09.–14.10.2026.: the opening balance of 01.01., the turnover before
+ * the period, every entry with its document (a link where the document has a screen: F-2026-0412,
+ * ST-2026-0004, KO-2026-0009, bank statement 188) and the running balance, the period's
+ * turnover and closing balance in the totals row.
+ */
+const CARD_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Account card 2040' })).toBeVisible()
+  await expect(canvas.getAllByText('Opening balance on 01.01.2026.').length).toBeGreaterThan(0)
+  await expect(canvas.getAllByRole('link', { name: 'F-2026-0412' }).length).toBeGreaterThan(0)
+}
+
+export const AccountCard: Story = {
+  name: 'Account card',
+  render: () => <ExampleApp start={AK_ROUTES.card('2040')} />,
+  play: ledgerPlay(CARD_CHECK),
+}
+
+export const AccountCardPhone: Story = {
+  name: 'Account card, phone',
+  render: () => <OnPhone start={AK_ROUTES.card('2040')} />,
+  play: ledgerPlay(CARD_CHECK, true),
+}
+
+/** The bank account's card: bank statement 188 line by line (its line 10 is left for later). */
+export const AccountCardBank: Story = {
+  name: 'Account card, bank account',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AK_ROUTES.card('2410')} />,
+  play: ledgerPlay(async (canvasElement) => {
+    await expect(
+      within(canvasElement).getByRole('heading', { level: 1, name: 'Account card 2410' }),
+    ).toBeVisible()
+  }),
+}
+
+/** From an entry to its document: the invoice F-2026-0412. */
+export const AccountCardDrillDown: Story = {
+  name: 'Account card, drill-down to the invoice, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AK_ROUTES.card('2040')} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const [link] = canvas.getAllByRole('link', { name: 'F-2026-0412' })
+    if (link === undefined) throw new Error('The link to F-2026-0412 is missing')
+    await userEvent.click(link)
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: 'F-2026-0412' }),
+    ).toBeVisible()
+  },
+}
+
+/**
+ * P5.45: the trial balance on 14.10.2026 on the statutory grid: one part per class, the synthetic
+ * accounts as numbered groups, Opening / Turnover / Closing over Debit / Credit; every figure
+ * opens the account's card; the Core's three checks passed; "Compare with 14.10.2025.".
+ */
+const TRIAL_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(
+    canvas.getByRole('heading', { level: 1, name: 'Trial balance, 01.01.–14.10.2026.' }),
+  ).toBeVisible()
+  await expect(canvas.getByText('3 checks passed', { exact: false })).toBeVisible()
+  await expect(canvas.getAllByText('Customers in the country').length).toBeGreaterThan(0)
+}
+
+export const TrialBalance: Story = {
+  name: 'Trial balance',
+  render: () => <ExampleApp start={AL_ROUTES.trial} />,
+  play: ledgerPlay(TRIAL_CHECK),
+}
+
+export const TrialBalancePhone: Story = {
+  name: 'Trial balance, phone',
+  render: () => <OnPhone start={AL_ROUTES.trial} />,
+  play: ledgerPlay(TRIAL_CHECK, true),
+}
+
+/** Last year's figure under each value. */
+export const TrialBalanceCompared: Story = {
+  name: 'Trial balance, compared with 2025',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AL_ROUTES.trialCompare} />,
+  play: ledgerPlay(async (canvasElement) => {
+    await expect(
+      canvasElement.querySelectorAll('[data-slot="statutory-previous"]').length,
+    ).toBeGreaterThan(0)
+  }),
+}
+
+/** A figure opens its source, the account's card, and the card its entries. */
+export const TrialBalanceDrillDown: Story = {
+  name: 'Trial balance, drill-down to the account card, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AL_ROUTES.trial} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(
+      canvas.getByRole('button', { name: /sources of 2040 · Closing 14\.10\.2026\. · Debit$/ }),
+    )
+    const drawer = await within(document.body).findByRole('dialog', { name: /Source documents/ })
+    await userEvent.click(within(drawer).getByRole('link', { name: /2040/ }))
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: 'Account card 2040' }),
+    ).toBeVisible()
+  },
+}
+
+/**
+ * The balance sheet at 30.09.2026 beside 31.12.2025 and the income statement for January–
+ * September beside 2025: illustrative positions and codes, the notes opened from the Note column.
+ */
+const BALANCE_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(
+    canvas.getByRole('heading', { level: 1, name: 'Balance sheet at 30.09.2026.' }),
+  ).toBeVisible()
+  await expect(
+    canvas.getAllByRole('button', { name: 'Note 8: Receivables from sales' }).length,
+  ).toBeGreaterThan(0)
+}
+
+export const BalanceSheet: Story = {
+  name: 'Balance sheet',
+  render: () => <ExampleApp start={AL_ROUTES.balanceSheet} />,
+  play: ledgerPlay(BALANCE_CHECK),
+}
+
+export const BalanceSheetPhone: Story = {
+  name: 'Balance sheet, phone',
+  render: () => <OnPhone start={AL_ROUTES.balanceSheet} />,
+  play: ledgerPlay(BALANCE_CHECK, true),
+}
+
+/** Note 8 beside the balance sheet, with its figures for both years. */
+export const BalanceSheetNote: Story = {
+  name: 'Balance sheet, note',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AL_ROUTES.balanceSheetNote} />,
+  play: ledgerPlay(async () => {
+    const drawer = within(document.body).getByRole('dialog', { name: /Note 8/ })
+    await expect(within(drawer).getAllByText('Customers in the country').length).toBe(2)
+  }),
+}
+
+export const BalanceSheetNoteFlow: Story = {
+  name: 'Balance sheet, a note opens, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AL_ROUTES.balanceSheet} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const [button] = within(canvasElement).getAllByRole('button', { name: /^Note 5:/ })
+    if (button === undefined) throw new Error('Note 5 is missing')
+    await userEvent.click(button)
+    const drawer = await within(document.body).findByRole('dialog', { name: /Note 5/ })
+    await settle()
+    // The note's figures for both years.
+    await expect(within(drawer).getAllByText('Construction machinery')).toHaveLength(2)
+  },
+}
+
+const INCOME_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(
+    canvas.getByRole('heading', { level: 1, name: 'Income statement, 01.01.–30.09.2026.' }),
+  ).toBeVisible()
+  await expect(canvas.getAllByText('Profit for the period').length).toBeGreaterThan(0)
+}
+
+export const IncomeStatement: Story = {
+  name: 'Income statement',
+  render: () => <ExampleApp start={AL_ROUTES.incomeStatement} />,
+  play: ledgerPlay(INCOME_CHECK),
+}
+
+export const IncomeStatementPhone: Story = {
+  name: 'Income statement, phone',
+  render: () => <OnPhone start={AL_ROUTES.incomeStatement} />,
+  play: ledgerPlay(INCOME_CHECK, true),
+}
+
+/**
+ * P5.46: the main cash desk's journal for 12–14.10.2026, by day — opening balance, the slips,
+ * the day's receipts and payments, the closing balance — and the cash limit's warning in the
+ * application's words and figures.
+ */
+const CASH_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Cash book' })).toBeVisible()
+  await expect(canvas.getByText("The cash is above the cash desk's limit")).toBeVisible()
+  await expect(canvas.getAllByRole('link', { name: 'CR-2026-0143' }).length).toBeGreaterThan(0)
+}
+
+export const CashBook: Story = {
+  name: 'Cash book',
+  render: () => <ExampleApp start={AM_ROUTES.book} />,
+  play: ledgerPlay(CASH_CHECK),
+}
+
+export const CashBookPhone: Story = {
+  name: 'Cash book, phone',
+  render: () => <OnPhone start={AM_ROUTES.book} />,
+  play: ledgerPlay(CASH_CHECK, true),
+}
+
+/** Cash receipt CR-2026-0143: a reservation deposit, the receipt that took the cash above its limit. */
+const RECEIPT_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'CR-2026-0143' })).toBeVisible()
+  await expect(canvas.getByText('Received from')).toBeVisible()
+}
+
+export const CashReceipt: Story = {
+  name: 'Cash receipt',
+  render: () => <ExampleApp start={AM_ROUTES.receipt} />,
+  play: ledgerPlay(RECEIPT_CHECK),
+}
+
+export const CashReceiptPhone: Story = {
+  name: 'Cash receipt, phone',
+  render: () => <OnPhone start={AM_ROUTES.receipt} />,
+  play: ledgerPlay(RECEIPT_CHECK, true),
+}
+
+/** Cash payment CP-2026-0212: Nikola Marković's travel advance. */
+const PAYMENT_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'CP-2026-0212' })).toBeVisible()
+  await expect(canvas.getByText('Paid to')).toBeVisible()
+}
+
+export const CashPayment: Story = {
+  name: 'Cash payment',
+  render: () => <ExampleApp start={AM_ROUTES.payment} />,
+  play: ledgerPlay(PAYMENT_CHECK),
+}
+
+export const CashPaymentPhone: Story = {
+  name: 'Cash payment, phone',
+  render: () => <OnPhone start={AM_ROUTES.payment} />,
+  play: ledgerPlay(PAYMENT_CHECK, true),
+}
+
+/**
+ * P5.56: late-payment interest charged to Stanogradnja Plus d.o.o. for 01.01.–14.10.2026.: each
+ * invoice's late days at the rate of their period (split where the rate changes), the total, and
+ * the illustrative rate table; "Issue interest note".
+ */
+const INTEREST_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(
+    canvas.getByRole('heading', { level: 1, name: 'Late-payment interest' }),
+  ).toBeVisible()
+  await expect(
+    canvas.getByRole('heading', { name: 'Illustrative statutory default interest rates' }),
+  ).toBeVisible()
+}
+
+export const LatePaymentInterest: Story = {
+  name: 'Late-payment interest',
+  render: () => <ExampleApp start={AO_ROUTES.calculation} />,
+  play: ledgerPlay(INTEREST_CHECK),
+}
+
+export const LatePaymentInterestPhone: Story = {
+  name: 'Late-payment interest, phone',
+  render: () => <OnPhone start={AO_ROUTES.calculation} />,
+  play: ledgerPlay(INTEREST_CHECK, true),
+}
+
+export const LatePaymentInterestIssue: Story = {
+  name: 'Late-payment interest, issue the note',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AO_ROUTES.calculationIssue} />,
+  play: ledgerPlay(async () => {
+    const dialog = within(document.body).getByRole('alertdialog', { name: /Issue interest note/ })
+    await expect(within(dialog).getByRole('button', { name: 'Issue' })).toBeVisible()
+  }),
+}
+
+/** Issuing the note opens it. */
+export const LatePaymentInterestIssueFlow: Story = {
+  name: 'Late-payment interest, the note is issued, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AO_ROUTES.calculation} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Issue interest note' }))
+    const dialog = await within(document.body).findByRole('alertdialog', {
+      name: /Issue interest note/,
+    })
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Issue' }))
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: 'KM-2026-0007' }),
+    ).toBeVisible()
+    // The success toast is closed and gone before the checks end (axe never catches it fading).
+    notice.dismiss()
+    await waitFor(
+      async () => {
+        await expect(document.querySelector('[data-sonner-toast]')).toBeNull()
+      },
+      { timeout: 5000 },
+    )
+  },
+}
+
+const NOTE_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'KM-2026-0007' })).toBeVisible()
+  await expect(canvas.getAllByText('Interest to pay').length).toBeGreaterThan(0)
+}
+
+export const InterestNote: Story = {
+  name: 'Interest note',
+  render: () => <ExampleApp start={AO_ROUTES.note} />,
+  play: ledgerPlay(NOTE_CHECK),
+}
+
+export const InterestNotePhone: Story = {
+  name: 'Interest note, phone',
+  render: () => <OnPhone start={AO_ROUTES.note} />,
+  play: ledgerPlay(NOTE_CHECK, true),
+}
+
+/**
+ * P5.59: "Illustrative NBS middle rates" on 14.10.2026 (invented values), the foreign-currency
+ * accounts with their value in dinars, and the exchange-rate differences of the open items —
+ * among them F-2026-0415, the invoice in euros — posted after a confirmation.
+ */
+const RATES_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Exchange rates' })).toBeVisible()
+  await expect(
+    canvas.getByRole('heading', { name: 'Illustrative NBS middle rates, list no. 198' }),
+  ).toBeVisible()
+}
+
+export const ExchangeRates: Story = {
+  name: 'Exchange rates',
+  render: () => <ExampleApp start={AN_ROUTES.rates} />,
+  play: ledgerPlay(RATES_CHECK),
+}
+
+export const ExchangeRatesPhone: Story = {
+  name: 'Exchange rates, phone',
+  render: () => <OnPhone start={AN_ROUTES.rates} />,
+  play: ledgerPlay(RATES_CHECK, true),
+}
+
+const FX_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(
+    canvas.getByRole('heading', { level: 1, name: 'Foreign-currency accounts on 14.10.2026.' }),
+  ).toBeVisible()
+  await expect(canvas.getAllByText('Total in RSD').length).toBeGreaterThan(0)
+}
+
+export const ForeignCurrencyAccounts: Story = {
+  name: 'Foreign-currency accounts',
+  render: () => <ExampleApp start={AN_ROUTES.accounts} />,
+  play: ledgerPlay(FX_CHECK),
+}
+
+export const ForeignCurrencyAccountsPhone: Story = {
+  name: 'Foreign-currency accounts, phone',
+  render: () => <OnPhone start={AN_ROUTES.accounts} />,
+  play: ledgerPlay(FX_CHECK, true),
+}
+
+const DIFFERENCES_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(
+    canvas.getByRole('heading', { level: 1, name: 'Exchange-rate differences' }),
+  ).toBeVisible()
+  await expect(canvas.getAllByRole('link', { name: 'F-2026-0415' }).length).toBeGreaterThan(0)
+}
+
+export const ExchangeDifferences: Story = {
+  name: 'Exchange-rate differences',
+  render: () => <ExampleApp start={AN_ROUTES.revaluation} />,
+  play: ledgerPlay(DIFFERENCES_CHECK),
+}
+
+export const ExchangeDifferencesPhone: Story = {
+  name: 'Exchange-rate differences, phone',
+  render: () => <OnPhone start={AN_ROUTES.revaluation} />,
+  play: ledgerPlay(DIFFERENCES_CHECK, true),
+}
+
+/** The confirmation shows the journal entry the posting makes. */
+export const ExchangeDifferencesPost: Story = {
+  name: 'Exchange-rate differences, post',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AN_ROUTES.revaluationPost} />,
+  play: ledgerPlay(async () => {
+    const dialog = within(document.body).getByRole('alertdialog', {
+      name: /Post exchange-rate differences/,
+    })
+    await expect(
+      within(dialog).getByRole('table', { name: 'Journal entry NK-2026-0951' }),
+    ).toBeVisible()
+  }),
+}
+
+export const ExchangeDifferencesPostFlow: Story = {
+  name: 'Exchange-rate differences, posted, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AN_ROUTES.revaluation} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Post differences' }))
+    const dialog = await within(document.body).findByRole('alertdialog', {
+      name: /Post exchange-rate differences/,
+    })
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Post' }))
+    await expect(await canvas.findByText('Posted as NK-2026-0951')).toBeVisible()
+    // The success toast is closed and gone before the checks end (axe never catches it fading).
+    notice.dismiss()
+    await waitFor(
+      async () => {
+        await expect(document.querySelector('[data-sonner-toast]')).toBeNull()
+      },
+      { timeout: 5000 },
+    )
+  },
+}
