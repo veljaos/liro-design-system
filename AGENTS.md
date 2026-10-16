@@ -369,7 +369,7 @@ screenshots taken on Windows or macOS directly.
   commit to the `bp/*` branch whose message contains `[baselines]` (an empty commit is enough:
   `git commit --allow-empty -m "P4.1: [baselines]"`), or start "Baselines" from the Actions tab
   and choose the branch. It builds Storybook once, runs the visual tests with
-  `--update-snapshots=changed` on twelve machines in the pinned image, and uploads one artifact
+  `--update-snapshots=changed` on twenty-four machines in the pinned image, and uploads one artifact
   `baselines` with only the new and changed images, laid out like
   `apps/storybook/tests/__screenshots__/` (the run's summary lists them). Download it into an
   empty folder (`gh run download <run-id> -n baselines -D <tmp>`; it refuses to overwrite files)
@@ -378,7 +378,7 @@ screenshots taken on Windows or macOS directly.
   and fails its part. The workflow never commits; images of removed stories are deleted by hand.
 - **Through CI.** Push the branch. When a story has no baseline or looks different, the job
   `Story tests, accessibility, visual` fails and uploads the artifact `playwright-results` (the
-  results of its twelve parallel parts joined), which contains the new images in
+  results of its thirty-two parallel parts joined), which contains the new images in
   `apps/storybook/tests/__screenshots__/`. Review them, copy them into the branch, commit.
 - **Locally, with Docker.** `node scripts/update-baselines.mjs` runs install, build, Storybook
   build and the visual tests with `--update-snapshots=changed` inside the same image, and writes
