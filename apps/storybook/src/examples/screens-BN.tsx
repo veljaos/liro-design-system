@@ -409,6 +409,30 @@ export function ExamRegistration({
         <Alert title={`Open until ${format.date(OPEN_PERIOD.registrationTo)} at 23:59`}>
           {`The exams run ${format.date(OPEN_PERIOD.examsFrom)} – ${format.date(OPEN_PERIOD.examsTo)}. A registration can be withdrawn until the deadline; fees are charged to your student account.`}
         </Alert>
+        <SectionCard title="Registered" headingLevel={2} flush>
+          <DataTable
+            label={`Exams registered for ${OPEN_PERIOD.name}`}
+            columns={registeredColumns}
+            rows={registeredRows}
+            getRowId={(row) => row.id}
+            getRowLabel={(row) => row.course}
+            inCard
+            layout={phone ? 'cards' : 'table'}
+            rowActions={(row) => [
+              {
+                label: 'Withdraw registration',
+                onSelect: () => {
+                  setWithdrawing(row)
+                },
+              },
+            ]}
+            mobile={{
+              title: (row) => row.course,
+              subtitle: (row) => `${format.date(row.date)} ${row.time} · ${row.room}`,
+              details: ['ects', 'fee'],
+            }}
+          />
+        </SectionCard>
         <SectionCard title="Open to you" headingLevel={2}>
           <div className="flex flex-col gap-4">
             <CandidateList
@@ -416,7 +440,11 @@ export function ExamRegistration({
               candidates={candidates}
               selected={chosen}
               onSelectedChange={setChosen}
-              empty="Every exam open to you is registered."
+              empty={
+                <p className="bidi-content m-0 py-3 text-sm text-secondary">
+                  Every exam open to you is registered.
+                </p>
+              }
             />
             {open.length > 0 && (
               <div className="flex flex-wrap items-center justify-between gap-3">
@@ -442,30 +470,6 @@ export function ExamRegistration({
               </div>
             )}
           </div>
-        </SectionCard>
-        <SectionCard title="Registered" headingLevel={2} flush>
-          <DataTable
-            label={`Exams registered for ${OPEN_PERIOD.name}`}
-            columns={registeredColumns}
-            rows={registeredRows}
-            getRowId={(row) => row.id}
-            getRowLabel={(row) => row.course}
-            inCard
-            layout={phone ? 'cards' : 'table'}
-            rowActions={(row) => [
-              {
-                label: 'Withdraw registration',
-                onSelect: () => {
-                  setWithdrawing(row)
-                },
-              },
-            ]}
-            mobile={{
-              title: (row) => row.course,
-              subtitle: (row) => `${format.date(row.date)} ${row.time} · ${row.room}`,
-              details: ['ects', 'fee'],
-            }}
-          />
         </SectionCard>
         <SectionCard
           title="Not open to you"
