@@ -3030,7 +3030,7 @@ export const HealthBookingWalk: Story = {
  * The clinic's schedule of Wednesday 14.10.2026 (ResourceSchedule): three doctors and the
  * laboratory; the break and dr Vesna Lukić's annual leave hatched with their reasons; Jovana
  * Nikolić's appointment booked online at 11:30; "now" (09:40) marked across the rows. Opening it
- * shows her finding.
+ * shows her chart (P5.72).
  */
 export const HealthClinicSchedule: Story = {
   name: 'Health, clinic schedule',
@@ -14439,5 +14439,239 @@ export const ExchangeDifferencesPostFlow: Story = {
       },
       { timeout: 5000 },
     )
+  },
+}
+
+// ── P5.72 health ──
+// (Imports here, inside the block, so the blocks merge without touching the top.)
+import { BM_ROUTES, FINDINGS as BM_FINDINGS } from './data-BM'
+
+/** The emergency visit's finding: masked in the chart until a reason is given. */
+const BM_ER_FINDING = BM_FINDINGS.find((each) => each.number === 'IZ-2026-02988')
+const BM_ER_DIAGNOSIS = BM_ER_FINDING?.diagnosis ?? ''
+
+/**
+ * Jovana Nikolić's chart at Ambulanta Liman (P5.72), seen by the clinic on Wednesday 14.10.2026 at
+ * 09:40, two hours before her check-up: her visits newest first (the emergency department of
+ * 02.08.2026 among them), her findings with the diagnosis masked until a reason is given (P5.14),
+ * her medicines with dose, directions and period, and the latest results of 08.10.2026 with the
+ * laboratory's ranges and verdicts — three above range, vitamin D still waiting. Her allergy is
+ * never masked. Opened from the doctor's calendar and the clinic's schedule.
+ */
+const BM_CHART_CHECK = async (canvasElement: HTMLElement, phone = false) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: PATIENT.name })).toBeVisible()
+  // On a phone the tables are cards: a list with the table's name.
+  await expect(
+    canvas.getByRole(phone ? 'list' : 'table', { name: `Visits, ${PATIENT.name}` }),
+  ).toBeVisible()
+  await expect(canvas.getAllByRole('button', { name: 'Show diagnosis' }).length).toBe(
+    BM_FINDINGS.length,
+  )
+  await expect(canvasElement).not.toHaveTextContent(BM_ER_DIAGNOSIS)
+  await expect(canvasElement).toHaveTextContent('Above range')
+  await expect(canvasElement).toHaveTextContent('Waiting for the laboratory')
+  await expect(canvasElement).toHaveTextContent('Allergy: penicillin')
+}
+
+export const HealthPatientChart: Story = {
+  name: 'Health, patient chart',
+  render: () => <ExampleApp start={BM_ROUTES.chart} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await BM_CHART_CHECK(canvasElement)
+    await expect(canvasElement).toHaveTextContent('3 of 10')
+    await expect(canvasElement).toHaveTextContent('3,9–6,1')
+  },
+}
+
+/** On a phone the visits come first: no key figures above them, the panels under the content. */
+export const HealthPatientChartPhone: Story = {
+  name: 'Health, patient chart, phone',
+  render: () => <OnPhone start={BM_ROUTES.chart} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await BM_CHART_CHECK(canvasElement, true)
+    const sections = [...canvasElement.querySelectorAll('h2')].map((each) => each.textContent)
+    await expect(sections[0]).toBe('Visits')
+    await noPageOverflow(canvasElement)
+  },
+}
+
+/** The emergency visit open in its drawer: who, where, the finding masked, the medicine given. */
+export const HealthPatientChartVisit: Story = {
+  name: 'Health, patient chart, visit open',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BM_ROUTES.chartVisit} />,
+  play: async () => {
+    await settle()
+    const drawer = within(document.body).getByRole('dialog', { name: /^Emergency, 02\.08\.2026/ })
+    await expect(drawer).toHaveTextContent('dr Jelena Popović')
+    await expect(drawer).toHaveTextContent('Captopril 25 mg, tablet')
+    await expect(within(drawer).getByRole('button', { name: 'Show diagnosis' })).toBeVisible()
+    await expect(drawer).not.toHaveTextContent(BM_ER_DIAGNOSIS)
+  },
+}
+
+export const HealthPatientChartVisitPhone: Story = {
+  name: 'Health, patient chart, visit open, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={BM_ROUTES.chartVisit} />,
+  play: async () => {
+    await settle()
+    await expect(
+      within(document.body).getByRole('dialog', { name: /^Emergency, 02\.08\.2026/ }),
+    ).toBeVisible()
+  },
+}
+
+/** The same visit after a reason: the diagnosis the application passed, with Hide. */
+export const HealthPatientChartShown: Story = {
+  name: 'Health, patient chart, diagnosis shown',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BM_ROUTES.chartVisitShown} />,
+  play: async () => {
+    await settle()
+    const drawer = within(document.body).getByRole('dialog', { name: /^Emergency, 02\.08\.2026/ })
+    await expect(drawer).toHaveTextContent(BM_ER_DIAGNOSIS)
+    await expect(within(drawer).getByRole('button', { name: 'Hide diagnosis' })).toBeVisible()
+    // The finding's text stays masked: each value asks for its own reason.
+    await expect(
+      within(drawer).getByRole('button', { name: 'Show finding and advice' }),
+    ).toBeVisible()
+  },
+}
+
+/**
+ * From the doctor's calendar to the chart: Jovana's appointment opens her chart, the emergency
+ * visit opens in its drawer, its diagnosis is shown after a reason and hidden again.
+ */
+export const HealthPatientChartFlow: Story = {
+  name: 'Health, patient chart from the calendar, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={H_ROUTES.doctorCalendar} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(
+      canvas.getByRole('button', { name: new RegExp(`${PATIENT.name}, Check-up`) }),
+    )
+    await expect(await canvas.findByRole('heading', { level: 1, name: PATIENT.name })).toBeVisible()
+    await userEvent.click(
+      within(canvas.getByRole('table', { name: `Visits, ${PATIENT.name}` })).getByRole('row', {
+        name: /Emergency/,
+      }),
+    )
+    const drawer = await within(document.body).findByRole('dialog', { name: /^Emergency/ })
+    await userEvent.click(within(drawer).getByRole('button', { name: 'Show diagnosis' }))
+    const ask = await within(document.body).findByRole('dialog', { name: /^Show diagnosis/ })
+    await expect(ask).toHaveTextContent('Access is logged')
+    await userEvent.click(within(ask).getByRole('radio', { name: 'I am treating the patient now' }))
+    await userEvent.click(within(ask).getByRole('button', { name: 'Show' }))
+    await expect(await within(drawer).findByText(BM_ER_DIAGNOSIS)).toBeVisible()
+    await userEvent.click(await within(drawer).findByRole('button', { name: 'Hide diagnosis' }))
+    await expect(drawer).not.toHaveTextContent(BM_ER_DIAGNOSIS)
+    await settle()
+  },
+}
+
+/**
+ * Jovana Nikolić's laboratory results (P5.72): fasting glucose over two years as a small line with
+ * the laboratory's upper and lower limit beside it (the range is data: grey series the tooltip and
+ * the table read too), every glucose result with its verdict, then the latest results with the
+ * one before each. A press on a result shows that test over time.
+ */
+const BM_LAB_CHECK = async (canvasElement: HTMLElement, phone = false) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Lab results' })).toBeVisible()
+  await expect(canvas.getByRole('heading', { name: 'Glucose, fasting, mmol/L' })).toBeVisible()
+  await expect(
+    canvas.getByRole(phone ? 'list' : 'table', { name: 'Glucose, fasting, every result' }),
+  ).toHaveTextContent('6,4')
+  await expect(canvasElement).toHaveTextContent('Upper limit')
+}
+
+export const HealthLabResults: Story = {
+  name: 'Health, lab results',
+  render: () => <ExampleApp start={BM_ROUTES.lab} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await BM_LAB_CHECK(canvasElement)
+    await expect(canvasElement).toHaveTextContent('Lower limit')
+  },
+}
+
+export const HealthLabResultsPhone: Story = {
+  name: 'Health, lab results, phone',
+  render: () => <OnPhone start={BM_ROUTES.lab} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await BM_LAB_CHECK(canvasElement, true)
+    await noPageOverflow(canvasElement)
+  },
+}
+
+/** LDL cholesterol: the laboratory gives only an upper limit, so only that line is drawn. */
+export const HealthLabResultsLdl: Story = {
+  name: 'Health, lab results, LDL cholesterol',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BM_ROUTES.labOf('ldl')} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(
+      within(canvasElement).getByRole('heading', { name: 'LDL cholesterol, mmol/L' }),
+    ).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('< 3,0')
+    await expect(canvasElement).not.toHaveTextContent('Lower limit')
+  },
+}
+
+/** Vitamin D is still at the laboratory: nothing to draw yet, the result "—" and its verdict. */
+export const HealthLabResultsWaiting: Story = {
+  name: 'Health, lab results, waiting for the laboratory',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BM_ROUTES.labOf('vitaminD')} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(
+      within(canvasElement).getByRole('table', { name: 'Vitamin D (25-OH), every result' }),
+    ).toHaveTextContent('Waiting for the laboratory')
+  },
+}
+
+export const HealthLabResultsLoading: Story = {
+  name: 'Health, lab results, loading',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BM_ROUTES.labLoading} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(within(canvasElement).getByRole('heading', { level: 1 })).toHaveTextContent(
+      'Lab results',
+    )
+  },
+}
+
+/** A press on a result shows that test over time; the select chooses another. */
+export const HealthLabResultsChoose: Story = {
+  name: 'Health, lab results, choose a test, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BM_ROUTES.chart} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('row', { name: /^Cholesterol, total/ }))
+    await expect(
+      await canvas.findByRole('heading', { name: 'Cholesterol, total, mmol/L' }),
+    ).toBeVisible()
+    await userEvent.click(
+      within(canvas.getByRole('table', { name: `Latest results, ${PATIENT.name}` })).getByRole(
+        'row',
+        { name: /^Leukocytes/ },
+      ),
+    )
+    await expect(
+      await canvas.findByRole('table', { name: 'Leukocytes, every result' }),
+    ).toHaveTextContent('11,2')
+    await settle()
   },
 }
