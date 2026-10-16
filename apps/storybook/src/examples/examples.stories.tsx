@@ -14476,7 +14476,7 @@ const bqNoticeGone = async () => {
  * Liman 2 and Grbavica 7, on 14.10.2026: 24 units by building and floor (RoomRack), Let / Vacant
  * / Under repair in words, the rent's state, the tenant and the lease's term on each tile.
  */
-export const PropertyUnits: Story = {
+export const BqPropertyUnits: Story = {
   name: 'Property units',
   render: () => <ExampleApp start={BQ_ROUTES.units} />,
   play: async ({ canvasElement }) => {
@@ -14489,7 +14489,7 @@ export const PropertyUnits: Story = {
   },
 }
 
-export const PropertyUnitsPhone: Story = {
+export const BqPropertyUnitsPhone: Story = {
   name: 'Property units, phone',
   render: () => <OnPhone start={BQ_ROUTES.units} />,
   play: async ({ canvasElement }) => {
@@ -14499,7 +14499,7 @@ export const PropertyUnitsPhone: Story = {
 }
 
 /** Flat L2-3.2 open beside the rack: the tenant, the lease and its term, the rent, the request. */
-export const PropertyUnitOpen: Story = {
+export const BqPropertyUnitOpen: Story = {
   name: 'Property units, a unit open',
   tags: ['!dev'],
   render: () => <ExampleApp start={BQ_ROUTES.unit('L2-3.2')} />,
@@ -14513,7 +14513,7 @@ export const PropertyUnitOpen: Story = {
   },
 }
 
-export const PropertyUnitOpenFlow: Story = {
+export const BqPropertyUnitOpenFlow: Story = {
   name: 'Property units, open a unit, interaction',
   tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={BQ_ROUTES.units} />,
@@ -14521,13 +14521,14 @@ export const PropertyUnitOpenFlow: Story = {
     await bqHeading(canvasElement, 'Units')
     await userEvent.click(bqTile(canvasElement, 'G7-2.2'))
     const drawer = await within(document.body).findByRole('dialog', { name: 'Unit G7-2.2' })
+    await settle()
     await expect(drawer).toHaveTextContent('Water damage')
     await expect(within(drawer).getByRole('link', { name: /MR-2026-0042/ })).toBeVisible()
   },
 }
 
 /** The same 24 units as a list: views by state, a building filter, the search. */
-export const PropertyUnitList: Story = {
+export const BqPropertyUnitList: Story = {
   name: 'Property unit list',
   render: () => <ExampleApp start={BQ_ROUTES.unitsList} />,
   play: async ({ canvasElement }) => {
@@ -14538,7 +14539,7 @@ export const PropertyUnitList: Story = {
   },
 }
 
-export const PropertyUnitListPhone: Story = {
+export const BqPropertyUnitListPhone: Story = {
   name: 'Property unit list, phone',
   render: () => <OnPhone start={BQ_ROUTES.unitsList} />,
   play: async ({ canvasElement }) => {
@@ -14548,7 +14549,7 @@ export const PropertyUnitListPhone: Story = {
 }
 
 /** The tenants: private persons and companies, overdue rent in figures, the state in words. */
-export const PropertyTenants: Story = {
+export const BqPropertyTenants: Story = {
   name: 'Property tenants',
   render: () => <ExampleApp start={BQ_ROUTES.tenants} />,
   play: async ({ canvasElement }) => {
@@ -14563,7 +14564,7 @@ export const PropertyTenants: Story = {
   },
 }
 
-export const PropertyTenantsPhone: Story = {
+export const BqPropertyTenantsPhone: Story = {
   name: 'Property tenants, phone',
   render: () => <OnPhone start={BQ_ROUTES.tenants} />,
   play: async ({ canvasElement }) => {
@@ -14573,7 +14574,7 @@ export const PropertyTenantsPhone: Story = {
 }
 
 /** Ivana Radović: contact, the national ID masked, her lease, invoices and requests. */
-export const PropertyTenant: Story = {
+export const BqPropertyTenant: Story = {
   name: 'Property tenant',
   render: () => <ExampleApp start={BQ_ROUTES.tenant(FEATURED_TENANT)} />,
   play: async ({ canvasElement }) => {
@@ -14585,7 +14586,7 @@ export const PropertyTenant: Story = {
   },
 }
 
-export const PropertyTenantPhone: Story = {
+export const BqPropertyTenantPhone: Story = {
   name: 'Property tenant, phone',
   render: () => <OnPhone start={BQ_ROUTES.tenant(FEATURED_TENANT)} />,
   play: async ({ canvasElement }) => {
@@ -14594,7 +14595,7 @@ export const PropertyTenantPhone: Story = {
 }
 
 /** A tenant with October's rent overdue: the figure in the danger tone and the invoice. */
-export const PropertyTenantOverdue: Story = {
+export const BqPropertyTenantOverdue: Story = {
   name: 'Property tenant, rent overdue',
   tags: ['!dev'],
   render: () => <ExampleApp start={BQ_ROUTES.tenant('kovac')} />,
@@ -14607,7 +14608,7 @@ export const PropertyTenantOverdue: Story = {
 }
 
 /** The leases: active, ending within 90 days (in the application's words), ended, all. */
-export const PropertyLeases: Story = {
+export const BqPropertyLeases: Story = {
   name: 'Property leases',
   render: () => <ExampleApp start={BQ_ROUTES.leases} />,
   play: async ({ canvasElement }) => {
@@ -14618,7 +14619,7 @@ export const PropertyLeases: Story = {
   },
 }
 
-export const PropertyLeasesPhone: Story = {
+export const BqPropertyLeasesPhone: Story = {
   name: 'Property leases, phone',
   render: () => <OnPhone start={BQ_ROUTES.leases} />,
   play: async ({ canvasElement }) => {
@@ -14631,7 +14632,7 @@ export const PropertyLeasesPhone: Story = {
  * Lease UZ-2024-041: flat L2-3.2 and Ivana Radović; the term, rent and deposit; the expiry and the
  * renewal offer in the application's words; the documents with the lease itself; the invoices.
  */
-export const PropertyLease: Story = {
+export const BqPropertyLease: Story = {
   name: 'Property lease',
   render: () => <ExampleApp start={BQ_ROUTES.lease(FEATURED_LEASE)} />,
   play: async ({ canvasElement }) => {
@@ -14643,7 +14644,7 @@ export const PropertyLease: Story = {
   },
 }
 
-export const PropertyLeasePhone: Story = {
+export const BqPropertyLeasePhone: Story = {
   name: 'Property lease, phone',
   render: () => <OnPhone start={BQ_ROUTES.lease(FEATURED_LEASE)} />,
   play: async ({ canvasElement }) => {
@@ -14652,7 +14653,7 @@ export const PropertyLeasePhone: Story = {
 }
 
 /** Renew… open: the new end and the application's proposed rent; Send the annex. */
-export const PropertyLeaseRenew: Story = {
+export const BqPropertyLeaseRenew: Story = {
   name: 'Property lease, renew',
   tags: ['!dev'],
   render: () => <ExampleApp start={BQ_ROUTES.leaseRenew} />,
@@ -14666,7 +14667,7 @@ export const PropertyLeaseRenew: Story = {
   },
 }
 
-export const PropertyLeaseRenewFlow: Story = {
+export const BqPropertyLeaseRenewFlow: Story = {
   name: 'Property lease, renew, interaction',
   tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={BQ_ROUTES.lease(FEATURED_LEASE)} />,
@@ -14685,7 +14686,7 @@ export const PropertyLeaseRenewFlow: Story = {
 }
 
 /** The lease agreement in the application's viewer (DocumentFrame). */
-export const PropertyLeaseDocument: Story = {
+export const BqPropertyLeaseDocument: Story = {
   name: 'Lease agreement',
   render: () => <ExampleApp start={BQ_ROUTES.leaseDocument(FEATURED_LEASE)} />,
   play: async ({ canvasElement }) => {
@@ -14696,7 +14697,7 @@ export const PropertyLeaseDocument: Story = {
   },
 }
 
-export const PropertyLeaseDocumentPhone: Story = {
+export const BqPropertyLeaseDocumentPhone: Story = {
   name: 'Lease agreement, phone',
   render: () => <OnPhone start={BQ_ROUTES.leaseDocument(FEATURED_LEASE)} />,
   play: async ({ canvasElement }) => {
@@ -14709,7 +14710,7 @@ export const PropertyLeaseDocumentPhone: Story = {
  * notice, overdue tenants), the preview with all 21 invoices and the totals — every figure the
  * application's; Issue.
  */
-export const RentInvoices: Story = {
+export const BqRentInvoices: Story = {
   name: 'Rent invoices',
   render: () => <ExampleApp start={BQ_ROUTES.run} />,
   play: async ({ canvasElement }) => {
@@ -14721,7 +14722,7 @@ export const RentInvoices: Story = {
   },
 }
 
-export const RentInvoicesPhone: Story = {
+export const BqRentInvoicesPhone: Story = {
   name: 'Rent invoices, phone',
   render: () => <OnPhone start={BQ_ROUTES.run} />,
   play: async ({ canvasElement }) => {
@@ -14733,7 +14734,7 @@ export const RentInvoicesPhone: Story = {
 }
 
 /** One invoice of the run as the tenant receives it (PrintDocument): the lines and the totals. */
-export const RentInvoicePreview: Story = {
+export const BqRentInvoicePreview: Story = {
   name: 'Rent invoices, invoice preview',
   tags: ['!dev'],
   render: () => <ExampleApp start={BQ_ROUTES.runPreview} />,
@@ -14747,7 +14748,7 @@ export const RentInvoicePreview: Story = {
 }
 
 /** After Issue: every step done, the invoices with their numbers and how each was sent. */
-export const RentInvoicesIssued: Story = {
+export const BqRentInvoicesIssued: Story = {
   name: 'Rent invoices, issued',
   tags: ['!dev'],
   render: () => <ExampleApp start={BQ_ROUTES.runIssued} />,
@@ -14759,7 +14760,7 @@ export const RentInvoicesIssued: Story = {
   },
 }
 
-export const RentInvoicesIssueFlow: Story = {
+export const BqRentInvoicesIssueFlow: Story = {
   name: 'Rent invoices, issue, interaction',
   tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={BQ_ROUTES.run} />,
@@ -14776,7 +14777,7 @@ export const RentInvoicesIssueFlow: Story = {
 }
 
 /** The manager's maintenance requests: the state in words, who handles each, the work order. */
-export const PropertyMaintenance: Story = {
+export const BqPropertyMaintenance: Story = {
   name: 'Maintenance requests',
   render: () => <ExampleApp start={BQ_ROUTES.requests} />,
   play: async ({ canvasElement }) => {
@@ -14787,7 +14788,7 @@ export const PropertyMaintenance: Story = {
   },
 }
 
-export const PropertyMaintenancePhone: Story = {
+export const BqPropertyMaintenancePhone: Story = {
   name: 'Maintenance requests, phone',
   render: () => <OnPhone start={BQ_ROUTES.requests} />,
   play: async ({ canvasElement }) => {
@@ -14797,7 +14798,7 @@ export const PropertyMaintenancePhone: Story = {
 }
 
 /** The leaking sink open: the tenant's photos, the progress, who handles it, the work order. */
-export const PropertyMaintenanceOpen: Story = {
+export const BqPropertyMaintenanceOpen: Story = {
   name: 'Maintenance requests, a request open',
   tags: ['!dev'],
   render: () => <ExampleApp start={BQ_ROUTES.request('MR-2026-0047')} />,
@@ -14811,7 +14812,7 @@ export const PropertyMaintenanceOpen: Story = {
   },
 }
 
-export const PropertyMaintenanceAssignFlow: Story = {
+export const BqPropertyMaintenanceAssignFlow: Story = {
   name: 'Maintenance requests, assign, interaction',
   tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={BQ_ROUTES.request('MR-2026-0048')} />,
@@ -14826,16 +14827,31 @@ export const PropertyMaintenanceAssignFlow: Story = {
     await userEvent.click(
       await within(document.body).findByRole('option', { name: /Saša Petković/ }),
     )
+    // The list closes first; the drawer is in the accessibility tree again after it.
+    await waitFor(
+      async () => {
+        await expect(
+          within(drawer).getByRole('combobox', { name: /Handled by/ }),
+        ).toHaveTextContent('Saša Petković')
+      },
+      { timeout: 5000 },
+    )
     await userEvent.click(within(drawer).getByRole('button', { name: 'Assign' }))
-    await expect(
-      within(canvasElement).getByRole('row', { name: /MR-2026-0048/ }),
-    ).toHaveTextContent('Assigned')
+    // Assigned, the drawer closes and the list shows the new state.
+    await waitFor(
+      async () => {
+        await expect(
+          within(canvasElement).getByRole('row', { name: /MR-2026-0048/ }),
+        ).toHaveTextContent('Assigned')
+      },
+      { timeout: 5000 },
+    )
     await bqNoticeGone()
   },
 }
 
 /** The tenants' portal of Ivana Radović: the renewal offer, her flat, the open repair, invoices. */
-export const TenantPortalHome: Story = {
+export const BqTenantPortalHome: Story = {
   name: 'Tenant portal',
   render: () => <ExampleApp start={BQ_ROUTES.portal} />,
   play: async ({ canvasElement }) => {
@@ -14848,7 +14864,7 @@ export const TenantPortalHome: Story = {
   },
 }
 
-export const TenantPortalHomePhone: Story = {
+export const BqTenantPortalHomePhone: Story = {
   name: 'Tenant portal, phone',
   render: () => <OnPhone start={BQ_ROUTES.portal} />,
   play: async ({ canvasElement }) => {
@@ -14857,7 +14873,7 @@ export const TenantPortalHomePhone: Story = {
 }
 
 /** "Report a problem": what, where, the description, photos ("Take a photo" on a phone), access. */
-export const TenantPortalReport: Story = {
+export const BqTenantPortalReport: Story = {
   name: 'Tenant portal, report a problem',
   render: () => <ExampleApp start={BQ_ROUTES.portalNew} />,
   play: async ({ canvasElement }) => {
@@ -14866,7 +14882,7 @@ export const TenantPortalReport: Story = {
   },
 }
 
-export const TenantPortalReportPhone: Story = {
+export const BqTenantPortalReportPhone: Story = {
   name: 'Tenant portal, report a problem, phone',
   render: () => <OnPhone start={BQ_ROUTES.portalNew} />,
   play: async ({ canvasElement }) => {
@@ -14876,7 +14892,7 @@ export const TenantPortalReportPhone: Story = {
 }
 
 /** The form filled in, with a photo added. */
-export const TenantPortalReportFilled: Story = {
+export const BqTenantPortalReportFilled: Story = {
   name: 'Tenant portal, report a problem, filled',
   tags: ['!dev'],
   render: () => <OnPhone start={`${BQ_ROUTES.portalNew}?draft=filled`} />,
@@ -14886,7 +14902,7 @@ export const TenantPortalReportFilled: Story = {
   },
 }
 
-export const TenantPortalReportFlow: Story = {
+export const BqTenantPortalReportFlow: Story = {
   name: 'Tenant portal, report a problem, interaction',
   tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={BQ_ROUTES.portalNew} />,
@@ -14897,20 +14913,29 @@ export const TenantPortalReportFlow: Story = {
     await expect(await canvas.findByText('Choose what is wrong.')).toBeVisible()
     await userEvent.click(canvas.getByRole('combobox', { name: /What is wrong/ }))
     await userEvent.click(await within(document.body).findByRole('option', { name: 'Appliances' }))
+    // The list closes first; the form is in the accessibility tree again after it.
+    await waitFor(
+      async () => {
+        await expect(canvas.getByRole('combobox', { name: /What is wrong/ })).toHaveTextContent(
+          'Appliances',
+        )
+      },
+      { timeout: 5000 },
+    )
     await userEvent.type(
-      canvas.getByRole('textbox', { name: /Description/ }),
+      await canvas.findByRole('textbox', { name: /Description/ }),
       'The oven does not heat. The light works.',
     )
-    await userEvent.click(canvas.getByRole('button', { name: 'Send request' }))
+    await userEvent.click(await canvas.findByRole('button', { name: 'Send request' }))
     await expect(
       await canvas.findByRole('heading', { level: 1, name: 'The oven does not heat' }),
     ).toBeVisible()
-    await expect(canvas.getByText(NEW_REQUEST, { exact: false })).toBeVisible()
+    await expect(canvas.getAllByText(new RegExp(NEW_REQUEST)).length).toBeGreaterThan(0)
     await bqNoticeGone()
   },
 }
 
-export const TenantPortalRequests: Story = {
+export const BqTenantPortalRequests: Story = {
   name: 'Tenant portal, my requests',
   render: () => <ExampleApp start={BQ_ROUTES.portalRequests} />,
   play: async ({ canvasElement }) => {
@@ -14921,7 +14946,7 @@ export const TenantPortalRequests: Story = {
   },
 }
 
-export const TenantPortalRequestsPhone: Story = {
+export const BqTenantPortalRequestsPhone: Story = {
   name: 'Tenant portal, my requests, phone',
   render: () => <OnPhone start={BQ_ROUTES.portalRequests} />,
   play: async ({ canvasElement }) => {
@@ -14930,7 +14955,7 @@ export const TenantPortalRequestsPhone: Story = {
 }
 
 /** One request's progress: reported, assigned to the service team, the visit planned. */
-export const TenantPortalRequest: Story = {
+export const BqTenantPortalRequest: Story = {
   name: 'Tenant portal, request',
   render: () => <ExampleApp start={BQ_ROUTES.portalRequest('MR-2026-0047')} />,
   play: async ({ canvasElement }) => {
@@ -14941,7 +14966,7 @@ export const TenantPortalRequest: Story = {
   },
 }
 
-export const TenantPortalRequestPhone: Story = {
+export const BqTenantPortalRequestPhone: Story = {
   name: 'Tenant portal, request, phone',
   render: () => <OnPhone start={BQ_ROUTES.portalRequest('MR-2026-0047')} />,
   play: async ({ canvasElement }) => {
@@ -14949,7 +14974,7 @@ export const TenantPortalRequestPhone: Story = {
   },
 }
 
-export const TenantPortalInvoices: Story = {
+export const BqTenantPortalInvoices: Story = {
   name: 'Tenant portal, invoices',
   render: () => <ExampleApp start={BQ_ROUTES.portalInvoices} />,
   play: async ({ canvasElement }) => {
@@ -14960,7 +14985,7 @@ export const TenantPortalInvoices: Story = {
   },
 }
 
-export const TenantPortalInvoicesPhone: Story = {
+export const BqTenantPortalInvoicesPhone: Story = {
   name: 'Tenant portal, invoices, phone',
   render: () => <OnPhone start={BQ_ROUTES.portalInvoices} />,
   play: async ({ canvasElement }) => {

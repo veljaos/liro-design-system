@@ -2199,6 +2199,7 @@ export function MaintenanceList({
                 : each,
             ),
           )
+          setChosen(null)
           notice.success(`${request.number} is handled by ${handlerName(handler)}.`)
         }}
       />
@@ -2513,8 +2514,11 @@ export function PortalNewRequest({ phone, filled = false }: { phone: boolean; fi
         <PageHeader
           title="Report a problem"
           back={{ label: 'Requests', href: `#${BQ_ROUTES.portalRequests}` }}
-          subtitle={`Flat ${RESIDENT.unit}. For water or gas pouring out, call ${MANAGER.phone} at once.`}
+          subtitle={`Flat ${RESIDENT.unit}, ${unitPlace(RESIDENT_UNIT)}`}
         />
+        <Alert tone="warning" title="In an emergency, call">
+          {`Water or gas pouring out, or no electricity in the whole flat: call ${MANAGER.phone} at once, day or night. Do not wait for an answer here.`}
+        </Alert>
         <SectionCard headingLevel={2}>
           <form
             noValidate
