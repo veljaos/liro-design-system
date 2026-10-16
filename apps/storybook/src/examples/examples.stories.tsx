@@ -17475,3 +17475,553 @@ export const UniversityExamRecordSigning: Story = {
     await bnToastGone()
   },
 }
+// ── P5.76 property ──
+// (Imports here, inside the block, so the blocks merge without touching the top.)
+import { BQ_ROUTES, FEATURED_LEASE, FEATURED_TENANT, NEW_REQUEST } from './data-BQ'
+
+/** Settles a property screen and finds its h1. */
+const bqHeading = async (canvasElement: HTMLElement, name: string | RegExp) => {
+  await settle()
+  await expect(
+    await within(canvasElement).findByRole('heading', { level: 1, name }),
+  ).toBeInTheDocument()
+}
+
+const bqTile = (canvasElement: HTMLElement, id: string) => {
+  const tile = canvasElement.querySelector<HTMLElement>(`[data-rack-room="${id}"]`)
+  if (tile === null) throw new Error(`no unit ${id}`)
+  return tile
+}
+
+/** Waits until every toast has gone (axe must not catch one fading out). */
+const bqNoticeGone = async () => {
+  notice.dismiss()
+  await waitFor(
+    async () => {
+      await expect(document.querySelector('[data-sonner-toast]')).toBeNull()
+    },
+    { timeout: 5000 },
+  )
+}
+
+/**
+ * P5.76: Kvadrat Nekretnine d.o.o. lets the units of two buildings Kvadrat Gradnja d.o.o. built,
+ * Liman 2 and Grbavica 7, on 14.10.2026: 24 units by building and floor (RoomRack), Let / Vacant
+ * / Under repair in words, the rent's state, the tenant and the lease's term on each tile.
+ */
+export const BqPropertyUnits: Story = {
+  name: 'Property units',
+  render: () => <ExampleApp start={BQ_ROUTES.units} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'Units')
+    await expect(bqTile(canvasElement, 'L2-3.2')).toHaveAccessibleName(
+      /Let.*Rent paid.*Ivana Radović/,
+    )
+    await expect(bqTile(canvasElement, 'L2-2.1')).toHaveAccessibleName(/Under repair/)
+    await expect(bqTile(canvasElement, 'L2-P.2')).toHaveAccessibleName(/Vacant/)
+  },
+}
+
+export const BqPropertyUnitsPhone: Story = {
+  name: 'Property units, phone',
+  render: () => <OnPhone start={BQ_ROUTES.units} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'Units')
+    await expect(bqTile(canvasElement, 'L2-P.1')).toBeVisible()
+  },
+}
+
+/** Flat L2-3.2 open beside the rack: the tenant, the lease and its term, the rent, the request. */
+export const BqPropertyUnitOpen: Story = {
+  name: 'Property units, a unit open',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BQ_ROUTES.unit('L2-3.2')} />,
+  play: async ({ canvasElement }) => {
+    const drawer = await within(document.body).findByRole('dialog', { name: 'Unit L2-3.2' })
+    await settle()
+    await expect(within(drawer).getByRole('link', { name: 'Ivana Radović' })).toBeVisible()
+    await expect(within(drawer).getByRole('link', { name: FEATURED_LEASE })).toBeVisible()
+    await expect(drawer).toHaveTextContent('64.000,00')
+    await expect(bqTile(canvasElement, 'L2-3.2')).toHaveAttribute('aria-current', 'true')
+  },
+}
+
+export const BqPropertyUnitOpenFlow: Story = {
+  name: 'Property units, open a unit, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BQ_ROUTES.units} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'Units')
+    await userEvent.click(bqTile(canvasElement, 'G7-2.2'))
+    const drawer = await within(document.body).findByRole('dialog', { name: 'Unit G7-2.2' })
+    await settle()
+    await expect(drawer).toHaveTextContent('Water damage')
+    await expect(within(drawer).getByRole('link', { name: /MR-2026-0042/ })).toBeVisible()
+  },
+}
+
+/** The same 24 units as a list: views by state, a building filter, the search. */
+export const BqPropertyUnitList: Story = {
+  name: 'Property unit list',
+  render: () => <ExampleApp start={BQ_ROUTES.unitsList} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'Units')
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('row', { name: /L2-3\.2/ })).toHaveTextContent('Ivana Radović')
+    await expect(canvas.getByRole('row', { name: /G7-P\.1/ })).toHaveTextContent('168.000,00')
+  },
+}
+
+export const BqPropertyUnitListPhone: Story = {
+  name: 'Property unit list, phone',
+  render: () => <OnPhone start={BQ_ROUTES.unitsList} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'Units')
+    await expect(within(canvasElement).getByText('L2-P.1')).toBeVisible()
+  },
+}
+
+/** The tenants: private persons and companies, overdue rent in figures, the state in words. */
+export const BqPropertyTenants: Story = {
+  name: 'Property tenants',
+  render: () => <ExampleApp start={BQ_ROUTES.tenants} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'Tenants')
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('row', { name: /Nemanja Kovač/ })).toHaveTextContent(
+      'Rent overdue',
+    )
+    await expect(canvas.getByRole('row', { name: /Pekara Zlatni klas/ })).toHaveTextContent(
+      'Company',
+    )
+  },
+}
+
+export const BqPropertyTenantsPhone: Story = {
+  name: 'Property tenants, phone',
+  render: () => <OnPhone start={BQ_ROUTES.tenants} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'Tenants')
+    await expect(within(canvasElement).getByText('Ivana Radović')).toBeVisible()
+  },
+}
+
+/** Ivana Radović: contact, the national ID masked, her lease, invoices and requests. */
+export const BqPropertyTenant: Story = {
+  name: 'Property tenant',
+  render: () => <ExampleApp start={BQ_ROUTES.tenant(FEATURED_TENANT)} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'Ivana Radović')
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('button', { name: /national ID/i })).toBeVisible()
+    await expect(canvas.queryByText('2304990805012')).toBeNull()
+    await expect(canvas.getByRole('link', { name: /MR-2026-0047/ })).toBeVisible()
+  },
+}
+
+export const BqPropertyTenantPhone: Story = {
+  name: 'Property tenant, phone',
+  render: () => <OnPhone start={BQ_ROUTES.tenant(FEATURED_TENANT)} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'Ivana Radović')
+  },
+}
+
+/** A tenant with October's rent overdue: the figure in the danger tone and the invoice. */
+export const BqPropertyTenantOverdue: Story = {
+  name: 'Property tenant, rent overdue',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BQ_ROUTES.tenant('kovac')} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'Nemanja Kovač')
+    await expect(
+      within(canvasElement).getByRole('row', { name: /RZ-2026-0264/ }),
+    ).toHaveTextContent('Overdue')
+  },
+}
+
+/** The leases: active, ending within 90 days (in the application's words), ended, all. */
+export const BqPropertyLeases: Story = {
+  name: 'Property leases',
+  render: () => <ExampleApp start={BQ_ROUTES.leases} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'Leases')
+    await expect(
+      within(canvasElement).getByRole('row', { name: new RegExp(FEATURED_LEASE) }),
+    ).toHaveTextContent('In 78 days · renewal offered')
+  },
+}
+
+export const BqPropertyLeasesPhone: Story = {
+  name: 'Property leases, phone',
+  render: () => <OnPhone start={BQ_ROUTES.leases} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'Leases')
+    await expect(within(canvasElement).getByText('Ivana Radović')).toBeVisible()
+  },
+}
+
+/**
+ * Lease UZ-2024-041: flat L2-3.2 and Ivana Radović; the term, rent and deposit; the expiry and the
+ * renewal offer in the application's words; the documents with the lease itself; the invoices.
+ */
+export const BqPropertyLease: Story = {
+  name: 'Property lease',
+  render: () => <ExampleApp start={BQ_ROUTES.lease(FEATURED_LEASE)} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, `Lease ${FEATURED_LEASE}`)
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('The lease ends on 31.12.2026, in 78 days.')).toBeVisible()
+    await expect(canvas.getByRole('link', { name: 'Open the lease agreement' })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Renew…' })).toBeVisible()
+  },
+}
+
+export const BqPropertyLeasePhone: Story = {
+  name: 'Property lease, phone',
+  render: () => <OnPhone start={BQ_ROUTES.lease(FEATURED_LEASE)} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, `Lease ${FEATURED_LEASE}`)
+  },
+}
+
+/** Renew… open: the new end and the application's proposed rent; Send the annex. */
+export const BqPropertyLeaseRenew: Story = {
+  name: 'Property lease, renew',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BQ_ROUTES.leaseRenew} />,
+  play: async () => {
+    const dialog = await within(document.body).findByRole('dialog', { name: /Renew lease/ })
+    await settle()
+    await expect(within(dialog).getByRole('button', { name: 'Send the annex' })).toBeVisible()
+    await expect(within(dialog).getByLabelText(/Monthly rent from 01\.01\.2027/)).toHaveValue(
+      '66.500,00',
+    )
+  },
+}
+
+export const BqPropertyLeaseRenewFlow: Story = {
+  name: 'Property lease, renew, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BQ_ROUTES.lease(FEATURED_LEASE)} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, `Lease ${FEATURED_LEASE}`)
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Renew…' }))
+    const dialog = await within(document.body).findByRole('dialog', { name: /Renew lease/ })
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Send the annex' }))
+    await expect(
+      await canvas.findByText(/Annex 2 sent to Ivana Radović for signature/),
+    ).toBeVisible()
+    await expect(canvas.queryByRole('button', { name: 'Renew…' })).toBeNull()
+    await bqNoticeGone()
+  },
+}
+
+/** The lease agreement in the application's viewer (DocumentFrame). */
+export const BqPropertyLeaseDocument: Story = {
+  name: 'Lease agreement',
+  render: () => <ExampleApp start={BQ_ROUTES.leaseDocument(FEATURED_LEASE)} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, `Lease agreement ${FEATURED_LEASE}`)
+    await expect(
+      await within(canvasElement).findByRole('button', { name: /next page/i }),
+    ).toBeVisible()
+  },
+}
+
+export const BqPropertyLeaseDocumentPhone: Story = {
+  name: 'Lease agreement, phone',
+  render: () => <OnPhone start={BQ_ROUTES.leaseDocument(FEATURED_LEASE)} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, `Lease agreement ${FEATURED_LEASE}`)
+  },
+}
+
+/**
+ * The November 2026 rent run in review: the checks in words (a lease starting, one ending with
+ * notice, overdue tenants), the preview with all 21 invoices and the totals — every figure the
+ * application's; Issue.
+ */
+export const BqRentInvoices: Story = {
+  name: 'Rent invoices',
+  render: () => <ExampleApp start={BQ_ROUTES.run} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'Rent invoices November 2026')
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('row', { name: /L2-3\.2/ })).toHaveTextContent('67.200,00')
+    await expect(canvas.getByRole('row', { name: /G7-P\.1/ })).toHaveTextContent('35.000,00')
+    await expect(canvas.getAllByText('1.712.100,00 RSD').length).toBeGreaterThan(0)
+  },
+}
+
+export const BqRentInvoicesPhone: Story = {
+  name: 'Rent invoices, phone',
+  render: () => <OnPhone start={BQ_ROUTES.run} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'Rent invoices November 2026')
+    await expect(
+      within(canvasElement).getByRole('button', { name: 'Issue invoices' }),
+    ).toBeVisible()
+  },
+}
+
+/** One invoice of the run as the tenant receives it (PrintDocument): the lines and the totals. */
+export const BqRentInvoicePreview: Story = {
+  name: 'Rent invoices, invoice preview',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BQ_ROUTES.runPreview} />,
+  play: async () => {
+    const dialog = await within(document.body).findByRole('dialog', { name: /Invoice preview/ })
+    await settle()
+    await expect(dialog).toHaveTextContent('Ivana Radović')
+    await expect(dialog).toHaveTextContent('67.200,00')
+    await expect(dialog).toHaveTextContent('Given on issue')
+  },
+}
+
+/** After Issue: every step done, the invoices with their numbers and how each was sent. */
+export const BqRentInvoicesIssued: Story = {
+  name: 'Rent invoices, issued',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BQ_ROUTES.runIssued} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'Rent invoices November 2026')
+    await expect(within(canvasElement).getByRole('row', { name: /L2-3\.2/ })).toHaveTextContent(
+      'RZ-2026-0288',
+    )
+  },
+}
+
+export const BqRentInvoicesIssueFlow: Story = {
+  name: 'Rent invoices, issue, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BQ_ROUTES.run} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'Rent invoices November 2026')
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Issue invoices' }))
+    await expect(await canvas.findByRole('row', { name: /L2-3\.2/ })).toHaveTextContent(
+      'RZ-2026-0288',
+    )
+    await expect(canvas.queryByRole('button', { name: 'Issue invoices' })).toBeNull()
+    await bqNoticeGone()
+  },
+}
+
+/** The manager's maintenance requests: the state in words, who handles each, the work order. */
+export const BqPropertyMaintenance: Story = {
+  name: 'Maintenance requests',
+  render: () => <ExampleApp start={BQ_ROUTES.requests} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'Maintenance requests')
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('row', { name: /MR-2026-0048/ })).toHaveTextContent('Nobody yet')
+    await expect(canvas.getByRole('link', { name: 'SN-2026-0087' })).toBeVisible()
+  },
+}
+
+export const BqPropertyMaintenancePhone: Story = {
+  name: 'Maintenance requests, phone',
+  render: () => <OnPhone start={BQ_ROUTES.requests} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'Maintenance requests')
+    await expect(within(canvasElement).getByText('Mould on the bathroom ceiling')).toBeVisible()
+  },
+}
+
+/** The leaking sink open: the tenant's photos, the progress, who handles it, the work order. */
+export const BqPropertyMaintenanceOpen: Story = {
+  name: 'Maintenance requests, a request open',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BQ_ROUTES.request('MR-2026-0047')} />,
+  play: async () => {
+    const drawer = await within(document.body).findByRole('dialog', {
+      name: 'Water leaking under the kitchen sink',
+    })
+    await settle()
+    await expect(drawer).toHaveTextContent('Under the sink.jpg')
+    await expect(within(drawer).getByRole('link', { name: 'SN-2026-0087' })).toBeVisible()
+  },
+}
+
+export const BqPropertyMaintenanceAssignFlow: Story = {
+  name: 'Maintenance requests, assign, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BQ_ROUTES.request('MR-2026-0048')} />,
+  play: async ({ canvasElement }) => {
+    const drawer = await within(document.body).findByRole('dialog', {
+      name: 'Mould on the bathroom ceiling',
+    })
+    await settle()
+    await userEvent.click(within(drawer).getByRole('button', { name: 'Assign' }))
+    await expect(await within(drawer).findByText('Choose who handles the request.')).toBeVisible()
+    await userEvent.click(within(drawer).getByRole('combobox', { name: /Handled by/ }))
+    await userEvent.click(
+      await within(document.body).findByRole('option', { name: /Saša Petković/ }),
+    )
+    // The list closes first; the drawer is in the accessibility tree again after it.
+    await waitFor(
+      async () => {
+        await expect(
+          within(drawer).getByRole('combobox', { name: /Handled by/ }),
+        ).toHaveTextContent('Saša Petković')
+      },
+      { timeout: 5000 },
+    )
+    await userEvent.click(within(drawer).getByRole('button', { name: 'Assign' }))
+    // Assigned, the drawer closes and the list shows the new state.
+    await waitFor(
+      async () => {
+        await expect(
+          within(canvasElement).getByRole('row', { name: /MR-2026-0048/ }),
+        ).toHaveTextContent('Assigned')
+      },
+      { timeout: 5000 },
+    )
+    await bqNoticeGone()
+  },
+}
+
+/** The tenants' portal of Ivana Radović: the renewal offer, her flat, the open repair, invoices. */
+export const BqTenantPortalHome: Story = {
+  name: 'Tenant portal',
+  render: () => <ExampleApp start={BQ_ROUTES.portal} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'My home')
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('Your lease ends on 31.12.2026.')).toBeVisible()
+    await expect(
+      canvas.getByRole('link', { name: 'Water leaking under the kitchen sink' }),
+    ).toBeVisible()
+  },
+}
+
+export const BqTenantPortalHomePhone: Story = {
+  name: 'Tenant portal, phone',
+  render: () => <OnPhone start={BQ_ROUTES.portal} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'My home')
+  },
+}
+
+/** "Report a problem": what, where, the description, photos ("Take a photo" on a phone), access. */
+export const BqTenantPortalReport: Story = {
+  name: 'Tenant portal, report a problem',
+  render: () => <ExampleApp start={BQ_ROUTES.portalNew} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'Report a problem')
+    await expect(within(canvasElement).getByRole('button', { name: 'Send request' })).toBeVisible()
+  },
+}
+
+export const BqTenantPortalReportPhone: Story = {
+  name: 'Tenant portal, report a problem, phone',
+  render: () => <OnPhone start={BQ_ROUTES.portalNew} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'Report a problem')
+    await expect(within(canvasElement).getByRole('button', { name: /Take a photo/ })).toBeVisible()
+  },
+}
+
+/** The form filled in, with a photo added. */
+export const BqTenantPortalReportFilled: Story = {
+  name: 'Tenant portal, report a problem, filled',
+  tags: ['!dev'],
+  render: () => <OnPhone start={`${BQ_ROUTES.portalNew}?draft=filled`} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'Report a problem')
+    await expect(within(canvasElement).getByText('Oven display.jpg')).toBeVisible()
+  },
+}
+
+export const BqTenantPortalReportFlow: Story = {
+  name: 'Tenant portal, report a problem, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BQ_ROUTES.portalNew} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'Report a problem')
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Send request' }))
+    await expect(await canvas.findByText('Choose what is wrong.')).toBeVisible()
+    await userEvent.click(canvas.getByRole('combobox', { name: /What is wrong/ }))
+    await userEvent.click(await within(document.body).findByRole('option', { name: 'Appliances' }))
+    // The list closes first; the form is in the accessibility tree again after it.
+    await waitFor(
+      async () => {
+        await expect(canvas.getByRole('combobox', { name: /What is wrong/ })).toHaveTextContent(
+          'Appliances',
+        )
+      },
+      { timeout: 5000 },
+    )
+    await userEvent.type(
+      await canvas.findByRole('textbox', { name: /Description/ }),
+      'The oven does not heat. The light works.',
+    )
+    await userEvent.click(await canvas.findByRole('button', { name: 'Send request' }))
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: 'The oven does not heat' }),
+    ).toBeVisible()
+    await expect(canvas.getAllByText(new RegExp(NEW_REQUEST)).length).toBeGreaterThan(0)
+    await bqNoticeGone()
+  },
+}
+
+export const BqTenantPortalRequests: Story = {
+  name: 'Tenant portal, my requests',
+  render: () => <ExampleApp start={BQ_ROUTES.portalRequests} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'My requests')
+    await expect(
+      within(canvasElement).getByRole('row', { name: /MR-2026-0012/ }),
+    ).toHaveTextContent('Done')
+  },
+}
+
+export const BqTenantPortalRequestsPhone: Story = {
+  name: 'Tenant portal, my requests, phone',
+  render: () => <OnPhone start={BQ_ROUTES.portalRequests} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'My requests')
+  },
+}
+
+/** One request's progress: reported, assigned to the service team, the visit planned. */
+export const BqTenantPortalRequest: Story = {
+  name: 'Tenant portal, request',
+  render: () => <ExampleApp start={BQ_ROUTES.portalRequest('MR-2026-0047')} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'Water leaking under the kitchen sink')
+    await expect(
+      within(canvasElement).getByText(/Saša Petković comes on 15\.10\.2026/),
+    ).toBeVisible()
+  },
+}
+
+export const BqTenantPortalRequestPhone: Story = {
+  name: 'Tenant portal, request, phone',
+  render: () => <OnPhone start={BQ_ROUTES.portalRequest('MR-2026-0047')} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'Water leaking under the kitchen sink')
+  },
+}
+
+export const BqTenantPortalInvoices: Story = {
+  name: 'Tenant portal, invoices',
+  render: () => <ExampleApp start={BQ_ROUTES.portalInvoices} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'Invoices')
+    await expect(
+      within(canvasElement).getByRole('row', { name: /RZ-2026-0268/ }),
+    ).toHaveTextContent('Paid')
+  },
+}
+
+export const BqTenantPortalInvoicesPhone: Story = {
+  name: 'Tenant portal, invoices, phone',
+  render: () => <OnPhone start={BQ_ROUTES.portalInvoices} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'Invoices')
+  },
+}

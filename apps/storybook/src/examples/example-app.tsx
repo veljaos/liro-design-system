@@ -112,6 +112,8 @@ import { GROUP_BO_ROUTES } from './screens-BO'
 import { GROUP_BP_ROUTES } from './screens-BP'
 // ── P5.73 campus ──
 import { GROUP_BN_ROUTES } from './screens-BN'
+// ── P5.76 property ──
+import { GROUP_BQ_ROUTES } from './screens-BQ'
 
 // ── Routes ────────────────────────────────────────────────────────────────────────────────
 
@@ -218,6 +220,8 @@ const EXAMPLE_ROUTES: readonly ExampleRoute[] = [
   ...GROUP_BP_ROUTES,
   // ── P5.73 campus ──
   ...GROUP_BN_ROUTES,
+  // ── P5.76 property ──
+  ...GROUP_BQ_ROUTES,
 ]
 
 // ── The app ───────────────────────────────────────────────────────────────────────────────────
