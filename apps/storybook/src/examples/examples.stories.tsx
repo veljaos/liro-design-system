@@ -12190,6 +12190,16 @@ import { AR_ROUTES } from './data-AR'
 import { AS_ROUTES } from './data-AS'
 import { AT_ROUTES } from './data-AT'
 
+/** Waits until a success notice has left (axe must not catch it fading out). */
+const noticeGone = async (text: string) => {
+  await waitFor(
+    async () => {
+      await expect(within(document.body).queryByText(text)).toBeNull()
+    },
+    { timeout: 10000 },
+  )
+}
+
 /** Settles a screen and finds its h1. */
 const assetsHeading = async (canvasElement: HTMLElement, name: string | RegExp) => {
   await settle()
@@ -12333,8 +12343,9 @@ export const AssetDisposalInteraction: Story = {
     await waitFor(async () => {
       await expect(page.queryByRole('dialog')).toBeNull()
     })
-    await expect(canvas.getByRole('heading', { name: 'Disposal' })).toBeVisible()
+    await expect(await canvas.findByRole('heading', { name: 'Disposal' })).toBeVisible()
     await expect(canvasElement).toHaveTextContent('Book value of 5.871.000,00 RSD written off.')
+    await noticeGone('OS-0142 disposed.')
   },
 }
 
@@ -12451,8 +12462,10 @@ export const TravelSettlementInteraction: Story = {
     await waitFor(async () => {
       await expect(canvas.getByRole('row', { name: /Taxi/ })).toHaveTextContent('Taxi_07-10.jpg')
     })
+    await noticeGone('Receipt added to the taxi of 07.10.2026.')
     await userEvent.click(canvas.getByRole('button', { name: 'Submit for approval' }))
     await expect(await canvas.findByText('To approve')).toBeVisible()
+    await noticeGone('PN-2026-047 sent to Milica Petrović for approval.')
   },
 }
 
@@ -12510,6 +12523,7 @@ export const TravelApprovalsInteraction: Story = {
     await waitFor(async () => {
       await expect(canvas.queryByText('Nikola Marković')).toBeNull()
     })
+    await noticeGone('PN-2026-044 approved.')
   },
 }
 
