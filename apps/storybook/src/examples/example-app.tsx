@@ -80,6 +80,12 @@ import { GROUP_AY_ROUTES } from './screens-AY'
 import { GROUP_AZ_ROUTES } from './screens-AZ'
 import { GROUP_BA_ROUTES } from './screens-BA'
 import { GROUP_BB_ROUTES } from './screens-BB'
+// ── P5.47 assets ──
+import { GROUP_AP_ROUTES } from './screens-AP'
+import { GROUP_AQ_ROUTES } from './screens-AQ'
+import { GROUP_AR_ROUTES } from './screens-AR'
+import { GROUP_AS_ROUTES } from './screens-AS'
+import { GROUP_AT_ROUTES } from './screens-AT'
 
 // ── Routes ────────────────────────────────────────────────────────────────────────────────
 
@@ -154,6 +160,12 @@ const EXAMPLE_ROUTES: readonly ExampleRoute[] = [
   ...GROUP_AZ_ROUTES,
   ...GROUP_BA_ROUTES,
   ...GROUP_BB_ROUTES,
+  // ── P5.47 assets ──
+  ...GROUP_AP_ROUTES,
+  ...GROUP_AQ_ROUTES,
+  ...GROUP_AR_ROUTES,
+  ...GROUP_AS_ROUTES,
+  ...GROUP_AT_ROUTES,
 ]
 
 // ── The app ───────────────────────────────────────────────────────────────────────────────────

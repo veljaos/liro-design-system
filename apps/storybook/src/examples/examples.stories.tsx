@@ -13317,3 +13317,589 @@ export const StocktakingCountPhone: Story = {
     await expectNoSidewaysScroll(canvasElement)
   }, true),
 }
+
+// ── P5.47 assets ──
+// (Imports here, inside the block, so the blocks merge without touching the top.)
+import { AP_ROUTES } from './data-AP'
+import { AQ_ROUTES } from './data-AQ'
+import { AR_ROUTES } from './data-AR'
+import { AS_ROUTES } from './data-AS'
+import { AT_ROUTES } from './data-AT'
+
+/** Waits until a success notice has left (axe must not catch it fading out). */
+const noticeGone = async (text: string) => {
+  await waitFor(
+    async () => {
+      await expect(within(document.body).queryByText(text)).toBeNull()
+    },
+    { timeout: 10000 },
+  )
+}
+
+/** Settles a screen and finds its h1. */
+const assetsHeading = async (canvasElement: HTMLElement, name: string | RegExp) => {
+  await settle()
+  await expect(
+    await within(canvasElement).findByRole('heading', { level: 1, name }),
+  ).toBeInTheDocument()
+}
+
+/**
+ * Kvadrat Gradnja's fixed assets on 14.10.2026 (P5.47): the register — group, location and the
+ * responsible person, acquisition and book value, the state in words; views and a group filter.
+ */
+export const FixedAssets: Story = {
+  name: 'Fixed assets',
+  render: () => <ExampleApp start={AP_ROUTES.register} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Fixed assets')
+    const canvas = within(canvasElement)
+    const row = canvas.getByRole('row', { name: /Mini excavator 3\.5 t/ })
+    await expect(row).toHaveTextContent('5.871.000,00')
+    await expect(canvas.getByRole('row', { name: /Laptop HP ProBook 450/ })).toHaveTextContent(
+      'Fully depreciated',
+    )
+  },
+}
+
+export const FixedAssetsPhone: Story = {
+  name: 'Fixed assets, phone',
+  render: () => <OnPhone start={AP_ROUTES.register} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Fixed assets')
+    await expect(within(canvasElement).getByText('Mini excavator 3.5 t')).toBeVisible()
+  },
+}
+
+/** The register's "Disposed and sold": the vibratory plate (July) and the van (30.09.2026). */
+export const FixedAssetsDisposed: Story = {
+  name: 'Fixed assets, disposed and sold',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AP_ROUTES.disposed} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Fixed assets')
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('row', { name: /Van Fiat Ducato/ })).toHaveTextContent('Sold')
+    await expect(canvas.getByRole('row', { name: /Wacker DPU 2550/ })).toHaveTextContent('Disposed')
+  },
+}
+
+/**
+ * The mini excavator OS-0142: the figures, the acquisition with the supplier's invoice and the
+ * loan that financed it, location and responsibility, the group and its illustrative rate, the
+ * value history and the 2026 schedule (August posted, September in review).
+ */
+export const FixedAsset: Story = {
+  name: 'Fixed asset',
+  render: () => <ExampleApp start={AP_ROUTES.featured} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Mini excavator 3.5 t')
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('link', { name: 'Loan KR-2025-004' })).toBeVisible()
+    const september = canvas.getByRole('row', { name: /September 2026/ })
+    await expect(september).toHaveTextContent('In review')
+    await expect(september).toHaveTextContent('5.814.000,00')
+  },
+}
+
+export const FixedAssetPhone: Story = {
+  name: 'Fixed asset, phone',
+  render: () => <OnPhone start={AP_ROUTES.featured} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Mini excavator 3.5 t')
+    await expect(within(canvasElement).getByText('Snežana Popović, Site manager')).toBeVisible()
+  },
+}
+
+/** A sold asset: the sale with its buyer, the sales invoice and the result. */
+export const FixedAssetSold: Story = {
+  name: 'Fixed asset, sold',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AP_ROUTES.sold} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Van Fiat Ducato NS-482-KG')
+    await expect(within(canvasElement).getByRole('link', { name: 'F-2026-0430' })).toBeVisible()
+  },
+}
+
+/** "Dispose…" asked: the reason and the asset's number typed before the button can be used. */
+export const AssetDisposal: Story = {
+  name: 'Asset disposal',
+  render: () => <ExampleApp start={AP_ROUTES.dispose} />,
+  play: async () => {
+    await settle()
+    const dialog = await within(document.body).findByRole('alertdialog', {
+      name: /Dispose of asset\s*OS-0142 · Mini excavator 3\.5 t/,
+    })
+    await expect(dialog).toHaveTextContent('5.871.000,00')
+    await expect(within(dialog).getByRole('button', { name: 'Dispose' })).toBeDisabled()
+  },
+}
+
+export const AssetDisposalPhone: Story = {
+  name: 'Asset disposal, phone',
+  render: () => <OnPhone start={AP_ROUTES.dispose} />,
+  play: async () => {
+    await settle()
+    await expect(
+      await within(document.body).findByRole('alertdialog', { name: /Dispose of asset/ }),
+    ).toBeVisible()
+  },
+}
+
+/** "Sell…" asked: the buyer, the date and the price; the application makes the invoice. */
+export const AssetSale: Story = {
+  name: 'Asset sale',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AP_ROUTES.sell} />,
+  play: async () => {
+    await settle()
+    const dialog = await within(document.body).findByRole('dialog', { name: /Sell asset/ })
+    await expect(within(dialog).getByText('Book value today: 5.871.000,00 RSD.')).toBeVisible()
+  },
+}
+
+/** The disposal end to end: a reason, OS-0142 typed, Dispose; the card says Disposed. */
+export const AssetDisposalInteraction: Story = {
+  name: 'Asset disposal, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AP_ROUTES.featured} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Mini excavator 3.5 t')
+    const canvas = within(canvasElement)
+    const page = within(document.body)
+    await userEvent.click(canvas.getByRole('button', { name: 'Dispose…' }))
+    const dialog = await page.findByRole('alertdialog', { name: /Dispose of asset/ })
+    await userEvent.click(within(dialog).getByRole('radio', { name: 'Stolen' }))
+    await userEvent.type(
+      within(dialog).getByRole('textbox', { name: /Type OS-0142 to confirm/ }),
+      'OS-0142',
+    )
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Dispose' }))
+    await waitFor(async () => {
+      await expect(page.queryByRole('dialog')).toBeNull()
+    })
+    await expect(await canvas.findByRole('heading', { name: 'Disposal' })).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('Book value of 5.871.000,00 RSD written off.')
+    await noticeGone('OS-0142 disposed.')
+  },
+}
+
+/**
+ * The September 2026 depreciation run in review: the period open, the checks (a laptop not yet
+ * in use), the preview — 445.385,21 RSD over eleven assets — and Post depreciation.
+ */
+export const DepreciationRun: Story = {
+  name: 'Depreciation run',
+  render: () => <ExampleApp start={AP_ROUTES.run} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Depreciation September 2026')
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('Acquisitions put into use')).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('445.385,21')
+    await expect(canvas.getByRole('button', { name: 'Post depreciation' })).toBeVisible()
+  },
+}
+
+export const DepreciationRunPhone: Story = {
+  name: 'Depreciation run, phone',
+  render: () => <OnPhone start={AP_ROUTES.run} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Depreciation September 2026')
+    await expect(canvasElement).toHaveTextContent('445.385,21')
+  },
+}
+
+/** After Rerun with a reason: the calculation runs again. */
+export const DepreciationRunRerun: Story = {
+  name: 'Depreciation run, rerun',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AP_ROUTES.runRerun} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Depreciation September 2026')
+    await expect(within(canvasElement).getByText(/an acquisition was added/)).toBeVisible()
+  },
+}
+
+/**
+ * Travel orders (P5.48): Snežana Popović issues PN-2026-052 for Nikola Marković's trip to
+ * Subotica — the trip, the company pickup, the cost centre, the advance.
+ */
+export const TravelOrder: Story = {
+  name: 'Travel order',
+  render: () => <ExampleApp start={AQ_ROUTES.newOrder} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'New travel order')
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('textbox', { name: /Destination/ })).toHaveValue('Subotica')
+    await expect(canvas.getAllByRole('button', { name: 'Send for approval' })[0]).toBeVisible()
+  },
+}
+
+export const TravelOrderPhone: Story = {
+  name: 'Travel order, phone',
+  render: () => <OnPhone start={AQ_ROUTES.newOrder} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'New travel order')
+  },
+}
+
+/**
+ * Jelena Stojković's settlement of PN-2026-047: the expenses with their receipts' photos (the
+ * taxi's missing, so Submit says why it cannot be used), the per-diems, 10.090,00 RSD to pay.
+ */
+export const TravelSettlement: Story = {
+  name: 'Travel settlement',
+  render: () => <ExampleApp start={AQ_ROUTES.settlement} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Settlement PN-2026-047')
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('row', { name: /Taxi/ })).toHaveTextContent('Receipt missing')
+    await expect(canvasElement).toHaveTextContent('10.090,00')
+    await expect(
+      canvas.getByText(/Add the photo of the taxi’s receipt of 07\.10\.2026\./),
+    ).toBeInTheDocument()
+  },
+}
+
+export const TravelSettlementPhone: Story = {
+  name: 'Travel settlement, phone',
+  render: () => <OnPhone start={AQ_ROUTES.settlement} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Settlement PN-2026-047')
+    await expect(within(canvasElement).getByRole('button', { name: /Take a photo/ })).toBeVisible()
+  },
+}
+
+/** The taxi's receipt photographed: every expense has its receipt, Submit can be used. */
+export const TravelSettlementReady: Story = {
+  name: 'Travel settlement, receipt added',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AQ_ROUTES.settlementReady} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Settlement PN-2026-047')
+    await expect(
+      within(canvasElement).getByRole('button', { name: 'Submit for approval' }),
+    ).toBeEnabled()
+  },
+}
+
+/** A receipt added from the phone's camera, then the settlement submitted. */
+export const TravelSettlementInteraction: Story = {
+  name: 'Travel settlement, receipt photo, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AQ_ROUTES.settlement} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Settlement PN-2026-047')
+    const canvas = within(canvasElement)
+    const input = canvasElement.querySelector<HTMLInputElement>('[data-slot="file-dropzone"] input')
+    if (input === null) throw new Error('The file input is missing')
+    await userEvent.upload(input, [new File(['jpeg'], 'Taxi_07-10.jpg', { type: 'image/jpeg' })])
+    await waitFor(async () => {
+      await expect(canvas.getByRole('row', { name: /Taxi/ })).toHaveTextContent('Taxi_07-10.jpg')
+    })
+    await noticeGone('Receipt added to the taxi of 07.10.2026.')
+    await userEvent.click(canvas.getByRole('button', { name: 'Submit for approval' }))
+    await expect(await canvas.findByText('To approve')).toBeVisible()
+    await noticeGone('PN-2026-047 sent to Milica Petrović for approval.')
+  },
+}
+
+/**
+ * Milica Petrović approves the settlements: Nikola Marković returns 1.920,00 RSD of his
+ * advance; Stefan Nikolić and Goran Medić are paid.
+ */
+export const TravelApprovals: Story = {
+  name: 'Travel settlements to approve',
+  render: () => <ExampleApp start={AQ_ROUTES.approvals} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Travel settlements to approve')
+    const canvas = within(canvasElement)
+    await expect(canvasElement).toHaveTextContent('1.920,00')
+    await expect(canvas.getByRole('button', { name: 'Approve' })).toBeVisible()
+  },
+}
+
+export const TravelApprovalsPhone: Story = {
+  name: 'Travel settlements to approve, phone',
+  render: () => <OnPhone start={AQ_ROUTES.approvals} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Travel settlements to approve')
+    await expect(within(canvasElement).getByText('Nikola Marković')).toBeVisible()
+  },
+}
+
+/** "Reject" asked for PN-2026-044: the reason from the list. */
+export const TravelApprovalsReject: Story = {
+  name: 'Travel settlements to approve, reject',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AQ_ROUTES.approvalsReject} />,
+  play: async () => {
+    await settle()
+    await expect(
+      await within(document.body).findByRole('alertdialog', {
+        name: /Reject settlement\s*PN-2026-044 · Nikola Marković/,
+      }),
+    ).toBeVisible()
+  },
+}
+
+/** Approve: the settlement leaves the queue and the next one opens. */
+export const TravelApprovalsInteraction: Story = {
+  name: 'Travel settlements to approve, approve, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AQ_ROUTES.approvals} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Travel settlements to approve')
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Approve' }))
+    await expect(
+      await within(document.body).findByText('PN-2026-044 approved.'),
+    ).toBeInTheDocument()
+    await waitFor(async () => {
+      await expect(canvas.queryByText('Nikola Marković')).toBeNull()
+    })
+    await noticeGone('PN-2026-044 approved.')
+  },
+}
+
+/**
+ * The budget 2026 (P5.58) against January–September by cost centre: Liman 4 over budget by
+ * 9.380.000,00 RSD, Bulevar Evrope 24 under; the chart, the tree, "Show entries".
+ */
+export const Budget: Story = {
+  name: 'Budget',
+  render: () => <ExampleApp start={AR_ROUTES.budget} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Budget 2026')
+    const canvas = within(canvasElement)
+    const liman = canvas.getByRole('row', { name: /Residential building Liman 4/ })
+    await expect(liman).toHaveTextContent('Over budget')
+    await expect(liman).toHaveTextContent('+9.380.000,00')
+  },
+}
+
+export const BudgetPhone: Story = {
+  name: 'Budget, phone',
+  render: () => <OnPhone start={AR_ROUTES.budget} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Budget 2026')
+  },
+}
+
+/** By project: Liman 4 by cost type, material 111,8 % used. */
+export const BudgetByProject: Story = {
+  name: 'Budget by project',
+  render: () => <ExampleApp start={AR_ROUTES.projects} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Budget 2026')
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('row', { name: /^5120 Material/ })).toHaveTextContent('111,8')
+  },
+}
+
+export const BudgetByProjectPhone: Story = {
+  name: 'Budget by project, phone',
+  render: () => <OnPhone start={AR_ROUTES.projects} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Budget 2026')
+  },
+}
+
+/** Liman 4's material chosen: "Show entries of 5120" can be used. */
+export const BudgetLineChosen: Story = {
+  name: 'Budget by project, line chosen',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AR_ROUTES.projectsChosen} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Budget 2026')
+    await expect(
+      within(canvasElement).getByRole('button', { name: 'Show entries of 5120' }),
+    ).toBeEnabled()
+  },
+}
+
+/** The drill-down: Liman 4's material, its figures and latest entries, 236 in all. */
+export const BudgetEntries: Story = {
+  name: 'Budget entries',
+  render: () => <ExampleApp start={AR_ROUTES.entries('p310-5120')} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Residential building Liman 4 · Material')
+    await expect(within(canvasElement).getByText('The latest 3 of 236 entries.')).toBeVisible()
+  },
+}
+
+export const BudgetEntriesPhone: Story = {
+  name: 'Budget entries, phone',
+  render: () => <OnPhone start={AR_ROUTES.entries('p310-5120')} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Residential building Liman 4 · Material')
+  },
+}
+
+/** Choose Liman 4's machinery, Show entries, then a depreciation's asset card. */
+export const BudgetDrillDown: Story = {
+  name: 'Budget, drill-down to an entry, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AR_ROUTES.projects} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Budget 2026')
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('row', { name: /^5130 Machinery and fuel/ }))
+    await userEvent.click(canvas.getByRole('button', { name: 'Show entries of 5130' }))
+    await assetsHeading(canvasElement, 'Residential building Liman 4 · Machinery and fuel')
+    const [excavator] = canvas.getAllByRole('link', { name: 'Depreciation August 2026' })
+    if (excavator === undefined) throw new Error('The depreciation entry is missing')
+    await userEvent.click(excavator)
+    await assetsHeading(canvasElement, 'Mini excavator 3.5 t')
+  },
+}
+
+/**
+ * Loans and leases (P5.60): two loans and the pickup's lease, its October instalment overdue;
+ * a loan repaid in May under "Repaid".
+ */
+export const Loans: Story = {
+  name: 'Loans and leases',
+  render: () => <ExampleApp start={AS_ROUTES.list} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Loans and leases')
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('row', { name: /Lizing Plus/ })).toHaveTextContent('Overdue')
+    await expect(canvas.getByRole('row', { name: /KR-2025-004/ })).toHaveTextContent('3.145.740,46')
+  },
+}
+
+export const LoansPhone: Story = {
+  name: 'Loans and leases, phone',
+  render: () => <OnPhone start={AS_ROUTES.list} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Loans and leases')
+    await expect(within(canvasElement).getByText('Lizing Plus d.o.o.')).toBeVisible()
+  },
+}
+
+/**
+ * The investment loan KR-2025-004 (the mini excavator): principal, rate, term, outstanding; the
+ * outstanding principal as a chart; the schedule — 18 paid, 15.10.2026 due.
+ */
+export const Loan: Story = {
+  name: 'Loan',
+  render: () => <ExampleApp start={AS_ROUTES.loan} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Investment loan KR-2025-004')
+    const canvas = within(canvasElement)
+    await expect(
+      canvas.getByRole('link', { name: /Mini excavator 3\.5 t \(OS-0142\)/ }),
+    ).toBeVisible()
+    const due = canvas.getByRole('row', { name: /^19 / })
+    await expect(due).toHaveTextContent('Due')
+    await expect(due).toHaveTextContent('2.978.885,87')
+  },
+}
+
+export const LoanPhone: Story = {
+  name: 'Loan, phone',
+  render: () => <OnPhone start={AS_ROUTES.loan} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Investment loan KR-2025-004')
+    await expect(canvasElement).toHaveTextContent('3.145.740,46')
+  },
+}
+
+/** The pickup's finance lease: instalment 32 overdue, said above the contract. */
+export const LeaseOverdue: Story = {
+  name: 'Lease, overdue',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AS_ROUTES.lease} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Finance lease LZ-2024-012')
+    await expect(
+      within(canvasElement).getByText('Instalment 32 of 10.10.2026 is overdue by 4 days.'),
+    ).toBeVisible()
+  },
+}
+
+/** Repaid: the loan of 2021, nothing outstanding. */
+export const LoansRepaid: Story = {
+  name: 'Loans and leases, repaid',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AS_ROUTES.repaid} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Loans and leases')
+    await expect(within(canvasElement).getByRole('row', { name: /KR-2021-011/ })).toHaveTextContent(
+      'Repaid',
+    )
+  },
+}
+
+/**
+ * Service and author contracts (P5.61): Dragana Vasić's author contract for the show flat — the
+ * amount agreed as gross, 43 % normed costs, the application's calculation: 102.291,00 RSD net.
+ */
+export const ServiceContract: Story = {
+  name: 'Service contract',
+  render: () => <ExampleApp start={AT_ROUTES.newContract} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'New contract')
+    await expect(canvasElement).toHaveTextContent('102.291,00')
+    await expect(canvasElement).toHaveTextContent('Normed costs (43%)')
+  },
+}
+
+export const ServiceContractPhone: Story = {
+  name: 'Service contract, phone',
+  render: () => <OnPhone start={AT_ROUTES.newContract} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'New contract')
+  },
+}
+
+/** The same agreed as net: the application's gross-up, 219.960,70 RSD gross. */
+export const ServiceContractNet: Story = {
+  name: 'Service contract, net amount',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AT_ROUTES.newContractNet} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'New contract')
+    await expect(canvasElement).toHaveTextContent('219.960,70')
+  },
+}
+
+/** The kind changed to a service contract: 20 % normed costs, 83.040,00 RSD net. */
+export const ServiceContractKind: Story = {
+  name: 'Service contract, kind changed, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AT_ROUTES.newContract} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'New contract')
+    await userEvent.click(within(canvasElement).getByRole('radio', { name: /Service contract/ }))
+    await waitFor(async () => {
+      await expect(canvasElement).toHaveTextContent('83.040,00')
+    })
+  },
+}
+
+/**
+ * The September 2026 run of five contracts: the checks (Mila Tošić's payment held for a missing
+ * bank account), the preview with each contract's tax and contributions, Post and pay.
+ */
+export const ServiceContractRun: Story = {
+  name: 'Service contracts run',
+  render: () => <ExampleApp start={AT_ROUTES.run} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Service and author contracts September 2026')
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('row', { name: /Mila Tošić/ })).toHaveTextContent('Held')
+    await expect(canvasElement).toHaveTextContent('285.058,20')
+  },
+}
+
+export const ServiceContractRunPhone: Story = {
+  name: 'Service contracts run, phone',
+  render: () => <OnPhone start={AT_ROUTES.run} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Service and author contracts September 2026')
+    await expect(canvasElement).toHaveTextContent('285.058,20')
+  },
+}
