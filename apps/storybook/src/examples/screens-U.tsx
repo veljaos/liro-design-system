@@ -118,11 +118,12 @@ export { U_ROUTES }
 
 // ── The accounting module's shell (shared with group W) ──────────────────────────────────────
 
-export type AccountingTab = 'inbox' | 'ios'
+export type AccountingTab = 'inbox' | 'ios' | 'offsets'
 
 const ACCOUNTING_TABS: { key: AccountingTab; label: string; path: string }[] = [
   { key: 'inbox', label: 'Document inbox', path: U_ROUTES.inbox },
   { key: 'ios', label: 'Statements of open items', path: '/accounting/ios' },
+  { key: 'offsets', label: 'Offsets and assignments', path: '/accounting/offsets' },
 ]
 
 export function accountingTabs(current: AccountingTab): ModuleTab[] {

@@ -12181,3 +12181,2263 @@ export const ClientPortalUploadFlow: Story = {
     await settle()
   },
 }
+
+// ── P5.49 trade ──
+// (Imports here, inside the block, so the blocks merge without touching the top.)
+import { AU_ROUTES } from './data-AU'
+
+/** A trade story's checks; on a phone also that nothing scrolls sideways. */
+function tradePlay(
+  check: (canvasElement: HTMLElement) => Promise<void>,
+  phone = false,
+): NonNullable<Story['play']> {
+  return async ({ canvasElement }) => {
+    await settle()
+    await check(canvasElement)
+    if (phone) {
+      for (const page of canvasElement.querySelectorAll<HTMLElement>('[data-liro-phone-page]')) {
+        await expect(page.scrollWidth).toBeLessThanOrEqual(page.clientWidth)
+      }
+    }
+  }
+}
+
+/**
+ * Kvadrat Gradnja d.o.o.'s purchase order NB-2026-0087 to Beton Mix d.o.o. on 14.10.2026: ready-
+ * mix concrete, a pump and transport for Site Liman 4, received on 12.10.2026 and waiting for its
+ * invoice to be matched; the chain (goods receipt, supplier invoice 2026-1187) in the related
+ * documents, "Match invoice 2026-1187" the main action.
+ */
+export const TradePurchaseOrder: Story = {
+  name: 'Purchase order',
+  render: () => <ExampleApp start={AU_ROUTES.order} />,
+  play: tradePlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { level: 1, name: 'NB-2026-0087' })).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('294.840,00')
+    await expect(canvas.getByRole('link', { name: /PRI-2026-0213/ })).toBeVisible()
+    await expect(canvas.getByRole('link', { name: /2026-1187/ })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Match invoice 2026-1187' })).toBeVisible()
+  }),
+}
+
+export const TradePurchaseOrderPhone: Story = {
+  name: 'Purchase order, phone',
+  render: () => <OnPhone start={AU_ROUTES.order} />,
+  play: tradePlay(async (canvasElement) => {
+    await expect(
+      within(canvasElement).getByRole('button', { name: 'Match invoice 2026-1187' }),
+    ).toBeVisible()
+  }, true),
+}
+
+/**
+ * Goods receipt PRI-2026-0213 at Site Liman 4, based on the order: each line received against
+ * ordered (Ordered / Difference / Received) with the receiver's reason — 35 m³ of concrete
+ * instead of 36, 4 pump hours instead of 3; the received value and the difference against the
+ * order from the application.
+ */
+export const TradeGoodsReceipt: Story = {
+  name: 'Goods receipt',
+  render: () => <ExampleApp start={AU_ROUTES.receipt} />,
+  play: tradePlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { level: 1, name: 'PRI-2026-0213' })).toBeVisible()
+    const table = canvas.getByRole('table', { name: 'Received lines' })
+    await expect(within(table).getByRole('columnheader', { name: 'Difference' })).toBeVisible()
+    await expect(within(table).getByRole('row', { name: /Concrete pump/ })).toHaveTextContent('+1')
+    await expect(
+      canvas.getByRole('link', { name: 'Purchase order NB-2026-0087, Awaiting match' }),
+    ).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('245.000,00')
+  }),
+}
+
+export const TradeGoodsReceiptPhone: Story = {
+  name: 'Goods receipt, phone',
+  render: () => <OnPhone start={AU_ROUTES.receipt} />,
+  play: tradePlay(async (canvasElement) => {
+    await expect(
+      within(canvasElement).getByRole('heading', { level: 1, name: 'PRI-2026-0213' }),
+    ).toBeVisible()
+  }, true),
+}
+
+/**
+ * The three-way match of Beton Mix d.o.o.'s invoice 2026-1187: the order, the receipt and the
+ * invoice side by side, line by line and in total; the application's verdict on each row —
+ * "Invoiced as received", "More than ordered: needs approval" for the extra pump hour.
+ */
+export const TradeThreeWayMatch: Story = {
+  name: 'Three-way match',
+  render: () => <ExampleApp start={AU_ROUTES.match} />,
+  play: tradePlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { level: 1, name: 'Match 2026-1187' })).toBeVisible()
+    const table = canvas.getByRole('table', { name: /^Order NB-2026-0087/ })
+    await expect(within(table).getAllByRole('columnheader')).toHaveLength(5)
+    await expect(within(table).getByText('More than ordered: needs approval')).toBeVisible()
+    await expect(canvas.getByText('1 of 8 differ')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Accept the difference' })).toBeVisible()
+  }),
+}
+
+export const TradeThreeWayMatchPhone: Story = {
+  name: 'Three-way match, phone',
+  render: () => <OnPhone start={AU_ROUTES.match} />,
+  play: tradePlay(async (canvasElement) => {
+    await expect(within(canvasElement).getByText('More than ordered: needs approval')).toBeVisible()
+  }, true),
+}
+
+/** The extra pump hour accepted: every row matches, the invoice may be posted in the inbox. */
+export const TradeThreeWayMatchAccepted: Story = {
+  name: 'Three-way match, accepted',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AU_ROUTES.matchAccepted} />,
+  play: tradePlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('No differences')).toBeVisible()
+    await expect(canvas.getByText('Accepted by Milica Petrović')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Post in the document inbox' })).toBeVisible()
+  }),
+}
+
+/**
+ * From the order to the match in one click, the difference accepted, then the order shows the
+ * invoice matched and the invoice opens in the document inbox (group U).
+ */
+export const TradePurchaseChainFlow: Story = {
+  name: 'Purchase order, match the invoice, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AU_ROUTES.order} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Match invoice 2026-1187' }))
+    await settle()
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: 'Match 2026-1187' }),
+    ).toBeVisible()
+    await userEvent.click(canvas.getByRole('button', { name: 'Accept the difference' }))
+    await settle()
+    await expect(canvas.getByText('No differences')).toBeVisible()
+    await userEvent.click(canvas.getByRole('link', { name: /NB-2026-0087/ }))
+    await settle()
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: 'NB-2026-0087' }),
+    ).toBeVisible()
+    await expect(canvas.queryByRole('button', { name: 'Match invoice 2026-1187' })).toBeNull()
+    await userEvent.click(canvas.getByRole('link', { name: /2026-1187/ }))
+    await settle()
+    await expect(await canvas.findByRole('button', { name: 'Confirm and post' })).toBeVisible()
+  },
+}
+
+// ── P5.50 trade ──
+// (Imports here, inside the block, so the blocks merge without touching the top.)
+import { AV_ROUTES } from './data-AV'
+
+/** The sales chain's pages: the h1, and the chain so far in the related documents. */
+async function chainCheck(canvasElement: HTMLElement, number: string, related: string[]) {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: number })).toBeVisible()
+  const list = canvas.queryByRole('list', { name: 'Related documents' })
+  if (related.length === 0) {
+    await expect(list).toBeNull()
+    return
+  }
+  if (list === null) throw new Error('The related documents are missing')
+  await expect(within(list).getAllByRole('link')).toHaveLength(related.length)
+  for (const each of related) {
+    await expect(within(list).getByRole('link', { name: new RegExp(each) })).toBeVisible()
+  }
+}
+
+/**
+ * Kvadrat Gradnja d.o.o.'s quotes on 14.10.2026: the open ones (draft, sent, accepted) with their
+ * customer, subject, validity, total and state; Ordered, Declined or expired, All as views.
+ */
+export const TradeSalesQuotes: Story = {
+  name: 'Sales quotes',
+  render: () => <ExampleApp start={AV_ROUTES.quotes} />,
+  play: tradePlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    const table = canvas.getByRole('table', { name: 'Quotes' })
+    await expect(within(table).getByRole('row', { name: /PON-2026-0031/ })).toHaveTextContent(
+      'Accepted',
+    )
+    await expect(within(table).getAllByRole('row')).toHaveLength(5)
+  }),
+}
+
+export const TradeSalesQuotesPhone: Story = {
+  name: 'Sales quotes, phone',
+  render: () => <OnPhone start={AV_ROUTES.quotes} />,
+  play: tradePlay(async (canvasElement) => {
+    await expect(
+      within(canvasElement).getAllByText('Stanogradnja Plus d.o.o.').length,
+    ).toBeGreaterThan(0)
+  }, true),
+}
+
+/**
+ * Quote PON-2026-0031 to Stanogradnja Plus d.o.o., accepted on 01.10.2026: "Create order" is the
+ * main action — one click, the application creates the order; its menu holds the proforma and
+ * advance invoice.
+ */
+export const TradeSalesQuote: Story = {
+  name: 'Sales quote',
+  render: () => <ExampleApp start={AV_ROUTES.quote} />,
+  play: tradePlay(async (canvasElement) => {
+    await chainCheck(canvasElement, 'PON-2026-0031', [])
+    await expect(within(canvasElement).getByRole('button', { name: 'Create order' })).toBeVisible()
+  }),
+}
+
+export const TradeSalesQuotePhone: Story = {
+  name: 'Sales quote, phone',
+  render: () => <OnPhone start={AV_ROUTES.quote} />,
+  play: tradePlay(async (canvasElement) => {
+    await expect(within(canvasElement).getByRole('button', { name: 'Create order' })).toBeVisible()
+  }, true),
+}
+
+/** The quote once the whole chain exists: the order, the delivery note and the invoice. */
+export const TradeSalesQuoteDone: Story = {
+  name: 'Sales quote, whole chain',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AV_ROUTES.quoteDone} />,
+  play: tradePlay(async (canvasElement) => {
+    await chainCheck(canvasElement, 'PON-2026-0031', [
+      'NAR-2026-0024',
+      'OTP-2026-0058',
+      'F-2026-0430',
+    ])
+    await expect(within(canvasElement).queryByRole('button', { name: 'Create order' })).toBeNull()
+  }),
+}
+
+/** Order NAR-2026-0024, based on the quote: "Create delivery note" next. */
+export const TradeSalesOrder: Story = {
+  name: 'Sales order',
+  render: () => <ExampleApp start={AV_ROUTES.order} />,
+  play: tradePlay(async (canvasElement) => {
+    await chainCheck(canvasElement, 'NAR-2026-0024', ['PON-2026-0031'])
+    await expect(
+      within(canvasElement).getByRole('button', { name: 'Create delivery note' }),
+    ).toBeVisible()
+  }),
+}
+
+export const TradeSalesOrderPhone: Story = {
+  name: 'Sales order, phone',
+  render: () => <OnPhone start={AV_ROUTES.order} />,
+  play: tradePlay(async (canvasElement) => {
+    await expect(
+      within(canvasElement).getByRole('button', { name: 'Create delivery note' }),
+    ).toBeVisible()
+  }, true),
+}
+
+/** Delivery note OTP-2026-0058 from the Central warehouse: "Create invoice" next. */
+export const TradeDeliveryNote: Story = {
+  name: 'Delivery note',
+  render: () => <ExampleApp start={AV_ROUTES.delivery} />,
+  play: tradePlay(async (canvasElement) => {
+    await chainCheck(canvasElement, 'OTP-2026-0058', ['PON-2026-0031', 'NAR-2026-0024'])
+    await expect(
+      within(canvasElement).getByRole('button', { name: 'Create invoice' }),
+    ).toBeVisible()
+  }),
+}
+
+export const TradeDeliveryNotePhone: Story = {
+  name: 'Delivery note, phone',
+  render: () => <OnPhone start={AV_ROUTES.delivery} />,
+  play: tradePlay(async (canvasElement) => {
+    await expect(
+      within(canvasElement).getByRole('button', { name: 'Create invoice' }),
+    ).toBeVisible()
+  }, true),
+}
+
+/** Invoice F-2026-0430, the end of the chain: the three documents before it, "Send to SEF". */
+export const TradeSalesInvoice: Story = {
+  name: 'Sales invoice',
+  render: () => <ExampleApp start={AV_ROUTES.invoice} />,
+  play: tradePlay(async (canvasElement) => {
+    await chainCheck(canvasElement, 'F-2026-0430', [
+      'PON-2026-0031',
+      'NAR-2026-0024',
+      'OTP-2026-0058',
+    ])
+    await expect(canvasElement).toHaveTextContent('549.120,00')
+  }),
+}
+
+export const TradeSalesInvoicePhone: Story = {
+  name: 'Sales invoice, phone',
+  render: () => <OnPhone start={AV_ROUTES.invoice} />,
+  play: tradePlay(async (canvasElement) => {
+    await expect(within(canvasElement).getByRole('button', { name: 'Send to SEF' })).toBeVisible()
+  }, true),
+}
+
+/** From the quote to the invoice, each next document in one click; the chain grows on each page. */
+export const TradeSalesChainFlow: Story = {
+  name: 'Sales quote, create the chain, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AV_ROUTES.quotes} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('row', { name: /PON-2026-0031/ }))
+    await settle()
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: 'PON-2026-0031' }),
+    ).toBeVisible()
+    for (const [action, number] of [
+      ['Create order', 'NAR-2026-0024'],
+      ['Create delivery note', 'OTP-2026-0058'],
+      ['Create invoice', 'F-2026-0430'],
+    ] as const) {
+      await userEvent.click(canvas.getByRole('button', { name: action }))
+      await settle()
+      await expect(await canvas.findByRole('heading', { level: 1, name: number })).toBeVisible()
+    }
+    await chainCheck(canvasElement, 'F-2026-0430', [
+      'PON-2026-0031',
+      'NAR-2026-0024',
+      'OTP-2026-0058',
+    ])
+    // Back to the quote: the whole chain, nothing left to create.
+    await userEvent.click(canvas.getByRole('link', { name: /PON-2026-0031/ }))
+    await settle()
+    await chainCheck(canvasElement, 'PON-2026-0031', [
+      'NAR-2026-0024',
+      'OTP-2026-0058',
+      'F-2026-0430',
+    ])
+  },
+}
+
+// ── P5.55 trade ──
+// (Imports here, inside the block, so the blocks merge without touching the top.)
+import { AW_ROUTES } from './data-AW'
+
+/** An offset document's checks: its parties, the sides' headings, the signatures. */
+async function offsetCheck(
+  canvasElement: HTMLElement,
+  number: string,
+  parties: string[],
+  signed: string,
+) {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: number })).toBeVisible()
+  for (const party of parties) {
+    await expect(canvas.getAllByText(party).length).toBeGreaterThan(0)
+  }
+  await expect(canvas.getByRole('heading', { name: 'What remains' })).toBeVisible()
+  await expect(canvas.getByText(signed)).toBeVisible()
+}
+
+/**
+ * Kvadrat Gradnja d.o.o.'s offsets and assignments on 14.10.2026: a compensation and a cession
+ * waiting for signatures, an assignment signed; "New compensation" with cession and assignment
+ * in its menu.
+ */
+export const TradeOffsets: Story = {
+  name: 'Offsets and assignments',
+  render: () => <ExampleApp start={AW_ROUTES.list} />,
+  play: tradePlay(async (canvasElement) => {
+    const table = within(canvasElement).getByRole('table', { name: 'Offsets and assignments' })
+    await expect(within(table).getAllByRole('row')).toHaveLength(4)
+    await expect(within(table).getByRole('row', { name: /CES-2026-0003/ })).toHaveTextContent(
+      'Awaiting signatures',
+    )
+  }),
+}
+
+export const TradeOffsetsPhone: Story = {
+  name: 'Offsets and assignments, phone',
+  render: () => <OnPhone start={AW_ROUTES.list} />,
+  play: tradePlay(async (canvasElement) => {
+    await expect(within(canvasElement).getByText('Compensation KMP-2026-0007')).toBeVisible()
+  }, true),
+}
+
+/**
+ * Compensation KMP-2026-0007 with Beton Mix d.o.o., based on the confirmed statement of open
+ * items IOS-2026-0040: crane rental F-2026-0398 (156.000,00) offset against part of Beton Mix's
+ * invoice 2026-1102; 138.000,00 RSD remains; Kvadrat Gradnja's director signed, Beton Mix's not
+ * yet.
+ */
+export const TradeCompensation: Story = {
+  name: 'Compensation',
+  render: () => <ExampleApp start={AW_ROUTES.compensation} />,
+  play: tradePlay(async (canvasElement) => {
+    await offsetCheck(canvasElement, 'KMP-2026-0007', ['Beton Mix d.o.o.'], '1 of 2 signed')
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('link', { name: /IOS-2026-0040/ })).toBeVisible()
+    const table = canvas.getByRole('table', { name: 'Items' })
+    await expect(within(table).getByRole('row', { name: /2026-1102/ })).toHaveTextContent(
+      '138.000,00',
+    )
+    await expect(canvas.getByRole('button', { name: 'Send reminder' })).toBeVisible()
+  }),
+}
+
+export const TradeCompensationPhone: Story = {
+  name: 'Compensation, phone',
+  render: () => <OnPhone start={AW_ROUTES.compensation} />,
+  play: tradePlay(async (canvasElement) => {
+    await expect(within(canvasElement).getByText('1 of 2 signed')).toBeVisible()
+  }, true),
+}
+
+/** Both directors signed: Post is the main action. */
+export const TradeCompensationSigned: Story = {
+  name: 'Compensation, signed',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AW_ROUTES.compensationSigned} />,
+  play: tradePlay(async (canvasElement) => {
+    await expect(within(canvasElement).getByText('2 of 2 signed')).toBeVisible()
+    await expect(within(canvasElement).getByRole('button', { name: 'Post' })).toBeVisible()
+  }),
+}
+
+/**
+ * Cession CES-2026-0003: Kvadrat Gradnja d.o.o. assigns 186.000,00 RSD of its claim on
+ * Stanogradnja Plus d.o.o. to Beton Mix d.o.o., paying Beton Mix's invoice 2026-1131; the
+ * assignee and the debtor beside each other; the debtor's acknowledgement is still missing.
+ */
+export const TradeCession: Story = {
+  name: 'Cession',
+  render: () => <ExampleApp start={AW_ROUTES.cession} />,
+  play: tradePlay(async (canvasElement) => {
+    await offsetCheck(
+      canvasElement,
+      'CES-2026-0003',
+      ['Assignee', 'Debtor', 'Stanogradnja Plus d.o.o.'],
+      '2 of 3 signed',
+    )
+  }),
+}
+
+export const TradeCessionPhone: Story = {
+  name: 'Cession, phone',
+  render: () => <OnPhone start={AW_ROUTES.cession} />,
+  play: tradePlay(async (canvasElement) => {
+    await expect(within(canvasElement).getByText('Debtor')).toBeVisible()
+  }, true),
+}
+
+/**
+ * Assignment ASG-2026-0002: Kvadrat Gradnja d.o.o. instructs Gradska toplana Novi Sad to pay
+ * 120.000,00 RSD to Elektro Sistem d.o.o.; signed by all three, ready to post.
+ */
+export const TradeAssignment: Story = {
+  name: 'Assignment',
+  render: () => <ExampleApp start={AW_ROUTES.assignment} />,
+  play: tradePlay(async (canvasElement) => {
+    await offsetCheck(
+      canvasElement,
+      'ASG-2026-0002',
+      ['Paying party', 'Receiving party', 'Elektro Sistem d.o.o.'],
+      '3 of 3 signed',
+    )
+    await expect(within(canvasElement).getByRole('button', { name: 'Post' })).toBeVisible()
+  }),
+}
+
+export const TradeAssignmentPhone: Story = {
+  name: 'Assignment, phone',
+  render: () => <OnPhone start={AW_ROUTES.assignment} />,
+  play: tradePlay(async (canvasElement) => {
+    await expect(within(canvasElement).getByText('Receiving party')).toBeVisible()
+  }, true),
+}
+
+/** From the list to the signed assignment, posted. */
+export const TradeAssignmentPost: Story = {
+  name: 'Assignment, post, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AW_ROUTES.list} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('row', { name: /ASG-2026-0002/ }))
+    await settle()
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: 'ASG-2026-0002' }),
+    ).toBeVisible()
+    await userEvent.click(canvas.getByRole('button', { name: 'Post' }))
+    await settle()
+    await expect(canvas.queryByRole('button', { name: 'Post' })).toBeNull()
+    await expect(canvas.getAllByText('Posted').length).toBeGreaterThan(0)
+    // The toast reports it, then leaves on its own before the checks of the page (a toast
+    // fading out under the checks would be read at half its contrast).
+    await within(document.body).findByText('ASG-2026-0002 is posted.')
+    await waitFor(
+      async () => {
+        await expect(within(document.body).queryByText('ASG-2026-0002 is posted.')).toBeNull()
+      },
+      { timeout: 15000 },
+    )
+    await settle()
+  },
+}
+
+// ── P5.54 trade ──
+// (Imports here, inside the block, so the blocks merge without touching the top.)
+import { AX_ROUTES } from './data-AX'
+
+/**
+ * Pekara Zlatni klas's price lists on 14.10.2026: the shop's retail list, wholesale for shops
+ * (valid until 31.10.2026) and for cafés and restaurants, and the shops' list scheduled from
+ * 01.11.2026 — who each applies to, with or without VAT, validity, items and state.
+ */
+export const TradePriceLists: Story = {
+  name: 'Price lists',
+  render: () => <ExampleApp start={AX_ROUTES.lists} />,
+  play: tradePlay(async (canvasElement) => {
+    const table = within(canvasElement).getByRole('table', { name: 'Price lists' })
+    await expect(within(table).getAllByRole('row')).toHaveLength(5)
+    await expect(within(table).getByRole('row', { name: /CN-04/ })).toHaveTextContent('Scheduled')
+  }),
+}
+
+export const TradePriceListsPhone: Story = {
+  name: 'Price lists, phone',
+  render: () => <OnPhone start={AX_ROUTES.lists} />,
+  play: tradePlay(async (canvasElement) => {
+    await expect(within(canvasElement).getByText('Wholesale, shops')).toBeVisible()
+  }, true),
+}
+
+/**
+ * CN-02 Wholesale, shops: eleven prices without VAT with the previous price where it changed,
+ * two customers' own prices, and the six shops of the group it applies to.
+ */
+export const TradePriceList: Story = {
+  name: 'Price list',
+  render: () => <ExampleApp start={AX_ROUTES.list} />,
+  play: tradePlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(
+      canvas.getByRole('heading', { level: 1, name: 'CN-02 Wholesale, shops' }),
+    ).toBeVisible()
+    const prices = canvas.getByRole('table', { name: 'Prices' })
+    await expect(within(prices).getByRole('row', { name: /Kroasan/ })).toHaveTextContent('88,00')
+    await expect(
+      within(canvas.getByRole('table', { name: 'Customers’ own prices' })).getAllByText(
+        'Market Sunce d.o.o.',
+      ),
+    ).toHaveLength(2)
+    await expect(canvas.getByRole('table', { name: 'Customers' })).toBeVisible()
+  }),
+}
+
+export const TradePriceListPhone: Story = {
+  name: 'Price list, phone',
+  render: () => <OnPhone start={AX_ROUTES.list} />,
+  play: tradePlay(async (canvasElement) => {
+    await expect(within(canvasElement).getByText('Kroasan sa čokoladom, 80 g')).toBeVisible()
+  }, true),
+}
+
+/** Promotions with their validity: active, scheduled and ended, the rule in words. */
+export const TradePromotions: Story = {
+  name: 'Promotions',
+  render: () => <ExampleApp start={AX_ROUTES.promotions} />,
+  play: tradePlay(async (canvasElement) => {
+    const table = within(canvasElement).getByRole('table', { name: 'Promotions' })
+    await expect(within(table).getAllByRole('row')).toHaveLength(7)
+    await expect(within(table).getByRole('row', { name: /Croissant 2 \+ 1/ })).toHaveTextContent(
+      'Buy 2, get 1 free',
+    )
+  }),
+}
+
+export const TradePromotionsPhone: Story = {
+  name: 'Promotions, phone',
+  render: () => <OnPhone start={AX_ROUTES.promotions} />,
+  play: tradePlay(async (canvasElement) => {
+    await expect(within(canvasElement).getByText('Wholesale bread week')).toBeVisible()
+  }, true),
+}
+
+/** The discount rules in the application's order, on or off, and how they combine. */
+export const TradeDiscountRules: Story = {
+  name: 'Discount rules',
+  render: () => <ExampleApp start={AX_ROUTES.rules} />,
+  play: tradePlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    const table = canvas.getByRole('table', { name: 'Discount rules' })
+    await expect(within(table).getByRole('row', { name: /Damaged packaging/ })).toHaveTextContent(
+      'Off',
+    )
+    await expect(
+      canvas.getByText(/A line in a promotion takes no further discount\./),
+    ).toBeVisible()
+  }),
+}
+
+export const TradeDiscountRulesPhone: Story = {
+  name: 'Discount rules, phone',
+  render: () => <OnPhone start={AX_ROUTES.rules} />,
+  play: tradePlay(async (canvasElement) => {
+    await expect(within(canvasElement).getByText('Quantity discount')).toBeVisible()
+  }, true),
+}
+
+/** From the price lists to CN-02, and a discount rule turned on from its row menu. */
+export const TradePricingFlow: Story = {
+  name: 'Price lists, open and turn a rule on, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AX_ROUTES.lists} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('row', { name: /CN-02/ }))
+    await settle()
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: 'CN-02 Wholesale, shops' }),
+    ).toBeVisible()
+    await userEvent.click(canvas.getByRole('link', { name: 'Discount rules' }))
+    await settle()
+    const table = await canvas.findByRole('table', { name: 'Discount rules' })
+    await userEvent.click(within(table).getByRole('button', { name: /Damaged packaging/ }))
+    await userEvent.click(await within(document.body).findByRole('menuitem', { name: 'Turn on' }))
+    await settle()
+    await expect(within(table).getByRole('row', { name: /Damaged packaging/ })).toHaveTextContent(
+      'On',
+    )
+    // The toast reports it, then leaves on its own before the checks of the page (a toast
+    // fading out under the checks would be read at half its contrast).
+    await within(document.body).findByText('Damaged packaging is on.')
+    await waitFor(
+      async () => {
+        await expect(within(document.body).queryByText('Damaged packaging is on.')).toBeNull()
+      },
+      { timeout: 15000 },
+    )
+    await settle()
+  },
+}
+
+// ── P5.51 stock ──
+// (Imports here, inside the block, so the blocks merge without touching the top.)
+import { AY_ROUTES } from './data-AY'
+import { AZ_ROUTES } from './data-AZ'
+import { BA_ROUTES } from './data-BA'
+import { BB_ROUTES } from './data-BB'
+
+/** A stock or production story's checks, and on a phone that nothing scrolls sideways. */
+function stockPlay(
+  check: (canvasElement: HTMLElement) => Promise<void>,
+  phone = false,
+): NonNullable<Story['play']> {
+  return async ({ canvasElement }) => {
+    await settle()
+    await check(canvasElement)
+    if (phone) {
+      for (const page of canvasElement.querySelectorAll<HTMLElement>('[data-liro-phone-page]')) {
+        await expect(page.scrollWidth).toBeLessThanOrEqual(page.clientWidth)
+      }
+    }
+  }
+}
+
+/**
+ * Dismisses the notices and waits until none is left on the page: on a loaded machine axe could
+ * otherwise read a success toast while it fades out.
+ */
+async function toastsGone() {
+  notice.dismiss()
+  await waitFor(
+    async () => {
+      await expect(document.querySelectorAll('[data-sonner-toast]').length).toBe(0)
+    },
+    { timeout: 5_000 },
+  )
+}
+
+/**
+ * Kvadrat Gradnja d.o.o.'s card of cement CEM II/A-M 42,5R on 14.10.2026 (P5.51): 515 bags in
+ * the two warehouses worth 360.200,00 RSD — 460 in Central warehouse, 55 at Site Liman 4 —, then
+ * Central warehouse's movements of October with the running balance and value (a goods receipt
+ * from Beton Mix, two transfers to the site, a delivery note, an issue), each document a link.
+ */
+const ITEM_CARD_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(
+    canvas.getByRole('heading', { level: 1, name: 'Cement CEM II/A-M 42,5R, 25 kg' }),
+  ).toBeVisible()
+  await expect(canvasElement).toHaveTextContent('360.200,00')
+  await expect(canvas.getAllByRole('link', { name: 'Transfer out MP-2026-0030' }).length).toBe(1)
+}
+
+export const ItemCard: Story = {
+  name: 'Item card',
+  render: () => <ExampleApp start={AY_ROUTES.item} />,
+  play: stockPlay(async (canvasElement) => {
+    await ITEM_CARD_CHECK(canvasElement)
+    await expect(canvasElement).toHaveTextContent('322.000,00')
+  }),
+}
+
+export const ItemCardPhone: Story = {
+  name: 'Item card, phone',
+  render: () => <OnPhone start={AY_ROUTES.item} />,
+  play: stockPlay(ITEM_CARD_CHECK, true),
+}
+
+/** The same card with Site Liman 4's movements: two transfers in, two issues to the works. */
+export const ItemCardSite: Story = {
+  name: 'Item card, Site Liman 4',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AY_ROUTES.itemSite} />,
+  play: stockPlay(async (canvasElement) => {
+    await expect(
+      within(canvasElement).getByRole('link', { name: 'Issue to works IZ-2026-0141' }),
+    ).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('38.200,00')
+  }),
+}
+
+/** Drill-down: the card's goods receipt opens its document, a press on a balance row switches. */
+export const ItemCardDrillDown: Story = {
+  name: 'Item card, drill-down, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AY_ROUTES.item} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('row', { name: /^Site Liman 4/ }))
+    await expect(
+      await canvas.findByRole('table', { name: 'Movements in Site Liman 4' }),
+    ).toBeVisible()
+    await userEvent.click(canvas.getByRole('link', { name: 'Issue to works IZ-2026-0141' }))
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: 'IZ-2026-0141' }),
+    ).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('76.400,00')
+    await settle()
+  },
+}
+
+/**
+ * Transfer MP-2026-0031 from Central warehouse to Site Liman 4, a draft (P5.51): four lines with
+ * what Central warehouse can give; the waterproofing tape asks for 6 rolls where 3 are available,
+ * the application says so under the line, and Send waits until it is fixed.
+ */
+const TRANSFER_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'MP-2026-0031' })).toBeVisible()
+  // On a phone the grid's line card and its row both carry the message.
+  await expect(canvasElement).toHaveTextContent('Only 3 roll available in Central warehouse.')
+  await expect(canvas.getByRole('button', { name: /^Send/ })).toHaveAttribute(
+    'aria-disabled',
+    'true',
+  )
+}
+
+export const Transfer: Story = {
+  name: 'Transfer',
+  render: () => <ExampleApp start={AY_ROUTES.transfer} />,
+  play: stockPlay(TRANSFER_CHECK),
+}
+
+export const TransferPhone: Story = {
+  name: 'Transfer, phone',
+  render: () => <OnPhone start={AY_ROUTES.transfer} />,
+  play: stockPlay(TRANSFER_CHECK, true),
+}
+
+/** Sent: on its way to Site Liman 4, waiting for Snežana Popović. */
+export const TransferInTransit: Story = {
+  name: 'Transfer, in transit',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AY_ROUTES.transferSent} />,
+  play: stockPlay(async (canvasElement) => {
+    await expect(canvasElement).toHaveTextContent('Waiting for Snežana Popović at Site Liman 4')
+  }),
+}
+
+/** MP-2026-0030, received in full on 12.10.2026. */
+export const TransferReceived: Story = {
+  name: 'Transfer, received',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AY_ROUTES.transferOf('MP-2026-0030')} />,
+  play: stockPlay(async (canvasElement) => {
+    await expect(
+      within(canvasElement).getByRole('columnheader', { name: 'Received' }),
+    ).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('Received 12.10.2026. 08:40 by Snežana Popović')
+  }),
+}
+
+/** The goods receipt behind the card's 480 bags (drill-down). */
+export const StockDocumentReceipt: Story = {
+  name: 'Stock document, goods receipt',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AY_ROUTES.documentOf('PRI-2026-0207')} />,
+  play: stockPlay(async (canvasElement) => {
+    await expect(canvasElement).toHaveTextContent('Beton Mix d.o.o.')
+    await expect(canvasElement).toHaveTextContent('391.800,00')
+  }),
+}
+
+/** Three rolls instead of six: the application's check is satisfied, Send sends. */
+export const TransferSend: Story = {
+  name: 'Transfer, send, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AY_ROUTES.transfer} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const cell = canvas.getByRole('textbox', { name: 'Quantity, line 4' })
+    await userEvent.clear(cell)
+    // Tab, not Enter: Enter on the last line adds a new one (EditableGrid).
+    await userEvent.type(cell, '3{Tab}')
+    await waitFor(async () => {
+      await expect(canvas.queryByText('Only 3 roll available in Central warehouse.')).toBeNull()
+      await expect(canvas.getByRole('button', { name: 'Send' })).not.toHaveAttribute(
+        'aria-disabled',
+        'true',
+      )
+    })
+    await userEvent.click(canvas.getByRole('button', { name: 'Send' }))
+    await waitFor(async () => {
+      await expect(canvasElement).toHaveTextContent('Waiting for Snežana Popović at Site Liman 4')
+    })
+    await toastsGone()
+    await settle()
+  },
+}
+
+/**
+ * Pekara Zlatni klas's bill of materials for its rye bread (P5.52): a batch of 200 loaves, the
+ * components with quantities, units and costs (7.007,00 RSD a batch, 35,04 a loaf), the rye
+ * sourdough starter a semi-finished good whose own bill opens under it; the steps, the work orders.
+ */
+const BOM_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Raženi hleb, 400 g' })).toBeVisible()
+  await expect(canvas.getByRole('treegrid', { name: 'Components of SAS-0012' })).toBeVisible()
+  await expect(canvasElement).toHaveTextContent('7.007,00')
+}
+
+export const BillOfMaterials: Story = {
+  name: 'Bill of materials',
+  render: () => <ExampleApp start={AZ_ROUTES.bom} />,
+  play: stockPlay(async (canvasElement) => {
+    await BOM_CHECK(canvasElement)
+    await expect(
+      within(canvasElement).getByRole('row', { name: /Kiselo testo, raženo/ }),
+    ).toHaveAttribute('aria-expanded', 'true')
+  }),
+}
+
+export const BillOfMaterialsPhone: Story = {
+  name: 'Bill of materials, phone',
+  render: () => <OnPhone start={AZ_ROUTES.bom} />,
+  play: stockPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(
+      canvas.getByRole('heading', { level: 1, name: 'Raženi hleb, 400 g' }),
+    ).toBeVisible()
+    await expect(canvas.getByRole('tree', { name: 'Components of SAS-0012' })).toBeVisible()
+  }, true),
+}
+
+/** The starter's own bill: rye flour and water, used in SAS-0012. */
+export const BillOfMaterialsStarter: Story = {
+  name: 'Bill of materials, starter',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AZ_ROUTES.starter} />,
+  play: stockPlay(async (canvasElement) => {
+    await expect(
+      within(canvasElement).getByRole('heading', { level: 1, name: 'Kiselo testo, raženo' }),
+    ).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('942,00')
+  }),
+}
+
+/**
+ * Work order RN-2026-0158, baked last night (P5.52): 400 loaves planned, 386 good, 14 scrap;
+ * the material planned against used, each difference with its value (2,5 kg more rye flour, 14
+ * bags fewer), 14.166,00 RSD used against 14.014,00 planned; the output and the scrap's reasons.
+ */
+const WORK_ORDER_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'RN-2026-0158' })).toBeVisible()
+  await expect(canvasElement).toHaveTextContent('14.166,00')
+  await expect(canvasElement).toHaveTextContent('386 pc')
+}
+
+export const WorkOrder: Story = {
+  name: 'Work order',
+  render: () => <ExampleApp start={AZ_ROUTES.workOrder} />,
+  play: stockPlay(async (canvasElement) => {
+    await WORK_ORDER_CHECK(canvasElement)
+    await expect(within(canvasElement).getByRole('columnheader', { name: 'Planned' })).toBeVisible()
+  }),
+}
+
+export const WorkOrderPhone: Story = {
+  name: 'Work order, phone',
+  render: () => <OnPhone start={AZ_ROUTES.workOrder} />,
+  play: stockPlay(WORK_ORDER_CHECK, true),
+}
+
+/**
+ * The bakery's production plan of 12.–25.10.2026 (P5.52) on Gantt: the work orders on the bread
+ * line, the pastry line and the cakes' oven, the starter before the rye bread, the croissants
+ * waiting for chocolate, the cakes for Hotel Fruška; now 14.10. 09:40.
+ */
+const PLAN_CHECK = async (canvasElement: HTMLElement) => {
+  await ganttReady(canvasElement)
+  await expect(
+    within(canvasElement).getByRole('heading', { level: 1, name: 'Production plan' }),
+  ).toBeVisible()
+}
+
+export const ProductionPlan: Story = {
+  name: 'Production plan',
+  render: () => <ExampleApp start={AZ_ROUTES.plan} />,
+  play: async ({ canvasElement }) => {
+    await PLAN_CHECK(canvasElement)
+    const canvas = within(canvasElement)
+    await expect(
+      canvas.getByRole('rowheader', { name: /^Task: RN-2026-0159 .*Waiting for chocolate/ }),
+    ).toBeVisible()
+    await expect(
+      canvas.getByRole('img', { name: /^Now, 14\.10\.2026\. 09:40$/ }),
+    ).toBeInTheDocument()
+  },
+}
+
+export const ProductionPlanPhone: Story = {
+  name: 'Production plan, phone',
+  render: () => <OnPhone start={AZ_ROUTES.plan} />,
+  play: async ({ canvasElement }) => {
+    await PLAN_CHECK(canvasElement)
+    await expect(
+      within(canvasElement).getByRole('heading', { name: 'Pastry line · Oven 2' }),
+    ).toBeVisible()
+  },
+}
+
+/** The work order posted: the good loaves into stock, the material out of it. */
+export const WorkOrderPost: Story = {
+  name: 'Work order, post, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AZ_ROUTES.workOrder} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Post to stock' }))
+    await waitFor(async () => {
+      await expect(canvas.queryByRole('button', { name: 'Post to stock' })).toBeNull()
+      await expect(canvas.getByRole('heading', { level: 1, name: 'RN-2026-0158' })).toBeVisible()
+    })
+    await toastsGone()
+    await settle()
+  },
+}
+
+/**
+ * Pekara Zlatni klas's retail price calculation KLK-2026-0047 (P5.53) from Mlekara Ravnica's
+ * invoice 2026-4471: per line the purchase price, the dependent costs, the cost price, the margin,
+ * the price without VAT, the VAT, the retail price the shop sets and the retail value; 30.246,00
+ * RSD in all; four prices on the shelf change.
+ */
+const CALCULATION_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'KLK-2026-0047' })).toBeVisible()
+  await expect(canvasElement).toHaveTextContent('30.246,00')
+  await expect(canvasElement).toHaveTextContent('Mlekara Ravnica d.o.o.')
+}
+
+export const RetailPriceCalculation: Story = {
+  name: 'Retail price calculation',
+  render: () => <ExampleApp start={BA_ROUTES.calculation} />,
+  play: stockPlay(async (canvasElement) => {
+    await CALCULATION_CHECK(canvasElement)
+    await expect(canvasElement).toHaveTextContent('19,05')
+  }),
+}
+
+export const RetailPriceCalculationPhone: Story = {
+  name: 'Retail price calculation, phone',
+  render: () => <OnPhone start={BA_ROUTES.calculation} />,
+  play: stockPlay(CALCULATION_CHECK, true),
+}
+
+/** The yoghurt at 169,00: the application prices the line again and the totals follow. */
+export const RetailPriceCalculationChange: Story = {
+  name: 'Retail price calculation, change a price, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BA_ROUTES.calculation} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const cell = canvas.getByRole('textbox', { name: 'Retail price, line 1' })
+    await userEvent.clear(cell)
+    await userEvent.type(cell, '169,00{Enter}')
+    await waitFor(async () => {
+      await expect(canvasElement).toHaveTextContent('30.486,00')
+      await expect(canvasElement).toHaveTextContent('21,94')
+    })
+    await settle()
+  },
+}
+
+/** Price change NIV-2026-0012: what the new prices do to the pieces already on the shelf. */
+const PRICE_CHANGE_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'NIV-2026-0012' })).toBeVisible()
+  await expect(canvasElement).toHaveTextContent('156,06')
+}
+
+export const PriceChange: Story = {
+  name: 'Price change',
+  render: () => <ExampleApp start={BA_ROUTES.priceChange} />,
+  play: stockPlay(PRICE_CHANGE_CHECK),
+}
+
+export const PriceChangePhone: Story = {
+  name: 'Price change, phone',
+  render: () => <OnPhone start={BA_ROUTES.priceChange} />,
+  play: stockPlay(PRICE_CHANGE_CHECK, true),
+}
+
+/**
+ * Stocktaking POP-2026-02 of Central warehouse, counted on 13.10.2026 (P5.57): eight lines, four
+ * with a difference — a surplus of 2.900,00 and a shortage of 6.390,00 RSD —, the commission's
+ * signatures (two of three; Milica's Sign), and "Post differences" waiting for them.
+ */
+const STOCKTAKING_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'POP-2026-02' })).toBeVisible()
+  await expect(canvasElement).toHaveTextContent('-3.490,00')
+  await expect(canvas.getByRole('button', { name: /^Post differences/ })).toHaveAttribute(
+    'aria-disabled',
+    'true',
+  )
+}
+
+export const StocktakingList: Story = {
+  name: 'Stocktaking list',
+  render: () => <ExampleApp start={BB_ROUTES.list} />,
+  play: stockPlay(async (canvasElement) => {
+    await STOCKTAKING_CHECK(canvasElement)
+    await expect(within(canvasElement).getByRole('button', { name: 'Sign' })).toBeVisible()
+  }),
+}
+
+export const StocktakingListPhone: Story = {
+  name: 'Stocktaking list, phone',
+  render: () => <OnPhone start={BB_ROUTES.list} />,
+  play: stockPlay(STOCKTAKING_CHECK, true),
+}
+
+/** Every member signed and "Post differences" asked: what is posted, the confirm button last. */
+export const StocktakingPost: Story = {
+  name: 'Stocktaking list, post differences',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BB_ROUTES.post} />,
+  play: stockPlay(async () => {
+    const dialog = within(document.body).getByRole('alertdialog', { name: /Post differences/ })
+    await expect(dialog).toHaveTextContent('6.390,00')
+    await expect(within(dialog).getByRole('button', { name: 'Post differences' })).toBeVisible()
+  }),
+}
+
+/** Posted: the surplus and shortage documents the application wrote. */
+export const StocktakingPosted: Story = {
+  name: 'Stocktaking list, posted',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BB_ROUTES.posted} />,
+  play: stockPlay(async (canvasElement) => {
+    await expect(canvasElement).toHaveTextContent('Stocktaking shortage MA-2026-004')
+  }),
+}
+
+/** Milica signs, then posts the differences. */
+export const StocktakingSignAndPost: Story = {
+  name: 'Stocktaking list, sign and post, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BB_ROUTES.list} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Sign' }))
+    await waitFor(async () => {
+      await expect(canvas.getByRole('button', { name: 'Post differences' })).not.toHaveAttribute(
+        'aria-disabled',
+        'true',
+      )
+    })
+    await userEvent.click(canvas.getByRole('button', { name: 'Post differences' }))
+    const dialog = await within(document.body).findByRole('alertdialog', {
+      name: /Post differences/,
+    })
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Post differences' }))
+    await expect(await canvas.findByText('Stocktaking shortage MA-2026-004')).toBeVisible()
+    await toastsGone()
+    await settle()
+  },
+}
+
+/**
+ * The count itself (P5.57): the commission at location A-02 with group I's handheld, counting
+ * blind — 88 sheets of Q188 just counted, Q131 none, the binding wire still to count.
+ */
+const STOCKTAKING_COUNT_CHECK = async (canvasElement: HTMLElement) => {
+  await expect(canvasElement).toHaveTextContent('Stocktaking POP-2026-02')
+  await expect(canvasElement).toHaveTextContent('A-02')
+  await expect(within(canvasElement).getByRole('button', { name: 'Finish location' })).toBeVisible()
+}
+
+export const StocktakingCount: Story = {
+  name: 'Stocktaking count',
+  render: () => <ExampleApp start={BB_ROUTES.count} />,
+  play: stockPlay(STOCKTAKING_COUNT_CHECK),
+}
+
+export const StocktakingCountPhone: Story = {
+  name: 'Stocktaking count, phone',
+  render: () => <OnHandheld start={BB_ROUTES.count} />,
+  play: stockPlay(async (canvasElement) => {
+    await STOCKTAKING_COUNT_CHECK(canvasElement)
+    await expectNoSidewaysScroll(canvasElement)
+  }, true),
+}
+
+// ── P5.47 assets ──
+// (Imports here, inside the block, so the blocks merge without touching the top.)
+import { AP_ROUTES } from './data-AP'
+import { AQ_ROUTES } from './data-AQ'
+import { AR_ROUTES } from './data-AR'
+import { AS_ROUTES } from './data-AS'
+import { AT_ROUTES } from './data-AT'
+
+/** Waits until a success notice has left (axe must not catch it fading out). */
+const noticeGone = async (text: string) => {
+  await waitFor(
+    async () => {
+      await expect(within(document.body).queryByText(text)).toBeNull()
+    },
+    { timeout: 10000 },
+  )
+}
+
+/** Settles a screen and finds its h1. */
+const assetsHeading = async (canvasElement: HTMLElement, name: string | RegExp) => {
+  await settle()
+  await expect(
+    await within(canvasElement).findByRole('heading', { level: 1, name }),
+  ).toBeInTheDocument()
+}
+
+/**
+ * Kvadrat Gradnja's fixed assets on 14.10.2026 (P5.47): the register — group, location and the
+ * responsible person, acquisition and book value, the state in words; views and a group filter.
+ */
+export const FixedAssets: Story = {
+  name: 'Fixed assets',
+  render: () => <ExampleApp start={AP_ROUTES.register} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Fixed assets')
+    const canvas = within(canvasElement)
+    const row = canvas.getByRole('row', { name: /Mini excavator 3\.5 t/ })
+    await expect(row).toHaveTextContent('5.871.000,00')
+    await expect(canvas.getByRole('row', { name: /Laptop HP ProBook 450/ })).toHaveTextContent(
+      'Fully depreciated',
+    )
+  },
+}
+
+export const FixedAssetsPhone: Story = {
+  name: 'Fixed assets, phone',
+  render: () => <OnPhone start={AP_ROUTES.register} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Fixed assets')
+    await expect(within(canvasElement).getByText('Mini excavator 3.5 t')).toBeVisible()
+  },
+}
+
+/** The register's "Disposed and sold": the vibratory plate (July) and the van (30.09.2026). */
+export const FixedAssetsDisposed: Story = {
+  name: 'Fixed assets, disposed and sold',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AP_ROUTES.disposed} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Fixed assets')
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('row', { name: /Van Fiat Ducato/ })).toHaveTextContent('Sold')
+    await expect(canvas.getByRole('row', { name: /Wacker DPU 2550/ })).toHaveTextContent('Disposed')
+  },
+}
+
+/**
+ * The mini excavator OS-0142: the figures, the acquisition with the supplier's invoice and the
+ * loan that financed it, location and responsibility, the group and its illustrative rate, the
+ * value history and the 2026 schedule (August posted, September in review).
+ */
+export const FixedAsset: Story = {
+  name: 'Fixed asset',
+  render: () => <ExampleApp start={AP_ROUTES.featured} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Mini excavator 3.5 t')
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('link', { name: 'Loan KR-2025-004' })).toBeVisible()
+    const september = canvas.getByRole('row', { name: /September 2026/ })
+    await expect(september).toHaveTextContent('In review')
+    await expect(september).toHaveTextContent('5.814.000,00')
+  },
+}
+
+export const FixedAssetPhone: Story = {
+  name: 'Fixed asset, phone',
+  render: () => <OnPhone start={AP_ROUTES.featured} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Mini excavator 3.5 t')
+    await expect(within(canvasElement).getByText('Snežana Popović, Site manager')).toBeVisible()
+  },
+}
+
+/** A sold asset: the sale with its buyer, the sales invoice and the result. */
+export const FixedAssetSold: Story = {
+  name: 'Fixed asset, sold',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AP_ROUTES.sold} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Van Fiat Ducato NS-482-KG')
+    await expect(within(canvasElement).getByText('F-2026-0429')).toBeVisible()
+  },
+}
+
+/** "Dispose…" asked: the reason and the asset's number typed before the button can be used. */
+export const AssetDisposal: Story = {
+  name: 'Asset disposal',
+  render: () => <ExampleApp start={AP_ROUTES.dispose} />,
+  play: async () => {
+    await settle()
+    const dialog = await within(document.body).findByRole('alertdialog', {
+      name: /Dispose of asset\s*OS-0142 · Mini excavator 3\.5 t/,
+    })
+    await expect(dialog).toHaveTextContent('5.871.000,00')
+    await expect(within(dialog).getByRole('button', { name: 'Dispose' })).toBeDisabled()
+  },
+}
+
+export const AssetDisposalPhone: Story = {
+  name: 'Asset disposal, phone',
+  render: () => <OnPhone start={AP_ROUTES.dispose} />,
+  play: async () => {
+    await settle()
+    await expect(
+      await within(document.body).findByRole('alertdialog', { name: /Dispose of asset/ }),
+    ).toBeVisible()
+  },
+}
+
+/** "Sell…" asked: the buyer, the date and the price; the application makes the invoice. */
+export const AssetSale: Story = {
+  name: 'Asset sale',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AP_ROUTES.sell} />,
+  play: async () => {
+    await settle()
+    const dialog = await within(document.body).findByRole('dialog', { name: /Sell asset/ })
+    await expect(within(dialog).getByText('Book value today: 5.871.000,00 RSD.')).toBeVisible()
+  },
+}
+
+/** The disposal end to end: a reason, OS-0142 typed, Dispose; the card says Disposed. */
+export const AssetDisposalInteraction: Story = {
+  name: 'Asset disposal, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AP_ROUTES.featured} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Mini excavator 3.5 t')
+    const canvas = within(canvasElement)
+    const page = within(document.body)
+    await userEvent.click(canvas.getByRole('button', { name: 'Dispose…' }))
+    const dialog = await page.findByRole('alertdialog', { name: /Dispose of asset/ })
+    await userEvent.click(within(dialog).getByRole('radio', { name: 'Stolen' }))
+    await userEvent.type(
+      within(dialog).getByRole('textbox', { name: /Type OS-0142 to confirm/ }),
+      'OS-0142',
+    )
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Dispose' }))
+    await waitFor(async () => {
+      await expect(page.queryByRole('dialog')).toBeNull()
+    })
+    await expect(await canvas.findByRole('heading', { name: 'Disposal' })).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('Book value of 5.871.000,00 RSD written off.')
+    await noticeGone('OS-0142 disposed.')
+  },
+}
+
+/**
+ * The September 2026 depreciation run in review: the period open, the checks (a laptop not yet
+ * in use), the preview — 445.385,21 RSD over eleven assets — and Post depreciation.
+ */
+export const DepreciationRun: Story = {
+  name: 'Depreciation run',
+  render: () => <ExampleApp start={AP_ROUTES.run} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Depreciation September 2026')
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('Acquisitions put into use')).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('445.385,21')
+    await expect(canvas.getByRole('button', { name: 'Post depreciation' })).toBeVisible()
+  },
+}
+
+export const DepreciationRunPhone: Story = {
+  name: 'Depreciation run, phone',
+  render: () => <OnPhone start={AP_ROUTES.run} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Depreciation September 2026')
+    await expect(canvasElement).toHaveTextContent('445.385,21')
+  },
+}
+
+/** After Rerun with a reason: the calculation runs again. */
+export const DepreciationRunRerun: Story = {
+  name: 'Depreciation run, rerun',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AP_ROUTES.runRerun} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Depreciation September 2026')
+    await expect(within(canvasElement).getByText(/an acquisition was added/)).toBeVisible()
+  },
+}
+
+/**
+ * Travel orders (P5.48): Snežana Popović issues PN-2026-052 for Nikola Marković's trip to
+ * Subotica — the trip, the company pickup, the cost centre, the advance.
+ */
+export const TravelOrder: Story = {
+  name: 'Travel order',
+  render: () => <ExampleApp start={AQ_ROUTES.newOrder} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'New travel order')
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('textbox', { name: /Destination/ })).toHaveValue('Subotica')
+    await expect(canvas.getAllByRole('button', { name: 'Send for approval' })[0]).toBeVisible()
+  },
+}
+
+export const TravelOrderPhone: Story = {
+  name: 'Travel order, phone',
+  render: () => <OnPhone start={AQ_ROUTES.newOrder} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'New travel order')
+  },
+}
+
+/**
+ * Jelena Stojković's settlement of PN-2026-047: the expenses with their receipts' photos (the
+ * taxi's missing, so Submit says why it cannot be used), the per-diems, 10.090,00 RSD to pay.
+ */
+export const TravelSettlement: Story = {
+  name: 'Travel settlement',
+  render: () => <ExampleApp start={AQ_ROUTES.settlement} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Settlement PN-2026-047')
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('row', { name: /Taxi/ })).toHaveTextContent('Receipt missing')
+    await expect(canvasElement).toHaveTextContent('10.090,00')
+    await expect(
+      canvas.getByText(/Add the photo of the taxi’s receipt of 07\.10\.2026\./),
+    ).toBeInTheDocument()
+  },
+}
+
+export const TravelSettlementPhone: Story = {
+  name: 'Travel settlement, phone',
+  render: () => <OnPhone start={AQ_ROUTES.settlement} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Settlement PN-2026-047')
+    await expect(within(canvasElement).getByRole('button', { name: /Take a photo/ })).toBeVisible()
+  },
+}
+
+/** The taxi's receipt photographed: every expense has its receipt, Submit can be used. */
+export const TravelSettlementReady: Story = {
+  name: 'Travel settlement, receipt added',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AQ_ROUTES.settlementReady} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Settlement PN-2026-047')
+    await expect(
+      within(canvasElement).getByRole('button', { name: 'Submit for approval' }),
+    ).toBeEnabled()
+  },
+}
+
+/** A receipt added from the phone's camera, then the settlement submitted. */
+export const TravelSettlementInteraction: Story = {
+  name: 'Travel settlement, receipt photo, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AQ_ROUTES.settlement} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Settlement PN-2026-047')
+    const canvas = within(canvasElement)
+    const input = canvasElement.querySelector<HTMLInputElement>('[data-slot="file-dropzone"] input')
+    if (input === null) throw new Error('The file input is missing')
+    await userEvent.upload(input, [new File(['jpeg'], 'Taxi_07-10.jpg', { type: 'image/jpeg' })])
+    await waitFor(async () => {
+      await expect(canvas.getByRole('row', { name: /Taxi/ })).toHaveTextContent('Taxi_07-10.jpg')
+    })
+    await noticeGone('Receipt added to the taxi of 07.10.2026.')
+    await userEvent.click(canvas.getByRole('button', { name: 'Submit for approval' }))
+    await expect(await canvas.findByText('To approve')).toBeVisible()
+    await noticeGone('PN-2026-047 sent to Milica Petrović for approval.')
+  },
+}
+
+/**
+ * Milica Petrović approves the settlements: Nikola Marković returns 1.920,00 RSD of his
+ * advance; Stefan Nikolić and Goran Medić are paid.
+ */
+export const TravelApprovals: Story = {
+  name: 'Travel settlements to approve',
+  render: () => <ExampleApp start={AQ_ROUTES.approvals} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Travel settlements to approve')
+    const canvas = within(canvasElement)
+    await expect(canvasElement).toHaveTextContent('1.920,00')
+    await expect(canvas.getByRole('button', { name: 'Approve' })).toBeVisible()
+  },
+}
+
+export const TravelApprovalsPhone: Story = {
+  name: 'Travel settlements to approve, phone',
+  render: () => <OnPhone start={AQ_ROUTES.approvals} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Travel settlements to approve')
+    await expect(within(canvasElement).getByText('Nikola Marković')).toBeVisible()
+  },
+}
+
+/** "Reject" asked for PN-2026-044: the reason from the list. */
+export const TravelApprovalsReject: Story = {
+  name: 'Travel settlements to approve, reject',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AQ_ROUTES.approvalsReject} />,
+  play: async () => {
+    await settle()
+    await expect(
+      await within(document.body).findByRole('alertdialog', {
+        name: /Reject settlement\s*PN-2026-044 · Nikola Marković/,
+      }),
+    ).toBeVisible()
+  },
+}
+
+/** Approve: the settlement leaves the queue and the next one opens. */
+export const TravelApprovalsInteraction: Story = {
+  name: 'Travel settlements to approve, approve, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AQ_ROUTES.approvals} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Travel settlements to approve')
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Approve' }))
+    await expect(
+      await within(document.body).findByText('PN-2026-044 approved.'),
+    ).toBeInTheDocument()
+    await waitFor(async () => {
+      await expect(canvas.queryByText('Nikola Marković')).toBeNull()
+    })
+    await noticeGone('PN-2026-044 approved.')
+  },
+}
+
+/**
+ * The budget 2026 (P5.58) against January–September by cost centre: Liman 4 over budget by
+ * 9.380.000,00 RSD, Bulevar Evrope 24 under; the chart, the tree, "Show entries".
+ */
+export const Budget: Story = {
+  name: 'Budget',
+  render: () => <ExampleApp start={AR_ROUTES.budget} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Budget 2026')
+    const canvas = within(canvasElement)
+    const liman = canvas.getByRole('row', { name: /Residential building Liman 4/ })
+    await expect(liman).toHaveTextContent('Over budget')
+    await expect(liman).toHaveTextContent('+9.380.000,00')
+  },
+}
+
+export const BudgetPhone: Story = {
+  name: 'Budget, phone',
+  render: () => <OnPhone start={AR_ROUTES.budget} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Budget 2026')
+  },
+}
+
+/** By project: Liman 4 by cost type, material 111,8 % used. */
+export const BudgetByProject: Story = {
+  name: 'Budget by project',
+  render: () => <ExampleApp start={AR_ROUTES.projects} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Budget 2026')
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('row', { name: /^5120 Material/ })).toHaveTextContent('111,8')
+  },
+}
+
+export const BudgetByProjectPhone: Story = {
+  name: 'Budget by project, phone',
+  render: () => <OnPhone start={AR_ROUTES.projects} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Budget 2026')
+  },
+}
+
+/** Liman 4's material chosen: "Show entries of 5120" can be used. */
+export const BudgetLineChosen: Story = {
+  name: 'Budget by project, line chosen',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AR_ROUTES.projectsChosen} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Budget 2026')
+    await expect(
+      within(canvasElement).getByRole('button', { name: 'Show entries of 5120' }),
+    ).toBeEnabled()
+  },
+}
+
+/** The drill-down: Liman 4's material, its figures and latest entries, 236 in all. */
+export const BudgetEntries: Story = {
+  name: 'Budget entries',
+  render: () => <ExampleApp start={AR_ROUTES.entries('p310-5120')} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Residential building Liman 4 · Material')
+    await expect(within(canvasElement).getByText('The latest 3 of 236 entries.')).toBeVisible()
+  },
+}
+
+export const BudgetEntriesPhone: Story = {
+  name: 'Budget entries, phone',
+  render: () => <OnPhone start={AR_ROUTES.entries('p310-5120')} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Residential building Liman 4 · Material')
+  },
+}
+
+/** Choose Liman 4's machinery, Show entries, then a depreciation's asset card. */
+export const BudgetDrillDown: Story = {
+  name: 'Budget, drill-down to an entry, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AR_ROUTES.projects} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Budget 2026')
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('row', { name: /^5130 Machinery and fuel/ }))
+    await userEvent.click(canvas.getByRole('button', { name: 'Show entries of 5130' }))
+    await assetsHeading(canvasElement, 'Residential building Liman 4 · Machinery and fuel')
+    const [excavator] = canvas.getAllByRole('link', { name: 'Depreciation August 2026' })
+    if (excavator === undefined) throw new Error('The depreciation entry is missing')
+    await userEvent.click(excavator)
+    await assetsHeading(canvasElement, 'Mini excavator 3.5 t')
+  },
+}
+
+/**
+ * Loans and leases (P5.60): two loans and the pickup's lease, its October instalment overdue;
+ * a loan repaid in May under "Repaid".
+ */
+export const Loans: Story = {
+  name: 'Loans and leases',
+  render: () => <ExampleApp start={AS_ROUTES.list} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Loans and leases')
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('row', { name: /Lizing Plus/ })).toHaveTextContent('Overdue')
+    await expect(canvas.getByRole('row', { name: /KR-2025-004/ })).toHaveTextContent('3.145.740,46')
+  },
+}
+
+export const LoansPhone: Story = {
+  name: 'Loans and leases, phone',
+  render: () => <OnPhone start={AS_ROUTES.list} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Loans and leases')
+    await expect(within(canvasElement).getByText('Lizing Plus d.o.o.')).toBeVisible()
+  },
+}
+
+/**
+ * The investment loan KR-2025-004 (the mini excavator): principal, rate, term, outstanding; the
+ * outstanding principal as a chart; the schedule — 18 paid, 15.10.2026 due.
+ */
+export const Loan: Story = {
+  name: 'Loan',
+  render: () => <ExampleApp start={AS_ROUTES.loan} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Investment loan KR-2025-004')
+    const canvas = within(canvasElement)
+    await expect(
+      canvas.getByRole('link', { name: /Mini excavator 3\.5 t \(OS-0142\)/ }),
+    ).toBeVisible()
+    const due = canvas.getByRole('row', { name: /^19 / })
+    await expect(due).toHaveTextContent('Due')
+    await expect(due).toHaveTextContent('2.978.885,87')
+  },
+}
+
+export const LoanPhone: Story = {
+  name: 'Loan, phone',
+  render: () => <OnPhone start={AS_ROUTES.loan} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Investment loan KR-2025-004')
+    await expect(canvasElement).toHaveTextContent('3.145.740,46')
+  },
+}
+
+/** The pickup's finance lease: instalment 32 overdue, said above the contract. */
+export const LeaseOverdue: Story = {
+  name: 'Lease, overdue',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AS_ROUTES.lease} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Finance lease LZ-2024-012')
+    await expect(
+      within(canvasElement).getByText('Instalment 32 of 10.10.2026 is overdue by 4 days.'),
+    ).toBeVisible()
+  },
+}
+
+/** Repaid: the loan of 2021, nothing outstanding. */
+export const LoansRepaid: Story = {
+  name: 'Loans and leases, repaid',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AS_ROUTES.repaid} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Loans and leases')
+    await expect(within(canvasElement).getByRole('row', { name: /KR-2021-011/ })).toHaveTextContent(
+      'Repaid',
+    )
+  },
+}
+
+/**
+ * Service and author contracts (P5.61): Dragana Vasić's author contract for the show flat — the
+ * amount agreed as gross, 43 % normed costs, the application's calculation: 102.291,00 RSD net.
+ */
+export const ServiceContract: Story = {
+  name: 'Service contract',
+  render: () => <ExampleApp start={AT_ROUTES.newContract} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'New contract')
+    await expect(canvasElement).toHaveTextContent('102.291,00')
+    await expect(canvasElement).toHaveTextContent('Normed costs (43%)')
+  },
+}
+
+export const ServiceContractPhone: Story = {
+  name: 'Service contract, phone',
+  render: () => <OnPhone start={AT_ROUTES.newContract} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'New contract')
+  },
+}
+
+/** The same agreed as net: the application's gross-up, 219.960,70 RSD gross. */
+export const ServiceContractNet: Story = {
+  name: 'Service contract, net amount',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AT_ROUTES.newContractNet} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'New contract')
+    await expect(canvasElement).toHaveTextContent('219.960,70')
+  },
+}
+
+/** The kind changed to a service contract: 20 % normed costs, 83.040,00 RSD net. */
+export const ServiceContractKind: Story = {
+  name: 'Service contract, kind changed, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AT_ROUTES.newContract} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'New contract')
+    await userEvent.click(within(canvasElement).getByRole('radio', { name: /Service contract/ }))
+    await waitFor(async () => {
+      await expect(canvasElement).toHaveTextContent('83.040,00')
+    })
+  },
+}
+
+/**
+ * The September 2026 run of five contracts: the checks (Mila Tošić's payment held for a missing
+ * bank account), the preview with each contract's tax and contributions, Post and pay.
+ */
+export const ServiceContractRun: Story = {
+  name: 'Service contracts run',
+  render: () => <ExampleApp start={AT_ROUTES.run} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Service and author contracts September 2026')
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('row', { name: /Mila Tošić/ })).toHaveTextContent('Held')
+    await expect(canvasElement).toHaveTextContent('285.058,20')
+  },
+}
+
+export const ServiceContractRunPhone: Story = {
+  name: 'Service contracts run, phone',
+  render: () => <OnPhone start={AT_ROUTES.run} />,
+  play: async ({ canvasElement }) => {
+    await assetsHeading(canvasElement, 'Service and author contracts September 2026')
+    await expect(canvasElement).toHaveTextContent('285.058,20')
+  },
+}
+
+// ── P5.44 ledger ──
+
+import { AK_ROUTES } from './data-AK'
+import { AL_ROUTES } from './data-AL'
+import { AM_ROUTES } from './data-AM'
+import { AN_ROUTES } from './data-AN'
+import { AO_ROUTES } from './data-AO'
+
+/** Settles, checks, and on a phone checks that no page scrolls sideways. */
+function ledgerPlay(
+  check: (canvasElement: HTMLElement) => Promise<void>,
+  phone = false,
+): NonNullable<Story['play']> {
+  return async ({ canvasElement }) => {
+    await settle()
+    await check(canvasElement)
+    if (phone) {
+      for (const page of canvasElement.querySelectorAll<HTMLElement>('[data-liro-phone-page]')) {
+        await expect(page.scrollWidth).toBeLessThanOrEqual(page.clientWidth)
+      }
+    }
+  }
+}
+
+/**
+ * P5.44: Kvadrat Gradnja d.o.o.'s chart of accounts on 14.10.2026 (illustrative, in the shape of
+ * the Serbian chart): classes 0–9, groups, synthetic and analytic accounts in a TreeTable with
+ * each account's kind, normal side, required analytics and balance; an inactive account and a
+ * class that is not kept say why. A press on an account opens its details; "Account card" opens
+ * its card.
+ */
+const CHART_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  // A treegrid on a desktop, TreeView's tree on a phone.
+  const tree =
+    canvas.queryByRole('treegrid', { name: 'Chart of accounts' }) ??
+    canvas.getByRole('tree', { name: 'Chart of accounts' })
+  await expect(within(tree).getByText('Main cash desk')).toBeVisible()
+  await expect(
+    within(tree).getByText('Inactive: the account was closed on 30.06.2025.'),
+  ).toBeVisible()
+}
+
+export const ChartOfAccounts: Story = {
+  name: 'Chart of accounts',
+  render: () => <ExampleApp start={AK_ROUTES.chart} />,
+  play: ledgerPlay(CHART_CHECK),
+}
+
+export const ChartOfAccountsPhone: Story = {
+  name: 'Chart of accounts, phone',
+  render: () => <OnPhone start={AK_ROUTES.chart} />,
+  play: ledgerPlay(CHART_CHECK, true),
+}
+
+/** The search "customers": the matching accounts and every level above them, opened. */
+export const ChartOfAccountsSearch: Story = {
+  name: 'Chart of accounts, search',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AK_ROUTES.chartSearch} />,
+  play: ledgerPlay(async (canvasElement) => {
+    const tree = within(canvasElement).getByRole('treegrid', { name: /accounts found$/ })
+    await expect(within(tree).getAllByText('Customers abroad')).toHaveLength(2)
+    await expect(within(tree).queryByText('Main cash desk')).toBeNull()
+  }),
+}
+
+/** Account 2040's details: place in the chart, kind, side, analytics, tax category, balance. */
+export const ChartOfAccountsDetails: Story = {
+  name: 'Chart of accounts, account details',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AK_ROUTES.chartDetails('2040')} />,
+  play: ledgerPlay(async () => {
+    const drawer = within(document.body).getByRole('dialog', { name: /Account details/ })
+    await expect(within(drawer).getByText('Partner')).toBeVisible()
+    await expect(within(drawer).getByRole('button', { name: 'Open account card' })).toBeVisible()
+  }),
+}
+
+/** Typing a code finds the account and opens the levels above it; a press opens its details. */
+export const ChartOfAccountsSearchFlow: Story = {
+  name: 'Chart of accounts, search and details, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AK_ROUTES.chart} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.type(canvas.getByRole('textbox', { name: 'Account number or name' }), '4350')
+    const tree = await canvas.findByRole(
+      'treegrid',
+      { name: /, 1 account found$/ },
+      { timeout: 3000 },
+    )
+    // The synthetic account 435 has the same name: the analytic account 4350 is the last.
+    const names = within(tree).getAllByText('Suppliers in the country')
+    const account = names[names.length - 1]
+    if (account === undefined) throw new Error('Account 4350 is missing')
+    await userEvent.click(account)
+    const drawer = await within(document.body).findByRole('dialog', { name: /4350/ })
+    await userEvent.click(within(drawer).getByRole('button', { name: 'Open account card' }))
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: 'Account card 4350' }),
+    ).toBeVisible()
+  },
+}
+
+/**
+ * Account card 2040 for 01.09.–14.10.2026.: the opening balance of 01.01., the turnover before
+ * the period, every entry with its document (a link where the document has a screen: F-2026-0412,
+ * ST-2026-0004, KO-2026-0009, bank statement 188) and the running balance, the period's
+ * turnover and closing balance in the totals row.
+ */
+const CARD_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Account card 2040' })).toBeVisible()
+  await expect(canvas.getAllByText('Opening balance on 01.01.2026.').length).toBeGreaterThan(0)
+  await expect(canvas.getAllByRole('link', { name: 'F-2026-0412' }).length).toBeGreaterThan(0)
+}
+
+export const AccountCard: Story = {
+  name: 'Account card',
+  render: () => <ExampleApp start={AK_ROUTES.card('2040')} />,
+  play: ledgerPlay(CARD_CHECK),
+}
+
+export const AccountCardPhone: Story = {
+  name: 'Account card, phone',
+  render: () => <OnPhone start={AK_ROUTES.card('2040')} />,
+  play: ledgerPlay(CARD_CHECK, true),
+}
+
+/** The bank account's card: bank statement 188 line by line (its line 10 is left for later). */
+export const AccountCardBank: Story = {
+  name: 'Account card, bank account',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AK_ROUTES.card('2410')} />,
+  play: ledgerPlay(async (canvasElement) => {
+    await expect(
+      within(canvasElement).getByRole('heading', { level: 1, name: 'Account card 2410' }),
+    ).toBeVisible()
+  }),
+}
+
+/** From an entry to its document: the invoice F-2026-0412. */
+export const AccountCardDrillDown: Story = {
+  name: 'Account card, drill-down to the invoice, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AK_ROUTES.card('2040')} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const [link] = canvas.getAllByRole('link', { name: 'F-2026-0412' })
+    if (link === undefined) throw new Error('The link to F-2026-0412 is missing')
+    await userEvent.click(link)
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: 'F-2026-0412' }),
+    ).toBeVisible()
+  },
+}
+
+/**
+ * P5.45: the trial balance on 14.10.2026 on the statutory grid: one part per class, the synthetic
+ * accounts as numbered groups, Opening / Turnover / Closing over Debit / Credit; every figure
+ * opens the account's card; the Core's three checks passed; "Compare with 14.10.2025.".
+ */
+const TRIAL_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(
+    canvas.getByRole('heading', { level: 1, name: 'Trial balance, 01.01.–14.10.2026.' }),
+  ).toBeVisible()
+  await expect(canvas.getByText('3 checks passed', { exact: false })).toBeVisible()
+  await expect(canvas.getAllByText('Customers in the country').length).toBeGreaterThan(0)
+}
+
+export const TrialBalance: Story = {
+  name: 'Trial balance',
+  render: () => <ExampleApp start={AL_ROUTES.trial} />,
+  play: ledgerPlay(TRIAL_CHECK),
+}
+
+export const TrialBalancePhone: Story = {
+  name: 'Trial balance, phone',
+  render: () => <OnPhone start={AL_ROUTES.trial} />,
+  play: ledgerPlay(TRIAL_CHECK, true),
+}
+
+/** Last year's figure under each value. */
+export const TrialBalanceCompared: Story = {
+  name: 'Trial balance, compared with 2025',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AL_ROUTES.trialCompare} />,
+  play: ledgerPlay(async (canvasElement) => {
+    await expect(
+      canvasElement.querySelectorAll('[data-slot="statutory-previous"]').length,
+    ).toBeGreaterThan(0)
+  }),
+}
+
+/** A figure opens its source, the account's card, and the card its entries. */
+export const TrialBalanceDrillDown: Story = {
+  name: 'Trial balance, drill-down to the account card, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AL_ROUTES.trial} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(
+      canvas.getByRole('button', { name: /sources of 2040 · Closing 14\.10\.2026\. · Debit$/ }),
+    )
+    const drawer = await within(document.body).findByRole('dialog', { name: /Source documents/ })
+    await userEvent.click(within(drawer).getByRole('link', { name: /2040/ }))
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: 'Account card 2040' }),
+    ).toBeVisible()
+  },
+}
+
+/**
+ * The balance sheet at 30.09.2026 beside 31.12.2025 and the income statement for January–
+ * September beside 2025: illustrative positions and codes, the notes opened from the Note column.
+ */
+const BALANCE_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(
+    canvas.getByRole('heading', { level: 1, name: 'Balance sheet at 30.09.2026.' }),
+  ).toBeVisible()
+  await expect(
+    canvas.getAllByRole('button', { name: 'Note 8: Receivables from sales' }).length,
+  ).toBeGreaterThan(0)
+}
+
+export const BalanceSheet: Story = {
+  name: 'Balance sheet',
+  render: () => <ExampleApp start={AL_ROUTES.balanceSheet} />,
+  play: ledgerPlay(BALANCE_CHECK),
+}
+
+export const BalanceSheetPhone: Story = {
+  name: 'Balance sheet, phone',
+  render: () => <OnPhone start={AL_ROUTES.balanceSheet} />,
+  play: ledgerPlay(BALANCE_CHECK, true),
+}
+
+/** Note 8 beside the balance sheet, with its figures for both years. */
+export const BalanceSheetNote: Story = {
+  name: 'Balance sheet, note',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AL_ROUTES.balanceSheetNote} />,
+  play: ledgerPlay(async () => {
+    const drawer = within(document.body).getByRole('dialog', { name: /Note 8/ })
+    await expect(within(drawer).getAllByText('Customers in the country').length).toBe(2)
+  }),
+}
+
+export const BalanceSheetNoteFlow: Story = {
+  name: 'Balance sheet, a note opens, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AL_ROUTES.balanceSheet} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const [button] = within(canvasElement).getAllByRole('button', { name: /^Note 5:/ })
+    if (button === undefined) throw new Error('Note 5 is missing')
+    await userEvent.click(button)
+    const drawer = await within(document.body).findByRole('dialog', { name: /Note 5/ })
+    await settle()
+    // The note's figures for both years.
+    await expect(within(drawer).getAllByText('Construction machinery')).toHaveLength(2)
+  },
+}
+
+const INCOME_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(
+    canvas.getByRole('heading', { level: 1, name: 'Income statement, 01.01.–30.09.2026.' }),
+  ).toBeVisible()
+  await expect(canvas.getAllByText('Profit for the period').length).toBeGreaterThan(0)
+}
+
+export const IncomeStatement: Story = {
+  name: 'Income statement',
+  render: () => <ExampleApp start={AL_ROUTES.incomeStatement} />,
+  play: ledgerPlay(INCOME_CHECK),
+}
+
+export const IncomeStatementPhone: Story = {
+  name: 'Income statement, phone',
+  render: () => <OnPhone start={AL_ROUTES.incomeStatement} />,
+  play: ledgerPlay(INCOME_CHECK, true),
+}
+
+/**
+ * P5.46: the main cash desk's journal for 12–14.10.2026, by day — opening balance, the slips,
+ * the day's receipts and payments, the closing balance — and the cash limit's warning in the
+ * application's words and figures.
+ */
+const CASH_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Cash book' })).toBeVisible()
+  await expect(canvas.getByText("The cash is above the cash desk's limit")).toBeVisible()
+  await expect(canvas.getAllByRole('link', { name: 'CR-2026-0143' }).length).toBeGreaterThan(0)
+}
+
+export const CashBook: Story = {
+  name: 'Cash book',
+  render: () => <ExampleApp start={AM_ROUTES.book} />,
+  play: ledgerPlay(CASH_CHECK),
+}
+
+export const CashBookPhone: Story = {
+  name: 'Cash book, phone',
+  render: () => <OnPhone start={AM_ROUTES.book} />,
+  play: ledgerPlay(CASH_CHECK, true),
+}
+
+/** Cash receipt CR-2026-0143: a reservation deposit, the receipt that took the cash above its limit. */
+const RECEIPT_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'CR-2026-0143' })).toBeVisible()
+  await expect(canvas.getByText('Received from')).toBeVisible()
+}
+
+export const CashReceipt: Story = {
+  name: 'Cash receipt',
+  render: () => <ExampleApp start={AM_ROUTES.receipt} />,
+  play: ledgerPlay(RECEIPT_CHECK),
+}
+
+export const CashReceiptPhone: Story = {
+  name: 'Cash receipt, phone',
+  render: () => <OnPhone start={AM_ROUTES.receipt} />,
+  play: ledgerPlay(RECEIPT_CHECK, true),
+}
+
+/** Cash payment CP-2026-0212: Nikola Marković's travel advance. */
+const PAYMENT_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'CP-2026-0212' })).toBeVisible()
+  await expect(canvas.getByText('Paid to')).toBeVisible()
+}
+
+export const CashPayment: Story = {
+  name: 'Cash payment',
+  render: () => <ExampleApp start={AM_ROUTES.payment} />,
+  play: ledgerPlay(PAYMENT_CHECK),
+}
+
+export const CashPaymentPhone: Story = {
+  name: 'Cash payment, phone',
+  render: () => <OnPhone start={AM_ROUTES.payment} />,
+  play: ledgerPlay(PAYMENT_CHECK, true),
+}
+
+/**
+ * P5.56: late-payment interest charged to Stanogradnja Plus d.o.o. for 01.01.–14.10.2026.: each
+ * invoice's late days at the rate of their period (split where the rate changes), the total, and
+ * the illustrative rate table; "Issue interest note".
+ */
+const INTEREST_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(
+    canvas.getByRole('heading', { level: 1, name: 'Late-payment interest' }),
+  ).toBeVisible()
+  await expect(
+    canvas.getByRole('heading', { name: 'Illustrative statutory default interest rates' }),
+  ).toBeVisible()
+}
+
+export const LatePaymentInterest: Story = {
+  name: 'Late-payment interest',
+  render: () => <ExampleApp start={AO_ROUTES.calculation} />,
+  play: ledgerPlay(INTEREST_CHECK),
+}
+
+export const LatePaymentInterestPhone: Story = {
+  name: 'Late-payment interest, phone',
+  render: () => <OnPhone start={AO_ROUTES.calculation} />,
+  play: ledgerPlay(INTEREST_CHECK, true),
+}
+
+export const LatePaymentInterestIssue: Story = {
+  name: 'Late-payment interest, issue the note',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AO_ROUTES.calculationIssue} />,
+  play: ledgerPlay(async () => {
+    const dialog = within(document.body).getByRole('alertdialog', { name: /Issue interest note/ })
+    await expect(within(dialog).getByRole('button', { name: 'Issue' })).toBeVisible()
+  }),
+}
+
+/** Issuing the note opens it. */
+export const LatePaymentInterestIssueFlow: Story = {
+  name: 'Late-payment interest, the note is issued, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AO_ROUTES.calculation} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Issue interest note' }))
+    const dialog = await within(document.body).findByRole('alertdialog', {
+      name: /Issue interest note/,
+    })
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Issue' }))
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: 'KM-2026-0007' }),
+    ).toBeVisible()
+    // The success toast is closed and gone before the checks end (axe never catches it fading).
+    notice.dismiss()
+    await waitFor(
+      async () => {
+        await expect(document.querySelector('[data-sonner-toast]')).toBeNull()
+      },
+      { timeout: 5000 },
+    )
+  },
+}
+
+const NOTE_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'KM-2026-0007' })).toBeVisible()
+  await expect(canvas.getAllByText('Interest to pay').length).toBeGreaterThan(0)
+}
+
+export const InterestNote: Story = {
+  name: 'Interest note',
+  render: () => <ExampleApp start={AO_ROUTES.note} />,
+  play: ledgerPlay(NOTE_CHECK),
+}
+
+export const InterestNotePhone: Story = {
+  name: 'Interest note, phone',
+  render: () => <OnPhone start={AO_ROUTES.note} />,
+  play: ledgerPlay(NOTE_CHECK, true),
+}
+
+/**
+ * P5.59: "Illustrative NBS middle rates" on 14.10.2026 (invented values), the foreign-currency
+ * accounts with their value in dinars, and the exchange-rate differences of the open items —
+ * among them F-2026-0415, the invoice in euros — posted after a confirmation.
+ */
+const RATES_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Exchange rates' })).toBeVisible()
+  await expect(
+    canvas.getByRole('heading', { name: 'Illustrative NBS middle rates, list no. 198' }),
+  ).toBeVisible()
+}
+
+export const ExchangeRates: Story = {
+  name: 'Exchange rates',
+  render: () => <ExampleApp start={AN_ROUTES.rates} />,
+  play: ledgerPlay(RATES_CHECK),
+}
+
+export const ExchangeRatesPhone: Story = {
+  name: 'Exchange rates, phone',
+  render: () => <OnPhone start={AN_ROUTES.rates} />,
+  play: ledgerPlay(RATES_CHECK, true),
+}
+
+const FX_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(
+    canvas.getByRole('heading', { level: 1, name: 'Foreign-currency accounts on 14.10.2026.' }),
+  ).toBeVisible()
+  await expect(canvas.getAllByText('Total in RSD').length).toBeGreaterThan(0)
+}
+
+export const ForeignCurrencyAccounts: Story = {
+  name: 'Foreign-currency accounts',
+  render: () => <ExampleApp start={AN_ROUTES.accounts} />,
+  play: ledgerPlay(FX_CHECK),
+}
+
+export const ForeignCurrencyAccountsPhone: Story = {
+  name: 'Foreign-currency accounts, phone',
+  render: () => <OnPhone start={AN_ROUTES.accounts} />,
+  play: ledgerPlay(FX_CHECK, true),
+}
+
+const DIFFERENCES_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(
+    canvas.getByRole('heading', { level: 1, name: 'Exchange-rate differences' }),
+  ).toBeVisible()
+  await expect(canvas.getAllByRole('link', { name: 'F-2026-0415' }).length).toBeGreaterThan(0)
+}
+
+export const ExchangeDifferences: Story = {
+  name: 'Exchange-rate differences',
+  render: () => <ExampleApp start={AN_ROUTES.revaluation} />,
+  play: ledgerPlay(DIFFERENCES_CHECK),
+}
+
+export const ExchangeDifferencesPhone: Story = {
+  name: 'Exchange-rate differences, phone',
+  render: () => <OnPhone start={AN_ROUTES.revaluation} />,
+  play: ledgerPlay(DIFFERENCES_CHECK, true),
+}
+
+/** The confirmation shows the journal entry the posting makes. */
+export const ExchangeDifferencesPost: Story = {
+  name: 'Exchange-rate differences, post',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AN_ROUTES.revaluationPost} />,
+  play: ledgerPlay(async () => {
+    const dialog = within(document.body).getByRole('alertdialog', {
+      name: /Post exchange-rate differences/,
+    })
+    await expect(
+      within(dialog).getByRole('table', { name: 'Journal entry NK-2026-0951' }),
+    ).toBeVisible()
+  }),
+}
+
+export const ExchangeDifferencesPostFlow: Story = {
+  name: 'Exchange-rate differences, posted, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AN_ROUTES.revaluation} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Post differences' }))
+    const dialog = await within(document.body).findByRole('alertdialog', {
+      name: /Post exchange-rate differences/,
+    })
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Post' }))
+    await expect(await canvas.findByText('Posted as NK-2026-0951')).toBeVisible()
+    // The success toast is closed and gone before the checks end (axe never catches it fading).
+    notice.dismiss()
+    await waitFor(
+      async () => {
+        await expect(document.querySelector('[data-sonner-toast]')).toBeNull()
+      },
+      { timeout: 5000 },
+    )
+  },
+}

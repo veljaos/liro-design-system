@@ -1499,3 +1499,6 @@ export { FilePreview } from './components/file-preview'
 export type { FilePreviewProps } from './components/file-preview'
 export { FileDetails } from './components/file-details'
 export type { FileDetailsProps } from './components/file-details'
+
+// ── P5.49 trade ──
+export type { ComparisonValues } from './components/value-comparison'

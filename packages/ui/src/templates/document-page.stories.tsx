@@ -848,6 +848,56 @@ export const DraftPhone: Story = {
   ),
 }
 
+/**
+ * A document among three parties (P5.55): a cession's assignee and debtor side by side at the
+ * counterparty's level (`counterparties`); the user's own company, the assignor, is in the shell.
+ */
+export const ThreeParties: Story = {
+  name: 'Three parties',
+  render: () => (
+    <ExampleProvider>
+      <Invoice
+        title="CES-2026-0003"
+        status={<StatusBadge label="Awaiting signatures" tone="warning" />}
+        lifecycle={{
+          steps: [
+            { key: 'draft', label: 'Draft' },
+            { key: 'signing', label: 'Sent for signatures' },
+            { key: 'signed', label: 'Signed' },
+            { key: 'posted', label: 'Posted' },
+          ],
+          current: 1,
+          label: 'Cession status',
+        }}
+        keyFigures={[{ label: 'Assigned', value: <MoneyText value="186000.00" currency="RSD" /> }]}
+        actions={<Button intent="pdf" label="PDF" emphasis="secondary" />}
+        lines={null}
+        panels={[]}
+        counterparty={{
+          label: 'Assignee',
+          name: 'Beton Mix d.o.o.',
+          taxId: 'PIB 106543218',
+          address: 'Industrijska zona bb, 21000 Novi Sad',
+        }}
+        counterparties={[
+          {
+            label: 'Debtor',
+            name: 'Stanogradnja Plus d.o.o.',
+            taxId: 'PIB 108990341',
+            address: 'Narodnog fronta 73, 21000 Novi Sad',
+          },
+        ]}
+      />
+    </ExampleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('Debtor')).toBeVisible()
+    await expect(canvas.getByText('Stanogradnja Plus d.o.o.')).toBeVisible()
+  },
+}
+
 /** Arabic lines and counterparty in a right-to-left page. */
 export const Arabic: Story = {
   render: () => (

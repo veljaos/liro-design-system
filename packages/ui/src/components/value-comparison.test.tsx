@@ -102,4 +102,44 @@ describe('ValueComparison', () => {
     )
     expect(own).toContain('No open items.')
   })
+
+  it('takes three sources: a column, and a labelled value, for each', () => {
+    const rows: ComparisonRow[] = [
+      { id: 'q', label: 'Quantity', values: ['36', '35', '35'], numeric: true },
+      {
+        id: 'p',
+        label: 'Pump hours',
+        values: ['3', '4', '4'],
+        numeric: true,
+        differs: true,
+        note: 'More than ordered',
+      },
+    ]
+    const table = render(
+      <ValueComparison
+        label="Three-way match"
+        columns={['Order', 'Receipt', 'Invoice']}
+        rows={rows}
+        layout="desktop"
+      />,
+    )
+    expect(table.match(/<th scope="col"/g)).toHaveLength(5)
+    expect(table.match(/<td/g)).toHaveLength(8)
+    expect(table).toContain('1 of 2 differ')
+    expect(table).toContain('More than ordered')
+    const cards = render(
+      <ValueComparison
+        label="Three-way match"
+        columns={['Order', 'Receipt', 'Invoice']}
+        rows={rows}
+        layout="phone"
+      />,
+    )
+    expect(cards).toContain('grid-cols-3')
+    expect(cards.match(/<dt[^>]*>Receipt<\/dt>/g)).toHaveLength(2)
+    const two = render(
+      <ValueComparison label="Two" columns={['Ours', 'Theirs']} rows={ROWS} layout="phone" />,
+    )
+    expect(two).toContain('grid-cols-2')
+  })
 })
