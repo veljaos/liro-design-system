@@ -14441,3 +14441,470 @@ export const ExchangeDifferencesPostFlow: Story = {
     )
   },
 }
+
+// ── P5.82 kyc ──
+
+import { AML_ROUTES } from './data-aml'
+
+/** Settles, checks, and on a phone checks that no page scrolls sideways (P5.82–P5.84). */
+function bwPlay(
+  check: (canvasElement: HTMLElement) => Promise<void>,
+  phone = false,
+): NonNullable<Story['play']> {
+  return async ({ canvasElement }) => {
+    await settle()
+    await check(canvasElement)
+    if (phone) {
+      for (const page of canvasElement.querySelectorAll<HTMLElement>('[data-liro-phone-page]')) {
+        await expect(page.scrollWidth).toBeLessThanOrEqual(page.clientWidth)
+      }
+    }
+  }
+}
+
+/** Closes the success toast and waits until it is gone (axe never catches it fading). */
+async function bwToastGone() {
+  notice.dismiss()
+  await waitFor(
+    async () => {
+      await expect(document.querySelector('[data-sonner-toast]')).toBeNull()
+    },
+    { timeout: 5000 },
+  )
+}
+
+/**
+ * P5.83: Knjigovodstvo Jelić's clients as its compliance officer sees them on 14.10.2026 — the
+ * risk in force, the next review, the client file's state, PEP status and the last screening;
+ * views All, Review due, High risk and Needs documents.
+ */
+const BX_CLIENTS_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getAllByText('Kvadrat Gradnja d.o.o.').length).toBeGreaterThan(0)
+  await expect(canvas.getAllByText('Adria Commodities d.o.o.').length).toBeGreaterThan(0)
+  await expect(canvas.getAllByText('High risk').length).toBeGreaterThan(0)
+}
+
+export const BxAmlClients: Story = {
+  name: 'AML clients',
+  render: () => <ExampleApp start={AML_ROUTES.clients} />,
+  play: bwPlay(BX_CLIENTS_CHECK),
+}
+
+export const BxAmlClientsPhone: Story = {
+  name: 'AML clients, phone',
+  render: () => <OnPhone start={AML_ROUTES.clients} />,
+  play: bwPlay(BX_CLIENTS_CHECK, true),
+}
+
+export const BxAmlClientsReviewDue: Story = {
+  name: 'AML clients, review due',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AML_ROUTES.clientsReviewDue} />,
+  play: bwPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getAllByText('Drina Prevoz d.o.o.').length).toBeGreaterThan(0)
+    await expect(canvas.queryByText('Pekara Zlatni klas d.o.o.')).toBeNull()
+  }),
+}
+
+/**
+ * P5.83: Kvadrat Gradnja d.o.o.'s client file — medium risk, its yearly review due since
+ * 01.10.2026; the representative's national ID and date of birth masked; the documents with
+ * their validity; the owners through Kvadrat Holding d.o.o. with their shares on the lines.
+ */
+const BX_FILE_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(
+    canvas.getByRole('heading', { level: 1, name: 'Kvadrat Gradnja d.o.o.' }),
+  ).toBeVisible()
+  await expect(canvas.getAllByText('Review due').length).toBeGreaterThan(0)
+  await expect(canvas.getByRole('button', { name: 'Show national ID number' })).toBeVisible()
+  await expect(canvas.getAllByText('Kvadrat Holding d.o.o.').length).toBeGreaterThan(0)
+}
+
+export const BxClientFile: Story = {
+  name: 'Client file',
+  render: () => <ExampleApp start={AML_ROUTES.client('kvadrat')} />,
+  play: bwPlay(BX_FILE_CHECK),
+}
+
+export const BxClientFilePhone: Story = {
+  name: 'Client file, phone',
+  render: () => <OnPhone start={AML_ROUTES.client('kvadrat')} />,
+  play: bwPlay(BX_FILE_CHECK, true),
+}
+
+/** Adria Commodities d.o.o.: owned through a holding abroad whose owners of 60% are unknown. */
+export const BxClientFileForeignHolding: Story = {
+  name: 'Client file, owners not disclosed',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AML_ROUTES.client('adria')} />,
+  play: bwPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getAllByText('Owners not disclosed').length).toBeGreaterThan(0)
+    await expect(canvas.getAllByText('Incomplete').length).toBeGreaterThan(0)
+  }),
+}
+
+export const BxClientFileForeignHoldingPhone: Story = {
+  name: 'Client file, owners not disclosed, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={AML_ROUTES.client('adria')} />,
+  play: bwPlay(async (canvasElement) => {
+    await expect(within(canvasElement).getAllByText('Owners not disclosed').length).toBeGreaterThan(
+      0,
+    )
+  }, true),
+}
+
+/** Stanić Elektro STR: the entrepreneur's ID card expired on 05.09.2026. */
+export const BxClientFileExpired: Story = {
+  name: 'Client file, document expired',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AML_ROUTES.client('stanic')} />,
+  play: bwPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getAllByText('Documents expired').length).toBeGreaterThan(0)
+    await expect(canvas.getAllByText('Expired').length).toBeGreaterThan(0)
+  }),
+}
+
+/** Panonija Agro d.o.o.: an owner's potential match on the Illustrative PEP list. */
+export const BxClientFilePep: Story = {
+  name: 'Client file, potential PEP',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AML_ROUTES.client('panonija')} />,
+  play: bwPlay(async (canvasElement) => {
+    await expect(within(canvasElement).getAllByText('Potential match').length).toBeGreaterThan(0)
+  }),
+}
+
+/** Pekara Zlatni klas d.o.o.: low risk, the file complete. */
+export const BxClientFileLowRisk: Story = {
+  name: 'Client file, low risk',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AML_ROUTES.client('zlatni-klas')} />,
+  play: bwPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getAllByText('Low risk').length).toBeGreaterThan(0)
+    await expect(canvas.getAllByText('Complete').length).toBeGreaterThan(0)
+  }),
+}
+
+/** The national ID is shown only after a reason; the access is logged. */
+export const BxClientFileReveal: Story = {
+  name: 'Client file, national ID asked',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AML_ROUTES.clientReveal} />,
+  play: bwPlay(async () => {
+    const dialog = within(document.body).getByRole('dialog', { name: /Show national ID number/ })
+    await expect(within(dialog).getByText('Access is logged')).toBeVisible()
+  }),
+}
+
+export const BxClientFileRevealFlow: Story = {
+  name: 'Client file, national ID shown, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AML_ROUTES.client('kvadrat')} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Show national ID number' }))
+    const dialog = await within(document.body).findByRole('dialog', {
+      name: /Show national ID number/,
+    })
+    await userEvent.click(
+      within(dialog).getByRole('radio', { name: 'Periodic review of the client file' }),
+    )
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Show' }))
+    await expect(await canvas.findByText('1805974800017')).toBeVisible()
+  },
+}
+
+/**
+ * P5.82: Kvadrat Gradnja d.o.o.'s risk assessment — Medium (40 of 100), the factors that drove
+ * it with the application's effect and points, the next review due; "Override risk" and "Start
+ * review".
+ */
+const BW_RISK_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Risk assessment' })).toBeVisible()
+  await expect(canvas.getAllByText('Medium risk').length).toBeGreaterThan(0)
+  await expect(canvas.getAllByText('Construction').length).toBeGreaterThan(0)
+}
+
+export const BwRiskAssessment: Story = {
+  name: 'Client risk assessment',
+  render: () => <ExampleApp start={AML_ROUTES.risk('kvadrat')} />,
+  play: bwPlay(BW_RISK_CHECK),
+}
+
+export const BwRiskAssessmentPhone: Story = {
+  name: 'Client risk assessment, phone',
+  render: () => <OnPhone start={AML_ROUTES.risk('kvadrat')} />,
+  play: bwPlay(BW_RISK_CHECK, true),
+}
+
+/** Adria Commodities d.o.o.: Medium by the assessment, High by the compliance officer. */
+export const BwRiskAssessmentOverridden: Story = {
+  name: 'Client risk assessment, overridden',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AML_ROUTES.risk('adria')} />,
+  play: bwPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { level: 2, name: 'Override' })).toBeVisible()
+    await expect(canvas.getAllByText('Ownership not fully known').length).toBeGreaterThan(0)
+  }),
+}
+
+export const BwRiskAssessmentLow: Story = {
+  name: 'Client risk assessment, low risk',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AML_ROUTES.risk('zlatni-klas')} />,
+  play: bwPlay(async (canvasElement) => {
+    await expect(within(canvasElement).getAllByText('Low risk').length).toBeGreaterThan(0)
+  }),
+}
+
+/** "Override risk" to High asks for the reason the application requires. */
+export const BwRiskOverrideAsked: Story = {
+  name: 'Client risk assessment, override asked',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AML_ROUTES.riskOverride} />,
+  play: bwPlay(async () => {
+    const dialog = within(document.body).getByRole('alertdialog', { name: /Override risk/ })
+    await expect(within(dialog).getByRole('button', { name: 'Set to High' })).toBeVisible()
+  }),
+}
+
+export const BwRiskOverrideFlow: Story = {
+  name: 'Client risk assessment, override, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AML_ROUTES.risk('kvadrat')} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Override risk' }))
+    await userEvent.click(
+      await within(document.body).findByRole('menuitem', { name: 'Set to High' }),
+    )
+    const dialog = await within(document.body).findByRole('alertdialog', { name: /Override risk/ })
+    const confirm = within(dialog).getByRole('button', { name: 'Set to High' })
+    await expect(confirm).toBeDisabled()
+    await userEvent.click(
+      within(dialog).getByRole('radio', { name: 'Adverse information about the client' }),
+    )
+    await userEvent.click(confirm)
+    await expect(await canvas.findByRole('heading', { level: 2, name: 'Override' })).toBeVisible()
+    await expect(canvas.getAllByText('High risk').length).toBeGreaterThan(0)
+    await bwToastGone()
+  },
+}
+
+/**
+ * P5.82: the review of Kvadrat Gradnja d.o.o. — the application's questions, its branch (the
+ * owners above a holding), the last answers filled in; the summary; "Send for assessment".
+ */
+const BW_REVIEW_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Risk review' })).toBeVisible()
+  await expect(canvas.getByText('What kind of client is it?')).toBeVisible()
+}
+
+export const BwRiskReview: Story = {
+  name: 'Risk review',
+  render: () => <ExampleApp start={AML_ROUTES.review('kvadrat')} />,
+  play: bwPlay(BW_REVIEW_CHECK),
+}
+
+export const BwRiskReviewPhone: Story = {
+  name: 'Risk review, phone',
+  render: () => <OnPhone start={AML_ROUTES.review('kvadrat')} />,
+  play: bwPlay(BW_REVIEW_CHECK, true),
+}
+
+export const BwRiskReviewSummary: Story = {
+  name: 'Risk review, summary',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AML_ROUTES.reviewSummary} />,
+  play: bwPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('button', { name: 'Send for assessment' })).toBeVisible()
+    await expect(canvas.getAllByText('Through a company in Serbia').length).toBeGreaterThan(0)
+  }),
+}
+
+export const BwRiskReviewFlow: Story = {
+  name: 'Risk review, sent, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AML_ROUTES.reviewSummary} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Send for assessment' }))
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: 'Risk assessment' }),
+    ).toBeVisible()
+    await expect(canvas.getByText('Review: the risk stays Medium (40 points).')).toBeVisible()
+    await bwToastGone()
+  },
+}
+
+/**
+ * P5.84: the potential matches of the screening, decided one by one — the client's record beside
+ * the listed entry with the application's marks and score, the confidentiality reminder, True
+ * match / False positive with a reason.
+ */
+const BY_SCREENING_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getAllByText('Nenad Kovačević').length).toBeGreaterThan(0)
+  await expect(canvas.getAllByText('Meridian Trade Holdings Ltd').length).toBeGreaterThan(0)
+}
+
+export const ByScreening: Story = {
+  name: 'Screening matches',
+  render: () => <ExampleApp start={AML_ROUTES.screening} />,
+  play: bwPlay(async (canvasElement) => {
+    await BY_SCREENING_CHECK(canvasElement)
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { level: 2, name: 'Milorad Petković' })).toBeVisible()
+    await expect(canvas.getByText('Confidential')).toBeVisible()
+  }),
+}
+
+export const ByScreeningPhone: Story = {
+  name: 'Screening matches, phone',
+  render: () => <OnPhone start={AML_ROUTES.screening} />,
+  play: bwPlay(BY_SCREENING_CHECK, true),
+}
+
+/** The sanctions match of Kvadrat Gradnja d.o.o.'s director, side by side. */
+export const ByScreeningSanctions: Story = {
+  name: 'Screening match, sanctions',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AML_ROUTES.screeningHit('SH-2026-0412')} />,
+  play: bwPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { level: 2, name: 'Nenad Kovačević' })).toBeVisible()
+    await expect(canvas.getByText('3 of 4 differ')).toBeVisible()
+  }),
+}
+
+/** On a phone the match opens full width, the decisions in the bottom bar. */
+export const ByScreeningMatchPhone: Story = {
+  name: 'Screening match, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={AML_ROUTES.screeningHit('SH-2026-0412')} />,
+  play: bwPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { level: 2, name: 'Nenad Kovačević' })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'True match…' })).toBeVisible()
+  }, true),
+}
+
+export const ByFalsePositiveAsked: Story = {
+  name: 'Screening match, false positive asked',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AML_ROUTES.screeningDecide('SH-2026-0412', 'false-positive')} />,
+  play: bwPlay(async () => {
+    const dialog = within(document.body).getByRole('alertdialog', {
+      name: /Mark as false positive/,
+    })
+    await expect(
+      within(dialog).getByRole('radio', { name: 'Different date of birth' }),
+    ).toBeVisible()
+  }),
+}
+
+export const ByTrueMatchAsked: Story = {
+  name: 'Screening match, true match asked',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AML_ROUTES.screeningDecide('SH-2026-0414', 'true-match')} />,
+  play: bwPlay(async () => {
+    const dialog = within(document.body).getByRole('alertdialog', {
+      name: /Confirm a true match/,
+    })
+    await expect(within(dialog).getByText(/politically exposed person/)).toBeVisible()
+  }),
+}
+
+/** After the two decisions: a false positive and a true match, with who, when and why. */
+export const ByScreeningDecided: Story = {
+  name: 'Screening matches, decided',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AML_ROUTES.screeningDecided} />,
+  play: bwPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getAllByText('True match').length).toBeGreaterThan(0)
+    await expect(canvas.getAllByText('False positive').length).toBeGreaterThan(0)
+  }),
+}
+
+export const ByFalsePositiveFlow: Story = {
+  name: 'Screening match, false positive, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AML_ROUTES.screeningHit('SH-2026-0412')} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'False positive…' }))
+    const dialog = await within(document.body).findByRole('alertdialog', {
+      name: /Mark as false positive/,
+    })
+    await userEvent.click(within(dialog).getByRole('radio', { name: 'Different date of birth' }))
+    await userEvent.click(within(dialog).getByRole('button', { name: 'False positive' }))
+    // The next match opens; the decided one leaves the "To decide" queue.
+    await expect(
+      await canvas.findByRole('heading', { level: 2, name: 'Milan Stanić' }),
+    ).toBeVisible()
+    await expect(canvas.queryByRole('heading', { level: 2, name: 'Nenad Kovačević' })).toBeNull()
+    await bwToastGone()
+  },
+}
+
+export const ByTrueMatchFlow: Story = {
+  name: 'Screening match, true match, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AML_ROUTES.screeningHit('SH-2026-0414')} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'True match…' }))
+    const dialog = await within(document.body).findByRole('alertdialog', {
+      name: /Confirm a true match/,
+    })
+    await userEvent.click(
+      within(dialog).getByRole('radio', { name: 'Same name, date of birth and residence' }),
+    )
+    await userEvent.click(within(dialog).getByRole('button', { name: 'True match' }))
+    await expect(
+      await canvas.findByRole('heading', { level: 2, name: 'Meridian Trade Holdings Ltd' }),
+    ).toBeVisible()
+    await bwToastGone()
+  },
+}
+
+/**
+ * P5.84: Kvadrat Gradnja d.o.o.'s screening — the client, its owners and its director against
+ * every list (a potential match links to its review), the lists' versions, and the re-screening
+ * history.
+ */
+const BY_CLIENT_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Screening' })).toBeVisible()
+  await expect(canvas.getAllByText('Potential match').length).toBeGreaterThan(0)
+  await expect(canvas.getAllByText('Illustrative sanctions list').length).toBeGreaterThan(0)
+}
+
+export const ByClientScreening: Story = {
+  name: 'Client screening',
+  render: () => <ExampleApp start={AML_ROUTES.clientScreening('kvadrat')} />,
+  play: bwPlay(BY_CLIENT_CHECK),
+}
+
+export const ByClientScreeningPhone: Story = {
+  name: 'Client screening, phone',
+  render: () => <OnPhone start={AML_ROUTES.clientScreening('kvadrat')} />,
+  play: bwPlay(BY_CLIENT_CHECK, true),
+}
