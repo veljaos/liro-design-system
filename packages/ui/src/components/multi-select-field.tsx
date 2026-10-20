@@ -106,7 +106,11 @@ export function MultiSelectField(props: MultiSelectFieldProps) {
                 !removable && 'pe-[0.8em]',
               )}
             >
-              <span dir="auto" className="truncate">
+              <span
+                dir="auto"
+                className="truncate"
+                {...(option.lang === undefined ? {} : { lang: option.lang })}
+              >
                 {option.label}
               </span>
               {removable && (

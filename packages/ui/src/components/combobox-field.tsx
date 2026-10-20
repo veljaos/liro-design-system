@@ -40,6 +40,11 @@ export interface ComboboxOption extends Choice {
   label: string
   /** Shown, but cannot be chosen. */
   disabled?: boolean
+  /**
+   * The label's language when it differs from the page's (D15): a language written in its own name
+   * ("Srpski (latinica)" in an English page) carries `lang="sr-Latn"`, in the list and once chosen.
+   */
+  lang?: string
 }
 
 interface ListProps {
@@ -130,7 +135,10 @@ export function ComboboxList(props: ListProps) {
                 <span className="flex size-[0.8em] shrink-0 items-center justify-center">
                   {props.isChosen(option) && <Check aria-hidden="true" className="size-[0.8em]" />}
                 </span>
-                <span className={cn('min-w-0 [overflow-wrap:anywhere]', TEXT_DIRECTION)}>
+                <span
+                  className={cn('min-w-0 [overflow-wrap:anywhere]', TEXT_DIRECTION)}
+                  {...(option.lang === undefined ? {} : { lang: option.lang })}
+                >
                   {option.label}
                 </span>
               </div>
@@ -323,6 +331,7 @@ export function ComboboxField(props: ComboboxFieldProps) {
             <Input
               {...attributes}
               value={value?.label ?? ''}
+              {...(value?.lang === undefined ? {} : { lang: value.lang })}
               dir={AUTO_DIRECTION.dir}
               className={cn(AUTO_DIRECTION.className, READ_ONLY)}
             />
@@ -368,6 +377,7 @@ export function ComboboxField(props: ComboboxFieldProps) {
                   dir={AUTO_DIRECTION.dir}
                   className={AUTO_DIRECTION.className}
                   value={query ?? value?.label ?? ''}
+                  {...(query === null && value?.lang !== undefined ? { lang: value.lang } : {})}
                   {...(props.placeholder === undefined ? {} : { placeholder: props.placeholder })}
                   onChange={(event) => {
                     const text = event.target.value

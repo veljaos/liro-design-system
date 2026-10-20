@@ -356,16 +356,16 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P5.59 | Foreign currency | P5.18 | done | 2026-10-16 | Illustrative NBS middle rates, FX accounts, exchange-rate differences posted (the foreign-currency invoice is group D2's F-2026-0415) |
 | P5.60 | Loans and leasing | P4.4 | done | 2026-10-16 | Loans and leases (ListPage), a loan with KeyFigures, the outstanding principal chart and the repayment schedule |
 | P5.61 | Service and author contracts | P5.21 | done | 2026-10-16 | Service and author contracts (RecordFormPage) with the application's calculation, the monthly run (PeriodicRunPage) |
-| P5.62 | My profile | P5.6 | todo | | |
-| P5.63 | Sign-in flows | P5.6 | todo | | |
-| P5.64 | Recruitment | P5.7 | todo | | |
-| P5.65 | Onboarding a new employee | P5.21 | todo | | |
-| P5.66 | A document from a JSON definition | P5.5, P5.21 | todo | | |
-| P5.67 | CRM | P5.7 | todo | | |
-| P5.68 | Registry book (delovodnik) | P5.20 | todo | | |
-| P5.69 | Archive book and retention | P5.20 | todo | | |
-| P5.70 | Meetings of company bodies | P5.66 | todo | | |
-| P5.71 | Contracts | P5.20 | todo | | |
+| P5.62 | My profile | P5.6 | done | 2026-10-16 | My profile on SettingsPage (language in its own name, theme, two-factor with QrCode, CodeInput and RecoveryCodes, passkeys, SessionList through `SettingsSection.content`) |
+| P5.63 | Sign-in flows | P5.6 | done | 2026-10-16 | Sign-in password, two-factor code, forgot and new password, accepting an invitation, account locked, session expired — AuthShell, EmailFirstForm, PasswordField, CodeInput, StatusPage |
+| P5.64 | Recruitment | P5.7 | done | 2026-10-16 | Job openings and a posting, candidates on KanbanBoard (reject with a reason, hire after an offer), the candidate, interview scheduling (SlotPicker), scorecards (RadioGroupField) |
+| P5.65 | Onboarding a new employee | P5.21 | done | 2026-10-16 | HR's checklist (DataTable by owner and due date), the new employee's portal (SetupChecklist), documents to sign (SigningPage), the salary account |
+| P5.66 | A document from a JSON definition | P5.5, P5.21 | done | 2026-10-16 | DefinedForm (new): the form from the JSON definitions with conditions, the application's PDF preview in DocumentFrame, the registry number, signing; eleven document types as data |
+| P5.67 | CRM | P5.7 | done | 2026-10-16 | The pipeline on KanbanBoard (lost with a reason, won with an accepted quote), the deal, the contact's timeline, activities as a list and a calendar |
+| P5.68 | Registry book (delovodnik) | P5.20 | done | 2026-10-16 | The registry book (RegisterPage), an entry linked to documents and files, a new entry |
+| P5.69 | Archive book and retention | P5.20 | done | 2026-10-16 | The archive book, retention periods per type, what expires, the disposal list with its minutes |
+| P5.70 | Meetings of company bodies | P5.66 | done | 2026-10-16 | Meetings, the next meeting with the agenda and materials, attendance and quorum, votes per item, minutes and decisions signed |
+| P5.71 | Contracts | P5.20 | done | 2026-10-16 | The contracts register with expiry and renewal in words, a contract with versions and linked documents |
 | P5.72 | Patient chart | P5.14 | todo | | |
 | P5.73 | University | P5.17 | todo | | |
 | P5.74 | Field service and maintenance | P5.11 | todo | | |

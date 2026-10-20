@@ -60,7 +60,7 @@ export const ADMIN_USERS: AdminUser[] = [
     email: 'milica.petrovic@example.com',
     role: 'Administrator',
     twoFactor: 'On',
-    method: 'Security key',
+    method: 'Authenticator app',
     lastSignIn: at('14', '07:58'),
   },
   {

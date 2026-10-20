@@ -3052,6 +3052,209 @@ counts, texts)` — the counts as numbers for the plural rules and as `format.nu
 - **2026-10-16 — One accounting module, one tab list (P5.55).** The document inbox, the statements of open items and the offsets are one module with the same three tabs on each of their pages (`accountingTabs` in `screens-U.tsx`); the ledger (chart of accounts to foreign currency) is a module of its own with its seven tabs.
 - **2026-10-16 — An example plays the application, so it may compute what the application would (P5.44, P5.53).** The ledger's cards, running balances and trial balance, and the retail price calculation's repricing when the shop types a new retail price, are worked out in the examples' data files in whole paras (as data-F and data-bank already did) and checked against the stated figures (`dataset-checks.ts`); the screens and the library add nothing (D4).
 
+## Users, HR, documents and governance (P5.62–P5.71)
+
+### My profile and the sign-in flows (P5.62, P5.63)
+
+- **2026-10-16 — My profile is a SettingsPage with three tabs (P5.62).** Preferences (name and
+  e-mail read-only — the administrator changes them —, the interface language and the theme: the
+  provider's choices as the Core offers them, saved at once with "Saved"), Sign-in and security
+  (password, two-factor sign-in, passkeys) and Devices (an e-mail about a new device as a row,
+  SessionList as the section's block). Each tab has its own address (`/profile`,
+  `/profile/security`, `/profile/devices`); the user menu's "Profile" opens it. Dialogs stand at
+  page level, outside the tabs (D16).
+- **2026-10-16 — Turning on two-factor sign-in is one Dialog in two steps (P5.62).** "1. Add Liro
+  to your authenticator app": QrCode of the Core's `otpauth://` text (176px, dark on light in both
+  themes), "Cannot scan it? Type this key in the app:" and the same secret as text (monospace, left
+  to right, grouped by four, selectable); on a phone also "Open in the authenticator app on this
+  phone" (the otpauth link), since a phone cannot scan its own screen. "2. Enter the code the app
+  shows": CodeInput; a wrong code is the Core's sentence under the boxes. Then "Save your
+  recovery codes": RecoveryCodes in the same dialog, not dismissible until "I have saved these
+  codes" and Continue. While on, the row reads "On since … · 8 of 10 recovery codes left" (the
+  Core counts) with a success "On" badge, "New recovery codes" (the same RecoveryCodes) and "Turn
+  off" (ConfirmDialog, destructive: "Your recovery codes stop working.").
+- **2026-10-16 — Passkeys are rows; adding is the Core's browser step (P5.62).** Each passkey is a
+  setting row (its name; "Added … · Last used …" or "Not used yet"; Remove → DeleteConfirmDialog
+  titled "Remove passkey" with the passkey as `subject`, D22). The last row is "Add a passkey":
+  the Core runs the browser's WebAuthn step; a failure is the row's error in the Core's words
+  (`state: 'error'`, announced); a success opens "Passkey added" to name it (the Core's suggestion
+  from the device filled in).
+- **2026-10-16 — The sign-in flows continue the sign-in screen (P5.63).** The e-mail screen of P4.8
+  (`SignIn`) now goes on to the password step (who is signing in, with Change; the password;
+  "Forgot your password?"), then the two-factor code (CodeInput, "Do not ask for a code on this
+  device for 30 days", "Use a recovery code" → a TextField left to right), then the home page.
+  The Walk-through types the password and a code. The main button of each card is full width as
+  EmailFirstForm's Continue (the form column stretches it); secondary ways are a centred line of
+  links under the form.
+- **2026-10-16 — Forgot password says the same for every address (P5.63).** EmailFirstForm with
+  "Send the link", then "Check your e-mail": "If an account uses …, a link … is on its way" and
+  the link's validity in the Core's words — the page never tells whether an account exists.
+  "Choose a new password": two PasswordFields (`new-password`), the company's rules as the first
+  field's description, a broken rule as the Core's sentence on the first field, a mismatch on the
+  second; an expired link is a warning Alert with "Send a new link" (neutral, D23).
+- **2026-10-16 — Invitation, locked account, expired session (P5.63).** The invitation names the
+  company (with PIB and city), who invited (with their position) and the role with what it
+  allows, the e-mail fixed (read-only), the name, a password twice — or Microsoft / Google with
+  the same address (ProviderSignInButtons, "or" above); an expired invitation says who can send a
+  new one. A locked account is a warning Alert with until when (the Core's instant through
+  `format.time`) and the way in that does not wait: "Choose a new password" (primary). An expired
+  session knows the account: the account line with "Not you?", only the password, "Sign in and
+  return" back to the page (F-2026-0412); the device is trusted for the code. StatusPage's 401
+  stays for a page opened with no session to resume.
+
+### Recruitment, onboarding and CRM (P5.64, P5.65, P5.67)
+
+- **2026-10-16 — Recruitment is assembled from the library (P5.64).** The openings are a ListPage
+  (views Open / Filled / All); a job posting is a DetailPage read and edited as a whole (P4.9:
+  Edit turns the same sections into fields, Cancel / Save in the bottom bar); the candidates are a
+  KanbanBoard with the stages Applied → Interview → Offer → Hired / Rejected. A move is only
+  reported and the application decides (D24's spirit for people's applications): Rejected asks
+  why first (ReasonConfirmDialog with the company's reasons), Hired is refused until an offer is
+  accepted and a toast says why, every other move is applied. A candidate is a DetailPage — the
+  application, the CV and documents (AttachmentList), the interviews (DataTable), the scorecards
+  side by side (a DataTable of criteria × interviewers, "—" for a scorecard not submitted) and the
+  history (HistoryList) as sections, no side column (P4.9). **Scorecards are RadioGroupFields**
+  on the posting's criteria and the company's scale (both data) inside a RecordFormPage, with the
+  recommendation and notes; sending checks every criterion and says so under the group. Not
+  SatisfactionRating: it is one question with its own Send and thanks, and a scorecard is four or
+  more questions sent once. Not Questionnaire: it walks one question at a time with branching,
+  and an interviewer reads and changes the whole card at once. **Interview scheduling is a Dialog
+  with SlotPicker** — the candidate as its subject (D22), the format, the slots when every
+  interviewer is free (the application computes the overlap), the invitation an explicit
+  checkbox. CalendarView was not needed: showing everyone's week would leave the user to find the
+  overlap the application already knows.
+- **2026-10-16 — Onboarding: a DataTable for HR, SetupChecklist for the new employee (P5.65).**
+  HR's checklist is a DetailPage with one flush section per kind of task (equipment, accounts,
+  training, documents to sign), each a DataTable: the task (a done task's note, a blocked task's
+  reason), its owner (PersonName), its due date (DueDate: overdue in words; a done task its
+  plain date) and its state (StatusBadge), a row menu to mark it done or remind its owner; key
+  figures count done, overdue and waiting. **SetupChecklist was not given owner and due-date
+  props:** onboarding tasks run side by side, each owned by someone else, and HR scans them by
+  owner, date and state — a table's job — while SetupChecklist is one person's steps in order
+  with one step to do now and a single progress. It is exactly that on the new employee's side
+  (PortalShell, phone first): "Before you start" with her own steps, the next highlighted, the
+  date in the step's description, the training blocked until her first day with the reason. Her
+  documents are signed on SigningPage with SignerList (the director signed first); her salary
+  account is a Dialog checked as the application checks it (MOD 97, `ipsAccountValid`). What she
+  does reaches HR's checklist (the examples keep the tasks above the screens).
+- **2026-10-16 — CRM: the pipeline on KanbanBoard, the contact's timeline on HistoryList (P5.67).**
+  Leads → opportunities → quotes → won / lost, each card a deal: the customer, the owner
+  (assignee), the next activity (DueDate), the value in the card's `meta` ("Value 549.120,00 RSD",
+  the application's figure through `format.money`) and its quote as the card's `record` link into
+  the sales chain (group AV, `/sales/quotes/…`). Column counts are counts of deals only: a column
+  sum is a computed figure, the application's, and KanbanColumn's `count` already carries it
+  ("3 deals · 1.579.920,00 RSD") when the application sends it — the examples do not add amounts.
+  The application's rules: Lost asks why (ReasonConfirmDialog), Won asks first (ConfirmDialog) and
+  only for a deal whose quote is accepted or ordered, Quotes only for a deal with a quote; a
+  refused move says why in a toast. A deal and a contact are DetailPages; the deal's quote is a
+  RelatedDocuments link to PON-2026-0031, its history a HistoryList of stage and value changes;
+  the contact's timeline is a HistoryList of calls, meetings, e-mails and documents, and "Log
+  activity" is an end Drawer (D14: a short edit with the page in view). Activities are a ListPage
+  (My planned / Overdue / Done / All) and the same activities on CalendarView (week; agenda on
+  phones; the application's `now`), switched by a "Show as calendar" / "Show as list" button.
+
+### Documents from definitions, the registry, the archive, meetings and contracts (P5.66, P5.68–P5.71)
+
+- **2026-10-16 — DefinedForm: a form drawn from the application's field definitions (P5.66).**
+  The documents of P5.66 (and the report to an authority of P5.87) are made from templates whose
+  fields the application keeps as JSON. `DefinedForm` draws such definitions with the library's
+  own parts, so a generated form looks and works as a hand-written one: `sections` of `fields`,
+  each section a FormSection card (title, description, 1–3 columns by its own width, one on
+  phones, `collapsible`); each field one of the library's fields by its `type` — text, textarea,
+  email, number, money, date, select, multiselect, radio, checkbox, switch — or `custom`, drawn by
+  the application (`renderCustom`: a document's lines, a lookup). **Conditions are data:**
+  `visibleWhen` (fields and sections) and `requiredWhen` (fields) with `equals`, `notEquals`,
+  `oneOf`, `filled`, combined by `all`, `any`, `not`; a multiple choice equals a value when that
+  value is chosen; numbers, amounts and dates compare as the strings they are, never as numbers
+  (D4). Conditions are read in the definitions' order and **a hidden field counts as empty** (an
+  old value of a hidden field never shows anything); a value that is no field (the document's
+  kind, the body of a meeting) is a context value the application adds, read as given — one
+  commercial definition serves the proforma, the invoice and the advance invoice abroad. **Hidden
+  values are kept but not submitted**, as in Questionnaire. **Required** fields carry the mark;
+  what is missing is said in words under the field — "Fill in this field.", "Choose an option.",
+  "Tick this to go on." — once `showMissing` is set or after the handle's `check()`, which also
+  focuses the first problem (opening a folded section) and returns `{ valid, missing,
+unreadable, values }` (the values to submit; an unreadable number or date blocks it too). A
+  read-only or disabled field is never missing. The application's own checks come back as
+  `errors` by field id, before the missing words. `readOnly` shows a numbered or sent document's
+  data as text; `lang` marks definitions written in another language (labels, hints, section
+  titles and radio options carry it; select options are plain strings). The pure rules are
+  exported (`definedFormState`, `definedConditionHolds`, `definedFieldRequired`,
+  `definedValueFilled`, …) and `definedFormProblems` lets the application test its definitions
+  (an id used twice, a choice without options, a condition on a later or unknown field). Not for
+  a form designed once for one screen (FormSection and the fields) nor for questions asked one at
+  a time (Questionnaire).
+- **2026-10-16 — A document from a JSON definition: the form is ours, the document is the
+  application's (P5.66).** "New document" lists the application's types by group (CategoryGrid in
+  section cards: decisions and conclusions, letters, commercial documents outside SEF, internal
+  acts and records, company bodies). A draft is a RecordFormPage: DefinedForm on the start side,
+  the preview on the end side from 80em (under the form on phones) — DocumentFrame showing what
+  the application's renderer returns: loading (the page skeleton), ready, failed (the renderer's
+  words and "Try again"). The preview is not redrawn on every keystroke: after a change a
+  neutral Alert says "The preview shows the values before your last change." and "Update
+  preview" checks the form first (the missing values said, the focus on the first). "Assign
+  number" checks, asks (ConfirmDialog with the document as `subject`: "entered in the registry
+  book as outgoing act 01-412/2026 … can no longer be changed"), then the document is
+  **Numbered**: the form read-only, an info Alert that a change is a new document, "Send for
+  signature" the main action. Signing is SigningPage (the preview first, SignerList in order:
+  the director, then the employee confirming receipt; the registry entry as a section).
+- **2026-10-16 — The registry book is RegisterPage (P5.68).** One entry per act: the number from
+  the book, the date entered, the kind in words with an arrow (Incoming, Outgoing, Internal; the
+  arrow mirrors in right to left), the sender or recipient, the subject with the act's own number
+  and date, the assignee, the due date as DueDate ("2 days overdue" in words; settled when done),
+  the state in the application's words, and the linked document (a draft reply, the numbered
+  decision of P5.66) with the count of files. A wrong entry is corrected by a new one that refers
+  to it ("Corrects no. 409" / "Corrected by no. 411"), never deleted. The year is the first row's
+  select (2025 lives in the archive); "Show" filters by kind or "Not done". An entry is a
+  DetailPage: the act, the linked documents (RelatedDocuments), the files (AttachmentList) and the
+  history (ActivityList); Reassign, Reply (a letter of P5.66), "Mark as done" last. A new entry is
+  a RecordFormPage: Incoming / Outgoing / Internal (an outgoing document numbered in Documents is
+  entered by itself), the party, their or our number, the subject (required, said in words), the
+  classification of the archive's plan, the assignee and the due date, the scanned act with
+  FileDropzone (`camera` on phones); the number is the book's, given on saving.
+- **2026-10-16 — The archive book, retention and disposal (P5.69).** The archive book is
+  RegisterPage too: a unit per entry — years, content with its classification, quantity, paper or
+  electronic, the retention in words, "Kept until" (the application's date, or "Permanently"),
+  place and state; the oldest entries locked (certified by the archive). Retention periods are a
+  ListPage of the classification plan's categories (code, category, retention, from when it runs,
+  basis — data, labelled illustrative). "What expires" is a ListPage of the units whose
+  retention ended or ends this year (the application's list); chosen units are proposed for a
+  disposal list with the BulkActionBar. A disposal list is a DocumentPage: Proposed → Commission
+  signed → Archive consented → Disposed; the units as its lines, the commission's signatures
+  (SignerList in any order), the archive's consent; "Dispose" (destructive) asks with
+  IrreversibleConfirmDialog — the list's number typed; afterwards the units stay in the book as
+  disposed and the minutes (the "Minutes of a disposal" type of P5.66, filled from the list) are
+  linked, numbered from the registry book.
+- **2026-10-16 — Meetings of company bodies (P5.70).** The schedule is a ListPage (Upcoming /
+  Held / All; the application's line about who comes). A meeting is a DetailPage: the invitation
+  (its registry number links to the entry) and the agenda with each item's materials
+  (AttachmentList); attendance (a table) and the quorum as the application's words in an Alert
+  ("4 of 5 members present: the board may decide (at least 3 members).") with its majority rule;
+  the votes as a table — For, Against, Abstain and the result in the application's words as a
+  badge ("Adopted: 3 of 4 present for", "Not adopted: …", "Noted, no vote"), each member's vote
+  in a Dialog from the row menu; while the meeting runs, "Record votes on item 4" asks each
+  present member's vote (radios) and the application answers with the result — the screen never
+  counts; the minutes and decisions are documents of P5.66 (RelatedDocuments) with the minutes'
+  signatures. The next meeting shows the invitation, the agenda and each member's answer.
+- **2026-10-16 — Contracts (P5.71).** The register is a ListPage (In force / Need attention /
+  Ended and expired / All): the contract and its number, partner, kind, value ("—" for a
+  framework contract), term, and "Renewal and reminder" — the application's reminder first
+  ("Give notice by 16.10.2026 or it renews on 01.11.2026"), how it renews under it — and the state
+  in words (Active, Notice due, Expiring, Expired, Ended, Draft, Renews). A contract is a
+  DetailPage: the reminder first as a warning Alert with its two ways as neutral secondary
+  buttons (D23) — "Prepare notice" (a letter of P5.66) and "Let it renew" —; the contract's
+  facts; its versions with VersionList (the signed contract and two annexes; `restoreUnavailable`:
+  "A signed version is never restored: a change is a new annex."; "Upload a new version"); the
+  linked documents with RelatedDocuments (the order, the goods receipt and the supplier invoice
+  of groups AU and U).
+
+### Integration of Group B (2026-10-16)
+
+- **2026-10-16 — Group B is assembled; one new component (P5.62–P5.71).** DefinedForm (P5.66) is the only new component: nothing drew a form from the application's field definitions (FormSection and the fields are written by hand, Questionnaire asks one question at a time, StatutoryFormPage is a grid of figures); Group E's suspicious-transaction report (P5.87) reuses it. Two optional props were added where an existing component lacked one thing: `SettingsSection.content` (the signed-in devices inside My profile's card) and `lang` on SelectField, ComboboxField and MultiSelectField options (languages written in their own names, D15) — DefinedForm passes its `lang` to its select and multiselect options too. Recruitment, onboarding and CRM needed nothing new (KanbanBoard, DetailPage, DataTable, SlotPicker, RadioGroupField, PortalShell, SigningPage, CalendarView).
+- **2026-10-16 — One person, one way to sign in (P5.62).** Milica Petrović's two-factor sign-in is an authenticator app in her profile and in the company's administration (group Q said "Security key"); her YubiKey is one of her passkeys.
+- **2026-10-16 — A merge of helpers' story blocks keeps each block's names apart (integration).** Two helpers both defined `noToasts` and `CONTRACT_CHECK` at the top level of the examples' stories; the later block's copies were renamed (`noToastsLeft`, `REGISTER_CONTRACT_CHECK`), and helpers now prefix their blocks' helpers with their letters.
+- **2026-10-16 — DateField's date keeps its order in a right-to-left page (D15, found in the Group B pictures).** The decision on annual leave in a right-to-left page showed ".06.11.2026" in its date fields: DateField's typing area took the page's direction, so the full stop of a Serbian date moved to the start. Its typing area and its read-only value are now `dir="auto"`, as each end of DateRangeField since P2.3b (a date in Latin digits left to right, an Arabic date right to left), and stay at the page's start side (`text-match-parent`, as the text fields since P3.6c). The story tests leave typed text out of `textOutOfOrder`, which is why no test caught it. The right-to-left pictures of every story with a filled DateField change; left-to-right pictures do not.
+
 ## Packaging
 
 - **2026-09-24 — Consumers install tarballs.** `pnpm consumer-check` packs the three packages with `pnpm pack`, copies `apps/consumer-check` to a temporary folder outside the repository, installs the tarballs there and builds, typechecks and checks the app. `apps/consumer-check` is excluded from the workspace and from the root ESLint run, because its dependencies exist only in that temporary install (Appendix B.10).

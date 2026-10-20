@@ -14,6 +14,7 @@ import {
 } from '@veljaos/ui'
 import { LIRO_BRAND } from '../../../../packages/ui/src/components/story-brand'
 import { EMPLOYEE } from './examples-story-data'
+import { BC_ROUTES } from './data-BC'
 
 /*
  * The example screens (P4.8): Liro as it will look, one company and one dataset, the screens
@@ -466,7 +467,14 @@ export function Shell({
     name: 'Milica Petrović',
     email: 'milica.petrovic@kvadratgradnja.rs',
     entries: [
-      { label: 'Profile', icon: UserRound, onSelect: () => undefined },
+      {
+        label: 'Profile',
+        icon: UserRound,
+        onSelect: () => {
+          // P5.62: Milica's own profile (group BC).
+          navigate(BC_ROUTES.preferences)
+        },
+      },
       {
         label: 'Company settings',
         icon: Building2,

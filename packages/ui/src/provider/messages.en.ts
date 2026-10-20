@@ -1654,4 +1654,8 @@ export const messagesEn: LiroMessages = {
   'versions.empty': 'No earlier versions.',
   'files.nameRequired': 'Enter a name.',
   'sharing.setPassword': 'Set password',
+  // ── P5.66 records ──
+  'definedForm.fill': 'Fill in this field.',
+  'definedForm.choose': 'Choose an option.',
+  'definedForm.tick': 'Tick this to go on.',
 }

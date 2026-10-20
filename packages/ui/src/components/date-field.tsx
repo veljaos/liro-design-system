@@ -198,9 +198,18 @@ export function DateField(props: DateFieldProps) {
     <Field {...fieldProps({ ...props, error })}>
       {(control) => {
         const attributes = controlAttributes(control, messages['field.readOnly'])
-        const typing = entryAttributes(entry, props, control.readOnly)
+        // dir="auto", as each end of DateRangeField: a date in Latin digits is laid out left to
+        // right ("06.11.2026." kept its full stop at the end in a right-to-left page), an Arabic
+        // date stays right to left; the text stays at the page's start (`text-match-parent`).
+        const typing = { ...entryAttributes(entry, props, control.readOnly), dir: 'auto' }
         if (control.readOnly) {
-          return <Input {...attributes} {...typing} className={cn('tabular-nums', READ_ONLY)} />
+          return (
+            <Input
+              {...attributes}
+              {...typing}
+              className={cn('tabular-nums text-match-parent', READ_ONLY)}
+            />
+          )
         }
         const onKeyDown = openOnAltArrowDown(() => {
           entry.commit()
@@ -219,7 +228,7 @@ export function DateField(props: DateFieldProps) {
                       onKeyDown(event)
                       typing.onKeyDown(event)
                     }}
-                    className={cn(TYPING, 'ps-3 pe-0')}
+                    className={cn(TYPING, 'ps-3 pe-0 text-match-parent')}
                   />
                   <CalendarButton disabled={control.disabled} />
                 </div>

@@ -56,8 +56,9 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 /**
- * The whole path: sign in, open Sales from the home page, preview and open F-2026-0412, back
- * to the list, the notifications, bank statement 188 from its notification, home, the tasks.
+ * The whole path: sign in (the e-mail, the password and the two-factor code), open Sales from
+ * the home page, preview and open F-2026-0412, back to the list, the notifications, bank
+ * statement 188 from its notification, home, the tasks.
  * The same invoice shows the same total in the list and on its page.
  */
 export const WalkThrough: Story = {
@@ -68,6 +69,12 @@ export const WalkThrough: Story = {
     await settle()
     const canvas = within(canvasElement)
     await userEvent.click(canvas.getByRole('button', { name: 'Continue' }))
+    // P5.63: the password, then the two-factor code (group BD).
+    await userEvent.type(await canvas.findByLabelText('Password'), 'correct horse battery')
+    await userEvent.click(canvas.getByRole('button', { name: 'Sign in' }))
+    await userEvent.click(await canvas.findByRole('textbox', { name: /Character 1 of 6/ }))
+    await userEvent.keyboard('314159')
+    await userEvent.click(canvas.getByRole('button', { name: 'Verify' }))
     await settle()
     await userEvent.click(await canvas.findByRole('link', { name: /Sales/ }))
     await settle()
@@ -14439,5 +14446,2049 @@ export const ExchangeDifferencesPostFlow: Story = {
       },
       { timeout: 5000 },
     )
+  },
+}
+
+// ── P5.62 identity ──
+
+import { BC_ROUTES } from './data-BC'
+import { BD_ROUTES } from './data-BD'
+
+/** Settles, checks, and on a phone checks that no page scrolls sideways. */
+function identityPlay(
+  check: (canvasElement: HTMLElement) => Promise<void>,
+  phone = false,
+): NonNullable<Story['play']> {
+  return async ({ canvasElement }) => {
+    await settle()
+    await check(canvasElement)
+    if (phone) {
+      for (const page of canvasElement.querySelectorAll<HTMLElement>('[data-liro-phone-page]')) {
+        await expect(page.scrollWidth).toBeLessThanOrEqual(page.clientWidth)
+      }
+    }
+  }
+}
+
+/** Waits until every toast is gone, so the checks never end on one fading. */
+async function noToasts() {
+  notice.dismiss()
+  await waitFor(
+    async () => {
+      await expect(document.querySelector('[data-sonner-toast]')).toBeNull()
+    },
+    { timeout: 5000 },
+  )
+}
+
+/** Types a whole code into CodeInput's boxes from the first. */
+async function typeCode(root: HTMLElement, code: string) {
+  await userEvent.click(within(root).getByRole('textbox', { name: /Character 1 of 6/ }))
+  await userEvent.keyboard(code)
+}
+
+/**
+ * P5.62: Milica Petrović's own profile (SettingsPage, opened from the user menu's "Profile"):
+ * Preferences — her name and e-mail as the administrator set them, the interface language (each
+ * language in its own name, `lang` on the option) and the theme, saved at once.
+ */
+const PROFILE_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'My profile' })).toBeVisible()
+  await expect(canvas.getByRole('tab', { name: 'Preferences', selected: true })).toBeVisible()
+  await expect(canvas.getByRole('combobox', { name: 'Language' })).toHaveTextContent('English')
+}
+
+export const MyProfile: Story = {
+  name: 'My profile',
+  render: () => <ExampleApp start={BC_ROUTES.preferences} />,
+  play: identityPlay(PROFILE_CHECK),
+}
+
+export const MyProfilePhone: Story = {
+  name: 'My profile, phone',
+  render: () => <OnPhone start={BC_ROUTES.preferences} />,
+  play: identityPlay(PROFILE_CHECK, true),
+}
+
+/**
+ * Sign-in and security: the password, two-factor sign-in with an authenticator app (on: new
+ * recovery codes, Turn off), the passkeys with created and last used, "Add a passkey".
+ */
+const SECURITY_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(
+    canvas.getByRole('tab', { name: 'Sign-in and security', selected: true }),
+  ).toBeVisible()
+  await expect(canvas.getByText('On since 02.03.2026. · 8 of 10 recovery codes left')).toBeVisible()
+  await expect(canvas.getByText('YubiKey 5C NFC')).toBeVisible()
+  await expect(canvas.getByRole('button', { name: 'Add a passkey' })).toBeVisible()
+}
+
+export const MyProfileSecurity: Story = {
+  name: 'My profile, sign-in and security',
+  render: () => <ExampleApp start={BC_ROUTES.security} />,
+  play: identityPlay(SECURITY_CHECK),
+}
+
+export const MyProfileSecurityPhone: Story = {
+  name: 'My profile, sign-in and security, phone',
+  render: () => <OnPhone start={BC_ROUTES.security} />,
+  play: identityPlay(SECURITY_CHECK, true),
+}
+
+/** Devices: the e-mail about a new device, and SessionList in the section's block. */
+const DEVICES_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  const list = canvas.getByRole('list', { name: 'Signed-in devices' })
+  await expect(within(list).getByText('This device')).toBeVisible()
+  await expect(canvas.getByRole('button', { name: 'Sign out all other devices' })).toBeVisible()
+}
+
+export const MyProfileDevices: Story = {
+  name: 'My profile, devices',
+  render: () => <ExampleApp start={BC_ROUTES.devices} />,
+  play: identityPlay(DEVICES_CHECK),
+}
+
+export const MyProfileDevicesPhone: Story = {
+  name: 'My profile, devices, phone',
+  render: () => <OnPhone start={BC_ROUTES.devices} />,
+  play: identityPlay(DEVICES_CHECK, true),
+}
+
+/** Two-factor sign-in off: the state in words and "Turn on". */
+export const MyProfileTwoFactorOff: Story = {
+  name: 'My profile, two-factor sign-in off',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BC_ROUTES.twoFactorOff} />,
+  play: identityPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('Off')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Turn on' })).toBeVisible()
+  }),
+}
+
+const TURN_ON_CHECK = async () => {
+  const dialog = within(document.body).getByRole('dialog', { name: 'Turn on two-factor sign-in' })
+  await expect(
+    within(dialog).getByRole('img', { name: 'QR code for your authenticator app' }),
+  ).toBeVisible()
+  await expect(within(dialog).getByText('JBSW Y3DP EHPK 3PXP KVQW 4ZLT NRXW')).toBeVisible()
+  await expect(within(dialog).getByRole('group', { name: 'Code from the app' })).toBeVisible()
+}
+
+/** Turning it on: the QR code of the Core's otpauth text, the key to type, the code. */
+export const MyProfileTurnOn: Story = {
+  name: 'My profile, turning on two-factor sign-in',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BC_ROUTES.turnOn} />,
+  play: identityPlay(TURN_ON_CHECK),
+}
+
+/** On a phone the same dialog is a bottom sheet, with the link that opens the phone's own app. */
+export const MyProfileTurnOnPhone: Story = {
+  name: 'My profile, turning on two-factor sign-in, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={BC_ROUTES.turnOn} />,
+  play: identityPlay(async () => {
+    await TURN_ON_CHECK()
+    await expect(
+      within(document.body).getByRole('link', {
+        name: 'Open in the authenticator app on this phone',
+      }),
+    ).toBeVisible()
+  }),
+}
+
+/** The code is wrong: the Core's answer under the boxes. */
+export const MyProfileCodeWrong: Story = {
+  name: 'My profile, two-factor code wrong',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BC_ROUTES.codeWrong} />,
+  play: identityPlay(async () => {
+    const dialog = within(document.body).getByRole('dialog', {
+      name: 'Turn on two-factor sign-in',
+    })
+    await expect(within(dialog).getByText(/The code is wrong/)).toBeVisible()
+  }),
+}
+
+/** The code was right: the recovery codes, shown once; Continue only after "I have saved". */
+export const MyProfileRecoveryCodes: Story = {
+  name: 'My profile, recovery codes',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BC_ROUTES.recoveryCodes} />,
+  play: identityPlay(async () => {
+    const dialog = within(document.body).getByRole('dialog', { name: 'Save your recovery codes' })
+    await expect(within(dialog).getByText('7KQ2-M9XD')).toBeVisible()
+    await expect(within(dialog).getByRole('button', { name: 'Continue' })).toBeDisabled()
+  }),
+}
+
+/** The browser's step gave no passkey: the Core's words in the row. */
+export const MyProfilePasskeyFailed: Story = {
+  name: 'My profile, passkey not added',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BC_ROUTES.passkeyFailed} />,
+  play: identityPlay(async (canvasElement) => {
+    await expect(within(canvasElement).getByRole('alert')).toHaveTextContent(
+      'The passkey was not added',
+    )
+  }),
+}
+
+/** The browser made a passkey: it is named before it joins the list. */
+export const MyProfilePasskeyAdded: Story = {
+  name: 'My profile, passkey added',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BC_ROUTES.passkeyAdded} />,
+  play: identityPlay(async () => {
+    const dialog = within(document.body).getByRole('dialog', { name: 'Passkey added' })
+    await expect(within(dialog).getByRole('textbox', { name: 'Name' })).toHaveValue(
+      'Windows Hello on this computer',
+    )
+  }),
+}
+
+/** Changing the password: the current one, the new one with the Core's rules, twice. */
+export const MyProfileChangePassword: Story = {
+  name: 'My profile, change password',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BC_ROUTES.changePassword} />,
+  play: identityPlay(async () => {
+    const dialog = within(document.body).getByRole('dialog', { name: 'Change password' })
+    await expect(within(dialog).getByText(/At least 12 characters/)).toBeVisible()
+  }),
+}
+
+/** From the user menu: Profile opens My profile. */
+export const MyProfileFromMenu: Story = {
+  name: 'My profile, from the user menu, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={ROUTES.home} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Account' }))
+    await userEvent.click(await within(document.body).findByRole('menuitem', { name: 'Profile' }))
+    await expect(await canvas.findByRole('heading', { level: 1, name: 'My profile' })).toBeVisible()
+    // A language chosen saves at once.
+    await userEvent.click(canvas.getByRole('combobox', { name: 'Language' }))
+    await userEvent.click(
+      await within(document.body).findByRole('option', { name: 'Srpski (latinica)' }),
+    )
+    await expect(await canvas.findByText('Saved')).toBeVisible()
+    await settle()
+  },
+}
+
+/** Off → Turn on → the code → the recovery codes kept → on. */
+export const MyProfileTurnOnFlow: Story = {
+  name: 'My profile, turn on two-factor sign-in, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BC_ROUTES.twoFactorOff} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const body = within(document.body)
+    await userEvent.click(canvas.getByRole('button', { name: 'Turn on' }))
+    const dialog = await body.findByRole('dialog', { name: 'Turn on two-factor sign-in' })
+    // An incomplete code is refused.
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Turn on' }))
+    // The message comes in under the boxes; the check waits for it to arrive.
+    await waitFor(async () => {
+      await expect(within(dialog).getByText(/The code is wrong/)).toBeVisible()
+    })
+    await typeCode(dialog, '314159')
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Turn on' }))
+    const codes = await body.findByRole('dialog', { name: 'Save your recovery codes' })
+    await userEvent.click(within(codes).getByRole('checkbox', { name: 'I have saved these codes' }))
+    await userEvent.click(within(codes).getByRole('button', { name: 'Continue' }))
+    await waitFor(async () => {
+      await expect(canvas.getByText(/On since/)).toBeVisible()
+    })
+    await noToasts()
+  },
+}
+
+/** Add a passkey (the browser's step is the Core's), name it, then remove another. */
+export const MyProfilePasskeysFlow: Story = {
+  name: 'My profile, add and remove a passkey, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BC_ROUTES.security} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const body = within(document.body)
+    await userEvent.click(canvas.getByRole('button', { name: 'Add a passkey' }))
+    const dialog = await body.findByRole('dialog', { name: 'Passkey added' })
+    const name = within(dialog).getByRole('textbox', { name: 'Name' })
+    await userEvent.clear(name)
+    await userEvent.type(name, 'Office computer')
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Save' }))
+    await expect(await canvas.findByText('Office computer')).toBeVisible()
+    const removes = canvas.getAllByRole('button', { name: 'Remove' })
+    const first = removes[0]
+    if (first === undefined) throw new Error('No passkey to remove')
+    await userEvent.click(first)
+    const confirm = await body.findByRole('alertdialog', { name: /Remove passkey/ })
+    await expect(confirm).toHaveTextContent('YubiKey 5C NFC')
+    await userEvent.click(within(confirm).getByRole('button', { name: 'Remove' }))
+    await waitFor(async () => {
+      await expect(canvas.queryByText('YubiKey 5C NFC')).toBeNull()
+    })
+    await noToasts()
+  },
+}
+
+/** Sign out one device, then every other one: only this device stays. */
+export const MyProfileDevicesFlow: Story = {
+  name: 'My profile, sign out devices, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BC_ROUTES.devices} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Sign out: Safari on iPad' }))
+    await waitFor(async () => {
+      await expect(canvas.queryByText('Safari on iPad')).toBeNull()
+    })
+    await userEvent.click(canvas.getByRole('button', { name: 'Sign out all other devices' }))
+    await expect(await canvas.findByText('No other device is signed in.')).toBeVisible()
+    await noToasts()
+  },
+}
+
+/**
+ * P5.63: the sign-in flows, from the sign-in building blocks only. The password step follows
+ * the sign-in screen's e-mail (its Continue): who is signing in, the password, "Forgot your
+ * password?".
+ */
+const PASSWORD_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Sign in' })).toBeVisible()
+  await expect(canvas.getByText('milica.petrovic@kvadratgradnja.rs')).toBeVisible()
+  await expect(canvas.getByRole('link', { name: 'Forgot your password?' })).toBeVisible()
+}
+
+export const SignInPassword: Story = {
+  name: 'Sign-in password',
+  render: () => <ExampleApp start={BD_ROUTES.password} />,
+  play: identityPlay(PASSWORD_CHECK),
+}
+
+export const SignInPasswordPhone: Story = {
+  name: 'Sign-in password, phone',
+  render: () => <OnPhone start={BD_ROUTES.password} />,
+  play: identityPlay(PASSWORD_CHECK, true),
+}
+
+/** A wrong password: the Core's answer with the tries left before the lock. */
+export const SignInPasswordWrong: Story = {
+  name: 'Sign-in password, wrong',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BD_ROUTES.passwordWrong} />,
+  play: identityPlay(async (canvasElement) => {
+    await expect(within(canvasElement).getByText(/After 2 more wrong tries/)).toBeVisible()
+  }),
+}
+
+/** The two-factor code: CodeInput, a trusted device, the recovery code when the phone is lost. */
+const CODE_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Two-factor sign-in' })).toBeVisible()
+  await expect(canvas.getByRole('group', { name: 'Code from the app' })).toBeVisible()
+  await expect(canvas.getByRole('link', { name: 'Use a recovery code' })).toBeVisible()
+}
+
+export const TwoFactorCode: Story = {
+  name: 'Two-factor code',
+  render: () => <ExampleApp start={BD_ROUTES.code} />,
+  play: identityPlay(CODE_CHECK),
+}
+
+export const TwoFactorCodePhone: Story = {
+  name: 'Two-factor code, phone',
+  render: () => <OnPhone start={BD_ROUTES.code} />,
+  play: identityPlay(CODE_CHECK, true),
+}
+
+export const TwoFactorCodeWrong: Story = {
+  name: 'Two-factor code, wrong',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BD_ROUTES.codeWrong} />,
+  play: identityPlay(async (canvasElement) => {
+    await expect(within(canvasElement).getByText(/The code is wrong or has expired/)).toBeVisible()
+  }),
+}
+
+export const TwoFactorRecoveryCode: Story = {
+  name: 'Two-factor code, recovery code',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BD_ROUTES.recovery} />,
+  play: identityPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('textbox', { name: 'Recovery code' })).toBeVisible()
+    await expect(canvas.getByRole('link', { name: 'Use the code from the app' })).toBeVisible()
+  }),
+}
+
+/** "Forgot your password?": the e-mail, then "Check your e-mail". */
+const FORGOT_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Reset your password' })).toBeVisible()
+  await expect(canvas.getByRole('button', { name: 'Send the link' })).toBeVisible()
+}
+
+export const ForgotPassword: Story = {
+  name: 'Forgot password',
+  render: () => <ExampleApp start={BD_ROUTES.forgot} />,
+  play: identityPlay(FORGOT_CHECK),
+}
+
+export const ForgotPasswordPhone: Story = {
+  name: 'Forgot password, phone',
+  render: () => <OnPhone start={BD_ROUTES.forgot} />,
+  play: identityPlay(FORGOT_CHECK, true),
+}
+
+/** The Core says the same whether or not an account uses the address. */
+export const ForgotPasswordSent: Story = {
+  name: 'Forgot password, check your e-mail',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BD_ROUTES.forgotSent} />,
+  play: identityPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { level: 1, name: 'Check your e-mail' })).toBeVisible()
+    await expect(canvas.getByText(/The link works for 60 minutes/)).toBeVisible()
+  }),
+}
+
+export const ForgotPasswordSentPhone: Story = {
+  name: 'Forgot password, check your e-mail, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={BD_ROUTES.forgotSent} />,
+  play: identityPlay(async (canvasElement) => {
+    await expect(
+      within(canvasElement).getByRole('heading', { level: 1, name: 'Check your e-mail' }),
+    ).toBeVisible()
+  }, true),
+}
+
+/** The e-mail's link: the new password twice, the company's rules under the first field. */
+const NEW_PASSWORD_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(
+    canvas.getByRole('heading', { level: 1, name: 'Choose a new password' }),
+  ).toBeVisible()
+  await expect(canvas.getByText(/At least 12 characters/)).toBeVisible()
+  await expect(canvas.getByLabelText('Repeat the new password')).toBeVisible()
+}
+
+export const NewPassword: Story = {
+  name: 'New password',
+  render: () => <ExampleApp start={BD_ROUTES.newPassword} />,
+  play: identityPlay(NEW_PASSWORD_CHECK),
+}
+
+export const NewPasswordPhone: Story = {
+  name: 'New password, phone',
+  render: () => <OnPhone start={BD_ROUTES.newPassword} />,
+  play: identityPlay(NEW_PASSWORD_CHECK, true),
+}
+
+export const NewPasswordMismatch: Story = {
+  name: 'New password, passwords differ',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BD_ROUTES.newPasswordMismatch} />,
+  play: identityPlay(async (canvasElement) => {
+    await expect(
+      within(canvasElement).getByText('The two passwords are not the same.'),
+    ).toBeVisible()
+  }),
+}
+
+export const NewPasswordRule: Story = {
+  name: 'New password, a rule broken',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BD_ROUTES.newPasswordRules} />,
+  play: identityPlay(async (canvasElement) => {
+    await expect(within(canvasElement).getByText(/was one of your last 5/)).toBeVisible()
+  }),
+}
+
+export const NewPasswordExpired: Story = {
+  name: 'New password, link expired',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BD_ROUTES.newPasswordExpired} />,
+  play: identityPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('alert')).toHaveTextContent('This link has expired')
+    await expect(canvas.getByRole('button', { name: 'Send a new link' })).toBeVisible()
+  }),
+}
+
+/** Ivan Lukić's invitation: the company, who invited and the role; a password, or a provider. */
+const INVITATION_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(
+    canvas.getByRole('heading', { level: 1, name: 'Join Kvadrat Gradnja d.o.o.' }),
+  ).toBeVisible()
+  await expect(
+    canvas.getByText('Milica Petrović, Head of finance and administration'),
+  ).toBeVisible()
+  await expect(canvas.getByRole('textbox', { name: 'E-mail' })).toHaveValue(
+    'ivan.lukic@kvadratgradnja.rs',
+  )
+}
+
+export const AcceptInvitation: Story = {
+  name: 'Accept invitation',
+  render: () => <ExampleApp start={BD_ROUTES.invitation} />,
+  play: identityPlay(INVITATION_CHECK),
+}
+
+export const AcceptInvitationPhone: Story = {
+  name: 'Accept invitation, phone',
+  render: () => <OnPhone start={BD_ROUTES.invitation} />,
+  play: identityPlay(INVITATION_CHECK, true),
+}
+
+export const AcceptInvitationExpired: Story = {
+  name: 'Accept invitation, expired',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BD_ROUTES.invitationExpired} />,
+  play: identityPlay(async (canvasElement) => {
+    await expect(within(canvasElement).getByRole('alert')).toHaveTextContent(
+      'Ask Milica Petrović to send a new one.',
+    )
+  }),
+}
+
+/** Too many wrong passwords: until when, in the Core's words, and the way in that does not wait. */
+const LOCKED_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Account locked' })).toBeVisible()
+  await expect(canvas.getByRole('alert')).toHaveTextContent('until 10:10 today')
+}
+
+export const AccountLocked: Story = {
+  name: 'Account locked',
+  render: () => <ExampleApp start={BD_ROUTES.locked} />,
+  play: identityPlay(LOCKED_CHECK),
+}
+
+export const AccountLockedPhone: Story = {
+  name: 'Account locked, phone',
+  render: () => <OnPhone start={BD_ROUTES.locked} />,
+  play: identityPlay(LOCKED_CHECK, true),
+}
+
+/** The session ended on invoice F-2026-0412: only the password, then back there. */
+const SESSION_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(
+    canvas.getByRole('heading', { level: 1, name: 'Your session has expired' }),
+  ).toBeVisible()
+  await expect(canvas.getByText(/return to Invoice F-2026-0412/)).toBeVisible()
+}
+
+export const SessionExpired: Story = {
+  name: 'Session expired',
+  render: () => <ExampleApp start={BD_ROUTES.sessionExpired} />,
+  play: identityPlay(SESSION_CHECK),
+}
+
+export const SessionExpiredPhone: Story = {
+  name: 'Session expired, phone',
+  render: () => <OnPhone start={BD_ROUTES.sessionExpired} />,
+  play: identityPlay(SESSION_CHECK, true),
+}
+
+/** E-mail → password → a wrong, then a right code → the home page. */
+export const SignInTwoFactorFlow: Story = {
+  name: 'Sign in with two-factor, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={ROUTES.signIn} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Continue' }))
+    await userEvent.type(await canvas.findByLabelText('Password'), 'correct horse battery')
+    await userEvent.click(canvas.getByRole('button', { name: 'Sign in' }))
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: 'Two-factor sign-in' }),
+    ).toBeVisible()
+    await userEvent.click(canvas.getByRole('button', { name: 'Verify' }))
+    await expect(canvas.getByText(/The code is wrong or has expired/)).toBeVisible()
+    await typeCode(canvasElement, '314159')
+    await userEvent.click(canvas.getByRole('button', { name: 'Verify' }))
+    await expect(await canvas.findByRole('link', { name: /Sales/ })).toBeVisible()
+    await settle()
+  },
+}
+
+/** Forgot password → the e-mail → "Check your e-mail" → the link → a new password → sign in. */
+export const ForgotPasswordFlow: Story = {
+  name: 'Forgot password, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BD_ROUTES.password} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('link', { name: 'Forgot your password?' }))
+    await userEvent.click(await canvas.findByRole('button', { name: 'Send the link' }))
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: 'Check your e-mail' }),
+    ).toBeVisible()
+    await userEvent.click(canvas.getByRole('button', { name: 'Open the link from the e-mail' }))
+    await userEvent.type(await canvas.findByLabelText('New password'), 'Liman4-gradiliste')
+    await userEvent.type(canvas.getByLabelText('Repeat the new password'), 'Liman4-gradilist')
+    await userEvent.click(canvas.getByRole('button', { name: 'Save the password' }))
+    await expect(canvas.getByText('The two passwords are not the same.')).toBeVisible()
+    await userEvent.type(canvas.getByLabelText('Repeat the new password'), 'e')
+    await userEvent.click(canvas.getByRole('button', { name: 'Save the password' }))
+    await expect(await canvas.findByRole('heading', { level: 1, name: 'Sign in' })).toBeVisible()
+    await settle()
+  },
+}
+
+/** The session expired on the invoice: the password, and back on F-2026-0412. */
+export const SessionExpiredFlow: Story = {
+  name: 'Session expired, sign in and return, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BD_ROUTES.sessionExpired} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.type(canvas.getByLabelText('Password'), 'correct horse battery')
+    await userEvent.click(canvas.getByRole('button', { name: 'Sign in and return' }))
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: 'F-2026-0412' }),
+    ).toBeVisible()
+    await settle()
+  },
+}
+
+/** Ivan Lukić joins: a short password is refused with the Core's words, then the home page. */
+export const AcceptInvitationFlow: Story = {
+  name: 'Accept invitation, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BD_ROUTES.invitation} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.type(canvas.getByLabelText('Choose a password'), 'short')
+    await userEvent.click(canvas.getByRole('button', { name: 'Accept and join' }))
+    await expect(canvas.getByText(/too short/)).toBeVisible()
+    await userEvent.type(canvas.getByLabelText('Choose a password'), '-but-longer-now')
+    await userEvent.type(canvas.getByLabelText('Repeat the password'), 'short-but-longer-now')
+    await userEvent.click(canvas.getByRole('button', { name: 'Accept and join' }))
+    await expect(await canvas.findByRole('link', { name: /Sales/ })).toBeVisible()
+    await settle()
+  },
+}
+
+// ── P5.64 people ──
+// (Imports here, inside the block, so the blocks merge without touching the top.)
+import { BJ_ROUTES } from './data-BJ'
+import { BK_ROUTES } from './data-BK'
+import { BL_ROUTES } from './data-BL'
+
+/** Settles, checks, and on a phone checks that no page scrolls sideways. */
+function peoplePlay(
+  check: (canvasElement: HTMLElement) => Promise<void>,
+  phone = false,
+): NonNullable<Story['play']> {
+  return async ({ canvasElement }) => {
+    await settle()
+    await check(canvasElement)
+    if (phone) {
+      for (const page of canvasElement.querySelectorAll<HTMLElement>('[data-liro-phone-page]')) {
+        await expect(page.scrollWidth).toBeLessThanOrEqual(page.clientWidth)
+      }
+    }
+  }
+}
+
+/** Closes the toasts an interaction left and waits until they are gone. */
+async function noToastsLeft() {
+  notice.dismiss()
+  await waitFor(
+    async () => {
+      await expect(document.querySelector('[data-sonner-toast]')).toBeNull()
+    },
+    { timeout: 5000 },
+  )
+}
+
+/**
+ * P5.64: Kvadrat Gradnja d.o.o.'s job openings on 14.10.2026, seen by Jelena Marković (HR): the
+ * buyer posting of the organisation chart's open position, the masons, a draft, and the filled
+ * maternity cover whose new employee is onboarding.
+ */
+const OPENINGS_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getAllByText('Buyer, construction materials').length).toBeGreaterThan(0)
+  await expect(canvas.getAllByText('11 candidates').length).toBeGreaterThan(0)
+}
+
+export const RecruitmentOpenings: Story = {
+  name: 'Recruitment, job openings',
+  render: () => <ExampleApp start={BJ_ROUTES.openings} />,
+  play: peoplePlay(OPENINGS_CHECK),
+}
+
+export const RecruitmentOpeningsPhone: Story = {
+  name: 'Recruitment, job openings, phone',
+  render: () => <OnPhone start={BJ_ROUTES.openings} />,
+  play: peoplePlay(OPENINGS_CHECK, true),
+}
+
+/**
+ * Job posting JOB-2026-007, one record read and edited as a whole: the position and its pay
+ * range, the work, what is asked, where it is published, the hiring team.
+ */
+const POSTING_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(
+    canvas.getByRole('heading', { level: 1, name: 'Buyer, construction materials' }),
+  ).toBeVisible()
+  await expect(canvasElement).toHaveTextContent('110.000,00')
+  await expect(canvas.getByRole('button', { name: 'Open candidates' })).toBeVisible()
+}
+
+export const RecruitmentPosting: Story = {
+  name: 'Recruitment, job posting',
+  render: () => <ExampleApp start={BJ_ROUTES.posting} />,
+  play: peoplePlay(POSTING_CHECK),
+}
+
+export const RecruitmentPostingPhone: Story = {
+  name: 'Recruitment, job posting, phone',
+  render: () => <OnPhone start={BJ_ROUTES.posting} />,
+  play: peoplePlay(POSTING_CHECK, true),
+}
+
+/** Edit: the same sections as fields; Cancel and Save in the bottom bar. */
+export const RecruitmentPostingEdit: Story = {
+  name: 'Recruitment, job posting, editing',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BJ_ROUTES.postingEdit} />,
+  play: peoplePlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('textbox', { name: /Position/ })).toHaveValue(
+      'Buyer, construction materials',
+    )
+    await expect(canvas.getByRole('button', { name: 'Save' })).toBeVisible()
+  }),
+}
+
+/**
+ * The candidates on a board: applied, interview, offer, hired, rejected. Moves are reported; the
+ * application asks why before Rejected and refuses Hired until an offer is accepted.
+ */
+const BOARD_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Candidates' })).toBeVisible()
+  await expect(canvas.getByRole('link', { name: 'Tijana Babić' })).toBeVisible()
+}
+
+export const RecruitmentCandidates: Story = {
+  name: 'Recruitment, candidates',
+  render: () => <ExampleApp start={BJ_ROUTES.candidates} />,
+  play: peoplePlay(async (canvasElement) => {
+    await BOARD_CHECK(canvasElement)
+    await expect(canvasElement.querySelector('[data-kanban-column="applied"]')).toHaveTextContent(
+      '5 candidates',
+    )
+  }),
+}
+
+export const RecruitmentCandidatesPhone: Story = {
+  name: 'Recruitment, candidates, phone',
+  render: () => <OnPhone start={BJ_ROUTES.candidates} />,
+  play: peoplePlay(async (canvasElement) => {
+    await expect(
+      within(canvasElement).getByRole('heading', { level: 1, name: 'Candidates' }),
+    ).toBeVisible()
+  }, true),
+}
+
+/** Luka Perić dropped on Rejected: the company's reasons are asked first. */
+export const RecruitmentCandidatesReject: Story = {
+  name: 'Recruitment, candidates, rejecting',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BJ_ROUTES.candidatesReject} />,
+  play: peoplePlay(async () => {
+    const dialog = within(document.body).getByRole('alertdialog', { name: /Reject.*Luka Perić/ })
+    await expect(within(dialog).getByRole('radio', { name: 'Not enough experience' })).toBeVisible()
+  }),
+}
+
+export const RecruitmentCandidatesFlow: Story = {
+  name: 'Recruitment, candidates, reject and hire, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BJ_ROUTES.candidates} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const body = within(document.body)
+    await userEvent.click(canvas.getByRole('button', { name: 'Move to: Luka Perić' }))
+    await userEvent.click(await body.findByRole('menuitem', { name: 'Rejected' }))
+    const dialog = await body.findByRole('alertdialog', { name: /Reject.*Luka Perić/ })
+    await userEvent.click(within(dialog).getByRole('radio', { name: 'Not enough experience' }))
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Reject' }))
+    const rejected = canvasElement.querySelector('[data-kanban-column="rejected"]')
+    await waitFor(async () => {
+      await expect(rejected).toHaveTextContent('3 candidates')
+    })
+    await expect(rejected).toHaveTextContent('Rejected 14.10.2026. · Not enough experience')
+    // The dialog is gone (and the page is no longer hidden behind it) before the next move.
+    await waitFor(async () => {
+      await expect(body.queryByRole('alertdialog')).toBeNull()
+    })
+    // Hired waits for an accepted offer: the application refuses and says why.
+    await userEvent.click(await canvas.findByRole('button', { name: 'Move to: Katarina Mitrović' }))
+    await userEvent.click(await body.findByRole('menuitem', { name: 'Hired' }))
+    await expect(
+      await body.findByText('Not moved: Katarina Mitrović has not accepted an offer.'),
+    ).toBeVisible()
+    await expect(canvasElement.querySelector('[data-kanban-column="hired"]')).toHaveTextContent(
+      '0 candidates',
+    )
+    await noToastsLeft()
+  },
+}
+
+/**
+ * Tijana Babić after her first interview: the application, her CV and documents, the interviews,
+ * two scorecards of three side by side, the history; Reject, Schedule interview, Make an offer.
+ */
+const CANDIDATE_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Tijana Babić' })).toBeVisible()
+  await expect(canvas.getAllByText('Tijana_Babic_CV.pdf').length).toBeGreaterThan(0)
+  await expect(canvas.getAllByText('2 of 3').length).toBeGreaterThan(0)
+}
+
+export const RecruitmentCandidate: Story = {
+  name: 'Recruitment, candidate',
+  render: () => <ExampleApp start={BJ_ROUTES.candidate} />,
+  play: peoplePlay(CANDIDATE_CHECK),
+}
+
+export const RecruitmentCandidatePhone: Story = {
+  name: 'Recruitment, candidate, phone',
+  render: () => <OnPhone start={BJ_ROUTES.candidate} />,
+  play: peoplePlay(CANDIDATE_CHECK, true),
+}
+
+export const RecruitmentOfferFlow: Story = {
+  name: 'Recruitment, candidate, make an offer, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BJ_ROUTES.candidate} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Make an offer' }))
+    await waitFor(async () => {
+      await expect(canvas.queryByRole('button', { name: 'Make an offer' })).toBeNull()
+    })
+    await userEvent.click(canvas.getByRole('link', { name: 'Back to Candidates' }))
+    await settle()
+    await expect(await canvas.findByRole('heading', { level: 1, name: 'Candidates' })).toBeVisible()
+    await expect(canvasElement.querySelector('[data-kanban-column="offer"]')).toHaveTextContent(
+      'Tijana Babić',
+    )
+    await noToastsLeft()
+  },
+}
+
+/**
+ * The second interview scheduled from the candidate's page: the format, the slots when the
+ * director and the hiring manager are both free (the application's), the invitation a choice.
+ */
+const SCHEDULE_CHECK = async () => {
+  const dialog = within(document.body).getByRole('dialog', {
+    name: /Schedule second interview.*Tijana Babić/,
+  })
+  await expect(within(dialog).getByRole('radiogroup', { name: /Time/ })).toBeVisible()
+  await expect(
+    within(dialog).getByRole('checkbox', {
+      name: 'Send the invitation to tijana.babic@example.com',
+    }),
+  ).toBeChecked()
+}
+
+export const RecruitmentSchedule: Story = {
+  name: 'Recruitment, interview scheduling',
+  render: () => <ExampleApp start={BJ_ROUTES.schedule} />,
+  play: peoplePlay(SCHEDULE_CHECK),
+}
+
+export const RecruitmentSchedulePhone: Story = {
+  name: 'Recruitment, interview scheduling, phone',
+  render: () => <OnPhone start={BJ_ROUTES.schedule} />,
+  play: peoplePlay(SCHEDULE_CHECK, true),
+}
+
+export const RecruitmentScheduleFlow: Story = {
+  name: 'Recruitment, interview scheduling, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BJ_ROUTES.candidate} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Schedule interview' }))
+    const dialog = await within(document.body).findByRole('dialog', {
+      name: /Schedule second interview/,
+    })
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Schedule' }))
+    // The error fades in: wait until it is shown.
+    await waitFor(async () => {
+      await expect(within(dialog).getByText('Choose a time.')).toBeVisible()
+    })
+    const time = within(dialog).getByRole('radiogroup', { name: /Time/ })
+    const [first] = within(time).getAllByRole('radio')
+    if (first === undefined) throw new Error('No free slot')
+    await userEvent.click(first)
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Schedule' }))
+    const table = await canvas.findByRole('table', { name: 'Interviews' })
+    await waitFor(async () => {
+      await expect(within(table).getByRole('row', { name: /Second interview/ })).toHaveTextContent(
+        'Scheduled',
+      )
+    })
+    await expect(canvas.queryByRole('button', { name: 'Schedule interview' })).toBeNull()
+    await noToastsLeft()
+  },
+}
+
+/**
+ * Jelena's scorecard for Tijana's first interview: the posting's four criteria on the company's
+ * scale, the recommendation and notes; her draft is kept, one rating still missing.
+ */
+const SCORECARD_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Scorecard' })).toBeVisible()
+  await expect(canvas.getByRole('radiogroup', { name: /Negotiation/ })).toBeVisible()
+  await expect(canvas.getAllByRole('button', { name: 'Submit scorecard' }).length).toBeGreaterThan(
+    0,
+  )
+}
+
+export const RecruitmentScorecard: Story = {
+  name: 'Recruitment, scorecard',
+  render: () => <ExampleApp start={BJ_ROUTES.scorecard} />,
+  play: peoplePlay(SCORECARD_CHECK),
+}
+
+export const RecruitmentScorecardPhone: Story = {
+  name: 'Recruitment, scorecard, phone',
+  render: () => <OnPhone start={BJ_ROUTES.scorecard} />,
+  play: peoplePlay(SCORECARD_CHECK, true),
+}
+
+/** Submitted with a criterion and the recommendation missing: each says so under its group. */
+export const RecruitmentScorecardMissing: Story = {
+  name: 'Recruitment, scorecard, ratings missing',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BJ_ROUTES.scorecardErrors} />,
+  play: peoplePlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('Rate this criterion.')).toBeVisible()
+    await expect(canvas.getByText('Choose your recommendation.')).toBeVisible()
+  }),
+}
+
+export const RecruitmentScorecardFlow: Story = {
+  name: 'Recruitment, scorecard, submit, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BJ_ROUTES.scorecard} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const [submit] = canvas.getAllByRole('button', { name: 'Submit scorecard' })
+    if (submit === undefined) throw new Error('No submit button')
+    await userEvent.click(submit)
+    await waitFor(async () => {
+      await expect(canvas.getByText('Rate this criterion.')).toBeVisible()
+    })
+    const negotiation = canvas.getByRole('radiogroup', { name: /Negotiation/ })
+    await userEvent.click(within(negotiation).getByRole('radio', { name: '4 · Strong' }))
+    const recommendation = canvas.getByRole('radiogroup', { name: /Hire this candidate/ })
+    await userEvent.click(within(recommendation).getByRole('radio', { name: 'Yes' }))
+    await userEvent.click(submit)
+    await settle()
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: 'Tijana Babić' }),
+    ).toBeVisible()
+    await expect(canvas.getAllByText('3 of 3').length).toBeGreaterThan(0)
+    await noToastsLeft()
+  },
+}
+
+/**
+ * P5.65: Teodora Lazić starts on 19.10.2026. HR's checklist: equipment, accounts, training and
+ * documents to sign, each task with its owner, due date and state; one overdue.
+ */
+const ONBOARDING_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Teodora Lazić' })).toBeVisible()
+  await expect(canvas.getAllByText('3 of 16').length).toBeGreaterThan(0)
+  await expect(canvas.getAllByText(/Ana Marić/).length).toBeGreaterThan(0)
+}
+
+export const OnboardingChecklist: Story = {
+  name: 'Onboarding, checklist',
+  render: () => <ExampleApp start={BK_ROUTES.onboarding} />,
+  play: peoplePlay(ONBOARDING_CHECK),
+}
+
+export const OnboardingChecklistPhone: Story = {
+  name: 'Onboarding, checklist, phone',
+  render: () => <OnPhone start={BK_ROUTES.onboarding} />,
+  play: peoplePlay(ONBOARDING_CHECK, true),
+}
+
+export const OnboardingChecklistFlow: Story = {
+  name: 'Onboarding, checklist, mark as done, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BK_ROUTES.onboarding} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(
+      canvas.getByRole('button', { name: 'Actions: Laptop with e-mail and Liro' }),
+    )
+    await userEvent.click(
+      await within(document.body).findByRole('menuitem', { name: 'Mark as done' }),
+    )
+    await waitFor(async () => {
+      await expect(canvas.getAllByText('4 of 16').length).toBeGreaterThan(0)
+    })
+    await expect(canvasElement).toHaveTextContent('Done 14.10.2026. by Jelena Marković')
+    await noToastsLeft()
+  },
+}
+
+/**
+ * Teodora's side, on her phone first: her first day and "Before you start" — her own steps, the
+ * next highlighted, the training waiting for her first day.
+ */
+const WELCOME_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Welcome, Teodora' })).toBeVisible()
+  await expect(canvas.getByText('1 of 6 done')).toBeVisible()
+  await expect(canvasElement).toHaveTextContent('Opens on your first day, 19.10.2026.')
+}
+
+export const OnboardingWelcome: Story = {
+  name: 'Onboarding, the new employee’s portal',
+  render: () => <ExampleApp start={BK_ROUTES.portal} />,
+  play: peoplePlay(WELCOME_CHECK),
+}
+
+export const OnboardingWelcomePhone: Story = {
+  name: 'Onboarding, the new employee’s portal, phone',
+  render: () => <OnPhone start={BK_ROUTES.portal} />,
+  play: peoplePlay(WELCOME_CHECK, true),
+}
+
+/** The salary account asked for in a dialog. */
+export const OnboardingAccount: Story = {
+  name: 'Onboarding, the salary account',
+  tags: ['!dev'],
+  render: () => <OnPhone start={BK_ROUTES.portalAccount} />,
+  play: peoplePlay(async () => {
+    const dialog = within(document.body).getByRole('dialog', { name: 'Your salary account' })
+    await expect(within(dialog).getByRole('textbox', { name: /Account number/ })).toBeVisible()
+  }),
+}
+
+export const OnboardingAccountFlow: Story = {
+  name: 'Onboarding, the salary account, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BK_ROUTES.portal} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Enter account' }))
+    const dialog = await within(document.body).findByRole('dialog', {
+      name: 'Your salary account',
+    })
+    const field = within(dialog).getByRole('textbox', { name: /Account number/ })
+    await userEvent.type(field, '160-0000000123456-00')
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Save' }))
+    await waitFor(async () => {
+      await expect(
+        within(dialog).getByText('This account number is not valid. Check it on your bank card.'),
+      ).toBeVisible()
+    })
+    await userEvent.clear(field)
+    await userEvent.type(field, '160-0000000123456-54')
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Save' }))
+    await waitFor(async () => {
+      await expect(canvas.getByText('2 of 6 done')).toBeVisible()
+    })
+    await noToastsLeft()
+  },
+}
+
+/** What waits for her signature. */
+const DOCUMENTS_LIST_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Documents' })).toBeVisible()
+  await expect(canvas.getByRole('link', { name: 'Employment contract RU-2026-019' })).toBeVisible()
+}
+
+export const OnboardingDocuments: Story = {
+  name: 'Onboarding, documents to sign',
+  render: () => <ExampleApp start={BK_ROUTES.documents} />,
+  play: peoplePlay(DOCUMENTS_LIST_CHECK),
+}
+
+export const OnboardingDocumentsPhone: Story = {
+  name: 'Onboarding, documents to sign, phone',
+  render: () => <OnPhone start={BK_ROUTES.documents} />,
+  play: peoplePlay(DOCUMENTS_LIST_CHECK, true),
+}
+
+/** Her employment contract, signed by the director, waiting for her. */
+const CONTRACT_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'RU-2026-019' })).toBeVisible()
+  await expect(canvas.getByRole('button', { name: 'Sign' })).toBeVisible()
+  await expect(canvasElement).toHaveTextContent('Article 1')
+}
+
+export const OnboardingContract: Story = {
+  name: 'Onboarding, the employment contract',
+  render: () => <ExampleApp start={BK_ROUTES.contract} />,
+  play: peoplePlay(CONTRACT_CHECK),
+}
+
+export const OnboardingContractPhone: Story = {
+  name: 'Onboarding, the employment contract, phone',
+  render: () => <OnPhone start={BK_ROUTES.contract} />,
+  play: peoplePlay(CONTRACT_CHECK, true),
+}
+
+/** Signed from her home page; the step is done and Documents counts one less. */
+export const OnboardingSignFlow: Story = {
+  name: 'Onboarding, sign the contract, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BK_ROUTES.portal} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const [open] = canvas.getAllByRole('link', { name: 'Open and sign' })
+    if (open === undefined) throw new Error('No document to sign')
+    await userEvent.click(open)
+    await settle()
+    await userEvent.click(await canvas.findByRole('button', { name: 'Sign' }))
+    await waitFor(async () => {
+      await expect(canvas.getByText('Signed by you')).toBeVisible()
+    })
+    await userEvent.click(canvas.getByRole('link', { name: /^Home/ }))
+    await settle()
+    await expect(await canvas.findByText('2 of 6 done')).toBeVisible()
+    await noToastsLeft()
+  },
+}
+
+/**
+ * P5.67: Kvadrat Gradnja d.o.o.'s pipeline, seen by Milena Jović: leads, opportunities, quotes
+ * (group AV's), won and lost; each deal's value, owner and next activity from the application.
+ */
+const PIPELINE_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Pipeline' })).toBeVisible()
+  await expect(canvasElement).toHaveTextContent('Leads')
+}
+
+export const CrmPipeline: Story = {
+  name: 'CRM, pipeline',
+  render: () => <ExampleApp start={BL_ROUTES.pipeline} />,
+  play: peoplePlay(async (canvasElement) => {
+    await PIPELINE_CHECK(canvasElement)
+    await expect(
+      within(canvasElement).getByRole('link', { name: 'Precast stairs for building B' }),
+    ).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('Value 549.120,00 RSD')
+  }),
+}
+
+export const CrmPipelinePhone: Story = {
+  name: 'CRM, pipeline, phone',
+  render: () => <OnPhone start={BL_ROUTES.pipeline} />,
+  play: peoplePlay(PIPELINE_CHECK, true),
+}
+
+/** A deal dropped on Lost: the reason is asked first. */
+export const CrmPipelineLost: Story = {
+  name: 'CRM, pipeline, marking as lost',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BL_ROUTES.pipelineLost} />,
+  play: peoplePlay(async () => {
+    const dialog = within(document.body).getByRole('alertdialog', {
+      name: /Mark as lost.*Formwork rental/,
+    })
+    await expect(within(dialog).getByRole('radio', { name: 'Price' })).toBeVisible()
+  }),
+}
+
+export const CrmPipelineFlow: Story = {
+  name: 'CRM, pipeline, move deals, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BL_ROUTES.pipeline} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const body = within(document.body)
+    // Won only with an accepted quote: refused, with the reason.
+    await userEvent.click(canvas.getByRole('button', { name: 'Move to: Silo foundations' }))
+    await userEvent.click(await body.findByRole('menuitem', { name: 'Won' }))
+    await expect(await body.findByText(/^Not moved: a deal is won when its quote/)).toBeVisible()
+    // Lost asks why.
+    await userEvent.click(
+      await canvas.findByRole('button', { name: 'Move to: Formwork rental, 60 days' }),
+    )
+    await userEvent.click(await body.findByRole('menuitem', { name: 'Lost' }))
+    const dialog = await body.findByRole('alertdialog', { name: /Mark as lost/ })
+    await userEvent.click(within(dialog).getByRole('radio', { name: 'Price' }))
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Mark as lost' }))
+    await waitFor(async () => {
+      await expect(canvasElement.querySelector('[data-kanban-column="lost"]')).toHaveTextContent(
+        '3 deals',
+      )
+    })
+    await noToastsLeft()
+  },
+}
+
+/**
+ * Deal OPP-2026-038: Stanogradnja Plus d.o.o. accepted quote PON-2026-0031 (group AV); value,
+ * probability and expected close; the activities and the history of its stages.
+ */
+const DEAL_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(
+    canvas.getByRole('heading', { level: 1, name: 'Precast stairs for building B' }),
+  ).toBeVisible()
+  await expect(canvas.getByRole('link', { name: /PON-2026-0031/ })).toBeVisible()
+  await expect(canvas.getAllByRole('button', { name: 'Mark as won' }).length).toBeGreaterThan(0)
+}
+
+export const CrmDeal: Story = {
+  name: 'CRM, deal',
+  render: () => <ExampleApp start={BL_ROUTES.deal} />,
+  play: peoplePlay(DEAL_CHECK),
+}
+
+export const CrmDealPhone: Story = {
+  name: 'CRM, deal, phone',
+  render: () => <OnPhone start={BL_ROUTES.deal} />,
+  play: peoplePlay(DEAL_CHECK, true),
+}
+
+/** Won after a confirmation; the quote link leads into the sales chain. */
+export const CrmDealFlow: Story = {
+  name: 'CRM, deal, mark as won, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BL_ROUTES.deal} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Mark as won' }))
+    const dialog = await within(document.body).findByRole('alertdialog', { name: /Mark as won/ })
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Mark as won' }))
+    await waitFor(async () => {
+      await expect(within(document.body).queryByRole('alertdialog')).toBeNull()
+    })
+    await expect(await canvas.findByText('Won')).toBeVisible()
+    await expect(canvas.queryByRole('button', { name: 'Mark as won' })).toBeNull()
+    await noToastsLeft()
+    await userEvent.click(await canvas.findByRole('link', { name: /PON-2026-0031/ }))
+    await settle()
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: 'PON-2026-0031' }),
+    ).toBeVisible()
+  },
+}
+
+/**
+ * Vesna Ilić of Stanogradnja Plus d.o.o.: her details, open deals, quotes and the timeline of
+ * calls, meetings, e-mails and documents.
+ */
+const CONTACT_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Vesna Ilić' })).toBeVisible()
+  await expect(canvasElement).toHaveTextContent('Quote PON-2026-0031 accepted.')
+  await expect(canvasElement).toHaveTextContent('1.237.920,00')
+}
+
+export const CrmContact: Story = {
+  name: 'CRM, contact',
+  render: () => <ExampleApp start={BL_ROUTES.contact} />,
+  play: peoplePlay(CONTACT_CHECK),
+}
+
+export const CrmContactPhone: Story = {
+  name: 'CRM, contact, phone',
+  render: () => <OnPhone start={BL_ROUTES.contact} />,
+  play: peoplePlay(CONTACT_CHECK, true),
+}
+
+/** A call logged in the end drawer, the page still in view. */
+export const CrmContactLog: Story = {
+  name: 'CRM, contact, logging an activity',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BL_ROUTES.contactLog} />,
+  play: peoplePlay(async () => {
+    const drawer = within(document.body).getByRole('dialog', { name: /Log activity.*Vesna Ilić/ })
+    await expect(within(drawer).getByRole('radio', { name: 'Call' })).toBeChecked()
+  }),
+}
+
+export const CrmContactLogFlow: Story = {
+  name: 'CRM, contact, log a call, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BL_ROUTES.contact} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Log activity' }))
+    const drawer = await within(document.body).findByRole('dialog', { name: /Log activity/ })
+    await userEvent.click(within(drawer).getByRole('button', { name: 'Save' }))
+    const subject = within(drawer).getByRole('textbox', { name: /Subject/ })
+    await waitFor(async () => {
+      await expect(subject).toHaveAccessibleDescription(/Write what it was about\./)
+    })
+    await userEvent.type(subject, 'Balcony slabs in two deliveries')
+    await userEvent.click(within(drawer).getByRole('button', { name: 'Save' }))
+    await waitFor(async () => {
+      await expect(canvasElement).toHaveTextContent('Call: Balcony slabs in two deliveries')
+    })
+    await noToastsLeft()
+  },
+}
+
+/** Calls, meetings, e-mails and tasks: Milena's planned ones first, an overdue task among them. */
+const ACTIVITIES_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(
+    canvas.getAllByText('Confirm the delivery date of the stairs').length,
+  ).toBeGreaterThan(0)
+  await expect(canvas.getByRole('button', { name: 'Show as calendar' })).toBeVisible()
+}
+
+export const CrmActivities: Story = {
+  name: 'CRM, activities',
+  render: () => <ExampleApp start={BL_ROUTES.activities} />,
+  play: peoplePlay(ACTIVITIES_CHECK),
+}
+
+export const CrmActivitiesPhone: Story = {
+  name: 'CRM, activities, phone',
+  render: () => <OnPhone start={BL_ROUTES.activities} />,
+  play: peoplePlay(ACTIVITIES_CHECK, true),
+}
+
+/** The same activities in the week of 14.10.2026, the application's "now" at 09:40. */
+const CALENDAR_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Activity calendar' })).toBeVisible()
+  await expect(
+    canvas.getAllByText(/Call: Confirm the delivery date of the stairs/).length,
+  ).toBeGreaterThan(0)
+}
+
+export const CrmCalendar: Story = {
+  name: 'CRM, activity calendar',
+  render: () => <ExampleApp start={BL_ROUTES.calendar} />,
+  play: peoplePlay(CALENDAR_CHECK),
+}
+
+export const CrmCalendarPhone: Story = {
+  name: 'CRM, activity calendar, phone',
+  render: () => <OnPhone start={BL_ROUTES.calendar} />,
+  play: peoplePlay(CALENDAR_CHECK, true),
+}
+
+// ── P5.66 records ──
+
+import { BE_ROUTES } from './data-BE'
+import { BF_ROUTES } from './data-BF'
+import { BG_ROUTES } from './data-BG'
+import { BH_ROUTES } from './data-BH'
+import { BI_ROUTES } from './data-BI'
+
+/** Settles, checks, and on a phone checks that no page scrolls sideways. */
+function recordsPlay(
+  check: (canvasElement: HTMLElement) => Promise<void>,
+  phone = false,
+): NonNullable<Story['play']> {
+  return async ({ canvasElement }) => {
+    await settle()
+    await check(canvasElement)
+    if (phone) {
+      for (const page of canvasElement.querySelectorAll<HTMLElement>('[data-liro-phone-page]')) {
+        await expect(page.scrollWidth).toBeLessThanOrEqual(page.clientWidth)
+      }
+    }
+  }
+}
+
+/** Waits until the application's viewer reports its pages (DocumentFrame's toolbar). */
+async function viewerReady(canvasElement: HTMLElement, pages: string) {
+  await waitFor(
+    async () => {
+      await expect(canvasElement).toHaveTextContent(`Page 1 of ${pages}`)
+    },
+    { timeout: 5000 },
+  )
+}
+
+/** The toast is closed and gone before the checks end (axe never catches it fading). */
+async function recordsToastGone() {
+  notice.dismiss()
+  await waitFor(
+    async () => {
+      await expect(document.querySelector('[data-sonner-toast]')).toBeNull()
+    },
+    { timeout: 5000 },
+  )
+}
+
+/**
+ * P5.66: a new document — the application's types by group, each made from its template's field
+ * definitions (decisions, letters, commercial documents outside SEF, internal acts, the minutes
+ * of company bodies).
+ */
+const TYPES_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'New document' })).toBeVisible()
+  await expect(canvas.getByRole('heading', { name: 'Company bodies' })).toBeVisible()
+  await expect(canvas.getByRole('link', { name: /Decision on annual leave/ })).toBeVisible()
+}
+
+export const RecordsNewDocument: Story = {
+  name: 'New document',
+  render: () => <ExampleApp start={BE_ROUTES.types} />,
+  play: recordsPlay(TYPES_CHECK),
+}
+
+export const RecordsNewDocumentPhone: Story = {
+  name: 'New document, phone',
+  render: () => <OnPhone start={BE_ROUTES.types} />,
+  play: recordsPlay(TYPES_CHECK, true),
+}
+
+/**
+ * P5.66: the decision on Nikola Marković's annual leave — the form drawn from the type's JSON
+ * definitions (DefinedForm: the second part's dates show because the leave is in two parts),
+ * the preview the application's renderer returns beside it (DocumentFrame), "Assign number" from
+ * the registry book.
+ */
+const DRAFT_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(
+    canvas.getByRole('heading', { level: 1, name: 'New decision on annual leave' }),
+  ).toBeVisible()
+  await expect(canvas.getByRole('textbox', { name: /Second part from/ })).toBeVisible()
+  await viewerReady(canvasElement, '2')
+}
+
+export const RecordsDocumentDraft: Story = {
+  name: 'Document draft',
+  render: () => <ExampleApp start={BE_ROUTES.leave} />,
+  play: recordsPlay(DRAFT_CHECK),
+}
+
+export const RecordsDocumentDraftPhone: Story = {
+  name: 'Document draft, phone',
+  render: () => <OnPhone start={BE_ROUTES.leave} />,
+  play: recordsPlay(DRAFT_CHECK, true),
+}
+
+/** The second part's dates missing: said in words under each field. */
+export const RecordsDocumentDraftMissing: Story = {
+  name: 'Document draft, values missing',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BE_ROUTES.leaveMissing} />,
+  play: recordsPlay(async (canvasElement) => {
+    await expect(within(canvasElement).getAllByText('Fill in this field.')).toHaveLength(2)
+  }),
+}
+
+/** The application is rendering the preview: the page-shaped skeleton. */
+export const RecordsDocumentDraftLoading: Story = {
+  name: 'Document draft, preview loading',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BE_ROUTES.leaveLoading} />,
+  play: recordsPlay(async (canvasElement) => {
+    await expect(canvasElement.querySelector('[aria-busy="true"]')).not.toBeNull()
+  }),
+}
+
+/** The renderer failed: its words and "Try again"; the values are kept. */
+export const RecordsDocumentDraftFailed: Story = {
+  name: 'Document draft, preview failed',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BE_ROUTES.leaveFailed} />,
+  play: recordsPlay(async (canvasElement) => {
+    await waitFor(async () => {
+      await expect(canvasElement).toHaveTextContent(/The template could not be rendered/)
+    })
+    await expect(within(canvasElement).getByRole('button', { name: 'Try again' })).toBeVisible()
+  }),
+}
+
+/** Numbered from the registry book: the form read-only, "Send for signature" the next step. */
+export const RecordsDocumentNumbered: Story = {
+  name: 'Document draft, numbered',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BE_ROUTES.leaveNumbered} />,
+  play: recordsPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { level: 1, name: '01-412/2026' })).toBeVisible()
+    await expect(canvas.getAllByRole('button', { name: 'Send for signature' }).length).toBe(1)
+    await viewerReady(canvasElement, '2')
+  }),
+}
+
+/** Other types, data only: their definitions drawn by the same form. */
+export const RecordsDocumentBusinessLetter: Story = {
+  name: 'Document draft, business letter',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BE_ROUTES.businessLetter} />,
+  play: recordsPlay(async (canvasElement) => {
+    await expect(
+      within(canvasElement).getByRole('heading', { level: 1, name: 'New business letter' }),
+    ).toBeVisible()
+    await viewerReady(canvasElement, '1')
+  }),
+}
+
+/** A buyer abroad: the VAT number and the exemption are asked for; the lines are the application's. */
+export const RecordsDocumentProforma: Story = {
+  name: 'Document draft, proforma invoice',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BE_ROUTES.proforma} />,
+  play: recordsPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('textbox', { name: /Valid until/ })).toBeVisible()
+    await expect(canvas.queryByRole('textbox', { name: /Date of supply/ })).toBeNull()
+    await expect(canvas.getByRole('table', { name: 'Lines' })).toBeVisible()
+  }),
+}
+
+/** The same definition as an invoice: the date of supply instead of "Valid until". */
+export const RecordsDocumentInvoiceAbroad: Story = {
+  name: 'Document draft, invoice for abroad',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BE_ROUTES.invoiceAbroad} />,
+  play: recordsPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('textbox', { name: /Date of supply/ })).toBeVisible()
+    await expect(canvas.queryByRole('textbox', { name: /Valid until/ })).toBeNull()
+  }),
+}
+
+/** The minutes of the supervisory board: present and quorum from the meeting (group BH). */
+export const RecordsDocumentBoardMinutes: Story = {
+  name: 'Document draft, minutes of the supervisory board',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BE_ROUTES.boardMinutes} />,
+  play: recordsPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('textbox', { name: /Quorum/ })).toHaveValue(
+      '4 of 5 members present: the board may decide (at least 3).',
+    )
+    await expect(canvas.getByRole('textbox', { name: /Auditor’s representative/ })).toBeVisible()
+  }),
+}
+
+/** Leave at once: the second part's fields go; delivery by e-mail asks for the address. */
+export const RecordsDocumentConditions: Story = {
+  name: 'Document draft, conditions, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BE_ROUTES.leave} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('radio', { name: 'At once' }))
+    await waitFor(async () => {
+      await expect(canvas.queryByRole('textbox', { name: /Second part from/ })).toBeNull()
+    })
+    await userEvent.click(canvas.getByRole('radio', { name: /By e-mail/ }))
+    await expect(await canvas.findByRole('textbox', { name: /Employee’s e-mail/ })).toBeVisible()
+    await expect(
+      canvas.getByText('The preview shows the values before your last change.'),
+    ).toBeVisible()
+  },
+}
+
+/** Update the preview (the e-mail missing first), number it, send it for signature. */
+export const RecordsDocumentNumberFlow: Story = {
+  name: 'Document draft, preview and number, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BE_ROUTES.leave} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('radio', { name: /By e-mail/ }))
+    await userEvent.click(canvas.getByRole('button', { name: 'Update preview' }))
+    const email = await canvas.findByRole('textbox', { name: /Employee’s e-mail/ })
+    await waitFor(async () => {
+      await expect(email).toHaveFocus()
+    })
+    await expect(email).toHaveAccessibleDescription('Fill in this field.')
+    await userEvent.type(email, 'nikola.markovic@example.com')
+    await userEvent.click(canvas.getByRole('button', { name: 'Update preview' }))
+    await waitFor(async () => {
+      await expect(
+        canvas.queryByText('The preview shows the values before your last change.'),
+      ).toBeNull()
+    })
+    await viewerReady(canvasElement, '2')
+    await userEvent.click(firstOf(canvas.getAllByRole('button', { name: 'Assign number' })))
+    const dialog = await within(document.body).findByRole('alertdialog', { name: /Assign number/ })
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Assign number' }))
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: '01-412/2026' }),
+    ).toBeVisible()
+    await recordsToastGone()
+    await userEvent.click(canvas.getByRole('button', { name: 'Send for signature' }))
+    await expect(await canvas.findByText('0 of 2 signed')).toBeVisible()
+  },
+}
+
+/** Sent for signature: the director signs first, then the employee confirms receipt. */
+const SIGNING_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: '01-412/2026' })).toBeVisible()
+  await expect(canvasElement).toHaveTextContent('0 of 2 signed')
+  await viewerReady(canvasElement, '2')
+}
+
+export const RecordsDocumentSigning: Story = {
+  name: 'Document signing',
+  render: () => <ExampleApp start={BE_ROUTES.leaveSigning} />,
+  play: recordsPlay(SIGNING_CHECK),
+}
+
+export const RecordsDocumentSigningPhone: Story = {
+  name: 'Document signing, phone',
+  render: () => <OnPhone start={BE_ROUTES.leaveSigning} />,
+  play: recordsPlay(SIGNING_CHECK, true),
+}
+
+export const RecordsDocumentSigned: Story = {
+  name: 'Document signing, signed',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BE_ROUTES.leaveSigned} />,
+  play: recordsPlay(async (canvasElement) => {
+    await expect(canvasElement).toHaveTextContent('2 of 2 signed')
+  }),
+}
+
+/**
+ * P5.68: the registry book for 2026 — incoming, outgoing and internal acts with the number from
+ * the book, the sender or recipient, the subject, who works on it, the due date ("2 days overdue"
+ * in words), the state and the linked document; no. 409 corrected by no. 411.
+ */
+const REGISTRY_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Registry book 2026' })).toBeVisible()
+  await expect(canvas.getAllByText('Overdue').length).toBeGreaterThan(0)
+  await expect(canvasElement).toHaveTextContent('Corrected by no. 411')
+}
+
+export const RecordsRegistryBook: Story = {
+  name: 'Registry book',
+  render: () => <ExampleApp start={BF_ROUTES.book} />,
+  play: recordsPlay(REGISTRY_CHECK),
+}
+
+export const RecordsRegistryBookPhone: Story = {
+  name: 'Registry book, phone',
+  render: () => <OnPhone start={BF_ROUTES.book} />,
+  play: recordsPlay(async (canvasElement) => {
+    await expect(
+      within(canvasElement).getByRole('heading', { level: 1, name: 'Registry book 2026' }),
+    ).toBeVisible()
+  }, true),
+}
+
+export const RecordsRegistryOpen: Story = {
+  name: 'Registry book, not done',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BF_ROUTES.open} />,
+}
+
+/** An incoming act: the labour inspection's request, two days overdue, with its reply and files. */
+const ENTRY_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'No. 405' })).toBeVisible()
+  await expect(canvasElement).toHaveTextContent('2 days overdue')
+  await expect(canvas.getByRole('link', { name: /Reply, draft letter/ })).toBeVisible()
+}
+
+export const RecordsRegistryEntry: Story = {
+  name: 'Registry entry',
+  render: () => <ExampleApp start={BF_ROUTES.entry} />,
+  play: recordsPlay(ENTRY_CHECK),
+}
+
+export const RecordsRegistryEntryPhone: Story = {
+  name: 'Registry entry, phone',
+  render: () => <OnPhone start={BF_ROUTES.entry} />,
+  play: recordsPlay(ENTRY_CHECK, true),
+}
+
+const NEW_ENTRY_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'New entry' })).toBeVisible()
+  await expect(canvasElement).toHaveTextContent('Number 415 is given when the entry is saved')
+}
+
+export const RecordsNewRegistryEntry: Story = {
+  name: 'New registry entry',
+  render: () => <ExampleApp start={BF_ROUTES.newEntry} />,
+  play: recordsPlay(NEW_ENTRY_CHECK),
+}
+
+export const RecordsNewRegistryEntryPhone: Story = {
+  name: 'New registry entry, phone',
+  render: () => <OnPhone start={BF_ROUTES.newEntry} />,
+  play: recordsPlay(NEW_ENTRY_CHECK, true),
+}
+
+/** Saving without a subject says what is missing; with it, the book gives no. 415. */
+export const RecordsNewRegistryEntrySave: Story = {
+  name: 'New registry entry, saved, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BF_ROUTES.newEntry} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(firstOf(canvas.getAllByRole('button', { name: 'Save entry' })))
+    await expect(await canvas.findByText('Write what the act is about.')).toBeVisible()
+    await userEvent.type(
+      canvas.getByRole('textbox', { name: /Subject/ }),
+      'Invitation to the opening of the Liman 4 site office',
+    )
+    await userEvent.click(firstOf(canvas.getAllByRole('button', { name: 'Save entry' })))
+    await expect(await within(document.body).findByText('Entered as no. 415.')).toBeVisible()
+    await recordsToastGone()
+  },
+}
+
+/**
+ * P5.69: the archive book — units with their years, content and classification, quantity,
+ * retention, the day each may be disposed of (the application's), place and state; the oldest
+ * entries locked.
+ */
+const ARCHIVE_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Archive book' })).toBeVisible()
+  await expect(canvas.getAllByText('Permanently').length).toBeGreaterThan(0)
+}
+
+export const RecordsArchiveBook: Story = {
+  name: 'Archive book',
+  render: () => <ExampleApp start={BG_ROUTES.book} />,
+  play: recordsPlay(ARCHIVE_CHECK),
+}
+
+export const RecordsArchiveBookPhone: Story = {
+  name: 'Archive book, phone',
+  render: () => <OnPhone start={BG_ROUTES.book} />,
+  play: recordsPlay(ARCHIVE_CHECK, true),
+}
+
+/** The retention period of each category: the classification plan's data. */
+const RETENTION_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Retention periods' })).toBeVisible()
+  await expect(canvasElement).toHaveTextContent('Leave decisions and leave plans')
+}
+
+export const RecordsRetention: Story = {
+  name: 'Retention periods',
+  render: () => <ExampleApp start={BG_ROUTES.retention} />,
+  play: recordsPlay(RETENTION_CHECK),
+}
+
+export const RecordsRetentionPhone: Story = {
+  name: 'Retention periods, phone',
+  render: () => <OnPhone start={BG_ROUTES.retention} />,
+  play: recordsPlay(RETENTION_CHECK, true),
+}
+
+/** What expires: units whose retention ended or ends this year; chosen ones are proposed. */
+const EXPIRING_CHECK = async (canvasElement: HTMLElement) => {
+  await expect(
+    within(canvasElement).getByRole('heading', { level: 1, name: 'What expires' }),
+  ).toBeVisible()
+  await expect(canvasElement).toHaveTextContent('Offers sent and received')
+}
+
+export const RecordsExpiring: Story = {
+  name: 'What expires',
+  render: () => <ExampleApp start={BG_ROUTES.expiring} />,
+  play: recordsPlay(EXPIRING_CHECK),
+}
+
+export const RecordsExpiringPhone: Story = {
+  name: 'What expires, phone',
+  render: () => <OnPhone start={BG_ROUTES.expiring} />,
+  play: recordsPlay(EXPIRING_CHECK, true),
+}
+
+export const RecordsExpiringChosen: Story = {
+  name: 'What expires, units chosen',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BG_ROUTES.expiringChosen} />,
+  play: recordsPlay(async (canvasElement) => {
+    await expect(
+      within(canvasElement).getByRole('button', { name: 'Propose for disposal' }),
+    ).toBeVisible()
+  }),
+}
+
+/** Disposal list LB-2026-01: signed by the commission, the archive consented; "Dispose" asks first. */
+const DISPOSAL_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'LB-2026-01' })).toBeVisible()
+  await expect(canvasElement).toHaveTextContent('3 of 3 signed')
+}
+
+export const RecordsDisposal: Story = {
+  name: 'Disposal list',
+  render: () => <ExampleApp start={BG_ROUTES.disposal} />,
+  play: recordsPlay(DISPOSAL_CHECK),
+}
+
+export const RecordsDisposalPhone: Story = {
+  name: 'Disposal list, phone',
+  render: () => <OnPhone start={BG_ROUTES.disposal} />,
+  play: recordsPlay(DISPOSAL_CHECK, true),
+}
+
+export const RecordsDisposed: Story = {
+  name: 'Disposal list, disposed',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BG_ROUTES.disposed} />,
+  play: recordsPlay(async (canvasElement) => {
+    await expect(within(canvasElement).getByRole('link', { name: /01-416\/2026/ })).toBeVisible()
+  }),
+}
+
+export const RecordsDisposeFlow: Story = {
+  name: 'Disposal list, dispose, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BG_ROUTES.disposal} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Dispose' }))
+    const dialog = await within(document.body).findByRole('alertdialog', {
+      name: /Dispose of the units/,
+    })
+    await userEvent.type(within(dialog).getByRole('textbox'), 'LB-2026-01')
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Dispose' }))
+    await expect(await canvas.findByText(/Disposed on/)).toBeVisible()
+    await recordsToastGone()
+  },
+}
+
+/**
+ * P5.70: the meetings of the general assembly and the supervisory board; the 4th meeting of the
+ * board (invitation and materials, attendance and quorum in the application's words, the votes
+ * on each item and their result, the minutes and decisions to sign); the 5th meeting's answers.
+ */
+const MEETINGS_CHECK = async (canvasElement: HTMLElement) => {
+  await expect(
+    within(canvasElement).getByRole('heading', { level: 1, name: 'Meetings of company bodies' }),
+  ).toBeVisible()
+  await expect(canvasElement).toHaveTextContent('3 of 5 confirmed')
+}
+
+export const RecordsMeetings: Story = {
+  name: 'Meetings',
+  render: () => <ExampleApp start={BH_ROUTES.list} />,
+  play: recordsPlay(MEETINGS_CHECK),
+}
+
+export const RecordsMeetingsPhone: Story = {
+  name: 'Meetings, phone',
+  render: () => <OnPhone start={BH_ROUTES.list} />,
+  play: recordsPlay(MEETINGS_CHECK, true),
+}
+
+const MEETING_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(
+    canvas.getByRole('heading', { level: 1, name: '4th meeting of the supervisory board' }),
+  ).toBeVisible()
+  await expect(canvasElement).toHaveTextContent('the board may decide')
+  await expect(canvasElement).toHaveTextContent('Not adopted: 2 of 4 present for')
+}
+
+export const RecordsMeeting: Story = {
+  name: 'Meeting',
+  render: () => <ExampleApp start={BH_ROUTES.held} />,
+  play: recordsPlay(MEETING_CHECK),
+}
+
+export const RecordsMeetingPhone: Story = {
+  name: 'Meeting, phone',
+  render: () => <OnPhone start={BH_ROUTES.held} />,
+  play: recordsPlay(MEETING_CHECK, true),
+}
+
+export const RecordsMeetingInSession: Story = {
+  name: 'Meeting, in session',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BH_ROUTES.voting} />,
+  play: recordsPlay(async (canvasElement) => {
+    await expect(canvasElement).toHaveTextContent('Not voted on yet')
+  }),
+}
+
+export const RecordsMeetingRecording: Story = {
+  name: 'Meeting, recording votes',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BH_ROUTES.recording} />,
+  play: recordsPlay(async () => {
+    await expect(within(document.body).getByRole('dialog', { name: /Record votes/ })).toBeVisible()
+  }),
+}
+
+export const RecordsMeetingVote: Story = {
+  name: 'Meeting, votes recorded, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BH_ROUTES.voting} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Record votes on item 4' }))
+    const dialog = within(
+      await within(document.body).findByRole('dialog', { name: /Record votes/ }),
+    )
+    const votes: [string, string][] = [
+      ['Vesna Radović', 'For'],
+      ['Bojan Kovač', 'For'],
+      ['Jasmina Lukić', 'For'],
+      ['Đorđe Pantić', 'Abstain'],
+    ]
+    for (const [member, vote] of votes) {
+      await userEvent.click(
+        within(dialog.getByRole('radiogroup', { name: member })).getByRole('radio', { name: vote }),
+      )
+    }
+    await userEvent.click(dialog.getByRole('button', { name: 'Save votes' }))
+    await expect(await canvas.findByText('Adopted: 3 of 4 present for')).toBeVisible()
+    await recordsToastGone()
+  },
+}
+
+const NEXT_MEETING_CHECK = async (canvasElement: HTMLElement) => {
+  await expect(
+    within(canvasElement).getByRole('heading', {
+      level: 1,
+      name: '5th meeting of the supervisory board',
+    }),
+  ).toBeVisible()
+  await expect(canvasElement).toHaveTextContent('Not answered')
+}
+
+export const RecordsNextMeeting: Story = {
+  name: 'Next meeting',
+  render: () => <ExampleApp start={BH_ROUTES.invited} />,
+  play: recordsPlay(NEXT_MEETING_CHECK),
+}
+
+export const RecordsNextMeetingPhone: Story = {
+  name: 'Next meeting, phone',
+  render: () => <OnPhone start={BH_ROUTES.invited} />,
+  play: recordsPlay(NEXT_MEETING_CHECK, true),
+}
+
+/**
+ * P5.71: the contracts register with the application's reminders in words; the framework
+ * contract with Beton Mix d.o.o. — notice due, its versions and linked documents.
+ */
+const CONTRACTS_CHECK = async (canvasElement: HTMLElement) => {
+  await expect(
+    within(canvasElement).getByRole('heading', { level: 1, name: 'Contracts' }),
+  ).toBeVisible()
+  await expect(canvasElement).toHaveTextContent('Give notice by 16.10.2026')
+}
+
+export const RecordsContracts: Story = {
+  name: 'Contracts',
+  render: () => <ExampleApp start={BI_ROUTES.list} />,
+  play: recordsPlay(CONTRACTS_CHECK),
+}
+
+export const RecordsContractsPhone: Story = {
+  name: 'Contracts, phone',
+  render: () => <OnPhone start={BI_ROUTES.list} />,
+  play: recordsPlay(CONTRACTS_CHECK, true),
+}
+
+export const RecordsContractsAttention: Story = {
+  name: 'Contracts, need attention',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BI_ROUTES.attention} />,
+  play: recordsPlay(async (canvasElement) => {
+    await expect(canvasElement).toHaveTextContent('Expired on 30.09.2026')
+  }),
+}
+
+const REGISTER_CONTRACT_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'UGO-2025-044' })).toBeVisible()
+  await expect(canvas.getByRole('button', { name: 'Let it renew' })).toBeVisible()
+  await expect(canvas.getByRole('link', { name: /NB-2026-0087/ })).toBeVisible()
+}
+
+export const RecordsContract: Story = {
+  name: 'Contract',
+  render: () => <ExampleApp start={BI_ROUTES.contract} />,
+  play: recordsPlay(REGISTER_CONTRACT_CHECK),
+}
+
+export const RecordsContractPhone: Story = {
+  name: 'Contract, phone',
+  render: () => <OnPhone start={BI_ROUTES.contract} />,
+  play: recordsPlay(REGISTER_CONTRACT_CHECK, true),
+}
+
+export const RecordsContractRenews: Story = {
+  name: 'Contract, renews',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BI_ROUTES.renewed} />,
+  play: recordsPlay(async (canvasElement) => {
+    await expect(canvasElement).toHaveTextContent('Renews on 01.11.2026')
+  }),
+}
+
+export const RecordsContractRenewFlow: Story = {
+  name: 'Contract, let it renew, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BI_ROUTES.contract} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Let it renew' }))
+    await expect(await canvas.findByText(/Renews on 01\.11\.2026/)).toBeVisible()
+    await recordsToastGone()
   },
 }
