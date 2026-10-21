@@ -1502,3 +1502,46 @@ export type { FileDetailsProps } from './components/file-details'
 
 // ── P5.49 trade ──
 export type { ComparisonValues } from './components/value-comparison'
+
+// ── P5.78 auto ──
+export { RuleBuilder, ruleValueText } from './components/rule-builder'
+export type { RuleBuilderProps } from './components/rule-builder'
+export {
+  addRuleAction,
+  addRuleCondition,
+  addRuleGroup,
+  emptyRuleDraft,
+  findRuleCondition,
+  moveRuleItem,
+  nextRuleId,
+  operatorsFor,
+  removeRuleItem,
+  ruleConditionCount,
+  rulePlace,
+  ruleProblemKey,
+  setConditionField,
+  setConditionOperator,
+  setConditionValue,
+  setRuleActionParam,
+  setRuleActionType,
+  setRuleJoin,
+} from './components/rule-builder-logic'
+export type {
+  RuleAction,
+  RuleActionParam,
+  RuleActionType,
+  RuleChoice,
+  RuleCondition,
+  RuleConditionGroup,
+  RuleConditionItem,
+  RuleDraft,
+  RuleField,
+  RuleJoin,
+  RuleOperator,
+  RulePlace,
+  RuleTrigger,
+  RuleValueKind,
+} from './components/rule-builder-logic'
+
+// ── P5.79 auto ──
+export { chosenCounts } from './components/value-comparison'

@@ -14441,3 +14441,454 @@ export const ExchangeDifferencesPostFlow: Story = {
     )
   },
 }
+
+// ── P5.78/79 auto ──
+// (Imports here, inside the block, so the blocks merge without touching the top.)
+import { BS_ROUTES } from './data-BS'
+import { BT_ROUTES } from './data-BT'
+
+/** An automation or merge story's checks; on a phone also that nothing scrolls sideways. */
+function bsPlay(
+  check: (canvasElement: HTMLElement) => Promise<void>,
+  phone = false,
+): NonNullable<Story['play']> {
+  return async ({ canvasElement }) => {
+    await settle()
+    await check(canvasElement)
+    if (phone) {
+      for (const page of canvasElement.querySelectorAll<HTMLElement>('[data-liro-phone-page]')) {
+        await expect(page.scrollWidth).toBeLessThanOrEqual(page.clientWidth)
+      }
+    }
+  }
+}
+
+/** The first of the elements found (a page's top and bottom bars both hold Save). */
+function bsFirst(elements: HTMLElement[]): HTMLElement {
+  const [first] = elements
+  if (first === undefined) throw new Error('Nothing found.')
+  return first
+}
+
+const bsHeading = (canvasElement: HTMLElement, name: string) =>
+  expect(within(canvasElement).getByRole('heading', { level: 1, name })).toBeVisible()
+
+/**
+ * P5.78: Kvadrat Gradnja d.o.o.'s automation rules on 14.10.2026 — notify the director of a
+ * large incoming invoice, send supplier invoices from the document inbox to the accountant,
+ * remind of a contract's end, payment reminders (off), cement below its minimum. Each rule in the
+ * application's words, its last run with the result in words, a switch per rule.
+ */
+const BS_RULES_CHECK = async (canvasElement: HTMLElement) => {
+  await bsHeading(canvasElement, 'Automation rules')
+  const canvas = within(canvasElement)
+  await expect(
+    canvas.getAllByText(/When an incoming invoice is posted, if total is more than 500\.000,00/)
+      .length,
+  ).toBeGreaterThan(0)
+  await expect(canvas.getAllByText('Failed').length).toBeGreaterThan(0)
+}
+
+export const BsRules: Story = {
+  name: 'Automation rules',
+  render: () => <ExampleApp start={BS_ROUTES.rules} />,
+  play: bsPlay(async (canvasElement) => {
+    await BS_RULES_CHECK(canvasElement)
+    await expect(
+      within(canvasElement).getByRole('switch', { name: 'Payment reminder to customers' }),
+    ).not.toBeChecked()
+  }),
+}
+
+export const BsRulesPhone: Story = {
+  name: 'Automation rules, phone',
+  render: () => <OnPhone start={BS_ROUTES.rules} />,
+  play: bsPlay(BS_RULES_CHECK, true),
+}
+
+/** A rule turned off from the list stays off on its page. */
+export const BsRulesToggleFlow: Story = {
+  name: 'Automation rules, turn a rule off, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BS_ROUTES.rules} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const toggle = canvas.getByRole('switch', { name: 'Large incoming invoice' })
+    await userEvent.click(toggle)
+    await expect(toggle).not.toBeChecked()
+    await userEvent.click(canvas.getByRole('row', { name: /Large incoming invoice/ }))
+    await settle()
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: 'Large incoming invoice' }),
+    ).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Turn on' })).toBeVisible()
+    notice.dismiss()
+    await waitFor(
+      async () => {
+        await expect(document.querySelector('[data-sonner-toast]')).toBeNull()
+      },
+      { timeout: 5000 },
+    )
+  },
+}
+
+/** One rule: in words, its figures, the rule as text, its runs. */
+const BS_RULE_CHECK = async (canvasElement: HTMLElement) => {
+  await bsHeading(canvasElement, 'Large incoming invoice')
+  const canvas = within(canvasElement)
+  await expect(canvas.getByText('An incoming invoice is posted')).toBeVisible()
+  await expect(canvas.getAllByText(/Notified Nenad Kovačević/).length).toBeGreaterThan(0)
+}
+
+export const BsRule: Story = {
+  name: 'Automation rule',
+  render: () => <ExampleApp start={BS_ROUTES.large} />,
+  play: bsPlay(BS_RULE_CHECK),
+}
+
+export const BsRulePhone: Story = {
+  name: 'Automation rule, phone',
+  render: () => <OnPhone start={BS_ROUTES.large} />,
+  play: bsPlay(BS_RULE_CHECK, true),
+}
+
+/** The inbox rule: its last run failed, the message and the next step above its runs. */
+export const BsRuleFailed: Story = {
+  name: 'Automation rule, last run failed',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BS_ROUTES.inbox} />,
+  play: bsPlay(async (canvasElement) => {
+    await bsHeading(canvasElement, 'Supplier invoices to the accountant')
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('The last run failed')).toBeVisible()
+    await expect(canvas.getAllByText(/Snežana Jelić has no access/).length).toBeGreaterThan(0)
+    await expect(canvas.getByRole('group', { name: 'Rule' })).toHaveTextContent('Any of these')
+  }),
+}
+
+/** Editing: a condition on the project added, and a hold of the payment without its reason. */
+const BS_EDIT_CHECK = async (canvasElement: HTMLElement) => {
+  await bsHeading(canvasElement, 'Large incoming invoice')
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('group', { name: 'Condition 2' })).toBeVisible()
+  await expect(canvas.getByRole('status')).toHaveTextContent(
+    'if total is more than 500.000,00 RSD and project is Residential building Liman 4',
+  )
+}
+
+export const BsRuleEdit: Story = {
+  name: 'Edit automation rule',
+  render: () => <ExampleApp start={BS_ROUTES.largeEdit} />,
+  play: bsPlay(BS_EDIT_CHECK),
+}
+
+export const BsRuleEditPhone: Story = {
+  name: 'Edit automation rule, phone',
+  render: () => <OnPhone start={BS_ROUTES.largeEdit} />,
+  play: bsPlay(BS_EDIT_CHECK, true),
+}
+
+/** Saved with a problem: the application's words under the field. */
+export const BsRuleProblems: Story = {
+  name: 'Edit automation rule, problems',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BS_ROUTES.largeProblems} />,
+  play: bsPlay(async (canvasElement) => {
+    await expect(
+      within(canvasElement).getByText('Give the reason the payment is held.'),
+    ).toBeVisible()
+  }),
+}
+
+/** "Test run": the application's answer on the two latest invoices. */
+export const BsRuleTested: Story = {
+  name: 'Edit automation rule, test run',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BS_ROUTES.largeTested} />,
+  play: bsPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { name: 'Test run' })).toBeVisible()
+    await expect(canvas.getByText('Would run')).toBeVisible()
+    await expect(canvas.getByText('Would not run')).toBeVisible()
+  }),
+}
+
+/** Edit, add the hold, save (the problem shown), give the reason, test and save. */
+export const BsRuleEditFlow: Story = {
+  name: 'Edit automation rule, add an action and save, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BS_ROUTES.large} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const body = within(document.body)
+    await userEvent.click(canvas.getByRole('button', { name: 'Edit' }))
+    await userEvent.click(await canvas.findByRole('button', { name: 'Add action' }))
+    const action = canvas.getByRole('group', { name: 'Action 2' })
+    const type = within(action).getByRole('combobox', { name: 'Action' })
+    await waitFor(async () => {
+      await expect(type).toHaveFocus()
+    })
+    await userEvent.click(type)
+    await userEvent.click(await body.findByRole('option', { name: 'Hold the payment' }))
+    // The list's closing gives the page back to assistive technology a moment later.
+    await userEvent.click(bsFirst(await canvas.findAllByRole('button', { name: 'Save' })))
+    await expect(await canvas.findByText('Give the reason the payment is held.')).toBeVisible()
+    await userEvent.type(
+      within(action).getByRole('textbox', { name: /Reason/ }),
+      'The director approves first.',
+    )
+    await userEvent.click(bsFirst(canvas.getAllByRole('button', { name: 'Test run' })))
+    await expect(await canvas.findByText('Would run')).toBeVisible()
+    await userEvent.click(bsFirst(canvas.getAllByRole('button', { name: 'Save' })))
+    await expect(await canvas.findByRole('button', { name: 'Edit' })).toBeVisible()
+    await expect(canvas.getByRole('group', { name: 'Rule' })).toHaveTextContent('Hold the payment')
+    notice.dismiss()
+    await waitFor(
+      async () => {
+        await expect(document.querySelector('[data-sonner-toast]')).toBeNull()
+      },
+      { timeout: 5000 },
+    )
+  },
+}
+
+/** A new rule: nothing chosen yet; the rule in words grows as it is built. */
+const BS_NEW_CHECK = async (canvasElement: HTMLElement) => {
+  await bsHeading(canvasElement, 'New rule')
+  await expect(
+    within(canvasElement).getByText('No conditions: the rule runs every time.'),
+  ).toBeVisible()
+}
+
+export const BsNewRule: Story = {
+  name: 'New automation rule',
+  render: () => <ExampleApp start={BS_ROUTES.create} />,
+  play: bsPlay(BS_NEW_CHECK),
+}
+
+export const BsNewRulePhone: Story = {
+  name: 'New automation rule, phone',
+  render: () => <OnPhone start={BS_ROUTES.create} />,
+  play: bsPlay(BS_NEW_CHECK, true),
+}
+
+/** Every rule's runs, newest first: what was done, or why it failed, in the application's words. */
+const BS_LOG_CHECK = async (canvasElement: HTMLElement) => {
+  await bsHeading(canvasElement, 'Run log')
+  const canvas = within(canvasElement)
+  await expect(canvas.getAllByText(/Could not assign the invoice/).length).toBeGreaterThan(0)
+  await expect(canvas.getAllByRole('link', { name: '2026-1187 · Beton Mix d.o.o.' }).length).toBe(2)
+}
+
+export const BsRunLog: Story = {
+  name: 'Automation run log',
+  render: () => <ExampleApp start={BS_ROUTES.log} />,
+  play: bsPlay(BS_LOG_CHECK),
+}
+
+export const BsRunLogPhone: Story = {
+  name: 'Automation run log, phone',
+  render: () => <OnPhone start={BS_ROUTES.log} />,
+  play: bsPlay(BS_LOG_CHECK, true),
+}
+
+/** The failed runs only. */
+export const BsRunLogFailed: Story = {
+  name: 'Automation run log, failed',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BS_ROUTES.logFailed} />,
+  play: bsPlay(async (canvasElement) => {
+    await expect(within(canvasElement).getAllByText('Failed').length).toBeGreaterThan(0)
+  }),
+}
+
+/**
+ * P5.79: the pairs the application found alike — Beton Mix d.o.o. and "Beton-Mix doo" (the same
+ * PIB; the second made by the document inbox from invoice 2026-1187), Kvadrat Gradnja's cement and
+ * the site's own record of it (the same barcode) — with why, and their state in words.
+ */
+const BT_LIST_CHECK = async (canvasElement: HTMLElement) => {
+  await bsHeading(canvasElement, 'Possible duplicates')
+  await expect(within(canvasElement).getAllByText('Same PIB 106543218').length).toBeGreaterThan(0)
+}
+
+export const BtDuplicates: Story = {
+  name: 'Possible duplicates',
+  render: () => <ExampleApp start={BT_ROUTES.duplicates} />,
+  play: bsPlay(BT_LIST_CHECK),
+}
+
+export const BtDuplicatesPhone: Story = {
+  name: 'Possible duplicates, phone',
+  render: () => <OnPhone start={BT_ROUTES.duplicates} />,
+  play: bsPlay(BT_LIST_CHECK, true),
+}
+
+/**
+ * The two partner records side by side: which stays (the application proposes the older), the
+ * value to keep where they differ (the e-mail for invoices still to choose, so Merge waits with
+ * its reason), and what will happen with the application's counts.
+ */
+const BT_MERGE_CHECK = async (canvasElement: HTMLElement) => {
+  await bsHeading(canvasElement, 'Merge partners')
+  const canvas = within(canvasElement)
+  await expect(canvas.getByText('4 of 5 chosen')).toBeVisible()
+  await expect(
+    canvas.getAllByText(/Choose the value to keep for 1 more field\./).length,
+  ).toBeGreaterThan(0)
+  await expect(canvas.getByText('1, 294.000,00 RSD')).toBeVisible()
+}
+
+export const BtMergePartners: Story = {
+  name: 'Merge partners',
+  render: () => <ExampleApp start={BT_ROUTES.partners} />,
+  play: bsPlay(BT_MERGE_CHECK),
+}
+
+export const BtMergePartnersPhone: Story = {
+  name: 'Merge partners, phone',
+  render: () => <OnPhone start={BT_ROUTES.partners} />,
+  play: bsPlay(BT_MERGE_CHECK, true),
+}
+
+/** Every value chosen: Merge is available. */
+export const BtMergePartnersReady: Story = {
+  name: 'Merge partners, ready',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BT_ROUTES.partnersReady} />,
+  play: bsPlay(async (canvasElement) => {
+    await expect(within(canvasElement).getByText('5 of 5 chosen')).toBeVisible()
+  }),
+}
+
+/** The newer record chosen to stay: the application's preselection and counts change. */
+export const BtMergePartnersOther: Story = {
+  name: 'Merge partners, the newer record stays',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BT_ROUTES.partnersOther} />,
+  play: bsPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('48: orders, receipts, invoices, payments')).toBeVisible()
+    await expect(canvas.getByRole('radio', { name: /Beton-Mix doo, P-00431/ })).toBeChecked()
+  }),
+}
+
+/** The irreversible confirmation: the merged record's code typed, the values kept shown. */
+export const BtMergePartnersConfirm: Story = {
+  name: 'Merge partners, confirm',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BT_ROUTES.partnersConfirm} />,
+  play: bsPlay(async () => {
+    const dialog = within(document.body).getByRole('alertdialog', { name: /Merge partners/ })
+    await expect(dialog).toHaveTextContent('Beton-Mix doo into Beton Mix d.o.o.')
+    await expect(within(dialog).getByRole('list', { name: 'Values kept' })).toBeVisible()
+  }),
+}
+
+/** The result: the kept partner, the merge in words, the invoice that moved here as a link. */
+const BT_MERGED_CHECK = async (canvasElement: HTMLElement) => {
+  await bsHeading(canvasElement, 'Beton Mix d.o.o.')
+  const canvas = within(canvasElement)
+  await expect(canvas.getByText('Beton-Mix doo was merged into this partner')).toBeVisible()
+  await expect(canvas.getByRole('link', { name: /2026-1187/ })).toBeVisible()
+}
+
+export const BtPartnerMerged: Story = {
+  name: 'Partners merged',
+  render: () => <ExampleApp start={BT_ROUTES.partnerMerged} />,
+  play: bsPlay(BT_MERGED_CHECK),
+}
+
+export const BtPartnerMergedPhone: Story = {
+  name: 'Partners merged, phone',
+  render: () => <OnPhone start={BT_ROUTES.partnerMerged} />,
+  play: bsPlay(BT_MERGED_CHECK, true),
+}
+
+/** From the list: choose the e-mail, merge, type the code, then the kept partner. */
+export const BtMergeFlow: Story = {
+  name: 'Merge partners, choose and merge, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BT_ROUTES.duplicates} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(
+      canvas.getByRole('row', { name: /Beton Mix d\.o\.o\. P-00112 Beton-Mix doo/ }),
+    )
+    await settle()
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: 'Merge partners' }),
+    ).toBeVisible()
+    await userEvent.click(canvas.getByRole('radio', { name: /office@betonmix\.example\.com/ }))
+    await expect(canvas.getByText('5 of 5 chosen')).toBeVisible()
+    await userEvent.click(canvas.getByRole('button', { name: 'Merge' }))
+    const dialog = await within(document.body).findByRole('alertdialog', { name: /Merge partners/ })
+    await userEvent.type(within(dialog).getByRole('textbox'), 'P-00431')
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Merge' }))
+    await settle()
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: 'Beton Mix d.o.o.' }),
+    ).toBeVisible()
+    await expect(canvas.getByText('office@betonmix.example.com')).toBeVisible()
+    notice.dismiss()
+    await waitFor(
+      async () => {
+        await expect(document.querySelector('[data-sonner-toast]')).toBeNull()
+      },
+      { timeout: 5000 },
+    )
+  },
+}
+
+/** Two item records of one cement: the units differ (the application counts 1 piece as 1 bag). */
+const BT_ITEMS_CHECK = async (canvasElement: HTMLElement) => {
+  await bsHeading(canvasElement, 'Merge items')
+  const canvas = within(canvasElement)
+  await expect(canvas.getByText('5 of 5 chosen')).toBeVisible()
+  await expect(canvas.getByText('40 bags at Site Liman 4')).toBeVisible()
+}
+
+export const BtMergeItems: Story = {
+  name: 'Merge items',
+  render: () => <ExampleApp start={BT_ROUTES.items} />,
+  play: bsPlay(BT_ITEMS_CHECK),
+}
+
+export const BtMergeItemsPhone: Story = {
+  name: 'Merge items, phone',
+  render: () => <OnPhone start={BT_ROUTES.items} />,
+  play: bsPlay(BT_ITEMS_CHECK, true),
+}
+
+export const BtMergeItemsConfirm: Story = {
+  name: 'Merge items, confirm',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BT_ROUTES.itemsConfirm} />,
+  play: bsPlay(async () => {
+    const dialog = within(document.body).getByRole('alertdialog', { name: /Merge items/ })
+    await expect(dialog).toHaveTextContent('CEM-25-S')
+  }),
+}
+
+/** The kept item after the merge: the stock and documents that moved, linked to its card. */
+const BT_ITEM_MERGED_CHECK = async (canvasElement: HTMLElement) => {
+  await bsHeading(canvasElement, 'Cement CEM II/A-M 42,5R, 25 kg')
+  await expect(
+    within(canvasElement).getByText('Cement PC 20M 42,5R vreća 25kg was merged into this item'),
+  ).toBeVisible()
+}
+
+export const BtItemMerged: Story = {
+  name: 'Items merged',
+  render: () => <ExampleApp start={BT_ROUTES.itemMerged} />,
+  play: bsPlay(BT_ITEM_MERGED_CHECK),
+}
+
+export const BtItemMergedPhone: Story = {
+  name: 'Items merged, phone',
+  render: () => <OnPhone start={BT_ROUTES.itemMerged} />,
+  play: bsPlay(BT_ITEM_MERGED_CHECK, true),
+}
