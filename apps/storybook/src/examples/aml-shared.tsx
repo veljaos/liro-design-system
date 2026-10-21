@@ -1,5 +1,5 @@
 import { LogOut, ShieldAlert, UserRound } from 'lucide-react'
-import { useCallback, useContext, type ReactNode } from 'react'
+import { useCallback, useContext, type ReactNode, type SetStateAction } from 'react'
 import {
   Alert,
   AppShell,
@@ -8,6 +8,7 @@ import {
   useLiro,
   type CommandItem,
   type ModuleTab,
+  type LiroFormat,
   type ShellCompanies,
 } from '@veljaos/ui'
 import { BRAND, Navigate, ROUTES } from './example-shell'
@@ -22,12 +23,18 @@ import {
   AML_RISK_TONES,
   AML_ROUTES,
   AML_TODAY,
+  amlAt,
   amlClient,
   type AmlClient,
   type AmlRisk,
   type KycState,
   type PepStatus,
 } from './data-aml'
+// ── P5.85–P5.88 cases ──
+import { BZ_ROUTES, MONITORING_ALERTS, type MonitoringAlert } from './data-BZ'
+import { AML_CASES, CA_ROUTES, type AmlCase } from './data-CA'
+import { AML_REPORTS, CB_ROUTES, type AmlReport } from './data-CB'
+import { CC_ROUTES } from './data-CC'
 
 /*
  * The AML compliance module's shared pieces (P5.82–P5.88), for every AML screen:
@@ -49,12 +56,17 @@ import {
  * The screens play the application with data-aml.ts; nothing here scores, matches or decides.
  */
 
-export type AmlTab = 'clients' | 'screening'
+export type AmlTab = 'clients' | 'screening' | 'alerts' | 'cases' | 'reports' | 'overview'
 
 /** The module's tabs, in order; each later AML step adds its own here. */
 export const AML_TABS: readonly { key: AmlTab; label: string; path: string }[] = [
   { key: 'clients', label: 'Clients', path: AML_ROUTES.clients },
   { key: 'screening', label: 'Screening', path: AML_ROUTES.screening },
+  // ── P5.85–P5.88 cases ──
+  { key: 'alerts', label: 'Alerts', path: BZ_ROUTES.alerts },
+  { key: 'cases', label: 'Cases', path: CA_ROUTES.cases },
+  { key: 'reports', label: 'Reports', path: CB_ROUTES.reports },
+  { key: 'overview', label: 'Overview', path: CC_ROUTES.overview },
 ]
 
 /** The module's name, the first crumb of every AML page. */
@@ -200,4 +212,42 @@ export function AmlShell({
       </AppShell>
     </Tenant>
   )
+}
+
+// ── P5.85–P5.88 cases ─────────────────────────────────────────────────────────────────────────
+
+/** The alerts as the application keeps them in this session (closing, escalating change them). */
+export function useAmlAlerts(): [
+  readonly MonitoringAlert[],
+  (next: SetStateAction<readonly MonitoringAlert[]>) => void,
+] {
+  return useExampleState<readonly MonitoringAlert[]>('aml.alerts', () => MONITORING_ALERTS)
+}
+
+/** The cases as the application keeps them in this session (an escalation adds one, a decision changes one). */
+export function useAmlCases(): [
+  readonly AmlCase[],
+  (next: SetStateAction<readonly AmlCase[]>) => void,
+] {
+  return useExampleState<readonly AmlCase[]>('aml.cases', () => AML_CASES)
+}
+
+/** The reports as the application keeps them in this session. */
+export function useAmlReports(): [
+  readonly AmlReport[],
+  (next: SetStateAction<readonly AmlReport[]>) => void,
+] {
+  return useExampleState<readonly AmlReport[]>('aml.reports', () => AML_REPORTS)
+}
+
+/** The signed-in user's instant for everything decided in this session (14.10.2026 09:40). */
+export const AML_NOW_AT = amlAt(AML_TODAY, '09:40')
+
+/**
+ * An instant written in the tenant's offset ("2026-10-14T08:30:00+02:00"), as its day and clock
+ * as written (`format.date` and `format.time`): the examples' instants are the tenant's, so the
+ * picture does not depend on the device's zone.
+ */
+export function amlDateTime(format: Pick<LiroFormat, 'date' | 'time'>, at: string): string {
+  return `${format.date(at.slice(0, 10))} ${format.time(at)}`
 }

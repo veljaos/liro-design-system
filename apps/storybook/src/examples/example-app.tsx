@@ -96,6 +96,11 @@ import { GROUP_AO_ROUTES } from './screens-AO'
 import { GROUP_BW_ROUTES } from './screens-BW'
 import { GROUP_BX_ROUTES } from './screens-BX'
 import { GROUP_BY_ROUTES } from './screens-BY'
+// ── P5.85 cases ──
+import { GROUP_BZ_ROUTES } from './screens-BZ'
+import { GROUP_CA_ROUTES } from './screens-CA'
+import { GROUP_CB_ROUTES } from './screens-CB'
+import { GROUP_CC_ROUTES } from './screens-CC'
 
 // ── Routes ────────────────────────────────────────────────────────────────────────────────
 
@@ -186,6 +191,11 @@ const EXAMPLE_ROUTES: readonly ExampleRoute[] = [
   ...GROUP_BW_ROUTES,
   ...GROUP_BX_ROUTES,
   ...GROUP_BY_ROUTES,
+  // ── P5.85 cases ──
+  ...GROUP_BZ_ROUTES,
+  ...GROUP_CA_ROUTES,
+  ...GROUP_CB_ROUTES,
+  ...GROUP_CC_ROUTES,
 ]
 
 // ── The app ───────────────────────────────────────────────────────────────────────────────────
