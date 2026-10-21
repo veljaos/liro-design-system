@@ -2347,4 +2347,49 @@ export interface LiroMessages {
   'pivot.export': string
   'pivot.drillHint': string
   'pivot.gridHint': string
+  // P5.78 auto: RuleBuilder
+  /** RuleBuilder: the blocks, the fields' labels, the joins, the add buttons, the empty lists. */
+  'rule.when': string
+  'rule.if': string
+  'rule.then': string
+  'rule.trigger': string
+  'rule.match': string
+  'rule.groupMatch': string
+  'rule.all': string
+  'rule.any': string
+  'rule.and': string
+  'rule.or': string
+  'rule.field': string
+  'rule.operator': string
+  'rule.value': string
+  'rule.action': string
+  'rule.fieldFirst': string
+  'rule.addCondition': string
+  'rule.addGroup': string
+  'rule.addToGroup': string
+  'rule.addAction': string
+  'rule.noConditions': string
+  'rule.noActions': string
+  'rule.summary': string
+  /** RuleBuilder: an item's name from its number written by `format` ("Condition 2"). */
+  'rule.condition': (numberText: string) => string
+  /** A condition inside a group ("Group 1, condition 2"). */
+  'rule.groupCondition': (groupText: string, numberText: string) => string
+  'rule.group': (numberText: string) => string
+  'rule.actionName': (numberText: string) => string
+  /** RuleBuilder: an item's tools, named with the item. */
+  'rule.moveUp': (item: string) => string
+  'rule.moveDown': (item: string) => string
+  'rule.remove': (item: string) => string
+  // P5.79 auto: ValueComparison chooses the values to keep
+  /** ValueComparison with `chosen`: how many differing rows have a value chosen. */
+  'comparison.chosenCount': (
+    count: number,
+    countText: string,
+    total: number,
+    totalText: string,
+  ) => string
+  /** ValueComparison with `chosen`: a differing row without a choice, and one with. */
+  'comparison.choose': string
+  'comparison.chosen': string
 }
