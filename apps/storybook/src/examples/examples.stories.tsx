@@ -14441,3 +14441,490 @@ export const ExchangeDifferencesPostFlow: Story = {
     )
   },
 }
+
+// ── P5.80/81 reports ──
+import { BU_ROUTES } from './data-BU'
+import { BV_ROUTES } from './data-BV'
+
+/** Settles, runs the check, and on a phone makes sure the page never scrolls sideways. */
+function buPlay(
+  check: (canvasElement: HTMLElement) => Promise<void>,
+  phone = false,
+): NonNullable<Story['play']> {
+  return async ({ canvasElement }) => {
+    await settle()
+    await check(canvasElement)
+    if (phone) {
+      for (const page of canvasElement.querySelectorAll<HTMLElement>('[data-liro-phone-page]')) {
+        await expect(page.scrollWidth).toBeLessThanOrEqual(page.clientWidth)
+      }
+    }
+  }
+}
+
+/** Closes the toasts and waits until they are gone (axe never catches one fading). */
+async function buDismissToasts() {
+  notice.dismiss()
+  await waitFor(
+    async () => {
+      await expect(document.querySelector('[data-sonner-toast]')).toBeNull()
+    },
+    { timeout: 5000 },
+  )
+}
+
+/**
+ * P5.80: Kvadrat Gradnja d.o.o.'s scheduled reports on 14.10.2026 at 09:40 — the weekly
+ * receivables to the director every Monday at 07:00, the monthly trial balance to Knjigovodstvo
+ * Jelić, the budget report whose last run failed, the Liman 4 report the director paused, and
+ * others; each with the schedule in the application's words, its recipients, the format, the
+ * next run and the last run's state, and a switch that pauses or resumes it.
+ */
+const BU_LIST_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Scheduled reports' })).toBeVisible()
+  await expect(
+    canvas.getByRole('switch', { name: 'Sending: Liman 4 progress, Friday' }),
+  ).not.toBeChecked()
+  await expect(
+    canvas.getByRole('switch', { name: 'Sending: Weekly receivables for the director' }),
+  ).toBeChecked()
+}
+
+export const BuScheduledReports: Story = {
+  name: 'Scheduled reports',
+  render: () => <ExampleApp start={BU_ROUTES.list} />,
+  play: buPlay(BU_LIST_CHECK),
+}
+
+export const BuScheduledReportsPhone: Story = {
+  name: 'Scheduled reports, phone',
+  render: () => <OnPhone start={BU_ROUTES.list} />,
+  play: buPlay(BU_LIST_CHECK, true),
+}
+
+/**
+ * One schedule: the weekly receivables overview to Nenad Kovačević every Monday at 07:00
+ * (Europe/Belgrade), its parameters, the application's next runs, the last runs with their files
+ * (one failed and sent again), and the e-mail as he gets it.
+ */
+const BU_SCHEDULE_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(
+    canvas.getByRole('heading', { level: 1, name: 'Weekly receivables for the director' }),
+  ).toBeVisible()
+  await expect(canvas.getAllByText('Every Monday at 07:00').length).toBeGreaterThan(0)
+  await expect(canvas.getByText('Receivables on 19.10.2026.')).toBeVisible()
+  await expect(canvas.getByRole('button', { name: 'Send now' })).toBeVisible()
+}
+
+export const BuScheduledReport: Story = {
+  name: 'Scheduled report',
+  render: () => <ExampleApp start={BU_ROUTES.receivables} />,
+  play: buPlay(BU_SCHEDULE_CHECK),
+}
+
+export const BuScheduledReportPhone: Story = {
+  name: 'Scheduled report, phone',
+  render: () => <OnPhone start={BU_ROUTES.receivables} />,
+  play: buPlay(BU_SCHEDULE_CHECK, true),
+}
+
+/** The budget report whose last run failed: the application's message at the top. */
+const BU_FAILED_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByText('The last run failed')).toBeVisible()
+  await expect(
+    canvas.getAllByText(/larger than the 10 MB the mail server accepts/).length,
+  ).toBeGreaterThan(0)
+}
+
+export const BuScheduledReportFailed: Story = {
+  name: 'Scheduled report, last run failed',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BU_ROUTES.failed} />,
+  play: buPlay(BU_FAILED_CHECK),
+}
+
+export const BuScheduledReportFailedPhone: Story = {
+  name: 'Scheduled report, last run failed, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={BU_ROUTES.failed} />,
+  play: buPlay(BU_FAILED_CHECK, true),
+}
+
+/** The report the director paused: why, no next runs, Resume. */
+export const BuScheduledReportPaused: Story = {
+  name: 'Scheduled report, paused',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BU_ROUTES.paused} />,
+  play: buPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText(/until the roof works start/)).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Resume' })).toBeVisible()
+  }),
+}
+
+/** "Send now" asks first: the action as the title, the schedule as its subject. */
+export const BuSendNow: Story = {
+  name: 'Scheduled report, send now',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BU_ROUTES.sendNow} />,
+  play: buPlay(async () => {
+    const dialog = within(document.body).getByRole('alertdialog', { name: /Send now/ })
+    await expect(dialog).toHaveTextContent('Weekly receivables for the director')
+  }),
+}
+
+/**
+ * A new schedule: the report and its parameters, how often from the application's list, the
+ * time and the time zone, people and outside addresses, the format, what happens when there is
+ * nothing to send, the e-mail and its preview.
+ */
+const BU_NEW_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(
+    canvas.getByRole('heading', { level: 1, name: 'New scheduled report' }),
+  ).toBeVisible()
+  await expect(canvas.getByRole('combobox', { name: 'Repeats' })).toHaveTextContent('Every week')
+  await expect(canvas.getByRole('textbox', { name: 'Time zone' })).toHaveValue(
+    'Europe/Belgrade (CEST, UTC+02:00)',
+  )
+}
+
+export const BuNewSchedule: Story = {
+  name: 'New scheduled report',
+  render: () => <ExampleApp start={BU_ROUTES.create} />,
+  play: buPlay(BU_NEW_CHECK),
+}
+
+export const BuNewSchedulePhone: Story = {
+  name: 'New scheduled report, phone',
+  render: () => <OnPhone start={BU_ROUTES.create} />,
+  play: buPlay(BU_NEW_CHECK, true),
+}
+
+/** After "Save": an outside address the application refused, and no subject. */
+const BU_CHECKED_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByText('Enter a whole address, like name@example.com.')).toBeVisible()
+  await expect(canvas.getByText('Enter a subject.')).toBeVisible()
+}
+
+export const BuNewScheduleChecked: Story = {
+  name: 'New scheduled report, checked',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BU_ROUTES.createChecked} />,
+  play: buPlay(BU_CHECKED_CHECK),
+}
+
+export const BuNewScheduleCheckedPhone: Story = {
+  name: 'New scheduled report, checked, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={BU_ROUTES.createChecked} />,
+  play: buPlay(BU_CHECKED_CHECK, true),
+}
+
+/** The weekly receivables schedule in its form, with its next run from the application. */
+export const BuEditSchedule: Story = {
+  name: 'Scheduled report, edit',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BU_ROUTES.edit} />,
+  play: buPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('textbox', { name: /Name/ })).toHaveValue(
+      'Weekly receivables for the director',
+    )
+    await expect(canvas.getByRole('textbox', { name: 'Next run' })).toHaveDisplayValue(
+      /19\.10\.2026\..*07:00/,
+    )
+  }),
+}
+
+/** The switch pauses a schedule: its next run says Paused, the Paused view counts it. */
+export const BuPauseFlow: Story = {
+  name: 'Scheduled reports, paused, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BU_ROUTES.list} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const name = 'Weekly receivables for the director'
+    await userEvent.click(canvas.getByRole('switch', { name: `Sending: ${name}` }))
+    await expect(canvas.getByRole('switch', { name: `Sending: ${name}` })).not.toBeChecked()
+    await expect(canvas.getByRole('row', { name: new RegExp(name) })).toHaveTextContent('Paused')
+    await expect(
+      await within(document.body).findByText(
+        `${name} is paused. Nothing is sent until you resume it.`,
+      ),
+    ).toBeVisible()
+    await buDismissToasts()
+  },
+}
+
+/** "Send now": confirmed, the run is listed first. */
+export const BuSendNowFlow: Story = {
+  name: 'Scheduled report, sent now, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BU_ROUTES.receivables} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Send now' }))
+    const dialog = await within(document.body).findByRole('alertdialog', { name: /Send now/ })
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Send now' }))
+    await expect(
+      await canvas.findByText('Sent now by Milica Petrović; the schedule is unchanged.'),
+    ).toBeVisible()
+    await buDismissToasts()
+  },
+}
+
+/**
+ * A new schedule: a name, a person, an outside address the application refuses and then
+ * accepts, a subject, Save; the list shows it.
+ */
+export const BuNewScheduleFlow: Story = {
+  name: 'New scheduled report, saved, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BU_ROUTES.create} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const body = within(document.body)
+    await userEvent.type(canvas.getByRole('textbox', { name: /^Name/ }), 'Weekly sales by customer')
+    const people = canvas.getByRole('combobox', { name: 'People of the company' })
+    await userEvent.click(people)
+    await userEvent.type(people, 'Dragan')
+    await userEvent.click(await body.findByRole('option', { name: 'Dragan Ilić' }))
+    const address = canvas.getByRole('textbox', { name: 'Add an outside address' })
+    await userEvent.type(address, 'nabavka@example')
+    await userEvent.click(canvas.getByRole('button', { name: 'Add address' }))
+    await expect(canvas.getByText('Enter a whole address, like name@example.com.')).toBeVisible()
+    await userEvent.type(address, '.com')
+    await userEvent.click(canvas.getByRole('button', { name: 'Add address' }))
+    await expect(canvas.queryByText('Enter a whole address, like name@example.com.')).toBeNull()
+    await userEvent.type(canvas.getByRole('textbox', { name: /^Subject/ }), 'Sales on {{date}}')
+    const [save] = canvas.getAllByRole('button', { name: 'Save' })
+    if (save === undefined) throw new Error('no Save button')
+    await userEvent.click(save)
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: 'Scheduled reports' }),
+    ).toBeVisible()
+    await expect(canvas.getByRole('row', { name: /Weekly sales by customer/ })).toBeVisible()
+    await buDismissToasts()
+  },
+}
+
+/**
+ * P5.81: Nenad Kovačević's overview of Kvadrat Gradnja d.o.o. on 14.10.2026 — his default layout
+ * "My overview": open receivables, overdue more than 30 days, the main cash desk, the budget used,
+ * revenue by month, plan and actual by cost centre and Residential building Liman 4's progress,
+ * each the figure the other examples show. The layout is chosen in the header; "Customize"
+ * arranges it.
+ */
+const BV_OVERVIEW_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Overview' })).toBeVisible()
+  await expect(canvas.getByRole('list', { name: 'My overview' })).toBeVisible()
+  await expect(canvas.getByText('Open receivables')).toBeVisible()
+  await expect(canvas.getByRole('button', { name: 'Customize' })).toBeVisible()
+}
+
+export const BvOverview: Story = {
+  name: 'Director’s overview',
+  render: () => <ExampleApp start={BV_ROUTES.overview} />,
+  play: buPlay(BV_OVERVIEW_CHECK),
+}
+
+export const BvOverviewPhone: Story = {
+  name: 'Director’s overview, phone',
+  render: () => <OnPhone start={BV_ROUTES.overview} />,
+  play: buPlay(BV_OVERVIEW_CHECK, true),
+}
+
+/** The second saved layout, "Month end": the budget and the overdue invoices first. */
+const BV_MONTH_END_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('list', { name: 'Month end' })).toBeVisible()
+  await expect(
+    canvas.getByRole('table', { name: 'Invoices overdue more than 30 days' }),
+  ).toBeVisible()
+}
+
+export const BvMonthEnd: Story = {
+  name: 'Director’s overview, month end',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BV_ROUTES.monthEnd} />,
+  play: buPlay(BV_MONTH_END_CHECK),
+}
+
+export const BvMonthEndPhone: Story = {
+  name: 'Director’s overview, month end, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={BV_ROUTES.monthEnd} />,
+  play: buPlay(async (canvasElement) => {
+    await expect(within(canvasElement).getByRole('list', { name: 'Month end' })).toBeVisible()
+  }, true),
+}
+
+/** Customizing: each card with its handle, size, menu and Remove; Add card, Cancel, Done. */
+export const BvCustomizing: Story = {
+  name: 'Director’s overview, customizing',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BV_ROUTES.editing} />,
+  play: buPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('button', { name: 'Move: Open receivables' })).toBeVisible()
+    await expect(
+      canvas.getByRole('button', { name: 'Medium, size of Revenue by month' }),
+    ).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Done' })).toBeVisible()
+  }),
+}
+
+/** On a phone: one column, the cards' menus move them; no dragging, no sizes. */
+export const BvCustomizingPhone: Story = {
+  name: 'Director’s overview, customizing, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={BV_ROUTES.editing} />,
+  play: buPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('button', { name: 'Options: Open receivables' })).toBeVisible()
+    await expect(canvas.queryByRole('button', { name: /^Move:/ })).toBeNull()
+  }, true),
+}
+
+/** "Add card": the application's catalogue, the cards not yet on the layout. */
+const BV_ADDING_CHECK = async () => {
+  const dialog = within(document.body).getByRole('dialog', { name: 'Add a card' })
+  await expect(within(dialog).getByText('Liman 4 by cost type')).toBeVisible()
+}
+
+export const BvAdding: Story = {
+  name: 'Director’s overview, adding a card',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BV_ROUTES.adding} />,
+  play: buPlay(BV_ADDING_CHECK),
+}
+
+export const BvAddingPhone: Story = {
+  name: 'Director’s overview, adding a card, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={BV_ROUTES.adding} />,
+  play: buPlay(BV_ADDING_CHECK),
+}
+
+/** "Save as…": a name for a copy of the layout. */
+export const BvSaveAs: Story = {
+  name: 'Director’s overview, save layout as',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BV_ROUTES.saveAs} />,
+  play: buPlay(async () => {
+    const dialog = within(document.body).getByRole('dialog', { name: /Save layout as/ })
+    await expect(within(dialog).getByRole('textbox', { name: /Layout name/ })).toHaveValue(
+      'My overview (copy)',
+    )
+  }),
+}
+
+/** "Delete…" on Month end asks first, the layout as its subject. */
+export const BvDeleteLayout: Story = {
+  name: 'Director’s overview, delete layout',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BV_ROUTES.deleting} />,
+  play: buPlay(async () => {
+    const dialog = within(document.body).getByRole('alertdialog', { name: /Delete layout/ })
+    await expect(dialog).toHaveTextContent('Month end')
+  }),
+}
+
+/**
+ * Customize: Revenue by month made full width from its size menu, the main cash desk moved to
+ * the start with the keyboard, the overdue figure removed; Done saves the layout.
+ */
+export const BvCustomizeFlow: Story = {
+  name: 'Director’s overview, customized, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BV_ROUTES.overview} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const body = within(document.body)
+    await userEvent.click(canvas.getByRole('button', { name: 'Customize' }))
+    await userEvent.click(
+      await canvas.findByRole('button', { name: 'Medium, size of Revenue by month' }),
+    )
+    await userEvent.click(await body.findByRole('menuitemradio', { name: 'Full width' }))
+    await expect(
+      await canvas.findByRole('button', { name: 'Full width, size of Revenue by month' }),
+    ).toBeVisible()
+    canvas.getByRole('button', { name: 'Move: Main cash desk' }).focus()
+    await userEvent.keyboard(' ')
+    await userEvent.keyboard('{Home}')
+    await userEvent.keyboard(' ')
+    await expect(canvas.getByRole('status')).toHaveTextContent(
+      'Dropped Main cash desk. Position 1 of 7.',
+    )
+    await userEvent.click(canvas.getByRole('button', { name: 'Remove: Overdue more than 30 days' }))
+    await expect(
+      canvas.queryByRole('button', { name: 'Options: Overdue more than 30 days' }),
+    ).toBeNull()
+    await userEvent.click(canvas.getByRole('button', { name: 'Done' }))
+    await expect(await body.findByText('My overview is saved.')).toBeVisible()
+    await expect(canvas.queryByText('Overdue more than 30 days')).toBeNull()
+    await buDismissToasts()
+  },
+}
+
+/** Cancel puts back a removed card. */
+export const BvCancelFlow: Story = {
+  name: 'Director’s overview, cancelled, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BV_ROUTES.editing} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Remove: Main cash desk' }))
+    await expect(canvas.queryByText('Main cash desk')).toBeNull()
+    await userEvent.click(canvas.getByRole('button', { name: 'Cancel' }))
+    await expect(await canvas.findByText('Main cash desk')).toBeVisible()
+  },
+}
+
+/** "Add card": a card chosen from the catalogue joins the layout at its end. */
+export const BvAddFlow: Story = {
+  name: 'Director’s overview, card added, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BV_ROUTES.editing} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Add card' }))
+    const dialog = await within(document.body).findByRole('dialog', { name: 'Add a card' })
+    await userEvent.click(within(dialog).getByRole('row', { name: /Liman 4 by cost type/ }))
+    await expect(
+      await canvas.findByRole('button', { name: 'Options: Liman 4 by cost type' }),
+    ).toBeVisible()
+    await buDismissToasts()
+  },
+}
+
+/** The second layout chosen in the header and made the default. */
+export const BvLayoutsFlow: Story = {
+  name: 'Director’s overview, layouts, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BV_ROUTES.overview} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const body = within(document.body)
+    await userEvent.click(canvas.getByRole('combobox', { name: 'Layout' }))
+    await userEvent.click(await body.findByRole('option', { name: 'Month end' }))
+    await expect(await canvas.findByRole('list', { name: 'Month end' })).toBeVisible()
+    await userEvent.click(canvas.getByRole('button', { name: 'Layout' }))
+    await userEvent.click(await body.findByRole('menuitem', { name: 'Set as default' }))
+    await expect(await canvas.findByText('Month end, the layout that opens first')).toBeVisible()
+    await buDismissToasts()
+  },
+}

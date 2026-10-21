@@ -1502,3 +1502,25 @@ export type { FileDetailsProps } from './components/file-details'
 
 // ── P5.49 trade ──
 export type { ComparisonValues } from './components/value-comparison'
+
+// ── P5.81 reports ──
+export { DashboardGrid } from './components/dashboard-grid'
+export type { DashboardCard, DashboardGridProps } from './components/dashboard-grid'
+export {
+  addCard,
+  allowedSizes,
+  cardSpan,
+  dashboardKeyTarget,
+  gridPlacement,
+  layoutOf,
+  moveCardBy,
+  moveCardTo,
+  removeCard,
+  resizeCard,
+} from './components/dashboard-grid-logic'
+export type {
+  DashboardCardSize,
+  DashboardLayoutChange,
+  DashboardLayoutItem,
+  GridPlace,
+} from './components/dashboard-grid-logic'
