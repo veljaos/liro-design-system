@@ -19751,7 +19751,7 @@ export const BzAlertCloseFlow: Story = {
     // The confirmation's own Close (the dialog's X is also named Close).
     const confirm = within(dialog)
       .getAllByRole('button', { name: 'Close' })
-      .find((button) => button.dataset['slot'] === 'button')
+      .find((button) => button.dataset.slot === 'button')
     if (confirm === undefined) throw new Error('no confirm button')
     await userEvent.click(confirm)
     // The next alert opens; the closed one leaves the open queue.
