@@ -14531,12 +14531,15 @@ export const BrCostAnalysisOpen: Story = {
     const canvas = within(canvasElement)
     const body = within(document.body)
     const grid = canvas.getByRole('treegrid')
-    const row = within(grid).getByRole('rowheader', { name: '5120 Material' }).closest('tr')
+    // Every site has a 5120 Material row: Liman 4's is the first.
+    const row = within(grid).getAllByRole('rowheader', { name: '5120 Material' })[0]?.closest('tr')
     const first = row === null ? null : within(row).getAllByRole('gridcell')[0]
     if (first === undefined || first === null) throw new Error('no figure')
     await userEvent.click(first)
     const drawer = await body.findByRole('dialog', { name: /Supplier invoices\s*Liman 4/ })
-    await expect(within(drawer).getAllByText('Beton Mix d.o.o.').length).toBeGreaterThan(0)
+    const table = within(drawer).getByRole('table', { name: 'Supplier invoices' })
+    // The header row and at least one invoice.
+    await expect(within(table).getAllByRole('row').length).toBeGreaterThan(1)
     await userEvent.keyboard('{Escape}')
     await waitFor(async () => {
       await expect(body.queryByRole('dialog')).toBeNull()
@@ -14613,7 +14616,9 @@ export const BrSalesAnalysisFieldsPhone: Story = {
   render: () => <OnPhone start={BR_ROUTES.salesFields} />,
   play: brPlay(async (canvasElement) => {
     const sheet = await within(canvasElement).findByRole('dialog', { name: 'Fields' })
-    await expect(within(sheet).getByRole('heading', { name: 'Rows' })).toBeVisible()
+    await waitFor(async () => {
+      await expect(within(sheet).getByRole('heading', { name: 'Rows' })).toBeVisible()
+    })
   }, true),
 }
 

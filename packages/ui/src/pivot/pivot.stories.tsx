@@ -271,7 +271,10 @@ export const PhoneFields: Story = {
   ),
   play: async ({ canvasElement }) => {
     const sheet = await within(canvasElement).findByRole('dialog', { name: 'Fields' })
-    await expect(within(sheet).getByRole('heading', { name: 'Values' })).toBeVisible()
+    // The sheet slides in (its first frame is transparent): wait until its content is shown.
+    await waitFor(async () => {
+      await expect(within(sheet).getByRole('heading', { name: 'Values' })).toBeVisible()
+    })
   },
 }
 
@@ -310,7 +313,9 @@ export const Keyboard: Story = {
     const north = within(grid).getByRole('rowheader', { name: 'North' })
     await expect(north).toHaveAttribute('tabindex', '0')
     north.focus()
-    await userEvent.keyboard('{ArrowRight}')
+    // The arrow towards the end: ArrowRight, or ArrowLeft in right to left.
+    const toEnd = getComputedStyle(grid).direction === 'rtl' ? '{ArrowLeft}' : '{ArrowRight}'
+    await userEvent.keyboard(toEnd)
     const first = within(grid).getAllByRole('gridcell')[0]
     await waitFor(async () => {
       await expect(first).toHaveFocus()
