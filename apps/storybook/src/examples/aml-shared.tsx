@@ -131,7 +131,8 @@ export function AmlLink({ href, children }: { href: string; children: ReactNode 
   const { linkComponent: Link } = useLiro()
   return (
     <Link href={`#${href}`} className="text-link underline">
-      {children}
+      {/* A name or a number keeps its own order in a right-to-left page (D15). */}
+      <bdi>{children}</bdi>
     </Link>
   )
 }
