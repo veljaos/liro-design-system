@@ -376,13 +376,13 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P5.79 | Merging duplicates | P5.19 | done | 2026-10-21 | ValueComparison `chosen` / `onChoose`: the values to keep per differing row; Beton Mix d.o.o. and "Beton-Mix doo" merged (which record stays, what will happen, irreversible confirmation) and two cement items |
 | P5.80 | Scheduled reports | P4.6 | done | 2026-10-21 | Scheduled reports (ListPage, DetailPage, RecordFormPage): schedule, recipients and outside addresses, format, the application's next runs, last runs (sent, failed, skipped), Send now, pause, the e-mail preview |
 | P5.81 | Customizable dashboard | P4.6 | done | 2026-10-21 | DashboardGrid (new): the director's overview — add from the catalogue, remove, resize, rearrange by drag, keyboard or menu; saved layouts (save as, rename, default, delete); phones by the menus |
-| P5.82 | AML client risk assessment | P5.1 | todo | | |
-| P5.83 | Know your customer (client file) | P5.42 | todo | | |
-| P5.84 | Screening | P5.33 | todo | | |
-| P5.85 | Transaction monitoring alerts | P4.3 | todo | | |
-| P5.86 | AML case management | P5.18 | todo | | |
-| P5.87 | Suspicious transaction report | P5.66 | todo | | |
-| P5.88 | AML overview and obligations | P4.6 | todo | | |
+| P5.82 | AML client risk assessment | P5.1 | done | 2026-10-21 | The client's risk assessment (DetailPage: risk in force, the application's score and factors, an override with a reason) and the risk review (Questionnaire with branches, sent for the application's assessment) |
+| P5.83 | Know your customer (client file) | P5.42 | done | 2026-10-21 | The AML clients by risk, review due and file state; the client file (identification with MaskedValue, documents with validity, owners on HierarchyChart with shares and an undisclosed owner, PEP, source of funds, review history) |
+| P5.84 | Screening | P5.33 | done | 2026-10-21 | Screening matches decided one by one (WorklistPage, the client's record beside the list entry with ValueComparison, True match / False positive with a reason), a client's screening and re-screening history |
+| P5.85 | Transaction monitoring alerts | P4.3 | done | 2026-10-21 | The alert queue (WorklistPage: rule, client, amount, risk, age, assignee), an alert with its transactions and the client's profile, close with a reason, escalate to a case |
+| P5.86 | AML case management | P5.18 | done | 2026-10-21 | A case (DocumentPage): timeline, linked alerts, transactions, documents, notes, tasks, the decision proposed and approved by a second person (SignerList, four eyes) |
+| P5.87 | Suspicious transaction report | P5.66 | done | 2026-10-21 | The suspicious transaction report from the authority's field definitions (DefinedForm), review and submission states, what was sent and when; confidential throughout |
+| P5.88 | AML overview and obligations | P4.6 | done | 2026-10-21 | The AML overview (DashboardPage: clients by risk, reviews due, open alerts and cases, ageing) and obligations (the compliance officer and deputy, training, procedures, retention, the audit trail) |
 | P6.1 | Full language and direction matrix | Phases 1–5 | todo | | |
 | P6.2 | Manual WCAG 2.2 checks | P6.1 | todo | | |
 | P6.3 | Performance budget | P4.8 | todo | | |

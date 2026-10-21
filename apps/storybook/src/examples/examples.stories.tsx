@@ -19163,3 +19163,1003 @@ export const BvLayoutsFlow: Story = {
     await buDismissToasts()
   },
 }
+// ── P5.82 kyc ──
+
+import { AML_ROUTES } from './data-aml'
+
+/** Settles, checks, and on a phone checks that no page scrolls sideways (P5.82–P5.84). */
+function bwPlay(
+  check: (canvasElement: HTMLElement) => Promise<void>,
+  phone = false,
+): NonNullable<Story['play']> {
+  return async ({ canvasElement }) => {
+    await settle()
+    await check(canvasElement)
+    if (phone) {
+      for (const page of canvasElement.querySelectorAll<HTMLElement>('[data-liro-phone-page]')) {
+        await expect(page.scrollWidth).toBeLessThanOrEqual(page.clientWidth)
+      }
+    }
+  }
+}
+
+/** Closes the success toast and waits until it is gone (axe never catches it fading). */
+async function bwToastGone() {
+  notice.dismiss()
+  await waitFor(
+    async () => {
+      await expect(document.querySelector('[data-sonner-toast]')).toBeNull()
+    },
+    { timeout: 5000 },
+  )
+}
+
+/**
+ * P5.83: Knjigovodstvo Jelić's clients as its compliance officer sees them on 14.10.2026 — the
+ * risk in force, the next review, the client file's state, PEP status and the last screening;
+ * views All, Review due, High risk and Needs documents.
+ */
+const BX_CLIENTS_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getAllByText('Kvadrat Gradnja d.o.o.').length).toBeGreaterThan(0)
+  await expect(canvas.getAllByText('Adria Commodities d.o.o.').length).toBeGreaterThan(0)
+  await expect(canvas.getAllByText('High risk').length).toBeGreaterThan(0)
+}
+
+export const BxAmlClients: Story = {
+  name: 'AML clients',
+  render: () => <ExampleApp start={AML_ROUTES.clients} />,
+  play: bwPlay(BX_CLIENTS_CHECK),
+}
+
+export const BxAmlClientsPhone: Story = {
+  name: 'AML clients, phone',
+  render: () => <OnPhone start={AML_ROUTES.clients} />,
+  play: bwPlay(BX_CLIENTS_CHECK, true),
+}
+
+export const BxAmlClientsReviewDue: Story = {
+  name: 'AML clients, review due',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AML_ROUTES.clientsReviewDue} />,
+  play: bwPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getAllByText('Drina Prevoz d.o.o.').length).toBeGreaterThan(0)
+    await expect(canvas.queryByText('Pekara Zlatni klas d.o.o.')).toBeNull()
+  }),
+}
+
+/**
+ * P5.83: Kvadrat Gradnja d.o.o.'s client file — medium risk, its yearly review due since
+ * 01.10.2026; the representative's national ID and date of birth masked; the documents with
+ * their validity; the owners through Kvadrat Holding d.o.o. with their shares on the lines.
+ */
+const BX_FILE_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(
+    canvas.getByRole('heading', { level: 1, name: 'Kvadrat Gradnja d.o.o.' }),
+  ).toBeVisible()
+  await expect(canvas.getAllByText('Review due').length).toBeGreaterThan(0)
+  await expect(canvas.getByRole('button', { name: 'Show national ID number' })).toBeVisible()
+  await expect(canvas.getAllByText('Kvadrat Holding d.o.o.').length).toBeGreaterThan(0)
+}
+
+export const BxClientFile: Story = {
+  name: 'Client file',
+  render: () => <ExampleApp start={AML_ROUTES.client('kvadrat')} />,
+  play: bwPlay(BX_FILE_CHECK),
+}
+
+export const BxClientFilePhone: Story = {
+  name: 'Client file, phone',
+  render: () => <OnPhone start={AML_ROUTES.client('kvadrat')} />,
+  play: bwPlay(BX_FILE_CHECK, true),
+}
+
+/** Adria Commodities d.o.o.: owned through a holding abroad whose owners of 60% are unknown. */
+export const BxClientFileForeignHolding: Story = {
+  name: 'Client file, owners not disclosed',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AML_ROUTES.client('adria')} />,
+  play: bwPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getAllByText('Owners not disclosed').length).toBeGreaterThan(0)
+    await expect(canvas.getAllByText('Incomplete').length).toBeGreaterThan(0)
+  }),
+}
+
+export const BxClientFileForeignHoldingPhone: Story = {
+  name: 'Client file, owners not disclosed, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={AML_ROUTES.client('adria')} />,
+  play: bwPlay(async (canvasElement) => {
+    await expect(within(canvasElement).getAllByText('Owners not disclosed').length).toBeGreaterThan(
+      0,
+    )
+  }, true),
+}
+
+/** Stanić Elektro STR: the entrepreneur's ID card expired on 05.09.2026. */
+export const BxClientFileExpired: Story = {
+  name: 'Client file, document expired',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AML_ROUTES.client('stanic')} />,
+  play: bwPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getAllByText('Documents expired').length).toBeGreaterThan(0)
+    await expect(canvas.getAllByText('Expired').length).toBeGreaterThan(0)
+  }),
+}
+
+/** Panonija Agro d.o.o.: an owner's potential match on the Illustrative PEP list. */
+export const BxClientFilePep: Story = {
+  name: 'Client file, potential PEP',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AML_ROUTES.client('panonija')} />,
+  play: bwPlay(async (canvasElement) => {
+    await expect(within(canvasElement).getAllByText('Potential match').length).toBeGreaterThan(0)
+  }),
+}
+
+/** Pekara Zlatni klas d.o.o.: low risk, the file complete. */
+export const BxClientFileLowRisk: Story = {
+  name: 'Client file, low risk',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AML_ROUTES.client('zlatni-klas')} />,
+  play: bwPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getAllByText('Low risk').length).toBeGreaterThan(0)
+    await expect(canvas.getAllByText('Complete').length).toBeGreaterThan(0)
+  }),
+}
+
+/** The national ID is shown only after a reason; the access is logged. */
+export const BxClientFileReveal: Story = {
+  name: 'Client file, national ID asked',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AML_ROUTES.clientReveal} />,
+  play: bwPlay(async () => {
+    const dialog = within(document.body).getByRole('dialog', { name: /Show national ID number/ })
+    await expect(within(dialog).getByText('Access is logged')).toBeVisible()
+  }),
+}
+
+export const BxClientFileRevealFlow: Story = {
+  name: 'Client file, national ID shown, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AML_ROUTES.client('kvadrat')} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Show national ID number' }))
+    const dialog = await within(document.body).findByRole('dialog', {
+      name: /Show national ID number/,
+    })
+    await userEvent.click(
+      within(dialog).getByRole('radio', { name: 'Periodic review of the client file' }),
+    )
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Show' }))
+    await expect(await canvas.findByText('1805974800017')).toBeVisible()
+  },
+}
+
+/**
+ * P5.82: Kvadrat Gradnja d.o.o.'s risk assessment — Medium (40 of 100), the factors that drove
+ * it with the application's effect and points, the next review due; "Override risk" and "Start
+ * review".
+ */
+const BW_RISK_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Risk assessment' })).toBeVisible()
+  await expect(canvas.getAllByText('Medium risk').length).toBeGreaterThan(0)
+  await expect(canvas.getAllByText('Construction').length).toBeGreaterThan(0)
+}
+
+export const BwRiskAssessment: Story = {
+  name: 'Client risk assessment',
+  render: () => <ExampleApp start={AML_ROUTES.risk('kvadrat')} />,
+  play: bwPlay(BW_RISK_CHECK),
+}
+
+export const BwRiskAssessmentPhone: Story = {
+  name: 'Client risk assessment, phone',
+  render: () => <OnPhone start={AML_ROUTES.risk('kvadrat')} />,
+  play: bwPlay(BW_RISK_CHECK, true),
+}
+
+/** Adria Commodities d.o.o.: Medium by the assessment, High by the compliance officer. */
+export const BwRiskAssessmentOverridden: Story = {
+  name: 'Client risk assessment, overridden',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AML_ROUTES.risk('adria')} />,
+  play: bwPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { level: 2, name: 'Override' })).toBeVisible()
+    await expect(canvas.getAllByText('Ownership not fully known').length).toBeGreaterThan(0)
+  }),
+}
+
+export const BwRiskAssessmentLow: Story = {
+  name: 'Client risk assessment, low risk',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AML_ROUTES.risk('zlatni-klas')} />,
+  play: bwPlay(async (canvasElement) => {
+    await expect(within(canvasElement).getAllByText('Low risk').length).toBeGreaterThan(0)
+  }),
+}
+
+/** "Override risk" to High asks for the reason the application requires. */
+export const BwRiskOverrideAsked: Story = {
+  name: 'Client risk assessment, override asked',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AML_ROUTES.riskOverride} />,
+  play: bwPlay(async () => {
+    const dialog = within(document.body).getByRole('alertdialog', { name: /Override risk/ })
+    await expect(within(dialog).getByRole('button', { name: 'Set to High' })).toBeVisible()
+  }),
+}
+
+export const BwRiskOverrideFlow: Story = {
+  name: 'Client risk assessment, override, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AML_ROUTES.risk('kvadrat')} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Override risk' }))
+    await userEvent.click(
+      await within(document.body).findByRole('menuitem', { name: 'Set to High' }),
+    )
+    const dialog = await within(document.body).findByRole('alertdialog', { name: /Override risk/ })
+    const confirm = within(dialog).getByRole('button', { name: 'Set to High' })
+    await expect(confirm).toBeDisabled()
+    await userEvent.click(
+      within(dialog).getByRole('radio', { name: 'Adverse information about the client' }),
+    )
+    await userEvent.click(confirm)
+    await expect(await canvas.findByRole('heading', { level: 2, name: 'Override' })).toBeVisible()
+    await expect(canvas.getAllByText('High risk').length).toBeGreaterThan(0)
+    await bwToastGone()
+  },
+}
+
+/**
+ * P5.82: the review of Kvadrat Gradnja d.o.o. — the application's questions, its branch (the
+ * owners above a holding), the last answers filled in; the summary; "Send for assessment".
+ */
+const BW_REVIEW_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Risk review' })).toBeVisible()
+  await expect(canvas.getByText('What kind of client is it?')).toBeVisible()
+}
+
+export const BwRiskReview: Story = {
+  name: 'Risk review',
+  render: () => <ExampleApp start={AML_ROUTES.review('kvadrat')} />,
+  play: bwPlay(BW_REVIEW_CHECK),
+}
+
+export const BwRiskReviewPhone: Story = {
+  name: 'Risk review, phone',
+  render: () => <OnPhone start={AML_ROUTES.review('kvadrat')} />,
+  play: bwPlay(BW_REVIEW_CHECK, true),
+}
+
+export const BwRiskReviewSummary: Story = {
+  name: 'Risk review, summary',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AML_ROUTES.reviewSummary} />,
+  play: bwPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('button', { name: 'Send for assessment' })).toBeVisible()
+    await expect(canvas.getAllByText('Through a company in Serbia').length).toBeGreaterThan(0)
+  }),
+}
+
+export const BwRiskReviewFlow: Story = {
+  name: 'Risk review, sent, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AML_ROUTES.reviewSummary} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Send for assessment' }))
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: 'Risk assessment' }),
+    ).toBeVisible()
+    await expect(canvas.getByText('Review: the risk stays Medium (40 points).')).toBeVisible()
+    await bwToastGone()
+  },
+}
+
+/**
+ * P5.84: the potential matches of the screening, decided one by one — the client's record beside
+ * the listed entry with the application's marks and score, the confidentiality reminder, True
+ * match / False positive with a reason.
+ */
+const BY_SCREENING_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getAllByText('Nenad Kovačević').length).toBeGreaterThan(0)
+  await expect(canvas.getAllByText('Meridian Trade Holdings Ltd').length).toBeGreaterThan(0)
+}
+
+export const ByScreening: Story = {
+  name: 'Screening matches',
+  render: () => <ExampleApp start={AML_ROUTES.screening} />,
+  play: bwPlay(async (canvasElement) => {
+    await BY_SCREENING_CHECK(canvasElement)
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { level: 2, name: 'Milorad Petković' })).toBeVisible()
+    await expect(canvas.getByText('Confidential')).toBeVisible()
+  }),
+}
+
+export const ByScreeningPhone: Story = {
+  name: 'Screening matches, phone',
+  render: () => <OnPhone start={AML_ROUTES.screening} />,
+  play: bwPlay(BY_SCREENING_CHECK, true),
+}
+
+/** The sanctions match of Kvadrat Gradnja d.o.o.'s director, side by side. */
+export const ByScreeningSanctions: Story = {
+  name: 'Screening match, sanctions',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AML_ROUTES.screeningHit('SH-2026-0412')} />,
+  play: bwPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { level: 2, name: 'Nenad Kovačević' })).toBeVisible()
+    await expect(canvas.getByText('3 of 4 differ')).toBeVisible()
+  }),
+}
+
+/** On a phone the match opens full width, the decisions in the bottom bar. */
+export const ByScreeningMatchPhone: Story = {
+  name: 'Screening match, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={AML_ROUTES.screeningHit('SH-2026-0412')} />,
+  play: bwPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { level: 2, name: 'Nenad Kovačević' })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'True match…' })).toBeVisible()
+  }, true),
+}
+
+export const ByFalsePositiveAsked: Story = {
+  name: 'Screening match, false positive asked',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AML_ROUTES.screeningDecide('SH-2026-0412', 'false-positive')} />,
+  play: bwPlay(async () => {
+    const dialog = within(document.body).getByRole('alertdialog', {
+      name: /Mark as false positive/,
+    })
+    await expect(
+      within(dialog).getByRole('radio', { name: 'Different date of birth' }),
+    ).toBeVisible()
+  }),
+}
+
+export const ByTrueMatchAsked: Story = {
+  name: 'Screening match, true match asked',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AML_ROUTES.screeningDecide('SH-2026-0414', 'true-match')} />,
+  play: bwPlay(async () => {
+    const dialog = within(document.body).getByRole('alertdialog', {
+      name: /Confirm a true match/,
+    })
+    await expect(within(dialog).getByText(/politically exposed person/)).toBeVisible()
+  }),
+}
+
+/** After the two decisions: a false positive and a true match, with who, when and why. */
+export const ByScreeningDecided: Story = {
+  name: 'Screening matches, decided',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={AML_ROUTES.screeningDecided} />,
+  play: bwPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getAllByText('True match').length).toBeGreaterThan(0)
+    await expect(canvas.getAllByText('False positive').length).toBeGreaterThan(0)
+  }),
+}
+
+export const ByFalsePositiveFlow: Story = {
+  name: 'Screening match, false positive, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AML_ROUTES.screeningHit('SH-2026-0412')} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'False positive…' }))
+    const dialog = await within(document.body).findByRole('alertdialog', {
+      name: /Mark as false positive/,
+    })
+    await userEvent.click(within(dialog).getByRole('radio', { name: 'Different date of birth' }))
+    await userEvent.click(within(dialog).getByRole('button', { name: 'False positive' }))
+    // The next match opens; the decided one leaves the "To decide" queue.
+    await expect(
+      await canvas.findByRole('heading', { level: 2, name: 'Milan Stanić' }),
+    ).toBeVisible()
+    await expect(canvas.queryByRole('heading', { level: 2, name: 'Nenad Kovačević' })).toBeNull()
+    await bwToastGone()
+  },
+}
+
+export const ByTrueMatchFlow: Story = {
+  name: 'Screening match, true match, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={AML_ROUTES.screeningHit('SH-2026-0414')} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'True match…' }))
+    const dialog = await within(document.body).findByRole('alertdialog', {
+      name: /Confirm a true match/,
+    })
+    await userEvent.click(
+      within(dialog).getByRole('radio', { name: 'Same name, date of birth and residence' }),
+    )
+    await userEvent.click(within(dialog).getByRole('button', { name: 'True match' }))
+    await expect(
+      await canvas.findByRole('heading', { level: 2, name: 'Meridian Trade Holdings Ltd' }),
+    ).toBeVisible()
+    await bwToastGone()
+  },
+}
+
+/**
+ * P5.84: Kvadrat Gradnja d.o.o.'s screening — the client, its owners and its director against
+ * every list (a potential match links to its review), the lists' versions, and the re-screening
+ * history.
+ */
+const BY_CLIENT_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Screening' })).toBeVisible()
+  await expect(canvas.getAllByText('Potential match').length).toBeGreaterThan(0)
+  await expect(canvas.getAllByText('Illustrative sanctions list').length).toBeGreaterThan(0)
+}
+
+export const ByClientScreening: Story = {
+  name: 'Client screening',
+  render: () => <ExampleApp start={AML_ROUTES.clientScreening('kvadrat')} />,
+  play: bwPlay(BY_CLIENT_CHECK),
+}
+
+export const ByClientScreeningPhone: Story = {
+  name: 'Client screening, phone',
+  render: () => <OnPhone start={AML_ROUTES.clientScreening('kvadrat')} />,
+  play: bwPlay(BY_CLIENT_CHECK, true),
+}
+
+// ── P5.85 cases ──
+
+import { BZ_ROUTES } from './data-BZ'
+import { CA_ROUTES } from './data-CA'
+import { CB_ROUTES } from './data-CB'
+import { CC_ROUTES } from './data-CC'
+
+/** The first of several same-named buttons (the header's and the timeline's), for the flows. */
+function cbFirst(buttons: readonly HTMLElement[]): HTMLElement {
+  const [first] = buttons
+  if (first === undefined) throw new Error('No such button')
+  return first
+}
+
+/**
+ * P5.85: the monitoring alerts, decided one by one — the rule, the client with its risk, the
+ * transactions' total, the age and the assignee in the list; the rule's threshold, the
+ * transactions with the application's marks, the client's profile and the history in the detail;
+ * "Close…" with a reason, "Escalate to a case…".
+ */
+const BZ_ALERTS_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(
+    canvas.getAllByText('Payments to a country outside the client’s profile').length,
+  ).toBeGreaterThan(0)
+  await expect(canvas.getAllByText('Adria Commodities d.o.o.').length).toBeGreaterThan(0)
+}
+
+export const BzAlerts: Story = {
+  name: 'Alert queue',
+  render: () => <ExampleApp start={BZ_ROUTES.alerts} />,
+  play: bwPlay(async (canvasElement) => {
+    await BZ_ALERTS_CHECK(canvasElement)
+    await expect(
+      within(canvasElement).getByRole('button', { name: 'Escalate to a case…' }),
+    ).toBeVisible()
+  }),
+}
+
+export const BzAlertsPhone: Story = {
+  name: 'Alert queue, phone',
+  render: () => <OnPhone start={BZ_ROUTES.alerts} />,
+  play: bwPlay(BZ_ALERTS_CHECK, true),
+}
+
+export const BzAlertPhone: Story = {
+  name: 'Alert, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={BZ_ROUTES.alert('TM-2026-0231')} />,
+  play: bwPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(
+      canvas.getByRole('heading', {
+        level: 2,
+        name: 'Payments to a country outside the client’s profile',
+      }),
+    ).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Escalate to a case…' })).toBeVisible()
+  }, true),
+}
+
+export const BzAlertsClosed: Story = {
+  name: 'Alert queue, closed and escalated',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BZ_ROUTES.alertsClosed} />,
+  play: bwPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getAllByText('Escalated').length).toBeGreaterThan(0)
+    await expect(canvas.getAllByText('Closed').length).toBeGreaterThan(0)
+  }),
+}
+
+/** TM-2026-0218: escalated into case CM-2026-0007, with the confidentiality reminder. */
+export const BzAlertEscalated: Story = {
+  name: 'Alert, escalated',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BZ_ROUTES.alert('TM-2026-0218')} />,
+  play: bwPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getAllByText('Confidential').length).toBeGreaterThan(0)
+    await expect(canvas.getAllByText('CM-2026-0007').length).toBeGreaterThan(0)
+  }),
+}
+
+export const BzAlertCloseAsked: Story = {
+  name: 'Alert, close asked',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BZ_ROUTES.alertAct('TM-2026-0228', 'close')} />,
+  play: bwPlay(async () => {
+    await expect(
+      await within(document.body).findByRole('alertdialog', { name: /Close alert/ }),
+    ).toBeVisible()
+  }),
+}
+
+export const BzAlertEscalateAsked: Story = {
+  name: 'Alert, escalate asked',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BZ_ROUTES.alertAct('TM-2026-0231', 'escalate')} />,
+  play: bwPlay(async () => {
+    await expect(
+      await within(document.body).findByRole('dialog', { name: /Escalate to a case/ }),
+    ).toBeVisible()
+  }),
+}
+
+export const BzAlertCloseFlow: Story = {
+  name: 'Alert, closed, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BZ_ROUTES.alert('TM-2026-0228')} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Close…' }))
+    const dialog = await within(document.body).findByRole('alertdialog', { name: /Close alert/ })
+    await userEvent.click(
+      within(dialog).getByRole('radio', { name: 'Explained by the client’s business' }),
+    )
+    // The confirmation's own Close (the dialog's X is also named Close).
+    const confirm = within(dialog)
+      .getAllByRole('button', { name: 'Close' })
+      .find((button) => button.dataset.slot === 'button')
+    if (confirm === undefined) throw new Error('no confirm button')
+    await userEvent.click(confirm)
+    // The next alert opens; the closed one leaves the open queue.
+    await expect(
+      await canvas.findByRole('heading', {
+        level: 2,
+        name: 'Transaction out of line with the expected activity',
+      }),
+    ).toBeVisible()
+    await expect(
+      canvas.queryByRole('heading', { level: 2, name: 'Cash payments above the threshold' }),
+    ).toBeNull()
+    await bwToastGone()
+  },
+}
+
+export const BzAlertEscalateFlow: Story = {
+  name: 'Alert, escalated to a new case, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BZ_ROUTES.alert('TM-2026-0231')} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Escalate to a case…' }))
+    const dialog = await within(document.body).findByRole('dialog', { name: /Escalate to a case/ })
+    const escalate = within(dialog).getByRole('button', { name: 'Escalate' })
+    await expect(escalate).toBeDisabled()
+    await userEvent.click(within(dialog).getByRole('radio', { name: 'Open a new case' }))
+    await userEvent.click(within(dialog).getByRole('radio', { name: 'Pattern not explained' }))
+    await userEvent.click(escalate)
+    // The new case opens, under investigation, with the alert's transactions.
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: 'CM-2026-0008' }),
+    ).toBeVisible()
+    await expect(canvas.getAllByText('Under investigation').length).toBeGreaterThan(0)
+    await expect(canvas.getAllByText('TM-2026-0231').length).toBeGreaterThan(0)
+    await bwToastGone()
+  },
+}
+
+/**
+ * P5.86: the cases — open, closed and all — and one case: the client, the transactions under
+ * review, the timeline, the linked alerts and screening, the documents, the tasks, the decision
+ * with its four-eyes approval, the notes and the history.
+ */
+const CA_CASES_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getAllByText('CM-2026-0007').length).toBeGreaterThan(0)
+  await expect(canvas.getAllByText('Adria Commodities d.o.o.').length).toBeGreaterThan(0)
+}
+
+export const CaCases: Story = {
+  name: 'Cases',
+  render: () => <ExampleApp start={CA_ROUTES.cases} />,
+  play: bwPlay(CA_CASES_CHECK),
+}
+
+export const CaCasesPhone: Story = {
+  name: 'Cases, phone',
+  render: () => <OnPhone start={CA_ROUTES.cases} />,
+  play: bwPlay(CA_CASES_CHECK, true),
+}
+
+export const CaCasesClosed: Story = {
+  name: 'Cases, closed',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={CA_ROUTES.casesClosed} />,
+  play: bwPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getAllByText('CM-2026-0005').length).toBeGreaterThan(0)
+    await expect(canvas.queryByText('CM-2026-0007')).toBeNull()
+  }),
+}
+
+const CA_CASE_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'CM-2026-0007' })).toBeVisible()
+  await expect(canvas.getAllByText('Confidential').length).toBeGreaterThan(0)
+  await expect(canvas.getAllByText('Report to the authority').length).toBeGreaterThan(0)
+  await expect(canvas.getAllByText('Four eyes').length).toBeGreaterThan(0)
+}
+
+export const CaCase: Story = {
+  name: 'Case',
+  render: () => <ExampleApp start={CA_ROUTES.case('CM-2026-0007')} />,
+  play: bwPlay(CA_CASE_CHECK),
+}
+
+export const CaCasePhone: Story = {
+  name: 'Case, phone',
+  render: () => <OnPhone start={CA_ROUTES.case('CM-2026-0007')} />,
+  play: bwPlay(CA_CASE_CHECK, true),
+}
+
+/** CM-2026-0006: no suspicion proposed by the deputy; the compliance officer approves or declines. */
+export const CaCaseProposed: Story = {
+  name: 'Case, decision proposed',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={CA_ROUTES.case('CM-2026-0006')} />,
+  play: bwPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('button', { name: 'Approve' })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Decline' })).toBeVisible()
+  }),
+}
+
+export const CaCaseProposedPhone: Story = {
+  name: 'Case, decision proposed, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={CA_ROUTES.case('CM-2026-0006')} />,
+  play: bwPlay(async (canvasElement) => {
+    await expect(within(canvasElement).getByRole('button', { name: 'Approve' })).toBeVisible()
+  }, true),
+}
+
+export const CaCaseClosed: Story = {
+  name: 'Case, closed',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={CA_ROUTES.case('CM-2026-0005')} />,
+  play: bwPlay(async (canvasElement) => {
+    await expect(within(canvasElement).getAllByText('Closed, no suspicion').length).toBeGreaterThan(
+      0,
+    )
+  }),
+}
+
+export const CaCaseApproveFlow: Story = {
+  name: 'Case, approved and closed, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={CA_ROUTES.case('CM-2026-0006')} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Approve' }))
+    await expect((await canvas.findAllByText('Closed, no suspicion')).length).toBeGreaterThan(0)
+    await expect(canvas.queryByRole('button', { name: 'Approve' })).toBeNull()
+    await bwToastGone()
+  },
+}
+
+export const CaCaseDeclineFlow: Story = {
+  name: 'Case, decision declined, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={CA_ROUTES.case('CM-2026-0006')} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Decline' }))
+    const dialog = await within(document.body).findByRole('alertdialog', { name: /Decline/ })
+    await userEvent.click(within(dialog).getByRole('radio', { name: 'More investigation needed' }))
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Decline' }))
+    await expect((await canvas.findAllByText('Under investigation')).length).toBeGreaterThan(0)
+    await expect(canvas.getByRole('button', { name: 'Propose decision' })).toBeVisible()
+    await bwToastGone()
+  },
+}
+
+export const CaCaseProposeFlow: Story = {
+  name: 'Case, report proposed, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BZ_ROUTES.alertAct('TM-2026-0229', 'escalate')} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    // Escalate the alert into a new case first, then propose a report on it.
+    const dialog = await within(document.body).findByRole('dialog', { name: /Escalate to a case/ })
+    await userEvent.click(within(dialog).getByRole('radio', { name: 'Open a new case' }))
+    await userEvent.click(within(dialog).getByRole('radio', { name: 'Possible structuring' }))
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Escalate' }))
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: 'CM-2026-0008' }),
+    ).toBeVisible()
+    await bwToastGone()
+    await userEvent.click(canvas.getByRole('button', { name: 'Propose decision' }))
+    await userEvent.click(
+      await within(document.body).findByRole('menuitem', { name: 'Report to the authority…' }),
+    )
+    const proposal = await within(document.body).findByRole('alertdialog', {
+      name: /Propose a report to the authority/,
+    })
+    const propose = within(proposal).getByRole('button', { name: 'Propose' })
+    await expect(propose).toBeDisabled()
+    await userEvent.click(
+      within(proposal).getByRole('radio', { name: 'Pattern of transactions not explained' }),
+    )
+    await userEvent.click(propose)
+    await expect((await canvas.findAllByText('Decision proposed')).length).toBeGreaterThan(0)
+    await expect(canvas.getByText('Marko Jelić approves or declines next')).toBeVisible()
+    await bwToastGone()
+  },
+}
+
+/**
+ * P5.87: the reports to the illustrative financial intelligence unit, and one report drawn from
+ * the authority's form definitions (DefinedForm): the confidentiality reminder, the states, the
+ * review and the submission with the record of what was sent.
+ */
+const CB_REPORTS_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getAllByText('STR-2026-0003').length).toBeGreaterThan(0)
+  await expect(canvas.getAllByText('Acknowledged').length).toBeGreaterThan(0)
+}
+
+export const CbReports: Story = {
+  name: 'Reports',
+  render: () => <ExampleApp start={CB_ROUTES.reports} />,
+  play: bwPlay(CB_REPORTS_CHECK),
+}
+
+export const CbReportsPhone: Story = {
+  name: 'Reports, phone',
+  render: () => <OnPhone start={CB_ROUTES.reports} />,
+  play: bwPlay(CB_REPORTS_CHECK, true),
+}
+
+const CB_REPORT_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'STR-2026-0003' })).toBeVisible()
+  await expect(canvas.getAllByText('Confidential').length).toBeGreaterThan(0)
+  await expect(canvas.getAllByText('Reasons for suspicion').length).toBeGreaterThan(0)
+  await expect(canvas.getAllByRole('button', { name: 'Send for review' }).length).toBeGreaterThan(0)
+}
+
+export const CbReport: Story = {
+  name: 'Suspicious transaction report',
+  render: () => <ExampleApp start={CB_ROUTES.report('STR-2026-0003')} />,
+  play: bwPlay(CB_REPORT_CHECK),
+}
+
+export const CbReportPhone: Story = {
+  name: 'Suspicious transaction report, phone',
+  render: () => <OnPhone start={CB_ROUTES.report('STR-2026-0003')} />,
+  play: bwPlay(CB_REPORT_CHECK, true),
+}
+
+export const CbReportMissing: Story = {
+  name: 'Suspicious transaction report, missing values',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={CB_ROUTES.reportAt('STR-2026-0003', 'missing')} />,
+  play: bwPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getAllByText('Fill in this field.').length).toBeGreaterThan(0)
+    await expect(canvas.getAllByText('Tick this to go on.').length).toBeGreaterThan(0)
+  }),
+}
+
+export const CbReportReview: Story = {
+  name: 'Suspicious transaction report, in review',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={CB_ROUTES.reportAt('STR-2026-0003', 'review')} />,
+  play: bwPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getAllByRole('button', { name: 'Approve' }).length).toBeGreaterThan(0)
+    await expect(canvas.getByRole('button', { name: 'Back to draft…' })).toBeVisible()
+  }),
+}
+
+export const CbReportApproved: Story = {
+  name: 'Suspicious transaction report, approved',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={CB_ROUTES.reportAt('STR-2026-0003', 'approved')} />,
+  play: bwPlay(async (canvasElement) => {
+    await expect(
+      within(canvasElement).getAllByRole('button', { name: 'Submit to the authority…' }).length,
+    ).toBeGreaterThan(0)
+  }),
+}
+
+export const CbReportSubmitted: Story = {
+  name: 'Suspicious transaction report, submitted',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={CB_ROUTES.reportAt('STR-2026-0003', 'submitted')} />,
+  play: bwPlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { level: 2, name: 'What was sent' })).toBeVisible()
+    await expect(canvas.getAllByText('ILL-FIU-2026-00003').length).toBeGreaterThan(0)
+  }),
+}
+
+export const CbReportSubmittedPhone: Story = {
+  name: 'Suspicious transaction report, submitted, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={CB_ROUTES.reportAt('STR-2026-0003', 'submitted')} />,
+  play: bwPlay(async (canvasElement) => {
+    await expect(
+      within(canvasElement).getByRole('heading', { level: 2, name: 'What was sent' }),
+    ).toBeVisible()
+  }, true),
+}
+
+export const CbReportAcknowledged: Story = {
+  name: 'Suspicious transaction report, acknowledged',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={CB_ROUTES.report('STR-2026-0001')} />,
+  play: bwPlay(async (canvasElement) => {
+    await expect(
+      within(canvasElement).getAllByText(/Acknowledgement 2026\/00318-A/).length,
+    ).toBeGreaterThan(0)
+  }),
+}
+
+export const CbReportReviewFlow: Story = {
+  name: 'Suspicious transaction report, sent for review, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={CB_ROUTES.report('STR-2026-0003')} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    // Sent incomplete: the missing values are said under their fields.
+    await userEvent.click(cbFirst(canvas.getAllByRole('button', { name: 'Send for review' })))
+    await expect((await canvas.findAllByText('Fill in this field.')).length).toBeGreaterThan(0)
+    await userEvent.type(
+      canvas.getByRole('textbox', { name: /Reasons for suspicion/ }),
+      'The owner’s sanctions match could not be ruled out.',
+    )
+    await userEvent.click(
+      canvas.getByRole('checkbox', { name: /has not been and will not be informed/ }),
+    )
+    await userEvent.click(cbFirst(canvas.getAllByRole('button', { name: 'Send for review' })))
+    await expect((await canvas.findAllByText('In review')).length).toBeGreaterThan(0)
+    await bwToastGone()
+  },
+}
+
+export const CbReportSubmitFlow: Story = {
+  name: 'Suspicious transaction report, submitted, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={CB_ROUTES.reportAt('STR-2026-0003', 'approved')} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(
+      cbFirst(canvas.getAllByRole('button', { name: 'Submit to the authority…' })),
+    )
+    const dialog = await within(document.body).findByRole('alertdialog', { name: /Submit report/ })
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Submit' }))
+    await expect(
+      await canvas.findByRole('heading', { level: 2, name: 'What was sent' }),
+    ).toBeVisible()
+    await expect(canvas.getAllByText('Submitted').length).toBeGreaterThan(0)
+    await bwToastGone()
+  },
+}
+
+/**
+ * P5.88: the AML overview — the figures over all clients, the clients by risk, the reviews due,
+ * the ageing of alerts and cases, the officer and deputy, the year's obligations — and the
+ * obligations page with the training records, the procedures, the retention and the audit trail.
+ */
+const CC_OVERVIEW_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'AML overview' })).toBeVisible()
+  await expect(canvas.getAllByText('High-risk clients').length).toBeGreaterThan(0)
+  await expect(canvas.getAllByText('Clients by risk').length).toBeGreaterThan(0)
+}
+
+export const CcOverview: Story = {
+  name: 'AML overview',
+  render: () => <ExampleApp start={CC_ROUTES.overview} />,
+  play: bwPlay(CC_OVERVIEW_CHECK),
+}
+
+export const CcOverviewPhone: Story = {
+  name: 'AML overview, phone',
+  render: () => <OnPhone start={CC_ROUTES.overview} />,
+  play: bwPlay(CC_OVERVIEW_CHECK, true),
+}
+
+export const CcOverviewLoading: Story = {
+  name: 'AML overview, loading',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={CC_ROUTES.overviewLoading} />,
+  play: bwPlay(async (canvasElement) => {
+    await expect(
+      within(canvasElement).getByRole('heading', { level: 1, name: 'AML overview' }),
+    ).toBeVisible()
+  }),
+}
+
+const CC_OBLIGATIONS_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Obligations' })).toBeVisible()
+  await expect(canvas.getAllByText('Ivana Simić').length).toBeGreaterThan(0)
+  await expect(canvas.getAllByText('Overdue').length).toBeGreaterThan(0)
+}
+
+export const CcObligations: Story = {
+  name: 'AML obligations',
+  render: () => <ExampleApp start={CC_ROUTES.obligations} />,
+  play: bwPlay(CC_OBLIGATIONS_CHECK),
+}
+
+export const CcObligationsPhone: Story = {
+  name: 'AML obligations, phone',
+  render: () => <OnPhone start={CC_ROUTES.obligations} />,
+  play: bwPlay(CC_OBLIGATIONS_CHECK, true),
+}
+
+export const CcAuditShowMoreFlow: Story = {
+  name: 'AML obligations, audit trail show more, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={CC_ROUTES.obligations} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Show more' }))
+    await expect(
+      await canvas.findByText('Case CM-2026-0005 opened from alert TM-2026-0197.'),
+    ).toBeVisible()
+  },
+}
