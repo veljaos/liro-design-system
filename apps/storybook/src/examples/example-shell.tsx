@@ -288,6 +288,10 @@ export const TONES = {
   Warning: 'warning',
   // P5.34 ai: a blog post on the blog (a draft and a scheduled post are neutral, as above)
   Published: 'success',
+  // ── P5.80 reports: a scheduled report's run and the schedule itself. A run skipped because it
+  // had nothing to send and a schedule paused on purpose wait on no one (neutral).
+  Skipped: 'neutral',
+  Paused: 'neutral',
 } as const
 
 /** A status of the examples. */

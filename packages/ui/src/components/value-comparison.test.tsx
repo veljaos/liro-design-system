@@ -1,7 +1,12 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 import { LiroProvider } from '../provider/liro-provider'
-import { ValueComparison, valueComparisonCounts, type ComparisonRow } from './value-comparison'
+import {
+  chosenCounts,
+  ValueComparison,
+  valueComparisonCounts,
+  type ComparisonRow,
+} from './value-comparison'
 
 const render = (node: React.ReactNode) =>
   renderToStaticMarkup(<LiroProvider locale="en">{node}</LiroProvider>)
@@ -141,5 +146,66 @@ describe('ValueComparison', () => {
       <ValueComparison label="Two" columns={['Ours', 'Theirs']} rows={ROWS} layout="phone" />,
     )
     expect(two).toContain('grid-cols-2')
+  })
+
+  it('chooses the value to keep in each differing row (P5.79)', () => {
+    const table = render(
+      <ValueComparison
+        label="Values to keep"
+        columns={['Kept record', 'Merged record']}
+        rows={ROWS}
+        chosen={{ b: 1 }}
+        onChoose={() => undefined}
+        layout="desktop"
+      />,
+    )
+    // Two differing rows, two radios each; one chosen.
+    expect(table.match(/type="radio"/g)).toHaveLength(4)
+    expect(table.match(/checked=""/g)).toHaveLength(1)
+    expect(table).toContain('1 of 2 chosen')
+    expect(table).toContain('Choose the value to keep')
+    expect(table.match(/data-chosen="true"/g)).toHaveLength(1)
+    // Only the row still to choose warns.
+    expect(table.match(/bg-status-warning-bg/g)).toHaveLength(1)
+    expect(table).toContain('bg-surface-selected')
+    // The same row is not a choice.
+    expect(table).toContain('Same')
+    const cards = render(
+      <ValueComparison
+        label="Values to keep"
+        columns={['Kept record', 'Merged record']}
+        rows={ROWS}
+        chosen={{ b: 1, c: 0 }}
+        onChoose={() => undefined}
+        layout="phone"
+      />,
+    )
+    expect(cards.match(/role="radiogroup"/g)).toHaveLength(2)
+    expect(cards.match(/<label/g)).toHaveLength(4)
+    expect(cards).toContain('2 of 2 chosen')
+    expect(cards).not.toContain('bg-status-warning-bg')
+  })
+
+  it('shows the values chosen without changing them', () => {
+    const html = render(
+      <ValueComparison
+        label="Values kept"
+        columns={['Kept record', 'Merged record']}
+        rows={ROWS}
+        chosen={{ b: 1, c: 0 }}
+        layout="desktop"
+      />,
+    )
+    expect(html).not.toContain('type="radio"')
+    expect(html.match(/data-chosen="true"/g)).toHaveLength(2)
+    expect(html).toContain('Chosen')
+  })
+})
+
+describe('chosenCounts', () => {
+  it('counts the differing rows with a value chosen', () => {
+    expect(chosenCounts(ROWS, {})).toEqual({ chosen: 0, total: 2 })
+    expect(chosenCounts(ROWS, { b: 0, a: 1 })).toEqual({ chosen: 1, total: 2 })
+    expect(chosenCounts([], {})).toEqual({ chosen: 0, total: 0 })
   })
 })

@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { expect, within } from 'storybook/test'
+import { useState } from 'react'
+import { expect, userEvent, within } from 'storybook/test'
 import { settle } from '../primitives/story-helpers'
 import { DateText, MoneyText } from './display-text'
 import { ExampleProvider, PhoneFrame, StoryProvider } from './story-frames'
@@ -69,7 +70,9 @@ const meta = {
           'beside a partner’s statement, a payment as each side booked it; or three sources — ' +
           'an order, its receipt and the invoice (the three-way match). It compares nothing: ' +
           'which rows differ, and why, is the application’s (`differs`, `note`). Phones show one ' +
-          'card per row, each value labelled with its source.\n\n' +
+          'card per row, each value labelled with its source. To merge two records (P5.79), ' +
+          '`chosen` and `onChoose` make each differing row a choice of the value to keep (radio ' +
+          'buttons, the kept value the neutral selection); `chosen` alone shows what was kept.\n\n' +
           '**When to use:** reconciling two records of the same things, where the user must see ' +
           'both. **When not:** a change from an old to a new value (ChangeConfirmDialog, ' +
           'ChangeText); two versions of a text (LegalCompare); choosing which record a line ' +
@@ -293,4 +296,118 @@ export const Japanese: Story = {
       </StoryProvider>
     ),
   ],
+}
+
+// ── P5.79 auto: choosing the values to keep ──
+
+/** Two records of one supplier, the values that differ chosen one by one (fictitious). */
+const MERGE_ROWS: ComparisonRow[] = [
+  {
+    id: 'name',
+    label: 'Name',
+    values: ['Harbour Timber Ltd', 'Harbour-Timber Ltd.'],
+    differs: true,
+  },
+  { id: 'tax', label: 'Tax number', values: ['GB 204 5512 08', 'GB 204 5512 08'] },
+  {
+    id: 'address',
+    label: 'Address',
+    values: ['4 Quay Street, Bristol', '4 Quay St, Bristol BS1'],
+    differs: true,
+  },
+  { id: 'email', label: 'E-mail', values: ['accounts@example.com', null], differs: true },
+  { id: 'terms', label: 'Payment terms', values: ['30 days', '15 days'], differs: true },
+]
+
+/** The comparison with the choice kept as the application keeps it. */
+function Choosing(props: Parameters<typeof ValueComparison>[0]) {
+  const [chosen, setChosen] = useState<Record<string, number>>(props.chosen ?? {})
+  return (
+    <ValueComparison
+      {...props}
+      chosen={chosen}
+      onChoose={(rowId, index) => {
+        setChosen((current) => ({ ...current, [rowId]: index }))
+      }}
+    />
+  )
+}
+
+const MERGE_ARGS = {
+  label: 'Values to keep',
+  columns: ['Harbour Timber Ltd (stays)', 'Harbour-Timber Ltd. (merged into it)'],
+  rows: MERGE_ROWS,
+  rowHeader: 'Field',
+} as const
+
+/**
+ * Merging two records (P5.79): each differing row's values are radio buttons; the kept value is
+ * the neutral selection, a row still to choose stays on the warning background.
+ */
+export const ChooseValues: Story = {
+  name: 'Choose the values to keep',
+  args: { ...MERGE_ARGS, chosen: { name: 0, email: 0 } },
+  render: (args) => <Choosing {...args} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('status')).toHaveTextContent('2 of 4 chosen')
+    await expect(canvas.getAllByRole('radio')).toHaveLength(8)
+    await expect(canvas.getAllByText('Choose the value to keep')).toHaveLength(2)
+  },
+}
+
+/** On a phone: one card per field, the two values as choices. */
+export const ChooseValuesPhone: Story = {
+  name: 'Choose the values to keep, phone',
+  args: { ...MERGE_ARGS, chosen: { name: 0, email: 0 }, layout: 'phone' },
+  render: (args) => <Choosing {...args} />,
+  decorators: [
+    (Story) => (
+      <PhoneFrame>
+        <ExampleProvider>
+          <div className="p-4">
+            <Story />
+          </div>
+        </ExampleProvider>
+      </PhoneFrame>
+    ),
+  ],
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(within(canvasElement).getAllByRole('radiogroup')).toHaveLength(4)
+  },
+}
+
+/** The choice shown, not changed: what a merge kept. */
+export const ValuesKept: Story = {
+  name: 'Values kept',
+  args: {
+    ...MERGE_ARGS,
+    label: 'Values kept',
+    chosen: { name: 0, address: 1, email: 0, terms: 0 },
+  },
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.queryAllByRole('radio')).toHaveLength(0)
+    await expect(canvas.getByRole('status')).toHaveTextContent('4 of 4 chosen')
+  },
+}
+
+/** Choosing from the keyboard: a press chooses, the arrows move the choice within the row. */
+export const ChooseValuesKeyboard: Story = {
+  name: 'Choose the values to keep, interaction',
+  tags: ['interaction'],
+  args: { ...MERGE_ARGS },
+  render: (args) => <Choosing {...args} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('radio', { name: /4 Quay St, Bristol BS1/ }))
+    await expect(canvas.getByRole('status')).toHaveTextContent('1 of 4 chosen')
+    await userEvent.keyboard('{ArrowUp}')
+    await expect(canvas.getByRole('radio', { name: /4 Quay Street, Bristol/ })).toBeChecked()
+    await expect(canvas.getByRole('status')).toHaveTextContent('1 of 4 chosen')
+  },
 }

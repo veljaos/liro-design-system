@@ -1533,3 +1533,66 @@ export type {
   DefinedValue,
   DefinedValues,
 } from './components/defined-form'
+// ── P5.78 auto ──
+export { RuleBuilder, ruleValueText } from './components/rule-builder'
+export type { RuleBuilderProps } from './components/rule-builder'
+export {
+  addRuleAction,
+  addRuleCondition,
+  addRuleGroup,
+  emptyRuleDraft,
+  findRuleCondition,
+  moveRuleItem,
+  nextRuleId,
+  operatorsFor,
+  removeRuleItem,
+  ruleConditionCount,
+  rulePlace,
+  ruleProblemKey,
+  setConditionField,
+  setConditionOperator,
+  setConditionValue,
+  setRuleActionParam,
+  setRuleActionType,
+  setRuleJoin,
+} from './components/rule-builder-logic'
+export type {
+  RuleAction,
+  RuleActionParam,
+  RuleActionType,
+  RuleChoice,
+  RuleCondition,
+  RuleConditionGroup,
+  RuleConditionItem,
+  RuleDraft,
+  RuleField,
+  RuleJoin,
+  RuleOperator,
+  RulePlace,
+  RuleTrigger,
+  RuleValueKind,
+} from './components/rule-builder-logic'
+
+// ── P5.79 auto ──
+export { chosenCounts } from './components/value-comparison'
+// ── P5.81 reports ──
+export { DashboardGrid } from './components/dashboard-grid'
+export type { DashboardCard, DashboardGridProps } from './components/dashboard-grid'
+export {
+  addCard,
+  allowedSizes,
+  cardSpan,
+  dashboardKeyTarget,
+  gridPlacement,
+  layoutOf,
+  moveCardBy,
+  moveCardTo,
+  removeCard,
+  resizeCard,
+} from './components/dashboard-grid-logic'
+export type {
+  DashboardCardSize,
+  DashboardLayoutChange,
+  DashboardLayoutItem,
+  GridPlace,
+} from './components/dashboard-grid-logic'

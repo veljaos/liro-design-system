@@ -1,6 +1,6 @@
 import { Check, TriangleAlert } from 'lucide-react'
-import type { ReactNode } from 'react'
-import { TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
+import { useId, type ReactNode } from 'react'
+import { FOCUS_RING, TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 import { Skeleton } from './progress'
@@ -22,6 +22,14 @@ import { usePhone } from './use-phone'
  *   side by side — the three-way match); every row has one value per source.
  * - A value the source does not have is the application's words ("Not in our books"); `null`
  *   shows "—". Loading: three skeleton rows; no rows: `empty` ("Nothing to compare").
+ * - Choosing the values to keep (P5.79, merging two records): with `onChoose`, each differing
+ *   row's values are radio buttons (one group per row; the arrows move between them), the whole
+ *   cell the target; the chosen value is the neutral selection (D17: surface.selected with the
+ *   3px border.selected bar, only the radio blue). A row still to choose lies on
+ *   status.warning.bg with "Choose the value to keep"; a chosen one says "Chosen". The count
+ *   reads "2 of 3 chosen". With `chosen` and no `onChoose` the choices are shown, not changed (a
+ *   merge's summary): the kept value carries a check. The application decides what a merge keeps
+ *   and checks the choice; the comparison only reports it.
  */
 
 /** The sources' names or values: two, or three (P5.49). */
@@ -59,6 +67,13 @@ export interface ValueComparisonProps {
   loading?: boolean
   /** Shown instead of the rows when there are none. Default `messages['comparison.empty']`. */
   empty?: ReactNode
+  /**
+   * P5.79: the value kept from each differing row, as the index of its source in `columns`
+   * (row id → index). With `onChoose` the differing rows are choices; without it, shown.
+   */
+  chosen?: Readonly<Record<string, number>>
+  /** P5.79: the user chose a row's value (the index of its source). */
+  onChoose?: (rowId: string, index: number) => void
   className?: string
 }
 
@@ -70,12 +85,59 @@ export function valueComparisonCounts(rows: readonly Pick<ComparisonRow, 'differ
   return { differ: rows.filter((row) => row.differs === true).length, total: rows.length }
 }
 
+/**
+ * How many of the rows the application marks as differing have a value chosen (P5.79), and how
+ * many differ.
+ */
+export function chosenCounts(
+  rows: readonly Pick<ComparisonRow, 'id' | 'differs'>[],
+  chosen: Readonly<Record<string, number>>,
+): { chosen: number; total: number } {
+  const differing = rows.filter((row) => row.differs === true)
+  return {
+    chosen: differing.filter((row) => chosen[row.id] !== undefined).length,
+    total: differing.length,
+  }
+}
+
+/** The kept value of a merge: the neutral selection with its bar at the start (D17). */
+const CHOSEN_CELL =
+  "relative bg-surface-selected before:absolute before:inset-y-0 before:start-0 before:border-0 before:border-s-[3px] before:border-solid before:border-selected before:content-['']"
+
+/** A native radio drawn as the system's (RadioGroupItem): 20px, brand.solid with a dot. */
+const RADIO = cn(
+  'm-0 mt-px size-5 shrink-0 cursor-pointer appearance-none rounded-full border border-solid border-control bg-surface-raised',
+  'checked:border-[6px] checked:border-brand-solid checked:bg-on-accent',
+  FOCUS_RING,
+)
+
 function Value({ value }: { value: ReactNode }) {
   return value === null || value === undefined || value === '' ? '—' : value
 }
 
-function Result({ row }: { row: ComparisonRow }) {
+function Result({
+  row,
+  choosing,
+  chosen,
+}: {
+  row: ComparisonRow
+  choosing: boolean
+  chosen: boolean
+}) {
   const { messages } = useLiro()
+  if (choosing && row.differs === true) {
+    return chosen ? (
+      <span className="inline-flex items-start gap-1 text-sm text-secondary">
+        <Check aria-hidden="true" className="mt-0.5 size-3.5 shrink-0" />
+        <span className={TEXT_DIRECTION}>{row.note ?? messages['comparison.chosen']}</span>
+      </span>
+    ) : (
+      <span className="inline-flex items-start gap-1 text-sm font-medium text-status-warning-fg">
+        <TriangleAlert aria-hidden="true" className="mt-0.5 size-3.5 shrink-0" />
+        <span className={TEXT_DIRECTION}>{messages['comparison.choose']}</span>
+      </span>
+    )
+  }
   if (row.differs === true) {
     return (
       <span className="inline-flex items-start gap-1 text-sm font-medium text-status-warning-fg">
@@ -97,13 +159,71 @@ export function ValueComparison(props: ValueComparisonProps) {
   const { messages, format } = useLiro()
   const viewportPhone = usePhone()
   const phone = props.layout === undefined ? viewportPhone : props.layout === 'phone'
+  const base = useId()
+  const choosing = props.chosen !== undefined || props.onChoose !== undefined
+  const chosenMap = props.chosen ?? {}
   const counts = valueComparisonCounts(props.rows)
-  const countText = messages['comparison.count'](
-    counts.differ,
-    format.number(String(counts.differ)),
-    counts.total,
-    format.number(String(counts.total)),
-  )
+  const choices = chosenCounts(props.rows, chosenMap)
+  const countText = choosing
+    ? messages['comparison.chosenCount'](
+        choices.chosen,
+        format.number(String(choices.chosen)),
+        choices.total,
+        format.number(String(choices.total)),
+      )
+    : messages['comparison.count'](
+        counts.differ,
+        format.number(String(counts.differ)),
+        counts.total,
+        format.number(String(counts.total)),
+      )
+  /** A row the user is to choose in, and whether the value at `index` is the kept one. */
+  const choosable = (row: ComparisonRow) => choosing && row.differs === true
+  const isChosen = (row: ComparisonRow, index: number) =>
+    choosable(row) && chosenMap[row.id] === index
+  /** The row's background: a difference still to resolve, in the warning tone. */
+  const warns = (row: ComparisonRow) =>
+    row.differs === true && (!choosing || chosenMap[row.id] === undefined)
+  /** One value: a radio to choose it, the kept value marked, or the value as it is. */
+  const valueContent = (row: ComparisonRow, index: number) => {
+    const value = row.values[index]
+    if (choosable(row) && props.onChoose !== undefined) {
+      const onChoose = props.onChoose
+      return (
+        <label className="inline-flex max-w-full cursor-pointer items-start gap-2">
+          <input
+            type="radio"
+            name={`${base}-${row.id}`}
+            className={RADIO}
+            checked={chosenMap[row.id] === index}
+            onChange={() => {
+              onChoose(row.id, index)
+            }}
+          />
+          <span className="sr-only">{sources[index]}</span>
+          <span className={cn('min-w-0', TEXT_ISOLATE)}>
+            <Value value={value} />
+          </span>
+        </label>
+      )
+    }
+    if (isChosen(row, index)) {
+      return (
+        <span className="inline-flex items-start gap-1">
+          <Check aria-hidden="true" className="mt-0.5 size-3.5 shrink-0 text-secondary" />
+          <span className="sr-only">{messages['comparison.chosen']}</span>
+          <span className={TEXT_ISOLATE}>
+            <Value value={value} />
+          </span>
+        </span>
+      )
+    }
+    return (
+      <span className={TEXT_ISOLATE}>
+        <Value value={value} />
+      </span>
+    )
+  }
   const sources = props.columns
   // The sources' headings stand over their values: at the end when every row holds figures.
   const numericColumns = props.rows.length > 0 && props.rows.every((row) => row.numeric === true)
@@ -145,36 +265,107 @@ export function ValueComparison(props: ValueComparisonProps) {
               data-differs={row.differs === true ? 'true' : undefined}
               className={cn(
                 'flex flex-col gap-2 rounded-md border border-solid p-3',
-                row.differs === true
+                warns(row)
                   ? 'border-status-warning-border bg-status-warning-bg'
                   : 'border-default bg-surface-raised',
               )}
             >
-              <span className={cn('text-sm font-medium text-primary', TEXT_DIRECTION)}>
+              <span
+                id={`${base}-${row.id}-label`}
+                className={cn('text-sm font-medium text-primary', TEXT_DIRECTION)}
+              >
                 {row.label}
               </span>
-              <dl
-                className={cn(
-                  'm-0 grid gap-x-4 gap-y-1',
-                  sources.length === 3 ? 'grid-cols-3' : 'grid-cols-2',
-                )}
-              >
-                {sources.map((source, index) => (
-                  <div key={index} className="flex min-w-0 flex-col gap-0.5">
-                    <dt className={cn('text-xs text-secondary', TEXT_DIRECTION)}>{source}</dt>
-                    <dd
-                      className={cn(
-                        'm-0 text-sm text-primary',
-                        row.numeric === true && 'tabular-nums',
-                        TEXT_ISOLATE,
-                      )}
-                    >
-                      <Value value={row.values[index]} />
-                    </dd>
-                  </div>
-                ))}
-              </dl>
-              <Result row={row} />
+              {choosable(row) ? (
+                // P5.79: on a phone the values are the choices, one per line, each with its source.
+                <div
+                  role={props.onChoose === undefined ? undefined : 'radiogroup'}
+                  aria-labelledby={`${base}-${row.id}-label`}
+                  className="flex flex-col gap-1"
+                >
+                  {sources.map((source, index) => {
+                    const box = cn(
+                      'flex min-w-0 items-start gap-2 rounded-sm border border-solid border-default bg-surface-raised px-3 py-2',
+                      isChosen(row, index) && CHOSEN_CELL,
+                    )
+                    const text = (
+                      <span className="flex min-w-0 flex-col gap-0.5">
+                        <span className={cn('text-xs text-secondary', TEXT_DIRECTION)}>
+                          {source}
+                        </span>
+                        <span
+                          className={cn(
+                            'text-sm text-primary',
+                            row.numeric === true && 'tabular-nums',
+                            TEXT_ISOLATE,
+                          )}
+                        >
+                          <Value value={row.values[index]} />
+                        </span>
+                      </span>
+                    )
+                    const onChoose = props.onChoose
+                    return onChoose === undefined ? (
+                      <div
+                        key={index}
+                        data-chosen={isChosen(row, index) ? 'true' : undefined}
+                        className={box}
+                      >
+                        {isChosen(row, index) && (
+                          <>
+                            <Check
+                              aria-hidden="true"
+                              className="mt-0.5 size-3.5 shrink-0 text-secondary"
+                            />
+                            <span className="sr-only">{messages['comparison.chosen']}</span>
+                          </>
+                        )}
+                        {text}
+                      </div>
+                    ) : (
+                      <label
+                        key={index}
+                        data-chosen={isChosen(row, index) ? 'true' : undefined}
+                        className={cn(box, 'cursor-pointer')}
+                      >
+                        <input
+                          type="radio"
+                          name={`${base}-${row.id}`}
+                          className={RADIO}
+                          checked={chosenMap[row.id] === index}
+                          onChange={() => {
+                            onChoose(row.id, index)
+                          }}
+                        />
+                        {text}
+                      </label>
+                    )
+                  })}
+                </div>
+              ) : (
+                <dl
+                  className={cn(
+                    'm-0 grid gap-x-4 gap-y-1',
+                    sources.length === 3 ? 'grid-cols-3' : 'grid-cols-2',
+                  )}
+                >
+                  {sources.map((source, index) => (
+                    <div key={index} className="flex min-w-0 flex-col gap-0.5">
+                      <dt className={cn('text-xs text-secondary', TEXT_DIRECTION)}>{source}</dt>
+                      <dd
+                        className={cn(
+                          'm-0 text-sm text-primary',
+                          row.numeric === true && 'tabular-nums',
+                          TEXT_ISOLATE,
+                        )}
+                      >
+                        <Value value={row.values[index]} />
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              )}
+              <Result row={row} choosing={choosing} chosen={chosenMap[row.id] !== undefined} />
             </li>
           ))}
         </ul>
@@ -210,7 +401,7 @@ export function ValueComparison(props: ValueComparisonProps) {
                   data-differs={row.differs === true ? 'true' : undefined}
                   className={cn(
                     'border-0 border-b border-solid border-subtle last:border-b-0',
-                    row.differs === true && 'bg-status-warning-bg',
+                    warns(row) && 'bg-status-warning-bg',
                   )}
                 >
                   <th
@@ -222,20 +413,30 @@ export function ValueComparison(props: ValueComparisonProps) {
                   {row.values.map((value, index) => (
                     <td
                       key={index}
+                      data-chosen={isChosen(row, index) ? 'true' : undefined}
                       className={cn(
                         'px-3 py-2 align-top text-sm text-primary',
                         row.numeric === true
                           ? 'text-end whitespace-nowrap tabular-nums'
                           : 'text-start',
+                        isChosen(row, index) && CHOSEN_CELL,
                       )}
                     >
-                      <span className={TEXT_ISOLATE}>
-                        <Value value={value} />
-                      </span>
+                      {choosable(row) ? (
+                        valueContent(row, index)
+                      ) : (
+                        <span className={TEXT_ISOLATE}>
+                          <Value value={value} />
+                        </span>
+                      )}
                     </td>
                   ))}
                   <td className="px-3 py-2 align-top">
-                    <Result row={row} />
+                    <Result
+                      row={row}
+                      choosing={choosing}
+                      chosen={chosenMap[row.id] !== undefined}
+                    />
                   </td>
                 </tr>
               ))}
