@@ -366,11 +366,11 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P5.69 | Archive book and retention | P5.20 | done | 2026-10-16 | The archive book, retention periods per type, what expires, the disposal list with its minutes |
 | P5.70 | Meetings of company bodies | P5.66 | done | 2026-10-16 | Meetings, the next meeting with the agenda and materials, attendance and quorum, votes per item, minutes and decisions signed |
 | P5.71 | Contracts | P5.20 | done | 2026-10-16 | The contracts register with expiry and renewal in words, a contract with versions and linked documents |
-| P5.72 | Patient chart | P5.14 | todo | | |
-| P5.73 | University | P5.17 | todo | | |
-| P5.74 | Field service and maintenance | P5.11 | todo | | |
-| P5.75 | Fleet | P4.3 | todo | | |
-| P5.76 | Property management | P4.3 | todo | | |
+| P5.72 | Patient chart | P5.14 | done | 2026-10-16 | Jovana Nikolić's chart (visits by date with a visit's drawer, masked diagnoses and findings, medicines, the latest results with the laboratory's ranges and verdicts, her allergy) and her lab results over time (LineChart with the limits as data), opened from group H's clinic |
+| P5.73 | University | P5.17 | done | 2026-10-16 | The student portal, exam registration (CandidateList, the fee, unavailable exams with reasons), grades, exam periods, the examiner's exam records and the exam record (DocumentPage, EditableGrid, SignerList, locked once signed) |
+| P5.74 | Field service and maintenance | P5.11 | done | 2026-10-16 | Work orders, a technician's work order on the phone (checklist, photos, parts used, offline, the customer's signature with SignerList), the office's read-only view, the preventive maintenance plan |
+| P5.75 | Fleet | P4.3 | done | 2026-10-16 | Vehicles (registration and the next service due in words), a vehicle with registration, insurance, services, fuel and reminders ("Add fuel entry"), the reminders list ("Mark as done…") |
+| P5.76 | Property management | P4.3 | done | 2026-10-16 | Units on RoomRack and as a list, tenants, leases with renewal, the monthly rent run (PeriodicRunPage), maintenance requests, the tenants' portal (report a problem, my requests, invoices) |
 | P5.77 | Pivot analysis | P3.1 | todo | | |
 | P5.78 | Automation rules | P5.26 | todo | | |
 | P5.79 | Merging duplicates | P5.19 | todo | | |

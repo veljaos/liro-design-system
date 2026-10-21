@@ -3037,7 +3037,7 @@ export const HealthBookingWalk: Story = {
  * The clinic's schedule of Wednesday 14.10.2026 (ResourceSchedule): three doctors and the
  * laboratory; the break and dr Vesna Lukić's annual leave hatched with their reasons; Jovana
  * Nikolić's appointment booked online at 11:30; "now" (09:40) marked across the rows. Opening it
- * shows her finding.
+ * shows her chart (P5.72).
  */
 export const HealthClinicSchedule: Story = {
   name: 'Health, clinic schedule',
@@ -16490,5 +16490,1538 @@ export const RecordsContractRenewFlow: Story = {
     await userEvent.click(canvas.getByRole('button', { name: 'Let it renew' }))
     await expect(await canvas.findByText(/Renews on 01\.11\.2026/)).toBeVisible()
     await recordsToastGone()
+  },
+}
+// ── P5.72 health ──
+// (Imports here, inside the block, so the blocks merge without touching the top.)
+import { BM_ROUTES, FINDINGS as BM_FINDINGS } from './data-BM'
+
+/** The emergency visit's finding: masked in the chart until a reason is given. */
+const BM_ER_FINDING = BM_FINDINGS.find((each) => each.number === 'IZ-2026-02988')
+const BM_ER_DIAGNOSIS = BM_ER_FINDING?.diagnosis ?? ''
+
+/**
+ * Jovana Nikolić's chart at Ambulanta Liman (P5.72), seen by the clinic on Wednesday 14.10.2026 at
+ * 09:40, two hours before her check-up: her visits newest first (the emergency department of
+ * 02.08.2026 among them), her findings with the diagnosis masked until a reason is given (P5.14),
+ * her medicines with dose, directions and period, and the latest results of 08.10.2026 with the
+ * laboratory's ranges and verdicts — three above range, vitamin D still waiting. Her allergy is
+ * never masked. Opened from the doctor's calendar and the clinic's schedule.
+ */
+const BM_CHART_CHECK = async (canvasElement: HTMLElement, phone = false) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: PATIENT.name })).toBeVisible()
+  // On a phone the tables are cards: a list with the table's name.
+  await expect(
+    canvas.getByRole(phone ? 'list' : 'table', { name: `Visits, ${PATIENT.name}` }),
+  ).toBeVisible()
+  await expect(canvas.getAllByRole('button', { name: 'Show diagnosis' }).length).toBe(
+    BM_FINDINGS.length,
+  )
+  await expect(canvasElement).not.toHaveTextContent(BM_ER_DIAGNOSIS)
+  await expect(canvasElement).toHaveTextContent('Above range')
+  await expect(canvasElement).toHaveTextContent('Waiting for the laboratory')
+  await expect(canvasElement).toHaveTextContent('Allergy: penicillin')
+}
+
+export const HealthPatientChart: Story = {
+  name: 'Health, patient chart',
+  render: () => <ExampleApp start={BM_ROUTES.chart} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await BM_CHART_CHECK(canvasElement)
+    await expect(canvasElement).toHaveTextContent('3 of 10')
+    await expect(canvasElement).toHaveTextContent('3,9–6,1')
+  },
+}
+
+/** On a phone the visits come first: no key figures above them, the panels under the content. */
+export const HealthPatientChartPhone: Story = {
+  name: 'Health, patient chart, phone',
+  render: () => <OnPhone start={BM_ROUTES.chart} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await BM_CHART_CHECK(canvasElement, true)
+    const sections = [...canvasElement.querySelectorAll('h2')].map((each) => each.textContent)
+    await expect(sections[0]).toBe('Visits')
+    await noPageOverflow(canvasElement)
+  },
+}
+
+/** The emergency visit open in its drawer: who, where, the finding masked, the medicine given. */
+export const HealthPatientChartVisit: Story = {
+  name: 'Health, patient chart, visit open',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BM_ROUTES.chartVisit} />,
+  play: async () => {
+    await settle()
+    const drawer = within(document.body).getByRole('dialog', { name: /^Emergency, 02\.08\.2026/ })
+    await expect(drawer).toHaveTextContent('dr Jelena Popović')
+    await expect(drawer).toHaveTextContent('Captopril 25 mg, tablet')
+    await expect(within(drawer).getByRole('button', { name: 'Show diagnosis' })).toBeVisible()
+    await expect(drawer).not.toHaveTextContent(BM_ER_DIAGNOSIS)
+  },
+}
+
+export const HealthPatientChartVisitPhone: Story = {
+  name: 'Health, patient chart, visit open, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={BM_ROUTES.chartVisit} />,
+  play: async () => {
+    await settle()
+    await expect(
+      within(document.body).getByRole('dialog', { name: /^Emergency, 02\.08\.2026/ }),
+    ).toBeVisible()
+  },
+}
+
+/** The same visit after a reason: the diagnosis the application passed, with Hide. */
+export const HealthPatientChartShown: Story = {
+  name: 'Health, patient chart, diagnosis shown',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BM_ROUTES.chartVisitShown} />,
+  play: async () => {
+    await settle()
+    const drawer = within(document.body).getByRole('dialog', { name: /^Emergency, 02\.08\.2026/ })
+    await expect(drawer).toHaveTextContent(BM_ER_DIAGNOSIS)
+    await expect(within(drawer).getByRole('button', { name: 'Hide diagnosis' })).toBeVisible()
+    // The finding's text stays masked: each value asks for its own reason.
+    await expect(
+      within(drawer).getByRole('button', { name: 'Show finding and advice' }),
+    ).toBeVisible()
+  },
+}
+
+/**
+ * From the doctor's calendar to the chart: Jovana's appointment opens her chart, the emergency
+ * visit opens in its drawer, its diagnosis is shown after a reason and hidden again.
+ */
+export const HealthPatientChartFlow: Story = {
+  name: 'Health, patient chart from the calendar, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={H_ROUTES.doctorCalendar} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(
+      canvas.getByRole('button', { name: new RegExp(`${PATIENT.name}, Check-up`) }),
+    )
+    await expect(await canvas.findByRole('heading', { level: 1, name: PATIENT.name })).toBeVisible()
+    await userEvent.click(
+      within(canvas.getByRole('table', { name: `Visits, ${PATIENT.name}` })).getByRole('row', {
+        name: /Emergency/,
+      }),
+    )
+    const drawer = await within(document.body).findByRole('dialog', { name: /^Emergency/ })
+    await userEvent.click(within(drawer).getByRole('button', { name: 'Show diagnosis' }))
+    const ask = await within(document.body).findByRole('dialog', { name: /^Show diagnosis/ })
+    await expect(ask).toHaveTextContent('Access is logged')
+    await userEvent.click(within(ask).getByRole('radio', { name: 'I am treating the patient now' }))
+    await userEvent.click(within(ask).getByRole('button', { name: 'Show' }))
+    await expect(await within(drawer).findByText(BM_ER_DIAGNOSIS)).toBeVisible()
+    await userEvent.click(await within(drawer).findByRole('button', { name: 'Hide diagnosis' }))
+    await expect(drawer).not.toHaveTextContent(BM_ER_DIAGNOSIS)
+    await settle()
+  },
+}
+
+/**
+ * Jovana Nikolić's laboratory results (P5.72): fasting glucose over two years as a small line with
+ * the laboratory's upper and lower limit beside it (the range is data: grey series the tooltip and
+ * the table read too), every glucose result with its verdict, then the latest results with the
+ * one before each. A press on a result shows that test over time.
+ */
+const BM_LAB_CHECK = async (canvasElement: HTMLElement, phone = false) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Lab results' })).toBeVisible()
+  await expect(canvas.getByRole('heading', { name: 'Glucose, fasting, mmol/L' })).toBeVisible()
+  await expect(
+    canvas.getByRole(phone ? 'list' : 'table', { name: 'Glucose, fasting, every result' }),
+  ).toHaveTextContent('6,4')
+  await expect(canvasElement).toHaveTextContent('Upper limit')
+}
+
+export const HealthLabResults: Story = {
+  name: 'Health, lab results',
+  render: () => <ExampleApp start={BM_ROUTES.lab} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await BM_LAB_CHECK(canvasElement)
+    await expect(canvasElement).toHaveTextContent('Lower limit')
+  },
+}
+
+export const HealthLabResultsPhone: Story = {
+  name: 'Health, lab results, phone',
+  render: () => <OnPhone start={BM_ROUTES.lab} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await BM_LAB_CHECK(canvasElement, true)
+    await noPageOverflow(canvasElement)
+  },
+}
+
+/** LDL cholesterol: the laboratory gives only an upper limit, so only that line is drawn. */
+export const HealthLabResultsLdl: Story = {
+  name: 'Health, lab results, LDL cholesterol',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BM_ROUTES.labOf('ldl')} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(
+      within(canvasElement).getByRole('heading', { name: 'LDL cholesterol, mmol/L' }),
+    ).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('< 3,0')
+    await expect(canvasElement).not.toHaveTextContent('Lower limit')
+  },
+}
+
+/** Vitamin D is still at the laboratory: nothing to draw yet, the result "—" and its verdict. */
+export const HealthLabResultsWaiting: Story = {
+  name: 'Health, lab results, waiting for the laboratory',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BM_ROUTES.labOf('vitaminD')} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(
+      within(canvasElement).getByRole('table', { name: 'Vitamin D (25-OH), every result' }),
+    ).toHaveTextContent('Waiting for the laboratory')
+  },
+}
+
+export const HealthLabResultsLoading: Story = {
+  name: 'Health, lab results, loading',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BM_ROUTES.labLoading} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(within(canvasElement).getByRole('heading', { level: 1 })).toHaveTextContent(
+      'Lab results',
+    )
+  },
+}
+
+/** A press on a result shows that test over time; the select chooses another. */
+export const HealthLabResultsChoose: Story = {
+  name: 'Health, lab results, choose a test, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BM_ROUTES.chart} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('row', { name: /^Cholesterol, total/ }))
+    await expect(
+      await canvas.findByRole('heading', { name: 'Cholesterol, total, mmol/L' }),
+    ).toBeVisible()
+    await userEvent.click(
+      within(canvas.getByRole('table', { name: `Latest results, ${PATIENT.name}` })).getByRole(
+        'row',
+        { name: /^Leukocytes/ },
+      ),
+    )
+    await expect(
+      await canvas.findByRole('table', { name: 'Leukocytes, every result' }),
+    ).toHaveTextContent('11,2')
+    await settle()
+  },
+}
+// ── P5.74 field ──
+// (Imports here, inside the block, so the blocks merge without touching the top.)
+import { BO_ROUTES } from './data-BO'
+import { BP_ROUTES } from './data-BP'
+
+/** Settles a screen and finds its h1. */
+const boHeading = async (canvasElement: HTMLElement, name: string | RegExp) => {
+  await settle()
+  await expect(
+    await within(canvasElement).findByRole('heading', { level: 1, name }),
+  ).toBeInTheDocument()
+}
+
+/** Closes the success toasts and waits until they are gone (axe never catches one fading). */
+const boToastsGone = async () => {
+  notice.dismiss()
+  await waitFor(
+    async () => {
+      await expect(document.querySelector('[data-sonner-toast]')).toBeNull()
+    },
+    { timeout: 5000 },
+  )
+}
+
+/**
+ * Field service (P5.74): Kvadrat Gradnja's work orders for its machines on 14.10.2026, dispatched
+ * by Marko Đorđević — the machine, the fault or the task, the technician, the day, the state.
+ */
+export const BoFieldWorkOrders: Story = {
+  name: 'Field work orders',
+  render: () => <ExampleApp start={BO_ROUTES.orders} />,
+  play: async ({ canvasElement }) => {
+    await boHeading(canvasElement, 'Work orders')
+    const canvas = within(canvasElement)
+    const row = canvas.getByRole('row', { name: /SN-2026-0143/ })
+    await expect(row).toHaveTextContent('Mini excavator 3.5 t')
+    await expect(row).toHaveTextContent('In progress')
+    await expect(canvas.getByRole('row', { name: /SN-2026-0145/ })).toHaveTextContent('Unassigned')
+  },
+}
+
+export const BoFieldWorkOrdersPhone: Story = {
+  name: 'Field work orders, phone',
+  render: () => <OnPhone start={BO_ROUTES.orders} />,
+  play: async ({ canvasElement }) => {
+    await boHeading(canvasElement, 'Work orders')
+    await expect(within(canvasElement).getByText('Mini excavator 3.5 t')).toBeVisible()
+  },
+}
+
+/** The "Unassigned" view: the bender's fault reported this morning. */
+export const BoFieldWorkOrdersUnassigned: Story = {
+  name: 'Field work orders, unassigned',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BO_ROUTES.unassigned} />,
+  play: async ({ canvasElement }) => {
+    await boHeading(canvasElement, 'Work orders')
+    await expect(
+      within(canvasElement).getByRole('row', { name: /SN-2026-0145/ }),
+    ).toHaveTextContent('The motor stops under load')
+  },
+}
+
+/** "Assign…" from the row's menu: the technician and the day; the order becomes Scheduled. */
+export const BoFieldWorkOrdersAssign: Story = {
+  name: 'Field work orders, assign, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BO_ROUTES.unassigned} />,
+  play: async ({ canvasElement }) => {
+    await boHeading(canvasElement, 'Work orders')
+    const canvas = within(canvasElement)
+    const page = within(document.body)
+    await userEvent.click(canvas.getByRole('button', { name: /^Actions: SN-2026-0145/ }))
+    await userEvent.click(await page.findByRole('menuitem', { name: 'Assign…' }))
+    const dialog = await page.findByRole('dialog', { name: /Assign work order/ })
+    await userEvent.click(within(dialog).getByRole('combobox', { name: /Technician/ }))
+    await userEvent.click(await page.findByRole('option', { name: /Saša Vukadinović/ }))
+    await userEvent.click(await within(dialog).findByRole('button', { name: 'Assign' }))
+    await waitFor(async () => {
+      await expect(page.queryByRole('dialog')).toBeNull()
+    })
+    await userEvent.click(canvas.getByRole('button', { name: /^Open/ }))
+    await expect(await canvas.findByRole('row', { name: /SN-2026-0145/ })).toHaveTextContent(
+      'Scheduled',
+    )
+    await boToastsGone()
+  },
+}
+
+/**
+ * The excavator's work order SN-2026-0143 as the office sees it: the fault, the service due,
+ * the machine, the checklist (5 of 9), the photos, the parts issued and used, the time, the
+ * signatures still waiting.
+ */
+export const BoFieldWorkOrder: Story = {
+  name: 'Field work order',
+  render: () => <ExampleApp start={BO_ROUTES.featured} />,
+  play: async ({ canvasElement }) => {
+    await boHeading(canvasElement, 'SN-2026-0143')
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('5 of 9 done')).toBeVisible()
+    await expect(canvas.getByRole('row', { name: /Engine oil 15W-40/ })).toHaveTextContent('8 l')
+    await expect(canvas.getByRole('link', { name: 'Mini excavator 3.5 t (OS-0142)' })).toBeVisible()
+  },
+}
+
+/**
+ * On the technician's phone (Saša Vukadinović): the checklist to tick, "Take a photo", the parts
+ * used stepped, Stop work, and "Finish and sign" saying why it cannot be used yet.
+ */
+export const BoFieldWorkOrderPhone: Story = {
+  name: 'Field work order, phone',
+  render: () => <OnPhone start={BO_ROUTES.featured} />,
+  play: async ({ canvasElement }) => {
+    await boHeading(canvasElement, 'SN-2026-0143')
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('checkbox', { name: /Track tension checked/ })).not.toBeChecked()
+    await expect(canvas.getByText(/Tick the 4 remaining checks first\./)).toBeInTheDocument()
+    await expect(canvas.getByText('Sent at 09:38')).toBeInTheDocument()
+  },
+}
+
+/** Without a connection: the offline strip, what waits on the phone, saved on this phone. */
+export const BoFieldWorkOrderOffline: Story = {
+  name: 'Field work order, offline',
+  tags: ['!dev'],
+  render: () => <OnPhone start={BO_ROUTES.offline} />,
+  play: async ({ canvasElement }) => {
+    await boHeading(canvasElement, 'SN-2026-0143')
+    await expect(canvasElement).toHaveTextContent('4 changes and 1 photo are kept on this phone.')
+    await expect(within(canvasElement).getByRole('button', { name: 'Try now' })).toBeVisible()
+  },
+}
+
+/** Sending failed: "Not sent" with Send again. */
+export const BoFieldWorkOrderNotSent: Story = {
+  name: 'Field work order, not sent',
+  tags: ['!dev'],
+  render: () => <OnPhone start={BO_ROUTES.notSent} />,
+  play: async ({ canvasElement }) => {
+    await boHeading(canvasElement, 'SN-2026-0143')
+    await expect(within(canvasElement).getByRole('button', { name: 'Send again' })).toBeVisible()
+  },
+}
+
+/** The phone handed to the site manager: what was done first, then her Sign or Decline. */
+export const BoFieldWorkOrderHandover: Story = {
+  name: 'Field work order, site manager signs',
+  tags: ['!dev'],
+  render: () => <OnPhone start={BO_ROUTES.handover} />,
+  play: async ({ canvasElement }) => {
+    await boHeading(canvasElement, 'SN-2026-0143')
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('1 of 2 signed')).toBeInTheDocument()
+    await expect(canvas.getByRole('button', { name: 'Sign the work order' })).toBeInTheDocument()
+  },
+}
+
+/** Both signed: done and sent. */
+export const BoFieldWorkOrderDone: Story = {
+  name: 'Field work order, done',
+  tags: ['!dev'],
+  render: () => <OnPhone start={BO_ROUTES.done} />,
+  play: async ({ canvasElement }) => {
+    await boHeading(canvasElement, 'SN-2026-0143')
+    await expect(within(canvasElement).getByText('2 of 2 signed')).toBeInTheDocument()
+  },
+}
+
+/**
+ * The technician's flow: the remaining checks ticked, a photo taken, less engine oil used,
+ * Finish and sign, the site manager signs; the order is done.
+ */
+export const BoFieldWorkOrderFlow: Story = {
+  name: 'Field work order, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <OnPhone start={BO_ROUTES.featured} />,
+  play: async ({ canvasElement }) => {
+    await boHeading(canvasElement, 'SN-2026-0143')
+    const canvas = within(canvasElement)
+    for (const name of [
+      /Air filter cleaned/,
+      /Every greasing point/,
+      /Track tension checked/,
+      /Test run under load/,
+    ]) {
+      await userEvent.click(canvas.getByRole('checkbox', { name }))
+    }
+    await expect(canvas.getByText('9 of 9 done')).toBeInTheDocument()
+    await userEvent.click(
+      canvas.getByRole('button', { name: /Decrease.*Engine oil|Engine oil.*decrease/i }),
+    )
+    const camera = canvasElement.querySelector<HTMLInputElement>('input[capture]')
+    if (camera === null) throw new Error('No camera input')
+    await userEvent.upload(camera, new File(['photo'], 'track.jpg', { type: 'image/jpeg' }))
+    await expect(await canvas.findByText('Track_tension_check.jpg')).toBeInTheDocument()
+    await userEvent.click(canvas.getByRole('button', { name: 'Finish and sign' }))
+    await userEvent.click(await canvas.findByRole('button', { name: 'Sign the work order' }))
+    await expect(await canvas.findByText('2 of 2 signed')).toBeInTheDocument()
+    await expect(canvas.getAllByText('Done')[0]).toBeInTheDocument()
+    await boToastsGone()
+  },
+}
+
+/**
+ * The preventive maintenance plan: every machine's tasks by interval, last done, next due (a date
+ * or a reading), the state in words, the work order or "Create work order".
+ */
+export const BoMaintenancePlan: Story = {
+  name: 'Maintenance plan',
+  render: () => <ExampleApp start={BO_ROUTES.plan} />,
+  play: async ({ canvasElement }) => {
+    await boHeading(canvasElement, 'Maintenance plan')
+    const canvas = within(canvasElement)
+    const generator = canvas.getByRole('row', { name: /Generator set 60 kVA/ })
+    await expect(generator).toHaveTextContent('38 h overdue')
+    await expect(within(generator).getByRole('button', { name: 'Create work order' })).toBeVisible()
+    await expect(canvas.getByRole('link', { name: 'SN-2026-0143' })).toBeVisible()
+  },
+}
+
+export const BoMaintenancePlanPhone: Story = {
+  name: 'Maintenance plan, phone',
+  render: () => <OnPhone start={BO_ROUTES.plan} />,
+  play: async ({ canvasElement }) => {
+    await boHeading(canvasElement, 'Maintenance plan')
+    await expect(within(canvasElement).getByText('Generator set 60 kVA')).toBeVisible()
+  },
+}
+
+/** "Create work order" asked for the generator's 500-hour service. */
+export const BoMaintenancePlanCreate: Story = {
+  name: 'Maintenance plan, create work order',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BO_ROUTES.planCreate} />,
+  play: async () => {
+    await settle()
+    const dialog = await within(document.body).findByRole('dialog', {
+      name: /Create work order\s*Generator set 60 kVA · 500-hour service/,
+    })
+    await expect(dialog).toHaveTextContent('SN-2026-0146')
+  },
+}
+
+/** Created: the plan links SN-2026-0146, and it waits in the work orders. */
+export const BoMaintenancePlanCreateFlow: Story = {
+  name: 'Maintenance plan, create, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BO_ROUTES.planCreate} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const page = within(document.body)
+    const dialog = await page.findByRole('dialog', { name: /Create work order/ })
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Create work order' }))
+    await waitFor(async () => {
+      await expect(page.queryByRole('dialog')).toBeNull()
+    })
+    await expect(await canvas.findByRole('link', { name: 'SN-2026-0146' })).toBeVisible()
+    await userEvent.click(canvas.getByRole('link', { name: 'Work orders' }))
+    await boHeading(canvasElement, 'Work orders')
+    await expect(await canvas.findByRole('row', { name: /SN-2026-0146/ })).toHaveTextContent(
+      'Scheduled',
+    )
+    await boToastsGone()
+  },
+}
+
+/**
+ * Fleet (P5.75): Kvadrat Gradnja's vehicles — plate and model, driver, mileage, the registration's
+ * expiry and the next service in the application's words, the state.
+ */
+export const BpFleetVehicles: Story = {
+  name: 'Vehicles',
+  render: () => <ExampleApp start={BP_ROUTES.vehicles} />,
+  play: async ({ canvasElement }) => {
+    await boHeading(canvasElement, 'Vehicles')
+    const canvas = within(canvasElement)
+    const van = canvas.getByRole('row', { name: /NS-123-AB/ })
+    await expect(van).toHaveTextContent('Expires in 5 days')
+    await expect(van).toHaveTextContent('Overdue by 2.880 km')
+    await expect(canvas.getByRole('row', { name: /NS-552-KG/ })).toHaveTextContent(
+      'In the workshop',
+    )
+  },
+}
+
+export const BpFleetVehiclesPhone: Story = {
+  name: 'Vehicles, phone',
+  render: () => <OnPhone start={BP_ROUTES.vehicles} />,
+  play: async ({ canvasElement }) => {
+    await boHeading(canvasElement, 'Vehicles')
+    await expect(within(canvasElement).getByText('NS-123-AB')).toBeVisible()
+  },
+}
+
+/** "Sold and returned": the van Fiat Ducato sold on 30.09.2026. */
+export const BpFleetVehiclesGone: Story = {
+  name: 'Vehicles, sold and returned',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BP_ROUTES.gone} />,
+  play: async ({ canvasElement }) => {
+    await boHeading(canvasElement, 'Vehicles')
+    await expect(within(canvasElement).getByRole('row', { name: /NS-482-KG/ })).toHaveTextContent(
+      'Sold',
+    )
+  },
+}
+
+/**
+ * The site van NS-123-AB: mileage, the application's consumption, the registration and insurance
+ * expiring, its reminders, the services with their invoices, the fuel entries paid from the cash
+ * book or by the fuel card.
+ */
+export const BpFleetVehicle: Story = {
+  name: 'Vehicle',
+  render: () => <ExampleApp start={BP_ROUTES.featured} />,
+  play: async ({ canvasElement }) => {
+    await boHeading(canvasElement, 'NS-123-AB')
+    const canvas = within(canvasElement)
+    const papers = canvas.getByRole('table', { name: 'Registration and insurance of NS-123-AB' })
+    await expect(
+      within(papers).getByRole('row', { name: /Compulsory motor insurance/ }),
+    ).toHaveTextContent('Expires in 5 days')
+    await expect(canvas.getByRole('link', { name: 'Cash, CP-2026-0214' })).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('178,30 l')
+  },
+}
+
+export const BpFleetVehiclePhone: Story = {
+  name: 'Vehicle, phone',
+  render: () => <OnPhone start={BP_ROUTES.featured} />,
+  play: async ({ canvasElement }) => {
+    await boHeading(canvasElement, 'NS-123-AB')
+    await expect(within(canvasElement).getAllByText('Overdue by 2.880 km')[0]).toBeInTheDocument()
+  },
+}
+
+/** "Add fuel entry" asked: the receipt's figures proposed. */
+export const BpFleetVehicleFuel: Story = {
+  name: 'Vehicle, add fuel entry',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BP_ROUTES.addFuel} />,
+  play: async () => {
+    await settle()
+    const dialog = await within(document.body).findByRole('dialog', {
+      name: /Add fuel entry\s*NS-123-AB/,
+    })
+    await expect(within(dialog).getByRole('textbox', { name: /Litres/ })).toHaveValue('40,10')
+  },
+}
+
+/** Added: the fill heads the list with the application's consumption; the mileage follows it. */
+export const BpFleetVehicleFuelFlow: Story = {
+  name: 'Vehicle, add fuel entry, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BP_ROUTES.featured} />,
+  play: async ({ canvasElement }) => {
+    await boHeading(canvasElement, 'NS-123-AB')
+    const canvas = within(canvasElement)
+    const page = within(document.body)
+    await userEvent.click(canvas.getByRole('button', { name: 'Add fuel entry' }))
+    const dialog = await page.findByRole('dialog', { name: /Add fuel entry/ })
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Add fuel entry' }))
+    await waitFor(async () => {
+      await expect(page.queryByRole('dialog')).toBeNull()
+    })
+    await expect(canvasElement).toHaveTextContent('40,10 l')
+    await expect(canvasElement).toHaveTextContent('143.260 km')
+    await boToastsGone()
+  },
+}
+
+/** Every vehicle's reminders: registration, insurance, service, tyres — due and overdue first. */
+export const BpFleetReminders: Story = {
+  name: 'Vehicle reminders',
+  render: () => <ExampleApp start={BP_ROUTES.reminders} />,
+  play: async ({ canvasElement }) => {
+    await boHeading(canvasElement, 'Reminders')
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('row', { name: /Service at 140\.000 km/ })).toHaveTextContent(
+      'Overdue by 2.880 km',
+    )
+    await expect(canvas.getByRole('row', { name: /Comprehensive insurance/ })).toHaveTextContent(
+      'In 8 days',
+    )
+  },
+}
+
+export const BpFleetRemindersPhone: Story = {
+  name: 'Vehicle reminders, phone',
+  render: () => <OnPhone start={BP_ROUTES.reminders} />,
+  play: async ({ canvasElement }) => {
+    await boHeading(canvasElement, 'Reminders')
+    await expect(within(canvasElement).getAllByText('Registration')[0]).toBeVisible()
+  },
+}
+
+/** "Mark as done…" for the van's registration: when, a note; it moves to Done. */
+export const BpFleetRemindersDone: Story = {
+  name: 'Vehicle reminders, mark as done, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BP_ROUTES.remindersDone} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const page = within(document.body)
+    const dialog = await page.findByRole('dialog', {
+      name: /Mark as done\s*Renew the registration/,
+    })
+    await userEvent.type(within(dialog).getByRole('textbox', { name: 'Note' }), 'Until 19.10.2027.')
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Mark as done' }))
+    await waitFor(async () => {
+      await expect(page.queryByRole('dialog')).toBeNull()
+    })
+    await userEvent.click(canvas.getByRole('button', { name: /^Done/ }))
+    await expect(
+      await canvas.findByRole('row', { name: /Renew the registration NS-123-AB/ }),
+    ).toHaveTextContent('Done on 14.10.2026. · Until 19.10.2027.')
+    await boToastsGone()
+  },
+}
+// ── P5.73 campus ──
+import { BN_ROUTES } from './data-BN'
+
+/** The University's stories: the screen's checks, and on a phone no page scrolls sideways. */
+function bnPlay(
+  check: (canvasElement: HTMLElement) => Promise<void>,
+  phone = false,
+): NonNullable<Story['play']> {
+  return async ({ canvasElement }) => {
+    await settle()
+    await check(canvasElement)
+    if (phone) {
+      for (const page of canvasElement.querySelectorAll<HTMLElement>('[data-liro-phone-page]')) {
+        await expect(page.scrollWidth).toBeLessThanOrEqual(page.clientWidth)
+      }
+    }
+  }
+}
+
+/** A success toast closed and gone before the checks end (axe never catches it fading). */
+async function bnToastGone() {
+  notice.dismiss()
+  await waitFor(
+    async () => {
+      await expect(document.querySelector('[data-sonner-toast]')).toBeNull()
+    },
+    { timeout: 5000 },
+  )
+}
+
+/**
+ * P5.73: the student portal of the Illustrative Faculty of Engineering, Novi Sad, as Teodora
+ * Pavlović (RA 112/2024, Computer Engineering, Year 3) sees it on 14.10.2026: the October 2
+ * registration open, her average, ECTS and exams passed (the application's), the exam she is
+ * registered for and her latest results. Made for a phone first.
+ */
+const BN_HOME_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'My exams' })).toBeVisible()
+  await expect(canvasElement).toHaveTextContent('8,72')
+  await expect(canvasElement).toHaveTextContent('102 of 240')
+  await expect(canvas.getByRole('button', { name: 'Register for exams' })).toBeVisible()
+  await expect(canvas.getByRole('link', { name: 'All grades' })).toBeVisible()
+}
+
+export const UniversityStudentPortal: Story = {
+  name: 'University, student portal',
+  render: () => <ExampleApp start={BN_ROUTES.portal} />,
+  play: bnPlay(BN_HOME_CHECK),
+}
+
+export const UniversityStudentPortalPhone: Story = {
+  name: 'University, student portal, phone',
+  render: () => <OnPhone start={BN_ROUTES.portal} />,
+  play: bnPlay(BN_HOME_CHECK, true),
+}
+
+/**
+ * Exam registration for October 2 2026: the exams open to her with the application's conditions
+ * and fee (a CandidateList), the total to pay, the exams registered (Withdraw in the row's menu)
+ * and the exams not open to her with the reason in words.
+ */
+const BN_REGISTRATION_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Exam registration' })).toBeVisible()
+  await expect(canvas.getByRole('checkbox', { name: 'Electronics' })).toBeVisible()
+  await expect(canvasElement).toHaveTextContent(
+    'Not allowed: Pre-exam obligations not met: laboratory exercises 1 of 5',
+  )
+  await expect(canvasElement).toHaveTextContent('Choose at least one exam.')
+}
+
+export const UniversityExamRegistration: Story = {
+  name: 'University, exam registration',
+  render: () => <ExampleApp start={BN_ROUTES.registration} />,
+  play: bnPlay(BN_REGISTRATION_CHECK),
+}
+
+export const UniversityExamRegistrationPhone: Story = {
+  name: 'University, exam registration, phone',
+  render: () => <OnPhone start={BN_ROUTES.registration} />,
+  play: bnPlay(BN_REGISTRATION_CHECK, true),
+}
+
+/** Two exams chosen; the confirmation names them and the application's fee. */
+export const UniversityExamRegistrationConfirm: Story = {
+  name: 'University, exam registration, confirm',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BN_ROUTES.registrationConfirm} />,
+  play: bnPlay(async () => {
+    const dialog = within(document.body).getByRole('alertdialog', {
+      name: /Register for 2 exams/,
+    })
+    await expect(dialog).toHaveTextContent('1.500,00 RSD is charged to your student account')
+  }),
+}
+
+/** Both registered: nothing left to choose. */
+const BN_REGISTERED_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvasElement).toHaveTextContent('Every exam open to you is registered.')
+  const table = canvas.getAllByRole('table', { name: 'Exams registered for October 2 2026' })[0]
+  if (table !== undefined) await expect(table).toHaveTextContent('Probability and Statistics')
+}
+
+export const UniversityExamRegistrationDone: Story = {
+  name: 'University, exam registration, registered',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BN_ROUTES.registrationDone} />,
+  play: bnPlay(BN_REGISTERED_CHECK),
+}
+
+export const UniversityExamRegistrationDonePhone: Story = {
+  name: 'University, exam registration, registered, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={BN_ROUTES.registrationDone} />,
+  play: bnPlay(async () => {
+    await expect(document.body).toHaveTextContent('Every exam open to you is registered.')
+  }, true),
+}
+
+export const UniversityExamRegistrationFlow: Story = {
+  name: 'University, exam registration, register, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BN_ROUTES.registration} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('checkbox', { name: 'Electronics' }))
+    await userEvent.click(canvas.getByRole('checkbox', { name: 'Probability and Statistics' }))
+    await expect(canvasElement).toHaveTextContent('To pay: 1.500,00 RSD')
+    await userEvent.click(canvas.getByRole('button', { name: 'Register for 2 exams' }))
+    const dialog = await within(document.body).findByRole('alertdialog', {
+      name: /Register for 2 exams/,
+    })
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Register' }))
+    await expect(await canvas.findByText('Every exam open to you is registered.')).toBeVisible()
+    await bnToastGone()
+  },
+}
+
+/** Her grades: 18 exams passed, 102 ECTS of 240, the average 8,72 — all the application's. */
+const BN_GRADES_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Grades' })).toBeVisible()
+  await expect(canvasElement).toHaveTextContent('102 of 240')
+  await expect(canvasElement).toHaveTextContent('Data Structures and Algorithms')
+}
+
+export const UniversityGrades: Story = {
+  name: 'University, grades',
+  render: () => <ExampleApp start={BN_ROUTES.grades} />,
+  play: bnPlay(BN_GRADES_CHECK),
+}
+
+export const UniversityGradesPhone: Story = {
+  name: 'University, grades, phone',
+  render: () => <OnPhone start={BN_ROUTES.grades} />,
+  play: bnPlay(BN_GRADES_CHECK, true),
+}
+
+/** The faculty's exam periods, newest first, with their dates and state in words. */
+const BN_PERIODS_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Exam periods' })).toBeVisible()
+  await expect(canvasElement).toHaveTextContent('Registration open')
+  await expect(canvasElement).toHaveTextContent('23 of 214 signed')
+}
+
+export const UniversityExamPeriods: Story = {
+  name: 'University, exam periods',
+  render: () => <ExampleApp start={BN_ROUTES.periods} />,
+  play: bnPlay(BN_PERIODS_CHECK),
+}
+
+export const UniversityExamPeriodsPhone: Story = {
+  name: 'University, exam periods, phone',
+  render: () => <OnPhone start={BN_ROUTES.periods} />,
+  play: bnPlay(BN_PERIODS_CHECK, true),
+}
+
+/** Prof. Milan Radović's exam records: two drafts of October, the older ones locked. */
+const BN_RECORDS_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'My exam records' })).toBeVisible()
+  await expect(canvas.getAllByRole('link', { name: 'ZI-2026-0417' }).length).toBeGreaterThan(0)
+  await expect(canvasElement).toHaveTextContent('12 of 14')
+}
+
+export const UniversityExamRecords: Story = {
+  name: 'University, exam records',
+  render: () => <ExampleApp start={BN_ROUTES.records} />,
+  play: bnPlay(BN_RECORDS_CHECK),
+}
+
+export const UniversityExamRecordsPhone: Story = {
+  name: 'University, exam records, phone',
+  render: () => <OnPhone start={BN_ROUTES.records} />,
+  play: bnPlay(BN_RECORDS_CHECK, true),
+}
+
+/**
+ * Exam record ZI-2026-0417, Operating Systems, 07.10.2026: fourteen students, the exam's points
+ * and the grade entered from the keyboard, the total and ECTS from the application; two grades
+ * missing, one grade the application's scale questions; the scale and the signers beside.
+ */
+const BN_RECORD_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'ZI-2026-0417' })).toBeVisible()
+  await expect(canvasElement).toHaveTextContent('77 points is grade 8 on the faculty’s scale.')
+  await expect(canvasElement).toHaveTextContent('12 of 14')
+  await expect(canvasElement).toHaveTextContent('You sign when every student has a grade')
+}
+
+export const UniversityExamRecord: Story = {
+  name: 'University, exam record',
+  render: () => <ExampleApp start={BN_ROUTES.record} />,
+  play: bnPlay(BN_RECORD_CHECK),
+}
+
+export const UniversityExamRecordPhone: Story = {
+  name: 'University, exam record, phone',
+  render: () => <OnPhone start={BN_ROUTES.record} />,
+  play: bnPlay(BN_RECORD_CHECK, true),
+}
+
+/** Every grade entered: the examiner may sign. */
+export const UniversityExamRecordReady: Story = {
+  name: 'University, exam record, ready to sign',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BN_ROUTES.recordReady} />,
+  play: bnPlay(async (canvasElement) => {
+    await expect(canvasElement).toHaveTextContent('14 of 14')
+    await expect(within(canvasElement).getByRole('button', { name: 'Sign record' })).toBeVisible()
+  }),
+}
+
+/** The signing confirmation: the record bold under the action. */
+export const UniversityExamRecordSign: Story = {
+  name: 'University, exam record, sign',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BN_ROUTES.recordSign} />,
+  play: bnPlay(async () => {
+    const dialog = within(document.body).getByRole('alertdialog', { name: /Sign exam record/ })
+    await expect(dialog).toHaveTextContent('ZI-2026-0417 · Operating Systems')
+  }),
+}
+
+/** Signed by the examiner: every cell plain text, the lock in words. */
+const BN_LOCKED_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvasElement).toHaveTextContent('Signed by Prof. Milan Radović on 14.10.2026.')
+  for (const cell of canvas.getAllByRole('textbox', { name: /Exam points/ })) {
+    await expect(cell).toHaveAttribute('readonly')
+  }
+}
+
+export const UniversityExamRecordLocked: Story = {
+  name: 'University, exam record, locked',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BN_ROUTES.recordLocked} />,
+  play: bnPlay(BN_LOCKED_CHECK),
+}
+
+export const UniversityExamRecordLockedPhone: Story = {
+  name: 'University, exam record, locked, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={BN_ROUTES.recordLocked} />,
+  play: bnPlay(BN_LOCKED_CHECK, true),
+}
+
+export const UniversityExamRecordEntry: Story = {
+  name: 'University, exam record, entering grades, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BN_ROUTES.record} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const body = within(document.body)
+    const points = canvas.getByRole('textbox', { name: 'Exam points (of 60), line 12' })
+    await userEvent.click(points)
+    await userEvent.type(points, '46,5{Enter}')
+    await waitFor(async () => {
+      await expect(canvasElement).toHaveTextContent('84,5')
+    })
+    const choose = async (line: number, option: string) => {
+      await userEvent.click(
+        await canvas.findByRole('combobox', { name: `Grade, line ${String(line)}` }),
+      )
+      await userEvent.click(await body.findByRole('option', { name: option }))
+      // The list closes before the next cell is reached (the page is inert while it is open).
+      await waitFor(async () => {
+        await expect(body.queryByRole('listbox')).toBeNull()
+      })
+    }
+    await choose(12, '9 · excellent (B)')
+    await choose(11, '8 · very good (C)')
+    await choose(14, '8 · very good (C)')
+    await waitFor(async () => {
+      await expect(canvasElement).toHaveTextContent('14 of 14')
+    })
+    await expect(canvasElement).not.toHaveTextContent('on the faculty’s scale')
+    await expect(canvas.getByRole('button', { name: 'Sign record' })).toBeVisible()
+    await settle()
+  },
+}
+
+export const UniversityExamRecordSigning: Story = {
+  name: 'University, exam record, signing, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BN_ROUTES.recordReady} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Sign record' }))
+    const dialog = await within(document.body).findByRole('alertdialog', {
+      name: /Sign exam record/,
+    })
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Sign' }))
+    await waitFor(async () => {
+      await expect(
+        canvas.getByRole('textbox', { name: 'Exam points (of 60), line 1' }),
+      ).toHaveAttribute('readonly')
+    })
+    await expect(canvasElement).toHaveTextContent('Signed by Prof. Milan Radović')
+    await bnToastGone()
+  },
+}
+// ── P5.76 property ──
+// (Imports here, inside the block, so the blocks merge without touching the top.)
+import { BQ_ROUTES, FEATURED_LEASE, FEATURED_TENANT, NEW_REQUEST } from './data-BQ'
+
+/** Settles a property screen and finds its h1. */
+const bqHeading = async (canvasElement: HTMLElement, name: string | RegExp) => {
+  await settle()
+  await expect(
+    await within(canvasElement).findByRole('heading', { level: 1, name }),
+  ).toBeInTheDocument()
+}
+
+const bqTile = (canvasElement: HTMLElement, id: string) => {
+  const tile = canvasElement.querySelector<HTMLElement>(`[data-rack-room="${id}"]`)
+  if (tile === null) throw new Error(`no unit ${id}`)
+  return tile
+}
+
+/** Waits until every toast has gone (axe must not catch one fading out). */
+const bqNoticeGone = async () => {
+  notice.dismiss()
+  await waitFor(
+    async () => {
+      await expect(document.querySelector('[data-sonner-toast]')).toBeNull()
+    },
+    { timeout: 5000 },
+  )
+}
+
+/**
+ * P5.76: Kvadrat Nekretnine d.o.o. lets the units of two buildings Kvadrat Gradnja d.o.o. built,
+ * Liman 2 and Grbavica 7, on 14.10.2026: 24 units by building and floor (RoomRack), Let / Vacant
+ * / Under repair in words, the rent's state, the tenant and the lease's term on each tile.
+ */
+export const BqPropertyUnits: Story = {
+  name: 'Property units',
+  render: () => <ExampleApp start={BQ_ROUTES.units} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'Units')
+    await expect(bqTile(canvasElement, 'L2-3.2')).toHaveAccessibleName(
+      /Let.*Rent paid.*Ivana Radović/,
+    )
+    await expect(bqTile(canvasElement, 'L2-2.1')).toHaveAccessibleName(/Under repair/)
+    await expect(bqTile(canvasElement, 'L2-P.2')).toHaveAccessibleName(/Vacant/)
+  },
+}
+
+export const BqPropertyUnitsPhone: Story = {
+  name: 'Property units, phone',
+  render: () => <OnPhone start={BQ_ROUTES.units} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'Units')
+    await expect(bqTile(canvasElement, 'L2-P.1')).toBeVisible()
+  },
+}
+
+/** Flat L2-3.2 open beside the rack: the tenant, the lease and its term, the rent, the request. */
+export const BqPropertyUnitOpen: Story = {
+  name: 'Property units, a unit open',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BQ_ROUTES.unit('L2-3.2')} />,
+  play: async ({ canvasElement }) => {
+    const drawer = await within(document.body).findByRole('dialog', { name: 'Unit L2-3.2' })
+    await settle()
+    await expect(within(drawer).getByRole('link', { name: 'Ivana Radović' })).toBeVisible()
+    await expect(within(drawer).getByRole('link', { name: FEATURED_LEASE })).toBeVisible()
+    await expect(drawer).toHaveTextContent('64.000,00')
+    await expect(bqTile(canvasElement, 'L2-3.2')).toHaveAttribute('aria-current', 'true')
+  },
+}
+
+export const BqPropertyUnitOpenFlow: Story = {
+  name: 'Property units, open a unit, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BQ_ROUTES.units} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'Units')
+    await userEvent.click(bqTile(canvasElement, 'G7-2.2'))
+    const drawer = await within(document.body).findByRole('dialog', { name: 'Unit G7-2.2' })
+    await settle()
+    await expect(drawer).toHaveTextContent('Water damage')
+    await expect(within(drawer).getByRole('link', { name: /MR-2026-0042/ })).toBeVisible()
+  },
+}
+
+/** The same 24 units as a list: views by state, a building filter, the search. */
+export const BqPropertyUnitList: Story = {
+  name: 'Property unit list',
+  render: () => <ExampleApp start={BQ_ROUTES.unitsList} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'Units')
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('row', { name: /L2-3\.2/ })).toHaveTextContent('Ivana Radović')
+    await expect(canvas.getByRole('row', { name: /G7-P\.1/ })).toHaveTextContent('168.000,00')
+  },
+}
+
+export const BqPropertyUnitListPhone: Story = {
+  name: 'Property unit list, phone',
+  render: () => <OnPhone start={BQ_ROUTES.unitsList} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'Units')
+    await expect(within(canvasElement).getByText('L2-P.1')).toBeVisible()
+  },
+}
+
+/** The tenants: private persons and companies, overdue rent in figures, the state in words. */
+export const BqPropertyTenants: Story = {
+  name: 'Property tenants',
+  render: () => <ExampleApp start={BQ_ROUTES.tenants} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'Tenants')
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('row', { name: /Nemanja Kovač/ })).toHaveTextContent(
+      'Rent overdue',
+    )
+    await expect(canvas.getByRole('row', { name: /Pekara Zlatni klas/ })).toHaveTextContent(
+      'Company',
+    )
+  },
+}
+
+export const BqPropertyTenantsPhone: Story = {
+  name: 'Property tenants, phone',
+  render: () => <OnPhone start={BQ_ROUTES.tenants} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'Tenants')
+    await expect(within(canvasElement).getByText('Ivana Radović')).toBeVisible()
+  },
+}
+
+/** Ivana Radović: contact, the national ID masked, her lease, invoices and requests. */
+export const BqPropertyTenant: Story = {
+  name: 'Property tenant',
+  render: () => <ExampleApp start={BQ_ROUTES.tenant(FEATURED_TENANT)} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'Ivana Radović')
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('button', { name: /national ID/i })).toBeVisible()
+    await expect(canvas.queryByText('2304990805012')).toBeNull()
+    await expect(canvas.getByRole('link', { name: /MR-2026-0047/ })).toBeVisible()
+  },
+}
+
+export const BqPropertyTenantPhone: Story = {
+  name: 'Property tenant, phone',
+  render: () => <OnPhone start={BQ_ROUTES.tenant(FEATURED_TENANT)} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'Ivana Radović')
+  },
+}
+
+/** A tenant with October's rent overdue: the figure in the danger tone and the invoice. */
+export const BqPropertyTenantOverdue: Story = {
+  name: 'Property tenant, rent overdue',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BQ_ROUTES.tenant('kovac')} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'Nemanja Kovač')
+    await expect(
+      within(canvasElement).getByRole('row', { name: /RZ-2026-0264/ }),
+    ).toHaveTextContent('Overdue')
+  },
+}
+
+/** The leases: active, ending within 90 days (in the application's words), ended, all. */
+export const BqPropertyLeases: Story = {
+  name: 'Property leases',
+  render: () => <ExampleApp start={BQ_ROUTES.leases} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'Leases')
+    await expect(
+      within(canvasElement).getByRole('row', { name: new RegExp(FEATURED_LEASE) }),
+    ).toHaveTextContent('In 78 days · renewal offered')
+  },
+}
+
+export const BqPropertyLeasesPhone: Story = {
+  name: 'Property leases, phone',
+  render: () => <OnPhone start={BQ_ROUTES.leases} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'Leases')
+    await expect(within(canvasElement).getByText('Ivana Radović')).toBeVisible()
+  },
+}
+
+/**
+ * Lease UZ-2024-041: flat L2-3.2 and Ivana Radović; the term, rent and deposit; the expiry and the
+ * renewal offer in the application's words; the documents with the lease itself; the invoices.
+ */
+export const BqPropertyLease: Story = {
+  name: 'Property lease',
+  render: () => <ExampleApp start={BQ_ROUTES.lease(FEATURED_LEASE)} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, `Lease ${FEATURED_LEASE}`)
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('The lease ends on 31.12.2026, in 78 days.')).toBeVisible()
+    await expect(canvas.getByRole('link', { name: 'Open the lease agreement' })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Renew…' })).toBeVisible()
+  },
+}
+
+export const BqPropertyLeasePhone: Story = {
+  name: 'Property lease, phone',
+  render: () => <OnPhone start={BQ_ROUTES.lease(FEATURED_LEASE)} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, `Lease ${FEATURED_LEASE}`)
+  },
+}
+
+/** Renew… open: the new end and the application's proposed rent; Send the annex. */
+export const BqPropertyLeaseRenew: Story = {
+  name: 'Property lease, renew',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BQ_ROUTES.leaseRenew} />,
+  play: async () => {
+    const dialog = await within(document.body).findByRole('dialog', { name: /Renew lease/ })
+    await settle()
+    await expect(within(dialog).getByRole('button', { name: 'Send the annex' })).toBeVisible()
+    await expect(within(dialog).getByLabelText(/Monthly rent from 01\.01\.2027/)).toHaveValue(
+      '66.500,00',
+    )
+  },
+}
+
+export const BqPropertyLeaseRenewFlow: Story = {
+  name: 'Property lease, renew, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BQ_ROUTES.lease(FEATURED_LEASE)} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, `Lease ${FEATURED_LEASE}`)
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Renew…' }))
+    const dialog = await within(document.body).findByRole('dialog', { name: /Renew lease/ })
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Send the annex' }))
+    await expect(
+      await canvas.findByText(/Annex 2 sent to Ivana Radović for signature/),
+    ).toBeVisible()
+    await expect(canvas.queryByRole('button', { name: 'Renew…' })).toBeNull()
+    await bqNoticeGone()
+  },
+}
+
+/** The lease agreement in the application's viewer (DocumentFrame). */
+export const BqPropertyLeaseDocument: Story = {
+  name: 'Lease agreement',
+  render: () => <ExampleApp start={BQ_ROUTES.leaseDocument(FEATURED_LEASE)} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, `Lease agreement ${FEATURED_LEASE}`)
+    await expect(
+      await within(canvasElement).findByRole('button', { name: /next page/i }),
+    ).toBeVisible()
+  },
+}
+
+export const BqPropertyLeaseDocumentPhone: Story = {
+  name: 'Lease agreement, phone',
+  render: () => <OnPhone start={BQ_ROUTES.leaseDocument(FEATURED_LEASE)} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, `Lease agreement ${FEATURED_LEASE}`)
+  },
+}
+
+/**
+ * The November 2026 rent run in review: the checks in words (a lease starting, one ending with
+ * notice, overdue tenants), the preview with all 21 invoices and the totals — every figure the
+ * application's; Issue.
+ */
+export const BqRentInvoices: Story = {
+  name: 'Rent invoices',
+  render: () => <ExampleApp start={BQ_ROUTES.run} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'Rent invoices November 2026')
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('row', { name: /L2-3\.2/ })).toHaveTextContent('67.200,00')
+    await expect(canvas.getByRole('row', { name: /G7-P\.1/ })).toHaveTextContent('35.000,00')
+    await expect(canvas.getAllByText('1.712.100,00 RSD').length).toBeGreaterThan(0)
+  },
+}
+
+export const BqRentInvoicesPhone: Story = {
+  name: 'Rent invoices, phone',
+  render: () => <OnPhone start={BQ_ROUTES.run} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'Rent invoices November 2026')
+    await expect(
+      within(canvasElement).getByRole('button', { name: 'Issue invoices' }),
+    ).toBeVisible()
+  },
+}
+
+/** One invoice of the run as the tenant receives it (PrintDocument): the lines and the totals. */
+export const BqRentInvoicePreview: Story = {
+  name: 'Rent invoices, invoice preview',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BQ_ROUTES.runPreview} />,
+  play: async () => {
+    const dialog = await within(document.body).findByRole('dialog', { name: /Invoice preview/ })
+    await settle()
+    await expect(dialog).toHaveTextContent('Ivana Radović')
+    await expect(dialog).toHaveTextContent('67.200,00')
+    await expect(dialog).toHaveTextContent('Given on issue')
+  },
+}
+
+/** After Issue: every step done, the invoices with their numbers and how each was sent. */
+export const BqRentInvoicesIssued: Story = {
+  name: 'Rent invoices, issued',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BQ_ROUTES.runIssued} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'Rent invoices November 2026')
+    await expect(within(canvasElement).getByRole('row', { name: /L2-3\.2/ })).toHaveTextContent(
+      'RZ-2026-0288',
+    )
+  },
+}
+
+export const BqRentInvoicesIssueFlow: Story = {
+  name: 'Rent invoices, issue, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BQ_ROUTES.run} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'Rent invoices November 2026')
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Issue invoices' }))
+    await expect(await canvas.findByRole('row', { name: /L2-3\.2/ })).toHaveTextContent(
+      'RZ-2026-0288',
+    )
+    await expect(canvas.queryByRole('button', { name: 'Issue invoices' })).toBeNull()
+    await bqNoticeGone()
+  },
+}
+
+/** The manager's maintenance requests: the state in words, who handles each, the work order. */
+export const BqPropertyMaintenance: Story = {
+  name: 'Maintenance requests',
+  render: () => <ExampleApp start={BQ_ROUTES.requests} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'Maintenance requests')
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('row', { name: /MR-2026-0048/ })).toHaveTextContent('Nobody yet')
+    await expect(canvas.getByRole('row', { name: /SN-2026-0087/ })).toBeVisible()
+  },
+}
+
+export const BqPropertyMaintenancePhone: Story = {
+  name: 'Maintenance requests, phone',
+  render: () => <OnPhone start={BQ_ROUTES.requests} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'Maintenance requests')
+    await expect(within(canvasElement).getByText('Mould on the bathroom ceiling')).toBeVisible()
+  },
+}
+
+/** The leaking sink open: the tenant's photos, the progress, who handles it, the work order. */
+export const BqPropertyMaintenanceOpen: Story = {
+  name: 'Maintenance requests, a request open',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BQ_ROUTES.request('MR-2026-0047')} />,
+  play: async () => {
+    const drawer = await within(document.body).findByRole('dialog', {
+      name: 'Water leaking under the kitchen sink',
+    })
+    await settle()
+    await expect(drawer).toHaveTextContent('Under the sink.jpg')
+    await expect(drawer).toHaveTextContent('SN-2026-0087')
+  },
+}
+
+export const BqPropertyMaintenanceAssignFlow: Story = {
+  name: 'Maintenance requests, assign, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BQ_ROUTES.request('MR-2026-0048')} />,
+  play: async ({ canvasElement }) => {
+    const drawer = await within(document.body).findByRole('dialog', {
+      name: 'Mould on the bathroom ceiling',
+    })
+    await settle()
+    await userEvent.click(within(drawer).getByRole('button', { name: 'Assign' }))
+    await expect(await within(drawer).findByText('Choose who handles the request.')).toBeVisible()
+    await userEvent.click(within(drawer).getByRole('combobox', { name: /Handled by/ }))
+    await userEvent.click(
+      await within(document.body).findByRole('option', { name: /Saša Petković/ }),
+    )
+    // The list closes first; the drawer is in the accessibility tree again after it.
+    await waitFor(
+      async () => {
+        await expect(
+          within(drawer).getByRole('combobox', { name: /Handled by/ }),
+        ).toHaveTextContent('Saša Petković')
+      },
+      { timeout: 5000 },
+    )
+    await userEvent.click(within(drawer).getByRole('button', { name: 'Assign' }))
+    // Assigned, the drawer closes and the list shows the new state.
+    await waitFor(
+      async () => {
+        await expect(
+          within(canvasElement).getByRole('row', { name: /MR-2026-0048/ }),
+        ).toHaveTextContent('Assigned')
+      },
+      { timeout: 5000 },
+    )
+    await bqNoticeGone()
+  },
+}
+
+/** The tenants' portal of Ivana Radović: the renewal offer, her flat, the open repair, invoices. */
+export const BqTenantPortalHome: Story = {
+  name: 'Tenant portal',
+  render: () => <ExampleApp start={BQ_ROUTES.portal} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'My home')
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('Your lease ends on 31.12.2026.')).toBeVisible()
+    await expect(
+      canvas.getByRole('link', { name: 'Water leaking under the kitchen sink' }),
+    ).toBeVisible()
+  },
+}
+
+export const BqTenantPortalHomePhone: Story = {
+  name: 'Tenant portal, phone',
+  render: () => <OnPhone start={BQ_ROUTES.portal} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'My home')
+  },
+}
+
+/** "Report a problem": what, where, the description, photos ("Take a photo" on a phone), access. */
+export const BqTenantPortalReport: Story = {
+  name: 'Tenant portal, report a problem',
+  render: () => <ExampleApp start={BQ_ROUTES.portalNew} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'Report a problem')
+    await expect(within(canvasElement).getByRole('button', { name: 'Send request' })).toBeVisible()
+  },
+}
+
+export const BqTenantPortalReportPhone: Story = {
+  name: 'Tenant portal, report a problem, phone',
+  render: () => <OnPhone start={BQ_ROUTES.portalNew} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'Report a problem')
+    await expect(within(canvasElement).getByRole('button', { name: /Take a photo/ })).toBeVisible()
+  },
+}
+
+/** The form filled in, with a photo added. */
+export const BqTenantPortalReportFilled: Story = {
+  name: 'Tenant portal, report a problem, filled',
+  tags: ['!dev'],
+  render: () => <OnPhone start={`${BQ_ROUTES.portalNew}?draft=filled`} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'Report a problem')
+    await expect(within(canvasElement).getByText('Oven display.jpg')).toBeVisible()
+  },
+}
+
+export const BqTenantPortalReportFlow: Story = {
+  name: 'Tenant portal, report a problem, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BQ_ROUTES.portalNew} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'Report a problem')
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Send request' }))
+    await expect(await canvas.findByText('Choose what is wrong.')).toBeVisible()
+    await userEvent.click(canvas.getByRole('combobox', { name: /What is wrong/ }))
+    await userEvent.click(await within(document.body).findByRole('option', { name: 'Appliances' }))
+    // The list closes first; the form is in the accessibility tree again after it.
+    await waitFor(
+      async () => {
+        await expect(canvas.getByRole('combobox', { name: /What is wrong/ })).toHaveTextContent(
+          'Appliances',
+        )
+      },
+      { timeout: 5000 },
+    )
+    await userEvent.type(
+      await canvas.findByRole('textbox', { name: /Description/ }),
+      'The oven does not heat. The light works.',
+    )
+    await userEvent.click(await canvas.findByRole('button', { name: 'Send request' }))
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: 'The oven does not heat' }),
+    ).toBeVisible()
+    await expect(canvas.getAllByText(new RegExp(NEW_REQUEST)).length).toBeGreaterThan(0)
+    await bqNoticeGone()
+  },
+}
+
+export const BqTenantPortalRequests: Story = {
+  name: 'Tenant portal, my requests',
+  render: () => <ExampleApp start={BQ_ROUTES.portalRequests} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'My requests')
+    await expect(
+      within(canvasElement).getByRole('row', { name: /MR-2026-0012/ }),
+    ).toHaveTextContent('Done')
+  },
+}
+
+export const BqTenantPortalRequestsPhone: Story = {
+  name: 'Tenant portal, my requests, phone',
+  render: () => <OnPhone start={BQ_ROUTES.portalRequests} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'My requests')
+  },
+}
+
+/** One request's progress: reported, assigned to the service team, the visit planned. */
+export const BqTenantPortalRequest: Story = {
+  name: 'Tenant portal, request',
+  render: () => <ExampleApp start={BQ_ROUTES.portalRequest('MR-2026-0047')} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'Water leaking under the kitchen sink')
+    await expect(
+      within(canvasElement).getByText(/Saša Petković comes on 15\.10\.2026/),
+    ).toBeVisible()
+  },
+}
+
+export const BqTenantPortalRequestPhone: Story = {
+  name: 'Tenant portal, request, phone',
+  render: () => <OnPhone start={BQ_ROUTES.portalRequest('MR-2026-0047')} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'Water leaking under the kitchen sink')
+  },
+}
+
+export const BqTenantPortalInvoices: Story = {
+  name: 'Tenant portal, invoices',
+  render: () => <ExampleApp start={BQ_ROUTES.portalInvoices} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'Invoices')
+    await expect(
+      within(canvasElement).getByRole('row', { name: /RZ-2026-0268/ }),
+    ).toHaveTextContent('Paid')
+  },
+}
+
+export const BqTenantPortalInvoicesPhone: Story = {
+  name: 'Tenant portal, invoices, phone',
+  render: () => <OnPhone start={BQ_ROUTES.portalInvoices} />,
+  play: async ({ canvasElement }) => {
+    await bqHeading(canvasElement, 'Invoices')
   },
 }
