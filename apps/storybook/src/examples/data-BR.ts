@@ -23,11 +23,11 @@ import type {
 export const BR_TODAY = '2026-10-14'
 
 export const BR_ROUTES = {
-  costs: '/accounting/analysis',
+  costs: '/analytics/costs',
   /** The saved view by supplier. */
-  costsBySupplier: '/accounting/analysis?view=suppliers',
+  costsBySupplier: '/analytics/costs?view=suppliers',
   /** The documents behind Liman 4's material in September, opened. */
-  costsDocuments: '/accounting/analysis?cell=liman4-material-sep',
+  costsDocuments: '/analytics/costs?cell=liman4-material-sep',
   sales: '/sales/analysis',
   /** The saved view by shop. */
   salesByShop: '/sales/analysis?view=shops',

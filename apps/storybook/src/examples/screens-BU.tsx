@@ -58,6 +58,7 @@ import {
   type WhenEmpty,
 } from './data-BU'
 import { BV_ROUTES } from './data-BV'
+import { BR_ROUTES } from './data-BR'
 
 /*
  * Group BU's example screens (P5.80, scheduled reports): Kvadrat Gradnja d.o.o.'s reports sent by
@@ -86,6 +87,7 @@ export { BU_ROUTES }
 /** The analytics module's tabs. */
 const TABS = [
   { key: 'overview', label: 'Overview', path: BV_ROUTES.overview },
+  { key: 'analysis', label: 'Cost analysis', path: BR_ROUTES.costs },
   { key: 'scheduled', label: 'Scheduled reports', path: BU_ROUTES.list },
 ]
 

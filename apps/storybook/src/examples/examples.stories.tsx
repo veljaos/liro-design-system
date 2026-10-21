@@ -18116,7 +18116,7 @@ export const BrCostAnalysisOpen: Story = {
     const grid = canvas.getByRole('treegrid')
     // Every site has a 5120 Material row: Liman 4's is the first.
     const row = within(grid).getAllByRole('rowheader', { name: '5120 Material' })[0]?.closest('tr')
-    const first = row === null ? null : within(row).getAllByRole('gridcell')[0]
+    const first = row === null || row === undefined ? null : within(row).getAllByRole('gridcell')[0]
     if (first === undefined || first === null) throw new Error('no figure')
     await userEvent.click(first)
     const drawer = await body.findByRole('dialog', { name: /Supplier invoices\s*Liman 4/ })

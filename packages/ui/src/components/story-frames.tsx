@@ -86,11 +86,16 @@ const TENANT_DIGITS = numericFormat('sr-Latn-RS')
  */
 export const EXAMPLE_FORMAT = createFormat('en-RS', TENANT_DIGITS)
 
+/** The examples' tenant's time zone (a Serbian company). */
+export const EXAMPLE_TIME_ZONE = 'Europe/Belgrade'
+
 /**
  * The template and example stories (Phase 4): the story's locale (with the tenant's region, see
  * `tenantLocale`), direction and theme, the English interface text, but numbers, amounts and
  * numeric dates written as a Serbian tenant writes them (12.345,60 RSD, 06.10.2026.) — never its
- * month or weekday names (P5.28 item 2) — and a fixed today.
+ * month or weekday names (P5.28 item 2) — and a fixed today. Instants are shown in the tenant's
+ * time zone (Europe/Belgrade), also where a screen formats one above its own shell: before P5.77
+ * those fell back to the machine's zone (05:00 for 07:00 in a UTC test container).
  */
 export function ExampleProvider({
   linkComponent,
@@ -108,6 +113,7 @@ export function ExampleProvider({
       colorScheme={liro.colorScheme}
       format={TENANT_DIGITS}
       today={EXAMPLE_TODAY}
+      timeZone={EXAMPLE_TIME_ZONE}
       {...(linkComponent === undefined ? {} : { linkComponent })}
     >
       {children}

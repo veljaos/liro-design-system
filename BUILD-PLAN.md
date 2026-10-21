@@ -371,11 +371,11 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P5.74 | Field service and maintenance | P5.11 | done | 2026-10-16 | Work orders, a technician's work order on the phone (checklist, photos, parts used, offline, the customer's signature with SignerList), the office's read-only view, the preventive maintenance plan |
 | P5.75 | Fleet | P4.3 | done | 2026-10-16 | Vehicles (registration and the next service due in words), a vehicle with registration, insurance, services, fuel and reminders ("Add fuel entry"), the reminders list ("Mark as done…") |
 | P5.76 | Property management | P4.3 | done | 2026-10-16 | Units on RoomRack and as a list, tenants, leases with renewal, the monthly rent run (PeriodicRunPage), maintenance requests, the tenants' portal (report a problem, my requests, invoices) |
-| P5.77 | Pivot analysis | P3.1 | todo | | |
-| P5.78 | Automation rules | P5.26 | todo | | |
-| P5.79 | Merging duplicates | P5.19 | todo | | |
-| P5.80 | Scheduled reports | P4.6 | todo | | |
-| P5.81 | Customizable dashboard | P4.6 | todo | | |
+| P5.77 | Pivot analysis | P3.1 | done | 2026-10-21 | Pivot (new, `@veljaos/ui/pivot` on TanStack Table after the library evaluation): fields to rows, columns, values with the application's aggregations and filters by buttons and menus; the application's result as a treegrid with subtotals and totals, drill-down and export; Kvadrat Gradnja's cost analysis and Pekara Zlatni klas's sales analysis |
+| P5.78 | Automation rules | P5.26 | done | 2026-10-21 | RuleBuilder (new): When / If / Then from the application's triggers, fields, tests and actions, groups, keyboard reordering, the rule in words; Kvadrat Gradnja's rules list (on / off), a rule with its last failed run, edit with test run and problems, the run log |
+| P5.79 | Merging duplicates | P5.19 | done | 2026-10-21 | ValueComparison `chosen` / `onChoose`: the values to keep per differing row; Beton Mix d.o.o. and "Beton-Mix doo" merged (which record stays, what will happen, irreversible confirmation) and two cement items |
+| P5.80 | Scheduled reports | P4.6 | done | 2026-10-21 | Scheduled reports (ListPage, DetailPage, RecordFormPage): schedule, recipients and outside addresses, format, the application's next runs, last runs (sent, failed, skipped), Send now, pause, the e-mail preview |
+| P5.81 | Customizable dashboard | P4.6 | done | 2026-10-21 | DashboardGrid (new): the director's overview — add from the catalogue, remove, resize, rearrange by drag, keyboard or menu; saved layouts (save as, rename, default, delete); phones by the menus |
 | P5.82 | AML client risk assessment | P5.1 | todo | | |
 | P5.83 | Know your customer (client file) | P5.42 | todo | | |
 | P5.84 | Screening | P5.33 | todo | | |

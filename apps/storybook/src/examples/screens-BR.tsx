@@ -46,6 +46,7 @@ import {
   type SalesRecord,
 } from './data-BR'
 import { Frame, Tenant } from './screens-G'
+import { AnalyticsShell } from './screens-BU'
 
 /*
  * Group BR's example screens (P5.77, pivot analysis) on 14 October 2026 at 09:40:
@@ -83,13 +84,25 @@ function AnalysisShell({
   phone,
   crumbs,
   bakery = false,
+  analytics = false,
   children,
 }: {
   phone: boolean
   crumbs: { label: string; href?: string }[]
   bakery?: boolean
+  /** Kvadrat Gradnja's cost analysis is a tab of its Analytics module (with group BU and BV). */
+  analytics?: boolean
   children: ReactNode
 }) {
+  if (analytics) {
+    return (
+      <AnalyticsShell phone={phone} tab="analysis" crumbs={crumbs}>
+        <Frame phone={phone} wide>
+          {children}
+        </Frame>
+      </AnalyticsShell>
+    )
+  }
   return (
     <Tenant today={BR_TODAY}>
       <Shell
@@ -292,7 +305,11 @@ function CostAnalysisScreen({
       : null,
   )
   return (
-    <AnalysisShell phone={phone} crumbs={[{ label: 'Accounting' }, { label: 'Cost analysis' }]}>
+    <AnalysisShell
+      phone={phone}
+      analytics
+      crumbs={[{ label: 'Analytics' }, { label: 'Cost analysis' }]}
+    >
       <PageHeader
         title="Cost analysis"
         subtitle="Supplier invoices booked to the sites, July–September 2026 · Illustrative figures for the saved views"
