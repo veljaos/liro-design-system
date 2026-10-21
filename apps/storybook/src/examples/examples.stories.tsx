@@ -18025,3 +18025,205 @@ export const BqTenantPortalInvoicesPhone: Story = {
     await bqHeading(canvasElement, 'Invoices')
   },
 }
+// ── P5.77 pivot ──
+import { BR_ROUTES } from './data-BR'
+
+/** P5.77: a screen's checks, and on a phone no sideways scroll of the page. */
+function brPlay(
+  check: (canvasElement: HTMLElement) => Promise<void>,
+  phone = false,
+): NonNullable<Story['play']> {
+  return async ({ canvasElement }) => {
+    await settle()
+    await check(canvasElement)
+    if (phone) {
+      for (const page of canvasElement.querySelectorAll<HTMLElement>('[data-liro-phone-page]')) {
+        await expect(page.scrollWidth).toBeLessThanOrEqual(page.clientWidth)
+      }
+    }
+  }
+}
+
+/**
+ * P5.77: Kvadrat Gradnja d.o.o.'s cost analysis — sites and their cost accounts down, July to
+ * September across with the amount and the number of supplier invoices, the totals; the chooser
+ * beside it (on a phone behind "Fields"); a figure opens its invoices.
+ */
+const BR_COSTS_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Cost analysis' })).toBeVisible()
+  const grid = canvas.getByRole('treegrid', { name: 'Costs by site and month' })
+  await expect(within(grid).getByRole('rowheader', { name: 'Liman 4' })).toBeVisible()
+  await expect(within(grid).getByRole('columnheader', { name: 'Sep 2026' })).toBeVisible()
+}
+
+export const BrCostAnalysis: Story = {
+  name: 'Cost analysis',
+  render: () => <ExampleApp start={BR_ROUTES.costs} />,
+  play: brPlay(BR_COSTS_CHECK),
+}
+
+export const BrCostAnalysisPhone: Story = {
+  name: 'Cost analysis, phone',
+  render: () => <OnPhone start={BR_ROUTES.costs} />,
+  play: brPlay(BR_COSTS_CHECK, true),
+}
+
+/** The saved view "By supplier": one figure, one header row. */
+export const BrCostAnalysisBySupplier: Story = {
+  name: 'Cost analysis, by supplier',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BR_ROUTES.costsBySupplier} />,
+  play: brPlay(async (canvasElement) => {
+    const grid = within(canvasElement).getByRole('treegrid')
+    await expect(within(grid).getByRole('rowheader', { name: 'Beton Mix d.o.o.' })).toBeVisible()
+  }),
+}
+
+/** Liman 4's material in September opened: its supplier invoices in an end drawer. */
+export const BrCostAnalysisDocuments: Story = {
+  name: 'Cost analysis, supplier invoices',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BR_ROUTES.costsDocuments} />,
+  play: brPlay(async () => {
+    const drawer = await within(document.body).findByRole('dialog', {
+      name: /Supplier invoices\s*Liman 4 · 5120 Material · Sep 2026 · Amount/,
+    })
+    await expect(within(drawer).getByRole('table', { name: 'Supplier invoices' })).toBeVisible()
+  }),
+}
+
+export const BrCostAnalysisDocumentsPhone: Story = {
+  name: 'Cost analysis, supplier invoices, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={BR_ROUTES.costsDocuments} />,
+  play: brPlay(async (canvasElement) => {
+    await expect(
+      await within(canvasElement).findByRole('dialog', { name: /Supplier invoices/ }),
+    ).toBeVisible()
+  }, true),
+}
+
+/** A press on a figure opens its invoices; the export is reported. */
+export const BrCostAnalysisOpen: Story = {
+  name: 'Cost analysis, open a figure, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BR_ROUTES.costs} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const body = within(document.body)
+    const grid = canvas.getByRole('treegrid')
+    // Every site has a 5120 Material row: Liman 4's is the first.
+    const row = within(grid).getAllByRole('rowheader', { name: '5120 Material' })[0]?.closest('tr')
+    const first = row === null ? null : within(row).getAllByRole('gridcell')[0]
+    if (first === undefined || first === null) throw new Error('no figure')
+    await userEvent.click(first)
+    const drawer = await body.findByRole('dialog', { name: /Supplier invoices\s*Liman 4/ })
+    const table = within(drawer).getByRole('table', { name: 'Supplier invoices' })
+    // The header row and at least one invoice.
+    await expect(within(table).getAllByRole('row').length).toBeGreaterThan(1)
+    await userEvent.keyboard('{Escape}')
+    await waitFor(async () => {
+      await expect(body.queryByRole('dialog')).toBeNull()
+    })
+    await userEvent.click(canvas.getByRole('button', { name: 'Export' }))
+    await userEvent.click(await body.findByRole('menuitem', { name: 'Excel workbook (.xlsx)' }))
+    await expect(
+      await body.findByText('Cost analysis is being exported as Excel workbook (.xlsx).'),
+    ).toBeVisible()
+    notice.dismiss()
+    await waitFor(
+      async () => {
+        await expect(document.querySelector('[data-sonner-toast]')).toBeNull()
+      },
+      { timeout: 5000 },
+    )
+  },
+}
+
+/**
+ * P5.77: Pekara Zlatni klas's sales analysis — categories and products down, months across with
+ * revenue and pieces; the saved view by shop; a figure opens its sale lines.
+ */
+const BR_SALES_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Sales analysis' })).toBeVisible()
+  const grid = canvas.getByRole('treegrid', { name: 'Sales by product' })
+  await expect(within(grid).getByRole('rowheader', { name: 'Kifla' })).toBeVisible()
+  await expect(within(grid).getByRole('rowheader', { name: 'Total' })).toBeVisible()
+}
+
+export const BrSalesAnalysis: Story = {
+  name: 'Sales analysis',
+  render: () => <ExampleApp start={BR_ROUTES.sales} />,
+  play: brPlay(BR_SALES_CHECK),
+}
+
+export const BrSalesAnalysisPhone: Story = {
+  name: 'Sales analysis, phone',
+  render: () => <OnPhone start={BR_ROUTES.sales} />,
+  play: brPlay(BR_SALES_CHECK, true),
+}
+
+/** The saved view "By product and shop": the bakery's shop and the shops it supplies. */
+export const BrSalesAnalysisByShop: Story = {
+  name: 'Sales analysis, by shop',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BR_ROUTES.salesByShop} />,
+  play: brPlay(async (canvasElement) => {
+    const grid = within(canvasElement).getByRole('treegrid')
+    await expect(
+      within(grid).getByRole('columnheader', { name: 'Market Sunce d.o.o.' }),
+    ).toBeVisible()
+  }),
+}
+
+/** Kifla's revenue in September opened: its sale lines. */
+export const BrSalesAnalysisLines: Story = {
+  name: 'Sales analysis, sale lines',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BR_ROUTES.salesDocuments} />,
+  play: brPlay(async () => {
+    const drawer = await within(document.body).findByRole('dialog', {
+      name: /Sale lines\s*Peciva · Kifla · Sep 2026 · Revenue/,
+    })
+    await expect(within(drawer).getByRole('table', { name: 'Sale lines' })).toBeVisible()
+  }),
+}
+
+/** On a phone, the field chooser open in its sheet. */
+export const BrSalesAnalysisFieldsPhone: Story = {
+  name: 'Sales analysis, fields, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={BR_ROUTES.salesFields} />,
+  play: brPlay(async (canvasElement) => {
+    const sheet = await within(canvasElement).findByRole('dialog', { name: 'Fields' })
+    await waitFor(async () => {
+      await expect(within(sheet).getByRole('heading', { name: 'Rows' })).toBeVisible()
+    })
+  }, true),
+}
+
+/** A saved view chosen, a field moved (no figures for that layout here), a view again. */
+export const BrSalesAnalysisLayout: Story = {
+  name: 'Sales analysis, change the layout, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BR_ROUTES.sales} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const body = within(document.body)
+    await userEvent.click(canvas.getByRole('combobox', { name: 'Saved view' }))
+    await userEvent.click(await body.findByRole('option', { name: 'By product and shop' }))
+    await expect(
+      await canvas.findByRole('columnheader', { name: 'Market Sunce d.o.o.' }),
+    ).toBeVisible()
+    await userEvent.click(canvas.getByRole('button', { name: 'Options: Category' }))
+    await userEvent.click(await body.findByRole('menuitem', { name: 'Move to Columns' }))
+    await expect(await canvas.findByText('No figures for this layout')).toBeVisible()
+    await userEvent.click(canvas.getByRole('combobox', { name: 'Saved view' }))
+    await userEvent.click(await body.findByRole('option', { name: 'By product and month' }))
+    await expect(await canvas.findByRole('columnheader', { name: 'Sep 2026' })).toBeVisible()
+  },
+}
