@@ -2392,4 +2392,28 @@ export interface LiroMessages {
   /** ValueComparison with `chosen`: a differing row without a choice, and one with. */
   'comparison.choose': string
   'comparison.chosen': string
+  // ── P5.81 reports ──
+  /** DashboardGrid: the handle that moves a card ("Move: Revenue") and its instructions. */
+  'dashboardGrid.moveCard': (title: string) => string
+  'dashboardGrid.instructions': string
+  /** Announcements while a card is moved with the keyboard or its menu (position of total). */
+  'dashboardGrid.lifted': (title: string, position: string, total: string) => string
+  'dashboardGrid.moved': (title: string, position: string, total: string) => string
+  'dashboardGrid.dropped': (title: string, position: string, total: string) => string
+  'dashboardGrid.cancelled': (title: string) => string
+  /** A card's menu ("Options: Revenue") and its entries. */
+  'dashboardGrid.cardMenu': (title: string) => string
+  'dashboardGrid.moveEarlier': string
+  'dashboardGrid.moveLater': string
+  'dashboardGrid.moveFirst': string
+  'dashboardGrid.moveLast': string
+  /** The size button: its visible text is the size, its name "Medium, size of Revenue". */
+  'dashboardGrid.sizeOf': (size: string, title: string) => string
+  'dashboardGrid.size': string
+  'dashboardGrid.resized': (title: string, size: string) => string
+  /** Removing a card ("Remove: Revenue") and its announcement. */
+  'dashboardGrid.remove': (title: string) => string
+  'dashboardGrid.removed': (title: string) => string
+  /** The grid without cards. */
+  'dashboardGrid.empty': string
 }

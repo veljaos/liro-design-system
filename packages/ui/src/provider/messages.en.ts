@@ -1727,4 +1727,25 @@ export const messagesEn: LiroMessages = {
     total === 0 ? 'No differences' : `${countText} of ${totalText} chosen`,
   'comparison.choose': 'Choose the value to keep',
   'comparison.chosen': 'Chosen',
+  // ── P5.81 reports ──
+  'dashboardGrid.moveCard': (title) => `Move: ${title}`,
+  'dashboardGrid.instructions':
+    'Press Space to pick up the card, the arrow keys to move it, Space to drop it and Escape to cancel.',
+  'dashboardGrid.lifted': (title, position, total) =>
+    `Picked up ${title}. Position ${position} of ${total}.`,
+  'dashboardGrid.moved': (title, position, total) => `${title}: position ${position} of ${total}.`,
+  'dashboardGrid.dropped': (title, position, total) =>
+    `Dropped ${title}. Position ${position} of ${total}.`,
+  'dashboardGrid.cancelled': (title) => `Move cancelled. ${title} is back in its place.`,
+  'dashboardGrid.cardMenu': (title) => `Options: ${title}`,
+  'dashboardGrid.moveEarlier': 'Move earlier',
+  'dashboardGrid.moveLater': 'Move later',
+  'dashboardGrid.moveFirst': 'Move to the start',
+  'dashboardGrid.moveLast': 'Move to the end',
+  'dashboardGrid.sizeOf': (size, title) => `${size}, size of ${title}`,
+  'dashboardGrid.size': 'Size',
+  'dashboardGrid.resized': (title, size) => `${title}: ${size}.`,
+  'dashboardGrid.remove': (title) => `Remove: ${title}`,
+  'dashboardGrid.removed': (title) => `${title} removed.`,
+  'dashboardGrid.empty': 'No cards on this dashboard.',
 }
