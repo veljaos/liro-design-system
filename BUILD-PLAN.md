@@ -383,8 +383,8 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P5.86 | AML case management | P5.18 | done | 2026-10-21 | A case (DocumentPage): timeline, linked alerts, transactions, documents, notes, tasks, the decision proposed and approved by a second person (SignerList, four eyes) |
 | P5.87 | Suspicious transaction report | P5.66 | done | 2026-10-21 | The suspicious transaction report from the authority's field definitions (DefinedForm), review and submission states, what was sent and when; confidential throughout |
 | P5.88 | AML overview and obligations | P4.6 | done | 2026-10-21 | The AML overview (DashboardPage: clients by risk, reviews due, open alerts and cases, ageing) and obligations (the compliance officer and deputy, training, procedures, retention, the audit trail) |
-| P5.89 | Consolidate to floorplans | P5.88 | in progress | | Seven floorplans (`docs/floorplans.md`); 26 canonical example screens, one story file per floorplan; every other screen a recipe (`docs/recipes.md`) |
-| P5.90 | The owner's review, applied to the floorplans | P5.89 | todo | | |
+| P5.89 | Consolidate to floorplans | P5.88 | done | 2026-10-23 | Seven floorplans (`docs/floorplans.md`); 26 canonical example screens, one story file per floorplan; every other screen a recipe (`docs/recipes.md`) |
+| P5.90 | The owner's review, applied to the floorplans | P5.89 | done | 2026-10-23 | Twenty-one review items fixed as classes: one sticky header band in pure CSS, the line editor rebuilt (phones one card per line), the bank statement automatic first, TimeField, CatalogPicker, schedules on phones as today's lists, the till and restaurant for a first-day waiter, toasts that never block |
 | P6.1 | Full language and direction matrix | Phases 1–5 | todo | | |
 | P6.3 | Performance budget | P4.8 | todo | | |
 | P6.6 | Full cleanup | P6.3 | todo | | |
