@@ -373,14 +373,6 @@ export function Shell({
       },
     },
     {
-      id: 'new-contract',
-      label: 'New employment contract',
-      group: 'actions',
-      onSelect: () => {
-        navigate('/hr/contracts/new')
-      },
-    },
-    {
       id: 'go-invoices',
       label: 'Invoices',
       group: 'navigation',
@@ -421,38 +413,6 @@ export function Shell({
       },
     },
     {
-      id: 'go-tasks',
-      label: 'Tasks',
-      group: 'navigation',
-      onSelect: () => {
-        navigate('/tasks')
-      },
-    },
-    {
-      id: 'go-0418',
-      label: 'Final invoice F-2026-0418',
-      group: 'navigation',
-      onSelect: () => {
-        navigate('/sales/invoices/F-2026-0418')
-      },
-    },
-    {
-      id: 'go-0415',
-      label: 'Invoice in EUR F-2026-0415',
-      group: 'navigation',
-      onSelect: () => {
-        navigate('/sales/invoices/F-2026-0415')
-      },
-    },
-    {
-      id: 'go-situation',
-      label: 'Interim situation IS-2026-007',
-      group: 'navigation',
-      onSelect: () => {
-        navigate('/projects/IS-2026-007')
-      },
-    },
-    {
       id: 'go-vat',
       label: 'VAT return, September 2026',
       group: 'navigation',
@@ -461,11 +421,19 @@ export function Shell({
       },
     },
     {
-      id: 'go-setup',
-      label: 'Set up Stanić Elektro STR',
+      id: 'go-trial',
+      label: 'Trial balance',
       group: 'navigation',
       onSelect: () => {
-        navigate('/setup')
+        navigate('/accounting/trial-balance')
+      },
+    },
+    {
+      id: 'go-payroll',
+      label: 'Payroll run, September 2026',
+      group: 'navigation',
+      onSelect: () => {
+        navigate('/hr/payroll/2026-09')
       },
     },
     {
