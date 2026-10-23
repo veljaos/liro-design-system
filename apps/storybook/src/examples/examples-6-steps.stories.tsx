@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { expect, userEvent, within } from 'storybook/test'
+import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { createFormat } from '@veljaos/ui'
 import { settle } from '../../../../packages/ui/src/primitives/story-helpers'
 import { ExampleApp, OnPhone } from './example-app'
@@ -157,6 +157,7 @@ async function noPageOverflow(canvasElement: HTMLElement) {
 /**
  * Health (P5.17): Jovana Nikolić books a check-up in Dom zdravlja Novi Sad's patient portal
  * (PortalShell) — the service and her chosen doctor, then a free time (SlotPicker), then Book.
+ * The service is chosen from the clinic's 61 services in a CatalogPicker (P5.90 item 14).
  */
 export const HealthBooking: Story = {
   name: 'Health, book an appointment',
@@ -167,8 +168,33 @@ export const HealthBooking: Story = {
     await expect(
       canvas.getByRole('heading', { level: 1, name: 'Book an appointment' }),
     ).toBeVisible()
-    await expect(canvas.getByRole('radio', { name: /Check-up/ })).toBeChecked()
+    await expect(canvas.getByRole('region', { name: 'Service' })).toHaveTextContent('Check-up')
+    await expect(canvas.getByRole('button', { name: 'Choose another service…' })).toBeVisible()
   },
+}
+
+/**
+ * The catalogue of services: most chosen, her recent ones, the recommended and those on
+ * discount first; the levels (general practice, specialist exams, the laboratory …) below.
+ */
+export const HealthBookingCatalogue: Story = {
+  name: 'Health, choosing a service',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={H_ROUTES.bookChoose} />,
+  play: async () => {
+    await settle()
+    const dialog = within(
+      await within(document.body).findByRole('dialog', { name: /Choose a service/ }),
+    )
+    await expect(dialog.getByRole('listbox', { name: 'Your recent' })).toBeVisible()
+    await expect(dialog.getByRole('button', { name: /^Laboratory.*services/ })).toBeVisible()
+  },
+}
+
+export const HealthBookingCataloguePhone: Story = {
+  name: 'Health, choosing a service, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={H_ROUTES.bookChoose} />,
 }
 
 export const HealthBookingPhone: Story = {
@@ -189,6 +215,23 @@ export const HealthBookingWalk: Story = {
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
+    // The service from the catalogue: the laboratory has its own level; the search finds the
+    // blood pressure control among the 61.
+    await userEvent.click(canvas.getByRole('button', { name: 'Choose another service…' }))
+    const dialog = within(
+      await within(document.body).findByRole('dialog', { name: /Choose a service/ }),
+    )
+    await userEvent.click(dialog.getByRole('button', { name: /^Laboratory/ }))
+    await expect(dialog.getByRole('button', { name: /^Blood draw/ })).toBeVisible()
+    await userEvent.click(dialog.getByRole('button', { name: 'Back to All' }))
+    await userEvent.type(dialog.getByRole('searchbox'), 'pressure')
+    await userEvent.click(dialog.getByRole('option', { name: /^Blood pressure control/ }))
+    await waitFor(async () => {
+      await expect(within(document.body).queryByRole('dialog')).toBeNull()
+    })
+    await expect(canvas.getByRole('region', { name: 'Service' })).toHaveTextContent(
+      'Blood pressure control',
+    )
     await userEvent.click(canvas.getByRole('button', { name: 'Continue' }))
     await settle()
     // The slot's name: its time range and the day in words.

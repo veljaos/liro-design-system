@@ -7,6 +7,10 @@
  */
 import type {
   CalendarEvent,
+  CatalogCategory,
+  CatalogFilter,
+  CatalogItem,
+  CatalogSection,
   FreeSlot,
   ScheduleBooking,
   ScheduleResource,
@@ -44,12 +48,201 @@ export const DOCTORS: readonly ScheduleResource[] = [
 /** Jovana's chosen doctor. */
 export const CHOSEN_DOCTOR = 'stankovic'
 
-export const SERVICES = [
-  { value: 'checkup', label: 'Check-up', description: '30 minutes' },
-  { value: 'pressure', label: 'Blood pressure control', description: '30 minutes' },
-  { value: 'prescription', label: 'Prescription renewal', description: '30 minutes' },
-  { value: 'referral', label: 'Referral to a specialist', description: '30 minutes' },
+// ── The catalogue of services (P5.90 item 14) ───────────────────────────────────────────────────
+
+/**
+ * Dom zdravlja Novi Sad's services as the patient portal offers them: 62 services in levels
+ * (general practice; specialist exams by specialty; the laboratory's blood draw and other
+ * samples; imaging; dental care; physical therapy; vaccination). Who performs each, how long it
+ * takes, whether health insurance covers it or its price (and a discount), all the clinic's data;
+ * the portal shows them in a CatalogPicker. Fictitious doctors and prices.
+ */
+export const SERVICE_LEVELS: CatalogCategory[] = [
+  { id: 'gp', label: 'General practice', description: 'Your chosen doctor at Ambulanta Liman' },
+  { id: 'specialist', label: 'Specialist exam', description: 'With a referral, or paid' },
+  { id: 'cardio', label: 'Cardiology', parentId: 'specialist' },
+  { id: 'derma', label: 'Dermatology', parentId: 'specialist' },
+  { id: 'eye', label: 'Ophthalmology', parentId: 'specialist' },
+  { id: 'ent', label: 'Ear, nose and throat', parentId: 'specialist' },
+  { id: 'gyn', label: 'Gynaecology', parentId: 'specialist' },
+  { id: 'endo', label: 'Endocrinology', parentId: 'specialist' },
+  { id: 'ortho', label: 'Orthopaedics', parentId: 'specialist' },
+  { id: 'lab', label: 'Laboratory', description: 'Samples taken 07–10 h' },
+  { id: 'blood', label: 'Blood draw', parentId: 'lab', description: 'Come fasting' },
+  { id: 'samples', label: 'Urine and swabs', parentId: 'lab' },
+  { id: 'imaging', label: 'Imaging', description: 'Ultrasound, X-ray, ECG' },
+  { id: 'dental', label: 'Dental care' },
+  { id: 'physio', label: 'Physical therapy' },
+  { id: 'vaccines', label: 'Vaccination' },
 ]
+
+const COVERED = 'Covered by health insurance'
+
+function service(
+  id: string,
+  name: string,
+  categoryId: string,
+  detail: string,
+  provider: string,
+  price?: string,
+  extra: Partial<CatalogItem> = {},
+): CatalogItem {
+  return {
+    id,
+    name,
+    categoryId,
+    detail,
+    provider,
+    ...(price === undefined ? { priceText: COVERED } : { price }),
+    ...extra,
+  }
+}
+
+const GP = 'Your chosen doctor'
+
+export const SERVICES: CatalogItem[] = [
+  // General practice: the patient's chosen doctor, covered.
+  service('checkup', 'Check-up', 'gp', '30 min', GP),
+  service('pressure', 'Blood pressure control', 'gp', '30 min', GP),
+  service('prescription', 'Prescription renewal', 'gp', '15 min', GP),
+  service('referral', 'Referral to a specialist', 'gp', '15 min', GP),
+  service('sick-leave', 'Sick-leave certificate', 'gp', '15 min', GP),
+  service('diabetes', 'Diabetes control', 'gp', '30 min', GP),
+  service('driving', 'Certificate for a driving licence', 'gp', '45 min', GP, '4500.00'),
+  service('sports', 'Certificate for sports', 'gp', '30 min', GP, '2800.00'),
+  service('preventive-40', 'Preventive check-up 40+', 'gp', '45 min', GP, '3200.00', {
+    originalPrice: '4000.00',
+    discount: '−20% in October, preventive month',
+  }),
+  // Specialist exams.
+  service('cardio-exam', 'Cardiology exam', 'cardio', '30 min', 'dr Ana Jović', undefined, {
+    keywords: 'heart',
+  }),
+  service('cardio-ecg-holter', 'Holter ECG, 24 h', 'cardio', '24 h', 'dr Ana Jović', '6800.00'),
+  service('cardio-echo', 'Heart ultrasound', 'cardio', '40 min', 'dr Ana Jović', '7500.00'),
+  service('cardio-stress', 'Stress test', 'cardio', '1 h', 'dr Petar Ilić', '6200.00'),
+  service('derma-exam', 'Dermatology exam', 'derma', '20 min', 'dr Mira Kostić'),
+  service(
+    'derma-moles',
+    'Mole check with dermoscopy',
+    'derma',
+    '30 min',
+    'dr Mira Kostić',
+    '4200.00',
+    {
+      originalPrice: '5250.00',
+      discount: '−20% until 31.10.',
+    },
+  ),
+  service(
+    'derma-removal',
+    'Removal of a skin change',
+    'derma',
+    '45 min',
+    'dr Mira Kostić',
+    '8900.00',
+  ),
+  service('eye-exam', 'Eye exam', 'eye', '30 min', 'dr Vladimir Đurić'),
+  service('eye-glasses', 'Eye test for glasses', 'eye', '20 min', 'dr Vladimir Đurić', '2500.00'),
+  service(
+    'eye-pressure',
+    'Eye pressure measurement',
+    'eye',
+    '15 min',
+    'dr Vladimir Đurić',
+    '1500.00',
+  ),
+  service('ent-exam', 'Ear, nose and throat exam', 'ent', '20 min', 'dr Lazar Nikolić'),
+  service('ent-hearing', 'Hearing test', 'ent', '30 min', 'dr Lazar Nikolić', '3000.00'),
+  service('ent-wax', 'Ear wax removal', 'ent', '15 min', 'dr Lazar Nikolić', '1800.00'),
+  service('gyn-exam', 'Gynaecology exam', 'gyn', '30 min', 'dr Jelena Popov'),
+  service('gyn-pap', 'Pap test', 'gyn', '15 min', 'dr Jelena Popov'),
+  service(
+    'gyn-ultrasound',
+    'Gynaecological ultrasound',
+    'gyn',
+    '20 min',
+    'dr Jelena Popov',
+    '3500.00',
+  ),
+  service('endo-exam', 'Endocrinology exam', 'endo', '30 min', 'dr Nevena Marić'),
+  service('endo-thyroid', 'Thyroid ultrasound', 'endo', '20 min', 'dr Nevena Marić', '3800.00'),
+  service('ortho-exam', 'Orthopaedic exam', 'ortho', '20 min', 'dr Bojan Savić'),
+  service('ortho-injection', 'Joint injection', 'ortho', '20 min', 'dr Bojan Savić', '5500.00'),
+  // The laboratory.
+  service('blood-count', 'Complete blood count', 'blood', '5 min', 'Laboratory'),
+  service('glucose', 'Blood glucose', 'blood', '5 min', 'Laboratory'),
+  service('lipids', 'Lipid profile', 'blood', '5 min', 'Laboratory', undefined, {
+    keywords: 'cholesterol triglycerides',
+  }),
+  service('liver', 'Liver tests', 'blood', '5 min', 'Laboratory'),
+  service('kidney', 'Kidney tests', 'blood', '5 min', 'Laboratory', undefined, {
+    keywords: 'creatinine urea',
+  }),
+  service('tsh', 'Thyroid hormones (TSH, FT4)', 'blood', '5 min', 'Laboratory', '2400.00'),
+  service('hba1c', 'HbA1c', 'blood', '5 min', 'Laboratory'),
+  service('vitamin-d', 'Vitamin D', 'blood', '5 min', 'Laboratory', '2900.00'),
+  service('iron', 'Iron and ferritin', 'blood', '5 min', 'Laboratory', '1900.00'),
+  service('psa', 'PSA', 'blood', '5 min', 'Laboratory', '1600.00'),
+  service('crp', 'CRP', 'blood', '5 min', 'Laboratory'),
+  service('urine', 'Urine test', 'samples', 'Bring the first morning urine', 'Laboratory'),
+  service('throat-swab', 'Throat swab', 'samples', '5 min', 'Laboratory'),
+  service('nose-swab', 'Nose swab', 'samples', '5 min', 'Laboratory'),
+  service('stool', 'Stool test', 'samples', 'Bring the sample', 'Laboratory', '1200.00'),
+  // Imaging.
+  service('ecg', 'ECG', 'imaging', '15 min', 'Imaging unit'),
+  service('us-abdomen', 'Abdominal ultrasound', 'imaging', '20 min', 'dr Goran Tomić'),
+  service('us-breast', 'Breast ultrasound', 'imaging', '20 min', 'dr Goran Tomić', '3600.00'),
+  service('xray-chest', 'Chest X-ray', 'imaging', '10 min', 'Imaging unit'),
+  service('xray-spine', 'Spine X-ray', 'imaging', '15 min', 'Imaging unit'),
+  service('mammography', 'Mammography', 'imaging', '20 min', 'Imaging unit', undefined, {
+    unavailableReason: 'No free times this month; the next ones open on 01.11.',
+  }),
+  // Dental care.
+  service('dental-exam', 'Dental exam', 'dental', '20 min', 'dr Ivana Lukić'),
+  service('dental-cleaning', 'Teeth cleaning', 'dental', '40 min', 'dr Ivana Lukić', '3500.00'),
+  service('dental-filling', 'Filling', 'dental', '45 min', 'dr Ivana Lukić', '4800.00'),
+  service('dental-xray', 'Dental X-ray', 'dental', '10 min', 'dr Ivana Lukić', '1200.00'),
+  // Physical therapy.
+  service('physio-exam', 'Physiatrist exam', 'physio', '30 min', 'dr Sava Petrović'),
+  service(
+    'physio-back',
+    'Therapy for back pain, 10 sessions',
+    'physio',
+    '10 × 45 min',
+    'Physiotherapy',
+    '18000.00',
+  ),
+  service('physio-massage', 'Therapeutic massage', 'physio', '30 min', 'Physiotherapy', '2500.00'),
+  // Vaccination.
+  service('flu', 'Flu vaccine', 'vaccines', '10 min', 'Vaccination point'),
+  service('tetanus', 'Tetanus vaccine', 'vaccines', '10 min', 'Vaccination point'),
+  service('hpv', 'HPV vaccine', 'vaccines', '10 min', 'Vaccination point', '9500.00'),
+  service(
+    'hepatitis-b',
+    'Hepatitis B vaccine',
+    'vaccines',
+    '10 min',
+    'Vaccination point',
+    '3200.00',
+  ),
+]
+
+/** What the portal shows first (the clinic's data): most chosen, Jovana's recent, for her age. */
+export const SERVICE_SECTIONS: CatalogSection[] = [
+  { id: 'top', label: 'Most chosen', itemIds: ['checkup', 'blood-count', 'prescription', 'flu'] },
+  { id: 'recent', label: 'Your recent', itemIds: ['pressure', 'lipids'] },
+  { id: 'recommended', label: 'Recommended for you', itemIds: ['preventive-40', 'mammography'] },
+  { id: 'discount', label: 'On discount', itemIds: ['preventive-40', 'derma-moles'] },
+]
+
+export const SERVICE_FILTERS: CatalogFilter[] = [
+  { id: 'covered', label: COVERED, matches: (each) => each.priceText === COVERED },
+  { id: 'gp', label: 'With your chosen doctor', matches: (each) => each.provider === GP },
+]
+
+/** The service a booking opens with (Jovana's usual). */
+export const DEFAULT_SERVICE = 'checkup'
 
 /** The doctors' consulting hours (the clinic's data): 07:00–13:00 in 30-minute appointments. */
 const DAY_SLOTS = [

@@ -21,6 +21,9 @@ import {
   FREE_SLOTS,
   JOVANA_BOOKING,
   JOVANA_SLOT,
+  SERVICE_LEVELS,
+  SERVICE_SECTIONS,
+  SERVICES,
   UNAVAILABLE,
 } from './data-H'
 import { cashOutcome, computeSale, QUICK_AMOUNTS, SALE, SALE_FIGURES } from './data-I'
@@ -106,6 +109,19 @@ export function checkBooking() {
   }
   const chosen = FREE_SLOTS.find((each) => each.id === JOVANA_SLOT)
   if (chosen?.start !== JOVANA_BOOKING.start) fail('Jovana’s booking is not a free time')
+  // The catalogue of services (P5.90 item 14): every service in a level, every section's service
+  // in the catalogue.
+  const levels = new Set(SERVICE_LEVELS.map((each) => each.id))
+  for (const each of SERVICES) {
+    if (each.categoryId !== undefined && !levels.has(each.categoryId)) {
+      fail(`service ${each.id} stands in no level`)
+    }
+  }
+  for (const section of SERVICE_SECTIONS) {
+    for (const id of section.itemIds) {
+      if (!SERVICES.some((each) => each.id === id)) fail(`section ${section.id}: no ${id}`)
+    }
+  }
   const own = [...BOOKINGS_BEFORE, JOVANA_BOOKING].filter((b) => b.resourceId === CHOSEN_DOCTOR)
   if (own.some((b) => !DOCTOR_EVENTS.some((event) => event.id === b.id))) {
     fail('the doctor’s calendar misses a booking')
