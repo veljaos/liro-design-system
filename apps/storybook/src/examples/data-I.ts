@@ -1,12 +1,10 @@
 /*
  * Group I's example data (P5.17): the till of Pekara Zlatni klas in Novi Sad (a bakery, Kasa 1)
- * on 6 October 2026, and the handheld of Magacin Novi Sad picking order NP-2026-0233 for Kvadrat
- * Gradnja d.o.o., then counting the location the pick came up short at. Fictitious; English
- * interface text, Serbian data. Amounts are whole paras (BigInt) and quantities whole thousandths:
- * every line total, discount, tax and difference is computed here, as the application would; the
- * components add nothing (D4). The stated figures below are checked against the computation in
- * dataset-checks.ts. Tax labels (E 10%, Đ 20%) and codes are illustrative. Not part of the
- * package. No classes here.
+ * on 6 October 2026. Fictitious; English interface text, Serbian data. Amounts are whole paras
+ * (BigInt) and quantities whole thousandths: every line total, discount, tax and change is
+ * computed here, as the application would; the components add nothing (D4). The stated figures
+ * below are checked against the computation in dataset-checks.ts. Tax labels (E 10%, Đ 20%) and
+ * codes are illustrative. Not part of the package. No classes here.
  */
 import type { CartAmount, CartLine, PosProduct, ProductCategory } from '@veljaos/ui'
 import { decimal, paras, sumUnits } from '../../../../packages/ui/src/components/amounts-story-data'
@@ -26,18 +24,6 @@ export const I_ROUTES = {
   posOffline: '/pos/zlatni-klas?offline',
   /** Phones: the products sheet open over the cart. */
   posProducts: '/pos/zlatni-klas?products=open',
-  /** The pick list, line 5 of 12: scan its location. */
-  picking: '/warehouse/picking/PL-2026-0418',
-  /** The location scanned: scan the item. */
-  pickingItem: '/warehouse/picking/PL-2026-0418?step=item',
-  /** Both scanned: confirm the quantity. */
-  pickingQuantity: '/warehouse/picking/PL-2026-0418?step=quantity',
-  /** Skipping the line, the reason asked. */
-  pickingSkip: '/warehouse/picking/PL-2026-0418?step=skip',
-  /** The connection lost, three changes kept on the handheld. */
-  pickingOffline: '/warehouse/picking/PL-2026-0418?offline',
-  /** The count of A-02-03, where the pick came up short. */
-  count: '/warehouse/counts/CC-2026-0031',
 }
 
 // ── The till ──────────────────────────────────────────────────────────────────────────────────
@@ -362,10 +348,6 @@ export function cartTotals(sale: ComputedSale): CartAmount[] {
 
 /** The footer's lines; the closing line is ReceiptPreview's `end` (P5.28), not "=====" text. */
 export const RECEIPT_FOOTER: readonly string[] = ['Thank you, see you tomorrow!']
-
-// ── The handheld: picking ─────────────────────────────────────────────────────────────────────
-
-// ── The handheld: counting ────────────────────────────────────────────────────────────────────
 
 /** What the cash tendered leaves: the change, or what is still to pay. Null while nothing is typed. */
 export function cashOutcome(total: bigint, tendered: string | null) {

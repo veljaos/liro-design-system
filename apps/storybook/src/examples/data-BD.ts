@@ -1,9 +1,8 @@
 /*
  * Group BD's example data (P5.63, sign-in flows): what the Core answers at each step of signing in
  * to Liro on 14.10.2026 at 09:40 — Milica Petrović's password and two-factor code (the e-mail step
- * is the sign-in screen of P4.8), the forgotten password and the new one, Ivan Lukić's invitation
- * to Kvadrat Gradnja d.o.o., the locked account and the expired session. Every sentence here is
- * the application's: the design system shows it as given. Not part of the package.
+ * is the sign-in screen of P4.8) and the forgotten password. Every sentence here is the
+ * application's: the design system shows it as given. Not part of the package.
  */
 
 // ── Routes ────────────────────────────────────────────────────────────────────────────────────
@@ -17,14 +16,6 @@ export const BD_ROUTES = {
   recovery: '/sign-in/recovery-code',
   forgot: '/sign-in/forgot-password',
   forgotSent: '/sign-in/forgot-password/sent',
-  newPassword: '/sign-in/new-password',
-  newPasswordMismatch: '/sign-in/new-password/mismatch',
-  newPasswordRules: '/sign-in/new-password/rules',
-  newPasswordExpired: '/sign-in/new-password/expired',
-  invitation: '/invitation/KG-7Q4M',
-  invitationExpired: '/invitation/KG-2F9C',
-  locked: '/sign-in/locked',
-  sessionExpired: '/sign-in/session-expired',
 } as const
 
 export const BD_TODAY = '2026-10-14'
@@ -49,15 +40,7 @@ export const WRONG_RECOVERY_CODE = 'This recovery code is wrong or was already u
 /** How long a trusted device skips the code, in the Core's words. */
 export const REMEMBER_DEVICE = 'Do not ask for a code on this device for 30 days'
 
-// ── Forgotten and new password ────────────────────────────────────────────────────────────────
+// ── Forgotten password ────────────────────────────────────────────────────────────────────────
 
 /** How long the link in the e-mail works, in the Core's words. */
 export const LINK_VALID = 'The link works for 60 minutes and only once.'
-
-/** The company's password rules, as the Core states them (its own policy, P5.29). */
-export const PASSWORD_RULES =
-  'At least 12 characters. Not one of your last 5 passwords, and not your e-mail address.'
-
-// ── Invitation ────────────────────────────────────────────────────────────────────────────────
-
-// ── Locked account and expired session ───────────────────────────────────────────────────────

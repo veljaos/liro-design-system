@@ -20,8 +20,7 @@ import {
   type PivotRow,
 } from '../../../../packages/ui/src/pivot'
 import type { ExampleRoute } from './example-app'
-import { Shell, type ExampleAccount } from './example-shell'
-import { BAKERY_COMPANY, BAKERY_OWNER } from './data-AZ'
+import { reportsTabs, Shell } from './example-shell'
 import {
   BR_ROUTES,
   BR_TODAY,
@@ -38,18 +37,13 @@ import {
   type CostDocument,
 } from './data-BR'
 import { Frame, Tenant } from './screens-G'
-import { AnalyticsShell } from './screens-BU'
 
 /*
- * Group BR's example screens (P5.77, pivot analysis) on 14 October 2026 at 09:40:
- * - Kvadrat Gradnja d.o.o.'s cost analysis (Accounting → Cost analysis, Milica Petrović): sites and
- *   their cost accounts down, July–September across, the amount and the number of supplier
- *   invoices under each month, the totals; the saved view "By supplier". A figure opens its
- *   invoices in an end Drawer (DataTable: date, number, supplier, text, amount; the latest ten of
- *   the application's count).
- * - Pekara Zlatni klas's sales analysis (Sales → Sales analysis, Jovana Marković): categories and
- *   products down, months across with revenue and pieces; the saved view "By product and shop"
- *   (its own shop and the shops it supplies). A figure opens its sale lines.
+ * Group BR's example screen (P5.77, pivot analysis): Kvadrat Gradnja d.o.o.'s cost analysis on
+ * 14 October 2026 at 09:40 (Analytics → Cost analysis, Milica Petrović): sites and their cost
+ * accounts down, July–September across, the amount and the number of supplier invoices under each
+ * month, the totals; the saved view "By supplier". A figure opens its invoices in an end Drawer
+ * (DataTable: date, number, supplier, text, amount; the latest ten of the application's count).
  * The layout is the user's (the Pivot's chooser, or a saved view); the figures are the
  * application's for that layout (data-BR.ts) — this illustrative application has them for the
  * saved views only, so any other layout shows "No figures for this layout". Export is reported in
@@ -63,44 +57,19 @@ const EXPORT_FORMATS = [
   { id: 'csv', label: 'Comma-separated values (.csv)' },
 ]
 
-/** Jovana Marković runs the bakery. */
-const BAKERY_ACCOUNT: ExampleAccount = {
-  name: BAKERY_OWNER.name,
-  email: BAKERY_OWNER.email,
-  companies: [BAKERY_COMPANY],
-}
-
-/** A signed-in screen of the analyses on 14 October 2026, with its toasts. */
+/** The Analytics module's screen on 14 October 2026, Cost analysis current, with its toasts. */
 function AnalysisShell({
   phone,
   crumbs,
-  bakery = false,
-  analytics = false,
   children,
 }: {
   phone: boolean
   crumbs: { label: string; href?: string }[]
-  bakery?: boolean
-  /** Kvadrat Gradnja's cost analysis is a tab of its Analytics module (with group BU and BV). */
-  analytics?: boolean
   children: ReactNode
 }) {
-  if (analytics) {
-    return (
-      <AnalyticsShell phone={phone} tab="analysis" crumbs={crumbs}>
-        <Frame phone={phone} wide>
-          {children}
-        </Frame>
-      </AnalyticsShell>
-    )
-  }
   return (
     <Tenant today={BR_TODAY}>
-      <Shell
-        phone={phone}
-        crumbs={crumbs}
-        {...(bakery ? { account: BAKERY_ACCOUNT, company: BAKERY_COMPANY.id } : {})}
-      >
+      <Shell phone={phone} crumbs={crumbs} tabs={reportsTabs('costs')}>
         <Frame phone={phone} wide>
           {children}
         </Frame>
@@ -296,11 +265,7 @@ function CostAnalysisScreen({
       : null,
   )
   return (
-    <AnalysisShell
-      phone={phone}
-      analytics
-      crumbs={[{ label: 'Analytics' }, { label: 'Cost analysis' }]}
-    >
+    <AnalysisShell phone={phone} crumbs={[{ label: 'Analytics' }, { label: 'Cost analysis' }]}>
       <PageHeader
         title="Cost analysis"
         subtitle="Supplier invoices booked to the sites, July–September 2026 · Illustrative figures for the saved views"
@@ -341,8 +306,6 @@ function CostAnalysisScreen({
     </AnalysisShell>
   )
 }
-
-// ── Pekara Zlatni klas: sales analysis ───────────────────────────────────────────────────────
 
 // ── Routes ────────────────────────────────────────────────────────────────────────────────────
 

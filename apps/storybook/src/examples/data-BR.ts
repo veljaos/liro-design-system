@@ -1,11 +1,7 @@
 /*
- * Group BR's example data (P5.77, pivot analysis) on 14 October 2026 at 09:40:
- * - Kvadrat Gradnja d.o.o.'s costs of July–September 2026 by site, account (the illustrative chart
- *   of accounts) and supplier, from its supplier invoices (UF-2026-…): the amounts and the number
- *   of documents.
- * - Pekara Zlatni klas's sales of July–September 2026 by product (the till's products, group I),
- *   month and customer: its own shop and the shops it supplies (group AX's customer group Shops),
- *   in RSD and pieces.
+ * Group BR's example data (P5.77, pivot analysis) on 14 October 2026 at 09:40: Kvadrat Gradnja
+ * d.o.o.'s costs of July–September 2026 by site, account (the illustrative chart of accounts) and
+ * supplier, from its supplier invoices (UF-2026-…): the amounts and the number of documents.
  * The application has computed its figures for each saved view (`views`): every cell, subtotal and
  * total is a decimal string written out here, never computed by the screens (D4); null is a cell
  * with nothing. For any other layout this illustrative application has no figures. The records
@@ -28,13 +24,6 @@ export const BR_ROUTES = {
   costsBySupplier: '/analytics/costs?view=suppliers',
   /** The documents behind Liman 4's material in September, opened. */
   costsDocuments: '/analytics/costs?cell=liman4-material-sep',
-  sales: '/sales/analysis',
-  /** The saved view by shop. */
-  salesByShop: '/sales/analysis?view=shops',
-  /** The records behind Kifla's revenue in September, opened. */
-  salesDocuments: '/sales/analysis?cell=kifla-sep',
-  /** On a phone: the field chooser open in its sheet. */
-  salesFields: '/sales/analysis?fields',
 } as const
 
 /** A saved view: its layout and the figures the application computed for it. */
@@ -806,5 +795,3 @@ export const COST_OPENED = {
   rowPath: ['Liman 4', '5120 Material'],
   columnPath: ['Sep 2026', 'Amount'],
 }
-
-// ── Pekara Zlatni klas: sales ────────────────────────────────────────────────────────────────

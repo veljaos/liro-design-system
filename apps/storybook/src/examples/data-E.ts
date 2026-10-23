@@ -1,8 +1,8 @@
 /*
  * The data of group E's example screens (P5.19, P5.20): Kvadrat Gradnja d.o.o.'s customer
- * catalogue (the dataset's customers and 50,000 generated ones), a customer import, the VAT
- * return for September 2026 and the work-injury register for 2026. Amounts are decimal strings,
- * added here in whole paras (BigInt) — the screens play the application; components never add.
+ * catalogue (the dataset's customers and 50,000 generated ones), a customer import and the VAT
+ * return for September 2026. Amounts are decimal strings, added here in whole paras (BigInt) —
+ * the screens play the application; components never add.
  * Legal codes, field numbers and texts are illustrative, not authoritative. No classes here.
  */
 
@@ -461,5 +461,3 @@ export const SEPTEMBER_REVERSE_CHARGE = [
 
 /** Ivana Stojanović left UF-2026-1179 out of 3.1.1's VAT: a query about its price is open. */
 export const VAT_INPUT_OVERRIDE = vatAt20('22788.00')
-
-// ── Work-injury register 2026 ─────────────────────────────────────────────────────────────────

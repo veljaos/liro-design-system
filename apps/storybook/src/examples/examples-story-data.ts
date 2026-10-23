@@ -368,7 +368,7 @@ export const APPROVALS: ExampleApproval[] = [
   },
 ]
 
-/** The employee the walk-through opens. */
+/** The employee of the record example (Employees on the home page). */
 export const EMPLOYEE = {
   id: 'jelena-markovic',
   firstName: 'Jelena',

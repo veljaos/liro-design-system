@@ -1,10 +1,9 @@
 /*
- * The data of group D1's example screens (Phase 5, P5.18 and P5.19): Kvadrat Gradnja d.o.o.'s
+ * The data of group D1's example screen (Phase 5, P5.18 and P5.19): Kvadrat Gradnja d.o.o.'s
  * catalogue (items with stock, services, fixed assets, and generated articles so it holds tens of
- * thousands of records), the draft invoice to Bojović i sinovi d.o.o. whose lines are added by
- * search, and the specification of works of the interim situation IS-2026-007. Every amount is a
- * decimal string computed here in whole paras (BigInt), never by hand: line → subtotal → recap
- * by tax category → total. Not part of the package. No classes here.
+ * thousands of records) and the draft invoice to Bojović i sinovi d.o.o. whose lines are added by
+ * search. Every amount is a decimal string computed here in whole paras (BigInt), never by hand:
+ * line → subtotal → recap by tax category → total. Not part of the package. No classes here.
  */
 import type {
   LookupKind,
@@ -507,113 +506,4 @@ export function draftTotals(lines: readonly DraftLine[]): {
     total: { key: 'total', label: 'Invoice total', value: fromParas(total), currency: 'RSD' },
     net: fromParas(net),
   }
-}
-
-// ── IS-2026-007: the specification of works (the recipe shared with group D2) ────────────────
-
-export const SITUATION = {
-  number: 'IS-2026-007',
-  customer: 'Vojvođanka Mlin a.d.',
-  taxId: '100421987',
-  address: 'Industrijska 4, 23000 Zrenjanin',
-  contract: '12/2026',
-  site: 'Hall B extension, Temerinski put 51',
-  period: 'September 2026',
-}
-
-export const SPEC_GROUPS = [
-  '1. Preparatory works',
-  '2. Earthworks',
-  '3. Concrete works',
-  '4. Masonry',
-  '5. Steel structure',
-  '6. Roofing',
-  '7. Facade',
-  '8. Carpentry',
-  '9. Plumbing',
-  '10. Electrical installation',
-  '11. Floors',
-  '12. Finishing works',
-]
-
-/** One row of the specification: a group heading, a position, or a group's subtotal. */
-export interface SpecRow {
-  id: string
-  type: LineType
-  /** The group (1-based). */
-  group: number
-  /** The position within the group (1-based); 0 for a heading or a subtotal. */
-  position: number
-  /** "3.12 Concrete works, position 12"; the heading's or the subtotal's text. */
-  text: string
-  /** Contracted quantity, a decimal string. */
-  quantity: string | null
-  /** "MTK" (m²) for odd positions, "H87" (pc) for even ones. */
-  unit: string
-  /** Unit price, a decimal string with paras. */
-  price: string | null
-  tax: string
-  /** Quantity done in earlier periods. */
-  previous: string
-  /** Quantity done this period (what this situation bills). */
-  current: string | null
-}
-
-/**
- * The specification of IS-2026-007, generated with the recipe both groups share: 12 groups of 25
- * positions; position i of group g has quantity ((g·7 + i·3) mod 40) + 1, in m² for odd i and pc
- * for even i; unit price 50000 + ((g·1301 + i·977) mod 950000) paras; the previous share
- * (i mod 3)·25 % of the quantity and this period ((i + g) mod 2)·25 %, each rounded down to whole
- * units; amounts quantity × price exactly; every position S 20%.
- */
-export function specificationOf(): SpecRow[] {
-  const rows: SpecRow[] = []
-  SPEC_GROUPS.forEach((title, index) => {
-    const g = index + 1
-    const name = title.replace(/^\d+\.\s*/, '')
-    rows.push({
-      id: `g${String(g)}`,
-      type: 'heading',
-      group: g,
-      position: 0,
-      text: title,
-      quantity: null,
-      unit: 'H87',
-      price: null,
-      tax: 'S20',
-      previous: '0',
-      current: null,
-    })
-    for (let i = 1; i <= 25; i += 1) {
-      const quantity = ((g * 7 + i * 3) % 40) + 1
-      const price = 50000n + ((BigInt(g) * 1301n + BigInt(i) * 977n) % 950000n)
-      rows.push({
-        id: `p${String(g)}-${String(i)}`,
-        type: 'line',
-        group: g,
-        position: i,
-        text: `${String(g)}.${String(i)} ${name}, position ${String(i)}`,
-        quantity: String(quantity),
-        unit: i % 2 === 1 ? 'MTK' : 'H87',
-        price: fromParas(price),
-        tax: 'S20',
-        previous: String(Math.floor((quantity * (i % 3) * 25) / 100)),
-        current: String(Math.floor((quantity * ((i + g) % 2) * 25) / 100)),
-      })
-    }
-    rows.push({
-      id: `s${String(g)}`,
-      type: 'subtotal',
-      group: g,
-      position: 0,
-      text: `Subtotal ${title}`,
-      quantity: null,
-      unit: 'H87',
-      price: null,
-      tax: 'S20',
-      previous: '0',
-      current: null,
-    })
-  })
-  return rows
 }

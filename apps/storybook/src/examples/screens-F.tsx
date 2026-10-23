@@ -40,9 +40,10 @@ import {
 } from './data-F'
 
 /*
- * Group F's example screens (P5.21): journal entry NK-2026-0912 (balanced, and a separate unbalanced stage) and the September 2026
- * payroll run. Every screen plays the application: it keeps the state and computes the figures in
- * whole paras (data-F.ts); the components only show them.
+ * Group F's example screens (P5.21): journal entry NK-2026-0912 (balanced, and a separate
+ * unbalanced stage) and the September 2026 payroll run. Every screen plays the application: it
+ * keeps the state and computes the figures in whole paras (data-F.ts); the components only show
+ * them.
  */
 
 export const F_ROUTES = {
