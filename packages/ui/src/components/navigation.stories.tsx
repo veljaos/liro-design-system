@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { FileText, List, Paperclip } from 'lucide-react'
 import { useState } from 'react'
-import { expect, userEvent, within } from 'storybook/test'
+import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { settle } from '../primitives/story-helpers'
 import { ARABIC, JAPANESE, LONG } from './field-story-data'
 import { Breadcrumbs, CursorPagination, ShortcutHint, Tabs } from './navigation'
@@ -215,13 +215,15 @@ export const ManyTabsPhone: Story = {
     </div>
   ),
   play: async ({ canvasElement }) => {
-    const tab = within(canvasElement).getByRole('tab', { name: 'Accounting' })
-    const row = tab.closest('[data-fade]')
-    await expect(row).not.toBeNull()
-    const box = row?.getBoundingClientRect()
-    const own = tab.getBoundingClientRect()
-    await expect(box !== undefined && own.left >= box.left && own.right <= box.right).toBe(true)
     await settle()
+    const tab = within(canvasElement).getByRole('tab', { name: 'Accounting' })
+    // The fade and the reveal follow the row's measurement (and the web font's arrival).
+    await waitFor(() => expect(tab.closest('[data-fade]')).not.toBeNull())
+    await waitFor(() => {
+      const box = tab.closest('[data-fade]')?.getBoundingClientRect()
+      const own = tab.getBoundingClientRect()
+      return expect(box !== undefined && own.left >= box.left && own.right <= box.right).toBe(true)
+    })
   },
 }
 
