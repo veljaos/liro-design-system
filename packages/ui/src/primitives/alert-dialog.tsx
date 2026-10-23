@@ -51,7 +51,11 @@ export function AlertDialogTitle({
   return (
     <AlertDialogPrimitive.Title
       data-slot="alert-dialog-title"
-      className={cn('m-0 text-md leading-none font-regular', TEXT_DIRECTION, className)}
+      className={cn(
+        'm-0 min-w-0 text-md leading-none font-regular [overflow-wrap:anywhere]',
+        TEXT_DIRECTION,
+        className,
+      )}
       {...props}
     />
   )

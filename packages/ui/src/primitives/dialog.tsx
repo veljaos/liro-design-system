@@ -72,7 +72,13 @@ export function DialogTitle({ className, ...props }: ComponentProps<typeof Dialo
   return (
     <DialogPrimitive.Title
       data-slot="dialog-title"
-      className={cn('m-0 text-md leading-none font-regular', TEXT_DIRECTION, className)}
+      // A long unbroken word (an IBAN, a URL) breaks inside the header rather than push it wider
+      // than the screen (P5.90 item 7).
+      className={cn(
+        'm-0 min-w-0 text-md leading-none font-regular [overflow-wrap:anywhere]',
+        TEXT_DIRECTION,
+        className,
+      )}
       {...props}
     />
   )
@@ -86,7 +92,11 @@ export function DialogDescription({
   return (
     <DialogPrimitive.Description
       data-slot="dialog-description"
-      className={cn('m-0 text-sm text-secondary', TEXT_DIRECTION, className)}
+      className={cn(
+        'm-0 min-w-0 text-sm text-secondary [overflow-wrap:anywhere]',
+        TEXT_DIRECTION,
+        className,
+      )}
       {...props}
     />
   )
