@@ -4,7 +4,6 @@ import {
   DateText,
   Drawer,
   MoneyText,
-  NumberText,
   PageHeader,
   SelectField,
   Toaster,
@@ -34,16 +33,9 @@ import {
   COST_VIEWS,
   membersOf,
   resultFor,
-  SALES_CUSTOMERS,
-  SALES_FIELDS,
-  SALES_OPENED,
-  SALES_PRODUCTS,
-  SALES_RECORDS,
-  SALES_VIEWS,
   viewOf,
   type AnalysisView,
   type CostDocument,
-  type SalesRecord,
 } from './data-BR'
 import { Frame, Tenant } from './screens-G'
 import { AnalyticsShell } from './screens-BU'
@@ -76,7 +68,6 @@ const BAKERY_ACCOUNT: ExampleAccount = {
   name: BAKERY_OWNER.name,
   email: BAKERY_OWNER.email,
   companies: [BAKERY_COMPANY],
-  links: [{ label: 'Sales analysis', path: BR_ROUTES.sales }],
 }
 
 /** A signed-in screen of the analyses on 14 October 2026, with its toasts. */
@@ -353,155 +344,6 @@ function CostAnalysisScreen({
 
 // ── Pekara Zlatni klas: sales analysis ───────────────────────────────────────────────────────
 
-const SALES_COLUMNS: DataTableColumn<SalesRecord>[] = [
-  { id: 'date', header: 'Date', cell: (row) => <DateText value={row.date} /> },
-  {
-    id: 'number',
-    header: 'Document',
-    cell: (row) => <span className="bidi-content font-medium">{row.number}</span>,
-  },
-  {
-    id: 'customer',
-    header: 'Customer',
-    cell: (row) => (
-      <span className="bidi-content">
-        {SALES_CUSTOMERS.find((each) => each.id === row.customer)?.label}
-      </span>
-    ),
-  },
-  {
-    id: 'product',
-    header: 'Product',
-    cell: (row) => (
-      <span className="bidi-content">
-        {SALES_PRODUCTS.find((each) => each.id === row.product)?.label}
-      </span>
-    ),
-  },
-  {
-    id: 'quantity',
-    header: 'Pieces',
-    align: 'end',
-    numeric: true,
-    cell: (row) => <NumberText value={row.quantity} />,
-  },
-  {
-    id: 'amount',
-    header: 'Revenue',
-    align: 'end',
-    numeric: true,
-    cell: (row) => <MoneyText value={row.amount} currency="RSD" />,
-  },
-]
-
-function SalesLines({
-  cell,
-  layout,
-  phone,
-  onClose,
-}: {
-  cell: PivotCellRef | null
-  layout: PivotLayout
-  phone: boolean
-  onClose: () => void
-}) {
-  const records = cell === null ? [] : recordsOf(SALES_RECORDS, cell, layout)
-  return (
-    <Drawer
-      side="end"
-      open={cell !== null}
-      onOpenChange={(open) => {
-        if (!open) onClose()
-      }}
-      title="Sale lines"
-      {...(cell === null ? {} : { subject: cellSubject(cell) })}
-      description={`The latest ${String(Math.min(SHOWN, records.length))} of ${String(records.length)} lines.`}
-    >
-      <DataTable
-        label="Sale lines"
-        layout={phone ? 'cards' : 'table'}
-        columns={SALES_COLUMNS}
-        rows={records.slice(0, SHOWN)}
-        getRowId={(row) => `${row.number}-${row.product}`}
-        getRowLabel={(row) => row.number}
-        mobile={{
-          title: (row) => row.number,
-          subtitle: (row) => (
-            <span className="bidi-content">
-              {SALES_CUSTOMERS.find((each) => each.id === row.customer)?.label}
-            </span>
-          ),
-          details: ['date', 'product', 'quantity', 'amount'],
-        }}
-      />
-    </Drawer>
-  )
-}
-
-function SalesAnalysisScreen({
-  phone,
-  view = 'months',
-  opened = false,
-  fieldsOpen,
-}: {
-  phone: boolean
-  view?: string
-  opened?: boolean
-  fieldsOpen?: boolean
-}) {
-  const [layout, setLayout] = useState<PivotLayout>(layoutOf(SALES_VIEWS, view))
-  const result = resultFor(SALES_VIEWS, layout)
-  const [cell, setCell] = useState<PivotCellRef | null>(
-    opened
-      ? {
-          ...SALES_OPENED,
-          value: rowOf(result, SALES_OPENED.rowKey)?.cells[SALES_OPENED.columnKey] ?? '',
-        }
-      : null,
-  )
-  return (
-    <AnalysisShell phone={phone} bakery crumbs={[{ label: 'Sales' }, { label: 'Sales analysis' }]}>
-      <PageHeader
-        title="Sales analysis"
-        subtitle="The shop and the wholesale customers, July–September 2026 · Illustrative figures for the saved views"
-      />
-      <Pivot
-        label="Sales by product"
-        fields={SALES_FIELDS}
-        value={layout}
-        onChange={setLayout}
-        result={result}
-        onDrillDown={setCell}
-        {...(fieldsOpen === undefined ? {} : { defaultFieldsOpen: fieldsOpen })}
-        exportAction={{
-          formats: EXPORT_FORMATS,
-          onExport: (format) => {
-            const name = EXPORT_FORMATS.find((each) => each.id === format)?.label ?? format
-            notice.success(`Sales analysis is being exported as ${name}.`)
-          },
-        }}
-        actions={
-          <ViewSelect
-            views={SALES_VIEWS}
-            layout={layout}
-            onChoose={(each) => {
-              setLayout(each.layout)
-            }}
-          />
-        }
-      />
-      <SalesLines
-        cell={cell}
-        layout={layout}
-        phone={phone}
-        onClose={() => {
-          setCell(null)
-        }}
-      />
-    </AnalysisShell>
-  )
-}
-
 // ── Routes ────────────────────────────────────────────────────────────────────────────────────
 
 export const GROUP_BR_ROUTES: ExampleRoute[] = [
@@ -513,18 +355,5 @@ export const GROUP_BR_ROUTES: ExampleRoute[] = [
   {
     path: BR_ROUTES.costsDocuments,
     render: (phone) => <CostAnalysisScreen phone={phone} opened />,
-  },
-  { path: BR_ROUTES.sales, render: (phone) => <SalesAnalysisScreen phone={phone} /> },
-  {
-    path: BR_ROUTES.salesByShop,
-    render: (phone) => <SalesAnalysisScreen phone={phone} view="shops" />,
-  },
-  {
-    path: BR_ROUTES.salesDocuments,
-    render: (phone) => <SalesAnalysisScreen phone={phone} opened />,
-  },
-  {
-    path: BR_ROUTES.salesFields,
-    render: (phone) => <SalesAnalysisScreen phone={phone} fieldsOpen />,
   },
 ]

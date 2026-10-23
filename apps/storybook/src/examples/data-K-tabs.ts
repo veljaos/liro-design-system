@@ -10,15 +10,7 @@
  */
 import type { PosProduct, ProductCategory } from '@veljaos/ui'
 import { decimal, paras, sumUnits } from '../../../../packages/ui/src/components/amounts-story-data'
-import {
-  BISTRO,
-  BISTRO_TABLES,
-  CAFE,
-  CAFE_CATEGORIES,
-  CAFE_PRODUCTS,
-  CAFE_TABLES,
-  K_ROUTES,
-} from './data-K'
+import { BISTRO, BISTRO_TABLES, CAFE_TABLES, K_ROUTES } from './data-K'
 
 // ── Venues ────────────────────────────────────────────────────────────────────────────────────
 
@@ -97,47 +89,6 @@ const DISCOUNTS: readonly DiscountChoice[] = [
   { id: 'manager', label: 'Manager’s discount −20%', rate: 20n },
   { id: 'staff', label: 'Staff −50%', rate: 50n },
 ]
-
-export const CAFE_VENUE: Venue = {
-  id: 'cafe',
-  name: CAFE.name,
-  brand: 'Kod Mike',
-  register: CAFE.register,
-  waiter: CAFE.waiter,
-  currency: CAFE.currency,
-  now: '18:40',
-  products: CAFE_PRODUCTS,
-  categories: CAFE_CATEGORIES,
-  stations: { coffee: BAR, soft: BAR, cakes: KITCHEN },
-  promotions: [
-    {
-      id: 'espresso-3-for-2',
-      label: 'Espresso 3 for 2',
-      kind: 'n-for-m',
-      productIds: ['espresso'],
-      n: 3,
-      free: 1,
-    },
-    {
-      id: 'juice-hour',
-      label: 'Juice hour −20%, 18:30–19:30',
-      kind: 'percent',
-      productIds: ['orange'],
-      rate: 20n,
-      from: '18:30',
-      to: '19:30',
-    },
-  ],
-  discounts: DISCOUNTS,
-  tables: CAFE_TABLES.map((each) => ({
-    id: each.id,
-    number: each.number,
-    area: 'Terrace',
-    seats: 4,
-  })),
-  back: { route: K_ROUTES.terrace, label: 'Terrace' },
-  tableRoute: (id) => `/cafe/kod-mike/terrace/${id}`,
-}
 
 /** Bistro Dunav's menu (fictitious). */
 const BISTRO_CATEGORIES: readonly ProductCategory[] = [
@@ -413,8 +364,6 @@ export function computeTab(venue: Venue, tab: Tab) {
     remaining: total - paid,
   }
 }
-
-export type ComputedTab = ReturnType<typeof computeTab>
 
 /** What chosen pieces of the lines cost, after their promotions, discounts and the order's. */
 export function itemsAmount(

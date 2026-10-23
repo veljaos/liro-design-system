@@ -1837,13 +1837,3 @@ export function Journal({
     </TillTouch>
   )
 }
-
-/** The routes of the till's fiscal flows. */
-export const TILL_SCREENS = {
-  till: (phone: boolean, start?: TillStart) => (
-    <Till phone={phone} {...(start === undefined ? {} : { start })} />
-  ),
-  journal: (phone: boolean, show?: 'copy' | 'cancel' | 'queue' | 'report') => (
-    <Journal phone={phone} {...(show === undefined ? {} : { show })} />
-  ),
-}

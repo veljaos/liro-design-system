@@ -9,7 +9,6 @@ import {
   EditableGrid,
   LookupDialog,
   MoneyText,
-  NumberText,
   TextField,
   useLiro,
   type DataTableColumn,
@@ -31,12 +30,10 @@ import type { ExampleRoute } from './example-app'
 import { SALES_TABS, Shell, statusBadge } from './example-shell'
 import {
   ACCOUNTS,
-  addQuantities,
   draftAmount,
   draftSubtotals,
   draftTotals,
   DRAFT,
-  fromParas,
   findInCatalogue,
   fromRecord,
   initialDraft,
@@ -47,15 +44,11 @@ import {
   recordOf,
   searchCatalogue,
   SITUATION,
-  specAmounts,
-  specificationOf,
-  specTotals,
   TAX_CATEGORIES,
   toUnits,
   UNITS,
   type CatalogueRecord,
   type DraftLine,
-  type SpecRow,
 } from './data-D1'
 
 /*
@@ -448,205 +441,8 @@ export function InvoiceDraft({ phone }: { phone: boolean }) {
 
 // ── Interim situation, editing the specification ──────────────────────────────────────────────
 
-export function SpecificationEditor({ phone }: { phone: boolean }) {
-  const { format } = useLiro()
-  const [rows, setRows] = useState<SpecRow[]>(specificationOf)
-  const totals = useMemo(() => specTotals(rows), [rows])
-  const { groups } = totals
-
-  const columns = useMemo<EditableGridColumn<SpecRow>[]>(
-    () => [
-      { id: 'text', header: 'Position', type: 'text', value: (row) => row.text },
-      {
-        id: 'unit',
-        header: 'Unit',
-        type: 'unit',
-        width: 76,
-        value: (row) => row.unit,
-        units: UNITS,
-      },
-      {
-        id: 'quantity',
-        header: 'Quantity',
-        type: 'number',
-        width: 90,
-        value: (row) => row.quantity,
-      },
-      {
-        id: 'price',
-        header: 'Unit price',
-        type: 'number',
-        width: 116,
-        decimals: 2,
-        value: (row) => row.price,
-      },
-      {
-        id: 'tax',
-        header: 'VAT',
-        type: 'taxCategory',
-        width: 84,
-        value: (row) => row.tax,
-        categories: TAX_CATEGORIES,
-      },
-      {
-        id: 'previous',
-        header: 'Previous',
-        type: 'display',
-        width: 84,
-        align: 'end',
-        numeric: true,
-        display: (row) => (row.type === 'line' ? <NumberText value={row.previous} /> : null),
-      },
-      {
-        id: 'current',
-        header: 'This period',
-        type: 'number',
-        width: 96,
-        value: (row) => row.current,
-      },
-      {
-        id: 'cumulative',
-        header: 'Cumulative',
-        type: 'display',
-        width: 96,
-        align: 'end',
-        numeric: true,
-        display: (row) =>
-          row.type === 'line' ? (
-            <NumberText value={addQuantities(row.previous, row.current)} />
-          ) : null,
-      },
-      {
-        id: 'amount',
-        header: 'This period, amount',
-        type: 'display',
-        width: 150,
-        align: 'end',
-        numeric: true,
-        display: (row) => {
-          if (row.type === 'subtotal') {
-            return <MoneyText value={fromParas(groups.get(row.id)?.current ?? 0n)} currency="RSD" />
-          }
-          const amounts = specAmounts(row)
-          return amounts === null ? null : (
-            <MoneyText value={fromParas(amounts.current)} currency="RSD" />
-          )
-        },
-      },
-    ],
-    [groups],
-  )
-
-  const save = <Button intent="save" label="Save specification" />
-  return (
-    <Shell
-      phone={phone}
-      crumbs={[
-        { label: 'Projects', href: '#/projects' },
-        { label: SITUATION.number, href: `#${D1_ROUTES.situation}` },
-        { label: 'Specification' },
-      ]}
-      {...(phone ? { bottomBar: save } : {})}
-    >
-      <DocumentPage
-        layout={phone ? 'phone' : 'desktop'}
-        title={`${SITUATION.number}: specification of works`}
-        back={{ href: `#${D1_ROUTES.situation}`, label: SITUATION.number }}
-        status={statusBadge('Draft')}
-        counterparty={{
-          label: 'Investor',
-          name: SITUATION.customer,
-          taxId: `PIB ${SITUATION.taxId}`,
-          address: SITUATION.address,
-        }}
-        keyFigures={[
-          {
-            key: 'positions',
-            label: 'Positions',
-            value: format.number(String(totals.positions)),
-          },
-          {
-            key: 'contract',
-            label: 'Contract value',
-            value: <MoneyText value={fromParas(totals.contract)} currency="RSD" />,
-          },
-          {
-            key: 'current',
-            label: 'This period',
-            value: <MoneyText value={fromParas(totals.current)} currency="RSD" />,
-          },
-        ]}
-        details={
-          <>
-            <ChangeableValue label="Contract" value={SITUATION.contract} />
-            <ChangeableValue label="Site" value={SITUATION.site} />
-            <ChangeableValue label="Period" value={SITUATION.period} />
-          </>
-        }
-        actions={
-          <>
-            <Button intent="cancel" label="Cancel" />
-            {phone ? null : save}
-          </>
-        }
-        lines={
-          <EditableGrid<SpecRow>
-            label="Specification of works"
-            inCard
-            layout={phone ? 'phone' : 'desktop'}
-            columns={columns}
-            rows={rows}
-            getRowId={(row) => row.id}
-            getRowType={(row) => row.type}
-            lineText={{ columnId: 'text', value: (row) => row.text }}
-            addTypes={['heading', 'text']}
-            totals={{ amount: { value: fromParas(totals.current), currency: 'RSD' } }}
-            totalsLabel="This period"
-            onCellChange={(rowId, columnId, value) => {
-              setRows((current) =>
-                current.map((row) => (row.id === rowId ? { ...row, [columnId]: value } : row)),
-              )
-            }}
-            onAddRow={(index, type) => {
-              setRows((current) => {
-                const group = current[Math.max(0, index - 1)]?.group ?? 1
-                const id = `new-${String(current.length + 1)}`
-                const blank: SpecRow = {
-                  id,
-                  type,
-                  group,
-                  position: 0,
-                  text: '',
-                  quantity: null,
-                  unit: 'H87',
-                  price: null,
-                  tax: 'S20',
-                  previous: '0',
-                  current: null,
-                }
-                const added: SpecRow[] =
-                  type === 'heading'
-                    ? [blank, { ...blank, id: `${id}-s`, type: 'subtotal', text: 'Subtotal' }]
-                    : [blank]
-                return [...current.slice(0, index), ...added, ...current.slice(index)]
-              })
-            }}
-            onRemoveRow={(rowId) => {
-              setRows((current) => current.filter((row) => row.id !== rowId))
-            }}
-          />
-        }
-        totals={{ ...totals.recap, label: 'This situation' }}
-        sections={[]}
-        panels={[]}
-      />
-    </Shell>
-  )
-}
-
 // ── Routes ────────────────────────────────────────────────────────────────────────────────────
 
 export const GROUP_D1_ROUTES: ExampleRoute[] = [
   { path: D1_ROUTES.draft, render: (phone) => <InvoiceDraft phone={phone} /> },
-  { path: D1_ROUTES.specification, render: (phone) => <SpecificationEditor phone={phone} /> },
 ]

@@ -1,4 +1,4 @@
-import { KeyRound, LogIn, Mail, Send, UserPlus } from 'lucide-react'
+import { LogIn, Mail, Send } from 'lucide-react'
 import { useContext, useState, type ReactNode } from 'react'
 import {
   Alert,
@@ -7,10 +7,8 @@ import {
   CheckboxField,
   CodeInput,
   EmailFirstForm,
-  KeyValueList,
   PasswordField,
   PersonAvatar,
-  ProviderSignInButtons,
   TextField,
   useLiro,
 } from '@veljaos/ui'
@@ -18,23 +16,12 @@ import type { ExampleRoute } from './example-app'
 import { BRAND, Navigate, ROUTES } from './example-shell'
 import { AuthFooter } from './screens-core'
 import { Tenant } from './screens-G'
-import { signInProviders } from './data-C'
 import {
   ACCOUNT,
   BD_ROUTES,
   BD_TODAY,
-  EXPIRED_INVITATION,
-  INVITATION,
-  LINK_EXPIRED,
   LINK_VALID,
-  LOCKED_UNTIL,
-  PASSWORD_RULES,
-  PASSWORDS_DIFFER,
   REMEMBER_DEVICE,
-  RESET_LINK_UNTIL,
-  RETURN_TO,
-  RULE_BROKEN,
-  SESSION_ENDED,
   WRONG_CODE,
   WRONG_PASSWORD,
   WRONG_RECOVERY_CODE,
@@ -293,15 +280,6 @@ export function ForgotPassword({ phone, sent = false }: { phone: boolean; sent?:
             label="Send the link again"
             onClick={() => undefined}
           />
-          {/* The example opens the e-mail's link at once, as the person would from the inbox. */}
-          <Button
-            family="neutral"
-            icon={KeyRound}
-            label="Open the link from the e-mail"
-            onClick={() => {
-              navigate(BD_ROUTES.newPassword)
-            }}
-          />
         </div>
         <LinkLine>
           <TextLink href={`#${BD_ROUTES.password}`}>Back to sign in</TextLink>
@@ -333,323 +311,11 @@ export function ForgotPassword({ phone, sent = false }: { phone: boolean; sent?:
 
 // ── New password ──────────────────────────────────────────────────────────────────────────────
 
-type NewPasswordStart = 'empty' | 'mismatch' | 'rules' | 'expired'
-
-/**
- * The page the e-mail's link opens: the new password twice, the company's rules under the first
- * field (the Core's words), its answer when a rule is broken, and the second field's own error
- * when the two differ. An expired link says so and offers a new one.
- */
-export function NewPassword({
-  phone,
-  start = 'empty',
-}: {
-  phone: boolean
-  start?: NewPasswordStart
-}) {
-  const navigate = useContext(Navigate)
-  const { format } = useLiro()
-  const filled = start === 'mismatch' || start === 'rules'
-  const [password, setPassword] = useState(filled ? 'Kvadrat-gradnja-2026' : '')
-  const [repeat, setRepeat] = useState(
-    start === 'mismatch' ? 'Kvadrat-gradnja-2025' : filled ? 'Kvadrat-gradnja-2026' : '',
-  )
-  const [ruleError, setRuleError] = useState<string | undefined>(
-    start === 'rules' ? RULE_BROKEN : undefined,
-  )
-  const [repeatError, setRepeatError] = useState<string | undefined>(
-    start === 'mismatch' ? PASSWORDS_DIFFER : undefined,
-  )
-  if (start === 'expired') {
-    return (
-      <AuthFrame phone={phone} title="Choose a new password">
-        <Alert
-          tone="warning"
-          title={LINK_EXPIRED.title}
-          actions={
-            <Button
-              family="neutral"
-              icon={Send}
-              label="Send a new link"
-              onClick={() => {
-                navigate(BD_ROUTES.forgot)
-              }}
-            />
-          }
-        >
-          {LINK_EXPIRED.message}
-        </Alert>
-        <LinkLine>
-          <TextLink href={`#${BD_ROUTES.password}`}>Back to sign in</TextLink>
-        </LinkLine>
-      </AuthFrame>
-    )
-  }
-  return (
-    <AuthFrame
-      phone={phone}
-      title="Choose a new password"
-      description={
-        <>
-          For <bdi dir="ltr">{ACCOUNT.email}</bdi>. The link works until{' '}
-          {format.time(RESET_LINK_UNTIL)}.
-        </>
-      }
-    >
-      <StepForm
-        onSubmit={() => {
-          // The example's Core: the length rule; the five last passwords are its secret.
-          if (password.length < 12) {
-            setRuleError('The password is too short: it needs at least 12 characters.')
-            return
-          }
-          if (password !== repeat) {
-            setRepeatError(PASSWORDS_DIFFER)
-            return
-          }
-          navigate(BD_ROUTES.password)
-        }}
-      >
-        <PasswordField
-          label="New password"
-          autoComplete="new-password"
-          description={PASSWORD_RULES}
-          value={password}
-          onChange={(value) => {
-            setPassword(value)
-            setRuleError(undefined)
-          }}
-          {...(ruleError === undefined ? {} : { error: ruleError })}
-        />
-        <PasswordField
-          label="Repeat the new password"
-          autoComplete="new-password"
-          value={repeat}
-          onChange={(value) => {
-            setRepeat(value)
-            setRepeatError(undefined)
-          }}
-          {...(repeatError === undefined ? {} : { error: repeatError })}
-        />
-        <Button type="submit" intent="save" label="Save the password" />
-      </StepForm>
-    </AuthFrame>
-  )
-}
-
 // ── Invitation ────────────────────────────────────────────────────────────────────────────────
-
-/**
- * The link in an invitation e-mail: which company, who invited and with which role; the e-mail
- * is fixed (it is the invitation's); a password chosen twice, or the work account of Microsoft or
- * Google with the same address. An expired invitation says who can send a new one.
- */
-export function AcceptInvitation({
-  phone,
-  expired = false,
-}: {
-  phone: boolean
-  expired?: boolean
-}) {
-  const navigate = useContext(Navigate)
-  const { format } = useLiro()
-  const [password, setPassword] = useState('')
-  const [repeat, setRepeat] = useState('')
-  const [repeatError, setRepeatError] = useState<string | undefined>(undefined)
-  const [passwordError, setPasswordError] = useState<string | undefined>(undefined)
-  if (expired) {
-    return (
-      <AuthFrame phone={phone} title={`Join ${EXPIRED_INVITATION.company}`}>
-        <Alert tone="warning" title="This invitation has expired">
-          {`The invitation for ${EXPIRED_INVITATION.email} expired on ${format.date(EXPIRED_INVITATION.expired)} Ask ${EXPIRED_INVITATION.invitedBy} to send a new one.`}
-        </Alert>
-        <LinkLine>
-          <TextLink href={`#${ROUTES.signIn}`}>Sign in with another account</TextLink>
-        </LinkLine>
-      </AuthFrame>
-    )
-  }
-  return (
-    <AuthFrame
-      phone={phone}
-      title={`Join ${INVITATION.company}`}
-      description={`${INVITATION.invitedBy} invited you to use Liro at ${INVITATION.company}. The invitation is valid until ${format.date(INVITATION.expires)}`}
-    >
-      <KeyValueList
-        columns={1}
-        items={[
-          {
-            label: 'Company',
-            value: (
-              <span className="flex flex-col">
-                <span className="bidi-content">{INVITATION.company}</span>
-                <span className="text-xs font-regular text-secondary bidi-content">
-                  {INVITATION.companyDetail}
-                </span>
-              </span>
-            ),
-          },
-          {
-            label: 'Invited by',
-            value: `${INVITATION.invitedBy}, ${INVITATION.invitedByRole}`,
-          },
-          {
-            label: 'Your role',
-            value: (
-              <span className="flex flex-col">
-                <span className="bidi-content">{INVITATION.role}</span>
-                <span className="text-xs font-regular text-secondary bidi-content">
-                  {INVITATION.roleDescription}
-                </span>
-              </span>
-            ),
-          },
-        ]}
-      />
-      <StepForm
-        onSubmit={() => {
-          if (password.length < 12) {
-            setPasswordError('The password is too short: it needs at least 12 characters.')
-            return
-          }
-          if (password !== repeat) {
-            setRepeatError(PASSWORDS_DIFFER)
-            return
-          }
-          navigate(ROUTES.home)
-        }}
-      >
-        <TextField
-          label="E-mail"
-          type="email"
-          direction="ltr"
-          readOnly
-          value={INVITATION.email}
-          description="The invitation is for this address."
-        />
-        <TextField label="Full name" autoComplete="name" defaultValue={INVITATION.name} />
-        <PasswordField
-          label="Choose a password"
-          autoComplete="new-password"
-          description={PASSWORD_RULES}
-          value={password}
-          onChange={(value) => {
-            setPassword(value)
-            setPasswordError(undefined)
-          }}
-          {...(passwordError === undefined ? {} : { error: passwordError })}
-        />
-        <PasswordField
-          label="Repeat the password"
-          autoComplete="new-password"
-          value={repeat}
-          onChange={(value) => {
-            setRepeat(value)
-            setRepeatError(undefined)
-          }}
-          {...(repeatError === undefined ? {} : { error: repeatError })}
-        />
-        <Button
-          type="submit"
-          family="primary"
-          emphasis="primary"
-          icon={UserPlus}
-          label="Accept and join"
-        />
-      </StepForm>
-      <ProviderSignInButtons
-        divider="above"
-        providers={signInProviders(() => {
-          navigate(ROUTES.home)
-        })}
-      />
-    </AuthFrame>
-  )
-}
 
 // ── Locked account ────────────────────────────────────────────────────────────────────────────
 
-/**
- * Too many wrong passwords: the Core locked the account until a time it names. The page says
- * until when, in the Core's words, and offers the way in that does not wait: a new password.
- */
-export function AccountLocked({ phone }: { phone: boolean }) {
-  const navigate = useContext(Navigate)
-  const { format } = useLiro()
-  return (
-    <AuthFrame phone={phone} title="Account locked">
-      <Alert tone="warning" title="Too many wrong passwords">
-        {`For your safety, ${ACCOUNT.email} cannot sign in until ${format.time(LOCKED_UNTIL)} today. Choose a new password to sign in sooner. If it was not you, tell your company’s administrator.`}
-      </Alert>
-      <div className="flex flex-col">
-        <Button
-          family="primary"
-          emphasis="primary"
-          icon={KeyRound}
-          label="Choose a new password"
-          onClick={() => {
-            navigate(BD_ROUTES.forgot)
-          }}
-        />
-      </div>
-      <LinkLine>
-        <TextLink href={`#${ROUTES.signIn}`}>Back to sign in</TextLink>
-      </LinkLine>
-    </AuthFrame>
-  )
-}
-
 // ── Expired session ───────────────────────────────────────────────────────────────────────────
-
-/**
- * The session ended while the page was open: the account is known, so only its password is
- * asked; after signing in the person is back on the page they were on (the invoice). This device
- * is trusted for the code (the code step's checkbox), so none is asked.
- */
-export function SessionExpired({ phone }: { phone: boolean }) {
-  const navigate = useContext(Navigate)
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState<string | undefined>(undefined)
-  return (
-    <AuthFrame
-      phone={phone}
-      title="Your session has expired"
-      description={`${SESSION_ENDED} Sign in again to return to ${RETURN_TO.label}.`}
-    >
-      <StepForm
-        onSubmit={() => {
-          if (password === '') setError(WRONG_PASSWORD)
-          else navigate(ROUTES.invoice(RETURN_TO.number))
-        }}
-      >
-        <AccountLine
-          name={ACCOUNT.name}
-          email={ACCOUNT.email}
-          change={<TextLink href={`#${ROUTES.signIn}`}>Not you?</TextLink>}
-        />
-        <PasswordField
-          label="Password"
-          value={password}
-          onChange={(value) => {
-            setPassword(value)
-            setError(undefined)
-          }}
-          {...(error === undefined ? {} : { error })}
-        />
-        <Button
-          type="submit"
-          family="primary"
-          emphasis="primary"
-          icon={LogIn}
-          label="Sign in and return"
-        />
-      </StepForm>
-      <LinkLine>
-        <TextLink href={`#${BD_ROUTES.forgot}`}>Forgot your password?</TextLink>
-      </LinkLine>
-    </AuthFrame>
-  )
-}
 
 // ── Routes ────────────────────────────────────────────────────────────────────────────────────
 
@@ -661,24 +327,4 @@ export const GROUP_BD_ROUTES: ExampleRoute[] = [
   { path: BD_ROUTES.recovery, render: (phone) => <CodeStep phone={phone} start="recovery" /> },
   { path: BD_ROUTES.forgot, render: (phone) => <ForgotPassword phone={phone} /> },
   { path: BD_ROUTES.forgotSent, render: (phone) => <ForgotPassword phone={phone} sent /> },
-  { path: BD_ROUTES.newPassword, render: (phone) => <NewPassword phone={phone} /> },
-  {
-    path: BD_ROUTES.newPasswordMismatch,
-    render: (phone) => <NewPassword phone={phone} start="mismatch" />,
-  },
-  {
-    path: BD_ROUTES.newPasswordRules,
-    render: (phone) => <NewPassword phone={phone} start="rules" />,
-  },
-  {
-    path: BD_ROUTES.newPasswordExpired,
-    render: (phone) => <NewPassword phone={phone} start="expired" />,
-  },
-  { path: BD_ROUTES.invitation, render: (phone) => <AcceptInvitation phone={phone} /> },
-  {
-    path: BD_ROUTES.invitationExpired,
-    render: (phone) => <AcceptInvitation phone={phone} expired />,
-  },
-  { path: BD_ROUTES.locked, render: (phone) => <AccountLocked phone={phone} /> },
-  { path: BD_ROUTES.sessionExpired, render: (phone) => <SessionExpired phone={phone} /> },
 ]

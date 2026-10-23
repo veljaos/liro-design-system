@@ -21,12 +21,6 @@ import { decimal, paras, sumUnits } from '../../../../packages/ui/src/components
 /** The ledger's day: the examples' today in Phase 5's last batch. */
 export const LEDGER_TODAY = '2026-10-14'
 
-export const COMPANY = {
-  name: 'Kvadrat Gradnja d.o.o.',
-  taxId: '108452317',
-  address: 'Bulevar oslobođenja 101, 21000 Novi Sad',
-}
-
 export const AK_ROUTES = {
   chart: '/accounting/accounts',
   /** The chart with a search typed: the matches revealed. */
@@ -34,18 +28,6 @@ export const AK_ROUTES = {
   /** The chart with an account's details open. */
   chartDetails: (code: string) => `/accounting/accounts?account=${code}`,
   card: (code: string) => `/accounting/accounts/${code}/card`,
-}
-
-/** The documents the postings link to, where a screen exists for them. */
-export const DOCUMENT_ROUTES: Record<string, string> = {
-  'F-2026-0412': '#/sales/invoices/F-2026-0412',
-  'F-2026-0415': '#/sales/invoices/F-2026-0415',
-  'ST-2026-0004': '#/sales/invoices/ST-2026-0004',
-  'KO-2026-0009': '#/sales/corrections/KO-2026-0009',
-  'Statement 188': '#/banking/statements/188',
-  'NK-2026-0912': '#/accounting/journal/NK-2026-0912',
-  'CR-2026-0143': '#/accounting/cash-book/CR-2026-0143',
-  'CP-2026-0212': '#/accounting/cash-book/CP-2026-0212',
 }
 
 // ── The chart of accounts ─────────────────────────────────────────────────────────────────────
@@ -935,111 +917,6 @@ if (sumUnits(Object.values(OPENING).map(paras)) !== 0n) fail('the opening does n
 
 // ── Account cards ─────────────────────────────────────────────────────────────────────────────
 
-/** The periods an account card can be run for (the Core's list). */
-export const CARD_PERIODS = [
-  { value: 'sep-oct', label: '01.09.–14.10.2026.', from: '2026-09-01', to: LEDGER_TODAY },
-  { value: 'oct', label: 'October 2026 (to 14.10.)', from: '2026-10-01', to: LEDGER_TODAY },
-  { value: 'sep', label: 'September 2026', from: '2026-09-01', to: '2026-09-30' },
-] as const
-
-export type CardPeriod = (typeof CARD_PERIODS)[number]['value']
-
-/** One row of an account card. */
-export interface CardRow {
-  id: string
-  /** 'opening' and 'before' are the summary rows above the entries. */
-  type: 'opening' | 'before' | 'entry'
-  date: string | null
-  /** The summary row's words ("Opening balance on 01.01.2026."). */
-  label?: string
-  document?: PostingDocument
-  description?: string
-  partner?: string
-  debit: string | null
-  credit: string | null
-  /** The running balance after the row: debit positive, credit negative. */
-  balance: string
-}
-
-export interface AccountCard {
-  account: LedgerAccount
-  period: (typeof CARD_PERIODS)[number]
-  rows: CardRow[]
-  /** The period's turnover (the entries only). */
-  totals: { debit: string; credit: string }
-  /** The balance at the period's end: debit positive, credit negative. */
-  closing: string
-  /** How many entries the period holds. */
-  entries: number
-}
-
-/** The day before a YYYY-MM-DD date (inside 2026, for the cards' summaries). */
-function dayBefore(date: string): string {
-  const [year, month, day] = date.split('-').map(Number) as [number, number, number]
-  const value = new Date(Date.UTC(year, month - 1, day - 1))
-  return value.toISOString().slice(0, 10)
-}
-
-/** An account's card for a period: opening, turnover before the period, entries, totals. */
-export function accountCard(code: string, periodKey: CardPeriod): AccountCard {
-  const period = CARD_PERIODS.find((each) => each.value === periodKey) ?? CARD_PERIODS[0]
-  const opening = paras(OPENING[code] ?? '0.00')
-  const before = turnover(code, '2026-01-01', dayBefore(period.from))
-  let balance = opening
-  const rows: CardRow[] = [
-    {
-      id: 'opening',
-      type: 'opening',
-      date: '2026-01-01',
-      ...sides(opening),
-      balance: decimal(balance),
-    },
-  ]
-  balance += before.debit - before.credit
-  rows.push({
-    id: 'before',
-    type: 'before',
-    date: dayBefore(period.from),
-    debit: decimal(before.debit),
-    credit: decimal(before.credit),
-    balance: decimal(balance),
-  })
-  let debit = 0n
-  let credit = 0n
-  let entries = 0
-  for (const posting of POSTINGS) {
-    if (!within(posting.date, period.from, period.to)) continue
-    posting.lines.forEach((line, index) => {
-      if (line.account !== code) return
-      const lineDebit = units(line.debit)
-      const lineCredit = units(line.credit)
-      debit += lineDebit
-      credit += lineCredit
-      balance += lineDebit - lineCredit
-      entries += 1
-      rows.push({
-        id: `${posting.id}-${String(index)}`,
-        type: 'entry',
-        date: posting.date,
-        document: posting.document,
-        description: posting.description,
-        ...(posting.partner === undefined ? {} : { partner: posting.partner }),
-        debit: line.debit,
-        credit: line.credit,
-        balance: decimal(balance),
-      })
-    })
-  }
-  return {
-    account: accountByCode(code),
-    period,
-    rows,
-    totals: { debit: decimal(debit), credit: decimal(credit) },
-    closing: decimal(balance),
-    entries,
-  }
-}
-
 // ── The trial balance's figures ───────────────────────────────────────────────────────────────
 
 /** Opening, turnover and closing of one account, each as debit and credit. */
@@ -1155,27 +1032,4 @@ for (const totals of [TRIAL_TOTALS, TRIAL_TOTALS_PREVIOUS]) {
   if (totals.openingDebit !== totals.openingCredit) fail('the opening columns differ')
   if (totals.turnoverDebit !== totals.turnoverCredit) fail('the turnover columns differ')
   if (totals.closingDebit !== totals.closingCredit) fail('the closing columns differ')
-}
-
-/** An account's balance on 14.10.2026: debit positive, credit negative. */
-export function balanceToday(code: string): string {
-  const opening = paras(OPENING[code] ?? '0.00')
-  const moved = turnover(code, '2026-01-01', LEDGER_TODAY)
-  return decimal(opening + moved.debit - moved.credit)
-}
-
-/** An account's balance at the end of a day of 2026: debit positive, credit negative. */
-export function balanceOn(code: string, date: string): string {
-  const opening = paras(OPENING[code] ?? '0.00')
-  const moved = turnover(code, '2026-01-01', date)
-  return decimal(opening + moved.debit - moved.credit)
-}
-
-/** An absolute decimal string and its side, for a signed balance. */
-export function balanceSide(balance: string): { amount: string; side: NormalSide | null } {
-  const value = paras(balance)
-  if (value === 0n) return { amount: '0.00', side: null }
-  return value > 0n
-    ? { amount: decimal(value), side: 'Debit' }
-    : { amount: decimal(-value), side: 'Credit' }
 }

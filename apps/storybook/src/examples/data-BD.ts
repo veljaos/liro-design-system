@@ -54,59 +54,10 @@ export const REMEMBER_DEVICE = 'Do not ask for a code on this device for 30 days
 /** How long the link in the e-mail works, in the Core's words. */
 export const LINK_VALID = 'The link works for 60 minutes and only once.'
 
-/** Until when the link of the e-mail sent at 09:31 works (the Core's 60 minutes). */
-export const RESET_LINK_UNTIL = '2026-10-14T10:31:00+02:00'
-
 /** The company's password rules, as the Core states them (its own policy, P5.29). */
 export const PASSWORD_RULES =
   'At least 12 characters. Not one of your last 5 passwords, and not your e-mail address.'
 
-/** The Core's answer to a new password that breaks a rule. */
-export const RULE_BROKEN =
-  'This password was one of your last 5. Choose a password you have not used before.'
-
-export const PASSWORDS_DIFFER = 'The two passwords are not the same.'
-
-/** The reset link was opened too late (the Core's words and when it expired). */
-export const LINK_EXPIRED = {
-  title: 'This link has expired',
-  message: 'The link was sent on 14.10.2026. at 08:12 and worked for 60 minutes.',
-}
-
 // ── Invitation ────────────────────────────────────────────────────────────────────────────────
 
-/** Ivan Lukić, buyer in Procurement (data-AJ), is invited to use Liro. */
-export const INVITATION = {
-  code: 'KG-7Q4M',
-  company: 'Kvadrat Gradnja d.o.o.',
-  companyDetail: 'PIB 108452317 · Novi Sad',
-  invitedBy: 'Milica Petrović',
-  invitedByRole: 'Head of finance and administration',
-  role: 'Warehouse',
-  roleDescription: 'Items, receipts, deliveries and stock counts.',
-  name: 'Ivan Lukić',
-  email: 'ivan.lukic@kvadratgradnja.rs',
-  sent: '2026-10-13',
-  expires: '2026-10-20',
-}
-
-/** An invitation opened after it expired: the Core says who can send a new one. */
-export const EXPIRED_INVITATION = {
-  code: 'KG-2F9C',
-  company: 'Kvadrat Gradnja d.o.o.',
-  invitedBy: 'Milica Petrović',
-  email: 'nikola.savic@kvadratgradnja.rs',
-  expired: '2026-10-09',
-}
-
 // ── Locked account and expired session ───────────────────────────────────────────────────────
-
-/** Until when the account is locked: an instant in the tenant's offset. */
-export const LOCKED_UNTIL = '2026-10-14T10:10:00+02:00'
-
-/** Where Milica was when the session ended: the page she returns to. */
-export const RETURN_TO = { label: 'Invoice F-2026-0412', number: 'F-2026-0412' }
-
-/** Why the session ended, in the Core's words. */
-export const SESSION_ENDED =
-  'For your safety you were signed out after 30 minutes without activity.'

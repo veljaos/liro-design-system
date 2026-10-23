@@ -180,6 +180,20 @@ export const HR_TABS: ModuleTab[] = [
   { key: 'safety', label: 'Safety at work', href: '#/hr/safety/injury-register/2026' },
 ]
 
+/**
+ * The Reports module (F5, P5.89): the overview, the trial balance, the VAT return and the cost
+ * analysis — the four kept screens of the "Overview and analysis" floorplan, one module.
+ */
+export function reportsTabs(current: 'overview' | 'trial' | 'vat' | 'costs'): ModuleTab[] {
+  const tabs = [
+    { key: 'overview', label: 'Overview', href: `#${ROUTES.dashboard}` },
+    { key: 'trial', label: 'Trial balance', href: '#/accounting/trial-balance' },
+    { key: 'vat', label: 'VAT return', href: '#/accounting/vat-return/2026-09' },
+    { key: 'costs', label: 'Cost analysis', href: '#/analytics/costs' },
+  ]
+  return tabs.map((tab) => ({ ...tab, current: tab.key === current }))
+}
+
 /** The HR tabs with `key` current (the module's other screens). */
 export function hrTabs(key: string): ModuleTab[] {
   return HR_TABS.map((tab) => ({ ...tab, current: tab.key === key }))

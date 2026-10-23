@@ -23,114 +23,18 @@ import {
 } from './screens-core'
 import { GROUP_F_ROUTES } from './screens-F'
 import { BANK_STATEMENT_ROUTES } from './screens-bank'
-import { GROUP_A_ROUTES } from './screens-A'
-import { GROUP_C_ROUTES } from './screens-C'
 import { GROUP_E_ROUTES } from './screens-E'
 import { GROUP_D2_ROUTES } from './screens-D2'
 import { GROUP_D1_ROUTES } from './screens-D1'
-import { GROUP_J_ROUTES } from './screens-J'
-import { GROUP_G_ROUTES } from './screens-G'
 import { GROUP_H_ROUTES } from './screens-H'
 import { GROUP_I_ROUTES } from './screens-I'
-import { GROUP_L_ROUTES } from './screens-L'
 import { GROUP_K_ROUTES } from './screens-K'
-import { GROUP_M_ROUTES } from './screens-M'
-import { GROUP_P_ROUTES } from './screens-P'
-import { GROUP_O_ROUTES } from './screens-O'
-import { GROUP_N_ROUTES } from './screens-N'
-// P5.29 superadmin
-import { GROUP_R_ROUTES } from './screens-R'
-import { GROUP_Q_ROUTES } from './screens-Q'
-// P5.29 agent
-import { GROUP_S_ROUTES } from './screens-S'
-// ── P5.29 portal ──
-import { GROUP_T_ROUTES } from './screens-T'
-// ── P5.42 org ──
-import { GROUP_AJ_ROUTES } from './screens-AJ'
-// P5.37 gantt
 import { GROUP_AA_ROUTES } from './screens-AA'
-// P5.35 gantt
 import { GROUP_Y_ROUTES } from './screens-Y'
-import { GROUP_AD_ROUTES } from './screens-AD'
-// ── P5.32 acct ──
-import { GROUP_V_ROUTES } from './screens-V'
-import { GROUP_Z_ROUTES } from './screens-Z'
-// P5.34 ai
-import { GROUP_X_ROUTES } from './screens-X'
-import { GROUP_AB_ROUTES } from './screens-AB'
-import { GROUP_AC_ROUTES } from './screens-AC'
-// ── P5.31 docs ──
-import { GROUP_U_ROUTES } from './screens-U'
-// ── P5.33 docs ──
-import { GROUP_W_ROUTES } from './screens-W'
-// P5.41 map
-import { GROUP_AE_ROUTES } from './screens-AE'
-import { GROUP_AF_ROUTES } from './screens-AF'
-import { GROUP_AG_ROUTES } from './screens-AG'
-// ── P5.43 files ──
-import { GROUP_AH_ROUTES } from './screens-AH'
-import { GROUP_AI_ROUTES } from './screens-AI'
-// ── P5.49 trade ──
-import { GROUP_AU_ROUTES } from './screens-AU'
-import { GROUP_AV_ROUTES } from './screens-AV'
-import { GROUP_AW_ROUTES } from './screens-AW'
-import { GROUP_AX_ROUTES } from './screens-AX'
-// ── P5.51 stock ──
-import { GROUP_AY_ROUTES } from './screens-AY'
-import { GROUP_AZ_ROUTES } from './screens-AZ'
-import { GROUP_BA_ROUTES } from './screens-BA'
-import { GROUP_BB_ROUTES } from './screens-BB'
-// ── P5.47 assets ──
-import { GROUP_AP_ROUTES } from './screens-AP'
-import { GROUP_AQ_ROUTES } from './screens-AQ'
-import { GROUP_AR_ROUTES } from './screens-AR'
-import { GROUP_AS_ROUTES } from './screens-AS'
-import { GROUP_AT_ROUTES } from './screens-AT'
-// ── P5.44 ledger ──
-import { GROUP_AK_ROUTES } from './screens-AK'
 import { GROUP_AL_ROUTES } from './screens-AL'
-import { GROUP_AM_ROUTES } from './screens-AM'
-import { GROUP_AN_ROUTES } from './screens-AN'
-import { GROUP_AO_ROUTES } from './screens-AO'
-// ── P5.62 identity ──
 import { GROUP_BC_ROUTES } from './screens-BC'
 import { GROUP_BD_ROUTES } from './screens-BD'
-// ── P5.64 people ──
-import { GROUP_BJ_ROUTES } from './screens-BJ'
-import { GROUP_BK_ROUTES } from './screens-BK'
-import { GROUP_BL_ROUTES } from './screens-BL'
-// ── P5.66 records ──
-import { GROUP_BE_ROUTES } from './screens-BE'
-import { GROUP_BF_ROUTES } from './screens-BF'
-import { GROUP_BG_ROUTES } from './screens-BG'
-import { GROUP_BH_ROUTES } from './screens-BH'
-import { GROUP_BI_ROUTES } from './screens-BI'
-// ── P5.72 health ──
-import { GROUP_BM_ROUTES } from './screens-BM'
-// ── P5.74 field ──
-import { GROUP_BO_ROUTES } from './screens-BO'
-import { GROUP_BP_ROUTES } from './screens-BP'
-// ── P5.73 campus ──
-import { GROUP_BN_ROUTES } from './screens-BN'
-// ── P5.76 property ──
-import { GROUP_BQ_ROUTES } from './screens-BQ'
-// ── P5.77 pivot ──
 import { GROUP_BR_ROUTES } from './screens-BR'
-// ── P5.78/79 auto ──
-import { GROUP_BS_ROUTES } from './screens-BS'
-import { GROUP_BT_ROUTES } from './screens-BT'
-// ── P5.80/81 reports ──
-import { GROUP_BU_ROUTES } from './screens-BU'
-import { GROUP_BV_ROUTES } from './screens-BV'
-// ── P5.82 kyc ──
-import { GROUP_BW_ROUTES } from './screens-BW'
-import { GROUP_BX_ROUTES } from './screens-BX'
-import { GROUP_BY_ROUTES } from './screens-BY'
-// ── P5.85 cases ──
-import { GROUP_BZ_ROUTES } from './screens-BZ'
-import { GROUP_CA_ROUTES } from './screens-CA'
-import { GROUP_CB_ROUTES } from './screens-CB'
-import { GROUP_CC_ROUTES } from './screens-CC'
 
 // ── Routes ────────────────────────────────────────────────────────────────────────────────
 
@@ -145,117 +49,20 @@ export interface ExampleRoute {
  * screens with one import above and one line here.
  */
 const EXAMPLE_ROUTES: readonly ExampleRoute[] = [
-  // ── P5 routes ──
   ...GROUP_F_ROUTES,
   ...BANK_STATEMENT_ROUTES,
-  ...GROUP_A_ROUTES,
-  ...GROUP_C_ROUTES,
   ...GROUP_E_ROUTES,
   ...GROUP_D2_ROUTES,
   ...GROUP_D1_ROUTES,
-  ...GROUP_J_ROUTES,
-  ...GROUP_G_ROUTES,
   ...GROUP_H_ROUTES,
   ...GROUP_I_ROUTES,
-  ...GROUP_L_ROUTES,
   ...GROUP_K_ROUTES,
-  ...GROUP_M_ROUTES,
-  ...GROUP_P_ROUTES,
-  ...GROUP_O_ROUTES,
-  ...GROUP_N_ROUTES,
-  // P5.29 superadmin
-  ...GROUP_R_ROUTES,
-  ...GROUP_Q_ROUTES,
-  // P5.29 agent
-  ...GROUP_S_ROUTES,
-  // ── P5.29 portal ──
-  ...GROUP_T_ROUTES,
-  // P5.37 gantt
   ...GROUP_AA_ROUTES,
-  // P5.35 gantt
   ...GROUP_Y_ROUTES,
-  ...GROUP_AD_ROUTES,
-  // ── P5.32 acct ──
-  ...GROUP_V_ROUTES,
-  ...GROUP_Z_ROUTES,
-  // P5.34 ai
-  ...GROUP_X_ROUTES,
-  ...GROUP_AB_ROUTES,
-  ...GROUP_AC_ROUTES,
-  // ── P5.31 docs ──
-  ...GROUP_U_ROUTES,
-  // ── P5.33 docs ──
-  ...GROUP_W_ROUTES,
-  // P5.41 map
-  ...GROUP_AE_ROUTES,
-  ...GROUP_AF_ROUTES,
-  ...GROUP_AG_ROUTES,
-  // ── P5.42 org ──
-  ...GROUP_AJ_ROUTES,
-  // ── P5.43 files ──
-  ...GROUP_AH_ROUTES,
-  ...GROUP_AI_ROUTES,
-  // ── P5.49 trade ──
-  ...GROUP_AU_ROUTES,
-  ...GROUP_AV_ROUTES,
-  ...GROUP_AW_ROUTES,
-  ...GROUP_AX_ROUTES,
-  // ── P5.51 stock ──
-  ...GROUP_AY_ROUTES,
-  ...GROUP_AZ_ROUTES,
-  ...GROUP_BA_ROUTES,
-  ...GROUP_BB_ROUTES,
-  // ── P5.47 assets ──
-  ...GROUP_AP_ROUTES,
-  ...GROUP_AQ_ROUTES,
-  ...GROUP_AR_ROUTES,
-  ...GROUP_AS_ROUTES,
-  ...GROUP_AT_ROUTES,
-  // ── P5.44 ledger ──
-  ...GROUP_AK_ROUTES,
   ...GROUP_AL_ROUTES,
-  ...GROUP_AM_ROUTES,
-  ...GROUP_AN_ROUTES,
-  ...GROUP_AO_ROUTES,
-  // ── P5.62 identity ──
   ...GROUP_BC_ROUTES,
   ...GROUP_BD_ROUTES,
-  // ── P5.64 people ──
-  ...GROUP_BJ_ROUTES,
-  ...GROUP_BK_ROUTES,
-  ...GROUP_BL_ROUTES,
-  // ── P5.66 records ──
-  ...GROUP_BE_ROUTES,
-  ...GROUP_BF_ROUTES,
-  ...GROUP_BG_ROUTES,
-  ...GROUP_BH_ROUTES,
-  ...GROUP_BI_ROUTES,
-  // ── P5.72 health ──
-  ...GROUP_BM_ROUTES,
-  // ── P5.74 field ──
-  ...GROUP_BO_ROUTES,
-  ...GROUP_BP_ROUTES,
-  // ── P5.73 campus ──
-  ...GROUP_BN_ROUTES,
-  // ── P5.76 property ──
-  ...GROUP_BQ_ROUTES,
-  // ── P5.77 pivot ──
   ...GROUP_BR_ROUTES,
-  // ── P5.78/79 auto ──
-  ...GROUP_BS_ROUTES,
-  ...GROUP_BT_ROUTES,
-  // ── P5.80/81 reports ──
-  ...GROUP_BU_ROUTES,
-  ...GROUP_BV_ROUTES,
-  // ── P5.82 kyc ──
-  ...GROUP_BW_ROUTES,
-  ...GROUP_BX_ROUTES,
-  ...GROUP_BY_ROUTES,
-  // ── P5.85 cases ──
-  ...GROUP_BZ_ROUTES,
-  ...GROUP_CA_ROUTES,
-  ...GROUP_CB_ROUTES,
-  ...GROUP_CC_ROUTES,
 ]
 
 // ── The app ───────────────────────────────────────────────────────────────────────────────────

@@ -45,11 +45,6 @@ export function percentOf(amount: string, rate: string): string {
   return fromUnits(divideRounded(toUnits(amount) * toUnits(rate, 4), 1_000_000n))
 }
 
-/** An amount in another currency at `rate` (home units for one foreign unit, 4 decimals). */
-export function converted(amount: string, rate: string): string {
-  return fromUnits(divideRounded(toUnits(amount) * toUnits(rate, 4), 10_000n))
-}
-
 /** Negates a decimal string. */
 export function negated(value: string): string {
   return fromUnits(-toUnits(value))
@@ -154,33 +149,7 @@ export function totalsOf(recap: readonly RecapRow[]): { net: string; tax: string
   return { net, tax, total: sum([net, tax]) }
 }
 
-/** A heading's section: its lines, then a subtotal of their amounts. */
-function section(id: string, heading: string, lines: DocLine[], subtotalLabel: string): DocLine[] {
-  return [
-    { id: `${id}-h`, type: 'heading', text: heading },
-    ...lines,
-    {
-      id: `${id}-s`,
-      type: 'subtotal',
-      text: subtotalLabel,
-      amount: sum(lines.map((each) => each.amount ?? '0')),
-    },
-  ]
-}
-
 // ── The company and the customers ───────────────────────────────────────────────────────────
-
-export const VOJVODJANKA = {
-  name: 'Vojvođanka Mlin a.d.',
-  taxId: 'PIB 100421987',
-  address: 'Industrijska 4, 23000 Zrenjanin',
-}
-
-export const DONAU_BAU = {
-  name: 'Donau Bau GmbH',
-  taxId: 'UID ATU12345678',
-  address: 'Handelskai 94, 1200 Wien, Austria',
-}
 
 export const MEDIC_LAB = {
   name: 'Medic Lab Niš d.o.o.',
@@ -188,95 +157,9 @@ export const MEDIC_LAB = {
   address: 'Bulevar Nemanjića 25, 18000 Niš',
 }
 
-export const BOJOVIC = {
-  name: 'Bojović i sinovi d.o.o.',
-  taxId: 'PIB 109773148',
-  address: 'Kralja Petra I 31, 11300 Smederevo',
-}
-
 // ── F-2026-0418: the final invoice ──────────────────────────────────────────────────────────
 
-const STEEL = [
-  line('1', 'Steel beams HEA 200, S275JR', 'Item', '12.6', 't', '142800.00', 'S20'),
-  line('2', 'Steel columns HEB 240, S275JR', 'Item', '8.4', 't', '146500.00', 'S20'),
-  line(
-    '3',
-    'High-strength bolts M20 10.9 with nuts and washers',
-    'Item',
-    '640',
-    'pc',
-    '186.40',
-    'S20',
-  ),
-]
-
-const ROOFING = [
-  line('4', 'Sandwich roof panels PUR 100 mm, RAL 9002', 'Item', '820', 'm²', '4385.00', 'S20'),
-  line('5', 'Ridge and edge flashings, 0,6 mm', 'Item', '96', 'm', '1240.00', 'S20'),
-]
-
-/** The 3% contract discount on the steel structure and the roofing (S 20%). */
-const DISCOUNT_BASE = sum([...STEEL, ...ROOFING].map((each) => each.amount ?? '0'))
-
-export const FINAL_LINES: DocLine[] = [
-  ...section('steel', 'Steel structure', STEEL, 'Total steel structure'),
-  ...section('roof', 'Roofing', ROOFING, 'Total roofing'),
-  line('6', 'Assembly drawings, printed and bound', 'Service', '2', 'lot', '6400.00', 'S10'),
-  {
-    id: 'note',
-    type: 'text',
-    text: 'Delivered to the site at Temerinski put 51, Novi Sad, from 14 to 25 September 2026; delivery notes OTP-2026-0388 to OTP-2026-0402.',
-  },
-  {
-    id: 'discount',
-    type: 'discount',
-    text: 'Contract discount 3% on the steel structure and the roofing',
-    kind: 'Discount',
-    tax: 'S20',
-    amount: negated(percentOf(DISCOUNT_BASE, '3')),
-  },
-]
-
-export const FINAL_RECAP = recapOf(FINAL_LINES)
-export const FINAL_TOTALS = totalsOf(FINAL_RECAP)
-
-/** The two advances, as invoiced (with their VAT). */
-export const ADVANCES = [
-  { number: 'A-2026-038', issued: '2026-07-15', amount: '1200000.00' },
-  { number: 'A-2026-044', issued: '2026-08-20', amount: '1800000.00' },
-]
-
-export const FINAL_DUE = sum([
-  FINAL_TOTALS.total,
-  ...ADVANCES.map((advance) => negated(advance.amount)),
-])
-
-/** The attachments of F-2026-0418, each with its "Send with the e-invoice" flag. */
-export const FINAL_ATTACHMENTS = [
-  { id: 'contract', name: 'Ugovor 12-2026.pdf', size: '412 KB', send: true },
-  { id: 'handover', name: 'Zapisnik o primopredaji 25.09.2026.pdf', size: '1,2 MB', send: true },
-  { id: 'notes', name: 'Otpremnice OTP-2026-0388–0402.pdf', size: '3,8 MB', send: false },
-]
-
 // ── F-2026-0415: the invoice in EUR ─────────────────────────────────────────────────────────
-
-export const EUR_LINES: DocLine[] = [
-  line('1', 'Precast concrete stair flights, type ST-12', 'Item', '6', 'pc', '1240.00', 'S20'),
-  line('2', 'Technical documentation, printed set', 'Item', '3', 'lot', '85.00', 'S10'),
-  line('3', 'Supervision of installation on site, Wien', 'Service', '16', 'h', '62.50', 'AE'),
-  line('4', 'Returnable steel transport pallets', 'Item', '10', 'pc', '45.00', 'E'),
-]
-
-export const EUR_RATE = { rate: '117.1825', date: '2026-10-05' }
-export const EUR_RECAP = recapOf(EUR_LINES)
-export const EUR_TOTALS = totalsOf(EUR_RECAP)
-
-/** The equivalents in RSD: the net and the tax converted, the total their sum. */
-export const EUR_IN_RSD = (() => {
-  const net = converted(EUR_TOTALS.net, EUR_RATE.rate)
-  const tax = converted(EUR_TOTALS.tax, EUR_RATE.rate)
-  return { net, tax, total: sum([net, tax]) }
-})()
 
 // ── F-2026-0410 and its decrease KO-2026-0009 ───────────────────────────────────────────────
 
@@ -351,14 +234,6 @@ export const CANCELLED_LINES: DocLine[] = [
   line('2', 'Facade anchors 140 mm', 'Item', '1500', 'pc', '13.00', 'S20'),
 ]
 export const CANCELLED_TOTALS = totalsOf(recapOf(CANCELLED_LINES))
-
-/** The cancellation document's lines: the cancelled invoice's, negated. */
-export const CANCELLATION_LINES: DocLine[] = CANCELLED_LINES.map((each) => ({
-  ...each,
-  quantity: negated(each.quantity ?? '0').replace(/\.00$/, ''),
-  amount: negated(each.amount ?? '0'),
-}))
-export const CANCELLATION_TOTALS = totalsOf(recapOf(CANCELLATION_LINES))
 
 export const CANCELLATION = {
   number: 'ST-2026-0004',
@@ -516,8 +391,6 @@ export function specificationOf(): SpecPosition[] {
   return positions
 }
 
-export const SPECIFICATION = specificationOf()
-
 /** A row of the specification view: a group heading, a position or a group's subtotal. */
 export interface SpecRow {
   id: string
@@ -527,50 +400,3 @@ export interface SpecRow {
   /** A subtotal's sums: contracted, previous, this period, cumulative. */
   sums?: { amount: string; previous: string; current: string; cumulative: string }
 }
-
-function sums(positions: readonly SpecPosition[]) {
-  return {
-    amount: sum(positions.map((each) => each.amount)),
-    previous: sum(positions.map((each) => each.previous.amount)),
-    current: sum(positions.map((each) => each.current.amount)),
-    cumulative: sum(positions.map((each) => each.cumulative.amount)),
-  }
-}
-
-export const SPEC_ROWS: SpecRow[] = SPEC_GROUPS.flatMap((name, index) => {
-  const positions = SPECIFICATION.filter((each) => each.group === index + 1)
-  return [
-    { id: `g${String(index + 1)}`, type: 'heading' as const, text: name },
-    ...positions.map((each) => ({
-      id: each.id,
-      type: 'line' as const,
-      text: each.text,
-      position: each,
-    })),
-    {
-      id: `s${String(index + 1)}`,
-      type: 'subtotal' as const,
-      text: `Total ${name}`,
-      sums: sums(positions),
-    },
-  ]
-})
-
-export const SPEC_TOTALS = sums(SPECIFICATION)
-
-/** This period's works, as the situation's one line (S 20%). */
-export const SITUATION_LINES: DocLine[] = [
-  {
-    id: '1',
-    type: 'line',
-    text: 'Works on the Hall B extension, Temerinski put 51, in September 2026, under contract 12/2026',
-    kind: 'Service',
-    quantity: '1',
-    unit: 'lot',
-    price: SPEC_TOTALS.current,
-    tax: 'S20',
-    amount: SPEC_TOTALS.current,
-  },
-]
-export const SITUATION_RECAP = recapOf(SITUATION_LINES)
-export const SITUATION_TOTALS = totalsOf(SITUATION_RECAP)

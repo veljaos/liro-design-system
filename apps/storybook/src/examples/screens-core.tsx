@@ -90,6 +90,7 @@ import {
   BRAND,
   COMPANIES,
   HR_TABS,
+  reportsTabs,
   Navigate,
   NOTIFICATION_TYPES,
   Notifications,
@@ -753,7 +754,7 @@ export function Dashboard({ phone }: { phone: boolean }) {
     },
   ]
   return (
-    <Shell phone={phone} crumbs={[{ label: 'Overview' }]}>
+    <Shell phone={phone} crumbs={[{ label: 'Overview' }]} tabs={reportsTabs('overview')}>
       <DashboardPage
         layout={phone ? 'phone' : 'desktop'}
         title="Overview"

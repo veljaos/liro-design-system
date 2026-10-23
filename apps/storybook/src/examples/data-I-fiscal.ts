@@ -627,30 +627,5 @@ export function dailyFigures(entries: readonly JournalEntry[]) {
 
 // ── The web-shop order (item 21i) ─────────────────────────────────────────────────────────────
 
-export const WEB_ORDER = {
-  number: 'WEB-1042',
-  customer: 'Ana Petrović',
-  email: 'ana@example.com',
-  placed: '2026-10-06',
-  placedTime: '08:14',
-  pickup: 'Pick up at Bulevar oslobođenja 46, today from 10:00',
-  lines: [
-    { productId: 'reforma', quantity: '4' },
-    { productId: 'tulumbe', quantity: '2' },
-  ] as SaleLine[],
-  payment: { id: 'p', label: 'Card', value: '1360.00', detail: 'Paid online, Visa •••• 0094' },
-  /** The receipt the web shop's processor issued (invented). */
-  receipt: {
-    number: 'WS4N8R2T-WS4N8R2T-0815',
-    time: '06.10.2026. 08:14:52',
-    counter: '0790/0815ПП',
-  },
-}
-
-export const SHOP_ACCOUNT = {
-  name: 'Snežana Kovačević',
-  email: 'snezana@zlatniklas.example',
-}
-
 /** The bakery's name on every receipt. */
 export const RECEIPT_HEADER = [BAKERY.name, BAKERY.address, BAKERY.taxId, BAKERY.register]
