@@ -1202,7 +1202,7 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
       className={cn(
         'overflow-x-auto',
         // Flush in its card as every table (P5.90 item 2); on its own, the region is the frame.
-        !inCard && 'rounded-md border border-solid border-default',
+        !inCard && 'rounded-md border border-solid border-default bg-surface-raised',
         STICKY_CLEARANCE,
       )}
     >
