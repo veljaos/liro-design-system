@@ -161,7 +161,7 @@ export const Shortcut: Story = {
   ),
 }
 
-/** Long labels at phone width: the tabs and the trail wrap. */
+/** Long labels at phone width: the tabs stay one line that scrolls sideways; the trail wraps. */
 export const LongTextPhone: Story = {
   name: 'Long text, phone width',
   render: () => (
@@ -187,6 +187,42 @@ export const LongTextPhone: Story = {
       />
     </div>
   ),
+}
+
+const MANY_TABS = [
+  'General',
+  'Lines',
+  'Attachments',
+  'Payments',
+  'Deliveries',
+  'Accounting',
+  'History',
+].map((label) => ({
+  value: label.toLowerCase(),
+  label,
+  content: <p className={cn('m-0 text-sm', TEXT_DIRECTION)}>{label}</p>,
+}))
+
+/**
+ * More tabs than a phone's width (the tab row rule, P5.90): one line that scrolls sideways, each
+ * edge with tabs past it faded, and the active tab ("Accounting") scrolled into view when drawn.
+ */
+export const ManyTabsPhone: Story = {
+  name: 'Many tabs, phone width',
+  render: () => (
+    <div className="w-[390px] max-w-full">
+      <Tabs label="Invoice" items={MANY_TABS} defaultValue="accounting" />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const tab = within(canvasElement).getByRole('tab', { name: 'Accounting' })
+    const row = tab.closest('[data-fade]')
+    await expect(row).not.toBeNull()
+    const box = row?.getBoundingClientRect()
+    const own = tab.getBoundingClientRect()
+    await expect(box !== undefined && own.left >= box.left && own.right <= box.right).toBe(true)
+    await settle()
+  },
 }
 
 /** Arabic sample text, right to left: "›" points left; the chevrons mirror. */

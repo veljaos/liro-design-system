@@ -2,6 +2,8 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { Plus, RefreshCw } from 'lucide-react'
 import { settle } from '../primitives/story-helpers'
 import { Button } from './button'
+import { SectionCard } from './cards'
+import { DataTable } from './data-table'
 import { EmptyState, ErrorState } from './empty-state'
 import { ARABIC, JAPANESE, LONG } from './field-story-data'
 
@@ -19,6 +21,8 @@ const meta = {
           "user must react differently. Titles and texts come from the provider's messages " +
           'unless given. `compact` for cards and table bodies. `ErrorState` adds the case number ' +
           'to quote and a "report a problem" action.\n\n' +
+          '**Its own space (P5.90):** 32px above and below (24px compact), so it never stands ' +
+          "against a card's top edge; the place that shows it adds no vertical padding.\n\n" +
           '**When not:** a problem with part of a page that still works (Alert); a failure the ' +
           'user just caused (Toast).',
       },
@@ -47,8 +51,33 @@ export const Variants: Story = {
 /** Compact (24px icon, Mantine size sm), for a card or a table body; texts from the application. */
 export const Compact: Story = {
   render: () => (
-    <div className="max-w-100 rounded-md border border-default bg-surface-raised p-6">
+    <div className="max-w-100 rounded-md border border-default bg-surface-raised px-6">
       <EmptyState compact title="No attachments" description="Drop files here or choose them." />
+    </div>
+  ),
+}
+
+/**
+ * Inside cards (P5.90 item 13): a SectionCard and a table's card show their empty states with the
+ * same space above and below — the state's own — never against the card's top edge.
+ */
+export const InCards: Story = {
+  name: 'Inside cards',
+  render: () => (
+    <div className="grid max-w-200 gap-6 md:grid-cols-2">
+      <SectionCard title="Attachments">
+        <EmptyState compact title="No attachments" description="Drop files here or choose them." />
+      </SectionCard>
+      <DataTable
+        label="Invoices"
+        rows={[]}
+        columns={[{ id: 'number', header: 'Number', cell: (row: { id: string }) => row.id }]}
+        getRowId={(row) => row.id}
+        getRowLabel={(row) => row.id}
+        emptyAction={{ label: 'Create an invoice', icon: Plus, onClick: noop }}
+        className="rounded-lg border border-solid border-default bg-surface-raised"
+        inCard
+      />
     </div>
   ),
 }

@@ -7,7 +7,7 @@ import {
   type RowSelectionState,
   type Updater,
 } from '@tanstack/react-table'
-import { useVirtualizer, type Range } from '@tanstack/react-virtual'
+import { useVirtualizer, useWindowVirtualizer, type Range } from '@tanstack/react-virtual'
 import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react'
 import {
   Fragment,
@@ -335,8 +335,10 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
   // with dividers instead.
   const flat = cards && props.inCard === true
   // On phones the cards flow with the page: no box with its own scroll inside the page, so no
-  // `maxHeight` and no virtual window there (P5.90 item 5); long lists page (`onNext`).
+  // `maxHeight` there (P5.90 item 5). A long list of cards is still drawn only where it is in
+  // view, measured against the page's own scroll (`cardWindow`), not a box of its own.
   const virtualize = props.virtualize === true && !cards
+  const cardWindow = props.virtualize === true && cards
   // Every table's header stays below the shell by default (P5.28 item 4).
   const sticky = props.stickyHeader !== false || virtualize
   // In a card the first column stays at the start while the table scrolls sideways (P5.28 item 4).
@@ -450,7 +452,7 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
   const [focusIndex, setFocusIndex] = useState<number | null>(null)
   useEffect(() => {
     const element = scroller.current
-    if (!virtualize || element === null) return
+    if ((!virtualize && !cardWindow) || element === null) return
     const onFocusIn = (event: FocusEvent) => {
       const at =
         event.target instanceof Element
@@ -468,7 +470,7 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
       element.removeEventListener('focusin', onFocusIn)
       element.removeEventListener('focusout', onFocusOut)
     }
-  }, [virtualize, cards])
+  }, [virtualize, cardWindow, cards])
   const rangeExtractor = useCallback(
     (range: Range) => keepFocusedRow(range, focusIndex),
     [focusIndex],
@@ -487,17 +489,68 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
     initialRect: { width: 0, height: 720 },
   })
 
+  // Phone cards in a window of the page's own scroll (P5.90): the closest scrolling ancestor (a
+  // story's phone frame, an application's scrolling layout), or the window; the list's offset in
+  // it is the window's scroll margin.
+  const cardListElement = useRef<HTMLUListElement>(null)
+  const [pageScroller, setPageScroller] = useState<HTMLElement | 'window' | null>(null)
+  const [cardMargin, setCardMargin] = useState(0)
+  useLayoutEffect(() => {
+    const list = cardListElement.current
+    if (!cardWindow || list === null) return
+    const measure = () => {
+      const found = scrollingAncestor(list)
+      setPageScroller((last) => (last === found ? last : found))
+      const top = list.getBoundingClientRect().top
+      const margin =
+        found === 'window'
+          ? top + window.scrollY
+          : top - found.getBoundingClientRect().top + found.scrollTop
+      setCardMargin((last) => (Math.abs(last - margin) < 1 ? last : Math.round(margin)))
+    }
+    measure()
+    // What stands above the list can change its offset (a filter row, a bulk bar).
+    const observer = new ResizeObserver(measure)
+    const found = scrollingAncestor(list)
+    observer.observe(found === 'window' ? document.body : (found.firstElementChild ?? found))
+    return () => {
+      observer.disconnect()
+    }
+  }, [cardWindow, rows.length])
+  const elementCards = useVirtualizer({
+    count: rows.length,
+    getScrollElement: () => (pageScroller instanceof HTMLElement ? pageScroller : null),
+    estimateSize: () => CARD_HEIGHT,
+    overscan: overscanRows(CARD_HEIGHT),
+    rangeExtractor,
+    enabled: cardWindow && pageScroller instanceof HTMLElement,
+    scrollMargin: cardMargin,
+    initialRect: { width: 0, height: 720 },
+  })
+  const windowCards = useWindowVirtualizer({
+    count: rows.length,
+    estimateSize: () => CARD_HEIGHT,
+    overscan: overscanRows(CARD_HEIGHT),
+    rangeExtractor,
+    enabled: cardWindow && pageScroller === 'window',
+    scrollMargin: cardMargin,
+    initialRect: { width: 0, height: 720 },
+  })
+  const cardPager = pageScroller === 'window' ? windowCards : elementCards
+
   useImperativeHandle(
     props.ref,
     () => ({
       revealRow: (id: string) => {
         // Drawn rows are all in the page: focusing in the row scrolls it into view.
-        if (!virtualize) return
+        if (!virtualize && !cardWindow) return
         const index = rows.findIndex((row) => getRowId(row) === id)
-        if (index >= 0) virtualizer.scrollToIndex(index, { align: 'center' })
+        if (index < 0) return
+        if (cardWindow) cardPager.scrollToIndex(index, { align: 'center' })
+        else virtualizer.scrollToIndex(index, { align: 'center' })
       },
     }),
-    [rows, getRowId, virtualize, virtualizer],
+    [rows, getRowId, virtualize, virtualizer, cardWindow, cardPager],
   )
 
   const byId = new Map(columns.map((column) => [column.id, column]))
@@ -883,7 +936,7 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
   const cardList = () => {
     if (firstLoad) return skeleton
     if (rows.length === 0) return <div className="px-4">{empty()}</div>
-    if (!virtualize) {
+    if (!cardWindow) {
       return (
         <ul
           aria-label={props.label}
@@ -897,19 +950,21 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
         </ul>
       )
     }
-    // Cards differ in height: each is measured once drawn; the gap is part of its item.
+    // Cards differ in height: each is measured once drawn; the gap is part of its item. The
+    // window follows the page's own scroll (P5.90): the list never scrolls in a box of its own.
     return (
       <ul
+        ref={cardListElement}
         aria-label={props.label}
         className="relative m-0 list-none p-0"
-        style={{ height: virtualizer.getTotalSize() }}
+        style={{ height: cardPager.getTotalSize() }}
       >
-        {virtualizer.getVirtualItems().map((item) => (
+        {cardPager.getVirtualItems().map((item) => (
           <li
             key={tableRows[item.index]?.id ?? item.index}
             data-index={item.index}
             {...lineAttribute(lineAt(item.index))}
-            ref={virtualizer.measureElement}
+            ref={cardPager.measureElement}
             aria-setsize={rows.length}
             aria-posinset={item.index + 1}
             className={cn(
@@ -920,7 +975,7 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
                 lineAt(item.index) === 'subtotal' &&
                 'border-0 border-t border-solid border-strong',
             )}
-            style={{ transform: `translateY(${String(item.start)}px)` }}
+            style={{ transform: `translateY(${String(item.start - cardMargin)}px)` }}
           >
             {card(item.index)}
           </li>
@@ -962,8 +1017,12 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
     props.maxHeight === undefined || cards ? undefined : { maxHeight: props.maxHeight }
 
   const edge = props.inCard === true ? 'px-4' : undefined
+  // The flat phone list's totals end the card themselves: no white band under them (P5.90).
   const under =
-    cardTotals !== null || props.rowLimitMessage !== undefined || paging || countText !== undefined
+    (cardTotals !== null && !flat) ||
+    props.rowLimitMessage !== undefined ||
+    paging ||
+    countText !== undefined
 
   return (
     <div
@@ -1147,6 +1206,19 @@ function lineAttribute(type: LineType): { 'data-line'?: LineType } {
 
 /** The totals row: the 1px border.strong line above it, and sticky at the bottom edge. */
 const TOTALS_LINE = 'sticky bottom-0 z-10 border-0 border-t border-solid border-strong'
+
+/**
+ * The closest ancestor that scrolls vertically (a layout's own scroll, a story's phone frame),
+ * else the window. The table's own rows box is passed over: on phones it never scrolls.
+ */
+function scrollingAncestor(element: HTMLElement): HTMLElement | 'window' {
+  for (let node = element.parentElement; node !== null; node = node.parentElement) {
+    if (node === document.body || node === document.documentElement) break
+    if (node.dataset.slot === 'data-table-rows') continue
+    if (/(auto|scroll|overlay)/.test(getComputedStyle(node).overflowY)) return node
+  }
+  return 'window'
+}
 
 function noop() {
   return undefined
