@@ -1203,6 +1203,30 @@ export interface LiroMessages {
   'cart.each': (priceText: string) => string
   'cart.total': string
   'cart.charge': (amountText: string) => string
+  /** A product tile's count in the order, for assistive technology ("2 in the order"). */
+  'pos.inOrder': (countText: string) => string
+  /** ProductGrid's search field. */
+  'pos.search': string
+  /** PosShell's order bar and sheet on a phone. */
+  'pos.order': string
+  /** CatalogPicker (P5.90 item 14). */
+  'catalog.search': string
+  'catalog.filters': string
+  /** The top level's name ("Back to All"). */
+  'catalog.top': string
+  'catalog.levels': string
+  'catalog.back': (label: string) => string
+  'catalog.count': (count: number, countText: string) => string
+  'catalog.found': (count: number, countText: string) => string
+  'catalog.results': string
+  'catalog.showMore': (shownText: string, totalText: string) => string
+  'catalog.clear': string
+  'catalog.empty': string
+  'catalog.retry': string
+  'catalog.noneChosen': string
+  'catalog.chosen': (names: string) => string
+  'catalog.choose': (count: number, countText: string) => string
+  'catalog.wasPrice': (priceText: string) => string
   /** PaymentDialog: the amounts, the methods, the card terminal and the end. */
   'payment.title': string
   'payment.due': string

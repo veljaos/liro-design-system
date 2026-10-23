@@ -172,6 +172,8 @@ export const Stepping: Story = {
     const input = canvas.getByRole('textbox', { name: 'Quantity picked' })
     await userEvent.click(canvas.getByRole('button', { name: 'Increase Quantity picked' }))
     await expect(input).toHaveValue('5')
+    // The press answers at once: the quantity is highlighted for a moment (P5.90).
+    await expect(canvasElement.querySelector('[data-flash]')).not.toBeNull()
     await userEvent.click(input)
     await userEvent.keyboard('{ArrowUp}')
     await expect(input).toHaveValue('6')

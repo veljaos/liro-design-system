@@ -24,5 +24,5 @@ export const GROUP_I_ROUTES: ExampleRoute[] = [
   { path: I_ROUTES.posCardApproved, render: till({ step: 'card-approved' }) },
   { path: I_ROUTES.posReceipt, render: till({ step: 'receipt' }) },
   { path: I_ROUTES.posOffline, render: till({ offline: true }) },
-  { path: I_ROUTES.posProducts, render: till({ productsOpen: true }) },
+  { path: I_ROUTES.posOrder, render: till({ orderOpen: true }) },
 ]

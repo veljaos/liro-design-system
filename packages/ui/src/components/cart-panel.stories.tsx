@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { Ban, ChefHat, PauseCircle, Percent, Receipt, UserRound } from 'lucide-react'
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { expect, fn, userEvent, within } from 'storybook/test'
 import { settle } from '../primitives/story-helpers'
 import { Button } from './button'
-import { CartPanel } from './cart-panel'
+import { CartPanel, type CartLine } from './cart-panel'
 import { AdvanceList } from './advance-list'
 import { CART_LINES, CART_TOTAL, CART_TOTALS, CURRENCY } from './pos-story-data'
 import { ADVANCES, TAB_LINES } from './sale-story-data'
@@ -303,5 +303,47 @@ export const AdvancesDeducted: Story = {
       />
     ),
     headerActions: <Button family="neutral" icon={Receipt} label="Receipt kind" />,
+  },
+}
+
+/** The application around the cart: + adds one, and the totals follow. */
+function GrowingCart() {
+  const [lines, setLines] = useState<readonly CartLine[]>(CART_LINES)
+  return (
+    <CartPanel
+      className="flex-1"
+      lines={lines}
+      currency={CURRENCY}
+      total={CART_TOTAL}
+      onQuantityChange={(id, quantity) => {
+        if (quantity === null) return
+        setLines((current) =>
+          current.map((line) => (line.id === id ? { ...line, quantity } : line)),
+        )
+      }}
+      onCharge={() => undefined}
+    />
+  )
+}
+
+/**
+ * A quantity that goes up (or a new line) is highlighted for a moment, so the tap is seen
+ * (P5.90); nothing flashes when the cart first appears.
+ */
+export const LineFeedback: Story = {
+  name: 'Line feedback, interaction',
+  tags: ['interaction'],
+  render: () => (
+    <Till>
+      <GrowingCart />
+    </Till>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvasElement.querySelector('li[data-flash]')).toBeNull()
+    await userEvent.click(canvas.getByRole('button', { name: 'Increase Quantity, Jogurt' }))
+    await expect(canvas.getByRole('textbox', { name: 'Quantity, Jogurt' })).toHaveValue('2')
+    await expect(canvasElement.querySelector('li[data-flash]')).toHaveTextContent('Jogurt')
   },
 }

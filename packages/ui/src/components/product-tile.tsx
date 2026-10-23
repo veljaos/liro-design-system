@@ -1,5 +1,6 @@
 import { Ban, CircleX, TriangleAlert } from 'lucide-react'
 import { useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
+import { foldCatalogText } from './catalog-picker-logic'
 import { BUTTON_RESET, FOCUS_RING, TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { Skeleton } from '../primitives/skeleton'
@@ -7,6 +8,8 @@ import { useLiro } from '../provider/liro-provider'
 import { launchpadArrowTarget } from '../templates/launchpad-logic'
 import { MoneyText } from './display-text'
 import { EmptyState } from './empty-state'
+import { FLASH_CLASS, FLASH_TRANSITION, tapFeedback, useFlash } from './pos-feedback'
+import { TextField } from './text-field'
 
 /*
  * ProductTile and ProductGrid (BUILD-PLAN P5.10; docs/decisions.md "Touch and POS"). The products
@@ -22,6 +25,14 @@ import { EmptyState } from './empty-state'
  * Categories are pressed chips at the start (the neutral selection: surface.selected with a
  * border.selected border, never blue, D17), "All" first; the grid shows the products of the
  * chosen category (`categoryId`).
+ *
+ * P5.90 (item 20, "ease sells"): every press answers at once — the tile is highlighted briefly
+ * (the neutral selection, kept with reduced motion; only the fade goes) and a device that can
+ * vibrate gives a short pulse (`tapFeedback`); `inOrder` shows on the tile how many of it the
+ * order holds ("2"), so the count going up is seen where the finger is, and its name says it. A
+ * product may stand under several categories (`categoryIds`: the application's "Most sold" first,
+ * chosen by default). `search` adds a search field above the chips: typing finds products by name
+ * or detail in every category (a local filter of the products given, as ComboboxField's).
  */
 
 /** The stock state of a product in the application's words ("12 left", "Sold out"). */
@@ -45,6 +56,8 @@ export interface ProductTileProps {
   stock?: ProductStock
   /** The product cannot be sold now: the reason, shown on the tile. */
   unavailableReason?: string
+  /** How many of it the order holds now, a decimal string; shown on the tile while above zero. */
+  inOrder?: string
   /** The tile was pressed (not while unavailable). */
   onSelect: () => void
   /** The roving tab index the grid gives; default 0. */
@@ -65,32 +78,69 @@ const STOCK_CLASS = {
 
 /** One product to sell, pressed to add it. */
 export function ProductTile(props: ProductTileProps) {
-  const { messages } = useLiro()
+  const { messages, format } = useLiro()
   const reasonId = useId()
+  const countId = useId()
+  const [flashing, flash] = useFlash()
   const unavailable = props.unavailableReason !== undefined
   const stock = props.stock
   const StockIcon = stock === undefined || stock.tone === 'neutral' ? null : STOCK_ICON[stock.tone]
+  const inOrder =
+    props.inOrder !== undefined &&
+    /^\d+(\.\d+)?$/.test(props.inOrder) &&
+    /[1-9]/.test(props.inOrder)
+      ? props.inOrder
+      : undefined
+  const describedBy = [
+    unavailable ? reasonId : undefined,
+    inOrder === undefined ? undefined : countId,
+  ]
+    .filter((id) => id !== undefined)
+    .join(' ')
   return (
     <button
       type="button"
       data-slot="product-tile"
+      data-flash={flashing.has('tile') || undefined}
       tabIndex={props.tabIndex ?? 0}
       aria-disabled={unavailable || undefined}
-      aria-describedby={unavailable ? reasonId : undefined}
+      aria-describedby={describedBy === '' ? undefined : describedBy}
       onKeyDown={props.onKeyDown}
       onClick={() => {
-        if (!unavailable) props.onSelect()
+        if (unavailable) return
+        tapFeedback()
+        flash(['tile'])
+        props.onSelect()
       }}
       className={cn(
         BUTTON_RESET,
         FOCUS_RING,
-        'flex min-h-28 w-full min-w-0 cursor-pointer flex-col items-stretch gap-1 rounded-lg border border-solid p-3 text-start select-none touch-manipulation [-webkit-touch-callout:none]',
+        'relative flex min-h-28 w-full min-w-0 cursor-pointer flex-col items-stretch gap-1 rounded-lg border border-solid p-3 text-start select-none touch-manipulation [-webkit-touch-callout:none]',
         unavailable
           ? 'cursor-not-allowed border-transparent bg-surface-sunken text-secondary'
-          : 'border-default bg-surface-raised text-primary transition-colors hover:bg-surface-hover active:bg-surface-sunken',
+          : cn(
+              'border-default text-primary hover:bg-surface-hover active:bg-surface-sunken',
+              FLASH_TRANSITION,
+              flashing.has('tile') ? cn(FLASH_CLASS, 'border-selected') : 'bg-surface-raised',
+            ),
         props.className,
       )}
     >
+      {inOrder !== undefined && (
+        <>
+          {/* Read after the name (the name stays the product's), shown at the corner. */}
+          <span id={countId} hidden>
+            {messages['pos.inOrder'](format.number(inOrder))}
+          </span>
+          <span
+            aria-hidden="true"
+            data-slot="product-tile-count"
+            className="absolute -top-2 -end-2 flex min-h-6 min-w-6 items-center justify-center rounded-full border border-solid border-strong bg-surface-raised px-1.5 text-xs font-semibold text-primary tabular-nums"
+          >
+            {format.number(inOrder)}
+          </span>
+        </>
+      )}
       {props.image !== undefined && (
         <span
           aria-hidden="true"
@@ -140,6 +190,10 @@ export interface PosProduct {
   unavailableReason?: string
   /** The category it is shown under; without one it is shown under "All" only. */
   categoryId?: string
+  /** Further categories it is also shown under (the application's "Most sold", "Favourites"). */
+  categoryIds?: readonly string[]
+  /** How many of it the order holds now, a decimal string (`ProductTile` `inOrder`). */
+  inOrder?: string
 }
 
 /** A category chip. */
@@ -165,6 +219,13 @@ export interface ProductGridProps {
   allLabel?: string
   /** Above the chips: a ScanField or a search, from the application. */
   toolbar?: ReactNode
+  /**
+   * A search field above the chips: typing finds products by name or detail in every category
+   * (a local filter of `products`). Default false.
+   */
+  search?: boolean
+  /** The search field's label and placeholder. Default: `messages['pos.search']`. */
+  searchLabel?: string
   /** Skeleton tiles while the products load. */
   loading?: boolean
   /** The empty state's title. Default: `messages['pos.noProducts']`. */
@@ -187,10 +248,11 @@ const CHIP =
 
 /** The products of a till as tiles under category chips, for fingers and the keyboard. */
 export function ProductGrid(props: ProductGridProps) {
-  const { messages, direction } = useLiro()
+  const { messages, direction, locale } = useLiro()
   const [innerCategory, setInnerCategory] = useState<string | null>(props.defaultCategory ?? null)
   const category = props.category === undefined ? innerCategory : props.category
   const [active, setActive] = useState(0)
+  const [query, setQuery] = useState('')
   const list = useRef<HTMLUListElement>(null)
 
   const choose = (next: string | null) => {
@@ -199,10 +261,17 @@ export function ProductGrid(props: ProductGridProps) {
     props.onCategoryChange?.(next)
   }
 
-  const shown =
-    category === null
+  const searching = props.search === true && query.trim() !== ''
+  const needle = foldCatalogText(query.trim(), locale)
+  const shown = searching
+    ? props.products.filter((product) =>
+        foldCatalogText(`${product.name} ${product.detail ?? ''}`, locale).includes(needle),
+      )
+    : category === null
       ? props.products
-      : props.products.filter((product) => product.categoryId === category)
+      : props.products.filter(
+          (product) => product.categoryId === category || product.categoryIds?.includes(category),
+        )
   const current = Math.min(active, Math.max(0, shown.length - 1))
 
   const onKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
@@ -249,7 +318,20 @@ export function ProductGrid(props: ProductGridProps) {
       className={cn('flex min-w-0 flex-col gap-3 font-sans', props.className)}
     >
       {props.toolbar}
-      {props.categories !== undefined && props.categories.length > 0 && (
+      {props.search === true && (
+        <TextField
+          type="search"
+          label={props.searchLabel ?? messages['pos.search']}
+          hideLabel
+          placeholder={props.searchLabel ?? messages['pos.search']}
+          value={query}
+          onChange={(text) => {
+            setQuery(text)
+            setActive(0)
+          }}
+        />
+      )}
+      {props.categories !== undefined && props.categories.length > 0 && !searching && (
         <div role="group" aria-label={messages['pos.categories']} className="flex flex-wrap gap-2">
           {chip(null, props.allLabel ?? messages['pos.allProducts'])}
           {props.categories.map((item) => chip(item.id, item.label))}
@@ -291,6 +373,7 @@ export function ProductGrid(props: ProductGridProps) {
                 {...(product.unavailableReason === undefined
                   ? {}
                   : { unavailableReason: product.unavailableReason })}
+                {...(product.inOrder === undefined ? {} : { inOrder: product.inOrder })}
               />
             </li>
           ))}

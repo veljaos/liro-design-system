@@ -3,7 +3,8 @@
  * line (P5.23, the owner's review): ten lines — two exact matches (an invoice paid by a customer,
  * a supplier invoice paid by us), a partial payment, a customer paying 0,40 RSD less, the bank's
  * fee, the salary advance batch, the taxes and contributions on it, a transfer to the company's
- * own account at another bank, an advance received, and an unknown payment left for later.
+ * own account at another bank, a payment against a proforma invoice (for which the Core has
+ * already issued the advance invoice, P5.90 item 9), and an unknown payment.
  * Amounts are whole paras (BigInt); every total, allocation and journal line is computed here, as
  * the Core would; the components add nothing (D4). The customer invoices are the dataset's open
  * ones (examples-story-data.ts, `isOpen`: F-2026-0407 is cancelled and F-2026-0408 a draft, so
@@ -141,8 +142,8 @@ export const BANK_LINES: BankLine[] = [
     paras: 60_000_00n,
     code: '221',
     model: '00',
-    reference: 'P-2026-118',
-    purpose: 'Avans po ponudi P-2026-118',
+    reference: 'PR-2026-118',
+    purpose: 'Avans po predračunu PR-2026-118',
   }),
   line(10, {
     party: 'Petar Jovanović',
@@ -342,7 +343,13 @@ export type CandidateReason =
 export interface LineSuggestion {
   /** The Core's best guess, preselected. */
   decision: Decision
+  /** Why, in a few words (shown on demand). */
   reason: string
+  /**
+   * 'exact': matched automatically (amount and reference, a known fee, the salary batch): the
+   * user accepts them all at once. 'suggestion': the Core's best guess, checked one by one.
+   */
+  match: 'exact' | 'suggestion'
 }
 
 /** What the Core proposes for each line; a line without one is to do. */
@@ -350,6 +357,7 @@ export const SUGGESTIONS: Record<string, LineSuggestion> = {
   b1: {
     decision: { kind: 'close', items: ['F-2026-0412'], difference: 'open' },
     reason: 'Exact: amount and reference',
+    match: 'exact',
   },
   b2: {
     decision: {
@@ -360,14 +368,17 @@ export const SUGGESTIONS: Record<string, LineSuggestion> = {
       costCentre: '',
     },
     reason: 'Recognised: a fee charged by Banca Intesa',
+    match: 'exact',
   },
   b3: {
     decision: { kind: 'close', items: ['F-2026-0410'], difference: 'open' },
     reason: 'Same customer and reference; pays part of the open amount',
+    match: 'suggestion',
   },
   b4: {
     decision: { kind: 'close', items: ['UF-2026-1204'], difference: 'open' },
     reason: 'Exact: amount and reference',
+    match: 'exact',
   },
   b5: {
     decision: {
@@ -378,6 +389,7 @@ export const SUGGESTIONS: Record<string, LineSuggestion> = {
       costCentre: '',
     },
     reason: 'Recognised: payment code 240 and the salary batch sent on 06.10.2026.',
+    match: 'exact',
   },
   b6: {
     decision: {
@@ -389,10 +401,12 @@ export const SUGGESTIONS: Record<string, LineSuggestion> = {
       ],
     },
     reason: 'From the salary advance: tax and contributions as calculated',
+    match: 'exact',
   },
   b7: {
     decision: { kind: 'close', items: ['F-2026-0406'], difference: 'writeOff' },
     reason: 'Same customer, invoice 406 in the purpose; the amount differs a little',
+    match: 'suggestion',
   },
   b8: {
     decision: {
@@ -403,11 +417,31 @@ export const SUGGESTIONS: Record<string, LineSuggestion> = {
       costCentre: '',
     },
     reason: 'Recognised: the company’s own account at Raiffeisen banka',
+    match: 'exact',
   },
 }
 
 function part(id: string, account: string, text: string, amount: string): SplitPart {
   return { id, account: accountOf(account), text, costCentre: '', amount }
+}
+
+/**
+ * What the Core did by itself (P5.90 item 9): line 9 pays proforma invoice PR-2026-118, so the
+ * Core issued advance invoice AF-2026-0031 for it and booked the payment as an advance received;
+ * the line is done when the statement opens, with a link to the advance invoice.
+ */
+export const HANDLED: Record<string, { decision: Decision; text: string; document: string }> = {
+  b9: {
+    decision: {
+      kind: 'account',
+      type: 'advanceReceived',
+      account: '4300',
+      text: 'Advance invoice AF-2026-0031 for proforma PR-2026-118',
+      costCentre: '',
+    },
+    text: 'Proforma PR-2026-118 paid: advance invoice AF-2026-0031 created',
+    document: 'AF-2026-0031',
+  },
 }
 
 /** The open items the Core ranks for each line, best first, with the reason for each. */
@@ -427,10 +461,7 @@ export const CANDIDATES: Record<string, { id: string; reason: CandidateReason }[
     { id: 'KO-UF-2026-0031', reason: { text: 'Same supplier' } },
   ],
   b7: [{ id: 'F-2026-0406', reason: { differsBy: 40n, partner: 'customer' } }],
-  b9: [
-    { id: 'F-2026-0392', reason: { text: 'Same customer; the amount differs' } },
-    { id: 'F-2026-0390', reason: { text: 'Same customer; the amount differs' } },
-  ],
+  b10: [],
 }
 
 /** A difference up to this may be written off (the Core's setting): 100,00 RSD. */

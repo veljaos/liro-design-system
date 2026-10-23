@@ -141,16 +141,23 @@ export const ApprovalPhoneToast: Story = {
 
 const SERBIAN_BANK = createFormat('sr-Latn-RS')
 
-/** The detail bar's position text ("3 of 10"). */
-function position(canvasElement: HTMLElement): string {
-  return canvasElement.querySelector('[data-slot="worklist-position"]')?.textContent ?? ''
+/** The statement's lines, as the table or the cards show them, in their order. */
+function bankRows(canvasElement: HTMLElement): string[] {
+  const list = canvasElement.querySelector(
+    'table[aria-label="Lines of statement 188"], ul[aria-label="Lines of statement 188"]',
+  )
+  if (list === null) throw new Error('no lines')
+  return Array.from(list.querySelectorAll<HTMLElement>('tbody tr, :scope > li')).map(
+    (row) => row.textContent,
+  )
 }
 
 /**
- * Bank statement 188 of 06.10.2026 (Banca Intesa), worked line by line as the supplier invoices
- * are approved: the statement's balances (they check out), its file and progress; ten lines,
- * two done, one left for later; line 3 (a partial payment) in focus. "Confirm and next" decides
- * it, the toast offers Undo, and line 4 (a supplier invoice paid in full) opens.
+ * Bank statement 188 of 06.10.2026 (Banca Intesa), auto first (P5.90 item 9): one compact table
+ * of its ten lines, each with what it does and its state — six matched automatically, two
+ * suggestions, one that needs the user, and the payment against proforma PR-2026-118 already done
+ * by the Core with a link to advance invoice AF-2026-0031. "Accept all exact matches (6)" is the
+ * main action; the balances check out.
  */
 export const BankStatementScreen: Story = {
   name: 'Bank statement 188',
@@ -163,17 +170,21 @@ export const BankStatementScreen: Story = {
       SERBIAN_BANK.number(STATEMENT_TOTALS.closing, { decimals: 2 }),
     )
     await expect(canvasElement).toHaveTextContent('Balance checks out')
-    await expect(canvasElement).toHaveTextContent('2 of 10 lines done')
-    await expect(position(canvasElement)).toBe('3 of 10')
-    // Posting waits for the lines, and says why.
+    await expect(canvasElement).toHaveTextContent('1 of 10 lines done')
     await expect(canvasElement).toHaveTextContent(
-      '7 lines still need a decision, and 1 line is left for later.',
+      '6 matched automatically · 2 suggestions · 1 needs you · 1 done',
     )
-    await expect(canvasElement).toHaveTextContent('17.762,75 RSD stays open')
+    await expect(canvas.getByRole('button', { name: 'Accept all exact matches (6)' })).toBeVisible()
+    await expect(canvas.getByRole('link', { name: 'AF-2026-0031' })).toBeVisible()
+    await expect(bankRows(canvasElement)).toHaveLength(10)
     await settle()
   },
 }
 
+/**
+ * Accepting the six exact matches at once (Undo offered), then line 3 — the Core's suggestion —
+ * opened in the drawer: what it does in one sentence, "Confirm and next", and line 7 opens.
+ */
 export const BankStatementScreenInteraction: Story = {
   name: 'Bank statement 188, interaction',
   tags: ['interaction', '!dev'],
@@ -181,67 +192,62 @@ export const BankStatementScreenInteraction: Story = {
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('heading', { level: 1, name: 'Statement 188' })).toBeVisible()
-    await expect(canvasElement).toHaveTextContent(
-      SERBIAN_BANK.number(STATEMENT_TOTALS.closing, { decimals: 2 }),
+    const page = within(document.body)
+    await userEvent.click(canvas.getByRole('button', { name: 'Accept all exact matches (6)' }))
+    await expect(await page.findByText('6 lines accepted.')).toBeInTheDocument()
+    await expect(canvasElement).toHaveTextContent('7 of 10 lines done')
+    await expect(canvas.queryByRole('button', { name: /^Accept all/ })).toBeNull()
+    await userEvent.click(canvas.getByRole('cell', { name: 'Medic Lab Niš d.o.o.' }))
+    const drawer = within(await page.findByRole('dialog', { name: /Confirm payment/ }))
+    await expect(drawer.getByRole('region', { name: 'What it does' })).toHaveTextContent(
+      'Pays 50.000,00',
     )
-    await expect(canvasElement).toHaveTextContent('Balance checks out')
-    await expect(canvasElement).toHaveTextContent('2 of 10 lines done')
-    await expect(position(canvasElement)).toBe('3 of 10')
-    // Posting waits for the lines, and says why.
-    await expect(canvasElement).toHaveTextContent(
-      '7 lines still need a decision, and 1 line is left for later.',
+    // The full choice and the bank's details only on demand.
+    await expect(drawer.queryByRole('radiogroup')).toBeNull()
+    await userEvent.click(drawer.getByRole('button', { name: 'Confirm and next' }))
+    const next = within(await page.findByRole('dialog', { name: /Line 7/ }))
+    await expect(next.getByRole('region', { name: 'What it does' })).toHaveTextContent(
+      'Closes F-2026-0406; 0,40 RSD is written off.',
     )
-    await expect(canvasElement).toHaveTextContent('17.762,75 RSD stays open')
-    await userEvent.click(canvas.getByRole('button', { name: 'Confirm and next' }))
-    await expect(
-      await within(document.body).findByText(/Line 3 done: Pays part of F-2026-0410/),
-    ).toBeInTheDocument()
-    await expect(position(canvasElement)).toBe('4 of 10')
-    await expect(
-      canvas.getByRole('heading', { level: 2, name: 'Gradska mehanizacija d.o.o.' }),
-    ).toBeVisible()
-    await expect(canvasElement).toHaveTextContent('3 of 10 lines done')
-    await expect(canvasElement).toHaveTextContent('Closes UF-2026-1204 in full.')
+    await expect(canvasElement).toHaveTextContent('8 of 10 lines done')
+    notice.dismiss()
     await settle()
   },
 }
 
-/** Phone: the statement's summary, then the list of lines; the posting in the bottom bar. */
+/** Phone: the summary, then the lines as cards — those that need the user first. */
 export const BankStatementPhone: Story = {
   name: 'Bank statement 188, phone',
   render: () => <OnPhone start={BANK_ROUTES.statement} />,
   play: async ({ canvasElement }) => {
     await settle()
-    const canvas = within(canvasElement)
-    await expect(canvas.getByRole('list', { name: 'Lines of statement 188' })).toBeVisible()
-    const page = canvasElement.querySelector('[data-slot="worklist-page"]')
-    if (page === null) throw new Error('no page')
-    await expect(page.scrollWidth).toBeLessThanOrEqual(page.clientWidth)
+    const rows = bankRows(canvasElement)
+    await expect(rows[0]).toMatch(/Petar Jovanović.*Needs you/)
+    await expect(rows[1]).toMatch(/Medic Lab Niš.*Suggestion/)
+    await expect(
+      within(canvasElement).getByRole('button', { name: 'Accept all exact matches (6)' }),
+    ).toBeVisible()
     await settle()
   },
 }
 
 /**
- * Phone, one line full screen: Zlatibor Turs paid 0,40 RSD less than F-2026-0406; the
- * difference is written off as the Core suggests; "7 of 10" in the header and "Confirm and next"
- * in the bottom bar; no list beside or under it.
+ * Phone, one line on the whole screen: Zlatibor Turs paid 0,40 RSD less than F-2026-0406; the
+ * difference is written off as the Core suggests; "Confirm and next".
  */
 export const BankStatementLinePhone: Story = {
   name: 'Bank statement 188, phone, line in focus',
   tags: ['!dev'],
   render: () => <OnPhone start={BANK_ROUTES.difference} />,
-  play: async ({ canvasElement }) => {
+  play: async () => {
     await settle()
-    const canvas = within(canvasElement)
-    await expect(position(canvasElement)).toBe('7 of 10')
-    await expect(canvas.queryByRole('list', { name: 'Lines of statement 188' })).toBeNull()
-    await expect(canvasElement).toHaveTextContent('Same customer, amount differs by 0,40 RSD')
-    await expect(canvasElement).toHaveTextContent('Closes F-2026-0406; 0,40 RSD is written off.')
-    await expect(canvas.getByRole('button', { name: 'Confirm and next' })).toBeVisible()
-    const page = canvasElement.querySelector('[data-slot="worklist-page"]')
-    if (page === null) throw new Error('no page')
-    await expect(page.scrollWidth).toBeLessThanOrEqual(page.clientWidth)
+    const drawer = within(
+      await within(document.body).findByRole('dialog', { name: /Zlatibor Turs/ }),
+    )
+    await expect(drawer.getByRole('region', { name: 'What it does' })).toHaveTextContent(
+      'Closes F-2026-0406; 0,40 RSD is written off.',
+    )
+    await expect(drawer.getByRole('button', { name: 'Confirm and next' })).toBeVisible()
     await settle()
   },
 }
