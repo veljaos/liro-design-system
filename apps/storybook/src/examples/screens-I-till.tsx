@@ -23,7 +23,6 @@ import {
   CartPanel,
   CheckboxField,
   ConfirmDialog,
-  DataTable,
   Dialog,
   DropdownMenu,
   IconButton,
@@ -34,19 +33,16 @@ import {
   PaymentDialog,
   PosShell,
   ProductGrid,
-  ReasonConfirmDialog,
   ReceiptFinder,
   ReceiptKindPicker,
   ReceiptPreview,
   ReceiptResult,
   ScanField,
-  StatusBadge,
   TextAreaField,
   Toaster,
   useLiro,
   type BuyerValue,
   type CardState,
-  type DataTableColumn,
   type FoundReceipt,
   type PaymentPart,
   type ReceiptDelivery,
@@ -84,7 +80,6 @@ import {
   BUYER_OPTIONAL_TYPES,
   COMPANY_ADVANCES,
   COMPANY_BUYER,
-  dailyFigures,
   entryTotal,
   FISCAL,
   issuedFacts,
@@ -112,13 +107,14 @@ import {
 } from './data-I-fiscal'
 
 /*
- * The till of Pekara Zlatni klas with the fiscal flows of P5.28 item 21 (screens-I.tsx keeps the
- * handheld). The screen plays the application: it keeps the sale, the receipt's kind, the buyer,
- * the payments and the journal of the day — the journal and the open advances above the screens
- * (`useExampleState`), so an issued receipt is still in the journal when the cashier opens it —
- * decides every rule and computes every figure in data-I-fiscal.ts; the components show and
- * report. Illustrative: the kinds, codes and rules after the Serbian fiscal system; every number
- * invented.
+ * The till of Pekara Zlatni klas (group I, screens-I.tsx registers its routes) with the fiscal
+ * flows of P5.28 item 21: the receipt's kind, training, the buyer, the ways to pay and several on
+ * one receipt, refunds of an earlier receipt, advances and the offline queue. The screen plays the
+ * application: it keeps the sale, the receipt's kind, the buyer, the payments and the journal of
+ * the day — the sale, the journal and the open advances above the screens (`useExampleState`), as
+ * the Core keeps them — decides every rule and computes every figure in data-I.ts and
+ * data-I-fiscal.ts; the components show and report. Illustrative: the kinds, codes and rules after
+ * the Serbian fiscal system; every number invented.
  */
 
 /** How long the example's terminal (or the customer's bank) takes to answer. */
@@ -205,8 +201,8 @@ function isFiscal(type: ReceiptTypeId): boolean {
   return type === 'normal' || type === 'advance'
 }
 
-/** One receipt of the journal as the till prints it. */
-export function EntryReceipt({ entry, copy = false }: { entry: JournalEntry; copy?: boolean }) {
+/** An issued receipt as the till prints it. */
+function EntryReceipt({ entry }: { entry: JournalEntry }) {
   const { format } = useLiro()
   const signed = (amount: string) => format.number(amount, { decimals: 2 })
   const sale = computeSale(entry.lines)
@@ -215,7 +211,7 @@ export function EntryReceipt({ entry, copy = false }: { entry: JournalEntry; cop
     entry.transaction,
     (rate, amount) => `Discount ${rate.toString()}%: ${signed(amount)}`,
   )
-  const type: ReceiptTypeId = copy ? 'copy' : entry.type
+  const type = entry.type
   const fiscal = isFiscal(type)
   const payments = entry.payments.map((part) => ({
     id: part.id,
@@ -324,7 +320,7 @@ export function Till({ phone, start = {} }: { phone: boolean; start?: TillStart 
   const [refundOriginalId] = useExampleState('till.refundOriginal', () => ORIGINAL_ID)
 
   // ── The sale ──
-  // The sale outlives the screen: the cashier opens the journal and comes back to it (P5.28).
+  // The sale outlives the screen, as the Core keeps it (P5.28).
   const [sale, setSale] = useExampleState<readonly SaleLine[]>('till.sale', () => SALE)
   const [feedback, setFeedback] = useState<ScanFeedback | null>(null)
   const [type, setType] = useState<ReceiptTypeId>(start.type ?? 'normal')
@@ -1453,397 +1449,4 @@ export function Till({ phone, start = {} }: { phone: boolean; start?: TillStart 
       </div>
     </TillTouch>
   )
-}
-
-// ── The journal of the day ────────────────────────────────────────────────────────────────────
-
-/** Where each receipt stands, in words with a tone. */
-function StateBadge({ entry }: { entry: JournalEntry }) {
-  return entry.state === 'sent' ? (
-    <StatusBadge label="Sent" tone="success" />
-  ) : entry.state === 'waiting' ? (
-    <StatusBadge label="Waiting to be sent" tone="neutral" />
-  ) : (
-    <StatusBadge label="Not accepted" tone="danger" />
-  )
-}
-
-/** A scrolling area without controls is one tab stop, so the keyboard can scroll it. */
-const SCROLL_STOP = 0
-
-/** Reasons to cancel a receipt issued by mistake (the application's list). */
-const CANCEL_REASONS = [
-  { value: 'items', label: 'Wrong items or quantities' },
-  { value: 'payment', label: 'Wrong way of paying' },
-  { value: 'buyer', label: 'Wrong buyer' },
-  { value: 'kind', label: 'Wrong receipt kind' },
-]
-
-export function Journal({
-  phone,
-  show,
-}: {
-  phone: boolean
-  show?: 'copy' | 'cancel' | 'queue' | 'report'
-}) {
-  const { format } = useLiro()
-  const navigate = useContext(Navigate)
-  const money = (value: string) => format.money(value, BAKERY.currency)
-  const [journal, setJournal] = useExampleState<JournalEntry[]>('till.journal', () =>
-    journalWith(show === 'queue' ? 'failed' : 'online'),
-  )
-  const [, setRefundOriginal] = useExampleState('till.refundOriginal', () => ORIGINAL_ID)
-  const queue = show === 'queue'
-  const rows = queue ? journal.filter((each) => each.state !== 'sent') : journal
-  const [chosenId, setChosenId] = useState<string | undefined>(
-    show === 'cancel' ? 'r2317' : rows[rows.length - 1]?.id,
-  )
-  const chosen = journal.find((each) => each.id === chosenId)
-  const [copyOpen, setCopyOpen] = useState(show === 'copy')
-  const [cancelOpen, setCancelOpen] = useState(show === 'cancel')
-  const [reportOpen, setReportOpen] = useState(show === 'report')
-  const day = dailyFigures(journal)
-
-  const columns: DataTableColumn<JournalEntry>[] = [
-    {
-      id: 'time',
-      header: 'Time',
-      cell: (row) => <bdi>{row.time}</bdi>,
-      width: 96,
-    },
-    {
-      id: 'number',
-      header: 'Receipt',
-      cell: (row) => <bdi dir="ltr">{row.number.slice(-4)}</bdi>,
-      width: 96,
-    },
-    {
-      id: 'kind',
-      header: 'Kind',
-      cell: (row) => kindLabel(row.type, row.transaction),
-      minWidth: 140,
-    },
-    {
-      id: 'total',
-      header: 'Total',
-      numeric: true,
-      cell: (row) => <bdi>{money(decimal(entryTotal(row)))}</bdi>,
-      width: 140,
-    },
-    {
-      id: 'state',
-      header: 'State',
-      cell: (row) => <StateBadge entry={row} />,
-      width: 170,
-    },
-  ]
-
-  const issue = (entry: JournalEntry, text: string) => {
-    setJournal((current) => [...current, entry])
-    setChosenId(entry.id)
-    notice.success(text)
-  }
-
-  const list = (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center gap-3">
-        <h1 className="m-0 text-h3 font-semibold text-primary bidi-content">
-          {queue ? 'Receipts not sent' : 'Receipts today'}
-        </h1>
-        <span className="text-sm text-secondary bidi-isolate">
-          {`${String(rows.length)} receipts · ${format.date('2026-10-06')}`}
-        </span>
-        <div className="ms-auto flex flex-wrap gap-2">
-          <Button
-            family="neutral"
-            icon={ChartNoAxesColumn}
-            label="Daily report"
-            onClick={() => {
-              setReportOpen(true)
-            }}
-          />
-          <Button
-            intent="back"
-            label="Back to the till"
-            onClick={() => {
-              navigate('/pos/zlatni-klas')
-            }}
-          />
-        </div>
-      </div>
-      {queue && (
-        <Banner
-          tone="danger"
-          title="Two receipts were not accepted"
-          actions={
-            <Button
-              family="neutral"
-              icon={RefreshCw}
-              label="Send again"
-              onClick={() => {
-                setJournal((current) =>
-                  current.map((each): JournalEntry => {
-                    if (each.state !== 'refused') return each
-                    const next: JournalEntry = { ...each, state: 'sent' }
-                    delete next.stateText
-                    return next
-                  }),
-                )
-                notice.success('2 receipts sent.')
-              }}
-            />
-          }
-        >
-          The processor refused the signature after the device’s certificate was renewed. The
-          printed receipts stay valid.
-        </Banner>
-      )}
-      <DataTable
-        label={queue ? 'Receipts not sent' : 'Receipts today'}
-        columns={columns}
-        rows={rows}
-        getRowId={(row) => row.id}
-        getRowLabel={(row) => `Receipt ${row.number}`}
-        onRowClick={(row) => {
-          setChosenId(row.id)
-        }}
-        mobile={{
-          title: (row) => <bdi dir="ltr">{row.number}</bdi>,
-          subtitle: (row) => `${row.time} · ${kindLabel(row.type, row.transaction)}`,
-          badge: (row) => <StateBadge entry={row} />,
-          details: ['total'],
-        }}
-      />
-    </div>
-  )
-
-  const panel =
-    chosen === undefined ? (
-      <p className="m-0 p-4 text-sm text-secondary bidi-content">Choose a receipt in the list.</p>
-    ) : (
-      <section aria-label={`Receipt ${chosen.number}`} className="flex min-h-0 flex-1 flex-col">
-        <div className="flex flex-wrap items-center gap-2 border-0 border-b border-solid border-default px-4 py-3">
-          <h2 className="m-0 text-h4 font-semibold break-all text-primary">
-            <bdi dir="ltr">{chosen.number}</bdi>
-          </h2>
-          <StateBadge entry={chosen} />
-          {chosen.stateText !== undefined && (
-            <p className="m-0 w-full text-xs text-secondary bidi-content">{chosen.stateText}</p>
-          )}
-        </div>
-        {/* The receipt scrolls on its own: focusable, so the keyboard can scroll it (WCAG 2.1.1). */}
-        <div
-          tabIndex={SCROLL_STOP}
-          role="group"
-          aria-label={`Receipt ${chosen.number}, as printed`}
-          className="min-h-0 flex-1 overflow-y-auto bg-surface-sunken p-4 outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus"
-        >
-          <EntryReceipt entry={chosen} />
-        </div>
-        <div className="flex flex-wrap gap-2 border-0 border-t border-solid border-default px-4 pt-3 pb-[max(12px,env(safe-area-inset-bottom))]">
-          <Button
-            family="document"
-            icon={Printer}
-            label="Copy"
-            onClick={() => {
-              setCopyOpen(true)
-            }}
-          />
-          {chosen.transaction === 'sale' && chosen.type === 'normal' && (
-            <>
-              <Button
-                family="neutral"
-                icon={Undo2}
-                label="Refund…"
-                onClick={() => {
-                  setRefundOriginal(chosen.id)
-                  navigate(TILL_ROUTES.refundLines)
-                }}
-              />
-              <Button
-                family="destructive"
-                icon={Undo2}
-                label="Cancel receipt…"
-                onClick={() => {
-                  setCancelOpen(true)
-                }}
-              />
-            </>
-          )}
-        </div>
-      </section>
-    )
-
-  return (
-    <TillTouch>
-      <div className={phone ? 'h-full' : 'h-dvh'}>
-        <PosShell
-          layout={phone ? 'phone' : 'tablet'}
-          brand={<BrandLockup brandName="Zlatni klas" productName="Kasa" compact={phone} />}
-          register={BAKERY.register}
-          cashier={BAKERY.cashier}
-          productsLabel="Receipts"
-          defaultProductsOpen={phone && !copyOpen && !cancelOpen && !reportOpen}
-          products={list}
-          cart={panel}
-        />
-        {chosen !== undefined && (
-          <Dialog
-            open={copyOpen}
-            onOpenChange={setCopyOpen}
-            title={`Copy of ${chosen.number}`}
-            actions={
-              <>
-                <Button
-                  intent="cancel"
-                  label="Cancel"
-                  onClick={() => {
-                    setCopyOpen(false)
-                  }}
-                />
-                <Button
-                  intent="print"
-                  label="Print copy"
-                  onClick={() => {
-                    setCopyOpen(false)
-                    notice.success(`Copy of ${chosen.number} printed.`)
-                  }}
-                />
-              </>
-            }
-          >
-            <EntryReceipt entry={chosen} copy />
-          </Dialog>
-        )}
-        {chosen !== undefined && (
-          <ReasonConfirmDialog
-            open={cancelOpen}
-            onOpenChange={setCancelOpen}
-            title="Cancel receipt issued by mistake"
-            family="destructive"
-            actionIcon={Undo2}
-            confirmLabel="Cancel receipt"
-            message={
-              <>
-                <strong className="block font-semibold bidi-content">
-                  {`${chosen.number} · ${money(decimal(entryTotal(chosen)))}`}
-                </strong>
-                <span className="block bidi-content">
-                  A refund of the whole receipt is issued with its number and time; the money goes
-                  back the way it was paid.
-                </span>
-              </>
-            }
-            reasons={CANCEL_REASONS}
-            onConfirm={(reason) => {
-              const entry = nextEntry(journal, {
-                type: 'normal',
-                transaction: 'refund',
-                lines: chosen.lines,
-                payments: chosen.payments,
-                reference: { number: chosen.number, time: `06.10.2026. ${chosen.time}` },
-                time: '09:44:02',
-                ...(chosen.buyer === undefined ? {} : { buyer: chosen.buyer }),
-              })
-              const why = CANCEL_REASONS.find((each) => each.value === reason.reason)?.label ?? ''
-              setCancelOpen(false)
-              issue(
-                entry,
-                `${chosen.number} cancelled (${why.toLowerCase()}): refund ${entry.number}.`,
-              )
-            }}
-          />
-        )}
-        <Dialog
-          open={reportOpen}
-          onOpenChange={setReportOpen}
-          title="Daily report"
-          actions={
-            <>
-              <Button
-                intent="cancel"
-                label="Close"
-                onClick={() => {
-                  setReportOpen(false)
-                }}
-              />
-              <Button
-                intent="print"
-                label="Print report"
-                onClick={() => {
-                  setReportOpen(false)
-                  notice.success('Daily report printed.')
-                }}
-              />
-            </>
-          }
-        >
-          <ReceiptPreview
-            className="mx-auto"
-            label="Daily report"
-            banner="DAILY REPORT"
-            header={RECEIPT_HEADER}
-            facts={[
-              { id: 'date', label: 'Date', value: '06.10.2026.' },
-              { id: 'device', label: 'Device', value: FISCAL.device },
-              {
-                id: 'range',
-                label: 'Receipts',
-                value: `${journal[0]?.number.slice(-4) ?? ''}–${journal[journal.length - 1]?.number.slice(-4) ?? ''} (${String(day.count)})`,
-              },
-            ]}
-            items={[]}
-            totals={[
-              {
-                id: 'sales',
-                label: `Sales (${String(day.salesCount)})`,
-                value: decimal(day.sales),
-              },
-              {
-                id: 'refunds',
-                label: `Refunds (${String(day.refundsCount)})`,
-                value: decimal(-day.refunds),
-              },
-              { id: 'net', label: 'Net', value: decimal(day.net), strong: true },
-            ]}
-            payments={day.byMethod.map(([label, value]) => ({
-              id: label,
-              label,
-              value: decimal(value),
-            }))}
-            recap={{
-              columns: [
-                { id: 'label', label: 'Label' },
-                { id: 'rate', label: 'Rate' },
-                { id: 'tax', label: 'Tax', amount: true },
-              ],
-              rows: day.tax.map((row) => ({
-                id: row.category,
-                cells: {
-                  label: row.category,
-                  rate: row.category === 'E' ? '10,00%' : '20,00%',
-                  tax: decimal(row.vat),
-                },
-              })),
-            }}
-            footer={[
-              `Not in the totals: ${String(day.other)} advances, proformas, copies and training receipts.`,
-            ]}
-            currency={BAKERY.currency}
-          />
-        </Dialog>
-        <Toaster layout={phone ? 'phone' : 'desktop'} />
-      </div>
-    </TillTouch>
-  )
-}
-
-/** The routes of the till's fiscal flows. */
-export const TILL_SCREENS = {
-  till: (phone: boolean, start?: TillStart) => (
-    <Till phone={phone} {...(start === undefined ? {} : { start })} />
-  ),
-  journal: (phone: boolean, show?: 'copy' | 'cancel' | 'queue' | 'report') => (
-    <Journal phone={phone} {...(show === undefined ? {} : { show })} />
-  ),
 }

@@ -2,11 +2,12 @@
  * The one dataset of the example screens (P4.8): Kvadrat Gradnja d.o.o., a construction-materials
  * trader in Novi Sad, on 6 October 2026. The same invoice — F-2026-0412 to Panonija Agro d.o.o.,
  * total 185.954,00 RSD, amount due 135.954,00 RSD after an advance — appears in the list, the
- * document and the dashboard. Amounts are decimal strings, added here in whole paras where a total
+ * document, its printout and the dashboard. Amounts are decimal strings, added here in whole paras where a total
  * is needed (the stories play the application; components never add). Not part of the package.
  * No classes here: Storybook compiles classes only from *.stories.tsx files.
  */
 import type { CartesianChartProps } from '../../../../packages/ui/src/charts'
+import { ipsQrText } from '@veljaos/ui'
 import { decimal, paras } from '../../../../packages/ui/src/components/amounts-story-data'
 
 export interface ExampleInvoice {
@@ -218,6 +219,41 @@ export const TOTALS = {
   due: '135954.00',
 }
 
+/** Kvadrat Gradnja d.o.o., the seller on the invoice's printout (PIB as in the company switcher). */
+export const SELLER = {
+  name: 'Kvadrat Gradnja d.o.o.',
+  address: 'Bulevar oslobođenja 102',
+  city: '21000 Novi Sad, Serbia',
+  taxId: '108452317',
+  registration: '21045873',
+  account: '160-0000012345678-67',
+  bank: 'Banca Intesa',
+  email: 'office@kvadratgradnja.rs',
+}
+
+/** F-2026-0412's facts its printout adds to its page: supply, place, the payment's reference. */
+export const INVOICE_FACTS = {
+  supplied: '2026-09-26',
+  place: 'Novi Sad',
+  reference: '97 32-2026-0412',
+  advance: 'A-2026-031',
+  /** The buyer's address for invoices (the printout's buyer block). */
+  buyerEmail: 'racuni@panonija-agro.rs',
+  /** The buyer's registration number (MB). */
+  buyerRegistration: '20945112',
+  /** What the IPS QR code carries (P5.40): the payment, written by `ipsQrText`. */
+  ipsPayload:
+    ipsQrText({
+      payeeAccount: '160-0000012345678-67',
+      payeeName: 'Kvadrat Gradnja d.o.o., Novi Sad',
+      amount: '135954.00',
+      paymentCode: '221',
+      purpose: 'Invoice F-2026-0412',
+      model: '97',
+      reference: '32-2026-0412',
+    }).text ?? '',
+}
+
 /** Months April–September 2026. */
 const MONTHS = [
   { key: '2026-04', label: 'Apr' },
@@ -368,7 +404,7 @@ export const APPROVALS: ExampleApproval[] = [
   },
 ]
 
-/** The employee the walk-through opens. */
+/** The employee of the record example (Employees on the home page). */
 export const EMPLOYEE = {
   id: 'jelena-markovic',
   firstName: 'Jelena',

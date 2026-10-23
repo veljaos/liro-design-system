@@ -1,8 +1,8 @@
 /*
  * The data of group E's example screens (P5.19, P5.20): Kvadrat Gradnja d.o.o.'s customer
- * catalogue (the dataset's customers and 50,000 generated ones), a customer import, the VAT
- * return for September 2026 and the work-injury register for 2026. Amounts are decimal strings,
- * added here in whole paras (BigInt) — the screens play the application; components never add.
+ * catalogue (the dataset's customers and 50,000 generated ones), a customer import and the VAT
+ * return for September 2026. Amounts are decimal strings, added here in whole paras (BigInt) —
+ * the screens play the application; components never add.
  * Legal codes, field numbers and texts are illustrative, not authoritative. No classes here.
  */
 
@@ -13,11 +13,6 @@ import { decimal, paras } from '../../../../packages/ui/src/components/amounts-s
 /** Decimal strings added in whole paras. */
 export function addAmounts(...values: readonly string[]): string {
   return decimal(values.reduce((total, value) => total + paras(value), 0n))
-}
-
-/** One amount less another, in whole paras. */
-export function subtractAmount(value: string, less: string): string {
-  return decimal(paras(value) - paras(less))
 }
 
 /** VAT at 20% of a base: exactly a fifth, in paras (the bases are chosen so it is exact). */
@@ -263,8 +258,6 @@ export const IMPORT_FILE = [
   'Ilić Drvo SZR;108765432;;Valjevo;Karađorđeva 52;ilicdrvo@mts.rs;15;',
 ].join('\n')
 
-/** The file's name, and what the application read from it. */
-export const IMPORT_FILE_NAME = 'kupci-stari-sistem.csv'
 export const IMPORT_FILE_DESCRIPTION = '1.213 rows, 8 columns, 96 KB'
 
 /** The columns of a CSV's header and first data row (the application's parser, for the example). */
@@ -468,181 +461,3 @@ export const SEPTEMBER_REVERSE_CHARGE = [
 
 /** Ivana Stojanović left UF-2026-1179 out of 3.1.1's VAT: a query about its price is open. */
 export const VAT_INPUT_OVERRIDE = vatAt20('22788.00')
-
-// ── Work-injury register 2026 ─────────────────────────────────────────────────────────────────
-
-export interface Injury {
-  id: string
-  /** The entry's number in the register. */
-  no: string
-  /** The day it was entered. */
-  recorded: string
-  /** The day of the injury. */
-  date: string
-  employee: string
-  position: string
-  injury: string
-  severity: 'Light' | 'Serious'
-  /** Working days lost. */
-  daysOff: string
-  corrects?: string
-  correctedBy?: string
-  locked?: boolean
-}
-
-/** The register's entries for 2026: January–June locked; no. 7 corrects no. 4. */
-export const INJURIES: Injury[] = [
-  {
-    id: 'i1',
-    no: '1',
-    recorded: '2026-01-15',
-    date: '2026-01-14',
-    employee: 'Marko Đorđević',
-    position: 'Warehouse worker',
-    injury: 'Cut to the left hand while opening a pallet strap',
-    severity: 'Light',
-    daysOff: '4',
-    locked: true,
-  },
-  {
-    id: 'i2',
-    no: '2',
-    recorded: '2026-02-04',
-    date: '2026-02-03',
-    employee: 'Snežana Popović',
-    position: 'Site manager',
-    injury: 'Slipped on ice at the Temerinski put 51 site; sprained right ankle',
-    severity: 'Light',
-    daysOff: '9',
-    locked: true,
-  },
-  {
-    id: 'i3',
-    no: '3',
-    recorded: '2026-03-20',
-    date: '2026-03-19',
-    employee: 'Dejan Savić',
-    position: 'Mason',
-    injury: 'Fell from scaffolding (1,8 m); fractured left wrist',
-    severity: 'Serious',
-    daysOff: '42',
-    locked: true,
-  },
-  {
-    id: 'i4',
-    no: '4',
-    recorded: '2026-05-08',
-    date: '2026-05-07',
-    employee: 'Goran Mitić',
-    position: 'Driver',
-    injury: 'Back strain while unloading cement bags',
-    severity: 'Light',
-    daysOff: '6',
-    correctedBy: '7',
-    locked: true,
-  },
-  {
-    id: 'i5',
-    no: '5',
-    recorded: '2026-06-23',
-    date: '2026-06-22',
-    employee: 'Marko Đorđević',
-    position: 'Warehouse worker',
-    injury: 'Right foot run over by a forklift; crushed toes',
-    severity: 'Serious',
-    daysOff: '30',
-    locked: true,
-  },
-  {
-    id: 'i6',
-    no: '6',
-    recorded: '2026-07-16',
-    date: '2026-07-15',
-    employee: 'Milan Rakić',
-    position: 'Tiler',
-    injury: 'Dust in the right eye while cutting tiles',
-    severity: 'Light',
-    daysOff: '2',
-  },
-  {
-    id: 'i7',
-    no: '7',
-    recorded: '2026-07-20',
-    date: '2026-05-07',
-    employee: 'Goran Mitić',
-    position: 'Driver',
-    injury: 'Lumbar disc injury after unloading cement bags; sick leave extended',
-    severity: 'Serious',
-    daysOff: '21',
-    corrects: '4',
-  },
-  {
-    id: 'i8',
-    no: '8',
-    recorded: '2026-09-03',
-    date: '2026-09-02',
-    employee: 'Stefan Lukić',
-    position: 'Electrician',
-    injury: 'Electric shock from a temporary site distribution board',
-    severity: 'Serious',
-    daysOff: '14',
-  },
-  {
-    id: 'i9',
-    no: '9',
-    recorded: '2026-09-30',
-    date: '2026-09-29',
-    employee: 'Ivan Pavlović',
-    position: 'Carpenter',
-    injury: 'Nail through the shoe sole at the Hall B site',
-    severity: 'Light',
-    daysOff: '3',
-  },
-]
-
-const WORKERS = [
-  ['Marko Đorđević', 'Warehouse worker'],
-  ['Goran Mitić', 'Driver'],
-  ['Dejan Savić', 'Mason'],
-  ['Stefan Lukić', 'Electrician'],
-  ['Ivan Pavlović', 'Carpenter'],
-  ['Milan Rakić', 'Tiler'],
-  ['Nemanja Vasić', 'Crane operator'],
-  ['Petar Jović', 'Concrete worker'],
-  ['Uroš Lazić', 'Roofer'],
-] as const
-const INJURY_KINDS = [
-  'Cut to the hand',
-  'Bruised knee',
-  'Sprained ankle',
-  'Dust in the eye',
-  'Back strain',
-  'Bruised shoulder',
-] as const
-
-/**
- * `count` generated entries over 2026, for the stress story; January–June locked. The tenth from
- * last corrects no. 12, so the correction links cross thousands of entries.
- */
-export function manyInjuries(count: number): Injury[] {
-  const corrector = String(count - 10)
-  return Array.from({ length: count }, (_, index) => {
-    const day = Math.floor((index * 365) / count)
-    const date = new Date(Date.UTC(2026, 0, 1 + day)).toISOString().slice(0, 10)
-    const [employee, position] = WORKERS[index % WORKERS.length] ?? ['', '']
-    return {
-      id: `g${String(index + 1)}`,
-      no: String(index + 1),
-      recorded: date,
-      date,
-      employee,
-      position,
-      injury: INJURY_KINDS[index % INJURY_KINDS.length] ?? '',
-      severity: index % 9 === 0 ? 'Serious' : 'Light',
-      daysOff: String(1 + (index % 14)),
-      ...(date < '2026-07-01' ? { locked: true } : {}),
-      ...(index === 11 ? { correctedBy: corrector } : {}),
-      ...(String(index + 1) === corrector ? { corrects: '12' } : {}),
-    }
-  })
-}

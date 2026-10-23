@@ -5,7 +5,6 @@ import {
   BulkEditDrawer,
   Button,
   DataTable,
-  DateText,
   DuplicateWarning,
   FilterBar,
   ImportWizard,
@@ -15,9 +14,7 @@ import {
   MoneyText,
   NumberText,
   PageHeader,
-  PeriodField,
   QuickPreview,
-  RegisterPage,
   SelectField,
   StatutoryFormPage,
   useLiro,
@@ -25,7 +22,6 @@ import {
   type DataTableColumn,
   type DataTableFilters,
   type DataTableSort,
-  type DateRange,
   type FilterDefinition,
   type ImportMapping,
   type ImportStep,
@@ -33,7 +29,7 @@ import {
   type StatutoryOverride,
 } from '@veljaos/ui'
 import type { ExampleRoute } from './example-app'
-import { hrTabs, Navigate, SALES_TABS, Shell, statusBadge } from './example-shell'
+import { Navigate, reportsTabs, SALES_TABS, Shell, statusBadge } from './example-shell'
 import {
   allCustomers,
   csvColumns,
@@ -42,8 +38,6 @@ import {
   IMPORT_FILE_DESCRIPTION,
   IMPORT_PREVIEW,
   IMPORT_SUGGESTION,
-  INJURIES,
-  manyInjuries,
   searchCustomers,
   SEPTEMBER_10,
   SEPTEMBER_ADVANCES,
@@ -52,7 +46,6 @@ import {
   SEPTEMBER_SALES_20,
   VAT_INPUT_OVERRIDE,
   type Customer,
-  type Injury,
 } from './data-E'
 import {
   VAT_ENTERED,
@@ -71,31 +64,20 @@ import {
 
 /*
  * Group E's example screens (P5.19 catalogues at scale, P5.20 registers and official forms):
- * the customer catalogue with its lookup, bulk edit and import, the VAT return for September
- * 2026, and the work-injury register for 2026. Only the public entry point `@veljaos/ui`.
+ * the customer catalogue with its lookup, bulk edit and import, and the VAT return for September
+ * 2026. Only the public entry point `@veljaos/ui`.
  */
 
 export const E_ROUTES = {
   customers: '/sales/customers',
   customerImport: '/sales/customers/import',
   vatReturn: '/accounting/vat-return/2026-09',
-  injuryRegister: '/hr/safety/injury-register/2026',
-  /** The stress story: 5,000 generated entries. */
-  injuryRegisterGenerated: '/hr/safety/injury-register/2026-generated',
 }
 
 const CUSTOMER_TABS: ModuleTab[] = SALES_TABS.map((tab) => ({
   ...tab,
   current: tab.key === 'customers',
 }))
-
-const SAFETY_TABS: ModuleTab[] = hrTabs('safety')
-
-const ACCOUNTING_TABS: ModuleTab[] = [
-  { key: 'journal', label: 'Journal', href: '#/accounting/journal' },
-  { key: 'vat', label: 'VAT returns', href: `#${E_ROUTES.vatReturn}`, current: true },
-  { key: 'registers', label: 'Registers', href: '#/accounting/registers' },
-]
 
 // ── Customers ─────────────────────────────────────────────────────────────────────────────────
 
@@ -794,7 +776,7 @@ export function VatReturn({ phone }: { phone: boolean }) {
         { label: 'VAT returns', href: `#${E_ROUTES.vatReturn}` },
         { label: 'September 2026' },
       ]}
-      tabs={ACCOUNTING_TABS}
+      tabs={reportsTabs('vat')}
       bottomBar={submit}
     >
       <StatutoryFormPage
@@ -862,106 +844,10 @@ export function VatReturn({ phone }: { phone: boolean }) {
   )
 }
 
-// ── Work-injury register ──────────────────────────────────────────────────────────────────────
-
-const INJURY_COLUMNS: DataTableColumn<Injury>[] = [
-  {
-    id: 'recorded',
-    header: 'Recorded',
-    numeric: true,
-    cell: (row) => <DateText value={row.recorded} />,
-  },
-  {
-    id: 'date',
-    header: 'Injury date',
-    numeric: true,
-    cell: (row) => <DateText value={row.date} />,
-  },
-  { id: 'employee', header: 'Employee', cell: (row) => row.employee },
-  { id: 'position', header: 'Position', cell: (row) => row.position },
-  { id: 'injury', header: 'Injury', cell: (row) => row.injury },
-  { id: 'severity', header: 'Severity', cell: (row) => row.severity },
-  {
-    id: 'daysOff',
-    header: 'Days off',
-    align: 'end',
-    numeric: true,
-    cell: (row) => <NumberText value={row.daysOff} decimals={0} />,
-  },
-]
-
-export function InjuryRegister({
-  phone,
-  generated = false,
-}: {
-  phone: boolean
-  generated?: boolean
-}) {
-  const [period, setPeriod] = useState<DateRange | null>({ start: '2026-01-01', end: '2026-12-31' })
-  const rows = useMemo(() => (generated ? manyInjuries(5000) : INJURIES), [generated])
-  const newEntry = <Button intent="create" label="New entry" />
-  return (
-    <Shell
-      phone={phone}
-      crumbs={[
-        { label: 'Safety at work', href: `#${E_ROUTES.injuryRegister}` },
-        { label: 'Work-injury register' },
-      ]}
-      tabs={SAFETY_TABS}
-      bottomBar={newEntry}
-    >
-      <RegisterPage
-        layout={phone ? 'phone' : 'desktop'}
-        title="Work-injury register 2026"
-        subtitle="Kept under the safety-at-work law (illustrative); entries are corrected, never deleted."
-        actions={
-          <>
-            <Button intent="print" emphasis="secondary" label="Print" />
-            <Button intent="export" label="Export" />
-            {phone ? null : newEntry}
-          </>
-        }
-        period={<PeriodField label="Period" value={period} onChange={setPeriod} className="w-60" />}
-        locks={[
-          {
-            key: 'h1',
-            period: 'January–June 2026',
-            reason: 'Reported to the labour inspection with the half-year report.',
-            detail: 'Locked by Jelena Marković on 15.07.2026.',
-          },
-        ]}
-        columns={INJURY_COLUMNS}
-        rows={rows}
-        getRowId={(row) => row.id}
-        getRowLabel={(row) => `No. ${row.no}, ${row.employee}`}
-        entry={(row) => ({
-          number: row.no,
-          ...(row.corrects === undefined ? {} : { corrects: row.corrects }),
-          ...(row.correctedBy === undefined ? {} : { correctedBy: row.correctedBy }),
-          ...(row.locked === undefined ? {} : { locked: row.locked }),
-        })}
-        rowActions={() => [{ label: 'Correct entry', onSelect: () => undefined }]}
-        count={rows.length}
-        virtualize={generated}
-        mobile={{
-          title: (row) => row.employee,
-          subtitle: (row) => row.injury,
-          details: ['date', 'severity', 'daysOff'],
-        }}
-      />
-    </Shell>
-  )
-}
-
 // ── Routes ────────────────────────────────────────────────────────────────────────────────────
 
 export const GROUP_E_ROUTES: ExampleRoute[] = [
   { path: E_ROUTES.customers, render: (phone) => <Customers phone={phone} /> },
   { path: E_ROUTES.customerImport, render: (phone) => <CustomerImport phone={phone} /> },
   { path: E_ROUTES.vatReturn, render: (phone) => <VatReturn phone={phone} /> },
-  { path: E_ROUTES.injuryRegister, render: (phone) => <InjuryRegister phone={phone} /> },
-  {
-    path: E_ROUTES.injuryRegisterGenerated,
-    render: (phone) => <InjuryRegister phone={phone} generated />,
-  },
 ]

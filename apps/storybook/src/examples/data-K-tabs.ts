@@ -1,24 +1,16 @@
 /*
- * Open tabs on tables (P5.28 item 22): Kafić Kod Mike's terrace and Bistro Dunav's service keep a
- * tab on every open table — what was ordered, what was sent to the bar or the kitchen and when,
- * notes, discounts, what was paid already — so the waiter adds items, leaves and comes back. The
- * tabs live in the examples' application above the screens (`useExampleState`). The promotions
- * (3 for 2, a happy hour), the discounts, the stations and every figure are the application's:
- * computed here in whole paras (BigInt) — line, promotion, discount, order discount, the tax
- * included, what is paid and what remains, equal shares; the components add nothing (D4).
- * Fictitious. Not part of the package. No classes here.
+ * Open tabs on tables (P5.28 item 22): Bistro Dunav's service keeps a tab on every open table —
+ * what was ordered, what was sent to the bar or the kitchen and when, notes, discounts, what was
+ * paid already — so the waiter adds items, leaves and comes back. The tabs live in the examples'
+ * application above the screens (`useExampleState`). The promotions (the dessert of the day), the
+ * discounts, the stations and every figure are the application's: computed here in whole paras
+ * (BigInt) — line, promotion, discount, order discount, the tax included, what is paid and what
+ * remains, equal shares; the components add nothing (D4). Fictitious. Not part of the package. No
+ * classes here.
  */
 import type { PosProduct, ProductCategory } from '@veljaos/ui'
 import { decimal, paras, sumUnits } from '../../../../packages/ui/src/components/amounts-story-data'
-import {
-  BISTRO,
-  BISTRO_TABLES,
-  CAFE,
-  CAFE_CATEGORIES,
-  CAFE_PRODUCTS,
-  CAFE_TABLES,
-  K_ROUTES,
-} from './data-K'
+import { BISTRO, BISTRO_TABLES, K_ROUTES } from './data-K'
 
 // ── Venues ────────────────────────────────────────────────────────────────────────────────────
 
@@ -62,13 +54,13 @@ export interface DiscountChoice {
 export interface TabTable {
   id: string
   number: number
-  /** Its area ("Terrace", "Sala"). */
+  /** Its area ("Sala", "Terasa"). */
   area: string
   seats: number
 }
 
 export interface Venue {
-  id: 'cafe' | 'bistro'
+  id: 'bistro'
   name: string
   brand: string
   register: string
@@ -83,7 +75,7 @@ export interface Venue {
   promotions: readonly Promotion[]
   discounts: readonly DiscountChoice[]
   tables: readonly TabTable[]
-  /** The floor's route and words ("Terrace", "Floor"). */
+  /** The floor's route and words ("Floor"). */
   back: { route: string; label: string }
   /** A table's tab route. */
   tableRoute: (tableId: string) => string
@@ -97,47 +89,6 @@ const DISCOUNTS: readonly DiscountChoice[] = [
   { id: 'manager', label: 'Manager’s discount −20%', rate: 20n },
   { id: 'staff', label: 'Staff −50%', rate: 50n },
 ]
-
-export const CAFE_VENUE: Venue = {
-  id: 'cafe',
-  name: CAFE.name,
-  brand: 'Kod Mike',
-  register: CAFE.register,
-  waiter: CAFE.waiter,
-  currency: CAFE.currency,
-  now: '18:40',
-  products: CAFE_PRODUCTS,
-  categories: CAFE_CATEGORIES,
-  stations: { coffee: BAR, soft: BAR, cakes: KITCHEN },
-  promotions: [
-    {
-      id: 'espresso-3-for-2',
-      label: 'Espresso 3 for 2',
-      kind: 'n-for-m',
-      productIds: ['espresso'],
-      n: 3,
-      free: 1,
-    },
-    {
-      id: 'juice-hour',
-      label: 'Juice hour −20%, 18:30–19:30',
-      kind: 'percent',
-      productIds: ['orange'],
-      rate: 20n,
-      from: '18:30',
-      to: '19:30',
-    },
-  ],
-  discounts: DISCOUNTS,
-  tables: CAFE_TABLES.map((each) => ({
-    id: each.id,
-    number: each.number,
-    area: 'Terrace',
-    seats: 4,
-  })),
-  back: { route: K_ROUTES.terrace, label: 'Terrace' },
-  tableRoute: (id) => `/cafe/kod-mike/terrace/${id}`,
-}
 
 /** Bistro Dunav's menu (fictitious). */
 const BISTRO_CATEGORIES: readonly ProductCategory[] = [
@@ -240,32 +191,8 @@ export interface Tab {
   payments: TabPayment[]
 }
 
-/** The tabs open when the examples start. */
-export function initialTabs(venue: Venue): Record<string, Tab> {
-  if (venue.id === 'cafe') {
-    const tabs: Record<string, Tab> = {}
-    for (const table of CAFE_TABLES) {
-      const since = table.since
-      if (since === undefined) continue
-      tabs[table.id] = {
-        tableId: table.id,
-        openedAt: since,
-        lines: table.order.map((line, index) => ({
-          id: `${table.id}-${String(index + 1)}`,
-          productId: line.productId,
-          quantity: line.quantity,
-          sentAt: since,
-        })),
-        payments: [],
-      }
-    }
-    // Table 1 ordered a third espresso: the 3 for 2 applies.
-    const t1 = tabs.t1
-    if (t1 !== undefined) {
-      t1.lines = [{ id: 't1-1', productId: 'espresso', quantity: 3, sentAt: '17:52' }]
-    }
-    return tabs
-  }
+/** Bistro Dunav's tabs open when the examples start. */
+export function initialTabs(): Record<string, Tab> {
   return {
     t1: {
       tableId: 't1',
@@ -414,8 +341,6 @@ export function computeTab(venue: Venue, tab: Tab) {
   }
 }
 
-export type ComputedTab = ReturnType<typeof computeTab>
-
 /** What chosen pieces of the lines cost, after their promotions, discounts and the order's. */
 export function itemsAmount(
   venue: Venue,
@@ -509,6 +434,6 @@ export function tabTotal(venue: Venue, tab: Tab | undefined): string | null {
 }
 
 /** The receipts the example issues for a tab's payments (invented processor numbers). */
-export function tabReceiptNumber(venue: Venue, count: number): string {
-  return `${venue.id === 'cafe' ? 'KM3T8W1Q-KM3T8W1Q' : 'BD5R2N7X-BD5R2N7X'}-${String(1200 + count)}`
+export function tabReceiptNumber(count: number): string {
+  return `BD5R2N7X-BD5R2N7X-${String(1200 + count)}`
 }

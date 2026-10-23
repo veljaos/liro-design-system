@@ -1,31 +1,13 @@
 /*
  * Group I's example data (P5.17): the till of Pekara Zlatni klas in Novi Sad (a bakery, Kasa 1)
- * on 6 October 2026, and the handheld of Magacin Novi Sad picking order NP-2026-0233 for Kvadrat
- * Gradnja d.o.o., then counting the location the pick came up short at. Fictitious; English
- * interface text, Serbian data. Amounts are whole paras (BigInt) and quantities whole thousandths:
- * every line total, discount, tax and difference is computed here, as the application would; the
- * components add nothing (D4). The stated figures below are checked against the computation in
- * dataset-checks.ts. Tax labels (E 10%, Đ 20%) and codes are illustrative. Not part of the
- * package. No classes here.
+ * on 6 October 2026. Fictitious; English interface text, Serbian data. Amounts are whole paras
+ * (BigInt) and quantities whole thousandths: every line total, discount, tax and change is
+ * computed here, as the application would; the components add nothing (D4). The stated figures
+ * below are checked against the computation in dataset-checks.ts. Tax labels (E 10%, Đ 20%) and
+ * codes are illustrative. Not part of the package. No classes here.
  */
-import type {
-  CartAmount,
-  CartLine,
-  ConfirmReason,
-  CountItem,
-  PickLine,
-  PosProduct,
-  ProductCategory,
-  ReceiptAmount,
-  ReceiptItem,
-} from '@veljaos/ui'
-import {
-  decimal,
-  fromUnits,
-  paras,
-  sumUnits,
-  toUnits,
-} from '../../../../packages/ui/src/components/amounts-story-data'
+import type { CartAmount, CartLine, PosProduct, ProductCategory } from '@veljaos/ui'
+import { decimal, paras, sumUnits } from '../../../../packages/ui/src/components/amounts-story-data'
 
 export const I_ROUTES = {
   /** The till, a sale of six lines in the cart. */
@@ -42,18 +24,6 @@ export const I_ROUTES = {
   posOffline: '/pos/zlatni-klas?offline',
   /** Phones: the products sheet open over the cart. */
   posProducts: '/pos/zlatni-klas?products=open',
-  /** The pick list, line 5 of 12: scan its location. */
-  picking: '/warehouse/picking/PL-2026-0418',
-  /** The location scanned: scan the item. */
-  pickingItem: '/warehouse/picking/PL-2026-0418?step=item',
-  /** Both scanned: confirm the quantity. */
-  pickingQuantity: '/warehouse/picking/PL-2026-0418?step=quantity',
-  /** Skipping the line, the reason asked. */
-  pickingSkip: '/warehouse/picking/PL-2026-0418?step=skip',
-  /** The connection lost, three changes kept on the handheld. */
-  pickingOffline: '/warehouse/picking/PL-2026-0418?offline',
-  /** The count of A-02-03, where the pick came up short. */
-  count: '/warehouse/counts/CC-2026-0031',
 }
 
 // ── The till ──────────────────────────────────────────────────────────────────────────────────
@@ -283,9 +253,6 @@ export const SALE: readonly SaleLine[] = [
   { productId: 'kafa', quantity: '2' },
 ]
 
-/** The loyalty card on the sale, as the till shows it. */
-export const LOYALTY_CARD = 'Loyalty card 0417-2291'
-
 /** Half up, for positive amounts: numerator / denominator in whole paras. */
 function halfUp(numerator: bigint, denominator: bigint): bigint {
   return (numerator * 2n + denominator) / (denominator * 2n)
@@ -379,6 +346,9 @@ export function cartTotals(sale: ComputedSale): CartAmount[] {
   ]
 }
 
+/** The footer's lines; the closing line is ReceiptPreview's `end` (P5.28), not "=====" text. */
+export const RECEIPT_FOOTER: readonly string[] = ['Thank you, see you tomorrow!']
+
 /** What the cash tendered leaves: the change, or what is still to pay. Null while nothing is typed. */
 export function cashOutcome(total: bigint, tendered: string | null) {
   if (tendered === null) return { change: null, remaining: null }
@@ -386,278 +356,4 @@ export function cashOutcome(total: bigint, tendered: string | null) {
   return given >= total
     ? { change: decimal(given - total), remaining: null }
     : { change: null, remaining: decimal(total - given) }
-}
-
-/** The receipt's items: the tax label after the name, a discount under it. */
-export function receiptItems(
-  sale: ComputedSale,
-  discountText: (rate: bigint, amount: string) => string,
-): ReceiptItem[] {
-  return sale.lines.map(({ line, product: item, discount, total }) => ({
-    id: item.id,
-    name: `${item.name}${item.detail === undefined ? '' : ` ${item.detail}`} (${item.vat})`,
-    quantity: line.quantity,
-    unitPrice: item.price,
-    total: decimal(total),
-    ...(line.discount === undefined
-      ? {}
-      : { note: discountText(line.discount.rate, decimal(-discount)) }),
-  }))
-}
-
-/** The receipt's totals: the total, then the tax per category and all of it. */
-export function receiptTotals(sale: ComputedSale): ReceiptAmount[] {
-  const rows = sale.vat.filter((each) => each.base !== 0n)
-  return [
-    { id: 'total', label: 'Total', value: decimal(sale.total), strong: true },
-    ...rows.map((each) => ({
-      id: `vat-${each.category}`,
-      label: `${VAT[each.category].label} ${String(VAT[each.category].rate)}% VAT`,
-      value: decimal(each.vat),
-    })),
-    { id: 'vat', label: 'Total VAT', value: decimal(sumUnits(rows.map((each) => each.vat))) },
-  ]
-}
-
-/** The footer's lines; the closing line is ReceiptPreview's `end` (P5.28), not "=====" text. */
-export const RECEIPT_FOOTER: readonly string[] = ['Thank you, see you tomorrow!']
-
-// ── The handheld: picking ─────────────────────────────────────────────────────────────────────
-
-export const PICKING = {
-  list: 'PL-2026-0418',
-  order: 'NP-2026-0233',
-  customer: 'Kvadrat Gradnja d.o.o.',
-  warehouse: 'Magacin Novi Sad',
-  worker: 'Nikola Babić',
-  /** Changes kept on the handheld while the connection is lost. */
-  queued: 3,
-}
-
-export const PICK_LINES: readonly PickLine[] = [
-  {
-    id: 'p1',
-    location: 'A-01-02',
-    item: 'Cement CEM II/A-M 42,5R, 25 kg',
-    itemCode: '8600981000101',
-    quantity: '40',
-    picked: '40',
-    unit: 'bag',
-    state: 'picked',
-  },
-  {
-    id: 'p2',
-    location: 'A-01-06',
-    item: 'Lepak za pločice C2TE, 25 kg',
-    itemCode: '8600981000118',
-    quantity: '15',
-    picked: '15',
-    unit: 'bag',
-    state: 'picked',
-  },
-  {
-    id: 'p3',
-    location: 'A-02-03',
-    item: 'Armaturna mreža Q131, 2,15 × 6 m',
-    itemCode: '8600981000125',
-    quantity: '10',
-    picked: '7',
-    unit: 'pc',
-    state: 'short',
-    note: 'Only 7 on the shelf; the rest arrives on 08.10.2026.',
-  },
-  {
-    id: 'p4',
-    location: 'A-04-01',
-    item: 'Hidroizolaciona traka, rolna 10 m',
-    itemCode: '8600981000132',
-    quantity: '4',
-    picked: null,
-    unit: 'roll',
-    state: 'skipped',
-    note: 'Skipped: Damaged — the rolls are wet.',
-  },
-  {
-    id: 'p5',
-    location: 'B-03-04',
-    item: 'Fasadni stiropor EPS 10 cm, paket 3 m²',
-    itemCode: '8600981000149',
-    quantity: '18',
-    picked: null,
-    unit: 'pack',
-    state: 'open',
-  },
-  {
-    id: 'p6',
-    location: 'B-05-02',
-    item: 'Fasadna mrežica 145 g/m², rolna 50 m',
-    itemCode: '8600981000156',
-    quantity: '6',
-    picked: null,
-    unit: 'roll',
-    state: 'open',
-  },
-  {
-    id: 'p7',
-    location: 'C-01-02',
-    item: 'Gips-karton ploča 12,5 mm, 1200 × 2000 mm',
-    itemCode: '8600981000163',
-    quantity: '32',
-    picked: null,
-    unit: 'pc',
-    state: 'open',
-  },
-  {
-    id: 'p8',
-    location: 'C-01-05',
-    item: 'UW profil 50 mm, 3 m',
-    itemCode: '8600981000170',
-    quantity: '20',
-    picked: null,
-    unit: 'pc',
-    state: 'open',
-  },
-  {
-    id: 'p9',
-    location: 'C-02-01',
-    item: 'Šrafovi za gips-karton 3,5 × 35 mm, 1000 kom',
-    itemCode: '8600981000187',
-    quantity: '4',
-    picked: null,
-    unit: 'box',
-    state: 'open',
-  },
-  {
-    id: 'p10',
-    location: 'D-02-03',
-    item: 'Silikon građevinski, beli, 300 ml',
-    itemCode: '8600981000194',
-    quantity: '12',
-    picked: null,
-    unit: 'pc',
-    state: 'open',
-  },
-  {
-    id: 'p11',
-    location: 'E-01-01',
-    item: 'Pesak 0–4 mm, rinfuz',
-    itemCode: '8600981000200',
-    quantity: '1.5',
-    picked: null,
-    unit: 't',
-    state: 'open',
-  },
-  {
-    id: 'p12',
-    location: 'E-03-02',
-    item: 'Mešalica za beton 140 l',
-    itemCode: '8600981000217',
-    quantity: '1',
-    picked: null,
-    unit: 'pc',
-    state: 'open',
-  },
-]
-
-/** The line in front of the worker when the list opens: the first open one. */
-export const CURRENT_PICK = 'p5'
-
-/** The reasons to skip a line (the application's list). */
-export const SKIP_REASONS: readonly ConfirmReason[] = [
-  { value: 'missing', label: 'Not on the shelf' },
-  { value: 'damaged', label: 'Damaged' },
-  { value: 'wrong', label: 'A different item at the location' },
-  { value: 'blocked', label: 'Location blocked' },
-  { value: 'other', label: 'Other' },
-]
-
-// ── The handheld: counting ────────────────────────────────────────────────────────────────────
-
-export const COUNT = {
-  number: 'CC-2026-0031',
-  title: 'Cycle count CC-2026-0031',
-  subtitle: 'Magacin Novi Sad · after PL-2026-0418',
-  location: 'A-02-03',
-  locationName: 'Rack A2, shelf 3',
-}
-
-/** Quantities as whole thousandths, so 1,5 t is exact. */
-export function quantityUnits(value: string): bigint {
-  return toUnits(value, 3)
-}
-
-/** Whole thousandths as a decimal string without trailing zeros ("-3", "1.5"). */
-export function quantityText(units: bigint): string {
-  return fromUnits(units, 3).replace(/\.?0+$/, '')
-}
-
-/** The books' quantity at the location, and what was counted (the application's records). */
-export interface CountRecord {
-  id: string
-  item: string
-  itemCode: string
-  unit: string
-  expected: string
-  counted: string | null
-  note?: string
-}
-
-export const COUNT_RECORDS: readonly CountRecord[] = [
-  {
-    id: 'c1',
-    item: 'Armaturna mreža Q131, 2,15 × 6 m',
-    itemCode: '8600981000125',
-    unit: 'pc',
-    expected: '3',
-    counted: '0',
-    note: '7 picked for PL-2026-0418; the books expected 10 here before the pick.',
-  },
-  {
-    id: 'c2',
-    item: 'Armaturna mreža Q188, 2,15 × 6 m',
-    itemCode: '8600981000231',
-    unit: 'pc',
-    expected: '12',
-    counted: '14',
-    note: 'Two sheets may be Q131 stored with Q188.',
-  },
-  {
-    id: 'c3',
-    item: 'Vezivna žica 1,2 mm, 25 kg',
-    itemCode: '8600981000248',
-    unit: 'roll',
-    expected: '6',
-    counted: '6',
-  },
-]
-
-/** The item in front when the count opens: the last one scanned. */
-export const CURRENT_COUNT = 'c2'
-
-/** The differences as stated (counted − expected); checked in dataset-checks.ts. */
-export const COUNT_DIFFERENCES: Record<string, string> = { c1: '-3', c2: '2', c3: '0' }
-
-/**
- * The application's reading of a count: the difference counted − expected, and its tone
- * (none: neutral; up to 2: warning; more: danger).
- */
-export function countItems(records: readonly CountRecord[]): CountItem[] {
-  return records.map((record) => {
-    const difference =
-      record.counted === null
-        ? null
-        : quantityUnits(record.counted) - quantityUnits(record.expected)
-    const size = difference === null ? 0n : difference < 0n ? -difference : difference
-    return {
-      id: record.id,
-      item: record.item,
-      itemCode: record.itemCode,
-      unit: record.unit,
-      counted: record.counted,
-      expected: record.expected,
-      difference: difference === null ? null : quantityText(difference),
-      differenceTone: size === 0n ? 'neutral' : size <= 2000n ? 'warning' : 'danger',
-      ...(record.note === undefined ? {} : { note: record.note }),
-    }
-  })
 }

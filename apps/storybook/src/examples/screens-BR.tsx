@@ -4,7 +4,6 @@ import {
   DateText,
   Drawer,
   MoneyText,
-  NumberText,
   PageHeader,
   SelectField,
   Toaster,
@@ -21,8 +20,7 @@ import {
   type PivotRow,
 } from '../../../../packages/ui/src/pivot'
 import type { ExampleRoute } from './example-app'
-import { Shell, type ExampleAccount } from './example-shell'
-import { BAKERY_COMPANY, BAKERY_OWNER } from './data-AZ'
+import { reportsTabs, Shell } from './example-shell'
 import {
   BR_ROUTES,
   BR_TODAY,
@@ -34,30 +32,18 @@ import {
   COST_VIEWS,
   membersOf,
   resultFor,
-  SALES_CUSTOMERS,
-  SALES_FIELDS,
-  SALES_OPENED,
-  SALES_PRODUCTS,
-  SALES_RECORDS,
-  SALES_VIEWS,
   viewOf,
   type AnalysisView,
   type CostDocument,
-  type SalesRecord,
 } from './data-BR'
 import { Frame, Tenant } from './screens-G'
-import { AnalyticsShell } from './screens-BU'
 
 /*
- * Group BR's example screens (P5.77, pivot analysis) on 14 October 2026 at 09:40:
- * - Kvadrat Gradnja d.o.o.'s cost analysis (Accounting → Cost analysis, Milica Petrović): sites and
- *   their cost accounts down, July–September across, the amount and the number of supplier
- *   invoices under each month, the totals; the saved view "By supplier". A figure opens its
- *   invoices in an end Drawer (DataTable: date, number, supplier, text, amount; the latest ten of
- *   the application's count).
- * - Pekara Zlatni klas's sales analysis (Sales → Sales analysis, Jovana Marković): categories and
- *   products down, months across with revenue and pieces; the saved view "By product and shop"
- *   (its own shop and the shops it supplies). A figure opens its sale lines.
+ * Group BR's example screen (P5.77, pivot analysis): Kvadrat Gradnja d.o.o.'s cost analysis on
+ * 14 October 2026 at 09:40 (Analytics → Cost analysis, Milica Petrović): sites and their cost
+ * accounts down, July–September across, the amount and the number of supplier invoices under each
+ * month, the totals; the saved view "By supplier". A figure opens its invoices in an end Drawer
+ * (DataTable: date, number, supplier, text, amount; the latest ten of the application's count).
  * The layout is the user's (the Pivot's chooser, or a saved view); the figures are the
  * application's for that layout (data-BR.ts) — this illustrative application has them for the
  * saved views only, so any other layout shows "No figures for this layout". Export is reported in
@@ -71,45 +57,19 @@ const EXPORT_FORMATS = [
   { id: 'csv', label: 'Comma-separated values (.csv)' },
 ]
 
-/** Jovana Marković runs the bakery. */
-const BAKERY_ACCOUNT: ExampleAccount = {
-  name: BAKERY_OWNER.name,
-  email: BAKERY_OWNER.email,
-  companies: [BAKERY_COMPANY],
-  links: [{ label: 'Sales analysis', path: BR_ROUTES.sales }],
-}
-
-/** A signed-in screen of the analyses on 14 October 2026, with its toasts. */
+/** The Analytics module's screen on 14 October 2026, Cost analysis current, with its toasts. */
 function AnalysisShell({
   phone,
   crumbs,
-  bakery = false,
-  analytics = false,
   children,
 }: {
   phone: boolean
   crumbs: { label: string; href?: string }[]
-  bakery?: boolean
-  /** Kvadrat Gradnja's cost analysis is a tab of its Analytics module (with group BU and BV). */
-  analytics?: boolean
   children: ReactNode
 }) {
-  if (analytics) {
-    return (
-      <AnalyticsShell phone={phone} tab="analysis" crumbs={crumbs}>
-        <Frame phone={phone} wide>
-          {children}
-        </Frame>
-      </AnalyticsShell>
-    )
-  }
   return (
     <Tenant today={BR_TODAY}>
-      <Shell
-        phone={phone}
-        crumbs={crumbs}
-        {...(bakery ? { account: BAKERY_ACCOUNT, company: BAKERY_COMPANY.id } : {})}
-      >
+      <Shell phone={phone} crumbs={crumbs} tabs={reportsTabs('costs')}>
         <Frame phone={phone} wide>
           {children}
         </Frame>
@@ -305,11 +265,7 @@ function CostAnalysisScreen({
       : null,
   )
   return (
-    <AnalysisShell
-      phone={phone}
-      analytics
-      crumbs={[{ label: 'Analytics' }, { label: 'Cost analysis' }]}
-    >
+    <AnalysisShell phone={phone} crumbs={[{ label: 'Analytics' }, { label: 'Cost analysis' }]}>
       <PageHeader
         title="Cost analysis"
         subtitle="Supplier invoices booked to the sites, July–September 2026 · Illustrative figures for the saved views"
@@ -351,157 +307,6 @@ function CostAnalysisScreen({
   )
 }
 
-// ── Pekara Zlatni klas: sales analysis ───────────────────────────────────────────────────────
-
-const SALES_COLUMNS: DataTableColumn<SalesRecord>[] = [
-  { id: 'date', header: 'Date', cell: (row) => <DateText value={row.date} /> },
-  {
-    id: 'number',
-    header: 'Document',
-    cell: (row) => <span className="bidi-content font-medium">{row.number}</span>,
-  },
-  {
-    id: 'customer',
-    header: 'Customer',
-    cell: (row) => (
-      <span className="bidi-content">
-        {SALES_CUSTOMERS.find((each) => each.id === row.customer)?.label}
-      </span>
-    ),
-  },
-  {
-    id: 'product',
-    header: 'Product',
-    cell: (row) => (
-      <span className="bidi-content">
-        {SALES_PRODUCTS.find((each) => each.id === row.product)?.label}
-      </span>
-    ),
-  },
-  {
-    id: 'quantity',
-    header: 'Pieces',
-    align: 'end',
-    numeric: true,
-    cell: (row) => <NumberText value={row.quantity} />,
-  },
-  {
-    id: 'amount',
-    header: 'Revenue',
-    align: 'end',
-    numeric: true,
-    cell: (row) => <MoneyText value={row.amount} currency="RSD" />,
-  },
-]
-
-function SalesLines({
-  cell,
-  layout,
-  phone,
-  onClose,
-}: {
-  cell: PivotCellRef | null
-  layout: PivotLayout
-  phone: boolean
-  onClose: () => void
-}) {
-  const records = cell === null ? [] : recordsOf(SALES_RECORDS, cell, layout)
-  return (
-    <Drawer
-      side="end"
-      open={cell !== null}
-      onOpenChange={(open) => {
-        if (!open) onClose()
-      }}
-      title="Sale lines"
-      {...(cell === null ? {} : { subject: cellSubject(cell) })}
-      description={`The latest ${String(Math.min(SHOWN, records.length))} of ${String(records.length)} lines.`}
-    >
-      <DataTable
-        label="Sale lines"
-        layout={phone ? 'cards' : 'table'}
-        columns={SALES_COLUMNS}
-        rows={records.slice(0, SHOWN)}
-        getRowId={(row) => `${row.number}-${row.product}`}
-        getRowLabel={(row) => row.number}
-        mobile={{
-          title: (row) => row.number,
-          subtitle: (row) => (
-            <span className="bidi-content">
-              {SALES_CUSTOMERS.find((each) => each.id === row.customer)?.label}
-            </span>
-          ),
-          details: ['date', 'product', 'quantity', 'amount'],
-        }}
-      />
-    </Drawer>
-  )
-}
-
-function SalesAnalysisScreen({
-  phone,
-  view = 'months',
-  opened = false,
-  fieldsOpen,
-}: {
-  phone: boolean
-  view?: string
-  opened?: boolean
-  fieldsOpen?: boolean
-}) {
-  const [layout, setLayout] = useState<PivotLayout>(layoutOf(SALES_VIEWS, view))
-  const result = resultFor(SALES_VIEWS, layout)
-  const [cell, setCell] = useState<PivotCellRef | null>(
-    opened
-      ? {
-          ...SALES_OPENED,
-          value: rowOf(result, SALES_OPENED.rowKey)?.cells[SALES_OPENED.columnKey] ?? '',
-        }
-      : null,
-  )
-  return (
-    <AnalysisShell phone={phone} bakery crumbs={[{ label: 'Sales' }, { label: 'Sales analysis' }]}>
-      <PageHeader
-        title="Sales analysis"
-        subtitle="The shop and the wholesale customers, July–September 2026 · Illustrative figures for the saved views"
-      />
-      <Pivot
-        label="Sales by product"
-        fields={SALES_FIELDS}
-        value={layout}
-        onChange={setLayout}
-        result={result}
-        onDrillDown={setCell}
-        {...(fieldsOpen === undefined ? {} : { defaultFieldsOpen: fieldsOpen })}
-        exportAction={{
-          formats: EXPORT_FORMATS,
-          onExport: (format) => {
-            const name = EXPORT_FORMATS.find((each) => each.id === format)?.label ?? format
-            notice.success(`Sales analysis is being exported as ${name}.`)
-          },
-        }}
-        actions={
-          <ViewSelect
-            views={SALES_VIEWS}
-            layout={layout}
-            onChoose={(each) => {
-              setLayout(each.layout)
-            }}
-          />
-        }
-      />
-      <SalesLines
-        cell={cell}
-        layout={layout}
-        phone={phone}
-        onClose={() => {
-          setCell(null)
-        }}
-      />
-    </AnalysisShell>
-  )
-}
-
 // ── Routes ────────────────────────────────────────────────────────────────────────────────────
 
 export const GROUP_BR_ROUTES: ExampleRoute[] = [
@@ -513,18 +318,5 @@ export const GROUP_BR_ROUTES: ExampleRoute[] = [
   {
     path: BR_ROUTES.costsDocuments,
     render: (phone) => <CostAnalysisScreen phone={phone} opened />,
-  },
-  { path: BR_ROUTES.sales, render: (phone) => <SalesAnalysisScreen phone={phone} /> },
-  {
-    path: BR_ROUTES.salesByShop,
-    render: (phone) => <SalesAnalysisScreen phone={phone} view="shops" />,
-  },
-  {
-    path: BR_ROUTES.salesDocuments,
-    render: (phone) => <SalesAnalysisScreen phone={phone} opened />,
-  },
-  {
-    path: BR_ROUTES.salesFields,
-    render: (phone) => <SalesAnalysisScreen phone={phone} fieldsOpen />,
   },
 ]

@@ -357,6 +357,16 @@ export function storyFiles(root) {
 }
 
 /**
+ * Whether a story file belongs to the Examples: "Examples" or one of its floorplan groups
+ * ("Examples/F1 List", P5.89).
+ * @param {string} title
+ * @returns {boolean}
+ */
+export function isExampleTitle(title) {
+  return title === EXAMPLES_TITLE || title.startsWith(`${EXAMPLES_TITLE}/`)
+}
+
+/**
  * The Examples stories tagged "interaction" that the sidebar still shows, as "file: Story": the
  * Examples show each screen on a desktop and on a phone, and hide the tests (P5.28).
  * @param {string} root
@@ -367,7 +377,7 @@ export function shownExampleTests(root) {
   const found = []
   for (const file of storyFiles(root)) {
     for (const story of storiesOf(file)) {
-      if (story.title === EXAMPLES_TITLE && story.tagged && !story.hidden) {
+      if (isExampleTitle(story.title) && story.tagged && !story.hidden) {
         found.push(`${relative(root, file)}: ${story.name}`)
       }
     }

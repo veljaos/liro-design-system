@@ -1,13 +1,12 @@
 /*
  * Group I's fiscal data (P5.28 items 21 and 22): the till of Pekara Zlatni klas (data-I.ts) issuing
  * receipts after the Serbian fiscal system — the receipt's kind (type × transaction), seven ways to
- * pay, the buyer's ID, refunds of an earlier receipt, advances, the journal of the day, the daily
- * report, the offline queue and a web-shop order delivered electronically. **Illustrative:** the
- * kinds, codes, labels, counters and rules are written from general knowledge of the system, in
- * English; every processor number, tax number and person is invented. The application's arithmetic
- * is here, in whole paras (BigInt): the remaining amount, the change, a refund's amount, the
- * advances deducted, the day's totals; the components add nothing (D4). Not part of the package.
- * No classes here.
+ * pay, the buyer's ID, refunds of a receipt from the day's journal, advances and the offline queue.
+ * **Illustrative:** the kinds, codes, labels, counters and rules are written from general knowledge
+ * of the system, in English; every processor number, tax number and person is invented. The
+ * application's arithmetic is here, in whole paras (BigInt): the remaining amount, the change, a
+ * refund's amount, the advances deducted; the components add nothing (D4). Not part of the
+ * package. No classes here.
  */
 import type {
   AdvanceItem,
@@ -33,61 +32,18 @@ import { BAKERY, computeSale, VAT, type ComputedSale, type SaleLine } from './da
 
 export { BUYER_ID_TYPES, BUYER_OPTIONAL_TYPES, PAYMENT_OPTIONS, RECEIPT_TYPES, TRANSACTIONS }
 
-// ── Routes: one per state (P5.23) ─────────────────────────────────────────────────────────────
+// ── Routes ────────────────────────────────────────────────────────────────────────────────────
 
 const TILL = '/pos/zlatni-klas'
 
+/** Where the till's menu and its offline strip lead (the journal and the report are not examples). */
 export const TILL_ROUTES = {
-  /** The receipt kind dialog: Proforma chosen, its marker. */
-  kind: `${TILL}?kind=proforma`,
-  /** A proforma in the cart: the marker above the lines. */
-  proforma: `${TILL}?proforma`,
-  /** Training mode: the persistent banner, the marker. */
-  training: `${TILL}?training`,
-  /** The buyer dialog: a company's tax number, the corporate card in the optional field. */
-  buyer: `${TILL}?buyer`,
-  /** Paying with several ways: a voucher and a card taken, cash for the rest. */
-  mixed: `${TILL}?step=mixed`,
-  /** An instant payment: the code shown to the customer, waiting. */
-  instant: `${TILL}?step=instant`,
-  /** A wire transfer (deferred payment) without the buyer: the reason and the buyer's field. */
-  deferred: `${TILL}?step=deferred`,
-  /** A corporate card sale: the company as the buyer, the card approved. */
-  corporate: `${TILL}?step=corporate`,
-  /** Paid: the receipt issued — processor number and time, counter, code, delivery. */
-  issued: `${TILL}?step=issued`,
-  /** Issued while offline: kept on the till, waiting to be sent. */
-  issuedOffline: `${TILL}?step=issued&offline`,
-  /** Refund: the original found by its total. */
-  refundFind: `${TILL}?refund=find`,
-  /** Refund: two kifle and a burek chosen, the buyer named. */
-  refundLines: `${TILL}?refund=lines`,
-  /** The refund in the cart: "Pay out 240,00 RSD". */
-  refundCart: `${TILL}?refund=cart`,
-  /** The refund's receipt: the original's number and time, the buyer's signature line. */
-  refundReceipt: `${TILL}?refund=receipt`,
-  /** A buyer's open advances in the cart, one deducted: the rest to pay. */
-  advances: `${TILL}?advances`,
-  /** Taking an advance for a cake order. */
-  advanceTake: `${TILL}?advance=take`,
-  /** Refunding an advance: the confirmation. */
-  advanceRefund: `${TILL}?advance=refund`,
-  /** A sale without compensation (a gift): its kind line and the marker of the tenant's rule. */
-  noCompensation: `${TILL}?no-compensation`,
-  /** Two receipts the processor did not accept: the strip's danger badge. */
-  queueFailed: `${TILL}?queue=failed`,
-  /** The day's receipts on the till, the last one shown. */
+  /** The day's receipts on the till. */
   journal: `${TILL}/journal`,
-  /** A copy of a receipt: "COPY", not a fiscal receipt. */
-  journalCopy: `${TILL}/journal?copy`,
-  /** Cancelling a receipt issued by mistake: the reason asked. */
-  journalCancel: `${TILL}/journal?cancel`,
   /** The receipts waiting to be sent or refused. */
   journalQueue: `${TILL}/journal?queue`,
   /** The daily report. */
   dailyReport: `${TILL}/journal?report`,
-  /** A web-shop order whose receipt was issued and e-mailed. */
-  webOrder: '/shop/zlatni-klas/orders/WEB-1042',
 }
 
 // ── The fiscal device ─────────────────────────────────────────────────────────────────────────
@@ -584,72 +540,6 @@ export function nextEntry(
     time: time ?? '09:42:17',
     state: offline === true ? 'waiting' : 'sent',
   }
-}
-
-// ── The daily report ──────────────────────────────────────────────────────────────────────────
-
-/** The day's figures: sales, refunds, by way of paying and the tax per label, in paras. */
-export function dailyFigures(entries: readonly JournalEntry[]) {
-  const counted = entries.filter((each) => each.type === 'normal')
-  const sales = counted.filter((each) => each.transaction === 'sale')
-  const refunds = counted.filter((each) => each.transaction === 'refund')
-  const sum = (list: readonly JournalEntry[]) =>
-    sumUnits(list.map((each) => computeSale(each.lines).total))
-  const byMethod = new Map<string, bigint>()
-  for (const each of counted) {
-    const sign = each.transaction === 'refund' ? -1n : 1n
-    for (const part of each.payments) {
-      byMethod.set(part.label, (byMethod.get(part.label) ?? 0n) + paras(part.value) * sign)
-    }
-  }
-  const tax = (Object.keys(VAT) as (keyof typeof VAT)[]).map((category) => ({
-    category,
-    vat: sumUnits(
-      counted.map((each) => {
-        const found = computeSale(each.lines).vat.find((row) => row.category === category)
-        const vat = found?.vat ?? 0n
-        return each.transaction === 'refund' ? -vat : vat
-      }),
-    ),
-  }))
-  return {
-    count: entries.length,
-    sales: sum(sales),
-    salesCount: sales.length,
-    refunds: sum(refunds),
-    refundsCount: refunds.length,
-    net: sum(sales) - sum(refunds),
-    byMethod: [...byMethod.entries()],
-    tax,
-    other: entries.filter((each) => each.type !== 'normal').length,
-  }
-}
-
-// ── The web-shop order (item 21i) ─────────────────────────────────────────────────────────────
-
-export const WEB_ORDER = {
-  number: 'WEB-1042',
-  customer: 'Ana Petrović',
-  email: 'ana@example.com',
-  placed: '2026-10-06',
-  placedTime: '08:14',
-  pickup: 'Pick up at Bulevar oslobođenja 46, today from 10:00',
-  lines: [
-    { productId: 'reforma', quantity: '4' },
-    { productId: 'tulumbe', quantity: '2' },
-  ] as SaleLine[],
-  payment: { id: 'p', label: 'Card', value: '1360.00', detail: 'Paid online, Visa •••• 0094' },
-  /** The receipt the web shop's processor issued (invented). */
-  receipt: {
-    number: 'WS4N8R2T-WS4N8R2T-0815',
-    time: '06.10.2026. 08:14:52',
-    counter: '0790/0815ПП',
-  },
-}
-
-export const SHOP_ACCOUNT = {
-  name: 'Snežana Kovačević',
-  email: 'snezana@zlatniklas.example',
 }
 
 /** The bakery's name on every receipt. */

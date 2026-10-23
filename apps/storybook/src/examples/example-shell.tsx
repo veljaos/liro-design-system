@@ -52,6 +52,8 @@ export const ROUTES = {
   home: '/home',
   invoices: '/sales/invoices',
   invoice: (number: string) => `/sales/invoices/${number}`,
+  /** An invoice's printout, from its page's "PDF". */
+  invoicePrint: (number: string) => `/sales/invoices/${number}/print`,
   dashboard: '/reports/overview',
   approvals: '/purchasing/approvals',
   employee: `/hr/employees/${EMPLOYEE.id}`,
@@ -180,17 +182,31 @@ export const HR_TABS: ModuleTab[] = [
   { key: 'safety', label: 'Safety at work', href: '#/hr/safety/injury-register/2026' },
 ]
 
+/**
+ * The Reports module (F5, P5.89): the overview, the trial balance, the VAT return and the cost
+ * analysis — the four kept screens of the "Overview and analysis" floorplan, one module.
+ */
+export function reportsTabs(current: 'overview' | 'trial' | 'vat' | 'costs'): ModuleTab[] {
+  const tabs = [
+    { key: 'overview', label: 'Overview', href: `#${ROUTES.dashboard}` },
+    { key: 'trial', label: 'Trial balance', href: '#/accounting/trial-balance' },
+    { key: 'vat', label: 'VAT return', href: '#/accounting/vat-return/2026-09' },
+    { key: 'costs', label: 'Cost analysis', href: '#/analytics/costs' },
+  ]
+  return tabs.map((tab) => ({ ...tab, current: tab.key === current }))
+}
+
 /** The HR tabs with `key` current (the module's other screens). */
 export function hrTabs(key: string): ModuleTab[] {
   return HR_TABS.map((tab) => ({ ...tab, current: tab.key === key }))
 }
 
 /**
- * The application's status-to-tone map (BUILD-PLAN A.7, the application's data, never the
- * Design System's): every status shown in the examples, one tone each, used by every screen
- * (P5.23, the owner's review: "Cancelled" was neutral on some screens). docs/decisions.md lists
- * them. Blue (info) is for a document on its way; red (danger) for what failed or ended badly —
- * overdue, rejected, cancelled, suspended; warning for what waits on someone.
+ * The application's status-to-tone map (BUILD-PLAN A.7, the application's data, never the Design
+ * System's): every status of the examples' application, one tone each, used by every screen (P5.23,
+ * the owner's review: "Cancelled" was neutral on some screens). docs/decisions.md lists them. Blue
+ * (info) is for a document on its way; red (danger) for what failed or ended badly — overdue,
+ * rejected, cancelled, suspended; warning for what waits on someone.
  */
 export const TONES = {
   // Documents
@@ -310,9 +326,9 @@ export function statusBadge(status: ExampleStatus) {
 export const HOME_COMPANY = 'kvadrat'
 
 /**
- * Another person signed in at another organisation (P5.17, P5.24: a store manager, a nurse, a
- * teacher): the user menu shows them, the switcher only their organisations, the search their
- * commands; Milica's notifications are not theirs, so there is no bell.
+ * Another person signed in at another organisation (P5.17, P5.25: a clinic's receptionist, a
+ * restaurant's manager): the user menu shows them, the switcher only their organisations, the
+ * search their commands; Milica's notifications are not theirs, so there is no bell.
  */
 export interface ExampleAccount {
   name: string
@@ -323,9 +339,8 @@ export interface ExampleAccount {
 }
 
 /**
- * The shell around every signed-in screen. `company` is the current company (another one for
- * Stanić Elektro STR's setup; choosing Kvadrat Gradnja there goes home); `agent` is the agent
- * button (P5.3).
+ * The shell around every signed-in screen. `company` is the current company (choosing Kvadrat
+ * Gradnja from another one goes home).
  */
 export function Shell({
   phone,
@@ -333,9 +348,7 @@ export function Shell({
   tabs,
   bottomBar,
   company = HOME_COMPANY,
-  agent,
   account,
-  banners,
   children,
 }: {
   phone: boolean
@@ -343,11 +356,8 @@ export function Shell({
   tabs?: ModuleTab[]
   bottomBar?: ReactNode
   company?: string
-  agent?: ReactNode
   /** Someone else than Milica, at another organisation. */
   account?: ExampleAccount
-  /** P5.36 acct: application-wide banners (a trial ending, a payment past due). */
-  banners?: ReactNode
   children: ReactNode
 }) {
   const navigate = useContext(Navigate)
@@ -360,14 +370,6 @@ export function Shell({
       group: 'actions',
       onSelect: () => {
         navigate('/sales/invoices/new')
-      },
-    },
-    {
-      id: 'new-contract',
-      label: 'New employment contract',
-      group: 'actions',
-      onSelect: () => {
-        navigate('/hr/contracts/new')
       },
     },
     {
@@ -411,38 +413,6 @@ export function Shell({
       },
     },
     {
-      id: 'go-tasks',
-      label: 'Tasks',
-      group: 'navigation',
-      onSelect: () => {
-        navigate('/tasks')
-      },
-    },
-    {
-      id: 'go-0418',
-      label: 'Final invoice F-2026-0418',
-      group: 'navigation',
-      onSelect: () => {
-        navigate('/sales/invoices/F-2026-0418')
-      },
-    },
-    {
-      id: 'go-0415',
-      label: 'Invoice in EUR F-2026-0415',
-      group: 'navigation',
-      onSelect: () => {
-        navigate('/sales/invoices/F-2026-0415')
-      },
-    },
-    {
-      id: 'go-situation',
-      label: 'Interim situation IS-2026-007',
-      group: 'navigation',
-      onSelect: () => {
-        navigate('/projects/IS-2026-007')
-      },
-    },
-    {
       id: 'go-vat',
       label: 'VAT return, September 2026',
       group: 'navigation',
@@ -451,11 +421,19 @@ export function Shell({
       },
     },
     {
-      id: 'go-setup',
-      label: 'Set up Stanić Elektro STR',
+      id: 'go-trial',
+      label: 'Trial balance',
       group: 'navigation',
       onSelect: () => {
-        navigate('/setup')
+        navigate('/accounting/trial-balance')
+      },
+    },
+    {
+      id: 'go-payroll',
+      label: 'Payroll run, September 2026',
+      group: 'navigation',
+      onSelect: () => {
+        navigate('/hr/payroll/2026-09')
       },
     },
     {
@@ -569,8 +547,6 @@ export function Shell({
       user={user}
       {...(tabs === undefined ? {} : { moduleTabs: tabs })}
       {...(bottomBar === undefined ? {} : { bottomBar })}
-      {...(agent === undefined ? {} : { agent })}
-      {...(banners === undefined ? {} : { banners })}
     >
       {children}
     </AppShell>

@@ -9,8 +9,6 @@
 import type { MyShift, Signer, StatusTimelineStep, Tone } from '@veljaos/ui'
 
 export const Y_TODAY = '2026-10-14'
-export const Y_NOW = '09:40'
-
 export const Y_ROUTES = {
   home: '/me',
   payslips: '/me/payslips',

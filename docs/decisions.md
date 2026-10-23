@@ -2,6 +2,20 @@
 
 Why things are as they are. Newest entries at the end of each section. The last section, "Lessons from the previous Design System", holds the lessons of BUILD-PLAN Appendix B, so the reasons survive.
 
+## The two principles (owner, 2026-10-23)
+
+They apply to every screen from now on, before every decision below; where an older entry asks for
+more, these win.
+
+1. **Simplicity first.** Show the minimum by default; advanced options are tucked away (a menu, a
+   "More" drawer, a section that opens).
+2. **Ease sells.** A first-day user must manage without training, under pressure: the fewest steps,
+   big clear targets, immediate visible feedback on every action, Undo instead of a confirmation for
+   anything reversible, nothing that blocks the user.
+
+Every screen is one of seven floorplans (`docs/floorplans.md`); the screens the examples no longer
+show are recipes (`docs/recipes.md`).
+
 ## Versions
 
 All dependencies are pinned to exact versions (`.npmrc`: `save-exact=true`). Each was the latest stable release on the date shown, unless the line says why not.
@@ -3329,6 +3343,18 @@ unreadable, values }` (the values to submit; an unreadable number or date blocks
 
 - **2026-10-21 — Group E is assembled; nothing new in the library (P5.82–P5.88).** The AML compliance examples are built from existing components (WorklistPage, DocumentPage, Questionnaire, HierarchyChart, ValueComparison, MaskedValue, SignerList, StatusTimeline, DefinedForm, DashboardPage, the charts); no component, prop, message key or dependency was added. Every risk, score, factor, match, threshold, list and legal text is the application's; the lists and the authority are illustrative.
 - **2026-10-21 — The report form uses DefinedForm as it is on main (P5.87).** The second half was written before Group B's DefinedForm reached its branch and carried a temporary copy of the component, its helpers, exports and three messages; they were dropped at the merge and the report form typechecks and runs against the library's own DefinedForm, unchanged.
+
+## Floorplans and the canonical examples (P5.89)
+
+- **2026-10-23 — Seven floorplans, three shells (owner).** The examples had grown to almost three hundred screens; SAP repeats five or six floorplans, and so do we: F1 List (ListPage), F2 Record (DetailPage, RecordFormPage, SettingsPage), F3 Document (DocumentPage with the one line editor, EditableGrid), F4 Worklist (WorklistPage), F5 Overview and analysis (DashboardPage, ReportPage, StatutoryFormPage, Pivot), F6 Steps (FormWizard, ImportWizard, Questionnaire, PeriodicRunPage), F7 Special canvases (calendar, floor plan, Gantt, POS, diagram, map — only where a list or a form cannot do), inside AppShell, AuthShell or PortalShell. `docs/floorplans.md` says for each when to use it, its anatomy on a desktop and on a phone, where actions go, how editing works and its empty, loading and error states. Every template and component stays; nothing new was needed — the floorplans are the templates that already existed, named and ruled.
+- **2026-10-23 — The canonical set (owner's list, no swap).** Twenty-six screens, each on a desktop and on a phone: Shell — Sign in, Home, Notifications, Not found (404), Employee portal; F1 — Invoice list, Customers (search all, bulk edit, the import entry); F2 — Employee record (view and edit), My profile; F3 — Invoice, Invoice draft, Journal entry, Decrease document; F4 — Supplier invoices to approve, Bank statement; F5 — Overview (dashboard), Trial balance, VAT return, Cost analysis (pivot); F6 — Customer import, Health, book an appointment, Payroll run; F7 — Doctor's calendar, Restaurant service (the floor plan with a table's tab), POS checkout, Project timeline. Each of the owner's choices already represents its floorplan, so none was swapped. The walk-through signs in and clicks through the kept screens.
+- **2026-10-23 — One story file per floorplan.** The single 20,000-line `examples.stories.tsx` became `examples-0-shell.stories.tsx` … `examples-7-canvases.stories.tsx`, titled "Examples/Shell", "Examples/F1 List" … "Examples/F7 Canvases", so the sidebar is the floorplan list. Kept per screen: the desktop and the phone story, the interaction stories that test the screen (hidden, `'!dev'`), and a hidden static state only where it is the floorplan's own state (the journal entry not balanced, the bank statement's line in focus on a phone). The other intermediate states of the kept screens were dropped with their pictures: each is a state of a component whose own stories show it. The story ids changed, so every Examples picture was regenerated (the Baselines workflow). `scripts/static-stories.mjs` counts "Examples/…" titles as Examples (`isExampleTitle`, tested).
+- **2026-10-23 — What was removed, and how.** Every other example screen, its stories, data files, routes and pictures: 136 files and about 115,000 lines of example code (49 files and about 15,000 lines remain), and 4,272 pictures. The kept files were pruned of the removed screens' routes, then of every declaration nothing referenced any more (repeated until stable), then of unused imports; typecheck and lint proved the result. The dataset checks (`dataset-checks.ts`) keep what the kept screens show: the cancelled and the decreased invoice in the list and the customers' balances, the overdue total, the booking's free times against the doctor's calendar, the till's sale, Bistro Dunav's floor and table 7's tab.
+- **2026-10-23 — Components stay, with their own stories.** No component or template was removed, including those only the deleted examples used. Audit: every exported component is rendered in its own stories or in those of the template that composes it (LifecycleBar, PageHeader, BackButton, HighlightedText, MentionText, FileIcon, AskedQuestion, QuestionList, PrintIssuedLine and PrintPaymentDetails through DocumentPage, the templates, SearchResultList, MessageList, FileGrid, AssistantPanel and PrintDocument); the states the removed screens showed are the components' own (C4), so no state needed moving.
+- **2026-10-23 — A link to a screen the set does not have opens the 404 example.** Module tabs and menus keep the modules' real shape (Sales: Invoices, Quotes, Orders, Customers, Reports), as the module tabs did since P4.8; their screens that are not in the set open the "Not found" example. Only the example-only shortcuts to removed screens were taken out: a walk-through link in the booking's confirmation, "Open the link from the e-mail" in the forgotten-password screen, the doctor's calendar opening the deleted patient chart, the reception's links, and the command palette's entries for removed records (the palette now offers the kept screens). The invoice's "PDF" keeps its printout (`screens-print.tsx`), part of the Invoice screen.
+- **2026-10-23 — The F5 screens are one Reports module.** The overview, the trial balance, the VAT return and the cost analysis came from four modules with four sets of tabs (the ledger's seven, the analytics module's three); they now share one module's tabs (`reportsTabs`), so F5 reads as one floorplan with four templates.
+- **2026-10-23 — Recipes keep the knowledge.** `docs/recipes.md` has one short entry per removed screen, grouped by domain: its floorplan, the pieces that compose it and what is the application's data. A new screen starts from its floorplan and its recipe, not from an example.
+- **2026-10-23 — CI in twenty-four parts.** About a third of the stories went with the examples (they were the heaviest: whole screens in four modes); the parts of the last 32-part runs took 7–22 minutes of their 25, so 24 parts keep each under the limit. The Baselines workflow keeps its 24 parts.
 
 ## Packaging
 

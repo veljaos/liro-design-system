@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { after, describe, it } from 'node:test'
 import { fileURLToPath } from 'node:url'
-import { shownExampleTests, storiesOf, violations } from './static-stories.mjs'
+import { isExampleTitle, shownExampleTests, storiesOf, violations } from './static-stories.mjs'
 
 const folder = mkdtempSync(join(tmpdir(), 'static-stories-'))
 after(() => {
@@ -97,6 +97,16 @@ export const Hidden = { tags: ['interaction', '!dev'] }
 describe('violations', () => {
   it('finds none in this repository: every pictured story is static', () => {
     assert.deepEqual(violations(fileURLToPath(new URL('..', import.meta.url))), [])
+  })
+})
+
+describe('isExampleTitle', () => {
+  it('counts the Examples and their floorplan groups, nothing else', () => {
+    assert.equal(isExampleTitle('Examples'), true)
+    assert.equal(isExampleTitle('Examples/F1 List'), true)
+    assert.equal(isExampleTitle('Examples/Shell'), true)
+    assert.equal(isExampleTitle('Components/ExamplesTable'), false)
+    assert.equal(isExampleTitle('ExamplesMore'), false)
   })
 })
 
