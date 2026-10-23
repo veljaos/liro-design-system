@@ -38,6 +38,7 @@ import {
   IMPORT_FILE_DESCRIPTION,
   IMPORT_PREVIEW,
   IMPORT_SUGGESTION,
+  readImportFile,
   searchCustomers,
   SEPTEMBER_10,
   SEPTEMBER_ADVANCES,
@@ -373,7 +374,7 @@ export function Customers({ phone }: { phone: boolean }) {
           layout={phone ? 'cards' : 'table'}
           inCard
           virtualize
-          maxHeight={phone ? '520px' : '60dvh'}
+          maxHeight="60dvh"
           columns={view === 'all' ? MIXED_COLUMNS : LIST_COLUMNS}
           sort={sort}
           onSortChange={setSort}
@@ -553,6 +554,7 @@ export function CustomerImport({ phone }: { phone: boolean }) {
   const [step, setStep] = useState<ImportStep>('file')
   const [file, setFile] = useState<{ name: string; description: string } | undefined>(undefined)
   const [reading, setReading] = useState(false)
+  const [fileError, setFileError] = useState<string | undefined>(undefined)
   const [columns, setColumns] = useState<ReturnType<typeof csvColumns>>([])
   const [mapping, setMapping] = useState<ImportMapping>({})
   const [problemsOnly, setProblemsOnly] = useState(false)
@@ -601,14 +603,25 @@ export function CustomerImport({ phone }: { phone: boolean }) {
           maxSizeText="10 MB"
           onFileChoose={(chosen) => {
             setReading(true)
+            setFileError(undefined)
             void chosen.text().then((text) => {
-              setColumns(csvColumns(text))
+              const read = readImportFile(chosen.name, text)
+              setReading(false)
+              // An unreadable file shows its error in words, never its content (P5.90 item 7).
+              if ('error' in read) {
+                setFile(undefined)
+                setColumns([])
+                setMapping({})
+                setFileError(read.error)
+                return
+              }
+              setColumns(read.columns)
               setMapping(IMPORT_SUGGESTION)
               setFile({ name: chosen.name, description: IMPORT_FILE_DESCRIPTION })
-              setReading(false)
             })
           }}
           {...(file === undefined ? {} : { file })}
+          {...(fileError === undefined ? {} : { fileError })}
           reading={reading}
           sourceColumns={columns}
           fields={CUSTOMER_FIELDS}

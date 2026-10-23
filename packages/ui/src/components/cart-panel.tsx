@@ -201,7 +201,6 @@ export function CartPanel(props: CartPanelProps) {
             icon={ShoppingCart}
             title={props.emptyTitle ?? messages['cart.empty']}
             description={props.emptyDescription ?? messages['cart.emptyDescription']}
-            className="py-8"
           />
         ) : (
           <ul className="m-0 list-none p-0">

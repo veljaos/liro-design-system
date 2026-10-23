@@ -191,6 +191,9 @@ export interface LiroMessages {
   'notice.close': string
   /** Names the region where toasts appear, for assistive technology. */
   'notice.region': string
+  /** SaveStatus (P5.90): beside the action while a routine save runs, and after it succeeded. */
+  'save.saving': string
+  'save.saved': string
   /** Tells assistive technology that a step of a Stepper is completed. */
   'stepper.completed': string
   /**
@@ -1008,7 +1011,7 @@ export interface LiroMessages {
   'masked.other': string
   /** MaskedValue: the label of the text field of "Other". */
   'masked.otherText': string
-  /** MaskedValue: the note in the dialog that the access is recorded, under `masked.loggedTitle`. */
+  /** MaskedValue: the note in the dialog that the access is recorded, after `masked.loggedTitle`. */
   'masked.logged': string
   /** MaskedValue: the value is on its way (after the reason was given). */
   'masked.loading': (label: string) => string
@@ -1739,7 +1742,7 @@ export interface LiroMessages {
   /** The "now" marker of the time grids (CalendarView, ResourceSchedule, Timetable): "Now, 10:05". */
   'schedule.now': (timeText: string) => string
   // P5.28 screens
-  /** MaskedValue: the bold start of the note that the access is recorded ("Access is logged"). */
+  /** MaskedValue: the start of the note that the access is recorded ("Access is logged."). */
   'masked.loggedTitle': string
   /** ClockRecordList: the correction drawer's record, under its title: "Nenad Ilić, 07.10.2026.". */
   'clock.correctSubject': (person: string, date: string) => string

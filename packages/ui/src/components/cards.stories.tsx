@@ -3,7 +3,7 @@ import { within } from 'storybook/test'
 import { settle } from '../primitives/story-helpers'
 import { Button } from './button'
 import { Card, KeyValueList, SectionCard, type KeyValueGroup, type KeyValueItem } from './cards'
-import { ARABIC, JAPANESE, LONG } from './field-story-data'
+import { ARABIC, JAPANESE, LONG, UNBROKEN } from './field-story-data'
 import { PersonName } from './person'
 import { StatusBadge } from './status-badge'
 import { expectContentDirection, StoryProvider } from './story-frames'
@@ -154,6 +154,29 @@ export const LongTextPhone: Story = {
             { label: LONG.label, value: LONG.value },
             { label: 'IBAN', value: 'RS35260005601001611379RS35260005601001611379', numeric: true },
             { label: 'Note', value: LONG.value, fullWidth: true },
+          ]}
+        />
+      </SectionCard>
+    </div>
+  ),
+}
+
+/**
+ * Text without a single space at phone width (P5.90 item 7): the title, the values and a status
+ * wrap inside the card, never past its edge.
+ */
+export const UnbrokenPhone: Story = {
+  name: 'Unbroken text, phone width',
+  render: () => (
+    <div className="w-[390px] max-w-full">
+      <SectionCard title={UNBROKEN.word} description={UNBROKEN.url}>
+        <KeyValueList
+          columns={1}
+          items={[
+            { label: 'IBAN', value: UNBROKEN.iban, numeric: true },
+            { label: 'Link', value: UNBROKEN.url },
+            { label: UNBROKEN.word, value: <StatusBadge label={UNBROKEN.word} tone="info" /> },
+            { label: 'Note', value: UNBROKEN.word, fullWidth: true },
           ]}
         />
       </SectionCard>

@@ -139,6 +139,27 @@ export const CustomerImportScreenInteraction: Story = {
   },
 }
 
+/**
+ * A binary file named .csv (P5.90 item 7): the import says in words that it could not be read,
+ * never shows the bytes, and Next waits for another file.
+ */
+export const CustomerImportUnreadableInteraction: Story = {
+  name: 'Customer import, unreadable file, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={E_ROUTES.customerImport} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const input = canvasElement.querySelector<HTMLInputElement>('input[type="file"]')
+    if (input === null) throw new Error('no file input')
+    const bytes = new Uint8Array([0x50, 0x4b, 0x03, 0x04, 0x00, 0x01, 0xff, 0xfe, 0x00, 0x00])
+    await userEvent.upload(input, new File([bytes], 'kupci.csv', { type: 'text/csv' }))
+    await expect(await canvas.findByText(/kupci.csv could not be read/)).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Next' })).toBeDisabled()
+    await settle()
+  },
+}
+
 export const CustomerImportPhone: Story = {
   name: 'Customer import, phone',
   render: () => <OnPhone start={E_ROUTES.customerImport} />,

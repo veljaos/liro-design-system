@@ -6,6 +6,7 @@ import { BUTTON_RESET, FOCUS_RING, TEXT_DIRECTION } from '../primitives/classes'
 import { Tabs as TabsRoot, TabsContent, TabsList, TabsTrigger } from '../primitives/tabs'
 import { useLiro } from '../provider/liro-provider'
 import { ActionButton } from './actions'
+import { useBottomBar } from './bottom-bars'
 import { SectionCard } from './cards'
 import { ConfirmDialog } from './confirm-dialog'
 import {
@@ -16,6 +17,7 @@ import {
   type StickyActions,
 } from './form-logic'
 import { Stepper } from './progress'
+import { TAB_ROW_SCROLLER, useTabRow } from './tab-row'
 import { usePhone } from './use-phone'
 import { WizardFooter } from './wizard-footer'
 
@@ -199,6 +201,7 @@ export function FormTabs(props: FormTabsProps) {
   const { messages } = useLiro()
   const [inner, setInner] = useState(props.defaultValue ?? props.items[0]?.value ?? '')
   const value = props.value ?? inner
+  const row = useTabRow(value)
   const select = (next: string) => {
     setInner(next)
     props.onValueChange?.(next)
@@ -214,30 +217,33 @@ export function FormTabs(props: FormTabsProps) {
         props.className,
       )}
     >
-      <TabsList
-        className="justify-start px-4"
-        {...(props.label === undefined ? {} : { 'aria-label': props.label })}
-      >
-        {props.items.map((item) => (
-          <TabsTrigger
-            key={item.value}
-            value={item.value}
-            disabled={item.disabled === true}
-            className="whitespace-nowrap"
-            {...(item.hasErrors === true
-              ? { 'aria-label': messages['form.hasErrors'](item.label), 'data-has-errors': '' }
-              : {})}
-          >
-            <span className={TEXT_DIRECTION}>{item.label}</span>
-            {item.hasErrors === true && (
-              <TriangleAlert
-                aria-hidden="true"
-                className="ms-1.5 size-3.25 shrink-0 text-status-danger-fg"
-              />
-            )}
-          </TabsTrigger>
-        ))}
-      </TabsList>
+      {/* The tab row rule (P5.90 item 6): one line that scrolls sideways with faded edges. */}
+      <div {...row} className={TAB_ROW_SCROLLER}>
+        <TabsList
+          className="w-max min-w-full flex-nowrap justify-start px-4"
+          {...(props.label === undefined ? {} : { 'aria-label': props.label })}
+        >
+          {props.items.map((item) => (
+            <TabsTrigger
+              key={item.value}
+              value={item.value}
+              disabled={item.disabled === true}
+              className="whitespace-nowrap focus-visible:-outline-offset-2"
+              {...(item.hasErrors === true
+                ? { 'aria-label': messages['form.hasErrors'](item.label), 'data-has-errors': '' }
+                : {})}
+            >
+              <span className={TEXT_DIRECTION}>{item.label}</span>
+              {item.hasErrors === true && (
+                <TriangleAlert
+                  aria-hidden="true"
+                  className="ms-1.5 size-3.25 shrink-0 text-status-danger-fg"
+                />
+              )}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </div>
       {props.items.map((item) => (
         <TabsContent key={item.value} value={item.value} className="flex flex-col">
           <InTabsCard.Provider value={true}>{item.content}</InTabsCard.Provider>
@@ -322,8 +328,12 @@ export function FormActions(props: FormActionsProps) {
  */
 export function FormBottomBar({ actions, dirty }: { actions: ReactNode; dirty: boolean }) {
   const { messages } = useLiro()
+  // Toasts stand above the bar, never over its actions (P5.90).
+  const [bar, setBar] = useState<HTMLDivElement | null>(null)
+  useBottomBar(bar)
   return (
     <div
+      ref={setBar}
       data-slot="form-bottom-bar"
       className="sticky bottom-0 z-(--liro-layer-sticky) flex flex-wrap items-center justify-between gap-3 border-0 border-t border-solid border-default bg-surface-page p-3"
     >

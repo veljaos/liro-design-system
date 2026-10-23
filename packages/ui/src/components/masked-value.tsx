@@ -1,4 +1,4 @@
-import { CircleAlert, Eye, EyeOff, ScrollText } from 'lucide-react'
+import { CircleAlert, Eye, EyeOff } from 'lucide-react'
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import { ButtonPrimitive, LoadingButtonPrimitive } from '../primitives/button'
 import { TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
@@ -21,9 +21,9 @@ import { TextAreaField } from './text-field'
  *   it reads in a sentence, `sentenceLabel`) and the record the value belongs to, bold, on its own
  *   line (`subject`, P5.28 item 6). Under it, 24px down, "Why do you need to see it?": the reasons
  *   from the application as radio buttons, with "Other" and its own text (`allowOther`); without a
- *   list the reason is written. Under them a deliberate note (P5.28 item 15): a neutral Alert with
- *   the ScrollText icon, "Access is logged" bold, then what is recorded (`logNote`, default from
- *   messages). The Show button enables once a reason is given; `onReveal({ reason, text })` —
+ *   list the reason is written; the question stands 8px above its options (P5.90 item 16). Above the
+ *   buttons one quiet line of secondary text, without icon or box (owner, P5.90 item 16): "Access
+ *   is logged." and what is recorded (`logNote`, default from messages). The Show button enables once a reason is given; `onReveal({ reason, text })` —
  *   `reason` the chosen value, or null for "Other" and for a written reason. A returned promise keeps the dialog working (the
  *   button busy, not dismissible); it closes when the promise resolves and stays open when it
  *   rejects, with the application's `error` in a danger Alert.
@@ -85,7 +85,7 @@ export interface MaskedValueProps {
   /** The application refused to show it, in its words: in the dialog, or beside the mask. */
   error?: ReactNode
   /**
-   * What is recorded, under the bold "Access is logged" (`messages['masked.loggedTitle']`).
+   * What is recorded, after "Access is logged." (`messages['masked.loggedTitle']`).
    * Default: `messages['masked.logged']`.
    */
   logNote?: ReactNode
@@ -344,9 +344,10 @@ export function MaskedValue(props: MaskedValueProps) {
                 onChange={setText}
               />
             )}
-            <Alert icon={ScrollText} title={messages['masked.loggedTitle']}>
-              {props.logNote ?? messages['masked.logged']}
-            </Alert>
+            {/* A quiet line above the buttons, no icon and no box (owner, P5.90 item 16). */}
+            <p className={cn('m-0 mt-2 text-xs text-secondary', TEXT_DIRECTION)}>
+              {messages['masked.loggedTitle']} {props.logNote ?? messages['masked.logged']}
+            </p>
           </div>
         </Dialog>
       )}

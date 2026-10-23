@@ -52,7 +52,7 @@ const TONE_CLASSES: Record<Tone, { colours: string; border: string }> = {
 
 /** The badge of the previous Design System ("button weights" in docs/decisions.md). */
 const BASE =
-  'inline-flex max-w-full shrink-0 items-center gap-1 rounded-xs px-1.5 py-0.5 align-middle font-sans text-xs leading-[1.4] font-semibold whitespace-nowrap'
+  'inline-flex max-w-full shrink-0 items-center gap-1 rounded-xs px-1.5 py-0.5 align-middle font-sans text-xs leading-[1.4] font-semibold'
 
 export interface StatusBadgeProps {
   /** The status as the application names it, e.g. "Paid". */
@@ -64,7 +64,10 @@ export interface StatusBadgeProps {
   icon?: IconComponent
 }
 
-/** A short status: the label on the tone's colours. It never wraps. */
+/**
+ * A short status: the label on the tone's colours, on one line while it fits; a label longer than
+ * the room there wraps inside the badge, never past it (P5.90 item 7).
+ */
 export function StatusBadge({ label, tone, withBorder = false, icon: Icon }: StatusBadgeProps) {
   const { colours, border } = TONE_CLASSES[tone]
   const className = withBorder
@@ -74,7 +77,7 @@ export function StatusBadge({ label, tone, withBorder = false, icon: Icon }: Sta
     <span className={className} data-tone={tone}>
       {Icon === undefined ? null : <Icon aria-hidden="true" className="size-3 shrink-0" />}
       {/* Its direction from its own text: "3 days overdue" in a right-to-left page (P4.3). */}
-      <span className={TEXT_ISOLATE}>{label}</span>
+      <span className={`min-w-0 ${TEXT_ISOLATE}`}>{label}</span>
     </span>
   )
 }

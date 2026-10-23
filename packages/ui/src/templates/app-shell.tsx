@@ -1,13 +1,5 @@
 import { Bell, Building2, Search } from 'lucide-react'
-import {
-  useEffect,
-  useId,
-  useLayoutEffect,
-  useRef,
-  useState,
-  type ReactNode,
-  type RefObject,
-} from 'react'
+import { useId, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from 'react'
 import { BrandLockup, type BrandLockupProps } from '../components/brand-lockup'
 import {
   CommandPalette,
@@ -17,6 +9,7 @@ import {
 import { MenuItemText, menuIconClass, type MenuEntry } from '../components/dropdown-menu'
 import { Breadcrumbs, type Crumb } from '../components/navigation'
 import { PersonAvatar } from '../components/person'
+import { edgeFade, TAB_ROW_SCROLLER, useTabRow } from '../components/tab-row'
 import { usePhone } from '../components/use-phone'
 import { ButtonPrimitive } from '../primitives/button'
 import { FOCUS_RING, TEXT_DIRECTION } from '../primitives/classes'
@@ -292,67 +285,21 @@ function UserMenu({
   )
 }
 
-/** Which ends of a scrolling row have more content past them (in reading order). */
-function useOverflowEnds(element: HTMLElement | null): { start: boolean; end: boolean } {
-  const [ends, setEnds] = useState({ start: false, end: false })
-  useEffect(() => {
-    if (element === null) return
-    const measure = () => {
-      // scrollLeft runs negative in right-to-left; its size from the start is what counts.
-      const fromStart = Math.abs(element.scrollLeft)
-      const room = element.scrollWidth - element.clientWidth
-      const next = { start: fromStart > 1, end: room - fromStart > 1 }
-      setEnds((last) => (last.start === next.start && last.end === next.end ? last : next))
-    }
-    measure()
-    element.addEventListener('scroll', measure, { passive: true })
-    // The row's own box keeps its width when its tabs grow, so each tab is observed; a web font
-    // that arrives after the first measure changes the tabs' widths (found as a flaky baseline).
-    const observer = new ResizeObserver(measure)
-    observer.observe(element)
-    for (const item of element.querySelectorAll('li')) observer.observe(item)
-    const fonts = typeof document === 'undefined' ? undefined : document.fonts
-    fonts?.addEventListener('loadingdone', measure)
-    void fonts?.ready.then(measure)
-    return () => {
-      element.removeEventListener('scroll', measure)
-      fonts?.removeEventListener('loadingdone', measure)
-      observer.disconnect()
-    }
-  }, [element])
-  return ends
-}
-
-/**
- * The mask that fades a scrolling row's edges where more lies past them: 32px from fully drawn to
- * gone, toward the start and the end in reading order. A mask, not a colour: the row fades into
- * whatever surface is behind it (only the mask's alpha counts, and currentcolor is opaque).
- */
-export function edgeFade(
-  ends: { start: boolean; end: boolean },
-  direction: 'ltr' | 'rtl',
-): string | undefined {
-  if (!ends.start && !ends.end) return undefined
-  const towards = direction === 'rtl' ? 'to left' : 'to right'
-  const start = ends.start ? 'transparent, currentcolor 32px' : 'currentcolor, currentcolor'
-  const end = ends.end ? 'currentcolor calc(100% - 32px), transparent' : 'currentcolor'
-  return `linear-gradient(${towards}, ${start}, ${end})`
-}
+// The tab row rule (P5.90 item 6) lives with every tab row's; edgeFade stays importable here.
+export { edgeFade }
 
 function ModuleTabs({ tabs }: { tabs: readonly ModuleTab[] }) {
-  const { messages, direction, linkComponent: Link } = useLiro()
-  const [scroller, setScroller] = useState<HTMLElement | null>(null)
-  const mask = edgeFade(useOverflowEnds(scroller), direction)
+  const { messages, linkComponent: Link } = useLiro()
+  // The tab row rule (P5.90 item 6): on a narrow screen the row scrolls sideways, without a
+  // scrollbar of its own — a tab that takes the focus scrolls into view, a finger swipes — each
+  // edge with tabs past it fades into the header, and the current module's tab is scrolled into
+  // view when the row is drawn.
+  const row = useTabRow(tabs.find((tab) => tab.current === true)?.key)
   return (
-    // On a narrow screen the row scrolls sideways, without a scrollbar of its own: a tab that takes
-    // the focus scrolls into view, and a finger swipes. While tabs lie past an edge, that edge
-    // fades into the header (P4.9), so the row shows that it goes on.
     <nav
-      ref={setScroller}
+      {...row}
       aria-label={messages['shell.moduleTabs']}
-      data-fade={mask === undefined ? undefined : ''}
-      className="-mb-px overflow-x-auto [scrollbar-width:none]"
-      {...(mask === undefined ? {} : { style: { maskImage: mask } })}
+      className={cn('-mb-px', TAB_ROW_SCROLLER)}
     >
       <ul className="m-0 flex h-10 list-none justify-center-safe p-0">
         {tabs.map((tab) => (
@@ -364,7 +311,7 @@ function ModuleTabs({ tabs }: { tabs: readonly ModuleTab[] }) {
                 'flex items-center rounded-t-md border-0 border-b-2 border-solid border-transparent px-4 font-sans text-sm leading-none whitespace-nowrap text-primary no-underline visited:text-primary hover:border-default hover:bg-surface-hover hover:text-primary active:text-primary',
                 tab.current === true && 'border-brand hover:border-brand',
                 FOCUS_RING,
-                '-outline-offset-2',
+                'focus-visible:-outline-offset-2',
                 TEXT_DIRECTION,
               )}
             >

@@ -530,7 +530,11 @@ export const ThousandRowsInteraction: Story = {
   },
 }
 
-/** 1,000 cards on a phone, virtualized: each card measured once drawn (estimate 104px). */
+/**
+ * 1,000 cards on a phone, virtualized: each card measured once drawn (estimate 104px), and only
+ * the cards in view are drawn — in the page's own scroll, never a box of its own (`maxHeight` is
+ * not used on phones, P5.90).
+ */
 export const ThousandCards: Story = {
   name: '1,000 cards (phone, virtualized)',
   render: () => <LargeList cards />,

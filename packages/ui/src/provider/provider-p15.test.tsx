@@ -1298,6 +1298,8 @@ describe('messages', () => {
       'run.rerun',
       'run.warning',
       'run.warningCount',
+      'save.saved',
+      'save.saving',
       'scan.camera',
       'scan.error',
       'scan.success',

@@ -173,7 +173,7 @@ function DesktopTreeTable<Data>(props: TreeTableProps<Data>) {
   if (props.nodes.length === 0 && props.loading !== true) {
     return (
       <div data-slot="tree-table" className={cn('font-sans', props.className)}>
-        {props.empty ?? <EmptyState compact className="py-6" />}
+        {props.empty ?? <EmptyState compact />}
       </div>
     )
   }

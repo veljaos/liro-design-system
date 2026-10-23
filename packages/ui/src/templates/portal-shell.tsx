@@ -4,6 +4,7 @@ import { BrandLockup, type BrandLockupProps } from '../components/brand-lockup'
 import { MenuItemText, menuIconClass, type MenuEntry } from '../components/dropdown-menu'
 import type { IconComponent } from '../components/intents'
 import { PersonAvatar } from '../components/person'
+import { TAB_ROW_SCROLLER, useTabRow } from '../components/tab-row'
 import { usePhone } from '../components/use-phone'
 import { ButtonPrimitive } from '../primitives/button'
 import { FOCUS_RING, TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
@@ -184,10 +185,14 @@ function ParticipantMenu({
 /** Desktop: the sections as a row of tabs under the header's first row, from the start. */
 function SectionTabs({ sections }: { sections: readonly PortalSection[] }) {
   const { messages, linkComponent: Link } = useLiro()
+  // The tab row rule (P5.90 item 6): faded edges where sections lie past them, the current one
+  // kept in view.
+  const row = useTabRow(sections.find((section) => section.current === true)?.key)
   return (
     <nav
+      {...row}
       aria-label={messages['portal.sections']}
-      className="-mb-px overflow-x-auto px-4 [scrollbar-width:none]"
+      className={cn('-mb-px px-4', TAB_ROW_SCROLLER)}
     >
       <ul className="m-0 flex h-10 list-none p-0">
         {sections.map((section) => (
@@ -199,7 +204,7 @@ function SectionTabs({ sections }: { sections: readonly PortalSection[] }) {
                 'flex items-center gap-2 rounded-t-md border-0 border-b-2 border-solid border-transparent px-2 font-sans text-sm leading-none whitespace-nowrap text-primary no-underline visited:text-primary hover:border-default hover:bg-surface-hover hover:text-primary active:text-primary',
                 section.current === true && 'border-brand hover:border-brand',
                 FOCUS_RING,
-                '-outline-offset-2',
+                'focus-visible:-outline-offset-2',
               )}
             >
               <span className={TEXT_DIRECTION}>{section.label}</span>

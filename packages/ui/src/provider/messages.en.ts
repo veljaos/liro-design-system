@@ -106,6 +106,8 @@ export const messagesEn: LiroMessages = {
     count === 1 ? `Apply to ${text} item?` : `Apply to ${text} items?`,
   'notice.close': 'Close',
   'notice.region': 'Notifications',
+  'save.saving': 'Saving…',
+  'save.saved': 'Saved',
   'stepper.completed': 'Completed',
   'stepper.step': (_step, stepText, _total, totalText) => `Step ${stepText} of ${totalText}`,
   'action.unavailable': (reason) => `Unavailable: ${reason}`,
@@ -1201,7 +1203,7 @@ export const messagesEn: LiroMessages = {
   // P5.28 dates
   'schedule.now': (timeText) => `Now, ${timeText}`,
   // P5.28 screens
-  'masked.loggedTitle': 'Access is logged',
+  'masked.loggedTitle': 'Access is logged.',
   'clock.correctSubject': (person, date) => `${person}, ${date}`,
   'change.save': 'Save',
   'change.saveAndNotify': 'Save and notify',

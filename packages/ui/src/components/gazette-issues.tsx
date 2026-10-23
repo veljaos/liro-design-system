@@ -126,7 +126,6 @@ export function GazetteIssues(props: GazetteIssuesProps) {
     body = (
       <ErrorState
         compact
-        className="py-8"
         {...(props.onRetry === undefined
           ? {}
           : { action: { label: messages['legalSearch.retry'], onClick: props.onRetry } })}
@@ -138,7 +137,6 @@ export function GazetteIssues(props: GazetteIssuesProps) {
     ) : (
       <EmptyState
         compact
-        className="py-8"
         title={messages['gazette.emptyTitle']}
         description={messages['gazette.emptyDescription']}
       />

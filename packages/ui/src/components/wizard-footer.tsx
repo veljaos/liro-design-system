@@ -1,6 +1,7 @@
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
+import { useBottomBar } from './bottom-bars'
 
 /*
  * The buttons of a multi-step flow (P5.23, the owner's review of the import wizard on phones; not
@@ -30,9 +31,13 @@ export interface WizardFooterProps {
 
 /** The row of Back and the main action of a multi-step flow. */
 export function WizardFooter({ phone, start, children, note, className }: WizardFooterProps) {
+  // On phones the row is stuck to the bottom: toasts stand above it (P5.90).
+  const [row, setRow] = useState<HTMLDivElement | null>(null)
+  useBottomBar(row, phone)
   if (phone) {
     return (
       <div
+        ref={setRow}
         data-slot="wizard-footer"
         className={cn(
           'sticky bottom-[var(--liro-shell-bottom,0px)] z-(--liro-layer-sticky) flex flex-col gap-1.5 bg-surface-raised pt-3 pb-[max(12px,calc(env(safe-area-inset-bottom)-var(--liro-shell-bottom,0px)))]',

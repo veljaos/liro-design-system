@@ -37,3 +37,13 @@ export const LONG = {
   value:
     'Bulevar Mihajla Pupina 10a, fourth floor, office 412, entrance from the courtyard, 11070 Novi Beograd',
 }
+
+/**
+ * Unbroken text (P5.90 item 7): strings without a single space, which must wrap inside their box
+ * rather than overflow it — an IBAN, a URL, a sixty-letter word.
+ */
+export const UNBROKEN = {
+  iban: 'RS35260005601001611379RS35260005601001611379',
+  url: 'https://portal.example.com/documents/2026/10/supplier-invoices/UF-2026-1187-attachment-scan.pdf',
+  word: 'Donaudampfschiffahrtselektrizitätenhauptbetriebswerkbauunterbeamtengesellschaft',
+}
