@@ -221,6 +221,8 @@ export const HealthBookingWalk: Story = {
     const dialog = within(
       await within(document.body).findByRole('dialog', { name: /Choose a service/ }),
     )
+    // The dialog has finished coming in.
+    await settle()
     await userEvent.click(dialog.getByRole('button', { name: /^Laboratory/ }))
     await expect(dialog.getByRole('button', { name: /^Blood draw/ })).toBeVisible()
     await userEvent.click(dialog.getByRole('button', { name: 'Back to All' }))

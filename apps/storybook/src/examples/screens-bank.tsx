@@ -76,7 +76,7 @@ import {
  * best guess, to check), Needs you (nothing found) or Done — and what the line does in a few
  * words. "Accept all exact matches" takes every automatic match in one press, with Undo. Only
  * the lines that need the user are opened: a press opens the line in a Drawer (the whole screen
- * on a phone) with the proposal, "Confirm and next" and "Change…" — the full choice (close open
+ * on a phone) with the proposal, "Confirm and next" and "Change" — the full choice (close open
  * items, post to an account, split) and the bank's details stay folded until asked for. A
  * payment against a proforma invoice is done before the user comes: the Core issued the advance
  * invoice, and the line links to it. On a phone the lines that need the user come first. "Post
@@ -312,7 +312,7 @@ function problemOf(line: BankLine, work: LineWork, money: (paras: bigint) => str
   return null
 }
 
-// ── The line's full choice ("Change…") ────────────────────────────────────────────────────────
+// ── The line's full choice ("Change") ─────────────────────────────────────────────────────────
 
 const SPLIT_COLUMNS: EditableGridColumn<SplitPart>[] = [
   {
@@ -669,7 +669,7 @@ function LineDrawer({
         <Button
           family="neutral"
           icon={Pencil}
-          label="Change…"
+          label="Change"
           onClick={() => {
             setChanging(true)
           }}

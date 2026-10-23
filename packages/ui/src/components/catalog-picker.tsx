@@ -653,7 +653,7 @@ function CatalogCard(props: {
         )}
       </span>
       {(item.price !== undefined || item.priceText !== undefined) && (
-        <span className="flex shrink-0 flex-col items-end gap-0.5 text-end">
+        <span className="flex max-w-[45%] shrink-0 flex-col items-end gap-0.5 text-end">
           {item.price !== undefined && props.currency !== undefined ? (
             <MoneyText
               value={item.price}
@@ -670,7 +670,7 @@ function CatalogCard(props: {
               <span className="sr-only">
                 {messages['catalog.wasPrice'](format.money(item.originalPrice, props.currency))}
               </span>
-              <s aria-hidden="true" className="tabular-nums">
+              <s aria-hidden="true" className={cn('tabular-nums', TEXT_ISOLATE)}>
                 {format.money(item.originalPrice, props.currency)}
               </s>
             </span>

@@ -290,10 +290,21 @@ export const RestaurantTab: Story = {
   play: deskPlay(RESTAURANT_TAB_CHECK),
 }
 
+/**
+ * On a phone the menu comes first — the most sold items, each with its count in the tab — and the
+ * tab is the bar at the bottom ("Order · 6 items"), opened with one tap (P5.90 item 20).
+ */
 export const RestaurantTabPhone: Story = {
   name: 'Restaurant tab, table 7, phone',
   render: () => <OnPhone start={BISTRO_TAB_7} />,
-  play: phonePlay(RESTAURANT_TAB_CHECK),
+  play: phonePlay(async (canvasElement) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('button', { name: 'Most sold', pressed: true })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: /^Točeno pivo/ })).toHaveAccessibleDescription(
+      '3 in the order',
+    )
+    await expect(canvas.getByRole('button', { name: /^Order\s*6 items/ })).toBeVisible()
+  }),
 }
 
 /**

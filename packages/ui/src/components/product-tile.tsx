@@ -127,14 +127,19 @@ export function ProductTile(props: ProductTileProps) {
       )}
     >
       {inOrder !== undefined && (
-        <span
-          id={countId}
-          data-slot="product-tile-count"
-          className="absolute -top-2 -end-2 flex min-h-6 min-w-6 items-center justify-center rounded-full border border-solid border-strong bg-surface-raised px-1.5 text-xs font-semibold text-primary tabular-nums"
-        >
-          <span className="sr-only">{messages['pos.inOrder'](format.number(inOrder))}</span>
-          <span aria-hidden="true">{format.number(inOrder)}</span>
-        </span>
+        <>
+          {/* Read after the name (the name stays the product's), shown at the corner. */}
+          <span id={countId} hidden>
+            {messages['pos.inOrder'](format.number(inOrder))}
+          </span>
+          <span
+            aria-hidden="true"
+            data-slot="product-tile-count"
+            className="absolute -top-2 -end-2 flex min-h-6 min-w-6 items-center justify-center rounded-full border border-solid border-strong bg-surface-raised px-1.5 text-xs font-semibold text-primary tabular-nums"
+          >
+            {format.number(inOrder)}
+          </span>
+        </>
       )}
       {props.image !== undefined && (
         <span
