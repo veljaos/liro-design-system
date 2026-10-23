@@ -1,5 +1,13 @@
 import { Check } from 'lucide-react'
-import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
+import {
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type FocusEvent,
+  type KeyboardEvent,
+  type ReactNode,
+} from 'react'
 import { TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import {
@@ -498,18 +506,16 @@ export function Questionnaire(props: QuestionnaireProps) {
   }, [])
 
   // A typed answer's field takes the focus when its question is shown (after the first), so the
-  // user types at once: Enter, then the date, then Enter.
-  const shownStep = useRef(step.kind === 'question' ? step.id : '')
-  useEffect(() => {
-    const id = step.kind === 'question' ? step.id : ''
-    if (id === shownStep.current) return
-    shownStep.current = id
-    if (current !== undefined && TYPED_TYPES.has(current.type)) {
-      item.current
-        ?.querySelector<HTMLInputElement>('input:not([type=hidden]):not(:disabled)')
-        ?.focus()
-    }
-  }, [step, current])
+  // user types at once: Enter, then the date, then Enter. The primitive focuses the question
+  // itself (a fieldset, not in the tab order) once it is registered; for a typed answer that
+  // focus moves on into the field.
+  const typedFocus = (event: FocusEvent<HTMLFieldSetElement>) => {
+    if (event.target !== event.currentTarget) return
+    if (current === undefined || !TYPED_TYPES.has(current.type)) return
+    event.currentTarget
+      .querySelector<HTMLInputElement>('input:not([type=hidden]):not(:disabled)')
+      ?.focus()
+  }
 
   const Heading = `h${String(props.headingLevel ?? 2)}` as 'h2'
   // What Next leads to: another question, the summary ("Review answers") or, without a summary,
@@ -553,6 +559,7 @@ export function Questionnaire(props: QuestionnaireProps) {
         <QuestionnaireItem
           key={current.id}
           ref={item}
+          onFocus={typedFocus}
           name={current.id}
           required={isRequired(current)}
           multiple={current.type === 'multiple'}
