@@ -14,6 +14,7 @@ import { ExampleProvider, expectContentDirection, PhoneFrame, StoryProvider } fr
 import {
   expectBelowShell,
   expectFirstColumnStays,
+  expectGluedWhileJumping,
   scrollUnderShell,
   ShellPage,
 } from './sticky-story-helpers'
@@ -992,5 +993,41 @@ export const UnderTheShell: Story = {
     const amount = table.querySelectorAll('tbody tr')[10]?.querySelector('td:last-child')
     if (amount === null || amount === undefined) throw new Error('no amount cell')
     await expectFirstColumnStays(region, number, amount, 120)
+    // Glued at any speed (P5.90 item 8): large jumps, checked in the very next frame.
+    await expectGluedWhileJumping(canvasElement, region, head)
+  },
+}
+
+/**
+ * The same table on a phone (P5.90 item 8): the page scrolls in its 390px frame, the table keeps
+ * its rows (`layout="table"`) and scrolls sideways; its header stays right below the shell in the
+ * very next frame of every jump.
+ */
+export const UnderTheShellPhone: Story = {
+  name: 'Thirty rows under the shell, phone, interaction',
+  tags: ['interaction'],
+  render: () => (
+    <ShellPage width={390} height={720}>
+      <div className="rounded-md border border-solid border-default bg-surface-raised">
+        <DataTable
+          {...BASE}
+          rows={MANY}
+          inCard
+          layout="table"
+          stickyHeader
+          totals={{ amount: <MoneyText value="102482.10" currency="EUR" /> }}
+          totalsLabel="Total"
+        />
+      </div>
+    </ShellPage>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const table = within(canvasElement).getByRole('table')
+    const head = table.querySelector('thead')
+    const region = table.parentElement
+    if (head === null || region === null) throw new Error('no table parts')
+    await expectGluedWhileJumping(canvasElement, region, head)
+    await expect(region.scrollWidth).toBeGreaterThan(region.clientWidth)
   },
 }

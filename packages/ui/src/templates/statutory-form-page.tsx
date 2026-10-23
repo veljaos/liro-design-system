@@ -503,7 +503,7 @@ function DesktopGrid({ section, context }: { section: StatutorySection; context:
         aria-label={section.title}
         className="w-full border-separate border-spacing-0 font-sans text-sm text-primary"
       >
-        <thead data-sticky-head="" className={cn(STICKY_HEAD, 'z-10')}>
+        <thead data-sticky-head="" className={cn('bg-surface-sunken', STICKY_HEAD, 'z-10')}>
           <tr>
             <th
               scope="col"

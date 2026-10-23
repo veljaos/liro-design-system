@@ -23,6 +23,7 @@ import { StoryProvider } from './story-frames'
 import {
   expectBelowShell,
   expectFirstColumnStays,
+  expectGluedWhileJumping,
   scrollUnderShell,
   ShellPage,
 } from './sticky-story-helpers'
@@ -42,9 +43,12 @@ const meta = {
           'application shows (the line amount). **Keys:** Enter goes to the same column in the ' +
           'next row and adds a row after the last; Shift+Enter goes up; Tab and Shift+Tab move ' +
           'across; while a list is open, Enter chooses. Ctrl+Enter (Cmd on a Mac) inserts a row ' +
-          'below, Ctrl+Delete removes the row. **On phones** each line is a card (fields under ' +
-          'their column labels, "Remove line" at the end), the totals and the balance stay in a ' +
-          'card sticky at the top, and Enter ("next") goes through the line, then the next one. ' +
+          'below, Ctrl+Delete removes the row. **On phones** each line is a card (its title and ' +
+          'remove button, then its fields under their column labels, short ones two to a row), ' +
+          '"Add line" under the cards and the totals and the balance after it, never over a ' +
+          'line; Enter ("next") goes through the line, then the next one. **Simple by default ' +
+          '(P5.90):** a rarely used column (`optional`: a line’s discount) is hidden until a line ' +
+          'uses it or the user adds it from "Add line ▾". ' +
           '**Controlled:** the application keeps the rows, adds and removes them when asked, ' +
           'computes amounts and totals (shown with SettlingValue) and sends errors and warnings, ' +
           'shown under their row.\n\n' +
@@ -444,11 +448,184 @@ export const WithDateAndFooter: Story = {
   ),
 }
 
+// ---- An optional column (P5.90 item 4): a line's discount, shown only when used. ----
+
+interface DiscountedLine extends Line {
+  /** The line's discount in percent, a decimal string, or null. */
+  discount: string | null
+}
+
+/** quantity × price less the discount, as the application computes it (never the grid). */
+const discountedAmount = (line: DiscountedLine): string | null =>
+  line.quantity === null || line.price === null
+    ? null
+    : unscaled(
+        toUnits(line.quantity, 4) *
+          toUnits(line.price, 4) *
+          (10000n - toUnits(line.discount ?? '0', 2)),
+        12,
+      )
+
+const DISCOUNT_COLUMNS: EditableGridColumn<DiscountedLine>[] = [
+  ...COLUMNS.slice(0, 4).filter((column) => column.id !== 'description'),
+  {
+    id: 'discount',
+    header: 'Discount %',
+    type: 'number',
+    width: 110,
+    decimals: 2,
+    value: (line) => line.discount,
+    optional: { addLabel: 'Discount on a line' },
+  },
+  COLUMNS[4] as EditableGridColumn<DiscountedLine>,
+  {
+    id: 'amount',
+    header: 'Amount',
+    type: 'display',
+    width: 130,
+    align: 'end',
+    numeric: true,
+    display: (line) => <NumberText value={discountedAmount(line)} decimals={2} />,
+  },
+]
+
+/** The application of the discount stories: keeps the lines and computes each amount. */
+function DiscountLines({
+  initial,
+  layout,
+}: {
+  initial: DiscountedLine[]
+  layout?: 'desktop' | 'phone'
+}) {
+  const [lines, setLines] = useState(initial)
+  return (
+    <EditableGrid<DiscountedLine>
+      label="Invoice lines"
+      columns={DISCOUNT_COLUMNS}
+      rows={lines}
+      getRowId={(line) => line.id}
+      {...(layout === undefined ? {} : { layout })}
+      onCellChange={(rowId, columnId, value) => {
+        setLines((current) =>
+          current.map((line) => (line.id === rowId ? { ...line, [columnId]: value } : line)),
+        )
+      }}
+      onAddRow={(index) => {
+        setLines((current) => [
+          ...current.slice(0, index),
+          { ...emptyLine(), discount: null },
+          ...current.slice(index),
+        ])
+      }}
+      onRemoveRow={(rowId) => {
+        setLines((current) => current.filter((line) => line.id !== rowId))
+      }}
+    />
+  )
+}
+
+const NO_DISCOUNT: DiscountedLine[] = FILLED.map((line) => ({ ...line, discount: null }))
+const ONE_DISCOUNT: DiscountedLine[] = NO_DISCOUNT.map((line, index) =>
+  index === 1 ? { ...line, discount: '5' } : line,
+)
+
 /**
- * Phone width (P3.6, the old behaviour): each line is a card with its fields stacked under their
- * column labels and "Remove line" at its end; the total and the balance stand in a card sticky at
- * the top, where the operator keeps seeing them; "next" on the on-screen keyboard (Enter) goes
- * through a line's fields, then into the next line.
+ * Simple by default (P5.90 item 4): no line has a discount, so the grid shows no discount column;
+ * "Add line ▾" offers it ("Discount on a line").
+ */
+export const OptionalColumnHidden: Story = {
+  name: 'Optional column, unused',
+  render: () => <DiscountLines initial={NO_DISCOUNT} />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.queryByRole('columnheader', { name: 'Discount %' })).toBeNull()
+    await expect(canvas.getByRole('button', { name: 'More options: Add line' })).toBeVisible()
+    await settle()
+  },
+}
+
+/** A line with a discount: the column is shown, every other line's cell empty. */
+export const OptionalColumnInUse: Story = {
+  name: 'Optional column, in use',
+  render: () => <DiscountLines initial={ONE_DISCOUNT} />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('columnheader', { name: 'Discount %' })).toBeVisible()
+    await expect(canvas.getByRole('textbox', { name: 'Discount %, line 2' })).toHaveValue('5.00')
+    await settle()
+  },
+}
+
+/** The same on a phone: the discount stands among the line's short fields. */
+export const OptionalColumnPhone: Story = {
+  name: 'Optional column, in use, phone width',
+  render: () => (
+    <div className="w-[390px] max-w-full">
+      <DiscountLines initial={ONE_DISCOUNT} layout="phone" />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    await expect(
+      within(canvasElement).getByRole('textbox', { name: 'Discount %, line 2' }),
+    ).toBeVisible()
+    await settle()
+  },
+}
+
+export const OptionalColumnInteraction: Story = {
+  name: 'Optional column, added from the menu, interaction',
+  tags: ['interaction'],
+  render: () => <DiscountLines initial={NO_DISCOUNT} />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.queryByRole('columnheader', { name: 'Discount %' })).toBeNull()
+    // The user works on line 3, then adds the discount from "Add line ▾": the column appears and
+    // line 3's discount takes the focus.
+    await userEvent.click(canvas.getByRole('textbox', { name: 'Quantity, line 3' }))
+    await userEvent.click(canvas.getByRole('button', { name: 'More options: Add line' }))
+    await userEvent.click(
+      await within(document.body).findByRole('menuitem', { name: 'Discount on a line' }),
+    )
+    const discount = await canvas.findByRole('textbox', { name: 'Discount %, line 3' })
+    await waitFor(() => expect(discount).toHaveFocus())
+    await userEvent.keyboard('10{Tab}')
+    // 3 × 6.75 less 10% = 18.225 (the application's figure, never rounded).
+    await waitFor(() => expect(canvasElement).toHaveTextContent('18.225'))
+    // Used now, so it stays; nothing is left to offer, so "Add line" is a plain button again.
+    await expect(canvas.getByRole('columnheader', { name: 'Discount %' })).toBeVisible()
+    await expect(canvas.queryByRole('button', { name: 'More options: Add line' })).toBeNull()
+    await expect(canvas.getByRole('button', { name: 'Add line' })).toBeEnabled()
+    await settle()
+  },
+}
+
+/**
+ * The phone layout's one place for the totals (P5.90 item 3): after the last line and "Add line",
+ * in the flow (never sticky over a line), and nothing wider than the screen.
+ */
+async function expectTotalsAfterLines(canvasElement: HTMLElement) {
+  const totals = canvasElement.querySelector('[data-slot="grid-totals"]')
+  const cards = canvasElement.querySelectorAll('[data-row-key]')
+  const last = cards[cards.length - 1]
+  const add = canvasElement.querySelector('[data-slot="grid-actions"]')
+  if (totals === null || last === undefined || add === null) throw new Error('no phone parts')
+  await expect(getComputedStyle(totals).position).toBe('static')
+  await expect(add.getBoundingClientRect().top).toBeGreaterThanOrEqual(
+    last.getBoundingClientRect().bottom - 1,
+  )
+  await expect(totals.getBoundingClientRect().top).toBeGreaterThanOrEqual(
+    add.getBoundingClientRect().bottom - 1,
+  )
+  const grid = canvasElement.querySelector('[data-slot="editable-grid"]')
+  await expect(grid === null ? 1 : grid.scrollWidth - grid.clientWidth).toBeLessThanOrEqual(0)
+}
+
+/**
+ * Phone width (P5.90 item 3): each line is a card — "Line 1" and its remove button, the fields
+ * under their column labels (the item and the description across, the short ones two to a row),
+ * the amount as a label and a value; "Add line" under the cards and the total and the balance in
+ * one place after it, never over a line; "next" on the on-screen keyboard (Enter) goes through a
+ * line's fields, then into the next line.
  */
 export const Phone: Story = {
   name: 'Phone width',
@@ -462,8 +639,7 @@ export const Phone: Story = {
     </div>
   ),
   play: async ({ canvasElement }) => {
-    const totals = canvasElement.querySelector('[data-slot="grid-totals"]')
-    await expect(totals === null ? '' : getComputedStyle(totals).position).toBe('sticky')
+    await expectTotalsAfterLines(canvasElement)
     await settle()
   },
 }
@@ -482,8 +658,7 @@ export const PhoneInteraction: Story = {
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const totals = canvasElement.querySelector('[data-slot="grid-totals"]')
-    await expect(totals === null ? '' : getComputedStyle(totals).position).toBe('sticky')
+    await expectTotalsAfterLines(canvasElement)
     await userEvent.click(canvas.getByRole('textbox', { name: 'Description, line 1' }))
     await userEvent.keyboard('{Enter}')
     await expect(canvas.getByRole('textbox', { name: 'Quantity, line 1' })).toHaveFocus()
@@ -1418,10 +1593,17 @@ export const UnderTheShell: Story = {
       throw new Error('no cells')
     }
     await expectFirstColumnStays(region, first, last, 120)
+    // Glued at any speed (P5.90 item 8): large jumps, checked in the very next frame.
+    const head = table.querySelector('thead')
+    if (head === null) throw new Error('no header')
+    await expectGluedWhileJumping(canvasElement, region, head)
   },
 }
 
-/** A phone: the page scrolls in its frame; the totals card stays right below the shell. */
+/**
+ * A phone (P5.90 item 3): the page scrolls in its frame; the cards follow each other and the
+ * totals stand after them and "Add line", never over a line, wherever the page is scrolled.
+ */
 export const UnderTheShellPhone: Story = {
   name: 'Thirty lines under the shell, phone, interaction',
   tags: ['interaction'],
@@ -1434,7 +1616,15 @@ export const UnderTheShellPhone: Story = {
     await settle()
     const totals = canvasElement.querySelector('[data-slot="grid-totals"]')
     if (totals === null) throw new Error('no totals')
-    await scrollUnderShell(canvasElement, totals, 600)
-    await expectBelowShell(canvasElement, totals)
+    const cards = [...canvasElement.querySelectorAll('[data-row-key]')]
+    for (const past of [-400, 600]) {
+      await scrollUnderShell(canvasElement, totals, past)
+      const box = totals.getBoundingClientRect()
+      for (const card of cards) {
+        const line = card.getBoundingClientRect()
+        await expect(line.bottom <= box.top + 1 || line.top >= box.bottom - 1).toBe(true)
+      }
+    }
+    await expectTotalsAfterLines(canvasElement)
   },
 }

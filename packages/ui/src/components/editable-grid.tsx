@@ -18,13 +18,15 @@ import { TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 import { ActionButton } from './actions'
-import { CompactIconButton } from './button'
+import { CompactIconButton, IconButton } from './button'
 import { ComboboxField, type ComboboxOption } from './combobox-field'
 import { DateField } from './date-field'
 import { ariaRowIndexes, VIRTUALIZE_FROM } from './editable-grid-window'
 import {
+  cellHasValue,
   gridKeyAction,
   orderMessages,
+  shownColumns,
   type GridAction,
   type GridDetail,
   type GridMessage,
@@ -66,8 +68,8 @@ import { HEAVY_ROW_OVERSCAN, keepFocusedRow, overscanRows, spacersBetween } from
  * - Cells are always fields, as in the old grid: the Design System's own fields (TextField,
  *   NumberField, SelectField, ComboboxField, DateField, LookupField) without their frames, inside
  *   a table with 1px border.default lines, the header on surface.sunken, 4px cell padding,
- *   numbers at the end with tabular digits. The focused cell: an inset 1px border.focus line and
- *   surface.hover (not the old blue surface.selected: blue is for actions and focus). A 44px end
+ *   numbers at the end with tabular digits. The focused cell: the 2px focus ring inside its lines
+ *   (P5.90; before, an inset 1px border.focus line on surface.hover). A 44px end
  *   column holds the row's remove (×) button. The frames are taken off in styles.css ("grid-cell").
  * - Enter: the same column, next row; on the last row a new row. Shift+Enter: previous row. Tab
  *   and Shift+Tab: the browser's order. While a cell's option list is open, Enter chooses and does
@@ -82,24 +84,29 @@ import { HEAVY_ROW_OVERSCAN, keepFocusedRow, overscanRows, spacersBetween } from
  * - Totals from props, shown with SettlingValue, under a 2px border.strong line. Nothing is
  *   computed: the application sums, checks the balance and sends the messages.
  *
- * On phones (below 48em; P3.6, owner: the old behaviour — a table scrolling sideways is not usable
+ * On phones (below 48em; P3.6, rebuilt in P5.90 item 3 — a table scrolling sideways is not usable
  * there):
- * - every line is a card (border.default, radius md, padding sm) with its fields stacked, each
- *   under its column's label (xs, text.tertiary, 2px gap), the line's messages under the fields,
- *   and an xs "Remove line" button (Trash2, destructive family, menu weight) at the card's end;
- * - the totals and the footer (the balance) stand in a card sticky at the TOP (raised, border,
- *   radius md, padding xs): the balance is the number the operator watches, and a long entry
- *   would push a total at the bottom below the screen;
- * - "Add line" under the cards, without the shortcut hints (no hardware keyboard); the on-screen
- *   keyboard's "next" goes through a line's fields, then to the next line.
+ * - every line is a card (border.default, radius md, padding sm; in a card a flat list with
+ *   dividers): its title ("Line 3", or the line type) with its remove button (Trash2, 36px), then
+ *   its fields under their column labels — text and searches across the card, short fields two to
+ *   a row —, its values as a label and a value, its messages;
+ * - "Add line" under the cards, without the shortcut hints (no hardware keyboard); the totals and
+ *   the footer (the balance) in one place after it, never over a line (the old card sticky at the
+ *   top covered the lines);
+ * - the on-screen keyboard's "next" goes through a line's fields, then to the next line.
  *
  * P4.9 (the owner's review):
  * - "Add line" is a normal button — the default neutral look (raised, border.default) at the
  *   normal 36px size and padding with the Plus icon — not a small tinted one.
  * - `inCard` (a document's lines card, as DataTable's): no card inside a card. On desktop the
- *   grid keeps md (16px) from the card's edges; on phones the lines are a flat list with 1px
- *   border.subtle dividers, padded md at the sides, and the totals a sticky bar with a line under
- *   it instead of a card.
+ *   grid is flush with the card's edges as every table (P5.90 item 2), "Add line" in a bar under
+ *   it; on phones the lines are a flat list with 1px border.subtle dividers, padded md at the
+ *   sides, and the totals after "Add line" under a line.
+ *
+ * P5.90 (the owner's review): one look for every cell — separate 1px border.default lines drawn
+ * once (bottom and end), 36px rows, the header on surface.sunken as one sticky band; one focus
+ * style, the library's 2px focus ring round the cell; optional columns (`optional`: a line's
+ * discount) shown only while used or once added from "Add line ▾".
  *
  * P5.18 (complex documents) and P5.19 (catalogues at scale):
  * - Line types (`getRowType`, components/line-types.ts), told apart by typography, never colour:
@@ -185,6 +192,13 @@ interface ColumnBase<Row> {
   width?: number
   /** The cell cannot be changed in this row (shown as plain text, not disabled). */
   readOnly?: (row: Row) => boolean
+  /**
+   * A column hidden until it is used (P5.90 item 4, simplicity first), such as a line's discount:
+   * shown while some line uses it — `used`, by default a value in the cell — or once the user
+   * chose `addLabel` from "Add line ▾" (its cell on the line last worked on then takes the focus).
+   * Without `addLabel` it appears only when a line uses it (an account only a one-off line needs).
+   */
+  optional?: { addLabel?: string; used?: (row: Row) => boolean }
 }
 
 /** "+ Create …" from a lookup column: what the panel offers and how the application saves. */
@@ -341,18 +355,17 @@ export interface EditableGridProps<Row> {
   className?: string
 }
 
-/** Literal classes, so Tailwind finds them. */
-const CELL_BORDER = 'border border-solid border-default'
-
 /*
- * The grid's lines are collapsed borders, which the table draws where the cells were: a sticky
- * cell that moves leaves them behind (P5.28 item 4). The header redraws its top and bottom lines as
- * shadows, which move with it; the sticky first column redraws its end line.
+ * The grid's lines (P5.90 item 2): every cell draws its bottom and end line (separate borders, no
+ * spacing), the row's last cell no end line, so each line is drawn once, aligned through every row,
+ * and moves with its cell — the sticky header and first column carry theirs. The frame is the
+ * card's (`inCard`, flush as every table) or the region's own border. Every row is 36px: a 28px
+ * field in 4px of padding, a value or the header's text on the same middle line (border-box: the
+ * package ships no reset, and a content-box cell of 36px grew by its padding).
  */
-const MOVING_HEAD_LINES =
-  'shadow-[0_-1px_0_var(--liro-border-default),0_1px_0_var(--liro-border-default)]'
-const MOVING_END_LINE =
-  "after:pointer-events-none after:absolute after:inset-y-0 after:-end-px after:border-0 after:border-e after:border-solid after:border-default after:content-['']"
+const CELL_BORDER = 'box-border border-0 border-e border-b border-solid border-default'
+/** The row's last cell (the remove column) draws no end line. */
+const LAST_CELL = '[&_tr>*:last-child]:border-e-0'
 const MESSAGE_TONE = {
   danger: { text: 'text-status-danger-fg', Icon: CircleAlert },
   warning: { text: 'text-status-warning-fg', Icon: TriangleAlert },
@@ -729,7 +742,7 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
   // stays at the start while the lines scroll sideways (P5.28 item 4).
   const region = useRef<HTMLDivElement>(null)
   useStickyHead(region, !phone)
-  const stickyFirst = inCard ? cn(STICKY_START, 'z-[5]', MOVING_END_LINE) : undefined
+  const stickyFirst = inCard ? cn(STICKY_START, 'z-[5]') : undefined
   const idBase = useId()
   const pending = useRef<{ row: number; column: number } | null>(null)
   const [unreadable, setUnreadable] = useState<Readonly<Record<string, boolean>>>({})
@@ -780,7 +793,22 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
       setCreateOpen(true)
     },
   }))
-  const { rows, columns } = props
+  const { rows } = props
+  // Optional columns (P5.90 item 4): shown while a line uses them, or once the user added one
+  // from "Add line ▾"; that column's cell then takes the focus.
+  const [revealed, setRevealed] = useState<ReadonlySet<string>>(() => new Set<string>())
+  const revealing = useRef<string | null>(null)
+  const columns = shownColumns(
+    props.columns,
+    (column) =>
+      rows.some(
+        (row) => column.optional?.used?.(row) ?? cellHasValue(cellValues(column, row).value),
+      ),
+    revealed,
+  )
+  const addableColumns = props.columns.filter(
+    (column) => column.optional?.addLabel !== undefined && !columns.includes(column),
+  )
   const editable = columns.filter(isEditable)
   const minRows = props.minRows ?? 1
   const canAdd = props.maxRows === undefined || rows.length < props.maxRows
@@ -822,12 +850,32 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
     focusCellIn(rootRef.current, target.row, target.column)
   }, [lineCount])
 
+  // An optional column just added: its cell on the line last worked on (else the first full line)
+  // takes the focus.
+  useEffect(() => {
+    const columnId = revealing.current
+    if (columnId === null) return
+    revealing.current = null
+    const current = latest.current
+    const first = current.rows.findIndex((row) => (current.getRowType?.(row) ?? 'line') === 'line')
+    for (const row of [lastRow.current, first]) {
+      const target = rootRef.current
+        ?.querySelector(`[data-grid-row="${String(row)}"][data-column-id="${columnId}"]`)
+        ?.querySelector<HTMLElement>(FOCUSABLE)
+      if (target === null || target === undefined) continue
+      target.focus()
+      return
+    }
+  }, [revealed])
+
   // The cell that has the focus, kept while the layout changes between the table and the cards
   // (a resize across 48em, a rotated tablet): the old cell's field leaves the page with the focus,
   // and the same cell of the new layout takes it back, with the same selection. A focus anywhere
   // else forgets it. In a full line, its column is also the one Enter keeps (`preferred`).
   const focused = useRef<{ row: number; column: number; element: Element } | null>(null)
   const preferred = useRef(0)
+  // The line last worked on, kept while the focus is elsewhere (in a menu).
+  const lastRow = useRef<number | null>(null)
   // The focused line, which a long grid always draws (with its neighbours).
   const [focusRow, setFocusRow] = useState<number | null>(null)
   useEffect(() => {
@@ -843,6 +891,7 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
       const row = Number(cell.getAttribute('data-grid-row'))
       const column = Number(cell.getAttribute('data-grid-column'))
       focused.current = { row, column, element: target }
+      lastRow.current = row
       setFocusRow(row)
       if (cell.getAttribute('data-grid-span') === null) preferred.current = column
     }
@@ -1138,12 +1187,34 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
   const firstDisplay = columns.findIndex((column) => column.type === 'display')
   const labelSpan = firstDisplay <= 0 ? columns.length : firstDisplay
 
+  // The row before a subtotal (its notes row, if any) draws the border.strong rule above it.
+  const beforeSubtotal = new Set<string>()
+  rows.forEach((row, index) => {
+    const next = rows[index + 1]
+    if (next !== undefined && rowType(next) === 'subtotal') beforeSubtotal.add(props.getRowId(row))
+  })
+  const ruleUnder = (rowId: string, hasNotes: boolean, notesRow: boolean) =>
+    beforeSubtotal.has(rowId) && hasNotes === notesRow ? '[&>td]:border-b-strong' : undefined
+
   const table = () => (
-    <div ref={region} className={cn('overflow-x-auto', STICKY_CLEARANCE)}>
+    <div
+      ref={region}
+      className={cn(
+        'overflow-x-auto',
+        // Flush in its card as every table (P5.90 item 2); on its own, the region is the frame.
+        !inCard && 'rounded-md border border-solid border-default bg-surface-raised',
+        STICKY_CLEARANCE,
+      )}
+    >
       <table
         aria-label={props.label}
         {...(aria === undefined ? {} : { 'aria-rowcount': aria.count })}
-        className="w-full table-fixed border-collapse text-sm"
+        className={cn(
+          'w-full table-fixed border-separate border-spacing-0 text-sm',
+          LAST_CELL,
+          // The totals' line, the card's or the frame's closes the last line.
+          '[&>tbody>tr:last-child>td]:border-b-0',
+        )}
         style={{ minWidth }}
       >
         <colgroup>
@@ -1155,7 +1226,7 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
           ))}
           <col style={{ width: 44 }} />
         </colgroup>
-        <thead data-sticky-head="">
+        <thead data-sticky-head="" className={cn('bg-surface-sunken', STICKY_HEAD, 'z-10')}>
           <tr {...(aria === undefined ? {} : { 'aria-rowindex': 1 })}>
             {columns.map((column, index) => (
               <th
@@ -1164,10 +1235,8 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
                 {...(index === 0 ? { 'data-sticky-start': '' } : {})}
                 className={cn(
                   CELL_BORDER,
-                  STICKY_HEAD,
-                  MOVING_HEAD_LINES,
-                  index === 0 && inCard ? ['start-0 z-20', MOVING_END_LINE] : 'z-10',
-                  'bg-surface-sunken px-2 py-2 align-bottom font-semibold break-words',
+                  index === 0 && inCard && [STICKY_START, 'z-20'],
+                  'h-9 bg-surface-sunken px-2 py-2 align-middle font-semibold break-words',
                   column.type === 'number' || (column.type === 'display' && column.align === 'end')
                     ? 'text-end'
                     : 'text-start',
@@ -1176,9 +1245,7 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
                 <span className={TEXT_ISOLATE}>{column.header}</span>
               </th>
             ))}
-            <td
-              className={cn(CELL_BORDER, STICKY_HEAD, MOVING_HEAD_LINES, 'z-10 bg-surface-sunken')}
-            />
+            <td className={cn(CELL_BORDER, 'bg-surface-sunken')} />
           </tr>
         </thead>
         <tbody ref={setBody}>
@@ -1187,6 +1254,7 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
           {shown.flatMap(({ row, rowIndex, before }) => {
             const type = rowType(row)
             const { rowId, notes, describedBy } = rowParts(row)
+            const hasNotes = notes.length > 0
             // The lines not drawn before this one.
             const spacer =
               before > 0 ? (
@@ -1201,19 +1269,19 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
             const index = aria?.indexes[rowIndex]
             const rowAria = (extra = 0) =>
               index === undefined ? {} : { 'aria-rowindex': index + extra }
-            const notesRow =
-              notes.length > 0 ? (
-                <tr
-                  key={`${rowId}-messages`}
-                  data-slot="grid-messages"
-                  data-row-key={rowId}
-                  {...rowAria(1)}
-                >
-                  <td colSpan={columns.length + 1} className={cn(CELL_BORDER, 'px-2 py-1')}>
-                    <NoteList notes={notes} />
-                  </td>
-                </tr>
-              ) : null
+            const notesRow = hasNotes ? (
+              <tr
+                key={`${rowId}-messages`}
+                data-slot="grid-messages"
+                data-row-key={rowId}
+                className={ruleUnder(rowId, true, true)}
+                {...rowAria(1)}
+              >
+                <td colSpan={columns.length + 1} className={cn(CELL_BORDER, 'px-2 py-1')}>
+                  <NoteList notes={notes} />
+                </td>
+              </tr>
+            ) : null
             if (type === 'subtotal') {
               return [
                 spacer,
@@ -1222,13 +1290,14 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
                   data-row-id={rowId}
                   data-row-key={rowId}
                   data-row-type={type}
+                  className={ruleUnder(rowId, hasNotes, false)}
                   {...rowAria()}
                 >
                   <td
                     colSpan={labelSpan}
                     className={cn(
                       CELL_BORDER,
-                      'border-t-strong px-2 py-2 text-end font-semibold break-words',
+                      'h-9 px-2 py-1 text-end align-middle font-semibold break-words',
                     )}
                   >
                     <span className={TEXT_ISOLATE}>{props.lineText?.value(row)}</span>
@@ -1238,7 +1307,7 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
                       key={column.id}
                       className={cn(
                         CELL_BORDER,
-                        'border-t-strong px-2 py-2 align-middle font-semibold break-words',
+                        'h-9 px-2 py-1 align-middle font-semibold break-words',
                         column.type === 'display' && column.align === 'end'
                           ? 'text-end'
                           : 'text-start',
@@ -1248,7 +1317,7 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
                       {column.type === 'display' ? column.display(row) : null}
                     </td>
                   ))}
-                  <td className={cn(CELL_BORDER, 'border-t-strong')} />
+                  <td className={CELL_BORDER} />
                 </tr>,
                 notesRow,
               ]
@@ -1261,6 +1330,7 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
                 data-row-id={rowId}
                 data-row-key={rowId}
                 data-row-type={type}
+                className={ruleUnder(rowId, hasNotes, false)}
                 {...rowAria()}
               >
                 {span !== undefined ? (
@@ -1274,7 +1344,7 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
                     data-align="start"
                     className={cn(
                       CELL_BORDER,
-                      'p-1 align-middle',
+                      'h-9 p-1 align-middle',
                       SPAN_TEXT[span === spanColumns?.text ? 'text' : 'heading'],
                     )}
                     {...cellKeys(rowIndex, 0)}
@@ -1290,10 +1360,11 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
                         return (
                           <td
                             key={column.id}
+                            data-column-id={column.id}
                             className={cn(
                               CELL_BORDER,
                               first && [stickyFirst, 'bg-surface-raised'],
-                              'px-2 py-1 align-middle break-words',
+                              'h-9 px-2 py-1 align-middle break-words',
                               column.align === 'end' ? 'text-end' : 'text-start',
                               column.numeric === true && 'tabular-nums',
                             )}
@@ -1315,7 +1386,7 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
                           className={cn(
                             CELL_BORDER,
                             first && [stickyFirst, 'bg-surface-raised'],
-                            'p-1 align-middle',
+                            'h-9 p-1 align-middle',
                           )}
                           {...cellKeys(rowIndex, at)}
                         >
@@ -1325,7 +1396,7 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
                     })
                   })()
                 )}
-                <td className={cn(CELL_BORDER, 'p-1 text-center align-middle')}>
+                <td className={cn(CELL_BORDER, 'h-9 p-1 text-center align-middle')}>
                   <CompactIconButton
                     intent="cancel"
                     label={removeLabel(rowIndex)}
@@ -1350,7 +1421,7 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
           )}
         </tbody>
         {hasTotals && (
-          <tfoot>
+          <tfoot className="bg-surface-sunken">
             <tr {...(aria === undefined ? {} : { 'aria-rowindex': aria.count })}>
               {columns.map((column, index) => {
                 const total = props.totals?.[column.id]
@@ -1360,7 +1431,8 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
                     className={cn(
                       CELL_BORDER,
                       index === 0 && stickyFirst,
-                      'border-t-2 border-t-strong bg-surface-sunken px-2 py-2 font-semibold',
+                      // The line above the totals, from the last row's place (P5.90 item 2).
+                      'h-9 border-t-2 border-b-0 border-t-strong bg-surface-sunken px-2 py-1 align-middle font-semibold',
                       total === undefined ? 'text-start' : 'text-end',
                     )}
                   >
@@ -1375,7 +1447,12 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
                   </td>
                 )
               })}
-              <td className={cn(CELL_BORDER, 'border-t-2 border-t-strong bg-surface-sunken')} />
+              <td
+                className={cn(
+                  CELL_BORDER,
+                  'border-t-2 border-b-0 border-t-strong bg-surface-sunken',
+                )}
+              />
             </tr>
           </tfoot>
         )}
@@ -1396,16 +1473,20 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
       extra,
     )
 
-  const removeButton = (rowIndex: number) => (
-    <div className="flex justify-end">
-      <ActionButton
-        small
-        action={{
-          family: 'destructive',
-          icon: Trash2,
-          emphasis: 'menu',
-          label: removeLabel(rowIndex),
-        }}
+  /** A card's first row: what the line is ("Line 3", "Section heading") and its remove button. */
+  const cardHeader = (rowIndex: number, title: string) => (
+    <div className="flex min-h-9 items-center justify-between gap-3">
+      <span
+        aria-hidden="true"
+        className={cn('text-xs font-semibold text-secondary', TEXT_DIRECTION)}
+      >
+        {title}
+      </span>
+      <IconButton
+        family="destructive"
+        icon={Trash2}
+        emphasis="menu"
+        label={removeLabel(rowIndex)}
         disabled={!canRemove}
         onClick={() => {
           removeRow(rowIndex)
@@ -1414,131 +1495,51 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
     </div>
   )
 
+  /**
+   * A field that takes the card's full width on phones (P5.90 item 3): text and searches, and any
+   * column the application made wide; the short ones (numbers, units, tax categories) stand two to
+   * a row.
+   */
+  const wideOnPhone = (column: EditableGridColumn<Row>) =>
+    column.type === 'text' ||
+    column.type === 'lookup' ||
+    column.type === 'combobox' ||
+    (column.width ?? 0) >= 160
+
+  /** The label over a field in a card: the field's own name is "Quantity, line 3" (screen readers). */
+  const cardLabel = (text: string) => (
+    <span aria-hidden="true" className={cn('text-xs text-secondary', TEXT_DIRECTION)}>
+      {text}
+    </span>
+  )
+
+  /*
+   * Phones (P5.90 item 3): one card per line — its title and remove button, then its fields under
+   * their labels (wide ones across, short ones two to a row), its values as label and value, its
+   * notes; "Add line" under the cards and the totals after it, in one place that never covers a
+   * line.
+   */
   const cards = () => (
-    <>
-      {(hasTotals || props.footer !== undefined) && (
-        <div
-          data-slot="grid-totals"
-          className={cn(
-            // Below the shell's sticky top (P5.28 item 4), as every sticky part of a page.
-            'sticky top-[var(--liro-shell-top,0px)] z-(--liro-layer-sticky) flex flex-col gap-1 bg-surface-raised text-sm',
-            inCard
-              ? 'border-0 border-b border-solid border-default px-4 py-2'
-              : 'rounded-md border border-solid border-default p-2',
-          )}
-        >
-          {props.totalsLabel !== undefined && (
-            <span className={cn('text-xs font-semibold text-secondary', TEXT_DIRECTION)}>
-              {props.totalsLabel}
-            </span>
-          )}
-          {hasTotals && (
-            <dl className="m-0 flex flex-col gap-1">
-              {columns.map((column) => {
-                const total = props.totals?.[column.id]
-                if (total === undefined) return null
-                return (
-                  <div key={column.id} className="flex items-baseline justify-between gap-4">
-                    <dt className={cn('text-secondary', TEXT_DIRECTION)}>{column.header}</dt>
-                    <dd className="m-0 font-semibold">
-                      <Total
-                        total={total}
-                        since={{ since: pendingSince, widest: totalWidths, key: column.id }}
-                      />
-                    </dd>
-                  </div>
-                )
-              })}
-            </dl>
-          )}
-          {props.footer !== undefined && <div className={TEXT_DIRECTION}>{props.footer}</div>}
-        </div>
-      )}
-      <ul
-        ref={setBody}
-        aria-label={props.label}
-        className={cn('m-0 flex list-none flex-col p-0', !inCard && 'gap-3')}
-      >
-        {shown.flatMap(({ row, rowIndex, before }) => {
-          const type = rowType(row)
-          const { rowId, notes, describedBy } = rowParts(row)
-          // The cards not drawn before this one; the list's gap follows the spacer.
-          const spacer =
-            before > 0 ? (
-              <li
-                key={`${rowId}-spacer`}
-                aria-hidden="true"
-                data-slot="grid-spacer"
-                style={{ height: Math.max(0, before - gap) }}
-              />
-            ) : null
-          if (type === 'subtotal') {
-            // The text and the amounts, semibold, with the rule above (no field, no remove).
-            return [
-              spacer,
-              <li
-                key={rowId}
-                data-row-id={rowId}
-                data-row-key={rowId}
-                data-row-type={type}
-                {...cardAria(rowIndex)}
-                className={cardClass('gap-1 border-t border-t-strong text-sm font-semibold')}
-              >
-                <span className={cn('text-end', TEXT_DIRECTION)}>{props.lineText?.value(row)}</span>
-                {columns.map((column) =>
-                  column.type === 'display' ? (
-                    <div
-                      key={column.id}
-                      className="flex items-baseline justify-between gap-4 font-semibold"
-                    >
-                      <span className={cn('text-xs text-tertiary', TEXT_DIRECTION)}>
-                        {column.header}
-                      </span>
-                      <span className={cn(column.numeric === true && 'tabular-nums')}>
-                        {column.display(row)}
-                      </span>
-                    </div>
-                  ) : null,
-                )}
-                {notes.length > 0 && <NoteList notes={notes} />}
-              </li>,
-            ]
-          }
-          const span = type === 'text' || type === 'heading' ? spanColumns?.[type] : undefined
-          if (span !== undefined) {
-            return [
-              spacer,
-              <li
-                key={rowId}
-                data-row-id={rowId}
-                data-row-key={rowId}
-                data-row-type={type}
-                {...cardAria(rowIndex)}
-                className={cardClass()}
-              >
-                <div
-                  data-slot="grid-card-cell"
-                  data-grid-row={rowIndex}
-                  data-grid-column={0}
-                  data-grid-span=""
-                  data-column-id={span.id}
-                  className={cn(
-                    'flex flex-col gap-0.5',
-                    SPAN_TEXT[span === spanColumns?.text ? 'text' : 'heading'],
-                  )}
-                  {...cellKeys(rowIndex, 0)}
-                >
-                  <span aria-hidden="true" className={cn('text-xs text-tertiary', TEXT_DIRECTION)}>
-                    {span.header}
-                  </span>
-                  {editor(span, row, rowIndex, describedBy)}
-                </div>
-                {notes.length > 0 && <NoteList notes={notes} />}
-                {removeButton(rowIndex)}
-              </li>,
-            ]
-          }
-          let editIndex = -1
+    <ul
+      ref={setBody}
+      aria-label={props.label}
+      className={cn('m-0 flex list-none flex-col p-0', !inCard && 'gap-3')}
+    >
+      {shown.flatMap(({ row, rowIndex, before }) => {
+        const type = rowType(row)
+        const { rowId, notes, describedBy } = rowParts(row)
+        // The cards not drawn before this one; the list's gap follows the spacer.
+        const spacer =
+          before > 0 ? (
+            <li
+              key={`${rowId}-spacer`}
+              aria-hidden="true"
+              data-slot="grid-spacer"
+              style={{ height: Math.max(0, before - gap) }}
+            />
+          ) : null
+        if (type === 'subtotal') {
+          // The text and the amounts, semibold, with the rule above (no field, no remove).
           return [
             spacer,
             <li
@@ -1547,16 +1548,84 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
               data-row-key={rowId}
               data-row-type={type}
               {...cardAria(rowIndex)}
-              className={cardClass()}
+              className={cardClass('gap-1 border-t border-t-strong text-sm font-semibold')}
             >
+              <span className={cn('text-end', TEXT_DIRECTION)}>{props.lineText?.value(row)}</span>
+              {columns.map((column) =>
+                column.type === 'display' ? (
+                  <div key={column.id} className="flex items-baseline justify-between gap-4">
+                    <span className={cn('text-xs text-secondary', TEXT_DIRECTION)}>
+                      {column.header}
+                    </span>
+                    <span className={cn(column.numeric === true && 'tabular-nums')}>
+                      {column.display(row)}
+                    </span>
+                  </div>
+                ) : null,
+              )}
+              {notes.length > 0 && <NoteList notes={notes} />}
+            </li>,
+          ]
+        }
+        const span = type === 'text' || type === 'heading' ? spanColumns?.[type] : undefined
+        if (span !== undefined) {
+          return [
+            spacer,
+            <li
+              key={rowId}
+              data-row-id={rowId}
+              data-row-key={rowId}
+              data-row-type={type}
+              {...cardAria(rowIndex)}
+              className={cardClass('gap-2')}
+            >
+              {cardHeader(rowIndex, span.header)}
+              <div
+                data-slot="grid-card-cell"
+                data-grid-row={rowIndex}
+                data-grid-column={0}
+                data-grid-span=""
+                data-column-id={span.id}
+                className={SPAN_TEXT[span === spanColumns?.text ? 'text' : 'heading']}
+                {...cellKeys(rowIndex, 0)}
+              >
+                {editor(span, row, rowIndex, describedBy)}
+              </div>
+              {notes.length > 0 && <NoteList notes={notes} />}
+            </li>,
+          ]
+        }
+        let editIndex = -1
+        return [
+          spacer,
+          <li
+            key={rowId}
+            data-row-id={rowId}
+            data-row-key={rowId}
+            data-row-type={type}
+            {...cardAria(rowIndex)}
+            className={cardClass('gap-2')}
+          >
+            {cardHeader(
+              rowIndex,
+              messages['grid.line'](rowIndex + 1, format.number(String(rowIndex + 1))),
+            )}
+            <div className="grid grid-cols-2 gap-x-3 gap-y-3">
               {columns.map((column) => {
                 if (column.type === 'display') {
                   return (
-                    <div key={column.id} className="flex flex-col gap-0.5">
-                      <span className={cn('text-xs text-tertiary', TEXT_DIRECTION)}>
-                        {column.header}
-                      </span>
-                      <div className={cn('text-sm', column.numeric === true && 'tabular-nums')}>
+                    <div
+                      key={column.id}
+                      data-column-id={column.id}
+                      className="col-span-2 flex min-w-0 items-baseline justify-between gap-4"
+                    >
+                      {cardLabel(column.header)}
+                      <div
+                        className={cn(
+                          'min-w-0 text-end text-sm font-semibold',
+                          column.numeric === true && 'tabular-nums',
+                        )}
+                      >
                         {column.display(row)}
                       </div>
                     </div>
@@ -1571,35 +1640,76 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
                     data-grid-row={rowIndex}
                     data-grid-column={at}
                     data-column-id={column.id}
-                    className="flex flex-col gap-0.5"
+                    className={cn(
+                      'flex min-w-0 flex-col gap-1',
+                      wideOnPhone(column) && 'col-span-2',
+                    )}
                     {...cellKeys(rowIndex, at)}
                   >
-                    {/* The field's own name is "Quantity, line 3" (screen readers); this is the visible one. */}
-                    <span
-                      aria-hidden="true"
-                      className={cn('text-xs text-tertiary', TEXT_DIRECTION)}
-                    >
-                      {column.header}
-                    </span>
+                    {cardLabel(column.header)}
                     {editor(column, row, rowIndex, describedBy)}
                   </div>
                 )
               })}
-              {notes.length > 0 && <NoteList notes={notes} />}
-              {removeButton(rowIndex)}
-            </li>,
-          ]
-        })}
-        {spacers.after > 0 && (
-          <li
-            aria-hidden="true"
-            data-slot="grid-spacer"
-            style={{ height: Math.max(0, spacers.after - gap) }}
-          />
-        )}
-      </ul>
-    </>
+            </div>
+            {notes.length > 0 && <NoteList notes={notes} />}
+          </li>,
+        ]
+      })}
+      {spacers.after > 0 && (
+        <li
+          aria-hidden="true"
+          data-slot="grid-spacer"
+          style={{ height: Math.max(0, spacers.after - gap) }}
+        />
+      )}
+    </ul>
   )
+
+  /** The totals' rows on phones: one total with `totalsLabel` reads as that label and its amount. */
+  const totalEntries = columns.flatMap((column) => {
+    const total = props.totals?.[column.id]
+    return total === undefined ? [] : [{ column, total }]
+  })
+  const singleTotal = totalEntries.length === 1 && props.totalsLabel !== undefined
+
+  /** On phones, the totals and the footer (a balance) in one place after the lines (P5.90 item 3). */
+  const phoneTotals = () =>
+    hasTotals || props.footer !== undefined ? (
+      <div
+        data-slot="grid-totals"
+        className={cn(
+          'flex flex-col gap-2 text-sm',
+          inCard
+            ? 'border-0 border-t border-solid border-default px-4 pt-3'
+            : 'rounded-md border border-solid border-default bg-surface-sunken p-3',
+        )}
+      >
+        {!singleTotal && props.totalsLabel !== undefined && hasTotals && (
+          <span className={cn('text-xs font-semibold text-secondary', TEXT_DIRECTION)}>
+            {props.totalsLabel}
+          </span>
+        )}
+        {hasTotals && (
+          <dl className="m-0 flex flex-col gap-1">
+            {totalEntries.map(({ column, total }) => (
+              <div key={column.id} className="flex items-baseline justify-between gap-4">
+                <dt className={cn('text-secondary', TEXT_DIRECTION)}>
+                  {singleTotal ? props.totalsLabel : column.header}
+                </dt>
+                <dd className="m-0 font-semibold">
+                  <Total
+                    total={total}
+                    since={{ since: pendingSince, widest: totalWidths, key: column.id }}
+                  />
+                </dd>
+              </div>
+            ))}
+          </dl>
+        )}
+        {props.footer !== undefined && <div className={TEXT_DIRECTION}>{props.footer}</div>}
+      </div>
+    ) : null
 
   const addTypes = props.addTypes ?? []
   const addTypeLabel: Record<AddableLineType, string> = {
@@ -1611,6 +1721,23 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
   const addLine = (type: LineType) => {
     run({ type: 'add', at: rows.length, column: 0 }, type)
   }
+  // "Add line ▾" (P5.90 item 4): the plain line is the button; the rarer line types and the
+  // optional columns not shown yet are its menu.
+  const addEntries = [
+    ...addTypes.map((type) => ({
+      label: addTypeLabel[type],
+      onSelect: () => {
+        addLine(type)
+      },
+    })),
+    ...addableColumns.map((column) => ({
+      label: column.optional?.addLabel ?? column.header,
+      onSelect: () => {
+        revealing.current = column.id
+        setRevealed((current) => new Set(current).add(column.id))
+      },
+    })),
+  ]
 
   // "+ Create …": the panel for the line it was chosen in.
   const createColumn =
@@ -1623,20 +1750,22 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
       data-slot="editable-grid"
       data-grid-direction={direction}
       className={cn(
-        'flex min-w-0 flex-col gap-2 font-sans text-primary',
-        inCard && (phone ? 'gap-3 pb-4' : 'gap-3 p-4'),
+        'flex min-w-0 flex-col font-sans text-primary',
+        // In a card the table is flush with its edges (P5.90 item 2), the bar under it padded.
+        inCard ? (phone ? 'gap-3 pb-4' : 'gap-0') : phone ? 'gap-3' : 'gap-2',
         props.className,
       )}
     >
       <LineNumbers.Provider value={lineNumbers}>{phone ? cards() : table()}</LineNumbers.Provider>
       <div
+        data-slot="grid-actions"
         className={cn(
           'flex flex-wrap items-center justify-between gap-3',
-          inCard && phone && 'px-4',
+          inCard && (phone ? 'px-4' : 'border-0 border-t border-solid border-default px-4 py-3'),
         )}
       >
         <div className="flex flex-wrap items-center gap-3">
-          {addTypes.length === 0 ? (
+          {addEntries.length === 0 ? (
             <ActionButton
               action={{
                 family: 'neutral',
@@ -1659,12 +1788,7 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
               onClick={() => {
                 addLine('line')
               }}
-              entries={addTypes.map((type) => ({
-                label: addTypeLabel[type],
-                onSelect: () => {
-                  addLine(type)
-                },
-              }))}
+              entries={addEntries}
             />
           )}
           {!phone && (
@@ -1684,6 +1808,7 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
           <div className={cn('ms-auto', TEXT_DIRECTION)}>{props.footer}</div>
         )}
       </div>
+      {phone && phoneTotals()}
       {creating !== null && createConfig !== undefined && (
         <LookupCreateDrawer
           open={createOpen}

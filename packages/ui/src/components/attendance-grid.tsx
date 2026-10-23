@@ -731,8 +731,7 @@ function DesktopView(props: ViewProps) {
         aria-colindex={index + 2}
         {...(focusable ? { 'data-pos': pos(cell), tabIndex: tabIndex(cell) } : {})}
         className={cn(
-          STICKY_HEAD,
-          'z-10 h-11 w-11 min-w-11 p-0 text-center align-middle font-sans',
+          'h-11 w-11 min-w-11 p-0 text-center align-middle font-sans',
           CELL_LINES,
           'border-b-default',
           shaded ? 'bg-surface-sunken' : 'bg-surface-raised',
@@ -1155,7 +1154,11 @@ function DesktopView(props: ViewProps) {
           onFocus={onFocus}
           className="table border-separate border-spacing-0 font-sans text-sm text-primary [&_[role=columnheader]]:table-cell [&_[role=gridcell]]:table-cell [&_[role=row]]:table-row [&_[role=rowheader]]:table-cell"
         >
-          <div role="rowgroup" data-sticky-head="" className="table-header-group">
+          <div
+            role="rowgroup"
+            data-sticky-head=""
+            className={cn('table-header-group bg-surface-raised', STICKY_HEAD, 'z-10')}
+          >
             <div role="row" aria-rowindex={1}>
               <div
                 role="columnheader"
@@ -1164,8 +1167,8 @@ function DesktopView(props: ViewProps) {
                 data-sticky-start=""
                 tabIndex={tabIndex({ row: 0, column: 0 })}
                 className={cn(
-                  STICKY_HEAD,
-                  'start-0 z-20 bg-surface-raised px-3 text-start align-bottom text-xs font-semibold text-secondary',
+                  STICKY_START,
+                  'z-20 bg-surface-raised px-3 text-start align-bottom text-xs font-semibold text-secondary',
                   CELL_LINES,
                   'border-e-default border-b-default',
                   FOCUS_CELL,
@@ -1187,8 +1190,7 @@ function DesktopView(props: ViewProps) {
                     tabIndex={tabIndex(cell)}
                     title={total.short === undefined ? undefined : total.label}
                     className={cn(
-                      STICKY_HEAD,
-                      'z-10 min-w-16 bg-surface-sunken px-2 text-end align-middle text-xs font-semibold text-secondary',
+                      'min-w-16 bg-surface-sunken px-2 text-end align-middle text-xs font-semibold text-secondary',
                       CELL_LINES,
                       'border-b-default',
                       index === 0 && 'border-s border-s-default',

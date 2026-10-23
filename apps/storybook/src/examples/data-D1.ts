@@ -352,7 +352,11 @@ export const DRAFT = {
   taxId: '109773148',
   address: 'Kralja Petra I 31, 11300 Smederevo',
   issued: '2026-10-06',
+  /** The date of supply (datum prometa): the goods delivered and the work done. */
+  supplied: '2026-10-06',
   due: '2026-10-21',
+  /** The place of issue: Kvadrat Gradnja d.o.o.'s seat. */
+  place: 'Novi Sad',
 }
 
 export interface DraftLine {
@@ -364,6 +368,8 @@ export interface DraftLine {
   quantity: string | null
   unit: string
   price: string | null
+  /** The line's discount in percent (a decimal string), or null: none. */
+  discount: string | null
   tax: string
   account: string
 }
@@ -379,6 +385,7 @@ export function newLine(type: LineType = 'line', extra: Partial<DraftLine> = {})
     quantity: type === 'line' ? null : '1',
     unit: 'H87',
     price: null,
+    discount: null,
     tax: 'S20',
     account: '',
     ...extra,
@@ -416,38 +423,33 @@ function recordLine(value: string, quantity: string): DraftLine {
 }
 
 /**
- * The draft as Milica left it: two sections with their subtotals, a text line, a fixed asset sold
- * with the materials, a 5% discount on the cement and the armature (computed here: 5% of their
- * 79.557,60 RSD is −3.977,88 RSD), mixed S 20% and S 10%, and an empty line at the end, where the
- * walk-through searches.
+ * The draft as Milica left it (P5.90 item 4, simple by default): plain lines only — the cement
+ * and the armature (more than the 36 pc in stock), a fixed asset sold with the materials, three
+ * services at S 20% and S 10% — and an empty line at the end, where the walk-through searches.
+ * No line has a discount, so the grid shows no discount column; section headings, text lines,
+ * discount lines and a line's discount are a choice of "Add line ▾".
  */
 export function initialDraft(): DraftLine[] {
-  const materials = lineParas('40', '685.00') + lineParas('44', '1185.40')
-  const discount = fromParas(-vatParas(materials, '5'))
   return [
-    newLine('heading', { text: '1. Materials' }),
     recordLine('ART-0204', '40'),
     recordLine('ART-0118', '44'),
     recordLine('OS-0112', '1'),
-    newLine('text', {
-      text: 'Delivery to the site in Smederevo, Kralja Petra I 31, on 9 October.',
-    }),
-    newLine('subtotal', { text: 'Subtotal 1. Materials' }),
-    newLine('heading', { text: '2. Services' }),
     recordLine('USL-014', '16'),
     recordLine('USL-021', '2'),
     recordLine('USL-040', '1'),
-    newLine('subtotal', { text: 'Subtotal 2. Services' }),
-    fromRecord(newLine('discount', { quantity: '1', price: discount }), recordOf('POP-05') ?? null),
     newLine(),
   ]
 }
 
-/** The line's amount in paras, or null while it has no quantity or price. */
+/**
+ * The line's amount in paras, or null while it has no quantity or price: quantity × price, less
+ * the line's discount (its percent of that, to the para, half up).
+ */
 export function draftLineParas(line: DraftLine): bigint | null {
   if (line.type === 'heading' || line.type === 'text' || line.type === 'subtotal') return null
   if (line.quantity === null || line.price === null) return null
-  return lineParas(line.quantity, line.price)
+  const base = lineParas(line.quantity, line.price)
+  return line.discount === null ? base : base - vatParas(base, line.discount)
 }
 
 /** Each subtotal's amount: the lines since the heading before it. */

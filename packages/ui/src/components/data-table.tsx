@@ -629,9 +629,9 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
           'group/header border-0 border-b border-solid border-default bg-surface-sunken font-bold text-primary',
           column.minWidth === undefined && 'min-w-16',
           ALIGN[align],
-          sticky ? STICKY_HEAD : resizable && 'relative',
-          corner && (selectable ? STICKY_START_AFTER_SELECT : STICKY_START),
-          sticky || corner ? (corner ? 'z-20' : 'z-10') : undefined,
+          // The header row is one sticky band (the thead, P5.90 item 1): its cells are not
+          // layers of their own; the corner stays at the start inside it.
+          corner ? [selectable ? STICKY_START_AFTER_SELECT : STICKY_START, 'z-20'] : 'relative',
           oneLine && 'truncate',
         )}
         // Without resizing, a column's minimum width holds in the automatic layout (P5.23); the
@@ -746,11 +746,17 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
   const totals = props.totals
   const footer =
     totals !== undefined && rows.length > 0 ? (
-      <tfoot>
+      // One sticky band at the bottom edge, as the header (P5.90 item 1).
+      <tfoot className="sticky bottom-0 z-10 bg-surface-sunken">
         <tr aria-rowindex={virtualize ? rows.length + 2 : undefined}>
           {selectable && (
             <td
-              className={cn(CELL, 'bg-surface-sunken', TOTALS_LINE, stickyStart && 'start-0 z-20')}
+              className={cn(
+                CELL,
+                'bg-surface-sunken',
+                TOTALS_LINE,
+                stickyStart && 'sticky start-0 z-20',
+              )}
             />
           )}
           {columns.map((column, index) => {
@@ -762,7 +768,9 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
                   CELL,
                   'min-w-16 bg-surface-sunken font-semibold text-primary',
                   TOTALS_LINE,
-                  stickyStart && index === 0 && (selectable ? 'start-12 z-20' : 'start-0 z-20'),
+                  stickyStart &&
+                    index === 0 &&
+                    (selectable ? 'sticky start-12 z-20' : 'sticky start-0 z-20'),
                   ALIGN[column.align ?? 'start'],
                   column.numeric === true && 'tabular-nums',
                   oneLine && 'truncate',
@@ -1061,7 +1069,10 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
                   {hasActions && <col style={{ width: ACTIONS_WIDTH }} />}
                 </colgroup>
               )}
-              <thead data-sticky-head="">
+              <thead
+                data-sticky-head=""
+                className={cn('bg-surface-sunken', sticky && [STICKY_HEAD, 'z-10'])}
+              >
                 <tr aria-rowindex={virtualize ? 1 : undefined}>
                   {selectable && (
                     <th
@@ -1070,9 +1081,7 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
                       className={cn(
                         CELL,
                         'w-px border-0 border-b border-solid border-default bg-surface-sunken',
-                        sticky && STICKY_HEAD,
-                        stickyStart && STICKY_START,
-                        stickyStart ? 'z-20' : sticky && 'z-10',
+                        stickyStart && [STICKY_START, 'z-20'],
                       )}
                     >
                       <Checkbox
@@ -1091,7 +1100,6 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
                     <td
                       className={cn(
                         'w-px border-0 border-b border-solid border-default bg-surface-sunken',
-                        sticky && [STICKY_HEAD, 'z-10'],
                       )}
                     />
                   )}
@@ -1140,8 +1148,8 @@ function lineAttribute(type: LineType): { 'data-line'?: LineType } {
   return type === 'line' ? {} : { 'data-line': type }
 }
 
-/** The totals row: the 1px border.strong line above it, and sticky at the bottom edge. */
-const TOTALS_LINE = 'sticky bottom-0 z-10 border-0 border-t border-solid border-strong'
+/** The totals row's cells: the 1px border.strong line above them (the tfoot is sticky). */
+const TOTALS_LINE = 'border-0 border-t border-solid border-strong'
 
 function noop() {
   return undefined

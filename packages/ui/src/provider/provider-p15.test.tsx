@@ -712,6 +712,7 @@ describe('messages', () => {
       'grid.headingCell',
       'grid.insertLine',
       'grid.internal',
+      'grid.line',
       'grid.modifierKey',
       'grid.removeLine',
       'grid.textCell',

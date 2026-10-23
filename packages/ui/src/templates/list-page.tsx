@@ -327,7 +327,7 @@ export function ListPage(props: ListPageProps) {
       />
       <section
         aria-label={props.title}
-        className="box-border flex min-w-0 flex-col overflow-hidden rounded-lg border border-solid border-default bg-surface-raised"
+        className="box-border flex min-w-0 flex-col overflow-clip rounded-lg border border-solid border-default bg-surface-raised"
       >
         {props.views !== undefined && props.views.length > 0 && (
           <Views

@@ -1,39 +1,48 @@
 import { useLayoutEffect, type RefObject } from 'react'
 
 /*
- * Table headers that stay in view below the shell (P5.28 item 4). A wide grid scrolls sideways in
- * its own region (`overflow-x: auto`), and such a region is a scroll container: a `position:
- * sticky` header inside it sticks to the region, never to the page, so on a long page it scrolled
- * away under the AppShell's header (School, gradebook: the dates row disappeared under it).
+ * Table headers that stay in view below the shell (P5.28 item 4; P5.90 item 8). A wide grid
+ * scrolls sideways in its own region (`overflow-x: auto`), and such a region is a scroll
+ * container: a `position: sticky` header inside it sticks to the region, never to the page, so on
+ * a long page it would scroll away under the AppShell's header.
  *
  * The rule, for every table, grid and schedule with a header row:
- * - The header cells carry `STICKY_HEAD`: sticky at the top of their own region (when the region
- *   scrolls down itself, inside `maxHeight` or virtualized), then moved down by
- *   `--liro-head-shift`, which `useStickyHead` keeps equal to how far the region's top has gone
- *   above the page's sticky edge — the bottom of the shell's sticky top (`--liro-shell-top`), or
- *   the top of the scrolling container when there is no shell. The header never leaves its
- *   region: it stops at the region's last row.
- * - The header group (thead, or the header row's element) carries `data-sticky-head`, so its
- *   height is known; the corner cell carries `data-sticky-start`, so the first column's width is
- *   (with a selection column before it, both carry it: the cover runs to the farthest end).
+ * - The header group (thead, or the header row's element) carries `STICKY_HEAD` and a background:
+ *   one band on one layer, sticky at the top of its own region (when the region scrolls down
+ *   itself, inside `maxHeight` or virtualized), and moved down while the region's top is above the
+ *   page's sticky edge — the bottom of the shell's sticky top (`--liro-shell-top`). The header
+ *   never leaves its region: it stops at the region's last row. Its cells are not layers of their
+ *   own (P5.90 item 1): adjacent layers at fractional positions left hairline gaps, white stripes
+ *   on the grey header; the group's background fills any such gap with the header's colour.
+ * - The move is pure CSS (styles.css, "Sticky table headers"): a scroll-driven animation on the
+ *   region's view timeline, inset by the shell's height. It runs with the scrolling itself (on the
+ *   compositor), so the header is glued at any speed, and no script runs on scroll.
+ *   `useStickyHead` names the region (`data-sticky-region`) and measures, on resize only, the
+ *   header's height, the room it may move in and the first column's width. A browser without
+ *   scroll-driven animations keeps the header at its region's top.
+ * - The header group carries `data-sticky-head`, so its height is known; the corner cell carries
+ *   `data-sticky-start`, so the first column's width is (with a selection column before it, both
+ *   carry it: the cover runs to the farthest end).
  * - The region carries `STICKY_CLEARANCE`, so a cell the keyboard reaches is scrolled clear of
  *   the shell, the header and the first column.
- * - The first column (the row headers: names, people, resources) is `sticky start-0` inside the
- *   region, on an opaque surface, above the body cells; the corner cell is both and above both.
- *   Layers: body cells 0, the first column 5, the header row 10, the corner 20 (all inside the
- *   region, under the shell's layers).
- * A header with no region of its own (a table that never scrolls sideways) may simply be
- * `sticky top-[var(--liro-shell-top,0px)]`; the hook gives the same result.
+ * - The first column (the row headers: names, people, resources) is `STICKY_START` inside the
+ *   region, on an opaque surface, above the body cells; the corner cell is sticky at the start
+ *   inside the sticky header group, above the other header cells. Layers: body cells 0, the first
+ *   column 5, the header group 10, the corner 20 inside it (all inside the region, under the
+ *   shell's layers).
+ * - No ancestor between the region and the page's scroller may be `overflow: hidden`: such a box is
+ *   a scroll container that never scrolls, and it would own the region's timeline. Cards clip with
+ *   `overflow: clip` instead.
  */
 
 /**
- * The header cells: sticky at their region's top, then moved by the page's scroll. Always on a
- * layer of their own (`will-change-transform`): Chromium otherwise decides from frame to frame
- * whether a sticky cell gets one, and its text was drawn with one antialiasing or the other — the
- * same story gave two pictures (P5.28).
+ * The header group (thead, or the header row's element): sticky at its region's top and moved by
+ * the page's scroll (`liro-sticky-head` in styles.css). Always one layer of its own
+ * (`will-change-transform`): Chromium otherwise decides from frame to frame whether it gets one,
+ * and its text was drawn with one antialiasing or the other — the same story gave two pictures
+ * (P5.28). The group needs a background (its cells' colour), so nothing shows between its cells.
  */
-export const STICKY_HEAD =
-  'sticky top-0 translate-y-[var(--liro-head-shift,0px)] will-change-transform'
+export const STICKY_HEAD = 'liro-sticky-head sticky top-0 will-change-transform'
 
 /**
  * A first column's cells (and the corner): sticky at the region's start, always on a layer of
@@ -55,41 +64,17 @@ export const STICKY_CLEARANCE =
   '[&_:is([role=gridcell],[role=rowheader],td,th[scope=row],tr[tabindex],[data-cell])]:scroll-mt-[calc(var(--liro-shell-top,0px)+var(--liro-head-height,0px))] [&_:is([role=gridcell],td,[data-cell])]:scroll-ms-[var(--liro-start-width,0px)]'
 
 /**
- * How far the header moves down, px: the part of the region above the sticky edge, never less
- * than 0 and never past the region's last row (`room`: the region's height minus the header's).
+ * Where the header moves (P5.90 item 8), px, as the CSS variables the scroll-driven animation
+ * reads: it starts once the region's top (its border edge) is `start` px above the sticky edge —
+ * the header stands inside the region's top border — and moves at most `room` px, the region's
+ * inner height less the header's, so it stops at the last row.
  */
-export function headShift(regionTop: number, edge: number, room: number): number {
-  return Math.max(0, Math.min(edge - regionTop, room))
-}
-
-/** The nearest ancestor that scrolls vertically, or null for the page itself. */
-function scrollingAncestor(element: HTMLElement): HTMLElement | null {
-  let current = element.parentElement
-  while (current !== null && current !== document.body && current !== document.documentElement) {
-    const { overflowY } = getComputedStyle(current)
-    if (
-      (overflowY === 'auto' || overflowY === 'scroll' || overflowY === 'overlay') &&
-      current.scrollHeight > current.clientHeight
-    ) {
-      return current
-    }
-    current = current.parentElement
-  }
-  return null
-}
-
-/**
- * The page's sticky edge in viewport coordinates: the top of the scrolling container (0 for the
- * page) plus the shell's sticky top when the shell scrolls in that container.
- */
-function stickyEdge(element: HTMLElement): number {
-  const scroller = scrollingAncestor(element)
-  const top = scroller === null ? 0 : scroller.getBoundingClientRect().top + scroller.clientTop
-  const shell = element.closest<HTMLElement>('[style*="--liro-shell-top"]')
-  if (shell === null || (scroller !== null && !scroller.contains(shell))) return top
-  return (
-    top + (Number.parseFloat(getComputedStyle(element).getPropertyValue('--liro-shell-top')) || 0)
-  )
+export function headTrack(
+  borderTop: number,
+  innerHeight: number,
+  headHeight: number,
+): { start: number; room: number } {
+  return { start: Math.max(0, borderTop), room: Math.max(0, innerHeight - headHeight) }
 }
 
 /**
@@ -123,50 +108,63 @@ function startWidth(region: HTMLElement): number {
   )
 }
 
+/** The CSS variables `useStickyHead` writes on its region. */
+export const STICKY_VARIABLES = [
+  '--liro-head-height',
+  '--liro-head-start',
+  '--liro-head-room',
+  '--liro-start-width',
+] as const
+
 /**
- * Keeps `--liro-head-shift` on the region (P5.28 item 4): the header cells (`STICKY_HEAD`) of a
- * region that scrolls sideways stay below the shell while the page scrolls. Updated once a frame
- * on any scroll (the page, a phone frame's page, an application's container) and on resize.
+ * Makes a region's header group (`STICKY_HEAD`) stay below the shell while the page scrolls (P5.28
+ * item 4, P5.90 item 8): names the region for the CSS (`data-sticky-region`) and measures, when
+ * the region, its header or its corner changes size, `--liro-head-height`, `--liro-head-start`,
+ * `--liro-head-room` and `--liro-start-width`. Nothing runs on scroll: the header moves with the
+ * scrolling itself.
  */
 export function useStickyHead(region: RefObject<HTMLElement | null>, enabled = true): void {
   useLayoutEffect(() => {
     const element = region.current
     if (!enabled || element === null) return
-    let frame = 0
     // Written only when it changes: every cell inherits these properties, so a write restyles the
     // whole grid.
-    const write = (name: string, px: number) => {
+    const write = (name: (typeof STICKY_VARIABLES)[number], px: number) => {
       const value = `${String(px)}px`
       if (element.style.getPropertyValue(name) !== value) element.style.setProperty(name, value)
     }
-    const update = () => {
-      frame = 0
-      const head = element.querySelector<HTMLElement>('[data-sticky-head]')
-      const height = head?.offsetHeight ?? 0
-      const rect = element.getBoundingClientRect()
-      write(
-        '--liro-head-shift',
-        headShift(rect.top + element.clientTop, stickyEdge(element), element.clientHeight - height),
-      )
+    let head: Element | null = null
+    let corner: Element | null = null
+    const observer = new ResizeObserver(() => {
+      measure()
+    })
+    // A header or corner drawn later (after loading) is observed from then on.
+    const follow = (previous: Element | null, next: Element | null) => {
+      if (previous === next) return
+      if (previous !== null) observer.unobserve(previous)
+      if (next !== null) observer.observe(next)
+    }
+    const measure = () => {
+      const nextHead = element.querySelector<HTMLElement>('[data-sticky-head]')
+      const nextCorner = element.querySelector('[data-sticky-start]')
+      follow(head, nextHead)
+      follow(corner, nextCorner)
+      head = nextHead
+      corner = nextCorner
+      const height = nextHead?.offsetHeight ?? 0
+      const track = headTrack(element.clientTop, element.clientHeight, height)
       write('--liro-head-height', height)
+      write('--liro-head-start', track.start)
+      write('--liro-head-room', track.room)
       write('--liro-start-width', startWidth(element))
     }
-    const schedule = () => {
-      if (frame === 0) frame = requestAnimationFrame(update)
-    }
-    update()
-    document.addEventListener('scroll', schedule, { capture: true, passive: true })
-    window.addEventListener('resize', schedule)
-    const observer = new ResizeObserver(schedule)
+    element.setAttribute('data-sticky-region', '')
+    measure()
     observer.observe(element)
     return () => {
-      cancelAnimationFrame(frame)
-      document.removeEventListener('scroll', schedule, { capture: true })
-      window.removeEventListener('resize', schedule)
       observer.disconnect()
-      element.style.removeProperty('--liro-head-shift')
-      element.style.removeProperty('--liro-head-height')
-      element.style.removeProperty('--liro-start-width')
+      element.removeAttribute('data-sticky-region')
+      for (const name of STICKY_VARIABLES) element.style.removeProperty(name)
     }
   }, [region, enabled])
 }

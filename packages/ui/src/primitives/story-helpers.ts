@@ -5,8 +5,9 @@
 
 /**
  * A play function that waits until the enter animations of overlays have finished, so the
- * accessibility check sees them at full opacity. Endless animations (a skeleton's pulse) are
- * not waited for.
+ * accessibility check sees them at full opacity. Endless animations (a skeleton's pulse) and
+ * scroll-driven ones (a sticky table header following the page, P5.90) are not waited for: they
+ * never finish.
  */
 export async function settle(): Promise<void> {
   // The fonts first: a chart draws its plot once they are ready (charts.tsx, Plot), then two
@@ -21,7 +22,11 @@ export async function settle(): Promise<void> {
   })
   const finite = document
     .getAnimations()
-    .filter((animation) => animation.effect?.getComputedTiming().iterations !== Infinity)
+    .filter(
+      (animation) =>
+        animation.timeline instanceof DocumentTimeline &&
+        animation.effect?.getComputedTiming().iterations !== Infinity,
+    )
   await Promise.all(finite.map((animation) => animation.finished.catch(() => undefined)))
 }
 

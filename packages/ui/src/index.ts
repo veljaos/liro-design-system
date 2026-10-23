@@ -66,7 +66,12 @@ export type {
 export { DataTable } from './components/data-table'
 export { EditableGrid } from './components/editable-grid'
 export type { EditableGridColumn, EditableGridProps, GridTotal } from './components/editable-grid'
-export { gridKeyAction, orderMessages } from './components/editable-grid-logic'
+export {
+  cellHasValue,
+  gridKeyAction,
+  orderMessages,
+  shownColumns,
+} from './components/editable-grid-logic'
 export type {
   GridAction,
   GridKey,
