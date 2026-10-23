@@ -1,6 +1,12 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { headTrack, STICKY_HEAD, startCover } from './sticky-head'
+import {
+  headTrack,
+  STICKY_HEAD,
+  STICKY_START,
+  STICKY_START_AFTER_SELECT,
+  startCover,
+} from './sticky-head'
 
 const source = (path: string) => readFileSync(new URL(path, import.meta.url), 'utf8')
 
@@ -63,6 +69,33 @@ describe('the sticky header is pure CSS (P5.90 item 8)', () => {
       const groups = text.split('data-sticky-head=""').length - 1
       expect(uses, file).toBeGreaterThan(0)
       expect(uses, file).toBe(groups)
+    }
+  })
+})
+
+describe('the sticky first column keeps every row line (P5.91)', () => {
+  it('stands each first-column cell on a translateZ layer, placed on whole pixels', () => {
+    for (const classes of [STICKY_START, STICKY_START_AFTER_SELECT]) {
+      expect(classes).toContain('[transform:translateZ(0)]')
+      // A will-change layer kept the row's fractional place, and the next row's cell covered the
+      // row's line where the two rounded apart (104 lines in 134 tables, measured in P5.91).
+      expect(classes).not.toContain('will-change')
+    }
+  })
+
+  it('is the only way a grid makes its first column sticky', () => {
+    const grids = [
+      './data-table.tsx',
+      './data-table-row.tsx',
+      './editable-grid.tsx',
+      './attendance-grid.tsx',
+      './shift-planner.tsx',
+      './resource-schedule.tsx',
+      '../pivot/pivot-grid.tsx',
+      '../templates/statutory-form-page.tsx',
+    ]
+    for (const grid of grids) {
+      expect(source(grid), grid).not.toMatch(/sticky start-(0|12) will-change/)
     }
   })
 })
