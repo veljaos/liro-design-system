@@ -5,6 +5,7 @@ import { Button } from '../components/button'
 import { KeyValueList, type KeyValueGroup, type KeyValueItem } from '../components/cards'
 import { commandMatches } from '../components/command-logic'
 import { Drawer } from '../components/dialog'
+import { TAB_ROW_SCROLLER, useTabRow } from '../components/tab-row'
 import { usePhone } from '../components/use-phone'
 import { ButtonPrimitive } from '../primitives/button'
 import { Checkbox } from '../primitives/checkbox'
@@ -131,12 +132,15 @@ function SavedViewTabs(props: SavedViewsProps) {
   const { messages } = useLiro()
   const { tabs, more } = splitViews(props.views, props.visible)
   const hiddenCurrent = more.find((view) => view.id === props.view)
+  // The tab row rule (P5.90 item 6): faded edges where views lie past them, the current one in view.
+  const row = useTabRow(props.view)
   return (
     <div className="flex items-end gap-4 border-0 border-b border-solid border-default px-4">
       <div
+        {...row}
         role="group"
         aria-label={messages['list.views']}
-        className="-mb-px flex min-w-0 flex-1 overflow-x-auto [scrollbar-width:none]"
+        className={cn('-mb-px flex flex-1', TAB_ROW_SCROLLER)}
       >
         {tabs.map((view) => {
           const current = view.id === props.view
@@ -145,12 +149,13 @@ function SavedViewTabs(props: SavedViewsProps) {
               key={view.id}
               type="button"
               aria-pressed={current}
+              {...(current ? { 'data-active-tab': '' } : {})}
               onClick={() => props.onViewChange?.(view.id)}
               className={cn(
                 VIEW_TAB,
                 current && 'border-brand hover:border-brand',
                 FOCUS_RING,
-                '-outline-offset-2',
+                'focus-visible:-outline-offset-2',
               )}
             >
               <span className={TEXT_DIRECTION}>{view.label}</span>
@@ -164,11 +169,12 @@ function SavedViewTabs(props: SavedViewsProps) {
               <button
                 type="button"
                 aria-pressed={hiddenCurrent !== undefined}
+                {...(hiddenCurrent === undefined ? {} : { 'data-active-tab': '' })}
                 className={cn(
                   VIEW_TAB,
                   hiddenCurrent !== undefined && 'border-brand hover:border-brand',
                   FOCUS_RING,
-                  '-outline-offset-2',
+                  'focus-visible:-outline-offset-2',
                 )}
               >
                 <span className={TEXT_DIRECTION}>

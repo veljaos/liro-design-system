@@ -56,7 +56,7 @@ export interface TreeViewProps<Data = undefined> extends TreeBaseProps<Data> {
   empty?: ReactNode
   /**
    * The tree scrolls inside this height (CSS length, e.g. "60vh") and draws only the rows in
-   * view: for thousands of nodes.
+   * view: for thousands of nodes. Not on phones: there the tree flows with the page (P5.90).
    */
   maxHeight?: string
   /** 'phone' draws the touch layout (44px rows); default by the viewport (below 48em). */
@@ -332,7 +332,8 @@ export function TreeView<Data = undefined>(props: TreeViewProps<Data>) {
   const scrollerRef = useRef<HTMLDivElement>(null)
   const revealRef = useRef<((index: number) => void) | null>(null)
   const tree = useTree(props, scrollerRef, revealRef)
-  const windowed = props.maxHeight !== undefined
+  // On phones the tree flows with the page, never in a box with its own scroll (P5.90 item 5).
+  const windowed = props.maxHeight !== undefined && !phone
   const view = useTreeRows(tree, scrollerRef, revealRef, windowed, phone)
 
   if (props.loading === true) {
@@ -350,7 +351,7 @@ export function TreeView<Data = undefined>(props: TreeViewProps<Data>) {
   if (props.nodes.length === 0) {
     return (
       <div data-slot="tree-view" className={cn('font-sans', props.className)}>
-        {props.empty ?? <EmptyState compact className="py-6" />}
+        {props.empty ?? <EmptyState compact />}
       </div>
     )
   }

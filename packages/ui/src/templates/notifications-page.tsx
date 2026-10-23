@@ -186,14 +186,12 @@ export function NotificationsPage(props: NotificationsPageProps) {
         {...(props.onClearFilters === undefined
           ? {}
           : { action: { label: messages['table.clearFilters'], onClick: props.onClearFilters } })}
-        className="py-10"
       />
     ) : (
       <EmptyState
         compact
         title={messages['notifications.emptyTitle']}
         description={messages['notifications.emptyDescription']}
-        className="py-10"
       />
     )
   } else {

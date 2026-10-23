@@ -174,6 +174,9 @@ export { initialsOf, PersonAvatar, PersonName } from './components/person'
 export type { PersonAvatarProps, PersonNameProps } from './components/person'
 export { notice, Toaster } from './components/notice'
 export type { NoticeAction, NoticeKind, NoticeOptions, ToasterProps } from './components/notice'
+export { SaveStatus } from './components/save-status'
+export type { SaveState, SaveStatusProps } from './components/save-status'
+export { useBottomBar } from './components/bottom-bars'
 export { compactStep, ProgressBar, Skeleton, Stepper, stepState } from './components/progress'
 export type {
   ProgressBarProps,

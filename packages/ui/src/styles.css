@@ -27,6 +27,9 @@
  */
 @utility bidi-content {
   unicode-bidi: plaintext;
+  /* A long unbroken string (an IBAN, a URL, a 60-letter word) breaks rather than overflow its box
+     (P5.90 item 7). break-word, not anywhere: a table's column still sizes by its longest word. */
+  overflow-wrap: break-word;
   text-align: -webkit-match-parent;
   @supports (text-align: match-parent) {
     text-align: match-parent;
@@ -42,6 +45,7 @@
 }
 @utility bidi-isolate {
   unicode-bidi: plaintext;
+  overflow-wrap: break-word;
 }
 
 /*
@@ -199,7 +203,7 @@
 [data-slot='grid-cell'] [data-slot='field'] > div {
   margin: 0;
 }
-[data-slot='grid-cell'] [data-slot='field'] > p {
+[data-slot='grid-cell'] [data-slot='field'] > :is(p, [data-field-messages]) {
   display: none;
 }
 [data-slot='grid-cell'][data-align='end'] input {
@@ -226,7 +230,7 @@
 [data-slot='grid-card-cell'] [data-slot='field'] > div {
   margin: 0;
 }
-[data-slot='grid-card-cell'] [data-slot='field'] > p {
+[data-slot='grid-card-cell'] [data-slot='field'] > :is(p, [data-field-messages]) {
   display: none;
 }
 

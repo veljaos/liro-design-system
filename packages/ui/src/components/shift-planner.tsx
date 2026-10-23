@@ -1386,7 +1386,7 @@ export function ShiftPlanner(props: ShiftPlannerProps) {
       {props.rows.length === 0 ? (
         <EmptyState
           compact
-          className="rounded-md border border-solid border-default py-8"
+          className="rounded-md border border-solid border-default"
           title={messages['shifts.noPeople']}
           description={messages['shifts.noPeopleDescription']}
         />

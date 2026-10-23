@@ -16,6 +16,10 @@ import type { IconComponent } from './intents'
  * - The default title and description of each variant come from the provider's messages.
  * - One optional action: a small (Mantine 'xs') button in the neutral "default" weight.
  * - `compact`: Mantine size 'sm' with a 24px icon; otherwise size 'md' with a 32px icon.
+ * - Its own space above and below (owner, P5.90 item 13): 32px, 24px when compact. Every "nothing
+ *   here", "no results" and "could not load" inside a card, a table, a list or a panel stands with
+ *   this space and never against the card's top edge; the places that show it add no vertical
+ *   padding of their own (DataTable, TreeView, the templates) — one rule, one look.
  *
  * Mantine 9.6.2 EmptyState.css, align 'center': a centred column; gaps 10px (md) or 8px (sm);
  * the icon in the dimmed colour; title weight 600, line height 1.3, 16px (md) or 14px (sm), in the
@@ -102,7 +106,7 @@ export function EmptyState(props: EmptyStateProps) {
       data-variant={variant}
       className={cn(
         'flex flex-col items-center font-sans',
-        compact ? 'gap-2' : 'gap-2.5',
+        compact ? 'gap-2 py-6' : 'gap-2.5 py-8',
         props.className,
       )}
     >

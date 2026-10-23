@@ -94,7 +94,6 @@ export function MyShifts(props: MyShiftsProps) {
           icon={CalendarX2}
           title={messages['shifts.noUpcoming']}
           description={messages['shifts.noUpcomingDescription']}
-          className="py-8"
         />
       ) : (
         weeks.map((week) => {

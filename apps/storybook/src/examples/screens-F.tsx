@@ -12,6 +12,7 @@ import {
   KeyFigures,
   MoneyText,
   PeriodicRunPage,
+  SaveStatus,
   SelectField,
   Toaster,
   UnavailableAction,
@@ -22,6 +23,7 @@ import {
   type GridMessage,
   type ModuleTab,
   type RunCheck,
+  type SaveState,
 } from '@veljaos/ui'
 import type { PayrollLine } from '../../../../packages/ui/src/templates/periodic-run-story-data'
 import type { ExampleRoute } from './example-app'
@@ -101,11 +103,25 @@ const JOURNALS = [
 
 export function JournalEntry({ phone, unbalanced }: { phone: boolean; unbalanced: boolean }) {
   const { format, linkComponent: Link } = useLiro()
-  const [lines, setLines] = useState(unbalanced ? JOURNAL_LINES_UNBALANCED : JOURNAL_LINES)
-  const [date, setDate] = useState<string | null>(JOURNAL.date)
-  const [journal, setJournal] = useState(
+  const [lines, setLinesNow] = useState(unbalanced ? JOURNAL_LINES_UNBALANCED : JOURNAL_LINES)
+  const [date, setDateNow] = useState<string | null>(JOURNAL.date)
+  const [journal, setJournalNow] = useState(
     JOURNALS.find((each) => each.label === JOURNAL.journal)?.value ?? 'general',
   )
+  // A routine save answers inline, "Saved" beside the button, until the next edit (P5.90).
+  const [saved, setSaved] = useState<SaveState>('idle')
+  const setLines: typeof setLinesNow = (next) => {
+    setSaved('idle')
+    setLinesNow(next)
+  }
+  const setDate = (next: string | null) => {
+    setSaved('idle')
+    setDateNow(next)
+  }
+  const setJournal = (next: string) => {
+    setSaved('idle')
+    setJournalNow(next)
+  }
   const balance = journalBalance(lines)
   // The Core's messages under the lines.
   const messages: Record<string, GridMessage[]> = {}
@@ -163,12 +179,13 @@ export function JournalEntry({ phone, unbalanced }: { phone: boolean; unbalanced
         status={statusBadge('Draft')}
         actions={
           <>
+            <SaveStatus state={saved} />
             <Button
               intent="save"
               emphasis="secondary"
               label="Save draft"
               onClick={() => {
-                notice.success(`${JOURNAL.number} saved.`)
+                setSaved('saved')
               }}
             />
             {phone ? null : post}

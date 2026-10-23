@@ -86,7 +86,7 @@ export function SlotPicker(props: SlotPickerProps) {
           return (
             <EmptyState
               compact
-              className="rounded-md bg-surface-sunken px-4 py-6"
+              className="rounded-md bg-surface-sunken px-4"
               title={messages['slots.none']}
               description={messages['slots.noneDescription']}
               {...(props.emptyAction === undefined ? {} : { action: props.emptyAction })}

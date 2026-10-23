@@ -159,7 +159,8 @@ export interface LegalTextProps {
   defaultShownDeleted?: readonly string[]
   /**
    * The text scrolls inside this height (CSS length, e.g. "70vh") and draws only the headings
-   * and articles in view: for long acts (300 articles and more).
+   * and articles in view: for long acts (300 articles and more). Not on phones: there the text
+   * flows with the page (P5.90).
    */
   maxHeight?: string
   /** 'phone' puts every article action in one menu; default by the viewport (below 48em). */
@@ -822,7 +823,8 @@ export function LegalText({ ref, ...props }: LegalTextProps) {
   )
 
   // ── Entries and the window ──
-  const windowed = props.maxHeight !== undefined
+  // On phones the act flows with the page, never in a box with its own scroll (P5.90 item 5).
+  const windowed = props.maxHeight !== undefined && !phone
   const scroller = useRef<HTMLDivElement>(null)
   const [focusIndex, setFocusIndex] = useState<number | null>(null)
   // The trees' row window (tree-window.ts): the rules of virtual-rows.ts, entries measured once

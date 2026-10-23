@@ -237,7 +237,10 @@ export interface DataTableProps<Row extends RowData> {
    * above the table, without a gap (P4.4).
    */
   inCard?: boolean
-  /** The table scrolls inside this height (CSS length, e.g. "60vh"), so header and totals stay. */
+  /**
+   * The table scrolls inside this height (CSS length, e.g. "60vh"), so header and totals stay.
+   * Not on phones: the cards flow with the page (P5.90).
+   */
   maxHeight?: string
 
   /** The card of a row on a phone. */
@@ -246,7 +249,7 @@ export interface DataTableProps<Row extends RowData> {
   layout?: 'auto' | 'table' | 'cards'
   /**
    * Renders only the rows in view, for long lists: 44px rows, the header sticky. Needs
-   * `maxHeight`, the height it scrolls in.
+   * `maxHeight`, the height it scrolls in. Not on phones: the cards flow with the page (P5.90).
    */
   virtualize?: boolean
   /** Columns can be resized by pointer, keyboard and a popover (without dragging). */
@@ -331,7 +334,9 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
   // Cards inside a card would be cards in a card (P4.9): in a card the rows are one flat list
   // with dividers instead.
   const flat = cards && props.inCard === true
-  const virtualize = props.virtualize === true
+  // On phones the cards flow with the page: no box with its own scroll inside the page, so no
+  // `maxHeight` and no virtual window there (P5.90 item 5); long lists page (`onNext`).
+  const virtualize = props.virtualize === true && !cards
   // Every table's header stays below the shell by default (P5.28 item 4).
   const sticky = props.stickyHeader !== false || virtualize
   // In a card the first column stays at the start while the table scrolls sideways (P5.28 item 4).
@@ -709,7 +714,7 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
     if (rows.length === 0) {
       return (
         <tr>
-          <td colSpan={span} className="p-4">
+          <td colSpan={span} className="px-4">
             {empty()}
           </td>
         </tr>
@@ -877,7 +882,7 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
 
   const cardList = () => {
     if (firstLoad) return skeleton
-    if (rows.length === 0) return <div className="p-4">{empty()}</div>
+    if (rows.length === 0) return <div className="px-4">{empty()}</div>
     if (!virtualize) {
       return (
         <ul
@@ -954,7 +959,7 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
       : formatCount(messages, format, props.count, props.countIsExact ?? true, props.countThreshold)
 
   const scrollStyle: CSSProperties | undefined =
-    props.maxHeight === undefined ? undefined : { maxHeight: props.maxHeight }
+    props.maxHeight === undefined || cards ? undefined : { maxHeight: props.maxHeight }
 
   const edge = props.inCard === true ? 'px-4' : undefined
   const under =

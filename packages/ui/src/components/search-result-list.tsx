@@ -183,7 +183,6 @@ export function SearchResultList(props: SearchResultListProps) {
     body = (
       <ErrorState
         compact
-        className="py-8"
         {...(props.onRetry === undefined
           ? {}
           : { action: { label: messages['searchResults.retry'], onClick: props.onRetry } })}
@@ -193,7 +192,7 @@ export function SearchResultList(props: SearchResultListProps) {
     body = loading ? (
       <ResultSkeletons />
     ) : (
-      (props.empty ?? <EmptyState compact variant="no-results" className="py-8" />)
+      (props.empty ?? <EmptyState compact variant="no-results" />)
     )
   } else {
     body = (

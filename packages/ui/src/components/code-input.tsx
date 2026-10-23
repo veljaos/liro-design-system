@@ -57,7 +57,7 @@ export interface CodeInputProps {
   onChange?: (value: string) => void
   /** Every box is filled: the whole code. */
   onComplete?: (code: string) => void
-  /** A hint under the label, from the application ("Sent to +381 64 ••• 12 34"). */
+  /** A hint under the boxes, from the application ("Sent to +381 64 ••• 12 34"). */
   description?: ReactNode
   /** The problem with the code, from the application ("The code has expired."). */
   error?: ReactNode
@@ -153,25 +153,13 @@ export function CodeInput(props: CodeInputProps) {
         {props.label}
         {props.required === true && <RequiredMark />}
       </span>
-      {hasDescription && (
-        <p
-          id={`${id}-description`}
-          className={cn('m-0 text-xs leading-tight text-secondary', TEXT_DIRECTION)}
-        >
-          {props.description}
-        </p>
-      )}
       <div
         role="group"
         aria-labelledby={labelId}
         aria-describedby={describedBy}
         dir="ltr"
         // The boxes stand at the page's start: the start of a right-to-left page is its right.
-        className={cn(
-          'mt-1 flex gap-2',
-          direction === 'rtl' && 'justify-end',
-          (hasError || showReason) && 'mb-[5px]',
-        )}
+        className={cn('mt-1 flex gap-2', direction === 'rtl' && 'justify-end')}
       >
         {boxes.map((box, index) => (
           <input
@@ -220,15 +208,27 @@ export function CodeInput(props: CodeInputProps) {
         ))}
       </div>
       {props.name !== undefined && <input type="hidden" name={props.name} value={boxes.join('')} />}
-      {hasError && (
-        <FieldMessage id={`${id}-error`} tone="error">
-          {props.error}
-        </FieldMessage>
-      )}
-      {showReason && (
-        <FieldMessage id={`${id}-reason`} tone="hint">
-          {props.disabledReason}
-        </FieldMessage>
+      {(hasDescription || hasError || showReason) && (
+        <div className="mt-[5px] flex min-w-0 flex-col gap-1">
+          {hasDescription && (
+            <p
+              id={`${id}-description`}
+              className={cn('m-0 text-xs leading-tight text-secondary', TEXT_DIRECTION)}
+            >
+              {props.description}
+            </p>
+          )}
+          {hasError && (
+            <FieldMessage id={`${id}-error`} tone="error">
+              {props.error}
+            </FieldMessage>
+          )}
+          {showReason && (
+            <FieldMessage id={`${id}-reason`} tone="hint">
+              {props.disabledReason}
+            </FieldMessage>
+          )}
+        </div>
       )}
     </div>
   )
