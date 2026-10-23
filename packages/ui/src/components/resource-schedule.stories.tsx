@@ -215,7 +215,12 @@ export const Default: Story = {
     )
     await expect(canvas.getByRole('button', { name: 'Move to…: Ana Petrović' })).toBeVisible()
     // The time grids' one "now" marker (P5.28 item 10), from the application's clock.
-    await expect(canvas.getByRole('img', { name: /^Now, 10:20\sAM$/ })).toBeInTheDocument()
+    const marker = canvas.getByRole('img', { name: /^Now, 10:20\sAM$/ })
+    await expect(marker).toBeInTheDocument()
+    // Drawn before the bookings, which cover its line, never the reverse (P5.90 item 17).
+    await expect(
+      marker.compareDocumentPosition(ana) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
   },
 }
 

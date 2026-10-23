@@ -79,9 +79,13 @@ export const Default: Story = {
     const now = canvasElement.querySelector<HTMLElement>('[aria-current="time"]')
     await expect(now).toHaveTextContent('Mathematics')
     // The one "now" marker (P5.28 item 10), inside the running period's cell for today.
+    const marker = within(now ?? canvasElement).getByRole('img', { name: /^Now, 09:10/ })
+    await expect(marker).toBeVisible()
+    // Drawn before the lesson, which covers its line, never the reverse (P5.90 item 17).
+    const lesson = within(now ?? canvasElement).getByText('Mathematics')
     await expect(
-      within(now ?? canvasElement).getByRole('img', { name: /^Now, 09:10/ }),
-    ).toBeVisible()
+      marker.compareDocumentPosition(lesson) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
     await expect(canvas.getAllByText('Free')).toHaveLength(5)
   },
 }
