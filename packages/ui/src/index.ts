@@ -836,6 +836,35 @@ export type {
 } from './components/product-tile'
 export { CartPanel } from './components/cart-panel'
 export type { CartAmount, CartLine, CartPanelProps } from './components/cart-panel'
+export {
+  FLASH_DURATION,
+  grownLines,
+  quantitiesOf,
+  TAP_VIBRATION,
+  tapFeedback,
+} from './components/pos-feedback'
+export { CatalogPicker } from './components/catalog-picker'
+export type { CatalogPickerProps } from './components/catalog-picker'
+export {
+  applyCatalogFilters,
+  CATALOG_PAGE,
+  categoryAndBelow,
+  categoryTrail,
+  childCategories,
+  countBelow,
+  itemsDirectlyIn,
+  searchCatalog,
+  sectionItems,
+  shownCount,
+  toggleCatalogItem,
+  toggleFilter,
+} from './components/catalog-picker-logic'
+export type {
+  CatalogCategory,
+  CatalogFilter,
+  CatalogItem,
+  CatalogSection,
+} from './components/catalog-picker-logic'
 export { PaymentDialog } from './components/payment-dialog'
 export type {
   CardState,

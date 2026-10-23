@@ -2,7 +2,8 @@
  * Story data of FloorPlan and SeatingChart (P5.25): fictitious. Restoran Kej in Novi Sad during
  * Saturday's dinner service (a hall, a terrace and a bar), a hotel floor, and the wedding of Ana
  * and Marko at Sala Fruškać. The states, their words, tones and icons are the application's map
- * (free, occupied, reserved, blocked, needs cleaning are only examples). Not part of the package:
+ * (free, occupied, reserved, blocked are only examples; a restaurant has no "needs cleaning" state
+ * unless its application turns one on, P5.90 item 20). Not part of the package:
  * nothing in src/index.ts imports this file. No classes here: Storybook compiles classes only from
  * *.stories.tsx files.
  */
@@ -28,7 +29,6 @@ export const RESTAURANT_STATES: FloorState[] = [
   { id: 'free', label: 'Free', tone: 'success', icon: CircleCheck },
   { id: 'occupied', label: 'Occupied', tone: 'neutral', icon: UsersRound },
   { id: 'reserved', label: 'Reserved', tone: 'premium', icon: CalendarClock },
-  { id: 'cleaning', label: 'Needs cleaning', tone: 'warning', icon: Sparkles },
   { id: 'blocked', label: 'Blocked', tone: 'danger', icon: Ban },
 ]
 
@@ -121,7 +121,7 @@ export const RESTAURANT_ITEMS: FloorItem[] = [
   }),
   rect('t4', 580, 80, 160, 90, 'hall', 4, 'free'),
   round('t5', 60, 300, 'hall', 4, 'occupied', party(4, '19:05')),
-  round('t6', 240, 300, 'hall', 4, 'cleaning'),
+  round('t6', 240, 300, 'hall', 4, 'free'),
   rect('t7', 400, 300, 160, 100, 'hall', 6, 'reserved', party(6, '20:00', true)),
   rect('t8', 600, 300, 140, 100, 'hall', 6, 'blocked', {
     note: 'Broken leg, waiting for the carpenter',
@@ -164,7 +164,7 @@ export const RESTAURANT_ITEMS: FloorItem[] = [
     areaId: 'hall',
   },
   round('t16', 860, 580, 'bar', 2, 'free'),
-  round('t17', 1060, 580, 'bar', 2, 'cleaning'),
+  round('t17', 1060, 580, 'bar', 2, 'free'),
 ]
 
 /** The palette of the restaurant's edit mode. */
