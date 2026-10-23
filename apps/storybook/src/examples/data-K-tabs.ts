@@ -90,15 +90,21 @@ const DISCOUNTS: readonly DiscountChoice[] = [
   { id: 'staff', label: 'Staff −50%', rate: 50n },
 ]
 
-/** Bistro Dunav's menu (fictitious). */
+/**
+ * Bistro Dunav's menu (fictitious). "Most sold" is the application's: tonight's most ordered
+ * items, first and chosen when a tab opens (P5.90 item 20), so most taps need no category.
+ */
+const MOST_SOLD = ['pivo', 'limunada', 'cevapi', 'pastrmka', 'voda', 'palacinke']
+
 const BISTRO_CATEGORIES: readonly ProductCategory[] = [
+  { id: 'top', label: 'Most sold' },
   { id: 'starters', label: 'Predjela' },
   { id: 'mains', label: 'Glavna jela' },
   { id: 'desserts', label: 'Dezerti' },
   { id: 'drinks', label: 'Pića' },
 ]
 
-const BISTRO_PRODUCTS: readonly PosProduct[] = [
+const MENU: readonly PosProduct[] = [
   { id: 'proja', name: 'Proja sa sirom', price: '390.00', categoryId: 'starters' },
   { id: 'corba', name: 'Riblja čorba', price: '520.00', categoryId: 'starters' },
   { id: 'pastrmka', name: 'Pastrmka na žaru', price: '1450.00', categoryId: 'mains' },
@@ -118,6 +124,14 @@ const BISTRO_PRODUCTS: readonly PosProduct[] = [
   { id: 'voda', name: 'Kisela voda 0,33', price: '220.00', categoryId: 'drinks' },
   { id: 'limunada', name: 'Limunada', price: '320.00', categoryId: 'drinks' },
 ]
+
+/** The menu with the most sold items first, each also under "Most sold". */
+const BISTRO_PRODUCTS: readonly PosProduct[] = [
+  ...MOST_SOLD.flatMap((id) => MENU.filter((product) => product.id === id)),
+  ...MENU.filter((product) => !MOST_SOLD.includes(product.id)),
+].map((product) =>
+  MOST_SOLD.includes(product.id) ? { ...product, categoryIds: ['top'] } : product,
+)
 
 export const BISTRO_VENUE: Venue = {
   id: 'bistro',
@@ -165,6 +179,11 @@ export interface TabLine {
   discountId?: string
   /** When it was sent to its station (HH:mm); absent while not sent. */
   sentAt?: string
+  /**
+   * Held for a later course (P5.90 item 20): not sent when the waiter leaves the table, only with
+   * "Send held".
+   */
+  held?: boolean
   /** Pieces paid already (a part paid by items). */
   paid?: number
 }
@@ -227,7 +246,8 @@ export function initialTabs(): Record<string, Tab> {
           note: 'One without onion',
         },
         { id: 'b7-5', productId: 'smudj', quantity: 1, sentAt: '19:01' },
-        { id: 'b7-6', productId: 'palacinke', quantity: 2 },
+        // The desserts wait for the main course to be eaten.
+        { id: 'b7-6', productId: 'palacinke', quantity: 2, held: true },
       ],
       payments: [],
     },
@@ -368,11 +388,18 @@ export function equalShares(remaining: bigint, people: number): bigint[] {
   )
 }
 
-/** The lines not sent yet, by station: "2 to the bar, 1 to the kitchen". */
-export function unsentByStation(venue: Venue, tab: Tab): { station: Station; count: number }[] {
+/**
+ * The lines waiting to be sent, by station: "2 to the bar, 1 to the kitchen" — the new ones
+ * ('new': not sent, not held), or those held for a later course ('held').
+ */
+export function unsentByStation(
+  venue: Venue,
+  tab: Tab,
+  which: 'new' | 'held' = 'new',
+): { station: Station; count: number }[] {
   const counts = new Map<string, { station: Station; count: number }>()
   for (const line of tab.lines) {
-    if (line.sentAt !== undefined) continue
+    if (line.sentAt !== undefined || (line.held === true) !== (which === 'held')) continue
     const product = venue.products.find((each) => each.id === line.productId)
     if (product === undefined) continue
     const station = venue.stations[product.categoryId ?? ''] ?? BAR
@@ -381,6 +408,46 @@ export function unsentByStation(venue: Venue, tab: Tab): { station: Station; cou
     counts.set(station.id, entry)
   }
   return [...counts.values()]
+}
+
+/**
+ * Sends the new lines (or the held ones) to their stations at `now` (P5.90 item 20): the till
+ * sends by itself when the waiter leaves the table, and on "Send now" / "Send held". Returns the
+ * tab and what went where; the sending itself is the application's.
+ */
+export function sendLines(
+  venue: Venue,
+  tab: Tab,
+  now: string,
+  which: 'new' | 'held' = 'new',
+): { tab: Tab; sent: { station: Station; count: number }[] } {
+  const sent = unsentByStation(venue, tab, which)
+  return {
+    tab: {
+      ...tab,
+      lines: tab.lines.map((line) => {
+        if (line.sentAt !== undefined || (line.held === true) !== (which === 'held')) return line
+        const next: TabLine = { ...line, sentAt: now }
+        delete next.held
+        return next
+      }),
+    },
+    sent,
+  }
+}
+
+/** "2 to the kitchen, 1 to the bar". */
+export function sentText(sent: readonly { station: Station; count: number }[]): string {
+  return sent.map((each) => `${String(each.count)} to ${each.station.label}`).join(', ')
+}
+
+/** How many pieces of each product the tab holds (the tiles' counts). */
+export function inOrder(tab: Tab | undefined): Record<string, number> {
+  const counts: Record<string, number> = {}
+  for (const line of tab?.lines ?? []) {
+    counts[line.productId] = (counts[line.productId] ?? 0) + line.quantity
+  }
+  return counts
 }
 
 /** Moves the chosen pieces (or every line) to another table's tab, joining it when open. */

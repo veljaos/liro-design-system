@@ -2,13 +2,14 @@
  * Group K's example data (P5.25, floor plans), fictitious, on the examples' today, Tuesday
  * 6 October 2026: Bistro Dunav on the quay in Novi Sad during the evening service (19:40) — the
  * hall (Sala), the terrace (Terasa) and the bar, tables free, occupied (since when, how many) and
- * reserved (for when, how many, for whom), one waiting to be cleaned; the takeaway and delivery
- * orders. The states and their tones are the application's map. Amounts are whole paras
+ * reserved (for when, how many, for whom); the takeaway and delivery orders. The states and their
+ * tones are the application's map: Bistro Dunav has no "Needs cleaning" state (P5.90 item 20, a
+ * cleared table is free at once; an application may turn one on). Amounts are whole paras
  * (BigInt): every line total, total and tax is computed here, as the application would; the
  * components add nothing (D4). The stated figures are checked in dataset-checks.ts. Not part of the
  * package. No classes here.
  */
-import { CalendarClock, CircleCheck, Sparkles, UsersRound } from 'lucide-react'
+import { CalendarClock, CircleCheck, UsersRound } from 'lucide-react'
 import type { FloorArea, FloorItem, FloorState } from '@veljaos/ui'
 
 export const K_ROUTES = {
@@ -16,8 +17,6 @@ export const K_ROUTES = {
   floor: '/restaurant/bistro-dunav/floor',
   /** Table 7 chosen: its party and what can be done. */
   floorTable: '/restaurant/bistro-dunav/floor?table=t7',
-  /** Free table 4: "Open table" asked how many. */
-  floorOpen: '/restaurant/bistro-dunav/floor?table=t4&open',
   /** Occupied table 5: "Move to table…" open. */
   floorMove: '/restaurant/bistro-dunav/floor?table=t5&move',
   /** Reserved table 8 (six guests): "Move to table…" open; no free table has six seats. */
@@ -46,7 +45,6 @@ export const BISTRO_STATES: FloorState[] = [
   { id: 'free', label: 'Free', tone: 'success', icon: CircleCheck },
   { id: 'occupied', label: 'Occupied', tone: 'neutral', icon: UsersRound },
   { id: 'reserved', label: 'Reserved', tone: 'premium', icon: CalendarClock },
-  { id: 'cleaning', label: 'Needs cleaning', tone: 'warning', icon: Sparkles },
 ]
 
 /** 1200 × 760 centimetres of floor. */
@@ -60,8 +58,8 @@ export const BISTRO_AREAS: FloorArea[] = [
 
 /** A table's party, as the restaurant's application keeps it. */
 export interface Party {
-  /** How many guests. */
-  size: number
+  /** How many guests; unknown for a table opened with one tap (P5.90 item 20). */
+  size?: number
   /** Occupied since, or reserved for (HH:mm). */
   time: string
   /** The reservation's name. */
@@ -83,7 +81,7 @@ export interface BistroTable {
   rotation?: 0 | 90
   seats: number
   areaId: string
-  state: 'free' | 'occupied' | 'reserved' | 'cleaning'
+  state: 'free' | 'occupied' | 'reserved'
   party?: Party
 }
 
@@ -127,7 +125,7 @@ export const BISTRO_TABLES: BistroTable[] = [
     time: '19:20',
     note: 'Asked for a quieter table',
   }),
-  table(6, 'round', [230, 290, 100, 100], 'sala', 4, 'cleaning'),
+  table(6, 'round', [230, 290, 100, 100], 'sala', 4, 'free'),
   table(7, 'rect', [400, 290, 150, 100], 'sala', 6, 'occupied', { size: 5, time: '18:50' }),
   table(8, 'rect', [590, 290, 130, 100], 'sala', 6, 'reserved', {
     size: 6,
@@ -177,9 +175,15 @@ export const BISTRO_FIXTURES: FloorItem[] = [
   },
 ]
 
-/** "4 guests", the party with its noun. */
-export function guestsText(size: number, number: (value: string) => string): string {
+/** "4 guests", the party with its noun; empty while the number is not known. */
+export function guestsText(size: number | undefined, number: (value: string) => string): string {
+  if (size === undefined) return ''
   return size === 1 ? '1 guest' : `${number(String(size))} guests`
+}
+
+/** "4 guests · 19:20", or only the time while the number is not known. */
+function partyText(first: string, second: string): string {
+  return [first, second].filter((part) => part !== '').join(' · ')
 }
 
 /**
@@ -199,8 +203,8 @@ export function bistroItems(
         party === undefined
           ? undefined
           : each.state === 'reserved'
-            ? `${party.time} · ${guestsText(party.size, number)}`
-            : `${guestsText(party.size, number)} · ${party.time}`
+            ? partyText(party.time, guestsText(party.size, number))
+            : partyText(guestsText(party.size, number), party.time)
       return {
         id: each.id,
         kind: 'table' as const,
@@ -217,7 +221,10 @@ export function bistroItems(
         stateId: each.state,
         ...(detail === undefined || party === undefined
           ? {}
-          : { detail, planDetail: guestsText(party.size, number) }),
+          : {
+              detail,
+              planDetail: party.size === undefined ? party.time : guestsText(party.size, number),
+            }),
         ...(party?.note === undefined ? {} : { note: party.note }),
       }
     }),

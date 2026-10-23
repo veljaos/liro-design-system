@@ -139,7 +139,7 @@ export function checkRestaurant() {
   const items = bistroItems(BISTRO_TABLES, (value) => value).filter((item) => item.kind === 'table')
   if (overlappingItems(items).length > 0) fail('Bistro Dunav: two tables overlap')
   for (const table of BISTRO_TABLES) {
-    if (table.party !== undefined && table.party.size > table.seats) {
+    if (table.party?.size !== undefined && table.party.size > table.seats) {
       fail(`Bistro Dunav: table ${String(table.number)} has more guests than seats`)
     }
   }

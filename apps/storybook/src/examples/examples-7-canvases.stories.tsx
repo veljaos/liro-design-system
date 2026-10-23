@@ -174,22 +174,26 @@ export const PosPayInteraction: Story = {
   },
 }
 
-/** Phone: the cart first, "Products" above it opening the products as a bottom sheet. */
+/**
+ * Phone: the products first (the most sold chip, the search, the tiles with their counts in the
+ * sale) and the sale as a compact bar at the bottom — "Order · 6 items · 1.907,00 RSD" — that
+ * expands into the cart with "Charge" (P5.90 item 20).
+ */
 export const PosPhone: Story = {
   name: 'POS checkout, phone',
   render: () => <OnPhone start={I_ROUTES.pos} />,
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('button', { name: 'Products' })).toBeVisible()
-    await expect(
-      canvas.getByRole('button', { name: chargeName(SALE_FIGURES.total) }),
-    ).toBeInTheDocument()
+    await expect(canvas.getByRole('button', { name: /^Order\s*6 items/ })).toHaveTextContent(
+      tillText(SALE_FIGURES.total),
+    )
+    await expect(canvas.getByRole('button', { name: /^Kifla/ })).toHaveAccessibleDescription(
+      '6 in the order',
+    )
     await expectNoSidewaysScroll(canvasElement)
   },
 }
-
-const SERBIAN_K = createFormat('sr-Latn-RS')
 
 /** A table on a floor plan by its id. */
 function floorItem(canvasElement: HTMLElement, id: string): HTMLElement {
@@ -209,8 +213,9 @@ async function expectNoPageScroll(canvasElement: HTMLElement) {
 
 /**
  * Bistro Dunav at 19:40 on a Tuesday: the hall, the terrace and the bar, each table in the
- * restaurant's state — free, occupied (how many, since when), reserved (for when, how many),
- * one waiting to be cleaned. Table 7 is chosen: its party and "Move to table…".
+ * restaurant's state — free, occupied (how many, since when), reserved (for when, how many); no
+ * "Needs cleaning" (P5.90 item 20). One tap on a table opens its tab; table 7 is chosen from the
+ * keyboard: its party, "Move to table…" and "Open tab".
  */
 export const RestaurantService: Story = {
   name: 'Restaurant service, Bistro Dunav',
@@ -224,6 +229,8 @@ export const RestaurantService: Story = {
     )
     await expect(canvas.getByRole('heading', { name: /^Table 7/ })).toBeVisible()
     await expect(canvas.getByRole('button', { name: 'Move to table…' })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Open tab' })).toBeVisible()
+    await expect(canvas.getByRole('list', { name: 'States' })).not.toHaveTextContent('cleaning')
     await expectNoPageScroll(canvasElement)
   },
 }
@@ -266,11 +273,15 @@ function phonePlay(
   }
 }
 
-/** Bistro Dunav's table 7: food from the kitchen, drinks from the bar, the dessert promotion. */
+/**
+ * Bistro Dunav's table 7: food from the kitchen, drinks from the bar, the dessert promotion; the
+ * desserts held for later (P5.90 item 20: sent with "Send held", not when the waiter leaves).
+ */
 const RESTAURANT_TAB_CHECK = async (canvasElement: HTMLElement) => {
   await expect(canvasElement).toHaveTextContent('Sent to the kitchen · 19:01')
   await expect(canvasElement).toHaveTextContent('Dessert of the day −15%')
   await expect(canvasElement).toHaveTextContent('One without onion')
+  await expect(canvasElement).toHaveTextContent('Held for later')
 }
 
 export const RestaurantTab: Story = {
@@ -285,7 +296,11 @@ export const RestaurantTabPhone: Story = {
   play: phonePlay(RESTAURANT_TAB_CHECK),
 }
 
-/** Bistro Dunav: table 7's tab from the floor, a krempita added, back on the floor its total. */
+/**
+ * Bistro Dunav (P5.90 item 20): table 7's tab from the floor, a krempita added — "New" until the
+ * waiter leaves; back on the floor it has gone to the kitchen by itself, and one tap on table 7
+ * opens its tab again with the krempita sent.
+ */
 export const RestaurantTabInteraction: Story = {
   name: 'Restaurant tab, interaction',
   tags: ['interaction', '!dev'],
@@ -293,16 +308,20 @@ export const RestaurantTabInteraction: Story = {
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
-    await userEvent.click(canvas.getByRole('button', { name: 'Tab' }))
+    await userEvent.click(canvas.getByRole('button', { name: 'Open tab' }))
     await expect(await canvas.findByRole('heading', { name: 'Table 7' })).toBeVisible()
     await userEvent.click(canvas.getByRole('button', { name: /^Krempita/ }))
-    await expect(canvas.getByRole('button', { name: 'Send order (3)' })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Send now (1)' })).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('New · sent when you leave the table')
     await userEvent.click(canvas.getByRole('button', { name: 'Floor' }))
+    await expect(
+      await within(document.body).findByText('Sent: 1 to the kitchen.'),
+    ).toBeInTheDocument()
     await userEvent.click(await waitFor(() => floorItem(canvasElement, 't7')))
-    await expect(await canvas.findByRole('button', { name: 'Tab' })).toBeVisible()
-    await expect(canvasElement).toHaveTextContent(
-      SERBIAN_K.money('9534', 'RSD').replace(/\s+/g, ' '),
-    )
+    await expect(await canvas.findByRole('heading', { name: 'Table 7' })).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('Sent to the kitchen · 19:40')
+    await expect(canvas.getByRole('button', { name: /^Bill 9\.534,00\sRSD$/ })).toBeInTheDocument()
+    notice.dismiss()
   },
 }
 
