@@ -61,7 +61,7 @@ import { usePhone } from './use-phone'
  *   application's clock) draws the time grids' one "now" marker (P5.28 item 10, NowMarker: a
  *   neutral line with a dot) across today's column, and its slot is `aria-current="time"`. Month: whole weeks, at most three lines a day, then "+N more", which opens the day's
  *   list (a popover with every event and "Open the day"). Agenda: the week's days that have
- *   events, each event a row with its time.
+ *   events, each event a row with its time, without bullet dots (P5.90 item 15).
  * - Tones: an event's optional status tone (neutral by default) colours its block — the tone's
  *   bg with its fg text and a 3px bar in the fg at the start. Never blue (D17).
  * - Keyboard (role grid, one tab stop): the arrows move between days (from the leading edge,
@@ -719,6 +719,23 @@ function TimeGrid(
             )
           })}
         </div>
+        {/* After the slots, before the events: events cover its line, never the reverse (P5.90). */}
+        {now !== null && (
+          <div
+            className="pointer-events-none absolute inset-y-0"
+            style={{ insetInlineStart: GUTTER, insetInlineEnd: 0 }}
+          >
+            <NowMarker
+              orientation="horizontal"
+              label={now.label}
+              style={{
+                top: now.top,
+                insetInlineStart: `${String((now.column * 100) / props.days.length)}%`,
+                width: `${String(100 / props.days.length)}%`,
+              }}
+            />
+          </div>
+        )}
         {/* The events, over their day's column; after the grid in the tab order. */}
         <div
           className="pointer-events-none absolute inset-y-0"
@@ -782,17 +799,6 @@ function TimeGrid(
               })}
             </ul>
           ))}
-          {now !== null && (
-            <NowMarker
-              orientation="horizontal"
-              label={now.label}
-              style={{
-                top: now.top,
-                insetInlineStart: `${String((now.column * 100) / props.days.length)}%`,
-                width: `${String(100 / props.days.length)}%`,
-              }}
-            />
-          )}
         </div>
       </div>
     </div>
@@ -1025,8 +1031,9 @@ function MonthGrid(
 }
 
 /**
- * One event as a row of a list: its time at the start, the tone's dot, the title and its
- * description; `stacked` (the day list, phones) puts the time above the title.
+ * One event as a row of a list: its time at the start, the title and its description; `stacked`
+ * (the day list, phones) puts the time above the title. No bullet dot (P5.90 item 15): a toned
+ * event carries its blocks' 3px start bar in the tone's fg; a neutral event has no mark.
  */
 function EventRow({
   read,
@@ -1039,12 +1046,7 @@ function EventRow({
 }) {
   const liro = useLiro()
   const texts = eventTexts(read, liro)
-  const dot = (
-    <span
-      aria-hidden="true"
-      className={cn('size-2 shrink-0 rounded-full bg-current', toneClasses(read.event.tone).fg)}
-    />
-  )
+  const toned = read.event.tone !== undefined && read.event.tone !== 'neutral'
   const time = <span className={cn('tabular-nums', TEXT_ISOLATE)}>{texts.time}</span>
   return (
     <EventBox
@@ -1055,16 +1057,18 @@ function EventRow({
               onSelect(read.event)
             }
       }
-      className="flex w-full min-w-0 items-start gap-3 rounded-sm px-2 py-2 text-start hover:bg-surface-hover"
+      className="relative flex w-full min-w-0 items-start gap-3 rounded-sm px-2 py-2 text-start hover:bg-surface-hover"
     >
-      {stacked ? (
-        <span className="mt-1.5 flex shrink-0">{dot}</span>
-      ) : (
-        <>
-          <span className="w-40 shrink-0 text-sm text-secondary">{time}</span>
-          <span className="mt-1.5 flex shrink-0">{dot}</span>
-        </>
+      {toned && (
+        <span
+          aria-hidden="true"
+          className={cn(
+            'absolute inset-y-1 start-0 w-[3px] rounded-full bg-current',
+            toneClasses(read.event.tone).fg,
+          )}
+        />
       )}
+      {!stacked && <span className="w-40 shrink-0 text-sm text-secondary">{time}</span>}
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
         {stacked && <span className="text-xs text-secondary">{time}</span>}
         <span className={cn('text-sm font-semibold text-primary', TEXT_DIRECTION)}>

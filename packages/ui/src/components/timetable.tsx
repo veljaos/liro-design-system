@@ -161,8 +161,9 @@ export function Timetable(props: TimetableProps) {
 
   const cell = (day: Weekday, period: TimetablePeriod) => {
     const lessons = lessonsAt(day, period.id)
+    // Positioned, after the "now" marker: the lessons and the free mark cover its line (P5.90).
     return (
-      <div className="flex flex-col gap-1">
+      <div className="relative flex flex-col gap-1">
         {lessons.length === 0 ? (
           <span className="px-3 py-1.5 text-sm text-tertiary">
             <span aria-hidden="true">—</span>
@@ -234,7 +235,7 @@ export function Timetable(props: TimetableProps) {
               className="relative flex gap-3 border-0 border-t border-solid border-subtle py-2 first:border-t-0"
             >
               {nowMarker(shownDay, period)}
-              <div className="flex w-24 shrink-0 flex-col gap-0.5">
+              <div className="relative flex w-24 shrink-0 flex-col gap-0.5">
                 <span className={cn('text-sm font-semibold text-primary', TEXT_DIRECTION)}>
                   {period.label}
                 </span>
@@ -316,8 +317,8 @@ export function Timetable(props: TimetableProps) {
                     : {})}
                   className="relative border-0 border-t border-s border-solid border-subtle p-1.5 align-top"
                 >
-                  {cell(day, period)}
                   {nowMarker(day, period)}
+                  {cell(day, period)}
                 </td>
               ))}
             </tr>

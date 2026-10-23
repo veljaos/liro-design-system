@@ -28,6 +28,8 @@ import {
   periodDays,
   readMoment,
   scheduleKeyTarget,
+  scheduleSearchMatches,
+  foldSearchText,
   shiftPeriod,
   slotKey,
   slotsPerDay,
@@ -469,5 +471,23 @@ describe('now (P5.28 item 10)', () => {
     expect(nowOnAxis(days, { day: '2026-10-14', minutes: 720 })).toBe(2 * 1440 + 720)
     expect(nowOnAxis(days, { day: '2026-10-11', minutes: 720 })).toBeNull()
     expect(nowOnAxis(days, { day: '2026-10-26', minutes: 0 })).toBeNull()
+  })
+})
+
+describe('scheduleSearchMatches: the phone lists search (P5.90 item 19)', () => {
+  it('matches every word anywhere in the texts, without case or accents', () => {
+    const texts = ['Đorđević Marija', '2 adults · Booking.com', 'Room 412']
+    expect(scheduleSearchMatches('', texts, 'sr-Latn-RS')).toBe(true)
+    expect(scheduleSearchMatches('  ', texts, 'sr-Latn-RS')).toBe(true)
+    expect(scheduleSearchMatches('dordevic', texts, 'sr-Latn-RS')).toBe(true)
+    expect(scheduleSearchMatches('ĐORĐEVIĆ', texts, 'sr-Latn-RS')).toBe(true)
+    expect(scheduleSearchMatches('412 marija', texts, 'sr-Latn-RS')).toBe(true)
+    expect(scheduleSearchMatches('booking', texts, 'sr-Latn-RS')).toBe(true)
+    expect(scheduleSearchMatches('413', texts, 'sr-Latn-RS')).toBe(false)
+    expect(scheduleSearchMatches('marija 413', texts, 'sr-Latn-RS')).toBe(false)
+  })
+  it('skips missing texts', () => {
+    expect(scheduleSearchMatches('suljic', ['Šuljić', undefined], 'en')).toBe(true)
+    expect(foldSearchText(' Šuljić ', 'en')).toBe('suljic')
   })
 })

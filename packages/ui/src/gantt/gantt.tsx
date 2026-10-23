@@ -724,7 +724,8 @@ function GanttChart(props: ChartProps) {
             label={messages['gantt.now'](
               `${format.date(moment.day)} ${String(Math.floor(moment.minutes / 60)).padStart(2, '0')}:${String(moment.minutes % 60).padStart(2, '0')}`,
             )}
-            className="z-[3]"
+            // Under the bars (`.wx-bars` is layer 1 in gantt.css): they cover its line (P5.90).
+            className="z-0"
             style={{ insetInlineStart: nowX, top: 0, bottom: 0 }}
           />,
           area,

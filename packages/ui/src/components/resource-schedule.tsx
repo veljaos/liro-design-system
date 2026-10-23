@@ -39,6 +39,7 @@ import {
 } from './schedule-logic'
 import { SelectField } from './select-field'
 import { NowMarker } from './now-marker'
+import { SchedulePhoneLists, type SchedulePhoneList } from './schedule-phone-lists'
 import type { Tone } from './status-badge'
 import { STICKY_HEAD, STICKY_START, useStickyHead } from './sticky-head'
 import { usePhone } from './use-phone'
@@ -69,7 +70,11 @@ import { usePhone } from './use-phone'
  *   reservation) is confirmed by the application with ChangeConfirmDialog (old → new, "Notify …"
  *   as a choice, Cancel / Save) before it is moved or anyone is messaged.
  * - Phones (below 48em or `layout="phone"`): one row at a time, chosen in a select; the time runs
- *   down; Left and Right move a picked-up booking to the other rows.
+ *   down; Left and Right move a picked-up booking to the other rows. With `phoneLists` (P5.90
+ *   item 19, the F7 phone rule: many rows, a hotel's 200 rooms) no timeline at all: the day's
+ *   lists the application passes (arrivals, departures, in house), a list at a time with its
+ *   count, a search, each booking a row that opens it (`onSelect`). Desktops and tablets keep the
+ *   timeline.
  * - `scale="days"` (P5.25): stays over days — rooms, vehicles, equipment. Each day of `days` is a
  *   column (64px at least; 48px high on phones) under its weekday and date, today's date in the
  *   neutral circle; bookings and unavailable times are read by their days (a day value's `end`
@@ -144,6 +149,14 @@ export interface ResourceScheduleProps {
   resourceLabel?: string
   /** 'phone' shows one row at a time with the time running down; default by the viewport. */
   layout?: 'desktop' | 'phone'
+  /**
+   * Phones (P5.90 item 19): the day's lists instead of the timeline — "Arrivals", "Departures",
+   * "In house" — each with its bookings, chosen and counted by the application. For schedules
+   * with many rows; the timeline stays on desktops and tablets.
+   */
+  phoneLists?: readonly SchedulePhoneList[]
+  /** The phone lists' search label ("Search guests or rooms"). Default `schedule.search`. */
+  phoneSearchLabel?: string
   /**
    * 'days' (P5.25): one column a day over `days` (stays of several days: rooms, vehicles);
    * bookings are read by their days and moved by whole days, `dayStart`, `dayEnd` and
@@ -829,8 +842,11 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
         aria-busy="true"
         className={cn('flex flex-col gap-2', props.className)}
       >
-        {Array.from({ length: phone ? 1 : 4 }, (_, index) => (
-          <Skeleton key={index} className={phone ? 'h-96' : 'h-14'} />
+        {Array.from({ length: phone && props.phoneLists === undefined ? 1 : 4 }, (_, index) => (
+          <Skeleton
+            key={index}
+            className={phone && props.phoneLists === undefined ? 'h-96' : 'h-14'}
+          />
         ))}
       </div>
     )
@@ -877,6 +893,20 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
       </span>
     </>
   )
+
+  if (phone && props.phoneLists !== undefined) {
+    return (
+      <SchedulePhoneLists
+        lists={props.phoneLists}
+        resources={props.resources}
+        label={props.label}
+        byDay={byDay}
+        {...(props.phoneSearchLabel === undefined ? {} : { searchLabel: props.phoneSearchLabel })}
+        {...(props.onSelect === undefined ? {} : { onSelect: props.onSelect })}
+        {...(props.className === undefined ? {} : { className: props.className })}
+      />
+    )
+  }
 
   return (
     <div
@@ -943,15 +973,15 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
             ))}
           </div>
           <div className="relative min-w-0 flex-1 border-0 border-s border-solid border-subtle">
-            {renderTrack(phoneRow)}
+            {/* Before the bookings: they cover its line, never the reverse (P5.90 item 17). */}
             {nowAt !== null && (
               <NowMarker
                 orientation="horizontal"
                 label={nowAt.label}
-                className="z-[1]"
                 style={{ top: along(nowAt.at), insetInlineStart: 0, insetInlineEnd: 0 }}
               />
             )}
+            {renderTrack(phoneRow)}
           </div>
         </div>
       ) : (
@@ -1037,6 +1067,19 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
               </div>
             </div>
             <div className="relative">
+              {/* Before the rows: bookings and names cover its line, never the reverse (P5.90). */}
+              {nowAt !== null && (
+                <div
+                  className="pointer-events-none absolute inset-y-0"
+                  style={{ insetInlineStart: NAME_WIDTH, insetInlineEnd: 0 }}
+                >
+                  <NowMarker
+                    orientation="vertical"
+                    label={nowAt.label}
+                    style={{ insetInlineStart: `${String(along(nowAt.at))}%`, top: 0, bottom: 0 }}
+                  />
+                </div>
+              )}
               {props.resources.map((resource, row) => (
                 <div
                   key={resource.id}
@@ -1069,18 +1112,6 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
                   {renderTrack(row)}
                 </div>
               ))}
-              {nowAt !== null && (
-                <div
-                  className="pointer-events-none absolute inset-y-0 z-[1]"
-                  style={{ insetInlineStart: NAME_WIDTH, insetInlineEnd: 0 }}
-                >
-                  <NowMarker
-                    orientation="vertical"
-                    label={nowAt.label}
-                    style={{ insetInlineStart: `${String(along(nowAt.at))}%`, top: 0, bottom: 0 }}
-                  />
-                </div>
-              )}
             </div>
           </div>
         </div>

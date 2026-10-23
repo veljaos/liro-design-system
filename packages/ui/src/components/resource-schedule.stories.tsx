@@ -18,6 +18,8 @@ import {
   CLINIC_UNAVAILABLE,
   ScheduleFrame,
 } from './schedule-story-data'
+import type { SchedulePhoneList } from './schedule-phone-lists'
+import { HOTEL_LISTS, HOTEL_ROOMS, HOTEL_STAYS } from './schedule-phone-story-data'
 import { PhoneFrame } from './story-frames'
 import {
   expectBelowShell,
@@ -171,7 +173,11 @@ const meta = {
           'appointment, a reservation) only proposes: the application confirms it with ' +
           'ChangeConfirmDialog — old → new, "Notify …" as a choice, Cancel / Save — and changes ' +
           '`bookings` on Save (P5.28 item 9; "Move asked").\n\n' +
-          '**Phones:** one row at a time, chosen in a select; the time runs down.\n\n' +
+          '**Phones:** one row at a time, chosen in a select; the time runs down. With many ' +
+          'rows (a hotel with 200 rooms) a phone shows no timeline at all: `phoneLists`, the ' +
+          'day’s lists the application passes — Arrivals, Departures, In house — a list at a ' +
+          'time with its count, a search over names, rooms and notes, each booking a row that ' +
+          'opens it (`onSelect`). Desktops and tablets keep the timeline (the F7 phone rule).\n\n' +
           '**When:** planning shared people or rooms over one day or a few days.\n\n' +
           '**When not:** one person’s days and weeks (CalendarView); offering free slots to book ' +
           '(SlotPicker); a school week (Timetable).',
@@ -209,7 +215,12 @@ export const Default: Story = {
     )
     await expect(canvas.getByRole('button', { name: 'Move to…: Ana Petrović' })).toBeVisible()
     // The time grids' one "now" marker (P5.28 item 10), from the application's clock.
-    await expect(canvas.getByRole('img', { name: /^Now, 10:20\sAM$/ })).toBeInTheDocument()
+    const marker = canvas.getByRole('img', { name: /^Now, 10:20\sAM$/ })
+    await expect(marker).toBeInTheDocument()
+    // Drawn before the bookings, which cover its line, never the reverse (P5.90 item 17).
+    await expect(
+      marker.compareDocumentPosition(ana) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
   },
 }
 
@@ -773,6 +784,136 @@ export const DaysPhone: Story = {
     const schedule = canvasElement.querySelector<HTMLElement>('[data-slot="resource-schedule"]')
     if (schedule !== null)
       await expect(schedule.scrollWidth).toBeLessThanOrEqual(schedule.clientWidth)
+  },
+}
+
+// ── Phones with many rows (P5.90 item 19, the F7 phone rule): today's lists, no timeline ──
+
+/** Hotel Fruška's 200 rooms on a phone: the day's lists, a search, a press opens the stay. */
+function HotelPhone({
+  lists = HOTEL_LISTS,
+  loading = false,
+}: {
+  lists?: readonly SchedulePhoneList[]
+  loading?: boolean
+}) {
+  const [opened, setOpened] = useState('')
+  return (
+    <PhoneFrame>
+      <ScheduleFrame>
+        <div className="flex flex-col gap-3 p-4">
+          <ResourceSchedule
+            layout="phone"
+            scale="days"
+            days={FORTNIGHT}
+            resources={HOTEL_ROOMS}
+            bookings={HOTEL_STAYS}
+            phoneLists={lists}
+            phoneSearchLabel="Search guests or rooms"
+            label="Hotel Fruška, Wednesday 14 October"
+            loading={loading}
+            onSelect={(stay) => {
+              setOpened(`Opened: ${stay.title}`)
+            }}
+          />
+          <output className={cn('text-sm text-secondary', TEXT_DIRECTION)}>{opened}</output>
+        </div>
+      </ScheduleFrame>
+    </PhoneFrame>
+  )
+}
+
+/**
+ * A hotel of 200 rooms on a phone: no timeline — the day's lists (17 arrivals, 20 departures, 134
+ * in house), which the application passes, a list at a time with its count, and a search.
+ */
+export const PhoneLists: Story = {
+  name: 'Phone, 200 rooms: today’s lists',
+  render: () => <HotelPhone />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('radio', { name: 'Arrivals 17' })).toBeChecked()
+    await expect(canvas.getByRole('radio', { name: 'In house 134' })).not.toBeChecked()
+    await expect(canvas.getByRole('list', { name: 'Arrivals' }).children).toHaveLength(17)
+    await expect(canvasElement.querySelector('[data-track]')).toBeNull()
+  },
+}
+
+/** Search by a guest without accents, choose the list, press a stay to open it. */
+export const PhoneListsInteraction: Story = {
+  name: 'Phone lists, interaction',
+  tags: ['interaction'],
+  render: () => <HotelPhone />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('radio', { name: /^In house/ }))
+    await expect(canvas.getByRole('list', { name: 'In house' }).children).toHaveLength(134)
+    await userEvent.type(
+      canvas.getByRole('searchbox', { name: 'Search guests or rooms' }),
+      'dordevic',
+    )
+    const list = canvas.getByRole('list', { name: 'In house' })
+    await expect(list.children.length).toBeLessThan(134)
+    for (const row of Array.from(list.children)) {
+      await expect(row).toHaveTextContent('Đorđević')
+    }
+    // The counts follow the search: Thomas Đorđević arrives today.
+    await expect(canvas.getByRole('radio', { name: 'Arrivals 1' })).toBeVisible()
+    await userEvent.click(canvas.getByRole('radio', { name: 'Arrivals 1' }))
+    await userEvent.click(canvas.getByRole('button', { name: /Thomas Đorđević/ }))
+    await expect(canvas.getByText('Opened: Thomas Đorđević')).toBeVisible()
+    await userEvent.clear(canvas.getByRole('searchbox', { name: 'Search guests or rooms' }))
+    await userEvent.type(
+      canvas.getByRole('searchbox', { name: 'Search guests or rooms' }),
+      'room 999',
+    )
+    await expect(canvas.getByText('Nothing matches “room 999”')).toBeVisible()
+  },
+}
+
+/** A quiet day: no arrivals, in the application's words. */
+export const PhoneListsEmpty: Story = {
+  name: 'Phone lists, empty',
+  render: () => (
+    <HotelPhone
+      lists={HOTEL_LISTS.map((list) => (list.id === 'in-house' ? list : { ...list, bookings: [] }))}
+    />
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(within(canvasElement).getByText('No arrivals today')).toBeVisible()
+  },
+}
+
+/** The lists load: skeleton rows. */
+export const PhoneListsLoading: Story = {
+  name: 'Phone lists, loading',
+  render: () => <HotelPhone loading />,
+}
+
+/** Desktops and tablets keep the timeline: `phoneLists` is for phones only. */
+export const PhoneListsDesktop: Story = {
+  name: 'Phone lists on a desktop: the timeline',
+  render: () => (
+    <ScheduleFrame>
+      <Schedule
+        scale="days"
+        days={FORTNIGHT}
+        resources={ROOMS}
+        initial={STAYS}
+        phoneLists={[{ id: 'arrivals', label: 'Arrivals', bookings: STAYS.slice(2, 3) }]}
+        label="Rooms, 14 – 27 October 2026"
+        resourceLabel="Room"
+        layout="desktop"
+      />
+    </ScheduleFrame>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement.querySelector('[data-track]')).not.toBeNull()
+    await expect(within(canvasElement).queryByRole('list', { name: 'Arrivals' })).toBeNull()
   },
 }
 

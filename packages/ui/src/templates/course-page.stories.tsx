@@ -2,14 +2,17 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { ClipboardCheck, HardHat, RotateCcw } from 'lucide-react'
 import { useState } from 'react'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
+import { BarChart } from '../charts'
 import { Alert } from '../components/alert'
 import { Button } from '../components/button'
+import { DataTable } from '../components/data-table'
 import { Questionnaire } from '../components/questionnaire'
 import { QuizResult } from '../components/quiz-result'
 import { ExampleProvider, PhoneFrame, StoryProvider } from '../components/story-frames'
 import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { settle } from '../primitives/story-helpers'
+import { RichText } from '../rich-text/rich-text'
 import { CoursePage, type CoursePageProps } from './course-page'
 import { SAFETY_CERTIFICATE, SAFETY_QUIZ, safetyCourse } from './print-story-data'
 import { PrintCertificate } from './print-templates'
@@ -44,6 +47,120 @@ function HandlingLesson() {
       <Alert tone="warning" title="Never lift alone">
         Cement bags, blocks on a pallet and reinforcement bars over 25 kg are carried by two people
         or with a trolley.
+      </Alert>
+    </>
+  )
+}
+
+/** A picture from the application: how to lift (an SVG drawing on paper, light in both themes). */
+const LIFT_PICTURE = `data:image/svg+xml,${encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 220" width="480" height="220">' +
+    '<rect width="480" height="220" fill="white"/>' +
+    '<g fill="none" stroke="black" stroke-width="4" stroke-linecap="round">' +
+    '<circle cx="110" cy="50" r="18"/><path d="M110 68 L104 130 M104 130 L80 160 L84 200 M104 130 L128 160 L124 200 M108 84 L140 120"/>' +
+    '<rect x="132" y="112" width="56" height="44"/>' +
+    '<circle cx="330" cy="40" r="18"/><path d="M330 58 L330 130 M330 130 L312 200 M330 130 L348 200 M330 78 L362 112"/>' +
+    '<rect x="352" y="104" width="56" height="44"/></g></svg>',
+)}`
+
+/** The video's poster: the first frame the application gives (a plain card here). */
+const VIDEO_POSTER = `data:image/svg+xml,${encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" width="640" height="360">' +
+    '<rect width="640" height="360" fill="black"/>' +
+    '<path d="M290 140 L370 180 L290 220 Z" fill="white"/></svg>',
+)}`
+
+/** The lesson's text, as the application stores it (RichText, sanitized). */
+const LESSON_TEXT = `<p>Most injuries on Kvadrat Gradnja’s sites in 2025 came from <strong>lifting and
+carrying</strong>, not from falls. Plan the lift, use the crane or a trolley where you can.</p>
+<h3>Before you lift</h3><ul><li>Check the weight on the label or the delivery note.</li>
+<li>Clear the path to where the load goes.</li><li>Wear gloves and safety boots — always.</li></ul>`
+
+interface LoadRow {
+  id: string
+  load: string
+  weight: string
+  how: string
+}
+
+const LOADS: readonly LoadRow[] = [
+  { id: 'cement', load: 'Cement bag', weight: '25 kg', how: 'One person, close to the body' },
+  { id: 'blocks', load: 'Blocks, one row of a pallet', weight: '48 kg', how: 'Two people' },
+  { id: 'bars', load: 'Reinforcement bars, a bundle', weight: '60 kg', how: 'Crane or trolley' },
+]
+
+/**
+ * A lesson with every kind of content (P5.90 item 11): text as RichText, a picture, a chart, a
+ * table, a video with captions and a callout (an Alert). The page keeps pictures and videos
+ * within the lesson's width.
+ */
+function RichLesson() {
+  return (
+    <>
+      <RichText html={LESSON_TEXT} />
+      <figure className="m-0 flex flex-col gap-2">
+        <img
+          src={LIFT_PICTURE}
+          width={480}
+          height={220}
+          alt="Wrong: bent back, the box far from the body. Right: straight back, knees bent, the box close."
+          className="rounded-md border border-solid border-default"
+        />
+        <figcaption className={cn('text-sm text-secondary', TEXT_DIRECTION)}>
+          Bend the knees, not the back; keep the load close.
+        </figcaption>
+      </figure>
+      <BarChart
+        title="Injuries by cause, 2025"
+        description="Kvadrat Gradnja's sites, number of reported injuries"
+        categories={[
+          { key: 'lifting', label: 'Lifting and carrying' },
+          { key: 'slips', label: 'Slips and trips' },
+          { key: 'falls', label: 'Falls from height' },
+          { key: 'tools', label: 'Hand tools' },
+        ]}
+        series={[{ key: 'injuries', label: 'Injuries' }]}
+        values={{ injuries: { lifting: '14', slips: '9', falls: '4', tools: '6' } }}
+      />
+      <DataTable
+        label="Typical loads on the site"
+        columns={[
+          { id: 'load', header: 'Load', cell: (row: LoadRow) => row.load },
+          {
+            id: 'weight',
+            header: 'Weight',
+            align: 'end',
+            numeric: true,
+            cell: (row) => row.weight,
+          },
+          { id: 'how', header: 'How to carry it', cell: (row) => row.how },
+        ]}
+        rows={LOADS}
+        getRowId={(row) => row.id}
+        getRowLabel={(row) => row.load}
+      />
+      <figure className="m-0 flex flex-col gap-2">
+        <video
+          controls
+          preload="none"
+          width={640}
+          height={360}
+          poster={VIDEO_POSTER}
+          aria-label="Video: lifting a cement bag, 2 minutes"
+          className="rounded-md bg-surface-inverse"
+        >
+          <track kind="captions" srcLang="en" label="English" src="data:text/vtt,WEBVTT" default />
+        </video>
+        <figcaption className={cn('text-sm text-secondary', TEXT_DIRECTION)}>
+          Lifting a cement bag, 2 minutes, with captions.
+        </figcaption>
+      </figure>
+      <Alert tone="warning" title="Never lift alone">
+        Cement bags, blocks on a pallet and reinforcement bars over 25 kg are carried by two people
+        or with a trolley.
+      </Alert>
+      <Alert tone="info" title="Remember">
+        Turn with your feet, never with your back.
       </Alert>
     </>
   )
@@ -116,8 +233,11 @@ const meta = {
           'next lesson at the bottom. A quiz is a lesson whose content is the general ' +
           'Questionnaire (P5.1); its outcome is a QuizResult ("9 of 10 correct", passed or not ' +
           'from the application). At completion the page offers the certificate: "Download ' +
-          'certificate" and its preview (a PrintCertificate, P5.15). Phones: the content first, ' +
-          'the outline in a drawer from "Course outline".\n\n' +
+          'certificate" and its preview (a PrintCertificate, P5.15). The outline can be collapsed ' +
+          '("Hide outline", the lesson full width). Phones: the content first, the outline ' +
+          'collapsed in a sheet from "Course outline". A lesson’s content is the ' +
+          'application’s: text as RichText, pictures, charts, tables, a video with captions, ' +
+          'callouts as Alerts.\n\n' +
           '**When:** training and courses: occupational safety, onboarding, a school subject’s ' +
           'lessons.\n\n' +
           '**When not:** a guided form (FormWizard, Questionnaire alone); documentation that is ' +
@@ -166,6 +286,84 @@ export const Default: Story = {
       'href',
       '#learning/safety/electricity',
     )
+  },
+}
+
+/** A lesson with a picture, a chart, a table, a video and callouts, around RichText. */
+export const RichContent: Story = {
+  name: 'Lesson with pictures, chart, table, video',
+  render: (args) => (
+    <ExampleProvider>
+      <CoursePage {...args} layout="desktop">
+        <RichLesson />
+      </CoursePage>
+    </ExampleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('img', { name: /Bend|Wrong: bent back/ })).toBeVisible()
+    await expect(canvas.getByRole('table', { name: 'Typical loads on the site' })).toBeVisible()
+    await expect(canvas.getByText('Never lift alone')).toBeVisible()
+  },
+}
+
+/**
+ * The outline collapsed (P5.90 item 11): the lesson takes the whole width; "Show outline" (not
+ * pressed) brings it back.
+ */
+export const OutlineCollapsed: Story = {
+  name: 'Outline collapsed',
+  args: { defaultOutlineCollapsed: true },
+  render: (args) => (
+    <ExampleProvider>
+      <CoursePage {...args} layout="desktop">
+        <RichLesson />
+      </CoursePage>
+    </ExampleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('button', { name: 'Show outline' })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    )
+    await expect(canvas.queryByRole('navigation', { name: 'Course outline' })).toBeNull()
+  },
+}
+
+/** "Hide outline" collapses it and reports it, so the application can remember the choice. */
+export const OutlineCollapseInteraction: Story = {
+  name: 'Outline collapse, interaction',
+  tags: ['interaction'],
+  render: function Render(args) {
+    const [said, setSaid] = useState('')
+    return (
+      <ExampleProvider>
+        <CoursePage
+          {...args}
+          layout="desktop"
+          onOutlineCollapsedChange={(collapsed) => {
+            setSaid(collapsed ? 'Outline collapsed' : 'Outline shown')
+          }}
+        >
+          <HandlingLesson />
+        </CoursePage>
+        <output className={cn('text-sm text-secondary', TEXT_DIRECTION)}>{said}</output>
+      </ExampleProvider>
+    )
+  },
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Hide outline' }))
+    await expect(canvas.queryByRole('navigation', { name: 'Course outline' })).toBeNull()
+    await expect(canvas.getByText('Outline collapsed')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Show outline' })).toHaveFocus()
+    await userEvent.click(canvas.getByRole('button', { name: 'Show outline' }))
+    await expect(canvas.getByRole('navigation', { name: 'Course outline' })).toBeVisible()
+    await expect(canvas.getByText('Outline shown')).toBeVisible()
   },
 }
 
@@ -405,6 +603,28 @@ export const LongText: Story = {
 /** On a phone: the lesson first, the outline in a drawer. */
 export const Phone: Story = {
   render: (args) => <PhonePage {...args} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('button', { name: 'Course outline' })).toBeVisible()
+    await expect(canvas.queryByRole('navigation', { name: 'Course outline' })).toBeNull()
+    const page = canvasElement.querySelector<HTMLElement>('[data-slot="course-page"]')
+    if (page !== null) await expect(page.scrollWidth).toBeLessThanOrEqual(page.clientWidth)
+  },
+}
+
+/** On a phone the outline is collapsed by default; the rich lesson fits the screen. */
+export const PhoneRichContent: Story = {
+  name: 'Phone, lesson with pictures, chart, table, video',
+  render: (args) => (
+    <PhoneFrame>
+      <ExampleProvider>
+        <CoursePage {...args} layout="phone">
+          <RichLesson />
+        </CoursePage>
+      </ExampleProvider>
+    </PhoneFrame>
+  ),
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)

@@ -43,6 +43,10 @@ export { CommandPalette } from './components/command-palette'
 export type { CommandItem, CommandPaletteProps } from './components/command-palette'
 export { DateField, DateRangeField } from './components/date-field'
 export type { DateFieldProps, DateRange, DateRangeFieldProps } from './components/date-field'
+export { TimeField } from './components/time-field'
+export type { TimeFieldProps } from './components/time-field'
+export { isTimeValue, parseTimeText } from './components/time-logic'
+export type { TimeTextOptions } from './components/time-logic'
 export {
   ConfirmDialog,
   confirmFamily,
@@ -377,11 +381,18 @@ export { mentionsInText, splitMentions } from './components/message-logic'
 export type { Mention, MentionPart } from './components/message-logic'
 export { Questionnaire } from './components/questionnaire'
 export type { QuestionnaireProps } from './components/questionnaire'
-export { answersOnPath, nextQuestionId, questionPath } from './components/questionnaire-logic'
+export {
+  answersOnPath,
+  nextQuestionId,
+  questionnaireKeyAction,
+  questionPath,
+} from './components/questionnaire-logic'
 export type {
   QuestionAnswer,
   QuestionAnswers,
   QuestionDefinition,
+  QuestionnaireKeyAction,
+  QuestionnaireKeyTarget,
   QuestionnaireStep,
   QuestionOption,
   QuestionType,
@@ -774,6 +785,7 @@ export type {
   ScheduleMove,
   ScheduleResource,
 } from './components/resource-schedule'
+export type { SchedulePhoneList } from './components/schedule-phone-lists'
 export { SlotPicker } from './components/slot-picker'
 export type { SlotPickerProps, SlotResource } from './components/slot-picker'
 export { Timetable } from './components/timetable'
@@ -793,6 +805,7 @@ export {
   periodDays,
   readMoment,
   scheduleKeyTarget,
+  scheduleSearchMatches,
   shiftPeriod as moveCalendarPeriod,
   slotKey,
   spanOf,

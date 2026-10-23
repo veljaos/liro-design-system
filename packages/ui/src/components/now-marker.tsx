@@ -9,6 +9,11 @@ import { cn } from '../primitives/cn'
  * and never a status colour: "now" is not an error or a warning. Its place comes from the
  * application's clock (`now` props), never the device's, so a picture never changes with the time.
  *
+ * **It never covers text (P5.90 item 17):** each grid draws it after its lines and backgrounds and
+ * before its content — events, bookings, lessons, bars and their labels are positioned after it
+ * (or on a higher layer, Gantt's bars), so they cover the line, never the reverse; the dot stays at
+ * the line's edge (a column's leading edge, the top of the rows).
+ *
  * Not part of the package's API: the grids place it (absolutely, inside a positioned box) and name
  * it. With `label` it is an image named by it ("Now, 10:05"); without, it is decoration and the
  * grid says "now" itself (`aria-current="time"`).

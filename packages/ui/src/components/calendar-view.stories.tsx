@@ -113,7 +113,13 @@ export const Default: Story = {
     await expect(canvas.getByRole('grid')).toBeVisible()
     await expect(canvas.getByRole('radio', { name: 'Week' })).toBeChecked()
     // The time grids' one "now" marker (P5.28 item 10) on today's column, its slot current.
-    await expect(canvas.getByRole('img', { name: /^Now, 10:20\sAM$/ })).toBeInTheDocument()
+    const marker = canvas.getByRole('img', { name: /^Now, 10:20\sAM$/ })
+    await expect(marker).toBeInTheDocument()
+    // Drawn before the events, which cover its line, never the reverse (P5.90 item 17).
+    const event = eventButton(canvasElement, 'Minor surgery: Stefan Đorđević')
+    await expect(
+      marker.compareDocumentPosition(event) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
     await expect(canvasElement.querySelector('[aria-current="time"]')).toHaveAccessibleName(
       /^Wednesday, October 14, 2026, 10:00\sAM$/,
     )
