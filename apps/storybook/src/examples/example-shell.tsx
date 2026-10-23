@@ -52,6 +52,8 @@ export const ROUTES = {
   home: '/home',
   invoices: '/sales/invoices',
   invoice: (number: string) => `/sales/invoices/${number}`,
+  /** An invoice's printout, from its page's "PDF". */
+  invoicePrint: (number: string) => `/sales/invoices/${number}/print`,
   dashboard: '/reports/overview',
   approvals: '/purchasing/approvals',
   employee: `/hr/employees/${EMPLOYEE.id}`,
@@ -200,11 +202,11 @@ export function hrTabs(key: string): ModuleTab[] {
 }
 
 /**
- * The application's status-to-tone map (BUILD-PLAN A.7, the application's data, never the
- * Design System's): every status shown in the examples, one tone each, used by every screen
- * (P5.23, the owner's review: "Cancelled" was neutral on some screens). docs/decisions.md lists
- * them. Blue (info) is for a document on its way; red (danger) for what failed or ended badly —
- * overdue, rejected, cancelled, suspended; warning for what waits on someone.
+ * The application's status-to-tone map (BUILD-PLAN A.7, the application's data, never the Design
+ * System's): every status of the examples' application, one tone each, used by every screen (P5.23,
+ * the owner's review: "Cancelled" was neutral on some screens). docs/decisions.md lists them. Blue
+ * (info) is for a document on its way; red (danger) for what failed or ended badly — overdue,
+ * rejected, cancelled, suspended; warning for what waits on someone.
  */
 export const TONES = {
   // Documents
@@ -324,9 +326,9 @@ export function statusBadge(status: ExampleStatus) {
 export const HOME_COMPANY = 'kvadrat'
 
 /**
- * Another person signed in at another organisation (P5.17, P5.24: a store manager, a nurse, a
- * teacher): the user menu shows them, the switcher only their organisations, the search their
- * commands; Milica's notifications are not theirs, so there is no bell.
+ * Another person signed in at another organisation (P5.17, P5.25: a clinic's receptionist, a
+ * restaurant's manager): the user menu shows them, the switcher only their organisations, the
+ * search their commands; Milica's notifications are not theirs, so there is no bell.
  */
 export interface ExampleAccount {
   name: string
@@ -337,9 +339,8 @@ export interface ExampleAccount {
 }
 
 /**
- * The shell around every signed-in screen. `company` is the current company (another one for
- * Stanić Elektro STR's setup; choosing Kvadrat Gradnja there goes home); `agent` is the agent
- * button (P5.3).
+ * The shell around every signed-in screen. `company` is the current company (choosing Kvadrat
+ * Gradnja from another one goes home).
  */
 export function Shell({
   phone,
@@ -347,9 +348,7 @@ export function Shell({
   tabs,
   bottomBar,
   company = HOME_COMPANY,
-  agent,
   account,
-  banners,
   children,
 }: {
   phone: boolean
@@ -357,11 +356,8 @@ export function Shell({
   tabs?: ModuleTab[]
   bottomBar?: ReactNode
   company?: string
-  agent?: ReactNode
   /** Someone else than Milica, at another organisation. */
   account?: ExampleAccount
-  /** P5.36 acct: application-wide banners (a trial ending, a payment past due). */
-  banners?: ReactNode
   children: ReactNode
 }) {
   const navigate = useContext(Navigate)
@@ -583,8 +579,6 @@ export function Shell({
       user={user}
       {...(tabs === undefined ? {} : { moduleTabs: tabs })}
       {...(bottomBar === undefined ? {} : { bottomBar })}
-      {...(agent === undefined ? {} : { agent })}
-      {...(banners === undefined ? {} : { banners })}
     >
       {children}
     </AppShell>

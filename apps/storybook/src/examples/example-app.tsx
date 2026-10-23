@@ -35,6 +35,7 @@ import { GROUP_AL_ROUTES } from './screens-AL'
 import { GROUP_BC_ROUTES } from './screens-BC'
 import { GROUP_BD_ROUTES } from './screens-BD'
 import { GROUP_BR_ROUTES } from './screens-BR'
+import { PRINT_ROUTES } from './screens-print'
 
 // ── Routes ────────────────────────────────────────────────────────────────────────────────
 
@@ -63,6 +64,7 @@ const EXAMPLE_ROUTES: readonly ExampleRoute[] = [
   ...GROUP_BC_ROUTES,
   ...GROUP_BD_ROUTES,
   ...GROUP_BR_ROUTES,
+  ...PRINT_ROUTES,
 ]
 
 // ── The app ───────────────────────────────────────────────────────────────────────────────────

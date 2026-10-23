@@ -12,7 +12,7 @@ const meta = {
     docs: {
       description: {
         component:
-          "The shells every screen sits in (docs/floorplans.md): AuthShell (sign in with its password and two-factor steps), AppShell (the home page, the bell's notifications, a page that does not exist) and PortalShell (the employee portal). The walk-through signs in and clicks through the kept screens of every floorplan, as one application linked through the provider's `linkComponent`.",
+          "The shells every screen sits in (docs/floorplans.md): AuthShell (sign in with its password and two-factor steps), AppShell (the home page, the bell's notifications, a page that does not exist) and PortalShell (the employee portal). The walk-through signs in and clicks through a list, a document, a worklist and the overview, as one application linked through the provider's `linkComponent`.",
       },
     },
   },
@@ -26,8 +26,8 @@ type Story = StoryObj<typeof meta>
 /**
  * The whole path: sign in (the e-mail, the password and the two-factor code), open Sales from
  * the home page, preview and open F-2026-0412, back to the list, the notifications, bank
- * statement 188 from its notification, home, the tasks.
- * The same invoice shows the same total in the list and on its page.
+ * statement 188 from its notification, home, the overview.
+ * The same invoice shows the same total in the list, on its page and in the overview.
  */
 export const WalkThrough: Story = {
   name: 'Walk-through',
@@ -76,7 +76,7 @@ export const WalkThrough: Story = {
     await expect(
       await canvas.findByRole('button', { name: 'Notifications, 1 unread' }),
     ).toBeVisible()
-    // Phase 5: the bank statement from its notification, then the tasks from the home page.
+    // The bank statement from its notification, then the overview from the home page.
     await userEvent.click(canvas.getByRole('button', { name: 'Notifications, 1 unread' }))
     await settle()
     await userEvent.click(within(document.body).getByRole('link', { name: 'View all' }))
@@ -88,9 +88,12 @@ export const WalkThrough: Story = {
     ).toBeVisible()
     await userEvent.click(canvas.getByRole('link', { name: 'Liro Business Apps' }))
     await settle()
-    await userEvent.click(await canvas.findByRole('link', { name: /Tasks/ }))
+    await userEvent.click(await canvas.findByRole('link', { name: /Overview/ }))
     await settle()
-    await expect(await canvas.findByRole('heading', { level: 1, name: 'Tasks' })).toBeVisible()
+    await expect(await canvas.findByRole('heading', { level: 1, name: 'Overview' })).toBeVisible()
+    const largest = canvas.getByRole('link', { name: 'F-2026-0412' }).closest('tr')
+    await expect(largest).toHaveTextContent('185.954,00')
+    await expect(largest).toHaveTextContent('135.954,00')
   },
 }
 

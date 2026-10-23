@@ -1,13 +1,9 @@
 /*
- * Group H's example data (P5.17, industry examples), one dataset each.
- * 4. Health: Ambulanta Liman of Dom zdravlja Novi Sad — the doctors' week of 12.–16.10.2026,
- *    the free times the patient portal offers, Jovana Nikolić's booking (Wed 14.10. at 11:30), the
- *    clinic's schedule and dr Marko Stanković's calendar with it, and her last finding.
- * 5. School: OŠ "Jovan Popović", class 7/2, 2026/27 — the timetable, Tuesday 06.10.'s attendance
- *    (lessons 1 and 2 marked, lesson 3 being marked), the mathematics gradebook and Luka
- *    Jovanović's absences as his parent sees them.
- * Counts and averages are worked out here, in whole numbers, as the application would; the
- * components add nothing. Fictitious people and numbers. No classes here.
+ * Group H's example data (P5.17, industry examples): Ambulanta Liman of Dom zdravlja Novi Sad —
+ * the doctors' week of 12.–16.10.2026, the free times the patient portal offers, Jovana Nikolić's
+ * booking (Wed 14.10. at 11:30) and dr Marko Stanković's calendar with it. Counts are worked out
+ * here, in whole numbers, as the application would; the components add nothing. Fictitious
+ * people and numbers. No classes here.
  */
 import type {
   CalendarEvent,
@@ -17,7 +13,7 @@ import type {
   UnavailableTime,
 } from '@veljaos/ui'
 
-// ── 4. Health: Ambulanta Liman ─────────────────────────────────────────────────────────────────
+// ── Ambulanta Liman ───────────────────────────────────────────────────────────────────────────
 
 export const CLINIC = {
   companyId: 'dzns',
@@ -26,7 +22,7 @@ export const CLINIC = {
   address: 'Fruškogorska 26, Novi Sad',
   phone: '021 4879 000',
   week: { start: '2026-10-12', end: '2026-10-16' },
-  /** The day the schedule shows: the day of Jovana's appointment. */
+  /** The day the calendar opens on: the day of Jovana's appointment. */
   day: '2026-10-14',
   /** The clinic's clock on that day, for the "now" marker (P5.28 item 10). */
   now: '09:40',
@@ -183,7 +179,7 @@ export const JOVANA_BOOKING: ScheduleBooking = {
   end: '2026-10-14T12:00',
 }
 
-/** Every booking after hers: the clinic's schedule and the doctor's calendar. */
+/** Every booking after hers: the doctor's calendar counts his. */
 export const BOOKINGS: readonly ScheduleBooking[] = [...BOOKINGS_BEFORE, JOVANA_BOOKING]
 
 /** dr Marko Stanković's week as calendar events: the patient first, then the service. */
@@ -203,47 +199,6 @@ export const DOCTOR_EVENTS: readonly CalendarEvent[] = [
     description: 'Room 2, ground floor',
   },
 ]
-
-/** Her last finding: the diagnosis and the finding are sensitive (MaskedValue). */
-export const FINDING = {
-  number: 'IZ-2026-03417',
-  date: '2026-09-14',
-  doctor: 'dr Marko Stanković',
-  kind: 'Check-up, general practice',
-  diagnosis: 'I10 Essential (primary) hypertension',
-  text: 'Blood pressure 150/95 mmHg in two measurements. Less salt, a walk every day; a control in a month with the readings from home.',
-  next: '2026-10-14T11:30',
-}
-
-// ── 5. School: OŠ "Jovan Popović", class 7/2 ───────────────────────────────────────────────────
-
-export const SCHOOL = {
-  companyId: 'jovan-popovic',
-  name: 'OŠ „Jovan Popović“ Novi Sad',
-  className: '7/2',
-  year: '2026/27',
-  /** Today in the examples: Tuesday 06.10.2026, during lesson 3. */
-  day: '2026-10-06',
-  now: '10:05',
-  teacher: 'Dragana Simić',
-}
-
-// ── The mathematics gradebook ─────────────────────────────────────────────────────────────────
-
-// ── The parent portal: Luka Jovanović's absences ───────────────────────────────────────────────
-
-// ── P5.28 screens ──────────────────────────────────────────────────────────────────────────────
-
-/**
- * A move of Jovana's appointment proposed on the schedule (a drag to dr Nada Grujić's free 12:30):
- * the confirmation open on it, as the reception would see it before anything changes.
- */
-export const JOVANA_MOVE = {
-  id: JOVANA_BOOKING.id,
-  resourceId: 'grujic',
-  start: `${CLINIC.day}T12:30`,
-  end: `${CLINIC.day}T13:00`,
-}
 
 /** dr Vesna Lukić is on annual leave on 14.10. (the clinic's data). */
 export const UNAVAILABLE: readonly UnavailableTime[] = [

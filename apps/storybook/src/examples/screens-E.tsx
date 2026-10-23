@@ -64,17 +64,14 @@ import {
 
 /*
  * Group E's example screens (P5.19 catalogues at scale, P5.20 registers and official forms):
- * the customer catalogue with its lookup, bulk edit and import, the VAT return for September
- * 2026, and the work-injury register for 2026. Only the public entry point `@veljaos/ui`.
+ * the customer catalogue with its lookup, bulk edit and import, and the VAT return for September
+ * 2026. Only the public entry point `@veljaos/ui`.
  */
 
 export const E_ROUTES = {
   customers: '/sales/customers',
   customerImport: '/sales/customers/import',
   vatReturn: '/accounting/vat-return/2026-09',
-  injuryRegister: '/hr/safety/injury-register/2026',
-  /** The stress story: 5,000 generated entries. */
-  injuryRegisterGenerated: '/hr/safety/injury-register/2026-generated',
 }
 
 const CUSTOMER_TABS: ModuleTab[] = SALES_TABS.map((tab) => ({
@@ -846,8 +843,6 @@ export function VatReturn({ phone }: { phone: boolean }) {
     </Shell>
   )
 }
-
-// ── Work-injury register ──────────────────────────────────────────────────────────────────────
 
 // ── Routes ────────────────────────────────────────────────────────────────────────────────────
 

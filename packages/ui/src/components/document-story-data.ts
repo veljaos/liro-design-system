@@ -68,10 +68,7 @@ export interface FinalLine {
   amount?: string
 }
 
-/**
- * The lines of F-2026-0418 as the Core sends them (the examples compute the same amounts in whole
- * paras: apps/storybook/src/examples/data-D2.ts).
- */
+/** The lines of F-2026-0418 as the Core sends them. */
 export const FINAL_LINES: FinalLine[] = [
   { id: 'h1', type: 'heading', item: 'Steel structure' },
   {

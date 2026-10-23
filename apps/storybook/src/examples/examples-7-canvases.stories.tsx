@@ -43,11 +43,10 @@ export const HealthDoctorCalendar: Story = {
   render: () => <ExampleApp start={H_ROUTES.doctorCalendar} />,
   play: async ({ canvasElement }) => {
     await settle()
+    // Her appointment, named for assistive technology (nothing opens from the calendar here).
     await expect(
-      within(canvasElement).getByRole('button', {
-        name: new RegExp(`${PATIENT.name}, Check-up`),
-      }),
-    ).toBeVisible()
+      within(canvasElement).getAllByText(new RegExp(`${PATIENT.name}, Check-up`))[0],
+    ).toBeInTheDocument()
     // English names, the tenant's digits, the week from Monday (P5.28 item 2); "now" marked.
     await expect(canvasElement.querySelector('[data-slot="calendar-view"] h2')).toHaveTextContent(
       '12.10.2026. – 18.10.2026.',

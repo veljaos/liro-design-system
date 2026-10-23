@@ -693,9 +693,7 @@ export function Service({
   )
 }
 
-// ── Kafić Kod Mike ─────────────────────────────────────────────────────────────────────────────
-
-// ── Konferencija Liro 2026 ─────────────────────────────────────────────────────────────────────
+// ── Routes ────────────────────────────────────────────────────────────────────────────────────
 
 export const GROUP_K_ROUTES: ExampleRoute[] = [
   { path: K_ROUTES.floor, render: (phone) => <Service phone={phone} /> },
@@ -717,7 +715,7 @@ export const GROUP_K_ROUTES: ExampleRoute[] = [
     render: (phone) => <Service phone={phone} channel="takeaway" />,
   },
   { path: K_ROUTES.floorTerrace, render: (phone) => <Service phone={phone} area="terasa" /> },
-  // P5.28 item 22: table 3's tab in each state; Bistro Dunav's tabs.
+  // Each table's tab (P5.28 item 22).
   ...BISTRO_VENUE.tables.map((table) => ({
     path: BISTRO_VENUE.tableRoute(table.id),
     render: (phone: boolean) => <TabTill phone={phone} venue={BISTRO_VENUE} tableId={table.id} />,

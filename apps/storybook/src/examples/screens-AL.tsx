@@ -1,6 +1,8 @@
+import { type ReactNode } from 'react'
 import {
   Button,
   StatutoryFormPage,
+  Toaster,
   useLiro,
   type SourceDocument,
   type StatutoryCell,
@@ -24,23 +26,39 @@ import {
   type TrialTotals,
 } from './data-AK'
 import { AL_ROUTES } from './data-AL'
-import { LedgerShell } from './screens-AK'
+import { reportsTabs, Shell } from './example-shell'
+import { Tenant } from './screens-G'
 
 /*
- * Group AL's example screens (P5.45): Kvadrat Gradnja d.o.o.'s trial balance on 14.10.2026 and
- * its financial statements of 30.09.2026, all on StatutoryFormPage's grid. The trial balance:
- * one part per class, the synthetic accounts as numbered groups, the accounts as rows; groups
- * Opening / Turnover / Closing over Debit / Credit (two header rows); every figure a source cell
- * whose drawer links to the account's card (the drill-down: trial balance → account card → the
- * document); "Compare with 14.10.2025." puts last year's figure under each value; the three
- * checks of the books ("Debit equals credit") are the Core's. The balance sheet and the income
- * statement: positions with their codes, a "Note" column whose cell opens the note (StatutoryCell
- * `content`, the one new prop of this group), this year and the year before beside it as the
- * statement's own columns. The screens lay out the Core's figures; data-AK.ts and data-AL.ts work
- * them out.
+ * Group AL's example screen (P5.45): Kvadrat Gradnja d.o.o.'s trial balance on 14.10.2026, on
+ * StatutoryFormPage's grid: one part per class, the synthetic accounts as numbered groups, the
+ * accounts as rows; groups Opening / Turnover / Closing over Debit / Credit (two header rows);
+ * every figure a source cell whose drawer links to the account's card; "Compare with 14.10.2025."
+ * puts last year's figure under each value; the three checks of the books ("Debit equals credit")
+ * are the Core's. The screen lays out the Core's figures; data-AK.ts works them out.
  */
 
 export { AL_ROUTES }
+
+/** Milica Petrović's ledger of Kvadrat Gradnja d.o.o. on 14 October 2026, with its toasts. */
+function LedgerShell({
+  phone,
+  crumbs,
+  children,
+}: {
+  phone: boolean
+  crumbs: { label: string; href?: string }[]
+  children: ReactNode
+}) {
+  return (
+    <Tenant today={LEDGER_TODAY}>
+      <Shell phone={phone} crumbs={crumbs} tabs={reportsTabs('trial')}>
+        {children}
+        <Toaster layout={phone ? 'phone' : 'desktop'} />
+      </Shell>
+    </Tenant>
+  )
+}
 
 // ── The trial balance ─────────────────────────────────────────────────────────────────────────
 
@@ -168,11 +186,7 @@ export function TrialBalance({ phone, compare = false }: { phone: boolean; compa
   const { format } = useLiro()
   const money = (value: string) => format.money(value, 'RSD')
   return (
-    <LedgerShell
-      phone={phone}
-      tab="trial"
-      crumbs={[{ label: 'Accounting' }, { label: 'Trial balance' }]}
-    >
+    <LedgerShell phone={phone} crumbs={[{ label: 'Accounting' }, { label: 'Trial balance' }]}>
       <StatutoryFormPage
         layout={phone ? 'phone' : 'desktop'}
         title="Trial balance, 01.01.–14.10.2026."
@@ -218,8 +232,6 @@ export function TrialBalance({ phone, compare = false }: { phone: boolean; compa
     </LedgerShell>
   )
 }
-
-// ── The financial statements ──────────────────────────────────────────────────────────────────
 
 // ── Routes ────────────────────────────────────────────────────────────────────────────────────
 

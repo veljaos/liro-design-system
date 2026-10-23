@@ -143,7 +143,7 @@ export function checkRestaurant() {
       fail(`Bistro Dunav: table ${String(table.number)} has more guests than seats`)
     }
   }
-  const t7 = initialTabs(BISTRO_VENUE).t7
+  const t7 = initialTabs().t7
   if (t7 === undefined || computeTab(BISTRO_VENUE, t7).promotions.length !== 1) {
     fail('Bistro Dunav: table 7’s dessert promotion is missing')
   }

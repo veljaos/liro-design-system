@@ -16,7 +16,6 @@ import {
 import type { ExampleRoute } from './example-app'
 import { SALES_TABS, Shell, statusBadge } from './example-shell'
 import {
-  CANCELLATION,
   DECREASE,
   DECREASE_LINES,
   MEDIC_LAB,
@@ -27,24 +26,14 @@ import {
 } from './data-D2'
 
 /*
- * The complex documents of P5.18 (group D2), linked into the example application: final invoice
- * F-2026-0418 (two advances deducted, references, notes, attachments, the recap by tax category),
- * interim situation IS-2026-007 with its specification of 300 positions, invoice F-2026-0415 in
- * EUR with four tax categories, decrease document KO-2026-0009 against F-2026-0410, and the
- * cancelled invoice F-2026-0407 with its cancellation document ST-2026-0004. Only the public
- * entry point; every amount comes from data-D2.ts, computed there in whole paras.
+ * A complex document of P5.18 (group D2), linked into the example application: decrease document
+ * KO-2026-0009 against F-2026-0410, its lines as Original / Change / New. Only the public entry
+ * point; every amount comes from data-D2.ts, computed there in whole paras.
  */
 
 export const D2_ROUTES = {
-  final: '/sales/invoices/F-2026-0418',
-  situation: '/projects/IS-2026-007',
-  eur: '/sales/invoices/F-2026-0415',
   decrease: '/sales/corrections/KO-2026-0009',
-  cancelled: '/sales/invoices/F-2026-0407',
-  cancellation: `/sales/invoices/${CANCELLATION.number}`,
 }
-
-// ── Shared pieces ───────────────────────────────────────────────────────────────────────────
 
 /** The tax category as the lines show it: the code with the rate, the footnote marker after it. */
 function taxLabel(code: DocLine['tax']): ReactNode {
@@ -90,12 +79,6 @@ function usePanels(initial: string[]) {
     onPanelsHiddenChange: setHidden,
   }
 }
-
-// ── F-2026-0418: final invoice ──────────────────────────────────────────────────────────────
-
-// ── IS-2026-007: interim situation and its specification ────────────────────────────────────
-
-// ── F-2026-0415: invoice in EUR ─────────────────────────────────────────────────────────────
 
 // ── KO-2026-0009: decrease against F-2026-0410 ──────────────────────────────────────────────
 
@@ -216,8 +199,6 @@ function Decrease({ phone }: { phone: boolean }) {
     </Shell>
   )
 }
-
-// ── F-2026-0407 cancelled, and ST-2026-0004 ─────────────────────────────────────────────────
 
 // ── Routes ──────────────────────────────────────────────────────────────────────────────────
 

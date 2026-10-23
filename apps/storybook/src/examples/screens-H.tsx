@@ -38,25 +38,17 @@ import {
   CLINIC,
   DOCTOR_EVENTS,
   DOCTORS,
-  FINDING,
   FREE_SLOTS,
-  JOVANA_MOVE,
   JOVANA_SLOT,
   PATIENT,
-  SCHOOL,
   SERVICES,
 } from './data-H'
 
 /*
- * Group H's example screens (P5.17, industry examples), one dataset each (data-H.ts).
- * - Health: Jovana Nikolić books a check-up in Dom zdravlja Novi Sad's patient portal (PortalShell:
- *   service and doctor, a free time, booked); the clinic's schedule of that day (ResourceSchedule)
- *   and the doctor's week (CalendarView) with her booking; her last finding, whose diagnosis is
- *   shown only for a reason (MaskedValue).
- * - School: OŠ "Jovan Popović", class 7/2: the timetable, the attendance of today's lessons
- *   (marked one key per pupil), the mathematics gradebook, and Luka Jovanović's absences in the
- *   parents' portal.
- * Every screen plays the application: it keeps the state and works out the counts (data-H.ts).
+ * Group H's example screens (P5.17, industry examples) for Dom zdravlja Novi Sad (data-H.ts):
+ * Jovana Nikolić books a check-up in the patient portal (PortalShell: service and doctor, a free
+ * time, booked), and the doctor's week (CalendarView) with her booking. Every screen plays the
+ * application: it keeps the state and works out the counts (data-H.ts).
  */
 
 export const H_ROUTES = {
@@ -65,20 +57,7 @@ export const H_ROUTES = {
   bookConfirm: '/portal/health/book?step=confirm',
   booked: '/portal/health/book?step=done',
   clinicSchedule: `/clinic/schedule/${CLINIC.day}`,
-  /** The schedule with a dragged appointment waiting for its confirmation (P5.28 item 9). */
-  clinicScheduleMove: `/clinic/schedule/${CLINIC.day}?move=${JOVANA_MOVE.id}`,
   doctorCalendar: `/clinic/calendar/${CHOSEN_DOCTOR}/${CLINIC.week.start}`,
-  finding: `/clinic/patients/jovana-nikolic/findings/${FINDING.number}`,
-  findingAsk: `/clinic/patients/jovana-nikolic/findings/${FINDING.number}?reveal=ask`,
-  findingShown: `/clinic/patients/jovana-nikolic/findings/${FINDING.number}?reveal=shown`,
-  timetable: '/school/classes/7-2/timetable',
-  attendance: `/school/classes/7-2/attendance/${SCHOOL.day}`,
-  gradebook: '/school/classes/7-2/gradebook/mathematics',
-  parent: '/portal/school/attendance',
-  /** The excuse form open, today's absences chosen (P5.28 item 16). */
-  parentExcuse: '/portal/school/attendance?excuse=open',
-  /** The excuse sent, waiting for the class teacher. */
-  parentExcuseSent: '/portal/school/attendance?excuse=sent',
 }
 
 const LINK = 'text-link no-underline visited:text-link hover:underline'
@@ -99,7 +78,7 @@ function PortalPage({ title, children }: { title: string; children: ReactNode })
   )
 }
 
-// ── 4. Health: the patient portal ──────────────────────────────────────────────────────────────
+// ── The patient portal ────────────────────────────────────────────────────────────────────────
 
 const HEALTH_SECTIONS: PortalSection[] = [
   {
@@ -286,7 +265,7 @@ export function Booking({
   )
 }
 
-// ── 4. Health: the clinic ──────────────────────────────────────────────────────────────────────
+// ── The clinic ────────────────────────────────────────────────────────────────────────────────
 
 const CLINIC_COMPANY: ShellCompany = {
   id: CLINIC.companyId,
@@ -332,7 +311,7 @@ export function ClinicShell({
   phone: boolean
   tab: 'schedule' | 'calendar' | 'patients'
   crumb: string
-  /** The schedule and the calendar are seen on the day of the appointment (P5.28 item 10). */
+  /** The calendar is seen on the day of the appointment (P5.28 item 10). */
   today?: string
   children: ReactNode
 }) {
@@ -377,10 +356,6 @@ export function DoctorCalendar({ phone }: { phone: boolean }) {
     </ClinicShell>
   )
 }
-
-// ── 5. School: the teacher's screens ───────────────────────────────────────────────────────────
-
-// ── 5. School: the parents' portal ─────────────────────────────────────────────────────────────
 
 // ── Routes ────────────────────────────────────────────────────────────────────────────────────
 

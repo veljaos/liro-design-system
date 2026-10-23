@@ -6,6 +6,7 @@ import { FEATURED } from './examples-story-data'
 import { ExampleApp, OnPhone } from './example-app'
 import { ROUTES } from './example-shell'
 import { E_ROUTES } from './screens-E'
+import { AK_ROUTES } from './data-AK'
 import { AL_ROUTES } from './data-AL'
 import { BR_ROUTES } from './data-BR'
 
@@ -179,9 +180,9 @@ export const TrialBalancePhone: Story = {
   play: ledgerPlay(TRIAL_CHECK, true),
 }
 
-/** A figure opens its source, the account's card, and the card its entries. */
+/** A figure opens its source: the account's card, linked from the drawer. */
 export const TrialBalanceDrillDown: Story = {
-  name: 'Trial balance, drill-down to the account card, interaction',
+  name: 'Trial balance, a figure’s source, interaction',
   tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={AL_ROUTES.trial} />,
   play: async ({ canvasElement }) => {
@@ -191,10 +192,10 @@ export const TrialBalanceDrillDown: Story = {
       canvas.getByRole('button', { name: /sources of 2040 · Closing 14\.10\.2026\. · Debit$/ }),
     )
     const drawer = await within(document.body).findByRole('dialog', { name: /Source documents/ })
-    await userEvent.click(within(drawer).getByRole('link', { name: /2040/ }))
-    await expect(
-      await canvas.findByRole('heading', { level: 1, name: 'Account card 2040' }),
-    ).toBeVisible()
+    await expect(within(drawer).getByRole('link', { name: /2040/ })).toHaveAttribute(
+      'href',
+      `#${AK_ROUTES.card('2040')}`,
+    )
   },
 }
 

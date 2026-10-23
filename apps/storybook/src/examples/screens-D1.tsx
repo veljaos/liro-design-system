@@ -43,7 +43,6 @@ import {
   RECENT,
   recordOf,
   searchCatalogue,
-  SITUATION,
   TAX_CATEGORIES,
   toUnits,
   UNITS,
@@ -52,21 +51,16 @@ import {
 } from './data-D1'
 
 /*
- * Group D1's example screens (Phase 5: P5.18 document lines, P5.19 LookupField):
- * - "Invoice draft, lines by search" (/sales/invoices/new): a draft to Bojović i sinovi d.o.o.
- *   whose lines are found by one search field per line — items with their stock, services, a
- *   fixed asset sold with its number and its internal book value — with a section heading and
- *   subtotal per section, a text line, a discount, S 20% and S 10%, and "+ Create service …".
- * - "Interim situation, editing the specification" (/projects/IS-2026-007/specification): the
- *   300 positions of IS-2026-007 in 12 groups with subtotals and Previous / This period /
- *   Cumulative columns, edited line by line like document lines.
- * Every amount comes from data-D1.ts (whole paras); the screens only show them.
+ * Group D1's example screen (Phase 5: P5.18 document lines, P5.19 LookupField), "Invoice draft,
+ * lines by search" (/sales/invoices/new): a draft to Bojović i sinovi d.o.o. whose lines are found
+ * by one search field per line — items with their stock, services, a fixed asset sold with its
+ * number and its internal book value — with a section heading and subtotal per section, a text
+ * line, a discount, S 20% and S 10%, and "+ Create service …". Every amount comes from data-D1.ts
+ * (whole paras); the screen only shows them.
  */
 
 export const D1_ROUTES = {
   draft: '/sales/invoices/new',
-  specification: `/projects/${SITUATION.number}/specification`,
-  situation: `/projects/${SITUATION.number}`,
 }
 
 const STEPS: LifecycleStep[] = [
@@ -438,8 +432,6 @@ export function InvoiceDraft({ phone }: { phone: boolean }) {
     </Shell>
   )
 }
-
-// ── Interim situation, editing the specification ──────────────────────────────────────────────
 
 // ── Routes ────────────────────────────────────────────────────────────────────────────────────
 

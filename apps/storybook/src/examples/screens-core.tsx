@@ -60,6 +60,7 @@ import {
   type FilterDefinition,
   type LaunchpadModule,
   type LifecycleStep,
+  type SignInProvider,
   type SidePanel,
   type TotalsRow,
   type WorklistItem,
@@ -99,10 +100,31 @@ import {
   Shell,
   statusBadge,
 } from './example-shell'
-import { signInProviders } from './data-C'
 import { BD_ROUTES } from './data-BD'
 
 // ── Sign in ───────────────────────────────────────────────────────────────────────────────────
+
+/** Microsoft's and Google's official marks are drawn by ProviderSignInButtons ('microsoft', 'google'). */
+function signInProviders(onClick: (id: string) => void): SignInProvider[] {
+  return [
+    {
+      id: 'microsoft',
+      label: 'Continue with Microsoft',
+      mark: 'microsoft',
+      onClick: () => {
+        onClick('microsoft')
+      },
+    },
+    {
+      id: 'google',
+      label: 'Continue with Google',
+      mark: 'google',
+      onClick: () => {
+        onClick('google')
+      },
+    },
+  ]
+}
 
 /** Under every sign-in card: the language switch, terms and privacy (P5.63 shares it). */
 export function AuthFooter() {
@@ -670,7 +692,7 @@ export function Invoice({ phone, invoice }: { phone: boolean; invoice: ExampleIn
               emphasis="secondary"
               // The printout (P5.17): the browser prints it or saves it as a PDF.
               onClick={() => {
-                navigate(`${ROUTES.invoice(invoice.number)}/print`)
+                navigate(ROUTES.invoicePrint(invoice.number))
               }}
             />
             {phone ? null : reminder}

@@ -58,18 +58,14 @@ import {
 import { TillTouch } from './screens-I-till'
 
 /*
- * A table's open tab on the till (P5.28 item 22), for Kafić Kod Mike's terrace and Bistro Dunav's
- * service. The tabs live above the screens (`useExampleState`, key `tabs.<venue>`): the waiter adds
- * items, leaves for the floor and comes back to the same tab. On the tab: send the new items to
- * the bar or the kitchen, edit a line (quantity, note, discount), a discount on the whole order,
- * the venue's promotions (3 for 2, a happy hour) applied by the application, split the bill
- * (equally or by items) and pay a part, move items or the whole tab to another table, and close it
- * with the fiscal receipt (item 21). The application computes every figure (data-K-tabs.ts).
+ * A table's open tab on the till (P5.28 item 22), for Bistro Dunav's service. The tabs live above
+ * the screens (`useExampleState`, key `tabs.<venue>`): the waiter adds items, leaves for the floor
+ * and comes back to the same tab. On the tab: send the new items to the bar or the kitchen, edit a
+ * line (quantity, note, discount), a discount on the whole order, the venue's promotions (the
+ * dessert of the day) applied by the application, split the bill (equally or by items) and pay a
+ * part, move items or the whole tab to another table, and close it with the fiscal receipt (item
+ * 21). The application computes every figure (data-K-tabs.ts).
  */
-
-/** Where the tab stands when the screen opens (one route per state, P5.23). */
-export type TabStart =
-  'new' | 'edit' | 'discount' | 'split' | 'pay-part' | 'move' | 'bill' | 'closed' | 'paid-share'
 
 /** How long the example's card terminal takes. */
 const TERMINAL_DELAY = 1200
@@ -77,53 +73,13 @@ const TERMINAL_DELAY = 1200
 /** The ways a tab is paid at the table (the application's choice of the seven). */
 const TAB_PAYMENTS = PAYMENT_OPTIONS.filter((each) => ['cash', 'card', 'instant'].includes(each.id))
 
-/** Where each venue's instant payments go (P5.40): invented accounts with valid control numbers. */
+/** Where the venue's instant payments go (P5.40): an invented account with valid control numbers. */
 const VENUE_PAYEES: Record<Venue['id'], InstantPayee> = {
-  cafe: {
-    name: 'Kafić Kod Mike, Novi Sad',
-    account: '840-0000000742311-24',
-    merchantCategory: '5814',
-  },
   bistro: {
     name: 'Bistro Dunav, Novi Sad',
     account: '170-0000000987654-14',
     merchantCategory: '5812',
   },
-}
-
-/** The tabs when the examples start, with a picture's state applied to one table. */
-function seed(venue: Venue, tableId: string, start: TabStart | undefined): Record<string, Tab> {
-  const tabs = initialTabs(venue)
-  const tab = tabs[tableId]
-  if (tab === undefined) return tabs
-  if (start === 'new' || start === 'edit' || start === 'split' || start === 'pay-part') {
-    tab.lines = [
-      ...tab.lines,
-      { id: `${tableId}-new-1`, productId: 'macchiato', quantity: 1, note: 'Oat milk' },
-      { id: `${tableId}-new-2`, productId: 'baklava', quantity: 1 },
-    ]
-  }
-  if (start === 'edit') {
-    tab.lines = tab.lines.map((line) =>
-      line.productId === 'baklava' && line.sentAt !== undefined
-        ? { ...line, note: 'Without walnuts', discountId: 'regular' }
-        : line,
-    )
-  }
-  if (start === 'paid-share') {
-    const figures = computeTab(venue, tab)
-    const first = equalShares(figures.remaining, 3)[0] ?? 0n
-    tab.payments = [
-      {
-        id: 'pay-1',
-        label: 'Card',
-        amount: decimal(first),
-        what: 'Share 1 of 3',
-        receipt: tabReceiptNumber(venue, 1),
-      },
-    ]
-  }
-  return tabs
 }
 
 /** "Table 3". */
@@ -136,18 +92,16 @@ export function TabTill({
   phone,
   venue,
   tableId,
-  start,
 }: {
   phone: boolean
   venue: Venue
   tableId: string
-  start?: TabStart
 }) {
   const { format } = useLiro()
   const navigate = useContext(Navigate)
   const money = (value: bigint) => format.money(decimal(value), venue.currency)
   const [tabs, setTabs] = useExampleState<Record<string, Tab>>(`tabs.${venue.id}`, () =>
-    seed(venue, tableId, start),
+    initialTabs(),
   )
   const name = tableName(venue, tableId)
   const tab: Tab = tabs[tableId] ?? { tableId, openedAt: venue.now, lines: [], payments: [] }
@@ -160,9 +114,7 @@ export function TabTill({
   }
 
   // ── Dialogs ──
-  const [editId, setEditId] = useState<string | null>(
-    start === 'edit' ? (tab.lines.find((line) => line.productId === 'baklava')?.id ?? null) : null,
-  )
+  const [editId, setEditId] = useState<string | null>(null)
   const editing = tab.lines.find((line) => line.id === editId)
   const [draft, setDraft] = useState<{ quantity: string | null; note: string; discountId: string }>(
     {
@@ -171,23 +123,13 @@ export function TabTill({
       discountId: editing?.discountId ?? '',
     },
   )
-  const [discountOpen, setDiscountOpen] = useState(start === 'discount')
-  const [orderDiscount, setOrderDiscount] = useState(
-    start === 'discount' ? 'regular' : (tab.orderDiscountId ?? ''),
-  )
-  const [splitOpen, setSplitOpen] = useState(start === 'split' || start === 'pay-part')
-  const [splitMode, setSplitMode] = useState<'equal' | 'items'>(
-    start === 'pay-part' ? 'items' : 'equal',
-  )
+  const [discountOpen, setDiscountOpen] = useState(false)
+  const [orderDiscount, setOrderDiscount] = useState(tab.orderDiscountId ?? '')
+  const [splitOpen, setSplitOpen] = useState(false)
+  const [splitMode, setSplitMode] = useState<'equal' | 'items'>('equal')
   const [people, setPeople] = useState<string | null>('4')
-  const [chosenItems, setChosenItems] = useState<Readonly<Record<string, string | null>>>(
-    start === 'pay-part'
-      ? Object.fromEntries(
-          tab.lines.filter((line) => line.productId === 'cappuccino').map((line) => [line.id, '2']),
-        )
-      : {},
-  )
-  const [moveOpen, setMoveOpen] = useState(start === 'move')
+  const [chosenItems, setChosenItems] = useState<Readonly<Record<string, string | null>>>({})
+  const [moveOpen, setMoveOpen] = useState(false)
   const [moveWhat, setMoveWhat] = useState<'all' | 'items'>('all')
   const [moveTo, setMoveTo] = useState(
     venue.tables.find((each) => each.id !== tableId && tabs[each.id] === undefined)?.id ?? '',
@@ -204,20 +146,12 @@ export function TabTill({
     /** It pays what remains: the table closes after it. */
     closes: boolean
     items?: Readonly<Record<string, string | null>>
-  } | null>(
-    start === 'bill' || start === 'closed'
-      ? { amount: figures.remaining, what: 'The rest of the tab', closes: true }
-      : null,
-  )
+  } | null>(null)
   const [method, setMethod] = useState('cash')
-  const [tendered, setTendered] = useState<string | null>(
-    start === 'bill' || start === 'closed' ? '2000' : null,
-  )
+  const [tendered, setTendered] = useState<string | null>(null)
   const [cardState, setCardState] = useState<CardState>('idle')
-  const [done, setDone] = useState(start === 'closed')
-  const [receipt, setReceipt] = useState<string | null>(
-    start === 'closed' ? tabReceiptNumber(venue, tab.payments.length + 1) : null,
-  )
+  const [done, setDone] = useState(false)
+  const [receipt, setReceipt] = useState<string | null>(null)
 
   useEffect(() => {
     if (paying === null || cardState !== 'waiting') return
@@ -893,7 +827,7 @@ export function TabTill({
             {...(completeDisabledReason === undefined ? {} : { completeDisabledReason })}
             onComplete={() => {
               if (completeDisabledReason !== undefined) return
-              const number = tabReceiptNumber(venue, tab.payments.length + 1)
+              const number = tabReceiptNumber(tab.payments.length + 1)
               setTab((current) => {
                 const paidTab =
                   paying.items === undefined ? current : markPaid(current, paying.items)
@@ -984,6 +918,6 @@ export function TabTill({
 
 /** A tab's total for the floor (the rest to pay), from the kept tabs. */
 export function useTabs(venue: Venue): Record<string, Tab> {
-  const [tabs] = useExampleState<Record<string, Tab>>(`tabs.${venue.id}`, () => initialTabs(venue))
+  const [tabs] = useExampleState<Record<string, Tab>>(`tabs.${venue.id}`, () => initialTabs())
   return tabs
 }

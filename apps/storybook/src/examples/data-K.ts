@@ -1,16 +1,12 @@
 /*
- * Group K's example data (P5.25, floor plans and seating), fictitious, on the examples' today,
- * Tuesday 6 October 2026:
- * - Bistro Dunav on the quay in Novi Sad during the evening service (19:40): the hall (Sala), the
- *   terrace (Terasa) and the bar, tables free, occupied (since when, how many) and reserved (for
- *   when, how many, for whom), one waiting to be cleaned.
- * - Kafić Kod Mike: its terrace of eight tables, each open table with its order on the till.
- * - Konferencija Liro 2026, the gala dinner in the Master congress hall of the Novi Sad Fair:
- *   14 round tables of 10, 140 guests, 112 seated.
- * The states and their tones are the application's map. Amounts are whole paras (BigInt): every
- * line total, total and tax is computed here, as the application would; the components add
- * nothing (D4). The stated figures are checked in dataset-checks.ts. Not part of the package.
- * No classes here.
+ * Group K's example data (P5.25, floor plans), fictitious, on the examples' today, Tuesday
+ * 6 October 2026: Bistro Dunav on the quay in Novi Sad during the evening service (19:40) — the
+ * hall (Sala), the terrace (Terasa) and the bar, tables free, occupied (since when, how many) and
+ * reserved (for when, how many, for whom), one waiting to be cleaned; the takeaway and delivery
+ * orders. The states and their tones are the application's map. Amounts are whole paras
+ * (BigInt): every line total, total and tax is computed here, as the application would; the
+ * components add nothing (D4). The stated figures are checked in dataset-checks.ts. Not part of the
+ * package. No classes here.
  */
 import { CalendarClock, CircleCheck, Sparkles, UsersRound } from 'lucide-react'
 import type { FloorArea, FloorItem, FloorState } from '@veljaos/ui'
@@ -30,24 +26,8 @@ export const K_ROUTES = {
   floorTakeaway: '/restaurant/bistro-dunav/floor?channel=takeaway',
   /** The floor on one area: the terrace (P5.28 item 26). */
   floorTerrace: '/restaurant/bistro-dunav/floor?area=terasa',
-  /** The floor plan in edit mode, terrace tables 11 and 12 chosen to merge. */
+  /** The floor plan's editor, where the "Floor plan" tab leads (not one of the examples). */
   floorEdit: '/restaurant/bistro-dunav/floor/edit',
-  /** Tables 11 and 12 merged into one. */
-  floorMerged: '/restaurant/bistro-dunav/floor/edit?merged',
-  /** Kafić Kod Mike: the terrace on the bar's tablet. */
-  terrace: '/cafe/kod-mike/terrace',
-  /** Table 3's order on the till. */
-  terraceTable: '/cafe/kod-mike/terrace/t3',
-  /** The gala dinner's seating. */
-  seating: '/events/liro-2026/seating',
-  /** A free seat chosen: table 4, seat 9. */
-  seatingSeat: '/events/liro-2026/seating?seat=t4-9',
-  /** "Seat at…" for a guest not seated yet. */
-  seatingSeatAt: '/events/liro-2026/seating?seat-at=g113',
-  /** Table 6's guests in seat order. */
-  seatingTable: '/events/liro-2026/seating?table=t6',
-  /** Three seating changes pending, "Save seating…" asked (P5.28 item 9). */
-  seatingPending: '/events/liro-2026/seating?pending',
 }
 
 // ── Bistro Dunav ──────────────────────────────────────────────────────────────────────────────
@@ -310,77 +290,3 @@ export const BISTRO_ORDERS: ChannelOrder[] = [
     phone: '063 441 9087',
   },
 ]
-
-// ── Kafić Kod Mike ─────────────────────────────────────────────────────────────────────────────
-
-/** A line of an order: a product and how many. */
-export interface OrderLine {
-  productId: string
-  quantity: number
-}
-
-/** A terrace table and its open order. */
-export interface CafeTable {
-  id: string
-  number: number
-  x: number
-  y: number
-  state: 'free' | 'open' | 'bill' | 'closed'
-  /** When the order was opened (HH:mm). */
-  since?: string
-  order: OrderLine[]
-  note?: string
-}
-
-export const CAFE_TABLES: CafeTable[] = [
-  {
-    id: 't1',
-    number: 1,
-    x: 60,
-    y: 60,
-    state: 'open',
-    since: '17:50',
-    order: [{ productId: 'espresso', quantity: 2 }],
-  },
-  { id: 't2', number: 2, x: 240, y: 60, state: 'free', order: [] },
-  {
-    id: 't3',
-    number: 3,
-    x: 420,
-    y: 60,
-    state: 'open',
-    since: '18:15',
-    order: [
-      { productId: 'cappuccino', quantity: 2 },
-      { productId: 'lemonade', quantity: 1 },
-      { productId: 'water', quantity: 2 },
-      { productId: 'baklava', quantity: 1 },
-    ],
-  },
-  {
-    id: 't4',
-    number: 4,
-    x: 600,
-    y: 60,
-    state: 'bill',
-    since: '17:20',
-    order: [
-      { productId: 'domestic', quantity: 2 },
-      { productId: 'cola', quantity: 1 },
-    ],
-  },
-  { id: 't5', number: 5, x: 60, y: 300, state: 'free', order: [] },
-  {
-    id: 't6',
-    number: 6,
-    x: 240,
-    y: 300,
-    state: 'open',
-    since: '18:30',
-    order: [{ productId: 'orange', quantity: 1 }],
-  },
-  { id: 't7', number: 7, x: 420, y: 300, state: 'closed', order: [], note: 'Umbrella broken' },
-  { id: 't8', number: 8, x: 600, y: 300, state: 'free', order: [] },
-]
-
-// ── Konferencija Liro 2026, the gala dinner ───────────────────────────────────────────────────

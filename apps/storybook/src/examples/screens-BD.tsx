@@ -29,13 +29,10 @@ import {
 
 /*
  * Group BD's example screens (P5.63, sign-in flows), built only from the sign-in building blocks
- * (AuthShell, EmailFirstForm, PasswordField, CodeInput, ProviderSignInButtons, Alert) and the
- * fields. They continue the sign-in screen of P4.8 (screens-core `SignIn`, the e-mail first):
- * its Continue opens the password step, then the two-factor code, then the home page. From the
- * password step: "Forgot your password?" (the e-mail, then "Check your e-mail"), and the link in
- * that e-mail opens "Choose a new password". Beside the flow: Ivan Lukić accepting his
- * invitation to Kvadrat Gradnja d.o.o., the account locked after too many wrong passwords and the
- * session that expired on invoice F-2026-0412, which returns there after signing in again.
+ * (AuthShell, EmailFirstForm, PasswordField, CodeInput, Alert) and the fields. They continue the
+ * sign-in screen of P4.8 (screens-core `SignIn`, the e-mail first): its Continue opens the
+ * password step, then the two-factor code (or a recovery code), then the home page. From the
+ * password step: "Forgot your password?" (the e-mail, then "Check your e-mail").
  *
  * Every rule, limit and sentence about the account is the Core's (data-BD); the screens only
  * decide what the example application does next. The main button stands full width in the
@@ -308,14 +305,6 @@ export function ForgotPassword({ phone, sent = false }: { phone: boolean; sent?:
     </AuthFrame>
   )
 }
-
-// ── New password ──────────────────────────────────────────────────────────────────────────────
-
-// ── Invitation ────────────────────────────────────────────────────────────────────────────────
-
-// ── Locked account ────────────────────────────────────────────────────────────────────────────
-
-// ── Expired session ───────────────────────────────────────────────────────────────────────────
 
 // ── Routes ────────────────────────────────────────────────────────────────────────────────────
 
