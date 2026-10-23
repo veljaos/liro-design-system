@@ -249,7 +249,7 @@ export function RegisterPage<Row extends RowData>(props: RegisterPageProps<Row>)
       />
       <section
         aria-label={props.title}
-        className="box-border flex min-w-0 flex-col overflow-hidden rounded-lg border border-solid border-default bg-surface-raised"
+        className="box-border flex min-w-0 flex-col overflow-clip rounded-lg border border-solid border-default bg-surface-raised"
       >
         {(props.period !== undefined || props.tools !== undefined || loader !== null) && (
           <div className="flex flex-wrap items-end justify-between gap-3 p-4">

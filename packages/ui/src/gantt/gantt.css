@@ -116,14 +116,16 @@
   background: var(--wx-gantt-select-color);
 }
 
-/* The time scale: two rows, sticky in the chart and moved below the shell (Gantt's head shift). */
+/*
+ * The time scale: two rows, sticky in the chart and moved below the shell with the table's header
+ * (styles.css, "Sticky table headers": the region's scroll-driven animation, P5.90 item 8).
+ */
 .liro-gantt .wx-scale {
   position: sticky;
   top: 0;
   z-index: 5;
   background-color: var(--wx-background);
   border-bottom: 1px solid var(--liro-border-default);
-  transform: translateY(var(--liro-head-shift, 0px));
   will-change: transform;
 }
 .liro-gantt .wx-scale .wx-row,

@@ -841,6 +841,8 @@ export interface LiroMessages {
   'grid.addDeduction': string
   /** EditableGrid: the note before a line's detail that never reaches the customer's document. */
   'grid.internal': string
+  /** EditableGrid on phones (P5.90): the title of a line's card, its number ("Line 3"). */
+  'grid.line': (line: number, text: string) => string
   // P5.24 shifts
   /** ShiftPlanner: the header of the people column, the hours column and the coverage row. */
   'shifts.person': string

@@ -519,6 +519,7 @@ export const messagesEn: LiroMessages = {
   'grid.addDiscount': 'Discount',
   'grid.addDeduction': 'Deduction',
   'grid.internal': 'Internal',
+  'grid.line': (_line, text) => `Line ${text}`,
   // P5.24 shifts
   'shifts.person': 'Person',
   'shifts.hours': 'Hours',

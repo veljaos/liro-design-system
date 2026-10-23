@@ -132,7 +132,7 @@ export function FormSection(props: FormSectionProps) {
       <section
         data-slot="form-section"
         className={cn(
-          'overflow-hidden rounded-lg border border-solid border-default bg-surface-raised font-sans text-primary',
+          'overflow-clip rounded-lg border border-solid border-default bg-surface-raised font-sans text-primary',
           flat && FLAT,
           props.className,
         )}
@@ -210,7 +210,7 @@ export function FormTabs(props: FormTabsProps) {
       onValueChange={select}
       data-slot="form-tabs"
       className={cn(
-        'overflow-hidden rounded-lg border border-solid border-default bg-surface-raised font-sans text-primary',
+        'overflow-clip rounded-lg border border-solid border-default bg-surface-raised font-sans text-primary',
         props.className,
       )}
     >

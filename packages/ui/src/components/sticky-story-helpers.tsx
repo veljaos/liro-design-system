@@ -73,7 +73,47 @@ function pageScroller(canvasElement: HTMLElement): Element {
   return document.scrollingElement ?? document.documentElement
 }
 
-/** Two animation frames: the header's position is updated once a frame. */
+/** One animation frame. */
+function nextFrame(): Promise<void> {
+  return new Promise((resolve) => {
+    requestAnimationFrame(() => {
+      resolve()
+    })
+  })
+}
+
+/**
+ * P5.90 item 8: the header is glued below the shell at any scrolling speed. Scrolls the page in
+ * large jumps, down and up, without waiting between them, and checks in the very next animation
+ * frame after each jump — before any script could react — that the header's top is the shell's
+ * bottom edge, while the region's top is under the shell and its end still below the header. The
+ * header moves with the scrolling itself (a scroll-driven animation), never a frame late.
+ */
+export async function expectGluedWhileJumping(
+  canvasElement: HTMLElement,
+  region: Element,
+  head: Element,
+): Promise<void> {
+  const scroller = pageScroller(canvasElement)
+  const edge = () => bar(canvasElement).getBoundingClientRect().bottom
+  // From the moment the region's top reaches the shell's edge …
+  const start = scroller.scrollTop + region.getBoundingClientRect().top - edge() + 1
+  // … to where its last rows still stand below the header, or the page's end.
+  const room = region.getBoundingClientRect().height - head.getBoundingClientRect().height - 2
+  const end = Math.min(start + room, scroller.scrollHeight - scroller.clientHeight)
+  const span = end - start
+  await expect(span).toBeGreaterThan(200)
+  let jumps = 0
+  for (const share of [0.1, 0.9, 0.35, 1, 0, 0.6, 0.2, 0.8]) {
+    scroller.scrollTop = Math.round(start + span * share)
+    await nextFrame()
+    await expect(Math.abs(head.getBoundingClientRect().top - edge())).toBeLessThanOrEqual(1)
+    jumps += 1
+  }
+  await expect(jumps).toBe(8)
+}
+
+/** Two animation frames: enough for anything that follows a scroll or a resize. */
 export function nextFrames(): Promise<void> {
   return new Promise((resolve) => {
     requestAnimationFrame(() => {

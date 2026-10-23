@@ -292,7 +292,7 @@ export function Pivot(props: PivotProps) {
         )}
         <div
           aria-busy={busy || undefined}
-          className="min-w-0 flex-1 overflow-hidden rounded-lg border border-solid border-default bg-surface-raised"
+          className="min-w-0 flex-1 overflow-clip rounded-lg border border-solid border-default bg-surface-raised"
         >
           {body}
         </div>

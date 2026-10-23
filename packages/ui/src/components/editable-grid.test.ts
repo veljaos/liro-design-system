@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest'
 import { createFormat } from '../provider/format'
 import { editableCellCount, taxCategoryText } from './line-types'
 import {
+  cellHasValue,
   gridKeyAction,
   orderMessages,
+  shownColumns,
   type GridKey,
   type GridPosition,
 } from './editable-grid-logic'
@@ -221,5 +223,32 @@ describe('orderMessages', () => {
       { tone: 'danger', text: 'e2' },
     ])
     expect(ordered.map((message) => message.text)).toEqual(['e1', 'e2', 'w1', 'w2'])
+  })
+})
+
+describe('optional columns (P5.90 item 4)', () => {
+  const columns = [
+    { id: 'item' },
+    { id: 'discount', optional: { addLabel: 'Discount on a line' } },
+    { id: 'account', optional: {} },
+    { id: 'amount' },
+  ]
+
+  it('counts text, numbers, dates and choices as used; empty text and null not', () => {
+    expect(cellHasValue('5')).toBe(true)
+    expect(cellHasValue({ value: 'x', label: 'X' })).toBe(true)
+    expect(cellHasValue('  ')).toBe(false)
+    expect(cellHasValue('')).toBe(false)
+    expect(cellHasValue(null)).toBe(false)
+    expect(cellHasValue(undefined)).toBe(false)
+  })
+
+  it('hides an optional column until a line uses it or the user adds it', () => {
+    const none = shownColumns(columns, () => false, new Set())
+    expect(none.map((column) => column.id)).toEqual(['item', 'amount'])
+    const used = shownColumns(columns, (column) => column.id === 'account', new Set())
+    expect(used.map((column) => column.id)).toEqual(['item', 'account', 'amount'])
+    const added = shownColumns(columns, () => false, new Set(['discount']))
+    expect(added.map((column) => column.id)).toEqual(['item', 'discount', 'amount'])
   })
 })

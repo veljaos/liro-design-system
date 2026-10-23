@@ -134,11 +134,18 @@ export const JournalEntryPhone: Story = {
   play: async ({ canvasElement }) => {
     await settle()
     const bar = canvasElement.querySelector('[data-slot="balance-bar"]')
+    // The balance in one place after the lines and "Add line", never over a line (P5.90 item 3).
     const totals = bar?.closest('[data-slot="grid-totals"]')
-    await expect(
-      totals === null || totals === undefined ? '' : getComputedStyle(totals).position,
-    ).toBe('sticky')
+    const lines = canvasElement.querySelectorAll('[data-row-key]')
+    const last = lines[lines.length - 1]
+    if (totals === null || totals === undefined || last === undefined) throw new Error('no lines')
+    await expect(getComputedStyle(totals).position).toBe('static')
+    await expect(totals.getBoundingClientRect().top).toBeGreaterThan(
+      last.getBoundingClientRect().bottom,
+    )
+    await expect(canvasElement.querySelectorAll('[data-slot="balance-bar"]')).toHaveLength(1)
     await expect(bar).toHaveTextContent('Not balanced')
+    await noSidewaysOverflow(canvasElement)
   },
 }
 
@@ -250,9 +257,12 @@ function draftAfterCreate(): DraftLine[] {
 /**
  * P5.18: a draft to Bojović i sinovi d.o.o. whose lines are added by search — items with their
  * stock (a warning when the quantity is above it), services, a fixed asset sold (its number, and
- * its book value marked internal) — in two sections with subtotals, a text line and a discount,
- * S 20% and S 10%. The walk-through creates the service "Montaža skele" from the last line's
- * search ("+ Create service …"), enters 24 hours, and the totals follow (computed in data-D1.ts).
+ * its book value marked internal) —, S 20% and S 10%. Simple by default (P5.90 item 4): item,
+ * quantity, unit, price, VAT and amount; no discount column while no line has a discount; the
+ * header with the date of supply and the place of issue. The walk-through creates the service
+ * "Montaža skele" from the last line's search ("+ Create service …"), enters 24 hours, gives the
+ * cement a 5% discount from "Add line ▾" (the column appears), and the totals follow (computed in
+ * data-D1.ts).
  */
 export const D1InvoiceDraft: Story = {
   name: 'Invoice draft, lines by search',
@@ -266,6 +276,20 @@ export const D1InvoiceDraft: Story = {
       canvas.getByText('Only 36 pc of ART-0118 in stock: the rest goes on back order.'),
     ).toBeVisible()
     await expect(canvas.getByText('Internal')).toBeVisible()
+    // Simple by default: the six columns, no discount or account column (P5.90 item 4).
+    const headers = within(canvas.getByRole('table', { name: 'Lines' }))
+      .getAllByRole('columnheader')
+      .map((cell) => cell.textContent)
+    await expect(headers).toEqual([
+      'Item, service or asset',
+      'Quantity',
+      'Unit',
+      'Price',
+      'VAT',
+      'Amount',
+    ])
+    await expect(canvas.getByRole('button', { name: 'Change Date of supply' })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Change Place of issue' })).toBeVisible()
     await settle()
   },
 }
@@ -284,7 +308,7 @@ export const D1InvoiceDraftInteraction: Story = {
     ).toBeVisible()
     await expect(canvas.getByText('Internal')).toBeVisible()
     // The last line: search, nothing found, "+ Create service …" with the typed name.
-    const item = canvas.getByRole('combobox', { name: 'Item, service or asset, line 13' })
+    const item = canvas.getByRole('combobox', { name: 'Item, service or asset, line 7' })
     await userEvent.click(item)
     await userEvent.type(item, NEW_SERVICE.name, { delay: 0 })
     const body = within(document.body)
@@ -301,12 +325,23 @@ export const D1InvoiceDraftInteraction: Story = {
     await waitFor(() => expect(body.queryByRole('dialog')).toBeNull())
     await expect(item).toHaveValue(NEW_SERVICE.name)
     // The quantity, and the totals the Core computes again.
-    const quantity = canvas.getByRole('textbox', { name: 'Quantity, line 13' })
+    const quantity = canvas.getByRole('textbox', { name: 'Quantity, line 7' })
     await userEvent.click(quantity)
     await userEvent.keyboard('24{Tab}')
     const after = draftTotals(draftAfterCreate())
     await waitFor(() => expect(canvasElement).toHaveTextContent(rsd(after.total.value ?? '0')))
     await expect(canvasElement).toHaveTextContent(rsd(after.net))
+    // A 5% discount on the cement: "Add line ▾" shows the discount column (P5.90 item 4).
+    await userEvent.click(canvas.getByRole('textbox', { name: 'Quantity, line 1' }))
+    await userEvent.click(canvas.getByRole('button', { name: 'More options: Add line' }))
+    await userEvent.click(await body.findByRole('menuitem', { name: 'Discount on a line' }))
+    const discount = await canvas.findByRole('textbox', { name: 'Discount %, line 1' })
+    await waitFor(() => expect(discount).toHaveFocus())
+    await userEvent.keyboard('5{Tab}')
+    const discounted = draftTotals(
+      draftAfterCreate().map((line, index) => (index === 0 ? { ...line, discount: '5' } : line)),
+    )
+    await waitFor(() => expect(canvasElement).toHaveTextContent(rsd(discounted.total.value ?? '0')))
     await settle()
   },
 }

@@ -85,7 +85,8 @@ const ALIGN = { start: 'text-start', center: 'text-center', end: 'text-end' } as
 /** Mantine Table cells, a little tighter for a tree: 8px top and bottom, 16px at the sides. */
 const CELL = 'px-4 py-2'
 const LINE = 'border-0 border-b border-solid border-default'
-const TOTALS_LINE = 'sticky bottom-0 z-10 border-0 border-t border-solid border-strong'
+/** The totals row's cells: the 1px border.strong line above them (the footer group is sticky). */
+const TOTALS_LINE = 'border-0 border-t border-solid border-strong'
 
 function alignOf<Data>(column: TreeTableColumn<Data>) {
   return column.align ?? (column.numeric === true ? 'end' : 'start')
@@ -167,7 +168,6 @@ function DesktopTreeTable<Data>(props: TreeTableProps<Data>) {
   const hasTotals = props.totals !== undefined
   // The header row stays below the shell while the page scrolls, and at the top inside
   // `maxHeight` (P5.28 item 4).
-  const sticky = cn(STICKY_HEAD, 'z-10')
   useStickyHead(scrollerRef, props.loading !== true && props.nodes.length > 0)
 
   if (props.nodes.length === 0 && props.loading !== true) {
@@ -182,12 +182,7 @@ function DesktopTreeTable<Data>(props: TreeTableProps<Data>) {
     <div role="row" aria-rowindex={windowed ? 1 : undefined} className="table-row">
       <div
         role="columnheader"
-        className={cn(
-          CELL,
-          LINE,
-          'table-cell bg-surface-sunken text-start font-bold text-primary',
-          sticky,
-        )}
+        className={cn(CELL, LINE, 'table-cell bg-surface-sunken text-start font-bold text-primary')}
       >
         <span className={TEXT_ISOLATE}>{props.treeHeader}</span>
       </div>
@@ -200,7 +195,6 @@ function DesktopTreeTable<Data>(props: TreeTableProps<Data>) {
             LINE,
             'table-cell bg-surface-sunken font-bold whitespace-nowrap text-primary',
             ALIGN[alignOf(column)],
-            sticky,
           )}
           style={column.minWidth === undefined ? undefined : { minWidth: column.minWidth }}
         >
@@ -291,7 +285,11 @@ function DesktopTreeTable<Data>(props: TreeTableProps<Data>) {
           aria-rowcount={windowed ? tree.rows.length + 1 + (hasTotals ? 1 : 0) : undefined}
           className="table w-full border-separate border-spacing-0 text-sm text-primary"
         >
-          <div role="rowgroup" data-sticky-head="" className="table-header-group">
+          <div
+            role="rowgroup"
+            data-sticky-head=""
+            className={cn('table-header-group bg-surface-sunken', STICKY_HEAD, 'z-10')}
+          >
             {headerRow}
           </div>
           {props.loading === true ? (
@@ -318,7 +316,10 @@ function DesktopTreeTable<Data>(props: TreeTableProps<Data>) {
             </div>
           )}
           {hasTotals && props.loading !== true && (
-            <div role="rowgroup" className="table-footer-group">
+            <div
+              role="rowgroup"
+              className="sticky bottom-0 z-10 table-footer-group bg-surface-sunken"
+            >
               <div
                 role="row"
                 aria-rowindex={windowed ? tree.rows.length + 2 : undefined}
