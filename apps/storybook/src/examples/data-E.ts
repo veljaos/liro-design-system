@@ -274,6 +274,37 @@ export function csvColumns(text: string): { id: string; name: string; sample?: s
   })
 }
 
+/**
+ * Reads a chosen file as the application would (for the example): a text CSV whose first row
+ * names at least two columns separated by ";" gives its columns; anything else — a damaged or
+ * binary file, an Excel file the example cannot open, a text without columns — gives the error in
+ * words, never what was read (P5.90 item 7).
+ */
+export function readImportFile(
+  name: string,
+  text: string,
+): { columns: ReturnType<typeof csvColumns> } | { error: string } {
+  // A control character other than tab and line breaks, or the replacement character: not text.
+  const head = text.slice(0, 4096)
+  let binary = false
+  for (let index = 0; index < head.length && !binary; index += 1) {
+    const code = head.charCodeAt(index)
+    binary = (code < 32 && code !== 9 && code !== 10 && code !== 13) || code === 0xfffd
+  }
+  if (binary) {
+    return {
+      error: `${name} could not be read: it is not a text CSV file. Open it in Excel and save it as CSV (separated by ;), then choose it again.`,
+    }
+  }
+  const columns = csvColumns(text)
+  if (columns.length < 2) {
+    return {
+      error: `${name} could not be read: its first row has no column names separated by ;.`,
+    }
+  }
+  return { columns }
+}
+
 /** The application's suggested mapping for the file (by the columns' names). */
 export const IMPORT_SUGGESTION: Record<string, string | null> = {
   name: 'col-0',

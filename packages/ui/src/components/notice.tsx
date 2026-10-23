@@ -17,8 +17,16 @@ import type { Family, IconComponent } from './intents'
  * - Radius md, with a border; an 18px icon, coloured by family: success positive (CircleCheck,
  *   lucide's CheckCircle2), info primary (Info), warning caution (TriangleAlert), error destructive
  *   (CircleX). Loading: the primary colour, a loader, no close button.
- * - Closes by itself after 3500ms (success), 4000ms (info), 6000ms (warning); an error and a
- *   loading toast stay until closed or updated (Appendix B.8: success disappears, errors wait).
+ * - Toasts never block (owner, P5.90 item 21). Success and info close by themselves after 4000ms
+ *   and have NO close button: nothing to dismiss, and clicks pass through them to what they cover
+ *   (`pointer-events: none` unless they carry an action). A warning closes after 6000ms and an
+ *   error waits until closed or updated, both with a close button (Appendix B.8: success
+ *   disappears, errors wait). A loading toast waits for its update.
+ * - A routine save is not a toast: "Saved" stands beside the action (SaveStatus). A toast reports
+ *   an outcome elsewhere ("Payroll posted", "Request sent"), never what to do next (D23).
+ * - Placed so it never covers actions: 16px above the AppShell's or PortalShell's bottom bar on
+ *   phones, WorklistPage's detail bar (`--liro-shell-bottom`) and any sticky bottom bar of the
+ *   page — a form's bottom bar, a wizard's Back / Next row (`--liro-bottom-bars`, `useBottomBar`).
  * - `action` (P4.9, the owner's review: "Approved. Undo"): one small neutral button before the
  *   close button, from the application (Undo, only when the Core allows it); pressing it runs the
  *   action and closes the toast. A toast with an action stays at least 8000ms, so there is time to
@@ -39,14 +47,16 @@ interface KindLook {
   icon: IconComponent | null
   /** Milliseconds before it closes by itself; Infinity: it waits. */
   duration: number
+  /** It has a close button (P5.90: only the toasts that may need reading or wait). */
+  closable: boolean
 }
 
 const KINDS: Record<NoticeKind, KindLook> = {
-  success: { family: 'positive', icon: CircleCheck, duration: 3500 },
-  info: { family: 'primary', icon: Info, duration: 4000 },
-  warning: { family: 'caution', icon: TriangleAlert, duration: 6000 },
-  error: { family: 'destructive', icon: CircleX, duration: Infinity },
-  loading: { family: 'primary', icon: null, duration: Infinity },
+  success: { family: 'positive', icon: CircleCheck, duration: 4000, closable: false },
+  info: { family: 'primary', icon: Info, duration: 4000, closable: false },
+  warning: { family: 'caution', icon: TriangleAlert, duration: 6000, closable: true },
+  error: { family: 'destructive', icon: CircleX, duration: Infinity, closable: true },
+  loading: { family: 'primary', icon: null, duration: Infinity, closable: false },
 }
 
 /** The icon circle's colour; literal classes, so Tailwind finds them. */
@@ -67,6 +77,20 @@ export const NOTICE_ACTION_DURATION = 8000
 export function noticeDuration(kind: NoticeKind, withAction = false): number {
   const duration = KINDS[kind].duration
   return withAction ? Math.max(duration, NOTICE_ACTION_DURATION) : duration
+}
+
+/** Whether a kind has a close button; exported for its test. Success and info close themselves. */
+export function noticeClosable(kind: NoticeKind): boolean {
+  return KINDS[kind].closable
+}
+
+/**
+ * Whether a toast takes the pointer (P5.90): a success or info toast without an action is only
+ * read, so clicks pass through it to whatever it covers; a toast with a button, a warning and an
+ * error take the pointer. Exported for its test.
+ */
+export function noticeTakesPointer(kind: NoticeKind, withAction = false): boolean {
+  return withAction || KINDS[kind].closable
 }
 
 /** The one action of a toast (Undo), from the application. */
@@ -138,7 +162,7 @@ export function NoticeView({ id, kind, message, title, action }: NoticeViewProps
           <span className={TEXT_DIRECTION}>{action.label}</span>
         </button>
       )}
-      {kind !== 'loading' && (
+      {look.closable && (
         <button
           type="button"
           aria-label={messages['notice.close']}
@@ -177,6 +201,10 @@ function show(kind: NoticeKind, message: ReactNode, options: NoticeOptions = {})
     ),
     {
       duration: noticeDuration(kind, options.action !== undefined),
+      // A toast that is only read lets clicks through to what it covers (P5.90).
+      ...(noticeTakesPointer(kind, options.action !== undefined)
+        ? {}
+        : { className: 'pointer-events-none' }),
       ...(options.id === undefined ? {} : { id: options.id }),
     },
   )
@@ -214,8 +242,8 @@ export interface ToasterProps {
 /**
  * Where toasts appear: place it once, inside LiroProvider (usually beside the application's
  * layout). Bottom right, bottom left in right-to-left; at most 4 visible. Toasts stand 16px above
- * the AppShell's bottom action bar on phones and WorklistPage's detail bar (`--liro-shell-bottom`),
- * never over their actions.
+ * the AppShell's bottom action bar on phones and WorklistPage's detail bar (`--liro-shell-bottom`)
+ * and above a page's sticky bottom bars (`--liro-bottom-bars`), never over their actions.
  */
 export function Toaster({ layout }: ToasterProps = {}) {
   const { direction, messages } = useLiro()
@@ -249,7 +277,7 @@ export function Toaster({ layout }: ToasterProps = {}) {
   // without fading, as the charts do not animate there: a toast caught half faded had half its
   // contrast. Sonner already drops the motion for reduced motion.
   const still = typeof navigator !== 'undefined' && navigator.webdriver
-  const bottom = 'calc(16px + var(--liro-shell-bottom, 0px))'
+  const bottom = 'calc(16px + var(--liro-shell-bottom, 0px) + var(--liro-bottom-bars, 0px))'
   const offset = { top: '16px', bottom, left: '16px', right: '16px' }
   return (
     <>

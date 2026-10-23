@@ -1,7 +1,7 @@
-import { BookCheck, CircleAlert, CircleCheck, Clock, Search } from 'lucide-react'
+import { BookCheck, CheckCheck, CircleAlert, CircleCheck, Pencil, Search } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import {
-  Alert,
+  Accordion,
   BalanceBar,
   Button,
   CandidateList,
@@ -12,6 +12,7 @@ import {
   DateText,
   Dialog,
   DocumentFrame,
+  Drawer,
   EditableGrid,
   FormGrid,
   KeyFigures,
@@ -20,23 +21,23 @@ import {
   MoneyText,
   ProgressBar,
   RadioGroupField,
+  SectionCard,
   SelectField,
   StatusBadge,
   TextField,
   Toaster,
   UnavailableAction,
-  WorklistPage,
   notice,
   useLiro,
   type Candidate,
   type DataTableColumn,
   type EditableGridColumn,
   type ModuleTab,
-  type WorklistItem,
+  type Tone,
 } from '@veljaos/ui'
 import type { ExampleRoute } from './example-app'
-import { Shell, statusBadge, toneOf, type ExampleStatus } from './example-shell'
-import type { Tone } from '@veljaos/ui'
+import { Shell, statusBadge } from './example-shell'
+import { Frame } from './screens-G'
 import {
   ACCOUNTS,
   accountOf,
@@ -47,6 +48,7 @@ import {
   decimal,
   entryBalance,
   entryLines,
+  HANDLED,
   OPEN_ITEMS,
   openItem,
   PAYMENT_CODES,
@@ -68,23 +70,28 @@ import {
 } from './data-bank'
 
 /*
- * Bank statement 188, worked line by line (P5.23, the owner's review): the statement is the
- * page — its balances, whether they check out, its file, its state and progress — and its lines
- * are a WorklistPage, the same "decide items one by one" as the supplier invoices to approve:
- * the lines at the side, one line in focus with everything the bank sent and "What is this
- * payment?" preselected by the Core's best suggestion, Previous / Next and "Confirm and next";
- * a toast with Undo after each decision. "Post statement" opens a confirmation with the summary
- * and the journal entry's preview once no line is left. The screen plays the application: it
- * keeps every line's draft and computes in whole paras (data-bank.ts); the components show.
+ * Bank statement 188 (P5.23; simplified "auto first" in P5.90 item 9, the owner's review). The
+ * statement opens as one compact table of its lines, each with its state in words — Matched
+ * automatically (amount and reference, a known fee, the salary batch), Suggestion (the Core's
+ * best guess, to check), Needs you (nothing found) or Done — and what the line does in a few
+ * words. "Accept all exact matches" takes every automatic match in one press, with Undo. Only
+ * the lines that need the user are opened: a press opens the line in a Drawer (the whole screen
+ * on a phone) with the proposal, "Confirm and next" and "Change" — the full choice (close open
+ * items, post to an account, split) and the bank's details stay folded until asked for. A
+ * payment against a proforma invoice is done before the user comes: the Core issued the advance
+ * invoice, and the line links to it. On a phone the lines that need the user come first. "Post
+ * statement" opens a confirmation with the journal entry once every line is done. The screen
+ * plays the application: it keeps every line's draft and computes in whole paras
+ * (data-bank.ts); the components show.
  */
 
 const STATEMENT_PATH = `/banking/statements/${STATEMENT.number}`
 
 export const BANK_ROUTES = {
   statement: STATEMENT_PATH,
-  /** Line 3 in focus: a partial payment. */
+  /** Line 3 open: a partial payment, the Core's suggestion. */
   partial: `${STATEMENT_PATH}?line=3`,
-  /** Line 7 in focus: 0,40 RSD less than the invoice. */
+  /** Line 7 open: 0,40 RSD less than the invoice. */
   difference: `${STATEMENT_PATH}?line=7`,
   /** Every line decided: the statement can be posted. */
   decided: `${STATEMENT_PATH}?stage=decided`,
@@ -95,6 +102,9 @@ const BANKING_TABS: ModuleTab[] = [
   { key: 'payments', label: 'Payments', href: '#/banking/payments' },
   { key: 'accounts', label: 'Bank accounts', href: '#/banking/accounts' },
 ]
+
+// Links stand inside sentences: underlined, never told by colour alone (WCAG 1.4.1).
+const LINK = 'text-link underline visited:text-link'
 
 // ── A line's work: what the user has chosen so far ─────────────────────────────────────────────
 
@@ -115,16 +125,15 @@ interface LineWork {
   /** Open items added from "Search all open items…". */
   extra: string[]
   done: boolean
-  later: boolean
 }
 
 function size(line: BankLine): bigint {
   return line.paras < 0n ? -line.paras : line.paras
 }
 
-/** A line's work as the Core proposes it: the suggestion preselected, the other kinds ready. */
+/** A line's work as the Core proposes it: its decision preselected, the other kinds ready. */
 function startWork(line: BankLine): LineWork {
-  const suggestion = SUGGESTIONS[line.id]?.decision
+  const suggestion = HANDLED[line.id]?.decision ?? SUGGESTIONS[line.id]?.decision
   return {
     kind: suggestion?.kind ?? null,
     close:
@@ -148,8 +157,8 @@ function startWork(line: BankLine): LineWork {
             },
           ],
     extra: [],
-    done: false,
-    later: false,
+    // What the Core did by itself is done when the statement opens.
+    done: line.id in HANDLED,
   }
 }
 
@@ -173,24 +182,12 @@ function decisionOf(work: LineWork, line: BankLine): Decision | null {
   return null
 }
 
-const START_DONE = ['b1', 'b2']
-const START_LATER = ['b10']
-
 function startAll(stage: 'start' | 'decided'): Record<string, LineWork> {
   return Object.fromEntries(
     BANK_LINES.map((line) => {
       const work = startWork(line)
       if (stage === 'decided') {
-        // Every line decided: the suggestions confirmed, the advance and the unknown payment too.
-        if (line.id === 'b9') {
-          work.kind = 'account'
-          work.account = {
-            type: 'advanceReceived',
-            account: '4300',
-            text: 'Advance for offer P-2026-118',
-            costCentre: '',
-          }
-        }
+        // Every line decided: the matches accepted, the unknown payment as an advance.
         if (line.id === 'b10') {
           work.kind = 'account'
           work.account = {
@@ -201,30 +198,31 @@ function startAll(stage: 'start' | 'decided'): Record<string, LineWork> {
           }
         }
         work.done = true
-      } else {
-        work.done = START_DONE.includes(line.id)
-        work.later = START_LATER.includes(line.id)
       }
       return [line.id, work]
     }),
   )
 }
 
-type LineState = 'done' | 'later' | 'suggestion' | 'todo'
+type LineState = 'done' | 'auto' | 'suggestion' | 'needs'
 
 function stateOf(line: BankLine, work: LineWork): LineState {
   if (work.done) return 'done'
-  if (work.later) return 'later'
-  return line.id in SUGGESTIONS ? 'suggestion' : 'todo'
+  const suggestion = SUGGESTIONS[line.id]
+  if (suggestion === undefined) return 'needs'
+  return suggestion.match === 'exact' ? 'auto' : 'suggestion'
 }
 
-/** The line states in words; the tone only repeats them (To do needs a decision, Done is done). */
-const STATE_BADGE = {
-  done: { label: 'Done', tone: toneOf('Done') },
-  later: { label: 'Left for later', tone: toneOf('Left for later') },
-  suggestion: { label: 'Suggestion ready', tone: toneOf('Suggestion ready') },
-  todo: { label: 'To do', tone: toneOf('To do') },
-} satisfies Record<LineState, { label: ExampleStatus; tone: Tone }>
+/** The line states in words; the tone only repeats them. */
+const STATE_BADGE: Record<LineState, { label: string; tone: Tone }> = {
+  needs: { label: 'Needs you', tone: 'warning' },
+  suggestion: { label: 'Suggestion', tone: 'info' },
+  auto: { label: 'Matched automatically', tone: 'neutral' },
+  done: { label: 'Done', tone: 'success' },
+}
+
+/** Which lines come first on a phone: those that need the user. */
+const ATTENTION: Record<LineState, number> = { needs: 0, suggestion: 1, auto: 2, done: 3 }
 
 function quickLabel(type: QuickType): string {
   return QUICK_TYPES.find((each) => each.value === type)?.label ?? ''
@@ -240,7 +238,7 @@ function useMoney() {
   return (paras: bigint) => format.money(decimal(paras), 'RSD')
 }
 
-/** How a decided line was decided, in a few words ("Closes F-2026-0412"). */
+/** How a line is decided, in a few words ("Closes F-2026-0412"). */
 function howText(line: BankLine, decision: Decision, money: (paras: bigint) => string): string {
   if (decision.kind === 'close') {
     const { rest } = closeOutcome(line.paras, decision.items)
@@ -290,7 +288,14 @@ function outcomeLines(
   return sentences
 }
 
-/** Why "Confirm and next" cannot be used yet, or null. */
+/** What a decided line does, in sentences: the items it closes, or where it is posted. */
+function resultLines(line: BankLine, decision: Decision, money: (paras: bigint) => string) {
+  return decision.kind === 'close'
+    ? outcomeLines(line, decision.items, decision.difference, money)
+    : [`${howText(line, decision, money)}.`]
+}
+
+/** Why "Confirm" cannot be used yet, or null. */
 function problemOf(line: BankLine, work: LineWork, money: (paras: bigint) => string) {
   if (work.kind === null) return 'Choose what this payment is.'
   if (work.kind === 'close' && work.close.items.length === 0) {
@@ -307,7 +312,7 @@ function problemOf(line: BankLine, work: LineWork, money: (paras: bigint) => str
   return null
 }
 
-// ── The line in focus ──────────────────────────────────────────────────────────────────────────
+// ── The line's full choice ("Change") ─────────────────────────────────────────────────────────
 
 const SPLIT_COLUMNS: EditableGridColumn<SplitPart>[] = [
   {
@@ -352,24 +357,19 @@ function candidateOf(item: OpenItem, reason: ReactNode): Candidate {
   }
 }
 
-function LineDetail({
+function LineEditor({
   line,
   work,
-  phone,
   onChange,
   onSearchAll,
 }: {
   line: BankLine
   work: LineWork
-  phone: boolean
   onChange: (patch: Partial<LineWork>) => void
   onSearchAll: () => void
 }) {
-  const { format } = useLiro()
   const money = useMoney()
   const incoming = line.paras > 0n
-  const state = stateOf(line, work)
-  const decision = decisionOf(work, line)
   const suggestion = SUGGESTIONS[line.id]
 
   const ranked = (CANDIDATES[line.id] ?? []).flatMap((each) => {
@@ -412,285 +412,377 @@ function LineDetail({
   )
 
   return (
-    <div className={phone ? 'flex flex-col gap-6' : 'flex flex-col gap-6 p-6'}>
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="flex min-w-0 flex-col gap-1">
-          <h2 className="bidi-content m-0 text-h2 text-primary">{line.party}</h2>
-          <p className="bidi-content m-0 text-sm text-secondary">
-            Line {format.number(String(line.no))} of statement {STATEMENT.number}
-          </p>
-        </div>
-        <div className="flex flex-col items-end gap-1">
-          <span className="bidi-isolate text-xs text-secondary">
-            {incoming ? 'Money in' : 'Money out'}
-          </span>
-          <bdi className="text-xl font-semibold whitespace-nowrap text-primary tabular-nums">
-            {format.money(decimal(line.paras), 'RSD', { sign: 'always' })}
-          </bdi>
-          <StatusBadge label={STATE_BADGE[state].label} tone={STATE_BADGE[state].tone} />
-        </div>
-      </div>
+    <section aria-label="What is this payment?" className="flex flex-col gap-4">
+      <RadioGroupField
+        label="What is this payment?"
+        {...(suggestion === undefined ? {} : { description: `Suggested: ${suggestion.reason}` })}
+        options={[
+          {
+            value: 'close',
+            label: 'Close open items',
+            description: incoming
+              ? 'Invoices and credit notes of customers'
+              : 'Supplier invoices and credit notes',
+          },
+          {
+            value: 'account',
+            label: 'Post to an account',
+            description: incoming
+              ? 'An advance, a transfer or any other account'
+              : 'A bank fee, salaries, taxes, a transfer, an advance or any other account',
+          },
+          {
+            value: 'split',
+            label: 'Split over several accounts',
+            description: 'Parts that add up to the line’s amount',
+          },
+        ]}
+        value={work.kind ?? ''}
+        onChange={(value) => {
+          onChange({ kind: value as Kind })
+        }}
+      />
 
-      {work.done && decision !== null && (
-        <Alert tone="success" title="Done">
-          {howText(line, decision, money)}. It can be changed until the statement is posted.
-        </Alert>
-      )}
-      {work.later && (
-        <Alert icon={Clock} title="Left for later">
-          The statement cannot be posted until this line is decided.
-        </Alert>
-      )}
-
-      <section aria-label="From the bank" className="flex flex-col gap-2">
-        <h3 className="m-0 text-h4 text-primary">From the bank</h3>
-        <KeyValueList
-          items={[
-            // The counterparty's name and the amount stand in the heading above.
-            {
-              label: 'Counterparty account',
-              value: <span dir="ltr">{line.partyAccount}</span>,
-              numeric: true,
-            },
-            { label: 'Value date', value: <DateText value={line.valueDate} />, numeric: true },
-            {
-              label: 'Payment code',
-              value: `${line.code} ${PAYMENT_CODES[line.code] ?? ''}`,
-            },
-            {
-              label: 'Model and reference number',
-              value:
-                line.model === '' && line.reference === '' ? (
-                  '—'
-                ) : (
-                  <span dir="ltr">{`${line.model} ${line.reference}`.trim()}</span>
-                ),
-              numeric: true,
-            },
-            { label: 'Purpose', value: line.purpose, fullWidth: true },
-          ]}
-        />
-      </section>
-
-      {work.done && decision?.kind === 'close' && (
-        <ul aria-label="Result" className="m-0 flex list-none flex-col gap-1 p-0 text-sm">
-          {outcomeLines(line, decision.items, decision.difference, money).map((text) => (
-            <li key={text} className="bidi-content text-primary">
-              {text}
-            </li>
-          ))}
-        </ul>
-      )}
-
-      {!work.done && (
-        <section aria-label="What is this payment?" className="flex flex-col gap-4">
-          <RadioGroupField
-            label="What is this payment?"
-            {...(suggestion === undefined
-              ? {}
-              : { description: `Suggested: ${suggestion.reason}` })}
-            options={[
-              {
-                value: 'close',
-                label: 'Close open items',
-                description: incoming
-                  ? 'Invoices and credit notes of customers'
-                  : 'Supplier invoices and credit notes',
-              },
-              {
-                value: 'account',
-                label: 'Post to an account',
-                description: incoming
-                  ? 'An advance, a transfer or any other account'
-                  : 'A bank fee, salaries, taxes, a transfer, an advance or any other account',
-              },
-              {
-                value: 'split',
-                label: 'Split over several accounts',
-                description: 'Parts that add up to the line’s amount',
-              },
-            ]}
-            value={work.kind ?? ''}
-            onChange={(value) => {
-              onChange({ kind: value as Kind })
-            }}
-          />
-
-          {work.kind === 'close' && (
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-col gap-2">
-                <h3 className="m-0 text-h4 text-primary">Open items</h3>
-                <CandidateList
-                  label="Open items"
-                  candidates={candidates}
-                  selected={work.close.items}
-                  onSelectedChange={(items) => {
-                    onChange({ close: { ...work.close, items } })
-                  }}
-                  empty={
-                    <p className="bidi-content m-0 border-0 border-y border-solid border-subtle py-3 text-sm text-secondary">
-                      No open item matches this payment.
-                    </p>
-                  }
-                />
-                <div>
-                  <Button
-                    family="neutral"
-                    icon={Search}
-                    label="Search all open items…"
-                    onClick={onSearchAll}
-                  />
-                </div>
-              </div>
-              {work.close.items.length > 0 && (
-                <div className="flex flex-col gap-1">
-                  <h3 className="m-0 text-h4 text-primary">Result</h3>
-                  {/* Announced politely as the choice changes. */}
-                  <div role="status">
-                    <ul className="m-0 flex list-none flex-col gap-1 p-0 text-sm">
-                      {outcomeLines(line, work.close.items, work.close.difference, money).map(
-                        (text) => (
-                          <li key={text} className="bidi-content text-primary">
-                            {text}
-                          </li>
-                        ),
-                      )}
-                    </ul>
-                  </div>
-                </div>
-              )}
-              {work.close.items.length > 0 && outcome.rest !== 0n && (
-                <RadioGroupField
-                  label={`The difference of ${money(rest)}`}
-                  options={
-                    outcome.rest < 0n
-                      ? [
-                          { value: 'open', label: `Leave it open on ${lastItem}` },
-                          {
-                            value: 'writeOff',
-                            label: `Write it off to ${writeOffAccount}`,
-                            disabled: rest > WRITE_OFF_LIMIT,
-                            description: `Only a difference up to ${money(WRITE_OFF_LIMIT)}.`,
-                          },
-                        ]
-                      : [
-                          {
-                            value: 'advance',
-                            label: `Record it as an advance ${incoming ? 'from' : 'to'} ${line.party}`,
-                          },
-                          {
-                            value: 'writeOff',
-                            label: `Write it off to ${writeOffAccount}`,
-                            disabled: rest > WRITE_OFF_LIMIT,
-                            description: `Only a difference up to ${money(WRITE_OFF_LIMIT)}.`,
-                          },
-                        ]
-                  }
-                  value={difference}
-                  onChange={(value) => {
-                    onChange({ close: { ...work.close, difference: value as DifferenceChoice } })
-                  }}
-                />
-              )}
-            </div>
-          )}
-
-          {work.kind === 'account' && (
-            <FormGrid>
-              <SelectField
-                label="Type"
-                options={types.map((each) => ({ value: each.value, label: each.label }))}
-                value={work.account.type}
-                onChange={(value) => {
-                  const type = QUICK_TYPES.find((each) => each.value === value)
-                  if (type !== undefined) {
-                    changeAccount({ type: type.value, account: type.account })
-                  }
-                }}
-              />
-              {work.account.account === null ? (
-                accountField
-              ) : (
-                <ChangeableValue
-                  label="Account"
-                  value={accountLabel(work.account.account)}
-                  field={accountField}
-                />
-              )}
-              <ChangeableValue
-                label="Description"
-                value={work.account.text}
-                field={
-                  <TextField
-                    label="Description"
-                    value={work.account.text}
-                    onChange={(text) => {
-                      changeAccount({ text })
-                    }}
-                  />
-                }
-              />
-              <SelectField
-                label="Cost centre"
-                options={COST_CENTRES}
-                value={work.account.costCentre}
-                clearable
-                placeholder="None"
-                onChange={(costCentre) => {
-                  changeAccount({ costCentre })
-                }}
-              />
-            </FormGrid>
-          )}
-
-          {work.kind === 'split' && (
-            <EditableGrid
-              label={`Parts of line ${String(line.no)}`}
-              layout={phone ? 'phone' : 'desktop'}
-              columns={SPLIT_COLUMNS}
-              rows={work.split}
-              getRowId={(part) => part.id}
-              onCellChange={(rowId, columnId, value) => {
-                onChange({
-                  split: work.split.map((part) =>
-                    part.id === rowId ? { ...part, [columnId]: value as never } : part,
-                  ),
-                })
+      {work.kind === 'close' && (
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-2">
+            <h3 className="m-0 text-h4 text-primary">Open items</h3>
+            <CandidateList
+              label="Open items"
+              candidates={candidates}
+              selected={work.close.items}
+              onSelectedChange={(items) => {
+                onChange({ close: { ...work.close, items } })
               }}
-              onAddRow={(index) => {
-                onChange({
-                  split: [
-                    ...work.split.slice(0, index),
-                    {
-                      id: `p${String(work.split.length + 1)}-${String(index)}`,
-                      account: null,
-                      text: line.purpose,
-                      costCentre: '',
-                      amount: null,
-                    },
-                    ...work.split.slice(index),
-                  ],
-                })
-              }}
-              onRemoveRow={(rowId) => {
-                onChange({ split: work.split.filter((part) => part.id !== rowId) })
-              }}
-              minRows={1}
-              footer={
-                <BalanceBar
-                  debit={split.debit}
-                  credit={split.credit}
-                  difference={split.difference}
-                  state={split.state}
-                  currency="RSD"
-                  layout={phone ? 'stacked' : 'row'}
-                />
+              empty={
+                <p className="bidi-content m-0 border-0 border-y border-solid border-subtle py-3 text-sm text-secondary">
+                  No open item matches this payment.
+                </p>
               }
             />
+            <div>
+              <Button
+                family="neutral"
+                icon={Search}
+                label="Search all open items…"
+                onClick={onSearchAll}
+              />
+            </div>
+          </div>
+          {work.close.items.length > 0 && (
+            <div className="flex flex-col gap-1">
+              <h3 className="m-0 text-h4 text-primary">Result</h3>
+              {/* Announced politely as the choice changes. */}
+              <div role="status">
+                <ul className="m-0 flex list-none flex-col gap-1 p-0 text-sm">
+                  {outcomeLines(line, work.close.items, work.close.difference, money).map(
+                    (text) => (
+                      <li key={text} className="bidi-content text-primary">
+                        {text}
+                      </li>
+                    ),
+                  )}
+                </ul>
+              </div>
+            </div>
           )}
-        </section>
+          {work.close.items.length > 0 && outcome.rest !== 0n && (
+            <RadioGroupField
+              label={`The difference of ${money(rest)}`}
+              options={
+                outcome.rest < 0n
+                  ? [
+                      { value: 'open', label: `Leave it open on ${lastItem}` },
+                      {
+                        value: 'writeOff',
+                        label: `Write it off to ${writeOffAccount}`,
+                        disabled: rest > WRITE_OFF_LIMIT,
+                        description: `Only a difference up to ${money(WRITE_OFF_LIMIT)}.`,
+                      },
+                    ]
+                  : [
+                      {
+                        value: 'advance',
+                        label: `Record it as an advance ${incoming ? 'from' : 'to'} ${line.party}`,
+                      },
+                      {
+                        value: 'writeOff',
+                        label: `Write it off to ${writeOffAccount}`,
+                        disabled: rest > WRITE_OFF_LIMIT,
+                        description: `Only a difference up to ${money(WRITE_OFF_LIMIT)}.`,
+                      },
+                    ]
+              }
+              value={difference}
+              onChange={(value) => {
+                onChange({ close: { ...work.close, difference: value as DifferenceChoice } })
+              }}
+            />
+          )}
+        </div>
       )}
-    </div>
+
+      {work.kind === 'account' && (
+        <FormGrid>
+          <SelectField
+            label="Type"
+            options={types.map((each) => ({ value: each.value, label: each.label }))}
+            value={work.account.type}
+            onChange={(value) => {
+              const type = QUICK_TYPES.find((each) => each.value === value)
+              if (type !== undefined) {
+                changeAccount({ type: type.value, account: type.account })
+              }
+            }}
+          />
+          {work.account.account === null ? (
+            accountField
+          ) : (
+            <ChangeableValue
+              label="Account"
+              value={accountLabel(work.account.account)}
+              field={accountField}
+            />
+          )}
+          <ChangeableValue
+            label="Description"
+            value={work.account.text}
+            field={
+              <TextField
+                label="Description"
+                value={work.account.text}
+                onChange={(text) => {
+                  changeAccount({ text })
+                }}
+              />
+            }
+          />
+          <SelectField
+            label="Cost centre"
+            options={COST_CENTRES}
+            value={work.account.costCentre}
+            clearable
+            placeholder="None"
+            onChange={(costCentre) => {
+              changeAccount({ costCentre })
+            }}
+          />
+        </FormGrid>
+      )}
+
+      {work.kind === 'split' && (
+        <EditableGrid
+          label={`Parts of line ${String(line.no)}`}
+          layout="phone"
+          columns={SPLIT_COLUMNS}
+          rows={work.split}
+          getRowId={(part) => part.id}
+          onCellChange={(rowId, columnId, value) => {
+            onChange({
+              split: work.split.map((part) =>
+                part.id === rowId ? { ...part, [columnId]: value as never } : part,
+              ),
+            })
+          }}
+          onAddRow={(index) => {
+            onChange({
+              split: [
+                ...work.split.slice(0, index),
+                {
+                  id: `p${String(work.split.length + 1)}-${String(index)}`,
+                  account: null,
+                  text: line.purpose,
+                  costCentre: '',
+                  amount: null,
+                },
+                ...work.split.slice(index),
+              ],
+            })
+          }}
+          onRemoveRow={(rowId) => {
+            onChange({ split: work.split.filter((part) => part.id !== rowId) })
+          }}
+          minRows={1}
+          footer={
+            <BalanceBar
+              debit={split.debit}
+              credit={split.credit}
+              difference={split.difference}
+              state={split.state}
+              currency="RSD"
+              layout="stacked"
+            />
+          }
+        />
+      )}
+    </section>
+  )
+}
+
+// ── The line open in the drawer ───────────────────────────────────────────────────────────────
+
+function LineDrawer({
+  line,
+  work,
+  state,
+  onChange,
+  onSearchAll,
+  onConfirm,
+  onReopen,
+  posted,
+  onOpenChange,
+}: {
+  line: BankLine
+  work: LineWork
+  state: LineState
+  onChange: (patch: Partial<LineWork>) => void
+  onSearchAll: () => void
+  /** Confirms the line and opens the next one that needs the user. */
+  onConfirm: () => void
+  /** A done line taken back, to be changed. */
+  onReopen: () => void
+  posted: boolean
+  onOpenChange: (open: boolean) => void
+}) {
+  const { format, linkComponent: Link } = useLiro()
+  const money = useMoney()
+  // The full choice is folded away until asked for, except where nothing was found.
+  const [changing, setChanging] = useState(state === 'needs')
+  const decision = decisionOf(work, line)
+  const suggestion = SUGGESTIONS[line.id]
+  const handled = HANDLED[line.id]
+  const problem = problemOf(line, work, money)
+  const badge = STATE_BADGE[state]
+
+  const actions = posted ? undefined : work.done ? (
+    <Button
+      intent="edit"
+      label="Change"
+      onClick={() => {
+        onReopen()
+        setChanging(true)
+      }}
+    />
+  ) : (
+    <>
+      {!changing && (
+        <Button
+          family="neutral"
+          icon={Pencil}
+          label="Change"
+          onClick={() => {
+            setChanging(true)
+          }}
+        />
+      )}
+      {problem === null ? (
+        <Button
+          family="primary"
+          icon={CircleCheck}
+          emphasis="primary"
+          label="Confirm and next"
+          onClick={onConfirm}
+        />
+      ) : (
+        <UnavailableAction
+          family="primary"
+          icon={CircleCheck}
+          emphasis="primary"
+          label="Confirm and next"
+          reason={problem}
+        />
+      )}
+    </>
+  )
+
+  return (
+    <Drawer
+      open
+      onOpenChange={onOpenChange}
+      side="end"
+      title={work.done ? 'Payment' : state === 'needs' ? 'Decide payment' : 'Confirm payment'}
+      subject={`Line ${format.number(String(line.no))} · ${line.party}`}
+      {...(actions === undefined ? {} : { actions })}
+    >
+      <div className="flex flex-col gap-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <bdi className="text-h3 font-semibold whitespace-nowrap text-primary tabular-nums">
+            {format.money(decimal(line.paras), 'RSD', { sign: 'always' })}
+          </bdi>
+          <StatusBadge label={badge.label} tone={badge.tone} />
+        </div>
+
+        {handled !== undefined && (
+          <p className="bidi-content m-0 text-md text-primary">
+            {`${handled.text.replace(handled.document, '').trim()} `}
+            <Link href={`#/sales/advance-invoices/${handled.document}`} className={LINK} dir="ltr">
+              {handled.document}
+            </Link>
+          </p>
+        )}
+
+        {handled === undefined && decision !== null && !changing && (
+          <section aria-label="What it does" className="flex flex-col gap-1">
+            <ul className="m-0 flex list-none flex-col gap-1 p-0 text-md text-primary">
+              {resultLines(line, decision, money).map((text) => (
+                <li key={text} className="bidi-content">
+                  {text}
+                </li>
+              ))}
+            </ul>
+            {suggestion !== undefined && !work.done && (
+              <p className="bidi-content m-0 text-sm text-secondary">{`Why: ${suggestion.reason}`}</p>
+            )}
+          </section>
+        )}
+
+        {changing && !work.done && (
+          <LineEditor line={line} work={work} onChange={onChange} onSearchAll={onSearchAll} />
+        )}
+
+        <Accordion
+          headingLevel={3}
+          items={[
+            {
+              value: 'bank',
+              title: 'From the bank',
+              content: (
+                <KeyValueList
+                  columns={1}
+                  items={[
+                    {
+                      label: 'Counterparty account',
+                      value: <span dir="ltr">{line.partyAccount}</span>,
+                      numeric: true,
+                    },
+                    {
+                      label: 'Value date',
+                      value: <DateText value={line.valueDate} />,
+                      numeric: true,
+                    },
+                    {
+                      label: 'Payment code',
+                      value: `${line.code} ${PAYMENT_CODES[line.code] ?? ''}`,
+                    },
+                    {
+                      label: 'Model and reference number',
+                      value:
+                        line.model === '' && line.reference === '' ? (
+                          '—'
+                        ) : (
+                          <span dir="ltr">{`${line.model} ${line.reference}`.trim()}</span>
+                        ),
+                      numeric: true,
+                    },
+                    { label: 'Purpose', value: line.purpose, fullWidth: true },
+                  ]}
+                />
+              ),
+            },
+          ]}
+        />
+      </div>
+    </Drawer>
   )
 }
 
@@ -738,12 +830,12 @@ function StatementSummary({ phone, done }: { phone: boolean; done: number }) {
         {STATEMENT_TOTALS.checksOut ? (
           <p className="bidi-content m-0 flex items-center gap-1.5 text-xs font-medium text-status-success-fg">
             <CircleCheck aria-hidden="true" className="size-3.5 shrink-0" />
-            Balance checks out: opening + in − out = closing
+            Balance checks out
           </p>
         ) : (
           <p className="bidi-content m-0 flex items-center gap-1.5 text-xs font-medium text-status-danger-fg">
             <CircleAlert aria-hidden="true" className="size-3.5 shrink-0" />
-            Balance does not check out: opening + in − out differs from closing
+            Balance does not check out
           </p>
         )}
       </div>
@@ -855,29 +947,36 @@ const OPEN_ITEM_COLUMNS: DataTableColumn<OpenItem>[] = [
 
 // ── The screen ─────────────────────────────────────────────────────────────────────────────────
 
+/** A line of the table: the bank's line, its state and what it does. */
+interface Row {
+  line: BankLine
+  state: LineState
+  what: ReactNode
+}
+
 export function BankStatement({
   phone,
   line: startLine,
   stage = 'start',
 }: {
   phone: boolean
-  /** The line in focus when the screen opens (its number). */
+  /** The line open when the screen opens (its number). */
   line?: number
   stage?: 'start' | 'decided'
 }) {
-  const { format } = useLiro()
+  const { format, linkComponent: Link } = useLiro()
   const money = useMoney()
   const [work, setWork] = useState(() => startAll(stage))
   const [posted, setPosted] = useState(false)
-  const first = startLine === undefined ? undefined : `b${String(startLine)}`
-  const [selected, setSelected] = useState<string | undefined>(first ?? (phone ? undefined : 'b3'))
+  const [openId, setOpenId] = useState<string | undefined>(
+    startLine === undefined ? undefined : `b${String(startLine)}`,
+  )
   const [posting, setPosting] = useState(false)
   const [viewing, setViewing] = useState(false)
   const [searching, setSearching] = useState(false)
   const [query, setQuery] = useState('')
 
-  const index = BANK_LINES.findIndex((each) => each.id === selected)
-  const line = BANK_LINES[index]
+  const line = BANK_LINES.find((each) => each.id === openId)
   const lineWork = line === undefined ? undefined : work[line.id]
   const change = (id: string, patch: Partial<LineWork>) => {
     setWork((current) => {
@@ -885,31 +984,25 @@ export function BankStatement({
       return before === undefined ? current : { ...current, [id]: { ...before, ...patch } }
     })
   }
-  const move = (step: number) => {
-    const next = BANK_LINES[(index + step + BANK_LINES.length) % BANK_LINES.length]
-    if (next !== undefined) setSelected(next.id)
+  const stateOfId = (id: string, from: Record<string, LineWork> = work): LineState => {
+    const each = BANK_LINES.find((candidate) => candidate.id === id)
+    const eachWork = from[id]
+    return each === undefined || eachWork === undefined ? 'needs' : stateOf(each, eachWork)
   }
 
-  const states = BANK_LINES.map((each) => {
-    const eachWork = work[each.id]
-    return eachWork === undefined ? 'todo' : stateOf(each, eachWork)
-  })
-  const done = states.filter((state) => state === 'done').length
-  const later = states.filter((state) => state === 'later').length
-  const open = BANK_LINES.length - done - later
-  const lines = (count: number) =>
-    `${format.number(String(count))} ${count === 1 ? 'line' : 'lines'}`
+  const states = BANK_LINES.map((each) => stateOfId(each.id))
+  const count = (state: LineState) => states.filter((each) => each === state).length
+  const done = count('done')
+  const exact = BANK_LINES.filter((each) => stateOfId(each.id) === 'auto')
+  const open = BANK_LINES.length - done
+  const lines = (value: number) =>
+    `${format.number(String(value))} ${value === 1 ? 'line' : 'lines'}`
   const postReason = posted
     ? 'The statement is posted.'
-    : open > 0 && later > 0
-      ? `${lines(open)} still ${open === 1 ? 'needs' : 'need'} a decision, and ${lines(later)} ${later === 1 ? 'is' : 'are'} left for later.`
-      : open > 0
-        ? `${lines(open)} still ${open === 1 ? 'needs' : 'need'} a decision.`
-        : later > 0
-          ? `${lines(later)} ${later === 1 ? 'is' : 'are'} left for later. Decide ${later === 1 ? 'it' : 'them'} before posting.`
-          : undefined
-  // "Post statement" is the main action only once every line is done; until then the line's
-  // "Confirm and next" is (one primary button per screen, D13).
+    : open > 0
+      ? `${lines(open)} still ${open === 1 ? 'needs' : 'need'} a decision.`
+      : undefined
+  // One primary button: "Accept all exact matches" while there are any, then "Post statement".
   const post =
     postReason === undefined ? (
       <Button
@@ -930,19 +1023,60 @@ export function BankStatement({
         reason={postReason}
       />
     )
+  const acceptAll =
+    exact.length === 0 || posted ? null : (
+      <Button
+        family="primary"
+        icon={CheckCheck}
+        emphasis="primary"
+        label={`Accept all exact matches (${format.number(String(exact.length))})`}
+        onClick={() => {
+          const ids = exact.map((each) => each.id)
+          setWork((current) => {
+            const next = { ...current }
+            for (const id of ids) {
+              const before = next[id]
+              if (before !== undefined) next[id] = { ...before, done: true }
+            }
+            return next
+          })
+          notice.success(`${lines(ids.length)} accepted.`, {
+            action: {
+              label: 'Undo',
+              onClick: () => {
+                setWork((current) => {
+                  const next = { ...current }
+                  for (const id of ids) {
+                    const before = next[id]
+                    if (before !== undefined) next[id] = { ...before, done: false }
+                  }
+                  return next
+                })
+              },
+            },
+          })
+        }}
+      />
+    )
   const statementStatus = statusBadge(posted ? 'Posted' : done === 0 ? 'Imported' : 'In progress')
+
+  /** The next line that needs the user, after `id` in the statement's order. */
+  const nextNeeding = (id: string, from: Record<string, LineWork>) => {
+    const at = BANK_LINES.findIndex((each) => each.id === id)
+    return [...BANK_LINES.slice(at + 1), ...BANK_LINES.slice(0, at)].find((each) => {
+      const state = stateOfId(each.id, from)
+      return each.id !== id && (state === 'needs' || state === 'suggestion')
+    })
+  }
 
   const confirm = () => {
     if (line === undefined || lineWork === undefined) return
     const decision = decisionOf(lineWork, line)
     if (decision === null) return
     const id = line.id
-    change(id, { done: true, later: false })
-    // On to the next line that still needs a decision, at the same place in the list.
-    const after = [...BANK_LINES.slice(index + 1), ...BANK_LINES.slice(0, index)].find(
-      (each) => each.id !== id && work[each.id]?.done !== true,
-    )
-    if (after !== undefined) setSelected(after.id)
+    const after = { ...work, [id]: { ...lineWork, done: true } }
+    change(id, { done: true })
+    setOpenId(nextNeeding(id, after)?.id)
     notice.success(
       `Line ${format.number(String(line.no))} done: ${howText(line, decision, money)}.`,
       {
@@ -951,87 +1085,73 @@ export function BankStatement({
           label: 'Undo',
           onClick: () => {
             change(id, { done: false })
-            setSelected(id)
           },
         },
       },
     )
   }
-  const leaveForLater = () => {
-    if (line === undefined) return
-    const id = line.id
-    change(id, { later: true })
-    move(1)
-    notice.info(`Line ${format.number(String(line.no))} is left for later.`, {
-      action: {
-        label: 'Undo',
-        onClick: () => {
-          change(id, { later: false })
-          setSelected(id)
-        },
-      },
-    })
-  }
 
-  const problem =
-    line === undefined || lineWork === undefined ? null : problemOf(line, lineWork, money)
-  const decisions =
-    line === undefined || lineWork === undefined || posted ? undefined : lineWork.done ? (
-      <Button
-        intent="edit"
-        label="Change"
-        onClick={() => {
-          change(line.id, { done: false })
-        }}
-      />
-    ) : (
-      <>
-        {!lineWork.later && (
-          <Button family="neutral" icon={Clock} label="Leave for later" onClick={leaveForLater} />
-        )}
-        {problem === null ? (
-          <Button
-            family="primary"
-            icon={CircleCheck}
-            emphasis="primary"
-            label="Confirm and next"
-            onClick={confirm}
-          />
-        ) : (
-          <UnavailableAction
-            family="primary"
-            icon={CircleCheck}
-            emphasis="primary"
-            label="Confirm and next"
-            reason={problem}
-          />
-        )}
-      </>
-    )
-
-  const items: WorklistItem[] = BANK_LINES.map((each, at) => {
+  const rows: Row[] = BANK_LINES.map((each, at) => {
     const eachWork = work[each.id]
-    const state = states[at] ?? 'todo'
+    const state = states[at] ?? 'needs'
+    const handled = HANDLED[each.id]
     const decision = eachWork === undefined ? null : decisionOf(eachWork, each)
-    return {
-      id: each.id,
-      label: `Line ${String(each.no)}, ${each.party}`,
-      title: each.party,
-      subtitle: (
+    const what =
+      handled !== undefined ? (
         <>
-          <span className="bidi-content block">
-            {format.number(String(each.no))} ·{' '}
-            {each.reference === '' ? each.purpose : each.reference}
-          </span>
-          {state === 'done' && decision !== null && (
-            <span className="bidi-content block">{howText(each, decision, money)}</span>
-          )}
+          {'Advance invoice '}
+          <Link href={`#/sales/advance-invoices/${handled.document}`} className={LINK} dir="ltr">
+            {handled.document}
+          </Link>
+          {' created'}
         </>
-      ),
-      figure: <bdi>{format.money(decimal(each.paras), 'RSD', { sign: 'always' })}</bdi>,
-      status: <StatusBadge label={STATE_BADGE[state].label} tone={STATE_BADGE[state].tone} />,
-    }
+      ) : decision === null ? (
+        'No match found'
+      ) : (
+        howText(each, decision, money)
+      )
+    return { line: each, state, what }
   })
+  // On a phone the lines that need the user come first.
+  const shownRows = phone
+    ? [...rows].sort((a, b) => ATTENTION[a.state] - ATTENTION[b.state] || a.line.no - b.line.no)
+    : rows
+
+  const columns: DataTableColumn<Row>[] = [
+    {
+      id: 'no',
+      header: 'No.',
+      numeric: true,
+      cell: (row) => format.number(String(row.line.no)),
+    },
+    { id: 'party', header: 'Counterparty', cell: (row) => row.line.party },
+    {
+      id: 'amount',
+      header: 'Amount',
+      align: 'end',
+      numeric: true,
+      cell: (row) => <bdi>{format.money(decimal(row.line.paras), 'RSD', { sign: 'always' })}</bdi>,
+    },
+    { id: 'what', header: 'What it does', cell: (row) => row.what },
+    {
+      id: 'state',
+      header: 'State',
+      cell: (row) => (
+        <StatusBadge label={STATE_BADGE[row.state].label} tone={STATE_BADGE[row.state].tone} />
+      ),
+    },
+  ]
+
+  const countWords: Record<LineState, (value: number, text: string) => string> = {
+    auto: (_, text) => `${text} matched automatically`,
+    suggestion: (value, text) => `${text} ${value === 1 ? 'suggestion' : 'suggestions'}`,
+    needs: (value, text) => `${text} ${value === 1 ? 'needs' : 'need'} you`,
+    done: (_, text) => `${text} done`,
+  }
+  const counts = (['auto', 'suggestion', 'needs', 'done'] as const)
+    .filter((state) => count(state) > 0)
+    .map((state) => countWords[state](count(state), format.number(String(count(state)))))
+    .join(' · ')
 
   const side = line === undefined || line.paras > 0n ? 'customer' : 'supplier'
   const found = OPEN_ITEMS.filter(
@@ -1048,31 +1168,21 @@ export function BankStatement({
         { label: `Statement ${STATEMENT.number}` },
       ]}
       tabs={BANKING_TABS}
-      // On a phone the line's decisions, or the posting on the list, stand in the bottom bar.
-      {...(phone
-        ? {
-            bottomBar:
-              line !== undefined && decisions !== undefined ? (
-                <div className="flex gap-2 [&>*]:flex-1">{decisions}</div>
-              ) : line === undefined ? (
-                post
-              ) : undefined,
-          }
-        : {})}
+      {...(phone ? { bottomBar: acceptAll ?? post } : {})}
     >
-      <WorklistPage
-        layout={phone ? 'stacked' : 'split'}
-        title={`Statement ${STATEMENT.number}`}
-        back={{ href: '#/banking/statements', label: 'Statements' }}
-        status={statementStatus}
-        subtitle={
-          <>
-            {STATEMENT.bank} · <span dir="ltr">{STATEMENT.account}</span> · Statement date{' '}
-            <DateText value={STATEMENT.date} />
-          </>
-        }
-        actions={
-          <>
+      <Frame phone={phone} wide>
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex min-w-0 flex-col gap-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="bidi-content m-0 text-h2 text-primary">{`Statement ${STATEMENT.number}`}</h1>
+              {statementStatus}
+            </div>
+            <p className="bidi-content m-0 text-sm text-secondary">
+              {STATEMENT.bank} · <span dir="ltr">{STATEMENT.account}</span> ·{' '}
+              <DateText value={STATEMENT.date} />
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
             <Button
               intent="preview"
               label="Bank’s file"
@@ -1080,44 +1190,71 @@ export function BankStatement({
                 setViewing(true)
               }}
             />
-            {phone ? null : post}
-          </>
-        }
-        summary={<StatementSummary phone={phone} done={done} />}
-        label={`Lines of statement ${STATEMENT.number}`}
-        items={items}
-        {...(selected === undefined ? {} : { selected })}
-        onSelect={setSelected}
-        {...(line === undefined || lineWork === undefined
-          ? {}
-          : {
-              detail: (
-                <LineDetail
-                  key={line.id}
-                  line={line}
-                  work={lineWork}
-                  phone={phone}
-                  onChange={(patch) => {
-                    change(line.id, patch)
-                  }}
-                  onSearchAll={() => {
-                    setQuery('')
-                    setSearching(true)
-                  }}
+            {!phone && (
+              <>
+                {acceptAll === null ? null : post}
+                {acceptAll ?? post}
+              </>
+            )}
+          </div>
+        </div>
+        <StatementSummary phone={phone} done={done} />
+        <SectionCard
+          title={`Lines of statement ${STATEMENT.number}`}
+          headingLevel={2}
+          description={counts}
+          flush
+        >
+          <DataTable
+            label={`Lines of statement ${STATEMENT.number}`}
+            inCard
+            layout={phone ? 'cards' : 'table'}
+            columns={columns}
+            rows={shownRows}
+            getRowId={(row) => row.line.id}
+            getRowLabel={(row) =>
+              `Line ${String(row.line.no)}, ${row.line.party}, ${STATE_BADGE[row.state].label}`
+            }
+            onRowClick={(row) => {
+              setOpenId(row.line.id)
+            }}
+            mobile={{
+              title: (row) => row.line.party,
+              subtitle: (row) => row.what,
+              badge: (row) => (
+                <StatusBadge
+                  label={STATE_BADGE[row.state].label}
+                  tone={STATE_BADGE[row.state].tone}
                 />
               ),
-            })}
-        {...(decisions === undefined || phone ? {} : { detailActions: decisions })}
-        onBack={() => {
-          setSelected(undefined)
-        }}
-        onPrevious={() => {
-          move(-1)
-        }}
-        onNext={() => {
-          move(1)
-        }}
-      />
+              details: ['amount'],
+            }}
+          />
+        </SectionCard>
+      </Frame>
+      {line !== undefined && lineWork !== undefined && (
+        <LineDrawer
+          key={line.id}
+          line={line}
+          work={lineWork}
+          state={stateOfId(line.id)}
+          posted={posted}
+          onChange={(patch) => {
+            change(line.id, patch)
+          }}
+          onSearchAll={() => {
+            setQuery('')
+            setSearching(true)
+          }}
+          onConfirm={confirm}
+          onReopen={() => {
+            change(line.id, { done: false })
+          }}
+          onOpenChange={(next) => {
+            if (!next) setOpenId(undefined)
+          }}
+        />
+      )}
       <ConfirmDialog
         open={posting}
         onOpenChange={setPosting}

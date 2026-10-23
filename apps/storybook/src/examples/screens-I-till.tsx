@@ -67,6 +67,7 @@ import {
   CATEGORIES,
   computeSale,
   productByCode,
+  MOST_SOLD,
   PRODUCTS,
   QUICK_AMOUNTS,
   RECEIPT_FOOTER,
@@ -133,7 +134,8 @@ export interface TillStart {
     | 'corporate'
     | 'issued'
   offline?: boolean
-  productsOpen?: boolean
+  /** Phones: the order sheet open. */
+  orderOpen?: boolean
   /** The receipt kind dialog open with this type chosen. */
   kindDialog?: ReceiptTypeId
   /** The cart's type. */
@@ -626,11 +628,24 @@ export function Till({ phone, start = {} }: { phone: boolean; start?: TillStart 
     setDone(true)
   }
 
+  // Each tile shows how many of it the sale holds: the count goes up under the finger (P5.90).
+  const inSale = new Map(sale.map((line) => [line.productId, line.quantity]))
   const products = (
     <ProductGrid
-      products={PRODUCTS}
-      categories={CATEGORIES}
+      products={[
+        ...MOST_SOLD.flatMap((id) => PRODUCTS.filter((each) => each.id === id)),
+        ...PRODUCTS.filter((each) => !MOST_SOLD.includes(each.id)),
+      ].map((each) => {
+        const quantity = inSale.get(each.id)
+        return {
+          ...each,
+          ...(MOST_SOLD.includes(each.id) ? { categoryIds: ['top'] } : {}),
+          ...(quantity === undefined ? {} : { inOrder: quantity }),
+        }
+      })}
+      categories={[{ id: 'top', label: 'Most sold' }, ...CATEGORIES]}
       currency={BAKERY.currency}
+      search
       onSelect={add}
       toolbar={
         <ScanField
@@ -894,9 +909,14 @@ export function Till({ phone, start = {} }: { phone: boolean; start?: TillStart 
             </>
           }
           onScan={scan}
-          defaultProductsOpen={start.productsOpen === true}
+          defaultOrderOpen={start.orderOpen === true}
           products={products}
           cart={cart}
+          orderSummary={{
+            count: computed.lines.length,
+            total: computed.lines.length === 0 ? null : decimal(due),
+            currency: BAKERY.currency,
+          }}
         />
 
         {/* The receipt kind */}

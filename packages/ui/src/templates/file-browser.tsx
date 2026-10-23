@@ -1110,7 +1110,6 @@ export function FileBrowser(props: FileBrowserProps) {
         title={messages['files.noAccess']}
         description={props.noAccess}
         {...(props.noAccessAction === undefined ? {} : { action: props.noAccessAction })}
-        className="py-12"
       />
     )
   } else if (props.error !== undefined) {
@@ -1122,7 +1121,6 @@ export function FileBrowser(props: FileBrowserProps) {
         {...(props.onRetry === undefined
           ? {}
           : { action: { label: messages['files.retry'], onClick: props.onRetry } })}
-        className="py-12"
       />
     )
   } else if (props.entries.length === 0 && props.loading !== true) {
@@ -1141,7 +1139,6 @@ export function FileBrowser(props: FileBrowserProps) {
               },
             }
           : {})}
-        className="py-12"
       />
     ) : (
       <EmptyState
@@ -1158,7 +1155,6 @@ export function FileBrowser(props: FileBrowserProps) {
               },
             }
           : {})}
-        className="py-12"
       />
     )
   } else if (phone) {

@@ -145,9 +145,10 @@ const meta = {
           'with the brand, the register, the cashier, what is being sent and the application’s ' +
           'actions; the offline strip with the queue (“3 sales waiting to be sent”); the product ' +
           'area at the start and the cart at the end. Kiosk-safe: nothing scrolls the page, no ' +
-          'double-tap zoom, no selection by a long press, safe areas kept. On a phone the cart ' +
-          'comes first and the products open in a bottom sheet. A scanner works anywhere on the ' +
-          'screen (`onScan`).\n\n' +
+          'double-tap zoom, no selection by a long press, safe areas kept. On a phone the ' +
+          'products come first and the order is a compact bar at the bottom (the count and the ' +
+          'total, highlighted at each change) that expands into a sheet with the cart (P5.90). A ' +
+          'scanner works anywhere on the screen (`onScan`).\n\n' +
           '**When:** a point of sale, a kiosk, a self-service order screen.\n\n' +
           '**When not:** the back office of a shop (AppShell); a handheld’s warehouse work ' +
           '(PickList, StockCount).\n\n' +
@@ -271,7 +272,10 @@ export const LongText: Story = {
   ),
 }
 
-/** A phone in portrait: the cart first, "Products" above it. */
+/** The order bar's count and total, as the cart shows them. */
+const ORDER = { count: CART_LINES.length, total: CART_TOTAL, currency: CURRENCY }
+
+/** A phone in portrait: the products first, the order as a compact bar at the bottom. */
 export const Phone: Story = {
   name: 'Phone width',
   render: () => (
@@ -288,17 +292,24 @@ export const Phone: Story = {
               queued={1}
               products={<Products />}
               cart={<Cart />}
+              orderSummary={ORDER}
             />
           </div>
         </ExampleProvider>
       </StoryProvider>
     </PhoneFrame>
   ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(
+      within(canvasElement).getByRole('button', { name: /^Order\s*4 items\s*1\.011,00/ }),
+    ).toBeVisible()
+  },
 }
 
-/** A phone with the products sheet open (a restored screen). */
-export const PhoneProducts: Story = {
-  name: 'Phone width, products open',
+/** A phone with the order sheet open (a restored screen): the cart and "Charge". */
+export const PhoneOrder: Story = {
+  name: 'Phone width, order open',
   render: () => (
     <PhoneFrame>
       <StoryProvider density="touch">
@@ -306,11 +317,12 @@ export const PhoneProducts: Story = {
           <div className="h-full">
             <PosShell
               layout="phone"
-              defaultProductsOpen
+              defaultOrderOpen
               brand={<BrandLockup brandName="Liro" productName="POS" compact />}
               register="Kasa 2"
               products={<Products />}
               cart={<Cart />}
+              orderSummary={ORDER}
             />
           </div>
         </ExampleProvider>
@@ -319,7 +331,88 @@ export const PhoneProducts: Story = {
   ),
   play: async () => {
     await settle()
-    await expect(within(document.body).getByRole('dialog', { name: 'Products' })).toBeVisible()
+    const sheet = within(within(document.body).getByRole('dialog', { name: 'Order' }))
+    await expect(sheet.getByRole('button', { name: /^Charge 1\.011,00/ })).toBeVisible()
+  },
+}
+
+/** The application around a phone till: each tap adds a line, and the bar answers at once. */
+function PhoneSelling() {
+  const [lines, setLines] = useState<readonly CartLine[]>([])
+  const add = (id: string) => {
+    const product = PRODUCTS.find((item) => item.id === id)
+    if (product === undefined) return
+    setLines((current) => {
+      const line = current.find((item) => item.id === id)
+      const quantity = String(Number(line?.quantity ?? '0') + 1)
+      const next: CartLine = {
+        id,
+        name: product.name,
+        quantity,
+        unit: 'pc',
+        unitPrice: product.price,
+        total: decimal(paras(product.price) * BigInt(quantity)),
+      }
+      return line === undefined
+        ? [...current, next]
+        : current.map((item) => (item.id === id ? next : item))
+    })
+  }
+  const total =
+    lines.length === 0 ? null : decimal(sumUnits(lines.map((line) => paras(line.total))))
+  return (
+    <PosShell
+      layout="phone"
+      brand={<BrandLockup brandName="Liro" productName="POS" compact />}
+      register="Kasa 2"
+      products={
+        <ProductGrid
+          products={PRODUCTS.map((product) => {
+            const line = lines.find((item) => item.id === product.id)
+            return line === undefined ? product : { ...product, inOrder: line.quantity }
+          })}
+          categories={CATEGORIES}
+          currency={CURRENCY}
+          search
+          onSelect={add}
+        />
+      }
+      cart={<Cart lines={lines} total={total} />}
+      orderSummary={{ count: lines.length, total, currency: CURRENCY }}
+    />
+  )
+}
+
+/** Tapping a tile: its count on the tile and the bar's count go up at once, highlighted. */
+export const PhoneSellingInteraction: Story = {
+  name: 'Phone width, tapping items, interaction',
+  tags: ['interaction'],
+  render: () => (
+    <PhoneFrame>
+      <StoryProvider density="touch">
+        <ExampleProvider>
+          <div className="h-full">
+            <PhoneSelling />
+          </div>
+        </ExampleProvider>
+      </StoryProvider>
+    </PhoneFrame>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: /^Kifla/ }))
+    await userEvent.click(canvas.getByRole('button', { name: /^Kifla/ }))
+    await expect(canvas.getByRole('button', { name: /^Kifla/ })).toHaveAccessibleDescription(
+      /2 in the order/,
+    )
+    const bar = canvasElement.querySelector('[data-slot="pos-order-bar"]')
+    await expect(bar).toHaveTextContent('1 item')
+    await expect(bar).toHaveAttribute('data-flash', 'true')
+    // The search finds products in every category.
+    await userEvent.type(canvas.getByRole('searchbox', { name: 'Search products' }), 'jog')
+    await expect(canvas.getByRole('button', { name: /^Jogurt/ })).toBeVisible()
+    await expect(canvas.queryByRole('button', { name: /^Kifla/ })).toBeNull()
   },
 }
 

@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { FileText, List, Paperclip } from 'lucide-react'
 import { useState } from 'react'
-import { expect, userEvent, within } from 'storybook/test'
+import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { settle } from '../primitives/story-helpers'
 import { ARABIC, JAPANESE, LONG } from './field-story-data'
 import { Breadcrumbs, CursorPagination, ShortcutHint, Tabs } from './navigation'
@@ -161,7 +161,7 @@ export const Shortcut: Story = {
   ),
 }
 
-/** Long labels at phone width: the tabs and the trail wrap. */
+/** Long labels at phone width: the tabs stay one line that scrolls sideways; the trail wraps. */
 export const LongTextPhone: Story = {
   name: 'Long text, phone width',
   render: () => (
@@ -187,6 +187,44 @@ export const LongTextPhone: Story = {
       />
     </div>
   ),
+}
+
+const MANY_TABS = [
+  'General',
+  'Lines',
+  'Attachments',
+  'Payments',
+  'Deliveries',
+  'Accounting',
+  'History',
+].map((label) => ({
+  value: label.toLowerCase(),
+  label,
+  content: <p className={cn('m-0 text-sm', TEXT_DIRECTION)}>{label}</p>,
+}))
+
+/**
+ * More tabs than a phone's width (the tab row rule, P5.90): one line that scrolls sideways, each
+ * edge with tabs past it faded, and the active tab ("Accounting") scrolled into view when drawn.
+ */
+export const ManyTabsPhone: Story = {
+  name: 'Many tabs, phone width',
+  render: () => (
+    <div className="w-[390px] max-w-full">
+      <Tabs label="Invoice" items={MANY_TABS} defaultValue="accounting" />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const tab = within(canvasElement).getByRole('tab', { name: 'Accounting' })
+    // The fade and the reveal follow the row's measurement (and the web font's arrival).
+    await waitFor(() => expect(tab.closest('[data-fade]')).not.toBeNull())
+    await waitFor(() => {
+      const box = tab.closest('[data-fade]')?.getBoundingClientRect()
+      const own = tab.getBoundingClientRect()
+      return expect(box !== undefined && own.left >= box.left && own.right <= box.right).toBe(true)
+    })
+  },
 }
 
 /** Arabic sample text, right to left: "›" points left; the chevrons mirror. */

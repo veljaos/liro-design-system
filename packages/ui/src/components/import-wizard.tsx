@@ -38,7 +38,8 @@ import { WizardFooter } from './wizard-footer'
  * - **File:** what the file may be (types, size, the first row as headings — the application's
  *   text) is shown BEFORE choosing; a button chooses the file (a plain file input until
  *   FileDropzone, P5.5, replaces it); the application reads it (`reading`) and reports its name
- *   and size in words, or an error.
+ *   and size in words, or an error (`fileError`): a file that cannot be read shows that error
+ *   in words, never its raw content, and Next waits for another file (P5.90 item 7).
  * - **Columns:** one row per catalogue field — the field (required ones marked), the file's
  *   column that fills it (a select; "Not imported" when none), a sample value from that column.
  *   The application suggests a mapping (`suggested` marks those fields); a column fills one field
@@ -99,7 +100,11 @@ export interface ImportWizardProps {
   file?: ImportFile
   /** The application is reading the file. */
   reading?: boolean
-  /** The file could not be read, in the application's words. */
+  /**
+   * The file could not be read (a damaged file, a binary file named .csv), in the application's
+   * words. Shown under the drop zone as the file's error; nothing read from the file is shown and
+   * Next stays unavailable until another file is read (P5.90 item 7).
+   */
   fileError?: string
   /** The file's columns, as the application read them. */
   sourceColumns: readonly ImportSourceColumn[]
@@ -198,6 +203,7 @@ export function ImportWizard(props: ImportWizardProps) {
   const go = (step: ImportStep) => {
     props.onStepChange(step)
   }
+  const unreadable = props.fileError !== undefined && props.fileError !== ''
   const reasonId = useId()
   const [leaving, setLeaving] = useState(false)
   const onCancel = props.onCancel
@@ -230,7 +236,9 @@ export function ImportWizard(props: ImportWizardProps) {
         }}
       />
       {props.reading === true && <Spinner size="sm">{messages['field.loading']}</Spinner>}
-      {props.file !== undefined && props.reading !== true && (
+      {/* A file the application could not read shows only its error (FileDropzone's), never
+          what was read from it (P5.90 item 7). */}
+      {props.file !== undefined && props.reading !== true && !unreadable && (
         <p className="m-0 flex min-w-0 flex-col gap-0.5">
           <span className={cn('text-sm font-semibold break-words text-primary', TEXT_DIRECTION)}>
             {props.file.name}
@@ -489,7 +497,7 @@ export function ImportWizard(props: ImportWizardProps) {
       <Button
         intent="next"
         label={messages['wizard.next']}
-        disabled={props.file === undefined || props.reading === true}
+        disabled={props.file === undefined || props.reading === true || unreadable}
         onClick={() => {
           go('columns')
         }}

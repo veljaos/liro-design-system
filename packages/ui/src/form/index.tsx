@@ -30,6 +30,7 @@ import {
   type TextAreaFieldProps,
   type TextFieldProps,
 } from '../components/text-field'
+import { TimeField, type TimeFieldProps } from '../components/time-field'
 import { focusFirstInvalid } from '../components/form-logic'
 import { useLiro } from '../provider/liro-provider'
 
@@ -40,7 +41,7 @@ import { useLiro } from '../provider/liro-provider'
  * `rules` in place of `value` and `onChange`: it shows the form's value and the rule's error
  * message, and reports changes and leaving the field. The fields themselves stay presentational
  * and do not depend on React Hook Form. No validation library: rules are React Hook Form's own
- * (required, min, validate …) or the application's functions. Number, money and date fields add
+ * (required, min, validate …) or the application's functions. Number, money, date and time fields add
  * one rule of their own: text they cannot read fails with the field's own message, so the form
  * does not submit while it is there (the owner's decision of P2.3a).
  */
@@ -235,6 +236,34 @@ export function FormDateRangeField<TValues extends FieldValues, TName extends Fi
       {...props}
       value={field.value ?? { start: null, end: null }}
       onChange={field.onChange}
+      onValidityChange={(valid) => {
+        readable.onValidityChange(valid)
+        props.onValidityChange?.(valid)
+      }}
+      {...(error === undefined ? {} : { error })}
+    />
+  )
+}
+
+export function FormTimeField<TValues extends FieldValues, TName extends FieldPath<TValues>>({
+  control,
+  name,
+  rules,
+  ...props
+}: Bound<TValues, TName> & Unbound<TimeFieldProps>) {
+  const { messages } = useLiro()
+  const readable = useReadable(messages['field.invalidTime'])
+  const { field, error } = useBound(
+    { control, name, ...(rules === undefined ? {} : { rules }) },
+    readable.rule,
+  )
+  return (
+    <TimeField
+      {...props}
+      name={field.name}
+      value={field.value ?? null}
+      onChange={field.onChange}
+      onBlur={field.onBlur}
       onValidityChange={(valid) => {
         readable.onValidityChange(valid)
         props.onValidityChange?.(valid)

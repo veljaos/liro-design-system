@@ -44,6 +44,8 @@ export interface LiroMessages {
   'field.invalidNumber': string
   /** A date field whose text cannot be read as a date (shown under the field). */
   'field.invalidDate': string
+  /** A time field whose text cannot be read as a time of day (shown under the field). */
+  'field.invalidTime': string
   /** A date range whose end is before its start (shown under the field). */
   'field.invalidRange': string
   /** The button that opens a date field's calendar. */
@@ -189,6 +191,9 @@ export interface LiroMessages {
   'notice.close': string
   /** Names the region where toasts appear, for assistive technology. */
   'notice.region': string
+  /** SaveStatus (P5.90): beside the action while a routine save runs, and after it succeeded. */
+  'save.saving': string
+  'save.saved': string
   /** Tells assistive technology that a step of a Stepper is completed. */
   'stepper.completed': string
   /**
@@ -841,6 +846,8 @@ export interface LiroMessages {
   'grid.addDeduction': string
   /** EditableGrid: the note before a line's detail that never reaches the customer's document. */
   'grid.internal': string
+  /** EditableGrid on phones (P5.90): the title of a line's card, its number ("Line 3"). */
+  'grid.line': (line: number, text: string) => string
   // P5.24 shifts
   /** ShiftPlanner: the header of the people column, the hours column and the coverage row. */
   'shifts.person': string
@@ -1004,7 +1011,7 @@ export interface LiroMessages {
   'masked.other': string
   /** MaskedValue: the label of the text field of "Other". */
   'masked.otherText': string
-  /** MaskedValue: the note in the dialog that the access is recorded, under `masked.loggedTitle`. */
+  /** MaskedValue: the note in the dialog that the access is recorded, after `masked.loggedTitle`. */
   'masked.logged': string
   /** MaskedValue: the value is on its way (after the reason was given). */
   'masked.loading': (label: string) => string
@@ -1094,7 +1101,6 @@ export interface LiroMessages {
   'clock.correct': string
   'clock.correctTitle': string
   'clock.time': string
-  'clock.timeInvalid': string
   'clock.reason': string
   'clock.save': string
   // P5.8 Calendar and scheduling
@@ -1153,6 +1159,10 @@ export interface LiroMessages {
   'schedule.when': (dateText: string, timeText: string) => string
   /** A start time in the "Move to…" list that overlaps an unavailable time. */
   'schedule.optionUnavailable': (timeText: string, reason: string) => string
+  /** ResourceSchedule's phone lists (P5.90): the search, an empty list, a search without results. */
+  'schedule.search': string
+  'schedule.listEmpty': string
+  'schedule.noMatches': (query: string) => string
   /** SlotPicker: nothing free in the period. */
   'slots.none': string
   'slots.noneDescription': string
@@ -1193,6 +1203,30 @@ export interface LiroMessages {
   'cart.each': (priceText: string) => string
   'cart.total': string
   'cart.charge': (amountText: string) => string
+  /** A product tile's count in the order, for assistive technology ("2 in the order"). */
+  'pos.inOrder': (countText: string) => string
+  /** ProductGrid's search field. */
+  'pos.search': string
+  /** PosShell's order bar and sheet on a phone. */
+  'pos.order': string
+  /** CatalogPicker (P5.90 item 14). */
+  'catalog.search': string
+  'catalog.filters': string
+  /** The top level's name ("Back to All"). */
+  'catalog.top': string
+  'catalog.levels': string
+  'catalog.back': (label: string) => string
+  'catalog.count': (count: number, countText: string) => string
+  'catalog.found': (count: number, countText: string) => string
+  'catalog.results': string
+  'catalog.showMore': (shownText: string, totalText: string) => string
+  'catalog.clear': string
+  'catalog.empty': string
+  'catalog.retry': string
+  'catalog.noneChosen': string
+  'catalog.chosen': (names: string) => string
+  'catalog.choose': (count: number, countText: string) => string
+  'catalog.wasPrice': (priceText: string) => string
   /** PaymentDialog: the amounts, the methods, the card terminal and the end. */
   'payment.title': string
   'payment.due': string
@@ -1284,6 +1318,9 @@ export interface LiroMessages {
   'print.placeAndDate': (place: string, date: string) => string
   /** CoursePage: names the outline (its navigation, the phone's button and drawer). */
   'course.outline': string
+  /** Desktop: hides and shows the outline (P5.90). */
+  'course.hideOutline': string
+  'course.showOutline': string
   /** CoursePage: the progress to completion ("7 of 12 lessons"). */
   'course.progress': (done: number, total: number, doneText: string, totalText: string) => string
   /** CoursePage: names the progress bar. */
@@ -1729,7 +1766,7 @@ export interface LiroMessages {
   /** The "now" marker of the time grids (CalendarView, ResourceSchedule, Timetable): "Now, 10:05". */
   'schedule.now': (timeText: string) => string
   // P5.28 screens
-  /** MaskedValue: the bold start of the note that the access is recorded ("Access is logged"). */
+  /** MaskedValue: the start of the note that the access is recorded ("Access is logged."). */
   'masked.loggedTitle': string
   /** ClockRecordList: the correction drawer's record, under its title: "Nenad Ilić, 07.10.2026.". */
   'clock.correctSubject': (person: string, date: string) => string

@@ -209,8 +209,8 @@ const meta = {
       description: {
         component:
           '**What for:** the Debit / Credit / Difference of a balanced entry (a journal entry), ' +
-          'always in view: in EditableGrid’s `footer` — beside "Add line" on desktop, in the ' +
-          'totals card sticky at the top on phones. The amounts and the state come from the ' +
+          'always in view: in EditableGrid’s `footer` — beside "Add line" on desktop, after the ' +
+          'lines and "Add line" on phones, in the flow (P5.90). The amounts and the state come from the ' +
           'application: whether an entry balances is the Core’s rule, and the bar adds nothing.\n\n' +
           '**States:** Balanced (a check and the word); Not balanced (the difference and the ' +
           'words in the danger colour — never colour alone); Amounts missing (a line without an ' +
@@ -336,7 +336,7 @@ export const InJournalEntryInteraction: Story = {
   },
 }
 
-/** Phone width: the bar stacked in the grid's totals card, sticky at the top. */
+/** Phone width: the bar stacked in the grid's one totals place, after the lines, in the flow (P5.90). */
 export const PhoneWidth: Story = {
   name: 'Phone width',
   render: () => (
@@ -354,7 +354,7 @@ export const PhoneWidth: Story = {
     const totals = bar?.closest('[data-slot="grid-totals"]')
     await expect(
       totals === null || totals === undefined ? '' : getComputedStyle(totals).position,
-    ).toBe('sticky')
+    ).toBe('static')
     if (bar === null) throw new Error('no bar')
     await expect(bar.scrollWidth).toBeLessThanOrEqual(bar.clientWidth)
   },

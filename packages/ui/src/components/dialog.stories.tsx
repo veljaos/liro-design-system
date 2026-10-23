@@ -7,7 +7,7 @@ import { KeyValueList } from './cards'
 import { Dialog } from './dialog'
 import { ProgressBar } from './progress'
 import { Spinner } from './spinner'
-import { ARABIC, JAPANESE, LONG } from './field-story-data'
+import { ARABIC, JAPANESE, LONG, UNBROKEN } from './field-story-data'
 import { expectContentDirection, PhoneFrame, StoryProvider } from './story-frames'
 import { TextField } from './text-field'
 
@@ -221,6 +221,24 @@ export const LongTextPhone: Story = {
         actions={<Button intent="confirm" label="Confirm the delivery address" />}
       >
         <p className="m-0 text-sm">{LONG.value}</p>
+      </Dialog>
+    </PhoneFrame>
+  ),
+}
+
+/** Text without a single space on a phone (P5.90 item 7): the title, the record and the text wrap. */
+export const UnbrokenPhone: Story = {
+  name: 'Unbroken text, phone width',
+  render: () => (
+    <PhoneFrame>
+      <Dialog
+        defaultOpen
+        title={UNBROKEN.word}
+        subject={UNBROKEN.iban}
+        description={UNBROKEN.url}
+        actions={<Button intent="confirm" label="Confirm" />}
+      >
+        <p className="m-0 text-sm">{UNBROKEN.url}</p>
       </Dialog>
     </PhoneFrame>
   ),

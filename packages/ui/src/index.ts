@@ -43,6 +43,10 @@ export { CommandPalette } from './components/command-palette'
 export type { CommandItem, CommandPaletteProps } from './components/command-palette'
 export { DateField, DateRangeField } from './components/date-field'
 export type { DateFieldProps, DateRange, DateRangeFieldProps } from './components/date-field'
+export { TimeField } from './components/time-field'
+export type { TimeFieldProps } from './components/time-field'
+export { isTimeValue, parseTimeText } from './components/time-logic'
+export type { TimeTextOptions } from './components/time-logic'
 export {
   ConfirmDialog,
   confirmFamily,
@@ -62,7 +66,12 @@ export type {
 export { DataTable } from './components/data-table'
 export { EditableGrid } from './components/editable-grid'
 export type { EditableGridColumn, EditableGridProps, GridTotal } from './components/editable-grid'
-export { gridKeyAction, orderMessages } from './components/editable-grid-logic'
+export {
+  cellHasValue,
+  gridKeyAction,
+  orderMessages,
+  shownColumns,
+} from './components/editable-grid-logic'
 export type {
   GridAction,
   GridKey,
@@ -174,6 +183,9 @@ export { initialsOf, PersonAvatar, PersonName } from './components/person'
 export type { PersonAvatarProps, PersonNameProps } from './components/person'
 export { notice, Toaster } from './components/notice'
 export type { NoticeAction, NoticeKind, NoticeOptions, ToasterProps } from './components/notice'
+export { SaveStatus } from './components/save-status'
+export type { SaveState, SaveStatusProps } from './components/save-status'
+export { useBottomBar } from './components/bottom-bars'
 export { compactStep, ProgressBar, Skeleton, Stepper, stepState } from './components/progress'
 export type {
   ProgressBarProps,
@@ -377,11 +389,18 @@ export { mentionsInText, splitMentions } from './components/message-logic'
 export type { Mention, MentionPart } from './components/message-logic'
 export { Questionnaire } from './components/questionnaire'
 export type { QuestionnaireProps } from './components/questionnaire'
-export { answersOnPath, nextQuestionId, questionPath } from './components/questionnaire-logic'
+export {
+  answersOnPath,
+  nextQuestionId,
+  questionnaireKeyAction,
+  questionPath,
+} from './components/questionnaire-logic'
 export type {
   QuestionAnswer,
   QuestionAnswers,
   QuestionDefinition,
+  QuestionnaireKeyAction,
+  QuestionnaireKeyTarget,
   QuestionnaireStep,
   QuestionOption,
   QuestionType,
@@ -774,6 +793,7 @@ export type {
   ScheduleMove,
   ScheduleResource,
 } from './components/resource-schedule'
+export type { SchedulePhoneList } from './components/schedule-phone-lists'
 export { SlotPicker } from './components/slot-picker'
 export type { SlotPickerProps, SlotResource } from './components/slot-picker'
 export { Timetable } from './components/timetable'
@@ -793,6 +813,7 @@ export {
   periodDays,
   readMoment,
   scheduleKeyTarget,
+  scheduleSearchMatches,
   shiftPeriod as moveCalendarPeriod,
   slotKey,
   spanOf,
@@ -836,6 +857,35 @@ export type {
 } from './components/product-tile'
 export { CartPanel } from './components/cart-panel'
 export type { CartAmount, CartLine, CartPanelProps } from './components/cart-panel'
+export {
+  FLASH_DURATION,
+  grownLines,
+  quantitiesOf,
+  TAP_VIBRATION,
+  tapFeedback,
+} from './components/pos-feedback'
+export { CatalogPicker } from './components/catalog-picker'
+export type { CatalogPickerProps } from './components/catalog-picker'
+export {
+  applyCatalogFilters,
+  CATALOG_PAGE,
+  categoryAndBelow,
+  categoryTrail,
+  childCategories,
+  countBelow,
+  itemsDirectlyIn,
+  searchCatalog,
+  sectionItems,
+  shownCount,
+  toggleCatalogItem,
+  toggleFilter,
+} from './components/catalog-picker-logic'
+export type {
+  CatalogCategory,
+  CatalogFilter,
+  CatalogItem,
+  CatalogSection,
+} from './components/catalog-picker-logic'
 export { PaymentDialog } from './components/payment-dialog'
 export type {
   CardState,

@@ -131,7 +131,7 @@ const meta = {
           'hall — with its tables, rooms, seats and places where the application puts them (plan ' +
           'units), areas as plain labelled regions (no walls, doors or windows: a real building ' +
           'plan is the `background` image), and each item’s state in words, tone and icon (the ' +
-          'states are the application’s map: free, occupied, reserved, needs cleaning are only ' +
+          'states are the application’s map: free, occupied, reserved, blocked are only ' +
           'examples). One item chosen or several; Enter or a press opens it (`onItemActivate`).\n\n' +
           '**A physical place:** the plan is not mirrored in a right-to-left page — the room does ' +
           'not turn round —, the page around it is. The arrow keys go to the nearest item in that ' +
@@ -195,7 +195,7 @@ export const Default: Story = {
       'aria-checked',
       'true',
     )
-    await expect(canvas.getByRole('list', { name: 'States' })).toHaveTextContent('Needs cleaning')
+    await expect(canvas.getByRole('list', { name: 'States' })).toHaveTextContent('Blocked')
     // The plan is a physical place: never mirrored.
     await expect(
       canvasElement.querySelector('[data-slot="floor-plan-canvas"]')?.getAttribute('dir'),
@@ -644,7 +644,7 @@ export const Warnings: Story = {
       <Plan
         warnings={[
           { itemId: 't9', text: 'The party grew to 12; the table takes 10.', tone: 'danger' },
-          { itemId: 't6', text: 'Waiting for cleaning since 19:10.' },
+          { itemId: 't6', text: 'A wobbly leg reported at 19:10.' },
         ]}
       />
     </ExampleProvider>
@@ -663,7 +663,7 @@ export const WarningsGoTo: Story = {
   tags: ['interaction'],
   render: () => (
     <ExampleProvider>
-      <Plan warnings={[{ itemId: 't6', text: 'Waiting for cleaning since 19:10.' }]} />
+      <Plan warnings={[{ itemId: 't6', text: 'A wobbly leg reported at 19:10.' }]} />
     </ExampleProvider>
   ),
   play: async ({ canvasElement }) => {
@@ -875,34 +875,13 @@ export const PhoneArea: Story = {
   },
 }
 
-/** Edit mode is not offered on a phone (P5.28 item 27): a note says where to edit. */
-export const PhoneEditing: Story = {
-  name: 'Phone width, editing',
-  render: () => (
-    <PhoneFrame>
-      <ExampleProvider>
-        <div className="p-4">
-          <Plan layout="phone" editing palette={RESTAURANT_PALETTE} defaultSelected={['t4']} />
-        </div>
-      </ExampleProvider>
-    </PhoneFrame>
-  ),
-  play: async ({ canvasElement }) => {
-    await settle()
-    const canvas = within(canvasElement)
-    await expect(canvas.getByText('Edit the plan on a computer or tablet.')).toBeVisible()
-    await expect(canvas.queryByRole('group', { name: 'Add' })).toBeNull()
-    await expect(canvas.queryByRole('button', { name: 'Move to…' })).toBeNull()
-  },
-}
-
 /** Arabic names in a right-to-left page: the page turns, the plan does not. */
 export const Arabic: Story = {
   render: () => (
     <StoryProvider locale="ar">
       <Plan
         label="مطعم كيه، خدمة العشاء"
-        states={statesIn(['متاحة', 'مشغولة', 'محجوزة', 'تحتاج إلى تنظيف', 'محظورة'])}
+        states={statesIn(['متاحة', 'مشغولة', 'محجوزة', 'محظورة'])}
         areas={areasIn(['القاعة', 'الشرفة', 'البار'])}
         initial={RESTAURANT_ITEMS.map((item) => ({
           ...item,
@@ -931,7 +910,7 @@ export const Japanese: Story = {
     <StoryProvider locale="ja">
       <Plan
         label="レストラン・ケイ、ディナー"
-        states={statesIn(['空席', '使用中', '予約済み', '清掃待ち', '使用不可'])}
+        states={statesIn(['空席', '使用中', '予約済み', '使用不可'])}
         areas={areasIn(['ホール', 'テラス', 'バー'])}
         defaultView="list"
         initial={RESTAURANT_ITEMS.map((item) => ({

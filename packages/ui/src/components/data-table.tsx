@@ -7,7 +7,7 @@ import {
   type RowSelectionState,
   type Updater,
 } from '@tanstack/react-table'
-import { useVirtualizer, type Range } from '@tanstack/react-virtual'
+import { useVirtualizer, useWindowVirtualizer, type Range } from '@tanstack/react-virtual'
 import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react'
 import {
   Fragment,
@@ -237,7 +237,10 @@ export interface DataTableProps<Row extends RowData> {
    * above the table, without a gap (P4.4).
    */
   inCard?: boolean
-  /** The table scrolls inside this height (CSS length, e.g. "60vh"), so header and totals stay. */
+  /**
+   * The table scrolls inside this height (CSS length, e.g. "60vh"), so header and totals stay.
+   * Not on phones: the cards flow with the page (P5.90).
+   */
   maxHeight?: string
 
   /** The card of a row on a phone. */
@@ -246,7 +249,7 @@ export interface DataTableProps<Row extends RowData> {
   layout?: 'auto' | 'table' | 'cards'
   /**
    * Renders only the rows in view, for long lists: 44px rows, the header sticky. Needs
-   * `maxHeight`, the height it scrolls in.
+   * `maxHeight`, the height it scrolls in. Not on phones: the cards flow with the page (P5.90).
    */
   virtualize?: boolean
   /** Columns can be resized by pointer, keyboard and a popover (without dragging). */
@@ -331,7 +334,11 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
   // Cards inside a card would be cards in a card (P4.9): in a card the rows are one flat list
   // with dividers instead.
   const flat = cards && props.inCard === true
-  const virtualize = props.virtualize === true
+  // On phones the cards flow with the page: no box with its own scroll inside the page, so no
+  // `maxHeight` there (P5.90 item 5). A long list of cards is still drawn only where it is in
+  // view, measured against the page's own scroll (`cardWindow`), not a box of its own.
+  const virtualize = props.virtualize === true && !cards
+  const cardWindow = props.virtualize === true && cards
   // Every table's header stays below the shell by default (P5.28 item 4).
   const sticky = props.stickyHeader !== false || virtualize
   // In a card the first column stays at the start while the table scrolls sideways (P5.28 item 4).
@@ -445,7 +452,7 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
   const [focusIndex, setFocusIndex] = useState<number | null>(null)
   useEffect(() => {
     const element = scroller.current
-    if (!virtualize || element === null) return
+    if ((!virtualize && !cardWindow) || element === null) return
     const onFocusIn = (event: FocusEvent) => {
       const at =
         event.target instanceof Element
@@ -463,7 +470,7 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
       element.removeEventListener('focusin', onFocusIn)
       element.removeEventListener('focusout', onFocusOut)
     }
-  }, [virtualize, cards])
+  }, [virtualize, cardWindow, cards])
   const rangeExtractor = useCallback(
     (range: Range) => keepFocusedRow(range, focusIndex),
     [focusIndex],
@@ -482,17 +489,68 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
     initialRect: { width: 0, height: 720 },
   })
 
+  // Phone cards in a window of the page's own scroll (P5.90): the closest scrolling ancestor (a
+  // story's phone frame, an application's scrolling layout), or the window; the list's offset in
+  // it is the window's scroll margin.
+  const cardListElement = useRef<HTMLUListElement>(null)
+  const [pageScroller, setPageScroller] = useState<HTMLElement | 'window' | null>(null)
+  const [cardMargin, setCardMargin] = useState(0)
+  useLayoutEffect(() => {
+    const list = cardListElement.current
+    if (!cardWindow || list === null) return
+    const measure = () => {
+      const found = scrollingAncestor(list)
+      setPageScroller((last) => (last === found ? last : found))
+      const top = list.getBoundingClientRect().top
+      const margin =
+        found === 'window'
+          ? top + window.scrollY
+          : top - found.getBoundingClientRect().top + found.scrollTop
+      setCardMargin((last) => (Math.abs(last - margin) < 1 ? last : Math.round(margin)))
+    }
+    measure()
+    // What stands above the list can change its offset (a filter row, a bulk bar).
+    const observer = new ResizeObserver(measure)
+    const found = scrollingAncestor(list)
+    observer.observe(found === 'window' ? document.body : (found.firstElementChild ?? found))
+    return () => {
+      observer.disconnect()
+    }
+  }, [cardWindow, rows.length])
+  const elementCards = useVirtualizer({
+    count: rows.length,
+    getScrollElement: () => (pageScroller instanceof HTMLElement ? pageScroller : null),
+    estimateSize: () => CARD_HEIGHT,
+    overscan: overscanRows(CARD_HEIGHT),
+    rangeExtractor,
+    enabled: cardWindow && pageScroller instanceof HTMLElement,
+    scrollMargin: cardMargin,
+    initialRect: { width: 0, height: 720 },
+  })
+  const windowCards = useWindowVirtualizer({
+    count: rows.length,
+    estimateSize: () => CARD_HEIGHT,
+    overscan: overscanRows(CARD_HEIGHT),
+    rangeExtractor,
+    enabled: cardWindow && pageScroller === 'window',
+    scrollMargin: cardMargin,
+    initialRect: { width: 0, height: 720 },
+  })
+  const cardPager = pageScroller === 'window' ? windowCards : elementCards
+
   useImperativeHandle(
     props.ref,
     () => ({
       revealRow: (id: string) => {
         // Drawn rows are all in the page: focusing in the row scrolls it into view.
-        if (!virtualize) return
+        if (!virtualize && !cardWindow) return
         const index = rows.findIndex((row) => getRowId(row) === id)
-        if (index >= 0) virtualizer.scrollToIndex(index, { align: 'center' })
+        if (index < 0) return
+        if (cardWindow) cardPager.scrollToIndex(index, { align: 'center' })
+        else virtualizer.scrollToIndex(index, { align: 'center' })
       },
     }),
-    [rows, getRowId, virtualize, virtualizer],
+    [rows, getRowId, virtualize, virtualizer, cardWindow, cardPager],
   )
 
   const byId = new Map(columns.map((column) => [column.id, column]))
@@ -629,9 +687,9 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
           'group/header border-0 border-b border-solid border-default bg-surface-sunken font-bold text-primary',
           column.minWidth === undefined && 'min-w-16',
           ALIGN[align],
-          sticky ? STICKY_HEAD : resizable && 'relative',
-          corner && (selectable ? STICKY_START_AFTER_SELECT : STICKY_START),
-          sticky || corner ? (corner ? 'z-20' : 'z-10') : undefined,
+          // The header row is one sticky band (the thead, P5.90 item 1): its cells are not
+          // layers of their own; the corner stays at the start inside it.
+          corner ? [selectable ? STICKY_START_AFTER_SELECT : STICKY_START, 'z-20'] : 'relative',
           oneLine && 'truncate',
         )}
         // Without resizing, a column's minimum width holds in the automatic layout (P5.23); the
@@ -709,7 +767,7 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
     if (rows.length === 0) {
       return (
         <tr>
-          <td colSpan={span} className="p-4">
+          <td colSpan={span} className="px-4">
             {empty()}
           </td>
         </tr>
@@ -746,11 +804,17 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
   const totals = props.totals
   const footer =
     totals !== undefined && rows.length > 0 ? (
-      <tfoot>
+      // One sticky band at the bottom edge, as the header (P5.90 item 1).
+      <tfoot className="sticky bottom-0 z-10 bg-surface-sunken">
         <tr aria-rowindex={virtualize ? rows.length + 2 : undefined}>
           {selectable && (
             <td
-              className={cn(CELL, 'bg-surface-sunken', TOTALS_LINE, stickyStart && 'start-0 z-20')}
+              className={cn(
+                CELL,
+                'bg-surface-sunken',
+                TOTALS_LINE,
+                stickyStart && 'sticky start-0 z-20',
+              )}
             />
           )}
           {columns.map((column, index) => {
@@ -762,7 +826,9 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
                   CELL,
                   'min-w-16 bg-surface-sunken font-semibold text-primary',
                   TOTALS_LINE,
-                  stickyStart && index === 0 && (selectable ? 'start-12 z-20' : 'start-0 z-20'),
+                  stickyStart &&
+                    index === 0 &&
+                    (selectable ? 'sticky start-12 z-20' : 'sticky start-0 z-20'),
                   ALIGN[column.align ?? 'start'],
                   column.numeric === true && 'tabular-nums',
                   oneLine && 'truncate',
@@ -877,8 +943,8 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
 
   const cardList = () => {
     if (firstLoad) return skeleton
-    if (rows.length === 0) return <div className="p-4">{empty()}</div>
-    if (!virtualize) {
+    if (rows.length === 0) return <div className="px-4">{empty()}</div>
+    if (!cardWindow) {
       return (
         <ul
           aria-label={props.label}
@@ -892,19 +958,21 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
         </ul>
       )
     }
-    // Cards differ in height: each is measured once drawn; the gap is part of its item.
+    // Cards differ in height: each is measured once drawn; the gap is part of its item. The
+    // window follows the page's own scroll (P5.90): the list never scrolls in a box of its own.
     return (
       <ul
+        ref={cardListElement}
         aria-label={props.label}
         className="relative m-0 list-none p-0"
-        style={{ height: virtualizer.getTotalSize() }}
+        style={{ height: cardPager.getTotalSize() }}
       >
-        {virtualizer.getVirtualItems().map((item) => (
+        {cardPager.getVirtualItems().map((item) => (
           <li
             key={tableRows[item.index]?.id ?? item.index}
             data-index={item.index}
             {...lineAttribute(lineAt(item.index))}
-            ref={virtualizer.measureElement}
+            ref={cardPager.measureElement}
             aria-setsize={rows.length}
             aria-posinset={item.index + 1}
             className={cn(
@@ -915,7 +983,7 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
                 lineAt(item.index) === 'subtotal' &&
                 'border-0 border-t border-solid border-strong',
             )}
-            style={{ transform: `translateY(${String(item.start)}px)` }}
+            style={{ transform: `translateY(${String(item.start - cardMargin)}px)` }}
           >
             {card(item.index)}
           </li>
@@ -954,11 +1022,15 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
       : formatCount(messages, format, props.count, props.countIsExact ?? true, props.countThreshold)
 
   const scrollStyle: CSSProperties | undefined =
-    props.maxHeight === undefined ? undefined : { maxHeight: props.maxHeight }
+    props.maxHeight === undefined || cards ? undefined : { maxHeight: props.maxHeight }
 
   const edge = props.inCard === true ? 'px-4' : undefined
+  // The flat phone list's totals end the card themselves: no white band under them (P5.90).
   const under =
-    cardTotals !== null || props.rowLimitMessage !== undefined || paging || countText !== undefined
+    (cardTotals !== null && !flat) ||
+    props.rowLimitMessage !== undefined ||
+    paging ||
+    countText !== undefined
 
   return (
     <div
@@ -1061,7 +1133,10 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
                   {hasActions && <col style={{ width: ACTIONS_WIDTH }} />}
                 </colgroup>
               )}
-              <thead data-sticky-head="">
+              <thead
+                data-sticky-head=""
+                className={cn('bg-surface-sunken', sticky && [STICKY_HEAD, 'z-10'])}
+              >
                 <tr aria-rowindex={virtualize ? 1 : undefined}>
                   {selectable && (
                     <th
@@ -1070,9 +1145,7 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
                       className={cn(
                         CELL,
                         'w-px border-0 border-b border-solid border-default bg-surface-sunken',
-                        sticky && STICKY_HEAD,
-                        stickyStart && STICKY_START,
-                        stickyStart ? 'z-20' : sticky && 'z-10',
+                        stickyStart && [STICKY_START, 'z-20'],
                       )}
                     >
                       <Checkbox
@@ -1091,7 +1164,6 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
                     <td
                       className={cn(
                         'w-px border-0 border-b border-solid border-default bg-surface-sunken',
-                        sticky && [STICKY_HEAD, 'z-10'],
                       )}
                     />
                   )}
@@ -1140,8 +1212,21 @@ function lineAttribute(type: LineType): { 'data-line'?: LineType } {
   return type === 'line' ? {} : { 'data-line': type }
 }
 
-/** The totals row: the 1px border.strong line above it, and sticky at the bottom edge. */
-const TOTALS_LINE = 'sticky bottom-0 z-10 border-0 border-t border-solid border-strong'
+/** The totals row's cells: the 1px border.strong line above them (the tfoot is sticky). */
+const TOTALS_LINE = 'border-0 border-t border-solid border-strong'
+
+/**
+ * The closest ancestor that scrolls vertically (a layout's own scroll, a story's phone frame),
+ * else the window. The table's own rows box is passed over: on phones it never scrolls.
+ */
+function scrollingAncestor(element: HTMLElement): HTMLElement | 'window' {
+  for (let node = element.parentElement; node !== null; node = node.parentElement) {
+    if (node === document.body || node === document.documentElement) break
+    if (node.dataset.slot === 'data-table-rows') continue
+    if (/(auto|scroll|overlay)/.test(getComputedStyle(node).overflowY)) return node
+  }
+  return 'window'
+}
 
 function noop() {
   return undefined

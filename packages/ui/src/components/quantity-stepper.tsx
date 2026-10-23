@@ -5,6 +5,7 @@ import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 import { controlAttributes, Field, fieldProps, type FieldBaseProps } from './field'
 import { readNumber, showNumber } from './number-logic'
+import { FLASH_CLASS, FLASH_TRANSITION, tapFeedback, useFlash } from './pos-feedback'
 import { canStep, quantityRange, stepQuantity } from './quantity-logic'
 import { entryAttributes, entryError, useEntry, type EntryProps } from './use-entry'
 
@@ -17,6 +18,10 @@ import { entryAttributes, entryError, useEntry, type EntryProps } from './use-en
  * shown as an error ("At least 1.") — never changed behind the user's back; − and + stop at the
  * limits. ArrowUp and ArrowDown step in the field. The unit ("pc", "kg") stands after the number.
  * The number is written left to right in every direction, as in NumberField.
+ *
+ * P5.90 (item 20): a press of − or + answers at once — the quantity is highlighted briefly and a
+ * device that can vibrate gives a short pulse (`tapFeedback`) — so nobody presses twice out of
+ * doubt while the application's totals settle.
  */
 
 export interface QuantityStepperProps extends FieldBaseProps, EntryProps {
@@ -63,6 +68,7 @@ export function QuantityStepper(props: QuantityStepperProps) {
         : undefined
   const error = entryError(props.error ?? rangeError, entry.valid, messages['field.invalidNumber'])
   const large = props.size === 'large'
+  const [flashing, flash] = useFlash()
 
   /** Steps from what is typed now, read first, as leaving the field would. */
   const step = (direction: 1 | -1) => {
@@ -117,6 +123,8 @@ export function QuantityStepper(props: QuantityStepperProps) {
               disabled={control.disabled || !canStep(entry.value, direction, limits)}
               className={cn('shrink-0 px-0', large ? 'size-14' : 'size-11')}
               onClick={() => {
+                tapFeedback()
+                flash(['value'])
                 step(direction)
               }}
             >
@@ -132,8 +140,11 @@ export function QuantityStepper(props: QuantityStepperProps) {
             {button(-1)}
             <div
               dir="ltr"
+              data-flash={flashing.has('value') || undefined}
               className={cn(
-                'flex min-w-0 flex-1 items-center rounded-md border border-solid border-control bg-surface-raised focus-within:border-focus',
+                'flex min-w-0 flex-1 items-center rounded-md border border-solid border-control focus-within:border-focus',
+                FLASH_TRANSITION,
+                flashing.has('value') ? FLASH_CLASS : 'bg-surface-raised',
                 large ? 'h-14' : 'h-11',
                 control.invalid && 'border-status-danger-fg focus-within:border-status-danger-fg',
                 control.disabled && 'border-default bg-surface-disabled',

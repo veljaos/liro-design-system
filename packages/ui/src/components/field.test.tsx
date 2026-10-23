@@ -45,9 +45,32 @@ describe('Field', () => {
       <TextField id="n" label="Name" hideLabel description="As on the invoice" />,
     )
     expect(described).toContain('id="n-description"')
-    expect(/<div class="([^"]*)"><input/.exec(described)?.[1]).toBe('mt-1')
+    // The hint stands under the control (P5.90), so a hidden label leaves no gap above it.
+    expect(/<div class="([^"]*)"><input/.exec(described)?.[1] ?? '').not.toContain('mt-1')
     const switchHtml = render(<SwitchField id="s" label="Send to SEF" hideLabel />)
     expect(switchHtml).toContain('sr-only')
+  })
+
+  it('puts the label, the control, the hint and the error in that order (P5.90 item 18)', () => {
+    const html = render(
+      <TextField id="id" label="Buyer ID" description="9 digits" error="The ID is too short." />,
+    )
+    const label = html.indexOf('id="id-label"')
+    const input = html.indexOf('<input')
+    const hint = html.indexOf('id="id-description"')
+    const error = html.indexOf('id="id-error"')
+    expect(label).toBeGreaterThanOrEqual(0)
+    expect(label).toBeLessThan(input)
+    expect(input).toBeLessThan(hint)
+    expect(hint).toBeLessThan(error)
+    // Two fields side by side, one with a hint: the markup before each control is the same, so
+    // the controls align.
+    const plain = render(<TextField id="a" label="Kind" />)
+    const before = (markup: string) =>
+      markup.slice(0, markup.indexOf('<input')).replace(/id="[^"]*"|for="[^"]*"/g, '')
+    expect(before(render(<TextField id="b" label="Kind" description="9 digits" />))).toBe(
+      before(plain),
+    )
   })
 
   it('hides every label inside FieldLabelsHidden (a settings row names its control once)', () => {

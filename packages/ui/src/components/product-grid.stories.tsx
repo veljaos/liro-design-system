@@ -45,6 +45,10 @@ const meta = {
           'product stays focusable with its reason. Categories are chips at the start (the neutral ' +
           'selection, never blue); one tile is in the tab order and the arrows move from the leading ' +
           'edge. No text selection or callout on a long press.\n\n' +
+          '**P5.90:** every press answers at once — the tile is highlighted briefly and a device ' +
+          'that can vibrate pulses; `inOrder` shows how many of it the order holds; `categoryIds` ' +
+          'puts a product under several chips (the application’s “Most sold” first); `search` ' +
+          'finds products by name in every category.\n\n' +
           '**When:** the product area of PosShell; a kiosk’s menu.\n\n' +
           '**When not:** a catalogue to search (LookupField, DataTable); choosing in a form ' +
           '(ComboboxField).',
@@ -282,5 +286,71 @@ export const Keyboard: Story = {
     await expect(first).toHaveFocus()
     await userEvent.click(canvas.getByRole('button', { name: 'Kolači' }))
     await expect(canvas.queryByText('Beli hleb')).toBeNull()
+  },
+}
+
+/** The application's "Most sold" chip first and chosen; the counts of the order on the tiles. */
+const MOST_SOLD = ['kifla', 'burek-meso', 'jogurt', 'krempita']
+const IN_ORDER: Record<string, string> = { kifla: '6', krempita: '4' }
+
+export const MostSoldAndCounts: Story = {
+  name: 'Most sold first, with the order’s counts',
+  args: {
+    categories: [{ id: 'top', label: 'Most sold' }, ...CATEGORIES],
+    defaultCategory: 'top',
+    products: [
+      ...MOST_SOLD.flatMap((id) => PRODUCTS.filter((product) => product.id === id)),
+      ...PRODUCTS.filter((product) => !MOST_SOLD.includes(product.id)),
+    ].map((product) => ({
+      ...product,
+      ...(MOST_SOLD.includes(product.id) ? { categoryIds: ['top'] } : {}),
+      ...(IN_ORDER[product.id] === undefined ? {} : { inOrder: IN_ORDER[product.id] }),
+    })),
+  },
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('button', { name: 'Most sold', pressed: true })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: /^Kifla/ })).toHaveAccessibleDescription(
+      '6 in the order',
+    )
+    await expect(canvas.queryByText('Beli hleb')).toBeNull()
+  },
+}
+
+/** A search above the chips: typing finds products in every category. */
+export const Search: Story = {
+  args: { search: true },
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(
+      within(canvasElement).getByRole('searchbox', { name: 'Search products' }),
+    ).toBeVisible()
+  },
+}
+
+export const SearchInteraction: Story = {
+  name: 'Search, interaction',
+  tags: ['interaction'],
+  args: { search: true, defaultCategory: 'cakes' },
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.type(canvas.getByRole('searchbox', { name: 'Search products' }), 'hleb')
+    // Found in every category, the chips set aside while searching.
+    await expect(canvas.getByRole('button', { name: /^Beli hleb/ })).toBeVisible()
+    await expect(canvas.queryByRole('group', { name: 'Categories' })).toBeNull()
+  },
+}
+
+/** A press answers at once: the tile is highlighted for a moment. */
+export const PressFeedback: Story = {
+  name: 'Press feedback, interaction',
+  tags: ['interaction'],
+  play: async ({ canvasElement }) => {
+    await settle()
+    const tile = within(canvasElement).getByRole('button', { name: /^Kifla/ })
+    await userEvent.click(tile)
+    await expect(tile).toHaveAttribute('data-flash', 'true')
   },
 }

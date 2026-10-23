@@ -268,7 +268,6 @@ export function LegalSearchPage(props: LegalSearchPageProps) {
     body = (
       <ErrorState
         compact
-        className="py-10"
         {...(props.errorCaseId === undefined ? {} : { caseId: props.errorCaseId })}
         {...(props.onRetry === undefined
           ? {}
@@ -282,11 +281,10 @@ export function LegalSearchPage(props: LegalSearchPageProps) {
       <EmptyState
         variant="no-results"
         compact
-        className="py-10"
         {...(filtered ? { action: { label: messages['table.clearFilters'], onClick: clear } } : {})}
       />
     ) : (
-      <EmptyState compact className="py-10" />
+      <EmptyState compact />
     )
   } else {
     body = (

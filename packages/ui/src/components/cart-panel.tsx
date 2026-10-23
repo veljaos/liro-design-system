@@ -1,5 +1,5 @@
 import { Pencil, ShoppingCart, Trash2 } from 'lucide-react'
-import { useId, type ReactNode } from 'react'
+import { useEffect, useId, useRef, type ReactNode } from 'react'
 import { ButtonPrimitive } from '../primitives/button'
 import { FOCUS_RING, TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
 import { cn } from '../primitives/cn'
@@ -8,6 +8,7 @@ import { MoneyText, NumberText } from './display-text'
 import { Banner } from './alert'
 import { EmptyState } from './empty-state'
 import type { IconComponent } from './intents'
+import { FLASH_CLASS, FLASH_TRANSITION, useGrowingLines } from './pos-feedback'
 import { QuantityStepper } from './quantity-stepper'
 import { SettlingValue } from './settling-value'
 import type { Tone } from './status-badge'
@@ -33,6 +34,10 @@ import type { Tone } from './status-badge'
  * **edit** button (`onEditLine`, the application's dialog: quantity, note, discount); the total's
  * own words (`totalLabel`, "To pay" once advances are deducted). Promotions and an order discount
  * are rows of `totals` and a line's `discount`, all computed by the application.
+ *
+ * P5.90 (item 20): a line that appears, or whose quantity goes up, is highlighted briefly and
+ * scrolled into view (`useGrowingLines`), so every tap on a product or on + is seen at once and
+ * nobody taps twice out of doubt. Nothing flashes when the cart first appears.
  */
 
 export interface CartLine {
@@ -147,6 +152,20 @@ export function CartPanel(props: CartPanelProps) {
     props.onRemove === undefined &&
     props.onEditLine === undefined
   const blocked = props.chargeDisabledReason !== undefined || props.total === null
+  const growing = useGrowingLines(props.lines)
+  const list = useRef<HTMLUListElement>(null)
+  useEffect(() => {
+    if (growing.size === 0) return
+    // The line that changed comes into view in the cart's own scroll, never the page's.
+    const line = list.current?.querySelector<HTMLElement>('[data-flash]')
+    const scroller = list.current?.parentElement
+    if (line === null || line === undefined || scroller === null || scroller === undefined) return
+    const top = line.offsetTop
+    if (top < scroller.scrollTop) scroller.scrollTop = top
+    else if (top + line.offsetHeight > scroller.scrollTop + scroller.clientHeight) {
+      scroller.scrollTop = top + line.offsetHeight - scroller.clientHeight
+    }
+  }, [growing])
   const chargeLabel =
     props.chargeLabel ??
     messages['cart.charge'](props.total === null ? '—' : format.money(props.total, props.currency))
@@ -184,7 +203,7 @@ export function CartPanel(props: CartPanelProps) {
       {/* A read-only cart has no control inside: the list itself takes the focus so it can be
           scrolled from the keyboard (WCAG 2.1.1, axe scrollable-region-focusable). */}
       <div
-        className={cn('min-h-0 flex-1 overflow-y-auto', readOnly && FOCUS_RING)}
+        className={cn('relative min-h-0 flex-1 overflow-y-auto', readOnly && FOCUS_RING)}
         {...(readOnly ? { tabIndex: 0, role: 'group', 'aria-labelledby': titleId } : {})}
       >
         {props.details !== undefined && (
@@ -201,12 +220,11 @@ export function CartPanel(props: CartPanelProps) {
             icon={ShoppingCart}
             title={props.emptyTitle ?? messages['cart.empty']}
             description={props.emptyDescription ?? messages['cart.emptyDescription']}
-            className="py-8"
           />
         ) : (
-          <ul className="m-0 list-none p-0">
+          <ul ref={list} className="m-0 list-none p-0">
             {props.lines.map((line) => (
-              <CartLineRow key={line.id} line={line} cart={props} />
+              <CartLineRow key={line.id} line={line} cart={props} flash={growing.has(line.id)} />
             ))}
           </ul>
         )}
@@ -265,11 +283,27 @@ export function CartPanel(props: CartPanelProps) {
   )
 }
 
-function CartLineRow({ line, cart }: { line: CartLine; cart: CartPanelProps }) {
+function CartLineRow({
+  line,
+  cart,
+  flash,
+}: {
+  line: CartLine
+  cart: CartPanelProps
+  /** New or grown just now: highlighted briefly. */
+  flash: boolean
+}) {
   const { messages, format } = useLiro()
   const onQuantityChange = cart.onQuantityChange
   return (
-    <li className="flex flex-col gap-2 border-0 border-b border-solid border-subtle px-4 py-3 last:border-b-0">
+    <li
+      data-flash={flash || undefined}
+      className={cn(
+        'flex flex-col gap-2 border-0 border-b border-solid border-subtle px-4 py-3 last:border-b-0',
+        FLASH_TRANSITION,
+        flash && FLASH_CLASS,
+      )}
+    >
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 flex-col gap-0.5">
           <span className={cn('text-sm font-semibold break-words text-primary', TEXT_DIRECTION)}>

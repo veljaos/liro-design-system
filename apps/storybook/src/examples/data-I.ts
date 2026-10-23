@@ -22,8 +22,8 @@ export const I_ROUTES = {
   posReceipt: '/pos/zlatni-klas?step=receipt',
   /** The connection lost, three sales kept on the till. */
   posOffline: '/pos/zlatni-klas?offline',
-  /** Phones: the products sheet open over the cart. */
-  posProducts: '/pos/zlatni-klas?products=open',
+  /** Phones: the order sheet open over the products (P5.90 item 20). */
+  posOrder: '/pos/zlatni-klas?order=open',
 }
 
 // ── The till ──────────────────────────────────────────────────────────────────────────────────
@@ -63,6 +63,19 @@ export const CATEGORIES: readonly ProductCategory[] = [
   { id: 'savoury', label: 'Slano' },
   { id: 'cakes', label: 'Kolači' },
   { id: 'drinks', label: 'Pića' },
+]
+
+/**
+ * The bakery's most sold products this week (the application's figures), first under their own
+ * chip so most sales need no category (P5.90 item 20).
+ */
+export const MOST_SOLD: readonly string[] = [
+  'kifla',
+  'burek-sir',
+  'beli',
+  'jogurt',
+  'kroasan',
+  'kafa',
 ]
 
 export const PRODUCTS: readonly BakeryProduct[] = [

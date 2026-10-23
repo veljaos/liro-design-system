@@ -135,3 +135,27 @@ export function orderMessages(messages: readonly GridMessage[]): GridMessage[] {
     ...messages.filter((message) => message.tone === 'warning'),
   ]
 }
+
+/**
+ * Whether a cell's value counts as used (P5.90 item 4): text that is not empty, a number or a
+ * date, a chosen option or record. Empty text, null and undefined are not.
+ */
+export function cellHasValue(value: unknown): boolean {
+  if (value === null || value === undefined) return false
+  if (typeof value === 'string') return value.trim() !== ''
+  return true
+}
+
+/**
+ * The columns a grid shows (P5.90 item 4, simplicity first): every column that is not optional,
+ * and an optional one while some line uses it (`inUse`) or once the user added it (`revealed`).
+ */
+export function shownColumns<Column extends { id: string; optional?: unknown }>(
+  columns: readonly Column[],
+  inUse: (column: Column) => boolean,
+  revealed: ReadonlySet<string>,
+): Column[] {
+  return columns.filter(
+    (column) => column.optional === undefined || revealed.has(column.id) || inUse(column),
+  )
+}

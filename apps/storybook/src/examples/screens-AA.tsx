@@ -40,10 +40,20 @@ function ProjectTimeline({
   const [model, setModel] = useState({ tasks: LIMAN_TASKS, dependencies: LIMAN_DEPENDENCIES })
   const label = (id: string) => model.tasks.find((each) => each.id === id)?.label ?? id
   const report = (change: GanttChange) => {
-    setModel((current) => applyPlanChange(current, change))
+    const before = model
+    setModel(applyPlanChange(model, change))
+    // A move is reversible: a toast that closes by itself, with Undo, never a confirmation (P5.90).
     if (change.type === 'dates') {
       notice.success(
         `${label(change.id)} now runs ${format.date(change.start)} – ${format.date(change.end)}`,
+        {
+          action: {
+            label: 'Undo',
+            onClick: () => {
+              setModel(before)
+            },
+          },
+        },
       )
     }
   }

@@ -99,7 +99,12 @@ export const Default: Story = {
       canvas.getByRole('rowheader', { name: /^Task: Steel frame, in Construction, .*40.*done/ }),
     ).toBeVisible()
     await expect(canvas.getByRole('columnheader', { name: 'Budget' })).toBeVisible()
-    await expect(canvas.getByRole('img', { name: /^Now, / })).toBeInTheDocument()
+    const marker = canvas.getByRole('img', { name: /^Now, / })
+    await expect(marker).toBeInTheDocument()
+    // Under the bars and their labels (P5.90 item 17): the marker on layer 0, the bars on 1.
+    const bars = canvasElement.querySelector<HTMLElement>('.wx-bars')
+    await expect(getComputedStyle(marker).zIndex).toBe('0')
+    await expect(bars === null ? '' : getComputedStyle(bars).zIndex).toBe('1')
     await expect(
       canvas.getByRole('region', { name: 'Timeline: Warehouse extension' }),
     ).toHaveAttribute('tabindex', '0')

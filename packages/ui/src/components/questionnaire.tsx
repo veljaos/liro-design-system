@@ -1,5 +1,13 @@
 import { Check } from 'lucide-react'
-import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
+import {
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type FocusEvent,
+  type KeyboardEvent,
+  type ReactNode,
+} from 'react'
 import { TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import {
@@ -30,9 +38,11 @@ import {
   multipleValues,
   nextStep,
   previousStep,
+  questionnaireKeyAction,
   questionPath,
   questionProgress,
   singleValue,
+  type QuestionnaireKeyTarget,
   type QuestionAnswer,
   type QuestionAnswers,
   type QuestionDefinition,
@@ -282,6 +292,39 @@ function Answer({
   )
 }
 
+/** What kind of element a key was pressed on, for `questionnaireKeyAction`. */
+function keyTarget(target: EventTarget | null): QuestionnaireKeyTarget {
+  if (target instanceof HTMLTextAreaElement) return 'multiline'
+  if (target instanceof HTMLButtonElement || target instanceof HTMLAnchorElement) return 'button'
+  if (target instanceof HTMLSelectElement) return 'typing'
+  if (target instanceof HTMLInputElement) {
+    return ['radio', 'checkbox'].includes(target.type)
+      ? 'other'
+      : ['button', 'submit', 'reset'].includes(target.type)
+        ? 'button'
+        : 'typing'
+  }
+  if (target instanceof HTMLElement && target.isContentEditable) return 'typing'
+  return 'other'
+}
+
+/** The choices of the question shown that can be chosen, in order: what 1–9 choose. */
+function choiceInputs(item: HTMLElement | null): HTMLInputElement[] {
+  return Array.from(
+    item?.querySelectorAll<HTMLInputElement>(
+      'input[type=radio]:not(:disabled), input[type=checkbox]:not(:disabled)',
+    ) ?? [],
+  )
+}
+
+/** The typed answers: their field takes the focus when the question is shown. */
+const TYPED_TYPES: ReadonlySet<QuestionDefinition['type']> = new Set([
+  'date',
+  'number',
+  'amount',
+  'text',
+])
+
 /** Questions one at a time, with branching, Back, a summary and progress. */
 export function Questionnaire(props: QuestionnaireProps) {
   const { messages, format } = useLiro()
@@ -303,6 +346,7 @@ export function Questionnaire(props: QuestionnaireProps) {
   const [busy, setBusy] = useState(false)
   const summaryHeading = useRef<HTMLHeadingElement>(null)
   const item = useRef<HTMLFieldSetElement>(null)
+  const rootRef = useRef<HTMLFormElement>(null)
   const otherField = useRef<HTMLDivElement | null>(null)
   // Set in event handlers, read after the render they cause (refs: no state update in an effect).
   const focusOther = useRef(false)
@@ -389,19 +433,88 @@ export function Questionnaire(props: QuestionnaireProps) {
     otherField.current?.querySelector('input')?.focus()
   })
 
-  const onKeyDown = (event: KeyboardEvent<HTMLFormElement>) => {
-    if (event.key !== 'Enter' || event.shiftKey || event.nativeEvent.isComposing) return
-    const target = event.target
-    if (
-      target instanceof HTMLButtonElement ||
-      target instanceof HTMLAnchorElement ||
-      target instanceof HTMLTextAreaElement
-    ) {
-      return
+  /**
+   * The keys (P5.90 item 10): 1–9 choose the numbered option, Enter goes on (a typed answer was
+   * read by its field's own Enter, just before this: use what it reported). True when handled.
+   */
+  const pressKey = (event: {
+    key: string
+    target: EventTarget | null
+    ctrlKey: boolean
+    metaKey: boolean
+    altKey: boolean
+    shiftKey: boolean
+    isComposing: boolean
+  }): boolean => {
+    if (step.kind !== 'question') return false
+    const choices = choiceInputs(item.current)
+    const action = questionnaireKeyAction(event.key, keyTarget(event.target), choices.length, {
+      ctrl: event.ctrlKey,
+      meta: event.metaKey,
+      alt: event.altKey,
+      shift: event.shiftKey,
+      composing: event.isComposing,
+    })
+    if (action === null) return false
+    if (action.kind === 'next') {
+      goNext(reportedAnswers.current ?? answers)
+      return true
     }
-    event.preventDefault()
-    // A typed answer was read by its field's own Enter, just before this: use what it reported.
-    if (step.kind === 'question') goNext(reportedAnswers.current ?? answers)
+    const choice = choices[action.index]
+    choice?.focus()
+    // A radio already chosen stays chosen; a checkbox toggles, as a press on it does.
+    if (choice !== undefined && !(choice.type === 'radio' && choice.checked)) choice.click()
+    return true
+  }
+
+  const onKeyDown = (event: KeyboardEvent<HTMLFormElement>) => {
+    if (
+      pressKey({
+        key: event.key,
+        target: event.target,
+        ctrlKey: event.ctrlKey,
+        metaKey: event.metaKey,
+        altKey: event.altKey,
+        shiftKey: event.shiftKey,
+        isComposing: event.nativeEvent.isComposing,
+      })
+    ) {
+      event.preventDefault()
+    }
+  }
+
+  // Nothing focused on the page (it has just opened, or the user clicked beside the question):
+  // the keys still work when this is the page's only questionnaire, so a first-day user can answer
+  // with the number keys at once.
+  const pressKeyRef = useRef(pressKey)
+  useEffect(() => {
+    pressKeyRef.current = pressKey
+  })
+  useEffect(() => {
+    const onDocumentKey = (event: globalThis.KeyboardEvent) => {
+      const active = document.activeElement
+      if (event.defaultPrevented || (active !== null && active !== document.body)) return
+      const root = rootRef.current
+      if (root === null || root.getClientRects().length === 0) return
+      if (document.querySelectorAll('[data-slot="questionnaire-flow"]').length !== 1) return
+      if (pressKeyRef.current(event)) event.preventDefault()
+    }
+    document.addEventListener('keydown', onDocumentKey)
+    return () => {
+      document.removeEventListener('keydown', onDocumentKey)
+    }
+  }, [])
+
+  // A typed answer's field takes the focus when its question is shown (after the first), so the
+  // user types at once: Enter, then the date, then Enter. The primitive focuses the question
+  // itself (a fieldset, not in the tab order) once it is registered; for a typed answer that
+  // focus moves on into the field.
+  const typedFocus = (event: FocusEvent<HTMLFieldSetElement>) => {
+    if (event.target !== event.currentTarget) return
+    if (current === undefined || !TYPED_TYPES.has(current.type)) return
+    event.currentTarget
+      .querySelector<HTMLInputElement>('input:not([type=hidden]):not(:disabled)')
+      ?.focus()
   }
 
   const Heading = `h${String(props.headingLevel ?? 2)}` as 'h2'
@@ -413,6 +526,7 @@ export function Questionnaire(props: QuestionnaireProps) {
 
   return (
     <QuestionnaireRoot
+      ref={rootRef}
       data-slot="questionnaire-flow"
       shortcuts="numbers"
       {...(step.kind === 'question' ? { item: step.id } : { item: '' })}
@@ -445,6 +559,7 @@ export function Questionnaire(props: QuestionnaireProps) {
         <QuestionnaireItem
           key={current.id}
           ref={item}
+          onFocus={typedFocus}
           name={current.id}
           required={isRequired(current)}
           multiple={current.type === 'multiple'}

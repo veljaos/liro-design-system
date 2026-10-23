@@ -1,13 +1,15 @@
-import { CloudAlert, CloudUpload, LayoutGrid } from 'lucide-react'
+import { ChevronUp, CloudAlert, CloudUpload } from 'lucide-react'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Sheet, SheetContent, SheetTrigger } from '../primitives/sheet'
 import { ButtonPrimitive } from '../primitives/button'
 import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
-import { DialogBody, DialogCloseButton, DialogHeader, DialogTitle } from '../primitives/dialog'
+import { DialogCloseButton, DialogHeader, DialogTitle } from '../primitives/dialog'
 import { useLiro } from '../provider/liro-provider'
 import { EMPTY_SCAN_BUFFER, scanKey, type ScanOptions } from '../components/scan-logic'
 import { OfflineIndicator } from '../components/shell-markers'
+import { MoneyText } from '../components/display-text'
+import { FLASH_CLASS, FLASH_TRANSITION, useFlash } from '../components/pos-feedback'
 import { StatusBadge } from '../components/status-badge'
 import { usePhone } from '../components/use-phone'
 
@@ -25,8 +27,11 @@ import { usePhone } from '../components/use-phone'
  *   OfflineIndicator stands under it with the queue (P5.3).
  * - **Landscape tablet first:** the product area at the start (scrolling), the cart panel at the
  *   end, 26rem (at most 45%), full height, its main action at the bottom within the thumb's reach.
- * - **Phone portrait (below 48em or `layout="phone"`): the cart first**, with "Products" above it
- *   opening the product area as a bottom sheet (85% of the height).
+ * - **Phone portrait (below 48em or `layout="phone"`): the products first** (P5.90 item 20: a
+ *   waiter taps items, not the cart) — the categories and the items in one scrolling area — and
+ *   the order as a compact bar at the bottom ("Order · 3 items · 1.011,00 RSD", the
+ *   application's count and total in `orderSummary`), which is highlighted at each change and
+ *   expands into a bottom sheet (85% of the height) with the cart and its main action.
  * - **Scanner:** with `onScan`, a burst of keys anywhere on the screen (not in a field, which has
  *   its own ScanField) is read as a scan (`scanKey`) and reported; the Enter that ends it never
  *   presses the focused button.
@@ -71,12 +76,19 @@ export interface PosShellProps {
   scanOptions?: ScanOptions
   /** 'phone' forces the cart-first phone layout; default by the viewport (48em). */
   layout?: 'tablet' | 'phone'
-  /** Phone: controlled open state of the products sheet. */
-  productsOpen?: boolean
-  /** Phone: the sheet open when it appears (a picture, a restored screen). */
-  defaultProductsOpen?: boolean
-  onProductsOpenChange?: (open: boolean) => void
-  /** The products button's and sheet's title. Default: `messages['pos.products']`. */
+  /**
+   * Phone: what the order bar says — the number of lines and the total (a decimal string, null
+   * while there is none), from the application, as its cart shows them.
+   */
+  orderSummary?: { count: number; total: string | null; currency: string }
+  /** Phone: controlled open state of the order sheet. */
+  orderOpen?: boolean
+  /** Phone: the order sheet open when it appears (a picture, a restored screen). */
+  defaultOrderOpen?: boolean
+  onOrderOpenChange?: (open: boolean) => void
+  /** The order bar's and sheet's title. Default: `messages['pos.order']`. */
+  orderLabel?: string
+  /** The product area's name on a phone. Default: `messages['pos.products']`. */
   productsLabel?: string
   className?: string
 }
@@ -128,8 +140,18 @@ export function PosShell(props: PosShellProps) {
   const { messages, format } = useLiro()
   const viewportPhone = usePhone()
   const phone = props.layout === undefined ? viewportPhone : props.layout === 'phone'
-  const [innerOpen, setInnerOpen] = useState(props.defaultProductsOpen ?? false)
-  const productsOpen = props.productsOpen ?? innerOpen
+  const [innerOpen, setInnerOpen] = useState(props.defaultOrderOpen ?? false)
+  const orderOpen = props.orderOpen ?? innerOpen
+  const [flashing, flash] = useFlash()
+  const summary = props.orderSummary
+  const summaryKey = summary === undefined ? '' : `${String(summary.count)}|${summary.total ?? ''}`
+  const lastSummary = useRef(summaryKey)
+  useEffect(() => {
+    // Every change of the order lights the bar up: the tap counted (P5.90 item 20).
+    if (lastSummary.current === summaryKey) return
+    lastSummary.current = summaryKey
+    flash(['order'])
+  }, [summaryKey, flash])
   useScanListener(props.onScan, props.scanOptions)
 
   const queued = props.queued ?? 0
@@ -138,6 +160,7 @@ export function PosShell(props: PosShellProps) {
       ? (props.queuedText ?? messages['pos.queued'](queued, format.number(String(queued))))
       : null
   const productsLabel = props.productsLabel ?? messages['pos.products']
+  const orderLabel = props.orderLabel ?? messages['pos.order']
   const offline = props.offline === true
 
   const fact = (label: string, value: string | undefined) =>
@@ -206,18 +229,51 @@ export function PosShell(props: PosShellProps) {
       )}
       {phone ? (
         <div className="flex min-h-0 flex-1 flex-col">
+          <main
+            aria-label={productsLabel}
+            className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 select-none"
+          >
+            {props.products}
+          </main>
           <Sheet
-            open={productsOpen}
+            open={orderOpen}
             onOpenChange={(next) => {
               setInnerOpen(next)
-              props.onProductsOpenChange?.(next)
+              props.onOrderOpenChange?.(next)
             }}
           >
-            <div className="shrink-0 border-0 border-b border-solid border-default bg-surface-raised px-4 py-2">
+            <div className="shrink-0 border-0 border-t border-solid border-default bg-surface-raised px-4 pt-2 pb-[max(8px,env(safe-area-inset-bottom))]">
               <SheetTrigger asChild>
-                <ButtonPrimitive className="min-h-12 w-full text-md">
-                  <LayoutGrid aria-hidden="true" className="size-4 shrink-0" />
-                  <span className={TEXT_DIRECTION}>{productsLabel}</span>
+                <ButtonPrimitive
+                  data-slot="pos-order-bar"
+                  data-flash={flashing.has('order') || undefined}
+                  className={cn(
+                    'min-h-14 w-full justify-between text-md',
+                    FLASH_TRANSITION,
+                    flashing.has('order') && FLASH_CLASS,
+                  )}
+                >
+                  <span className="flex min-w-0 items-center gap-2">
+                    <ChevronUp aria-hidden="true" className="size-5 shrink-0" />
+                    <span className={cn('font-semibold', TEXT_DIRECTION)}>{orderLabel}</span>
+                    {summary !== undefined && (
+                      <span className={cn('text-sm text-secondary', TEXT_DIRECTION)}>
+                        {summary.count === 0
+                          ? messages['cart.empty']
+                          : messages['cart.count'](
+                              summary.count,
+                              format.number(String(summary.count)),
+                            )}
+                      </span>
+                    )}
+                  </span>
+                  {summary?.total != null && (
+                    <MoneyText
+                      value={summary.total}
+                      currency={summary.currency}
+                      className="shrink-0 font-semibold"
+                    />
+                  )}
                 </ButtonPrimitive>
               </SheetTrigger>
             </div>
@@ -227,13 +283,12 @@ export function PosShell(props: PosShellProps) {
               className="h-[85%] rounded-t-lg pb-[env(safe-area-inset-bottom)]"
             >
               <DialogHeader>
-                <DialogTitle>{productsLabel}</DialogTitle>
+                <DialogTitle>{orderLabel}</DialogTitle>
                 <DialogCloseButton label={messages['dialog.close']} />
               </DialogHeader>
-              <DialogBody className="select-none">{props.products}</DialogBody>
+              <div className="flex min-h-0 flex-1 flex-col">{props.cart}</div>
             </SheetContent>
           </Sheet>
-          <main className="flex min-h-0 flex-1 flex-col">{props.cart}</main>
         </div>
       ) : (
         <div className="flex min-h-0 flex-1">

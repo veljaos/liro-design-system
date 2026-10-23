@@ -5,15 +5,15 @@ import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 
 /*
- * The frame of every field (BUILD-PLAN P2.2): label, optional description, the control, and under
- * it the error or the reason it is disabled. Mantine 9.6.2 Input.Wrapper (Input.css, InputWrapper):
+ * The frame of every field (BUILD-PLAN P2.2): label, the control, and under it the optional
+ * description, then the error or the reason it is disabled. Mantine 9.6.2 Input.Wrapper (Input.css, InputWrapper):
  * label 13px weight 600; description and error at the label size minus 2px (12px here, the
  * smallest A.5 size) with line height 1.2 (A.5 tight, 1.25, here); the control 5px (10 / 2) above
  * an error. The required mark is Mantine's " *" in the error colour.
  *
- * The control sits 4px (spacing xxs) under the label block, with or without a description (owner,
- * P3.2a). Mantine puts it 5px (xs / 2) under a description and directly under a label alone, which
- * left a label alone too close to its control.
+ * The control sits 4px (spacing xxs) under the label (owner, P3.2a). The description is a hint
+ * UNDER the control, never between the label and the control (owner, P5.90 item 18): fields side
+ * by side in one row keep their controls on one line whether or not they have a hint.
  *
  * Owner's decisions (2026-09-25, docs/decisions.md "Fields"):
  * - Error: the message sits under the field in status.danger.fg with an icon, the control's border
@@ -29,7 +29,7 @@ import { useLiro } from '../provider/liro-provider'
 export interface FieldBaseProps {
   /** The field's name for the user. From the application. */
   label: ReactNode
-  /** A hint under the label. */
+  /** A hint under the control (never between the label and the control, P5.90). */
   description?: ReactNode
   /** The problem with the value, shown under the field. The field is marked invalid while set. */
   error?: ReactNode
@@ -112,7 +112,7 @@ export function FieldMessage({
       )}
     >
       {tone === 'error' && <CircleAlert aria-hidden="true" className="mt-px size-3 shrink-0" />}
-      <span className={TEXT_DIRECTION}>{children}</span>
+      <span className={cn('min-w-0 break-words', TEXT_DIRECTION)}>{children}</span>
     </p>
   )
 }
@@ -198,31 +198,31 @@ export function Field(props: FieldProps) {
           {required && <RequiredMark />}
         </label>
       )}
-      {ids.hasDescription && (
-        <p
-          id={ids.descriptionId}
-          className={cn('m-0 text-xs leading-tight text-secondary', TEXT_DIRECTION)}
-        >
-          {description}
-        </p>
-      )}
-      <div
-        className={cn(
-          (!hideLabel || ids.hasDescription) && 'mt-1',
-          (ids.hasError || ids.showReason) && 'mb-[5px]',
-        )}
-      >
+      {/* A group's options stand 8px under their question, a single control 4px (P5.90 item 16). */}
+      <div className={cn(!hideLabel && (props.group === true ? 'mt-2' : 'mt-1'))}>
         {props.children(control)}
       </div>
-      {ids.hasError && (
-        <FieldMessage id={ids.errorId} tone="error">
-          {error}
-        </FieldMessage>
-      )}
-      {ids.showReason && (
-        <FieldMessage id={ids.reasonId} tone="hint">
-          {props.disabledReason}
-        </FieldMessage>
+      {(ids.hasDescription || ids.hasError || ids.showReason) && (
+        <div data-field-messages="" className="mt-[5px] flex min-w-0 flex-col gap-1">
+          {ids.hasDescription && (
+            <p
+              id={ids.descriptionId}
+              className={cn('m-0 text-xs leading-tight break-words text-secondary', TEXT_DIRECTION)}
+            >
+              {description}
+            </p>
+          )}
+          {ids.hasError && (
+            <FieldMessage id={ids.errorId} tone="error">
+              {error}
+            </FieldMessage>
+          )}
+          {ids.showReason && (
+            <FieldMessage id={ids.reasonId} tone="hint">
+              {props.disabledReason}
+            </FieldMessage>
+          )}
+        </div>
       )}
     </div>
   )

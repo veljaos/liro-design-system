@@ -3,9 +3,9 @@ import {
   Bike,
   CircleCheck,
   HandPlatter,
+  LogOut,
   Merge,
   ReceiptText,
-  Sparkles,
   UsersRound,
 } from 'lucide-react'
 import { useContext, useState, type ReactNode } from 'react'
@@ -20,11 +20,11 @@ import {
   MoneyText,
   notice,
   PageHeader,
-  QuantityStepper,
   SectionCard,
   StatusBadge,
   Tabs,
   Toaster,
+  UnavailableAction,
   useLiro,
   type KeyValueItem,
   type ModuleTab,
@@ -114,20 +114,19 @@ function TablePanel({
   onMove,
   onSeat,
   onClear,
-  onClean,
-  onTab,
   tabText,
+  tabOpen,
 }: {
   table: BistroTable | undefined
+  /** Opens the table's tab on the till, a new one for a free table (P5.90 item 20). */
   onOpen: () => void
   onMove: () => void
   onSeat: () => void
   onClear: () => void
-  onClean: () => void
-  /** Opens the table's tab on the till (P5.28 item 22). */
-  onTab: () => void
   /** What the tab still has to pay, written; null without a tab. */
   tabText: string | null
+  /** The tab still has something to pay: the table cannot be cleared yet. */
+  tabOpen: boolean
 }) {
   const { format } = useLiro()
   const number = (value: string) => format.number(value)
@@ -137,20 +136,21 @@ function TablePanel({
         <EmptyState
           compact
           title="No table chosen"
-          description="Choose a table on the plan or in the list to see its guests."
+          description="Tap a table to open its tab; a reserved table shows its reservation here."
         />
       </SectionCard>
     )
   }
   const state = BISTRO_STATES.find((each) => each.id === table.state)
   const party = table.party
+  const guests = party === undefined ? '' : guestsText(party.size, number)
   const items: KeyValueItem[] = [
     { label: 'Area', value: BISTRO_AREAS.find((area) => area.id === table.areaId)?.label ?? '' },
     { label: 'Seats', value: number(String(table.seats)), numeric: true },
     ...(party === undefined
       ? []
       : [
-          { label: 'Guests', value: guestsText(party.size, number) },
+          ...(guests === '' ? [] : [{ label: 'Guests', value: guests }]),
           {
             label: table.state === 'reserved' ? 'Reserved for' : 'Since',
             value: party.time,
@@ -177,17 +177,26 @@ function TablePanel({
       />
     ) : table.state === 'occupied' ? (
       <>
-        <Button family="neutral" icon={Sparkles} label="Clear table" onClick={onClear} />
-        <Button family="neutral" icon={ReceiptText} label="Tab" onClick={onTab} />
+        {tabOpen ? (
+          <UnavailableAction
+            family="neutral"
+            icon={LogOut}
+            label="Clear table"
+            reason={`The tab is still open: ${tabText ?? ''} to pay.`}
+          />
+        ) : (
+          <Button family="neutral" icon={LogOut} label="Clear table" onClick={onClear} />
+        )}
+        <Button family="neutral" icon={ArrowRightLeft} label="Move to table…" onClick={onMove} />
         <Button
           family="primary"
           emphasis="primary"
-          icon={ArrowRightLeft}
-          label="Move to table…"
-          onClick={onMove}
+          icon={ReceiptText}
+          label="Open tab"
+          onClick={onOpen}
         />
       </>
-    ) : table.state === 'reserved' ? (
+    ) : (
       <>
         <Button family="neutral" icon={ArrowRightLeft} label="Move to table…" onClick={onMove} />
         <Button
@@ -198,14 +207,6 @@ function TablePanel({
           onClick={onSeat}
         />
       </>
-    ) : (
-      <Button
-        family="primary"
-        emphasis="primary"
-        icon={Sparkles}
-        label="Mark as clean"
-        onClick={onClean}
-      />
     )
   return (
     <SectionCard
@@ -452,7 +453,12 @@ function MoveGuestsDialog({
   )
 }
 
-/** Bistro Dunav's evening service: the floor (dine-in), takeaway and delivery; open and move. */
+/**
+ * Bistro Dunav's evening service: the floor (dine-in), takeaway and delivery. One tap on a table
+ * opens its tab — a free table is opened at once, with no question (P5.90 item 20); a reserved
+ * table shows its reservation with "Seat guests". Clearing and seating offer Undo instead of a
+ * confirmation; a cleared table is free at once (no "Needs cleaning" state).
+ */
 export function Service({
   phone,
   tableId,
@@ -462,7 +468,7 @@ export function Service({
 }: {
   phone: boolean
   tableId?: string
-  dialog?: 'open' | 'move'
+  dialog?: 'move'
   channel?: 'dine-in' | 'takeaway' | 'delivery'
   area?: string
 }) {
@@ -480,9 +486,7 @@ export function Service({
   )
   const [channel, setChannel] = useState(initialChannel)
   const [chosen, setChosen] = useState<string | undefined>(tableId)
-  const [open, setOpen] = useState(dialog === 'open')
   const [move, setMove] = useState(dialog === 'move')
-  const [partySize, setPartySize] = useState<string | null>('2')
   const table = tables.find((each) => each.id === chosen)
   const update = (id: string, change: Partial<BistroTable>, drop?: 'party') => {
     setTables((current) =>
@@ -498,6 +502,15 @@ export function Service({
   const tabs = useTabs(BISTRO_VENUE)
   const tab = chosen === undefined ? undefined : tabs[chosen]
   const tabRest = tabTotal(BISTRO_VENUE, tab)
+  /** Opens a table's tab; a free table is opened first, now, guests not asked. */
+  const openTab = (each: BistroTable) => {
+    if (each.state === 'free') update(each.id, { state: 'occupied', party: { time: BISTRO.now } })
+    navigate(BISTRO_VENUE.tableRoute(each.id))
+  }
+  /** Puts a table back as it was (Undo). */
+  const restore = (before: BistroTable) => {
+    setTables((current) => current.map((each) => (each.id === before.id ? before : each)))
+  }
   const plan = (
     <FloorPlan
       label={`${BISTRO.name}, evening service`}
@@ -512,7 +525,10 @@ export function Service({
         setChosen(selected[0])
       }}
       onItemActivate={(item) => {
-        setChosen(item.id)
+        // One tap opens the tab (P5.90 item 20); a reservation is shown first.
+        const tapped = tables.find((each) => each.id === item.id)
+        if (tapped === undefined || tapped.state === 'reserved') setChosen(item.id)
+        else openTab(tapped)
       }}
       layout={phone ? 'phone' : 'desktop'}
     />
@@ -521,41 +537,44 @@ export function Service({
     <TablePanel
       table={table}
       onOpen={() => {
-        setPartySize(String(Math.min(2, table?.seats ?? 2)))
-        setOpen(true)
+        if (table !== undefined) openTab(table)
       }}
       onMove={() => {
         setMove(true)
       }}
       onSeat={() => {
         if (table === undefined) return
+        const before = table
         update(table.id, {
           state: 'occupied',
-          party: { ...(table.party ?? { size: 1 }), time: BISTRO.now },
+          party: { ...(table.party ?? {}), time: BISTRO.now },
         })
-        notice.success(`${tableName(table)}: guests seated at ${BISTRO.now}.`)
+        notice.success(`${tableName(table)}: guests seated at ${BISTRO.now}.`, {
+          action: {
+            label: 'Undo',
+            onClick: () => {
+              restore(before)
+            },
+          },
+        })
       }}
       onClear={() => {
         if (table === undefined) return
-        update(table.id, { state: 'cleaning' }, 'party')
-        notice.success(`${tableName(table)} cleared. It waits for cleaning.`)
-      }}
-      onClean={() => {
-        if (table === undefined) return
-        update(table.id, { state: 'free' })
-        notice.success(`${tableName(table)} is free.`)
-      }}
-      onTab={() => {
-        if (table !== undefined) navigate(BISTRO_VENUE.tableRoute(table.id))
+        const before = table
+        update(table.id, { state: 'free' }, 'party')
+        notice.success(`${tableName(table)} is free.`, {
+          action: {
+            label: 'Undo',
+            onClick: () => {
+              restore(before)
+            },
+          },
+        })
       }}
       tabText={tabRest === null ? null : format.money(tabRest, BISTRO_VENUE.currency)}
+      tabOpen={tabRest !== null && tabRest !== '0.00'}
     />
   )
-  const size = partySize === null ? null : Number.parseInt(partySize, 10)
-  const sizeError =
-    table !== undefined && (size === null || Number.isNaN(size) || size < 1 || size > table.seats)
-      ? `From 1 to ${number(String(table.seats))} guests.`
-      : undefined
   const waiting = (kind: ChannelOrder['channel']) =>
     orders.filter((order) => order.channel === kind && order.state !== 'done').length
   const floor = phone ? (
@@ -619,47 +638,6 @@ export function Service({
         />
       </Frame>
       {/* At page level, outside the Tabs (D16). */}
-      {table !== undefined && (
-        <Dialog
-          open={open}
-          onOpenChange={setOpen}
-          title="Open table"
-          subject={tableName(table)}
-          description={`${number(String(table.seats))} seats, from ${BISTRO.now}.`}
-          actions={
-            <>
-              <Button
-                intent="cancel"
-                label="Cancel"
-                onClick={() => {
-                  setOpen(false)
-                }}
-              />
-              <Button
-                family="primary"
-                emphasis="primary"
-                icon={UsersRound}
-                label="Open table"
-                onClick={() => {
-                  if (sizeError !== undefined || size === null) return
-                  update(table.id, { state: 'occupied', party: { size, time: BISTRO.now } })
-                  setOpen(false)
-                  notice.success(`${tableName(table)} opened for ${guestsText(size, number)}.`)
-                }}
-              />
-            </>
-          }
-        >
-          <QuantityStepper
-            label="Guests"
-            value={partySize}
-            onChange={setPartySize}
-            min="1"
-            max={String(table.seats)}
-            {...(sizeError === undefined ? {} : { error: sizeError })}
-          />
-        </Dialog>
-      )}
       {table?.party !== undefined && (
         <MoveGuestsDialog
           // A new round of choosing each time it opens: the best table first.
@@ -676,7 +654,7 @@ export function Service({
             const party = table.party
             if (party === undefined) return
             update(to.id, { state: table.state, party })
-            update(table.id, { state: table.state === 'occupied' ? 'cleaning' : 'free' }, 'party')
+            update(table.id, { state: 'free' }, 'party')
             setChosen(to.id)
             const moved = `Guests moved from ${tableName(table)} to ${tableName(to)}.`
             notice.success(
@@ -698,10 +676,6 @@ export function Service({
 export const GROUP_K_ROUTES: ExampleRoute[] = [
   { path: K_ROUTES.floor, render: (phone) => <Service phone={phone} /> },
   { path: K_ROUTES.floorTable, render: (phone) => <Service phone={phone} tableId="t7" /> },
-  {
-    path: K_ROUTES.floorOpen,
-    render: (phone) => <Service phone={phone} tableId="t4" dialog="open" />,
-  },
   {
     path: K_ROUTES.floorMove,
     render: (phone) => <Service phone={phone} tableId="t5" dialog="move" />,

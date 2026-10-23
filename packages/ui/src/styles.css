@@ -27,6 +27,9 @@
  */
 @utility bidi-content {
   unicode-bidi: plaintext;
+  /* A long unbroken string (an IBAN, a URL, a 60-letter word) breaks rather than overflow its box
+     (P5.90 item 7). break-word, not anywhere: a table's column still sizes by its longest word. */
+  overflow-wrap: break-word;
   text-align: -webkit-match-parent;
   @supports (text-align: match-parent) {
     text-align: match-parent;
@@ -42,6 +45,7 @@
 }
 @utility bidi-isolate {
   unicode-bidi: plaintext;
+  overflow-wrap: break-word;
 }
 
 /*
@@ -173,9 +177,49 @@
 }
 
 /*
+ * Sticky table headers (P5.90 item 8; components/sticky-head.ts). A region that scrolls sideways
+ * is a scroll container, so its header group is sticky only inside it; below the shell it is moved
+ * by a scroll-driven animation on the region's view timeline (`data-sticky-region`, named by
+ * useStickyHead), the scrollport inset by the shell's sticky height (`--liro-shell-top`). The
+ * header moves 1px for each pixel the region's top has gone under the shell, from
+ * `--liro-head-start` (the region's top border) for `--liro-head-room` (the region's inner height
+ * less the header's), so it never leaves its region. The animation follows the scrolling itself
+ * (on the compositor): the header is glued at any speed, and no script runs on scroll. A browser
+ * without scroll-driven animations keeps the header at its region's top. Unlayered, longhands only.
+ */
+@keyframes liro-head-follow {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(var(--liro-head-room, 0px));
+  }
+}
+@supports (animation-timeline: view()) {
+  [data-sticky-region] {
+    view-timeline-name: --liro-sticky-region;
+    view-timeline-axis: block;
+    view-timeline-inset: var(--liro-shell-top, 0px) 0px;
+  }
+  [data-sticky-region] :is(.liro-sticky-head, .liro-gantt .wx-scale) {
+    animation-name: liro-head-follow;
+    animation-duration: auto;
+    animation-timing-function: linear;
+    animation-fill-mode: both;
+    animation-timeline: --liro-sticky-region;
+    animation-range-start: exit-crossing var(--liro-head-start, 0px);
+    animation-range-end: exit-crossing
+      calc(var(--liro-head-start, 0px) + var(--liro-head-room, 0px));
+  }
+}
+
+/*
  * EditableGrid (P3.4, owner's decision 2026-10-01): a cell's field loses its own frame, label gap
- * and message (the messages stand under the row); the cell draws the focus (an inset 1px
- * border.focus line on surface.hover) and an error (the danger line). Fields are 28px high with
+ * and message (the messages stand under the row); the cell draws the focus and an error (the
+ * danger line). One focus style (P5.90 item 2): the library's focus ring — 2px border.focus — round
+ * the whole cell, inside its lines, while its field has the focus; the field itself draws none (no
+ * read-only or amount ring inside the cell's). A button beside the field (a date's calendar) keeps
+ * its own ring, and the cell then draws none. Fields are 28px high with
  * 4px of padding inside the cell's 4px. Numbers stand at the end: their typing area is written
  * left to right in every direction (NumberField), so in a right-to-left grid the end is its start.
  * Unlayered, so it wins over the fields' utilities.
@@ -199,7 +243,7 @@
 [data-slot='grid-cell'] [data-slot='field'] > div {
   margin: 0;
 }
-[data-slot='grid-cell'] [data-slot='field'] > p {
+[data-slot='grid-cell'] [data-slot='field'] > :is(p, [data-field-messages]) {
   display: none;
 }
 [data-slot='grid-cell'][data-align='end'] input {
@@ -208,14 +252,17 @@
 [data-grid-direction='rtl'] [data-slot='grid-cell'][data-align='end'] input[dir='ltr'] {
   text-align: start;
 }
-[data-slot='grid-cell']:focus-within {
-  outline: 1px solid var(--liro-border-focus);
-  outline-offset: -1px;
-  background-color: var(--liro-surface-hover);
+[data-slot='grid-cell']
+  :is(input, [data-slot='select-trigger'], [data-slot='money'], [data-slot='date']) {
+  outline: none;
 }
 [data-slot='grid-cell']:has([aria-invalid='true']) {
   outline: 1px solid var(--liro-status-danger-fg);
   outline-offset: -1px;
+}
+[data-slot='grid-cell']:has(:is(input, [data-slot='select-trigger']):focus) {
+  outline: 2px solid var(--liro-border-focus);
+  outline-offset: -2px;
 }
 
 /*
@@ -226,7 +273,7 @@
 [data-slot='grid-card-cell'] [data-slot='field'] > div {
   margin: 0;
 }
-[data-slot='grid-card-cell'] [data-slot='field'] > p {
+[data-slot='grid-card-cell'] [data-slot='field'] > :is(p, [data-field-messages]) {
   display: none;
 }
 

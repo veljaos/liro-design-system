@@ -3,7 +3,7 @@ import type { CSSProperties } from 'react'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { settle } from '../primitives/story-helpers'
 import { Button } from './button'
-import { ARABIC, JAPANESE, LONG } from './field-story-data'
+import { ARABIC, JAPANESE, LONG, UNBROKEN } from './field-story-data'
 import { notice, NoticeView, Toaster } from './notice'
 
 const meta = {
@@ -13,16 +13,21 @@ const meta = {
     docs: {
       description: {
         component:
-          '**What for:** telling the user that something happened, without stopping them: ' +
-          '"Invoice saved", "Could not send the e-mail". Place `<Toaster />` once inside ' +
+          '**What for:** telling the user about an outcome elsewhere, without stopping them: ' +
+          '"Payroll posted", "Could not send the e-mail". Place `<Toaster />` once inside ' +
           'LiroProvider and call `notice.success | info | warning | error | loading(message, ' +
-          '{ title })`. Success, info and warning close by themselves (3.5, 4 and 6 seconds); ' +
-          'an error stays until the user closes it (Appendix B.8: successes disappear, errors ' +
-          'wait). `notice.loading` stays, without a close button, until `notice.update(id, ' +
-          'kind, message)` turns it into the result. Bottom right, bottom left in ' +
-          'right-to-left; at most four at a time.\n\n' +
-          '**When not:** a problem with a field (its error, under the field); something the ' +
-          'user must decide (ConfirmDialog); a lasting state of the page (Alert or Banner).',
+          '{ title })`.\n\n' +
+          '**Toasts never block (P5.90).** Success and info close by themselves after 4 ' +
+          'seconds and have no close button — nothing to dismiss, and clicks pass through ' +
+          'them. A warning closes after 6 seconds; an error stays until the user closes it ' +
+          '(Appendix B.8: successes disappear, errors wait). `notice.loading` stays, without a ' +
+          'close button, until `notice.update(id, kind, message)` turns it into the result. ' +
+          'Bottom right, bottom left in right-to-left; at most four at a time; always above ' +
+          "the shell's bottom bar and a page's sticky bottom bars (`useBottomBar`).\n\n" +
+          '**When not:** a routine save — "Saved" beside the action (SaveStatus); a problem ' +
+          'with a field (its error, under the field); something the user must decide ' +
+          '(ConfirmDialog); a lasting state of the page (Alert or Banner); a download (the ' +
+          'browser shows it).',
       },
     },
   },
@@ -39,7 +44,7 @@ const WIDTH = { '--width': '440px' } as CSSProperties
 export const Kinds: Story = {
   render: () => (
     <div className="flex max-w-full flex-col gap-4" style={WIDTH}>
-      <NoticeView id="a" kind="success" message="Invoice F-114 saved." />
+      <NoticeView id="a" kind="success" message="Invoice F-114 sent to the buyer." />
       <NoticeView id="b" kind="info" title="New version" message="Reload to use the new version." />
       <NoticeView id="c" kind="warning" message="The exchange rate is from yesterday." />
       <NoticeView
@@ -53,7 +58,7 @@ export const Kinds: Story = {
   ),
 }
 
-/** With an action: "Undo" before the close button, only when the application can undo. */
+/** With an action: "Undo", only when the application can undo; it stays 8 seconds, no close button. */
 export const WithAction: Story = {
   name: 'With an action (Undo)',
   render: () => (
@@ -106,6 +111,36 @@ export const LoadingThenResult: Story = {
   },
 }
 
+/**
+ * A success closes by itself after 4 seconds, has no close button, and lets clicks through to what
+ * it covers (P5.90: toasts never block).
+ */
+export const SuccessNeverBlocks: Story = {
+  name: 'Success closes by itself, never blocks',
+  tags: ['interaction'],
+  render: () => (
+    <div className="flex min-h-60 items-start gap-3">
+      <Button
+        intent="confirm"
+        label="Post"
+        onClick={() => notice.success('Payroll September 2026 posted.')}
+      />
+      <Toaster />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const body = within(canvasElement.ownerDocument.body)
+    await userEvent.click(body.getByRole('button', { name: 'Post' }))
+    const toast = await body.findByText('Payroll September 2026 posted.')
+    await expect(body.queryByRole('button', { name: 'Close' })).toBeNull()
+    const item = toast.closest('[data-sonner-toast]')
+    await expect(item === null ? '' : getComputedStyle(item).pointerEvents).toBe('none')
+    await waitFor(() => expect(body.queryByText('Payroll September 2026 posted.')).toBeNull(), {
+      timeout: 8000,
+    })
+  },
+}
+
 /** Close an error with its button (keyboard: Tab to it, Enter). */
 export const CloseWithButton: Story = {
   name: 'Close an error',
@@ -129,7 +164,7 @@ export const CloseWithButton: Story = {
   },
 }
 
-/** Long title and message at phone width: the text wraps inside the toast. */
+/** Long title and message at phone width: the text wraps inside the toast, also without spaces. */
 export const LongTextPhone: Story = {
   name: 'Long text, phone width',
   render: () => (
@@ -139,11 +174,12 @@ export const LongTextPhone: Story = {
     >
       <NoticeView id="a" kind="error" title={LONG.label} message={LONG.error} />
       <NoticeView id="b" kind="success" message={LONG.description} />
+      <NoticeView id="c" kind="warning" title={UNBROKEN.word} message={UNBROKEN.url} />
     </div>
   ),
 }
 
-/** Arabic sample text, right to left: the icon at the start (right), the close button at the end. */
+/** Arabic sample text, right to left: the icon at the start (right), an error's close button at the end. */
 export const Arabic: Story = {
   render: () => (
     <div lang="ar" dir="rtl" className="flex max-w-full flex-col gap-4" style={WIDTH}>

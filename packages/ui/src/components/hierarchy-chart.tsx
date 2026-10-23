@@ -811,7 +811,7 @@ export function HierarchyChart(props: HierarchyChartProps) {
   if (props.loading === true) body = <ChartSkeleton />
   else if (props.error !== undefined) {
     body = (
-      <div className="p-6">
+      <div className="px-6">
         <ErrorState
           compact
           description={props.error}
@@ -822,7 +822,7 @@ export function HierarchyChart(props: HierarchyChartProps) {
       </div>
     )
   } else if (props.nodes.length === 0) {
-    body = <div className={cn('p-6', TEXT_DIRECTION)}>{props.empty ?? <EmptyState compact />}</div>
+    body = <div className={cn('px-6', TEXT_DIRECTION)}>{props.empty ?? <EmptyState compact />}</div>
   } else if (phone) {
     const toTree = (node: HierarchyNode): TreeNode<HierarchyNode> => {
       const kids = index.children.get(node.id) ?? []

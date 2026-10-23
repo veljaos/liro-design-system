@@ -98,7 +98,8 @@ const meta = {
           'shown only after the user says why. "Show" asks for a reason in a dialog titled with ' +
           'the action in sentence case (“Show gross salary”: `sentenceLabel`) and the record ' +
           'bold under it (`subject`); then the application’s reasons (optionally "Other" with ' +
-          'words) and a note, “Access is logged”, saying what is recorded; ' +
+          'words) and, above the buttons, one quiet line, “Access is logged.”, saying what is ' +
+          'recorded; ' +
           '`onReveal({ reason, text })` reports it, the application records it and passes ' +
           '`value`. A returned promise keeps the dialog working; a refusal (`error`) is shown in ' +
           'it. "Hide" (or `hideAfter`) masks the value again and calls `onHide`.\n\n' +

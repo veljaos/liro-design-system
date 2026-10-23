@@ -1,10 +1,11 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { Fragment, type ReactNode } from 'react'
+import { Fragment, useState, type ReactNode } from 'react'
 import { BUTTON_RESET, FOCUS_RING, TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { Tabs as TabsRoot, TabsContent, TabsList, TabsTrigger } from '../primitives/tabs'
 import { useLiro } from '../provider/liro-provider'
 import type { IconComponent } from './intents'
+import { TAB_ROW_SCROLLER, useTabRow } from './tab-row'
 
 /*
  * Tabs, Breadcrumbs, CursorPagination and ShortcutHint (BUILD-PLAN P2.6), the previous Design
@@ -18,6 +19,8 @@ import type { IconComponent } from './intents'
  *   These Tabs switch between DIFFERENT content (Members / Roles / Invitations) and stand above
  *   it; views that filter ONE list (Active / Inactive / All) are not these Tabs but the list
  *   card's saved views (ListPage), inside the card.
+ *   The tab row rule (P5.90 item 6, tab-row.tsx): the row never wraps; when its tabs do not fit
+ *   it scrolls sideways with faded edges, and the active tab is kept in view.
  * - Breadcrumbs: the separator "›", which mirrors in right-to-left by itself (a Unicode mirrored
  *   character), 10px (xs) on each side; links underlined only on hover; the last item not a link.
  * - CursorPagination: Mantine Pagination 'sm', radius md, no first/last buttons; only the
@@ -63,6 +66,10 @@ export interface TabsProps {
  */
 export function Tabs(props: TabsProps) {
   const first = props.items[0]?.value
+  // The active tab, for the row to keep in view; uncontrolled, followed from the changes.
+  const [inner, setInner] = useState(props.defaultValue ?? first)
+  const active = props.value ?? inner
+  const row = useTabRow(active)
   return (
     <TabsRoot
       {...(props.value === undefined ? {} : { value: props.value })}
@@ -71,23 +78,37 @@ export function Tabs(props: TabsProps) {
           ? {}
           : { defaultValue: first }
         : { defaultValue: props.defaultValue })}
-      {...(props.onValueChange === undefined ? {} : { onValueChange: props.onValueChange })}
+      onValueChange={(value) => {
+        setInner(value)
+        props.onValueChange?.(value)
+      }}
       className={props.className}
     >
-      <TabsList
-        className={props.align === 'center' ? 'justify-center' : 'justify-start'}
-        {...(props.label === undefined ? {} : { 'aria-label': props.label })}
-      >
-        {props.items.map((item) => {
-          const Icon = item.icon
-          return (
-            <TabsTrigger key={item.value} value={item.value} disabled={item.disabled === true}>
-              {Icon !== undefined && <Icon aria-hidden="true" />}
-              <span className={TEXT_DIRECTION}>{item.label}</span>
-            </TabsTrigger>
-          )
-        })}
-      </TabsList>
+      {/* The tab row rule (P5.90 item 6): one line that scrolls sideways with faded edges. */}
+      <div {...row} className={TAB_ROW_SCROLLER}>
+        <TabsList
+          className={cn(
+            'w-max min-w-full flex-nowrap',
+            props.align === 'center' ? 'justify-center-safe' : 'justify-start',
+          )}
+          {...(props.label === undefined ? {} : { 'aria-label': props.label })}
+        >
+          {props.items.map((item) => {
+            const Icon = item.icon
+            return (
+              <TabsTrigger
+                key={item.value}
+                value={item.value}
+                disabled={item.disabled === true}
+                className="focus-visible:-outline-offset-2"
+              >
+                {Icon !== undefined && <Icon aria-hidden="true" />}
+                <span className={TEXT_DIRECTION}>{item.label}</span>
+              </TabsTrigger>
+            )
+          })}
+        </TabsList>
+      </div>
       {props.items.map((item) => (
         <TabsContent key={item.value} value={item.value} className={TAB_PANEL_GAP}>
           {item.content}

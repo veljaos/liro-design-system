@@ -5,6 +5,7 @@ import {
   CircleCheck,
   ListTree,
   Lock,
+  PanelLeft,
   type LucideIcon,
 } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
@@ -44,7 +45,12 @@ import {
  *   `aria-current="page"` — neutral, never blue (D17). Every lesson row is square and full width,
  *   flush with the card's (or the drawer's) edges, and the card ends at its last row: no empty
  *   strip under it (P5.28 item 14, the owner's review).
- * - Lesson (h2, its detail line), the application's content, then "Mark as done" (the page's
+ * - The outline can be collapsed (P5.90 item 11): on a desktop "Hide outline" / "Show outline"
+ *   (pressed while shown, PanelLeft) above the lesson gives the lesson the whole width
+ *   (`defaultOutlineCollapsed`, `onOutlineCollapsedChange` to remember it); on phones it is
+ *   collapsed by default and opens as a sheet.
+ * - Lesson (h2, its detail line), the application's content (text as RichText, images, charts,
+ *   tables, a video, callouts as Alerts; images and videos never wider than the lesson), then "Mark as done" (the page's
  *   one primary action) while the lesson is to do, or "Lesson completed" once it is done; then
  *   the pager: the previous lesson at the start, the next at the end, each a link with its
  *   title.
@@ -97,6 +103,10 @@ export interface CoursePageProps {
   loading?: boolean
   /** The phone's outline drawer is open when the page first shows. */
   defaultOutlineOpen?: boolean
+  /** Desktop: the outline starts collapsed, the lesson full width. Default false. */
+  defaultOutlineCollapsed?: boolean
+  /** The user hid or showed the outline (desktop), so the application can remember it. */
+  onOutlineCollapsedChange?: (collapsed: boolean) => void
   /** 'desktop' or 'phone' forces one; default by the viewport (48em). */
   layout?: 'desktop' | 'phone'
 }
@@ -381,6 +391,7 @@ export function CoursePage(props: CoursePageProps) {
   const viewportPhone = usePhone()
   const phone = props.layout === undefined ? viewportPhone : props.layout === 'phone'
   const [outlineOpen, setOutlineOpen] = useState(props.defaultOutlineOpen === true)
+  const [collapsed, setCollapsed] = useState(props.defaultOutlineCollapsed === true)
   const loading = props.loading === true
   const empty = !loading && props.modules.length === 0
   const lesson = findLesson(props.modules, props.currentKey)
@@ -402,7 +413,13 @@ export function CoursePage(props: CoursePageProps) {
           )}
         </div>
       )}
-      <div className={cn('flex min-w-0 flex-col gap-4 text-md text-primary', TEXT_DIRECTION)}>
+      {/* Images and videos of the lesson never run wider than it. */}
+      <div
+        className={cn(
+          'flex min-w-0 flex-col gap-4 text-md text-primary [&_img]:h-auto [&_img]:max-w-full [&_video]:h-auto [&_video]:max-w-full',
+          TEXT_DIRECTION,
+        )}
+      >
         {props.children}
       </div>
       {lesson?.state === 'done' && (
@@ -490,24 +507,42 @@ export function CoursePage(props: CoursePageProps) {
           {lessonArea}
         </>
       ) : (
-        <div className={cn('flex items-start gap-6', empty && 'flex-col')}>
+        <div className="flex flex-col gap-3">
           {!empty && (
-            <nav
-              aria-label={messages['course.outline']}
-              // No padding under the last row (P5.28 item 14); the card clips the square rows.
-              className="box-border flex w-75 shrink-0 flex-col gap-3 overflow-hidden rounded-lg border border-solid border-default bg-surface-raised pt-3"
-            >
-              <h2 className={cn('m-0 px-3 text-sm font-semibold text-secondary', TEXT_DIRECTION)}>
-                {messages['course.outline']}
-              </h2>
-              {loading ? (
-                <OutlineSkeleton />
-              ) : (
-                <Outline modules={props.modules} currentKey={props.currentKey} inset="card" />
-              )}
-            </nav>
+            // The icon mirrors in right-to-left: the outline stands at the inline start.
+            <div className="flex rtl:[&_svg]:-scale-x-100">
+              <Button
+                family="neutral"
+                emphasis="menu"
+                icon={PanelLeft}
+                label={collapsed ? messages['course.showOutline'] : messages['course.hideOutline']}
+                aria-pressed={!collapsed}
+                onClick={() => {
+                  setCollapsed(!collapsed)
+                  props.onOutlineCollapsedChange?.(!collapsed)
+                }}
+              />
+            </div>
           )}
-          <div className="flex min-w-0 flex-1 flex-col">{lessonArea}</div>
+          <div className={cn('flex items-start gap-6', empty && 'flex-col')}>
+            {!empty && !collapsed && (
+              <nav
+                aria-label={messages['course.outline']}
+                // No padding under the last row (P5.28 item 14); the card clips the square rows.
+                className="box-border flex w-75 shrink-0 flex-col gap-3 overflow-hidden rounded-lg border border-solid border-default bg-surface-raised pt-3"
+              >
+                <h2 className={cn('m-0 px-3 text-sm font-semibold text-secondary', TEXT_DIRECTION)}>
+                  {messages['course.outline']}
+                </h2>
+                {loading ? (
+                  <OutlineSkeleton />
+                ) : (
+                  <Outline modules={props.modules} currentKey={props.currentKey} inset="card" />
+                )}
+              </nav>
+            )}
+            <div className="flex min-w-0 flex-1 flex-col">{lessonArea}</div>
+          </div>
         </div>
       )}
     </div>

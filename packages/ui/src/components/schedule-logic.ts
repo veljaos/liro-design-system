@@ -686,3 +686,36 @@ export function nowOnAxis(
   if (minutes < axis.dayStart || minutes >= axis.dayStart + dayLength(axis)) return null
   return axisMinutes(axis, day, minutes)
 }
+
+/**
+ * Text folded for a search (P5.90 item 19): lower case in the locale, without accents ("Šuljić" →
+ * "suljic"), and "đ", which Unicode does not decompose, as "d" ("Đorđević" → "dordevic").
+ */
+export function foldSearchText(text: string, locale: string): string {
+  return text
+    .toLocaleLowerCase(locale)
+    .normalize('NFD')
+    .replace(/\p{Mn}/gu, '')
+    .replace(/đ/g, 'd')
+    .trim()
+}
+
+/**
+ * Whether a search matches any of a booking's texts (its title, description, the resource's name),
+ * every word of the search somewhere in them. An empty search matches everything.
+ */
+export function scheduleSearchMatches(
+  query: string,
+  texts: readonly (string | undefined)[],
+  locale: string,
+): boolean {
+  const words = foldSearchText(query, locale)
+    .split(/\s+/)
+    .filter((word) => word !== '')
+  if (words.length === 0) return true
+  const haystack = foldSearchText(
+    texts.filter((text): text is string => text !== undefined).join(' '),
+    locale,
+  )
+  return words.every((word) => haystack.includes(word))
+}

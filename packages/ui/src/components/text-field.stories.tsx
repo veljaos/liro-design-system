@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { useState } from 'react'
 import { settle } from '../primitives/story-helpers'
-import { ARABIC, JAPANESE, LONG } from './field-story-data'
+import { ARABIC, JAPANESE, LONG, UNBROKEN } from './field-story-data'
 import { TextAreaField, TextField } from './text-field'
 
 const meta = {
@@ -79,6 +79,21 @@ export const LongTextPhone: Story = {
       <TextField label={LONG.label} description={LONG.description} defaultValue={LONG.value} />
       <TextField label={LONG.label} error={LONG.error} defaultValue={LONG.value} />
       <TextAreaField label={LONG.label} readOnly defaultValue={LONG.value} rows={3} />
+    </div>
+  ),
+}
+
+/**
+ * Text without a single space at phone width (an IBAN, a URL, a long word; P5.90 item 7): the
+ * label, the hint and the error wrap inside the field; a read-only text area wraps its value.
+ */
+export const UnbrokenPhone: Story = {
+  name: 'Unbroken text, phone width',
+  render: () => (
+    <div className="flex w-[390px] max-w-full flex-col gap-6 rounded-md border border-default bg-surface-raised p-4">
+      <TextField label={UNBROKEN.word} description={UNBROKEN.url} defaultValue={UNBROKEN.iban} />
+      <TextField label="Account" error={UNBROKEN.word} defaultValue={UNBROKEN.iban} />
+      <TextAreaField label="Link" readOnly defaultValue={UNBROKEN.url} rows={3} />
     </div>
   ),
 }

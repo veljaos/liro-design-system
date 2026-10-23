@@ -352,7 +352,7 @@ export function PivotGrid(props: PivotGridProps) {
           role="presentation"
           className="w-full border-separate border-spacing-0 font-sans text-sm text-primary"
         >
-          <thead data-sticky-head="" className={cn(STICKY_HEAD, 'z-10')}>
+          <thead data-sticky-head="" className={cn('bg-surface-sunken', STICKY_HEAD, 'z-10')}>
             {table.getHeaderGroups().map((group) => (
               <tr key={group.id} role="row">
                 {group.headers.filter((header) => header.rowSpan !== 0).map(headerCell)}

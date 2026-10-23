@@ -346,6 +346,28 @@ export const FileError: Story = {
   ),
 }
 
+/**
+ * A file the application could not read (a binary file named .csv): only its error, in words —
+ * never the bytes read from it — and Next stays unavailable until another file is read (P5.90).
+ */
+export const UnreadableFile: Story = {
+  name: 'Unreadable file',
+  render: () => (
+    <ExampleProvider>
+      <Import
+        chosen
+        fileError="kupci-oktobar-2026.csv could not be read: it is not a text file. Save it again as CSV from Excel, or choose the .xlsx file."
+      />
+    </ExampleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.queryByText('1.213 rows, 8 columns, 96 KB')).toBeNull()
+    await expect(canvas.getByRole('button', { name: 'Next' })).toBeDisabled()
+    await settle()
+  },
+}
+
 /** Every row passed the check: "Only rows with problems" says that none is left. */
 export const NoProblems: Story = {
   name: 'No problems',

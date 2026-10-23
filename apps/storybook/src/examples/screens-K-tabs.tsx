@@ -2,8 +2,11 @@ import {
   ArrowLeft,
   ArrowRightLeft,
   ChefHat,
+  Clock,
+  PauseCircle,
   Percent,
   Receipt,
+  Send,
   Split,
   Trash2,
   Wallet,
@@ -26,6 +29,7 @@ import {
   RadioGroupField,
   ReceiptResult,
   SelectField,
+  SwitchField,
   TextField,
   Toaster,
   useLiro,
@@ -45,22 +49,37 @@ import { useExampleState } from './example-state'
 import {
   computeTab,
   equalShares,
+  inOrder,
   initialTabs,
   itemsAmount,
   markPaid,
   moveItems,
+  sendLines,
+  sentText,
   tabReceiptNumber,
   unsentByStation,
   type Tab,
   type TabLine,
   type Venue,
 } from './data-K-tabs'
+import { BISTRO_TABLES, type BistroTable } from './data-K'
 import { TillTouch } from './screens-I-till'
 
 /*
  * A table's open tab on the till (P5.28 item 22), for Bistro Dunav's service. The tabs live above
  * the screens (`useExampleState`, key `tabs.<venue>`): the waiter adds items, leaves for the floor
- * and comes back to the same tab. On the tab: send the new items to the bar or the kitchen, edit a
+ * and comes back to the same tab.
+ *
+ * Sending (P5.90 item 20, as restaurant tills do it — "send on leaving the table"): a new item is
+ * marked "New" and goes to the bar or the kitchen by itself when the waiter leaves the table
+ * (Floor), each line then "Sent to the kitchen · 19:40"; "Send now" is kept for a rush; a line
+ * held for a later course (the desserts) waits, marked "Held", until "Send held". A waiter who
+ * forgets to press Send no longer leaves an order unsent; nothing is sent while items are still
+ * being tapped. The sending itself is the application's — the screen reports what went where.
+ * Every tap answers at once (the tile's count, the line's highlight, the order bar on phones);
+ * removing a line offers Undo instead of a confirmation.
+ *
+ * On the tab: edit a
  * line (quantity, note, discount), a discount on the whole order, the venue's promotions (the
  * dessert of the day) applied by the application, split the bill (equally or by items) and pay a
  * part, move items or the whole tab to another table, and close it with the fiscal receipt (item
@@ -103,7 +122,13 @@ export function TabTill({
   const [tabs, setTabs] = useExampleState<Record<string, Tab>>(`tabs.${venue.id}`, () =>
     initialTabs(),
   )
+  // The floor's tables: closing the tab frees the table at once (P5.90 item 20).
+  const [, setTables] = useExampleState<readonly BistroTable[]>(
+    'bistro.tables',
+    () => BISTRO_TABLES,
+  )
   const name = tableName(venue, tableId)
+  const productName = (id: string) => venue.products.find((each) => each.id === id)?.name ?? ''
   const tab: Tab = tabs[tableId] ?? { tableId, openedAt: venue.now, lines: [], payments: [] }
   const figures = computeTab(venue, tab)
   const setTab = (change: (current: Tab) => Tab) => {
@@ -116,13 +141,17 @@ export function TabTill({
   // ── Dialogs ──
   const [editId, setEditId] = useState<string | null>(null)
   const editing = tab.lines.find((line) => line.id === editId)
-  const [draft, setDraft] = useState<{ quantity: string | null; note: string; discountId: string }>(
-    {
-      quantity: editing === undefined ? null : String(editing.quantity),
-      note: editing?.note ?? '',
-      discountId: editing?.discountId ?? '',
-    },
-  )
+  const [draft, setDraft] = useState<{
+    quantity: string | null
+    note: string
+    discountId: string
+    held: boolean
+  }>({
+    quantity: editing === undefined ? null : String(editing.quantity),
+    note: editing?.note ?? '',
+    discountId: editing?.discountId ?? '',
+    held: editing?.held === true,
+  })
   const [discountOpen, setDiscountOpen] = useState(false)
   const [orderDiscount, setOrderDiscount] = useState(tab.orderDiscountId ?? '')
   const [splitOpen, setSplitOpen] = useState(false)
@@ -163,8 +192,16 @@ export function TabTill({
     }
   }, [paying, cardState])
 
-  const unsent = unsentByStation(venue, tab)
-  const unsentCount = unsent.reduce((sum, each) => sum + each.count, 0)
+  const unsentCount = unsentByStation(venue, tab).reduce((sum, each) => sum + each.count, 0)
+  const heldCount = unsentByStation(venue, tab, 'held').reduce((sum, each) => sum + each.count, 0)
+  const counts = inOrder(tab)
+  /** Sends the new lines (or the held ones) and says what went where. */
+  const send = (which: 'new' | 'held') => {
+    const result = sendLines(venue, tab, venue.now, which)
+    if (result.sent.length === 0) return
+    setTab(() => result.tab)
+    notice.success(`Sent: ${sentText(result.sent)}.`)
+  }
   const add = (productId: string) => {
     const product = venue.products.find((each) => each.id === productId)
     if (product === undefined || product.unavailableReason !== undefined) return
@@ -174,6 +211,7 @@ export function TabTill({
         (line) =>
           line.productId === productId &&
           line.sentAt === undefined &&
+          line.held !== true &&
           line.note === undefined &&
           line.discountId === undefined,
       )
@@ -220,18 +258,22 @@ export function TabTill({
         state:
           paid >= line.quantity
             ? { label: 'Paid', tone: 'success' as const }
-            : line.sentAt === undefined
-              ? { label: 'Not sent yet', tone: 'warning' as const, icon: ChefHat }
-              : {
-                  label: `Sent to ${station?.label ?? 'the bar'} · ${line.sentAt}${paid > 0 ? ` · ${String(paid)} paid` : ''}`,
-                  icon: ChefHat,
-                },
+            : line.held === true
+              ? { label: 'Held for later', icon: PauseCircle }
+              : line.sentAt === undefined
+                ? { label: 'New · sent when you leave the table', icon: Clock }
+                : {
+                    label: `Sent to ${station?.label ?? 'the bar'} · ${line.sentAt}${paid > 0 ? ` · ${String(paid)} paid` : ''}`,
+                    icon: ChefHat,
+                  },
       }
     },
   )
 
   const remainingText = decimal(figures.remaining)
+  /** Leaving the table sends the new items by themselves (P5.90 item 20). */
   const leave = () => {
+    send('new')
     navigate(venue.back.route)
   }
 
@@ -291,6 +333,7 @@ export function TabTill({
           quantity: String(line.quantity),
           note: line.note ?? '',
           discountId: line.discountId ?? '',
+          held: line.held === true,
         })
         setEditId(id)
       }}
@@ -346,23 +389,29 @@ export function TabTill({
         </>
       }
       actions={
-        unsentCount > 0 ? (
-          <Button
-            family="primary"
-            icon={ChefHat}
-            label={`Send order (${String(unsentCount)})`}
-            onClick={() => {
-              setTab((current) => ({
-                ...current,
-                lines: current.lines.map((line) =>
-                  line.sentAt === undefined ? { ...line, sentAt: venue.now } : line,
-                ),
-              }))
-              notice.success(
-                `Sent: ${unsent.map((each) => `${String(each.count)} to ${each.station.label}`).join(', ')}.`,
-              )
-            }}
-          />
+        unsentCount > 0 || heldCount > 0 ? (
+          <>
+            {unsentCount > 0 && (
+              <Button
+                family="neutral"
+                icon={ChefHat}
+                label={`Send now (${String(unsentCount)})`}
+                onClick={() => {
+                  send('new')
+                }}
+              />
+            )}
+            {heldCount > 0 && (
+              <Button
+                family="neutral"
+                icon={Send}
+                label={`Send held (${String(heldCount)})`}
+                onClick={() => {
+                  send('held')
+                }}
+              />
+            )}
+          </>
         ) : undefined
       }
       emptyTitle={`${name} has no order yet`}
@@ -425,13 +474,23 @@ export function TabTill({
           }
           products={
             <ProductGrid
-              products={venue.products}
+              products={venue.products.map((product) => {
+                const count = counts[product.id]
+                return count === undefined ? product : { ...product, inOrder: String(count) }
+              })}
               categories={venue.categories}
+              defaultCategory={venue.categories[0]?.id ?? null}
               currency={venue.currency}
+              search
               onSelect={add}
             />
           }
           cart={cart}
+          orderSummary={{
+            count: tab.lines.length,
+            total: tab.lines.length === 0 ? null : remainingText,
+            currency: venue.currency,
+          }}
         />
 
         {/* Edit a line */}
@@ -449,11 +508,29 @@ export function TabTill({
                   icon={Trash2}
                   label="Remove line"
                   onClick={() => {
+                    const removed = editing
+                    const at = tab.lines.findIndex((line) => line.id === removed.id)
                     setTab((current) => ({
                       ...current,
-                      lines: current.lines.filter((line) => line.id !== editing.id),
+                      lines: current.lines.filter((line) => line.id !== removed.id),
                     }))
                     setEditId(null)
+                    // Undo instead of a confirmation (P5.90 item 20).
+                    notice.success(`${productName(removed.productId)} removed.`, {
+                      action: {
+                        label: 'Undo',
+                        onClick: () => {
+                          setTab((current) => ({
+                            ...current,
+                            lines: [
+                              ...current.lines.slice(0, at),
+                              removed,
+                              ...current.lines.slice(at),
+                            ],
+                          }))
+                        },
+                      },
+                    })
                   }}
                 />
                 <Button
@@ -481,6 +558,8 @@ export function TabTill({
                         else next.note = draft.note.trim()
                         if (draft.discountId === '') delete next.discountId
                         else next.discountId = draft.discountId
+                        if (draft.held && line.sentAt === undefined) next.held = true
+                        else delete next.held
                         return next
                       }),
                     }))
@@ -492,7 +571,7 @@ export function TabTill({
           >
             <div className="flex flex-col gap-4">
               <p className="m-0 text-md font-semibold text-primary bidi-content">
-                {venue.products.find((each) => each.id === editing.productId)?.name ?? ''}
+                {productName(editing.productId)}
               </p>
               <QuantityStepper
                 label="Quantity"
@@ -521,6 +600,16 @@ export function TabTill({
                   setDraft((current) => ({ ...current, discountId }))
                 }}
               />
+              {editing.sentAt === undefined && (
+                <SwitchField
+                  label="Hold for a later course"
+                  description="Not sent when you leave the table; send it with “Send held”."
+                  checked={draft.held}
+                  onChange={(held) => {
+                    setDraft((current) => ({ ...current, held }))
+                  }}
+                />
+              )}
               {editing.sentAt !== undefined && (
                 <p className="m-0 text-xs text-secondary bidi-content">
                   {`Sent at ${editing.sentAt}; a change of quantity or note is sent again with the next order.`}
@@ -890,9 +979,17 @@ export function TabTill({
                       }
                       return rest
                     })
+                    setTables((current) =>
+                      current.map((each) => {
+                        if (each.id !== tableId) return each
+                        const free: BistroTable = { ...each, state: 'free' }
+                        delete free.party
+                        return free
+                      }),
+                    )
                     setPaying(null)
-                    notice.success(`${name} closed.`)
-                    leave()
+                    notice.success(`${name} closed and free.`)
+                    navigate(venue.back.route)
                   }}
                 />
               ) : (

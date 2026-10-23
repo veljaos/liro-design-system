@@ -3,6 +3,7 @@ import {
   CalendarPlus,
   FlaskConical,
   Languages,
+  LayoutList,
   LogOut,
   MessageSquare,
   UserRound,
@@ -12,10 +13,11 @@ import {
   Alert,
   Button,
   CalendarView,
+  CatalogPicker,
   KeyValueList,
+  MoneyText,
   PageHeader,
   PortalShell,
-  RadioGroupField,
   SectionCard,
   SelectField,
   SlotPicker,
@@ -36,23 +38,33 @@ import {
   BOOKINGS,
   CHOSEN_DOCTOR,
   CLINIC,
+  DEFAULT_SERVICE,
   DOCTOR_EVENTS,
   DOCTORS,
   FREE_SLOTS,
   JOVANA_SLOT,
   PATIENT,
+  SERVICE_FILTERS,
+  SERVICE_LEVELS,
+  SERVICE_SECTIONS,
   SERVICES,
 } from './data-H'
 
 /*
  * Group H's example screens (P5.17, industry examples) for Dom zdravlja Novi Sad (data-H.ts):
  * Jovana Nikolić books a check-up in the patient portal (PortalShell: service and doctor, a free
- * time, booked), and the doctor's week (CalendarView) with her booking. Every screen plays the
+ * time, booked), and the doctor's week (CalendarView) with her booking. The service is chosen in a
+ * CatalogPicker from the clinic's 61 services in levels (P5.90 item 14: radio buttons do not
+ * scale): most chosen, her recent ones and the recommended first, a search, the specialties and
+ * the laboratory as a drill-down, each with who performs it and its price or "Covered by health
+ * insurance". Every screen plays the
  * application: it keeps the state and works out the counts (data-H.ts).
  */
 
 export const H_ROUTES = {
   book: '/portal/health/book',
+  /** The catalogue of services open (P5.90 item 14). */
+  bookChoose: '/portal/health/book?service=choose',
   bookTime: '/portal/health/book?step=time',
   bookConfirm: '/portal/health/book?step=confirm',
   booked: '/portal/health/book?step=done',
@@ -130,30 +142,50 @@ function useWhen() {
   return (start: string) => `${format.dateLong(start.slice(0, 10))} at ${format.time(start)}`
 }
 
+/** "Covered by health insurance" or the price, as the catalogue gives it. */
+function ServicePrice({ id }: { id: string }) {
+  const chosen = SERVICES.find((each) => each.id === id)
+  if (chosen === undefined) return null
+  return chosen.price === undefined ? (
+    <>{chosen.priceText ?? ''}</>
+  ) : (
+    <MoneyText value={chosen.price} currency="RSD" />
+  )
+}
+
 export function Booking({
   phone,
   step,
+  choosing = false,
 }: {
   phone: boolean
   step: 'service' | 'time' | 'confirm' | 'done'
+  /** The catalogue of services open. */
+  choosing?: boolean
 }) {
   const navigate = useContext(Navigate)
   const { linkComponent: Link } = useLiro()
   const when = useWhen()
-  const [service, setService] = useState('checkup')
+  const [service, setService] = useState(DEFAULT_SERVICE)
+  const [picking, setPicking] = useState(choosing)
   const [doctor, setDoctor] = useState(CHOSEN_DOCTOR)
   const [slot, setSlot] = useState<string | null>(
     step === 'service' || step === 'time' ? null : JOVANA_SLOT,
   )
   const chosen = FREE_SLOTS.find((each) => slotKey(each) === slot)
-  const serviceName = SERVICES.find((each) => each.value === service)?.label ?? ''
+  const chosenService = SERVICES.find((each) => each.id === service)
+  const serviceName = chosenService?.name ?? ''
+  // The chosen doctor sees the general-practice services; the others name who performs them.
+  const generalPractice = chosenService?.categoryId === 'gp'
+  const performer = generalPractice ? doctorName(doctor) : (chosenService?.provider ?? '')
   const active = { service: 0, time: 1, confirm: 2, done: 3 }[step]
   const summary = (
     <KeyValueList
       columns={1}
       items={[
         { label: 'Service', value: serviceName },
-        { label: 'Doctor', value: doctorName(doctor) },
+        { label: generalPractice ? 'Doctor' : 'Who', value: performer },
+        { label: 'Price', value: <ServicePrice id={service} /> },
         { label: 'Where', value: `${CLINIC.name}, ${CLINIC.address}` },
         ...(chosen === undefined ? [] : [{ label: 'When', value: when(chosen.start) }]),
       ]}
@@ -167,19 +199,41 @@ export function Booking({
           {step === 'service' && (
             <SectionCard>
               <div className="flex flex-col gap-4">
-                <RadioGroupField
-                  label="Service"
-                  options={SERVICES}
-                  value={service}
-                  onChange={setService}
-                />
-                <SelectField
-                  label="Doctor"
-                  description="Your chosen doctor sees you first; another doctor of the clinic when yours is away."
-                  options={DOCTOR_OPTIONS}
-                  value={doctor}
-                  onChange={setDoctor}
-                />
+                <section aria-labelledby="service-heading" className="flex flex-col gap-2">
+                  <h2 id="service-heading" className="bidi-content m-0 text-h4 text-primary">
+                    Service
+                  </h2>
+                  <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-solid border-default px-4 py-3">
+                    <div className="flex min-w-0 flex-col gap-0.5">
+                      <span className="bidi-content text-md font-semibold text-primary">
+                        {serviceName}
+                      </span>
+                      <span className="bidi-content text-sm text-secondary">
+                        {[chosenService?.detail, chosenService?.provider]
+                          .filter((each) => each !== undefined)
+                          .join(' · ')}{' '}
+                        · <ServicePrice id={service} />
+                      </span>
+                    </div>
+                    <Button
+                      family="neutral"
+                      icon={LayoutList}
+                      label="Choose another service…"
+                      onClick={() => {
+                        setPicking(true)
+                      }}
+                    />
+                  </div>
+                </section>
+                {generalPractice && (
+                  <SelectField
+                    label="Doctor"
+                    description="Your chosen doctor sees you first; another doctor of the clinic when yours is away."
+                    options={DOCTOR_OPTIONS}
+                    value={doctor}
+                    onChange={setDoctor}
+                  />
+                )}
                 <div className="flex justify-end">
                   <Button
                     intent="next"
@@ -195,7 +249,7 @@ export function Booking({
           )}
           {(step === 'time' || step === 'confirm') && (
             <SectionCard
-              title={`${serviceName} with ${doctorName(doctor)}`}
+              title={`${serviceName} with ${performer}`}
               headingLevel={2}
               actions={
                 <Link href={`#${H_ROUTES.book}`} className={`text-sm ${LINK}`}>
@@ -206,7 +260,7 @@ export function Booking({
               <div className="flex flex-col gap-4">
                 <SlotPicker
                   label="Free times next week"
-                  description={`${CLINIC.name}, ${CLINIC.address} · 30 minutes`}
+                  description={`${CLINIC.name}, ${CLINIC.address} · ${chosenService?.detail ?? ''}`}
                   required
                   slots={FREE_SLOTS}
                   value={slot}
@@ -260,6 +314,25 @@ export function Booking({
             </>
           )}
         </PortalPage>
+        <CatalogPicker
+          open={picking}
+          onOpenChange={setPicking}
+          title="Choose a service"
+          subject={`${PATIENT.name} · ${CLINIC.name}`}
+          items={SERVICES}
+          categories={SERVICE_LEVELS}
+          sections={SERVICE_SECTIONS}
+          filters={SERVICE_FILTERS}
+          currency="RSD"
+          selected={[service]}
+          countLabel={(count, text) => `${text} ${count === 1 ? 'service' : 'services'}`}
+          searchLabel="Search services, doctors, tests"
+          onChoose={(ids) => {
+            const next = ids[0]
+            if (next !== undefined) setService(next)
+          }}
+          layout={phone ? 'phone' : 'desktop'}
+        />
       </HealthPortal>
     </Tenant>
   )
@@ -361,6 +434,10 @@ export function DoctorCalendar({ phone }: { phone: boolean }) {
 
 export const GROUP_H_ROUTES: ExampleRoute[] = [
   { path: H_ROUTES.book, render: (phone) => <Booking phone={phone} step="service" /> },
+  {
+    path: H_ROUTES.bookChoose,
+    render: (phone) => <Booking phone={phone} step="service" choosing />,
+  },
   { path: H_ROUTES.bookTime, render: (phone) => <Booking phone={phone} step="time" /> },
   { path: H_ROUTES.bookConfirm, render: (phone) => <Booking phone={phone} step="confirm" /> },
   { path: H_ROUTES.booked, render: (phone) => <Booking phone={phone} step="done" /> },

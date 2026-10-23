@@ -19,7 +19,7 @@ import { MoneyText } from '../components/display-text'
 import { NowMarker } from '../components/now-marker'
 import { nowMoment, addDays, dayNumber } from '../components/schedule-logic'
 import { StatusBadge, type Tone } from '../components/status-badge'
-import { useStickyHead } from '../components/sticky-head'
+import { STICKY_HEAD, useStickyHead } from '../components/sticky-head'
 import { usePhone } from '../components/use-phone'
 import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
@@ -233,7 +233,10 @@ function GanttTable({
         <div
           role="row"
           data-sticky-head=""
-          className="relative z-10 col-span-full grid translate-y-[var(--liro-head-shift,0px)] grid-cols-subgrid border-0 border-b border-solid border-default bg-surface-raised will-change-transform"
+          className={cn(
+            STICKY_HEAD,
+            'z-10 col-span-full grid grid-cols-subgrid border-0 border-b border-solid border-default bg-surface-raised',
+          )}
           style={{ height: SCALE_ROW * 2 }}
         >
           <span role="columnheader" className={cn(cell, 'text-xs font-semibold text-secondary')}>
@@ -724,7 +727,8 @@ function GanttChart(props: ChartProps) {
             label={messages['gantt.now'](
               `${format.date(moment.day)} ${String(Math.floor(moment.minutes / 60)).padStart(2, '0')}:${String(moment.minutes % 60).padStart(2, '0')}`,
             )}
-            className="z-[3]"
+            // Under the bars (`.wx-bars` is layer 1 in gantt.css): they cover its line (P5.90).
+            className="z-0"
             style={{ insetInlineStart: nowX, top: 0, bottom: 0 }}
           />,
           area,

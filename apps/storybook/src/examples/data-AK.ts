@@ -734,7 +734,7 @@ export const POSTINGS: readonly Posting[] = [
     id: 'p30',
     date: '2026-10-06',
     document: { kind: 'Bank statement', number: 'Statement 188' },
-    description: 'Advance on quote P-2026-118',
+    description: 'Advance on proforma PR-2026-118 (advance invoice AF-2026-0031)',
     partner: 'Vojvođanka Mlin a.d.',
     lines: [dr('2410', '60000.00'), cr('4300', '60000.00')],
   },

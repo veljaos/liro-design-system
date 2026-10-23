@@ -113,8 +113,10 @@ describe('EditableGrid line types', () => {
     const subtotal =
       /<tr data-row-id="s"[^>]*data-row-type="subtotal"[^>]*>(.*?)<\/tr>/.exec(html)?.[1] ?? ''
     expect(subtotal).toContain('colSpan="4"')
-    expect(subtotal).toContain('border-t-strong')
-    expect(subtotal).toContain('text-end font-semibold')
+    // The rule above it is the line under the row before (P5.90: each line drawn once).
+    const before = html.slice(0, html.indexOf('<tr data-row-id="s"'))
+    expect(before.slice(before.lastIndexOf('<tr'))).toContain('border-b-strong')
+    expect(subtotal).toMatch(/class="[^"]*text-end[^"]*font-semibold/)
     expect(subtotal).toContain('Subtotal 1. Earthworks')
     expect(subtotal).not.toContain('<input')
     expect(subtotal).not.toContain('Remove line')

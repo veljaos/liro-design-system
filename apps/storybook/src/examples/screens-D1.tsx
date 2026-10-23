@@ -54,9 +54,12 @@ import {
  * Group D1's example screen (Phase 5: P5.18 document lines, P5.19 LookupField), "Invoice draft,
  * lines by search" (/sales/invoices/new): a draft to Bojović i sinovi d.o.o. whose lines are found
  * by one search field per line — items with their stock, services, a fixed asset sold with its
- * number and its internal book value — with a section heading and subtotal per section, a text
- * line, a discount, S 20% and S 10%, and "+ Create service …". Every amount comes from data-D1.ts
- * (whole paras); the screen only shows them.
+ * number and its internal book value —, S 20% and S 10%, and "+ Create service …". Simple by
+ * default (P5.90 item 4): the lines show item, quantity, unit, price, VAT and amount; section
+ * headings, text lines, discount lines and a line's discount (its column appears) come from "Add
+ * line ▾", the account only with a one-off line. The header: number, issue date, date of supply,
+ * due date and place of issue. Every amount comes from data-D1.ts (whole paras); the screen only
+ * shows them.
  */
 
 export const D1_ROUTES = {
@@ -170,6 +173,8 @@ export function InvoiceDraft({ phone }: { phone: boolean }) {
   const [lines, setLines] = useState<DraftLine[]>(initialDraft)
   const [number, setNumber] = useState(DRAFT.number)
   const [issued, setIssued] = useState<string | null>(DRAFT.issued)
+  const [supplied, setSupplied] = useState<string | null>(DRAFT.supplied)
+  const [place, setPlace] = useState(DRAFT.place)
   const [due, setDue] = useState<string | null>(DRAFT.due)
   const { results, loading, onSearch } = useLineSearch()
   const [searchAll, setSearchAll] = useState<{ rowId: string; query: string } | null>(null)
@@ -246,6 +251,16 @@ export function InvoiceDraft({ phone }: { phone: boolean }) {
         value: (line) => line.price,
       },
       {
+        // Only while a line has a discount, or once added from "Add line ▾" (P5.90 item 4).
+        id: 'discount',
+        header: 'Discount %',
+        type: 'number',
+        width: 100,
+        decimals: 2,
+        value: (line) => line.discount,
+        optional: { addLabel: 'Discount on a line' },
+      },
+      {
         id: 'tax',
         header: 'VAT',
         type: 'taxCategory',
@@ -260,8 +275,10 @@ export function InvoiceDraft({ phone }: { phone: boolean }) {
         width: 170,
         value: (line) => line.account,
         options: ACCOUNTS,
-        // A catalogue record brings its account; a one-off line chooses it.
+        // A catalogue record brings its account; a one-off line chooses it, so the column is
+        // shown only while the draft has a one-off line (P5.90 item 4).
         readOnly: (line) => line.item !== null && line.item.oneOff !== true,
+        optional: { used: (line) => line.item?.oneOff === true },
       },
       {
         id: 'amount',
@@ -323,9 +340,19 @@ export function InvoiceDraft({ phone }: { phone: boolean }) {
               field={<DateField label="Issue date" value={issued} onChange={setIssued} />}
             />
             <ChangeableValue
+              label="Date of supply"
+              value={<DateText value={supplied} />}
+              field={<DateField label="Date of supply" value={supplied} onChange={setSupplied} />}
+            />
+            <ChangeableValue
               label="Due date"
               value={<DateText value={due} />}
               field={<DateField label="Due date" value={due} onChange={setDue} />}
+            />
+            <ChangeableValue
+              label="Place of issue"
+              value={place}
+              field={<TextField label="Place of issue" value={place} onChange={setPlace} />}
             />
           </>
         }

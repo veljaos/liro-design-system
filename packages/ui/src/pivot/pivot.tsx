@@ -192,7 +192,6 @@ export function Pivot(props: PivotProps) {
               },
             }
           : {})}
-        className="py-10"
       />
     )
   } else if (props.error !== undefined) {
@@ -203,7 +202,6 @@ export function Pivot(props: PivotProps) {
         {...(props.onRetry === undefined
           ? {}
           : { action: { label: messages['pivot.retry'], onClick: props.onRetry } })}
-        className="py-10"
       />
     )
   } else if (result === null) {
@@ -215,7 +213,6 @@ export function Pivot(props: PivotProps) {
         variant="no-results"
         title={messages['pivot.noDataTitle']}
         description={messages['pivot.noDataDescription']}
-        className="py-10"
       />
     )
   } else {
@@ -292,7 +289,7 @@ export function Pivot(props: PivotProps) {
         )}
         <div
           aria-busy={busy || undefined}
-          className="min-w-0 flex-1 overflow-hidden rounded-lg border border-solid border-default bg-surface-raised"
+          className="min-w-0 flex-1 overflow-clip rounded-lg border border-solid border-default bg-surface-raised"
         >
           {body}
         </div>

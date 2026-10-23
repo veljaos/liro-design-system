@@ -76,7 +76,7 @@ export function SectionCard(props: SectionCardProps) {
     <section
       data-slot="section-card"
       className={cn(
-        'overflow-hidden rounded-lg border border-solid border-default bg-surface-raised font-sans text-primary',
+        'overflow-clip rounded-lg border border-solid border-default bg-surface-raised font-sans text-primary',
         props.className,
       )}
     >
