@@ -103,7 +103,8 @@ const BANKING_TABS: ModuleTab[] = [
   { key: 'accounts', label: 'Bank accounts', href: '#/banking/accounts' },
 ]
 
-const LINK = 'text-link no-underline visited:text-link hover:underline'
+// Links stand inside sentences: underlined, never told by colour alone (WCAG 1.4.1).
+const LINK = 'text-link underline visited:text-link'
 
 // ── A line's work: what the user has chosen so far ─────────────────────────────────────────────
 
