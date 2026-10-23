@@ -385,7 +385,7 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P5.88 | AML overview and obligations | P4.6 | done | 2026-10-21 | The AML overview (DashboardPage: clients by risk, reviews due, open alerts and cases, ageing) and obligations (the compliance officer and deputy, training, procedures, retention, the audit trail) |
 | P5.89 | Consolidate to floorplans | P5.88 | done | 2026-10-23 | Seven floorplans (`docs/floorplans.md`); 26 canonical example screens, one story file per floorplan; every other screen a recipe (`docs/recipes.md`) |
 | P5.90 | The owner's review, applied to the floorplans | P5.89 | done | 2026-10-23 | Twenty-one review items fixed as classes: one sticky header band in pure CSS, the line editor rebuilt (phones one card per line), the bank statement automatic first, TimeField, CatalogPicker, schedules on phones as today's lists, the till and restaurant for a first-day waiter, toasts that never block |
-| P5.91 | P5.90 follow-ups: the till's renamed props, the first column's row lines | P5.90 | done | 2026-10-23 | The PosShell rename announced in the release notes with its migration; a sticky first column never loses a row line (each cell draws the line above itself, on its own layer) |
+| P5.91 | P5.90 follow-ups: the till's renamed props, the first column's row lines | P5.90 | done | 2026-10-23 | The PosShell rename announced in the release notes with its migration; a sticky first column never loses a row line (its cells on a `translateZ(0)` layer, placed on whole pixels) |
 | P6.1 | Full language and direction matrix | Phases 1–5 | todo | | |
 | P6.3 | Performance budget | P4.8 | todo | | |
 | P6.6 | Full cleanup | P6.3 | todo | | |

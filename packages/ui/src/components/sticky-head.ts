@@ -47,12 +47,16 @@ export const STICKY_HEAD = 'liro-sticky-head sticky top-0 will-change-transform'
 /**
  * A first column's cells (and the corner): sticky at the region's start, always on a layer of
  * their own for the same reason as `STICKY_HEAD` — without it the statutory grid's labels were
- * antialiased one way or the other from run to run (P5.29).
+ * antialiased one way or the other from run to run (P5.29). The layer is a 3D transform, not
+ * `will-change`: a `will-change` layer kept its row's fractional position, and where the next
+ * row's cell rounded the other way its background covered the row's line (rows are fractional:
+ * the 1.45 line height). A `translateZ(0)` layer is placed on whole pixels, so every row's line
+ * shows in the first column as in the others (P5.91).
  */
-export const STICKY_START = 'sticky start-0 will-change-transform'
+export const STICKY_START = 'sticky start-0 [transform:translateZ(0)]'
 
 /** The first column after DataTable's 48px selection column. */
-export const STICKY_START_AFTER_SELECT = 'sticky start-12 will-change-transform'
+export const STICKY_START_AFTER_SELECT = 'sticky start-12 [transform:translateZ(0)]'
 
 /**
  * On the region: a cell reached by the keyboard is scrolled clear of the shell, the header and the
