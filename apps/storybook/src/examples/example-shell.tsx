@@ -52,6 +52,8 @@ export const ROUTES = {
   home: '/home',
   invoices: '/sales/invoices',
   invoice: (number: string) => `/sales/invoices/${number}`,
+  /** An invoice's printout, from its page's "PDF". */
+  invoicePrint: (number: string) => `/sales/invoices/${number}/print`,
   dashboard: '/reports/overview',
   approvals: '/purchasing/approvals',
   employee: `/hr/employees/${EMPLOYEE.id}`,

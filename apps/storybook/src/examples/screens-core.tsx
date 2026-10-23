@@ -692,7 +692,7 @@ export function Invoice({ phone, invoice }: { phone: boolean; invoice: ExampleIn
               emphasis="secondary"
               // The printout (P5.17): the browser prints it or saves it as a PDF.
               onClick={() => {
-                navigate(`${ROUTES.invoice(invoice.number)}/print`)
+                navigate(ROUTES.invoicePrint(invoice.number))
               }}
             />
             {phone ? null : reminder}

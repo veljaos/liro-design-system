@@ -181,7 +181,7 @@ export const HealthBookingPhone: Story = {
   },
 }
 
-/** The whole booking from the keyboard and pointer, then on to the clinic's schedule. */
+/** The whole booking from the keyboard and pointer, to the booked appointment. */
 export const HealthBookingWalk: Story = {
   name: 'Health, booking, interaction',
   tags: ['interaction', '!dev'],
@@ -203,8 +203,9 @@ export const HealthBookingWalk: Story = {
     await userEvent.click(canvas.getByRole('button', { name: 'Book' }))
     await settle()
     await expect(await canvas.findByText('Your appointment is booked')).toBeVisible()
-    await userEvent.click(canvas.getByRole('link', { name: 'schedule of 14.10.2026' }))
-    await settle()
-    await expect(await canvas.findByRole('heading', { level: 1, name: 'Schedule' })).toBeVisible()
+    await expect(
+      canvas.getByRole('heading', { level: 1, name: 'Appointment booked' }),
+    ).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('at 11:30')
   },
 }
