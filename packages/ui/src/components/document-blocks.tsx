@@ -1,6 +1,6 @@
 import { Ban, Maximize2 } from 'lucide-react'
 import type { RowData } from '@tanstack/react-table'
-import type { ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { FOCUS_RING, TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import {
@@ -343,6 +343,8 @@ export function DocumentSpecification(props: DocumentSpecificationProps) {
     format.number(String(props.count)),
     amount,
   )
+  const [body, setBody] = useState<HTMLDivElement | null>(null)
+  const bodyScrolls = useScrollsItself(body)
   return (
     <Sheet
       {...(props.open === undefined ? {} : { open: props.open })}
@@ -385,8 +387,10 @@ export function DocumentSpecification(props: DocumentSpecificationProps) {
           <DialogCloseButton label={messages['dialog.close']} />
         </DialogHeader>
         <div
+          ref={setBody}
           data-slot="specification-body"
-          className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4"
+          {...(bodyScrolls ? { tabIndex: 0, role: 'region', 'aria-label': props.title } : {})}
+          className={cn('flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4', FOCUS_RING)}
         >
           {props.children}
         </div>
@@ -553,4 +557,26 @@ export function correctionColumns<Row extends RowData>(
       cell: (row) => value(spec.next(row)),
     },
   ]
+}
+
+/**
+ * Whether a box scrolls its own content: then it takes the keyboard's focus, so its content can
+ * be scrolled with the arrow keys when it holds nothing focusable (WCAG 2.1.1).
+ */
+function useScrollsItself(element: HTMLElement | null): boolean {
+  const [scrolls, setScrolls] = useState(false)
+  useEffect(() => {
+    if (element === null) return
+    const measure = () => {
+      setScrolls(element.scrollHeight > element.clientHeight + 1)
+    }
+    measure()
+    const observer = new ResizeObserver(measure)
+    observer.observe(element)
+    for (const child of Array.from(element.children)) observer.observe(child)
+    return () => {
+      observer.disconnect()
+    }
+  }, [element])
+  return scrolls
 }
