@@ -5,30 +5,15 @@
  * the application.
  */
 
+import { parseTimeText } from './time-logic'
+
 /**
  * A clock time as typed — "7:30", "07.30", "0730", "730", "7" — as "HH:MM", or null when it is not
  * a time of day (B.4: unreadable is null). Empty text is null too; the caller tells empty from
- * unreadable.
+ * unreadable. The library's one time parser, `parseTimeText` (P5.90 item 12).
  */
 export function parseClockTime(text: string): string | null {
-  const trimmed = text.trim()
-  let hours: string
-  let minutes: string
-  const separated = /^(\d{1,2})[:.h ](\d{2})$/.exec(trimmed)
-  if (separated !== null) {
-    hours = separated[1] ?? ''
-    minutes = separated[2] ?? ''
-  } else if (/^\d{1,2}$/.test(trimmed)) {
-    hours = trimmed
-    minutes = '00'
-  } else if (/^\d{3,4}$/.test(trimmed)) {
-    hours = trimmed.slice(0, -2)
-    minutes = trimmed.slice(-2)
-  } else {
-    return null
-  }
-  if (Number(hours) > 23 || Number(minutes) > 59) return null
-  return `${hours.padStart(2, '0')}:${minutes}`
+  return parseTimeText(text)
 }
 
 /** The clock time of an instant as written ("2026-10-06T07:30:00+02:00" → "07:30"), or null. */

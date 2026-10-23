@@ -64,7 +64,7 @@ const meta = {
           '"next day"; a missing clock-in or clock-out is said in words ("No clock-out"), never ' +
           '0.\n\n' +
           '**Corrections are audited:** "Correct" in a row’s menu opens a Drawer with the new ' +
-          'times (typed freely, read as hh:mm) and a required reason. The application keeps the ' +
+          'times (TimeField: "1530" or "15:30" reads 15:30) and a required reason. The application keeps the ' +
           'original: a corrected time shows the new value, then the original struck through ' +
           '("was" for assistive technology), and who corrected it, when and why.\n\n' +
           '**Phones:** DataTable’s cards.\n\n' +
@@ -134,9 +134,7 @@ export const Correcting: Story = {
     const out = within(drawer).getByRole('textbox', { name: 'Clock-out' })
     await userEvent.type(out, '15.7')
     await userEvent.click(within(drawer).getByRole('button', { name: 'Save correction' }))
-    await expect(
-      within(drawer).getByText('Enter a time as hh:mm, for example 07:30.'),
-    ).toBeVisible()
+    await expect(within(drawer).getByText('Enter a time, for example 0630 or 6:30')).toBeVisible()
     await expect(within(drawer).getByText('Required')).toBeVisible()
     await userEvent.clear(out)
     await userEvent.type(out, '1530')
@@ -144,6 +142,7 @@ export const Correcting: Story = {
       within(drawer).getByRole('textbox', { name: /Reason for the correction/ }),
       'The phone had no signal at the end of the shift.',
     )
+    await expect(out).toHaveValue('15:30')
     await userEvent.click(within(drawer).getByRole('button', { name: 'Save correction' }))
     await expect(onCorrect).toHaveBeenCalledWith({
       id: 'c3',

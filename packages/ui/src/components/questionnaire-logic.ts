@@ -245,3 +245,50 @@ export function chooseOption(
   }
   return { ...answer, value: checked ? value : null }
 }
+
+/** Where a key was pressed, as the questionnaire's keys tell it (P5.90 item 10). */
+export type QuestionnaireKeyTarget =
+  /** A one-line typing field (a typed answer, "Other"'s text): digits type, Enter goes on. */
+  | 'typing'
+  /** A multi-line text box: Enter breaks the line. */
+  | 'multiline'
+  /** A button or link: Enter presses it; the number keys still choose. */
+  | 'button'
+  /** A choice, the question itself, or nothing focused on the page. */
+  | 'other'
+
+/** What a key does in the questionnaire, or null when it is left to the browser. */
+export type QuestionnaireKeyAction = { kind: 'choose'; index: number } | { kind: 'next' } | null
+
+/**
+ * The questionnaire's keys (P5.90 item 10): on a choice question, 1–9 choose the numbered option
+ * (the `choices` that can be chosen, in order; the number is shown at each option's end), unless
+ * the user is typing; Enter goes to the next question (Next checks the answer first), except on a
+ * button, which presses itself, and in a multi-line text box (Ctrl/Cmd+Enter goes on from both).
+ * Other modifier keys and composing text (an input method) are left alone.
+ */
+export function questionnaireKeyAction(
+  key: string,
+  target: QuestionnaireKeyTarget,
+  choices: number,
+  modifiers: {
+    ctrl?: boolean
+    meta?: boolean
+    alt?: boolean
+    shift?: boolean
+    composing?: boolean
+  } = {},
+): QuestionnaireKeyAction {
+  if (modifiers.composing === true) return null
+  const command = modifiers.ctrl === true || modifiers.meta === true
+  if (key === 'Enter') {
+    if (modifiers.shift === true || modifiers.alt === true) return null
+    // Ctrl/Cmd+Enter goes on from anywhere, also from a multi-line text box.
+    if (!command && (target === 'button' || target === 'multiline')) return null
+    return { kind: 'next' }
+  }
+  if (command || modifiers.alt === true) return null
+  if (!/^[1-9]$/.test(key) || target === 'typing' || target === 'multiline') return null
+  const index = Number(key) - 1
+  return index < choices ? { kind: 'choose', index } : null
+}

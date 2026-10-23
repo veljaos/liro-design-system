@@ -7,6 +7,7 @@ import {
   nextStep,
   previousStep,
   questionPath,
+  questionnaireKeyAction,
   questionProgress,
   type QuestionAnswers,
   type QuestionDefinition,
@@ -249,5 +250,42 @@ describe('progress and moving', () => {
     })
     expect(previousStep(path, { kind: 'question', id: 'type' })).toBeNull()
     expect(previousStep(path, { kind: 'summary' })).toEqual({ kind: 'question', id: 'salary' })
+  })
+})
+
+describe('questionnaireKeyAction: number keys choose, Enter goes on (P5.90 item 10)', () => {
+  it('chooses the numbered option with 1–9, wherever the user is not typing', () => {
+    expect(questionnaireKeyAction('1', 'other', 3)).toEqual({ kind: 'choose', index: 0 })
+    expect(questionnaireKeyAction('3', 'other', 3)).toEqual({ kind: 'choose', index: 2 })
+    expect(questionnaireKeyAction('2', 'button', 3)).toEqual({ kind: 'choose', index: 1 })
+  })
+  it('leaves a number without an option, 0 and letters alone', () => {
+    expect(questionnaireKeyAction('4', 'other', 3)).toBeNull()
+    expect(questionnaireKeyAction('0', 'other', 3)).toBeNull()
+    expect(questionnaireKeyAction('a', 'other', 3)).toBeNull()
+    expect(questionnaireKeyAction('1', 'other', 0)).toBeNull()
+  })
+  it('types digits into a typing field and a text box', () => {
+    expect(questionnaireKeyAction('1', 'typing', 3)).toBeNull()
+    expect(questionnaireKeyAction('1', 'multiline', 3)).toBeNull()
+  })
+  it('goes on with Enter, from a choice, a typed answer or the question', () => {
+    expect(questionnaireKeyAction('Enter', 'other', 3)).toEqual({ kind: 'next' })
+    expect(questionnaireKeyAction('Enter', 'typing', 0)).toEqual({ kind: 'next' })
+  })
+  it('leaves Enter to a button and a multi-line text box, unless with Ctrl or Cmd', () => {
+    expect(questionnaireKeyAction('Enter', 'button', 3)).toBeNull()
+    expect(questionnaireKeyAction('Enter', 'multiline', 0)).toBeNull()
+    expect(questionnaireKeyAction('Enter', 'multiline', 0, { ctrl: true })).toEqual({
+      kind: 'next',
+    })
+    expect(questionnaireKeyAction('Enter', 'button', 0, { meta: true })).toEqual({ kind: 'next' })
+  })
+  it('leaves modifiers and composing text alone', () => {
+    expect(questionnaireKeyAction('Enter', 'other', 3, { shift: true })).toBeNull()
+    expect(questionnaireKeyAction('Enter', 'other', 3, { composing: true })).toBeNull()
+    expect(questionnaireKeyAction('1', 'other', 3, { ctrl: true })).toBeNull()
+    expect(questionnaireKeyAction('1', 'other', 3, { alt: true })).toBeNull()
+    expect(questionnaireKeyAction('1', 'other', 3, { composing: true })).toBeNull()
   })
 })

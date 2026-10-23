@@ -44,6 +44,8 @@ export interface LiroMessages {
   'field.invalidNumber': string
   /** A date field whose text cannot be read as a date (shown under the field). */
   'field.invalidDate': string
+  /** A time field whose text cannot be read as a time of day (shown under the field). */
+  'field.invalidTime': string
   /** A date range whose end is before its start (shown under the field). */
   'field.invalidRange': string
   /** The button that opens a date field's calendar. */
@@ -1094,7 +1096,6 @@ export interface LiroMessages {
   'clock.correct': string
   'clock.correctTitle': string
   'clock.time': string
-  'clock.timeInvalid': string
   'clock.reason': string
   'clock.save': string
   // P5.8 Calendar and scheduling
@@ -1153,6 +1154,10 @@ export interface LiroMessages {
   'schedule.when': (dateText: string, timeText: string) => string
   /** A start time in the "Move to…" list that overlaps an unavailable time. */
   'schedule.optionUnavailable': (timeText: string, reason: string) => string
+  /** ResourceSchedule's phone lists (P5.90): the search, an empty list, a search without results. */
+  'schedule.search': string
+  'schedule.listEmpty': string
+  'schedule.noMatches': (query: string) => string
   /** SlotPicker: nothing free in the period. */
   'slots.none': string
   'slots.noneDescription': string
@@ -1284,6 +1289,9 @@ export interface LiroMessages {
   'print.placeAndDate': (place: string, date: string) => string
   /** CoursePage: names the outline (its navigation, the phone's button and drawer). */
   'course.outline': string
+  /** Desktop: hides and shows the outline (P5.90). */
+  'course.hideOutline': string
+  'course.showOutline': string
   /** CoursePage: the progress to completion ("7 of 12 lessons"). */
   'course.progress': (done: number, total: number, doneText: string, totalText: string) => string
   /** CoursePage: names the progress bar. */

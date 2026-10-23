@@ -63,8 +63,10 @@ const meta = {
           'branch no longer taken are kept (they return with the branch) but only the current ' +
           'path is submitted. **Summary:** every answer with a pencil to change it; Next then ' +
           'returns to the summary, unless the change opened new questions. **Progress:** "3 of 7 ' +
-          'answered" with a bar. **Keys:** Enter goes on, the number keys choose options when not ' +
-          'typing.\n\n' +
+          'answered" with a bar. **Keys:** 1–9 choose the numbered option (its number at the ' +
+          "option's end) unless the user is typing, also before anything is focused when it is the " +
+          "page's only questionnaire; Enter goes on; a typed answer's field takes the focus with " +
+          'its question.\n\n' +
           '**When:** a guided path through a decision of more than two or three questions. ' +
           '**When not:** a form whose fields are all known in advance (FormSection, FormWizard ' +
           'for long multi-step forms); one yes/no question (ConfirmDialog).',
@@ -109,21 +111,26 @@ export const Keyboard: Story = {
     await expect(canvas.getByRole('radio', { name: /Fixed term/ })).toBeChecked()
     await expect(canvas.getByText('1 of 6 answered')).toBeVisible()
     await userEvent.keyboard('{Enter}')
-    await expect(canvas.getByRole('group', { name: 'When does it end?' })).toHaveFocus()
-    await userEvent.tab()
+    // A typed answer's field takes the focus with its question: type at once (P5.90 item 10).
+    const ends = canvas.getByRole('group', { name: 'When does it end?' })
+    await waitFor(() => expect(within(ends).getByRole('textbox')).toHaveFocus())
     await userEvent.keyboard('31.12.2027{Enter}')
     await expect(canvas.getByRole('group', { name: 'Why a fixed term?' })).toHaveFocus()
     await userEvent.keyboard('3')
     const reason = canvas.getByRole('textbox', { name: /Reason/ })
     await waitFor(() => expect(reason).toHaveFocus())
     await userEvent.keyboard('Seasonal work{Enter}')
-    await userEvent.tab()
+    const starts = canvas.getByRole('group', { name: 'When does the employee start?' })
+    await waitFor(() => expect(within(starts).getByRole('textbox')).toHaveFocus())
     await userEvent.keyboard('02.11.2026{Enter}')
     await expect(canvas.getByRole('group', { name: 'Where will the employee work?' })).toHaveFocus()
     await userEvent.keyboard('3{Enter}')
-    await userEvent.tab()
+    await waitFor(() =>
+      expect(canvas.getByRole('textbox', { name: 'Office days per week' })).toHaveFocus(),
+    )
     await userEvent.keyboard('3{Enter}')
-    await userEvent.tab()
+    const salary = canvas.getByRole('group', { name: 'Gross monthly salary' })
+    await waitFor(() => expect(within(salary).getByRole('textbox')).toHaveFocus())
     await userEvent.keyboard('185000{Enter}')
     const summary = await canvas.findByRole('heading', { name: 'Check your answers' })
     await expect(summary).toHaveFocus()
@@ -131,6 +138,33 @@ export const Keyboard: Story = {
     await expect(canvas.getByText('Seasonal work')).toBeVisible()
     await expect(canvas.getByText('31.12.2027.')).toBeVisible()
     await expect(canvas.getByText('185.000,00 RSD')).toBeVisible()
+    await settle()
+  },
+}
+
+/**
+ * The number keys with nothing focused (the page has just opened): 1–9 choose the numbered option
+ * (its number at the option's end), a second number changes the choice, Enter goes on (P5.90 item
+ * 10).
+ */
+export const NumberKeys: Story = {
+  name: 'Number keys, interaction',
+  tags: ['interaction'],
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const active = canvasElement.ownerDocument.activeElement
+    if (active instanceof HTMLElement) active.blur()
+    await expect(
+      canvas.getByRole('radio', { name: /Indefinite term/ }).closest('label'),
+    ).toHaveTextContent('1')
+    await userEvent.keyboard('1')
+    await expect(canvas.getByRole('radio', { name: /Indefinite term/ })).toBeChecked()
+    await userEvent.keyboard('2')
+    await expect(canvas.getByRole('radio', { name: /Fixed term/ })).toBeChecked()
+    await expect(canvas.getByRole('radio', { name: /Fixed term/ })).toHaveFocus()
+    await userEvent.keyboard('{Enter}')
+    const ends = canvas.getByRole('group', { name: 'When does it end?' })
+    await waitFor(() => expect(within(ends).getByRole('textbox')).toHaveFocus())
     await settle()
   },
 }

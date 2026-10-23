@@ -13,10 +13,11 @@ import { Sheet, SheetContent } from '../primitives/sheet'
 import { useLiro } from '../provider/liro-provider'
 import { Button } from './button'
 import { DialogHeading, dialogHeaderClass } from './dialog'
-import { clockTimeOf, onLaterDay, parseClockTime } from './clock-record-logic'
+import { clockTimeOf, onLaterDay } from './clock-record-logic'
 import { DataTable, type DataTableColumn } from './data-table'
 import type { EmptyAction } from './empty-state'
-import { TextAreaField, TextField } from './text-field'
+import { TextAreaField } from './text-field'
+import { TimeField } from './time-field'
 
 /*
  * ClockRecordList (BUILD-PLAN P5.24e): clock-in and clock-out records from terminals or a phone,
@@ -315,16 +316,15 @@ function CorrectionDrawer({
   onClose: () => void
 }) {
   const { messages, format } = useLiro()
-  const [inText, setInText] = useState(clockTimeOf(record.in) ?? '')
-  const [outText, setOutText] = useState(clockTimeOf(record.out) ?? '')
+  const [inTime, setInTime] = useState(clockTimeOf(record.in))
+  const [outTime, setOutTime] = useState(clockTimeOf(record.out))
+  // TimeField reads "630" as 06:30 on leaving the field and keeps unreadable text with its own
+  // message (P5.90 item 12); saving waits until both times can be read.
+  const [inValid, setInValid] = useState(true)
+  const [outValid, setOutValid] = useState(true)
   const [reason, setReason] = useState('')
   const [checked, setChecked] = useState(false)
   const [pending, setPending] = useState(false)
-  const read = (text: string) => (text.trim() === '' ? null : parseClockTime(text))
-  const timeError = (text: string): ReactNode =>
-    checked && text.trim() !== '' && parseClockTime(text) === null
-      ? messages['clock.timeInvalid']
-      : undefined
   const reasonError = checked && reason.trim() === '' ? messages['field.required'] : undefined
   const keep = (event: Event) => {
     if (pending) event.preventDefault()
@@ -334,14 +334,11 @@ function CorrectionDrawer({
     event.preventDefault()
     if (pending) return
     setChecked(true)
-    const bad = [inText, outText].some(
-      (text) => text.trim() !== '' && parseClockTime(text) === null,
-    )
-    if (bad || reason.trim() === '') return
+    if (!inValid || !outValid || reason.trim() === '') return
     const result = onCorrect({
       id: record.id,
-      in: read(inText),
-      out: read(outText),
+      in: inTime,
+      out: outTime,
       reason: reason.trim(),
     })
     if (result instanceof Promise) {
@@ -388,21 +385,19 @@ function CorrectionDrawer({
         </DialogHeader>
         <form noValidate onSubmit={submit} className="contents">
           <DialogBody>
-            <TextField
+            <TimeField
               label={messages['clock.in']}
               description={messages['clock.time']}
-              direction="ltr"
-              value={inText}
-              onChange={setInText}
-              {...errorProps(timeError(inText))}
+              value={inTime}
+              onChange={setInTime}
+              onValidityChange={setInValid}
             />
-            <TextField
+            <TimeField
               label={messages['clock.out']}
               description={messages['clock.time']}
-              direction="ltr"
-              value={outText}
-              onChange={setOutText}
-              {...errorProps(timeError(outText))}
+              value={outTime}
+              onChange={setOutTime}
+              onValidityChange={setOutValid}
             />
             <TextAreaField
               label={messages['clock.reason']}

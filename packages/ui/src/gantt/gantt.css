@@ -153,6 +153,8 @@
 /* The bars. Gantt draws each bar's look itself (its template); SVAR keeps the place and the drag. */
 .liro-gantt .wx-bars {
   position: absolute;
+  /* Above the "now" marker (layer 0): bars and their labels cover its line, never the reverse. */
+  z-index: 1;
   top: 0;
   left: 0;
   width: 100%;
