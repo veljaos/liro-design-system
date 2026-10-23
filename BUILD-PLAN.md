@@ -383,10 +383,11 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P5.86 | AML case management | P5.18 | done | 2026-10-21 | A case (DocumentPage): timeline, linked alerts, transactions, documents, notes, tasks, the decision proposed and approved by a second person (SignerList, four eyes) |
 | P5.87 | Suspicious transaction report | P5.66 | done | 2026-10-21 | The suspicious transaction report from the authority's field definitions (DefinedForm), review and submission states, what was sent and when; confidential throughout |
 | P5.88 | AML overview and obligations | P4.6 | done | 2026-10-21 | The AML overview (DashboardPage: clients by risk, reviews due, open alerts and cases, ageing) and obligations (the compliance officer and deputy, training, procedures, retention, the audit trail) |
+| P5.89 | Consolidate to floorplans | P5.88 | in progress | | Seven floorplans (`docs/floorplans.md`); 26 canonical example screens, one story file per floorplan; every other screen a recipe (`docs/recipes.md`) |
+| P5.90 | The owner's review, applied to the floorplans | P5.89 | todo | | |
 | P6.1 | Full language and direction matrix | Phases 1–5 | todo | | |
-| P6.2 | Manual WCAG 2.2 checks | P6.1 | todo | | |
 | P6.3 | Performance budget | P4.8 | todo | | |
-| P6.4 | Documentation for consumers | P6.2 | todo | | |
+| P6.6 | Full cleanup | P6.3 | todo | | |
 | P6.5 | Release 1.0.0 | all | todo | | |
 
 ---
@@ -1021,6 +1022,13 @@ Anti-money laundering in the spirit of Napier AI, for an accounting firm as an o
 
 **Done when** each group's pull request is green in CI with every item's screens (desktop and phone stories), new components with their stories and tests, the decisions in `docs/decisions.md`, and the report in Serbian on the pull request.
 
+#### Consolidation (owner, 2026-10-23)
+The examples grew to almost three hundred screens; SAP repeats five or six floorplans. Keep every component; reduce the examples to a small canonical set; module authors compose their own screens from the floorplans. Two branches and pull requests, in order. The owner's two principles apply to every screen from now on: **simplicity first** (show the minimum by default, advanced options tucked away) and **ease sells** (a first-day user manages without training, under pressure: fewest steps, big clear targets, immediate visible feedback, Undo instead of confirmations for reversible actions, nothing that blocks the user).
+- **P5.89 Consolidate to floorplans.** Seven floorplans in `docs/floorplans.md` (when to use each, its anatomy on desktop and phone, where actions go, how editing works, empty / loading / error states), each backed by an existing template: F1 List, F2 Record, F3 Document (one line editor for every document, the same on desktop and phone), F4 Worklist (auto-handled items first), F5 Overview and analysis, F6 Steps, F7 Special canvases; plus AppShell, AuthShell and PortalShell. Keep only the canonical example screens (each desktop and phone), brought onto their floorplan, with the walk-through; delete every other example screen, its stories, data, routes and pictures; components stay with their own stories. `docs/recipes.md`: one short entry per removed screen, by domain. CI reduced to what the smaller set needs.
+- **P5.90 The owner's review, applied to the floorplans.** Twenty-one findings, each fixed as a class wherever it applies: table headers without white gaps; the line editor flush in its card, one look and one focus style per cell, rebuilt on phones (one card per line, the totals in one place); the invoice draft's date of supply and place of issue, only the usual line columns by default; no nested scroll boxes on phones; module tabs that show they scroll; long text that wraps and unreadable files as an error in words; sticky headers in pure CSS; the bank statement automatic first; number keys in the Questionnaire; a collapsible course outline with rich lessons; quick time entry; empty states with room; a service picker for bookings; no dots in the agenda; a quieter reveal dialog; the "now" line never over text; helper text under the input; resource schedules on phones as today's lists; restaurant service and POS for a first-day waiter; toasts that never block.
+
+**Done when** P5.89's pull request (protected: CI changes, merged by the owner) and P5.90's are green, with the report in Serbian on each.
+
 **End of Phase 5:** `0.1.0-alpha.5`; report.
 
 ---
@@ -1030,14 +1038,13 @@ Anti-money laundering in the spirit of Napier AI, for an accounting firm as an o
 ### P6.1 — Full language and direction matrix
 Every story in light/dark × ltr/rtl, plus Arabic and Japanese sample-text stories for every component with text. Fix every finding; record anything left open in `docs/decisions.md` with a reason (there should be nothing).
 
-### P6.2 — Manual WCAG 2.2 checks
-Check by hand what axe cannot: keyboard-only use of every template, focus never hidden under sticky bars, target sizes on phone width, a non-drag alternative for every drag, paste in every code and password field, 200% zoom. Write the results to `docs/wcag22.md`.
-
 ### P6.3 — Performance budget
 Measure the JavaScript and CSS needed for the list example and the document example in mobile emulation (mid-range device, slow 4G). Record the numbers and set a budget in CI a little above them.
 
-### P6.4 — Documentation for consumers
-`README.md` and `docs/getting-started.md` for agents building `liro-core`: installing, the two CSS imports, `LiroProvider` and what the Core should pass into each field, the rule "never import primitives or Radix", how to choose an intent or family, how to ask for a missing component. Final pass on `AGENTS.md` and `docs/decisions.md`.
+### P6.6 — Full cleanup
+Remove dead code, unused files, stale scripts and stories; every comment in English and true to the code it describes; consistent names across packages, stories and docs. Final pass on `AGENTS.md` and `docs/decisions.md`.
+
+*(P6.2 "Manual WCAG 2.2 checks" and P6.4 "Documentation for consumers" are removed by the owner's decision of 2026-10-23; the guide for `liro-core` is written outside the agent.)*
 
 ### P6.5 — Release 1.0.0
 All steps `done`; changesets complete; `1.0.0` published with exact versions; final report to the owner in Serbian: what exists, where to see it, what `liro-core` does next.
