@@ -321,6 +321,8 @@ export const RestaurantTabInteraction: Story = {
     const canvas = within(canvasElement)
     await userEvent.click(canvas.getByRole('button', { name: 'Open tab' }))
     await expect(await canvas.findByRole('heading', { name: 'Table 7' })).toBeVisible()
+    // The tab opens on the most sold items; the krempita is under the desserts.
+    await userEvent.click(canvas.getByRole('button', { name: 'Dezerti' }))
     await userEvent.click(canvas.getByRole('button', { name: /^Krempita/ }))
     await expect(canvas.getByRole('button', { name: 'Send now (1)' })).toBeVisible()
     await expect(canvasElement).toHaveTextContent('New · sent when you leave the table')
