@@ -44,6 +44,7 @@ import {
   FREE_SLOTS,
   JOVANA_SLOT,
   PATIENT,
+  COVERED,
   SERVICE_FILTERS,
   SERVICE_LEVELS,
   SERVICE_SECTIONS,
@@ -142,12 +143,12 @@ function useWhen() {
   return (start: string) => `${format.dateLong(start.slice(0, 10))} at ${format.time(start)}`
 }
 
-/** "Covered by health insurance" or the price, as the catalogue gives it. */
+/** The price, or "Covered by health insurance" when the patient pays nothing. */
 function ServicePrice({ id }: { id: string }) {
   const chosen = SERVICES.find((each) => each.id === id)
   if (chosen === undefined) return null
   return chosen.price === undefined ? (
-    <>{chosen.priceText ?? ''}</>
+    <>{COVERED}</>
   ) : (
     <MoneyText value={chosen.price} currency="RSD" />
   )
@@ -169,6 +170,8 @@ export function Booking({
   const [service, setService] = useState(DEFAULT_SERVICE)
   const [picking, setPicking] = useState(choosing)
   const [doctor, setDoctor] = useState(CHOSEN_DOCTOR)
+  // Another doctor only on request: the chosen one is the default (P5.93 item 12, simplicity).
+  const [changingDoctor, setChangingDoctor] = useState(false)
   const [slot, setSlot] = useState<string | null>(
     step === 'service' || step === 'time' ? null : JOVANA_SLOT,
   )
@@ -225,15 +228,29 @@ export function Booking({
                     />
                   </div>
                 </section>
-                {generalPractice && (
-                  <SelectField
-                    label="Doctor"
-                    description="Your chosen doctor sees you first; another doctor of the clinic when yours is away."
-                    options={DOCTOR_OPTIONS}
-                    value={doctor}
-                    onChange={setDoctor}
-                  />
-                )}
+                {generalPractice &&
+                  (changingDoctor ? (
+                    <SelectField
+                      label="Doctor"
+                      description="Your chosen doctor sees you first; another doctor of the clinic when yours is away."
+                      options={DOCTOR_OPTIONS}
+                      value={doctor}
+                      onChange={setDoctor}
+                    />
+                  ) : (
+                    <p className="bidi-content m-0 flex flex-wrap items-baseline gap-x-3 gap-y-1 text-sm text-primary">
+                      <span>{`With ${doctorName(doctor)}, your chosen doctor`}</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setChangingDoctor(true)
+                        }}
+                        className={`m-0 inline-flex min-h-6 cursor-pointer items-center border-0 bg-transparent p-0 font-sans text-sm ${LINK}`}
+                      >
+                        Another doctor…
+                      </button>
+                    </p>
+                  ))}
                 <div className="flex justify-end">
                   <Button
                     intent="next"
@@ -327,6 +344,8 @@ export function Booking({
           selected={[service]}
           countLabel={(count, text) => `${text} ${count === 1 ? 'service' : 'services'}`}
           searchLabel="Search services, doctors, tests"
+          topLabel="All services"
+          description={`${COVERED}, unless a price is shown.`}
           onChoose={(ids) => {
             const next = ids[0]
             if (next !== undefined) setService(next)

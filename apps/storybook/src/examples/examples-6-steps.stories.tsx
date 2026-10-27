@@ -246,7 +246,9 @@ export const HealthBookingWalk: Story = {
     await settle()
     await userEvent.click(dialog.getByRole('button', { name: /^Laboratory/ }))
     await expect(dialog.getByRole('button', { name: /^Blood draw/ })).toBeVisible()
-    await userEvent.click(dialog.getByRole('button', { name: 'Back to All' }))
+    // A quiet "‹ All services" link back, no Cancel: the X closes it (P5.93 items 4 and 12).
+    await expect(dialog.queryByRole('button', { name: 'Cancel' })).toBeNull()
+    await userEvent.click(dialog.getByRole('button', { name: 'Back to All services' }))
     await userEvent.type(dialog.getByRole('searchbox'), 'pressure')
     await userEvent.click(dialog.getByRole('option', { name: /^Blood pressure control/ }))
     await waitFor(async () => {

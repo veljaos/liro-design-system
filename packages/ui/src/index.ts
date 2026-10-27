@@ -1367,6 +1367,7 @@ export type {
 } from './components/assistant-logic'
 export { EmailPreview, emailPreviewWidth } from './components/email-preview'
 export type {
+  EmailAddress,
   EmailPreviewProps,
   EmailPreviewScheme,
   EmailPreviewWidth,

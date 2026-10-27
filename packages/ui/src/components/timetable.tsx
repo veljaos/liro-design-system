@@ -235,11 +235,17 @@ export function Timetable(props: TimetableProps) {
               className="relative flex gap-3 border-0 border-t border-solid border-subtle py-2 first:border-t-0"
             >
               {nowMarker(shownDay, period)}
-              <div className="relative flex w-24 shrink-0 flex-col gap-0.5">
+              <div className="relative flex min-w-24 shrink-0 flex-col gap-0.5">
                 <span className={cn('text-sm font-semibold text-primary', TEXT_DIRECTION)}>
                   {period.label}
                 </span>
-                <span className={cn('text-xs text-secondary tabular-nums', TEXT_DIRECTION)}>
+                {/* The start and the end on one line, never broken apart (P5.93 item 5). */}
+                <span
+                  className={cn(
+                    'text-xs whitespace-nowrap text-secondary tabular-nums',
+                    TEXT_DIRECTION,
+                  )}
+                >
                   {timeText(period)}
                 </span>
               </div>
@@ -267,7 +273,7 @@ export function Timetable(props: TimetableProps) {
           <tr>
             <th
               scope="col"
-              className="w-36 border-0 border-b border-solid border-default px-3 py-2 text-start text-xs font-medium text-secondary"
+              className="w-40 border-0 border-b border-solid border-default px-3 py-2 text-start text-xs font-medium text-secondary"
             >
               {messages['timetable.period']}
             </th>
@@ -302,7 +308,7 @@ export function Timetable(props: TimetableProps) {
                 </span>
                 <span
                   className={cn(
-                    'block text-xs font-regular text-secondary tabular-nums',
+                    'block text-xs font-regular whitespace-nowrap text-secondary tabular-nums',
                     TEXT_DIRECTION,
                   )}
                 >

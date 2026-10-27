@@ -1,4 +1,4 @@
-import { ArrowLeft, Ban, BadgePercent, Check, ChevronRight } from 'lucide-react'
+import { Ban, BadgePercent, Check, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
 import {
   DialogBody,
@@ -72,6 +72,14 @@ import {
  *
  * Computes nothing: prices, discounts, what combines and what is recommended are the
  * application's data.
+ *
+ * P5.93 (items 4, 5 and 12, the owner's fourth review): the search and the chips stay at the top
+ * and only the cards scroll, in a region of their own that ends above the footer with room to
+ * spare — nothing floats over them. One choice has no footer at all (the header's X closes it);
+ * several end with one opaque footer behind one line: what is chosen, then "Choose 2". A level
+ * opened shows a quiet "‹ All services" link back (`topLabel`), not a button. On phones the cards
+ * and the levels are one column and a card's price (or the application's words for it) stands
+ * under its name, so no word is broken.
  */
 
 export interface CatalogPickerProps {
@@ -109,6 +117,8 @@ export interface CatalogPickerProps {
   countLabel?: (count: number, countText: string) => string
   /** The search field's label. Default: `messages['catalog.search']`. */
   searchLabel?: string
+  /** The top level's name, in the link back to it ("All services"). Default: `messages['catalog.top']`. */
+  topLabel?: string
   /** The items are loading: skeleton cards. */
   loading?: boolean
   /** The catalogue could not be loaded: the application's words. */
@@ -147,6 +157,9 @@ function PickerBody(props: CatalogPickerProps & { phone: boolean }) {
   const selected = props.selected ?? innerSelected
   const count = (value: number) =>
     (props.countLabel ?? messages['catalog.count'])(value, format.number(String(value)))
+  const topLabel = props.topLabel ?? messages['catalog.top']
+  /** One column on phones (P5.93 item 5): the layout follows the picker, not the viewport. */
+  const grid = props.phone ? 'grid-cols-1' : 'grid-cols-2'
 
   const filtered = applyCatalogFilters(props.items, props.filters ?? [], pressed)
   const searching = query.trim() !== ''
@@ -203,7 +216,7 @@ function PickerBody(props: CatalogPickerProps & { phone: boolean }) {
   const content = (
     <div className="flex min-w-0 flex-col gap-4" id={listsId}>
       {props.loading === true ? (
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+        <div className={cn('grid gap-2', grid)}>
           {Array.from({ length: 6 }, (_, index) => (
             <Skeleton key={index} className="h-20 rounded-md" />
           ))}
@@ -222,14 +235,23 @@ function PickerBody(props: CatalogPickerProps & { phone: boolean }) {
         <>
           {!searching && current !== undefined && (
             <div className="flex flex-col items-start gap-1">
-              <Button
-                family="neutral"
-                icon={ArrowLeft}
-                label={messages['catalog.back'](parent?.label ?? messages['catalog.top'])}
+              {/* A quiet link back up, not a button (P5.93 item 4). */}
+              <button
+                type="button"
+                data-slot="catalog-back"
+                aria-label={messages['catalog.back'](parent?.label ?? topLabel)}
                 onClick={() => {
                   goTo(parent?.id ?? null)
                 }}
-              />
+                className={cn(
+                  BUTTON_RESET,
+                  FOCUS_RING,
+                  'inline-flex min-h-6 cursor-pointer items-center gap-1 rounded-sm text-sm text-link hover:underline',
+                )}
+              >
+                <ChevronLeft aria-hidden="true" className="size-4 shrink-0 rtl:-scale-x-100" />
+                <span className={TEXT_DIRECTION}>{parent?.label ?? topLabel}</span>
+              </button>
               <h3 className={cn('m-0 text-h3 text-primary', TEXT_DIRECTION)}>{current.label}</h3>
               {current.description !== undefined && (
                 <p className={cn('m-0 text-sm text-secondary', TEXT_DIRECTION)}>
@@ -247,6 +269,7 @@ function PickerBody(props: CatalogPickerProps & { phone: boolean }) {
             <section key={section.id} className="flex flex-col gap-2">
               <h3 className={cn('m-0 text-h4 text-primary', TEXT_DIRECTION)}>{section.label}</h3>
               <CardList
+                phone={props.phone}
                 label={section.label}
                 items={items}
                 selected={selected}
@@ -267,7 +290,7 @@ function PickerBody(props: CatalogPickerProps & { phone: boolean }) {
               )}
               <ul
                 aria-label={current?.label ?? messages['catalog.levels']}
-                className="m-0 grid list-none grid-cols-1 gap-2 p-0 sm:grid-cols-2"
+                className={cn('m-0 grid list-none gap-2 p-0', grid)}
               >
                 {levels.map((each) => (
                   <li key={each.id} className="flex min-w-0">
@@ -310,15 +333,12 @@ function PickerBody(props: CatalogPickerProps & { phone: boolean }) {
             <section className="flex flex-col gap-2">
               {!searching && (sections.length > 0 || levels.length > 0) && (
                 <h3 className={cn('m-0 text-h4 text-primary', TEXT_DIRECTION)}>
-                  {current?.label ?? messages['catalog.top']}
+                  {current?.label ?? topLabel}
                 </h3>
               )}
               <CardList
-                label={
-                  searching
-                    ? messages['catalog.results']
-                    : (current?.label ?? messages['catalog.top'])
-                }
+                phone={props.phone}
+                label={searching ? messages['catalog.results'] : (current?.label ?? topLabel)}
                 items={here.slice(0, shown)}
                 selected={selected}
                 multiple={multiple}
@@ -369,7 +389,7 @@ function PickerBody(props: CatalogPickerProps & { phone: boolean }) {
         </DialogTitle>
         <DialogCloseButton label={messages['dialog.close']} />
       </DialogHeader>
-      <DialogBody className="flex min-h-0 flex-1 flex-col gap-4">
+      <DialogBody className="flex min-h-0 flex-1 flex-col gap-4 pb-0">
         {props.description !== undefined && (
           <DialogDescription id={descriptionId}>{props.description}</DialogDescription>
         )}
@@ -419,25 +439,24 @@ function PickerBody(props: CatalogPickerProps & { phone: boolean }) {
             </div>
           )}
         </div>
-        <div className="min-h-0 flex-1">{content}</div>
+        {/* Only the cards scroll, above the footer, with room under the last (P5.93 item 4):
+            the search and the chips stay; nothing is drawn over the cards. The 4px inset keeps
+            a card's focus ring inside the region. */}
+        <div
+          data-slot="catalog-lists"
+          className="-mx-1 min-h-0 flex-1 overflow-y-auto px-1 pt-1 pb-4 [scrollbar-width:thin]"
+        >
+          {content}
+        </div>
       </DialogBody>
-      <DialogFooter className="flex-wrap items-center border-0 border-t border-solid border-subtle px-6 py-3">
-        {multiple && (
+      {multiple && (
+        <DialogFooter className="flex-nowrap items-center border-0 border-t border-solid border-default bg-surface-overlay px-4 py-3">
           <p className={cn('m-0 min-w-0 flex-1 text-sm text-secondary', TEXT_DIRECTION)}>
             {chosenNames.length === 0
               ? messages['catalog.noneChosen']
               : messages['catalog.chosen'](chosenNames.join(', '))}
           </p>
-        )}
-        <Button
-          intent="cancel"
-          label={messages['dialog.cancel']}
-          onClick={() => {
-            props.onOpenChange(false)
-          }}
-        />
-        {multiple &&
-          (selected.length === 0 ? (
+          {selected.length === 0 ? (
             <UnavailableAction
               family="primary"
               emphasis="primary"
@@ -459,8 +478,9 @@ function PickerBody(props: CatalogPickerProps & { phone: boolean }) {
                 props.onOpenChange(false)
               }}
             />
-          ))}
-      </DialogFooter>
+          )}
+        </DialogFooter>
+      )}
     </>
   )
 
@@ -498,6 +518,8 @@ function columnsOf(cards: readonly HTMLElement[]): number {
 
 /** Items as cards in a listbox: one tab stop, the arrows by the measured columns. */
 function CardList(props: {
+  /** One column, the price under the name (P5.93 items 5 and 12). */
+  phone: boolean
   label: string
   items: readonly CatalogItem[]
   selected: readonly string[]
@@ -537,11 +559,12 @@ function CardList(props: {
       role="listbox"
       aria-label={props.label}
       aria-multiselectable={props.multiple || undefined}
-      className="m-0 grid list-none grid-cols-1 gap-2 p-0 sm:grid-cols-2"
+      className={cn('m-0 grid list-none gap-2 p-0', props.phone ? 'grid-cols-1' : 'grid-cols-2')}
     >
       {props.items.map((item, index) => (
         <CatalogCard
           key={item.id}
+          stacked={props.phone}
           item={item}
           chosen={props.selected.includes(item.id)}
           multiple={props.multiple}
@@ -568,6 +591,8 @@ function CardList(props: {
 }
 
 function CatalogCard(props: {
+  /** The price under the name, not beside it (phones). */
+  stacked: boolean
   item: CatalogItem
   chosen: boolean
   multiple: boolean
@@ -583,6 +608,41 @@ function CatalogCard(props: {
   const { item } = props
   const unavailable = item.unavailableReason !== undefined
   const facts = [item.detail, item.provider].filter((each) => each !== undefined).join(' · ')
+  // The price (or the application's words for it): at the end beside the name on a desktop, under
+  // the name on a phone, so neither is squeezed into broken words (P5.93 items 5 and 12).
+  const price =
+    item.price === undefined && item.priceText === undefined ? null : (
+      <span
+        className={cn(
+          'flex gap-0.5',
+          props.stacked
+            ? 'flex-wrap items-baseline gap-x-2'
+            : 'max-w-[45%] shrink-0 flex-col items-end text-end',
+        )}
+      >
+        {item.price !== undefined && props.currency !== undefined ? (
+          <MoneyText
+            value={item.price}
+            currency={props.currency}
+            className="text-md font-semibold text-primary"
+          />
+        ) : (
+          <span className={cn('text-sm font-medium text-primary', TEXT_DIRECTION)}>
+            {item.priceText}
+          </span>
+        )}
+        {item.originalPrice !== undefined && props.currency !== undefined && (
+          <span className="text-xs text-tertiary">
+            <span className="sr-only">
+              {messages['catalog.wasPrice'](format.money(item.originalPrice, props.currency))}
+            </span>
+            <s aria-hidden="true" className={cn('tabular-nums', TEXT_ISOLATE)}>
+              {format.money(item.originalPrice, props.currency)}
+            </s>
+          </span>
+        )}
+      </span>
+    )
   return (
     <div
       role="option"
@@ -632,6 +692,7 @@ function CatalogCard(props: {
         {facts !== '' && (
           <span className={cn('text-sm text-secondary', TEXT_DIRECTION)}>{facts}</span>
         )}
+        {props.stacked && price}
         {item.discount !== undefined && !unavailable && (
           <span
             className={cn(
@@ -652,31 +713,7 @@ function CatalogCard(props: {
           </span>
         )}
       </span>
-      {(item.price !== undefined || item.priceText !== undefined) && (
-        <span className="flex max-w-[45%] shrink-0 flex-col items-end gap-0.5 text-end">
-          {item.price !== undefined && props.currency !== undefined ? (
-            <MoneyText
-              value={item.price}
-              currency={props.currency}
-              className="text-md font-semibold text-primary"
-            />
-          ) : (
-            <span className={cn('text-sm font-medium text-primary', TEXT_DIRECTION)}>
-              {item.priceText}
-            </span>
-          )}
-          {item.originalPrice !== undefined && props.currency !== undefined && (
-            <span className="text-xs text-tertiary">
-              <span className="sr-only">
-                {messages['catalog.wasPrice'](format.money(item.originalPrice, props.currency))}
-              </span>
-              <s aria-hidden="true" className={cn('tabular-nums', TEXT_ISOLATE)}>
-                {format.money(item.originalPrice, props.currency)}
-              </s>
-            </span>
-          )}
-        </span>
-      )}
+      {!props.stacked && price}
     </div>
   )
 }

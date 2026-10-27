@@ -10,6 +10,7 @@ import { launchpadArrowTarget } from '../templates/launchpad-logic'
 import { DropdownMenu, type MenuEntry } from './dropdown-menu'
 import { selectRange, toggleSelection, type FileEntry } from './file-browser-logic'
 import { EntryMarks, EntryState, FactsLine, FileIcon, useEntryFacts } from './file-entry-parts'
+import { FileName } from './file-name'
 import { Tooltip } from './popover'
 
 /*
@@ -166,47 +167,46 @@ export function FileGrid(props: FileGridProps) {
               checked ? 'border-selected bg-surface-selected' : 'border-default bg-surface-raised',
             )}
           >
-            <button
-              type="button"
-              data-file-tile-main=""
-              tabIndex={tabbable ? 0 : -1}
-              aria-describedby={entryFacts.length > 0 ? factsId : undefined}
-              onFocus={() => {
-                setFocus(index)
-              }}
-              onKeyDown={(event) => {
-                onKeyDown(event, index, entry)
-              }}
-              onClick={(event) => {
-                onClick(event, entry)
-              }}
-              className={cn(
-                BUTTON_RESET,
-                'flex min-w-0 cursor-pointer flex-col gap-2 rounded-lg p-3 pb-0 text-start',
-                !checked && 'hover:bg-surface-hover',
-                FOCUS_RING,
-                'focus-visible:-outline-offset-2',
-              )}
-            >
-              <span className="flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-md bg-surface-sunken">
-                {entry.thumbnail === undefined ? (
-                  <FileIcon entry={entry} className="size-10" />
-                ) : (
-                  <img
-                    src={entry.thumbnail}
-                    alt=""
-                    draggable={false}
-                    className="size-full object-cover"
-                  />
+            {/* The whole name on hover and focus; on the tile, one line shortened in the middle
+                (P5.93 item 5). */}
+            <Tooltip label={entry.name}>
+              <button
+                type="button"
+                data-file-tile-main=""
+                tabIndex={tabbable ? 0 : -1}
+                aria-describedby={entryFacts.length > 0 ? factsId : undefined}
+                onFocus={() => {
+                  setFocus(index)
+                }}
+                onKeyDown={(event) => {
+                  onKeyDown(event, index, entry)
+                }}
+                onClick={(event) => {
+                  onClick(event, entry)
+                }}
+                className={cn(
+                  BUTTON_RESET,
+                  'flex min-w-0 cursor-pointer flex-col gap-2 rounded-lg p-3 pb-0 text-start',
+                  !checked && 'hover:bg-surface-hover',
+                  FOCUS_RING,
+                  'focus-visible:-outline-offset-2',
                 )}
-              </span>
-              <bdi
-                dir="auto"
-                className="line-clamp-2 min-w-0 text-sm font-medium break-words text-primary"
               >
-                {entry.name}
-              </bdi>
-            </button>
+                <span className="flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-md bg-surface-sunken">
+                  {entry.thumbnail === undefined ? (
+                    <FileIcon entry={entry} className="size-10" />
+                  ) : (
+                    <img
+                      src={entry.thumbnail}
+                      alt=""
+                      draggable={false}
+                      className="size-full object-cover"
+                    />
+                  )}
+                </span>
+                <FileName name={entry.name} className="text-sm font-medium text-primary" />
+              </button>
+            </Tooltip>
             <div className="flex min-w-0 flex-col gap-1 px-3 pt-1 pb-3">
               <span className="flex min-w-0 flex-wrap items-center gap-1.5 empty:hidden">
                 <EntryMarks entry={entry} />

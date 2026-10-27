@@ -4,6 +4,8 @@ import { ButtonPrimitive } from '../primitives/button'
 import { BUTTON_RESET, FOCUS_RING, TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
+import { FileName } from './file-name'
+import { Tooltip } from './popover'
 import { CompactIconButton } from './button'
 import { attachmentOffers, type AttachmentState } from './file-logic'
 import { ProgressBar, Skeleton } from './progress'
@@ -219,11 +221,8 @@ export function AttachmentList(props: AttachmentListProps) {
           canRetry: props.onRetry !== undefined,
         })
         const busy = downloading.has(file.id)
-        const name = (
-          <bdi className="min-w-0 break-words" dir="auto">
-            {file.name}
-          </bdi>
-        )
+        // One line, shortened in the middle; the whole name in the tooltip (P5.93 item 5).
+        const name = <FileName name={file.name} />
         return (
           <li
             key={file.id}
@@ -232,32 +231,38 @@ export function AttachmentList(props: AttachmentListProps) {
             className={cn(ROW, rowPadding, 'items-start')}
           >
             <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-              <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+              {/* The first line is as tall as the remove button (28px), so the name and the
+                  button share one line (P5.93 item 6). */}
+              <div className="flex min-h-7 min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
                 {offers.download ? (
-                  <button
-                    type="button"
-                    aria-busy={busy || undefined}
-                    aria-label={messages['attachment.download'](file.name)}
-                    onClick={() => {
-                      download(file)
-                    }}
-                    className={cn(
-                      BUTTON_RESET,
-                      'inline-flex min-h-6 min-w-0 cursor-pointer items-center rounded-sm text-start text-sm font-medium text-link hover:underline',
-                      FOCUS_RING,
-                    )}
-                  >
-                    {name}
-                  </button>
+                  <Tooltip label={file.name}>
+                    <button
+                      type="button"
+                      aria-busy={busy || undefined}
+                      aria-label={messages['attachment.download'](file.name)}
+                      onClick={() => {
+                        download(file)
+                      }}
+                      className={cn(
+                        BUTTON_RESET,
+                        'inline-flex min-h-6 max-w-full min-w-0 cursor-pointer items-center rounded-sm text-start text-sm font-medium text-link hover:underline',
+                        FOCUS_RING,
+                      )}
+                    >
+                      {name}
+                    </button>
+                  </Tooltip>
                 ) : (
-                  <span
-                    className={cn(
-                      'min-w-0 text-sm font-medium',
-                      file.state === 'quarantined' ? 'text-secondary' : 'text-primary',
-                    )}
-                  >
-                    {name}
-                  </span>
+                  <Tooltip label={file.name}>
+                    <span
+                      className={cn(
+                        'flex max-w-full min-w-0 text-sm font-medium',
+                        file.state === 'quarantined' ? 'text-secondary' : 'text-primary',
+                      )}
+                    >
+                      {name}
+                    </span>
+                  </Tooltip>
                 )}
                 {busy && <Spinner size="sm" label={messages['attachment.download'](file.name)} />}
                 {file.sizeText !== undefined && (

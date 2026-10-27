@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import { isValidElement, useState, type ReactNode } from 'react'
 import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { ToggleGroup, ToggleGroupItem } from '../primitives/toggle-group'
@@ -21,16 +21,49 @@ import { usePhone } from './use-phone'
  *   thin rule. Black and grey, no boxes, frames or shaded bands; the brand colour only in links.
  * - `lang` marks the message's language when it differs from the page's (D15: a Serbian variant
  *   previewed in an English interface).
+ * - P5.93 (item 5): a sender or recipient given as `{ name, address }` keeps its name whole on its
+ *   own line and the address, left to right, after it on the same line where it fits and under it
+ *   where it does not — never "Novi Sad <accounts@" broken across two lines.
  */
+
+/** A sender or a recipient: the name as the reader sees it and the address. */
+export interface EmailAddress {
+  name?: string
+  address: string
+}
+
+function isAddress(value: ReactNode | EmailAddress): value is EmailAddress {
+  return typeof value === 'object' && value !== null && !isValidElement(value) && 'address' in value
+}
+
+/** "Name <address>": the name whole, the address after it or under it (P5.93 item 5). */
+function AddressText({ value }: { value: EmailAddress }) {
+  if (value.name === undefined) {
+    return (
+      <bdi dir="ltr" className="break-words">
+        {value.address}
+      </bdi>
+    )
+  }
+  return (
+    <span className="flex flex-wrap gap-x-1">
+      <span className={TEXT_DIRECTION}>{value.name}</span>
+      <bdi dir="ltr" className="min-w-0 break-words text-secondary">{`<${value.address}>`}</bdi>
+    </span>
+  )
+}
 
 export type EmailPreviewWidth = 'desktop' | 'phone'
 export type EmailPreviewScheme = 'light' | 'dark'
 
 export interface EmailPreviewProps {
-  /** The sender as the reader sees it ("Kvadrat Gradnja d.o.o. <billing@example.com>"). */
-  from: ReactNode
-  /** The recipient. */
-  to?: ReactNode
+  /**
+   * The sender as the reader sees it: `{ name, address }` (the name whole, the address after it
+   * or under it), or the application's own content.
+   */
+  from: ReactNode | EmailAddress
+  /** The recipient, as `from`. */
+  to?: ReactNode | EmailAddress
   /** The subject, with the sample data filled in. */
   subject: ReactNode
   /** The sender's logo, at the start over the body (an image or a lockup). */
@@ -77,11 +110,13 @@ export function EmailPreview(props: EmailPreviewProps) {
   const width = props.width ?? innerWidth
   const scheme = props.scheme ?? innerScheme
   const narrow = width === 'phone'
+  const party = (value: ReactNode | EmailAddress): ReactNode =>
+    isAddress(value) ? <AddressText value={value} /> : value
   const header: [string, ReactNode][] = [
-    [messages['emailPreview.from'], props.from],
+    [messages['emailPreview.from'], party(props.from)],
     ...(props.to === undefined
       ? []
-      : ([[messages['emailPreview.to'], props.to]] as [string, ReactNode][])),
+      : ([[messages['emailPreview.to'], party(props.to)]] as [string, ReactNode][])),
     [messages['emailPreview.subject'], props.subject],
   ]
   return (
