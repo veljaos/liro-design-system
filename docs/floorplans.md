@@ -28,8 +28,13 @@ They apply to every screen, before any rule below.
 - **States, always:** loading (skeletons in the final layout, never a spinner over an empty
   page), empty (EmptyState with what to do next), no results (with "Clear filters"), error
   (ErrorState with "Try again"), no access (the reason in words), offline (OfflineIndicator).
-- **Feedback:** a routine success is shown in place ("Saved" beside the action) or as a short
-  toast that covers nothing and closes itself; errors stay until read (D23).
+- **Feedback:** a routine success is shown in place ("Saved" beside the action, a line's "Sent ·
+  19:40", a table's state) with Undo beside what changed for anything reversible; a toast only
+  for an error or an outcome outside the screen — it has its X, closes itself and covers no
+  action; errors stay until read (D23).
+- **Fields that cannot be changed are read only** (grey, readable, focusable, "—" when empty);
+  an action that cannot be used says why. Hints are the library's tooltip, never the browser's
+  (D3, D32).
 - **Reversible actions are undone, not confirmed.** ConfirmDialog only before what cannot be
   undone or what reaches other people (D14, D24).
 
@@ -39,7 +44,7 @@ They apply to every screen, before any rule below.
 | --------------- | ------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **AppShell**    | Everyone inside a company: every floorplan below.                              | Header 56px: the product's lockup, breadcrumbs, search (Ctrl K), notifications, company switcher, user menu; module tabs (96px) when the module has more than one screen. Phones: compact lockup, the companies in the user menu, a bottom bar for the screen's main action. |
 | **AuthShell**   | Signing in, two-factor, recovering a password, accepting an invitation.        | A 420px card on the sunken surface, the lockup above, the footer below; on phones no card frame. One field or one decision per step.                                                                                                                                         |
-| **PortalShell** | People outside the company: patients, parents, students, customers, employees. | Header with the brand and the person's menu; at most five sections as tabs, a bottom navigation bar on phones. The same floorplans inside, usually F2 and F6.                                                                                                                |
+| **PortalShell** | People outside the company: patients, parents, students, customers, employees. | Header with the brand and the person's menu; at most five sections as centred tabs, a bottom navigation bar on phones; the home shows only what matters now (quick actions, to-dos, what is new). The same floorplans inside, usually F2 and F6.                             |
 
 PosShell is the till's full-screen shell (F7).
 
