@@ -160,7 +160,7 @@ export const Default: Story = {
   play: async ({ canvasElement }) => {
     await editorReady(canvasElement)
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('group', { name: 'Message type' })).toBeVisible()
+    await expect(canvas.getByRole('radiogroup', { name: 'Message type' })).toBeVisible()
     await expect(canvas.getByRole('radio', { name: 'Reply' })).toBeChecked()
     await expect(canvas.getByRole('textbox', { name: 'Reply' })).toBeVisible()
     await expect(canvas.getByRole('button', { name: 'Attach files' })).toBeVisible()
