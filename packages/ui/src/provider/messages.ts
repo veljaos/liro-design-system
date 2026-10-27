@@ -2251,6 +2251,22 @@ export interface LiroMessages {
   'pivot.export': string
   'pivot.drillHint': string
   'pivot.gridHint': string
+  /** P5.93 item 45: the suggested views' group. */
+  'pivot.views': string
+  /** One value in the summary line ("Sum of Amount"). */
+  'pivot.summaryValue': (field: string, aggregation: string) => string
+  /** The one-line summary above the grid: values, rows ('' when none), columns ('' when none). */
+  'pivot.summary': (values: string, rows: string, columns: string) => string
+  /** One filter in the summary ("Salesperson: Ana Petrović"). */
+  'pivot.summaryFilter': (field: string, values: string) => string
+  /** The filters after the summary ("Only Salesperson: Ana Petrović"). */
+  'pivot.summaryFilters': (filters: string) => string
+  /** A filter that keeps more than three values ("4 values"). */
+  'pivot.summaryMany': (countText: string) => string
+  /** Announced after a field is moved by dragging or its menu. */
+  'pivot.moved': (field: string, area: string, positionText: string, totalText: string) => string
+  /** Announced after a field is taken out of the layout. */
+  'pivot.removedField': (field: string) => string
   // P5.78 auto: RuleBuilder
   /** RuleBuilder: the blocks, the fields' labels, the joins, the add buttons, the empty lists. */
   'rule.when': string
@@ -2263,10 +2279,27 @@ export interface LiroMessages {
   'rule.any': string
   'rule.and': string
   'rule.or': string
-  'rule.field': string
-  'rule.operator': string
-  'rule.value': string
-  'rule.action': string
+  /** P5.93 item 46: the blocks of further branches and of Else. */
+  'rule.elseIf': string
+  'rule.else': string
+  /** An Else-if block's name ("Else if 1"). */
+  'rule.branchName': (numberText: string) => string
+  /** The pills' accessible names ("Condition 2: field"); nothing is written on the screen. */
+  'rule.fieldOf': (item: string) => string
+  'rule.operatorOf': (item: string) => string
+  'rule.valueOf': (item: string) => string
+  'rule.actionOf': (item: string) => string
+  /** An empty pill's words. */
+  'rule.chooseTrigger': string
+  'rule.chooseField': string
+  'rule.chooseTest': string
+  'rule.chooseAction': string
+  'rule.addElseIf': string
+  'rule.addElse': string
+  /** An item's menu button ("Options: Condition 2"). */
+  'rule.itemMenu': (item: string) => string
+  /** Announced after an item is moved by dragging or its menu. */
+  'rule.moved': (item: string, positionText: string, totalText: string) => string
   'rule.addCondition': string
   'rule.addGroup': string
   'rule.addToGroup': string

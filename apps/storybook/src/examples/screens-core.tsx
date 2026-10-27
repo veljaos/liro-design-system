@@ -66,7 +66,7 @@ import {
   type WorklistItem,
   DESCRIPTION_MIN_WIDTH,
 } from '@veljaos/ui'
-import { BarChart, LineChart } from '../../../../packages/ui/src/charts'
+import { BarChart, ChartSeriesToggle, LineChart } from '../../../../packages/ui/src/charts'
 import { percentText } from '../../../../packages/ui/src/components/story-frames'
 import {
   APPROVAL_DETAILS,
@@ -80,7 +80,7 @@ import {
   OVERDUE_TOTAL,
   LINES,
   REJECT_REASONS,
-  REVENUE,
+  PERFORMANCE,
   TOTALS,
   type ApprovalLine,
   type ExampleApproval,
@@ -738,6 +738,46 @@ export function Invoice({ phone, invoice }: { phone: boolean; invoice: ExampleIn
 
 // ── Dashboard ─────────────────────────────────────────────────────────────────────────────────
 
+/**
+ * Revenue or costs by month, 2026 against 2025, in the interactive header of P5.93 item 42: the
+ * two six-month totals as toggle buttons at the header's end (under the title on a phone); the
+ * chosen one draws the chart.
+ */
+function PerformanceChart({ phone }: { phone: boolean }) {
+  const { format } = useLiro()
+  const [measure, setMeasure] = useState<string>('revenue')
+  const chosen =
+    PERFORMANCE.measures.find((each) => each.key === measure) ?? PERFORMANCE.measures[0]
+  return (
+    <BarChart
+      title={PERFORMANCE.title}
+      description={PERFORMANCE.description}
+      layout={phone ? 'phone' : 'desktop'}
+      categories={PERFORMANCE.categories}
+      series={[
+        { key: `${chosen.key}2026`, label: `${chosen.label} 2026` },
+        { key: `${chosen.key}2025`, label: `${chosen.label} 2025` },
+      ]}
+      values={PERFORMANCE.values}
+      decimals={PERFORMANCE.decimals}
+      toggle={
+        <ChartSeriesToggle
+          label="Shown"
+          value={[measure]}
+          onValueChange={(value) => {
+            setMeasure(value[0] ?? 'revenue')
+          }}
+          items={PERFORMANCE.measures.map((each) => ({
+            key: each.key,
+            label: each.label,
+            total: format.number(each.total, { decimals: PERFORMANCE.decimals }),
+          }))}
+        />
+      }
+    />
+  )
+}
+
 export function Dashboard({ phone }: { phone: boolean }) {
   const { format, linkComponent: Link } = useLiro()
   const columns: DataTableColumn<ExampleInvoice>[] = [
@@ -811,7 +851,7 @@ export function Dashboard({ phone }: { phone: boolean }) {
           },
         ]}
       >
-        <BarChart {...REVENUE} />
+        <PerformanceChart phone={phone} />
         <LineChart {...CASH} />
         {/* col-span-full, never md:col-span-2: in the phone layout one column stays one. */}
         <SectionCard title="Largest open invoices" headingLevel={3} flush className="col-span-full">

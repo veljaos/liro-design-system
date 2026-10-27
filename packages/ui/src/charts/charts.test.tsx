@@ -7,6 +7,7 @@ import { BarChart, defaultCurve, equalTicks } from './cartesian'
 import { centreValueSize } from './centre'
 import { ChartSeriesToggle } from './series-toggle'
 import { DonutChart } from './pie'
+import { RadarChart, RadialChart } from './polar'
 import {
   categoricalColour,
   isEmptyChart,
@@ -156,6 +157,89 @@ describe('ChartSeriesToggle', () => {
     )
     expect(html).toMatch(/aria-pressed="true"[^>]*>.*Sales/)
     expect(html).toContain('aria-pressed="false"')
+  })
+})
+
+describe('the interactive header (P5.93 item 42)', () => {
+  const toggle = (
+    <ChartSeriesToggle
+      label="Shown"
+      items={[
+        { key: 'a', label: 'Revenue', total: '29.032,9' },
+        { key: 'b', label: 'Costs', total: '23.277,0' },
+      ]}
+      value={['a']}
+      onValueChange={() => undefined}
+    />
+  )
+  it('puts the key figures in a header band at the end, a line between each', () => {
+    const html = render(
+      <BarChart
+        title="Revenue and costs"
+        categories={[{ key: 'm', label: 'Sep' }]}
+        series={[{ key: 'a', label: 'Revenue' }]}
+        values={{ a: { m: '5684.2' } }}
+        toggle={toggle}
+      />,
+    )
+    expect(html).toContain('data-slot="chart-header"')
+    expect(html).toContain('border-s')
+    expect(html).toMatch(/text-xl[^>]*>29\.032,9/)
+    expect(html).toContain('not-first:border-s')
+  })
+  it('stands the key figures under the title on phones, smaller', () => {
+    const html = render(
+      <BarChart
+        title="Revenue and costs"
+        layout="phone"
+        categories={[{ key: 'm', label: 'Sep' }]}
+        series={[{ key: 'a', label: 'Revenue' }]}
+        values={{ a: { m: '5684.2' } }}
+        toggle={toggle}
+      />,
+    )
+    expect(html).toMatch(/data-slot="chart-header"[^>]*flex-col/)
+    expect(html).toMatch(/text-lg[^>]*>29\.032,9/)
+  })
+  it('takes the toggle in every chart', () => {
+    for (const html of [
+      render(
+        <DonutChart
+          title="Shares"
+          slices={[{ key: 'a', label: 'A', value: '1' }]}
+          toggle={toggle}
+        />,
+      ),
+      render(
+        <RadarChart
+          title="Scores"
+          categories={[{ key: 'm', label: 'M' }]}
+          series={[{ key: 'a', label: 'A' }]}
+          values={{ a: { m: '1' } }}
+          toggle={toggle}
+        />,
+      ),
+      render(
+        <RadialChart
+          title="Goals"
+          items={[{ key: 'a', label: 'A', value: '50' }]}
+          toggle={toggle}
+        />,
+      ),
+    ]) {
+      expect(html).toContain('data-slot="chart-header"')
+    }
+  })
+  it('leaves the header as it was without a toggle', () => {
+    const html = render(
+      <BarChart
+        title="Revenue"
+        categories={[{ key: 'm', label: 'Sep' }]}
+        series={[{ key: 'a', label: 'Revenue' }]}
+        values={{ a: { m: '5684.2' } }}
+      />,
+    )
+    expect(html).not.toContain('data-slot="chart-header"')
   })
 })
 

@@ -264,17 +264,20 @@ const MONTHS = [
   { key: '2026-09', label: 'Sep' },
 ]
 
-/** Revenue 2026 against 2025, thousands of RSD. */
-export const REVENUE: CartesianChartProps = {
-  title: 'Revenue',
-  description: 'Thousands of RSD, without VAT',
+/**
+ * Revenue and costs 2026 against 2025, thousands of RSD (P5.93 item 42: the chart's header shows
+ * both six-month totals as toggle buttons; the totals are the application's, written here).
+ */
+export const PERFORMANCE = {
+  title: 'Revenue and costs',
+  description: 'Thousands of RSD, without VAT, April–September',
   categories: MONTHS,
-  series: [
-    { key: 'y2026', label: '2026' },
-    { key: 'y2025', label: '2025' },
+  measures: [
+    { key: 'revenue', label: 'Revenue', total: '29032.9' },
+    { key: 'costs', label: 'Costs', total: '23277.0' },
   ],
   values: {
-    y2026: {
+    revenue2026: {
       '2026-04': '4812.4',
       '2026-05': '5230.9',
       '2026-06': '4977.1',
@@ -282,7 +285,7 @@ export const REVENUE: CartesianChartProps = {
       '2026-08': '4421.8',
       '2026-09': '5684.2',
     },
-    y2025: {
+    revenue2025: {
       '2026-04': '4390.2',
       '2026-05': '4718.6',
       '2026-06': '4655.0',
@@ -290,9 +293,25 @@ export const REVENUE: CartesianChartProps = {
       '2026-08': '3958.7',
       '2026-09': '4870.1',
     },
+    costs2026: {
+      '2026-04': '3921.6',
+      '2026-05': '4105.3',
+      '2026-06': '3988.0',
+      '2026-07': '3402.7',
+      '2026-08': '3611.9',
+      '2026-09': '4247.5',
+    },
+    costs2025: {
+      '2026-04': '3650.2',
+      '2026-05': '3820.4',
+      '2026-06': '3795.8',
+      '2026-07': '3190.6',
+      '2026-08': '3301.5',
+      '2026-09': '3912.3',
+    },
   },
   decimals: 1,
-}
+} as const
 
 /** Cash at month end, thousands of RSD. */
 export const CASH: CartesianChartProps = {

@@ -17,6 +17,7 @@ import {
   QUARTER_RESULT,
   relabel,
   relabelFields,
+  VIEWS,
 } from './pivot-story-data'
 
 const EXPORT = {
@@ -40,6 +41,7 @@ function Controlled(props: Partial<PivotProps> & { fixed?: boolean }) {
       <Pivot
         label="Sales by region and quarter"
         fields={FIELDS}
+        views={VIEWS}
         result={QUARTER_RESULT}
         onDrillDown={(cell) => {
           setLast(JSON.stringify(cell))
@@ -83,10 +85,13 @@ const meta = {
           'layout is reported through `onChange`; the application computes the cells, the ' +
           'subtotals and the totals and passes them back as decimal strings (`result`). The ' +
           'library never adds, averages or counts; null is “—”.\n\n' +
-          '**The chooser** (“Fields”): Filters, Columns, Rows and Values, then the fields not ' +
-          'used. A field is added, moved up or down, moved to another area or removed by its ' +
-          'buttons and menus — never only by dragging. Beside the grid on wider screens, in a ' +
-          'full-screen sheet on phones.\n\n' +
+          '**Simple first** (P5.93): one card — the application’s suggested views (`views`) as ' +
+          'its first row, the layout in one line of words, few buttons (Fields, one Expand all ' +
+          '/ Collapse all, Export), then the grid. The user starts from a view.\n\n' +
+          '**The chooser** (“Fields”, closed by default): an end sheet (full screen on phones) ' +
+          'with four zones — Rows, Columns, Values, Filters — and the fields not used. A chip ' +
+          'is dragged to another zone or place (the dragging rule, announced), or moved by its ' +
+          'menu — never only by dragging. The grid behind it follows every change.\n\n' +
           '**The grid:** the application’s column tree as header rows (a quarter over its ' +
           'figures), row groups that open and close (the first level open), subtotals ' +
           'semibold, total columns and the grand total on the sunken surface as DataTable’s ' +
@@ -122,24 +127,50 @@ export const Default: Story = {
     await expect(grid).toBeVisible()
     await expect(within(grid).getByRole('columnheader', { name: 'Q1 2026' })).toBeVisible()
     await expect(within(grid).getByRole('rowheader', { name: 'Total' })).toBeVisible()
-    await expect(canvas.getByRole('complementary', { name: 'Fields' })).toBeVisible()
     await expect(canvas.getByRole('button', { name: 'Fields' })).toHaveAttribute(
       'aria-expanded',
+      'false',
+    )
+    await expect(canvas.getByRole('button', { name: 'By region and quarter' })).toHaveAttribute(
+      'aria-pressed',
       'true',
     )
+    await expect(
+      canvas.getByText(/Sum of Amount, Count of Orders by Region \/ Product line/),
+    ).toBeVisible()
+  },
+}
+
+/** The Fields sheet open: the four zones and the unused fields, the grid behind it. */
+export const FieldsOpen: Story = {
+  name: 'Fields',
+  render: () => <Controlled defaultFieldsOpen />,
+  play: async ({ canvasElement }) => {
+    const sheet = await within(canvasElement.ownerDocument.body).findByRole('dialog', {
+      name: 'Fields',
+    })
+    await waitFor(async () => {
+      await expect(within(sheet).getByRole('heading', { name: 'Rows' })).toBeVisible()
+    })
+    const headings = within(sheet)
+      .getAllByRole('heading', { level: 3 })
+      .map((each) => each.textContent)
+    await expect(headings).toEqual(['Rows', 'Columns', 'Values', 'Filters', 'Available fields'])
   },
 }
 
 /** Every group open (`defaultExpanded`). */
 export const AllOpen: Story = {
+  tags: ['!dev'],
   name: 'All groups open',
   render: () => <Controlled defaultExpanded={['north', 'south', 'west']} />,
 }
 
 /** Every group closed: the regions and their subtotals only. */
 export const AllClosed: Story = {
+  tags: ['!dev'],
   name: 'All groups closed',
-  render: () => <Controlled defaultExpanded={[]} defaultFieldsOpen={false} />,
+  render: () => <Controlled defaultExpanded={[]} />,
   play: async ({ canvasElement }) => {
     await expect(within(canvasElement).queryByRole('rowheader', { name: 'Hardware' })).toBeNull()
   },
@@ -147,12 +178,14 @@ export const AllClosed: Story = {
 
 /** One figure across months: one header row, a percent-free money grid. */
 export const OneValue: Story = {
+  tags: ['!dev'],
   name: 'One value',
   render: () => <Controlled value={MONTH_LAYOUT} result={MONTH_RESULT} />,
 }
 
 /** A fixed layout: no chooser (no `onChange`), the figures still open their records. */
 export const FixedLayout: Story = {
+  tags: ['!dev'],
   name: 'Fixed layout',
   render: () => <Controlled fixed />,
   play: async ({ canvasElement }) => {
@@ -162,6 +195,7 @@ export const FixedLayout: Story = {
 
 /** Without drill-down or export: the figures are only read. */
 export const ReadOnly: Story = {
+  tags: ['!dev'],
   name: 'Read only',
 }
 
@@ -170,6 +204,7 @@ export const ReadOnly: Story = {
  * before Export.
  */
 export const ControlledState: Story = {
+  tags: ['!dev'],
   name: 'Controlled state',
   render: function Render() {
     const [expanded, setExpanded] = useState<string[]>(['south'])
@@ -203,12 +238,13 @@ export const ChooseAValue: Story = {
 
 /** The first result being computed. */
 export const Loading: Story = {
-  render: () => <Controlled result={null} loading defaultFieldsOpen={false} />,
+  render: () => <Controlled result={null} loading />,
 }
 
 /** A new result being computed: the old figures stay, "Updating…" at the end. */
 export const Updating: Story = {
-  render: () => <Controlled loading defaultFieldsOpen={false} />,
+  tags: ['!dev'],
+  render: () => <Controlled loading />,
 }
 
 export const Failed: Story = {
@@ -217,7 +253,6 @@ export const Failed: Story = {
       result={null}
       error="The figures could not be computed. The analysis service did not answer."
       onRetry={() => undefined}
-      defaultFieldsOpen={false}
     />
   ),
   play: async ({ canvasElement }) => {
@@ -227,6 +262,7 @@ export const Failed: Story = {
 
 /** The filters keep nothing the layout could show. */
 export const NoFigures: Story = {
+  tags: ['!dev'],
   name: 'No figures',
   render: () => (
     <Controlled
@@ -237,6 +273,7 @@ export const NoFigures: Story = {
 }
 
 export const LongText: Story = {
+  tags: ['!dev'],
   name: 'Long text',
   render: () => (
     <Controlled result={relabel(QUARTER_RESULT, LONG_LABELS)} fields={relabelFields(LONG_LABELS)} />
@@ -255,12 +292,13 @@ export const Phone: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('treegrid')).toBeVisible()
-    await expect(canvas.queryByRole('complementary', { name: 'Fields' })).toBeNull()
+    await expect(canvas.queryByRole('dialog', { name: 'Fields' })).toBeNull()
   },
 }
 
 /** The chooser in its sheet on a phone, as an application restores it. */
 export const PhoneFields: Story = {
+  tags: ['!dev'],
   name: 'Phone, fields',
   render: () => (
     <PhoneFrame>
@@ -279,6 +317,7 @@ export const PhoneFields: Story = {
 }
 
 export const Arabic: Story = {
+  tags: ['!dev'],
   render: () => (
     <StoryProvider locale="ar">
       <Controlled
@@ -291,6 +330,7 @@ export const Arabic: Story = {
 }
 
 export const Japanese: Story = {
+  tags: ['!dev'],
   render: () => (
     <StoryProvider locale="ja">
       <Controlled
@@ -305,8 +345,8 @@ export const Japanese: Story = {
 /** The keys: into a figure, Enter opens its records; on a group, Enter closes it; the ends. */
 export const Keyboard: Story = {
   name: 'Keyboard, interaction',
-  tags: ['interaction'],
-  render: () => <Controlled defaultFieldsOpen={false} />,
+  tags: ['interaction', '!dev'],
+  render: () => <Controlled />,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const grid = canvas.getByRole('treegrid')
@@ -347,41 +387,117 @@ export const Keyboard: Story = {
 /** The chooser by its menus: a field moved to Columns, a field added to Rows, one removed. */
 export const ChangeLayout: Story = {
   name: 'Change the layout, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => <Controlled />,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const body = within(document.body)
     const last = canvas.getByTestId('last')
-    await userEvent.click(canvas.getByRole('button', { name: 'Options: Product line' }))
-    await userEvent.click(await body.findByRole('menuitem', { name: 'Move to Columns' }))
-    await expect(last).toHaveTextContent('"rows":["region"],"columns":["quarter","line"]')
-    await userEvent.click(canvas.getByRole('button', { name: 'Add Month' }))
-    await userEvent.click(await body.findByRole('menuitem', { name: 'Add to Rows' }))
-    await expect(last).toHaveTextContent('"rows":["region","month"]')
-    await userEvent.click(canvas.getByRole('button', { name: 'Options: Month' }))
-    await userEvent.click(await body.findByRole('menuitem', { name: 'Move up' }))
-    await expect(last).toHaveTextContent('"rows":["month","region"]')
-    await userEvent.click(canvas.getByRole('button', { name: 'Options: Orders' }))
-    await userEvent.click(await body.findByRole('menuitem', { name: 'Remove' }))
-    await expect(last).toHaveTextContent('"values":[{"field":"amount","aggregation":"sum"}]')
-    await userEvent.click(canvas.getByRole('button', { name: 'Add Orders to Values' }))
-    await expect(last).toHaveTextContent('{"field":"orders","aggregation":"count"}')
-    // Collapse and expand every group; the chooser hides.
+    // One button opens or closes every group.
     await userEvent.click(canvas.getByRole('button', { name: 'Collapse all' }))
     await expect(canvas.queryByRole('rowheader', { name: 'Hardware' })).toBeNull()
     await userEvent.click(canvas.getByRole('button', { name: 'Expand all' }))
     await expect(canvas.getAllByRole('rowheader', { name: 'Hardware' })).toHaveLength(3)
+    // A suggested view reports its layout.
+    await userEvent.click(canvas.getByRole('button', { name: 'By region and month' }))
+    await expect(last).toHaveTextContent('"rows":["region"],"columns":["month"]')
+    await userEvent.click(canvas.getByRole('button', { name: 'By region and quarter' }))
     await userEvent.click(canvas.getByRole('button', { name: 'Fields' }))
-    await expect(canvas.queryByRole('complementary', { name: 'Fields' })).toBeNull()
+    const sheet = within(await body.findByRole('dialog', { name: 'Fields' }))
+    await userEvent.click(sheet.getByRole('button', { name: 'Options: Product line' }))
+    await userEvent.click(await body.findByRole('menuitem', { name: 'Move to Columns' }))
+    await expect(last).toHaveTextContent('"rows":["region"],"columns":["quarter","line"]')
+    await expect(sheet.getByRole('status')).toHaveTextContent(
+      'Product line in Columns, position 2 of 2',
+    )
+    await userEvent.click(sheet.getByRole('button', { name: 'Add Month' }))
+    await userEvent.click(await body.findByRole('menuitem', { name: 'Add to Rows' }))
+    await expect(last).toHaveTextContent('"rows":["region","month"]')
+    await userEvent.click(sheet.getByRole('button', { name: 'Options: Month' }))
+    await userEvent.click(await body.findByRole('menuitem', { name: 'Move up' }))
+    await expect(last).toHaveTextContent('"rows":["month","region"]')
+    await userEvent.click(sheet.getByRole('button', { name: 'Options: Orders' }))
+    await userEvent.click(await body.findByRole('menuitem', { name: 'Remove' }))
+    await expect(last).toHaveTextContent('"values":[{"field":"amount","aggregation":"sum"}]')
+    await userEvent.click(sheet.getByRole('button', { name: 'Add Orders to Values' }))
+    await expect(last).toHaveTextContent('{"field":"orders","aggregation":"count"}')
+    // The summary follows the layout; no view stands chosen for a layout of the user's own.
+    await expect(
+      canvas.getByText(/by Month \/ Region, across Quarter \/ Product line/),
+    ).toBeVisible()
+    await userEvent.click(sheet.getByRole('button', { name: 'Done' }))
+    await waitFor(async () => {
+      await expect(body.queryByRole('dialog', { name: 'Fields' })).toBeNull()
+    })
+    await expect(canvas.getByRole('button', { name: 'By region and quarter' })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    )
+  },
+}
+
+/**
+ * Dragging a chip (the dragging rule): Product line from Rows to Columns, then Salesperson out
+ * of the layout among the unused fields; each move reported and announced.
+ */
+export const DragFields: Story = {
+  name: 'Drag a field, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <Controlled defaultFieldsOpen />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const body = within(document.body)
+    const sheet = await body.findByRole('dialog', { name: 'Fields' })
+    const chip = (field: string) => {
+      const element = sheet.querySelector<HTMLElement>(`[data-drop-item="${field}"]`)
+      if (element === null) throw new Error(`no chip ${field}`)
+      return element
+    }
+    const zone = (name: string) => {
+      const element = sheet.querySelector<HTMLElement>(`[data-drop-zone="${name}"]`)
+      if (element === null) throw new Error(`no zone ${name}`)
+      return element
+    }
+    await waitFor(async () => {
+      await expect(within(sheet).getByRole('heading', { name: 'Rows' })).toBeVisible()
+    })
+    const drag = async (field: string, target: string) => {
+      const from = chip(field).querySelector('svg')?.getBoundingClientRect()
+      const to = zone(target).getBoundingClientRect()
+      if (from === undefined) throw new Error('no handle')
+      const start = { x: from.left + from.width / 2, y: from.top + from.height / 2 }
+      const end = { x: to.left + to.width / 2, y: to.bottom - 4 }
+      await userEvent.pointer([
+        {
+          keys: '[MouseLeft>]',
+          target: chip(field),
+          coords: { clientX: start.x, clientY: start.y },
+        },
+        { coords: { clientX: start.x + 6, clientY: start.y + 6 } },
+        { coords: { clientX: end.x, clientY: end.y } },
+        { keys: '[/MouseLeft]', coords: { clientX: end.x, clientY: end.y } },
+      ])
+    }
+    await drag('line', 'columns')
+    await expect(canvas.getByTestId('last')).toHaveTextContent(
+      '"rows":["region"],"columns":["quarter","line"]',
+    )
+    await expect(within(sheet).getByRole('status')).toHaveTextContent(
+      'Product line in Columns, position 2 of 2',
+    )
+    await drag('salesperson', 'available')
+    await expect(canvas.getByTestId('last')).toHaveTextContent('"filters":[]')
+    await expect(within(sheet).getByRole('status')).toHaveTextContent(
+      'Salesperson removed from the layout',
+    )
   },
 }
 
 /** Export: a menu of the application's formats; the choice is reported. */
 export const Export: Story = {
   name: 'Export, interaction',
-  tags: ['interaction'],
-  render: () => <Controlled defaultFieldsOpen={false} />,
+  tags: ['interaction', '!dev'],
+  render: () => <Controlled />,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await userEvent.click(canvas.getByRole('button', { name: 'Export' }))
@@ -395,7 +511,7 @@ export const Export: Story = {
 /** On a phone: Fields opens the sheet, Done closes it. */
 export const PhoneChooser: Story = {
   name: 'Phone, fields, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => (
     <PhoneFrame>
       <div className="p-4">

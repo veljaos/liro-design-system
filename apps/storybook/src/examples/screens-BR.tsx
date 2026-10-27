@@ -5,7 +5,6 @@ import {
   Drawer,
   MoneyText,
   PageHeader,
-  SelectField,
   Toaster,
   notice,
   useLiro,
@@ -32,7 +31,6 @@ import {
   COST_VIEWS,
   membersOf,
   resultFor,
-  viewOf,
   type AnalysisView,
   type CostDocument,
 } from './data-BR'
@@ -44,7 +42,8 @@ import { Frame, Tenant } from './screens-G'
  * accounts down, July–September across, the amount and the number of supplier invoices under each
  * month, the totals; the saved view "By supplier". A figure opens its invoices in an end Drawer
  * (DataTable: date, number, supplier, text, amount; the latest ten of the application's count).
- * The layout is the user's (the Pivot's chooser, or a saved view); the figures are the
+ * The application suggests its saved views as the Pivot's first row (P5.93 item 45: the user
+ * starts from one); the layout is the user's (a view, or the Fields sheet); the figures are the
  * application's for that layout (data-BR.ts) — this illustrative application has them for the
  * saved views only, so any other layout shows "No figures for this layout". Export is reported in
  * a toast; the application makes the file.
@@ -113,32 +112,6 @@ function recordsOf<Item extends object>(
 
 /** How many records the drawer shows: the latest ten. */
 const SHOWN = 10
-
-/** The saved views as a select in the pivot's toolbar; "Custom layout" when none matches. */
-function ViewSelect({
-  views,
-  layout,
-  onChoose,
-}: {
-  views: readonly AnalysisView[]
-  layout: PivotLayout
-  onChoose: (view: AnalysisView) => void
-}) {
-  return (
-    <SelectField
-      label="Saved view"
-      hideLabel
-      className="w-56"
-      placeholder="Custom layout"
-      options={views.map((view) => ({ value: view.id, label: view.label }))}
-      value={viewOf(views, layout)}
-      onChange={(id) => {
-        const view = views.find((each) => each.id === id)
-        if (view !== undefined) onChoose(view)
-      }}
-    />
-  )
-}
 
 /** A saved view's layout. */
 function layoutOf(views: readonly AnalysisView[], id: string): PivotLayout {
@@ -284,15 +257,7 @@ function CostAnalysisScreen({
             notice.success(`Cost analysis is being exported as ${name}.`)
           },
         }}
-        actions={
-          <ViewSelect
-            views={COST_VIEWS}
-            layout={layout}
-            onChoose={(each) => {
-              setLayout(each.layout)
-            }}
-          />
-        }
+        views={COST_VIEWS}
       />
       <CostDocuments
         cell={cell}

@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest'
 import { createFormat } from '../provider/format'
 import { LiroProvider } from '../provider/liro-provider'
 import { Pivot, type PivotProps } from './pivot'
+import { PivotFields } from './pivot-fields'
 import { EMPTY_PIVOT_LAYOUT } from './pivot-logic'
 import {
   FIELDS,
@@ -11,6 +12,7 @@ import {
   MONTH_RESULT,
   QUARTER_LAYOUT,
   QUARTER_RESULT,
+  VIEWS,
 } from './pivot-story-data'
 
 function render(node: ReactNode): string {
@@ -137,17 +139,51 @@ describe('Pivot states and actions', () => {
     )
   })
 
-  it('has no chooser without onChange, and the chooser beside the grid with it', () => {
-    const fixed = render(<Pivot {...fixedProps} />)
-    expect(fixed).not.toContain('aria-label="Fields"')
-    const open = render(<Pivot {...base} />)
-    expect(open).toMatch(/<aside[^>]*aria-label="Fields"/)
-    for (const area of ['Filters', 'Columns', 'Rows', 'Values', 'Available fields']) {
-      expect(open).toContain(`>${area}</h3>`)
-    }
-    expect(open).toContain('aria-label="Options: Product line"')
-    expect(open).toContain('aria-label="Add Month"')
-    expect(render(<Pivot {...base} defaultFieldsOpen={false} />)).not.toContain('<aside')
+  it('has no chooser without onChange; with it, a closed Fields button and no open sheet', () => {
+    const fixed = render(<Pivot {...fixedProps} views={VIEWS} />)
+    expect(fixed).not.toContain('>Fields<')
+    expect(fixed).not.toContain('Suggested views')
+    const closed = render(<Pivot {...base} />)
+    expect(closed).toMatch(/aria-haspopup="dialog" aria-expanded="false"[^>]*>.*Fields/s)
+    expect(closed).not.toContain('data-slot="pivot-fields"')
+  })
+
+  it('draws the four zones in order, Rows first, then the unused fields, as chips', () => {
+    const html = render(
+      <PivotFields fields={FIELDS} layout={QUARTER_LAYOUT} onChange={() => undefined} />,
+    )
+    const headings = [...html.matchAll(/<h3[^>]*>([^<]*)<\/h3>/g)].map((match) => match[1])
+    expect(headings).toEqual(['Rows', 'Columns', 'Values', 'Filters', 'Available fields'])
+    expect(html).toContain('data-drop-zone="rows"')
+    expect(html).toContain('data-drop-zone="available"')
+    expect(html).toContain('data-drop-item="line"')
+    expect(html).toContain('aria-label="Options: Product line"')
+    expect(html).toContain('aria-label="Add Month"')
+  })
+
+  it('offers the suggested views first, the current one pressed, and says the layout in words', () => {
+    const html = render(<Pivot {...base} views={VIEWS} />)
+    expect(html).toMatch(/aria-label="Suggested views"/)
+    expect(html).toMatch(/aria-pressed="true"[^>]*>.*By region and quarter/s)
+    expect(html).toContain(
+      'Sum of Amount, Count of Orders by Region / Product line, across Quarter',
+    )
+    const filtered = render(
+      <Pivot
+        {...base}
+        views={VIEWS}
+        value={{ ...QUARTER_LAYOUT, filters: [{ field: 'salesperson', values: ['ana'] }] }}
+      />,
+    )
+    expect(filtered).toContain('· Only Salesperson: Ana Petrović')
+    expect(filtered).not.toMatch(/aria-pressed="true"/)
+  })
+
+  it('has one Expand all / Collapse all button, by whether every group is open', () => {
+    expect(render(<Pivot {...base} />)).toContain('Collapse all')
+    const closed = render(<Pivot {...base} defaultExpanded={[]} />)
+    expect(closed).toContain('Expand all')
+    expect(closed).not.toContain('Collapse all')
   })
 
   it('exports by one button or by a menu of formats', () => {

@@ -93,8 +93,10 @@ export interface CartesianChartProps extends ChartStateProps {
   palette?: ChartPalette
   /** The plot's height in pixels. Default 240 (200 on phones). */
   height?: number
-  /** The application's header controls: a time-range select, a series toggle. */
+  /** The application's header controls: a time-range select. */
   controls?: ReactNode
+  /** The key figures as toggle buttons (a ChartSeriesToggle) at the header's end (P5.93 item 42). */
+  toggle?: ReactNode
   /** Default: shown for two or more series, and always with the categorical palette. */
   legend?: boolean
   /** The value axis. Default true. */
@@ -655,6 +657,7 @@ function Cartesian({
       title={props.title}
       {...(props.description === undefined ? {} : { description: props.description })}
       {...(props.controls === undefined ? {} : { controls: props.controls })}
+      {...(props.toggle === undefined ? {} : { toggle: props.toggle })}
       {...(props.className === undefined ? {} : { className: props.className })}
       {...(props.loading === undefined ? {} : { loading: props.loading })}
       {...(props.defaultView === undefined ? {} : { defaultView: props.defaultView })}
