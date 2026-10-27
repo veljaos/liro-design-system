@@ -847,7 +847,10 @@ export const PhoneScrollingTabsInteraction: Story = {
     // The wheel moves the row to its end; the end's chevron goes, the start's stays.
     await fireEvent.wheel(nav, { deltaY: 600 })
     await waitFor(async () => {
-      await expect(nav.scrollLeft).toBe(nav.scrollWidth - nav.clientWidth)
+      // scrollLeft runs negative in right-to-left: its size from the start counts.
+      await expect(
+        nav.scrollWidth - nav.clientWidth - Math.abs(nav.scrollLeft),
+      ).toBeLessThanOrEqual(1)
     })
     await waitFor(async () => {
       await expect(box.querySelector('[data-tab-row-edge="end"]')).toBeNull()
@@ -857,7 +860,7 @@ export const PhoneScrollingTabsInteraction: Story = {
     // The start's chevron pages the row back to the start.
     await userEvent.click(start)
     await waitFor(async () => {
-      await expect(nav.scrollLeft).toBe(0)
+      await expect(Math.abs(nav.scrollLeft)).toBeLessThanOrEqual(1)
     })
     await waitFor(async () => {
       await expect(box.querySelector('[data-tab-row-edge="end"]')).not.toBeNull()

@@ -294,11 +294,11 @@ export const Default: Story = {
     await expect(canvas.getByRole('button', { name: 'Book an appointment' })).toBeVisible()
     // The sections are centred, as AppShell's module tabs (P5.93 item 11).
     const list = nav.getByRole('list')
-    const first = list.firstElementChild?.getBoundingClientRect()
-    const last = list.lastElementChild?.getBoundingClientRect()
+    const items = [...list.children].map((item) => item.getBoundingClientRect())
     const box = list.getBoundingClientRect()
-    if (first === undefined || last === undefined) throw new Error('no sections')
-    await expect(Math.abs(first.left - box.left - (box.right - last.right))).toBeLessThanOrEqual(2)
+    const before = Math.min(...items.map((item) => item.left)) - box.left
+    const after = box.right - Math.max(...items.map((item) => item.right))
+    await expect(Math.abs(before - after)).toBeLessThanOrEqual(2)
     await expect(nav.getByRole('link', { name: 'Messages 2 new' })).toBeVisible()
     await expect(canvas.getByRole('button', { name: 'Account: Jovana Nikolić' })).toHaveTextContent(
       'Jovana Nikolić',
