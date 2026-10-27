@@ -1,4 +1,4 @@
-import { CircleAlert, Eye, EyeOff } from 'lucide-react'
+import { Eye, EyeOff } from 'lucide-react'
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import { ButtonPrimitive, LoadingButtonPrimitive } from '../primitives/button'
 import { TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
@@ -30,10 +30,13 @@ import { TextAreaField } from './text-field'
  * - Revealed: the value, and "Hide" (EyeOff), which hides it at once and calls `onHide` so the
  *   application can drop it; `hideAfter` hides it by itself after that many milliseconds. The
  *   focus that was on "Hide" goes back to "Show".
- * - `loading`: the value is on its way (a small Spinner and "Showing …"). `error` outside the
- *   dialog: the refusal in danger text beside the mask. `notAllowedReason`: "Show" is unavailable
- *   (aria-disabled, focusable) and the reason stands beside it in words. `readOnly`: only the
+ * - `loading`: the value is on its way (a small Spinner and "Showing …"). `readOnly`: only the
  *   mask, no action (a printout, a summary).
+ * - A refusal is not an error (owner, P5.93 item 10): `error` outside the dialog (refused) and
+ *   `notAllowedReason` ("Show" unavailable, aria-disabled and focusable) keep the value's shape —
+ *   in a KeyValueList row the label at the start, the mask and "Show" at the end — with one
+ *   neutral line of secondary text under the value, no red and no error icon. Inside the dialog
+ *   the refusal stays the application's danger Alert (the request the user just made failed).
  */
 
 /** A reason the application offers for seeing the value. */
@@ -82,14 +85,17 @@ export interface MaskedValueProps {
   hideAfter?: number
   /** The value is on its way (the application fetches it after the reason). */
   loading?: boolean
-  /** The application refused to show it, in its words: in the dialog, or beside the mask. */
+  /**
+   * The application refused to show it, in its words: a danger Alert in the dialog; outside it,
+   * a neutral line under the value (a refusal is not an error, P5.93).
+   */
   error?: ReactNode
   /**
    * What is recorded, after "Access is logged." (`messages['masked.loggedTitle']`).
    * Default: `messages['masked.logged']`.
    */
   logNote?: ReactNode
-  /** The user may not see the value, and why (shown in words beside the unavailable "Show"). */
+  /** The user may not see the value, and why (a neutral line under the value; "Show" unavailable). */
   notAllowedReason?: string
   /** Only the mask, without "Show" (a printout, a summary). */
   readOnly?: boolean
@@ -213,6 +219,15 @@ export function MaskedValue(props: MaskedValueProps) {
     </>
   )
 
+  // The line under the value: why it cannot be shown (P5.93 item 10), neutral, never red.
+  const refused = props.error !== undefined && props.error !== null && !asking && !shown
+  const note =
+    !shown && props.loading !== true && props.notAllowedReason !== undefined
+      ? messages['masked.notAllowed'](props.notAllowedReason)
+      : refused
+        ? props.error
+        : null
+
   let content: ReactNode
   if (shown) {
     content = (
@@ -254,7 +269,8 @@ export function MaskedValue(props: MaskedValueProps) {
               notAllowed && 'cursor-not-allowed text-disabled hover:bg-transparent',
             )}
             aria-label={messages['masked.showLabel'](named)}
-            {...(notAllowed ? { 'aria-disabled': true, 'aria-describedby': reasonId } : {})}
+            {...(notAllowed ? { 'aria-disabled': true } : {})}
+            {...(note === null ? {} : { 'aria-describedby': reasonId })}
             onClick={() => {
               if (!notAllowed) setOpen(true)
             }}
@@ -263,32 +279,30 @@ export function MaskedValue(props: MaskedValueProps) {
             <span className={TEXT_DIRECTION}>{messages['masked.show']}</span>
           </ButtonPrimitive>
         )}
-        {notAllowed && (
-          <span id={reasonId} className={cn('text-xs text-secondary', TEXT_DIRECTION)}>
-            {messages['masked.notAllowed'](props.notAllowedReason ?? '')}
-          </span>
-        )}
-        {props.error !== undefined && props.error !== null && !asking && (
-          <span className="inline-flex items-center gap-1 text-xs text-status-danger-fg">
-            <CircleAlert aria-hidden="true" className="size-3.5 shrink-0" />
-            <span className={TEXT_DIRECTION}>{props.error}</span>
-          </span>
-        )}
       </>
     )
   }
-
   return (
     <span
       ref={root}
       data-slot="masked-value"
       data-state={shown ? 'shown' : 'masked'}
-      className={cn(
-        'inline-flex min-w-0 max-w-full flex-wrap items-center gap-x-2 gap-y-1 font-sans text-sm',
-        props.className,
-      )}
+      // Inline-level parts: the row and the line under it follow the place's alignment (a
+      // KeyValueList row's value stands at the end).
+      className={cn('inline-block min-w-0 max-w-full font-sans text-sm', props.className)}
     >
-      {content}
+      <span className="inline-flex max-w-full flex-wrap items-center gap-x-2 gap-y-1 align-middle">
+        {content}
+      </span>
+      {note !== null && (
+        <span
+          id={reasonId}
+          data-slot="masked-note"
+          className={cn('block text-xs font-regular text-secondary', TEXT_DIRECTION)}
+        >
+          {note}
+        </span>
+      )}
       {props.readOnly !== true && props.notAllowedReason === undefined && (
         <Dialog
           open={asking}

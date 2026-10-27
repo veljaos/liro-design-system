@@ -60,8 +60,16 @@ describe('MaskedValue', () => {
     expect(readOnly).not.toContain('<button')
   })
 
-  it('shows a refusal beside the mask, and a loader while the value comes', () => {
-    expect(render(<MaskedValue label="Salary" error="Refused." />)).toContain('Refused.')
+  it('shows a refusal as a neutral line under the value, never red, and a loader', () => {
+    const refused = render(
+      <MaskedValue label="Salary" onReveal={() => undefined} error="Refused." />,
+    )
+    expect(refused).toMatch(/data-slot="masked-note" class="[^"]*text-secondary[^"]*">Refused\./)
+    expect(refused).not.toContain('text-status-danger-fg')
+    expect(refused).not.toContain('lucide-circle-alert')
+    expect(refused).toMatch(/aria-describedby="([^"]+)"[^>]*>/)
+    const notAllowed = render(<MaskedValue label="Salary" notAllowedReason="payroll staff only." />)
+    expect(notAllowed).toMatch(/data-slot="masked-note" class="[^"]*text-secondary/)
     expect(render(<MaskedValue label="Salary" loading />)).toContain('Showing Salary…')
   })
 })
