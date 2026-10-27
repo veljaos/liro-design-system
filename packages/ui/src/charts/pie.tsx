@@ -220,6 +220,8 @@ export function PieChart(props: PieChartProps) {
         fill={(sector.payload as { fill?: string } | undefined)?.fill ?? 'currentColor'}
         stroke="var(--liro-surface-raised)"
         strokeWidth={2}
+        // P5.93: round joins, so the separators meet evenly at the centre.
+        strokeLinejoin="round"
       />
     )
   }
@@ -292,6 +294,7 @@ export function PieChart(props: PieChartProps) {
               outerRadius={outer}
               stroke="var(--liro-surface-raised)"
               strokeWidth={2}
+              strokeLinejoin="round"
               labelLine={false}
               shape={shape}
               {...(labels === 'outside'
@@ -310,6 +313,7 @@ export function PieChart(props: PieChartProps) {
                 outerRadius="80%"
                 stroke="var(--liro-surface-raised)"
                 strokeWidth={2}
+                strokeLinejoin="round"
                 labelLine={false}
                 {...motion}
               />
