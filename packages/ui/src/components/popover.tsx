@@ -1,4 +1,12 @@
-import { useRef, useState, type FocusEvent, type ReactElement, type ReactNode } from 'react'
+import {
+  createContext,
+  useContext,
+  useRef,
+  useState,
+  type FocusEvent,
+  type ReactElement,
+  type ReactNode,
+} from 'react'
 import { Slot } from 'radix-ui'
 import { Popover as PopoverRoot, PopoverContent, PopoverTrigger } from '../primitives/popover'
 import {
@@ -105,23 +113,36 @@ export function Tooltip({
           setOpen(next)
         }}
       >
-        <TooltipTrigger
-          asChild
-          {...trigger}
-          onFocus={(event: FocusEvent<HTMLElement>) => {
-            onFocus?.(event)
-            focusing.current = true
-            queueMicrotask(() => {
-              focusing.current = false
-            })
-          }}
-        >
-          {children}
-        </TooltipTrigger>
+        <InTooltip value={true}>
+          <TooltipTrigger
+            asChild
+            {...trigger}
+            onFocus={(event: FocusEvent<HTMLElement>) => {
+              onFocus?.(event)
+              focusing.current = true
+              queueMicrotask(() => {
+                focusing.current = false
+              })
+            }}
+          >
+            {children}
+          </TooltipTrigger>
+        </InTooltip>
         <TooltipContent side={physicalSide(side, direction)}>{label}</TooltipContent>
       </TooltipRoot>
     </TooltipProvider>
   )
+}
+
+/**
+ * True inside a tooltip's target: an IconButton given its own Tooltip by the application draws
+ * no second one of its own (P5.93 item 7). Internal.
+ */
+const InTooltip = createContext(false)
+
+/** Whether a target already has an application's tooltip around it. Internal. */
+export function useInTooltip(): boolean {
+  return useContext(InTooltip)
 }
 
 /** How the user last acted: a focus opens a tooltip only after a key (P5.93 item 7). */

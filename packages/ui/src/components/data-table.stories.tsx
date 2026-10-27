@@ -612,8 +612,12 @@ export const ResizableColumnsInteraction: Story = {
     await waitFor(() => expect(canvas.getByTestId('widths')).toHaveTextContent('Customer: 190px'))
 
     await userEvent.click(handle)
-    await userEvent.click(await body.findByRole('button', { name: 'Narrower: Customer' }))
+    const narrower = await body.findByRole('button', { name: 'Narrower: Customer' })
+    await userEvent.click(narrower)
     await expect(handle).toHaveAttribute('aria-valuenow', '150')
+    // The pointer leaves the button, so its tooltip is not the layer Escape closes first.
+    await userEvent.unhover(narrower)
+    await waitFor(() => expect(body.queryByRole('tooltip')).toBeNull())
     await userEvent.keyboard('{Escape}')
     await waitFor(() => expect(handle).toHaveFocus())
     // End without focus: whether a returned focus counts as keyboard focus (:focus-visible) varies

@@ -2,7 +2,7 @@ import type { MouseEventHandler } from 'react'
 import { BUTTON_SHAPES, buttonClassName, type ButtonShape } from '../primitives/button'
 import { TEXT_DIRECTION } from '../primitives/classes'
 import { INTENTS, type Emphasis, type Family, type IconComponent, type Intent } from './intents'
-import { Tooltip } from './popover'
+import { Tooltip, useInTooltip } from './popover'
 
 /*
  * The look (colours by family and emphasis, the Mantine sizes of each shape) lives in
@@ -149,14 +149,14 @@ export function Button(props: ButtonProps) {
  */
 export function IconButton(props: IconButtonProps) {
   const { icon, attributes } = buttonParts(props, 'icon')
-  // The library's tooltip names it on hover and focus, never the browser's title (P5.93 item 7).
-  return (
-    <Tooltip label={props.label}>
-      <button {...attributes} aria-label={props.label}>
-        {icon}
-      </button>
-    </Tooltip>
+  const button = (
+    <button {...attributes} aria-label={props.label}>
+      {icon}
+    </button>
   )
+  // The library's tooltip names it on hover and focus, never the browser's title (P5.93 item 7);
+  // inside the application's own Tooltip, that one alone.
+  return useInTooltip() ? button : <Tooltip label={props.label}>{button}</Tooltip>
 }
 
 /**
@@ -165,12 +165,12 @@ export function IconButton(props: IconButtonProps) {
  */
 export function CompactIconButton(props: CompactIconButtonProps) {
   const { icon, attributes } = buttonParts(props, 'compact')
-  // The library's tooltip names it on hover and focus, never the browser's title (P5.93 item 7).
-  return (
-    <Tooltip label={props.label}>
-      <button {...attributes} aria-label={props.label}>
-        {icon}
-      </button>
-    </Tooltip>
+  const button = (
+    <button {...attributes} aria-label={props.label}>
+      {icon}
+    </button>
   )
+  // The library's tooltip names it on hover and focus, never the browser's title (P5.93 item 7);
+  // inside the application's own Tooltip, that one alone.
+  return useInTooltip() ? button : <Tooltip label={props.label}>{button}</Tooltip>
 }
