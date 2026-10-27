@@ -195,7 +195,9 @@ export const InACardWithControl: Story = {
                   />
                 ) : (
                   // A file that cannot be sent says why instead of a dead checkbox (P5.93).
-                  <span className="text-xs text-secondary">SEF accepts PDF attachments only.</span>
+                  <span className="text-xs text-secondary bidi-content">
+                    SEF accepts PDF attachments only.
+                  </span>
                 )
               }
             />
