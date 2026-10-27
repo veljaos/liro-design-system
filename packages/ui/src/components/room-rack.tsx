@@ -1,4 +1,13 @@
-import { Circle, CircleCheck, CircleX, Info, Search, Star, TriangleAlert } from 'lucide-react'
+import {
+  Circle,
+  CircleCheck,
+  CircleX,
+  Info,
+  Search,
+  Star,
+  StickyNote,
+  TriangleAlert,
+} from 'lucide-react'
 import { useId, useLayoutEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
 import { BUTTON_RESET, FOCUS_RING, TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
 import { cn } from '../primitives/cn'
@@ -266,14 +275,25 @@ export function RoomRack(props: RoomRackProps) {
 
   const notesOf = (room: RackRoom, small: boolean) =>
     room.notes !== undefined && room.notes.length > 0 ? (
-      <span className="flex flex-wrap gap-1">
+      <span className="flex min-w-0 flex-col gap-0.5">
         {room.notes.map((note, index) =>
           small ? (
             <span key={index} className="sr-only">
               {note.label}
             </span>
           ) : (
-            <StatusBadge key={index} label={note.label} tone={note.tone ?? 'neutral'} withBorder />
+            // P5.93: a note is a state line like housekeeping (icon and words in its tone),
+            // wrapping inside the tile's padding — never a badge wider than the tile.
+            <span
+              key={index}
+              className={cn(
+                'flex min-w-0 items-start gap-1 text-xs font-medium',
+                toneClasses(note.tone ?? 'neutral').fg,
+              )}
+            >
+              <StickyNote aria-hidden="true" className="mt-px size-3.5 shrink-0" />
+              <span className={cn('min-w-0 break-words', TEXT_DIRECTION)}>{note.label}</span>
+            </span>
           ),
         )}
       </span>
