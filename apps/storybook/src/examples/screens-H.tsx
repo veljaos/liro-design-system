@@ -247,7 +247,7 @@ export function Booking({
                         }}
                         className={`m-0 inline-flex min-h-6 cursor-pointer items-center border-0 bg-transparent p-0 font-sans text-sm ${LINK}`}
                       >
-                        Another doctor…
+                        <span className="bidi-content">Another doctor…</span>
                       </button>
                     </p>
                   ))}
