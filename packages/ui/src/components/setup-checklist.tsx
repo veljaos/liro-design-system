@@ -1,5 +1,5 @@
-import { ArrowRight, Check, Lock } from 'lucide-react'
-import { useId, type ReactNode } from 'react'
+import { ArrowRight, Check, ChevronDown, CircleCheck, Lock } from 'lucide-react'
+import { useId, useState, type ReactNode } from 'react'
 import { ButtonPrimitive } from '../primitives/button'
 import { FOCUS_RING, TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
@@ -27,6 +27,9 @@ import { ProgressBar } from './progress'
  *   main button; other open steps show their action as a small neutral button; a blocked step
  *   has none (its reason says what it waits for); a done step may offer a small "Change".
  * - Actions are links (`href`, through the provider's `linkComponent`) or buttons (`onClick`).
+ * - All done (P5.93): the header says so in the success tone ("Setup complete" after a
+ *   CircleCheck) instead of the progress; the steps fold under "Show steps"; done steps' markers
+ *   are success-toned and no step offers its action again (`completeActions` keeps them).
  */
 
 /** A step's action: a link to the page that does it, or a button. */
@@ -60,6 +63,10 @@ export interface SetupChecklistProps {
   headingLevel?: 2 | 3 | 4
   /** Skeleton rows while the steps load. */
   loading?: boolean
+  /** All done: the steps start open (default folded under "Show steps"). */
+  defaultStepsOpen?: boolean
+  /** All done: done steps still offer their action ("Change"). Default false. */
+  completeActions?: boolean
   className?: string
 }
 
@@ -69,7 +76,13 @@ function Marker({ step, number }: { step: SetupStep; number: string }) {
     'box-border flex size-6 shrink-0 items-center justify-center rounded-full border border-solid text-xs font-semibold tabular-nums'
   if (step.state === 'done') {
     return (
-      <span aria-hidden="true" className={cn(base, 'border-strong bg-surface-sunken text-primary')}>
+      <span
+        aria-hidden="true"
+        className={cn(
+          base,
+          'border-status-success-border bg-status-success-bg text-status-success-fg',
+        )}
+      >
         <Check className="size-3.5" />
       </span>
     )
@@ -133,6 +146,10 @@ export function SetupChecklist(props: SetupChecklistProps) {
   const Heading = `h${String(props.headingLevel ?? 2)}` as 'h2'
   const progress = setupProgress(props.steps)
   const resume = resumeStep(props.steps)
+  const complete = progress.total > 0 && progress.done === progress.total
+  const [stepsOpen, setStepsOpen] = useState(props.defaultStepsOpen === true)
+  const stepsId = useId()
+  const showSteps = !complete || stepsOpen
   const progressText = messages['setup.progress'](
     progress.done,
     format.number(String(progress.done)),
@@ -161,7 +178,37 @@ export function SetupChecklist(props: SetupChecklistProps) {
         {props.description !== undefined && (
           <p className={cn('m-0 text-sm text-secondary', TEXT_DIRECTION)}>{props.description}</p>
         )}
-        {props.loading !== true && (
+        {props.loading !== true && complete && (
+          <div className="mt-2 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+            <p
+              role="status"
+              className="m-0 flex items-center gap-2 text-sm font-semibold text-status-success-fg"
+            >
+              <CircleCheck aria-hidden="true" className="size-4.5 shrink-0" />
+              <span className={TEXT_DIRECTION}>{messages['setup.complete']}</span>
+              <span className="sr-only">{` (${progressText})`}</span>
+            </p>
+            <ButtonPrimitive
+              family="neutral"
+              emphasis="secondary"
+              aria-expanded={stepsOpen}
+              {...(stepsOpen ? { 'aria-controls': stepsId } : {})}
+              onClick={() => {
+                setStepsOpen((open) => !open)
+              }}
+              className="min-h-control-sm gap-2 px-3 text-xs"
+            >
+              <span className={TEXT_DIRECTION}>
+                {stepsOpen ? messages['setup.hideSteps'] : messages['setup.showSteps']}
+              </span>
+              <ChevronDown
+                aria-hidden="true"
+                className={cn('size-3.5 shrink-0 transition-transform', stepsOpen && 'rotate-180')}
+              />
+            </ButtonPrimitive>
+          </div>
+        )}
+        {props.loading !== true && !complete && (
           <div className="mt-2 flex items-center gap-3">
             <ProgressBar
               label={progressText}
@@ -184,8 +231,8 @@ export function SetupChecklist(props: SetupChecklistProps) {
             <Skeleton key={index} className="h-12" />
           ))}
         </div>
-      ) : (
-        <ol className="m-0 list-none border-0 border-t border-solid border-subtle p-0">
+      ) : !showSteps ? null : (
+        <ol id={stepsId} className="m-0 list-none border-0 border-t border-solid border-subtle p-0">
           {props.steps.map((step, index) => {
             const highlighted = step.id === resume
             const number = format.number(String(index + 1))
@@ -222,11 +269,13 @@ export function SetupChecklist(props: SetupChecklistProps) {
                       {step.blockedReason}
                     </span>
                   )}
-                  {step.action !== undefined && step.state !== 'blocked' && (
-                    <div className="mt-2 flex">
-                      <StepAction action={step.action} main={highlighted} />
-                    </div>
-                  )}
+                  {step.action !== undefined &&
+                    step.state !== 'blocked' &&
+                    (!complete || props.completeActions === true) && (
+                      <div className="mt-2 flex">
+                        <StepAction action={step.action} main={highlighted} />
+                      </div>
+                    )}
                 </div>
               </li>
             )

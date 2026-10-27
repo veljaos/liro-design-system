@@ -559,6 +559,10 @@ export interface LiroMessages {
   'setup.next': string
   'setup.todo': string
   'setup.blocked': string
+  /** All steps done (P5.93). */
+  'setup.complete': string
+  'setup.showSteps': string
+  'setup.hideSteps': string
   /** SignerList (P5.21): "1 of 3 signed"; numbers already written by `format.number`. */
   'signing.summary': (
     signed: number,

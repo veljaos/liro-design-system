@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { expect, within } from 'storybook/test'
+import { expect, userEvent, within } from 'storybook/test'
 import { settle } from '../primitives/story-helpers'
 import { SETUP_STEPS } from './group-c-story-data'
-import { SetupChecklist } from './setup-checklist'
+import { SetupChecklist, type SetupStep } from './setup-checklist'
 import { ExampleProvider, PhoneFrame, StoryProvider } from './story-frames'
 
 const meta = {
@@ -72,20 +72,44 @@ export const Current: Story = {
   },
 }
 
-/** Every step done. */
+const ALL_DONE: SetupStep[] = SETUP_STEPS.map((step) => ({
+  ...step,
+  state: 'done',
+  doneNote: step.doneNote ?? 'Completed by Milica Petrović',
+}))
+
+/** Every step done: "Setup complete" in the success tone, the steps folded under "Show steps". */
 export const AllDone: Story = {
   name: 'All done',
-  args: {
-    steps: SETUP_STEPS.map((step) => ({
-      ...step,
-      state: 'done',
-      doneNote: step.doneNote ?? 'Completed by Milica Petrović',
-    })),
-  },
+  args: { steps: ALL_DONE },
   play: async ({ canvasElement }) => {
     await settle()
-    await expect(canvasElement).toHaveTextContent('5 of 5 done')
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('status')).toHaveTextContent('Setup complete')
+    await expect(canvasElement.querySelector('ol')).toBeNull()
+    await expect(canvas.getByRole('button', { name: 'Show steps' })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    )
+  },
+}
+
+/** All done, the steps opened: success-toned checks, no action offered again. */
+export const AllDoneOpen: Story = {
+  name: 'All done, steps shown, interaction',
+  tags: ['interaction', '!dev'],
+  args: { steps: ALL_DONE },
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Show steps' }))
+    await expect(canvas.getByRole('button', { name: 'Hide steps' })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    )
+    await expect(canvas.getAllByRole('listitem')).toHaveLength(5)
     await expect(canvasElement.querySelector('[aria-current="step"]')).toBeNull()
+    await expect(canvas.queryByRole('link')).toBeNull()
   },
 }
 

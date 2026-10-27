@@ -337,6 +337,9 @@ export const messagesEn: LiroMessages = {
   'setup.next': 'Next step',
   'setup.todo': 'To do',
   'setup.blocked': 'Blocked',
+  'setup.complete': 'Setup complete',
+  'setup.showSteps': 'Show steps',
+  'setup.hideSteps': 'Hide steps',
   'signing.summary': (_signed, signedText, _total, totalText) =>
     `${signedText} of ${totalText} signed`,
   'signing.waiting': 'Waiting',
