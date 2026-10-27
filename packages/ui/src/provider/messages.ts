@@ -1263,6 +1263,12 @@ export interface LiroMessages {
   'quantity.increase': string
   'quantity.belowMin': (minText: string) => string
   'quantity.aboveMax': (maxText: string) => string
+  /**
+   * Why + (or −) cannot be used (P5.93 item 39): the limit, and the application's reason when it
+   * gives one ("Maximum 6 — the quantity on the order").
+   */
+  'quantity.atMax': (maxText: string, reason?: string) => string
+  'quantity.atMin': (minText: string, reason?: string) => string
   /** PickList and StockCount: changes kept on the device while offline. */
   'queue.waiting': (count: number, countText: string) => string
   /** PickList: progress, the current line and its steps, skipping, the route and its states. */
@@ -2400,7 +2406,6 @@ export interface LiroMessages {
   'rule.operator': string
   'rule.value': string
   'rule.action': string
-  'rule.fieldFirst': string
   'rule.addCondition': string
   'rule.addGroup': string
   'rule.addToGroup': string

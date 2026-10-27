@@ -123,23 +123,23 @@ export const ApplicationErrors: Story = {
   },
 }
 
-/** Read-only: a numbered or sent document's data as text, without required marks. */
+/** Read only: a numbered or sent document's data in the read-only look, without required marks. */
 export const ReadOnly: Story = {
-  name: 'Read-only',
+  name: 'Read only',
   args: { defaultValues: FILLED, readOnly: true },
 }
 
 /**
- * A field the application filled in (read-only), one disabled with its reason, and a folded
- * section of rarely used fields.
+ * Fields the application filled in or the user may not change (read only), and a folded section
+ * of rarely used fields.
  */
-export const DisabledAndCollapsible: Story = {
-  name: 'Disabled with reason, read-only field, collapsible section',
+export const ReadOnlyFieldsAndCollapsible: Story = {
+  name: 'Read-only fields, collapsible section',
   args: { sections: WITH_EXTRAS, defaultValues: { number: 'REQ-2026-0141' } },
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
-    await expect(canvas.getByText('Set by the team; ask the team lead to change it.')).toBeVisible()
+    await expect(canvas.getByRole('textbox', { name: 'Cost centre' })).toHaveAttribute('readonly')
     await expect(canvas.getByRole('button', { name: 'More details' })).toHaveAttribute(
       'aria-expanded',
       'false',

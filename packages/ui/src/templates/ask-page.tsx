@@ -29,7 +29,7 @@ export interface AskPageProps {
   description?: ReactNode
   /** Asks a question (typed, suggested, recent or a follow-up). */
   onAsk: (question: string) => void
-  /** The question box's other props (placeholder, value, busy, disabled with its reason). */
+  /** The question box's other props (placeholder, value, busy, unavailable with its reason). */
   composer?: Omit<AssistantComposerProps, 'onAsk' | 'size'>
   /** Questions to start with. */
   suggestions?: readonly string[]

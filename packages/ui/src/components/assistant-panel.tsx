@@ -58,7 +58,7 @@ export interface AssistantPanelProps {
   suggestions?: readonly string[]
   /** Asks a question (typed, suggested or a follow-up the application forwards). */
   onAsk: (question: string) => void
-  /** The question box's other props (placeholder, busy, disabled with its reason, value). */
+  /** The question box's other props (placeholder, busy, unavailable with its reason, value). */
   composer?: Omit<AssistantComposerProps, 'onAsk' | 'size'>
   /** A line under the question box, from the application. */
   note?: ReactNode

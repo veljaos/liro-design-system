@@ -34,19 +34,13 @@ export const Default: Story = {
   },
 }
 
-/** Off, required with an error, read-only next to disabled. */
+/** Off, required with an error, read only (the read-only look, an empty value "—"). */
 export const States: Story = {
   render: () => (
     <div className="flex max-w-100 flex-col gap-6">
       <SwitchField label="Two-step sign-in" />
       <SwitchField label="Share with the accountant" required error="Required by your plan" />
       <SwitchField label="Audit log (read-only)" readOnly defaultChecked />
-      <SwitchField
-        label="Audit log (disabled)"
-        disabled
-        disabledReason="Always on for companies in VAT."
-        defaultChecked
-      />
     </div>
   ),
 }
@@ -64,7 +58,6 @@ export const Arabic: Story = {
   render: () => (
     <div lang="ar" dir="rtl" className="flex max-w-100 flex-col gap-6">
       <SwitchField label={ARABIC.label} description={ARABIC.description} defaultChecked />
-      <SwitchField label={ARABIC.label} disabled disabledReason={ARABIC.reason} />
     </div>
   ),
 }
@@ -73,7 +66,6 @@ export const Japanese: Story = {
   render: () => (
     <div lang="ja" className="flex max-w-100 flex-col gap-6">
       <SwitchField label={JAPANESE.label} description={JAPANESE.description} defaultChecked />
-      <SwitchField label={JAPANESE.label} disabled disabledReason={JAPANESE.reason} />
     </div>
   ),
 }

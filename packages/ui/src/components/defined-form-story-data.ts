@@ -192,7 +192,7 @@ export const WITH_EXTRAS: DefinedSection[] = [
         id: 'costCentre',
         type: 'select',
         label: 'Cost centre',
-        disabledReason: 'Set by the team; ask the team lead to change it.',
+        readOnly: true,
         options: [{ value: 'cc-10', label: 'CC-10 Design' }],
       },
     ],

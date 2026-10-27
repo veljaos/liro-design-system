@@ -132,7 +132,7 @@ export const Keyboard: Story = {
   },
 }
 
-/** Empty, required, error, read-only next to disabled. */
+/** Empty, required, error, read only (the read-only look, an empty value "—"). */
 export const States: Story = {
   render: () => (
     <div className="flex max-w-100 flex-col gap-6">
@@ -144,12 +144,6 @@ export const States: Story = {
         error="December 2025 is closed; choose an open month."
       />
       <MonthField label="Accounting period (read-only)" readOnly defaultValue="2026-09" />
-      <MonthField
-        label="Accounting period (disabled)"
-        disabled
-        disabledReason="The entry is posted."
-        defaultValue="2026-09"
-      />
     </div>
   ),
 }
@@ -172,12 +166,6 @@ export const Arabic: Story = {
       <MonthField label={ARABIC.label} description={ARABIC.description} defaultValue="2026-09" />
       <MonthField label={ARABIC.label} required error={ARABIC.error} />
       <MonthField label={ARABIC.label} readOnly defaultValue="2026-09" />
-      <MonthField
-        label={ARABIC.label}
-        disabled
-        disabledReason={ARABIC.reason}
-        defaultValue="2026-09"
-      />
     </div>
   ),
 }
@@ -193,12 +181,6 @@ export const Japanese: Story = {
       />
       <MonthField label={JAPANESE.label} required error={JAPANESE.error} />
       <MonthField label={JAPANESE.label} readOnly defaultValue="2026-09" />
-      <MonthField
-        label={JAPANESE.label}
-        disabled
-        disabledReason={JAPANESE.reason}
-        defaultValue="2026-09"
-      />
     </div>
   ),
 }

@@ -65,7 +65,8 @@ export type {
  *   that cannot be read keeps the field's own message and blocks `check()` too.
  * - **The application's own checks** come back as `errors` by field id and are shown under their
  *   fields, before a missing value's words.
- * - `readOnly` shows the whole form as text (a document numbered or sent for signature).
+ * - `readOnly` shows the whole form read-only (a document numbered or sent for signature): every
+ *   field in the read-only look, no hints, no required marks (P5.93).
  * - `lang`: the language of the definitions' texts when it is not the page's ("sr-Latn" on an
  *   English page): labels, hints, section titles and every option carry it (D15), select and
  *   multiselect options through their `lang`.
@@ -233,9 +234,6 @@ export function DefinedForm({ ref, ...props }: DefinedFormProps) {
               ...(error === undefined ? {} : { error }),
               required: required && !readOnly,
               readOnly,
-              ...(field.disabledReason === undefined || readOnly
-                ? {}
-                : { disabled: true, disabledReason: field.disabledReason }),
             }
             const hint = field.placeholder === undefined ? {} : { placeholder: field.placeholder }
             const set = (next: DefinedValue) => {

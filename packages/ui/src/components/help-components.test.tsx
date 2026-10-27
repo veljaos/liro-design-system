@@ -46,20 +46,21 @@ describe('SatisfactionRating', () => {
     expect(html).toContain('aria-checked="true"')
   })
 
-  it('leaves the comment out and shows a disabled reason', () => {
+  it('leaves the comment out and, unavailable, shows the scale read-only and why', () => {
     const html = render(
       <SatisfactionRating
         question="How did we do?"
         options={SCALE}
         comment={false}
-        disabled
-        disabledReason="Rating closed after 14 days."
+        unavailableReason="Rating closed after 14 days."
         onSubmit={noop}
       />,
     )
     expect(html).not.toContain('Comment (optional)')
     expect(html).toContain('Rating closed after 14 days.')
-    expect(html).toContain('disabled=""')
+    expect(html).toContain('aria-readonly="true"')
+    expect(html).toContain('data-readonly=""')
+    expect(html).toMatch(/aria-describedby="[^"]*-reason"[^>]*disabled=""/)
   })
 
   it('thanks with the answer in words once sent', () => {

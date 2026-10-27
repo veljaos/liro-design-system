@@ -752,15 +752,19 @@ function SeatAtDialog({
             }
           })}
         />
-        <SelectField
-          label={messages['seating.seat']}
-          value={seatValue}
-          onChange={setSeatValue}
-          {...(free.length === 0
-            ? { disabled: true, disabledReason: messages['seating.tableFull'] }
-            : {})}
-          options={free.map((each) => ({ value: String(each), label: number(each) }))}
-        />
+        {/* A full table has no seat to choose: it says so instead of a dead field (P5.93). */}
+        {free.length === 0 ? (
+          <p className={cn('m-0 text-sm text-secondary', TEXT_DIRECTION)}>
+            {messages['seating.tableFull']}
+          </p>
+        ) : (
+          <SelectField
+            label={messages['seating.seat']}
+            value={seatValue}
+            onChange={setSeatValue}
+            options={free.map((each) => ({ value: String(each), label: number(each) }))}
+          />
+        )}
       </div>
     </Dialog>
   )

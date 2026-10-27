@@ -34,18 +34,21 @@ export interface TextFieldProps extends FieldBaseProps, TextValueProps {
   direction?: 'auto' | 'ltr'
 }
 
-function valueProps(props: TextValueProps) {
+function valueProps(props: TextValueProps & { readOnly?: boolean }) {
   return {
     ...(props.value === undefined ? {} : { value: props.value }),
     ...(props.defaultValue === undefined ? {} : { defaultValue: props.defaultValue }),
     ...(props.onBlur === undefined ? {} : { onBlur: props.onBlur }),
-    ...(props.placeholder === undefined ? {} : { placeholder: props.placeholder }),
+    // Read-only shows "—" for an empty value, never the application's placeholder (P5.93).
+    ...(props.placeholder === undefined || props.readOnly === true
+      ? {}
+      : { placeholder: props.placeholder }),
     ...(props.name === undefined ? {} : { name: props.name }),
   }
 }
 
 /**
- * A single-line text field: label, the input, description, error, read-only and disabled states.
+ * A single-line text field: label, the input, description, error and the read-only state.
  * The value is plain text; paste is always allowed.
  */
 export function TextField(props: TextFieldProps) {

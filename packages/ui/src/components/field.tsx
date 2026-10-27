@@ -1,12 +1,12 @@
 import { CircleAlert } from 'lucide-react'
 import { createContext, useContext, useId, type ReactNode } from 'react'
-import { TEXT_DIRECTION } from '../primitives/classes'
+import { INPUT, READ_ONLY, TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 
 /*
  * The frame of every field (BUILD-PLAN P2.2): label, the control, and under it the optional
- * description, then the error or the reason it is disabled. Mantine 9.6.2 Input.Wrapper (Input.css, InputWrapper):
+ * description, then the error. Mantine 9.6.2 Input.Wrapper (Input.css, InputWrapper):
  * label 13px weight 600; description and error at the label size minus 2px (12px here, the
  * smallest A.5 size) with line height 1.2 (A.5 tight, 1.25, here); the control 5px (10 / 2) above
  * an error. The required mark is Mantine's " *" in the error colour.
@@ -19,11 +19,16 @@ import { useLiro } from '../provider/liro-provider'
  * - Error: the message sits under the field in status.danger.fg with an icon, the control's border
  *   takes the same colour, the control is aria-invalid and the message is linked with
  *   aria-describedby. Colour is never the only signal.
- * - Read-only is plain text in the full text colour, without border or background, at the same
- *   height and padding as an editable control; selectable, copyable and announced as read-only.
- *   It is not disabled.
- * - Disabled shows its reason, when given, as visible text under the control.
+ * - One state for a field that cannot be changed: read-only (owner, P5.93 item 1; fields have no
+ *   disabled state). It looks like the old disabled field — the grey surface.disabled background
+ *   and a drawn border.default — but the value stays in the full text colour: readable,
+ *   selectable, copyable, focusable and announced as read-only (native `readonly`, or
+ *   `aria-readonly` where the role takes it). No hint and no placeholder in read-only; an empty
+ *   value shows "—" (READ_ONLY_EMPTY). The error, when the application gives one, still shows.
  */
+
+/** What a read-only field shows for an empty value (P5.93 item 1). */
+export const READ_ONLY_EMPTY = '—'
 
 /** What every field takes, besides its value. */
 export interface FieldBaseProps {
@@ -35,12 +40,12 @@ export interface FieldBaseProps {
   error?: ReactNode
   /** Marks the field with " *" and as required for assistive technology. */
   required?: boolean
-  /** Shows the value as text that can be selected and copied, not changed. Not disabled. */
+  /**
+   * The value cannot be changed here: the field is drawn grey with a border, the value stays
+   * readable, selectable and focusable; no hint, no placeholder, an empty value shows "—". The
+   * one non-editable state of a field (there is no disabled field, P5.93).
+   */
   readOnly?: boolean
-  /** The field cannot be used. Give `disabledReason` so the user sees why. */
-  disabled?: boolean
-  /** Why the field is disabled, shown as text under it. */
-  disabledReason?: ReactNode
   /** The control's id. Default: generated. */
   id?: string
   /**
@@ -62,12 +67,11 @@ export interface FieldControl {
   id: string
   /** The id of the label element. */
   labelId: string
-  /** The description, error and disabled reason, for the control's aria-describedby. */
+  /** The description and the error, for the control's aria-describedby. */
   describedBy: string | undefined
   invalid: boolean
   required: boolean
   readOnly: boolean
-  disabled: boolean
 }
 
 export interface FieldProps extends FieldBaseProps {
@@ -122,29 +126,24 @@ export function useFieldIds(props: FieldBaseProps) {
   const generated = useId()
   const id = props.id ?? `field-${generated}`
   const hasError = props.error !== undefined && props.error !== null && props.error !== false
-  const hasDescription = props.description !== undefined && props.description !== null
-  const showReason =
-    props.disabled === true &&
-    !hasError &&
-    props.disabledReason !== undefined &&
-    props.disabledReason !== null
+  // No hint in read-only (P5.93 item 1): there is nothing to fill in.
+  const hasDescription =
+    props.readOnly !== true && props.description !== undefined && props.description !== null
   const ids = {
     id,
     labelId: `${id}-label`,
     descriptionId: `${id}-description`,
     errorId: `${id}-error`,
-    reasonId: `${id}-reason`,
   }
   const describedBy =
     [
       hasDescription ? ids.descriptionId : null,
       hasError ? ids.errorId : null,
-      showReason ? ids.reasonId : null,
       props.describedBy ?? null,
     ]
       .filter((part) => part !== null)
       .join(' ') || undefined
-  return { ...ids, describedBy, hasError, hasDescription, showReason }
+  return { ...ids, describedBy, hasError, hasDescription }
 }
 
 /**
@@ -156,12 +155,12 @@ export function useFieldIds(props: FieldBaseProps) {
 export const FieldLabelsHidden = createContext(false)
 
 /**
- * The frame of a field: label, description, control, error or disabled reason. TextField,
+ * The frame of a field: label, control, description, error. TextField,
  * SelectField and the other fields use it; use it directly only for a control the Design System
  * does not have yet.
  */
 export function Field(props: FieldProps) {
-  const { label, description, error, required = false, readOnly = false, disabled = false } = props
+  const { label, description, error, required = false, readOnly = false } = props
   const ids = useFieldIds(props)
   const labelsHidden = useContext(FieldLabelsHidden)
   const hideLabel = props.hideLabel ?? labelsHidden
@@ -172,7 +171,6 @@ export function Field(props: FieldProps) {
     invalid: ids.hasError,
     required,
     readOnly,
-    disabled,
   }
   const labelClass = cn(
     'inline-block text-sm font-semibold break-words text-primary',
@@ -184,7 +182,6 @@ export function Field(props: FieldProps) {
       data-slot="field"
       data-invalid={ids.hasError || undefined}
       data-readonly={readOnly || undefined}
-      data-disabled={disabled || undefined}
       className={cn('flex min-w-0 flex-col font-sans', props.className)}
     >
       {props.group === true ? (
@@ -202,7 +199,7 @@ export function Field(props: FieldProps) {
       <div className={cn(!hideLabel && (props.group === true ? 'mt-2' : 'mt-1'))}>
         {props.children(control)}
       </div>
-      {(ids.hasDescription || ids.hasError || ids.showReason) && (
+      {(ids.hasDescription || ids.hasError) && (
         <div data-field-messages="" className="mt-[5px] flex min-w-0 flex-col gap-1">
           {ids.hasDescription && (
             <p
@@ -217,56 +214,80 @@ export function Field(props: FieldProps) {
               {error}
             </FieldMessage>
           )}
-          {ids.showReason && (
-            <FieldMessage id={ids.reasonId} tone="hint">
-              {props.disabledReason}
-            </FieldMessage>
-          )}
         </div>
       )}
     </div>
   )
 }
 
-/** The attributes a Field gives its control. */
+/**
+ * The attributes a Field gives its control. Read-only: native `readonly`, the title "Read-only",
+ * and "—" where the value is empty (the placeholder, P5.93 item 1).
+ */
 export function controlAttributes(control: FieldControl, readOnlyTitle: string) {
   return {
     id: control.id,
     'aria-describedby': control.describedBy,
     'aria-invalid': control.invalid || undefined,
     required: control.required,
-    disabled: control.disabled,
     readOnly: control.readOnly,
     title: control.readOnly ? readOnlyTitle : undefined,
+    ...(control.readOnly ? { placeholder: READ_ONLY_EMPTY } : {}),
   }
 }
 
 /** The FieldBaseProps of a field's props, without undefined members. */
 export function fieldProps(props: FieldBaseProps) {
-  const {
-    label,
-    description,
-    error,
-    required,
-    readOnly,
-    disabled,
-    disabledReason,
-    id,
-    className,
-    describedBy,
-    hideLabel,
-  } = props
+  const { label, description, error, required, readOnly, id, className, describedBy, hideLabel } =
+    props
   return {
     label,
     ...(description === undefined ? {} : { description }),
     ...(error === undefined ? {} : { error }),
     ...(required === undefined ? {} : { required }),
     ...(readOnly === undefined ? {} : { readOnly }),
-    ...(disabled === undefined ? {} : { disabled }),
-    ...(disabledReason === undefined ? {} : { disabledReason }),
     ...(id === undefined ? {} : { id }),
     ...(className === undefined ? {} : { className }),
     ...(hideLabel === undefined ? {} : { hideLabel }),
     ...(describedBy === undefined || describedBy === '' ? {} : { describedBy }),
   }
+}
+
+/**
+ * A read-only value that is not one line of text (MultiSelectField's pills, a rich text, a code's
+ * boxes): the read-only look of every field (READ_ONLY), focusable and selectable, read as a
+ * read-only text box named by the field's label (P5.93 item 1). Empty: "—".
+ */
+export function ReadOnlyBox({
+  control,
+  title,
+  empty,
+  className,
+  children,
+}: {
+  control: FieldControl
+  /** messages['field.readOnly']. */
+  title: string
+  /** Whether there is no value: the box shows "—". */
+  empty: boolean
+  className?: string
+  children?: ReactNode
+}) {
+  return (
+    <div
+      id={control.id}
+      role="textbox"
+      aria-readonly="true"
+      aria-multiline="true"
+      aria-labelledby={control.labelId}
+      aria-describedby={control.describedBy}
+      aria-invalid={control.invalid || undefined}
+      tabIndex={0}
+      title={title}
+      data-slot="read-only"
+      className={cn(INPUT, READ_ONLY, 'h-auto min-h-control py-[5.5px] select-text', className)}
+    >
+      {empty ? <span className="text-secondary">{READ_ONLY_EMPTY}</span> : children}
+    </div>
+  )
 }

@@ -10,15 +10,24 @@ import { cn } from './cn'
  * Disabled: surface.disabled. The thumb carries a dot 40% of its size in the track's colour
  * (withThumbIndicator, on by default; added in P2.2a). The thumb moves along the inline axis, so it starts at the
  * leading edge in both directions (150ms). An invisible 2px margin makes the target 24px high.
+ * `readOnly` (P5.93): the disabled look with a border.default line and the thumb in
+ * text.secondary at its side, focusable; the caller keeps the state from changing.
  */
-export function Switch({ className, ...props }: ComponentProps<typeof SwitchPrimitive.Root>) {
+export function Switch({
+  className,
+  readOnly,
+  ...props
+}: ComponentProps<typeof SwitchPrimitive.Root> & { readOnly?: boolean }) {
+  const readOnlyMark = readOnly === true ? '' : undefined
   return (
     <SwitchPrimitive.Root
       data-slot="switch"
+      data-readonly={readOnlyMark}
       className={cn(
         BUTTON_RESET,
         'peer relative inline-flex h-5 w-9.5 shrink-0 cursor-pointer items-center rounded-full bg-control transition-colors duration-(--liro-duration-base) ease-standard after:absolute after:-inset-y-0.5 after:inset-x-0',
-        'data-[state=checked]:not-disabled:bg-brand-solid disabled:cursor-not-allowed disabled:bg-surface-disabled',
+        'data-[state=checked]:not-disabled:not-data-readonly:bg-brand-solid disabled:cursor-not-allowed disabled:bg-surface-disabled',
+        'data-readonly:cursor-default data-readonly:border data-readonly:border-solid data-readonly:border-default data-readonly:bg-surface-disabled',
         FOCUS_RING,
         className,
       )}
@@ -26,7 +35,8 @@ export function Switch({ className, ...props }: ComponentProps<typeof SwitchPrim
     >
       <SwitchPrimitive.Thumb
         data-slot="switch-thumb"
-        className="pointer-events-none absolute start-[2.5px] block size-3.5 rounded-full bg-current text-on-accent transition-[inset-inline-start] duration-(--liro-duration-base) ease-standard before:absolute before:inset-0 before:m-auto before:size-[40%] before:rounded-full before:bg-control data-[state=checked]:start-[21.5px] data-[state=checked]:not-data-disabled:before:bg-brand-solid data-disabled:before:bg-surface-disabled"
+        data-readonly={readOnlyMark}
+        className="pointer-events-none absolute start-[2.5px] block size-3.5 rounded-full bg-current text-on-accent transition-[inset-inline-start] duration-(--liro-duration-base) ease-standard before:absolute before:inset-0 before:m-auto before:size-[40%] before:rounded-full before:bg-control data-[state=checked]:start-[21.5px] data-[state=checked]:not-data-disabled:not-data-readonly:before:bg-brand-solid data-disabled:before:bg-surface-disabled data-readonly:text-secondary data-readonly:before:bg-surface-disabled"
       />
     </SwitchPrimitive.Root>
   )

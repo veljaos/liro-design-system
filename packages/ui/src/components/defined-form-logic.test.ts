@@ -206,7 +206,7 @@ describe('definedFormState', () => {
             type: 'checkbox',
             label: 'Seal',
             required: true,
-            disabledReason: 'Not used by this company.',
+            readOnly: true,
           },
         ],
       },

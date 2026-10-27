@@ -26,7 +26,9 @@ const meta = {
           'least 44px — or typed (read by the provider’s format on leaving, on Enter or on a step). ' +
           'The value, `min`, `max` and `step` are decimal strings compared exactly, never ' +
           'JavaScript numbers. A typed value outside the limits is kept and shown as an error; − ' +
-          'and + stop at the limits. ArrowUp and ArrowDown step. The unit stands after the number.' +
+          'and + stop at the limits and say why (the limit and the application’s `maxReason`, in a ' +
+          'tooltip and a line under the field). ArrowUp and ArrowDown step. The unit stands after ' +
+          'the number. Read-only is the read-only look of every field, without − and +.' +
           '\n\n**When:** a count, a quantity picked, a cart line at a till.\n\n' +
           '**When not:** money (MoneyField: amounts are never stepped); a free number in a form ' +
           '(NumberField).',
@@ -66,15 +68,41 @@ export const Large: Story = {
   args: { size: 'large', description: 'Count every piece on the shelf.' },
 }
 
-/** At its limit: + is off. */
+/**
+ * At its limit (P5.93 item 39): + cannot be used and says why — it stays focusable, its tooltip
+ * and a line under the field name the limit with the application's reason.
+ */
 export const AtLimit: Story = {
   name: 'At the limit',
-  args: { defaultValue: '6', max: '6' },
+  args: { defaultValue: '6', max: '6', maxReason: 'the quantity on the order' },
   play: async ({ canvasElement }) => {
     await settle()
-    await expect(
-      within(canvasElement).getByRole('button', { name: 'Increase Quantity picked' }),
-    ).toBeDisabled()
+    const canvas = within(canvasElement)
+    const increase = canvas.getByRole('button', { name: 'Increase Quantity picked' })
+    await expect(increase).toHaveAttribute('aria-disabled', 'true')
+    await expect(increase).toBeEnabled()
+    await expect(increase).toHaveAccessibleDescription('Maximum 6 — the quantity on the order')
+    await expect(canvas.getByText('Maximum 6 — the quantity on the order')).toBeVisible()
+  },
+}
+
+/** The tooltip of + at the limit, on focus (an interaction: it focuses the button). */
+export const AtLimitTooltip: Story = {
+  name: 'At the limit, tooltip, interaction',
+  tags: ['interaction', '!dev'],
+  args: { defaultValue: '6', max: '6', maxReason: 'the quantity on the order' },
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.tab()
+    await userEvent.tab()
+    await userEvent.tab()
+    const increase = canvas.getByRole('button', { name: 'Increase Quantity picked' })
+    await expect(increase).toHaveFocus()
+    await userEvent.keyboard('{Enter}')
+    await expect(canvas.getByRole('textbox', { name: 'Quantity picked' })).toHaveValue('6')
+    const tooltip = await within(document.body).findByRole('tooltip')
+    await expect(tooltip).toHaveTextContent('Maximum 6 — the quantity on the order')
   },
 }
 
@@ -94,15 +122,17 @@ export const ApplicationError: Story = {
   args: { error: 'More than the order line asks for.', defaultValue: '9', required: true },
 }
 
-/** Read-only: the quantity as text. */
+/** Read only (P5.93): the read-only look of every field, no − and +; empty shows "—". */
 export const ReadOnly: Story = {
-  name: 'Read-only',
-  args: { readOnly: true },
-}
-
-/** Disabled, with its reason. */
-export const Disabled: Story = {
-  args: { disabled: true, disabledReason: 'Scan the item first.' },
+  name: 'Read only',
+  render: (args) => (
+    <Handheld>
+      <div className="flex flex-col gap-6">
+        <QuantityStepper {...args} readOnly />
+        <QuantityStepper {...args} label="Quantity counted" defaultValue="" readOnly />
+      </div>
+    </Handheld>
+  ),
 }
 
 /** Label hidden, where the row names it. */
@@ -178,7 +208,10 @@ export const Stepping: Story = {
     await userEvent.keyboard('{ArrowUp}')
     await expect(input).toHaveValue('6')
     await expect(args.onChange).toHaveBeenLastCalledWith('6')
-    await expect(canvas.getByRole('button', { name: 'Increase Quantity picked' })).toBeDisabled()
+    await expect(canvas.getByRole('button', { name: 'Increase Quantity picked' })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    )
     await userEvent.clear(input)
     await userEvent.type(input, '2{Enter}')
     await expect(args.onChange).toHaveBeenLastCalledWith('2')

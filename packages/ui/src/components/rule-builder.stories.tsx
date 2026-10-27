@@ -232,16 +232,10 @@ export const Problems: Story = {
   },
 }
 
-/** The rule as text. */
+/** The rule as text: a rule that cannot be changed here (P5.93: no disabled state). */
 export const ReadOnly: Story = {
-  name: 'Read-only',
+  name: 'Read only',
   args: { readOnly: true },
-}
-
-/** Cannot be changed: the reason above the rule. */
-export const Disabled: Story = {
-  name: 'Disabled with reason',
-  args: { disabledReason: 'Only administrators change rules.' },
 }
 
 /** The application is loading the rule. */

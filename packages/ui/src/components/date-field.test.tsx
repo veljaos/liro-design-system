@@ -105,13 +105,17 @@ describe('DateField and DateRangeField markup', () => {
     expect(html).toContain('aria-haspopup="dialog"')
   })
 
-  it('draws read-only as text without the calendar button, and disabled with its reason', () => {
+  it('draws read-only in the read-only look without the calendar button; empty is "—"', () => {
     const readOnly = render(<DateField label="Due" readOnly value="2026-03-01" />)
     expect(readOnly).toMatch(/<input[^>]*readOnly=""/)
+    expect(readOnly).toContain('bg-surface-disabled')
     expect(readOnly).not.toContain('Choose a date')
-    const disabled = render(<DateField label="Due" disabled disabledReason="Closed period" />)
-    expect(disabled).toContain('Closed period')
-    expect(disabled).toMatch(/<button[^>]*disabled=""/)
+    const empty = render(<DateField label="Due" readOnly placeholder="dd.mm.yyyy" />)
+    expect(empty).toContain('placeholder="—"')
+    expect(empty).not.toContain('dd.mm.yyyy')
+    const range = render(<DateRangeField label="Contract" readOnly />)
+    expect(range).toContain('bg-surface-disabled')
+    expect(range.match(/<input/g)).toHaveLength(1)
   })
 
   it('names both ends of a range and shows "start – end"', () => {

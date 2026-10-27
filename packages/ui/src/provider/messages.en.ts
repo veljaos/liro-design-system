@@ -828,6 +828,10 @@ export const messagesEn: LiroMessages = {
   'quantity.increase': 'Increase',
   'quantity.belowMin': (minText) => `At least ${minText}.`,
   'quantity.aboveMax': (maxText) => `At most ${maxText}.`,
+  'quantity.atMax': (maxText, reason) =>
+    reason === undefined || reason === '' ? `Maximum ${maxText}` : `Maximum ${maxText} — ${reason}`,
+  'quantity.atMin': (minText, reason) =>
+    reason === undefined || reason === '' ? `Minimum ${minText}` : `Minimum ${minText} — ${reason}`,
   'queue.waiting': (count, countText) =>
     `${countText} ${count === 1 ? 'change' : 'changes'} waiting to be sent`,
   'pick.progress': (_done, doneText, _total, totalText) => `${doneText} of ${totalText}`,
@@ -1734,7 +1738,6 @@ export const messagesEn: LiroMessages = {
   'rule.operator': 'Test',
   'rule.value': 'Value',
   'rule.action': 'Action',
-  'rule.fieldFirst': 'Choose a field first.',
   'rule.addCondition': 'Add condition',
   'rule.addGroup': 'Add group',
   'rule.addToGroup': 'Add condition to the group',

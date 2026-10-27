@@ -19,7 +19,7 @@ const meta = {
           'Shift+Enter starts a new line, the ask button sits inside the box at its end. ' +
           '`size="panel"` in AssistantPanel; `size="page"` is the "Ask" page’s large box with ' +
           'the keys written under it. It grows with the text; `busy` keeps the ask button ' +
-          'waiting while an answer is written; disabled with a visible reason.\n\n**When to ' +
+          'waiting while an answer is written; `unavailableReason` makes the box read-only and Ask unavailable, the reason in words.\n\n**When to ' +
           'use:** asking an assistant. **When not:** a comment or message to people ' +
           '(MessageComposer, ReplyComposer); a search over records (FilterBar, CommandPalette).',
       },
@@ -80,12 +80,12 @@ export const Busy: Story = {
   args: { busy: true, defaultValue: 'And last quarter?' },
 }
 
-/** The assistant is off: the reason in words. */
-export const Disabled: Story = {
-  name: 'Disabled with reason',
+/** The assistant is off: the box read-only and Ask unavailable, the reason in words. */
+export const Unavailable: Story = {
+  name: 'Unavailable with reason',
   args: {
-    disabled: true,
-    disabledReason: 'The assistant is turned off for Kvadrat Gradnja d.o.o. by your administrator.',
+    unavailableReason:
+      'The assistant is turned off for Kvadrat Gradnja d.o.o. by your administrator.',
   },
 }
 

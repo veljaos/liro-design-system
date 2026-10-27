@@ -72,7 +72,9 @@ export function PasswordField(props: PasswordFieldProps) {
               {...(props.value === undefined ? {} : { value: props.value })}
               {...(props.defaultValue === undefined ? {} : { defaultValue: props.defaultValue })}
               {...(props.name === undefined ? {} : { name: props.name })}
-              {...(props.placeholder === undefined ? {} : { placeholder: props.placeholder })}
+              {...(props.placeholder === undefined || control.readOnly
+                ? {}
+                : { placeholder: props.placeholder })}
               onChange={(event: ChangeEvent<HTMLInputElement>) =>
                 props.onChange?.(event.target.value)
               }
@@ -98,7 +100,6 @@ export function PasswordField(props: PasswordFieldProps) {
                 aria-pressed={shown}
                 aria-controls={control.id}
                 title={messages['password.show']}
-                disabled={control.disabled}
                 // Keeps the focus (and the caret) in the field when pressed with a pointer.
                 onMouseDown={(event) => {
                   event.preventDefault()
@@ -106,7 +107,7 @@ export function PasswordField(props: PasswordFieldProps) {
                 onClick={() => {
                   setShown((value) => !value)
                 }}
-                className="absolute end-1 top-1 disabled:bg-transparent"
+                className="absolute end-1 top-1"
               >
                 {shown ? (
                   <EyeOff aria-hidden="true" className="size-4" />

@@ -151,13 +151,12 @@ export const NoAccess: Story = {
   },
 }
 
-/** The assistant is off: the box disabled with its reason. */
-export const Disabled: Story = {
-  name: 'Disabled with reason',
+/** The assistant is off: the box read-only, Ask unavailable with its reason. */
+export const Unavailable: Story = {
+  name: 'Unavailable with reason',
   args: {
     composer: {
-      disabled: true,
-      disabledReason: 'The assistant is turned off for this company by your administrator.',
+      unavailableReason: 'The assistant is turned off for this company by your administrator.',
     },
   },
 }

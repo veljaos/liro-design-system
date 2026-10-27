@@ -28,12 +28,24 @@ export const INPUT =
   'block h-control w-full min-w-0 rounded-md border border-solid border-control bg-surface-raised px-3 font-sans text-sm text-primary outline-none transition-colors duration-(--liro-duration-fast) ease-standard placeholder:text-tertiary focus:border-focus disabled:cursor-not-allowed disabled:border-default disabled:bg-surface-disabled disabled:text-disabled aria-invalid:border-status-danger-fg'
 
 /**
- * A read-only control (owner's decision, 2026-09-25): plain text in the full text colour, no
- * border and no background, at the same height and padding as an editable control, so a form
- * that mixes both stays aligned. It keeps a focus ring: it can be focused, selected and copied.
+ * A read-only control, the one state of a field that cannot be changed (owner, P5.93 item 1; it
+ * replaces both the old plain-text read-only of 2026-09-25 and the disabled field): the look of
+ * the old disabled control — surface.disabled background and a border.default line — with the
+ * value in the full text colour, so it stays readable. It can be focused (the focus ring, the
+ * border unchanged), selected and copied. An empty value shows "—" as its placeholder, in
+ * text.secondary. Every field uses this one class set (READ_ONLY_CHOICE for checkboxes, radios
+ * and switches).
  */
 export const READ_ONLY =
-  'cursor-text border-transparent bg-transparent focus:border-transparent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus'
+  'cursor-text border-default bg-surface-disabled text-primary placeholder:text-secondary focus:border-default focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus'
+
+/**
+ * A read-only checkbox, radio or switch (P5.93 item 1), set with `data-readonly` on the control:
+ * the disabled look (surface.disabled, border.default) with its state still drawn — the check
+ * or the dot in text.secondary, a switch's thumb at its side — focusable, not changeable.
+ */
+export const READ_ONLY_CHOICE =
+  'data-readonly:cursor-default data-readonly:border-default data-readonly:bg-surface-disabled data-readonly:text-secondary'
 
 /**
  * The floating surface of popovers, menus and selects (Popover.css): 1px border, radius md, no

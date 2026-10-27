@@ -50,8 +50,8 @@ const meta = {
           'edge), Space chooses. Each slot shows its start; its name says the time, the day and ' +
           'the resource.\n\n' +
           '**States:** loading (skeleton chips), nothing free (an empty state with an optional ' +
-          'action such as "Show next week"), error, read-only, disabled with its reason — the ' +
-          'Field around it.\n\n' +
+          'action such as "Show next week"), error, read-only (the read-only look, the booked ' +
+          'slot the neutral selection) — the Field around it.\n\n' +
           '**When:** a person books a time that someone else has made available.\n\n' +
           '**When not:** planning shared people or rooms (ResourceSchedule); seeing one’s events ' +
           '(CalendarView); any time of day without offered slots (DateField with a time field).',
@@ -151,17 +151,13 @@ export const Empty: Story = {
   },
 }
 
-/** An error under the slots, a required mark; read-only; disabled with its reason. */
+/** An error under the slots, a required mark; read only (the booked slot marked). */
 export const States: Story = {
   render: () => (
     <ScheduleFrame>
       <div className="flex flex-col gap-8">
         <Picker required error="Choose a time for the appointment." />
         <Picker readOnly defaultValue="jovanovic@2026-10-14T11:00" label="Appointment (booked)" />
-        <Picker
-          disabled
-          disabledReason="The referral has expired: ask your doctor for a new one."
-        />
       </div>
     </ScheduleFrame>
   ),
@@ -172,9 +168,10 @@ export const States: Story = {
       'aria-invalid',
       'true',
     )
-    await expect(
-      canvas.getByText('The referral has expired: ask your doctor for a new one.'),
-    ).toBeVisible()
+    await expect(canvas.getByRole('radiogroup', { name: 'Appointment (booked)' })).toHaveAttribute(
+      'aria-readonly',
+      'true',
+    )
   },
 }
 

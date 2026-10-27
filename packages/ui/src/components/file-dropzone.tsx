@@ -15,7 +15,7 @@ export type { FileFacts, FileRejection, FileRules, RejectionReason } from './fil
  * FileDropzone (BUILD-PLAN P5.5; docs/decisions.md "Files and document frame"): choose files, or
  * drop them, with what is accepted shown BEFORE choosing.
  *
- * - The field frame (label, description, error, disabled with its reason) around a zone: radius md,
+ * - The field frame (label, description, error) around a zone: radius md,
  *   a 1px dashed border.control border on the raised surface, 16px padding; in it a 20px Upload
  *   icon (text.secondary), the "Choose files" button (neutral default weight, the main way: a
  *   real button, so the keyboard and every pointer reach it) and "or drop them here"; under them,
@@ -34,6 +34,9 @@ export type { FileFacts, FileRejection, FileRules, RejectionReason } from './fil
  * - `camera` (P5.28): on phones a second neutral button, "Take a photo", opens the camera (an
  *   input with `capture="environment"`); the photo goes through the same checks.
  * - The files themselves (upload, scan, list) are the application's: AttachmentList shows them.
+ * - It is an action, not a value (P5.93 item 1): there is no read-only or disabled dropzone. When
+ *   files cannot be added now, `unavailableReason` draws the zone grey, keeps "Choose files"
+ *   focusable but unavailable (aria-disabled), ignores drops, and says why under the zone.
  */
 
 export interface FileDropzoneProps extends Omit<FieldBaseProps, 'readOnly'> {
@@ -68,6 +71,11 @@ export interface FileDropzoneProps extends Omit<FieldBaseProps, 'readOnly'> {
    * `capture`), for a paper note or a receipt. The photo is checked as any other file. P5.28.
    */
   camera?: boolean
+  /**
+   * Files cannot be added now, and why, from the application ("The period is closed."): the
+   * zone is grey, "Choose files" is unavailable and the reason stands under the zone.
+   */
+  unavailableReason?: string
 }
 
 /** Choose files with a button, or drop them; what is accepted is said before choosing. */
@@ -76,7 +84,8 @@ export function FileDropzone(props: FileDropzoneProps) {
   const viewportPhone = usePhone()
   const phone = props.layout === undefined ? viewportPhone : props.layout === 'phone'
   const multiple = props.multiple ?? true
-  const disabled = props.disabled === true
+  const disabled = props.unavailableReason !== undefined && props.unavailableReason !== ''
+  const reasonId = `${useId()}-reason`
   const input = useRef<HTMLInputElement>(null)
   const cameraInput = useRef<HTMLInputElement>(null)
   const camera = props.camera === true && phone
@@ -197,13 +206,19 @@ export function FileDropzone(props: FileDropzoneProps) {
             <ButtonPrimitive
               family="neutral"
               emphasis="secondary"
-              disabled={disabled}
+              aria-disabled={disabled || undefined}
               aria-describedby={
-                [hint.length > 0 ? hintId : null, control.describedBy ?? null]
+                [
+                  hint.length > 0 ? hintId : null,
+                  disabled ? reasonId : null,
+                  control.describedBy ?? null,
+                ]
                   .filter((id) => id !== null)
                   .join(' ') || undefined
               }
-              onClick={() => input.current?.click()}
+              onClick={() => {
+                if (!disabled) input.current?.click()
+              }}
             >
               <FileUp aria-hidden="true" className="size-3.75 shrink-0" />
               <span className={TEXT_DIRECTION}>{messages['file.choose'](multiple)}</span>
@@ -212,8 +227,11 @@ export function FileDropzone(props: FileDropzoneProps) {
               <ButtonPrimitive
                 family="neutral"
                 emphasis="secondary"
-                disabled={disabled}
-                onClick={() => cameraInput.current?.click()}
+                aria-disabled={disabled || undefined}
+                aria-describedby={disabled ? reasonId : undefined}
+                onClick={() => {
+                  if (!disabled) cameraInput.current?.click()
+                }}
               >
                 <Camera aria-hidden="true" className="size-3.75 shrink-0" />
                 <span className={TEXT_DIRECTION}>{messages['file.takePhoto']}</span>
@@ -267,6 +285,11 @@ export function FileDropzone(props: FileDropzoneProps) {
               />
             )}
           </div>
+          {disabled && (
+            <FieldMessage id={reasonId} tone="hint">
+              {props.unavailableReason}
+            </FieldMessage>
+          )}
           {/* Always in the page, so a rejection is announced when it appears. */}
           <div role="alert" className="flex flex-col gap-1 empty:hidden">
             {rejections.map((rejection, index) => (

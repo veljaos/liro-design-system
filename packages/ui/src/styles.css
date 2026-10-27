@@ -256,6 +256,10 @@
   :is(input, [data-slot='select-trigger'], [data-slot='money'], [data-slot='date']) {
   outline: none;
 }
+/* A read-only cell (P5.93 item 1): the read-only look of every field, on the whole cell. */
+[data-slot='grid-cell']:has([data-slot='field'][data-readonly]) {
+  background-color: var(--liro-surface-disabled);
+}
 [data-slot='grid-cell']:has([aria-invalid='true']) {
   outline: 1px solid var(--liro-status-danger-fg);
   outline-offset: -1px;

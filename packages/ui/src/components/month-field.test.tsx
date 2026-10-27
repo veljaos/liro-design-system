@@ -65,11 +65,9 @@ describe('MonthField markup', () => {
     expect(html).not.toMatch(/<button[^>]*\saria-invalid=/)
   })
 
-  it('draws read-only as text and disabled with its reason', () => {
+  it('draws read-only in the read-only look', () => {
     const readOnly = render(<MonthField label="P" readOnly value="2026-03" />)
     expect(readOnly).toMatch(/<input[^>]*readOnly=""[^>]*value="March 2026"/)
-    const disabled = render(<MonthField label="P" disabled disabledReason="Locked" />)
-    expect(disabled).toContain('Locked')
-    expect(disabled).toMatch(/<button[^>]*disabled=""/)
+    expect(readOnly).toContain('bg-surface-disabled')
   })
 })

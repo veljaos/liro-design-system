@@ -113,7 +113,7 @@ export function FileNameDialog(props: FileNameDialogProps) {
           }}
           required
           {...(error === null ? {} : { error })}
-          disabled={busy}
+          readOnly={busy}
         />
       </form>
     </Dialog>

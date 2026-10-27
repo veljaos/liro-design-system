@@ -39,8 +39,8 @@ const meta = {
           'buttons (ProviderSignInButtons), and lines for "No account?" and the terms. The Core ' +
           'decides the next step from the address: a password (PasswordField), a code ' +
           '(CodeInput) or the company’s identity provider.\n\n' +
-          '**How:** `onSubmit` receives the trimmed address; `error`, `loading`, `disabled` with ' +
-          '`disabledReason` are the application’s. `providers` (each with its official mark ' +
+          '**How:** `onSubmit` receives the trimmed address; `error`, `loading` and ' +
+          '`unavailableReason` are the application’s. `providers` (each with its official mark ' +
           'file) and `providersPosition` place the other ways in; `signUp` and `terms` are slots ' +
           'for the application’s sentences and links. The label and the button default to ' +
           '`messages` ("E-mail", "Continue").\n\n' +
@@ -163,12 +163,11 @@ export const LoadingInteraction: Story = {
   },
 }
 
-/** Signing in is paused: the reason under the field, every button unavailable. */
-export const Disabled: Story = {
-  name: 'Disabled with reason',
+/** Signing in is paused (P5.93): the address read-only, every button unavailable, why in words. */
+export const Unavailable: Story = {
+  name: 'Unavailable with reason',
   args: {
-    disabled: true,
-    disabledReason: 'Signing in is paused for maintenance until 22:00.',
+    unavailableReason: 'Signing in is paused for maintenance until 22:00.',
     providers: providers(),
   },
 }

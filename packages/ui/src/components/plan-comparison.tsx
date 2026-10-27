@@ -39,7 +39,8 @@ import { usePhone } from './use-phone'
  *   technology; `false` / nothing — a dash and "Not included"; or the application's words or
  *   figure ("30 users").
  * - **A plan that cannot be chosen** (`unavailableReason`) has a disabled radio and the reason in
- *   words under it (D3); the whole comparison can be disabled with `disabledReason`.
+ *   words under it (D3); `readOnly` shows the comparison and the choice that cannot be changed
+ *   here: the radios in the read-only look, focusable, nothing changes (P5.93 item 1).
  */
 
 export interface PlanComparisonProps {
@@ -60,10 +61,8 @@ export interface PlanComparisonProps {
   /** The plan chosen at first (uncontrolled). */
   defaultValue?: string
   onChange?: (planId: string) => void
-  /** Nothing can be chosen. Give `disabledReason`. */
-  disabled?: boolean
-  /** Why, under the label. */
-  disabledReason?: ReactNode
+  /** The choice is shown but cannot be changed here (the read-only look, P5.93). */
+  readOnly?: boolean
   /** An error under the label (the application's words: "Choose a plan."). */
   error?: ReactNode
   /** 'desktop' or 'phone' forces one; default by the viewport (48em). */
@@ -149,10 +148,10 @@ export function PlanComparison(props: PlanComparisonProps) {
   const value = props.value === undefined ? innerValue : props.value
   const rows = comparisonRows(props.features)
   const currentLabel = props.currentLabel ?? messages['plan.current']
-  const disabled = props.disabled === true
+  const readOnly = props.readOnly === true
 
   const choose = (next: string) => {
-    if (disabled || !choosablePlan(props.plans, next)) return
+    if (readOnly || !choosablePlan(props.plans, next)) return
     setInnerValue(next)
     props.onChange?.(next)
   }
@@ -165,8 +164,7 @@ export function PlanComparison(props: PlanComparisonProps) {
       group
       {...(props.description === undefined ? {} : { description: props.description })}
       {...(props.error === undefined ? {} : { error: props.error })}
-      {...(disabled ? { disabled: true } : {})}
-      {...(props.disabledReason === undefined ? {} : { disabledReason: props.disabledReason })}
+      readOnly={readOnly}
       {...(props.className === undefined ? {} : { className: props.className })}
     >
       {(control) => (
@@ -177,13 +175,14 @@ export function PlanComparison(props: PlanComparisonProps) {
           aria-labelledby={control.labelId}
           aria-describedby={control.describedBy}
           aria-invalid={control.invalid || undefined}
-          disabled={control.disabled}
+          aria-readonly={control.readOnly || undefined}
+          title={control.readOnly ? messages['field.readOnly'] : undefined}
           className={cn('min-w-0 font-sans', phone ? 'flex flex-col gap-3' : 'block')}
         >
           {phone ? (
             props.plans.map((plan, index) => {
               const chosen = plan.id === value
-              const off = control.disabled || !choosablePlan(props.plans, plan.id)
+              const off = !choosablePlan(props.plans, plan.id)
               return (
                 <div
                   key={plan.id}
@@ -200,13 +199,18 @@ export function PlanComparison(props: PlanComparisonProps) {
                     htmlFor={radioId(index)}
                     className={cn(
                       'flex min-w-0 items-start gap-3 p-4',
-                      off ? 'cursor-not-allowed' : 'cursor-pointer',
+                      off
+                        ? 'cursor-not-allowed'
+                        : control.readOnly
+                          ? 'cursor-default'
+                          : 'cursor-pointer',
                     )}
                   >
                     <RadioGroupItem
                       id={radioId(index)}
                       value={plan.id}
                       disabled={off}
+                      readOnly={control.readOnly}
                       aria-describedby={factsId(index)}
                       className="mt-0.5"
                     />
@@ -272,7 +276,7 @@ export function PlanComparison(props: PlanComparisonProps) {
                     </th>
                     {props.plans.map((plan, index) => {
                       const chosen = plan.id === value
-                      const off = control.disabled || !choosablePlan(props.plans, plan.id)
+                      const off = !choosablePlan(props.plans, plan.id)
                       return (
                         <th
                           key={plan.id}
@@ -290,13 +294,18 @@ export function PlanComparison(props: PlanComparisonProps) {
                               htmlFor={radioId(index)}
                               className={cn(
                                 'flex min-h-6 items-center gap-2',
-                                off ? 'cursor-not-allowed' : 'cursor-pointer',
+                                off
+                                  ? 'cursor-not-allowed'
+                                  : control.readOnly
+                                    ? 'cursor-default'
+                                    : 'cursor-pointer',
                               )}
                             >
                               <RadioGroupItem
                                 id={radioId(index)}
                                 value={plan.id}
                                 disabled={off}
+                                readOnly={control.readOnly}
                                 aria-describedby={factsId(index)}
                               />
                               <span

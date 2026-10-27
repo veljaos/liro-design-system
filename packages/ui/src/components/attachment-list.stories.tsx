@@ -185,21 +185,18 @@ export const InACardWithControl: Story = {
               )}
               inCard
               extra={(file) =>
-                file.state === 'available' ? (
+                file.state !== 'available' ? null : file.flag === undefined ? (
                   <CheckboxField
                     label="Send with the e-invoice"
                     checked={sent.includes(file.id)}
                     onChange={(checked) => {
                       setSent(checked ? [...sent, file.id] : sent.filter((id) => id !== file.id))
                     }}
-                    {...(file.flag === undefined
-                      ? {}
-                      : {
-                          disabled: true,
-                          disabledReason: 'SEF accepts PDF attachments only.',
-                        })}
                   />
-                ) : null
+                ) : (
+                  // A file that cannot be sent says why instead of a dead checkbox (P5.93).
+                  <span className="text-xs text-secondary">SEF accepts PDF attachments only.</span>
+                )
               }
             />
           </SectionCard>
@@ -211,9 +208,8 @@ export const InACardWithControl: Story = {
     await settle()
     const canvas = within(canvasElement)
     const boxes = canvas.getAllByRole('checkbox', { name: 'Send with the e-invoice' })
-    await expect(boxes).toHaveLength(2)
+    await expect(boxes).toHaveLength(1)
     await expect(boxes[0]).toBeChecked()
-    await expect(boxes[1]).toBeDisabled()
     await expect(canvas.getByText('SEF accepts PDF attachments only.')).toBeVisible()
   },
 }

@@ -117,32 +117,14 @@ export const NotFound: Story = {
   },
 }
 
-/** Read-only: the value as text, the reading still told. */
+/** Read only: the read-only look of every field, the reading still told. */
 export const ReadOnly: Story = {
-  name: 'Read-only',
+  name: 'Read only',
   args: {
     onShowSource: noop,
     confidence: '98%',
     children: (describedBy: string) => (
       <TextField label="Number" value="INV-1001" readOnly describedBy={describedBy} />
-    ),
-  },
-}
-
-/** Disabled with its reason. */
-export const Disabled: Story = {
-  name: 'Disabled with reason',
-  args: {
-    onShowSource: noop,
-    confidence: '98%',
-    children: (describedBy: string) => (
-      <TextField
-        label="Number"
-        value="INV-1001"
-        disabled
-        disabledReason="The document is posted."
-        describedBy={describedBy}
-      />
     ),
   },
 }

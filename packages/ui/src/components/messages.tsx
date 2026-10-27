@@ -1,5 +1,5 @@
 import { Bot, CircleAlert, LockKeyhole, SendHorizontal } from 'lucide-react'
-import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
+import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
 import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { Bubble, BubbleContent } from '../primitives/bubble'
@@ -27,6 +27,7 @@ import { Button } from './button'
 import { groupByDayOf } from './day-groups'
 import { EmptyState } from './empty-state'
 import { dayHeading } from './day-groups'
+import { FieldMessage } from './field'
 import { MentionCombobox, type MentionCandidate } from './mention-combobox'
 import { splitMentions, startsRun, type Mention } from './message-logic'
 import { PersonAvatar } from './person'
@@ -445,10 +446,11 @@ export interface MessageComposerProps {
   onSend: (message: ComposedMessage) => void | Promise<void>
   /** The application is sending. */
   sending?: boolean
-  /** No message can be written. Give `disabledReason`. */
-  disabled?: boolean
-  /** Why, shown under the field. */
-  disabledReason?: ReactNode
+  /**
+   * No message can be written now, and why, from the application (P5.93): the field is
+   * read-only, Send is unavailable, and the reason stands under the field.
+   */
+  unavailableReason?: ReactNode
   /** A problem with the message, shown under the field. */
   error?: ReactNode
   /** People who can be mentioned with "@". Without it, "@" is plain text. */
@@ -472,7 +474,8 @@ export function MessageComposer(props: MessageComposerProps) {
   const [mentions, setMentions] = useState<Mention[]>([])
   const [busy, setBusy] = useState(false)
   const sending = busy || props.sending === true
-  const disabled = props.disabled === true
+  const disabled = props.unavailableReason !== undefined && props.unavailableReason !== null
+  const reasonId = `${useId()}-reason`
   const canSend = !disabled && !sending && text.trim() !== ''
 
   const setText = (next: string) => {
@@ -526,10 +529,14 @@ export function MessageComposer(props: MessageComposerProps) {
         {...(props.placeholder === undefined ? {} : { placeholder: props.placeholder })}
         {...(props.onSearch === undefined ? {} : { onSearch: props.onSearch })}
         {...(props.loading === undefined ? {} : { loading: props.loading })}
-        {...(disabled ? { disabled: true } : {})}
-        {...(props.disabledReason === undefined ? {} : { disabledReason: props.disabledReason })}
+        {...(disabled ? { readOnly: true, describedBy: reasonId } : {})}
         {...(props.error === undefined ? {} : { error: props.error })}
       />
+      {disabled && (
+        <FieldMessage id={reasonId} tone="hint" className="-mt-1">
+          {props.unavailableReason}
+        </FieldMessage>
+      )}
       {props.attachments}
       <div className="flex flex-wrap items-center gap-2">
         {props.tools}

@@ -143,14 +143,11 @@ describe('NumberField and MoneyField markup', () => {
     expect(html).not.toContain('Enter a number')
   })
 
-  it('draws read-only as text and disabled with its reason', () => {
+  it('draws read-only in the read-only look; an empty value is "—"', () => {
     const readOnly = render(<MoneyField label="A" currency="EUR" value="5" readOnly />)
     expect(readOnly).toMatch(/<input[^>]*readOnly=""/)
-    expect(readOnly).toContain('border-transparent bg-transparent')
-    const disabled = render(
-      <NumberField id="d" label="A" disabled disabledReason="Closed period" />,
-    )
-    expect(disabled).toContain('Closed period')
-    expect(disabled).toMatch(/<input[^>]*disabled=""/)
+    expect(readOnly).toContain('bg-surface-disabled')
+    const empty = render(<NumberField id="d" label="A" readOnly placeholder="0" />)
+    expect(empty).toContain('placeholder="—"')
   })
 })

@@ -41,7 +41,7 @@ export const Default: Story = {
   },
 }
 
-/** Required with an error, read-only next to disabled. */
+/** Required with an error, read only (the read-only look, an empty value "—"). */
 export const States: Story = {
   render: () => (
     <div className="flex max-w-100 flex-col gap-6">
@@ -55,13 +55,6 @@ export const States: Story = {
         label="VAT period (read-only)"
         options={PERIODS}
         readOnly
-        defaultValue="quarterly"
-      />
-      <RadioGroupField
-        label="VAT period (disabled)"
-        options={PERIODS}
-        disabled
-        disabledReason="Set by the tax office for this year."
         defaultValue="quarterly"
       />
     </div>

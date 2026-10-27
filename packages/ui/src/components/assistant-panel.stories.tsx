@@ -137,15 +137,14 @@ export const Streaming: Story = {
   args: { turns: [OVERDUE_TURN, STREAMING_TURN], composer: { busy: true } },
 }
 
-/** The assistant is off for this company: the box disabled with the reason. */
-export const Disabled: Story = {
-  name: 'Disabled with reason',
+/** The assistant is off for this company: the box read-only, Ask unavailable with the reason. */
+export const Unavailable: Story = {
+  name: 'Unavailable with reason',
   args: {
     turns: [],
     intro: 'Ask about your company’s invoices, payments, VAT and people.',
     composer: {
-      disabled: true,
-      disabledReason: 'The assistant is turned off for this company by your administrator.',
+      unavailableReason: 'The assistant is turned off for this company by your administrator.',
     },
   },
 }
