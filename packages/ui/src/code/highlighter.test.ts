@@ -31,9 +31,9 @@ describe('tokenKind and tokensFromShiki', () => {
     expect(
       tokensFromShiki([
         [
-          { content: '// x', offset: 0, color: 'var(--liro-code-comment)', fontStyle: 1 },
-          { content: ' y', offset: 4, color: HASH + '123456', fontStyle: 2 },
-          { content: 'z', offset: 6, fontStyle: 4 },
+          { content: '// x', color: 'var(--liro-code-comment)', fontStyle: 1 },
+          { content: ' y', color: HASH + '123456', fontStyle: 2 },
+          { content: 'z', fontStyle: 4 },
         ],
       ]),
     ).toEqual([

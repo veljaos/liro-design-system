@@ -12,4 +12,4 @@ export {
   tokenKind,
   tokensFromShiki,
 } from './highlighter'
-export type { CodeLanguage } from './highlighter'
+export type { CodeLanguage, LiroCodeTheme, ShikiToken } from './highlighter'

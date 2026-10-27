@@ -384,7 +384,13 @@ export function Reasoning(props: ReasoningProps) {
         open={open}
         onOpenChange={onOpenChange}
         content={
-          <div className={cn('flex min-w-0 flex-col gap-2 text-sm text-secondary', TEXT_DIRECTION)}>
+          // The application's paragraphs take their direction from their own text (D15).
+          <div
+            className={cn(
+              'flex min-w-0 flex-col gap-2 text-sm text-secondary [&>*]:bidi-content',
+              TEXT_DIRECTION,
+            )}
+          >
             {props.children}
           </div>
         }
@@ -466,7 +472,9 @@ function Result({ label, children }: { label: string; children: ReactNode }) {
       <p id={id} className={cn('m-0 text-xs font-medium text-secondary', TEXT_DIRECTION)}>
         {label}
       </p>
-      <div className={cn('min-w-0 text-sm text-primary', TEXT_DIRECTION)}>{children}</div>
+      <div className={cn('min-w-0 text-sm text-primary [&>*]:bidi-content', TEXT_DIRECTION)}>
+        {children}
+      </div>
     </section>
   )
 }

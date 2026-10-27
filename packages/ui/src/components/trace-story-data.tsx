@@ -134,9 +134,8 @@ export function overdueReasonSteps(): TraceStep[] {
       detail: (
         <MaskedValue
           label="Bank account"
-          sentenceLabel="Show bank account"
+          sentenceLabel="bank account"
           subject="Drina Prevoz d.o.o."
-          value="160-0000000012345-67"
           onReveal={noop}
           reasons={[{ value: 'check', label: 'Checking a rejected invoice' }]}
         />

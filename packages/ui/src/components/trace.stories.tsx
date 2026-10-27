@@ -50,6 +50,7 @@ function Work() {
       <Queue title="Statement lines to match" items={MATCH_QUEUE} />
       <ChainOfThought
         title="Found why invoice F-2026-0398 was rejected"
+        status="done"
         steps={overdueReasonSteps()}
       />
       <Sources items={RECORD_SOURCES} />
@@ -116,6 +117,7 @@ export const Opened: Story = {
     <Frame width="34rem">
       <ChainOfThought
         title="Found why invoice F-2026-0398 was rejected"
+        status="done"
         steps={overdueReasonSteps().map((step) =>
           step.id === 'sef' || step.id === 'iban' ? { ...step, defaultOpen: true } : step,
         )}
@@ -136,7 +138,7 @@ export const Opened: Story = {
     await expect(canvas.getByRole('region', { name: 'SEF response' })).toBeVisible()
     await expect(canvas.getByRole('button', { name: 'Show bank account' })).toBeVisible()
     await expect(
-      canvas.getByRole('link', { name: 'NBS middle exchange rate list (opens in a new tab)' }),
+      canvas.getByRole('link', { name: /^NBS middle exchange rate list \(opens in a new tab\)/ }),
     ).toHaveAttribute('target', '_blank')
   },
 }
@@ -156,10 +158,9 @@ export const Working: Story = {
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('button', { name: 'Thinking…, In progress' })).toHaveAttribute(
-      'aria-expanded',
-      'true',
-    )
+    await expect(
+      canvas.getByRole('button', { name: /^Thinking…\s*, In progress$/ }),
+    ).toHaveAttribute('aria-expanded', 'true')
     await expect(canvas.getByText('Check the payments without a reference')).toBeVisible()
   },
 }
@@ -336,9 +337,11 @@ export const FinishInteraction: Story = {
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
-    const thinking = canvas.getByRole('button', { name: 'Thinking…, In progress' })
+    const thinking = canvas.getByRole('button', { name: /^Thinking…\s*, In progress$/ })
     await expect(thinking).toHaveAttribute('aria-expanded', 'true')
-    const task = canvas.getByRole('button', { name: 'Matching bank statement 188, In progress' })
+    const task = canvas.getByRole('button', {
+      name: /^Matching bank statement 188\s*, In progress$/,
+    })
     // The user closes the task: it stays as they left it.
     await userEvent.click(task)
     await expect(task).toHaveAttribute('aria-expanded', 'false')

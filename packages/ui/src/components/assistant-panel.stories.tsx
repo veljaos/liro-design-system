@@ -194,7 +194,7 @@ export const WithWork: Story = {
     await settle()
     await expect(within(panel).getByRole('button', { name: 'Thought for 3 s' })).toBeVisible()
     await expect(
-      within(panel).getByRole('button', { name: 'Matching bank statement 188, In progress' }),
+      within(panel).getByRole('button', { name: /^Matching bank statement 188\s*, In progress/ }),
     ).toHaveAttribute('aria-expanded', 'true')
     await waitFor(async () => {
       await expect(panel.querySelector('[data-slot="code-block"]')).toHaveAttribute(

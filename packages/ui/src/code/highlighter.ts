@@ -4,8 +4,6 @@ import {
   createShikiPrimitiveAsync,
   type LanguageRegistration,
   type ShikiPrimitive,
-  type ThemedToken,
-  type ThemeRegistration,
 } from '@shikijs/primitive'
 import {
   CODE_TOKEN_KINDS,
@@ -22,7 +20,34 @@ import {
  * highlighter.test.ts.
  */
 
-const LANGUAGE_LOADERS = {
+/** A language CodeBlock highlights. */
+export type CodeLanguage =
+  | 'bash'
+  | 'csharp'
+  | 'css'
+  | 'dockerfile'
+  | 'dotenv'
+  | 'go'
+  | 'graphql'
+  | 'html'
+  | 'http'
+  | 'ini'
+  | 'java'
+  | 'javascript'
+  | 'json'
+  | 'jsonc'
+  | 'jsx'
+  | 'kotlin'
+  | 'powershell'
+  | 'python'
+  | 'sql'
+  | 'tsx'
+  | 'typescript'
+  | 'xml'
+
+// The public declarations name no Shiki type: a consumer type-checks them with its own `lib`
+// (Shiki's declarations need `Symbol.dispose`, ES2026 and later).
+const LANGUAGE_LOADERS: Record<CodeLanguage, () => Promise<{ default: LanguageRegistration[] }>> = {
   bash: () => import('@shikijs/langs/bash'),
   csharp: () => import('@shikijs/langs/csharp'),
   css: () => import('@shikijs/langs/css'),
@@ -45,10 +70,7 @@ const LANGUAGE_LOADERS = {
   tsx: () => import('@shikijs/langs/tsx'),
   typescript: () => import('@shikijs/langs/typescript'),
   xml: () => import('@shikijs/langs/xml'),
-} satisfies Record<string, () => Promise<{ default: LanguageRegistration[] }>>
-
-/** A language CodeBlock highlights. */
-export type CodeLanguage = keyof typeof LANGUAGE_LOADERS
+}
 
 /**
  * The languages highlighted: what business applications show (payloads, queries, scripts). Every
@@ -86,6 +108,22 @@ export function codeLanguage(name: string): CodeLanguage | null {
   return ALIASES[key] ?? null
 }
 
+/** A TextMate theme as Shiki reads it: scopes to a foreground and a font style. */
+export interface LiroCodeTheme {
+  name: string
+  type: 'light' | 'dark'
+  colors: Record<string, string>
+  tokenColors: { scope: string[]; settings: { foreground?: string; fontStyle?: string } }[]
+}
+
+/** A token as Shiki's tokenizer returns it (the fields the conversion reads). */
+export interface ShikiToken {
+  content: string
+  color?: string | undefined
+  /** Shiki's FontStyle bits: 1 italic, 2 bold, 4 underline. */
+  fontStyle?: number | undefined
+}
+
 const THEME_NAME = 'liro'
 const v = (name: string) => `var(--liro-code-${name})`
 
@@ -93,7 +131,7 @@ const v = (name: string) => `var(--liro-code-${name})`
  * The Liro code theme: TextMate scopes to the meanings of CodeTokenKind, each a CSS variable.
  * Unscoped text is the code's own colour (text.primary).
  */
-export const LIRO_CODE_THEME: ThemeRegistration = {
+export const LIRO_CODE_THEME: LiroCodeTheme = {
   name: THEME_NAME,
   type: 'light',
   colors: { 'editor.foreground': v('text'), 'editor.background': v('background') },
@@ -169,7 +207,7 @@ export function tokenKind(color: string | undefined): CodeTokenKind | undefined 
 }
 
 /** Shiki's tokens as CodeTokens: text, the kind (never a colour) and the font style. */
-export function tokensFromShiki(lines: readonly (readonly ThemedToken[])[]): CodeToken[][] {
+export function tokensFromShiki(lines: readonly (readonly ShikiToken[])[]): CodeToken[][] {
   return lines.map((line) =>
     line.map((token) => {
       const kind = tokenKind(token.color)
