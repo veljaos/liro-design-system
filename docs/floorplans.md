@@ -189,8 +189,9 @@ official form (VAT return, financial statements), a pivot analysis.
 - **StatutoryFormPage:** the form's real grid (groups over sub-columns, numbered sections),
   entered / computed / source cells (a source cell opens its documents), the rule checks with
   "Go to", the previous period as a comparison under each value.
-- **Pivot:** the user places fields in rows, columns, values and filters (buttons and menus, no
-  dragging); a figure opens its records.
+- **Pivot:** the application's suggested views first; the layout in one line of words; the
+  fields in a sheet with four zones Rows / Columns / Values / Filters — chips dragged between
+  them, or moved by their menus; a figure opens its records.
 
 **Phone:** figures two per row, one chart per row, tables as cards (official forms one card per
 row, each value labelled with its group and column).

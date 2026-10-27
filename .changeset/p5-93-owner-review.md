@@ -56,3 +56,46 @@ P5.93 (helper d) — breaking changes and how to migrate:
 Migration: rename the prop and the type — `<AreaMap tiles={{ url, attribution, urlDark }} />` becomes `<AreaMap baseLayer={{ url, attribution, urlDark, maxZoom: 19 }} />`; `import type { MapTiles }` becomes `import type { MapBaseLayer }`. The base map stays off by default; its provider, key and usage terms are the application's.
 
 ReplyComposer's mode switch is now a segmented control: tests that looked for the buttons "Reply" / "Internal note" with `aria-pressed` find radios (`getByRole('radio', { name: 'Reply' })`, checked).
+
+RuleBuilder (P5.93 item 46) — breaking: a rule has branches.
+
+`RuleDraft` was `{ trigger, join, conditions, actions }`; it is now
+`{ trigger, branches: RuleBranch[], otherwise: RuleAction[] | null }`, where
+`RuleBranch` is `{ id, join, conditions, actions }` — the first branch is "If", the others
+"Else if" (tried in order), and `otherwise` is "Else" (null when the rule has none).
+
+Migrate a stored rule:
+
+```ts
+const draft: RuleDraft = {
+  trigger: old.trigger,
+  branches: [{ id: 'b1', join: old.join, conditions: old.conditions, actions: old.actions }],
+  otherwise: null,
+}
+```
+
+and back, while a rule has one branch and no Else: `const { join, conditions, actions } = draft.branches[0]`.
+
+- `addRuleCondition(draft, containerId?)`, `addRuleGroup(draft, branchId?)`, `addRuleAction(draft, branchId?)`
+  and `setRuleJoin(draft, join, containerId?)` take a branch's (or a group's) id; without it they act on the
+  first branch, as before. `addRuleAction(draft, RULE_OTHERWISE)` adds to Else.
+- New: `RuleBranch`, `RULE_OTHERWISE`, `addRuleBranch`, `addRuleOtherwise`, `moveRuleItemTo`.
+- `rulePlace` reports `branchId`, and `list: 'branches'` for an Else-if block.
+- `removeRuleItem` also removes an Else-if branch or Else (`RULE_OTHERWISE`); the first branch stays.
+- Removed: `moveFocusTarget` (internal; the move buttons became one menu per item).
+- Messages: removed `rule.field`, `rule.operator`, `rule.value`, `rule.action`; added `rule.elseIf`,
+  `rule.else`, `rule.branchName`, `rule.fieldOf`, `rule.operatorOf`, `rule.valueOf`, `rule.actionOf`,
+  `rule.chooseTrigger`, `rule.chooseField`, `rule.chooseTest`, `rule.chooseAction`, `rule.addElseIf`,
+  `rule.addElse`, `rule.itemMenu`, `rule.moved`. An application with its own messages adds them.
+
+Pivot (P5.93 item 45): `views` (the application's suggested views, `PivotView`); the chooser is closed
+by default (`defaultFieldsOpen` now defaults to false on every screen) and opens as a sheet; the
+start column beside the grid is gone; `PIVOT_AREAS` is now ordered rows, columns, values, filters;
+"Expand all" and "Collapse all" are one button. New exports: `PivotView`, `PivotZone`,
+`PivotSummaryParts`, `sameLayout`, `pivotViewOf`, `pivotSummaryParts`, `acceptsField`, `dropField`.
+New messages: `pivot.views`, `pivot.summary`, `pivot.summaryValue`, `pivot.summaryFilter`,
+`pivot.summaryFilters`, `pivot.summaryMany`, `pivot.moved`, `pivot.removedField`.
+
+Charts (P5.93 item 42): every chart (and RegionChart) takes `toggle` — a ChartSeriesToggle shown as
+the interactive header (key figures at the header's end, under the title on phones). Pass a
+ChartSeriesToggle there instead of in `controls`.
