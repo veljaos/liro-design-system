@@ -176,7 +176,7 @@ function InvoiceList({
         layout={phone ? 'phone' : 'desktop'}
         title="Invoices"
         {...(phone ? {} : { actions: <Button intent="create" label="New invoice" /> })}
-        views={views}
+        views={state === 'rows' ? views : views.map((each) => ({ id: each.id, label: each.label }))}
         view={view}
         onViewChange={setView}
         saveView={<Button family="neutral" emphasis="menu" icon={BookmarkPlus} label="Save view" />}
