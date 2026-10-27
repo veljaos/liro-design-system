@@ -2374,4 +2374,23 @@ export interface LiroMessages {
   // ── P5.93 (e) ──
   /** ArticleList: the words at a card's foot that say where it leads. */
   'articles.read': string
+  // ── P5.93 (h) ──
+  /** Charts whose marks are reached one by one (P5.93 item 44): the plot's keys. */
+  'chart.itemKeys': string
+  /** CandlestickChart: a candle's four prices, and the legend's rising and falling candles. */
+  'chart.open': string
+  'chart.high': string
+  'chart.low': string
+  'chart.close': string
+  'chart.rising': string
+  'chart.falling': string
+  /** Heatmap and MatrixChart: a cell's name from its row and column ("Mon, 14:00"). */
+  'chart.cellName': (row: string, column: string) => string
+  /** SankeyChart: a flow from one node to another ("Sales → Bank"), and its table's columns. */
+  'chart.flow': (from: string, to: string) => string
+  'chart.from': string
+  'chart.to': string
+  /** MatrixChart: a cell with nothing in it, and a tooltip's list cut short ("+3 more"). */
+  'chart.none': string
+  'chart.more': (count: number, countText: string) => string
 }

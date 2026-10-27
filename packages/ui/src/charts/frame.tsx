@@ -212,6 +212,7 @@ export function ValuesTable({
   series,
   values,
   write,
+  writeSeries,
   total,
 }: {
   title: string
@@ -219,6 +220,8 @@ export function ValuesTable({
   series: readonly Pick<ChartSeries, 'key' | 'label'>[]
   values: ChartValues
   write: (value: string | null | undefined) => string
+  /** A series written its own way (a share that is already text, P5.93 item 44). */
+  writeSeries?: Readonly<Record<string, (value: string | null | undefined) => string>>
   /** A total per category, from the application, as the last column. */
   total?: { label: string; values: Readonly<Record<string, string | null>> }
 }) {
@@ -251,7 +254,7 @@ export function ValuesTable({
               </th>
               {series.map((each) => (
                 <td key={each.key} className={cn(cell, 'text-end tabular-nums')}>
-                  <bdi>{write(values[each.key]?.[category.key])}</bdi>
+                  <bdi>{(writeSeries?.[each.key] ?? write)(values[each.key]?.[category.key])}</bdi>
                 </td>
               ))}
               {total !== undefined && (
