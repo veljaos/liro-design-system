@@ -800,6 +800,8 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
                       BUTTON_RESET,
                       look,
                       FOCUS_RING,
+                      // The library's hover: the tone's border drawn in its text colour (P5.93).
+                      'hover:border-current',
                       canMove ? 'cursor-grab select-none' : 'cursor-pointer',
                       isMoving && 'cursor-grabbing',
                     )}

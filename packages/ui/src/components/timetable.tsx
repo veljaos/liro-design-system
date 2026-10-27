@@ -149,7 +149,7 @@ export function Timetable(props: TimetableProps) {
     return (
       <button
         type="button"
-        className={cn(BUTTON_RESET, look, 'cursor-pointer', FOCUS_RING)}
+        className={cn(BUTTON_RESET, look, 'cursor-pointer hover:border-current', FOCUS_RING)}
         onClick={() => {
           props.onSelect?.(lesson)
         }}

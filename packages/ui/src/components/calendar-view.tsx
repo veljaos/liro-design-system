@@ -460,7 +460,7 @@ function EventBox({
     <HintedTarget hint={label}>
       <button
         type="button"
-        className={cn(BUTTON_RESET, 'cursor-pointer', FOCUS_RING, className)}
+        className={cn(BUTTON_RESET, 'cursor-pointer hover:border-current', FOCUS_RING, className)}
         style={style}
         {...(label === undefined ? {} : { 'aria-label': label })}
         {...(tabIndex === undefined ? {} : { tabIndex })}
