@@ -22,9 +22,10 @@ const meta = {
       description: {
         component:
           '**What for:** articles to read — a blog’s posts, a newsroom’s notes — as cards ' +
-          'without frames: the cover (the application’s image or drawing, decorative), the ' +
-          'category, the title as the card’s link, the excerpt and the byline (author · date · ' +
-          'reading time). Columns of at least 17rem as many as fit; one on phones. `featured` ' +
+          '(shadcn’s Card): the optional image on top (the application’s image or drawing, ' +
+          'decorative), the title, a short description, the meta line (category · author · date ' +
+          '· reading time) and a clear “Read article” at the foot; the whole card is the ' +
+          'title’s link. Columns of at least 17rem as many as fit; one on phones. `featured` ' +
           'puts the first across the row. Loading, empty and error states.\n\n**When to ' +
           'use:** a list of articles to browse, the related articles under one. **When not:** ' +
           'search results with snippets (SearchResultList); categories (CategoryGrid); records ' +

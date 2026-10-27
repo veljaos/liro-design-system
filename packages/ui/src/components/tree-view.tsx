@@ -28,8 +28,11 @@ import { spacersBetween } from './virtual-rows'
  * - Rows: 13px text, at least 32px high (44px on phones), 20px of indent per level (16px on
  *   phones), from the leading edge. Before the name a 24px chevron (32px on phones) pointing to
  *   the trailing side, turned down when open, mirrored in right-to-left; a leaf keeps the room.
- *   The node's code (tabular, left to right) before its name, a description line under it, and a
- *   node that cannot be selected says why in words (`disabledReason`).
+ *   One plain chevron, never in a grey box (P5.93 item 36). The node's code (tabular, left to
+ *   right) in a column of its own, 8px before its name: a long name wraps under its own start (a
+ *   hanging indent), never under the code or the chevron. A description line under the name, and
+ *   a node that cannot be selected says why in words (`disabledReason`). The first line stands in
+ *   the middle of the chevron's box (`FIRST_LINE`), so a TreeTable's figures align with it.
  * - The WAI-ARIA tree pattern (`tree-logic.ts`, tested): one row in the tab order (roving focus);
  *   ArrowDown / ArrowUp, Home / End; the arrow toward the trailing side opens a node or enters it,
  *   the other closes it or goes to its parent (mirrored in right-to-left, Appendix B.7); `*` opens
@@ -72,6 +75,15 @@ export interface TreeViewProps<Data = undefined> extends TreeBaseProps<Data> {
 
 /** The indent of one level, in pixels. */
 export const TREE_INDENT = 20
+
+/**
+ * The padding that puts a row's first line of text (text-sm) in the middle of the 24px chevron
+ * box (32px on phones), whatever the script's line height; TreeTable's figures take it too, so a
+ * row's numbers stand on its name's line (P5.93 item 36).
+ */
+export const FIRST_LINE = 'py-[calc((24px-1lh)/2)]'
+/** FIRST_LINE on phones (the 32px chevron box). */
+export const FIRST_LINE_PHONE = 'py-[calc((32px-1lh)/2)]'
 export const TREE_PHONE_INDENT = 16
 
 /** The tree state, as `useTree` returns it. */
@@ -168,16 +180,19 @@ export function TreeItemContent<Data>({
   const { node } = row
   const Chevron = direction === 'rtl' ? ChevronLeft : ChevronRight
   const check = tree.checks?.get(node.id) ?? false
+  // The first line stands in the middle of the chevron's box, whatever the script's line height
+  // (P5.93 item 36): TreeTable's figures take the same padding, so they align with it.
+  const firstLine = phone ? FIRST_LINE_PHONE : FIRST_LINE
   return (
     <div style={style} className="flex min-w-0 items-start gap-1">
       {row.expandable ? (
         // For the pointer only (the row's click handler, `onTreeRowClick`): the row's keys open and
-        // close it (the tree pattern).
+        // close it (the tree pattern). One plain chevron, never in a box (P5.93 item 36).
         <span
           aria-hidden="true"
           data-slot="tree-chevron"
           className={cn(
-            'flex shrink-0 cursor-pointer items-center justify-center rounded-sm text-secondary hover:bg-surface-sunken',
+            'flex shrink-0 cursor-pointer items-center justify-center text-secondary hover:text-primary',
             chevronBox,
           )}
         >
@@ -196,25 +211,27 @@ export function TreeItemContent<Data>({
           <RowCheck state={check} disabled={node.disabledReason !== undefined} />
         </span>
       )}
-      <div
-        className={cn('flex min-w-0 flex-1 flex-col justify-center', phone ? 'min-h-8' : 'min-h-6')}
-      >
-        <span className={cn('min-w-0 text-sm text-primary', TEXT_DIRECTION)}>
-          {node.code !== undefined && (
-            <>
-              <bdi dir="ltr" className="me-1 text-secondary tabular-nums">
-                {node.code}
-              </bdi>{' '}
-            </>
+      {/* The code in a column of its own, a fixed gap, then the name: a long name wraps under
+          its own start (a hanging indent), never under the code. */}
+      <div className={cn('flex min-w-0 flex-1 items-start gap-2 text-sm', firstLine)}>
+        {node.code !== undefined && (
+          <bdi dir="ltr" className="shrink-0 whitespace-nowrap text-secondary tabular-nums">
+            {node.code}
+          </bdi>
+        )}
+        <div className="flex min-w-0 flex-1 flex-col">
+          <span className={cn('min-w-0 break-words text-primary', TEXT_DIRECTION)}>
+            {node.label}
+          </span>
+          {node.description !== undefined && (
+            <span className={cn('text-xs text-secondary', TEXT_DIRECTION)}>{node.description}</span>
           )}
-          {node.label}
-        </span>
-        {node.description !== undefined && (
-          <span className={cn('text-xs text-secondary', TEXT_DIRECTION)}>{node.description}</span>
-        )}
-        {node.disabledReason !== undefined && (
-          <span className={cn('text-xs text-tertiary', TEXT_DIRECTION)}>{node.disabledReason}</span>
-        )}
+          {node.disabledReason !== undefined && (
+            <span className={cn('text-xs text-tertiary', TEXT_DIRECTION)}>
+              {node.disabledReason}
+            </span>
+          )}
+        </div>
       </div>
       {end !== undefined && (
         <span

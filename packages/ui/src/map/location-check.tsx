@@ -7,7 +7,7 @@ import { usePhone } from '../components/use-phone'
 import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
-import { MapCanvas, type CanvasShape, type MapTiles } from './map-canvas'
+import { MapCanvas, type CanvasShape, type MapBaseLayer } from './map-canvas'
 import {
   circleBounds,
   geometryBounds,
@@ -93,7 +93,7 @@ export interface LocationCheckProps {
   /** The check-in (or any action that needs the place). */
   action?: LocationAction
   /** The application's base map; without it only the area and the position are drawn. */
-  tiles?: MapTiles
+  baseLayer?: MapBaseLayer
   /** The map's height in pixels. Default 260 on phones, 380 on a desktop. */
   height?: number
   /** Default: from the viewport (below 48em 'phone'). */
@@ -258,7 +258,7 @@ export function LocationCheck(props: LocationCheckProps) {
           label={messages['map.name'](props.label)}
           shapes={shapes}
           bounds={bounds}
-          tiles={props.tiles}
+          baseLayer={props.baseLayer}
           height={height}
           onReady={() => {
             setReady(true)

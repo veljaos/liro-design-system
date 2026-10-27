@@ -95,7 +95,9 @@
 }
 .liro-gantt .wx-area {
   position: relative;
-  overflow-y: hidden;
+  /* Clipped, not hidden: a hidden box would scroll, and a bar's name sticks to the chart's edge
+     (the chart is the one box that scrolls sideways; P5.93 item 34). */
+  overflow-y: clip;
   /* The grid: a line at the end of every column, one under every row (sizes from Gantt). */
   background-image:
     linear-gradient(to right, transparent calc(100% - 1px), var(--liro-border-subtle) 0),
@@ -152,7 +154,11 @@
   padding-right: 12px;
 }
 
-/* The bars. Gantt draws each bar's look itself (its template); SVAR keeps the place and the drag. */
+/*
+ * The bars. Gantt draws each bar's look itself (its template); SVAR keeps the place and the drag.
+ * The bars' layer is above the dependencies' lines: a name beside its bar stands on a tag of the
+ * surface, so no line crosses its text (P5.93 item 34).
+ */
 .liro-gantt .wx-bars {
   position: absolute;
   /* Above the "now" marker (layer 0): bars and their labels cover its line, never the reverse. */
@@ -161,7 +167,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  overflow: hidden;
+  overflow: clip;
 }
 .liro-gantt .wx-bar {
   pointer-events: all;

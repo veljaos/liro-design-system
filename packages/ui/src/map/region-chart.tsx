@@ -6,7 +6,7 @@ import { TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
 import { ChartTooltipContent } from '../primitives/chart-parts'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
-import { MapCanvas, type CanvasLabel, type CanvasShape, type MapTiles } from './map-canvas'
+import { MapCanvas, type CanvasLabel, type CanvasShape, type MapBaseLayer } from './map-canvas'
 import {
   bubbleRadius,
   geometryBounds,
@@ -99,7 +99,7 @@ export interface RegionChartProps extends ChartStateProps {
   defaultSelected?: string
   onSelect?: (id: string) => void
   /** The application's base map; without it (the usual case for a chart) only the areas are drawn. */
-  tiles?: MapTiles
+  baseLayer?: MapBaseLayer
   /** The map's height in pixels. Default 380 (300 on phones). */
   height?: number
   /** The application's controls in the header (a period select). */
@@ -476,7 +476,7 @@ export function RegionChart(props: RegionChartProps) {
           shapes={shapes}
           labels={labels}
           bounds={bounds}
-          tiles={props.tiles}
+          baseLayer={props.baseLayer}
           height={height}
           surface="raised"
           keyboard={false}

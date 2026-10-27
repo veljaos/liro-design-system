@@ -67,6 +67,7 @@ describe('messages', () => {
       'agent.named',
       'agent.question',
       'alert.close',
+      'articles.read',
       'assistant.ask',
       'assistant.askHint',
       'assistant.confirm',

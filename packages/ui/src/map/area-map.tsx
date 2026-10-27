@@ -6,7 +6,7 @@ import { FOCUS_RING, TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { Skeleton } from '../primitives/skeleton'
 import { useLiro } from '../provider/liro-provider'
-import { MapCanvas, type CanvasLabel, type CanvasShape, type MapTiles } from './map-canvas'
+import { MapCanvas, type CanvasLabel, type CanvasShape, type MapBaseLayer } from './map-canvas'
 import {
   areaAt,
   areaListKeyTarget,
@@ -25,11 +25,15 @@ import {
  * AreaMap (BUILD-PLAN P5.41): areas on a map — municipalities, the zones of a city's tax, service
  * areas — drawn as lines and fills in tokens, labelled where the name fits, with the list of
  * every area beside the map. The list is the keyboard's and the screen reader's way (a single
- * choice, the arrow keys move and choose), and choosing an area on the map or in the list marks
- * it neutrally (D17: `border.selected` and `surface.selected`). An optional point (an address)
+ * choice, the arrow keys move and choose). The chosen area (P5.93 item 37) is filled with its own
+ * colour, clearly stronger, with a thicker line; its label stands out (the strong tag) and the
+ * same item is the list's neutral selection (D17: surface.selected and the border.selected bar —
+ * never colour alone); the pointer over an area tints it lighter. An optional point (an address)
  * says which area it falls in ("Falls in: Zone II", `pointInArea`). The legend and every word on
- * an area are the application's; every boundary is the application's data (GeoJSON polygons),
- * and the base map's tiles too (`tiles`) — without them only the areas are drawn.
+ * an area are the application's; every boundary is the application's data (GeoJSON polygons).
+ * The base map is optional and off by default (`baseLayer`: the application's tile URL template,
+ * attribution — always shown — and max zoom; its provider, key and usage terms are the
+ * application's): without it only the areas are drawn and the library fetches nothing.
  * Phones: the list first, the map full width under it. The map is never mirrored.
  */
 
@@ -68,8 +72,13 @@ export interface AreaMapProps {
   /** The chosen area at first (uncontrolled). */
   defaultSelected?: string
   onSelect?: (id: string) => void
-  /** The application's base map; without it only the areas are drawn. */
-  tiles?: MapTiles
+  /**
+   * The application's base map, off by default: a tile URL template, its attribution (always
+   * shown under the map) and its max zoom. The provider, its key and its usage terms are the
+   * application's — the public openstreetmap.org tiles are not for heavy commercial use. Without
+   * it only the areas are drawn.
+   */
+  baseLayer?: MapBaseLayer
   /** The map's height in pixels. Default 420 (320 on phones). */
   height?: number
   /** Default: from the viewport (below 48em 'phone'). */
@@ -319,7 +328,7 @@ export function AreaMap(props: AreaMapProps) {
       shapes={shapes}
       labels={labels}
       bounds={bounds}
-      tiles={props.tiles}
+      baseLayer={props.baseLayer}
       height={height}
       className="min-w-0 flex-1"
       onShapeClick={choose}
