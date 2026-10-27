@@ -1518,6 +1518,7 @@ describe('messages', () => {
       'tree.loading',
       'tree.retry',
       'tree.total',
+      'undo.label',
       'usage.amount',
       'usage.noLimit',
       'usage.ofLimit',

@@ -45,6 +45,7 @@ import {
   type GanttTask,
 } from './gantt-logic'
 import { GanttDialogs, GanttList, useRowWords, type GanttDialog } from './gantt-parts'
+import { Tooltip } from '../components/popover'
 
 /*
  * Gantt (BUILD-PLAN P5.37; docs/decisions.md "Gantt"): a project's plan — phases, tasks and
@@ -292,16 +293,17 @@ function GanttTable({
                   <Flag aria-hidden="true" className="size-3.5 shrink-0 text-secondary" />
                 )}
                 <span className="flex min-w-0 flex-1 flex-col" aria-hidden="true">
-                  <span
-                    title={task.label}
-                    className={cn(
-                      'block truncate text-sm text-primary',
-                      kind === 'phase' ? 'font-semibold' : 'font-medium',
-                      TEXT_DIRECTION,
-                    )}
-                  >
-                    {task.label}
-                  </span>
+                  <Tooltip label={task.label}>
+                    <span
+                      className={cn(
+                        'block truncate text-sm text-primary',
+                        kind === 'phase' ? 'font-semibold' : 'font-medium',
+                        TEXT_DIRECTION,
+                      )}
+                    >
+                      {task.label}
+                    </span>
+                  </Tooltip>
                   <span
                     className={cn(
                       'block truncate text-xs text-secondary tabular-nums',

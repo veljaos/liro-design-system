@@ -187,7 +187,7 @@ export function MentionCombobox(props: MentionComboboxProps) {
   return (
     <Field {...fieldProps(props)}>
       {(control) => {
-        const attributes = controlAttributes(control, messages['field.readOnly'])
+        const attributes = controlAttributes(control)
         const onKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
           if (listShown && (MOVE_KEYS as readonly string[]).includes(event.key)) {
             event.preventDefault()

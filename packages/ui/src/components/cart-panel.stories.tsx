@@ -347,3 +347,95 @@ export const LineFeedback: Story = {
     await expect(canvasElement.querySelector('li[data-flash]')).toHaveTextContent('Jogurt')
   },
 }
+
+/**
+ * No toasts for routine actions at a till (P5.93 item 3): a removed line leaves "… removed" and
+ * Undo in its place, until the next change.
+ */
+export const UndoInPlace: Story = {
+  name: 'Undo in place',
+  args: {
+    lines: CART_LINES.filter((line) => line.id !== 'c2'),
+    undo: { message: 'Burek sa mesom removed', after: 'c1', onUndo: fn() },
+  },
+  play: async ({ canvasElement }) => {
+    await settle()
+    const undo = within(canvasElement).getByRole('button', { name: 'Undo' })
+    await expect(undo).toHaveAccessibleDescription('Burek sa mesom removed')
+  },
+}
+
+/** A parked sale: the empty cart says where it went, with "Resume" at the top. */
+export const ParkedUndo: Story = {
+  name: 'Parked, with Resume',
+  tags: ['!dev'],
+  args: {
+    lines: [],
+    total: null,
+    totals: [],
+    undo: {
+      message: 'Sale parked. It waits under Parked sales.',
+      undoLabel: 'Resume',
+      onUndo: fn(),
+    },
+  },
+}
+
+/** The application around the cart: remove takes the line away and offers Undo in its place. */
+function RemovingCart() {
+  const [lines, setLines] = useState<readonly CartLine[]>(CART_LINES)
+  const [removed, setRemoved] = useState<{ line: CartLine; at: number } | null>(null)
+  const previous = removed === null ? undefined : lines[removed.at - 1]?.id
+  return (
+    <CartPanel
+      className="flex-1"
+      lines={lines}
+      currency={CURRENCY}
+      total={CART_TOTAL}
+      onRemove={(id) => {
+        const at = lines.findIndex((line) => line.id === id)
+        const line = lines[at]
+        if (line === undefined) return
+        setRemoved({ line, at })
+        setLines((current) => current.filter((each) => each.id !== id))
+      }}
+      {...(removed === null
+        ? {}
+        : {
+            undo: {
+              message: `${removed.line.name} removed`,
+              ...(previous === undefined ? {} : { after: previous }),
+              onUndo: () => {
+                setLines((current) => [
+                  ...current.slice(0, removed.at),
+                  removed.line,
+                  ...current.slice(removed.at),
+                ])
+                setRemoved(null)
+              },
+            },
+          })}
+      onCharge={() => undefined}
+    />
+  )
+}
+
+/** Remove, then Undo in the line's place: no question first, no toast. */
+export const UndoInteraction: Story = {
+  name: 'Remove and undo, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => (
+    <Till>
+      <RemovingCart />
+    </Till>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Remove Burek sa mesom' }))
+    await expect(canvas.queryByRole('button', { name: 'Remove Burek sa mesom' })).toBeNull()
+    await userEvent.click(canvas.getByRole('button', { name: 'Undo' }))
+    await expect(canvas.getByRole('button', { name: 'Remove Burek sa mesom' })).toBeVisible()
+    await expect(canvas.queryByRole('button', { name: 'Undo' })).toBeNull()
+  },
+}

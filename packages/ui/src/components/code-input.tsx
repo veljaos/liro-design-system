@@ -183,7 +183,6 @@ export function CodeInput(props: CodeInputProps) {
             aria-invalid={hasError || undefined}
             aria-required={props.required === true || undefined}
             readOnly={readOnly}
-            title={readOnly ? messages['field.readOnly'] : undefined}
             value={box}
             onFocus={(event) => {
               event.currentTarget.select()

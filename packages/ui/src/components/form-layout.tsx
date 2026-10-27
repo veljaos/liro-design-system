@@ -17,7 +17,7 @@ import {
   type StickyActions,
 } from './form-logic'
 import { Stepper } from './progress'
-import { TAB_ROW_SCROLLER, useTabRow } from './tab-row'
+import { TAB_ROW_BOX, TAB_ROW_SCROLLER, useTabRow } from './tab-row'
 import { usePhone } from './use-phone'
 import { WizardFooter } from './wizard-footer'
 
@@ -218,31 +218,34 @@ export function FormTabs(props: FormTabsProps) {
       )}
     >
       {/* The tab row rule (P5.90 item 6): one line that scrolls sideways with faded edges. */}
-      <div {...row} className={TAB_ROW_SCROLLER}>
-        <TabsList
-          className="w-max min-w-full flex-nowrap justify-start px-4"
-          {...(props.label === undefined ? {} : { 'aria-label': props.label })}
-        >
-          {props.items.map((item) => (
-            <TabsTrigger
-              key={item.value}
-              value={item.value}
-              disabled={item.disabled === true}
-              className="whitespace-nowrap focus-visible:-outline-offset-2"
-              {...(item.hasErrors === true
-                ? { 'aria-label': messages['form.hasErrors'](item.label), 'data-has-errors': '' }
-                : {})}
-            >
-              <span className={TEXT_DIRECTION}>{item.label}</span>
-              {item.hasErrors === true && (
-                <TriangleAlert
-                  aria-hidden="true"
-                  className="ms-1.5 size-3.25 shrink-0 text-status-danger-fg"
-                />
-              )}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+      <div className={TAB_ROW_BOX}>
+        <div {...row.scroller} className={TAB_ROW_SCROLLER}>
+          <TabsList
+            className="w-max min-w-full flex-nowrap justify-start px-4"
+            {...(props.label === undefined ? {} : { 'aria-label': props.label })}
+          >
+            {props.items.map((item) => (
+              <TabsTrigger
+                key={item.value}
+                value={item.value}
+                disabled={item.disabled === true}
+                className="whitespace-nowrap focus-visible:-outline-offset-2"
+                {...(item.hasErrors === true
+                  ? { 'aria-label': messages['form.hasErrors'](item.label), 'data-has-errors': '' }
+                  : {})}
+              >
+                <span className={TEXT_DIRECTION}>{item.label}</span>
+                {item.hasErrors === true && (
+                  <TriangleAlert
+                    aria-hidden="true"
+                    className="ms-1.5 size-3.25 shrink-0 text-status-danger-fg"
+                  />
+                )}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </div>
+        {row.edges}
       </div>
       {props.items.map((item) => (
         <TabsContent key={item.value} value={item.value} className="flex flex-col">

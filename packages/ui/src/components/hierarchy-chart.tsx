@@ -678,83 +678,89 @@ export function HierarchyChart(props: HierarchyChartProps) {
   const toolbar = showToolbar && (
     <div
       data-slot="hierarchy-toolbar"
-      className="flex flex-wrap items-end gap-x-4 gap-y-3 border-0 border-b border-solid border-default p-4 print:hidden"
+      className="flex flex-col gap-1 border-0 border-b border-solid border-default p-4 print:hidden"
     >
-      {searchable && (
-        <div
-          className="flex min-w-0 flex-col gap-1"
-          onKeyDown={(event) => {
-            if (event.key === 'Enter' && (event.target as HTMLElement).tagName === 'INPUT') {
-              event.preventDefault()
-              findNext()
-            }
-          }}
-          role="presentation"
-        >
-          <TextField
-            type="search"
-            label={props.searchLabel ?? messages['hierarchy.search']}
-            value={query}
-            onChange={find}
-            className="w-72 max-w-full"
-          />
-          <p role="status" className={cn('m-0 min-h-4 text-xs text-secondary', TEXT_DIRECTION)}>
-            {found}
-          </p>
-        </div>
-      )}
-      <div className="flex flex-wrap items-center gap-2">
-        {unitTargetHasChildren && unitTarget !== unit ? (
-          <Button
-            family="neutral"
-            icon={ScanSearch}
-            label={messages['hierarchy.showUnit']}
-            onClick={() => {
-              setUnit(unitTarget)
-              setExpanded(initiallyExpanded(index, depth, [unitTarget]))
+      {/* The tools stand on the search field's line (P5.93 item 6); what the search found is a
+          line of its own under both. */}
+      <div className="flex flex-wrap items-end gap-x-4 gap-y-3">
+        {searchable && (
+          <div
+            className="flex min-w-0 flex-col"
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' && (event.target as HTMLElement).tagName === 'INPUT') {
+                event.preventDefault()
+                findNext()
+              }
             }}
-          />
-        ) : (
-          <UnavailableAction
-            family="neutral"
-            icon={ScanSearch}
-            label={messages['hierarchy.showUnit']}
-            reason={
-              unitTarget !== null && unitTarget === unit
-                ? messages['hierarchy.unitShown']
-                : messages['hierarchy.unitReason']
-            }
-          />
-        )}
-        {!phone && (
-          <div role="group" aria-label={messages['hierarchy.size']} className="flex gap-1">
-            <ButtonPrimitive
-              family="neutral"
-              emphasis={zoom === 'fit' ? 'secondary' : 'menu'}
-              aria-pressed={zoom === 'fit'}
-              onClick={() => {
-                setZoom('fit')
-              }}
-              className={cn(zoom === 'fit' && 'border-selected bg-surface-selected')}
-            >
-              <Shrink aria-hidden="true" className="size-4" />
-              <span className={TEXT_DIRECTION}>{messages['hierarchy.fit']}</span>
-            </ButtonPrimitive>
-            <ButtonPrimitive
-              family="neutral"
-              emphasis={zoom === 'actual' ? 'secondary' : 'menu'}
-              aria-pressed={zoom === 'actual'}
-              onClick={() => {
-                setZoom('actual')
-              }}
-              className={cn(zoom === 'actual' && 'border-selected bg-surface-selected')}
-            >
-              <Maximize2 aria-hidden="true" className="size-4" />
-              <span className={TEXT_DIRECTION}>{messages['hierarchy.actual']}</span>
-            </ButtonPrimitive>
+            role="presentation"
+          >
+            <TextField
+              type="search"
+              label={props.searchLabel ?? messages['hierarchy.search']}
+              value={query}
+              onChange={find}
+              className="w-72 max-w-full"
+            />
           </div>
         )}
+        <div className="flex flex-wrap items-center gap-2">
+          {unitTargetHasChildren && unitTarget !== unit ? (
+            <Button
+              family="neutral"
+              icon={ScanSearch}
+              label={messages['hierarchy.showUnit']}
+              onClick={() => {
+                setUnit(unitTarget)
+                setExpanded(initiallyExpanded(index, depth, [unitTarget]))
+              }}
+            />
+          ) : (
+            <UnavailableAction
+              family="neutral"
+              icon={ScanSearch}
+              label={messages['hierarchy.showUnit']}
+              reason={
+                unitTarget !== null && unitTarget === unit
+                  ? messages['hierarchy.unitShown']
+                  : messages['hierarchy.unitReason']
+              }
+            />
+          )}
+          {!phone && (
+            <div role="group" aria-label={messages['hierarchy.size']} className="flex gap-1">
+              <ButtonPrimitive
+                family="neutral"
+                emphasis={zoom === 'fit' ? 'secondary' : 'menu'}
+                aria-pressed={zoom === 'fit'}
+                onClick={() => {
+                  setZoom('fit')
+                }}
+                className={cn(zoom === 'fit' && 'border-selected bg-surface-selected')}
+              >
+                <Shrink aria-hidden="true" className="size-4" />
+                <span className={TEXT_DIRECTION}>{messages['hierarchy.fit']}</span>
+              </ButtonPrimitive>
+              <ButtonPrimitive
+                family="neutral"
+                emphasis={zoom === 'actual' ? 'secondary' : 'menu'}
+                aria-pressed={zoom === 'actual'}
+                onClick={() => {
+                  setZoom('actual')
+                }}
+                className={cn(zoom === 'actual' && 'border-selected bg-surface-selected')}
+              >
+                <Maximize2 aria-hidden="true" className="size-4" />
+                <span className={TEXT_DIRECTION}>{messages['hierarchy.actual']}</span>
+              </ButtonPrimitive>
+            </div>
+          )}
+        </div>
       </div>
+      {searchable && (
+        <p role="status" className={cn('m-0 min-h-4 text-xs text-secondary', TEXT_DIRECTION)}>
+          {found}
+        </p>
+      )}
     </div>
   )
 

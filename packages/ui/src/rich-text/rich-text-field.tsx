@@ -283,9 +283,10 @@ export function RichTextField({ ref, ...props }: RichTextFieldProps) {
             role="group"
             aria-labelledby={control.labelId}
             aria-describedby={control.describedBy}
-            title={messages['field.readOnly']}
             className={cn('rounded-md border border-solid px-3 py-2', READ_ONLY)}
           >
+            {/* A group has no read-only state of its own: said once, for assistive technology. */}
+            <span className="sr-only">{messages['field.readOnly']}</span>
             {isRichTextEmpty(props.value ?? props.defaultValue ?? null) ? (
               <span className="text-sm text-secondary">{READ_ONLY_EMPTY}</span>
             ) : (

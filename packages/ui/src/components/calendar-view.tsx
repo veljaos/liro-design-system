@@ -43,6 +43,7 @@ import { NowMarker } from './now-marker'
 import type { Tone } from './status-badge'
 import { STICKY_HEAD, useStickyHead } from './sticky-head'
 import { usePhone } from './use-phone'
+import { HintedTarget, Tooltip } from './popover'
 
 /*
  * CalendarView (BUILD-PLAN P5.8): events in a day, a week, a month or an agenda (a list of the
@@ -296,28 +297,30 @@ export function CalendarView(props: CalendarViewProps) {
       >
         <span className={TEXT_DIRECTION}>{messages['calendar.today']}</span>
       </ButtonPrimitive>
-      <ButtonPrimitive
-        shape="icon"
-        className="order-2"
-        aria-label={messages['calendar.previous'](view)}
-        title={messages['calendar.previous'](view)}
-        onClick={() => {
-          changeDate(shiftPeriod(view, date, -1))
-        }}
-      >
-        <ChevronLeft aria-hidden="true" className="size-4 rtl:-scale-x-100" />
-      </ButtonPrimitive>
-      <ButtonPrimitive
-        shape="icon"
-        className="order-3"
-        aria-label={messages['calendar.next'](view)}
-        title={messages['calendar.next'](view)}
-        onClick={() => {
-          changeDate(shiftPeriod(view, date, 1))
-        }}
-      >
-        <ChevronRight aria-hidden="true" className="size-4 rtl:-scale-x-100" />
-      </ButtonPrimitive>
+      <Tooltip label={messages['calendar.previous'](view)}>
+        <ButtonPrimitive
+          shape="icon"
+          className="order-2"
+          aria-label={messages['calendar.previous'](view)}
+          onClick={() => {
+            changeDate(shiftPeriod(view, date, -1))
+          }}
+        >
+          <ChevronLeft aria-hidden="true" className="size-4 rtl:-scale-x-100" />
+        </ButtonPrimitive>
+      </Tooltip>
+      <Tooltip label={messages['calendar.next'](view)}>
+        <ButtonPrimitive
+          shape="icon"
+          className="order-3"
+          aria-label={messages['calendar.next'](view)}
+          onClick={() => {
+            changeDate(shiftPeriod(view, date, 1))
+          }}
+        >
+          <ChevronRight aria-hidden="true" className="size-4 rtl:-scale-x-100" />
+        </ButtonPrimitive>
+      </Tooltip>
       <ToggleGroup
         type="single"
         value={view}
@@ -454,16 +457,18 @@ function EventBox({
     )
   }
   return (
-    <button
-      type="button"
-      className={cn(BUTTON_RESET, 'cursor-pointer', FOCUS_RING, className)}
-      style={style}
-      {...(label === undefined ? {} : { 'aria-label': label, title: label })}
-      {...(tabIndex === undefined ? {} : { tabIndex })}
-      onClick={onPress}
-    >
-      {children}
-    </button>
+    <HintedTarget hint={label}>
+      <button
+        type="button"
+        className={cn(BUTTON_RESET, 'cursor-pointer hover:border-current', FOCUS_RING, className)}
+        style={style}
+        {...(label === undefined ? {} : { 'aria-label': label })}
+        {...(tabIndex === undefined ? {} : { tabIndex })}
+        onClick={onPress}
+      >
+        {children}
+      </button>
+    </HintedTarget>
   )
 }
 
@@ -884,9 +889,8 @@ function MonthGrid(
             role="columnheader"
             className="min-w-0 flex-1 basis-0 py-1.5 text-center text-xs text-secondary first-letter:uppercase"
           >
-            <abbr title={format.weekdayName(weekdayOf(day), 'long')} className="no-underline">
-              {format.weekdayName(weekdayOf(day), 'short')}
-            </abbr>
+            <span aria-hidden="true">{format.weekdayName(weekdayOf(day), 'short')}</span>
+            <span className="sr-only">{format.weekdayName(weekdayOf(day), 'long')}</span>
           </div>
         ))}
       </div>

@@ -101,16 +101,16 @@ describe('Field', () => {
 
   it('marks a required field with " *" named by messages, and the control as required', () => {
     const html = render(<TextField id="name" label="Name" required />)
-    expect(html).toContain('title="Required"')
+    expect(html).not.toContain('title="Required"')
     expect(html).toContain('> *</span>'.replace(' ', ' '))
     expect(html).toMatch(/<input[^>]*required=""/)
   })
 
-  it('draws read-only grey with a border, the value readable, named by messages', () => {
+  it('draws read-only grey with a border, the value readable, announced by readonly, no native title', () => {
     const html = render(<TextField id="a" label="A" readOnly defaultValue="100200300" />)
     expect(html).toMatch(/<input[^>]*readOnly=""/)
     expect(html).not.toMatch(/<input[^>]*\sdisabled=""/)
-    expect(html).toContain('title="Read-only"')
+    expect(html).not.toContain('title=')
     for (const look of ['border-default', 'bg-surface-disabled', 'text-primary'])
       expect(html).toContain(look)
     expect(html).toContain('h-control')

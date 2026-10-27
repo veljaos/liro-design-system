@@ -7,6 +7,7 @@ import { TEXT_DIRECTION } from '../primitives/classes'
 import { useLiro } from '../provider/liro-provider'
 import { usePhone } from './use-phone'
 import type { Family, IconComponent } from './intents'
+import { Tooltip } from './popover'
 
 /*
  * Toasts (BUILD-PLAN P2.5): the previous Design System's `notice` API, carried over exactly
@@ -16,14 +17,18 @@ import type { Family, IconComponent } from './intents'
  * - Bottom right (bottom left in right-to-left), at most 4 visible.
  * - Radius md, with a border; an 18px icon, coloured by family: success positive (CircleCheck,
  *   lucide's CheckCircle2), info primary (Info), warning caution (TriangleAlert), error destructive
- *   (CircleX). Loading: the primary colour, a loader, no close button.
- * - Toasts never block (owner, P5.90 item 21). Success and info close by themselves after 4000ms
- *   and have NO close button: nothing to dismiss, and clicks pass through them to what they cover
- *   (`pointer-events: none` unless they carry an action). A warning closes after 6000ms and an
- *   error waits until closed or updated, both with a close button (Appendix B.8: success
- *   disappears, errors wait). A loading toast waits for its update.
- * - A routine save is not a toast: "Saved" stands beside the action (SaveStatus). A toast reports
- *   an outcome elsewhere ("Payroll posted", "Request sent"), never what to do next (D23).
+ *   (CircleX). Loading: the primary colour, a loader.
+ * - Every toast has a close button (X) (owner, P5.93 item 3; P5.90 had taken it off success and
+ *   info). Success and info still close by themselves after 4000ms, a warning after 6000ms; an
+ *   error waits until closed or updated (Appendix B.8: success disappears, errors wait), and a
+ *   loading toast waits for its update.
+ * - Toasts never block (P5.90 item 21, P5.93 item 3): only a toast's buttons (its action and its
+ *   X) take the pointer; a click anywhere else on it passes through to what it covers
+ *   (`pointer-events: none` on the toast, `auto` on its buttons).
+ * - A routine save is not a toast: "Saved" stands beside the action (SaveStatus), a sent line
+ *   says "Sent · 19:40" on the line, a removed one offers Undo in its place (P5.93 item 3). A
+ *   toast reports an error or an outcome outside the screen ("Payroll posted", "Request sent"),
+ *   never what to do next (D23).
  * - Placed so it never covers actions: 16px above the AppShell's or PortalShell's bottom bar on
  *   phones, WorklistPage's detail bar (`--liro-shell-bottom`) and any sticky bottom bar of the
  *   page — a form's bottom bar, a wizard's Back / Next row (`--liro-bottom-bars`, `useBottomBar`).
@@ -47,16 +52,14 @@ interface KindLook {
   icon: IconComponent | null
   /** Milliseconds before it closes by itself; Infinity: it waits. */
   duration: number
-  /** It has a close button (P5.90: only the toasts that may need reading or wait). */
-  closable: boolean
 }
 
 const KINDS: Record<NoticeKind, KindLook> = {
-  success: { family: 'positive', icon: CircleCheck, duration: 4000, closable: false },
-  info: { family: 'primary', icon: Info, duration: 4000, closable: false },
-  warning: { family: 'caution', icon: TriangleAlert, duration: 6000, closable: true },
-  error: { family: 'destructive', icon: CircleX, duration: Infinity, closable: true },
-  loading: { family: 'primary', icon: null, duration: Infinity, closable: false },
+  success: { family: 'positive', icon: CircleCheck, duration: 4000 },
+  info: { family: 'primary', icon: Info, duration: 4000 },
+  warning: { family: 'caution', icon: TriangleAlert, duration: 6000 },
+  error: { family: 'destructive', icon: CircleX, duration: Infinity },
+  loading: { family: 'primary', icon: null, duration: Infinity },
 }
 
 /** The icon circle's colour; literal classes, so Tailwind finds them. */
@@ -79,19 +82,8 @@ export function noticeDuration(kind: NoticeKind, withAction = false): number {
   return withAction ? Math.max(duration, NOTICE_ACTION_DURATION) : duration
 }
 
-/** Whether a kind has a close button; exported for its test. Success and info close themselves. */
-export function noticeClosable(kind: NoticeKind): boolean {
-  return KINDS[kind].closable
-}
-
-/**
- * Whether a toast takes the pointer (P5.90): a success or info toast without an action is only
- * read, so clicks pass through it to whatever it covers; a toast with a button, a warning and an
- * error take the pointer. Exported for its test.
- */
-export function noticeTakesPointer(kind: NoticeKind, withAction = false): boolean {
-  return withAction || KINDS[kind].closable
-}
+/** The classes of a toast: clicks pass through it, except on its buttons (P5.93 item 3). */
+export const NOTICE_POINTER = 'pointer-events-none [&_button]:pointer-events-auto'
 
 /** The one action of a toast (Undo), from the application. */
 export interface NoticeAction {
@@ -162,19 +154,22 @@ export function NoticeView({ id, kind, message, title, action }: NoticeViewProps
           <span className={TEXT_DIRECTION}>{action.label}</span>
         </button>
       )}
-      {look.closable && (
+      {/* Every toast has its X (P5.93 item 3), also those that close by themselves. */}
+      <Tooltip label={messages['notice.close']}>
         <button
           type="button"
           aria-label={messages['notice.close']}
-          title={messages['notice.close']}
-          className={buttonClassName({ family: 'neutral', emphasis: 'menu', shape: 'compact' })}
+          className={cn(
+            buttonClassName({ family: 'neutral', emphasis: 'menu', shape: 'compact' }),
+            'shrink-0',
+          )}
           onClick={() => {
             toast.dismiss(id)
           }}
         >
           <X aria-hidden="true" className={BUTTON_SHAPES.compact.icon} />
         </button>
-      )}
+      </Tooltip>
     </div>
   )
 }
@@ -184,7 +179,10 @@ export interface NoticeOptions {
   title?: ReactNode
   /** The toast to replace; by default a new one. */
   id?: string | number
-  /** One action before the close button (Undo), only when the application can carry it out. */
+  /**
+   * One action before the close button (Undo), only when the application can carry it out. In a
+   * till or on a restaurant's floor an Undo stands beside what changed, not in a toast (P5.93).
+   */
   action?: NoticeAction
 }
 
@@ -201,10 +199,8 @@ function show(kind: NoticeKind, message: ReactNode, options: NoticeOptions = {})
     ),
     {
       duration: noticeDuration(kind, options.action !== undefined),
-      // A toast that is only read lets clicks through to what it covers (P5.90).
-      ...(noticeTakesPointer(kind, options.action !== undefined)
-        ? {}
-        : { className: 'pointer-events-none' }),
+      // Clicks pass through a toast to what it covers; only its buttons take them (P5.93).
+      className: NOTICE_POINTER,
       ...(options.id === undefined ? {} : { id: options.id }),
     },
   )

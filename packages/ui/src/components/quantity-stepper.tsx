@@ -138,7 +138,7 @@ export function QuantityStepper(props: QuantityStepperProps) {
               )}
             >
               <input
-                {...controlAttributes(control, messages['field.readOnly'])}
+                {...controlAttributes(control)}
                 {...attributes}
                 aria-describedby={describedBy}
                 className={cn(
@@ -196,7 +196,7 @@ export function QuantityStepper(props: QuantityStepperProps) {
                 )}
               >
                 <input
-                  {...controlAttributes(control, messages['field.readOnly'])}
+                  {...controlAttributes(control)}
                   {...attributes}
                   aria-describedby={describedBy}
                   inputMode="decimal"

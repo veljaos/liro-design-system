@@ -3,7 +3,6 @@ import { Checkbox } from '../primitives/checkbox'
 import { cn } from '../primitives/cn'
 import { TEXT_DIRECTION } from '../primitives/classes'
 import { Switch } from '../primitives/switch'
-import { useLiro } from '../provider/liro-provider'
 import {
   FieldLabelsHidden,
   FieldMessage,
@@ -41,7 +40,6 @@ interface InlineControlProps {
   'aria-describedby': string | undefined
   'aria-invalid': true | undefined
   'aria-readonly': true | undefined
-  title: string | undefined
   required: boolean
   readOnly: boolean
   checked?: boolean
@@ -52,7 +50,6 @@ interface InlineControlProps {
 }
 
 function InlineField(props: InlineProps) {
-  const { messages } = useLiro()
   const ids = useFieldIds(props)
   const labelsHidden = useContext(FieldLabelsHidden)
   const hideLabel = props.hideLabel ?? labelsHidden
@@ -76,7 +73,6 @@ function InlineField(props: InlineProps) {
         'aria-describedby': ids.describedBy,
         'aria-invalid': ids.hasError || undefined,
         'aria-readonly': readOnly || undefined,
-        title: readOnly ? messages['field.readOnly'] : undefined,
         required: props.required === true,
         readOnly,
         ...state,

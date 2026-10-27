@@ -52,14 +52,14 @@ function valueProps(props: TextValueProps & { readOnly?: boolean }) {
  * The value is plain text; paste is always allowed.
  */
 export function TextField(props: TextFieldProps) {
-  const { messages, direction } = useLiro()
+  const { direction } = useLiro()
   const type = props.type ?? 'text'
   const ltr = props.direction === 'ltr' || type === 'email' || type === 'tel' || type === 'url'
   return (
     <Field {...fieldProps(props)}>
       {(control) => (
         <Input
-          {...controlAttributes(control, messages['field.readOnly'])}
+          {...controlAttributes(control)}
           {...valueProps(props)}
           type={type}
           {...(props.autoComplete === undefined ? {} : { autoComplete: props.autoComplete })}
@@ -83,12 +83,11 @@ export interface TextAreaFieldProps extends FieldBaseProps, TextValueProps {
 
 /** A multi-line text field, with the states of TextField. Paste is always allowed. */
 export function TextAreaField(props: TextAreaFieldProps) {
-  const { messages } = useLiro()
   return (
     <Field {...fieldProps(props)}>
       {(control) => (
         <Textarea
-          {...controlAttributes(control, messages['field.readOnly'])}
+          {...controlAttributes(control)}
           {...valueProps(props)}
           {...(props.rows === undefined ? {} : { rows: props.rows })}
           onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>

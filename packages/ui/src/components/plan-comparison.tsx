@@ -176,7 +176,6 @@ export function PlanComparison(props: PlanComparisonProps) {
           aria-describedby={control.describedBy}
           aria-invalid={control.invalid || undefined}
           aria-readonly={control.readOnly || undefined}
-          title={control.readOnly ? messages['field.readOnly'] : undefined}
           className={cn('min-w-0 font-sans', phone ? 'flex flex-col gap-3' : 'block')}
         >
           {phone ? (

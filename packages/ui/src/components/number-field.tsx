@@ -117,10 +117,10 @@ function NumberBox(props: {
   before: ReactNode
   after: ReactNode
 }) {
-  const { messages, direction } = useLiro()
+  const { direction } = useLiro()
   const rtl = direction === 'rtl'
   const { control } = props
-  const attributes = controlAttributes(control, messages['field.readOnly'])
+  const attributes = controlAttributes(control)
   // The typing area's own direction is left to right: its start is the field's end in
   // right-to-left.
   const left = rtl ? props.after !== null : props.before !== null
@@ -190,7 +190,7 @@ export function NumberField(props: NumberFieldProps) {
         props.startText === undefined ? (
           <>
             <Input
-              {...controlAttributes(control, messages['field.readOnly'])}
+              {...controlAttributes(control)}
               {...numberAttributes(entry, props, control.readOnly)}
               className={cn('tabular-nums', rtl && 'text-end', control.readOnly && READ_ONLY)}
             />

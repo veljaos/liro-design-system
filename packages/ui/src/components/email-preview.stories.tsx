@@ -56,8 +56,8 @@ const meta = {
     },
   },
   args: {
-    from: 'Kvadrat Gradnja d.o.o. <billing@example.com>',
-    to: 'Gradska toplana Novi Sad <accounts@example.com>',
+    from: { name: 'Kvadrat Gradnja d.o.o.', address: 'billing@example.com' },
+    to: { name: 'Gradska toplana Novi Sad', address: 'accounts@example.com' },
     subject: 'Invoice F-2026-0431 from Kvadrat Gradnja d.o.o.',
     logo: <Logo />,
     footer: FOOTER,
@@ -151,7 +151,10 @@ export const LongText: Story = {
   name: 'Long text',
   args: {
     label: 'Preview of the invoice e-mail for residential construction customers',
-    from: 'Kvadrat Gradnja d.o.o., accounting department for residential construction projects <residential.projects.accounting@example.com>',
+    from: {
+      name: 'Kvadrat Gradnja d.o.o., accounting department for residential construction projects',
+      address: 'residential.projects.accounting@example.com',
+    },
     subject:
       'Invoice F-2026-0431 for the works on the heating substation in the residential building Liman 4, phase three, with the interim situation attached',
   },
@@ -176,8 +179,8 @@ export const Phone: Story = {
 /** Arabic interface, Arabic message. */
 export const Arabic: Story = {
   args: {
-    from: 'شركة البناء <billing@example.com>',
-    to: 'accounts@example.com',
+    from: { name: 'شركة البناء', address: 'billing@example.com' },
+    to: { address: 'accounts@example.com' },
     subject: 'الفاتورة F-2026-0431',
     logo: <Logo name="شركة البناء" />,
     footer: 'تصلك هذه الرسالة لأنك من عملائنا.',
@@ -204,7 +207,7 @@ export const Arabic: Story = {
 /** Japanese. */
 export const Japanese: Story = {
   args: {
-    from: '建設会社 <billing@example.com>',
+    from: { name: '建設会社', address: 'billing@example.com' },
     subject: '請求書 F-2026-0431 のお知らせ',
     logo: <Logo name="建設会社" />,
     footer: 'このメールはお客様にお送りしています。',

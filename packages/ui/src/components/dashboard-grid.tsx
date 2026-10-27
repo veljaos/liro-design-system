@@ -40,6 +40,7 @@ import {
 } from './dashboard-grid-logic'
 import { EmptyState } from './empty-state'
 import { usePhone } from './use-phone'
+import { Tooltip } from './popover'
 
 /*
  * DashboardGrid (P5.81): the cards of a dashboard the user arranges — the application's cards
@@ -449,30 +450,31 @@ export function DashboardGrid(props: DashboardGridProps) {
             >
               <div className="flex min-w-0 items-start gap-1">
                 {!phone && (
-                  <ButtonPrimitive
-                    family="neutral"
-                    emphasis="menu"
-                    shape="compact"
-                    data-dashboard-grip=""
-                    data-dashboard-focus={`handle:${card.id}`}
-                    aria-label={messages['dashboardGrid.moveCard'](card.title)}
-                    aria-describedby={instructionsId}
-                    aria-pressed={isLifted}
-                    title={messages['dashboardGrid.moveCard'](card.title)}
-                    onKeyDown={(event) => {
-                      onHandleKey(event, card)
-                    }}
-                    onBlur={(event) => {
-                      // Leaving the handle while the card is up (Tab) puts it back.
-                      if (isLifted && event.relatedTarget !== null) {
-                        setLifted(null)
-                        setAnnouncement(messages['dashboardGrid.cancelled'](card.title))
-                      }
-                    }}
-                    className="cursor-grab"
-                  >
-                    <GripVertical aria-hidden="true" className="size-4" />
-                  </ButtonPrimitive>
+                  <Tooltip label={messages['dashboardGrid.moveCard'](card.title)}>
+                    <ButtonPrimitive
+                      family="neutral"
+                      emphasis="menu"
+                      shape="compact"
+                      data-dashboard-grip=""
+                      data-dashboard-focus={`handle:${card.id}`}
+                      aria-label={messages['dashboardGrid.moveCard'](card.title)}
+                      aria-describedby={instructionsId}
+                      aria-pressed={isLifted}
+                      onKeyDown={(event) => {
+                        onHandleKey(event, card)
+                      }}
+                      onBlur={(event) => {
+                        // Leaving the handle while the card is up (Tab) puts it back.
+                        if (isLifted && event.relatedTarget !== null) {
+                          setLifted(null)
+                          setAnnouncement(messages['dashboardGrid.cancelled'](card.title))
+                        }
+                      }}
+                      className="cursor-grab"
+                    >
+                      <GripVertical aria-hidden="true" className="size-4" />
+                    </ButtonPrimitive>
+                  </Tooltip>
                 )}
                 <span
                   className={cn(
@@ -511,21 +513,22 @@ export function DashboardGrid(props: DashboardGridProps) {
                     move(card.id, to)
                   }}
                 />
-                <ButtonPrimitive
-                  family="neutral"
-                  emphasis="menu"
-                  shape="compact"
-                  aria-label={messages['dashboardGrid.remove'](card.title)}
-                  title={messages['dashboardGrid.remove'](card.title)}
-                  onClick={() => {
-                    const next = layout[index + 1] ?? layout[index - 1]
-                    if (next !== undefined) focusAfter.current = `menu:${next.id}`
-                    report(removeCard(layout, card.id), { kind: 'remove', id: card.id })
-                    setAnnouncement(messages['dashboardGrid.removed'](card.title))
-                  }}
-                >
-                  <X aria-hidden="true" className="size-4" />
-                </ButtonPrimitive>
+                <Tooltip label={messages['dashboardGrid.remove'](card.title)}>
+                  <ButtonPrimitive
+                    family="neutral"
+                    emphasis="menu"
+                    shape="compact"
+                    aria-label={messages['dashboardGrid.remove'](card.title)}
+                    onClick={() => {
+                      const next = layout[index + 1] ?? layout[index - 1]
+                      if (next !== undefined) focusAfter.current = `menu:${next.id}`
+                      report(removeCard(layout, card.id), { kind: 'remove', id: card.id })
+                      setAnnouncement(messages['dashboardGrid.removed'](card.title))
+                    }}
+                  >
+                    <X aria-hidden="true" className="size-4" />
+                  </ButtonPrimitive>
+                </Tooltip>
               </div>
               {/* What the card shows, as it will look; not reached while arranging. */}
               <div inert className="min-w-0">
@@ -642,16 +645,17 @@ function CardMenu({
   return (
     <MenuRoot modal={false}>
       <DropdownMenuTrigger asChild>
-        <ButtonPrimitive
-          family="neutral"
-          emphasis="menu"
-          shape="compact"
-          data-dashboard-focus={focusId}
-          aria-label={messages['dashboardGrid.cardMenu'](card.title)}
-          title={messages['dashboardGrid.cardMenu'](card.title)}
-        >
-          <MoreHorizontal aria-hidden="true" className="size-4" />
-        </ButtonPrimitive>
+        <Tooltip label={messages['dashboardGrid.cardMenu'](card.title)}>
+          <ButtonPrimitive
+            family="neutral"
+            emphasis="menu"
+            shape="compact"
+            data-dashboard-focus={focusId}
+            aria-label={messages['dashboardGrid.cardMenu'](card.title)}
+          >
+            <MoreHorizontal aria-hidden="true" className="size-4" />
+          </ButtonPrimitive>
+        </Tooltip>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem

@@ -1680,4 +1680,6 @@ export const messagesEn: LiroMessages = {
   'trace.sourcesUsed': (count, countText) =>
     count === 1 ? 'Used 1 record' : `Used ${countText} records`,
   'trace.result': 'Result',
+  // ── P5.93 (c) ──
+  'undo.label': 'Undo',
 }

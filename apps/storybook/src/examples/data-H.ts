@@ -76,7 +76,11 @@ export const SERVICE_LEVELS: CatalogCategory[] = [
   { id: 'vaccines', label: 'Vaccination' },
 ]
 
-const COVERED = 'Covered by health insurance'
+/**
+ * Said once, in the catalogue's description and as a filter (P5.93 item 12): a covered service
+ * shows no price; only the ones the patient pays show theirs.
+ */
+export const COVERED = 'Covered by health insurance'
 
 function service(
   id: string,
@@ -93,7 +97,7 @@ function service(
     categoryId,
     detail,
     provider,
-    ...(price === undefined ? { priceText: COVERED } : { price }),
+    ...(price === undefined ? {} : { price }),
     ...extra,
   }
 }
@@ -237,7 +241,7 @@ export const SERVICE_SECTIONS: CatalogSection[] = [
 ]
 
 export const SERVICE_FILTERS: CatalogFilter[] = [
-  { id: 'covered', label: COVERED, matches: (each) => each.priceText === COVERED },
+  { id: 'covered', label: COVERED, matches: (each) => each.price === undefined },
   { id: 'gp', label: 'With your chosen doctor', matches: (each) => each.provider === GP },
 ]
 

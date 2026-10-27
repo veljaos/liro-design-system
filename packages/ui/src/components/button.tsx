@@ -2,6 +2,7 @@ import type { MouseEventHandler } from 'react'
 import { BUTTON_SHAPES, buttonClassName, type ButtonShape } from '../primitives/button'
 import { TEXT_DIRECTION } from '../primitives/classes'
 import { INTENTS, type Emphasis, type Family, type IconComponent, type Intent } from './intents'
+import { Tooltip, useInTooltip } from './popover'
 
 /*
  * The look (colours by family and emphasis, the Mantine sizes of each shape) lives in
@@ -144,26 +145,32 @@ export function Button(props: ButtonProps) {
 
 /**
  * An action without visible text: the same 36px button with only its icon. `label` is required:
- * it is the accessible name and the tooltip. Use it where the icon is universally understood.
+ * it is the accessible name and the library's tooltip. Use it where the icon is universally understood.
  */
 export function IconButton(props: IconButtonProps) {
   const { icon, attributes } = buttonParts(props, 'icon')
-  return (
-    <button {...attributes} aria-label={props.label} title={props.label}>
+  const button = (
+    <button {...attributes} aria-label={props.label}>
       {icon}
     </button>
   )
+  // The library's tooltip names it on hover and focus, never the browser's title (P5.93 item 7);
+  // inside the application's own Tooltip, that one alone.
+  return useInTooltip() ? button : <Tooltip label={props.label}>{button}</Tooltip>
 }
 
 /**
  * A 28px icon button for tight places only: table row menus, close buttons. Neutral and subtle
- * (menu emphasis) by default. `label` is required: it is the accessible name and the tooltip.
+ * (menu emphasis) by default. `label` is required: it is the accessible name and the library's tooltip.
  */
 export function CompactIconButton(props: CompactIconButtonProps) {
   const { icon, attributes } = buttonParts(props, 'compact')
-  return (
-    <button {...attributes} aria-label={props.label} title={props.label}>
+  const button = (
+    <button {...attributes} aria-label={props.label}>
       {icon}
     </button>
   )
+  // The library's tooltip names it on hover and focus, never the browser's title (P5.93 item 7);
+  // inside the application's own Tooltip, that one alone.
+  return useInTooltip() ? button : <Tooltip label={props.label}>{button}</Tooltip>
 }

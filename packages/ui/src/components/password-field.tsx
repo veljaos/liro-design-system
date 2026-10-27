@@ -12,6 +12,7 @@ import { cn } from '../primitives/cn'
 import { Input } from '../primitives/input'
 import { useLiro } from '../provider/liro-provider'
 import { controlAttributes, Field, FieldMessage, fieldProps, type FieldBaseProps } from './field'
+import { Tooltip } from './popover'
 
 /*
  * PasswordField (BUILD-PLAN P5.6): a password with its show / hide toggle.
@@ -62,7 +63,7 @@ export function PasswordField(props: PasswordFieldProps) {
         <>
           <div className="relative">
             <Input
-              {...controlAttributes(control, messages['field.readOnly'])}
+              {...controlAttributes(control)}
               type={shown ? 'text' : 'password'}
               autoComplete={props.autoComplete ?? 'current-password'}
               autoCapitalize="none"
@@ -92,29 +93,30 @@ export function PasswordField(props: PasswordFieldProps) {
               )}
             />
             {!control.readOnly && (
-              <ButtonPrimitive
-                family="neutral"
-                emphasis="menu"
-                shape="compact"
-                aria-label={messages['password.show']}
-                aria-pressed={shown}
-                aria-controls={control.id}
-                title={messages['password.show']}
-                // Keeps the focus (and the caret) in the field when pressed with a pointer.
-                onMouseDown={(event) => {
-                  event.preventDefault()
-                }}
-                onClick={() => {
-                  setShown((value) => !value)
-                }}
-                className="absolute end-1 top-1"
-              >
-                {shown ? (
-                  <EyeOff aria-hidden="true" className="size-4" />
-                ) : (
-                  <Eye aria-hidden="true" className="size-4" />
-                )}
-              </ButtonPrimitive>
+              <Tooltip label={messages['password.show']}>
+                <ButtonPrimitive
+                  family="neutral"
+                  emphasis="menu"
+                  shape="compact"
+                  aria-label={messages['password.show']}
+                  aria-pressed={shown}
+                  aria-controls={control.id}
+                  // Keeps the focus (and the caret) in the field when pressed with a pointer.
+                  onMouseDown={(event) => {
+                    event.preventDefault()
+                  }}
+                  onClick={() => {
+                    setShown((value) => !value)
+                  }}
+                  className="absolute end-1 top-1"
+                >
+                  {shown ? (
+                    <EyeOff aria-hidden="true" className="size-4" />
+                  ) : (
+                    <Eye aria-hidden="true" className="size-4" />
+                  )}
+                </ButtonPrimitive>
+              </Tooltip>
             )}
           </div>
           {/* Always in the page, so the note is announced when it appears. */}

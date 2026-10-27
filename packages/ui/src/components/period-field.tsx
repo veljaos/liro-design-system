@@ -134,7 +134,7 @@ export function PeriodField(props: PeriodFieldProps) {
         if (control.readOnly) {
           return (
             <Input
-              {...controlAttributes(control, messages['field.readOnly'])}
+              {...controlAttributes(control)}
               value={text}
               dir={AUTO_DIRECTION.dir}
               className={cn(AUTO_DIRECTION.className, READ_ONLY)}

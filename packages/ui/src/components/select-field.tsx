@@ -120,7 +120,7 @@ export function SelectField(props: SelectFieldProps) {
         if (control.readOnly) {
           return (
             <Input
-              {...controlAttributes(control, messages['field.readOnly'])}
+              {...controlAttributes(control)}
               value={chosenLabel}
               {...(chosenOption?.lang === undefined ? {} : { lang: chosenOption.lang })}
               className={READ_ONLY}
@@ -280,7 +280,7 @@ function SearchableSelect(
         }}
         anchor={
           <Input
-            {...controlAttributes(control, messages['field.readOnly'])}
+            {...controlAttributes(control)}
             role="combobox"
             aria-autocomplete="list"
             aria-expanded={visible && shown.length > 0}

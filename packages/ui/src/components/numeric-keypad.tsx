@@ -4,6 +4,7 @@ import { buttonClassName, type ButtonLook } from '../primitives/button'
 import { BUTTON_RESET, FOCUS_RING, READ_ONLY, TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
+import { HintedTarget } from './popover'
 import type { Emphasis } from './intents'
 import { READ_ONLY_EMPTY } from './field'
 import {
@@ -208,7 +209,6 @@ export function NumericKeypad(props: NumericKeypadProps) {
             inputMode="none"
             autoComplete="off"
             value={text}
-            {...(readOnly ? { title: messages['field.readOnly'] } : {})}
             placeholder={readOnly ? READ_ONLY_EMPTY : (props.placeholder ?? format.number('0'))}
             onKeyDown={onKeyDown}
             className={cn(
@@ -226,26 +226,26 @@ export function NumericKeypad(props: NumericKeypadProps) {
             key === 'decimal' && maxDecimals === 0 ? (
               <span key={key} aria-hidden="true" />
             ) : (
-              <button
-                key={key}
-                type="button"
-                data-key={key}
-                {...(key === 'backspace' || key === 'decimal'
-                  ? { 'aria-label': key === 'decimal' ? messages['keypad.decimal'] : label(key) }
-                  : {})}
-                {...(key === 'backspace' ? { title: label(key) } : {})}
-                className={cn(BUTTON_RESET, KEY, FOCUS_RING)}
-                onKeyDown={onKeyDown}
-                onClick={() => {
-                  press(key)
-                }}
-              >
-                {key === 'backspace' ? (
-                  <Delete aria-hidden="true" className="size-6" />
-                ) : (
-                  label(key)
-                )}
-              </button>
+              <HintedTarget key={key} hint={key === 'backspace' ? label(key) : undefined}>
+                <button
+                  type="button"
+                  data-key={key}
+                  {...(key === 'backspace' || key === 'decimal'
+                    ? { 'aria-label': key === 'decimal' ? messages['keypad.decimal'] : label(key) }
+                    : {})}
+                  className={cn(BUTTON_RESET, KEY, FOCUS_RING)}
+                  onKeyDown={onKeyDown}
+                  onClick={() => {
+                    press(key)
+                  }}
+                >
+                  {key === 'backspace' ? (
+                    <Delete aria-hidden="true" className="size-6" />
+                  ) : (
+                    label(key)
+                  )}
+                </button>
+              </HintedTarget>
             ),
           )}
           <button

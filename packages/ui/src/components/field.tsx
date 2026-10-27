@@ -2,7 +2,6 @@ import { CircleAlert } from 'lucide-react'
 import { createContext, useContext, useId, type ReactNode } from 'react'
 import { INPUT, READ_ONLY, TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
-import { useLiro } from '../provider/liro-provider'
 
 /*
  * The frame of every field (BUILD-PLAN P2.2): label, the control, and under it the optional
@@ -84,11 +83,13 @@ export interface FieldProps extends FieldBaseProps {
   children: (control: FieldControl) => ReactNode
 }
 
-/** The required mark after a label: " *" in the error colour; its name comes from messages. */
+/**
+ * The required mark after a label: " *" in the error colour, hidden from assistive technology —
+ * the control itself is `required` (no browser title on it, P5.93 item 7).
+ */
 export function RequiredMark() {
-  const { messages } = useLiro()
   return (
-    <span aria-hidden="true" title={messages['field.required']} className="text-status-danger-fg">
+    <span aria-hidden="true" className="text-status-danger-fg">
       {' *'}
     </span>
   )
@@ -221,17 +222,17 @@ export function Field(props: FieldProps) {
 }
 
 /**
- * The attributes a Field gives its control. Read-only: native `readonly`, the title "Read-only",
- * and "—" where the value is empty (the placeholder, P5.93 item 1).
+ * The attributes a Field gives its control. Read-only: native `readonly` (read by assistive
+ * technology; no native `title`, P5.93 item 7) and "—" where the value is empty (the placeholder,
+ * P5.93 item 1).
  */
-export function controlAttributes(control: FieldControl, readOnlyTitle: string) {
+export function controlAttributes(control: FieldControl) {
   return {
     id: control.id,
     'aria-describedby': control.describedBy,
     'aria-invalid': control.invalid || undefined,
     required: control.required,
     readOnly: control.readOnly,
-    title: control.readOnly ? readOnlyTitle : undefined,
     ...(control.readOnly ? { placeholder: READ_ONLY_EMPTY } : {}),
   }
 }
@@ -260,14 +261,11 @@ export function fieldProps(props: FieldBaseProps) {
  */
 export function ReadOnlyBox({
   control,
-  title,
   empty,
   className,
   children,
 }: {
   control: FieldControl
-  /** messages['field.readOnly']. */
-  title: string
   /** Whether there is no value: the box shows "—". */
   empty: boolean
   className?: string
@@ -283,7 +281,6 @@ export function ReadOnlyBox({
       aria-describedby={control.describedBy}
       aria-invalid={control.invalid || undefined}
       tabIndex={0}
-      title={title}
       data-slot="read-only"
       className={cn(INPUT, READ_ONLY, 'h-auto min-h-control py-[5.5px] select-text', className)}
     >

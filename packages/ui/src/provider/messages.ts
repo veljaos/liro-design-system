@@ -2344,4 +2344,7 @@ export interface LiroMessages {
   'trace.sourcesUsed': (count: number, countText: string) => string
   /** Task and Subagent: what the work handed back. */
   'trace.result': string
+  // ── P5.93 (c) ──
+  /** InlineUndo's button (P5.93 item 3). */
+  'undo.label': string
 }

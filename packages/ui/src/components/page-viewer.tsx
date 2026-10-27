@@ -15,6 +15,7 @@ import {
   type ViewerPage,
 } from './page-viewer-logic'
 import { Skeleton } from './progress'
+import { Tooltip } from './popover'
 
 export { clampPage, labelSide, regionBox, regionPage } from './page-viewer-logic'
 export type { PageRegion, RegionBox, ViewerPage } from './page-viewer-logic'
@@ -90,17 +91,18 @@ function ToolButton({
   children: ReactNode
 }) {
   return (
-    <ButtonPrimitive
-      family="neutral"
-      emphasis="menu"
-      shape="compact"
-      aria-label={label}
-      title={label}
-      disabled={disabled}
-      onClick={onClick}
-    >
-      {children}
-    </ButtonPrimitive>
+    <Tooltip label={label}>
+      <ButtonPrimitive
+        family="neutral"
+        emphasis="menu"
+        shape="compact"
+        aria-label={label}
+        disabled={disabled}
+        onClick={onClick}
+      >
+        {children}
+      </ButtonPrimitive>
+    </Tooltip>
   )
 }
 

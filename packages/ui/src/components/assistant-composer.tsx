@@ -106,7 +106,6 @@ export function AssistantComposer(props: AssistantComposerProps) {
                   .join(' ') || undefined
               }
               readOnly={control.readOnly}
-              title={control.readOnly ? messages['field.readOnly'] : undefined}
               value={text}
               rows={page ? 3 : 2}
               enterKeyHint="send"

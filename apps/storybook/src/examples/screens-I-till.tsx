@@ -3,7 +3,9 @@ import {
   GraduationCap,
   HandCoins,
   ListChecks,
+  CircleCheck,
   Lock,
+  LockOpen,
   LogOut,
   PauseCircle,
   Printer,
@@ -29,7 +31,6 @@ import {
   LineQuantityPicker,
   LiroProvider,
   MoneyField,
-  notice,
   PaymentDialog,
   PosShell,
   ProductGrid,
@@ -37,6 +38,7 @@ import {
   ReceiptKindPicker,
   ReceiptPreview,
   ReceiptResult,
+  SaveStatus,
   ScanField,
   TextAreaField,
   Toaster,
@@ -324,7 +326,22 @@ export function Till({ phone, start = {} }: { phone: boolean; start?: TillStart 
   // ── The sale ──
   // The sale outlives the screen, as the Core keeps it (P5.28).
   const [sale, setSale] = useExampleState<readonly SaleLine[]>('till.sale', () => SALE)
+  /**
+   * The cart's Undo of the last removal or of a parked sale, in its place (P5.93 item 3: no toasts
+   * for routine actions at a till).
+   */
+  const [undo, setUndo] = useState<{
+    message: string
+    undoLabel?: string
+    after?: string
+    before: readonly SaleLine[]
+  } | null>(null)
   const [feedback, setFeedback] = useState<ScanFeedback | null>(null)
+  const [locked, setLocked] = useState(false)
+  const [offlineChecked, setOfflineChecked] = useState(false)
+  /** The advance just refunded, said in the cart's details (P5.93 item 3: no toast). */
+  const [refunded, setRefunded] = useState<string | null>(null)
+  const [reprinted, setReprinted] = useState(false)
   const [type, setType] = useState<ReceiptTypeId>(start.type ?? 'normal')
   const [transaction, setTransaction] = useState<TransactionId>(
     start.refund === 'cart' || start.refund === 'receipt' ? 'refund' : 'sale',
@@ -530,6 +547,7 @@ export function Till({ phone, start = {} }: { phone: boolean; start?: TillStart 
       return
     }
     setFeedback((previous) => answer(previous, 'success', `${item.name} added`))
+    setUndo(null)
     setSale((current) => {
       const line = current.find((each) => each.productId === id)
       return line === undefined
@@ -565,6 +583,7 @@ export function Till({ phone, start = {} }: { phone: boolean; start?: TillStart 
     setBuyer(null)
     setWithoutCompensation(false)
     setFeedback(null)
+    setUndo(null)
     resetPayment()
   }
 
@@ -690,6 +709,12 @@ export function Till({ phone, start = {} }: { phone: boolean; start?: TillStart 
             emptyText="No open advances."
           />
         )}
+        {refunded !== null && (
+          <p role="status" className="m-0 text-sm text-status-success-fg bidi-content">
+            <CircleCheck aria-hidden="true" className="me-1.5 inline size-4 align-[-0.1875em]" />
+            {refunded}
+          </p>
+        )}
       </>
     ) : undefined
 
@@ -725,11 +750,21 @@ export function Till({ phone, start = {} }: { phone: boolean; start?: TillStart 
         ? {
             onQuantityChange: (id: string, quantity: string | null) => {
               if (quantity === null || !/^[1-9]\d*$/.test(quantity)) return
+              setUndo(null)
               setSale((current) =>
                 current.map((each) => (each.productId === id ? { ...each, quantity } : each)),
               )
             },
             onRemove: (id: string) => {
+              // No question first: the line goes, and Undo stands in its place (P5.93 item 3).
+              const at = sale.findIndex((each) => each.productId === id)
+              const name = PRODUCTS.find((each) => each.id === id)?.name ?? ''
+              const previous = at > 0 ? sale[at - 1]?.productId : undefined
+              setUndo({
+                message: `${name} removed`,
+                ...(previous === undefined ? {} : { after: previous }),
+                before: sale,
+              })
               setSale((current) => current.filter((each) => each.productId !== id))
             },
           }
@@ -739,7 +774,21 @@ export function Till({ phone, start = {} }: { phone: boolean; start?: TillStart 
         : deduction > 0n
           ? { chargeLabel: `Charge ${money(decimal(due))}` }
           : {})}
+      {...(undo === null
+        ? {}
+        : {
+            undo: {
+              message: undo.message,
+              ...(undo.undoLabel === undefined ? {} : { undoLabel: undo.undoLabel }),
+              ...(undo.after === undefined ? {} : { after: undo.after }),
+              onUndo: () => {
+                setSale(undo.before)
+                setUndo(null)
+              },
+            },
+          })}
       onCharge={() => {
+        setUndo(null)
         resetPayment()
         setPaying(true)
       }}
@@ -771,8 +820,14 @@ export function Till({ phone, start = {} }: { phone: boolean; start?: TillStart 
           icon={PauseCircle}
           label="Park sale"
           onClick={() => {
-            notice.success('Sale parked. It waits under Parked sales.')
+            const parked = sale
             newSale()
+            // The empty cart says where the sale went, with "Resume" (P5.93 item 3: no toast).
+            setUndo({
+              message: 'Sale parked. It waits under Parked sales.',
+              undoLabel: 'Resume',
+              before: parked,
+            })
           }}
         />
       }
@@ -835,6 +890,30 @@ export function Till({ phone, start = {} }: { phone: boolean; start?: TillStart 
   const optionNow = options.find((each) => each.id === method)
   const amountShown = (value: string) => money(value)
 
+  if (locked) {
+    // The register locked in place (P5.93 item 3: the screen itself answers, not a toast).
+    return (
+      <TillTouch>
+        <div
+          className={`${phone ? 'h-full' : 'h-dvh'} flex flex-col items-center justify-center gap-4 bg-surface-sunken p-6 text-center`}
+        >
+          <BrandLockup brandName="Zlatni klas" productName="Kasa" />
+          <h1 className="m-0 text-h2 text-primary bidi-content">{`${BAKERY.register} is locked`}</h1>
+          <p className="m-0 text-sm text-secondary bidi-content">{`${BAKERY.cashier} · the sale waits as it was`}</p>
+          <Button
+            family="primary"
+            emphasis="primary"
+            icon={LockOpen}
+            label="Unlock"
+            onClick={() => {
+              setLocked(false)
+            }}
+          />
+        </div>
+      </TillTouch>
+    )
+  }
+
   return (
     <TillTouch>
       <div className={phone ? 'h-full' : 'h-dvh'}>
@@ -862,14 +941,20 @@ export function Till({ phone, start = {} }: { phone: boolean; start?: TillStart 
             />
           }
           offlineAction={
-            <Button
-              family="neutral"
-              icon={RefreshCw}
-              label="Try now"
-              onClick={() => {
-                notice.info('Still offline. The receipts stay on this register until it connects.')
-              }}
-            />
+            <span className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+              {/* The answer beside the action, not a toast (P5.93 item 3). */}
+              <span role="status" className="text-xs text-secondary bidi-content">
+                {offlineChecked ? 'Still offline' : ''}
+              </span>
+              <Button
+                family="neutral"
+                icon={RefreshCw}
+                label="Try now"
+                onClick={() => {
+                  setOfflineChecked(true)
+                }}
+              />
+            </span>
           }
           {...(training
             ? {
@@ -902,7 +987,7 @@ export function Till({ phone, start = {} }: { phone: boolean; start?: TillStart 
                 icon={Lock}
                 label="Lock register"
                 onClick={() => {
-                  notice.info('Register locked.')
+                  setLocked(true)
                 }}
               />
               {menu}
@@ -1208,7 +1293,7 @@ export function Till({ phone, start = {} }: { phone: boolean; start?: TillStart 
                 setAdvances((current) => current.filter((each) => each.id !== advance.id))
                 setAdvancesChosen((current) => current.filter((id) => id !== advance.id))
                 setAdvanceRefundId(null)
-                notice.success(`Advance ${advance.number} refunded: ${money(advance.open)}.`)
+                setRefunded(`${advance.number} refunded: ${money(advance.open)}, by wire transfer`)
               }}
             />
           )
@@ -1432,6 +1517,7 @@ export function Till({ phone, start = {} }: { phone: boolean; start?: TillStart 
                   onClick={() => {
                     setPaying(false)
                     setDone(false)
+                    setReprinted(false)
                     setReceiptOpen(true)
                   }}
                 />
@@ -1450,12 +1536,14 @@ export function Till({ phone, start = {} }: { phone: boolean; start?: TillStart 
             description="Printed on the register's printer; the customer can ask for it by e-mail."
             actions={
               <>
+                {/* The answer beside the action, not a toast (P5.93 item 3). */}
+                <SaveStatus state={reprinted ? 'saved' : 'idle'} savedText="Sent to the printer" />
                 <Button
                   intent="print"
                   emphasis="secondary"
                   label="Print again"
                   onClick={() => {
-                    notice.success('Receipt sent to the printer.')
+                    setReprinted(true)
                   }}
                 />
                 <Button intent="create" emphasis="primary" label="New sale" onClick={newSale} />

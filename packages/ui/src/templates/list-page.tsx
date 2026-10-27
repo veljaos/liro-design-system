@@ -5,7 +5,7 @@ import { Button } from '../components/button'
 import { KeyValueList, type KeyValueGroup, type KeyValueItem } from '../components/cards'
 import { commandMatches } from '../components/command-logic'
 import { Drawer } from '../components/dialog'
-import { TAB_ROW_SCROLLER, useTabRow } from '../components/tab-row'
+import { TAB_ROW_BOX, TAB_ROW_SCROLLER, useTabRow } from '../components/tab-row'
 import { usePhone } from '../components/use-phone'
 import { ButtonPrimitive } from '../primitives/button'
 import { Checkbox } from '../primitives/checkbox'
@@ -22,6 +22,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '../primitives/popover'
 import { useLiro } from '../provider/liro-provider'
 import { moveModule } from './launchpad-logic'
 import { PageHeader } from './page-header'
+import { Tooltip } from '../components/popover'
 
 /*
  * ListPage, ColumnChooser and QuickPreview (BUILD-PLAN P4.3; the owner's values,
@@ -136,69 +137,72 @@ function SavedViewTabs(props: SavedViewsProps) {
   const row = useTabRow(props.view)
   return (
     <div className="flex items-end gap-4 border-0 border-b border-solid border-default px-4">
-      <div
-        {...row}
-        role="group"
-        aria-label={messages['list.views']}
-        className={cn('-mb-px flex flex-1', TAB_ROW_SCROLLER)}
-      >
-        {tabs.map((view) => {
-          const current = view.id === props.view
-          return (
-            <button
-              key={view.id}
-              type="button"
-              aria-pressed={current}
-              {...(current ? { 'data-active-tab': '' } : {})}
-              onClick={() => props.onViewChange?.(view.id)}
-              className={cn(
-                VIEW_TAB,
-                current && 'border-brand hover:border-brand',
-                FOCUS_RING,
-                'focus-visible:-outline-offset-2',
-              )}
-            >
-              <span className={TEXT_DIRECTION}>{view.label}</span>
-              <ViewCount count={view.count} />
-            </button>
-          )
-        })}
-        {more.length > 0 && (
-          <DropdownMenu modal={false}>
-            <DropdownMenuTrigger asChild>
+      <div className={cn('-mb-px flex-1', TAB_ROW_BOX)}>
+        <div
+          {...row.scroller}
+          role="group"
+          aria-label={messages['list.views']}
+          className={cn('flex', TAB_ROW_SCROLLER)}
+        >
+          {tabs.map((view) => {
+            const current = view.id === props.view
+            return (
               <button
+                key={view.id}
                 type="button"
-                aria-pressed={hiddenCurrent !== undefined}
-                {...(hiddenCurrent === undefined ? {} : { 'data-active-tab': '' })}
+                aria-pressed={current}
+                {...(current ? { 'data-active-tab': '' } : {})}
+                onClick={() => props.onViewChange?.(view.id)}
                 className={cn(
                   VIEW_TAB,
-                  hiddenCurrent !== undefined && 'border-brand hover:border-brand',
+                  current && 'border-brand hover:border-brand',
                   FOCUS_RING,
                   'focus-visible:-outline-offset-2',
                 )}
               >
-                <span className={TEXT_DIRECTION}>
-                  {hiddenCurrent?.label ?? messages['list.moreViews']}
-                </span>
-                {hiddenCurrent !== undefined && <ViewCount count={hiddenCurrent.count} />}
-                <ChevronDown aria-hidden="true" className="size-3.5 shrink-0 text-secondary" />
+                <span className={TEXT_DIRECTION}>{view.label}</span>
+                <ViewCount count={view.count} />
               </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="min-w-50 shadow-md">
-              <DropdownMenuRadioGroup
-                value={props.view ?? ''}
-                onValueChange={(id) => props.onViewChange?.(id)}
-              >
-                {more.map((view) => (
-                  <DropdownMenuRadioItem key={view.id} value={view.id} check>
-                    <span className={cn('min-w-0 flex-1', TEXT_DIRECTION)}>{view.label}</span>
-                    <ViewCount count={view.count} />
-                  </DropdownMenuRadioItem>
-                ))}
-              </DropdownMenuRadioGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
+            )
+          })}
+          {more.length > 0 && (
+            <DropdownMenu modal={false}>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  aria-pressed={hiddenCurrent !== undefined}
+                  {...(hiddenCurrent === undefined ? {} : { 'data-active-tab': '' })}
+                  className={cn(
+                    VIEW_TAB,
+                    hiddenCurrent !== undefined && 'border-brand hover:border-brand',
+                    FOCUS_RING,
+                    'focus-visible:-outline-offset-2',
+                  )}
+                >
+                  <span className={TEXT_DIRECTION}>
+                    {hiddenCurrent?.label ?? messages['list.moreViews']}
+                  </span>
+                  {hiddenCurrent !== undefined && <ViewCount count={hiddenCurrent.count} />}
+                  <ChevronDown aria-hidden="true" className="size-3.5 shrink-0 text-secondary" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="min-w-50 shadow-md">
+                <DropdownMenuRadioGroup
+                  value={props.view ?? ''}
+                  onValueChange={(id) => props.onViewChange?.(id)}
+                >
+                  {more.map((view) => (
+                    <DropdownMenuRadioItem key={view.id} value={view.id} check>
+                      <span className={cn('min-w-0 flex-1', TEXT_DIRECTION)}>{view.label}</span>
+                      <ViewCount count={view.count} />
+                    </DropdownMenuRadioItem>
+                  ))}
+                </DropdownMenuRadioGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </div>
+        {row.edges}
       </div>
       {props.saveView !== undefined && (
         <div className="flex shrink-0 items-center self-center">{props.saveView}</div>
@@ -418,32 +422,34 @@ export function ColumnChooser({ columns, onChange }: ColumnChooserProps) {
                 >
                   {column.label}
                 </label>
-                <ButtonPrimitive
-                  family="neutral"
-                  emphasis="menu"
-                  shape="compact"
-                  aria-label={messages['columns.moveUp'](column.label)}
-                  title={messages['columns.moveUp'](column.label)}
-                  disabled={index === 0}
-                  onClick={() => {
-                    reorder(column.id, -1)
-                  }}
-                >
-                  <ArrowUp aria-hidden="true" className="size-4" />
-                </ButtonPrimitive>
-                <ButtonPrimitive
-                  family="neutral"
-                  emphasis="menu"
-                  shape="compact"
-                  aria-label={messages['columns.moveDown'](column.label)}
-                  title={messages['columns.moveDown'](column.label)}
-                  disabled={index === columns.length - 1}
-                  onClick={() => {
-                    reorder(column.id, 1)
-                  }}
-                >
-                  <ArrowDown aria-hidden="true" className="size-4" />
-                </ButtonPrimitive>
+                <Tooltip label={messages['columns.moveUp'](column.label)}>
+                  <ButtonPrimitive
+                    family="neutral"
+                    emphasis="menu"
+                    shape="compact"
+                    aria-label={messages['columns.moveUp'](column.label)}
+                    disabled={index === 0}
+                    onClick={() => {
+                      reorder(column.id, -1)
+                    }}
+                  >
+                    <ArrowUp aria-hidden="true" className="size-4" />
+                  </ButtonPrimitive>
+                </Tooltip>
+                <Tooltip label={messages['columns.moveDown'](column.label)}>
+                  <ButtonPrimitive
+                    family="neutral"
+                    emphasis="menu"
+                    shape="compact"
+                    aria-label={messages['columns.moveDown'](column.label)}
+                    disabled={index === columns.length - 1}
+                    onClick={() => {
+                      reorder(column.id, 1)
+                    }}
+                  >
+                    <ArrowDown aria-hidden="true" className="size-4" />
+                  </ButtonPrimitive>
+                </Tooltip>
               </li>
             )
           })}

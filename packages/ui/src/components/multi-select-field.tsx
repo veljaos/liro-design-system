@@ -137,7 +137,6 @@ export function MultiSelectField(props: MultiSelectFieldProps) {
           return (
             <ReadOnlyBox
               control={control}
-              title={messages['field.readOnly']}
               empty={chosen.length === 0}
               className="flex flex-wrap items-center gap-2"
             >

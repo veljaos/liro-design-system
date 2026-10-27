@@ -5,7 +5,8 @@ import { cn } from '../primitives/cn'
 import { Tabs as TabsRoot, TabsContent, TabsList, TabsTrigger } from '../primitives/tabs'
 import { useLiro } from '../provider/liro-provider'
 import type { IconComponent } from './intents'
-import { TAB_ROW_SCROLLER, useTabRow } from './tab-row'
+import { TAB_ROW_BOX, TAB_ROW_SCROLLER, useTabRow } from './tab-row'
+import { Tooltip } from './popover'
 
 /*
  * Tabs, Breadcrumbs, CursorPagination and ShortcutHint (BUILD-PLAN P2.6), the previous Design
@@ -85,29 +86,32 @@ export function Tabs(props: TabsProps) {
       className={props.className}
     >
       {/* The tab row rule (P5.90 item 6): one line that scrolls sideways with faded edges. */}
-      <div {...row} className={TAB_ROW_SCROLLER}>
-        <TabsList
-          className={cn(
-            'w-max min-w-full flex-nowrap',
-            props.align === 'center' ? 'justify-center-safe' : 'justify-start',
-          )}
-          {...(props.label === undefined ? {} : { 'aria-label': props.label })}
-        >
-          {props.items.map((item) => {
-            const Icon = item.icon
-            return (
-              <TabsTrigger
-                key={item.value}
-                value={item.value}
-                disabled={item.disabled === true}
-                className="focus-visible:-outline-offset-2"
-              >
-                {Icon !== undefined && <Icon aria-hidden="true" />}
-                <span className={TEXT_DIRECTION}>{item.label}</span>
-              </TabsTrigger>
-            )
-          })}
-        </TabsList>
+      <div className={TAB_ROW_BOX}>
+        <div {...row.scroller} className={TAB_ROW_SCROLLER}>
+          <TabsList
+            className={cn(
+              'w-max min-w-full flex-nowrap',
+              props.align === 'center' ? 'justify-center-safe' : 'justify-start',
+            )}
+            {...(props.label === undefined ? {} : { 'aria-label': props.label })}
+          >
+            {props.items.map((item) => {
+              const Icon = item.icon
+              return (
+                <TabsTrigger
+                  key={item.value}
+                  value={item.value}
+                  disabled={item.disabled === true}
+                  className="focus-visible:-outline-offset-2"
+                >
+                  {Icon !== undefined && <Icon aria-hidden="true" />}
+                  <span className={TEXT_DIRECTION}>{item.label}</span>
+                </TabsTrigger>
+              )
+            })}
+          </TabsList>
+        </div>
+        {row.edges}
       </div>
       {props.items.map((item) => (
         <TabsContent key={item.value} value={item.value} className={TAB_PANEL_GAP}>
@@ -211,20 +215,21 @@ export interface CursorPaginationProps {
 export function CursorPagination(props: CursorPaginationProps) {
   const { messages } = useLiro()
   const control = (label: string, enabled: boolean, onClick: () => void, Icon: IconComponent) => (
-    <button
-      type="button"
-      aria-label={label}
-      title={label}
-      disabled={!enabled}
-      onClick={onClick}
-      className={cn(
-        BUTTON_RESET,
-        'flex size-[26px] cursor-pointer items-center justify-center rounded-md border border-solid border-strong bg-surface-raised text-primary enabled:hover:bg-surface-hover disabled:cursor-not-allowed disabled:border-default disabled:bg-surface-disabled disabled:text-disabled',
-        FOCUS_RING,
-      )}
-    >
-      <Icon aria-hidden="true" className="size-[calc(26px/1.8)] rtl:-scale-x-100" />
-    </button>
+    <Tooltip label={label}>
+      <button
+        type="button"
+        aria-label={label}
+        disabled={!enabled}
+        onClick={onClick}
+        className={cn(
+          BUTTON_RESET,
+          'flex size-[26px] cursor-pointer items-center justify-center rounded-md border border-solid border-strong bg-surface-raised text-primary enabled:hover:bg-surface-hover disabled:cursor-not-allowed disabled:border-default disabled:bg-surface-disabled disabled:text-disabled',
+          FOCUS_RING,
+        )}
+      >
+        <Icon aria-hidden="true" className="size-[calc(26px/1.8)] rtl:-scale-x-100" />
+      </button>
+    </Tooltip>
   )
   return (
     <div

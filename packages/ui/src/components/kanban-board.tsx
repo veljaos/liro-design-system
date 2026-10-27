@@ -27,6 +27,7 @@ import {
 import { PersonAvatar } from './person'
 import { SelectField } from './select-field'
 import { usePhone } from './use-phone'
+import { Tooltip } from './popover'
 
 /*
  * KanbanBoard (BUILD-PLAN P5.7): cards in columns, moved by dragging, by the keyboard or from a
@@ -455,42 +456,44 @@ export function KanbanBoard(props: KanbanBoardProps) {
           )}
           {editable && (
             <div className="-me-1 -mt-0.5 flex shrink-0">
-              <ButtonPrimitive
-                family="neutral"
-                emphasis="menu"
-                shape="compact"
-                data-kanban-handle={card.id}
-                aria-label={messages['kanban.moveCard'](card.title)}
-                aria-describedby={instructionsId}
-                aria-pressed={isLifted}
-                title={messages['kanban.moveCard'](card.title)}
-                onKeyDown={(event) => {
-                  onHandleKey(event, card)
-                }}
-                onBlur={(event) => {
-                  // Leaving the handle while the card is up (Tab) puts it back.
-                  if (isLifted && event.relatedTarget !== null) {
-                    setLifted(null)
-                    setAnnouncement(messages['kanban.cancelled'](card.title))
-                  }
-                }}
-                className="cursor-grab"
-              >
-                <GripVertical aria-hidden="true" className="size-4" />
-              </ButtonPrimitive>
+              <Tooltip label={messages['kanban.moveCard'](card.title)}>
+                <ButtonPrimitive
+                  family="neutral"
+                  emphasis="menu"
+                  shape="compact"
+                  data-kanban-handle={card.id}
+                  aria-label={messages['kanban.moveCard'](card.title)}
+                  aria-describedby={instructionsId}
+                  aria-pressed={isLifted}
+                  onKeyDown={(event) => {
+                    onHandleKey(event, card)
+                  }}
+                  onBlur={(event) => {
+                    // Leaving the handle while the card is up (Tab) puts it back.
+                    if (isLifted && event.relatedTarget !== null) {
+                      setLifted(null)
+                      setAnnouncement(messages['kanban.cancelled'](card.title))
+                    }
+                  }}
+                  className="cursor-grab"
+                >
+                  <GripVertical aria-hidden="true" className="size-4" />
+                </ButtonPrimitive>
+              </Tooltip>
               <DropdownMenu
                 align="end"
                 entries={menu}
                 trigger={
-                  <ButtonPrimitive
-                    family="neutral"
-                    emphasis="menu"
-                    shape="compact"
-                    aria-label={messages['kanban.cardMenu'](card.title)}
-                    title={messages['kanban.cardMenu'](card.title)}
-                  >
-                    <MoreHorizontal aria-hidden="true" className="size-4" />
-                  </ButtonPrimitive>
+                  <Tooltip label={messages['kanban.cardMenu'](card.title)}>
+                    <ButtonPrimitive
+                      family="neutral"
+                      emphasis="menu"
+                      shape="compact"
+                      aria-label={messages['kanban.cardMenu'](card.title)}
+                    >
+                      <MoreHorizontal aria-hidden="true" className="size-4" />
+                    </ButtonPrimitive>
+                  </Tooltip>
                 }
               />
             </div>

@@ -197,7 +197,6 @@ export function SatisfactionRating(props: SatisfactionRatingProps) {
             aria-describedby={control.describedBy}
             aria-invalid={control.invalid || undefined}
             aria-readonly={disabled || sending || undefined}
-            title={disabled ? messages['field.readOnly'] : undefined}
             className={cn('gap-2', phone ? 'flex flex-col' : 'grid')}
             style={
               phone

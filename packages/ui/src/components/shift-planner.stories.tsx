@@ -400,7 +400,7 @@ export const PhoneWidth: Story = {
   render: () => (
     <PhoneFrame>
       <ExampleProvider>
-        <div className="h-full overflow-y-auto p-4">
+        <div className="p-4">
           <Planner
             layout="phone"
             status="draft"
@@ -430,7 +430,7 @@ export const PhoneHealth: Story = {
   render: () => (
     <PhoneFrame>
       <ExampleProvider>
-        <div className="h-full overflow-y-auto p-4">
+        <div className="p-4">
           <Planner
             layout="phone"
             label="Shifts, Dom zdravlja"

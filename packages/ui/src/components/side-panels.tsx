@@ -12,10 +12,11 @@ import { useLiro } from '../provider/liro-provider'
  *   the panel: the name (sm semibold), the count after it (xs text.secondary, tabular), a 14px
  *   ChevronDown at the end that turns when the panel is closed; padding md. Closed, only the
  *   header row stays. 16px between panels.
- * - One spacing rule for every panel (P4.9, the owner's review): the header (padding md), an sm
- *   (12px) gap, the body padded md at the sides and the bottom. The body's content adds no space
- *   of its own at its outer edges: the first and last rows of a KeyValueList, RelatedDocuments or
- *   ActivityList lose their outer padding here, so every panel's first row stands 12px under its
+ * - One spacing rule for every panel (P4.9, the owner's review; P5.93 item 6: the same gap as
+ *   every SectionCard and collapsible FormSection): the header (padding md), an md (16px) gap,
+ *   the body padded md at the sides and the bottom. The body's content adds no space of its own
+ *   at its outer edges: the first and last rows of a KeyValueList, RelatedDocuments or
+ *   ActivityList lose their outer padding here, so every panel's first row stands 16px under its
  *   header and its last row 16px above the panel's edge, whatever the content.
  * - Which panels are open is the application's (`open`, `onOpenChange`), so the Core can remember
  *   it. The content of a closed panel is not mounted.
@@ -71,9 +72,9 @@ function Panel({
           onClick={toggle}
           className={cn(
             BUTTON_RESET,
-            'box-border flex w-full cursor-pointer items-center gap-2 px-4 pt-4 text-start text-primary hover:bg-surface-hover',
-            // Open: an sm (12px) gap to the body; closed: md (16px) under the header.
-            isOpen ? 'pb-3' : 'pb-4',
+            // 16px under the header, open or closed: the same gap from a section's header to its
+            // first row as every SectionCard and collapsible FormSection (P5.93 item 6).
+            'box-border flex w-full cursor-pointer items-center gap-2 p-4 text-start text-primary hover:bg-surface-hover',
             FOCUS_RING,
             '-outline-offset-2',
           )}
@@ -93,7 +94,7 @@ function Panel({
           />
         </button>
       </h2>
-      {/* The header's 12px gap above, md (16px) at the sides and below, aligned with the header's
+      {/* The header's 16px gap above, md (16px) at the sides and below, aligned with the header's
           text; the content's own outer padding is taken off (PANEL_BODY). */}
       <div id={contentId} hidden={!isOpen} className={cn('box-border px-4 pt-0 pb-4', PANEL_BODY)}>
         {isOpen && panel.content}

@@ -26,6 +26,7 @@ import {
 } from './date-logic'
 import { controlAttributes, Field, fieldProps, type FieldBaseProps } from './field'
 import { entryAttributes, entryError, useEntry, type EntryProps } from './use-entry'
+import { Tooltip } from './popover'
 
 /*
  * DateField and DateRangeField (BUILD-PLAN P2.3). A date is typed (read by `format.parseDate` on
@@ -108,15 +109,11 @@ function CalendarButton() {
   return (
     <span className="flex h-full min-w-[34px] shrink-0 items-center justify-center">
       <PopoverTrigger asChild>
-        <ButtonPrimitive
-          family="neutral"
-          emphasis="menu"
-          shape="compact"
-          aria-label={label}
-          title={label}
-        >
-          <CalendarDays aria-hidden="true" className="size-4 shrink-0" />
-        </ButtonPrimitive>
+        <Tooltip label={label}>
+          <ButtonPrimitive family="neutral" emphasis="menu" shape="compact" aria-label={label}>
+            <CalendarDays aria-hidden="true" className="size-4 shrink-0" />
+          </ButtonPrimitive>
+        </Tooltip>
       </PopoverTrigger>
     </span>
   )
@@ -195,7 +192,7 @@ export function DateField(props: DateFieldProps) {
   return (
     <Field {...fieldProps({ ...props, error })}>
       {(control) => {
-        const attributes = controlAttributes(control, messages['field.readOnly'])
+        const attributes = controlAttributes(control)
         // dir="auto", as each end of DateRangeField: a date in Latin digits is laid out left to
         // right ("06.11.2026." kept its full stop at the end in a right-to-left page), an Arabic
         // date stays right to left; the text stays at the page's start (`text-match-parent`).
@@ -347,7 +344,7 @@ export function DateRangeField(props: DateRangeFieldProps) {
   return (
     <Field {...fieldProps({ ...props, error })}>
       {(control) => {
-        const attributes = controlAttributes(control, messages['field.readOnly'])
+        const attributes = controlAttributes(control)
         // dir="auto": a date in Latin digits is laid out left to right (in a right-to-left input,
         // Chromium on Linux cut its last digit); a date Intl writes with right-to-left marks
         // (Arabic) stays right to left.

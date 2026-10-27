@@ -111,7 +111,6 @@ export function SlotPicker(props: SlotPickerProps) {
             aria-readonly={control.readOnly || undefined}
             aria-required={control.required || undefined}
             required={control.required}
-            title={control.readOnly ? messages['field.readOnly'] : undefined}
             className="flex flex-col gap-4"
           >
             {days.map((day) => {
