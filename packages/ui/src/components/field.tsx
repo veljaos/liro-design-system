@@ -2,7 +2,6 @@ import { CircleAlert } from 'lucide-react'
 import { createContext, useContext, useId, type ReactNode } from 'react'
 import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
-import { useLiro } from '../provider/liro-provider'
 
 /*
  * The frame of every field (BUILD-PLAN P2.2): label, the control, and under it the optional
@@ -80,11 +79,13 @@ export interface FieldProps extends FieldBaseProps {
   children: (control: FieldControl) => ReactNode
 }
 
-/** The required mark after a label: " *" in the error colour; its name comes from messages. */
+/**
+ * The required mark after a label: " *" in the error colour, hidden from assistive technology —
+ * the control itself is `required` (no browser title on it, P5.93 item 7).
+ */
 export function RequiredMark() {
-  const { messages } = useLiro()
   return (
-    <span aria-hidden="true" title={messages['field.required']} className="text-status-danger-fg">
+    <span aria-hidden="true" className="text-status-danger-fg">
       {' *'}
     </span>
   )

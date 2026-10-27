@@ -77,6 +77,7 @@ import {
 import { StatusBadge } from './status-badge'
 import { STICKY_CLEARANCE, STICKY_HEAD, STICKY_START, useStickyHead } from './sticky-head'
 import { usePhone } from './use-phone'
+import { HintedTarget } from './popover'
 
 /*
  * ShiftPlanner (BUILD-PLAN P5.24 b): people × days of a week or a period, each cell holding zero
@@ -808,42 +809,43 @@ export function ShiftPlanner(props: ShiftPlannerProps) {
             const duration = durationText(format, messages, template.start, template.end)
             const isLifted = lifted('template', template.id)
             return (
-              <button
-                key={template.id}
-                type="button"
-                data-template={template.id}
-                {...(isLifted ? { 'data-dragging': '' } : {})}
-                title={duration ?? undefined}
-                onPointerDown={(event) => {
-                  startDrag(event, { kind: 'template', id: template.id })
-                }}
-                onClick={() => {
-                  if (suppressClick.current) return
-                  assign(template, selectedRefs())
-                  const here = refOf(activeIndex)
-                  if (here !== null) focusCell(here)
-                }}
-                style={liftStyle('template', template.id)}
-                className={cn(
-                  BUTTON_RESET,
-                  FOCUS_RING,
-                  'relative box-border flex min-h-8 items-center gap-2 rounded-md border border-solid px-2 py-1 text-xs',
-                  TEMPLATE_TONE[template.tone ?? 'neutral'],
-                  'cursor-grab select-none',
-                  isLifted && 'z-(--liro-layer-raised) cursor-grabbing border-strong shadow-lg',
-                )}
-              >
-                <span className={cn('font-semibold', TEXT_ISOLATE)}>{template.label}</span>
-                <ShiftTime start={template.start} end={template.end} />
-                {key !== null && (
-                  <>
-                    <span aria-hidden="true" className="inline-flex">
-                      <ShortcutHint keys={[key]} className="[&_kbd]:bg-surface-raised" />
-                    </span>
-                    <span className="sr-only">{messages['shifts.key'](key)}</span>
-                  </>
-                )}
-              </button>
+              <HintedTarget hint={duration}>
+                <button
+                  key={template.id}
+                  type="button"
+                  data-template={template.id}
+                  {...(isLifted ? { 'data-dragging': '' } : {})}
+                  onPointerDown={(event) => {
+                    startDrag(event, { kind: 'template', id: template.id })
+                  }}
+                  onClick={() => {
+                    if (suppressClick.current) return
+                    assign(template, selectedRefs())
+                    const here = refOf(activeIndex)
+                    if (here !== null) focusCell(here)
+                  }}
+                  style={liftStyle('template', template.id)}
+                  className={cn(
+                    BUTTON_RESET,
+                    FOCUS_RING,
+                    'relative box-border flex min-h-8 items-center gap-2 rounded-md border border-solid px-2 py-1 text-xs',
+                    TEMPLATE_TONE[template.tone ?? 'neutral'],
+                    'cursor-grab select-none',
+                    isLifted && 'z-(--liro-layer-raised) cursor-grabbing border-strong shadow-lg',
+                  )}
+                >
+                  <span className={cn('font-semibold', TEXT_ISOLATE)}>{template.label}</span>
+                  <ShiftTime start={template.start} end={template.end} />
+                  {key !== null && (
+                    <>
+                      <span aria-hidden="true" className="inline-flex">
+                        <ShortcutHint keys={[key]} className="[&_kbd]:bg-surface-raised" />
+                      </span>
+                      <span className="sr-only">{messages['shifts.key'](key)}</span>
+                    </>
+                  )}
+                </button>
+              </HintedTarget>
             )
           })}
         </div>

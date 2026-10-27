@@ -6,6 +6,7 @@ import { TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { Skeleton } from '../primitives/skeleton'
 import { useLiro } from '../provider/liro-provider'
+import { Tooltip } from './popover'
 import { Alert } from './alert'
 import { MoneyText } from './display-text'
 import { SettlingValue } from './settling-value'
@@ -194,19 +195,20 @@ export function AdvanceList(props: AdvanceListProps) {
                   body
                 )}
                 {props.onRefund !== undefined && (
-                  <ButtonPrimitive
-                    family="neutral"
-                    emphasis="menu"
-                    shape="icon"
-                    aria-label={messages['advances.refund'](advance.number)}
-                    title={messages['advances.refund'](advance.number)}
-                    className="size-11 shrink-0 px-0"
-                    onClick={() => {
-                      props.onRefund?.(advance.id)
-                    }}
-                  >
-                    <Undo2 aria-hidden="true" className="size-4" />
-                  </ButtonPrimitive>
+                  <Tooltip label={messages['advances.refund'](advance.number)}>
+                    <ButtonPrimitive
+                      family="neutral"
+                      emphasis="menu"
+                      shape="icon"
+                      aria-label={messages['advances.refund'](advance.number)}
+                      className="size-11 shrink-0 px-0"
+                      onClick={() => {
+                        props.onRefund?.(advance.id)
+                      }}
+                    >
+                      <Undo2 aria-hidden="true" className="size-4" />
+                    </ButtonPrimitive>
+                  </Tooltip>
                 )}
               </li>
             )

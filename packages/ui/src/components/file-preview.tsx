@@ -13,6 +13,7 @@ import { Sheet, SheetContent } from '../primitives/sheet'
 import { useLiro } from '../provider/liro-provider'
 import { Button } from './button'
 import { EmptyState } from './empty-state'
+import { Tooltip } from './popover'
 
 /*
  * FilePreview (BUILD-PLAN P5.43): one file shown on the whole screen, with the previous and the
@@ -114,28 +115,30 @@ export function FilePreview(props: FilePreviewProps) {
             )}
             {(props.onPrevious !== undefined || props.onNext !== undefined || hasPosition) && (
               <span className="flex items-center gap-1">
-                <ButtonPrimitive
-                  family="neutral"
-                  emphasis="menu"
-                  shape="compact"
-                  aria-label={messages['files.previous']}
-                  title={messages['files.previous']}
-                  disabled={props.onPrevious === undefined}
-                  onClick={props.onPrevious}
-                >
-                  <Back aria-hidden="true" className="size-4" />
-                </ButtonPrimitive>
-                <ButtonPrimitive
-                  family="neutral"
-                  emphasis="menu"
-                  shape="compact"
-                  aria-label={messages['files.next']}
-                  title={messages['files.next']}
-                  disabled={props.onNext === undefined}
-                  onClick={props.onNext}
-                >
-                  <Forward aria-hidden="true" className="size-4" />
-                </ButtonPrimitive>
+                <Tooltip label={messages['files.previous']}>
+                  <ButtonPrimitive
+                    family="neutral"
+                    emphasis="menu"
+                    shape="compact"
+                    aria-label={messages['files.previous']}
+                    disabled={props.onPrevious === undefined}
+                    onClick={props.onPrevious}
+                  >
+                    <Back aria-hidden="true" className="size-4" />
+                  </ButtonPrimitive>
+                </Tooltip>
+                <Tooltip label={messages['files.next']}>
+                  <ButtonPrimitive
+                    family="neutral"
+                    emphasis="menu"
+                    shape="compact"
+                    aria-label={messages['files.next']}
+                    disabled={props.onNext === undefined}
+                    onClick={props.onNext}
+                  >
+                    <Forward aria-hidden="true" className="size-4" />
+                  </ButtonPrimitive>
+                </Tooltip>
               </span>
             )}
             {props.actions}

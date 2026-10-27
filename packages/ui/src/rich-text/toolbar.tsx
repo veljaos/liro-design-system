@@ -27,6 +27,7 @@ import {
 import { useLiro } from '../provider/liro-provider'
 import type { RichTextMergeField } from './rich-text'
 import { toolbarKeyTarget } from './rich-text-logic'
+import { Tooltip } from '../components/popover'
 
 /*
  * The formatting toolbar of RichTextField (P5.22), the WAI-ARIA toolbar pattern: one control in
@@ -134,23 +135,24 @@ export function Toolbar({
     command: (editor: Editor) => void,
     shortcut?: string,
   ) => (
-    <button
-      type="button"
-      {...rove(index)}
-      aria-label={label}
-      title={label}
-      {...(pressed === null ? {} : { 'aria-pressed': pressed })}
-      {...(shortcut === undefined ? {} : { 'aria-keyshortcuts': shortcut })}
-      className={cn(CONTROL, 'w-7')}
-      onMouseDown={(event) => {
-        event.preventDefault()
-      }}
-      onClick={() => {
-        run(command)
-      }}
-    >
-      <Icon aria-hidden="true" className="size-4" />
-    </button>
+    <Tooltip label={label}>
+      <button
+        type="button"
+        {...rove(index)}
+        aria-label={label}
+        {...(pressed === null ? {} : { 'aria-pressed': pressed })}
+        {...(shortcut === undefined ? {} : { 'aria-keyshortcuts': shortcut })}
+        className={cn(CONTROL, 'w-7')}
+        onMouseDown={(event) => {
+          event.preventDefault()
+        }}
+        onClick={() => {
+          run(command)
+        }}
+      >
+        <Icon aria-hidden="true" className="size-4" />
+      </button>
+    </Tooltip>
   )
 
   const styles: { value: ToolbarState['block']; label: string }[] = [
@@ -187,20 +189,21 @@ export function Toolbar({
     mergeMenu = (
       <MenuRoot modal={false}>
         <DropdownMenuTrigger asChild>
-          <button
-            type="button"
-            {...rove(7)}
-            aria-label={messages['richText.insertMergeField']}
-            title={messages['richText.insertMergeField']}
-            className={cn(CONTROL, 'px-1.5')}
-            onMouseDown={(event) => {
-              // Radix opens the menu on pointer down; the text keeps its selection.
-              if (event.button === 0) event.preventDefault()
-            }}
-          >
-            <Braces aria-hidden="true" className="size-4" />
-            <ChevronDown aria-hidden="true" className="size-3" />
-          </button>
+          <Tooltip label={messages['richText.insertMergeField']}>
+            <button
+              type="button"
+              {...rove(7)}
+              aria-label={messages['richText.insertMergeField']}
+              className={cn(CONTROL, 'px-1.5')}
+              onMouseDown={(event) => {
+                // Radix opens the menu on pointer down; the text keeps its selection.
+                if (event.button === 0) event.preventDefault()
+              }}
+            >
+              <Braces aria-hidden="true" className="size-4" />
+              <ChevronDown aria-hidden="true" className="size-3" />
+            </button>
+          </Tooltip>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="max-w-80" onCloseAutoFocus={afterMenu}>
           {[...groups.entries()].map(([group, fields]) => (
@@ -235,19 +238,20 @@ export function Toolbar({
     >
       <MenuRoot modal={false}>
         <DropdownMenuTrigger asChild>
-          <button
-            type="button"
-            {...rove(0)}
-            aria-label={messages['richText.textStyleCurrent'](currentStyle?.label ?? '')}
-            title={messages['richText.textStyle']}
-            className={cn(CONTROL, 'ps-2 pe-1.5')}
-            onMouseDown={(event) => {
-              if (event.button === 0) event.preventDefault()
-            }}
-          >
-            <span className={cn('whitespace-nowrap', TEXT_DIRECTION)}>{currentStyle?.label}</span>
-            <ChevronDown aria-hidden="true" className="size-3" />
-          </button>
+          <Tooltip label={messages['richText.textStyle']}>
+            <button
+              type="button"
+              {...rove(0)}
+              aria-label={messages['richText.textStyleCurrent'](currentStyle?.label ?? '')}
+              className={cn(CONTROL, 'ps-2 pe-1.5')}
+              onMouseDown={(event) => {
+                if (event.button === 0) event.preventDefault()
+              }}
+            >
+              <span className={cn('whitespace-nowrap', TEXT_DIRECTION)}>{currentStyle?.label}</span>
+              <ChevronDown aria-hidden="true" className="size-3" />
+            </button>
+          </Tooltip>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" onCloseAutoFocus={afterMenu}>
           <DropdownMenuRadioGroup

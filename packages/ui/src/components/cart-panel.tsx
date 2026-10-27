@@ -12,6 +12,7 @@ import { FLASH_CLASS, FLASH_TRANSITION, useGrowingLines } from './pos-feedback'
 import { QuantityStepper } from './quantity-stepper'
 import { SettlingValue } from './settling-value'
 import type { Tone } from './status-badge'
+import { Tooltip } from './popover'
 
 /*
  * CartPanel (BUILD-PLAN P5.10; docs/decisions.md "Touch and POS"). What is being sold, for a
@@ -353,34 +354,36 @@ function CartLineRow({
           {messages['cart.each'](format.money(line.unitPrice, cart.currency))}
         </span>
         {cart.onEditLine !== undefined && (
-          <ButtonPrimitive
-            family="neutral"
-            emphasis="menu"
-            shape="icon"
-            aria-label={messages['cart.edit'](line.name)}
-            title={messages['cart.edit'](line.name)}
-            className="size-11 shrink-0 px-0"
-            onClick={() => {
-              cart.onEditLine?.(line.id)
-            }}
-          >
-            <Pencil aria-hidden="true" className="size-4" />
-          </ButtonPrimitive>
+          <Tooltip label={messages['cart.edit'](line.name)}>
+            <ButtonPrimitive
+              family="neutral"
+              emphasis="menu"
+              shape="icon"
+              aria-label={messages['cart.edit'](line.name)}
+              className="size-11 shrink-0 px-0"
+              onClick={() => {
+                cart.onEditLine?.(line.id)
+              }}
+            >
+              <Pencil aria-hidden="true" className="size-4" />
+            </ButtonPrimitive>
+          </Tooltip>
         )}
         {cart.onRemove !== undefined && (
-          <ButtonPrimitive
-            family="neutral"
-            emphasis="menu"
-            shape="icon"
-            aria-label={messages['cart.remove'](line.name)}
-            title={messages['cart.remove'](line.name)}
-            className="size-11 shrink-0 px-0"
-            onClick={() => {
-              cart.onRemove?.(line.id)
-            }}
-          >
-            <Trash2 aria-hidden="true" className="size-4" />
-          </ButtonPrimitive>
+          <Tooltip label={messages['cart.remove'](line.name)}>
+            <ButtonPrimitive
+              family="neutral"
+              emphasis="menu"
+              shape="icon"
+              aria-label={messages['cart.remove'](line.name)}
+              className="size-11 shrink-0 px-0"
+              onClick={() => {
+                cart.onRemove?.(line.id)
+              }}
+            >
+              <Trash2 aria-hidden="true" className="size-4" />
+            </ButtonPrimitive>
+          </Tooltip>
         )}
       </div>
     </li>

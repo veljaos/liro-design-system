@@ -1,6 +1,7 @@
 import { X } from 'lucide-react'
 import { Dialog as DialogPrimitive } from 'radix-ui'
 import type { ComponentProps } from 'react'
+import { Tooltip } from '../components/popover'
 import { usePhone } from '../components/use-phone'
 import { usePortalContainer } from '../provider/portal'
 import { buttonClassName, BUTTON_SHAPES } from './button'
@@ -138,19 +139,21 @@ export function DialogCloseButton({
   className,
   ...props
 }: Omit<ComponentProps<typeof DialogPrimitive.Close>, 'children'> & { label: string }) {
+  // The library's tooltip names it on hover and keyboard focus, never the browser's title (P5.93).
   return (
-    <DialogPrimitive.Close
-      data-slot="dialog-close"
-      data-shape="compact"
-      aria-label={label}
-      title={label}
-      className={cn(
-        buttonClassName({ family: 'neutral', emphasis: 'menu', shape: 'compact' }),
-        className,
-      )}
-      {...props}
-    >
-      <X aria-hidden="true" className={BUTTON_SHAPES.compact.icon} />
-    </DialogPrimitive.Close>
+    <Tooltip label={label}>
+      <DialogPrimitive.Close
+        data-slot="dialog-close"
+        data-shape="compact"
+        aria-label={label}
+        className={cn(
+          buttonClassName({ family: 'neutral', emphasis: 'menu', shape: 'compact' }),
+          className,
+        )}
+        {...props}
+      >
+        <X aria-hidden="true" className={BUTTON_SHAPES.compact.icon} />
+      </DialogPrimitive.Close>
+    </Tooltip>
   )
 }

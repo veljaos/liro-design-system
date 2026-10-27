@@ -43,6 +43,7 @@ import { SchedulePhoneLists, type SchedulePhoneList } from './schedule-phone-lis
 import type { Tone } from './status-badge'
 import { STICKY_HEAD, STICKY_START, useStickyHead } from './sticky-head'
 import { usePhone } from './use-phone'
+import { Tooltip } from './popover'
 
 /*
  * ResourceSchedule (BUILD-PLAN P5.8): rows of resources — doctors, rooms, teachers — against the
@@ -696,26 +697,26 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
                 bottom: 0,
               }
           return (
-            <div
-              key={index}
-              title={each.reason}
-              className="absolute box-border flex items-start overflow-hidden border-0 border-s border-solid border-default bg-surface-sunken bg-[repeating-linear-gradient(135deg,var(--liro-border-default)_0_1px,transparent_1px_7px)] px-1.5 py-1"
-              style={style}
-            >
-              <span className="sr-only">
-                {messages['schedule.unavailable'](each.reason, timeText)}
-              </span>
-              <span
-                aria-hidden="true"
-                className={cn(
-                  'rounded-xs bg-surface-sunken px-1 text-xs text-secondary',
-                  phone ? 'whitespace-normal' : 'truncate',
-                  TEXT_ISOLATE,
-                )}
+            <Tooltip key={index} label={each.reason}>
+              <div
+                className="absolute box-border flex items-start overflow-hidden border-0 border-s border-solid border-default bg-surface-sunken bg-[repeating-linear-gradient(135deg,var(--liro-border-default)_0_1px,transparent_1px_7px)] px-1.5 py-1"
+                style={style}
               >
-                {each.reason}
-              </span>
-            </div>
+                <span className="sr-only">
+                  {messages['schedule.unavailable'](each.reason, timeText)}
+                </span>
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    'rounded-xs bg-surface-sunken px-1 text-xs text-secondary',
+                    phone ? 'whitespace-normal' : 'truncate',
+                    TEXT_ISOLATE,
+                  )}
+                >
+                  {each.reason}
+                </span>
+              </div>
+            </Tooltip>
           )
         })}
         {placeholder !== null && movingItem !== undefined && (
@@ -769,42 +770,43 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
               style={canMove && !phone ? { ...style, minWidth: MOVABLE_MIN_WIDTH } : style}
             >
               {pressable ? (
-                <button
-                  type="button"
-                  data-booking-button=""
-                  aria-label={label}
-                  title={label}
-                  {...(canMove ? { 'aria-describedby': instructionsId } : {})}
-                  onKeyDown={(event) => {
-                    onBookingKey(event, item)
-                  }}
-                  onKeyUp={(event) => {
-                    // Space picks up and drops: it never also presses the button.
-                    if (event.key === ' ' && canMove) event.preventDefault()
-                  }}
-                  onClick={() => {
-                    if (swallowClick.current || moving !== null) return
-                    props.onSelect?.(item.booking)
-                  }}
-                  onBlur={(event) => {
-                    if (moving?.keys === true && isMoving && event.relatedTarget !== null) {
-                      setMoving(null)
-                      setAnnouncement(messages['schedule.cancelled'](item.booking.title))
-                    }
-                  }}
-                  onPointerDown={(event) => {
-                    startDrag(event, item)
-                  }}
-                  className={cn(
-                    BUTTON_RESET,
-                    look,
-                    FOCUS_RING,
-                    canMove ? 'cursor-grab select-none' : 'cursor-pointer',
-                    isMoving && 'cursor-grabbing',
-                  )}
-                >
-                  {body}
-                </button>
+                <Tooltip label={label}>
+                  <button
+                    type="button"
+                    data-booking-button=""
+                    aria-label={label}
+                    {...(canMove ? { 'aria-describedby': instructionsId } : {})}
+                    onKeyDown={(event) => {
+                      onBookingKey(event, item)
+                    }}
+                    onKeyUp={(event) => {
+                      // Space picks up and drops: it never also presses the button.
+                      if (event.key === ' ' && canMove) event.preventDefault()
+                    }}
+                    onClick={() => {
+                      if (swallowClick.current || moving !== null) return
+                      props.onSelect?.(item.booking)
+                    }}
+                    onBlur={(event) => {
+                      if (moving?.keys === true && isMoving && event.relatedTarget !== null) {
+                        setMoving(null)
+                        setAnnouncement(messages['schedule.cancelled'](item.booking.title))
+                      }
+                    }}
+                    onPointerDown={(event) => {
+                      startDrag(event, item)
+                    }}
+                    className={cn(
+                      BUTTON_RESET,
+                      look,
+                      FOCUS_RING,
+                      canMove ? 'cursor-grab select-none' : 'cursor-pointer',
+                      isMoving && 'cursor-grabbing',
+                    )}
+                  >
+                    {body}
+                  </button>
+                </Tooltip>
               ) : (
                 <div className={look}>
                   <span className="sr-only">{label}</span>
@@ -950,14 +952,14 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
               ))}
             {byDay &&
               shownDays.map((day, index) => (
-                <span
-                  key={day}
-                  title={format.dateLong(day)}
-                  className="absolute inset-x-0 flex flex-col items-center gap-0.5 pt-1"
-                  style={{ top: along(index * MINUTES_PER_DAY) }}
-                >
-                  {dayLabel(day)}
-                </span>
+                <Tooltip key={day} label={format.dateLong(day)}>
+                  <span
+                    className="absolute inset-x-0 flex flex-col items-center gap-0.5 pt-1"
+                    style={{ top: along(index * MINUTES_PER_DAY) }}
+                  >
+                    {dayLabel(day)}
+                  </span>
+                </Tooltip>
               ))}
             {hours.map((hour) => (
               <span
@@ -1042,14 +1044,14 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
                 <div className={cn('relative flex-1', byDay ? 'flex' : 'h-7')}>
                   {byDay &&
                     shownDays.map((day) => (
-                      <div
-                        key={day}
-                        title={format.dateLong(day)}
-                        className="box-border flex flex-col items-center gap-0.5 border-0 border-s border-solid border-subtle py-1"
-                        style={{ width: `${String(100 / shownDays.length)}%` }}
-                      >
-                        {dayLabel(day)}
-                      </div>
+                      <Tooltip key={day} label={format.dateLong(day)}>
+                        <div
+                          className="box-border flex flex-col items-center gap-0.5 border-0 border-s border-solid border-subtle py-1"
+                          style={{ width: `${String(100 / shownDays.length)}%` }}
+                        >
+                          {dayLabel(day)}
+                        </div>
+                      </Tooltip>
                     ))}
                   {hours.map((hour) => (
                     <span
@@ -1172,18 +1174,19 @@ function MoveTo({
       }}
     >
       <PopoverTrigger asChild>
-        <button
-          type="button"
-          aria-label={title}
-          title={title}
-          className={cn(
-            BUTTON_RESET,
-            'absolute end-1 top-1/2 inline-flex size-6 -translate-y-1/2 cursor-pointer items-center justify-center rounded-sm text-current hover:bg-surface-hover',
-            FOCUS_RING,
-          )}
-        >
-          <MoveRight aria-hidden="true" className="size-3.5 rtl:-scale-x-100" />
-        </button>
+        <Tooltip label={title}>
+          <button
+            type="button"
+            aria-label={title}
+            className={cn(
+              BUTTON_RESET,
+              'absolute end-1 top-1/2 inline-flex size-6 -translate-y-1/2 cursor-pointer items-center justify-center rounded-sm text-current hover:bg-surface-hover',
+              FOCUS_RING,
+            )}
+          >
+            <MoveRight aria-hidden="true" className="size-3.5 rtl:-scale-x-100" />
+          </button>
+        </Tooltip>
       </PopoverTrigger>
       <PopoverContent align="end" aria-label={title} className="flex w-72 flex-col gap-3">
         {/* The action, then the booking it moves, bold on its own line (P5.28 item 6). */}

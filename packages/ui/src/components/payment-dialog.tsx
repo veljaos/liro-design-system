@@ -19,6 +19,7 @@ import {
 } from './sale-logic'
 import { Spinner } from './spinner'
 import { TextField } from './text-field'
+import { Tooltip } from './popover'
 
 /*
  * PaymentDialog (BUILD-PLAN P5.10; docs/decisions.md "Touch and POS"). Taking the money for a
@@ -449,20 +450,21 @@ export function PaymentDialog(props: PaymentDialogProps) {
               <span className="flex shrink-0 items-center gap-1">
                 <MoneyText value={part.value} currency={props.currency} />
                 {props.onRemovePart !== undefined && (
-                  <ButtonPrimitive
-                    family="neutral"
-                    emphasis="menu"
-                    shape="icon"
-                    aria-label={messages['payment.removePart'](part.label)}
-                    title={messages['payment.removePart'](part.label)}
-                    className="size-11 shrink-0 px-0"
-                    disabled={locked}
-                    onClick={() => {
-                      props.onRemovePart?.(part.id)
-                    }}
-                  >
-                    <Trash2 aria-hidden="true" className="size-4" />
-                  </ButtonPrimitive>
+                  <Tooltip label={messages['payment.removePart'](part.label)}>
+                    <ButtonPrimitive
+                      family="neutral"
+                      emphasis="menu"
+                      shape="icon"
+                      aria-label={messages['payment.removePart'](part.label)}
+                      className="size-11 shrink-0 px-0"
+                      disabled={locked}
+                      onClick={() => {
+                        props.onRemovePart?.(part.id)
+                      }}
+                    >
+                      <Trash2 aria-hidden="true" className="size-4" />
+                    </ButtonPrimitive>
+                  </Tooltip>
                 )}
               </span>
             </dd>

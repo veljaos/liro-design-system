@@ -216,9 +216,9 @@ export const Compact: Story = {
     const canvas = within(canvasElement)
     const tiles = canvas.getAllByRole('button', { name: /^\d{3,4},/ })
     await expect(tiles).toHaveLength(240)
-    // The words stay in the tile's name and title.
+    // The words stay in the tile's name and the library's tooltip, never the browser's title.
     await expect(tiles[0]).toHaveAccessibleName(/^101, TWN, (Occupied|Vacant|Arriving today)/)
-    await expect(tiles[0]?.getAttribute('title')).toBe(tiles[0]?.getAttribute('aria-label'))
+    await expect(tiles[0]).not.toHaveAttribute('title')
   },
 }
 

@@ -176,7 +176,7 @@ function RequiredMark() {
   const { messages } = useLiro()
   return (
     <>
-      <span aria-hidden="true" title={messages['field.required']} className="text-status-danger-fg">
+      <span aria-hidden="true" className="text-status-danger-fg">
         {' *'}
       </span>
       <span className="sr-only">{` (${messages['field.required']})`}</span>

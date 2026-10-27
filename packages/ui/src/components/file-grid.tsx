@@ -10,6 +10,7 @@ import { launchpadArrowTarget } from '../templates/launchpad-logic'
 import { DropdownMenu, type MenuEntry } from './dropdown-menu'
 import { selectRange, toggleSelection, type FileEntry } from './file-browser-logic'
 import { EntryMarks, EntryState, FactsLine, FileIcon, useEntryFacts } from './file-entry-parts'
+import { Tooltip } from './popover'
 
 /*
  * FileGrid (BUILD-PLAN P5.43): files and folders as tiles with a picture — photos from a site,
@@ -234,16 +235,17 @@ export function FileGrid(props: FileGridProps) {
                   align="end"
                   entries={menu}
                   trigger={
-                    <ButtonPrimitive
-                      family="neutral"
-                      emphasis="menu"
-                      shape="compact"
-                      tabIndex={tabbable ? 0 : -1}
-                      aria-label={messages['files.actions'](entry.name)}
-                      title={messages['files.actions'](entry.name)}
-                    >
-                      <MoreHorizontal aria-hidden="true" className="size-4" />
-                    </ButtonPrimitive>
+                    <Tooltip label={messages['files.actions'](entry.name)}>
+                      <ButtonPrimitive
+                        family="neutral"
+                        emphasis="menu"
+                        shape="compact"
+                        tabIndex={tabbable ? 0 : -1}
+                        aria-label={messages['files.actions'](entry.name)}
+                      >
+                        <MoreHorizontal aria-hidden="true" className="size-4" />
+                      </ButtonPrimitive>
+                    </Tooltip>
                   }
                 />
               </span>

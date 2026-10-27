@@ -24,6 +24,7 @@ import {
   slotShift,
   type CardSlot,
 } from './launchpad-logic'
+import { Tooltip } from '../components/popover'
 
 /*
  * Launchpad (BUILD-PLAN P4.2; the owner's values, docs/decisions.md "Launchpad"): the home of
@@ -519,16 +520,17 @@ function EditButton({
   onClick: () => void
 }) {
   return (
-    <ButtonPrimitive
-      family="neutral"
-      emphasis="menu"
-      shape="compact"
-      aria-label={label}
-      title={label}
-      disabled={disabled}
-      onClick={onClick}
-    >
-      <Icon aria-hidden="true" className={cn('size-4', mirrored && 'rtl:-scale-x-100')} />
-    </ButtonPrimitive>
+    <Tooltip label={label}>
+      <ButtonPrimitive
+        family="neutral"
+        emphasis="menu"
+        shape="compact"
+        aria-label={label}
+        disabled={disabled}
+        onClick={onClick}
+      >
+        <Icon aria-hidden="true" className={cn('size-4', mirrored && 'rtl:-scale-x-100')} />
+      </ButtonPrimitive>
+    </Tooltip>
   )
 }

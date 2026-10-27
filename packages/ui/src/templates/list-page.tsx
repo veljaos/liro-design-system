@@ -22,6 +22,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '../primitives/popover'
 import { useLiro } from '../provider/liro-provider'
 import { moveModule } from './launchpad-logic'
 import { PageHeader } from './page-header'
+import { Tooltip } from '../components/popover'
 
 /*
  * ListPage, ColumnChooser and QuickPreview (BUILD-PLAN P4.3; the owner's values,
@@ -418,32 +419,34 @@ export function ColumnChooser({ columns, onChange }: ColumnChooserProps) {
                 >
                   {column.label}
                 </label>
-                <ButtonPrimitive
-                  family="neutral"
-                  emphasis="menu"
-                  shape="compact"
-                  aria-label={messages['columns.moveUp'](column.label)}
-                  title={messages['columns.moveUp'](column.label)}
-                  disabled={index === 0}
-                  onClick={() => {
-                    reorder(column.id, -1)
-                  }}
-                >
-                  <ArrowUp aria-hidden="true" className="size-4" />
-                </ButtonPrimitive>
-                <ButtonPrimitive
-                  family="neutral"
-                  emphasis="menu"
-                  shape="compact"
-                  aria-label={messages['columns.moveDown'](column.label)}
-                  title={messages['columns.moveDown'](column.label)}
-                  disabled={index === columns.length - 1}
-                  onClick={() => {
-                    reorder(column.id, 1)
-                  }}
-                >
-                  <ArrowDown aria-hidden="true" className="size-4" />
-                </ButtonPrimitive>
+                <Tooltip label={messages['columns.moveUp'](column.label)}>
+                  <ButtonPrimitive
+                    family="neutral"
+                    emphasis="menu"
+                    shape="compact"
+                    aria-label={messages['columns.moveUp'](column.label)}
+                    disabled={index === 0}
+                    onClick={() => {
+                      reorder(column.id, -1)
+                    }}
+                  >
+                    <ArrowUp aria-hidden="true" className="size-4" />
+                  </ButtonPrimitive>
+                </Tooltip>
+                <Tooltip label={messages['columns.moveDown'](column.label)}>
+                  <ButtonPrimitive
+                    family="neutral"
+                    emphasis="menu"
+                    shape="compact"
+                    aria-label={messages['columns.moveDown'](column.label)}
+                    disabled={index === columns.length - 1}
+                    onClick={() => {
+                      reorder(column.id, 1)
+                    }}
+                  >
+                    <ArrowDown aria-hidden="true" className="size-4" />
+                  </ButtonPrimitive>
+                </Tooltip>
               </li>
             )
           })}

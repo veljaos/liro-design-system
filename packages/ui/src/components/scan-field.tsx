@@ -6,6 +6,7 @@ import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 import { controlAttributes, Field, fieldProps, type FieldBaseProps } from './field'
 import { scanDecision, type ScanOptions } from './scan-logic'
+import { Tooltip } from './popover'
 
 /*
  * ScanField (BUILD-PLAN P5.11; docs/decisions.md "Scanning"). A hardware scanner is a keyboard
@@ -144,19 +145,20 @@ export function ScanField(props: ScanFieldProps) {
               />
             </div>
             {props.onCameraScan !== undefined && (
-              <ButtonPrimitive
-                family="neutral"
-                emphasis="secondary"
-                shape="icon"
-                disabled={control.disabled}
-                aria-label={props.cameraLabel ?? messages['scan.camera']}
-                title={props.cameraLabel ?? messages['scan.camera']}
-                onClick={() => {
-                  props.onCameraScan?.()
-                }}
-              >
-                <Camera aria-hidden="true" className="size-4 shrink-0" />
-              </ButtonPrimitive>
+              <Tooltip label={props.cameraLabel ?? messages['scan.camera']}>
+                <ButtonPrimitive
+                  family="neutral"
+                  emphasis="secondary"
+                  shape="icon"
+                  disabled={control.disabled}
+                  aria-label={props.cameraLabel ?? messages['scan.camera']}
+                  onClick={() => {
+                    props.onCameraScan?.()
+                  }}
+                >
+                  <Camera aria-hidden="true" className="size-4 shrink-0" />
+                </ButtonPrimitive>
+              </Tooltip>
             )}
           </div>
         )}

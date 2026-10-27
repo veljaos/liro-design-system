@@ -81,7 +81,7 @@ describe('RichTextField', () => {
     )
     expect(html).toContain('<span id="letter-label"')
     expect(html).toContain('role="toolbar" aria-label="Formatting" aria-controls="letter"')
-    expect(html).toContain('aria-label="Bold" title="Bold" aria-pressed="false"')
+    expect(html).toContain('aria-label="Bold" aria-pressed="false"')
     expect(html).toContain('aria-label="Text style: Normal text"')
     expect(html).toContain('aria-label="Insert merge field"')
     expect(html).toContain('Merge field: Customer name')

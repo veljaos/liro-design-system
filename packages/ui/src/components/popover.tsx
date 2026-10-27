@@ -1,4 +1,5 @@
-import type { ReactElement, ReactNode } from 'react'
+import { useRef, useState, type FocusEvent, type ReactElement, type ReactNode } from 'react'
+import { Slot } from 'radix-ui'
 import { Popover as PopoverRoot, PopoverContent, PopoverTrigger } from '../primitives/popover'
 import {
   Tooltip as TooltipRoot,
@@ -77,16 +78,90 @@ export function physicalSide(
 
 /**
  * A short hint on hover and keyboard focus, after 300ms. It adds a description to its target
- * (aria-describedby); anything the user needs to act must also be visible without it.
+ * (aria-describedby); anything the user needs to act must also be visible without it. Every hover
+ * hint of the library is this one, never the browser's `title` (P5.93 item 7).
  */
-export function Tooltip({ label, children, side = 'top', defaultOpen }: TooltipProps) {
+export function Tooltip({
+  label,
+  children,
+  side = 'top',
+  defaultOpen,
+  ...trigger
+}: TooltipProps & Record<string, unknown>) {
   const { direction } = useLiro()
+  const [open, setOpen] = useState(defaultOpen === true)
+  const focusing = useRef(false)
+  const onFocus = trigger.onFocus as ((event: FocusEvent<HTMLElement>) => void) | undefined
+  // Props from an outer trigger (a menu's or a dialog's, asChild) pass on to the target, so a
+  // tooltip can stand between a trigger and its button (P5.93 item 7). A focus opens the tooltip
+  // only when it comes from the keyboard: a dialog that focuses its close button as it opens, or
+  // a menu that gives the focus back to its button after a click, shows no tooltip.
   return (
     <TooltipProvider>
-      <TooltipRoot {...(defaultOpen === undefined ? {} : { defaultOpen })}>
-        <TooltipTrigger asChild>{children}</TooltipTrigger>
+      <TooltipRoot
+        open={open}
+        onOpenChange={(next) => {
+          if (next && focusing.current && lastInput !== 'keyboard') return
+          setOpen(next)
+        }}
+      >
+        <TooltipTrigger
+          asChild
+          {...trigger}
+          onFocus={(event: FocusEvent<HTMLElement>) => {
+            onFocus?.(event)
+            focusing.current = true
+            queueMicrotask(() => {
+              focusing.current = false
+            })
+          }}
+        >
+          {children}
+        </TooltipTrigger>
         <TooltipContent side={physicalSide(side, direction)}>{label}</TooltipContent>
       </TooltipRoot>
     </TooltipProvider>
+  )
+}
+
+/** How the user last acted: a focus opens a tooltip only after a key (P5.93 item 7). */
+let lastInput: 'none' | 'keyboard' | 'pointer' = 'none'
+if (typeof document !== 'undefined') {
+  document.addEventListener(
+    'keydown',
+    () => {
+      lastInput = 'keyboard'
+    },
+    true,
+  )
+  document.addEventListener(
+    'pointerdown',
+    () => {
+      lastInput = 'pointer'
+    },
+    true,
+  )
+}
+
+/**
+ * The library's tooltip on a target when there is a hint, the target alone when there is none
+ * (P5.93 item 7: where the browser's `title` was set only sometimes). Props from an outer trigger
+ * pass on to the target either way. Internal: not exported from the package.
+ */
+export function HintedTarget({
+  hint,
+  children,
+  ...trigger
+}: {
+  hint: ReactNode | undefined
+  children: ReactElement
+} & Record<string, unknown>) {
+  if (hint === undefined || hint === null || hint === '') {
+    return <Slot.Root {...trigger}>{children}</Slot.Root>
+  }
+  return (
+    <Tooltip label={hint} {...trigger}>
+      {children}
+    </Tooltip>
   )
 }

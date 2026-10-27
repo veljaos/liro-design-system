@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { noticeClosable, noticeDuration, noticeTakesPointer } from './notice'
+import { noticeDuration, NOTICE_POINTER } from './notice'
 
 describe('noticeDuration', () => {
   it('closes success, info and warning by themselves; errors and loading wait', () => {
@@ -19,20 +19,11 @@ describe('noticeDuration with an action', () => {
   })
 })
 
-describe('toasts never block (P5.90)', () => {
-  it('gives success and info no close button; warnings and errors keep theirs', () => {
-    expect(noticeClosable('success')).toBe(false)
-    expect(noticeClosable('info')).toBe(false)
-    expect(noticeClosable('loading')).toBe(false)
-    expect(noticeClosable('warning')).toBe(true)
-    expect(noticeClosable('error')).toBe(true)
-  })
-
-  it('lets clicks through a toast that is only read', () => {
-    expect(noticeTakesPointer('success')).toBe(false)
-    expect(noticeTakesPointer('info')).toBe(false)
-    expect(noticeTakesPointer('success', true)).toBe(true)
-    expect(noticeTakesPointer('error')).toBe(true)
-    expect(noticeTakesPointer('warning')).toBe(true)
+describe('toasts never block (P5.90, P5.93)', () => {
+  it('lets clicks through a toast except on its buttons', () => {
+    expect(NOTICE_POINTER.split(' ')).toEqual([
+      'pointer-events-none',
+      '[&_button]:pointer-events-auto',
+    ])
   })
 })

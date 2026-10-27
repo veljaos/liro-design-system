@@ -17,6 +17,7 @@ import {
 } from './document-frame-protocol'
 import { ErrorState } from './empty-state'
 import { Skeleton } from './progress'
+import { Tooltip } from './popover'
 
 export {
   FRAME_PROTOCOL,
@@ -92,17 +93,18 @@ function ToolButton({
   children: ReactNode
 }) {
   return (
-    <ButtonPrimitive
-      family="neutral"
-      emphasis="menu"
-      shape="compact"
-      aria-label={label}
-      title={label}
-      disabled={disabled}
-      onClick={onClick}
-    >
-      {children}
-    </ButtonPrimitive>
+    <Tooltip label={label}>
+      <ButtonPrimitive
+        family="neutral"
+        emphasis="menu"
+        shape="compact"
+        aria-label={label}
+        disabled={disabled}
+        onClick={onClick}
+      >
+        {children}
+      </ButtonPrimitive>
+    </Tooltip>
   )
 }
 

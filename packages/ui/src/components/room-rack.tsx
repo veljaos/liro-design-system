@@ -20,6 +20,7 @@ import {
 } from './room-rack-logic'
 import { StatusBadge, type Tone } from './status-badge'
 import { usePhone } from './use-phone'
+import { HintedTarget } from './popover'
 
 /*
  * RoomRack (BUILD-PLAN P5.25): the rooms of a place at a glance — the front desk's "room rack" of
@@ -419,41 +420,44 @@ export function RoomRack(props: RoomRackProps) {
     const title = compact ? summary(room) : undefined
     if (!openable) {
       return (
-        <div className={look} title={title} {...(selected ? { 'aria-current': true } : {})}>
-          {tileBody(room)}
-        </div>
+        <HintedTarget hint={title}>
+          <div className={look} {...(selected ? { 'aria-current': true } : {})}>
+            {tileBody(room)}
+          </div>
+        </HintedTarget>
       )
     }
     return (
-      <button
-        type="button"
-        data-rack-room={room.id}
-        tabIndex={room.id === current ? 0 : -1}
-        // Its facts in words, in order and with pauses ("204, DBL, Occupied, Clean, …").
-        aria-label={summary(room)}
-        title={title}
-        {...(selected ? { 'aria-current': true } : {})}
-        {...(room.id === current ? { 'aria-describedby': instructionsId } : {})}
-        onKeyDown={(event) => {
-          onTileKey(event, room)
-        }}
-        onFocus={() => {
-          setActive(room.id)
-        }}
-        onClick={() => {
-          setActive(room.id)
-          props.onRoomOpen?.(room)
-        }}
-        className={cn(
-          BUTTON_RESET,
-          FOCUS_RING,
-          look,
-          'cursor-pointer',
-          !selected && 'hover:bg-surface-hover',
-        )}
-      >
-        {tileBody(room)}
-      </button>
+      <HintedTarget hint={title}>
+        <button
+          type="button"
+          data-rack-room={room.id}
+          tabIndex={room.id === current ? 0 : -1}
+          // Its facts in words, in order and with pauses ("204, DBL, Occupied, Clean, …").
+          aria-label={summary(room)}
+          {...(selected ? { 'aria-current': true } : {})}
+          {...(room.id === current ? { 'aria-describedby': instructionsId } : {})}
+          onKeyDown={(event) => {
+            onTileKey(event, room)
+          }}
+          onFocus={() => {
+            setActive(room.id)
+          }}
+          onClick={() => {
+            setActive(room.id)
+            props.onRoomOpen?.(room)
+          }}
+          className={cn(
+            BUTTON_RESET,
+            FOCUS_RING,
+            look,
+            'cursor-pointer',
+            !selected && 'hover:bg-surface-hover',
+          )}
+        >
+          {tileBody(room)}
+        </button>
+      </HintedTarget>
     )
   }
 

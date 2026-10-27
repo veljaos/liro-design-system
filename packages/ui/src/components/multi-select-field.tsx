@@ -140,7 +140,6 @@ export function MultiSelectField(props: MultiSelectFieldProps) {
               role="list"
               aria-labelledby={control.labelId}
               aria-describedby={control.describedBy}
-              title={messages['field.readOnly']}
               className="flex min-h-control flex-wrap items-center gap-2 px-3 py-[5.5px] font-sans"
             >
               {chosen.map((option) => (

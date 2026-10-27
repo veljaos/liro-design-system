@@ -96,7 +96,7 @@ describe('Field', () => {
 
   it('marks a required field with " *" named by messages, and the control as required', () => {
     const html = render(<TextField id="name" label="Name" required />)
-    expect(html).toContain('title="Required"')
+    expect(html).not.toContain('title="Required"')
     expect(html).toContain('> *</span>'.replace(' ', ' '))
     expect(html).toMatch(/<input[^>]*required=""/)
   })

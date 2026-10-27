@@ -26,6 +26,7 @@ import {
 } from './date-logic'
 import { controlAttributes, Field, fieldProps, type FieldBaseProps } from './field'
 import { entryAttributes, entryError, useEntry, type EntryProps } from './use-entry'
+import { Tooltip } from './popover'
 
 /*
  * DateField and DateRangeField (BUILD-PLAN P2.3). A date is typed (read by `format.parseDate` on
@@ -109,16 +110,17 @@ function CalendarButton({ disabled }: { disabled: boolean }) {
   return (
     <span className="flex h-full min-w-[34px] shrink-0 items-center justify-center">
       <PopoverTrigger asChild>
-        <ButtonPrimitive
-          family="neutral"
-          emphasis="menu"
-          shape="compact"
-          aria-label={label}
-          title={label}
-          disabled={disabled}
-        >
-          <CalendarDays aria-hidden="true" className="size-4 shrink-0" />
-        </ButtonPrimitive>
+        <Tooltip label={label}>
+          <ButtonPrimitive
+            family="neutral"
+            emphasis="menu"
+            shape="compact"
+            aria-label={label}
+            disabled={disabled}
+          >
+            <CalendarDays aria-hidden="true" className="size-4 shrink-0" />
+          </ButtonPrimitive>
+        </Tooltip>
       </PopoverTrigger>
     </span>
   )
