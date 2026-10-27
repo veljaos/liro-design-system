@@ -315,7 +315,10 @@ export const BankStatementProformaInteraction: Story = {
     await expect(within(result).getByRole('link', { name: 'AF-2026-0031' })).toBeVisible()
     await expect(canvasElement).toHaveTextContent('1 of 10 lines done')
     await userEvent.click(drawer.getByRole('button', { name: 'Next line' }))
-    await expect(await page.findByRole('dialog', { name: /Petar Jovanović/ })).toBeVisible()
+    // The next line's drawer slides in: wait for it to settle.
+    await waitFor(async () => {
+      await expect(page.getByRole('dialog', { name: /Petar Jovanović/ })).toBeVisible()
+    })
     await settle()
   },
 }
