@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { FileText, RotateCw } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test'
+import { CodeHighlighting } from '../code'
 import { settle } from '../primitives/story-helpers'
 import { HealthList, type HealthItem } from './health-list'
 import { ExampleProvider, PhoneFrame, StoryProvider } from './story-frames'
@@ -12,6 +13,14 @@ const DEGRADED = { kind: 'degraded', label: 'Degraded', tone: 'warning' } as con
 const DOWN = { kind: 'down', label: 'Down', tone: 'danger' } as const
 const MAINTENANCE = { kind: 'maintenance', label: 'In maintenance', tone: 'neutral' } as const
 const UNKNOWN = { kind: 'unknown', label: 'No report', tone: 'neutral' } as const
+
+/** The bank's raw answer, as the application logged it. */
+const BANK_ERROR = `{
+  "error": "GATEWAY_TIMEOUT",
+  "message": "The statement service did not answer within 120 s.",
+  "requestId": "b7c1-44e0-9a2f",
+  "retryAfter": 300
+}`
 
 const retry = fn()
 const openLog = fn()
@@ -45,7 +54,13 @@ const CONNECTIONS: HealthItem[] = [
     note: 'Statements arrive late; the bank reports a slow service.',
     metrics: [{ key: 'last', label: 'Last statement', value: '188' }],
     lastSuccess: '2026-10-14T06:02:00+02:00',
-    lastError: { at: '2026-10-14T02:01:00+02:00', message: 'Timeout after 120 seconds.' },
+    lastError: {
+      at: '2026-10-14T02:01:00+02:00',
+      message: 'Timeout after 120 seconds.',
+      // The bank's raw answer (P5.93), shown on request as a CodeBlock.
+      detail: BANK_ERROR,
+      detailLanguage: 'json',
+    },
     actions: [{ key: 'retry', label: 'Retry', icon: RotateCw, onSelect: retry }],
   },
   {
@@ -318,5 +333,40 @@ export const Retrying: Story = {
     })
     await userEvent.click(canvas.getByRole('button', { name: 'Open log: SEF (e-invoicing)' }))
     await expect(openLog).toHaveBeenCalled()
+  },
+}
+
+/**
+ * A last error's raw answer, on request (P5.93): "Show details" opens it as a small CodeBlock
+ * across the row, highlighted where the application gives `CodeHighlighting`.
+ */
+export const ErrorDetails: Story = {
+  name: 'Error details, interaction',
+  tags: ['interaction', '!dev'],
+  render: (args) => (
+    <CodeHighlighting>
+      <Page>
+        <HealthList {...args} />
+      </Page>
+    </CodeHighlighting>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const show = canvas.getByRole('button', { name: 'Show details' })
+    await expect(show).toHaveAttribute('aria-expanded', 'false')
+    await userEvent.click(show)
+    await expect(canvas.getByRole('button', { name: 'Hide details' })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    )
+    const code = canvas.getByRole('region', { name: 'Last error details: Banca Intesa statements' })
+    await expect(code).toHaveTextContent('GATEWAY_TIMEOUT')
+    await waitFor(async () => {
+      await expect(canvasElement.querySelector('[data-slot="code-block"]')).toHaveAttribute(
+        'data-ready',
+        'true',
+      )
+    })
   },
 }

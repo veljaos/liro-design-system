@@ -6,6 +6,7 @@ import { cn } from '../primitives/cn'
 import { Skeleton } from '../primitives/skeleton'
 import { useLiro } from '../provider/liro-provider'
 import { Alert } from './alert'
+import { CodeDetails } from './code-block'
 import { healthFacts, type HealthFact, type HealthKind, type HealthTimes } from './health-logic'
 import type { IconComponent } from './intents'
 import { StatusBadge, type Tone } from './status-badge'
@@ -27,6 +28,8 @@ import { usePhone } from './use-phone'
  *   semibold) with its detail and the application's note (xs text.secondary); the state; the
  *   figures as label over value (xs text.secondary over sm medium, tabular); the last success and
  *   the last error with its message; the actions at the end. Rows are divided by border.subtle.
+ *   A last error's raw response or log (`lastError.detail`, P5.93) opens on request ("Show
+ *   details") as a small CodeBlock across the row, under it.
  * - Phones: one card per thing (P5.29, owner): the name and the state on top, the detail and note,
  *   then the figures and the times as label / value rows, the error's message in full, the actions
  *   at the bottom. The title stands above the cards (never cards in a card, P4.9).
@@ -207,6 +210,22 @@ function FactValue({ fact }: { fact: HealthFact }) {
   )
 }
 
+/** The last error's raw response or log, on request. */
+function ErrorDetail({ item, className }: { item: HealthItem; className?: string }) {
+  const { messages } = useLiro()
+  const detail = item.lastError?.detail
+  if (detail === undefined || detail === '') return null
+  return (
+    <div className={cn('min-w-0', className)}>
+      <CodeDetails
+        code={detail}
+        language={item.lastError?.detailLanguage}
+        label={messages['health.errorDetail'](item.name)}
+      />
+    </div>
+  )
+}
+
 /** One thing as a row of the shared grid (desktop). */
 function Row({ item }: { item: HealthItem }) {
   const { messages, format } = useLiro()
@@ -257,6 +276,7 @@ function Row({ item }: { item: HealthItem }) {
           ))}
       </dl>
       <Actions item={item} phone={false} />
+      <ErrorDetail item={item} className="col-span-full pt-2" />
     </li>
   )
 }
@@ -314,6 +334,7 @@ function ItemCard({ item }: { item: HealthItem }) {
           ))}
         </dl>
       )}
+      <ErrorDetail item={item} />
       <Actions item={item} phone />
     </li>
   )

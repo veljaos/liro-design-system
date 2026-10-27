@@ -11,6 +11,7 @@ import {
 import { useEffect, useId, useState, type SubmitEvent } from 'react'
 import { Button } from '../components/button'
 import { CheckboxField } from '../components/checkbox-field'
+import { CodeDetails } from '../components/code-block'
 import { Dialog } from '../components/dialog'
 import { RadioGroupField } from '../components/radio-group-field'
 import { StatusBadge, type Tone } from '../components/status-badge'
@@ -183,7 +184,7 @@ export function RunAttention({
               failed ? 'bg-status-danger-bg' : 'bg-status-neutral-bg',
             )}
           >
-            <div className="flex min-w-0 flex-col gap-0.5">
+            <div className="flex min-w-0 flex-1 basis-60 flex-col gap-0.5">
               <p className={cn('m-0 flex items-center gap-1.5 text-sm font-semibold', look.text)}>
                 <Icon aria-hidden="true" className="size-4 shrink-0" />
                 <span className={TEXT_ISOLATE}>
@@ -192,6 +193,13 @@ export function RunAttention({
               </p>
               {state.reason !== undefined && (
                 <p className={cn('m-0 text-sm text-primary', TEXT_DIRECTION)}>{state.reason}</p>
+              )}
+              {state.log !== undefined && state.log !== '' && (
+                <CodeDetails
+                  code={state.log}
+                  language={state.logLanguage}
+                  label={messages['diagram.stepLog'](step.label)}
+                />
               )}
             </div>
             <div className="flex flex-wrap items-center gap-2">
@@ -335,6 +343,13 @@ function ListRunState({
         >
           {run.reason}
         </p>
+      )}
+      {run?.log !== undefined && run.log !== '' && (
+        <CodeDetails
+          code={run.log}
+          language={run.logLanguage}
+          label={messages['diagram.stepLog'](label)}
+        />
       )}
       {run?.actions !== undefined && run.actions.length > 0 && (
         <div className="flex flex-wrap items-center gap-2 pt-1">

@@ -1587,3 +1587,66 @@ export type {
   DashboardLayoutItem,
   GridPlace,
 } from './components/dashboard-grid-logic'
+// ── P5.93 code and the assistant's work ──
+export { CodeBlock, CodeHighlighterProvider } from './components/code-block'
+export type { CodeBlockProps } from './components/code-block'
+export {
+  ansiLines,
+  applySgr,
+  CODE_TOKEN_KINDS,
+  codeCopyText,
+  codeLines,
+  diffLine,
+  isAnsiLanguage,
+  isPlainLanguage,
+  lineNumberDigits,
+  parseAnsi,
+  splitCodeLines,
+  stripAnsi,
+} from './components/code-block-logic'
+export type {
+  AnsiColor,
+  AnsiSpan,
+  AnsiStyle,
+  CodeHighlighter,
+  CodeLine,
+  CodeLineKind,
+  CodeLineOptions,
+  CodeToken,
+  CodeTokenKind,
+} from './components/code-block-logic'
+export {
+  ChainOfThought,
+  Plan,
+  Queue,
+  Reasoning,
+  Sources,
+  Subagent,
+  Task,
+  Trace,
+} from './components/trace'
+export type {
+  ChainOfThoughtProps,
+  PlanProps,
+  QueueProps,
+  ReasoningProps,
+  SourcesProps,
+  SubagentProps,
+  TaskProps,
+  TraceProps,
+} from './components/trace'
+export {
+  autoOpen,
+  changedStep,
+  flattenTrace,
+  isExternalLink,
+  planProgress,
+  queueGroups,
+  statusOf,
+  summaryStatus,
+  TRACE_STATUSES,
+  traceStatuses,
+  uniqueSources,
+} from './components/trace-logic'
+export type { QueueItem, TraceSource, TraceStatus, TraceStep } from './components/trace-logic'
+export type { AnswerCodeBlock } from './components/assistant-logic'

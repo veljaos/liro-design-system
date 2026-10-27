@@ -1,6 +1,7 @@
 import { Button } from '@veljaos/ui'
 import { useState } from 'react'
 import { ChartsExample } from './ChartsExample'
+import { CodeExample } from './CodeExample'
 import { DiagramExample } from './DiagramExample'
 import { FormExample } from './FormExample'
 import { GanttExample } from './GanttExample'
@@ -27,6 +28,7 @@ export function App() {
       <GanttExample />
       <MapExample />
       <PivotExample />
+      <CodeExample />
     </main>
   )
 }

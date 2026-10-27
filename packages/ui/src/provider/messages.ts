@@ -2289,4 +2289,46 @@ export interface LiroMessages {
   'dashboardGrid.removed': (title: string) => string
   /** The grid without cards. */
   'dashboardGrid.empty': string
+  // ── P5.93 code and the assistant's work ──
+  /** CodeBlock: the code's name without a title, Copy and its result, "Wrap lines". */
+  'code.label': string
+  'code.copy': string
+  'code.copied': string
+  'code.copyFailed': string
+  'code.wrap': string
+  /** A diff's added and removed lines and a highlighted line, for assistive technology. */
+  'code.added': string
+  'code.removed': string
+  'code.highlighted': string
+  /** The toggle that shows a failure's raw response or log (HealthList, Diagram's run). */
+  'code.showDetail': string
+  'code.hideDetail': string
+  /** HealthList: the last error's raw response, named with the thing ("Last error details: SEF"). */
+  'health.errorDetail': (name: string) => string
+  /** Diagram's run: a step's log ("Log: Send to the bank"). */
+  'diagram.stepLog': (step: string) => string
+  /** Trace: a status for assistive technology (done needs none: the title says it). */
+  'trace.running': string
+  'trace.pending': string
+  'trace.failed': string
+  /** After a link that opens in a new tab, for assistive technology. */
+  'trace.newTab': string
+  /** Reasoning: "Thinking…", then "Thought for 5 s" (the application's duration) or "Thought". */
+  'trace.thinking': string
+  'trace.thought': (duration: string | undefined) => string
+  /** Plan: "2 of 5 done". */
+  'trace.planProgress': (done: number, doneText: string, total: number, totalText: string) => string
+  /** Queue: "3 to do · 2 completed", and its two groups. */
+  'trace.queueSummary': (
+    toDo: number,
+    toDoText: string,
+    completed: number,
+    completedText: string,
+  ) => string
+  'trace.toDo': string
+  'trace.completed': string
+  /** Sources: "Used 4 records". */
+  'trace.sourcesUsed': (count: number, countText: string) => string
+  /** Task and Subagent: what the work handed back. */
+  'trace.result': string
 }

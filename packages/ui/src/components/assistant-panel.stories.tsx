@@ -19,8 +19,17 @@ import {
   STREAMING_BLOCKS,
   SUGGESTIONS,
 } from './assistant-story-data'
+import { CodeHighlighting } from '../code'
 import { IconButton } from './button'
 import { ExampleProvider, PhoneFrame, StoryProvider } from './story-frames'
+import { Reasoning, Sources, Subagent, Task } from './trace'
+import {
+  MATCHING_STEPS,
+  QUESTION_SEF,
+  RECORD_SOURCES,
+  SEF_BLOCKS,
+  SUBAGENT_STEPS,
+} from './trace-story-data'
 
 const noop = () => undefined
 const NOTE = 'Answers use only the data you may see. Check them before you act.'
@@ -49,6 +58,55 @@ const STREAMING_TURN: AssistantTurn = {
       state="streaming"
       blocks={STREAMING_BLOCKS}
       onStop={noop}
+    />
+  ),
+}
+
+/** A finished answer with its work (P5.93): thinking, a handed-off run and the records used. */
+const SEF_TURN: AssistantTurn = {
+  id: 't3',
+  question: QUESTION_SEF,
+  answer: (
+    <AssistantAnswer
+      author="Liro Assistant"
+      question={QUESTION_SEF}
+      blocks={SEF_BLOCKS}
+      onReport={noop}
+      work={
+        <>
+          <Reasoning status="done" duration="3 s">
+            <p className="m-0">
+              A rejected e-invoice has SEF’s answer in the connection log. I read it, then the
+              buyer’s record.
+            </p>
+          </Reasoning>
+          <Subagent
+            name="Integration checker"
+            title="Read SEF’s answer to invoice F-2026-0398"
+            duration="2 s"
+            steps={SUBAGENT_STEPS.slice(0, 1)}
+          />
+          <Sources items={RECORD_SOURCES.slice(0, 2)} />
+        </>
+      }
+    />
+  ),
+}
+
+/** The next question while it works: the task's steps as they happen. */
+const WORKING_TURN: AssistantTurn = {
+  id: 't4',
+  question: 'Match the payments on statement 188.',
+  answer: (
+    <AssistantAnswer
+      author="Liro Assistant"
+      state="thinking"
+      work={
+        <>
+          <Reasoning status="done" duration="2 s" />
+          <Task title="Matching bank statement 188" description="31 of 42" steps={MATCHING_STEPS} />
+        </>
+      }
     />
   ),
 }
@@ -113,6 +171,37 @@ export const Default: Story = {
     await expect(within(panel).getByRole('log', { name: 'Conversation' })).toBeVisible()
     await expect(within(panel).getByRole('textbox', { name: 'Your question' })).toBeVisible()
     await expect(within(panel).getByRole('link', { name: 'Open as a page' })).toBeVisible()
+  },
+}
+
+/**
+ * With the assistant's work (P5.93): over each answer how it got there — thinking, a handed-off
+ * run, the records used — one calm line each; the next answer's task shows its steps as they
+ * happen. Code in an answer is a CodeBlock.
+ */
+export const WithWork: Story = {
+  name: 'With its work',
+  args: { turns: [SEF_TURN, WORKING_TURN], composer: { busy: true } },
+  decorators: [
+    (Story) => (
+      <CodeHighlighting>
+        <Story />
+      </CodeHighlighting>
+    ),
+  ],
+  play: async () => {
+    const panel = await within(document.body).findByRole('dialog', { name: 'Liro Assistant' })
+    await settle()
+    await expect(within(panel).getByRole('button', { name: 'Thought for 3 s' })).toBeVisible()
+    await expect(
+      within(panel).getByRole('button', { name: /^Matching bank statement 188\s*, In progress/ }),
+    ).toHaveAttribute('aria-expanded', 'true')
+    await waitFor(async () => {
+      await expect(panel.querySelector('[data-slot="code-block"]')).toHaveAttribute(
+        'data-ready',
+        'true',
+      )
+    })
   },
 }
 

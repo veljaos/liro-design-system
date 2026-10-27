@@ -34,8 +34,12 @@ export interface HealthFact {
 export interface HealthTimes {
   /** An ISO instant in the tenant's offset; null: never succeeded; undefined: not reported. */
   lastSuccess?: string | null
-  /** The last failure: when (an ISO instant) and the application's message. */
-  lastError?: { at: string; message: string }
+  /**
+   * The last failure: when (an ISO instant) and the application's message; optionally its raw
+   * response or log (`detail`, secrets already masked by the application) in a language for
+   * CodeBlock ("json", "xml", "ansi"), shown on request under the row (P5.93).
+   */
+  lastError?: { at: string; message: string; detail?: string; detailLanguage?: string }
 }
 
 /**
