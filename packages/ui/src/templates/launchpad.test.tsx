@@ -124,6 +124,8 @@ describe('Launchpad', () => {
     expect(html).not.toContain('href="/fa"')
     expect(html).toContain('aria-disabled="true"')
     expect(html).toContain('Available in Pro')
+    // P5.93: the state line — "Locked", the reason under it.
+    expect(html).toContain('>Locked<')
     expect(html).toContain('3 waiting')
   })
   it('in editing mode: buttons instead of links, and the hidden list', () => {

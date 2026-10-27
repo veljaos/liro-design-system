@@ -1,37 +1,74 @@
-import { Globe, KeyRound, Link2, Plus, Trash2, UserRound, Users, X } from 'lucide-react'
-import { useState, type ReactNode } from 'react'
+import {
+  Check,
+  ChevronDown,
+  Copy,
+  Globe,
+  KeyRound,
+  Lock,
+  Plus,
+  UserRound,
+  Users,
+} from 'lucide-react'
+import { useEffect, useId, useState, type ReactNode } from 'react'
+import { ButtonPrimitive } from '../primitives/button'
 import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
+import {
+  DialogBody,
+  DialogCloseButton,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  Dialog as DialogRoot,
+} from '../primitives/dialog'
+import {
+  DropdownMenu as MenuRoot,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '../primitives/dropdown-menu'
+import { Sheet, SheetContent } from '../primitives/sheet'
 import { useLiro } from '../provider/liro-provider'
-import { Button, CompactIconButton } from './button'
+import { Button, IconButton } from './button'
 import { SwitchField } from './checkbox-field'
 import { ComboboxField, type ComboboxOption } from './combobox-field'
 import { ConfirmDialog } from './confirm-dialog'
 import { DateField } from './date-field'
-import { Dialog } from './dialog'
+import { DialogHeading, dialogHeaderClass } from './dialog'
 import { expiresTooSoon } from './file-browser-logic'
 import { PasswordField } from './password-field'
 import { SelectField } from './select-field'
-import { ShareLinks } from './share-links'
+import { usePhone } from './use-phone'
 
 /*
  * ShareDialog (BUILD-PLAN P5.43): who may open a file or a folder, and a link for anyone else.
  * Every person, role, portal, access level and rule is the application's; the dialog shows them
  * and reports what the user asks.
- * - The title "Share" with the item bold under it (D22), then three parts:
- *   1. **Add**: one search among the application's people, roles and client portals
- *      (ComboboxField, searched by name), the access level ("View", "Edit": the
- *      application's levels) and Add. `addUnavailable` replaces them with the reason.
- *   2. **Who has access**: a row per person, role or portal — a neutral icon by kind (a person, a
- *      role, a portal), the name, the application's detail and where the access comes from ("From
- *      the folder Contracts"); the owner says "Owner"; a fixed access shows its level and why it
- *      cannot change; any other has its level (a SelectField named "Access for <name>") and a
- *      28px "Remove access: <name>". Removing is reversible (add again): it does not ask.
- *   3. **Link**: none yet — what a link does and "Create link"; a link — its address with Copy
- *      link (ShareLinks), "Expires" (a DateField; a day not after today is an error, never sent),
- *      "Protect with a password" (a switch; turning it on asks for the password, which is used
- *      once and not kept), and "Revoke link" (destructive, asks first). `linkUnavailable` says why
- *      a link cannot be made ("Employee files are never shared by link.").
+ * - The title "Share" with the item bold under it (D22), then three parts (P5.93 item 21, the
+ *   owner's fourth review: the familiar pattern of the big file services):
+ *   1. **Add people or roles**: one search among the application's people, roles and client
+ *      portals (ComboboxField, searched by name), the access level ("View", "Edit": the
+ *      application's levels) and **Invite**. `addUnavailable` replaces them with the reason.
+ *   2. **People with access**: a row per person, role or portal — a neutral icon by kind, the
+ *      name, the application's detail and where the access comes from ("From the folder
+ *      Contracts"); the owner says "Owner"; a fixed access shows its level and why it cannot
+ *      change; any other has an access menu — its level as the button ("Editor, access for
+ *      <name>"), the levels as a radio group, then "Remove access" (reversible: add again; it
+ *      does not ask).
+ *   3. **General access**: Restricted or Anyone with the link, with what each means in words.
+ *      Choosing "Anyone with the link" creates the link (`onCreateLink`); going back to
+ *      Restricted turns it off after one confirmation, because it reaches the people who have
+ *      the link (`onRevokeLink`). With a link: its address in a box with a Copy icon button
+ *      beside it and an inline "Copied", then "Expires" (a DateField; a day not after today is an
+ *      error, never sent) and "Password" (a switch; turning it on asks for the password, used
+ *      once and not kept). `linkUnavailable` says why a link cannot be made ("Employee files are
+ *      never shared by link.") and keeps it Restricted.
+ * - Phones: a full-screen sheet (`layout`, D19).
  * - "Done" closes it: every change is reported as it is made (`onAdd`, `onLevelChange`,
  *   `onRevoke`, `onCreateLink`, `onLinkChange`, `onRevokeLink`); saving is the application's.
  */
@@ -108,14 +145,19 @@ export interface ShareDialogProps {
   onRevokeLink?: () => void
   /** A link cannot be made, and why. */
   linkUnavailable?: string
+  /** 'phone' shows a full-screen sheet; default by the viewport (48em). */
+  layout?: 'desktop' | 'phone'
 }
 
 const KIND_ICONS = { person: UserRound, role: Users, portal: Globe } as const
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
+  const id = useId()
   return (
-    <section className="flex min-w-0 flex-col gap-2">
-      <h3 className={cn('m-0 text-sm font-semibold text-primary', TEXT_DIRECTION)}>{title}</h3>
+    <section aria-labelledby={id} className="flex min-w-0 flex-col gap-2">
+      <h3 id={id} className={cn('m-0 text-sm font-semibold text-primary', TEXT_DIRECTION)}>
+        {title}
+      </h3>
       {children}
     </section>
   )
@@ -125,9 +167,128 @@ function Reason({ children }: { children: ReactNode }) {
   return <p className={cn('m-0 text-sm text-secondary', TEXT_DIRECTION)}>{children}</p>
 }
 
+/** One person's access: the level as a menu button; its radio items, then Remove access. */
+function AccessMenu({
+  access,
+  levels,
+  onLevelChange,
+  onRevoke,
+}: {
+  access: ShareAccess
+  levels: readonly ShareLevel[]
+  onLevelChange: ((accessId: string, level: string) => void) | undefined
+  onRevoke: ((access: ShareAccess) => void) | undefined
+}) {
+  const { messages } = useLiro()
+  const levelLabel = levels.find((each) => each.value === access.level)?.label ?? access.level
+  return (
+    <MenuRoot modal={false}>
+      <DropdownMenuTrigger asChild>
+        <ButtonPrimitive
+          family="neutral"
+          emphasis="menu"
+          aria-label={messages['sharing.levelMenu'](levelLabel, access.name)}
+          className="shrink-0 gap-1 pe-2"
+        >
+          <span className={TEXT_DIRECTION}>{levelLabel}</span>
+          <ChevronDown aria-hidden="true" className="size-3.5 shrink-0" />
+        </ButtonPrimitive>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        {onLevelChange !== undefined && (
+          <DropdownMenuRadioGroup
+            value={access.level}
+            onValueChange={(value) => {
+              onLevelChange(access.id, value)
+            }}
+          >
+            {levels.map((level) => (
+              <DropdownMenuRadioItem key={level.value} value={level.value} check>
+                {level.label}
+              </DropdownMenuRadioItem>
+            ))}
+          </DropdownMenuRadioGroup>
+        )}
+        {onLevelChange !== undefined && onRevoke !== undefined && <DropdownMenuSeparator />}
+        {onRevoke !== undefined && (
+          <DropdownMenuItem
+            className="text-status-danger-fg data-highlighted:bg-status-danger-bg"
+            onSelect={() => {
+              onRevoke(access)
+            }}
+          >
+            <span className={TEXT_DIRECTION}>{messages['sharing.removeAccess']}</span>
+          </DropdownMenuItem>
+        )}
+      </DropdownMenuContent>
+    </MenuRoot>
+  )
+}
+
+/** The link in a box, its Copy icon button beside it and an inline "Copied". */
+function LinkBox({ url }: { url: string }) {
+  const { messages } = useLiro()
+  const [copied, setCopied] = useState<'copied' | 'failed' | null>(null)
+  useEffect(() => {
+    if (copied === null) return
+    const timer = setTimeout(() => {
+      setCopied(null)
+    }, 4000)
+    return () => {
+      clearTimeout(timer)
+    }
+  }, [copied])
+  const copy = () => {
+    try {
+      void navigator.clipboard.writeText(url).then(
+        () => {
+          setCopied('copied')
+        },
+        () => {
+          setCopied('failed')
+        },
+      )
+    } catch {
+      setCopied('failed')
+    }
+  }
+  return (
+    <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+      <p
+        dir="ltr"
+        aria-label={messages['sharing.linkAddress']}
+        className="m-0 min-w-0 flex-1 basis-48 rounded-sm border border-solid border-default bg-surface-sunken px-3 py-2 font-mono text-xs break-all text-primary"
+      >
+        {url}
+      </p>
+      <IconButton family="neutral" icon={Copy} label={messages['share.copy']} onClick={copy} />
+      {/* Inline, beside the button: what the copy did ("Copied"), gone after a few seconds. */}
+      <span
+        role="status"
+        className={cn(
+          'flex items-center gap-1 text-xs',
+          copied === 'failed' ? 'text-status-danger-fg' : 'text-secondary',
+        )}
+      >
+        {copied === 'copied' && <Check aria-hidden="true" className="size-3.5 shrink-0" />}
+        {copied !== null && (
+          <span className={TEXT_DIRECTION}>
+            {copied === 'copied' ? messages['sharing.copied'] : messages['share.copyFailed']}
+          </span>
+        )}
+      </span>
+    </div>
+  )
+}
+
 /** Share a file or folder with people, roles or a portal, and by a link. */
 export function ShareDialog(props: ShareDialogProps) {
   const { messages, today } = useLiro()
+  const viewportPhone = usePhone()
+  const phone = props.layout === undefined ? viewportPhone : props.layout === 'phone'
+  const descriptionId = useId()
+  const [innerOpen, setInnerOpen] = useState(props.defaultOpen ?? false)
+  const open = props.open ?? innerOpen
   const [candidate, setCandidate] = useState<ComboboxOption | null>(null)
   const [level, setLevel] = useState(props.levels[0]?.value ?? '')
   const [settingPassword, setSettingPassword] = useState(false)
@@ -139,6 +300,10 @@ export function ShareDialog(props: ShareDialogProps) {
     value: each.id,
     label: each.label,
   }))
+  const setOpen = (next: boolean) => {
+    setInnerOpen(next)
+    props.onOpenChange?.(next)
+  }
 
   const add = (
     <Section title={messages['sharing.add']}>
@@ -190,11 +355,11 @@ export function ShareDialog(props: ShareDialogProps) {
             const editable =
               access.owner !== true &&
               access.fixedReason === undefined &&
-              props.onLevelChange !== undefined
+              (props.onLevelChange !== undefined || props.onRevoke !== undefined)
             return (
               <li
                 key={access.id}
-                className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 border-0 border-b border-solid border-subtle py-2 last:border-b-0"
+                className="flex min-w-0 items-center gap-3 border-0 border-b border-solid border-subtle py-2 last:border-b-0"
               >
                 <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-surface-sunken text-secondary">
                   <Icon aria-hidden="true" className="size-4" />
@@ -214,36 +379,26 @@ export function ShareDialog(props: ShareDialogProps) {
                     </span>
                   )}
                   {access.fixedReason !== undefined && (
-                    <span className={cn('text-xs text-tertiary', TEXT_DIRECTION)}>
+                    <span className={cn('text-xs text-secondary', TEXT_DIRECTION)}>
                       {access.fixedReason}
                     </span>
                   )}
                 </span>
                 {access.owner === true ? (
-                  <span className={cn('text-sm text-secondary', TEXT_DIRECTION)}>
+                  <span className={cn('shrink-0 text-sm text-secondary', TEXT_DIRECTION)}>
                     {messages['sharing.owner']}
                   </span>
                 ) : editable ? (
-                  <span className="flex items-center gap-1">
-                    <SelectField
-                      label={messages['sharing.levelOf'](access.name)}
-                      hideLabel
-                      className="w-28"
-                      options={props.levels}
-                      value={access.level}
-                      onChange={(value) => props.onLevelChange?.(access.id, value)}
-                    />
-                    {props.onRevoke !== undefined && (
-                      <CompactIconButton
-                        family="destructive"
-                        icon={X}
-                        label={messages['sharing.remove'](access.name)}
-                        onClick={() => props.onRevoke?.(access)}
-                      />
-                    )}
-                  </span>
+                  <AccessMenu
+                    access={access}
+                    levels={props.levels}
+                    onLevelChange={props.onLevelChange}
+                    onRevoke={props.onRevoke}
+                  />
                 ) : (
-                  <span className={cn('text-sm text-secondary', TEXT_DIRECTION)}>{levelLabel}</span>
+                  <span className={cn('shrink-0 text-sm text-secondary', TEXT_DIRECTION)}>
+                    {levelLabel}
+                  </span>
                 )}
               </li>
             )
@@ -254,53 +409,72 @@ export function ShareDialog(props: ShareDialogProps) {
   )
 
   const passwordOn = link?.password === true || settingPassword
-  const linkPart = (
-    <Section title={messages['sharing.link']}>
-      {props.linkUnavailable !== undefined ? (
-        <Reason>{props.linkUnavailable}</Reason>
-      ) : link === null ? (
-        <div className="flex flex-col items-start gap-2">
-          <Reason>{messages['sharing.linkNone']}</Reason>
-          {props.onCreateLink !== undefined && (
-            <Button
-              family="neutral"
-              icon={Link2}
-              label={messages['sharing.createLink']}
-              onClick={props.onCreateLink}
-            />
+  const anyone = link !== null
+  const generalChangeable =
+    props.linkUnavailable === undefined &&
+    (anyone ? props.onRevokeLink !== undefined : props.onCreateLink !== undefined)
+  const general = (
+    <Section title={messages['sharing.general']}>
+      <div className="flex min-w-0 items-start gap-3">
+        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-surface-sunken text-secondary">
+          {anyone ? (
+            <Globe aria-hidden="true" className="size-4" />
+          ) : (
+            <Lock aria-hidden="true" className="size-4" />
           )}
-        </div>
-      ) : (
-        <div className="flex flex-col gap-3">
-          <p dir="ltr" className="m-0 font-mono text-xs break-all text-primary">
-            {link.url}
-          </p>
-          <ShareLinks url={link.url} label={messages['sharing.linkAddress']} />
-          <DateField
-            label={messages['sharing.expires']}
-            {...(link.expires === null ? { description: messages['sharing.never'] } : {})}
-            value={link.expires}
-            {...(expiresError ? { error: messages['sharing.expiresTooSoon'] } : {})}
+        </span>
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
+          <SelectField
+            label={messages['sharing.general']}
+            hideLabel
+            className="max-w-64"
+            readOnly={!generalChangeable}
+            options={[
+              { value: 'restricted', label: messages['sharing.restricted'] },
+              { value: 'anyone', label: messages['sharing.anyone'] },
+            ]}
+            value={anyone ? 'anyone' : 'restricted'}
             onChange={(value) => {
-              const tooSoon = expiresTooSoon(value, today)
-              setExpiresError(tooSoon)
-              if (!tooSoon) props.onLinkChange?.({ expires: value })
+              if (value === 'anyone' && !anyone) props.onCreateLink?.()
+              if (value === 'restricted' && anyone) setRevoking(true)
             }}
           />
-          <SwitchField
-            label={messages['sharing.password']}
-            {...(link.password ? { description: messages['sharing.passwordSet'] } : {})}
-            checked={passwordOn}
-            onChange={(checked) => {
-              if (checked) {
-                setSettingPassword(true)
-                return
-              }
-              setSettingPassword(false)
-              setPassword('')
-              if (link.password) props.onLinkChange?.({ password: null })
-            }}
-          />
+          <Reason>
+            {props.linkUnavailable ??
+              (anyone ? messages['sharing.anyoneHint'] : messages['sharing.restrictedHint'])}
+          </Reason>
+        </div>
+      </div>
+      {link !== null && props.linkUnavailable === undefined && (
+        <div className="flex min-w-0 flex-col gap-3 ps-11">
+          <LinkBox url={link.url} />
+          <div className={cn('grid min-w-0 gap-3', phone ? 'grid-cols-1' : 'grid-cols-2')}>
+            <DateField
+              label={messages['sharing.expires']}
+              {...(link.expires === null ? { description: messages['sharing.never'] } : {})}
+              value={link.expires}
+              {...(expiresError ? { error: messages['sharing.expiresTooSoon'] } : {})}
+              onChange={(value) => {
+                const tooSoon = expiresTooSoon(value, today)
+                setExpiresError(tooSoon)
+                if (!tooSoon) props.onLinkChange?.({ expires: value })
+              }}
+            />
+            <SwitchField
+              label={messages['sharing.password']}
+              {...(link.password ? { description: messages['sharing.passwordSet'] } : {})}
+              checked={passwordOn}
+              onChange={(checked) => {
+                if (checked) {
+                  setSettingPassword(true)
+                  return
+                }
+                setSettingPassword(false)
+                setPassword('')
+                if (link.password) props.onLinkChange?.({ password: null })
+              }}
+            />
+          </div>
           {settingPassword && !link.password && (
             <div className="flex flex-wrap items-end gap-2">
               <PasswordField
@@ -323,52 +497,68 @@ export function ShareDialog(props: ShareDialogProps) {
               />
             </div>
           )}
-          {props.onRevokeLink !== undefined && (
-            <div>
-              <Button
-                family="destructive"
-                icon={Trash2}
-                label={messages['sharing.revokeLink']}
-                onClick={() => {
-                  setRevoking(true)
-                }}
-              />
-            </div>
-          )}
         </div>
       )}
     </Section>
   )
 
-  return (
+  const title = props.title ?? messages['sharing.title']
+  const content = (
     <>
-      <Dialog
-        {...(props.open === undefined ? {} : { open: props.open })}
-        {...(props.defaultOpen === undefined ? {} : { defaultOpen: props.defaultOpen })}
-        {...(props.onOpenChange === undefined ? {} : { onOpenChange: props.onOpenChange })}
-        title={props.title ?? messages['sharing.title']}
-        subject={props.subject}
-        size="wide"
-        {...(props.description === undefined ? {} : { description: props.description })}
-        actions={
-          <Button
-            intent="confirm"
-            label={messages['sharing.done']}
-            onClick={() => props.onOpenChange?.(false)}
-          />
-        }
-      >
+      <DialogHeader className={dialogHeaderClass(props.subject)}>
+        <DialogTitle>
+          <DialogHeading title={title} subject={props.subject} />
+        </DialogTitle>
+        <DialogCloseButton label={messages['dialog.close']} />
+      </DialogHeader>
+      <DialogBody className={cn(phone && 'flex-1')}>
+        {props.description !== undefined && (
+          <DialogDescription id={descriptionId}>{props.description}</DialogDescription>
+        )}
         <div className="flex flex-col gap-5">
           {add}
           {who}
-          {linkPart}
+          {general}
         </div>
-      </Dialog>
+        <DialogFooter>
+          <Button
+            intent="confirm"
+            label={messages['sharing.done']}
+            onClick={() => {
+              setOpen(false)
+            }}
+          />
+        </DialogFooter>
+      </DialogBody>
+    </>
+  )
+  const describedBy = props.description === undefined ? undefined : descriptionId
+
+  return (
+    <>
+      {phone ? (
+        <Sheet open={open} onOpenChange={setOpen}>
+          <SheetContent
+            side="full"
+            aria-describedby={describedBy}
+            data-slot="share-dialog"
+            className="pb-[env(safe-area-inset-bottom)]"
+          >
+            {content}
+          </SheetContent>
+        </Sheet>
+      ) : (
+        <DialogRoot open={open} onOpenChange={setOpen}>
+          <DialogContent aria-describedby={describedBy} data-slot="share-dialog" className="w-150">
+            {content}
+          </DialogContent>
+        </DialogRoot>
+      )}
       <ConfirmDialog
         open={revoking}
         onOpenChange={setRevoking}
-        family="destructive"
-        actionIcon={Trash2}
+        family="caution"
+        actionIcon={Lock}
         title={messages['sharing.revokeTitle']}
         subject={props.subject}
         message={messages['sharing.revokeMessage']}

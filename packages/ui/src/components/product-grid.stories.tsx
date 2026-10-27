@@ -49,6 +49,9 @@ const meta = {
           'that can vibrate pulses; `inOrder` shows how many of it the order holds; `categoryIds` ' +
           'puts a product under several chips (the application’s “Most sold” first); `search` ' +
           'finds products by name in every category.\n\n' +
+          '**P5.93:** a tile’s state is two lines under the price, as on every tile and card — the ' +
+          'icon and the state (“Unavailable”, “Low stock”; `stock.label` or the provider’s words), ' +
+          'the detail under it (“Sold out”, “3 left”).\n\n' +
           '**When:** the product area of PosShell; a kiosk’s menu.\n\n' +
           '**When not:** a catalogue to search (LookupField, DataTable); choosing in a form ' +
           '(ComboboxField).',
@@ -73,15 +76,18 @@ export default meta
 
 type Story = StoryObj<typeof meta>
 
-/** Every product under "All": stock low, the last one, and one sold out with its reason. */
+/**
+ * Every product under "All": stock low, the last one, and one sold out with its reason — each
+ * state in two lines, the state with its icon and the detail under it (P5.93).
+ */
 export const Default: Story = {
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('button', { name: 'All', pressed: true })).toBeVisible()
-    await expect(
-      canvas.getByText('Unavailable: Sold out; the next batch is at 11:00'),
-    ).toBeVisible()
+    await expect(canvas.getByText('Sold out; the next batch is at 11:00')).toBeVisible()
+    await expect(canvas.getAllByText('Unavailable').length).toBeGreaterThan(0)
+    await expect(canvas.getAllByText('Low stock').length).toBeGreaterThan(0)
   },
 }
 
@@ -140,7 +146,10 @@ export const LongText: Story = {
         name: 'Integralni hleb sa semenkama suncokreta, lana, susama i bundeve',
         detail: '750 g · Made today at 05:30 in the bakery on Bulevar oslobođenja',
         price: '1234567.50',
-        stock: { tone: 'warning', text: 'Low stock: only three loaves are left on the shelf' },
+        stock: {
+          tone: 'warning',
+          text: 'Only three loaves are left on the shelf; the next batch comes out of the oven at 11:00',
+        },
         categoryId: 'a',
       },
       {

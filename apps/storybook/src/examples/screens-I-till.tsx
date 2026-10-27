@@ -102,6 +102,7 @@ import {
   refundableLines,
   refundFigures,
   searchJournal,
+  searchJournalText,
   TILL_ROUTES,
   TRANSACTIONS,
   type JournalEntry,
@@ -1196,7 +1197,7 @@ export function Till({ phone, start = {} }: { phone: boolean; start?: TillStart 
           ) : (
             <ReceiptFinder
               currency={BAKERY.currency}
-              defaultQuery={{ total: '1011' }}
+              defaultSearch={format.number('1011', { decimals: 2 })}
               onScan={(code) => {
                 const hit = journal.find((each) => code.endsWith(each.number))
                 if (hit !== undefined) {
@@ -1204,8 +1205,9 @@ export function Till({ phone, start = {} }: { phone: boolean; start?: TillStart 
                   setRefundChosenId(hit.id)
                 }
               }}
-              onSearch={(query) => {
-                setFound(searchJournal(journal, { number: query.number, total: query.total }))
+              onSearch={(text) => {
+                // The application reads the one field: a day, an amount or a receipt's number.
+                setFound(text === '' ? undefined : searchJournalText(journal, text, format))
               }}
               {...(found === undefined ? {} : { results: found })}
               chosenId={refundChosenId}

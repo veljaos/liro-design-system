@@ -1,16 +1,13 @@
-import { ReceiptText, Search } from 'lucide-react'
-import { useId, useState } from 'react'
+import { ReceiptText } from 'lucide-react'
+import { useId, useRef, useState } from 'react'
 import { BUTTON_RESET, FOCUS_RING, TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { Skeleton } from '../primitives/skeleton'
 import { useLiro } from '../provider/liro-provider'
 import { Alert } from './alert'
-import { Button } from './button'
-import { DateField } from './date-field'
+import { useDebouncedCallback } from './combobox-logic'
 import { DateText, MoneyText } from './display-text'
 import { EmptyState } from './empty-state'
-import { FormGrid } from './form-layout'
-import { MoneyField } from './number-field'
 import { ScanField, type ScanFeedback } from './scan-field'
 import { TextField } from './text-field'
 
@@ -20,9 +17,11 @@ import { TextField } from './text-field'
  * camera), or **search** by its number, its date and its total. The application searches and
  * answers with the receipts found; the finder shows them and reports the one chosen. It
  * computes and matches nothing (D1, D4).
- * - The ScanField first (the fastest way: the receipt is in the customer's hand), then "or search
- *   by" and three fields in a FormGrid (number left to right, date, amount with the currency),
- *   then Search (neutral: the dialog around it has the main action).
+ * - The ScanField first (the fastest way: the receipt is in the customer's hand), then ONE search
+ *   field, "Receipt number, date or total" (P5.93 item 14, the owner's fourth review: not three
+ *   fields and a Search button). The text is reported as typed (`onSearch`, after 300ms of
+ *   quiet, at once on Enter); the application reads it — a number, a day, an amount — and
+ *   answers with the receipts found.
  * - The results as rows (CandidateList's look): the number (semibold, left to right), the date
  *   and time, the kind in the application's words, a detail ("2 lines refunded already"), the
  *   total at the end. A row is a button; the chosen one is the neutral selection with the 3px
@@ -51,13 +50,6 @@ export interface FoundReceipt {
   unavailableReason?: string
 }
 
-/** What the cashier searched for: any of the three; empty ones are null or ''. */
-export interface ReceiptQuery {
-  number: string
-  date: string | null
-  total: string | null
-}
-
 export interface ReceiptFinderProps {
   /** The currency of the amounts. */
   currency: string
@@ -67,10 +59,15 @@ export interface ReceiptFinderProps {
   scanFeedback?: ScanFeedback | null
   /** Opens the camera to scan the code. */
   onCameraScan?: () => void
-  /** Searches; the application answers with `results`. */
-  onSearch: (query: ReceiptQuery) => void
-  /** The search's starting values (a restored screen). */
-  defaultQuery?: Partial<ReceiptQuery>
+  /**
+   * The text typed in the one search field (a receipt's number, a date or a total, as the cashier
+   * writes it), trimmed; the application reads it and answers with `results`.
+   */
+  onSearch: (text: string) => void
+  /** The search's starting text (a restored screen). */
+  defaultSearch?: string
+  /** Milliseconds of quiet before `onSearch` while typing. Default: 300. */
+  searchDelay?: number
   /** The receipts found; undefined before a search. */
   results?: readonly FoundReceipt[]
   /** The application is searching. */
@@ -93,12 +90,16 @@ const CHOSEN =
 export function ReceiptFinder(props: ReceiptFinderProps) {
   const { messages } = useLiro()
   const reasonBase = useId()
-  const [number, setNumber] = useState(props.defaultQuery?.number ?? '')
-  const [date, setDate] = useState<string | null>(props.defaultQuery?.date ?? null)
-  const [total, setTotal] = useState<string | null>(props.defaultQuery?.total ?? null)
-  const search = () => {
-    props.onSearch({ number: number.trim(), date, total })
+  const [text, setText] = useState(props.defaultSearch ?? '')
+  // The last text reported, so Enter and the pause after typing do not ask twice.
+  const sent = useRef<string | null>(props.defaultSearch?.trim() ?? null)
+  const search = (value: string) => {
+    const query = value.trim()
+    if (query === sent.current) return
+    sent.current = query
+    props.onSearch(query)
   }
+  const searchLater = useDebouncedCallback(search, props.searchDelay ?? 300)
   const results = props.results
   return (
     <div
@@ -117,41 +118,27 @@ export function ReceiptFinder(props: ReceiptFinderProps) {
       )}
       <form
         role="search"
-        aria-label={messages['receiptFinder.searchBy']}
-        className="flex flex-col gap-3"
+        aria-label={messages['receiptFinder.searchLabel']}
         onSubmit={(event) => {
           event.preventDefault()
-          search()
+          search(text)
         }}
       >
-        <p className={cn('m-0 text-sm font-semibold text-primary', TEXT_DIRECTION)}>
-          {props.onScan === undefined
-            ? messages['receiptFinder.searchBy']
-            : messages['receiptFinder.orSearchBy']}
-        </p>
-        <FormGrid columns={3}>
-          <TextField
-            label={messages['receiptFinder.number']}
-            direction="ltr"
-            value={number}
-            onChange={setNumber}
-          />
-          <DateField label={messages['receiptFinder.date']} value={date} onChange={setDate} />
-          <MoneyField
-            label={messages['receiptFinder.total']}
-            currency={props.currency}
-            value={total}
-            onChange={setTotal}
-          />
-        </FormGrid>
-        <div>
-          <Button
-            type="submit"
-            family="neutral"
-            icon={Search}
-            label={messages['receiptFinder.search']}
-          />
-        </div>
+        <TextField
+          type="search"
+          direction="ltr"
+          label={
+            props.onScan === undefined
+              ? messages['receiptFinder.searchLabel']
+              : messages['receiptFinder.orSearch']
+          }
+          description={messages['receiptFinder.searchHint']}
+          value={text}
+          onChange={(value) => {
+            setText(value)
+            searchLater(value)
+          }}
+        />
       </form>
       {props.error !== undefined && <Alert tone="danger" title={props.error} />}
       {props.loading === true ? (

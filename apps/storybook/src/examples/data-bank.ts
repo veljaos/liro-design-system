@@ -3,8 +3,8 @@
  * line (P5.23, the owner's review): ten lines — two exact matches (an invoice paid by a customer,
  * a supplier invoice paid by us), a partial payment, a customer paying 0,40 RSD less, the bank's
  * fee, the salary advance batch, the taxes and contributions on it, a transfer to the company's
- * own account at another bank, a payment against a proforma invoice (for which the Core has
- * already issued the advance invoice, P5.90 item 9), and an unknown payment.
+ * own account at another bank, a payment against a proforma invoice (posted as an advance and
+ * its advance invoice issued in one step, P5.93 item 17), and an unknown payment.
  * Amounts are whole paras (BigInt); every total, allocation and journal line is computed here, as
  * the Core would; the components add nothing (D4). The customer invoices are the dataset's open
  * ones (examples-story-data.ts, `isOpen`: F-2026-0407 is cancelled and F-2026-0408 a draft, so
@@ -419,6 +419,17 @@ export const SUGGESTIONS: Record<string, LineSuggestion> = {
     reason: 'Recognised: the company’s own account at Raiffeisen banka',
     match: 'exact',
   },
+  b9: {
+    decision: {
+      kind: 'account',
+      type: 'advanceReceived',
+      account: '4300',
+      text: 'Advance on proforma PR-2026-118',
+      costCentre: '',
+    },
+    reason: 'The reference and the amount are those of proforma PR-2026-118',
+    match: 'suggestion',
+  },
 }
 
 function part(id: string, account: string, text: string, amount: string): SplitPart {
@@ -426,22 +437,22 @@ function part(id: string, account: string, text: string, amount: string): SplitP
 }
 
 /**
- * What the Core did by itself (P5.90 item 9): line 9 pays proforma invoice PR-2026-118, so the
- * Core issued advance invoice AF-2026-0031 for it and booked the payment as an advance received;
- * the line is done when the statement opens, with a link to the advance invoice.
+ * A payment against a proforma invoice (P5.93 item 17, the owner's fourth review): line 9 pays
+ * proforma PR-2026-118. The Core proposes to post it as an advance received AND to issue the
+ * advance invoice at once — one Confirm does both, and the drawer then shows the result: the new
+ * advance invoice's number as a link and the related documents.
  */
-export const HANDLED: Record<string, { decision: Decision; text: string; document: string }> = {
-  b9: {
-    decision: {
-      kind: 'account',
-      type: 'advanceReceived',
-      account: '4300',
-      text: 'Advance invoice AF-2026-0031 for proforma PR-2026-118',
-      costCentre: '',
-    },
-    text: 'Proforma PR-2026-118 paid: advance invoice AF-2026-0031 created',
-    document: 'AF-2026-0031',
-  },
+export interface ProformaPayment {
+  /** The proforma invoice the payment refers to. */
+  proforma: string
+  /** The advance invoice the Core issues on Confirm (its number, known once issued). */
+  advanceInvoice: string
+  /** The day the advance invoice is issued. */
+  issued: string
+}
+
+export const PROFORMA_PAYMENTS: Record<string, ProformaPayment> = {
+  b9: { proforma: 'PR-2026-118', advanceInvoice: 'AF-2026-0031', issued: STATEMENT.date },
 }
 
 /** The open items the Core ranks for each line, best first, with the reason for each. */

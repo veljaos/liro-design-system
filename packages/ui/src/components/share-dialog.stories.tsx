@@ -19,11 +19,13 @@ const meta = {
     docs: {
       description: {
         component:
-          '**What for:** who may open a file or a folder — people, roles or a client’s portal, ' +
-          'each with View or Edit (the application’s levels) — and an external link with an ' +
-          'expiry date and an optional password; who has access now, where it comes from, and ' +
-          'revoking it. Every person, level and rule is the application’s; each change is ' +
-          'reported as it is made.\n\n' +
+          '**What for:** who may open a file or a folder, in the familiar pattern of the big file ' +
+          'services (P5.93): “Add people or roles” with the access level and Invite; “People ' +
+          'with access”, each with an access menu (the levels, then Remove access); “General ' +
+          'access” — Restricted or Anyone with the link — and the link with a Copy button and ' +
+          'an inline “Copied”, its expiry and an optional password. Every person, level and ' +
+          'rule is the application’s; each change is reported as it is made. Phones: a ' +
+          'full-screen sheet.\n\n' +
           '**When to use:** "Share…" on a file or a folder. **When not:** sharing a public page ' +
           'by its address (ShareLinks); permissions of a role across the application ' +
           '(PermissionMatrix).',
@@ -68,13 +70,15 @@ export const Default: Story = {
     })
     await expect(within(dialog).getByText('From the folder Site documentation')).toBeVisible()
     await expect(
-      within(dialog).getByRole('button', { name: 'Remove access: Tom Hughes' }),
+      within(dialog).getByRole('button', { name: 'View, access for Tom Hughes' }),
     ).toBeVisible()
+    await expect(within(dialog).getByRole('button', { name: 'Invite' })).toBeVisible()
+    await expect(within(dialog).getByRole('button', { name: 'Copy link' })).toBeVisible()
     await expect(within(dialog).getByText('Protected with a password')).toBeVisible()
   },
 }
 
-/** No link yet: what one does, and "Create link". */
+/** No link: general access Restricted, and what that means. */
 export const NoLink: Story = {
   name: 'No link',
   args: { link: null },
@@ -99,7 +103,7 @@ export const Restricted: Story = {
     await settle()
     const dialog = within(document.body).getByRole('dialog')
     await expect(within(dialog).getByText('Staff files are never shared by link.')).toBeVisible()
-    await expect(within(dialog).queryByRole('button', { name: 'Create link' })).toBeNull()
+    await expect(within(dialog).queryByRole('combobox', { name: 'General access' })).toBeNull()
   },
 }
 
@@ -124,8 +128,9 @@ export const LongText: Story = {
   },
 }
 
-/** Phone width: a bottom sheet. */
+/** Phone width: a full-screen sheet. */
 export const Phone: Story = {
+  args: { layout: 'phone' },
   decorators: [
     (Story) => (
       <PhoneFrame>
@@ -191,18 +196,31 @@ export const Japanese: Story = {
   ],
 }
 
-/** Create a link, give it a day that has passed (an error), then a later one. */
+/**
+ * "Anyone with the link" creates it; Copy says "Copied" beside it; a day that has passed is an
+ * error; a person's access menu changes the level; back to Restricted asks once.
+ */
 export const LinkExpiry: Story = {
-  name: 'Link expiry, interaction',
-  tags: ['interaction'],
+  name: 'Link and access, interaction',
+  tags: ['interaction', '!dev'],
   render: function Render(args) {
     const [link, setLink] = useState<ShareLinkState | null>(null)
+    const [access, setAccess] = useState<readonly ShareAccess[]>(args.access)
     return (
       <ShareDialog
         {...args}
+        access={access}
         link={link}
+        onLevelChange={(id, level) => {
+          setAccess((current) =>
+            current.map((each) => (each.id === id ? { ...each, level } : each)),
+          )
+        }}
         onCreateLink={() => {
           setLink({ url: 'https://files.example.com/s/new', expires: null, password: false })
+        }}
+        onRevokeLink={() => {
+          setLink(null)
         }}
         onLinkChange={(change) => {
           setLink((current) =>
@@ -219,12 +237,29 @@ export const LinkExpiry: Story = {
   },
   play: async () => {
     await settle()
-    const dialog = within(document.body).getByRole('dialog')
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Create link' }))
-    const expires = await within(dialog).findByRole('textbox', { name: /^Expires/ })
+    const body = within(document.body)
+    const dialog = within(body.getByRole('dialog', { name: /^Share/ }))
+    await userEvent.click(dialog.getByRole('combobox', { name: 'General access' }))
+    await userEvent.click(await body.findByRole('option', { name: 'Anyone with the link' }))
+    await userEvent.click(await dialog.findByRole('button', { name: 'Copy link' }))
+    // The browser may refuse the clipboard, as a real one can: either answer is said in place.
+    await expect(await dialog.findByText(/^(Copied|The link could not be copied)$/)).toBeVisible()
+    const expires = dialog.getByRole('textbox', { name: /^Expires/ })
     await userEvent.type(expires, '01.10.2026{Enter}')
     await waitFor(async () => {
-      await expect(within(dialog).getByText('Choose a day after today.')).toBeVisible()
+      await expect(dialog.getByText('Choose a day after today.')).toBeVisible()
+    })
+    await userEvent.click(dialog.getByRole('button', { name: 'View, access for Tom Hughes' }))
+    await userEvent.click(await body.findByRole('menuitemradio', { name: 'Edit' }))
+    await expect(
+      await dialog.findByRole('button', { name: 'Edit, access for Tom Hughes' }),
+    ).toBeVisible()
+    await userEvent.click(dialog.getByRole('combobox', { name: 'General access' }))
+    await userEvent.click(await body.findByRole('option', { name: 'Restricted' }))
+    const confirm = within(await body.findByRole('alertdialog'))
+    await userEvent.click(confirm.getByRole('button', { name: 'Turn off the link' }))
+    await waitFor(async () => {
+      await expect(dialog.queryByRole('button', { name: 'Copy link' })).toBeNull()
     })
   },
 }

@@ -1,7 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { Merge } from 'lucide-react'
 import { useState } from 'react'
 import { expect, userEvent, within } from 'storybook/test'
 import { settle } from '../primitives/story-helpers'
+import { UnavailableAction } from './actions'
+import { Button } from './button'
+import { ConfirmDialog } from './confirm-dialog'
+import { chosenCounts } from './value-comparison'
 import { DateText, MoneyText } from './display-text'
 import { ExampleProvider, PhoneFrame, StoryProvider } from './story-frames'
 import { ValueComparison, type ComparisonRow } from './value-comparison'
@@ -73,6 +78,13 @@ const meta = {
           'card per row, each value labelled with its source. To merge two records (P5.79), ' +
           '`chosen` and `onChoose` make each differing row a choice of the value to keep (radio ' +
           'buttons, the kept value the neutral selection); `chosen` alone shows what was kept.\n\n' +
+          '**Merging (P5.93):** only the differing fields by default (“Show identical fields” ' +
+          'brings back the rest); one press on a value keeps it, marked “Kept”; “Keep all from …” ' +
+          '(`onChooseAll`) answers every row from one record; the merged record is previewed ' +
+          'under the comparison as the choices are made; the merge — it cannot be undone — is ' +
+          'confirmed once, by the application. On a phone each differing field is a card with ' +
+          'its two values stacked as large choices. Every value starts at the start of its ' +
+          'column, figures in tabular digits, so the sources compare at a glance.\n\n' +
           '**When to use:** reconciling two records of the same things, where the user must see ' +
           'both. **When not:** a change from an old to a new value (ChangeConfirmDialog, ' +
           'ChangeText); two versions of a text (LegalCompare); choosing which record a line ' +
@@ -329,7 +341,82 @@ function Choosing(props: Parameters<typeof ValueComparison>[0]) {
       onChoose={(rowId, index) => {
         setChosen((current) => ({ ...current, [rowId]: index }))
       }}
+      onChooseAll={(index) => {
+        setChosen(
+          Object.fromEntries(
+            props.rows.filter((row) => row.differs === true).map((row) => [row.id, index]),
+          ),
+        )
+      }}
     />
+  )
+}
+
+/**
+ * The application's merge around the comparison (P5.93): Merge only once every differing field
+ * is chosen, then one confirmation — a merge cannot be undone.
+ */
+function MergeScreen(props: Parameters<typeof ValueComparison>[0]) {
+  const [chosen, setChosen] = useState<Record<string, number>>(props.chosen ?? {})
+  const [confirming, setConfirming] = useState(false)
+  const [merged, setMerged] = useState(false)
+  const counts = chosenCounts(props.rows, chosen)
+  const left = counts.total - counts.chosen
+  return (
+    <div className="flex flex-col gap-4">
+      <ValueComparison
+        {...props}
+        chosen={chosen}
+        onChoose={(rowId, index) => {
+          setChosen((current) => ({ ...current, [rowId]: index }))
+        }}
+        onChooseAll={(index) => {
+          setChosen(
+            Object.fromEntries(
+              props.rows.filter((row) => row.differs === true).map((row) => [row.id, index]),
+            ),
+          )
+        }}
+      />
+      <div className="flex justify-end">
+        {left === 0 ? (
+          <Button
+            family="caution"
+            icon={Merge}
+            emphasis="primary"
+            label="Merge records"
+            onClick={() => {
+              setConfirming(true)
+            }}
+          />
+        ) : (
+          <UnavailableAction
+            family="caution"
+            icon={Merge}
+            emphasis="primary"
+            label="Merge records"
+            reason={`Choose the value to keep in ${String(left)} more ${left === 1 ? 'field' : 'fields'}.`}
+          />
+        )}
+      </div>
+      <ConfirmDialog
+        open={confirming}
+        onOpenChange={setConfirming}
+        family="caution"
+        actionIcon={Merge}
+        title="Merge records"
+        subject="Harbour-Timber Ltd. into Harbour Timber Ltd"
+        message="Its documents move to Harbour Timber Ltd with the values chosen, and Harbour-Timber Ltd. is removed. A merge cannot be undone."
+        confirmLabel="Merge records"
+        onConfirm={() => {
+          setMerged(true)
+          setConfirming(false)
+        }}
+      />
+      <p role="status" className="bidi-content m-0 text-sm text-primary">
+        {merged ? 'Harbour-Timber Ltd. merged into Harbour Timber Ltd.' : ''}
+      </p>
+    </div>
   )
 }
 
@@ -357,11 +444,73 @@ export const ChooseValues: Story = {
   },
 }
 
-/** On a phone: one card per field, the two values as choices. */
+/**
+ * Merging two records (P5.93): only the four differing fields (the tax number is the same, behind
+ * "Show identical fields"), "Keep all from …" for either record, two values kept ("Kept"), the
+ * merged record previewed under them, and Merge waiting for the other two.
+ */
+export const MergeRecords: Story = {
+  name: 'Merge two records',
+  args: { ...MERGE_ARGS, chosen: { name: 0, email: 0 } },
+  render: (args) => <MergeScreen {...args} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(
+      canvas.getByRole('switch', { name: 'Show identical fields (1)' }),
+    ).not.toBeChecked()
+    await expect(canvas.getAllByText('Kept')).toHaveLength(2)
+    await expect(
+      canvas.getByRole('button', { name: 'Keep all from Harbour Timber Ltd (stays)' }),
+    ).toBeVisible()
+    await expect(canvas.getByRole('region', { name: 'Merged record' })).toHaveTextContent(
+      'GB 204 5512 08',
+    )
+    await expect(canvas.getByRole('button', { name: 'Merge records' })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    )
+  },
+}
+
+/**
+ * Merging, the whole way: "Keep all from" the record that stays, one value from the other, the
+ * identical fields shown on request, then Merge and its one confirmation.
+ */
+export const MergeRecordsInteraction: Story = {
+  name: 'Merge two records, interaction',
+  tags: ['interaction', '!dev'],
+  args: { ...MERGE_ARGS },
+  render: (args) => <MergeScreen {...args} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const preview = canvas.getByRole('region', { name: 'Merged record' })
+    await expect(preview).toHaveTextContent('Not chosen yet')
+    await userEvent.click(
+      canvas.getByRole('button', { name: 'Keep all from Harbour Timber Ltd (stays)' }),
+    )
+    await expect(canvas.getByText('4 of 4 chosen')).toBeVisible()
+    await userEvent.click(canvas.getByRole('radio', { name: /4 Quay St, Bristol BS1/ }))
+    await expect(preview).toHaveTextContent('4 Quay St, Bristol BS1')
+    await expect(preview).not.toHaveTextContent('Not chosen yet')
+    await expect(canvas.queryByRole('rowheader', { name: 'Tax number' })).toBeNull()
+    await userEvent.click(canvas.getByRole('switch', { name: 'Show identical fields (1)' }))
+    await expect(canvas.getByRole('rowheader', { name: 'Tax number' })).toBeVisible()
+    await userEvent.click(canvas.getByRole('button', { name: 'Merge records' }))
+    const dialog = within(await within(document.body).findByRole('alertdialog'))
+    await userEvent.click(dialog.getByRole('button', { name: 'Merge records' }))
+    await expect(
+      await canvas.findByText('Harbour-Timber Ltd. merged into Harbour Timber Ltd.'),
+    ).toBeVisible()
+  },
+}
+
+/** On a phone: a card per differing field, its two values stacked as large choices. */
 export const ChooseValuesPhone: Story = {
-  name: 'Choose the values to keep, phone',
+  name: 'Merge two records, phone',
   args: { ...MERGE_ARGS, chosen: { name: 0, email: 0 }, layout: 'phone' },
-  render: (args) => <Choosing {...args} />,
+  render: (args) => <MergeScreen {...args} />,
   decorators: [
     (Story) => (
       <PhoneFrame>
@@ -375,7 +524,9 @@ export const ChooseValuesPhone: Story = {
   ],
   play: async ({ canvasElement }) => {
     await settle()
-    await expect(within(canvasElement).getAllByRole('radiogroup')).toHaveLength(4)
+    const canvas = within(canvasElement)
+    await expect(canvas.getAllByRole('radiogroup')).toHaveLength(4)
+    await expect(canvas.getAllByText('Kept')).toHaveLength(2)
   },
 }
 

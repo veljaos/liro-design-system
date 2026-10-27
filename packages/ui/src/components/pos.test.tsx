@@ -184,13 +184,22 @@ describe('ProductGrid', () => {
             categoryId: 'bread',
             unavailableReason: 'Sold out',
           },
+          {
+            id: 'd',
+            name: 'Pogača',
+            price: '90',
+            categoryId: 'bread',
+            stock: { tone: 'warning', text: '3 left' },
+          },
           { id: 'c', name: 'Krempita', price: '220', categoryId: 'cakes' },
         ]}
       />,
     )
     expect(html).toContain('Kifla')
     expect(html).not.toContain('Krempita')
-    expect(html).toContain('Unavailable: Sold out')
+    // P5.93: a state in two lines — the state with its icon, the detail under it.
+    expect(html).toMatch(/>Unavailable<\/span><\/span><span[^>]*>Sold out</)
+    expect(html).toMatch(/>Low stock<\/span><\/span><span[^>]*>3 left</)
     expect(html).toContain('aria-pressed="true"')
     // One tile in the tab order.
     expect(html.match(/tabindex="0"/gi)).toHaveLength(1)

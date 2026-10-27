@@ -1,4 +1,4 @@
-import { useRef, type ReactElement, type ReactNode } from 'react'
+import { useRef, type ReactElement, type ReactNode, type RefObject } from 'react'
 import {
   DialogBody,
   DialogCloseButton,
@@ -96,6 +96,11 @@ export interface DialogProps extends OverlayProps {
    * document in the viewer, a table. Default 440px.
    */
   size?: 'default' | 'wide'
+  /**
+   * P5.93: the element that takes the focus when the dialog opens — the default answer of a
+   * question (NameConflictDialog's Keep both). Default: the first focusable element inside.
+   */
+  initialFocus?: RefObject<HTMLElement | null>
 }
 
 /** The handlers that keep an overlay open while it is not dismissible. */
@@ -155,6 +160,16 @@ export function Dialog(props: DialogProps) {
         {...keepOpen(props.dismissible ?? true)}
         {...(props.description === undefined ? { 'aria-describedby': undefined } : {})}
         {...(props.size === 'wide' ? { className: 'w-180' } : {})}
+        {...(props.initialFocus === undefined
+          ? {}
+          : {
+              onOpenAutoFocus: (event: Event) => {
+                const target = props.initialFocus?.current
+                if (target === null || target === undefined) return
+                event.preventDefault()
+                target.focus()
+              },
+            })}
       >
         <OverlayParts {...props} />
       </DialogContent>

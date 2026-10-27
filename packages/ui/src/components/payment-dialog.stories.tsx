@@ -39,6 +39,14 @@ const DONE_ACTIONS = (
 
 const dialog = () => within(document.body).getByRole('dialog', { name: 'Payment' })
 
+/** P5.93: everything fits at once — the dialog never scrolls (the tests run at 1280 × 720). */
+async function expectNoScroll() {
+  const content = document.querySelector<HTMLElement>('[data-slot="payment-dialog"]')
+  await expect(content).not.toBeNull()
+  if (content === null) return
+  await expect(content.scrollHeight).toBeLessThanOrEqual(content.clientHeight + 1)
+}
+
 const meta = {
   title: 'Components/POS/PaymentDialog',
   component: PaymentDialog,
@@ -51,6 +59,11 @@ const meta = {
           'reason, approved) or split (the parts paid and the next one). **It never subtracts:** ' +
           'the change due, the remaining amount and whether it can be completed come from the ' +
           'application as decimal strings and words.\n\n' +
+          '**P5.93:** the dialog never scrolls — at a tablet and on a phone the amount due, the ' +
+          'ways to pay, the quick amounts, the amount tendered, the keypad and the main action ' +
+          'fit at once (two columns on a wide screen, 48px keys on a phone). Cash and Card are ' +
+          'the two big choices; every other way stands behind one “Other…”. Done: the change due ' +
+          'exactly as given and the focus on the main action (“New sale”).\n\n' +
           '**When:** after “Charge” in CartPanel.\n\n' +
           '**When not:** an invoice’s payment in the books (a form); a refund (the application’s ' +
           'own flow with a confirmation).\n\n' +
@@ -92,6 +105,11 @@ export const Cash: Story = {
     await settle()
     await expect(dialog()).toHaveTextContent('Change due')
     await expect(within(dialog()).getByLabelText(/Amount tendered/)).toHaveValue('2.000')
+    await expect(within(dialog()).getByRole('button', { name: 'Cash' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    await expectNoScroll()
   },
 }
 
@@ -108,6 +126,10 @@ export const CashShort: Story = {
 /** Card, ready to send to the terminal. */
 export const Card: Story = {
   args: { defaultMethod: 'card', completeDisabledReason: 'Waiting for the card payment.' },
+  play: async () => {
+    await settle()
+    await expectNoScroll()
+  },
 }
 
 /** Card: waiting for the terminal; the dialog cannot be dismissed meanwhile. */
@@ -169,6 +191,9 @@ export const Done: Story = {
   play: async () => {
     await settle()
     await expect(dialog()).toHaveTextContent('Payment complete')
+    await expect(dialog()).toHaveTextContent('989,00')
+    // The done view's main action takes the focus: the next sale is one press away.
+    await expect(within(dialog()).getByRole('button', { name: 'New sale' })).toHaveFocus()
   },
 }
 
@@ -193,7 +218,7 @@ export const LongText: Story = {
   },
 }
 
-/** On a phone. */
+/** On a phone (390 × 844): one column, 48px keys, nothing scrolls. */
 export const Phone: Story = {
   name: 'Phone width',
   render: (args) => (
@@ -205,6 +230,10 @@ export const Phone: Story = {
       </StoryProvider>
     </PhoneFrame>
   ),
+  play: async () => {
+    await settle()
+    await expectNoScroll()
+  },
 }
 
 /** Arabic, right to left. */
@@ -250,7 +279,7 @@ export const Japanese: Story = {
 /** A banknote sets the amount tendered; the application answers with the change. */
 export const QuickAmount: Story = {
   name: 'Quick amount, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   args: { onTenderedChange: fn() },
   play: async ({ args }) => {
     await settle()
@@ -281,7 +310,10 @@ const PAYMENT_CODE = (
   </span>
 )
 
-/** The seven ways to pay of the application, cash chosen: a wrapping grid of pressed buttons. */
+/**
+ * The seven ways to pay of the application, cash chosen: Cash and Card are the two big choices,
+ * the other five stand behind "Other…".
+ */
 export const OwnMethods: Story = {
   name: 'Own ways to pay',
   args: {
@@ -292,11 +324,16 @@ export const OwnMethods: Story = {
   play: async () => {
     await settle()
     const methods = within(dialog()).getByRole('group', { name: 'Payment method' })
-    await expect(within(methods).getAllByRole('button')).toHaveLength(7)
+    await expect(within(methods).getAllByRole('button')).toHaveLength(3)
     await expect(within(methods).getByRole('button', { name: 'Cash' })).toHaveAttribute(
       'aria-pressed',
       'true',
     )
+    await expect(within(methods).getByRole('button', { name: 'Other…' })).toHaveAttribute(
+      'aria-haspopup',
+      'menu',
+    )
+    await expectNoScroll()
   },
 }
 
@@ -318,6 +355,7 @@ export const Mixed: Story = {
     await expect(dialog()).toHaveTextContent('Paid so far')
     await expect(body.getByRole('button', { name: 'Remove Voucher' })).toBeVisible()
     await expect(body.getByRole('button', { name: 'Add this payment' })).toBeVisible()
+    await expectNoScroll()
   },
 }
 
@@ -404,10 +442,49 @@ export const DoneWithReceipt: Story = {
   play: async () => {
     await settle()
     await expect(dialog()).toHaveTextContent('2290/2318ПП')
+    await expectNoScroll()
   },
 }
 
-/** On a phone: the seven ways wrap. */
+/**
+ * Done on a phone: the change due and "New sale" (focused) in view at once; the issued receipt
+ * opens under "Receipt".
+ */
+export const DoneWithReceiptPhone: Story = {
+  name: 'Done, receipt issued, phone width',
+  tags: ['!dev'],
+  render: (args) => (
+    <PhoneFrame>
+      <StoryProvider density="touch">
+        <ExampleProvider>
+          <PaymentDialog
+            {...args}
+            done
+            change="989.00"
+            doneActions={DONE_ACTIONS}
+            doneContent={
+              <ReceiptResult
+                facts={ISSUED_FACTS}
+                code={RECEIPT_CODE}
+                link={RECEIPT_LINK}
+                deliveries={DELIVERIES}
+                onDeliver={() => undefined}
+              />
+            }
+          />
+        </ExampleProvider>
+      </StoryProvider>
+    </PhoneFrame>
+  ),
+  play: async () => {
+    await settle()
+    await expect(within(dialog()).getByRole('button', { name: 'New sale' })).toHaveFocus()
+    await expect(within(dialog()).getByRole('button', { name: 'Receipt' })).toBeVisible()
+    await expectNoScroll()
+  },
+}
+
+/** On a phone: several ways on one sale — the parts as chips, nothing scrolls. */
 export const OwnMethodsPhone: Story = {
   name: 'Own ways to pay, phone width',
   render: (args) => (
@@ -422,17 +499,22 @@ export const OwnMethodsPhone: Story = {
             defaultTendered="200"
             change="89.00"
             onAddPart={() => undefined}
+            onRemovePart={() => undefined}
           />
         </ExampleProvider>
       </StoryProvider>
     </PhoneFrame>
   ),
+  play: async () => {
+    await settle()
+    await expectNoScroll()
+  },
 }
 
-/** Choosing a way reports its id; a cheque part is added with the keypad's amount. */
+/** "Other…" opens the other ways; choosing one reports its id; a cheque part is added. */
 export const AddingParts: Story = {
   name: 'Adding parts, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   args: {
     methods: PAYMENT_OPTIONS,
     remaining: '1011.00',
@@ -442,8 +524,12 @@ export const AddingParts: Story = {
   play: async ({ args }) => {
     await settle()
     const body = within(dialog())
-    await userEvent.click(body.getByRole('button', { name: 'Cheque' }))
+    await userEvent.click(body.getByRole('button', { name: 'Other…' }))
+    await userEvent.click(
+      await within(document.body).findByRole('menuitemradio', { name: 'Cheque' }),
+    )
     await expect(args.onMethodChange).toHaveBeenCalledWith('cheque')
+    await expect(body.getByRole('button', { name: 'Cheque' })).toBeVisible()
     await userEvent.click(body.getByRole('button', { name: '5' }))
     await userEvent.click(body.getByRole('button', { name: '0' }))
     await userEvent.click(body.getByRole('button', { name: '0' }))

@@ -299,6 +299,21 @@
   min-width: var(--liro-touch-target);
   min-height: var(--liro-touch-target);
 }
+/*
+ * P5.93 (item 14): DateField's calendar button looks the same in every density — the 28px
+ * compact button in its 34px section, the icon where every DateField has it; in the touch
+ * density its target is still 44px, drawn by an invisible layer around it.
+ */
+[data-liro-density='touch'] [data-slot='date-field-calendar'] [data-shape='compact'] {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+}
+[data-liro-density='touch'] [data-slot='date-field-calendar'] [data-shape='compact']::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
+}
 [data-liro-density='touch']
   :is(
     [data-slot='dropdown-menu-item'],

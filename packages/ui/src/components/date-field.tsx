@@ -107,7 +107,10 @@ function CalendarButton() {
   const { messages } = useLiro()
   const label = messages['field.openCalendar']
   return (
-    <span className="flex h-full min-w-[34px] shrink-0 items-center justify-center">
+    <span
+      data-slot="date-field-calendar"
+      className="flex h-full min-w-[34px] shrink-0 items-center justify-center"
+    >
       <PopoverTrigger asChild>
         <Tooltip label={label}>
           <ButtonPrimitive family="neutral" emphasis="menu" shape="compact" aria-label={label}>

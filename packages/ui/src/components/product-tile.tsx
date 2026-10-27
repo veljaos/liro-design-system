@@ -9,6 +9,7 @@ import { launchpadArrowTarget } from '../templates/launchpad-logic'
 import { MoneyText } from './display-text'
 import { EmptyState } from './empty-state'
 import { FLASH_CLASS, FLASH_TRANSITION, tapFeedback, useFlash } from './pos-feedback'
+import { StateLine } from './state-line'
 import { TextField } from './text-field'
 
 /*
@@ -33,13 +34,25 @@ import { TextField } from './text-field'
  * product may stand under several categories (`categoryIds`: the application's "Most sold" first,
  * chosen by default). `search` adds a search field above the chips: typing finds products by name
  * or detail in every category (a local filter of the products given, as ComboboxField's).
+ *
+ * P5.93 (item 15, the owner's fourth review): a tile's state is two lines over the price, as on
+ * every tile and card (StateLine) — the icon and the state ("Unavailable", "Low stock", "Out of
+ * stock"; `stock.label` or the provider's words), the detail under it ("Sold out", "3 left").
+ * Plenty in stock is one quiet line ("12 left").
  */
 
 /** The stock state of a product in the application's words ("12 left", "Sold out"). */
 export interface ProductStock {
   /** neutral: plenty; warning: running low; danger: none left. Shown with an icon, never alone. */
   tone: 'neutral' | 'warning' | 'danger'
+  /** The detail in the application's words ("3 left", "Sold out"). */
   text: string
+  /**
+   * P5.93: the state over it, in the application's words. Default for warning
+   * `messages['pos.lowStock']` ("Low stock"), for danger `messages['pos.outOfStock']`; neutral
+   * has none (the detail alone).
+   */
+  label?: string
 }
 
 export interface ProductTileProps {
@@ -70,12 +83,6 @@ export interface ProductTileProps {
 
 const STOCK_ICON = { warning: TriangleAlert, danger: CircleX } as const
 
-const STOCK_CLASS = {
-  neutral: 'text-secondary',
-  warning: 'text-status-warning-fg',
-  danger: 'text-status-danger-fg',
-} as const
-
 /** One product to sell, pressed to add it. */
 export function ProductTile(props: ProductTileProps) {
   const { messages, format } = useLiro()
@@ -84,7 +91,6 @@ export function ProductTile(props: ProductTileProps) {
   const [flashing, flash] = useFlash()
   const unavailable = props.unavailableReason !== undefined
   const stock = props.stock
-  const StockIcon = stock === undefined || stock.tone === 'neutral' ? null : STOCK_ICON[stock.tone]
   const inOrder =
     props.inOrder !== undefined &&
     /^\d+(\.\d+)?$/.test(props.inOrder) &&
@@ -153,27 +159,34 @@ export function ProductTile(props: ProductTileProps) {
       {props.detail !== undefined && (
         <span className={cn('text-xs text-secondary', TEXT_DIRECTION)}>{props.detail}</span>
       )}
-      <span className="mt-auto flex flex-wrap items-end justify-between gap-x-2 gap-y-1 pt-1">
-        <MoneyText
-          value={props.price}
-          currency={props.currency}
-          className="text-md font-semibold"
+      {/* The state under the name and detail; the price stays at the tile's foot in every tile. */}
+      {unavailable ? (
+        <StateLine
+          className="mt-1"
+          id={reasonId}
+          icon={Ban}
+          state={messages['stateLine.unavailable']}
+          detail={props.unavailableReason}
         />
-        {stock !== undefined && !unavailable && (
-          <span className={cn('flex items-center gap-1 text-xs', STOCK_CLASS[stock.tone])}>
-            {StockIcon !== null && <StockIcon aria-hidden="true" className="size-3 shrink-0" />}
-            <span className={TEXT_DIRECTION}>{stock.text}</span>
-          </span>
-        )}
-      </span>
-      {unavailable && (
-        <span id={reasonId} className="flex items-start gap-1 text-xs text-secondary">
-          <Ban aria-hidden="true" className="mt-px size-3 shrink-0" />
-          <span className={TEXT_DIRECTION}>
-            {messages['action.unavailable'](props.unavailableReason ?? '')}
-          </span>
-        </span>
+      ) : stock === undefined ? null : stock.tone === 'neutral' ? (
+        <span className={cn('mt-1 text-xs text-secondary', TEXT_DIRECTION)}>{stock.text}</span>
+      ) : (
+        <StateLine
+          className="mt-1"
+          icon={STOCK_ICON[stock.tone]}
+          tone={stock.tone}
+          state={
+            stock.label ??
+            (stock.tone === 'warning' ? messages['pos.lowStock'] : messages['pos.outOfStock'])
+          }
+          detail={stock.text}
+        />
       )}
+      <MoneyText
+        value={props.price}
+        currency={props.currency}
+        className="mt-auto pt-1 text-md font-semibold"
+      />
     </button>
   )
 }
