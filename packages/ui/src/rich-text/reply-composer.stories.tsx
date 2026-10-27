@@ -121,8 +121,8 @@ const meta = {
           'question, a case — or a note only the team sees, in formatted text (RichTextField’s ' +
           'toolbar, shortcuts, paste rules and merge fields). From the `@veljaos/ui/rich-text` ' +
           'subpath.\n\n' +
-          '**Two modes** (`modes`): Reply and Internal note, two pressed buttons (neutral, never ' +
-          'blue); the text is kept when the mode changes. A note’s text box is sunken and a line ' +
+          '**Two modes** (`modes`): Reply and Internal note, a compact segmented control on one ' +
+          'line (neutral, never blue); the text is kept when the mode changes. A note’s text box is sunken and a line ' +
           'says who sees it; "@" mentions the team only in a note. Labels from messages or from ' +
           '`replyLabel` / `noteLabel` / `noteHint`; one mode shows no switch.\n\n' +
           '**Tools:** saved replies (`savedReplies`, the application’s texts, grouped, searched ' +
@@ -136,7 +136,8 @@ const meta = {
           "through `format`, fields `computed` from 'today' or 'now' from the provider’s day " +
           'and the application’s `now` — and a field without a value stays a pill marked "No ' +
           'value", named under the text. ' +
-          '**Send** (or Ctrl/Cmd+Enter): `onSend({ mode, value })`; a promise keeps the text ' +
+          '**Send** (or Ctrl/Cmd+Enter), filled once there is something to send: ' +
+          '`onSend({ mode, value })`; a promise keeps the text ' +
           'with a spinner until it resolves.\n\n' +
           '**When not:** a chat message or comment without formatting (MessageComposer); a long ' +
           'document (RichTextField).',
@@ -160,10 +161,7 @@ export const Default: Story = {
     await editorReady(canvasElement)
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('group', { name: 'Message type' })).toBeVisible()
-    await expect(canvas.getByRole('button', { name: 'Reply' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    )
+    await expect(canvas.getByRole('radio', { name: 'Reply' })).toBeChecked()
     await expect(canvas.getByRole('textbox', { name: 'Reply' })).toBeVisible()
     await expect(canvas.getByRole('button', { name: 'Attach files' })).toBeVisible()
     await expect(canvas.getByRole('button', { name: 'Insert article' })).toBeVisible()
@@ -204,10 +202,7 @@ export const InternalNote: Story = {
   play: async ({ canvasElement }) => {
     await editorReady(canvasElement)
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('button', { name: 'Internal note' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    )
+    await expect(canvas.getByRole('radio', { name: 'Internal note' })).toBeChecked()
     await expect(canvas.getByText('Only your team sees internal notes.')).toBeVisible()
     await expect(canvas.getByRole('button', { name: 'Add note' })).toBeEnabled()
   },
@@ -249,7 +244,7 @@ export const UnavailableWithReason: Story = {
     const canvas = within(canvasElement)
     await expect(canvas.getByText('The request is closed. Reopen it to reply.')).toBeVisible()
     await expect(canvas.getByRole('button', { name: 'Send' })).toBeDisabled()
-    await expect(canvas.getByRole('button', { name: 'Reply' })).toBeDisabled()
+    await expect(canvas.getByRole('radio', { name: 'Reply' })).toBeDisabled()
   },
 }
 
@@ -368,7 +363,7 @@ export const NoteInteraction: Story = {
   play: async ({ canvasElement }) => {
     await editorReady(canvasElement)
     const canvas = within(canvasElement)
-    await userEvent.click(canvas.getByRole('button', { name: 'Internal note' }))
+    await userEvent.click(canvas.getByRole('radio', { name: 'Internal note' }))
     await expect(canvas.getByText('Only your team sees internal notes.')).toBeVisible()
     const box = canvas.getByRole('textbox', { name: 'Internal note' })
     await userEvent.click(box)

@@ -22,7 +22,7 @@ import {
   type ReactNode,
   type Ref,
 } from 'react'
-import { ButtonPrimitive } from '../primitives/button'
+import { ButtonPrimitive, buttonClassName } from '../primitives/button'
 import { AUTO_DIRECTION, FOCUS_RING, TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { Input } from '../primitives/input'
@@ -31,6 +31,7 @@ import { ToggleGroup, ToggleGroupItem } from '../primitives/toggle-group'
 import { langAttribute } from '../provider/lang'
 import { useLiro } from '../provider/liro-provider'
 import { CompactIconButton, IconButton } from './button'
+import { Dialog } from './dialog'
 import { DropdownMenu, type MenuEntry } from './dropdown-menu'
 import {
   deletedPart,
@@ -87,7 +88,9 @@ import { spacersBetween } from './virtual-rows'
  *   A deleted article shows its words ("Deleted (No. 33/2021)") with its earlier text collapsed.
  * - References are links through the provider's `linkComponent`; with `resolveTarget` a 24px
  *   preview button after each opens the target article in a popover (keyboard: Tab to it, Enter;
- *   Escape closes; the popover is not modal, so the focus is never trapped).
+ *   Escape closes; the popover is not modal, so the focus is never trapped). On phones it opens a
+ *   bottom sheet instead, never a popover over the text (P5.93 item 31): the article's label and
+ *   title as its title, its text, and "Open Article 5" as the sheet's one action.
  * - Search in the act runs on the data (`legal-logic.ts`), so it also finds articles that are not
  *   drawn: hits marked on status.warning.bg (never a blue fill), the current one also underlined
  *   twice as thick ("3 of 12", Enter / Shift+Enter, previous / next), brought into view.
@@ -230,6 +233,8 @@ interface InlineContext {
   /** The reference (`partId:index`) whose preview stands open at first, until it closes. */
   defaultPreview: string | null
   dismissDefaultPreview: () => void
+  /** Phones: a preview opens as a bottom sheet, never a popover over the text (P5.93 item 31). */
+  phone: boolean
 }
 
 /** A part's runs: text, references (with their preview), emphasis and footnote marks. */
@@ -332,6 +337,68 @@ function Reference({
   if (context.resolveTarget === undefined) return link
   const found = context.resolveTarget(inline.target)
   const target = found === undefined ? undefined : context.mapArticle(found)
+  const button = (
+    <button
+      ref={trigger}
+      type="button"
+      aria-label={messages['legal.preview'](inline.text)}
+      data-slot="legal-preview-button"
+      className={cn(
+        'mx-0.5 -my-1 inline-flex size-6 cursor-pointer items-center justify-center rounded-sm border-0 bg-transparent p-0 align-middle text-secondary hover:bg-surface-hover hover:text-primary',
+        FOCUS_RING,
+      )}
+    >
+      <Eye aria-hidden="true" className="size-3.5" />
+    </button>
+  )
+  if (context.phone) {
+    // A bottom sheet over the page, the article's text in it and "Open Article 5" at its foot.
+    return (
+      <>
+        {link}
+        <Dialog
+          open={open}
+          onOpenChange={(next) => {
+            if (!next && restored) context.dismissDefaultPreview()
+            setOpen(next)
+          }}
+          trigger={button}
+          title={
+            target === undefined
+              ? messages['legal.preview'](inline.text)
+              : target.title === undefined
+                ? target.label
+                : `${target.label} · ${target.title}`
+          }
+          {...(target === undefined
+            ? {}
+            : {
+                actions: (
+                  <Link
+                    href={target.href}
+                    className={cn(
+                      buttonClassName({ family: 'primary', emphasis: 'primary', shape: 'text' }),
+                      'w-full justify-center no-underline visited:text-on-accent hover:bg-family-primary-solid-hover',
+                    )}
+                  >
+                    <span className={TEXT_DIRECTION}>{messages['legal.open'](target.label)}</span>
+                  </Link>
+                ),
+              })}
+        >
+          {target === undefined ? (
+            <p className={cn('m-0 text-sm text-secondary', TEXT_DIRECTION)}>
+              {messages['legal.previewMissing']}
+            </p>
+          ) : (
+            <div className="flex flex-col gap-2">
+              <PreviewArticle article={target} sheet />
+            </div>
+          )}
+        </Dialog>
+      </>
+    )
+  }
   return (
     <>
       {link}
@@ -343,20 +410,7 @@ function Reference({
           setOpen(next)
         }}
       >
-        <PopoverTrigger asChild>
-          <button
-            ref={trigger}
-            type="button"
-            aria-label={messages['legal.preview'](inline.text)}
-            data-slot="legal-preview-button"
-            className={cn(
-              'mx-0.5 -my-1 inline-flex size-6 cursor-pointer items-center justify-center rounded-sm border-0 bg-transparent p-0 align-middle text-secondary hover:bg-surface-hover hover:text-primary',
-              FOCUS_RING,
-            )}
-          >
-            <Eye aria-hidden="true" className="size-3.5" />
-          </button>
-        </PopoverTrigger>
+        <PopoverTrigger asChild>{button}</PopoverTrigger>
         <PopoverContent
           side={side}
           align="start"
@@ -381,8 +435,11 @@ function Reference({
   )
 }
 
-/** The target article in a preview: its label, title, paragraphs and a link to it. */
-function PreviewArticle({ article }: { article: LegalArticle }) {
+/**
+ * The target article in a preview: its label, title, paragraphs and a link to it. In a phone's
+ * sheet (`sheet`) the label and title are the sheet's title and the link its action.
+ */
+function PreviewArticle({ article, sheet = false }: { article: LegalArticle; sheet?: boolean }) {
   const { linkComponent: Link, messages } = useLiro()
   const plain = (content: readonly LegalInline[]) =>
     content.map((inline, index) =>
@@ -406,9 +463,11 @@ function PreviewArticle({ article }: { article: LegalArticle }) {
     )
   return (
     <>
-      <p className={cn('m-0 text-sm font-semibold text-primary', TEXT_DIRECTION)}>
-        {article.title === undefined ? article.label : `${article.label} · ${article.title}`}
-      </p>
+      {!sheet && (
+        <p className={cn('m-0 text-sm font-semibold text-primary', TEXT_DIRECTION)}>
+          {article.title === undefined ? article.label : `${article.label} · ${article.title}`}
+        </p>
+      )}
       {article.deleted !== undefined && (
         <p className={cn('m-0 text-sm text-secondary', TEXT_DIRECTION)}>{article.deleted}</p>
       )}
@@ -421,12 +480,14 @@ function PreviewArticle({ article }: { article: LegalArticle }) {
           {points(paragraph.points)}
         </div>
       ))}
-      <Link
-        href={article.href}
-        className={cn('self-start text-sm text-link underline', TEXT_ISOLATE, FOCUS_RING)}
-      >
-        {messages['legal.open'](article.label)}
-      </Link>
+      {!sheet && (
+        <Link
+          href={article.href}
+          className={cn('self-start text-sm text-link underline', TEXT_ISOLATE, FOCUS_RING)}
+        >
+          {messages['legal.open'](article.label)}
+        </Link>
+      )}
     </>
   )
 }
@@ -964,6 +1025,7 @@ export function LegalText({ ref, ...props }: LegalTextProps) {
     dismissDefaultPreview: () => {
       setDefaultPreview(null)
     },
+    phone,
   }
 
   const draw = (entry: LegalEntry) => {

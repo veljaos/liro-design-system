@@ -50,7 +50,7 @@ const meta = {
           'use `distanceMeters`). “Use my location” calls the application’s `onLocate`, which asks ' +
           'the browser and passes the position back; the library never asks the browser itself. ' +
           'The check-in is unavailable with the application’s reason in words.\n\n' +
-          '**Base map:** the application’s `tiles` (with their attribution); these stories pass ' +
+          '**Base map:** the application’s `baseLayer` (with its attribution); these stories pass ' +
           'none, so they fetch nothing.\n\n' +
           '**Phones** are the main use: the state, the facts and the buttons first, the map under ' +
           'them.\n\n**When not:** areas to choose from (AreaMap).',

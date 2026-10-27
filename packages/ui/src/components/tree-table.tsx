@@ -5,6 +5,7 @@ import { useLiro } from '../provider/liro-provider'
 import { EmptyState } from './empty-state'
 import type { TreeNode, TreeRow } from './tree-logic'
 import {
+  FIRST_LINE,
   onTreeRowClick,
   SELECTED_BAR,
   TreeItemContent,
@@ -246,15 +247,18 @@ function DesktopTreeTable<Data>(props: TreeTableProps<Data>) {
             key={column.id}
             role="gridcell"
             className={cn(
-              CELL,
+              // The row's padding (py-1) and the first line's (FIRST_LINE): a figure stands on its
+              // name's first line, also when the name wraps (P5.93 item 36).
+              'table-cell px-4 py-1 align-top whitespace-nowrap text-primary',
               LINE,
-              'table-cell align-top whitespace-nowrap text-primary',
               ALIGN[alignOf(column)],
               column.numeric === true && 'tabular-nums',
             )}
             style={column.minWidth === undefined ? undefined : { minWidth: column.minWidth }}
           >
-            {row.kind === 'node' && <span className={TEXT_ISOLATE}>{column.cell(row.node)}</span>}
+            {row.kind === 'node' && (
+              <span className={cn('block', FIRST_LINE, TEXT_ISOLATE)}>{column.cell(row.node)}</span>
+            )}
           </div>
         ))}
       </div>

@@ -2347,4 +2347,7 @@ export interface LiroMessages {
   // ── P5.93 (c) ──
   /** InlineUndo's button (P5.93 item 3). */
   'undo.label': string
+  // ── P5.93 (e) ──
+  /** ArticleList: the words at a card's foot that say where it leads. */
+  'articles.read': string
 }

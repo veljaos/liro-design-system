@@ -24,9 +24,10 @@ import type { MentionCandidate } from '../components/mention-combobox'
 import { SEARCHABLE_FROM } from '../components/select-field'
 import { Spinner } from '../components/spinner'
 import { ButtonPrimitive } from '../primitives/button'
-import { BUTTON_RESET, FOCUS_RING, TEXT_DIRECTION } from '../primitives/classes'
+import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { Popover, PopoverContent, PopoverTrigger } from '../primitives/popover'
+import { ToggleGroup, ToggleGroupItem } from '../primitives/toggle-group'
 import { useLiro } from '../provider/liro-provider'
 import type { MergeValues } from './merge-values'
 import type { RichTextMergeField } from './rich-text'
@@ -47,8 +48,9 @@ import {
  * RichTextField (the `@veljaos/ui/rich-text` subpath), so its toolbar, shortcuts, paste rules,
  * merge fields and mentions are RichTextField's.
  *
- * - **Two modes** (`modes`, default both): a reply and an internal note, switched by two pressed
- *   buttons at the top (a group named "Message type"; the neutral selection, never blue, D17).
+ * - **Two modes** (`modes`, default both): a reply and an internal note, switched by a compact
+ *   segmented control at the top that never wraps (P5.93 item 33; one choice, named "Message
+ *   type"; the neutral selection, never blue, D17).
  *   The text is kept when the mode changes. The note's text box stands on surface.sunken and a
  *   line under the switch says who sees it ("Only your team sees internal notes."), with a lock —
  *   the same look as the note in the thread (MessageBubble `internal`). Labels from messages, or
@@ -63,12 +65,13 @@ import {
  *   the application's `now`; a field without a value stays a pill marked "No value" (P5.31).
  * - **Attachments:** the paperclip opens the file chooser (`accept`); the files go to `onAttach`,
  *   which checks and uploads them, and shows them in `attachments` (an AttachmentList) under the
- *   text. Dropping files on the composer is the shortcut.
+ *   text — each file on one line, a long name shortened in the middle, its remove button on the
+ *   file's line. Dropping files on the composer is the shortcut.
  * - **Insert a link** (`onInsertLink`, `insertLinkLabel`): the application opens its own search
  *   (a knowledge base, a catalogue: LookupDialog) and resolves with `{ text, href }` — or null when
  *   nothing was chosen; the link is inserted at the caret. Only http(s) and mailto links.
- * - **Send:** the button at the end ("Send" or "Add note", the primary family in its light weight,
- *   so the page keeps its one filled button), or Ctrl/Cmd+Enter in the text. `onSend` receives the
+ * - **Send:** the button at the end ("Send" or "Add note"), filled — clearly the main action —
+ *   once there is something to send (P5.93 item 33), or Ctrl/Cmd+Enter in the text. `onSend` receives the
  *   mode and the value (JSON, sanitized HTML, mentions, length); a promise keeps the text with a
  *   spinner until it resolves and empties it then; a rejection keeps it. Disabled while the text
  *   is empty. `unavailableReason` (P5.93): nothing can be written now — the text is read-only (the
@@ -211,15 +214,6 @@ export function isSendKey(event: {
 }): boolean {
   return event.key === 'Enter' && (event.ctrlKey || event.metaKey) && event.isComposing !== true
 }
-
-const MODE_BUTTON = cn(
-  BUTTON_RESET,
-  'inline-flex h-7 cursor-pointer items-center gap-1.5 rounded-sm border border-solid border-transparent px-2.5 text-sm text-secondary select-none',
-  'enabled:hover:bg-surface-hover enabled:hover:text-primary',
-  'aria-pressed:border-selected aria-pressed:bg-surface-selected aria-pressed:font-medium aria-pressed:text-primary enabled:aria-pressed:hover:bg-surface-selected',
-  'disabled:cursor-not-allowed disabled:text-disabled',
-  FOCUS_RING,
-)
 
 /** The saved replies: a button opening the list, searched by typing from 11. */
 function SavedReplies({
@@ -453,26 +447,32 @@ export function ReplyComposer({ ref: outer, ...props }: ReplyComposerProps) {
       )}
     >
       {modes.length > 1 && (
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-          <div role="group" aria-label={messages['composer.modes']} className="flex gap-1">
+        <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
+          {/* A compact segmented control on one line (P5.93 item 33): a label too long for the
+              room is shortened with an ellipsis, its whole text still the item's name. */}
+          <ToggleGroup
+            type="single"
+            value={mode}
+            aria-label={messages['composer.modes']}
+            disabled={disabled}
+            onValueChange={(value) => {
+              if (value === 'reply' || value === 'note') changeMode(value)
+            }}
+            className="max-w-full min-w-0"
+          >
             {modes.map((each) => (
-              <button
+              <ToggleGroupItem
                 key={each}
-                type="button"
-                aria-pressed={each === mode}
-                disabled={disabled}
-                onClick={() => {
-                  changeMode(each)
-                }}
-                className={MODE_BUTTON}
+                value={each}
+                className="inline-flex min-w-0 flex-auto items-center justify-center gap-1.5"
               >
                 {each === 'note' && (
                   <LockKeyhole aria-hidden="true" className="size-3.5 shrink-0" />
                 )}
-                <span className={TEXT_DIRECTION}>{modeLabel(each)}</span>
-              </button>
+                <span className={cn('min-w-0 truncate', TEXT_DIRECTION)}>{modeLabel(each)}</span>
+              </ToggleGroupItem>
             ))}
-          </div>
+          </ToggleGroup>
           {note && (
             <span
               data-slot="composer-note-hint"
@@ -577,15 +577,20 @@ export function ReplyComposer({ ref: outer, ...props }: ReplyComposerProps) {
             messages['composer.sendHint']
           )}
         </span>
-        <Button
-          family="primary"
-          icon={SendHorizontal}
-          label={note ? messages['composer.addNote'] : messages['composer.send']}
-          disabled={!canSend}
-          onClick={() => {
-            send(latest)
-          }}
-        />
+        {/* Clearly the main action once there is something to send (P5.93 item 33); at the
+            row's end also when the row wraps. */}
+        <span className="ms-auto flex">
+          <Button
+            family="primary"
+            emphasis="primary"
+            icon={SendHorizontal}
+            label={note ? messages['composer.addNote'] : messages['composer.send']}
+            disabled={!canSend}
+            onClick={() => {
+              send(latest)
+            }}
+          />
+        </span>
       </div>
     </div>
   )

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { tagCovers } from './now-marker'
 import {
   absoluteMinutes,
   addDays,
@@ -489,5 +490,13 @@ describe('scheduleSearchMatches: the phone lists search (P5.90 item 19)', () => 
   it('skips missing texts', () => {
     expect(scheduleSearchMatches('suljic', ['Šuljić', undefined], 'en')).toBe(true)
     expect(foldSearchText(' Šuljić ', 'en')).toBe('suljic')
+  })
+})
+
+describe('the time of "now" over a scale label (P5.93 item 8)', () => {
+  it('covers a label it overlaps, not one beside it', () => {
+    expect(tagCovers(100, 10, 95, 110)).toBe(true)
+    expect(tagCovers(100, 10, 111, 130)).toBe(false)
+    expect(tagCovers(100, 10, 70, 90)).toBe(false)
   })
 })

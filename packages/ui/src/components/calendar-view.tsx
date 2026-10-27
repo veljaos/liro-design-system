@@ -39,7 +39,7 @@ import {
   type GridCell,
   type Span,
 } from './schedule-logic'
-import { NowMarker } from './now-marker'
+import { NowMarker, NowTimeTag, tagCovers } from './now-marker'
 import type { Tone } from './status-badge'
 import { STICKY_HEAD, useStickyHead } from './sticky-head'
 import { usePhone } from './use-phone'
@@ -60,7 +60,10 @@ import { HintedTarget, Tooltip } from './popover'
  *   side (`layoutDay`); all-day events, and timed events outside the hours shown, in a strip
  *   above. The days row stays below the shell while the page scrolls (P5.28 item 4). `now` (the
  *   application's clock) draws the time grids' one "now" marker (P5.28 item 10, NowMarker: a
- *   neutral line with a dot) across today's column, and its slot is `aria-current="time"`. Month: whole weeks, at most three lines a day, then "+N more", which opens the day's
+ *   neutral line with a dot) across today's column, with the time written in the time gutter
+ *   (P5.93 item 8: nothing covers it, the events cover the line), and its slot is
+ *   `aria-current="time"`. Month: whole weeks, at most three lines a day, then "+N more", which
+ *   opens the day's
  *   list (a popover with every event and "Open the day"). Agenda: the week's days that have
  *   events, each event a row with its time, without bullet dots (P5.90 item 15).
  * - Tones: an event's optional status tone (neutral by default) colours its block — the tone's
@@ -553,6 +556,7 @@ function TimeGrid(
           day: props.now.day,
           slot: Math.floor((props.now.minutes - from) / slotMinutes),
           top: ((props.now.minutes - from) / slotMinutes) * SLOT_HEIGHT,
+          time: format.time(localDateTime(props.now.day, props.now.minutes)),
           label: messages['schedule.now'](
             format.time(localDateTime(props.now.day, props.now.minutes)),
           ),
@@ -688,7 +692,16 @@ function TimeGrid(
                       'absolute end-2 whitespace-nowrap',
                       TEXT_ISOLATE,
                       slot === 0 ? 'top-0.5' : '-top-2',
-                      !onHour && 'sr-only',
+                      // Off the hour, or under the time of "now" (P5.93 item 8): for screen readers only.
+                      (!onHour ||
+                        (now !== null &&
+                          tagCovers(
+                            now.top,
+                            10,
+                            slot * SLOT_HEIGHT - 8,
+                            slot * SLOT_HEIGHT + 8,
+                          ))) &&
+                        'sr-only',
                     )}
                   >
                     {time}
@@ -724,12 +737,28 @@ function TimeGrid(
             )
           })}
         </div>
-        {/* After the slots, before the events: events cover its line, never the reverse (P5.90). */}
+        {/* After the slots, before the events: events cover its line, never the reverse (P5.90);
+            its time stands in the gutter, which nothing covers (P5.93 item 8). */}
+        {now !== null && (
+          <NowTimeTag
+            orientation="horizontal"
+            time={now.time}
+            style={{ top: now.top, insetInlineStart: 0, width: GUTTER }}
+          />
+        )}
         {now !== null && (
           <div
             className="pointer-events-none absolute inset-y-0"
             style={{ insetInlineStart: GUTTER, insetInlineEnd: 0 }}
           >
+            {/* In a week, a thin line across the other days leads from the time to today. */}
+            {props.days.length > 1 && (
+              <div
+                aria-hidden="true"
+                className="absolute inset-x-0 h-0 border-0 border-t border-solid border-strong"
+                style={{ top: now.top }}
+              />
+            )}
             <NowMarker
               orientation="horizontal"
               label={now.label}

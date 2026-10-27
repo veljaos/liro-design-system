@@ -1682,4 +1682,6 @@ export const messagesEn: LiroMessages = {
   'trace.result': 'Result',
   // ── P5.93 (c) ──
   'undo.label': 'Undo',
+  // ── P5.93 (e) ──
+  'articles.read': 'Read article',
 }

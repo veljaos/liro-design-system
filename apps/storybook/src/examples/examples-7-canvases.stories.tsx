@@ -53,6 +53,8 @@ export const HealthDoctorCalendar: Story = {
     )
     await expect(canvasElement).toHaveTextContent('Wednesday, October 14, 2026')
     await expect(within(canvasElement).getByRole('img', { name: 'Now, 09:40' })).toBeInTheDocument()
+    // The time of "now" written in the time gutter, which no appointment covers (P5.93 item 8).
+    await expect(canvasElement.querySelector('[data-slot="now-time"]')).toHaveTextContent('09:40')
   },
 }
 
@@ -372,6 +374,15 @@ export const ProjectTimeline: Story = {
     await expect(
       canvas.getByRole('img', { name: /^Now, 14\.10\.2026\. 09:40$/ }),
     ).toBeInTheDocument()
+    // Today's date on the time scale; short bars carry their names beside them, never cut, and
+    // the plan opens at its start (P5.93 items 8 and 34).
+    await expect(canvasElement.querySelector('[data-slot="now-time"]')).toHaveTextContent(
+      '14.10.2026.',
+    )
+    await expect(
+      canvasElement.querySelector('[data-gantt-label="after"]')?.textContent,
+    ).toBeTruthy()
+    await expect(canvasElement.querySelector('.wx-chart')?.scrollLeft).toBe(0)
   },
 }
 

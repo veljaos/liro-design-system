@@ -25,6 +25,7 @@ import {
   initiallyExpanded,
   matchHierarchy,
   revealNode,
+  toggleWidth,
   visibleHierarchy,
   type HierarchyIndex,
   type HierarchyItem,
@@ -256,6 +257,7 @@ function Item({
   const open = item.expanded
   const chosen = state.chosen === node.id
   const hidden = descendantCount(state.index, node.id)
+  const toggleText = `+${format.number(String(hidden))}`
   const stackKids =
     children.length >= state.stackFrom &&
     children.every((child) => !hasChildren(state.index, child.id))
@@ -339,7 +341,9 @@ function Item({
         'relative flex flex-col items-center px-2 outline-none',
         item.level > 1 && DROP,
         // The lines to the parent: the half bar toward the start (not on the first child), the
-        // half bar toward the end with the drop to this node (no bar on the last child).
+        // half bar toward the end with the drop to this node (no bar on the last child). Every
+        // drop is the 1px column just after the middle (toward the end); the "+N" toggle is
+        // centred on that column (P5.93 item 35).
         item.level > 1 &&
           "before:absolute before:start-0 before:top-0 before:w-1/2 before:border-0 before:border-t before:border-solid before:border-strong before:content-[''] first:before:hidden after:absolute after:start-1/2 after:top-0 after:h-8 after:w-1/2 after:border-0 after:border-s after:border-t after:border-solid after:border-strong after:content-[''] last:after:border-t-0",
         '[&:focus-visible>[data-slot=hierarchy-node]]:outline-2 [&:focus-visible>[data-slot=hierarchy-node]]:outline-offset-2 [&:focus-visible>[data-slot=hierarchy-node]]:outline-focus',
@@ -349,11 +353,12 @@ function Item({
       {item.level > 1 && node.lineLabel !== undefined && (
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 top-1.5 z-10 flex justify-center"
+          // Centred on the line's 1px column, as the toggle (P5.93 item 35).
+          className="pointer-events-none absolute start-1/2 top-1.5 z-10 flex w-px justify-center"
         >
           <span
             className={cn(
-              'rounded-xs border border-solid border-subtle bg-surface-raised px-1 text-xs leading-tight font-medium text-secondary tabular-nums',
+              'shrink-0 rounded-xs border border-solid border-subtle bg-surface-raised px-1 text-xs leading-tight font-medium text-secondary tabular-nums',
               TEXT_ISOLATE,
             )}
           >
@@ -380,33 +385,39 @@ function Item({
       {item.expandable && state.controls && (
         // The toggle stands on the line under the box: a pointer's way to open and close. The
         // keyboard opens and closes with Space on the node (it is not a tab stop of its own).
-        <div className="relative z-10 -mt-3 flex justify-center">
-          <button
-            type="button"
-            tabIndex={-1}
-            aria-label={
-              open
-                ? messages['hierarchy.collapse'](node.title)
-                : messages['hierarchy.expand'](hidden, format.number(String(hidden)), node.title)
-            }
-            onClick={(event) => {
-              event.stopPropagation()
-              state.toggle(node.id)
-            }}
-            className={cn(
-              BUTTON_RESET,
-              FOCUS_RING,
-              'box-border inline-flex h-6 min-w-6 cursor-pointer items-center justify-center rounded-full border border-solid border-strong bg-surface-raised px-1.5 font-sans text-xs font-medium text-primary hover:bg-surface-hover',
-            )}
-          >
-            {open ? (
-              <Minus aria-hidden="true" className="size-3" />
-            ) : (
-              <span aria-hidden="true" className={cn('tabular-nums', TEXT_ISOLATE)}>
-                +{format.number(String(hidden))}
-              </span>
-            )}
-          </button>
+        // Exactly centred on the line (P5.93 item 35): it is centred on the same 1px column as
+        // the lines (`start-1/2`, one pixel wide) and its width is odd (`toggleWidth`), so it
+        // stands on whole pixels in both directions.
+        <div className="relative z-10 -mt-3 h-6 self-stretch">
+          <div className="absolute start-1/2 top-0 flex h-6 w-px justify-center">
+            <button
+              type="button"
+              tabIndex={-1}
+              aria-label={
+                open
+                  ? messages['hierarchy.collapse'](node.title)
+                  : messages['hierarchy.expand'](hidden, format.number(String(hidden)), node.title)
+              }
+              onClick={(event) => {
+                event.stopPropagation()
+                state.toggle(node.id)
+              }}
+              style={{ width: toggleWidth(open ? '−' : toggleText) }}
+              className={cn(
+                BUTTON_RESET,
+                FOCUS_RING,
+                'box-border inline-flex h-6 shrink-0 cursor-pointer items-center justify-center rounded-full border border-solid border-strong bg-surface-raised font-sans text-xs font-medium text-primary hover:bg-surface-hover',
+              )}
+            >
+              {open ? (
+                <Minus aria-hidden="true" className="size-[13px]" />
+              ) : (
+                <span aria-hidden="true" className={cn('tabular-nums', TEXT_ISOLATE)}>
+                  {toggleText}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
       )}
       {open && children.length > 0 && (

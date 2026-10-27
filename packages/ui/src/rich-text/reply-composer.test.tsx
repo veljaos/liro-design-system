@@ -97,7 +97,7 @@ describe('ReplyComposer', () => {
   it('offers both modes, the reply pressed first, the send button disabled while empty', () => {
     const html = render(<ReplyComposer onSend={() => undefined} placeholder="Write a reply" />)
     expect(html).toContain('aria-label="Message type"')
-    expect(html).toMatch(/aria-pressed="true"[^>]*>(<[^>]+>)*Reply/)
+    expect(html).toMatch(/role="radio" aria-checked="true"[^>]*>(<[^>]+>)*Reply/)
     expect(html).toContain('Internal note')
     expect(html).toMatch(/<button[^>]*disabled=""[^>]*>.*?Send<\/span>/)
     expect(html).not.toContain('Only your team sees internal notes.')

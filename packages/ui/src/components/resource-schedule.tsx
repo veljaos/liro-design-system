@@ -38,7 +38,7 @@ import {
   type UnavailableTime,
 } from './schedule-logic'
 import { SelectField } from './select-field'
-import { NowMarker } from './now-marker'
+import { NowMarker, NowTimeTag, tagCovers } from './now-marker'
 import { SchedulePhoneLists, type SchedulePhoneList } from './schedule-phone-lists'
 import type { Tone } from './status-badge'
 import { STICKY_HEAD, STICKY_START, useStickyHead } from './sticky-head'
@@ -56,7 +56,9 @@ import { Tooltip } from './popover'
  *   the grid scrolls sideways inside its own box; the hours (and days) above stay below the
  *   shell while the page scrolls (P5.28 item 4, `useStickyHead`).
  * - Now (`now`, the application's clock, P5.28 item 10): the time grids' one marker, a neutral
- *   line with a dot (NowMarker), across the rows at the current time, named "Now, 09:40". Rows 56px; bookings that overlap share the row
+ *   line with a dot (NowMarker), across the rows at the current time, named "Now, 09:40", with the
+ *   time written on the line in the hours row (the gutter on phones; P5.93 item 8). Rows 56px;
+ *   bookings that overlap share the row
  *   in lanes. A booking: the tone's colours (neutral by default) with a 3px bar at the start,
  *   its title and its description or time.
  * - Three ways to move a booking (WCAG 2.5.7): drag it (pointer events; a mouse after 4px, a touch
@@ -878,6 +880,7 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
       ? null
       : {
           at: nowPlace,
+          time: format.time(localDateTime(moment.day, moment.minutes)),
           label: messages['schedule.now'](format.time(localDateTime(moment.day, moment.minutes))),
         }
 
@@ -969,12 +972,25 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
                 className={cn(
                   'absolute end-2 text-xs whitespace-nowrap text-tertiary tabular-nums',
                   TEXT_ISOLATE,
+                  // Under the time of "now": out of sight (P5.93 item 8).
+                  nowAt !== null &&
+                    !byDay &&
+                    tagCovers(along(nowAt.at), 10, along(hour.at), along(hour.at) + 20) &&
+                    'invisible',
                 )}
                 style={{ top: along(hour.at) + 2 }}
               >
                 {hour.text}
               </span>
             ))}
+            {/* The time of "now" in the gutter, at the line's height (P5.93 item 8). */}
+            {nowAt !== null && !byDay && (
+              <NowTimeTag
+                orientation="horizontal"
+                time={nowAt.time}
+                style={{ top: along(nowAt.at), insetInlineStart: 0, insetInlineEnd: 0 }}
+              />
+            )}
           </div>
           <div className="relative min-w-0 flex-1 border-0 border-s border-solid border-subtle">
             {/* Before the bookings: they cover its line, never the reverse (P5.90 item 17). */}
@@ -1061,12 +1077,24 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
                       className={cn(
                         'absolute top-1.5 ps-1 text-xs whitespace-nowrap text-tertiary tabular-nums',
                         TEXT_ISOLATE,
+                        // Under the time of "now" (its words take up to half an hour): out of sight.
+                        nowAt !== null &&
+                          tagCovers(nowAt.at, 16, hour.at, hour.at + 30) &&
+                          'invisible',
                       )}
                       style={{ insetInlineStart: `${String(along(hour.at))}%` }}
                     >
                       {hour.text}
                     </span>
                   ))}
+                  {/* The time of "now" in the hours row, on the line (P5.93 item 8). */}
+                  {nowAt !== null && !byDay && (
+                    <NowTimeTag
+                      orientation="vertical"
+                      time={nowAt.time}
+                      style={{ insetInlineStart: `${String(along(nowAt.at))}%` }}
+                    />
+                  )}
                 </div>
               </div>
             </div>

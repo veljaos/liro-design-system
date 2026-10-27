@@ -1,27 +1,29 @@
-import type { ReactNode } from 'react'
-import { FOCUS_RING, TEXT_DIRECTION } from '../primitives/classes'
+import { ArrowLeft, ArrowRight } from 'lucide-react'
+import { Fragment, type ReactNode } from 'react'
+import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { langAttribute } from '../provider/lang'
 import { useLiro } from '../provider/liro-provider'
-import { articlePlaces, bylineText } from './blog-logic'
+import { articlePlaces } from './blog-logic'
 import { EmptyState, ErrorState } from './empty-state'
 import { Skeleton } from './progress'
 import { usePhone } from './use-phone'
 
 /*
- * ArticleList (BUILD-PLAN P5.39): articles to read — a blog's posts, a magazine's stories, a
- * newsroom's notes — as cards: the cover, the category, the title (a link to the article), the
- * excerpt and the byline (author · date · reading time). Generic: every word and figure is the
- * application's; the date goes through the provider's `format`.
- * - Cards stand without frames on the page (calm reading, no boxes): the cover in a 16:9 slot on
- *   surface.sunken (radius lg; the application's image or drawing, decorative), the category (xs
- *   medium text.secondary), the title (h4 size, semibold, text.primary; underlined on hover and
- *   focus), the excerpt (sm text.secondary, three lines) and the byline (xs text.tertiary). The
- *   whole card is the title's link (its press area covers the card); the link is named by the
- *   title alone.
- * - The grid follows its own width: columns of at least 17rem, 24px apart; one column on phones.
- *   `featured`: the first article spans the row, its cover beside the text on a desktop (the
- *   blog's lead story).
+ * ArticleList (BUILD-PLAN P5.39; restyled in P5.93 item 27, the owner: "like shadcn Card"):
+ * articles to read — a blog's posts, a magazine's stories, a newsroom's notes — as cards. Generic:
+ * every word and figure is the application's; the date goes through the provider's `format`.
+ * - A card is shadcn's Card (radius lg, border.default, surface.raised, the xs shadow): the
+ *   optional image on top, edge to edge (16:9 on surface.sunken; the application's image or
+ *   drawing, decorative); then the title (h4 size, semibold), the short description (sm
+ *   text.secondary, three lines), the meta line (xs text.tertiary: category · author · date ·
+ *   reading time) and, at the card's foot, a clear link ("Read article" with an arrow, in the
+ *   link colour). The whole card is the title's link (its press area covers the card, named by
+ *   the title alone); the foot's words show where it leads. Hover: surface.hover and the title
+ *   underlined; keyboard focus: the ring round the card.
+ * - The grid follows its own width: columns of at least 17rem, 24px apart, cards of one row the
+ *   same height; one column on phones. `featured`: the first article spans the row, its image
+ *   beside the text on a desktop (the blog's lead story).
  * - Loading: skeleton cards. None: the application's `empty`, or EmptyState's no-results. Error:
  *   ErrorState with the application's Try again.
  * - `headingLevel` (default 2) keeps the page's outline; `lang` marks an article in another
@@ -82,38 +84,44 @@ function Card({
   lead: boolean
   level: 2 | 3 | 4
 }) {
-  const { format, locale, linkComponent: Link } = useLiro()
+  const { format, locale, messages, direction, linkComponent: Link } = useLiro()
   const Heading = `h${String(level)}` as 'h2'
-  const byline = bylineText([
+  // Each part stays whole ("6 min read" never breaks); the line wraps between them.
+  const metaParts = [
+    article.category,
     article.author,
     article.date === undefined ? undefined : format.date(article.date),
     article.readingTime,
-  ])
+  ].filter((part): part is string => part !== undefined && part !== '')
+  const Arrow = direction === 'rtl' ? ArrowLeft : ArrowRight
   return (
     <article
       data-slot="article-card"
       {...langAttribute(article.lang, locale)}
       className={cn(
-        'group relative flex h-full w-full min-w-0 font-sans text-primary',
-        lead
-          ? 'flex-col gap-4 @min-[44rem]:grid @min-[44rem]:grid-cols-2 @min-[44rem]:gap-8'
-          : 'flex-col gap-3',
+        'group relative flex h-full w-full min-w-0 overflow-clip rounded-lg border border-solid border-default bg-surface-raised font-sans text-primary shadow-xs hover:bg-surface-hover',
+        // The keyboard's focus ring round the whole card (its link covers it).
+        'has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-focus has-[a:focus-visible]:outline-solid',
+        lead ? 'flex-col @min-[44rem]:grid @min-[44rem]:grid-cols-2' : 'flex-col',
       )}
     >
       {article.cover !== undefined && (
         <div
           aria-hidden="true"
-          className="aspect-video min-w-0 overflow-hidden rounded-lg bg-surface-sunken *:size-full"
+          className={cn(
+            'aspect-video min-w-0 overflow-hidden bg-surface-sunken *:size-full',
+            lead && '@min-[44rem]:aspect-auto @min-[44rem]:h-full',
+          )}
         >
           {article.cover}
         </div>
       )}
-      <div className={cn('flex min-w-0 flex-col gap-1.5', lead && '@min-[44rem]:justify-center')}>
-        {article.category !== undefined && (
-          <p className={cn('m-0 text-xs font-medium text-secondary', TEXT_DIRECTION)}>
-            {article.category}
-          </p>
+      <div
+        className={cn(
+          'flex min-w-0 flex-1 flex-col gap-2 p-5',
+          lead && '@min-[44rem]:justify-center @min-[44rem]:p-8',
         )}
+      >
         <Heading
           className={cn(
             'm-0 font-semibold break-words text-primary',
@@ -124,9 +132,8 @@ function Card({
           <Link
             href={article.href}
             className={cn(
-              'rounded-sm text-primary no-underline visited:text-primary group-hover:underline focus-visible:underline',
+              'text-primary no-underline outline-none visited:text-primary group-hover:underline focus-visible:underline',
               'after:absolute after:inset-0 after:content-[""]',
-              FOCUS_RING,
             )}
           >
             {article.title}
@@ -143,9 +150,28 @@ function Card({
             {article.excerpt}
           </p>
         )}
-        {byline !== '' && (
-          <p className={cn('m-0 text-xs text-tertiary', TEXT_DIRECTION)}>{byline}</p>
+        {metaParts.length > 0 && (
+          <p className={cn('m-0 text-xs text-tertiary', TEXT_DIRECTION)}>
+            {metaParts.map((part, index) => (
+              <Fragment key={index}>
+                {index > 0 && ' · '}
+                <span className="whitespace-nowrap">{part}</span>
+              </Fragment>
+            ))}
+          </p>
         )}
+        {/* Where the card leads, in words; the card itself is the link (its title names it). */}
+        <p
+          aria-hidden="true"
+          className={cn(
+            'm-0 flex items-center gap-1.5 pt-2 text-sm font-medium text-link group-hover:underline',
+            // At the card's foot, the same height in every card of a row (not the lead story).
+            !lead && 'mt-auto',
+          )}
+        >
+          <span className={TEXT_DIRECTION}>{messages['articles.read']}</span>
+          <Arrow className="size-4 shrink-0" />
+        </p>
       </div>
     </article>
   )
@@ -179,11 +205,17 @@ export function ArticleList(props: ArticleListProps) {
       >
         <span className="sr-only">{messages['field.loading']}</span>
         {Array.from({ length: props.skeletonCount ?? 6 }, (_, index) => (
-          <div key={index} aria-hidden="true" className="flex flex-col gap-3">
-            <Skeleton className="aspect-video rounded-lg" />
-            <Skeleton className="h-4 w-1/3" />
-            <Skeleton className="h-6 w-4/5" />
-            <Skeleton className="h-10" />
+          <div
+            key={index}
+            aria-hidden="true"
+            className="flex flex-col overflow-clip rounded-lg border border-solid border-default bg-surface-raised"
+          >
+            <Skeleton className="aspect-video rounded-none" />
+            <div className="flex flex-col gap-3 p-5">
+              <Skeleton className="h-6 w-4/5" />
+              <Skeleton className="h-10" />
+              <Skeleton className="h-4 w-1/2" />
+            </div>
           </div>
         ))}
       </div>
