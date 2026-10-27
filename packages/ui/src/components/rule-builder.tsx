@@ -62,8 +62,9 @@ import { usePhone } from './use-phone'
  *   that line: Move up, Move down (only where it can move) and Remove, 28px icon buttons named
  *   with the item. The focus follows: a new item's first field, the moved item's button, after a
  *   removal the item that takes its place (or the add button).
- * - Read-only (`readOnly`, or `disabledReason` — the reason shown above): the same blocks as
- *   text, values through the provider's `format`. Loading: skeleton blocks.
+ * - Read-only (`readOnly`): the same blocks as text, values through the provider's `format`; a
+ *   rule that cannot be changed is read-only, with no reason of its own under it (P5.93 item 1:
+ *   the application says why once, where the page needs it). Loading: skeleton blocks.
  * - Phones (`layout`, default below 48em): every field on its own line; on a desktop a
  *   condition's three fields stand in one row when the builder is wide enough.
  */
@@ -86,8 +87,6 @@ export interface RuleBuilderProps {
   problems?: Readonly<Record<string, ReactNode>>
   /** Shows the rule as text. */
   readOnly?: boolean
-  /** The rule cannot be changed, and why ("Only administrators change rules."): shown as text. */
-  disabledReason?: ReactNode
   /** The application is loading the rule: skeleton blocks. */
   loading?: boolean
   /** The blocks' heading level. Default 3. */
@@ -222,7 +221,7 @@ function joinOptions(messages: Messages) {
   ]
 }
 
-/** The rule as text: the read-only and disabled states. */
+/** The rule as text: the read-only state. */
 function RuleText(props: RuleBuilderProps & { heading: 'h2' | 'h3' | 'h4' }) {
   const { messages, format } = useLiro()
   const Heading = props.heading
@@ -422,14 +421,9 @@ export function RuleBuilder(props: RuleBuilderProps) {
     )
   }
 
-  if (onChange === undefined || props.readOnly === true || props.disabledReason !== undefined) {
+  if (onChange === undefined || props.readOnly === true) {
     return frame(
       <>
-        {props.disabledReason !== undefined && (
-          <FieldMessage id={`${base}-reason`} tone="hint">
-            {props.disabledReason}
-          </FieldMessage>
-        )}
         {summary}
         <RuleText {...props} heading={Heading} />
       </>,
@@ -555,27 +549,27 @@ export function RuleBuilder(props: RuleBuilderProps) {
                   )
                 }}
               />
-              <SelectField
-                label={messages['rule.operator']}
-                options={idOptions(tests)}
-                value={condition.operator ?? ''}
-                {...(field === undefined
-                  ? { disabled: true, disabledReason: messages['rule.fieldFirst'] }
-                  : {})}
-                {...(problem(ruleProblemKey(condition.id, 'operator')) === undefined
-                  ? {}
-                  : { error: problem(ruleProblemKey(condition.id, 'operator')) })}
-                onChange={(next) => {
-                  change(
-                    setConditionOperator(
-                      draft,
-                      condition.id,
-                      next === '' ? null : next,
-                      props.operators,
-                    ),
-                  )
-                }}
-              />
+              {/* The test comes once the field is chosen (P5.93: the minimum first). */}
+              {field !== undefined && (
+                <SelectField
+                  label={messages['rule.operator']}
+                  options={idOptions(tests)}
+                  value={condition.operator ?? ''}
+                  {...(problem(ruleProblemKey(condition.id, 'operator')) === undefined
+                    ? {}
+                    : { error: problem(ruleProblemKey(condition.id, 'operator')) })}
+                  onChange={(next) => {
+                    change(
+                      setConditionOperator(
+                        draft,
+                        condition.id,
+                        next === '' ? null : next,
+                        props.operators,
+                      ),
+                    )
+                  }}
+                />
+              )}
               {field !== undefined && operator !== undefined && operator.noValue !== true && (
                 <ValueControl
                   key={`${field.id}-${field.kind}`}

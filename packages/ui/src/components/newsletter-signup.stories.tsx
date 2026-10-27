@@ -84,10 +84,10 @@ export const Subscribed: Story = {
   args: { subscribed: true },
 }
 
-/** Closed for now, with the reason. */
-export const Disabled: Story = {
-  name: 'Disabled with reason',
-  args: { disabled: true, disabledReason: 'The newsletter is paused until 1 November.' },
+/** Closed for now (P5.93): the address read-only, Subscribe unavailable, the reason in words. */
+export const Unavailable: Story = {
+  name: 'Unavailable with reason',
+  args: { unavailableReason: 'The newsletter is paused until 1 November.' },
 }
 
 /** Long text wraps. */

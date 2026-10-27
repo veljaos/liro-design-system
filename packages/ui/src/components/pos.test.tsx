@@ -121,10 +121,29 @@ describe('QuantityStepper', () => {
     expect(html).toContain('aria-invalid="true"')
   })
 
-  it('names its buttons with the field, and stops at a limit', () => {
+  it('names its buttons with the field, and stops at a limit, still focusable', () => {
     const html = render(<QuantityStepper label="Quantity" value="0" min="0" />)
-    expect(html).toMatch(/aria-labelledby="[^"]+ [^"]+"[^>]*disabled=""/)
+    expect(html).toMatch(/aria-labelledby="[^"]+ [^"]+"[^>]*aria-disabled="true"/)
+    expect(html).not.toMatch(/<button[^>]*\sdisabled=""/)
     expect(html).toContain('Decrease')
+    // At the lower limit without the application's reason: no line under the field.
+    expect(html).not.toContain('Minimum 0')
+  })
+
+  it('says why + cannot be used at the maximum, with the application’s reason', () => {
+    const html = render(
+      <QuantityStepper label="Quantity" value="6" max="6" maxReason="the quantity on the order" />,
+    )
+    expect(html).toContain('Maximum 6 — the quantity on the order')
+    expect(html).toMatch(/aria-disabled="true"[^>]*aria-describedby="([^"]+)"/)
+    const described = /aria-disabled="true"[^>]*aria-describedby="([^"]+)"/.exec(html)?.[1] ?? ''
+    expect(html).toContain(`id="${described}"`)
+  })
+
+  it('shows read-only in the read-only look, without − and +', () => {
+    const html = render(<QuantityStepper label="Quantity" value="4" readOnly />)
+    expect(html).toContain('bg-surface-disabled')
+    expect(html).not.toContain('Increase')
   })
 })
 

@@ -12,11 +12,12 @@ const meta = {
       description: {
         component:
           '**What for:** one line of free text: a name, an e-mail, a reference. Label, optional ' +
-          'description, the error under the field, read-only and disabled with a reason. Paste is ' +
+          'description, the error under the field, and read only. Paste is ' +
           'always allowed. TextAreaField is the multi-line version.\n\n' +
           '**When not:** numbers, amounts and dates (NumberField, MoneyField, DateField, P2.3); a ' +
-          'choice from a list (SelectField, ComboboxField). Read-only is for a value the user may ' +
-          'see but not change; disabled is for a field that does not apply now, with the reason.',
+          'choice from a list (SelectField, ComboboxField). Read only is for a value the user may ' +
+          'see but not change: the grey look of every field, no hint, an empty value "—". A ' +
+          'field has no disabled state (P5.93).',
       },
     },
   },
@@ -37,7 +38,7 @@ export const Default: Story = {
   },
 }
 
-/** Empty, required, with an error, read-only next to disabled, and the other input types. */
+/** Empty, required, with an error, read only (the read-only look, an empty value "—"), and the other input types. */
 export const States: Story = {
   render: () => (
     <div className="flex max-w-100 flex-col gap-6">
@@ -51,12 +52,6 @@ export const States: Story = {
         error="Enter the whole address, e.g. ana@example.com"
       />
       <TextField label="Tax number (read-only)" readOnly defaultValue="100200300" />
-      <TextField
-        label="Tax number (disabled)"
-        disabled
-        disabledReason="Set by the registry; it cannot be changed here."
-        defaultValue="100200300"
-      />
       <TextField label="Phone" type="tel" defaultValue="+381 11 123 4567" />
       <TextField label="Website" type="url" defaultValue="https://example.com" />
       <TextField label="Search" type="search" placeholder="Search documents" />
@@ -109,12 +104,6 @@ export const Arabic: Story = {
       />
       <TextField label={ARABIC.label} required error={ARABIC.error} />
       <TextField label={ARABIC.label} readOnly defaultValue={ARABIC.value} />
-      <TextField
-        label={ARABIC.label}
-        disabled
-        disabledReason={ARABIC.reason}
-        defaultValue={ARABIC.value}
-      />
     </div>
   ),
 }
@@ -130,12 +119,6 @@ export const Japanese: Story = {
       />
       <TextField label={JAPANESE.label} required error={JAPANESE.error} />
       <TextField label={JAPANESE.label} readOnly defaultValue={JAPANESE.value} />
-      <TextField
-        label={JAPANESE.label}
-        disabled
-        disabledReason={JAPANESE.reason}
-        defaultValue={JAPANESE.value}
-      />
     </div>
   ),
 }

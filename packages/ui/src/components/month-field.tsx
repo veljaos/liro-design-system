@@ -157,11 +157,10 @@ export function MonthField(props: MonthFieldProps) {
                   id={control.id}
                   aria-labelledby={`${control.labelId} ${control.id}`}
                   aria-describedby={control.describedBy}
-                  disabled={control.disabled}
                   className={cn(
                     INPUT,
                     // The month's name and year in their own order, at the page's start (P3.6).
-                    'cursor-pointer enabled:hover:bg-surface-hover',
+                    'cursor-pointer hover:bg-surface-hover',
                     TEXT_DIRECTION,
                     // The month's name is capitalised; the placeholder is shown as given.
                     text === null ? 'text-tertiary' : 'capitalize',

@@ -157,7 +157,7 @@ export const Unreadable: Story = {
   },
 }
 
-/** Empty, required, the application's error, read-only next to disabled. */
+/** Empty, required, the application's error, read only (the read-only look, an empty value "—"). */
 export const States: Story = {
   render: () => (
     <div className="flex max-w-100 flex-col gap-6">
@@ -169,12 +169,6 @@ export const States: Story = {
         error="The delivery date cannot be before the issue date."
       />
       <DateField label="Posting date (read-only)" readOnly defaultValue="2026-03-01" />
-      <DateField
-        label="Posting date (disabled)"
-        disabled
-        disabledReason="The period is closed."
-        defaultValue="2026-03-01"
-      />
     </div>
   ),
 }
@@ -197,12 +191,6 @@ export const Arabic: Story = {
       <DateField label={ARABIC.label} description={ARABIC.description} defaultValue="2026-03-01" />
       <DateField label={ARABIC.label} required error={ARABIC.error} />
       <DateField label={ARABIC.label} readOnly defaultValue="2026-03-01" />
-      <DateField
-        label={ARABIC.label}
-        disabled
-        disabledReason={ARABIC.reason}
-        defaultValue="2026-03-01"
-      />
     </div>
   ),
 }
@@ -218,12 +206,6 @@ export const Japanese: Story = {
       />
       <DateField label={JAPANESE.label} required error={JAPANESE.error} />
       <DateField label={JAPANESE.label} readOnly defaultValue="2026-03-01" />
-      <DateField
-        label={JAPANESE.label}
-        disabled
-        disabledReason={JAPANESE.reason}
-        defaultValue="2026-03-01"
-      />
     </div>
   ),
 }

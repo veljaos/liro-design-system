@@ -1,10 +1,11 @@
 import { ArrowRight } from 'lucide-react'
-import { useState, type ReactNode } from 'react'
+import { useId, useState, type ReactNode } from 'react'
 import { isProviderMark, ProviderMarkIcon, type ProviderMark } from './provider-marks'
 import { LoadingButtonPrimitive } from '../primitives/button'
 import { TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
+import { FieldMessage } from './field'
 import { TextField } from './text-field'
 
 /*
@@ -135,9 +136,12 @@ export interface EmailFirstFormProps {
   submitLabel?: string
   /** The address is being checked: the button shows it and cannot be pressed again. */
   loading?: boolean
-  /** The form cannot be used now; give `disabledReason` so the user sees why. */
-  disabled?: boolean
-  disabledReason?: ReactNode
+  /**
+   * Signing in with this form is not possible now, and why, from the application ("Signing in is
+   * paused for maintenance until 22:00."): the address is read-only, Continue and the providers
+   * are unavailable, and the reason stands under Continue (P5.93).
+   */
+  unavailableReason?: ReactNode
   /** Sign-in providers (ProviderSignInButtons), with the "or" divider between. */
   providers?: readonly SignInProvider[]
   /** The providers after the form (default, as login-05) or before it. */
@@ -155,7 +159,8 @@ export function EmailFirstForm(props: EmailFirstFormProps) {
   const [inner, setInner] = useState(props.defaultValue ?? '')
   const value = props.value ?? inner
   const busy = props.loading === true
-  const disabled = props.disabled === true
+  const disabled = props.unavailableReason !== undefined && props.unavailableReason !== null
+  const reasonId = `${useId()}-reason`
   const providers =
     props.providers === undefined || props.providers.length === 0 ? null : props.providers
   const before = props.providersPosition === 'before'
@@ -186,20 +191,29 @@ export function EmailFirstForm(props: EmailFirstFormProps) {
           {...(props.description === undefined ? {} : { description: props.description })}
           {...(props.placeholder === undefined ? {} : { placeholder: props.placeholder })}
           {...(props.error === undefined ? {} : { error: props.error })}
-          {...(disabled ? { disabled: true } : {})}
-          {...(props.disabledReason === undefined ? {} : { disabledReason: props.disabledReason })}
+          readOnly={disabled}
         />
-        <LoadingButtonPrimitive
-          type="submit"
-          family="primary"
-          emphasis="primary"
-          disabled={disabled}
-          loading={busy}
-          className="w-full"
-        >
-          <ArrowRight aria-hidden="true" className="size-3.75 shrink-0 rtl:-scale-x-100" />
-          <span className={TEXT_DIRECTION}>{props.submitLabel ?? messages['signIn.continue']}</span>
-        </LoadingButtonPrimitive>
+        <div className="flex flex-col gap-1.5">
+          <LoadingButtonPrimitive
+            type="submit"
+            family="primary"
+            emphasis="primary"
+            disabled={disabled}
+            {...(disabled ? { 'aria-describedby': reasonId } : {})}
+            loading={busy}
+            className="w-full"
+          >
+            <ArrowRight aria-hidden="true" className="size-3.75 shrink-0 rtl:-scale-x-100" />
+            <span className={TEXT_DIRECTION}>
+              {props.submitLabel ?? messages['signIn.continue']}
+            </span>
+          </LoadingButtonPrimitive>
+          {disabled && (
+            <FieldMessage id={reasonId} tone="hint">
+              {props.unavailableReason}
+            </FieldMessage>
+          )}
+        </div>
       </form>
       {providers !== null && !before && (
         <ProviderSignInButtons providers={providers} divider="above" disabled={disabled || busy} />

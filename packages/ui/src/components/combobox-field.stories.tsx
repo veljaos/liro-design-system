@@ -165,7 +165,7 @@ export const EmptyInteraction: Story = {
   },
 }
 
-/** Chosen, required with an error, read-only next to disabled. */
+/** Chosen, required with an error, read only (the read-only look, an empty value "—"). */
 export const States: Story = {
   render: (args) => (
     <div className="flex max-w-100 flex-col gap-6">
@@ -175,13 +175,6 @@ export const States: Story = {
         {...args}
         label="Customer (read-only)"
         readOnly
-        defaultValue={CUSTOMERS[0] ?? null}
-      />
-      <ComboboxField
-        {...args}
-        label="Customer (disabled)"
-        disabled
-        disabledReason="The invoice is posted."
         defaultValue={CUSTOMERS[0] ?? null}
       />
     </div>

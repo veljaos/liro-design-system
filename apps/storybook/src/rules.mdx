@@ -20,7 +20,7 @@ The model is Carbon (IBM) and SAP's UI5 controls, not an application framework:
 
 1. Calls an API, reads a cookie, or knows a URL of a backend.
 2. Translates. It shows the text it is given; its own few strings ("Next", "Rows per page") come from the provider with English defaults.
-3. Decides permissions. It shows what it is told: hidden, read-only, or disabled with a reason.
+3. Decides permissions. It shows what it is told: hidden, read-only (a field), or unavailable with a reason (an action).
 4. Computes money. Amounts arrive as decimal strings and totals arrive already computed; the Design System displays them and never adds, rounds or converts them to a JavaScript `number`.
 5. Knows a business domain. No "invoice", "post", "storno", "PIB" or "VAT" inside components. Examples in Storybook may use them as fictitious data.
 6. Hard-codes colours, a language or a direction.
@@ -32,7 +32,7 @@ A component is finished only when all of these hold.
 1. **Tokens only.** Semantic Tailwind classes or CSS variables; no raw colours, no hex values.
 2. **Logical properties only.** `ms-`/`me-`/`ps-`/`pe-`/`start-`/`end-`, `text-start`; never `ml-`, `left-`, `text-left`. Drag and pointer logic measures from the leading edge.
 3. **No text of its own** except provider `messages`; no formatting of its own except provider `format`.
-4. **Stories:** default; every state it supports (disabled with reason, read-only, error, loading, empty); long text; phone width; one story with Arabic sample text and one with Japanese sample text.
+4. **Stories:** default; every state it supports (read-only, an action unavailable with its reason, error, loading, empty); long text; phone width; one story with Arabic sample text and one with Japanese sample text.
 5. **Accessibility:** axe with WCAG 2.2 AA tags passes in light and dark, left-to-right and right-to-left; operable by keyboard alone; visible focus never hidden under sticky elements; targets at least 24×24 CSS pixels; no interaction possible only by dragging.
 6. **Visual baselines** on Linux for light/dark × ltr/rtl.
 7. **Unit tests** for any logic (parsing, counting, keyboard handling).

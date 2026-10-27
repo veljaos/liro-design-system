@@ -21,8 +21,10 @@ import { Spinner } from './spinner'
  *   warning).
  * - While the application searches (`loading`) a small spinner and "Looking for suggestions…"
  *   stand under the title; the earlier suggestions stay until new ones arrive.
- * - Without suggestions and not loading, nothing is drawn but a hidden status, so the count can
- *   still be announced politely ("3 suggestions", "No suggestions") as they change.
+ * - Without suggestions and not loading, the box says what it is for (P5.93 item 2: an empty state
+ *   says something useful): its title and one quiet line, "No matching pages yet. They appear
+ *   here as you write." (`emptyText`, default from messages). The count is announced politely
+ *   ("3 suggestions", "No suggestions") as it changes.
  * - `onOpen` reports a press on a suggestion (the application may keep the draft, log the
  *   choice or open the page in a drawer instead and call `preventDefault`).
  */
@@ -51,6 +53,8 @@ export interface LinkSuggestionsProps {
   loading?: boolean
   /** A press on a suggestion (before the link is followed). */
   onOpen?: (suggestion: LinkSuggestion, event: MouseEvent<HTMLAnchorElement>) => void
+  /** The line shown without suggestions. Default `messages['suggestions.empty']`. */
+  emptyText?: ReactNode
   /** The title's heading level. Default 2. */
   headingLevel?: 2 | 3 | 4
   className?: string
@@ -65,13 +69,12 @@ export function LinkSuggestions(props: LinkSuggestionsProps) {
   const Heading = `h${String(props.headingLevel ?? 2)}` as 'h2'
   // The polite count is announced only once the search has answered.
   const status = loading ? '' : messages['suggestions.count'](count, format.number(String(count)))
-  const shown = count > 0 || loading
   return (
     <div data-slot="link-suggestions" className={cn('min-w-0 font-sans', props.className)}>
       <span role="status" className="sr-only">
         {status}
       </span>
-      {shown && (
+      {
         <section
           aria-labelledby={titleId}
           className="box-border flex flex-col gap-2 rounded-md border border-solid border-default bg-surface-raised px-4 py-3"
@@ -89,6 +92,11 @@ export function LinkSuggestions(props: LinkSuggestionsProps) {
                 {messages['suggestions.searching']}
               </span>
             </Spinner>
+          )}
+          {count === 0 && !loading && (
+            <p className={cn('m-0 text-xs text-secondary', TEXT_DIRECTION)}>
+              {props.emptyText ?? messages['suggestions.empty']}
+            </p>
           )}
           {count > 0 && (
             <ul className="m-0 flex list-none flex-col p-0">
@@ -138,7 +146,7 @@ export function LinkSuggestions(props: LinkSuggestionsProps) {
             </ul>
           )}
         </section>
-      )}
+      }
     </div>
   )
 }

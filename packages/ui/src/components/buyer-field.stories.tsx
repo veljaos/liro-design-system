@@ -91,19 +91,10 @@ export const FewTypes: Story = {
   },
 }
 
-/** Read-only: the values as text. */
+/** Read only (P5.93): every part in the read-only look of every field, no hints. */
 export const ReadOnly: Story = {
-  name: 'Read-only',
+  name: 'Read only',
   args: { types: FEW_TYPES, readOnly: true, defaultValue: STORY_BUYER },
-}
-
-/** Disabled with the application's reason. */
-export const Disabled: Story = {
-  args: {
-    disabled: true,
-    disabledReason: 'A refund keeps the buyer of the original receipt.',
-    defaultValue: STORY_BUYER,
-  },
 }
 
 /** Long words wrap. */

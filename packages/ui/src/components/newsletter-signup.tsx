@@ -1,11 +1,12 @@
 import { CircleCheck, Mail } from 'lucide-react'
-import { useState, type ReactNode, type SyntheticEvent } from 'react'
+import { useId, useState, type ReactNode, type SyntheticEvent } from 'react'
 import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 import { Alert } from './alert'
 import { emailProblem } from './blog-logic'
 import { Button } from './button'
+import { FieldMessage } from './field'
 import { Spinner } from './spinner'
 import { TextField } from './text-field'
 import { usePhone } from './use-phone'
@@ -27,7 +28,8 @@ import { usePhone } from './use-phone'
  * - Subscribed (`subscribed`, or kept after `onSubscribe` succeeds): a polite status with a
  *   success CircleCheck and "Thank you — check your inbox to confirm." or the application's words,
  *   in the form's place: the block keeps its size (P5.93).
- * - Disabled with a visible reason, as every field.
+ * - Unavailable (`unavailableReason`, P5.93): the address read-only, Subscribe unavailable, the
+ *   reason in words under the form.
  */
 
 export interface NewsletterSignupProps {
@@ -51,9 +53,11 @@ export interface NewsletterSignupProps {
   subscribed?: ReactNode
   /** The address at first. */
   defaultEmail?: string
-  /** Nothing can be sent. Give `disabledReason`. */
-  disabled?: boolean
-  disabledReason?: ReactNode
+  /**
+   * No one can subscribe now, and why, from the application (P5.93): the address is read-only,
+   * Subscribe is unavailable, and the reason stands under the form.
+   */
+  unavailableReason?: ReactNode
   /** Subscribe's weight: 'primary' where it is the page's main action. Default 'secondary'. */
   emphasis?: 'primary' | 'secondary'
   /** The title's level. Default 2. */
@@ -73,12 +77,14 @@ export function NewsletterSignup(props: NewsletterSignupProps) {
   const [busy, setBusy] = useState(false)
   const [done, setDone] = useState(false)
   const sending = busy || props.sending === true
+  const disabled = props.unavailableReason !== undefined && props.unavailableReason !== null
+  const reasonId = `${useId()}-reason`
   const subscribed = props.subscribed ?? done
   const Heading = `h${String(props.headingLevel ?? 2)}` as 'h2'
 
   const submit = (event: SyntheticEvent) => {
     event.preventDefault()
-    if (sending || props.disabled === true) return
+    if (sending || disabled) return
     const found = emailProblem(email)
     setProblem(found)
     if (found !== null) return
@@ -162,10 +168,7 @@ export function NewsletterSignup(props: NewsletterSignupProps) {
                         ? messages['newsletter.required']
                         : messages['newsletter.invalid'],
                   })}
-              {...(props.disabled === true ? { disabled: true } : {})}
-              {...(props.disabledReason === undefined
-                ? {}
-                : { disabledReason: props.disabledReason })}
+              readOnly={disabled}
               className="min-w-0 flex-1"
             />
             <div className="flex flex-col">
@@ -182,7 +185,8 @@ export function NewsletterSignup(props: NewsletterSignupProps) {
                   type="submit"
                   emphasis={props.emphasis ?? 'secondary'}
                   label={props.subscribeLabel ?? messages['newsletter.subscribe']}
-                  disabled={sending || props.disabled === true}
+                  disabled={sending || disabled}
+                  {...(disabled ? { 'aria-describedby': reasonId } : {})}
                 />
                 {sending && (
                   <Spinner size="sm">
@@ -192,6 +196,11 @@ export function NewsletterSignup(props: NewsletterSignupProps) {
               </div>
             </div>
           </div>
+          {disabled && (
+            <FieldMessage id={reasonId} tone="hint">
+              {props.unavailableReason}
+            </FieldMessage>
+          )}
           {props.error !== undefined && <Alert tone="danger">{props.error}</Alert>}
           {props.consent !== undefined && (
             <p className={cn('m-0 text-xs text-secondary', TEXT_DIRECTION)}>{props.consent}</p>

@@ -434,21 +434,14 @@ export const ManyResults: Story = {
   },
 }
 
+/** Read only (P5.93): the read-only look of every field; nothing chosen shows "—". */
 export const ReadOnly: Story = {
-  name: 'Read-only',
+  name: 'Read only',
   render: () => (
-    <Lookup readOnly initial={{ value: 'USL-014', label: 'Montaža armature', kind: 'service' }} />
-  ),
-}
-
-export const Disabled: Story = {
-  name: 'Disabled with a reason',
-  render: () => (
-    <Lookup
-      disabled
-      disabledReason="The invoice is issued: its lines can no longer change."
-      initial={{ value: 'USL-014', label: 'Montaža armature', kind: 'service' }}
-    />
+    <div className="flex flex-col gap-6">
+      <Lookup readOnly initial={{ value: 'USL-014', label: 'Montaža armature', kind: 'service' }} />
+      <Lookup readOnly initial={null} />
+    </div>
   ),
 }
 

@@ -1263,6 +1263,12 @@ export interface LiroMessages {
   'quantity.increase': string
   'quantity.belowMin': (minText: string) => string
   'quantity.aboveMax': (maxText: string) => string
+  /**
+   * Why + (or −) cannot be used (P5.93 item 39): the limit, and the application's reason when it
+   * gives one ("Maximum 6 — the quantity on the order").
+   */
+  'quantity.atMax': (maxText: string, reason?: string) => string
+  'quantity.atMin': (minText: string, reason?: string) => string
   /** A handheld worklist (picking, a stock count): changes kept on the device while offline. */
   'queue.waiting': (count: number, countText: string) => string
   // P5.15 / P5.12
@@ -1828,6 +1834,8 @@ export interface LiroMessages {
   /** LinkSuggestions (P5.30 d): the count announced while the user types, and the search. */
   'suggestions.count': (count: number, countText: string) => string
   'suggestions.searching': string
+  /** LinkSuggestions without suggestions (P5.93 item 2): what the box is for. */
+  'suggestions.empty': string
   /** PageContents (P5.30 e). */
   'pageContents.title': string
   /** SearchResultList (P5.30 e): the count over the results, and Try again. */
@@ -2187,6 +2195,8 @@ export interface LiroMessages {
   'sharing.setPassword': string
   // ── P5.66 records ──
   /** DefinedForm: a required value missing — a value to write, an option to choose, a box to tick. */
+  /** DefinedForm without definitions (P5.93 item 2). */
+  'definedForm.empty': string
   'definedForm.fill': string
   'definedForm.choose': string
   'definedForm.tick': string
@@ -2240,7 +2250,6 @@ export interface LiroMessages {
   'rule.operator': string
   'rule.value': string
   'rule.action': string
-  'rule.fieldFirst': string
   'rule.addCondition': string
   'rule.addGroup': string
   'rule.addToGroup': string

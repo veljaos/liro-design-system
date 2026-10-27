@@ -177,9 +177,12 @@ export const Empty: Story = {
   },
 }
 
-/** Read-only: the text as RichText, selectable, no toolbar. */
+/**
+ * Read only (P5.93): the text as RichText in the read-only look of every field, selectable, no
+ * toolbar; an empty one shows "—".
+ */
 export const ReadOnly: Story = {
-  name: 'Read-only',
+  name: 'Read only',
   render: () => (
     <div className="max-w-180">
       <RichTextField
@@ -188,6 +191,7 @@ export const ReadOnly: Story = {
         defaultValue={OFFER_LETTER}
         mergeFields={OFFER_FIELDS}
       />
+      <RichTextField label="Note for the customer" readOnly className="mt-6" />
     </div>
   ),
   play: async ({ canvasElement }) => {
@@ -197,31 +201,6 @@ export const ReadOnly: Story = {
     await expect(within(value).getByText('Merge field: Customer name')).toBeInTheDocument()
     await expect(canvas.queryByRole('toolbar')).toBeNull()
     await expect(canvas.queryByRole('textbox')).toBeNull()
-  },
-}
-
-/** Disabled, with its reason under it; the toolbar is disabled too. */
-export const Disabled: Story = {
-  name: 'Disabled with reason',
-  render: () => (
-    <div className="max-w-180">
-      <RichTextField
-        label="Offer letter"
-        disabled
-        disabledReason="The offer was sent on 6 October 2026; its letter can no longer change."
-        defaultValue={OFFER_LETTER}
-        mergeFields={OFFER_FIELDS}
-      />
-    </div>
-  ),
-  play: async ({ canvasElement }) => {
-    await editorReady(canvasElement)
-    const canvas = within(canvasElement)
-    await expect(canvas.getByRole('textbox', { name: 'Offer letter' })).toHaveAttribute(
-      'aria-disabled',
-      'true',
-    )
-    await expect(canvas.getByRole('button', { name: 'Bold' })).toBeDisabled()
   },
 }
 

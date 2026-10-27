@@ -131,7 +131,7 @@ export const EmptyInteraction: Story = {
   },
 }
 
-/** Several chosen, required with an error, read-only next to disabled. */
+/** Several chosen, required with an error, read only (the read-only look, an empty value "—"). */
 export const States: Story = {
   render: (args) => (
     <div className="flex max-w-100 flex-col gap-6">
@@ -141,13 +141,6 @@ export const States: Story = {
         {...args}
         label="Labels (read-only)"
         readOnly
-        defaultValue={['urgent', 'vip']}
-      />
-      <MultiSelectField
-        {...args}
-        label="Labels (disabled)"
-        disabled
-        disabledReason="Labels are set by the workflow."
         defaultValue={['urgent', 'vip']}
       />
     </div>

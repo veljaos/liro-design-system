@@ -293,17 +293,26 @@ describe('RuleBuilder', () => {
     expect(html).not.toContain('Add condition')
   })
 
-  it('shows the reason when the rule cannot be changed', () => {
+  it('shows a read-only rule as text, even with onChange', () => {
+    const html = render(
+      <RuleBuilder {...common} value={RULE} onChange={() => undefined} readOnly />,
+    )
+    expect(html).not.toContain('Add action')
+  })
+
+  it('offers the test only once the condition has a field', () => {
     const html = render(
       <RuleBuilder
         {...common}
-        value={RULE}
+        value={{
+          ...RULE,
+          conditions: [{ kind: 'condition', id: 'c9', field: null, operator: null, value: null }],
+        }}
         onChange={() => undefined}
-        disabledReason="Only administrators change rules."
+        layout="desktop"
       />,
     )
-    expect(html).toContain('Only administrators change rules.')
-    expect(html).not.toContain('Add action')
+    expect(html).not.toContain('>Test<')
   })
 
   it('edits: the blocks, the tools named with their item, the problems under their fields', () => {

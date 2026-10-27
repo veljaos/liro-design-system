@@ -10,6 +10,7 @@ import {
 import {
   useCallback,
   useEffect,
+  useId,
   useLayoutEffect,
   useRef,
   useState,
@@ -18,6 +19,7 @@ import {
 } from 'react'
 import { Button, IconButton } from '../components/button'
 import { commandMatches } from '../components/command-logic'
+import { FieldMessage } from '../components/field'
 import type { MentionCandidate } from '../components/mention-combobox'
 import { SEARCHABLE_FROM } from '../components/select-field'
 import { Spinner } from '../components/spinner'
@@ -69,7 +71,9 @@ import {
  *   so the page keeps its one filled button), or Ctrl/Cmd+Enter in the text. `onSend` receives the
  *   mode and the value (JSON, sanitized HTML, mentions, length); a promise keeps the text with a
  *   spinner until it resolves and empties it then; a rejection keeps it. Disabled while the text
- *   is empty, and with a visible reason (`disabled`, `disabledReason`).
+ *   is empty. `unavailableReason` (P5.93): nothing can be written now — the text is read-only (the
+ *   read-only look of every field), the tools and Send are unavailable, and the reason stands
+ *   under the text in words.
  *
  * When not: a chat message or a comment without formatting (MessageComposer); a long document
  * (RichTextField on its own page).
@@ -129,9 +133,11 @@ export interface ReplyComposerProps {
   onSend: (reply: ComposedReply) => void | Promise<void>
   /** The application is sending. */
   sending?: boolean
-  /** Nothing can be written. Give `disabledReason`. */
-  disabled?: boolean
-  disabledReason?: ReactNode
+  /**
+   * Nothing can be written now, and why, from the application: the text is read-only, the tools
+   * and Send are unavailable, and the reason stands under the text.
+   */
+  unavailableReason?: ReactNode
   /** A problem with the message, under the text. */
   error?: ReactNode
   /** Who "@" offers in a note. */
@@ -329,7 +335,8 @@ export function ReplyComposer({ ref: outer, ...props }: ReplyComposerProps) {
   const fileInput = useRef<HTMLInputElement | null>(null)
 
   const sending = busy || props.sending === true
-  const disabled = props.disabled === true
+  const disabled = props.unavailableReason !== undefined && props.unavailableReason !== null
+  const reasonId = `${useId()}-reason`
   const canSend = !disabled && !sending && !isRichTextEmpty(latest.json)
   const label =
     mode === 'note'
@@ -500,10 +507,14 @@ export function ReplyComposer({ ref: outer, ...props }: ReplyComposerProps) {
         {...(note && props.mentionsLoading !== undefined
           ? { mentionsLoading: props.mentionsLoading }
           : {})}
-        {...(disabled ? { disabled: true } : {})}
-        {...(props.disabledReason === undefined ? {} : { disabledReason: props.disabledReason })}
+        {...(disabled ? { readOnly: true, describedBy: reasonId } : {})}
         {...(props.error === undefined ? {} : { error: props.error })}
       />
+      {disabled && (
+        <FieldMessage id={reasonId} tone="hint">
+          {props.unavailableReason}
+        </FieldMessage>
+      )}
       {props.attachments}
       <div className="flex flex-wrap items-center gap-1">
         {props.onAttach !== undefined && (

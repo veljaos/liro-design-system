@@ -1,6 +1,6 @@
 import { RadioGroup as RadioGroupPrimitive } from 'radix-ui'
 import type { ComponentProps } from 'react'
-import { BUTTON_RESET, FOCUS_RING } from './classes'
+import { BUTTON_RESET, FOCUS_RING, READ_ONLY_CHOICE } from './classes'
 import { cn } from './cn'
 
 /**
@@ -27,16 +27,19 @@ export function RadioGroup({
  */
 export function RadioGroupItem({
   className,
+  readOnly,
   ...props
-}: ComponentProps<typeof RadioGroupPrimitive.Item>) {
+}: ComponentProps<typeof RadioGroupPrimitive.Item> & { readOnly?: boolean }) {
   return (
     <RadioGroupPrimitive.Item
       data-slot="radio-group-item"
+      data-readonly={readOnly === true ? '' : undefined}
       className={cn(
         BUTTON_RESET,
         'peer relative inline-flex size-5 shrink-0 cursor-pointer items-center justify-center rounded-full border border-solid border-control bg-surface-raised text-on-accent transition-colors duration-(--liro-duration-fast) ease-standard after:absolute after:-inset-0.5 after:rounded-full',
-        'data-[state=checked]:not-disabled:border-transparent data-[state=checked]:not-disabled:bg-brand-solid',
+        'data-[state=checked]:not-disabled:not-data-readonly:border-transparent data-[state=checked]:not-disabled:not-data-readonly:bg-brand-solid',
         'disabled:cursor-not-allowed disabled:border-default disabled:bg-surface-disabled disabled:text-disabled',
+        READ_ONLY_CHOICE,
         FOCUS_RING,
         className,
       )}

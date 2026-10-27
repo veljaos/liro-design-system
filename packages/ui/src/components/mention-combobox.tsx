@@ -227,7 +227,9 @@ export function MentionCombobox(props: MentionComboboxProps) {
             aria-autocomplete="list"
             aria-controls={listShown ? listId : undefined}
             aria-activedescendant={listShown && active >= 0 ? optionId(listId, active) : undefined}
-            {...(props.placeholder === undefined ? {} : { placeholder: props.placeholder })}
+            {...(props.placeholder === undefined || control.readOnly
+              ? {}
+              : { placeholder: props.placeholder })}
             {...(props.name === undefined ? {} : { name: props.name })}
             {...(props.enterKeyHint === undefined ? {} : { enterKeyHint: props.enterKeyHint })}
             className={cn(
@@ -249,7 +251,7 @@ export function MentionCombobox(props: MentionComboboxProps) {
             }}
           />
         )
-        if (control.disabled) return textarea
+        if (control.readOnly) return textarea
         let listContent: ReactNode = null
         if (options.length > 0) {
           listContent = (

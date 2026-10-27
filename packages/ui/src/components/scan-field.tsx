@@ -1,7 +1,7 @@
 import { Camera, CircleCheck, CircleX, ScanBarcode } from 'lucide-react'
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import { ButtonPrimitive } from '../primitives/button'
-import { INPUT, TEXT_DIRECTION } from '../primitives/classes'
+import { INPUT, READ_ONLY, TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 import { controlAttributes, Field, fieldProps, type FieldBaseProps } from './field'
@@ -28,7 +28,7 @@ export interface ScanFeedback {
   text: string
 }
 
-export interface ScanFieldProps extends Omit<FieldBaseProps, 'readOnly'> {
+export interface ScanFieldProps extends FieldBaseProps {
   /** A code was scanned or typed and Enter pressed. */
   onScan: (code: string, source: 'scanner' | 'keyboard') => void
   /** The application's answer to the last scan; null or absent shows nothing. */
@@ -86,6 +86,8 @@ export function ScanField(props: ScanFieldProps) {
   const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') {
       event.preventDefault()
+      // Read-only (P5.93): nothing is scanned in now.
+      if (props.readOnly === true) return
       const code = text.trim()
       const source =
         scanDecision(times.current, props.scanOptions) === 'scan' ? 'scanner' : 'keyboard'
@@ -114,16 +116,14 @@ export function ScanField(props: ScanFieldProps) {
                 INPUT,
                 'flex items-center gap-2 px-3 focus-within:border-focus',
                 control.invalid && 'border-status-danger-fg',
-                control.disabled && 'cursor-not-allowed border-default bg-surface-disabled',
+                control.readOnly &&
+                  cn(
+                    READ_ONLY,
+                    'has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-focus',
+                  ),
               )}
             >
-              <ScanBarcode
-                aria-hidden="true"
-                className={cn(
-                  'size-4 shrink-0',
-                  control.disabled ? 'text-disabled' : 'text-secondary',
-                )}
-              />
+              <ScanBarcode aria-hidden="true" className="size-4 shrink-0 text-secondary" />
               <input
                 {...controlAttributes(control, messages['field.readOnly'])}
                 ref={input}
@@ -134,21 +134,23 @@ export function ScanField(props: ScanFieldProps) {
                 enterKeyHint="go"
                 inputMode={props.inputMode ?? 'text'}
                 value={text}
-                {...(props.placeholder === undefined ? {} : { placeholder: props.placeholder })}
+                {...(props.placeholder === undefined || control.readOnly
+                  ? {}
+                  : { placeholder: props.placeholder })}
                 onChange={(event) => {
+                  if (control.readOnly) return
                   setText(event.target.value)
                   if (event.target.value === '') times.current = []
                 }}
                 onKeyDown={onKeyDown}
-                className="m-0 h-full min-w-0 flex-1 border-0 bg-transparent p-0 font-sans text-sm text-primary tabular-nums outline-none placeholder:text-tertiary disabled:cursor-not-allowed disabled:text-disabled"
+                className="m-0 h-full min-w-0 flex-1 border-0 bg-transparent p-0 font-sans text-sm text-primary tabular-nums outline-none placeholder:text-tertiary read-only:placeholder:text-secondary"
               />
             </div>
-            {props.onCameraScan !== undefined && (
+            {props.onCameraScan !== undefined && !control.readOnly && (
               <ButtonPrimitive
                 family="neutral"
                 emphasis="secondary"
                 shape="icon"
-                disabled={control.disabled}
                 aria-label={props.cameraLabel ?? messages['scan.camera']}
                 title={props.cameraLabel ?? messages['scan.camera']}
                 onClick={() => {

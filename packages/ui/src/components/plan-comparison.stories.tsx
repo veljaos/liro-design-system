@@ -26,7 +26,7 @@ const meta = {
           'A radio group: on a desktop a table (plans as columns, features as rows, grouped), on ' +
           'a phone one card per plan with its features. The plan in use says “Current plan” in ' +
           'words; the chosen one is the neutral selection (surface.selected, a border.selected ' +
-          'bar), never a colour alone. A plan that cannot be chosen is disabled with its reason. ' +
+          'bar), never a colour alone. A plan that cannot be chosen is unavailable with its reason; `readOnly` shows a choice that cannot be changed here. ' +
           'The plans, prices, features and what each offers are the application’s; the ' +
           'component reports the chosen plan’s id and never prices or recommends.\n\n' +
           '**When to use:** changing a plan, choosing a package before signing up — a choice ' +
@@ -103,13 +103,10 @@ export const Unavailable: Story = {
   },
 }
 
-/** Nothing can be chosen, with the reason under the label. */
-export const Disabled: Story = {
-  args: {
-    defaultValue: 'business',
-    disabled: true,
-    disabledReason: 'Only the account owner can change the plan.',
-  },
+/** The choice cannot be changed here: the radios in the read-only look, the chosen plan shown. */
+export const ReadOnly: Story = {
+  name: 'Read only',
+  args: { defaultValue: 'business', readOnly: true },
 }
 
 /** The application's error under the label. */

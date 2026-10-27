@@ -103,10 +103,11 @@ export interface DefinedField {
   requiredWhen?: DefinedCondition
   /** Shown only while this holds. */
   visibleWhen?: DefinedCondition
-  /** Shown as text that can be copied, not changed (a value the application filled in). */
+  /**
+   * Shown but not changed (a value the application filled in, a field the user may not change):
+   * the read-only look of every field (P5.93; a field has no disabled state).
+   */
   readOnly?: boolean
-  /** The field cannot be used, and why (shown under it). */
-  disabledReason?: string
   /** The options of a select, multiselect or radio group. */
   options?: readonly DefinedOption[]
   /** The currency of an amount ('money'). */
@@ -229,7 +230,7 @@ export function definedFormState(
       const value = values[field.id]
       seen[field.id] = value
       const required = definedFieldRequired(field, seen)
-      const editable = field.readOnly !== true && field.disabledReason === undefined
+      const editable = field.readOnly !== true
       const isMissing = required && editable && !definedValueFilled(value)
       if (isMissing) missing.push(field.id)
       submitted[field.id] = value ?? null

@@ -81,15 +81,9 @@ function numberAttributes(
 }
 
 /** A fixed text beside the typing area: Mantine's input section, at least 34px wide, centred. */
-function Section(props: {
-  children: ReactNode
-  disabled: boolean
-  htmlFor?: string
-  onPress?: () => void
-}) {
+function Section(props: { children: ReactNode; htmlFor?: string; onPress?: () => void }) {
   const className = cn(
-    'flex h-full min-w-[34px] shrink-0 cursor-text items-center justify-center text-sm',
-    props.disabled ? 'cursor-not-allowed text-disabled' : 'text-secondary',
+    'flex h-full min-w-[34px] shrink-0 cursor-text items-center justify-center text-sm text-secondary',
   )
   return props.htmlFor === undefined ? (
     <span
@@ -139,9 +133,11 @@ function NumberBox(props: {
           INPUT,
           'flex items-center px-0 focus-within:border-focus',
           control.invalid && 'border-status-danger-fg focus-within:border-status-danger-fg',
-          control.disabled && 'cursor-not-allowed border-default bg-surface-disabled text-disabled',
           control.readOnly &&
-            'border-transparent bg-transparent focus-within:border-transparent has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-focus',
+            cn(
+              READ_ONLY,
+              'focus-within:border-default has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-focus',
+            ),
         )}
       >
         {props.before}
@@ -149,11 +145,11 @@ function NumberBox(props: {
           {...attributes}
           {...numberAttributes(props.entry, props.field, control.readOnly)}
           className={cn(
-            'm-0 h-full min-w-0 flex-1 border-0 bg-transparent py-0 font-sans text-sm text-inherit tabular-nums outline-none placeholder:text-tertiary disabled:cursor-not-allowed',
+            'm-0 h-full min-w-0 flex-1 border-0 bg-transparent py-0 font-sans text-sm text-inherit tabular-nums outline-none placeholder:text-tertiary',
             rtl && 'text-end',
             left ? 'ps-0' : 'ps-3',
             right ? 'pe-0' : 'pe-3',
-            control.readOnly && 'cursor-text',
+            control.readOnly && 'cursor-text placeholder:text-secondary',
           )}
         />
         {props.after}
@@ -166,11 +162,10 @@ function NumberBox(props: {
 }
 
 /** The `startText` section, which puts the caret in the field when pressed. */
-function startSection(text: string | undefined, control: { id: string; disabled: boolean }) {
+function startSection(text: string | undefined, control: { id: string }) {
   if (text === undefined) return null
   return (
     <Section
-      disabled={control.disabled}
       onPress={() => {
         document.getElementById(control.id)?.focus()
       }}
@@ -232,11 +227,7 @@ export function MoneyField(props: MoneyFieldProps) {
       {(control) => {
         // The currency is a second label of the input: a press on it puts the caret in the
         // amount, and the input's name includes it ("Amount EUR").
-        const currency = (
-          <Section disabled={control.disabled} htmlFor={control.id}>
-            {props.currency}
-          </Section>
-        )
+        const currency = <Section htmlFor={control.id}>{props.currency}</Section>
         const start = startSection(props.startText, control)
         return (
           <NumberBox

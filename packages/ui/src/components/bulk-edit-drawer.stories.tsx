@@ -74,19 +74,6 @@ function BulkEdit({
         : { valueText: GROUPS.find((each) => each.value === group)?.label ?? '' }),
     },
     {
-      id: 'agent',
-      label: 'Sales agent',
-      editor: (
-        <SelectField
-          label="Sales agent"
-          hideLabel
-          options={[{ value: 'dragan', label: 'Dragan Ilić' }]}
-          disabled
-          disabledReason="Only an administrator changes the sales agent."
-        />
-      ),
-    },
-    {
       id: 'note',
       label: 'Note on documents',
       editor: <TextField label="Note on documents" hideLabel value={note} onChange={setNote} />,
@@ -203,14 +190,14 @@ export const DefaultInteraction: Story = {
 }
 
 /**
- * Two fields ticked; the sales agent's field is disabled with the application's reason (only an
- * administrator changes it).
+ * Two fields ticked. A field the user may not change in bulk is not offered at all (P5.93: the
+ * drawer shows only what can be set).
  */
 export const SeveralFields: Story = {
-  name: 'Several fields, one disabled with a reason',
+  name: 'Several fields',
   render: () => (
     <ExampleProvider>
-      <BulkEdit changing={['term', 'agent', 'note']} />
+      <BulkEdit changing={['term', 'note']} />
     </ExampleProvider>
   ),
 }

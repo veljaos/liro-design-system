@@ -238,18 +238,14 @@ export const Sending: Story = {
   },
 }
 
-/** Disabled, with its reason. */
-export const DisabledWithReason: Story = {
-  name: 'Disabled with reason',
+/** Nothing can be written (P5.93): the text read-only, the tools and Send unavailable, why in words. */
+export const UnavailableWithReason: Story = {
+  name: 'Unavailable with reason',
   render: () => (
-    <Composer
-      disabled
-      disabledReason="The request is closed. Reopen it to reply."
-      defaultValue={DRAFT}
-    />
+    <Composer unavailableReason="The request is closed. Reopen it to reply." defaultValue={DRAFT} />
   ),
   play: async ({ canvasElement }) => {
-    await editorReady(canvasElement)
+    await settle()
     const canvas = within(canvasElement)
     await expect(canvas.getByText('The request is closed. Reopen it to reply.')).toBeVisible()
     await expect(canvas.getByRole('button', { name: 'Send' })).toBeDisabled()

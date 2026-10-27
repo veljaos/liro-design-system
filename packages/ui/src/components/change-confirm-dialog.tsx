@@ -177,7 +177,8 @@ function Line({ change }: { change: ChangeLine }) {
 export function NotifyChoices(props: {
   options: readonly NotifyOption[]
   checked: readonly string[]
-  disabled?: boolean
+  /** While the action runs: the choices are read-only. */
+  readOnly?: boolean
   onChange: (checked: string[]) => void
   className?: string
 }) {
@@ -195,7 +196,7 @@ export function NotifyChoices(props: {
           label={option.label}
           {...(option.description === undefined ? {} : { description: option.description })}
           checked={props.checked.includes(option.id)}
-          disabled={props.disabled === true}
+          readOnly={props.readOnly === true}
           onChange={(on) => {
             props.onChange(toggleNotify(props.options, props.checked, option.id, on))
           }}
@@ -302,7 +303,7 @@ function ChangeForm(
       <NotifyChoices
         options={options}
         checked={checked}
-        disabled={props.working}
+        readOnly={props.working}
         onChange={setChecked}
       />
       <DialogFooter>

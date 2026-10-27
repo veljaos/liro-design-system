@@ -97,7 +97,7 @@ export const CurrencyPosition: Story = {
   ),
 }
 
-/** Empty, required, error, read-only next to disabled, negative. */
+/** Empty, required, error, read only (the read-only look, an empty value "—"), negative. */
 export const States: Story = {
   render: () => (
     <div className="flex max-w-100 flex-col gap-6">
@@ -110,13 +110,6 @@ export const States: Story = {
         error="The advance cannot exceed the invoice total."
       />
       <MoneyField label="Total (read-only)" currency="EUR" readOnly defaultValue="12345.6" />
-      <MoneyField
-        label="Total (disabled)"
-        currency="EUR"
-        disabled
-        disabledReason="Totals are computed by the server."
-        defaultValue="12345.6"
-      />
       <MoneyField label="Credit" currency="RSD" defaultValue="-42" />
     </div>
   ),
@@ -150,13 +143,6 @@ export const Arabic: Story = {
       />
       <MoneyField label={ARABIC.label} currency="EUR" required error={ARABIC.error} />
       <MoneyField label={ARABIC.label} currency="EUR" readOnly defaultValue="1234.5" />
-      <MoneyField
-        label={ARABIC.label}
-        currency="EUR"
-        disabled
-        disabledReason={ARABIC.reason}
-        defaultValue="7"
-      />
     </RightToLeft>
   ),
 }
@@ -174,14 +160,6 @@ export const Japanese: Story = {
       />
       <MoneyField label={JAPANESE.label} currency="JPY" required error={JAPANESE.error} />
       <MoneyField label={JAPANESE.label} currency="JPY" readOnly defaultValue="1234" decimals={0} />
-      <MoneyField
-        label={JAPANESE.label}
-        currency="JPY"
-        disabled
-        disabledReason={JAPANESE.reason}
-        defaultValue="7"
-        decimals={0}
-      />
     </div>
   ),
 }

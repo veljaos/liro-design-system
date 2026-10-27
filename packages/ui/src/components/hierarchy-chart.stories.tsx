@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { useState } from 'react'
+import { Plus } from 'lucide-react'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { settle } from '../primitives/story-helpers'
 import { PrintPage } from '../templates/print-page'
@@ -139,9 +140,19 @@ export const Failed: Story = {
   args: { error: 'The organisation could not be loaded.', onRetry: () => undefined },
 }
 
-/** No nodes: the application's words. */
+/** No nodes (P5.93): an EmptyState with the application's words and first step; no tools. */
 export const Empty: Story = {
-  args: { nodes: [], empty: 'No positions yet. Add the first one in Positions.' },
+  args: {
+    nodes: [],
+    empty: 'No positions yet: the chart is drawn from them.',
+    emptyAction: { label: 'Add the first position', icon: Plus, onClick: () => undefined },
+  },
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('button', { name: 'Add the first position' })).toBeVisible()
+    await expect(canvas.queryByRole('searchbox')).toBeNull()
+  },
 }
 
 /** Long names and positions wrap inside their boxes. */

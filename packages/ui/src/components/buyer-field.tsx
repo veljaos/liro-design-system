@@ -22,7 +22,8 @@ import { TextField } from './text-field'
  * - The type is a SelectField, or a searchable ComboboxField when there are more than ten kinds
  *   (P5.28 item 3).
  * - The optional field appears when the application gives its kinds (`optionalTypes`).
- * - Read-only shows the chosen values as text; disabled with the application's reason.
+ * - Read-only shows the chosen values in the read-only look of every field, without hints (P5.93:
+ *   there is no disabled state).
  */
 
 /** A kind of ID, from the application. */
@@ -59,9 +60,8 @@ export interface BuyerFieldProps {
   required?: boolean
   /** The application's checks, under each part. */
   errors?: { type?: string; id?: string; optional?: string }
+  /** The buyer is shown but cannot be changed: every part read-only, no hints (P5.93). */
   readOnly?: boolean
-  disabled?: boolean
-  disabledReason?: string
   /** Defaults: `messages['buyer.type']`, `['buyer.id']`, `['buyer.optionalType']`, `['buyer.optional']`. */
   typeLabel?: string
   idLabel?: string
@@ -87,10 +87,8 @@ export function BuyerField(props: BuyerFieldProps) {
   }
   const chosen = props.types.find((each) => each.value === value.typeId)
   const optionalChosen = props.optionalTypes?.find((each) => each.value === value.optionalTypeId)
-  const common = {
-    ...(props.readOnly === true ? { readOnly: true } : {}),
-    ...(props.disabled === true ? { disabled: true } : {}),
-  }
+  const readOnly = props.readOnly === true
+  const common = readOnly ? { readOnly: true } : {}
 
   const typeField = (
     kinds: readonly BuyerIdType[],
@@ -139,14 +137,9 @@ export function BuyerField(props: BuyerFieldProps) {
           {props.required === true && <RequiredMark />}
         </span>
       </legend>
-      {props.description !== undefined && (
+      {props.description !== undefined && !readOnly && (
         <p className={cn('m-0 -mt-2 text-xs text-secondary', TEXT_DIRECTION)}>
           {props.description}
-        </p>
-      )}
-      {props.disabled === true && props.disabledReason !== undefined && (
-        <p className={cn('m-0 -mt-2 text-xs text-secondary', TEXT_DIRECTION)}>
-          {props.disabledReason}
         </p>
       )}
       <FormGrid columns={2}>

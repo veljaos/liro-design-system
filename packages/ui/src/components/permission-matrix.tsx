@@ -12,6 +12,7 @@ import {
   type PermissionValue,
 } from './admin-logic'
 import { CheckboxField } from './checkbox-field'
+import { FieldMessage } from './field'
 import { Tooltip } from './popover'
 import { usePhone } from './use-phone'
 
@@ -132,19 +133,33 @@ export function PermissionMatrix(props: PermissionMatrixProps) {
                 return <ReadOnlyValue key={action.id} allowed={allowed} label={action.label} />
               }
               const reason = props.unavailable?.(area.id, action.id)
+              if (reason === undefined) {
+                return (
+                  <CheckboxField
+                    key={action.id}
+                    label={action.label}
+                    checked={allowed}
+                    onChange={(next) => {
+                      change(area.id, action.id, next)
+                    }}
+                  />
+                )
+              }
+              // A cell that cannot be given (P5.93): read-only, and the matrix's own reason under
+              // it, as the desktop cell's tooltip says it.
+              const reasonId = `${baseId}-${area.id}-${action.id}-reason`
               return (
-                <CheckboxField
-                  key={action.id}
-                  label={action.label}
-                  checked={allowed}
-                  {...(reason === undefined
-                    ? {
-                        onChange: (next: boolean) => {
-                          change(area.id, action.id, next)
-                        },
-                      }
-                    : { disabled: true, disabledReason: reason })}
-                />
+                <div key={action.id} className="flex flex-col gap-1">
+                  <CheckboxField
+                    label={action.label}
+                    checked={allowed}
+                    readOnly
+                    describedBy={reasonId}
+                  />
+                  <FieldMessage id={reasonId} tone="hint" className="ps-8">
+                    {reason}
+                  </FieldMessage>
+                </div>
               )
             })}
           </fieldset>

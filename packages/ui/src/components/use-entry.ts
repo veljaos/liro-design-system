@@ -7,6 +7,7 @@ import {
   type KeyboardEvent,
   type ReactNode,
 } from 'react'
+import { READ_ONLY_EMPTY } from './field'
 
 /*
  * Typed entry for the number, money and date fields (BUILD-PLAN P2.3): the user types freely, and
@@ -141,7 +142,12 @@ export function entryAttributes(
     type: 'text',
     autoComplete: 'off',
     value: entry.text,
-    ...(props.placeholder === undefined ? {} : { placeholder: props.placeholder }),
+    // Read-only: "—" for an empty value, never the application's placeholder (P5.93 item 1).
+    ...(readOnly
+      ? { placeholder: READ_ONLY_EMPTY }
+      : props.placeholder === undefined
+        ? {}
+        : { placeholder: props.placeholder }),
     onChange: (event: { target: { value: string } }) => {
       if (!readOnly) entry.setText(event.target.value)
     },

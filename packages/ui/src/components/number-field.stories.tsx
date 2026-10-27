@@ -129,7 +129,7 @@ export const ReadOnEnter: Story = {
   },
 }
 
-/** Empty, required, the application's error, read-only next to disabled, and decimals. */
+/** Empty, required, the application's error, read only (the read-only look, an empty value "—"), and decimals. */
 export const States: Story = {
   render: () => (
     <div className="flex max-w-100 flex-col gap-6">
@@ -137,12 +137,6 @@ export const States: Story = {
       <NumberField label="Quantity" required defaultValue="12" />
       <NumberField label="Discount %" defaultValue="120" error="A discount cannot exceed 100%." />
       <NumberField label="Rate (read-only)" readOnly defaultValue="0.0725" decimals={2} />
-      <NumberField
-        label="Rate (disabled)"
-        disabled
-        disabledReason="The period is closed."
-        defaultValue="0.0725"
-      />
       <NumberField label="Exchange rate, 6 decimals" defaultValue="117.2" decimals={6} />
       <NumberField
         label="More digits than decimals: all shown"
@@ -225,7 +219,6 @@ export const Arabic: Story = {
       />
       <NumberField label={ARABIC.label} required error={ARABIC.error} />
       <NumberField label={ARABIC.label} readOnly defaultValue="1234.5" />
-      <NumberField label={ARABIC.label} disabled disabledReason={ARABIC.reason} defaultValue="7" />
     </RightToLeft>
   ),
 }
@@ -241,12 +234,6 @@ export const Japanese: Story = {
       />
       <NumberField label={JAPANESE.label} required error={JAPANESE.error} />
       <NumberField label={JAPANESE.label} readOnly defaultValue="1234.5" />
-      <NumberField
-        label={JAPANESE.label}
-        disabled
-        disabledReason={JAPANESE.reason}
-        defaultValue="7"
-      />
     </div>
   ),
 }

@@ -62,7 +62,7 @@ const meta = {
       description: {
         component:
           '**What for:** one choice from a list the application already has, optionally in ' +
-          'groups. Read-only shows the chosen label as text. From 11 options the list is ' +
+          'groups. Read only shows the chosen label in the read-only look. From 11 options the list is ' +
           'searched by typing (`searchable`, P5.28): a text box with the chevron; a press shows ' +
           'every option, typing filters them. The list never runs off the screen: it keeps 8px ' +
           'inside it and a long option wraps; it scrolls with the finger, without scroll buttons.\n\n' +
@@ -96,7 +96,7 @@ export const Default: Story = {
   },
 }
 
-/** Empty, required with an error, read-only next to disabled. */
+/** Empty, required with an error, read only (the read-only look, an empty value "—"). */
 export const States: Story = {
   render: () => (
     <div className="flex max-w-100 flex-col gap-6">
@@ -109,13 +109,6 @@ export const States: Story = {
         error="Choose the currency of the invoice"
       />
       <SelectField label="Currency (read-only)" options={CURRENCIES} readOnly defaultValue="eur" />
-      <SelectField
-        label="Currency (disabled)"
-        options={CURRENCIES}
-        disabled
-        disabledReason="The document has lines; remove them to change the currency."
-        defaultValue="eur"
-      />
     </div>
   ),
 }
