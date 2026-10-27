@@ -5,16 +5,19 @@ import { createFormat } from '../provider/format'
 import { RuleBuilder, ruleValueText } from './rule-builder'
 import {
   addRuleAction,
+  addRuleBranch,
   addRuleCondition,
   addRuleGroup,
+  addRuleOtherwise,
   emptyRuleDraft,
   findRuleCondition,
   focusAfterRemove,
-  moveFocusTarget,
   moveRuleItem,
+  moveRuleItemTo,
   nextRuleId,
   operatorsFor,
   removeRuleItem,
+  RULE_OTHERWISE,
   ruleConditionCount,
   rulePlace,
   ruleProblemKey,
@@ -81,48 +84,87 @@ const ACTIONS: RuleActionType[] = [
   { id: 'tag', label: 'Add a tag', params: [{ id: 'tag', label: 'Tag', kind: 'text' }] },
 ]
 
-/** A rule: amount over 500, and a group (kind is goods, or lines more than 3); notify Ana. */
+/**
+ * A rule: if amount over 500 and a group (kind is goods, or lines more than 3), notify Ana and
+ * tag it; else if the due date is empty, tag it "No due date"; else nothing.
+ */
 const RULE: RuleDraft = {
   trigger: 'posted',
-  join: 'all',
-  conditions: [
-    { kind: 'condition', id: 'c1', field: 'amount', operator: 'gt', value: '500' },
+  branches: [
     {
-      kind: 'group',
-      id: 'g1',
-      join: 'any',
-      items: [
-        { kind: 'condition', id: 'c2', field: 'kind', operator: 'eq', value: 'goods' },
-        { kind: 'condition', id: 'c3', field: 'count', operator: 'gt', value: '3' },
+      id: 'b1',
+      join: 'all',
+      conditions: [
+        { kind: 'condition', id: 'c1', field: 'amount', operator: 'gt', value: '500' },
+        {
+          kind: 'group',
+          id: 'g1',
+          join: 'any',
+          items: [
+            { kind: 'condition', id: 'c2', field: 'kind', operator: 'eq', value: 'goods' },
+            { kind: 'condition', id: 'c3', field: 'count', operator: 'gt', value: '3' },
+          ],
+        },
+      ],
+      actions: [
+        { id: 'a1', type: 'notify', params: { who: 'ana', note: null } },
+        { id: 'a2', type: 'tag', params: { tag: 'Large' } },
       ],
     },
+    {
+      id: 'b2',
+      join: 'all',
+      conditions: [{ kind: 'condition', id: 'c4', field: 'due', operator: 'empty', value: null }],
+      actions: [{ id: 'a3', type: 'tag', params: { tag: 'No due date' } }],
+    },
   ],
-  actions: [
-    { id: 'a1', type: 'notify', params: { who: 'ana', note: null } },
-    { id: 'a2', type: 'tag', params: { tag: 'Large' } },
-  ],
+  otherwise: null,
+}
+
+/** The first branch ("If") of a draft. */
+function first(draft: RuleDraft) {
+  const branch = draft.branches[0]
+  if (branch === undefined) throw new Error('no branch')
+  return branch
 }
 
 describe('rule ids and places', () => {
-  it('makes new ids above the highest of their prefix', () => {
-    expect(nextRuleId(RULE, 'c')).toBe('c4')
+  it('makes new ids above the highest of their prefix, in every branch', () => {
+    expect(nextRuleId(RULE, 'c')).toBe('c5')
     expect(nextRuleId(RULE, 'g')).toBe('g2')
-    expect(nextRuleId(RULE, 'a')).toBe('a3')
+    expect(nextRuleId(RULE, 'a')).toBe('a4')
+    expect(nextRuleId(RULE, 'b')).toBe('b3')
     expect(nextRuleId(emptyRuleDraft(), 'c')).toBe('c1')
+    expect(emptyRuleDraft()).toEqual({
+      trigger: null,
+      branches: [{ id: 'b1', join: 'all', conditions: [], actions: [] }],
+      otherwise: null,
+    })
   })
 
   it('finds where an item stands', () => {
-    expect(rulePlace(RULE, 'c1')).toEqual({ list: 'conditions', index: 0, length: 2 })
-    expect(rulePlace(RULE, 'g1')).toEqual({ list: 'conditions', index: 1, length: 2 })
-    expect(rulePlace(RULE, 'c3')).toEqual({ list: 'group', groupId: 'g1', index: 1, length: 2 })
-    expect(rulePlace(RULE, 'a2')).toEqual({ list: 'actions', index: 1, length: 2 })
+    expect(rulePlace(RULE, 'c1')).toEqual({
+      list: 'conditions',
+      branchId: 'b1',
+      index: 0,
+      length: 2,
+    })
+    expect(rulePlace(RULE, 'c3')).toEqual({
+      list: 'group',
+      branchId: 'b1',
+      groupId: 'g1',
+      index: 1,
+      length: 2,
+    })
+    expect(rulePlace(RULE, 'a3')).toEqual({ list: 'actions', branchId: 'b2', index: 0, length: 1 })
+    expect(rulePlace(RULE, 'b2')).toEqual({ list: 'branches', index: 1, length: 2 })
     expect(rulePlace(RULE, 'x')).toBeUndefined()
-    expect(findRuleCondition(RULE, 'c3')?.value).toBe('3')
+    expect(findRuleCondition(RULE, 'c4')?.field).toBe('due')
     expect(findRuleCondition(RULE, 'g1')).toBeUndefined()
   })
 
-  it('counts the conditions, those in groups included', () => {
-    expect(ruleConditionCount(RULE)).toBe(3)
+  it('counts the conditions of every branch, those in groups included', () => {
+    expect(ruleConditionCount(RULE)).toBe(4)
     expect(ruleConditionCount(emptyRuleDraft())).toBe(0)
   })
 
@@ -132,69 +174,105 @@ describe('rule ids and places', () => {
 })
 
 describe('adding, moving and removing', () => {
-  it('adds a condition to the rule or to a group, and a group with one condition', () => {
+  it('adds a condition to a branch or a group, and a group with one condition', () => {
     const top = addRuleCondition(RULE)
-    expect(top.id).toBe('c4')
-    expect(top.draft.conditions.at(-1)).toEqual({
+    expect(top.id).toBe('c5')
+    expect(first(top.draft).conditions.at(-1)).toEqual({
       kind: 'condition',
-      id: 'c4',
+      id: 'c5',
       field: null,
       operator: null,
       value: null,
     })
-    const inside = addRuleCondition(RULE, 'g1')
-    expect(rulePlace(inside.draft, inside.id)).toEqual({
-      list: 'group',
-      groupId: 'g1',
-      index: 2,
-      length: 3,
+    expect(rulePlace(addRuleCondition(RULE, 'b2').draft, 'c5')).toMatchObject({
+      branchId: 'b2',
+      index: 1,
     })
-    const group = addRuleGroup(RULE)
+    const inside = addRuleCondition(RULE, 'g1')
+    expect(rulePlace(inside.draft, inside.id)).toMatchObject({ list: 'group', index: 2 })
+    const group = addRuleGroup(RULE, 'b2')
     expect(group.id).toBe('g2')
-    expect(group.conditionId).toBe('c4')
-    expect(group.draft.conditions.at(-1)).toMatchObject({ kind: 'group', join: 'any' })
+    expect(group.conditionId).toBe('c5')
+    expect(group.draft.branches[1]?.conditions.at(-1)).toMatchObject({ kind: 'group', join: 'any' })
     const action = addRuleAction(RULE)
-    expect(action.id).toBe('a3')
-    expect(action.draft.actions.at(-1)).toEqual({ id: 'a3', type: null, params: {} })
+    expect(action.id).toBe('a4')
+    expect(first(action.draft).actions.at(-1)).toEqual({ id: 'a4', type: null, params: {} })
   })
 
-  it('moves an item within its own list and never past its ends', () => {
-    expect(moveRuleItem(RULE, 'g1', -1).conditions.map((each) => each.id)).toEqual(['g1', 'c1'])
+  it('adds Else if with one condition, and Else with one action (once)', () => {
+    const branch = addRuleBranch(RULE)
+    expect(branch.id).toBe('b3')
+    expect(branch.draft.branches.at(-1)).toMatchObject({
+      id: 'b3',
+      join: 'all',
+      conditions: [{ id: branch.conditionId }],
+      actions: [],
+    })
+    const otherwise = addRuleOtherwise(RULE)
+    expect(otherwise.draft.otherwise).toEqual([{ id: 'a4', type: null, params: {} }])
+    expect(addRuleOtherwise(otherwise.draft).draft).toBe(otherwise.draft)
+    const more = addRuleAction(otherwise.draft, RULE_OTHERWISE)
+    expect(more.draft.otherwise?.map((each) => each.id)).toEqual(['a4', 'a5'])
+  })
+
+  it('moves an item within its own list, never past its ends; If stays first', () => {
+    expect(first(moveRuleItem(RULE, 'g1', -1)).conditions.map((each) => each.id)).toEqual([
+      'g1',
+      'c1',
+    ])
     expect(moveRuleItem(RULE, 'c1', -1)).toEqual(RULE)
-    const inGroup = moveRuleItem(RULE, 'c3', -1).conditions[1]
+    const inGroup = first(moveRuleItem(RULE, 'c3', -1)).conditions[1]
     expect(inGroup?.kind === 'group' ? inGroup.items.map((each) => each.id) : []).toEqual([
       'c3',
       'c2',
     ])
-    expect(moveRuleItem(RULE, 'a1', 1).actions.map((each) => each.id)).toEqual(['a2', 'a1'])
+    expect(first(moveRuleItem(RULE, 'a1', 1)).actions.map((each) => each.id)).toEqual(['a2', 'a1'])
     expect(moveRuleItem(RULE, 'x', 1)).toBe(RULE)
+    expect(moveRuleItem(RULE, 'b2', -1)).toBe(RULE)
+    const three = addRuleBranch(RULE).draft
+    expect(moveRuleItem(three, 'b3', -1).branches.map((each) => each.id)).toEqual([
+      'b1',
+      'b3',
+      'b2',
+    ])
+    // A drag lands at an index counted without the item.
+    expect(first(moveRuleItemTo(RULE, 'a1', 1)).actions.map((each) => each.id)).toEqual([
+      'a2',
+      'a1',
+    ])
+    const elsewhere = addRuleAction(addRuleOtherwise(RULE).draft, RULE_OTHERWISE).draft
+    expect(moveRuleItemTo(elsewhere, 'a5', 0).otherwise?.map((each) => each.id)).toEqual([
+      'a5',
+      'a4',
+    ])
   })
 
-  it('removes conditions, groups and actions; an emptied group goes with its last condition', () => {
-    expect(removeRuleItem(RULE, 'c1').conditions.map((each) => each.id)).toEqual(['g1'])
-    expect(removeRuleItem(RULE, 'g1').conditions.map((each) => each.id)).toEqual(['c1'])
-    expect(removeRuleItem(RULE, 'a1').actions.map((each) => each.id)).toEqual(['a2'])
+  it('removes items, branches and Else; an emptied group goes with its last condition', () => {
+    expect(first(removeRuleItem(RULE, 'c1')).conditions.map((each) => each.id)).toEqual(['g1'])
+    expect(first(removeRuleItem(RULE, 'g1')).conditions.map((each) => each.id)).toEqual(['c1'])
+    expect(first(removeRuleItem(RULE, 'a1')).actions.map((each) => each.id)).toEqual(['a2'])
     const once = removeRuleItem(RULE, 'c2')
-    expect(ruleConditionCount(once)).toBe(2)
-    expect(removeRuleItem(once, 'c3').conditions.map((each) => each.id)).toEqual(['c1'])
+    expect(ruleConditionCount(once)).toBe(3)
+    expect(first(removeRuleItem(once, 'c3')).conditions.map((each) => each.id)).toEqual(['c1'])
+    expect(removeRuleItem(RULE, 'b2').branches.map((each) => each.id)).toEqual(['b1'])
+    expect(removeRuleItem(RULE, 'b1')).toBe(RULE)
+    expect(removeRuleItem(addRuleOtherwise(RULE).draft, RULE_OTHERWISE).otherwise).toBeNull()
+    const withElse = addRuleOtherwise(RULE).draft
+    expect(removeRuleItem(withElse, 'a4').otherwise).toEqual([])
   })
 
-  it('says where the focus goes after a removal and a move', () => {
+  it('says where the focus goes after a removal', () => {
     expect(focusAfterRemove(0, 3)).toBe(0)
     expect(focusAfterRemove(2, 3)).toBe(1)
     expect(focusAfterRemove(0, 1)).toBeUndefined()
-    // Moving up into first place: Move up is gone, Move down keeps the focus.
-    expect(moveFocusTarget(1, 3, -1)).toBe('down')
-    expect(moveFocusTarget(2, 3, -1)).toBe('up')
-    expect(moveFocusTarget(1, 3, 1)).toBe('up')
-    expect(moveFocusTarget(0, 3, 1)).toBe('down')
   })
 })
 
 describe('editing conditions and actions', () => {
-  it('sets the joins', () => {
-    expect(setRuleJoin(RULE, 'any').join).toBe('any')
-    expect(setRuleJoin(RULE, 'all', 'g1').conditions[1]).toMatchObject({ join: 'all' })
+  it('sets the joins of a branch and of a group', () => {
+    expect(first(setRuleJoin(RULE, 'any')).join).toBe('any')
+    expect(setRuleJoin(RULE, 'any', 'b2').branches[1]?.join).toBe('any')
+    expect(first(setRuleJoin(RULE, 'all', 'g1')).conditions[1]).toMatchObject({ join: 'all' })
   })
 
   it('keeps a test and a value only where the new field allows them', () => {
@@ -218,7 +296,7 @@ describe('editing conditions and actions', () => {
       operator: null,
       value: null,
     })
-    expect(findRuleCondition(setConditionField(RULE, 'c1', null, FIELDS), 'c1')).toMatchObject({
+    expect(findRuleCondition(setConditionField(RULE, 'c4', null, FIELDS), 'c4')).toMatchObject({
       field: null,
       operator: null,
       value: null,
@@ -235,19 +313,21 @@ describe('editing conditions and actions', () => {
     expect(findRuleCondition(setConditionValue(RULE, 'c3', '10'), 'c3')?.value).toBe('10')
   })
 
-  it('starts another kind of action with no parameters', () => {
-    expect(setRuleActionType(RULE, 'a1', 'tag').actions[0]).toEqual({
+  it('starts another kind of action with no parameters, in any branch and in Else', () => {
+    expect(first(setRuleActionType(RULE, 'a1', 'tag')).actions[0]).toEqual({
       id: 'a1',
       type: 'tag',
       params: {},
     })
-    expect(setRuleActionType(RULE, 'a1', 'notify').actions[0]?.params).toEqual({
+    expect(first(setRuleActionType(RULE, 'a1', 'notify')).actions[0]?.params).toEqual({
       who: 'ana',
       note: null,
     })
-    expect(setRuleActionParam(RULE, 'a2', 'tag', 'Urgent').actions[1]?.params).toEqual({
-      tag: 'Urgent',
-    })
+    expect(setRuleActionParam(RULE, 'a3', 'tag', 'Urgent').branches[1]?.actions[0]?.params).toEqual(
+      { tag: 'Urgent' },
+    )
+    const withElse = addRuleOtherwise(RULE).draft
+    expect(setRuleActionType(withElse, 'a4', 'tag').otherwise?.[0]?.type).toBe('tag')
   })
 
   it('lists a field’s tests in its order', () => {
@@ -290,7 +370,13 @@ describe('RuleBuilder', () => {
     expect(html).toContain('A bill is posted')
     expect(html).toContain('Any of these')
     expect(html).toContain('Ana Ward')
+    expect(html).toContain('>Else if<')
+    expect(html).toContain('No due date')
     expect(html).not.toContain('Add condition')
+    const withElse = render(
+      <RuleBuilder {...common} value={addRuleOtherwise(RULE).draft} readOnly />,
+    )
+    expect(withElse).toContain('>Else<')
   })
 
   it('shows a read-only rule as text, even with onChange', () => {
@@ -306,13 +392,22 @@ describe('RuleBuilder', () => {
         {...common}
         value={{
           ...RULE,
-          conditions: [{ kind: 'condition', id: 'c9', field: null, operator: null, value: null }],
+          branches: [
+            {
+              ...first(RULE),
+              conditions: [
+                { kind: 'condition', id: 'c9', field: null, operator: null, value: null },
+              ],
+            },
+          ],
         }}
         onChange={() => undefined}
         layout="desktop"
       />,
     )
-    expect(html).not.toContain('>Test<')
+    expect(html).toContain('Condition 1: field')
+    expect(html).toContain('Choose a field')
+    expect(html).not.toContain('Condition 1: test')
   })
 
   it('edits: the blocks, the tools named with their item, the problems under their fields', () => {
@@ -332,12 +427,28 @@ describe('RuleBuilder', () => {
     expect(html).toContain('>When<')
     expect(html).toContain('>If<')
     expect(html).toContain('>Then<')
+    expect(html).toContain('>Else if<')
     expect(html).toContain('Conditions to meet')
     expect(html).toContain('In this group')
-    expect(html).toContain('aria-label="Move down: Condition 1"')
-    expect(html).not.toContain('aria-label="Move up: Condition 1"')
-    expect(html).toContain('aria-label="Remove: Group 1"')
-    expect(html).toContain('aria-label="Move up: Action 2"')
+    // Each pill is named in full; no "Field / Test / Value" labels on the screen.
+    expect(html).toContain('Condition 1: field')
+    expect(html).toContain('Condition 1: test')
+    expect(html).toContain('Condition 1: value')
+    expect(html).toContain('Group 1, condition 2: value')
+    expect(html).toContain('Action 3: action')
+    expect(html).not.toContain('>Field<')
+    // One menu per item, named with it; conditions, groups and actions drag within their list.
+    expect(html).toContain('aria-label="Options: Condition 1"')
+    expect(html).toContain('aria-label="Options: Group 1"')
+    expect(html).toContain('aria-label="Options: Action 2"')
+    expect(html).toContain('aria-label="Options: Else if 1"')
+    expect(html).not.toContain('aria-label="Options: If"')
+    expect(html).toContain('data-drop-zone="b1:conditions"')
+    expect(html).toContain('data-drop-zone="g1:group"')
+    expect(html).toContain('data-drop-zone="b2:actions"')
+    expect(html).toContain('data-drop-item="a1"')
+    expect(html).toContain('Add Else if')
+    expect(html).toContain('Add Else')
     expect(html).toContain('Choose what starts the rule.')
     expect(html).toContain('Enter a number above 0.')
     expect(html).toContain('Two actions notify the same person.')

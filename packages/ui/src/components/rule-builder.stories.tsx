@@ -7,6 +7,7 @@ import { RuleBuilder, ruleValueText, type RuleBuilderProps } from './rule-builde
 import {
   emptyRuleDraft,
   ruleProblemKey,
+  type RuleAction,
   type RuleActionType,
   type RuleCondition,
   type RuleDraft,
@@ -80,23 +81,37 @@ const ACTIONS: RuleActionType[] = [
 
 const RULE: RuleDraft = {
   trigger: 'bill-posted',
-  join: 'all',
-  conditions: [
-    { kind: 'condition', id: 'c1', field: 'amount', operator: 'gt', value: '5000' },
+  branches: [
     {
-      kind: 'group',
-      id: 'g1',
-      join: 'any',
-      items: [
-        { kind: 'condition', id: 'c2', field: 'supplier', operator: 'eq', value: 'harbour' },
-        { kind: 'condition', id: 'c3', field: 'lines', operator: 'gt', value: '20' },
+      id: 'b1',
+      join: 'all',
+      conditions: [
+        { kind: 'condition', id: 'c1', field: 'amount', operator: 'gt', value: '5000' },
+        {
+          kind: 'group',
+          id: 'g1',
+          join: 'any',
+          items: [
+            { kind: 'condition', id: 'c2', field: 'supplier', operator: 'eq', value: 'harbour' },
+            { kind: 'condition', id: 'c3', field: 'lines', operator: 'gt', value: '20' },
+          ],
+        },
+      ],
+      actions: [
+        { id: 'a1', type: 'notify', params: { who: 'ana', message: 'A large bill was posted.' } },
+        { id: 'a2', type: 'hold', params: { until: '2026-10-30' } },
       ],
     },
+    {
+      id: 'b2',
+      join: 'all',
+      conditions: [
+        { kind: 'condition', id: 'c4', field: 'supplier', operator: 'eq', value: 'office' },
+      ],
+      actions: [{ id: 'a3', type: 'assign', params: { who: 'tom' } }],
+    },
   ],
-  actions: [
-    { id: 'a1', type: 'notify', params: { who: 'ana', message: 'A large bill was posted.' } },
-    { id: 'a2', type: 'hold', params: { until: '2026-10-30' } },
-  ],
+  otherwise: [{ id: 'a4', type: 'assign', params: { who: 'ana' } }],
 }
 
 /** The application's sentence for a rule (here the story plays the application). */
@@ -113,22 +128,30 @@ function useStorySummary(draft: RuleDraft): string {
         : ` ${ruleValueText(format, field.kind, item.value, field.options, field.currency)}`
     return `${field.label.toLowerCase()} ${operator.label}${value}`
   }
-  const parts = draft.conditions.map((item) =>
-    item.kind === 'condition'
-      ? condition(item)
-      : `(${item.items.map(condition).join(item.join === 'all' ? ' and ' : ' or ')})`,
-  )
-  const actions = draft.actions.map((action) => {
-    const type = ACTIONS.find((each) => each.id === action.type)
-    if (type === undefined) return '…'
-    const who = PEOPLE.find((each) => each.value === action.params.who)?.label
-    return who === undefined ? type.label.toLowerCase() : `${type.label.toLowerCase()}: ${who}`
+  const actions = (list: readonly RuleAction[]) => {
+    if (list.length === 0) return 'do nothing yet'
+    return list
+      .map((action) => {
+        const type = ACTIONS.find((each) => each.id === action.type)
+        if (type === undefined) return '…'
+        const who = PEOPLE.find((each) => each.value === action.params.who)?.label
+        return who === undefined ? type.label.toLowerCase() : `${type.label.toLowerCase()}: ${who}`
+      })
+      .join(', then ')
+  }
+  const branches = draft.branches.map((branch, index) => {
+    const parts = branch.conditions.map((item) =>
+      item.kind === 'condition'
+        ? condition(item)
+        : `(${item.items.map(condition).join(item.join === 'all' ? ' and ' : ' or ')})`,
+    )
+    const test =
+      parts.length === 0 ? 'always' : parts.join(branch.join === 'all' ? ' and ' : ' or ')
+    return `${index === 0 ? 'if' : 'else if'} ${test}, ${actions(branch.actions)}`
   })
   const when = trigger === undefined ? 'When …' : `When ${trigger.label.toLowerCase()}`
-  const ifPart =
-    parts.length === 0 ? '' : `, if ${parts.join(draft.join === 'all' ? ' and ' : ' or ')}`
-  const then = actions.length === 0 ? ', do nothing yet' : `, ${actions.join(', then ')}`
-  return `${when}${ifPart}${then}.`
+  const otherwise = draft.otherwise === null ? '' : `; else ${actions(draft.otherwise)}`
+  return `${when}, ${branches.join('; ')}${otherwise}.`
 }
 
 /** The builder with the rule kept as the application keeps it. */
@@ -156,14 +179,19 @@ const meta = {
     docs: {
       description: {
         component:
-          '**What for:** an automation rule as three blocks — **When** (what starts it), **If** ' +
-          '(conditions joined by "All of these" or "Any of these", groups one level deep) and ' +
-          '**Then** (the actions in order, each with its parameters). The triggers, the fields a ' +
-          'condition tests, the tests, the values’ kinds and the actions are the application’s ' +
-          'data; the builder reports the edited rule and never evaluates it. The application ' +
-          'checks it (`problems`, shown under their fields) and writes it in words (`summary`). ' +
-          'Every item is added, moved (Move up / Move down) and removed with buttons; the focus ' +
-          'follows. Read-only and disabled show the rule as text.\n\n' +
+          '**What for:** an automation rule as blocks (P5.93, like Zapier or Make) — **When** ' +
+          '(what starts it), **If** (each condition a sentence of pills: [Number of lines] [is ' +
+          'more than] [20]; joined by "All of these" or "Any of these", groups one level deep) ' +
+          'with its **Then** (the actions in order), further **Else if** blocks each with its ' +
+          'own Then, and **Else**. "In words" stays at the top (`summary`, the application’s). ' +
+          'No "Field / Test / Value" labels on the screen: each pill is named in full for ' +
+          'assistive technology ("Condition 2: field"). The triggers, fields, tests, values’ ' +
+          'kinds and actions are the application’s data; the builder reports the edited rule ' +
+          '(`RuleDraft`: `branches` and `otherwise`) and never evaluates it; the application’s ' +
+          '`problems` stand under their pills. Each item has its menu (Move up, Move down, ' +
+          'Remove); conditions and actions are also reordered by dragging their row (announced). ' +
+          'The focus follows. Read-only shows the rule as text. Phones: the blocks stacked, the ' +
+          'pills wrapping.\n\n' +
           '**When to use:** "When X happens, if Y, do Z" — notifications, assignments, holds. ' +
           '**When not:** filtering a list (FilterBar); a process with steps and branches ' +
           '(Diagram); a single on/off setting (SettingsPage).',
@@ -192,12 +220,14 @@ export const Default: Story = {
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('status')).toHaveTextContent(
+    await expect(canvas.getAllByRole('status')[0]).toHaveTextContent(
       'When a bill is posted, if amount is more than',
     )
     await expect(canvas.getByRole('group', { name: 'Group 1' })).toBeVisible()
-    await expect(canvas.getByRole('button', { name: 'Move down: Condition 1' })).toBeVisible()
-    await expect(canvas.queryByRole('button', { name: 'Move up: Condition 1' })).toBeNull()
+    await expect(canvas.getByRole('combobox', { name: 'Condition 1: field' })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Options: Condition 1' })).toBeVisible()
+    await expect(canvas.getByRole('group', { name: 'Else if 1' })).toBeVisible()
+    await expect(canvas.getByRole('group', { name: 'Else' })).toBeVisible()
   },
 }
 
@@ -213,11 +243,18 @@ export const Problems: Story = {
   args: {
     initial: {
       ...RULE,
-      conditions: [
-        { kind: 'condition', id: 'c1', field: 'amount', operator: 'gt', value: null },
-        ...RULE.conditions.slice(1),
+      branches: [
+        {
+          id: 'b1',
+          join: 'all',
+          conditions: [
+            { kind: 'condition', id: 'c1', field: 'amount', operator: 'gt', value: null },
+            ...(RULE.branches[0]?.conditions.slice(1) ?? []),
+          ],
+          actions: [{ id: 'a1', type: 'notify', params: { who: null, message: null } }],
+        },
       ],
-      actions: [{ id: 'a1', type: 'notify', params: { who: null, message: null } }],
+      otherwise: null,
     },
     problems: {
       [ruleProblemKey('c1', 'value')]: 'Enter the amount.',
@@ -245,6 +282,7 @@ export const Loading: Story = {
 
 /** Long names wrap. */
 export const LongText: Story = {
+  tags: ['!dev'],
   name: 'Long text',
   args: {
     triggers: [
@@ -262,7 +300,7 @@ export const LongText: Story = {
   },
 }
 
-/** Phone width: every field on its own line. */
+/** Phone width: the blocks stacked, the pills wrapping. */
 export const Phone: Story = {
   args: { layout: 'phone' },
   decorators: [
@@ -279,55 +317,85 @@ export const Phone: Story = {
 }
 
 /**
- * From the keyboard: add a condition (the focus goes to its field), choose the field, the test
- * and the value; move it up (the focus stays on its button), remove it (the focus goes to the
- * item in its place).
+ * From the keyboard: add a condition (the focus goes to its field pill), choose the field and the
+ * test (no value for "is empty"); move it up by its menu (the focus comes back to the menu),
+ * remove it (the focus goes to the item in its place); add an action, an Else if and an Else.
  */
 export const Keyboard: Story = {
   name: 'Add, move and remove, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
     const body = within(document.body)
-    await userEvent.click(canvas.getByRole('button', { name: 'Add condition' }))
-    const added = canvas.getByRole('group', { name: 'Condition 2' })
-    const field = within(added).getByRole('combobox', { name: 'Field' })
+    const ifBlock = canvas.getByRole('group', { name: 'If' })
+    await userEvent.click(within(ifBlock).getByRole('button', { name: 'Add condition' }))
+    const field = canvas.getByRole('combobox', { name: 'Condition 2: field' })
     await waitFor(async () => {
       await expect(field).toHaveFocus()
     })
     await userEvent.click(field)
     await userEvent.click(await body.findByRole('option', { name: 'Due date' }))
-    await userEvent.click(await within(added).findByRole('combobox', { name: 'Test' }))
+    await userEvent.click(await canvas.findByRole('combobox', { name: 'Condition 2: test' }))
     await userEvent.click(await body.findByRole('option', { name: 'is empty' }))
-    await expect(within(added).queryByLabelText('Value')).toBeNull()
-    await expect(await canvas.findByRole('status')).toHaveTextContent('due date is empty')
-    // Up one place, before the group: the focus stays on Move up.
-    await userEvent.click(
-      await within(added).findByRole('button', { name: 'Move up: Condition 2' }),
-    )
+    await expect(canvas.queryByLabelText('Condition 2: value')).toBeNull()
+    await expect(canvas.getAllByRole('status')[0]).toHaveTextContent('due date is empty')
+    // Up one place, before the group, by the menu: announced, the focus back on the menu.
+    await userEvent.click(canvas.getByRole('button', { name: 'Options: Condition 2' }))
+    await userEvent.click(await body.findByRole('menuitem', { name: 'Move up: Condition 2' }))
     await waitFor(async () => {
-      await expect(canvas.getByRole('button', { name: 'Move up: Condition 2' })).toHaveFocus()
+      await expect(canvas.getByRole('button', { name: 'Options: Condition 2' })).toHaveFocus()
     })
+    await expect(canvas.getByText('Condition 2 moved, position 2 of 3')).toBeInTheDocument()
     // Removed: the group, now in its place, takes the focus.
-    await userEvent.click(canvas.getByRole('button', { name: 'Remove: Condition 2' }))
+    await userEvent.click(canvas.getByRole('button', { name: 'Options: Condition 2' }))
+    await userEvent.click(await body.findByRole('menuitem', { name: 'Remove: Condition 2' }))
     await waitFor(async () => {
-      await expect(canvas.getByRole('combobox', { name: 'In this group' })).toHaveFocus()
+      await expect(canvas.getByRole('button', { name: 'Options: Group 1' })).toHaveFocus()
     })
-    await expect(canvas.queryByRole('group', { name: 'Condition 2' })).toBeNull()
-    await userEvent.click(canvas.getByRole('button', { name: 'Add action' }))
+    await userEvent.click(within(ifBlock).getByRole('button', { name: 'Add action' }))
     await waitFor(async () => {
-      await expect(
-        within(canvas.getByRole('group', { name: 'Action 3' })).getByRole('combobox', {
-          name: 'Action',
-        }),
-      ).toHaveFocus()
+      await expect(canvas.getByRole('combobox', { name: 'Action 3: action' })).toHaveFocus()
     })
+    await userEvent.click(canvas.getByRole('button', { name: 'Add Else if' }))
+    await expect(canvas.getByRole('group', { name: 'Else if 2' })).toBeVisible()
+  },
+}
+
+/** Dragging an action's row above the other: the order is reported and announced. */
+export const Drag: Story = {
+  name: 'Reorder by dragging, interaction',
+  tags: ['interaction', '!dev'],
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const second = canvasElement.querySelector<HTMLElement>('[data-drop-item="a2"]')
+    const firstRow = canvasElement.querySelector<HTMLElement>('[data-drop-item="a1"]')
+    const grip = second?.querySelector('svg')
+    if (second === null || firstRow === null || grip === null || grip === undefined) {
+      throw new Error('no rows')
+    }
+    const from = grip.getBoundingClientRect()
+    const to = firstRow.getBoundingClientRect()
+    const start = { x: from.left + from.width / 2, y: from.top + from.height / 2 }
+    await userEvent.pointer([
+      { keys: '[MouseLeft>]', target: grip, coords: { clientX: start.x, clientY: start.y } },
+      { coords: { clientX: start.x, clientY: start.y - 6 } },
+      { coords: { clientX: start.x, clientY: to.top + 4 } },
+      { keys: '[/MouseLeft]', coords: { clientX: start.x, clientY: to.top + 4 } },
+    ])
+    await waitFor(async () => {
+      await expect(canvas.getAllByRole('status')[0]).toHaveTextContent(
+        'hold the payment, then notify a person: Ana Ward',
+      )
+    })
+    await expect(canvas.getByText('Action 1 moved, position 1 of 2')).toBeInTheDocument()
   },
 }
 
 /** Arabic. */
 export const Arabic: Story = {
+  tags: ['!dev'],
   args: {
     triggers: [{ id: 'bill-posted', label: 'تم ترحيل فاتورة' }],
     fields: [{ id: 'amount', label: 'المبلغ', kind: 'money', currency: 'GBP', operators: ['gt'] }],
@@ -343,9 +411,17 @@ export const Arabic: Story = {
     ],
     initial: {
       trigger: 'bill-posted',
-      join: 'all',
-      conditions: [{ kind: 'condition', id: 'c1', field: 'amount', operator: 'gt', value: '5000' }],
-      actions: [{ id: 'a1', type: 'notify', params: { who: 'ana' } }],
+      branches: [
+        {
+          id: 'b1',
+          join: 'all',
+          conditions: [
+            { kind: 'condition', id: 'c1', field: 'amount', operator: 'gt', value: '5000' },
+          ],
+          actions: [{ id: 'a1', type: 'notify', params: { who: 'ana' } }],
+        },
+      ],
+      otherwise: null,
     },
     summary: 'عند ترحيل فاتورة، إذا كان المبلغ أكبر من 5000، أبلغ آنا.',
   },
@@ -362,6 +438,7 @@ export const Arabic: Story = {
 
 /** Japanese. */
 export const Japanese: Story = {
+  tags: ['!dev'],
   args: {
     triggers: [{ id: 'bill-posted', label: '請求書が計上された' }],
     fields: [{ id: 'amount', label: '金額', kind: 'money', currency: 'GBP', operators: ['gt'] }],
@@ -382,9 +459,17 @@ export const Japanese: Story = {
     ],
     initial: {
       trigger: 'bill-posted',
-      join: 'all',
-      conditions: [{ kind: 'condition', id: 'c1', field: 'amount', operator: 'gt', value: '5000' }],
-      actions: [{ id: 'a1', type: 'notify', params: { who: 'ana' } }],
+      branches: [
+        {
+          id: 'b1',
+          join: 'all',
+          conditions: [
+            { kind: 'condition', id: 'c1', field: 'amount', operator: 'gt', value: '5000' },
+          ],
+          actions: [{ id: 'a1', type: 'notify', params: { who: 'ana' } }],
+        },
+      ],
+      otherwise: null,
     },
     summary: '請求書が計上され、金額が5000より大きい場合、佐藤 花子に通知します。',
   },
