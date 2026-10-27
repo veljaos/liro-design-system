@@ -216,7 +216,7 @@ function InvoiceList({
             inCard
             columns={shown}
             rows={state === 'rows' ? INVOICE_LIST : []}
-            loading={state === 'loading'}
+            {...(state === 'loading' ? { loading: true } : {})}
             emptyAction={{ label: 'Create an invoice', onClick: () => undefined }}
             getRowId={(row) => row.id}
             getRowLabel={(row) => row.number}
