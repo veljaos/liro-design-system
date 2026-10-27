@@ -69,10 +69,10 @@ const meta = {
           '`agent` slot. The conversation — each question on its own surface, each answer an ' +
           'AssistantAnswer — and the question box at the bottom; before the first question the ' +
           'application’s intro and suggested questions. "New conversation" and "Open as a ' +
-          'page" (the application’s AskPage) in the header. Nothing calls a model: the turns ' +
+          'page" (the application’s Ask page) in the header. Nothing calls a model: the turns ' +
           'are the application’s data.\n\n**When to use:** the assistant on any page, with the ' +
           'page still there when it closes. **When not:** a long reading of one answer ' +
-          '(AskPage); an agent asking the user something (AgentQuestion); a search for a ' +
+          '(an Ask page, the Ask recipe); an agent asking the user something (AgentQuestion); a search for a ' +
           'record (CommandPalette).',
       },
     },

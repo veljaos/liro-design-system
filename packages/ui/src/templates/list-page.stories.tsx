@@ -6,6 +6,7 @@ import { Button } from '../components/button'
 import { DataTable, type DataTableColumn } from '../components/data-table'
 import type { DataTableFilters } from '../components/data-table-logic'
 import { DateText, DueDate, MoneyText } from '../components/display-text'
+import { ErrorState } from '../components/empty-state'
 import { FilterBar } from '../components/filter-bar'
 import type { FilterDefinition } from '../components/filter-logic'
 import { StatusBadge, toneFor } from '../components/status-badge'
@@ -130,10 +131,13 @@ function InvoiceList({
   phone = false,
   previewOpen = false,
   views = VIEWS,
+  state = 'rows',
 }: {
   phone?: boolean
   previewOpen?: boolean
   views?: readonly SavedView[]
+  /** The list's state: its rows, the first load, nothing yet, or a load that failed. */
+  state?: 'rows' | 'loading' | 'empty' | 'error'
 }) {
   const [view, setView] = useState('all')
   const [filters, setFilters] = useState<DataTableFilters>({})
@@ -172,7 +176,7 @@ function InvoiceList({
         layout={phone ? 'phone' : 'desktop'}
         title="Invoices"
         {...(phone ? {} : { actions: <Button intent="create" label="New invoice" /> })}
-        views={views}
+        views={state === 'rows' ? views : views.map((each) => ({ id: each.id, label: each.label }))}
         view={view}
         onViewChange={setView}
         saveView={<Button family="neutral" emphasis="menu" icon={BookmarkPlus} label="Save view" />}
@@ -197,29 +201,39 @@ function InvoiceList({
           />
         }
       >
-        <DataTable
-          label="Invoices"
-          layout={phone ? 'cards' : 'table'}
-          inCard
-          columns={shown}
-          rows={INVOICE_LIST}
-          getRowId={(row) => row.id}
-          getRowLabel={(row) => row.number}
-          filters={filters}
-          onRowClick={setPreview}
-          onRowOpen={() => undefined}
-          count={1284}
-          countIsExact
-          hasPrevious={false}
-          hasNext
-          onPrevious={() => undefined}
-          onNext={() => undefined}
-          mobile={{
-            subtitle: (row) => row.customer,
-            badge: (row) => <StatusBadge label={row.status} tone={toneFor(row.status, TONES)} />,
-            details: ['due', 'total'],
-          }}
-        />
+        {state === 'error' ? (
+          <ErrorState
+            compact
+            title="The invoices could not be loaded"
+            description="The connection to the server was lost. Your filters are kept."
+            caseId="7F3K-2Q9M"
+            action={{ label: 'Try again', onClick: () => undefined }}
+          />
+        ) : (
+          <DataTable
+            label="Invoices"
+            layout={phone ? 'cards' : 'table'}
+            inCard
+            columns={shown}
+            rows={state === 'rows' ? INVOICE_LIST : []}
+            {...(state === 'loading' ? { loading: true } : {})}
+            emptyAction={{ label: 'Create an invoice', onClick: () => undefined }}
+            getRowId={(row) => row.id}
+            getRowLabel={(row) => row.number}
+            filters={filters}
+            onRowClick={setPreview}
+            onRowOpen={() => undefined}
+            {...(state === 'rows' ? { count: 1284, countIsExact: true, hasNext: true } : {})}
+            hasPrevious={false}
+            onPrevious={() => undefined}
+            onNext={() => undefined}
+            mobile={{
+              subtitle: (row) => row.customer,
+              badge: (row) => <StatusBadge label={row.status} tone={toneFor(row.status, TONES)} />,
+              details: ['due', 'total'],
+            }}
+          />
+        )}
       </ListPage>
       {preview !== null && (
         <QuickPreview
@@ -313,7 +327,7 @@ export const Default: Story = {
 
 export const DefaultInteraction: Story = {
   name: 'Default, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
@@ -330,6 +344,34 @@ export const DefaultInteraction: Story = {
 }
 
 /** The views that do not fit as tabs are under "More"; choosing one names it on the button. */
+/** The first load: the views and filters stand, the table shows skeleton bars. */
+export const Loading: Story = {
+  render: () => (
+    <ExampleProvider>
+      <InvoiceList state="loading" />
+    </ExampleProvider>
+  ),
+}
+
+/** Nothing yet: the table's empty state offers the first step. */
+export const Empty: Story = {
+  render: () => (
+    <ExampleProvider>
+      <InvoiceList state="empty" />
+    </ExampleProvider>
+  ),
+}
+
+/** The load failed: ErrorState in the card, with the case number and Try again. */
+export const LoadError: Story = {
+  name: 'Error',
+  render: () => (
+    <ExampleProvider>
+      <InvoiceList state="error" />
+    </ExampleProvider>
+  ),
+}
+
 export const MoreViews: Story = {
   name: 'More views',
   play: async () => {
@@ -339,7 +381,7 @@ export const MoreViews: Story = {
 
 export const MoreViewsInteraction: Story = {
   name: 'More views, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
@@ -359,6 +401,7 @@ export const MoreViewsInteraction: Story = {
 
 /** Phones: one select "View: All 1.284" with the counts; above 7 views a search field. */
 export const PhoneViews: Story = {
+  tags: ['!dev'],
   name: 'Phone views',
   render: () => (
     <PhoneFrame>
@@ -374,7 +417,7 @@ export const PhoneViews: Story = {
 
 export const PhoneViewsInteraction: Story = {
   name: 'Phone views, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => (
     <PhoneFrame>
       <ExampleProvider>
@@ -396,6 +439,7 @@ export const PhoneViewsInteraction: Story = {
 
 /** A row pressed: the quick preview from the end, with "Open" to the full page. */
 export const Preview: Story = {
+  tags: ['!dev'],
   render: () => (
     <ExampleProvider>
       <InvoiceList previewOpen />
@@ -410,7 +454,7 @@ export const Preview: Story = {
 
 /** Space on a focused row opens the preview; the column chooser hides a column. */
 export const Keyboard: Story = {
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
@@ -445,6 +489,7 @@ export const PhoneWidth: Story = {
 
 /** A list that no module tab names (a report's list, a settings list): the title shows. */
 export const VisibleTitle: Story = {
+  tags: ['!dev'],
   name: 'Visible title',
   render: () => (
     <ExampleProvider>
@@ -484,6 +529,7 @@ export const VisibleTitle: Story = {
 
 /** Arabic view names. */
 export const Arabic: Story = {
+  tags: ['!dev'],
   render: () => (
     <StoryProvider locale="ar">
       <ExampleProvider>
@@ -505,6 +551,7 @@ export const Arabic: Story = {
 
 /** Japanese view names. */
 export const Japanese: Story = {
+  tags: ['!dev'],
   render: () => (
     <StoryProvider locale="ja">
       <ExampleProvider>

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { createFormat } from '../provider/format'
-import { snippetFromRanges } from '../templates/legal-search-logic'
+import { snippetFromRanges } from './help-logic'
 import {
   asksWhy,
   currentEntry,

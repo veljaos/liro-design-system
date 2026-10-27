@@ -173,6 +173,7 @@ export const Default: Story = {
 
 /** The bell's panel: recent notifications, the unread count, Mark all as read, View all. */
 export const Notifications: Story = {
+  tags: ['!dev'],
   args: { layout: 'desktop', defaultOpenMenu: 'notifications' },
   play: async () => {
     await within(document.body).findByRole('dialog')
@@ -182,7 +183,7 @@ export const Notifications: Story = {
 
 export const NotificationsInteraction: Story = {
   name: 'Notifications, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   args: { layout: 'desktop' },
   play: async ({ canvasElement }) => {
     await settle()
@@ -200,6 +201,7 @@ export const NotificationsInteraction: Story = {
 
 /** One level is no trail: no breadcrumbs (the page's title says where the user is). */
 export const OneLevel: Story = {
+  tags: ['!dev'],
   name: 'One level, no breadcrumbs',
   args: { layout: 'desktop', breadcrumbs: [{ label: 'Overview' }], moduleTabs: [] },
   play: async ({ canvasElement }) => {
@@ -241,7 +243,7 @@ export const CompanySwitcher: Story = {
 
 export const CompanySwitcherInteraction: Story = {
   name: 'Company switcher, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   args: { layout: 'desktop' },
   play: async ({ canvasElement }) => {
     await settle()
@@ -260,6 +262,7 @@ export const CompanySwitcherInteraction: Story = {
  * then all; a suspended and an inactive company marked.
  */
 export const ManyCompanies: Story = {
+  tags: ['!dev'],
   name: 'Many companies',
   args: {
     defaultOpenMenu: 'companies',
@@ -280,7 +283,7 @@ export const ManyCompanies: Story = {
 
 export const ManyCompaniesInteraction: Story = {
   name: 'Many companies, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   args: {
     layout: 'desktop',
     companies: {
@@ -333,6 +336,7 @@ async function openCompanySheet(canvasElement: HTMLElement) {
  * once, and the arrow keys move through the list (End reaches the last company).
  */
 export const FiveThousandCompanies: Story = {
+  tags: ['!dev'],
   name: '5,000 companies',
   args: {
     defaultOpenMenu: 'companies',
@@ -353,7 +357,7 @@ export const FiveThousandCompanies: Story = {
 
 export const FiveThousandCompaniesInteraction: Story = {
   name: '5,000 companies, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   args: {
     layout: 'desktop',
     companies: {
@@ -387,6 +391,7 @@ export const FiveThousandCompaniesInteraction: Story = {
 
 /** The user menu: name and e-mail, then the entries. */
 export const UserMenu: Story = {
+  tags: ['!dev'],
   name: 'User menu',
   args: { layout: 'desktop', defaultOpenMenu: 'user' },
   play: async () => {
@@ -397,7 +402,7 @@ export const UserMenu: Story = {
 
 export const UserMenuInteraction: Story = {
   name: 'User menu, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   args: { layout: 'desktop' },
   play: async ({ canvasElement }) => {
     await settle()
@@ -409,6 +414,7 @@ export const UserMenuInteraction: Story = {
 
 /** The agent button before the bell (P5.3): it opens the agent's question in a Popover. */
 export const Agent: Story = {
+  tags: ['!dev'],
   name: 'Agent button',
   args: {
     layout: 'desktop',
@@ -441,7 +447,7 @@ export const Agent: Story = {
 
 export const AgentInteraction: Story = {
   name: 'Agent button, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   args: {
     layout: 'desktop',
     agent: (
@@ -492,7 +498,7 @@ export const Search: Story = {
 
 export const SearchInteraction: Story = {
   name: 'Search, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   args: { layout: 'desktop', searchShortcut: '⌘K' },
   play: async ({ canvasElement }) => {
     await settle()
@@ -547,6 +553,7 @@ function shellMarkers(phone: boolean): Partial<AppShellProps> {
  * sticky —, then an application-wide banner at the top of the content, which scrolls away.
  */
 export const ShellMarkers: Story = {
+  tags: ['!dev'],
   name: 'Shell markers',
   args: { layout: 'desktop', ...shellMarkers(false) },
   play: async ({ canvasElement }) => {
@@ -572,6 +579,7 @@ export const ShellMarkers: Story = {
 
 /** The same markers on a phone: the bars wrap, the environment marker stays beside the lockup. */
 export const ShellMarkersPhone: Story = {
+  tags: ['!dev'],
   name: 'Shell markers, phone',
   render: (args) => (
     <PhoneFrame>
@@ -599,6 +607,7 @@ export const ShellMarkersPhone: Story = {
 
 /** The slots take any content: here plain elements, as before P5.3. */
 export const Slots: Story = {
+  tags: ['!dev'],
   args: {
     layout: 'desktop',
     impersonationBar: (
@@ -617,6 +626,7 @@ export const Slots: Story = {
 
 /** Long names: the company and the crumbs stay on one line. */
 export const LongText: Story = {
+  tags: ['!dev'],
   name: 'Long text',
   args: {
     layout: 'desktop',
@@ -658,6 +668,7 @@ export const PhoneWidth: Story = {
 
 /** Phone width, the user menu open: "Switch company" inside it, every entry neutral. */
 export const PhoneUserMenu: Story = {
+  tags: ['!dev'],
   name: 'Phone user menu',
   args: { defaultOpenMenu: 'user' },
   render: (args) => (
@@ -680,7 +691,7 @@ export const PhoneUserMenu: Story = {
 
 export const PhoneUserMenuInteraction: Story = {
   name: 'Phone user menu, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: (args) => (
     <PhoneFrame>
       <ExampleProvider>
@@ -710,6 +721,7 @@ export const PhoneUserMenuInteraction: Story = {
 
 /** Phones: the company switcher is a full-screen sheet, the search field at the top. */
 export const PhoneCompanySheet: Story = {
+  tags: ['!dev'],
   name: 'Phone company switcher',
   args: {
     defaultOpenMenu: 'companies',
@@ -741,7 +753,7 @@ export const PhoneCompanySheet: Story = {
 
 export const PhoneCompanySheetInteraction: Story = {
   name: 'Phone company switcher, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   args: {
     companies: {
       items: MANY_COMPANIES,
@@ -800,6 +812,7 @@ export const PhoneScrollingTabs: Story = {
 
 /** Arabic module and crumb names in a right-to-left page. */
 export const Arabic: Story = {
+  tags: ['!dev'],
   render: (args) => (
     <StoryProvider locale="ar">
       <ExampleProvider>
@@ -820,6 +833,7 @@ export const Arabic: Story = {
 
 /** Japanese module and crumb names. */
 export const Japanese: Story = {
+  tags: ['!dev'],
   render: (args) => (
     <StoryProvider locale="ja">
       <ExampleProvider>
@@ -842,7 +856,7 @@ export const Japanese: Story = {
 export const PhoneCompanySheetEscape: Story = {
   ...PhoneCompanySheetInteraction,
   name: 'Phone company switcher, Escape',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   play: async ({ canvasElement }) => {
     await openCompanySheet(canvasElement)
     await userEvent.keyboard('{Escape}')

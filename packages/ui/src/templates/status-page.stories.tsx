@@ -61,6 +61,7 @@ export const NotFound: Story = {
 
 /** 401: the session ended. Warning, not blue: a session ending is not a failure. */
 export const Unauthenticated: Story = {
+  tags: ['!dev'],
   name: 'Not signed in (401)',
   args: {
     kind: 'unauthenticated',
@@ -70,6 +71,7 @@ export const Unauthenticated: Story = {
 
 /** 402: a module outside the company's plan. */
 export const PlanRequired: Story = {
+  tags: ['!dev'],
   name: 'Not in the plan (402)',
   args: {
     kind: 'planRequired',
@@ -134,6 +136,7 @@ export const Suspended: Story = {
 
 /** The user's own account suspended (the default subject). */
 export const SuspendedAccount: Story = {
+  tags: ['!dev'],
   name: 'Suspended account',
   args: {
     kind: 'suspended',
@@ -148,6 +151,7 @@ export const SuspendedAccount: Story = {
 
 /** Long texts wrap in the 440px column; the line above the title replaced by the application. */
 export const LongText: Story = {
+  tags: ['!dev'],
   name: 'Long text',
   args: {
     kind: 'forbidden',
@@ -183,6 +187,7 @@ export const PhoneWidth: Story = {
 
 /** Arabic texts in a right-to-left page. */
 export const Arabic: Story = {
+  tags: ['!dev'],
   render: () => (
     <StoryProvider locale="ar">
       <ExampleProvider>
@@ -200,6 +205,7 @@ export const Arabic: Story = {
 
 /** Japanese texts. */
 export const Japanese: Story = {
+  tags: ['!dev'],
   render: () => (
     <StoryProvider locale="ja">
       <ExampleProvider>

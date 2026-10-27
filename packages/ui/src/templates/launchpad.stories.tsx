@@ -145,7 +145,7 @@ export const Default: Story = {
 
 /** The arrow keys move between cards; down moves by a row. */
 export const Keyboard: Story = {
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   play: async ({ canvasElement }) => {
     await settle()
     const grid = within(within(canvasElement).getByRole('list', { name: 'Modules' }))
@@ -174,7 +174,7 @@ export const EditingMode: Story = {
 
 export const EditingModeInteraction: Story = {
   name: 'Editing, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => (
     <ExampleProvider>
       <Editing />
@@ -204,7 +204,7 @@ function centreOf(element: Element) {
  * The move buttons stay the keyboard's way (WCAG 2.5.7).
  */
 export const Dragging: Story = {
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => (
     <ExampleProvider>
       <Editing />
@@ -248,6 +248,7 @@ export const Loading: Story = { args: { loading: true } }
 
 /** Long names and counters wrap inside the card. */
 export const LongText: Story = {
+  tags: ['!dev'],
   name: 'Long text',
   args: {
     modules: [
@@ -276,6 +277,7 @@ export const PhoneWidth: Story = {
 
 /** Arabic module names. */
 export const Arabic: Story = {
+  tags: ['!dev'],
   args: {
     modules: [
       {
@@ -304,6 +306,7 @@ export const Arabic: Story = {
 
 /** Japanese module names. */
 export const Japanese: Story = {
+  tags: ['!dev'],
   args: {
     modules: [
       {

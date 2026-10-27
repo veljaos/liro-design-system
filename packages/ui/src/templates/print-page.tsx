@@ -21,7 +21,7 @@ import {
 /*
  * PrintPage (BUILD-PLAN P5.15): the frame of every printed page — an A4 sheet with its margins, a
  * header and a footer on every printed page, the page number, and no application chrome. The
- * print templates (PrintDocument, PrintCertificate, PrintGradeReport, PrintFinding) are built on
+ * print templates (PrintDocument; other layouts come from JSON definitions rendered from these parts) are built on
  * it; an application may put any content in it.
  *
  * - **Paper is always light** (decided): the sheet carries `data-liro-theme="light"` and
@@ -84,7 +84,7 @@ export type PrintStatus =
 
 /** What every print template passes to its PrintPage. */
 export interface PrintFrameProps {
-  /** Default 'portrait' (PrintCertificate: 'landscape'). */
+  /** Default 'portrait' ('landscape' for a certificate). */
   orientation?: PrintOrientation
   /** CSS lengths; default 16mm top, 20mm bottom, 18mm at the sides. */
   margins?: PrintMargins

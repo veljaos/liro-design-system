@@ -6,6 +6,61 @@ data, the rules and every figure are always the application's: the pieces show a
 never count, check or decide. To build a new screen, pick its floorplan in `docs/floorplans.md`
 and compose these pieces; the 26 kept examples in Storybook "Examples" show each floorplan.
 
+## Pages composed from the core templates (P5.92)
+
+The library keeps about eighteen page templates (the shells, Launchpad, ListPage, DetailPage,
+RecordFormPage, SettingsPage, DocumentPage, WorklistPage, DashboardPage, ReportPage,
+StatutoryFormPage, RegisterPage, PeriodicRunPage, StatusPage, NotificationsPage, PrintPage and
+PrintDocument). The domain page templates it had before P5.92 are composed from them and the
+components, as below; the components stay.
+
+- **Legal act** — F3 Document: `DocumentPage` (back, the act's title as the h1 with `lang`, its
+  status as a `StatusBadge`, "type · issuer" as the subtitle, the gazette line as
+  `DocumentReferences`, the version in a `SelectField` "Version as of …"; actions Compare
+  versions, Copy citation, Print / PDF, Watch and Bookmark with the state in the label) with
+  `LegalText` (and its toolbar) in the lines' card, `LegalContents` in a start-side `Drawer`, and
+  `useLegalPanels` as the side panels ("Hide panels" from 75em; a "Details" full-screen sheet on
+  phones). Comparing two versions: `LegalCompare`, the versions from `useVersionRange`.
+- **Legal search** — F1 List: `ListPage` with saved views, `FilterBar` (the area as a `tree`
+  filter, type, issuer, status, dates) and, instead of the table, `SearchResultList` (type,
+  issuer and status as context; the title link; gazette references; the snippet from
+  `snippetFromRanges` with matches marked; "Found in Article 57"); "Sort: …" as a menu beside the
+  count, `CursorPagination` under the list; the application searches.
+- **Reading page** (a course lesson, a blog article, "Ask") — F2 Record: `DetailPage` with one
+  section of reading width and no frame (`RichText` with `headingIds`; pictures and video within
+  its width), `PageContents` or the course outline (`TreeView` with the lesson states in words,
+  "7 of 12 lessons") in the side column, previous / next and Mark as done at the end; phones:
+  the content first, the outline in a `Drawer`. A page with only a question box ("Ask") is the
+  same page with `AssistantComposer` large and centred.
+- **Handheld picking and counting** — F4 Worklist (picking: one line at a time, decided with
+  scans) or F1 List (counting: the items of a location) inside
+  `<LiroProvider density="touch">` at 360px: `PageHeader` with the progress in words ("4 of 12"),
+  `ScanField` for location and item, `QuantityStepper` (large) to confirm, skip with a reason in
+  `ReasonConfirmDialog`, the route or the counted items as a list with their states in words,
+  `OfflineIndicator` and the queue; "All lines are done" as `EmptyState`. Expected quantities
+  and signed differences are the application's (none in a blind count).
+- **Payment order** — F2 Record: `RecordFormPage` with the order's fields (`FormGrid`,
+  `MoneyField`, `SelectField`, `RadioGroupField`, `ipsProblemsOf` for the checks under their
+  fields); its paper form is a printout from a JSON definition (see "Printouts") with `QrCode`
+  from `ipsQrText`.
+- **Signing** — F2 Record: `DetailPage` (or `DocumentPage` when the document has lines) with the
+  preview (`DocumentFrame` or `PrintPage`) as the first, flush section, `AttachmentList`, and
+  `SignerList` in the 300px side column — first on phones. The signing is the Core's. See the
+  Shell example "Employee portal" (its annex).
+- **Files** — F1 List: `ListPage` with a start column of places (`TreeView` of folders, the
+  storage `UsageMeter`), the `FilterBar` (search, type, List / Grid, Details, New folder, Upload
+  last), the list as `DataTable` or `FileGrid`, `FileDetails` in the side column, uploads in
+  `AttachmentList`; `FileDropzone` in a `Dialog`, `FolderPickerDialog`, `NameConflictDialog`,
+  `FileNameDialog`, `ShareDialog`, `VersionList`, `FilePreview`. The helpers of
+  `file-browser-logic` (`canDropInto`, `blockedFolders`, `selectRange`, `uploadCounts`,
+  `resolveConflicts`) stay exported.
+- **Printouts** (certificate, school report, medical finding, legal act, payment order, statutory
+  forms) — not templates: each layout is a JSON definition the Core renders with liro-core-pdf
+  from the print parts (`PrintPage`, `PrintTitle`, `PrintDetails`, `PrintTable`, `PrintSection`,
+  `PrintSignatures`, `PrintAmountDueLine`, `PrintPaymentDetails`, `PrintIssuedLine`). The
+  library keeps `PrintDocument`, the business document; the Serbian formal acts come in a later
+  step.
+
 ## Accounting
 
 - **Chart of accounts** — F1 List: `ListPage` with `FilterBar` and `TreeTable` (classes, synthetic and analytic accounts), an account's details in a `Drawer` with `KeyValueList`; the chart is the application's.
@@ -30,7 +85,7 @@ and compose these pieces; the 26 kept examples in Storybook "Examples" show each
 - **Travel order** — F3 Document: `DocumentPage` (traveller, destination, dates, how they travel and the cost centre as header fields), its costs and the advance in the line editor (`EditableGrid`), `DocumentTotals`; Send for approval goes to the approver's F4 worklist; per-diems and limits are the application's data.
 - **Travel settlement** — F3 Document: `DocumentPage` based on its travel order (`DocumentReferences`), the costs in the line editor (`EditableGrid`), receipts by `FileDropzone` with `camera` and `AttachmentList`, per-diems and the settlement in `DocumentTotals`; the per-diems are the application's data.
 - **Travel settlements to approve** — F4 Worklist: `WorklistPage`, Reject with `ReasonConfirmDialog`, then Approve.
-- **Payment orders** — F2 Record: the order's fields (`FormGrid`, `MoneyField`, `SelectField`, `RadioGroupField`), printed as `PaymentOrderForm` in `PrintPage` with `QrCode` from `ipsQrText`; `ipsProblemsOf` gives the checks under their fields.
+- **Payment orders** — F2 Record: see "Payment order" under "Pages composed from the core templates".
 
 ## Trade (purchasing, sales, pricing, offsets)
 
@@ -62,7 +117,7 @@ and compose these pieces; the 26 kept examples in Storybook "Examples" show each
 - **Item card** — F2 Record: `DetailPage`, balance per warehouse in `KeyValueList`, movements in `DataTable` with running balance and value, `ChangeText` for signed quantities, each document a link.
 - **Transfer** — F3 Document: `DocumentPage`, the line editor (`EditableGrid`) with available per line, `ChangeableValue` for the warehouses, `UnavailableAction` when the application's check fails; Draft / In transit / Received.
 - **Stocktaking list** — F3 Document: `DocumentPage` with book / difference / counted in `DataTable`, the commission's `SignerList`, posting through `ConfirmDialog`.
-- **Stocktaking count** — F7 handheld: `StockCount` in blind mode (no expected quantities).
+- **Stocktaking count** — the handheld count (see "Handheld picking and counting") in blind mode: no expected quantities, no differences.
 - **Bill of materials** — F2 Record: `DetailPage`, `TreeTable` for nested bills, `RelatedDocuments` to work orders.
 - **Work order** — F3 Document: `DocumentPage`, planned / difference / used material in `DataTable`, `ChangeableValue`, `DocumentReferences`; good and scrap are the application's.
 - **Production plan** — F7 Gantt: `Gantt` from `@veljaos/ui/gantt` with `KeyFigures`; the screen applies each change with `applyGanttChange`.
@@ -79,9 +134,9 @@ and compose these pieces; the 26 kept examples in Storybook "Examples" show each
 - **Store, swap requests** — F4 Worklist: `WorklistPage`, `ChangeConfirmDialog` to approve, `ReasonConfirmDialog` to decline, `EmptyState`.
 - **Emergency shifts, rotation applied** — F7 grid: `ShiftPlanner` with "Apply rotation…" (`rotationPeople`, `rotationConflicts`) and an `Alert`.
 - **Emergency working-time balance** — F5 Overview: `WorkingTimeBalance` (planned, worked, signed difference, warnings in words); computes nothing.
-- **Employment contract questionnaire** — F6 Steps: `Questionnaire` with branching; "Generate contract" opens the contract on `SigningPage`.
+- **Employment contract questionnaire** — F6 Steps: `Questionnaire` with branching; "Generate contract" opens the contract on its signing page (see "Signing").
 - **Work-injury register** — F1 List: `RegisterPage` (numbered, never deleted, corrections both ways) with `PeriodField`.
-- **Safety course, lesson** — F6 Steps: `CoursePage` (outline with locked lessons and reasons, "5 of 8 lessons", Mark as done); the final test is `Questionnaire` with `QuizResult`, completion with `PrintCertificate`.
+- **Safety course, lesson** — the reading page (see "Reading page") with the course outline in its side column (locked lessons and reasons, "5 of 8 lessons", Mark as done); the final test is `Questionnaire` with `QuizResult`; the certificate is a printout from a JSON definition (see "Printouts").
 - **Recruitment, job openings** — F1 List: `ListPage`, `FilterBar`, `DataTable`.
 - **Recruitment, job posting** — F2 Record: `DetailPage` in view / edit mode, `FormGrid` with `TextField`, `TextAreaField`, `MoneyField`, `DateField`.
 - **Recruitment, candidates** — F1 List as a board: `KanbanBoard`; Rejected asks why (`ReasonConfirmDialog`); Hired waits for the application's accepted offer.
@@ -89,7 +144,7 @@ and compose these pieces; the 26 kept examples in Storybook "Examples" show each
 - **Recruitment, scorecard** — F2 Record: `RecordFormPage`, `FormSection` with `RadioGroupField` per criterion and `TextAreaField`.
 - **Onboarding, checklist** — F2 Record: `DetailPage`, one section per kind of task, each a `DataTable` with owner (`PersonName`), `DueDate` and state; not `SetupChecklist`, as tasks run side by side.
 - **Onboarding, the new employee's portal** — F6 Steps in `PortalShell`: `SetupChecklist` ("Before you start"), the salary account in a `Dialog` checked by the application.
-- **Onboarding, documents to sign** and **Onboarding, the employment contract** — F2 Record in `PortalShell`: a list of documents in `SectionCard`, each on `SigningPage` with `PrintPage` and `SignerList`.
+- **Onboarding, documents to sign** and **Onboarding, the employment contract** — F2 Record in `PortalShell`: a list of documents in `SectionCard`, each on its signing page (see "Signing") with `PrintPage` and `SignerList`.
 - **Employee portal, payslips** — F1 List in `PortalShell`: `DataTable` of months.
 - **Employee portal, payslip** — F2 Record in `PortalShell`: `KeyFigures` and `KeyValueList` by section; every figure is payroll's.
 - **Employee portal, payslip PDF** — Printout: `PrintPage` with `PrintTitle`, `PrintDetails`, `PrintTable`, `PrintSection`.
@@ -97,7 +152,7 @@ and compose these pieces; the 26 kept examples in Storybook "Examples" show each
 - **Employee portal, leave request** — F2 Record in `PortalShell`: `KeyValueList` and the approval as `StatusTimeline`.
 - **Employee portal, new leave request** — F2 Record in `PortalShell`: `DateRangeField`, `SelectField`, `TextAreaField`; the days counted are the application's.
 - **Employee portal, shifts** — `MyShifts` in `PortalShell`.
-- **Employee portal, documents** and **Employee portal, document to sign** — F1 List then F2 Record in `PortalShell`: documents in `SectionCard`, one on `SigningPage` with `SignerList`.
+- **Employee portal, documents** and **Employee portal, document to sign** — F1 List then F2 Record in `PortalShell`: documents in `SectionCard`, one on its signing page (see "Signing").
 - **Employee portal, my details** — F2 Record in `PortalShell`: `KeyValueList`, a change request in a `Drawer`, waiting for HR shown as an `Alert`.
 
 ## Health
@@ -136,8 +191,8 @@ and compose these pieces; the 26 kept examples in Storybook "Examples" show each
 - **POS fiscal, receipt kind** — F7 POS: `PosShell` with `ReceiptKindPicker` in a `Dialog`; the chosen kind's marker (`kindMarker`) in a warning `Alert`; kinds are the application's.
 - **POS journal**, also **POS daily report** — F7 POS: `PosShell` with the issued receipts in `DataTable`, a copy as `ReceiptPreview`, cancel with `ReasonConfirmDialog`, not sent shown with `Banner`; the report's figures are the application's.
 - **Web shop order, receipt delivered** — F2 Record: `PageHeader`, `KeyValueList`, `ReceiptResult` with delivery by e-mail, `ReceiptPreview` in a `Dialog`.
-- **Warehouse picking, handheld** — F7 handheld: `PickList` (scan location → item → quantity, skip with a reason), its menu as `DropdownMenu`.
-- **Stock count, handheld** — F7 handheld: `StockCount` with `QuantityStepper` and the application's signed differences.
+- **Warehouse picking, handheld** — see "Handheld picking and counting": scan location → item → quantity, skip with a reason, its menu as `DropdownMenu`.
+- **Stock count, handheld** — see "Handheld picking and counting": `QuantityStepper` and the application's signed differences.
 
 ## Field service, fleet and maintenance
 
@@ -169,17 +224,15 @@ and compose these pieces; the 26 kept examples in Storybook "Examples" show each
 
 ## Documents, records and governance
 
-- **Contract awaiting signatures** and **Contract signing, the employee signs** — F2 Record: `SigningPage` (preview in `DocumentFrame`, `AttachmentList`, `SignerList` with Decline and Sign); the signing is the Core's.
+- **Contract awaiting signatures** and **Contract signing, the employee signs** — see "Signing" (preview in `DocumentFrame`, `AttachmentList`, `SignerList` with Decline and Sign); the signing is the Core's.
 - **Printout, invoice** — Printout: `PrintDocument` (title and logo, amount due line, IPS QR slot, ruled totals), `BackButton` above the sheet.
-- **Printout, certificate** — Printout: `PrintCertificate` (landscape, signature fields).
-- **Printout, school report** — Printout: `PrintGradeReport` with signature fields.
-- **Printout, medical finding** — Printout: `PrintFinding` with `PrintTable` and a signature field.
+- **Printout, certificate**, **school report**, **medical finding** — see "Printouts": JSON definitions rendered from the print parts (a landscape `PrintPage`, `PrintTable`, `PrintSignatures`).
 - **Document inbox** — F1 List: `ListPage`, `FilterBar`, `FileDropzone` (Add documents), a document's page in `QuickPreview` with `PageViewer`, bulk Reject with `ReasonConfirmDialog`.
 - **Document review** — F4 Worklist: `WorklistPage` beside `PageViewer` (`highlight`), fields wrapped in `RecognizedField`, supplier by `LookupField`, lines in `EditableGrid`, `DuplicateWarning`, `CandidateList` for a new supplier; confidence and matches are the application's.
-- **Company documents** and **Company document preview** — F1 List: `FileBrowser` with `FileDetails`, `FolderPickerDialog`, `NameConflictDialog`, `FileNameDialog`, `ShareDialog`, `VersionList`; preview in `FilePreview` with `DocumentFrame` or `PageViewer`.
+- **Company documents** and **Company document preview** — F1 List: the files page (see "Files") with `FileDetails`, `FolderPickerDialog`, `NameConflictDialog`, `FileNameDialog`, `ShareDialog`, `VersionList`; preview in `FilePreview` with `DocumentFrame` or `PageViewer`.
 - **New document** — F1 List of types: `CategoryGrid` in a `SectionCard`.
 - **Document draft** — F2 Record: `RecordFormPage` with `DefinedForm` from the application's JSON definition, the application's preview in `DocumentFrame`, the number from the registry book.
-- **Document signing** — F2 Record: `SigningPage` with `DocumentFrame` and `SignerList`.
+- **Document signing** — see "Signing".
 - **Registry book** — F1 List: `RegisterPage` (overdue and corrected entries in words), year in `SelectField`.
 - **Registry entry** — F2 Record: `DetailPage`, `KeyValueList`, `DueDate`, `AttachmentList`, `RelatedDocuments`, `ActivityList`.
 - **New registry entry** — F2 Record: `RecordFormPage`, `FormSection`, `RadioGroupField`, `DateField`, `FileDropzone` and `AttachmentList`; the number is the application's.
@@ -191,11 +244,11 @@ and compose these pieces; the 26 kept examples in Storybook "Examples" show each
 - **Next meeting** — F2 Record: `DetailPage` with the invitation, agenda in `DataTable`, `ActionGroup`.
 - **Contracts** — F1 List: `ListPage` with `DataTable`.
 - **Contract** — F2 Record: `DetailPage`, notice due as an `Alert`, `VersionList`, `RelatedDocuments`.
-- **Legal search** — F1 List: `LegalSearchPage` (FilterBar with a `tree` filter, snippets with matches marked).
+- **Legal search** — see "Legal search" under "Pages composed from the core templates".
 - **New in the Illustrative Gazette** — F1 List: `GazetteIssues`.
-- **Illustrative law, act page**, **work rulebook**, **by-law**, **court decision** — F2 Record: `LegalActPage` with `LegalText`, `LegalContents` and `useLegalPanels`; texts and versions are the application's.
+- **Illustrative law, act page**, **work rulebook**, **by-law**, **court decision** — see "Legal act" under "Pages composed from the core templates"; texts and versions are the application's.
 - **Illustrative law, compare versions** — F2 Record: `LegalCompare` with two versions chosen in `SelectField`.
-- **Illustrative law, printout** — Printout: `PrintLegalAct`.
+- **Illustrative law, printout** — see "Printouts": the act's JSON definition rendered from the print parts (title and gazette in the repeating header, articles in order, footnotes).
 
 ## AML compliance
 
@@ -259,7 +312,7 @@ and compose these pieces; the 26 kept examples in Storybook "Examples" show each
 - **Client portal requests** — F1 List in `PortalShell`: `DataTable` with `DueDate`.
 - **Client portal request** — F2 Record in `PortalShell`: `StatusTimeline`, answer with `TextAreaField`, `FileDropzone` and `AttachmentList`.
 - **Client portal documents** — F1 List in `PortalShell`: `AttachmentList`.
-- **Client folders** and **Client portal files** — F1 List: `FileBrowser` in `AppShell` for the firm and in `PortalShell` for the client, over the same files.
+- **Client folders** and **Client portal files** — F1 List: the files page (see "Files") in `AppShell` for the firm and in `PortalShell` for the client, over the same files.
 - **IOS partners** (statements of open items) — F1 List: `ListPage`, `FilterBar`, prepare in a `Dialog` (`DateField`, `RadioGroupField`), preview as `PrintDocument`, send with `ConfirmDialog`.
 - **IOS reconciliation** — F4 Worklist: `WorklistPage`, `ValueComparison`, `CandidateList`, `EditableGrid`, `BalanceBar`, `KeyFigures`; the matches and differences are the application's.
 - **IOS partner portal** — F2 Record in `PortalShell`: the statement with `DocumentTotals`, confirm with `ConfirmDialog` or dispute in a `Drawer` (`MoneyField`, `TextAreaField`, `FileDropzone`).
@@ -281,13 +334,13 @@ and compose these pieces; the 26 kept examples in Storybook "Examples" show each
 - **Merge partners**, **Merge items** — F2 Record: `DetailPage`, `CandidateList` (which record stays), `ValueComparison` with `chosen` / `onChoose`, `IrreversibleConfirmDialog`.
 - **Partners merged**, **Items merged** — F2 Record: `DetailPage` of the kept record, the merge in an `Alert`, moved documents in `RelatedDocuments`.
 - **Liro Assistant** (overdue, revenue, proposed action, no access) — the page's floorplan with `AssistantPanel` from `AppShell`'s `agent` slot: `AssistantAnswer` (table, `BarChart`, sources, "no access" in the application's words), `ProposedAction` waiting for Confirm.
-- **Ask Liro**, also **Ask Liro, answer** — `AskPage` with `AssistantAnswer` and `ProposedAction`; nothing calls a model in the library.
+- **Ask Liro**, also **Ask Liro, answer** — the reading page (see "Reading page"): a large `AssistantComposer` with suggested and recent questions, then the question as the h1, `AssistantAnswer` and `ProposedAction`, a follow-up `AssistantComposer`; nothing calls a model in the library.
 - **Property tax zones** — F7 Map: `AreaMap` from `@veljaos/ui/map`, properties in `RadioGroupField`, "Falls in" from `areaAt`.
 - **Site check-in** — F7 Map in `PortalShell`: `LocationCheck` (the workplace's area, the position, the application's verdict); never `navigator.geolocation`.
 - **Group revenue by country**, **Sales by region** — F5 Overview: `RegionChart` (choropleth steps from the application's `breaks`, no data hatched), `KeyValueList`.
 - **Organisation chart**, **Company group** — F5 Overview: `HierarchyChart` (people / units `Tabs`, ownership shares on the lines), a node's card in a `Drawer`, `KeyFigures`.
 - **Blog** — F1 List in `PortalShell`: `ArticleList` with `featured`, `NewsletterSignup`.
-- **Blog article** — F2 Record: `ArticlePage` with `RichText`, `PageContents`, `ShareLinks`, related `ArticleList`.
+- **Blog article** — the reading page (see "Reading page") with `RichText`, `PageContents`, `ShareLinks`, `NewsletterSignup`, related `ArticleList`.
 - **Blog posts** — F1 List: `ListPage` with `DataTable`.
 - **Blog post editor** — F2 Record: `RecordFormPage`, `RichTextField`, cover with `FileDropzone`, `MultiSelectField` for tags, schedule with `DateField`.
 - **E-mail templates** — F1 List: `ListPage` with `DataTable`.

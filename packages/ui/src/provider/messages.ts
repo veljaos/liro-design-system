@@ -579,10 +579,6 @@ export interface LiroMessages {
   'signing.declineConfirm': string
   /** In order: the signer whose turn comes first. */
   'signing.notYourTurn': (name: string) => string
-  /** SigningPage: its sections. */
-  'signing.signers': string
-  'signing.document': string
-  'signing.attachments': string
   // ── P5 group E ──
   /** LookupDialog: how the keyboard moves through the results (under the table; the search's description). */
   'lookup.keyboardHint': string
@@ -1263,52 +1259,8 @@ export interface LiroMessages {
   'quantity.increase': string
   'quantity.belowMin': (minText: string) => string
   'quantity.aboveMax': (maxText: string) => string
-  /** PickList and StockCount: changes kept on the device while offline. */
+  /** A handheld worklist (picking, a stock count): changes kept on the device while offline. */
   'queue.waiting': (count: number, countText: string) => string
-  /** PickList: progress, the current line and its steps, skipping, the route and its states. */
-  'pick.progress': (done: number, doneText: string, total: number, totalText: string) => string
-  'pick.progressLabel': string
-  'pick.current': string
-  'pick.location': string
-  'pick.item': string
-  'pick.toPick': string
-  'pick.pickedOf': (pickedText: string, totalText: string) => string
-  'pick.steps': string
-  'pick.stepLocation': string
-  'pick.stepItem': string
-  'pick.stepQuantity': string
-  'pick.stepDone': string
-  'pick.scanLocation': string
-  'pick.scanItem': string
-  'pick.quantity': string
-  'pick.confirm': string
-  'pick.skip': string
-  'pick.skipMessage': string
-  'pick.route': string
-  'pick.open': string
-  'pick.picked': string
-  'pick.short': string
-  'pick.skipped': string
-  'pick.allDone': string
-  'pick.allDoneDescription': string
-  'pick.finish': string
-  'pick.empty': string
-  'pick.emptyDescription': string
-  /** StockCount: the location, the item being counted, the counted items and their differences. */
-  'count.location': string
-  'count.scanLocation': string
-  'count.scanItem': string
-  'count.noLocation': string
-  'count.changeLocation': string
-  'count.current': string
-  'count.quantity': string
-  'count.counted': string
-  'count.expected': string
-  'count.difference': string
-  'count.items': string
-  'count.noItems': string
-  'count.noItemsDescription': string
-  'count.finish': string
   // P5.15 / P5.12
   /** PrintPage: the page number in the bottom margin of every printed page ("Page 1 of 3"). */
   'print.pageNumber': (page: string, pages: string) => string
@@ -1316,36 +1268,6 @@ export interface LiroMessages {
   'print.draft': string
   /** PrintPage: a place and a date under a printed document ("Novi Sad, 10.10.2026."). */
   'print.placeAndDate': (place: string, date: string) => string
-  /** CoursePage: names the outline (its navigation, the phone's button and drawer). */
-  'course.outline': string
-  /** Desktop: hides and shows the outline (P5.90). */
-  'course.hideOutline': string
-  'course.showOutline': string
-  /** CoursePage: the progress to completion ("7 of 12 lessons"). */
-  'course.progress': (done: number, total: number, doneText: string, totalText: string) => string
-  /** CoursePage: names the progress bar. */
-  'course.progressLabel': string
-  /** CoursePage: a module's lessons done ("3 of 4 done"). */
-  'course.moduleProgress': (doneText: string, totalText: string) => string
-  /** CoursePage: a lesson's state in the outline. */
-  'course.done': string
-  'course.locked': string
-  /** CoursePage: a locked lesson's reason after the state ("Locked: finish module 1 first"). */
-  'course.lockedReason': (reason: string) => string
-  /** CoursePage: the action under a lesson, and the state once done. */
-  'course.markDone': string
-  'course.lessonDone': string
-  /** CoursePage: the lesson pager at the bottom, and its navigation's name. */
-  'course.previous': string
-  'course.next': string
-  'course.pager': string
-  /** CoursePage: a course without lessons. */
-  'course.empty': string
-  'course.emptyDescription': string
-  /** CoursePage: the completion block and its certificate. */
-  'course.completed': string
-  'course.downloadCertificate': string
-  'course.certificatePreview': string
   /** QuizResult: the score ("8 of 10 correct"), the outcome and the answers' review. */
   'quiz.score': (correct: number, total: number, correctText: string, totalText: string) => string
   'quiz.passed': string
@@ -1604,16 +1526,6 @@ export interface LiroMessages {
   /** The label dialog's checkbox for a decision's connection. */
   'diagram.defaultWay': string
   // P5.27 legal search
-  /** The name of the search results' list. */
-  'legalSearch.results': string
-  /** How many acts were found: "128 results", "More than 10.000 results" (not exact). */
-  'legalSearch.count': (count: number, text: string, exact: boolean) => string
-  /** The sort button: "Sort: Relevance". */
-  'legalSearch.sortBy': (label: string) => string
-  /** The link to the article a result matched in: "Found in Article 57". */
-  'legalSearch.foundIn': (article: string) => string
-  /** A result's gazette references after the gazette's name: "Illustrative Gazette No. 12/2016, 47/2018". */
-  'legalSearch.gazette': (gazette: string, numbers: string) => string
   /** "Try again" after the search failed. */
   'legalSearch.retry': string
   /** GazetteIssues: an issue's day, its number of acts, "Show more issues", the empty state. */
@@ -1672,26 +1584,6 @@ export interface LiroMessages {
   'legal.unchanged': (count: number, countText: string) => string
   'legal.noChanges': string
   // P5.27 legal page
-  /** The header's version line: "Version as of 11.10.2026."; the date written by `format.date`. */
-  'legalPage.versionAsOf': (date: string) => string
-  /** The version picker's label (for assistive technology; the line above names it). */
-  'legalPage.version': string
-  /** A version in the picker: its from–to range, "(current)" after the version in force. */
-  'legalPage.versionOption': (range: string, current: boolean) => string
-  /** The header's actions. */
-  'legalPage.compareVersions': string
-  'legalPage.copyCitation': string
-  'legalPage.print': string
-  /** Watch for changes, and its "on" state's action. */
-  'legalPage.watch': string
-  'legalPage.unwatch': string
-  /** Bookmark the act, and its "on" state's action. */
-  'legalPage.bookmark': string
-  'legalPage.unbookmark': string
-  /** Phones: the button that opens the side panels as a sheet, and the sheet's title. */
-  'legalPage.details': string
-  /** The act's text region while it loads. */
-  'legalPage.loading': string
   /** The panels' names. */
   'legalPanel.versions': string
   'legalPanel.history': string
@@ -1743,8 +1635,6 @@ export interface LiroMessages {
   ) => string
   /** Leaves the narrowed panel. */
   'legalPanel.backToAct': string
-  /** The printout's footnotes heading. */
-  'legalPrint.footnotes': string
   // P5.25a FloorPlan
   /** An item's level in words, from the formatted percentage: "62,5% full". */
   'floorPlan.level': (percentText: string) => string
@@ -1786,8 +1676,6 @@ export interface LiroMessages {
   'attendance.correctSubject': (row: string, column: string) => string
   /** ShiftPlanner: the move dialog's action; the shift goes under it (P5.28 item 6). */
   'shifts.moveAction': string
-  /** PickList: the skip dialog's action; the item goes under it (P5.28 item 6). */
-  'pick.skipAction': string
   // P5.28 left
   /** ShiftPlanner's move dialog: the shift it moves, under the action ("Morning · Ana Petrović, …"). */
   'shifts.moveSubject': (label: string, name: string, dayText: string) => string
@@ -1976,13 +1864,9 @@ export interface LiroMessages {
   /** The conversation's name, suggested and recent questions. */
   'assistant.conversation': string
   'assistant.suggested': string
-  'assistant.recent': string
   /** The panel's and the page's buttons. */
   'assistant.newConversation': string
   'assistant.openPage': string
-  'assistant.newQuestion': string
-  /** The question box under an answer on the "Ask" page. */
-  'assistant.followUp': string
   /** EmailPreview (P5.38): its name, the width and mail-client switches, the header's labels. */
   'emailPreview.label': string
   'emailPreview.width': string
@@ -1994,10 +1878,6 @@ export interface LiroMessages {
   'emailPreview.from': string
   'emailPreview.to': string
   'emailPreview.subject': string
-  /** ArticlePage (P5.39): the related articles, the tags, the date of the last change. */
-  'article.related': string
-  'article.tags': string
-  'article.updated': (dateText: string) => string
   /** ShareLinks (P5.39). */
   'share.label': string
   'share.copy': string
@@ -2205,18 +2085,7 @@ export interface LiroMessages {
   /** Loading failed. */
   'hierarchy.retry': string
   // P5.43 files
-  /** FileBrowser (P5.43): the quick places and the folder tree, and showing or hiding them. */
-  'files.places': string
   'files.folders': string
-  'files.showFolders': string
-  'files.hideFolders': string
-  /** The list and grid views, and the grid's sort menu. */
-  'files.view': string
-  'files.listView': string
-  'files.gridView': string
-  'files.sort': string
-  /** The columns and facts of a file. */
-  'files.name': string
   'files.owner': string
   'files.modified': string
   'files.created': string
@@ -2232,44 +2101,11 @@ export interface LiroMessages {
   /** After a name: shared with others, a favourite. */
   'files.shared': string
   'files.favourite': string
-  /** The actions of the view. */
-  'files.upload': string
-  'files.uploadTitle': string
-  'files.chooseFolder': string
-  'files.newFolder': string
   'files.details': string
   'files.download': string
   /** One item: its checkbox, its menu, the phone's bottom sheet of actions. */
   'files.select': (name: string) => string
-  'files.selectAll': string
   'files.actions': (name: string) => string
-  'files.actionsTitle': string
-  /** The way back to the parent folder on a phone ("Back to Contracts"). */
-  'files.backTo': (folder: string) => string
-  /** While searching: in this folder or everywhere. */
-  'files.searchScope': string
-  'files.searchEverywhere': string
-  /** The states. */
-  'files.empty': string
-  'files.emptyDescription': string
-  'files.noResults': string
-  'files.noResultsDescription': string
-  'files.noAccess': string
-  'files.offline': string
-  'files.offlineDescription': string
-  'files.offlineReason': string
-  'files.loadError': string
-  'files.retry': string
-  /** Dropping files from the computer onto the view. */
-  'files.dropHere': (folder: string) => string
-  /** Dragging items onto a folder: what moves, where it would land, a cancelled drag. */
-  'files.dragging': (count: number, countText: string) => string
-  'files.dropInto': (folder: string) => string
-  'files.dragCancelled': string
-  /** The uploads: "2 of 5 uploaded", clear the finished ones. */
-  'files.uploads': string
-  'files.uploadCounts': (done: number, doneText: string, total: number, totalText: string) => string
-  'files.clearUploads': string
   /** The name of a new folder or a renamed item. */
   'files.nameLabel': string
   /** FilePreview: "3 of 12", the previous and next file, a file without a preview. */

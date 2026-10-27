@@ -43,6 +43,21 @@ They apply to every screen, before any rule below.
 
 PosShell is the till's full-screen shell (F7).
 
+## The templates (P5.92)
+
+The library keeps about eighteen page templates, each a floorplan's frame: the shells (AppShell,
+AuthShell, PortalShell, PosShell) and Launchpad; F1 `ListPage`, `RegisterPage`; F2 `DetailPage`,
+`RecordFormPage`, `SettingsPage`; F3 `DocumentPage`; F4 `WorklistPage`; F5 `DashboardPage`,
+`ReportPage`, `StatutoryFormPage`; F6 `PeriodicRunPage`; `StatusPage` and `NotificationsPage`;
+the printout `PrintPage` with `PrintDocument`. Everything else is a composition of these and the
+components, written in `docs/recipes.md` ("Pages composed from the core templates"): a legal act
+is a DocumentPage with LegalText, legal search a ListPage with SearchResultList, a course, an
+article or "Ask" one reading page, picking and counting a WorklistPage or ListPage in touch
+density, a payment order a RecordFormPage, signing a DetailPage with SignerList, the files a
+ListPage with the file components. Other printouts are JSON definitions rendered from the print
+parts. Each template shows four to six stories in the Storybook sidebar (default, empty,
+loading, error, phone and the one that matters most); its other variants stay in the tests.
+
 ## F1 List — `ListPage`
 
 **When:** a set of records to find, scan and act on: lists, catalogues, registers, queues (an

@@ -219,6 +219,7 @@ export const Phone: Story = {
 
 /** On a phone at 100%: the sheet scrolls sideways in its own region; the page does not. */
 export const PhoneScrolling: Story = {
+  tags: ['!dev'],
   name: 'Phone, 100% scrolling',
   args: { fit: 'none' },
   render: (args) => (
@@ -244,6 +245,7 @@ export const PhoneScrolling: Story = {
 
 /** Arabic, right to left: the page number moves to the left margin, the margins mirror. */
 export const Arabic: Story = {
+  tags: ['!dev'],
   render: () => (
     <StoryProvider locale="ar">
       <PrintPage
@@ -277,6 +279,7 @@ export const Arabic: Story = {
 
 /** Japanese. */
 export const Japanese: Story = {
+  tags: ['!dev'],
   render: () => (
     <StoryProvider locale="ja">
       <PrintPage

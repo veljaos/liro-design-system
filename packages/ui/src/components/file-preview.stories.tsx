@@ -44,7 +44,7 @@ const meta = {
           'Download.\n\n' +
           '**When to use:** previewing files of a folder or a list of attachments. **When not:** ' +
           'a document beside the values read from it (PageViewer in the review); a document to ' +
-          'sign (SigningPage).',
+          'sign (a record page with SignerList).',
       },
     },
   },

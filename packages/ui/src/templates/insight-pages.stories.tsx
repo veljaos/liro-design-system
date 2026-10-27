@@ -390,7 +390,7 @@ export const ReportStory: Story = {
 
 export const ReportStoryInteraction: Story = {
   name: 'Report, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => (
     <ExampleProvider>
       <Report />
@@ -417,6 +417,7 @@ export const ReportRan: Story = {
 
 /** The report at phone width. */
 export const ReportPhone: Story = {
+  tags: ['!dev'],
   name: 'Report, phone width',
   render: () => (
     <PhoneFrame>
@@ -445,6 +446,7 @@ export const SettingsStory: Story = {
 
 /** Settings at phone width: the controls under the descriptions. */
 export const SettingsPhone: Story = {
+  tags: ['!dev'],
   name: 'Settings, phone width',
   render: () => (
     <PhoneFrame>
@@ -460,6 +462,7 @@ export const SettingsPhone: Story = {
  * devices signed in to the account, under the same line as a row.
  */
 export const SettingsWithBlock: Story = {
+  tags: ['!dev'],
   name: 'Settings, a section with a block',
   render: () => (
     <ExampleProvider>
@@ -523,6 +526,7 @@ export const SettingsWithBlock: Story = {
 
 /** Arabic settings in a right-to-left page. */
 export const Arabic: Story = {
+  tags: ['!dev'],
   render: () => (
     <StoryProvider locale="ar">
       <ExampleProvider>
@@ -560,6 +564,7 @@ export const Arabic: Story = {
 
 /** Japanese dashboard numbers. */
 export const Japanese: Story = {
+  tags: ['!dev'],
   render: () => (
     <StoryProvider locale="ja">
       <ExampleProvider>

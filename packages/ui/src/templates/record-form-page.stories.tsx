@@ -141,7 +141,7 @@ export const Default: Story = {}
  */
 export const UnsavedChanges: Story = {
   name: 'Unsaved changes',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => (
     <ExampleProvider>
       <NewEmployeeForm startDirty />
@@ -173,6 +173,7 @@ export const PhoneWidth: Story = {
 
 /** Arabic title in a right-to-left page. */
 export const Arabic: Story = {
+  tags: ['!dev'],
   render: () => (
     <StoryProvider locale="ar">
       <ExampleProvider>
@@ -184,6 +185,7 @@ export const Arabic: Story = {
 
 /** Japanese title. */
 export const Japanese: Story = {
+  tags: ['!dev'],
   render: () => (
     <StoryProvider locale="ja">
       <ExampleProvider>

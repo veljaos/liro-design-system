@@ -322,6 +322,7 @@ export const PatientPhone: Story = {
 
 /** The participant menu open: who they are, then the application's entries. */
 export const ParticipantMenu: Story = {
+  tags: ['!dev'],
   name: 'Participant menu',
   args: { defaultMenuOpen: true },
   play: async () => {
@@ -334,7 +335,7 @@ export const ParticipantMenu: Story = {
 /** Opening the participant menu. */
 export const ParticipantMenuInteraction: Story = {
   name: 'Participant menu, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   play: async ({ canvasElement }) => {
     await settle()
     await userEvent.click(
@@ -361,6 +362,7 @@ export const ParentPortal: Story = {
 
 /** The parent portal on a phone: four sections in the bottom bar. */
 export const ParentPhone: Story = {
+  tags: ['!dev'],
   name: 'Parent portal, phone',
   args: PARENT,
   render: (args) => (
@@ -389,6 +391,7 @@ export const CustomerPortal: Story = {
 
 /** The customer portal on a phone. */
 export const CustomerPhone: Story = {
+  tags: ['!dev'],
   name: 'Customer portal, phone',
   args: CUSTOMER,
   render: (args) => (
@@ -404,6 +407,7 @@ export const CustomerPhone: Story = {
 
 /** Long names: the participant's name is cut in the header and whole in the menu. */
 export const LongText: Story = {
+  tags: ['!dev'],
   name: 'Long text',
   args: {
     ...CUSTOMER,
@@ -438,6 +442,7 @@ export const LongText: Story = {
 
 /** Long names on a phone: section names are cut in the bar and whole in their names. */
 export const LongTextPhone: Story = {
+  tags: ['!dev'],
   name: 'Long text, phone',
   args: LongText.args ?? {},
   render: (args) => (
@@ -458,6 +463,7 @@ export const LongTextPhone: Story = {
 
 /** Arabic, on a phone: the bottom bar from the right. */
 export const Arabic: Story = {
+  tags: ['!dev'],
   render: () => (
     <PhoneFrame>
       <StoryProvider locale="ar">
@@ -483,6 +489,7 @@ export const Arabic: Story = {
 
 /** Japanese, on desktop. */
 export const Japanese: Story = {
+  tags: ['!dev'],
   render: () => (
     <StoryProvider locale="ja">
       <PortalShell

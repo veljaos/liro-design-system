@@ -47,7 +47,7 @@ const meta = {
           'with a border.selected border); the tiles are one tab stop: the arrows move, Space ' +
           'checks, Shift+arrows extend, Ctrl/Cmd+A checks all, Enter opens; Tab reaches the ' +
           'focused tile’s menu.\n\n' +
-          '**When to use:** FileBrowser’s grid view, a folder of pictures. **When not:** ' +
+          '**When to use:** a files page’s grid view (the files recipe, docs/recipes.md), a folder of pictures. **When not:** ' +
           'documents read by their names, owners and dates (the list, DataTable); products at a ' +
           'till (ProductGrid).',
       },

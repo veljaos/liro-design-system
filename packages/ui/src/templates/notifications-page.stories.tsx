@@ -122,7 +122,7 @@ export const Default: Story = {
 
 export const DefaultInteraction: Story = {
   name: 'Default, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
@@ -162,6 +162,7 @@ export const Unread: Story = {
 
 /** Filtered by one company that has no unread notification: "Nothing matches" with Clear. */
 export const NoMatch: Story = {
+  tags: ['!dev'],
   name: 'Nothing matches',
   render: () => (
     <ExampleProvider>
@@ -178,7 +179,7 @@ export const NoMatch: Story = {
 
 export const NoMatchInteraction: Story = {
   name: 'Nothing matches, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => (
     <ExampleProvider>
       <Demo show="unread" companies={['panonija']} />
@@ -229,6 +230,7 @@ const LONG: NotificationItem[] = [
 
 /** Long titles, comments and company names wrap; nothing is cut. */
 export const LongText: Story = {
+  tags: ['!dev'],
   name: 'Long text',
   render: () => (
     <ExampleProvider>
@@ -268,6 +270,7 @@ export const Panel: Story = {
 
 /** The panel with nothing in it. */
 export const PanelEmpty: Story = {
+  tags: ['!dev'],
   name: 'Panel, empty',
   render: () => (
     <ExampleProvider>
@@ -303,6 +306,7 @@ const ARABIC: NotificationItem[] = [
 
 /** Arabic notifications in a right-to-left page. */
 export const Arabic: Story = {
+  tags: ['!dev'],
   render: () => (
     <StoryProvider locale="ar">
       <ExampleProvider>
@@ -337,6 +341,7 @@ const JAPANESE: NotificationItem[] = [
 
 /** Japanese notifications. */
 export const Japanese: Story = {
+  tags: ['!dev'],
   render: () => (
     <StoryProvider locale="ja">
       <ExampleProvider>

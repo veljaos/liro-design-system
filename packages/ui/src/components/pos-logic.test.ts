@@ -18,7 +18,6 @@ import {
   stepQuantity,
 } from './quantity-logic'
 import { EMPTY_SCAN_BUFFER, scanDecision, scanKey, type ScanBuffer } from './scan-logic'
-import { pickProgress, pickStepState } from './warehouse-logic'
 
 /** The entry after pressing these keys from empty. */
 function typed(keys: readonly KeypadKey[], options = {}): string {
@@ -227,25 +226,5 @@ describe('scanKey', () => {
     ])
     expect(result.codes).toEqual([])
     expect(result.buffer).toEqual(EMPTY_SCAN_BUFFER)
-  })
-})
-
-describe('pickProgress and pickStepState', () => {
-  it('counts the lines done of all', () => {
-    expect(
-      pickProgress([
-        { state: 'picked' },
-        { state: 'open' },
-        { state: 'short' },
-        { state: 'skipped' },
-      ]),
-    ).toEqual({ done: 3, total: 4 })
-    expect(pickProgress([])).toEqual({ done: 0, total: 0 })
-  })
-
-  it('places each step against the current one', () => {
-    expect(pickStepState('location', 'item')).toBe('done')
-    expect(pickStepState('item', 'item')).toBe('current')
-    expect(pickStepState('quantity', 'item')).toBe('todo')
   })
 })

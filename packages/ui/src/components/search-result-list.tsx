@@ -11,7 +11,7 @@ import { Spinner } from './spinner'
 /*
  * SearchResultList (BUILD-PLAN P5.30 e): the pages a search found — help articles, pages of a
  * guide, saved answers — as a list, each with its matches marked. A list, not a table: a snippet
- * needs the width (as LegalSearchPage's results, P5.27, whose snippet idea it shares). The
+ * needs the width (as the legal search recipe's results, P5.27). The
  * application searches, ranks and cuts the snippets; the list only shows them.
  * - Over the list a polite status: the count ("3 results", `count`) or the application's own
  *   words (`summary`: "3 results for “rejected”"); while the application searches again, a small

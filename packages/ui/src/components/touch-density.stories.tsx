@@ -61,7 +61,7 @@ const meta = {
           'rows of checkboxes, radios and switches — overlays included, since they render inside ' +
           'the provider. Nothing else changes: the same tokens, the same look. A nested provider ' +
           'keeps it (touch is never lowered inside a touch screen).\n\n' +
-          '**When:** PosShell, PickList, StockCount, any screen made for fingers.\n\n' +
+          '**When:** PosShell, a handheld worklist (picking, a stock count), any screen made for fingers.\n\n' +
           '**When not:** the back office (the desktop sizes are denser on purpose).',
       },
     },

@@ -151,7 +151,7 @@ const meta = {
           'scanner works anywhere on the screen (`onScan`).\n\n' +
           '**When:** a point of sale, a kiosk, a self-service order screen.\n\n' +
           '**When not:** the back office of a shop (AppShell); a handheld’s warehouse work ' +
-          '(PickList, StockCount).\n\n' +
+          '(a handheld worklist: picking, a stock count).\n\n' +
           '**P5.28:** `banners` under the strip stay in view (a training mode); the queue’s ' +
           'state (`queueState` “failed”: a danger “Not sent” badge) and `queueAction`.',
       },
@@ -181,12 +181,14 @@ export const Default: Story = {
 
 /** Sales waiting to be sent while online. */
 export const Sending: Story = {
+  tags: ['!dev'],
   name: 'Sending the queue',
   render: () => <Till queued={2} />,
 }
 
 /** Training: a persistent warning banner, and the cart's marker. */
 export const Training: Story = {
+  tags: ['!dev'],
   render: () => (
     <Till
       banners={
@@ -262,6 +264,7 @@ export const EmptyCart: Story = {
 
 /** Long names wrap in the strip. */
 export const LongText: Story = {
+  tags: ['!dev'],
   name: 'Long text',
   render: () => (
     <Till
@@ -386,7 +389,7 @@ function PhoneSelling() {
 /** Tapping a tile: its count on the tile and the bar's count go up at once, highlighted. */
 export const PhoneSellingInteraction: Story = {
   name: 'Phone width, tapping items, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => (
     <PhoneFrame>
       <StoryProvider density="touch">
@@ -418,6 +421,7 @@ export const PhoneSellingInteraction: Story = {
 
 /** Arabic, right to left: the cart at the end is on the left. */
 export const Arabic: Story = {
+  tags: ['!dev'],
   render: () => (
     <StoryProvider locale="ar" density="touch">
       <div className="h-dvh">
@@ -461,6 +465,7 @@ export const Arabic: Story = {
 
 /** Japanese. */
 export const Japanese: Story = {
+  tags: ['!dev'],
   render: () => (
     <StoryProvider locale="ja" density="touch">
       <div className="h-dvh">
@@ -500,7 +505,7 @@ export const Japanese: Story = {
 /** Pressing tiles and scanning anywhere on the screen add products; the application sums. */
 export const Selling: Story = {
   name: 'Selling, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   args: { onScan: fn() },
   render: (args) => <SellingDemo onScan={args.onScan ?? (() => undefined)} />,
   play: async ({ canvasElement, args }) => {

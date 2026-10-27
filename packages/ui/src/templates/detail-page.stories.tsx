@@ -376,7 +376,7 @@ export const EditMode: Story = {
 
 export const EditModeInteraction: Story = {
   name: 'Edit mode, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
@@ -398,7 +398,7 @@ export const EditModeInteraction: Story = {
 /** Saving goes back to reading, with the new value. */
 export const EditAndSave: Story = {
   name: 'Edit and save',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
@@ -419,6 +419,7 @@ export const EditAndSave: Story = {
 
 /** A user who may not change pay: in edit mode Payroll keeps its values as text. */
 export const ReadOnlySection: Story = {
+  tags: ['!dev'],
   name: 'Read-only section in edit mode',
   render: () => (
     <ExampleProvider>
@@ -436,7 +437,7 @@ export const ReadOnlySection: Story = {
 /** Leaving with unsaved changes asks first: Stay, then Leave (the main action last). */
 export const UnsavedChanges: Story = {
   name: 'Unsaved changes',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
@@ -465,7 +466,7 @@ export const SectionBarStory: Story = {
 
 export const SectionBarStoryInteraction: Story = {
   name: 'Section bar, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => (
     <ExampleProvider>
       <EmployeeRecord frame={{ sectionBar: true }} />
@@ -545,6 +546,7 @@ export const PhoneEdit: Story = {
 
 /** Long names and values wrap. */
 export const LongText: Story = {
+  tags: ['!dev'],
   name: 'Long text',
   render: () => (
     <ExampleProvider>
@@ -560,6 +562,7 @@ export const LongText: Story = {
 
 /** Arabic record names in a right-to-left page. */
 export const Arabic: Story = {
+  tags: ['!dev'],
   render: () => (
     <StoryProvider locale="ar">
       <ExampleProvider>
@@ -578,6 +581,7 @@ export const Arabic: Story = {
 
 /** Japanese record names. */
 export const Japanese: Story = {
+  tags: ['!dev'],
   render: () => (
     <StoryProvider locale="ja">
       <ExampleProvider>

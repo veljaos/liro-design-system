@@ -3,7 +3,7 @@ import { Bell } from 'lucide-react'
 import { useState } from 'react'
 import { expect, userEvent, within } from 'storybook/test'
 import { settle } from '../primitives/story-helpers'
-import { ISSUES } from '../templates/legal-search-story-data'
+import { ISSUES } from './gazette-story-data'
 import { Button } from './button'
 import { GazetteIssues, type GazetteIssue } from './gazette-issues'
 import { ExampleProvider, expectContentDirection, PhoneFrame, StoryProvider } from './story-frames'
@@ -20,7 +20,7 @@ const meta = {
           'holds, then its acts — type, status, the title as a link, and the application’s ' +
           'short note ("Amends …"). "Show more issues" pages from the application.\n\n' +
           '**When to use:** beside the legal search, on a start page, in a watch list. ' +
-          '**When not:** a search across acts (LegalSearchPage); the history of one act ' +
+          '**When not:** a search across acts (the legal search recipe); the history of one act ' +
           '(the act page’s side panel).',
       },
     },
