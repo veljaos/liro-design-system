@@ -1942,6 +1942,8 @@ export interface LiroMessages {
   /** LinkSuggestions (P5.30 d): the count announced while the user types, and the search. */
   'suggestions.count': (count: number, countText: string) => string
   'suggestions.searching': string
+  /** LinkSuggestions without suggestions (P5.93 item 2): what the box is for. */
+  'suggestions.empty': string
   /** PageContents (P5.30 e). */
   'pageContents.title': string
   /** SearchResultList (P5.30 e): the count over the results, and Try again. */
@@ -2353,6 +2355,8 @@ export interface LiroMessages {
   'sharing.setPassword': string
   // ── P5.66 records ──
   /** DefinedForm: a required value missing — a value to write, an option to choose, a box to tick. */
+  /** DefinedForm without definitions (P5.93 item 2). */
+  'definedForm.empty': string
   'definedForm.fill': string
   'definedForm.choose': string
   'definedForm.tick': string

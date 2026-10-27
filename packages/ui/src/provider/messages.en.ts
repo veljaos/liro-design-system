@@ -1348,6 +1348,7 @@ export const messagesEn: LiroMessages = {
   'suggestions.count': (count, countText) =>
     count === 0 ? 'No suggestions' : `${countText} ${count === 1 ? 'suggestion' : 'suggestions'}`,
   'suggestions.searching': 'Looking for suggestions…',
+  'suggestions.empty': 'No matching pages yet. They appear here as you write.',
   'pageContents.title': 'On this page',
   'searchResults.count': (count, countText) => `${countText} ${count === 1 ? 'result' : 'results'}`,
   'searchResults.retry': 'Try again',
@@ -1686,6 +1687,7 @@ export const messagesEn: LiroMessages = {
   'files.nameRequired': 'Enter a name.',
   'sharing.setPassword': 'Set password',
   // ── P5.66 records ──
+  'definedForm.empty': 'There is nothing to fill in here.',
   'definedForm.fill': 'Fill in this field.',
   'definedForm.choose': 'Choose an option.',
   'definedForm.tick': 'Tick this to go on.',

@@ -861,8 +861,19 @@ function DiagramBody(props: DiagramProps) {
   let body
   if (props.loading === true) {
     body = (
-      <div role="status" aria-label={messages['diagram.loading']} style={{ height }}>
-        <Skeleton className="size-full rounded-lg" />
+      // A visible loading state (P5.93 item 2): the canvas's place, and the words over it.
+      <div
+        role="status"
+        aria-label={messages['diagram.loading']}
+        className="relative"
+        style={{ height }}
+      >
+        <Skeleton className="absolute inset-0 rounded-lg" />
+        <div className="absolute inset-0 flex items-center justify-center p-4">
+          <span aria-hidden="true" className={cn('text-sm text-secondary', TEXT_ISOLATE)}>
+            {messages['diagram.loading']}
+          </span>
+        </div>
       </div>
     )
   } else if (props.error !== undefined) {

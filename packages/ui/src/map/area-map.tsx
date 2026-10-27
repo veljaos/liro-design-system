@@ -191,8 +191,13 @@ export function AreaMap(props: AreaMapProps) {
         data-ready=""
         className={cn('flex flex-col gap-3', props.className)}
       >
-        <span className="sr-only">{messages['map.loading']}</span>
-        <Skeleton className="w-full" style={{ height }} />
+        {/* A visible loading state (P5.93 item 2): the map's place, and the words over it. */}
+        <div className="relative w-full" style={{ height }}>
+          <Skeleton className="absolute inset-0" />
+          <div className="absolute inset-0 flex items-center justify-center p-4">
+            <span className="text-sm text-secondary bidi-isolate">{messages['map.loading']}</span>
+          </div>
+        </div>
       </div>
     )
   }

@@ -153,12 +153,18 @@ export const LongText: Story = {
   args: { sections: LONG, showMissing: true },
 }
 
-/** No definitions yet (the application loads them): nothing is drawn. */
+/** The definitions are on their way (P5.93): a card of skeleton fields. */
+export const Loading: Story = {
+  args: { sections: [], loading: true },
+}
+
+/** No definitions: the form says there is nothing to fill in. */
 export const Empty: Story = {
   args: { sections: [] },
   play: async ({ canvasElement }) => {
     await settle()
     await expect(canvasElement.querySelectorAll('[data-slot="field"]')).toHaveLength(0)
+    await expect(within(canvasElement).getByText('There is nothing to fill in here.')).toBeVisible()
   },
 }
 

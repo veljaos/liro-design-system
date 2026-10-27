@@ -76,13 +76,14 @@ export const FirstSearch: Story = {
   args: { loading: true, suggestions: [] },
 }
 
-/** Nothing found: nothing is drawn; "No suggestions" is announced. */
+/** Nothing found (P5.93): the box says what it is for; "No suggestions" is announced. */
 export const Empty: Story = {
   args: { suggestions: [] },
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
-    await expect(canvas.queryByRole('heading')).toBeNull()
+    await expect(canvas.getByRole('heading')).toBeVisible()
+    await expect(canvas.getByText(/They appear here as you write/)).toBeVisible()
     await expect(canvas.getByRole('status')).toHaveTextContent('No suggestions')
   },
 }

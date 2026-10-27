@@ -15,7 +15,7 @@ import { cn } from '../primitives/cn'
 import { Skeleton } from '../primitives/skeleton'
 import { useLiro } from '../provider/liro-provider'
 import { Button } from './button'
-import { EmptyState, ErrorState } from './empty-state'
+import { EmptyState, ErrorState, type EmptyAction } from './empty-state'
 import {
   descendantCount,
   hasChildren,
@@ -94,7 +94,10 @@ export type {
  *   dragging).
  * - Phones (below 48em, or `layout`): the same nodes as an indented list (TreeView), with the
  *   same search, unit, choosing and opening.
- * - Loading: skeleton boxes; `error` with Try again; no nodes: `empty`.
+ * - Loading: skeleton boxes; `error` with Try again; no nodes: an EmptyState with the
+ *   application's words (`empty`) and its first step (`emptyAction`, "Add the first position").
+ *   While loading, failed or empty the tools (search, fit, show only this unit) are not drawn:
+ *   they have nothing to work on (P5.93 item 2).
  */
 
 export interface HierarchyChartProps {
@@ -148,8 +151,13 @@ export interface HierarchyChartProps {
   /** The nodes could not be loaded: the application's words. */
   error?: ReactNode
   onRetry?: () => void
-  /** What an empty chart shows. Default EmptyState with the provider's texts. */
+  /**
+   * The empty chart's words under the provider's "Nothing here yet" (an EmptyState), from the
+   * application: "No positions yet." Default: the provider's description.
+   */
   empty?: ReactNode
+  /** The empty chart's first step, from the application ("Add the first position"). */
+  emptyAction?: EmptyAction
   /** 'phone' draws the indented list; default by the viewport (48em). */
   layout?: 'desktop' | 'phone'
   className?: string
@@ -469,7 +477,9 @@ export function HierarchyChart(props: HierarchyChartProps) {
   const depth = props.defaultExpandedDepth ?? 3
   const stackFrom = props.stackFrom ?? 3
   const vacantLabel = props.vacantLabel ?? messages['hierarchy.vacant']
-  const showToolbar = props.toolbar ?? true
+  // The tools work on nodes: not drawn while loading, failed or empty (P5.93 item 2).
+  const hasNodes = props.loading !== true && props.error === undefined && props.nodes.length > 0
+  const showToolbar = (props.toolbar ?? true) && hasNodes
   const searchable = props.search ?? true
 
   // What the search found first at mount: revealed, chosen.
@@ -822,7 +832,15 @@ export function HierarchyChart(props: HierarchyChartProps) {
       </div>
     )
   } else if (props.nodes.length === 0) {
-    body = <div className={cn('px-6', TEXT_DIRECTION)}>{props.empty ?? <EmptyState compact />}</div>
+    body = (
+      <div className="px-6">
+        <EmptyState
+          compact
+          {...(props.empty === undefined ? {} : { description: props.empty })}
+          {...(props.emptyAction === undefined ? {} : { action: props.emptyAction })}
+        />
+      </div>
+    )
   } else if (phone) {
     const toTree = (node: HierarchyNode): TreeNode<HierarchyNode> => {
       const kids = index.children.get(node.id) ?? []
@@ -910,7 +928,7 @@ export function HierarchyChart(props: HierarchyChartProps) {
       )}
     >
       {toolbar}
-      {trail}
+      {hasNodes && trail}
       {body}
     </section>
   )

@@ -125,9 +125,10 @@ describe('LinkSuggestions', () => {
     expect(html).toContain('1 suggestion')
   })
 
-  it('draws only the status without suggestions', () => {
+  it('says what the box is for without suggestions, and announces none', () => {
     const html = render(<LinkSuggestions title="These articles may help" suggestions={[]} />)
-    expect(html).not.toContain('These articles may help')
+    expect(html).toContain('These articles may help')
+    expect(html).toContain('No matching pages yet. They appear here as you write.')
     expect(html).toContain('No suggestions')
     const loading = render(<LinkSuggestions title="Help" suggestions={[]} loading />)
     expect(loading).toContain('Looking for suggestions…')

@@ -1,10 +1,12 @@
 import { useImperativeHandle, useRef, useState, type ReactNode, type Ref } from 'react'
 import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
+import { Skeleton } from '../primitives/skeleton'
 import { useLangAttribute } from '../provider/lang'
 import { useLiro } from '../provider/liro-provider'
 import { CheckboxField, SwitchField } from './checkbox-field'
 import { DateField } from './date-field'
+import { EmptyState } from './empty-state'
 import {
   definedFormState,
   definedEmptyValue,
@@ -70,6 +72,9 @@ export type {
  * - `lang`: the language of the definitions' texts when it is not the page's ("sr-Latn" on an
  *   English page): labels, hints, section titles and every option carry it (D15), select and
  *   multiselect options through their `lang`.
+ * - `loading` (the definitions are on their way): a card of skeleton fields, busy. No sections
+ *   and not loading: an EmptyState that says there is nothing to fill in (P5.93 item 2: a loading
+ *   state is always visible, an empty one says something).
  * Nothing is computed, saved or rendered as a document here: the preview of the document is the
  * application's (DocumentFrame beside the form).
  */
@@ -115,8 +120,10 @@ export interface DefinedFormProps {
   errors?: Readonly<Record<string, string>>
   /** Shows the missing values from the start (a draft opened again, a step already tried). */
   showMissing?: boolean
-  /** The whole form as text that can be copied, not changed. */
+  /** The whole form read-only: every field in the read-only look (P5.93). */
   readOnly?: boolean
+  /** The definitions are on their way: skeleton fields. */
+  loading?: boolean
   /** Draws a field of type 'custom'. Without it such a field is left out. */
   renderCustom?: (field: DefinedField, control: DefinedCustomControl) => ReactNode
   /** The language of the definitions' texts, when not the page's (D15). */
@@ -202,6 +209,38 @@ export function DefinedForm({ ref, ...props }: DefinedFormProps) {
     if (kind === 'choose') return messages['definedForm.choose']
     if (kind === 'tick') return messages['definedForm.tick']
     return messages['definedForm.fill']
+  }
+
+  if (props.loading === true) {
+    return (
+      <div
+        role="region"
+        aria-busy="true"
+        aria-label={messages['field.loading']}
+        data-slot="defined-form"
+        className={cn(
+          'box-border flex min-w-0 flex-col gap-4 rounded-lg border border-solid border-default bg-surface-raised p-4 font-sans',
+          props.className,
+        )}
+      >
+        <Skeleton className="h-5 w-48 max-w-full" />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {[0, 1, 2, 3].map((index) => (
+            <div key={index} className="flex flex-col gap-1.5">
+              <Skeleton className="h-3 w-28 max-w-full" />
+              <Skeleton className="h-control w-full" />
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+  if (props.sections.length === 0) {
+    return (
+      <div data-slot="defined-form" className={cn('min-w-0 font-sans', props.className)}>
+        <EmptyState compact description={messages['definedForm.empty']} />
+      </div>
+    )
   }
 
   return (
