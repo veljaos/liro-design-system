@@ -128,6 +128,13 @@ export const NIGHTLY_FAILED: DiagramRun = {
     savings: {
       state: 'failed',
       reason: 'The bank did not answer in 30 s.',
+      // The step's log (P5.93), shown on request as a small CodeBlock.
+      log: [
+        '02:01:02 GET /statements?account=savings&date=2026-10-05',
+        '02:01:32 No answer within 30 s (timeout)',
+        '02:01:32 Run stopped: waiting for Retry or Skip',
+      ].join('\n'),
+      logLanguage: 'text',
       actions: [
         { key: 'skip', label: 'Skip', icon: SkipForward },
         { key: 'retry', label: 'Retry', icon: RotateCw, family: 'primary' },

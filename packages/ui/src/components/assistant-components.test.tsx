@@ -47,8 +47,9 @@ describe('AssistantAnswer', () => {
     expect(html).toContain('<tfoot')
     expect(html).toContain('href="#/f-1"')
     expect(html).toContain('data-testid="chart"')
-    expect(html).toContain('Sources')
-    expect(html).toContain('href="#/sales"')
+    // The sources are one line "Used 1 record" that opens into the links (P5.93).
+    expect(html).toContain('Used 1 record')
+    expect(html).toContain('aria-expanded="false"')
   })
 
   it('draws a table as cards in the panel', () => {

@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 /*
  * The data of an assistant's answer (BUILD-PLAN P5.34) and the pure rules the assistant's
  * components follow. Nothing here calls a model: an answer is the application's data — blocks of
- * text, small tables, charts and sources — and its state. Tested in assistant-logic.test.ts.
+ * text, small tables, charts, code (P5.93) and sources — and its state. Tested in assistant-logic.test.ts.
  */
 
 /**
@@ -92,11 +92,27 @@ export interface AnswerSource {
   detail?: ReactNode
 }
 
-/** The records the answer came from, as links. */
+/**
+ * The records the answer came from: one line "Used 4 records" that opens into the links (Sources,
+ * P5.93); the same record twice is listed once.
+ */
 export interface AnswerSourcesBlock {
   kind: 'sources'
   items: readonly AnswerSource[]
-  /** The title over them. Default `messages['assistant.sources']`. */
+  /** Another line than "Used 4 records" (a string). */
+  title?: string
+}
+
+/**
+ * Code, a query, a payload or a log the answer shows (P5.93): a CodeBlock with Copy, highlighted
+ * where the application gives `CodeHighlighting` (`@veljaos/ui/code`).
+ */
+export interface AnswerCodeBlock {
+  kind: 'code'
+  code: string
+  /** "sql", "json", "ansi" for terminal output … (CodeBlock's `language`). */
+  language?: string
+  /** A file name or a label over the code ("Query", "webhook.json"). */
   title?: ReactNode
 }
 
@@ -107,6 +123,7 @@ export type AnswerBlock =
   | AnswerListBlock
   | AnswerTableBlock
   | AnswerChartBlock
+  | AnswerCodeBlock
   | AnswerSourcesBlock
 
 /** The state of an action the assistant proposes. Nothing happens before 'running'. */
