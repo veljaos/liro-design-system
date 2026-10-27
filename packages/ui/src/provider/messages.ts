@@ -2289,4 +2289,7 @@ export interface LiroMessages {
   'dashboardGrid.removed': (title: string) => string
   /** The grid without cards. */
   'dashboardGrid.empty': string
+  // ── P5.93 (c) ──
+  /** InlineUndo's button (P5.93 item 3). */
+  'undo.label': string
 }

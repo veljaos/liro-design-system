@@ -185,6 +185,8 @@ export { notice, Toaster } from './components/notice'
 export type { NoticeAction, NoticeKind, NoticeOptions, ToasterProps } from './components/notice'
 export { SaveStatus } from './components/save-status'
 export type { SaveState, SaveStatusProps } from './components/save-status'
+export { InlineUndo } from './components/inline-undo'
+export type { InlineUndoProps } from './components/inline-undo'
 export { useBottomBar } from './components/bottom-bars'
 export { compactStep, ProgressBar, Skeleton, Stepper, stepState } from './components/progress'
 export type {
@@ -854,7 +856,7 @@ export type {
   ProductTileProps,
 } from './components/product-tile'
 export { CartPanel } from './components/cart-panel'
-export type { CartAmount, CartLine, CartPanelProps } from './components/cart-panel'
+export type { CartAmount, CartLine, CartPanelProps, CartUndo } from './components/cart-panel'
 export {
   FLASH_DURATION,
   grownLines,

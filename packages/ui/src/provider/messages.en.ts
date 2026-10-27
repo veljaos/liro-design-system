@@ -1645,4 +1645,6 @@ export const messagesEn: LiroMessages = {
   'dashboardGrid.remove': (title) => `Remove: ${title}`,
   'dashboardGrid.removed': (title) => `${title} removed.`,
   'dashboardGrid.empty': 'No cards on this dashboard.',
+  // ── P5.93 (c) ──
+  'undo.label': 'Undo',
 }

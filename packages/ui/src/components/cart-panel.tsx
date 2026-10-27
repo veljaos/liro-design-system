@@ -1,5 +1,5 @@
 import { Pencil, ShoppingCart, Trash2 } from 'lucide-react'
-import { useEffect, useId, useRef, type ReactNode } from 'react'
+import { Fragment, useEffect, useId, useRef, type ReactNode } from 'react'
 import { ButtonPrimitive } from '../primitives/button'
 import { FOCUS_RING, TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
 import { cn } from '../primitives/cn'
@@ -7,6 +7,7 @@ import { useLiro } from '../provider/liro-provider'
 import { MoneyText, NumberText } from './display-text'
 import { Banner } from './alert'
 import { EmptyState } from './empty-state'
+import { InlineUndo } from './inline-undo'
 import type { IconComponent } from './intents'
 import { FLASH_CLASS, FLASH_TRANSITION, useGrowingLines } from './pos-feedback'
 import { QuantityStepper } from './quantity-stepper'
@@ -39,6 +40,11 @@ import { Tooltip } from './popover'
  * P5.90 (item 20): a line that appears, or whose quantity goes up, is highlighted briefly and
  * scrolled into view (`useGrowingLines`), so every tap on a product or on + is seen at once and
  * nobody taps twice out of doubt. Nothing flashes when the cart first appears.
+ *
+ * P5.93 (item 3): no toasts for routine actions in a till. What just changed shows in the cart,
+ * with its Undo in the place where it happened (`undo`, an InlineUndo row): a removed line's place
+ * ("Krempita removed · Undo"), the top of the list for a parked sale or moved items. A line's
+ * state says where it stands ("Sent to the kitchen · 19:40", in the application's tone).
  */
 
 export interface CartLine {
@@ -86,6 +92,20 @@ const STATE_TONE: Record<Tone, string> = {
   premium: 'text-status-premium-fg',
 }
 
+/** What just changed in the cart, with its Undo in place (P5.93 item 3). */
+export interface CartUndo {
+  /** What happened, in the application's words ("Krempita removed"). */
+  message: string
+  onUndo: () => void
+  /** The button's words. Default: `messages['undo.label']` ("Undo"). */
+  undoLabel?: string
+  /**
+   * The line it stands after (a removed line's former neighbour); without it, or when that line
+   * is gone, at the top of the list.
+   */
+  after?: string
+}
+
 /** A row above the total: a subtotal, a discount, tax included; signed as the application sends. */
 export interface CartAmount {
   id: string
@@ -110,6 +130,12 @@ export interface CartPanelProps {
   onRemove?: (id: string) => void
   /** Adds an edit button to each line (the application's dialog: quantity, note, discount). */
   onEditLine?: (id: string) => void
+  /**
+   * What just changed, with Undo, in its place in the list (a removed line, a parked sale): the
+   * inline answer instead of a toast (P5.93 item 3). The application takes it away at the next
+   * change.
+   */
+  undo?: CartUndo
   /** The sale's kind under the title, in the application's words ("Normal · Sale"). */
   kindLabel?: string
   /**
@@ -167,6 +193,19 @@ export function CartPanel(props: CartPanelProps) {
       scroller.scrollTop = top + line.offsetHeight - scroller.clientHeight
     }
   }, [growing])
+  const undo = props.undo
+  const undoAtTop =
+    undo !== undefined &&
+    (undo.after === undefined || !props.lines.some((line) => line.id === undo.after))
+  const undoRow =
+    undo === undefined ? null : (
+      <InlineUndo
+        message={undo.message}
+        onUndo={undo.onUndo}
+        {...(undo.undoLabel === undefined ? {} : { undoLabel: undo.undoLabel })}
+        className="border-0 border-b border-solid border-subtle bg-surface-sunken px-4 py-2"
+      />
+    )
   const chargeLabel =
     props.chargeLabel ??
     messages['cart.charge'](props.total === null ? '—' : format.money(props.total, props.currency))
@@ -215,6 +254,7 @@ export function CartPanel(props: CartPanelProps) {
             {props.details}
           </div>
         )}
+        {undoAtTop && undoRow}
         {count === 0 ? (
           <EmptyState
             compact
@@ -225,7 +265,12 @@ export function CartPanel(props: CartPanelProps) {
         ) : (
           <ul ref={list} className="m-0 list-none p-0">
             {props.lines.map((line) => (
-              <CartLineRow key={line.id} line={line} cart={props} flash={growing.has(line.id)} />
+              <Fragment key={line.id}>
+                <CartLineRow line={line} cart={props} flash={growing.has(line.id)} />
+                {!undoAtTop && props.undo?.after === line.id && (
+                  <li className="last:[&>*]:border-b-0">{undoRow}</li>
+                )}
+              </Fragment>
             ))}
           </ul>
         )}
