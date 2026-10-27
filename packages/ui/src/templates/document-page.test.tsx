@@ -185,7 +185,8 @@ describe('panel lists (P4.9)', () => {
       />,
     )
     expect(html).toContain('[&amp;_[data-slot=panel-row]:first-child]:pt-0')
-    expect(html).toContain('pb-3')
+    // The header's 16px under it, open or closed, as every section's (P5.93 item 6).
+    expect(html).toMatch(/aria-expanded="true"[^>]*class="[^"]* p-4 /)
   })
 })
 
