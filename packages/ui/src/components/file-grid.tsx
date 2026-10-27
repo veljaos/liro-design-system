@@ -25,7 +25,7 @@ import { EntryMarks, EntryState, FactsLine, FileIcon, useEntryFacts } from './fi
  *   Home / End; Space checks the tile, Shift+arrows extend from the last tile checked, Ctrl/Cmd+A
  *   checks every tile; Enter (or a press) opens it (`onOpen`). Ctrl/Cmd+click checks, Shift+click
  *   checks a range. Tab goes on to the focused tile's menu (`actions`), a 28px "Actions: <name>".
- * - Drag (FileBrowser): each tile carries `data-file-drag`, a folder's `data-file-drop`; the
+ * - Drag (a files page): each tile carries `data-file-drag`, a folder's `data-file-drop`; the
  *   tiles themselves never start a drag.
  * - `loading`: skeleton tiles.
  */

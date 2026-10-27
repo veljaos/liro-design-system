@@ -203,7 +203,7 @@ export const Default: Story = {
 
 export const DefaultInteraction: Story = {
   name: 'Default, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
@@ -230,7 +230,7 @@ export const CheckedRows: Story = {
 
 export const CheckedRowsInteraction: Story = {
   name: 'Checked rows, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => (
     <ExampleProvider>
       <Approvals checkable startChecked={['u2', 'u5']} />
@@ -368,7 +368,7 @@ export const PhoneDetail: Story = {
 
 export const PhoneDetailInteraction: Story = {
   name: 'Phone width, detail, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => (
     <PhoneFrame>
       <ExampleProvider>
@@ -388,6 +388,7 @@ export const PhoneDetailInteraction: Story = {
 
 /** Arabic rows. */
 export const Arabic: Story = {
+  tags: ['!dev'],
   render: () => (
     <StoryProvider locale="ar">
       <ExampleProvider>
@@ -408,6 +409,7 @@ export const Arabic: Story = {
 
 /** Japanese rows. */
 export const Japanese: Story = {
+  tags: ['!dev'],
   render: () => (
     <StoryProvider locale="ja">
       <ExampleProvider>

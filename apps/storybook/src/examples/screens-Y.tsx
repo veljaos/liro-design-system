@@ -35,7 +35,7 @@ import {
   SectionCard,
   SelectField,
   SignerList,
-  SigningPage,
+  DetailPage,
   StatusBadge,
   StatusTimeline,
   TextAreaField,
@@ -93,7 +93,7 @@ import {
  *   approval (StatusTimeline: submitted, the site manager, HR) and a new request (the
  *   application counts the working days).
  * - Shifts: MyShifts with "Request swap" to his crew.
- * - Documents: what waits for his signature and what he signed; an annex on SigningPage with
+ * - Documents: what waits for his signature and what he signed; an annex on a record page (DetailPage + SignerList) with
  *   SignerList (Sign, Decline with a reason). The signing itself is the application's.
  * - My details: what HR has, and change requests waiting for HR's approval (a Drawer for the
  *   request, D14).
@@ -983,10 +983,30 @@ export function AnnexScreen({ phone }: { phone: boolean }) {
   const update = (patch: Partial<Signer>) => {
     setSigners((list) => list.map((each) => (each.id === 'nikola' ? { ...each, ...patch } : each)))
   }
+  const signerList = (
+    <SignerList
+      signers={signers}
+      declineReasons={DECLINE_REASONS}
+      declineMessage={`The annex goes back to ${EMPLOYEE.hr} (HR) with your reason.`}
+      declineSubject={ANNEX.title}
+      onSign={() => {
+        update({ state: 'signed', at: '2026-10-14T09:42:00+02:00' })
+        notice.success('Annex signed. Nenad Kovačević signs next.')
+      }}
+      onDecline={(_signer, answer) => {
+        const reason = DECLINE_REASONS.find((each) => each.value === answer.reason)?.label
+        update({
+          state: 'declined',
+          at: '2026-10-14T09:42:00+02:00',
+          reason: [reason, answer.text].filter(Boolean).join(': '),
+        })
+      }}
+    />
+  )
   return (
     <EmployeePortal phone={phone} current="documents">
       <Page wide>
-        <SigningPage
+        <DetailPage
           layout={phone ? 'phone' : 'desktop'}
           title={document.id}
           back={{ href: `#${Y_ROUTES.documents}`, label: 'Documents' }}
@@ -1009,27 +1029,19 @@ export function AnnexScreen({ phone }: { phone: boolean }) {
               }}
             />
           }
-          preview={<AnnexSheet />}
-          signers={
-            <SignerList
-              signers={signers}
-              declineReasons={DECLINE_REASONS}
-              declineMessage={`The annex goes back to ${EMPLOYEE.hr} (HR) with your reason.`}
-              declineSubject={ANNEX.title}
-              onSign={() => {
-                update({ state: 'signed', at: '2026-10-14T09:42:00+02:00' })
-                notice.success('Annex signed. Nenad Kovačević signs next.')
-              }}
-              onDecline={(_signer, answer) => {
-                const reason = DECLINE_REASONS.find((each) => each.value === answer.reason)?.label
-                update({
-                  state: 'declined',
-                  at: '2026-10-14T09:42:00+02:00',
-                  reason: [reason, answer.text].filter(Boolean).join(': '),
-                })
-              }}
-            />
-          }
+          sections={[
+            ...(phone ? [{ id: 'signers', label: 'Signers', content: signerList }] : []),
+            { id: 'document', label: 'Document', flush: true, content: <AnnexSheet /> },
+          ]}
+          {...(phone
+            ? {}
+            : {
+                side: (
+                  <SectionCard title="Signers" headingLevel={2}>
+                    {signerList}
+                  </SectionCard>
+                ),
+              })}
         />
       </Page>
     </EmployeePortal>

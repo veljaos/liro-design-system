@@ -50,7 +50,7 @@ const meta = {
     docs: {
       description: {
         component:
-          '**What for:** everything about one file or folder, in FileBrowser’s details column: ' +
+          '**What for:** everything about one file or folder, in a files page’s details column: ' +
           'type, size, owner, created and modified, location, the retention label in the ' +
           'application’s words, tags; the records it is linked to; its signing (SignerList), ' +
           'versions (VersionList), who has access and its activity — each a collapsible panel ' +
@@ -121,7 +121,7 @@ export const LongText: Story = {
   },
 }
 
-/** Phone width (in FileBrowser it stands in a Drawer). */
+/** Phone width (on a files page it stands in a Drawer). */
 export const Phone: Story = {
   args: FULL,
   decorators: [

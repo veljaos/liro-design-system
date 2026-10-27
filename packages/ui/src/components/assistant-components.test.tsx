@@ -1,8 +1,6 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 import { LiroProvider } from '../provider/liro-provider'
-import { ArticlePage } from '../templates/article-page'
-import { AskPage } from '../templates/ask-page'
 import { ArticleList } from './article-list'
 import { AssistantAnswer } from './assistant-answer'
 import { AssistantComposer } from './assistant-composer'
@@ -152,40 +150,13 @@ describe('ProposedAction', () => {
   })
 })
 
-describe('AssistantComposer and AskPage', () => {
+describe('AssistantComposer', () => {
   it('names the box and keeps Ask waiting for a question', () => {
     const html = render(<AssistantComposer onAsk={noop} placeholder="Ask about your data" />)
     expect(html).toContain('Your question')
     expect(html).toContain('placeholder="Ask about your data"')
     expect(html).toContain('aria-label="Ask"')
     expect(html).toMatch(/disabled=""[^>]*aria-label="Ask"|aria-label="Ask"[^>]*disabled=""/)
-  })
-
-  it('shows the start and the answer views', () => {
-    const start = render(
-      <AskPage
-        title="What would you like to know?"
-        onAsk={noop}
-        suggestions={['Which invoices are overdue?']}
-        recent={['How much VAT is due?']}
-      />,
-    )
-    expect(start).toContain('<h1')
-    expect(start).toContain('Suggested questions')
-    expect(start).toContain('Recent questions')
-    expect(start).toContain('Enter asks, Shift+Enter starts a new line')
-    const answered = render(
-      <AskPage
-        title="What would you like to know?"
-        onAsk={noop}
-        question="Which invoices are overdue?"
-        answer={<p>The answer</p>}
-        onNewQuestion={noop}
-      />,
-    )
-    expect(answered).toContain('Which invoices are overdue?</h1>')
-    expect(answered).toContain('New question')
-    expect(answered).toContain('Ask a follow-up')
   })
 })
 
@@ -265,27 +236,6 @@ describe('reading', () => {
     expect(share).toContain('Copy link')
     expect(share).toContain('target="_blank"')
   })
-
-  it('lays an article out for reading', () => {
-    const html = render(
-      <ArticlePage
-        title="Why e-invoices are rejected"
-        category={{ label: 'E-invoicing', href: '#/c' }}
-        author={{ name: 'Jelena Stanković' }}
-        date="2026-10-14"
-        updated="2026-10-15"
-        readingTime="6 min read"
-        tags={[{ key: 't', label: 'SEF', href: '#/t' }]}
-        related={<p>related</p>}
-      >
-        <p>Body</p>
-      </ArticlePage>,
-    )
-    expect(html).toContain('Why e-invoices are rejected</h1>')
-    expect(html).toContain('Updated ')
-    expect(html).toContain('Related articles')
-    expect(html).toContain('Tags')
-  })
 })
 
 describe('every prop does something (C8)', () => {
@@ -321,19 +271,5 @@ describe('every prop does something (C8)', () => {
         />,
       ),
     ).toContain('lang="sr-Latn"')
-  })
-
-  it("draws an author's photo and the article's language", () => {
-    const html = render(
-      <ArticlePage
-        title="Članak"
-        lang="sr-Latn"
-        author={{ name: 'Jelena Stanković', avatarSrc: 'https://example.com/j.png' }}
-      >
-        <p>Tekst</p>
-      </ArticlePage>,
-    )
-    expect(html).toContain('lang="sr-Latn"')
-    expect(html).toContain('JS')
   })
 })

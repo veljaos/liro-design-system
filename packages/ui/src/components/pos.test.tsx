@@ -2,9 +2,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 import { numericFormat } from '../provider/format'
 import { LiroProvider, useLiro } from '../provider/liro-provider'
-import { PickList } from '../templates/pick-list'
 import { PosShell } from '../templates/pos-shell'
-import { StockCount } from '../templates/stock-count'
 import { CartPanel } from './cart-panel'
 import { NumericKeypad } from './numeric-keypad'
 import { ProductGrid } from './product-tile'
@@ -231,66 +229,5 @@ describe('PosShell', () => {
     )
     expect(offline).toContain('Offline')
     expect(offline).toContain('1 sale waiting to be sent')
-  })
-})
-
-describe('PickList and StockCount', () => {
-  it('shows progress, the current line and its step', () => {
-    const html = render(
-      <PickList
-        title="PL-1"
-        lines={[
-          {
-            id: 'a',
-            location: 'A-01-01',
-            item: 'Cement',
-            quantity: '10',
-            picked: '10',
-            state: 'picked',
-          },
-          {
-            id: 'b',
-            location: 'A-02-03',
-            item: 'Lepak',
-            quantity: '4',
-            picked: null,
-            state: 'open',
-          },
-        ]}
-        currentId="b"
-        step="item"
-        onScan={() => undefined}
-        onConfirm={() => undefined}
-      />,
-    )
-    expect(html).toContain('1 of 2')
-    expect(html).toContain('Item code')
-    expect(html).toContain('aria-current="step"')
-  })
-
-  it('shows a signed difference from the application', () => {
-    const html = render(
-      <StockCount
-        title="Count"
-        location="B-01"
-        items={[
-          {
-            id: 'a',
-            item: 'Cement',
-            counted: '8',
-            expected: '10',
-            difference: '-2',
-            differenceTone: 'danger',
-          },
-          { id: 'b', item: 'Lepak', counted: '5', difference: '2' },
-        ]}
-        currentId="a"
-        onScan={() => undefined}
-        onCountChange={() => undefined}
-      />,
-    )
-    expect(html).toContain('-2')
-    expect(html).toContain('+2')
-    expect(html).toContain('Expected')
   })
 })

@@ -175,7 +175,7 @@ export const Default: Story = {
 
 export const DefaultInteraction: Story = {
   name: 'Default, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
@@ -230,6 +230,7 @@ export const Empty: Story = {
  * docs/decisions.md "Liro patterns (Phase 5 part 1)").
  */
 export const FiveThousand: Story = {
+  tags: ['!dev'],
   name: '5,000 entries (virtualized)',
   render: () => {
     function Many() {
@@ -254,7 +255,7 @@ export const FiveThousand: Story = {
 
 export const FiveThousandInteraction: Story = {
   name: '5,000 entries (virtualized), interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => {
     function Many() {
       const rows = useMemo(() => manyTraining(5000), [])
@@ -280,6 +281,7 @@ export const FiveThousandInteraction: Story = {
 
 /** Long text wraps in the header and the lock. */
 export const LongText: Story = {
+  tags: ['!dev'],
   name: 'Long text',
   render: () => (
     <ExampleProvider>
@@ -312,6 +314,7 @@ export const PhoneWidth: Story = {
 
 /** Arabic sample text, right to left. */
 export const Arabic: Story = {
+  tags: ['!dev'],
   render: () => (
     <StoryProvider locale="ar">
       <Register
@@ -324,6 +327,7 @@ export const Arabic: Story = {
 
 /** Japanese sample text. */
 export const Japanese: Story = {
+  tags: ['!dev'],
   render: () => (
     <StoryProvider locale="ja">
       <Register

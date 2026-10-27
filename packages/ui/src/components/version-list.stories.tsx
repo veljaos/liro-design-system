@@ -18,7 +18,7 @@ const meta = {
           '“Upload a new version”. Restore and upload can be unavailable with the application’s ' +
           'reason.\n\n' +
           '**When to use:** the Versions panel of a file’s details. **When not:** a record’s ' +
-          'history of changes (HistoryList); versions of a legal act (LegalActPage).',
+          'history of changes (HistoryList); versions of a legal act (legal-panels’ Versions panel).',
       },
     },
   },

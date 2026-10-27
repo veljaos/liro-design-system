@@ -352,7 +352,7 @@ export const Empty: Story = {
 /** The rerun asks for a reason; the run goes back to Calculate with its progress. */
 export const Rerun: Story = {
   name: 'Rerun with a reason',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: function Render() {
     const [rerun, setRerun] = useState<string | null>(null)
     return (
@@ -416,6 +416,7 @@ export const Rerun: Story = {
 
 /** Earlier steps can be opened to look at their checks (the application shows them). */
 export const StepClick: Story = {
+  tags: ['!dev'],
   name: 'Steps as buttons',
   render: function Render() {
     const [viewed, setViewed] = useState(2)
@@ -441,7 +442,7 @@ export const StepClick: Story = {
 
 export const StepClickInteraction: Story = {
   name: 'Steps as buttons, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: function Render() {
     const [viewed, setViewed] = useState(2)
     return (
@@ -469,6 +470,7 @@ export const StepClickInteraction: Story = {
 
 /** Long names, details and figures wrap; amounts stay whole. */
 export const LongText: Story = {
+  tags: ['!dev'],
   name: 'Long text',
   render: () => (
     <ExampleProvider>
@@ -517,6 +519,7 @@ export const PhoneWidth: Story = {
 
 /** Arabic text. */
 export const Arabic: Story = {
+  tags: ['!dev'],
   render: () => (
     <StoryProvider locale="ar">
       <PayrollRun
@@ -536,6 +539,7 @@ export const Arabic: Story = {
 
 /** Japanese text. */
 export const Japanese: Story = {
+  tags: ['!dev'],
   render: () => (
     <StoryProvider locale="ja">
       <PayrollRun

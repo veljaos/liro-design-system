@@ -681,7 +681,7 @@ export const Default: Story = {
 
 export const DefaultInteraction: Story = {
   name: 'Default, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
@@ -709,6 +709,7 @@ export const DefaultInteraction: Story = {
 
 /** "Hide panels": the document takes the full width. */
 export const PanelsHidden: Story = {
+  tags: ['!dev'],
   name: 'Panels hidden',
   render: () => (
     <ExampleProvider>
@@ -723,7 +724,7 @@ export const PanelsHidden: Story = {
 
 export const PanelsHiddenInteraction: Story = {
   name: 'Panels hidden, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
@@ -735,6 +736,7 @@ export const PanelsHiddenInteraction: Story = {
 
 /** Rejected by SEF: the error step in danger, its reason on hover and focus. */
 export const Rejected: Story = {
+  tags: ['!dev'],
   render: () => (
     <ExampleProvider>
       <Invoice
@@ -778,7 +780,7 @@ export const Draft: Story = {
 
 export const DraftInteraction: Story = {
   name: 'Draft, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => (
     <ExampleProvider>
       <DraftInvoice />
@@ -798,6 +800,7 @@ export const DraftInteraction: Story = {
 
 /** Below 75em: the panels under the document, no whole-column button. */
 export const Narrow: Story = {
+  tags: ['!dev'],
   render: () => (
     <ExampleProvider>
       <Invoice layout="narrow" />
@@ -853,6 +856,7 @@ export const DraftPhone: Story = {
  * counterparty's level (`counterparties`); the user's own company, the assignor, is in the shell.
  */
 export const ThreeParties: Story = {
+  tags: ['!dev'],
   name: 'Three parties',
   render: () => (
     <ExampleProvider>
@@ -900,6 +904,7 @@ export const ThreeParties: Story = {
 
 /** Arabic lines and counterparty in a right-to-left page. */
 export const Arabic: Story = {
+  tags: ['!dev'],
   render: () => (
     <StoryProvider locale="ar">
       <ExampleProvider>
@@ -925,6 +930,7 @@ export const Arabic: Story = {
 
 /** Japanese counterparty. */
 export const Japanese: Story = {
+  tags: ['!dev'],
   render: () => (
     <StoryProvider locale="ja">
       <ExampleProvider>
@@ -1090,7 +1096,7 @@ export const ComplexDocument: Story = {
 
 export const ComplexDocumentInteraction: Story = {
   name: 'Complex document, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => (
     <ExampleProvider>
       <ComplexInvoice />
@@ -1123,6 +1129,7 @@ export const ComplexDocumentInteraction: Story = {
 
 /** The same at phone width: the same order, the lines a flat list, the recap full width. */
 export const ComplexDocumentPhone: Story = {
+  tags: ['!dev'],
   name: 'Complex document, phone',
   render: () => (
     <PhoneFrame>
@@ -1139,6 +1146,7 @@ export const ComplexDocumentPhone: Story = {
  * and links to the cancellation document.
  */
 export const CancelDocument: Story = {
+  tags: ['!dev'],
   name: 'Cancel a document',
   render: () => {
     function Cancellable() {
@@ -1211,7 +1219,7 @@ export const CancelDocument: Story = {
 
 export const CancelDocumentInteraction: Story = {
   name: 'Cancel a document, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => {
     function Cancellable() {
       const [reason, setReason] = useState<string | null>(null)
@@ -1454,6 +1462,7 @@ export const CorrectiveDocument: Story = {
 
 /** The same on a phone: the source under the customer. */
 export const CorrectiveDocumentPhone: Story = {
+  tags: ['!dev'],
   name: 'Corrective document, phone',
   render: () => (
     <PhoneFrame>

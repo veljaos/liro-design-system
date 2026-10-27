@@ -18,7 +18,7 @@ import { TEXT_ISOLATE } from '../primitives/classes'
 import { settle } from '../primitives/story-helpers'
 import type { PrintColumn } from './print-parts'
 import { BUYER, longInvoice, SELLER, type PrintLine } from './print-story-data'
-import { PrintDocument, type PrintDocumentProps } from './print-templates'
+import { PrintDocument, type PrintDocumentProps } from './print-document'
 
 /**
  * The issuer's logo, an image from the application (D18): a mark and the name in the logo colour,
@@ -258,6 +258,7 @@ export const Default: Story = {
 
 /** Without the recap, the payment block or the notes: each part only when the data has it. */
 export const Minimal: Story = {
+  tags: ['!dev'],
   name: 'Invoice without recap and payment block',
   render: () => (
     <ExampleProvider>
@@ -413,6 +414,7 @@ const ARABIC_LINES: FinalLine[] = [
 
 /** Arabic, right to left: the parties, the lines and the totals mirror. */
 export const Arabic: Story = {
+  tags: ['!dev'],
   render: () => (
     <StoryProvider locale="ar">
       <PrintDocument
@@ -463,6 +465,7 @@ export const Arabic: Story = {
 
 /** Japanese. */
 export const Japanese: Story = {
+  tags: ['!dev'],
   render: () => (
     <StoryProvider locale="ja">
       <PrintDocument

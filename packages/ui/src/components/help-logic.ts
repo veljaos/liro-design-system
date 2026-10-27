@@ -11,8 +11,7 @@ import type { LiroFormat } from '../provider/format'
 
 /**
  * A part of a highlighted text: plain text, or a run that matched the search (drawn in a
- * <mark>). The same shape as LegalSearchPage's snippet parts, so `snippetFromRanges` makes them
- * from a text and the ranges a search engine reports.
+ * <mark>). `snippetFromRanges` makes them from a text and the ranges a search engine reports.
  */
 export type HighlightPart = string | { match: string }
 
@@ -22,6 +21,38 @@ export type Highlight = readonly HighlightPart[]
 /** A highlighted text's plain text, the marks dropped (an accessible name, a test). */
 export function highlightText(parts: Highlight): string {
   return parts.map((part) => (typeof part === 'string' ? part : part.match)).join('')
+}
+
+/**
+ * A highlighted text from a text and the ranges that matched, as a search engine reports them:
+ * each range `[start, end)` in UTF-16 code units (JavaScript string offsets). Ranges are clamped
+ * to the text, empty ones dropped, and overlapping or touching ones joined, so a match is never
+ * marked twice or split; the parts come in the text's order. Ranges are the engine's: the library
+ * finds nothing itself.
+ */
+export function snippetFromRanges(
+  text: string,
+  ranges: readonly (readonly [number, number])[],
+): HighlightPart[] {
+  const clamped = ranges
+    .map(([start, end]) => [Math.max(0, start), Math.min(text.length, end)] as const)
+    .filter(([start, end]) => end > start)
+    .sort((a, b) => a[0] - b[0])
+  const joined: [number, number][] = []
+  for (const [start, end] of clamped) {
+    const last = joined.at(-1)
+    if (last !== undefined && start <= last[1]) last[1] = Math.max(last[1], end)
+    else joined.push([start, end])
+  }
+  const parts: HighlightPart[] = []
+  let at = 0
+  for (const [start, end] of joined) {
+    if (start > at) parts.push(text.slice(at, start))
+    parts.push({ match: text.slice(start, end) })
+    at = end
+  }
+  if (at < text.length) parts.push(text.slice(at))
+  return parts
 }
 
 /** How many runs of a highlighted text matched. */

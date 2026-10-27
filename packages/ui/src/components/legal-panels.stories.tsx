@@ -73,7 +73,7 @@ const meta = {
     docs: {
       description: {
         component:
-          '**What for:** the side panels of a legal act’s page (LegalActPage), as the invoice’s ' +
+          '**What for:** the side panels of a legal act’s page (DocumentPage with LegalText, the legal act recipe in docs/recipes.md), as the invoice’s ' +
           'panels: `useLegalPanels` returns SidePanel entries — Versions, History of changes, ' +
           'Legal hierarchy, References, Court practice and opinions, My notes and bookmarks — ' +
           'and `LegalArticleSummary` stands above them while they are narrowed to one article.\n\n' +

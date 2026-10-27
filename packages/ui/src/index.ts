@@ -458,8 +458,6 @@ export { SetupChecklist } from './components/setup-checklist'
 export type { SetupAction, SetupChecklistProps, SetupStep } from './components/setup-checklist'
 export { SignerList } from './components/signer-list'
 export type { Signer, SignerListProps } from './components/signer-list'
-export { SigningPage } from './templates/signing-page'
-export type { SigningPageProps } from './templates/signing-page'
 export {
   instantText,
   isAllowed,
@@ -923,13 +921,6 @@ export {
   stepQuantity,
 } from './components/quantity-logic'
 export type { StepOptions } from './components/quantity-logic'
-export { PickList } from './templates/pick-list'
-export type { PickLine, PickListProps } from './templates/pick-list'
-export { StockCount } from './templates/stock-count'
-export type { CountItem, StockCountProps } from './templates/stock-count'
-export { PICK_STEPS, pickProgress, pickStepState } from './components/warehouse-logic'
-export type { PickLineState, PickStep } from './components/warehouse-logic'
-// ── P5.15 Print templates, P5.12 Learning ──
 export { PrintPage } from './templates/print-page'
 export type { PrintFrameProps, PrintPageProps, PrintStatus } from './templates/print-page'
 export {
@@ -950,20 +941,8 @@ export type {
   PrintSignaturesProps,
   PrintTableProps,
 } from './templates/print-parts'
-export {
-  PrintCertificate,
-  PrintDocument,
-  PrintFinding,
-  PrintGradeReport,
-} from './templates/print-templates'
-export type {
-  PrintCertificateProps,
-  PrintDocumentProps,
-  PrintFindingProps,
-  PrintFindingSection,
-  PrintGradeReportProps,
-  PrintParty,
-} from './templates/print-templates'
+export { PrintDocument } from './templates/print-document'
+export type { PrintDocumentProps, PrintParty } from './templates/print-document'
 export {
   cssString,
   fitZoom,
@@ -976,10 +955,6 @@ export {
   sheetSize,
 } from './templates/print-logic'
 export type { PageRulesOptions, PrintMargins, PrintOrientation } from './templates/print-logic'
-export { CoursePage } from './templates/course-page'
-export type { CourseCompletion, CourseLessonLink, CoursePageProps } from './templates/course-page'
-export { courseProgress, findLesson, moduleProgress } from './templates/course-logic'
-export type { CourseLesson, CourseModule, LessonCount, LessonState } from './templates/course-logic'
 export { QuizResult } from './components/quiz-result'
 export type { QuizResultProps, QuizReviewItem } from './components/quiz-result'
 // ── P5.25 RoomRack ──
@@ -1071,15 +1046,6 @@ export type {
 } from './components/seating-logic'
 
 // ── P5.27 legal search ──
-export { LegalSearchPage } from './templates/legal-search-page'
-export type { LegalSearchPageProps } from './templates/legal-search-page'
-export { gazetteNumbers, snippetFromRanges, snippetText } from './templates/legal-search-logic'
-export type {
-  LegalSearchResult,
-  LegalSearchSort,
-  LegalSnippet,
-  LegalSnippetPart,
-} from './templates/legal-search-logic'
 export { GazetteIssues } from './components/gazette-issues'
 export type { GazetteIssue, GazetteIssuesProps } from './components/gazette-issues'
 export { treeFilterIds, treeFilterLabels } from './components/filter-logic'
@@ -1135,8 +1101,6 @@ export type {
   LegalTextPart,
 } from './components/legal-logic'
 // ── P5.27 legal page ──
-export { LegalActPage } from './templates/legal-act-page'
-export type { LegalActPageProps } from './templates/legal-act-page'
 export {
   LEGAL_PANEL_KEYS,
   LegalArticleSummary,
@@ -1161,9 +1125,6 @@ export {
   versionsNewestFirst,
 } from './components/legal-panels-logic'
 export type { ArticleCounts } from './components/legal-panels-logic'
-export { PrintLegalAct } from './templates/print-legal-act'
-export type { PrintLegalActProps } from './templates/print-legal-act'
-// ── P5.25a FloorPlan: background, polygon areas, level ──
 export type { FloorBackground } from './components/floor-plan'
 export {
   areaBox,
@@ -1354,6 +1315,7 @@ export {
   currentEntry,
   highlightMatches,
   highlightText,
+  snippetFromRanges,
   ratingAnswer,
   ratingOption,
   scaleValueText,
@@ -1401,8 +1363,6 @@ export type {
   AnswerTextBlock,
   ProposedActionState,
 } from './components/assistant-logic'
-export { AskPage } from './templates/ask-page'
-export type { AskPageProps } from './templates/ask-page'
 export { EmailPreview, emailPreviewWidth } from './components/email-preview'
 export type {
   EmailPreviewProps,
@@ -1416,10 +1376,6 @@ export type { NewsletterSignupProps } from './components/newsletter-signup'
 export { opensOutside, ShareLinks } from './components/share-links'
 export type { ShareLinksProps, ShareTarget } from './components/share-links'
 export { articlePlaces, bylineText, emailProblem, looksLikeEmail } from './components/blog-logic'
-export { ArticlePage } from './templates/article-page'
-export type { ArticleAuthor, ArticlePageProps, ArticleTag } from './templates/article-page'
-
-// ── P5.40 QR code, IPS QR and payment orders ──
 export { QrCode, qrModules, qrPath } from './components/qr-code'
 export type { QrCodeProps, QrErrorCorrection } from './components/qr-code'
 export {
@@ -1438,14 +1394,6 @@ export type {
   IpsQrKind,
   IpsQrResult,
 } from './components/ips-qr'
-export { PaymentOrderForm } from './templates/payment-order'
-export type {
-  PaymentOrderAccount,
-  PaymentOrderField,
-  PaymentOrderFormProps,
-  PaymentOrderParty,
-} from './templates/payment-order'
-// ── P5.36 acct ──
 export { PlanComparison } from './components/plan-comparison'
 export type { PlanComparisonProps } from './components/plan-comparison'
 export { choosablePlan, comparisonRows, featureCell } from './components/plan-logic'
@@ -1490,13 +1438,6 @@ export type {
   HierarchyNode,
 } from './components/hierarchy-logic'
 // ── P5.43 files ──
-export { FileBrowser } from './templates/file-browser'
-export type {
-  FileBrowserProps,
-  FileColumn,
-  FilePlace,
-  FileUploadRules,
-} from './templates/file-browser'
 export {
   blockedFolders,
   canDropInto,

@@ -108,6 +108,7 @@ export const Minimal: Story = {
 
 /** Long texts wrap inside the card. */
 export const LongText: Story = {
+  tags: ['!dev'],
   name: 'Long text',
   args: {
     title: 'Sign in to Kvadrat Gradnja d.o.o. and the other companies you work for',
@@ -139,6 +140,7 @@ export const PhoneWidth: Story = {
 
 /** Arabic texts in a right-to-left page. */
 export const Arabic: Story = {
+  tags: ['!dev'],
   render: () => (
     <StoryProvider locale="ar">
       <ExampleProvider>
@@ -157,6 +159,7 @@ export const Arabic: Story = {
 
 /** Japanese texts. */
 export const Japanese: Story = {
+  tags: ['!dev'],
   render: () => (
     <StoryProvider locale="ja">
       <ExampleProvider>

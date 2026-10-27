@@ -39,7 +39,7 @@ const meta = {
           'always labelled "AI-generated" (AgentMark) and offers "Report a wrong answer" ' +
           '(ReasonConfirmDialog). Follow-up questions and ProposedAction cards come after it.' +
           '\n\n**When to use:** inside AssistantPanel (`size="panel"`: tables as cards) or on ' +
-          'AskPage (`size="page"`: larger text, tables as tables). **When not:** a message ' +
+          'an "Ask" page (`size="page"`: larger text, tables as tables; the Ask recipe, docs/recipes.md). **When not:** a message ' +
           'between people (MessageBubble); an agent asking the user something (AgentQuestion); ' +
           'a notification (Toaster).',
       },

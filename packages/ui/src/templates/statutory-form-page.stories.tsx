@@ -413,7 +413,7 @@ export const Default: Story = {
 
 export const DefaultInteraction: Story = {
   name: 'Default, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
@@ -481,6 +481,7 @@ export const Comparing: Story = {
 
 /** Part 3 and group 1.2 collapsed: their rows are not drawn. */
 export const Collapsed: Story = {
+  tags: ['!dev'],
   render: () => (
     <ExampleProvider>
       <VatReturn defaultCollapsed={['1.2', 'part3']} />
@@ -507,7 +508,7 @@ export const Collapsed: Story = {
  */
 export const Override: Story = {
   name: 'Changing a value',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
@@ -556,6 +557,7 @@ export const Submitted: Story = {
 
 /** Long text wraps: the title and a row's label. */
 export const LongText: Story = {
+  tags: ['!dev'],
   name: 'Long text',
   render: () => (
     <ExampleProvider>
@@ -614,6 +616,7 @@ export const PhoneWidth: Story = {
 
 /** Arabic sample text, right to left. */
 export const Arabic: Story = {
+  tags: ['!dev'],
   render: () => (
     <StoryProvider locale="ar">
       <StatutoryFormPage
@@ -646,6 +649,7 @@ export const Arabic: Story = {
 
 /** Japanese sample text. */
 export const Japanese: Story = {
+  tags: ['!dev'],
   render: () => (
     <StoryProvider locale="ja">
       <StatutoryFormPage
@@ -777,7 +781,7 @@ async function expectTopAtLeast(element: Element, edge: number): Promise<void> {
  */
 export const UnderTheShell: Story = {
   name: 'Thirty-two rows under the shell, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => (
     <ExampleProvider>
       <ShellPage>
@@ -828,7 +832,7 @@ export const UnderTheShell: Story = {
  */
 export const UnderTheShellPhone: Story = {
   name: 'Thirty-two rows under the shell, phone, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => (
     <ExampleProvider>
       <ShellPage width={390} height={720}>
