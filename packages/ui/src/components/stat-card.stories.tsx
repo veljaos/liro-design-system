@@ -13,7 +13,7 @@ const meta = {
         component:
           '**What for:** one number on a dashboard: the label, the value (24px), its change with ' +
           'an arrow — green or red only when the application says the change is good or bad — ' +
-          'what it compares with, and an optional grey sparkline. No decorative icon.\n\n' +
+          'what it compares with, and a grey sparkline only when the application asks for one (`trend`). No decorative icon.\n\n' +
           '**When not:** the figures of one record (KeyFigures); a series to compare (a chart).',
       },
     },
@@ -23,7 +23,6 @@ const meta = {
     value: <MoneyText value="5684200.00" currency="RSD" />,
     change: { text: percentText('16.7', 'always'), direction: 'up', sentiment: 'good' },
     comparison: 'vs September 2025',
-    trend: ['4812.4', '5230.9', '4977.1', '3906.5', '4421.8', '5684.2'],
   },
   render: (args) => (
     <ExampleProvider>
@@ -39,8 +38,14 @@ export default meta
 
 type Story = StoryObj<typeof meta>
 
-/** A good change in green, with the trend. */
+/** A good change in green. No sparkline unless the application asks for one (P5.93). */
 export const Default: Story = {}
+
+/** With the trend the application asks for: a grey sparkline of its values. */
+export const WithTrend: Story = {
+  name: 'With a trend',
+  args: { trend: ['4812.4', '5230.9', '4977.1', '3906.5', '4421.8', '5684.2'] },
+}
 
 /** A bad change in red (overdue receivables went up). */
 export const BadChange: Story = {
@@ -61,7 +66,6 @@ export const NeutralChange: Story = {
     value: '214',
     change: { text: percentText('-3'), direction: 'down' },
     comparison: 'vs September 2025',
-    trend: [],
   },
 }
 

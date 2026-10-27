@@ -1141,7 +1141,7 @@ export const messagesEn: LiroMessages = {
   'change.save': 'Save',
   'change.saveAndNotify': 'Save and notify',
   'change.changes': 'Changes',
-  'change.affected': 'Concerns:',
+  'change.affected': 'Concerns',
   'change.notifyGroup': 'Messages to send',
   'file.takePhoto': 'Take a photo',
   'attendance.correctAction': 'Correct',

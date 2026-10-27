@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { CodeHighlighting } from '../code'
 import { settle } from '../primitives/story-helpers'
@@ -306,9 +306,21 @@ export const Japanese: Story = {
   ),
 }
 
+/** The story's stand-in for the application's answer arriving (no visible test button). */
+const FINISH_EVENT = 'liro-story-finish'
+
 /** Reasoning that finishes: it closes itself and says "Thought for 4 s" — unless toggled. */
 function Finishing() {
   const [done, setDone] = useState(false)
+  useEffect(() => {
+    const finish = () => {
+      setDone(true)
+    }
+    window.addEventListener(FINISH_EVENT, finish)
+    return () => {
+      window.removeEventListener(FINISH_EVENT, finish)
+    }
+  }, [])
   return (
     <Frame>
       <Reasoning status={done ? 'done' : 'running'} {...(done ? { duration: '4 s' } : {})}>
@@ -318,14 +330,6 @@ function Finishing() {
         title={done ? 'Matched bank statement 188' : 'Matching bank statement 188'}
         steps={done ? MATCHED_STEPS : MATCHING_STEPS}
       />
-      <button
-        type="button"
-        onClick={() => {
-          setDone(true)
-        }}
-      >
-        Finish
-      </button>
     </Frame>
   )
 }
@@ -345,8 +349,8 @@ export const FinishInteraction: Story = {
     // The user closes the task: it stays as they left it.
     await userEvent.click(task)
     await expect(task).toHaveAttribute('aria-expanded', 'false')
-    await userEvent.click(canvas.getByRole('button', { name: 'Finish' }))
-    const thought = canvas.getByRole('button', { name: 'Thought for 4 s' })
+    window.dispatchEvent(new Event(FINISH_EVENT))
+    const thought = await canvas.findByRole('button', { name: 'Thought for 4 s' })
     await waitFor(() => expect(thought).toHaveAttribute('aria-expanded', 'false'))
     await expect(
       canvas.getAllByRole('status').some((status) => status.textContent === 'Thought for 4 s'),

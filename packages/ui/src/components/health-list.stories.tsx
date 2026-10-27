@@ -11,7 +11,7 @@ import { ExampleProvider, PhoneFrame, StoryProvider } from './story-frames'
 const UP = { kind: 'up', label: 'Up', tone: 'success' } as const
 const DEGRADED = { kind: 'degraded', label: 'Degraded', tone: 'warning' } as const
 const DOWN = { kind: 'down', label: 'Down', tone: 'danger' } as const
-const MAINTENANCE = { kind: 'maintenance', label: 'In maintenance', tone: 'neutral' } as const
+const MAINTENANCE = { kind: 'maintenance', label: 'Maintenance', tone: 'neutral' } as const
 const UNKNOWN = { kind: 'unknown', label: 'No report', tone: 'neutral' } as const
 
 /** The bank's raw answer, as the application logged it. */
@@ -283,9 +283,8 @@ export const Japanese: Story = {
 /** Retry runs the application's action; the button is busy until its promise settles. */
 export const Retrying: Story = {
   name: 'Retrying, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: (args) => {
-    let finish: () => void = () => undefined
     const items = CONNECTIONS.map((item) =>
       item.id === 'sef'
         ? {
@@ -299,7 +298,8 @@ export const Retrying: Story = {
                 onSelect: () =>
                   new Promise<void>((resolve) => {
                     retry()
-                    finish = resolve
+                    // The application's answer arrives a moment later.
+                    setTimeout(resolve, 800)
                   }),
               },
             ],
@@ -309,14 +309,6 @@ export const Retrying: Story = {
     return (
       <Page>
         <HealthList {...args} items={items} />
-        <button
-          type="button"
-          onClick={() => {
-            finish()
-          }}
-        >
-          Answer
-        </button>
       </Page>
     )
   },
@@ -327,10 +319,12 @@ export const Retrying: Story = {
     await userEvent.click(button)
     await expect(retry).toHaveBeenCalled()
     await expect(button).toHaveAttribute('aria-busy', 'true')
-    await userEvent.click(canvas.getByRole('button', { name: 'Answer' }))
-    await waitFor(async () => {
-      await expect(button).not.toHaveAttribute('aria-busy')
-    })
+    await waitFor(
+      async () => {
+        await expect(button).not.toHaveAttribute('aria-busy')
+      },
+      { timeout: 3000 },
+    )
     await userEvent.click(canvas.getByRole('button', { name: 'Open log: SEF (e-invoicing)' }))
     await expect(openLog).toHaveBeenCalled()
   },

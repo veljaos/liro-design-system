@@ -790,7 +790,6 @@ export function Dashboard({ phone }: { phone: boolean }) {
             value: <MoneyText value="5684200.00" currency="RSD" />,
             change: { text: percentText('16.7', 'always'), direction: 'up', sentiment: 'good' },
             comparison: 'vs September 2025',
-            trend: ['4812.4', '5230.9', '4977.1', '3906.5', '4421.8', '5684.2'],
           },
           {
             key: 'overdue',

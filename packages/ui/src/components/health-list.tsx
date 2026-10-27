@@ -46,7 +46,7 @@ import { usePhone } from './use-phone'
 export interface HealthState {
   /** What it means, for the icon: up, degraded, down, maintenance, unknown. */
   kind: HealthKind
-  /** The application's words: "Up", "Degraded", "Down", "In maintenance", "No report". */
+  /** The application's words: "Up", "Degraded", "Down", "Maintenance", "No report". */
   label: string
   /** The application's tone for this state (its status-to-tone map). */
   tone: Tone

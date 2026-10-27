@@ -427,7 +427,7 @@ function MoveGuestsDialog({
             ],
           }
         : {
-            affected: 'The waiter and the kitchen see the new table at once.',
+            affected: ['The waiter', 'The kitchen'],
           })}
       confirmLabel="Move"
       onConfirm={(answer) => {

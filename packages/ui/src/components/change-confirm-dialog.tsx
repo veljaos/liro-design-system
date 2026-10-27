@@ -1,5 +1,5 @@
 import { ArrowRight, Save } from 'lucide-react'
-import { useState, type ReactElement, type ReactNode } from 'react'
+import { useId, useState, type ReactElement, type ReactNode } from 'react'
 import { LoadingButtonPrimitive } from '../primitives/button'
 import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
@@ -88,8 +88,11 @@ export interface ChangeConfirmDialogProps {
   children?: ReactNode
   /** The change, old → new, one line per field. */
   changes: readonly ChangeLine[]
-  /** Who the change concerns, in the application's words ("Jovana Nikolić, patient; dr …"). */
-  affected?: ReactNode
+  /**
+   * Who the change concerns, in the application's words: each party on its own line under
+   * "Concerns" (P5.93: "Jovana Nikolić (patient)", "dr Marko Stanković"). One node is one line.
+   */
+  affected?: ReactNode | readonly ReactNode[]
   /** The messages the application can send, each an explicit choice. */
   notify?: readonly NotifyOption[]
   /** The application's check of the change (a clash, a rule): a warning Alert. */
@@ -130,6 +133,12 @@ export function changeConfirmLabel(
 ): string {
   if (confirmLabel !== undefined) return confirmLabel
   return checked > 0 ? messages['change.saveAndNotify'] : messages['change.save']
+}
+
+/** The parties a change concerns, one per line; empty ones dropped (P5.93). */
+function affectedParties(value: ReactNode | readonly ReactNode[]): ReactNode[] {
+  const list: readonly ReactNode[] = Array.isArray(value) ? value : [value]
+  return list.filter((party) => !isEmpty(party))
 }
 
 function isEmpty(value: ReactNode): boolean {
@@ -261,6 +270,8 @@ function ChangeForm(
   const options = props.notify ?? []
   const [checked, setChecked] = useState<string[]>(() => initialNotify(options))
   const label = changeConfirmLabel(messages, checked.length, props.confirmLabel)
+  const affectedId = useId()
+  const affected = affectedParties(props.affected)
   return (
     <div data-slot="change-confirm" className="flex flex-col gap-4">
       {props.children}
@@ -273,11 +284,19 @@ function ChangeForm(
           <Line key={change.key ?? change.label} change={change} />
         ))}
       </ul>
-      {!isEmpty(props.affected) && (
-        <p className={cn('m-0 text-sm text-primary', TEXT_DIRECTION)}>
-          <span className="text-secondary">{messages['change.affected']} </span>
-          {props.affected}
-        </p>
+      {affected.length > 0 && (
+        <div className="flex flex-col gap-1 text-sm">
+          <p id={affectedId} className={cn('m-0 text-secondary', TEXT_DIRECTION)}>
+            {messages['change.affected']}
+          </p>
+          <ul aria-labelledby={affectedId} className="m-0 flex list-none flex-col gap-0.5 p-0">
+            {affected.map((party, index) => (
+              <li key={index} className={cn('text-primary', TEXT_DIRECTION)}>
+                {party}
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
       {!isEmpty(props.warning) && <Alert tone="warning">{props.warning}</Alert>}
       <NotifyChoices

@@ -58,7 +58,7 @@ const meta = {
     title: 'Move appointment',
     subject: 'Jovana Nikolić, check-up',
     changes: MOVE,
-    affected: 'Jovana Nikolić (patient), dr Marko Stanković, dr Nada Grujić',
+    affected: ['Jovana Nikolić (patient)', 'dr Marko Stanković', 'dr Nada Grujić'],
     notify: NOTIFY,
     onConfirm: () => undefined,
   },
