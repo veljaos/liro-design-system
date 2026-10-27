@@ -30,7 +30,9 @@ const meta = {
           'apart.\n\n' +
           '**How:** `categories` (time, oldest first), `series`, `values` as decimal strings; ' +
           '`curve` (`monotone` by default, `linear`, `step`); `stack` (`stacked`, `expanded` to ' +
-          '100%); `controls` for an interactive header. Import from `@veljaos/ui/charts`.\n\n' +
+          '100%); `toggle` (a ChartSeriesToggle) for the interactive header — the key figures as ' +
+          'toggle buttons at its end, under the title on phones; `controls` for a period select. ' +
+          'Import from `@veljaos/ui/charts`.\n\n' +
           '**When not:** a change without volume (LineChart); categories that are not time ' +
           '(BarChart). See "Charts / Choosing a chart".',
       },
@@ -117,38 +119,41 @@ function Interactive({
       series={stores.filter((store) => shown.includes(store.key))}
       values={DAILY.values}
       decimals={2}
+      toggle={
+        <ChartSeriesToggle
+          label="Stores shown"
+          multiple
+          value={shown}
+          onValueChange={setShown}
+          items={stores.map((store) => ({
+            key: store.key,
+            label: store.label,
+            total: format.number(dailyTotal(store.key, count), { decimals: 2 }),
+          }))}
+        />
+      }
       controls={
-        <>
-          <ChartSeriesToggle
-            label="Stores shown"
-            multiple
-            value={shown}
-            onValueChange={setShown}
-            items={stores.map((store) => ({
-              key: store.key,
-              label: store.label,
-              total: format.number(dailyTotal(store.key, count), { decimals: 2 }),
-            }))}
-          />
-          <SelectField
-            label="Period"
-            hideLabel
-            value={days}
-            onChange={setDays}
-            className="w-44"
-            options={[
-              { value: '90', label: 'Last 3 months' },
-              { value: '30', label: 'Last 30 days' },
-              { value: '7', label: 'Last 7 days' },
-            ]}
-          />
-        </>
+        <SelectField
+          label="Period"
+          hideLabel
+          value={days}
+          onChange={setDays}
+          className="w-44"
+          options={[
+            { value: '90', label: 'Last 3 months' },
+            { value: '30', label: 'Last 30 days' },
+            { value: '7', label: 'Last 7 days' },
+          ]}
+        />
       }
     />
   )
 }
 
-/** A time-range select and a series toggle in the header; the application filters the data. */
+/**
+ * The interactive header (P5.93 item 42): each store's total as a toggle button at the header's
+ * end, a period select beside the title; the application filters the data.
+ */
 export const InteractiveStory: Story = {
   name: 'Interactive',
   render: () => (

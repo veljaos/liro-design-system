@@ -104,6 +104,8 @@ export interface RegionChartProps extends ChartStateProps {
   height?: number
   /** The application's controls in the header (a period select). */
   controls?: ReactNode
+  /** The key figures as toggle buttons (a ChartSeriesToggle) at the header's end (P5.93 item 42). */
+  toggle?: ReactNode
   /** Default: from the viewport (below 48em 'phone'). */
   layout?: 'desktop' | 'phone'
   className?: string
@@ -460,6 +462,7 @@ export function RegionChart(props: RegionChartProps) {
         title={props.title}
         {...(props.description === undefined ? {} : { description: props.description })}
         {...(props.controls === undefined ? {} : { controls: props.controls })}
+        {...(props.toggle === undefined ? {} : { toggle: props.toggle })}
         {...(props.loading === undefined ? {} : { loading: props.loading })}
         {...(props.defaultView === undefined ? {} : { defaultView: props.defaultView })}
         {...(props.error === undefined ? {} : { error: props.error })}
