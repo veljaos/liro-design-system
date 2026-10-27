@@ -96,7 +96,11 @@ export const Arabic: Story = {
   tags: ['!dev'],
   render: () => (
     <div lang="ar" dir="rtl" className="w-96 max-w-full">
-      <InlineUndo message={ARABIC.value} undoLabel={ARABIC.options[0] ?? ''} onUndo={() => undefined} />
+      <InlineUndo
+        message={ARABIC.value}
+        undoLabel={ARABIC.options[0] ?? ''}
+        onUndo={() => undefined}
+      />
     </div>
   ),
 }
