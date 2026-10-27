@@ -1,4 +1,7 @@
-import { useEffect, useLayoutEffect, useState, type CSSProperties } from 'react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { useEffect, useLayoutEffect, useState, type CSSProperties, type ReactNode } from 'react'
+import { BUTTON_RESET } from '../primitives/classes'
+import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 
 /*
@@ -10,6 +13,14 @@ import { useLiro } from '../provider/liro-provider'
  * the fade. The AppShell's module tabs, the page's Tabs, FormTabs, the PortalShell's sections, the
  * SectionBar and the ListPage's saved views all follow it (saved views keep their "More" after the fifth: that
  * is how many views a list shows, not an overflow rule).
+ *
+ * P5.93 (item 9, the owner's fourth review: "phone header tabs still do not visibly scroll —
+ * 'Repor…' cut"): a faded edge alone read as a cut label. Each edge with more past it now also
+ * shows a chevron over the fade (`edges`, placed beside the scroller in a `relative` box): a
+ * press scrolls the row by most of its width, so a mouse can scroll it too; it is a pointer
+ * shortcut only (hidden from assistive technology and out of the Tab order — the keyboard reaches
+ * every tab, and a focused tab scrolls into view). A mouse wheel over a row that scrolls moves it
+ * sideways (`wheelScroll`); at either end the wheel scrolls the page as before.
  */
 
 /** The width of the fade at an edge with more past it (px); the active tab stays clear of it. */
@@ -52,6 +63,29 @@ export function revealDelta(
   if (tab.left < row.left + margin) return tab.left - (row.left + margin)
   if (tab.right > row.right - margin) return tab.right - (row.right - margin)
   return 0
+}
+
+/**
+ * How far (px, as `scrollLeft` counts) a vertical wheel turn moves a row sideways: down moves
+ * toward the row's end in reading order (to the left in right-to-left). 0 when the turn is
+ * mostly sideways already (a trackpad's own sideways scroll) or the row cannot move that way, so
+ * the page scrolls instead.
+ */
+export function wheelScroll(
+  wheel: { deltaX: number; deltaY: number },
+  row: { scrollLeft: number; scrollWidth: number; clientWidth: number },
+  direction: 'ltr' | 'rtl' = 'ltr',
+): number {
+  if (Math.abs(wheel.deltaY) <= Math.abs(wheel.deltaX)) return 0
+  const room = row.scrollWidth - row.clientWidth
+  if (room <= 1) return 0
+  const fromStart = Math.abs(row.scrollLeft)
+  const towardEnd = wheel.deltaY > 0
+  const step = towardEnd
+    ? Math.min(wheel.deltaY, room - fromStart)
+    : Math.max(wheel.deltaY, -fromStart)
+  if (Math.abs(step) < 1) return 0
+  return direction === 'rtl' ? -step : step
 }
 
 /** Which ends of a scrolling row have more content past them (in reading order). */
@@ -103,18 +137,39 @@ function revealActive(row: HTMLElement, direction: 'ltr' | 'rtl') {
 }
 
 /**
- * The tab row rule on one element: spread the result on the row's scroller (with
- * TAB_ROW_SCROLLER). `active` is the active tab's key; the row scrolls it into view when first
- * drawn and whenever it changes.
+ * The tab row rule on one element: spread `scroller` on the row's scroller (with
+ * TAB_ROW_SCROLLER) and place `edges` beside it, both in one `relative` box (TAB_ROW_BOX).
+ * `active` is the active tab's key; the row scrolls it into view when first drawn and whenever it
+ * changes.
  */
 export function useTabRow(active: string | undefined): {
-  ref: (element: HTMLElement | null) => void
-  'data-fade'?: ''
-  style?: CSSProperties
+  scroller: {
+    ref: (element: HTMLElement | null) => void
+    'data-fade'?: ''
+    style?: CSSProperties
+  }
+  /** The chevrons over the faded edges (P5.93 item 9); null while every tab fits. */
+  edges: ReactNode
 } {
   const { direction } = useLiro()
   const [element, setElement] = useState<HTMLElement | null>(null)
-  const mask = edgeFade(useOverflowEnds(element), direction)
+  const ends = useOverflowEnds(element)
+  const mask = edgeFade(ends, direction)
+  // A wheel over a row that scrolls moves it sideways (P5.93 item 9); not passive, so the page
+  // does not scroll as well.
+  useEffect(() => {
+    if (element === null) return
+    const onWheel = (event: WheelEvent) => {
+      const delta = wheelScroll(event, element, direction)
+      if (delta === 0) return
+      event.preventDefault()
+      element.scrollLeft += delta
+    }
+    element.addEventListener('wheel', onWheel, { passive: false })
+    return () => {
+      element.removeEventListener('wheel', onWheel)
+    }
+  }, [element, direction])
   useLayoutEffect(() => {
     if (element === null) return
     revealActive(element, direction)
@@ -128,8 +183,48 @@ export function useTabRow(active: string | undefined): {
       live = false
     }
   }, [element, active, direction])
+  const page = (towardEnd: boolean) => {
+    if (element === null) return
+    const step = Math.max(element.clientWidth * 0.8, TAB_ROW_FADE)
+    const sign = (towardEnd ? 1 : -1) * (direction === 'rtl' ? -1 : 1)
+    element.scrollBy({ left: sign * step, behavior: 'smooth' })
+  }
+  const edge = (side: 'start' | 'end') => {
+    const Icon = (side === 'end') === (direction === 'rtl') ? ChevronLeft : ChevronRight
+    return (
+      <button
+        key={side}
+        type="button"
+        tabIndex={-1}
+        aria-hidden="true"
+        data-tab-row-edge={side}
+        onClick={() => {
+          page(side === 'end')
+        }}
+        className={cn(
+          BUTTON_RESET,
+          'absolute inset-y-0 flex w-7 cursor-pointer items-center justify-center text-secondary hover:text-primary',
+          side === 'start' ? 'start-0' : 'end-0',
+        )}
+      >
+        <Icon className="size-4" />
+      </button>
+    )
+  }
   return {
-    ref: setElement,
-    ...(mask === undefined ? {} : { 'data-fade': '' as const, style: { maskImage: mask } }),
+    scroller: {
+      ref: setElement,
+      ...(mask === undefined ? {} : { 'data-fade': '' as const, style: { maskImage: mask } }),
+    },
+    edges:
+      ends.start || ends.end ? (
+        <>
+          {ends.start && edge('start')}
+          {ends.end && edge('end')}
+        </>
+      ) : null,
   }
 }
+
+/** The box around a tab row's scroller and its edges. */
+export const TAB_ROW_BOX = 'relative min-w-0'

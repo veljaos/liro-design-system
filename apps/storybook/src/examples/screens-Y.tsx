@@ -201,6 +201,33 @@ function monthName(month: string, format: ReturnType<typeof useLiro>['format']):
 
 // ── Home ──────────────────────────────────────────────────────────────────────────────────────
 
+/** One thing on the home page: what, its detail, its one action or state. */
+function HomeRow({
+  title,
+  detail,
+  end,
+}: {
+  title: ReactNode
+  detail?: ReactNode
+  end?: ReactNode
+}) {
+  return (
+    <li className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-0 border-b border-solid border-default pb-3 last:border-b-0 last:pb-0">
+      <div className="flex min-w-0 flex-1 basis-56 flex-col gap-0.5">
+        <span className="text-sm font-semibold text-primary bidi-content">{title}</span>
+        {detail !== undefined && (
+          <span className="text-sm text-secondary bidi-content">{detail}</span>
+        )}
+      </div>
+      {end}
+    </li>
+  )
+}
+
+/**
+ * The portal's home shows only what matters now (P5.93 item 11, the owner's review): the quick
+ * actions, what waits for Nikola, and what is new for him — no grid of equal cards.
+ */
 export function EmployeeHome({ phone }: { phone: boolean }) {
   const { format } = useLiro()
   const navigate = useContext(Navigate)
@@ -212,72 +239,94 @@ export function EmployeeHome({ phone }: { phone: boolean }) {
     <EmployeePortal phone={phone} current="home">
       <Page>
         <PageHeader title="Hello, Nikola" subtitle={`${EMPLOYEE.role} · ${EMPLOYEE.site}`} />
-        {toSign !== undefined && (
-          <Alert
-            tone="warning"
-            title="A document waits for your signature"
-            actions={
-              <Button
-                family="neutral"
-                icon={PenLine}
-                label="Open the annex"
-                onClick={() => {
-                  navigate(Y_ROUTES.document(toSign.id))
-                }}
-              />
-            }
-          >
-            {`${toSign.title}. Sign by ${format.date(toSign.due ?? Y_TODAY)}`}
-          </Alert>
-        )}
-        <div className="grid gap-4 sm:grid-cols-2">
-          {latest !== undefined && (
-            <SectionCard title="Latest payslip" headingLevel={2}>
-              <div className="flex flex-col gap-1">
-                <To href={Y_ROUTES.payslip(latest.month)}>{monthName(latest.month, format)}</To>
-                <span className="bidi-content text-sm text-secondary">
-                  Net pay <MoneyText value={latest.net} currency="RSD" />, paid{' '}
-                  <DateText value={latest.paidOn} />
-                </span>
-              </div>
-            </SectionCard>
-          )}
-          <SectionCard title="Leave" headingLevel={2}>
-            <div className="flex flex-col gap-1">
-              <To
-                href={Y_ROUTES.leave}
-              >{`${LEAVE_BALANCE.available} days left in ${LEAVE_BALANCE.year}`}</To>
-              {pending !== undefined && (
-                <span className="bidi-content text-sm text-secondary">
-                  {`${pending.kind}, ${format.date(pending.from)} – ${format.date(pending.to)} · ${pending.state}`}
-                </span>
-              )}
-            </div>
-          </SectionCard>
-          {next !== undefined && (
-            <SectionCard title="Next shift" headingLevel={2}>
-              <div className="flex flex-col gap-1">
-                <To
-                  href={Y_ROUTES.shifts}
-                >{`${format.dateLong(next.date)}, ${next.start}–${next.end}`}</To>
-                <span className="bidi-content text-sm text-secondary">
-                  {`${next.label} · ${next.place ?? ''}`}
-                </span>
-                {next.changed !== undefined && (
-                  <span className="self-start">
-                    <StatusBadge label="Changed" tone="warning" />
-                  </span>
-                )}
-              </div>
-            </SectionCard>
-          )}
-          <SectionCard title="My details" headingLevel={2}>
-            <div className="flex flex-col gap-1">
-              <To href={Y_ROUTES.details}>See what HR has</To>
-              <span className="bidi-content text-sm text-secondary">1 change waiting for HR</span>
-            </div>
-          </SectionCard>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            family="neutral"
+            icon={CalendarClock}
+            label="My shifts"
+            onClick={() => {
+              navigate(Y_ROUTES.shifts)
+            }}
+          />
+          <Button
+            family="neutral"
+            icon={Wallet}
+            label="Payslips"
+            onClick={() => {
+              navigate(Y_ROUTES.payslips)
+            }}
+          />
+          <Button
+            family="primary"
+            emphasis="primary"
+            icon={Plane}
+            label="Request leave"
+            onClick={() => {
+              navigate(Y_ROUTES.newLeave)
+            }}
+          />
         </div>
+        {toSign !== undefined && (
+          <SectionCard title="To do" headingLevel={2}>
+            <ul className="m-0 flex list-none flex-col gap-3 p-0">
+              <HomeRow
+                title={`Sign: ${toSign.title}`}
+                detail={`By ${format.date(toSign.due ?? Y_TODAY)}`}
+                end={
+                  <Button
+                    family="neutral"
+                    icon={PenLine}
+                    label="Open the annex"
+                    onClick={() => {
+                      navigate(Y_ROUTES.document(toSign.id))
+                    }}
+                  />
+                }
+              />
+            </ul>
+          </SectionCard>
+        )}
+        <SectionCard title="New for you" headingLevel={2}>
+          <ul className="m-0 flex list-none flex-col gap-3 p-0">
+            {next !== undefined && (
+              <HomeRow
+                title={
+                  <To href={Y_ROUTES.shifts}>
+                    {`Next shift: ${format.dateLong(next.date)}, ${next.start}–${next.end}`}
+                  </To>
+                }
+                detail={`${next.label} · ${next.place ?? ''}`}
+                {...(next.changed === undefined
+                  ? {}
+                  : { end: <StatusBadge label="Changed" tone="warning" /> })}
+              />
+            )}
+            {latest !== undefined && (
+              <HomeRow
+                title={
+                  <To href={Y_ROUTES.payslip(latest.month)}>{monthName(latest.month, format)}</To>
+                }
+                detail={
+                  <>
+                    Net pay <MoneyText value={latest.net} currency="RSD" />, paid{' '}
+                    <DateText value={latest.paidOn} />
+                  </>
+                }
+              />
+            )}
+            {pending !== undefined && (
+              <HomeRow
+                title={
+                  <To
+                    href={Y_ROUTES.leave}
+                  >{`${pending.kind}, ${format.date(pending.from)} – ${format.date(pending.to)}`}</To>
+                }
+                detail={`${LEAVE_BALANCE.available} days left in ${LEAVE_BALANCE.year}`}
+                end={<StatusBadge label={pending.state} tone={LEAVE_TONES[pending.state]} />}
+              />
+            )}
+          </ul>
+        </SectionCard>
       </Page>
     </EmployeePortal>
   )

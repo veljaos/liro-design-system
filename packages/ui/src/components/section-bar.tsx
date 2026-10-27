@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type MouseEvent } from 'react'
 import { FOCUS_RING, TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
-import { TAB_ROW_SCROLLER, useTabRow } from './tab-row'
+import { TAB_ROW_BOX, TAB_ROW_SCROLLER, useTabRow } from './tab-row'
 
 /*
  * SectionBar (P4.4, the owner's values, docs/decisions.md "Detail and record form pages"): for
@@ -118,32 +118,35 @@ export function SectionBar({ sections, className }: SectionBarProps) {
       )}
     >
       {/* The tab row rule (P5.90 item 6): faded edges, the current section kept in view. */}
-      <div {...row} className={TAB_ROW_SCROLLER}>
-        <ul className="m-0 flex h-10 list-none p-0">
-          {sections.map((section) => {
-            const active = section.id === current
-            return (
-              <li key={section.id} className="flex">
-                <a
-                  href={`#${section.id}`}
-                  onClick={(event) => {
-                    go(event, section.id)
-                  }}
-                  {...(active ? { 'aria-current': 'location' as const } : {})}
-                  className={cn(
-                    '-mb-px flex items-center rounded-t-md border-0 border-b-2 border-solid border-transparent px-4 font-sans text-sm leading-none whitespace-nowrap text-primary no-underline visited:text-primary hover:border-default hover:bg-surface-hover hover:text-primary active:text-primary',
-                    active && 'border-brand hover:border-brand',
-                    FOCUS_RING,
-                    'focus-visible:-outline-offset-2',
-                    TEXT_DIRECTION,
-                  )}
-                >
-                  {section.label}
-                </a>
-              </li>
-            )
-          })}
-        </ul>
+      <div className={TAB_ROW_BOX}>
+        <div {...row.scroller} className={TAB_ROW_SCROLLER}>
+          <ul className="m-0 flex h-10 list-none p-0">
+            {sections.map((section) => {
+              const active = section.id === current
+              return (
+                <li key={section.id} className="flex">
+                  <a
+                    href={`#${section.id}`}
+                    onClick={(event) => {
+                      go(event, section.id)
+                    }}
+                    {...(active ? { 'aria-current': 'location' as const } : {})}
+                    className={cn(
+                      '-mb-px flex items-center rounded-t-md border-0 border-b-2 border-solid border-transparent px-4 font-sans text-sm leading-none whitespace-nowrap text-primary no-underline visited:text-primary hover:border-default hover:bg-surface-hover hover:text-primary active:text-primary',
+                      active && 'border-brand hover:border-brand',
+                      FOCUS_RING,
+                      'focus-visible:-outline-offset-2',
+                      TEXT_DIRECTION,
+                    )}
+                  >
+                    {section.label}
+                  </a>
+                </li>
+              )
+            })}
+          </ul>
+        </div>
+        {row.edges}
       </div>
     </nav>
   )

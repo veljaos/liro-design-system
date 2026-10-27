@@ -9,7 +9,7 @@ import {
 import { MenuItemText, menuIconClass, type MenuEntry } from '../components/dropdown-menu'
 import { Breadcrumbs, type Crumb } from '../components/navigation'
 import { PersonAvatar } from '../components/person'
-import { edgeFade, TAB_ROW_SCROLLER, useTabRow } from '../components/tab-row'
+import { edgeFade, TAB_ROW_BOX, TAB_ROW_SCROLLER, useTabRow } from '../components/tab-row'
 import { usePhone } from '../components/use-phone'
 import { ButtonPrimitive } from '../primitives/button'
 import { FOCUS_RING, TEXT_DIRECTION } from '../primitives/classes'
@@ -296,31 +296,30 @@ function ModuleTabs({ tabs }: { tabs: readonly ModuleTab[] }) {
   // view when the row is drawn.
   const row = useTabRow(tabs.find((tab) => tab.current === true)?.key)
   return (
-    <nav
-      {...row}
-      aria-label={messages['shell.moduleTabs']}
-      className={cn('-mb-px', TAB_ROW_SCROLLER)}
-    >
-      <ul className="m-0 flex h-10 list-none justify-center-safe p-0">
-        {tabs.map((tab) => (
-          <li key={tab.key} className="flex">
-            <Link
-              href={tab.href}
-              {...(tab.current === true ? { 'aria-current': 'page' } : {})}
-              className={cn(
-                'flex items-center rounded-t-md border-0 border-b-2 border-solid border-transparent px-4 font-sans text-sm leading-none whitespace-nowrap text-primary no-underline visited:text-primary hover:border-default hover:bg-surface-hover hover:text-primary active:text-primary',
-                tab.current === true && 'border-brand hover:border-brand',
-                FOCUS_RING,
-                'focus-visible:-outline-offset-2',
-                TEXT_DIRECTION,
-              )}
-            >
-              {tab.label}
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </nav>
+    <div className={cn('-mb-px', TAB_ROW_BOX)}>
+      <nav {...row.scroller} aria-label={messages['shell.moduleTabs']} className={TAB_ROW_SCROLLER}>
+        <ul className="m-0 flex h-10 list-none justify-center-safe p-0">
+          {tabs.map((tab) => (
+            <li key={tab.key} className="flex">
+              <Link
+                href={tab.href}
+                {...(tab.current === true ? { 'aria-current': 'page' } : {})}
+                className={cn(
+                  'flex items-center rounded-t-md border-0 border-b-2 border-solid border-transparent px-4 font-sans text-sm leading-none whitespace-nowrap text-primary no-underline visited:text-primary hover:border-default hover:bg-surface-hover hover:text-primary active:text-primary',
+                  tab.current === true && 'border-brand hover:border-brand',
+                  FOCUS_RING,
+                  'focus-visible:-outline-offset-2',
+                  TEXT_DIRECTION,
+                )}
+              >
+                {tab.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
+      {row.edges}
+    </div>
   )
 }
 
