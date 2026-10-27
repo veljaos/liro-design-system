@@ -374,15 +374,18 @@ export const ProjectTimeline: Story = {
     await expect(
       canvas.getByRole('img', { name: /^Now, 14\.10\.2026\. 09:40$/ }),
     ).toBeInTheDocument()
-    // Today's date on the time scale; short bars carry their names beside them, never cut, and
-    // the plan opens at its start (P5.93 items 8 and 34).
-    await expect(canvasElement.querySelector('[data-slot="now-time"]')).toHaveTextContent(
-      '14.10.2026.',
-    )
+    // Today's date on the time scale, in view when the plan opens (at its start, or at the
+    // column before today's); short bars carry their names beside them, never cut (P5.93 items 8
+    // and 34).
+    const today = canvasElement.querySelector('[data-slot="now-time"]')
+    await expect(today).toHaveTextContent('14.10.2026.')
+    const chart = canvasElement.querySelector('.wx-chart')?.getBoundingClientRect()
+    const tag = today?.getBoundingClientRect()
+    await expect(chart !== undefined && tag !== undefined && tag.left >= chart.left).toBe(true)
+    await expect(chart !== undefined && tag !== undefined && tag.right <= chart.right).toBe(true)
     await expect(
       canvasElement.querySelector('[data-gantt-label="after"]')?.textContent,
     ).toBeTruthy()
-    await expect(canvasElement.querySelector('.wx-chart')?.scrollLeft).toBe(0)
   },
 }
 
