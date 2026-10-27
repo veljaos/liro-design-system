@@ -339,7 +339,10 @@ export const Keyboard: Story = {
     await userEvent.click(await canvas.findByRole('combobox', { name: 'Condition 2: test' }))
     await userEvent.click(await body.findByRole('option', { name: 'is empty' }))
     await expect(canvas.queryByLabelText('Condition 2: value')).toBeNull()
-    await expect(canvas.getAllByRole('status')[0]).toHaveTextContent('due date is empty')
+    // The list closes first (the page is hidden from assistive technology while it is open).
+    await waitFor(async () => {
+      await expect(canvas.getAllByRole('status')[0]).toHaveTextContent('due date is empty')
+    })
     // Up one place, before the group, by the menu: announced, the focus back on the menu.
     await userEvent.click(canvas.getByRole('button', { name: 'Options: Condition 2' }))
     await userEvent.click(await body.findByRole('menuitem', { name: 'Move up: Condition 2' }))
