@@ -22,6 +22,7 @@ import { Button } from './button'
 import { DialogHeading, dialogHeaderClass } from './dialog'
 import { MoneyText } from './display-text'
 import { EmptyState, ErrorState } from './empty-state'
+import { StateLine } from './state-line'
 import { TextField } from './text-field'
 import { usePhone } from './use-phone'
 import {
@@ -644,12 +645,13 @@ function CatalogCard(props: {
           </span>
         )}
         {unavailable && (
-          <span id={reasonId} className="flex items-start gap-1 text-xs text-secondary">
-            <Ban aria-hidden="true" className="mt-px size-3 shrink-0" />
-            <span className={TEXT_DIRECTION}>
-              {messages['action.unavailable'](item.unavailableReason ?? '')}
-            </span>
-          </span>
+          // P5.93: the state line of every tile and card — "Unavailable", the reason under it.
+          <StateLine
+            id={reasonId}
+            icon={Ban}
+            state={messages['stateLine.unavailable']}
+            detail={item.unavailableReason}
+          />
         )}
       </span>
       {(item.price !== undefined || item.priceText !== undefined) && (

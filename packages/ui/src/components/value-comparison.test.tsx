@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest'
 import { LiroProvider } from '../provider/liro-provider'
 import {
   chosenCounts,
+  comparisonRowsShown,
+  mergedFields,
   ValueComparison,
   valueComparisonCounts,
   type ComparisonRow,
@@ -54,7 +56,9 @@ describe('ValueComparison', () => {
     expect(html.match(/bg-status-warning-bg/g)).toHaveLength(2)
     // A value one source does not have.
     expect(html).toContain('—')
-    expect(html).toContain('text-end')
+    // P5.93: one alignment for every column — the values at the start, figures tabular.
+    expect(html).not.toContain('text-end')
+    expect(html).toContain('tabular-nums')
   })
 
   it('takes its own first heading, and says when nothing differs', () => {
@@ -160,6 +164,9 @@ describe('ValueComparison', () => {
       />,
     )
     // Two differing rows, two radios each; one chosen.
+    // P5.93: only the differing rows while choosing; the identical one behind the switch.
+    expect(table).toContain('Show identical fields (1)')
+    expect(table.split('value-comparison-preview')[0]).not.toContain('Invoice 101')
     expect(table.match(/type="radio"/g)).toHaveLength(4)
     expect(table.match(/checked=""/g)).toHaveLength(1)
     expect(table).toContain('1 of 2 chosen')
@@ -168,8 +175,29 @@ describe('ValueComparison', () => {
     // Only the row still to choose warns.
     expect(table.match(/bg-status-warning-bg/g)).toHaveLength(1)
     expect(table).toContain('bg-surface-selected')
+    // The kept value says so in words; the merged record lists every field.
+    expect(table.match(/>Kept</g)).toHaveLength(1)
+    expect(table).toContain('aria-label="Merged record"')
+    expect(table).toContain('Not chosen yet')
+    const all = render(
+      <ValueComparison
+        label="Values to keep"
+        columns={['Kept record', 'Merged record']}
+        rows={ROWS}
+        chosen={{ b: 1 }}
+        onChoose={() => undefined}
+        onChooseAll={() => undefined}
+        defaultShowIdentical
+        preview={false}
+        layout="desktop"
+      />,
+    )
     // The same row is not a choice.
-    expect(table).toContain('Same')
+    expect(all).toContain('Same')
+    expect(all).toContain('Invoice 101')
+    expect(all).toContain('Keep all from Kept record')
+    expect(all).toContain('Keep all from Merged record')
+    expect(all).not.toContain('aria-label="Merged record"')
     const cards = render(
       <ValueComparison
         label="Values to keep"
@@ -181,7 +209,9 @@ describe('ValueComparison', () => {
       />,
     )
     expect(cards.match(/role="radiogroup"/g)).toHaveLength(2)
-    expect(cards.match(/<label/g)).toHaveLength(4)
+    // Large choices, stacked.
+    expect(cards).toContain('min-h-14')
+    expect(cards.match(/<label/g)).toHaveLength(5) // four choices and the identical fields' switch
     expect(cards).toContain('2 of 2 chosen')
     expect(cards).not.toContain('bg-status-warning-bg')
   })
@@ -199,6 +229,9 @@ describe('ValueComparison', () => {
     expect(html).not.toContain('type="radio"')
     expect(html.match(/data-chosen="true"/g)).toHaveLength(2)
     expect(html).toContain('Chosen')
+    expect(html.match(/>Kept</g)).toHaveLength(2)
+    // Shown, not chosen: no preview unless asked for.
+    expect(html).not.toContain('aria-label="Merged record"')
   })
 })
 
@@ -207,5 +240,29 @@ describe('chosenCounts', () => {
     expect(chosenCounts(ROWS, {})).toEqual({ chosen: 0, total: 2 })
     expect(chosenCounts(ROWS, { b: 0, a: 1 })).toEqual({ chosen: 1, total: 2 })
     expect(chosenCounts([], {})).toEqual({ chosen: 0, total: 0 })
+  })
+})
+
+describe('comparisonRowsShown', () => {
+  it('lists only the differing rows while choosing, unless the identical are asked for', () => {
+    expect(comparisonRowsShown(ROWS, false, false).map((row) => row.id)).toEqual(['a', 'b', 'c'])
+    expect(comparisonRowsShown(ROWS, true, false).map((row) => row.id)).toEqual(['b', 'c'])
+    expect(comparisonRowsShown(ROWS, true, true).map((row) => row.id)).toEqual(['a', 'b', 'c'])
+  })
+})
+
+describe('mergedFields', () => {
+  it('keeps an identical value, the chosen source of a differing one, or waits', () => {
+    expect(mergedFields(ROWS, { c: 1 })).toEqual([
+      { id: 'a', label: 'Invoice 101', value: '120.00', pending: false },
+      { id: 'b', label: 'Invoice 102', value: null, pending: true },
+      { id: 'c', label: 'Invoice 103', value: '80.00', pending: false },
+    ])
+    expect(mergedFields(ROWS, { b: 0 })[1]).toEqual({
+      id: 'b',
+      label: 'Invoice 102',
+      value: null,
+      pending: false,
+    })
   })
 })

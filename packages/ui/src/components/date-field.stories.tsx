@@ -5,6 +5,7 @@ import { settle } from '../primitives/story-helpers'
 import { LiroProvider, useLiro } from '../provider/liro-provider'
 import { DateField } from './date-field'
 import { ARABIC, JAPANESE, LONG } from './field-story-data'
+import { StoryProvider } from './story-frames'
 import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 
@@ -208,4 +209,25 @@ export const Japanese: Story = {
       <DateField label={JAPANESE.label} readOnly defaultValue="2026-03-01" />
     </div>
   ),
+}
+
+/**
+ * The touch density (a till, a kiosk): the field is 44px high and the calendar button keeps the
+ * look of every DateField — its icon in the same place — with a 44px target around it (P5.93).
+ */
+export const Touch: Story = {
+  name: 'Touch density',
+  tags: ['!dev'],
+  render: () => (
+    <StoryProvider density="touch">
+      <div className="flex max-w-100 flex-col gap-6">
+        <DateField label="Due date" defaultValue="2026-03-01" />
+      </div>
+    </StoryProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await settle()
+    const button = within(canvasElement).getByRole('button', { name: 'Choose a date' })
+    await expect(button.getBoundingClientRect().width).toBe(28)
+  },
 }

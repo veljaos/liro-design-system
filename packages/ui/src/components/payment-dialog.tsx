@@ -1,13 +1,38 @@
-import { Banknote, CircleCheck, CreditCard, QrCode, Trash2, WalletCards } from 'lucide-react'
-import { useId, useState, type ReactElement, type ReactNode } from 'react'
+import {
+  Banknote,
+  ChevronDown,
+  CircleCheck,
+  CreditCard,
+  QrCode,
+  Split,
+  Trash2,
+  WalletCards,
+} from 'lucide-react'
+import { useEffect, useId, useRef, useState, type ReactElement, type ReactNode } from 'react'
 import { ButtonPrimitive, LoadingButtonPrimitive } from '../primitives/button'
 import { BUTTON_RESET, FOCUS_RING, TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
 import { cn } from '../primitives/cn'
-import { ToggleGroup, ToggleGroupItem } from '../primitives/toggle-group'
+import {
+  DialogBody,
+  DialogCloseButton,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  Dialog as DialogRoot,
+  DialogTrigger,
+} from '../primitives/dialog'
+import {
+  DropdownMenu as MenuRoot,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from '../primitives/dropdown-menu'
 import { useLiro } from '../provider/liro-provider'
 import { Alert } from './alert'
 import { Button } from './button'
-import { Dialog } from './dialog'
+import { DialogHeading } from './dialog'
 import { MoneyText } from './display-text'
 import { NumericKeypad } from './numeric-keypad'
 import {
@@ -19,6 +44,7 @@ import {
 } from './sale-logic'
 import { Spinner } from './spinner'
 import { TextField } from './text-field'
+import { usePhone } from './use-phone'
 
 /*
  * PaymentDialog (BUILD-PLAN P5.10; docs/decisions.md "Touch and POS"). Taking the money for a
@@ -53,6 +79,18 @@ import { TextField } from './text-field'
  * (`unavailableReason`, e.g. a deferred payment without the buyer) shows its reason and the
  * application's `extra` content (the buyer's field). `doneContent` takes the issued receipt
  * (ReceiptResult) in the done view.
+ *
+ * P5.93 (item 13, the owner's fourth review): **the dialog never scrolls** — at a tablet
+ * (1024 × 768) and a phone (390 × 844) everything fits at once: the amount due, the ways to pay,
+ * the quick amounts, the amount tendered, the keypad and the main action. It is wider (880px,
+ * at most 90% of the screen) and lays out in two columns — the amount due, the ways to pay, the
+ * quick amounts and the change at the start, the keypad (or the card terminal) at the end; on a
+ * phone one column with 48px keys. **Cash and Card are the two big choices** (56px); every
+ * other way stands behind one "Other…" (a menu; one other way stands beside them by itself),
+ * which then names the way chosen. The parts already paid are chips with their remove button,
+ * the remaining amount beside the amount due. **Done:** the change due as the application gives
+ * it (never rounded), on a plain row, and the focus on the done view's main action (the last of
+ * `doneActions`, "New sale").
  */
 
 export type { PaymentKind, PaymentMethod, PaymentOption }
@@ -149,7 +187,7 @@ export interface PaymentDialogProps {
   doneContent?: ReactNode
 }
 
-const METHOD_ICON = { cash: Banknote, card: CreditCard, split: null } as const
+const METHOD_ICON = { cash: Banknote, card: CreditCard, split: Split } as const
 
 /** The icon of a way to pay by its kind. */
 const KIND_ICON: Record<PaymentKind, typeof Banknote> = {
@@ -159,12 +197,30 @@ const KIND_ICON: Record<PaymentKind, typeof Banknote> = {
   plain: WalletCards,
 }
 
-/** Up to this many ways stand in one segmented row; more wrap as a grid of pressed buttons. */
-const SEGMENTED_MAX = 4
+/** A big choice of the way to pay: the neutral selection when chosen (D17), 56px high. */
+const CHOICE = cn(
+  BUTTON_RESET,
+  FOCUS_RING,
+  'flex min-h-14 min-w-0 cursor-pointer items-center justify-center gap-2 rounded-md border border-solid px-3 py-2 text-md font-semibold text-primary',
+  'disabled:cursor-not-allowed disabled:text-disabled',
+)
+const CHOICE_ON = 'border-selected bg-surface-selected'
+const CHOICE_OFF = 'border-default bg-surface-raised enabled:hover:bg-surface-hover'
 
-/** Taking the payment for a sale: cash, card or split; every figure from the application. */
+/** The keypad's keys at 44px (the touch minimum) on a phone, so everything fits the screen. */
+const PHONE_KEYPAD =
+  '[&_[data-key]]:h-11 [&_[data-key]]:min-h-11 [&_div:has(>input)]:h-12 [&_input]:text-h4'
+
+/** The focusable elements of the done view's actions; the last is its main action (D13). */
+function lastAction(container: HTMLElement | null): HTMLElement | null {
+  const all = container?.querySelectorAll<HTMLElement>('button:not([disabled]), a[href]')
+  return all === undefined || all.length === 0 ? null : (all[all.length - 1] ?? null)
+}
+
+/** Taking the payment for a sale: cash, card or another way; every figure from the application. */
 export function PaymentDialog(props: PaymentDialogProps) {
   const { messages, format } = useLiro()
+  const phone = usePhone()
   const methods = props.methods ?? (['cash', 'card', 'split'] as const)
   const ownOptions = hasOwnOptions(methods)
   const options = paymentOptions(methods, {
@@ -199,6 +255,18 @@ export function PaymentDialog(props: PaymentDialogProps) {
   const reasonId = useId()
   const paid = props.paid ?? []
   const parts = props.onAddPart !== undefined
+  const doneActions = useRef<HTMLDivElement>(null)
+
+  // Done while open: the focus goes to the done view's main action ("New sale").
+  useEffect(() => {
+    if (!open || !done) return
+    const frame = requestAnimationFrame(() => {
+      lastAction(doneActions.current)?.focus()
+    })
+    return () => {
+      cancelAnimationFrame(frame)
+    }
+  }, [open, done])
 
   const setOpen = (next: boolean) => {
     if (locked) return
@@ -215,6 +283,13 @@ export function PaymentDialog(props: PaymentDialogProps) {
   }
 
   const money = (value: string) => format.money(value, props.currency)
+  const iconOf = (item: PaymentOption) =>
+    item.icon ??
+    (ownOptions
+      ? KIND_ICON[item.kind]
+      : item.id === 'cash' || item.id === 'card' || item.id === 'split'
+        ? METHOD_ICON[item.id]
+        : KIND_ICON[item.kind])
 
   const amountRow = (label: string, value: string | null | undefined, large = false) =>
     value === undefined || value === null ? null : (
@@ -244,7 +319,7 @@ export function PaymentDialog(props: PaymentDialogProps) {
       value={tendered}
       currency={props.currency}
       onChange={setTendered}
-      className="max-w-none"
+      className={cn('max-w-none', phone && PHONE_KEYPAD)}
     />
   )
 
@@ -258,27 +333,32 @@ export function PaymentDialog(props: PaymentDialogProps) {
     <div
       role="group"
       aria-label={messages['payment.quickAmounts']}
-      className="flex flex-wrap gap-2"
+      className={cn(
+        'gap-2',
+        // On a phone one row of equal buttons: the banknotes without the currency (said above).
+        phone ? 'grid grid-cols-[repeat(auto-fit,minmax(3.75rem,1fr))]' : 'flex flex-wrap',
+      )}
     >
       <ButtonPrimitive
-        className="min-h-11"
+        className="min-h-11 px-2"
         aria-pressed={tendered === exact}
         onClick={() => {
           setTendered(exact)
         }}
       >
-        <span className={TEXT_DIRECTION}>{messages['payment.exact']}</span>
+        <span className={cn('text-center', TEXT_DIRECTION)}>{messages['payment.exact']}</span>
       </ButtonPrimitive>
       {props.quickAmounts?.map((amount) => (
         <ButtonPrimitive
           key={amount}
-          className="min-h-11 tabular-nums"
+          className="min-h-11 px-2 tabular-nums"
           aria-pressed={tendered === amount}
+          {...(phone ? { 'aria-label': money(amount) } : {})}
           onClick={() => {
             setTendered(amount)
           }}
         >
-          <bdi>{money(amount)}</bdi>
+          <bdi>{phone ? format.number(amount) : money(amount)}</bdi>
         </ButtonPrimitive>
       ))}
     </div>
@@ -305,7 +385,7 @@ export function PaymentDialog(props: PaymentDialogProps) {
         </ButtonPrimitive>
       )}
       {waiting && (
-        <div className="flex flex-col items-center gap-3 rounded-lg bg-surface-sunken px-4 py-6 text-center">
+        <div className="flex flex-col items-center gap-3 rounded-lg bg-surface-sunken px-4 py-5 text-center">
           {qr && props.qrCode !== undefined && props.qrCode !== null && (
             <figure
               aria-label={messages['payment.qrCode']}
@@ -358,119 +438,133 @@ export function PaymentDialog(props: PaymentDialogProps) {
     </div>
   )
 
-  /** The ways to pay: a segmented row, or a wrapping grid of pressed buttons when many. */
-  const chooser =
-    options.length <= 1 ? null : options.length <= SEGMENTED_MAX ? (
-      <ToggleGroup
-        type="single"
-        aria-label={messages['payment.method']}
-        value={method}
+  // Cash and Card are the two big choices; every other way stands behind "Other…" (P5.93).
+  const isMain = (item: PaymentOption, wanted: 'cash' | 'card') =>
+    ownOptions ? item.kind === wanted : item.id === wanted
+  const mainChoices = (['cash', 'card'] as const).flatMap((wanted) => {
+    const found = options.find((item) => isMain(item, wanted))
+    return found === undefined ? [] : [found]
+  })
+  const otherChoices = options.filter((item) => !mainChoices.includes(item))
+  const chosenOther = otherChoices.find((item) => item.id === method)
+
+  const choice = (item: PaymentOption) => {
+    const Icon = iconOf(item)
+    const pressed = item.id === method
+    return (
+      <button
+        key={item.id}
+        type="button"
+        aria-pressed={pressed}
         disabled={locked}
-        onValueChange={(value) => {
-          const next = options.find((item) => item.id === value)
-          if (next !== undefined) chooseMethod(next.id)
+        onClick={() => {
+          chooseMethod(item.id)
         }}
-        className="w-full"
+        className={cn(
+          CHOICE,
+          pressed ? CHOICE_ON : CHOICE_OFF,
+          item.unavailableReason !== undefined && !pressed && 'text-secondary',
+        )}
       >
-        {options.map((item) => {
-          const Icon =
-            item.icon ??
-            (ownOptions
-              ? KIND_ICON[item.kind]
-              : item.id === 'cash' || item.id === 'card'
-                ? METHOD_ICON[item.id]
-                : null)
-          return (
-            <ToggleGroupItem key={item.id} value={item.id} className="min-h-10">
-              <span className="inline-flex items-center justify-center gap-2">
-                {Icon !== null && <Icon aria-hidden="true" className="size-4 shrink-0" />}
+        <Icon aria-hidden="true" className="size-5 shrink-0" />
+        <span className={cn('min-w-0 break-words', TEXT_ISOLATE)}>{item.label}</span>
+      </button>
+    )
+  }
+
+  const otherMenu = (
+    <MenuRoot modal={false}>
+      <DropdownMenuTrigger asChild disabled={locked}>
+        <button
+          type="button"
+          data-slot="payment-other"
+          className={cn(CHOICE, chosenOther === undefined ? CHOICE_OFF : CHOICE_ON)}
+        >
+          {chosenOther !== undefined &&
+            (() => {
+              const Icon = iconOf(chosenOther)
+              return <Icon aria-hidden="true" className="size-5 shrink-0" />
+            })()}
+          <span className={cn('min-w-0 break-words', TEXT_ISOLATE)}>
+            {chosenOther?.label ?? messages['payment.other']}
+          </span>
+          <ChevronDown aria-hidden="true" className="size-4 shrink-0" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuRadioGroup value={method} onValueChange={chooseMethod}>
+          {otherChoices.map((item) => {
+            const Icon = iconOf(item)
+            return (
+              <DropdownMenuRadioItem key={item.id} value={item.id} check>
+                <Icon aria-hidden="true" />
                 {item.label}
-              </span>
-            </ToggleGroupItem>
-          )
-        })}
-      </ToggleGroup>
-    ) : (
+              </DropdownMenuRadioItem>
+            )
+          })}
+        </DropdownMenuRadioGroup>
+      </DropdownMenuContent>
+    </MenuRoot>
+  )
+
+  const chooserCount = mainChoices.length + (otherChoices.length > 0 ? 1 : 0)
+  const chooser =
+    options.length <= 1 ? null : (
       <div
         role="group"
         aria-label={messages['payment.method']}
         data-slot="payment-methods"
-        className="grid grid-cols-[repeat(auto-fill,minmax(8.5rem,1fr))] gap-2"
+        className={cn('grid gap-2', chooserCount === 2 ? 'grid-cols-2' : 'grid-cols-3')}
       >
-        {options.map((item) => {
-          const Icon = item.icon ?? KIND_ICON[item.kind]
-          const pressed = item.id === method
-          return (
-            <button
-              key={item.id}
-              type="button"
-              aria-pressed={pressed}
-              disabled={locked}
-              onClick={() => {
-                chooseMethod(item.id)
-              }}
-              className={cn(
-                BUTTON_RESET,
-                FOCUS_RING,
-                'flex min-h-11 cursor-pointer items-center gap-2 rounded-sm border border-solid px-3 py-2 text-start text-sm font-medium text-primary',
-                pressed
-                  ? 'border-selected bg-surface-selected'
-                  : 'border-default bg-surface-raised enabled:hover:bg-surface-hover',
-                'disabled:cursor-not-allowed disabled:text-disabled',
-                item.unavailableReason !== undefined && !pressed && 'text-secondary',
-              )}
-            >
-              <Icon aria-hidden="true" className="size-4 shrink-0" />
-              <span className={cn('min-w-0 break-words', TEXT_ISOLATE)}>{item.label}</span>
-            </button>
-          )
-        })}
+        {mainChoices.map(choice)}
+        {otherChoices.length === 1 && otherChoices[0] !== undefined && choice(otherChoices[0])}
+        {otherChoices.length > 1 && otherMenu}
       </div>
     )
 
-  /** The parts paid so far and what remains (several ways on one sale). */
-  const paidSummary = (
-    <dl className="m-0 flex flex-col gap-1 rounded-lg bg-surface-sunken p-3">
-      {paid.length > 0 && (
-        <div className="flex flex-col gap-1">
-          <dt className={cn('text-xs font-semibold text-secondary', TEXT_DIRECTION)}>
-            {messages['payment.paid']}
-          </dt>
-          {paid.map((part) => (
-            <dd key={part.id} className="m-0 flex items-center justify-between gap-3 text-sm">
-              <span className="flex min-w-0 flex-col">
-                <span className={TEXT_DIRECTION}>{part.label}</span>
-                {part.detail !== undefined && (
-                  <span className={cn('text-xs text-secondary', TEXT_DIRECTION)}>
-                    {part.detail}
-                  </span>
-                )}
+  /** The parts paid so far, as chips with their remove button (several ways on one sale). */
+  const paidParts = paid.length > 0 && (
+    <div className="flex flex-col gap-1">
+      <span className={cn('text-xs font-semibold text-secondary', TEXT_DIRECTION)}>
+        {messages['payment.paid']}
+      </span>
+      <ul aria-label={messages['payment.paid']} className="m-0 flex list-none flex-wrap gap-2 p-0">
+        {paid.map((part) => (
+          <li
+            key={part.id}
+            className="flex min-h-11 min-w-0 items-center gap-2 rounded-md bg-surface-sunken ps-3 text-sm"
+          >
+            <span className="flex min-w-0 flex-col py-1">
+              <span className={cn('font-medium text-primary', TEXT_DIRECTION)}>
+                {part.label}{' '}
+                <MoneyText value={part.value} currency={props.currency} className="font-semibold" />
               </span>
-              <span className="flex shrink-0 items-center gap-1">
-                <MoneyText value={part.value} currency={props.currency} />
-                {props.onRemovePart !== undefined && (
-                  <ButtonPrimitive
-                    family="neutral"
-                    emphasis="menu"
-                    shape="icon"
-                    aria-label={messages['payment.removePart'](part.label)}
-                    title={messages['payment.removePart'](part.label)}
-                    className="size-11 shrink-0 px-0"
-                    disabled={locked}
-                    onClick={() => {
-                      props.onRemovePart?.(part.id)
-                    }}
-                  >
-                    <Trash2 aria-hidden="true" className="size-4" />
-                  </ButtonPrimitive>
-                )}
-              </span>
-            </dd>
-          ))}
-        </div>
-      )}
-      {amountRow(messages['payment.remaining'], props.remaining, true)}
-    </dl>
+              {part.detail !== undefined && (
+                <span className={cn('text-xs text-secondary', TEXT_DIRECTION)}>{part.detail}</span>
+              )}
+            </span>
+            {props.onRemovePart === undefined ? (
+              <span className="pe-3" />
+            ) : (
+              <ButtonPrimitive
+                family="neutral"
+                emphasis="menu"
+                shape="icon"
+                aria-label={messages['payment.removePart'](part.label)}
+                title={messages['payment.removePart'](part.label)}
+                className="size-11 shrink-0 px-0"
+                disabled={locked}
+                onClick={() => {
+                  props.onRemovePart?.(part.id)
+                }}
+              >
+                <Trash2 aria-hidden="true" className="size-4" />
+              </ButtonPrimitive>
+            )}
+          </li>
+        ))}
+      </ul>
+    </div>
   )
 
   const addPart = parts && option !== undefined && (
@@ -482,11 +576,34 @@ export function PaymentDialog(props: PaymentDialogProps) {
       }}
     >
       {(() => {
-        const Icon = option.icon ?? KIND_ICON[option.kind]
+        const Icon = iconOf(option)
         return <Icon aria-hidden="true" className="size-4 shrink-0" />
       })()}
       <span className={TEXT_DIRECTION}>{messages['payment.addPart']}</span>
     </ButtonPrimitive>
+  )
+
+  const splitParts = !ownOptions && kind === 'split' && parts && (
+    <div className="grid grid-cols-2 gap-2">
+      {(['cash', 'card'] as const).map((part) => {
+        const Icon = METHOD_ICON[part]
+        return (
+          <ButtonPrimitive
+            key={part}
+            className="min-h-11"
+            disabled={tendered === null || locked}
+            onClick={() => {
+              if (tendered !== null) props.onAddPart?.(part, tendered)
+            }}
+          >
+            <Icon aria-hidden="true" className="size-4 shrink-0" />
+            <span className={TEXT_DIRECTION}>
+              {part === 'cash' ? messages['payment.addCash'] : messages['payment.addCard']}
+            </span>
+          </ButtonPrimitive>
+        )
+      })}
+    </div>
   )
 
   const referenceField = option?.referenceLabel !== undefined && (
@@ -501,126 +618,50 @@ export function PaymentDialog(props: PaymentDialogProps) {
     />
   )
 
-  /** The panel of the application's own way to pay (P5.28). */
-  const ownPanel =
-    option === undefined ? null : option.unavailableReason !== undefined ? (
-      <Alert tone="warning" title={option.unavailableReason} />
-    ) : (
-      <>
-        {kind === 'cash' && (
-          <>
-            {quick}
-            {keypad(messages['payment.tendered'])}
-            {addPart}
-            <dl className="m-0 flex flex-col gap-1">
-              {amountRow(messages['payment.change'], props.change, true)}
-              {paid.length === 0 && amountRow(messages['payment.remaining'], props.remaining)}
-            </dl>
-          </>
-        )}
-        {(kind === 'card' || kind === 'qr') && (
-          <>
-            {parts && cardState === 'idle' && keypad(messages['payment.part'])}
-            {terminal(kind === 'qr')}
-          </>
-        )}
-        {kind === 'plain' && (
-          <>
-            {parts && keypad(messages['payment.part'])}
-            {referenceField}
-            {addPart}
-          </>
-        )}
-        {kind !== 'cash' && paid.length === 0 && props.remaining !== undefined && (
-          <dl className="m-0">{amountRow(messages['payment.remaining'], props.remaining)}</dl>
-        )}
-      </>
-    )
+  const unavailableReason = ownOptions ? option?.unavailableReason : undefined
+  const unavailable = unavailableReason !== undefined
+  const cardLike = kind === 'card' || kind === 'qr'
+  // The keypad is there whenever an amount is typed: cash, a split, or a part of the sale.
+  const needsKeypad =
+    !unavailable &&
+    (kind === 'cash' ||
+      kind === 'split' ||
+      (parts && ownOptions && (kind === 'plain' || (cardLike && cardState === 'idle'))))
+  const keypadPanel = needsKeypad && (
+    <div className="flex flex-col gap-2">
+      {keypad(kind === 'cash' && !parts ? messages['payment.tendered'] : messages['payment.part'])}
+      {ownOptions ? addPart : splitParts}
+    </div>
+  )
+  const terminalPanel = cardLike && !unavailable && terminal(kind === 'qr')
 
-  const body = done ? (
-    <div data-slot="payment-done" className="flex flex-col items-center gap-3 py-4 text-center">
-      <CircleCheck aria-hidden="true" className="size-12 text-status-success-fg" />
-      <p className={cn('m-0 text-h3 font-semibold text-primary', TEXT_ISOLATE)}>
-        {messages['payment.done']}
-      </p>
-      {props.doneText !== undefined && (
-        <p className={cn('m-0 text-sm text-secondary', TEXT_ISOLATE)}>{props.doneText}</p>
-      )}
-      {props.change !== undefined && props.change !== null && (
-        <dl className="m-0 flex w-full flex-col gap-1 rounded-lg bg-surface-sunken p-4 text-start">
+  /** What the chosen way shows beside the keypad: its amounts, its terminal, its reference. */
+  const methodPanel = unavailable ? (
+    <Alert tone="warning" title={unavailableReason} />
+  ) : (
+    <>
+      {kind === 'cash' && quick}
+      {kind === 'cash' && (
+        <dl className="m-0 flex flex-col gap-1">
           {amountRow(messages['payment.change'], props.change, true)}
+          {paid.length === 0 && amountRow(messages['payment.remaining'], props.remaining)}
         </dl>
       )}
-      {props.doneContent !== undefined && (
-        <div className="w-full text-start">{props.doneContent}</div>
-      )}
-    </div>
-  ) : (
-    <div className="flex flex-col gap-4">
-      <dl className="m-0">
-        <div className="flex items-baseline justify-between gap-4">
-          <dt className={cn('text-sm text-secondary', TEXT_DIRECTION)}>
-            {messages['payment.due']}
-          </dt>
-          <dd className="m-0">
-            <MoneyText
-              value={props.total}
-              currency={props.currency}
-              className="text-h2 font-semibold text-primary"
-            />
-          </dd>
-        </div>
-      </dl>
-      {ownOptions && paid.length > 0 && paidSummary}
-      {chooser}
-      {ownOptions ? (
-        ownPanel
-      ) : (
-        <>
-          {kind === 'cash' && (
-            <>
-              {quick}
-              {keypad(messages['payment.tendered'])}
-              <dl className="m-0 flex flex-col gap-1">
-                {amountRow(messages['payment.change'], props.change, true)}
-                {amountRow(messages['payment.remaining'], props.remaining)}
-              </dl>
-            </>
-          )}
-          {kind === 'card' && terminal(false)}
-          {kind === 'split' && (
-            <>
-              {paidSummary}
-              {cardState !== 'idle' && terminal(false)}
-              {keypad(messages['payment.part'])}
-              {props.onAddPart !== undefined && (
-                <div className="grid grid-cols-2 gap-2">
-                  {(['cash', 'card'] as const).map((part) => {
-                    const Icon = METHOD_ICON[part]
-                    return (
-                      <ButtonPrimitive
-                        key={part}
-                        className="min-h-11"
-                        disabled={tendered === null || locked}
-                        onClick={() => {
-                          if (tendered !== null) props.onAddPart?.(part, tendered)
-                        }}
-                      >
-                        <Icon aria-hidden="true" className="size-4 shrink-0" />
-                        <span className={TEXT_DIRECTION}>
-                          {part === 'cash'
-                            ? messages['payment.addCash']
-                            : messages['payment.addCard']}
-                        </span>
-                      </ButtonPrimitive>
-                    )
-                  })}
-                </div>
-              )}
-            </>
-          )}
-        </>
-      )}
+      {kind === 'split' && cardState !== 'idle' && terminal(false)}
+      {kind === 'plain' && referenceField}
+      {needsKeypad && cardLike && terminalPanel}
+      {kind !== 'cash' &&
+        kind !== 'split' &&
+        paid.length === 0 &&
+        props.remaining !== undefined &&
+        props.remaining !== null && (
+          <dl className="m-0">{amountRow(messages['payment.remaining'], props.remaining)}</dl>
+        )}
+    </>
+  )
+
+  const notes = (
+    <>
       {option?.note !== undefined && (
         <p className={cn('m-0 text-xs text-secondary', TEXT_DIRECTION)}>{option.note}</p>
       )}
@@ -630,11 +671,119 @@ export function PaymentDialog(props: PaymentDialogProps) {
           {props.completeDisabledReason}
         </p>
       )}
+    </>
+  )
+
+  const showRemaining =
+    (paid.length > 0 || kind === 'split') &&
+    props.remaining !== undefined &&
+    props.remaining !== null
+  /** The amount due, and beside it what remains once parts are paid. */
+  const amounts = (
+    <dl className="m-0 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+      <div className="flex min-w-0 flex-col">
+        <dt className={cn('text-sm text-secondary', TEXT_DIRECTION)}>{messages['payment.due']}</dt>
+        <dd className="m-0">
+          <MoneyText
+            value={props.total}
+            currency={props.currency}
+            className="text-h2 font-semibold text-primary"
+          />
+        </dd>
+      </div>
+      {showRemaining && (
+        <div className="flex min-w-0 flex-col items-end">
+          <dt className={cn('text-sm text-secondary', TEXT_DIRECTION)}>
+            {messages['payment.remaining']}
+          </dt>
+          <dd className="m-0">
+            <MoneyText
+              value={props.remaining ?? ''}
+              currency={props.currency}
+              className="text-h3 font-semibold text-primary"
+            />
+          </dd>
+        </div>
+      )}
+    </dl>
+  )
+
+  const start = (
+    <div className={cn('flex min-w-0 flex-col', phone ? 'gap-2' : 'gap-4')}>
+      {amounts}
+      {paidParts}
+      {chooser}
+      {methodPanel}
+      {!phone && notes}
+    </div>
+  )
+  const end = needsKeypad ? keypadPanel : cardLike ? terminalPanel : null
+
+  const doneSummary = (
+    <div className="flex flex-col items-center gap-3 py-2 text-center">
+      <CircleCheck aria-hidden="true" className="size-12 text-status-success-fg" />
+      <p className={cn('m-0 text-h3 font-semibold text-primary', TEXT_ISOLATE)}>
+        {messages['payment.done']}
+      </p>
+      {props.doneText !== undefined && (
+        <p className={cn('m-0 text-sm text-secondary', TEXT_ISOLATE)}>{props.doneText}</p>
+      )}
+      {props.change !== undefined && props.change !== null && (
+        // The change as the application gives it, exact (D4), on a plain row.
+        <dl className="m-0 flex w-full max-w-md flex-wrap items-baseline justify-between gap-x-4 border-0 border-y border-solid border-subtle py-3 text-start">
+          <dt className={cn('text-md font-semibold text-primary', TEXT_DIRECTION)}>
+            {messages['payment.change']}
+          </dt>
+          <dd className="m-0">
+            <MoneyText
+              value={props.change}
+              currency={props.currency}
+              className="text-h2 font-semibold text-primary"
+            />
+          </dd>
+        </dl>
+      )}
+    </div>
+  )
+  const body = done ? (
+    // With the issued receipt on a wide screen: the summary at the start, the receipt at the
+    // end, so it fits without scrolling.
+    <div
+      data-slot="payment-done"
+      className={cn(
+        'grid items-center gap-6',
+        !phone && props.doneContent !== undefined
+          ? 'grid-cols-[minmax(0,2fr)_minmax(0,3fr)]'
+          : 'grid-cols-1',
+      )}
+    >
+      {doneSummary}
+      {props.doneContent !== undefined && (
+        <div className="min-w-0 text-start">{props.doneContent}</div>
+      )}
+    </div>
+  ) : phone ? (
+    <div className="flex flex-col gap-2">
+      {start}
+      {end}
+      {notes}
+    </div>
+  ) : (
+    <div
+      className={cn(
+        'grid items-start gap-6',
+        end === null || end === false ? 'grid-cols-1' : 'grid-cols-2',
+      )}
+    >
+      {start}
+      {end !== null && end !== false && <div className="flex min-w-0 flex-col gap-3">{end}</div>}
     </div>
   )
 
   const actions = done ? (
-    props.doneActions
+    <div ref={doneActions} className="contents">
+      {props.doneActions}
+    </div>
   ) : (
     <>
       <Button
@@ -652,6 +801,7 @@ export function PaymentDialog(props: PaymentDialogProps) {
           loading={completing}
           waiting={props.completeDisabledReason !== undefined || waiting}
           aria-describedby={props.completeDisabledReason === undefined ? undefined : reasonId}
+          className={cn(phone && 'min-h-11 flex-1')}
           onClick={props.onComplete}
         >
           <CircleCheck aria-hidden="true" className="size-3.75 shrink-0" />
@@ -663,16 +813,41 @@ export function PaymentDialog(props: PaymentDialogProps) {
     </>
   )
 
+  const prevent = (event: Event) => {
+    if (locked) event.preventDefault()
+  }
+
   return (
-    <Dialog
-      open={open}
-      onOpenChange={setOpen}
-      title={props.title ?? messages['payment.title']}
-      dismissible={!locked}
-      actions={actions}
-      {...(props.trigger === undefined ? {} : { trigger: props.trigger })}
-    >
-      {body}
-    </Dialog>
+    <DialogRoot open={open} onOpenChange={setOpen}>
+      {props.trigger !== undefined && <DialogTrigger asChild>{props.trigger}</DialogTrigger>}
+      <DialogContent
+        aria-describedby={undefined}
+        data-slot="payment-dialog"
+        // Wider, and nearer the top and bottom edges: everything fits at once (P5.93).
+        className="top-[2%] max-h-[96%] w-220"
+        onEscapeKeyDown={prevent}
+        onPointerDownOutside={prevent}
+        onInteractOutside={prevent}
+        onOpenAutoFocus={(event) => {
+          // Opened done (a restored screen): the focus on the done view's main action.
+          if (!done) return
+          const target = lastAction(doneActions.current)
+          if (target === null) return
+          event.preventDefault()
+          target.focus()
+        }}
+      >
+        <DialogHeader>
+          <DialogTitle>
+            <DialogHeading title={props.title ?? messages['payment.title']} />
+          </DialogTitle>
+          {!locked && <DialogCloseButton label={messages['dialog.close']} />}
+        </DialogHeader>
+        <DialogBody>
+          {body}
+          <DialogFooter>{actions}</DialogFooter>
+        </DialogBody>
+      </DialogContent>
+    </DialogRoot>
   )
 }
