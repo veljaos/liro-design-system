@@ -1242,6 +1242,8 @@ export interface LiroMessages {
   'payment.split': string
   /** P5.93: every way to pay but cash and card stands behind it (a menu). */
   'payment.other': string
+  /** P5.93: on a phone the done view's receipt (`doneContent`) opens under this heading. */
+  'payment.doneDetails': string
   'payment.tendered': string
   'payment.exact': string
   'payment.quickAmounts': string

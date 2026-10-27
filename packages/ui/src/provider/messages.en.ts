@@ -807,6 +807,7 @@ export const messagesEn: LiroMessages = {
   'payment.card': 'Card',
   'payment.split': 'Split',
   'payment.other': 'Other…',
+  'payment.doneDetails': 'Receipt',
   'payment.tendered': 'Amount tendered',
   'payment.exact': 'Exact amount',
   'payment.quickAmounts': 'Quick amounts',

@@ -964,6 +964,7 @@ describe('messages', () => {
       'payment.change',
       'payment.complete',
       'payment.done',
+      'payment.doneDetails',
       'payment.due',
       'payment.exact',
       'payment.method',

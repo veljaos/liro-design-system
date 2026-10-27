@@ -442,6 +442,45 @@ export const DoneWithReceipt: Story = {
   play: async () => {
     await settle()
     await expect(dialog()).toHaveTextContent('2290/2318ПП')
+    await expectNoScroll()
+  },
+}
+
+/**
+ * Done on a phone: the change due and "New sale" (focused) in view at once; the issued receipt
+ * opens under "Receipt".
+ */
+export const DoneWithReceiptPhone: Story = {
+  name: 'Done, receipt issued, phone width',
+  tags: ['!dev'],
+  render: (args) => (
+    <PhoneFrame>
+      <StoryProvider density="touch">
+        <ExampleProvider>
+          <PaymentDialog
+            {...args}
+            done
+            change="989.00"
+            doneActions={DONE_ACTIONS}
+            doneContent={
+              <ReceiptResult
+                facts={ISSUED_FACTS}
+                code={RECEIPT_CODE}
+                link={RECEIPT_LINK}
+                deliveries={DELIVERIES}
+                onDeliver={() => undefined}
+              />
+            }
+          />
+        </ExampleProvider>
+      </StoryProvider>
+    </PhoneFrame>
+  ),
+  play: async () => {
+    await settle()
+    await expect(within(dialog()).getByRole('button', { name: 'New sale' })).toHaveFocus()
+    await expect(within(dialog()).getByRole('button', { name: 'Receipt' })).toBeVisible()
+    await expectNoScroll()
   },
 }
 

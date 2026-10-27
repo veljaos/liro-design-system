@@ -413,7 +413,7 @@ function MergeScreen(props: Parameters<typeof ValueComparison>[0]) {
           setConfirming(false)
         }}
       />
-      <p role="status" className="m-0 text-sm text-primary">
+      <p role="status" className="bidi-content m-0 text-sm text-primary">
         {merged ? 'Harbour-Timber Ltd. merged into Harbour Timber Ltd.' : ''}
       </p>
     </div>

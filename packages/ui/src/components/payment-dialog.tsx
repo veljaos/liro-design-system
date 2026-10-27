@@ -30,11 +30,13 @@ import {
   DropdownMenuTrigger,
 } from '../primitives/dropdown-menu'
 import { useLiro } from '../provider/liro-provider'
+import { Accordion } from './accordion'
 import { Alert } from './alert'
 import { Button } from './button'
 import { DialogHeading } from './dialog'
 import { MoneyText } from './display-text'
 import { NumericKeypad } from './numeric-keypad'
+import { Tooltip } from './popover'
 import {
   hasOwnOptions,
   paymentOptions,
@@ -90,7 +92,8 @@ import { usePhone } from './use-phone'
  * which then names the way chosen. The parts already paid are chips with their remove button,
  * the remaining amount beside the amount due. **Done:** the change due as the application gives
  * it (never rounded), on a plain row, and the focus on the done view's main action (the last of
- * `doneActions`, "New sale").
+ * `doneActions`, "New sale"); the issued receipt (`doneContent`) beside it on a wide screen, and
+ * behind "Receipt" on a phone.
  */
 
 export type { PaymentKind, PaymentMethod, PaymentOption }
@@ -546,20 +549,21 @@ export function PaymentDialog(props: PaymentDialogProps) {
             {props.onRemovePart === undefined ? (
               <span className="pe-3" />
             ) : (
-              <ButtonPrimitive
-                family="neutral"
-                emphasis="menu"
-                shape="icon"
-                aria-label={messages['payment.removePart'](part.label)}
-                title={messages['payment.removePart'](part.label)}
-                className="size-11 shrink-0 px-0"
-                disabled={locked}
-                onClick={() => {
-                  props.onRemovePart?.(part.id)
-                }}
-              >
-                <Trash2 aria-hidden="true" className="size-4" />
-              </ButtonPrimitive>
+              <Tooltip label={messages['payment.removePart'](part.label)}>
+                <ButtonPrimitive
+                  family="neutral"
+                  emphasis="menu"
+                  shape="icon"
+                  aria-label={messages['payment.removePart'](part.label)}
+                  className="size-11 shrink-0 px-0"
+                  disabled={locked}
+                  onClick={() => {
+                    props.onRemovePart?.(part.id)
+                  }}
+                >
+                  <Trash2 aria-hidden="true" className="size-4" />
+                </ButtonPrimitive>
+              </Tooltip>
             )}
           </li>
         ))}
@@ -758,9 +762,24 @@ export function PaymentDialog(props: PaymentDialogProps) {
       )}
     >
       {doneSummary}
-      {props.doneContent !== undefined && (
-        <div className="min-w-0 text-start">{props.doneContent}</div>
-      )}
+      {props.doneContent !== undefined &&
+        (phone ? (
+          // On a phone the receipt opens on request, so the change due and "New sale" stay in
+          // view without scrolling (simplicity first).
+          <Accordion
+            headingLevel={3}
+            className="text-start"
+            items={[
+              {
+                value: 'receipt',
+                title: messages['payment.doneDetails'],
+                content: props.doneContent,
+              },
+            ]}
+          />
+        ) : (
+          <div className="min-w-0 text-start">{props.doneContent}</div>
+        ))}
     </div>
   ) : phone ? (
     <div className="flex flex-col gap-2">
