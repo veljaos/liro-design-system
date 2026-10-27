@@ -1,4 +1,11 @@
-import type { PivotColumn, PivotField, PivotLayout, PivotResult, PivotRow } from './pivot-logic'
+import type {
+  PivotColumn,
+  PivotField,
+  PivotLayout,
+  PivotResult,
+  PivotRow,
+  PivotView,
+} from './pivot-logic'
 
 /*
  * The stories' pivot: a fictitious company's sales by region and product line over three
@@ -454,3 +461,19 @@ export const LONG_LABELS: Record<string, string> = {
   Hardware: 'Hardware, spare parts and accessories delivered with installation on site',
   'Product line': 'Product line as registered in the catalogue of the previous year',
 }
+
+/** The views the stories' application suggests (P5.93 item 45): the user starts from one. */
+export const VIEWS: PivotView[] = [
+  { id: 'quarter', label: 'By region and quarter', layout: QUARTER_LAYOUT },
+  { id: 'month', label: 'By region and month', layout: MONTH_LAYOUT },
+  {
+    id: 'salesperson',
+    label: 'By salesperson',
+    layout: {
+      rows: ['salesperson'],
+      columns: ['quarter'],
+      values: [{ field: 'amount', aggregation: 'sum' }],
+      filters: [],
+    },
+  },
+]

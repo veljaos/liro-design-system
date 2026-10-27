@@ -10,8 +10,8 @@
 /** Where a field stands in the layout. */
 export type PivotArea = 'filters' | 'columns' | 'rows' | 'values'
 
-/** The areas in the chooser's order (as a spreadsheet's field list: filters, columns, rows, values). */
-export const PIVOT_AREAS: readonly PivotArea[] = ['filters', 'columns', 'rows', 'values']
+/** The areas in the chooser's order: Rows, Columns, Values, Filters (P5.93 item 45). */
+export const PIVOT_AREAS: readonly PivotArea[] = ['rows', 'columns', 'values', 'filters']
 
 /** One choice from the application's list: an aggregation, or a dimension's value. */
 export interface PivotOption {
@@ -58,6 +58,16 @@ export interface PivotLayout {
 
 /** An empty layout: nothing chosen yet. */
 export const EMPTY_PIVOT_LAYOUT: PivotLayout = { rows: [], columns: [], values: [], filters: [] }
+
+/**
+ * A view the application suggests (P5.93 item 45): its name in the application's words ("By
+ * site and month") and the layout it shows. The user starts from one and may change it.
+ */
+export interface PivotView {
+  id: string
+  label: string
+  layout: PivotLayout
+}
 
 /** How a column's figures are written: through the provider's `format`. Default 'number'. */
 export type PivotValueKind = 'number' | 'money' | 'percent'
@@ -228,6 +238,92 @@ export function setFilterValues(
 /** The fields not in the layout, in the application's order. */
 export function unusedFields(fields: readonly PivotField[], layout: PivotLayout): PivotField[] {
   return fields.filter((field) => areaOf(layout, field.id) === null)
+}
+
+/** Whether two layouts are the same: the same fields in the same places and order. */
+export function sameLayout(a: PivotLayout, b: PivotLayout): boolean {
+  const list = (left: readonly string[], right: readonly string[]) =>
+    left.length === right.length && left.every((each, index) => each === right[index])
+  return (
+    list(a.rows, b.rows) &&
+    list(a.columns, b.columns) &&
+    a.values.length === b.values.length &&
+    a.values.every((value, index) => {
+      const other = b.values[index]
+      return value.field === other?.field && value.aggregation === other.aggregation
+    }) &&
+    a.filters.length === b.filters.length &&
+    a.filters.every((filter, index) => {
+      const other = b.filters[index]
+      return (
+        filter.field === other?.field && list([...filter.values].sort(), [...other.values].sort())
+      )
+    })
+  )
+}
+
+/** The suggested view the layout is, or undefined when the user has changed it. */
+export function pivotViewOf(views: readonly PivotView[], layout: PivotLayout): string | undefined {
+  return views.find((view) => sameLayout(view.layout, layout))?.id
+}
+
+/** What the layout shows, in its fields' names: the one-line summary's parts (P5.93 item 45). */
+export interface PivotSummaryParts {
+  /** Each value: the field's name and its aggregation's (undefined when not in the field's list). */
+  values: { field: string; aggregation: string | undefined }[]
+  rows: string[]
+  columns: string[]
+  /** The filters that keep some values: the field's name and the kept values' names. */
+  filters: { field: string; values: string[] }[]
+}
+
+/** The summary's parts: names from the application's fields, in the layout's order. */
+export function pivotSummaryParts(
+  fields: readonly PivotField[],
+  layout: PivotLayout,
+): PivotSummaryParts {
+  const field = (id: string) => fields.find((each) => each.id === id)
+  const names = (ids: readonly string[]) => ids.flatMap((id) => field(id)?.label ?? [])
+  return {
+    values: layout.values.flatMap((value) => {
+      const found = field(value.field)
+      if (found === undefined) return []
+      const aggregation = found.aggregations?.find((each) => each.id === value.aggregation)
+      return [{ field: found.label, aggregation: aggregation?.label }]
+    }),
+    rows: names(layout.rows),
+    columns: names(layout.columns),
+    filters: layout.filters.flatMap((filter) => {
+      const found = field(filter.field)
+      if (found === undefined || filter.values.length === 0) return []
+      const values = filter.values.flatMap(
+        (id) => found.values?.find((each) => each.id === id)?.label ?? [],
+      )
+      return [{ field: found.label, values }]
+    }),
+  }
+}
+
+/** The drop zone a field's chip may land in: an area it can stand in, or back among the unused. */
+export type PivotZone = PivotArea | 'available'
+
+/** Whether the field may be dropped in the zone. */
+export function acceptsField(field: PivotField, zone: PivotZone): boolean {
+  return zone === 'available' || fieldAreas(field).includes(zone)
+}
+
+/**
+ * The layout after a field's chip is dropped in a zone at `index` (counted without the field):
+ * placed in an area, or out of the layout among the unused.
+ */
+export function dropField(
+  layout: PivotLayout,
+  field: PivotField,
+  zone: PivotZone,
+  index: number,
+): PivotLayout {
+  if (zone === 'available') return removeField(layout, field.id)
+  return placeField(layout, field, zone, index)
 }
 
 /** Whether there is a figure to show: at least one value. */

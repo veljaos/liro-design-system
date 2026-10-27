@@ -1602,6 +1602,16 @@ export const messagesEn: LiroMessages = {
     'Move between the figures with the arrow keys. Enter on a figure opens its records; on a group, it opens or closes the group.',
   'pivot.gridHint':
     'Move between the figures with the arrow keys. Enter on a group opens or closes it.',
+  'pivot.views': 'Suggested views',
+  'pivot.summaryValue': (field, aggregation) => `${aggregation} of ${field}`,
+  'pivot.summary': (values, rows, columns) =>
+    `${values}${rows === '' ? '' : ` by ${rows}`}${columns === '' ? '' : `, across ${columns}`}`,
+  'pivot.summaryFilter': (field, values) => `${field}: ${values}`,
+  'pivot.summaryFilters': (filters) => `Only ${filters}`,
+  'pivot.summaryMany': (countText) => `${countText} values`,
+  'pivot.moved': (field, area, positionText, totalText) =>
+    `${field} in ${area}, position ${positionText} of ${totalText}`,
+  'pivot.removedField': (field) => `${field} removed from the layout`,
   // P5.78 auto: RuleBuilder
   'rule.when': 'When',
   'rule.if': 'If',

@@ -2251,6 +2251,22 @@ export interface LiroMessages {
   'pivot.export': string
   'pivot.drillHint': string
   'pivot.gridHint': string
+  /** P5.93 item 45: the suggested views' group. */
+  'pivot.views': string
+  /** One value in the summary line ("Sum of Amount"). */
+  'pivot.summaryValue': (field: string, aggregation: string) => string
+  /** The one-line summary above the grid: values, rows ('' when none), columns ('' when none). */
+  'pivot.summary': (values: string, rows: string, columns: string) => string
+  /** One filter in the summary ("Salesperson: Ana Petrović"). */
+  'pivot.summaryFilter': (field: string, values: string) => string
+  /** The filters after the summary ("Only Salesperson: Ana Petrović"). */
+  'pivot.summaryFilters': (filters: string) => string
+  /** A filter that keeps more than three values ("4 values"). */
+  'pivot.summaryMany': (countText: string) => string
+  /** Announced after a field is moved by dragging or its menu. */
+  'pivot.moved': (field: string, area: string, positionText: string, totalText: string) => string
+  /** Announced after a field is taken out of the layout. */
+  'pivot.removedField': (field: string) => string
   // P5.78 auto: RuleBuilder
   /** RuleBuilder: the blocks, the fields' labels, the joins, the add buttons, the empty lists. */
   'rule.when': string
