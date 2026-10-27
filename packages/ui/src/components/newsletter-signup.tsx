@@ -25,7 +25,8 @@ import { usePhone } from './use-phone'
  * - `onSubscribe` may return a promise ("Subscribing…" beside the button, the field waits; a
  *   rejection keeps the address); `error` is the application's danger Alert.
  * - Subscribed (`subscribed`, or kept after `onSubscribe` succeeds): a polite status with a
- *   success CircleCheck and "Thank you. Check your inbox to confirm." or the application's words.
+ *   success CircleCheck and "Thank you — check your inbox to confirm." or the application's words,
+ *   in the form's place: the block keeps its size (P5.93).
  * - Disabled with a visible reason, as every field.
  */
 
@@ -118,18 +119,31 @@ export function NewsletterSignup(props: NewsletterSignupProps) {
           )}
         </div>
       </div>
-      {subscribed !== false ? (
-        <p role="status" className="m-0 flex items-start gap-2 text-sm text-primary">
-          <CircleCheck
-            aria-hidden="true"
-            className="mt-0.5 size-4 shrink-0 text-status-success-fg"
-          />
-          <span className={TEXT_DIRECTION}>
-            {subscribed === true ? messages['newsletter.thanks'] : subscribed}
-          </span>
-        </p>
-      ) : (
-        <form noValidate onSubmit={submit} className="flex min-w-0 flex-col gap-3">
+      {/*
+        P5.93: the thanks replaces only the form, in its place — the form stays laid out but
+        hidden and inert, so the block keeps its size.
+      */}
+      <div className="grid min-w-0">
+        {subscribed !== false && (
+          <p
+            role="status"
+            className="m-0 flex items-center gap-2 self-center text-sm text-primary [grid-area:1/1]"
+          >
+            <CircleCheck aria-hidden="true" className="size-4 shrink-0 text-status-success-fg" />
+            <span className={TEXT_DIRECTION}>
+              {subscribed === true ? messages['newsletter.thanks'] : subscribed}
+            </span>
+          </p>
+        )}
+        <form
+          noValidate
+          onSubmit={submit}
+          {...(subscribed !== false ? { inert: true, 'aria-hidden': true } : {})}
+          className={cn(
+            'flex min-w-0 flex-col gap-3 [grid-area:1/1]',
+            subscribed !== false && 'invisible',
+          )}
+        >
           <div className={cn('flex min-w-0 gap-2', phone ? 'flex-col' : 'items-start')}>
             <TextField
               label={props.emailLabel ?? messages['newsletter.email']}
@@ -183,7 +197,7 @@ export function NewsletterSignup(props: NewsletterSignupProps) {
             <p className={cn('m-0 text-xs text-secondary', TEXT_DIRECTION)}>{props.consent}</p>
           )}
         </form>
-      )}
+      </div>
     </section>
   )
 }

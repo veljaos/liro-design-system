@@ -227,7 +227,7 @@ describe('reading', () => {
     expect(form).toContain('type="email"')
     expect(form).toContain('We never share it.')
     const thanks = render(<NewsletterSignup title="News" subscribed onSubscribe={noop} />)
-    expect(thanks).toContain('Thank you. Check your inbox to confirm.')
+    expect(thanks).toContain('Thank you — check your inbox to confirm.')
     const share = render(
       <ShareLinks
         url="https://example.com/a"

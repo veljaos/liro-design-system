@@ -17,7 +17,7 @@ const meta = {
           'of a list: the application’s title and line, the address (left to right, autofill) ' +
           'and Subscribe, the consent note. An empty or misshaped address is said under the ' +
           'field before anything is sent; `onSubscribe` may return a promise ' +
-          '("Subscribing…"); then "Thank you. Check your inbox to confirm.". The application ' +
+          '("Subscribing…"); then "Thank you — check your inbox to confirm.". The application ' +
           'subscribes and confirms.\n\n**When to use:** a public reading page. **When not:** ' +
           'notification settings of a signed-in user (SettingsPage); a contact form ' +
           '(TextField, TextAreaField).',
@@ -180,7 +180,7 @@ export const SubscribeInteraction: Story = {
     )
     await userEvent.type(field, '.com{Enter}')
     await expect(await canvas.findByRole('status')).toHaveTextContent(
-      'Thank you. Check your inbox to confirm.',
+      'Thank you — check your inbox to confirm.',
     )
   },
 }
