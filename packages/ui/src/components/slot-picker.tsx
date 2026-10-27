@@ -12,7 +12,8 @@ import { groupSlots, localOfAbsolute, slotKey, spanOf, type FreeSlot } from './s
  * SlotPicker (BUILD-PLAN P5.8): the free slots the application offers for booking, grouped by day
  * (and, with `resources`, by resource within a day), one chosen with radio semantics. The
  * application finds the slots; the picker shows them and reports the choice.
- * - A Field (label, description, error, required, read-only, disabled with its reason) around one
+ * - A Field (label, description, error, required, read only — P5.93: the grey chips, the booked
+ *   slot the neutral selection) around one
  *   radio group. Each day under its date in words ("Today" marked); each slot a 36px chip with its
  *   start time (tabular); its accessible name says the time, the day and the resource. The arrow
  *   keys move between all slots, from the leading edge (Radix).

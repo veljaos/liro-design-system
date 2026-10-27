@@ -63,7 +63,8 @@ import { Spinner } from './spinner'
  *   filled button). Enter sends, Shift+Enter breaks the line, Enter while choosing a mention
  *   chooses it. `onSend` may return a promise: the text stays as sent (typing waits; the field
  *   keeps its look and the focus) with a spinner until it resolves, and is cleared then; a
- *   rejection keeps it. Disabled with a visible reason.
+ *   rejection keeps it. `unavailableReason`: the field read only, Send unavailable, the reason
+ *   under the field (P5.93).
  *   `attachments` is a slot above the toolbar for the files added to the message.
  * - **MessageThread:** the list and the composer under it, in one column.
  *
