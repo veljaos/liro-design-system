@@ -400,7 +400,7 @@ export const WizardPhone: Story = {
   render: () => (
     <PhoneFrame>
       <ExampleProvider>
-        <div className="h-full overflow-y-auto p-4">
+        <div className="p-4">
           <Wizard layout="phone" />
         </div>
       </ExampleProvider>
@@ -420,7 +420,7 @@ export const WizardPhoneInteraction: Story = {
   render: () => (
     <PhoneFrame>
       <ExampleProvider>
-        <div className="h-full overflow-y-auto p-4">
+        <div className="p-4">
           <Wizard layout="phone" />
         </div>
       </ExampleProvider>

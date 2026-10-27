@@ -28,7 +28,7 @@ describe('edgeFade', () => {
   it('fades only the edges with more past them, toward reading order', () => {
     expect(edgeFade({ start: false, end: false }, 'ltr')).toBeUndefined()
     expect(edgeFade({ start: true, end: true }, 'rtl')).toBe(
-      'linear-gradient(to left, transparent, currentcolor 32px, currentcolor calc(100% - 32px), transparent)',
+      'linear-gradient(to left, transparent 28px, currentcolor 60px, currentcolor calc(100% - 60px), transparent calc(100% - 28px))',
     )
   })
 })

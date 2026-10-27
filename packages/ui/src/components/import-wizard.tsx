@@ -436,7 +436,8 @@ export function ImportWizard(props: ImportWizardProps) {
           </span>
         )}
       </div>
-      <div className="-mx-4 border-0 border-y border-solid border-default">
+      {/* The list ends on the footer's one line, not a second line of its own (P5.93 item 4). */}
+      <div className="-mx-4 -mb-4 border-0 border-t border-solid border-default">
         {props.problemsOnly && props.previewRows.length === 0 && props.previewLoading !== true ? (
           <p role="status" className={cn('m-0 px-4 py-6 text-sm text-secondary', TEXT_DIRECTION)}>
             {messages['import.noProblems']}

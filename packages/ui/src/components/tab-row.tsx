@@ -26,13 +26,20 @@ import { useLiro } from '../provider/liro-provider'
 /** The width of the fade at an edge with more past it (px); the active tab stays clear of it. */
 export const TAB_ROW_FADE = 32
 
+/**
+ * The width of an edge's chevron (px, P5.93 item 9): under it the row is fully faded, so no label
+ * shows through the chevron; the fade runs before it.
+ */
+export const TAB_ROW_EDGE = 28
+
 /** The classes of a tab row's scroller: sideways scroll without a scrollbar of its own. */
 export const TAB_ROW_SCROLLER = 'min-w-0 overflow-x-auto overflow-y-hidden [scrollbar-width:none]'
 
 /**
  * The mask that fades a scrolling row's edges where more lies past them: 32px from fully drawn to
- * gone, toward the start and the end in reading order. A mask, not a colour: the row fades into
- * whatever surface is behind it (only the mask's alpha counts, and currentcolor is opaque).
+ * gone, then gone under the edge's 28px chevron (P5.93), toward the start and the end in reading
+ * order. A mask, not a colour: the row fades into whatever surface is behind it (only the mask's
+ * alpha counts, and currentcolor is opaque).
  */
 export function edgeFade(
   ends: { start: boolean; end: boolean },
@@ -40,8 +47,13 @@ export function edgeFade(
 ): string | undefined {
   if (!ends.start && !ends.end) return undefined
   const towards = direction === 'rtl' ? 'to left' : 'to right'
-  const start = ends.start ? 'transparent, currentcolor 32px' : 'currentcolor, currentcolor'
-  const end = ends.end ? 'currentcolor calc(100% - 32px), transparent' : 'currentcolor'
+  const clear = TAB_ROW_EDGE + TAB_ROW_FADE
+  const start = ends.start
+    ? `transparent ${String(TAB_ROW_EDGE)}px, currentcolor ${String(clear)}px`
+    : 'currentcolor'
+  const end = ends.end
+    ? `currentcolor calc(100% - ${String(clear)}px), transparent calc(100% - ${String(TAB_ROW_EDGE)}px)`
+    : 'currentcolor'
   return `linear-gradient(${towards}, ${start}, ${end})`
 }
 
@@ -130,7 +142,7 @@ function revealActive(row: HTMLElement, direction: 'ltr' | 'rtl') {
   const delta = revealDelta(
     row.getBoundingClientRect(),
     active.getBoundingClientRect(),
-    TAB_ROW_FADE,
+    TAB_ROW_EDGE + TAB_ROW_FADE,
     direction,
   )
   if (delta !== 0) row.scrollLeft += delta

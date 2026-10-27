@@ -399,7 +399,7 @@ function OnPhone(props: Parameters<typeof Import>[0]) {
   return (
     <PhoneFrame>
       <ExampleProvider>
-        <div className="h-full overflow-y-auto p-4">
+        <div className="p-4">
           <Import {...props} layout="phone" />
         </div>
       </ExampleProvider>
