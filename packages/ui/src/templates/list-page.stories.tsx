@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { BookmarkPlus, FileSpreadsheet } from 'lucide-react'
 import { useState } from 'react'
-import { expect, userEvent, within } from 'storybook/test'
+import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { Button } from '../components/button'
 import { DataTable, type DataTableColumn } from '../components/data-table'
 import type { DataTableFilters } from '../components/data-table-logic'
@@ -464,7 +464,12 @@ export const Keyboard: Story = {
     await settle()
     const body = within(document.body)
     await expect(body.getByRole('dialog', { name: 'F-2026-0410' })).toBeVisible()
+    // The drawer focused its Close button by script: no tooltip takes the Escape (P5.93 item 7).
+    await expect(body.queryByRole('tooltip')).toBeNull()
     await userEvent.keyboard('{Escape}')
+    await waitFor(async () => {
+      await expect(body.queryByRole('dialog')).toBeNull()
+    })
     await settle()
     await userEvent.click(canvas.getByRole('button', { name: 'Columns' }))
     await settle()

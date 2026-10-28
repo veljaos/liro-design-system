@@ -102,8 +102,8 @@ export function Tooltip({
   const onFocus = trigger.onFocus as ((event: FocusEvent<HTMLElement>) => void) | undefined
   // Props from an outer trigger (a menu's or a dialog's, asChild) pass on to the target, so a
   // tooltip can stand between a trigger and its button (P5.93 item 7). A focus opens the tooltip
-  // only when it comes from the keyboard: a dialog that focuses its close button as it opens, or
-  // a menu that gives the focus back to its button after a click, shows no tooltip.
+  // only when a key moved it there (FOCUS_KEYS): a dialog that focuses its close button as it
+  // opens, after a click or a Space, or a menu that gives the focus back to its button, shows none.
   return (
     <TooltipProvider>
       <TooltipRoot
@@ -145,13 +145,33 @@ export function useInTooltip(): boolean {
   return useContext(InTooltip)
 }
 
-/** How the user last acted: a focus opens a tooltip only after a key (P5.93 item 7). */
-let lastInput: 'none' | 'keyboard' | 'pointer' = 'none'
+/**
+ * The keys that move the focus themselves: Tab and the arrows, Home, End and the page keys of a
+ * roving group. A focus after any other key (Space or Enter opening a dialog that focuses its
+ * close button, Escape giving the focus back to a menu's button) was given by a script.
+ */
+export const FOCUS_KEYS: ReadonlySet<string> = new Set([
+  'Tab',
+  'ArrowUp',
+  'ArrowDown',
+  'ArrowLeft',
+  'ArrowRight',
+  'Home',
+  'End',
+  'PageUp',
+  'PageDown',
+])
+
+/**
+ * How the user last acted: a focus opens a tooltip only after a key that moves the focus (P5.93
+ * item 7), so a tooltip never stands open over a dialog's close button and takes its Escape.
+ */
+let lastInput: 'none' | 'keyboard' | 'other' | 'pointer' = 'none'
 if (typeof document !== 'undefined') {
   document.addEventListener(
     'keydown',
-    () => {
-      lastInput = 'keyboard'
+    (event) => {
+      lastInput = FOCUS_KEYS.has(event.key) ? 'keyboard' : 'other'
     },
     true,
   )

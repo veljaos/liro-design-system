@@ -170,7 +170,8 @@ export function Booking({
   const [service, setService] = useState(DEFAULT_SERVICE)
   const [picking, setPicking] = useState(choosing)
   const [doctor, setDoctor] = useState(CHOSEN_DOCTOR)
-  // Another doctor only on request: the chosen one is the default (P5.93 item 12, simplicity).
+  // Another doctor only on request: the chosen one is the default (P5.93 item 12, simplicity). The
+  // button shows the field in its place, so it has no "…" (which promises a dialog).
   const [changingDoctor, setChangingDoctor] = useState(false)
   const [slot, setSlot] = useState<string | null>(
     step === 'service' || step === 'time' ? null : JOVANA_SLOT,
@@ -230,9 +231,11 @@ export function Booking({
                 </section>
                 {generalPractice &&
                   (changingDoctor ? (
+                    // The list opens at once, so the focus stays on it when its button is gone.
                     <SelectField
                       label="Doctor"
                       description="Your chosen doctor sees you first; another doctor of the clinic when yours is away."
+                      defaultOpen
                       options={DOCTOR_OPTIONS}
                       value={doctor}
                       onChange={setDoctor}
@@ -247,7 +250,7 @@ export function Booking({
                         }}
                         className={`m-0 inline-flex min-h-6 cursor-pointer items-center border-0 bg-transparent p-0 font-sans text-sm ${LINK}`}
                       >
-                        <span className="bidi-content">Another doctor…</span>
+                        <span className="bidi-content">Another doctor</span>
                       </button>
                     </p>
                   ))}
