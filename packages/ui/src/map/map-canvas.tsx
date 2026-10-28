@@ -60,6 +60,19 @@ export interface MapBaseLayer {
   urlDark?: string
 }
 
+/**
+ * Whether Leaflet has a view yet: projecting a point before the first fit throws ("Set map center
+ * and zoom first"), which a chart remounted with new areas (a drill-down, P5.93 item 43) reached.
+ */
+function hasView(map: L.Map): boolean {
+  try {
+    map.getCenter()
+    return true
+  } catch {
+    return false
+  }
+}
+
 /** The deepest zoom of a base map whose `maxZoom` is not given (Leaflet's default). */
 const DEFAULT_MAX_ZOOM = 18
 
@@ -108,6 +121,11 @@ export interface MapCanvasProps {
   /** What the map shows at first, and again with "Show all". */
   bounds: MapBounds | null
   baseLayer?: MapBaseLayer | undefined
+  /**
+   * The areas' own attribution (P5.93 item 43: boundary data under an open licence, such as
+   * `SERBIA_BOUNDARIES_ATTRIBUTION`), written under the map after the base map's.
+   */
+  attribution?: string | undefined
   height: number
   onShapeClick?: (id: string) => void
   /** The pointer over an interactive area (its id and the point in the map), or off it (null). */
@@ -327,7 +345,7 @@ export function MapCanvas(props: MapCanvasProps) {
     if (map === null) return
     const place = () => {
       const size = map.getSize()
-      if (size.x === 0 || size.y === 0) return
+      if (size.x === 0 || size.y === 0 || !hasView(map)) return
       setPlaced(
         (labels ?? []).map((label) => {
           const point = map.latLngToContainerPoint([label.at.lat, label.at.lng])
@@ -403,7 +421,7 @@ export function MapCanvas(props: MapCanvasProps) {
   // The place the keys reached stays in view.
   const reveal = props.reveal
   useEffect(() => {
-    if (map === null || reveal === undefined || reveal === null) return
+    if (map === null || reveal === undefined || reveal === null || !hasView(map)) return
     const at = L.latLng(reveal.lat, reveal.lng)
     if (map.getBounds().pad(-0.1).contains(at)) return
     moved.current = true
@@ -411,7 +429,7 @@ export function MapCanvas(props: MapCanvasProps) {
   }, [map, reveal])
 
   const project = (at: LatLng): ScreenPoint | null => {
-    if (map === null) return null
+    if (map === null || !hasView(map)) return null
     const point = map.latLngToContainerPoint([at.lat, at.lng])
     return { x: point.x, y: point.y }
   }
@@ -498,9 +516,11 @@ export function MapCanvas(props: MapCanvasProps) {
           }}
         />
       </div>
-      {props.baseLayer !== undefined && (
+      {(props.baseLayer !== undefined || props.attribution !== undefined) && (
         <p data-slot="map-attribution" className="bidi-content m-0 mt-1 text-xs text-secondary">
-          {props.baseLayer.attribution}
+          {[props.baseLayer?.attribution, props.attribution]
+            .filter((part) => part !== undefined)
+            .join(' · ')}
         </p>
       )}
     </div>

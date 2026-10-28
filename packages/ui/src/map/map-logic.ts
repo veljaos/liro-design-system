@@ -1,5 +1,4 @@
 import { pointInPolygon, polygonCentroid } from '../components/floor-plan-logic'
-import { compareDecimal, isDecimal } from '../components/quantity-logic'
 
 /*
  * The logic of AreaMap and LocationCheck (BUILD-PLAN P5.41), apart from the markup so it can be
@@ -285,72 +284,20 @@ export function circleBounds(centre: LatLng, radius: number): MapBounds {
 
 // ── RegionChart (P5.41, maps in charts) ───────────────────────────────────────────────────────
 
-/** The most steps a region chart's ramp has: five shades of one meaning stay distinguishable. */
-export const REGION_MAX_STEPS = 5
-
-/** A region chart's ramp: the charts' main blue in steps, or neutral grey. */
-export type RegionRamp = 'main' | 'neutral'
-
-/**
- * The step a value falls in, between the application's `breaks` (ascending decimal strings): 0
- * below the first break, n at or above the nth. Compared exactly as decimal strings (D4), never as
- * JavaScript numbers. Null — "No data", never 0 — when the value is missing or unreadable.
- */
-export function regionStep(
-  value: string | null | undefined,
-  breaks: readonly string[],
-): number | null {
-  if (value === null || value === undefined || !isDecimal(value.trim())) return null
-  const exact = value.trim()
-  let step = 0
-  for (const each of breaks) {
-    if (isDecimal(each) && compareDecimal(exact, each) >= 0) step += 1
-  }
-  return step
-}
-
-/** How many steps the breaks make (one more than the breaks), at most `REGION_MAX_STEPS`. */
-export function regionStepCount(breaks: readonly string[]): number {
-  return Math.min(breaks.length + 1, REGION_MAX_STEPS)
-}
-
-/** A step's shade: the ramp's meaning and how strongly it is laid on the card. */
-export interface RampShade {
-  /** `var(--liro-chart-main)`, or `var(--liro-chart-other)` for a neutral ramp. */
-  colour: string
-  /** 0.25 for the lowest step up to 1 for the highest. */
-  opacity: number
-}
-
-/**
- * A step's shade: the ramp's meaning (`--liro-chart-main`, or `--liro-chart-other` for neutral)
- * laid on the card's surface, the lowest step lightest (25%), the highest the meaning itself.
- * Tokens only, so the shades follow the theme (on a dark card the lowest step is the darkest).
- */
-export function rampShade(step: number, count: number, ramp: RegionRamp): RampShade {
-  const colour = ramp === 'main' ? 'var(--liro-chart-main)' : 'var(--liro-chart-other)'
-  const last = Math.max(1, count - 1)
-  const clamped = Math.min(Math.max(step, 0), last)
-  const opacity = count <= 1 ? 1 : Math.round(25 + (75 * clamped) / last) / 100
-  return { colour, opacity }
-}
-
-/** A step of the legend: its range, `from` inclusive and `to` exclusive; null at an open end. */
-export interface RegionStepRange {
-  step: number
-  from: string | null
-  to: string | null
-}
-
-/** The ranges of the steps the breaks make, lowest first. */
-export function regionStepRanges(breaks: readonly string[]): RegionStepRange[] {
-  const used = breaks.slice(0, REGION_MAX_STEPS - 1)
-  return Array.from({ length: used.length + 1 }, (_, step) => ({
-    step,
-    from: step === 0 ? null : (used[step - 1] ?? null),
-    to: used[step] ?? null,
-  }))
-}
+// The steps, their shades and ranges are the charts' (`charts/steps.ts`, shared with Heatmap since
+// P5.93 item 44); the region chart keeps its names.
+export {
+  MAX_STEPS as REGION_MAX_STEPS,
+  stepCount as regionStepCount,
+  stepRanges as regionStepRanges,
+  stepShade as rampShade,
+  valueStep as regionStep,
+} from '../charts/steps'
+export type {
+  StepRamp as RegionRamp,
+  StepRange as RegionStepRange,
+  StepShade as RampShade,
+} from '../charts/steps'
 
 /**
  * The areas in reading order: rows from north to south (points within `rowTolerance` degrees of

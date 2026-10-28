@@ -1716,4 +1716,18 @@ export const messagesEn: LiroMessages = {
   'undo.label': 'Undo',
   // ── P5.93 (e) ──
   'articles.read': 'Read article',
+  // ── P5.93 (h) ──
+  'chart.itemKeys': 'Arrow keys move between the values; Escape hides the details.',
+  'chart.open': 'Open',
+  'chart.high': 'High',
+  'chart.low': 'Low',
+  'chart.close': 'Close',
+  'chart.rising': 'Rising',
+  'chart.falling': 'Falling',
+  'chart.cellName': (row, column) => `${row}, ${column}`,
+  'chart.flow': (from, to) => `${from} → ${to}`,
+  'chart.from': 'From',
+  'chart.to': 'To',
+  'chart.none': 'None',
+  'chart.more': (_count, countText) => `+${countText} more`,
 }
