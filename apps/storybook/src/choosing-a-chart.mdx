@@ -6,19 +6,26 @@ import { Meta } from '@storybook/addon-docs/blocks'
 
 Pick the chart by what the numbers must show. Charts come from `@veljaos/ui/charts`, a subpath of their own, so an application without charts does not load Recharts.
 
-| What the reader must see                        | Chart                                                             |
-| ----------------------------------------------- | ----------------------------------------------------------------- |
-| A trend over time                               | **LineChart**, or **AreaChart** for a volume                      |
-| How parts make up a volume over time            | **AreaChart** with `stack="stacked"` (or `"expanded"` for shares) |
-| Categories compared: months, customers, regions | **BarChart**                                                      |
-| … with long names, or more than 7 items         | **BarChart** with `orientation="horizontal"`                      |
-| Profit and loss                                 | **BarChart** with `signTones`                                     |
-| Parts of one whole, **5 or fewer**              | **PieChart** or **DonutChart**                                    |
-| Parts of one whole, more than 5                 | **BarChart** (horizontal), largest first                          |
-| A few scores of one or two things               | **RadarChart**                                                    |
-| Progress to a goal                              | **RadialChart** with `max`                                        |
-| One number that matters                         | **StatCard**, not a chart                                         |
-| One figure across places: countries, regions    | **RegionChart** (`@veljaos/ui/map`), see "Maps of values" below   |
+| What the reader must see                           | Chart                                                             |
+| -------------------------------------------------- | ----------------------------------------------------------------- |
+| A trend over time                                  | **LineChart**, or **AreaChart** for a volume                      |
+| How parts make up a volume over time               | **AreaChart** with `stack="stacked"` (or `"expanded"` for shares) |
+| Categories compared: months, customers, regions    | **BarChart**                                                      |
+| … with long names, or more than 7 items            | **BarChart** with `orientation="horizontal"`                      |
+| Profit and loss                                    | **BarChart** with `signTones`                                     |
+| Parts of one whole, **5 or fewer**                 | **PieChart** or **DonutChart**                                    |
+| Parts of one whole, more than 5                    | **BarChart** (horizontal), largest first                          |
+| A few scores of one or two things                  | **RadarChart**                                                    |
+| Progress to a goal                                 | **RadialChart** with `max`                                        |
+| One number that matters                            | **StatCard**, not a chart                                         |
+| One figure across places: countries, regions       | **RegionChart** (`@veljaos/ui/map`), see "Maps of values" below   |
+| A price's open, high, low and close per period     | **CandlestickChart**                                              |
+| How many reach each stage of a process             | **FunnelChart**                                                   |
+| Items placed by two values (and a third as size)   | **ScatterChart** (with `size`: bubbles)                           |
+| A value over two dimensions (weekday × hour)       | **Heatmap**, in the application's steps                           |
+| How amounts flow from sources to uses              | **SankeyChart**                                                   |
+| Items placed by two scales, cells by level (risks) | **MatrixChart**                                                   |
+| Many parts of one whole, in groups                 | **Treemap**                                                       |
 
 **Never:** radar or radial charts for money over time; a pie for parts that do not add up to one whole; two value axes in one chart.
 
@@ -28,7 +35,7 @@ Pick the chart by what the numbers must show. Charts come from `@veljaos/ui/char
 
 - **Use it** when _where_ matters: one figure for each country, region or municipality, and the reader looks for neighbours, clusters or the places that stand out ("revenue by country", "sales by region"). Add points or bubbles for places inside the areas (offices, shops).
 - **Not** for exact comparison: a bar chart ranks places better, because large areas look important whatever their value. Not for a trend over time. Not for parts of a whole. Not for more than five steps of precision: those need the table. Not for choosing an area (**AreaMap**).
-- An area without a value is hatched and says "No data", never 0. The map is never mirrored in right-to-left. The geometry (GeoJSON) is the application's; the stories use Natural Earth's 1:110m countries.
+- An area without a value is hatched and says "No data", never 0. The map is never mirrored in right-to-left. The geometry (GeoJSON) is the application's; the stories use Natural Earth's 1:110m countries. Serbia's statistical regions, districts and cities and municipalities ship with the map subpath (`loadSerbiaBoundaries`, loaded on demand, with the attribution to show; "Charts / Map / Serbia").
 
 ## Colour
 
