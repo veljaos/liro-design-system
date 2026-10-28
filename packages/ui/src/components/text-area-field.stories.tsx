@@ -29,18 +29,12 @@ export const Default: Story = {
   render: (args) => <TextAreaField {...args} className="max-w-100" />,
 }
 
-/** Required with an error, read-only next to disabled. */
+/** Required with an error, read only (the read-only look, an empty value "—"). */
 export const States: Story = {
   render: () => (
     <div className="flex max-w-100 flex-col gap-6">
       <TextAreaField label="Reason" required error="Say why the document is cancelled" />
       <TextAreaField label="Terms (read-only)" readOnly defaultValue="Payment within 15 days." />
-      <TextAreaField
-        label="Terms (disabled)"
-        disabled
-        disabledReason="Terms come from the contract."
-        defaultValue="Payment within 15 days."
-      />
     </div>
   ),
 }

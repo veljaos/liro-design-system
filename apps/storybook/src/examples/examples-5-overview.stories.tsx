@@ -217,8 +217,9 @@ function brPlay(
 
 /**
  * P5.77: Kvadrat Gradnja d.o.o.'s cost analysis — sites and their cost accounts down, July to
- * September across with the amount and the number of supplier invoices, the totals; the chooser
- * beside it (on a phone behind "Fields"); a figure opens its invoices.
+ * September across with the amount and the number of supplier invoices, the totals; P5.93 item 45:
+ * the application's suggested views first, the layout in one line of words, the chooser behind
+ * "Fields" (closed); a figure opens its invoices.
  */
 const BR_COSTS_CHECK = async (canvasElement: HTMLElement) => {
   const canvas = within(canvasElement)
@@ -226,6 +227,15 @@ const BR_COSTS_CHECK = async (canvasElement: HTMLElement) => {
   const grid = canvas.getByRole('treegrid', { name: 'Costs by site and month' })
   await expect(within(grid).getByRole('rowheader', { name: 'Liman 4' })).toBeVisible()
   await expect(within(grid).getByRole('columnheader', { name: 'Sep 2026' })).toBeVisible()
+  const views = canvas.getByRole('group', { name: 'Suggested views' })
+  await expect(within(views).getByRole('button', { name: 'By site and account' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
+  await expect(canvas.getByRole('button', { name: 'Fields' })).toHaveAttribute(
+    'aria-expanded',
+    'false',
+  )
 }
 
 export const BrCostAnalysis: Story = {
@@ -240,7 +250,7 @@ export const BrCostAnalysisPhone: Story = {
   play: brPlay(BR_COSTS_CHECK, true),
 }
 
-/** A press on a figure opens its invoices; the export is reported. */
+/** A press on a figure opens its invoices; the export is reported; a suggested view is chosen. */
 export const BrCostAnalysisOpen: Story = {
   name: 'Cost analysis, open a figure, interaction',
   tags: ['interaction', '!dev'],
@@ -274,6 +284,12 @@ export const BrCostAnalysisOpen: Story = {
         await expect(document.querySelector('[data-sonner-toast]')).toBeNull()
       },
       { timeout: 5000 },
+    )
+    // The other suggested view (P5.93 item 45): the grid follows, the view stands chosen.
+    await userEvent.click(canvas.getByRole('button', { name: 'By supplier' }))
+    await expect(canvas.getByRole('button', { name: 'By supplier' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
     )
   },
 }

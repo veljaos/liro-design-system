@@ -117,7 +117,7 @@ export const Unreadable: Story = {
   },
 }
 
-/** Empty, required, with seconds, the application's error, read-only next to disabled. */
+/** Empty, required, with seconds, the application's error, read only (the read-only look, an empty value "—"). */
 export const States: Story = {
   render: () => (
     <div className="flex max-w-60 flex-col gap-6">
@@ -126,12 +126,6 @@ export const States: Story = {
       <TimeField label="Logged at" withSeconds defaultValue="06:30:15" />
       <TimeField label="End" defaultValue="05:00" error="The end is before the start." />
       <TimeField label="Opening (read-only)" readOnly defaultValue="08:00" />
-      <TimeField
-        label="Closing (disabled)"
-        disabled
-        disabledReason="The day is closed."
-        defaultValue="20:00"
-      />
     </div>
   ),
 }
@@ -154,12 +148,6 @@ export const Arabic: Story = {
       <TimeField label={ARABIC.label} description={ARABIC.description} defaultValue="06:30" />
       <TimeField label={ARABIC.label} required error={ARABIC.error} />
       <TimeField label={ARABIC.label} readOnly defaultValue="14:30" />
-      <TimeField
-        label={ARABIC.label}
-        disabled
-        disabledReason={ARABIC.reason}
-        defaultValue="14:30"
-      />
     </div>
   ),
 }
@@ -171,12 +159,6 @@ export const Japanese: Story = {
       <TimeField label={JAPANESE.label} description={JAPANESE.description} defaultValue="06:30" />
       <TimeField label={JAPANESE.label} required error={JAPANESE.error} />
       <TimeField label={JAPANESE.label} readOnly defaultValue="14:30" />
-      <TimeField
-        label={JAPANESE.label}
-        disabled
-        disabledReason={JAPANESE.reason}
-        defaultValue="14:30"
-      />
     </div>
   ),
 }

@@ -66,7 +66,7 @@ import { LazyDropdownMenu, type MenuEntry } from './dropdown-menu'
 import { EmptyState } from './empty-state'
 import { ShortcutHint } from './navigation'
 import { NumberField } from './number-field'
-import { Tooltip } from './popover'
+import { HintedTarget, Tooltip } from './popover'
 import { Skeleton } from './progress'
 import { SelectField } from './select-field'
 import { StatusBadge, type Tone } from './status-badge'
@@ -759,19 +759,20 @@ function DesktopView(props: ViewProps) {
       <LazyDropdownMenu
         entries={() => menu}
         trigger={
-          <button
-            type="button"
-            data-pos={pos(cell)}
-            tabIndex={tabIndex(cell)}
-            title={extra ?? undefined}
-            className={cn(
-              BUTTON_RESET,
-              'flex min-h-11 w-full cursor-pointer flex-col items-center justify-center px-0.5 py-1 text-primary hover:bg-surface-hover',
-              FOCUS_CELL,
-            )}
-          >
-            {content}
-          </button>
+          <HintedTarget hint={extra ?? undefined}>
+            <button
+              type="button"
+              data-pos={pos(cell)}
+              tabIndex={tabIndex(cell)}
+              className={cn(
+                BUTTON_RESET,
+                'flex min-h-11 w-full cursor-pointer flex-col items-center justify-center px-0.5 py-1 text-primary hover:bg-surface-hover',
+                FOCUS_CELL,
+              )}
+            >
+              {content}
+            </button>
+          </HintedTarget>
         }
       />,
       false,
@@ -1182,30 +1183,33 @@ function DesktopView(props: ViewProps) {
               {rowTotals.map((total, index) => {
                 const cell = { row: 0, column: days + 1 + index }
                 return (
-                  <div
+                  <HintedTarget
                     key={total.id}
-                    role="columnheader"
-                    aria-colindex={days + 2 + index}
-                    data-pos={pos(cell)}
-                    tabIndex={tabIndex(cell)}
-                    title={total.short === undefined ? undefined : total.label}
-                    className={cn(
-                      'min-w-16 bg-surface-sunken px-2 text-end align-middle text-xs font-semibold text-secondary',
-                      CELL_LINES,
-                      'border-b-default',
-                      index === 0 && 'border-s border-s-default',
-                      FOCUS_CELL,
-                    )}
+                    hint={total.short === undefined ? undefined : total.label}
                   >
-                    {total.short === undefined ? (
-                      <span className={TEXT_ISOLATE}>{total.label}</span>
-                    ) : (
-                      <abbr title={total.label} className="no-underline">
-                        <span aria-hidden="true">{total.short}</span>
-                        <span className="sr-only">{total.label}</span>
-                      </abbr>
-                    )}
-                  </div>
+                    <div
+                      role="columnheader"
+                      aria-colindex={days + 2 + index}
+                      data-pos={pos(cell)}
+                      tabIndex={tabIndex(cell)}
+                      className={cn(
+                        'min-w-16 bg-surface-sunken px-2 text-end align-middle text-xs font-semibold text-secondary',
+                        CELL_LINES,
+                        'border-b-default',
+                        index === 0 && 'border-s border-s-default',
+                        FOCUS_CELL,
+                      )}
+                    >
+                      {total.short === undefined ? (
+                        <span className={TEXT_ISOLATE}>{total.label}</span>
+                      ) : (
+                        <span>
+                          <span aria-hidden="true">{total.short}</span>
+                          <span className="sr-only">{total.label}</span>
+                        </span>
+                      )}
+                    </div>
+                  </HintedTarget>
                 )
               })}
             </div>

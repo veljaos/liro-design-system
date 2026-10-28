@@ -81,7 +81,7 @@ describe('RichTextField', () => {
     )
     expect(html).toContain('<span id="letter-label"')
     expect(html).toContain('role="toolbar" aria-label="Formatting" aria-controls="letter"')
-    expect(html).toContain('aria-label="Bold" title="Bold" aria-pressed="false"')
+    expect(html).toContain('aria-label="Bold" aria-pressed="false"')
     expect(html).toContain('aria-label="Text style: Normal text"')
     expect(html).toContain('aria-label="Insert merge field"')
     expect(html).toContain('Merge field: Customer name')
@@ -108,18 +108,12 @@ describe('RichTextField', () => {
     expect(html).toContain('text-status-danger-fg')
   })
 
-  it('shows the reason it is disabled and disables the toolbar', () => {
+  it('shows an empty read-only text as "—", without the hint', () => {
     const html = render(
-      <RichTextField
-        id="d"
-        label="Comment"
-        disabled
-        disabledReason="The offer was sent."
-        defaultValue={LETTER}
-      />,
+      <RichTextField id="d" label="Comment" description="Seen by the customer" readOnly />,
     )
-    expect(html).toContain('The offer was sent.')
-    expect(html).toContain('aria-disabled="true"')
-    expect(html).toMatch(/<button[^>]*disabled=""[^>]*aria-label="Bold"/u)
+    expect(html).toContain('—')
+    expect(html).toContain('bg-surface-disabled')
+    expect(html).not.toContain('Seen by the customer')
   })
 })

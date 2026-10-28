@@ -534,6 +534,37 @@ export const Phone: Story = {
   },
 }
 
+/**
+ * A reference's preview on a phone (P5.93 item 31): a bottom sheet with the article's text and
+ * "Open Article 4" at its foot — never a popover over the text.
+ */
+export const PhoneReferencePreview: Story = {
+  name: 'Phone width, reference preview',
+  tags: ['!dev'],
+  render: () => (
+    <PhoneFrame>
+      <ExampleProvider>
+        <div style={{ height: '100%', overflowY: 'auto', padding: 16, boxSizing: 'border-box' }}>
+          <Act layout="phone" defaultPreview="#/legal/acts/site-records/article-4" />
+        </div>
+      </ExampleProvider>
+    </PhoneFrame>
+  ),
+  play: async () => {
+    await settle()
+    const sheet = within(document.body).getByRole('dialog', {
+      name: 'Article 4 · Keeping of records',
+    })
+    await expect(within(sheet).getByText(/Site records are kept/)).toBeVisible()
+    const open = within(sheet).getByRole('link', { name: 'Open Article 4' })
+    await expect(open).toHaveAttribute('href', '#/legal/acts/site-records/article-4')
+    // Edge to edge at the screen's foot, the action across it.
+    const box = sheet.getBoundingClientRect()
+    await expect(box.width).toBeGreaterThan(380)
+    await expect(open.getBoundingClientRect().width).toBeGreaterThan(300)
+  },
+}
+
 /** The phone's article menu open. */
 export const PhoneMenu: Story = {
   name: 'Phone width, article menu, interaction',

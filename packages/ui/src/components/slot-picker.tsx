@@ -12,7 +12,8 @@ import { groupSlots, localOfAbsolute, slotKey, spanOf, type FreeSlot } from './s
  * SlotPicker (BUILD-PLAN P5.8): the free slots the application offers for booking, grouped by day
  * (and, with `resources`, by resource within a day), one chosen with radio semantics. The
  * application finds the slots; the picker shows them and reports the choice.
- * - A Field (label, description, error, required, read-only, disabled with its reason) around one
+ * - A Field (label, description, error, required, read only — P5.93: the grey chips, the booked
+ *   slot the neutral selection) around one
  *   radio group. Each day under its date in words ("Today" marked); each slot a 36px chip with its
  *   start time (tabular); its accessible name says the time, the day and the resource. The arrow
  *   keys move between all slots, from the leading edge (Radix).
@@ -110,7 +111,6 @@ export function SlotPicker(props: SlotPickerProps) {
             aria-readonly={control.readOnly || undefined}
             aria-required={control.required || undefined}
             required={control.required}
-            disabled={control.disabled}
             className="flex flex-col gap-4"
           >
             {days.map((day) => {
@@ -167,11 +167,11 @@ export function SlotPicker(props: SlotPickerProps) {
                                 className={cn(
                                   BUTTON_RESET,
                                   'inline-flex h-control min-w-20 items-center justify-center rounded-md border border-solid border-control bg-surface-raised px-3 text-sm text-primary tabular-nums transition-colors duration-(--liro-duration-fast) ease-standard',
-                                  'data-[state=checked]:border-transparent data-[state=checked]:bg-brand-solid data-[state=checked]:font-semibold data-[state=checked]:text-brand-on-solid',
-                                  'disabled:cursor-not-allowed disabled:border-default disabled:bg-surface-disabled disabled:text-disabled',
+                                  // Read-only (P5.93): the read-only look, the chosen slot the
+                                  // neutral selection.
                                   control.readOnly
-                                    ? 'cursor-default'
-                                    : 'cursor-pointer enabled:data-[state=unchecked]:hover:bg-surface-hover',
+                                    ? 'cursor-default border-default bg-surface-disabled data-[state=checked]:border-selected data-[state=checked]:bg-surface-selected data-[state=checked]:font-semibold'
+                                    : 'cursor-pointer data-[state=checked]:border-transparent data-[state=checked]:bg-brand-solid data-[state=checked]:font-semibold data-[state=checked]:text-brand-on-solid data-[state=unchecked]:hover:bg-surface-hover',
                                   control.invalid &&
                                     'data-[state=unchecked]:border-status-danger-fg',
                                   FOCUS_RING,

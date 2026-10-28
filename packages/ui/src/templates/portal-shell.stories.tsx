@@ -9,8 +9,10 @@ import {
   Languages,
   LifeBuoy,
   LogOut,
+  House,
   MessageSquare,
   Package,
+  Pill,
   Receipt,
   UserRound,
 } from 'lucide-react'
@@ -36,13 +38,8 @@ const MENU: MenuEntry[] = [
 ]
 
 const PATIENT_SECTIONS: PortalSection[] = [
-  {
-    key: 'appointments',
-    label: 'Appointments',
-    href: '#appointments',
-    icon: CalendarDays,
-    current: true,
-  },
+  { key: 'home', label: 'Home', href: '#home', icon: House, current: true },
+  { key: 'appointments', label: 'Appointments', href: '#appointments', icon: CalendarDays },
   { key: 'results', label: 'Results', href: '#results', icon: FlaskConical, note: '1 new' },
   { key: 'messages', label: 'Messages', href: '#messages', icon: MessageSquare, note: '2 new' },
 ]
@@ -66,56 +63,70 @@ function Page({ title, children }: { title: string; children: ReactNode }) {
   )
 }
 
-function Appointments() {
+/** One thing on the home page: what, when or from whom, and its one action. */
+function HomeRow(props: { title: string; detail: ReactNode; action?: ReactNode }) {
   return (
-    <Page title="Appointments">
-      <SectionCard
-        title="Upcoming"
-        headingLevel={2}
-        actions={<Button intent="create" label="Book an appointment" />}
-      >
+    <li className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-0 border-b border-solid border-default pb-3 last:border-b-0 last:pb-0">
+      <div className="flex min-w-0 flex-1 basis-56 flex-col gap-0.5">
+        <span className={cn('text-sm font-semibold text-primary', TEXT_DIRECTION)}>
+          {props.title}
+        </span>
+        <span className={cn('text-sm text-secondary', TEXT_DIRECTION)}>{props.detail}</span>
+      </div>
+      {props.action}
+    </li>
+  )
+}
+
+/**
+ * A portal's home shows only what matters now (P5.93 item 11, the owner's review): the quick
+ * actions, what the person has to do, and what is new for them — no grid of equal cards.
+ */
+function PatientHome() {
+  return (
+    <Page title="Hello, Jovana">
+      <div className="flex flex-wrap gap-2">
+        <Button family="neutral" icon={MessageSquare} label="Write to your doctor" />
+        <Button family="neutral" icon={Pill} label="Renew a prescription" />
+        <Button intent="create" emphasis="primary" label="Book an appointment" />
+      </div>
+      <SectionCard title="To do" headingLevel={2}>
         <ul className="m-0 flex list-none flex-col gap-3 p-0">
-          {[
-            {
-              date: '2026-10-14',
-              time: '09:20',
-              who: 'dr Marko Stanković, general practice',
-              where: 'Ambulanta Liman, room 12',
-              state: <StatusBadge label="Confirmed" tone="success" />,
-            },
-            {
-              date: '2026-10-27',
-              time: '13:40',
-              who: 'Laboratory: blood count and glucose',
-              where: 'Laboratorija, ground floor',
-              state: <StatusBadge label="Waiting for confirmation" tone="warning" />,
-            },
-          ].map((visit) => (
-            <li
-              key={visit.date}
-              className="flex flex-wrap items-start justify-between gap-2 border-0 border-b border-solid border-default pb-3 last:border-b-0 last:pb-0"
-            >
-              <div className="flex min-w-0 flex-col gap-0.5">
-                <span className={cn('text-sm font-semibold text-primary', TEXT_DIRECTION)}>
-                  <DateText value={visit.date} /> · {visit.time}
-                </span>
-                <span className={cn('text-sm text-primary', TEXT_DIRECTION)}>{visit.who}</span>
-                <span className={cn('text-xs text-secondary', TEXT_DIRECTION)}>{visit.where}</span>
-              </div>
-              {visit.state}
-            </li>
-          ))}
+          <HomeRow
+            title="Confirm your laboratory appointment"
+            detail={
+              <>
+                <DateText value="2026-10-27" /> · 13:40 · Laboratorija, ground floor
+              </>
+            }
+            action={<Button family="neutral" icon={CalendarCheck} label="Confirm" />}
+          />
+          <HomeRow
+            title="A new result: blood count and glucose"
+            detail={
+              <>
+                From the laboratory, <DateText value="2026-10-10" />
+              </>
+            }
+            action={<Button family="neutral" icon={FlaskConical} label="Open result" />}
+          />
         </ul>
       </SectionCard>
-      <SectionCard title="Your doctor" headingLevel={2}>
-        <KeyValueList
-          columns={1}
-          items={[
-            { label: 'Chosen doctor', value: 'dr Marko Stanković' },
-            { label: 'Clinic', value: 'Ambulanta Liman, Fruškogorska 26' },
-            { label: 'Hours', value: 'Mon–Fri 07–14 h' },
-          ]}
-        />
+      <SectionCard title="New for you" headingLevel={2}>
+        <ul className="m-0 flex list-none flex-col gap-3 p-0">
+          <HomeRow
+            title="dr Marko Stanković: your prescription is renewed"
+            detail={
+              <>
+                Message, <DateText value="2026-10-12" />
+              </>
+            }
+          />
+          <HomeRow
+            title="Flu vaccines from 1 November"
+            detail="Dom zdravlja Novi Sad · no appointment needed at the vaccination point"
+          />
+        </ul>
       </SectionCard>
     </Page>
   )
@@ -230,8 +241,8 @@ const meta = {
           '**What for:** the frame of a portal for people outside the company — a patient, a ' +
           'parent, a student, a customer. The header (56px) has the brand (BrandLockup props: ' +
           'the application’s names, no logo inside) and the participant, whose menu holds ' +
-          'their details, the language and signing out. A few sections (up to five): tabs from ' +
-          'the start on desktop, a bottom navigation bar on phones within thumb reach, with the ' +
+          'their details, the language and signing out. A few sections (up to five): centred ' +
+          'tabs on desktop, as the module tabs of AppShell (P5.93), a bottom navigation bar on phones within thumb reach, with the ' +
           'safe areas. A section’s note ("2 new") is small text on desktop and a dot on the ' +
           'icon on phones, read with the name. Portal-wide `banners` at the top of the content, ' +
           'the institution’s `footer` under it, a skip link first. Phone first.\n\n' +
@@ -247,7 +258,7 @@ const meta = {
   render: (args) => (
     <ExampleProvider>
       <PortalShell {...args} layout="desktop">
-        <Appointments />
+        <PatientHome />
       </PortalShell>
     </ExampleProvider>
   ),
@@ -277,10 +288,17 @@ export const Default: Story = {
     await settle()
     const canvas = within(canvasElement)
     const nav = within(canvas.getByRole('navigation', { name: 'Sections' }))
-    await expect(nav.getByRole('link', { name: /Appointments/ })).toHaveAttribute(
-      'aria-current',
-      'page',
-    )
+    await expect(nav.getByRole('link', { name: 'Home' })).toHaveAttribute('aria-current', 'page')
+    // The home shows what matters now: the quick actions, the to-dos, what is new (P5.93).
+    await expect(canvas.getByRole('heading', { name: 'To do' })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Book an appointment' })).toBeVisible()
+    // The sections are centred, as AppShell's module tabs (P5.93 item 11).
+    const list = nav.getByRole('list')
+    const items = [...list.children].map((item) => item.getBoundingClientRect())
+    const box = list.getBoundingClientRect()
+    const before = Math.min(...items.map((item) => item.left)) - box.left
+    const after = box.right - Math.max(...items.map((item) => item.right))
+    await expect(Math.abs(before - after)).toBeLessThanOrEqual(2)
     await expect(nav.getByRole('link', { name: 'Messages 2 new' })).toBeVisible()
     await expect(canvas.getByRole('button', { name: 'Account: Jovana Nikolić' })).toHaveTextContent(
       'Jovana Nikolić',
@@ -299,7 +317,7 @@ export const PatientPhone: Story = {
     <PhoneFrame>
       <ExampleProvider>
         <PortalShell {...args} layout="phone">
-          <Appointments />
+          <PatientHome />
         </PortalShell>
       </ExampleProvider>
     </PhoneFrame>
@@ -310,7 +328,7 @@ export const PatientPhone: Story = {
     const bar = canvasElement.querySelector<HTMLElement>('[data-slot="portal-bottom-bar"]')
     if (bar === null) throw new Error('no bottom bar')
     const links = within(bar).getAllByRole('link')
-    await expect(links).toHaveLength(3)
+    await expect(links).toHaveLength(4)
     for (const link of links) {
       await expect(link.getBoundingClientRect().height).toBeGreaterThanOrEqual(56)
     }

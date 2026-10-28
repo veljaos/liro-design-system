@@ -9,6 +9,7 @@ import {
   type PointerEvent,
 } from 'react'
 import type { IconComponent } from '../components/intents'
+import { StateLine } from '../components/state-line'
 import { ButtonPrimitive } from '../primitives/button'
 import { FOCUS_RING, TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
@@ -24,6 +25,7 @@ import {
   slotShift,
   type CardSlot,
 } from './launchpad-logic'
+import { Tooltip } from '../components/popover'
 
 /*
  * Launchpad (BUILD-PLAN P4.2; the owner's values, docs/decisions.md "Launchpad"): the home of
@@ -39,8 +41,9 @@ import {
  * - Hover: border.strong, no shadow; the icon square turns brand.solid with the icon in
  *   brand.onSolid (the old detail that says the card can be opened); colours change in the base
  *   duration with the standard easing. Focus: the standard ring.
- * - Locked: surface.sunken, border.default, not a link, no hover change; a 12px Lock and the
- *   application's text ("Available in Pro") in normal case where the counter stands.
+ * - Locked: surface.sunken, border.default, not a link, no hover change; where the counter stands
+ *   the state line of every tile and card (P5.93): a Lock and "Locked", the application's text
+ *   ("Available in Pro") under it.
  * - Keys: 1–9 open the first nine modules (outside fields, without modifiers); the arrows move
  *   between cards (left and right in reading order, up and down by a row), Home and End.
  * - Editing (`editing`, switched on by the application): each card shows three 28px buttons —
@@ -144,15 +147,7 @@ function CardText({ module }: { module: LaunchpadModule }) {
 }
 
 function Counter({ module }: { module: LaunchpadModule }) {
-  if (module.locked !== undefined) {
-    return (
-      <span className="flex min-w-0 items-center gap-1 text-xs font-medium text-secondary">
-        <Lock aria-hidden="true" className="size-3 shrink-0" />
-        <span className={TEXT_DIRECTION}>{module.locked}</span>
-      </span>
-    )
-  }
-  if (module.counter === undefined) return null
+  if (module.locked !== undefined || module.counter === undefined) return null
   return (
     <span
       className={cn(
@@ -438,7 +433,14 @@ export function Launchpad(props: LaunchpadProps) {
                 >
                   <div className="flex items-start justify-between gap-2">
                     <ModuleIcon icon={module.icon} locked />
-                    <Counter module={module} />
+                    {/* P5.93: the state line of every tile and card — "Locked", the reason
+                        under it — where the counter stands. */}
+                    <StateLine
+                      icon={Lock}
+                      state={messages['stateLine.locked']}
+                      detail={module.locked}
+                      className="max-w-[60%]"
+                    />
                   </div>
                   <CardText module={module} />
                 </div>
@@ -519,16 +521,17 @@ function EditButton({
   onClick: () => void
 }) {
   return (
-    <ButtonPrimitive
-      family="neutral"
-      emphasis="menu"
-      shape="compact"
-      aria-label={label}
-      title={label}
-      disabled={disabled}
-      onClick={onClick}
-    >
-      <Icon aria-hidden="true" className={cn('size-4', mirrored && 'rtl:-scale-x-100')} />
-    </ButtonPrimitive>
+    <Tooltip label={label}>
+      <ButtonPrimitive
+        family="neutral"
+        emphasis="menu"
+        shape="compact"
+        aria-label={label}
+        disabled={disabled}
+        onClick={onClick}
+      >
+        <Icon aria-hidden="true" className={cn('size-4', mirrored && 'rtl:-scale-x-100')} />
+      </ButtonPrimitive>
+    </Tooltip>
   )
 }

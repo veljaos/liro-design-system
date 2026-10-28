@@ -283,3 +283,13 @@ export function hierarchyKeyAction(
       return null
   }
 }
+
+/**
+ * The width of a node's open / close toggle, px (P5.93 item 35): always odd, so the toggle is
+ * centred exactly on the 1px line it stands on, in both directions — a box of even width cannot
+ * be. At least 25px (the 24px target); a "+N" grows 6px a character (12px text, tabular digits).
+ */
+export function toggleWidth(label: string): number {
+  const width = Math.max(25, 13 + 6 * Array.from(new Intl.Segmenter().segment(label)).length)
+  return width % 2 === 0 ? width + 1 : width
+}

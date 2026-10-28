@@ -391,3 +391,27 @@ export async function showTable({ canvasElement }: { canvasElement: HTMLElement 
   await expect(canvas.getByRole('table')).toBeVisible()
   await settle()
 }
+
+/**
+ * A story's play function for the charts whose marks are reached one by one (P5.93 item 44): the
+ * plot is one Tab stop; an arrow reaches the first mark, which shows its tooltip, takes the focus
+ * ring and is announced.
+ */
+export async function keysReachMarks({ canvasElement }: { canvasElement: HTMLElement }) {
+  await settle()
+  const canvas = within(canvasElement)
+  const plot = canvas.getAllByRole('application').at(0)
+  if (plot === undefined) throw new Error('No chart plot')
+  await expect(plot).toHaveAttribute('tabindex', '0')
+  plot.focus()
+  await userEvent.keyboard('{ArrowRight}')
+  await settle()
+  await expect(canvasElement.querySelector('[data-slot="chart-tooltip"]')).toBeVisible()
+  await expect(canvasElement.querySelector('[data-slot="chart-item-focus"]')).not.toBeNull()
+  const announced = canvas.getAllByRole('status').some((each) => each.textContent !== '')
+  await expect(announced).toBe(true)
+  await userEvent.keyboard('{ArrowRight}')
+  await userEvent.keyboard('{Escape}')
+  await settle()
+  await expect(canvasElement.querySelector('[data-slot="chart-tooltip"]')).toBeNull()
+}

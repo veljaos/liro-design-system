@@ -13,6 +13,7 @@ import { Sheet, SheetContent } from '../primitives/sheet'
 import { useLiro } from '../provider/liro-provider'
 import { Button } from './button'
 import { EmptyState } from './empty-state'
+import { Tooltip } from './popover'
 
 /*
  * FilePreview (BUILD-PLAN P5.43): one file shown on the whole screen, with the previous and the
@@ -21,8 +22,8 @@ import { EmptyState } from './empty-state'
  * frames it.
  * - A full-screen sheet on every width (a phone's preview is full screen; a desktop's needs the
  *   room): a header with the file's name (the title, read in its own direction) and the
- *   application's line under it ("PDF · 2,4 MB · Milica Petrović"), then "3 of 12", Previous
- *   file / Next file (28px, chevrons that mirror in right-to-left; unavailable at the ends),
+ *   application's line under it ("PDF · 2,4 MB · Milica Petrović") at the start and Close at the
+ *   end of the same row (P5.93); under them one bar: "3 of 12", Previous file / Next file (28px, chevrons that mirror in right-to-left; unavailable at the ends),
  *   Download (the document family) and the application's own actions (Share, Details), Close.
  *   ArrowLeft and ArrowRight outside the viewer go to the previous and next file by the reading
  *   direction (Appendix B.7).
@@ -90,16 +91,20 @@ export function FilePreview(props: FilePreviewProps) {
         {...(props.description === undefined ? { 'aria-describedby': undefined } : {})}
         className="overflow-hidden pb-[env(safe-area-inset-bottom)] ps-[env(safe-area-inset-left)] pe-[env(safe-area-inset-right)]"
       >
-        <DialogHeader className="shrink-0 flex-wrap items-start gap-y-2 border-0 border-b border-solid border-default pt-[max(16px,env(safe-area-inset-top))]">
-          <div className="flex min-w-0 flex-1 basis-60 flex-col gap-1">
-            <DialogTitle className="leading-snug font-medium">
-              <bdi dir="auto" className="break-words">
-                {props.name}
-              </bdi>
-            </DialogTitle>
-            {props.description !== undefined && (
-              <DialogDescription className="text-xs">{props.description}</DialogDescription>
-            )}
+        <DialogHeader className="shrink-0 flex-col items-stretch gap-3 border-0 border-b border-solid border-default pt-[max(16px,env(safe-area-inset-top))]">
+          {/* P5.93: the name at the start and Close at the end of one row; the file's bar under it. */}
+          <div className="flex min-w-0 items-start gap-3">
+            <div className="flex min-w-0 flex-1 flex-col gap-1">
+              <DialogTitle className="leading-snug font-medium">
+                <bdi dir="auto" className="break-words">
+                  {props.name}
+                </bdi>
+              </DialogTitle>
+              {props.description !== undefined && (
+                <DialogDescription className="text-xs">{props.description}</DialogDescription>
+              )}
+            </div>
+            <DialogCloseButton label={messages['dialog.close']} />
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {hasPosition && (
@@ -114,28 +119,30 @@ export function FilePreview(props: FilePreviewProps) {
             )}
             {(props.onPrevious !== undefined || props.onNext !== undefined || hasPosition) && (
               <span className="flex items-center gap-1">
-                <ButtonPrimitive
-                  family="neutral"
-                  emphasis="menu"
-                  shape="compact"
-                  aria-label={messages['files.previous']}
-                  title={messages['files.previous']}
-                  disabled={props.onPrevious === undefined}
-                  onClick={props.onPrevious}
-                >
-                  <Back aria-hidden="true" className="size-4" />
-                </ButtonPrimitive>
-                <ButtonPrimitive
-                  family="neutral"
-                  emphasis="menu"
-                  shape="compact"
-                  aria-label={messages['files.next']}
-                  title={messages['files.next']}
-                  disabled={props.onNext === undefined}
-                  onClick={props.onNext}
-                >
-                  <Forward aria-hidden="true" className="size-4" />
-                </ButtonPrimitive>
+                <Tooltip label={messages['files.previous']}>
+                  <ButtonPrimitive
+                    family="neutral"
+                    emphasis="menu"
+                    shape="compact"
+                    aria-label={messages['files.previous']}
+                    disabled={props.onPrevious === undefined}
+                    onClick={props.onPrevious}
+                  >
+                    <Back aria-hidden="true" className="size-4" />
+                  </ButtonPrimitive>
+                </Tooltip>
+                <Tooltip label={messages['files.next']}>
+                  <ButtonPrimitive
+                    family="neutral"
+                    emphasis="menu"
+                    shape="compact"
+                    aria-label={messages['files.next']}
+                    disabled={props.onNext === undefined}
+                    onClick={props.onNext}
+                  >
+                    <Forward aria-hidden="true" className="size-4" />
+                  </ButtonPrimitive>
+                </Tooltip>
               </span>
             )}
             {props.actions}
@@ -146,7 +153,6 @@ export function FilePreview(props: FilePreviewProps) {
                 onClick={props.onDownload}
               />
             )}
-            <DialogCloseButton label={messages['dialog.close']} />
           </div>
         </DialogHeader>
         <div

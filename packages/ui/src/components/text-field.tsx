@@ -34,29 +34,32 @@ export interface TextFieldProps extends FieldBaseProps, TextValueProps {
   direction?: 'auto' | 'ltr'
 }
 
-function valueProps(props: TextValueProps) {
+function valueProps(props: TextValueProps & { readOnly?: boolean }) {
   return {
     ...(props.value === undefined ? {} : { value: props.value }),
     ...(props.defaultValue === undefined ? {} : { defaultValue: props.defaultValue }),
     ...(props.onBlur === undefined ? {} : { onBlur: props.onBlur }),
-    ...(props.placeholder === undefined ? {} : { placeholder: props.placeholder }),
+    // Read-only shows "—" for an empty value, never the application's placeholder (P5.93).
+    ...(props.placeholder === undefined || props.readOnly === true
+      ? {}
+      : { placeholder: props.placeholder }),
     ...(props.name === undefined ? {} : { name: props.name }),
   }
 }
 
 /**
- * A single-line text field: label, the input, description, error, read-only and disabled states.
+ * A single-line text field: label, the input, description, error and the read-only state.
  * The value is plain text; paste is always allowed.
  */
 export function TextField(props: TextFieldProps) {
-  const { messages, direction } = useLiro()
+  const { direction } = useLiro()
   const type = props.type ?? 'text'
   const ltr = props.direction === 'ltr' || type === 'email' || type === 'tel' || type === 'url'
   return (
     <Field {...fieldProps(props)}>
       {(control) => (
         <Input
-          {...controlAttributes(control, messages['field.readOnly'])}
+          {...controlAttributes(control)}
           {...valueProps(props)}
           type={type}
           {...(props.autoComplete === undefined ? {} : { autoComplete: props.autoComplete })}
@@ -80,12 +83,11 @@ export interface TextAreaFieldProps extends FieldBaseProps, TextValueProps {
 
 /** A multi-line text field, with the states of TextField. Paste is always allowed. */
 export function TextAreaField(props: TextAreaFieldProps) {
-  const { messages } = useLiro()
   return (
     <Field {...fieldProps(props)}>
       {(control) => (
         <Textarea
-          {...controlAttributes(control, messages['field.readOnly'])}
+          {...controlAttributes(control)}
           {...valueProps(props)}
           {...(props.rows === undefined ? {} : { rows: props.rows })}
           onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>

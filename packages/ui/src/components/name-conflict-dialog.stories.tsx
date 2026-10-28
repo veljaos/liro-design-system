@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { settle } from '../primitives/story-helpers'
 import type { ConflictResolution } from './file-browser-logic'
-import { CONFLICTS, CRANE_CONFLICT } from './file-story-data'
+import { CONFLICTS, CRANE_CONFLICT, photoUri } from './file-story-data'
 import { NameConflictDialog, type NameConflict } from './name-conflict-dialog'
 import { ExampleProvider, PhoneFrame, StoryProvider } from './story-frames'
 
@@ -32,6 +32,17 @@ function Queue(props: Parameters<typeof NameConflictDialog>[0]) {
   )
 }
 
+/** The crane photo with both pictures, as the application shows them. */
+const CRANE_PHOTOS: NameConflict = {
+  ...CRANE_CONFLICT,
+  existing: { ...CRANE_CONFLICT.existing, thumbnail: photoUri(3) },
+  incoming: {
+    ...CRANE_CONFLICT.incoming,
+    thumbnail: photoUri(4),
+    owner: 'Uploaded by you',
+  },
+}
+
 const meta = {
   title: 'Components/Files/NameConflictDialog',
   component: Queue,
@@ -39,10 +50,12 @@ const meta = {
     docs: {
       description: {
         component:
-          '**What for:** “A file with this name exists” — what happens to an uploaded, moved ' +
-          'or copied file whose name is taken in its folder: Replace, Keep both (the new name is ' +
-          'the application’s) or Skip, with the two files side by side, and “Apply to all” when ' +
-          'more wait. Replace can be unavailable with the application’s reason.\n\n' +
+          '**What for:** what happens to an uploaded, moved or copied file whose name is taken ' +
+          'in its folder — one decision, one press: a short question, the two files compact ' +
+          'side by side (thumbnail, size, date, who), and the answers as buttons: Keep both (the ' +
+          'default, focused; the new name is the application’s), Replace, Skip; “Do this for the ' +
+          'other N conflicts” when more wait; “Cancel upload” secondary. Replace can be ' +
+          'unavailable with the application’s reason. Phones stack the buttons.\n\n' +
           '**When to use:** an upload or a move into a folder where names are unique. **When ' +
           'not:** a new version of the same file (VersionList’s “Upload a new version”); a ' +
           'duplicate record (DuplicateWarning).',
@@ -68,22 +81,27 @@ export default meta
 
 type Story = StoryObj<typeof meta>
 
-/** One photo's name is taken: Keep both is chosen at first, so nothing is lost. */
+/**
+ * One photo's name is taken: a short question, the two photos side by side, and the three answers
+ * as buttons — Keep both (focused at first: nothing is lost), Replace, Skip; one press answers.
+ */
 export const Default: Story = {
+  args: { conflicts: [CRANE_PHOTOS] },
   play: async () => {
     await settle()
     const dialog = within(document.body).getByRole('dialog', {
-      name: 'A file with this name exists Crane inspection.jpg',
+      name: 'Keep both files? Crane inspection.jpg',
     })
-    await expect(within(dialog).getByRole('radio', { name: /^Keep both/ })).toBeChecked()
+    await expect(within(dialog).getByRole('button', { name: 'Keep both' })).toHaveFocus()
     await expect(
-      within(dialog).getByText('The new file is saved as Crane inspection (1).jpg.'),
+      within(dialog).getByText('Keep both saves the new file as Crane inspection (1).jpg.'),
     ).toBeVisible()
     await expect(within(dialog).getByText('3,2 MB')).toBeVisible()
+    await expect(within(dialog).queryByRole('radio')).toBeNull()
   },
 }
 
-/** Three conflicts: "Conflict 1 of 3" and "Apply to all 3 conflicts". */
+/** Three conflicts: "Conflict 1 of 3" and "Do this for the other 2 conflicts". */
 export const Several: Story = {
   args: { conflicts: CONFLICTS },
   play: async () => {
@@ -91,26 +109,31 @@ export const Several: Story = {
     const dialog = within(document.body).getByRole('dialog')
     await expect(within(dialog).getByText('Conflict 1 of 3')).toBeVisible()
     await expect(
-      within(dialog).getByRole('checkbox', { name: 'Apply to all 3 conflicts' }),
+      within(dialog).getByRole('checkbox', { name: 'Do this for the other 2 conflicts' }),
     ).not.toBeChecked()
   },
 }
 
-/** A signed document cannot be replaced: the application's reason under Replace. */
+/** A signed document cannot be replaced: Replace says why, in words under the files. */
 export const ReplaceUnavailable: Story = {
   name: 'Replace unavailable',
   args: { conflicts: CONFLICTS.slice(1, 2) },
   play: async () => {
     await settle()
     const dialog = within(document.body).getByRole('dialog')
-    await expect(within(dialog).getByRole('radio', { name: /^Replace/ })).toBeDisabled()
+    const replace = within(dialog).getByRole('button', { name: 'Replace' })
+    await expect(replace).toHaveAttribute('aria-disabled', 'true')
+    await expect(replace).toHaveAccessibleDescription(
+      'Replace is unavailable: Signed documents cannot be replaced; upload it as a new version.',
+    )
   },
 }
 
-/** Replace chosen at first, "Apply to all" ticked. */
+/** "Do this for the other 2 conflicts" ticked at first. */
 export const ReplaceAll: Story = {
-  name: 'Replace, apply to all',
-  args: { conflicts: CONFLICTS, defaultChoice: 'replace', defaultApplyToAll: true },
+  name: 'Do this for the others',
+  tags: ['!dev'],
+  args: { conflicts: CONFLICTS, defaultApplyToAll: true },
 }
 
 /** Long names. */
@@ -129,9 +152,9 @@ export const LongText: Story = {
   },
 }
 
-/** Phone width: a bottom sheet. */
+/** Phone width: a bottom sheet, the buttons stacked across it. */
 export const Phone: Story = {
-  args: { conflicts: CONFLICTS },
+  args: { conflicts: [CRANE_PHOTOS, ...CONFLICTS.slice(1)] },
   decorators: [
     (Story) => (
       <PhoneFrame>
@@ -193,22 +216,24 @@ export const Japanese: Story = {
   ],
 }
 
-/** Skip the first, then Replace with "Apply to all": the signed one still asks on its own. */
+/**
+ * One press answers: Skip the first; the second is the signed document (Replace unavailable), so
+ * Keep both with "Do this for the other conflict" answers it and the last one.
+ */
 export const ApplyToAll: Story = {
-  name: 'Apply to all, interaction',
-  tags: ['interaction'],
+  name: 'Do this for the others, interaction',
+  tags: ['interaction', '!dev'],
   args: { conflicts: CONFLICTS },
   play: async ({ canvasElement }) => {
     await settle()
     const body = within(document.body)
-    await userEvent.click(body.getByRole('radio', { name: /^Skip/ }))
-    await userEvent.click(body.getByRole('button', { name: 'Continue' }))
+    await userEvent.click(body.getByRole('button', { name: 'Skip' }))
     await waitFor(async () => {
       await expect(body.getByText('Conflict 2 of 3')).toBeVisible()
     })
-    // The second is the signed document: Replace cannot be chosen; Keep both for it and the rest.
-    await userEvent.click(body.getByRole('checkbox', { name: 'Apply to all 2 conflicts' }))
-    await userEvent.click(body.getByRole('button', { name: 'Continue' }))
+    await expect(body.getByRole('button', { name: 'Keep both' })).toHaveFocus()
+    await userEvent.click(body.getByRole('checkbox', { name: 'Do this for the other conflict' }))
+    await userEvent.click(body.getByRole('button', { name: 'Keep both' }))
     await expect(within(canvasElement).getByTestId('answers')).toHaveTextContent(
       'c-1:skip c-2:keepBoth c-3:keepBoth',
     )

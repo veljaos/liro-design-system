@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { BUTTON_RESET, FOCUS_RING, TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
+import { Tooltip } from './popover'
 import type { IconComponent } from './intents'
 
 /*
@@ -101,20 +102,21 @@ export interface AlertProps extends AlertBaseProps {
 function CloseButton({ onClose, fg }: { onClose: () => void; fg: string }) {
   const { messages } = useLiro()
   return (
-    <button
-      type="button"
-      aria-label={messages['alert.close']}
-      title={messages['alert.close']}
-      onClick={onClose}
-      className={cn(
-        BUTTON_RESET,
-        'flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-sm',
-        FOCUS_RING,
-        fg,
-      )}
-    >
-      <X aria-hidden="true" className="size-4" />
-    </button>
+    <Tooltip label={messages['alert.close']}>
+      <button
+        type="button"
+        aria-label={messages['alert.close']}
+        onClick={onClose}
+        className={cn(
+          BUTTON_RESET,
+          'flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-sm',
+          FOCUS_RING,
+          fg,
+        )}
+      >
+        <X aria-hidden="true" className="size-4" />
+      </button>
+    </Tooltip>
   )
 }
 

@@ -1,9 +1,11 @@
 import { Minus, Plus } from 'lucide-react'
 import { useId, type KeyboardEvent } from 'react'
 import { ButtonPrimitive } from '../primitives/button'
+import { READ_ONLY } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
-import { controlAttributes, Field, fieldProps, type FieldBaseProps } from './field'
+import { controlAttributes, Field, FieldMessage, fieldProps, type FieldBaseProps } from './field'
+import { Tooltip } from './popover'
 import { readNumber, showNumber } from './number-logic'
 import { FLASH_CLASS, FLASH_TRANSITION, tapFeedback, useFlash } from './pos-feedback'
 import { canStep, quantityRange, stepQuantity } from './quantity-logic'
@@ -22,6 +24,14 @@ import { entryAttributes, entryError, useEntry, type EntryProps } from './use-en
  * P5.90 (item 20): a press of − or + answers at once — the quantity is highlighted briefly and a
  * device that can vibrate gives a short pulse (`tapFeedback`) — so nobody presses twice out of
  * doubt while the application's totals settle.
+ *
+ * P5.93 (item 39): at a limit the button that cannot be used says why — never a silent dead
+ * button. It stays focusable (aria-disabled), its tooltip on hover and focus names the limit
+ * ("Maximum 6 — the quantity on the order": `messages['quantity.atMax']` with the application's
+ * `maxReason`), and a short line under the field says the same, linked to the button. At the
+ * lower limit the line shows only with a `minReason` (a quantity at 0 or 1 needs no words); the
+ * tooltip always explains. Read-only (P5.93 item 1): the read-only look of every field, no
+ * buttons.
  */
 
 export interface QuantityStepperProps extends FieldBaseProps, EntryProps {
@@ -29,6 +39,13 @@ export interface QuantityStepperProps extends FieldBaseProps, EntryProps {
   min?: string
   /** The largest quantity, a decimal string. */
   max?: string
+  /**
+   * Why the quantity cannot go above `max`, in the application's words ("the quantity on the
+   * order"); shown with the limit when + cannot be used.
+   */
+  maxReason?: string
+  /** Why it cannot go below `min`; with it, the line under the field shows at the lower limit. */
+  minReason?: string
   /** What − and + change it by, a decimal string. Default "1"; "0.5", "0.001" for weights. */
   step?: string
   /** Zeros added up to this many decimals when shown; never rounded. */
@@ -69,6 +86,20 @@ export function QuantityStepper(props: QuantityStepperProps) {
   const error = entryError(props.error ?? rangeError, entry.valid, messages['field.invalidNumber'])
   const large = props.size === 'large'
   const [flashing, flash] = useFlash()
+  const limitId = useId()
+  // The limit a button stops at, in words; null while it can step (or the value is outside, where
+  // the error already speaks).
+  const atLimit = (direction: 1 | -1) => {
+    if (canStep(entry.value, direction, limits) || range !== null) return null
+    if (direction === 1 && props.max !== undefined)
+      return messages['quantity.atMax'](format.number(props.max), props.maxReason)
+    if (direction === -1 && props.min !== undefined)
+      return messages['quantity.atMin'](format.number(props.min), props.minReason)
+    return null
+  }
+  const maxText = atLimit(1)
+  const minText = atLimit(-1)
+  const limitLine = maxText ?? (props.minReason === undefined ? null : minText)
 
   /** Steps from what is typed now, read first, as leaving the field would. */
   const step = (direction: 1 | -1) => {
@@ -95,15 +126,23 @@ export function QuantityStepper(props: QuantityStepperProps) {
           </span>
         )
         if (control.readOnly) {
+          // The read-only look of every field (P5.93 item 1), at the stepper's height.
           return (
-            <div className={cn('flex items-center', large ? 'h-14' : 'h-11')}>
+            <div
+              dir="ltr"
+              className={cn(
+                'flex items-center rounded-md border border-solid',
+                READ_ONLY,
+                'has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-focus',
+                large ? 'h-14' : 'h-11',
+              )}
+            >
               <input
-                {...controlAttributes(control, messages['field.readOnly'])}
+                {...controlAttributes(control)}
                 {...attributes}
                 aria-describedby={describedBy}
-                dir="ltr"
                 className={cn(
-                  'm-0 w-full min-w-0 flex-1 cursor-text border-0 bg-transparent p-0 font-sans text-primary tabular-nums outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
+                  'm-0 h-full w-full min-w-0 flex-1 cursor-text border-0 bg-transparent px-3 font-sans text-primary tabular-nums outline-none placeholder:text-secondary',
                   large ? 'text-h3 font-semibold' : 'text-md',
                 )}
               />
@@ -114,15 +153,20 @@ export function QuantityStepper(props: QuantityStepperProps) {
         const button = (direction: 1 | -1) => {
           const id = direction === 1 ? increaseId : decreaseId
           const Icon = direction === 1 ? Plus : Minus
-          return (
+          const limit = direction === 1 ? maxText : minText
+          const usable = canStep(entry.value, direction, limits)
+          const element = (
             <ButtonPrimitive
               family="neutral"
               emphasis="secondary"
               shape="icon"
               aria-labelledby={`${id} ${control.labelId}`}
-              disabled={control.disabled || !canStep(entry.value, direction, limits)}
+              // At a limit it stays focusable and says why (P5.93 item 39).
+              aria-disabled={!usable || undefined}
+              {...(limit !== null && limit === limitLine ? { 'aria-describedby': limitId } : {})}
               className={cn('shrink-0 px-0', large ? 'size-14' : 'size-11')}
               onClick={() => {
+                if (!usable) return
                 tapFeedback()
                 flash(['value'])
                 step(direction)
@@ -134,45 +178,52 @@ export function QuantityStepper(props: QuantityStepperProps) {
               <Icon aria-hidden="true" className={large ? 'size-6' : 'size-5'} />
             </ButtonPrimitive>
           )
+          return limit === null ? element : <Tooltip label={limit}>{element}</Tooltip>
         }
         return (
-          <div data-slot="quantity-stepper" className="flex items-center gap-2">
-            {button(-1)}
-            <div
-              dir="ltr"
-              data-flash={flashing.has('value') || undefined}
-              className={cn(
-                'flex min-w-0 flex-1 items-center rounded-md border border-solid border-control focus-within:border-focus',
-                FLASH_TRANSITION,
-                flashing.has('value') ? FLASH_CLASS : 'bg-surface-raised',
-                large ? 'h-14' : 'h-11',
-                control.invalid && 'border-status-danger-fg focus-within:border-status-danger-fg',
-                control.disabled && 'border-default bg-surface-disabled',
-              )}
-            >
-              <input
-                {...controlAttributes(control, messages['field.readOnly'])}
-                {...attributes}
-                aria-describedby={describedBy}
-                inputMode="decimal"
-                onKeyDown={(event: KeyboardEvent<HTMLInputElement>) => {
-                  if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
-                    event.preventDefault()
-                    step(event.key === 'ArrowUp' ? 1 : -1)
-                    return
-                  }
-                  attributes.onKeyDown(event)
-                }}
+          <div className="flex flex-col gap-1">
+            <div data-slot="quantity-stepper" className="flex items-center gap-2">
+              {button(-1)}
+              <div
+                dir="ltr"
+                data-flash={flashing.has('value') || undefined}
                 className={cn(
-                  'm-0 h-full w-full min-w-0 flex-1 border-0 bg-transparent px-3 text-center font-sans text-primary tabular-nums outline-none placeholder:text-tertiary disabled:cursor-not-allowed disabled:text-disabled',
-                  large ? 'text-h3 font-semibold' : 'text-md font-semibold',
+                  'flex min-w-0 flex-1 items-center rounded-md border border-solid border-control focus-within:border-focus',
+                  FLASH_TRANSITION,
+                  flashing.has('value') ? FLASH_CLASS : 'bg-surface-raised',
+                  large ? 'h-14' : 'h-11',
+                  control.invalid && 'border-status-danger-fg focus-within:border-status-danger-fg',
                 )}
-              />
-              {unit}
+              >
+                <input
+                  {...controlAttributes(control)}
+                  {...attributes}
+                  aria-describedby={describedBy}
+                  inputMode="decimal"
+                  onKeyDown={(event: KeyboardEvent<HTMLInputElement>) => {
+                    if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+                      event.preventDefault()
+                      step(event.key === 'ArrowUp' ? 1 : -1)
+                      return
+                    }
+                    attributes.onKeyDown(event)
+                  }}
+                  className={cn(
+                    'm-0 h-full w-full min-w-0 flex-1 border-0 bg-transparent px-3 text-center font-sans text-primary tabular-nums outline-none placeholder:text-tertiary',
+                    large ? 'text-h3 font-semibold' : 'text-md font-semibold',
+                  )}
+                />
+                {unit}
+              </div>
+              {button(1)}
+              {props.name !== undefined && (
+                <input type="hidden" name={props.name} value={entry.value ?? ''} />
+              )}
             </div>
-            {button(1)}
-            {props.name !== undefined && (
-              <input type="hidden" name={props.name} value={entry.value ?? ''} />
+            {limitLine !== null && (
+              <FieldMessage id={limitId} tone="hint">
+                {limitLine}
+              </FieldMessage>
             )}
           </div>
         )

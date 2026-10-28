@@ -17,14 +17,17 @@ const meta = {
           '"Payroll posted", "Could not send the e-mail". Place `<Toaster />` once inside ' +
           'LiroProvider and call `notice.success | info | warning | error | loading(message, ' +
           '{ title })`.\n\n' +
-          '**Toasts never block (P5.90).** Success and info close by themselves after 4 ' +
-          'seconds and have no close button — nothing to dismiss, and clicks pass through ' +
-          'them. A warning closes after 6 seconds; an error stays until the user closes it ' +
-          '(Appendix B.8: successes disappear, errors wait). `notice.loading` stays, without a ' +
-          'close button, until `notice.update(id, kind, message)` turns it into the result. ' +
-          'Bottom right, bottom left in right-to-left; at most four at a time; always above ' +
-          "the shell's bottom bar and a page's sticky bottom bars (`useBottomBar`).\n\n" +
-          '**When not:** a routine save — "Saved" beside the action (SaveStatus); a problem ' +
+          '**Toasts never block (P5.90, P5.93).** Every toast has its close button (X). ' +
+          'Success and info close by themselves after 4 seconds, a warning after 6; an error ' +
+          'stays until the user closes it (Appendix B.8: successes disappear, errors wait). ' +
+          '`notice.loading` stays until `notice.update(id, kind, message)` turns it into the ' +
+          'result. Only the buttons take the pointer: a click anywhere else on a toast passes ' +
+          'through to what it covers. Bottom right, bottom left in right-to-left; at most four ' +
+          "at a time; always above the shell's bottom bar and a page's sticky bottom bars " +
+          '(`useBottomBar`).\n\n' +
+          '**When not:** a routine action whose result shows on the screen — "Saved" beside ' +
+          'the action (SaveStatus), a line "Sent · 19:40" in a till, a table\'s state on a ' +
+          'floor plan, and Undo beside what changed (P5.93); a problem ' +
           'with a field (its error, under the field); something the user must decide ' +
           '(ConfirmDialog); a lasting state of the page (Alert or Banner); a download (the ' +
           'browser shows it).',
@@ -58,7 +61,7 @@ export const Kinds: Story = {
   ),
 }
 
-/** With an action: "Undo", only when the application can undo; it stays 8 seconds, no close button. */
+/** With an action: "Undo", only when the application can undo; it stays 8 seconds. */
 export const WithAction: Story = {
   name: 'With an action (Undo)',
   render: () => (
@@ -82,7 +85,7 @@ export const WithAction: Story = {
 /** Loading, then its result; an error stays until closed with its button. */
 export const LoadingThenResult: Story = {
   name: 'Loading, then the result',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => (
     <div className="flex min-h-100 flex-wrap items-start gap-3">
       <Button
@@ -103,7 +106,6 @@ export const LoadingThenResult: Story = {
     await userEvent.click(body.getByRole('button', { name: 'Send' }))
     const loading = await body.findByText('Sending 24 invoices…')
     await waitFor(() => expect(loading).toBeVisible())
-    await expect(body.queryByRole('button', { name: 'Close' })).toBeNull()
     const error = await body.findByRole('alert')
     await expect(error).toHaveTextContent('The e-mail server did not answer.')
     await waitFor(() => expect(within(error).getByRole('button', { name: 'Close' })).toBeVisible())
@@ -112,12 +114,12 @@ export const LoadingThenResult: Story = {
 }
 
 /**
- * A success closes by itself after 4 seconds, has no close button, and lets clicks through to what
- * it covers (P5.90: toasts never block).
+ * A success closes by itself after 4 seconds; it has its X, and a click anywhere else on it passes
+ * through to what it covers (P5.90, P5.93: toasts never block).
  */
 export const SuccessNeverBlocks: Story = {
   name: 'Success closes by itself, never blocks',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => (
     <div className="flex min-h-60 items-start gap-3">
       <Button
@@ -132,9 +134,11 @@ export const SuccessNeverBlocks: Story = {
     const body = within(canvasElement.ownerDocument.body)
     await userEvent.click(body.getByRole('button', { name: 'Post' }))
     const toast = await body.findByText('Payroll September 2026 posted.')
-    await expect(body.queryByRole('button', { name: 'Close' })).toBeNull()
-    const item = toast.closest('[data-sonner-toast]')
-    await expect(item === null ? '' : getComputedStyle(item).pointerEvents).toBe('none')
+    const item = toast.closest<HTMLElement>('[data-sonner-toast]')
+    if (item === null) throw new Error('no toast')
+    await expect(getComputedStyle(item).pointerEvents).toBe('none')
+    const close = within(item).getByRole('button', { name: 'Close' })
+    await expect(getComputedStyle(close).pointerEvents).toBe('auto')
     await waitFor(() => expect(body.queryByText('Payroll September 2026 posted.')).toBeNull(), {
       timeout: 8000,
     })
@@ -144,7 +148,7 @@ export const SuccessNeverBlocks: Story = {
 /** Close an error with its button (keyboard: Tab to it, Enter). */
 export const CloseWithButton: Story = {
   name: 'Close an error',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   render: () => (
     <div className="flex min-h-60 items-start gap-3">
       <Button
@@ -179,7 +183,7 @@ export const LongTextPhone: Story = {
   ),
 }
 
-/** Arabic sample text, right to left: the icon at the start (right), an error's close button at the end. */
+/** Arabic sample text, right to left: the icon at the start (right), the close button at the end. */
 export const Arabic: Story = {
   render: () => (
     <div lang="ar" dir="rtl" className="flex max-w-full flex-col gap-4" style={WIDTH}>

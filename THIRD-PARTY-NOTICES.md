@@ -14,18 +14,19 @@ dependency, or copies third-party code (for example a shadcn/ui component) into 
 
 ## Included in the packages
 
-| Software                                                   | Version | License | Where                                                                                                                 |
-| ---------------------------------------------------------- | ------- | ------- | --------------------------------------------------------------------------------------------------------------------- |
-| Tailwind CSS                                               | 4.3.3   | MIT     | Generated CSS in `@veljaos/ui/styles.css` (built with the Tailwind CLI)                                               |
-| Noto Sans (`@fontsource-variable/noto-sans`)               | 5.3.0   | OFL-1.1 | Font files in `@veljaos/tokens/dist/fonts/`, faces in `fonts.css`; also in the Storybook build. Notice below (Fonts). |
-| Noto Sans Arabic (`@fontsource-variable/noto-sans-arabic`) | 5.3.0   | OFL-1.1 | Font files in `@veljaos/tokens/dist/fonts/`, faces in `fonts.css`; also in the Storybook build. Notice below (Fonts). |
-| Noto Sans Hebrew (`@fontsource-variable/noto-sans-hebrew`) | 5.3.0   | OFL-1.1 | Font files in `@veljaos/tokens/dist/fonts/`, faces in `fonts.css`; also in the Storybook build. Notice below (Fonts). |
-| Noto Sans SC (`@fontsource-variable/noto-sans-sc`)         | 5.3.0   | OFL-1.1 | Font files in `@veljaos/tokens/dist/fonts/`, faces in `fonts.css`; also in the Storybook build. Notice below (Fonts). |
-| Noto Sans TC (`@fontsource-variable/noto-sans-tc`)         | 5.3.0   | OFL-1.1 | Font files in `@veljaos/tokens/dist/fonts/`, faces in `fonts.css`; also in the Storybook build. Notice below (Fonts). |
-| Noto Sans JP (`@fontsource-variable/noto-sans-jp`)         | 5.3.0   | OFL-1.1 | Font files in `@veljaos/tokens/dist/fonts/`, faces in `fonts.css`; also in the Storybook build. Notice below (Fonts). |
-| Space Grotesk (`@fontsource-variable/space-grotesk`)       | 5.3.0   | OFL-1.1 | Font files in `@veljaos/tokens/dist/fonts/`, faces in `fonts.css`; also in the Storybook build. Notice below (Fonts). |
-| Inter (`@fontsource-variable/inter`)                       | 5.3.0   | OFL-1.1 | Font files in `@veljaos/tokens/dist/fonts/`, faces in `fonts.css`; also in the Storybook build. Notice below (Fonts). |
-| JetBrains Mono (`@fontsource-variable/jetbrains-mono`)     | 5.3.0   | OFL-1.1 | Font files in `@veljaos/tokens/dist/fonts/`, faces in `fonts.css`; also in the Storybook build. Notice below (Fonts). |
+| Software                                                                                    | Version                    | License                                                     | Where                                                                                                                                                                 |
+| ------------------------------------------------------------------------------------------- | -------------------------- | ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Tailwind CSS                                                                                | 4.3.3                      | MIT                                                         | Generated CSS in `@veljaos/ui/styles.css` (built with the Tailwind CLI)                                                                                               |
+| Noto Sans (`@fontsource-variable/noto-sans`)                                                | 5.3.0                      | OFL-1.1                                                     | Font files in `@veljaos/tokens/dist/fonts/`, faces in `fonts.css`; also in the Storybook build. Notice below (Fonts).                                                 |
+| Noto Sans Arabic (`@fontsource-variable/noto-sans-arabic`)                                  | 5.3.0                      | OFL-1.1                                                     | Font files in `@veljaos/tokens/dist/fonts/`, faces in `fonts.css`; also in the Storybook build. Notice below (Fonts).                                                 |
+| Noto Sans Hebrew (`@fontsource-variable/noto-sans-hebrew`)                                  | 5.3.0                      | OFL-1.1                                                     | Font files in `@veljaos/tokens/dist/fonts/`, faces in `fonts.css`; also in the Storybook build. Notice below (Fonts).                                                 |
+| Noto Sans SC (`@fontsource-variable/noto-sans-sc`)                                          | 5.3.0                      | OFL-1.1                                                     | Font files in `@veljaos/tokens/dist/fonts/`, faces in `fonts.css`; also in the Storybook build. Notice below (Fonts).                                                 |
+| Noto Sans TC (`@fontsource-variable/noto-sans-tc`)                                          | 5.3.0                      | OFL-1.1                                                     | Font files in `@veljaos/tokens/dist/fonts/`, faces in `fonts.css`; also in the Storybook build. Notice below (Fonts).                                                 |
+| Noto Sans JP (`@fontsource-variable/noto-sans-jp`)                                          | 5.3.0                      | OFL-1.1                                                     | Font files in `@veljaos/tokens/dist/fonts/`, faces in `fonts.css`; also in the Storybook build. Notice below (Fonts).                                                 |
+| Space Grotesk (`@fontsource-variable/space-grotesk`)                                        | 5.3.0                      | OFL-1.1                                                     | Font files in `@veljaos/tokens/dist/fonts/`, faces in `fonts.css`; also in the Storybook build. Notice below (Fonts).                                                 |
+| Inter (`@fontsource-variable/inter`)                                                        | 5.3.0                      | OFL-1.1                                                     | Font files in `@veljaos/tokens/dist/fonts/`, faces in `fonts.css`; also in the Storybook build. Notice below (Fonts).                                                 |
+| JetBrains Mono (`@fontsource-variable/jetbrains-mono`)                                      | 5.3.0                      | OFL-1.1                                                     | Font files in `@veljaos/tokens/dist/fonts/`, faces in `fonts.css`; also in the Storybook build. Notice below (Fonts).                                                 |
+| Boundaries of Serbia (geoBoundaries gbOpen SRB ADM1, ADM2 and XKX ADM0, from OpenStreetMap) | build 2023-12-12 (9469f09) | ODbL-1.0 (XKX ADM0 listed by geoBoundaries as CC BY-SA 2.0) | Simplified TopoJSON in `@veljaos/ui/map` (`packages/ui/src/map/serbia/*.ts`, P5.93), loaded on demand by `loadSerbiaBoundaries`. Notice below (Boundaries of Serbia). |
 
 ## Copied into this repository
 
@@ -38,26 +39,27 @@ dependency, or copies third-party code (for example a shadcn/ui component) into 
 
 ## Runtime and peer dependencies
 
-| Software                                                                                                                                                                                                                    | Version                 | License                                    | Used by                                                                                                                                                                                                                                                                                                            |
-| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| React                                                                                                                                                                                                                       | 19 (peer)               | MIT                                        | `@veljaos/ui`                                                                                                                                                                                                                                                                                                      |
-| Radix UI (`radix-ui`, and the `@radix-ui/*` packages it depends on)                                                                                                                                                         | 1.6.7                   | MIT                                        | `@veljaos/ui` (`LiroProvider` sets Radix's direction; the primitives of P2.1). Notice below.                                                                                                                                                                                                                       |
-| lucide-react                                                                                                                                                                                                                | 1.48.0                  | ISC (part derived from Feather, MIT)       | `@veljaos/ui` (the icons of the intents). Notice below.                                                                                                                                                                                                                                                            |
-| cmdk                                                                                                                                                                                                                        | 1.1.1                   | MIT                                        | `@veljaos/ui` (the command primitive, P2.1). Notice below.                                                                                                                                                                                                                                                         |
-| react-day-picker (with its dependencies date-fns 4.4.0 and @date-fns/tz 1.5.0, both MIT)                                                                                                                                    | 10.0.1                  | MIT                                        | `@veljaos/ui` (the calendar primitive, P2.1). Notices below.                                                                                                                                                                                                                                                       |
-| clsx                                                                                                                                                                                                                        | 2.1.1                   | MIT                                        | `@veljaos/ui` (joining class names, P2.1). Notice below.                                                                                                                                                                                                                                                           |
-| tailwind-merge                                                                                                                                                                                                              | 3.7.0                   | MIT                                        | `@veljaos/ui` (merging class names, P2.1). Notice below.                                                                                                                                                                                                                                                           |
-| sonner                                                                                                                                                                                                                      | 2.0.8                   | MIT                                        | `@veljaos/ui` (toasts, P2.5). Notice below.                                                                                                                                                                                                                                                                        |
-| TanStack Table (`@tanstack/react-table`, `@tanstack/table-core`), with TanStack Store (`@tanstack/react-store`, `@tanstack/store` 0.11.2)                                                                                   | 9.2.4                   | MIT                                        | `@veljaos/ui` (DataTable, P3.1). Notices below.                                                                                                                                                                                                                                                                    |
-| TanStack Virtual (`@tanstack/react-virtual` 3.14.13, with `@tanstack/virtual-core` 3.17.11)                                                                                                                                 | 3.14.13                 | MIT                                        | `@veljaos/ui` (DataTable virtual rows, P3.2). Notice below.                                                                                                                                                                                                                                                        |
-| React Hook Form (`react-hook-form`)                                                                                                                                                                                         | 7.89.0 (optional peer)  | MIT                                        | `@veljaos/ui/form` (P3.5): imported by the binding, installed by the application; not bundled. In the Storybook build. Notice below.                                                                                                                                                                               |
-| Recharts (`recharts`, with the packages listed in its notice section), and `react-is` (its peer)                                                                                                                            | 3.10.1; react-is 19.3.0 | MIT (d3 modules ISC, d3-ease BSD-3-Clause) | `@veljaos/ui` (the charts of DashboardPage, P4.6). Notices below.                                                                                                                                                                                                                                                  |
-| @shadcn/react                                                                                                                                                                                                               | 0.3.1                   | MIT                                        | `@veljaos/ui` (the unstyled Message Scroller and Questionnaire under the P5.1 primitives). Pre-1.0. Notice below.                                                                                                                                                                                                  |
-| Tiptap (`@tiptap/core`, `pm`, `react`, `extensions` and the extensions document, paragraph, text, heading, bold, italic, underline, link, list, hard-break), with ProseMirror and the packages listed in its notice section | 3.31.4                  | MIT                                        | `@veljaos/ui/rich-text` (RichTextField, P5.22): MIT packages only, no Tiptap Pro or paid extension; loaded only through that subpath. Notices below.                                                                                                                                                               |
-| React Flow (`@xyflow/react`, with `@xyflow/system`, classcat, zustand and the d3 modules listed in its notice section) and dagre (`@dagrejs/dagre`, with `@dagrejs/graphlib`)                                               | 12.12.0; dagre 3.1.1    | MIT (d3 modules ISC, d3-ease BSD-3-Clause) | `@veljaos/ui/diagram` (Diagram, P5.26): the canvas and the automatic layout; loaded only through that subpath; React Flow's style sheets are not shipped. Notices below.                                                                                                                                           |
-| SVAR React Gantt, MIT edition (`@svar-ui/react-gantt`, with the `@svar-ui/*` packages listed in its notice section and date-fns 3.6.0)                                                                                      | 2.7.3                   | MIT                                        | `@veljaos/ui/gantt` (Gantt, P5.37): the timeline's bars, links, drag and scale; loaded only through that subpath; SVAR's style sheets, themes and icon font are not shipped. Notices below.                                                                                                                        |
-| qr (`qr`, Paul Miller)                                                                                                                                                                                                      | 0.7.2                   | MIT OR Apache-2.0 (used under MIT)         | QrCode (P5.40): encodes a text as a QR code in the browser; no dependencies. Notice below.                                                                                                                                                                                                                         |
-| Leaflet (`leaflet`)                                                                                                                                                                                                         | 1.9.4                   | BSD-2-Clause                               | `@veljaos/ui/map` (AreaMap, LocationCheck, RegionChart, P5.41): the map, its panning, zoom and keyboard, drawn with SVG; loaded only through that subpath; its style sheet, controls and images are not shipped. Notice below. Not used: react-leaflet (Hippocratic License 2.1, not open source) and MapLibre GL. |
+| Software                                                                                                                                                                                                                    | Version                                              | License                                    | Used by                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- | ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| React                                                                                                                                                                                                                       | 19 (peer)                                            | MIT                                        | `@veljaos/ui`                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| Radix UI (`radix-ui`, and the `@radix-ui/*` packages it depends on)                                                                                                                                                         | 1.6.7                                                | MIT                                        | `@veljaos/ui` (`LiroProvider` sets Radix's direction; the primitives of P2.1). Notice below.                                                                                                                                                                                                                                                                                                                                                               |
+| lucide-react                                                                                                                                                                                                                | 1.48.0                                               | ISC (part derived from Feather, MIT)       | `@veljaos/ui` (the icons of the intents). Notice below.                                                                                                                                                                                                                                                                                                                                                                                                    |
+| cmdk                                                                                                                                                                                                                        | 1.1.1                                                | MIT                                        | `@veljaos/ui` (the command primitive, P2.1). Notice below.                                                                                                                                                                                                                                                                                                                                                                                                 |
+| react-day-picker (with its dependencies date-fns 4.4.0 and @date-fns/tz 1.5.0, both MIT)                                                                                                                                    | 10.0.1                                               | MIT                                        | `@veljaos/ui` (the calendar primitive, P2.1). Notices below.                                                                                                                                                                                                                                                                                                                                                                                               |
+| clsx                                                                                                                                                                                                                        | 2.1.1                                                | MIT                                        | `@veljaos/ui` (joining class names, P2.1). Notice below.                                                                                                                                                                                                                                                                                                                                                                                                   |
+| tailwind-merge                                                                                                                                                                                                              | 3.7.0                                                | MIT                                        | `@veljaos/ui` (merging class names, P2.1). Notice below.                                                                                                                                                                                                                                                                                                                                                                                                   |
+| sonner                                                                                                                                                                                                                      | 2.0.8                                                | MIT                                        | `@veljaos/ui` (toasts, P2.5). Notice below.                                                                                                                                                                                                                                                                                                                                                                                                                |
+| TanStack Table (`@tanstack/react-table`, `@tanstack/table-core`), with TanStack Store (`@tanstack/react-store`, `@tanstack/store` 0.11.2)                                                                                   | 9.2.4                                                | MIT                                        | `@veljaos/ui` (DataTable, P3.1). Notices below.                                                                                                                                                                                                                                                                                                                                                                                                            |
+| TanStack Virtual (`@tanstack/react-virtual` 3.14.13, with `@tanstack/virtual-core` 3.17.11)                                                                                                                                 | 3.14.13                                              | MIT                                        | `@veljaos/ui` (DataTable virtual rows, P3.2). Notice below.                                                                                                                                                                                                                                                                                                                                                                                                |
+| React Hook Form (`react-hook-form`)                                                                                                                                                                                         | 7.89.0 (optional peer)                               | MIT                                        | `@veljaos/ui/form` (P3.5): imported by the binding, installed by the application; not bundled. In the Storybook build. Notice below.                                                                                                                                                                                                                                                                                                                       |
+| Recharts (`recharts`, with the packages listed in its notice section), and `react-is` (its peer)                                                                                                                            | 3.10.1; react-is 19.3.0                              | MIT (d3 modules ISC, d3-ease BSD-3-Clause) | `@veljaos/ui` (the charts of DashboardPage, P4.6). Notices below.                                                                                                                                                                                                                                                                                                                                                                                          |
+| @shadcn/react                                                                                                                                                                                                               | 0.3.1                                                | MIT                                        | `@veljaos/ui` (the unstyled Message Scroller and Questionnaire under the P5.1 primitives). Pre-1.0. Notice below.                                                                                                                                                                                                                                                                                                                                          |
+| Tiptap (`@tiptap/core`, `pm`, `react`, `extensions` and the extensions document, paragraph, text, heading, bold, italic, underline, link, list, hard-break), with ProseMirror and the packages listed in its notice section | 3.31.4                                               | MIT                                        | `@veljaos/ui/rich-text` (RichTextField, P5.22): MIT packages only, no Tiptap Pro or paid extension; loaded only through that subpath. Notices below.                                                                                                                                                                                                                                                                                                       |
+| React Flow (`@xyflow/react`, with `@xyflow/system`, classcat, zustand and the d3 modules listed in its notice section) and dagre (`@dagrejs/dagre`, with `@dagrejs/graphlib`)                                               | 12.12.0; dagre 3.1.1                                 | MIT (d3 modules ISC, d3-ease BSD-3-Clause) | `@veljaos/ui/diagram` (Diagram, P5.26): the canvas and the automatic layout; loaded only through that subpath; React Flow's style sheets are not shipped. Notices below.                                                                                                                                                                                                                                                                                   |
+| SVAR React Gantt, MIT edition (`@svar-ui/react-gantt`, with the `@svar-ui/*` packages listed in its notice section and date-fns 3.6.0)                                                                                      | 2.7.3                                                | MIT                                        | `@veljaos/ui/gantt` (Gantt, P5.37): the timeline's bars, links, drag and scale; loaded only through that subpath; SVAR's style sheets, themes and icon font are not shipped. Notices below.                                                                                                                                                                                                                                                                |
+| qr (`qr`, Paul Miller)                                                                                                                                                                                                      | 0.7.2                                                | MIT OR Apache-2.0 (used under MIT)         | QrCode (P5.40): encodes a text as a QR code in the browser; no dependencies. Notice below.                                                                                                                                                                                                                                                                                                                                                                 |
+| Leaflet (`leaflet`)                                                                                                                                                                                                         | 1.9.4                                                | BSD-2-Clause                               | `@veljaos/ui/map` (AreaMap, LocationCheck, RegionChart, P5.41): the map, its panning, zoom and keyboard, drawn with SVG; loaded only through that subpath; its style sheet, controls and images are not shipped. Notice below. Not used: react-leaflet (Hippocratic License 2.1, not open source) and MapLibre GL.                                                                                                                                         |
+| Shiki (`@shikijs/primitive`, `@shikijs/engine-javascript`, `@shikijs/langs`, with `@shikijs/types`, `@shikijs/vscode-textmate`, oniguruma-to-es, oniguruma-parser, regex, regex-recursion and regex-utilities)              | 4.5.0; vscode-textmate 10.1.0; oniguruma-to-es 4.3.6 | MIT                                        | `@veljaos/ui/code` (CodeHighlighting, P5.93): syntax highlighting for CodeBlock — the tokenizer, its JavaScript regular-expression engine (no WebAssembly) and the TextMate grammars of 22 languages, each loaded on first use; loaded only through that subpath. No Shiki theme is shipped. The grammars' own notices are below (Shiki). Not used: `@shikijs/engine-oniguruma` (WebAssembly), `@shikijs/themes`, the YAML and TOML grammars (no licence). |
 
 ## Storybook build
 
@@ -65,17 +67,17 @@ The static Storybook build (`apps/storybook/storybook-static`) is not hosted any
 only as a downloadable artifact of CI runs and of the publish workflow, and carries `LICENSE` and
 this file. Besides our own code it bundles:
 
-| Software                                                                                                                                                                                                                                                                                  | Version  | License                     | Note                                                                                                                                                                                                                                                 |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Storybook (storybook, @storybook/addon-a11y, addon-docs, react-vite)                                                                                                                                                                                                                      | 10.6.0   | MIT                         | Notice below, from the upstream repository (tag v10.6.0); the npm package ships no LICENSE file.                                                                                                                                                     |
-| React, React DOM                                                                                                                                                                                                                                                                          | 19.3.0   | MIT                         | Notice below (React DOM carries the same notice).                                                                                                                                                                                                    |
-| scheduler                                                                                                                                                                                                                                                                                 | 0.28.0   | MIT                         | Dependency of React DOM; same notice as React.                                                                                                                                                                                                       |
-| axe-core                                                                                                                                                                                                                                                                                  | 4.13.0   | MPL-2.0                     | Used by the accessibility addon. Unmodified; source: https://github.com/dequelabs/axe-core/tree/v4.13.0. Notices below.                                                                                                                              |
-| Radix UI (`@radix-ui/react-direction`, through `radix-ui`)                                                                                                                                                                                                                                | 1.1.4    | MIT                         | Used by `LiroProvider`. Notice below (Radix UI).                                                                                                                                                                                                     |
-| `@veljaos/ui` runtime dependencies (lucide-react, cmdk, react-day-picker, date-fns, @date-fns/tz, clsx, tailwind-merge, sonner, TanStack Table, Store and Virtual, Radix UI, @shadcn/react, Tiptap and ProseMirror, React Flow and dagre, SVAR React Gantt, qr, Leaflet), React Hook Form | as above | MIT, ISC                    | Used by the components and primitives in the stories. Notices below.                                                                                                                                                                                 |
-| world-atlas (Natural Earth 1:110m countries as TopoJSON)                                                                                                                                                                                                                                  | 2.0.2    | ISC; the data public domain | A development dependency of `@veljaos/ui`, read only by the RegionChart stories and examples (`packages/ui/src/map/map-story-world.ts`, P5.41): eight countries' outlines are bundled into the Storybook build, never into a package. Notice below.  |
-| topojson-client                                                                                                                                                                                                                                                                           | 3.1.0    | ISC                         | A development dependency of `@veljaos/ui`: turns world-atlas's TopoJSON into GeoJSON for the same stories; in the Storybook build, never in a package. `@types/topojson-client` 3.1.5 (MIT) is for the type checks only. Notice below (world-atlas). |
-| Nunito Sans                                                                                                                                                                                                                                                                               | —        | OFL-1.1                     | Interface font of the Storybook manager, shipped inside the storybook package. Notice below, from https://github.com/googlefonts/NunitoSans.                                                                                                         |
+| Software                                                                                                                                                                                                                                                                                                          | Version  | License                     | Note                                                                                                                                                                                                                                                 |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Storybook (storybook, @storybook/addon-a11y, addon-docs, react-vite)                                                                                                                                                                                                                                              | 10.6.0   | MIT                         | Notice below, from the upstream repository (tag v10.6.0); the npm package ships no LICENSE file.                                                                                                                                                     |
+| React, React DOM                                                                                                                                                                                                                                                                                                  | 19.3.0   | MIT                         | Notice below (React DOM carries the same notice).                                                                                                                                                                                                    |
+| scheduler                                                                                                                                                                                                                                                                                                         | 0.28.0   | MIT                         | Dependency of React DOM; same notice as React.                                                                                                                                                                                                       |
+| axe-core                                                                                                                                                                                                                                                                                                          | 4.13.0   | MPL-2.0                     | Used by the accessibility addon. Unmodified; source: https://github.com/dequelabs/axe-core/tree/v4.13.0. Notices below.                                                                                                                              |
+| Radix UI (`@radix-ui/react-direction`, through `radix-ui`)                                                                                                                                                                                                                                                        | 1.1.4    | MIT                         | Used by `LiroProvider`. Notice below (Radix UI).                                                                                                                                                                                                     |
+| `@veljaos/ui` runtime dependencies (lucide-react, cmdk, react-day-picker, date-fns, @date-fns/tz, clsx, tailwind-merge, sonner, TanStack Table, Store and Virtual, Radix UI, @shadcn/react, Tiptap and ProseMirror, React Flow and dagre, SVAR React Gantt, qr, Leaflet, Shiki and its grammars), React Hook Form | as above | MIT, ISC                    | Used by the components and primitives in the stories. Notices below.                                                                                                                                                                                 |
+| world-atlas (Natural Earth 1:110m countries as TopoJSON)                                                                                                                                                                                                                                                          | 2.0.2    | ISC; the data public domain | A development dependency of `@veljaos/ui`, read only by the RegionChart stories and examples (`packages/ui/src/map/map-story-world.ts`, P5.41): eight countries' outlines are bundled into the Storybook build, never into a package. Notice below.  |
+| topojson-client                                                                                                                                                                                                                                                                                                   | 3.1.0    | ISC                         | A development dependency of `@veljaos/ui`: turns world-atlas's TopoJSON into GeoJSON for the same stories; in the Storybook build, never in a package. `@types/topojson-client` 3.1.5 (MIT) is for the type checks only. Notice below (world-atlas). |
+| Nunito Sans                                                                                                                                                                                                                                                                                                       | —        | OFL-1.1                     | Interface font of the Storybook manager, shipped inside the storybook package. Notice below, from https://github.com/googlefonts/NunitoSans.                                                                                                         |
 
 The `storybook` package ships its own dependencies pre-bundled into its code, without separate
 notices; they are not listed here.
@@ -1711,6 +1713,317 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
 
+### Shiki and its dependencies
+
+Syntax highlighting of `@veljaos/ui/code` (CodeHighlighting, P5.93) and the packages it brings at runtime, each with its own notice; loaded only through that subpath. Shiki's tokenizer (`@shikijs/primitive` 4.5.0), its JavaScript regular-expression engine (`@shikijs/engine-javascript` 4.5.0) and its grammars (`@shikijs/langs` 4.5.0), with `@shikijs/types` 4.5.0, `@shikijs/vscode-textmate` 10.1.0 (Microsoft's TextMate tokenizer as Shiki keeps it), and Steven Levithan's oniguruma-to-es 4.3.6, oniguruma-parser 0.12.2, regex 6.1.0, regex-recursion 6.0.2 and regex-utilities 2.3.0 (all MIT). `@types/hast` and `@types/unist` carry type declarations only (MIT) and are not part of any bundle. The grammars CodeBlock loads (bash, csharp, css, dockerfile, dotenv, go, graphql, html, http, ini, java, javascript, json, jsonc, jsx, kotlin, powershell, python, sql, tsx, typescript, xml) come from VS Code and from four extensions, each MIT; their notices follow the packages'.
+
+#### @shikijs/primitive 4.5.0 (MIT)
+
+```
+MIT License
+
+Copyright (c) 2021 Pine Wu
+Copyright (c) 2023 Anthony Fu <https://github.com/antfu>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+#### @shikijs/engine-javascript 4.5.0, @shikijs/langs 4.5.0 and @shikijs/types 4.5.0 (MIT)
+
+The same notice as `@shikijs/primitive` above.
+
+#### @shikijs/vscode-textmate 10.1.0 (MIT)
+
+```
+The MIT License (MIT)
+
+Copyright (c) Microsoft Corporation
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+#### oniguruma-to-es 4.3.6 (MIT)
+
+```
+MIT License
+
+Copyright (c) 2024-2026 Steven Levithan
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+#### oniguruma-parser 0.12.2 (MIT)
+
+```
+MIT License
+
+Copyright (c) 2025-2026 Steven Levithan
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+#### regex 6.1.0 (MIT)
+
+```
+MIT License
+
+Copyright (c) 2025 Steven Levithan
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+#### regex-recursion 6.0.2 (MIT)
+
+```
+MIT License
+
+Copyright (c) 2025 Steven Levithan
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+#### regex-utilities 2.3.0 (MIT)
+
+```
+MIT License
+
+Copyright (c) 2024 Steven Levithan
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+#### Grammars from VS Code (bash, csharp, css, dockerfile, go, html, ini, java, javascript, json, jsonc, jsx, powershell, python, sql, tsx, typescript, xml) (MIT)
+
+```
+MIT License
+
+Copyright (c) 2015 - present Microsoft Corporation
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+#### dotenv grammar (dotenv-org/dotenv-vscode) (MIT)
+
+```
+MIT License
+
+Copyright (c) 2022 Scott Motte
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+#### GraphQL grammar (prisma-labs/vscode-graphql) (MIT)
+
+```
+MIT License
+
+Copyright (c) 2018 Prisma Data Services <support@prisma.io>
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+```
+
+#### HTTP grammar (Huachao/vscode-restclient) (MIT)
+
+```
+MIT License
+
+Copyright (c) 2016 - present Huachao Mao
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+#### Kotlin grammar (fwcd/vscode-kotlin) (MIT)
+
+```
+The MIT License (MIT)
+
+Copyright (c) 2016 George Fraser
+Copyright (c) 2018 fwcd
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+```
+
 ### Leaflet
 
 The map of `@veljaos/ui/map` (P5.41): Leaflet 1.9.4 (BSD-2-Clause), loaded only through that subpath, with no dependencies of its own. Its style sheet (`dist/leaflet.css`), controls and marker images are not shipped; `packages/ui/src/map/map.css` adapts the structural rules of `dist/leaflet.css` (same notice) with Liro tokens in place of its colours. The tiles of a base map are the application's, with their own attribution, which the map shows. `@types/leaflet` 1.9.22 (MIT) is a development dependency for the type checks and is not part of any bundle.
@@ -1744,9 +2057,30 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
+### Boundaries of Serbia (geoBoundaries, OpenStreetMap)
+
+`@veljaos/ui/map` ships the boundaries of the Republic of Serbia's statistical regions, districts
+(okrug) and cities and municipalities (P5.93 item 43; `packages/ui/src/map/serbia/regions.ts`,
+`districts.ts`, `municipalities.ts`). They are derived from geoBoundaries (gbOpen, build of
+12 December 2023, commit 9469f09): SRB ADM1 and ADM2 (source: OpenStreetMap, Wambacher; licence
+Open Data Commons Open Database License 1.0) and XKX ADM0 (source: OpenStreetMap; listed by
+geoBoundaries as Creative Commons Attribution-ShareAlike 2.0), used only for the outline of
+Kosovo and Metohija, drawn within Serbia. The data were merged, cleaned, dissolved into regions,
+simplified (mapshaper 0.6.113, weighted Visvalingam, 8% of the points, shapes kept) and quantized;
+the names in Serbian and English and the regions are ours.
+
+Contains information from OpenStreetMap, © OpenStreetMap contributors, which is made available
+here under the Open Database License (ODbL) 1.0: https://opendatacommons.org/licenses/odbl/1-0/
+— see https://www.openstreetmap.org/copyright. The derived boundary data in the files named above
+are likewise made available under the ODbL 1.0. Any map drawn from them shows the attribution
+`SERBIA_BOUNDARIES_ATTRIBUTION` ("© OpenStreetMap contributors (ODbL), via geoBoundaries").
+
+geoBoundaries: Runfola, D. et al. (2020) geoBoundaries: A global database of political
+administrative boundaries. PLoS ONE 15(4): e0231866. https://doi.org/10.1371/journal.pone.0231866
+
 ### world-atlas, Natural Earth and topojson-client
 
-The RegionChart stories and examples of P5.41 (Storybook only; no package ships geometry) read the outlines of eight countries from `world-atlas` 2.0.2, a redistribution of Natural Earth's 1:110m Admin 0 country boundaries, version 4.1.0, as TopoJSON, and turn them into GeoJSON with `topojson-client` 3.1.0. Natural Earth's data is in the public domain (Natural Earth's terms of use, https://www.naturalearthdata.com/about/terms-of-use/); made with Natural Earth. The regions of Serbia in the examples are hand-drawn and illustrative, not from any source.
+The RegionChart stories and examples of P5.41 (Storybook only; these outlines are in no package) read the outlines of eight countries from `world-atlas` 2.0.2, a redistribution of Natural Earth's 1:110m Admin 0 country boundaries, version 4.1.0, as TopoJSON, and turn them into GeoJSON with `topojson-client` 3.1.0. Natural Earth's data is in the public domain (Natural Earth's terms of use, https://www.naturalearthdata.com/about/terms-of-use/); made with Natural Earth. The regions of Serbia in the examples are hand-drawn and illustrative, not from any source.
 
 world-atlas 2.0.2 (ISC):
 

@@ -31,10 +31,14 @@ const meta = {
           'move and choose). An optional point (an address) says which area it falls in. The ' +
           'legend and every word are the application’s.\n\n' +
           '**Data:** each area’s boundary is a GeoJSON Polygon or MultiPolygon ([longitude, ' +
-          'latitude], holes after the outer ring). **The base map is the application’s:** a real ' +
-          'application passes its tile source in `tiles` (its own server, or OpenStreetMap’s with ' +
-          'its attribution, which is always shown under the map). These stories pass none, so ' +
-          'they fetch nothing; only the shapes are drawn.\n\n' +
+          'latitude], holes after the outer ring). **The base map is optional and off by ' +
+          'default:** a real application passes `baseLayer` — its tile URL template (with its ' +
+          'key), its attribution, always shown under the map, and its max zoom. The provider, ' +
+          'key and usage terms are the application’s (the public openstreetmap.org tiles are not ' +
+          'for heavy commercial use). These stories fetch nothing: “With a base map” uses an ' +
+          'illustrative local tile.\n\n' +
+          '**Chosen:** the area filled with its own colour, clearly stronger, its label on the ' +
+          'strong tag and the same item selected in the list; the pointer tints an area lighter.\n\n' +
           '**Keyboard:** the map is one Tab stop — arrow keys pan, plus and minus zoom; the ' +
           'buttons zoom and show everything again. Nothing needs dragging.\n\n' +
           '**Phones:** the list first, the map full width under it.\n\n' +
@@ -117,15 +121,27 @@ export const Keyboard: Story = {
   },
 }
 
-/** With the application's base map: its attribution is shown under the map (a local stand-in tile). */
-export const WithTiles: Story = {
-  name: 'With tiles',
+/**
+ * With the application's base map (`baseLayer`): an illustrative provider — a local stand-in tile,
+ * so nothing is fetched — its attribution under the map and its max zoom.
+ */
+export const WithBaseMap: Story = {
+  name: 'With a base map',
   args: {
-    tiles: { url: GRID_TILE, urlDark: GRID_TILE, attribution: 'Tiles: illustrative grid' },
+    defaultSelected: 'inner',
+    baseLayer: {
+      url: GRID_TILE,
+      urlDark: GRID_TILE,
+      attribution: 'Map tiles: Example Maps (illustrative provider)',
+      maxZoom: 16,
+    },
   },
   play: async ({ canvasElement }) => {
     await mapReady(canvasElement)
-    await expect(canvasElement).toHaveTextContent('Tiles: illustrative grid')
+    await expect(canvasElement.querySelector('[data-slot="map-attribution"]')).toHaveTextContent(
+      'Map tiles: Example Maps (illustrative provider)',
+    )
+    await expect(canvasElement.querySelector('.liro-map-tiles')).not.toBeNull()
   },
 }
 

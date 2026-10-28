@@ -29,9 +29,11 @@ import {
  * canvas or WebGL, so a picture is the same every time). Leaflet's own controls, attribution and
  * style sheet are not used: zoom is our IconButtons, the tiles' attribution is written under the
  * map by the component, and `map/map.css` keeps Leaflet's structural rules with tokens.
- * - The base map is optional: tiles come from the application (`tiles.url`, a `{z}/{x}/{y}`
- *   template, and `urlDark` for the dark theme). Without them only the shapes are drawn, on a
- *   token surface; the library fetches nothing.
+ * - The base map is optional and off by default (`baseLayer`, P5.93 item 37): the application's
+ *   tile source (`url`, a `{z}/{x}/{y}` template, `urlDark` for the dark theme, `maxZoom`) and its
+ *   attribution, always shown under the map. The provider, its key and its usage terms are the
+ *   application's (the public openstreetmap.org tiles are not for heavy commercial use). Without
+ *   it only the shapes are drawn, on a token surface; the library fetches nothing.
  * - Shapes are areas (GeoJSON polygons, coloured by their tone through CSS classes), circles in
  *   metres (an allowed area, an accuracy) and dots (a point, a position). Their colours are CSS
  *   (`map.css`), so they follow the theme.
@@ -43,15 +45,36 @@ import {
  *   page's end corner.
  */
 
-/** The application's base map. */
-export interface MapTiles {
-  /** A tile URL template ("https://tile.example.com/{z}/{x}/{y}.png"). */
+/**
+ * The application's base map (P5.93 item 37): its tile provider, key and usage terms are the
+ * application's; the attribution is always shown under the map.
+ */
+export interface MapBaseLayer {
+  /** A tile URL template ("https://tile.example.com/{z}/{x}/{y}.png"), with the application's key. */
   url: string
   /** The tiles' attribution as plain text, always shown under the map ("© OpenStreetMap contributors"). */
   attribution: string
+  /** The deepest zoom the provider serves; the map zooms no further. Default 18. */
+  maxZoom?: number
   /** Tiles for the dark theme; default `url`. */
   urlDark?: string
 }
+
+/**
+ * Whether Leaflet has a view yet: projecting a point before the first fit throws ("Set map center
+ * and zoom first"), which a chart remounted with new areas (a drill-down, P5.93 item 43) reached.
+ */
+function hasView(map: L.Map): boolean {
+  try {
+    map.getCenter()
+    return true
+  } catch {
+    return false
+  }
+}
+
+/** The deepest zoom of a base map whose `maxZoom` is not given (Leaflet's default). */
+const DEFAULT_MAX_ZOOM = 18
 
 export type CanvasShape =
   | {
@@ -97,7 +120,12 @@ export interface MapCanvasProps {
   labels?: readonly CanvasLabel[]
   /** What the map shows at first, and again with "Show all". */
   bounds: MapBounds | null
-  tiles?: MapTiles | undefined
+  baseLayer?: MapBaseLayer | undefined
+  /**
+   * The areas' own attribution (P5.93 item 43: boundary data under an open licence, such as
+   * `SERBIA_BOUNDARIES_ATTRIBUTION`), written under the map after the base map's.
+   */
+  attribution?: string | undefined
   height: number
   onShapeClick?: (id: string) => void
   /** The pointer over an interactive area (its id and the point in the map), or off it (null). */
@@ -229,18 +257,20 @@ export function MapCanvas(props: MapCanvasProps) {
 
   // The base map, when the application gives one.
   const tileUrl =
-    props.tiles === undefined
+    props.baseLayer === undefined
       ? undefined
       : colorScheme === 'dark'
-        ? (props.tiles.urlDark ?? props.tiles.url)
-        : props.tiles.url
+        ? (props.baseLayer.urlDark ?? props.baseLayer.url)
+        : props.baseLayer.url
+  const maxZoom = props.baseLayer?.maxZoom ?? DEFAULT_MAX_ZOOM
   useEffect(() => {
     if (map === null || tileUrl === undefined) return
-    const layer = L.tileLayer(tileUrl, { className: 'liro-map-tiles' }).addTo(map)
+    map.setMaxZoom(maxZoom)
+    const layer = L.tileLayer(tileUrl, { className: 'liro-map-tiles', maxZoom }).addTo(map)
     return () => {
       layer.remove()
     }
-  }, [map, tileUrl])
+  }, [map, tileUrl, maxZoom])
 
   // The view: the bounds, with room around; a single point at street level.
   const boundsKey = props.bounds === null ? '' : JSON.stringify(props.bounds)
@@ -315,7 +345,7 @@ export function MapCanvas(props: MapCanvasProps) {
     if (map === null) return
     const place = () => {
       const size = map.getSize()
-      if (size.x === 0 || size.y === 0) return
+      if (size.x === 0 || size.y === 0 || !hasView(map)) return
       setPlaced(
         (labels ?? []).map((label) => {
           const point = map.latLngToContainerPoint([label.at.lat, label.at.lng])
@@ -391,7 +421,7 @@ export function MapCanvas(props: MapCanvasProps) {
   // The place the keys reached stays in view.
   const reveal = props.reveal
   useEffect(() => {
-    if (map === null || reveal === undefined || reveal === null) return
+    if (map === null || reveal === undefined || reveal === null || !hasView(map)) return
     const at = L.latLng(reveal.lat, reveal.lng)
     if (map.getBounds().pad(-0.1).contains(at)) return
     moved.current = true
@@ -399,7 +429,7 @@ export function MapCanvas(props: MapCanvasProps) {
   }, [map, reveal])
 
   const project = (at: LatLng): ScreenPoint | null => {
-    if (map === null) return null
+    if (map === null || !hasView(map)) return null
     const point = map.latLngToContainerPoint([at.lat, at.lng])
     return { x: point.x, y: point.y }
   }
@@ -440,8 +470,10 @@ export function MapCanvas(props: MapCanvasProps) {
             key={label.id}
             data-label-id={label.id}
             className={cn(
-              'absolute block max-w-48 -translate-x-1/2 -translate-y-1/2 rounded-xs bg-surface-raised px-1 text-center text-xs leading-tight text-primary',
-              label.strong ? 'font-semibold' : 'font-medium',
+              'absolute block max-w-48 -translate-x-1/2 -translate-y-1/2 rounded-xs px-1 text-center text-xs leading-tight',
+              !label.strong && 'bg-surface-raised text-primary',
+              // The chosen area's name stands out: the strong tag (P5.93 item 37).
+              label.strong ? 'bg-surface-inverse font-semibold text-on-inverse' : 'font-medium',
               shown?.has(label.id) === true ? 'visible' : 'invisible',
             )}
             style={{ insetInlineStart: label.x, top: label.y }}
@@ -484,9 +516,11 @@ export function MapCanvas(props: MapCanvasProps) {
           }}
         />
       </div>
-      {props.tiles !== undefined && (
+      {(props.baseLayer !== undefined || props.attribution !== undefined) && (
         <p data-slot="map-attribution" className="bidi-content m-0 mt-1 text-xs text-secondary">
-          {props.tiles.attribution}
+          {[props.baseLayer?.attribution, props.attribution]
+            .filter((part) => part !== undefined)
+            .join(' · ')}
         </p>
       )}
     </div>

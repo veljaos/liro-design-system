@@ -14,6 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '../primitives/popover'
 import { useLiro } from '../provider/liro-provider'
 import { useCalendarOpen } from './date-field'
 import { controlAttributes, Field, fieldProps, type FieldBaseProps } from './field'
+import { Tooltip } from './popover'
 
 /*
  * MonthField (BUILD-PLAN P2.3), the previous Design System's AccountingPeriodSelect: one month,
@@ -135,7 +136,7 @@ export function MonthField(props: MonthFieldProps) {
         if (control.readOnly) {
           return (
             <Input
-              {...controlAttributes(control, messages['field.readOnly'])}
+              {...controlAttributes(control)}
               value={text ?? ''}
               dir={AUTO_DIRECTION.dir}
               className={cn(AUTO_DIRECTION.className, READ_ONLY)}
@@ -157,11 +158,10 @@ export function MonthField(props: MonthFieldProps) {
                   id={control.id}
                   aria-labelledby={`${control.labelId} ${control.id}`}
                   aria-describedby={control.describedBy}
-                  disabled={control.disabled}
                   className={cn(
                     INPUT,
                     // The month's name and year in their own order, at the page's start (P3.6).
-                    'cursor-pointer enabled:hover:bg-surface-hover',
+                    'cursor-pointer hover:bg-surface-hover',
                     TEXT_DIRECTION,
                     // The month's name is capitalised; the placeholder is shown as given.
                     text === null ? 'text-tertiary' : 'capitalize',
@@ -185,29 +185,31 @@ export function MonthField(props: MonthFieldProps) {
                 }}
               >
                 <div className="mb-2.5 flex items-center justify-between">
-                  <button
-                    type="button"
-                    className={NAV}
-                    aria-label={messages['calendar.previousYear']}
-                    title={messages['calendar.previousYear']}
-                    onClick={() => {
-                      setFocused(focused - 12)
-                    }}
-                  >
-                    <ChevronLeft aria-hidden="true" className="size-[60%] rtl:-scale-x-100" />
-                  </button>
+                  <Tooltip label={messages['calendar.previousYear']}>
+                    <button
+                      type="button"
+                      className={NAV}
+                      aria-label={messages['calendar.previousYear']}
+                      onClick={() => {
+                        setFocused(focused - 12)
+                      }}
+                    >
+                      <ChevronLeft aria-hidden="true" className="size-[60%] rtl:-scale-x-100" />
+                    </button>
+                  </Tooltip>
                   <span className="text-sm font-semibold">{shownYear}</span>
-                  <button
-                    type="button"
-                    className={NAV}
-                    aria-label={messages['calendar.nextYear']}
-                    title={messages['calendar.nextYear']}
-                    onClick={() => {
-                      setFocused(focused + 12)
-                    }}
-                  >
-                    <ChevronRight aria-hidden="true" className="size-[60%] rtl:-scale-x-100" />
-                  </button>
+                  <Tooltip label={messages['calendar.nextYear']}>
+                    <button
+                      type="button"
+                      className={NAV}
+                      aria-label={messages['calendar.nextYear']}
+                      onClick={() => {
+                        setFocused(focused + 12)
+                      }}
+                    >
+                      <ChevronRight aria-hidden="true" className="size-[60%] rtl:-scale-x-100" />
+                    </button>
+                  </Tooltip>
                 </div>
                 <div
                   ref={grid}

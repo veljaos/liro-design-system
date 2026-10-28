@@ -53,13 +53,11 @@ describe('PeriodField markup', () => {
     expect(html).toContain('name="to" value="2026-03-31"')
   })
 
-  it('draws read-only as text and disabled with its reason', () => {
+  it('draws read-only in the read-only look', () => {
     const readOnly = render(
       <PeriodField label="P" readOnly value={{ start: '2026-03-01', end: '2026-03-31' }} />,
     )
     expect(readOnly).toMatch(/<input[^>]*readOnly=""[^>]*value="March 2026"/)
-    const disabled = render(<PeriodField id="d" label="P" disabled disabledReason="Closed" />)
-    expect(disabled).toContain('Closed')
-    expect(disabled).toMatch(/<button[^>]*disabled=""/)
+    expect(readOnly).toContain('bg-surface-disabled')
   })
 })

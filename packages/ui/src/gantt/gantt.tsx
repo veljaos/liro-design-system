@@ -16,8 +16,8 @@ import { CompactIconButton } from '../components/button'
 import { DropdownMenu } from '../components/dropdown-menu'
 import { EmptyState, ErrorState } from '../components/empty-state'
 import { MoneyText } from '../components/display-text'
-import { NowMarker } from '../components/now-marker'
-import { nowMoment, addDays, dayNumber } from '../components/schedule-logic'
+import { NowMarker, NowTimeTag } from '../components/now-marker'
+import { nowMoment, addDays, dayNumber, localDateTime } from '../components/schedule-logic'
 import { StatusBadge, type Tone } from '../components/status-badge'
 import { STICKY_HEAD, useStickyHead } from '../components/sticky-head'
 import { usePhone } from '../components/use-phone'
@@ -27,6 +27,7 @@ import { Skeleton } from '../primitives/skeleton'
 import { ToggleGroup, ToggleGroupItem } from '../primitives/toggle-group'
 import { useLiro } from '../provider/liro-provider'
 import {
+  barLabelPlace,
   chartDate,
   chartEnd,
   chartRange,
@@ -37,7 +38,9 @@ import {
   kindOf,
   linkType,
   nowPosition,
+  openingScroll,
   progressWidth,
+  type BarLabelPlace,
   type GanttChange,
   type GanttDependency,
   type GanttRow,
@@ -45,6 +48,7 @@ import {
   type GanttTask,
 } from './gantt-logic'
 import { GanttDialogs, GanttList, useRowWords, type GanttDialog } from './gantt-parts'
+import { Tooltip } from '../components/popover'
 
 /*
  * Gantt (BUILD-PLAN P5.37; docs/decisions.md "Gantt"): a project's plan — phases, tasks and
@@ -143,55 +147,117 @@ interface ChartTask {
   liroTone: Tone | undefined
 }
 
-/** The bar's look and words (SVAR's `taskTemplate`): our tokens, its name for assistive technology. */
+/** A name beside its bar: on a small tag of the surface, so no line (a dependency, "now") crosses it. */
+const OUTSIDE_LABEL =
+  'pointer-events-none absolute top-1/2 -translate-y-1/2 rounded-xs bg-surface-raised px-1 text-xs leading-tight font-medium whitespace-nowrap text-primary'
+
+/** A number SVAR gives a bar (its place and width, px). */
+function pixels(value: unknown): number {
+  return typeof value === 'number' && Number.isFinite(value) ? value : 0
+}
+
+/**
+ * The bar's look and words (SVAR's `taskTemplate`): our tokens, its name for assistive technology.
+ * Its name is never cut (P5.93 item 34): inside the bar when it fits — and then it stays in view
+ * at the chart's edge while the bar runs out of it (sticky) —, otherwise beside the bar on a tag
+ * (`barLabelPlace`), measured on the bar's own font.
+ */
 function BarTemplate({ data }: { data: Record<string, unknown> }) {
   const type = data.type
   const label = typeof data.text === 'string' ? data.text : ''
   const name = typeof data.liroName === 'string' ? data.liroName : label
   const tone = (typeof data.liroTone === 'string' ? data.liroTone : 'neutral') as Tone
   const progress = typeof data.progress === 'number' ? data.progress : 0
-  if (type === 'milestone') {
+  const milestone = type === 'milestone'
+  const x = pixels(data.$x)
+  const width = pixels(data.$w)
+  const ghost = useRef<HTMLSpanElement>(null)
+  const [place, setPlace] = useState<BarLabelPlace>(milestone ? 'after' : 'inside')
+  useLayoutEffect(() => {
+    const measure = () => {
+      const element = ghost.current
+      if (element === null) return
+      const chart = element.closest('.wx-bars')?.clientWidth ?? Number.POSITIVE_INFINITY
+      setPlace(barLabelPlace({ x, width }, element.offsetWidth, chart, !milestone))
+    }
+    measure()
+    // Measured again once the web fonts are in: the fallback's widths differ.
+    let live = true
+    if ('fonts' in document) {
+      void document.fonts.ready.then(() => {
+        if (live) measure()
+      })
+    }
+    return () => {
+      live = false
+    }
+  }, [x, width, label, milestone])
+
+  const measurer = (
+    <span
+      ref={ghost}
+      aria-hidden="true"
+      className="pointer-events-none invisible absolute start-0 top-0 text-xs font-medium whitespace-nowrap"
+    >
+      {label}
+    </span>
+  )
+  const outside =
+    place === 'inside' ? null : (
+      <span
+        aria-hidden="true"
+        data-gantt-text=""
+        data-gantt-label={place}
+        className={cn(OUTSIDE_LABEL, place === 'after' ? 'start-full ms-1.5' : 'end-full me-1.5')}
+      >
+        {label}
+      </span>
+    )
+  if (milestone) {
     return (
       <>
-        <span
-          aria-hidden="true"
-          data-gantt-text=""
-          className="pointer-events-none absolute start-full top-1/2 -translate-y-1/2 ps-1.5 text-xs font-medium whitespace-nowrap text-primary"
-        >
-          {label}
-        </span>
+        {measurer}
+        {outside}
         <span className="sr-only">{name}</span>
       </>
     )
   }
   const summary = type === 'summary'
   return (
-    <span
-      data-slot="gantt-bar"
-      className={cn(
-        'pointer-events-none absolute inset-0 box-border flex items-center overflow-hidden rounded-sm border border-solid',
-        summary ? 'border-transparent bg-surface-inverse text-on-inverse' : BAR_TONE[tone],
-      )}
-    >
+    <>
+      {measurer}
       <span
-        aria-hidden="true"
-        data-gantt-text=""
-        className="block min-w-0 truncate px-2 text-xs font-medium"
+        data-slot="gantt-bar"
+        className={cn(
+          'pointer-events-none absolute inset-0 box-border flex items-center overflow-clip rounded-sm border border-solid',
+          summary ? 'border-transparent bg-surface-inverse text-on-inverse' : BAR_TONE[tone],
+        )}
       >
-        {label}
+        {place === 'inside' && (
+          <span
+            aria-hidden="true"
+            data-gantt-text=""
+            data-gantt-label="inside"
+            // Sticky at the chart's edge: a bar that runs out of view keeps its name in view.
+            className="sticky start-0 block min-w-0 truncate px-2 text-xs font-medium"
+          >
+            {label}
+          </span>
+        )}
+        <span className="sr-only">{name}</span>
+        {progress > 0 && (
+          <span
+            aria-hidden="true"
+            className={cn(
+              'absolute start-0 bottom-0 h-1',
+              summary ? 'bg-surface-raised' : 'bg-current',
+            )}
+            style={{ width: `${String(progress)}%` }}
+          />
+        )}
       </span>
-      <span className="sr-only">{name}</span>
-      {progress > 0 && (
-        <span
-          aria-hidden="true"
-          className={cn(
-            'absolute start-0 bottom-0 h-1',
-            summary ? 'bg-surface-raised' : 'bg-current',
-          )}
-          style={{ width: `${String(progress)}%` }}
-        />
-      )}
-    </span>
+      {outside}
+    </>
   )
 }
 
@@ -292,16 +358,17 @@ function GanttTable({
                   <Flag aria-hidden="true" className="size-3.5 shrink-0 text-secondary" />
                 )}
                 <span className="flex min-w-0 flex-1 flex-col" aria-hidden="true">
-                  <span
-                    title={task.label}
-                    className={cn(
-                      'block truncate text-sm text-primary',
-                      kind === 'phase' ? 'font-semibold' : 'font-medium',
-                      TEXT_DIRECTION,
-                    )}
-                  >
-                    {task.label}
-                  </span>
+                  <Tooltip label={task.label}>
+                    <span
+                      className={cn(
+                        'block truncate text-sm text-primary',
+                        kind === 'phase' ? 'font-semibold' : 'font-medium',
+                        TEXT_DIRECTION,
+                      )}
+                    >
+                      {task.label}
+                    </span>
+                  </Tooltip>
                   <span
                     className={cn(
                       'block truncate text-xs text-secondary tabular-nums',
@@ -459,6 +526,7 @@ function GanttChart(props: ChartProps) {
   const api = useRef<IApi | null>(null)
   const hintId = useId()
   const [area, setArea] = useState<HTMLElement | null>(null)
+  const [scaleBox, setScaleBox] = useState<HTMLElement | null>(null)
   const [geometry, setGeometry] = useState<{ nowX: number | null; column: number }>({
     nowX: null,
     column: COLUMN[props.scale],
@@ -625,6 +693,7 @@ function GanttChart(props: ChartProps) {
     }
     name()
     setArea(root.querySelector<HTMLElement>('.wx-area'))
+    setScaleBox(root.querySelector<HTMLElement>('.wx-scale'))
     const observer = new MutationObserver(name)
     observer.observe(root, { childList: true, subtree: true })
     return () => {
@@ -633,7 +702,7 @@ function GanttChart(props: ChartProps) {
   }, [messages, hintId])
 
   // "Now": the application's moment on the chart's own scale (as SVAR places a bar), plus the
-  // part of the day that has passed. Opens with today in view. A passive effect: SVAR rebuilds its
+  // part of the day that has passed. Opens at the plan's start, or with today in view. A passive effect: SVAR rebuilds its
   // store from new props in its own (child) effect, which runs first.
   const scrolled = useRef<string | null>(null)
   useEffect(() => {
@@ -664,7 +733,9 @@ function GanttChart(props: ChartProps) {
       if (state._chartWidth === undefined) return
       if (scrolled.current !== key) {
         scrolled.current = key
-        void instance.exec('scroll-chart', { left: Math.max(0, Math.round((x ?? 0) - 160)) })
+        // The plan's start, or the column before today's when today is further on (P5.93 item 34).
+        const visible = holder.current?.querySelector('.wx-chart')?.clientWidth ?? 0
+        void instance.exec('scroll-chart', { left: openingScroll(x, cellWidth, visible) })
       }
       latest.current.onReady()
     }
@@ -725,13 +796,38 @@ function GanttChart(props: ChartProps) {
           <NowMarker
             orientation="vertical"
             label={messages['gantt.now'](
-              `${format.date(moment.day)} ${String(Math.floor(moment.minutes / 60)).padStart(2, '0')}:${String(moment.minutes % 60).padStart(2, '0')}`,
+              `${format.date(moment.day)} ${format.time(localDateTime(moment.day, moment.minutes))}`,
             )}
             // Under the bars (`.wx-bars` is layer 1 in gantt.css): they cover its line (P5.90).
             className="z-0"
             style={{ insetInlineStart: nowX, top: 0, bottom: 0 }}
           />,
           area,
+        )}
+      {/* The day of "now" on the time scale, on the line (P5.93 item 8). */}
+      {scaleBox !== null &&
+        nowX !== null &&
+        moment !== null &&
+        createPortal(
+          <NowTimeTag
+            orientation="vertical"
+            // On the days' row today's number itself, written as the scale writes it, over its
+            // own; on the months' row the date.
+            time={
+              props.scale === 'days' ? String(Number(moment.day.slice(8))) : format.date(moment.day)
+            }
+            // The lower row of the scale (the months' or the days' names).
+            style={{
+              insetInlineStart:
+                props.scale === 'days'
+                  ? nowX - (moment.minutes / 1440) * geometry.column + geometry.column / 2
+                  : nowX,
+              top: 'auto',
+              bottom: 0,
+              height: SCALE_ROW,
+            }}
+          />,
+          scaleBox,
         )}
     </div>
   )

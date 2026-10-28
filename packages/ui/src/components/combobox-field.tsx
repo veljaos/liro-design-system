@@ -300,7 +300,7 @@ export interface ComboboxFieldProps extends FieldBaseProps {
  * Loading and "nothing found" are shown in the list. Clearing the text clears the choice.
  */
 export function ComboboxField(props: ComboboxFieldProps) {
-  const { messages, locale } = useLiro()
+  const { locale } = useLiro()
   const listId = `${useId()}-list`
   const [innerValue, setInnerValue] = useState(props.defaultValue ?? null)
   const value = props.value === undefined ? innerValue : props.value
@@ -325,7 +325,7 @@ export function ComboboxField(props: ComboboxFieldProps) {
   return (
     <Field {...fieldProps(props)}>
       {(control) => {
-        const attributes = controlAttributes(control, messages['field.readOnly'])
+        const attributes = controlAttributes(control)
         if (control.readOnly) {
           return (
             <Input

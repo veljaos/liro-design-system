@@ -6,7 +6,7 @@ import { TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
 import { ChartTooltipContent } from '../primitives/chart-parts'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
-import { MapCanvas, type CanvasLabel, type CanvasShape, type MapTiles } from './map-canvas'
+import { MapCanvas, type CanvasLabel, type CanvasShape, type MapBaseLayer } from './map-canvas'
 import {
   bubbleRadius,
   geometryBounds,
@@ -99,11 +99,18 @@ export interface RegionChartProps extends ChartStateProps {
   defaultSelected?: string
   onSelect?: (id: string) => void
   /** The application's base map; without it (the usual case for a chart) only the areas are drawn. */
-  tiles?: MapTiles
+  baseLayer?: MapBaseLayer
+  /**
+   * The areas' attribution, written under the map: required by the licence of open boundary data
+   * (`loadSerbiaBoundaries` gives `SERBIA_BOUNDARIES_ATTRIBUTION`, P5.93 item 43).
+   */
+  attribution?: string
   /** The map's height in pixels. Default 380 (300 on phones). */
   height?: number
   /** The application's controls in the header (a period select). */
   controls?: ReactNode
+  /** The key figures as toggle buttons (a ChartSeriesToggle) at the header's end (P5.93 item 42). */
+  toggle?: ReactNode
   /** Default: from the viewport (below 48em 'phone'). */
   layout?: 'desktop' | 'phone'
   className?: string
@@ -460,6 +467,7 @@ export function RegionChart(props: RegionChartProps) {
         title={props.title}
         {...(props.description === undefined ? {} : { description: props.description })}
         {...(props.controls === undefined ? {} : { controls: props.controls })}
+        {...(props.toggle === undefined ? {} : { toggle: props.toggle })}
         {...(props.loading === undefined ? {} : { loading: props.loading })}
         {...(props.defaultView === undefined ? {} : { defaultView: props.defaultView })}
         {...(props.error === undefined ? {} : { error: props.error })}
@@ -476,7 +484,8 @@ export function RegionChart(props: RegionChartProps) {
           shapes={shapes}
           labels={labels}
           bounds={bounds}
-          tiles={props.tiles}
+          baseLayer={props.baseLayer}
+          attribution={props.attribution}
           height={height}
           surface="raised"
           keyboard={false}

@@ -386,7 +386,7 @@ export function LookupField(props: LookupFieldProps) {
   return (
     <Field {...fieldProps(props)}>
       {(control) => {
-        const attributes = controlAttributes(control, messages['field.readOnly'])
+        const attributes = controlAttributes(control)
         if (control.readOnly) {
           return (
             <Input

@@ -180,7 +180,10 @@ export function PhoneFrame({
         transform: 'translateZ(0)',
         width,
         height,
-        maxWidth: '100%',
+        // A phone keeps its width inside a story's narrower wrapper (P5.93: a 320px column
+        // squeezed the phone and drew the page at the wrong width).
+        maxWidth: 'none',
+        flexShrink: 0,
         // Clip, not hidden: a hidden overflow can still be scrolled by the browser (a focused
         // element brought into view), which moved the whole screen under its fixed overlays.
         overflow: 'clip',

@@ -11,6 +11,7 @@ import {
 import { useLiro } from '../provider/liro-provider'
 import type { MenuEntry } from './dropdown-menu'
 import { INTENTS, type Emphasis, type Family, type IconComponent, type Intent } from './intents'
+import { Tooltip } from './popover'
 
 /*
  * SplitAction (BUILD-PLAN P2.7), the previous Design System's, carried over (owner's decision,
@@ -74,16 +75,17 @@ export function SplitAction(props: SplitActionProps) {
         {...(props.defaultOpen === undefined ? {} : { defaultOpen: props.defaultOpen })}
       >
         <DropdownMenuTrigger asChild>
-          <ButtonPrimitive
-            family={family}
-            emphasis={emphasis}
-            disabled={props.disabled === true}
-            aria-label={messages['action.moreOptions'](props.label)}
-            title={messages['action.moreOptions'](props.label)}
-            className="relative -ms-px h-auto shrink-0 rounded-s-none px-2 before:absolute before:inset-y-0 before:start-0 before:w-px before:bg-current before:opacity-30"
-          >
-            <ChevronDown aria-hidden="true" className="size-4 shrink-0" />
-          </ButtonPrimitive>
+          <Tooltip label={messages['action.moreOptions'](props.label)}>
+            <ButtonPrimitive
+              family={family}
+              emphasis={emphasis}
+              disabled={props.disabled === true}
+              aria-label={messages['action.moreOptions'](props.label)}
+              className="relative -ms-px h-auto shrink-0 rounded-s-none px-2 before:absolute before:inset-y-0 before:start-0 before:w-px before:bg-current before:opacity-30"
+            >
+              <ChevronDown aria-hidden="true" className="size-4 shrink-0" />
+            </ButtonPrimitive>
+          </Tooltip>
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="end"

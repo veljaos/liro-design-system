@@ -45,6 +45,10 @@
       "types": "./dist/pivot.d.ts",
       "import": "./dist/pivot.js"
     },
+    "./code": {
+      "types": "./dist/code.d.ts",
+      "import": "./dist/code.js"
+    },
     "./styles.css": "./dist/styles.css",
     "./package.json": "./package.json"
   },
@@ -92,6 +96,9 @@
   "dependencies": {
     "@dagrejs/dagre": "3.1.1",
     "@shadcn/react": "0.3.1",
+    "@shikijs/engine-javascript": "4.5.0",
+    "@shikijs/langs": "4.5.0",
+    "@shikijs/primitive": "4.5.0",
     "@svar-ui/react-gantt": "2.7.3",
     "@tanstack/react-table": "9.2.4",
     "@tanstack/react-virtual": "3.14.13",

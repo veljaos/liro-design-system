@@ -100,7 +100,11 @@
   opacity: 0.85;
 }
 
-/* Areas: a line in their tone, a light fill; the chosen one neutral and strong (D17). */
+/*
+ * Areas: a line in their tone, a light fill; under the pointer a lighter tint; the chosen one
+ * filled with its own colour, clearly stronger, with a thicker line (P5.93 item 37) — its label
+ * and its row in the list say it too, so the choice is never colour alone (D17).
+ */
 .liro-map path.liro-map-area {
   stroke-width: 2;
   stroke-linejoin: round;
@@ -130,14 +134,13 @@
   stroke: var(--liro-chart-category5);
   fill: var(--liro-chart-category5);
 }
-.liro-map path.liro-map-area.is-selected {
-  stroke: var(--liro-border-selected);
-  stroke-width: 4;
-  fill: var(--liro-surface-selected);
-  fill-opacity: 0.55;
-}
 .liro-map path.liro-map-area.leaflet-interactive:hover {
-  fill-opacity: 0.26;
+  fill-opacity: 0.24;
+}
+.liro-map path.liro-map-area.is-selected,
+.liro-map path.liro-map-area.is-selected.leaflet-interactive:hover {
+  stroke-width: 4;
+  fill-opacity: 0.45;
 }
 
 /* A workplace's allowed area: a dashed neutral line (3:1 on every surface) round a light fill. */

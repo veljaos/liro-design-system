@@ -2,10 +2,15 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 import { LiroProvider } from '../provider/liro-provider'
 import { CheckboxField, SwitchField } from './checkbox-field'
+import { DateField } from './date-field'
 import { Field, FieldLabelsHidden } from './field'
+import { MultiSelectField } from './multi-select-field'
+import { NumberField } from './number-field'
+import { PasswordField } from './password-field'
 import { RadioGroupField } from './radio-group-field'
 import { groupOptions, SelectField } from './select-field'
 import { TextAreaField, TextField } from './text-field'
+import { TimeField } from './time-field'
 
 const render = (node: React.ReactNode) =>
   renderToStaticMarkup(<LiroProvider locale="en">{node}</LiroProvider>)
@@ -96,35 +101,56 @@ describe('Field', () => {
 
   it('marks a required field with " *" named by messages, and the control as required', () => {
     const html = render(<TextField id="name" label="Name" required />)
-    expect(html).toContain('title="Required"')
+    expect(html).not.toContain('title="Required"')
     expect(html).toContain('> *</span>'.replace(' ', ' '))
     expect(html).toMatch(/<input[^>]*required=""/)
   })
 
-  it('shows the reason of a disabled field as text and links it', () => {
-    const html = render(
-      <TextField id="tax" label="Tax number" disabled disabledReason="Set by the registry" />,
-    )
-    expect(html).toContain('Set by the registry')
-    expect(html).toContain('aria-describedby="tax-reason"')
-    expect(html).toMatch(/<input[^>]*disabled=""/)
-  })
-
-  it('shows the error rather than the reason when both are given', () => {
-    const html = render(
-      <TextField id="a" label="A" disabled disabledReason="Closed" error="Wrong" />,
-    )
-    expect(html).not.toContain('Closed')
-    expect(html).toContain('aria-describedby="a-error"')
-  })
-
-  it('draws read-only as plain text: readonly, no border or background, named by messages', () => {
+  it('draws read-only grey with a border, the value readable, announced by readonly, no native title', () => {
     const html = render(<TextField id="a" label="A" readOnly defaultValue="100200300" />)
     expect(html).toMatch(/<input[^>]*readOnly=""/)
     expect(html).not.toMatch(/<input[^>]*\sdisabled=""/)
-    expect(html).toContain('title="Read-only"')
-    expect(html).toContain('border-transparent bg-transparent')
+    expect(html).not.toContain('title=')
+    for (const look of ['border-default', 'bg-surface-disabled', 'text-primary'])
+      expect(html).toContain(look)
     expect(html).toContain('h-control')
+  })
+
+  it('leaves the hint and the placeholder out of read-only; an empty value shows "—"', () => {
+    const html = render(
+      <TextField id="b" label="B" readOnly description="A hint" placeholder="e.g. 42" />,
+    )
+    expect(html).not.toContain('A hint')
+    expect(html).not.toContain('e.g. 42')
+    expect(html).toContain('placeholder="—"')
+    expect(html).not.toContain('aria-describedby')
+  })
+
+  it('keeps the error of a read-only field', () => {
+    const html = render(<TextField id="c" label="C" readOnly error="Wrong" />)
+    expect(html).toContain('aria-describedby="c-error"')
+  })
+
+  it('draws every read-only field with the one look', () => {
+    const fields = [
+      render(<NumberField label="N" readOnly defaultValue="1" />),
+      render(<DateField label="D" readOnly defaultValue="2026-01-02" />),
+      render(<SelectField label="S" readOnly options={[{ value: 'a', label: 'A' }]} />),
+      render(<MultiSelectField label="M" readOnly options={[]} />),
+      render(<PasswordField label="P" readOnly />),
+      render(<TimeField label="T" readOnly />),
+    ]
+    for (const html of fields) expect(html).toContain('bg-surface-disabled')
+    expect(fields[3]).toContain('aria-readonly="true"')
+    expect(fields[3]).toContain('—')
+  })
+
+  it('shows a read-only checkbox grey with its state, focusable and not changeable', () => {
+    const html = render(<CheckboxField label="Exported" readOnly defaultChecked />)
+    expect(html).toContain('aria-readonly="true"')
+    expect(html).toContain('data-readonly=""')
+    expect(html).toContain('data-state="checked"')
+    expect(html).not.toMatch(/<button[^>]*\sdisabled=""/)
   })
 
   it('never blocks paste', () => {

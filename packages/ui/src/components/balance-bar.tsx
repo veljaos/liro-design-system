@@ -108,8 +108,10 @@ export function BalanceBar(props: BalanceBarProps) {
           </div>
         ))}
       </dl>
-      <p role="status" className={cn('m-0 flex items-center gap-1.5 font-semibold', state.text)}>
-        <state.Icon aria-hidden="true" className="size-4 shrink-0" />
+      {/* The icon inline with the words, so the state stands on the amounts' baseline
+          (P5.93 item 6; a flex row took the icon's bottom as its baseline). */}
+      <p role="status" className={cn('m-0 font-semibold', state.text)}>
+        <state.Icon aria-hidden="true" className="me-1.5 inline size-4 align-[-0.1875em]" />
         <span className={TEXT_DIRECTION}>{words}</span>
       </p>
     </div>

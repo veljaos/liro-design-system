@@ -290,7 +290,7 @@ function ConfirmFrame(
                 className="mt-4"
                 options={options}
                 checked={checked}
-                disabled={busy}
+                readOnly={busy}
                 onChange={setChecked}
               />
               {props.extra}

@@ -103,7 +103,7 @@ export const PickInCalendarInteraction: Story = {
   },
 }
 
-/** Open end, the end before the start (its own error), the application's error, read-only, disabled. */
+/** Open end, the end before the start (its own error), the application's error, read only. */
 export const States: Story = {
   render: () => (
     <div className="flex max-w-100 flex-col gap-6">
@@ -117,12 +117,6 @@ export const States: Story = {
       <DateRangeField
         label="Contract (read-only)"
         readOnly
-        defaultValue={{ start: '2026-01-01', end: '2026-12-31' }}
-      />
-      <DateRangeField
-        label="Contract (disabled)"
-        disabled
-        disabledReason="Signed contracts cannot be changed."
         defaultValue={{ start: '2026-01-01', end: '2026-12-31' }}
       />
     </div>
@@ -163,7 +157,6 @@ export const Arabic: Story = {
         readOnly
         defaultValue={{ start: '2026-01-01', end: '2026-03-31' }}
       />
-      <DateRangeField label={ARABIC.label} disabled disabledReason={ARABIC.reason} />
     </div>
   ),
 }
@@ -183,7 +176,6 @@ export const Japanese: Story = {
         readOnly
         defaultValue={{ start: '2026-01-01', end: '2026-03-31' }}
       />
-      <DateRangeField label={JAPANESE.label} disabled disabledReason={JAPANESE.reason} />
     </div>
   ),
 }

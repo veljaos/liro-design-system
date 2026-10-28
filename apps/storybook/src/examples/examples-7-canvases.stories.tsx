@@ -53,6 +53,8 @@ export const HealthDoctorCalendar: Story = {
     )
     await expect(canvasElement).toHaveTextContent('Wednesday, October 14, 2026')
     await expect(within(canvasElement).getByRole('img', { name: 'Now, 09:40' })).toBeInTheDocument()
+    // The time of "now" written in the time gutter, which no appointment covers (P5.93 item 8).
+    await expect(canvasElement.querySelector('[data-slot="now-time"]')).toHaveTextContent('09:40')
   },
 }
 
@@ -309,8 +311,9 @@ export const RestaurantTabPhone: Story = {
 
 /**
  * Bistro Dunav (P5.90 item 20): table 7's tab from the floor, a krempita added — "New" until the
- * waiter leaves; back on the floor it has gone to the kitchen by itself, and one tap on table 7
- * opens its tab again with the krempita sent.
+ * waiter leaves; back on the floor table 7 is chosen and says what went to the kitchen (P5.93
+ * item 3: no toast), and one tap on table 7 opens its tab again with the krempita sent. Removing
+ * a line leaves "… removed · Undo" in its place.
  */
 export const RestaurantTabInteraction: Story = {
   name: 'Restaurant tab, interaction',
@@ -327,14 +330,20 @@ export const RestaurantTabInteraction: Story = {
     await expect(canvas.getByRole('button', { name: 'Send now (1)' })).toBeVisible()
     await expect(canvasElement).toHaveTextContent('New · sent when you leave the table')
     await userEvent.click(canvas.getByRole('button', { name: 'Floor' }))
-    await expect(
-      await within(document.body).findByText('Sent: 1 to the kitchen.'),
-    ).toBeInTheDocument()
+    await expect(await canvas.findByText('Sent: 1 to the kitchen · 19:40')).toBeVisible()
+    await expect(document.body.querySelector('[data-sonner-toast]')).toBeNull()
     await userEvent.click(await waitFor(() => floorItem(canvasElement, 't7')))
     await expect(await canvas.findByRole('heading', { name: 'Table 7' })).toBeVisible()
     await expect(canvasElement).toHaveTextContent('Sent to the kitchen · 19:40')
     await expect(canvas.getByRole('button', { name: /^Bill 9\.534,00\sRSD$/ })).toBeInTheDocument()
-    notice.dismiss()
+    // Removing a line: no question, no toast — "Krempita removed · Undo" in its place.
+    await userEvent.click(canvas.getByRole('button', { name: 'Edit Krempita' }))
+    await userEvent.click(await within(document.body).findByRole('button', { name: 'Remove line' }))
+    const undo = await canvas.findByRole('button', { name: 'Undo' })
+    await expect(undo).toHaveAccessibleDescription('Krempita removed')
+    await userEvent.click(undo)
+    await expect(canvas.getByRole('button', { name: 'Edit Krempita' })).toBeVisible()
+    await expect(document.body.querySelector('[data-sonner-toast]')).toBeNull()
   },
 }
 
@@ -365,6 +374,18 @@ export const ProjectTimeline: Story = {
     await expect(
       canvas.getByRole('img', { name: /^Now, 14\.10\.2026\. 09:40$/ }),
     ).toBeInTheDocument()
+    // Today's date on the time scale, in view when the plan opens (at its start, or at the
+    // column before today's); short bars carry their names beside them, never cut (P5.93 items 8
+    // and 34).
+    const today = canvasElement.querySelector('[data-slot="now-time"]')
+    await expect(today).toHaveTextContent('14.10.2026.')
+    const chart = canvasElement.querySelector('.wx-chart')?.getBoundingClientRect()
+    const tag = today?.getBoundingClientRect()
+    await expect(chart !== undefined && tag !== undefined && tag.left >= chart.left).toBe(true)
+    await expect(chart !== undefined && tag !== undefined && tag.right <= chart.right).toBe(true)
+    await expect(
+      canvasElement.querySelector('[data-gantt-label="after"]')?.textContent,
+    ).toBeTruthy()
   },
 }
 

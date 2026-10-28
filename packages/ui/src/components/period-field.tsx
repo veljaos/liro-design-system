@@ -134,7 +134,7 @@ export function PeriodField(props: PeriodFieldProps) {
         if (control.readOnly) {
           return (
             <Input
-              {...controlAttributes(control, messages['field.readOnly'])}
+              {...controlAttributes(control)}
               value={text}
               dir={AUTO_DIRECTION.dir}
               className={cn(AUTO_DIRECTION.className, READ_ONLY)}
@@ -152,7 +152,6 @@ export function PeriodField(props: PeriodFieldProps) {
             emphasis="secondary"
             aria-labelledby={`${control.labelId} ${textId}`}
             aria-describedby={control.describedBy}
-            disabled={control.disabled}
             className={cn(
               'max-w-full pe-3 font-regular',
               // A button cannot be aria-invalid; the error is linked by aria-describedby.

@@ -154,10 +154,10 @@ function bankRows(canvasElement: HTMLElement): string[] {
 
 /**
  * Bank statement 188 of 06.10.2026 (Banca Intesa), auto first (P5.90 item 9): one compact table
- * of its ten lines, each with what it does and its state — six matched automatically, two
- * suggestions, one that needs the user, and the payment against proforma PR-2026-118 already done
- * by the Core with a link to advance invoice AF-2026-0031. "Accept all exact matches (6)" is the
- * main action; the balances check out.
+ * of its ten lines, each with what it does and its state — six matched automatically, three
+ * suggestions (one of them the payment against proforma PR-2026-118: an advance and its invoice,
+ * P5.93 item 17), one that needs the user. "Accept all exact matches (6)" is the main action; the
+ * balances check out.
  */
 export const BankStatementScreen: Story = {
   name: 'Bank statement 188',
@@ -170,12 +170,12 @@ export const BankStatementScreen: Story = {
       SERBIAN_BANK.number(STATEMENT_TOTALS.closing, { decimals: 2 }),
     )
     await expect(canvasElement).toHaveTextContent('Balance checks out')
-    await expect(canvasElement).toHaveTextContent('1 of 10 lines done')
+    await expect(canvasElement).toHaveTextContent('0 of 10 lines done')
     await expect(canvasElement).toHaveTextContent(
-      '6 matched automatically · 2 suggestions · 1 needs you · 1 done',
+      '6 matched automatically · 3 suggestions · 1 needs you',
     )
     await expect(canvas.getByRole('button', { name: 'Accept all exact matches (6)' })).toBeVisible()
-    await expect(canvas.getByRole('link', { name: 'AF-2026-0031' })).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('Advance and its invoice for PR-2026-118')
     await expect(bankRows(canvasElement)).toHaveLength(10)
     await settle()
   },
@@ -195,7 +195,7 @@ export const BankStatementScreenInteraction: Story = {
     const page = within(document.body)
     await userEvent.click(canvas.getByRole('button', { name: 'Accept all exact matches (6)' }))
     await expect(await page.findByText('6 lines accepted.')).toBeInTheDocument()
-    await expect(canvasElement).toHaveTextContent('7 of 10 lines done')
+    await expect(canvasElement).toHaveTextContent('6 of 10 lines done')
     await expect(canvas.queryByRole('button', { name: /^Accept all/ })).toBeNull()
     await userEvent.click(canvas.getByRole('cell', { name: 'Medic Lab Niš d.o.o.' }))
     const drawer = within(await page.findByRole('dialog', { name: /Confirm payment/ }))
@@ -209,7 +209,7 @@ export const BankStatementScreenInteraction: Story = {
     await expect(next.getByRole('region', { name: 'What it does' })).toHaveTextContent(
       'Closes F-2026-0406; 0,40 RSD is written off.',
     )
-    await expect(canvasElement).toHaveTextContent('8 of 10 lines done')
+    await expect(canvasElement).toHaveTextContent('7 of 10 lines done')
     notice.dismiss()
     await settle()
   },
@@ -248,6 +248,77 @@ export const BankStatementLinePhone: Story = {
       'Closes F-2026-0406; 0,40 RSD is written off.',
     )
     await expect(drawer.getByRole('button', { name: 'Confirm and next' })).toBeVisible()
+    await settle()
+  },
+}
+
+/**
+ * A payment against a proforma invoice (P5.93 item 17): line 9 open — it pays proforma
+ * PR-2026-118; the Core proposes to post it as an advance and to issue the advance invoice at
+ * once, one press: "Post advance and issue invoice".
+ */
+export const BankStatementProforma: Story = {
+  name: 'Bank statement 188, proforma paid',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BANK_ROUTES.proforma} />,
+  play: async () => {
+    await settle()
+    const drawer = within(
+      await within(document.body).findByRole('dialog', { name: /Vojvođanka Mlin/ }),
+    )
+    await expect(drawer.getByRole('region', { name: 'What it does' })).toHaveTextContent(
+      'The advance invoice is issued at once.',
+    )
+    await expect(drawer.getByRole('link', { name: 'PR-2026-118' })).toBeVisible()
+    await expect(
+      drawer.getByRole('button', { name: 'Post advance and issue invoice' }),
+    ).toBeVisible()
+    await settle()
+  },
+}
+
+/**
+ * The result in place, after the one press: advance invoice AF-2026-0031 issued (its number a
+ * link), the payment posted as an advance, the related documents (the proforma, paid; the
+ * advance invoice, issued) and "Next line".
+ */
+export const BankStatementProformaIssued: Story = {
+  name: 'Bank statement 188, advance invoice issued',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BANK_ROUTES.proformaIssued} />,
+  play: async () => {
+    await settle()
+    const drawer = within(
+      await within(document.body).findByRole('dialog', { name: /Vojvođanka Mlin/ }),
+    )
+    const result = drawer.getByRole('region', { name: 'Result' })
+    await expect(within(result).getByRole('link', { name: 'AF-2026-0031' })).toBeVisible()
+    const related = within(result).getByRole('list', { name: 'Related documents' })
+    await expect(related).toHaveTextContent('PR-2026-118')
+    await expect(related).toHaveTextContent('AF-2026-0031')
+    await expect(drawer.getByRole('button', { name: 'Next line' })).toBeVisible()
+    await settle()
+  },
+}
+
+/** The one step: post the advance and issue its invoice, see the result, go to the next line. */
+export const BankStatementProformaInteraction: Story = {
+  name: 'Bank statement 188, proforma, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BANK_ROUTES.proforma} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const page = within(document.body)
+    const drawer = within(await page.findByRole('dialog', { name: /Vojvođanka Mlin/ }))
+    await userEvent.click(drawer.getByRole('button', { name: 'Post advance and issue invoice' }))
+    const result = await drawer.findByRole('region', { name: 'Result' })
+    await expect(within(result).getByRole('link', { name: 'AF-2026-0031' })).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('1 of 10 lines done')
+    await userEvent.click(drawer.getByRole('button', { name: 'Next line' }))
+    // The next line's drawer slides in: wait for it to settle.
+    await waitFor(async () => {
+      await expect(page.getByRole('dialog', { name: /Petar Jovanović/ })).toBeVisible()
+    })
     await settle()
   },
 }

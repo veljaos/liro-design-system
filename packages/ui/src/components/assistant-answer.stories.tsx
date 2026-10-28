@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { useState } from 'react'
-import { expect, userEvent, within } from 'storybook/test'
+import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { settle } from '../primitives/story-helpers'
 import { AssistantAnswer } from './assistant-answer'
 import {
@@ -19,8 +19,17 @@ import {
   revenueBlocks,
   STREAMING_BLOCKS,
 } from './assistant-story-data'
+import { CodeHighlighting } from '../code'
 import { ProposedAction } from './proposed-action'
 import { ExampleProvider, PhoneFrame, StoryProvider } from './story-frames'
+import { Reasoning, Sources, Task } from './trace'
+import {
+  MATCHED_STEPS,
+  MATCHING_STEPS,
+  QUESTION_SEF,
+  RECORD_SOURCES,
+  SEF_BLOCKS,
+} from './trace-story-data'
 
 const noop = () => undefined
 
@@ -79,7 +88,7 @@ export const Default: Story = {
       'href',
       '#/sales/invoices/F-2026-0371',
     )
-    await expect(canvas.getByRole('list', { name: 'Sources' })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Used 2 records' })).toBeVisible()
     await expect(canvas.getByRole('button', { name: OVERDUE_FOLLOW_UPS[0] ?? '' })).toBeVisible()
     await expect(canvas.getByRole('button', { name: 'Report a wrong answer' })).toBeVisible()
   },
@@ -309,5 +318,74 @@ export const FollowUpInteraction: Story = {
     await expect(canvasElement.querySelector('output')).toHaveTextContent(
       OVERDUE_FOLLOW_UPS[1] ?? '',
     )
+  },
+}
+
+/**
+ * With its work (P5.93): how the assistant got there, above the answer — its thinking, the task
+ * and the records it used — each one calm line until opened.
+ */
+export const WithWork: Story = {
+  name: 'With its work',
+  args: {
+    question: QUESTION_OVERDUE,
+    onReport: noop,
+    work: (
+      <>
+        <Reasoning status="done" duration="4 s">
+          <p className="m-0">
+            Overdue means past the due date and not paid in full. I read the open items of every
+            customer and kept those more than 30 days late.
+          </p>
+        </Reasoning>
+        <Task title="Read 214 open invoices" steps={MATCHED_STEPS.slice(1, 2)} />
+        <Sources items={RECORD_SOURCES} />
+      </>
+    ),
+  },
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('button', { name: 'Thought for 4 s' })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Used 4 records' })).toBeVisible()
+  },
+}
+
+/** Thinking with its work: the task's steps as they happen take the place of "Thinking…". */
+export const ThinkingWork: Story = {
+  name: 'Thinking, with its work',
+  tags: ['!dev'],
+  args: {
+    state: 'thinking',
+    work: (
+      <>
+        <Reasoning status="done" duration="2 s" />
+        <Task title="Matching bank statement 188" description="31 of 42" steps={MATCHING_STEPS} />
+      </>
+    ),
+  },
+}
+
+/** Code in an answer: a payload with Copy, highlighted where the application gives it. */
+export const WithCode: Story = {
+  name: 'With code',
+  tags: ['!dev'],
+  args: { question: QUESTION_SEF, blocks: SEF_BLOCKS, onReport: noop },
+  decorators: [
+    (Story) => (
+      <CodeHighlighting>
+        <Story />
+      </CodeHighlighting>
+    ),
+  ],
+  play: async ({ canvasElement }) => {
+    await settle()
+    await waitFor(async () => {
+      await expect(canvasElement.querySelector('[data-slot="code-block"]')).toHaveAttribute(
+        'data-ready',
+        'true',
+      )
+    })
+    await expect(within(canvasElement).getByRole('region', { name: 'SEF response' })).toBeVisible()
   },
 }

@@ -24,9 +24,10 @@ const meta = {
       description: {
         component:
           '**What for:** finding an issued receipt again — the original of a refund, a receipt to ' +
-          'copy or to cancel: scan its code, or search by its number, date and total. The ' +
-          'application searches and answers; the finder shows the receipts found and reports the ' +
-          'one chosen. A receipt that cannot be chosen (refunded in full) says why.\n\n' +
+          'copy or to cancel: scan its code, or type its number, date or total in ONE field ' +
+          '(P5.93). The text is reported as typed; the application reads it, searches and ' +
+          'answers; the finder shows the receipts found and reports the one chosen. A receipt ' +
+          'that cannot be chosen (refunded in full) says why.\n\n' +
           '**When:** the first step of a refund, a copy or a cancellation at the till.\n\n' +
           '**When not:** browsing the day’s receipts (the journal, a DataTable); finding a ' +
           'customer or a product (LookupField).',
@@ -51,13 +52,13 @@ export default meta
 
 type Story = StoryObj<typeof meta>
 
-/** Before a search: scan, or the three fields. */
+/** Before a search: scan the code, or type its number, date or total in one field. */
 export const Default: Story = {}
 
 /** Three receipts of 1.011,00 found; the first chosen, the third refunded in full. */
 export const Results: Story = {
   args: {
-    defaultQuery: { total: '1011' },
+    defaultSearch: '1.011,00',
     results: FOUND_RECEIPTS,
     chosenId: 'r2318',
   },
@@ -75,19 +76,19 @@ export const Results: Story = {
 }
 
 /** Searching: skeleton rows. */
-export const Loading: Story = { args: { defaultQuery: { number: '2318' }, loading: true } }
+export const Loading: Story = { args: { defaultSearch: '2318', loading: true } }
 
 /** None found. */
 export const NoResults: Story = {
   name: 'No results',
-  args: { defaultQuery: { number: '9999' }, results: [] },
+  args: { defaultSearch: '9999', results: [] },
 }
 
 /** The application's error. */
 export const Failed: Story = {
   name: 'Error',
   args: {
-    defaultQuery: { number: '2318' },
+    defaultSearch: '2318',
     results: [],
     error: 'The journal cannot be reached. Try again in a minute.',
   },
@@ -185,17 +186,25 @@ export const Japanese: Story = {
   ),
 }
 
-/** Search by number, then choose a receipt; a refunded one cannot be chosen. */
+/**
+ * Type a total in the one field: the text goes to the application as typed (and at once on
+ * Enter, never twice); then choose a receipt; a refunded one cannot be chosen.
+ */
 export const Searching: Story = {
   name: 'Searching, interaction',
-  tags: ['interaction'],
+  tags: ['interaction', '!dev'],
   args: { results: FOUND_RECEIPTS },
   play: async ({ args, canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
-    await userEvent.type(canvas.getByRole('textbox', { name: 'Receipt number' }), '2318')
-    await userEvent.click(canvas.getByRole('button', { name: 'Search' }))
-    await expect(args.onSearch).toHaveBeenCalledWith({ number: '2318', date: null, total: null })
+    await expect(canvas.queryByRole('button', { name: 'Search' })).toBeNull()
+    await userEvent.type(
+      canvas.getByRole('searchbox', { name: /^Or type its number, date or total/ }),
+      '1.011,00{Enter}',
+    )
+    await expect(args.onSearch).toHaveBeenLastCalledWith('1.011,00')
+    await new Promise((resolve) => setTimeout(resolve, 400))
+    await expect(args.onSearch).toHaveBeenCalledTimes(1)
     await userEvent.click(canvas.getByRole('button', { name: /ZK7Q2M4P-ZK7Q2M4P-2297/ }))
     await expect(args.onChoose).toHaveBeenCalledWith('r2297')
     await userEvent.click(canvas.getByRole('button', { name: /ZK7Q2M4P-ZK7Q2M4P-2240/ }))

@@ -206,13 +206,10 @@ export const WithError: Story = {
   },
 }
 
-/** Waiting before a new attempt: the reason under the boxes. */
-export const Disabled: Story = {
-  name: 'Disabled with reason',
-  args: {
-    disabled: true,
-    disabledReason: 'Too many attempts. A new code can be asked for at 11:05.',
-  },
+/** Read only (P5.93): the boxes in the read-only look of every field, focusable, no hint. */
+export const ReadOnly: Story = {
+  name: 'Read only',
+  args: { readOnly: true, defaultValue: '482913' },
 }
 
 /** Long label and description wrap; the boxes keep their size. */

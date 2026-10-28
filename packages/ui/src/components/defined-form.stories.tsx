@@ -123,23 +123,23 @@ export const ApplicationErrors: Story = {
   },
 }
 
-/** Read-only: a numbered or sent document's data as text, without required marks. */
+/** Read only: a numbered or sent document's data in the read-only look, without required marks. */
 export const ReadOnly: Story = {
-  name: 'Read-only',
+  name: 'Read only',
   args: { defaultValues: FILLED, readOnly: true },
 }
 
 /**
- * A field the application filled in (read-only), one disabled with its reason, and a folded
- * section of rarely used fields.
+ * Fields the application filled in or the user may not change (read only), and a folded section
+ * of rarely used fields.
  */
-export const DisabledAndCollapsible: Story = {
-  name: 'Disabled with reason, read-only field, collapsible section',
+export const ReadOnlyFieldsAndCollapsible: Story = {
+  name: 'Read-only fields, collapsible section',
   args: { sections: WITH_EXTRAS, defaultValues: { number: 'REQ-2026-0141' } },
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
-    await expect(canvas.getByText('Set by the team; ask the team lead to change it.')).toBeVisible()
+    await expect(canvas.getByRole('textbox', { name: 'Cost centre' })).toHaveAttribute('readonly')
     await expect(canvas.getByRole('button', { name: 'More details' })).toHaveAttribute(
       'aria-expanded',
       'false',
@@ -153,12 +153,18 @@ export const LongText: Story = {
   args: { sections: LONG, showMissing: true },
 }
 
-/** No definitions yet (the application loads them): nothing is drawn. */
+/** The definitions are on their way (P5.93): a card of skeleton fields. */
+export const Loading: Story = {
+  args: { sections: [], loading: true },
+}
+
+/** No definitions: the form says there is nothing to fill in. */
 export const Empty: Story = {
   args: { sections: [] },
   play: async ({ canvasElement }) => {
     await settle()
     await expect(canvasElement.querySelectorAll('[data-slot="field"]')).toHaveLength(0)
+    await expect(within(canvasElement).getByText('There is nothing to fill in here.')).toBeVisible()
   },
 }
 

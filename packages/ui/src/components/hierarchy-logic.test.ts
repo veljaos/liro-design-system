@@ -9,6 +9,7 @@ import {
   matchHierarchy,
   revealNode,
   stacksChildren,
+  toggleWidth,
   visibleHierarchy,
   type HierarchyNode,
 } from './hierarchy-logic'
@@ -147,5 +148,16 @@ describe('hierarchyKeyAction', () => {
     expect(act('w1', '*')).toBeNull()
     expect(act('nobody', 'Enter')).toBeNull()
     expect(act('ceo', 'x')).toBeNull()
+  })
+})
+
+describe('toggleWidth (P5.93 item 35)', () => {
+  it('is odd, at least 25px, and grows with the label', () => {
+    expect(toggleWidth('−')).toBe(25)
+    expect(toggleWidth('+3')).toBe(25)
+    expect(toggleWidth('+12')).toBe(31)
+    expect(toggleWidth('+123')).toBe(37)
+    expect(toggleWidth('+١٢')).toBe(31)
+    for (const label of ['−', '+3', '+12', '+1.234']) expect(toggleWidth(label) % 2).toBe(1)
   })
 })

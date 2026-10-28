@@ -8,7 +8,7 @@ import {
   type KeyboardEvent,
   type ReactNode,
 } from 'react'
-import { INPUT, TEXT_DIRECTION } from '../primitives/classes'
+import { INPUT, READ_ONLY, TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 import {
@@ -63,9 +63,11 @@ export interface CodeInputProps {
   error?: ReactNode
   /** Marks the code as required. */
   required?: boolean
-  /** The boxes cannot be used; give `disabledReason` so the user sees why. */
-  disabled?: boolean
-  disabledReason?: ReactNode
+  /**
+   * The code is shown but cannot be changed: the boxes in the read-only look of every field,
+   * focusable, no hint (P5.93; there is no disabled state).
+   */
+  readOnly?: boolean
   /** The form field name: the code is submitted as one value. */
   name?: string
   /** Puts the focus in the first box when shown. */
@@ -82,17 +84,12 @@ export function CodeInput(props: CodeInputProps) {
   const [inner, setInner] = useState(props.defaultValue ?? '')
   const boxes = codeBoxes(props.value ?? inner, length)
   const refs = useRef<(HTMLInputElement | null)[]>([])
-  const disabled = props.disabled === true
+  const readOnly = props.readOnly === true
   const hasError = props.error !== undefined && props.error !== null && props.error !== false
-  const hasDescription = props.description !== undefined && props.description !== null
-  const showReason = disabled && !hasError && props.disabledReason !== undefined
+  const hasDescription = !readOnly && props.description !== undefined && props.description !== null
   const labelId = `${id}-label`
   const describedBy =
-    [
-      hasDescription ? `${id}-description` : null,
-      hasError ? `${id}-error` : null,
-      showReason ? `${id}-reason` : null,
-    ]
+    [hasDescription ? `${id}-description` : null, hasError ? `${id}-error` : null]
       .filter((part) => part !== null)
       .join(' ') || undefined
 
@@ -114,6 +111,7 @@ export function CodeInput(props: CodeInputProps) {
     if (codeComplete(next)) props.onComplete?.(next.join(''))
   }
   const enter = (index: number, text: string) => {
+    if (readOnly) return
     const { boxes: next, focus } = fillCode(boxes, index, text, kind)
     if (next.join('\u0000') === boxes.join('\u0000')) {
       focusBox(index)
@@ -122,6 +120,7 @@ export function CodeInput(props: CodeInputProps) {
     commit(next, focus)
   }
   const onKeyDown = (event: KeyboardEvent<HTMLInputElement>, index: number) => {
+    if (readOnly && (event.key === 'Backspace' || event.key === 'Delete')) return
     if (event.key === 'Backspace') {
       event.preventDefault()
       const { boxes: next, focus } = eraseCode(boxes, index)
@@ -146,7 +145,7 @@ export function CodeInput(props: CodeInputProps) {
     <div
       data-slot="code-input"
       data-invalid={hasError || undefined}
-      data-disabled={disabled || undefined}
+      data-readonly={readOnly || undefined}
       className={cn('flex min-w-0 flex-col font-sans', props.className)}
     >
       <span id={labelId} className={cn('text-sm font-semibold text-primary', TEXT_DIRECTION)}>
@@ -183,7 +182,7 @@ export function CodeInput(props: CodeInputProps) {
             aria-describedby={describedBy}
             aria-invalid={hasError || undefined}
             aria-required={props.required === true || undefined}
-            disabled={disabled}
+            readOnly={readOnly}
             value={box}
             onFocus={(event) => {
               event.currentTarget.select()
@@ -203,12 +202,16 @@ export function CodeInput(props: CodeInputProps) {
                 box !== '' && text.length === box.length + 1 ? text.replace(box, '') : text
               enter(index, typed)
             }}
-            className={cn(INPUT, 'h-11 w-10 shrink-0 px-0 text-center text-md tabular-nums')}
+            className={cn(
+              INPUT,
+              'h-11 w-10 shrink-0 px-0 text-center text-md tabular-nums',
+              readOnly && READ_ONLY,
+            )}
           />
         ))}
       </div>
       {props.name !== undefined && <input type="hidden" name={props.name} value={boxes.join('')} />}
-      {(hasDescription || hasError || showReason) && (
+      {(hasDescription || hasError) && (
         <div className="mt-[5px] flex min-w-0 flex-col gap-1">
           {hasDescription && (
             <p
@@ -221,11 +224,6 @@ export function CodeInput(props: CodeInputProps) {
           {hasError && (
             <FieldMessage id={`${id}-error`} tone="error">
               {props.error}
-            </FieldMessage>
-          )}
-          {showReason && (
-            <FieldMessage id={`${id}-reason`} tone="hint">
-              {props.disabledReason}
             </FieldMessage>
           )}
         </div>

@@ -1,4 +1,13 @@
-import type { ReactElement, ReactNode } from 'react'
+import {
+  createContext,
+  useContext,
+  useRef,
+  useState,
+  type FocusEvent,
+  type ReactElement,
+  type ReactNode,
+} from 'react'
+import { Slot } from 'radix-ui'
 import { Popover as PopoverRoot, PopoverContent, PopoverTrigger } from '../primitives/popover'
 import {
   Tooltip as TooltipRoot,
@@ -77,16 +86,123 @@ export function physicalSide(
 
 /**
  * A short hint on hover and keyboard focus, after 300ms. It adds a description to its target
- * (aria-describedby); anything the user needs to act must also be visible without it.
+ * (aria-describedby); anything the user needs to act must also be visible without it. Every hover
+ * hint of the library is this one, never the browser's `title` (P5.93 item 7).
  */
-export function Tooltip({ label, children, side = 'top', defaultOpen }: TooltipProps) {
+export function Tooltip({
+  label,
+  children,
+  side = 'top',
+  defaultOpen,
+  ...trigger
+}: TooltipProps & Record<string, unknown>) {
   const { direction } = useLiro()
+  const [open, setOpen] = useState(defaultOpen === true)
+  const focusing = useRef(false)
+  const onFocus = trigger.onFocus as ((event: FocusEvent<HTMLElement>) => void) | undefined
+  // Props from an outer trigger (a menu's or a dialog's, asChild) pass on to the target, so a
+  // tooltip can stand between a trigger and its button (P5.93 item 7). A focus opens the tooltip
+  // only when a key moved it there (FOCUS_KEYS): a dialog that focuses its close button as it
+  // opens, after a click or a Space, or a menu that gives the focus back to its button, shows none.
   return (
     <TooltipProvider>
-      <TooltipRoot {...(defaultOpen === undefined ? {} : { defaultOpen })}>
-        <TooltipTrigger asChild>{children}</TooltipTrigger>
+      <TooltipRoot
+        open={open}
+        onOpenChange={(next) => {
+          if (next && focusing.current && lastInput !== 'keyboard') return
+          setOpen(next)
+        }}
+      >
+        <InTooltip value={true}>
+          <TooltipTrigger
+            asChild
+            {...trigger}
+            onFocus={(event: FocusEvent<HTMLElement>) => {
+              onFocus?.(event)
+              focusing.current = true
+              queueMicrotask(() => {
+                focusing.current = false
+              })
+            }}
+          >
+            {children}
+          </TooltipTrigger>
+        </InTooltip>
         <TooltipContent side={physicalSide(side, direction)}>{label}</TooltipContent>
       </TooltipRoot>
     </TooltipProvider>
+  )
+}
+
+/**
+ * True inside a tooltip's target: an IconButton given its own Tooltip by the application draws
+ * no second one of its own (P5.93 item 7). Internal.
+ */
+const InTooltip = createContext(false)
+
+/** Whether a target already has an application's tooltip around it. Internal. */
+export function useInTooltip(): boolean {
+  return useContext(InTooltip)
+}
+
+/**
+ * The keys that move the focus themselves: Tab and the arrows, Home, End and the page keys of a
+ * roving group. A focus after any other key (Space or Enter opening a dialog that focuses its
+ * close button, Escape giving the focus back to a menu's button) was given by a script.
+ */
+export const FOCUS_KEYS: ReadonlySet<string> = new Set([
+  'Tab',
+  'ArrowUp',
+  'ArrowDown',
+  'ArrowLeft',
+  'ArrowRight',
+  'Home',
+  'End',
+  'PageUp',
+  'PageDown',
+])
+
+/**
+ * How the user last acted: a focus opens a tooltip only after a key that moves the focus (P5.93
+ * item 7), so a tooltip never stands open over a dialog's close button and takes its Escape.
+ */
+let lastInput: 'none' | 'keyboard' | 'other' | 'pointer' = 'none'
+if (typeof document !== 'undefined') {
+  document.addEventListener(
+    'keydown',
+    (event) => {
+      lastInput = FOCUS_KEYS.has(event.key) ? 'keyboard' : 'other'
+    },
+    true,
+  )
+  document.addEventListener(
+    'pointerdown',
+    () => {
+      lastInput = 'pointer'
+    },
+    true,
+  )
+}
+
+/**
+ * The library's tooltip on a target when there is a hint, the target alone when there is none
+ * (P5.93 item 7: where the browser's `title` was set only sometimes). Props from an outer trigger
+ * pass on to the target either way. Internal: not exported from the package.
+ */
+export function HintedTarget({
+  hint,
+  children,
+  ...trigger
+}: {
+  hint: ReactNode | undefined
+  children: ReactElement
+} & Record<string, unknown>) {
+  if (hint === undefined || hint === null || hint === '') {
+    return <Slot.Root {...trigger}>{children}</Slot.Root>
+  }
+  return (
+    <Tooltip label={hint} {...trigger}>
+      {children}
+    </Tooltip>
   )
 }

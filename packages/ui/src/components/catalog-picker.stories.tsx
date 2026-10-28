@@ -256,6 +256,20 @@ export const Several: Story = {
       'The big service already includes the small one.',
     )
     await expect(dialog.getByRole('button', { name: 'Choose 2' })).toBeVisible()
+    // One footer, opaque, under the cards: they scroll in their own region above it (P5.93).
+    const footer = document.body.querySelector<HTMLElement>(
+      '[data-slot="catalog-picker"] [data-slot="dialog-footer"]',
+    )
+    const lists = document.body.querySelector<HTMLElement>('[data-slot="catalog-lists"]')
+    if (footer === null || lists === null) throw new Error('no footer or lists')
+    const probe = document.createElement('i')
+    document.body.append(probe)
+    const transparent = getComputedStyle(probe).backgroundColor
+    probe.remove()
+    await expect(getComputedStyle(footer).backgroundColor).not.toBe(transparent)
+    await expect(lists.getBoundingClientRect().bottom).toBeLessThanOrEqual(
+      footer.getBoundingClientRect().top + 1,
+    )
   },
 }
 
@@ -381,6 +395,15 @@ export const Phone: Story = {
       </ExampleProvider>
     </PhoneFrame>
   ),
+  // One column of cards, the price under the name; no Cancel — the X closes it (P5.93).
+  play: async ({ canvasElement }) => {
+    await settle()
+    const dialog = await picker(canvasElement)
+    for (const list of dialog.getAllByRole('listbox')) {
+      await expect(getComputedStyle(list).gridTemplateColumns.split(' ')).toHaveLength(1)
+    }
+    await expect(dialog.queryByRole('button', { name: 'Cancel' })).toBeNull()
+  },
 }
 
 export const PhoneLevel: Story = {

@@ -120,10 +120,10 @@ export const WithError: Story = {
   },
 }
 
-/** Paused after too many attempts: the reason under the field. */
-export const Disabled: Story = {
-  name: 'Disabled with reason',
-  args: { disabled: true, disabledReason: 'Too many attempts. Try again at 11:05.' },
+/** Read only (P5.93): the read-only look of every field, without the show / hide toggle. */
+export const ReadOnly: Story = {
+  name: 'Read only',
+  args: { readOnly: true, defaultValue: 'kvadrat-2026' },
 }
 
 /** Long label, description and error wrap. */

@@ -226,17 +226,21 @@ export const CountLimitInteraction: Story = {
   },
 }
 
-/** Disabled, with its reason visible. */
-export const Disabled: Story = {
-  name: 'Disabled with reason',
+/**
+ * Files cannot be added now (P5.93): the zone grey, "Choose files" unavailable but focusable, the
+ * reason in words under the zone.
+ */
+export const Unavailable: Story = {
+  name: 'Unavailable with reason',
   args: {
-    disabled: true,
-    disabledReason: 'The invoice is issued: attachments can no longer be added.',
+    unavailableReason: 'The invoice is issued: attachments can no longer be added.',
   },
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('button', { name: 'Choose files' })).toBeDisabled()
+    const choose = canvas.getByRole('button', { name: 'Choose files' })
+    await expect(choose).toHaveAttribute('aria-disabled', 'true')
+    await expect(choose).toHaveAccessibleDescription(/can no longer be added/)
     await expect(canvas.getByText(/can no longer be added/)).toBeVisible()
   },
 }

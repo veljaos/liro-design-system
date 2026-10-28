@@ -25,8 +25,9 @@ const meta = {
           '**What for:** change over time — cash, a rate, a price. 2px lines; a missing value is ' +
           'a gap, never 0.\n\n' +
           '**How:** `categories` (time, oldest first), `series`, `values` as decimal strings; ' +
-          '`curve` (`monotone` by default, `linear`, `step`), `dots`, `labels`; `controls` for an ' +
-          'interactive header. Import from `@veljaos/ui/charts`.\n\n' +
+          '`curve` (`monotone` by default, `linear`, `step`), `dots`, `labels`; `toggle` (a ' +
+          'ChartSeriesToggle) for the key figures as toggle buttons, `controls` for a period ' +
+          'select. Import from `@veljaos/ui/charts`.\n\n' +
           '**When not:** a volume that adds up (AreaChart, stacked); categories that are not time ' +
           '(BarChart).',
       },

@@ -1,7 +1,7 @@
 import { defineConfig } from 'tsup'
 
 // Outputs (BUILD-PLAN Appendix B.10): dist/index.js, dist/form.js, dist/charts.js, dist/rich-text.js
-// (P5.22), dist/diagram.js (P5.26), dist/gantt.js (P5.37), dist/map.js (P5.41), dist/pivot.js (P5.77) and their .d.ts, and shared chunks; dist/LICENSE and dist/THIRD-PARTY-NOTICES.md come from
+// (P5.22), dist/diagram.js (P5.26), dist/gantt.js (P5.37), dist/map.js (P5.41), dist/pivot.js (P5.77), dist/code.js (P5.93) and their .d.ts, and shared chunks; dist/LICENSE and dist/THIRD-PARTY-NOTICES.md come from
 // scripts/copy-legal.mjs. dist/styles.css comes from the Tailwind CLI.
 export default defineConfig({
   entry: {
@@ -13,6 +13,7 @@ export default defineConfig({
     gantt: 'src/gantt/index.ts',
     map: 'src/map/index.ts',
     pivot: 'src/pivot/index.ts',
+    code: 'src/code/index.ts',
   },
   format: ['esm'],
   // tsup 8.5.1 sets `baseUrl` for its declaration build, which TypeScript 6 reports as deprecated.

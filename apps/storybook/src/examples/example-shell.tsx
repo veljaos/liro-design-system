@@ -292,7 +292,7 @@ export const TONES = {
   Blocked: 'danger',
   Up: 'success',
   Down: 'danger',
-  'In maintenance': 'neutral',
+  Maintenance: 'neutral',
   'No report': 'neutral',
   Revoked: 'neutral',
   'Expires soon': 'warning',

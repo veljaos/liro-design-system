@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { expect, userEvent, waitFor, within } from 'storybook/test'
+import { expect, fireEvent, userEvent, waitFor, within } from 'storybook/test'
 import { Bot, CreditCard } from 'lucide-react'
 import { Banner } from '../components/alert'
 import { AgentQuestion } from '../components/agent-question'
@@ -807,6 +807,64 @@ export const PhoneScrollingTabs: Story = {
     await settle()
     const tabs = within(canvasElement).getByRole('navigation', { name: 'Module' })
     await expect(tabs).toHaveAttribute('data-fade')
+    // The faded end carries a chevron: the row visibly goes on (P5.93 item 9).
+    await expect(tabs.parentElement?.querySelector('[data-tab-row-edge="end"]')).not.toBeNull()
+  },
+}
+
+/**
+ * The module tabs on a phone visibly scroll (P5.93 item 9): the end fades with a chevron over it;
+ * a mouse wheel moves the row sideways, the chevrons page it, and the current module's tab is
+ * scrolled into view when the row is drawn.
+ */
+export const PhoneScrollingTabsInteraction: Story = {
+  name: 'Phone, module tabs scroll by wheel and chevrons, interaction',
+  tags: ['interaction', '!dev'],
+  render: (args) => (
+    <PhoneFrame>
+      <ExampleProvider>
+        <AppShell {...args} layout="phone" children={<SamplePage phone />} />
+      </ExampleProvider>
+    </PhoneFrame>
+  ),
+  args: {
+    breadcrumbs: [],
+    moduleTabs: SALES_TABS.map((tab) => ({ ...tab, current: tab.key === 'customers' })),
+  },
+  play: async ({ canvasElement }) => {
+    await settle()
+    const nav = within(canvasElement).getByRole('navigation', { name: 'Module' })
+    const box = nav.parentElement
+    if (box === null) throw new Error('no tab row box')
+    // The current module stands in view, clear of the fades.
+    const current = within(nav).getByRole('link', { name: 'Customers' })
+    const row = nav.getBoundingClientRect()
+    const tab = current.getBoundingClientRect()
+    await expect(tab.left).toBeGreaterThanOrEqual(row.left)
+    await expect(tab.right).toBeLessThanOrEqual(row.right)
+    // A chevron over each faded edge with tabs past it.
+    await expect(nav).toHaveAttribute('data-fade')
+    // The wheel moves the row to its end; the end's chevron goes, the start's stays.
+    await fireEvent.wheel(nav, { deltaY: 600 })
+    await waitFor(async () => {
+      // scrollLeft runs negative in right-to-left: its size from the start counts.
+      await expect(
+        nav.scrollWidth - nav.clientWidth - Math.abs(nav.scrollLeft),
+      ).toBeLessThanOrEqual(1)
+    })
+    await waitFor(async () => {
+      await expect(box.querySelector('[data-tab-row-edge="end"]')).toBeNull()
+    })
+    const start = box.querySelector<HTMLElement>('[data-tab-row-edge="start"]')
+    if (start === null) throw new Error('no start chevron')
+    // The start's chevron pages the row back to the start.
+    await userEvent.click(start)
+    await waitFor(async () => {
+      await expect(Math.abs(nav.scrollLeft)).toBeLessThanOrEqual(1)
+    })
+    await waitFor(async () => {
+      await expect(box.querySelector('[data-tab-row-edge="end"]')).not.toBeNull()
+    })
   },
 }
 

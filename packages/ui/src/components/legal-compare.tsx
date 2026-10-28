@@ -75,12 +75,17 @@ function Segments({ segments }: { segments: readonly DiffSegment[] }) {
         segment.kind === 'same' ? (
           <Fragment key={index}>{segment.text}</Fragment>
         ) : segment.kind === 'added' ? (
-          <ins key={index} className={ADDED}>
+          <ins key={index} className={cn(ADDED, segments[index + 1]?.kind === 'removed' && 'me-1')}>
             <span className="sr-only">{`${messages['legal.addedMark']} `}</span>
             {segment.text}
           </ins>
         ) : (
-          <del key={index} className={REMOVED}>
+          <del
+            key={index}
+            // P5.93: a deletion right before an insertion stands apart from it ("60 30", never
+            // "6030"): a visible gap, not a character, so the text read and copied is unchanged.
+            className={cn(REMOVED, segments[index + 1]?.kind === 'added' && 'me-1')}
+          >
             <span className="sr-only">{`${messages['legal.deletedMark']} `}</span>
             {segment.text}
           </del>

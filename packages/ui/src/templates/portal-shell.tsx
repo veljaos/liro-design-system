@@ -4,7 +4,7 @@ import { BrandLockup, type BrandLockupProps } from '../components/brand-lockup'
 import { MenuItemText, menuIconClass, type MenuEntry } from '../components/dropdown-menu'
 import type { IconComponent } from '../components/intents'
 import { PersonAvatar } from '../components/person'
-import { TAB_ROW_SCROLLER, useTabRow } from '../components/tab-row'
+import { TAB_ROW_BOX, TAB_ROW_SCROLLER, useTabRow } from '../components/tab-row'
 import { usePhone } from '../components/use-phone'
 import { ButtonPrimitive } from '../primitives/button'
 import { FOCUS_RING, TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
@@ -31,8 +31,8 @@ import { useLiro } from '../provider/liro-provider'
  *   medium) and a 14px chevron; on phones the avatar alone (36px). It opens the participant's
  *   menu (neutral, 220px): the name and its detail line ("Parent of Luka Jovanović"), then the
  *   application's entries (profile, language, sign out).
- * - Sections (up to five): on desktop a second header row of tabs, start-aligned (D16: only the
- *   module tabs of AppShell are centred), links with `aria-current="page"` and the 2px brand line
+ * - Sections (up to five): on desktop a second header row of tabs, centred as the AppShell's
+ *   module tabs (P5.93 item 11, D16: they are the portal's top navigation), links with `aria-current="page"` and the 2px brand line
  *   (D17); a section's note ("2 new") as small secondary text after its name. On phones a bottom
  *   navigation bar within thumb reach: one equal cell per section, a 20px icon over the 12px
  *   name, at least 56px high, the current one in text.primary semibold with the 2px brand line
@@ -182,47 +182,52 @@ function ParticipantMenu({
   )
 }
 
-/** Desktop: the sections as a row of tabs under the header's first row, from the start. */
+/** Desktop: the sections as a row of tabs under the header's first row, centred (P5.93). */
 function SectionTabs({ sections }: { sections: readonly PortalSection[] }) {
   const { messages, linkComponent: Link } = useLiro()
   // The tab row rule (P5.90 item 6): faded edges where sections lie past them, the current one
   // kept in view.
   const row = useTabRow(sections.find((section) => section.current === true)?.key)
+  // Centred, as the AppShell's module tabs (P5.93 item 11): the portal's few sections are its
+  // top navigation; a row that does not fit starts at the start and scrolls (justify-center-safe).
   return (
-    <nav
-      {...row}
-      aria-label={messages['portal.sections']}
-      className={cn('-mb-px px-4', TAB_ROW_SCROLLER)}
-    >
-      <ul className="m-0 flex h-10 list-none p-0">
-        {sections.map((section) => (
-          <li key={section.key} className="flex">
-            <Link
-              href={section.href}
-              {...(section.current === true ? { 'aria-current': 'page' } : {})}
-              className={cn(
-                'flex items-center gap-2 rounded-t-md border-0 border-b-2 border-solid border-transparent px-2 font-sans text-sm leading-none whitespace-nowrap text-primary no-underline visited:text-primary hover:border-default hover:bg-surface-hover hover:text-primary active:text-primary',
-                section.current === true && 'border-brand hover:border-brand',
-                FOCUS_RING,
-                'focus-visible:-outline-offset-2',
-              )}
-            >
-              <span className={TEXT_DIRECTION}>{section.label}</span>
-              {section.note !== undefined && (
-                <span
-                  className={cn(
-                    'rounded-full bg-surface-sunken px-1.5 py-0.5 text-xs text-secondary',
-                    TEXT_ISOLATE,
-                  )}
-                >
-                  {section.note}
-                </span>
-              )}
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </nav>
+    <div className={cn('-mb-px', TAB_ROW_BOX)}>
+      <nav
+        {...row.scroller}
+        aria-label={messages['portal.sections']}
+        className={cn('px-4', TAB_ROW_SCROLLER)}
+      >
+        <ul className="m-0 flex h-10 list-none justify-center-safe p-0">
+          {sections.map((section) => (
+            <li key={section.key} className="flex">
+              <Link
+                href={section.href}
+                {...(section.current === true ? { 'aria-current': 'page' } : {})}
+                className={cn(
+                  'flex items-center gap-2 rounded-t-md border-0 border-b-2 border-solid border-transparent px-2 font-sans text-sm leading-none whitespace-nowrap text-primary no-underline visited:text-primary hover:border-default hover:bg-surface-hover hover:text-primary active:text-primary',
+                  section.current === true && 'border-brand hover:border-brand',
+                  FOCUS_RING,
+                  'focus-visible:-outline-offset-2',
+                )}
+              >
+                <span className={TEXT_DIRECTION}>{section.label}</span>
+                {section.note !== undefined && (
+                  <span
+                    className={cn(
+                      'rounded-full bg-surface-sunken px-1.5 py-0.5 text-xs text-secondary',
+                      TEXT_ISOLATE,
+                    )}
+                  >
+                    {section.note}
+                  </span>
+                )}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
+      {row.edges}
+    </div>
   )
 }
 

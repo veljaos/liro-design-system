@@ -464,17 +464,19 @@ export const Sending: Story = {
   },
 }
 
-/** No comments can be written: the reason under the field; the attach tool in the toolbar. */
-export const DisabledWithReason: Story = {
-  name: 'Disabled with reason',
+/**
+ * No comments can be written (P5.93): the field read-only, Send unavailable, the reason under the
+ * field; the attach tool in the toolbar.
+ */
+export const UnavailableWithReason: Story = {
+  name: 'Unavailable with reason',
   render: () => (
     <ExampleProvider>
       <div className="max-w-180">
         <MessageComposer
           label="Comment"
           placeholder="Write a comment"
-          disabled
-          disabledReason="Comments are closed: the invoice was archived on 05.10.2026."
+          unavailableReason="Comments are closed: the invoice was archived on 05.10.2026."
           tools={<CompactIconButton icon={Paperclip} label="Attach a file" disabled />}
           onSend={() => undefined}
         />
@@ -483,7 +485,9 @@ export const DisabledWithReason: Story = {
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('textbox', { name: 'Comment' })).toBeDisabled()
+    const field = canvas.getByRole('textbox', { name: 'Comment' })
+    await expect(field).toHaveAttribute('readonly')
+    await expect(field).toHaveAccessibleDescription(/Comments are closed/)
     await expect(
       canvas.getByText('Comments are closed: the invoice was archived on 05.10.2026.'),
     ).toBeVisible()

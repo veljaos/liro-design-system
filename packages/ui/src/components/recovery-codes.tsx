@@ -181,7 +181,7 @@ export function RecoveryCodes(props: RecoveryCodesProps) {
       <CheckboxField
         label={messages['recovery.saved']}
         checked={saved}
-        disabled={loading}
+        readOnly={loading}
         onChange={setSaved}
       />
       <ButtonPrimitive

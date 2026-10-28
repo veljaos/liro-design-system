@@ -196,12 +196,10 @@ describe('LookupField', () => {
     expect(html).toContain('<input type="hidden" name="customer" value="c1"/>')
   })
 
-  it('reads as text when read-only, and shows the reason when disabled', () => {
+  it('reads as text in the read-only look when read-only', () => {
     expect(field({ readOnly: true })).toContain('readOnly=""')
+    expect(field({ readOnly: true })).toContain('bg-surface-disabled')
     expect(field({ readOnly: true })).not.toContain('role="combobox"')
-    const disabled = field({ disabled: true, disabledReason: 'The document is issued.' })
-    expect(disabled).toContain('disabled=""')
-    expect(disabled).toContain('The document is issued.')
   })
 
   it('shows the error under the field and marks it invalid', () => {

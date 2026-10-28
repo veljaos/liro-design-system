@@ -21,7 +21,13 @@ import {
   useDebouncedCallback,
   type MoveKey,
 } from '../components/combobox-logic'
-import { Field, fieldProps, type FieldBaseProps, type FieldControl } from '../components/field'
+import {
+  Field,
+  fieldProps,
+  READ_ONLY_EMPTY,
+  type FieldBaseProps,
+  type FieldControl,
+} from '../components/field'
 import type { MentionCandidate } from '../components/mention-combobox'
 import { PersonAvatar } from '../components/person'
 import { OPTION, READ_ONLY, TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
@@ -56,14 +62,14 @@ import { IDLE_TOOLBAR, Toolbar, type ToolbarState } from './toolbar'
 /*
  * RichTextField (P5.22): formatted text — a letter template, a note, a comment — on Tiptap's MIT
  * packages only (no Pro or paid extension). A Field (label, description, error under it, required
- * mark, read-only as RichText, disabled with its reason) around a framed editor: the formatting
+ * mark, read-only as RichText in the read-only look of every field, P5.93) around a framed editor: the formatting
  * toolbar on top (toolbar.tsx), the text under it, the counter under the frame when `maxLength` is
  * set.
  *
  * - **The text box** is a contenteditable `role="textbox"` with `aria-multiline`, named by the
  *   label and described by the description, error, reason and counter. Its frame looks like an
  *   input's: border.control, radius md, the focus colour while anything inside has the focus, the
- *   danger colour when invalid, surface.disabled when disabled. Each paragraph takes its direction
+ *   danger colour when invalid. Each paragraph takes its direction
  *   from its text (`dir="auto"`).
  * - **Shortcuts:** Ctrl/Cmd+B, I, U (bold, italic, underline), K (the link dialog), Z / Shift+Z
  *   (undo, redo); Tiptap's own Ctrl/Cmd+Alt+2 / 3 (heading, subheading), Ctrl/Cmd+Shift+8 / 7
@@ -256,10 +262,11 @@ function joinIds(...ids: (string | undefined)[]): string | undefined {
  * plain text use TextAreaField, for a chat message MessageComposer.
  */
 export function RichTextField({ ref, ...props }: RichTextFieldProps) {
+  const { messages } = useLiro()
   const generated = useId()
   const id = props.id ?? `rich-${generated}`
-  // The counter (not drawn when read-only) describes the text box, with the description, error and
-  // reason.
+  // The counter (not drawn when read-only) describes the text box, with the description and the
+  // error.
   const counterId =
     props.maxLength === undefined || props.readOnly === true ? undefined : `${id}-count`
   const frame: RichTextFieldProps = { ...props, id }
@@ -278,10 +285,16 @@ export function RichTextField({ ref, ...props }: RichTextFieldProps) {
             aria-describedby={control.describedBy}
             className={cn('rounded-md border border-solid px-3 py-2', READ_ONLY)}
           >
-            <RichText
-              value={props.value ?? props.defaultValue ?? null}
-              {...(props.mergeFields === undefined ? {} : { mergeFields: props.mergeFields })}
-            />
+            {/* A group has no read-only state of its own: said once, for assistive technology. */}
+            <span className="sr-only">{messages['field.readOnly']}</span>
+            {isRichTextEmpty(props.value ?? props.defaultValue ?? null) ? (
+              <span className="text-sm text-secondary">{READ_ONLY_EMPTY}</span>
+            ) : (
+              <RichText
+                value={props.value ?? props.defaultValue ?? null}
+                {...(props.mergeFields === undefined ? {} : { mergeFields: props.mergeFields })}
+              />
+            )}
           </div>
         ) : (
           <RichTextEditor {...props} handleRef={ref} control={control} counterId={counterId} />
@@ -339,7 +352,6 @@ function RichTextEditor({
 }) {
   const { messages, locale, format, today } = useLiro()
   const { control } = props
-  const disabled = control.disabled
   const loading = props.loading === true
   const mergeFields = props.mergeFields ?? []
   const listId = `${control.id}-suggestions`
@@ -393,7 +405,7 @@ function RichTextEditor({
     extensions,
     editorProps,
     content: initial,
-    editable: !disabled && !loading,
+    editable: !loading,
     // The editor is made after the first render, so a server and the browser draw the same.
     immediatelyRender: false,
     // The look is ours (classes on the text), and no <style> element is added to the page.
@@ -464,7 +476,7 @@ function RichTextEditor({
     (suggestion.kind === 'mergeField'
       ? mergeFields.length > 0
       : props.mentionCandidates !== undefined)
-  const open = offered && suggestion.from !== dismissed && !disabled
+  const open = offered && suggestion.from !== dismissed
   const searching = suggestion?.kind === 'mention' && props.mentionsLoading === true
   const showEmpty = open && options.length === 0 && !searching
   const visible = open && (options.length > 0 || searching || showEmpty)
@@ -533,16 +545,12 @@ function RichTextEditor({
       RICH_CONTENT,
       'min-h-(--rich-min-height) px-3 py-2 whitespace-pre-wrap outline-none [font-variant-ligatures:none]',
       '[&_img.ProseMirror-separator]:m-0 [&_img.ProseMirror-separator]:inline [&_img.ProseMirror-separator]:border-0',
-      // Disabled: every text in the disabled colour, the pills and links too.
-      disabled &&
-        'cursor-not-allowed text-disabled [&_[data-merge-field]]:text-disabled [&_[data-mention]]:text-disabled [&_a]:text-disabled',
     ),
   }
   const describedBy = joinIds(control.describedBy, missingKeys.length > 0 ? missingId : undefined)
   if (describedBy !== undefined) attributes['aria-describedby'] = describedBy
   if (invalid) attributes['aria-invalid'] = 'true'
   if (control.required) attributes['aria-required'] = 'true'
-  if (disabled) attributes['aria-disabled'] = 'true'
   if (props.placeholder !== undefined) attributes['aria-placeholder'] = props.placeholder
   if (autocomplete) attributes['aria-autocomplete'] = 'list'
   if (listShown) {
@@ -558,7 +566,7 @@ function RichTextEditor({
       missingOf: (key) => merge !== null && mergeFieldText(key, merge) === null,
       missingNameOf: (label) => messages['richText.mergeFieldMissing'](label),
       openLink: () => {
-        if (editor === null || disabled || loading) return
+        if (editor === null || loading) return
         const href: unknown = editor.getAttributes('link').href
         setLinkCurrent(typeof href === 'string' ? href : null)
         setLinkOpen(true)
@@ -600,8 +608,8 @@ function RichTextEditor({
   }, [editor, attributesKey])
 
   useEffect(() => {
-    if (editor !== null && !editor.isDestroyed) editor.setEditable(!disabled && !loading, false)
-  }, [editor, disabled, loading])
+    if (editor !== null && !editor.isDestroyed) editor.setEditable(!loading, false)
+  }, [editor, loading])
 
   // A controlled value set by the application (not the one this field just reported).
   useEffect(() => {
@@ -721,20 +729,16 @@ function RichTextEditor({
         data-slot="rich-text-field"
         className={cn(
           'overflow-hidden rounded-md border border-solid font-sans transition-colors duration-(--liro-duration-fast) ease-standard',
-          disabled
-            ? 'border-default bg-surface-disabled'
-            : cn(
-                'border-control',
-                props.surface === 'sunken' ? 'bg-surface-sunken' : 'bg-surface-raised',
-                invalid ? 'border-status-danger-fg' : 'focus-within:border-focus',
-              ),
+          'border-control',
+          props.surface === 'sunken' ? 'bg-surface-sunken' : 'bg-surface-raised',
+          invalid ? 'border-status-danger-fg' : 'focus-within:border-focus',
         )}
       >
         <Toolbar
           editor={editor}
           state={toolbar}
           controls={loading ? undefined : control.id}
-          disabled={disabled || loading}
+          disabled={loading}
           mergeFields={mergeFields}
           onLink={() => {
             live.value.openLink()
@@ -743,37 +747,33 @@ function RichTextEditor({
             editor?.chain().focus().insertContent(mergeNode(key)).run()
           }}
         />
-        {disabled ? (
-          textArea
-        ) : (
-          <ComboboxPopover
-            open={visible}
-            onOpenChange={(next) => {
-              if (!next && suggestion !== null) setDismissed(suggestion.from)
-            }}
-            onOptionHover={setActive}
-            onOptionClick={choose}
-            anchor={textArea}
-          >
-            {listContent}
-            {searching && (
-              <p
-                role="status"
-                className={cn('m-0 px-2.5 py-1.5 text-center text-sm text-secondary', TEXT_ISOLATE)}
-              >
-                {messages['field.loading']}
-              </p>
-            )}
-            {showEmpty && (
-              <p
-                role="status"
-                className={cn('m-0 px-2.5 py-1.5 text-center text-sm text-secondary', TEXT_ISOLATE)}
-              >
-                {messages['field.noResults']}
-              </p>
-            )}
-          </ComboboxPopover>
-        )}
+        <ComboboxPopover
+          open={visible}
+          onOpenChange={(next) => {
+            if (!next && suggestion !== null) setDismissed(suggestion.from)
+          }}
+          onOptionHover={setActive}
+          onOptionClick={choose}
+          anchor={textArea}
+        >
+          {listContent}
+          {searching && (
+            <p
+              role="status"
+              className={cn('m-0 px-2.5 py-1.5 text-center text-sm text-secondary', TEXT_ISOLATE)}
+            >
+              {messages['field.loading']}
+            </p>
+          )}
+          {showEmpty && (
+            <p
+              role="status"
+              className={cn('m-0 px-2.5 py-1.5 text-center text-sm text-secondary', TEXT_ISOLATE)}
+            >
+              {messages['field.noResults']}
+            </p>
+          )}
+        </ComboboxPopover>
       </div>
       {missingKeys.length > 0 && (
         <p

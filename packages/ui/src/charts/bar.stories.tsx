@@ -30,7 +30,9 @@ const meta = {
           'the data.\n\n' +
           '**How:** `categories`, `series`, `values` as decimal strings; `orientation`, `stack`, ' +
           '`labels` (`end`, `inside`), `activeCategory`, `signTones` for profit and loss, ' +
-          '`colorBy="category"` with the categorical palette. Import from `@veljaos/ui/charts`.\n\n' +
+          '`colorBy="category"` with the categorical palette; `toggle` (a ChartSeriesToggle) for the ' +
+          'interactive header — the key figures as toggle buttons at its end, a line between ' +
+          'each, under the title on phones. Import from `@veljaos/ui/charts`.\n\n' +
           '**When not:** a trend over many points in time (LineChart, AreaChart); parts of a whole ' +
           '(PieChart, five parts or fewer).',
       },
@@ -134,7 +136,7 @@ function Interactive({
       series={[chosen]}
       values={DAILY.values}
       decimals={2}
-      controls={
+      toggle={
         <ChartSeriesToggle
           label="Store shown"
           value={[store]}
@@ -165,9 +167,10 @@ export const InteractiveStory: Story = {
   ),
   play: async ({ canvasElement }) => {
     await settle()
-    await expect(
-      within(canvasElement).getByRole('button', { name: /Novi Sad store/ }),
-    ).toHaveAttribute('aria-pressed', 'true')
+    const chosen = within(canvasElement).getByRole('button', { name: /Novi Sad store/ })
+    await expect(chosen).toHaveAttribute('aria-pressed', 'true')
+    // The key figures stand in the header band, ruled off from the plot (P5.93 item 42).
+    await expect(chosen.closest('[data-slot="chart-header"]')).not.toBeNull()
   },
 }
 

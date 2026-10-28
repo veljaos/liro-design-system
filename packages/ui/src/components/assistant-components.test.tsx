@@ -45,8 +45,9 @@ describe('AssistantAnswer', () => {
     expect(html).toContain('<tfoot')
     expect(html).toContain('href="#/f-1"')
     expect(html).toContain('data-testid="chart"')
-    expect(html).toContain('Sources')
-    expect(html).toContain('href="#/sales"')
+    // The sources are one line "Used 1 record" that opens into the links (P5.93).
+    expect(html).toContain('Used 1 record')
+    expect(html).toContain('aria-expanded="false"')
   })
 
   it('draws a table as cards in the panel', () => {
@@ -212,7 +213,8 @@ describe('reading', () => {
     )
     expect(html).toContain('aria-label="Latest"')
     expect(html).toContain('col-span-full')
-    expect(html).toContain('Jelena · ')
+    expect(html).toContain('Jelena</span> · ')
+    expect(html).toContain('Read article')
     expect(html).toContain('6 min read')
     expect(html).toContain('Guides')
     expect(render(<ArticleList label="Latest" articles={[]} />)).toContain('Nothing matches')
@@ -226,7 +228,7 @@ describe('reading', () => {
     expect(form).toContain('type="email"')
     expect(form).toContain('We never share it.')
     const thanks = render(<NewsletterSignup title="News" subscribed onSubscribe={noop} />)
-    expect(thanks).toContain('Thank you. Check your inbox to confirm.')
+    expect(thanks).toContain('Thank you — check your inbox to confirm.')
     const share = render(
       <ShareLinks
         url="https://example.com/a"

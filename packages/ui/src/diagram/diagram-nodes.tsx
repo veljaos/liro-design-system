@@ -70,6 +70,13 @@ export interface DiagramRunStep {
   note?: string
   /** Why it failed or was skipped ("The bank's server did not answer."). */
   reason?: string
+  /**
+   * The step's log or the response it got (secrets already masked by the application), shown on
+   * request under the reason in a small CodeBlock (P5.93).
+   */
+  log?: string
+  /** The log's language for CodeBlock ("json", "xml", "ansi" for terminal output). */
+  logLanguage?: string
   /** What the user may do now, the main action last (Skip, Retry). */
   actions?: readonly DiagramStepAction[]
 }

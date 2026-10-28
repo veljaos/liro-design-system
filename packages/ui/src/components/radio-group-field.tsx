@@ -2,7 +2,6 @@ import type { ReactNode } from 'react'
 import { cn } from '../primitives/cn'
 import { TEXT_DIRECTION } from '../primitives/classes'
 import { RadioGroup, RadioGroupItem } from '../primitives/radio-group'
-import { useLiro } from '../provider/liro-provider'
 import { Field, fieldProps, type FieldBaseProps } from './field'
 
 /** One choice of a RadioGroupField. */
@@ -32,10 +31,11 @@ export interface RadioGroupFieldProps extends FieldBaseProps {
  * One choice from a few options that should all be visible (up to about five). The group label
  * names the radio group; each option has its own label (Mantine Radio.Group and InlineInput:
  * 12px between radio and label, 20px label line, 16px between options). Arrow keys follow the
- * direction. Read-only shows the options with the chosen one marked, and nothing can change.
+ * direction. Read-only (P5.93 item 1) draws the options grey with the chosen one marked, still
+ * focusable and read with the group as read-only; nothing can change. An option's `disabled`
+ * is a choice that does not apply, not a state of the field.
  */
 export function RadioGroupField(props: RadioGroupFieldProps) {
-  const { messages } = useLiro()
   const current = props.value ?? props.defaultValue
   return (
     <Field {...fieldProps(props)} group>
@@ -60,23 +60,19 @@ export function RadioGroupField(props: RadioGroupFieldProps) {
             aria-invalid={control.invalid || undefined}
             aria-readonly={control.readOnly || undefined}
             aria-required={control.required || undefined}
-            title={control.readOnly ? messages['field.readOnly'] : undefined}
             required={control.required}
-            disabled={control.disabled}
           >
             {props.options.map((option, index) => {
               const id = `${control.id}-${String(index)}`
-              const disabled = control.disabled || option.disabled === true
+              const disabled = option.disabled === true
               return (
                 <div key={option.value} className="flex items-start">
                   <RadioGroupItem
                     id={id}
                     value={option.value}
                     disabled={disabled}
-                    className={cn(
-                      control.invalid && 'border-status-danger-fg',
-                      control.readOnly && 'cursor-default',
-                    )}
+                    readOnly={control.readOnly}
+                    className={cn(control.invalid && 'border-status-danger-fg')}
                   />
                   <div className="flex min-w-0 flex-col ps-3">
                     <label

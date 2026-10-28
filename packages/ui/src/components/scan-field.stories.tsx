@@ -113,13 +113,10 @@ export const Typed: Story = {
   args: { defaultValue: '38700125', inputMode: 'none' },
 }
 
-/** Disabled, with its reason. */
-export const Disabled: Story = {
-  args: {
-    disabled: true,
-    disabledReason: 'Scan the location first.',
-    onCameraScan: () => undefined,
-  },
+/** Read only (P5.93): the read-only look of every field; no camera, nothing is scanned in. */
+export const ReadOnly: Story = {
+  name: 'Read only',
+  args: { readOnly: true, onCameraScan: () => undefined },
 }
 
 /** The field's own error (the application's). */

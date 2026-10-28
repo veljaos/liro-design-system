@@ -38,11 +38,12 @@ import {
   type UnavailableTime,
 } from './schedule-logic'
 import { SelectField } from './select-field'
-import { NowMarker } from './now-marker'
+import { NowMarker, NowTimeTag, tagCovers } from './now-marker'
 import { SchedulePhoneLists, type SchedulePhoneList } from './schedule-phone-lists'
 import type { Tone } from './status-badge'
 import { STICKY_HEAD, STICKY_START, useStickyHead } from './sticky-head'
 import { usePhone } from './use-phone'
+import { Tooltip } from './popover'
 
 /*
  * ResourceSchedule (BUILD-PLAN P5.8): rows of resources — doctors, rooms, teachers — against the
@@ -55,7 +56,9 @@ import { usePhone } from './use-phone'
  *   the grid scrolls sideways inside its own box; the hours (and days) above stay below the
  *   shell while the page scrolls (P5.28 item 4, `useStickyHead`).
  * - Now (`now`, the application's clock, P5.28 item 10): the time grids' one marker, a neutral
- *   line with a dot (NowMarker), across the rows at the current time, named "Now, 09:40". Rows 56px; bookings that overlap share the row
+ *   line with a dot (NowMarker), across the rows at the current time, named "Now, 09:40", with the
+ *   time written on the line in the hours row (the gutter on phones; P5.93 item 8). Rows 56px;
+ *   bookings that overlap share the row
  *   in lanes. A booking: the tone's colours (neutral by default) with a 3px bar at the start,
  *   its title and its description or time.
  * - Three ways to move a booking (WCAG 2.5.7): drag it (pointer events; a mouse after 4px, a touch
@@ -696,26 +699,26 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
                 bottom: 0,
               }
           return (
-            <div
-              key={index}
-              title={each.reason}
-              className="absolute box-border flex items-start overflow-hidden border-0 border-s border-solid border-default bg-surface-sunken bg-[repeating-linear-gradient(135deg,var(--liro-border-default)_0_1px,transparent_1px_7px)] px-1.5 py-1"
-              style={style}
-            >
-              <span className="sr-only">
-                {messages['schedule.unavailable'](each.reason, timeText)}
-              </span>
-              <span
-                aria-hidden="true"
-                className={cn(
-                  'rounded-xs bg-surface-sunken px-1 text-xs text-secondary',
-                  phone ? 'whitespace-normal' : 'truncate',
-                  TEXT_ISOLATE,
-                )}
+            <Tooltip key={index} label={each.reason}>
+              <div
+                className="absolute box-border flex items-start overflow-hidden border-0 border-s border-solid border-default bg-surface-sunken bg-[repeating-linear-gradient(135deg,var(--liro-border-default)_0_1px,transparent_1px_7px)] px-1.5 py-1"
+                style={style}
               >
-                {each.reason}
-              </span>
-            </div>
+                <span className="sr-only">
+                  {messages['schedule.unavailable'](each.reason, timeText)}
+                </span>
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    'rounded-xs bg-surface-sunken px-1 text-xs text-secondary',
+                    phone ? 'whitespace-normal' : 'truncate',
+                    TEXT_ISOLATE,
+                  )}
+                >
+                  {each.reason}
+                </span>
+              </div>
+            </Tooltip>
           )
         })}
         {placeholder !== null && movingItem !== undefined && (
@@ -769,42 +772,45 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
               style={canMove && !phone ? { ...style, minWidth: MOVABLE_MIN_WIDTH } : style}
             >
               {pressable ? (
-                <button
-                  type="button"
-                  data-booking-button=""
-                  aria-label={label}
-                  title={label}
-                  {...(canMove ? { 'aria-describedby': instructionsId } : {})}
-                  onKeyDown={(event) => {
-                    onBookingKey(event, item)
-                  }}
-                  onKeyUp={(event) => {
-                    // Space picks up and drops: it never also presses the button.
-                    if (event.key === ' ' && canMove) event.preventDefault()
-                  }}
-                  onClick={() => {
-                    if (swallowClick.current || moving !== null) return
-                    props.onSelect?.(item.booking)
-                  }}
-                  onBlur={(event) => {
-                    if (moving?.keys === true && isMoving && event.relatedTarget !== null) {
-                      setMoving(null)
-                      setAnnouncement(messages['schedule.cancelled'](item.booking.title))
-                    }
-                  }}
-                  onPointerDown={(event) => {
-                    startDrag(event, item)
-                  }}
-                  className={cn(
-                    BUTTON_RESET,
-                    look,
-                    FOCUS_RING,
-                    canMove ? 'cursor-grab select-none' : 'cursor-pointer',
-                    isMoving && 'cursor-grabbing',
-                  )}
-                >
-                  {body}
-                </button>
+                <Tooltip label={label}>
+                  <button
+                    type="button"
+                    data-booking-button=""
+                    aria-label={label}
+                    {...(canMove ? { 'aria-describedby': instructionsId } : {})}
+                    onKeyDown={(event) => {
+                      onBookingKey(event, item)
+                    }}
+                    onKeyUp={(event) => {
+                      // Space picks up and drops: it never also presses the button.
+                      if (event.key === ' ' && canMove) event.preventDefault()
+                    }}
+                    onClick={() => {
+                      if (swallowClick.current || moving !== null) return
+                      props.onSelect?.(item.booking)
+                    }}
+                    onBlur={(event) => {
+                      if (moving?.keys === true && isMoving && event.relatedTarget !== null) {
+                        setMoving(null)
+                        setAnnouncement(messages['schedule.cancelled'](item.booking.title))
+                      }
+                    }}
+                    onPointerDown={(event) => {
+                      startDrag(event, item)
+                    }}
+                    className={cn(
+                      BUTTON_RESET,
+                      look,
+                      FOCUS_RING,
+                      // The library's hover: the tone's border drawn in its text colour (P5.93).
+                      'hover:border-current',
+                      canMove ? 'cursor-grab select-none' : 'cursor-pointer',
+                      isMoving && 'cursor-grabbing',
+                    )}
+                  >
+                    {body}
+                  </button>
+                </Tooltip>
               ) : (
                 <div className={look}>
                   <span className="sr-only">{label}</span>
@@ -874,6 +880,7 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
       ? null
       : {
           at: nowPlace,
+          time: format.time(localDateTime(moment.day, moment.minutes)),
           label: messages['schedule.now'](format.time(localDateTime(moment.day, moment.minutes))),
         }
 
@@ -950,14 +957,14 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
               ))}
             {byDay &&
               shownDays.map((day, index) => (
-                <span
-                  key={day}
-                  title={format.dateLong(day)}
-                  className="absolute inset-x-0 flex flex-col items-center gap-0.5 pt-1"
-                  style={{ top: along(index * MINUTES_PER_DAY) }}
-                >
-                  {dayLabel(day)}
-                </span>
+                <Tooltip key={day} label={format.dateLong(day)}>
+                  <span
+                    className="absolute inset-x-0 flex flex-col items-center gap-0.5 pt-1"
+                    style={{ top: along(index * MINUTES_PER_DAY) }}
+                  >
+                    {dayLabel(day)}
+                  </span>
+                </Tooltip>
               ))}
             {hours.map((hour) => (
               <span
@@ -965,12 +972,25 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
                 className={cn(
                   'absolute end-2 text-xs whitespace-nowrap text-tertiary tabular-nums',
                   TEXT_ISOLATE,
+                  // Under the time of "now": out of sight (P5.93 item 8).
+                  nowAt !== null &&
+                    !byDay &&
+                    tagCovers(along(nowAt.at), 10, along(hour.at), along(hour.at) + 20) &&
+                    'invisible',
                 )}
                 style={{ top: along(hour.at) + 2 }}
               >
                 {hour.text}
               </span>
             ))}
+            {/* The time of "now" in the gutter, at the line's height (P5.93 item 8). */}
+            {nowAt !== null && !byDay && (
+              <NowTimeTag
+                orientation="horizontal"
+                time={nowAt.time}
+                style={{ top: along(nowAt.at), insetInlineStart: 0, insetInlineEnd: 0 }}
+              />
+            )}
           </div>
           <div className="relative min-w-0 flex-1 border-0 border-s border-solid border-subtle">
             {/* Before the bookings: they cover its line, never the reverse (P5.90 item 17). */}
@@ -1042,14 +1062,14 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
                 <div className={cn('relative flex-1', byDay ? 'flex' : 'h-7')}>
                   {byDay &&
                     shownDays.map((day) => (
-                      <div
-                        key={day}
-                        title={format.dateLong(day)}
-                        className="box-border flex flex-col items-center gap-0.5 border-0 border-s border-solid border-subtle py-1"
-                        style={{ width: `${String(100 / shownDays.length)}%` }}
-                      >
-                        {dayLabel(day)}
-                      </div>
+                      <Tooltip key={day} label={format.dateLong(day)}>
+                        <div
+                          className="box-border flex flex-col items-center gap-0.5 border-0 border-s border-solid border-subtle py-1"
+                          style={{ width: `${String(100 / shownDays.length)}%` }}
+                        >
+                          {dayLabel(day)}
+                        </div>
+                      </Tooltip>
                     ))}
                   {hours.map((hour) => (
                     <span
@@ -1057,12 +1077,24 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
                       className={cn(
                         'absolute top-1.5 ps-1 text-xs whitespace-nowrap text-tertiary tabular-nums',
                         TEXT_ISOLATE,
+                        // Under the time of "now" (its words take up to half an hour): out of sight.
+                        nowAt !== null &&
+                          tagCovers(nowAt.at, 16, hour.at, hour.at + 30) &&
+                          'invisible',
                       )}
                       style={{ insetInlineStart: `${String(along(hour.at))}%` }}
                     >
                       {hour.text}
                     </span>
                   ))}
+                  {/* The time of "now" in the hours row, on the line (P5.93 item 8). */}
+                  {nowAt !== null && !byDay && (
+                    <NowTimeTag
+                      orientation="vertical"
+                      time={nowAt.time}
+                      style={{ insetInlineStart: `${String(along(nowAt.at))}%` }}
+                    />
+                  )}
                 </div>
               </div>
             </div>
@@ -1172,18 +1204,19 @@ function MoveTo({
       }}
     >
       <PopoverTrigger asChild>
-        <button
-          type="button"
-          aria-label={title}
-          title={title}
-          className={cn(
-            BUTTON_RESET,
-            'absolute end-1 top-1/2 inline-flex size-6 -translate-y-1/2 cursor-pointer items-center justify-center rounded-sm text-current hover:bg-surface-hover',
-            FOCUS_RING,
-          )}
-        >
-          <MoveRight aria-hidden="true" className="size-3.5 rtl:-scale-x-100" />
-        </button>
+        <Tooltip label={title}>
+          <button
+            type="button"
+            aria-label={title}
+            className={cn(
+              BUTTON_RESET,
+              'absolute end-1 top-1/2 inline-flex size-6 -translate-y-1/2 cursor-pointer items-center justify-center rounded-sm text-current hover:bg-surface-hover',
+              FOCUS_RING,
+            )}
+          >
+            <MoveRight aria-hidden="true" className="size-3.5 rtl:-scale-x-100" />
+          </button>
+        </Tooltip>
       </PopoverTrigger>
       <PopoverContent align="end" aria-label={title} className="flex w-72 flex-col gap-3">
         {/* The action, then the booking it moves, bold on its own line (P5.28 item 6). */}

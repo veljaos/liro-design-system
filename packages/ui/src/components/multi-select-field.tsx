@@ -11,7 +11,7 @@ import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 import { ComboboxList, ComboboxPopover, optionId, type ComboboxOption } from './combobox-field'
 import { filterChoices, MOVE_KEYS, moveActive, type MoveKey } from './combobox-logic'
-import { Field, fieldProps, type FieldBaseProps } from './field'
+import { Field, fieldProps, ReadOnlyBox, type FieldBaseProps } from './field'
 
 /*
  * Several choices from a list, shown as pills inside the field (Mantine MultiSelect, PillsInput
@@ -54,7 +54,7 @@ export function toggleValue(values: readonly string[], value: string): string[] 
 
 /**
  * Several choices from a known list, found by typing. Chosen options appear as pills with a
- * remove button; read-only shows the pills without it.
+ * remove button; read-only shows the pills without it, in the read-only look ("—" when none).
  */
 export function MultiSelectField(props: MultiSelectFieldProps) {
   const { messages, locale, format } = useLiro()
@@ -135,20 +135,13 @@ export function MultiSelectField(props: MultiSelectFieldProps) {
 
         if (control.readOnly) {
           return (
-            <div
-              id={control.id}
-              role="list"
-              aria-labelledby={control.labelId}
-              aria-describedby={control.describedBy}
-              title={messages['field.readOnly']}
-              className="flex min-h-control flex-wrap items-center gap-2 px-3 py-[5.5px] font-sans"
+            <ReadOnlyBox
+              control={control}
+              empty={chosen.length === 0}
+              className="flex flex-wrap items-center gap-2"
             >
-              {chosen.map((option) => (
-                <span key={option.value} role="listitem" className="flex">
-                  {pills(false).find((pill) => pill.key === option.value)}
-                </span>
-              ))}
-            </div>
+              {pills(false)}
+            </ReadOnlyBox>
           )
         }
 
@@ -189,8 +182,6 @@ export function MultiSelectField(props: MultiSelectFieldProps) {
                     props.summary === true ? 'flex-nowrap' : 'flex-wrap',
                     control.invalid &&
                       'border-status-danger-fg focus-within:border-status-danger-fg',
-                    control.disabled &&
-                      'cursor-not-allowed border-default bg-surface-disabled text-disabled',
                   )}
                 >
                   {props.summary === true
@@ -202,7 +193,7 @@ export function MultiSelectField(props: MultiSelectFieldProps) {
                           {summaryText}
                         </span>
                       )
-                    : pills(!control.disabled)}
+                    : pills(true)}
                   <input
                     ref={inputRef}
                     id={control.id}
@@ -220,7 +211,6 @@ export function MultiSelectField(props: MultiSelectFieldProps) {
                     }
                     aria-invalid={control.invalid || undefined}
                     aria-required={control.required || undefined}
-                    disabled={control.disabled}
                     autoComplete="off"
                     dir={AUTO_DIRECTION.dir}
                     value={query}
@@ -228,7 +218,7 @@ export function MultiSelectField(props: MultiSelectFieldProps) {
                       ? { placeholder: props.placeholder }
                       : {})}
                     className={cn(
-                      'm-0 h-[1.6em] flex-1 border-0 bg-transparent p-0 font-sans text-sm text-inherit outline-none placeholder:text-tertiary disabled:cursor-not-allowed',
+                      'm-0 h-[1.6em] flex-1 border-0 bg-transparent p-0 font-sans text-sm text-inherit outline-none placeholder:text-tertiary',
                       AUTO_DIRECTION.className,
                       summaryText === null ? 'min-w-25' : 'min-w-4',
                     )}

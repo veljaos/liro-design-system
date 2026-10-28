@@ -114,7 +114,7 @@ describe('IconButton', () => {
   it('is the 36px button without visible text: 8px padding, 16px icon, label as its name', () => {
     const html = renderToStaticMarkup(<IconButton intent="more" label="More actions" />)
     expect(html).toContain('aria-label="More actions"')
-    expect(html).toContain('title="More actions"')
+    expect(html).not.toContain('title=')
     expect(html).not.toContain('<span>')
     expect(html).toContain(' h-control px-2 ')
     expect(html).toContain('size-4 shrink-0')

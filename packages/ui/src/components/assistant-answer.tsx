@@ -16,8 +16,10 @@ import {
   type AnswerTableBlock,
 } from './assistant-logic'
 import { Button } from './button'
+import { CodeBlock } from './code-block'
 import { ReasonConfirmDialog, type ConfirmAnswer, type ConfirmReason } from './confirm-dialog'
 import { Spinner } from './spinner'
+import { Sources } from './trace'
 import { usePhone } from './use-phone'
 
 /*
@@ -34,7 +36,13 @@ import { usePhone } from './use-phone'
  * - **Charts** are a slot (`kind: 'chart'`): the application passes one from
  *   `@veljaos/ui/charts`, which keeps its own title, legend and "Show as table"; the main entry
  *   never loads the charts.
- * - **Sources**: the records the answer came from, a numbered list of links with a detail line.
+ * - **Code** (`kind: 'code'`, P5.93): a query, a payload or a log as a CodeBlock with Copy —
+ *   small in the panel, scrolling inside past 320px (480px on the page); highlighted where the
+ *   application gives `CodeHighlighting` (`@veljaos/ui/code`).
+ * - **Sources** (P5.93): the records the answer came from, one calm line "Used 4 records" that
+ *   opens into the links (Sources), duplicates removed.
+ * - **Work** (`work`, P5.93): how the assistant got there — Reasoning, Task, Plan, Sources … from
+ *   the application — above the blocks; while thinking it takes the place of "Thinking…".
  * - **States**: 'thinking' (a spinner and "Thinking…", a polite status); 'streaming' (the blocks
  *   so far, "Writing…" and Stop — the application renders the text it has; nothing here runs a
  *   timer); 'done'; 'stopped' (the blocks written, "Stopped. The answer may be incomplete." and
@@ -62,6 +70,12 @@ export interface AssistantAnswerProps {
   reason?: ReactNode
   /** The assistant's name over the answer ("Liro Assistant"). */
   author?: ReactNode
+  /**
+   * How the assistant works on the answer, from the application: Reasoning, Task, Plan,
+   * ChainOfThought, Subagent, Queue or Sources rows (P5.93), above the blocks. While thinking they
+   * replace the "Thinking…" line.
+   */
+  work?: ReactNode
   /** The question answered: the subject of the report dialog. */
   question?: ReactNode
   /** Questions to ask next, under a complete answer. */
@@ -253,42 +267,11 @@ function AnswerTable({
   )
 }
 
-function AnswerSources({ block, level }: { block: AnswerSourcesBlock; level: Level }) {
-  const { messages, linkComponent: Link } = useLiro()
-  const titleId = useId()
+/** The records the answer came from: one line "Used 4 records" that opens into the links. */
+function AnswerSources({ block }: { block: AnswerSourcesBlock }) {
   return (
-    <div data-slot="answer-sources" className="flex min-w-0 flex-col gap-1.5">
-      <Heading
-        level={level}
-        className={cn('m-0 text-xs font-medium text-secondary', TEXT_DIRECTION)}
-      >
-        <span id={titleId}>{block.title ?? messages['assistant.sources']}</span>
-      </Heading>
-      <ol
-        aria-labelledby={titleId}
-        className="m-0 flex list-decimal flex-col gap-1 ps-5 text-sm text-secondary"
-      >
-        {block.items.map((item) => (
-          <li key={item.id} className="min-w-0 ps-1">
-            <span className="flex min-w-0 flex-col">
-              <Link
-                href={item.href}
-                className={cn(
-                  // At least 24px high, so two sources in a row are targets of their own.
-                  'inline-flex min-h-6 items-center self-start rounded-sm text-link no-underline hover:underline',
-                  FOCUS_RING,
-                  TEXT_DIRECTION,
-                )}
-              >
-                {item.label}
-              </Link>
-              {item.detail !== undefined && (
-                <span className={cn('text-xs text-tertiary', TEXT_DIRECTION)}>{item.detail}</span>
-              )}
-            </span>
-          </li>
-        ))}
-      </ol>
+    <div data-slot="answer-sources" className="min-w-0">
+      <Sources items={block.items} {...(block.title === undefined ? {} : { title: block.title })} />
     </div>
   )
 }
@@ -358,8 +341,19 @@ function Blocks({
                 {block.chart}
               </div>
             )
+          case 'code':
+            return (
+              <CodeBlock
+                key={key}
+                code={block.code}
+                size={page ? 'md' : 'sm'}
+                maxHeight={page ? 480 : 320}
+                {...(block.language === undefined ? {} : { language: block.language })}
+                {...(block.title === undefined ? {} : { title: block.title })}
+              />
+            )
           case 'sources':
-            return <AnswerSources key={key} block={block} level={level} />
+            return <AnswerSources key={key} block={block} />
           default:
             return null
         }
@@ -404,7 +398,12 @@ export function AssistantAnswer(props: AssistantAnswerProps) {
         )}
         <AgentMark showLabel label={messages['assistant.generated']} />
       </p>
-      {state === 'thinking' && (
+      {props.work !== undefined && (
+        <div data-slot="answer-work" className="flex min-w-0 flex-col gap-0.5">
+          {props.work}
+        </div>
+      )}
+      {state === 'thinking' && props.work === undefined && (
         <Spinner size="sm">
           <span className="text-sm text-secondary">{messages['assistant.thinking']}</span>
         </Spinner>

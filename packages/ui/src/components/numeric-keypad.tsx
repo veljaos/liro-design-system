@@ -1,10 +1,12 @@
 import { Delete } from 'lucide-react'
 import { useId, useState, type KeyboardEvent } from 'react'
 import { buttonClassName, type ButtonLook } from '../primitives/button'
-import { BUTTON_RESET, FOCUS_RING, TEXT_DIRECTION } from '../primitives/classes'
+import { BUTTON_RESET, FOCUS_RING, READ_ONLY, TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
+import { HintedTarget } from './popover'
 import type { Emphasis } from './intents'
+import { READ_ONLY_EMPTY } from './field'
 import {
   decimalSeparator,
   entryFromValue,
@@ -66,8 +68,11 @@ export interface NumericKeypadProps {
   showDisplay?: boolean
   /** Shown in the display while it is empty. Default: zero, written by `format.number`. */
   placeholder?: string
-  /** No key can be pressed. */
-  disabled?: boolean
+  /**
+   * The value is shown but cannot be changed (the register is locked): the display in the
+   * read-only look of every field, no keys (P5.93: there is no disabled keypad).
+   */
+  readOnly?: boolean
   /** Layout classes (width, margins). */
   className?: string
 }
@@ -109,12 +114,12 @@ export function NumericKeypad(props: NumericKeypadProps) {
   const [entry, setEntry] = useKeypadEntry(props)
   const maxDecimals =
     props.maxDecimals ?? (props.currency === undefined ? undefined : format.moneyDecimals)
-  const disabled = props.disabled === true
+  const readOnly = props.readOnly === true
   const hasEnter = props.onEnter !== undefined
   const showDisplay = props.showDisplay ?? true
 
   const press = (key: KeypadKey) => {
-    if (disabled) return
+    if (readOnly) return
     if (key === 'enter') {
       props.onEnter?.(keypadValue(entry))
       return
@@ -194,7 +199,7 @@ export function NumericKeypad(props: NumericKeypadProps) {
           dir="ltr"
           className={cn(
             'flex h-14 items-center gap-2 rounded-md border border-solid border-control bg-surface-raised px-3 focus-within:border-focus',
-            disabled && 'border-default bg-surface-disabled',
+            readOnly && cn(READ_ONLY, 'focus-within:border-default'),
           )}
         >
           {first && currencyText}
@@ -203,72 +208,78 @@ export function NumericKeypad(props: NumericKeypadProps) {
             readOnly
             inputMode="none"
             autoComplete="off"
-            disabled={disabled}
             value={text}
-            placeholder={props.placeholder ?? format.number('0')}
+            placeholder={readOnly ? READ_ONLY_EMPTY : (props.placeholder ?? format.number('0'))}
             onKeyDown={onKeyDown}
-            className="m-0 h-full min-w-0 flex-1 cursor-default border-0 bg-transparent p-0 text-end font-sans text-h3 font-semibold text-primary tabular-nums outline-none placeholder:text-tertiary disabled:text-disabled"
+            className={cn(
+              'm-0 h-full min-w-0 flex-1 cursor-default border-0 bg-transparent p-0 text-end font-sans text-h3 font-semibold text-primary tabular-nums outline-none placeholder:text-tertiary',
+              readOnly &&
+                'cursor-text placeholder:text-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
+            )}
           />
           {!first && currencyText}
         </div>
       )}
-      <div dir="ltr" className="grid grid-cols-3 gap-2">
-        {KEY_ROWS.flat().map((key) =>
-          key === 'decimal' && maxDecimals === 0 ? (
-            <span key={key} aria-hidden="true" />
-          ) : (
-            <button
-              key={key}
-              type="button"
-              disabled={disabled}
-              data-key={key}
-              {...(key === 'backspace' || key === 'decimal'
-                ? { 'aria-label': key === 'decimal' ? messages['keypad.decimal'] : label(key) }
-                : {})}
-              {...(key === 'backspace' ? { title: label(key) } : {})}
-              className={cn(BUTTON_RESET, KEY, FOCUS_RING)}
-              onKeyDown={onKeyDown}
-              onClick={() => {
-                press(key)
-              }}
-            >
-              {key === 'backspace' ? <Delete aria-hidden="true" className="size-6" /> : label(key)}
-            </button>
-          ),
-        )}
-        <button
-          type="button"
-          disabled={disabled}
-          data-key="clear"
-          className={cn(
-            BUTTON_RESET,
-            KEY,
-            FOCUS_RING,
-            'text-md',
-            hasEnter ? 'col-span-1' : 'col-span-3',
+      {!readOnly && (
+        <div dir="ltr" className="grid grid-cols-3 gap-2">
+          {KEY_ROWS.flat().map((key) =>
+            key === 'decimal' && maxDecimals === 0 ? (
+              <span key={key} aria-hidden="true" />
+            ) : (
+              <HintedTarget key={key} hint={key === 'backspace' ? label(key) : undefined}>
+                <button
+                  type="button"
+                  data-key={key}
+                  {...(key === 'backspace' || key === 'decimal'
+                    ? { 'aria-label': key === 'decimal' ? messages['keypad.decimal'] : label(key) }
+                    : {})}
+                  className={cn(BUTTON_RESET, KEY, FOCUS_RING)}
+                  onKeyDown={onKeyDown}
+                  onClick={() => {
+                    press(key)
+                  }}
+                >
+                  {key === 'backspace' ? (
+                    <Delete aria-hidden="true" className="size-6" />
+                  ) : (
+                    label(key)
+                  )}
+                </button>
+              </HintedTarget>
+            ),
           )}
-          onKeyDown={onKeyDown}
-          onClick={() => {
-            press('clear')
-          }}
-        >
-          <span className={TEXT_DIRECTION}>{label('clear')}</span>
-        </button>
-        {hasEnter && (
           <button
             type="button"
-            disabled={disabled}
-            data-key="enter"
-            className={cn(buttonClassName(enterLook), 'col-span-2 h-14 text-md')}
+            data-key="clear"
+            className={cn(
+              BUTTON_RESET,
+              KEY,
+              FOCUS_RING,
+              'text-md',
+              hasEnter ? 'col-span-1' : 'col-span-3',
+            )}
             onKeyDown={onKeyDown}
             onClick={() => {
-              press('enter')
+              press('clear')
             }}
           >
-            <span className={TEXT_DIRECTION}>{label('enter')}</span>
+            <span className={TEXT_DIRECTION}>{label('clear')}</span>
           </button>
-        )}
-      </div>
+          {hasEnter && (
+            <button
+              type="button"
+              data-key="enter"
+              className={cn(buttonClassName(enterLook), 'col-span-2 h-14 text-md')}
+              onKeyDown={onKeyDown}
+              onClick={() => {
+                press('enter')
+              }}
+            >
+              <span className={TEXT_DIRECTION}>{label('enter')}</span>
+            </button>
+          )}
+        </div>
+      )}
     </div>
   )
 }

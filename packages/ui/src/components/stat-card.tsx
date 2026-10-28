@@ -11,8 +11,8 @@ import { Skeleton } from '../primitives/skeleton'
  *   with an arrow (ArrowUpRight or ArrowDownRight, 14px) beside its text — green or red only when
  *   the application says the change is good or bad, otherwise neutral (text.secondary); the
  *   comparison in xs text.secondary ("vs September").
- * - An optional grey 32px sparkline (text.tertiary, 2px line, no axes), drawn from the
- *   application's values. Values are decimal strings; they become numbers only to place the line
+ * - A grey 32px sparkline (text.tertiary, 2px line, no axes) only when the application asks for
+ *   one (`trend`, P5.93: none by default), drawn from its values. Values are decimal strings; they become numbers only to place the line
  *   (rule D4: nothing is computed or shown from them).
  * - Loading: a skeleton 104px high.
  */
@@ -33,7 +33,7 @@ export interface StatCardProps {
   change?: StatChange
   /** What the change compares with ("vs September"). */
   comparison?: string
-  /** Values for the sparkline, oldest first, as decimal strings. */
+  /** Values for the sparkline, oldest first, as decimal strings. Without it, no sparkline. */
   trend?: readonly string[]
   loading?: boolean
   className?: string

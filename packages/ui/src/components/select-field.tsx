@@ -100,7 +100,7 @@ function OptionLabel({ option }: { option: SelectOption }) {
 /**
  * A choice from a known list (Mantine Select look). From SEARCHABLE_FROM options it is searched
  * by typing (Mantine Select `searchable`); for a list searched on the server, use ComboboxField.
- * Read-only shows the chosen option's label as text.
+ * Read-only shows the chosen option's label in the read-only look ("—" when none is chosen).
  */
 export function SelectField(props: SelectFieldProps) {
   const { messages } = useLiro()
@@ -120,7 +120,7 @@ export function SelectField(props: SelectFieldProps) {
         if (control.readOnly) {
           return (
             <Input
-              {...controlAttributes(control, messages['field.readOnly'])}
+              {...controlAttributes(control)}
               value={chosenLabel}
               {...(chosenOption?.lang === undefined ? {} : { lang: chosenOption.lang })}
               className={READ_ONLY}
@@ -138,8 +138,8 @@ export function SelectField(props: SelectFieldProps) {
             />
           )
         }
-        const { id, disabled, required } = control
-        const showClear = props.clearable === true && value !== '' && !disabled
+        const { id, required } = control
+        const showClear = props.clearable === true && value !== ''
         return (
           <div className="relative">
             <Select
@@ -147,7 +147,6 @@ export function SelectField(props: SelectFieldProps) {
               onValueChange={change}
               defaultOpen={props.defaultOpen === true}
               {...(props.name === undefined ? {} : { name: props.name })}
-              disabled={disabled}
               required={required}
             >
               <SelectTrigger
@@ -238,7 +237,7 @@ function SearchableSelect(
     setOpenState(next)
   }
   const showEmpty = shown.length === 0
-  const visible = open && !control.disabled
+  const visible = open
   const grouped = props.options.some((option) => option.group !== undefined)
   const choose = (next: string) => {
     props.onChoose(next)
@@ -268,7 +267,7 @@ function SearchableSelect(
       setQuery(null)
     }
   }
-  const showClear = props.clearable === true && props.value !== '' && !control.disabled
+  const showClear = props.clearable === true && props.value !== ''
   return (
     <div className="relative">
       <ComboboxPopover
@@ -281,7 +280,7 @@ function SearchableSelect(
         }}
         anchor={
           <Input
-            {...controlAttributes(control, messages['field.readOnly'])}
+            {...controlAttributes(control)}
             role="combobox"
             aria-autocomplete="list"
             aria-expanded={visible && shown.length > 0}

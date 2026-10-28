@@ -149,12 +149,6 @@ export interface DiagramProps {
   height?: number
   /** Shows the overview of the whole diagram in the canvas's end-bottom corner. */
   minimap?: boolean
-  /**
-   * Hides React Flow's small credit link ("React Flow", in the start-bottom corner). Its MIT
-   * licence allows hiding it, but React Flow's authors ask that only applications with a React
-   * Flow Pro subscription do (docs/decisions.md, P5.26). Default false: the link is shown.
-   */
-  hideAttribution?: boolean
   /** The instance to show in mode 'run'. */
   run?: DiagramRun
   /** The application's validation messages, on their steps and in the problems list. */
@@ -861,8 +855,19 @@ function DiagramBody(props: DiagramProps) {
   let body
   if (props.loading === true) {
     body = (
-      <div role="status" aria-label={messages['diagram.loading']} style={{ height }}>
-        <Skeleton className="size-full rounded-lg" />
+      // A visible loading state (P5.93 item 2): the canvas's place, and the words over it.
+      <div
+        role="status"
+        aria-label={messages['diagram.loading']}
+        className="relative"
+        style={{ height }}
+      >
+        <Skeleton className="absolute inset-0 rounded-lg" />
+        <div className="absolute inset-0 flex items-center justify-center p-4">
+          <span aria-hidden="true" className={cn('text-sm text-secondary', TEXT_ISOLATE)}>
+            {messages['diagram.loading']}
+          </span>
+        </div>
       </div>
     )
   } else if (props.error !== undefined) {
@@ -1062,8 +1067,9 @@ function DiagramBody(props: DiagramProps) {
               minZoom={0.2}
               maxZoom={2}
               connectionLineType={ConnectionLineType.SmoothStep}
-              proOptions={{ hideAttribution: props.hideAttribution === true }}
-              attributionPosition={rtl ? 'bottom-right' : 'bottom-left'}
+              // No credit link on the canvas (P5.93): React Flow is MIT and the link is only a
+              // request; the credit stays in THIRD-PARTY-NOTICES.md.
+              proOptions={{ hideAttribution: true }}
               ariaLabelConfig={{
                 'node.a11yDescription.default': editable
                   ? messages['diagram.editInstructions']

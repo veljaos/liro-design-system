@@ -26,6 +26,7 @@ import {
 } from './date-logic'
 import { controlAttributes, Field, fieldProps, type FieldBaseProps } from './field'
 import { entryAttributes, entryError, useEntry, type EntryProps } from './use-entry'
+import { Tooltip } from './popover'
 
 /*
  * DateField and DateRangeField (BUILD-PLAN P2.3). A date is typed (read by `format.parseDate` on
@@ -80,18 +81,17 @@ function useDateEntry(props: EntryProps) {
 }
 
 /** The frame of an editable date field: the input look around the typing areas and the button. */
-function dateBoxClass(control: { invalid: boolean; disabled: boolean }) {
+function dateBoxClass(control: { invalid: boolean }) {
   return cn(
     INPUT,
     'flex items-center px-0 focus-within:border-focus',
     control.invalid && 'border-status-danger-fg focus-within:border-status-danger-fg',
-    control.disabled && 'cursor-not-allowed border-default bg-surface-disabled text-disabled',
   )
 }
 
 /** A typing area inside the frame. */
 const TYPING =
-  'm-0 h-full min-w-0 flex-1 border-0 bg-transparent py-0 font-sans text-sm text-inherit tabular-nums outline-none placeholder:text-tertiary disabled:cursor-not-allowed'
+  'm-0 h-full min-w-0 flex-1 border-0 bg-transparent py-0 font-sans text-sm text-inherit tabular-nums outline-none placeholder:text-tertiary'
 
 /**
  * Each end of a range is as wide as its text (`field-sizing: content`, at least 8 characters so
@@ -103,22 +103,20 @@ const TYPING =
 const RANGE_PART = 'min-w-[8ch] flex-none field-sizing-content'
 
 /** The calendar button, in a section at the end of the field. */
-function CalendarButton({ disabled }: { disabled: boolean }) {
+function CalendarButton() {
   const { messages } = useLiro()
   const label = messages['field.openCalendar']
   return (
-    <span className="flex h-full min-w-[34px] shrink-0 items-center justify-center">
+    <span
+      data-slot="date-field-calendar"
+      className="flex h-full min-w-[34px] shrink-0 items-center justify-center"
+    >
       <PopoverTrigger asChild>
-        <ButtonPrimitive
-          family="neutral"
-          emphasis="menu"
-          shape="compact"
-          aria-label={label}
-          title={label}
-          disabled={disabled}
-        >
-          <CalendarDays aria-hidden="true" className="size-4 shrink-0" />
-        </ButtonPrimitive>
+        <Tooltip label={label}>
+          <ButtonPrimitive family="neutral" emphasis="menu" shape="compact" aria-label={label}>
+            <CalendarDays aria-hidden="true" className="size-4 shrink-0" />
+          </ButtonPrimitive>
+        </Tooltip>
       </PopoverTrigger>
     </span>
   )
@@ -197,7 +195,7 @@ export function DateField(props: DateFieldProps) {
   return (
     <Field {...fieldProps({ ...props, error })}>
       {(control) => {
-        const attributes = controlAttributes(control, messages['field.readOnly'])
+        const attributes = controlAttributes(control)
         // dir="auto", as each end of DateRangeField: a date in Latin digits is laid out left to
         // right ("06.11.2026." kept its full stop at the end in a right-to-left page), an Arabic
         // date stays right to left; the text stays at the page's start (`text-match-parent`).
@@ -230,7 +228,7 @@ export function DateField(props: DateFieldProps) {
                     }}
                     className={cn(TYPING, 'ps-3 pe-0 text-match-parent')}
                   />
-                  <CalendarButton disabled={control.disabled} />
+                  <CalendarButton />
                 </div>
               </PopoverAnchor>
               <CalendarPopover labelId={control.labelId} returnTo={inputRef}>
@@ -349,7 +347,7 @@ export function DateRangeField(props: DateRangeFieldProps) {
   return (
     <Field {...fieldProps({ ...props, error })}>
       {(control) => {
-        const attributes = controlAttributes(control, messages['field.readOnly'])
+        const attributes = controlAttributes(control)
         // dir="auto": a date in Latin digits is laid out left to right (in a right-to-left input,
         // Chromium on Linux cut its last digit); a date Intl writes with right-to-left marks
         // (Arabic) stays right to left.
@@ -393,8 +391,9 @@ export function DateRangeField(props: DateRangeFieldProps) {
             </span>
           )
         if (control.readOnly) {
+          // The read-only look of every field; an empty range is one "—" (P5.93 item 1).
           return (
-            <div className="flex h-control items-center px-3 font-sans text-sm text-primary">
+            <div data-slot="date-range" className={cn(INPUT, READ_ONLY, 'flex items-center')}>
               {names}
               <input
                 {...attributes}
@@ -403,21 +402,23 @@ export function DateRangeField(props: DateRangeFieldProps) {
                 className={cn(
                   TYPING,
                   RANGE_PART,
-                  'ps-0 pe-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
+                  'ps-0 pe-1 placeholder:text-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
                 )}
               />
-              {separator}
-              <input
-                {...attributes}
-                {...endTyping}
-                id={`${control.id}-end`}
-                aria-labelledby={`${control.labelId} ${endLabel}`}
-                className={cn(
-                  TYPING,
-                  RANGE_PART,
-                  'ps-0.5 pe-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
-                )}
-              />
+              {!empty && separator}
+              {!empty && (
+                <input
+                  {...attributes}
+                  {...endTyping}
+                  id={`${control.id}-end`}
+                  aria-labelledby={`${control.labelId} ${endLabel}`}
+                  className={cn(
+                    TYPING,
+                    RANGE_PART,
+                    'ps-0.5 pe-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
+                  )}
+                />
+              )}
             </div>
           )
         }
@@ -464,7 +465,7 @@ export function DateRangeField(props: DateRangeFieldProps) {
                   />
                   {/* The room between the end and the calendar button. */}
                   <span aria-hidden="true" className="flex-1" />
-                  <CalendarButton disabled={control.disabled} />
+                  <CalendarButton />
                 </div>
               </PopoverAnchor>
               <CalendarPopover labelId={control.labelId} returnTo={startRef}>

@@ -64,7 +64,10 @@ export function QuestionnaireTitle({
     <QuestionnairePrimitive.Title
       data-slot="questionnaire-title"
       className={cn(
-        'float-none m-0 w-full p-0 text-lg font-semibold break-words text-primary',
+        // Floated, the legend is an ordinary item of the question's column (a fieldset draws its
+        // first legend apart, outside the gap): its description follows under its last line, never
+        // over it, however many lines a long question takes (P5.93 item 32).
+        'float-start m-0 w-full p-0 text-lg font-semibold break-words text-primary',
         TEXT_DIRECTION,
         className,
       )}

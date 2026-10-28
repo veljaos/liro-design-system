@@ -185,6 +185,8 @@ export { notice, Toaster } from './components/notice'
 export type { NoticeAction, NoticeKind, NoticeOptions, ToasterProps } from './components/notice'
 export { SaveStatus } from './components/save-status'
 export type { SaveState, SaveStatusProps } from './components/save-status'
+export { InlineUndo } from './components/inline-undo'
+export type { InlineUndoProps } from './components/inline-undo'
 export { useBottomBar } from './components/bottom-bars'
 export { compactStep, ProgressBar, Skeleton, Stepper, stepState } from './components/progress'
 export type {
@@ -854,7 +856,7 @@ export type {
   ProductTileProps,
 } from './components/product-tile'
 export { CartPanel } from './components/cart-panel'
-export type { CartAmount, CartLine, CartPanelProps } from './components/cart-panel'
+export type { CartAmount, CartLine, CartPanelProps, CartUndo } from './components/cart-panel'
 export {
   FLASH_DURATION,
   grownLines,
@@ -1232,7 +1234,7 @@ export type { ReceiptKindPickerProps } from './components/receipt-kind-picker'
 export { BuyerField, BUYER_TYPES_SEARCHABLE_FROM } from './components/buyer-field'
 export type { BuyerFieldProps, BuyerIdType, BuyerValue } from './components/buyer-field'
 export { ReceiptFinder } from './components/receipt-finder'
-export type { FoundReceipt, ReceiptFinderProps, ReceiptQuery } from './components/receipt-finder'
+export type { FoundReceipt, ReceiptFinderProps } from './components/receipt-finder'
 export { LineQuantityPicker } from './components/line-quantity-picker'
 export type { ChoosableLine, LineQuantityPickerProps } from './components/line-quantity-picker'
 export { AdvanceList } from './components/advance-list'
@@ -1365,6 +1367,7 @@ export type {
 } from './components/assistant-logic'
 export { EmailPreview, emailPreviewWidth } from './components/email-preview'
 export type {
+  EmailAddress,
   EmailPreviewProps,
   EmailPreviewScheme,
   EmailPreviewWidth,
@@ -1529,14 +1532,18 @@ export { RuleBuilder, ruleValueText } from './components/rule-builder'
 export type { RuleBuilderProps } from './components/rule-builder'
 export {
   addRuleAction,
+  addRuleBranch,
   addRuleCondition,
   addRuleGroup,
+  addRuleOtherwise,
   emptyRuleDraft,
   findRuleCondition,
   moveRuleItem,
+  moveRuleItemTo,
   nextRuleId,
   operatorsFor,
   removeRuleItem,
+  RULE_OTHERWISE,
   ruleConditionCount,
   rulePlace,
   ruleProblemKey,
@@ -1551,6 +1558,7 @@ export type {
   RuleAction,
   RuleActionParam,
   RuleActionType,
+  RuleBranch,
   RuleChoice,
   RuleCondition,
   RuleConditionGroup,
@@ -1587,3 +1595,66 @@ export type {
   DashboardLayoutItem,
   GridPlace,
 } from './components/dashboard-grid-logic'
+// ── P5.93 code and the assistant's work ──
+export { CodeBlock, CodeHighlighterProvider } from './components/code-block'
+export type { CodeBlockProps } from './components/code-block'
+export {
+  ansiLines,
+  applySgr,
+  CODE_TOKEN_KINDS,
+  codeCopyText,
+  codeLines,
+  diffLine,
+  isAnsiLanguage,
+  isPlainLanguage,
+  lineNumberDigits,
+  parseAnsi,
+  splitCodeLines,
+  stripAnsi,
+} from './components/code-block-logic'
+export type {
+  AnsiColor,
+  AnsiSpan,
+  AnsiStyle,
+  CodeHighlighter,
+  CodeLine,
+  CodeLineKind,
+  CodeLineOptions,
+  CodeToken,
+  CodeTokenKind,
+} from './components/code-block-logic'
+export {
+  ChainOfThought,
+  Plan,
+  Queue,
+  Reasoning,
+  Sources,
+  Subagent,
+  Task,
+  Trace,
+} from './components/trace'
+export type {
+  ChainOfThoughtProps,
+  PlanProps,
+  QueueProps,
+  ReasoningProps,
+  SourcesProps,
+  SubagentProps,
+  TaskProps,
+  TraceProps,
+} from './components/trace'
+export {
+  autoOpen,
+  changedStep,
+  flattenTrace,
+  isExternalLink,
+  planProgress,
+  queueGroups,
+  statusOf,
+  summaryStatus,
+  TRACE_STATUSES,
+  traceStatuses,
+  uniqueSources,
+} from './components/trace-logic'
+export type { QueueItem, TraceSource, TraceStatus, TraceStep } from './components/trace-logic'
+export type { AnswerCodeBlock } from './components/assistant-logic'

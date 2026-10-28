@@ -303,6 +303,29 @@ export function searchJournal(
   )
 }
 
+/**
+ * The one search field's text read as the application reads it (P5.93 item 14): a day (as the
+ * provider writes dates), an amount (as it writes numbers), or the end of a receipt's number —
+ * a receipt matches any of them.
+ */
+export function searchJournalText(
+  entries: readonly JournalEntry[],
+  text: string,
+  read: {
+    parseDate: (text: string) => string | null
+    parseNumber: (text: string) => string | null
+  },
+): FoundReceipt[] {
+  const date = read.parseDate(text)
+  const amount = read.parseNumber(text)
+  return foundReceipts(entries).filter(
+    (each) =>
+      each.number.toLowerCase().endsWith(text.toLowerCase()) ||
+      (date !== null && each.date === date) ||
+      (amount !== null && paras(each.total) === paras(amount)),
+  )
+}
+
 // ── Refunds ───────────────────────────────────────────────────────────────────────────────────
 
 /** Half up, for positive amounts. */

@@ -45,7 +45,7 @@ export function TimeField(props: TimeFieldProps) {
       {(control) => (
         <>
           <Input
-            {...controlAttributes(control, messages['field.readOnly'])}
+            {...controlAttributes(control)}
             {...entryAttributes(
               entry,
               {

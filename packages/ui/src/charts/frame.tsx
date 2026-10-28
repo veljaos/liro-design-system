@@ -1,5 +1,5 @@
 import { AlertTriangle, ChartColumn, Table2 } from 'lucide-react'
-import { useId, useState, type ReactNode } from 'react'
+import { createContext, useId, useState, type ReactNode } from 'react'
 import { Button, CompactIconButton } from '../components/button'
 import { TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
 import { cn } from '../primitives/cn'
@@ -10,14 +10,23 @@ import type { ChartCategory, ChartSeries, ChartStateProps, ChartValues } from '.
 /*
  * The card every chart stands in (P4.6, kept in P4.7a): radius lg, border.default, padding md, no
  * shadow; the title (h3, sm semibold) and a description under it; the application's controls (a
- * time range, a series toggle) and the 28px "Show as table" / "Show as chart" button at the end of
- * the header; the legend; the plot. On phones the header stacks (the controls under the title) and
- * the legend stands under the plot.
+ * time range) and the 28px "Show as table" / "Show as chart" button at the end of the header; the
+ * legend; the plot. On phones the header stacks (the controls under the title) and the legend
+ * stands under the plot.
+ *
+ * The interactive header (P5.93 item 42, shadcn/ui's "Bar Chart - Interactive"): with `toggle`
+ * (a ChartSeriesToggle) the header is a band of its own, flush with the card and ruled off from
+ * the plot: the title and description at the start, the key figures as toggle buttons at the
+ * end, full height, a line between each; on phones the toggles stand under the title, across the
+ * whole width, side by side.
  *
  * States: loading draws a chart-shaped skeleton in the plot's place (no spinner, `aria-busy`);
  * empty says `messages['chart.noData']`; an error says its message with Retry. The plot keeps its
  * height in every state, so nothing moves when the data arrives.
  */
+
+/** Whether the chart around stands in its phone layout (the toggle's figures are smaller there). */
+export const ChartPhoneContext = createContext(false)
 
 export type ChartSkeletonShape = 'columns' | 'bars' | 'round' | 'block'
 
@@ -64,8 +73,13 @@ function ChartSkeleton({ shape, height }: { shape: ChartSkeletonShape; height: n
 export interface ChartCardProps extends ChartStateProps {
   title: string
   description?: string
-  /** The application's controls in the header: a time-range select, a series toggle. */
+  /** The application's controls in the header: a time-range select. */
   controls?: ReactNode
+  /**
+   * The key figures as toggle buttons (a ChartSeriesToggle) at the header's end, flush with the
+   * card (P5.93 item 42); on phones under the title, across the width.
+   */
+  toggle?: ReactNode
   legend?: ReactNode
   /** The same values as a table ("Show as table"). */
   table: ReactNode
@@ -145,6 +159,41 @@ export function ChartCard(props: ChartCardProps) {
     )
   }
 
+  const heading = (
+    <div className="flex items-start gap-2">
+      <div
+        className={cn(
+          'flex min-w-0 flex-1 gap-x-4 gap-y-2',
+          props.phone ? 'flex-col' : 'flex-wrap items-start justify-between',
+        )}
+      >
+        <div className="flex min-w-0 flex-col gap-0.5">
+          <h3 id={titleId} className={cn('m-0 text-sm font-semibold text-primary', TEXT_DIRECTION)}>
+            {props.title}
+          </h3>
+          {props.description !== undefined && (
+            <p id={descriptionId} className={cn('m-0 text-xs text-secondary', TEXT_DIRECTION)}>
+              {props.description}
+            </p>
+          )}
+        </div>
+        {props.controls !== undefined && (
+          <div className="flex flex-wrap items-center gap-2">{props.controls}</div>
+        )}
+      </div>
+      {ready && (
+        <CompactIconButton
+          icon={asTable ? ChartColumn : Table2}
+          label={asTable ? messages['chart.showChart'] : messages['chart.showTable']}
+          aria-pressed={asTable}
+          onClick={() => {
+            setAsTable(!asTable)
+          }}
+        />
+      )}
+    </div>
+  )
+
   const legend = ready && !showTable ? props.legend : undefined
   return (
     <section
@@ -156,41 +205,29 @@ export function ChartCard(props: ChartCardProps) {
         props.className,
       )}
     >
-      <div className="flex items-start gap-2">
+      {props.toggle === undefined ? (
+        heading
+      ) : (
         <div
+          data-slot="chart-header"
           className={cn(
-            'flex min-w-0 flex-1 gap-x-4 gap-y-2',
-            props.phone ? 'flex-col' : 'flex-wrap items-start justify-between',
+            '-mx-4 -mt-4 mb-1 flex overflow-clip rounded-t-lg border-0 border-b border-solid border-default',
+            props.phone ? 'flex-col' : 'items-stretch',
           )}
         >
-          <div className="flex min-w-0 flex-col gap-0.5">
-            <h3
-              id={titleId}
-              className={cn('m-0 text-sm font-semibold text-primary', TEXT_DIRECTION)}
-            >
-              {props.title}
-            </h3>
-            {props.description !== undefined && (
-              <p id={descriptionId} className={cn('m-0 text-xs text-secondary', TEXT_DIRECTION)}>
-                {props.description}
-              </p>
+          <div className="min-w-0 flex-1 p-4">{heading}</div>
+          <div
+            className={cn(
+              'flex border-0 border-solid border-default',
+              props.phone ? 'border-t' : 'max-w-[60%] border-s',
             )}
+          >
+            <ChartPhoneContext.Provider value={props.phone}>
+              {props.toggle}
+            </ChartPhoneContext.Provider>
           </div>
-          {props.controls !== undefined && (
-            <div className="flex flex-wrap items-center gap-2">{props.controls}</div>
-          )}
         </div>
-        {ready && (
-          <CompactIconButton
-            icon={asTable ? ChartColumn : Table2}
-            label={asTable ? messages['chart.showChart'] : messages['chart.showTable']}
-            aria-pressed={asTable}
-            onClick={() => {
-              setAsTable(!asTable)
-            }}
-          />
-        )}
-      </div>
+      )}
       {!props.phone && legend}
       {body}
       {props.phone && legend}
@@ -212,6 +249,7 @@ export function ValuesTable({
   series,
   values,
   write,
+  writeSeries,
   total,
 }: {
   title: string
@@ -219,6 +257,8 @@ export function ValuesTable({
   series: readonly Pick<ChartSeries, 'key' | 'label'>[]
   values: ChartValues
   write: (value: string | null | undefined) => string
+  /** A series written its own way (a share that is already text, P5.93 item 44). */
+  writeSeries?: Readonly<Record<string, (value: string | null | undefined) => string>>
   /** A total per category, from the application, as the last column. */
   total?: { label: string; values: Readonly<Record<string, string | null>> }
 }) {
@@ -251,7 +291,7 @@ export function ValuesTable({
               </th>
               {series.map((each) => (
                 <td key={each.key} className={cn(cell, 'text-end tabular-nums')}>
-                  <bdi>{write(values[each.key]?.[category.key])}</bdi>
+                  <bdi>{(writeSeries?.[each.key] ?? write)(values[each.key]?.[category.key])}</bdi>
                 </td>
               ))}
               {total !== undefined && (

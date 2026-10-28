@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import {
+  acceptsField,
   areaFieldIds,
   areaOf,
+  dropField,
   EMPTY_PIVOT_LAYOUT,
   fieldAreas,
   hasValues,
@@ -11,9 +13,13 @@ import {
   pivotKeyTarget,
   pivotLeaves,
   pivotRowPaths,
+  pivotSummaryParts,
   pivotTopGroupKeys,
+  pivotViewOf,
+  PIVOT_AREAS,
   placeField,
   removeField,
+  sameLayout,
   setAggregation,
   setFilterValues,
   unusedFields,
@@ -116,9 +122,9 @@ describe('the layout', () => {
     expect(moveField(LAYOUT, 'partner', -1).rows).toEqual(['partner', 'site'])
     expect(moveField(LAYOUT, 'nothing', 1)).toBe(LAYOUT)
     const two = placeField(placeField(LAYOUT, PARTNER, 'filters'), MONTH, 'rows')
-    const withFilters = { ...two, filters: [...two.filters, { field: 'site', values: [] }] }
-    expect(moveField(withFilters, 'site', -1).filters.map((each) => each.field)).toEqual([
-      'site',
+    const withFilters = { ...two, filters: [...two.filters, { field: 'zone', values: [] }] }
+    expect(moveField(withFilters, 'zone', -1).filters.map((each) => each.field)).toEqual([
+      'zone',
       'partner',
     ])
     const values = { ...LAYOUT, values: [...LAYOUT.values, { field: 'x', aggregation: 'n' }] }
@@ -249,5 +255,53 @@ describe('the grid’s keys', () => {
     })
     expect(pivotKeyTarget('Enter', { row: 1, column: 1 }, size, ltr)).toBeNull()
     expect(pivotKeyTarget('a', { row: 1, column: 1 }, size, ltr)).toBeNull()
+  })
+})
+
+describe('suggested views, the summary and dropping a chip (P5.93 item 45)', () => {
+  it('orders the zones Rows, Columns, Values, Filters', () => {
+    expect(PIVOT_AREAS).toEqual(['rows', 'columns', 'values', 'filters'])
+  })
+
+  it('knows a layout as a view only when every field, place, aggregation and filter matches', () => {
+    const views = [
+      { id: 'a', label: 'A', layout: LAYOUT },
+      { id: 'b', label: 'B', layout: { ...LAYOUT, columns: [] } },
+    ]
+    expect(pivotViewOf(views, { ...LAYOUT })).toBe('a')
+    expect(pivotViewOf(views, { ...LAYOUT, columns: [] })).toBe('b')
+    expect(pivotViewOf(views, { ...LAYOUT, rows: ['site', 'partner'] })).toBeUndefined()
+    expect(pivotViewOf(views, setAggregation(LAYOUT, 'amount', 'sum'))).toBeUndefined()
+    const filtered = { ...LAYOUT, filters: [{ field: 'partner', values: ['p1', 'p2'] }] }
+    expect(
+      sameLayout(filtered, { ...LAYOUT, filters: [{ field: 'partner', values: ['p2', 'p1'] }] }),
+    ).toBe(true)
+    expect(sameLayout(filtered, LAYOUT)).toBe(false)
+  })
+
+  it('names what the layout shows, in the fields’ words, filters only when they keep some values', () => {
+    const parts = pivotSummaryParts(FIELDS, {
+      ...LAYOUT,
+      filters: [
+        { field: 'partner', values: ['p2'] },
+        { field: 'site', values: [] },
+      ],
+    })
+    expect(parts).toEqual({
+      values: [{ field: 'Amount', aggregation: 'Average' }],
+      rows: ['Partner', 'Site'],
+      columns: ['Month'],
+      filters: [{ field: 'Partner', values: ['Beta'] }],
+    })
+  })
+
+  it('drops a chip into a zone that takes it, or out of the layout', () => {
+    expect(acceptsField(AMOUNT, 'rows')).toBe(false)
+    expect(acceptsField(AMOUNT, 'values')).toBe(true)
+    expect(acceptsField(MONTH, 'filters')).toBe(false)
+    expect(acceptsField(MONTH, 'available')).toBe(true)
+    expect(dropField(LAYOUT, PARTNER, 'columns', 1).columns).toEqual(['month', 'partner'])
+    expect(dropField(LAYOUT, SITE, 'rows', 0).rows).toEqual(['site', 'partner'])
+    expect(dropField(LAYOUT, PARTNER, 'available', 0).rows).toEqual(['site'])
   })
 })

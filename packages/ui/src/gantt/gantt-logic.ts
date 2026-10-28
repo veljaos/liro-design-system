@@ -256,6 +256,44 @@ export function nowPosition(todayX: number, tomorrowX: number, minutes: number):
   return todayX + (tomorrowX - todayX) * part
 }
 
+/**
+ * Where the chart opens (P5.93 item 34), as its scroll from the start, px: at the plan's start
+ * when today is in view there; otherwise at the start of the column before today's, so "now" and
+ * what comes next are in view and no column is cut at the edge. `todayX` null (no `now`, or out
+ * of the plan): the plan's start.
+ */
+export function openingScroll(todayX: number | null, column: number, visible: number): number {
+  if (todayX === null || column <= 0) return 0
+  // Today and the column after it fit beside the plan's start: open at the start.
+  if (todayX + column <= visible) return 0
+  return Math.max(0, (Math.floor(todayX / column) - 1) * column)
+}
+
+/** Where a bar's name stands: inside the bar, after it, or before it. */
+export type BarLabelPlace = 'inside' | 'after' | 'before'
+
+/** The room a name takes beside a bar besides its text, px: the gap and the tag's padding. */
+export const BAR_LABEL_ROOM = 14
+/** The padding of a name inside a bar, px. */
+export const BAR_LABEL_PADDING = 16
+
+/**
+ * Where a bar's name stands (P5.93 item 34): never cut. Inside the bar when it fits (a milestone
+ * never holds it); otherwise after the bar when the chart has room there, else before the bar
+ * (a bar at the chart's end); after it when neither side has the room.
+ */
+export function barLabelPlace(
+  bar: { x: number; width: number },
+  text: number,
+  chart: number,
+  canHold = true,
+): BarLabelPlace {
+  if (canHold && text + BAR_LABEL_PADDING <= bar.width) return 'inside'
+  if (bar.x + bar.width + text + BAR_LABEL_ROOM <= chart) return 'after'
+  if (bar.x - text - BAR_LABEL_ROOM >= 0) return 'before'
+  return 'after'
+}
+
 // ── Progress ──────────────────────────────────────────────────────────────────────────────────
 
 const DECIMAL = /^-?\d+(\.\d+)?$/

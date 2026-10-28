@@ -21,7 +21,6 @@ import {
   DropdownMenu,
   IconButton,
   LineQuantityPicker,
-  notice,
   PaymentDialog,
   PosShell,
   ProductGrid,
@@ -77,7 +76,10 @@ import { TillTouch } from './screens-I-till'
  * forgets to press Send no longer leaves an order unsent; nothing is sent while items are still
  * being tapped. The sending itself is the application's — the screen reports what went where.
  * Every tap answers at once (the tile's count, the line's highlight, the order bar on phones);
- * removing a line offers Undo instead of a confirmation.
+ * removing a line offers Undo instead of a confirmation. No toasts for routine actions (P5.93
+ * item 3): a sent line says "Sent to the kitchen · 19:40" in green, a removed line or moved items
+ * leave "… · Undo" in their place in the cart, a printed receipt says "Printed", and the floor
+ * shows the table just left with what was sent.
  *
  * On the tab: edit a
  * line (quantity, note, discount), a discount on the whole order, the venue's promotions (the
@@ -99,6 +101,26 @@ const VENUE_PAYEES: Record<Venue['id'], InstantPayee> = {
     account: '170-0000000987654-14',
     merchantCategory: '5812',
   },
+}
+
+/**
+ * What the floor shows about the table the waiter just left (P5.93 item 3): it is chosen there,
+ * with what went to the bar or the kitchen — instead of a toast.
+ */
+export interface LeftTable {
+  tableId: string
+  /** "Sent: 1 to the kitchen · 19:40", or null when nothing was sent. */
+  sent: string | null
+}
+
+/** The cart's Undo of the last change, kept above the screens (it may follow a moved tab). */
+interface TabUndo {
+  tableId: string
+  message: string
+  /** The line it stands after in the cart. */
+  after?: string
+  /** The tabs before the change. */
+  before: Record<string, Tab>
 }
 
 /** "Table 3". */
@@ -127,11 +149,16 @@ export function TabTill({
     'bistro.tables',
     () => BISTRO_TABLES,
   )
+  const [, setLeft] = useExampleState<LeftTable | null>(`left.${venue.id}`, () => null)
+  const [undo, setUndo] = useExampleState<TabUndo | null>(`undo.${venue.id}`, () => null)
+  const [printed, setPrinted] = useState(false)
   const name = tableName(venue, tableId)
   const productName = (id: string) => venue.products.find((each) => each.id === id)?.name ?? ''
   const tab: Tab = tabs[tableId] ?? { tableId, openedAt: venue.now, lines: [], payments: [] }
   const figures = computeTab(venue, tab)
   const setTab = (change: (current: Tab) => Tab) => {
+    // Any other change takes the last Undo away.
+    setUndo(null)
     setTabs((current) => {
       const now = current[tableId] ?? { tableId, openedAt: venue.now, lines: [], payments: [] }
       return { ...current, [tableId]: change(now) }
@@ -195,12 +222,15 @@ export function TabTill({
   const unsentCount = unsentByStation(venue, tab).reduce((sum, each) => sum + each.count, 0)
   const heldCount = unsentByStation(venue, tab, 'held').reduce((sum, each) => sum + each.count, 0)
   const counts = inOrder(tab)
-  /** Sends the new lines (or the held ones) and says what went where. */
-  const send = (which: 'new' | 'held') => {
+  /**
+   * Sends the new lines (or the held ones): each line then says where it went and when, in green
+   * (P5.93 item 3: no toast). Returns what went where, for the floor.
+   */
+  const send = (which: 'new' | 'held'): string | null => {
     const result = sendLines(venue, tab, venue.now, which)
-    if (result.sent.length === 0) return
+    if (result.sent.length === 0) return null
     setTab(() => result.tab)
-    notice.success(`Sent: ${sentText(result.sent)}.`)
+    return `Sent: ${sentText(result.sent)} · ${venue.now}`
   }
   const add = (productId: string) => {
     const product = venue.products.find((each) => each.id === productId)
@@ -265,15 +295,20 @@ export function TabTill({
                 : {
                     label: `Sent to ${station?.label ?? 'the bar'} · ${line.sentAt}${paid > 0 ? ` · ${String(paid)} paid` : ''}`,
                     icon: ChefHat,
+                    tone: 'success' as const,
                   },
       }
     },
   )
 
   const remainingText = decimal(figures.remaining)
-  /** Leaving the table sends the new items by themselves (P5.90 item 20). */
+  /**
+   * Leaving the table sends the new items by themselves (P5.90 item 20); the floor then shows this
+   * table with what was sent (P5.93 item 3).
+   */
   const leave = () => {
-    send('new')
+    setLeft({ tableId, sent: send('new') })
+    setUndo(null)
     navigate(venue.back.route)
   }
 
@@ -283,6 +318,18 @@ export function TabTill({
       title={name}
       kindLabel={`Tab since ${tab.openedAt} · ${venue.waiter}`}
       lines={cartLines}
+      {...(undo?.tableId !== tableId
+        ? {}
+        : {
+            undo: {
+              message: undo.message,
+              ...(undo.after === undefined ? {} : { after: undo.after }),
+              onUndo: () => {
+                setTabs(() => undo.before)
+                setUndo(null)
+              },
+            },
+          })}
       currency={venue.currency}
       total={tab.lines.length === 0 ? null : remainingText}
       {...(figures.paid > 0n ? { totalLabel: 'To pay' } : {})}
@@ -343,6 +390,7 @@ export function TabTill({
         setCardState('idle')
         setMethod('cash')
         setDone(false)
+        setUndo(null)
         setPaying({ amount: figures.remaining, what: 'The rest of the tab', closes: true })
       }}
       headerActions={
@@ -510,26 +558,20 @@ export function TabTill({
                   onClick={() => {
                     const removed = editing
                     const at = tab.lines.findIndex((line) => line.id === removed.id)
+                    const before = tabs
                     setTab((current) => ({
                       ...current,
                       lines: current.lines.filter((line) => line.id !== removed.id),
                     }))
                     setEditId(null)
-                    // Undo instead of a confirmation (P5.90 item 20).
-                    notice.success(`${productName(removed.productId)} removed.`, {
-                      action: {
-                        label: 'Undo',
-                        onClick: () => {
-                          setTab((current) => ({
-                            ...current,
-                            lines: [
-                              ...current.lines.slice(0, at),
-                              removed,
-                              ...current.lines.slice(at),
-                            ],
-                          }))
-                        },
-                      },
+                    // Undo instead of a confirmation (P5.90 item 20), in the line's place in
+                    // the cart, not in a toast (P5.93 item 3).
+                    const previous = at > 0 ? tab.lines[at - 1]?.id : undefined
+                    setUndo({
+                      tableId,
+                      message: `${productName(removed.productId)} removed`,
+                      ...(previous === undefined ? {} : { after: previous }),
+                      before,
                     })
                   }}
                 />
@@ -696,6 +738,7 @@ export function TabTill({
                     setTendered(null)
                     setCardState('idle')
                     setDone(false)
+                    setUndo(null)
                     setPaying({
                       amount: shares.length === 1 ? figures.remaining : share,
                       what: `Share 1 of ${String(shares.length)}`,
@@ -715,6 +758,7 @@ export function TabTill({
                     setTendered(null)
                     setCardState('idle')
                     setDone(false)
+                    setUndo(null)
                     setPaying({
                       amount: itemsTotal,
                       what: 'Items',
@@ -809,6 +853,7 @@ export function TabTill({
                 onClick={() => {
                   if (moveTo === '') return
                   const to = tableName(venue, moveTo)
+                  const before = tabs
                   setTabs((current) =>
                     moveItems(
                       current,
@@ -819,9 +864,14 @@ export function TabTill({
                     ),
                   )
                   setMoveOpen(false)
-                  notice.success(
-                    moveWhat === 'all' ? `${name}’s tab moved to ${to}.` : `Items moved to ${to}.`,
-                  )
+                  // The answer stands in the cart, with Undo (P5.93 item 3): the moved tab's,
+                  // on the table it went to, or this one's, for some items.
+                  setUndo({
+                    tableId: moveWhat === 'all' ? moveTo : tableId,
+                    message:
+                      moveWhat === 'all' ? `Tab moved here from ${name}` : `Items moved to ${to}`,
+                    before,
+                  })
                   if (moveWhat === 'all') navigate(venue.tableRoute(moveTo))
                 }}
               />
@@ -957,9 +1007,17 @@ export function TabTill({
                           <QrCode value={receipt} label="Receipt code" size={112} />
                         </span>
                       }
-                      deliveries={[{ id: 'print', label: 'Print', icon: Receipt }]}
+                      deliveries={[
+                        {
+                          id: 'print',
+                          label: 'Print',
+                          icon: Receipt,
+                          // The answer in place, not a toast (P5.93 item 3).
+                          ...(printed ? { state: 'sent' as const, stateText: 'Printed' } : {}),
+                        },
+                      ]}
                       onDeliver={() => {
-                        notice.success('Receipt printed.')
+                        setPrinted(true)
                       }}
                     />
                   ),
@@ -988,7 +1046,8 @@ export function TabTill({
                       }),
                     )
                     setPaying(null)
-                    notice.success(`${name} closed and free.`)
+                    // The floor shows the table free, chosen (P5.93 item 3: no toast).
+                    setLeft({ tableId, sent: null })
                     navigate(venue.back.route)
                   }}
                 />

@@ -30,13 +30,17 @@ const meta = {
   },
   args: { label: 'Search results', results: RESULTS, count: 3 },
   decorators: [
-    (Story) => (
-      <ExampleProvider>
-        <div className="max-w-180 rounded-lg border border-solid border-default bg-surface-raised">
-          <Story />
-        </div>
-      </ExampleProvider>
-    ),
+    // A phone story draws its own frame and card; the desktop card would only wrap it.
+    (Story, { parameters }) =>
+      parameters.phoneFrame === true ? (
+        <Story />
+      ) : (
+        <ExampleProvider>
+          <div className="max-w-180 rounded-lg border border-solid border-default bg-surface-raised">
+            <Story />
+          </div>
+        </ExampleProvider>
+      ),
   ],
   play: settle,
 } satisfies Meta<typeof SearchResultList>
@@ -132,6 +136,7 @@ export const LongText: Story = {
 
 /** Phone width. */
 export const Phone: Story = {
+  parameters: { phoneFrame: true },
   decorators: [
     (Story) => (
       <PhoneFrame>

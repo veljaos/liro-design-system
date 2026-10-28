@@ -1,6 +1,8 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import {
+  barLabelPlace,
+  openingScroll,
   applyGanttChange,
   chartDate,
   chartEnd,
@@ -277,5 +279,31 @@ describe('the lockfile (P5.37)', () => {
     const lockfile = readFileSync(new URL('../../../../pnpm-lock.yaml', import.meta.url), 'utf8')
     expect(lockfile).toContain("'@svar-ui/react-gantt@2.7.3'")
     expect(forbiddenGanttPackages(lockfile)).toEqual([])
+  })
+})
+
+describe('where the chart opens (P5.93 item 34)', () => {
+  it("opens at the plan's start when today is in view there", () => {
+    expect(openingScroll(300, 64, 800)).toBe(0)
+    expect(openingScroll(null, 64, 800)).toBe(0)
+  })
+  it("opens at the column before today's when today is further on, on a column edge", () => {
+    // Today at 700px in columns of 64px: its column starts at 640, the one before at 576.
+    expect(openingScroll(700, 64, 400)).toBe(576)
+    expect(openingScroll(70, 64, 40)).toBe(0)
+  })
+})
+
+describe("where a bar's name stands (P5.93 item 34)", () => {
+  it('inside when it fits, after the bar when it does not', () => {
+    expect(barLabelPlace({ x: 100, width: 120 }, 80, 1000)).toBe('inside')
+    expect(barLabelPlace({ x: 100, width: 60 }, 80, 1000)).toBe('after')
+  })
+  it("before a bar at the chart's end", () => {
+    expect(barLabelPlace({ x: 900, width: 60 }, 80, 1000)).toBe('before')
+  })
+  it('never inside a milestone; after it when neither side has room', () => {
+    expect(barLabelPlace({ x: 100, width: 200 }, 20, 1000, false)).toBe('after')
+    expect(barLabelPlace({ x: 10, width: 20 }, 300, 320)).toBe('after')
   })
 })

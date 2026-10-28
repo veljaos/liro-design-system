@@ -37,7 +37,7 @@ export const PRODUCTS: readonly PosProduct[] = [
     detail: '400 g',
     price: '95',
     categoryId: 'bread',
-    stock: { tone: 'warning', text: 'Low stock: 3' },
+    stock: { tone: 'warning', text: '3 left' },
   },
   {
     id: 'kukuruzni',
@@ -82,7 +82,7 @@ export const PRODUCTS: readonly PosProduct[] = [
     name: 'Reforma torta, parče',
     price: '260',
     categoryId: 'cakes',
-    stock: { tone: 'danger', text: '1 left' },
+    stock: { tone: 'danger', label: 'Last one', text: '1 left' },
   },
   { id: 'jogurt', name: 'Jogurt', detail: '1 l', price: '135', categoryId: 'drinks' },
   { id: 'kafa', name: 'Domaća kafa', price: '120', categoryId: 'drinks' },

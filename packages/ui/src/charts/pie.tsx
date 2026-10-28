@@ -75,6 +75,8 @@ export interface PieChartProps extends ChartStateProps {
   ringLabel?: string
   height?: number
   controls?: ReactNode
+  /** The key figures as toggle buttons (a ChartSeriesToggle) at the header's end (P5.93 item 42). */
+  toggle?: ReactNode
   layout?: 'desktop' | 'phone'
   className?: string
 }
@@ -220,6 +222,8 @@ export function PieChart(props: PieChartProps) {
         fill={(sector.payload as { fill?: string } | undefined)?.fill ?? 'currentColor'}
         stroke="var(--liro-surface-raised)"
         strokeWidth={2}
+        // P5.93: round joins, so the separators meet evenly at the centre.
+        strokeLinejoin="round"
       />
     )
   }
@@ -248,6 +252,7 @@ export function PieChart(props: PieChartProps) {
       title={props.title}
       {...(props.description === undefined ? {} : { description: props.description })}
       {...(props.controls === undefined ? {} : { controls: props.controls })}
+      {...(props.toggle === undefined ? {} : { toggle: props.toggle })}
       {...(props.className === undefined ? {} : { className: props.className })}
       {...(props.loading === undefined ? {} : { loading: props.loading })}
       {...(props.defaultView === undefined ? {} : { defaultView: props.defaultView })}
@@ -292,6 +297,7 @@ export function PieChart(props: PieChartProps) {
               outerRadius={outer}
               stroke="var(--liro-surface-raised)"
               strokeWidth={2}
+              strokeLinejoin="round"
               labelLine={false}
               shape={shape}
               {...(labels === 'outside'
@@ -310,6 +316,7 @@ export function PieChart(props: PieChartProps) {
                 outerRadius="80%"
                 stroke="var(--liro-surface-raised)"
                 strokeWidth={2}
+                strokeLinejoin="round"
                 labelLine={false}
                 {...motion}
               />

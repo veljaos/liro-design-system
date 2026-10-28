@@ -17,8 +17,8 @@ import {
   EmptyState,
   FloorPlan,
   KeyValueList,
+  InlineUndo,
   MoneyText,
-  notice,
   PageHeader,
   SectionCard,
   StatusBadge,
@@ -49,7 +49,7 @@ import {
   type ChannelOrder,
 } from './data-K'
 import { BISTRO_VENUE, tabTotal } from './data-K-tabs'
-import { TabTill, useTabs } from './screens-K-tabs'
+import { TabTill, useTabs, type LeftTable } from './screens-K-tabs'
 
 export { K_ROUTES }
 
@@ -116,8 +116,11 @@ function TablePanel({
   onClear,
   tabText,
   tabOpen,
+  note,
 }: {
   table: BistroTable | undefined
+  /** What just happened to the table, with Undo where it can be undone (P5.93 item 3). */
+  note?: ReactNode
   /** Opens the table's tab on the till, a new one for a free table (P5.90 item 20). */
   onOpen: () => void
   onMove: () => void
@@ -221,10 +224,21 @@ function TablePanel({
       headingLevel={2}
     >
       <div className="flex flex-col gap-4">
+        {note}
         <KeyValueList items={items} columns={1} />
         <div className="flex flex-wrap justify-end gap-2">{actions}</div>
       </div>
     </SectionCard>
+  )
+}
+
+/** A done thing on the floor, in words, where nothing can be undone ("Sent: 1 to the kitchen"). */
+function FloorNote({ children }: { children: ReactNode }) {
+  return (
+    <p role="status" className="m-0 text-sm text-status-success-fg bidi-content">
+      <CircleCheck aria-hidden="true" className="me-1.5 inline size-4 align-[-0.1875em]" />
+      {children}
+    </p>
   )
 }
 
@@ -239,19 +253,25 @@ function ChannelOrders({
   channel,
   orders,
   onAdvance,
+  undo,
 }: {
   channel: ChannelOrder['channel']
   orders: readonly ChannelOrder[]
   onAdvance: (order: ChannelOrder) => void
+  /** The last step, with Undo, at the top of the list (P5.93 item 3: no toast). */
+  undo?: ReactNode
 }) {
   const shown = orders.filter((order) => order.channel === channel && order.state !== 'done')
   if (shown.length === 0) {
     return (
-      <EmptyState
-        compact
-        title={channel === 'takeaway' ? 'No takeaway orders' : 'No deliveries'}
-        description="New orders from the till appear here."
-      />
+      <div className="flex flex-col gap-3">
+        {undo}
+        <EmptyState
+          compact
+          title={channel === 'takeaway' ? 'No takeaway orders' : 'No deliveries'}
+          description="New orders from the till appear here."
+        />
+      </div>
     )
   }
   const STATE: Record<
@@ -272,62 +292,65 @@ function ChannelOrders({
           : 'Out for delivery'
         : 'Delivered'
   return (
-    <ul className="m-0 flex list-none flex-col gap-3 p-0">
-      {shown.map((order) => (
-        <li key={order.id}>
-          <SectionCard
-            title={
-              <span className="flex flex-wrap items-center gap-2">
-                <span dir="ltr" className="bidi-isolate">
-                  {order.number}
+    <div className="flex flex-col gap-3">
+      {undo}
+      <ul className="m-0 flex list-none flex-col gap-3 p-0">
+        {shown.map((order) => (
+          <li key={order.id}>
+            <SectionCard
+              title={
+                <span className="flex flex-wrap items-center gap-2">
+                  <span dir="ltr" className="bidi-isolate">
+                    {order.number}
+                  </span>
+                  <StatusBadge label={STATE[order.state].label} tone={STATE[order.state].tone} />
                 </span>
-                <StatusBadge label={STATE[order.state].label} tone={STATE[order.state].tone} />
-              </span>
-            }
-            headingLevel={3}
-            actions={
-              <Button
-                family="neutral"
-                icon={
-                  order.state === 'preparing'
-                    ? CircleCheck
-                    : order.channel === 'delivery'
-                      ? Bike
-                      : HandPlatter
-                }
-                label={next(order)}
-                onClick={() => {
-                  onAdvance(order)
-                }}
+              }
+              headingLevel={3}
+              actions={
+                <Button
+                  family="neutral"
+                  icon={
+                    order.state === 'preparing'
+                      ? CircleCheck
+                      : order.channel === 'delivery'
+                        ? Bike
+                        : HandPlatter
+                  }
+                  label={next(order)}
+                  onClick={() => {
+                    onAdvance(order)
+                  }}
+                />
+              }
+            >
+              <KeyValueList
+                columns={1}
+                items={[
+                  { label: 'Name', value: order.name },
+                  {
+                    label: channel === 'takeaway' ? 'Pick-up' : 'Delivery',
+                    value: order.time,
+                    numeric: true,
+                  },
+                  ...(order.address === undefined
+                    ? []
+                    : [{ label: 'Address', value: order.address }]),
+                  ...(order.phone === undefined
+                    ? []
+                    : [{ label: 'Phone', value: <span dir="ltr">{order.phone}</span> }]),
+                  {
+                    label: 'Total',
+                    value: <MoneyText value={order.total} currency={BISTRO_VENUE.currency} />,
+                    numeric: true,
+                  },
+                ]}
               />
-            }
-          >
-            <KeyValueList
-              columns={1}
-              items={[
-                { label: 'Name', value: order.name },
-                {
-                  label: channel === 'takeaway' ? 'Pick-up' : 'Delivery',
-                  value: order.time,
-                  numeric: true,
-                },
-                ...(order.address === undefined
-                  ? []
-                  : [{ label: 'Address', value: order.address }]),
-                ...(order.phone === undefined
-                  ? []
-                  : [{ label: 'Phone', value: <span dir="ltr">{order.phone}</span> }]),
-                {
-                  label: 'Total',
-                  value: <MoneyText value={order.total} currency={BISTRO_VENUE.currency} />,
-                  numeric: true,
-                },
-              ]}
-            />
-          </SectionCard>
-        </li>
-      ))}
-    </ul>
+            </SectionCard>
+          </li>
+        ))}
+      </ul>
+    </div>
   )
 }
 
@@ -427,7 +450,7 @@ function MoveGuestsDialog({
             ],
           }
         : {
-            affected: 'The waiter and the kitchen see the new table at once.',
+            affected: ['The waiter', 'The kitchen'],
           })}
       confirmLabel="Move"
       onConfirm={(answer) => {
@@ -485,7 +508,16 @@ export function Service({
     () => BISTRO_ORDERS,
   )
   const [channel, setChannel] = useState(initialChannel)
-  const [chosen, setChosen] = useState<string | undefined>(tableId)
+  // The table the waiter just left is chosen, with what went to the kitchen (P5.93 item 3).
+  const [left, setLeft] = useExampleState<LeftTable | null>(`left.${BISTRO_VENUE.id}`, () => null)
+  const [chosen, setChosen] = useState<string | undefined>(tableId ?? left?.tableId)
+  /** The last change on the floor, with its Undo in the table's panel or the orders' list. */
+  const [undo, setUndo] = useState<{
+    /** A table's id, or a channel. */
+    place: string
+    message: string
+    onUndo?: () => void
+  } | null>(null)
   const [move, setMove] = useState(dialog === 'move')
   const table = tables.find((each) => each.id === chosen)
   const update = (id: string, change: Partial<BistroTable>, drop?: 'party') => {
@@ -523,6 +555,7 @@ export function Service({
       selected={chosen === undefined ? [] : [chosen]}
       onSelectionChange={(selected) => {
         setChosen(selected[0])
+        setLeft(null)
       }}
       onItemActivate={(item) => {
         // One tap opens the tab (P5.90 item 20); a reservation is shown first.
@@ -533,9 +566,23 @@ export function Service({
       layout={phone ? 'phone' : 'desktop'}
     />
   )
+  const leftNote = left !== null && left.tableId === chosen && left.sent !== null ? left.sent : null
+  const undoNote =
+    undo === null || undo.place !== chosen ? null : undo.onUndo === undefined ? (
+      <FloorNote>{undo.message}</FloorNote>
+    ) : (
+      <InlineUndo
+        message={undo.message}
+        onUndo={() => {
+          undo.onUndo?.()
+          setUndo(null)
+        }}
+      />
+    )
   const panel = (
     <TablePanel
       table={table}
+      note={undoNote ?? (leftNote === null ? undefined : <FloorNote>{leftNote}</FloorNote>)}
       onOpen={() => {
         if (table !== undefined) openTab(table)
       }}
@@ -549,12 +596,12 @@ export function Service({
           state: 'occupied',
           party: { ...(table.party ?? {}), time: BISTRO.now },
         })
-        notice.success(`${tableName(table)}: guests seated at ${BISTRO.now}.`, {
-          action: {
-            label: 'Undo',
-            onClick: () => {
-              restore(before)
-            },
+        // Undo in the table's panel, not a toast (P5.93 item 3).
+        setUndo({
+          place: table.id,
+          message: `Guests seated at ${BISTRO.now}`,
+          onUndo: () => {
+            restore(before)
           },
         })
       }}
@@ -562,12 +609,11 @@ export function Service({
         if (table === undefined) return
         const before = table
         update(table.id, { state: 'free' }, 'party')
-        notice.success(`${tableName(table)} is free.`, {
-          action: {
-            label: 'Undo',
-            onClick: () => {
-              restore(before)
-            },
+        setUndo({
+          place: table.id,
+          message: `${tableName(table)} is free`,
+          onUndo: () => {
+            restore(before)
           },
         })
       }}
@@ -598,14 +644,30 @@ export function Service({
     setOrders((current) =>
       current.map((each) => (each.id === order.id ? { ...each, state: next } : each)),
     )
-    notice.success(
-      next === 'ready'
-        ? `${order.number} is ready.`
-        : next === 'out'
-          ? `${order.number} is out for delivery.`
-          : `${order.number} is done.`,
+    // The order's badge changes in place; a finished order leaves the list with Undo at its top
+    // (P5.93 item 3: no toast).
+    setUndo(
+      next === 'done'
+        ? {
+            place: order.channel,
+            message: `${order.number} is done`,
+            onUndo: () => {
+              setOrders((current) => current.map((each) => (each.id === order.id ? order : each)))
+            },
+          }
+        : null,
     )
   }
+  const channelUndo = (kind: ChannelOrder['channel']) =>
+    undo?.place !== kind || undo.onUndo === undefined ? undefined : (
+      <InlineUndo
+        message={undo.message}
+        onUndo={() => {
+          undo.onUndo?.()
+          setUndo(null)
+        }}
+      />
+    )
   return (
     <BistroShell phone={phone} tab="floor">
       <Frame phone={phone} wide>
@@ -627,12 +689,26 @@ export function Service({
             {
               value: 'takeaway',
               label: `Takeaway (${number(String(waiting('takeaway')))})`,
-              content: <ChannelOrders channel="takeaway" orders={orders} onAdvance={advance} />,
+              content: (
+                <ChannelOrders
+                  channel="takeaway"
+                  orders={orders}
+                  onAdvance={advance}
+                  undo={channelUndo('takeaway')}
+                />
+              ),
             },
             {
               value: 'delivery',
               label: `Delivery (${number(String(waiting('delivery')))})`,
-              content: <ChannelOrders channel="delivery" orders={orders} onAdvance={advance} />,
+              content: (
+                <ChannelOrders
+                  channel="delivery"
+                  orders={orders}
+                  onAdvance={advance}
+                  undo={channelUndo('delivery')}
+                />
+              ),
             },
           ]}
         />
@@ -653,17 +729,28 @@ export function Service({
           onMove={(to, notify) => {
             const party = table.party
             if (party === undefined) return
+            const before = { from: table, to }
             update(to.id, { state: table.state, party })
             update(table.id, { state: 'free' }, 'party')
             setChosen(to.id)
-            const moved = `Guests moved from ${tableName(table)} to ${tableName(to)}.`
-            notice.success(
-              table.state !== 'reserved' || party.phone === undefined
-                ? moved
-                : notify.includes('guest')
-                  ? `${moved} ${party.name ?? ''} gets an SMS.`
-                  : `${moved} No message was sent.`,
-            )
+            // The answer in the new table's panel (P5.93 item 3): Undo while no one was told; a
+            // sent SMS cannot be taken back, so it is said, not undone.
+            const moved = `Guests moved here from ${tableName(table)}.`
+            const texted =
+              table.state === 'reserved' && party.phone !== undefined && notify.includes('guest')
+            setUndo({
+              place: to.id,
+              message: texted ? `${moved} ${party.name ?? ''} gets an SMS.` : moved,
+              ...(texted
+                ? {}
+                : {
+                    onUndo: () => {
+                      restore(before.from)
+                      restore(before.to)
+                      setChosen(before.from.id)
+                    },
+                  }),
+            })
           }}
         />
       )}

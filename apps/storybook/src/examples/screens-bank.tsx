@@ -1,4 +1,13 @@
-import { BookCheck, CheckCheck, CircleAlert, CircleCheck, Pencil, Search } from 'lucide-react'
+import {
+  ArrowRight,
+  BookCheck,
+  CheckCheck,
+  CircleAlert,
+  CircleCheck,
+  Pencil,
+  ReceiptText,
+  Search,
+} from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import {
   Accordion,
@@ -21,6 +30,7 @@ import {
   MoneyText,
   ProgressBar,
   RadioGroupField,
+  RelatedDocuments,
   SectionCard,
   SelectField,
   StatusBadge,
@@ -48,10 +58,10 @@ import {
   decimal,
   entryBalance,
   entryLines,
-  HANDLED,
   OPEN_ITEMS,
   openItem,
   PAYMENT_CODES,
+  PROFORMA_PAYMENTS,
   QUICK_TYPES,
   quickTypesFor,
   splitBalance,
@@ -78,8 +88,10 @@ import {
  * the lines that need the user are opened: a press opens the line in a Drawer (the whole screen
  * on a phone) with the proposal, "Confirm and next" and "Change" — the full choice (close open
  * items, post to an account, split) and the bank's details stay folded until asked for. A
- * payment against a proforma invoice is done before the user comes: the Core issued the advance
- * invoice, and the line links to it. On a phone the lines that need the user come first. "Post
+ * payment against a proforma invoice is one step (P5.93 item 17): the Core proposes "post it as
+ * an advance and issue the advance invoice"; one Confirm does both, and the drawer shows the
+ * result — the new advance invoice's number as a link and the related documents — with "Next
+ * line". On a phone the lines that need the user come first. "Post
  * statement" opens a confirmation with the journal entry once every line is done. The screen
  * plays the application: it keeps every line's draft and computes in whole paras
  * (data-bank.ts); the components show.
@@ -95,6 +107,10 @@ export const BANK_ROUTES = {
   difference: `${STATEMENT_PATH}?line=7`,
   /** Every line decided: the statement can be posted. */
   decided: `${STATEMENT_PATH}?stage=decided`,
+  /** Line 9 open: a payment against a proforma invoice, the advance and its invoice proposed. */
+  proforma: `${STATEMENT_PATH}?line=9`,
+  /** Line 9 confirmed: the advance invoice issued, its link and the related documents. */
+  proformaIssued: `${STATEMENT_PATH}?line=9&issued`,
 }
 
 const BANKING_TABS: ModuleTab[] = [
@@ -133,7 +149,7 @@ function size(line: BankLine): bigint {
 
 /** A line's work as the Core proposes it: its decision preselected, the other kinds ready. */
 function startWork(line: BankLine): LineWork {
-  const suggestion = HANDLED[line.id]?.decision ?? SUGGESTIONS[line.id]?.decision
+  const suggestion = SUGGESTIONS[line.id]?.decision
   return {
     kind: suggestion?.kind ?? null,
     close:
@@ -157,8 +173,7 @@ function startWork(line: BankLine): LineWork {
             },
           ],
     extra: [],
-    // What the Core did by itself is done when the statement opens.
-    done: line.id in HANDLED,
+    done: false,
   }
 }
 
@@ -182,10 +197,12 @@ function decisionOf(work: LineWork, line: BankLine): Decision | null {
   return null
 }
 
-function startAll(stage: 'start' | 'decided'): Record<string, LineWork> {
+function startAll(stage: 'start' | 'decided', issued: boolean): Record<string, LineWork> {
   return Object.fromEntries(
     BANK_LINES.map((line) => {
       const work = startWork(line)
+      // The proforma's advance invoice already issued (a restored screen).
+      if (issued && line.id in PROFORMA_PAYMENTS) work.done = true
       if (stage === 'decided') {
         // Every line decided: the matches accepted, the unknown payment as an advance.
         if (line.id === 'b10') {
@@ -619,6 +636,11 @@ function LineEditor({
   )
 }
 
+/** A sentence ending in a name: one full stop, also after "a.d." or "d.o.o.". */
+function sentenceEnd(text: string): string {
+  return text.endsWith('.') ? text : `${text}.`
+}
+
 // ── The line open in the drawer ───────────────────────────────────────────────────────────────
 
 function LineDrawer({
@@ -629,6 +651,7 @@ function LineDrawer({
   onSearchAll,
   onConfirm,
   onReopen,
+  onNext,
   posted,
   onOpenChange,
 }: {
@@ -641,6 +664,8 @@ function LineDrawer({
   onConfirm: () => void
   /** A done line taken back, to be changed. */
   onReopen: () => void
+  /** Opens the next line that needs the user (after a result shown in place); none: undefined. */
+  onNext: (() => void) | undefined
   posted: boolean
   onOpenChange: (open: boolean) => void
 }) {
@@ -650,19 +675,35 @@ function LineDrawer({
   const [changing, setChanging] = useState(state === 'needs')
   const decision = decisionOf(work, line)
   const suggestion = SUGGESTIONS[line.id]
-  const handled = HANDLED[line.id]
+  const proforma = PROFORMA_PAYMENTS[line.id]
   const problem = problemOf(line, work, money)
   const badge = STATE_BADGE[state]
+  // A proforma's payment: one Confirm posts the advance and issues its invoice (P5.93 item 17).
+  const confirmLabel =
+    proforma !== undefined && !changing ? 'Post advance and issue invoice' : 'Confirm and next'
 
   const actions = posted ? undefined : work.done ? (
-    <Button
-      intent="edit"
-      label="Change"
-      onClick={() => {
-        onReopen()
-        setChanging(true)
-      }}
-    />
+    proforma !== undefined ? (
+      // The advance invoice is issued: corrected only by its own document, so no "Change" here.
+      onNext === undefined ? undefined : (
+        <Button
+          family="primary"
+          icon={ArrowRight}
+          emphasis="primary"
+          label="Next line"
+          onClick={onNext}
+        />
+      )
+    ) : (
+      <Button
+        intent="edit"
+        label="Change"
+        onClick={() => {
+          onReopen()
+          setChanging(true)
+        }}
+      />
+    )
   ) : (
     <>
       {!changing && (
@@ -680,7 +721,7 @@ function LineDrawer({
           family="primary"
           icon={CircleCheck}
           emphasis="primary"
-          label="Confirm and next"
+          label={confirmLabel}
           onClick={onConfirm}
         />
       ) : (
@@ -688,7 +729,7 @@ function LineDrawer({
           family="primary"
           icon={CircleCheck}
           emphasis="primary"
-          label="Confirm and next"
+          label={confirmLabel}
           reason={problem}
         />
       )}
@@ -712,16 +753,81 @@ function LineDrawer({
           <StatusBadge label={badge.label} tone={badge.tone} />
         </div>
 
-        {handled !== undefined && (
-          <p className="bidi-content m-0 text-md text-primary">
-            {`${handled.text.replace(handled.document, '').trim()} `}
-            <Link href={`#/sales/advance-invoices/${handled.document}`} className={LINK} dir="ltr">
-              {handled.document}
-            </Link>
-          </p>
+        {proforma !== undefined && work.done && (
+          // The result in place: the new advance invoice and the documents it ties together.
+          <section aria-label="Result" className="flex flex-col gap-4">
+            <p className="m-0 flex items-start gap-2 text-md text-primary">
+              <CircleCheck
+                aria-hidden="true"
+                className="mt-1 size-4 shrink-0 text-status-success-fg"
+              />
+              <span className="bidi-content">
+                {'Advance invoice '}
+                <Link
+                  href={`#/sales/advance-invoices/${proforma.advanceInvoice}`}
+                  className={LINK}
+                  dir="ltr"
+                >
+                  {proforma.advanceInvoice}
+                </Link>
+                {` issued; ${money(line.paras)} is posted as an advance received from ${sentenceEnd(line.party)}`}
+              </span>
+            </p>
+            <div className="flex flex-col gap-1">
+              <h3 className="m-0 text-sm font-semibold text-primary">Related documents</h3>
+              <RelatedDocuments
+                label="Related documents"
+                items={[
+                  {
+                    key: 'proforma',
+                    type: 'Proforma invoice',
+                    number: proforma.proforma,
+                    href: `#/sales/proforma-invoices/${proforma.proforma}`,
+                    status: statusBadge('Paid'),
+                  },
+                  {
+                    key: 'advance',
+                    type: 'Advance invoice',
+                    number: proforma.advanceInvoice,
+                    href: `#/sales/advance-invoices/${proforma.advanceInvoice}`,
+                    status: statusBadge('Issued'),
+                  },
+                ]}
+              />
+            </div>
+          </section>
         )}
 
-        {handled === undefined && decision !== null && !changing && (
+        {proforma !== undefined && !work.done && !changing && (
+          // The choice: one Confirm posts the advance and issues its invoice at once.
+          <section aria-label="What it does" className="flex flex-col gap-1">
+            <ul className="m-0 flex list-none flex-col gap-1 p-0 text-md text-primary">
+              <li className="bidi-content">
+                {'Pays proforma invoice '}
+                <Link
+                  href={`#/sales/proforma-invoices/${proforma.proforma}`}
+                  className={LINK}
+                  dir="ltr"
+                >
+                  {proforma.proforma}
+                </Link>
+                .
+              </li>
+              <li className="bidi-content">
+                {`${money(line.paras)} is posted as an advance received from ${sentenceEnd(line.party)}`}
+              </li>
+              <li className="flex items-start gap-2">
+                <ReceiptText aria-hidden="true" className="mt-1 size-4 shrink-0 text-secondary" />
+                <span className="bidi-content">The advance invoice is issued at once.</span>
+              </li>
+            </ul>
+            {suggestion !== undefined && (
+              <p className="bidi-content m-0 text-sm text-secondary">{`Why: ${suggestion.reason}`}</p>
+            )}
+          </section>
+        )}
+
+        {proforma === undefined && decision !== null && !changing && (
           <section aria-label="What it does" className="flex flex-col gap-1">
             <ul className="m-0 flex list-none flex-col gap-1 p-0 text-md text-primary">
               {resultLines(line, decision, money).map((text) => (
@@ -958,15 +1064,18 @@ export function BankStatement({
   phone,
   line: startLine,
   stage = 'start',
+  issued = false,
 }: {
   phone: boolean
   /** The line open when the screen opens (its number). */
   line?: number
   stage?: 'start' | 'decided'
+  /** The proforma's advance invoice already issued (a restored screen). */
+  issued?: boolean
 }) {
   const { format, linkComponent: Link } = useLiro()
   const money = useMoney()
-  const [work, setWork] = useState(() => startAll(stage))
+  const [work, setWork] = useState(() => startAll(stage, issued))
   const [posted, setPosted] = useState(false)
   const [openId, setOpenId] = useState<string | undefined>(
     startLine === undefined ? undefined : `b${String(startLine)}`,
@@ -1076,6 +1185,9 @@ export function BankStatement({
     const id = line.id
     const after = { ...work, [id]: { ...lineWork, done: true } }
     change(id, { done: true })
+    // A proforma's payment: the advance invoice is issued at once and the drawer shows the
+    // result (its link and the related documents) with "Next line"; nothing to undo by a toast.
+    if (id in PROFORMA_PAYMENTS && lineWork.kind === 'account') return
     setOpenId(nextNeeding(id, after)?.id)
     notice.success(
       `Line ${format.number(String(line.no))} done: ${howText(line, decision, money)}.`,
@@ -1094,17 +1206,23 @@ export function BankStatement({
   const rows: Row[] = BANK_LINES.map((each, at) => {
     const eachWork = work[each.id]
     const state = states[at] ?? 'needs'
-    const handled = HANDLED[each.id]
+    const proforma = PROFORMA_PAYMENTS[each.id]
     const decision = eachWork === undefined ? null : decisionOf(eachWork, each)
     const what =
-      handled !== undefined ? (
+      proforma !== undefined && eachWork?.done === true ? (
         <>
           {'Advance invoice '}
-          <Link href={`#/sales/advance-invoices/${handled.document}`} className={LINK} dir="ltr">
-            {handled.document}
+          <Link
+            href={`#/sales/advance-invoices/${proforma.advanceInvoice}`}
+            className={LINK}
+            dir="ltr"
+          >
+            {proforma.advanceInvoice}
           </Link>
-          {' created'}
+          {' issued'}
         </>
+      ) : proforma !== undefined && eachWork?.kind === 'account' ? (
+        `Advance and its invoice for ${proforma.proforma}`
       ) : decision === null ? (
         'No match found'
       ) : (
@@ -1250,6 +1368,14 @@ export function BankStatement({
           onReopen={() => {
             change(line.id, { done: false })
           }}
+          onNext={(() => {
+            const next = nextNeeding(line.id, work)
+            return next === undefined
+              ? undefined
+              : () => {
+                  setOpenId(next.id)
+                }
+          })()}
           onOpenChange={(next) => {
             if (!next) setOpenId(undefined)
           }}
@@ -1341,5 +1467,10 @@ export const BANK_STATEMENT_ROUTES: ExampleRoute[] = [
   {
     path: BANK_ROUTES.decided,
     render: (phone) => <BankStatement phone={phone} stage="decided" />,
+  },
+  { path: BANK_ROUTES.proforma, render: (phone) => <BankStatement phone={phone} line={9} /> },
+  {
+    path: BANK_ROUTES.proformaIssued,
+    render: (phone) => <BankStatement phone={phone} line={9} issued />,
   },
 ]

@@ -136,7 +136,20 @@ export function SessionList(props: SessionListProps) {
                   {details.map((part, index) => (
                     <span key={index}>
                       {index > 0 && ' · '}
-                      {part === session.address ? <bdi dir="ltr">{part}</bdi> : part}
+                      {part === session.address ? (
+                        <bdi dir="ltr">{part}</bdi>
+                      ) : current && index === details.length - 1 ? (
+                        // P5.93: "Active now" in the success tone with a small dot.
+                        <span className="inline-flex items-center gap-1 font-medium text-status-success-fg">
+                          <span
+                            aria-hidden="true"
+                            className="size-1.5 shrink-0 rounded-full bg-status-success-solid"
+                          />
+                          {part}
+                        </span>
+                      ) : (
+                        part
+                      )}
                     </span>
                   ))}
                 </span>

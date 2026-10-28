@@ -96,11 +96,11 @@ export const Sent: Story = {
   },
 }
 
-/** No rating any more, with the reason in words. */
-export const Disabled: Story = {
+/** No rating any more (P5.93): the scale and the comment read-only, Send unavailable, why in words. */
+export const Unavailable: Story = {
+  name: 'Unavailable with reason',
   args: {
-    disabled: true,
-    disabledReason: 'The rating closed 14 days after the request was resolved.',
+    unavailableReason: 'The rating closed 14 days after the request was resolved.',
   },
 }
 

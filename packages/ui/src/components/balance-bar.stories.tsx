@@ -342,7 +342,7 @@ export const PhoneWidth: Story = {
   render: () => (
     <PhoneFrame>
       <ExampleProvider>
-        <div className="h-full overflow-y-auto p-4">
+        <div className="p-4">
           <JournalEntry layout="phone" />
         </div>
       </ExampleProvider>

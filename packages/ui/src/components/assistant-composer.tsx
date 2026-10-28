@@ -1,11 +1,11 @@
 import { ArrowUp } from 'lucide-react'
-import { useState, type KeyboardEvent, type ReactNode } from 'react'
+import { useId, useState, type KeyboardEvent, type ReactNode } from 'react'
 import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 import { questionKey, questionReady } from './assistant-logic'
 import { IconButton } from './button'
-import { Field } from './field'
+import { Field, FieldMessage, READ_ONLY_EMPTY } from './field'
 
 /*
  * AssistantComposer (BUILD-PLAN P5.34): the box where the user asks an assistant in plain words.
@@ -19,7 +19,9 @@ import { Field } from './field'
  * - The box grows with the text (field-sizing) up to 12 lines, then scrolls.
  * - `busy`: an answer is being written; the box can be typed in, the ask button waits (Stop is
  *   the answer's).
- * - Disabled with a visible reason, as every field (the assistant is off for this company).
+ * - `unavailableReason` (the assistant is off for this company, P5.93 item 1): nothing can be
+ *   asked. The box is read-only (the one non-editable look of every field) and Ask is an
+ *   unavailable action with its reason in words under the box, which describes the button.
  * - The label names the box for assistive technology (default "Your question"); the visible
  *   prompt is the placeholder.
  */
@@ -38,10 +40,11 @@ export interface AssistantComposerProps {
   onAsk: (question: string) => void
   /** An answer is being written: the ask button waits. */
   busy?: boolean
-  /** No question can be asked. Give `disabledReason`. */
-  disabled?: boolean
-  /** Why, under the box. */
-  disabledReason?: ReactNode
+  /**
+   * No question can be asked, and why (from the application): the box is read-only and the
+   * reason stands under it, describing the unavailable Ask button.
+   */
+  unavailableReason?: ReactNode
   /** 'panel' (default) or 'page' (the "Ask" page's large box). */
   size?: 'panel' | 'page'
   className?: string
@@ -53,8 +56,9 @@ export function AssistantComposer(props: AssistantComposerProps) {
   const [inner, setInner] = useState(props.defaultValue ?? '')
   const text = props.value ?? inner
   const page = props.size === 'page'
-  const disabled = props.disabled === true
-  const ready = questionReady(text) && !disabled && props.busy !== true
+  const reasonId = `${useId()}-reason`
+  const unavailable = props.unavailableReason !== undefined && props.unavailableReason !== null
+  const ready = questionReady(text) && !unavailable && props.busy !== true
 
   const setText = (next: string) => {
     setInner(next)
@@ -80,8 +84,7 @@ export function AssistantComposer(props: AssistantComposerProps) {
     <Field
       label={props.label ?? messages['assistant.question']}
       hideLabel
-      {...(disabled ? { disabled: true } : {})}
-      {...(props.disabledReason === undefined ? {} : { disabledReason: props.disabledReason })}
+      readOnly={unavailable}
       className={cn('font-sans', props.className)}
     >
       {(control) => (
@@ -92,29 +95,37 @@ export function AssistantComposer(props: AssistantComposerProps) {
             className={cn(
               'box-border flex min-w-0 flex-col border border-solid border-control bg-surface-raised transition-colors duration-(--liro-duration-fast) focus-within:border-focus',
               page ? 'gap-2 rounded-lg p-3 shadow-xs' : 'gap-1 rounded-md p-2',
-              control.disabled && 'border-default bg-surface-disabled',
+              control.readOnly && 'border-default bg-surface-disabled focus-within:border-default',
             )}
           >
             <textarea
               id={control.id}
-              aria-describedby={control.describedBy}
-              disabled={control.disabled}
+              aria-describedby={
+                [control.describedBy, unavailable ? reasonId : undefined]
+                  .filter(Boolean)
+                  .join(' ') || undefined
+              }
+              readOnly={control.readOnly}
               value={text}
               rows={page ? 3 : 2}
               enterKeyHint="send"
               dir="auto"
-              {...(props.placeholder === undefined ? {} : { placeholder: props.placeholder })}
+              {...(control.readOnly
+                ? { placeholder: READ_ONLY_EMPTY }
+                : props.placeholder === undefined
+                  ? {}
+                  : { placeholder: props.placeholder })}
               onChange={(event) => {
-                setText(event.target.value)
+                if (!control.readOnly) setText(event.target.value)
               }}
               onKeyDown={onKeyDown}
               className={cn(
-                'm-0 box-border block max-h-[12lh] w-full min-w-0 resize-none border-0 bg-transparent p-1 font-sans text-primary outline-none [field-sizing:content] text-match-parent placeholder:text-tertiary disabled:cursor-not-allowed disabled:text-disabled',
+                'm-0 box-border block max-h-[12lh] w-full min-w-0 resize-none border-0 bg-transparent p-1 font-sans text-primary outline-none [field-sizing:content] text-match-parent placeholder:text-tertiary read-only:cursor-text read-only:placeholder:text-secondary',
                 page ? 'min-h-[3lh] text-md' : 'min-h-[2lh] text-sm',
               )}
             />
             <div className="flex items-center justify-end gap-2">
-              {page && !control.disabled && (
+              {page && !control.readOnly && (
                 <span className={cn('min-w-0 flex-1 text-xs text-tertiary', TEXT_DIRECTION)}>
                   {messages['assistant.askHint']}
                 </span>
@@ -125,10 +136,16 @@ export function AssistantComposer(props: AssistantComposerProps) {
                 icon={ArrowUp}
                 label={messages['assistant.ask']}
                 disabled={!ready}
+                {...(unavailable ? { 'aria-describedby': reasonId } : {})}
                 onClick={ask}
               />
             </div>
           </div>
+          {unavailable && (
+            <FieldMessage id={reasonId} tone="hint">
+              {props.unavailableReason}
+            </FieldMessage>
+          )}
         </div>
       )}
     </Field>

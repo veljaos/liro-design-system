@@ -213,7 +213,7 @@ export const BusinessYearJuly: Story = {
   ),
 }
 
-/** Empty, required, error, read-only next to disabled. */
+/** Empty, required, error, read only (the read-only look, an empty value "—"). */
 export const States: Story = {
   render: () => (
     <div className="flex max-w-100 flex-col gap-6">
@@ -231,12 +231,6 @@ export const States: Story = {
       <PeriodField
         label="Period (read-only)"
         readOnly
-        defaultValue={{ start: '2026-03-01', end: '2026-03-31' }}
-      />
-      <PeriodField
-        label="Period (disabled)"
-        disabled
-        disabledReason="The report is being generated."
         defaultValue={{ start: '2026-03-01', end: '2026-03-31' }}
       />
     </div>
@@ -273,7 +267,6 @@ export const Arabic: Story = {
         readOnly
         defaultValue={{ start: '2026-09-01', end: '2026-09-30' }}
       />
-      <PeriodField label={ARABIC.label} disabled disabledReason={ARABIC.reason} />
     </div>
   ),
 }
@@ -293,7 +286,6 @@ export const Japanese: Story = {
         readOnly
         defaultValue={{ start: '2026-09-01', end: '2026-09-30' }}
       />
-      <PeriodField label={JAPANESE.label} disabled disabledReason={JAPANESE.reason} />
     </div>
   ),
 }

@@ -203,6 +203,9 @@ export interface LiroMessages {
   'stepper.step': (step: number, stepText: string, total: number, totalText: string) => string
   /** An action that cannot be used, with the reason it is given. */
   'action.unavailable': (reason: string) => string
+  /** P5.93: a tile's or a card's state line — the state over its detail ("Unavailable" / "Sold out"). */
+  'stateLine.unavailable': string
+  'stateLine.locked': string
   /** EditableGrid: each cell's accessible name, its column and line: "Quantity, line 3". */
   'grid.cell': (column: string, line: number, text: string) => string
   /** EditableGrid: a message about one cell under its row: "Quantity: Enter a number". */
@@ -559,6 +562,10 @@ export interface LiroMessages {
   'setup.next': string
   'setup.todo': string
   'setup.blocked': string
+  /** All steps done (P5.93). */
+  'setup.complete': string
+  'setup.showSteps': string
+  'setup.hideSteps': string
   /** SignerList (P5.21): "1 of 3 signed"; numbers already written by `format.number`. */
   'signing.summary': (
     signed: number,
@@ -1203,6 +1210,9 @@ export interface LiroMessages {
   'pos.inOrder': (countText: string) => string
   /** ProductGrid's search field. */
   'pos.search': string
+  /** P5.93: ProductTile's stock state over the application's detail ("Low stock" / "3 left"). */
+  'pos.lowStock': string
+  'pos.outOfStock': string
   /** PosShell's order bar and sheet on a phone. */
   'pos.order': string
   /** CatalogPicker (P5.90 item 14). */
@@ -1230,6 +1240,10 @@ export interface LiroMessages {
   'payment.cash': string
   'payment.card': string
   'payment.split': string
+  /** P5.93: every way to pay but cash and card stands behind it (a menu). */
+  'payment.other': string
+  /** P5.93: on a phone the done view's receipt (`doneContent`) opens under this heading. */
+  'payment.doneDetails': string
   'payment.tendered': string
   'payment.exact': string
   'payment.quickAmounts': string
@@ -1259,6 +1273,12 @@ export interface LiroMessages {
   'quantity.increase': string
   'quantity.belowMin': (minText: string) => string
   'quantity.aboveMax': (maxText: string) => string
+  /**
+   * Why + (or −) cannot be used (P5.93 item 39): the limit, and the application's reason when it
+   * gives one ("Maximum 6 — the quantity on the order").
+   */
+  'quantity.atMax': (maxText: string, reason?: string) => string
+  'quantity.atMin': (minText: string, reason?: string) => string
   /** A handheld worklist (picking, a stock count): changes kept on the device while offline. */
   'queue.waiting': (count: number, countText: string) => string
   // P5.15 / P5.12
@@ -1710,14 +1730,11 @@ export interface LiroMessages {
   'buyer.id': string
   'buyer.optionalType': string
   'buyer.optional': string
-  /** ReceiptFinder: scan, search by number, date and total, the results. */
+  /** ReceiptFinder: scan, or one search field (P5.93: number, date or total), the results. */
   'receiptFinder.scan': string
-  'receiptFinder.searchBy': string
-  'receiptFinder.orSearchBy': string
-  'receiptFinder.number': string
-  'receiptFinder.date': string
-  'receiptFinder.total': string
-  'receiptFinder.search': string
+  'receiptFinder.searchLabel': string
+  'receiptFinder.orSearch': string
+  'receiptFinder.searchHint': string
   'receiptFinder.results': string
   'receiptFinder.none': string
   'receiptFinder.noneDescription': string
@@ -1824,6 +1841,8 @@ export interface LiroMessages {
   /** LinkSuggestions (P5.30 d): the count announced while the user types, and the search. */
   'suggestions.count': (count: number, countText: string) => string
   'suggestions.searching': string
+  /** LinkSuggestions without suggestions (P5.93 item 2): what the box is for. */
+  'suggestions.empty': string
   /** PageContents (P5.30 e). */
   'pageContents.title': string
   /** SearchResultList (P5.30 e): the count over the results, and Try again. */
@@ -2124,28 +2143,34 @@ export interface LiroMessages {
   'folderPicker.none': string
   'folderPicker.moving': string
   'folderPicker.here': string
-  /** NameConflictDialog: the question, the three answers, "Apply to all", the progress. */
+  /**
+   * NameConflictDialog: the short question, where the other file is, the three answers (one press
+   * answers, P5.93), Keep both's new name, Replace's reason, "Do this for the other N
+   * conflicts", the progress.
+   */
   'conflict.title': string
   'conflict.message': (folder: string) => string
-  'conflict.choice': string
   'conflict.replace': string
-  'conflict.replaceHint': string
+  'conflict.replaceUnavailable': (reason: string) => string
   'conflict.keepBoth': string
   'conflict.keepBothHint': (name: string) => string
   'conflict.skip': string
-  'conflict.skipHint': string
   'conflict.existing': string
   'conflict.incoming': string
-  'conflict.applyToAll': (count: number, countText: string) => string
+  'conflict.applyToOthers': (count: number, countText: string) => string
   'conflict.progress': (
     index: number,
     indexText: string,
     total: number,
     totalText: string,
   ) => string
-  'conflict.continue': string
   'conflict.cancel': string
-  /** ShareDialog: adding people, who has access, the link. */
+  /**
+   * ShareDialog (the familiar pattern since P5.93): adding people or roles and Invite, the people
+   * with access and each one's access menu, general access (Restricted / Anyone with the link and
+   * what each means), the link with its Copy button and the inline "Copied", the expiry and the
+   * password.
+   */
   'sharing.title': string
   'sharing.add': string
   'sharing.level': string
@@ -2153,12 +2178,16 @@ export interface LiroMessages {
   'sharing.who': string
   'sharing.onlyYou': string
   'sharing.owner': string
-  'sharing.levelOf': (name: string) => string
-  'sharing.remove': (name: string) => string
-  'sharing.link': string
-  'sharing.linkNone': string
-  'sharing.createLink': string
+  /** An access menu's name: its visible level first ("Editor, access for Tom Hughes"). */
+  'sharing.levelMenu': (level: string, name: string) => string
+  'sharing.removeAccess': string
+  'sharing.general': string
+  'sharing.restricted': string
+  'sharing.restrictedHint': string
+  'sharing.anyone': string
+  'sharing.anyoneHint': string
   'sharing.linkAddress': string
+  'sharing.copied': string
   'sharing.expires': string
   'sharing.never': string
   'sharing.expiresTooSoon': string
@@ -2183,6 +2212,8 @@ export interface LiroMessages {
   'sharing.setPassword': string
   // ── P5.66 records ──
   /** DefinedForm: a required value missing — a value to write, an option to choose, a box to tick. */
+  /** DefinedForm without definitions (P5.93 item 2). */
+  'definedForm.empty': string
   'definedForm.fill': string
   'definedForm.choose': string
   'definedForm.tick': string
@@ -2220,6 +2251,22 @@ export interface LiroMessages {
   'pivot.export': string
   'pivot.drillHint': string
   'pivot.gridHint': string
+  /** P5.93 item 45: the suggested views' group. */
+  'pivot.views': string
+  /** One value in the summary line ("Sum of Amount"). */
+  'pivot.summaryValue': (field: string, aggregation: string) => string
+  /** The one-line summary above the grid: values, rows ('' when none), columns ('' when none). */
+  'pivot.summary': (values: string, rows: string, columns: string) => string
+  /** One filter in the summary ("Salesperson: Ana Petrović"). */
+  'pivot.summaryFilter': (field: string, values: string) => string
+  /** The filters after the summary ("Only Salesperson: Ana Petrović"). */
+  'pivot.summaryFilters': (filters: string) => string
+  /** A filter that keeps more than three values ("4 values"). */
+  'pivot.summaryMany': (countText: string) => string
+  /** Announced after a field is moved by dragging or its menu. */
+  'pivot.moved': (field: string, area: string, positionText: string, totalText: string) => string
+  /** Announced after a field is taken out of the layout. */
+  'pivot.removedField': (field: string) => string
   // P5.78 auto: RuleBuilder
   /** RuleBuilder: the blocks, the fields' labels, the joins, the add buttons, the empty lists. */
   'rule.when': string
@@ -2232,11 +2279,27 @@ export interface LiroMessages {
   'rule.any': string
   'rule.and': string
   'rule.or': string
-  'rule.field': string
-  'rule.operator': string
-  'rule.value': string
-  'rule.action': string
-  'rule.fieldFirst': string
+  /** P5.93 item 46: the blocks of further branches and of Else. */
+  'rule.elseIf': string
+  'rule.else': string
+  /** An Else-if block's name ("Else if 1"). */
+  'rule.branchName': (numberText: string) => string
+  /** The pills' accessible names ("Condition 2: field"); nothing is written on the screen. */
+  'rule.fieldOf': (item: string) => string
+  'rule.operatorOf': (item: string) => string
+  'rule.valueOf': (item: string) => string
+  'rule.actionOf': (item: string) => string
+  /** An empty pill's words. */
+  'rule.chooseTrigger': string
+  'rule.chooseField': string
+  'rule.chooseTest': string
+  'rule.chooseAction': string
+  'rule.addElseIf': string
+  'rule.addElse': string
+  /** An item's menu button ("Options: Condition 2"). */
+  'rule.itemMenu': (item: string) => string
+  /** Announced after an item is moved by dragging or its menu. */
+  'rule.moved': (item: string, positionText: string, totalText: string) => string
   'rule.addCondition': string
   'rule.addGroup': string
   'rule.addToGroup': string
@@ -2265,6 +2328,13 @@ export interface LiroMessages {
   /** ValueComparison with `chosen`: a differing row without a choice, and one with. */
   'comparison.choose': string
   'comparison.chosen': string
+  /** P5.93: ValueComparison's merge — the kept value's mark, "Keep all from …" (a source's name, or "Source 2"), the identical rows' switch, the merged record's preview and a field not chosen yet. */
+  'comparison.kept': string
+  'comparison.keepAll': (source: string) => string
+  'comparison.source': (numberText: string) => string
+  'comparison.showIdentical': (count: number, countText: string) => string
+  'comparison.preview': string
+  'comparison.notChosen': string
   // ── P5.81 reports ──
   /** DashboardGrid: the handle that moves a card ("Move: Revenue") and its instructions. */
   'dashboardGrid.moveCard': (title: string) => string
@@ -2289,4 +2359,71 @@ export interface LiroMessages {
   'dashboardGrid.removed': (title: string) => string
   /** The grid without cards. */
   'dashboardGrid.empty': string
+  // ── P5.93 code and the assistant's work ──
+  /** CodeBlock: the code's name without a title, Copy and its result, "Wrap lines". */
+  'code.label': string
+  'code.copy': string
+  'code.copied': string
+  'code.copyFailed': string
+  'code.wrap': string
+  /** A diff's added and removed lines and a highlighted line, for assistive technology. */
+  'code.added': string
+  'code.removed': string
+  'code.highlighted': string
+  /** The toggle that shows a failure's raw response or log (HealthList, Diagram's run). */
+  'code.showDetail': string
+  'code.hideDetail': string
+  /** HealthList: the last error's raw response, named with the thing ("Last error details: SEF"). */
+  'health.errorDetail': (name: string) => string
+  /** Diagram's run: a step's log ("Log: Send to the bank"). */
+  'diagram.stepLog': (step: string) => string
+  /** Trace: a status for assistive technology (done needs none: the title says it). */
+  'trace.running': string
+  'trace.pending': string
+  'trace.failed': string
+  /** After a link that opens in a new tab, for assistive technology. */
+  'trace.newTab': string
+  /** Reasoning: "Thinking…", then "Thought for 5 s" (the application's duration) or "Thought". */
+  'trace.thinking': string
+  'trace.thought': (duration: string | undefined) => string
+  /** Plan: "2 of 5 done". */
+  'trace.planProgress': (done: number, doneText: string, total: number, totalText: string) => string
+  /** Queue: "3 to do · 2 completed", and its two groups. */
+  'trace.queueSummary': (
+    toDo: number,
+    toDoText: string,
+    completed: number,
+    completedText: string,
+  ) => string
+  'trace.toDo': string
+  'trace.completed': string
+  /** Sources: "Used 4 records". */
+  'trace.sourcesUsed': (count: number, countText: string) => string
+  /** Task and Subagent: what the work handed back. */
+  'trace.result': string
+  // ── P5.93 (c) ──
+  /** InlineUndo's button (P5.93 item 3). */
+  'undo.label': string
+  // ── P5.93 (e) ──
+  /** ArticleList: the words at a card's foot that say where it leads. */
+  'articles.read': string
+  // ── P5.93 (h) ──
+  /** Charts whose marks are reached one by one (P5.93 item 44): the plot's keys. */
+  'chart.itemKeys': string
+  /** CandlestickChart: a candle's four prices, and the legend's rising and falling candles. */
+  'chart.open': string
+  'chart.high': string
+  'chart.low': string
+  'chart.close': string
+  'chart.rising': string
+  'chart.falling': string
+  /** Heatmap and MatrixChart: a cell's name from its row and column ("Mon, 14:00"). */
+  'chart.cellName': (row: string, column: string) => string
+  /** SankeyChart: a flow from one node to another ("Sales → Bank"), and its table's columns. */
+  'chart.flow': (from: string, to: string) => string
+  'chart.from': string
+  'chart.to': string
+  /** MatrixChart: a cell with nothing in it, and a tooltip's list cut short ("+3 more"). */
+  'chart.none': string
+  'chart.more': (count: number, countText: string) => string
 }

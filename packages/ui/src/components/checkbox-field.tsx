@@ -3,7 +3,6 @@ import { Checkbox } from '../primitives/checkbox'
 import { cn } from '../primitives/cn'
 import { TEXT_DIRECTION } from '../primitives/classes'
 import { Switch } from '../primitives/switch'
-import { useLiro } from '../provider/liro-provider'
 import {
   FieldLabelsHidden,
   FieldMessage,
@@ -15,8 +14,9 @@ import {
 /*
  * A checkbox or a switch with its label beside it (Mantine InlineInput.css, size 'sm'): the label
  * column starts 12px after the control, the label is 13px with a 20px line (the control's
- * height), the description and the error sit 5px under the label. Read-only keeps the control in
- * its colours and state, but it cannot be changed (aria-readonly); disabled greys it out.
+ * height), the description and the error sit 5px under the label. Read-only (P5.93 item 1, the
+ * one non-editable state) draws the control grey with its state still shown, focusable, and
+ * announced as read-only (aria-readonly); a click or Space changes nothing. No hint in read-only.
  */
 
 export interface CheckboxFieldProps extends FieldBaseProps {
@@ -40,9 +40,8 @@ interface InlineControlProps {
   'aria-describedby': string | undefined
   'aria-invalid': true | undefined
   'aria-readonly': true | undefined
-  title: string | undefined
   required: boolean
-  disabled: boolean
+  readOnly: boolean
   checked?: boolean
   defaultChecked?: boolean
   onCheckedChange: (checked: boolean) => void
@@ -51,12 +50,10 @@ interface InlineControlProps {
 }
 
 function InlineField(props: InlineProps) {
-  const { messages } = useLiro()
   const ids = useFieldIds(props)
   const labelsHidden = useContext(FieldLabelsHidden)
   const hideLabel = props.hideLabel ?? labelsHidden
   const readOnly = props.readOnly === true
-  const disabled = props.disabled === true
   const current = props.checked ?? props.defaultChecked ?? false
   const state = readOnly
     ? { checked: current }
@@ -76,9 +73,8 @@ function InlineField(props: InlineProps) {
         'aria-describedby': ids.describedBy,
         'aria-invalid': ids.hasError || undefined,
         'aria-readonly': readOnly || undefined,
-        title: readOnly ? messages['field.readOnly'] : undefined,
         required: props.required === true,
-        disabled,
+        readOnly,
         ...state,
         onCheckedChange: (checked) => {
           if (!readOnly) props.onChange?.(checked)
@@ -94,8 +90,8 @@ function InlineField(props: InlineProps) {
             hideLabel && 'sr-only',
             'text-sm leading-5 break-words',
             TEXT_DIRECTION,
-            disabled ? 'cursor-not-allowed text-disabled' : 'text-primary',
-            !disabled && !readOnly && 'cursor-pointer',
+            'text-primary',
+            !readOnly && 'cursor-pointer',
           )}
         >
           {props.label}
@@ -114,11 +110,6 @@ function InlineField(props: InlineProps) {
             {props.error}
           </FieldMessage>
         )}
-        {ids.showReason && (
-          <FieldMessage id={ids.reasonId} tone="hint" className="mt-[5px]">
-            {props.disabledReason}
-          </FieldMessage>
-        )}
       </div>
     </div>
   )
@@ -135,11 +126,7 @@ export function CheckboxField(props: CheckboxFieldProps) {
           onCheckedChange={(checked) => {
             onCheckedChange(checked === true)
           }}
-          className={cn(
-            'mt-0',
-            control['aria-invalid'] && 'border-status-danger-fg',
-            control['aria-readonly'] && 'cursor-default',
-          )}
+          className={cn('mt-0', control['aria-invalid'] && 'border-status-danger-fg')}
         />
       )}
     />
@@ -150,12 +137,5 @@ export type SwitchFieldProps = CheckboxFieldProps
 
 /** A setting that is on or off, often taking effect at once: a switch with its label. */
 export function SwitchField(props: SwitchFieldProps) {
-  return (
-    <InlineField
-      {...props}
-      control={(control) => (
-        <Switch {...control} className={cn(control['aria-readonly'] && 'cursor-default')} />
-      )}
-    />
-  )
+  return <InlineField {...props} control={(control) => <Switch {...control} />} />
 }

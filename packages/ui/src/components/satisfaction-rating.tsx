@@ -45,7 +45,9 @@ import { usePhone } from './use-phone'
  *   for your feedback." or the application's `thanks`) and the answer in words ("Your answer: 4,
  *   Satisfied") with the comment under it. Controlled with `submitted`, or kept by the component
  *   after `onSubmit` succeeds.
- * - **Disabled** with a visible reason (`disabledReason`), as every field.
+ * - **Unavailable** (`unavailableReason`, P5.93): the answer cannot be given now. The scale and
+ *   the comment are read-only (the read-only look of every field), Send is unavailable, and the
+ *   reason stands under Send in words.
  */
 
 export interface SatisfactionRatingProps {
@@ -79,10 +81,11 @@ export interface SatisfactionRatingProps {
   submitted?: SatisfactionAnswer | null
   /** The thank-you text. Default `messages['rating.thanks']`. */
   thanks?: ReactNode
-  /** Nothing can be chosen. Give `disabledReason`. */
-  disabled?: boolean
-  /** Why, under the question. */
-  disabledReason?: ReactNode
+  /**
+   * No answer can be given now, and why, from the application: the scale and the comment are
+   * read-only and Send is unavailable, with the reason in words.
+   */
+  unavailableReason?: ReactNode
   /** 'desktop' or 'phone' forces one; default by the viewport (48em). */
   layout?: 'desktop' | 'phone'
   className?: string
@@ -103,7 +106,8 @@ export function SatisfactionRating(props: SatisfactionRatingProps) {
   const [busy, setBusy] = useState(false)
   const [missing, setMissing] = useState(false)
   const sending = busy || props.sending === true
-  const disabled = props.disabled === true
+  const disabled = props.unavailableReason !== undefined && props.unavailableReason !== null
+  const reasonId = `${idBase}-reason`
   const withComment = props.comment !== false
 
   if (submitted !== null) {
@@ -183,8 +187,7 @@ export function SatisfactionRating(props: SatisfactionRatingProps) {
         group
         {...(props.description === undefined ? {} : { description: props.description })}
         {...(missing ? { error: messages['rating.required'] } : {})}
-        {...(disabled ? { disabled: true } : {})}
-        {...(props.disabledReason === undefined ? {} : { disabledReason: props.disabledReason })}
+        readOnly={disabled}
       >
         {(control) => (
           <RadioGroup
@@ -193,7 +196,7 @@ export function SatisfactionRating(props: SatisfactionRatingProps) {
             aria-labelledby={control.labelId}
             aria-describedby={control.describedBy}
             aria-invalid={control.invalid || undefined}
-            disabled={control.disabled || sending}
+            aria-readonly={disabled || sending || undefined}
             className={cn('gap-2', phone ? 'flex flex-col' : 'grid')}
             style={
               phone
@@ -206,7 +209,7 @@ export function SatisfactionRating(props: SatisfactionRatingProps) {
             {props.options.map((option, index) => {
               const id = `${idBase}-${String(index)}`
               const chosen = option.value === value
-              const off = control.disabled || sending
+              const off = disabled || sending
               return (
                 <label
                   key={option.value}
@@ -221,13 +224,14 @@ export function SatisfactionRating(props: SatisfactionRatingProps) {
                       ? 'border-selected bg-surface-selected'
                       : 'border-default bg-surface-raised',
                     off
-                      ? 'cursor-not-allowed'
+                      ? 'cursor-default'
                       : cn('cursor-pointer', !chosen && 'hover:bg-surface-hover'),
                   )}
                 >
                   <RadioGroupItem
                     id={id}
                     value={option.value}
+                    readOnly={off}
                     className={cn(control.invalid && 'border-status-danger-fg')}
                   />
                   <span
@@ -239,7 +243,7 @@ export function SatisfactionRating(props: SatisfactionRatingProps) {
                     <span
                       className={cn(
                         'text-h3 font-semibold tabular-nums',
-                        off ? 'text-disabled' : 'text-primary',
+                        'text-primary',
                         TEXT_ISOLATE,
                       )}
                     >
@@ -248,7 +252,7 @@ export function SatisfactionRating(props: SatisfactionRatingProps) {
                     <span
                       className={cn(
                         'min-w-0 text-xs break-words',
-                        off ? 'text-disabled' : 'text-secondary',
+                        'text-secondary',
                         phone ? TEXT_DIRECTION : TEXT_ISOLATE,
                       )}
                     >
@@ -267,7 +271,7 @@ export function SatisfactionRating(props: SatisfactionRatingProps) {
           rows={3}
           value={comment}
           onChange={writeComment}
-          {...(disabled ? { disabled: true } : {})}
+          readOnly={disabled}
         />
       )}
       {props.error !== undefined && props.error !== null && props.error !== false && (
@@ -280,8 +284,14 @@ export function SatisfactionRating(props: SatisfactionRatingProps) {
           icon={Send}
           label={messages['rating.send']}
           disabled={disabled || sending}
+          {...(disabled ? { 'aria-describedby': reasonId } : {})}
           onClick={send}
         />
+        {disabled && (
+          <span id={reasonId} className={cn('text-xs text-secondary', TEXT_DIRECTION)}>
+            {props.unavailableReason}
+          </span>
+        )}
         {sending && (
           <Spinner size="sm">
             <span className={cn('text-xs text-secondary', TEXT_DIRECTION)}>

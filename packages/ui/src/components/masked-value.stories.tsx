@@ -105,8 +105,10 @@ const meta = {
           'it. "Hide" (or `hideAfter`) masks the value again and calls `onHide`.\n\n' +
           '**The value is never in the page while masked:** the application passes it only after ' +
           'the reveal.\n\n' +
-          '**States:** masked, asking, loading, shown, refused, not allowed (the reason in words ' +
-          'beside an unavailable "Show"), read-only (the mask alone).\n\n' +
+          '**States:** masked, asking, loading, shown, refused and not allowed — a refusal is not ' +
+          'an error: the row keeps its shape (label at the start, the mask and "Show" at the ' +
+          'end) with one neutral line of secondary text under the value, no red, no icon — and ' +
+          'read-only (the mask alone).\n\n' +
           '**When:** values whose every viewing must be justified and audited.\n\n' +
           '**When not:** a value the user may not see at all (leave it out); a password field ' +
           '(PasswordField); values that are merely long (KeyValueList).',
@@ -285,7 +287,7 @@ export const Loading: Story = {
   },
 }
 
-/** The application refused: the reason beside the mask. */
+/** The application refused: one neutral line under the value, the row keeps its shape. */
 export const Refused: Story = {
   name: 'Refused',
   render: () => (
@@ -349,7 +351,7 @@ export const RefusedInteraction: Story = {
   },
 }
 
-/** The user may not see it: "Show" is unavailable and the reason is in words. */
+/** The user may not see it: "Show" is unavailable, the reason one neutral line under the value. */
 export const NotAllowed: Story = {
   name: 'Not allowed',
   render: () => (

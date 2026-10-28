@@ -1,13 +1,17 @@
-import type { ReactNode } from 'react'
-import { FOCUS_RING, TEXT_DIRECTION } from '../primitives/classes'
+import { useContext, type ReactNode } from 'react'
+import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
+import { ChartPhoneContext } from './frame'
 
 /*
- * ChartSeriesToggle (P4.7a, shadcn/ui's interactive chart header): the series a chart shows, as
- * toggle buttons in its header — each the series' name (xs, text.secondary) and its total (lg
- * semibold, tabular; the application's, never added here). The chosen one is the neutral selection
- * (surface.selected with a 2px border.selected line under it, D17), never blue. One at a time by
- * default; `multiple` lets several be shown.
+ * ChartSeriesToggle (P4.7a; P5.93 item 42, shadcn/ui's "Bar Chart - Interactive"): the key
+ * figures of a chart as toggle buttons, passed as the chart's `toggle` so they stand at the end of
+ * its header band, full height, a line between each (on phones under the title, side by side
+ * across the width). Each is the series' name (xs, text.secondary) and its figure (xl semibold on
+ * a desktop, lg on a phone, tabular; the application's, never added here). The chosen one is the
+ * neutral selection (surface.selected with a 2px border.selected line along its bottom edge, the
+ * header's rule, D17), never blue: it chooses what the chart shows, it is not a tab. One at a time
+ * by default; `multiple` lets several be shown.
  */
 
 export interface ChartSeriesToggleItem {
@@ -31,11 +35,12 @@ export interface ChartSeriesToggleProps {
 
 /** The series a chart shows, chosen in its header. */
 export function ChartSeriesToggle(props: ChartSeriesToggleProps) {
+  const phone = useContext(ChartPhoneContext)
   return (
     <div
       role="group"
       aria-label={props.label}
-      className={cn('flex flex-wrap items-stretch gap-1', props.className)}
+      className={cn('flex min-w-0 flex-1 items-stretch', props.className)}
     >
       {props.items.map((item) => {
         const pressed = props.value.includes(item.key)
@@ -55,16 +60,21 @@ export function ChartSeriesToggle(props: ChartSeriesToggleProps) {
               if (next.length > 0) props.onValueChange(next)
             }}
             className={cn(
-              'box-border flex min-h-11 min-w-24 cursor-pointer flex-col items-start justify-center gap-0.5 rounded-md border-0 border-b-2 border-solid px-3 py-1.5 text-start font-sans',
+              'm-0 box-border flex min-h-14 min-w-0 flex-1 cursor-pointer flex-col items-start justify-center gap-1 border-0 border-b-2 border-solid px-4 py-3 text-start font-sans not-first:border-s not-first:border-s-default',
               pressed
-                ? 'border-selected bg-surface-selected'
-                : 'border-transparent bg-transparent hover:bg-surface-hover',
-              FOCUS_RING,
+                ? 'border-b-selected bg-surface-selected'
+                : 'border-b-transparent bg-transparent hover:bg-surface-hover',
+              'outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus',
             )}
           >
             <span className={cn('text-xs text-secondary', TEXT_DIRECTION)}>{item.label}</span>
             {item.total !== undefined && (
-              <bdi className="text-lg leading-tight font-semibold text-primary tabular-nums">
+              <bdi
+                className={cn(
+                  'leading-tight font-semibold text-primary tabular-nums',
+                  phone ? 'text-lg' : 'text-xl',
+                )}
+              >
                 {item.total}
               </bdi>
             )}

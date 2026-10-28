@@ -203,28 +203,3 @@ svg.react-flow__connectionline {
     transition: none;
   }
 }
-
-/*
- * React Flow's credit link, kept unless the application hides it (`hideAttribution`, P5.26):
- * small and quiet in the start-bottom corner, underlined (a link not told by colour alone), a
- * 24px target.
- */
-.react-flow__attribution {
-  margin: 4px;
-  padding: 0 6px;
-  border-radius: var(--liro-radius-md);
-  background: var(--liro-surface-raised);
-  font-family: var(--liro-font-sans);
-  font-size: var(--liro-font-size-xs);
-  line-height: 24px;
-}
-.react-flow__attribution a {
-  display: inline-block;
-  min-height: 24px;
-  color: var(--liro-text-secondary);
-  text-decoration: underline;
-}
-.react-flow__attribution a:focus-visible {
-  outline: 2px solid var(--liro-border-focus);
-  outline-offset: 2px;
-}

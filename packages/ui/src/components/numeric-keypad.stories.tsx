@@ -87,9 +87,10 @@ export const Weight: Story = {
   },
 }
 
-/** Disabled (the register is locked). */
-export const Disabled: Story = {
-  args: { currency: CURRENCY, defaultValue: '500', disabled: true, onEnter: () => undefined },
+/** Read only (the register is locked, P5.93): the display in the read-only look, no keys. */
+export const ReadOnly: Story = {
+  name: 'Read only',
+  args: { currency: CURRENCY, defaultValue: '500', readOnly: true, onEnter: () => undefined },
 }
 
 /** Label hidden, where a heading beside it names it. */

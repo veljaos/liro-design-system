@@ -4,8 +4,10 @@
 export { Pivot } from './pivot'
 export type { PivotExport, PivotProps } from './pivot'
 export {
+  acceptsField,
   areaFieldIds,
   areaOf,
+  dropField,
   EMPTY_PIVOT_LAYOUT,
   fieldAreas,
   hasValues,
@@ -17,9 +19,12 @@ export {
   pivotKeyTarget,
   pivotLeaves,
   pivotRowPaths,
+  pivotSummaryParts,
   pivotTopGroupKeys,
+  pivotViewOf,
   placeField,
   removeField,
+  sameLayout,
   setAggregation,
   setFilterValues,
   unusedFields,
@@ -36,6 +41,9 @@ export type {
   PivotPosition,
   PivotResult,
   PivotRow,
+  PivotSummaryParts,
   PivotValue,
   PivotValueKind,
+  PivotView,
+  PivotZone,
 } from './pivot-logic'

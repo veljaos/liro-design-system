@@ -11,6 +11,7 @@ import { EmptyState } from './empty-state'
 import { PersonAvatar } from './person'
 import { Skeleton } from './progress'
 import { Spinner } from './spinner'
+import { Tooltip } from './popover'
 
 /*
  * HistoryList (P5.1; the plan's "Timeline / HistoryList", one component under this name): the
@@ -118,9 +119,11 @@ function ActorMarker({ actor, messages }: { actor: HistoryActor; messages: LiroM
   const Icon = kind === 'system' ? Settings2 : Plug
   const word = kind === 'system' ? messages['history.system'] : messages['history.integration']
   return (
-    <span role="img" aria-label={word} title={word} className={cn(MARKER, 'text-secondary')}>
-      <Icon aria-hidden="true" className="size-3.5" />
-    </span>
+    <Tooltip label={word}>
+      <span role="img" aria-label={word} className={cn(MARKER, 'text-secondary')}>
+        <Icon aria-hidden="true" className="size-3.5" />
+      </span>
+    </Tooltip>
   )
 }
 
