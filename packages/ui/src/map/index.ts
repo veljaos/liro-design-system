@@ -13,6 +13,16 @@ export type {
 } from './location-check'
 export type { MapBaseLayer } from './map-canvas'
 export { RegionChart } from './region-chart'
+export {
+  loadSerbiaBoundaries,
+  SERBIA_BOUNDARIES_ATTRIBUTION,
+  SERBIA_LEVELS,
+  serbiaAreas,
+  serbiaChildren,
+} from './serbia'
+export type { SerbiaArea, SerbiaBoundaries, SerbiaLevel } from './serbia'
+export { decodeArcs, ringFromArcs, topologyFeatures } from './topology'
+export type { Topology, TopologyCollection, TopologyFeature, TopologyGeometry } from './topology'
 export type { RegionChartArea, RegionChartPlace, RegionChartProps } from './region-chart'
 export {
   areaAt,

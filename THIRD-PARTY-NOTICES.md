@@ -14,18 +14,19 @@ dependency, or copies third-party code (for example a shadcn/ui component) into 
 
 ## Included in the packages
 
-| Software                                                   | Version | License | Where                                                                                                                 |
-| ---------------------------------------------------------- | ------- | ------- | --------------------------------------------------------------------------------------------------------------------- |
-| Tailwind CSS                                               | 4.3.3   | MIT     | Generated CSS in `@veljaos/ui/styles.css` (built with the Tailwind CLI)                                               |
-| Noto Sans (`@fontsource-variable/noto-sans`)               | 5.3.0   | OFL-1.1 | Font files in `@veljaos/tokens/dist/fonts/`, faces in `fonts.css`; also in the Storybook build. Notice below (Fonts). |
-| Noto Sans Arabic (`@fontsource-variable/noto-sans-arabic`) | 5.3.0   | OFL-1.1 | Font files in `@veljaos/tokens/dist/fonts/`, faces in `fonts.css`; also in the Storybook build. Notice below (Fonts). |
-| Noto Sans Hebrew (`@fontsource-variable/noto-sans-hebrew`) | 5.3.0   | OFL-1.1 | Font files in `@veljaos/tokens/dist/fonts/`, faces in `fonts.css`; also in the Storybook build. Notice below (Fonts). |
-| Noto Sans SC (`@fontsource-variable/noto-sans-sc`)         | 5.3.0   | OFL-1.1 | Font files in `@veljaos/tokens/dist/fonts/`, faces in `fonts.css`; also in the Storybook build. Notice below (Fonts). |
-| Noto Sans TC (`@fontsource-variable/noto-sans-tc`)         | 5.3.0   | OFL-1.1 | Font files in `@veljaos/tokens/dist/fonts/`, faces in `fonts.css`; also in the Storybook build. Notice below (Fonts). |
-| Noto Sans JP (`@fontsource-variable/noto-sans-jp`)         | 5.3.0   | OFL-1.1 | Font files in `@veljaos/tokens/dist/fonts/`, faces in `fonts.css`; also in the Storybook build. Notice below (Fonts). |
-| Space Grotesk (`@fontsource-variable/space-grotesk`)       | 5.3.0   | OFL-1.1 | Font files in `@veljaos/tokens/dist/fonts/`, faces in `fonts.css`; also in the Storybook build. Notice below (Fonts). |
-| Inter (`@fontsource-variable/inter`)                       | 5.3.0   | OFL-1.1 | Font files in `@veljaos/tokens/dist/fonts/`, faces in `fonts.css`; also in the Storybook build. Notice below (Fonts). |
-| JetBrains Mono (`@fontsource-variable/jetbrains-mono`)     | 5.3.0   | OFL-1.1 | Font files in `@veljaos/tokens/dist/fonts/`, faces in `fonts.css`; also in the Storybook build. Notice below (Fonts). |
+| Software                                                                                    | Version                    | License                                                     | Where                                                                                                                                                                 |
+| ------------------------------------------------------------------------------------------- | -------------------------- | ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Tailwind CSS                                                                                | 4.3.3                      | MIT                                                         | Generated CSS in `@veljaos/ui/styles.css` (built with the Tailwind CLI)                                                                                               |
+| Noto Sans (`@fontsource-variable/noto-sans`)                                                | 5.3.0                      | OFL-1.1                                                     | Font files in `@veljaos/tokens/dist/fonts/`, faces in `fonts.css`; also in the Storybook build. Notice below (Fonts).                                                 |
+| Noto Sans Arabic (`@fontsource-variable/noto-sans-arabic`)                                  | 5.3.0                      | OFL-1.1                                                     | Font files in `@veljaos/tokens/dist/fonts/`, faces in `fonts.css`; also in the Storybook build. Notice below (Fonts).                                                 |
+| Noto Sans Hebrew (`@fontsource-variable/noto-sans-hebrew`)                                  | 5.3.0                      | OFL-1.1                                                     | Font files in `@veljaos/tokens/dist/fonts/`, faces in `fonts.css`; also in the Storybook build. Notice below (Fonts).                                                 |
+| Noto Sans SC (`@fontsource-variable/noto-sans-sc`)                                          | 5.3.0                      | OFL-1.1                                                     | Font files in `@veljaos/tokens/dist/fonts/`, faces in `fonts.css`; also in the Storybook build. Notice below (Fonts).                                                 |
+| Noto Sans TC (`@fontsource-variable/noto-sans-tc`)                                          | 5.3.0                      | OFL-1.1                                                     | Font files in `@veljaos/tokens/dist/fonts/`, faces in `fonts.css`; also in the Storybook build. Notice below (Fonts).                                                 |
+| Noto Sans JP (`@fontsource-variable/noto-sans-jp`)                                          | 5.3.0                      | OFL-1.1                                                     | Font files in `@veljaos/tokens/dist/fonts/`, faces in `fonts.css`; also in the Storybook build. Notice below (Fonts).                                                 |
+| Space Grotesk (`@fontsource-variable/space-grotesk`)                                        | 5.3.0                      | OFL-1.1                                                     | Font files in `@veljaos/tokens/dist/fonts/`, faces in `fonts.css`; also in the Storybook build. Notice below (Fonts).                                                 |
+| Inter (`@fontsource-variable/inter`)                                                        | 5.3.0                      | OFL-1.1                                                     | Font files in `@veljaos/tokens/dist/fonts/`, faces in `fonts.css`; also in the Storybook build. Notice below (Fonts).                                                 |
+| JetBrains Mono (`@fontsource-variable/jetbrains-mono`)                                      | 5.3.0                      | OFL-1.1                                                     | Font files in `@veljaos/tokens/dist/fonts/`, faces in `fonts.css`; also in the Storybook build. Notice below (Fonts).                                                 |
+| Boundaries of Serbia (geoBoundaries gbOpen SRB ADM1, ADM2 and XKX ADM0, from OpenStreetMap) | build 2023-12-12 (9469f09) | ODbL-1.0 (XKX ADM0 listed by geoBoundaries as CC BY-SA 2.0) | Simplified TopoJSON in `@veljaos/ui/map` (`packages/ui/src/map/serbia/*.ts`, P5.93), loaded on demand by `loadSerbiaBoundaries`. Notice below (Boundaries of Serbia). |
 
 ## Copied into this repository
 
@@ -2056,9 +2057,30 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
+### Boundaries of Serbia (geoBoundaries, OpenStreetMap)
+
+`@veljaos/ui/map` ships the boundaries of the Republic of Serbia's statistical regions, districts
+(okrug) and cities and municipalities (P5.93 item 43; `packages/ui/src/map/serbia/regions.ts`,
+`districts.ts`, `municipalities.ts`). They are derived from geoBoundaries (gbOpen, build of
+12 December 2023, commit 9469f09): SRB ADM1 and ADM2 (source: OpenStreetMap, Wambacher; licence
+Open Data Commons Open Database License 1.0) and XKX ADM0 (source: OpenStreetMap; listed by
+geoBoundaries as Creative Commons Attribution-ShareAlike 2.0), used only for the outline of
+Kosovo and Metohija, drawn within Serbia. The data were merged, cleaned, dissolved into regions,
+simplified (mapshaper 0.6.113, weighted Visvalingam, 8% of the points, shapes kept) and quantized;
+the names in Serbian and English and the regions are ours.
+
+Contains information from OpenStreetMap, © OpenStreetMap contributors, which is made available
+here under the Open Database License (ODbL) 1.0: https://opendatacommons.org/licenses/odbl/1-0/
+— see https://www.openstreetmap.org/copyright. The derived boundary data in the files named above
+are likewise made available under the ODbL 1.0. Any map drawn from them shows the attribution
+`SERBIA_BOUNDARIES_ATTRIBUTION` ("© OpenStreetMap contributors (ODbL), via geoBoundaries").
+
+geoBoundaries: Runfola, D. et al. (2020) geoBoundaries: A global database of political
+administrative boundaries. PLoS ONE 15(4): e0231866. https://doi.org/10.1371/journal.pone.0231866
+
 ### world-atlas, Natural Earth and topojson-client
 
-The RegionChart stories and examples of P5.41 (Storybook only; no package ships geometry) read the outlines of eight countries from `world-atlas` 2.0.2, a redistribution of Natural Earth's 1:110m Admin 0 country boundaries, version 4.1.0, as TopoJSON, and turn them into GeoJSON with `topojson-client` 3.1.0. Natural Earth's data is in the public domain (Natural Earth's terms of use, https://www.naturalearthdata.com/about/terms-of-use/); made with Natural Earth. The regions of Serbia in the examples are hand-drawn and illustrative, not from any source.
+The RegionChart stories and examples of P5.41 (Storybook only; these outlines are in no package) read the outlines of eight countries from `world-atlas` 2.0.2, a redistribution of Natural Earth's 1:110m Admin 0 country boundaries, version 4.1.0, as TopoJSON, and turn them into GeoJSON with `topojson-client` 3.1.0. Natural Earth's data is in the public domain (Natural Earth's terms of use, https://www.naturalearthdata.com/about/terms-of-use/); made with Natural Earth. The regions of Serbia in the examples are hand-drawn and illustrative, not from any source.
 
 world-atlas 2.0.2 (ISC):
 

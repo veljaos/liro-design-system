@@ -12,7 +12,7 @@ import {
 import { RegionChart } from './region-chart'
 
 const meta = {
-  title: 'Components/Map/Region chart',
+  title: 'Charts/Map/Region chart',
   component: RegionChart,
   parameters: {
     docs: {

@@ -100,6 +100,11 @@ export interface RegionChartProps extends ChartStateProps {
   onSelect?: (id: string) => void
   /** The application's base map; without it (the usual case for a chart) only the areas are drawn. */
   baseLayer?: MapBaseLayer
+  /**
+   * The areas' attribution, written under the map: required by the licence of open boundary data
+   * (`loadSerbiaBoundaries` gives `SERBIA_BOUNDARIES_ATTRIBUTION`, P5.93 item 43).
+   */
+  attribution?: string
   /** The map's height in pixels. Default 380 (300 on phones). */
   height?: number
   /** The application's controls in the header (a period select). */
@@ -477,6 +482,7 @@ export function RegionChart(props: RegionChartProps) {
           labels={labels}
           bounds={bounds}
           baseLayer={props.baseLayer}
+          attribution={props.attribution}
           height={height}
           surface="raised"
           keyboard={false}
