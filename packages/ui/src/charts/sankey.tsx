@@ -61,6 +61,8 @@ export interface SankeyChartProps extends ChartStateProps {
   /** The plot's height in pixels. Default 320 (280 on phones). */
   height?: number
   controls?: ReactNode
+  /** The key figures as toggle buttons (a ChartSeriesToggle) at the header's end (P5.93 item 42). */
+  toggle?: ReactNode
   layout?: 'desktop' | 'phone'
   className?: string
 }
@@ -153,6 +155,7 @@ export function SankeyChart(props: SankeyChartProps) {
       title={props.title}
       {...(props.description === undefined ? {} : { description: props.description })}
       {...(props.controls === undefined ? {} : { controls: props.controls })}
+      {...(props.toggle === undefined ? {} : { toggle: props.toggle })}
       {...(props.className === undefined ? {} : { className: props.className })}
       {...(props.loading === undefined ? {} : { loading: props.loading })}
       {...(props.defaultView === undefined ? {} : { defaultView: props.defaultView })}

@@ -57,6 +57,8 @@ export interface CandlestickChartProps extends ChartStateProps {
   /** The legend that says which candles rose. Default true. */
   legend?: boolean
   controls?: ReactNode
+  /** The key figures as toggle buttons (a ChartSeriesToggle) at the header's end (P5.93 item 42). */
+  toggle?: ReactNode
   /** Default: from the viewport (below 48em 'phone'). */
   layout?: 'desktop' | 'phone'
   className?: string
@@ -273,6 +275,7 @@ export function CandlestickChart(props: CandlestickChartProps) {
       title={props.title}
       {...(props.description === undefined ? {} : { description: props.description })}
       {...(props.controls === undefined ? {} : { controls: props.controls })}
+      {...(props.toggle === undefined ? {} : { toggle: props.toggle })}
       {...(props.className === undefined ? {} : { className: props.className })}
       {...(props.loading === undefined ? {} : { loading: props.loading })}
       {...(props.defaultView === undefined ? {} : { defaultView: props.defaultView })}

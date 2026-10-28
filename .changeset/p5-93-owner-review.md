@@ -99,3 +99,7 @@ New messages: `pivot.views`, `pivot.summary`, `pivot.summaryValue`, `pivot.summa
 Charts (P5.93 item 42): every chart (and RegionChart) takes `toggle` — a ChartSeriesToggle shown as
 the interactive header (key figures at the header's end, under the title on phones). Pass a
 ChartSeriesToggle there instead of in `controls`.
+
+# Changeset notes from helper h (P5.93 items 43 and 44)
+
+Not breaking. New: seven charts in `@veljaos/ui/charts` (CandlestickChart, FunnelChart, ScatterChart, Heatmap, SankeyChart, MatrixChart, Treemap) with their helpers; `loadSerbiaBoundaries` and the TopoJSON reader in `@veljaos/ui/map`; RegionChart `attribution`. `regionStep` & co. now come from the charts' step helpers (same names and behaviour; a break beyond the fourth no longer makes a sixth step). New message keys: `chart.itemKeys`, `chart.open`, `chart.high`, `chart.low`, `chart.close`, `chart.rising`, `chart.falling`, `chart.cellName`, `chart.flow`, `chart.from`, `chart.to`, `chart.none`, `chart.more` — an application with its own complete `messages` adds them. `@veljaos/ui/map` now ships boundary data under the ODbL 1.0 (notice in THIRD-PARTY-NOTICES.md).

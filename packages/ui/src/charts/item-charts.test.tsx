@@ -37,6 +37,12 @@ describe('CandlestickChart', () => {
     expect(html).toContain('117.12')
     expect(html).toContain('—')
   })
+  it('puts the application’s toggle in the interactive header', () => {
+    const html = render(
+      <CandlestickChart title="EUR" candles={candles} toggle={<span>Key figures</span>} />,
+    )
+    expect(html).toContain('Key figures')
+  })
   it('says "No data" when no candle can be drawn', () => {
     const html = render(<CandlestickChart title="EUR" candles={candles.slice(1)} />)
     expect(html).toContain('No data for this period')

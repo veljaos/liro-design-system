@@ -57,6 +57,8 @@ export interface HeatmapProps extends ChartStateProps {
   /** A row's height in pixels. Default 28 (24 on phones). */
   rowHeight?: number
   controls?: ReactNode
+  /** The key figures as toggle buttons (a ChartSeriesToggle) at the header's end (P5.93 item 42). */
+  toggle?: ReactNode
   layout?: 'desktop' | 'phone'
   className?: string
 }
@@ -126,6 +128,7 @@ export function Heatmap(props: HeatmapProps) {
         title={props.title}
         {...(props.description === undefined ? {} : { description: props.description })}
         {...(props.controls === undefined ? {} : { controls: props.controls })}
+        {...(props.toggle === undefined ? {} : { toggle: props.toggle })}
         {...(props.loading === undefined ? {} : { loading: props.loading })}
         {...(props.defaultView === undefined ? {} : { defaultView: props.defaultView })}
         {...(props.error === undefined ? {} : { error: props.error })}
