@@ -385,10 +385,11 @@ export const AskInteraction: Story = {
       `${QUESTION_REVENUE}{Enter}`,
     )
     await expect(log).toHaveTextContent('Revenue in the third quarter')
-    await userEvent.click(within(panel).getByRole('button', { name: 'New conversation' }))
+    // "New conversation" from the keyboard: a pointer resting on it would show its tooltip, and
+    // a hovered tooltip takes the first Escape (P5.93 item 7).
+    within(panel).getByRole('button', { name: 'New conversation' }).focus()
+    await userEvent.keyboard('{Enter}')
     await expect(within(panel).queryByRole('log')).toBeNull()
-    // The pointer moves off "New conversation": a hovered tooltip would take the first Escape.
-    await userEvent.unhover(within(panel).getByRole('button', { name: 'New conversation' }))
     await userEvent.keyboard('{Escape}')
     // The focus returns once the sheet has finished closing.
     await waitFor(() => expect(opener).toHaveFocus())
