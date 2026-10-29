@@ -188,10 +188,10 @@ export const Split: Story = {
     await settle()
     const body = within(dialog())
     await expect(body.getByRole('list', { name: 'Paid so far' })).toHaveTextContent('Approved')
-    await expect(body.getByRole('button', { name: /^Pay 511,00 RSD by card$/ })).toBeVisible()
+    await expect(body.getByRole('button', { name: /^Pay 511,00\sRSD by card$/ })).toBeVisible()
     await expect(
       body.getByRole('button', { name: 'Complete payment' }),
-    ).toHaveAccessibleDescription('Still to pay: 511,00 RSD.')
+    ).toHaveAccessibleDescription(/^Still to pay: 511,00\sRSD\.$/)
     // An approval is not removed here: cancelling the payment reverses it.
     await expect(body.queryByRole('button', { name: 'Remove Card' })).toBeNull()
     await expectNoScroll()
@@ -716,11 +716,11 @@ export const SplitAnyWays: Story = {
     const body = within(dialog())
     for (const key of ['5', '0', '0'])
       await userEvent.click(body.getByRole('button', { name: key }))
-    await userEvent.click(body.getByRole('button', { name: 'Pay 500,00 RSD by card' }))
+    await userEvent.click(body.getByRole('button', { name: /^Pay 500,00\sRSD by card$/ }))
     await waitFor(() =>
       expect(body.getByRole('list', { name: 'Paid so far' })).toHaveTextContent('Approved'),
     )
-    await expect(dialog()).toHaveTextContent('511,00 RSD')
+    await expect(dialog()).toHaveTextContent(/511,00\sRSD/)
     await expect(body.getByRole('button', { name: 'Complete payment' })).toHaveAttribute(
       'aria-disabled',
       'true',
@@ -749,13 +749,13 @@ export const CancelAfterApproval: Story = {
   play: async ({ args }) => {
     await settle()
     const body = within(dialog())
-    await userEvent.click(body.getByRole('button', { name: 'Pay 1.011,00 RSD by card' }))
+    await userEvent.click(body.getByRole('button', { name: /^Pay 1\.011,00\sRSD by card$/ }))
     await waitFor(() =>
       expect(body.getByRole('list', { name: 'Paid so far' })).toHaveTextContent('Approved'),
     )
     await userEvent.click(body.getByRole('button', { name: 'Cancel' }))
     await expect(dialog()).toHaveTextContent(
-      'Cancelling reverses the approved payments: Card 1.011,00 RSD.',
+      /Cancelling reverses the approved payments: Card 1\.011,00\sRSD\./,
     )
     const keep = body.getByRole('button', { name: 'Keep paying' })
     await expect(keep).toHaveFocus()

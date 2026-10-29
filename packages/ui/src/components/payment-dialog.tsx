@@ -244,8 +244,8 @@ const CHOICE = cn(
   'flex min-h-14 min-w-0 flex-[1_1_auto] cursor-pointer items-center justify-center gap-2 rounded-md border border-solid px-3 py-2 text-md font-semibold text-primary',
   'disabled:cursor-not-allowed disabled:text-disabled',
 )
-/** On a phone the icon stands above the label, so three ways fit one row. */
-const CHOICE_PHONE = 'flex-col gap-1 px-2 text-sm'
+/** On a phone a little tighter, so three ways fit one row. */
+const CHOICE_PHONE = 'gap-1.5 px-2'
 const CHOICE_ON = 'border-selected bg-surface-selected'
 const CHOICE_OFF = 'border-default bg-surface-raised enabled:hover:bg-surface-hover'
 
@@ -632,10 +632,66 @@ export function PaymentDialog(props: PaymentDialogProps) {
       <ul
         aria-label={messages['payment.paid']}
         data-slot="payment-parts"
-        className="m-0 flex list-none flex-col gap-1 p-0"
+        className={cn(
+          'm-0 flex list-none gap-1 p-0',
+          // On a phone the parts are chips, two to a row, so the dialog still fits (P5.93).
+          phone ? 'flex-row flex-wrap gap-2' : 'flex-col',
+        )}
       >
         {paid.map((part) => {
           const isApproved = part.state === 'approved'
+          const state = isApproved ? messages['payment.partApproved'] : messages['payment.partPaid']
+          if (phone) {
+            return (
+              <li
+                key={part.id}
+                className="flex min-h-11 min-w-0 items-center gap-2 rounded-md bg-surface-sunken ps-3 text-sm"
+              >
+                <span className="flex min-w-0 flex-col py-1">
+                  <span className={cn('font-medium text-primary', TEXT_DIRECTION)}>
+                    {part.label}{' '}
+                    <MoneyText
+                      value={part.value}
+                      currency={props.currency}
+                      className="font-semibold"
+                    />
+                  </span>
+                  <span
+                    className={cn(
+                      'flex items-center gap-1 text-xs',
+                      isApproved ? 'text-status-success-fg' : 'text-secondary',
+                      TEXT_DIRECTION,
+                    )}
+                  >
+                    {isApproved && <CircleCheck aria-hidden="true" className="size-3 shrink-0" />}
+                    <span className={cn(!isApproved && 'sr-only')}>{state}</span>
+                    {part.detail !== undefined && (
+                      <span className="text-secondary">{part.detail}</span>
+                    )}
+                  </span>
+                </span>
+                {props.onRemovePart === undefined || isApproved ? (
+                  <span className="pe-2" />
+                ) : (
+                  <Tooltip label={messages['payment.removePart'](part.label)}>
+                    <ButtonPrimitive
+                      family="neutral"
+                      emphasis="menu"
+                      shape="icon"
+                      aria-label={messages['payment.removePart'](part.label)}
+                      className="size-11 shrink-0 px-0"
+                      disabled={locked}
+                      onClick={() => {
+                        props.onRemovePart?.(part.id)
+                      }}
+                    >
+                      <Trash2 aria-hidden="true" className="size-4" />
+                    </ButtonPrimitive>
+                  </Tooltip>
+                )}
+              </li>
+            )
+          }
           return (
             <li
               key={part.id}
@@ -658,7 +714,7 @@ export function PaymentDialog(props: PaymentDialogProps) {
                 )}
               >
                 {isApproved && <CircleCheck aria-hidden="true" className="size-3.5 shrink-0" />}
-                {isApproved ? messages['payment.partApproved'] : messages['payment.partPaid']}
+                {state}
               </span>
               {props.onRemovePart === undefined || isApproved ? (
                 <span className="pe-1" />
@@ -703,7 +759,7 @@ export function PaymentDialog(props: PaymentDialogProps) {
       <ButtonPrimitive
         family={cardLikeNow ? 'primary' : 'neutral'}
         emphasis="secondary"
-        className="min-h-12 w-full text-md"
+        className={cn('w-full', phone ? 'min-h-11' : 'min-h-12 text-md')}
         disabled={partAmount === null || locked}
         aria-disabled={over === null ? undefined : true}
         aria-describedby={over === null ? undefined : limitId}
