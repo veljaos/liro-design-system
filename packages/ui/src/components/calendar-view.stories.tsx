@@ -107,7 +107,7 @@ export const Default: Story = {
     const canvas = within(canvasElement)
     await expect(
       canvas.getByRole('button', {
-        name: /^Minor surgery: Stefan Đorđević, 09:00\sAM – 10:30\sAM, Wednesday, October 14, 2026$/,
+        name: /^Minor surgery: Stefan Đorđević, 9:00\sAM – 10:30\sAM, Wednesday, October 14, 2026$/,
       }),
     ).toBeVisible()
     await expect(canvas.getByRole('grid')).toBeVisible()
@@ -234,23 +234,23 @@ export const KeyboardInteraction: Story = {
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
-    const first = canvas.getByRole('gridcell', { name: /^Wednesday, October 14, 2026, 07:00\sAM$/ })
+    const first = canvas.getByRole('gridcell', { name: /^Wednesday, October 14, 2026, 7:00\sAM$/ })
     await expect(first).toHaveAttribute('tabindex', '0')
     first.focus()
     await userEvent.keyboard('{ArrowDown}{ArrowDown}')
     await expect(
-      canvas.getByRole('gridcell', { name: /^Wednesday, October 14, 2026, 08:00\sAM$/ }),
+      canvas.getByRole('gridcell', { name: /^Wednesday, October 14, 2026, 8:00\sAM$/ }),
     ).toHaveFocus()
     await userEvent.keyboard(rtl(canvasElement) ? '{ArrowLeft}' : '{ArrowRight}')
     await expect(
-      canvas.getByRole('gridcell', { name: /^Thursday, October 15, 2026, 08:00\sAM$/ }),
+      canvas.getByRole('gridcell', { name: /^Thursday, October 15, 2026, 8:00\sAM$/ }),
     ).toHaveFocus()
     await userEvent.keyboard('{Enter}')
     await expect(canvas.getByText('New appointment at 2026-10-15T08:00')).toBeVisible()
     // Page Down goes to the next week; the title follows.
     await userEvent.keyboard('{PageDown}')
     await expect(
-      canvas.getByRole('gridcell', { name: /^Thursday, October 22, 2026, 08:00\sAM$/ }),
+      canvas.getByRole('gridcell', { name: /^Thursday, October 22, 2026, 8:00\sAM$/ }),
     ).toHaveFocus()
     await expect(canvas.getByRole('heading', { level: 2 })).toHaveTextContent(
       '10/19/2026 – 10/25/2026',
@@ -315,7 +315,7 @@ export const ReadOnly: Story = {
     const canvas = within(canvasElement)
     await expect(canvas.queryByRole('button', { name: /^Check-up: Petar Đurić/ })).toBeNull()
     await expect(
-      canvas.getByText(/^Check-up: Petar Đurić, 08:00\sAM – 08:30\sAM/),
+      canvas.getByText(/^Check-up: Petar Đurić, 8:00\sAM – 8:30\sAM/),
     ).toBeInTheDocument()
   },
 }
@@ -374,7 +374,7 @@ export const HoursAndWeekStart: Story = {
     )
     await expect(canvas.getAllByRole('row')).toHaveLength(16)
     // The 06:30 handover lies outside the hours: it stands in the strip above, with its time.
-    await expect(eventButton(canvasElement, 'Early shift handover')).toHaveTextContent(/06:30\sAM/)
+    await expect(eventButton(canvasElement, 'Early shift handover')).toHaveTextContent(/6:30\sAM/)
   },
 }
 
@@ -403,8 +403,8 @@ export const TimeZone: Story = {
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
-    await expect(canvas.getByText(/^09:30\sAM – 10:00\sAM$/)).toBeVisible()
-    await expect(canvas.getByText(/^04:30\sPM – 05:00\sPM$/)).toBeVisible()
+    await expect(canvas.getByText(/^9:30\sAM – 10:00\sAM$/)).toBeVisible()
+    await expect(canvas.getByText(/^4:30\sPM – 5:00\sPM$/)).toBeVisible()
   },
 }
 

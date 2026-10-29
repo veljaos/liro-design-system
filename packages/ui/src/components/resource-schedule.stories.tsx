@@ -207,7 +207,7 @@ export const Default: Story = {
     const canvas = within(canvasElement)
     const ana = booking(canvasElement, 'Ana Petrović')
     await expect(ana).toHaveAccessibleName(
-      /^Ana Petrović, Dr Milica Jovanović, 09:00\sAM – 10:00\sAM$/,
+      /^Ana Petrović, Dr Milica Jovanović, 9:00\sAM – 10:00\sAM$/,
     )
     await expect(ana).toHaveAccessibleDescription(/Press Space to pick up the booking/)
     await expect(canvas.getAllByText('Unavailable: Lunch break, 12:00 PM – 12:30 PM')).toHaveLength(
@@ -237,12 +237,12 @@ export const KeyboardInteraction: Story = {
     booking(canvasElement, 'Ana Petrović').focus()
     await userEvent.keyboard(' ')
     await expect(liveRegion(canvasElement)).toHaveTextContent(
-      /^Picked up Ana Petrović\. Dr Milica Jovanović, 09:00\sAM – 10:00\sAM\.$/,
+      /^Picked up Ana Petrović\. Dr Milica Jovanović, 9:00\sAM – 10:00\sAM\.$/,
     )
     await userEvent.keyboard(rtl(canvasElement) ? '{ArrowLeft}' : '{ArrowRight}')
     await userEvent.keyboard('{ArrowDown}')
     await expect(liveRegion(canvasElement)).toHaveTextContent(
-      /^Ana Petrović: Dr Nenad Kovačević, 09:30\sAM – 10:30\sAM\.$/,
+      /^Ana Petrović: Dr Nenad Kovačević, 9:30\sAM – 10:30\sAM\.$/,
     )
     await expect(booking(canvasElement, 'Ana Petrović')).toHaveFocus()
     await userEvent.keyboard('{Enter}')
@@ -250,14 +250,14 @@ export const KeyboardInteraction: Story = {
     // page under the open dialog is hidden from assistive technology.
     await expect(
       within(canvasElement).getByRole('button', { name: /^Ana Petrović, /, hidden: true }),
-    ).toHaveAccessibleName(/Dr Milica Jovanović, 09:00\sAM – 10:00\sAM$/)
+    ).toHaveAccessibleName(/Dr Milica Jovanović, 9:00\sAM – 10:00\sAM$/)
     await saveMove('Ana Petrović')
     await expect(
       canvas.getByText('Moved b2 to kovacevic at 2026-10-14T09:30–2026-10-14T10:30; no message'),
     ).toBeVisible()
     await waitFor(async () => {
       await expect(booking(canvasElement, 'Ana Petrović')).toHaveAccessibleName(
-        /Dr Nenad Kovačević, 09:30\sAM – 10:30\sAM$/,
+        /Dr Nenad Kovačević, 9:30\sAM – 10:30\sAM$/,
       )
     })
   },
@@ -378,7 +378,7 @@ export const MoveAsked: Story = {
     // Still in its place (the page under the dialog is hidden from assistive technology).
     await expect(
       within(canvasElement).getByRole('button', { name: /^Marko Ilić, /, hidden: true }),
-    ).toHaveAccessibleName(/Dr Milica Jovanović, 08:00\sAM – 08:30\sAM$/)
+    ).toHaveAccessibleName(/Dr Milica Jovanović, 8:00\sAM – 8:30\sAM$/)
   },
 }
 

@@ -95,20 +95,32 @@
   pointer-events: auto;
   cursor: pointer;
 }
+/*
+ * An area that answers the pointer (its tooltip) but cannot be chosen — the last level of a
+ * drill-down (P5.94 item 1) — keeps the map's own cursor: nothing says it opens.
+ */
+.liro-map .leaflet-pane > svg path.leaflet-interactive.is-static {
+  cursor: inherit;
+}
 /* A dark theme's tiles are the application's (`urlDark`); ours are only dimmed a little. */
 [data-liro-theme='dark'] .liro-map .liro-map-tiles {
   opacity: 0.85;
 }
 
 /*
- * Areas: a line in their tone, a light fill; under the pointer a lighter tint; the chosen one
+ * Areas: a line in their tone, a light fill; under the pointer a little darker; the chosen one
  * filled with its own colour, clearly stronger, with a thicker line (P5.93 item 37) — its label
- * and its row in the list say it too, so the choice is never colour alone (D17).
+ * and its row in the list say it too, so the choice is never colour alone (D17). Every area takes
+ * the charts' main blue (`main`, P5.94 item 17) unless the data gives it another tone.
  */
 .liro-map path.liro-map-area {
   stroke-width: 2;
   stroke-linejoin: round;
   fill-opacity: 0.14;
+}
+.liro-map path.liro-map-tone-main {
+  stroke: var(--liro-chart-main);
+  fill: var(--liro-chart-main);
 }
 .liro-map path.liro-map-tone-neutral {
   stroke: var(--liro-border-strong);

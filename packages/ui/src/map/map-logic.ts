@@ -254,11 +254,16 @@ export function areaListKeyTarget(index: number, key: string, count: number): nu
   return null
 }
 
-/** The tones an area may take: neutral or one of the five categorical colours of the charts. */
+/**
+ * The tones an area may take: the charts' main blue (every area alike, the default, P5.94 item
+ * 17), neutral, or one of the five categorical colours of the charts (when the data sorts the
+ * areas into kinds).
+ */
 export type MapAreaTone =
-  'neutral' | 'category1' | 'category2' | 'category3' | 'category4' | 'category5'
+  'main' | 'neutral' | 'category1' | 'category2' | 'category3' | 'category4' | 'category5'
 
 export const MAP_AREA_TONES: readonly MapAreaTone[] = [
+  'main',
   'neutral',
   'category1',
   'category2',

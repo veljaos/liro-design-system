@@ -54,7 +54,7 @@ describe('notifications logic', () => {
   })
   it('writes a clock time as written, never shifted, in the locale', () => {
     expect(createFormat('sr-Latn-RS').time('2026-10-06T09:42:00+02:00')).toBe('09:42')
-    expect(createFormat('en-US').time('2026-10-06T21:05:00-05:00')).toMatch(/09:05\sPM/)
+    expect(createFormat('en-US').time('2026-10-06T21:05:00-05:00')).toMatch(/9:05\sPM/)
     expect(createFormat('en').time('nonsense')).toBe('nonsense')
   })
 })
