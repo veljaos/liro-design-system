@@ -113,6 +113,77 @@ export const Default: Story = {
   },
 }
 
+/** A rectangle's top and bottom, rounded to a hundredth of a pixel. */
+function edges(element: Element | null): [number, number] {
+  const box = element?.getBoundingClientRect()
+  const round = (value: number) => Math.round(value * 100) / 100
+  return box === undefined ? [Number.NaN, Number.NaN] : [round(box.top), round(box.bottom)]
+}
+
+/** The box of a scale label's text itself (in a mirrored chart its span fills the cell). */
+function textBox(cell: Element): DOMRect {
+  const text = document.createTreeWalker(cell, NodeFilter.SHOW_TEXT).nextNode()
+  const range = document.createRange()
+  range.selectNodeContents(text ?? cell)
+  return range.getBoundingClientRect()
+}
+
+/** Whether two rectangles share any pixel. */
+function overlap(a: DOMRect, b: DOMRect): boolean {
+  return a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom
+}
+
+/**
+ * The table's rows and the timeline's rows (P5.94 item 6): every row starts and ends at the same
+ * pixel on both sides — its line, and the chosen row's band — down to the last row; and the date
+ * of "now" on the scale covers none of the scale's labels.
+ */
+export const RowsAligned: Story = {
+  name: 'Rows aligned, interaction',
+  tags: ['interaction', '!dev'],
+  args: { defaultSelected: 'frame' },
+  play: async ({ canvasElement }) => {
+    await ganttReady(canvasElement)
+    const table = canvasElement.querySelector('[data-slot="gantt-table"]')
+    const head = table?.querySelector('[data-sticky-head]') ?? null
+    const scale = canvasElement.querySelector('.wx-scale')
+    const area = canvasElement.querySelector('.wx-area')
+    await expect(edges(head)).toEqual(edges(scale))
+    const rows = [...(table?.querySelectorAll('[data-gantt-row]') ?? [])]
+    await expect(rows.length).toBeGreaterThan(5)
+    const [areaTop] = edges(area)
+    for (const [index, row] of rows.entries()) {
+      // The timeline's rows are 44px each from the area's top (its lines and SVAR's bars).
+      const [top, bottom] = edges(row)
+      await expect(Math.abs(top - (areaTop + index * 44))).toBeLessThan(0.01)
+      await expect(Math.abs(bottom - (areaTop + (index + 1) * 44))).toBeLessThan(0.01)
+    }
+    // The chosen row's band in the timeline has the table row's top and bottom.
+    const band = canvasElement.querySelector('.wx-area > .wx-selected')
+    await expect(band).not.toBeNull()
+    await expect(edges(band)).toEqual(
+      edges(canvasElement.querySelector('[data-gantt-row="frame"]')),
+    )
+    // Choosing another bar moves both together.
+    const bar = canvasElement.querySelector('.wx-bar[data-task-id=":drawings"]')
+    if (bar === null) throw new Error('no bar for Drawings')
+    await userEvent.click(bar)
+    const next = canvasElement.querySelector('[data-gantt-row="drawings"]')
+    await waitFor(async () => {
+      await expect(next).toHaveAttribute('aria-selected', 'true')
+    })
+    await expect(edges(canvasElement.querySelector('.wx-area > .wx-selected'))).toEqual(edges(next))
+    // The date of "now" stands on the scale and covers no label of it.
+    const tag = canvasElement.querySelector('[data-slot="now-time"] span')
+    await expect(tag).not.toBeNull()
+    const tagBox = tag?.getBoundingClientRect()
+    for (const label of canvasElement.querySelectorAll('.wx-scale .wx-cell')) {
+      const text = textBox(label)
+      if (tagBox !== undefined && text.width > 0) await expect(overlap(tagBox, text)).toBe(false)
+    }
+  },
+}
+
 /** A column a day: the month above, the day's number below. */
 export const Days: Story = {
   args: { defaultScale: 'days' },

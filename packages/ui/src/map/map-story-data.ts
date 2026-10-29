@@ -59,18 +59,25 @@ export const EAST_ZONE: MapAreaGeometry = {
   ],
 }
 
+/** The town's zones, all in one colour (P5.94 item 17: the default). */
 export const TOWN_AREAS: MapArea[] = [
-  { id: 'centre', name: 'Centre', detail: 'Rate A', geometry: CENTRE_ZONE, tone: 'category1' },
-  { id: 'inner', name: 'Inner ring', detail: 'Rate B', geometry: INNER_ZONE, tone: 'category2' },
-  { id: 'outer', name: 'Outer ring', detail: 'Rate C', geometry: OUTER_ZONE, tone: 'category3' },
-  { id: 'east', name: 'East bank', detail: 'Rate C', geometry: EAST_ZONE, tone: 'category4' },
+  { id: 'centre', name: 'Centre', detail: 'Rate A', geometry: CENTRE_ZONE },
+  { id: 'inner', name: 'Inner ring', detail: 'Rate B', geometry: INNER_ZONE },
+  { id: 'outer', name: 'Outer ring', detail: 'Rate C', geometry: OUTER_ZONE },
+  { id: 'east', name: 'East bank', detail: 'Rate C', geometry: EAST_ZONE },
 ]
+
+/** The same zones coloured by their rate: the data asks for categories, the legend names them. */
+export const TOWN_AREAS_BY_RATE: MapArea[] = TOWN_AREAS.map((area) => ({
+  ...area,
+  tone:
+    area.detail === 'Rate A' ? 'category1' : area.detail === 'Rate B' ? 'category2' : 'category3',
+}))
 
 export const TOWN_LEGEND = [
   { tone: 'category1' as const, label: 'Rate A — the highest' },
   { tone: 'category2' as const, label: 'Rate B' },
   { tone: 'category3' as const, label: 'Rate C' },
-  { tone: 'category4' as const, label: 'Rate C, across the river' },
 ]
 
 export const LONG_AREAS: MapArea[] = TOWN_AREAS.map((area) =>

@@ -167,7 +167,7 @@ components, as below; the components stay.
 
 ## School and university
 
-- **School, timetable** — F7 Calendar: `Timetable` (periods × weekdays, the running period's now marker).
+- **School, timetable** — F7 Calendar: `Timetable` (periods × weekdays, the running period's time of "now").
 - **School, attendance of a lesson** — F7 grid: `AttendanceGrid` in lesson mode, one key per pupil.
 - **School, gradebook** — F7 grid: `AttendanceGrid` with the application's grade codes; averages are the application's.
 - **School, parents' portal, absences** — F1 List in `PortalShell`: `KeyFigures`, absences in `DataTable`, an excuse in a `Drawer` with `RadioGroupField`, `FileDropzone` and `AttachmentList`.

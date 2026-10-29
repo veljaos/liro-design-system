@@ -39,8 +39,8 @@ const meta = {
           'weekdays (columns) — with each lesson’s subject, teacher and room, an optional note in ' +
           'a status tone (a test, a substitution) and empty periods. Weekday names, times and ' +
           '"today" come from `LiroProvider`; `now` (the application’s clock) marks the running ' +
-          'period today with the time grids’ one "now" marker (a neutral line with a dot, ' +
-          'CalendarView’s and ResourceSchedule’s) where the time stands in the period.\n\n' +
+          'period today: its time on a small dark tag under the period’s times, as CalendarView ' +
+          'and ResourceSchedule write it in their gutter (no line across the cells).\n\n' +
           '**Phones:** one day at a time, chosen in a row of weekdays (today first).\n\n' +
           '**When:** a repeating weekly plan of fixed periods (classes, courses, shifts of a ' +
           'school).\n\n' +
@@ -63,8 +63,8 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 /**
- * Class 7/2's week; Wednesday is today and the 2nd period is running (a mathematics test): the
- * "now" marker stands in it at 09:10.
+ * Class 7/2's week; Wednesday is today and the 2nd period is running (a mathematics test): its
+ * time, 09:10, stands under the period's times.
  */
 export const Default: Story = {
   play: async ({ canvasElement }) => {
@@ -78,14 +78,12 @@ export const Default: Story = {
     )
     const now = canvasElement.querySelector<HTMLElement>('[aria-current="time"]')
     await expect(now).toHaveTextContent('Mathematics')
-    // The one "now" marker (P5.28 item 10), inside the running period's cell for today.
-    const marker = within(now ?? canvasElement).getByRole('img', { name: /^Now, 09:10/ })
+    // "Now" is only its time, on the tag under the running period's times (P5.94 item 16): no
+    // line across the cells.
+    const marker = canvas.getByRole('img', { name: /^Now, 9:10\sAM$/ })
     await expect(marker).toBeVisible()
-    // Drawn before the lesson, which covers its line, never the reverse (P5.90 item 17).
-    const lesson = within(now ?? canvasElement).getByText('Mathematics')
-    await expect(
-      marker.compareDocumentPosition(lesson) & Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy()
+    await expect(marker.closest('th')).toHaveTextContent(/^2\./)
+    await expect(canvasElement.querySelector('[data-slot="now-marker"]')).toBeNull()
     await expect(canvas.getAllByText('Free')).toHaveLength(5)
   },
 }

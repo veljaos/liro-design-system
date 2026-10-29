@@ -126,7 +126,7 @@ describe('ConnectionState', () => {
   it('names each state in words, with the clock time from the instant', () => {
     const at = '2026-10-06T09:42:00+02:00'
     expect(render(<ConnectionState status="local" at={at} />)).toContain(
-      'Saved on this device at 09:42 AM',
+      'Saved on this device at 9:42 AM',
     )
     expect(render(<ConnectionState status="sending" />)).toContain('Sending…')
     expect(render(<ConnectionState status="sent" />)).toContain('>Sent<')

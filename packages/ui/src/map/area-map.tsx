@@ -24,7 +24,10 @@ import {
 /*
  * AreaMap (BUILD-PLAN P5.41): areas on a map — municipalities, the zones of a city's tax, service
  * areas — drawn as lines and fills in tokens, labelled where the name fits, with the list of
- * every area beside the map. The list is the keyboard's and the screen reader's way (a single
+ * every area beside the map. Every area takes one colour, the charts' main blue, light; the
+ * pointer darkens it a little and the chosen one is darker still (P5.94 item 17): different
+ * colours only when the data sorts the areas into kinds (`tone`, with a legend). The list is the
+ * keyboard's and the screen reader's way (a single
  * choice, the arrow keys move and choose). The chosen area (P5.93 item 37) is filled with its own
  * colour, clearly stronger, with a thicker line; its label stands out (the strong tag) and the
  * same item is the list's neutral selection (D17: surface.selected and the border.selected bar —
@@ -44,7 +47,10 @@ export interface MapArea {
   /** A line under the name in the list, the application's words ("Rate from the city's decision"). */
   detail?: string
   geometry: MapAreaGeometry
-  /** Its colour: neutral or one of five categories. Default 'neutral'. */
+  /**
+   * Its colour, only when the data sorts the areas into kinds (a legend says which): neutral or
+   * one of five categories. Default 'main': every area the charts' main blue (P5.94 item 17).
+   */
   tone?: MapAreaTone
 }
 
@@ -90,6 +96,7 @@ export interface AreaMapProps {
 
 /** A tone's colour, for the legend's and the list's swatches. Written out. */
 export const AREA_SWATCH: Readonly<Record<MapAreaTone, CSSProperties>> = {
+  main: { borderColor: 'var(--liro-chart-main)' },
   neutral: { borderColor: 'var(--liro-border-strong)' },
   category1: { borderColor: 'var(--liro-chart-category1)' },
   category2: { borderColor: 'var(--liro-chart-category2)' },
@@ -136,7 +143,7 @@ export function AreaMap(props: AreaMapProps) {
       kind: 'area',
       id: area.id,
       geometry: area.geometry,
-      tone: area.tone ?? 'neutral',
+      tone: area.tone ?? 'main',
       selected: area.id === selected,
       interactive: true,
     }))
@@ -228,6 +235,8 @@ export function AreaMap(props: AreaMapProps) {
     )
   }
 
+  // The list's swatches only when the areas have colours of their own (one colour needs no key).
+  const toned = props.areas.some((area) => area.tone !== undefined && area.tone !== 'main')
   const focusIndex = Math.max(
     0,
     props.areas.findIndex((area) => area.id === selected),
@@ -283,7 +292,7 @@ export function AreaMap(props: AreaMapProps) {
                   : 'hover:bg-surface-hover',
               )}
             >
-              <Swatch tone={area.tone ?? 'neutral'} />
+              {toned && <Swatch tone={area.tone ?? 'main'} />}
               <span className="flex min-w-0 flex-col">
                 <span
                   className={cn(

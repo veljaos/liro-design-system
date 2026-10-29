@@ -1474,6 +1474,7 @@ export const messagesEn: LiroMessages = {
   'location.allowed': 'Allowed area',
   'location.position': 'Your position',
   'map.regionKeys': 'Arrow keys move between the areas; Enter chooses one.',
+  'map.regionKeysView': 'Arrow keys move between the areas.',
   'map.noData': 'No data',
   'map.stepBelow': (toText) => `Under ${toText}`,
   'map.stepBetween': (fromText, toText) => `${fromText} to under ${toText}`,

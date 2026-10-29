@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
-import { createFormat, deviceTimeZone, localDateTimeIn } from './format'
+import { createFormat, deviceTimeZone, hourStyle, localDateTimeIn } from './format'
 import { LiroProvider, useLiro } from './liro-provider'
 
 /*
@@ -52,6 +52,17 @@ describe('format with a time zone', () => {
   it('without a zone keeps the clock of an instant as written (backward compatible)', () => {
     expect(createFormat('sr-Latn-RS').time('2026-10-06T09:42:00+02:00')).toBe('09:42')
   })
+
+  it('writes the hour as the locale does: 12-hour without a leading zero, 24-hour with two digits (P5.94)', () => {
+    expect(hourStyle('en-US')).toBe('numeric')
+    expect(hourStyle('sr-Latn-RS')).toBe('2-digit')
+    expect(createFormat('en').time('2026-10-12T07:00')).toMatch(/^7:00\sAM$/)
+    expect(createFormat('en').time('2026-10-12T19:05')).toMatch(/^7:05\sPM$/)
+    expect(createFormat('en').dateTime('2026-10-12T07:00')).toMatch(/^10\/12\/2026, 7:00\sAM$/)
+    expect(createFormat('sr-Latn-RS').time('2026-10-12T07:00')).toBe('07:00')
+    expect(createFormat('en-GB').time('2026-10-12T07:00')).toBe('07:00')
+    expect(createFormat('ja').time('2026-10-12T07:00')).toBe('07:00')
+  })
 })
 
 function ShowZone() {
@@ -71,7 +82,7 @@ describe('LiroProvider timeZone', () => {
       </LiroProvider>,
     )
     expect(html).toContain('Asia/Tokyo')
-    expect(html).toMatch(/04:30\sPM/)
+    expect(html).toMatch(/4:30\sPM/)
   })
 
   it("defaults to the browser's zone", () => {

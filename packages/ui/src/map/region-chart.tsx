@@ -46,7 +46,9 @@ import {
  * - Keyboard: the map is one Tab stop; the arrows move between the areas in reading order (rows
  *   north to south, each from the page's start), show the tooltip and announce the area and its
  *   value; Enter or Space chooses; Escape hides the tooltip. A chosen area keeps its fill and takes
- *   the neutral selected line (D17).
+ *   the neutral selected line (D17). An area that cannot be chosen (`choosable` false: the last
+ *   level of a drill-down, P5.94 item 1) shows its tooltip but no pointer cursor, and a press or
+ *   Enter does nothing.
  * - The map is never mirrored in right-to-left; the card, the legend and the table are.
  * - The geometry is the application's (GeoJSON).
  */
@@ -61,6 +63,12 @@ export interface RegionChartArea {
   value: string | null
   /** A line under the name in the tooltip and the table, the application's words ("+12% on 2025"). */
   detail?: string
+  /**
+   * Whether the area can be chosen (default true). False for the last level of a drill-down
+   * (`SerbiaArea.hasLowerLevel`, P5.94 item 1): the tooltip still answers the pointer and the keys,
+   * but no pointer cursor, and a press or Enter does nothing.
+   */
+  choosable?: boolean
 }
 
 /** A place on the map (an office, a shop): a point, or a bubble sized by its value. */
@@ -191,6 +199,7 @@ export function RegionChart(props: RegionChartProps) {
       selected: area.id === selected,
       active: area.id === active,
       interactive: true,
+      choosable: area.choosable !== false,
       paint,
     }))
     for (const place of props.places ?? []) {
@@ -236,7 +245,7 @@ export function RegionChart(props: RegionChartProps) {
     }
     if ((event.key === 'Enter' || event.key === ' ') && active !== null) {
       event.preventDefault()
-      choose(active)
+      if (props.areas.find((area) => area.id === active)?.choosable !== false) choose(active)
       return
     }
     const index = order.findIndex((each) => each.area.id === active)
@@ -431,6 +440,8 @@ export function RegionChart(props: RegionChartProps) {
     )
   }
 
+  // Without an area to choose, the keys' description says only how to move (P5.94 item 1).
+  const anyChoosable = props.areas.some((area) => area.choosable !== false)
   const empty = props.areas.length === 0 || drawn.every((each) => each.step === null)
   const waiting = props.loading !== true && props.error === undefined && !empty
   const reveal =
@@ -480,7 +491,7 @@ export function RegionChart(props: RegionChartProps) {
       >
         <MapCanvas
           label={messages['map.name'](props.title)}
-          hint={messages['map.regionKeys']}
+          hint={anyChoosable ? messages['map.regionKeys'] : messages['map.regionKeysView']}
           shapes={shapes}
           labels={labels}
           bounds={bounds}
