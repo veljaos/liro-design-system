@@ -884,6 +884,12 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
           label: messages['schedule.now'](format.time(localDateTime(moment.day, moment.minutes))),
         }
 
+  // "Now" named for assistive technology where the rows are (the hours row is decoration).
+  const nowName =
+    nowAt === null || byDay ? null : (
+      <span role="img" aria-label={nowAt.label} className="sr-only" />
+    )
+
   /** `scale="days"`: a day's weekday and its date, today's in the neutral circle (CalendarView's). */
   const dayLabel = (day: string) => (
     <>
@@ -891,7 +897,6 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
         {format.weekdayName(weekdayOf(day), 'short')}
       </span>
       <span
-        {...(day === today ? { 'aria-current': 'date' as const } : {})}
         className={cn(
           'inline-flex h-6 min-w-6 items-center justify-center rounded-full px-1 text-sm tabular-nums',
           day === today ? 'bg-surface-inverse font-semibold text-on-inverse' : 'text-primary',
@@ -989,12 +994,12 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
               <NowTimeTag
                 orientation="horizontal"
                 time={nowAt.time}
-                label={nowAt.label}
                 style={{ top: along(nowAt.at), insetInlineStart: 0, insetInlineEnd: 0 }}
               />
             )}
           </div>
           <div className="relative min-w-0 flex-1 border-0 border-s border-solid border-subtle">
+            {nowName}
             {renderTrack(phoneRow)}
           </div>
         </div>
@@ -1087,7 +1092,6 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
                     <NowTimeTag
                       orientation="vertical"
                       time={nowAt.time}
-                      label={nowAt.label}
                       style={{ insetInlineStart: `${String(along(nowAt.at))}%` }}
                     />
                   )}
@@ -1095,6 +1099,7 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
               </div>
             </div>
             <div className="relative">
+              {nowName}
               {props.resources.map((resource, row) => (
                 <div
                   key={resource.id}

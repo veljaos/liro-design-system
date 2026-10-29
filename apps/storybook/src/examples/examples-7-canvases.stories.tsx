@@ -389,8 +389,11 @@ export const ProjectTimeline: Story = {
     // It covers no label of the scale: "Oct" stays readable (P5.94 item 6).
     const tagText = today?.querySelector('span')?.getBoundingClientRect()
     for (const cell of canvasElement.querySelectorAll('.wx-scale .wx-cell')) {
+      // The text itself: in a mirrored chart a label's span fills its cell.
       const range = document.createRange()
-      range.selectNodeContents(cell)
+      range.selectNodeContents(
+        document.createTreeWalker(cell, NodeFilter.SHOW_TEXT).nextNode() ?? cell,
+      )
       const text = range.getBoundingClientRect()
       const covers =
         tagText !== undefined &&

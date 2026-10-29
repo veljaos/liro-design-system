@@ -216,8 +216,11 @@ export const Default: Story = {
     await expect(canvas.getByRole('button', { name: 'Move to…: Ana Petrović' })).toBeVisible()
     // "Now" is only its time in the hours row, from the application's clock (P5.94 item 16): no
     // line across the rows.
-    const marker = canvas.getByRole('img', { name: /^Now, 10:20\sAM$/ })
-    await expect(marker).toHaveTextContent(/^10:20\sAM$/)
+    // Named where the rows are (the hours row is decoration).
+    await expect(canvas.getByRole('img', { name: /^Now, 10:20\sAM$/ })).toBeInTheDocument()
+    await expect(canvasElement.querySelector('[data-slot="now-time"]')).toHaveTextContent(
+      /^10:20\sAM$/,
+    )
     await expect(canvasElement.querySelector('[data-slot="now-marker"]')).toBeNull()
   },
 }

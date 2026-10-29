@@ -556,9 +556,11 @@ function ScaleNowTag({
           : { start: rect.left - box.left, end: rect.right - box.left }
       const row = scaleBox.querySelector('.wx-row')
       const labels = [...(row?.querySelectorAll('.wx-cell-value') ?? [])].flatMap((value) => {
-        // The text itself, not the label's padding.
+        // The text itself, not the label's padding (nor its whole cell, in a mirrored chart).
         const range = document.createRange()
-        range.selectNodeContents(value)
+        range.selectNodeContents(
+          document.createTreeWalker(value, NodeFilter.SHOW_TEXT).nextNode() ?? value,
+        )
         const rect = range.getBoundingClientRect()
         return rect.width > 0 ? [along(rect)] : []
       })

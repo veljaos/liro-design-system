@@ -116,10 +116,14 @@ export const Default: Story = {
     const marker = canvas.getByRole('img', { name: /^Now, 10:20\sAM$/ })
     await expect(marker).toHaveTextContent(/^10:20\sAM$/)
     await expect(canvasElement.querySelector('[data-slot="now-marker"]')).toBeNull()
-    const firstSlot = canvasElement.querySelector('[role="gridcell"]')
+    // The tag stands inside the time gutter, in either direction.
+    const gutter = canvasElement.querySelector('[role="rowheader"]')?.getBoundingClientRect()
+    const tag = marker.querySelector('span')?.getBoundingClientRect()
     await expect(
-      (marker.querySelector('span')?.getBoundingClientRect().right ?? Infinity) <=
-        (firstSlot?.getBoundingClientRect().left ?? 0),
+      gutter !== undefined &&
+        tag !== undefined &&
+        tag.left >= gutter.left &&
+        tag.right <= gutter.right,
     ).toBe(true)
     // The gutter writes the hours as the locale does: "7:00 AM", no leading zero.
     await expect(canvas.getByText(/^7:00\sAM$/)).toBeInTheDocument()
