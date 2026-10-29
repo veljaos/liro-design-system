@@ -14,3 +14,4 @@ P5.94, the owner's fifth review. Breaking changes (alpha) and how to migrate:
 - Launchpad: the home page has no "Customize"; show the editing mode in the user's preferences.
 - New exports: `CURRENT_TONE`, `CURRENT_ROW` (the one "current" look), `partOverLimit`, `stillToPay`, `closesOnSpace`. `mentionQueryAt` takes the chosen mentions as an optional third argument.
 - Buttons, tabs, menu items and field labels never break a word inside (a CSS rule in the package's styles).
+- New: CommonQuestions (a portal's common questions); FileDropzone `expected` (`ExpectedFile`); date fields read a day and a month alone in today's year; DateRangeField types into its first empty end from a press anywhere in its frame; PeriodField's custom range is typed. New messages `file.expected*` and `questions.*`.
