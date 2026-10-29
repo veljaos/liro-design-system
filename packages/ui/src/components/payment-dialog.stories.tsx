@@ -253,12 +253,22 @@ export const VoucherOverValue: Story = {
     total: '3011.00',
     onAddPart: fn(),
   },
-  play: async ({ args }) => {
+  play: async () => {
     await settle()
     const add = within(dialog()).getByRole('button', { name: 'Add this payment' })
     await expect(add).toHaveAttribute('aria-disabled', 'true')
     await expect(add).toHaveAccessibleDescription('This voucher is worth 2.000,00 RSD.')
-    await userEvent.click(add)
+  },
+}
+
+/** A press on the unavailable "Add this payment" adds nothing. */
+export const VoucherOverValueInteraction: Story = {
+  ...VoucherOverValue,
+  name: 'Voucher over its value, interaction',
+  tags: ['interaction', '!dev'],
+  play: async ({ args }) => {
+    await settle()
+    await userEvent.click(within(dialog()).getByRole('button', { name: 'Add this payment' }))
     await expect(args.onAddPart).not.toHaveBeenCalled()
   },
 }
