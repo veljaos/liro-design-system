@@ -829,7 +829,6 @@ export const messagesEn: LiroMessages = {
   'payment.cardApproved': 'Card payment approved',
   'payment.complete': 'Complete payment',
   'payment.done': 'Payment complete',
-  'receipt.title': 'Receipt',
   'scan.camera': 'Scan with camera',
   'scan.success': 'Done:',
   'scan.error': 'Problem:',
@@ -844,9 +843,6 @@ export const messagesEn: LiroMessages = {
   'queue.waiting': (count, countText) =>
     `${countText} ${count === 1 ? 'change' : 'changes'} waiting to be sent`,
   // P5.15 / P5.12
-  'print.pageNumber': (page, pages) => `Page ${page} of ${pages}`,
-  'print.draft': 'Draft',
-  'print.placeAndDate': (place, date) => `${place}, ${date}`,
   'quiz.score': (_correct, _total, correctText, totalText) =>
     `${correctText} of ${totalText} correct`,
   'quiz.passed': 'Passed',
@@ -1146,9 +1142,6 @@ export const messagesEn: LiroMessages = {
   'statutory.compareWith': (period) => `Compare with ${period}`,
   'statutory.comparing': (current, previous) => `${current}, with ${previous} under each amount`,
   'statutory.previousValue': (period) => `${period}:`,
-  'print.amountDue': (amount, date) =>
-    date === undefined ? `${amount} due` : `${amount} due ${date}`,
-  'print.signHere': 'Sign here',
   // P5.28 dates
   'schedule.now': (timeText) => `Now, ${timeText}`,
   // P5.28 screens

@@ -31,7 +31,7 @@ const meta = {
           'an invoice or a till (`ipsQrText`), a link to a record, a pairing code. Encoded in ' +
           'the browser (`qr` 0.7.2, MIT) and drawn as one SVG path: sharp at any size and on ' +
           'paper. Dark on light in both themes (a camera reads it), with its quiet zone, named ' +
-          '(`label`). `size` in px, or `fill` for a printout’s slot.\n\n' +
+          '(`label`). `size` in px, or `fill` for the box it stands in.\n\n' +
           '**When:** whatever a phone should read from the screen or from paper.\n\n' +
           '**When not:** a picture the application already made (pass it to the slot); a code ' +
           'that only decorates.',

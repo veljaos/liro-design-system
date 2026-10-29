@@ -7,7 +7,6 @@ import { CartPanel } from './cart-panel'
 import { NumericKeypad } from './numeric-keypad'
 import { ProductGrid } from './product-tile'
 import { QuantityStepper } from './quantity-stepper'
-import { ReceiptPreview } from './receipt-preview'
 import { ScanField } from './scan-field'
 
 const SERBIAN = numericFormat('sr-Latn-RS')
@@ -203,30 +202,6 @@ describe('ProductGrid', () => {
     expect(html).toContain('aria-pressed="true"')
     // One tile in the tab order.
     expect(html.match(/tabindex="0"/gi)).toHaveLength(1)
-  })
-})
-
-describe('ReceiptPreview', () => {
-  it('writes every amount through format, never rounded', () => {
-    const html = render(
-      <ReceiptPreview
-        header={['Pekara Zlatni klas']}
-        items={[
-          {
-            id: 'a',
-            name: 'Hleb',
-            quantity: '0.75',
-            unit: 'kg',
-            unitPrice: '119.999',
-            total: '89.99925',
-          },
-        ]}
-        totals={[{ id: 't', label: 'Total', value: '89.99925', strong: true }]}
-        currency="RSD"
-      />,
-    )
-    expect(html).toContain('0,75 kg × 119,999')
-    expect(html).toContain('89,99925')
   })
 })
 

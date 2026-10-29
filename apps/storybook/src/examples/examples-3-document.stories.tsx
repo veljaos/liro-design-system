@@ -362,9 +362,12 @@ export const D1InvoiceDraftPhone: Story = {
   },
 }
 
-/** The invoice's "PDF" opens its printout; the back button returns to the invoice. */
+/**
+ * The invoice's "PDF" opens liro-folio's PDF (a stand-in in the examples, P5.95); the back button
+ * returns to the invoice.
+ */
 export const PrintoutInvoiceInteraction: Story = {
-  name: 'Printout, invoice from its page, interaction',
+  name: 'Invoice PDF from its page, interaction',
   tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={ROUTES.invoice(FEATURED)} />,
   play: async ({ canvasElement }) => {
@@ -372,10 +375,10 @@ export const PrintoutInvoiceInteraction: Story = {
     const canvas = within(canvasElement)
     await userEvent.click(canvas.getByRole('button', { name: 'PDF' }))
     await settle()
-    const sheet = await canvas.findByRole('article', { name: `Invoice ${FEATURED}` })
-    await expect(sheet.querySelector('[data-slot="document-totals"]')).toHaveTextContent(
-      '135.954,00',
-    )
+    const pdf = await canvas.findByRole('figure', {
+      name: `${FEATURED}.pdf, PDF from liro-folio`,
+    })
+    await expect(within(pdf).getByRole('button', { name: 'Download PDF' })).toBeVisible()
     await userEvent.click(canvas.getByRole('link', { name: `Back to ${FEATURED}` }))
     await settle()
     await expect(await canvas.findByRole('heading', { level: 1, name: FEATURED })).toBeVisible()

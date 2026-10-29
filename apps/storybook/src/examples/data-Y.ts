@@ -624,25 +624,9 @@ export function annexSigners(nikola: 'waiting' | 'signed' | 'declined', reason?:
   ]
 }
 
-/** The annex's text (what the preview shows). */
+/** The annex (its PDF is liro-folio's, P5.95). */
 export const ANNEX = {
   title: 'Annex 2 to employment contract RU-2025-088',
-  parties:
-    'Kvadrat Gradnja d.o.o., Novi Sad (the employer), represented by director Nenad Kovačević, and Nikola Marković, site worker (the employee).',
-  articles: [
-    {
-      heading: 'Article 1',
-      text: 'From 15 October 2026 until the structure of Residential building Liman 4 is complete, the employee may be scheduled for night work when concrete is poured, at most two nights a week.',
-    },
-    {
-      heading: 'Article 2',
-      text: 'Each hour of night work is paid 26% above the base hourly pay, as in the contract. A night shift is followed by at least 12 hours of rest.',
-    },
-    {
-      heading: 'Article 3',
-      text: 'All other terms of the employment contract stay unchanged. The annex is made in electronic form and signed with qualified electronic signatures.',
-    },
-  ],
 }
 
 export const DECLINE_REASONS = [

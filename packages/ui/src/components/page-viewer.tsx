@@ -39,7 +39,7 @@ export type { PageRegion, RegionBox, ViewerPage } from './page-viewer-logic'
  *   (the text stays readable through it, as the search's matches) inside a 2px status.warning.fg
  *   frame, and its name on a raised tag above it (below it at the page's top); "Highlighted:
  *   Total, page 1" is announced politely. The page is paper, light in both themes
- *   (`data-liro-theme="light"`, as PrintPage), so the marker reads the same on it. A new highlight
+ *   (`data-liro-theme="light"`), so the marker reads the same on it. A new highlight
  *   turns to its page (reported with `onPageChange`) and is scrolled into view; the first one is
  *   shown without scrolling, so a story's picture never moves.
  * - Loading: a page-shaped skeleton. `error`: an ErrorState with "Try again" (`onRetry`).

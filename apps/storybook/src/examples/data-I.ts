@@ -359,9 +359,6 @@ export function cartTotals(sale: ComputedSale): CartAmount[] {
   ]
 }
 
-/** The footer's lines; the closing line is ReceiptPreview's `end` (P5.28), not "=====" text. */
-export const RECEIPT_FOOTER: readonly string[] = ['Thank you, see you tomorrow!']
-
 /** What the cash tendered leaves: the change, or what is still to pay. Null while nothing is typed. */
 export function cashOutcome(total: bigint, tendered: string | null) {
   if (tendered === null) return { change: null, remaining: null }

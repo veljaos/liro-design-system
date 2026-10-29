@@ -19,8 +19,8 @@ import type { ReceiptKindOption } from './sale-logic'
  *   the original).
  * - Under the groups: the chosen type's description, and its **marker** in a warning Alert
  *   ("Proforma — not a fiscal receipt"): a kind that is not a sale is never chosen silently.
- * The application shows the same marker on the cart (CartPanel `marker`) and prints it on the
- * receipt (ReceiptPreview `marker`); a training mode also gets PosShell's banner.
+ * The application shows the same marker on the cart (CartPanel `marker`); the printed receipt
+ * (liro-folio's) carries it too; a training mode also gets PosShell's banner.
  */
 
 export interface ReceiptKindPickerProps {

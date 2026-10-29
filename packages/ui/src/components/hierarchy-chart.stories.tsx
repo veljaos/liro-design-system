@@ -3,7 +3,6 @@ import { useState } from 'react'
 import { Plus } from 'lucide-react'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { settle } from '../primitives/story-helpers'
-import { PrintPage } from '../templates/print-page'
 import { HierarchyChart } from './hierarchy-chart'
 import {
   ARABIC_PEOPLE,
@@ -211,22 +210,24 @@ export const Japanese: Story = {
   ],
 }
 
-/** On a landscape sheet: every level open, no controls, scaled to the sheet. */
+/**
+ * The chart ready for the browser's printing: every level open, no tools (`toolbar={false}`), no
+ * frame (`framed={false}`), fitted to the width. A screen printed as you see it, not a document:
+ * printed documents come from liro-folio (P5.95).
+ */
 export const Print: Story = {
   render: () => (
-    <PrintPage title="Organisation of Northwind Ltd." orientation="landscape">
-      <HierarchyChart
-        label="Organisation of Northwind Ltd."
-        nodes={PEOPLE}
-        layout="desktop"
-        toolbar={false}
-        framed={false}
-        defaultExpandedDepth={9}
-        stackFrom={2}
-        defaultZoom="fit"
-        maxHeight="none"
-      />
-    </PrintPage>
+    <HierarchyChart
+      label="Organisation of Northwind Ltd."
+      nodes={PEOPLE}
+      layout="desktop"
+      toolbar={false}
+      framed={false}
+      defaultExpandedDepth={9}
+      stackFrom={2}
+      defaultZoom="fit"
+      maxHeight="none"
+    />
   ),
 }
 

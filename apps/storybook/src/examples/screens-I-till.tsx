@@ -1,5 +1,6 @@
 import {
   ChartNoAxesColumn,
+  Copy,
   GraduationCap,
   HandCoins,
   ListChecks,
@@ -36,9 +37,7 @@ import {
   ProductGrid,
   ReceiptFinder,
   ReceiptKindPicker,
-  ReceiptPreview,
   ReceiptResult,
-  SaveStatus,
   ScanField,
   TextAreaField,
   Toaster,
@@ -52,9 +51,6 @@ import {
 } from '@veljaos/ui'
 import { decimal, paras } from '../../../../packages/ui/src/components/amounts-story-data'
 import {
-  FISCAL_BANNER,
-  FISCAL_END,
-  NOT_FISCAL,
   BAKERY_PAYEE,
   instantPaymentCode,
 } from '../../../../packages/ui/src/components/sale-story-data'
@@ -72,7 +68,6 @@ import {
   MOST_SOLD,
   PRODUCTS,
   QUICK_AMOUNTS,
-  RECEIPT_FOOTER,
   SALE,
   type SaleLine,
 } from './data-I'
@@ -88,15 +83,12 @@ import {
   issuedFacts,
   journalWith,
   kindLabel,
-  kindLine,
   MIXED_PARTS,
   nextEntry,
   ORIGINAL_ID,
   paymentFigures,
   paymentOptionsFor,
-  RECEIPT_HEADER,
   RECEIPT_TYPES,
-  receiptParts,
   REFUND_BUYER,
   REFUND_CHOICE,
   refundableLines,
@@ -187,11 +179,6 @@ function buyerText(buyer: BuyerValue): string {
   return `${type} ${buyer.id}${optional}`
 }
 
-/** The buyer as the receipt prints it: "10:100100100". */
-function buyerCode(buyer: BuyerValue): string {
-  return `${buyer.typeId}:${buyer.id}`
-}
-
 /** The receipt's code (a stand-in drawn from its link; the application draws the real one). */
 function receiptCode(number: string, size = 128) {
   return (
@@ -201,92 +188,68 @@ function receiptCode(number: string, size = 128) {
   )
 }
 
-/** Whether a kind is a real sale (it gets the fiscal banner; the others the marker). */
-function isFiscal(type: ReceiptTypeId): boolean {
-  return type === 'normal' || type === 'advance'
+/** What the example answers when the receipt goes out one way (the application sends it). */
+function deliveryAnswer(
+  id: string,
+  address: string | null,
+): Pick<ReceiptDelivery, 'state' | 'stateText'> {
+  if (id === 'print') return { state: 'sent', stateText: 'Printed' }
+  if (id === 'copy') return { state: 'sent', stateText: 'Copy printed' }
+  if (address === null || address === '') {
+    return {
+      state: 'failed',
+      stateText: id === 'email' ? 'Enter the customer’s e-mail.' : 'Enter the mobile number.',
+    }
+  }
+  return { state: 'sent', stateText: `Sent to ${address}` }
 }
 
-/** An issued receipt as the till prints it. */
-function EntryReceipt({ entry }: { entry: JournalEntry }) {
+/**
+ * An issued receipt as the till shows it (P5.95): ReceiptResult — its state, kind, total and the
+ * processor's facts, its code and link, Print, Send and Copy. Its printed form is liro-folio's.
+ */
+function EntryReceipt({
+  entry,
+  deliveries,
+  onDeliver,
+}: {
+  entry: JournalEntry
+  deliveries: Readonly<Record<string, Partial<ReceiptDelivery>>>
+  onDeliver: (id: string, address: string | null) => void
+}) {
   const { format } = useLiro()
-  const signed = (amount: string) => format.number(amount, { decimals: 2 })
-  const sale = computeSale(entry.lines)
-  const parts = receiptParts(
-    sale,
-    entry.transaction,
-    (rate, amount) => `Discount ${rate.toString()}%: ${signed(amount)}`,
-  )
-  const type = entry.type
-  const fiscal = isFiscal(type)
-  const payments = entry.payments.map((part) => ({
-    id: part.id,
-    label: part.label,
-    value: entry.transaction === 'refund' ? decimal(-paras(part.value)) : part.value,
-  }))
-  const total = entryTotal(entry)
-  const paid = entry.payments.reduce((sum, part) => sum + paras(part.value), 0n)
-  const change = entry.transaction === 'sale' && paid > total ? paid - total : 0n
-  const advanceItem =
-    entry.type === 'advance'
-      ? [
-          {
-            id: 'advance',
-            name: `Advance: ${entry.advanceText ?? 'order'} (Đ)`,
-            quantity: '1',
-            unitPrice: decimal(total),
-            total: decimal(total),
-          },
-        ]
-      : null
+  const sent = entry.state === 'sent'
   return (
-    <ReceiptPreview
-      className="mx-auto"
-      {...(fiscal ? { banner: FISCAL_BANNER, end: FISCAL_END } : { marker: NOT_FISCAL })}
-      header={RECEIPT_HEADER}
+    <ReceiptResult
+      tone={sent ? 'issued' : 'waiting'}
+      {...(sent
+        ? {}
+        : {
+            text: 'Kept on this till and sent when the connection is back; the printed receipt is valid.',
+          })}
       facts={[
-        { id: 'cashier', label: 'Cashier', value: BAKERY.cashier },
-        { id: 'device', label: 'Device', value: FISCAL.device },
-        ...(entry.buyer === undefined
-          ? []
-          : [{ id: 'buyer', label: 'Buyer ID', value: buyerCode(entry.buyer) }]),
-        ...(entry.buyer?.optionalTypeId === undefined || entry.buyer.optionalTypeId === ''
-          ? []
-          : [
-              {
-                id: 'optional',
-                label: 'Buyer’s optional field',
-                value: `${entry.buyer.optionalTypeId}:${entry.buyer.optional ?? ''}`,
-              },
-            ]),
-        ...(entry.reference === undefined
-          ? []
-          : [
-              { id: 'ref', label: 'Original receipt', value: entry.reference.number },
-              { id: 'reftime', label: 'Original time', value: entry.reference.time },
-            ]),
+        { id: 'kind', label: 'Kind', value: kindLabel(entry.type, entry.transaction) },
+        {
+          id: 'total',
+          label: 'Total',
+          value: format.money(decimal(entryTotal(entry)), BAKERY.currency),
+        },
+        ...issuedFacts(entry),
       ]}
-      kindLine={kindLine(type, entry.transaction)}
-      items={advanceItem ?? parts.items}
-      totals={
-        advanceItem === null
-          ? parts.totals
-          : [{ id: 'total', label: 'Advance', value: decimal(total), strong: true }]
-      }
-      payments={[
-        ...payments,
-        ...(change === 0n ? [] : [{ id: 'change', label: 'Change', value: decimal(change) }]),
-      ]}
-      {...(advanceItem === null && parts.recap.rows.length > 0 ? { recap: parts.recap } : {})}
-      {...(fiscal ? { issuedFacts: issuedFacts(entry) } : {})}
-      {...(entry.transaction === 'refund' && entry.payments.some((part) => part.label === 'Cash')
-        ? { signature: 'Buyer’s signature' }
+      {...(sent
+        ? {
+            code: receiptCode(entry.number, 112),
+            link: {
+              href: `${FISCAL.linkBase}${entry.number}`,
+              label: `example.com/receipts/${entry.number}`,
+            },
+          }
         : {})}
-      {...(fiscal && entry.state === 'sent' ? { code: receiptCode(entry.number) } : {})}
-      footer={[
-        ...(entry.withoutCompensation === true ? ['WITHOUT COMPENSATION'] : []),
-        ...RECEIPT_FOOTER,
-      ]}
-      currency={BAKERY.currency}
+      deliveries={[...(sent ? DELIVERY_WAYS : DELIVERY_WAYS.slice(0, 1)), COPY_WAY].map((way) => ({
+        ...way,
+        ...deliveries[way.id],
+      }))}
+      onDeliver={onDeliver}
     />
   )
 }
@@ -309,6 +272,14 @@ const DELIVERY_WAYS: readonly ReceiptDelivery[] = [
     address: { label: 'Customer’s mobile number', type: 'tel' },
   },
 ]
+
+/** A copy of the receipt (a reprint is a copy by law), printed on the register's printer. */
+const COPY_WAY: ReceiptDelivery = {
+  id: 'copy',
+  label: 'Copy',
+  actionLabel: 'Print a copy',
+  icon: Copy,
+}
 
 export function Till({ phone, start = {} }: { phone: boolean; start?: TillStart }) {
   const { format } = useLiro()
@@ -342,7 +313,6 @@ export function Till({ phone, start = {} }: { phone: boolean; start?: TillStart 
   const [offlineChecked, setOfflineChecked] = useState(false)
   /** The advance just refunded, said in the cart's details (P5.93 item 3: no toast). */
   const [refunded, setRefunded] = useState<string | null>(null)
-  const [reprinted, setReprinted] = useState(false)
   const [type, setType] = useState<ReceiptTypeId>(start.type ?? 'normal')
   const [transaction, setTransaction] = useState<TransactionId>(
     start.refund === 'cart' || start.refund === 'receipt' ? 'refund' : 'sale',
@@ -1491,29 +1461,9 @@ export function Till({ phone, start = {} }: { phone: boolean; start?: TillStart 
                         : DELIVERY_WAYS.slice(0, 1)
                       ).map((way) => ({ ...way, ...deliveries[way.id] }))}
                       onDeliver={(id, address) => {
-                        if (id === 'print') {
-                          setDeliveries((current) => ({
-                            ...current,
-                            print: { state: 'sent', stateText: 'Printed' },
-                          }))
-                          return
-                        }
-                        if (address === null || address === '') {
-                          setDeliveries((current) => ({
-                            ...current,
-                            [id]: {
-                              state: 'failed',
-                              stateText:
-                                id === 'email'
-                                  ? 'Enter the customer’s e-mail.'
-                                  : 'Enter the mobile number.',
-                            },
-                          }))
-                          return
-                        }
                         setDeliveries((current) => ({
                           ...current,
-                          [id]: { state: 'sent', stateText: `Sent to ${address}` },
+                          [id]: deliveryAnswer(id, address),
                         }))
                       }}
                     />
@@ -1528,7 +1478,6 @@ export function Till({ phone, start = {} }: { phone: boolean; start?: TillStart 
                   onClick={() => {
                     setPaying(false)
                     setDone(false)
-                    setReprinted(false)
                     setReceiptOpen(true)
                   }}
                 />
@@ -1538,30 +1487,23 @@ export function Till({ phone, start = {} }: { phone: boolean; start?: TillStart 
           />
         )}
 
-        {/* The issued receipt as printed */}
+        {/* The issued receipt: its state, facts and ways out; its printed form is liro-folio's */}
         {issued !== null && (
           <Dialog
             open={receiptOpen}
             onOpenChange={setReceiptOpen}
             title={`Receipt ${issued.number}`}
-            description="Printed on the register's printer; the customer can ask for it by e-mail."
             actions={
-              <>
-                {/* The answer beside the action, not a toast (P5.93 item 3). */}
-                <SaveStatus state={reprinted ? 'saved' : 'idle'} savedText="Sent to the printer" />
-                <Button
-                  intent="print"
-                  emphasis="secondary"
-                  label="Print again"
-                  onClick={() => {
-                    setReprinted(true)
-                  }}
-                />
-                <Button intent="create" emphasis="primary" label="New sale" onClick={newSale} />
-              </>
+              <Button intent="create" emphasis="primary" label="New sale" onClick={newSale} />
             }
           >
-            <EntryReceipt entry={issued} />
+            <EntryReceipt
+              entry={issued}
+              deliveries={deliveries}
+              onDeliver={(id, address) => {
+                setDeliveries((current) => ({ ...current, [id]: deliveryAnswer(id, address) }))
+              }}
+            />
           </Dialog>
         )}
         <Toaster layout={phone ? 'phone' : 'desktop'} />

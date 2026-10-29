@@ -40,7 +40,7 @@ const meta = {
           'application as a decimal string; a quantity change is reported, and the new totals ' +
           'settle in place (`pending`).\n\n' +
           '**When:** the cart of PosShell; a kiosk’s order.\n\n' +
-          '**When not:** document lines (EditableGrid); a read-only receipt (ReceiptPreview).\n\n' +
+          '**When not:** document lines (EditableGrid); an issued receipt (ReceiptResult; its printed form is liro-folio’s).\n\n' +
           '**P5.28:** the sale’s kind under the title and a marker for a kind that is not a real ' +
           'sale; the application’s details (the buyer, open advances); a line’s note, its state ' +
           '(“Sent to the bar · 18:15”) and an edit button; the total’s own words (“To pay”). ' +

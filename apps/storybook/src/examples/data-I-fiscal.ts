@@ -15,10 +15,7 @@ import type {
   FoundReceipt,
   PaymentOption,
   PaymentPart,
-  ReceiptAmount,
   ReceiptFact,
-  ReceiptItem,
-  ReceiptRecap,
 } from '@veljaos/ui'
 import { decimal, paras, sumUnits } from '../../../../packages/ui/src/components/amounts-story-data'
 import {
@@ -28,7 +25,7 @@ import {
   RECEIPT_TYPES,
   TRANSACTIONS,
 } from '../../../../packages/ui/src/components/sale-story-data'
-import { BAKERY, computeSale, VAT, type ComputedSale, type SaleLine } from './data-I'
+import { computeSale, type SaleLine } from './data-I'
 
 export { BUYER_ID_TYPES, BUYER_OPTIONAL_TYPES, PAYMENT_OPTIONS, RECEIPT_TYPES, TRANSACTIONS }
 
@@ -66,15 +63,11 @@ export const FISCAL = {
 export type ReceiptTypeId = 'normal' | 'advance' | 'proforma' | 'copy' | 'training'
 export type TransactionId = 'sale' | 'refund'
 
-/** The kind's words on the screen ("Normal · Sale") and printed ("NORMAL SALE"). */
+/** The kind's words on the screen ("Normal · Sale"). */
 export function kindLabel(type: string, transaction: string): string {
   const typeLabel = RECEIPT_TYPES.find((each) => each.id === type)?.label ?? type
   const transactionLabel = TRANSACTIONS.find((each) => each.id === transaction)?.label ?? ''
   return `${typeLabel} · ${transactionLabel}`
-}
-
-export function kindLine(type: string, transaction: string): string {
-  return kindLabel(type, transaction).replace(' · ', ' ').toUpperCase()
 }
 
 /** The counter's suffix per kind (illustrative, after the system's two letters). */
@@ -470,60 +463,6 @@ export const MIXED_PARTS: readonly PaymentPart[] = [
 
 // ── An issued receipt ─────────────────────────────────────────────────────────────────────────
 
-/** The parts of a receipt as ReceiptPreview prints them. */
-export function receiptParts(
-  sale: ComputedSale,
-  transaction: string,
-  discountText: (rate: bigint, amount: string) => string,
-): { items: ReceiptItem[]; recap: ReceiptRecap; totals: ReceiptAmount[] } {
-  const sign = transaction === 'refund' ? -1n : 1n
-  const rows = sale.vat.filter((each) => each.base !== 0n)
-  return {
-    items: sale.lines.map(({ line, product, discount, total }) => ({
-      id: product.id,
-      name: `${product.name}${product.detail === undefined ? '' : ` ${product.detail}`} (${product.vat})`,
-      quantity: (BigInt(line.quantity) * sign).toString(),
-      unitPrice: product.price,
-      total: decimal(total * sign),
-      ...(line.discount === undefined
-        ? {}
-        : { note: discountText(line.discount.rate, decimal(-discount * sign)) }),
-    })),
-    recap: {
-      columns: [
-        { id: 'label', label: 'Label' },
-        { id: 'name', label: 'Name' },
-        { id: 'rate', label: 'Rate' },
-        { id: 'tax', label: 'Tax', amount: true },
-      ],
-      rows: rows.map((each) => ({
-        id: each.category,
-        cells: {
-          label: VAT[each.category].label,
-          name: 'VAT',
-          rate: `${String(VAT[each.category].rate)},00%`,
-          tax: decimal(each.vat * sign),
-        },
-      })),
-      totals: [
-        {
-          id: 'all',
-          label: 'Total tax',
-          value: decimal(sumUnits(rows.map((each) => each.vat)) * sign),
-        },
-      ],
-    },
-    totals: [
-      {
-        id: 'total',
-        label: transaction === 'refund' ? 'Refund total' : 'Total',
-        value: decimal(sale.total * sign),
-        strong: true,
-      },
-    ],
-  }
-}
-
 /** The facts of an issued receipt: the processor's number and time, the counter. */
 export function issuedFacts(each: JournalEntry): ReceiptFact[] {
   return each.state === 'sent'
@@ -564,6 +503,3 @@ export function nextEntry(
     state: offline === true ? 'waiting' : 'sent',
   }
 }
-
-/** The bakery's name on every receipt. */
-export const RECEIPT_HEADER = [BAKERY.name, BAKERY.address, BAKERY.taxId, BAKERY.register]

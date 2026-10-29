@@ -11,7 +11,7 @@ import { useLiro } from '../provider/liro-provider'
  *
  * - **Dark on light, always:** a code is read by a camera, and many readers fail on an inverted
  *   one, so the code stands on the light surface in both themes (`data-liro-theme="light"`, as
- *   paper in PrintPage), in the light theme's text colour — tokens only (D6).
+ *   PageViewer's paper), in the light theme's text colour — tokens only (D6).
  * - **The quiet zone** (`quietZone`, default 4 modules, as the standard asks) is part of the
  *   drawing: nothing may touch the code.
  * - **Error correction** (`errorCorrection`): 'medium' by default (15% of the code may be lost).
@@ -64,8 +64,8 @@ export interface QrCodeProps {
   /** The image's name ("IPS QR code for the payment"). */
   label: string
   /**
-   * Width and height in px, quiet zone included (default 160), or 'fill': as large as its box (a
-   * printout's 32mm slot).
+   * Width and height in px, quiet zone included (default 160), or 'fill': as large as its box (the
+   * slot a screen gives it).
    */
   size?: number | 'fill'
   /** Default 'medium'. */
