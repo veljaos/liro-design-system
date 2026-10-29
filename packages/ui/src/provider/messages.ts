@@ -330,6 +330,15 @@ export interface LiroMessages {
   ) => string
   /** WorklistPage, from 62em: names the detail pane. */
   'worklist.detail': string
+  /** WorklistPage: names the queue's search field (its placeholder too). */
+  'worklist.search': string
+  /** WorklistPage: names the queue's filter chips. */
+  'worklist.filters': string
+  /**
+   * WorklistSummary: how many items are decided ("3 of 10 done"); the numbers already written by
+   * `format.number` (`doneText`, `totalText`), the numbers kept for plural rules.
+   */
+  'worklist.done': (done: number, doneText: string, total: number, totalText: string) => string
   /** PageHeader's back button: its name and tooltip (`list` is the list's name). */
   'page.backTo': (list: string) => string
   /** SectionBar: names the row of section links. */

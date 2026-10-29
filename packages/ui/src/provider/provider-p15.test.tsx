@@ -1610,9 +1610,12 @@ describe('messages', () => {
       'workingTime.worked',
       'worklist.back',
       'worklist.detail',
+      'worklist.done',
+      'worklist.filters',
       'worklist.next',
       'worklist.position',
       'worklist.previous',
+      'worklist.search',
     ])
   })
 

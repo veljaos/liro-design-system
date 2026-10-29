@@ -141,23 +141,32 @@ export const ApprovalPhoneToast: Story = {
 
 const SERBIAN_BANK = createFormat('sr-Latn-RS')
 
-/** The statement's lines, as the table or the cards show them, in their order. */
-function bankRows(canvasElement: HTMLElement): string[] {
-  const list = canvasElement.querySelector(
-    'table[aria-label="Lines of statement 188"], ul[aria-label="Lines of statement 188"]',
-  )
+/** The rows of the statement's queue drawn now, as their text, in their order. */
+function bankRows(canvasElement: HTMLElement, statement = '188'): string[] {
+  const list = canvasElement.querySelector(`ul[aria-label="Lines of statement ${statement}"]`)
   if (list === null) throw new Error('no lines')
-  return Array.from(list.querySelectorAll<HTMLElement>('tbody tr, :scope > li')).map(
+  return Array.from(list.querySelectorAll<HTMLElement>(':scope > li[data-worklist-row]')).map(
     (row) => row.textContent,
   )
 }
 
+/** A filter chip of the queue ("Needs you 1"), by its state's words. */
+function chip(canvasElement: HTMLElement, label: string): HTMLElement {
+  const group = within(canvasElement).getByRole('group', { name: 'Show lines' })
+  return within(group).getByRole('button', { name: new RegExp(`^${label}`) })
+}
+
+/** The chosen line's heading in the detail (the payer or the payee). */
+function lineHeading(canvasElement: HTMLElement): string {
+  return canvasElement.querySelector('h2')?.textContent ?? ''
+}
+
 /**
- * Bank statement 188 of 06.10.2026 (Banca Intesa), auto first (P5.90 item 9): one compact table
- * of its ten lines, each with what it does and its state — six matched automatically, three
- * suggestions (one of them the payment against proforma PR-2026-118: an advance and its invoice,
- * P5.93 item 17), one that needs the user. "Accept all exact matches (6)" is the main action; the
- * balances check out.
+ * Bank statement 188 of 06.10.2026 (Banca Intesa) as a worklist (P5.94 item 19): the strip with
+ * the balances and "0 of 10 done"; the queue with "Accept all exact matches (6)" at its top, the
+ * search and the states as chips (Needs you 1, Suggestion 3, Matched automatically 6, Done 0),
+ * Needs you chosen; the one line nothing was found for — Petar Jovanović's payment — open beside
+ * it with the bank's text and "What is this payment?".
  */
 export const BankStatementScreen: Story = {
   name: 'Bank statement 188',
@@ -170,20 +179,27 @@ export const BankStatementScreen: Story = {
       SERBIAN_BANK.number(STATEMENT_TOTALS.closing, { decimals: 2 }),
     )
     await expect(canvasElement).toHaveTextContent('Balance checks out')
-    await expect(canvasElement).toHaveTextContent('0 of 10 lines done')
-    await expect(canvasElement).toHaveTextContent(
-      '6 matched automatically · 3 suggestions · 1 needs you',
+    await expect(canvasElement).toHaveTextContent('0 of 10 done')
+    await expect(chip(canvasElement, 'Needs you')).toHaveAttribute('aria-pressed', 'true')
+    await expect(chip(canvasElement, 'Needs you')).toHaveTextContent('Needs you1')
+    await expect(chip(canvasElement, 'Suggestion')).toHaveTextContent('Suggestion3')
+    await expect(chip(canvasElement, 'Matched automatically')).toHaveTextContent(
+      'Matched automatically6',
     )
     await expect(canvas.getByRole('button', { name: 'Accept all exact matches (6)' })).toBeVisible()
-    await expect(canvasElement).toHaveTextContent('Advance and its invoice for PR-2026-118')
-    await expect(bankRows(canvasElement)).toHaveLength(10)
+    await expect(bankRows(canvasElement)).toHaveLength(1)
+    await expect(lineHeading(canvasElement)).toBe('Petar Jovanović')
+    await expect(canvas.getByRole('radiogroup', { name: 'What is this payment?' })).toBeVisible()
+    await expect(canvas.queryByRole('button', { name: 'Post statement' })).toBeNull()
     await settle()
   },
 }
 
 /**
- * Accepting the six exact matches at once (Undo offered), then line 3 — the Core's suggestion —
- * opened in the drawer: what it does in one sentence, "Confirm and next", and line 7 opens.
+ * Accepting the six exact matches at once ("6 lines accepted." with Undo in place, no
+ * confirmation); the suggestions: line 3 confirmed with the button, line 7 opens by itself with
+ * "Line 3 done … Undo" above it; Enter in the queue confirms line 7 and line 9 (the proforma)
+ * opens; Undo takes line 7 back.
  */
 export const BankStatementScreenInteraction: Story = {
   name: 'Bank statement 188, interaction',
@@ -192,38 +208,100 @@ export const BankStatementScreenInteraction: Story = {
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
-    const page = within(document.body)
     await userEvent.click(canvas.getByRole('button', { name: 'Accept all exact matches (6)' }))
-    await expect(await page.findByText('6 lines accepted.')).toBeInTheDocument()
-    await expect(canvasElement).toHaveTextContent('6 of 10 lines done')
-    await expect(canvas.queryByRole('button', { name: /^Accept all/ })).toBeNull()
-    await userEvent.click(canvas.getByRole('cell', { name: 'Medic Lab Niš d.o.o.' }))
-    const drawer = within(await page.findByRole('dialog', { name: /Confirm payment/ }))
-    await expect(drawer.getByRole('region', { name: 'What it does' })).toHaveTextContent(
+    await expect(await canvas.findByText('6 lines accepted.')).toBeVisible()
+    await expect(canvasElement).toHaveTextContent('6 of 10 done')
+    await userEvent.click(canvas.getByRole('button', { name: 'Undo' }))
+    await expect(canvasElement).toHaveTextContent('0 of 10 done')
+    await userEvent.click(canvas.getByRole('button', { name: 'Accept all exact matches (6)' }))
+    await userEvent.click(chip(canvasElement, 'Suggestion'))
+    await expect(lineHeading(canvasElement)).toBe('Medic Lab Niš d.o.o.')
+    await expect(canvas.getByRole('region', { name: 'What it does' })).toHaveTextContent(
       'Pays 50.000,00',
     )
-    // The full choice and the bank's details only on demand.
-    await expect(drawer.queryByRole('radiogroup')).toBeNull()
-    await userEvent.click(drawer.getByRole('button', { name: 'Confirm and next' }))
-    const next = within(await page.findByRole('dialog', { name: /Line 7/ }))
-    await expect(next.getByRole('region', { name: 'What it does' })).toHaveTextContent(
+    await expect(
+      within(canvas.getByRole('list', { name: 'Why' })).getAllByRole('listitem'),
+    ).toHaveLength(3)
+    // The full choice only on demand.
+    await expect(canvas.queryByRole('radiogroup')).toBeNull()
+    await userEvent.click(canvas.getByRole('button', { name: 'Confirm' }))
+    await expect(lineHeading(canvasElement)).toBe('Zlatibor Turs d.o.o.')
+    await expect(canvas.getByRole('region', { name: 'What it does' })).toHaveTextContent(
       'Closes F-2026-0406; 0,40 RSD is written off.',
     )
-    await expect(canvasElement).toHaveTextContent('7 of 10 lines done')
+    await expect(canvasElement).toHaveTextContent('Line 3 done: Pays part of F-2026-0410.')
+    await expect(canvasElement).toHaveTextContent('7 of 10 done')
+    // The keyboard: the queue's chosen row, then Enter confirms it.
+    const row = canvasElement.querySelector<HTMLElement>(
+      '[data-worklist-row="b7"] [data-worklist-target]',
+    )
+    row?.focus()
+    await userEvent.keyboard('{Enter}')
+    await expect(lineHeading(canvasElement)).toBe('Vojvođanka Mlin a.d.')
+    await expect(canvasElement).toHaveTextContent('Line 7 done')
+    await expect(document.activeElement?.closest('[data-worklist-row]')).toHaveAttribute(
+      'data-worklist-row',
+      'b9',
+    )
+    await userEvent.click(canvas.getByRole('button', { name: 'Undo' }))
+    await expect(lineHeading(canvasElement)).toBe('Zlatibor Turs d.o.o.')
+    await expect(canvasElement).toHaveTextContent('7 of 10 done')
+    await settle()
+  },
+}
+
+/** Every line decided: the strip offers "Post statement" (the journal entry in a confirmation). */
+export const BankStatementReady: Story = {
+  name: 'Bank statement 188, ready to post',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BANK_ROUTES.decided} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await expect(canvasElement).toHaveTextContent('10 of 10 done')
+    await expect(chip(canvasElement, 'Done')).toHaveAttribute('aria-pressed', 'true')
+    await expect(canvas.getByRole('button', { name: 'Post statement' })).toBeVisible()
+    await expect(canvas.queryByRole('button', { name: /^Accept all/ })).toBeNull()
+    await settle()
+  },
+}
+
+/** Posting: the confirmation shows the journal entry, balanced; the statement is posted. */
+export const BankStatementPost: Story = {
+  name: 'Bank statement 188, ready to post, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BANK_ROUTES.decided} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const page = within(document.body)
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Post statement' }))
+    const alert = await page.findByRole('alertdialog')
+    const dialog = within(alert)
+    await expect(alert).toHaveTextContent('Journal entry')
+    await expect(alert).toHaveTextContent('Balanced')
+    await userEvent.click(dialog.getByRole('button', { name: 'Post statement' }))
+    await expect(await page.findByText('Statement 188 posted.')).toBeInTheDocument()
+    // The dialog closes; the strip no longer offers posting, and the statement says Posted.
+    await waitFor(async () => {
+      await expect(
+        within(canvasElement).queryByRole('button', { name: 'Post statement' }),
+      ).toBeNull()
+    })
+    await expect(within(canvasElement).getByText('Posted')).toBeVisible()
     notice.dismiss()
     await settle()
   },
 }
 
-/** Phone: the summary, then the lines as cards — those that need the user first. */
+/** Phone: the strip, then the queue — the lines that need the user first (Needs you). */
 export const BankStatementPhone: Story = {
   name: 'Bank statement 188, phone',
   render: () => <OnPhone start={BANK_ROUTES.statement} />,
   play: async ({ canvasElement }) => {
     await settle()
     const rows = bankRows(canvasElement)
+    await expect(rows).toHaveLength(1)
     await expect(rows[0]).toMatch(/Petar Jovanović.*Needs you/)
-    await expect(rows[1]).toMatch(/Medic Lab Niš.*Suggestion/)
     await expect(
       within(canvasElement).getByRole('button', { name: 'Accept all exact matches (6)' }),
     ).toBeVisible()
@@ -233,21 +311,49 @@ export const BankStatementPhone: Story = {
 
 /**
  * Phone, one line on the whole screen: Zlatibor Turs paid 0,40 RSD less than F-2026-0406; the
- * difference is written off as the Core suggests; "Confirm and next".
+ * difference is written off as the Core suggests; Change and Confirm in the bottom bar.
  */
 export const BankStatementLinePhone: Story = {
-  name: 'Bank statement 188, phone, line in focus',
+  name: 'Bank statement 188, phone, one line',
   tags: ['!dev'],
   render: () => <OnPhone start={BANK_ROUTES.difference} />,
-  play: async () => {
+  play: async ({ canvasElement }) => {
     await settle()
-    const drawer = within(
-      await within(document.body).findByRole('dialog', { name: /Zlatibor Turs/ }),
-    )
-    await expect(drawer.getByRole('region', { name: 'What it does' })).toHaveTextContent(
+    const canvas = within(canvasElement)
+    await expect(lineHeading(canvasElement)).toBe('Zlatibor Turs d.o.o.')
+    await expect(canvas.getByRole('region', { name: 'What it does' })).toHaveTextContent(
       'Closes F-2026-0406; 0,40 RSD is written off.',
     )
-    await expect(drawer.getByRole('button', { name: 'Confirm and next' })).toBeVisible()
+    await expect(canvas.getByText('2 of 3')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Confirm' })).toBeVisible()
+    await settle()
+  },
+}
+
+/**
+ * Phone, as the approvals: the queue, a line on the whole screen, Confirm, and the next line
+ * opens by itself (with Undo in place); Back to list returns to the queue.
+ */
+export const BankStatementPhoneInteraction: Story = {
+  name: 'Bank statement 188, phone, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <OnPhone start={BANK_ROUTES.statement} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    await userEvent.click(chip(canvasElement, 'Suggestion'))
+    await userEvent.click(canvas.getByRole('button', { name: /Medic Lab Niš/ }))
+    await settle()
+    await expect(lineHeading(canvasElement)).toBe('Medic Lab Niš d.o.o.')
+    await expect(canvas.getByText('1 of 3')).toBeVisible()
+    await userEvent.click(canvas.getByRole('button', { name: 'Confirm' }))
+    await settle()
+    // The next line that waits opens by itself, the last decision's Undo above it.
+    await expect(lineHeading(canvasElement)).toBe('Zlatibor Turs d.o.o.')
+    await expect(canvasElement).toHaveTextContent('Line 3 done')
+    await userEvent.click(canvas.getByRole('button', { name: 'Back to list' }))
+    await settle()
+    await expect(chip(canvasElement, 'Suggestion')).toHaveAttribute('aria-pressed', 'true')
     await settle()
   },
 }
@@ -261,17 +367,16 @@ export const BankStatementProforma: Story = {
   name: 'Bank statement 188, proforma paid',
   tags: ['!dev'],
   render: () => <ExampleApp start={BANK_ROUTES.proforma} />,
-  play: async () => {
+  play: async ({ canvasElement }) => {
     await settle()
-    const drawer = within(
-      await within(document.body).findByRole('dialog', { name: /Vojvođanka Mlin/ }),
-    )
-    await expect(drawer.getByRole('region', { name: 'What it does' })).toHaveTextContent(
+    const canvas = within(canvasElement)
+    await expect(lineHeading(canvasElement)).toBe('Vojvođanka Mlin a.d.')
+    await expect(canvas.getByRole('region', { name: 'What it does' })).toHaveTextContent(
       'The advance invoice is issued at once.',
     )
-    await expect(drawer.getByRole('link', { name: 'PR-2026-118' })).toBeVisible()
+    await expect(canvas.getByRole('link', { name: 'PR-2026-118' })).toBeVisible()
     await expect(
-      drawer.getByRole('button', { name: 'Post advance and issue invoice' }),
+      canvas.getByRole('button', { name: 'Post advance and issue invoice' }),
     ).toBeVisible()
     await settle()
   },
@@ -286,17 +391,15 @@ export const BankStatementProformaIssued: Story = {
   name: 'Bank statement 188, advance invoice issued',
   tags: ['!dev'],
   render: () => <ExampleApp start={BANK_ROUTES.proformaIssued} />,
-  play: async () => {
+  play: async ({ canvasElement }) => {
     await settle()
-    const drawer = within(
-      await within(document.body).findByRole('dialog', { name: /Vojvođanka Mlin/ }),
-    )
-    const result = drawer.getByRole('region', { name: 'Result' })
+    const canvas = within(canvasElement)
+    const result = canvas.getByRole('region', { name: 'Result' })
     await expect(within(result).getByRole('link', { name: 'AF-2026-0031' })).toBeVisible()
     const related = within(result).getByRole('list', { name: 'Related documents' })
     await expect(related).toHaveTextContent('PR-2026-118')
     await expect(related).toHaveTextContent('AF-2026-0031')
-    await expect(drawer.getByRole('button', { name: 'Next line' })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Next line' })).toBeVisible()
     await settle()
   },
 }
@@ -308,17 +411,92 @@ export const BankStatementProformaInteraction: Story = {
   render: () => <ExampleApp start={BANK_ROUTES.proforma} />,
   play: async ({ canvasElement }) => {
     await settle()
-    const page = within(document.body)
-    const drawer = within(await page.findByRole('dialog', { name: /Vojvođanka Mlin/ }))
-    await userEvent.click(drawer.getByRole('button', { name: 'Post advance and issue invoice' }))
-    const result = await drawer.findByRole('region', { name: 'Result' })
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Post advance and issue invoice' }))
+    const result = await canvas.findByRole('region', { name: 'Result' })
     await expect(within(result).getByRole('link', { name: 'AF-2026-0031' })).toBeVisible()
-    await expect(canvasElement).toHaveTextContent('1 of 10 lines done')
-    await userEvent.click(drawer.getByRole('button', { name: 'Next line' }))
-    // The next line's drawer slides in: wait for it to settle.
+    await expect(canvasElement).toHaveTextContent('1 of 10 done')
+    await userEvent.click(canvas.getByRole('button', { name: 'Next line' }))
+    await expect(lineHeading(canvasElement)).toBe('Medic Lab Niš d.o.o.')
+    await settle()
+  },
+}
+
+/**
+ * Statement 189: 1,240 generated lines (P5.94 item 19). The strip and the chips count them all;
+ * the queue draws only the rows in view.
+ */
+export const BankStatementLarge: Story = {
+  name: 'Bank statement 189, 1,240 lines',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={BANK_ROUTES.large} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expect(canvasElement).toHaveTextContent('0 of 1.240 done')
+    await expect(chip(canvasElement, 'Needs you')).toHaveAttribute('aria-pressed', 'true')
+    await settle()
+  },
+}
+
+/**
+ * 1,240 lines: the 1,161 matched automatically in the queue, only about twenty rows drawn, each
+ * telling its place; End, ArrowUp and Home move the chosen line (its detail follows); Enter
+ * confirms it and the next one opens; the search finds one line by its reference.
+ */
+export const BankStatementLargeInteraction: Story = {
+  name: 'Bank statement 189, 1,240 lines, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={BANK_ROUTES.large} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const auto = chip(canvasElement, 'Matched automatically')
+    const count = Number(auto.textContent.replace(/\D/g, ''))
+    await expect(count).toBeGreaterThan(1000)
+    await userEvent.click(auto)
+    await settle()
+    const list = () => {
+      const element = canvasElement.querySelector('ul[aria-label="Lines of statement 189"]')
+      if (element === null) throw new Error('no queue')
+      return element
+    }
+    const drawn = () => list().querySelectorAll('li[data-worklist-row]')
+    await expect(drawn().length).toBeGreaterThan(5)
+    await expect(drawn().length).toBeLessThan(60)
+    await expect(drawn()[0]).toHaveAttribute('aria-setsize', String(count))
+    const chosen = () => list().querySelector('li[aria-current="true"]')
+    // The keyboard: the chosen row has the queue's one tab stop.
+    list().querySelector<HTMLElement>('li[aria-current="true"] [data-worklist-target]')?.focus()
+    await userEvent.keyboard('{End}')
     await waitFor(async () => {
-      await expect(page.getByRole('dialog', { name: /Petar Jovanović/ })).toBeVisible()
+      await expect(chosen()).toHaveAttribute('aria-posinset', String(count))
     })
+    const last = lineHeading(canvasElement)
+    await userEvent.keyboard('{ArrowUp}')
+    await waitFor(async () => {
+      await expect(chosen()).toHaveAttribute('aria-posinset', String(count - 1))
+    })
+    await expect(lineHeading(canvasElement)).not.toBe(last)
+    await expect(drawn().length).toBeLessThan(60)
+    // Enter confirms the chosen line; the next one in the queue opens and keeps the focus.
+    const before = lineHeading(canvasElement)
+    await userEvent.keyboard('{Enter}')
+    await expect(canvasElement).toHaveTextContent('1 of 1.240 done')
+    await expect(lineHeading(canvasElement)).not.toBe(before)
+    await expect(document.activeElement?.closest('li')).toHaveAttribute('aria-current', 'true')
+    await userEvent.keyboard('{Home}')
+    await waitFor(async () => {
+      await expect(chosen()).toHaveAttribute('aria-posinset', '1')
+    })
+    // The search: a reference finds its one line.
+    await userEvent.type(
+      canvas.getByRole('textbox', { name: 'Name, amount, reference or account' }),
+      '261000500',
+    )
+    await waitFor(async () => {
+      await expect(drawn()).toHaveLength(1)
+    })
+    await expect(lineHeading(canvasElement)).toMatch(/\S/)
     await settle()
   },
 }

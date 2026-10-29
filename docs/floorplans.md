@@ -155,25 +155,46 @@ line, the count at the top); posted, cancelled (CancellationBanner), locked peri
 
 ## F4 Worklist — `WorklistPage`
 
-**When:** items that each need a decision: approve or reject supplier invoices, match a bank
-statement's lines, decide screening matches, handle alerts, approve travel settlements.
+**When:** items that each need a decision, one after another, from a handful to thousands:
+approve or reject supplier invoices, match a bank statement's lines, decide screening matches,
+handle alerts, approve travel settlements, review recognised documents. Every "go through many
+lines and decide" screen is this one floorplan (P5.94 item 19) — never a table with a drawer, and
+never a focus view of its own.
 
-**Anatomy, desktop:** the list of items (380px) and the item's detail beside it from 62em, each
-scrolling on its own; what the application handled automatically first and done in bulk ("Accept
-all exact matches"); then the items that need the user, with a state each in a short label;
-under the detail one bar: the position ("3 of 11"), Previous, Next and the decisions (main last).
-After a decision the next item opens.
+**Anatomy, desktop:** the title (with back, the record's state and a subtitle when the queue
+belongs to a record) and, under it, a thin summary strip of the record when it has one
+(`WorklistSummary`: its figures, "3 of 10 done" with a bar, the application's check in words,
+and its final action — "Post statement" — only once nothing waits). Then one card: the queue
+(380px) at the start and the chosen item's detail beside it from 62em, each scrolling on its own.
+At the top of the queue, always in view: the bulk action for what the application handled
+automatically ("Accept all exact matches (6)", answered by Undo in place, never a
+confirmation), the search (name, amount, reference, account — the application's), and the states
+as chips with their counts ("Needs you 3", "Suggestion 2", "Matched automatically 6", "Done 0";
+the one that needs the user chosen by default; chips wrap, so every state is in view). Each row:
+title, a short subtitle (what it does), the deciding figure, the state in a badge. From 100 items
+only the rows in view are drawn (thousands stay fast). The detail shows the item whole — for a
+statement line the payer or payee, the amount, purpose and reference, the proposed match or the
+choices, the reasons as short labels — and under it one bar: the position ("3 of 11"), Previous,
+Next and the decisions, the main one last ("Confirm").
 
-**Anatomy, phone:** the items that need attention first; a press opens the item full screen with
-its position and Previous / Next in its header and the decisions in the bottom bar.
+**Deciding:** the main decision opens the next item that waits by itself (in the chosen state
+first, then the other states that wait), with "Line 3 done … Undo" in place above it; a decision
+that reaches other people or cannot be taken back asks first or says so (a rejection sent to SEF,
+an issued invoice). Keyboard: the queue is one tab stop; ArrowUp / ArrowDown, Home and End move in
+it and the detail follows; Enter takes the main decision; the focus follows to the next item.
 
-**Editing:** only the decision and what it needs (a reason, an account); the rest of the item is
-read-only; a decision can be undone from the toast or the item's history.
+**Anatomy, phone:** the summary strip, then the queue (the state that needs the user first); a
+press opens the item full screen with "Back to list", its position and Previous / Next in its
+header and the decisions in the bottom bar; deciding opens the next item.
 
-**States:** loading rows; "Nothing to decide" when all is done; an item that failed with its
-message; no access.
+**Editing:** only the decision and what it needs (a reason, an account, the open items it
+closes); the rest of the item is read-only; a decision is undone in place (or from the item's
+history) until the record is finished.
 
-**Examples:** Supplier invoices to approve; Bank statement.
+**States:** loading rows; "Nothing needs you" (an EmptyState per state) and "No lines match"
+with "Clear search"; an item that failed with its message; no access.
+
+**Examples:** Supplier invoices to approve; Bank statement (188, and 189 with 1,240 lines).
 
 ## F5 Overview and analysis — `DashboardPage`, `ReportPage`, `StatutoryFormPage`, `Pivot`
 
