@@ -236,7 +236,7 @@ export async function textOutOfOrder(page: Page): Promise<string[]> {
  * a legend or a label never stands on two lines (a break inside it: "Vouche r"), and a button's
  * text never runs out of its box unless it is clipped on purpose (an ellipsis, `FittedLabel`).
  * Words of scripts that break between characters (Chinese, Japanese, Korean, Thai) are not
- * words here; text for assistive technology only (`sr-only`) is not drawn.
+ * words here; text for assistive technology only (`sr-only`) or hidden is not drawn.
  */
 export async function brokenWords(page: Page): Promise<string[]> {
   return page.evaluate(() => {
@@ -271,6 +271,8 @@ export async function brokenWords(page: Page): Promise<string[]> {
       for (let node = walker.nextNode(); node !== null; node = walker.nextNode()) {
         const text = node.textContent ?? ''
         if (text.trim() === '' || node.parentElement?.closest('.sr-only') != null) continue
+        // Text that is not drawn (a floor plan label left out with `visibility: hidden`) is skipped.
+        if (node.parentElement?.checkVisibility({ visibilityProperty: true }) === false) continue
         // One measure per text: only a text on more than one line can break a word, and only a
         // text past its button's edge can run out of it.
         const whole = document.createRange()

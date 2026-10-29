@@ -77,6 +77,13 @@
   word-break: normal;
 }
 
+/* A label's or a legend's one word wider than its whole line ends in "…" on that line (the
+   accessible name keeps all of it); the page never scrolls sideways for it (D19). */
+:is(legend, label:not(:has(input, select, textarea, button))) {
+  overflow-x: clip;
+  text-overflow: ellipsis;
+}
+
 /*
  * Not a reset: only the elements of the primitives (each carries data-slot) size their padding and
  * border inside their width, as Tailwind's preflight would, so `w-full` with padding never

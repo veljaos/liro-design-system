@@ -174,7 +174,8 @@ export function Field(props: FieldProps) {
     readOnly,
   }
   const labelClass = cn(
-    'inline-block text-sm font-semibold break-words text-primary',
+    // Never wider than the field: a word wider than the whole line ends in "…" (P5.94 item 4).
+    'inline-block max-w-full overflow-x-clip text-ellipsis text-sm font-semibold break-words text-primary',
     TEXT_DIRECTION,
     hideLabel && 'sr-only',
   )
