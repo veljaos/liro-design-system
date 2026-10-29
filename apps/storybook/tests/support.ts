@@ -269,8 +269,24 @@ export async function brokenWords(page: Page): Promise<string[]> {
       const control = scope.matches('button, [role="button"], [role="tab"]')
       const walker = document.createTreeWalker(scope, NodeFilter.SHOW_TEXT)
       for (let node = walker.nextNode(); node !== null; node = walker.nextNode()) {
-        if (node.parentElement?.closest('.sr-only') != null) continue
         const text = node.textContent ?? ''
+        if (text.trim() === '' || node.parentElement?.closest('.sr-only') != null) continue
+        // One measure per text: only a text on more than one line can break a word, and only a
+        // text past its button's edge can run out of it.
+        const whole = document.createRange()
+        whole.selectNodeContents(node)
+        const lines = [...whole.getClientRects()].filter(
+          (rect) => rect.width > 0.5 && rect.height > 0.5,
+        )
+        const outside = lines.some(
+          (rect) => rect.right > box.right + 1.5 || rect.left < box.left - 1.5,
+        )
+        if (control && outside && !clippedWithin(node, scope)) {
+          found.add(
+            `"${text.trim().slice(0, 30)}" runs out of <${scope.tagName.toLowerCase()}> "${name(scope)}"`,
+          )
+        }
+        if (new Set(lines.map((rect) => Math.round(rect.bottom / 3))).size < 2) continue
         for (const match of text.matchAll(/[^\s\-–—/·,]+/gu)) {
           const word = match[0]
           if (word.length < 2 || characterScripts.test(word)) continue
@@ -282,13 +298,6 @@ export async function brokenWords(page: Page): Promise<string[]> {
           )
           if (new Set(rects.map((rect) => Math.round(rect.bottom / 3))).size > 1) {
             found.add(`"${word}" broken in <${scope.tagName.toLowerCase()}> "${name(scope)}"`)
-          }
-          if (
-            control &&
-            !clippedWithin(node, scope) &&
-            rects.some((rect) => rect.right > box.right + 1.5 || rect.left < box.left - 1.5)
-          ) {
-            found.add(`"${word}" runs out of <${scope.tagName.toLowerCase()}> "${name(scope)}"`)
           }
         }
       }
