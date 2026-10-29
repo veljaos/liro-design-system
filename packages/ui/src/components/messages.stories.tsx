@@ -216,7 +216,7 @@ export const MentionsInteraction: Story = {
     await userEvent.type(field, 'please')
     await expect(within(document.body).queryByRole('listbox')).toBeNull()
     await expect(within(document.body).queryByText('Nothing found')).toBeNull()
-    for (let index = 0; index < 'please'.length; index += 1) await userEvent.keyboard('{Backspace}')
+    await userEvent.keyboard('{Backspace}'.repeat('please'.length))
     await userEvent.keyboard('{Backspace}{Backspace}')
     await expect(field).toHaveValue('Check with ')
     await expect(canvas.getByText('Mentioned: nobody')).toBeVisible()

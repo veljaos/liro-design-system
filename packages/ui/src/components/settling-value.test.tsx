@@ -21,7 +21,7 @@ describe('SettlingValue', () => {
     expect(html).toContain('data-pending="true"')
     expect(html).not.toContain('settling-dot')
     // The dot's slot is always there, so the number never moves.
-    expect(html).toContain('size-1.5 shrink-0 text-tertiary')
+    expect(html).toContain('size-1.5 shrink-0 self-center text-tertiary')
   })
 
   it('reserves width and writes the unavailable text, or "—"', () => {

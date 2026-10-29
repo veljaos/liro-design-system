@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { useState } from 'react'
-import { expect, userEvent, waitFor, within } from 'storybook/test'
+import { expect, userEvent, within } from 'storybook/test'
 import { settle } from '../primitives/story-helpers'
 import { CURRENT_VERSION, VERSIONS } from './file-story-data'
 import { ExampleProvider, PhoneFrame, StoryProvider } from './story-frames'
