@@ -199,7 +199,7 @@ type Story = StoryObj<typeof meta>
 
 /**
  * Four rows on Wednesday 14 October 2026: bookings, the lunch break for all, a service; "now"
- * (10:20, the application's clock) marked across the rows.
+ * (10:20, the application's clock) as its time in the hours row.
  */
 export const Default: Story = {
   play: async ({ canvasElement }) => {
@@ -214,13 +214,11 @@ export const Default: Story = {
       4,
     )
     await expect(canvas.getByRole('button', { name: 'Move to…: Ana Petrović' })).toBeVisible()
-    // The time grids' one "now" marker (P5.28 item 10), from the application's clock.
+    // "Now" is only its time in the hours row, from the application's clock (P5.94 item 16): no
+    // line across the rows.
     const marker = canvas.getByRole('img', { name: /^Now, 10:20\sAM$/ })
-    await expect(marker).toBeInTheDocument()
-    // Drawn before the bookings, which cover its line, never the reverse (P5.90 item 17).
-    await expect(
-      marker.compareDocumentPosition(ana) & Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy()
+    await expect(marker).toHaveTextContent(/^10:20\sAM$/)
+    await expect(canvasElement.querySelector('[data-slot="now-marker"]')).toBeNull()
   },
 }
 

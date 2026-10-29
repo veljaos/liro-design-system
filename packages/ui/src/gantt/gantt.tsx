@@ -16,7 +16,7 @@ import { CompactIconButton } from '../components/button'
 import { DropdownMenu } from '../components/dropdown-menu'
 import { EmptyState, ErrorState } from '../components/empty-state'
 import { MoneyText } from '../components/display-text'
-import { NowMarker, NowTimeTag } from '../components/now-marker'
+import { NowMarker, NowTime, NowTimeTag } from '../components/now-marker'
 import { nowMoment, addDays, dayNumber, localDateTime } from '../components/schedule-logic'
 import { StatusBadge, type Tone } from '../components/status-badge'
 import { STICKY_HEAD, useStickyHead } from '../components/sticky-head'
@@ -38,6 +38,7 @@ import {
   kindOf,
   linkType,
   nowPosition,
+  nowTagStart,
   openingScroll,
   progressWidth,
   type BarLabelPlace,
@@ -57,10 +58,12 @@ import { Tooltip } from '../components/popover'
  * - Desktop: a table at the start — each row's name with its dates and who does it, its progress
  *   and, when the application gives them, a phase's budget and what was spent (decimal strings
  *   through `format`, never added: D4) — and the timeline beside it, the same rows at the same
- *   height. Phases are summary bars, tasks bars with their progress as a line, milestones
- *   diamonds; dependencies are lines. The one "now" marker (D25) comes from the application's
- *   `now`, drawn by Gantt (SVAR's markers are a paid feature). The header rows of both stay below
- *   the shell while the page scrolls (D21).
+ *   height, to the pixel (P5.94 item 6). Phases are summary bars, tasks bars with their progress
+ *   as a line, milestones diamonds; dependencies are lines. The one "now" line (D25: the Gantt
+ *   keeps its line, the calendars only the time) comes from the application's `now`, drawn by
+ *   Gantt (SVAR's markers are a paid feature); its date stands on the years' row of the scale,
+ *   beside the year's label, never over a label (P5.94 item 6). The header rows of both stay
+ *   below the shell while the page scrolls (D21).
  * - Edit (`mode="edit"`): drag a bar to move it, its ends to change its dates, its tab to set the
  *   progress, a dot at its end to another bar to add a dependency; and for every drag another way
  *   (WCAG 2.5.7): each row's "Change" menu — Move…, Change dates…, Set progress…, Dependencies… —
@@ -290,7 +293,10 @@ function GanttTable({
       aria-label={label}
       data-slot="gantt-table"
       className={cn(
-        'grid shrink-0 border-0 border-e border-solid border-default text-sm',
+        // The rows keep their own height from the top (`content-start`): the table stretches to
+        // the timeline's height (its scrollbar's room under the rows), and stretched tracks let
+        // every row drift by a fraction of a pixel from the timeline's (P5.94 item 6).
+        'grid shrink-0 content-start border-0 border-e border-solid border-default text-sm',
         columns,
         budget ? 'w-[33rem]' : 'w-[20rem]',
       )}
@@ -517,6 +523,71 @@ interface ChartProps {
   onChange: (change: GanttChange) => void
   onDialog: (dialog: GanttDialog) => void
   onReady: () => void
+}
+
+/**
+ * The date of "now" on the scale's upper row (the years', P5.94 item 6): the months' row stays
+ * whole ("Oct" was under the tag), and the tag steps aside from the year's label, which is sticky
+ * and moves as the chart scrolls (`nowTagStart`, measured again on every scroll and once the fonts
+ * are in). Decoration: the line's name says the date and time.
+ */
+function ScaleNowTag({
+  scaleBox,
+  line,
+  text,
+  mirrored,
+}: {
+  scaleBox: HTMLElement
+  line: number
+  text: string
+  mirrored: boolean
+}) {
+  const tag = useRef<HTMLDivElement>(null)
+  useLayoutEffect(() => {
+    const element = tag.current
+    if (element === null) return
+    const chart = scaleBox.closest('.wx-chart')
+    const place = () => {
+      const box = scaleBox.getBoundingClientRect()
+      // Along the time axis from the scale's start; a mirrored chart runs from the right.
+      const along = (rect: DOMRect) =>
+        mirrored
+          ? { start: box.right - rect.right, end: box.right - rect.left }
+          : { start: rect.left - box.left, end: rect.right - box.left }
+      const row = scaleBox.querySelector('.wx-row')
+      const labels = [...(row?.querySelectorAll('.wx-cell-value') ?? [])].flatMap((value) => {
+        // The text itself, not the label's padding.
+        const range = document.createRange()
+        range.selectNodeContents(value)
+        const rect = range.getBoundingClientRect()
+        return rect.width > 0 ? [along(rect)] : []
+      })
+      const start = nowTagStart(line, element.offsetWidth, labels, scaleBox.scrollWidth)
+      element.style.insetInlineStart = `${String(start)}px`
+    }
+    place()
+    let live = true
+    void document.fonts.ready.then(() => {
+      if (live) place()
+    })
+    chart?.addEventListener('scroll', place, { passive: true })
+    return () => {
+      live = false
+      chart?.removeEventListener('scroll', place)
+    }
+  }, [scaleBox, line, text, mirrored])
+  return createPortal(
+    <div
+      ref={tag}
+      aria-hidden="true"
+      data-slot="now-time"
+      className="pointer-events-none absolute top-0 z-(--liro-layer-raised) flex items-center"
+      style={{ insetInlineStart: line, height: SCALE_ROW }}
+    >
+      <NowTime time={text} />
+    </div>,
+    scaleBox,
+  )
 }
 
 /** The timeline: SVAR's chart, controlled, with our "now" marker. */
@@ -804,24 +875,19 @@ function GanttChart(props: ChartProps) {
           />,
           area,
         )}
-      {/* The day of "now" on the time scale, on the line (P5.93 item 8). */}
+      {/* The day of "now" on the time scale (P5.93 item 8): on the days' row today's number
+          itself, written as the scale writes it, over its own (it covers no other label). */}
       {scaleBox !== null &&
         nowX !== null &&
         moment !== null &&
+        props.scale === 'days' &&
         createPortal(
           <NowTimeTag
             orientation="vertical"
-            // On the days' row today's number itself, written as the scale writes it, over its
-            // own; on the months' row the date.
-            time={
-              props.scale === 'days' ? String(Number(moment.day.slice(8))) : format.date(moment.day)
-            }
-            // The lower row of the scale (the months' or the days' names).
+            time={String(Number(moment.day.slice(8)))}
             style={{
               insetInlineStart:
-                props.scale === 'days'
-                  ? nowX - (moment.minutes / 1440) * geometry.column + geometry.column / 2
-                  : nowX,
+                nowX - (moment.minutes / 1440) * geometry.column + geometry.column / 2,
               top: 'auto',
               bottom: 0,
               height: SCALE_ROW,
@@ -829,6 +895,16 @@ function GanttChart(props: ChartProps) {
           />,
           scaleBox,
         )}
+      {/* On the months' scale the date stands on the years' row, above the months' names, and
+          beside the year's own label when it would cover it (P5.94 item 6): it covers no text. */}
+      {scaleBox !== null && nowX !== null && moment !== null && props.scale === 'months' && (
+        <ScaleNowTag
+          scaleBox={scaleBox}
+          line={nowX}
+          text={format.date(moment.day)}
+          mirrored={props.mirrored}
+        />
+      )}
     </div>
   )
 }

@@ -99,7 +99,7 @@ type Story = StoryObj<typeof meta>
 
 /**
  * The week of 12–18 October 2026: overlaps side by side, all-day events above, today marked, and
- * "now" (10:20, the application's clock) on today's column.
+ * "now" (10:20, the application's clock) as its time in the gutter.
  */
 export const Default: Story = {
   play: async ({ canvasElement }) => {
@@ -112,14 +112,17 @@ export const Default: Story = {
     ).toBeVisible()
     await expect(canvas.getByRole('grid')).toBeVisible()
     await expect(canvas.getByRole('radio', { name: 'Week' })).toBeChecked()
-    // The time grids' one "now" marker (P5.28 item 10) on today's column, its slot current.
+    // "Now" is only its time in the gutter (P5.94 item 16): no line across the days.
     const marker = canvas.getByRole('img', { name: /^Now, 10:20\sAM$/ })
-    await expect(marker).toBeInTheDocument()
-    // Drawn before the events, which cover its line, never the reverse (P5.90 item 17).
-    const event = eventButton(canvasElement, 'Minor surgery: Stefan Đorđević')
+    await expect(marker).toHaveTextContent(/^10:20\sAM$/)
+    await expect(canvasElement.querySelector('[data-slot="now-marker"]')).toBeNull()
+    const firstSlot = canvasElement.querySelector('[role="gridcell"]')
     await expect(
-      marker.compareDocumentPosition(event) & Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy()
+      (marker.querySelector('span')?.getBoundingClientRect().right ?? Infinity) <=
+        (firstSlot?.getBoundingClientRect().left ?? 0),
+    ).toBe(true)
+    // The gutter writes the hours as the locale does: "7:00 AM", no leading zero.
+    await expect(canvas.getByText(/^7:00\sAM$/)).toBeInTheDocument()
     await expect(canvasElement.querySelector('[aria-current="time"]')).toHaveAccessibleName(
       /^Wednesday, October 14, 2026, 10:00\sAM$/,
     )

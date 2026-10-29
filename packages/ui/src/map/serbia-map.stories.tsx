@@ -181,7 +181,7 @@ function DrillDown({
   // The story's starting point: open the given areas one after another.
   useEffect(() => {
     if (regions === null || startKey === '') return
-    let live = true
+    const run = { live: true }
     void (async () => {
       let path: Opened[] = []
       let areas: readonly SerbiaArea[] = regions.areas
@@ -196,13 +196,13 @@ function DrillDown({
         areas = last.step.areas
         level = last.step.level
       }
-      if (live) {
+      if (run.live) {
         setTrail(path)
         setOpening(false)
       }
     })()
     return () => {
-      live = false
+      run.live = false
     }
   }, [regions, startKey])
   const last = trail[trail.length - 1]
@@ -226,7 +226,7 @@ function DrillDown({
       selected={null}
       onSelect={(id) => {
         const area = areas.find((each) => each.id === id)
-        if (area === undefined || !area.hasLowerLevel) return
+        if (area?.hasLowerLevel !== true) return
         setOpening(true)
         void open(trail, level, area).then((next) => {
           if (next !== null) setTrail(next)

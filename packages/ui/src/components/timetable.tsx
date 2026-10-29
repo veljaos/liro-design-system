@@ -6,7 +6,7 @@ import { ToggleGroup, ToggleGroupItem } from '../primitives/toggle-group'
 import type { Weekday } from '../provider/format'
 import { useLiro } from '../provider/liro-provider'
 import { toneClasses } from './calendar-view'
-import { NowMarker, NowTime } from './now-marker'
+import { NowTime } from './now-marker'
 import {
   clockOf,
   currentPeriod,
@@ -29,10 +29,10 @@ import { usePhone } from './use-phone'
  *   class is split): the subject (sm semibold), the teacher and the room (xs), a note in the
  *   tone's colour; the tone's colours (neutral by default) with a 3px bar at the start. An empty
  *   period shows "—" and says `timetable.free` to assistive technology.
- * - The running period: today's cell is `aria-current="time"` and carries the time grids' one
- *   "now" marker (P5.28 item 10, NowMarker: a neutral line with a dot) where `now` stands inside
- *   the period, named "Now, 10:05"; the time itself stands on a tag under the period's times in
- *   its own cell (P5.93 item 8), where it covers no text. The cell keeps its look: no outline and no badge.
+ * - The running period: today's cell is `aria-current="time"`; the time of `now` stands on a
+ *   small dark tag under the period's times in its own cell (P5.93 item 8), where it covers no
+ *   text, named "Now, 10:05 AM" — the only mark of "now" (P5.94 item 16: no line across the
+ *   cells). The cell keeps its look: no outline and no badge.
  * - Phones (below 48em or `layout="phone"`): one day at a time, chosen in a segmented control
  *   (today's day first by default); the periods as a list.
  */
@@ -105,24 +105,14 @@ export function Timetable(props: TimetableProps) {
     if (moment === null || running !== period.id || day !== todayWeekday) return null
     return nowWithin(moment.minutes, period.start, period.end)
   }
-  /** The "now" marker in the running period's cell for today, at its place in the period. */
-  const nowMarker = (day: Weekday, period: TimetablePeriod): ReactNode => {
-    const at = nowAt(day, period)
-    if (moment === null || at === null) return null
-    return (
-      <NowMarker
-        orientation="horizontal"
-        label={messages['schedule.now'](format.time(localDateTime(today, moment.minutes)))}
-        style={{ top: `${String(at * 100)}%`, insetInlineStart: 0, insetInlineEnd: 0 }}
-      />
-    )
-  }
-  /** The time of "now" under the running period's times, covering no text (P5.93 item 8). */
+  /**
+   * "Now" under the running period's times, covering no text (P5.93 item 8): only its time on the
+   * dark tag, named "Now, 10:05 AM"; no line across the cells (P5.94 item 16).
+   */
   const nowTime = (period: TimetablePeriod): ReactNode => {
     if (moment === null || !days.some((day) => nowAt(day, period) !== null)) return null
-    return (
-      <NowTime time={format.time(localDateTime(today, moment.minutes))} className="mt-1 block" />
-    )
+    const time = format.time(localDateTime(today, moment.minutes))
+    return <NowTime time={time} label={messages['schedule.now'](time)} className="mt-1 block" />
   }
   const shownDay = initialTimetableDay(days, today, props.day ?? innerDay)
 
@@ -262,10 +252,7 @@ export function Timetable(props: TimetableProps) {
                 </span>
                 {shownDay === todayWeekday && nowTime(period)}
               </div>
-              <div className="relative min-w-0 flex-1 py-2">
-                {nowMarker(shownDay, period)}
-                {cell(shownDay, period)}
-              </div>
+              <div className="relative min-w-0 flex-1 py-2">{cell(shownDay, period)}</div>
             </li>
           ))}
         </ol>
@@ -340,7 +327,6 @@ export function Timetable(props: TimetableProps) {
                     : {})}
                   className="relative border-0 border-t border-s border-solid border-subtle p-1.5 align-top"
                 >
-                  {nowMarker(day, period)}
                   {cell(day, period)}
                 </td>
               ))}

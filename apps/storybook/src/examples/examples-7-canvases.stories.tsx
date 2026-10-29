@@ -53,8 +53,11 @@ export const HealthDoctorCalendar: Story = {
     )
     await expect(canvasElement).toHaveTextContent('Wednesday, October 14, 2026')
     await expect(within(canvasElement).getByRole('img', { name: 'Now, 09:40' })).toBeInTheDocument()
-    // The time of "now" written in the time gutter, which no appointment covers (P5.93 item 8).
+    // "Now" is only its time in the gutter, which no appointment covers (P5.94 item 16): no line
+    // across the days; the tenant's 24-hour clock with two digits.
     await expect(canvasElement.querySelector('[data-slot="now-time"]')).toHaveTextContent('09:40')
+    await expect(canvasElement.querySelector('[data-slot="now-marker"]')).toBeNull()
+    await expect(within(canvasElement).getAllByText('07:00').length).toBeGreaterThan(0)
   },
 }
 
@@ -383,6 +386,29 @@ export const ProjectTimeline: Story = {
     const tag = today?.getBoundingClientRect()
     await expect(chart !== undefined && tag !== undefined && tag.left >= chart.left).toBe(true)
     await expect(chart !== undefined && tag !== undefined && tag.right <= chart.right).toBe(true)
+    // It covers no label of the scale: "Oct" stays readable (P5.94 item 6).
+    const tagText = today?.querySelector('span')?.getBoundingClientRect()
+    for (const cell of canvasElement.querySelectorAll('.wx-scale .wx-cell')) {
+      const range = document.createRange()
+      range.selectNodeContents(cell)
+      const text = range.getBoundingClientRect()
+      const covers =
+        tagText !== undefined &&
+        text.width > 0 &&
+        tagText.left < text.right &&
+        text.left < tagText.right &&
+        tagText.top < text.bottom &&
+        text.top < tagText.bottom
+      await expect(covers).toBe(false)
+    }
+    // The table's rows and the timeline's rows share every top and bottom (P5.94 item 6).
+    const areaTop = canvasElement.querySelector('.wx-area')?.getBoundingClientRect().top ?? 0
+    const rows = [...canvasElement.querySelectorAll('[data-gantt-row]')]
+    for (const [index, row] of rows.entries()) {
+      await expect(Math.abs(row.getBoundingClientRect().top - (areaTop + index * 44))).toBeLessThan(
+        0.01,
+      )
+    }
     await expect(
       canvasElement.querySelector('[data-gantt-label="after"]')?.textContent,
     ).toBeTruthy()

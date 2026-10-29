@@ -38,7 +38,7 @@ import {
   type UnavailableTime,
 } from './schedule-logic'
 import { SelectField } from './select-field'
-import { NowMarker, NowTimeTag, tagCovers } from './now-marker'
+import { NowTimeTag, tagCovers } from './now-marker'
 import { SchedulePhoneLists, type SchedulePhoneList } from './schedule-phone-lists'
 import type { Tone } from './status-badge'
 import { STICKY_HEAD, STICKY_START, useStickyHead } from './sticky-head'
@@ -55,9 +55,9 @@ import { Tooltip } from './popover'
  *   edge (right to left in right-to-left pages), 2px a minute, hour labels above, slot lines;
  *   the grid scrolls sideways inside its own box; the hours (and days) above stay below the
  *   shell while the page scrolls (P5.28 item 4, `useStickyHead`).
- * - Now (`now`, the application's clock, P5.28 item 10): the time grids' one marker, a neutral
- *   line with a dot (NowMarker), across the rows at the current time, named "Now, 09:40", with the
- *   time written on the line in the hours row (the gutter on phones; P5.93 item 8). Rows 56px;
+ * - Now (`now`, the application's clock, P5.28 item 10): only its time, on a small dark tag in the
+ *   hours row (the gutter on phones), named "Now, 9:40 AM" (P5.94 item 16: no line across the
+ *   rows); on a scale of days today's date in the header says it. Rows 56px;
  *   bookings that overlap share the row
  *   in lanes. A booking: the tone's colours (neutral by default) with a 3px bar at the start,
  *   its title and its description or time.
@@ -891,6 +891,7 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
         {format.weekdayName(weekdayOf(day), 'short')}
       </span>
       <span
+        {...(day === today ? { 'aria-current': 'date' as const } : {})}
         className={cn(
           'inline-flex h-6 min-w-6 items-center justify-center rounded-full px-1 text-sm tabular-nums',
           day === today ? 'bg-surface-inverse font-semibold text-on-inverse' : 'text-primary',
@@ -983,24 +984,17 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
                 {hour.text}
               </span>
             ))}
-            {/* The time of "now" in the gutter, at the line's height (P5.93 item 8). */}
+            {/* "Now" is only its time, in the gutter (P5.94 item 16): no line across the row. */}
             {nowAt !== null && !byDay && (
               <NowTimeTag
                 orientation="horizontal"
                 time={nowAt.time}
+                label={nowAt.label}
                 style={{ top: along(nowAt.at), insetInlineStart: 0, insetInlineEnd: 0 }}
               />
             )}
           </div>
           <div className="relative min-w-0 flex-1 border-0 border-s border-solid border-subtle">
-            {/* Before the bookings: they cover its line, never the reverse (P5.90 item 17). */}
-            {nowAt !== null && (
-              <NowMarker
-                orientation="horizontal"
-                label={nowAt.label}
-                style={{ top: along(nowAt.at), insetInlineStart: 0, insetInlineEnd: 0 }}
-              />
-            )}
             {renderTrack(phoneRow)}
           </div>
         </div>
@@ -1087,11 +1081,13 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
                       {hour.text}
                     </span>
                   ))}
-                  {/* The time of "now" in the hours row, on the line (P5.93 item 8). */}
+                  {/* "Now" is only its time, in the hours row (P5.94 item 16): no line across the
+                      rows; on a scale of days today's date in the header says it. */}
                   {nowAt !== null && !byDay && (
                     <NowTimeTag
                       orientation="vertical"
                       time={nowAt.time}
+                      label={nowAt.label}
                       style={{ insetInlineStart: `${String(along(nowAt.at))}%` }}
                     />
                   )}
@@ -1099,19 +1095,6 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
               </div>
             </div>
             <div className="relative">
-              {/* Before the rows: bookings and names cover its line, never the reverse (P5.90). */}
-              {nowAt !== null && (
-                <div
-                  className="pointer-events-none absolute inset-y-0"
-                  style={{ insetInlineStart: NAME_WIDTH, insetInlineEnd: 0 }}
-                >
-                  <NowMarker
-                    orientation="vertical"
-                    label={nowAt.label}
-                    style={{ insetInlineStart: `${String(along(nowAt.at))}%`, top: 0, bottom: 0 }}
-                  />
-                </div>
-              )}
               {props.resources.map((resource, row) => (
                 <div
                   key={resource.id}

@@ -269,6 +269,44 @@ export function openingScroll(todayX: number | null, column: number, visible: nu
   return Math.max(0, (Math.floor(todayX / column) - 1) * column)
 }
 
+/** The room between the "now" tag and a scale label it steps aside from, px. */
+export const NOW_TAG_GAP = 6
+
+/** A label's text along the time axis, px from the scale's start. */
+export interface ScaleLabelExtent {
+  start: number
+  end: number
+}
+
+/**
+ * Where the date of "now" starts on the scale's upper row (P5.94 item 6), px from the scale's
+ * start: centred on the line, unless that would cover a label of the row (the year, the month
+ * and year); then the nearest place beside that label that covers none, kept inside the scale
+ * (`room`, its width). The tag covers no text: the months' names under it stay readable.
+ */
+export function nowTagStart(
+  line: number,
+  width: number,
+  labels: readonly ScaleLabelExtent[],
+  room: number,
+): number {
+  const keep = (at: number) => Math.min(Math.max(at, 0), Math.max(room - width, 0))
+  const centred = keep(line - width / 2)
+  const free = (at: number) => labels.every((label) => at + width <= label.start || at >= label.end)
+  const candidates = [
+    centred,
+    ...labels.flatMap((label) => [
+      keep(label.end + NOW_TAG_GAP),
+      keep(label.start - NOW_TAG_GAP - width),
+    ]),
+  ].filter(free)
+  let best = candidates[0] ?? centred
+  for (const at of candidates) {
+    if (Math.abs(at - centred) < Math.abs(best - centred)) best = at
+  }
+  return best
+}
+
 /** Where a bar's name stands: inside the bar, after it, or before it. */
 export type BarLabelPlace = 'inside' | 'after' | 'before'
 
