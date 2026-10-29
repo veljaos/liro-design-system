@@ -135,7 +135,9 @@ export function SessionList(props: SessionListProps) {
                 <span className={cn('text-xs text-secondary', TEXT_DIRECTION)}>
                   {details.map((part, index) => (
                     <span key={index}>
-                      {index > 0 && ' · '}
+                      {/* Never two separators in a row: the dot of "Active now" is its own (P5.94). */}
+                      {index > 0 && !(current && index === details.length - 1) && ' · '}
+                      {index > 0 && current && index === details.length - 1 && ' '}
                       {part === session.address ? (
                         <bdi dir="ltr">{part}</bdi>
                       ) : current && index === details.length - 1 ? (

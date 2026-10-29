@@ -55,8 +55,9 @@ import { Tooltip } from '../components/popover'
  *   border.strong placeholder on surface.sunken shows where it lands. The target is the slot
  *   nearest to the card's centre, measured on the laid-out grid, so it holds in right-to-left
  *   (B.7). Escape or a cancelled pointer puts everything back. Hidden modules are listed under the grid ("Hidden (2)") with "Show".
- *   The application's page header holds "Customize" and "Done", which switch the mode. Every
- *   change is reported through a callback.
+ *   Every change is reported through a callback. P5.94 (item 18): the editing mode belongs to the
+ *   user's Preferences ("Home page"), never a "Customize" on the home page; the home page has no
+ *   visible title (the company is in the header's switcher), the tiles right under the header.
  * - Loading: skeleton cards, 132px high.
  */
 
@@ -125,7 +126,9 @@ function ModuleIcon({ icon: Icon, locked }: { icon: IconComponent; locked: boole
         'flex size-10 shrink-0 items-center justify-center rounded-[10px] text-primary',
         locked
           ? 'bg-surface-raised'
-          : 'bg-surface-sunken transition-colors duration-(--liro-duration-base) ease-standard group-hover:bg-brand-solid group-hover:text-brand-on-solid',
+          : // Only the background animates: the icon turns white at once, so it is never dark on
+            // blue for a moment; the keyboard's focus looks as the hover (P5.94 item 18).
+            'bg-surface-sunken transition-[background-color] duration-(--liro-duration-base) ease-standard group-hover:bg-brand-solid group-hover:text-brand-on-solid group-focus-visible:bg-brand-solid group-focus-visible:text-brand-on-solid',
       )}
     >
       <Icon className="size-5" />
@@ -196,13 +199,15 @@ export function Launchpad(props: LaunchpadProps) {
       if (index === null) return
       const card = cards()[index]
       if (card?.tagName !== 'A') return
+      // Handled here, on the document: a page-wide shortcut on the same digit never runs too.
       event.preventDefault()
+      event.stopPropagation()
       card.focus()
       card.click()
     }
-    window.addEventListener('keydown', onKey)
+    document.addEventListener('keydown', onKey)
     return () => {
-      window.removeEventListener('keydown', onKey)
+      document.removeEventListener('keydown', onKey)
     }
   }, [editing, props.loading])
 

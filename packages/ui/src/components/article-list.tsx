@@ -132,7 +132,9 @@ function Card({
           <Link
             href={article.href}
             className={cn(
-              'text-primary no-underline outline-none visited:text-primary group-hover:underline focus-visible:underline',
+              // A title is never underlined (P5.94 item 10): the card shows hover by its surface, the
+              // keyboard's focus by the ring round it.
+              'text-primary no-underline outline-none visited:text-primary',
               'after:absolute after:inset-0 after:content-[""]',
             )}
           >
@@ -164,7 +166,7 @@ function Card({
         <p
           aria-hidden="true"
           className={cn(
-            'm-0 flex items-center gap-1.5 pt-2 text-sm font-medium text-link group-hover:underline',
+            'm-0 flex items-center gap-1.5 pt-2 text-sm font-medium text-link',
             // At the card's foot, the same height in every card of a row (not the lead story).
             !lead && 'mt-auto',
           )}

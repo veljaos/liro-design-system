@@ -9,7 +9,7 @@ import {
   type PointerEvent,
 } from 'react'
 import { ButtonPrimitive } from '../primitives/button'
-import { FOCUS_RING, TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
+import { FOCUS_RING, LINK_ITEM_HOVER, TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { Skeleton } from '../primitives/skeleton'
 import { useLiro } from '../provider/liro-provider'
@@ -426,6 +426,7 @@ export function KanbanBoard(props: KanbanBoardProps) {
         style={cardStyle(card)}
         className={cn(
           'relative box-border flex flex-col gap-1.5 rounded-md border border-solid bg-surface-raised p-3 text-start',
+          LINK_ITEM_HOVER,
           editable && 'cursor-grab select-none',
           drag !== null &&
             !isDragged &&
@@ -446,7 +447,7 @@ export function KanbanBoard(props: KanbanBoardProps) {
             <Link
               href={card.href}
               className={cn(
-                'min-w-0 flex-1 rounded-sm pt-1 text-sm font-medium text-primary no-underline visited:text-primary hover:text-primary hover:underline active:text-primary',
+                'min-w-0 flex-1 rounded-sm pt-1 text-sm font-medium text-primary no-underline visited:text-primary hover:text-primary active:text-primary',
                 FOCUS_RING,
                 TEXT_DIRECTION,
               )}

@@ -206,7 +206,13 @@ export { SETTLING_DELAY, SettlingValue } from './components/settling-value'
 export type { SettlingValueProps } from './components/settling-value'
 export { SplitAction } from './components/split-action'
 export type { SplitActionProps } from './components/split-action'
-export { StatusBadge, TONE_NAMES, toneFor } from './components/status-badge'
+export {
+  CURRENT_ROW,
+  CURRENT_TONE,
+  StatusBadge,
+  TONE_NAMES,
+  toneFor,
+} from './components/status-badge'
 export type { StatusBadgeProps, Tone } from './components/status-badge'
 export type { Emphasis, Family, IconComponent, Intent, IntentInfo } from './components/intents'
 export {

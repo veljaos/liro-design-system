@@ -12,6 +12,7 @@ import {
   QrCode,
   RecoveryCodes,
   SelectField,
+  Launchpad,
   SessionList,
   SettingsPage,
   StatusBadge,
@@ -25,6 +26,7 @@ import {
 } from '@veljaos/ui'
 import type { ExampleRoute } from './example-app'
 import { Navigate, Shell } from './example-shell'
+import { MODULES } from './screens-core'
 import { Tenant } from './screens-G'
 import {
   BC_ROUTES,
@@ -355,6 +357,11 @@ export function MyProfile({
   const [removing, setRemoving] = useState<ExamplePasskey | null>(null)
   // Devices.
   const [sessions, setSessions] = useState<readonly SessionItem[]>(MY_SESSIONS)
+  // The home page's tiles (P5.94 item 18): chosen, ordered and hidden here, not on the home page.
+  const [tiles, setTiles] = useState(MODULES.map((module) => module.id))
+  const [hiddenTiles, setHiddenTiles] = useState<string[]>([])
+  const modulesOf = (ids: readonly string[]) =>
+    ids.flatMap((id) => MODULES.filter((module) => module.id === id))
 
   const savedState = (key: string) => (saved.includes(key) ? { state: 'saved' as const } : {})
   const markSaved = (key: string) => {
@@ -484,6 +491,34 @@ export function MyProfile({
               ...savedState('theme'),
             },
           ],
+        },
+        {
+          key: 'home',
+          title: 'Home page',
+          rows: [],
+          content: (
+            <div className="flex flex-col gap-3">
+              <p className="bidi-content m-0 text-sm text-secondary">
+                Choose, order and hide the modules on your home page.
+              </p>
+              <Launchpad
+                label="Home page modules"
+                editing
+                modules={modulesOf(tiles)}
+                hidden={modulesOf(hiddenTiles)}
+                layout={phone ? 'phone' : 'desktop'}
+                onReorder={setTiles}
+                onHide={(id) => {
+                  setTiles((list) => list.filter((each) => each !== id))
+                  setHiddenTiles((list) => [...list, id])
+                }}
+                onShow={(id) => {
+                  setHiddenTiles((list) => list.filter((each) => each !== id))
+                  setTiles((list) => [...list, id])
+                }}
+              />
+            </div>
+          ),
         },
       ],
     },

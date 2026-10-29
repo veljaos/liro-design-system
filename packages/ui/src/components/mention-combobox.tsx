@@ -29,6 +29,7 @@ import {
 import { controlAttributes, Field, fieldProps, type FieldBaseProps } from './field'
 import {
   insertMention,
+  closesOnSpace,
   mentionQueryAt,
   mentionsInText,
   tokenBefore,
@@ -130,7 +131,9 @@ export function MentionCombobox(props: MentionComboboxProps) {
           value: candidate.id,
           label: candidate.name,
         }))
-  const open = query !== null && query.start !== dismissed
+  // A space after a query that matches nothing ends the search (P5.94 item 8).
+  const ended = query !== null && closesOnSpace(query.query, options.length, props.loading === true)
+  const open = query !== null && query.start !== dismissed && !ended
   const showEmpty = open && options.length === 0 && props.loading !== true
   const visible = open && (options.length > 0 || props.loading === true || showEmpty)
   const listShown = visible && options.length > 0
@@ -160,7 +163,7 @@ export function MentionCombobox(props: MentionComboboxProps) {
   const readQuery = (element: HTMLTextAreaElement) => {
     const found =
       element.selectionStart === element.selectionEnd
-        ? mentionQueryAt(element.value, element.selectionStart)
+        ? mentionQueryAt(element.value, element.selectionStart, chosen)
         : null
     if (found?.start !== query?.start || found?.query !== query?.query) {
       setQuery(found)

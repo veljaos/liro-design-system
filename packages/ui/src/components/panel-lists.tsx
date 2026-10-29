@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react'
-import { FOCUS_RING, TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
+import { FOCUS_RING, LINK_ITEM_HOVER, TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 
@@ -48,14 +48,15 @@ export function RelatedDocuments({ items, label, className }: RelatedDocumentsPr
         <li
           key={item.key}
           data-slot="panel-row"
-          className={cn(ROW, 'items-center justify-between gap-3')}
+          className={cn(
+            ROW,
+            '-mx-2 items-center justify-between gap-3 rounded-md px-2',
+            LINK_ITEM_HOVER,
+          )}
         >
           <Link
             href={item.href}
-            className={cn(
-              'flex min-w-0 flex-col rounded-sm text-sm no-underline hover:underline',
-              FOCUS_RING,
-            )}
+            className={cn('flex min-w-0 flex-col rounded-sm text-sm no-underline', FOCUS_RING)}
           >
             <span className={cn('text-xs text-secondary', TEXT_DIRECTION)}>{item.type}</span>
             <span dir="ltr" className="text-start font-medium text-link tabular-nums">

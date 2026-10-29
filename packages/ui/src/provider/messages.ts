@@ -1716,6 +1716,17 @@ export interface LiroMessages {
   'payment.addPart': string
   /** Removes a part paid: "Remove Voucher". */
   'payment.removePart': (label: string) => string
+  'payment.partPaid': string
+  'payment.partApproved': string
+  'payment.payByCard': (amount: string) => string
+  'payment.payByCode': (amount: string) => string
+  'payment.overRemaining': (amount: string) => string
+  'payment.overLimit': (amount: string) => string
+  'payment.stillToPay': (amount: string) => string
+  'payment.declinedHint': string
+  'payment.reverseWarning': (parts: string) => string
+  'payment.keepPaying': string
+  'payment.cancelPayment': string
   /** A cart line's edit button: "Edit Kapućino". */
   'cart.edit': (name: string) => string
   /** The till's queue could not be sent. */
@@ -1877,6 +1888,7 @@ export interface LiroMessages {
   /** The question box: its name, the ask button and the keys. */
   'assistant.question': string
   'assistant.ask': string
+  'assistant.answering': string
   'assistant.askHint': string
   /** The user's question in a conversation, for assistive technology. */
   'assistant.youAsked': string
@@ -2199,10 +2211,7 @@ export interface LiroMessages {
   'sharing.done': string
   /** VersionList: the current version, restore, download, upload a new one, none. */
   'versions.current': string
-  'versions.restore': string
   'versions.restoreOf': (label: string) => string
-  'versions.restoreTitle': string
-  'versions.restoreMessage': string
   'versions.download': (label: string) => string
   'versions.upload': string
   'versions.empty': string

@@ -1,6 +1,6 @@
 import { ChevronDown } from 'lucide-react'
 import { useId, type ReactNode } from 'react'
-import { FOCUS_RING, TEXT_DIRECTION } from '../primitives/classes'
+import { FOCUS_RING, LINK_ITEM_HOVER, TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 import { Button } from './button'
@@ -64,7 +64,10 @@ function ActRow({ act }: { act: RelatedAct }) {
   return (
     <li
       data-slot="gazette-act"
-      className="flex min-w-0 flex-col gap-0.5 border-0 border-t border-solid border-subtle py-2 first:border-t-0"
+      className={cn(
+        '-mx-2 flex min-w-0 flex-col gap-0.5 rounded-md border-0 border-t border-solid border-subtle px-2 py-2 first:border-t-0',
+        LINK_ITEM_HOVER,
+      )}
     >
       <div className="flex items-start justify-between gap-3">
         <span className={cn('min-w-0 text-xs text-secondary', TEXT_DIRECTION)}>{act.type}</span>
@@ -77,7 +80,7 @@ function ActRow({ act }: { act: RelatedAct }) {
       <Link
         href={act.href}
         className={cn(
-          'self-start rounded-sm text-sm font-medium break-words text-link no-underline visited:text-link hover:underline',
+          'self-start rounded-sm text-sm font-medium break-words text-link no-underline visited:text-link',
           FOCUS_RING,
           TEXT_DIRECTION,
         )}
@@ -163,7 +166,7 @@ export function GazetteIssues(props: GazetteIssuesProps) {
                   <Link
                     href={issue.href}
                     className={cn(
-                      'rounded-sm text-link no-underline visited:text-link hover:underline',
+                      'rounded-sm text-link no-underline visited:text-link',
                       FOCUS_RING,
                     )}
                   >

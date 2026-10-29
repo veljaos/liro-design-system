@@ -12,7 +12,7 @@ import {
   type ComparedFeature,
   type ComparedPlan,
 } from './plan-logic'
-import { StatusBadge } from './status-badge'
+import { CURRENT_TONE, StatusBadge } from './status-badge'
 import { usePhone } from './use-phone'
 
 /*
@@ -128,7 +128,7 @@ function PlanFacts({
       {plan.description !== undefined && plan.description !== null && (
         <span className={cn('text-xs break-words text-secondary', align)}>{plan.description}</span>
       )}
-      {current && <StatusBadge label={currentLabel} tone="neutral" withBorder />}
+      {current && <StatusBadge label={currentLabel} tone={CURRENT_TONE} withBorder />}
       {unavailable && (
         <span className={cn('text-xs break-words text-secondary', align)}>
           {plan.unavailableReason}

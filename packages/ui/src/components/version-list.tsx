@@ -6,19 +6,21 @@ import { Skeleton } from '../primitives/skeleton'
 import { useLiro } from '../provider/liro-provider'
 import { UnavailableAction } from './actions'
 import { Button, CompactIconButton } from './button'
-import { ConfirmDialog } from './confirm-dialog'
 import { momentText, sizeText } from './file-browser-logic'
 import { FactsLine } from './file-entry-parts'
-import { StatusBadge } from './status-badge'
+import { CURRENT_ROW, CURRENT_TONE, StatusBadge } from './status-badge'
 
 /*
  * VersionList (BUILD-PLAN P5.43): a file's versions, newest first, in its details panel.
  * - Rows (the panel lists' rows, `panel-row`, so SidePanels' edge rule holds): the version's name
- *   (medium) with "Current" (a neutral badge) on the current one, then when, who and its size
- *   (through `format`), and the application's note ("Signed by both parties").
- * - Each earlier version: Download (28px, the document family) and Restore (28px, the caution
- *   family: it changes what everyone opens), Restore asking first in a ConfirmDialog with the
- *   version as its subject (D22). The current one has only Download.
+ *   (medium), then when, who and its size (through `format`), and the application's note
+ *   ("Signed by both parties"). The current version stands out (P5.94 item 13, the owner's
+ *   choice): its row on the subtle success background and "Current" a success badge — the one
+ *   "current" look of the library (CURRENT_ROW, CURRENT_TONE).
+ * - Each version: Download and, on an earlier one, Restore — 28px neutral icon buttons, each named
+ *   in the library's Tooltip. Restoring is not destructive (it makes a new current version and
+ *   keeps every other), so it runs at once, without asking (Undo over confirmations: restore the
+ *   other version again); a promise keeps the row's buttons waiting.
  * - "Upload a new version" (neutral) under the list opens the file dialog; the file goes to
  *   `onUpload` (the application checks and uploads it). Restore and upload can be unavailable
  *   with the application's reason (`restoreUnavailable`, `uploadUnavailable`: "Signed documents
@@ -49,7 +51,10 @@ export interface VersionListProps {
   label?: string
   /** Downloads one version; a promise is the application's to show. */
   onDownload?: (version: FileVersion) => void
-  /** Makes an earlier version the current one, after asking; a promise keeps the dialog busy. */
+  /**
+   * Makes an earlier version the current one, at once (P5.94: not destructive, so no question); a
+   * promise keeps the row's buttons waiting.
+   */
   onRestore?: (version: FileVersion) => void | Promise<void>
   /** Restore cannot be used, and why. */
   restoreUnavailable?: string
@@ -69,7 +74,16 @@ const ROW =
 export function VersionList(props: VersionListProps) {
   const { messages, format } = useLiro()
   const input = useRef<HTMLInputElement>(null)
-  const [asking, setAsking] = useState<FileVersion | null>(null)
+  // The version being restored, while the application's promise runs.
+  const [restoring, setRestoring] = useState<string | null>(null)
+  const restore = (version: FileVersion) => {
+    const result = props.onRestore?.(version)
+    if (!(result instanceof Promise)) return
+    setRestoring(version.id)
+    void result.finally(() => {
+      setRestoring(null)
+    })
+  }
   const label = props.label ?? messages['files.versions']
 
   const chosen = (event: ChangeEvent<HTMLInputElement>) => {
@@ -104,14 +118,19 @@ export function VersionList(props: VersionListProps) {
           const size = sizeText(format, messages, version)
           if (size !== null) facts.push(size)
           return (
-            <li key={version.id} data-slot="panel-row" className={ROW}>
+            <li
+              key={version.id}
+              data-slot="panel-row"
+              data-current={version.current === true || undefined}
+              className={cn(ROW, version.current === true && cn(CURRENT_ROW, '-mx-2 px-2'))}
+            >
               <div className="flex min-w-0 flex-1 flex-col gap-0.5">
                 <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
                   <span className={cn('text-sm font-medium text-primary', TEXT_DIRECTION)}>
                     {version.label}
                   </span>
                   {version.current === true && (
-                    <StatusBadge label={messages['versions.current']} tone="neutral" />
+                    <StatusBadge label={messages['versions.current']} tone={CURRENT_TONE} />
                   )}
                 </span>
                 <span className={cn('text-xs text-secondary', TEXT_DIRECTION)}>{version.by}</span>
@@ -125,8 +144,9 @@ export function VersionList(props: VersionListProps) {
               <div className="flex shrink-0 items-center gap-1">
                 {props.onDownload !== undefined && (
                   <CompactIconButton
-                    family="document"
+                    family="neutral"
                     icon={Download}
+                    disabled={restoring !== null}
                     label={messages['versions.download'](version.label)}
                     onClick={() => props.onDownload?.(version)}
                   />
@@ -135,11 +155,13 @@ export function VersionList(props: VersionListProps) {
                   version.current !== true &&
                   props.restoreUnavailable === undefined && (
                     <CompactIconButton
-                      family="caution"
+                      family="neutral"
                       icon={RotateCcw}
                       label={messages['versions.restoreOf'](version.label)}
+                      disabled={restoring !== null}
+                      aria-busy={restoring === version.id || undefined}
                       onClick={() => {
-                        setAsking(version)
+                        restore(version)
                       }}
                     />
                   )}
@@ -181,28 +203,6 @@ export function VersionList(props: VersionListProps) {
             reason={props.uploadUnavailable}
           />
         ))}
-      <ConfirmDialog
-        open={asking !== null}
-        onOpenChange={(open) => {
-          if (!open) setAsking(null)
-        }}
-        family="caution"
-        actionIcon={RotateCcw}
-        title={messages['versions.restoreTitle']}
-        {...(asking === null ? {} : { subject: asking.label })}
-        message={messages['versions.restoreMessage']}
-        confirmLabel={messages['versions.restore']}
-        onConfirm={() => {
-          if (asking === null) return
-          const result = props.onRestore?.(asking)
-          if (result instanceof Promise) {
-            return result.then(() => {
-              setAsking(null)
-            })
-          }
-          setAsking(null)
-        }}
-      />
     </div>
   )
 }

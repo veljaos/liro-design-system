@@ -7,7 +7,9 @@ import {
   hasOwnOptions,
   isChosen,
   kindMarker,
+  partOverLimit,
   paymentOptions,
+  stillToPay,
   toggleLine,
   type PaymentOption,
 } from './sale-logic'
@@ -95,5 +97,42 @@ describe('kindMarker (P5.28)', () => {
     expect(kindMarker(types, transactions, 'normal', 'refund')).toBe('Refund')
     expect(kindMarker(types, transactions, 'normal', 'sale')).toBeUndefined()
     expect(kindMarker(types, transactions, undefined, undefined)).toBeUndefined()
+  })
+})
+
+describe('partOverLimit and stillToPay: a part of a payment (P5.94 item 5)', () => {
+  const card = { kind: 'card' as const }
+  const voucher = { kind: 'plain' as const, maxAmount: '2000', maxReason: 'Worth 2.000,00 RSD.' }
+  it('lets cash be more than what remains: it gives change', () => {
+    expect(partOverLimit({ kind: 'cash' }, '5000', '1011.00')).toBeNull()
+  })
+  it('keeps every other way within the remaining amount, exactly', () => {
+    expect(partOverLimit(card, '1011.00', '1011')).toBeNull()
+    expect(partOverLimit(card, '1011.01', '1011.00')).toEqual({
+      reason: 'remaining',
+      limit: '1011.00',
+    })
+  })
+  it('keeps a way within its own limit when that is lower than what remains', () => {
+    expect(partOverLimit(voucher, '2500', '3000')).toEqual({
+      reason: 'option',
+      limit: '2000',
+      words: 'Worth 2.000,00 RSD.',
+    })
+    expect(partOverLimit(voucher, '2000.00', '3000')).toBeNull()
+    // The remaining amount is the lower limit: that one is said.
+    expect(partOverLimit(voucher, '1800', '1500')).toEqual({ reason: 'remaining', limit: '1500' })
+  })
+  it('leaves an unreadable amount to the application', () => {
+    expect(partOverLimit(card, 'abc', '100')).toBeNull()
+    expect(partOverLimit(card, null, '100')).toBeNull()
+    expect(partOverLimit(card, '100', null)).toBeNull()
+  })
+  it('says whether something is still to pay, exactly', () => {
+    expect(stillToPay('0.00')).toBe(false)
+    expect(stillToPay('0')).toBe(false)
+    expect(stillToPay('0.01')).toBe(true)
+    expect(stillToPay(null)).toBe(false)
+    expect(stillToPay(undefined)).toBe(false)
   })
 })

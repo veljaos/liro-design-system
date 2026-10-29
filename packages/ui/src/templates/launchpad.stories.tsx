@@ -1,19 +1,18 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { SlidersHorizontal } from 'lucide-react'
 import { useState } from 'react'
 import { expect, fireEvent, userEvent, within } from 'storybook/test'
-import { Button } from '../components/button'
 import { ExampleProvider, PhoneFrame, StoryProvider } from '../components/story-frames'
 import { settle } from '../primitives/story-helpers'
 import { AppShell } from './app-shell'
 import { Launchpad, type LaunchpadProps } from './launchpad'
 import { BRAND, COMMANDS, COMPANIES, MODULES, moduleById, USER } from './shell-story-data'
 
-/** The home screen: the shell without module tabs, the page title and the grid. */
-function Home({
-  phone = false,
-  ...props
-}: Partial<LaunchpadProps> & { phone?: boolean; action?: React.ReactNode }) {
+/**
+ * The home screen: the shell without module tabs and the grid right under it (P5.94 item 18): no
+ * visible title — the company is in the header's switcher — and no "Customize"; the page's h1
+ * stays for screen readers.
+ */
+function Home({ phone = false, ...props }: Partial<LaunchpadProps> & { phone?: boolean }) {
   return (
     <AppShell
       layout={phone ? 'phone' : 'desktop'}
@@ -30,10 +29,7 @@ function Home({
             : 'mx-auto box-border flex w-full max-w-content flex-col gap-6 p-6'
         }
       >
-        <div className="flex items-center justify-between gap-4">
-          <h1 className="bidi-content m-0 text-h1 text-primary">Kvadrat Gradnja d.o.o.</h1>
-          {props.action}
-        </div>
+        <h1 className="sr-only">Kvadrat Gradnja d.o.o.</h1>
         <Launchpad
           label="Modules"
           modules={MODULES}
@@ -45,48 +41,60 @@ function Home({
   )
 }
 
-/** Editing with state: the story keeps the order and the hidden modules, as the Core would. */
+/**
+ * Choosing, ordering and hiding the tiles is the user's Preferences (P5.94 item 18): the section
+ * "Home page" shows the Launchpad in its editing mode, always; the home page itself has no
+ * "Customize". The story keeps the order and the hidden modules, as the Core would.
+ */
 function Editing({ phone = false }: { phone?: boolean }) {
-  const [editing, setEditing] = useState(true)
   const [order, setOrder] = useState(MODULES.slice(0, 7).map((module) => module.id))
   const [hidden, setHidden] = useState<string[]>(['reports', 'assets'])
   const byId = moduleById
   return (
-    <Home
-      phone={phone}
-      editing={editing}
-      modules={order.map(byId)}
-      hidden={hidden.map(byId)}
-      onReorder={setOrder}
-      onHide={(id) => {
-        setOrder(order.filter((other) => other !== id))
-        setHidden([...hidden, id])
-      }}
-      onShow={(id) => {
-        setHidden(hidden.filter((other) => other !== id))
-        setOrder([...order, id])
-      }}
-      action={
-        editing ? (
-          <Button
-            intent="confirm"
-            label="Done"
-            onClick={() => {
-              setEditing(false)
+    <AppShell
+      layout={phone ? 'phone' : 'desktop'}
+      brand={BRAND}
+      commands={{ items: COMMANDS }}
+      notifications={{ unread: 0, panel: <p className="m-0 text-sm">No notifications.</p> }}
+      companies={{ items: COMPANIES, current: 'kvadrat', onSelect: () => undefined }}
+      user={USER}
+    >
+      <div
+        className={
+          phone
+            ? 'box-border flex w-full flex-col gap-4 p-4'
+            : 'mx-auto box-border flex w-full max-w-content flex-col gap-6 p-6'
+        }
+      >
+        <h1 className="bidi-content m-0 text-h2 text-primary">Preferences</h1>
+        <section aria-labelledby="home-page-tiles" className="flex flex-col gap-3">
+          <div className="flex flex-col gap-1">
+            <h2 id="home-page-tiles" className="bidi-content m-0 text-h4 text-primary">
+              Home page
+            </h2>
+            <p className="bidi-content m-0 text-sm text-secondary">
+              Choose, order and hide the modules on your home page.
+            </p>
+          </div>
+          <Launchpad
+            label="Modules"
+            layout={phone ? 'phone' : 'desktop'}
+            editing
+            modules={order.map(byId)}
+            hidden={hidden.map(byId)}
+            onReorder={setOrder}
+            onHide={(id) => {
+              setOrder(order.filter((other) => other !== id))
+              setHidden([...hidden, id])
+            }}
+            onShow={(id) => {
+              setHidden(hidden.filter((other) => other !== id))
+              setOrder([...order, id])
             }}
           />
-        ) : (
-          <Button
-            family="neutral"
-            icon={SlidersHorizontal}
-            label="Customize"
-            onClick={() => {
-              setEditing(true)
-            }}
-          />
-        )
-      }
-    />
+        </section>
+      </div>
+    </AppShell>
   )
 }
 
@@ -104,10 +112,11 @@ const meta = {
           'and does not open. Keys 1–9 open the first nine modules; the arrows move between ' +
           'cards.\n\n' +
           '**How:** `modules` in order, each with an `href`. The application switches ' +
-          '`editing` on (a "Customize" button in the page header): the cards then have move ' +
-          'and hide buttons and can be dragged, hidden modules are listed with "Show", and ' +
-          '"Done", also the application’s, leaves it. `onReorder`, `onHide` and `onShow` report every ' +
-          'change; the Core stores it.\n\n' +
+          '`editing` on in the user’s Preferences (P5.94: “Home page”, never a “Customize” on the ' +
+          'home page itself): the cards then have move and hide buttons and can be dragged, hidden ' +
+          'modules are listed with "Show". `onReorder`, `onHide` and `onShow` report every change; ' +
+          'the Core stores it. The home page has no visible title — the company stands in the ' +
+          'header’s switcher — so the tiles start right under the header.\n\n' +
           '**When not:** navigation inside a module is its tabs (AppShell `moduleTabs`), never ' +
           'a sidebar; numbers and charts belong to a dashboard (P4.6).',
       },
@@ -126,13 +135,11 @@ export default meta
 
 type Story = StoryObj<typeof meta>
 
-/** Nine modules, one locked. */
+/** Nine modules, one locked; the tiles right under the header, no title, no "Customize". */
 export const Default: Story = {
-  args: {
-    action: <Button family="neutral" icon={SlidersHorizontal} label="Customize" />,
-  } as Partial<LaunchpadProps>,
   play: async ({ canvasElement }) => {
     await settle()
+    await expect(within(canvasElement).queryByRole('button', { name: 'Customize' })).toBeNull()
     const grid = within(within(canvasElement).getByRole('list', { name: 'Modules' }))
     const sales = grid.getByRole('link', { name: /Sales/ })
     await expect(sales).toHaveAttribute('aria-keyshortcuts', '1')
@@ -159,7 +166,7 @@ export const Keyboard: Story = {
   },
 }
 
-/** Editing: move, hide and drag; hidden modules with "Show"; "Done" leaves. */
+/** Editing, in the user's Preferences: move, hide and drag; hidden modules with "Show". */
 export const EditingMode: Story = {
   name: 'Editing',
   render: () => (

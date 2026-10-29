@@ -1,5 +1,5 @@
 import { CircleCheck, Mail } from 'lucide-react'
-import { useId, useState, type ReactNode, type SyntheticEvent } from 'react'
+import { useEffect, useId, useRef, useState, type ReactNode, type SyntheticEvent } from 'react'
 import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
@@ -25,9 +25,10 @@ import { usePhone } from './use-phone'
  *   name@example.com." — under the field, without sending.
  * - `onSubscribe` may return a promise ("Subscribing…" beside the button, the field waits; a
  *   rejection keeps the address); `error` is the application's danger Alert.
- * - Subscribed (`subscribed`, or kept after `onSubscribe` succeeds): a polite status with a
- *   success CircleCheck and "Thank you — check your inbox to confirm." or the application's words,
- *   in the form's place: the block keeps its size (P5.93).
+ * - Subscribed (`subscribed`, or kept after `onSubscribe` succeeds): the band holds only a polite
+ *   status with a success CircleCheck and "Thank you — check your inbox to confirm." or the
+ *   application's words — no title, line, form or note (P5.94 item 11); after Subscribe the focus
+ *   moves to it, so it is not lost with the button.
  * - Unavailable (`unavailableReason`, P5.93): the address read-only, Subscribe unavailable, the
  *   reason in words under the form.
  */
@@ -81,6 +82,11 @@ export function NewsletterSignup(props: NewsletterSignupProps) {
   const reasonId = `${useId()}-reason`
   const subscribed = props.subscribed ?? done
   const Heading = `h${String(props.headingLevel ?? 2)}` as 'h2'
+  const thanks = useRef<HTMLParagraphElement>(null)
+  // Subscribed after the press: the focus goes to the thanks, as the form leaves the page.
+  useEffect(() => {
+    if (done) thanks.current?.focus()
+  }, [done])
 
   const submit = (event: SyntheticEvent) => {
     event.preventDefault()
@@ -114,99 +120,96 @@ export function NewsletterSignup(props: NewsletterSignupProps) {
         props.className,
       )}
     >
-      <div className="flex min-w-0 items-start gap-3">
-        <Mail aria-hidden="true" className="mt-1 size-5 shrink-0 text-secondary" />
-        <div className="flex min-w-0 flex-col gap-1">
-          <Heading className={cn('m-0 text-h4 font-semibold text-primary', TEXT_DIRECTION)}>
-            {props.title}
-          </Heading>
-          {props.description !== undefined && (
-            <p className={cn('m-0 text-sm text-secondary', TEXT_DIRECTION)}>{props.description}</p>
-          )}
-        </div>
-      </div>
-      {/*
-        P5.93: the thanks replaces only the form, in its place — the form stays laid out but
-        hidden and inert, so the block keeps its size.
-      */}
-      <div className="grid min-w-0">
-        {subscribed !== false && (
-          <p
-            role="status"
-            className="m-0 flex items-center gap-2 self-center text-sm text-primary [grid-area:1/1]"
-          >
-            <CircleCheck aria-hidden="true" className="size-4 shrink-0 text-status-success-fg" />
-            <span className={TEXT_DIRECTION}>
-              {subscribed === true ? messages['newsletter.thanks'] : subscribed}
-            </span>
-          </p>
-        )}
-        <form
-          noValidate
-          onSubmit={submit}
-          {...(subscribed !== false ? { inert: true, 'aria-hidden': true } : {})}
-          className={cn(
-            'flex min-w-0 flex-col gap-3 [grid-area:1/1]',
-            subscribed !== false && 'invisible',
-          )}
+      {subscribed !== false ? (
+        <p
+          ref={thanks}
+          role="status"
+          tabIndex={-1}
+          className="m-0 flex items-center gap-2 text-sm text-primary outline-none"
         >
-          <div className={cn('flex min-w-0 gap-2', phone ? 'flex-col' : 'items-start')}>
-            <TextField
-              label={props.emailLabel ?? messages['newsletter.email']}
-              type="email"
-              autoComplete="email"
-              value={email}
-              onChange={(next) => {
-                setEmail(next)
-                if (problem !== null) setProblem(null)
-              }}
-              {...(problem === null
-                ? {}
-                : {
-                    error:
-                      problem === 'required'
-                        ? messages['newsletter.required']
-                        : messages['newsletter.invalid'],
-                  })}
-              readOnly={disabled}
-              className="min-w-0 flex-1"
-            />
-            <div className="flex flex-col">
-              {/* As tall as the field's label, so the button stands beside the field's box. */}
-              {!phone && (
-                <span aria-hidden="true" className="invisible text-sm font-semibold">
-                  {'\u00a0'}
-                </span>
+          <CircleCheck aria-hidden="true" className="size-4 shrink-0 text-status-success-fg" />
+          <span className={TEXT_DIRECTION}>
+            {subscribed === true ? messages['newsletter.thanks'] : subscribed}
+          </span>
+        </p>
+      ) : (
+        <>
+          <div className="flex min-w-0 items-start gap-3">
+            <Mail aria-hidden="true" className="mt-1 size-5 shrink-0 text-secondary" />
+            <div className="flex min-w-0 flex-col gap-1">
+              <Heading className={cn('m-0 text-h4 font-semibold text-primary', TEXT_DIRECTION)}>
+                {props.title}
+              </Heading>
+              {props.description !== undefined && (
+                <p className={cn('m-0 text-sm text-secondary', TEXT_DIRECTION)}>
+                  {props.description}
+                </p>
               )}
-              <div className={cn('flex items-center gap-3', !phone && 'mt-1')}>
-                <Button
-                  family="primary"
-                  icon={Mail}
-                  type="submit"
-                  emphasis={props.emphasis ?? 'secondary'}
-                  label={props.subscribeLabel ?? messages['newsletter.subscribe']}
-                  disabled={sending || disabled}
-                  {...(disabled ? { 'aria-describedby': reasonId } : {})}
-                />
-                {sending && (
-                  <Spinner size="sm">
-                    <span className="text-xs text-secondary">{messages['newsletter.sending']}</span>
-                  </Spinner>
-                )}
-              </div>
             </div>
           </div>
-          {disabled && (
-            <FieldMessage id={reasonId} tone="hint">
-              {props.unavailableReason}
-            </FieldMessage>
-          )}
-          {props.error !== undefined && <Alert tone="danger">{props.error}</Alert>}
-          {props.consent !== undefined && (
-            <p className={cn('m-0 text-xs text-secondary', TEXT_DIRECTION)}>{props.consent}</p>
-          )}
-        </form>
-      </div>
+          <div className="grid min-w-0">
+            <form noValidate onSubmit={submit} className="flex min-w-0 flex-col gap-3">
+              <div className={cn('flex min-w-0 gap-2', phone ? 'flex-col' : 'items-start')}>
+                <TextField
+                  label={props.emailLabel ?? messages['newsletter.email']}
+                  type="email"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(next) => {
+                    setEmail(next)
+                    if (problem !== null) setProblem(null)
+                  }}
+                  {...(problem === null
+                    ? {}
+                    : {
+                        error:
+                          problem === 'required'
+                            ? messages['newsletter.required']
+                            : messages['newsletter.invalid'],
+                      })}
+                  readOnly={disabled}
+                  className="min-w-0 flex-1"
+                />
+                <div className="flex flex-col">
+                  {/* As tall as the field's label, so the button stands beside the field's box. */}
+                  {!phone && (
+                    <span aria-hidden="true" className="invisible text-sm font-semibold">
+                      {'\u00a0'}
+                    </span>
+                  )}
+                  <div className={cn('flex items-center gap-3', !phone && 'mt-1')}>
+                    <Button
+                      family="primary"
+                      icon={Mail}
+                      type="submit"
+                      emphasis={props.emphasis ?? 'secondary'}
+                      label={props.subscribeLabel ?? messages['newsletter.subscribe']}
+                      disabled={sending || disabled}
+                      {...(disabled ? { 'aria-describedby': reasonId } : {})}
+                    />
+                    {sending && (
+                      <Spinner size="sm">
+                        <span className="text-xs text-secondary">
+                          {messages['newsletter.sending']}
+                        </span>
+                      </Spinner>
+                    )}
+                  </div>
+                </div>
+              </div>
+              {disabled && (
+                <FieldMessage id={reasonId} tone="hint">
+                  {props.unavailableReason}
+                </FieldMessage>
+              )}
+              {props.error !== undefined && <Alert tone="danger">{props.error}</Alert>}
+              {props.consent !== undefined && (
+                <p className={cn('m-0 text-xs text-secondary', TEXT_DIRECTION)}>{props.consent}</p>
+              )}
+            </form>
+          </div>
+        </>
+      )}
     </section>
   )
 }

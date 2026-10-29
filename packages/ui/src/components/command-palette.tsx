@@ -107,14 +107,16 @@ export function CommandPalette(props: CommandPaletteProps) {
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (opensPalette(event)) {
+        // Handled here, on the document: the browser's or a host's own Ctrl+K never runs too.
         event.preventDefault()
+        event.stopPropagation()
         setInnerOpen(true)
         onOpenChange?.(true)
       }
     }
-    window.addEventListener('keydown', onKey)
+    document.addEventListener('keydown', onKey)
     return () => {
-      window.removeEventListener('keydown', onKey)
+      document.removeEventListener('keydown', onKey)
     }
   }, [onOpenChange])
 

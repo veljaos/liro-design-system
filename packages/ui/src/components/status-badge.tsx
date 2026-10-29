@@ -81,3 +81,13 @@ export function StatusBadge({ label, tone, withBorder = false, icon: Icon }: Sta
     </span>
   )
 }
+
+/**
+ * The one "current" look of the library (P5.94 item 13, the owner's choice): the item that is in
+ * force now — a file's current version, the current plan, an act's version in force — carries a
+ * success badge ("Current"), and a plain list row the subtle success background. A row that is
+ * itself a selection keeps the neutral selection and only the badge.
+ */
+export const CURRENT_TONE = 'success' as const
+/** The row of the current item in a plain list: the subtle success background, rounded. */
+export const CURRENT_ROW = 'rounded-md bg-status-success-bg'

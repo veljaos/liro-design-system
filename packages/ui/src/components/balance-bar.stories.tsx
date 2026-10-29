@@ -243,13 +243,60 @@ export default meta
 
 type Story = StoryObj<typeof meta>
 
-/** A balanced entry. */
-export const Default: Story = {}
+/**
+ * P5.94 (item 14), measured: labels, amounts and the state stand on one baseline (the bottoms of
+ * their text, all of one size, within half a pixel); each label is as far from its amount as the
+ * others; the groups (debit, credit, difference, the state) stand the same distance apart.
+ */
+async function expectOneLine(root: HTMLElement) {
+  const bar = root.querySelector<HTMLElement>('[data-slot="balance-bar"]')
+  if (bar === null) throw new Error('no balance bar')
+  const textBox = (element: Element) => {
+    const range = document.createRange()
+    range.selectNodeContents(element)
+    return range.getBoundingClientRect()
+  }
+  const labels = [...bar.querySelectorAll('dt')].map(textBox)
+  const amounts = [...bar.querySelectorAll('dd bdi')].map(textBox)
+  const state = bar.querySelector('[role="status"] span')
+  if (state === null) throw new Error('no state')
+  const bottoms = [...labels, ...amounts, textBox(state)].map((box) => box.bottom)
+  await expect(Math.max(...bottoms) - Math.min(...bottoms)).toBeLessThanOrEqual(0.5)
+  const rtl = getComputedStyle(bar).direction === 'rtl'
+  const gap = (before: DOMRect, after: DOMRect) =>
+    rtl ? before.left - after.right : after.left - before.right
+  const toAmount = labels.map((label, index) => {
+    const amount = amounts[index]
+    return amount === undefined ? 0 : gap(label, amount)
+  })
+  await expect(Math.max(...toAmount) - Math.min(...toAmount)).toBeLessThanOrEqual(1)
+  const groups = [
+    ...[...bar.querySelectorAll('dl > div')].map((group) => group.getBoundingClientRect()),
+    (bar.querySelector('[role="status"]') ?? bar).getBoundingClientRect(),
+  ]
+  const between = groups.slice(1).map((group, index) => {
+    const previous = groups[index]
+    return previous === undefined ? 0 : gap(previous, group)
+  })
+  await expect(Math.max(...between) - Math.min(...between)).toBeLessThanOrEqual(1)
+}
+
+/** A balanced entry: one baseline, even gaps (measured). */
+export const Default: Story = {
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expectOneLine(canvasElement)
+  },
+}
 
 /** A difference: marked in words and the danger tone. */
 export const Unbalanced: Story = {
   name: 'Not balanced',
   args: { debit: '146720.00', credit: '144720.00', difference: '2000.00', state: 'unbalanced' },
+  play: async ({ canvasElement }) => {
+    await settle()
+    await expectOneLine(canvasElement)
+  },
 }
 
 /** An amount is missing: the difference is not known, so it is not shown. */
@@ -299,6 +346,7 @@ export const InJournalEntry: Story = {
     if (status === null) throw new Error('no status')
     await expect(status).toHaveTextContent('Balanced')
     await settle()
+    await expectOneLine(canvasElement)
   },
 }
 

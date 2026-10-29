@@ -185,7 +185,8 @@ export function SignIn({ phone }: { phone: boolean }) {
 
 // ── Home ──────────────────────────────────────────────────────────────────────────────────────
 
-const MODULES: LaunchpadModule[] = [
+/** The modules of the example company, in the user's order (also My profile's "Home page"). */
+export const MODULES: LaunchpadModule[] = [
   {
     id: 'sales',
     name: 'Sales',
