@@ -393,7 +393,12 @@ export type {
 } from './components/messages'
 export { MentionCombobox } from './components/mention-combobox'
 export type { MentionCandidate, MentionComboboxProps } from './components/mention-combobox'
-export { mentionsInText, splitMentions } from './components/message-logic'
+export {
+  closesOnSpace,
+  mentionQueryAt,
+  mentionsInText,
+  splitMentions,
+} from './components/message-logic'
 export type { Mention, MentionPart } from './components/message-logic'
 export { Questionnaire } from './components/questionnaire'
 export type { QuestionnaireProps } from './components/questionnaire'
@@ -1255,11 +1260,14 @@ export {
   hasOwnOptions,
   isChosen,
   kindMarker,
+  partOverLimit,
   paymentOptions,
+  stillToPay,
   toggleLine,
 } from './components/sale-logic'
 export type {
   ChosenQuantities,
+  PartOverLimit,
   PaymentKind,
   PaymentOption,
   ReceiptKindOption,

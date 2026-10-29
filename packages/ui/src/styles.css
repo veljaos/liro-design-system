@@ -49,6 +49,35 @@
 }
 
 /*
+ * A button's, a tab's or a field label's words never break inside (P5.94 item 4): "Vouche r" is
+ * never drawn. Their text wraps between words only; where one word is wider than the room, the
+ * place gives it room (whole buttons wrap) or shortens the label with "…" (FittedLabel). Body
+ * text keeps breaking a long unbroken string (an IBAN, a URL) inside its box. Unlayered, so it
+ * wins over the bidi utilities above; `pnpm test`'s story check measures every word.
+ */
+:is(
+    button,
+    [role='button'],
+    [role='tab'],
+    [role='menuitem'],
+    [role='menuitemradio'],
+    [role='menuitemcheckbox'],
+    legend,
+    label:not(:has(input, select, textarea, button))
+  )
+  :is(.bidi-content, .bidi-isolate, span, bdi),
+:is(
+  button,
+  [role='button'],
+  [role='tab'],
+  legend,
+  label:not(:has(input, select, textarea, button))
+) {
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+/*
  * Not a reset: only the elements of the primitives (each carries data-slot) size their padding and
  * border inside their width, as Tailwind's preflight would, so `w-full` with padding never
  * overflows in an application without preflight. Zero specificity: any utility wins.

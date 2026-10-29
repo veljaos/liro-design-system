@@ -230,3 +230,69 @@ export async function textOutOfOrder(page: Page): Promise<string[]> {
     return [...found]
   })
 }
+
+/**
+ * P5.94 (item 4): the words of the controls and labels. A word inside a button, a tab, a menu item,
+ * a legend or a label never stands on two lines (a break inside it: "Vouche r"), and a button's
+ * text never runs out of its box unless it is clipped on purpose (an ellipsis, `FittedLabel`).
+ * Words of scripts that break between characters (Chinese, Japanese, Korean, Thai) are not
+ * words here; text for assistive technology only (`sr-only`) is not drawn.
+ */
+export async function brokenWords(page: Page): Promise<string[]> {
+  return page.evaluate(() => {
+    const found = new Set<string>()
+    const characterScripts =
+      /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Thai}\p{Script=Hangul}]/u
+    const name = (element: Element) =>
+      (element.getAttribute('aria-label') ?? element.textContent)
+        .trim()
+        .replace(/\s+/g, ' ')
+        .slice(0, 50)
+    const clippedWithin = (node: Node, scope: Element) => {
+      for (
+        let element = node.parentElement;
+        element !== null && element !== scope.parentElement;
+        element = element.parentElement
+      ) {
+        const style = getComputedStyle(element)
+        if (style.overflowX !== 'visible' || style.textOverflow === 'ellipsis') return true
+        if (element === scope) break
+      }
+      return false
+    }
+    const scopes = document.querySelectorAll(
+      'button, [role="button"], [role="tab"], [role="menuitem"], [role="menuitemradio"], [role="menuitemcheckbox"], label, legend',
+    )
+    for (const scope of scopes) {
+      const box = scope.getBoundingClientRect()
+      if (box.width <= 2 || box.height <= 2) continue
+      const control = scope.matches('button, [role="button"], [role="tab"]')
+      const walker = document.createTreeWalker(scope, NodeFilter.SHOW_TEXT)
+      for (let node = walker.nextNode(); node !== null; node = walker.nextNode()) {
+        if (node.parentElement?.closest('.sr-only') != null) continue
+        const text = node.textContent ?? ''
+        for (const match of text.matchAll(/[^\s\-–—/·,]+/gu)) {
+          const word = match[0]
+          if (word.length < 2 || characterScripts.test(word)) continue
+          const range = document.createRange()
+          range.setStart(node, match.index)
+          range.setEnd(node, match.index + word.length)
+          const rects = [...range.getClientRects()].filter(
+            (rect) => rect.width > 0.5 && rect.height > 0.5,
+          )
+          if (new Set(rects.map((rect) => Math.round(rect.bottom / 3))).size > 1) {
+            found.add(`"${word}" broken in <${scope.tagName.toLowerCase()}> "${name(scope)}"`)
+          }
+          if (
+            control &&
+            !clippedWithin(node, scope) &&
+            rects.some((rect) => rect.right > box.right + 1.5 || rect.left < box.left - 1.5)
+          ) {
+            found.add(`"${word}" runs out of <${scope.tagName.toLowerCase()}> "${name(scope)}"`)
+          }
+        }
+      }
+    }
+    return [...found]
+  })
+}
