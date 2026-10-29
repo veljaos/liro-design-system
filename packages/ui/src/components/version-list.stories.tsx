@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { useState } from 'react'
-import { expect, userEvent, waitFor, within } from 'storybook/test'
+import { expect, userEvent, within } from 'storybook/test'
 import { settle } from '../primitives/story-helpers'
 import { CURRENT_VERSION, VERSIONS } from './file-story-data'
 import { ExampleProvider, PhoneFrame, StoryProvider } from './story-frames'
@@ -14,9 +14,12 @@ const meta = {
       description: {
         component:
           '**What for:** a file’s versions, newest first — when, who, its size and the ' +
-          'application’s note — with Download, Restore (asks first; the caution family) and ' +
-          '“Upload a new version”. Restore and upload can be unavailable with the application’s ' +
-          'reason.\n\n' +
+          'application’s note — with Download, Restore and “Upload a new version”. Restore and ' +
+          'upload can be unavailable with the application’s reason.\n\n' +
+          '**P5.94:** the current version stands out — its row on the subtle success background, ' +
+          '“Current” a success badge (the library’s one “current” look). Download and Restore are ' +
+          'neutral icon buttons named in the tooltip; restoring is not destructive (it makes a new ' +
+          'current version and keeps every other), so it runs at once, without asking.\n\n' +
           '**When to use:** the Versions panel of a file’s details. **When not:** a record’s ' +
           'history of changes (HistoryList); versions of a legal act (legal-panels’ Versions panel).',
       },
@@ -44,12 +47,13 @@ export default meta
 
 type Story = StoryObj<typeof meta>
 
-/** Three versions; the current one has only Download. */
+/** Three versions; the current one stands out and has only Download. */
 export const Default: Story = {
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
     await expect(canvas.getByText('Current')).toBeVisible()
+    await expect(canvas.getByText('Current').closest('li')).toHaveAttribute('data-current', 'true')
     await expect(canvas.queryByRole('button', { name: 'Restore Version 3' })).toBeNull()
     await expect(canvas.getByRole('button', { name: 'Restore Version 2' })).toBeVisible()
   },
@@ -155,7 +159,7 @@ export const Japanese: Story = {
   ],
 }
 
-/** Restore asks first, with the version as its subject; Restore reports it. */
+/** Restore runs at once — not destructive, nothing to ask — and reports the version. */
 export const Restore: Story = {
   name: 'Restore, interaction',
   tags: ['interaction'],
@@ -179,13 +183,7 @@ export const Restore: Story = {
     await settle()
     const canvas = within(canvasElement)
     await userEvent.click(canvas.getByRole('button', { name: 'Restore Version 2' }))
-    const dialog = await within(document.body).findByRole('alertdialog', {
-      name: /^Restore this version\? Version 2/,
-    })
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Restore' }))
+    await expect(within(document.body).queryByRole('alertdialog')).toBeNull()
     await expect(canvas.getByTestId('restored')).toHaveTextContent('Version 2')
-    await waitFor(async () => {
-      await expect(within(document.body).queryByRole('alertdialog')).toBeNull()
-    })
   },
 }

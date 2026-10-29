@@ -1,5 +1,5 @@
 import { useId, type MouseEvent, type ReactNode } from 'react'
-import { FOCUS_RING, TEXT_DIRECTION } from '../primitives/classes'
+import { FOCUS_RING, LINK_ITEM_HOVER, TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { langAttribute } from '../provider/lang'
 import { useLiro } from '../provider/liro-provider'
@@ -107,7 +107,10 @@ function ResultRow({
   return (
     <li
       data-slot="search-result"
-      className="flex min-w-0 flex-col gap-1 border-0 border-t border-solid border-subtle px-4 py-3 first:border-t-0"
+      className={cn(
+        'flex min-w-0 flex-col gap-1 border-0 border-t border-solid border-subtle px-4 py-3 first:border-t-0',
+        LINK_ITEM_HOVER,
+      )}
     >
       {(result.meta !== undefined || result.badge !== undefined) && (
         <div className="flex items-start justify-between gap-3">
@@ -127,7 +130,7 @@ function ResultRow({
             onOpen?.(result, event)
           }}
           className={cn(
-            'rounded-sm break-words text-link no-underline visited:text-link hover:underline',
+            'rounded-sm break-words text-link no-underline visited:text-link',
             FOCUS_RING,
             TEXT_DIRECTION,
           )}

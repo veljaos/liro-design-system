@@ -429,6 +429,7 @@ export function Till({ phone, start = {} }: { phone: boolean; start?: TillStart 
               label: 'Card',
               value: decimal(computeSale(SALE).total),
               detail: step === 'corporate' ? 'Corporate card •••• 7310' : CARD_APPROVAL,
+              state: 'approved',
             },
           ]
         : [],
@@ -521,6 +522,7 @@ export function Till({ phone, start = {} }: { phone: boolean; start?: TillStart 
           label: option?.label ?? method,
           value: sentAmount,
           detail: method === 'card' ? CARD_APPROVAL : 'Reference 97 0612-0942',
+          state: 'approved',
         },
       ])
       setSentAmount(null)
@@ -1368,6 +1370,13 @@ export function Till({ phone, start = {} }: { phone: boolean; start?: TillStart 
             }}
             onRemovePart={(id) => {
               setParts((current) => current.filter((each) => each.id !== id))
+            }}
+            onCancel={() => {
+              // The example reverses the approved parts at once; a real till asks its terminal.
+              setParts([])
+              setCardState('idle')
+              setTendered(null)
+              setSentAmount(null)
             }}
             reference={reference}
             onReferenceChange={setReference}

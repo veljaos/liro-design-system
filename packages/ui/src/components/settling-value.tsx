@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 
@@ -10,6 +10,10 @@ import { useLiro } from '../provider/liro-provider'
  *   confirmed values).
  * - Reserved width and tabular digits, so nothing reflows in left-to-right or right-to-left: the
  *   number keeps at least the widest width it has had (or `reserveChars`), aligned to its end.
+ *   P5.94 (item 14): the width is the text's own, measured in pixels — counted in characters it
+ *   left a different empty space before each amount ("RSD" and the separators are narrower than a
+ *   digit), so the gaps beside the amounts differed. The value stands on the line's baseline (its
+ *   dot slot is centred apart, so an empty slot no longer lowers the number).
  * - The new value is announced once, politely, when it settles (a live region of its own; the
  *   visible number is not live, so typing does not make it chatter).
  * - `unavailableText` when no value can be shown (offline, say); "—" when there is none.
@@ -73,14 +77,41 @@ export function SettlingValue(props: SettlingValueProps) {
 
   // The widest text so far: the number never gets narrower, so nothing around it moves back.
   const slot = useContext(SettlingMemory)
-  const [widest, setWidest] = useState(() => Math.max(text.length, slot?.widest.get(slot.key) ?? 0))
-  if (text.length > widest) setWidest(text.length)
+  const measured = useRef<HTMLSpanElement>(null)
+  const [widest, setWidest] = useState(() => slot?.widest.get(slot.key) ?? 0)
+  useLayoutEffect(() => {
+    const element = measured.current
+    if (element === null) return
+    const width = Math.ceil(element.getBoundingClientRect().width)
+    setWidest((current) => Math.max(current, width))
+  }, [text])
+  // Measured again once the web fonts are in: a width taken in the fallback font is wider and
+  // would leave a gap beside the number for good.
+  useEffect(() => {
+    if (typeof document === 'undefined' || !('fonts' in document)) return
+    let alive = true
+    void document.fonts.ready.then(() => {
+      const element = measured.current
+      if (!alive || element === null) return
+      setWidest(Math.ceil(element.getBoundingClientRect().width))
+    })
+    return () => {
+      alive = false
+    }
+  }, [])
   const kept = slot?.widest
   const keptKey = slot?.key
   useEffect(() => {
     if (kept !== undefined && keptKey !== undefined) kept.set(keptKey, widest)
   }, [kept, keptKey, widest])
-  const reserve = Math.max(widest, props.reserveChars ?? 0)
+  const reserve =
+    props.reserveChars === undefined
+      ? widest > 0
+        ? `${String(widest)}px`
+        : undefined
+      : widest > 0
+        ? `max(${String(widest)}px, ${String(props.reserveChars)}ch)`
+        : `${String(props.reserveChars)}ch`
 
   // The announcement: the text of each new settled value, once (not the first one on the page).
   const [shown, setShown] = useState(text)
@@ -120,9 +151,9 @@ export function SettlingValue(props: SettlingValueProps) {
     <span
       data-slot="settling-value"
       data-pending={pending || undefined}
-      className={cn('inline-flex items-center gap-1.5 font-sans', props.className)}
+      className={cn('inline-flex items-baseline gap-1.5 font-sans', props.className)}
     >
-      <span aria-hidden="true" className="flex size-1.5 shrink-0 text-tertiary">
+      <span aria-hidden="true" className="flex size-1.5 shrink-0 self-center text-tertiary">
         {pending && late && (
           <span
             data-slot="settling-dot"
@@ -135,9 +166,9 @@ export function SettlingValue(props: SettlingValueProps) {
           'inline-block text-end whitespace-nowrap tabular-nums',
           props.value === null && 'text-secondary',
         )}
-        style={{ minInlineSize: `${String(reserve)}ch` }}
+        {...(reserve === undefined ? {} : { style: { minInlineSize: reserve } })}
       >
-        {text}
+        <span ref={measured}>{text}</span>
       </bdi>
       <span aria-live="polite" className="sr-only">
         {announcement}

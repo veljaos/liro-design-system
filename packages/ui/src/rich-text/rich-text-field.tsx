@@ -29,6 +29,7 @@ import {
   type FieldControl,
 } from '../components/field'
 import type { MentionCandidate } from '../components/mention-combobox'
+import { closesOnSpace } from '../components/message-logic'
 import { PersonAvatar } from '../components/person'
 import { OPTION, READ_ONLY, TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
 import { cn } from '../primitives/cn'
@@ -476,8 +477,12 @@ function RichTextEditor({
     (suggestion.kind === 'mergeField'
       ? mergeFields.length > 0
       : props.mentionCandidates !== undefined)
-  const open = offered && suggestion.from !== dismissed
   const searching = suggestion?.kind === 'mention' && props.mentionsLoading === true
+  // A space after a query that matches nothing ends the search, as in every composer (P5.94).
+  const open =
+    offered &&
+    suggestion.from !== dismissed &&
+    !closesOnSpace(suggestion.query, options.length, searching)
   const showEmpty = open && options.length === 0 && !searching
   const visible = open && (options.length > 0 || searching || showEmpty)
   const listShown = visible && options.length > 0

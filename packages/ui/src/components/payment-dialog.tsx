@@ -35,11 +35,14 @@ import { Alert } from './alert'
 import { Button } from './button'
 import { DialogHeading } from './dialog'
 import { MoneyText } from './display-text'
+import { FittedLabel } from './fitted-label'
 import { NumericKeypad } from './numeric-keypad'
 import { Tooltip } from './popover'
 import {
   hasOwnOptions,
+  partOverLimit,
   paymentOptions,
+  stillToPay,
   type PaymentKind,
   type PaymentMethod,
   type PaymentOption,
@@ -94,6 +97,22 @@ import { usePhone } from './use-phone'
  * it (never rounded), on a plain row, and the focus on the done view's main action (the last of
  * `doneActions`, "New sale"); the issued receipt (`doneContent`) beside it on a wide screen, and
  * behind "Receipt" on a phone.
+ *
+ * P5.94 (item 5, the owner's fifth review): **a sale is paid in parts by any ways, in any order**
+ * (`onAddPart`): part cash, part card, part voucher. The parts paid stand in a list — the way, the
+ * amount and its state ("Paid", or "Approved" for a card or an instant payment) — and the
+ * remaining amount always beside the amount due. The keypad holds the amount of this part; cash
+ * and the plain ways add it ("Add this payment"); a card (or an instant payment) takes one part
+ * at a time: "Pay 500,00 RSD by card" sends it to the terminal (`onCardStart(amount)`), the
+ * customer taps or inserts the card, and the application adds the approved part to `paid` and
+ * lowers `remaining`; declined keeps the amount for "Try again" or another way. Only cash gives
+ * change; a part of any other way is at most the remaining amount and the way's own `maxAmount`
+ * (a voucher's value, `maxReason`), compared exactly (`partOverLimit`). "Complete payment" waits
+ * while something is still to pay. Cancelling after an approved part says first, in the dialog,
+ * that the approved parts are reversed ("Keep paying" / "Cancel payment"); the reversal is the
+ * application's (`onCancel`). A way's label never breaks inside a word (item 4): the ways wrap as
+ * whole buttons (on a phone the icon above the label) and a label too long for its button ends in
+ * "…" with the whole name in the Tooltip.
  */
 
 export type { PaymentKind, PaymentMethod, PaymentOption }
@@ -110,6 +129,11 @@ export interface PaymentPart {
   value: string
   /** A line under it: the card, the voucher's code, the cheque's number. */
   detail?: string
+  /**
+   * 'approved': a card's or an instant payment's approval (reversed if the payment is cancelled,
+   * by the application); 'paid' (default): cash or a plain way.
+   */
+  state?: 'paid' | 'approved'
 }
 
 export interface PaymentDialogProps {
@@ -168,12 +192,21 @@ export interface PaymentDialogProps {
   cardState?: CardState
   /** The terminal's words: the reason of a decline, the approval's detail. */
   cardMessage?: string
-  /** Sends the amount to the terminal (also "Try again"). */
-  onCardStart?: () => void
+  /**
+   * Sends the amount to the terminal (also "Try again"): the keypad's amount, or the remaining
+   * amount when none is typed (P5.94).
+   */
+  onCardStart?: (amount: string | null) => void
   /** Cancels the payment on the terminal while waiting. */
   onCardCancel?: () => void
   /** The main action. */
   onComplete?: () => void
+  /**
+   * The cashier cancels the payment (Cancel, the X or Escape); after an approved part only once
+   * the dialog has said that the approved parts are reversed (P5.94). The reversal is the
+   * application's.
+   */
+  onCancel?: () => void
   /** Default: `messages['payment.complete']`. */
   completeLabel?: string
   /** Why it cannot be completed yet, from the application; shown under the dialog's content. */
@@ -200,19 +233,29 @@ const KIND_ICON: Record<PaymentKind, typeof Banknote> = {
   plain: WalletCards,
 }
 
-/** A big choice of the way to pay: the neutral selection when chosen (D17), 56px high. */
+/**
+ * A big choice of the way to pay: the neutral selection when chosen (D17), 56px high. Sized by its
+ * label and growing to fill the row, so the ways wrap as whole buttons; a label wider than a whole
+ * row ends in "…" (FittedLabel), never broken inside a word (P5.94 item 4).
+ */
 const CHOICE = cn(
   BUTTON_RESET,
   FOCUS_RING,
-  'flex min-h-14 min-w-0 cursor-pointer items-center justify-center gap-2 rounded-md border border-solid px-3 py-2 text-md font-semibold text-primary',
+  'flex min-h-14 min-w-0 flex-[1_1_auto] cursor-pointer items-center justify-center gap-2 rounded-md border border-solid px-3 py-2 text-md font-semibold text-primary',
   'disabled:cursor-not-allowed disabled:text-disabled',
 )
+/** On a phone a little tighter, so three ways fit one row. */
+const CHOICE_PHONE = 'gap-1.5 px-2'
 const CHOICE_ON = 'border-selected bg-surface-selected'
 const CHOICE_OFF = 'border-default bg-surface-raised enabled:hover:bg-surface-hover'
 
-/** The keypad's keys at 44px (the touch minimum) on a phone, so everything fits the screen. */
+/**
+ * The keypad's keys at 44px (the touch minimum) on a phone, so everything fits the screen; no
+ * Clear row there (P5.94): Backspace stays, and "Exact amount" and the quick amounts replace the
+ * amount in one press.
+ */
 const PHONE_KEYPAD =
-  '[&_[data-key]]:h-11 [&_[data-key]]:min-h-11 [&_div:has(>input)]:h-12 [&_input]:text-h4'
+  '[&_[data-key]]:h-11 [&_[data-key]]:min-h-11 [&_div:has(>input)]:h-12 [&_input]:text-h4 [&_[data-key=clear]]:hidden'
 
 /** The focusable elements of the done view's actions; the last is its main action (D13). */
 function lastAction(container: HTMLElement | null): HTMLElement | null {
@@ -224,7 +267,12 @@ function lastAction(container: HTMLElement | null): HTMLElement | null {
 export function PaymentDialog(props: PaymentDialogProps) {
   const { messages, format } = useLiro()
   const phone = usePhone()
-  const methods = props.methods ?? (['cash', 'card', 'split'] as const)
+  // With parts every way can pay a part, so no "Split" way is needed (P5.94).
+  const methods =
+    props.methods ??
+    (props.onAddPart === undefined
+      ? (['cash', 'card', 'split'] as const)
+      : (['cash', 'card'] as const))
   const ownOptions = hasOwnOptions(methods)
   const options = paymentOptions(methods, {
     cash: messages['payment.cash'],
@@ -256,9 +304,18 @@ export function PaymentDialog(props: PaymentDialogProps) {
   const done = props.done === true
   const locked = waiting || completing
   const reasonId = useId()
+  const limitId = useId()
   const paid = props.paid ?? []
   const parts = props.onAddPart !== undefined
   const doneActions = useRef<HTMLDivElement>(null)
+  // The parts a card or an instant payment approved: cancelling reverses them (P5.94).
+  const approved = paid.filter((part) => part.state === 'approved')
+  const [confirmingCancel, setConfirmingCancel] = useState(false)
+  const keepPaying = useRef<HTMLDivElement>(null)
+  // The question about reversing takes the focus on "Keep paying", the safe answer.
+  useEffect(() => {
+    if (confirmingCancel) keepPaying.current?.querySelector('button')?.focus()
+  }, [confirmingCancel])
 
   // Done while open: the focus goes to the done view's main action ("New sale").
   useEffect(() => {
@@ -271,10 +328,39 @@ export function PaymentDialog(props: PaymentDialogProps) {
     }
   }, [open, done])
 
+  const close = () => {
+    setConfirmingCancel(false)
+    setInnerOpen(false)
+    props.onOpenChange?.(false)
+  }
   const setOpen = (next: boolean) => {
     if (locked) return
-    setInnerOpen(next)
-    props.onOpenChange?.(next)
+    if (next) {
+      setInnerOpen(true)
+      props.onOpenChange?.(true)
+      return
+    }
+    if (done) {
+      close()
+      return
+    }
+    // Escape or the X on the question about reversing keeps the payment going: only "Cancel
+    // payment" cancels it.
+    if (confirmingCancel) {
+      setConfirmingCancel(false)
+      return
+    }
+    // After an approved card part the dialog first says that it is reversed (P5.94).
+    if (approved.length > 0) {
+      setConfirmingCancel(true)
+      return
+    }
+    props.onCancel?.()
+    close()
+  }
+  const cancelPayment = () => {
+    props.onCancel?.()
+    close()
   }
   const setTendered = (value: string | null) => {
     setInnerTendered(value)
@@ -370,12 +456,14 @@ export function PaymentDialog(props: PaymentDialogProps) {
   /** The card terminal's or the instant payment's state. */
   const terminal = (qr: boolean) => (
     <div data-slot={qr ? 'payment-code' : 'card-terminal'} className="flex flex-col gap-3">
-      {cardState === 'idle' && props.onCardStart !== undefined && (
+      {cardState === 'idle' && props.onCardStart !== undefined && !parts && (
         <ButtonPrimitive
           family="primary"
           emphasis="secondary"
           className="min-h-14 w-full text-md"
-          onClick={props.onCardStart}
+          onClick={() => {
+            props.onCardStart?.(cardAmount)
+          }}
         >
           {qr ? (
             <QrCode aria-hidden="true" className="size-4 shrink-0" />
@@ -423,8 +511,15 @@ export function PaymentDialog(props: PaymentDialogProps) {
           {props.cardMessage !== undefined && (
             <p className={cn('m-0', TEXT_DIRECTION)}>{props.cardMessage}</p>
           )}
+          {parts && <p className={cn('m-0', TEXT_DIRECTION)}>{messages['payment.declinedHint']}</p>}
           {props.onCardStart !== undefined && (
-            <ButtonPrimitive className="mt-3 min-h-11" onClick={props.onCardStart}>
+            <ButtonPrimitive
+              className="mt-3 min-h-11"
+              disabled={over !== null}
+              onClick={() => {
+                props.onCardStart?.(cardAmount)
+              }}
+            >
               <span className={TEXT_DIRECTION}>{messages['payment.cardRetry']}</span>
             </ButtonPrimitive>
           )}
@@ -465,12 +560,13 @@ export function PaymentDialog(props: PaymentDialogProps) {
         }}
         className={cn(
           CHOICE,
+          phone && CHOICE_PHONE,
           pressed ? CHOICE_ON : CHOICE_OFF,
           item.unavailableReason !== undefined && !pressed && 'text-secondary',
         )}
       >
         <Icon aria-hidden="true" className="size-5 shrink-0" />
-        <span className={cn('min-w-0 break-words', TEXT_ISOLATE)}>{item.label}</span>
+        <FittedLabel text={item.label} className="max-w-full" />
       </button>
     )
   }
@@ -481,17 +577,21 @@ export function PaymentDialog(props: PaymentDialogProps) {
         <button
           type="button"
           data-slot="payment-other"
-          className={cn(CHOICE, chosenOther === undefined ? CHOICE_OFF : CHOICE_ON)}
+          className={cn(
+            CHOICE,
+            phone && CHOICE_PHONE,
+            chosenOther === undefined ? CHOICE_OFF : CHOICE_ON,
+          )}
         >
           {chosenOther !== undefined &&
             (() => {
               const Icon = iconOf(chosenOther)
               return <Icon aria-hidden="true" className="size-5 shrink-0" />
             })()}
-          <span className={cn('min-w-0 break-words', TEXT_ISOLATE)}>
-            {chosenOther?.label ?? messages['payment.other']}
+          <span className="flex max-w-full min-w-0 items-center gap-1">
+            <FittedLabel text={chosenOther?.label ?? messages['payment.other']} />
+            <ChevronDown aria-hidden="true" className="size-4 shrink-0" />
           </span>
-          <ChevronDown aria-hidden="true" className="size-4 shrink-0" />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
@@ -510,14 +610,13 @@ export function PaymentDialog(props: PaymentDialogProps) {
     </MenuRoot>
   )
 
-  const chooserCount = mainChoices.length + (otherChoices.length > 0 ? 1 : 0)
   const chooser =
     options.length <= 1 ? null : (
       <div
         role="group"
         aria-label={messages['payment.method']}
         data-slot="payment-methods"
-        className={cn('grid gap-2', chooserCount === 2 ? 'grid-cols-2' : 'grid-cols-3')}
+        className="flex flex-wrap gap-2"
       >
         {mainChoices.map(choice)}
         {otherChoices.length === 1 && otherChoices[0] !== undefined && choice(otherChoices[0])}
@@ -525,66 +624,176 @@ export function PaymentDialog(props: PaymentDialogProps) {
       </div>
     )
 
-  /** The parts paid so far, as chips with their remove button (several ways on one sale). */
+  /**
+   * The parts paid so far (several ways on one sale): the way, its amount and its state, and a
+   * remove button for a part that is not an approval (P5.94).
+   */
   const paidParts = paid.length > 0 && (
     <div className="flex flex-col gap-1">
-      <span className={cn('text-xs font-semibold text-secondary', TEXT_DIRECTION)}>
-        {messages['payment.paid']}
-      </span>
-      <ul aria-label={messages['payment.paid']} className="m-0 flex list-none flex-wrap gap-2 p-0">
-        {paid.map((part) => (
-          <li
-            key={part.id}
-            className="flex min-h-11 min-w-0 items-center gap-2 rounded-md bg-surface-sunken ps-3 text-sm"
-          >
-            <span className="flex min-w-0 flex-col py-1">
-              <span className={cn('font-medium text-primary', TEXT_DIRECTION)}>
-                {part.label}{' '}
-                <MoneyText value={part.value} currency={props.currency} className="font-semibold" />
+      {!phone && (
+        <span className={cn('text-xs font-semibold text-secondary', TEXT_DIRECTION)}>
+          {messages['payment.paid']}
+        </span>
+      )}
+      <ul
+        aria-label={messages['payment.paid']}
+        data-slot="payment-parts"
+        className={cn(
+          'm-0 flex list-none gap-1 p-0',
+          // On a phone the parts are chips, two to a row, so the dialog still fits (P5.93).
+          phone ? 'flex-row flex-wrap gap-2' : 'flex-col',
+        )}
+      >
+        {paid.map((part) => {
+          const isApproved = part.state === 'approved'
+          const state = isApproved ? messages['payment.partApproved'] : messages['payment.partPaid']
+          if (phone) {
+            // One line on a phone: the way, the amount and, for an approval, a check; the
+            // detail (the card, the voucher's code) in the tooltip and for assistive technology.
+            const chip = (
+              <span className="flex min-w-0 items-center gap-1.5 py-1">
+                {isApproved && (
+                  <CircleCheck
+                    aria-hidden="true"
+                    className="size-3.5 shrink-0 text-status-success-fg"
+                  />
+                )}
+                <span className={cn('font-medium whitespace-nowrap text-primary', TEXT_DIRECTION)}>
+                  {part.label}{' '}
+                  <MoneyText
+                    value={part.value}
+                    currency={props.currency}
+                    className="font-semibold"
+                  />
+                </span>
+                <span className="sr-only">
+                  {[state, part.detail].filter((each) => each !== undefined).join(', ')}
+                </span>
               </span>
-              {part.detail !== undefined && (
-                <span className={cn('text-xs text-secondary', TEXT_DIRECTION)}>{part.detail}</span>
+            )
+            return (
+              <li
+                key={part.id}
+                className="flex min-h-11 min-w-0 items-center gap-1 rounded-md bg-surface-sunken ps-3 text-sm"
+              >
+                {part.detail === undefined ? chip : <Tooltip label={part.detail}>{chip}</Tooltip>}
+                {props.onRemovePart === undefined || isApproved ? (
+                  <span className="pe-2" />
+                ) : (
+                  <Tooltip label={messages['payment.removePart'](part.label)}>
+                    <ButtonPrimitive
+                      family="neutral"
+                      emphasis="menu"
+                      shape="icon"
+                      aria-label={messages['payment.removePart'](part.label)}
+                      className="size-11 shrink-0 px-0"
+                      disabled={locked}
+                      onClick={() => {
+                        props.onRemovePart?.(part.id)
+                      }}
+                    >
+                      <Trash2 aria-hidden="true" className="size-4" />
+                    </ButtonPrimitive>
+                  </Tooltip>
+                )}
+              </li>
+            )
+          }
+          return (
+            <li
+              key={part.id}
+              className="flex min-h-11 min-w-0 items-center gap-3 rounded-md bg-surface-sunken ps-3 text-sm"
+            >
+              <span className="flex min-w-0 flex-1 flex-col py-1">
+                <span className={cn('font-medium text-primary', TEXT_DIRECTION)}>{part.label}</span>
+                {part.detail !== undefined && (
+                  <span className={cn('text-xs text-secondary', TEXT_DIRECTION)}>
+                    {part.detail}
+                  </span>
+                )}
+              </span>
+              <MoneyText value={part.value} currency={props.currency} className="font-semibold" />
+              <span
+                className={cn(
+                  'flex shrink-0 items-center gap-1 text-xs',
+                  isApproved ? 'text-status-success-fg' : 'text-secondary',
+                  TEXT_DIRECTION,
+                )}
+              >
+                {isApproved && <CircleCheck aria-hidden="true" className="size-3.5 shrink-0" />}
+                {state}
+              </span>
+              {props.onRemovePart === undefined || isApproved ? (
+                <span className="pe-1" />
+              ) : (
+                <Tooltip label={messages['payment.removePart'](part.label)}>
+                  <ButtonPrimitive
+                    family="neutral"
+                    emphasis="menu"
+                    shape="icon"
+                    aria-label={messages['payment.removePart'](part.label)}
+                    className="size-11 shrink-0 px-0"
+                    disabled={locked}
+                    onClick={() => {
+                      props.onRemovePart?.(part.id)
+                    }}
+                  >
+                    <Trash2 aria-hidden="true" className="size-4" />
+                  </ButtonPrimitive>
+                </Tooltip>
               )}
-            </span>
-            {props.onRemovePart === undefined ? (
-              <span className="pe-3" />
-            ) : (
-              <Tooltip label={messages['payment.removePart'](part.label)}>
-                <ButtonPrimitive
-                  family="neutral"
-                  emphasis="menu"
-                  shape="icon"
-                  aria-label={messages['payment.removePart'](part.label)}
-                  className="size-11 shrink-0 px-0"
-                  disabled={locked}
-                  onClick={() => {
-                    props.onRemovePart?.(part.id)
-                  }}
-                >
-                  <Trash2 aria-hidden="true" className="size-4" />
-                </ButtonPrimitive>
-              </Tooltip>
-            )}
-          </li>
-        ))}
+            </li>
+          )
+        })}
       </ul>
     </div>
   )
 
+  // The amount of this part: the keypad's, or for a card what remains (P5.94).
+  const cardLikeNow = kind === 'card' || kind === 'qr'
+  const partAmount = tendered ?? (cardLikeNow ? (props.remaining ?? null) : null)
+  const over = option === undefined ? null : partOverLimit(option, partAmount, props.remaining)
+  const overReason =
+    over === null
+      ? undefined
+      : over.reason === 'remaining'
+        ? messages['payment.overRemaining'](money(over.limit))
+        : (over.words ?? messages['payment.overLimit'](money(over.limit)))
+  const cardAmount = parts ? partAmount : props.total
+  /** The part's action: cash and the plain ways add it; a card or a code sends it (P5.94). */
   const addPart = parts && option !== undefined && (
-    <ButtonPrimitive
-      className="min-h-11 w-full"
-      disabled={tendered === null || locked}
-      onClick={() => {
-        if (tendered !== null) props.onAddPart?.(option.id, tendered)
-      }}
-    >
-      {(() => {
-        const Icon = iconOf(option)
-        return <Icon aria-hidden="true" className="size-4 shrink-0" />
-      })()}
-      <span className={TEXT_DIRECTION}>{messages['payment.addPart']}</span>
-    </ButtonPrimitive>
+    <div className="flex flex-col gap-1">
+      <ButtonPrimitive
+        family={cardLikeNow ? 'primary' : 'neutral'}
+        emphasis="secondary"
+        className={cn('w-full', phone ? 'min-h-11' : 'min-h-12 text-md')}
+        disabled={partAmount === null || locked}
+        aria-disabled={over === null ? undefined : true}
+        aria-describedby={over === null ? undefined : limitId}
+        onClick={() => {
+          if (partAmount === null || over !== null) return
+          if (cardLikeNow) props.onCardStart?.(partAmount)
+          else props.onAddPart?.(option.id, partAmount)
+        }}
+      >
+        {(() => {
+          const Icon = iconOf(option)
+          return <Icon aria-hidden="true" className="size-4 shrink-0" />
+        })()}
+        <span className={TEXT_DIRECTION}>
+          {kind === 'card' && partAmount !== null
+            ? messages['payment.payByCard'](money(partAmount))
+            : kind === 'qr' && partAmount !== null
+              ? messages['payment.payByCode'](money(partAmount))
+              : messages['payment.addPart']}
+        </span>
+      </ButtonPrimitive>
+      {overReason !== undefined && (
+        <p id={limitId} className={cn('m-0 text-xs text-secondary', TEXT_DIRECTION)}>
+          {overReason}
+        </p>
+      )}
+    </div>
   )
 
   const splitParts = !ownOptions && kind === 'split' && parts && (
@@ -630,11 +839,17 @@ export function PaymentDialog(props: PaymentDialogProps) {
     !unavailable &&
     (kind === 'cash' ||
       kind === 'split' ||
-      (parts && ownOptions && (kind === 'plain' || (cardLike && cardState === 'idle'))))
+      (parts &&
+        (kind === 'plain' ||
+          (cardLike &&
+            (cardState === 'idle' ||
+              cardState === 'declined' ||
+              // After an approved part, the next part while something is still to pay.
+              (cardState === 'approved' && stillToPay(props.remaining)))))))
   const keypadPanel = needsKeypad && (
     <div className="flex flex-col gap-2">
       {keypad(kind === 'cash' && !parts ? messages['payment.tendered'] : messages['payment.part'])}
-      {ownOptions ? addPart : splitParts}
+      {kind === 'split' ? splitParts : addPart}
     </div>
   )
   const terminalPanel = cardLike && !unavailable && terminal(kind === 'qr')
@@ -664,22 +879,40 @@ export function PaymentDialog(props: PaymentDialogProps) {
     </>
   )
 
+  // "Complete payment" waits while something is still to pay after a part (P5.94). The remaining
+  // amount stands at the top, so this reason is for assistive technology only; the
+  // application's own reason is shown.
+  const stillToPayReason =
+    props.completeDisabledReason === undefined &&
+    parts &&
+    paid.length > 0 &&
+    stillToPay(props.remaining)
+      ? messages['payment.stillToPay'](money(props.remaining ?? '0'))
+      : undefined
+  const completeReason = props.completeDisabledReason ?? stillToPayReason
   const notes = (
     <>
       {option?.note !== undefined && (
         <p className={cn('m-0 text-xs text-secondary', TEXT_DIRECTION)}>{option.note}</p>
       )}
       {props.extra}
-      {props.completeDisabledReason !== undefined && (
-        <p id={reasonId} className={cn('m-0 text-xs text-secondary', TEXT_DIRECTION)}>
-          {props.completeDisabledReason}
+      {completeReason !== undefined && (
+        <p
+          id={reasonId}
+          className={cn(
+            'm-0 text-xs text-secondary',
+            TEXT_DIRECTION,
+            stillToPayReason !== undefined && 'sr-only',
+          )}
+        >
+          {completeReason}
         </p>
       )}
     </>
   )
 
   const showRemaining =
-    (paid.length > 0 || kind === 'split') &&
+    (paid.length > 0 || kind === 'split' || parts) &&
     props.remaining !== undefined &&
     props.remaining !== null
   /** The amount due, and beside it what remains once parts are paid. */
@@ -799,10 +1032,40 @@ export function PaymentDialog(props: PaymentDialogProps) {
     </div>
   )
 
+  // Cancelling after an approved part: the dialog says that it is reversed, in place (P5.94).
+  const reverseQuestion = confirmingCancel && (
+    <div data-slot="payment-reverse" className="flex flex-col gap-3">
+      <Alert
+        tone="warning"
+        title={messages['payment.reverseWarning'](
+          approved.map((part) => `${part.label} ${money(part.value)}`).join(', '),
+        )}
+      />
+    </div>
+  )
   const actions = done ? (
     <div ref={doneActions} className="contents">
       {props.doneActions}
     </div>
+  ) : confirmingCancel ? (
+    <>
+      <div ref={keepPaying} className="contents">
+        <Button
+          family="neutral"
+          icon={CircleCheck}
+          label={messages['payment.keepPaying']}
+          onClick={() => {
+            setConfirmingCancel(false)
+          }}
+        />
+      </div>
+      <Button
+        intent="delete"
+        emphasis="primary"
+        label={messages['payment.cancelPayment']}
+        onClick={cancelPayment}
+      />
+    </>
   ) : (
     <>
       <Button
@@ -818,8 +1081,8 @@ export function PaymentDialog(props: PaymentDialogProps) {
           family="primary"
           emphasis="primary"
           loading={completing}
-          waiting={props.completeDisabledReason !== undefined || waiting}
-          aria-describedby={props.completeDisabledReason === undefined ? undefined : reasonId}
+          waiting={completeReason !== undefined || waiting}
+          aria-describedby={completeReason === undefined ? undefined : reasonId}
           className={cn(phone && 'min-h-11 flex-1')}
           onClick={props.onComplete}
         >
@@ -864,6 +1127,7 @@ export function PaymentDialog(props: PaymentDialogProps) {
         </DialogHeader>
         <DialogBody>
           {body}
+          {reverseQuestion}
           <DialogFooter>{actions}</DialogFooter>
         </DialogBody>
       </DialogContent>

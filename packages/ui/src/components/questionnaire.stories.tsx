@@ -145,26 +145,42 @@ export const Keyboard: Story = {
 /**
  * The number keys with nothing focused (the page has just opened): 1–9 choose the numbered option
  * (its number at the option's end), a second number changes the choice, Enter goes on (P5.90 item
- * 10).
+ * 10). A key the questionnaire handled stops there (P5.94 item 9): the play stands in for a
+ * page-wide shortcut on the digits (Storybook's "1" focuses its sidebar) that would take the focus
+ * away before Enter.
  */
 export const NumberKeys: Story = {
   name: 'Number keys, interaction',
   tags: ['interaction'],
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const active = canvasElement.ownerDocument.activeElement
-    if (active instanceof HTMLElement) active.blur()
-    await expect(
-      canvas.getByRole('radio', { name: /Indefinite term/ }).closest('label'),
-    ).toHaveTextContent('1')
-    await userEvent.keyboard('1')
-    await expect(canvas.getByRole('radio', { name: /Indefinite term/ })).toBeChecked()
-    await userEvent.keyboard('2')
-    await expect(canvas.getByRole('radio', { name: /Fixed term/ })).toBeChecked()
-    await expect(canvas.getByRole('radio', { name: /Fixed term/ })).toHaveFocus()
-    await userEvent.keyboard('{Enter}')
-    const ends = canvas.getByRole('group', { name: 'When does it end?' })
-    await waitFor(() => expect(within(ends).getByRole('textbox')).toHaveFocus())
+    const view = canvasElement.ownerDocument.defaultView ?? window
+    const outside = canvasElement.ownerDocument.createElement('button')
+    outside.textContent = 'Page shortcut'
+    canvasElement.ownerDocument.body.append(outside)
+    const shortcut = (event: KeyboardEvent) => {
+      if (/^[1-9]$/.test(event.key) || event.key === 'Enter') outside.focus()
+    }
+    view.addEventListener('keydown', shortcut)
+    try {
+      const active = canvasElement.ownerDocument.activeElement
+      if (active instanceof HTMLElement) active.blur()
+      await expect(
+        canvas.getByRole('radio', { name: /Indefinite term/ }).closest('label'),
+      ).toHaveTextContent('1')
+      await userEvent.keyboard('1')
+      await expect(canvas.getByRole('radio', { name: /Indefinite term/ })).toBeChecked()
+      await userEvent.keyboard('2')
+      await expect(canvas.getByRole('radio', { name: /Fixed term/ })).toBeChecked()
+      await expect(canvas.getByRole('radio', { name: /Fixed term/ })).toHaveFocus()
+      await userEvent.keyboard('{Enter}')
+      const ends = canvas.getByRole('group', { name: 'When does it end?' })
+      await waitFor(() => expect(within(ends).getByRole('textbox')).toHaveFocus())
+      await expect(outside).not.toHaveFocus()
+    } finally {
+      view.removeEventListener('keydown', shortcut)
+      outside.remove()
+    }
     await settle()
   },
 }

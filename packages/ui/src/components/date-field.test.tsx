@@ -10,6 +10,7 @@ import {
   readDate,
   showDate,
   toLocalDate,
+  withTodaysYear,
 } from './date-logic'
 
 describe('readDate: what a date field reads on blur', () => {
@@ -36,6 +37,35 @@ describe('readDate: what a date field reads on blur', () => {
       expect(readDate(text, sr)).toEqual({ value: null, valid: false })
     },
   )
+
+  it.each([
+    ['7.10.', '2026-10-07'],
+    ['07.10', '2026-10-07'],
+    ['7.10', '2026-10-07'],
+    ['7/10', '2026-10-07'],
+    ['0710', '2026-10-07'],
+    ['31.12.', '2026-12-31'],
+  ])('reads a day and a month alone, %j, in the year of today (P5.94 item 2)', (text, expected) => {
+    expect(readDate(text, sr, '2026-10-14')).toEqual({ value: expected, valid: true })
+  })
+
+  it("reads a day and a month in each locale's order", () => {
+    expect(readDate('10/7', en, '2026-10-14').value).toBe('2026-10-07')
+    expect(readDate('10/7', createFormat('ja'), '2026-10-14').value).toBe('2026-10-07')
+  })
+
+  it('keeps a day and a month that do not exist unreadable, and needs today for them', () => {
+    expect(readDate('31.2.', sr, '2026-10-14')).toEqual({ value: null, valid: false })
+    expect(readDate('7.10.', sr)).toEqual({ value: null, valid: false })
+  })
+
+  it('offers the year only for a day and a month alone', () => {
+    expect(withTodaysYear('7.10.', '2026-10-14')).toEqual(['7.10.2026', '2026.7.10'])
+    expect(withTodaysYear('0710', '2026-10-14')).toEqual(['07.10.2026', '2026.07.10'])
+    for (const text of ['7', '7.10.2026', '123.4', 'a.b', '07102026']) {
+      expect(withTodaysYear(text, '2026-10-14'), text).toBeNull()
+    }
+  })
 
   it('reads empty text as an empty, valid value', () => {
     expect(readDate(' ', sr)).toEqual({ value: null, valid: true })

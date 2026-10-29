@@ -479,7 +479,10 @@ export function Questionnaire(props: QuestionnaireProps) {
         isComposing: event.nativeEvent.isComposing,
       })
     ) {
+      // A handled key stops here: a page-wide shortcut on the same key (Storybook's "1", an
+      // application's own) must not take the focus away before the next key (P5.94 item 9).
       event.preventDefault()
+      event.stopPropagation()
     }
   }
 
@@ -497,7 +500,10 @@ export function Questionnaire(props: QuestionnaireProps) {
       const root = rootRef.current
       if (root === null || root.getClientRects().length === 0) return
       if (document.querySelectorAll('[data-slot="questionnaire-flow"]').length !== 1) return
-      if (pressKeyRef.current(event)) event.preventDefault()
+      if (pressKeyRef.current(event)) {
+        event.preventDefault()
+        event.stopPropagation()
+      }
     }
     document.addEventListener('keydown', onDocumentKey)
     return () => {

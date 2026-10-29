@@ -36,7 +36,8 @@ const meta = {
         component:
           '**What for:** the period of a report or a list: a preset (today, this week, this ' +
           'month, last month, this quarter, last quarter, year to date, last year) or a custom ' +
-          'range picked in the calendar. Presets follow the business year (`yearStartMonth`), ' +
+          'range, typed into its Start and End as DateField reads a date ("07102026", "7.10.") or ' +
+          'picked in the calendar; a typed range applies when the end is left or on Enter. Presets follow the business year (`yearStartMonth`), ' +
           'the quarter basis (`quarterBasis`: the business year, or the calendar for periods ' +
           "such as quarterly VAT) and the provider's `today` and `weekStartsOn`. The trigger " +
           'names the period: a month, "Q1 2025/26", a business year "2025/26", or two dates; the ' +
@@ -179,6 +180,36 @@ export const PresetAndRange: Story = {
     await userEvent.click(fifth)
     await waitFor(() => expect(body.queryByRole('grid')).toBeNull())
     await expect(canvas.getByText('{"start":"2026-04-05","end":"2026-04-12"}')).toBeVisible()
+    await settle()
+  },
+}
+
+/**
+ * The custom range typed, no calendar (P5.94 item 2): Start, then End and Enter apply it and
+ * close the popover; an end before the start is said under the two fields and not applied.
+ */
+export const TypedRange: Story = {
+  name: 'Custom range typed, interaction',
+  tags: ['interaction'],
+  render: () => (
+    <div className="min-h-110">
+      <Controlled initial={null} clearable />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const body = within(canvasElement.ownerDocument.body)
+    const canvas = within(canvasElement)
+    await userEvent.click(body.getByRole('button', { name: /Period/ }))
+    const start = await body.findByRole('textbox', { name: 'Start' })
+    const end = body.getByRole('textbox', { name: 'End' })
+    await userEvent.type(start, '2026-05-20')
+    await userEvent.type(end, '2026-05-04{Enter}')
+    await expect(await body.findByText('The end is before the start')).toBeVisible()
+    await expect(canvas.getByText('null')).toBeVisible()
+    await userEvent.clear(end)
+    await userEvent.type(end, '2026-05-29{Enter}')
+    await waitFor(() => expect(body.queryByRole('grid')).toBeNull())
+    await expect(canvas.getByText('{"start":"2026-05-20","end":"2026-05-29"}')).toBeVisible()
     await settle()
   },
 }

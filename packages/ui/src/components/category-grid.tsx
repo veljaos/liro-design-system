@@ -116,7 +116,7 @@ export function CategoryGrid(props: CategoryGridProps) {
                   ) : (
                     <span
                       aria-hidden="true"
-                      className="flex size-10 shrink-0 items-center justify-center rounded-[10px] bg-surface-sunken text-primary transition-colors duration-(--liro-duration-base) ease-standard group-hover:bg-brand-solid group-hover:text-brand-on-solid"
+                      className="flex size-10 shrink-0 items-center justify-center rounded-[10px] bg-surface-sunken text-primary transition-[background-color] duration-(--liro-duration-base) ease-standard group-hover:bg-brand-solid group-hover:text-brand-on-solid group-focus-visible:bg-brand-solid group-focus-visible:text-brand-on-solid"
                     >
                       <Icon className="size-5" />
                     </span>

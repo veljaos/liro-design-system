@@ -180,6 +180,161 @@ export const EmployeePortalPhone: Story = {
   play: employeePlay(EMPLOYEE_HOME_CHECK, true),
 }
 
+/** Every common question, with search and categories (P5.94 item 20). */
+const QUESTIONS_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('heading', { level: 1, name: 'Common questions' })).toBeVisible()
+  await expect(canvas.getByRole('searchbox', { name: 'Search questions' })).toBeVisible()
+  await expect(
+    canvas.getByRole('button', { name: 'I changed my ID card. Do I have to tell my employer?' }),
+  ).toBeVisible()
+}
+
+export const EmployeeQuestions: Story = {
+  name: 'Employee portal, common questions',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={Y_ROUTES.questions} />,
+  play: employeePlay(QUESTIONS_CHECK),
+}
+
+export const EmployeeQuestionsPhone: Story = {
+  name: 'Employee portal, common questions, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={Y_ROUTES.questions} />,
+  play: employeePlay(QUESTIONS_CHECK, true),
+}
+
+/** Paid leave for a death in the family: Kind, Reason (5 days), the proof it needs (P5.94 item 3). */
+const LEAVE_PROOF_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(canvas.getByRole('combobox', { name: 'Reason' })).toHaveTextContent(
+    'Death of a family member',
+  )
+  const expected = canvas.getByRole('list', { name: 'Attach' })
+  await expect(within(expected).getByText('Death certificate')).toBeVisible()
+  await expect(within(expected).getByText('Required')).toBeVisible()
+}
+
+export const EmployeeLeaveProof: Story = {
+  name: 'Employee portal, paid leave with proof',
+  tags: ['!dev'],
+  render: () => <ExampleApp start={Y_ROUTES.newLeaveOf('paid', 'death')} />,
+  play: employeePlay(LEAVE_PROOF_CHECK),
+}
+
+export const EmployeeLeaveProofPhone: Story = {
+  name: 'Employee portal, paid leave with proof, phone',
+  tags: ['!dev'],
+  render: () => <OnPhone start={Y_ROUTES.newLeaveOf('paid', 'death')} />,
+  play: employeePlay(async (canvasElement) => {
+    await LEAVE_PROOF_CHECK(canvasElement)
+    await expect(within(canvasElement).getByRole('button', { name: 'Take a photo' })).toBeVisible()
+  }, true),
+}
+
+/** A file as a browser gives it (the content is not read). */
+function photo(name: string): File {
+  const made = new File(['x'], name, { type: 'image/jpeg' })
+  Object.defineProperty(made, 'size', { value: 1_900_000 })
+  return made
+}
+
+/**
+ * Request paid leave from the home page (P5.94 items 2 and 3; on a phone started filled in, as a
+ * common question starts it): Kind, Reason, the dates typed the quick way, Send says what is missing, the certificate attached, sent; the request's page shows
+ * the proof to whoever opens it.
+ */
+async function requestPaidLeave(canvasElement: HTMLElement, fromHome: boolean) {
+  await settle()
+  const canvas = within(canvasElement)
+  const body = within(canvasElement.ownerDocument.body)
+  if (fromHome) {
+    await userEvent.click(canvas.getByRole('button', { name: 'Request leave' }))
+    await userEvent.click(await canvas.findByRole('combobox', { name: 'Kind' }))
+    await userEvent.click(await body.findByRole('option', { name: 'Paid leave' }))
+    await userEvent.click(await canvas.findByRole('combobox', { name: 'Reason' }))
+    await userEvent.click(await body.findByRole('option', { name: 'Death of a family member' }))
+  }
+  await expect(await canvas.findByText('Up to 5 working days')).toBeVisible()
+  // The dates typed, no calendar: "19.10." and "23.10." in this year.
+  // On a phone the list is a sheet over the page: the page answers again once it has closed.
+  await settle()
+  await userEvent.click(await canvas.findByRole('textbox', { name: 'Dates Start' }))
+  await userEvent.keyboard('19.10.')
+  await userEvent.tab()
+  await userEvent.keyboard('23.10.')
+  await userEvent.tab()
+  await expect(canvas.getByRole('textbox', { name: 'Dates Start' })).toHaveValue('19.10.2026.')
+  await expect(await canvas.findByText('5 working days')).toBeVisible()
+  await userEvent.click(canvas.getByRole('button', { name: 'Send request' }))
+  await expect(await canvas.findByText('Attach: Death certificate.')).toBeVisible()
+  const input = canvasElement.querySelector<HTMLInputElement>('input[type="file"]:not([capture])')
+  if (input === null) throw new Error('No file input')
+  await userEvent.upload(input, photo('Death certificate.jpg'))
+  await expect(await canvas.findByText('Attached')).toBeVisible()
+  await userEvent.click(canvas.getByRole('button', { name: 'Send request' }))
+  await expect(await canvas.findByText('Request sent')).toBeVisible()
+  const sent = await canvas.findByRole('link', { name: /Paid leave · Death of a family member/ })
+  await expect(canvasElement).toHaveTextContent('1 attachment')
+  await userEvent.click(sent)
+  await expect(await canvas.findByRole('heading', { level: 1, name: 'LR-2026-032' })).toBeVisible()
+  const proof = canvas.getByRole('list', { name: 'Proof sent with LR-2026-032' })
+  await expect(within(proof).getByText('Death certificate.jpg')).toBeVisible()
+  await expect(canvasElement).toHaveTextContent('Snežana Popović (site manager) approves next')
+  await settle()
+}
+
+export const EmployeeLeaveProofFlow: Story = {
+  name: 'Employee portal, request paid leave with proof, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={Y_ROUTES.home} />,
+  play: async ({ canvasElement }) => {
+    await requestPaidLeave(canvasElement, true)
+  },
+}
+
+export const EmployeeLeaveProofFlowPhone: Story = {
+  name: 'Employee portal, request paid leave with proof, phone, interaction',
+  tags: ['interaction', '!dev'],
+  // Started filled in, as the common question "A family member died" starts it.
+  render: () => <OnPhone start={Y_ROUTES.newLeaveOf('paid', 'death')} />,
+  play: async ({ canvasElement }) => {
+    await requestPaidLeave(canvasElement, false)
+  },
+}
+
+/**
+ * A common question starts its request (P5.94 item 20): "All questions", a search, the card
+ * opened, "Report a change of address" opens the change request on the address with its proof.
+ */
+export const EmployeeQuestionFlow: Story = {
+  name: 'Employee portal, a common question starts its request, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <ExampleApp start={Y_ROUTES.home} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const body = within(canvasElement.ownerDocument.body)
+    await userEvent.click(canvas.getByRole('link', { name: 'All questions' }))
+    await userEvent.type(
+      await canvas.findByRole('searchbox', { name: 'Search questions' }),
+      'adresa',
+    )
+    await expect(await canvas.findByText('1 question')).toBeVisible()
+    const card = canvas.getByRole('button', { name: 'What do I need to change my address?' })
+    await userEvent.click(card)
+    await userEvent.click(canvas.getByRole('button', { name: 'Report a change of address' }))
+    const drawer = await body.findByRole('dialog', { name: 'Request a change' })
+    // The drawer slides in: its content is seen once the animation ends.
+    await settle()
+    await expect(within(drawer).getByRole('combobox', { name: 'What changes' })).toHaveTextContent(
+      'Address',
+    )
+    await expect(within(drawer).getByText('Proof of the new address')).toBeVisible()
+    await settle()
+  },
+}
+
 /** Types a whole code into CodeInput's boxes from the first. */
 async function typeCode(root: HTMLElement, code: string) {
   await userEvent.click(within(root).getByRole('textbox', { name: /Character 1 of 6/ }))

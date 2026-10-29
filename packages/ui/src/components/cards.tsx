@@ -262,7 +262,13 @@ function ItemList({
               <dd
                 className={cn(
                   'm-0 min-w-0 text-sm font-medium break-words',
-                  !stacked && '@min-[24rem]:flex-1 @min-[24rem]:text-end',
+                  // A column: the row's baseline is the value's first line whatever the value is
+                  // (an inline-block's own baseline is its last line), so the label stands on the
+                  // first line and a note under the value never moves it (P5.94 item 7). Its items
+                  // stand at the row's end (`items-end`): a flex item is a block whose own text
+                  // direction would put a Latin value at the wrong end in right-to-left.
+                  !stacked &&
+                    '@min-[24rem]:flex @min-[24rem]:flex-1 @min-[24rem]:flex-col @min-[24rem]:items-end @min-[24rem]:text-end',
                   empty && !loading ? 'text-secondary' : 'text-primary',
                   item.numeric === true && 'tabular-nums',
                 )}

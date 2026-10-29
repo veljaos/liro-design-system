@@ -155,8 +155,13 @@ export function IconButton(props: IconButtonProps) {
     </button>
   )
   // The library's tooltip names it on hover and focus, never the browser's title (P5.93 item 7);
-  // inside the application's own Tooltip, that one alone.
-  return useInTooltip() ? button : <Tooltip label={props.label}>{button}</Tooltip>
+  // inside the application's own Tooltip, that one alone; a disabled button has none — it cannot
+  // be used, so it promises nothing on hover (P5.94 item 12).
+  return useInTooltip() || props.disabled === true ? (
+    button
+  ) : (
+    <Tooltip label={props.label}>{button}</Tooltip>
+  )
 }
 
 /**
@@ -171,6 +176,11 @@ export function CompactIconButton(props: CompactIconButtonProps) {
     </button>
   )
   // The library's tooltip names it on hover and focus, never the browser's title (P5.93 item 7);
-  // inside the application's own Tooltip, that one alone.
-  return useInTooltip() ? button : <Tooltip label={props.label}>{button}</Tooltip>
+  // inside the application's own Tooltip, that one alone; a disabled button has none — it cannot
+  // be used, so it promises nothing on hover (P5.94 item 12).
+  return useInTooltip() || props.disabled === true ? (
+    button
+  ) : (
+    <Tooltip label={props.label}>{button}</Tooltip>
+  )
 }

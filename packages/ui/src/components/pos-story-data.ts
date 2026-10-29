@@ -146,7 +146,9 @@ export const CART_TOTAL = '1011.00'
 /** Banknotes offered for cash. */
 export const QUICK_AMOUNTS: readonly string[] = ['1100', '1500', '2000', '5000']
 
-export const SPLIT_PAID: readonly PaymentPart[] = [{ id: 'p1', label: 'Card', value: '500.00' }]
+export const SPLIT_PAID: readonly PaymentPart[] = [
+  { id: 'p1', label: 'Card', value: '500.00', detail: 'Visa •••• 4821', state: 'approved' },
+]
 
 export const RECEIPT_HEADER: readonly string[] = [
   'Pekara Zlatni klas',

@@ -7,7 +7,7 @@ import { MultiSelectField } from '../components/multi-select-field'
 import { Skeleton } from '../components/progress'
 import { usePhone } from '../components/use-phone'
 import { buttonClassName } from '../primitives/button'
-import { FOCUS_RING, TEXT_DIRECTION } from '../primitives/classes'
+import { FOCUS_RING, LINK_ITEM_HOVER, TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 import { dayHeading } from '../components/day-groups'
@@ -207,7 +207,10 @@ export function NotificationsPage(props: NotificationsPageProps) {
           {group.items.map((item) => (
             <li
               key={item.id}
-              className="flex items-start gap-2 border-0 border-t border-solid border-subtle px-4 py-3"
+              className={cn(
+                'flex items-start gap-2 border-0 border-t border-solid border-subtle px-4 py-3',
+                LINK_ITEM_HOVER,
+              )}
             >
               <UnreadDot read={item.read} />
               <div className="flex min-w-0 flex-1 flex-col gap-0.5">
@@ -215,7 +218,7 @@ export function NotificationsPage(props: NotificationsPageProps) {
                   href={item.href}
                   onClick={() => props.onOpen?.(item)}
                   className={cn(
-                    'self-start rounded-sm text-sm text-primary no-underline visited:text-primary hover:text-primary hover:underline active:text-primary',
+                    'self-start rounded-sm text-sm text-primary no-underline visited:text-primary hover:text-primary active:text-primary',
                     !item.read && 'font-semibold',
                     FOCUS_RING,
                     TEXT_DIRECTION,

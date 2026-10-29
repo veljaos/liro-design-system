@@ -30,9 +30,15 @@ export const MENTION_QUERY_MAX = 40
  * The mention being typed before the caret, or null: an "@" at the start of the text or after a
  * space or line break, followed up to the caret by at most `MENTION_QUERY_MAX` characters without
  * a line break or another "@", and with at most two spaces (a first, middle and last name). An "@"
- * inside a word (an e-mail address) is not a mention.
+ * inside a word (an e-mail address) is not a mention. A mention already chosen ends the search
+ * (P5.94 item 8): the "@" of "@Ana Petrović" and the words typed after it are text, not a new
+ * query; the list opens again only at a new "@" at the start of a word.
  */
-export function mentionQueryAt(text: string, caret: number): MentionQuery | null {
+export function mentionQueryAt(
+  text: string,
+  caret: number,
+  chosen: readonly Pick<Mention, 'name'>[] = [],
+): MentionQuery | null {
   const before = text.slice(0, caret)
   const at = before.lastIndexOf('@')
   if (at < 0) return null
@@ -42,7 +48,17 @@ export function mentionQueryAt(text: string, caret: number): MentionQuery | null
   if (query.length > MENTION_QUERY_MAX || /[\n@]/u.test(query)) return null
   if (query.startsWith(' ')) return null
   if ((query.match(/ /gu) ?? []).length > 2) return null
+  if (chosen.some((mention) => query.startsWith(mention.name))) return null
   return { start: at, query }
+}
+
+/**
+ * Whether an open suggestion list closes by itself (P5.94 item 8): a space typed after a query
+ * that matches nothing ends the search ("@" then a normal word), so the list never says "Nothing
+ * found" while the user writes on. Escape closes it too (the component's).
+ */
+export function closesOnSpace(query: string, matches: number, loading: boolean): boolean {
+  return matches === 0 && !loading && query.endsWith(' ')
 }
 
 /**

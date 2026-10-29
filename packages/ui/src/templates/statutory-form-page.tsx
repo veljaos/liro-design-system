@@ -17,7 +17,13 @@ import { DateText, MoneyText } from '../components/display-text'
 import { LifecycleBar, type LifecycleStep } from '../components/lifecycle-bar'
 import { StatusBadge } from '../components/status-badge'
 import { usePhone } from '../components/use-phone'
-import { BUTTON_RESET, FOCUS_RING, TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
+import {
+  BUTTON_RESET,
+  FOCUS_RING,
+  LINK_ITEM_HOVER,
+  TEXT_DIRECTION,
+  TEXT_ISOLATE,
+} from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLangAttribute } from '../provider/lang'
 import { useLiro } from '../provider/liro-provider'
@@ -984,13 +990,16 @@ export function StatutoryFormPage(props: StatutoryFormPageProps) {
               {(drillCell.sources ?? []).map((source) => (
                 <li
                   key={source.key}
-                  className="flex items-center justify-between gap-3 border-0 border-b border-solid border-subtle py-2 first:pt-0"
+                  className={cn(
+                    '-mx-2 flex items-center justify-between gap-3 rounded-md border-0 border-b border-solid border-subtle px-2 py-2 first:pt-0',
+                    LINK_ITEM_HOVER,
+                  )}
                 >
                   <span className="flex min-w-0 flex-col gap-0.5">
                     <Link
                       href={source.href}
                       className={cn(
-                        'flex min-w-0 flex-col rounded-sm text-sm no-underline hover:underline',
+                        'flex min-w-0 flex-col rounded-sm text-sm no-underline',
                         FOCUS_RING,
                       )}
                     >

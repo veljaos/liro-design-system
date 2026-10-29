@@ -122,3 +122,10 @@ export const TEXT_ISOLATE = 'bidi-isolate'
  * dates and codes are written left to right instead.
  */
 export const AUTO_DIRECTION = { dir: 'auto', className: 'text-match-parent' } as const
+
+/**
+ * An item whose title is its link — a card, a result, a row (P5.94 item 10): the title is never
+ * underlined; the item shows the hover on its surface and the keyboard's focus as the link's ring.
+ * Rows without side padding add `-mx-2 px-2` so the surface has room round the text.
+ */
+export const LINK_ITEM_HOVER = 'has-[a:hover]:bg-surface-hover'

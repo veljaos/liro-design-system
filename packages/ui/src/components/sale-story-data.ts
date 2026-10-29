@@ -92,6 +92,9 @@ export const PAYMENT_OPTIONS: readonly PaymentOption[] = [
     icon: Ticket,
     referenceLabel: 'Voucher code',
     note: 'Single-purpose vouchers only; a multi-purpose voucher is paid as Other cashless.',
+    // The voucher read from its code is worth 2.000,00 (the application's data, P5.94).
+    maxAmount: '2000.00',
+    maxReason: 'This voucher is worth 2.000,00 RSD.',
   },
   {
     id: 'wire',
@@ -116,7 +119,7 @@ export const WIRE_WITHOUT_BUYER: PaymentOption = {
 /** A voucher of 500,00 and a card payment of 400,00 taken; 111,00 remaining of 1.011,00. */
 export const MIXED_PAID: readonly PaymentPart[] = [
   { id: 'v1', label: 'Voucher', value: '500.00', detail: 'VC-2026-7741' },
-  { id: 'c1', label: 'Card', value: '400.00', detail: 'Visa •••• 4821' },
+  { id: 'c1', label: 'Card', value: '400.00', detail: 'Visa •••• 4821', state: 'approved' },
 ]
 
 // ── The buyer ─────────────────────────────────────────────────────────────────────────────────

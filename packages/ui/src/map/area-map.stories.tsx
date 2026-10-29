@@ -9,6 +9,7 @@ import {
   LONG_AREAS,
   mapReady,
   TOWN_AREAS,
+  TOWN_AREAS_BY_RATE,
   TOWN_LEGEND,
 } from './map-story-data'
 
@@ -37,8 +38,11 @@ const meta = {
           'key and usage terms are the application’s (the public openstreetmap.org tiles are not ' +
           'for heavy commercial use). These stories fetch nothing: “With a base map” uses an ' +
           'illustrative local tile.\n\n' +
-          '**Chosen:** the area filled with its own colour, clearly stronger, its label on the ' +
-          'strong tag and the same item selected in the list; the pointer tints an area lighter.\n\n' +
+          '**Colour:** every area alike, the charts’ main blue, light; the pointer darkens it a ' +
+          'little. Different colours only when the data sorts the areas into kinds (`tone` per ' +
+          'area, with a `legend`): see “By category”.\n\n' +
+          '**Chosen:** the area darker still, with a thicker line, its label on the strong tag ' +
+          'and the same item selected in the list (never colour alone).\n\n' +
           '**Keyboard:** the map is one Tab stop — arrow keys pan, plus and minus zoom; the ' +
           'buttons zoom and show everything again. Nothing needs dragging.\n\n' +
           '**Phones:** the list first, the map full width under it.\n\n' +
@@ -50,7 +54,6 @@ const meta = {
   args: {
     label: 'Illustrative town zones',
     areas: TOWN_AREAS,
-    legend: TOWN_LEGEND,
   },
   play: async ({ canvasElement }) => {
     await mapReady(canvasElement)
@@ -66,12 +69,26 @@ export const Default: Story = {
   play: async ({ canvasElement }) => {
     await mapReady(canvasElement)
     const canvas = within(canvasElement)
+    // One colour for every area (P5.94 item 17).
+    await expect(canvasElement.querySelectorAll('path.liro-map-area')).toHaveLength(4)
+    await expect(canvasElement.querySelectorAll('path.liro-map-tone-main')).toHaveLength(4)
     await expect(
       canvas.getByRole('region', { name: 'Map: Illustrative town zones' }),
     ).toHaveAttribute('tabindex', '0')
     await expect(canvas.getByRole('listbox', { name: 'Illustrative town zones' })).toBeVisible()
     await expect(canvas.getAllByRole('option')).toHaveLength(4)
     await expect(canvas.getByRole('button', { name: 'Zoom in' })).toBeVisible()
+  },
+}
+
+/** Coloured by category: the data sorts the zones by their rate, and the legend names the colours. */
+export const ByCategory: Story = {
+  name: 'By category',
+  args: { areas: TOWN_AREAS_BY_RATE, legend: TOWN_LEGEND },
+  play: async ({ canvasElement }) => {
+    await mapReady(canvasElement)
+    await expect(canvasElement.querySelectorAll('path.liro-map-tone-category3')).toHaveLength(2)
+    await expect(canvasElement).toHaveTextContent('Rate A — the highest')
   },
 }
 
@@ -85,7 +102,7 @@ export const WithPoint: Story = {
   },
 }
 
-/** A chosen area: neutral, strong, and marked in the list. */
+/** A chosen area: darker, with a thicker line, and marked in the list. */
 export const Chosen: Story = {
   args: { defaultSelected: 'outer', point: ADDRESS },
   play: async ({ canvasElement }) => {

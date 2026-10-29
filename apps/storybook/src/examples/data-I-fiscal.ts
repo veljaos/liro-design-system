@@ -465,7 +465,7 @@ export function paymentFigures(
 /** The mixed example: a voucher of 500,00 and 1.000,00 by card for the 1.907,00 sale. */
 export const MIXED_PARTS: readonly PaymentPart[] = [
   { id: 'voucher-1', label: 'Voucher', value: '500.00', detail: 'VC-2026-7741' },
-  { id: 'card-1', label: 'Card', value: '1000.00', detail: 'Visa •••• 4821' },
+  { id: 'card-1', label: 'Card', value: '1000.00', detail: 'Visa •••• 4821', state: 'approved' },
 ]
 
 // ── An issued receipt ─────────────────────────────────────────────────────────────────────────

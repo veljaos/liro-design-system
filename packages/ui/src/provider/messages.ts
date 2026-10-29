@@ -1691,6 +1691,11 @@ export interface LiroMessages {
   'change.notifyGroup': string
   /** FileDropzone on phones: the button that takes a photo with the camera. */
   'file.takePhoto': string
+  /** FileDropzone `expected` (P5.94 item 3): the list's title, and each document's state. */
+  'file.expected': string
+  'file.expectedRequired': string
+  'file.expectedOptional': string
+  'file.expectedAttached': string
   /** AttendanceGrid: the correction dialog's action and record, "Nenad Ilić, Wed 7" (P5.28 item 6). */
   'attendance.correctAction': string
   'attendance.correctSubject': (row: string, column: string) => string
@@ -1716,6 +1721,17 @@ export interface LiroMessages {
   'payment.addPart': string
   /** Removes a part paid: "Remove Voucher". */
   'payment.removePart': (label: string) => string
+  'payment.partPaid': string
+  'payment.partApproved': string
+  'payment.payByCard': (amount: string) => string
+  'payment.payByCode': (amount: string) => string
+  'payment.overRemaining': (amount: string) => string
+  'payment.overLimit': (amount: string) => string
+  'payment.stillToPay': (amount: string) => string
+  'payment.declinedHint': string
+  'payment.reverseWarning': (parts: string) => string
+  'payment.keepPaying': string
+  'payment.cancelPayment': string
   /** A cart line's edit button: "Edit Kapućino". */
   'cart.edit': (name: string) => string
   /** The till's queue could not be sent. */
@@ -1877,6 +1893,7 @@ export interface LiroMessages {
   /** The question box: its name, the ask button and the keys. */
   'assistant.question': string
   'assistant.ask': string
+  'assistant.answering': string
   'assistant.askHint': string
   /** The user's question in a conversation, for assistive technology. */
   'assistant.youAsked': string
@@ -2070,6 +2087,8 @@ export interface LiroMessages {
   'location.position': string
   /** RegionChart (P5.41, maps in charts): how the keys move between the areas (its description). */
   'map.regionKeys': string
+  /** The same when no area can be chosen (the last level of a drill-down, P5.94 item 1). */
+  'map.regionKeysView': string
   /** An area without a value (hatched): never 0. */
   'map.noData': string
   /** A legend step's range, the numbers written by `format`: below the first break … */
@@ -2199,10 +2218,7 @@ export interface LiroMessages {
   'sharing.done': string
   /** VersionList: the current version, restore, download, upload a new one, none. */
   'versions.current': string
-  'versions.restore': string
   'versions.restoreOf': (label: string) => string
-  'versions.restoreTitle': string
-  'versions.restoreMessage': string
   'versions.download': (label: string) => string
   'versions.upload': string
   'versions.empty': string
@@ -2426,4 +2442,17 @@ export interface LiroMessages {
   /** MatrixChart: a cell with nothing in it, and a tooltip's list cut short ("+3 more"). */
   'chart.none': string
   'chart.more': (count: number, countText: string) => string
+  // ── P5.94 (portal) ──
+  /** CommonQuestions (P5.94 item 20): the search field's label and the categories' group. */
+  'questions.search': string
+  'questions.categories': string
+  /** CommonQuestions: the chip of every category. */
+  'questions.all': string
+  /** CommonQuestions: an open card's parts. */
+  'questions.whatToDo': string
+  'questions.documents': string
+  /** CommonQuestions: how many questions a search or a category keeps ("3 questions"). */
+  'questions.found': (count: number, countText: string) => string
+  /** CommonQuestions: the no-results action. */
+  'questions.clear': string
 }

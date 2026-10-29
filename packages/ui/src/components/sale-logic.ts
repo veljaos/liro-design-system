@@ -39,6 +39,14 @@ export interface PaymentOption {
   note?: string
   /** Asks for a reference (a cheque number, a voucher code) under this label. */
   referenceLabel?: string
+  /**
+   * The most one payment of this way can take, a decimal string (a voucher's value), from the
+   * application (P5.94 item 5). A part that is not cash can never be more than the remaining
+   * amount either; only cash gives change.
+   */
+  maxAmount?: string
+  /** Why `maxAmount` is the limit, in the application's words ("The voucher is worth 2.000,00 RSD."). */
+  maxReason?: string
 }
 
 /** The options of the built-in methods, in the provider's words. */
@@ -164,5 +172,59 @@ export function kindMarker(
   return (
     types.find((each) => each.id === typeId)?.marker ??
     transactions.find((each) => each.id === transactionId)?.marker
+  )
+}
+
+// ── A part of a payment and its limit (P5.94 item 5) ──────────────────────────────────────
+
+/** Why an amount cannot be one part of a way to pay: over what remains, or over the way's limit. */
+export type PartOverLimit =
+  { reason: 'remaining'; limit: string } | { reason: 'option'; limit: string; words?: string }
+
+/**
+ * Whether `amount` can be one part of a payment by `option`, compared exactly as decimal strings
+ * (D4). Cash may be more than what remains (it gives change); every other way at most the
+ * remaining amount and the way's own `maxAmount` (a voucher's value). Null when it can; an
+ * unreadable amount or remaining amount is the application's to judge, so null too.
+ */
+export function partOverLimit(
+  option: Pick<PaymentOption, 'kind' | 'maxAmount' | 'maxReason'>,
+  amount: string | null,
+  remaining: string | null | undefined,
+): PartOverLimit | null {
+  if (option.kind === 'cash' || amount === null || !isDecimal(amount)) return null
+  if (
+    option.maxAmount !== undefined &&
+    isDecimal(option.maxAmount) &&
+    compareDecimal(amount, option.maxAmount) > 0 &&
+    (remaining === null ||
+      remaining === undefined ||
+      !isDecimal(remaining) ||
+      compareDecimal(option.maxAmount, remaining) <= 0)
+  ) {
+    return {
+      reason: 'option',
+      limit: option.maxAmount,
+      ...(option.maxReason === undefined ? {} : { words: option.maxReason }),
+    }
+  }
+  if (
+    remaining !== null &&
+    remaining !== undefined &&
+    isDecimal(remaining) &&
+    compareDecimal(amount, remaining) > 0
+  ) {
+    return { reason: 'remaining', limit: remaining }
+  }
+  return null
+}
+
+/** Whether something is still to pay: the remaining amount is more than zero, exactly. */
+export function stillToPay(remaining: string | null | undefined): boolean {
+  return (
+    remaining !== null &&
+    remaining !== undefined &&
+    isDecimal(remaining) &&
+    compareDecimal(remaining, '0') > 0
   )
 }

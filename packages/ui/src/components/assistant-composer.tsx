@@ -1,4 +1,4 @@
-import { ArrowUp } from 'lucide-react'
+import { ArrowUp, Square } from 'lucide-react'
 import { useId, useState, type KeyboardEvent, type ReactNode } from 'react'
 import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
@@ -6,6 +6,7 @@ import { useLiro } from '../provider/liro-provider'
 import { questionKey, questionReady } from './assistant-logic'
 import { IconButton } from './button'
 import { Field, FieldMessage, READ_ONLY_EMPTY } from './field'
+import { Spinner } from './spinner'
 
 /*
  * AssistantComposer (BUILD-PLAN P5.34): the box where the user asks an assistant in plain words.
@@ -17,8 +18,10 @@ import { Field, FieldMessage, READ_ONLY_EMPTY } from './field'
  *   large centred box — 3 lines, 16px text, more room, a soft shadow — with the keys written
  *   under it ("Enter asks, Shift+Enter starts a new line").
  * - The box grows with the text (field-sizing) up to 12 lines, then scrolls.
- * - `busy`: an answer is being written; the box can be typed in, the ask button waits (Stop is
- *   the answer's).
+ * - `busy`: an answer is being written. It shows (P5.94 item 12): "Answering…" with a small ring
+ *   in the bottom row, and the ask button becomes Stop (a square, named "Stop", `onStop`); without
+ *   `onStop` the ask button waits, disabled and without a tooltip. The next question can be typed
+ *   meanwhile but not sent: Enter only waits.
  * - `unavailableReason` (the assistant is off for this company, P5.93 item 1): nothing can be
  *   asked. The box is read-only (the one non-editable look of every field) and Ask is an
  *   unavailable action with its reason in words under the box, which describes the button.
@@ -38,8 +41,10 @@ export interface AssistantComposerProps {
   onChange?: (text: string) => void
   /** Asks the question (trimmed). */
   onAsk: (question: string) => void
-  /** An answer is being written: the ask button waits. */
+  /** An answer is being written: "Answering…", and the ask button becomes Stop (or waits). */
   busy?: boolean
+  /** Stops the answer being written: the ask button becomes Stop while `busy`. */
+  onStop?: () => void
   /**
    * No question can be asked, and why (from the application): the box is read-only and the
    * reason stands under it, describing the unavailable Ask button.
@@ -125,20 +130,41 @@ export function AssistantComposer(props: AssistantComposerProps) {
               )}
             />
             <div className="flex items-center justify-end gap-2">
-              {page && !control.readOnly && (
-                <span className={cn('min-w-0 flex-1 text-xs text-tertiary', TEXT_DIRECTION)}>
-                  {messages['assistant.askHint']}
+              {props.busy === true ? (
+                <span className="flex min-w-0 flex-1 items-center">
+                  <Spinner size="sm">
+                    <span className={cn('text-xs text-secondary', TEXT_DIRECTION)}>
+                      {messages['assistant.answering']}
+                    </span>
+                  </Spinner>
                 </span>
+              ) : (
+                page &&
+                !control.readOnly && (
+                  <span className={cn('min-w-0 flex-1 text-xs text-tertiary', TEXT_DIRECTION)}>
+                    {messages['assistant.askHint']}
+                  </span>
+                )
               )}
-              <IconButton
-                family="primary"
-                emphasis={ready ? 'primary' : 'secondary'}
-                icon={ArrowUp}
-                label={messages['assistant.ask']}
-                disabled={!ready}
-                {...(unavailable ? { 'aria-describedby': reasonId } : {})}
-                onClick={ask}
-              />
+              {props.busy === true && props.onStop !== undefined ? (
+                <IconButton
+                  family="neutral"
+                  emphasis="secondary"
+                  icon={Square}
+                  label={messages['assistant.stop']}
+                  onClick={props.onStop}
+                />
+              ) : (
+                <IconButton
+                  family="primary"
+                  emphasis={ready ? 'primary' : 'secondary'}
+                  icon={ArrowUp}
+                  label={messages['assistant.ask']}
+                  disabled={!ready}
+                  {...(unavailable ? { 'aria-describedby': reasonId } : {})}
+                  onClick={ask}
+                />
+              )}
             </div>
           </div>
           {unavailable && (

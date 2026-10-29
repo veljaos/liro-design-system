@@ -26,7 +26,7 @@ import {
 } from './legal-panels-logic'
 import { SelectField } from './select-field'
 import type { SidePanel } from './side-panels'
-import { StatusBadge } from './status-badge'
+import { CURRENT_TONE, StatusBadge } from './status-badge'
 
 /*
  * The side panels of a legal act's page (BUILD-PLAN P5.27 c), as the invoice's panels: each a
@@ -160,7 +160,11 @@ function VersionsList({
                     {range(version)}
                   </span>
                   {version.to === undefined && (
-                    <StatusBadge label={messages['legalPanel.current']} tone="neutral" withBorder />
+                    <StatusBadge
+                      label={messages['legalPanel.current']}
+                      tone={CURRENT_TONE}
+                      withBorder
+                    />
                   )}
                   {version.status !== undefined && (
                     <StatusBadge label={version.status.label} tone={version.status.tone} />

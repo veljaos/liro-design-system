@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { dayOf, groupByDayOf, previousDay } from './day-groups'
 import {
   insertMention,
+  closesOnSpace,
   mentionQueryAt,
   mentionsInText,
   splitMentions,
@@ -109,5 +110,28 @@ describe('day groups', () => {
     expect(previousDay('2026-10-01')).toBe('2026-09-30')
     expect(previousDay('2026-01-01')).toBe('2025-12-31')
     expect(previousDay('2028-03-01')).toBe('2028-02-29')
+  })
+})
+
+describe('a chosen mention ends the search; a space closes an empty list (P5.94 item 8)', () => {
+  it('reads the words after a chosen mention as text, not a new query', () => {
+    const text = '@Ana Petrović please check the invoice'
+    expect(mentionQueryAt(text, text.length, [{ name: 'Ana Petrović' }])).toBeNull()
+    expect(mentionQueryAt('@Ana Petrović ', 14, [{ name: 'Ana Petrović' }])).toBeNull()
+    // Without the choice it is still a query (up to two spaces).
+    expect(mentionQueryAt('@Ana Pe', 7)).toEqual({ start: 0, query: 'Ana Pe' })
+  })
+  it('opens again at a new "@" at the start of a word', () => {
+    const text = '@Ana Petrović and @Iv'
+    expect(mentionQueryAt(text, text.length, [{ name: 'Ana Petrović' }])).toEqual({
+      start: 18,
+      query: 'Iv',
+    })
+  })
+  it('closes on a space when nothing matches, not while searching or matching', () => {
+    expect(closesOnSpace('hello ', 0, false)).toBe(true)
+    expect(closesOnSpace('hello', 0, false)).toBe(false)
+    expect(closesOnSpace('Ana ', 1, false)).toBe(false)
+    expect(closesOnSpace('Ana ', 0, true)).toBe(false)
   })
 })

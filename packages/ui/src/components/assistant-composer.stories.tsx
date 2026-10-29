@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { useState } from 'react'
-import { expect, userEvent, within } from 'storybook/test'
+import { expect, fn, userEvent, within } from 'storybook/test'
 import { settle } from '../primitives/story-helpers'
 import { AssistantComposer } from './assistant-composer'
 import { ExampleProvider, PhoneFrame, StoryProvider } from './story-frames'
@@ -75,9 +75,42 @@ export const Page: Story = {
   ],
 }
 
-/** An answer is being written: the ask button waits. */
+/**
+ * An answer is being written (P5.94 item 12): "Answering…" shows, the ask button became Stop; the
+ * next question can be typed, but Enter does not send it.
+ */
 export const Busy: Story = {
+  args: { busy: true, defaultValue: 'And last quarter?', onStop: fn(), onAsk: fn() },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('status')).toHaveTextContent('Answering…')
+    await expect(canvas.getByRole('button', { name: 'Stop' })).toBeVisible()
+    await expect(canvas.queryByRole('button', { name: 'Ask' })).toBeNull()
+    await settle()
+  },
+}
+
+/** Busy without Stop: the ask button waits, disabled and without a tooltip. */
+export const BusyWithoutStop: Story = {
+  name: 'Busy, without Stop',
+  tags: ['!dev'],
   args: { busy: true, defaultValue: 'And last quarter?' },
+}
+
+/** Busy: typing goes on, Enter does not send, Stop stops. */
+export const BusyInteraction: Story = {
+  name: 'Busy, interaction',
+  tags: ['interaction', '!dev'],
+  args: { busy: true, onStop: fn(), onAsk: fn() },
+  play: async ({ canvasElement, args }) => {
+    const canvas = within(canvasElement)
+    const box = canvas.getByRole('textbox', { name: 'Your question' })
+    await userEvent.type(box, 'And last quarter?{Enter}')
+    await expect(args.onAsk).not.toHaveBeenCalled()
+    await expect(box).toHaveValue('And last quarter?')
+    await userEvent.click(canvas.getByRole('button', { name: 'Stop' }))
+    await expect(args.onStop).toHaveBeenCalledOnce()
+  },
 }
 
 /** The assistant is off: the box read-only and Ask unavailable, the reason in words. */

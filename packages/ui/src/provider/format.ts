@@ -334,6 +334,20 @@ const NUMERIC_DATE: Intl.DateTimeFormatOptions = {
   day: '2-digit',
 }
 
+/**
+ * How a locale writes the hour (P5.94 item 16): a 12-hour clock without a leading zero ("7:00 AM",
+ * as English writes it), a 24-hour clock with two digits ("07:00", as Serbian writes it).
+ */
+export function hourStyle(locale: string): '2-digit' | 'numeric' {
+  const cycle = cachedDateTimeFormat(locale, {
+    ...DATE_BASE,
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'UTC',
+  }).resolvedOptions().hourCycle
+  return cycle === 'h11' || cycle === 'h12' ? 'numeric' : '2-digit'
+}
+
 /** Bidirectional marks Intl puts into the dates of right-to-left locales. */
 const BIDI_MARKS = /[‎‏؜]/g
 
@@ -453,25 +467,27 @@ export function createFormat(
   timeZone?: string,
 ): LiroFormat {
   const intl = intlLocale(locale)
+  // "7:00 AM" on a 12-hour clock, "07:00" on a 24-hour one (P5.94 item 16).
+  const hour = hourStyle(intl)
   const dateFormat = cachedDateTimeFormat(intl, { ...NUMERIC_DATE, timeZone: 'UTC' })
   // An instant is shown in the provider's time zone, else the device's.
   const dateTimeFormat = cachedDateTimeFormat(intl, {
     ...NUMERIC_DATE,
-    hour: '2-digit',
+    hour,
     minute: '2-digit',
     ...(timeZone === undefined ? {} : { timeZone }),
   })
   // A local date and time without an offset is shown as written: read in UTC, never shifted.
   const localDateTimeFormat = cachedDateTimeFormat(intl, {
     ...NUMERIC_DATE,
-    hour: '2-digit',
+    hour,
     minute: '2-digit',
     timeZone: 'UTC',
   })
   // A clock time as written in an instant (`time`): read in UTC, so it is never shifted.
   const timeFormat = cachedDateTimeFormat(intl, {
     ...DATE_BASE,
-    hour: '2-digit',
+    hour,
     minute: '2-digit',
     timeZone: 'UTC',
   })

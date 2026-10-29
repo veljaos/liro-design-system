@@ -206,7 +206,13 @@ export { SETTLING_DELAY, SettlingValue } from './components/settling-value'
 export type { SettlingValueProps } from './components/settling-value'
 export { SplitAction } from './components/split-action'
 export type { SplitActionProps } from './components/split-action'
-export { StatusBadge, TONE_NAMES, toneFor } from './components/status-badge'
+export {
+  CURRENT_ROW,
+  CURRENT_TONE,
+  StatusBadge,
+  TONE_NAMES,
+  toneFor,
+} from './components/status-badge'
 export type { StatusBadgeProps, Tone } from './components/status-badge'
 export type { Emphasis, Family, IconComponent, Intent, IntentInfo } from './components/intents'
 export {
@@ -387,7 +393,12 @@ export type {
 } from './components/messages'
 export { MentionCombobox } from './components/mention-combobox'
 export type { MentionCandidate, MentionComboboxProps } from './components/mention-combobox'
-export { mentionsInText, splitMentions } from './components/message-logic'
+export {
+  closesOnSpace,
+  mentionQueryAt,
+  mentionsInText,
+  splitMentions,
+} from './components/message-logic'
 export type { Mention, MentionPart } from './components/message-logic'
 export { Questionnaire } from './components/questionnaire'
 export type { QuestionnaireProps } from './components/questionnaire'
@@ -565,6 +576,7 @@ export type {
 } from './components/job-progress'
 export { acceptsFile, checkFiles, FileDropzone } from './components/file-dropzone'
 export type {
+  ExpectedFile,
   FileDropzoneProps,
   FileFacts,
   FileRejection,
@@ -1249,11 +1261,14 @@ export {
   hasOwnOptions,
   isChosen,
   kindMarker,
+  partOverLimit,
   paymentOptions,
+  stillToPay,
   toggleLine,
 } from './components/sale-logic'
 export type {
   ChosenQuantities,
+  PartOverLimit,
   PaymentKind,
   PaymentOption,
   ReceiptKindOption,
@@ -1312,6 +1327,22 @@ export { HighlightedText, SearchResultList } from './components/search-result-li
 export type { SearchResult, SearchResultListProps } from './components/search-result-list'
 export { CategoryGrid } from './components/category-grid'
 export type { CategoryCard, CategoryGridProps } from './components/category-grid'
+// P5.94 item 20: a portal's common questions.
+export {
+  CommonQuestions,
+  filterQuestions,
+  foldQuestionText,
+  questionMatches,
+  questionsFiltered,
+  shownQuestions,
+  toggleQuestion,
+} from './components/common-questions'
+export type {
+  CommonQuestion,
+  CommonQuestionsProps,
+  QuestionCategory,
+  SearchableQuestion,
+} from './components/common-questions'
 export {
   asksWhy,
   currentEntry,

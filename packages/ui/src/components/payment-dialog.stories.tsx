@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { Plus } from 'lucide-react'
-import type { ReactNode } from 'react'
-import { expect, fn, userEvent, within } from 'storybook/test'
+import { useState, type ReactNode } from 'react'
+import { expect, fn, userEvent, waitFor, within } from 'storybook/test'
 import { settle } from '../primitives/story-helpers'
 import { Button } from './button'
-import { PaymentDialog } from './payment-dialog'
+import { PaymentDialog, type CardState, type PaymentPart } from './payment-dialog'
 import { BuyerField } from './buyer-field'
 import { CART_TOTAL, CURRENCY, QUICK_AMOUNTS, SPLIT_PAID } from './pos-story-data'
 import { ReceiptResult } from './receipt-result'
@@ -72,7 +72,16 @@ const meta = {
           'the customer scans), other cashless; more than four wrap as a grid of pressed buttons. ' +
           'With `onAddPart` several ways pay one sale: the parts paid and the remaining amount ' +
           'stand on top. A way that needs something first (the buyer) shows the reason and the ' +
-          'application’s `extra` field.',
+          'application’s `extra` field.\n\n' +
+          '**P5.94: a sale paid in parts, any ways in any order.** The parts paid are a list — ' +
+          'the way, the amount, its state (“Paid”, “Approved”) — and the remaining amount always ' +
+          'stands beside the amount due. A card takes one part at a time: the amount, “Pay … by ' +
+          'card”, the terminal, then approved (the application adds the part) or declined (the ' +
+          'amount stays; try again or choose another way). Only cash gives change; any other part ' +
+          'is at most the remaining amount and the way’s own limit (a voucher’s value, ' +
+          '`maxAmount`). “Complete payment” waits while something is still to pay. Cancelling ' +
+          'after an approved part says first that it will be reversed. A way’s label never breaks ' +
+          'inside a word: the ways wrap as whole buttons, a label too long ends in “…”.',
       },
     },
   },
@@ -163,15 +172,104 @@ export const CardApproved: Story = {
   },
 }
 
-/** Split: 500,00 paid by card, 511,00 remaining on the keypad. */
+/**
+ * Split (P5.94): 500,00 approved by card, 511,00 remaining; the next card part is the keypad's
+ * amount and "Pay 511,00 RSD by card". "Complete payment" waits: still to pay.
+ */
 export const Split: Story = {
   args: {
-    defaultMethod: 'split',
+    defaultMethod: 'card',
     onAddPart: () => undefined,
     paid: SPLIT_PAID,
     remaining: '511.00',
     defaultTendered: '511',
-    completeDisabledReason: 'Pay the remaining amount first.',
+  },
+  play: async () => {
+    await settle()
+    const body = within(dialog())
+    await expect(body.getByRole('list', { name: 'Paid so far' })).toHaveTextContent('Approved')
+    await expect(body.getByRole('button', { name: /^Pay 511,00\sRSD by card$/ })).toBeVisible()
+    await expect(
+      body.getByRole('button', { name: 'Complete payment' }),
+    ).toHaveAccessibleDescription(/^Still to pay: 511,00\sRSD\.$/)
+    // An approval is not removed here: cancelling the payment reverses it.
+    await expect(body.queryByRole('button', { name: 'Remove Card' })).toBeNull()
+    await expectNoScroll()
+  },
+}
+
+/** Split: the card part is on the terminal; Cancel there cancels the terminal's request. */
+export const SplitCardWaiting: Story = {
+  name: 'Split, card part waiting',
+  args: {
+    methods: PAYMENT_OPTIONS,
+    defaultMethod: 'card',
+    onAddPart: () => undefined,
+    paid: [{ id: 'v1', label: 'Voucher', value: '500.00', detail: 'VC-2026-7741' }],
+    remaining: '511.00',
+    defaultTendered: '511',
+    cardState: 'waiting',
+  },
+  play: async () => {
+    await settle()
+    await expect(
+      within(dialog()).getByRole('button', { name: 'Cancel card payment' }),
+    ).toBeVisible()
+    await expectNoScroll()
+  },
+}
+
+/** Split: the card part was declined; its amount stays for "Try again" or another way. */
+export const SplitCardDeclined: Story = {
+  name: 'Split, card part declined',
+  args: {
+    methods: PAYMENT_OPTIONS,
+    defaultMethod: 'card',
+    onAddPart: () => undefined,
+    paid: [{ id: 'v1', label: 'Voucher', value: '500.00', detail: 'VC-2026-7741' }],
+    remaining: '511.00',
+    defaultTendered: '511',
+    cardState: 'declined',
+    cardMessage: 'Insufficient funds (code 51).',
+  },
+  play: async () => {
+    await settle()
+    const body = within(dialog())
+    await expect(dialog()).toHaveTextContent('Try again, or choose another way to pay.')
+    await expect(body.getByLabelText(/Amount of this payment/)).toHaveValue('511')
+    await expectNoScroll()
+  },
+}
+
+/** A voucher part over the voucher's value: the reason from the application, nothing added. */
+export const VoucherOverValue: Story = {
+  name: 'Voucher over its value',
+  args: {
+    methods: PAYMENT_OPTIONS,
+    defaultMethod: 'voucher',
+    defaultTendered: '2500',
+    defaultReference: 'VC-2026-7741',
+    remaining: '3011.00',
+    total: '3011.00',
+    onAddPart: fn(),
+  },
+  play: async () => {
+    await settle()
+    const add = within(dialog()).getByRole('button', { name: 'Add this payment' })
+    await expect(add).toHaveAttribute('aria-disabled', 'true')
+    await expect(add).toHaveAccessibleDescription('This voucher is worth 2.000,00 RSD.')
+  },
+}
+
+/** A press on the unavailable "Add this payment" adds nothing. */
+export const VoucherOverValueInteraction: Story = {
+  ...VoucherOverValue,
+  name: 'Voucher over its value, interaction',
+  tags: ['interaction', '!dev'],
+  play: async ({ args }) => {
+    await settle()
+    await userEvent.click(within(dialog()).getByRole('button', { name: 'Add this payment' }))
+    await expect(args.onAddPart).not.toHaveBeenCalled()
   },
 }
 
@@ -535,5 +633,166 @@ export const AddingParts: Story = {
     await userEvent.click(body.getByRole('button', { name: '0' }))
     await userEvent.click(body.getByRole('button', { name: 'Add this payment' }))
     await expect(args.onAddPart).toHaveBeenCalledWith('cheque', '500')
+  },
+}
+
+/** The story's till: it adds the approved parts and works out what remains (the application). */
+function SplitTill({ onCancel }: { onCancel?: () => void }) {
+  const total = 101100n
+  const [paid, setPaid] = useState<readonly PaymentPart[]>([])
+  const [method, setMethod] = useState('card')
+  const [tendered, setTendered] = useState<string | null>(null)
+  const [cardState, setCardState] = useState<CardState>('idle')
+  const [done, setDone] = useState(false)
+  const cents = (value: string) => {
+    const [whole = '0', part = ''] = value.split('.')
+    return BigInt(whole) * 100n + BigInt((part + '00').slice(0, 2))
+  }
+  const text = (value: bigint) =>
+    `${(value / 100n).toString()}.${(value % 100n).toString().padStart(2, '0')}`
+  const left = total - paid.reduce((sum, part) => sum + cents(part.value), 0n)
+  const add = (label: string, amount: string, state: 'paid' | 'approved') => {
+    setPaid((current) => [
+      ...current,
+      { id: `p${String(current.length + 1)}`, label, value: text(cents(amount)), state },
+    ])
+    setTendered(null)
+  }
+  return (
+    <PaymentDialog
+      defaultOpen
+      total={text(total)}
+      currency={CURRENCY}
+      quickAmounts={QUICK_AMOUNTS}
+      method={method}
+      onMethodChange={(next) => {
+        setMethod(next)
+        setCardState('idle')
+      }}
+      tendered={tendered}
+      onTenderedChange={setTendered}
+      paid={paid}
+      remaining={text(left)}
+      onAddPart={(id, amount) => {
+        add(id === 'cash' ? 'Cash' : 'Card', amount, 'paid')
+      }}
+      cardState={cardState}
+      onCardStart={(amount) => {
+        if (amount === null) return
+        setCardState('waiting')
+        // The story's terminal approves at once.
+        window.setTimeout(() => {
+          add('Card', amount, 'approved')
+          setCardState('approved')
+        }, 50)
+      }}
+      onCardCancel={() => {
+        setCardState('idle')
+      }}
+      onComplete={() => {
+        setDone(true)
+      }}
+      done={done}
+      doneActions={DONE_ACTIONS}
+      {...(onCancel === undefined ? {} : { onCancel })}
+    />
+  )
+}
+
+/**
+ * A sale paid in parts (P5.94): 500,00 by card — the amount, "Pay 500,00 RSD by card", approved —
+ * then the rest in cash; "Complete payment" works once nothing remains.
+ */
+export const SplitAnyWays: Story = {
+  name: 'Split, card then cash, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => (
+    <Till>
+      <SplitTill />
+    </Till>
+  ),
+  play: async () => {
+    await settle()
+    const body = within(dialog())
+    for (const key of ['5', '0', '0'])
+      await userEvent.click(body.getByRole('button', { name: key }))
+    await userEvent.click(body.getByRole('button', { name: /^Pay 500,00\sRSD by card$/ }))
+    await waitFor(() =>
+      expect(body.getByRole('list', { name: 'Paid so far' })).toHaveTextContent('Approved'),
+    )
+    await expect(dialog()).toHaveTextContent(/511,00\sRSD/)
+    await expect(body.getByRole('button', { name: 'Complete payment' })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    )
+    await userEvent.click(body.getByRole('button', { name: 'Cash' }))
+    await userEvent.click(body.getByRole('button', { name: 'Exact amount' }))
+    await userEvent.click(body.getByRole('button', { name: 'Add this payment' }))
+    await expect(body.getByRole('list', { name: 'Paid so far' })).toHaveTextContent('Cash')
+    await expect(body.getByRole('button', { name: 'Complete payment' })).not.toHaveAttribute(
+      'aria-disabled',
+      'true',
+    )
+  },
+}
+
+/** Cancelling after an approved card part: the dialog says first that it will be reversed. */
+export const CancelAfterApproval: Story = {
+  name: 'Cancel after an approved part, interaction',
+  tags: ['interaction', '!dev'],
+  args: { onCancel: fn() },
+  render: (args) => (
+    <Till>
+      <SplitTill {...(args.onCancel === undefined ? {} : { onCancel: args.onCancel })} />
+    </Till>
+  ),
+  play: async ({ args }) => {
+    await settle()
+    const body = within(dialog())
+    await userEvent.click(body.getByRole('button', { name: /^Pay 1\.011,00\sRSD by card$/ }))
+    await waitFor(() =>
+      expect(body.getByRole('list', { name: 'Paid so far' })).toHaveTextContent('Approved'),
+    )
+    await userEvent.click(body.getByRole('button', { name: 'Cancel' }))
+    await expect(dialog()).toHaveTextContent(
+      /Cancelling reverses the approved payments: Card 1\.011,00\sRSD\./,
+    )
+    const keep = body.getByRole('button', { name: 'Keep paying' })
+    await expect(keep).toHaveFocus()
+    await userEvent.click(keep)
+    await expect(args.onCancel).not.toHaveBeenCalled()
+    await userEvent.click(body.getByRole('button', { name: 'Cancel' }))
+    await userEvent.click(body.getByRole('button', { name: 'Cancel payment' }))
+    await expect(args.onCancel).toHaveBeenCalledOnce()
+    await waitFor(() => expect(within(document.body).queryByRole('dialog')).toBeNull())
+  },
+}
+
+/** A way chosen under "Other…" on a phone: its whole name, never broken inside a word (P5.94). */
+export const VoucherPhone: Story = {
+  name: 'Voucher, phone width',
+  render: (args) => (
+    <PhoneFrame>
+      <StoryProvider density="touch">
+        <ExampleProvider>
+          <PaymentDialog
+            {...args}
+            methods={PAYMENT_OPTIONS}
+            defaultMethod="voucher"
+            defaultTendered="500"
+            defaultReference="VC-2026-7741"
+            remaining="1011.00"
+            onAddPart={() => undefined}
+          />
+        </ExampleProvider>
+      </StoryProvider>
+    </PhoneFrame>
+  ),
+  play: async () => {
+    await settle()
+    await expect(
+      within(dialog()).getByRole('button', { name: /^Voucher/, expanded: false }),
+    ).toBeVisible()
+    await expectNoScroll()
   },
 }

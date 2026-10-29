@@ -79,9 +79,17 @@ export const Failed: Story = {
   },
 }
 
-/** Subscribed: the thanks. */
+/** Subscribed: only the thanks — no title, line, form or note (P5.94 item 11). */
 export const Subscribed: Story = {
   args: { subscribed: true },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('status')).toHaveTextContent(
+      'Thank you — check your inbox to confirm.',
+    )
+    await expect(canvas.queryByRole('heading')).toBeNull()
+    await expect(canvas.queryByRole('textbox')).toBeNull()
+  },
 }
 
 /** Closed for now (P5.93): the address read-only, Subscribe unavailable, the reason in words. */

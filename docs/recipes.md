@@ -149,11 +149,13 @@ components, as below; the components stay.
 - **Employee portal, payslip** — F2 Record in `PortalShell`: `KeyFigures` and `KeyValueList` by section; every figure is payroll's.
 - **Employee portal, payslip PDF** — Printout: `PrintPage` with `PrintTitle`, `PrintDetails`, `PrintTable`, `PrintSection`.
 - **Employee portal, leave** — F1 List in `PortalShell`: balance as `KeyFigures`, requests with their state, `Alert` for the application's notes.
-- **Employee portal, leave request** — F2 Record in `PortalShell`: `KeyValueList` and the approval as `StatusTimeline`.
-- **Employee portal, new leave request** — F2 Record in `PortalShell`: `DateRangeField`, `SelectField`, `TextAreaField`; the days counted are the application's.
+- **Employee portal, leave request** — F2 Record in `PortalShell`: `KeyValueList` and the approval as `StatusTimeline`; the proof sent with it as `AttachmentList` (what the approvers open).
+- **Employee portal, new leave request** — F2 Record in `PortalShell`: `SelectField` Kind, then for paid leave a `SelectField` Reason (each reason with its days and its proof, the application's data), `DateRangeField` typed or picked, the proof as `FileDropzone` with `expected` (the documents from the data, "Required" or "Optional"; `camera` on phones) and `AttachmentList`, `TextAreaField`; the days counted are the application's, a required document missing is said under the dropzone.
+- **Employee portal, common questions** — in `PortalShell`: `CommonQuestions` — its top four on the home page beside "All questions", every question on its own page with search and categories; a question's action starts its request filled in (the change of address with its proof).
+- **HR, leave requests to approve** — F4 Worklist: `WorklistPage`, each request with its `StatusTimeline`, its proof in `AttachmentList` (a photo or PDF opens in `FilePreview`), Approve / Reject (`ReasonConfirmDialog`).
 - **Employee portal, shifts** — `MyShifts` in `PortalShell`.
 - **Employee portal, documents** and **Employee portal, document to sign** — F1 List then F2 Record in `PortalShell`: documents in `SectionCard`, one on its signing page (see "Signing").
-- **Employee portal, my details** — F2 Record in `PortalShell`: `KeyValueList`, a change request in a `Drawer`, waiting for HR shown as an `Alert`.
+- **Employee portal, my details** — F2 Record in `PortalShell`: `KeyValueList`, a change request in a `Drawer` with the proof the field needs (`FileDropzone` with `expected`, `AttachmentList`), waiting for HR shown in its list.
 
 ## Health
 
@@ -165,7 +167,7 @@ components, as below; the components stay.
 
 ## School and university
 
-- **School, timetable** — F7 Calendar: `Timetable` (periods × weekdays, the running period's now marker).
+- **School, timetable** — F7 Calendar: `Timetable` (periods × weekdays, the running period's time of "now").
 - **School, attendance of a lesson** — F7 grid: `AttendanceGrid` in lesson mode, one key per pupil.
 - **School, gradebook** — F7 grid: `AttendanceGrid` with the application's grade codes; averages are the application's.
 - **School, parents' portal, absences** — F1 List in `PortalShell`: `KeyFigures`, absences in `DataTable`, an excuse in a `Drawer` with `RadioGroupField`, `FileDropzone` and `AttachmentList`.
