@@ -249,9 +249,13 @@ const CHOICE_PHONE = 'gap-1.5 px-2'
 const CHOICE_ON = 'border-selected bg-surface-selected'
 const CHOICE_OFF = 'border-default bg-surface-raised enabled:hover:bg-surface-hover'
 
-/** The keypad's keys at 44px (the touch minimum) on a phone, so everything fits the screen. */
+/**
+ * The keypad's keys at 44px (the touch minimum) on a phone, so everything fits the screen; no
+ * Clear row there (P5.94): Backspace stays, and "Exact amount" and the quick amounts replace the
+ * amount in one press.
+ */
 const PHONE_KEYPAD =
-  '[&_[data-key]]:h-11 [&_[data-key]]:min-h-11 [&_div:has(>input)]:h-12 [&_input]:text-h4'
+  '[&_[data-key]]:h-11 [&_[data-key]]:min-h-11 [&_div:has(>input)]:h-12 [&_input]:text-h4 [&_[data-key=clear]]:hidden'
 
 /** The focusable elements of the done view's actions; the last is its main action (D13). */
 function lastAction(container: HTMLElement | null): HTMLElement | null {
@@ -626,9 +630,11 @@ export function PaymentDialog(props: PaymentDialogProps) {
    */
   const paidParts = paid.length > 0 && (
     <div className="flex flex-col gap-1">
-      <span className={cn('text-xs font-semibold text-secondary', TEXT_DIRECTION)}>
-        {messages['payment.paid']}
-      </span>
+      {!phone && (
+        <span className={cn('text-xs font-semibold text-secondary', TEXT_DIRECTION)}>
+          {messages['payment.paid']}
+        </span>
+      )}
       <ul
         aria-label={messages['payment.paid']}
         data-slot="payment-parts"
@@ -642,35 +648,35 @@ export function PaymentDialog(props: PaymentDialogProps) {
           const isApproved = part.state === 'approved'
           const state = isApproved ? messages['payment.partApproved'] : messages['payment.partPaid']
           if (phone) {
+            // One line on a phone: the way, the amount and, for an approval, a check; the
+            // detail (the card, the voucher's code) in the tooltip and for assistive technology.
+            const chip = (
+              <span className="flex min-w-0 items-center gap-1.5 py-1">
+                {isApproved && (
+                  <CircleCheck
+                    aria-hidden="true"
+                    className="size-3.5 shrink-0 text-status-success-fg"
+                  />
+                )}
+                <span className={cn('font-medium whitespace-nowrap text-primary', TEXT_DIRECTION)}>
+                  {part.label}{' '}
+                  <MoneyText
+                    value={part.value}
+                    currency={props.currency}
+                    className="font-semibold"
+                  />
+                </span>
+                <span className="sr-only">
+                  {[state, part.detail].filter((each) => each !== undefined).join(', ')}
+                </span>
+              </span>
+            )
             return (
               <li
                 key={part.id}
-                className="flex min-h-11 min-w-0 items-center gap-2 rounded-md bg-surface-sunken ps-3 text-sm"
+                className="flex min-h-11 min-w-0 items-center gap-1 rounded-md bg-surface-sunken ps-3 text-sm"
               >
-                <span className="flex min-w-0 flex-col py-1">
-                  <span className={cn('font-medium text-primary', TEXT_DIRECTION)}>
-                    {part.label}{' '}
-                    <MoneyText
-                      value={part.value}
-                      currency={props.currency}
-                      className="font-semibold"
-                    />
-                  </span>
-                  <span
-                    className={cn(
-                      'flex items-center gap-1 text-xs',
-                      isApproved ? 'text-status-success-fg' : 'text-secondary',
-                      TEXT_DIRECTION,
-                    )}
-                  >
-                    {isApproved && <CircleCheck aria-hidden="true" className="size-3 shrink-0" />}
-                    {/* The check says it on a phone; the words are for assistive technology. */}
-                    <span className="sr-only">{state}</span>
-                    {part.detail !== undefined && (
-                      <span className="text-secondary">{part.detail}</span>
-                    )}
-                  </span>
-                </span>
+                {part.detail === undefined ? chip : <Tooltip label={part.detail}>{chip}</Tooltip>}
                 {props.onRemovePart === undefined || isApproved ? (
                   <span className="pe-2" />
                 ) : (
