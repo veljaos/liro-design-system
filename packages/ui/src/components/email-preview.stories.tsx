@@ -47,10 +47,10 @@ const meta = {
           '**What for:** an e-mail as its reader will see it, with the application’s sample ' +
           'data filled in — at a desktop mail client’s width (600px) or a phone’s (360px), in a ' +
           'light or a dark mail client (Width and Mail client switches). The message is as ' +
-          'simple as the printouts (D27): From, To and Subject over a thin rule, the logo at ' +
+          'simple as a Stripe e-mail: From, To and Subject over a thin rule, the logo at ' +
           'the start, the body, a small grey footer; black and grey, no boxes. `lang` marks a ' +
           'variant in another language.\n\n**When to use:** beside a template editor, before ' +
-          '"Send test". **When not:** a document to print (PrintPage); a sent e-mail in a ' +
+          '"Send test". **When not:** a printed document (its PDF comes from liro-folio); a sent e-mail in a ' +
           'conversation (MessageList).',
       },
     },

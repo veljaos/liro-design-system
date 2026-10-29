@@ -48,19 +48,27 @@ They apply to every screen, before any rule below.
 
 PosShell is the till's full-screen shell (F7).
 
+## Out of scope: printed documents → liro-folio (P5.95)
+
+A printed document (an invoice, a note, a quote, a delivery note, a decision, a contract, a letter,
+minutes, a payslip, an IOS statement, a ledger report, a prescribed form, the fiscal receipt, a
+label) is not a floorplan and not a screen: liro-folio renders it as a PDF, from
+`@veljaos/tokens` only. The Design System has no React replica of one; its screens show the PDF or
+its page images (F3's "PDF" action, `FilePreview`, `DocumentFrame`, `PageViewer`) and, at the till,
+`ReceiptResult`. A screen printed as you see it (a report, a chart, a list) is still a screen.
+
 ## The templates (P5.92)
 
-The library keeps about eighteen page templates, each a floorplan's frame: the shells (AppShell,
+The library keeps these page templates, each a floorplan's frame: the shells (AppShell,
 AuthShell, PortalShell, PosShell) and Launchpad; F1 `ListPage`, `RegisterPage`; F2 `DetailPage`,
 `RecordFormPage`, `SettingsPage`; F3 `DocumentPage`; F4 `WorklistPage`; F5 `DashboardPage`,
-`ReportPage`, `StatutoryFormPage`; F6 `PeriodicRunPage`; `StatusPage` and `NotificationsPage`;
-the printout `PrintPage` with `PrintDocument`. Everything else is a composition of these and the
+`ReportPage`, `StatutoryFormPage`; F6 `PeriodicRunPage`; `StatusPage` and `NotificationsPage`.
+The printouts left in P5.95 (see "Out of scope: printed documents → liro-folio"). Everything else is a composition of these and the
 components, written in `docs/recipes.md` ("Pages composed from the core templates"): a legal act
 is a DocumentPage with LegalText, legal search a ListPage with SearchResultList, a course, an
 article or "Ask" one reading page, picking and counting a WorklistPage or ListPage in touch
 density, a payment order a RecordFormPage, signing a DetailPage with SignerList, the files a
-ListPage with the file components. Other printouts are JSON definitions rendered from the print
-parts. Each template shows four to six stories in the Storybook sidebar (default, empty,
+ListPage with the file components. Each template shows four to six stories in the Storybook sidebar (default, empty,
 loading, error, phone and the one that matters most); its other variants stay in the tests.
 
 ## F1 List — `ListPage`

@@ -6,12 +6,25 @@ data, the rules and every figure are always the application's: the pieces show a
 never count, check or decide. To build a new screen, pick its floorplan in `docs/floorplans.md`
 and compose these pieces; the 26 kept examples in Storybook "Examples" show each floorplan.
 
+## Out of scope: printed documents → liro-folio (P5.95)
+
+Every printed document — invoices, credit and debit notes, quotes, delivery notes, decisions and
+rulings, contracts, letters, minutes, payslips, IOS statements, ledger reports, prescribed forms,
+the fiscal receipt and labels — is a PDF that liro-folio renders (its own repository, on
+`@veljaos/tokens` only, never `@veljaos/ui` or React). The Design System owns only the screens
+around a document and shows the PDF or its page images: a "PDF" / "Download PDF" action,
+`FilePreview`, `DocumentFrame`, `PageViewer`, `AttachmentList`, `EmailPreview`; at the till
+`ReceiptResult` (state, number, Print, Send, Copy). It has no React replica of a printed document.
+A screen printed "as you see it" (a report, a chart, a list; HierarchyChart with `toolbar={false}`
+and `framed={false}`, a screen's `@media print` rules) is not a document and stays.
+
 ## Pages composed from the core templates (P5.92)
 
-The library keeps about eighteen page templates (the shells, Launchpad, ListPage, DetailPage,
-RecordFormPage, SettingsPage, DocumentPage, WorklistPage, DashboardPage, ReportPage,
-StatutoryFormPage, RegisterPage, PeriodicRunPage, StatusPage, NotificationsPage, PrintPage and
-PrintDocument). The domain page templates it had before P5.92 are composed from them and the
+The library keeps these page templates: the shells (AppShell, AuthShell, PortalShell, PosShell),
+Launchpad, ListPage, DetailPage, RecordFormPage, SettingsPage, DocumentPage, WorklistPage,
+DashboardPage, ReportPage, StatutoryFormPage, RegisterPage, PeriodicRunPage, StatusPage and
+NotificationsPage (PrintPage and PrintDocument left in P5.95, see "Out of scope: printed documents
+→ liro-folio"). The domain page templates it had before P5.92 are composed from them and the
 components, as below; the components stay.
 
 - **Legal act** — F3 Document: `DocumentPage` (back, the act's title as the h1 with `lang`, its
@@ -52,10 +65,11 @@ components, as below; the components stay.
   and signed differences are the application's (none in a blind count).
 - **Payment order** — F2 Record: `RecordFormPage` with the order's fields (`FormGrid`,
   `MoneyField`, `SelectField`, `RadioGroupField`, `ipsProblemsOf` for the checks under their
-  fields); its paper form is a printout from a JSON definition (see "Printouts") with `QrCode`
-  from `ipsQrText`.
+  fields); its printed form is liro-folio's PDF (P5.95), the IPS QR code on it from the same
+  payment; on the screen `QrCode` from `ipsQrText`.
 - **Signing** — F2 Record: `DetailPage` (or `DocumentPage` when the document has lines) with the
-  preview (`DocumentFrame` or `PrintPage`) as the first, flush section, `AttachmentList`, and
+  document (liro-folio's PDF in `DocumentFrame` or `FilePreview`, or its page images in
+  `PageViewer`) as the first, flush section, `AttachmentList`, and
   `SignerList` in the 300px side column — first on phones. The signing is the Core's. See the
   Shell example "Employee portal" (its annex).
 - **Files** — F1 List: `ListPage` with a start column of places (`TreeView` of folders, the
@@ -65,12 +79,11 @@ components, as below; the components stay.
   `FileNameDialog`, `ShareDialog`, `VersionList`, `FilePreview`. The helpers of
   `file-browser-logic` (`canDropInto`, `blockedFolders`, `selectRange`, `uploadCounts`,
   `resolveConflicts`) stay exported.
-- **Printouts** (certificate, school report, medical finding, legal act, payment order, statutory
-  forms) — not templates: each layout is a JSON definition the Core renders with liro-core-pdf
-  from the print parts (`PrintPage`, `PrintTitle`, `PrintDetails`, `PrintTable`, `PrintSection`,
-  `PrintSignatures`, `PrintAmountDueLine`, `PrintPaymentDetails`, `PrintIssuedLine`). The
-  library keeps `PrintDocument`, the business document; the Serbian formal acts come in a later
-  step.
+- **Printed documents** (an invoice, a certificate, a school report, a medical finding, a legal
+  act, a payment order, a statutory form, a payslip, the fiscal receipt) — not in the Design System
+  (P5.95): liro-folio renders each as a PDF. The screen around it is the library's: a "PDF" or
+  "Download PDF" action, the PDF in `FilePreview` or `DocumentFrame`, or its page images in
+  `PageViewer`. See "Out of scope: printed documents → liro-folio".
 
 ## Accounting
 
@@ -147,7 +160,7 @@ components, as below; the components stay.
 - **Emergency working-time balance** — F5 Overview: `WorkingTimeBalance` (planned, worked, signed difference, warnings in words); computes nothing.
 - **Employment contract questionnaire** — F6 Steps: `Questionnaire` with branching; "Generate contract" opens the contract on its signing page (see "Signing").
 - **Work-injury register** — F1 List: `RegisterPage` (numbered, never deleted, corrections both ways) with `PeriodField`.
-- **Safety course, lesson** — the reading page (see "Reading page") with the course outline in its side column (locked lessons and reasons, "5 of 8 lessons", Mark as done); the final test is `Questionnaire` with `QuizResult`; the certificate is a printout from a JSON definition (see "Printouts").
+- **Safety course, lesson** — the reading page (see "Reading page") with the course outline in its side column (locked lessons and reasons, "5 of 8 lessons", Mark as done); the final test is `Questionnaire` with `QuizResult`; the certificate is liro-folio's PDF (see "Printed documents").
 - **Recruitment, job openings** — F1 List: `ListPage`, `FilterBar`, `DataTable`.
 - **Recruitment, job posting** — F2 Record: `DetailPage` in view / edit mode, `FormGrid` with `TextField`, `TextAreaField`, `MoneyField`, `DateField`.
 - **Recruitment, candidates** — F1 List as a board: `KanbanBoard`; Rejected asks why (`ReasonConfirmDialog`); Hired waits for the application's accepted offer.
@@ -155,10 +168,10 @@ components, as below; the components stay.
 - **Recruitment, scorecard** — F2 Record: `RecordFormPage`, `FormSection` with `RadioGroupField` per criterion and `TextAreaField`.
 - **Onboarding, checklist** — F2 Record: `DetailPage`, one section per kind of task, each a `DataTable` with owner (`PersonName`), `DueDate` and state; not `SetupChecklist`, as tasks run side by side.
 - **Onboarding, the new employee's portal** — F6 Steps in `PortalShell`: `SetupChecklist` ("Before you start"), the salary account in a `Dialog` checked by the application.
-- **Onboarding, documents to sign** and **Onboarding, the employment contract** — F2 Record in `PortalShell`: a list of documents in `SectionCard`, each on its signing page (see "Signing") with `PrintPage` and `SignerList`.
+- **Onboarding, documents to sign** and **Onboarding, the employment contract** — F2 Record in `PortalShell`: a list of documents in `SectionCard`, each on its signing page (see "Signing") with the document's PDF from liro-folio and `SignerList`.
 - **Employee portal, payslips** — F1 List in `PortalShell`: `DataTable` of months.
 - **Employee portal, payslip** — F2 Record in `PortalShell`: `KeyFigures` and `KeyValueList` by section; every figure is payroll's.
-- **Employee portal, payslip PDF** — Printout: `PrintPage` with `PrintTitle`, `PrintDetails`, `PrintTable`, `PrintSection`.
+- **Employee portal, payslip PDF** — liro-folio's PDF under a bar with the way back (`FilePreview`); the Shell example stands it in with a page-shaped card and "Download PDF".
 - **Employee portal, leave** — F1 List in `PortalShell`: balance as `KeyFigures`, requests with their state, `Alert` for the application's notes.
 - **Employee portal, leave request** — F2 Record in `PortalShell`: `KeyValueList` and the approval as `StatusTimeline`; the proof sent with it as `AttachmentList` (what the approvers open).
 - **Employee portal, new leave request** — F2 Record in `PortalShell`: `SelectField` Kind, then for paid leave a `SelectField` Reason (each reason with its days and its proof, the application's data), `DateRangeField` typed or picked, the proof as `FileDropzone` with `expected` (the documents from the data, "Required" or "Optional"; `camera` on phones) and `AttachmentList`, `TextAreaField`; the days counted are the application's, a required document missing is said under the dropzone.
@@ -202,8 +215,8 @@ components, as below; the components stay.
 ## Point of sale and warehouse handhelds
 
 - **POS fiscal, receipt kind** — F7 POS: `PosShell` with `ReceiptKindPicker` in a `Dialog`; the chosen kind's marker (`kindMarker`) in a warning `Alert`; kinds are the application's.
-- **POS journal**, also **POS daily report** — F7 POS: `PosShell` with the issued receipts in `DataTable`, a copy as `ReceiptPreview`, cancel with `ReasonConfirmDialog`, not sent shown with `Banner`; the report's figures are the application's.
-- **Web shop order, receipt delivered** — F2 Record: `PageHeader`, `KeyValueList`, `ReceiptResult` with delivery by e-mail, `ReceiptPreview` in a `Dialog`.
+- **POS journal**, also **POS daily report** — F7 POS: `PosShell` with the issued receipts in `DataTable`, a copy issued from `ReceiptResult` (Copy; its printed form liro-folio's), cancel with `ReasonConfirmDialog`, not sent shown with `Banner`; the report's figures are the application's.
+- **Web shop order, receipt delivered** — F2 Record: `PageHeader`, `KeyValueList`, `ReceiptResult` with delivery by e-mail; the receipt's PDF from liro-folio in `FilePreview`.
 - **Warehouse picking, handheld** — see "Handheld picking and counting": scan location → item → quantity, skip with a reason, its menu as `DropdownMenu`.
 - **Stock count, handheld** — see "Handheld picking and counting": `QuantityStepper` and the application's signed differences.
 
@@ -224,7 +237,7 @@ components, as below; the components stay.
 - **Property tenant** — F2 Record: `DetailPage`, `KeyValueList`, the national ID in `MaskedValue`, leases in `DataTable`.
 - **Property lease** — F2 Record: `DetailPage`, renewal and expiry in words (`Alert`), "Renew…" in a `Dialog`, documents in `AttachmentList`.
 - **Lease agreement** — F2 Record: the signed lease in `DocumentFrame`.
-- **Rent invoices** — F6 Steps: `PeriodicRunPage` (checks, preview), one invoice as `PrintDocument` in a `Dialog`.
+- **Rent invoices** — F6 Steps: `PeriodicRunPage` (checks, preview), one invoice as liro-folio's PDF in `FilePreview`.
 - **Maintenance requests** — F1 List: `ListPage`, `FilterBar`, a request in a `Drawer` with `StatusTimeline` and `AttachmentList`.
 - **Tenant portal** — F5 Overview in `PortalShell`: `CategoryGrid` of actions, `KeyValueList`, `Alert`.
 - **Tenant portal, report a problem** — F2 Record in `PortalShell`: `RadioGroupField`, `SelectField`, `TextAreaField`, photos with `FileDropzone` and `AttachmentList`.
@@ -238,8 +251,8 @@ components, as below; the components stay.
 ## Documents, records and governance
 
 - **Contract awaiting signatures** and **Contract signing, the employee signs** — see "Signing" (preview in `DocumentFrame`, `AttachmentList`, `SignerList` with Decline and Sign); the signing is the Core's.
-- **Printout, invoice** — Printout: `PrintDocument` (title and logo, amount due line, IPS QR slot, ruled totals), `BackButton` above the sheet.
-- **Printout, certificate**, **school report**, **medical finding** — see "Printouts": JSON definitions rendered from the print parts (a landscape `PrintPage`, `PrintTable`, `PrintSignatures`).
+- **Invoice PDF** — liro-folio's PDF under a bar with `BackButton` (`FilePreview` or `DocumentFrame`); the F3 example "Invoice" opens it from "PDF".
+- **Certificate**, **school report**, **medical finding** — liro-folio's PDFs (see "Printed documents"); the screens around them show the PDF.
 - **Document inbox** — F1 List: `ListPage`, `FilterBar`, `FileDropzone` (Add documents), a document's page in `QuickPreview` with `PageViewer`, bulk Reject with `ReasonConfirmDialog`.
 - **Document review** — F4 Worklist (see "Going through many lines"): `WorklistPage` beside `PageViewer` (`highlight`), fields wrapped in `RecognizedField`, supplier by `LookupField`, lines in `EditableGrid`, `DuplicateWarning`, `CandidateList` for a new supplier; confidence and matches are the application's.
 - **Company documents** and **Company document preview** — F1 List: the files page (see "Files") with `FileDetails`, `FolderPickerDialog`, `NameConflictDialog`, `FileNameDialog`, `ShareDialog`, `VersionList`; preview in `FilePreview` with `DocumentFrame` or `PageViewer`.
@@ -261,7 +274,7 @@ components, as below; the components stay.
 - **New in the Illustrative Gazette** — F1 List: `GazetteIssues`.
 - **Illustrative law, act page**, **work rulebook**, **by-law**, **court decision** — see "Legal act" under "Pages composed from the core templates"; texts and versions are the application's.
 - **Illustrative law, compare versions** — F2 Record: `LegalCompare` with two versions chosen in `SelectField`.
-- **Illustrative law, printout** — see "Printouts": the act's JSON definition rendered from the print parts (title and gazette in the repeating header, articles in order, footnotes).
+- **Illustrative law, printed** — liro-folio's PDF (see "Printed documents"); on the screen the act is `LegalText`.
 
 ## AML compliance
 
@@ -326,7 +339,7 @@ components, as below; the components stay.
 - **Client portal request** — F2 Record in `PortalShell`: `StatusTimeline`, answer with `TextAreaField`, `FileDropzone` and `AttachmentList`.
 - **Client portal documents** — F1 List in `PortalShell`: `AttachmentList`.
 - **Client folders** and **Client portal files** — F1 List: the files page (see "Files") in `AppShell` for the firm and in `PortalShell` for the client, over the same files.
-- **IOS partners** (statements of open items) — F1 List: `ListPage`, `FilterBar`, prepare in a `Dialog` (`DateField`, `RadioGroupField`), preview as `PrintDocument`, send with `ConfirmDialog`.
+- **IOS partners** (statements of open items) — F1 List: `ListPage`, `FilterBar`, prepare in a `Dialog` (`DateField`, `RadioGroupField`), preview as liro-folio's PDF in `FilePreview`, send with `ConfirmDialog`.
 - **IOS reconciliation** — F4 Worklist (see "Going through many lines"): `WorklistPage`, `ValueComparison`, `CandidateList`, `EditableGrid`, `BalanceBar`, `KeyFigures`; the matches and differences are the application's.
 - **IOS partner portal** — F2 Record in `PortalShell`: the statement with `DocumentTotals`, confirm with `ConfirmDialog` or dispute in a `Drawer` (`MoneyField`, `TextAreaField`, `FileDropzone`).
 
@@ -360,5 +373,5 @@ components, as below; the components stay.
 - **E-mail template** — F2 Record: `RichTextField` with merge fields, `Tabs` per language, `EmailPreview`, versions in a `Drawer`, send test in a `Dialog`.
 - **Subscription** — F2 Record: plan and payment method in `KeyValueList`, `UsageMeter`, next invoice in `DocumentTotals`, cancel with `IrreversibleConfirmDialog`, trial / past-due / cancelled as `Banner`.
 - **Subscription invoices** — F1 List: `ListPage`, `DataTable`.
-- **Subscription invoice PDF** — Printout: `PrintDocument`.
+- **Subscription invoice PDF** — liro-folio's PDF in `FilePreview`.
 - **Subscription change plan** — F6 Steps: `PlanComparison`, the proration in `DocumentTotals`, `ConfirmDialog`; prices are the application's.

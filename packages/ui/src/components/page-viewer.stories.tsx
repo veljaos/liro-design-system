@@ -23,7 +23,8 @@ const meta = {
           '**When to use:** beside recognised fields (RecognizedField’s "Show where it was ' +
           'read"), or wherever the application must point at a place on a page. ' +
           '**When not:** a viewer the application runs on another origin (DocumentFrame); a ' +
-          'printout the library draws itself (PrintPage).',
+          'printout drawn as React (the library has none: a printed document is liro-folio’s PDF, shown ' +
+          'here as its page images).',
       },
     },
   },

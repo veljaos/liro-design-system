@@ -139,10 +139,10 @@ export interface HierarchyChartProps {
   onZoomChange?: (zoom: 'actual' | 'fit') => void
   /**
    * The controls: search, unit, size and the toggles under the nodes. Default true; false for a
-   * chart on paper, as it is open.
+   * chart printed from the screen as you see it (a screen, not a document).
    */
   toolbar?: boolean
-  /** The card around the chart. Default true; false on paper (no frames, D27). */
+  /** The card around the chart. Default true; false when the screen is printed as you see it. */
   framed?: boolean
   /** A vacant position's mark. Default `messages['hierarchy.vacant']`. */
   vacantLabel?: string

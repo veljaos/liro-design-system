@@ -1271,8 +1271,6 @@ export interface LiroMessages {
   'payment.cardApproved': string
   'payment.complete': string
   'payment.done': string
-  /** ReceiptPreview: its name. */
-  'receipt.title': string
   /** ScanField: the camera button and the words before a result for assistive technology. */
   'scan.camera': string
   'scan.success': string
@@ -1291,12 +1289,6 @@ export interface LiroMessages {
   /** A handheld worklist (picking, a stock count): changes kept on the device while offline. */
   'queue.waiting': (count: number, countText: string) => string
   // P5.15 / P5.12
-  /** PrintPage: the page number in the bottom margin of every printed page ("Page 1 of 3"). */
-  'print.pageNumber': (page: string, pages: string) => string
-  /** PrintPage: the marker of a draft, at the top of the first page and across every page. */
-  'print.draft': string
-  /** PrintPage: a place and a date under a printed document ("Novi Sad, 10.10.2026."). */
-  'print.placeAndDate': (place: string, date: string) => string
   /** QuizResult: the score ("8 of 10 correct"), the outcome and the answers' review. */
   'quiz.score': (correct: number, total: number, correctText: string, totalText: string) => string
   'quiz.passed': string
@@ -1674,13 +1666,6 @@ export interface LiroMessages {
   'statutory.comparing': (current: string, previous: string) => string
   /** Names a previous value for assistive technology, before the amount: "August 2026:". */
   'statutory.previousValue': (period: string) => string
-  /**
-   * A printed document's one prominent line, from the amount as `format.money` writes it and the
-   * due date as `format.date` writes it (none: no date): "5.003.678,22 RSD due 21.10.2026.".
-   */
-  'print.amountDue': (amount: string, date: string | undefined) => string
-  /** The button in an empty electronic signature field on screen (left off the paper). */
-  'print.signHere': string
   // P5.28 dates
   /** The "now" marker of the time grids (CalendarView, ResourceSchedule, Timetable): "Now, 10:05". */
   'schedule.now': (timeText: string) => string

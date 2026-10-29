@@ -2,7 +2,6 @@ import { createFormat } from '../provider/format'
 import type { CartAmount, CartLine } from './cart-panel'
 import type { PaymentPart } from './payment-dialog'
 import type { PosProduct, ProductCategory } from './product-tile'
-import type { ReceiptAmount, ReceiptFact, ReceiptItem } from './receipt-preview'
 
 /*
  * Story data of the till (P5.10): Pekara Zlatni klas, a bakery in Novi Sad (fictitious). English
@@ -149,51 +148,3 @@ export const QUICK_AMOUNTS: readonly string[] = ['1100', '1500', '2000', '5000']
 export const SPLIT_PAID: readonly PaymentPart[] = [
   { id: 'p1', label: 'Card', value: '500.00', detail: 'Visa •••• 4821', state: 'approved' },
 ]
-
-export const RECEIPT_HEADER: readonly string[] = [
-  'Pekara Zlatni klas',
-  'Bulevar oslobođenja 46, Novi Sad',
-  'PIB 108765432',
-]
-
-export const RECEIPT_FACTS: readonly ReceiptFact[] = [
-  { id: 'number', label: 'Receipt', value: 'ZK-02-000412' },
-  { id: 'time', label: 'Date', value: '06.10.2026. 09:42' },
-  { id: 'register', label: 'Register', value: 'Kasa 2' },
-  { id: 'cashier', label: 'Cashier', value: 'Milica Jovanović' },
-]
-
-export const RECEIPT_ITEMS: readonly ReceiptItem[] = [
-  { id: 'r1', name: 'Kifla 60 g (Đ)', quantity: '4', unitPrice: '25.00', total: '100.00' },
-  {
-    id: 'r2',
-    name: 'Burek sa mesom 250 g (Đ)',
-    quantity: '2',
-    unitPrice: '190.00',
-    total: '380.00',
-  },
-  { id: 'r3', name: 'Jogurt 1 l (Đ)', quantity: '1', unitPrice: '135.00', total: '135.00' },
-  {
-    id: 'r4',
-    name: 'Krempita (Đ)',
-    quantity: '2',
-    unitPrice: '220.00',
-    total: '396.00',
-    note: `Discount 10%: ${SERBIAN.number('-44', { decimals: 2 })}`,
-  },
-]
-
-export const RECEIPT_TOTALS: readonly ReceiptAmount[] = [
-  { id: 'total', label: 'Total', value: '1011.00', strong: true },
-  { id: 'vat', label: 'Đ 20% VAT', value: '168.50' },
-]
-
-export const RECEIPT_PAYMENTS: readonly ReceiptAmount[] = [
-  { id: 'cash', label: 'Cash', value: '2000.00' },
-  { id: 'change', label: 'Change', value: '989.00' },
-]
-
-export const RECEIPT_FOOTER: readonly string[] = ['Thank you, see you tomorrow!']
-
-/** The closing line, printed between double rules (P5.28: the `end` prop, not "=====" text). */
-export const RECEIPT_END = 'END OF FISCAL RECEIPT'

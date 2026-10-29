@@ -14,8 +14,7 @@ import type { CartLine } from './cart-panel'
 import type { ChoosableLine } from './line-quantity-picker'
 import type { PaymentPart } from './payment-dialog'
 import type { FoundReceipt } from './receipt-finder'
-import type { ReceiptFact, ReceiptRecap } from './receipt-preview'
-import type { ReceiptDelivery } from './receipt-result'
+import type { ReceiptDelivery, ReceiptFact } from './receipt-result'
 import type { PaymentOption, ReceiptKindOption } from './sale-logic'
 
 /*
@@ -291,24 +290,6 @@ export const DELIVERED: readonly ReceiptDelivery[] = [
     stateText: 'The SMS service did not answer. Try again in a minute.',
   },
 ]
-
-// ── The fiscal receipt's printed parts (illustrative English texts) ───────────────────────────
-
-export const FISCAL_BANNER = 'FISCAL RECEIPT'
-export const FISCAL_END = 'END OF FISCAL RECEIPT'
-export const NOT_FISCAL = 'THIS IS NOT A FISCAL RECEIPT'
-
-/** The tax per label of the 1.011,00 sale (Đ 20% included: 1.011,00 × 20 / 120 = 168,50). */
-export const TAX_RECAP: ReceiptRecap = {
-  columns: [
-    { id: 'label', label: 'Label' },
-    { id: 'name', label: 'Name' },
-    { id: 'rate', label: 'Rate' },
-    { id: 'tax', label: 'Tax', amount: true },
-  ],
-  rows: [{ id: 'd', cells: { label: 'Đ', name: 'VAT', rate: '20,00%', tax: '168.50' } }],
-  totals: [{ id: 'all', label: 'Total tax', value: '168.50' }],
-}
 
 // ── An open tab (P5.28 item 22) ───────────────────────────────────────────────────────────────
 

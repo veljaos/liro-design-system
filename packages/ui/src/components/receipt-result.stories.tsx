@@ -38,7 +38,7 @@ const meta = {
           'application’s.\n\n' +
           '**When:** in the payment dialog’s done view; on an online order’s page (its receipt ' +
           'issued and delivered electronically); a receipt opened from the journal.\n\n' +
-          '**When not:** the receipt as printed (ReceiptPreview); a list of receipts (the journal, ' +
+          '**When not:** the receipt as printed (its PDF comes from liro-folio); a list of receipts (the journal, ' +
           'a DataTable).',
       },
     },

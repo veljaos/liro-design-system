@@ -918,13 +918,6 @@ export type {
   PaymentMethod,
   PaymentPart,
 } from './components/payment-dialog'
-export { ReceiptPreview } from './components/receipt-preview'
-export type {
-  ReceiptAmount,
-  ReceiptFact,
-  ReceiptItem,
-  ReceiptPreviewProps,
-} from './components/receipt-preview'
 export { PosShell } from './templates/pos-shell'
 export type { PosShellProps } from './templates/pos-shell'
 export { ScanField } from './components/scan-field'
@@ -948,40 +941,6 @@ export {
   stepQuantity,
 } from './components/quantity-logic'
 export type { StepOptions } from './components/quantity-logic'
-export { PrintPage } from './templates/print-page'
-export type { PrintFrameProps, PrintPageProps, PrintStatus } from './templates/print-page'
-export {
-  PrintDetails,
-  PrintIssuedLine,
-  PrintSection,
-  PrintSignatures,
-  PrintTable,
-  PrintTitle,
-} from './templates/print-parts'
-export type {
-  PrintColumn,
-  PrintDetail,
-  PrintDetailsProps,
-  PrintIssued,
-  PrintSectionProps,
-  PrintSignature,
-  PrintSignaturesProps,
-  PrintTableProps,
-} from './templates/print-parts'
-export { PrintDocument } from './templates/print-document'
-export type { PrintDocumentProps, PrintParty } from './templates/print-document'
-export {
-  cssString,
-  fitZoom,
-  pageName,
-  pageNumberContent,
-  pageRules,
-  PRINT_MARGINS,
-  PX_PER_MM,
-  resolvedMargins,
-  sheetSize,
-} from './templates/print-logic'
-export type { PageRulesOptions, PrintMargins, PrintOrientation } from './templates/print-logic'
 export { QuizResult } from './components/quiz-result'
 export type { QuizResultProps, QuizReviewItem } from './components/quiz-result'
 // ── P5.25 RoomRack ──
@@ -1193,7 +1152,7 @@ export type {
   PracticeItem,
   RelatedAct,
 } from './components/legal-model'
-// ── P5.28 docs: the statutory form grid, simple printouts and electronic signature fields ──
+// ── P5.28 docs: the statutory form grid ──
 export {
   statutoryRows,
   statutoryColumnLabel,
@@ -1216,23 +1175,6 @@ export type {
   StatutoryPlace,
   StatutoryRow,
 } from './templates/statutory-logic'
-export {
-  PrintAmountDueLine,
-  PrintPaymentDetails,
-  PrintSignatureField,
-} from './templates/print-parts'
-export type {
-  PrintAmountDue,
-  PrintPayment,
-  PrintSignatureFieldProps,
-} from './templates/print-parts'
-export {
-  lengthToMm,
-  printedPageCount,
-  PT_PER_MM,
-  signatureFieldPlacement,
-} from './templates/print-logic'
-export type { PrintBodyArea, SheetBox, SignatureFieldPlacement } from './templates/print-logic'
 
 // ── P5.28 dates ──
 export { numericFormat } from './provider'
@@ -1265,7 +1207,7 @@ export type { ChoosableLine, LineQuantityPickerProps } from './components/line-q
 export { AdvanceList } from './components/advance-list'
 export type { AdvanceItem, AdvanceListProps } from './components/advance-list'
 export { ReceiptResult } from './components/receipt-result'
-export type { ReceiptDelivery, ReceiptResultProps } from './components/receipt-result'
+export type { ReceiptDelivery, ReceiptFact, ReceiptResultProps } from './components/receipt-result'
 export {
   allLinesChosen,
   chooseAllLines,
@@ -1287,7 +1229,6 @@ export type {
   ReceiptKindOption,
 } from './components/sale-logic'
 export type { CartLineState } from './components/cart-panel'
-export type { ReceiptRecap, ReceiptRecapColumn } from './components/receipt-preview'
 
 // ── P5.28 floor ──
 export {

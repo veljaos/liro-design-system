@@ -5,7 +5,6 @@ import { TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 import type { IconComponent } from './intents'
-import type { ReceiptFact } from './receipt-preview'
 import { Spinner } from './spinner'
 import { TextField } from './text-field'
 
@@ -26,6 +25,13 @@ import { TextField } from './text-field'
  *   failed (danger) with the application's words. `onDeliver(id, address)` reports it; the
  *   application sends and answers with the state.
  */
+
+/** One fact of the issued receipt (the processor's number, its time, the counter), as given. */
+export interface ReceiptFact {
+  id: string
+  label: string
+  value: string
+}
 
 /** A way the receipt reaches the customer, from the application. */
 export interface ReceiptDelivery {

@@ -31,11 +31,6 @@ import {
   notice,
   PageHeader,
   PortalShell,
-  PrintDetails,
-  PrintPage,
-  PrintSection,
-  PrintTable,
-  PrintTitle,
   SectionCard,
   SelectField,
   SignerList,
@@ -52,10 +47,10 @@ import {
   type MenuEntry,
   type MyShift,
   type PortalSection,
-  type PrintColumn,
   type Signer,
 } from '@veljaos/ui'
 import type { ExampleRoute } from './example-app'
+import { FolioPdf } from './folio-pdf'
 import { Navigate, ROUTES } from './example-shell'
 import { useExampleState } from './example-state'
 import { Tenant } from './screens-G'
@@ -99,8 +94,8 @@ import {
  * made for a phone first), as Nikola Marković, a site worker on Liman 4, sees it on 14.10.2026.
  * - Home: the latest payslip, the leave left, the next shift and what waits for his signature.
  * - Payslips: the list (DataTable, cards on a phone), one payslip (KeyFigures and KeyValueLists:
- *   hours, earnings, deductions, the account, what the employer pays on top) and its PDF (a
- *   PrintPage preview, as the application renders it).
+ *   hours, earnings, deductions, the account, what the employer pays on top) and its PDF
+ *   (liro-folio's; FolioPdf stands in for it, P5.95).
  * - Leave: the balance (KeyFigures), the requests with their state (StatusBadge), one request's
  *   approval (StatusTimeline: submitted, the site manager, HR) and a new request (the
  *   application counts the working days).
@@ -615,19 +610,10 @@ export function PayslipScreen({ phone }: { phone: boolean }) {
   )
 }
 
-const SLIP_COLUMNS: PrintColumn<PayslipLine>[] = [
-  { key: 'label', header: 'Item', cell: (line) => line.label },
-  { key: 'basis', header: 'Basis', cell: (line) => line.basis ?? '', width: '42mm' },
-  {
-    key: 'amount',
-    header: 'Amount',
-    align: 'end',
-    width: '36mm',
-    cell: (line) => <MoneyText value={line.amount} currency="RSD" />,
-  },
-]
-
-/** The payslip's PDF, as the application renders it: a bar with the way back, the sheet. */
+/**
+ * The payslip's PDF (P5.95): a bar with the way back and the file's name, then liro-folio's PDF
+ * (FolioPdf stands in for it in the examples).
+ */
 export function PayslipPdfScreen() {
   const { format } = useLiro()
   const navigate = useContext(Navigate)
@@ -635,7 +621,7 @@ export function PayslipPdfScreen() {
   return (
     <Tenant today={Y_TODAY}>
       <div className="flex min-h-full w-full flex-col bg-surface-sunken font-sans">
-        <header className="sticky top-0 z-10 box-border flex items-center gap-3 border-0 border-b border-solid border-default bg-surface-raised px-4 py-2 print:hidden">
+        <header className="sticky top-0 z-10 box-border flex items-center gap-3 border-0 border-b border-solid border-default bg-surface-raised px-4 py-2">
           <Button
             intent="back"
             label="Back to the payslip"
@@ -646,96 +632,12 @@ export function PayslipPdfScreen() {
           <p className="bidi-content m-0 min-w-0 flex-1 text-sm font-semibold text-primary">
             {`${slip.number}.pdf`}
           </p>
-          <Button
-            intent="print"
-            label="Print"
-            onClick={() => {
-              window.print()
-            }}
-          />
         </header>
-        <main className="flex min-w-0 flex-1 flex-col">
-          <PrintPage
-            title={`Payslip ${slip.number}`}
-            footer={`${EMPLOYEE.company} · ${HR_CONTACT}`}
-          >
-            <div className="flex flex-col gap-6">
-              <PrintTitle
-                title="Payslip"
-                number={slip.number}
-                subtitle={`${monthName(slip.month, format)} · ${EMPLOYEE.company}`}
-              />
-              <PrintDetails
-                items={[
-                  { key: 'employee', label: 'Employee', value: EMPLOYEE.name },
-                  {
-                    key: 'number',
-                    label: 'Employee number',
-                    value: EMPLOYEE.number,
-                    numeric: true,
-                  },
-                  { key: 'role', label: 'Position', value: EMPLOYEE.role },
-                  {
-                    key: 'period',
-                    label: 'Period',
-                    value: <DateRangeText from={slip.period.from} to={slip.period.to} />,
-                    numeric: true,
-                  },
-                  {
-                    key: 'paid',
-                    label: 'Paid on',
-                    value: <DateText value={slip.paidOn} />,
-                    numeric: true,
-                  },
-                  {
-                    key: 'account',
-                    label: 'Account',
-                    value: <bdi>{slip.account}</bdi>,
-                    numeric: true,
-                  },
-                ]}
-              />
-              <PrintSection title="Earnings">
-                <PrintTable
-                  caption="Earnings"
-                  columns={SLIP_COLUMNS}
-                  rows={[
-                    ...slip.earnings,
-                    { key: 'gross', label: 'Gross pay', amount: slip.gross },
-                  ]}
-                  rowKey={(line) => line.key}
-                  lineType={(line) => (line.key === 'gross' ? 'subtotal' : 'line')}
-                />
-              </PrintSection>
-              <PrintSection title="Deductions">
-                <PrintTable
-                  caption="Deductions"
-                  columns={SLIP_COLUMNS}
-                  rows={[
-                    ...slip.deductions,
-                    { key: 'total', label: 'Deductions', amount: slip.deductionsTotal },
-                  ]}
-                  rowKey={(line) => line.key}
-                  lineType={(line) => (line.key === 'total' ? 'subtotal' : 'line')}
-                />
-              </PrintSection>
-              <p className="bidi-content m-0 text-md font-semibold text-primary">
-                {`Net pay ${format.money(slip.net, 'RSD')}, paid ${format.date(slip.paidOn)}.`}
-              </p>
-              <PrintSection title="Paid by the employer on top">
-                <PrintTable
-                  caption="Paid by the employer"
-                  columns={SLIP_COLUMNS}
-                  rows={[
-                    ...slip.employer,
-                    { key: 'cost', label: 'Total cost of the work', amount: slip.cost },
-                  ]}
-                  rowKey={(line) => line.key}
-                  lineType={(line) => (line.key === 'cost' ? 'subtotal' : 'line')}
-                />
-              </PrintSection>
-            </div>
-          </PrintPage>
+        <main className="box-border flex min-w-0 flex-1 flex-col p-4">
+          <FolioPdf
+            fileName={`${slip.number}.pdf`}
+            detail={`Payslip · ${monthName(slip.month, format)} · ${EMPLOYEE.company}`}
+          />
         </main>
       </div>
     </Tenant>
@@ -1290,23 +1192,12 @@ export function DocumentsScreen({ phone }: { phone: boolean }) {
   )
 }
 
-/** The annex as it is signed: its text on a sheet (the preview). */
+/** The annex as it is signed: liro-folio's PDF (FolioPdf stands in for it, P5.95). */
 function AnnexSheet() {
   return (
-    <PrintPage title={ANNEX.title} pageNumbers={false}>
-      <div className="flex flex-col gap-4">
-        <PrintTitle
-          title={ANNEX.title}
-          subtitle="Kvadrat Gradnja d.o.o. · Novi Sad · illustrative"
-        />
-        <p className="bidi-content m-0 text-sm text-primary">{ANNEX.parties}</p>
-        {ANNEX.articles.map((article) => (
-          <PrintSection key={article.heading} title={article.heading} headingLevel={3}>
-            <p className="bidi-content m-0 text-sm text-primary">{article.text}</p>
-          </PrintSection>
-        ))}
-      </div>
-    </PrintPage>
+    <div className="p-4">
+      <FolioPdf fileName={`${DOCUMENTS[0]?.id ?? 'annex'}.pdf`} detail={ANNEX.title} />
+    </div>
   )
 }
 
