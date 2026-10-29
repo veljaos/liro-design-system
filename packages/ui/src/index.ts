@@ -565,6 +565,7 @@ export type {
 } from './components/job-progress'
 export { acceptsFile, checkFiles, FileDropzone } from './components/file-dropzone'
 export type {
+  ExpectedFile,
   FileDropzoneProps,
   FileFacts,
   FileRejection,
@@ -1312,6 +1313,22 @@ export { HighlightedText, SearchResultList } from './components/search-result-li
 export type { SearchResult, SearchResultListProps } from './components/search-result-list'
 export { CategoryGrid } from './components/category-grid'
 export type { CategoryCard, CategoryGridProps } from './components/category-grid'
+// P5.94 item 20: a portal's common questions.
+export {
+  CommonQuestions,
+  filterQuestions,
+  foldQuestionText,
+  questionMatches,
+  questionsFiltered,
+  shownQuestions,
+  toggleQuestion,
+} from './components/common-questions'
+export type {
+  CommonQuestion,
+  CommonQuestionsProps,
+  QuestionCategory,
+  SearchableQuestion,
+} from './components/common-questions'
 export {
   asksWhy,
   currentEntry,

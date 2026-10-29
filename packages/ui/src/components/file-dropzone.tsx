@@ -1,4 +1,4 @@
-import { Camera, FileUp, Upload } from 'lucide-react'
+import { Camera, CircleCheck, FileText, FileUp, Upload } from 'lucide-react'
 import { useEffect, useId, useLayoutEffect, useRef, useState, type ChangeEvent } from 'react'
 import { ButtonPrimitive } from '../primitives/button'
 import { TEXT_DIRECTION } from '../primitives/classes'
@@ -37,7 +37,26 @@ export type { FileFacts, FileRejection, FileRules, RejectionReason } from './fil
  * - It is an action, not a value (P5.93 item 1): there is no read-only or disabled dropzone. When
  *   files cannot be added now, `unavailableReason` draws the zone grey, keeps "Choose files"
  *   focusable but unavailable (aria-disabled), ignores drops, and says why under the zone.
+ * - `expected` (P5.94 item 3): the documents the application expects, from its data — "Attach"
+ *   and, one per line under the zone, each document's name (a 14px FileText) with "Required" or
+ *   "Optional", the application's detail under it, and a success-toned check with "Attached"
+ *   once the application says it is there. The list describes "Choose files"; the field is
+ *   marked required when a document is (unless `required` says otherwise). Which file is which
+ *   document, and whether one is missing, stays the application's.
  */
+
+/** A document the application expects among the files (P5.94 item 3). */
+export interface ExpectedFile {
+  key: string
+  /** Its name, in the application's words ("Death certificate"). */
+  label: string
+  /** It must be attached (the application's rule): "Required"; otherwise "Optional". */
+  required?: boolean
+  /** A line about it, from the application ("A photo of the paper is enough"). */
+  detail?: string
+  /** The application has it among the files: a check and "Attached". */
+  attached?: boolean
+}
 
 export interface FileDropzoneProps extends Omit<FieldBaseProps, 'readOnly'> {
   /**
@@ -76,6 +95,66 @@ export interface FileDropzoneProps extends Omit<FieldBaseProps, 'readOnly'> {
    * zone is grey, "Choose files" is unavailable and the reason stands under the zone.
    */
   unavailableReason?: string
+  /**
+   * The documents the application expects, from its data (a request's proof: "Death
+   * certificate", required): listed under the zone, each "Required" or "Optional", checked when
+   * `attached`. P5.94 item 3.
+   */
+  expected?: readonly ExpectedFile[]
+}
+
+/** The expected documents under the zone; `id` describes "Choose files". */
+function ExpectedFiles({ id, files }: { id: string; files: readonly ExpectedFile[] }) {
+  const { messages } = useLiro()
+  return (
+    <div id={id} data-slot="file-expected" className="flex flex-col gap-1">
+      <p
+        id={`${id}-title`}
+        className={cn('m-0 text-xs font-medium text-secondary', TEXT_DIRECTION)}
+      >
+        {messages['file.expected']}
+      </p>
+      <ul aria-labelledby={`${id}-title`} className="m-0 flex list-none flex-col gap-1 p-0">
+        {files.map((item) => {
+          const Icon = item.attached === true ? CircleCheck : FileText
+          return (
+            <li key={item.key} className="flex min-w-0 items-start gap-1.5 text-sm">
+              <Icon
+                aria-hidden="true"
+                className={cn(
+                  'mt-0.5 size-3.5 shrink-0',
+                  item.attached === true ? 'text-status-success-fg' : 'text-secondary',
+                )}
+              />
+              <span className="flex min-w-0 flex-col">
+                <span className={cn('min-w-0 break-words', TEXT_DIRECTION)}>
+                  <span className="font-medium text-primary">{item.label}</span>
+                  <span aria-hidden="true" className="px-1.5 text-secondary">
+                    ·
+                  </span>
+                  <span className="sr-only">, </span>
+                  <span
+                    className={item.attached === true ? 'text-status-success-fg' : 'text-secondary'}
+                  >
+                    {item.attached === true
+                      ? messages['file.expectedAttached']
+                      : item.required === true
+                        ? messages['file.expectedRequired']
+                        : messages['file.expectedOptional']}
+                  </span>
+                </span>
+                {item.detail !== undefined && item.detail !== '' && (
+                  <span className={cn('text-xs text-secondary', TEXT_DIRECTION)}>
+                    {item.detail}
+                  </span>
+                )}
+              </span>
+            </li>
+          )
+        })}
+      </ul>
+    </div>
+  )
 }
 
 /** Choose files with a button, or drop them; what is accepted is said before choosing. */
@@ -90,6 +169,8 @@ export function FileDropzone(props: FileDropzoneProps) {
   const cameraInput = useRef<HTMLInputElement>(null)
   const camera = props.camera === true && phone
   const hintId = useId()
+  const expectedId = `${hintId}-expected`
+  const expected = props.expected ?? []
   const [dragging, setDragging] = useState(false)
   const depth = useRef(0)
   const [rejections, setRejections] = useState<FileRejection[]>([])
@@ -180,7 +261,13 @@ export function FileDropzone(props: FileDropzoneProps) {
     return messages['file.rejectedCount'](name, max, format.number(String(max)))
   }
   return (
-    <Field {...fieldProps(props)} group>
+    <Field
+      {...fieldProps({
+        ...props,
+        required: props.required ?? expected.some((item) => item.required === true),
+      })}
+      group
+    >
       {(control) => (
         <div role="group" aria-labelledby={control.labelId} className="flex flex-col gap-1.5">
           {/* The drop target: drag events only (dropping is a shortcut; the button is the way). */}
@@ -210,6 +297,7 @@ export function FileDropzone(props: FileDropzoneProps) {
               aria-describedby={
                 [
                   hint.length > 0 ? hintId : null,
+                  expected.length > 0 ? expectedId : null,
                   disabled ? reasonId : null,
                   control.describedBy ?? null,
                 ]
@@ -285,6 +373,7 @@ export function FileDropzone(props: FileDropzoneProps) {
               />
             )}
           </div>
+          {expected.length > 0 && <ExpectedFiles id={expectedId} files={expected} />}
           {disabled && (
             <FieldMessage id={reasonId} tone="hint">
               {props.unavailableReason}

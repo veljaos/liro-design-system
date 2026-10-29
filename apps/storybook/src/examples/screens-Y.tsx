@@ -1,5 +1,6 @@
 import {
   CalendarClock,
+  CircleHelp,
   FileText,
   House,
   Languages,
@@ -14,7 +15,10 @@ import {
 import { useContext, useState, type ReactNode } from 'react'
 import {
   Alert,
+  AttachmentList,
   Button,
+  CommonQuestions,
+  FileDropzone,
   DataTable,
   DateRangeField,
   DateRangeText,
@@ -42,6 +46,8 @@ import {
   TextField,
   Toaster,
   useLiro,
+  type Attachment,
+  type CommonQuestion,
   type DataTableColumn,
   type MenuEntry,
   type MyShift,
@@ -51,6 +57,7 @@ import {
 } from '@veljaos/ui'
 import type { ExampleRoute } from './example-app'
 import { Navigate, ROUTES } from './example-shell'
+import { useExampleState } from './example-state'
 import { Tenant } from './screens-G'
 import {
   ANNEX,
@@ -64,14 +71,18 @@ import {
   DOCUMENT_TONES,
   DOCUMENTS,
   EMPLOYEE,
+  EMPLOYEE_QUESTIONS,
   HR_CONTACT,
   LEAVE_BALANCE,
   LEAVE_KINDS,
   LEAVE_REQUESTS,
   LEAVE_TONES,
+  leaveProof,
   NIKOLA_SHIFTS,
   PAYSLIPS,
+  QUESTION_CATEGORIES,
   SEPTEMBER,
+  sentSteps,
   workingDays,
   Y_ROUTES,
   Y_TODAY,
@@ -80,6 +91,7 @@ import {
   type LeaveRequest,
   type Payslip,
   type PayslipLine,
+  type ProofRule,
 } from './data-Y'
 
 /*
@@ -97,12 +109,20 @@ import {
  *   SignerList (Sign, Decline with a reason). The signing itself is the application's.
  * - My details: what HR has, and change requests waiting for HR's approval (a Drawer for the
  *   request, D14).
+ * - P5.94 (the owner's fifth review): a request is sent with its proof (item 3) — paid leave is
+ *   Kind then Reason, each reason with its days and its documents, sick leave with the doctor's
+ *   note, a change of address or account with its proof; FileDropzone lists what is expected
+ *   (`expected`, from data), the photo from the camera on a phone, AttachmentList shows the files,
+ *   and the request's page shows them to whoever opens it. The Dates are typed or picked (item
+ *   2). Common questions (item 20): the top four on the home page, all of them with search and
+ *   categories on their own page; a question's button starts its request filled in.
  * Every figure is the application's (data-Y.ts); the screens use only `@veljaos/ui`.
  */
 
 const LINK = 'text-link no-underline visited:text-link hover:underline'
 
-export type SectionKey = 'home' | 'payslips' | 'leave' | 'shifts' | 'documents' | 'details'
+export type SectionKey =
+  'home' | 'payslips' | 'leave' | 'shifts' | 'documents' | 'details' | 'questions'
 
 const SECTIONS: PortalSection[] = [
   { key: 'home', label: 'Home', href: `#${Y_ROUTES.home}`, icon: House },
@@ -125,6 +145,13 @@ function portalMenu(navigate: (path: string) => void): MenuEntry[] {
       icon: UserRound,
       onSelect: () => {
         navigate(Y_ROUTES.details)
+      },
+    },
+    {
+      label: 'Common questions',
+      icon: CircleHelp,
+      onSelect: () => {
+        navigate(Y_ROUTES.questions)
       },
     },
     { label: 'Language: English', icon: Languages, onSelect: () => undefined },
@@ -226,7 +253,8 @@ function HomeRow({
 
 /**
  * The portal's home shows only what matters now (P5.93 item 11, the owner's review): the quick
- * actions, what waits for Nikola, and what is new for him — no grid of equal cards.
+ * actions, what waits for Nikola, and what is new for him — no grid of equal cards. Under them the
+ * four questions employees ask most, and "All questions" (P5.94 item 20).
  */
 export function EmployeeHome({ phone }: { phone: boolean }) {
   const { format } = useLiro()
@@ -235,6 +263,7 @@ export function EmployeeHome({ phone }: { phone: boolean }) {
   const pending = LEAVE_REQUESTS.find((request) => request.state === 'Waiting for HR')
   const next = NIKOLA_SHIFTS.find((shift) => shift.date > Y_TODAY)
   const toSign = DOCUMENTS.find((document) => document.state === 'To sign')
+  const questions = useEmployeeQuestions()
   return (
     <EmployeePortal phone={phone} current="home">
       <Page>
@@ -327,6 +356,54 @@ export function EmployeeHome({ phone }: { phone: boolean }) {
             )}
           </ul>
         </SectionCard>
+        <SectionCard
+          title="Common questions"
+          headingLevel={2}
+          actions={<To href={Y_ROUTES.questions}>All questions</To>}
+        >
+          <CommonQuestions label="Common questions" questions={questions} limit={4} />
+        </SectionCard>
+      </Page>
+    </EmployeePortal>
+  )
+}
+
+/** The common questions, each request starting where it is done, filled in (P5.94 item 20). */
+function useEmployeeQuestions(): CommonQuestion[] {
+  const navigate = useContext(Navigate)
+  return EMPLOYEE_QUESTIONS.map(({ request, ...question }) =>
+    request === undefined
+      ? question
+      : {
+          ...question,
+          action: {
+            label: request.label,
+            onSelect: () => {
+              navigate(request.route)
+            },
+          },
+        },
+  )
+}
+
+/** Every common question, searched and by category (P5.94 item 20). */
+export function QuestionsScreen({ phone }: { phone: boolean }) {
+  const questions = useEmployeeQuestions()
+  return (
+    <EmployeePortal phone={phone} current="home">
+      <Page>
+        <PageHeader
+          title="Common questions"
+          back={{ href: `#${Y_ROUTES.home}`, label: 'Home' }}
+          subtitle={`What changes when your life changes, and what to bring. Anything else: ${EMPLOYEE.hr}, HR.`}
+        />
+        <CommonQuestions
+          label="Common questions"
+          questions={questions}
+          search
+          categories={QUESTION_CATEGORIES}
+          headingLevel={2}
+        />
       </Page>
     </EmployeePortal>
   )
@@ -671,23 +748,38 @@ function LeaveBadge({ request }: { request: LeaveRequest }) {
   return <StatusBadge label={request.state} tone={LEAVE_TONES[request.state]} />
 }
 
-/** A new request just sent (the route carries it, as the Core's list would). */
-const SENT_REQUEST: LeaveRequest = {
-  id: 'LR-2026-032',
-  kind: 'Annual leave',
-  from: DECEMBER_DRAFT.from,
-  to: '2026-12-28',
-  days: '6',
-  submitted: Y_TODAY,
-  state: 'Waiting for site manager',
-  steps: [],
-  current: 0,
+/** The requests sent in this visit, kept above the screens as the Core keeps them (P5.94). */
+function useSentRequests() {
+  return useExampleState<LeaveRequest[]>('portal.leave.sent', () => [])
+}
+
+/** The ids the requests sent in this visit take, newest last (their pages are routes). */
+const SENT_IDS = Array.from(
+  { length: 8 },
+  (_, index) => `LR-2026-${String(32 + index).padStart(3, '0')}`,
+)
+
+/** "Paid leave · Moving": a request's kind, with its reason. */
+function kindText(request: LeaveRequest): string {
+  return request.cause === undefined ? request.kind : `${request.kind} · ${request.cause}`
+}
+
+/** "1 attachment", "2 attachments", or nothing. */
+function attachmentsText(count: number): string | null {
+  return count === 0 ? null : count === 1 ? '1 attachment' : `${String(count)} attachments`
 }
 
 export function LeaveScreen({ phone, sent = false }: { phone: boolean; sent?: boolean }) {
   const { format } = useLiro()
   const navigate = useContext(Navigate)
-  const requests = sent ? [SENT_REQUEST, ...LEAVE_REQUESTS] : LEAVE_REQUESTS
+  const [sentRequests] = useSentRequests()
+  const requests = [...[...sentRequests].reverse(), ...LEAVE_REQUESTS]
+  // The application's balance: the annual leave sent in this visit waits for approval too.
+  const sentAnnual = sentRequests
+    .filter((request) => request.kind === 'Annual leave')
+    .reduce((sum, request) => sum + Number(request.days), 0)
+  const requested = String(Number(LEAVE_BALANCE.requested) + sentAnnual)
+  const left = String(Math.max(Number(LEAVE_BALANCE.available) - sentAnnual, 0))
   return (
     <EmployeePortal phone={phone} current="leave">
       <Page>
@@ -714,12 +806,8 @@ export function LeaveScreen({ phone, sent = false }: { phone: boolean; sent?: bo
           items={[
             { key: 'entitlement', label: 'Days this year', value: LEAVE_BALANCE.entitlement },
             { key: 'used', label: 'Taken', value: LEAVE_BALANCE.used },
-            {
-              key: 'requested',
-              label: 'Waiting for approval',
-              value: sent ? '11' : LEAVE_BALANCE.requested,
-            },
-            { key: 'available', label: 'Left', value: sent ? '0' : LEAVE_BALANCE.available },
+            { key: 'requested', label: 'Waiting for approval', value: requested },
+            { key: 'available', label: 'Left', value: left },
           ]}
         />
         <SectionCard title="Requests" headingLevel={2}>
@@ -731,17 +819,18 @@ export function LeaveScreen({ phone, sent = false }: { phone: boolean; sent?: bo
               >
                 <div className="flex flex-wrap items-start gap-x-3 gap-y-1">
                   <span className="flex min-w-0 flex-1 flex-col">
-                    {request.steps.length > 0 ? (
-                      <To href={Y_ROUTES.leaveRequest(request.id)}>
-                        {`${request.kind}, ${format.date(request.from)} – ${format.date(request.to)}`}
-                      </To>
-                    ) : (
-                      <span className="bidi-content font-medium text-primary">
-                        {`${request.kind}, ${format.date(request.from)} – ${format.date(request.to)}`}
-                      </span>
-                    )}
+                    <To href={Y_ROUTES.leaveRequest(request.id)}>
+                      {`${kindText(request)}, ${format.date(request.from)} – ${format.date(request.to)}`}
+                    </To>
                     <span className="bidi-content text-xs text-secondary">
-                      {`${request.id} · ${request.days} working ${request.days === '1' ? 'day' : 'days'} · sent ${format.date(request.submitted)}`}
+                      {[
+                        request.id,
+                        `${request.days} working ${request.days === '1' ? 'day' : 'days'}`,
+                        `sent ${format.date(request.submitted)}`,
+                        attachmentsText(request.attachments?.length ?? 0),
+                      ]
+                        .filter((part) => part !== null)
+                        .join(' · ')}
                     </span>
                   </span>
                   <LeaveBadge request={request} />
@@ -758,12 +847,24 @@ export function LeaveScreen({ phone, sent = false }: { phone: boolean; sent?: bo
   )
 }
 
+/**
+ * One request: its approval, its details and the proof sent with it (P5.94 item 3) — what the
+ * site manager and HR open to decide; the examples have no approver's screen for leave, so the
+ * request's own page shows the attachments to whoever opens it.
+ */
 export function LeaveRequestScreen({ phone, id }: { phone: boolean; id: string }) {
   const { format } = useLiro()
-  const request = LEAVE_REQUESTS.find((each) => each.id === id) ?? LEAVE_REQUESTS[0]
+  const [sentRequests] = useSentRequests()
+  const request =
+    [...sentRequests, ...LEAVE_REQUESTS].find((each) => each.id === id) ?? LEAVE_REQUESTS[0]
   const [withdrawn, setWithdrawn] = useState(false)
   if (request === undefined) return null
   const waiting = request.state.startsWith('Waiting') && !withdrawn
+  const approver =
+    request.steps[request.current]?.key === 'manager'
+      ? `${EMPLOYEE.manager} (site manager)`
+      : `${EMPLOYEE.hr} (HR)`
+  const attachments = request.attachments ?? []
   return (
     <EmployeePortal phone={phone} current="leave">
       <Page>
@@ -777,7 +878,7 @@ export function LeaveRequestScreen({ phone, id }: { phone: boolean; id: string }
               <LeaveBadge request={request} />
             )
           }
-          subtitle={`${request.kind} · ${format.date(request.from)} – ${format.date(request.to)} · ${request.days} working days`}
+          subtitle={`${kindText(request)} · ${format.date(request.from)} – ${format.date(request.to)} · ${request.days} working ${request.days === '1' ? 'day' : 'days'}`}
         />
         <SectionCard title="Approval" headingLevel={2}>
           <StatusTimeline
@@ -787,7 +888,7 @@ export function LeaveRequestScreen({ phone, id }: { phone: boolean; id: string }
             {...(waiting
               ? {
                   next: {
-                    title: `${EMPLOYEE.hr} (HR) approves next`,
+                    title: `${approver} approves next`,
                     description: 'You get a notification when it is decided.',
                     actions: (
                       <Button
@@ -810,6 +911,9 @@ export function LeaveRequestScreen({ phone, id }: { phone: boolean; id: string }
             columns={1}
             items={[
               { key: 'kind', label: 'Kind', value: request.kind },
+              ...(request.cause === undefined
+                ? []
+                : [{ key: 'reason', label: 'Reason', value: request.cause }]),
               {
                 key: 'dates',
                 label: 'Dates',
@@ -827,23 +931,152 @@ export function LeaveRequestScreen({ phone, id }: { phone: boolean; id: string }
             ]}
           />
         </SectionCard>
+        {attachments.length > 0 && (
+          <SectionCard title="Proof" headingLevel={2} flush>
+            <AttachmentList
+              label={`Proof sent with ${request.id}`}
+              inCard
+              files={attachments}
+              onDownload={(file) => {
+                notice.success(`${file.name} is downloaded.`)
+              }}
+            />
+          </SectionCard>
+        )}
       </Page>
     </EmployeePortal>
   )
 }
 
-export function NewLeaveScreen({ phone, draft = false }: { phone: boolean; draft?: boolean }) {
+const MB = 1024 * 1024
+
+/** A file's size as the application writes it ("1,8 MB", "240 KB"), through `format`. */
+function sizeText(bytes: number, format: ReturnType<typeof useLiro>['format']): string {
+  return bytes >= MB
+    ? `${format.number((bytes / MB).toFixed(1))} MB`
+    : `${format.number(String(Math.max(Math.round(bytes / 1024), 1)))} KB`
+}
+
+/** A chosen file as the application lists it once it has it (the upload is the Core's). */
+function attachmentOf(file: File, format: ReturnType<typeof useLiro>['format']): Attachment {
+  return {
+    id: `${file.name}-${String(file.size)}-${String(file.lastModified)}`,
+    name: file.name,
+    sizeText: sizeText(file.size, format),
+    state: 'available',
+  }
+}
+
+/**
+ * The application's reading of which expected documents are there: one file per document, in
+ * the order they are listed (a real application asks or recognises the document).
+ */
+function withAttached(rules: readonly ProofRule[], files: number): ProofRule[] {
+  return rules.map((rule, index) => ({ ...rule, attached: files > index }))
+}
+
+/** The required documents still missing, by the same reading. */
+function missingProof(rules: readonly ProofRule[], files: number): ProofRule[] {
+  return rules.filter((rule, index) => rule.required === true && files <= index)
+}
+
+/**
+ * The proof a request is sent with (P5.94 item 3): FileDropzone lists what is expected, from
+ * the data (`expected`), a photo from the camera on a phone; AttachmentList shows the files.
+ */
+function ProofField({
+  rules,
+  files,
+  onChange,
+  phone,
+  error,
+}: {
+  rules: readonly ProofRule[]
+  files: readonly Attachment[]
+  onChange: (files: Attachment[]) => void
+  phone: boolean
+  error?: string
+}) {
+  const { format } = useLiro()
+  return (
+    <div className="flex flex-col gap-2">
+      <FileDropzone
+        label="Proof"
+        expected={withAttached(rules, files.length)}
+        accept={['image/*', '.pdf']}
+        acceptText="A photo or a PDF"
+        maxSize={10 * MB}
+        maxSizeText="10 MB"
+        camera
+        layout={phone ? 'phone' : 'desktop'}
+        onFiles={(chosen) => {
+          onChange([...files, ...chosen.map((file) => attachmentOf(file, format))])
+        }}
+        {...(error === undefined ? {} : { error })}
+      />
+      {files.length > 0 && (
+        <AttachmentList
+          label="Proof"
+          files={files}
+          onDownload={() => undefined}
+          canRemove={() => true}
+          onRemove={(removed) => {
+            onChange(files.filter((file) => file.id !== removed.id))
+          }}
+        />
+      )}
+    </div>
+  )
+}
+
+/** "Attach: Death certificate." — the required documents not attached yet. */
+function proofError(missing: readonly ProofRule[]): string | undefined {
+  return missing.length === 0
+    ? undefined
+    : `Attach: ${missing.map((rule) => rule.label).join(', ')}.`
+}
+
+/**
+ * A new leave request (P5.94 items 2 and 3): Kind, then for paid leave its Reason (each with its
+ * days and its proof, from data), the Dates typed or picked, the proof the kind or reason needs,
+ * a note. `kind` and `reason` start it filled in, as a common question does.
+ */
+export function NewLeaveScreen({
+  phone,
+  draft = false,
+  kind: startKind,
+  reason: startReason,
+}: {
+  phone: boolean
+  draft?: boolean
+  kind?: string
+  reason?: string
+}) {
   const { format } = useLiro()
   const navigate = useContext(Navigate)
-  const [kind, setKind] = useState(draft ? DECEMBER_DRAFT.kind : 'annual')
+  const [, setSent] = useSentRequests()
+  const [kind, setKind] = useState(draft ? DECEMBER_DRAFT.kind : (startKind ?? 'annual'))
+  const [reason, setReason] = useState(startReason ?? '')
   const [range, setRange] = useState<{ start: string | null; end: string | null }>(
     draft ? { start: DECEMBER_DRAFT.from, end: '2026-12-28' } : { start: null, end: null },
   )
   const [note, setNote] = useState(draft ? DECEMBER_DRAFT.note : '')
-  const [missing, setMissing] = useState(false)
+  const [files, setFiles] = useState<Attachment[]>([])
+  const [checked, setChecked] = useState(false)
+  const chosenKind = LEAVE_KINDS.find((each) => each.value === kind)
+  const reasons = chosenKind?.reasons
+  const chosenReason = reasons?.find((each) => each.value === reason)
+  const proof = leaveProof(kind, reason)
+  const missing = missingProof(proof, files.length)
   // The application counts the working days of the range (weekends and holidays out).
   const days = workingDays(range.start, range.end)
   const over = days !== null && kind === 'annual' && Number(days) > Number(LEAVE_BALANCE.available)
+  const overReason =
+    days !== null && chosenReason !== undefined && Number(days) > Number(chosenReason.days)
+  const datesMissing = checked && (range.start === null || range.end === null)
+  const reasonMissing = checked && reasons !== undefined && chosenReason === undefined
+  const daysText = days === null ? null : `${days} working ${days === '1' ? 'day' : 'days'}`
+  const proofMessage = checked ? proofError(missing) : undefined
   return (
     <EmployeePortal phone={phone} current="leave">
       <Page>
@@ -854,11 +1087,32 @@ export function NewLeaveScreen({ phone, draft = false }: { phone: boolean; draft
             className="flex flex-col gap-4"
             onSubmit={(event) => {
               event.preventDefault()
-              if (range.start === null || range.end === null) {
-                setMissing(true)
+              setChecked(true)
+              if (
+                range.start === null ||
+                range.end === null ||
+                days === null ||
+                (reasons !== undefined && chosenReason === undefined) ||
+                missing.length > 0
+              ) {
                 return
               }
-              notice.success('Leave request sent to Snežana Popović.')
+              const request: LeaveRequest = {
+                id: SENT_IDS[0] ?? 'LR-2026-032',
+                kind: chosenKind?.label ?? kind,
+                ...(chosenReason === undefined ? {} : { cause: chosenReason.label }),
+                from: range.start,
+                to: range.end,
+                days,
+                submitted: Y_TODAY,
+                state: 'Waiting for site manager',
+                ...(note.trim() === '' ? {} : { note: note.trim() }),
+                ...(files.length === 0 ? {} : { attachments: files }),
+                steps: sentSteps(),
+                current: 1,
+              }
+              setSent((list) => [...list, { ...request, id: SENT_IDS[list.length] ?? request.id }])
+              notice.success(`Leave request sent to ${EMPLOYEE.manager}.`)
               navigate(`${Y_ROUTES.leave}?sent`)
             }}
           >
@@ -866,28 +1120,60 @@ export function NewLeaveScreen({ phone, draft = false }: { phone: boolean; draft
               label="Kind"
               required
               value={kind}
-              onChange={setKind}
-              options={LEAVE_KINDS}
+              onChange={(next) => {
+                setKind(next)
+                setReason('')
+              }}
+              options={LEAVE_KINDS.map(({ value, label }) => ({ value, label }))}
             />
+            {reasons !== undefined && (
+              <SelectField
+                label="Reason"
+                required
+                placeholder="Choose the reason"
+                value={reason}
+                onChange={setReason}
+                options={reasons.map(({ value, label }) => ({ value, label }))}
+                {...(chosenReason === undefined
+                  ? {}
+                  : { description: `Up to ${chosenReason.days} working days` })}
+                {...(reasonMissing ? { error: 'Choose the reason.' } : {})}
+              />
+            )}
             <DateRangeField
               label="Dates"
               required
+              placeholder="First day"
+              endPlaceholder="Last day"
               value={range}
-              onChange={(next) => {
-                setRange(next)
-                setMissing(false)
-              }}
+              onChange={setRange}
               description={
-                days === null
-                  ? `You have ${LEAVE_BALANCE.available} days of annual leave left this year.`
-                  : `${days} working ${days === '1' ? 'day' : 'days'} · ${LEAVE_BALANCE.available} left this year`
+                kind === 'annual'
+                  ? daysText === null
+                    ? `You have ${LEAVE_BALANCE.available} days of annual leave left this year.`
+                    : `${daysText} · ${LEAVE_BALANCE.available} left this year`
+                  : (daysText ?? 'Type the dates, for example 7.10., or pick them.')
               }
-              {...(missing ? { error: 'Choose the first and the last day.' } : {})}
+              {...(datesMissing ? { error: 'Enter the first and the last day.' } : {})}
             />
             {over && (
               <Alert tone="warning" title="More days than you have left">
                 {`The request is sent as it is; HR decides how the ${format.number(String(Number(days) - Number(LEAVE_BALANCE.available)))} extra days are taken.`}
               </Alert>
+            )}
+            {overReason && (
+              <Alert tone="warning" title="More days than the reason allows">
+                {`${chosenReason.label}: up to ${chosenReason.days} working days. The request is sent as it is; HR decides how the other days are taken.`}
+              </Alert>
+            )}
+            {proof.length > 0 && (
+              <ProofField
+                rules={proof}
+                files={files}
+                onChange={setFiles}
+                phone={phone}
+                {...(proofMessage === undefined ? {} : { error: proofMessage })}
+              />
             )}
             <TextAreaField label="Note for your site manager" value={note} onChange={setNote} />
             <div className="flex flex-wrap justify-end gap-2">
@@ -1110,16 +1396,27 @@ function detailItems(
   }))
 }
 
-export function MyDetailsScreen({ phone, open = false }: { phone: boolean; open?: boolean }) {
+/**
+ * My details, and a change request in a Drawer with the proof the field needs (P5.94 item 3,
+ * from data: proof of the new address, the marriage certificate, a bank statement). `change`
+ * opens the request on a field, as a common question does.
+ */
+export function MyDetailsScreen({ phone, change }: { phone: boolean; change?: string }) {
   const { format } = useLiro()
   const [requests, setRequests] = useState<ChangeRequest[]>(CHANGE_REQUESTS)
-  const [drawer, setDrawer] = useState(open)
-  const [field, setField] = useState(open ? 'address' : 'phone')
-  const [value, setValue] = useState(open ? 'Narodnog fronta 12, 21000 Novi Sad' : '')
-  const [reason, setReason] = useState(open ? 'Moved on 1 October.' : '')
-  const [missing, setMissing] = useState(false)
+  const [drawer, setDrawer] = useState(change !== undefined)
+  const [field, setField] = useState(change ?? 'phone')
+  const [value, setValue] = useState('')
+  const [reason, setReason] = useState('')
+  const [files, setFiles] = useState<Attachment[]>([])
+  const [checked, setChecked] = useState(false)
   const chosen = CHANGEABLE.find((each) => each.value === field)
-  const current = [...DETAILS.personal, ...DETAILS.pay].find((each) => each.key === field)
+  const current =
+    chosen?.now ?? [...DETAILS.personal, ...DETAILS.pay].find((each) => each.key === field)?.value
+  const proof = chosen?.proof ?? []
+  const missingFiles = missingProof(proof, files.length)
+  const proofMessage = checked ? proofError(missingFiles) : undefined
+  const valueMissing = checked && value.trim() === ''
   return (
     <EmployeePortal phone={phone} current="details">
       <Page>
@@ -1149,7 +1446,13 @@ export function MyDetailsScreen({ phone, open = false }: { phone: boolean; open?
                     <del>{request.from}</del> → {request.to}
                   </span>
                   <span className="bidi-content text-xs text-secondary">
-                    {`${request.id} · sent ${format.date(request.submitted)}`}
+                    {[
+                      request.id,
+                      `sent ${format.date(request.submitted)}`,
+                      attachmentsText(request.attachments?.length ?? 0),
+                    ]
+                      .filter((part) => part !== null)
+                      .join(' · ')}
                   </span>
                 </span>
                 <StatusBadge
@@ -1190,22 +1493,25 @@ export function MyDetailsScreen({ phone, open = false }: { phone: boolean; open?
                 icon={FileText}
                 label="Send to HR"
                 onClick={() => {
-                  if (value.trim() === '') {
-                    setMissing(true)
-                    return
-                  }
+                  setChecked(true)
+                  if (value.trim() === '' || missingFiles.length > 0) return
                   setRequests((list) => [
                     {
-                      id: 'CR-2026-010',
+                      id: `CR-2026-${String(10 + list.length - CHANGE_REQUESTS.length).padStart(3, '0')}`,
                       field: chosen?.label ?? field,
-                      from: current?.value ?? '',
+                      from: current ?? '',
                       to: value.trim(),
                       submitted: Y_TODAY,
                       state: 'Waiting for HR',
+                      ...(files.length === 0 ? {} : { attachments: files }),
                     },
                     ...list,
                   ])
                   setDrawer(false)
+                  setValue('')
+                  setReason('')
+                  setFiles([])
+                  setChecked(false)
                   notice.success(`Change request sent to ${EMPLOYEE.hr}.`)
                 }}
               />
@@ -1219,30 +1525,33 @@ export function MyDetailsScreen({ phone, open = false }: { phone: boolean; open?
               onChange={(next) => {
                 setField(next)
                 setValue('')
-                setMissing(false)
+                // The files were the proof of the other field.
+                setFiles([])
+                setChecked(false)
               }}
               options={CHANGEABLE.map(({ value: key, label }) => ({ value: key, label }))}
             />
             <KeyValueList
               columns={1}
-              items={[{ key: 'now', label: 'Now', value: <bdi>{current?.value ?? '—'}</bdi> }]}
+              items={[{ key: 'now', label: 'Now', value: <bdi>{current ?? '—'}</bdi> }]}
             />
             <TextField
               label="New value"
               required
               value={value}
-              onChange={(next) => {
-                setValue(next)
-                setMissing(false)
-              }}
-              {...(missing ? { error: 'Write the new value.' } : {})}
+              onChange={setValue}
+              {...(valueMissing ? { error: 'Write the new value.' } : {})}
             />
-            <TextAreaField label="Note for HR" value={reason} onChange={setReason} />
-            {chosen?.proof !== undefined && (
-              <Alert tone="neutral" title="HR will ask for proof">
-                {chosen.proof}
-              </Alert>
+            {proof.length > 0 && (
+              <ProofField
+                rules={proof}
+                files={files}
+                onChange={setFiles}
+                phone={phone}
+                {...(proofMessage === undefined ? {} : { error: proofMessage })}
+              />
             )}
+            <TextAreaField label="Note for HR" value={reason} onChange={setReason} />
           </div>
         </Drawer>
       </Page>
@@ -1262,11 +1571,27 @@ export const GROUP_Y_ROUTES: ExampleRoute[] = [
   { path: Y_ROUTES.payslipPdf(SEPTEMBER.month), render: () => <PayslipPdfScreen /> },
   { path: Y_ROUTES.leave, render: (phone) => <LeaveScreen phone={phone} /> },
   { path: `${Y_ROUTES.leave}?sent`, render: (phone) => <LeaveScreen phone={phone} sent /> },
-  ...LEAVE_REQUESTS.map((request) => ({
-    path: Y_ROUTES.leaveRequest(request.id),
-    render: (phone: boolean) => <LeaveRequestScreen phone={phone} id={request.id} />,
+  ...[...LEAVE_REQUESTS.map((request) => request.id), ...SENT_IDS].map((id) => ({
+    path: Y_ROUTES.leaveRequest(id),
+    render: (phone: boolean) => <LeaveRequestScreen phone={phone} id={id} />,
   })),
   { path: Y_ROUTES.newLeave, render: (phone) => <NewLeaveScreen phone={phone} /> },
+  // A request started from a common question, filled in (P5.94 item 20).
+  ...LEAVE_KINDS.flatMap((kind) =>
+    kind.reasons === undefined
+      ? [
+          {
+            path: Y_ROUTES.newLeaveOf(kind.value),
+            render: (phone: boolean) => <NewLeaveScreen phone={phone} kind={kind.value} />,
+          },
+        ]
+      : kind.reasons.map((reason) => ({
+          path: Y_ROUTES.newLeaveOf(kind.value, reason.value),
+          render: (phone: boolean) => (
+            <NewLeaveScreen phone={phone} kind={kind.value} reason={reason.value} />
+          ),
+        })),
+  ),
   { path: Y_ROUTES.newLeaveDraft, render: (phone) => <NewLeaveScreen phone={phone} draft /> },
   { path: Y_ROUTES.shifts, render: (phone) => <EmployeeShiftsScreen phone={phone} /> },
   { path: Y_ROUTES.documents, render: (phone) => <DocumentsScreen phone={phone} /> },
@@ -1275,5 +1600,9 @@ export const GROUP_Y_ROUTES: ExampleRoute[] = [
     render: (phone) => <AnnexScreen phone={phone} />,
   },
   { path: Y_ROUTES.details, render: (phone) => <MyDetailsScreen phone={phone} /> },
-  { path: Y_ROUTES.detailsChange, render: (phone) => <MyDetailsScreen phone={phone} open /> },
+  ...CHANGEABLE.map((field) => ({
+    path: Y_ROUTES.detailsChange(field.value),
+    render: (phone: boolean) => <MyDetailsScreen phone={phone} change={field.value} />,
+  })),
+  { path: Y_ROUTES.questions, render: (phone) => <QuestionsScreen phone={phone} /> },
 ]
