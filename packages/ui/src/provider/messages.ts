@@ -1691,6 +1691,11 @@ export interface LiroMessages {
   'change.notifyGroup': string
   /** FileDropzone on phones: the button that takes a photo with the camera. */
   'file.takePhoto': string
+  /** FileDropzone `expected` (P5.94 item 3): the list's title, and each document's state. */
+  'file.expected': string
+  'file.expectedRequired': string
+  'file.expectedOptional': string
+  'file.expectedAttached': string
   /** AttendanceGrid: the correction dialog's action and record, "Nenad Ilić, Wed 7" (P5.28 item 6). */
   'attendance.correctAction': string
   'attendance.correctSubject': (row: string, column: string) => string
@@ -2435,4 +2440,17 @@ export interface LiroMessages {
   /** MatrixChart: a cell with nothing in it, and a tooltip's list cut short ("+3 more"). */
   'chart.none': string
   'chart.more': (count: number, countText: string) => string
+  // ── P5.94 (portal) ──
+  /** CommonQuestions (P5.94 item 20): the search field's label and the categories' group. */
+  'questions.search': string
+  'questions.categories': string
+  /** CommonQuestions: the chip of every category. */
+  'questions.all': string
+  /** CommonQuestions: an open card's parts. */
+  'questions.whatToDo': string
+  'questions.documents': string
+  /** CommonQuestions: how many questions a search or a category keeps ("3 questions"). */
+  'questions.found': (count: number, countText: string) => string
+  /** CommonQuestions: the no-results action. */
+  'questions.clear': string
 }

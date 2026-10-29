@@ -57,7 +57,9 @@ const meta = {
           'accepted ones go to `onFiles`, the others to `onReject` and are named under the zone ' +
           'with the reason, from the provider’s messages.\n\n' +
           '**When:** wherever files are added; the files then live in an AttachmentList beside ' +
-          'it, which shows their upload, virus check and state.\n\n' +
+          'it, which shows their upload, virus check and state. `expected` lists the documents ' +
+          'the application expects — a request’s proof, from its data ("Death certificate", ' +
+          'required) — under the zone, each "Required" or "Optional", checked once attached.\n\n' +
           '**When not:** choosing one of the files already stored (a list or a lookup); a single ' +
           'image with a preview (a dedicated picker, not yet in the Design System).',
       },
@@ -243,6 +245,62 @@ export const Unavailable: Story = {
     await expect(choose).toHaveAccessibleDescription(/can no longer be added/)
     await expect(canvas.getByText(/can no longer be added/)).toBeVisible()
   },
+}
+
+/**
+ * The documents the application expects (P5.94 item 3), from its data: a request's proof under
+ * the zone, each "Required" or "Optional", the first already attached; the field is marked
+ * required because one is.
+ */
+export const Expected: Story = {
+  name: 'Expected documents',
+  args: {
+    label: 'Proof',
+    accept: ['image/*', '.pdf'],
+    acceptText: 'A photo or a PDF',
+    maxSizeText: '10 MB',
+    expected: [
+      { key: 'death', label: 'Death certificate', required: true, attached: true },
+      {
+        key: 'kinship',
+        label: 'Proof of kinship',
+        detail: 'A birth or marriage certificate, when the surname differs',
+      },
+    ],
+  },
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const list = canvas.getByRole('list', { name: 'Attach' })
+    await expect(within(list).getAllByRole('listitem')).toHaveLength(2)
+    await expect(within(list).getByText('Attached')).toBeVisible()
+    await expect(within(list).getByText('Optional')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Choose files' })).toHaveAccessibleDescription(
+      /Death certificate ?, Attached.*Proof of kinship ?, Optional/,
+    )
+  },
+}
+
+/** Expected documents on a phone, with the camera: a paper certificate photographed. */
+export const ExpectedPhone: Story = {
+  name: 'Expected documents, phone',
+  args: {
+    label: 'Proof',
+    accept: ['image/*', '.pdf'],
+    acceptText: 'A photo or a PDF',
+    maxSizeText: '10 MB',
+    camera: true,
+    expected: [{ key: 'note', label: 'Doctor’s note', required: true }],
+  },
+  render: (args) => (
+    <PhoneFrame>
+      <ExampleProvider>
+        <div className="box-border p-4">
+          <FileDropzone {...args} layout="phone" />
+        </div>
+      </ExampleProvider>
+    </PhoneFrame>
+  ),
 }
 
 /** The application's error (required, nothing attached). */

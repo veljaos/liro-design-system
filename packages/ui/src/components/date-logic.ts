@@ -7,10 +7,44 @@ import type { Entry } from './use-entry'
  * "today" is the provider's `today` (the tenant's date), never the device's clock.
  */
 
-/** Reads the typed text: empty is a valid null, unreadable is an invalid null. */
-export function readDate(text: string, format: Pick<LiroFormat, 'parseDate'>): Entry {
+/** Right-to-left and left-to-right marks Intl writes into some locales' dates. */
+const BIDI_MARKS = /[\u200e\u200f\u061c]/g
+
+/**
+ * A day and a month typed without the year ("7.10.", "07.10", "7/10", "0710"): the quick entry
+ * of a date this year (P5.94 item 2). Returns the text with the year of `today` added, written
+ * the way `format.parseDate` reads it, in both places the year can stand in a locale's order —
+ * after the day and month (day–month–year, month–day–year) or before them (year–month–day) — or
+ * null when the text is not a day and a month alone.
+ */
+export function withTodaysYear(text: string, today: string): [string, string] | null {
+  const cleaned = text.replace(BIDI_MARKS, '').trim().replace(/\.$/, '').trim()
+  const parts = /^\d{4}$/.test(cleaned)
+    ? [cleaned.slice(0, 2), cleaned.slice(2)]
+    : cleaned.split(/[./\-\s]+/)
+  if (parts.length !== 2 || !parts.every((part) => /^\d{1,2}$/.test(part))) return null
+  const year = today.slice(0, 4)
+  const dayAndMonth = parts.join('.')
+  return [`${dayAndMonth}.${year}`, `${year}.${dayAndMonth}`]
+}
+
+/**
+ * Reads the typed text: empty is a valid null, unreadable is an invalid null. With `today` (the
+ * provider's date), a day and a month alone ("7.10.") are read in today's year (P5.94 item 2).
+ */
+export function readDate(
+  text: string,
+  format: Pick<LiroFormat, 'parseDate'>,
+  today?: string,
+): Entry {
   if (text.trim() === '') return { value: null, valid: true }
-  const value = format.parseDate(text)
+  let value = format.parseDate(text)
+  if (value === null && today !== undefined) {
+    for (const candidate of withTodaysYear(text, today) ?? []) {
+      value = format.parseDate(candidate)
+      if (value !== null) break
+    }
+  }
   return value === null ? { value: null, valid: false } : { value, valid: true }
 }
 

@@ -1157,6 +1157,10 @@ export const messagesEn: LiroMessages = {
   'change.affected': 'Concerns',
   'change.notifyGroup': 'Messages to send',
   'file.takePhoto': 'Take a photo',
+  'file.expected': 'Attach',
+  'file.expectedRequired': 'Required',
+  'file.expectedOptional': 'Optional',
+  'file.expectedAttached': 'Attached',
   'attendance.correctAction': 'Correct',
   'attendance.correctSubject': (row, column) => `${row}, ${column}`,
   'shifts.moveAction': 'Move',
@@ -1739,4 +1743,13 @@ export const messagesEn: LiroMessages = {
   'chart.to': 'To',
   'chart.none': 'None',
   'chart.more': (_count, countText) => `+${countText} more`,
+  // ── P5.94 (portal) ──
+  'questions.search': 'Search questions',
+  'questions.categories': 'Categories',
+  'questions.all': 'All',
+  'questions.whatToDo': 'What to do',
+  'questions.documents': 'What you need',
+  'questions.found': (count, countText) =>
+    count === 0 ? 'No questions found' : count === 1 ? '1 question' : `${countText} questions`,
+  'questions.clear': 'Clear the search',
 }

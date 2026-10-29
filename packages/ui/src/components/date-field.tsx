@@ -30,8 +30,10 @@ import { Tooltip } from './popover'
 
 /*
  * DateField and DateRangeField (BUILD-PLAN P2.3). A date is typed (read by `format.parseDate` on
- * leaving the field or on Enter: "010326", "1.3.2026", "01/03/2026", the locale's own form) or
- * picked in the calendar; the value is YYYY-MM-DD. The calendar opens on the provider's `today`
+ * leaving the field or on Enter: "010326", "1.3.2026", "01/03/2026", the locale's own form; a day
+ * and a month alone, "7.10." or "0710", in the year of the provider's `today`, P5.94 item 2) or
+ * picked in the calendar; the value is YYYY-MM-DD. Both ends of a range are typed the same way;
+ * the calendar is optional. The calendar opens on the provider's `today`
  * (the tenant's date), and its month and weekday names come from `format`.
  *
  * Owner's decisions (2026-09-28, docs/decisions.md "Numbers, money and dates"):
@@ -70,12 +72,16 @@ function useCalendarLabels(): CalendarLabels {
   }
 }
 
-/** The typed entry of a date: read by `format.parseDate`, shown by `format.date`. */
-function useDateEntry(props: EntryProps) {
-  const { format } = useLiro()
+/**
+ * The typed entry of a date: read by `format.parseDate` ("7.10." in the provider's year of
+ * `today`, P5.94 item 2), shown by `format.date`. Shared by DateField, both ends of
+ * DateRangeField and PeriodField's custom range (internal).
+ */
+export function useDateEntry(props: EntryProps) {
+  const { format, today } = useLiro()
   return useEntry(
     props,
-    (text) => readDate(text, format),
+    (text) => readDate(text, format, today),
     (value) => showDate(value, format),
   )
 }
@@ -342,7 +348,33 @@ export function DateRangeField(props: DateRangeFieldProps) {
   // Days picked since the calendar opened: the first is the start, the second the end.
   const [picked, setPicked] = useState<string | null>(null)
   const startRef = useRef<HTMLInputElement>(null)
+  const endRef = useRef<HTMLInputElement>(null)
+  const boxRef = useRef<HTMLDivElement>(null)
   const nameId = useId()
+
+  // A press anywhere in the frame that is not on an end or the calendar button (the dash, the
+  // room before the button) puts the caret in the start while it is empty, else in the end:
+  // a range is typed like any field, and a press beside the two short ends did nothing before
+  // (P5.94 item 2). Listened to natively: the frame is not a control of its own.
+  useEffect(() => {
+    const box = boxRef.current
+    if (box === null) return
+    const press = (event: MouseEvent) => {
+      if (
+        !(event.target instanceof Element) ||
+        event.target.closest('input, button, [data-slot="date-field-calendar"]') !== null
+      ) {
+        return
+      }
+      event.preventDefault()
+      const target = startRef.current?.value === '' ? startRef.current : endRef.current
+      target?.focus()
+    }
+    box.addEventListener('mousedown', press)
+    return () => {
+      box.removeEventListener('mousedown', press)
+    }
+  }, [props.readOnly])
 
   return (
     <Field {...fieldProps({ ...props, error })}>
@@ -439,7 +471,11 @@ export function DateRangeField(props: DateRangeFieldProps) {
               }}
             >
               <PopoverAnchor asChild>
-                <div data-slot="date-range" className={cn(dateBoxClass(control), 'ps-3')}>
+                <div
+                  ref={boxRef}
+                  data-slot="date-range"
+                  className={cn(dateBoxClass(control), 'cursor-text ps-3')}
+                >
                   <input
                     ref={startRef}
                     {...attributes}
@@ -453,6 +489,7 @@ export function DateRangeField(props: DateRangeFieldProps) {
                   />
                   {separator}
                   <input
+                    ref={endRef}
                     {...attributes}
                     {...endTyping}
                     id={`${control.id}-end`}

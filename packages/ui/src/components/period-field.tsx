@@ -9,9 +9,10 @@ import { DialogBody, DialogCloseButton, DialogHeader, DialogTitle } from '../pri
 import { Popover, PopoverContent, PopoverTrigger } from '../primitives/popover'
 import { Sheet, SheetContent, SheetTrigger } from '../primitives/sheet'
 import { useLiro } from '../provider/liro-provider'
-import { useCalendarOpen, type DateRange } from './date-field'
-import { fromLocalDate, openingMonth, toLocalDate } from './date-logic'
-import { controlAttributes, Field, fieldProps, type FieldBaseProps } from './field'
+import { useCalendarOpen, useDateEntry, type DateRange } from './date-field'
+import { fromLocalDate, openingMonth, rangeInOrder, readDate, toLocalDate } from './date-logic'
+import { controlAttributes, Field, FieldMessage, fieldProps, type FieldBaseProps } from './field'
+import { entryAttributes } from './use-entry'
 import {
   describePeriod,
   matchingPreset,
@@ -43,6 +44,12 @@ import { usePhone } from './use-phone'
  * On a phone (P5.28 item 1) the popover would run off the screen: the field opens a sheet on the
  * screen's bottom edge instead, titled by the field's label, with the presets first — two columns
  * of the same buttons — then "Custom range" with one month across the sheet's full width.
+ *
+ * The custom range is typed too (P5.94 item 2): under "Custom range" a Start and an End field
+ * read as DateField reads ("07102026", "7.10."), the calendar optional. A typed start is the
+ * calendar's first pick; the range applies (and the popover closes) when the end is typed and
+ * left, or on Enter in either, once both ends are there in order. Unreadable text and an end
+ * before the start are said under the two fields, never applied.
  */
 
 /** The message of each preset: text keys only, so the name is always a string. */
@@ -116,7 +123,11 @@ export function PeriodField(props: PeriodFieldProps) {
   // The first day picked in the calendar since it opened; the second applies the range.
   const [picked, setPicked] = useState<string | null>(null)
   const textId = `${useId()}-text`
+  const typedId = useId()
   const phone = usePhone()
+  // The custom range being typed: the value when the field opened, then what is typed or picked.
+  const [draft, setDraft] = useState<DateRange>({ start: null, end: null })
+  const [typedValid, setTypedValid] = useState({ start: true, end: true })
 
   const choose = (next: DateRange | null) => {
     setInner(next)
@@ -127,6 +138,40 @@ export function PeriodField(props: PeriodFieldProps) {
   const end = value?.end ?? null
   const text = describePeriod(value, rules, format, messages)
   const active = matchingPreset(value, presets, rules)
+
+  /** Applies a typed range once both ends are there, in order. */
+  const applyTyped = (next: DateRange) => {
+    if (next.start !== null && next.end !== null && next.start <= next.end) choose(next)
+  }
+  const typedStart = useDateEntry({
+    value: draft.start,
+    onChange: (next) => {
+      setDraft((current) => ({ ...current, start: next }))
+      setPicked(next)
+    },
+    onValidityChange: (valid) => {
+      setTypedValid((current) => ({ ...current, start: valid }))
+    },
+  })
+  const typedEnd = useDateEntry({
+    value: draft.end,
+    onChange: (next) => {
+      setDraft({ start: draft.start, end: next })
+      applyTyped({ start: draft.start, end: next })
+    },
+    onValidityChange: (valid) => {
+      setTypedValid((current) => ({ ...current, end: valid }))
+    },
+  })
+  /** Enter in either typed end: read it now and apply when the range is whole. */
+  const enterTyped = (which: 'start' | 'end') => {
+    const entry = which === 'start' ? typedStart : typedEnd
+    const read = readDate(entry.text, format, liro.today)
+    if (!read.valid) return
+    // A changed end has just been read and applied by its own onChange.
+    if (which === 'end' && read.value !== entry.value) return
+    applyTyped(which === 'start' ? { ...draft, start: read.value } : { ...draft, end: read.value })
+  }
 
   return (
     <Field {...fieldProps(props)}>
@@ -142,7 +187,10 @@ export function PeriodField(props: PeriodFieldProps) {
           )
         }
         const openChange = (next: boolean) => {
-          if (next) setPicked(null)
+          if (next) {
+            setPicked(null)
+            setDraft({ start, end })
+          }
           setOpen(next)
         }
         const trigger = (
@@ -207,7 +255,42 @@ export function PeriodField(props: PeriodFieldProps) {
             )}
           </div>
         )
-        /** "Custom range" and the month; `fill`: across the sheet's width (phones). */
+        const typedError = !(typedValid.start && typedValid.end)
+          ? messages['field.invalidDate']
+          : rangeInOrder(draft.start, draft.end)
+            ? undefined
+            : messages['field.invalidRange']
+        /** One typed end of the custom range: its small label above, the date under it. */
+        const typedInput = (which: 'start' | 'end') => {
+          const entry = which === 'start' ? typedStart : typedEnd
+          const id = `${typedId}-${which}`
+          const typing = entryAttributes(entry, {}, false)
+          return (
+            <div className="flex min-w-0 flex-1 flex-col gap-1">
+              <label
+                htmlFor={id}
+                className={cn('text-xs font-medium text-primary', TEXT_DIRECTION)}
+              >
+                {messages[which === 'start' ? 'field.rangeStart' : 'field.rangeEnd']}
+              </label>
+              <Input
+                {...typing}
+                id={id}
+                dir="auto"
+                aria-invalid={
+                  !entry.valid || (which === 'end' && typedError !== undefined) || undefined
+                }
+                {...(typedError === undefined ? {} : { 'aria-describedby': `${typedId}-error` })}
+                onKeyDown={(event) => {
+                  typing.onKeyDown(event)
+                  if (event.key === 'Enter') enterTyped(which)
+                }}
+                className="tabular-nums text-match-parent"
+              />
+            </div>
+          )
+        }
+        /** "Custom range", its typed ends and the month; `fill`: across the sheet's width (phones). */
         const calendar = (fill: boolean) => (
           <>
             <p
@@ -218,6 +301,17 @@ export function PeriodField(props: PeriodFieldProps) {
             >
               {messages['period.customRange']}
             </p>
+            <div className="flex flex-col gap-1 px-3 pb-2">
+              <div className="flex gap-2">
+                {typedInput('start')}
+                {typedInput('end')}
+              </div>
+              {typedError !== undefined && (
+                <FieldMessage id={`${typedId}-error`} tone="error">
+                  {typedError}
+                </FieldMessage>
+              )}
+            </div>
             <Calendar
               key={openings}
               fullWidth={fill}
@@ -240,6 +334,8 @@ export function PeriodField(props: PeriodFieldProps) {
                 const iso = fromLocalDate(day)
                 if (picked === null) {
                   setPicked(iso)
+                  // The typed ends follow the calendar: the first day is the start.
+                  setDraft({ start: iso, end: null })
                   return
                 }
                 choose(iso < picked ? { start: iso, end: picked } : { start: picked, end: iso })

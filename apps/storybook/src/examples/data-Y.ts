@@ -6,7 +6,14 @@
  * illustrative. The payroll is the application's work (its figures add up here, and
  * dataset-checks could prove it); the components only show it. Not part of the package.
  */
-import type { MyShift, Signer, StatusTimelineStep, Tone } from '@veljaos/ui'
+import type {
+  Attachment,
+  ExpectedFile,
+  MyShift,
+  Signer,
+  StatusTimelineStep,
+  Tone,
+} from '@veljaos/ui'
 
 export const Y_TODAY = '2026-10-14'
 export const Y_ROUTES = {
@@ -17,14 +24,19 @@ export const Y_ROUTES = {
   leave: '/me/leave',
   leaveRequest: (id: string) => `/me/leave/${id}`,
   newLeave: '/me/leave/new',
+  /** A new request of a kind (and reason), as a common question starts it (P5.94 item 20). */
+  newLeaveOf: (kind: string, reason?: string) =>
+    `/me/leave/new?kind=${kind}${reason === undefined ? '' : `&reason=${reason}`}`,
   /** The new request half written, the application's count of working days shown. */
   newLeaveDraft: '/me/leave/new?draft=december',
   shifts: '/me/my-shifts',
   documents: '/me/documents',
   document: (id: string) => `/me/documents/${id}`,
   details: '/me/details',
-  /** My details with the change form open, as the application restores it. */
-  detailsChange: '/me/details?change=address',
+  /** My details with the change request open on a field (a common question starts it). */
+  detailsChange: (field: string) => `/me/details?change=${field}`,
+  /** Every common question, searched and by category (P5.94 item 20). */
+  questions: '/me/questions',
 } as const
 
 export const EMPLOYEE = {
@@ -140,6 +152,10 @@ export const LEAVE_TONES: Readonly<Record<LeaveState, Tone>> = {
 export interface LeaveRequest {
   id: string
   kind: string
+  /** A paid leave's reason ("Moving"), P5.94 item 3. */
+  cause?: string
+  /** The proof sent with it (P5.94 item 3): what the approvers open. */
+  attachments?: Attachment[]
   from: string
   to: string
   /** Working days, the application's count. */
@@ -159,6 +175,16 @@ const SUBMITTED = (at: string): StatusTimelineStep => ({
   at,
   detail: EMPLOYEE.name,
 })
+
+/** The approval of a request sent now: the site manager first, then HR (P5.94 item 3). */
+export function sentSteps(): StatusTimelineStep[] {
+  return [
+    SUBMITTED(`${Y_TODAY}T09:40:00+02:00`),
+    { key: 'manager', label: 'Site manager approval', detail: EMPLOYEE.manager },
+    { key: 'hr', label: 'HR approval', detail: EMPLOYEE.hr },
+    { key: 'approved', label: 'Approved' },
+  ]
+}
 
 export const LEAVE_REQUESTS: LeaveRequest[] = [
   {
@@ -182,6 +208,43 @@ export const LEAVE_REQUESTS: LeaveRequest[] = [
       { key: 'approved', label: 'Approved' },
     ],
     current: 2,
+  },
+  {
+    id: 'LR-2026-029',
+    kind: 'Paid leave',
+    cause: 'Moving',
+    from: '2026-09-21',
+    to: '2026-09-22',
+    days: '2',
+    submitted: '2026-09-14',
+    state: 'Taken',
+    note: 'Moving to Narodnog fronta 12.',
+    attachments: [
+      {
+        id: 'residence',
+        name: 'Residence certificate.jpg',
+        sizeText: '1,8 MB',
+        state: 'available',
+        detail: 'Proof of the new address',
+      },
+    ],
+    steps: [
+      SUBMITTED('2026-09-14T06:40:00+02:00'),
+      {
+        key: 'manager',
+        label: 'Approved by the site manager',
+        at: '2026-09-14T10:15:00+02:00',
+        detail: EMPLOYEE.manager,
+      },
+      {
+        key: 'hr',
+        label: 'Approved by HR',
+        at: '2026-09-15T08:30:00+02:00',
+        detail: EMPLOYEE.hr,
+      },
+      { key: 'approved', label: 'Approved', at: '2026-09-15T08:30:00+02:00' },
+    ],
+    current: 4,
   },
   {
     id: 'LR-2026-027',
@@ -260,11 +323,114 @@ export const LEAVE_REQUESTS: LeaveRequest[] = [
   },
 ]
 
-export const LEAVE_KINDS = [
-  { value: 'annual', label: 'Annual leave' },
-  { value: 'paid', label: 'Paid leave (wedding, moving, a death in the family)' },
+/**
+ * What a request must be sent with (P5.94 item 3): every kind of request may need proof, set by
+ * the application's data — a death certificate, a marriage certificate, proof of a new address,
+ * a doctor's note. A `required` one blocks sending until a file is attached.
+ */
+export type ProofRule = ExpectedFile
+
+/** A paid leave's reason: its days by the company's rules (illustrative) and its proof. */
+export interface LeaveReason {
+  value: string
+  label: string
+  /** Working days allowed, the application's figure. */
+  days: string
+  proof: ProofRule[]
+}
+
+export interface LeaveKind {
+  value: string
+  label: string
+  /** Paid leave: chosen by its reason, each with its days and its proof. */
+  reasons?: LeaveReason[]
+  /** The proof the kind itself needs (sick leave: the doctor's note). */
+  proof?: ProofRule[]
+  /** Taken from the annual balance. */
+  fromBalance?: boolean
+}
+
+export const LEAVE_KINDS: LeaveKind[] = [
+  { value: 'annual', label: 'Annual leave', fromBalance: true },
+  {
+    value: 'paid',
+    label: 'Paid leave',
+    reasons: [
+      {
+        value: 'wedding',
+        label: 'Wedding',
+        days: '5',
+        proof: [{ key: 'marriage', label: 'Marriage certificate', required: true }],
+      },
+      {
+        value: 'birth',
+        label: 'Birth of a child',
+        days: '5',
+        proof: [{ key: 'birth', label: 'Birth certificate of the child', required: true }],
+      },
+      {
+        value: 'death',
+        label: 'Death of a family member',
+        days: '5',
+        proof: [
+          { key: 'death', label: 'Death certificate', required: true },
+          {
+            key: 'kinship',
+            label: 'Proof of kinship',
+            detail: 'Only when the surname differs: a birth or marriage certificate',
+          },
+        ],
+      },
+      {
+        value: 'illness',
+        label: 'Serious illness of a family member',
+        days: '5',
+        proof: [{ key: 'medical', label: 'Doctor’s confirmation of the illness', required: true }],
+      },
+      {
+        value: 'moving',
+        label: 'Moving',
+        days: '2',
+        proof: [
+          {
+            key: 'address',
+            label: 'Proof of the new address',
+            required: true,
+            detail: 'The residence certificate or the new ID card',
+          },
+        ],
+      },
+      {
+        value: 'blood',
+        label: 'Blood donation',
+        days: '2',
+        proof: [{ key: 'blood', label: 'Blood donation certificate', required: true }],
+      },
+    ],
+  },
+  {
+    value: 'sick',
+    label: 'Sick leave',
+    proof: [
+      {
+        key: 'note',
+        label: 'Doctor’s note',
+        required: true,
+        detail: 'A photo of the paper is enough; bring the original when you are back.',
+      },
+    ],
+  },
   { value: 'unpaid', label: 'Unpaid leave' },
 ]
+
+/** The proof a kind (and its reason) needs; none for annual and unpaid leave. */
+export function leaveProof(kind: string, reason: string): ProofRule[] {
+  const chosen = LEAVE_KINDS.find((each) => each.value === kind)
+  if (chosen?.reasons !== undefined) {
+    return chosen.reasons.find((each) => each.value === reason)?.proof ?? []
+  }
+  return chosen?.proof ?? []
+}
 
 /** The request he is writing: 21.–31.12.2026., 9 working days by the application's count. */
 export const DECEMBER_DRAFT = {
@@ -515,6 +681,8 @@ export interface ChangeRequest {
   submitted: string
   state: 'Waiting for HR' | 'Approved'
   note?: string
+  /** The proof sent with it (P5.94 item 3). */
+  attachments?: Attachment[]
 }
 
 export const CHANGE_REQUESTS: ChangeRequest[] = [
@@ -536,14 +704,196 @@ export const CHANGE_REQUESTS: ChangeRequest[] = [
   },
 ]
 
-/** The fields he may ask HR to change, and the proof each needs. */
-export const CHANGEABLE = [
+/** The fields he may ask HR to change, and the proof each needs (P5.94 item 3: as data). */
+export const CHANGEABLE: {
+  value: string
+  label: string
+  /** Its value now, when My details shows it inside another (the surname in the name). */
+  now?: string
+  proof?: ProofRule[]
+}[] = [
   {
     value: 'address',
     label: 'Address',
-    proof: 'A copy of the ID card or the residence certificate.',
+    proof: [
+      {
+        key: 'address',
+        label: 'Proof of the new address',
+        required: true,
+        detail: 'The residence certificate or the new ID card',
+      },
+    ],
+  },
+  {
+    value: 'surname',
+    label: 'Surname',
+    now: 'Marković',
+    proof: [
+      { key: 'marriage', label: 'Marriage certificate', required: true },
+      { key: 'id', label: 'The new ID card', detail: 'When you already have it' },
+    ],
   },
   { value: 'phone', label: 'Mobile phone' },
   { value: 'email', label: 'Private e-mail' },
-  { value: 'account', label: 'Salary account', proof: 'A bank statement with the account number.' },
+  {
+    value: 'account',
+    label: 'Salary account',
+    proof: [
+      {
+        key: 'statement',
+        label: 'Bank statement with the account number',
+        required: true,
+        detail: 'Or the account contract, with your name on it',
+      },
+    ],
+  },
+]
+
+// ── Common questions (P5.94 item 20) ──────────────────────────────────────────────────────────
+
+export const QUESTION_CATEGORIES = [
+  { id: 'personal', label: 'Personal data' },
+  { id: 'leave', label: 'Leave' },
+  { id: 'pay', label: 'Pay' },
+  { id: 'documents', label: 'Documents' },
+]
+
+/** A common question; `request` is the request that does it (its label and its route). */
+export interface EmployeeQuestion {
+  id: string
+  category: string
+  question: string
+  answer: string
+  steps?: string[]
+  documents?: string[]
+  keywords?: string
+  request?: { label: string; route: string }
+}
+
+/**
+ * What Kvadrat Gradnja's employees keep asking HR, the most asked first. Illustrative: the days
+ * and the documents are this fictitious company's rules, not legal advice.
+ */
+export const EMPLOYEE_QUESTIONS: EmployeeQuestion[] = [
+  {
+    id: 'id-card',
+    category: 'personal',
+    question: 'I changed my ID card. Do I have to tell my employer?',
+    answer:
+      'Only when your address or surname on it changed. A new card with the same details needs nothing.',
+    steps: [
+      'Check your address and surname in My details.',
+      'If one changed, report the change and attach a photo of the new card.',
+    ],
+    documents: ['A photo of the new ID card, both sides'],
+    keywords: 'identity card lična karta',
+    request: { label: 'Report a change of address', route: Y_ROUTES.detailsChange('address') },
+  },
+  {
+    id: 'address',
+    category: 'personal',
+    question: 'What do I need to change my address?',
+    answer: 'A change request with proof of the new address. HR updates it within two days.',
+    steps: [
+      'Report the change of address and write the new one.',
+      'Attach the proof; a photo is enough.',
+      'You get a notification when HR has updated it.',
+    ],
+    documents: ['The residence certificate, or the new ID card with the new address'],
+    keywords: 'moving moved residence adresa',
+    request: { label: 'Report a change of address', route: Y_ROUTES.detailsChange('address') },
+  },
+  {
+    id: 'married',
+    category: 'leave',
+    question: 'I got married. What changes, and what do I bring?',
+    answer:
+      'You have 5 working days of paid leave for the wedding. If you take a new surname, HR changes it with the marriage certificate.',
+    steps: [
+      'Request paid leave with the reason Wedding and attach the marriage certificate.',
+      'For a new surname, report the change with the same certificate.',
+    ],
+    documents: ['Marriage certificate', 'The new ID card, when the surname changes'],
+    keywords: 'wedding marriage surname name venčanje',
+    request: {
+      label: 'Request leave for the wedding',
+      route: Y_ROUTES.newLeaveOf('paid', 'wedding'),
+    },
+  },
+  {
+    id: 'child',
+    category: 'leave',
+    question: 'I had a child. What changes, and what do I bring?',
+    answer:
+      'You have 5 working days of paid leave for the birth, and a tax relief for the child from the next pay.',
+    steps: [
+      'Request paid leave with the reason Birth of a child.',
+      'Attach the birth certificate; HR adds the tax relief and the health insurance.',
+    ],
+    documents: ['Birth certificate of the child'],
+    keywords: 'baby birth born maternity parental',
+    request: { label: 'Request leave for the birth', route: Y_ROUTES.newLeaveOf('paid', 'birth') },
+  },
+  {
+    id: 'account',
+    category: 'pay',
+    question: 'How do I change the bank account my pay goes to?',
+    answer:
+      'Send a change request with a bank statement before the 25th; the next pay goes to the new account.',
+    documents: ['A bank statement or the account contract, with your name and the account number'],
+    keywords: 'salary bank account račun',
+    request: { label: 'Change the salary account', route: Y_ROUTES.detailsChange('account') },
+  },
+  {
+    id: 'sick',
+    category: 'leave',
+    question: 'I am sick. How do I report it?',
+    answer:
+      'Tell your site manager before the shift; then request sick leave and attach the doctor’s note.',
+    steps: [
+      `Call or message ${EMPLOYEE.manager} before your shift.`,
+      'Request sick leave; a photo of the doctor’s note is enough.',
+    ],
+    documents: ['Doctor’s note'],
+    keywords: 'ill illness doctor bolovanje',
+    request: { label: 'Request sick leave', route: Y_ROUTES.newLeaveOf('sick') },
+  },
+  {
+    id: 'surname',
+    category: 'personal',
+    question: 'What do I need to change my surname?',
+    answer: 'A change request with the marriage certificate; the new ID card when you have it.',
+    documents: ['Marriage certificate', 'The new ID card'],
+    keywords: 'name prezime',
+    request: { label: 'Report a new surname', route: Y_ROUTES.detailsChange('surname') },
+  },
+  {
+    id: 'relief',
+    category: 'pay',
+    question: 'How do I claim a tax relief for a family member who depends on me?',
+    answer:
+      'Bring HR the documents that show the person depends on you; the relief is in your pay from the next month.',
+    documents: [
+      'Birth or marriage certificate of the family member',
+      'Proof that they have no income of their own',
+    ],
+    keywords: 'tax relief dependent child spouse olakšica',
+  },
+  {
+    id: 'death',
+    category: 'leave',
+    question: 'A family member died. How many days do I have?',
+    answer:
+      'You have 5 working days of paid leave. Attach the death certificate; a photo of it is enough.',
+    documents: ['Death certificate'],
+    keywords: 'funeral death bereavement',
+    request: { label: 'Request paid leave', route: Y_ROUTES.newLeaveOf('paid', 'death') },
+  },
+  {
+    id: 'certificate',
+    category: 'documents',
+    question: 'I need a certificate of employment for the bank. How do I get one?',
+    answer: `Write to ${EMPLOYEE.hr} in HR; she signs it electronically, usually the same day, and it appears in Documents.`,
+    keywords: 'certificate confirmation loan bank potvrda',
+  },
 ]
