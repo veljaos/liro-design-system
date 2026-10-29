@@ -183,6 +183,9 @@ export const messagesEn: LiroMessages = {
   'worklist.next': 'Next item',
   'worklist.position': (_index, indexText, _total, totalText) => `${indexText} of ${totalText}`,
   'worklist.detail': 'Details',
+  'worklist.search': 'Search',
+  'worklist.filters': 'Show',
+  'worklist.done': (_done, doneText, _total, totalText) => `${doneText} of ${totalText} done`,
   'page.backTo': (list) => `Back to ${list}`,
   'page.sections': 'Sections',
   'lifecycle.step': (_step, stepText, _total, totalText, label) =>

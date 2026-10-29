@@ -11,6 +11,11 @@
  * neither is an open item) and earlier ones of the same customers; the supplier invoice
  * UF-2026-1204 is the one journal entry NK-2026-0912 books. Payment codes, models and accounts are
  * illustrative. Not part of the package. No classes here.
+ *
+ * A statement is one `StatementData` (P5.94 item 19): its lines, the Core's suggestions (with
+ * their reasons as short labels), the ranked candidates, the proformas paid, the open items a
+ * line may close and the totals; statement 188 here, the generated 1,240 lines of statement 189 in
+ * data-bank-189.ts. The screen (screens-bank.tsx) takes either.
  */
 import { decimal, paras, sumUnits } from '../../../../packages/ui/src/components/amounts-story-data'
 import { viewer } from '../../../../packages/ui/src/components/document-frame-story-data'
@@ -18,7 +23,22 @@ import { INVOICES, isOpen } from './examples-story-data'
 
 // ── The statement ─────────────────────────────────────────────────────────────────────────────
 
-export const STATEMENT = {
+/** A statement's facts, from the bank. */
+export interface Statement {
+  number: string
+  date: string
+  bank: string
+  account: string
+  /** The balance before the statement. */
+  opening: bigint
+  /** The balance after it, as the bank reports it (checked against the lines). */
+  closing: bigint
+  /** The bank's file, opened in the document viewer. */
+  file: string
+  imported: string
+}
+
+export const STATEMENT: Statement = {
   number: '188',
   date: '2026-10-06',
   bank: 'Banca Intesa',
@@ -157,21 +177,25 @@ export const BANK_LINES: BankLine[] = [
 ]
 
 /** Money in, money out, and the closing balance they give. */
-export const STATEMENT_TOTALS = (() => {
-  const amounts = BANK_LINES.map((each) => each.paras)
+export function statementTotals(statement: Statement, lines: readonly BankLine[]) {
+  const amounts = lines.map((each) => each.paras)
   const incoming = sumUnits(amounts.filter((value) => value > 0n))
   const outgoing = -sumUnits(amounts.filter((value) => value < 0n))
-  const computed = STATEMENT.opening + incoming - outgoing
+  const computed = statement.opening + incoming - outgoing
   return {
-    lines: BANK_LINES.length,
-    opening: decimal(STATEMENT.opening),
+    lines: lines.length,
+    opening: decimal(statement.opening),
     incoming: decimal(incoming),
     outgoing: decimal(outgoing),
-    closing: decimal(STATEMENT.closing),
+    closing: decimal(statement.closing),
     /** The Core's check: opening + in − out equals the bank's closing balance. */
-    checksOut: computed === STATEMENT.closing,
+    checksOut: computed === statement.closing,
   }
-})()
+}
+
+export type StatementTotals = ReturnType<typeof statementTotals>
+
+export const STATEMENT_TOTALS = statementTotals(STATEMENT, BANK_LINES)
 
 if (!STATEMENT_TOTALS.checksOut) {
   throw new Error('Example dataset: statement 188 does not add up to its closing balance')
@@ -250,8 +274,10 @@ export const OPEN_ITEMS: OpenItem[] = [
   },
 ]
 
+const OPEN_ITEM_INDEX = new Map(OPEN_ITEMS.map((each) => [each.id, each]))
+
 export function openItem(id: string): OpenItem | undefined {
-  return OPEN_ITEMS.find((each) => each.id === id)
+  return OPEN_ITEM_INDEX.get(id)
 }
 
 // ── Accounts ──────────────────────────────────────────────────────────────────────────────────
@@ -343,8 +369,10 @@ export type CandidateReason =
 export interface LineSuggestion {
   /** The Core's best guess, preselected. */
   decision: Decision
-  /** Why, in a few words (shown on demand). */
+  /** Why, in a few words (the choice's description). */
   reason: string
+  /** Why, as short labels beside the proposal ("Amount matches", "Reference matches"). */
+  labels: string[]
   /**
    * 'exact': matched automatically (amount and reference, a known fee, the salary batch): the
    * user accepts them all at once. 'suggestion': the Core's best guess, checked one by one.
@@ -357,6 +385,7 @@ export const SUGGESTIONS: Record<string, LineSuggestion> = {
   b1: {
     decision: { kind: 'close', items: ['F-2026-0412'], difference: 'open' },
     reason: 'Exact: amount and reference',
+    labels: ['Amount matches', 'Reference matches'],
     match: 'exact',
   },
   b2: {
@@ -368,16 +397,19 @@ export const SUGGESTIONS: Record<string, LineSuggestion> = {
       costCentre: '',
     },
     reason: 'Recognised: a fee charged by Banca Intesa',
+    labels: ['Bank fee', 'Charged by Banca Intesa'],
     match: 'exact',
   },
   b3: {
     decision: { kind: 'close', items: ['F-2026-0410'], difference: 'open' },
     reason: 'Same customer and reference; pays part of the open amount',
+    labels: ['Same customer', 'Reference matches', 'Pays part'],
     match: 'suggestion',
   },
   b4: {
     decision: { kind: 'close', items: ['UF-2026-1204'], difference: 'open' },
     reason: 'Exact: amount and reference',
+    labels: ['Amount matches', 'Reference matches'],
     match: 'exact',
   },
   b5: {
@@ -389,6 +421,7 @@ export const SUGGESTIONS: Record<string, LineSuggestion> = {
       costCentre: '',
     },
     reason: 'Recognised: payment code 240 and the salary batch sent on 06.10.2026.',
+    labels: ['Payment code 240', 'Salary batch'],
     match: 'exact',
   },
   b6: {
@@ -401,11 +434,13 @@ export const SUGGESTIONS: Record<string, LineSuggestion> = {
       ],
     },
     reason: 'From the salary advance: tax and contributions as calculated',
+    labels: ['Payment code 254', 'From the salary advance'],
     match: 'exact',
   },
   b7: {
     decision: { kind: 'close', items: ['F-2026-0406'], difference: 'writeOff' },
     reason: 'Same customer, invoice 406 in the purpose; the amount differs a little',
+    labels: ['Same customer', 'Invoice 406 in the purpose', 'Amount differs a little'],
     match: 'suggestion',
   },
   b8: {
@@ -417,6 +452,7 @@ export const SUGGESTIONS: Record<string, LineSuggestion> = {
       costCentre: '',
     },
     reason: 'Recognised: the company’s own account at Raiffeisen banka',
+    labels: ['Own account', 'Raiffeisen banka'],
     match: 'exact',
   },
   b9: {
@@ -428,6 +464,7 @@ export const SUGGESTIONS: Record<string, LineSuggestion> = {
       costCentre: '',
     },
     reason: 'The reference and the amount are those of proforma PR-2026-118',
+    labels: ['Proforma PR-2026-118', 'Amount matches', 'Reference matches'],
     match: 'suggestion',
   },
 }
@@ -478,6 +515,44 @@ export const CANDIDATES: Record<string, { id: string; reason: CandidateReason }[
 /** A difference up to this may be written off (the Core's setting): 100,00 RSD. */
 export const WRITE_OFF_LIMIT = 100_00n
 
+// ── A statement as one piece of data ──────────────────────────────────────────────────────────
+
+/** Everything the screen shows of one statement (the Core's data). */
+export interface StatementData {
+  statement: Statement
+  lines: BankLine[]
+  suggestions: Record<string, LineSuggestion>
+  candidates: Record<string, { id: string; reason: CandidateReason }[]>
+  proformas: Record<string, ProformaPayment>
+  /** The open items "Search all open items…" offers. */
+  openItems: OpenItem[]
+  /** Finds an open item by its number. */
+  openItem: (id: string) => OpenItem | undefined
+  totals: StatementTotals
+  /** The bank's file, as the example viewer's pages. */
+  viewer: string
+}
+
+/** A statement's data, its totals checked (a disagreement throws, so no story shows it). */
+export function statementData(
+  parts: Omit<StatementData, 'totals' | 'openItem'> & {
+    openItem?: (id: string) => OpenItem | undefined
+  },
+): StatementData {
+  const totals = statementTotals(parts.statement, parts.lines)
+  if (!totals.checksOut) {
+    throw new Error(
+      `Example dataset: statement ${parts.statement.number} does not add up to its closing balance`,
+    )
+  }
+  const index = new Map(parts.openItems.map((each) => [each.id, each]))
+  return {
+    ...parts,
+    openItem: parts.openItem ?? ((id) => index.get(id)),
+    totals,
+  }
+}
+
 // ── The arithmetic of closing open items ───────────────────────────────────────────────────────
 
 export interface CloseOutcome {
@@ -492,8 +567,15 @@ export interface CloseOutcome {
  * order, each up to what it owes; the rest is what the payment has over (above zero) or what
  * stays owed (below zero). Amounts are the line's size, the sign of the direction dropped.
  */
-export function closeOutcome(amount: bigint, itemIds: readonly string[]): CloseOutcome {
-  const items = itemIds.flatMap((id) => OPEN_ITEMS.filter((each) => each.id === id))
+export function closeOutcome(
+  amount: bigint,
+  itemIds: readonly string[],
+  find: (id: string) => OpenItem | undefined = openItem,
+): CloseOutcome {
+  const items = itemIds.flatMap((id) => {
+    const item = find(id)
+    return item === undefined ? [] : [item]
+  })
   const credits = sumUnits(items.filter((each) => each.paras < 0n).map((each) => each.paras))
   let money = (amount < 0n ? -amount : amount) - credits
   const paid = items.map((each) => {
@@ -541,10 +623,15 @@ export interface EntryLine {
  * The entry lines of one decided statement line: the bank account against the items, the
  * accounts or the parts; a written-off difference or an advance on its own line.
  */
-export function entryLines(bankLine: BankLine, decision: Decision): EntryLine[] {
+export function entryLines(
+  bankLine: BankLine,
+  decision: Decision,
+  data: Pick<StatementData, 'statement' | 'openItem'> = STATEMENT_188,
+): EntryLine[] {
   const incoming = bankLine.paras > 0n
   const size = incoming ? bankLine.paras : -bankLine.paras
-  const prefix = `${STATEMENT.number}/${String(bankLine.no)}`
+  const prefix = `${data.statement.number}/${String(bankLine.no)}`
+  const openItem = data.openItem
   const lines: EntryLine[] = []
   const add = (account: string, text: string, value: bigint, debit: boolean) => {
     if (value === 0n) return
@@ -561,7 +648,7 @@ export function entryLines(bankLine: BankLine, decision: Decision): EntryLine[] 
   }
   add(BANK_ACCOUNT.value, bankLine.party, size, incoming)
   if (decision.kind === 'close') {
-    const outcome = closeOutcome(bankLine.paras, decision.items)
+    const outcome = closeOutcome(bankLine.paras, decision.items, openItem)
     for (const each of outcome.paid) {
       const item = openItem(each.id)
       if (item === undefined) continue
@@ -612,3 +699,15 @@ export function entryBalance(lines: readonly EntryLine[]) {
 }
 
 export { decimal, paras, sumUnits }
+
+/** Statement 188 as one piece of data (the screen's default). */
+export const STATEMENT_188: StatementData = statementData({
+  statement: STATEMENT,
+  lines: BANK_LINES,
+  suggestions: SUGGESTIONS,
+  candidates: CANDIDATES,
+  proformas: PROFORMA_PAYMENTS,
+  openItems: OPEN_ITEMS,
+  openItem,
+  viewer: STATEMENT_VIEWER,
+})

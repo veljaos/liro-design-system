@@ -32,6 +32,17 @@ components, as below; the components stay.
   "7 of 12 lessons") in the side column, previous / next and Mark as done at the end; phones:
   the content first, the outline in a `Drawer`. A page with only a question box ("Ask") is the
   same page with `AssistantComposer` large and centred.
+- **Going through many lines and deciding** (a bank statement, a supplier's statement of open
+  items, an IOS reconciliation, recognised documents, screening matches, alerts, a card's
+  payments) — F4 Worklist, one pattern (P5.94 item 19): `WorklistPage` with `WorklistSummary` as
+  the record's strip (its figures, "3 of 10 done", its check; the final action only once nothing
+  waits), the bulk action for what the application matched by itself as `toolbar` ("Accept all
+  exact matches (N)", then `InlineUndo`), `search` and `filters` (Needs you, Suggestion, Matched
+  automatically, Done, each with its count, Needs you chosen), the item whole in `detail` (the
+  proposal or the choices, the reasons as neutral `StatusBadge` labels, `CandidateList`), Confirm
+  last in `detailActions` and `onConfirm` for Enter; the application opens the next item that
+  waits (`nextWorklistItem`) and shows "… done · Undo" in place. Thousands of items are drawn in
+  view only. The example "Bank statement 188" (and 189, 1,240 lines) shows it whole.
 - **Handheld picking and counting** — F4 Worklist (picking: one line at a time, decided with
   scans) or F1 List (counting: the items of a location) inside
   `<LiroProvider density="touch">` at 360px: `PageHeader` with the progress in words ("4 of 12"),
@@ -230,7 +241,7 @@ components, as below; the components stay.
 - **Printout, invoice** — Printout: `PrintDocument` (title and logo, amount due line, IPS QR slot, ruled totals), `BackButton` above the sheet.
 - **Printout, certificate**, **school report**, **medical finding** — see "Printouts": JSON definitions rendered from the print parts (a landscape `PrintPage`, `PrintTable`, `PrintSignatures`).
 - **Document inbox** — F1 List: `ListPage`, `FilterBar`, `FileDropzone` (Add documents), a document's page in `QuickPreview` with `PageViewer`, bulk Reject with `ReasonConfirmDialog`.
-- **Document review** — F4 Worklist: `WorklistPage` beside `PageViewer` (`highlight`), fields wrapped in `RecognizedField`, supplier by `LookupField`, lines in `EditableGrid`, `DuplicateWarning`, `CandidateList` for a new supplier; confidence and matches are the application's.
+- **Document review** — F4 Worklist (see "Going through many lines"): `WorklistPage` beside `PageViewer` (`highlight`), fields wrapped in `RecognizedField`, supplier by `LookupField`, lines in `EditableGrid`, `DuplicateWarning`, `CandidateList` for a new supplier; confidence and matches are the application's.
 - **Company documents** and **Company document preview** — F1 List: the files page (see "Files") with `FileDetails`, `FolderPickerDialog`, `NameConflictDialog`, `FileNameDialog`, `ShareDialog`, `VersionList`; preview in `FilePreview` with `DocumentFrame` or `PageViewer`.
 - **New document** — F1 List of types: `CategoryGrid` in a `SectionCard`.
 - **Document draft** — F2 Record: `RecordFormPage` with `DefinedForm` from the application's JSON definition, the application's preview in `DocumentFrame`, the number from the registry book.
@@ -258,9 +269,9 @@ components, as below; the components stay.
 - **Client file** — F2 Record: `DetailPage` with `SidePanels`, owners as `HierarchyChart` (shares on the line), national ID in `MaskedValue`, `AttachmentList`, `HistoryList`.
 - **Client risk assessment** — F2 Record: `DetailPage`, factors in `DataTable`, an override with `ReasonConfirmDialog`, `HistoryList`; the risk is the application's.
 - **Risk review** — F6 Steps: `Questionnaire` in a `SectionCard`.
-- **Screening matches** — F4 Worklist: `WorklistPage`, `ValueComparison` of client and list entry, `ReasonConfirmDialog` for false positive or true match, `BulkActionBar`, `KeyFigures`.
+- **Screening matches** — F4 Worklist (see "Going through many lines"): `WorklistPage`, `ValueComparison` of client and list entry, `ReasonConfirmDialog` for false positive or true match, `BulkActionBar`, `KeyFigures`.
 - **Client screening** — F2 Record: `DetailPage`, re-screening history in `HistoryList` and `DataTable`.
-- **Alert queue** — F4 Worklist: `WorklistPage`, the rule's facts in `KeyValueList`, close with a reason (`ReasonConfirmDialog`) or escalate in a `Dialog`, `BulkActionBar`.
+- **Alert queue** — F4 Worklist (see "Going through many lines"): `WorklistPage`, the rule's facts in `KeyValueList`, close with a reason (`ReasonConfirmDialog`) or escalate in a `Dialog`, `BulkActionBar`.
 - **Cases** — F1 List: `ListPage` with `DataTable`.
 - **Case** — F3 Document: `DocumentPage` with `StatusTimeline`, `RelatedDocuments`, `ActivityList`, `HistoryList`, the four-eyes approval in `SignerList`.
 - **Reports** — F1 List: `ListPage` with `DataTable`.
@@ -316,7 +327,7 @@ components, as below; the components stay.
 - **Client portal documents** — F1 List in `PortalShell`: `AttachmentList`.
 - **Client folders** and **Client portal files** — F1 List: the files page (see "Files") in `AppShell` for the firm and in `PortalShell` for the client, over the same files.
 - **IOS partners** (statements of open items) — F1 List: `ListPage`, `FilterBar`, prepare in a `Dialog` (`DateField`, `RadioGroupField`), preview as `PrintDocument`, send with `ConfirmDialog`.
-- **IOS reconciliation** — F4 Worklist: `WorklistPage`, `ValueComparison`, `CandidateList`, `EditableGrid`, `BalanceBar`, `KeyFigures`; the matches and differences are the application's.
+- **IOS reconciliation** — F4 Worklist (see "Going through many lines"): `WorklistPage`, `ValueComparison`, `CandidateList`, `EditableGrid`, `BalanceBar`, `KeyFigures`; the matches and differences are the application's.
 - **IOS partner portal** — F2 Record in `PortalShell`: the statement with `DocumentTotals`, confirm with `ConfirmDialog` or dispute in a `Drawer` (`MoneyField`, `TextAreaField`, `FileDropzone`).
 
 ## Analytics, automation and AI

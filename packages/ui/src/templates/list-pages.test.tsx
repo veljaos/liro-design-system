@@ -4,7 +4,14 @@ import { rowKeyAction } from '../components/data-table-logic'
 import { LiroProvider } from '../provider/liro-provider'
 import { ListPage, splitViews } from './list-page'
 import { PageHeader } from './page-header'
-import { WorklistPage, worklistPosition } from './worklist-page'
+import {
+  nextWorklistItem,
+  WORKLIST_WINDOW_FROM,
+  WorklistPage,
+  WorklistSummary,
+  worklistKeyTarget,
+  worklistPosition,
+} from './worklist-page'
 
 function render(node: React.ReactNode) {
   return renderToStaticMarkup(
@@ -262,6 +269,122 @@ describe('WorklistPage', () => {
       </LiroProvider>,
     )
     expect(html).toContain('1.100 od 1.200')
+  })
+  it('worklistKeyTarget: ArrowDown / ArrowUp by one, stopping at the ends; Home, End', () => {
+    expect(worklistKeyTarget('ArrowDown', 0, 3)).toBe(1)
+    expect(worklistKeyTarget('ArrowDown', 2, 3)).toBe(2)
+    expect(worklistKeyTarget('ArrowUp', 1, 3)).toBe(0)
+    expect(worklistKeyTarget('ArrowUp', 0, 3)).toBe(0)
+    expect(worklistKeyTarget('Home', 2, 3)).toBe(0)
+    expect(worklistKeyTarget('End', 0, 1200)).toBe(1199)
+    expect(worklistKeyTarget('Enter', 0, 3)).toBeNull()
+    expect(worklistKeyTarget('ArrowDown', 0, 0)).toBeNull()
+    // A place outside the queue (the row just left it) starts from its nearest end.
+    expect(worklistKeyTarget('ArrowDown', 7, 3)).toBe(2)
+  })
+  it('nextWorklistItem: the next item that waits, after the decided one, wrapping around', () => {
+    const queue = [
+      { id: 'a', waits: true },
+      { id: 'b', waits: false },
+      { id: 'c', waits: true },
+      { id: 'd', waits: false },
+    ]
+    const waits = (item: { waits: boolean }) => item.waits
+    expect(nextWorklistItem(queue, 'a', waits)?.id).toBe('c')
+    expect(nextWorklistItem(queue, 'c', waits)?.id).toBe('a')
+    expect(nextWorklistItem(queue, 'b', waits)?.id).toBe('c')
+    // The decided item itself is never the answer, even when it still waits.
+    expect(nextWorklistItem([{ id: 'a', waits: true }], 'a', waits)).toBeNull()
+    // An item no longer in the queue: from the start.
+    expect(nextWorklistItem(queue, 'gone', waits)?.id).toBe('a')
+    expect(nextWorklistItem(queue, undefined, waits)?.id).toBe('a')
+    expect(nextWorklistItem(queue, 'a', () => false)).toBeNull()
+  })
+  it('the queue is one tab stop: the chosen row, else the first; each row tells its place', () => {
+    const chosen = render(
+      <WorklistPage layout="split" title="T" label="T" items={ITEMS} selected="b" />,
+    )
+    expect(chosen.match(/tabindex="0"/g)).toHaveLength(1)
+    expect(chosen).toMatch(/data-worklist-row="b"[^>]*>(?:(?!data-worklist-row).)*tabindex="0"/)
+    expect(chosen).toContain('aria-posinset="2"')
+    expect(chosen).toContain('aria-setsize="2"')
+    const none = render(<WorklistPage layout="split" title="T" label="T" items={ITEMS} />)
+    expect(none).toMatch(/data-worklist-row="a"[^>]*>(?:(?!data-worklist-row).)*tabindex="0"/)
+  })
+  it('the queue’s tools: search, the filter chips with counts (one pressed), the toolbar', () => {
+    const html = render(
+      <WorklistPage
+        layout="split"
+        title="T"
+        label="Lines"
+        items={ITEMS}
+        toolbar={<button type="button">ACCEPT ALL</button>}
+        search="drina"
+        onSearchChange={() => undefined}
+        searchLabel="Name or amount"
+        filters={[
+          { value: 'needs', label: 'Needs you', count: 3 },
+          { value: 'done', label: 'Done', count: 1250 },
+        ]}
+        filter="needs"
+        onFilterChange={() => undefined}
+      />,
+    )
+    expect(html).toContain('ACCEPT ALL')
+    expect(html).toContain('aria-label="Name or amount"')
+    expect(html).toContain('value="drina"')
+    expect(html).toContain('aria-label="Clear search"')
+    expect(html).toContain('role="group" aria-label="Show"')
+    expect(html).toMatch(/aria-pressed="true" data-worklist-filter="needs"/)
+    expect(html).toMatch(/aria-pressed="false" data-worklist-filter="done"/)
+    expect(html).toContain('1.250')
+    // The tools stand above the rows, outside their scroll.
+    expect(html.indexOf('data-slot="worklist-tools"')).toBeLessThan(
+      html.indexOf('data-slot="worklist-scroller"'),
+    )
+    const plain = render(<WorklistPage layout="split" title="T" label="T" items={ITEMS} />)
+    expect(plain).not.toContain('data-slot="worklist-tools"')
+  })
+  it(`draws only the rows in view from ${String(WORKLIST_WINDOW_FROM)} items`, () => {
+    const many = Array.from({ length: 1240 }, (_, index) => ({
+      id: `i${String(index)}`,
+      title: `Item ${String(index)}`,
+    }))
+    const html = render(<WorklistPage layout="split" title="T" label="T" items={many} />)
+    const drawn = html.match(/data-worklist-row="/g) ?? []
+    expect(drawn.length).toBeGreaterThan(0)
+    expect(drawn.length).toBeLessThan(60)
+    expect(html).toContain('aria-setsize="1240"')
+    const few = render(
+      <WorklistPage
+        layout="split"
+        title="T"
+        label="T"
+        items={many.slice(0, WORKLIST_WINDOW_FROM - 1)}
+      />,
+    )
+    expect(few.match(/data-worklist-row="/g)).toHaveLength(WORKLIST_WINDOW_FROM - 1)
+  })
+  it('WorklistSummary: the figures, "3 of 1.240 done" through format and messages, the action', () => {
+    const html = render(
+      <WorklistSummary
+        layout="desktop"
+        facts={[{ key: 'opening', label: 'Opening balance', value: '5.284.550,17' }]}
+        done={3}
+        total={1240}
+        note={<span>CHECKS OUT</span>}
+        action={<button type="button">POST</button>}
+      />,
+    )
+    expect(html).toContain('Opening balance')
+    expect(html).toContain('5.284.550,17')
+    expect(html).toContain('3 of 1.240 done')
+    expect(html).toContain('aria-label="3 of 1.240 done"')
+    expect(html).toContain('CHECKS OUT')
+    expect(html).toContain('POST')
+    const waiting = render(<WorklistSummary layout="phone" facts={[]} done={0} total={0} />)
+    expect(waiting).toContain('0 of 0 done')
+    expect(waiting).not.toContain('POST')
   })
   it('shows the empty slot when there are no items', () => {
     const html = render(

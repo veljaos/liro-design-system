@@ -295,8 +295,21 @@ export type {
   QuickPreviewProps,
   SavedView,
 } from './templates/list-page'
-export { WorklistPage, worklistPosition } from './templates/worklist-page'
-export type { WorklistItem, WorklistPageProps } from './templates/worklist-page'
+export {
+  WorklistPage,
+  WorklistSummary,
+  worklistPosition,
+  worklistKeyTarget,
+  nextWorklistItem,
+  WORKLIST_WINDOW_FROM,
+} from './templates/worklist-page'
+export type {
+  WorklistItem,
+  WorklistPageProps,
+  WorklistFilter,
+  WorklistFact,
+  WorklistSummaryProps,
+} from './templates/worklist-page'
 export { BackButton, PageHeader } from './templates/page-header'
 export type { PageBack, PageHeaderProps } from './templates/page-header'
 export { KeyFigures } from './components/key-figures'
