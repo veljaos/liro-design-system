@@ -664,7 +664,8 @@ export function PaymentDialog(props: PaymentDialogProps) {
                     )}
                   >
                     {isApproved && <CircleCheck aria-hidden="true" className="size-3 shrink-0" />}
-                    <span className={cn(!isApproved && 'sr-only')}>{state}</span>
+                    {/* The check says it on a phone; the words are for assistive technology. */}
+                    <span className="sr-only">{state}</span>
                     {part.detail !== undefined && (
                       <span className="text-secondary">{part.detail}</span>
                     )}
@@ -872,12 +873,17 @@ export function PaymentDialog(props: PaymentDialogProps) {
     </>
   )
 
-  // "Complete payment" waits while something is still to pay after a part (P5.94).
-  const completeReason =
-    props.completeDisabledReason ??
-    (parts && paid.length > 0 && stillToPay(props.remaining)
+  // "Complete payment" waits while something is still to pay after a part (P5.94). The remaining
+  // amount stands at the top, so this reason is for assistive technology only; the
+  // application's own reason is shown.
+  const stillToPayReason =
+    props.completeDisabledReason === undefined &&
+    parts &&
+    paid.length > 0 &&
+    stillToPay(props.remaining)
       ? messages['payment.stillToPay'](money(props.remaining ?? '0'))
-      : undefined)
+      : undefined
+  const completeReason = props.completeDisabledReason ?? stillToPayReason
   const notes = (
     <>
       {option?.note !== undefined && (
@@ -885,7 +891,14 @@ export function PaymentDialog(props: PaymentDialogProps) {
       )}
       {props.extra}
       {completeReason !== undefined && (
-        <p id={reasonId} className={cn('m-0 text-xs text-secondary', TEXT_DIRECTION)}>
+        <p
+          id={reasonId}
+          className={cn(
+            'm-0 text-xs text-secondary',
+            TEXT_DIRECTION,
+            stillToPayReason !== undefined && 'sr-only',
+          )}
+        >
           {completeReason}
         </p>
       )}

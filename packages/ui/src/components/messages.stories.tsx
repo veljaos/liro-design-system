@@ -213,7 +213,7 @@ export const MentionsInteraction: Story = {
     await expect(field).toHaveValue('Check with @Ivana Stojanović ')
     await expect(canvas.getByText('Mentioned: u-ivana')).toBeVisible()
     // The chosen mention ended the search: writing on opens nothing (P5.94 item 8).
-    await userEvent.type(field, 'please')
+    await userEvent.keyboard('please')
     await expect(within(document.body).queryByRole('listbox')).toBeNull()
     await expect(within(document.body).queryByText('Nothing found')).toBeNull()
     await userEvent.keyboard('{Backspace}'.repeat('please'.length))
@@ -231,7 +231,7 @@ export const MentionsInteraction: Story = {
     await userEvent.keyboard('{Escape}')
     await waitFor(() => expect(within(document.body).queryByRole('listbox')).toBeNull())
     // "@" then an ordinary word and a space: nothing matches, the list closes by itself.
-    await userEvent.type(field, ' @tomorrow ')
+    await userEvent.keyboard(' @tomorrow ')
     await waitFor(() => expect(within(document.body).queryByRole('listbox')).toBeNull())
     await settle()
   },
