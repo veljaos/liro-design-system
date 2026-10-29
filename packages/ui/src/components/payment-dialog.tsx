@@ -244,14 +244,18 @@ const CHOICE = cn(
   'flex min-h-14 min-w-0 flex-[1_1_auto] cursor-pointer items-center justify-center gap-2 rounded-md border border-solid px-3 py-2 text-md font-semibold text-primary',
   'disabled:cursor-not-allowed disabled:text-disabled',
 )
-/** On a phone the icon stands above the label, so three ways fit one row. */
-const CHOICE_PHONE = 'flex-col gap-1 px-2 text-sm'
+/** On a phone a little tighter, so three ways fit one row. */
+const CHOICE_PHONE = 'gap-1.5 px-2'
 const CHOICE_ON = 'border-selected bg-surface-selected'
 const CHOICE_OFF = 'border-default bg-surface-raised enabled:hover:bg-surface-hover'
 
-/** The keypad's keys at 44px (the touch minimum) on a phone, so everything fits the screen. */
+/**
+ * The keypad's keys at 44px (the touch minimum) on a phone, so everything fits the screen; no
+ * Clear row there (P5.94): Backspace stays, and "Exact amount" and the quick amounts replace the
+ * amount in one press.
+ */
 const PHONE_KEYPAD =
-  '[&_[data-key]]:h-11 [&_[data-key]]:min-h-11 [&_div:has(>input)]:h-12 [&_input]:text-h4'
+  '[&_[data-key]]:h-11 [&_[data-key]]:min-h-11 [&_div:has(>input)]:h-12 [&_input]:text-h4 [&_[data-key=clear]]:hidden'
 
 /** The focusable elements of the done view's actions; the last is its main action (D13). */
 function lastAction(container: HTMLElement | null): HTMLElement | null {
@@ -626,16 +630,75 @@ export function PaymentDialog(props: PaymentDialogProps) {
    */
   const paidParts = paid.length > 0 && (
     <div className="flex flex-col gap-1">
-      <span className={cn('text-xs font-semibold text-secondary', TEXT_DIRECTION)}>
-        {messages['payment.paid']}
-      </span>
+      {!phone && (
+        <span className={cn('text-xs font-semibold text-secondary', TEXT_DIRECTION)}>
+          {messages['payment.paid']}
+        </span>
+      )}
       <ul
         aria-label={messages['payment.paid']}
         data-slot="payment-parts"
-        className="m-0 flex list-none flex-col gap-1 p-0"
+        className={cn(
+          'm-0 flex list-none gap-1 p-0',
+          // On a phone the parts are chips, two to a row, so the dialog still fits (P5.93).
+          phone ? 'flex-row flex-wrap gap-2' : 'flex-col',
+        )}
       >
         {paid.map((part) => {
           const isApproved = part.state === 'approved'
+          const state = isApproved ? messages['payment.partApproved'] : messages['payment.partPaid']
+          if (phone) {
+            // One line on a phone: the way, the amount and, for an approval, a check; the
+            // detail (the card, the voucher's code) in the tooltip and for assistive technology.
+            const chip = (
+              <span className="flex min-w-0 items-center gap-1.5 py-1">
+                {isApproved && (
+                  <CircleCheck
+                    aria-hidden="true"
+                    className="size-3.5 shrink-0 text-status-success-fg"
+                  />
+                )}
+                <span className={cn('font-medium whitespace-nowrap text-primary', TEXT_DIRECTION)}>
+                  {part.label}{' '}
+                  <MoneyText
+                    value={part.value}
+                    currency={props.currency}
+                    className="font-semibold"
+                  />
+                </span>
+                <span className="sr-only">
+                  {[state, part.detail].filter((each) => each !== undefined).join(', ')}
+                </span>
+              </span>
+            )
+            return (
+              <li
+                key={part.id}
+                className="flex min-h-11 min-w-0 items-center gap-1 rounded-md bg-surface-sunken ps-3 text-sm"
+              >
+                {part.detail === undefined ? chip : <Tooltip label={part.detail}>{chip}</Tooltip>}
+                {props.onRemovePart === undefined || isApproved ? (
+                  <span className="pe-2" />
+                ) : (
+                  <Tooltip label={messages['payment.removePart'](part.label)}>
+                    <ButtonPrimitive
+                      family="neutral"
+                      emphasis="menu"
+                      shape="icon"
+                      aria-label={messages['payment.removePart'](part.label)}
+                      className="size-11 shrink-0 px-0"
+                      disabled={locked}
+                      onClick={() => {
+                        props.onRemovePart?.(part.id)
+                      }}
+                    >
+                      <Trash2 aria-hidden="true" className="size-4" />
+                    </ButtonPrimitive>
+                  </Tooltip>
+                )}
+              </li>
+            )
+          }
           return (
             <li
               key={part.id}
@@ -658,7 +721,7 @@ export function PaymentDialog(props: PaymentDialogProps) {
                 )}
               >
                 {isApproved && <CircleCheck aria-hidden="true" className="size-3.5 shrink-0" />}
-                {isApproved ? messages['payment.partApproved'] : messages['payment.partPaid']}
+                {state}
               </span>
               {props.onRemovePart === undefined || isApproved ? (
                 <span className="pe-1" />
@@ -703,7 +766,7 @@ export function PaymentDialog(props: PaymentDialogProps) {
       <ButtonPrimitive
         family={cardLikeNow ? 'primary' : 'neutral'}
         emphasis="secondary"
-        className="min-h-12 w-full text-md"
+        className={cn('w-full', phone ? 'min-h-11' : 'min-h-12 text-md')}
         disabled={partAmount === null || locked}
         aria-disabled={over === null ? undefined : true}
         aria-describedby={over === null ? undefined : limitId}
@@ -816,12 +879,17 @@ export function PaymentDialog(props: PaymentDialogProps) {
     </>
   )
 
-  // "Complete payment" waits while something is still to pay after a part (P5.94).
-  const completeReason =
-    props.completeDisabledReason ??
-    (parts && paid.length > 0 && stillToPay(props.remaining)
+  // "Complete payment" waits while something is still to pay after a part (P5.94). The remaining
+  // amount stands at the top, so this reason is for assistive technology only; the
+  // application's own reason is shown.
+  const stillToPayReason =
+    props.completeDisabledReason === undefined &&
+    parts &&
+    paid.length > 0 &&
+    stillToPay(props.remaining)
       ? messages['payment.stillToPay'](money(props.remaining ?? '0'))
-      : undefined)
+      : undefined
+  const completeReason = props.completeDisabledReason ?? stillToPayReason
   const notes = (
     <>
       {option?.note !== undefined && (
@@ -829,7 +897,14 @@ export function PaymentDialog(props: PaymentDialogProps) {
       )}
       {props.extra}
       {completeReason !== undefined && (
-        <p id={reasonId} className={cn('m-0 text-xs text-secondary', TEXT_DIRECTION)}>
+        <p
+          id={reasonId}
+          className={cn(
+            'm-0 text-xs text-secondary',
+            TEXT_DIRECTION,
+            stillToPayReason !== undefined && 'sr-only',
+          )}
+        >
           {completeReason}
         </p>
       )}

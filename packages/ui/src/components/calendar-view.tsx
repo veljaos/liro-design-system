@@ -39,7 +39,7 @@ import {
   type GridCell,
   type Span,
 } from './schedule-logic'
-import { NowMarker, NowTimeTag, tagCovers } from './now-marker'
+import { NowTimeTag, tagCovers } from './now-marker'
 import type { Tone } from './status-badge'
 import { STICKY_HEAD, useStickyHead } from './sticky-head'
 import { usePhone } from './use-phone'
@@ -59,10 +59,9 @@ import { HintedTarget, Tooltip } from './popover'
  *   `dayStart` to `dayEnd`; events as blocks over their day's column, overlapping events side by
  *   side (`layoutDay`); all-day events, and timed events outside the hours shown, in a strip
  *   above. The days row stays below the shell while the page scrolls (P5.28 item 4). `now` (the
- *   application's clock) draws the time grids' one "now" marker (P5.28 item 10, NowMarker: a
- *   neutral line with a dot) across today's column, with the time written in the time gutter
- *   (P5.93 item 8: nothing covers it, the events cover the line), and its slot is
- *   `aria-current="time"`. Month: whole weeks, at most three lines a day, then "+N more", which
+ *   application's clock) writes the time in the time gutter on a small dark tag (P5.94 item 16:
+ *   only the tag, no line across the days; nothing covers the gutter), named "Now, 10:20 AM",
+ *   and its slot is `aria-current="time"`. Month: whole weeks, at most three lines a day, then "+N more", which
  *   opens the day's
  *   list (a popover with every event and "Open the day"). Agenda: the week's days that have
  *   events, each event a row with its time, without bullet dots (P5.90 item 15).
@@ -737,38 +736,15 @@ function TimeGrid(
             )
           })}
         </div>
-        {/* After the slots, before the events: events cover its line, never the reverse (P5.90);
-            its time stands in the gutter, which nothing covers (P5.93 item 8). */}
+        {/* "Now" is only its time, in the gutter, which nothing covers (P5.94 item 16): no line
+            across the days; today's column is named by its date in the header. */}
         {now !== null && (
           <NowTimeTag
             orientation="horizontal"
             time={now.time}
+            label={now.label}
             style={{ top: now.top, insetInlineStart: 0, width: GUTTER }}
           />
-        )}
-        {now !== null && (
-          <div
-            className="pointer-events-none absolute inset-y-0"
-            style={{ insetInlineStart: GUTTER, insetInlineEnd: 0 }}
-          >
-            {/* In a week, a thin line across the other days leads from the time to today. */}
-            {props.days.length > 1 && (
-              <div
-                aria-hidden="true"
-                className="absolute inset-x-0 h-0 border-0 border-t border-solid border-strong"
-                style={{ top: now.top }}
-              />
-            )}
-            <NowMarker
-              orientation="horizontal"
-              label={now.label}
-              style={{
-                top: now.top,
-                insetInlineStart: `${String((now.column * 100) / props.days.length)}%`,
-                width: `${String(100 / props.days.length)}%`,
-              }}
-            />
-          </div>
         )}
         {/* The events, over their day's column; after the grid in the tab order. */}
         <div

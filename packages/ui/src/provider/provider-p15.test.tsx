@@ -905,6 +905,7 @@ describe('messages', () => {
       'map.name',
       'map.noData',
       'map.regionKeys',
+      'map.regionKeysView',
       'map.retry',
       'map.showAll',
       'map.stepBelow',

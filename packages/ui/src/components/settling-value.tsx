@@ -85,6 +85,20 @@ export function SettlingValue(props: SettlingValueProps) {
     const width = Math.ceil(element.getBoundingClientRect().width)
     setWidest((current) => Math.max(current, width))
   }, [text])
+  // Measured again once the web fonts are in: a width taken in the fallback font is wider and
+  // would leave a gap beside the number for good.
+  useEffect(() => {
+    if (typeof document === 'undefined' || !('fonts' in document)) return
+    let alive = true
+    void document.fonts.ready.then(() => {
+      const element = measured.current
+      if (!alive || element === null) return
+      setWidest(Math.ceil(element.getBoundingClientRect().width))
+    })
+    return () => {
+      alive = false
+    }
+  }, [])
   const kept = slot?.widest
   const keptKey = slot?.key
   useEffect(() => {

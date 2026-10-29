@@ -2096,6 +2096,8 @@ export interface LiroMessages {
   'location.position': string
   /** RegionChart (P5.41, maps in charts): how the keys move between the areas (its description). */
   'map.regionKeys': string
+  /** The same when no area can be chosen (the last level of a drill-down, P5.94 item 1). */
+  'map.regionKeysView': string
   /** An area without a value (hatched): never 0. */
   'map.noData': string
   /** A legend step's range, the numbers written by `format`: below the first break … */

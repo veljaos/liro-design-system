@@ -98,7 +98,7 @@ export const ByResource: Story = {
     await settle()
     await expect(
       within(canvasElement).getByRole('radio', {
-        name: /^08:30\sAM – 09:00\sAM, Thursday, October 15, 2026, Dr Milica Jovanović$/,
+        name: /^8:30\sAM – 9:00\sAM, Thursday, October 15, 2026, Dr Milica Jovanović$/,
       }),
     ).toBeChecked()
   },

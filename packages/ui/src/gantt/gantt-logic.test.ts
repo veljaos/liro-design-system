@@ -2,6 +2,8 @@ import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import {
   barLabelPlace,
+  NOW_TAG_GAP,
+  nowTagStart,
   openingScroll,
   applyGanttChange,
   chartDate,
@@ -279,6 +281,25 @@ describe('the lockfile (P5.37)', () => {
     const lockfile = readFileSync(new URL('../../../../pnpm-lock.yaml', import.meta.url), 'utf8')
     expect(lockfile).toContain("'@svar-ui/react-gantt@2.7.3'")
     expect(forbiddenGanttPackages(lockfile)).toEqual([])
+  })
+})
+
+describe('where the date of "now" stands on the scale (P5.94 item 6)', () => {
+  it('is centred on the line when it covers no label', () => {
+    expect(nowTagStart(400, 70, [{ start: 12, end: 40 }], 1200)).toBe(365)
+    expect(nowTagStart(400, 70, [], 1200)).toBe(365)
+  })
+  it('steps aside from a label it would cover, to the nearest side, by the gap', () => {
+    // The year's label from 380 to 410: after it (416) is nearer than before it (304).
+    expect(nowTagStart(400, 70, [{ start: 380, end: 410 }], 1200)).toBe(410 + NOW_TAG_GAP)
+    // A label after the line: the tag goes before it.
+    expect(nowTagStart(400, 70, [{ start: 420, end: 450 }], 1200)).toBe(420 - NOW_TAG_GAP - 70)
+  })
+  it('stays inside the scale', () => {
+    expect(nowTagStart(10, 70, [], 1200)).toBe(0)
+    expect(nowTagStart(1195, 70, [], 1200)).toBe(1130)
+    // Squeezed at the start by a label: after the label.
+    expect(nowTagStart(10, 70, [{ start: 0, end: 30 }], 1200)).toBe(30 + NOW_TAG_GAP)
   })
 })
 

@@ -85,6 +85,12 @@ export type CanvasShape =
       selected: boolean
       interactive: boolean
       /**
+       * Whether a press chooses it (default true). An interactive area that cannot be chosen (the
+       * last level of a drill-down, P5.94 item 1) still answers the pointer (its tooltip) but
+       * takes no pointer cursor and reports no click.
+       */
+      choosable?: boolean
+      /**
        * A region chart's value (P5.41): the fill is this paint — a ramp's meaning laid on the
        * surface at an opacity, or a pattern (`url(#…)`) for "No data" — and the line is the
        * surface's, thin, between neighbours.
@@ -165,6 +171,7 @@ function shapeLayer(shape: CanvasShape): L.Path {
         shape.paint === undefined ? `liro-map-tone-${shape.tone}` : 'liro-map-value',
         shape.selected && 'is-selected',
         shape.active === true && 'is-active',
+        shape.choosable === false && 'is-static',
       ),
       interactive: shape.interactive,
       bubblingMouseEvents: false,
@@ -313,9 +320,11 @@ export function MapCanvas(props: MapCanvasProps) {
     for (const shape of props.shapes) {
       const layer = shapeLayer(shape)
       if (shape.kind === 'area' && shape.interactive) {
-        layer.on('click', () => {
-          latest.current.onShapeClick?.(shape.id)
-        })
+        if (shape.choosable !== false) {
+          layer.on('click', () => {
+            latest.current.onShapeClick?.(shape.id)
+          })
+        }
         layer.on('mousemove', (event: L.LeafletMouseEvent) => {
           latest.current.onShapeHover?.(shape.id, {
             x: event.containerPoint.x,

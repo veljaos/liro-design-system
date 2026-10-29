@@ -199,7 +199,7 @@ type Story = StoryObj<typeof meta>
 
 /**
  * Four rows on Wednesday 14 October 2026: bookings, the lunch break for all, a service; "now"
- * (10:20, the application's clock) marked across the rows.
+ * (10:20, the application's clock) as its time in the hours row.
  */
 export const Default: Story = {
   play: async ({ canvasElement }) => {
@@ -207,20 +207,21 @@ export const Default: Story = {
     const canvas = within(canvasElement)
     const ana = booking(canvasElement, 'Ana Petrović')
     await expect(ana).toHaveAccessibleName(
-      /^Ana Petrović, Dr Milica Jovanović, 09:00\sAM – 10:00\sAM$/,
+      /^Ana Petrović, Dr Milica Jovanović, 9:00\sAM – 10:00\sAM$/,
     )
     await expect(ana).toHaveAccessibleDescription(/Press Space to pick up the booking/)
     await expect(canvas.getAllByText('Unavailable: Lunch break, 12:00 PM – 12:30 PM')).toHaveLength(
       4,
     )
     await expect(canvas.getByRole('button', { name: 'Move to…: Ana Petrović' })).toBeVisible()
-    // The time grids' one "now" marker (P5.28 item 10), from the application's clock.
-    const marker = canvas.getByRole('img', { name: /^Now, 10:20\sAM$/ })
-    await expect(marker).toBeInTheDocument()
-    // Drawn before the bookings, which cover its line, never the reverse (P5.90 item 17).
-    await expect(
-      marker.compareDocumentPosition(ana) & Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy()
+    // "Now" is only its time in the hours row, from the application's clock (P5.94 item 16): no
+    // line across the rows.
+    // Named where the rows are (the hours row is decoration).
+    await expect(canvas.getByRole('img', { name: /^Now, 10:20\sAM$/ })).toBeInTheDocument()
+    await expect(canvasElement.querySelector('[data-slot="now-time"]')).toHaveTextContent(
+      /^10:20\sAM$/,
+    )
+    await expect(canvasElement.querySelector('[data-slot="now-marker"]')).toBeNull()
   },
 }
 
@@ -237,12 +238,12 @@ export const KeyboardInteraction: Story = {
     booking(canvasElement, 'Ana Petrović').focus()
     await userEvent.keyboard(' ')
     await expect(liveRegion(canvasElement)).toHaveTextContent(
-      /^Picked up Ana Petrović\. Dr Milica Jovanović, 09:00\sAM – 10:00\sAM\.$/,
+      /^Picked up Ana Petrović\. Dr Milica Jovanović, 9:00\sAM – 10:00\sAM\.$/,
     )
     await userEvent.keyboard(rtl(canvasElement) ? '{ArrowLeft}' : '{ArrowRight}')
     await userEvent.keyboard('{ArrowDown}')
     await expect(liveRegion(canvasElement)).toHaveTextContent(
-      /^Ana Petrović: Dr Nenad Kovačević, 09:30\sAM – 10:30\sAM\.$/,
+      /^Ana Petrović: Dr Nenad Kovačević, 9:30\sAM – 10:30\sAM\.$/,
     )
     await expect(booking(canvasElement, 'Ana Petrović')).toHaveFocus()
     await userEvent.keyboard('{Enter}')
@@ -250,14 +251,14 @@ export const KeyboardInteraction: Story = {
     // page under the open dialog is hidden from assistive technology.
     await expect(
       within(canvasElement).getByRole('button', { name: /^Ana Petrović, /, hidden: true }),
-    ).toHaveAccessibleName(/Dr Milica Jovanović, 09:00\sAM – 10:00\sAM$/)
+    ).toHaveAccessibleName(/Dr Milica Jovanović, 9:00\sAM – 10:00\sAM$/)
     await saveMove('Ana Petrović')
     await expect(
       canvas.getByText('Moved b2 to kovacevic at 2026-10-14T09:30–2026-10-14T10:30; no message'),
     ).toBeVisible()
     await waitFor(async () => {
       await expect(booking(canvasElement, 'Ana Petrović')).toHaveAccessibleName(
-        /Dr Nenad Kovačević, 09:30\sAM – 10:30\sAM$/,
+        /Dr Nenad Kovačević, 9:30\sAM – 10:30\sAM$/,
       )
     })
   },
@@ -378,7 +379,7 @@ export const MoveAsked: Story = {
     // Still in its place (the page under the dialog is hidden from assistive technology).
     await expect(
       within(canvasElement).getByRole('button', { name: /^Marko Ilić, /, hidden: true }),
-    ).toHaveAccessibleName(/Dr Milica Jovanović, 08:00\sAM – 08:30\sAM$/)
+    ).toHaveAccessibleName(/Dr Milica Jovanović, 8:00\sAM – 8:30\sAM$/)
   },
 }
 

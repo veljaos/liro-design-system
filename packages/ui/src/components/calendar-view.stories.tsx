@@ -99,7 +99,7 @@ type Story = StoryObj<typeof meta>
 
 /**
  * The week of 12–18 October 2026: overlaps side by side, all-day events above, today marked, and
- * "now" (10:20, the application's clock) on today's column.
+ * "now" (10:20, the application's clock) as its time in the gutter.
  */
 export const Default: Story = {
   play: async ({ canvasElement }) => {
@@ -107,19 +107,26 @@ export const Default: Story = {
     const canvas = within(canvasElement)
     await expect(
       canvas.getByRole('button', {
-        name: /^Minor surgery: Stefan Đorđević, 09:00\sAM – 10:30\sAM, Wednesday, October 14, 2026$/,
+        name: /^Minor surgery: Stefan Đorđević, 9:00\sAM – 10:30\sAM, Wednesday, October 14, 2026$/,
       }),
     ).toBeVisible()
     await expect(canvas.getByRole('grid')).toBeVisible()
     await expect(canvas.getByRole('radio', { name: 'Week' })).toBeChecked()
-    // The time grids' one "now" marker (P5.28 item 10) on today's column, its slot current.
+    // "Now" is only its time in the gutter (P5.94 item 16): no line across the days.
     const marker = canvas.getByRole('img', { name: /^Now, 10:20\sAM$/ })
-    await expect(marker).toBeInTheDocument()
-    // Drawn before the events, which cover its line, never the reverse (P5.90 item 17).
-    const event = eventButton(canvasElement, 'Minor surgery: Stefan Đorđević')
+    await expect(marker).toHaveTextContent(/^10:20\sAM$/)
+    await expect(canvasElement.querySelector('[data-slot="now-marker"]')).toBeNull()
+    // The tag stands inside the time gutter, in either direction.
+    const gutter = canvasElement.querySelector('[role="rowheader"]')?.getBoundingClientRect()
+    const tag = marker.querySelector('span')?.getBoundingClientRect()
     await expect(
-      marker.compareDocumentPosition(event) & Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy()
+      gutter !== undefined &&
+        tag !== undefined &&
+        tag.left >= gutter.left &&
+        tag.right <= gutter.right,
+    ).toBe(true)
+    // The gutter writes the hours as the locale does: "7:00 AM", no leading zero.
+    await expect(canvas.getByText(/^7:00\sAM$/)).toBeInTheDocument()
     await expect(canvasElement.querySelector('[aria-current="time"]')).toHaveAccessibleName(
       /^Wednesday, October 14, 2026, 10:00\sAM$/,
     )
@@ -234,23 +241,23 @@ export const KeyboardInteraction: Story = {
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
-    const first = canvas.getByRole('gridcell', { name: /^Wednesday, October 14, 2026, 07:00\sAM$/ })
+    const first = canvas.getByRole('gridcell', { name: /^Wednesday, October 14, 2026, 7:00\sAM$/ })
     await expect(first).toHaveAttribute('tabindex', '0')
     first.focus()
     await userEvent.keyboard('{ArrowDown}{ArrowDown}')
     await expect(
-      canvas.getByRole('gridcell', { name: /^Wednesday, October 14, 2026, 08:00\sAM$/ }),
+      canvas.getByRole('gridcell', { name: /^Wednesday, October 14, 2026, 8:00\sAM$/ }),
     ).toHaveFocus()
     await userEvent.keyboard(rtl(canvasElement) ? '{ArrowLeft}' : '{ArrowRight}')
     await expect(
-      canvas.getByRole('gridcell', { name: /^Thursday, October 15, 2026, 08:00\sAM$/ }),
+      canvas.getByRole('gridcell', { name: /^Thursday, October 15, 2026, 8:00\sAM$/ }),
     ).toHaveFocus()
     await userEvent.keyboard('{Enter}')
     await expect(canvas.getByText('New appointment at 2026-10-15T08:00')).toBeVisible()
     // Page Down goes to the next week; the title follows.
     await userEvent.keyboard('{PageDown}')
     await expect(
-      canvas.getByRole('gridcell', { name: /^Thursday, October 22, 2026, 08:00\sAM$/ }),
+      canvas.getByRole('gridcell', { name: /^Thursday, October 22, 2026, 8:00\sAM$/ }),
     ).toHaveFocus()
     await expect(canvas.getByRole('heading', { level: 2 })).toHaveTextContent(
       '10/19/2026 – 10/25/2026',
@@ -315,7 +322,7 @@ export const ReadOnly: Story = {
     const canvas = within(canvasElement)
     await expect(canvas.queryByRole('button', { name: /^Check-up: Petar Đurić/ })).toBeNull()
     await expect(
-      canvas.getByText(/^Check-up: Petar Đurić, 08:00\sAM – 08:30\sAM/),
+      canvas.getByText(/^Check-up: Petar Đurić, 8:00\sAM – 8:30\sAM/),
     ).toBeInTheDocument()
   },
 }
@@ -374,7 +381,7 @@ export const HoursAndWeekStart: Story = {
     )
     await expect(canvas.getAllByRole('row')).toHaveLength(16)
     // The 06:30 handover lies outside the hours: it stands in the strip above, with its time.
-    await expect(eventButton(canvasElement, 'Early shift handover')).toHaveTextContent(/06:30\sAM/)
+    await expect(eventButton(canvasElement, 'Early shift handover')).toHaveTextContent(/6:30\sAM/)
   },
 }
 
@@ -403,8 +410,8 @@ export const TimeZone: Story = {
   play: async ({ canvasElement }) => {
     await settle()
     const canvas = within(canvasElement)
-    await expect(canvas.getByText(/^09:30\sAM – 10:00\sAM$/)).toBeVisible()
-    await expect(canvas.getByText(/^04:30\sPM – 05:00\sPM$/)).toBeVisible()
+    await expect(canvas.getByText(/^9:30\sAM – 10:00\sAM$/)).toBeVisible()
+    await expect(canvas.getByText(/^4:30\sPM – 5:00\sPM$/)).toBeVisible()
   },
 }
 
