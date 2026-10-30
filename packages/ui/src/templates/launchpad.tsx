@@ -434,7 +434,7 @@ export function Launchpad(props: LaunchpadProps) {
                   aria-disabled="true"
                   tabIndex={-1}
                   onKeyDown={onArrow}
-                  className={cn(CARD, 'h-full border-default bg-surface-sunken outline-none')}
+                  className={cn(CARD, 'h-full border-default bg-surface-sunken', FOCUS_RING)}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <ModuleIcon icon={module.icon} locked />

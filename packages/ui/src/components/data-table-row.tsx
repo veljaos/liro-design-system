@@ -262,7 +262,7 @@ function TableRowView<Row extends RowData>({
         virtualize && 'h-11',
         selected ? [SELECTED_ROW, 'bg-surface-selected'] : shared.classes.row,
         shared.clickable &&
-          'cursor-pointer outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus',
+          'cursor-pointer outline-none focus-visible:outline-2 focus-visible:outline-solid focus-visible:-outline-offset-2 focus-visible:outline-focus',
         shared.clickable && !selected && 'hover:bg-surface-sunken',
       )}
     >

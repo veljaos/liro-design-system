@@ -434,7 +434,7 @@ export function DateRangeField(props: DateRangeFieldProps) {
                 className={cn(
                   TYPING,
                   RANGE_PART,
-                  'ps-0 pe-1 placeholder:text-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
+                  'ps-0 pe-1 placeholder:text-secondary focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-focus',
                 )}
               />
               {!empty && separator}
@@ -447,7 +447,7 @@ export function DateRangeField(props: DateRangeFieldProps) {
                   className={cn(
                     TYPING,
                     RANGE_PART,
-                    'ps-0.5 pe-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
+                    'ps-0.5 pe-1 focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-focus',
                   )}
                 />
               )}

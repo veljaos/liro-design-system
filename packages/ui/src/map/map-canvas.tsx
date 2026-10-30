@@ -197,6 +197,57 @@ function shapeLayer(shape: CanvasShape): L.Path {
   })
 }
 
+const TOOLTIP_HALF = 124
+
+/**
+ * A map's tooltip at a point in the map (the pointer, or the area the keys reached): the one way a
+ * map names an area (P5.96b), the same for every area. Kept inside the map; below the point near
+ * its top.
+ */
+export function MapTooltip({
+  point,
+  size,
+  slot,
+  children,
+}: {
+  point: ScreenPoint
+  size: { width: number; height: number }
+  slot: string
+  children: ReactNode
+}) {
+  const x =
+    size.width < TOOLTIP_HALF * 2
+      ? size.width / 2
+      : Math.min(Math.max(point.x, TOOLTIP_HALF), size.width - TOOLTIP_HALF)
+  const below = point.y < 96
+  return (
+    <div
+      data-slot={slot}
+      className={cn(
+        'absolute max-w-60 -translate-x-1/2',
+        below ? 'translate-y-3.5' : '-translate-y-[calc(100%+14px)]',
+      )}
+      style={{ insetInlineStart: x, top: point.y }}
+    >
+      {children}
+    </div>
+  )
+}
+
+/**
+ * Draws an area over every other area (P5.96b): last among the areas, still under the places and
+ * points drawn after them, so its whole line shows where it borders a neighbour.
+ */
+function raise(element: Element) {
+  const parent = element.parentNode
+  if (parent === null) return
+  let anchor = element.nextSibling
+  while (anchor instanceof Element && anchor.classList.contains('liro-map-area')) {
+    anchor = anchor.nextSibling
+  }
+  if (anchor !== element.nextSibling) parent.insertBefore(element, anchor)
+}
+
 /** Leaflet's bounds of ours. */
 function leafletBounds(bounds: MapBounds): L.LatLngBounds {
   return L.latLngBounds([bounds.south, bounds.west], [bounds.north, bounds.east])
@@ -267,9 +318,18 @@ export function MapCanvas(props: MapCanvasProps) {
     stillAt.current = null
     return true
   }
+  // The hovered area's place among its siblings, to put it back when the pointer leaves it.
+  const hoveredNext = useRef<Node | null>(null)
   const unhover = () => {
-    hovered.current?.classList.remove('is-hovered')
+    const element = hovered.current
     hovered.current = null
+    if (element === null) return
+    element.classList.remove('is-hovered')
+    const next = hoveredNext.current
+    hoveredNext.current = null
+    if (next !== null && next.parentNode === element.parentNode) {
+      element.parentNode?.insertBefore(element, next)
+    }
   }
 
   // The map, once. No animation, so the view after a fit or a zoom is final at once.
@@ -425,6 +485,7 @@ export function MapCanvas(props: MapCanvasProps) {
     const group = L.layerGroup().addTo(map)
     stillAt.current = pointer.current
     armed.current = false
+    const raised: Element[] = []
     for (const shape of props.shapes) {
       const layer = shapeLayer(shape)
       if (shape.kind === 'area' && shape.interactive) {
@@ -438,7 +499,11 @@ export function MapCanvas(props: MapCanvasProps) {
           const element = layer.getElement() ?? null
           if (hovered.current !== element) {
             unhover()
-            element?.classList.add('is-hovered')
+            if (element !== null) {
+              element.classList.add('is-hovered')
+              hoveredNext.current = element.nextSibling
+              raise(element)
+            }
             hovered.current = element
           }
           latest.current.onShapeHover?.(shape.id, {
@@ -458,9 +523,17 @@ export function MapCanvas(props: MapCanvasProps) {
         element.style.fill = shape.paint.fill
         element.style.fillOpacity = String(shape.paint.opacity)
       }
+      // Which area a path draws, for the tests that hover every area (P5.96b).
+      if (shape.kind === 'area' && element) element.setAttribute('data-area-id', shape.id)
+      if (shape.kind === 'area' && (shape.selected || shape.active === true) && element) {
+        raised.push(element)
+      }
     }
+    // The chosen area and the keys' area over their neighbours: their whole line shows (P5.96b).
+    for (const element of raised) raise(element)
     return () => {
       hovered.current = null
+      hoveredNext.current = null
       group.remove()
     }
   }, [map, props.shapes])

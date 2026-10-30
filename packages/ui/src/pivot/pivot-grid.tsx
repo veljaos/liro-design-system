@@ -69,7 +69,7 @@ const HEADER_CELL =
   'border-0 border-b border-solid border-default bg-surface-sunken px-3 py-2 align-bottom text-xs font-semibold text-secondary'
 const BODY_CELL = 'border-0 border-b border-solid border-subtle px-3 py-2 align-top'
 const CELL_FOCUS =
-  'outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus'
+  'outline-none focus-visible:outline-2 focus-visible:outline-solid focus-visible:-outline-offset-2 focus-visible:outline-focus'
 
 /** The indent of a row header by its depth. */
 const INDENT = ['', 'ps-5', 'ps-10', 'ps-15', 'ps-20'] as const

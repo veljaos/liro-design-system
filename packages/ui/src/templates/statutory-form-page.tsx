@@ -290,7 +290,7 @@ function CellContent({
         id={fieldElementId(context.prefix, id)}
         tabIndex={-1}
         className={cn(
-          'inline-flex max-w-full items-center gap-1 rounded-sm outline-none focus-visible:outline-2 focus-visible:outline-focus',
+          'inline-flex max-w-full items-center gap-1 rounded-sm outline-none focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-focus',
           cell.kind === 'entered' && !context.readOnly && 'w-full',
           row.total === true && 'font-semibold',
         )}
@@ -395,7 +395,7 @@ function RowNumber({ row, context }: { row: StatutoryRow; context: GridContext }
       tabIndex={-1}
       dir="ltr"
       className={cn(
-        'shrink-0 rounded-sm tabular-nums outline-none focus-visible:outline-2 focus-visible:outline-focus',
+        'shrink-0 rounded-sm tabular-nums outline-none focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-focus',
         !context.phone && 'w-14 text-start',
       )}
     >

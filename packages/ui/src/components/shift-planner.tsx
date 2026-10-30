@@ -1280,6 +1280,8 @@ export function ShiftPlanner(props: ShiftPlannerProps) {
         className={cn(
           BUTTON_RESET,
           FOCUS_RING,
+          // Inside the cell (P5.96b): the next cell and the sticky names never cover it.
+          'focus-visible:-outline-offset-2',
           'relative box-border flex min-h-14 w-full flex-col items-stretch gap-1 rounded-sm border border-solid p-1 text-start',
           editable ? 'cursor-pointer hover:bg-surface-hover' : 'cursor-default',
           selected

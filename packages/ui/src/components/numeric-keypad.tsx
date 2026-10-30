@@ -214,7 +214,7 @@ export function NumericKeypad(props: NumericKeypadProps) {
             className={cn(
               'm-0 h-full min-w-0 flex-1 cursor-default border-0 bg-transparent p-0 text-end font-sans text-h3 font-semibold text-primary tabular-nums outline-none placeholder:text-tertiary',
               readOnly &&
-                'cursor-text placeholder:text-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
+                'cursor-text placeholder:text-secondary focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-focus',
             )}
           />
           {!first && currencyText}

@@ -117,7 +117,7 @@ export function DataTableCard(props: DataTableCardProps) {
             ),
         onPress !== undefined &&
           cn(
-            'cursor-pointer outline-none focus-visible:outline-2 focus-visible:outline-focus',
+            'cursor-pointer outline-none focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-focus',
             props.flat === true
               ? 'focus-visible:-outline-offset-2'
               : 'focus-visible:outline-offset-2',

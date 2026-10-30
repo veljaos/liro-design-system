@@ -6,13 +6,11 @@ import { TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
 import { ChartTooltipContent } from '../primitives/chart-parts'
 import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
-import { MapCanvas, type CanvasLabel, type CanvasShape, type MapBaseLayer } from './map-canvas'
+import { MapCanvas, MapTooltip, type CanvasShape, type MapBaseLayer } from './map-canvas'
 import {
   bubbleRadius,
   geometryBounds,
-  geometryPolygons,
   labelPoint,
-  pointInArea,
   pointsBounds,
   rampShade,
   regionKeyTarget,
@@ -45,8 +43,10 @@ import {
  *   "1,000 to under 5,000", "5,000 and more"), or the application's own words (`stepLabels`).
  * - Keyboard: the map is one Tab stop; the arrows move between the areas in reading order (rows
  *   north to south, each from the page's start), show the tooltip and announce the area and its
- *   value; Enter or Space chooses; Escape hides the tooltip. A chosen area keeps its fill and takes
- *   the neutral selected line (D17). An area that cannot be chosen (`choosable` false: the last
+ *   value; Enter or Space chooses; Escape hides the tooltip. The area under the pointer and the
+ *   area the keys reached take one look whatever their size (P5.96b): a line in the text colour
+ *   drawn over the neighbours and the tooltip — never a name on the area. A chosen area keeps its
+ *   fill and takes the neutral selected line (D17). An area that cannot be chosen (`choosable` false: the last
  *   level of a drill-down, P5.94 item 1) shows its tooltip but no pointer cursor, and a press or
  *   Enter does nothing.
  * - The map is never mirrored in right-to-left; the card, the legend and the table are.
@@ -124,8 +124,6 @@ export interface RegionChartProps extends ChartStateProps {
   className?: string
 }
 
-const TOOLTIP_HALF = 124
-
 /** A choropleth: areas coloured by their value's step, with points or bubbles for places. */
 export function RegionChart(props: RegionChartProps) {
   const { messages, direction } = useLiro()
@@ -156,23 +154,12 @@ export function RegionChart(props: RegionChartProps) {
   const valueText = (value: string | null | undefined): string =>
     regionStep(value, []) === null ? messages['map.noData'] : write(value)
 
-  // Every area's step and paint, its label point and the polygon the label stands in.
+  // Every area's step and paint, and its label point (where the keys' tooltip stands).
   const drawn = useMemo(
     () =>
       props.areas.map((area) => {
         const step = regionStep(area.value, props.breaks)
         const at = labelPoint(area.geometry)
-        const rings =
-          at === null
-            ? []
-            : (geometryPolygons(area.geometry).find((each) =>
-                pointInArea(at, {
-                  type: 'Polygon',
-                  coordinates: each.map((ring) =>
-                    ring.map((point) => [point.lng, point.lat] as const),
-                  ),
-                }),
-              ) ?? [])
         const paint =
           step === null
             ? { fill: `url(#${pattern})`, opacity: 1 }
@@ -180,7 +167,7 @@ export function RegionChart(props: RegionChartProps) {
                 const shade = rampShade(step, count, ramp)
                 return { fill: shade.colour, opacity: shade.opacity }
               })()
-        return { area, step, at, rings, paint }
+        return { area, step, at, paint }
       }),
     [props.areas, props.breaks, count, ramp, pattern],
   )
@@ -223,19 +210,6 @@ export function RegionChart(props: RegionChartProps) {
     }
     return list
   }, [drawn, selected, active, props.places, bubbles, largest])
-
-  // An area's name shows only while the pointer is over it or the keys reached it (P5.96): no
-  // name stands on the map by itself, so none looks like a hover left behind.
-  const shown = hover?.id ?? active
-  const labels = useMemo(
-    (): CanvasLabel[] =>
-      drawn.flatMap(({ area, at, rings }) =>
-        at === null || area.id !== shown
-          ? []
-          : [{ id: area.id, at, text: area.name, rings, strong: area.id === selected }],
-      ),
-    [drawn, selected, shown],
-  )
 
   const bounds = useMemo(
     () =>
@@ -413,20 +387,8 @@ export function RegionChart(props: RegionChartProps) {
     if (tipArea === undefined) return null
     const point = hover === null ? (tipArea.at === null ? null : project(tipArea.at)) : hover.at
     if (point === null || size.width === 0) return null
-    const x =
-      size.width < TOOLTIP_HALF * 2
-        ? size.width / 2
-        : Math.min(Math.max(point.x, TOOLTIP_HALF), size.width - TOOLTIP_HALF)
-    const below = point.y < 96
     return (
-      <div
-        data-slot="region-chart-tooltip"
-        className={cn(
-          'absolute max-w-60 -translate-x-1/2',
-          below ? 'translate-y-3.5' : '-translate-y-[calc(100%+14px)]',
-        )}
-        style={{ insetInlineStart: x, top: point.y }}
-      >
+      <MapTooltip point={point} size={size} slot="region-chart-tooltip">
         <ChartTooltipContent
           direction={direction}
           indicator="none"
@@ -449,7 +411,7 @@ export function RegionChart(props: RegionChartProps) {
             },
           ]}
         />
-      </div>
+      </MapTooltip>
     )
   }
 
@@ -506,7 +468,6 @@ export function RegionChart(props: RegionChartProps) {
           label={messages['map.name'](props.title)}
           hint={anyChoosable ? messages['map.regionKeys'] : messages['map.regionKeysView']}
           shapes={shapes}
-          labels={labels}
           bounds={bounds}
           baseLayer={props.baseLayer}
           attribution={props.attribution}

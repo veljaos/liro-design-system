@@ -192,7 +192,7 @@ export function RegisterPage<Row extends RowData>(props: RegisterPageProps<Row>)
               tabIndex={-1}
               dir="ltr"
               // Reached from a correction link: the ring shows where the focus landed.
-              className="rounded-sm outline-none focus:outline-2 focus:outline-offset-2 focus:outline-focus"
+              className="rounded-sm outline-none focus:outline-2 focus:outline-solid focus:outline-offset-2 focus:outline-focus"
             >
               {info.number}
             </span>

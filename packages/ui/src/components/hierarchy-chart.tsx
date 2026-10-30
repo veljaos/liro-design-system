@@ -295,7 +295,7 @@ function Item({
           state.choose(node.id)
         }}
         className={cn(
-          'relative cursor-pointer border-0 border-b border-solid border-subtle px-3 py-2 outline-none last:border-b-0 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus',
+          'relative cursor-pointer border-0 border-b border-solid border-subtle px-3 py-2 outline-none last:border-b-0 focus-visible:outline-2 focus-visible:outline-solid focus-visible:-outline-offset-2 focus-visible:outline-focus',
           chosen ? 'bg-surface-selected' : 'hover:bg-surface-hover',
           node.vacant === true && 'border-dashed',
         )}

@@ -47,12 +47,11 @@ async function marks(page: Page): Promise<Marks> {
 
 const NO_MARKS: Marks = { labels: [], tooltip: null, outlined: 0, ring: 'none' }
 
-/** The centre of the area whose tooltip starts with `name`, found by moving the mouse over each. */
+/** A point inside the area whose tooltip starts with `name`, found by moving the mouse over each. */
 async function areaPoint(page: Page, name: string): Promise<{ x: number; y: number }> {
-  for (const path of await page.locator('path.liro-map-area').all()) {
-    const box = await path.boundingBox()
-    if (box === null) continue
-    const point = { x: box.x + box.width / 2, y: box.y + box.height / 2 }
+  for (const id of await areaIds(page)) {
+    const point = await insidePoint(page, id)
+    if (point === null) continue
     await page.mouse.move(point.x, point.y, { steps: 3 })
     await page.waitForTimeout(50)
     const tip = await page.evaluate(
@@ -152,4 +151,203 @@ test('Map: the keys show the focus ring and the area they reach', async ({ page 
   if (box === null) return
   await page.mouse.click(box.x + 4, box.y + box.height - 4)
   await expect.poll(() => marks(page)).toEqual(NO_MARKS)
+})
+
+// One hover look for every area (P5.96b, the owner's review of P5.96a): every area of every
+// level, hovered with the real mouse, shows the same look — its tooltip, its whole line drawn over
+// its neighbours (the last area drawn), a solid line, and no name on the area.
+
+interface AreaLook {
+  id: string
+  /** Why the area's look differs from every other's; null when it is the one look. */
+  problem: string | null
+}
+
+/** A point inside the area's path that the pointer reaches (no neighbour drawn over it there). */
+async function insidePoint(page: Page, id: string): Promise<{ x: number; y: number } | null> {
+  return page.evaluate((areaId) => {
+    const path = document.querySelector(`path[data-area-id="${CSS.escape(areaId)}"]`)
+    if (path === null) return null
+    const box = path.getBoundingClientRect()
+    const steps = 24
+    // The middle first, then a grid over the area's box.
+    const tries: [number, number][] = [[box.x + box.width / 2, box.y + box.height / 2]]
+    for (let row = 1; row < steps; row += 1) {
+      for (let column = 1; column < steps; column += 1) {
+        tries.push([box.x + (box.width * column) / steps, box.y + (box.height * row) / steps])
+      }
+    }
+    // Whole pixels (a mouse event's), with the pixels round it in the area too: the pointer lands
+    // on this area, never on a neighbour's edge.
+    for (const [px, py] of tries) {
+      const x = Math.round(px)
+      const y = Math.round(py)
+      const around = [
+        [x, y],
+        [x - 1, y],
+        [x + 1, y],
+        [x, y - 1],
+        [x, y + 1],
+      ]
+      if (around.every(([ax = 0, ay = 0]) => document.elementFromPoint(ax, ay) === path)) {
+        return { x, y }
+      }
+    }
+    return null
+  }, id)
+}
+
+/** The look of the area under the pointer, checked against the one look. */
+async function hoverLook(page: Page, id: string, tooltipSlot: string): Promise<AreaLook> {
+  const at = await insidePoint(page, id)
+  if (at === null) return { id, problem: 'no point of the area the pointer can reach' }
+  await page.mouse.move(at.x, at.y, { steps: 8 })
+  try {
+    await page.locator(`[data-slot="${tooltipSlot}"]`).waitFor({ timeout: 2000 })
+  } catch {
+    return { id, problem: 'no tooltip' }
+  }
+  const problem = await page.evaluate((areaId) => {
+    const path = document.querySelector(`path[data-area-id="${CSS.escape(areaId)}"]`)
+    if (path === null) return 'gone'
+    if (!path.classList.contains('is-hovered')) return 'not marked as hovered'
+    const areas = [...(path.parentElement?.querySelectorAll(':scope > path.liro-map-area') ?? [])]
+    if (areas[areas.length - 1] !== path) return 'not drawn over its neighbours'
+    const line = getComputedStyle(path)
+    if (line.strokeDasharray !== 'none') return `a broken line (${line.strokeDasharray})`
+    if (parseFloat(line.strokeWidth) < 2) return `a thin line (${line.strokeWidth})`
+    const names = [...document.querySelectorAll<HTMLElement>('[data-label-id]')].filter(
+      (each) => getComputedStyle(each).visibility === 'visible',
+    )
+    if (names.length > 0) return `a name on the area (${names[0]?.textContent ?? ''})`
+    return null
+  }, id)
+  return { id, problem }
+}
+
+async function areaIds(page: Page): Promise<string[]> {
+  return page.evaluate(() =>
+    [...document.querySelectorAll('path.liro-map-area.leaflet-interactive')].map(
+      (each) => each.getAttribute('data-area-id') ?? '',
+    ),
+  )
+}
+
+/** Every area on the map hovered one after another; returns the areas whose look differs. */
+async function everyAreaLook(page: Page, tooltipSlot = 'region-chart-tooltip') {
+  const ids = await areaIds(page)
+  const looks: AreaLook[] = []
+  for (const id of ids) looks.push(await hoverLook(page, id, tooltipSlot))
+  return { count: ids.length, different: looks.filter((each) => each.problem !== null) }
+}
+
+const LEVELS = [
+  { id: 'charts-map-serbia--by-region', name: 'By region', count: 5 },
+  { id: 'charts-map-serbia--by-district', name: 'By district, with bubbles', count: 26 },
+  { id: 'charts-map-serbia--by-municipality', name: 'By city and municipality', count: 146 },
+]
+
+for (const level of LEVELS) {
+  test(`Map: one hover look for all ${String(level.count)} areas, ${level.name}`, async ({
+    page,
+  }) => {
+    test.setTimeout(240_000)
+    const outcome = await openEntry(
+      page,
+      { id: level.id, title: 'Charts/Map/Serbia', name: level.name, type: 'story' },
+      MODE,
+    )
+    expect(outcome.status).toBe('success')
+    await settled(page)
+    const result = await everyAreaLook(page)
+    expect(result.count).toBe(level.count)
+    expect(result.different).toEqual([])
+  })
+}
+
+/**
+ * The city municipalities of the five divided cities, reached as the owner does: real clicks down
+ * the drill-down, every area of every level on the way hovered too.
+ */
+const CITIES = [
+  { city: 'Belgrade', path: ['beograd'], count: 17 },
+  { city: 'Niš', path: ['juzna-istocna-srbija', 'RS-20', 'nis'], count: 5 },
+  { city: 'Požarevac', path: ['juzna-istocna-srbija', 'RS-11', 'pozarevac'], count: 2 },
+  { city: 'Užice', path: ['sumadija-zapadna-srbija', 'RS-16', 'uzice'], count: 2 },
+  { city: 'Vranje', path: ['juzna-istocna-srbija', 'RS-24', 'vranje'], count: 2 },
+]
+
+for (const city of CITIES) {
+  test(`Map: one hover look on every level down to ${city.city}'s city municipalities`, async ({
+    page,
+  }) => {
+    test.setTimeout(240_000)
+    const outcome = await openEntry(page, DRILL_DOWN, MODE)
+    expect(outcome.status).toBe('success')
+    await settled(page)
+    for (const id of city.path) {
+      const level = await everyAreaLook(page)
+      expect(level.different).toEqual([])
+      const at = await insidePoint(page, id)
+      expect(at).not.toBeNull()
+      if (at === null) return
+      await page.mouse.click(at.x, at.y)
+      await expect.poll(async () => (await areaIds(page)).includes(id)).toBe(false)
+      await settled(page)
+    }
+    const last = await everyAreaLook(page)
+    expect(last.count).toBe(city.count)
+    expect(last.different).toEqual([])
+  })
+}
+
+test('Map: the keys show the same look as the pointer', async ({ page }) => {
+  const outcome = await openEntry(
+    page,
+    {
+      id: 'charts-map-serbia--by-region',
+      title: 'Charts/Map/Serbia',
+      name: 'By region',
+      type: 'story',
+    },
+    MODE,
+  )
+  expect(outcome.status).toBe('success')
+  await settled(page)
+  const map = page.locator('.liro-map')
+  await map.focus()
+  for (let step = 0; step < 5; step += 1) {
+    await page.keyboard.press('ArrowRight')
+    const look = await page.evaluate(() => {
+      const path = document.querySelector('path.liro-map-area.is-active')
+      if (path === null) return 'nothing reached'
+      const areas = [...(path.parentElement?.querySelectorAll(':scope > path.liro-map-area') ?? [])]
+      if (areas[areas.length - 1] !== path) return 'not drawn over its neighbours'
+      if (parseFloat(getComputedStyle(path).strokeWidth) < 2) return 'a thin line'
+      if (document.querySelector('[data-slot="region-chart-tooltip"]') === null) return 'no tooltip'
+      const names = [...document.querySelectorAll<HTMLElement>('[data-label-id]')].filter(
+        (each) => getComputedStyle(each).visibility === 'visible',
+      )
+      return names.length > 0 ? 'a name on the area' : null
+    })
+    expect(look).toBeNull()
+  }
+})
+
+test('AreaMap: one hover look for every area', async ({ page }) => {
+  const outcome = await openEntry(
+    page,
+    {
+      id: 'components-map-area-map--default',
+      title: 'Components/Map/Area map',
+      name: 'Default',
+      type: 'story',
+    },
+    MODE,
+  )
+  expect(outcome.status).toBe('success')
+  await page.waitForTimeout(500)
+  const result = await everyAreaLook(page, 'area-map-tooltip')
+  expect(result.count).toBeGreaterThan(0)
+  expect(result.different).toEqual([])
 })
