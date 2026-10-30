@@ -395,7 +395,7 @@ Status: `todo`, `in progress`, `blocked (reason)`, `done`.
 | P5.93 | The owner's review, round 4 | P5.92 | done | 2026-10-28 | Forty-nine findings fixed as classes: read only as the one non-editable field state, visible loading and useful empty states, toasts with a close button and Undo in place, the library's tooltips, scrolling tab rows, the portal home, the till's payment without scrolling, merging, sharing, the now marker's time, a readable Gantt, simpler pivot, rules as blocks, CodeBlock, the assistant's work display, seven new charts and the maps of Serbia |
 | P5.94 | The owner's review, round 5 | P5.93 | done | 2026-10-29 | Twenty findings fixed as classes, in two pull requests: A (items 1–18 and 20) and B (item 19, the bank statement as a worklist) |
 | P5.95 | Printed documents leave the Design System | P5.94 | done | 2026-10-29 | PrintPage, PrintDocument, the print parts, print-logic and ReceiptPreview removed; printed documents are liro-folio's PDFs; the examples show them as liro-folio's output |
-| P5.96 | The owner's review of P5.94–P5.95 | P5.95 | in progress | | Questions and answers as a page of their own in every portal; a map names an area only while it is pointed at; "All" first in every worklist's state chips; the Launchpad's story named "Home" |
+| P5.96 | The owner's review of P5.94–P5.95 | P5.95 | done | 2026-10-30 | Questions and answers as a page of their own in every portal; a map names an area only while it is pointed at; "All" first in every worklist's state chips; the Launchpad's story named "Home" |
 | P6.1 | Full language and direction matrix | Phases 1–5 | todo | | |
 | P6.3 | Performance budget | P4.8 | todo | | |
 | P6.6 | Full cleanup | P6.3 | todo | | |

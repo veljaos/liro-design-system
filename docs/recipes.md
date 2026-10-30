@@ -68,8 +68,8 @@ components, as below; the components stay.
   question as the h1 with the way back, the answer, "What to do", "What you need" and the
   request that does it started filled in (the page's main action). The home page keeps the top
   three to five as `CommonQuestions` (`limit`, opened in place) beside "All questions"; the page
-  is reached from there and from the participant's menu (the five sections fill the phone's
-  bottom bar). The questions, answers, order and counts' categories are the application's data;
+  is reached from there and from the portal's navigation: on desktop a section of its own (a
+  tab), on phones, whose bottom bar holds five sections, an entry of the participant's menu. The questions, answers, order and counts' categories are the application's data;
   a search on the server is `SearchResultList` instead. The Shell example "Employee portal,
   questions and answers" (330 questions) and "Employee portal, an answer" show it.
 - **Handheld picking and counting** — F4 Worklist (picking: one line at a time, decided with

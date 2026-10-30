@@ -119,8 +119,8 @@ import {
  *   questions (QuestionsAndAnswers: search as you type with the words marked, categories with
  *   counts, 30 at a time), each answer on its own page (AnswerView) with the request it starts;
  *   nothing found offers "Ask HR" (a Drawer, the words typed filled in). Reached from the home's
- *   "All questions" and the participant's menu: the five sections fill the phone's bottom bar
- *   (PortalShell's limit), so the questions are not a sixth.
+ *   "All questions" and the portal's navigation: on desktop a sixth tab, on phones (whose bottom
+ *   bar holds five) an entry of the participant's menu.
  * Every figure is the application's (data-Y.ts); the screens use only `@veljaos/ui`.
  */
 
@@ -143,7 +143,15 @@ const SECTIONS: PortalSection[] = [
   },
 ]
 
-function portalMenu(navigate: (path: string) => void): MenuEntry[] {
+/** On desktop the questions are a sixth tab; the phone's bottom bar holds five (the menu has it). */
+const QUESTIONS_SECTION: PortalSection = {
+  key: 'questions',
+  label: 'Questions and answers',
+  href: `#${Y_ROUTES.questions}`,
+  icon: CircleHelp,
+}
+
+function portalMenu(navigate: (path: string) => void, phone: boolean): MenuEntry[] {
   return [
     {
       label: 'My details',
@@ -152,13 +160,17 @@ function portalMenu(navigate: (path: string) => void): MenuEntry[] {
         navigate(Y_ROUTES.details)
       },
     },
-    {
-      label: 'Questions and answers',
-      icon: CircleHelp,
-      onSelect: () => {
-        navigate(Y_ROUTES.questions)
-      },
-    },
+    ...(phone
+      ? [
+          {
+            label: 'Questions and answers',
+            icon: CircleHelp,
+            onSelect: () => {
+              navigate(Y_ROUTES.questions)
+            },
+          },
+        ]
+      : []),
     { label: 'Language: English', icon: Languages, onSelect: () => undefined },
     { type: 'separator' },
     {
@@ -171,7 +183,7 @@ function portalMenu(navigate: (path: string) => void): MenuEntry[] {
   ]
 }
 
-/** The portal's frame: PortalShell with the five sections, the tenant's digits and today. */
+/** The portal's frame: PortalShell with its sections, the tenant's digits and today. */
 export function EmployeePortal({
   phone,
   current,
@@ -192,8 +204,8 @@ export function EmployeePortal({
           href: `#${Y_ROUTES.home}`,
         }}
         participant={{ name: EMPLOYEE.name, detail: `${EMPLOYEE.role} · ${EMPLOYEE.company}` }}
-        menu={portalMenu(navigate)}
-        sections={SECTIONS.map((section) =>
+        menu={portalMenu(navigate, phone)}
+        sections={(phone ? SECTIONS : [...SECTIONS, QUESTIONS_SECTION]).map((section) =>
           section.key === current ? { ...section, current: true } : section,
         )}
         footer={`${HR_CONTACT} · Illustrative data`}

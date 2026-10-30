@@ -31,7 +31,8 @@ import { useLiro } from '../provider/liro-provider'
  *   medium) and a 14px chevron; on phones the avatar alone (36px). It opens the participant's
  *   menu (neutral, 220px): the name and its detail line ("Parent of Luka Jovanović"), then the
  *   application's entries (profile, language, sign out).
- * - Sections (up to five): on desktop a second header row of tabs, centred as the AppShell's
+ * - Sections (up to five on phones; a further one, as Questions and answers, is a desktop tab and
+ *   an entry of the participant's menu on phones, P5.96): on desktop a second header row of tabs, centred as the AppShell's
  *   module tabs (P5.93 item 11, D16: they are the portal's top navigation), links with `aria-current="page"` and the 2px brand line
  *   (D17); a section's note ("2 new") as small secondary text after its name. On phones a bottom
  *   navigation bar within thumb reach: one equal cell per section, a 20px icon over the 12px
