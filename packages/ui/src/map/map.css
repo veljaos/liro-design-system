@@ -150,11 +150,19 @@
   stroke: var(--liro-chart-category5);
   fill: var(--liro-chart-category5);
 }
-.liro-map path.liro-map-area.leaflet-interactive.is-hovered {
+/*
+ * The area under the pointer and the area the keys reached: one look for every area, whatever its
+ * size (P5.96b) — a stronger line and fill, drawn over its neighbours (MapCanvas raises it), so
+ * its whole outline is one solid line; the name is in the tooltip, never on the area.
+ */
+.liro-map path.liro-map-area.is-hovered,
+.liro-map path.liro-map-area.is-active {
+  stroke-width: 3;
   fill-opacity: 0.24;
 }
 .liro-map path.liro-map-area.is-selected,
-.liro-map path.liro-map-area.is-selected.leaflet-interactive.is-hovered {
+.liro-map path.liro-map-area.is-selected.is-hovered,
+.liro-map path.liro-map-area.is-selected.is-active {
   stroke-width: 4;
   fill-opacity: 0.45;
 }
@@ -187,7 +195,7 @@
  * A region chart (P5.41): areas filled by their value's step (the fill is set per area: a ramp's
  * meaning at an opacity, on the card's own surface, or the "No data" hatching), with a thin line
  * between neighbours; the chosen area keeps its fill and takes the neutral selected line (D17);
- * the area the keys reached a strong line in the text colour.
+ * the area under the pointer and the area the keys reached the same line in the text colour.
  */
 .liro-map.liro-map-raised {
   background: var(--liro-surface-raised);
@@ -196,16 +204,13 @@
   stroke: var(--liro-border-strong);
   stroke-width: 1;
 }
-.liro-map path.liro-map-value.leaflet-interactive.is-hovered {
-  stroke: var(--liro-text-secondary);
+.liro-map path.liro-map-area.liro-map-value.is-hovered,
+.liro-map path.liro-map-area.liro-map-value.is-active {
+  stroke: var(--liro-text-primary);
   stroke-width: 2;
 }
 .liro-map path.liro-map-area.liro-map-value.is-selected {
   stroke: var(--liro-border-selected);
-  stroke-width: 3;
-}
-.liro-map path.liro-map-area.is-active {
-  stroke: var(--liro-text-primary);
   stroke-width: 3;
 }
 /* A place's bubble: neutral, its area by the value, the areas' colours showing through. */

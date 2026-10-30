@@ -64,7 +64,7 @@ export function ChartSeriesToggle(props: ChartSeriesToggleProps) {
               pressed
                 ? 'border-b-selected bg-surface-selected'
                 : 'border-b-transparent bg-transparent hover:bg-surface-hover',
-              'outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus',
+              'outline-none focus-visible:outline-2 focus-visible:outline-solid focus-visible:-outline-offset-2 focus-visible:outline-focus',
             )}
           >
             <span className={cn('text-xs text-secondary', TEXT_DIRECTION)}>{item.label}</span>

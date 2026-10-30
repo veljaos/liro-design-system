@@ -83,6 +83,8 @@ export function ToggleGroupItem({
         'disabled:cursor-not-allowed disabled:text-disabled',
         TEXT_DIRECTION,
         FOCUS_RING,
+        // Inside the option (P5.96b): the group clips its edges and the next option is drawn over it.
+        'focus-visible:-outline-offset-2',
         className,
       )}
       {...props}

@@ -219,7 +219,7 @@ export function MessageBubble({
               <button
                 type="button"
                 onClick={onRetry}
-                className="min-h-6 cursor-pointer rounded-sm border-0 bg-transparent p-0 font-sans text-xs text-link hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                className="min-h-6 cursor-pointer rounded-sm border-0 bg-transparent p-0 font-sans text-xs text-link hover:underline focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-focus"
               >
                 {messages['message.retry']}
               </button>

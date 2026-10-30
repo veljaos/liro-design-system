@@ -294,7 +294,7 @@ export function CompanyList({
           if (index !== undefined) choose(index)
         }}
         className={cn(
-          'min-h-0 overflow-y-auto [overflow-anchor:none] rounded-md outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus',
+          'min-h-0 overflow-y-auto [overflow-anchor:none] rounded-md outline-none focus-visible:outline-2 focus-visible:outline-solid focus-visible:-outline-offset-2 focus-visible:outline-focus',
           fill ? 'flex-1' : 'max-h-100',
           total === 0 && 'hidden',
         )}

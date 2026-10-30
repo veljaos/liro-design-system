@@ -1,37 +1,46 @@
 import { MapPin } from 'lucide-react'
-import { useId, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent } from 'react'
+import {
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type KeyboardEvent,
+  type ReactNode,
+} from 'react'
 import { EmptyState, ErrorState } from '../components/empty-state'
 import { usePhone } from '../components/use-phone'
 import { FOCUS_RING, TEXT_DIRECTION } from '../primitives/classes'
+import { ChartTooltipContent } from '../primitives/chart-parts'
 import { cn } from '../primitives/cn'
 import { Skeleton } from '../primitives/skeleton'
 import { useLiro } from '../provider/liro-provider'
-import { MapCanvas, type CanvasLabel, type CanvasShape, type MapBaseLayer } from './map-canvas'
+import { MapCanvas, MapTooltip, type CanvasShape, type MapBaseLayer } from './map-canvas'
 import {
   areaAt,
   areaListKeyTarget,
   geometryBounds,
-  geometryPolygons,
   labelPoint,
-  pointInArea,
   pointsBounds,
   type LatLng,
   unionBounds,
   type MapAreaGeometry,
   type MapAreaTone,
+  type ScreenPoint,
 } from './map-logic'
 
 /*
  * AreaMap (BUILD-PLAN P5.41): areas on a map — municipalities, the zones of a city's tax, service
- * areas — drawn as lines and fills in tokens, labelled where the name fits, with the list of
- * every area beside the map. Every area takes one colour, the charts' main blue, light; the
+ * areas — drawn as lines and fills in tokens, with the list of every area beside the map. Every area takes one colour, the charts' main blue, light; the
  * pointer darkens it a little and the chosen one is darker still (P5.94 item 17): different
  * colours only when the data sorts the areas into kinds (`tone`, with a legend). The list is the
  * keyboard's and the screen reader's way (a single
  * choice, the arrow keys move and choose). The chosen area (P5.93 item 37) is filled with its own
- * colour, clearly stronger, with a thicker line; its label stands out (the strong tag) and the
- * same item is the list's neutral selection (D17: surface.selected and the border.selected bar —
- * never colour alone); the pointer over an area tints it lighter. An optional point (an address)
+ * colour, clearly stronger, with a thicker line, and the same item is the list's neutral selection
+ * (D17: surface.selected and the border.selected bar — never colour alone). The area under the
+ * pointer, and the area whose list item has the keys' focus, take one look whatever their size
+ * (P5.96b): a stronger line drawn over the neighbours and the name (and detail) in a tooltip —
+ * never a name on the area. An optional point (an address)
  * says which area it falls in ("Falls in: Zone II", `pointInArea`). The legend and every word on
  * an area are the application's; every boundary is the application's data (GeoJSON polygons).
  * The base map is optional and off by default (`baseLayer`: the application's tile URL template,
@@ -117,7 +126,7 @@ function Swatch({ tone }: { tone: MapAreaTone }) {
 
 /** Areas on a map, with their list, legend and an optional point. */
 export function AreaMap(props: AreaMapProps) {
-  const { messages } = useLiro()
+  const { messages, direction } = useLiro()
   const viewportPhone = usePhone()
   const phone = props.layout === undefined ? viewportPhone : props.layout === 'phone'
   const height = props.height ?? (phone ? 320 : 420)
@@ -127,9 +136,9 @@ export function AreaMap(props: AreaMapProps) {
   const [ready, setReady] = useState(false)
   const items = useRef<(HTMLDivElement | null)[]>([])
   const headingId = useId()
-  // The area the pointer is over on the map, and the area whose list item has the focus: only that
-  // area's name stands on the map (P5.96).
-  const [hovered, setHovered] = useState<string | null>(null)
+  // The area the pointer is over on the map (and where), and the area whose list item has the keys'
+  // focus: that area is outlined and named in the tooltip, the same for every area (P5.96b).
+  const [hovered, setHovered] = useState<{ id: string; at: ScreenPoint } | null>(null)
   const [focused, setFocused] = useState<string | null>(null)
   const areaIds = props.areas.map((area) => area.id).join('\n')
   const [shownIds, setShownIds] = useState(areaIds)
@@ -138,7 +147,7 @@ export function AreaMap(props: AreaMapProps) {
     setHovered(null)
     setFocused(null)
   }
-  const shown = hovered ?? focused
+  const shown = hovered?.id ?? focused
 
   const choose = (id: string) => {
     setInner(id)
@@ -157,32 +166,45 @@ export function AreaMap(props: AreaMapProps) {
       geometry: area.geometry,
       tone: area.tone ?? 'main',
       selected: area.id === selected,
+      active: area.id === focused,
       interactive: true,
     }))
     if (point !== undefined) {
       list.push({ kind: 'dot', id: 'point', at: { lat: point.lat, lng: point.lng }, look: 'point' })
     }
     return list
-  }, [props.areas, selected, point])
+  }, [props.areas, selected, focused, point])
 
-  const labels = useMemo(
-    (): CanvasLabel[] =>
-      props.areas.flatMap((area) => {
-        if (area.id !== shown) return []
-        const at = labelPoint(area.geometry)
-        if (at === null) return []
-        // The polygon the name stands in, with its holes.
-        const rings =
-          geometryPolygons(area.geometry).find((each) =>
-            pointInArea(at, {
-              type: 'Polygon',
-              coordinates: each.map((ring) => ring.map((point) => [point.lng, point.lat] as const)),
-            }),
-          ) ?? []
-        return [{ id: area.id, at, text: area.name, rings, strong: area.id === selected }]
-      }),
-    [props.areas, selected, shown],
-  )
+  // The tooltip: the area's name (and detail) at the pointer, or at the area the keys reached.
+  const tipArea = shown === null ? undefined : props.areas.find((area) => area.id === shown)
+  const overlay = (
+    project: (at: LatLng) => ScreenPoint | null,
+    size: { width: number; height: number },
+  ): ReactNode => {
+    if (tipArea === undefined || size.width === 0) return null
+    const at = hovered === null ? labelPoint(tipArea.geometry) : null
+    const point = hovered === null ? (at === null ? null : project(at)) : hovered.at
+    if (point === null) return null
+    return (
+      <MapTooltip point={point} size={size} slot="area-map-tooltip">
+        <ChartTooltipContent
+          direction={direction}
+          indicator="none"
+          label={
+            <>
+              {tipArea.name}
+              {tipArea.detail !== undefined && (
+                <span className={cn('block font-regular text-secondary', TEXT_DIRECTION)}>
+                  {tipArea.detail}
+                </span>
+              )}
+            </>
+          }
+          rows={[]}
+        />
+      </MapTooltip>
+    )
+  }
 
   const bounds = useMemo(
     () =>
@@ -298,7 +320,7 @@ export function AreaMap(props: AreaMapProps) {
                 onKeyDown(event, index)
               }}
               onFocus={(event) => {
-                // The keys' focus names the area on the map; a press of the pointer only chooses
+                // The keys' focus marks the area on the map; a press of the pointer only chooses
                 // it (P5.96a: no name left by a click).
                 if (event.currentTarget.matches(':focus-visible')) setFocused(area.id)
               }}
@@ -356,15 +378,15 @@ export function AreaMap(props: AreaMapProps) {
     <MapCanvas
       label={messages['map.name'](props.label)}
       shapes={shapes}
-      labels={labels}
       bounds={bounds}
       baseLayer={props.baseLayer}
       height={height}
       className="min-w-0 flex-1"
       onShapeClick={choose}
-      onShapeHover={(id) => {
-        setHovered(id)
+      onShapeHover={(id, at) => {
+        setHovered(id === null || at === null ? null : { id, at })
       }}
+      overlay={overlay}
       onReady={() => {
         setReady(true)
       }}

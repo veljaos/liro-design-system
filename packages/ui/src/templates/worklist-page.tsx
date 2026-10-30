@@ -291,7 +291,7 @@ function Row({
         onKeyDown={(event) => {
           onKeyDown(event, index)
         }}
-        className="flex min-w-0 flex-1 cursor-pointer items-start gap-4 rounded-sm outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+        className="flex min-w-0 flex-1 cursor-pointer items-start gap-4 rounded-sm outline-none focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-focus"
       >
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
           <span className={cn('text-sm font-semibold text-primary', TEXT_DIRECTION)}>
@@ -357,7 +357,7 @@ function DetailPane({
     <div
       ref={pane}
       {...(scrolls ? { tabIndex: 0, role: 'region', 'aria-label': label } : {})}
-      className="min-h-0 min-w-0 flex-1 overflow-y-auto outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus"
+      className="min-h-0 min-w-0 flex-1 overflow-y-auto outline-none focus-visible:outline-2 focus-visible:outline-solid focus-visible:-outline-offset-2 focus-visible:outline-focus"
     >
       <div ref={content}>{children}</div>
       <div ref={spacer} aria-hidden="true" />

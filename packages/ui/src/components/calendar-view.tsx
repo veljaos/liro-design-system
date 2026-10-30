@@ -462,7 +462,14 @@ function EventBox({
     <HintedTarget hint={label}>
       <button
         type="button"
-        className={cn(BUTTON_RESET, 'cursor-pointer hover:border-current', FOCUS_RING, className)}
+        className={cn(
+          BUTTON_RESET,
+          'cursor-pointer hover:border-current',
+          FOCUS_RING,
+          // Inside the event (P5.96b): events side by side and the sticky header never cover it.
+          'focus-visible:-outline-offset-2',
+          className,
+        )}
         style={style}
         {...(label === undefined ? {} : { 'aria-label': label })}
         {...(tabIndex === undefined ? {} : { tabIndex })}
@@ -724,7 +731,7 @@ function TimeGrid(
                         props.onSlotSelect?.(slotRange(day, slot))
                       }}
                       className={cn(
-                        'relative min-w-0 flex-1 basis-0 border-0 border-s border-t border-subtle outline-none focus-visible:z-(--liro-layer-raised) focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus',
+                        'relative min-w-0 flex-1 basis-0 border-0 border-s border-t border-subtle outline-none focus-visible:z-(--liro-layer-raised) focus-visible:outline-2 focus-visible:outline-solid focus-visible:-outline-offset-2 focus-visible:outline-focus',
                         onHour ? 'border-solid' : 'border-solid [border-top-style:dotted]',
                         slot === 0 && 'border-t-0',
                         props.onSlotSelect !== undefined && 'cursor-pointer hover:bg-surface-hover',
@@ -919,7 +926,7 @@ function MonthGrid(
                   if (event.target === event.currentTarget) activate(day)
                 }}
                 className={cn(
-                  'relative box-border flex min-h-28 min-w-0 flex-1 basis-0 flex-col gap-0.5 border-0 border-s border-t border-solid border-subtle p-1 outline-none first:border-s-0 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus',
+                  'relative box-border flex min-h-28 min-w-0 flex-1 basis-0 flex-col gap-0.5 border-0 border-s border-t border-solid border-subtle p-1 outline-none first:border-s-0 focus-visible:outline-2 focus-visible:outline-solid focus-visible:-outline-offset-2 focus-visible:outline-focus',
                   !inMonth && 'bg-surface-sunken',
                 )}
               >

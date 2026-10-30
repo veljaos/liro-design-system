@@ -802,6 +802,8 @@ export function ResourceSchedule(props: ResourceScheduleProps) {
                       BUTTON_RESET,
                       look,
                       FOCUS_RING,
+                      // Inside the booking (P5.96b): neighbours and the sticky names never cover it.
+                      'focus-visible:-outline-offset-2',
                       // The library's hover: the tone's border drawn in its text colour (P5.93).
                       'hover:border-current',
                       canMove ? 'cursor-grab select-none' : 'cursor-pointer',
@@ -1200,6 +1202,7 @@ function MoveTo({
               BUTTON_RESET,
               'absolute end-1 top-1/2 inline-flex size-6 -translate-y-1/2 cursor-pointer items-center justify-center rounded-sm text-current hover:bg-surface-hover',
               FOCUS_RING,
+              'focus-visible:-outline-offset-2',
             )}
           >
             <MoveRight aria-hidden="true" className="size-3.5 rtl:-scale-x-100" />

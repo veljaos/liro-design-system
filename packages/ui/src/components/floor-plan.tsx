@@ -1087,6 +1087,8 @@ export function FloorPlan(props: FloorPlanProps) {
       round ? 'rounded-full' : 'rounded-md',
       state === undefined ? KIND_LOOK[item.kind] : cn('border border-solid', TONE_ITEM[state.tone]),
       barWidth !== null && 'pb-2.5',
+      // The chosen item over its neighbours, so its frame is whole (P5.96b).
+      isChosen && 'z-[1]',
       moving && 'z-(--liro-layer-raised) border-strong shadow-lg',
       props.dropTargetId === item.id &&
         'outline-2 outline-offset-2 outline-(--liro-border-strong) [outline-style:dashed]',
@@ -1214,7 +1216,8 @@ export function FloorPlan(props: FloorPlanProps) {
             BUTTON_RESET,
             thin ? 'absolute box-border rounded-md' : look,
             FOCUS_RING,
-            'focus-visible:outline-offset-[5px]',
+            // Over the neighbours (P5.96b): the ring is whole around every item, packed or not.
+            'focus-visible:z-[2] focus-visible:outline-offset-[5px]',
             editing ? 'cursor-grab touch-none' : 'cursor-pointer',
             moving && 'cursor-grabbing',
           )}

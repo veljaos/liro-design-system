@@ -273,7 +273,7 @@ function ConfirmFrame(
             {...(props.preview === undefined
               ? {}
               : { tabIndex: 0, role: 'region', 'aria-labelledby': titleId })}
-            className="min-h-0 overflow-y-auto px-4 outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus"
+            className="min-h-0 overflow-y-auto px-4 outline-none focus-visible:outline-2 focus-visible:outline-solid focus-visible:-outline-offset-2 focus-visible:outline-focus"
           >
             <div ref={body} data-slot="confirm-body" className="flex flex-col">
               {props.message !== undefined && (

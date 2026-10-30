@@ -133,7 +133,7 @@ export function QuantityStepper(props: QuantityStepperProps) {
               className={cn(
                 'flex items-center rounded-md border border-solid',
                 READ_ONLY,
-                'has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-focus',
+                'has-focus-visible:outline-2 has-focus-visible:outline-solid has-focus-visible:outline-offset-2 has-focus-visible:outline-focus',
                 large ? 'h-14' : 'h-11',
               )}
             >

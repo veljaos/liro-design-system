@@ -94,7 +94,7 @@ const DISABLED =
  * with Mantine's line height 1 (2px of leading on each side, a whole pixel; 1.25 moved it by one).
  */
 const BASE =
-  'inline-flex cursor-pointer items-center justify-center rounded-md border border-solid font-sans font-semibold box-border select-none transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus'
+  'inline-flex cursor-pointer items-center justify-center rounded-md border border-solid font-sans font-semibold box-border select-none transition-colors focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-focus'
 
 /** text: a button with an icon and a label; icon: 36px without text; compact: 28px, tight places. */
 export type ButtonShape = 'text' | 'icon' | 'compact'

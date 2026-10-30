@@ -120,7 +120,7 @@ export function ScanField(props: ScanFieldProps) {
                 control.readOnly &&
                   cn(
                     READ_ONLY,
-                    'has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-focus',
+                    'has-focus-visible:outline-2 has-focus-visible:outline-solid has-focus-visible:outline-offset-2 has-focus-visible:outline-focus',
                   ),
               )}
             >

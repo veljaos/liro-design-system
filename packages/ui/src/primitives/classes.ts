@@ -14,7 +14,7 @@ export const BUTTON_RESET =
 
 /** Mantine's focus ring (global.css): 2px outline in the focus colour, 2px away from the element. */
 export const FOCUS_RING =
-  'outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus'
+  'outline-none focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-focus'
 
 /**
  * A text input (Input.css, size 'sm'): 36px high, 12px (36 / 3) horizontal padding, radius md,
@@ -37,7 +37,7 @@ export const INPUT =
  * and switches).
  */
 export const READ_ONLY =
-  'cursor-text border-default bg-surface-disabled text-primary placeholder:text-secondary focus:border-default focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus'
+  'cursor-text border-default bg-surface-disabled text-primary placeholder:text-secondary focus:border-default focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-focus'
 
 /**
  * A read-only checkbox, radio or switch (P5.93 item 1), set with `data-readonly` on the control:
