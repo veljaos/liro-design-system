@@ -181,7 +181,8 @@ const meta = {
           'queue’s own scroll from 62em, against the page’s scroll below); `toolbar` at the top ' +
           'of the queue (a bulk action such as "Accept all exact matches (6)", then its Undo in ' +
           'place), `search` / `onSearchChange` and `filters` (states with their counts, as chips ' +
-          'that wrap, one pressed; `filter` / `onFilterChange`) stay above the rows. The queue is ' +
+          'that wrap, one pressed; `filter` / `onFilterChange`; always "All" first, P5.96, while ' +
+          'the queue opens on the state that needs the user) stay above the rows. The queue is ' +
           'one tab stop: ArrowUp / ArrowDown, Home and End move it and, from 62em, choose the ' +
           'item; Enter takes the chosen item’s main decision (`onConfirm`). After a decision the ' +
           'application opens the next item that waits by itself (`nextWorklistItem`) and the ' +
@@ -482,13 +483,14 @@ const CARD_STATES: { value: CardState; label: string; tone: 'warning' | 'neutral
 /** The card payments of October to explain: 1,200 items, the queue's tools and a summary. */
 function LongQueue({ stacked = false }: { stacked?: boolean }) {
   const [payments, setPayments] = useState(CARD_PAYMENTS)
-  const [filter, setFilter] = useState<CardState>('needs')
+  // "All" is always the first chip (P5.96); Needs you is the one the queue opens on.
+  const [filter, setFilter] = useState<CardState | 'all'>('needs')
   const [query, setQuery] = useState('')
   const [selected, setSelected] = useState<string | undefined>(stacked ? undefined : 't4')
   const [accepted, setAccepted] = useState<string[] | null>(null)
   const shown = payments.filter(
     (each) =>
-      (each.state === filter || each.id === selected) &&
+      (filter === 'all' || each.state === filter || each.id === selected) &&
       `${each.merchant} ${each.amount}`.toLowerCase().includes(query.trim().toLowerCase()),
   )
   const chosen = payments.find((each) => each.id === selected)
@@ -499,7 +501,11 @@ function LongQueue({ stacked = false }: { stacked?: boolean }) {
       each.id === id ? { ...each, state: 'done' as const } : each,
     )
     setPayments(after)
-    setSelected(nextWorklistItem(after, id, (each) => each.state === filter)?.id)
+    setSelected(
+      nextWorklistItem(after, id, (each) =>
+        filter === 'all' ? each.state !== 'done' : each.state === filter,
+      )?.id,
+    )
   }
   const items: WorklistItem[] = shown.map((each) => {
     const state = CARD_STATES.find((candidate) => candidate.value === each.state)
@@ -599,16 +605,26 @@ function LongQueue({ stacked = false }: { stacked?: boolean }) {
         search={query}
         onSearchChange={setQuery}
         searchLabel="Merchant or amount"
-        filters={CARD_STATES.map((state) => ({
-          value: state.value,
-          label: state.label,
-          count: count(state.value),
-        }))}
+        filters={[
+          { value: 'all', label: 'All', count: payments.length },
+          ...CARD_STATES.map((state) => ({
+            value: state.value,
+            label: state.label,
+            count: count(state.value),
+          })),
+        ]}
         filter={filter}
         onFilterChange={(value) => {
-          const state = CARD_STATES.find((each) => each.value === value)?.value ?? 'needs'
+          const state =
+            value === 'all'
+              ? 'all'
+              : (CARD_STATES.find((each) => each.value === value)?.value ?? 'needs')
           setFilter(state)
-          setSelected(stacked ? undefined : payments.find((each) => each.state === state)?.id)
+          setSelected(
+            stacked
+              ? undefined
+              : payments.find((each) => state === 'all' || each.state === state)?.id,
+          )
         }}
         items={items}
         {...(selected === undefined ? {} : { selected })}

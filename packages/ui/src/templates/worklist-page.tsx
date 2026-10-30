@@ -42,7 +42,8 @@ import { PageHeader, type PageBack } from './page-header'
  *   queue's own scroll from md and against the page's scroll below it; every row still tells its
  *   place (`aria-posinset`, `aria-setsize`). `filters` (the application's states with their
  *   counts: "Needs you 3", "Done 7") stand as chips that wrap, one pressed, so every state is in
- *   view in the narrow queue; `search` is the application's (it narrows `items`). The floorplan
+ *   view in the narrow queue; the first chip is always "All" with every item's count (P5.96), so
+ *   every item can be seen, while the queue opens on the state that needs the user; `search` is the application's (it narrows `items`). The floorplan
  *   neither filters nor counts.
  * - Keyboard: the queue is one tab stop (a roving focus); ArrowUp / ArrowDown, Home and End move
  *   it and, from md, choose the item (its detail follows); Enter takes the chosen item's main
@@ -139,7 +140,11 @@ export interface WorklistPageProps {
   onSearchChange?: (text: string) => void
   /** Names the search field (its placeholder too). Default `messages['worklist.search']`. */
   searchLabel?: string
-  /** The states to show, each with its count, as chips above the rows (one pressed). */
+  /**
+   * The states to show, each with its count, as chips above the rows (one pressed). The first is
+   * always "All" with every item's count (P5.96); the application opens the queue on the state
+   * that needs the user.
+   */
   filters?: readonly WorklistFilter[]
   /** The pressed filter's value. */
   filter?: string

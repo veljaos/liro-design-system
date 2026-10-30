@@ -414,6 +414,56 @@ export const DrillDownLastLevel: Story = {
   },
 }
 
+/** The map's names that are drawn and visible (a name off the map's view or not fitting is hidden). */
+function visibleNames(canvasElement: HTMLElement): string[] {
+  return [...canvasElement.querySelectorAll<HTMLElement>('[data-label-id]')]
+    .filter((label) => getComputedStyle(label).visibility === 'visible')
+    .map((label) => label.textContent)
+}
+
+/**
+ * No name is left behind (P5.96 item 2): an area's name shows only while the pointer is over it;
+ * after a drill-down and once the pointer leaves, no area is named on the map.
+ */
+export const DrillDownNoNameLeft: Story = {
+  name: 'Drill-down, no name left behind, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <DrillDown />,
+  play: async ({ canvasElement }) => {
+    await serbiaReady(canvasElement)
+    const canvas = within(canvasElement)
+    const areas = () => [...canvasElement.querySelectorAll<SVGPathElement>('path.liro-map-area')]
+    await expect(visibleNames(canvasElement)).toEqual([])
+    const region = areas()[0]
+    if (region === undefined) throw new Error('no region')
+    await userEvent.click(region)
+    await canvas.findByRole('button', { name: 'Back to regions' })
+    await serbiaReady(canvasElement)
+    await userEvent.unhover(canvas.getByRole('region', { name: 'Map: Sales in Serbia' }))
+    await waitFor(async () => {
+      await expect(visibleNames(canvasElement)).toEqual([])
+    })
+    // Pointing at an area names it; leaving it takes the name away again.
+    const district = areas().find((path) => !path.classList.contains('is-static'))
+    if (district === undefined) throw new Error('no district')
+    await userEvent.hover(district)
+    await waitFor(async () => {
+      await expect(visibleNames(canvasElement).length).toBeLessThanOrEqual(1)
+    })
+    await userEvent.unhover(district)
+    await waitFor(async () => {
+      await expect(visibleNames(canvasElement)).toEqual([])
+    })
+    // Back to the regions: still nothing named.
+    await userEvent.click(canvas.getByRole('button', { name: 'Back to regions' }))
+    await waitFor(async () => {
+      await expect(canvas.queryByRole('button', { name: 'Back to regions' })).toBeNull()
+    })
+    await serbiaReady(canvasElement)
+    await expect(visibleNames(canvasElement)).toEqual([])
+  },
+}
+
 /** "Show as table": every district with its sales, "No data" for the province. */
 export const AsTable: Story = {
   name: 'Show as table',

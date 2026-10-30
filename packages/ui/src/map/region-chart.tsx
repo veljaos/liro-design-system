@@ -142,6 +142,16 @@ export function RegionChart(props: RegionChartProps) {
   const [announcement, setAnnouncement] = useState('')
   const [ready, setReady] = useState(false)
 
+  // New areas (a drill-down, Back, another level): nothing is pointed at or reached until the user
+  // does it again (P5.96), so no name or strong line is left behind from the level before.
+  const areaIds = props.areas.map((area) => area.id).join('\n')
+  const [shownIds, setShownIds] = useState(areaIds)
+  if (shownIds !== areaIds) {
+    setShownIds(areaIds)
+    setHover(null)
+    setActive(null)
+  }
+
   const count = regionStepCount(props.breaks)
   const valueText = (value: string | null | undefined): string =>
     regionStep(value, []) === null ? messages['map.noData'] : write(value)
@@ -214,14 +224,17 @@ export function RegionChart(props: RegionChartProps) {
     return list
   }, [drawn, selected, active, props.places, bubbles, largest])
 
+  // An area's name shows only while the pointer is over it or the keys reached it (P5.96): no
+  // name stands on the map by itself, so none looks like a hover left behind.
+  const shown = hover?.id ?? active
   const labels = useMemo(
     (): CanvasLabel[] =>
       drawn.flatMap(({ area, at, rings }) =>
-        at === null
+        at === null || area.id !== shown
           ? []
           : [{ id: area.id, at, text: area.name, rings, strong: area.id === selected }],
       ),
-    [drawn, selected],
+    [drawn, selected, shown],
   )
 
   const bounds = useMemo(

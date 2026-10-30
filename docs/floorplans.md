@@ -177,8 +177,9 @@ and its final action — "Post statement" — only once nothing waits). Then one
 At the top of the queue, always in view: the bulk action for what the application handled
 automatically ("Accept all exact matches (6)", answered by Undo in place, never a
 confirmation), the search (name, amount, reference, account — the application's), and the states
-as chips with their counts ("Needs you 3", "Suggestion 2", "Matched automatically 6", "Done 0";
-the one that needs the user chosen by default; chips wrap, so every state is in view). Each row:
+as chips with their counts ("All 11", "Needs you 3", "Suggestion 2", "Matched automatically 6",
+"Done 0"; always "All" first, so every item can be seen (P5.96), and the one that needs the user
+chosen by default; chips wrap, so every state is in view). Each row:
 title, a short subtitle (what it does), the deciding figure, the state in a badge. From 100 items
 only the rows in view are drawn (thousands stay fast). The detail shows the item whole — for a
 statement line the payer or payee, the amount, purpose and reference, the proposed match or the
