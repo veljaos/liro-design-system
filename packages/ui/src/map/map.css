@@ -16,7 +16,11 @@
   font-family: var(--liro-font-sans);
   -webkit-tap-highlight-color: transparent;
 }
-.liro-map:focus-visible {
+/*
+ * The focus ring only when the focus came from the keys (P5.96a): MapCanvas marks it
+ * (`data-keyboard-focus`), never after a press of the pointer or a touch.
+ */
+.liro-map[data-keyboard-focus]:focus {
   outline: 2px solid var(--liro-border-focus);
 }
 .liro-map .leaflet-pane,
@@ -146,11 +150,11 @@
   stroke: var(--liro-chart-category5);
   fill: var(--liro-chart-category5);
 }
-.liro-map path.liro-map-area.leaflet-interactive:hover {
+.liro-map path.liro-map-area.leaflet-interactive.is-hovered {
   fill-opacity: 0.24;
 }
 .liro-map path.liro-map-area.is-selected,
-.liro-map path.liro-map-area.is-selected.leaflet-interactive:hover {
+.liro-map path.liro-map-area.is-selected.leaflet-interactive.is-hovered {
   stroke-width: 4;
   fill-opacity: 0.45;
 }
@@ -192,7 +196,7 @@
   stroke: var(--liro-border-strong);
   stroke-width: 1;
 }
-.liro-map path.liro-map-value.leaflet-interactive:hover {
+.liro-map path.liro-map-value.leaflet-interactive.is-hovered {
   stroke: var(--liro-text-secondary);
   stroke-width: 2;
 }

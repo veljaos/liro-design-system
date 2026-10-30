@@ -517,6 +517,11 @@ export function RegionChart(props: RegionChartProps) {
           onBlur={() => {
             setActive(null)
           }}
+          onKeyboardFocus={(keys) => {
+            // The keys' area only while the focus is the keyboard's (P5.96a): a press of the
+            // pointer or a touch clears it.
+            if (!keys) setActive(null)
+          }}
           onShapeClick={(id) => {
             choose(id)
           }}
