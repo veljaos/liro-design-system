@@ -56,6 +56,22 @@ components, as below; the components stay.
   last in `detailActions` and `onConfirm` for Enter; the application opens the next item that
   waits (`nextWorklistItem`) and shows "… done · Undo" in place. Thousands of items are drawn in
   view only. The example "Bank statement 188" (and 189, 1,240 lines) shows it whole.
+- **Questions and answers (any portal)** (an employee's, a patient's, a tenant's, a client's;
+  P5.96) — in `PortalShell`, a page of its own once there are more than a home page's few:
+  `PageHeader` ("Questions and answers", back home), then `QuestionsAndAnswers` with every
+  question (300 and more): one search field first that filters as you type over the questions,
+  answers, documents and keywords (case and accents ignored, "dj" finds "đ") and marks the words
+  found, the categories as chips with their counts ("All" first, the neutral selection), 30 at a
+  time with "Show more", and nothing found offering the application's `askAction` ("Ask HR")
+  with the words typed (a `Drawer` to write the question, D14). Each question is a link to its
+  answer's own page (`answerHref`, through the provider's `linkComponent`): `AnswerView` — the
+  question as the h1 with the way back, the answer, "What to do", "What you need" and the
+  request that does it started filled in (the page's main action). The home page keeps the top
+  three to five as `CommonQuestions` (`limit`, opened in place) beside "All questions"; the page
+  is reached from there and from the participant's menu (the five sections fill the phone's
+  bottom bar). The questions, answers, order and counts' categories are the application's data;
+  a search on the server is `SearchResultList` instead. The Shell example "Employee portal,
+  questions and answers" (330 questions) and "Employee portal, an answer" show it.
 - **Handheld picking and counting** — F4 Worklist (picking: one line at a time, decided with
   scans) or F1 List (counting: the items of a location) inside
   `<LiroProvider density="touch">` at 360px: `PageHeader` with the progress in words ("4 of 12"),
@@ -175,7 +191,7 @@ components, as below; the components stay.
 - **Employee portal, leave** — F1 List in `PortalShell`: balance as `KeyFigures`, requests with their state, `Alert` for the application's notes.
 - **Employee portal, leave request** — F2 Record in `PortalShell`: `KeyValueList` and the approval as `StatusTimeline`; the proof sent with it as `AttachmentList` (what the approvers open).
 - **Employee portal, new leave request** — F2 Record in `PortalShell`: `SelectField` Kind, then for paid leave a `SelectField` Reason (each reason with its days and its proof, the application's data), `DateRangeField` typed or picked, the proof as `FileDropzone` with `expected` (the documents from the data, "Required" or "Optional"; `camera` on phones) and `AttachmentList`, `TextAreaField`; the days counted are the application's, a required document missing is said under the dropzone.
-- **Employee portal, common questions** — in `PortalShell`: `CommonQuestions` — its top four on the home page beside "All questions", every question on its own page with search and categories; a question's action starts its request filled in (the change of address with its proof).
+- **Employee portal, common questions** — in `PortalShell`: `CommonQuestions` — its top four on the home page beside "All questions"; a question's action starts its request filled in (the change of address with its proof). Every question has its own page (see "Questions and answers (any portal)", P5.96).
 - **HR, leave requests to approve** — F4 Worklist: `WorklistPage`, each request with its `StatusTimeline`, its proof in `AttachmentList` (a photo or PDF opens in `FilePreview`), Approve / Reject (`ReasonConfirmDialog`).
 - **Employee portal, shifts** — `MyShifts` in `PortalShell`.
 - **Employee portal, documents** and **Employee portal, document to sign** — F1 List then F2 Record in `PortalShell`: documents in `SectionCard`, one on its signing page (see "Signing").

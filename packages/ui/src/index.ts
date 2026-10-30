@@ -1297,6 +1297,19 @@ export type {
   QuestionCategory,
   SearchableQuestion,
 } from './components/common-questions'
+// P5.96 item 1: every question of a portal on a page of its own, each answer on its own page.
+export {
+  AnswerView,
+  highlightQuestion,
+  QUESTIONS_PAGE,
+  questionCounts,
+  QuestionsAndAnswers,
+} from './components/questions-and-answers'
+export type {
+  AnswerViewProps,
+  QuestionCounts,
+  QuestionsAndAnswersProps,
+} from './components/questions-and-answers'
 export {
   asksWhy,
   currentEntry,

@@ -2449,4 +2449,9 @@ export interface LiroMessages {
   'questions.found': (count: number, countText: string) => string
   /** CommonQuestions: the no-results action. */
   'questions.clear': string
+  // ── P5.96 (questions and answers) ──
+  /** QuestionsAndAnswers (P5.96 item 1): the next page of questions ("Show more (30 of 312 shown)"). */
+  'questions.showMore': (shownText: string, totalText: string) => string
+  /** QuestionsAndAnswers: nothing found, with the application's way to ask. */
+  'questions.askInstead': string
 }

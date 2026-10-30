@@ -15,6 +15,7 @@ import {
 import { useContext, useState, type ReactNode } from 'react'
 import {
   Alert,
+  AnswerView,
   AttachmentList,
   Button,
   CommonQuestions,
@@ -31,6 +32,7 @@ import {
   notice,
   PageHeader,
   PortalShell,
+  QuestionsAndAnswers,
   SectionCard,
   SelectField,
   SignerList,
@@ -55,6 +57,7 @@ import { Navigate, ROUTES } from './example-shell'
 import { useExampleState } from './example-state'
 import { Tenant } from './screens-G'
 import {
+  ALL_EMPLOYEE_QUESTIONS,
   ANNEX,
   annexSigners,
   CHANGE_REQUESTS,
@@ -67,6 +70,7 @@ import {
   DOCUMENTS,
   EMPLOYEE,
   EMPLOYEE_QUESTIONS,
+  type EmployeeQuestion,
   HR_CONTACT,
   LEAVE_BALANCE,
   LEAVE_KINDS,
@@ -109,8 +113,14 @@ import {
  *   note, a change of address or account with its proof; FileDropzone lists what is expected
  *   (`expected`, from data), the photo from the camera on a phone, AttachmentList shows the files,
  *   and the request's page shows them to whoever opens it. The Dates are typed or picked (item
- *   2). Common questions (item 20): the top four on the home page, all of them with search and
- *   categories on their own page; a question's button starts its request filled in.
+ *   2). Common questions (item 20): the top four on the home page; a question's button starts
+ *   its request filled in.
+ * - P5.96 (the owner's review of P5.94): Questions and answers, a page of its own for 330
+ *   questions (QuestionsAndAnswers: search as you type with the words marked, categories with
+ *   counts, 30 at a time), each answer on its own page (AnswerView) with the request it starts;
+ *   nothing found offers "Ask HR" (a Drawer, the words typed filled in). Reached from the home's
+ *   "All questions" and the participant's menu: the five sections fill the phone's bottom bar
+ *   (PortalShell's limit), so the questions are not a sixth.
  * Every figure is the application's (data-Y.ts); the screens use only `@veljaos/ui`.
  */
 
@@ -143,7 +153,7 @@ function portalMenu(navigate: (path: string) => void): MenuEntry[] {
       },
     },
     {
-      label: 'Common questions',
+      label: 'Questions and answers',
       icon: CircleHelp,
       onSelect: () => {
         navigate(Y_ROUTES.questions)
@@ -363,10 +373,15 @@ export function EmployeeHome({ phone }: { phone: boolean }) {
   )
 }
 
-/** The common questions, each request starting where it is done, filled in (P5.94 item 20). */
-function useEmployeeQuestions(): CommonQuestion[] {
+/**
+ * The questions with their requests, each starting where it is done, filled in (P5.94 item 20):
+ * the ten most asked by default, or every question (P5.96).
+ */
+function useEmployeeQuestions(
+  questions: readonly EmployeeQuestion[] = EMPLOYEE_QUESTIONS,
+): CommonQuestion[] {
   const navigate = useContext(Navigate)
-  return EMPLOYEE_QUESTIONS.map(({ request, ...question }) =>
+  return questions.map(({ request, ...question }) =>
     request === undefined
       ? question
       : {
@@ -381,24 +396,116 @@ function useEmployeeQuestions(): CommonQuestion[] {
   )
 }
 
-/** Every common question, searched and by category (P5.94 item 20). */
+/** Where an answer's page is, in the portal's router. */
+const answerHref = (question: CommonQuestion) => `#${Y_ROUTES.answer(question.id)}`
+
+/**
+ * Every question and its answer (P5.96 item 1): the search first (as you type, the words marked),
+ * the categories with their counts, 30 at a time, each a link to its answer's page. Nothing found:
+ * "Ask HR" opens a Drawer with the words typed (D14: a short edit, the list stays in view).
+ */
 export function QuestionsScreen({ phone }: { phone: boolean }) {
-  const questions = useEmployeeQuestions()
+  const questions = useEmployeeQuestions(ALL_EMPLOYEE_QUESTIONS)
+  const [asking, setAsking] = useState<string | null>(null)
+  const [asked, setAsked] = useState(false)
+  const [checked, setChecked] = useState(false)
+  const question = asking ?? ''
   return (
-    <EmployeePortal phone={phone} current="home">
+    <EmployeePortal phone={phone} current="questions">
       <Page>
         <PageHeader
-          title="Common questions"
+          title="Questions and answers"
           back={{ href: `#${Y_ROUTES.home}`, label: 'Home' }}
-          subtitle={`What changes when your life changes, and what to bring. Anything else: ${EMPLOYEE.hr}, HR.`}
+          // On a phone the search comes first: the questions start on the first screen.
+          {...(phone
+            ? {}
+            : {
+                subtitle: `What changes when your life changes, and what to bring. Anything else: ${EMPLOYEE.hr}, HR.`,
+              })}
         />
-        <CommonQuestions
-          label="Common questions"
+        {asked && (
+          <Alert
+            tone="success"
+            title="Question sent to HR"
+            onClose={() => {
+              setAsked(false)
+            }}
+          >
+            {`${EMPLOYEE.hr} answers within two working days; the answer comes to your notifications.`}
+          </Alert>
+        )}
+        <QuestionsAndAnswers
+          label="Questions and answers"
           questions={questions}
-          search
+          answerHref={answerHref}
           categories={QUESTION_CATEGORIES}
-          headingLevel={2}
+          askAction={{
+            label: 'Ask HR',
+            onSelect: (words) => {
+              setChecked(false)
+              setAsking(words)
+            },
+          }}
         />
+        <Drawer
+          side="end"
+          open={asking !== null}
+          onOpenChange={(open) => {
+            if (!open) setAsking(null)
+          }}
+          title="Ask HR"
+          description={`${EMPLOYEE.hr} answers within two working days.`}
+          actions={
+            <>
+              <Button
+                intent="cancel"
+                label="Cancel"
+                onClick={() => {
+                  setAsking(null)
+                }}
+              />
+              <Button
+                family="primary"
+                emphasis="primary"
+                icon={Send}
+                label="Send to HR"
+                onClick={() => {
+                  setChecked(true)
+                  if (question.trim() === '') return
+                  setAsking(null)
+                  setAsked(true)
+                }}
+              />
+            </>
+          }
+        >
+          <TextAreaField
+            label="Your question"
+            value={question}
+            onChange={setAsking}
+            required
+            {...(checked && question.trim() === '' ? { error: 'Write your question.' } : {})}
+          />
+        </Drawer>
+      </Page>
+    </EmployeePortal>
+  )
+}
+
+/** One answer on its own page, with the request it starts (P5.96 item 1). */
+export function AnswerScreen({ phone, id }: { phone: boolean; id: string }) {
+  const questions = useEmployeeQuestions(ALL_EMPLOYEE_QUESTIONS)
+  const question = questions.find((each) => each.id === id)
+  return (
+    <EmployeePortal phone={phone} current="questions">
+      <Page>
+        {question !== undefined && (
+          <AnswerView
+            question={question}
+            back={{ href: `#${Y_ROUTES.questions}`, label: 'Questions and answers' }}
+            categories={QUESTION_CATEGORIES}
+          />
+        )}
       </Page>
     </EmployeePortal>
   )
@@ -1496,4 +1603,8 @@ export const GROUP_Y_ROUTES: ExampleRoute[] = [
     render: (phone: boolean) => <MyDetailsScreen phone={phone} change={field.value} />,
   })),
   { path: Y_ROUTES.questions, render: (phone) => <QuestionsScreen phone={phone} /> },
+  ...ALL_EMPLOYEE_QUESTIONS.map((question) => ({
+    path: Y_ROUTES.answer(question.id),
+    render: (phone: boolean) => <AnswerScreen phone={phone} id={question.id} />,
+  })),
 ]

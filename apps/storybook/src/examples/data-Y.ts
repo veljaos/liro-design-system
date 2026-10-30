@@ -14,6 +14,11 @@ import type {
   StatusTimelineStep,
   Tone,
 } from '@veljaos/ui'
+import {
+  QA_CATEGORIES,
+  QA_QUESTIONS,
+  type StoryQuestion,
+} from '../../../../packages/ui/src/components/questions-and-answers-story-data'
 
 export const Y_TODAY = '2026-10-14'
 export const Y_ROUTES = {
@@ -35,8 +40,10 @@ export const Y_ROUTES = {
   details: '/me/details',
   /** My details with the change request open on a field (a common question starts it). */
   detailsChange: (field: string) => `/me/details?change=${field}`,
-  /** Every common question, searched and by category (P5.94 item 20). */
+  /** Every question and its answer, searched and by category (P5.96 item 1). */
   questions: '/me/questions',
+  /** One answer on its own page (P5.96 item 1). */
+  answer: (id: string) => `/me/questions/${id}`,
 } as const
 
 export const EMPLOYEE = {
@@ -733,14 +740,10 @@ export const CHANGEABLE: {
   },
 ]
 
-// ── Common questions (P5.94 item 20) ──────────────────────────────────────────────────────────
+// ── Questions and answers (P5.94 item 20, P5.96 item 1) ──────────────────────────────────────────────────────────
 
-export const QUESTION_CATEGORIES = [
-  { id: 'personal', label: 'Personal data' },
-  { id: 'leave', label: 'Leave' },
-  { id: 'pay', label: 'Pay' },
-  { id: 'documents', label: 'Documents' },
-]
+/** The categories of the portal's questions (P5.96 item 1: ten, the first four as before). */
+export const QUESTION_CATEGORIES = QA_CATEGORIES
 
 /** A common question; `request` is the request that does it (its label and its route). */
 export interface EmployeeQuestion {
@@ -880,4 +883,53 @@ export const EMPLOYEE_QUESTIONS: EmployeeQuestion[] = [
     answer: `Write to ${EMPLOYEE.hr} in HR; she signs it electronically, usually the same day, and it appears in Documents.`,
     keywords: 'certificate confirmation loan bank potvrda',
   },
+]
+
+/** A generated leave situation's request, started filled in where the portal has that kind. */
+const LEAVE_BY_SITUATION: Readonly<Record<string, string>> = {
+  annual: Y_ROUTES.newLeaveOf('annual'),
+  'annual-split': Y_ROUTES.newLeaveOf('annual'),
+  moving: Y_ROUTES.newLeaveOf('paid', 'moving'),
+  blood: Y_ROUTES.newLeaveOf('paid', 'blood'),
+  care: Y_ROUTES.newLeaveOf('sick'),
+}
+
+/**
+ * The request of a generated question that asks how to request something ("What do I need …",
+ * "… on my phone?"): leave opens the leave request (filled in where the portal has the kind), a
+ * personal-data question the change request or My details.
+ */
+function generatedRequest(question: StoryQuestion): EmployeeQuestion['request'] {
+  if (!/-(need|phone)$/.test(question.id)) return undefined
+  const situation = question.id.replace(/^[a-z]+-/, '').replace(/-(need|phone)$/, '')
+  if (question.request === 'leave') {
+    return { label: 'Request leave', route: LEAVE_BY_SITUATION[situation] ?? Y_ROUTES.newLeave }
+  }
+  if (question.request === 'change') {
+    return situation === 'phone'
+      ? { label: 'Request a change', route: Y_ROUTES.detailsChange('phone') }
+      : { label: 'Open My details', route: Y_ROUTES.details }
+  }
+  return undefined
+}
+
+/**
+ * Every question of the portal (P5.96 item 1): the ten most asked first, then 320 more from the
+ * library's story data (fictitious, made without randomness) — 330 in all.
+ */
+export const ALL_EMPLOYEE_QUESTIONS: EmployeeQuestion[] = [
+  ...EMPLOYEE_QUESTIONS,
+  ...QA_QUESTIONS.map((question) => {
+    const request = generatedRequest(question)
+    return {
+      id: question.id,
+      category: question.category,
+      question: question.question,
+      answer: question.answer,
+      ...(question.steps === undefined ? {} : { steps: [...question.steps] }),
+      ...(question.documents === undefined ? {} : { documents: [...question.documents] }),
+      ...(question.keywords === undefined ? {} : { keywords: question.keywords }),
+      ...(request === undefined ? {} : { request }),
+    }
+  }),
 ]
