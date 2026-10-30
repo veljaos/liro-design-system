@@ -135,8 +135,9 @@ export default meta
 
 type Story = StoryObj<typeof meta>
 
-/** Nine modules, one locked; the tiles right under the header, no title, no "Customize". */
+/** The home page: nine modules, one locked, the tiles right under the header, no title. */
 export const Default: Story = {
+  name: 'Home',
   play: async ({ canvasElement }) => {
     await settle()
     await expect(within(canvasElement).queryByRole('button', { name: 'Customize' })).toBeNull()

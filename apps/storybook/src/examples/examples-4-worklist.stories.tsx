@@ -164,8 +164,8 @@ function lineHeading(canvasElement: HTMLElement): string {
 /**
  * Bank statement 188 of 06.10.2026 (Banca Intesa) as a worklist (P5.94 item 19): the strip with
  * the balances and "0 of 10 done"; the queue with "Accept all exact matches (6)" at its top, the
- * search and the states as chips (Needs you 1, Suggestion 3, Matched automatically 6, Done 0),
- * Needs you chosen; the one line nothing was found for — Petar Jovanović's payment — open beside
+ * search and the states as chips (All 10, Needs you 1, Suggestion 3, Matched automatically 6,
+ * Done 0), Needs you chosen; the one line nothing was found for — Petar Jovanović's payment — open beside
  * it with the bank's text and "What is this payment?".
  */
 export const BankStatementScreen: Story = {
@@ -180,6 +180,8 @@ export const BankStatementScreen: Story = {
     )
     await expect(canvasElement).toHaveTextContent('Balance checks out')
     await expect(canvasElement).toHaveTextContent('0 of 10 done')
+    await expect(chip(canvasElement, 'All')).toHaveTextContent('All10')
+    await expect(chip(canvasElement, 'All')).toHaveAttribute('aria-pressed', 'false')
     await expect(chip(canvasElement, 'Needs you')).toHaveAttribute('aria-pressed', 'true')
     await expect(chip(canvasElement, 'Needs you')).toHaveTextContent('Needs you1')
     await expect(chip(canvasElement, 'Suggestion')).toHaveTextContent('Suggestion3')

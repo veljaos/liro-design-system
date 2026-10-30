@@ -1,6 +1,6 @@
 import { ChevronDown, FileText } from 'lucide-react'
 import { useId, useState, type ReactNode } from 'react'
-import { BUTTON_RESET, FOCUS_RING, TEXT_DIRECTION } from '../primitives/classes'
+import { BUTTON_RESET, FOCUS_RING, TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 import { langAttribute } from '../provider/lang'
 import { useLiro } from '../provider/liro-provider'
@@ -121,7 +121,7 @@ export interface CommonQuestionsProps {
 
 /** A chip of the category row (CatalogPicker's filter chips). */
 const CHIP =
-  'inline-flex min-h-9 max-w-full cursor-pointer items-center rounded-full border border-solid px-3 text-start text-sm font-medium'
+  'inline-flex min-h-9 max-w-full cursor-pointer items-center gap-1.5 rounded-full border border-solid px-3 text-start text-sm font-medium'
 
 /** Questions people keep asking, each with its answer, what to do and what they need. */
 export function CommonQuestions(props: CommonQuestionsProps) {
@@ -163,35 +163,11 @@ export function CommonQuestions(props: CommonQuestionsProps) {
           />
         )}
         {categories.length > 0 && (
-          <div
-            role="group"
-            aria-label={messages['questions.categories']}
-            className="flex flex-wrap gap-2"
-          >
-            {[{ id: null, label: messages['questions.all'] }, ...categories].map((each) => {
-              const pressed = each.id === category
-              return (
-                <button
-                  key={each.id ?? ''}
-                  type="button"
-                  aria-pressed={pressed}
-                  onClick={() => {
-                    setCategory(each.id)
-                  }}
-                  className={cn(
-                    BUTTON_RESET,
-                    FOCUS_RING,
-                    CHIP,
-                    pressed
-                      ? 'border-selected bg-surface-selected text-primary'
-                      : 'border-default bg-surface-raised text-primary hover:bg-surface-hover',
-                  )}
-                >
-                  <span className={TEXT_DIRECTION}>{each.label}</span>
-                </button>
-              )
-            })}
-          </div>
+          <QuestionCategoryChips
+            categories={categories}
+            category={category}
+            onChange={setCategory}
+          />
         )}
       </div>
     ) : null
@@ -368,6 +344,68 @@ export function CommonQuestions(props: CommonQuestionsProps) {
           })}
         </ul>
       )}
+    </div>
+  )
+}
+
+/**
+ * The category chips of CommonQuestions and QuestionsAndAnswers: "All" first, then the
+ * application's categories, one pressed (the neutral selection, never blue, D17); with `counts`
+ * each chip says how many questions it holds (WorklistPage's chips). Internal: not exported from
+ * the package.
+ */
+export function QuestionCategoryChips({
+  categories,
+  category,
+  onChange,
+  counts,
+}: {
+  categories: readonly QuestionCategory[]
+  category: string | null
+  onChange: (category: string | null) => void
+  counts?: { all: number; byCategory: Readonly<Record<string, number>> }
+}) {
+  const { messages, format } = useLiro()
+  return (
+    <div
+      role="group"
+      aria-label={messages['questions.categories']}
+      className="flex flex-wrap gap-2"
+    >
+      {[{ id: null, label: messages['questions.all'] }, ...categories].map((each) => {
+        const pressed = each.id === category
+        const count =
+          counts === undefined
+            ? undefined
+            : each.id === null
+              ? counts.all
+              : (counts.byCategory[each.id] ?? 0)
+        return (
+          <button
+            key={each.id ?? ''}
+            type="button"
+            aria-pressed={pressed}
+            onClick={() => {
+              onChange(each.id)
+            }}
+            className={cn(
+              BUTTON_RESET,
+              FOCUS_RING,
+              CHIP,
+              pressed
+                ? 'border-selected bg-surface-selected text-primary'
+                : 'border-default bg-surface-raised text-primary hover:bg-surface-hover',
+            )}
+          >
+            <span className={TEXT_DIRECTION}>{each.label}</span>
+            {count !== undefined && (
+              <span className={cn('font-semibold text-secondary tabular-nums', TEXT_ISOLATE)}>
+                {format.number(String(count))}
+              </span>
+            )}
+          </button>
+        )
+      })}
     </div>
   )
 }

@@ -247,6 +247,10 @@ type LineState = 'done' | 'auto' | 'suggestion' | 'needs'
 /** The states in the order the queue offers them, and the order "the next line" looks in. */
 const STATES: readonly LineState[] = ['needs', 'suggestion', 'auto', 'done']
 
+/** The queue's chips: every line ("All", always first, P5.96), or one state's lines. */
+type QueueFilter = 'all' | LineState
+const FILTERS: readonly QueueFilter[] = ['all', ...STATES]
+
 function stateOf(line: BankLine, work: LineWork | undefined, data: StatementData): LineState {
   if (work?.done === true) return 'done'
   const suggestion = data.suggestions[line.id]
@@ -263,7 +267,8 @@ const STATE_BADGE: Record<LineState, { label: string; tone: Tone }> = {
 }
 
 /** What a queue shows when a state has no lines. */
-const EMPTY: Record<LineState, { title: string; description: string }> = {
+const EMPTY: Record<QueueFilter, { title: string; description: string }> = {
+  all: { title: 'No lines', description: 'The statement has no lines.' },
   needs: { title: 'Nothing needs you', description: 'Every line has a match or a suggestion.' },
   suggestion: { title: 'No suggestions to check', description: 'Every suggestion is decided.' },
   auto: { title: 'No automatic matches left', description: 'Every exact match is accepted.' },
@@ -1088,7 +1093,7 @@ function StatementScreen({
   const [work, setWork] = useState(() => startAll(data, stage, issued))
   const startId = startLine === undefined ? undefined : `b${String(startLine)}`
   // The first state that has lines (Needs you by default), or the state of the line opened.
-  const [filter, setFilter] = useState<LineState>(() => {
+  const [filter, setFilter] = useState<QueueFilter>(() => {
     const before = startAll(data, stage, false)
     const opened = lines.find((each) => each.id === startId)
     if (opened !== undefined) return stateOf(opened, before[opened.id], data)
@@ -1127,7 +1132,8 @@ function StatementScreen({
   // The queue: the chosen state's lines that match the search; a chosen line stays in it until
   // the user moves on (a proforma's result, a line found by the search).
   const shown = lines.filter(
-    (each) => matches(each) && (stateIn(each) === filter || each.id === selectedId),
+    (each) =>
+      matches(each) && (filter === 'all' || stateIn(each) === filter || each.id === selectedId),
   )
   const selected = phone
     ? selectedId
@@ -1160,14 +1166,16 @@ function StatementScreen({
     const inFilter = nextWorklistItem(
       lines,
       id,
-      (each) => stateIn(each, after) === filter && matches(each),
+      (each) =>
+        (filter === 'all' ? stateIn(each, after) !== 'done' : stateIn(each, after) === filter) &&
+        matches(each),
     )
     if (inFilter !== null) {
       setSelectedId(inFilter.id)
       return
     }
     for (const state of STATES) {
-      if (state === 'done' || state === filter) continue
+      if (state === 'done' || state === filter || filter === 'all') continue
       const next = nextWorklistItem(lines, id, (each) => stateIn(each, after) === state)
       if (next !== null) {
         setFilter(state)
@@ -1209,7 +1217,8 @@ function StatementScreen({
       message: `Line ${format.number(String(each.no))} done: ${howText(each, decision, money, data)}.`,
       onUndo: () => {
         change(id, { done: false })
-        setFilter(before)
+        // Under "All" the line is in view already; under a state the queue returns to its state.
+        setFilter((current) => (current === 'all' ? current : before))
         setSelectedId(id)
         setLast(null)
       },
@@ -1480,17 +1489,20 @@ function StatementScreen({
         search={query}
         onSearchChange={setQuery}
         searchLabel="Name, amount, reference or account"
-        filters={STATES.map((state) => ({
+        filters={FILTERS.map((state) => ({
           value: state,
-          label: STATE_BADGE[state].label,
-          count: counts[state],
+          label: state === 'all' ? 'All' : STATE_BADGE[state].label,
+          count: state === 'all' ? lines.length : counts[state],
         }))}
         filter={filter}
         onFilterChange={(value) => {
-          const state = STATES.find((each) => each === value) ?? 'needs'
+          const state = FILTERS.find((each) => each === value) ?? 'needs'
           setFilter(state)
           choose(
-            phone ? undefined : lines.find((each) => stateIn(each) === state && matches(each))?.id,
+            phone
+              ? undefined
+              : lines.find((each) => (state === 'all' || stateIn(each) === state) && matches(each))
+                  ?.id,
           )
         }}
         filtersLabel="Show lines"

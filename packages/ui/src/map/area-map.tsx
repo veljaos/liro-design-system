@@ -127,6 +127,18 @@ export function AreaMap(props: AreaMapProps) {
   const [ready, setReady] = useState(false)
   const items = useRef<(HTMLDivElement | null)[]>([])
   const headingId = useId()
+  // The area the pointer is over on the map, and the area whose list item has the focus: only that
+  // area's name stands on the map (P5.96).
+  const [hovered, setHovered] = useState<string | null>(null)
+  const [focused, setFocused] = useState<string | null>(null)
+  const areaIds = props.areas.map((area) => area.id).join('\n')
+  const [shownIds, setShownIds] = useState(areaIds)
+  if (shownIds !== areaIds) {
+    setShownIds(areaIds)
+    setHovered(null)
+    setFocused(null)
+  }
+  const shown = hovered ?? focused
 
   const choose = (id: string) => {
     setInner(id)
@@ -156,6 +168,7 @@ export function AreaMap(props: AreaMapProps) {
   const labels = useMemo(
     (): CanvasLabel[] =>
       props.areas.flatMap((area) => {
+        if (area.id !== shown) return []
         const at = labelPoint(area.geometry)
         if (at === null) return []
         // The polygon the name stands in, with its holes.
@@ -168,7 +181,7 @@ export function AreaMap(props: AreaMapProps) {
           ) ?? []
         return [{ id: area.id, at, text: area.name, rings, strong: area.id === selected }]
       }),
-    [props.areas, selected],
+    [props.areas, selected, shown],
   )
 
   const bounds = useMemo(
@@ -284,6 +297,12 @@ export function AreaMap(props: AreaMapProps) {
               onKeyDown={(event) => {
                 onKeyDown(event, index)
               }}
+              onFocus={() => {
+                setFocused(area.id)
+              }}
+              onBlur={() => {
+                setFocused(null)
+              }}
               className={cn(
                 'relative flex min-h-11 cursor-pointer items-start gap-2 rounded-sm px-3 py-2',
                 FOCUS_RING,
@@ -341,6 +360,9 @@ export function AreaMap(props: AreaMapProps) {
       height={height}
       className="min-w-0 flex-1"
       onShapeClick={choose}
+      onShapeHover={(id) => {
+        setHovered(id)
+      }}
       onReady={() => {
         setReady(true)
       }}

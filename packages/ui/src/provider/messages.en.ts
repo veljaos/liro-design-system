@@ -1749,4 +1749,7 @@ export const messagesEn: LiroMessages = {
   'questions.found': (count, countText) =>
     count === 0 ? 'No questions found' : count === 1 ? '1 question' : `${countText} questions`,
   'questions.clear': 'Clear the search',
+  // ── P5.96 (questions and answers) ──
+  'questions.showMore': (shownText, totalText) => `Show more (${shownText} of ${totalText} shown)`,
+  'questions.askInstead': 'Try other words, or ask your question.',
 }

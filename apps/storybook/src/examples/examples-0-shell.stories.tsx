@@ -180,28 +180,58 @@ export const EmployeePortalPhone: Story = {
   play: employeePlay(EMPLOYEE_HOME_CHECK, true),
 }
 
-/** Every common question, with search and categories (P5.94 item 20). */
+/**
+ * Questions and answers, a page of its own (P5.96 item 1): 330 questions, the search first, the
+ * categories with their counts, the first 30 and "Show more", each question a link to its answer.
+ */
 const QUESTIONS_CHECK = async (canvasElement: HTMLElement) => {
   const canvas = within(canvasElement)
-  await expect(canvas.getByRole('heading', { level: 1, name: 'Common questions' })).toBeVisible()
-  await expect(canvas.getByRole('searchbox', { name: 'Search questions' })).toBeVisible()
   await expect(
-    canvas.getByRole('button', { name: 'I changed my ID card. Do I have to tell my employer?' }),
+    canvas.getByRole('heading', { level: 1, name: 'Questions and answers' }),
   ).toBeVisible()
+  await expect(canvas.getByRole('searchbox', { name: 'Search questions' })).toBeVisible()
+  await expect(canvas.getByRole('button', { name: 'All 330' })).toBeVisible()
+  await expect(
+    canvas.getByRole('link', { name: 'I changed my ID card. Do I have to tell my employer?' }),
+  ).toHaveAttribute('href', `#${Y_ROUTES.answer('id-card')}`)
+  await expect(canvas.getByRole('button', { name: 'Show more (30 of 330 shown)' })).toBeVisible()
 }
 
 export const EmployeeQuestions: Story = {
-  name: 'Employee portal, common questions',
-  tags: ['!dev'],
+  name: 'Employee portal, questions and answers',
   render: () => <ExampleApp start={Y_ROUTES.questions} />,
   play: employeePlay(QUESTIONS_CHECK),
 }
 
 export const EmployeeQuestionsPhone: Story = {
-  name: 'Employee portal, common questions, phone',
-  tags: ['!dev'],
+  name: 'Employee portal, questions and answers, phone',
   render: () => <OnPhone start={Y_ROUTES.questions} />,
   play: employeePlay(QUESTIONS_CHECK, true),
+}
+
+/** One answer on its own page: the question as the title, what to do, what you need, the request. */
+const ANSWER_CHECK = async (canvasElement: HTMLElement) => {
+  const canvas = within(canvasElement)
+  await expect(
+    canvas.getByRole('heading', { level: 1, name: 'What do I need to change my address?' }),
+  ).toBeVisible()
+  await expect(canvas.getByRole('heading', { level: 2, name: 'What you need' })).toBeVisible()
+  await expect(canvas.getByRole('button', { name: 'Report a change of address' })).toBeVisible()
+  await expect(
+    canvas.getAllByRole('link', { name: 'Back to Questions and answers' })[0],
+  ).toHaveAttribute('href', `#${Y_ROUTES.questions}`)
+}
+
+export const EmployeeAnswer: Story = {
+  name: 'Employee portal, an answer',
+  render: () => <ExampleApp start={Y_ROUTES.answer('address')} />,
+  play: employeePlay(ANSWER_CHECK),
+}
+
+export const EmployeeAnswerPhone: Story = {
+  name: 'Employee portal, an answer, phone',
+  render: () => <OnPhone start={Y_ROUTES.answer('address')} />,
+  play: employeePlay(ANSWER_CHECK, true),
 }
 
 /** Paid leave for a death in the family: Kind, Reason (5 days), the proof it needs (P5.94 item 3). */
@@ -304,11 +334,12 @@ export const EmployeeLeaveProofFlowPhone: Story = {
 }
 
 /**
- * A common question starts its request (P5.94 item 20): "All questions", a search, the card
- * opened, "Report a change of address" opens the change request on the address with its proof.
+ * A question's answer starts its request (P5.94 item 20, P5.96 item 1): "All questions" on the
+ * home page, a search typed ("adresa" — the words marked), the answer opened on its own page,
+ * "Report a change of address" opens the change request on the address with its proof.
  */
 export const EmployeeQuestionFlow: Story = {
-  name: 'Employee portal, a common question starts its request, interaction',
+  name: 'Employee portal, an answer starts its request, interaction',
   tags: ['interaction', '!dev'],
   render: () => <ExampleApp start={Y_ROUTES.home} />,
   play: async ({ canvasElement }) => {
@@ -320,9 +351,16 @@ export const EmployeeQuestionFlow: Story = {
       await canvas.findByRole('searchbox', { name: 'Search questions' }),
       'adresa',
     )
-    await expect(await canvas.findByText('1 question')).toBeVisible()
-    const card = canvas.getByRole('button', { name: 'What do I need to change my address?' })
-    await userEvent.click(card)
+    await expect(await canvas.findByText('5 questions')).toBeVisible()
+    await userEvent.click(
+      canvas.getByRole('link', { name: 'What do I need to change my address?' }),
+    )
+    await expect(
+      await canvas.findByRole('heading', {
+        level: 1,
+        name: 'What do I need to change my address?',
+      }),
+    ).toBeVisible()
     await userEvent.click(canvas.getByRole('button', { name: 'Report a change of address' }))
     const drawer = await body.findByRole('dialog', { name: 'Request a change' })
     // The drawer slides in: its content is seen once the animation ends.
@@ -331,6 +369,35 @@ export const EmployeeQuestionFlow: Story = {
       'Address',
     )
     await expect(within(drawer).getByText('Proof of the new address')).toBeVisible()
+    await settle()
+  },
+}
+
+/**
+ * Nothing found asks HR (P5.96 item 1): the questions from the participant's menu, a search that
+ * finds nothing, "Ask HR" with the words typed, sent; the page says so in place.
+ */
+export const EmployeeAskFlow: Story = {
+  name: 'Employee portal, nothing found asks HR, phone, interaction',
+  tags: ['interaction', '!dev'],
+  render: () => <OnPhone start={Y_ROUTES.home} />,
+  play: async ({ canvasElement }) => {
+    await settle()
+    const canvas = within(canvasElement)
+    const body = within(canvasElement.ownerDocument.body)
+    await userEvent.click(canvas.getByRole('button', { name: /Nikola Marković/ }))
+    await userEvent.click(await body.findByRole('menuitem', { name: 'Questions and answers' }))
+    const search = await canvas.findByRole('searchbox', { name: 'Search questions' })
+    await userEvent.type(search, 'parking permit')
+    await expect(await canvas.findByText('No questions found')).toBeInTheDocument()
+    await userEvent.click(canvas.getByRole('button', { name: 'Ask HR' }))
+    const drawer = await body.findByRole('dialog', { name: 'Ask HR' })
+    await settle()
+    await expect(within(drawer).getByRole('textbox', { name: /Your question/ })).toHaveValue(
+      'parking permit',
+    )
+    await userEvent.click(within(drawer).getByRole('button', { name: 'Send to HR' }))
+    await expect(await canvas.findByText('Question sent to HR')).toBeVisible()
     await settle()
   },
 }
