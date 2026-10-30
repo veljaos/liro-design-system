@@ -297,8 +297,10 @@ export function AreaMap(props: AreaMapProps) {
               onKeyDown={(event) => {
                 onKeyDown(event, index)
               }}
-              onFocus={() => {
-                setFocused(area.id)
+              onFocus={(event) => {
+                // The keys' focus names the area on the map; a press of the pointer only chooses
+                // it (P5.96a: no name left by a click).
+                if (event.currentTarget.matches(':focus-visible')) setFocused(area.id)
               }}
               onBlur={() => {
                 setFocused(null)

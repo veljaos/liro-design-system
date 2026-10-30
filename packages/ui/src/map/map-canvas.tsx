@@ -143,6 +143,12 @@ export interface MapCanvasProps {
   keyboard?: boolean
   onKeyDown?: (event: KeyboardEvent<HTMLDivElement>) => void
   onBlur?: () => void
+  /**
+   * Whether the map's focus came from the keys (P5.96a): true on a Tab into it or a key pressed
+   * in it, false on a press of the pointer, a touch or leaving it. Only then is the focus ring
+   * drawn and only then may the keys' area be shown.
+   */
+  onKeyboardFocus?: (keyboard: boolean) => void
   /** The keys described for assistive technology; default `messages['map.keys']`. */
   hint?: string
   /** HTML over the map (a tooltip), placed through `project`; drawn again after every move. */
@@ -226,6 +232,45 @@ export function MapCanvas(props: MapCanvasProps) {
     latest.current = props
   })
   const moved = useRef(false)
+  // The pointer (P5.96a). Where it last was over the map (null off it); where it stood when new
+  // shapes were drawn — an area that appears under a pointer that has not moved is not hovered,
+  // whatever the browser sends (Chrome repeats a mouse move after the page changes under a still
+  // pointer); the area under it marked as hovered (a class, never CSS `:hover`, which follows
+  // such a still pointer too).
+  const pointer = useRef<{ x: number; y: number } | null>(null)
+  const stillAt = useRef<{ x: number; y: number } | null>(null)
+  const armed = useRef(false)
+  const hovered = useRef<Element | null>(null)
+  const pressing = useRef(false)
+  const [keyboard, setKeyboard] = useState(false)
+  const keyboardFocus = (on: boolean) => {
+    setKeyboard(on)
+    latest.current.onKeyboardFocus?.(on)
+  }
+  /**
+   * Whether the pointer has really moved since new shapes were drawn (or since it came back): the
+   * first mouse event only tells where it stands — a new map under a still pointer gets one from
+   * the browser — and a move of a pixel or more arms it. A mouse event's position is whole
+   * pixels, a pointer event's is not.
+   */
+  const arm = (event: MouseEvent): boolean => {
+    if (armed.current) return true
+    const still = stillAt.current
+    if (still === null) {
+      stillAt.current = { x: event.clientX, y: event.clientY }
+      return false
+    }
+    if (Math.abs(still.x - event.clientX) < 1 && Math.abs(still.y - event.clientY) < 1) {
+      return false
+    }
+    armed.current = true
+    stillAt.current = null
+    return true
+  }
+  const unhover = () => {
+    hovered.current?.classList.remove('is-hovered')
+    hovered.current = null
+  }
 
   // The map, once. No animation, so the view after a fit or a zoom is final at once.
   useEffect(() => {
@@ -249,6 +294,67 @@ export function MapCanvas(props: MapCanvasProps) {
     return () => {
       instance.remove()
       setMap(null)
+    }
+  }, [])
+
+  // Where the focus came from and where the pointer is (P5.96a), as native listeners on the map.
+  useEffect(() => {
+    const element = holder.current
+    if (element === null) return
+    const move = (event: PointerEvent) => {
+      if (event.pointerType !== 'touch') pointer.current = { x: event.clientX, y: event.clientY }
+    }
+    // Any move over the map counts, not only over an area (Leaflet's own listener runs first).
+    const mouse = (event: MouseEvent) => {
+      arm(event)
+    }
+    const leave = () => {
+      // Leaving the map clears every mark: the hovered area and the keys' area with the ring (the
+      // next key brings them back).
+      pointer.current = null
+      stillAt.current = null
+      armed.current = false
+      unhover()
+      latest.current.onShapeHover?.(null, null)
+      keyboardFocus(false)
+    }
+    const down = () => {
+      pressing.current = true
+      keyboardFocus(false)
+    }
+    const up = () => {
+      pressing.current = false
+    }
+    // A focus without a press of the pointer came from the keys (Tab, or a script after one).
+    const focus = (event: FocusEvent) => {
+      if (event.target === element && !pressing.current) keyboardFocus(true)
+    }
+    const key = (event: globalThis.KeyboardEvent) => {
+      if (event.key !== 'Tab') keyboardFocus(true)
+    }
+    const blur = (event: FocusEvent) => {
+      if (event.target !== element) return
+      pressing.current = false
+      keyboardFocus(false)
+      latest.current.onBlur?.()
+    }
+    element.addEventListener('pointermove', move)
+    element.addEventListener('mousemove', mouse)
+    element.addEventListener('pointerleave', leave)
+    element.addEventListener('pointerdown', down)
+    element.addEventListener('pointerup', up)
+    element.addEventListener('focus', focus)
+    element.addEventListener('keydown', key)
+    element.addEventListener('blur', blur)
+    return () => {
+      element.removeEventListener('pointermove', move)
+      element.removeEventListener('mousemove', mouse)
+      element.removeEventListener('pointerleave', leave)
+      element.removeEventListener('pointerdown', down)
+      element.removeEventListener('pointerup', up)
+      element.removeEventListener('focus', focus)
+      element.removeEventListener('keydown', key)
+      element.removeEventListener('blur', blur)
     }
   }, [])
 
@@ -317,6 +423,8 @@ export function MapCanvas(props: MapCanvasProps) {
   useEffect(() => {
     if (map === null) return
     const group = L.layerGroup().addTo(map)
+    stillAt.current = pointer.current
+    armed.current = false
     for (const shape of props.shapes) {
       const layer = shapeLayer(shape)
       if (shape.kind === 'area' && shape.interactive) {
@@ -326,12 +434,20 @@ export function MapCanvas(props: MapCanvasProps) {
           })
         }
         layer.on('mousemove', (event: L.LeafletMouseEvent) => {
+          if (!arm(event.originalEvent)) return
+          const element = layer.getElement() ?? null
+          if (hovered.current !== element) {
+            unhover()
+            element?.classList.add('is-hovered')
+            hovered.current = element
+          }
           latest.current.onShapeHover?.(shape.id, {
             x: event.containerPoint.x,
             y: event.containerPoint.y,
           })
         })
         layer.on('mouseout', () => {
+          unhover()
           latest.current.onShapeHover?.(null, null)
         })
       }
@@ -344,6 +460,7 @@ export function MapCanvas(props: MapCanvasProps) {
       }
     }
     return () => {
+      hovered.current = null
       group.remove()
     }
   }, [map, props.shapes])
@@ -465,8 +582,8 @@ export function MapCanvas(props: MapCanvasProps) {
           props.surface === 'raised' && 'liro-map-raised',
         )}
         style={{ height: props.height }}
+        {...(keyboard ? { 'data-keyboard-focus': '' } : {})}
         {...(props.onKeyDown === undefined ? {} : { onKeyDown: props.onKeyDown })}
-        {...(props.onBlur === undefined ? {} : { onBlur: props.onBlur })}
       />
       <div
         ref={overlay}
