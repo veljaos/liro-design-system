@@ -1,0 +1,22 @@
+{
+  "pages": {
+    "list": { "js": 250, "css": 160 },
+    "document": { "js": 250, "css": 160 }
+  },
+  "measured": {
+    "date": "2026-10-31",
+    "how": "gzip of what each page loads at start; timing in Chromium emulating a mid-range phone (412 × 823, 4× CPU slowdown) on slow 4G (150 ms latency, 1.6 Mbit/s down), cache off, median of three",
+    "list": {
+      "js": 235.9,
+      "css": 151.6,
+      "fontsTransferred": 221.7,
+      "firstContentfulPaintMs": 3164
+    },
+    "document": {
+      "js": 236.0,
+      "css": 151.6,
+      "fontsTransferred": 221.7,
+      "firstContentfulPaintMs": 3432
+    }
+  }
+}
