@@ -13,10 +13,10 @@ const meta = {
       description: {
         component:
           '**What for:** one name — a new folder, or renaming a file or a folder (the item bold ' +
-          'under "Rename", D22). Enter or the button saves; an empty name says so; every other ' +
+          'under "Rename"). Enter or the button saves; an empty name says so; every other ' +
           'check is the application’s, returned from `onSubmit` as its words.\n\n' +
           '**When to use:** naming a folder or a file. **When not:** a record with more fields ' +
-          '(a Drawer or a full page, D14).',
+          '(a Drawer or a full page).',
       },
     },
   },

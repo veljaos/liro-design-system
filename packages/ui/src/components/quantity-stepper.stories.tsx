@@ -69,7 +69,7 @@ export const Large: Story = {
 }
 
 /**
- * At its limit (P5.93 item 39): + cannot be used and says why — it stays focusable, its tooltip
+ * At its limit: + cannot be used and says why — it stays focusable, its tooltip
  * and a line under the field name the limit with the application's reason.
  */
 export const AtLimit: Story = {
@@ -122,7 +122,7 @@ export const ApplicationError: Story = {
   args: { error: 'More than the order line asks for.', defaultValue: '9', required: true },
 }
 
-/** Read only (P5.93): the read-only look of every field, no − and +; empty shows "—". */
+/** Read only: the read-only look of every field, no − and +; empty shows "—". */
 export const ReadOnly: Story = {
   name: 'Read only',
   render: (args) => (
@@ -202,7 +202,7 @@ export const Stepping: Story = {
     const input = canvas.getByRole('textbox', { name: 'Quantity picked' })
     await userEvent.click(canvas.getByRole('button', { name: 'Increase Quantity picked' }))
     await expect(input).toHaveValue('5')
-    // The press answers at once: the quantity is highlighted for a moment (P5.90).
+    // The press answers at once: the quantity is highlighted for a moment.
     await expect(canvasElement.querySelector('[data-flash]')).not.toBeNull()
     await userEvent.click(input)
     await userEvent.keyboard('{ArrowUp}')

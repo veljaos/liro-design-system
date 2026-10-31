@@ -1,5 +1,5 @@
 /*
- * Story data of HierarchyChart (P5.42): fictitious. A small company's people by their reporting
+ * Story data of HierarchyChart: fictitious. A small company's people by their reporting
  * lines, the same company's units with their heads and headcounts, a group of companies with
  * ownership shares on the lines, and the people in Arabic and Japanese. Every word is the
  * application's; the counts are its words, never computed by the chart. Not part of the package:

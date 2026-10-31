@@ -1,9 +1,9 @@
 /*
- * Group BR's example data (P5.77, pivot analysis) on 14 October 2026 at 09:40: Kvadrat Gradnja
+ * The example data (pivot analysis) on 14 October 2026 at 09:40: Kvadrat Gradnja
  * d.o.o.'s costs of July–September 2026 by site, account (the illustrative chart of accounts) and
  * supplier, from its supplier invoices (UF-2026-…): the amounts and the number of documents.
  * The application has computed its figures for each saved view (`views`): every cell, subtotal and
- * total is a decimal string written out here, never computed by the screens (D4); null is a cell
+ * total is a decimal string written out here, never computed by the screens; null is a cell
  * with nothing. For any other layout this illustrative application has no figures. The records
  * behind a figure are the application's documents, newest first; the screens take those of the
  * figure's members. Every name, number and amount is invented. Not part of the package.
@@ -52,11 +52,6 @@ export function resultFor(views: readonly AnalysisView[], layout: PivotLayout): 
       rows: [],
     }
   )
-}
-
-/** The saved view whose layout this is, if any. */
-export function viewOf(views: readonly AnalysisView[], layout: PivotLayout): string {
-  return views.find((view) => signature(view.layout) === signature(layout))?.id ?? ''
 }
 
 /**

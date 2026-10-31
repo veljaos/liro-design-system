@@ -15,7 +15,7 @@ import { controlAttributes, Field, FieldMessage, fieldProps, type FieldBaseProps
 import { Tooltip } from './popover'
 
 /*
- * PasswordField (BUILD-PLAN P5.6): a password with its show / hide toggle.
+ * PasswordField: a password with its show / hide toggle.
  * - Paste is always allowed (WCAG 3.3.8: a password manager pastes); nothing blocks it.
  * - The toggle is a 28px subtle button at the field's end, inside its frame (the target is 28px,
  *   above the 24px minimum), named "Show password" (`messages['password.show']`) with

@@ -6,7 +6,7 @@ import type { LinkSuggestion } from './link-suggestions'
 import type { SearchResult } from './search-result-list'
 
 /*
- * Sample data for the help-centre stories (P5.30 d and e): a support portal's rating scale, help
+ * Sample data for the help-centre stories: a support portal's rating scale, help
  * articles and their categories — fictitious. Not part of the package: nothing in src/index.ts
  * imports this file. No classes here: Storybook compiles classes only from *.stories.tsx files.
  */

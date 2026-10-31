@@ -31,7 +31,7 @@ export interface RadioGroupFieldProps extends FieldBaseProps {
  * One choice from a few options that should all be visible (up to about five). The group label
  * names the radio group; each option has its own label (Mantine Radio.Group and InlineInput:
  * 12px between radio and label, 20px label line, 16px between options). Arrow keys follow the
- * direction. Read-only (P5.93 item 1) draws the options grey with the chosen one marked, still
+ * direction. Read-only draws the options grey with the chosen one marked, still
  * focusable and read with the group as read-only; nothing can change. An option's `disabled`
  * is a choice that does not apply, not a state of the field.
  */

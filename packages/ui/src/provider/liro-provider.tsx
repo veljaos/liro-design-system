@@ -21,7 +21,7 @@ import { messagesEn } from './messages.en'
 import { PortalContainerContext } from './portal'
 
 /**
- * Everything that differs between applications, languages and customers (BUILD-PLAN section 5).
+ * Everything that differs between applications, languages and customers.
  * Every value has a default, so the Design System works on its own and in Storybook.
  */
 export interface LiroProviderProps {
@@ -38,7 +38,7 @@ export interface LiroProviderProps {
   /** 0 = Sunday … 6 = Saturday. Default: from the locale. */
   weekStartsOn?: Weekday
   /**
-   * The IANA time zone instants are shown in ("Europe/Belgrade"), P5.8. Default: the browser's.
+   * The IANA time zone instants are shown in ("Europe/Belgrade"). Default: the browser's.
    * The Core passes the tenant's. `format.dateTime` and `format.time` show an instant with an
    * offset in it; a local date and time without an offset ("2026-10-12T09:30") is shown as
    * written. Without this prop `format.time` keeps the clock as the instant writes it.
@@ -49,7 +49,7 @@ export interface LiroProviderProps {
   /** Router link component, so navigation stays client-side. Default: <a>. */
   linkComponent?: ElementType
   /**
-   * 'touch' (P5.10): every control, list row and target inside — buttons, fields, menu items,
+   * 'touch': every control, list row and target inside — buttons, fields, menu items,
    * options, tabs and toggles, overlays included — is at least 44px, for a till, a kiosk or a
    * handheld. Default: the parent provider's, else 'default'. Touch is never lowered by a nested
    * provider: a screen meant for fingers stays one.
@@ -58,7 +58,7 @@ export interface LiroProviderProps {
   children: ReactNode
 }
 
-/** How large the targets are: the desktop sizes, or at least 44px for fingers (P5.10). */
+/** How large the targets are: the desktop sizes, or at least 44px for fingers. */
 export type Density = 'default' | 'touch'
 
 export interface LiroContextValue {
@@ -74,7 +74,7 @@ export interface LiroContextValue {
   timeZone: string
   /** Renders links: the application's router link, or <a>. */
   linkComponent: ElementType
-  /** 'touch': targets of at least 44px (P5.10). */
+  /** 'touch': targets of at least 44px. */
   density: Density
 }
 

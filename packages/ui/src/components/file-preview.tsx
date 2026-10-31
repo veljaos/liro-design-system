@@ -16,17 +16,17 @@ import { EmptyState } from './empty-state'
 import { Tooltip } from './popover'
 
 /*
- * FilePreview (BUILD-PLAN P5.43): one file shown on the whole screen, with the previous and the
+ * FilePreview: one file shown on the whole screen, with the previous and the
  * next file of its folder. The viewer is the application's: a PDF or an office file in
  * DocumentFrame (a viewer on another origin), a photo or a scan in PageViewer — the preview only
  * frames it.
  * - A full-screen sheet on every width (a phone's preview is full screen; a desktop's needs the
  *   room): a header with the file's name (the title, read in its own direction) and the
  *   application's line under it ("PDF · 2,4 MB · Milica Petrović") at the start and Close at the
- *   end of the same row (P5.93); under them one bar: "3 of 12", Previous file / Next file (28px, chevrons that mirror in right-to-left; unavailable at the ends),
+ *   end of the same row; under them one bar: "3 of 12", Previous file / Next file (28px, chevrons that mirror in right-to-left; unavailable at the ends),
  *   Download (the document family) and the application's own actions (Share, Details), Close.
  *   ArrowLeft and ArrowRight outside the viewer go to the previous and next file by the reading
- *   direction (Appendix B.7).
+ *   direction.
  * - The body is the viewer, filling the rest of the screen; a file without a preview says so
  *   (`unavailable`: "This file cannot be previewed", with Download).
  * - Escape and Close return the focus to what opened it (the dialog's own rule).
@@ -92,7 +92,7 @@ export function FilePreview(props: FilePreviewProps) {
         className="overflow-hidden pb-[env(safe-area-inset-bottom)] ps-[env(safe-area-inset-left)] pe-[env(safe-area-inset-right)]"
       >
         <DialogHeader className="shrink-0 flex-col items-stretch gap-3 border-0 border-b border-solid border-default pt-[max(16px,env(safe-area-inset-top))]">
-          {/* P5.93: the name at the start and Close at the end of one row; the file's bar under it. */}
+          {/* The name at the start and Close at the end of one row; the file's bar under it. */}
           <div className="flex min-w-0 items-start gap-3">
             <div className="flex min-w-0 flex-1 flex-col gap-1">
               <DialogTitle className="leading-snug font-medium">

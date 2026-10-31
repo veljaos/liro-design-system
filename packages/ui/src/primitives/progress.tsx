@@ -7,9 +7,9 @@ import { cn } from './cn'
  * radius md, the track surface.sunken, the filled part brand.solid, its width changing in 100ms.
  *
  * The bar fills from the leading edge: the filled part is sized with its inline size in a row,
- * so it grows from the left in left-to-right and from the right in right-to-left (Appendix B.7:
- * a bar is a metaphor for reading). shadcn/ui's version moved the fill with translateX, which
- * fills from the left in both directions (P2.1 finding).
+ * so it grows from the left in left-to-right and from the right in right-to-left (a bar is a
+ * metaphor for reading). shadcn/ui's version moves the fill with translateX, which fills from
+ * the left in both directions.
  */
 export function Progress({
   className,

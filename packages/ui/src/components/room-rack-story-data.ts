@@ -12,7 +12,7 @@ import {
 import type { RackFloor, RackRoom, RackState } from './room-rack'
 
 /*
- * Story data of RoomRack (P5.25): Garni hotel Tvrđava, Petrovaradin (fictitious), three floors of
+ * Story data of RoomRack: Garni hotel Tvrđava, Petrovaradin (fictitious), three floors of
  * rooms on Tuesday 06.10.2026 (EXAMPLE_TODAY). The states and their tones are the application's
  * data; a front desk names them so.
  */

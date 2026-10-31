@@ -4,5 +4,5 @@ storybook-static/
 coverage/
 playwright-report/
 test-results/
-BUILD-PLAN.md
+packages/tokens/src/look-reference.md
 .claude/worktrees/

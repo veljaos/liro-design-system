@@ -1,6 +1,6 @@
 /*
- * The logic of JobProgress (P5.4): how far a job has come and how its report reads. Counts of
- * items are whole numbers the application sends (not money, AGENTS.md D4); they are shown through
+ * The logic of JobProgress: how far a job has come and how its report reads. Counts of
+ * items are whole numbers the application sends (not money); they are shown through
  * the provider's `format.number`.
  */
 

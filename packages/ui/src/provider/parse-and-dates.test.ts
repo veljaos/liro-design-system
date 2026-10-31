@@ -9,7 +9,7 @@ import {
 
 const NBSP = ' '
 
-describe('formatting never loses a digit (P1.5)', () => {
+describe('formatting never loses a digit', () => {
   it.each([
     ['dot-comma', '12.345.678.901.234,567891'],
     ['comma-dot', '12,345,678,901,234.567891'],
@@ -34,7 +34,7 @@ describe('formatting never loses a digit (P1.5)', () => {
   })
 })
 
-describe('parseNumber (Appendix B.3 and B.4)', () => {
+describe('parseNumber', () => {
   const dotComma = createFormat('sr-Latn-RS')
   const commaDot = createFormat('en')
 
@@ -161,7 +161,7 @@ describe('dates', () => {
     ['sr-Latn-RS', '01/03/2026', '2026-03-01'],
     ['sr-Latn-RS', '1-3-26', '2026-03-01'],
     ['sr-Latn-RS', '2026-03-01', '2026-03-01'],
-    // P3.6 check (owner): six digits in the locale's day-month-year order.
+    // Check: six digits in the locale's day-month-year order.
     ['sr-Latn-RS', '151026', '2026-10-15'],
     ['en', '03/01/2026', '2026-03-01'],
     ['en', '030126', '2026-03-01'],
@@ -186,7 +186,7 @@ describe('dates', () => {
     expect(createFormat('sr-Latn-RS').parseDate(text)).toBeNull()
   })
 
-  it('rejects "151026" in en-US, where it would be month 15 (P3.6 check)', () => {
+  it('rejects "151026" in en-US, where it would be month 15', () => {
     expect(createFormat('en-US').parseDate('151026')).toBeNull()
   })
 
@@ -203,7 +203,7 @@ describe('dates', () => {
     expect(() => en.weekdayName(7, 'long')).toThrow(RangeError)
   })
 
-  it('reads Serbian without a script as Latin (Appendix B.1)', () => {
+  it('reads Serbian without a script as Latin', () => {
     expect(intlLocale('sr')).toBe('sr-Latn')
     expect(intlLocale('sr-RS')).toBe('sr-Latn-RS')
     expect(intlLocale('sr-Cyrl-RS')).toBe('sr-Cyrl-RS')

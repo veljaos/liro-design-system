@@ -10,16 +10,14 @@ import {
 import { useLiro } from '../provider/liro-provider'
 
 /*
- * DateText, DateRangeText, DueDate, NumberText and MoneyText (BUILD-PLAN P2.8), the previous
- * Design System's, carried over (owner's decision, 2026-09-28, docs/decisions.md "Display"):
- * tabular digits; an empty value is "—" (Appendix B.5) in text.secondary; values formatted only
+ * DateText, DateRangeText, DueDate, NumberText and MoneyText: tabular digits; an empty value is "—" in text.secondary; values formatted only
  * through the provider's `format` (never here). Numbers and amounts are isolated (<bdi>), so a
- * minus sign or a currency never moves in right-to-left text (docs/decisions.md, Provider).
+ * minus sign or a currency never moves in right-to-left text (Provider).
  *
  * DueDate compares with the provider's `today` (the tenant's date, not the device's) and always
  * shows the date; a short xs note follows it — "3 days overdue" in the danger tone, "Due today" and
  * "Due in N days" (within `warningDays`, default 5) in the warning tone, "Settled" in
- * text.secondary. No badge (P4.9: a second pill beside the status badge read as a second status).
+ * text.secondary. No badge (a second pill beside the status badge read as a second status).
  */
 
 /** The empty value: an em dash, never a hyphen (a hyphen reads as a minus sign). */
@@ -77,7 +75,7 @@ export function DateText({ value, withWeekday = false, dimmed = false, className
   if (value === undefined || value === null || value === '') return <Empty />
   const text = (
     // dir="auto", as a bdi: a date of Latin digits has no strong character and is laid out left to
-    // right, so "26.09.2026." keeps its final dot in a right-to-left page (P4.3); a date Intl
+    // right, so "26.09.2026." keeps its final dot in a right-to-left page; a date Intl
     // writes with right-to-left marks (Arabic) stays right to left.
     <time
       dir="auto"
@@ -136,7 +134,7 @@ export function dueState(
   return { kind: 'later', days }
 }
 
-/** The note after a due date: its words and its tone (P4.9). */
+/** The note after a due date: its words and its tone. */
 const DUE_NOTE = {
   overdue: 'text-status-danger-fg',
   today: 'text-status-warning-fg',
@@ -148,7 +146,7 @@ const DUE_NOTE = {
  * When something is due, measured from the provider's `today`: always the date, and after it a
  * short note in xs — overdue (with the days) in the danger tone, due today or soon in the warning
  * tone, settled in text.secondary; a later date has no note. Never a badge: the date is what a
- * column of due dates is read for (P4.9, the owner's review).
+ * column of due dates is read for.
  */
 export function DueDate({ value, settled = false, warningDays = 5 }: DueDateProps) {
   const { messages, format, today } = useLiro()

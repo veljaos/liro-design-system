@@ -132,7 +132,7 @@ describe('DocumentPage', () => {
   })
 })
 
-describe('panel lists (P4.9)', () => {
+describe('panel lists', () => {
   const entries = ['c4', 'c3', 'c2', 'c1'].map((key) => ({
     key,
     author: `Author ${key}`,
@@ -185,12 +185,12 @@ describe('panel lists (P4.9)', () => {
       />,
     )
     expect(html).toContain('[&amp;_[data-slot=panel-row]:first-child]:pt-0')
-    // The header's 16px under it, open or closed, as every section's (P5.93 item 6).
+    // The header's 16px under it, open or closed, as every section's.
     expect(html).toMatch(/aria-expanded="true"[^>]*class="[^"]* p-4 /)
   })
 })
 
-describe('ChangeableValue (P4.9)', () => {
+describe('ChangeableValue', () => {
   it('shows the value and a pencil named after it, not the field', () => {
     const html = render(
       <ChangeableValue
@@ -216,7 +216,7 @@ describe('ChangeableValue (P4.9)', () => {
     expect(html).toContain('<input aria-label="Due date"/>')
   })
 
-  it('without a field: the same value row, no pencil, never a field (P5.23)', () => {
+  it('without a field: the same value row, no pencil, never a field', () => {
     const changeable = render(
       <ChangeableValue label="Date" value="06.10.2026." field={<input aria-label="Date" />} />,
     )
@@ -229,7 +229,7 @@ describe('ChangeableValue (P4.9)', () => {
   })
 })
 
-describe('DocumentSource in the header (P5.23)', () => {
+describe('DocumentSource in the header', () => {
   it('stands beside the counterparty, before the key figures and the references', () => {
     const html = render(
       <DocumentPage
@@ -282,7 +282,7 @@ describe('DocumentSource in the header (P5.23)', () => {
     expect(render(<DocumentSource label="Corrects" documents={[]} />)).not.toContain('Corrects')
   })
 
-  it('puts further parties beside the counterparty (P5.55)', () => {
+  it('puts further parties beside the counterparty', () => {
     const html = render(
       <DocumentPage
         layout="desktop"

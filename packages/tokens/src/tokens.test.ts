@@ -1,4 +1,4 @@
-// The tokens equal BUILD-PLAN Appendix A, read from the plan itself, so a value typed wrongly on
+// The tokens equal the reference values of look-reference.md, so a value typed wrongly on
 // either side fails here. The generated CSS declares every variable it or the theme refers to.
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
@@ -31,12 +31,12 @@ import {
   TONES,
 } from './tokens.ts'
 
-const plan = readFileSync(new URL('../../../BUILD-PLAN.md', import.meta.url), 'utf8')
+const plan = readFileSync(new URL('look-reference.md', import.meta.url), 'utf8')
 
 /** The text of an appendix section, from its heading to the next heading of the same level. */
 function section(heading: string): string {
   const start = plan.indexOf(`### ${heading}`)
-  assert.notEqual(start, -1, `BUILD-PLAN has no section "${heading}"`)
+  assert.notEqual(start, -1, `look-reference.md has no section "${heading}"`)
   const end = plan.indexOf('\n### ', start + 4)
   return plan.slice(start, end === -1 ? undefined : end)
 }
@@ -70,7 +70,7 @@ function dotted(text: string, label: string): [string, string][] {
   })
 }
 
-describe('values equal Appendix A.1', () => {
+describe('values equal the reference ramps (A.1)', () => {
   it('has every ramp with its ten steps', () => {
     const table = rows(section('A.1')).slice(1)
     assert.equal(table.length, Object.keys(RAMPS).length)
@@ -109,7 +109,7 @@ function expand(names: string, values: string): [string, string][] {
   return full.map((name, index) => [name, valueParts[index] ?? ''])
 }
 
-describe('meanings equal Appendix A.2', () => {
+describe('meanings equal the reference (A.2)', () => {
   const text = section('A.2')
   const [meaningsText = '', tonesText = ''] = text.split('Status tones')
 
@@ -168,7 +168,7 @@ describe('meanings equal Appendix A.2', () => {
   })
 })
 
-describe('spacing, radius, shadows, motion and layout equal Appendix A.3 and A.4', () => {
+describe('spacing, radius, shadows, motion and layout equal the reference (A.3, A.4)', () => {
   const a3 = section('A.3')
   const a4 = section('A.4')
 
@@ -275,9 +275,9 @@ describe('generated files', () => {
   })
 })
 
-describe('typography equals Appendix A.5', () => {
+describe('typography equals the reference (A.5)', () => {
   const a5 = section('A.5')
-  /** The plan writes negative numbers with U+2212 MINUS SIGN. */
+  /** The reference writes negative numbers with U+2212 MINUS SIGN. */
   const ascii = (pairs: [string, string][]) =>
     pairs.map(([name, value]): [string, string] => [name, value.replace('−', '-')])
 
@@ -317,7 +317,7 @@ describe('typography equals Appendix A.5', () => {
   })
 })
 
-describe('fonts (P1.2)', () => {
+describe('fonts', () => {
   const tokens = tokensCss()
   const theme = themeCss()
 

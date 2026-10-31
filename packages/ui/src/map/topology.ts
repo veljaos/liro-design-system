@@ -1,7 +1,7 @@
 import type { MapAreaGeometry, MapPosition } from './map-logic'
 
 /*
- * A small TopoJSON reader (P5.93 item 43) for the boundary data the map subpath ships: quantized,
+ * A small TopoJSON reader for the boundary data the map subpath ships: quantized,
  * delta-encoded arcs shared between neighbouring areas, turned back into GeoJSON polygons. Only
  * what the data uses — Polygon and MultiPolygon geometries with properties — so the package needs
  * no topojson-client (a development dependency of the stories only).

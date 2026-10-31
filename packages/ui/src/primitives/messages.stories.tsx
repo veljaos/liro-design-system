@@ -15,7 +15,7 @@ import {
 import { internal, settle } from './story-helpers'
 
 /*
- * The message primitives of P5.1 (shadcn/ui Bubble, Marker, Message and Message Scroller,
+ * The message primitives (shadcn/ui Bubble, Marker, Message and Message Scroller,
  * adapted): one story each.
  */
 const meta = {
@@ -24,9 +24,9 @@ const meta = {
     docs: {
       description: {
         component: internal(
-          'Bubble, Marker, Message and Message Scroller (shadcn/ui, radix-vega, fetched 2026-10-08). ' +
+          'Bubble, Marker, Message and Message Scroller (shadcn/ui, radix-vega). ' +
             'The Message family (MessageBubble, MessageList, MessageThread, MessageComposer) and ' +
-            'AgentQuestion are built from them (P5.1).',
+            'AgentQuestion are built from them.',
         ),
       },
     },

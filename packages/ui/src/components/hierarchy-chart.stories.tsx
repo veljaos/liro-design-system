@@ -139,7 +139,7 @@ export const Failed: Story = {
   args: { error: 'The organisation could not be loaded.', onRetry: () => undefined },
 }
 
-/** No nodes (P5.93): an EmptyState with the application's words and first step; no tools. */
+/** No nodes: an EmptyState with the application's words and first step; no tools. */
 export const Empty: Story = {
   args: {
     nodes: [],
@@ -213,7 +213,7 @@ export const Japanese: Story = {
 /**
  * The chart ready for the browser's printing: every level open, no tools (`toolbar={false}`), no
  * frame (`framed={false}`), fitted to the width. A screen printed as you see it, not a document:
- * printed documents come from liro-folio (P5.95).
+ * printed documents come from liro-folio.
  */
 export const Print: Story = {
   render: () => (

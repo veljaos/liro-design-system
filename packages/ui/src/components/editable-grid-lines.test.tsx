@@ -7,7 +7,7 @@ import { LookupField } from './lookup-field'
 import type { LookupKind, LookupOption } from './lookup-logic'
 
 /*
- * P5.18 and P5.19: the line types, the lookup column, details and the "Add line ▾" menu as the
+ * The line types, the lookup column, details and the "Add line ▾" menu as the
  * grid renders them; LookupField's states. The keyboard and the lists are proved in the stories.
  */
 
@@ -113,7 +113,7 @@ describe('EditableGrid line types', () => {
     const subtotal =
       /<tr data-row-id="s"[^>]*data-row-type="subtotal"[^>]*>(.*?)<\/tr>/.exec(html)?.[1] ?? ''
     expect(subtotal).toContain('colSpan="4"')
-    // The rule above it is the line under the row before (P5.90: each line drawn once).
+    // The rule above it is the line under the row before (each line drawn once).
     const before = html.slice(0, html.indexOf('<tr data-row-id="s"'))
     expect(before.slice(before.lastIndexOf('<tr'))).toContain('border-b-strong')
     expect(subtotal).toMatch(/class="[^"]*text-end[^"]*font-semibold/)

@@ -120,7 +120,7 @@ export const WithError: Story = {
   },
 }
 
-/** Read only (P5.93): the read-only look of every field, without the show / hide toggle. */
+/** Read only: the read-only look of every field, without the show / hide toggle. */
 export const ReadOnly: Story = {
   name: 'Read only',
   args: { readOnly: true, defaultValue: 'kvadrat-2026' },

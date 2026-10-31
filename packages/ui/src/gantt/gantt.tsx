@@ -52,22 +52,22 @@ import { GanttDialogs, GanttList, useRowWords, type GanttDialog } from './gantt-
 import { Tooltip } from '../components/popover'
 
 /*
- * Gantt (BUILD-PLAN P5.37; docs/decisions.md "Gantt"): a project's plan — phases, tasks and
+ * Gantt: a project's plan — phases, tasks and
  * milestones against time — on SVAR React Gantt (@svar-ui/react-gantt 2.7.3, MIT edition), drawn
  * with Liro tokens (gantt.css; SVAR's themes and icon font are not used).
  * - Desktop: a table at the start — each row's name with its dates and who does it, its progress
  *   and, when the application gives them, a phase's budget and what was spent (decimal strings
- *   through `format`, never added: D4) — and the timeline beside it, the same rows at the same
- *   height, to the pixel (P5.94 item 6). Phases are summary bars, tasks bars with their progress
- *   as a line, milestones diamonds; dependencies are lines. The one "now" line (D25: the Gantt
+ *   through `format`, never added) — and the timeline beside it, the same rows at the same
+ *   height, to the pixel. Phases are summary bars, tasks bars with their progress
+ *   as a line, milestones diamonds; dependencies are lines. The one "now" line (the Gantt
  *   keeps its line, the calendars only the time) comes from the application's `now`, drawn by
  *   Gantt (SVAR's markers are a paid feature); its date stands on the years' row of the scale,
- *   beside the year's label, never over a label (P5.94 item 6). The header rows of both stay
- *   below the shell while the page scrolls (D21).
+ *   beside the year's label, never over a label. The header rows of both stay
+ *   below the shell while the page scrolls.
  * - Edit (`mode="edit"`): drag a bar to move it, its ends to change its dates, its tab to set the
  *   progress, a dot at its end to another bar to add a dependency; and for every drag another way
  *   (WCAG 2.5.7): each row's "Change" menu — Move…, Change dates…, Set progress…, Dependencies… —
- *   opens a dialog titled by the action with the row bold under it (D22). Every edit is reported
+ *   opens a dialog titled by the action with the row bold under it. Every edit is reported
  *   through `onChange` (SVAR's `api.intercept` turns a drag into a report and stops it); nothing
  *   changes until the application passes new rows. SVAR's own keys (Backspace deletes, Ctrl+C/X/V/D)
  *   are off.
@@ -89,7 +89,7 @@ const SCROLLBAR_ROOM = 16
 /** A column's width: a day, or a month. */
 const COLUMN: Readonly<Record<GanttScale, number>> = { days: 28, months: 64 }
 
-/** A chosen row: the selection surface with the selected bar at its start (D17). */
+/** A chosen row: the selection surface with the selected bar at its start. */
 const SELECTED_ROW =
   "bg-surface-selected before:absolute before:inset-y-0 before:start-0 before:border-0 before:border-s-[3px] before:border-solid before:border-selected before:content-['']"
 
@@ -114,7 +114,7 @@ export interface GanttProps {
   /** Every edit, as one change; the application applies and saves it. */
   onChange?: (change: GanttChange) => void
   /**
-   * The application's clock (D25): "HH:mm" of the provider's `today`, a local
+   * The application's clock: "HH:mm" of the provider's `today`, a local
    * "YYYY-MM-DDTHH:mm", or an instant with an offset (shown in the provider's time zone). The
    * one "now" marker stands there; without it, none is drawn.
    */
@@ -161,7 +161,7 @@ function pixels(value: unknown): number {
 
 /**
  * The bar's look and words (SVAR's `taskTemplate`): our tokens, its name for assistive technology.
- * Its name is never cut (P5.93 item 34): inside the bar when it fits — and then it stays in view
+ * Its name is never cut: inside the bar when it fits — and then it stays in view
  * at the chart's edge while the bar runs out of it (sticky) —, otherwise beside the bar on a tag
  * (`barLabelPlace`), measured on the bar's own font.
  */
@@ -295,7 +295,7 @@ function GanttTable({
       className={cn(
         // The rows keep their own height from the top (`content-start`): the table stretches to
         // the timeline's height (its scrollbar's room under the rows), and stretched tracks let
-        // every row drift by a fraction of a pixel from the timeline's (P5.94 item 6).
+        // every row drift by a fraction of a pixel from the timeline's.
         'grid shrink-0 content-start border-0 border-e border-solid border-default text-sm',
         columns,
         budget ? 'w-[33rem]' : 'w-[20rem]',
@@ -526,7 +526,7 @@ interface ChartProps {
 }
 
 /**
- * The date of "now" on the scale's upper row (the years', P5.94 item 6): the months' row stays
+ * The date of "now" on the scale's upper row (the years'): the months' row stays
  * whole ("Oct" was under the tag), and the tag steps aside from the year's label, which is sticky
  * and moves as the chart scrolls (`nowTagStart`, measured again on every scroll and once the fonts
  * are in). Decoration: the line's name says the date and time.
@@ -806,7 +806,7 @@ function GanttChart(props: ChartProps) {
       if (state._chartWidth === undefined) return
       if (scrolled.current !== key) {
         scrolled.current = key
-        // The plan's start, or the column before today's when today is further on (P5.93 item 34).
+        // The plan's start, or the column before today's when today is further on.
         const visible = holder.current?.querySelector('.wx-chart')?.clientWidth ?? 0
         void instance.exec('scroll-chart', { left: openingScroll(x, cellWidth, visible) })
       }
@@ -871,13 +871,13 @@ function GanttChart(props: ChartProps) {
             label={messages['gantt.now'](
               `${format.date(moment.day)} ${format.time(localDateTime(moment.day, moment.minutes))}`,
             )}
-            // Under the bars (`.wx-bars` is layer 1 in gantt.css): they cover its line (P5.90).
+            // Under the bars (`.wx-bars` is layer 1 in gantt.css): they cover its line.
             className="z-0"
             style={{ insetInlineStart: nowX, top: 0, bottom: 0 }}
           />,
           area,
         )}
-      {/* The day of "now" on the time scale (P5.93 item 8): on the days' row today's number
+      {/* The day of "now" on the time scale: on the days' row today's number
           itself, written as the scale writes it, over its own (it covers no other label). */}
       {scaleBox !== null &&
         nowX !== null &&
@@ -898,7 +898,7 @@ function GanttChart(props: ChartProps) {
           scaleBox,
         )}
       {/* On the months' scale the date stands on the years' row, above the months' names, and
-          beside the year's own label when it would cover it (P5.94 item 6): it covers no text. */}
+          beside the year's own label when it would cover it: it covers no text. */}
       {scaleBox !== null && nowX !== null && moment !== null && props.scale === 'months' && (
         <ScaleNowTag
           scaleBox={scaleBox}

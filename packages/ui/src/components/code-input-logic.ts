@@ -1,6 +1,5 @@
 /*
- * The logic of CodeInput (P5.6), kept apart from the markup so it can be unit-tested (AGENTS.md
- * C7): which characters a code takes, how typed or pasted text fills the boxes, and where the
+ * The logic of CodeInput, kept apart from the markup so it can be unit-tested: which characters a code takes, how typed or pasted text fills the boxes, and where the
  * arrow keys move.
  */
 
@@ -67,7 +66,7 @@ export function fillCode(
 /**
  * The box the focus moves to from `index` for a key, or null when the key does not move it. The
  * boxes run in `direction` (CodeInput writes a code left to right in every language, as numbers
- * are); the arrow that points forward moves forward (Appendix B.7: from the leading edge).
+ * are); the arrow that points forward moves forward (from the leading edge).
  */
 export function codeKeyTarget(
   key: string,

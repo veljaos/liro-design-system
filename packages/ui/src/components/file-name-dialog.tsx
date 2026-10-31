@@ -6,8 +6,8 @@ import { TextField } from './text-field'
 import type { IconComponent } from './intents'
 
 /*
- * FileNameDialog (BUILD-PLAN P5.43): one name for a new folder, or a new name for a file or
- * folder ("Rename", the item bold under the title, D22). One field; Enter or the button submits.
+ * FileNameDialog: one name for a new folder, or a new name for a file or
+ * folder ("Rename", the item bold under the title). One field; Enter or the button submits.
  * An empty name says so; every other check is the application's: `onSubmit` returns the error in
  * its words ("A folder with this name already exists here."), or a promise of it, and the dialog
  * stays open with the error under the field.

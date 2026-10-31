@@ -5,7 +5,7 @@ import { useLiro } from '../provider/liro-provider'
 import { MessageBubble } from './messages'
 
 /*
- * AgentQuestion (P5.3's agent sentence; owner, P3.6): an agent asking the user something — the
+ * AgentQuestion: an agent asking the user something — the
  * agent's name with AgentMark and its question in a Bubble (the Message family's MessageBubble, so
  * an agent's question looks like its messages everywhere), and the way to answer inside the
  * bubble under the question: a Questionnaire (one question with `summary={false}` for a short

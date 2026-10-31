@@ -34,7 +34,7 @@ import { KIND_MESSAGE, STATE_LOOK, type DiagramRunStep } from './diagram-nodes'
 /*
  * The parts of Diagram around its canvas: the kinds' small glyphs (palette and steps list), a
  * run's summary line, the problems with "Go to", the steps as a list (the diagram's accessible
- * alternative, and its view on a phone) and the three small dialogs of editing (D14: one action
+ * alternative, and its view on a phone) and the three small dialogs of editing (one action
  * with one outcome each) — rename a step, connect it to another, label a connection.
  */
 
@@ -644,7 +644,7 @@ export function EditDialog({
   const connection =
     dialog?.type === 'label' ? model.connections.find((each) => each.id === dialog.id) : undefined
   const open = dialog !== null && (step !== undefined || connection !== undefined)
-  // The action as the title, the step or connection it acts on bold under it (P5.28 item 6).
+  // The action as the title, the step or connection it acts on bold under it.
   const title =
     dialog?.type === 'rename'
       ? messages['diagram.renameTitle']

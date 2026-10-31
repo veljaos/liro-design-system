@@ -72,7 +72,7 @@ describe('ImpersonationBar', () => {
     expect(html).not.toContain('Close')
   })
 
-  it('adds the application’s note after the reason (P5.29: an audited view of a tenant)', () => {
+  it('adds the application’s note after the reason (an audited view of a tenant)', () => {
     const html = render(
       <ImpersonationBar
         person="Kvadrat Gradnja d.o.o. administrator"

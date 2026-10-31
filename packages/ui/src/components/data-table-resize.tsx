@@ -12,8 +12,7 @@ import {
 } from './data-table-logic'
 
 /*
- * The column-resize handle (BUILD-PLAN P3.2), the previous Design System's, carried over (the
- * owner, 2026-09-30, docs/decisions.md "Table"):
+ * The column-resize handle:
  * - an invisible 9px strip on the header cell's end edge (inset-inline-end -4px), the header's
  *   full height, col-resize cursor, no text selection, no touch scrolling;
  * - inside it a 3px, fully rounded line, 64% of the header's height, from 18% down, 3px from the
@@ -22,9 +21,9 @@ import {
  *   transition base / standard;
  * - a separator with aria-valuenow / min / max: arrows change the width by 10px (Shift 40px), the
  *   arrow that widens points in the reading direction;
- * - dragging measures from the leading edge (Appendix B.7);
+ * - dragging measures from the leading edge;
  * - a press without moving opens a popover with "Narrower" and "Wider" (−40px / +40px), the
- *   alternative to dragging (WCAG 2.5.7; the owner's deliberate addition, 2026-09-30).
+ *   alternative to dragging (WCAG 2.5.7).
  */
 
 /** A pointer that moves less than this between press and release has not dragged. */

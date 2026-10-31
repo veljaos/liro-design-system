@@ -14,13 +14,13 @@ import { FileName } from './file-name'
 import { Tooltip } from './popover'
 
 /*
- * FileGrid (BUILD-PLAN P5.43): files and folders as tiles with a picture — photos from a site,
+ * FileGrid: files and folders as tiles with a picture — photos from a site,
  * scans — where seeing the file helps choosing it. The list (DataTable) stays the default view.
  * - A tile: radius lg, border.default on the raised surface, 12px padding; a 4:3 picture (the
  *   application's thumbnail, decorative, or the family's 40px icon on surface.sunken), the name
  *   in two lines at most (medium), the application's marks after it, the facts under it (a
  *   folder's items; a file's size and when it changed, through `format`).
- * - Selection is neutral (D17): a checked tile on surface.selected with a border.selected border;
+ * - Selection is neutral: a checked tile on surface.selected with a border.selected border;
  *   the checkbox in the tile's top start corner is the pointer's way (blue only when checked, as
  *   every checkbox). The keyboard: the tiles are one tab stop (roving), the arrows move (forward
  *   in the reading direction, mirrored in right-to-left; up and down by the measured columns),
@@ -167,8 +167,8 @@ export function FileGrid(props: FileGridProps) {
               checked ? 'border-selected bg-surface-selected' : 'border-default bg-surface-raised',
             )}
           >
-            {/* The whole name on hover and focus; on the tile, one line shortened in the middle
-                (P5.93 item 5). */}
+            {/* The whole name on hover and focus; on the tile, one line shortened in the
+                middle. */}
             <Tooltip label={entry.name}>
               <button
                 type="button"

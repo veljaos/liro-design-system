@@ -7,7 +7,7 @@ import type { FreeSlot, UnavailableTime } from './schedule-logic'
 import { tenantLocale } from './story-frames'
 
 /*
- * Fictitious data for the scheduling stories (P5.8): a health clinic in Novi Sad and the timetable
+ * Fictitious data for the scheduling stories: a health clinic in Novi Sad and the timetable
  * of "OŠ Jovan Popović". Not part of the package: nothing in src/index.ts imports this file. No
  * classes here: Storybook compiles classes only from *.stories.tsx files.
  */
@@ -19,7 +19,7 @@ export const SCHEDULE_TODAY = '2026-10-14'
  * A provider in the story's theme and direction with a fixed today, so pictures never change with
  * the date; locale, week start and time zone may be given. The tenant is a Serbian clinic or
  * school: the story's language with the region RS ("en-RS", `tenantLocale`), so the names are the
- * interface's and the week starts on Monday, from the locale (P5.28 item 2).
+ * interface's and the week starts on Monday, from the locale.
  */
 export function ScheduleFrame({
   locale,

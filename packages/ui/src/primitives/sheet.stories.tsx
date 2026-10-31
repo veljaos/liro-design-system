@@ -21,7 +21,7 @@ const meta = {
     docs: {
       description: {
         component: internal(
-          'A side sheet on a logical side: start is the left in left-to-right and the right in right-to-left. Drawer (P2.4).',
+          'A side sheet on a logical side: start is the left in left-to-right and the right in right-to-left. Drawer.',
         ),
       },
     },

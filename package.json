@@ -14,6 +14,7 @@
     "test": "pnpm -r --if-present test && node --test \"scripts/*.test.mjs\"",
     "build": "pnpm -r --if-present build",
     "consumer-check": "node scripts/consumer-check.mjs",
+    "perf": "pnpm --filter liro-perf perf",
     "storybook": "pnpm --filter liro-storybook storybook",
     "build-storybook": "pnpm --filter liro-storybook build-storybook",
     "format": "prettier . --write",

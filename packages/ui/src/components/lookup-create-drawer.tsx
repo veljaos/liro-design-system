@@ -16,8 +16,8 @@ import { SelectField } from './select-field'
 import { TextField } from './text-field'
 
 /*
- * The "+ Create …" panel of LookupField (BUILD-PLAN P5.18, P5.19): a catalogue record made from a
- * document line without leaving the document. A Drawer at the end (AGENTS.md D14: a short edit
+ * The "+ Create …" panel of LookupField: a catalogue record made from a
+ * document line without leaving the document. A Drawer at the end (a short edit
  * with the document still visible; a popover inside a 28px grid cell would cover the lines around
  * it and, being non-modal, would let the focus leave a half-filled record), titled "New <kind>",
  * with the name (the text typed), the unit of measure, the price and the tax category; Cancel,

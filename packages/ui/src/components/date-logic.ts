@@ -2,8 +2,8 @@ import type { LiroFormat } from '../provider/format'
 import type { Entry } from './use-entry'
 
 /*
- * The logic of DateField and DateRangeField, kept apart from the markup so it can be unit-tested
- * (AGENTS.md C7). Values are YYYY-MM-DD strings. The typed text is read by `format.parseDate`;
+ * The logic of DateField and DateRangeField, kept apart from the markup so it can be unit-tested.
+ * Values are YYYY-MM-DD strings. The typed text is read by `format.parseDate`;
  * "today" is the provider's `today` (the tenant's date), never the device's clock.
  */
 
@@ -12,7 +12,7 @@ const BIDI_MARKS = /[\u200e\u200f\u061c]/g
 
 /**
  * A day and a month typed without the year ("7.10.", "07.10", "7/10", "0710"): the quick entry
- * of a date this year (P5.94 item 2). Returns the text with the year of `today` added, written
+ * of a date this year. Returns the text with the year of `today` added, written
  * the way `format.parseDate` reads it, in both places the year can stand in a locale's order —
  * after the day and month (day–month–year, month–day–year) or before them (year–month–day) — or
  * null when the text is not a day and a month alone.
@@ -30,7 +30,7 @@ export function withTodaysYear(text: string, today: string): [string, string] | 
 
 /**
  * Reads the typed text: empty is a valid null, unreadable is an invalid null. With `today` (the
- * provider's date), a day and a month alone ("7.10.") are read in today's year (P5.94 item 2).
+ * provider's date), a day and a month alone ("7.10.") are read in today's year.
  */
 export function readDate(
   text: string,

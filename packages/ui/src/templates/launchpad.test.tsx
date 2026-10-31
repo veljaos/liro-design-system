@@ -81,7 +81,7 @@ describe('live dragging', () => {
     // Far outside the grid: still the nearest slot.
     expect(dragTargetIndex(ltr, { x: 2000, y: -500 })).toBe(2)
   })
-  it('measures on the laid-out slots, so right-to-left needs no mirroring (B.7)', () => {
+  it('measures on the laid-out slots, so right-to-left needs no mirroring', () => {
     // Dragging the first card (at the right in rtl) 216px to the left takes the second place.
     const first = rtl[0]
     if (first === undefined) throw new Error('no slot')
@@ -124,7 +124,7 @@ describe('Launchpad', () => {
     expect(html).not.toContain('href="/fa"')
     expect(html).toContain('aria-disabled="true"')
     expect(html).toContain('Available in Pro')
-    // P5.93: the state line — "Locked", the reason under it.
+    // The state line — "Locked", the reason under it.
     expect(html).toContain('>Locked<')
     expect(html).toContain('3 waiting')
   })

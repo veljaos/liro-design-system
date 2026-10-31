@@ -1,6 +1,6 @@
 /*
- * The logic of SeatingChart (P5.25), apart from the markup so it can be unit-tested (AGENTS.md
- * C7): where the seats of a table stand, a seat's id, who sits where, the counts, the groups of
+ * The logic of SeatingChart, apart from the markup so it can be unit-tested:
+ * where the seats of a table stand, a seat's id, who sits where, the counts, the groups of
  * the guest list and the search. The chart computes no seating of its own: the application says
  * who sits where and decides every change it is told about.
  */
@@ -213,7 +213,7 @@ export function guestGroups<Guest extends SeatingGuest>(
   return groups.filter((group) => group.guests.length > 0)
 }
 
-/** One guest's seat before and after (P5.28 item 9: a seating plan's pending changes). */
+/** One guest's seat before and after (a seating plan's pending changes). */
 export interface SeatingChange {
   guestId: string
   /** The seat saved; null when the guest was not seated. */

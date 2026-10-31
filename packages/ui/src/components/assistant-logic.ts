@@ -1,9 +1,9 @@
 import type { ReactNode } from 'react'
 
 /*
- * The data of an assistant's answer (BUILD-PLAN P5.34) and the pure rules the assistant's
+ * The data of an assistant's answer and the pure rules the assistant's
  * components follow. Nothing here calls a model: an answer is the application's data — blocks of
- * text, small tables, charts, code (P5.93) and sources — and its state. Tested in assistant-logic.test.ts.
+ * text, small tables, charts, code and sources — and its state. Tested in assistant-logic.test.ts.
  */
 
 /**
@@ -93,8 +93,8 @@ export interface AnswerSource {
 }
 
 /**
- * The records the answer came from: one line "Used 4 records" that opens into the links (Sources,
- * P5.93); the same record twice is listed once.
+ * The records the answer came from: one line "Used 4 records" that opens into the links
+ * (Sources); the same record twice is listed once.
  */
 export interface AnswerSourcesBlock {
   kind: 'sources'
@@ -104,7 +104,7 @@ export interface AnswerSourcesBlock {
 }
 
 /**
- * Code, a query, a payload or a log the answer shows (P5.93): a CodeBlock with Copy, highlighted
+ * Code, a query, a payload or a log the answer shows: a CodeBlock with Copy, highlighted
  * where the application gives `CodeHighlighting` (`@veljaos/ui/code`).
  */
 export interface AnswerCodeBlock {

@@ -41,7 +41,7 @@ const meta = {
           'settle in place (`pending`).\n\n' +
           '**When:** the cart of PosShell; a kiosk’s order.\n\n' +
           '**When not:** document lines (EditableGrid); an issued receipt (ReceiptResult; its printed form is liro-folio’s).\n\n' +
-          '**P5.28:** the sale’s kind under the title and a marker for a kind that is not a real ' +
+          'the sale’s kind under the title and a marker for a kind that is not a real ' +
           'sale; the application’s details (the buyer, open advances); a line’s note, its state ' +
           '(“Sent to the bar · 18:15”) and an edit button; the total’s own words (“To pay”). ' +
           'Promotions and an order discount are rows and line texts the application computes.',
@@ -327,8 +327,8 @@ function GrowingCart() {
 }
 
 /**
- * A quantity that goes up (or a new line) is highlighted for a moment, so the tap is seen
- * (P5.90); nothing flashes when the cart first appears.
+ * A quantity that goes up (or a new line) is highlighted for a moment, so the tap is seen;
+ * nothing flashes when the cart first appears.
  */
 export const LineFeedback: Story = {
   name: 'Line feedback, interaction',
@@ -349,7 +349,7 @@ export const LineFeedback: Story = {
 }
 
 /**
- * No toasts for routine actions at a till (P5.93 item 3): a removed line leaves "… removed" and
+ * No toasts for routine actions at a till: a removed line leaves "… removed" and
  * Undo in its place, until the next change.
  */
 export const UndoInPlace: Story = {

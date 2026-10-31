@@ -56,7 +56,7 @@ describe('ValueComparison', () => {
     expect(html.match(/bg-status-warning-bg/g)).toHaveLength(2)
     // A value one source does not have.
     expect(html).toContain('—')
-    // P5.93: one alignment for every column — the values at the start, figures tabular.
+    // One alignment for every column — the values at the start, figures tabular.
     expect(html).not.toContain('text-end')
     expect(html).toContain('tabular-nums')
   })
@@ -152,7 +152,7 @@ describe('ValueComparison', () => {
     expect(two).toContain('grid-cols-2')
   })
 
-  it('chooses the value to keep in each differing row (P5.79)', () => {
+  it('chooses the value to keep in each differing row', () => {
     const table = render(
       <ValueComparison
         label="Values to keep"
@@ -164,7 +164,7 @@ describe('ValueComparison', () => {
       />,
     )
     // Two differing rows, two radios each; one chosen.
-    // P5.93: only the differing rows while choosing; the identical one behind the switch.
+    // Only the differing rows while choosing; the identical one behind the switch.
     expect(table).toContain('Show identical fields (1)')
     expect(table.split('value-comparison-preview')[0]).not.toContain('Invoice 101')
     expect(table.match(/type="radio"/g)).toHaveLength(4)

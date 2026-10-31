@@ -1,8 +1,8 @@
 /*
- * The logic of QuantityStepper (BUILD-PLAN P5.11), kept apart from the markup so it can be
- * unit-tested (AGENTS.md C7). A quantity is a decimal string, never a JavaScript number: 0.1 + 0.2
+ * The logic of QuantityStepper, kept apart from the markup so it can be
+ * unit-tested. A quantity is a decimal string, never a JavaScript number: 0.1 + 0.2
  * is 0.30000000000000004 as a number. Comparing and stepping work on whole integers (`bigint`)
- * scaled by the decimals of both strings, so they are exact. Money is never stepped (D4): this is
+ * scaled by the decimals of both strings, so they are exact. Money is never stepped: this is
  * for counts and quantities only.
  */
 

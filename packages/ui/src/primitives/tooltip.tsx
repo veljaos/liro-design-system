@@ -6,11 +6,10 @@ import { TEXT_DIRECTION } from './classes'
 import { cn } from './cn'
 
 /*
- * A tooltip (shadcn/ui tooltip, adapted). The previous Design System's tooltip (owner's decision,
- * 2026-09-25): inverted colours (surface.inverse, text.onInverse), radius sm (4px), 12px text, an
- * arrow, opening after 300ms. From Mantine Tooltip.css and defaults: padding 5px 10px, 5px from
- * its target, a 4px arrow, no wrapping, fading in 100ms. A tooltip is never the only place
- * important information lives (BUILD-PLAN P2.4).
+ * A tooltip (shadcn/ui tooltip, adapted): inverted colours (surface.inverse, text.onInverse),
+ * radius sm (4px), 12px text, an arrow, opening after 300ms. From Mantine Tooltip.css and defaults:
+ * padding 5px 10px, 5px from its target, a 4px arrow, no wrapping, fading in 100ms. A tooltip is
+ * never the only place important information lives.
  */
 
 /** Wrap an area that has tooltips once; the delay applies to all of them. */
@@ -39,7 +38,7 @@ export function TooltipContent({
         sideOffset={sideOffset}
         {...collision}
         className={cn(
-          // One line as wide as its text; a text longer than the screen's room wraps (P5.28).
+          // One line as wide as its text; a text longer than the screen's room wraps.
           'z-(--liro-layer-tooltip) w-max max-w-(--radix-tooltip-content-available-width) rounded-sm bg-surface-inverse px-2.5 py-[5px] font-sans text-xs text-on-inverse data-[state=closed]:animate-liro-tooltip-out data-[state=delayed-open]:animate-liro-tooltip-in data-[state=instant-open]:animate-liro-tooltip-in',
           TEXT_DIRECTION,
           className,

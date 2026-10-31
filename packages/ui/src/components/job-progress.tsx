@@ -12,9 +12,9 @@ export { clampedDone, jobOutcome } from './job-logic'
 export type { JobOutcome, JobState } from './job-logic'
 
 /*
- * JobProgress (BUILD-PLAN P5.4; docs/decisions.md "Delivery and progress"): a long job — sending
+ * JobProgress: a long job — sending
  * 1.284 invoices, an import, a payroll run — while it runs and after it ends. It generalises
- * "Progress in a dialog" (P3.6): the same Spinner (progress not known) or ProgressBar with the
+ * "Progress in a dialog": the same Spinner (progress not known) or ProgressBar with the
  * count, now with Cancel and the final report; inline in a card or as a Dialog's content.
  *
  * - Running: the job's label (13px semibold), the ProgressBar (5px) with "312 of 1.284" under it

@@ -1,10 +1,11 @@
 import { useLiro } from '../provider/liro-provider'
 
 /*
- * The refetch loader (P3.6): a 14px oval in a slot that is always reserved, so showing or hiding
+ * The refetch loader: a 14px oval in a slot that is always reserved, so showing or hiding
  * it never moves anything, and a polite live region that announces "Updating…" when a refetch
  * starts. DataTable draws it above the table at the end; a container that draws its own row
- * above the table (RegisterPage, ImportWizard's check step, P5.23) draws it there and turns DataTable's slot off. Internal.
+ * above the table (RegisterPage, ImportWizard's check step) draws it there and turns DataTable's
+ * slot off. Internal.
  */
 export function RefetchLoader({ active }: { active: boolean }) {
   const { messages } = useLiro()

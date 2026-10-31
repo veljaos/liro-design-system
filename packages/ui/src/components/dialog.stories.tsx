@@ -18,7 +18,7 @@ const meta = {
     docs: {
       description: {
         component:
-          '**What for:** one action with one outcome, or a read-only view (Appendix B.8): ' +
+          '**What for:** one action with one outcome, or a read-only view: ' +
           'rename, a short confirmation of details, a preview. Title, optional description, ' +
           'content and actions at the end with the main action last. The focus stays inside ' +
           'while it is open and returns to the trigger; Escape, a press outside and the close ' +
@@ -26,7 +26,7 @@ const meta = {
           '**When not:** a short edit with the list still visible (Drawer); anything with more ' +
           'than about ten fields, tabs or attachments (a full page); asking before a ' +
           'destructive action (ConfirmDialog).\n\n' +
-          '**On one record** (P5.28, the owner’s review): the title is the action (“Rename ' +
+          '**On one record**: the title is the action (“Rename ' +
           'report”, “Correct”) and `subject` the record, bold on its own line under it; both ' +
           'name the dialog. The same holds for Drawer.',
       },
@@ -134,7 +134,7 @@ export const DefaultInteraction: Story = {
 
 /**
  * While an action runs: Escape and a press outside do not close it; no close button. A Spinner
- * beside the text says that work is going on (P3.6); it is a `role="status"`.
+ * beside the text says that work is going on; it is a `role="status"`.
  */
 export const NotDismissible: Story = {
   name: 'Not dismissible',
@@ -208,7 +208,7 @@ export const KnownProgress: Story = {
 
 /**
  * Long title and text on a phone (a 390 × 844 frame): a sheet across the screen's full width on
- * its bottom edge, its top corners rounded, the text wrapping (P5.28 item 1).
+ * its bottom edge, its top corners rounded, the text wrapping.
  */
 export const LongTextPhone: Story = {
   name: 'Long text, phone width',
@@ -226,7 +226,7 @@ export const LongTextPhone: Story = {
   ),
 }
 
-/** Text without a single space on a phone (P5.90 item 7): the title, the record and the text wrap. */
+/** Text without a single space on a phone: the title, the record and the text wrap. */
 export const UnbrokenPhone: Story = {
   name: 'Unbroken text, phone width',
   render: () => (
@@ -245,7 +245,7 @@ export const UnbrokenPhone: Story = {
 }
 
 /**
- * A long page on a phone, scrolled to its end, then a dialog (P5.28 items 5 and 11): the page
+ * A long page on a phone, scrolled to its end, then a dialog: the page
  * scrolls inside the phone frame, and the backdrop covers the whole screen — never only a band
  * of it — and the sheet stands on the screen's bottom edge.
  */
@@ -325,7 +325,7 @@ export const Japanese: Story = {
 }
 
 /**
- * English in a right-to-left page (P3.6): the title and the description keep their own order;
+ * English in a right-to-left page: the title and the description keep their own order;
  * the close button stays at the inline end (the left) and the actions at the end of the row.
  */
 export const EnglishInRtl: Story = {

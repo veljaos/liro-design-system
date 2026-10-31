@@ -1,12 +1,12 @@
 import { useLayoutEffect, useRef, type RefObject } from 'react'
 
 /*
- * A steady bottom (P5.23, the owner's review of the bank statement): when the content of a
+ * A steady bottom: when the content of a
  * scrolling area shrinks while the area is scrolled to (or near) its end, the browser clamps the
  * scroll position and everything in view moves down by what was removed — a line of a result
  * that disappears as a second item is unticked made the whole detail jump under the pointer.
  * CSS scroll anchoring does not cover it (it keeps content above the view steady, not a clamp at
- * the end). The rule (docs/decisions.md): content that changes as the user works never moves
+ * the end). The rule: content that changes as the user works never moves
  * what is in view. Here, a spacer after the content holds the space the content gave up, so the
  * scroll position stays; it gives the space back as the user scrolls up (only space under the
  * view goes, so nothing moves), and it is cleared when the area shows something else (`key`).

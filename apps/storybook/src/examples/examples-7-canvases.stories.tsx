@@ -47,13 +47,13 @@ export const HealthDoctorCalendar: Story = {
     await expect(
       within(canvasElement).getAllByText(new RegExp(`${PATIENT.name}, Check-up`))[0],
     ).toBeInTheDocument()
-    // English names, the tenant's digits, the week from Monday (P5.28 item 2); "now" marked.
+    // English names, the tenant's digits, the week from Monday; "now" marked.
     await expect(canvasElement.querySelector('[data-slot="calendar-view"] h2')).toHaveTextContent(
       '12.10.2026. – 18.10.2026.',
     )
     await expect(canvasElement).toHaveTextContent('Wednesday, October 14, 2026')
     await expect(within(canvasElement).getByRole('img', { name: 'Now, 09:40' })).toBeInTheDocument()
-    // "Now" is only its time in the gutter, which no appointment covers (P5.94 item 16): no line
+    // "Now" is only its time in the gutter, which no appointment covers: no line
     // across the days; the tenant's 24-hour clock with two digits.
     await expect(canvasElement.querySelector('[data-slot="now-time"]')).toHaveTextContent('09:40')
     await expect(canvasElement.querySelector('[data-slot="now-marker"]')).toBeNull()
@@ -182,7 +182,7 @@ export const PosPayInteraction: Story = {
 /**
  * Phone: the products first (the most sold chip, the search, the tiles with their counts in the
  * sale) and the sale as a compact bar at the bottom — "Order · 6 items · 1.907,00 RSD" — that
- * expands into the cart with "Charge" (P5.90 item 20).
+ * expands into the cart with "Charge".
  */
 export const PosPhone: Story = {
   name: 'POS checkout, phone',
@@ -219,7 +219,7 @@ async function expectNoPageScroll(canvasElement: HTMLElement) {
 /**
  * Bistro Dunav at 19:40 on a Tuesday: the hall, the terrace and the bar, each table in the
  * restaurant's state — free, occupied (how many, since when), reserved (for when, how many); no
- * "Needs cleaning" (P5.90 item 20). One tap on a table opens its tab; table 7 is chosen from the
+ * "Needs cleaning". One tap on a table opens its tab; table 7 is chosen from the
  * keyboard: its party, "Move to table…" and "Open tab".
  */
 export const RestaurantService: Story = {
@@ -261,7 +261,7 @@ function deskPlay(
     await settle()
     await check(canvasElement)
     // The page at rest before the accessibility check: a hover or a fade that the last step
-    // started is measured at its end, not halfway (P5.31).
+    // started is measured at its end, not halfway.
     await settle()
   }
 }
@@ -280,7 +280,7 @@ function phonePlay(
 
 /**
  * Bistro Dunav's table 7: food from the kitchen, drinks from the bar, the dessert promotion; the
- * desserts held for later (P5.90 item 20: sent with "Send held", not when the waiter leaves).
+ * desserts held for later (sent with "Send held", not when the waiter leaves).
  */
 const RESTAURANT_TAB_CHECK = async (canvasElement: HTMLElement) => {
   await expect(canvasElement).toHaveTextContent('Sent to the kitchen · 19:01')
@@ -297,7 +297,7 @@ export const RestaurantTab: Story = {
 
 /**
  * On a phone the menu comes first — the most sold items, each with its count in the tab — and the
- * tab is the bar at the bottom ("Order · 6 items"), opened with one tap (P5.90 item 20).
+ * tab is the bar at the bottom ("Order · 6 items"), opened with one tap.
  */
 export const RestaurantTabPhone: Story = {
   name: 'Restaurant tab, table 7, phone',
@@ -313,9 +313,9 @@ export const RestaurantTabPhone: Story = {
 }
 
 /**
- * Bistro Dunav (P5.90 item 20): table 7's tab from the floor, a krempita added — "New" until the
- * waiter leaves; back on the floor table 7 is chosen and says what went to the kitchen (P5.93
- * item 3: no toast), and one tap on table 7 opens its tab again with the krempita sent. Removing
+ * Bistro Dunav: table 7's tab from the floor, a krempita added — "New" until the
+ * waiter leaves; back on the floor table 7 is chosen and says what went to the kitchen (no
+ * toast), and one tap on table 7 opens its tab again with the krempita sent. Removing
  * a line leaves "… removed · Undo" in its place.
  */
 export const RestaurantTabInteraction: Story = {
@@ -351,7 +351,7 @@ export const RestaurantTabInteraction: Story = {
 }
 
 /**
- * Kvadrat Gradnja's "Residential building Liman 4" on 14.10.2026 (P5.37): the figures, then the
+ * Kvadrat Gradnja's "Residential building Liman 4" on 14.10.2026: the figures, then the
  * plan — nine phases with their tasks and milestones, each phase's budget and what was spent
  * beside the timeline, today's marker, Floors 3–4 at risk. Every row has its Change menu.
  */
@@ -378,15 +378,14 @@ export const ProjectTimeline: Story = {
       canvas.getByRole('img', { name: /^Now, 14\.10\.2026\. 09:40$/ }),
     ).toBeInTheDocument()
     // Today's date on the time scale, in view when the plan opens (at its start, or at the
-    // column before today's); short bars carry their names beside them, never cut (P5.93 items 8
-    // and 34).
+    // column before today's); short bars carry their names beside them, never cut.
     const today = canvasElement.querySelector('[data-slot="now-time"]')
     await expect(today).toHaveTextContent('14.10.2026.')
     const chart = canvasElement.querySelector('.wx-chart')?.getBoundingClientRect()
     const tag = today?.getBoundingClientRect()
     await expect(chart !== undefined && tag !== undefined && tag.left >= chart.left).toBe(true)
     await expect(chart !== undefined && tag !== undefined && tag.right <= chart.right).toBe(true)
-    // It covers no label of the scale: "Oct" stays readable (P5.94 item 6).
+    // It covers no label of the scale: "Oct" stays readable.
     const tagText = today?.querySelector('span')?.getBoundingClientRect()
     for (const cell of canvasElement.querySelectorAll('.wx-scale .wx-cell')) {
       // The text itself: in a mirrored chart a label's span fills its cell.
@@ -404,7 +403,7 @@ export const ProjectTimeline: Story = {
         text.top < tagText.bottom
       await expect(covers).toBe(false)
     }
-    // The table's rows and the timeline's rows share every top and bottom (P5.94 item 6).
+    // The table's rows and the timeline's rows share every top and bottom.
     const areaTop = canvasElement.querySelector('.wx-area')?.getBoundingClientRect().top ?? 0
     const rows = [...canvasElement.querySelectorAll('[data-gantt-row]')]
     for (const [index, row] of rows.entries()) {

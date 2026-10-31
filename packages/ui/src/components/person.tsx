@@ -5,12 +5,10 @@ import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 
 /*
- * PersonAvatar and PersonName (BUILD-PLAN P2.8), the previous Design System's, carried over
- * (owner's decision, 2026-09-28, docs/decisions.md "Display"): Mantine's light avatar, neutral
- * since P3.6 (surface.sunken with text.primary; blue is for actions), radius xl (16px), 38px (size 'md'), a photo when
- * given; decorative by default (the name is written beside it), unless `alt` is given. Initials
- * from the first letter of the FIRST and the LAST word ("Ana Marija Jovanović" → AJ, Appendix B.9;
- * the old code took the first two words).
+ * PersonAvatar and PersonName: Mantine's light avatar, neutral
+ * (surface.sunken with text.primary; blue is for actions), radius xl (16px), 38px (size 'md'), a
+ * photo when given; decorative by default (the name is written beside it), unless `alt` is given.
+ * Initials from the first letter of the FIRST and the LAST word ("Ana Marija Jovanović" → AJ).
  */
 
 /**

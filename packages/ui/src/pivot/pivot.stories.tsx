@@ -85,7 +85,7 @@ const meta = {
           'layout is reported through `onChange`; the application computes the cells, the ' +
           'subtotals and the totals and passes them back as decimal strings (`result`). The ' +
           'library never adds, averages or counts; null is “—”.\n\n' +
-          '**Simple first** (P5.93): one card — the application’s suggested views (`views`) as ' +
+          '**Simple first**: one card — the application’s suggested views (`views`) as ' +
           'its first row, the layout in one line of words, few buttons (Fields, one Expand all ' +
           '/ Collapse all, Export), then the grid. The user starts from a view.\n\n' +
           '**The chooser** (“Fields”, closed by default): an end sheet (full screen on phones) ' +

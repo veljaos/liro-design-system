@@ -12,7 +12,7 @@ import { TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 
 /*
- * LookupField (BUILD-PLAN P5.19): stories over a catalogue of 20,011 records (the story data's),
+ * LookupField: stories over a catalogue of 20,011 records (the story data's),
  * searched by a pretend server that answers after 400ms.
  */
 
@@ -434,7 +434,7 @@ export const ManyResults: Story = {
   },
 }
 
-/** Read only (P5.93): the read-only look of every field; nothing chosen shows "—". */
+/** Read only: the read-only look of every field; nothing chosen shows "—". */
 export const ReadOnly: Story = {
   name: 'Read only',
   render: () => (

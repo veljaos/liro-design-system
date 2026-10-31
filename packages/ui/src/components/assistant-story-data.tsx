@@ -3,7 +3,7 @@ import type { AnswerBlock } from './assistant-logic'
 import { DateText, MoneyText, NumberText } from './display-text'
 
 /*
- * Story data of the assistant's components (P5.34): fictitious answers of a fictitious company's
+ * Story data of the assistant's components: fictitious answers of a fictitious company's
  * assistant. Not part of the package. Every figure is written by the stories' provider format.
  */
 

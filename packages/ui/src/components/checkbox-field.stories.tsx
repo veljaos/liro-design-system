@@ -12,11 +12,11 @@ const meta = {
       description: {
         component:
           '**What for:** a yes/no choice that takes effect when the form is saved, with its ' +
-          'label beside the box. Read only (the one state of a field that cannot change, P5.93) ' +
+          'label beside the box. Read only (the one state of a field that cannot change) ' +
           'draws the box grey with its state still shown; it stays focusable and nothing ' +
           'changes.\n\n' +
           '**When not:** a setting that applies at once (SwitchField); one choice of several ' +
-          '(RadioGroupField); selecting table rows (DataTable, P3.1).',
+          '(RadioGroupField); selecting table rows (DataTable).',
       },
     },
   },

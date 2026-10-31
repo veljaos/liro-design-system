@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 
 /*
  * The logic of ComboboxField and MultiSelectField, kept apart from the markup so it can be
- * unit-tested (AGENTS.md C7): keyboard movement through the options, local filtering, and a
+ * unit-tested: keyboard movement through the options, local filtering, and a
  * debounced search callback.
  */
 

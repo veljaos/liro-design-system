@@ -10,7 +10,7 @@ const meta = {
     docs: {
       description: {
         component: internal(
-          'Tabs with a 2px line and a brand edge under the active tab; arrow keys follow the direction. Tabs (P2.6), FormTabs (P3.5).',
+          'Tabs with a 2px line and a brand edge under the active tab; arrow keys follow the direction. Tabs, FormTabs.',
         ),
       },
     },

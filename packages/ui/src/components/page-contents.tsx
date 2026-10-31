@@ -7,7 +7,7 @@ import { currentEntry, type ContentsEntry } from './help-logic'
 import { usePhone } from './use-phone'
 
 /*
- * PageContents (BUILD-PLAN P5.30 e): "On this page" — the headings of one long reading page (a
+ * PageContents: "On this page" — the headings of one long reading page (a
  * help article, a policy, a guide) as links, the current one marked while the reader scrolls.
  * For one page's headings; a document's structure to browse is TreeView, a legal act's is
  * LegalContents, and a detail page's sections are the SectionBar.
@@ -15,7 +15,7 @@ import { usePhone } from './use-phone'
  *   text.secondary). The entries are links (sm, text.secondary, hover text.primary), a
  *   subsection (level 3) indented 12px; each 4px 12px with a 2px start line in border.subtle.
  *   The current entry is text.primary medium with the line in border.selected and
- *   `aria-current="location"` — neutral, never blue (D17: it is a place, not an action).
+ *   `aria-current="location"` — neutral, never blue (it is a place, not an action).
  * - A press scrolls to the heading (smoothly, unless the user reduces motion), moves the focus
  *   to it (the heading needs `tabIndex={-1}`; RichText's `headingIds` gives it) and keeps that
  *   entry current until the scroll ends. The headings need a scroll margin under the shell's

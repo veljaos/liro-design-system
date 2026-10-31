@@ -1,9 +1,9 @@
 /*
- * Reading a typed time of day (P5.90 item 12), without React: the one parser of TimeField,
+ * Reading a typed time of day, without React: the one parser of TimeField,
  * ClockRecordList's correction and any other place a time is typed. Quick entry, as the date
  * fields read "010326": "630", "0630" and "6:30" are 06:30, "1430" is 14:30; with seconds "630" is
  * 06:30:00. The value is a clock time of the tenant, "HH:MM" or "HH:MM:SS" on a 24-hour clock;
- * unreadable text is null (B.4), never midnight.
+ * unreadable text is null, never midnight.
  */
 
 /** How a time is read. */

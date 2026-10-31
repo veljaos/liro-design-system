@@ -1,5 +1,5 @@
 /*
- * Sample data for the document block stories (P5.18): Kvadrat Gradnja d.o.o.'s final invoice
+ * Sample data for the document block stories: Kvadrat Gradnja d.o.o.'s final invoice
  * F-2026-0418 to Vojvođanka Mlin a.d. and its references. Fictitious; legal texts and codes are
  * illustrative. Not part of the package: nothing in src/index.ts imports this file. No classes
  * here: Storybook compiles classes only from *.stories.tsx files.
@@ -56,7 +56,7 @@ export const REFERENCES: DocumentReferenceGroup[] = [
   },
 ]
 
-/** One line of the final invoice, with its type (P5.18). */
+/** One line of the final invoice, with its type. */
 export interface FinalLine {
   id: string
   type: LineType

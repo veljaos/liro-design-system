@@ -2,7 +2,7 @@ import type { GazetteIssue } from './gazette-issues'
 import type { LegalStatus } from './legal-model'
 
 /*
- * Story data of GazetteIssues (P5.27). Every act, number and text is invented and labelled
+ * Story data of GazetteIssues. Every act, number and text is invented and labelled
  * "Illustrative": the "Illustrative Gazette" is no real gazette. Not part of the package.
  */
 

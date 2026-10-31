@@ -316,7 +316,7 @@ describe('ResourceSchedule axis', () => {
   })
 })
 
-describe('ResourceSchedule days axis (P5.25)', () => {
+describe('ResourceSchedule days axis', () => {
   // Fourteen days as one segment from the first day's midnight, a slot a day.
   const axis = { days: ['2026-10-06'], dayStart: 0, dayEnd: 14 * 1440, slotMinutes: 1440 }
   const days = { axis, resources: 3, scale: 'days' as const }
@@ -427,7 +427,7 @@ describe('dayListSide', () => {
   })
 })
 
-describe('now (P5.28 item 10)', () => {
+describe('now', () => {
   it('reads the application’s clock: a time of today, a local value or an instant', () => {
     expect(nowMoment('10:05', '2026-10-06', ZONE)).toEqual({ day: '2026-10-06', minutes: 605 })
     expect(nowMoment('2026-10-14T09:40', '2026-10-06', ZONE)).toEqual({
@@ -475,7 +475,7 @@ describe('now (P5.28 item 10)', () => {
   })
 })
 
-describe('scheduleSearchMatches: the phone lists search (P5.90 item 19)', () => {
+describe('scheduleSearchMatches: the phone lists search', () => {
   it('matches every word anywhere in the texts, without case or accents', () => {
     const texts = ['Đorđević Marija', '2 adults · Booking.com', 'Room 412']
     expect(scheduleSearchMatches('', texts, 'sr-Latn-RS')).toBe(true)
@@ -493,7 +493,7 @@ describe('scheduleSearchMatches: the phone lists search (P5.90 item 19)', () => 
   })
 })
 
-describe('the time of "now" over a scale label (P5.93 item 8)', () => {
+describe('the time of "now" over a scale label', () => {
   it('covers a label it overlaps, not one beside it', () => {
     expect(tagCovers(100, 10, 95, 110)).toBe(true)
     expect(tagCovers(100, 10, 111, 130)).toBe(false)

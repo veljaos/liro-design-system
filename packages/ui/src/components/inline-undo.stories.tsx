@@ -17,7 +17,7 @@ const meta = {
         component:
           '**What for:** the answer to a routine, reversible action, in the place where it ' +
           'happened: what changed, in the application’s words, and Undo — "Krempita removed · ' +
-          'Undo" in a cart, "Guests seated at 19:40 · Undo" in a table’s panel (P5.93). Nothing ' +
+          'Undo" in a cart, "Guests seated at 19:40 · Undo" in a table’s panel. Nothing ' +
           'to dismiss, nothing that covers the screen; the application takes it away at the next ' +
           'change. The words are announced politely; the button is described by them.\n\n' +
           '**When:** a till, a restaurant’s floor, any quick flow where a toast would cover the ' +

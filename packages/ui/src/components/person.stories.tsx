@@ -10,12 +10,12 @@ const meta = {
       description: {
         component:
           '**PersonAvatar** — a photo, or the initials of the first and the last word of the ' +
-          'name ("Ana Marija Jovanović" → AJ; Appendix B.9), in a neutral grey (blue is kept for actions). ' +
+          'name ("Ana Marija Jovanović" → AJ), in a neutral grey (blue is kept for actions). ' +
           'Decorative by default, because the name is written beside it; give `alt` when it ' +
           'stands alone. **PersonName** — the name with its avatar and an optional line (a role, ' +
           'an e-mail).\n\n' +
-          '**When not:** several people at once (PresenceAvatars, P5.2); marking an agent ' +
-          '(AgentMark, P5.2).',
+          '**When not:** several people at once (PresenceAvatars); marking an agent ' +
+          '(AgentMark).',
       },
     },
   },

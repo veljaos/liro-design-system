@@ -163,7 +163,7 @@ export const LoadingInteraction: Story = {
   },
 }
 
-/** Signing in is paused (P5.93): the address read-only, every button unavailable, why in words. */
+/** Signing in is paused: the address read-only, every button unavailable, why in words. */
 export const Unavailable: Story = {
   name: 'Unavailable with reason',
   args: {

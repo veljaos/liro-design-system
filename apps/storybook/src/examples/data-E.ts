@@ -1,5 +1,5 @@
 /*
- * The data of group E's example screens (P5.19, P5.20): Kvadrat Gradnja d.o.o.'s customer
+ * The data of the catalogue example screens: Kvadrat Gradnja d.o.o.'s customer
  * catalogue (the dataset's customers and 50,000 generated ones), a customer import and the VAT
  * return for September 2026. Amounts are decimal strings, added here in whole paras (BigInt) —
  * the screens play the application; components never add.
@@ -39,7 +39,7 @@ export interface Customer {
 }
 
 /**
- * The dataset's customers (P4.8): their open balances are the open amounts of the invoice list
+ * The dataset's customers: their open balances are the open amounts of the invoice list
  * (Panonija Agro: F-2026-0412 135.954,00 + F-2026-0403 247.809,12).
  */
 export const KNOWN_CUSTOMERS: Customer[] = [
@@ -278,7 +278,7 @@ export function csvColumns(text: string): { id: string; name: string; sample?: s
  * Reads a chosen file as the application would (for the example): a text CSV whose first row
  * names at least two columns separated by ";" gives its columns; anything else — a damaged or
  * binary file, an Excel file the example cannot open, a text without columns — gives the error in
- * words, never what was read (P5.90 item 7).
+ * words, never what was read.
  */
 export function readImportFile(
   name: string,
@@ -465,7 +465,7 @@ export const SEPTEMBER_PURCHASES_20 = [
   },
 ] as const
 
-/** F-2026-0412's 10% line and its exempt deposit (P4.8 TOTALS). */
+/** F-2026-0412's 10% line and its exempt deposit. */
 export const SEPTEMBER_10 = { base: '8500.00', exempt: '2700.00' }
 
 /** September's advance e-invoice at 20% (the return's 1.2.1). */

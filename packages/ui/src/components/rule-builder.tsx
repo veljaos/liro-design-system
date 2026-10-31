@@ -57,8 +57,7 @@ import { DROP_LINE, DROP_ZONE_ACTIVE, LIFTED, useListDrag } from './use-list-dra
 import { usePhone } from './use-phone'
 
 /*
- * RuleBuilder (BUILD-PLAN P5.78; P5.93 item 46, the owner's fourth review: "redesign as BLOCKS,
- * like Zapier / Make"): an automation rule as blocks joined by a line —
+ * RuleBuilder: an automation rule, like Zapier / Make, as blocks joined by a line —
  * - "In words" first: the rule as the application writes it (`summary`), announced politely.
  * - When: what starts the rule, one pill.
  * - If: each condition one sentence of pills — [Number of lines] [is more than] [20] — with no
@@ -712,7 +711,7 @@ export function RuleBuilder(props: RuleBuilderProps) {
                 )
               }}
             />
-            {/* The test comes once the field is chosen (P5.93: the minimum first). */}
+            {/* The test comes once the field is chosen (the minimum first). */}
             {field !== undefined && (
               <SelectField
                 label={messages['rule.operatorOf'](name)}

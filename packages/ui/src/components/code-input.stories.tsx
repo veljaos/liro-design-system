@@ -206,7 +206,7 @@ export const WithError: Story = {
   },
 }
 
-/** Read only (P5.93): the boxes in the read-only look of every field, focusable, no hint. */
+/** Read only: the boxes in the read-only look of every field, focusable, no hint. */
 export const ReadOnly: Story = {
   name: 'Read only',
   args: { readOnly: true, defaultValue: '482913' },

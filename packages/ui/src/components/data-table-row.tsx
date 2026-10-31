@@ -13,7 +13,7 @@ import { LINE_TYPE_TEXT, spansRow, type LineType } from './line-types'
 import { STICKY_START, STICKY_START_AFTER_SELECT } from './sticky-head'
 
 /*
- * One row of DataTable's table layout, memoised (P5.20: long lists stay responsive). A row draws
+ * One row of DataTable's table layout, memoised (long lists stay responsive). A row draws
  * again only when what it shows changes: its record, its place (aria-rowindex), its selection,
  * the line after it (a subtotal), or the table's columns and settings. A scroll draws only the
  * rows that enter the window; selecting a row draws that row. Handlers and `getRowLabel` are read
@@ -26,18 +26,18 @@ export const ALIGN = { start: 'text-start', center: 'text-center', end: 'text-en
 export const CELL = 'px-4 py-3'
 
 /**
- * A selected row (P3.6, owner): besides its neutral background, a 3px bar in border.selected on
+ * A selected row: besides its neutral background, a 3px bar in border.selected on
  * the row's start edge, drawn by the first cell, so selected differs from hovered by shape too.
- * A sticky first cell (in a card, P5.28) is positioned already and stays sticky.
+ * A sticky first cell (in a card) is positioned already and stays sticky.
  */
 const SELECTED_ROW =
   "[&>td:first-child:not(.sticky)]:relative [&>td:first-child]:before:absolute [&>td:first-child]:before:inset-y-0 [&>td:first-child]:before:start-0 [&>td:first-child]:before:border-0 [&>td:first-child]:before:border-s-[3px] [&>td:first-child]:before:border-solid [&>td:first-child]:before:border-selected [&>td:first-child]:before:content-['']"
 
 /**
- * A subtotal's cells (P5.18): the rule above in border.strong (line-types' SUBTOTAL_RULE), the
+ * A subtotal's cells: the rule above in border.strong (line-types' SUBTOTAL_RULE), the
  * row line below as every row's; the bottom width is set by the row.
  */
-/** What the line is, under its first cell (P5.18). */
+/** What the line is, under its first cell. */
 const LINE_KIND = cn('block text-xs text-secondary', TEXT_DIRECTION)
 
 const SUBTOTAL_LINE = 'border-0 border-t border-solid border-t-strong border-b-default'
@@ -77,12 +77,12 @@ export interface LineClasses {
   cells: readonly [readonly string[], readonly string[]]
   select: readonly [string, string]
   actions: readonly [string, string]
-  /** The row's own surface when its first column is sticky (P5.28 item 4), else ''. */
+  /** The row's own surface when its first column is sticky, else ''. */
   row: string
 }
 
 /**
- * The sticky first column (P5.28 item 4): in a card the selection column and the first column stay
+ * The sticky first column: in a card the selection column and the first column stay
  * at the start while the table scrolls sideways, on the row's surface (`bg-inherit`: the row is
  * raised, sunken under the pointer, selected when selected), under the header and over the cells.
  * The selection column is 48px wide (16px padding, the 16px checkbox), so the first column stands
@@ -108,7 +108,7 @@ export function lineClasses<Row extends RowData>(
         CELL,
         stickyStart !== null &&
           index === 0 && [stickyStartFirst(stickyStart.selectable), 'bg-inherit'],
-        // A column's own minimum width stands on its header cell (P5.23).
+        // A column's own minimum width stands on its header cell.
         column.minWidth === undefined && 'min-w-16',
         rowLine,
         ALIGN[column.align ?? 'start'],
@@ -236,7 +236,7 @@ function TableRowView<Row extends RowData>({
     <tr
       {...(type === 'line' ? {} : { 'data-line': type })}
       aria-selected={selectable ? selected : undefined}
-      // The selection's own text colours (P4.3): tokens.css lightens the few that fail on it.
+      // The selection's own text colours: tokens.css lightens the few that fail on it.
       data-liro-surface={selected ? 'selected' : undefined}
       data-index={dataIndex}
       aria-rowindex={rowIndex}
@@ -282,7 +282,7 @@ function TableRowView<Row extends RowData>({
         <td key={column.id} className={shared.classes.cells[line][cellIndex]}>
           {/* The application's content takes its direction from itself; the cell keeps its side. */}
           <span className={TEXT_ISOLATE}>{column.cell(original)}</span>
-          {/* What the line is (P5.18): small secondary text under the first cell, no colour. */}
+          {/* What the line is: small secondary text under the first cell, no colour. */}
           {cellIndex === 0 && kind !== undefined && kind !== null && (
             <span data-slot="line-kind" className={LINE_KIND}>
               {kind}

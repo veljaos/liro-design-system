@@ -75,10 +75,10 @@ const meta = {
           'beside a partner’s statement, a payment as each side booked it; or three sources — ' +
           'an order, its receipt and the invoice (the three-way match). It compares nothing: ' +
           'which rows differ, and why, is the application’s (`differs`, `note`). Phones show one ' +
-          'card per row, each value labelled with its source. To merge two records (P5.79), ' +
+          'card per row, each value labelled with its source. To merge two records, ' +
           '`chosen` and `onChoose` make each differing row a choice of the value to keep (radio ' +
           'buttons, the kept value the neutral selection); `chosen` alone shows what was kept.\n\n' +
-          '**Merging (P5.93):** only the differing fields by default (“Show identical fields” ' +
+          '**Merging:** only the differing fields by default (“Show identical fields” ' +
           'brings back the rest); one press on a value keeps it, marked “Kept”; “Keep all from …” ' +
           '(`onChooseAll`) answers every row from one record; the merged record is previewed ' +
           'under the comparison as the choices are made; the merge — it cannot be undone — is ' +
@@ -211,7 +211,7 @@ const THREE_WAY: ComparisonRow[] = [
   },
 ]
 
-/** Three sources: an order, its receipt and the invoice (the three-way match, P5.49). */
+/** Three sources: an order, its receipt and the invoice (the three-way match). */
 export const ThreeSources: Story = {
   name: 'Three sources',
   args: {
@@ -310,7 +310,7 @@ export const Japanese: Story = {
   ],
 }
 
-// ── P5.79 auto: choosing the values to keep ──
+// ── Choosing the values to keep ──
 
 /** Two records of one supplier, the values that differ chosen one by one (fictitious). */
 const MERGE_ROWS: ComparisonRow[] = [
@@ -353,7 +353,7 @@ function Choosing(props: Parameters<typeof ValueComparison>[0]) {
 }
 
 /**
- * The application's merge around the comparison (P5.93): Merge only once every differing field
+ * The application's merge around the comparison: Merge only once every differing field
  * is chosen, then one confirmation — a merge cannot be undone.
  */
 function MergeScreen(props: Parameters<typeof ValueComparison>[0]) {
@@ -428,7 +428,7 @@ const MERGE_ARGS = {
 } as const
 
 /**
- * Merging two records (P5.79): each differing row's values are radio buttons; the kept value is
+ * Merging two records: each differing row's values are radio buttons; the kept value is
  * the neutral selection, a row still to choose stays on the warning background.
  */
 export const ChooseValues: Story = {
@@ -445,7 +445,7 @@ export const ChooseValues: Story = {
 }
 
 /**
- * Merging two records (P5.93): only the four differing fields (the tax number is the same, behind
+ * Merging two records: only the four differing fields (the tax number is the same, behind
  * "Show identical fields"), "Keep all from …" for either record, two values kept ("Kept"), the
  * merged record previewed under them, and Merge waiting for the other two.
  */

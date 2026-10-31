@@ -5,7 +5,7 @@ import { useLiro } from '../provider/liro-provider'
 import { DateText, MoneyText } from './display-text'
 
 /*
- * DocumentSource (P5.23, the owner's review of Phase 5 part 1): the document a correcting or
+ * DocumentSource: the document a correcting or
  * cancelling document refers to — a decrease, an increase, a cancellation document, a credit
  * note, a return — shown in DocumentPage's header at the counterparty's level (the `source`
  * slot), because it is the most important fact of such a page. The label from the application
@@ -43,7 +43,7 @@ export interface DocumentSourceProps {
   className?: string
 }
 
-/** Link colours named for every state (P4.4); 24px high as a target. */
+/** Link colours named for every state; 24px high as a target. */
 const LINK =
   'inline-flex min-h-6 items-center gap-1 rounded-sm text-sm font-semibold text-link no-underline visited:text-link hover:text-link hover:underline active:text-link'
 

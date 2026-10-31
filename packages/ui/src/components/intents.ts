@@ -22,7 +22,7 @@ import {
 import type { ComponentType, SVGProps } from 'react'
 
 /**
- * The colour of an action by its purpose (BUILD-PLAN Appendix A.6). Blue means confirm, red
+ * The colour of an action by its purpose. Blue means confirm, red
  * means destructive, everywhere.
  */
 export type Family =
@@ -50,7 +50,7 @@ export type IconComponent = ComponentType<SVGProps<SVGSVGElement>>
 export interface IntentInfo {
   family: Family
   emphasis: Emphasis
-  /** Whether the action asks for confirmation (ConfirmDialog, P2.4). */
+  /** Whether the action asks for confirmation (ConfirmDialog). */
   confirms: boolean
   icon: IconComponent
   /** A direction arrow, drawn mirrored in right-to-left. */
@@ -72,7 +72,7 @@ function info(
   }
 }
 
-/** The interface intents of Appendix A.6: each with family, default emphasis, confirmation and icon. */
+/** The interface intents: each with family, default emphasis, confirmation and icon. */
 export const INTENTS = {
   create: info('primary', 'primary', Plus),
   save: info('primary', 'primary', Save),

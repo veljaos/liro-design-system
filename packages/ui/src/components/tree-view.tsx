@@ -22,20 +22,20 @@ import { useTree, type TreeBaseProps } from './use-tree'
 import { spacersBetween } from './virtual-rows'
 
 /*
- * TreeView (BUILD-PLAN P5.9): nodes in a hierarchy — a chart of accounts, warehouse locations,
+ * TreeView: nodes in a hierarchy — a chart of accounts, warehouse locations,
  * org units, a course's structure. The tree shows what it is given and reports what the user
  * does; what a node means is the application's.
  * - Rows: 13px text, at least 32px high (44px on phones), 20px of indent per level (16px on
  *   phones), from the leading edge. Before the name a 24px chevron (32px on phones) pointing to
  *   the trailing side, turned down when open, mirrored in right-to-left; a leaf keeps the room.
- *   One plain chevron, never in a grey box (P5.93 item 36). The node's code (tabular, left to
+ *   One plain chevron, never in a grey box. The node's code (tabular, left to
  *   right) in a column of its own, 8px before its name: a long name wraps under its own start (a
  *   hanging indent), never under the code or the chevron. A description line under the name, and
  *   a node that cannot be selected says why in words (`disabledReason`). The first line stands in
  *   the middle of the chevron's box (`FIRST_LINE`), so a TreeTable's figures align with it.
  * - The WAI-ARIA tree pattern (`tree-logic.ts`, tested): one row in the tab order (roving focus);
  *   ArrowDown / ArrowUp, Home / End; the arrow toward the trailing side opens a node or enters it,
- *   the other closes it or goes to its parent (mirrored in right-to-left, Appendix B.7); `*` opens
+ *   the other closes it or goes to its parent (mirrored in right-to-left); `*` opens
  *   every sibling; typing a name's (or code's) first letters moves to it; Enter or Space selects
  *   (or, without selection, opens and closes). `aria-level`, `aria-setsize`, `aria-posinset`,
  *   `aria-expanded` on every row, so a flat list of drawn rows still reads as a tree.
@@ -43,7 +43,7 @@ import { spacersBetween } from './virtual-rows'
  *   is opened; a loading row (the small Spinner, "Loading…") stands under it until the children
  *   arrive, an error row (`loadError`) with "Try again" when they could not be loaded.
  * - Selection (`selectionMode`): 'single' — the selected row on surface.selected with the 3px
- *   border.selected bar at its start (D17: never blue); 'multiple' — a checkbox per row, a branch
+ *   border.selected bar at its start (never blue); 'multiple' — a checkbox per row, a branch
  *   checked, unchecked or mixed from the selected ids (`treeCheckStates`; the application may
  *   pass a node's own `checked`), toggled with its loaded descendants (`toggleTreeSelection`).
  * - Long trees: with `maxHeight` the tree scrolls inside it and draws only the rows in view
@@ -59,7 +59,7 @@ export interface TreeViewProps<Data = undefined> extends TreeBaseProps<Data> {
   empty?: ReactNode
   /**
    * The tree scrolls inside this height (CSS length, e.g. "60vh") and draws only the rows in
-   * view: for thousands of nodes. Not on phones: there the tree flows with the page (P5.90).
+   * view: for thousands of nodes. Not on phones: there the tree flows with the page.
    */
   maxHeight?: string
   /** 'phone' draws the touch layout (44px rows); default by the viewport (below 48em). */
@@ -79,7 +79,7 @@ export const TREE_INDENT = 20
 /**
  * The padding that puts a row's first line of text (text-sm) in the middle of the 24px chevron
  * box (32px on phones), whatever the script's line height; TreeTable's figures take it too, so a
- * row's numbers stand on its name's line (P5.93 item 36).
+ * row's numbers stand on its name's line.
  */
 export const FIRST_LINE = 'py-[calc((24px-1lh)/2)]'
 /** FIRST_LINE on phones (the 32px chevron box). */
@@ -91,7 +91,7 @@ export type TreeState<Data> = ReturnType<typeof useTree<Data>>
 
 /**
  * A selected row (single selection): besides surface.selected, a 3px border.selected bar on its
- * start edge (as DataTable's selected row, D17).
+ * start edge (as DataTable's selected row).
  */
 export const SELECTED_BAR =
   "relative before:absolute before:inset-y-0 before:start-0 before:border-0 before:border-s-[3px] before:border-solid before:border-selected before:content-['']"
@@ -180,14 +180,14 @@ export function TreeItemContent<Data>({
   const { node } = row
   const Chevron = direction === 'rtl' ? ChevronLeft : ChevronRight
   const check = tree.checks?.get(node.id) ?? false
-  // The first line stands in the middle of the chevron's box, whatever the script's line height
-  // (P5.93 item 36): TreeTable's figures take the same padding, so they align with it.
+  // The first line stands in the middle of the chevron's box, whatever the script's line height:
+  // TreeTable's figures take the same padding, so they align with it.
   const firstLine = phone ? FIRST_LINE_PHONE : FIRST_LINE
   return (
     <div style={style} className="flex min-w-0 items-start gap-1">
       {row.expandable ? (
         // For the pointer only (the row's click handler, `onTreeRowClick`): the row's keys open and
-        // close it (the tree pattern). One plain chevron, never in a box (P5.93 item 36).
+        // close it (the tree pattern). One plain chevron, never in a box.
         <span
           aria-hidden="true"
           data-slot="tree-chevron"
@@ -349,7 +349,7 @@ export function TreeView<Data = undefined>(props: TreeViewProps<Data>) {
   const scrollerRef = useRef<HTMLDivElement>(null)
   const revealRef = useRef<((index: number) => void) | null>(null)
   const tree = useTree(props, scrollerRef, revealRef)
-  // On phones the tree flows with the page, never in a box with its own scroll (P5.90 item 5).
+  // On phones the tree flows with the page, never in a box with its own scroll.
   const windowed = props.maxHeight !== undefined && !phone
   const view = useTreeRows(tree, scrollerRef, revealRef, windowed, phone)
 

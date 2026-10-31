@@ -5,8 +5,8 @@ import { useLiro } from '../provider/liro-provider'
 import { SettlingValue } from './settling-value'
 
 /*
- * DocumentTotals (P4.5, the owner's decision, docs/decisions.md "Document page"): a document's
- * totals under its lines — computed by the application, never here (rule D4).
+ * DocumentTotals: a document's
+ * totals under its lines — computed by the application, never here.
  * - An end-aligned block, 320px wide (the full width on phones), no card.
  * - Rows from the application in any number (tax base 20%, VAT 20%, tax base 10%, VAT 10%,
  *   exempt, advance deducted …): label and amount, 13px, 8px apart; the label text.secondary,
@@ -14,7 +14,7 @@ import { SettlingValue } from './settling-value'
  *   while a new one is computed). A row may start a group: a thin border.subtle line above it.
  * - Only the final row is large: 16px semibold, a 1px border.strong line above it.
  *
- * P5.18 (complex documents), additive — every part optional, nothing computed:
+ * Complex documents, additive — every part optional, nothing computed:
  * - `recap`: the recap by tax category after the rows — a small table (category, base, rate,
  *   tax) under its caption; the block is then 384px wide, so four columns of amounts fit.
  * - `deductions`: one row per deduction (an advance), each label a link to its document
@@ -40,13 +40,13 @@ export interface TotalsRow {
   /** Starts a group: a thin line above the row. */
   group?: boolean
   /**
-   * The label is a link to this address (P5.18: a deduction's advance invoice), followed through
+   * The label is a link to this address (a deduction's advance invoice), followed through
    * the provider's linkComponent.
    */
   href?: string
 }
 
-/** One line of the recap by tax category (P5.18). */
+/** One line of the recap by tax category. */
 export interface TaxRecapRow {
   key: string
   /** The category as the lines show it ("S 20%", "E¹"). */
@@ -59,7 +59,7 @@ export interface TaxRecapRow {
   tax: string | null
 }
 
-/** The recap by tax category: a small table after the rows (P5.18). */
+/** The recap by tax category: a small table after the rows. */
 export interface TaxRecap {
   /** The table's caption, from the application ("Recap by tax category"). */
   label: string
@@ -71,7 +71,7 @@ export interface TaxRecap {
   decimals?: number
 }
 
-/** The home-currency equivalents of a foreign-currency document, and its rate (P5.18). */
+/** The home-currency equivalents of a foreign-currency document, and its rate. */
 export interface TotalsExchange {
   /** The document's currency ("EUR"). */
   currency: string
@@ -85,7 +85,7 @@ export interface TotalsExchange {
   rows: readonly TotalsRow[]
 }
 
-/** A reason given once under the totals (P5.18): the marker repeats it in the lines. */
+/** A reason given once under the totals: the marker repeats it in the lines. */
 export interface TotalsFootnote {
   key: string
   /** "¹", "²" — the same marker the lines' tax column shows. */
@@ -99,13 +99,13 @@ export interface DocumentTotalsProps {
   total: TotalsRow
   /** Names the block for assistive technology ("Totals"), from the application. */
   label: string
-  /** The recap by tax category, after the rows (P5.18). */
+  /** The recap by tax category, after the rows. */
   recap?: TaxRecap
-  /** One row per deduction (an advance), before the final row (P5.18). */
+  /** One row per deduction (an advance), before the final row. */
   deductions?: readonly TotalsRow[]
-  /** The home-currency equivalents and the rate line, after the final row (P5.18). */
+  /** The home-currency equivalents and the rate line, after the final row. */
   exchange?: TotalsExchange
-  /** Exemption and reverse-charge reasons, once, under the totals (P5.18). */
+  /** Exemption and reverse-charge reasons, once, under the totals. */
   footnotes?: readonly TotalsFootnote[]
   className?: string
 }

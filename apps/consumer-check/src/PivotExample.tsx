@@ -8,7 +8,7 @@ const FIELDS: PivotField[] = [
 ]
 
 /**
- * The pivot through the `@veljaos/ui/pivot` subpath (P5.77), typed against the packed
+ * The pivot through the `@veljaos/ui/pivot` subpath, typed against the packed
  * declarations; built on TanStack Table, a dependency of `@veljaos/ui`. The figures are given.
  */
 export function PivotExample() {

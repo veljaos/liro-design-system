@@ -11,7 +11,7 @@ const meta = {
     docs: {
       description: {
         component: internal(
-          'The previous Design System tooltip: inverted colours, radius 4px, 12px text, an arrow, 300ms delay. Never the only place important information lives. Tooltip (P2.4).',
+          'Inverted colours, radius 4px, 12px text, an arrow, 300ms delay. Never the only place important information lives. Tooltip.',
         ),
       },
     },

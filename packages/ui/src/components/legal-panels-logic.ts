@@ -10,7 +10,7 @@ import type {
 } from './legal-model'
 
 /*
- * The pure logic of a legal act's page and its side panels (BUILD-PLAN P5.27): finding an
+ * The pure logic of a legal act's page and its side panels: finding an
  * article, narrowing the panels to one article, counting what concerns it, grouping related acts
  * by type, and the version a page shows. Nothing legal is decided here: which act refers to which,
  * which amendment changed which article, which decision concerns which article — all of it is the

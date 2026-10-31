@@ -196,7 +196,7 @@ describe('ProductGrid', () => {
     )
     expect(html).toContain('Kifla')
     expect(html).not.toContain('Krempita')
-    // P5.93: a state in two lines — the state with its icon, the detail under it.
+    // A state in two lines — the state with its icon, the detail under it.
     expect(html).toMatch(/>Unavailable<\/span><\/span><span[^>]*>Sold out</)
     expect(html).toMatch(/>Low stock<\/span><\/span><span[^>]*>3 left</)
     expect(html).toContain('aria-pressed="true"')

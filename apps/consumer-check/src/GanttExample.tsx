@@ -3,7 +3,7 @@ import { applyGanttChange, Gantt, type GanttModel } from '@veljaos/ui/gantt'
 import { useState } from 'react'
 
 /**
- * One plan through the `@veljaos/ui/gantt` subpath (P5.37), typed against the packed declarations;
+ * One plan through the `@veljaos/ui/gantt` subpath, typed against the packed declarations;
  * SVAR React Gantt (MIT) comes with it as a dependency of `@veljaos/ui`.
  */
 export function GanttExample() {

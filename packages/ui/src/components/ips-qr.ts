@@ -1,9 +1,9 @@
 /*
- * IPS QR (P5.40): the text of the Serbian instant-payment QR code of the National Bank of Serbia
+ * IPS QR: the text of the Serbian instant-payment QR code of the National Bank of Serbia
  * (IPS NBS), written from a payment's data and checked against the standard's rules — the same
  * text a bank's app reads to fill in a payment order. A national payment standard is a format,
  * like a locale's digits: the library writes it, the application decides what is paid, to whom
- * and how much (D1, D4).
+ * and how much.
  *
  * The text is tag:value pairs joined by "|", in the standard's order
  * K|V|C|R|N|I|P|SF|S|M|JS|RO|RL|RP, UTF-8:
@@ -14,7 +14,7 @@
  * - N the payee's name and place (at most 70 characters, 3 lines); P the payer's (70).
  * - I the currency and amount, "RSD294000,50": the decimal comma always, no thousands separator,
  *   at least 0,01 and at most 14 whole digits. Written from the decimal string without rounding:
- *   an amount with more than two decimals is a problem, never cut (D4).
+ *   an amount with more than two decimals is a problem, never cut.
  * - SF the payment code (3 digits, the first 1 or 2; required for PR); S the purpose (35).
  * - M the merchant category (4 digits; required for PT, PK and EK); JS a one-time code (5 digits).
  * - RO the model and reference number (35 at most; model 97's control number checked); RL the

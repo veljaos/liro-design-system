@@ -67,7 +67,7 @@ describe('Button', () => {
     }
   })
 
-  it('lets a long label wrap, centred, and shrink to its container; icon buttons never wrap (P2.7d)', () => {
+  it('lets a long label wrap, centred, and shrink to its container; icon buttons never wrap', () => {
     const html = renderToStaticMarkup(<Button intent="save" label="Save" />)
     for (const part of ['min-w-0', 'max-w-full', 'text-center']) {
       expect(html).toContain(` ${part} `)
@@ -102,7 +102,7 @@ describe('Button', () => {
     expect(typeof wrong).toBe('function')
   })
 
-  it('knows every interface intent of Appendix A.6', () => {
+  it('knows every interface intent', () => {
     expect(INTENT_NAMES).toHaveLength(20)
     expect(INTENTS.pdf).toMatchObject({ family: 'document', emphasis: 'primary', confirms: false })
     expect(INTENTS.export.family).toBe('positive')

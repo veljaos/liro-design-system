@@ -6,7 +6,7 @@ import { SettlingValue } from './settling-value'
 import { usePhone } from './use-phone'
 
 /*
- * BalanceBar (BUILD-PLAN P5.21, "Balanced entry"): the Debit / Credit / Difference of a journal
+ * BalanceBar ("Balanced entry"): the Debit / Credit / Difference of a journal
  * entry, always in view — in EditableGrid's `footer` (beside "Add line" on desktop; in the totals
  * card sticky at the top on phones).
  * - The three amounts come from the application (decimal strings, computed by the Core; nothing
@@ -15,8 +15,8 @@ import { usePhone } from './use-phone'
  * - The state comes from the application too (`state`): whether an entry balances is the Core's
  *   rule. Balanced: a CircleCheck and "Balanced" in status.success.fg. Not balanced: the
  *   difference and the words "Not balanced" in status.danger.fg with CircleAlert — words and tone,
- *   never colour alone. Incomplete (an amount is missing or cannot be read — Appendix B.4, never
- *   counted as 0): the difference "—" and "Amounts missing" in text.secondary with CircleHelp; the
+ *   never colour alone. Incomplete (an amount is missing or cannot be read, never counted as
+ *   0): the difference "—" and "Amounts missing" in text.secondary with CircleHelp; the
  *   grid's own message under the row says which. The state's words are a polite live region, so a
  *   change is heard once.
  * - Posting is the application's: while the entry is not balanced it shows its post action as an
@@ -109,7 +109,7 @@ export function BalanceBar(props: BalanceBarProps) {
         ))}
       </dl>
       {/* The icon inline with the words, so the state stands on the amounts' baseline
-          (P5.93 item 6; a flex row took the icon's bottom as its baseline). */}
+          (a flex row would take the icon's bottom as its baseline). */}
       <p role="status" className={cn('m-0 font-semibold', state.text)}>
         <state.Icon aria-hidden="true" className="me-1.5 inline size-4 align-[-0.1875em]" />
         <span className={TEXT_DIRECTION}>{words}</span>

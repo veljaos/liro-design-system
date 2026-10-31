@@ -1,5 +1,5 @@
 /*
- * The logic of CommandPalette, kept apart from the markup so it can be unit-tested (AGENTS.md C7):
+ * The logic of CommandPalette, kept apart from the markup so it can be unit-tested:
  * which items match what was typed, and which parts of a label to highlight.
  */
 

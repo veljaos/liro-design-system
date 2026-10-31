@@ -1,4 +1,4 @@
-// The Liro brand files (P3.7): every expected file is there, every SVG is clean (a viewBox, no
+// The Liro brand files: every expected file is there, every SVG is clean (a viewBox, no
 // live text, fonts, embedded images or scripts), and the raster icons have their sizes.
 import assert from 'node:assert/strict'
 import { readdirSync, readFileSync } from 'node:fs'
@@ -71,7 +71,7 @@ describe('brand', () => {
     assert.match(svg, /<title>Liro<\/title>/)
   })
 
-  it('has a tab favicon without a tile: brand-blue dots, lighter in a dark browser (P4.7b)', () => {
+  it('has a tab favicon without a tile: brand-blue dots, lighter in a dark browser', () => {
     const svg = read('web/favicon.svg').toString('utf8')
     assert.doesNotMatch(svg, /<rect/)
     assert.match(svg, /path\{fill:#0078D4\}/)

@@ -65,7 +65,7 @@ function boxAround(element: Element | null): Element | null {
   return parent
 }
 
-/** Nothing in the phone frame scrolls sideways (P4.9 rule 16). */
+/** Nothing in the phone frame scrolls sideways. */
 async function noSidewaysScroll(canvasElement: HTMLElement) {
   const frame = boxAround(canvasElement.querySelector('[data-slot="app-shell"]'))
   await expect(frame).not.toBeNull()
@@ -74,7 +74,7 @@ async function noSidewaysScroll(canvasElement: HTMLElement) {
 
 /**
  * The VAT return for September 2026 as its form grid (an illustrative PP PDV / POPDV-like form,
- * P5.28 item 19): the rates over Base and VAT, nested numbered groups (1.2 collapsed), one-column
+ * The rates over Base and VAT, nested numbered groups (1.2 collapsed), one-column
  * parts, absent cells blank; 1.1.1 from SEF opens the invoices (F-2026-0412 among them); typed
  * cells as fields; 3.1.1's VAT overridden by Ivana Stojanović, one failing check.
  */
@@ -155,7 +155,7 @@ function ledgerPlay(
 }
 
 /**
- * P5.45: the trial balance on 14.10.2026 on the statutory grid: one part per class, the synthetic
+ * The trial balance on 14.10.2026 on the statutory grid: one part per class, the synthetic
  * accounts as numbered groups, Opening / Turnover / Closing over Debit / Credit; every figure
  * opens the account's card; the Core's three checks passed; "Compare with 14.10.2025.".
  */
@@ -199,7 +199,7 @@ export const TrialBalanceDrillDown: Story = {
   },
 }
 
-/** P5.77: a screen's checks, and on a phone no sideways scroll of the page. */
+/** A screen's checks, and on a phone no sideways scroll of the page. */
 function brPlay(
   check: (canvasElement: HTMLElement) => Promise<void>,
   phone = false,
@@ -216,8 +216,8 @@ function brPlay(
 }
 
 /**
- * P5.77: Kvadrat Gradnja d.o.o.'s cost analysis — sites and their cost accounts down, July to
- * September across with the amount and the number of supplier invoices, the totals; P5.93 item 45:
+ * Kvadrat Gradnja d.o.o.'s cost analysis — sites and their cost accounts down, July to
+ * September across with the amount and the number of supplier invoices, the totals:
  * the application's suggested views first, the layout in one line of words, the chooser behind
  * "Fields" (closed); a figure opens its invoices.
  */
@@ -285,7 +285,7 @@ export const BrCostAnalysisOpen: Story = {
       },
       { timeout: 5000 },
     )
-    // The other suggested view (P5.93 item 45): the grid follows, the view stands chosen.
+    // The other suggested view: the grid follows, the view stands chosen.
     await userEvent.click(canvas.getByRole('button', { name: 'By supplier' }))
     await expect(canvas.getByRole('button', { name: 'By supplier' })).toHaveAttribute(
       'aria-pressed',

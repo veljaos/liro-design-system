@@ -30,7 +30,7 @@ import { reportsTabs, Shell } from './example-shell'
 import { Tenant } from './screens-G'
 
 /*
- * Group AL's example screen (P5.45): Kvadrat Gradnja d.o.o.'s trial balance on 14.10.2026, on
+ * The example screen: Kvadrat Gradnja d.o.o.'s trial balance on 14.10.2026, on
  * StatutoryFormPage's grid: one part per class, the synthetic accounts as numbered groups, the
  * accounts as rows; groups Opening / Turnover / Closing over Debit / Credit (two header rows);
  * every figure a source cell whose drawer links to the account's card; "Compare with 14.10.2025."

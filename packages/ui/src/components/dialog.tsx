@@ -17,12 +17,11 @@ import { useSteadyBottom } from '../primitives/use-steady-bottom'
 import { useLiro } from '../provider/liro-provider'
 
 /*
- * Dialog and Drawer (BUILD-PLAN P2.4). The look is the P2.1 primitives' (Mantine Modal and
- * Drawer). When to use which (Appendix B.8, AGENTS.md D14): a **dialog** for one action with one
+ * Dialog and Drawer. The look is the primitives' (Mantine Modal and Drawer). When to use which: a **dialog** for one action with one
  * outcome, or a read-only view; a **drawer** for a short edit with the list still visible; a full
  * page for anything with more than about ten fields, tabs or attachments.
  *
- * A dialog that acts on one record (P5.28 item 6, the owner's review) names the action as its
+ * A dialog that acts on one record names the action as its
  * title ("Correct", "Reject swap request", "Show diagnosis") and the record, bold, on its own line
  * under it (`subject`: "Nenad Ilić, Wed 7"). Both are inside the title element, so the dialog's
  * accessible name says what is done to what. Components that draw their own header from the
@@ -35,7 +34,7 @@ function hasSubject(subject: ReactNode): boolean {
 }
 
 /**
- * A dialog's title and, on its own line, the record it acts on, bold (P5.28 item 6). Goes inside a
+ * A dialog's title and, on its own line, the record it acts on, bold. Goes inside a
  * DialogTitle; without a subject it is the title alone. The space between the two keeps the
  * accessible name's words apart ("Correct Nenad Ilić, Wed 7").
  */
@@ -75,13 +74,13 @@ interface OverlayProps {
   title: ReactNode
   /**
    * The one record the dialog acts on, from the application ("Nenad Ilić, Wed 7"): bold, on its
-   * own line under the title, and part of the dialog's name (P5.28 item 6).
+   * own line under the title, and part of the dialog's name.
    */
   subject?: ReactNode
   /** A line under the title, from the application. */
   description?: ReactNode
   children?: ReactNode
-  /** Buttons at the end, the main action last (AGENTS.md D13). */
+  /** Buttons at the end, the main action last. */
   actions?: ReactNode
   /**
    * Default true. False while the dialog must stay (for example while an action runs): Escape
@@ -97,7 +96,7 @@ export interface DialogProps extends OverlayProps {
    */
   size?: 'default' | 'wide'
   /**
-   * P5.93: the element that takes the focus when the dialog opens — the default answer of a
+   * The element that takes the focus when the dialog opens — the default answer of a
    * question (NameConflictDialog's Keep both). Default: the first focusable element inside.
    */
   initialFocus?: RefObject<HTMLElement | null>
@@ -124,7 +123,7 @@ function rootProps(props: OverlayProps) {
 function OverlayParts(props: OverlayProps) {
   const { messages } = useLiro()
   const dismissible = props.dismissible ?? true
-  // A message that comes and goes in the body never moves what is in view (P5.23).
+  // A message that comes and goes in the body never moves what is in view.
   const body = useRef<HTMLDivElement>(null)
   const spacer = useSteadyBottom(body, undefined)
   return (

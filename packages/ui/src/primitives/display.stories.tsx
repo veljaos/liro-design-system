@@ -20,7 +20,7 @@ const meta = {
     docs: {
       description: {
         component: internal(
-          'Separator, ScrollArea, Skeleton, Avatar, Progress and Collapsible. Card and SectionCard, PersonAvatar (P2.8), Skeleton and ProgressBar (P2.5).',
+          'Separator, ScrollArea, Skeleton, Avatar, Progress and Collapsible. Card and SectionCard, PersonAvatar, Skeleton and ProgressBar.',
         ),
       },
     },

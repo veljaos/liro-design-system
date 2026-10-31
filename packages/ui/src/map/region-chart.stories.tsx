@@ -31,7 +31,7 @@ const meta = {
           'hatched and says “No data”**, never 0. The legend writes each step’s range through ' +
           '`format`, or the application’s words (`stepLabels`).\n\n' +
           '**Keyboard:** Tab to the map; the arrows move between the areas in reading order and ' +
-          'show the tooltip; Enter chooses (a neutral line, D17); Escape hides it. “Show as table” ' +
+          'show the tooltip; Enter chooses (a neutral line); Escape hides it. “Show as table” ' +
           'is the screen reader’s way. The map is never mirrored in right-to-left.\n\n' +
           '**Geometry** is the application’s GeoJSON. These stories use Natural Earth’s 1:110m ' +
           'countries (`world-atlas`, a development dependency only).\n\n' +

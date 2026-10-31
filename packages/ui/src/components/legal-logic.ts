@@ -10,8 +10,8 @@ import type {
 import type { TreeNode } from './tree-logic'
 
 /*
- * The logic of LegalText, LegalContents and LegalCompare (BUILD-PLAN P5.27), kept apart from the
- * markup so it can be unit-tested (AGENTS.md C7). Nothing here decides anything legal: it reads
+ * The logic of LegalText, LegalContents and LegalCompare, kept apart from the
+ * markup so it can be unit-tested. Nothing here decides anything legal: it reads
  * the application's act as text.
  * - The act as a sequence of headings and articles, for the window of a long act.
  * - The plain text of every part, and the in-act search over the data (not over the page), so it
@@ -354,7 +354,7 @@ export function serbianScript(lang: string | undefined): 'latin' | 'cyrillic' | 
   const parts = lang.toLowerCase().split('-')
   if (parts[0] !== 'sr') return null
   if (parts.includes('cyrl')) return 'cyrillic'
-  // Serbian without a script is Latin (AGENTS.md D12 never writes it; intlLocale reads it so).
+  // Serbian without a script is Latin (the library never writes it; intlLocale reads it so).
   return 'latin'
 }
 

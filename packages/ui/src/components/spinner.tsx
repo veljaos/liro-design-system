@@ -4,7 +4,7 @@ import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 
 /*
- * Spinner (P3.6): shadcn/ui's spinner (a `role="status"` with an accessible label) drawn as the
+ * Spinner: shadcn/ui's spinner (a `role="status"` with an accessible label) drawn as the
  * Design System's own loader, Mantine's "oval" (Loader.css): a ring an eighth of its size thick, in
  * border.brand, one quarter open, one turn in 1.2s, linear — the loader already used by the
  * DataTable's refetch (14px), the loading button (20px) and the loading toast (28px), so the sizes

@@ -31,7 +31,7 @@ const meta = {
     docs: {
       description: {
         component:
-          '**What for:** the notes block of a document (P5.18), after its totals: **template ' +
+          '**What for:** the notes block of a document, after its totals: **template ' +
           'texts** chosen from the application’s list (payment terms, warranty, the legal ' +
           'basis of an exemption) and a **free note**. In view mode the texts in order, as the ' +
           'document shows them; in edit mode the templates are chosen by name ' +

@@ -13,7 +13,7 @@ function render(node: React.ReactNode) {
 const BRAND = { brandName: 'Liro', productName: 'Business Apps' }
 
 describe('statusLook', () => {
-  it('gives each kind the owner’s tone, and the HTTP code only to the coded pages', () => {
+  it('gives each kind its tone, and the HTTP code only to the coded pages', () => {
     expect(
       STATUS_KINDS.map((kind) => [kind, statusLook(kind).tone, statusLook(kind).code]),
     ).toEqual([
@@ -112,7 +112,7 @@ describe('AuthShell', () => {
 })
 
 describe('start-aligned tabs', () => {
-  it('Tabs stand at the start by default and centre with align="center" (P4.7c)', () => {
+  it('Tabs stand at the start by default and centre with align="center"', () => {
     const items = [{ value: 'a', label: 'A', content: 'a' }]
     expect(render(<Tabs items={items} />)).toContain('justify-start')
     expect(render(<Tabs items={items} align="center" />)).toContain('justify-center')

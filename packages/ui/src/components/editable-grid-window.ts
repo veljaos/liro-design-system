@@ -1,9 +1,9 @@
 /*
- * EditableGrid's row window (P5.18: a specification of 300 positions), without React. A long
+ * EditableGrid's row window (a specification of 300 positions), without React. A long
  * grid draws only the lines in view and 600px around them, plus the line that has the focus and
  * its neighbours (so Enter, Tab and the row shortcuts always find the next line); spacers keep
- * the scroll height. It runs on TanStack Virtual with the shared rules of `virtual-rows.ts`
- * (P5.21a), heights measured once drawn and estimated before. Cells stay fields: a line in the
+ * the scroll height. It runs on TanStack Virtual with the shared rules of `virtual-rows.ts`,
+ * heights measured once drawn and estimated before. Cells stay fields: a line in the
  * page is the same as in a short grid. Here: when to window, and the table's row numbers.
  */
 

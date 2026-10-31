@@ -1,6 +1,5 @@
 /*
- * The shape of a legal act as the application gives it (BUILD-PLAN P5.27; docs/decisions.md
- * "Legal information"): the library presents it and computes nothing legal. Every text, date,
+ * The shape of a legal act as the application gives it: the library presents it and computes nothing legal. Every text, date,
  * status and reference is the application's; dates are YYYY-MM-DD and go through `format`.
  *
  * Words such as "Article", "Part", "Deleted", "Amended by" are part of the data (`label`s), not
@@ -11,7 +10,7 @@
 export interface LegalStatus {
   id: string
   label: string
-  /** Its tone, as StatusBadge's; never blue (D17). */
+  /** Its tone, as StatusBadge's; never blue. */
   tone: 'success' | 'warning' | 'danger' | 'neutral' | 'premium'
 }
 
@@ -144,7 +143,7 @@ export interface LegalAct {
   /** The text of the version shown. */
   nodes: readonly LegalNode[]
   footnotes?: readonly LegalFootnote[]
-  /** The language tag of the text (`sr-Cyrl`, `sr-Latn`, `en`), for `lang` (D15). */
+  /** The language tag of the text (`sr-Cyrl`, `sr-Latn`, `en`), for `lang`. */
   lang?: string
 }
 

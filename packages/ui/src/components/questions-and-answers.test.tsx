@@ -44,7 +44,7 @@ function render(node: React.ReactNode): string {
   return renderToStaticMarkup(<LiroProvider locale="en">{node}</LiroProvider>)
 }
 
-describe('highlightQuestion (P5.96 item 1)', () => {
+describe('highlightQuestion', () => {
   it('marks every typed word, ignoring case', () => {
     expect(highlightQuestion('What do I need to change my address?', 'ADDRESS need', 'en')).toEqual(
       ['What do I ', { match: 'need' }, ' to change my ', { match: 'address' }, '?'],
@@ -73,7 +73,7 @@ describe('highlightQuestion (P5.96 item 1)', () => {
   })
 })
 
-describe('questionCounts (P5.96 item 1)', () => {
+describe('questionCounts', () => {
   const labels = Object.fromEntries(CATEGORIES.map((each) => [each.id, each.label]))
 
   it('counts every question and each category, empty ones as 0', () => {
@@ -91,7 +91,7 @@ describe('questionCounts (P5.96 item 1)', () => {
   })
 })
 
-describe('The story data (P5.96 item 1)', () => {
+describe('The story data', () => {
   it('has more than 300 questions, the same on every run, with unique ids', () => {
     expect(QA_QUESTIONS.length).toBe(320)
     expect(storyQuestions()).toEqual(QA_QUESTIONS)
@@ -106,7 +106,7 @@ describe('The story data (P5.96 item 1)', () => {
   })
 })
 
-describe('QuestionsAndAnswers (P5.96 item 1)', () => {
+describe('QuestionsAndAnswers', () => {
   it('links every question to its answer and shows the first page with "Show more"', () => {
     const html = render(
       <QuestionsAndAnswers
@@ -119,7 +119,7 @@ describe('QuestionsAndAnswers (P5.96 item 1)', () => {
     expect(html.match(/data-slot="answer-link"/g)).toHaveLength(QUESTIONS_PAGE)
     expect(html).toContain(`href="/questions/${QA_QUESTIONS[0]?.id ?? ''}"`)
     expect(html).toContain('Show more (30 of 320 shown)')
-    // "All" first with its count, pressed; titles are never underlined (D36).
+    // "All" first with its count, pressed; titles are never underlined.
     expect(html).toMatch(/aria-pressed="true"[^>]*>.*?>All<.*?>320</)
     expect(html).toContain('no-underline')
     expect(html).not.toContain('hover:underline')
@@ -203,7 +203,7 @@ describe('QuestionsAndAnswers (P5.96 item 1)', () => {
   })
 })
 
-describe('AnswerView (P5.96 item 1)', () => {
+describe('AnswerView', () => {
   it('has the question as the h1, its parts, the request and the way back', () => {
     const question = QUESTIONS[0]
     if (question === undefined) throw new Error('No question')

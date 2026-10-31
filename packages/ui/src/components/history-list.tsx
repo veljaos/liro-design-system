@@ -14,10 +14,9 @@ import { Spinner } from './spinner'
 import { Tooltip } from './popover'
 
 /*
- * HistoryList (P5.1; the plan's "Timeline / HistoryList", one component under this name): the
- * full history of a record — who did what, when, and what changed.
+ * HistoryList: the full history of a record — who did what, when, and what changed.
  *
- * - **Entries newest first, grouped by day** like the notifications page (P4.9): "Today",
+ * - **Entries newest first, grouped by day** like the notifications page: "Today",
  *   "Yesterday", then the date (`format.date`), each heading an h3 by default (`headingLevel`),
  *   xs semibold text.secondary. An entry's `at` is an instant in the tenant's offset; its date
  *   part is its day and its clock part is shown (`format.time`), so heading and time agree.
@@ -36,8 +35,8 @@ import { Tooltip } from './popover'
  *   skeleton rows while the first page loads). Empty: an EmptyState ("No changes yet").
  *
  * Which one to use: HistoryList for the whole history of a record, on its page; ActivityList
- * (P4.9) for the latest few entries in a side panel; StatusTimeline (P5.4) for the states of one
- * process with its next step; LifecycleBar (P4.5) for the dots of a document's lifecycle above it;
+ * for the latest few entries in a side panel; StatusTimeline for the states of one
+ * process with its next step; LifecycleBar for the dots of a document's lifecycle above it;
  * MessageThread for a conversation.
  */
 

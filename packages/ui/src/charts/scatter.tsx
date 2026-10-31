@@ -32,12 +32,12 @@ import {
 } from './shared'
 
 /*
- * ScatterChart (P5.93 item 44, owner: "price vs margin, optional bubble size"): items placed by two
+ * ScatterChart ("price vs margin, optional bubble size"): items placed by two
  * values, optionally sized by a third, on Recharts' Scatter with our own shapes.
  * - Colour as every chart: one series in the main blue, a second grey; three or more groups only
  *   with `palette="categorical"`, named in the legend. Points are a 75% fill with a 1px line of the
  *   card, so overlapping points stay readable. A bubble's area follows its size value (drawing
- *   only, D4; 4–20px).
+ *   only; 4–20px).
  * - Each axis is named (`x`, `y`, `size`: the label and how its values are written — an amount, a
  *   percentage or a number). Ticks are the scale's round steps written short; the values
  *   themselves are written in full in the tooltip and the table.
@@ -91,7 +91,7 @@ export interface ScatterChartProps extends ChartStateProps {
   /** The plot's height in pixels. Default 280 (240 on phones). */
   height?: number
   controls?: ReactNode
-  /** The key figures as toggle buttons (a ChartSeriesToggle) at the header's end (P5.93 item 42). */
+  /** The key figures as toggle buttons (a ChartSeriesToggle) at the header's end. */
   toggle?: ReactNode
   layout?: 'desktop' | 'phone'
   className?: string

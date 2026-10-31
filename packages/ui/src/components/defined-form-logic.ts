@@ -1,6 +1,6 @@
 /*
- * The logic of DefinedForm (P5.66), kept apart from the markup so it can be unit-tested
- * (AGENTS.md C7). A form is drawn from the application's definitions — sections of fields, each
+ * The logic of DefinedForm, kept apart from the markup so it can be unit-tested.
+ * A form is drawn from the application's definitions — sections of fields, each
  * with its type, whether it is required and when it shows — which are data (JSON the application
  * keeps per document type, report or request). The component decides nothing about the content:
  * the fields, their texts, options and conditions are the application's.
@@ -10,7 +10,7 @@
  * value (`field`) and asks whether it `equals` a value, `notEquals` it, is `oneOf` several, or is
  * `filled`; `all`, `any` and `not` combine conditions. A multiple choice equals a value when that
  * value is among those chosen. Numbers, amounts and dates are compared as the strings they are
- * (decimal strings, YYYY-MM-DD): never converted to a number (D4).
+ * (decimal strings, YYYY-MM-DD): never converted to a number.
  *
  * **Order and hidden fields.** Conditions are read in the definitions' order, and a hidden field
  * counts as empty: a condition on a field that is itself hidden does not hold through its old
@@ -105,7 +105,7 @@ export interface DefinedField {
   visibleWhen?: DefinedCondition
   /**
    * Shown but not changed (a value the application filled in, a field the user may not change):
-   * the read-only look of every field (P5.93; a field has no disabled state).
+   * the read-only look of every field (a field has no disabled state).
    */
   readOnly?: boolean
   /** The options of a select, multiselect or radio group. */

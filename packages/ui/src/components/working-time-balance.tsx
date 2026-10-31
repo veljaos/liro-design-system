@@ -7,7 +7,7 @@ import { DateRangeText } from './display-text'
 import { ConflictIcon } from './shift-parts'
 
 /*
- * WorkingTimeBalance (BUILD-PLAN P5.24 d, working-time redistribution): a plan that spreads the
+ * WorkingTimeBalance (working-time redistribution): a plan that spreads the
  * hours of a period unevenly over its weeks, and per person the balance of planned against worked
  * hours. Everything is the application's: the weeks' hours, each person's planned, worked and
  * difference, the running average per week, the reference average and the warnings — the

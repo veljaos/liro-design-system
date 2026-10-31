@@ -12,7 +12,7 @@ import { SidePanels, type SidePanel } from './side-panels'
 import { StatusBadge } from './status-badge'
 
 /*
- * FileDetails (BUILD-PLAN P5.43): everything about one file or folder, in the details column of
+ * FileDetails: everything about one file or folder, in the details column of
  * a files page (ListPage with the file components, the files recipe; a Drawer on phones): its icon and name (h2) with the application's marks, its
  * actions, then SidePanels, each collapsible:
  * - Details: type, size, owner, created, modified, location (through `format`), and the

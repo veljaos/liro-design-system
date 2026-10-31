@@ -2,13 +2,13 @@ import { type ReactNode } from 'react'
 import { LiroProvider, numericFormat, useLiro } from '@veljaos/ui'
 
 /*
- * Two pieces the Phase 5 example screens share (first written for group G, P5.24): the tenant's
+ * Two pieces several example screens share: the tenant's
  * provider settings (`Tenant`) and the page's frame (`Frame`).
  */
 
 /**
  * The tenant's digits in its own time zone (instants with an offset are shown there): numbers and
- * numeric dates as a Serbian company writes them, never its month or weekday names (P5.28 item 2).
+ * numeric dates as a Serbian company writes them, never its month or weekday names.
  */
 const TENANT_DIGITS = numericFormat('sr-Latn-RS', 'Europe/Belgrade')
 

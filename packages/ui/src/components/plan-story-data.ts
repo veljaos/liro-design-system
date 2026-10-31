@@ -1,7 +1,7 @@
 import type { ComparedFeature, ComparedPlan } from './plan-logic'
 
 /*
- * Fictitious plans for the PlanComparison and UsageMeter stories and tests (P5.36): three tiers
+ * Fictitious plans for the PlanComparison and UsageMeter stories and tests: three tiers
  * of an illustrative business application, prices in RSD as the application writes them. Not
  * part of the package's API.
  */

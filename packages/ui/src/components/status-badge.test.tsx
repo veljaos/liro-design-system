@@ -25,7 +25,7 @@ describe('StatusBadge', () => {
     expect(html).toContain('data-tone="success"')
     expect(html).toContain('<span class="min-w-0 bidi-isolate">Paid</span>')
     expect(html).not.toContain('border')
-    // One line while it fits; a label wider than the room wraps inside the badge (P5.90).
+    // One line while it fits; a label wider than the room wraps inside the badge.
     expect(html).not.toContain('whitespace-nowrap')
     expect(html).toContain('max-w-full')
   })

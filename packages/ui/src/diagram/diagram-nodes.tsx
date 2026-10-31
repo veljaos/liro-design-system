@@ -48,7 +48,7 @@ import {
  * 1.5px border.control, which keeps 3:1 against every surface for WCAG 1.4.11), an event a
  * circle (the end event's ring 3px in text.primary), a gateway a diamond with its X or +, a
  * sub-process a box with the + marker. Labels are HTML, so their words keep their order in
- * every direction (D15). States are an icon, words and a status tone — never blue (D17); the
+ * every direction. States are an icon, words and a status tone — never blue; the
  * blue in the canvas is the focus ring and a connection being dragged.
  */
 
@@ -72,7 +72,7 @@ export interface DiagramRunStep {
   reason?: string
   /**
    * The step's log or the response it got (secrets already masked by the application), shown on
-   * request under the reason in a small CodeBlock (P5.93).
+   * request under the reason in a small CodeBlock.
    */
   log?: string
   /** The log's language for CodeBlock ("json", "xml", "ansi" for terminal output). */

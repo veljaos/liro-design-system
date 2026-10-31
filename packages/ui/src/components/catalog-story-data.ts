@@ -1,5 +1,5 @@
 /*
- * Story data for the catalogue components (P5.19): customers of Kvadrat Gradnja d.o.o.,
+ * Story data for the catalogue components: customers of Kvadrat Gradnja d.o.o.,
  * generated repeatably, and a search that plays the application (the components never search).
  * Not part of the package: nothing in src/index.ts imports this file. No classes here.
  */
@@ -17,7 +17,7 @@ export interface StoryCustomer {
   active: boolean
 }
 
-/** The dataset's customers (P4.8), first. */
+/** The dataset's customers, first. */
 const KNOWN: StoryCustomer[] = [
   {
     id: 'c-104987265',
@@ -298,9 +298,9 @@ export function pageOf<Row>(rows: readonly Row[], cursor: number, size: number) 
 }
 
 /**
- * How the application sorts a catalogue column (P5.23: every catalogue list sorts by its
+ * How the application sorts a catalogue column (every catalogue list sorts by its
  * columns): text by the language's collation ("Č" after "C", "10" after "9"); numbers and amounts
- * exactly, the decimal strings read as whole units (BigInt), never as JavaScript numbers (D4).
+ * exactly, the decimal strings read as whole units (BigInt), never as JavaScript numbers.
  */
 export type SortKey<Row> =
   | { kind: 'text'; value: (row: Row) => string }

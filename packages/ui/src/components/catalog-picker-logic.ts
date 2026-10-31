@@ -1,5 +1,5 @@
 /*
- * The logic of CatalogPicker (P5.90 item 14): where an item stands in the application's levels,
+ * The logic of CatalogPicker: where an item stands in the application's levels,
  * what a level shows, the search and the filters over the items given, the chosen items and the
  * paging of a long list. Pure functions, unit-tested in `catalog-picker-logic.test.ts`. Nothing
  * here ranks, prices or decides which items combine: that is the application's data.

@@ -34,7 +34,7 @@ export {
 export type { FrameState, HostMessage, ViewerMessage } from './document-frame-protocol'
 
 /*
- * DocumentFrame (BUILD-PLAN P5.5; the protocol in docs/document-frame.md): a document viewer from
+ * DocumentFrame (the protocol in document-frame-protocol.ts): a document viewer from
  * another origin (the Core's PDF viewer, a signing service's preview) in a sandboxed iframe, with
  * the Design System's toolbar around it.
  *

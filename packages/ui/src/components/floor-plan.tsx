@@ -78,13 +78,13 @@ import { StatusBadge, type Tone } from './status-badge'
 import { usePhone } from './use-phone'
 
 /*
- * FloorPlan (BUILD-PLAN P5.25; docs/decisions.md "Floor plans and seating"): the plan of a place
+ * FloorPlan: the plan of a place
  * — a restaurant, a café terrace, a hotel floor, a hall — with its areas, tables, rooms, seats and
  * places where the application puts them. It shows what it is given and reports what the user
  * does; it decides nothing and saves nothing.
  *
- * P5.28 (the owner's review, items 23–27): simplicity first.
- * - **No walls, doors or windows** (they confused): areas are plain labelled regions; the bar, a
+ * Simplicity first.
+ * - **No walls, doors or windows** (they confuse): areas are plain labelled regions; the bar, a
  *   counter or a stage are labelled furniture; a real building plan is the `background` image.
  * - **A label is never cut:** the name (the number) and the state's icon, then `planDetail` (the
  *   guests) on a second line; what does not fit an item is left out, measured at every width
@@ -108,10 +108,10 @@ import { usePhone } from './use-phone'
  *   draws a target under 24px: below that width it scrolls sideways in its own box.
  * - **States are data:** `states` (id, words, tone, icon) — free, occupied, reserved are the
  *   application's. An item shows its state by its tone and its icon, the legend gives the words,
- *   and the item's name says them. Never blue (D17): the tones are status tones without `info`.
+ *   and the item's name says them. Never blue: the tones are status tones without `info`.
  * - **Choosing:** `selectionMode` single (default), multiple or none; `selected` /
  *   `defaultSelected` / `onSelectionChange`. A chosen item has a 2px border.selected frame round
- *   its tone (D17: neutral, never blue) and `aria-pressed`.
+ *   its tone (neutral, never blue) and `aria-pressed`.
  * - **Keyboard:** one item is in the tab order (roving focus). The arrows go to the nearest item
  *   in that direction on the plan (`nearestItem`), Home / End to the first and last; in single
  *   mode the choice follows. Enter or Space activates (`onItemActivate`: open the table); in
@@ -125,7 +125,7 @@ import { usePhone } from './use-phone'
  *   handle or "Size…"; turned 90°, duplicated, removed (also Delete). Every change goes to
  *   `onChange`; overlapping items are allowed and the application's `warnings` flag them.
  * - **Zoom:** in, out and fit (`PLAN_ZOOM_STEPS`, CSS widths, no measuring).
- * - **P5.25a:** `background` draws the building's own plan (an image: a drawing, an SVG, a PDF
+ * - `background` draws the building's own plan (an image: a drawing, an SVG, a PDF
  *   page rendered as an image) under the areas and items, placed and scaled in plan units, so it
  *   stays aligned at every zoom; decorative unless it has `alt` (the plan is read through its
  *   items and the list). In the dark theme it is `srcDark`, else the image inverted (a line
@@ -147,7 +147,7 @@ export type {
 } from './floor-plan-logic'
 
 /**
- * An image under the plan's areas and items (P5.25a): the building's own plan — a drawing, an
+ * An image under the plan's areas and items: the building's own plan — a drawing, an
  * SVG, a PDF page rendered as an image —, placed and scaled in plan units.
  */
 export interface FloorBackground {
@@ -170,7 +170,7 @@ export interface FloorBackground {
   opacity?: number
 }
 
-/** The tones a state may take: the status tones without info, which is blue (D17). */
+/** The tones a state may take: the status tones without info, which is blue. */
 export type FloorTone = Exclude<Tone, 'info'>
 
 /** A state of the items (free, occupied, needs cleaning …): the application's map. */
@@ -217,9 +217,9 @@ export interface FloorPlanProps {
   /** The plan's size in plan units. */
   width: number
   height: number
-  /** Areas: rectangles, or polygons (`points`, P5.25a). */
+  /** Areas: rectangles, or polygons (`points`). */
   areas?: readonly FloorArea[]
-  /** The building's own plan under the areas and items (P5.25a). */
+  /** The building's own plan under the areas and items. */
   background?: FloorBackground
   states?: readonly FloorState[]
   /** Default 'single'. */
@@ -234,7 +234,7 @@ export interface FloorPlanProps {
   /** Default: 'list' on phones, else 'plan'. */
   defaultView?: 'plan' | 'list'
   onViewChange?: (view: 'plan' | 'list') => void
-  /** The one area shown (an id of `areas`), or null for all of them (controlled; P5.28). */
+  /** The one area shown (an id of `areas`), or null for all of them (controlled). */
   area?: string | null
   /** The area shown when it appears; default null, all areas. */
   defaultArea?: string | null
@@ -246,7 +246,7 @@ export interface FloorPlanProps {
   areaChoices?: readonly string[]
   /**
    * Edit mode: the palette, moving, resizing, turning and removing (with `onChange`). Not on a
-   * phone (P5.28 item 27): there the plan shows `messages['floorPlan.editOnLarger']` instead.
+   * phone: there the plan shows `messages['floorPlan.editOnLarger']` instead.
    */
   editing?: boolean
   palette?: readonly FloorPaletteEntry[]
@@ -299,7 +299,7 @@ const KIND_LOOK: Record<FloorItemKind, string> = {
 }
 
 /**
- * Writes on every item's label how much of it fits (`labelFit`, P5.28 item 24): measured on the
+ * Writes on every item's label how much of it fits (`labelFit`): measured on the
  * page after each drawing and each change of the plan's width; the CSS leaves out the rest.
  */
 function fitLabels(root: HTMLElement | null) {
@@ -378,12 +378,12 @@ export function FloorPlan(props: FloorPlanProps) {
   const plan = { width: props.width, height: props.height }
   const grid = props.grid ?? 10
   const mode = props.selectionMode ?? 'single'
-  // No edit mode on a phone (P5.28 item 27): the plan is changed on a computer or a tablet.
+  // No edit mode on a phone: the plan is changed on a computer or a tablet.
   const editOnLarger = props.editing === true && props.onChange !== undefined && phone
   const editing = props.editing === true && props.onChange !== undefined && !phone
   const interactive = editing || mode !== 'none' || props.onItemActivate !== undefined
   const areas = props.areas ?? []
-  // One area at a time (P5.28 item 26): the switcher's areas, the one shown and the part drawn.
+  // One area at a time: the switcher's areas, the one shown and the part drawn.
   const offered =
     props.areaChoices?.length === 0 ? [] : switchableAreas(areas, props.items, props.areaChoices)
   const areaId = props.area !== undefined ? props.area : innerArea
@@ -1087,7 +1087,7 @@ export function FloorPlan(props: FloorPlanProps) {
       round ? 'rounded-full' : 'rounded-md',
       state === undefined ? KIND_LOOK[item.kind] : cn('border border-solid', TONE_ITEM[state.tone]),
       barWidth !== null && 'pb-2.5',
-      // The chosen item over its neighbours, so its frame is whole (P5.96b).
+      // The chosen item over its neighbours, so its frame is whole.
       isChosen && 'z-[1]',
       moving && 'z-(--liro-layer-raised) border-strong shadow-lg',
       props.dropTargetId === item.id &&
@@ -1114,7 +1114,7 @@ export function FloorPlan(props: FloorPlanProps) {
         )}
       </>
     )
-    // The name and the state's icon, then the short second line; never cut (P5.28 item 24):
+    // The name and the state's icon, then the short second line; never cut:
     // `fitLabels` writes how much fits ('all', 'name', 'number', 'none') and the rest is left out.
     const label = (
       <>
@@ -1216,7 +1216,7 @@ export function FloorPlan(props: FloorPlanProps) {
             BUTTON_RESET,
             thin ? 'absolute box-border rounded-md' : look,
             FOCUS_RING,
-            // Over the neighbours (P5.96b): the ring is whole around every item, packed or not.
+            // Over the neighbours: the ring is whole around every item, packed or not.
             'focus-visible:z-[2] focus-visible:outline-offset-[5px]',
             editing ? 'cursor-grab touch-none' : 'cursor-pointer',
             moving && 'cursor-grabbing',
@@ -1230,7 +1230,7 @@ export function FloorPlan(props: FloorPlanProps) {
   }
 
   const fixtures = shown.filter((item) => !editing && isFixture(item))
-  // The building's own plan under everything, in plan units (P5.25a).
+  // The building's own plan under everything, in plan units.
   const background = props.background
   const hasBackground = background !== undefined
   const backgroundImage = background !== undefined && (
@@ -1352,7 +1352,7 @@ export function FloorPlan(props: FloorPlanProps) {
       ? listGroups(listedItems, areas, messages['floorPlan.noArea'])
       : groupedBy(listedItems, props.listGroup, messages['floorPlan.noArea'])
   const Heading = `h${String(props.headingLevel ?? 3)}` as 'h3'
-  // On a phone every item is a card (P5.28 item 27): its state, the guests and the time.
+  // On a phone every item is a card: its state, the guests and the time.
   const listView = (
     <div data-slot="floor-plan-list" className="flex flex-col gap-4">
       {groups.map((group) => (
@@ -1461,7 +1461,7 @@ function groupedBy(
 }
 
 /**
- * The building's own plan (P5.25a): an image placed in percentages of the plan, so it scales and
+ * The building's own plan: an image placed in percentages of the plan, so it scales and
  * zooms with the items; never a target. The dark theme takes `srcDark`, else inverts the image.
  */
 function BackgroundImage({
@@ -1511,7 +1511,7 @@ function BackgroundImage({
 }
 
 /**
- * How full an item is, as a bar (P5.25a): drawn in the current colour (the state's tone on the
+ * How full an item is, as a bar: drawn in the current colour (the state's tone on the
  * plan, secondary text in the list); the words are in the item's name and the list.
  */
 function LevelBar({ width, onPlan = false }: { width: string; onPlan?: boolean }) {
@@ -1719,7 +1719,7 @@ function EditDialog({
           label={kind === 'move' ? messages['floorPlan.moveTo'] : messages['floorPlan.size']}
         />
       }
-      // The action, then the item on its own line (P5.28 item 6).
+      // The action, then the item on its own line.
       title={kind === 'move' ? messages['floorPlan.moveTitle'] : messages['floorPlan.sizeTitle']}
       subject={item.label}
       description={messages['floorPlan.unitsHint']}

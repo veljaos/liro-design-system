@@ -2,12 +2,12 @@ import { compareDecimal, isDecimal } from '../components/quantity-logic'
 import { plotValue } from './shared'
 
 /*
- * The layout and keyboard logic of the charts drawn as marks one by one (P5.93 item 44:
- * CandlestickChart, FunnelChart, ScatterChart, Heatmap, SankeyChart, MatrixChart, Treemap), apart
- * from the markup so it can be unit-tested (AGENTS.md C7). Positions are measured from the plot's
+ * The layout and keyboard logic of the charts drawn as marks one by one (CandlestickChart,
+ * FunnelChart, ScatterChart, Heatmap, SankeyChart, MatrixChart, Treemap), apart
+ * from the markup so it can be unit-tested. Positions are measured from the plot's
  * start (`fromStart`); `physicalX` turns them into SVG coordinates, mirrored on a right-to-left
  * page for the charts whose axis is time or a scale (a candlestick's days, a heatmap's hours).
- * Values stay decimal strings; they become numbers only to be drawn (D4), never to be shown.
+ * Values stay decimal strings; they become numbers only to be drawn, never to be shown.
  */
 
 /** A mark's place measured from the plot's start, as an SVG x (from the end in right-to-left). */
@@ -152,7 +152,7 @@ export function candleDomain(candles: readonly CandlePrices[]): [number, number]
 
 /**
  * Whether a candle rose: its close at or above its open, compared exactly as decimal strings
- * (D4). Null when either is missing or unreadable.
+ * Null when either is missing or unreadable.
  */
 export function candleRises(open: string | null, close: string | null): boolean | null {
   if (open === null || close === null || !isDecimal(open.trim()) || !isDecimal(close.trim()))
@@ -322,7 +322,7 @@ export function scatterOrder<Point extends { key: string; x: string | null; y: s
 
 /**
  * A point's radius in pixels: 5 without sizes; a bubble's area grows with its value against the
- * largest (drawing only, D4), 4–20px; a missing or non-positive size is the smallest.
+ * largest (drawing only), 4–20px; a missing or non-positive size is the smallest.
  */
 export function scatterRadius(value: number | null, largest: number | null): number {
   if (largest === null) return 5
@@ -344,7 +344,7 @@ export function spacedLabels(count: number, max: number): number[] {
 export interface SankeyLayoutData<Node> {
   /** The nodes some drawn flow touches, in the application's order. */
   nodes: (Node & { index: number })[]
-  /** The drawn flows: a known source and target and an amount above zero (drawing only, D4). */
+  /** The drawn flows: a known source and target and an amount above zero (drawing only). */
   links: { source: number; target: number; value: number; flow: number; index: number }[]
 }
 

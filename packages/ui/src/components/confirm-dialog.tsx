@@ -27,26 +27,25 @@ import { RadioGroupField } from './radio-group-field'
 import { TextAreaField, TextField } from './text-field'
 
 /*
- * ConfirmDialog (BUILD-PLAN P2.4), the previous Design System's ConfirmModal, carried over
- * exactly (owner's decision, 2026-09-28, docs/decisions.md "Overlays"):
+ * ConfirmDialog:
  * - Title row: an 18px icon (default TriangleAlert, lucide's AlertTriangle) and the title, bold
  *   (700), 13px, both in the tone's fg colour.
  * - The tone comes from the action's family: primary and verify → info, document → neutral,
  *   positive → success, destructive → danger, caution → warning, neutral → neutral; warning
  *   without an intent or family; the `tone` prop overrides it.
- * - The text in text.secondary, 13px, aligned with the title's text (after the icon, P4.9). The
- *   buttons in the standard dialog footer (DialogFooter: 16px under the text, 8px apart, P4.9):
+ * - The text in text.secondary, 13px, aligned with the title's text (after the icon). The
+ *   buttons in the standard dialog footer (DialogFooter: 16px under the text, 8px apart):
  *   Cancel in the neutral "default" weight, then the confirm button filled in the action's family
  *   colour (the main action last).
- * - Colours never mix (owner, P3.2a): the confirm button always follows the dialog's tone. Its
+ * - Colours never mix: the confirm button always follows the dialog's tone. Its
  *   family is the action's when that family gives the tone, otherwise the tone's own family
  *   (warning → caution, danger → destructive, info → primary, success → positive, neutral →
  *   neutral, premium → document), so a confirmation without an action, or with a `tone` that
  *   overrides the action's, never shows a warning title over a blue button.
- * - On one record (P5.28 item 6): the title is the action ("Reject invoice") and `subject` the
+ * - On one record: the title is the action ("Reject invoice") and `subject` the
  *   record, bold in text.primary on its own line under it ("UF-2026-1187 · Medic Lab Niš"); both
  *   name the dialog. A confirmation about several records or none keeps a question as its title.
- * - Messages are a choice (P5.28 item 9): with `notify`, the messages the application can send
+ * - Messages are a choice: with `notify`, the messages the application can send
  *   with the action stand as "Notify …" checkboxes (as ChangeConfirmDialog's) above the buttons,
  *   each as the application sets it; with any checked the button says `notifyConfirmLabel`, and
  *   `onConfirm` receives the checked ids. ConfirmDialog and DeleteConfirmDialog only.
@@ -114,7 +113,7 @@ interface ConfirmBase {
   onConfirm: (answer: ChangeConfirmAnswer) => void | Promise<void>
   /**
    * The messages the application can send with the action ("Notify 8 people in the app"), each
-   * an explicit choice, checked as the application sets it (P5.28 item 9).
+   * an explicit choice, checked as the application sets it.
    */
   notify?: readonly NotifyOption[]
   /** The confirm button's text while a message is checked ("Publish and notify"). */
@@ -187,7 +186,7 @@ function ConfirmFrame(
   const { family, icon: ActionIcon } = actionOf(props)
   const tone = confirmTone(props.tone, family)
   const TitleIcon = props.icon ?? TriangleAlert
-  // The safe action takes the focus when the dialog opens (P4.9d): a single Enter never confirms
+  // The safe action takes the focus when the dialog opens: a single Enter never confirms
   // a delete, a rejection or a discard, and the close button is not where typing starts.
   const cancelRef = useRef<HTMLButtonElement>(null)
   // A message that comes and goes in the body (a reason's error) never moves what is in view.
@@ -229,7 +228,7 @@ function ConfirmFrame(
       <DialogContent
         role="alertdialog"
         // An alertdialog is modal: said, so assistive technology (and axe) treat the page under
-        // it as inert also where the backdrop does not cover the screen (a phone frame, P5.11).
+        // it as inert also where the backdrop does not cover the screen (a phone frame).
         aria-modal="true"
         className={cn(
           'inset-y-0 my-auto h-fit overflow-hidden rounded-lg',
@@ -244,7 +243,7 @@ function ConfirmFrame(
         onInteractOutside={keep}
         {...(props.message === undefined ? { 'aria-describedby': undefined } : {})}
       >
-        {/* One inset for the header, the text and the footer (P4.9d): 16px from every edge. */}
+        {/* One inset for the header, the text and the footer: 16px from every edge. */}
         <div className="flex shrink-0 items-start justify-between gap-4 p-4">
           <DialogTitle
             className={cn(
@@ -260,9 +259,9 @@ function ConfirmFrame(
           {!busy && <DialogCloseButton label={messages['dialog.close']} />}
         </div>
         {/*
-          The text starts at the header row's start, under the icon (one inset, P4.9d). Taller
+          The text starts at the header row's start, under the icon (one inset). Taller
           than the screen (a preview), only the body scrolls: the title and the buttons stay in
-          view (P5.23). The scrolling body takes the focus for the keyboard, named by the title.
+          view. The scrolling body takes the focus for the keyboard, named by the title.
         */}
         {(props.message !== undefined ||
           props.preview !== undefined ||
@@ -377,7 +376,7 @@ export interface ConfirmAnswer {
 }
 
 /**
- * The reason an irreversible action asks for (P5.18: a cancellation), as ReasonConfirmDialog
+ * The reason an irreversible action asks for (a cancellation), as ReasonConfirmDialog
  * asks it: with `reasons` one must be chosen and the text is optional details; without them the
  * text is the reason and is required.
  */
@@ -408,7 +407,7 @@ export type IrreversibleConfirmDialogProps = ConfirmAction &
      */
     onConfirm: (answer: ConfirmAnswer) => void | Promise<void>
     /**
-     * Also asks why (P5.18, owner: one dialog asks the reason AND the typed confirmation — never
+     * Also asks why (one dialog asks the reason AND the typed confirmation — never
      * two dialogs in a row). The button enables once both are given.
      */
     reason?: IrreversibleReason
@@ -508,7 +507,7 @@ export type ReasonConfirmDialogProps = ConfirmAction &
   }
 
 /**
- * A confirmation that asks why (P4.9, the owner's review): reject, return, cancel with a reason.
+ * A confirmation that asks why: reject, return, cancel with a reason.
  * The confirm button enables once a reason is given — a reason chosen from `reasons`, or the
  * text written when there is no list; `onConfirm` receives both. Same frame, tone and buttons as
  * ConfirmDialog.

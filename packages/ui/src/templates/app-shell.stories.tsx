@@ -58,7 +58,7 @@ const COLUMNS: DataTableColumn<InvoiceRow>[] = [
   },
 ]
 
-/** A plain page inside the shell: the title and a short table (the list templates are P4.3). */
+/** A plain page inside the shell: the title and a short table. */
 function SamplePage({ phone = false }: { phone?: boolean }) {
   return (
     <div
@@ -122,7 +122,7 @@ const meta = {
           '(searchable by name or tax number, pinned and recent first, virtualised for thousands, ' +
           'suspended companies marked; also "Switch company…" in the command palette) and the ' +
           'user menu (all entries neutral, sign-out too). Breadcrumbs only from two levels. A module adds its tabs as a second row (96px in ' +
-          'all), centred. Slots (P5.3), top to bottom: `impersonationBar` (ImpersonationBar) ' +
+          'all), centred. Slots, top to bottom: `impersonationBar` (ImpersonationBar) ' +
           'above the header, `environmentMarker` (EnvironmentMarker) after the brand, ' +
           '`offlineIndicator` (OfflineIndicator) under the header — these three sticky with it — ' +
           'and `banners`, the application-wide Banners (a trial ending, a maintenance window), ' +
@@ -137,8 +137,7 @@ const meta = {
           'the provider’s ' +
           '`linkComponent`.\n\n' +
           '**When not:** there is no sidebar navigation, ever: the launchpad and module tabs ' +
-          'navigate (Appendix B.8). Sign-in and status pages use AuthShell and the status pages ' +
-          '(P4.7).',
+          'navigate. Sign-in and status pages use AuthShell and the status pages.',
       },
     },
   },
@@ -412,7 +411,7 @@ export const UserMenuInteraction: Story = {
   },
 }
 
-/** The agent button before the bell (P5.3): it opens the agent's question in a Popover. */
+/** The agent button before the bell: it opens the agent's question in a Popover. */
 export const Agent: Story = {
   tags: ['!dev'],
   name: 'Agent button',
@@ -513,7 +512,7 @@ function supportSessionEnd(): string {
   return new Date(Date.now() + 23 * 60_000 - 1_000).toISOString()
 }
 
-/** The markers of P5.3 together, as the Core fills the slots. */
+/** The shell markers together, as the Core fills the slots. */
 function shellMarkers(phone: boolean): Partial<AppShellProps> {
   return {
     impersonationBar: (
@@ -548,7 +547,7 @@ function shellMarkers(phone: boolean): Partial<AppShellProps> {
 }
 
 /**
- * The shell markers (P5.3) in their places, top to bottom: the impersonation bar above the header,
+ * The shell markers in their places, top to bottom: the impersonation bar above the header,
  * the environment marker after the brand, the offline indicator under the header — these three
  * sticky —, then an application-wide banner at the top of the content, which scrolls away.
  */
@@ -605,7 +604,7 @@ export const ShellMarkersPhone: Story = {
   },
 }
 
-/** The slots take any content: here plain elements, as before P5.3. */
+/** The slots take any content: here plain elements. */
 export const Slots: Story = {
   tags: ['!dev'],
   args: {
@@ -712,7 +711,7 @@ export const PhoneUserMenuInteraction: Story = {
       name: 'Switch company Kvadrat Gradnja d.o.o.',
     })
     await expect(item).toBeVisible()
-    // Two lines: the action, then the current company, never cut with "…" (P5, the owner).
+    // Two lines: the action, then the current company, never cut with "…" (P5).
     for (const line of item.querySelectorAll('span')) {
       await expect(line.scrollWidth).toBeLessThanOrEqual(line.clientWidth)
     }
@@ -807,13 +806,13 @@ export const PhoneScrollingTabs: Story = {
     await settle()
     const tabs = within(canvasElement).getByRole('navigation', { name: 'Module' })
     await expect(tabs).toHaveAttribute('data-fade')
-    // The faded end carries a chevron: the row visibly goes on (P5.93 item 9).
+    // The faded end carries a chevron: the row visibly goes on.
     await expect(tabs.parentElement?.querySelector('[data-tab-row-edge="end"]')).not.toBeNull()
   },
 }
 
 /**
- * The module tabs on a phone visibly scroll (P5.93 item 9): the end fades with a chevron over it;
+ * The module tabs on a phone visibly scroll: the end fades with a chevron over it;
  * a mouse wheel moves the row sideways, the chevrons page it, and the current module's tab is
  * scrolled into view when the row is drawn.
  */

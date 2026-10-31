@@ -3,12 +3,12 @@ import type { LiroMessages } from '../provider/messages'
 import type { DateRange } from './date-field'
 
 /*
- * The logic of PeriodField, kept apart from the markup so it can be unit-tested (AGENTS.md C7).
+ * The logic of PeriodField, kept apart from the markup so it can be unit-tested.
  * Every preset is computed from the provider's `today` (the tenant's date, never the device's),
  * the business year's first month (`yearStartMonth`) and the provider's `weekStartsOn`. Dates are
  * YYYY-MM-DD; the arithmetic works on whole months and days, never on a clock.
  *
- * Owner's decisions (2026-09-28, docs/decisions.md "Numbers, money and dates"):
+ * Rules:
  * - Quarters follow `quarterBasis`: 'business' counts Q1 from the business year's first month
  *   (a July start: Q1 = Jul–Sep … Q4 = Apr–Jun); 'calendar' always starts Q1 in January, for
  *   periods such as quarterly VAT.
@@ -27,7 +27,7 @@ export type PeriodPreset =
   | 'yearToDate'
   | 'lastYear'
 
-/** The presets shown by default, in this order (the previous Design System's PeriodPicker). */
+/** The presets shown by default, in this order. */
 export const PERIOD_PRESETS: readonly PeriodPreset[] = [
   'today',
   'thisWeek',

@@ -41,22 +41,22 @@ export {
 } from './company-logic'
 
 /*
- * AppShell (BUILD-PLAN P4.1; the owner's values, docs/decisions.md "Application shell"):
+ * AppShell:
  * - Header 56px on surface.header with a 1px border.default line under it; horizontal padding md
  *   (16px) on phones and lg (24px) from sm. Start, 16px (md) apart: the BrandLockup, an optional
  *   environment marker, then from sm a short vertical divider (18px, border.default) and the
  *   breadcrumbs in xs. End: the search button, then 16px, then the cluster of the agent button
- *   (`agent`, P5.3), notifications, company switcher and user menu, 8px (xs) apart.
- * - Search (the old look): a neutral "default" button, small (30px), the Search icon 15px,
+ *   (`agent`), notifications, company switcher and user menu, 8px (xs) apart.
+ * - Search: a neutral "default" button, small (30px), the Search icon 15px,
  *   `messages['shell.search']`, then 16px (md) and the shortcut as plain text ("Ctrl K"; the
- *   application gives "⌘K" on a Mac) in xs text.tertiary, no key boxes (owner); width by
+ *   application gives "⌘K" on a Mac) in xs text.tertiary, no key boxes; width by
  *   content. It opens the CommandPalette (also Ctrl/Cmd+K). On phones an icon-only subtle 36px
  *   button, like the bell.
  * - Notifications: a subtle 36px button with an 18px Bell; while anything is unread a 10px dot in
  *   status.danger.solid sits at the bell's top end corner, 4px in (Mantine Indicator offset), no
  *   number and no animation; the count is in the button's name ("Notifications, 3 unread") and in
- *   the panel (NotificationsPanel, P4.9), which the application passes.
- * - Company switcher (CompanySwitcher, P4.9): a subtle neutral 30px button, the company 13px
+ *   the panel (NotificationsPanel), which the application passes.
+ * - Company switcher (CompanySwitcher): a subtle neutral 30px button, the company 13px
  *   medium and a 14px chevron; a 320px list below it at the end, searchable by name or tax number
  *   above 7 companies, sectioned Pinned / Recent / All companies, virtualised for thousands, a
  *   status badge for a suspended company and the application's note ("5 tasks") — never a bare
@@ -64,13 +64,12 @@ export {
  *   user menu that opens a full-screen sheet with the search field at the top.
  * - User menu: PersonAvatar sm (26px) in a 36px button, no name; the menu below at the end, 220px,
  *   radius md, shadow md: the name xs semibold and the e-mail xs text.tertiary, then the entries
- *   with 14px icons, all neutral — signing out is not destructive (P4.9).
- * - Breadcrumbs only from two levels: one crumb repeats the page's title (P4.9).
+ *   with 14px icons, all neutral — signing out is not destructive.
+ * - Breadcrumbs only from two levels: one crumb repeats the page's title.
  * - Module tabs: a second header row (the header 96px in all), centred, as page-level tabs; links,
  *   the current one `aria-current="page"` with the 2px brand line; a row wider than the screen
- *   scrolls and fades at the edge with more past it (P4.9). There is no sidebar, ever
- *   (Appendix B.8).
- * - Slots (P5.3), top to bottom: the impersonation bar (ImpersonationBar) above the header, the
+ *   scrolls and fades at the edge with more past it. There is no sidebar, ever.
+ * - Slots, top to bottom: the impersonation bar (ImpersonationBar) above the header, the
  *   environment marker (EnvironmentMarker) after the brand, the offline indicator
  *   (OfflineIndicator) under the header and its tabs — these three sticky with the header —, then
  *   the application-wide `banners` at the top of the content, full width and square, scrolling
@@ -109,7 +108,7 @@ export interface ModuleTab {
 export interface AppShellProps {
   /** The brand at the start, a link home (BrandLockup's props: the application's brand files). */
   brand: BrandLockupProps
-  /** Where the user is (from the third level of routes, Appendix B.8); hidden on phones. */
+  /** Where the user is (from the third level of routes); hidden on phones. */
   breadcrumbs?: readonly Crumb[]
   /** The command palette the search button opens (its items and search). */
   commands?: Omit<CommandPaletteProps, 'open' | 'onOpenChange'>
@@ -119,7 +118,7 @@ export interface AppShellProps {
    */
   searchShortcut?: string
   /**
-   * The application's agent button, before the notifications (P5.3): a subtle 36px IconButton
+   * The application's agent button, before the notifications: a subtle 36px IconButton
    * (Bot, named "Liro agent, 1 question") that opens a Popover or Drawer with AgentQuestion. On
    * phones too.
    */
@@ -135,14 +134,14 @@ export interface AppShellProps {
   user?: ShellUser
   /** The module's tabs: a second header row. */
   moduleTabs?: readonly ModuleTab[]
-  /** Above the header, never dismissible (P5.3 ImpersonationBar). */
+  /** Above the header, never dismissible (ImpersonationBar). */
   impersonationBar?: ReactNode
-  /** After the brand (P5.3 EnvironmentMarker: sandbox, demo). */
+  /** After the brand (EnvironmentMarker: sandbox, demo). */
   environmentMarker?: ReactNode
-  /** Under the header (P5.3 OfflineIndicator). */
+  /** Under the header (OfflineIndicator). */
   offlineIndicator?: ReactNode
   /**
-   * Application-wide Banners (P5.3: a trial ending, a maintenance window), most important first.
+   * Application-wide Banners (a trial ending, a maintenance window), most important first.
    * They stand under the header and the offline indicator, above the page, full width and
    * square, and scroll away with the page; a dismissible one is the application's state
    * (`onClose`). Never a message about one page's content: that is an Alert in the page.
@@ -264,7 +263,7 @@ function UserMenu({
             return <DropdownMenuLabel key={index}>{entry.label}</DropdownMenuLabel>
           }
           const Icon = entry.icon
-          // The user menu is neutral (P4.9, the owner's review): signing out loses nothing, so it
+          // The user menu is neutral: signing out loses nothing, so it
           // is never drawn in the danger colours; `destructive` is not read here.
           return (
             <DropdownMenuItem
@@ -285,12 +284,12 @@ function UserMenu({
   )
 }
 
-// The tab row rule (P5.90 item 6) lives with every tab row's; edgeFade stays importable here.
+// The tab row rule lives with every tab row's; edgeFade stays importable here.
 export { edgeFade }
 
 function ModuleTabs({ tabs }: { tabs: readonly ModuleTab[] }) {
   const { messages, linkComponent: Link } = useLiro()
-  // The tab row rule (P5.90 item 6): on a narrow screen the row scrolls sideways, without a
+  // The tab row rule: on a narrow screen the row scrolls sideways, without a
   // scrollbar of its own — a tab that takes the focus scrolls into view, a finger swipes — each
   // edge with tabs past it fades into the header, and the current module's tab is scrolled into
   // view when the row is drawn.
@@ -326,7 +325,7 @@ function ModuleTabs({ tabs }: { tabs: readonly ModuleTab[] }) {
 /**
  * The frame of every Liro screen: the header with the brand, breadcrumbs, search, notifications,
  * company and user; the module's tabs; the page; on phones the bottom action bar. Navigation is
- * the launchpad and module tabs, never a sidebar (Appendix B.8).
+ * the launchpad and module tabs, never a sidebar.
  */
 export function AppShell(props: AppShellProps) {
   const { messages } = useLiro()
@@ -338,7 +337,7 @@ export function AppShell(props: AppShellProps) {
   const contentId = useId()
   const shortcut = props.searchShortcut ?? `${messages['grid.modifierKey']} K`
   const root = useRef<HTMLDivElement>(null)
-  // "Switch company…" in the command palette (P4.9): it opens the switcher once the palette has
+  // "Switch company…" in the command palette: it opens the switcher once the palette has
   // closed, so the palette's focus return does not close the popover again.
   const commandItems: readonly CommandItem[] =
     props.commands === undefined
@@ -378,7 +377,7 @@ export function AppShell(props: AppShellProps) {
     }
   }, [])
 
-  // The bottom bar's height, as --liro-shell-bottom on the provider's root (P4.9d), so the
+  // The bottom bar's height, as --liro-shell-bottom on the provider's root, so the
   // Toaster — placed inside LiroProvider, beside or inside the shell — stands above the bar and
   // never covers its actions.
   const [bottom, setBottom] = useState<HTMLDivElement | null>(null)
@@ -427,7 +426,7 @@ export function AppShell(props: AppShellProps) {
             <div className="flex min-w-0 flex-1 items-center gap-4">
               <BrandLockup {...props.brand} compact={phone} />
               {props.environmentMarker}
-              {/* One level is no trail: the page's title already says it (P4.9). */}
+              {/* One level is no trail: the page's title already says it. */}
               {!phone && props.breadcrumbs !== undefined && props.breadcrumbs.length > 1 && (
                 <>
                   <span
@@ -461,7 +460,7 @@ export function AppShell(props: AppShellProps) {
                   <ButtonPrimitive
                     family="neutral"
                     emphasis="secondary"
-                    // Exactly 30px (owner): the keys' line height made it 35.5px, which put its
+                    // Exactly 30px: the keys' line height made it 35.5px, which put its
                     // edges between pixels and changed their antialiasing from run to run.
                     className={cn(SMALL_BUTTON, 'h-control-sm py-0')}
                     aria-keyshortcuts="Control+K Meta+K"
@@ -521,7 +520,7 @@ export function AppShell(props: AppShellProps) {
       </div>
       <main id={contentId} tabIndex={-1} className="flex min-w-0 flex-1 flex-col outline-none">
         {props.banners !== undefined && props.banners !== null && props.banners !== false && (
-          // Full-width strips at the top of the content (P5.3): square, without side borders, a
+          // Full-width strips at the top of the content: square, without side borders, a
           // 1px border.default line under each, padded like the header; they scroll with the page.
           <div
             data-slot="shell-banners"

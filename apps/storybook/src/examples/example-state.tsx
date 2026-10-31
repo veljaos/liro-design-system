@@ -8,7 +8,7 @@ import {
 } from 'react'
 
 /*
- * State the examples' application keeps above its screens (P5.28 item 22): what must outlive a
+ * State the examples' application keeps above its screens: what must outlive a
  * screen — a table's open tab, the till's journal — as the real application keeps it on its
  * server. Each screen starts fresh (ExampleApp keys the screen by its path); a value kept here by
  * its key is still there when the user comes back. Without the provider (a screen rendered

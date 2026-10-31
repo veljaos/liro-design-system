@@ -13,9 +13,8 @@ import { useLiro } from '../provider/liro-provider'
 import { PageHeader, type PageBack } from './page-header'
 
 /*
- * DocumentPage (BUILD-PLAN P4.5, the most important template; the owner's decisions,
- * docs/decisions.md "Document page"): one business document — an invoice, an order, a journal
- * entry — read or edited on its own page.
+ * DocumentPage (the most important template): one business document — an invoice, an order, a
+ * journal entry — read or edited on its own page.
  * - The lifecycle bar above the header (LifecycleBar): where the document stands.
  * - The header: back, the document's number (h1), status, actions at the end; with side panels, a
  *   subtle neutral "Hide panels" / "Show panels" button (PanelRight, mirrored in right-to-left)
@@ -24,29 +23,29 @@ import { PageHeader, type PageBack } from './page-header'
  *   application ("Customer", "Supplier") in xs text.secondary, the name sm semibold, the tax number
  *   and the address xs text.secondary; then the key figures (KeyFigures). A document among three
  *   parties (a cession: the assignee and the debtor; an assignment: the paying and the receiving
- *   party; P5.55) passes the others in `counterparties`: every block side by side at the same
+ *   party) passes the others in `counterparties`: every block side by side at the same
  *   level, one under the other where they do not fit.
  * - The lines (an EditableGrid or a read-only DataTable, from the application) in one card, edge
  *   to edge, without a title by default (the column headers say what it is), the table header at
  *   the card's top; the totals (DocumentTotals) under them at the end, inside the same card.
  * - Further sections (notes, payment terms) as SectionCards under the lines.
- * - The header is a set of slots (P4.9, the owner's review): the Core decides what a document's
+ * - The header is a set of slots: the Core decides what a document's
  *   header shows — `counterparty` (the customer block), `keyFigures` (amount due, total, due date …,
  *   any two to four, or none), `details` (the values the system filled in on a draft, as
  *   ChangeableValues). A slot left out takes no room.
  * - A correcting or cancelling document (decrease, increase, cancellation document, credit note,
- *   return) shows its source in `source` (DocumentSource, P5.23): beside the counterparty, at its
+ *   return) shows its source in `source` (DocumentSource): beside the counterparty, at its
  *   level — "Corrects" and the source's link with kind, number, state, date and total. The
  *   source lists its correcting documents in its Related documents panel; the "Based on"
  *   `references` keep the documents this one is based on, never the back-link.
- * - A draft is as simple as possible (P4.9): the application passes no side panels (attachments
+ * - A draft is as simple as possible: the application passes no side panels (attachments
  *   only when there are some), two header actions (Preview, Issue invoice), the filled-in values as
  *   `details`, and an EditableGrid with unit, tax category and amount per line.
  * - The side panels (SidePanels) in a 300px column from lg (75em), as DetailPage; the whole
  *   column can be hidden (`panelsHidden`), and the document takes the full width. Below 75em and
  *   on phones the panels stand under the document, and the whole-column button is not shown. Both
  *   states are the application's (callbacks), so the Core can remember them.
- * - Complex documents (P5.18), a fixed block order: header (with `banner` above it — a cancelled
+ * - Complex documents, a fixed block order: header (with `banner` above it — a cancelled
  *   document's marker — and the `currency` block in it) → "Based on" `references` → lines (with
  *   the `specification` summary row under them) → totals (recap, deductions, home-currency
  *   equivalents, footnotes) → `notes` → `attachments` → the other sections. A block without
@@ -90,13 +89,13 @@ export interface DocumentPageProps {
   lifecycle?: { steps: readonly LifecycleStep[]; current: number; label: string }
   counterparty?: Counterparty
   /**
-   * Further parties after `counterparty`, for a document among three parties (P5.55: a cession's
+   * Further parties after `counterparty`, for a document among three parties (a cession's
    * debtor, an assignment's receiving party), each with its role as `label`: side by side with
    * the counterparty.
    */
   counterparties?: readonly Counterparty[]
   /**
-   * The document a correcting or cancelling document refers to (`DocumentSource`, P5.23): beside
+   * The document a correcting or cancelling document refers to (`DocumentSource`): beside
    * the counterparty, at its level, never in the "Based on" `references`.
    */
   source?: ReactNode
@@ -104,14 +103,14 @@ export interface DocumentPageProps {
   /**
    * The document's own values under the counterparty — on a draft, the values the system filled
    * in (number, issue date, due date) as ChangeableValues, in one wrapping row. Every draft's
-   * header is built this way (P5.23): changeable values with their field, read-only ones (a
+   * header is built this way: changeable values with their field, read-only ones (a
    * "Based on" link) as ChangeableValues without a field, so they align.
    */
   details?: ReactNode
   /**
    * A title over the lines' card. Default: none — the table's column headers say what it is,
-   * and the table starts at the card's top (owner, P4.5). A card that holds the page's only
-   * table has no title (P5.23): pass one only when the page has more than one table.
+   * and the table starts at the card's top. A card that holds the page's only
+   * table has no title: pass one only when the page has more than one table.
    */
   linesTitle?: string
   /**
@@ -122,19 +121,19 @@ export interface DocumentPageProps {
   /** Actions in the lines' header ("Add from order"). */
   linesActions?: ReactNode
   /**
-   * The totals under the lines, computed by the application: rows, the final row, and (P5.18) the
+   * The totals under the lines, computed by the application: rows, the final row, and the
    * recap by tax category, the deductions, the home-currency equivalents and the footnotes.
    */
   totals?: Omit<DocumentTotalsProps, 'className'>
   /**
-   * A marker above the whole document (P5.18): a cancelled document's `CancellationBanner`.
+   * A marker above the whole document: a cancelled document's `CancellationBanner`.
    */
   banner?: ReactNode
   /** The currency block of a foreign-currency document (`DocumentCurrency`), in the header. */
   currency?: ReactNode
   /**
    * The documents this one is based on (`DocumentReferences`), one line between the header and
-   * the lines. A correcting or cancelling document's source goes in `source` (P5.23).
+   * the lines. A correcting or cancelling document's source goes in `source`.
    */
   references?: ReactNode
   /**
@@ -142,10 +141,10 @@ export interface DocumentPageProps {
    * lines and above the totals.
    */
   specification?: ReactNode
-  /** The notes block (`DocumentNotes`), after the lines and totals (P5.18). */
+  /** The notes block (`DocumentNotes`), after the lines and totals. */
   notes?: DocumentBlock
   /**
-   * The attachments block, after the notes (P5.18): the files, each with its "send with the
+   * The attachments block, after the notes: the files, each with its "send with the
    * document" flag.
    */
   attachments?: DocumentBlock
@@ -194,7 +193,7 @@ export function DocumentPage(props: DocumentPageProps) {
   // document; below 75em CSS puts them under it (`layout` 'narrow' forces that in a frame).
   const beside = layout === 'desktop'
   const hidden = beside && props.panelsHidden === true
-  // The counterparty and any further parties (P5.55), in the application's order.
+  // The counterparty and any further parties, in the application's order.
   const parties = [
     ...(props.counterparty === undefined ? [] : [props.counterparty]),
     ...(props.counterparties ?? []),
@@ -320,7 +319,7 @@ export function DocumentPage(props: DocumentPageProps) {
           {...(actions === undefined ? {} : { actions })}
         />
         {(props.source !== undefined && props.source !== null) || parties.length > 1 ? (
-          // The source (P5.23) and further parties (P5.55) at the counterparty's level: side by
+          // The source and further parties at the counterparty's level: side by
           // side, one under the other where they do not fit.
           <div data-slot="document-parties" className="flex flex-wrap items-start gap-x-12 gap-y-4">
             {parties.map((party, index) => (

@@ -103,7 +103,7 @@ export const Open: Story = {
 }
 
 /**
- * Open on a phone (P5.28 item 1): a sheet on the screen's bottom edge, titled by the field's
+ * Open on a phone: a sheet on the screen's bottom edge, titled by the field's
  * label — the presets first in two columns, then "Custom range" with one month across the
  * sheet's full width. Nothing runs off the screen.
  */
@@ -185,7 +185,7 @@ export const PresetAndRange: Story = {
 }
 
 /**
- * The custom range typed, no calendar (P5.94 item 2): Start, then End and Enter apply it and
+ * The custom range typed, no calendar: Start, then End and Enter apply it and
  * close the popover; an end before the start is said under the two fields and not applied.
  */
 export const TypedRange: Story = {

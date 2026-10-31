@@ -59,7 +59,7 @@ export type {
 } from './hierarchy-logic'
 
 /*
- * HierarchyChart (BUILD-PLAN P5.42): people and positions by their reporting lines, units with
+ * HierarchyChart: people and positions by their reporting lines, units with
  * their heads and headcounts, a group of companies with ownership shares on the lines, cost
  * centres. Every word and figure is the application's; the chart draws and reports.
  * - HTML, not a canvas: nested lists of boxes, the connector lines drawn by CSS borders in
@@ -82,7 +82,7 @@ export type {
  *   scrolled into view — not opened: its card waits for a press or Enter on it; Enter in the field
  *   goes to the next; "2 of 5 found" is announced politely.
  * - Choosing: a press or Enter on a node chooses it (the neutral selection, surface.selected and a
- *   border.selected border; D17) and calls `onOpen(id)` — the application opens its card or page.
+ *   border.selected border) and calls `onOpen(id)` — the application opens its card or page.
  *   Secondary (dotted-line) relations are the application's: listed in its card, never drawn.
  * - A WAI-ARIA tree: `role="tree"`, every node a `treeitem` with aria-level, aria-setsize,
  *   aria-posinset and aria-expanded, named by its title and subtitle; one node in the tab order
@@ -91,14 +91,14 @@ export type {
  *   ArrowDown / ArrowUp; Home, End; Enter opens; Space opens or closes; `*` opens the siblings
  *   (`hierarchyKeyAction`, tested).
  * - The chart scrolls in both directions inside its card (`maxHeight`); the page never scrolls
- *   sideways (D19). "Fit to width" scales it to the card, "Actual size" back (pressed buttons; no
+ *   sideways. "Fit to width" scales it to the card, "Actual size" back (pressed buttons; no
  *   dragging).
  * - Phones (below 48em, or `layout`): the same nodes as an indented list (TreeView), with the
  *   same search, unit, choosing and opening.
  * - Loading: skeleton boxes; `error` with Try again; no nodes: an EmptyState with the
  *   application's words (`empty`) and its first step (`emptyAction`, "Add the first position").
  *   While loading, failed or empty the tools (search, fit, show only this unit) are not drawn:
- *   they have nothing to work on (P5.93 item 2).
+ *   they have nothing to work on.
  */
 
 export interface HierarchyChartProps {
@@ -343,7 +343,7 @@ function Item({
         // The lines to the parent: the half bar toward the start (not on the first child), the
         // half bar toward the end with the drop to this node (no bar on the last child). Every
         // drop is the 1px column just after the middle (toward the end); the "+N" toggle is
-        // centred on that column (P5.93 item 35).
+        // centred on that column.
         item.level > 1 &&
           "before:absolute before:start-0 before:top-0 before:w-1/2 before:border-0 before:border-t before:border-solid before:border-strong before:content-[''] first:before:hidden after:absolute after:start-1/2 after:top-0 after:h-8 after:w-1/2 after:border-0 after:border-s after:border-t after:border-solid after:border-strong after:content-[''] last:after:border-t-0",
         '[&:focus-visible>[data-slot=hierarchy-node]]:outline-2 [&:focus-visible>[data-slot=hierarchy-node]]:outline-offset-2 [&:focus-visible>[data-slot=hierarchy-node]]:outline-focus',
@@ -353,7 +353,7 @@ function Item({
       {item.level > 1 && node.lineLabel !== undefined && (
         <span
           aria-hidden="true"
-          // Centred on the line's 1px column, as the toggle (P5.93 item 35).
+          // Centred on the line's 1px column, as the toggle.
           className="pointer-events-none absolute start-1/2 top-1.5 z-10 flex w-px justify-center"
         >
           <span
@@ -385,7 +385,7 @@ function Item({
       {item.expandable && state.controls && (
         // The toggle stands on the line under the box: a pointer's way to open and close. The
         // keyboard opens and closes with Space on the node (it is not a tab stop of its own).
-        // Exactly centred on the line (P5.93 item 35): it is centred on the same 1px column as
+        // Exactly centred on the line: it is centred on the same 1px column as
         // the lines (`start-1/2`, one pixel wide) and its width is odd (`toggleWidth`), so it
         // stands on whole pixels in both directions.
         <div className="relative z-10 -mt-3 h-6 self-stretch">
@@ -488,7 +488,7 @@ export function HierarchyChart(props: HierarchyChartProps) {
   const depth = props.defaultExpandedDepth ?? 3
   const stackFrom = props.stackFrom ?? 3
   const vacantLabel = props.vacantLabel ?? messages['hierarchy.vacant']
-  // The tools work on nodes: not drawn while loading, failed or empty (P5.93 item 2).
+  // The tools work on nodes: not drawn while loading, failed or empty.
   const hasNodes = props.loading !== true && props.error === undefined && props.nodes.length > 0
   const showToolbar = (props.toolbar ?? true) && hasNodes
   const searchable = props.search ?? true
@@ -691,7 +691,7 @@ export function HierarchyChart(props: HierarchyChartProps) {
       data-slot="hierarchy-toolbar"
       className="flex flex-col gap-1 border-0 border-b border-solid border-default p-4 print:hidden"
     >
-      {/* The tools stand on the search field's line (P5.93 item 6); what the search found is a
+      {/* The tools stand on the search field's line; what the search found is a
           line of its own under both. */}
       <div className="flex flex-wrap items-end gap-x-4 gap-y-3">
         {searchable && (

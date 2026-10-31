@@ -6,18 +6,18 @@ import { RadioGroup, RadioGroupItem } from '../primitives/radio-group'
 import { useLiro } from '../provider/liro-provider'
 
 /*
- * CandidateList (P5.23, the owner's review of the bank statement): the records the application
+ * CandidateList: the records the application
  * proposes for one decision, best first, each with the reason it is proposed, to choose one or
  * several — the open items a payment may close, the existing records a new one may duplicate,
  * the people a task may go to. The order, the reasons and what is preselected are the
- * application's; the list only shows them and reports the choice. It computes nothing (D4): a
+ * application's; the list only shows them and reports the choice. It computes nothing: a
  * figure arrives written (MoneyText).
  * - A row: the checkbox (several) or the radio (one) at the start; the title (sm medium), the
  *   subtitle (xs text.secondary), the reason (xs medium text.secondary, words, never colour); the
  *   figure at the end (sm medium, tabular, never wrapping). Rows 12px by 12px, divided by
- *   border.subtle lines, a line above the first and below the last (P4.9 rule 4: rows, never
+ *   border.subtle lines, a line above the first and below the last (rows, never
  *   cards).
- * - The chosen rows are the neutral selection (D17): surface.selected with the 3px border.selected
+ * - The chosen rows are the neutral selection: surface.selected with the 3px border.selected
  *   bar at the start; only the control is blue.
  * - The whole row is the control's label, so a press anywhere on it chooses; the keys are the
  *   native ones (Tab and Space for checkboxes, the arrows inside a radio group).
@@ -119,8 +119,8 @@ export function CandidateList(props: CandidateListProps) {
   if (props.candidates.length === 0) {
     return (
       <div data-slot="candidate-list" className={props.className}>
-        {/* Text (the default or the application's words) takes its direction from its content
-            (D15); an element is the application's own. */}
+        {/* Text (the default or the application's words) takes its direction from its content;
+            an element is the application's own. */}
         {props.empty === undefined || typeof props.empty === 'string' ? (
           <p className={cn('m-0 py-3 text-sm text-secondary', TEXT_DIRECTION)}>
             {props.empty ?? messages['candidates.empty']}

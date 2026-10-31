@@ -8,18 +8,18 @@ import { StatusBadge, type Tone } from './status-badge'
 import { meterShare, usageWords } from './usage-logic'
 
 /*
- * UsageMeter (BUILD-PLAN P5.36): how much of an allowance is used — users of a licence, storage,
+ * UsageMeter: how much of an allowance is used — users of a licence, storage,
  * documents sent this month, connections — as words and a bar. Generic: the name, the amounts,
  * the unit, the state and the note are the application's.
  * - **Words first:** the name (sm medium) at the start and "24 of 30" (or "4,2 GB of 10 GB", "412
  *   used, no limit"; `valueText` replaces them) at the end, tabular, the numbers through
- *   `format.number` exactly as given (decimal strings, D4).
+ *   `format.number` exactly as given (decimal strings).
  * - **The bar** under them: ProgressBar's look (5px, rounded, filling from the leading edge),
  *   named by the name, its value read as the same words (`aria-valuetext`). It is only a picture:
  *   its length is the one place a number is used (as the charts draw), and an amount over its
  *   limit fills it. No limit, no bar.
  * - **The state is the application's** (`state`: "Near the limit", warning; "Over the limit",
- *   danger) as a badge in words and tone: the meter never turns a figure into a state (D30), so
+ *   danger) as a badge in words and tone: the meter never turns a figure into a state, so
  *   the bar itself keeps one colour.
  * - A `note` under it ("Resets on 01.11.2026.", "Included in your plan: 30") and an `action`
  *   (the application's link or button, "Add users").

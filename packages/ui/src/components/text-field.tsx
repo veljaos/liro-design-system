@@ -22,7 +22,7 @@ interface TextValueProps {
 }
 
 export interface TextFieldProps extends FieldBaseProps, TextValueProps {
-  /** Default: 'text'. Numbers, money and dates have their own fields (P2.3). */
+  /** Default: 'text'. Numbers, money and dates have their own fields. */
   type?: 'text' | 'email' | 'tel' | 'url' | 'search'
   /** The browser's autofill hint, e.g. 'email', 'organization'. */
   autoComplete?: HTMLInputAutoCompleteAttribute
@@ -39,7 +39,7 @@ function valueProps(props: TextValueProps & { readOnly?: boolean }) {
     ...(props.value === undefined ? {} : { value: props.value }),
     ...(props.defaultValue === undefined ? {} : { defaultValue: props.defaultValue }),
     ...(props.onBlur === undefined ? {} : { onBlur: props.onBlur }),
-    // Read-only shows "—" for an empty value, never the application's placeholder (P5.93).
+    // Read-only shows "—" for an empty value, never the application's placeholder.
     ...(props.placeholder === undefined || props.readOnly === true
       ? {}
       : { placeholder: props.placeholder }),

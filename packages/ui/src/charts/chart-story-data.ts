@@ -1,5 +1,5 @@
 /*
- * Fictitious data for the chart stories (P4.7a): a Serbian construction-materials trader,
+ * Fictitious data for the chart stories: a Serbian construction-materials trader,
  * Kvadrat Gradnja d.o.o., in RSD. Not part of the package: nothing in src/charts/index.ts imports
  * this file. No classes here: Storybook compiles classes only from *.stories.tsx files.
  */
@@ -319,8 +319,8 @@ function noise(n: number): number {
 }
 
 /**
- * Daily sales of the two stores for 92 days to 6 October 2026, thousands of RSD (P4.7c, owner:
- * believable data). Both stores keep the same week — Saturday strongest, Sunday short hours —
+ * Daily sales of the two stores for 92 days to 6 October 2026, thousands of RSD (believable
+ * data). Both stores keep the same week — Saturday strongest, Sunday short hours —
  * with a few percent of day-to-day noise and no sawtooth (weekdays alike, Friday and Saturday
  * stronger, Sunday about 60%); the first working days of a month are stronger
  * (contractors start their jobs), the week before the school year has the end-of-season sale,
@@ -366,11 +366,6 @@ export function dailyTotal(store: 'beograd' | 'noviSad', days: number): string {
   return `${String(Math.trunc(paras / 100))}.${String(paras % 100).padStart(2, '0')}`
 }
 
-/**
- * A story's play function: opens the first chart's "Show as table" and checks the table, so the
- * table view of every chart family has its pictures in the four modes (P4.9: it was wrong in
- * right-to-left and had no baseline).
- */
 /** A card that opens on its table (`defaultView: 'table'`) shows the table and "Show as chart". */
 export async function tableShown({ canvasElement }: { canvasElement: HTMLElement }) {
   await settle()
@@ -393,7 +388,7 @@ export async function showTable({ canvasElement }: { canvasElement: HTMLElement 
 }
 
 /**
- * A story's play function for the charts whose marks are reached one by one (P5.93 item 44): the
+ * A story's play function for the charts whose marks are reached one by one: the
  * plot is one Tab stop; an arrow reaches the first mark, which shows its tooltip, takes the focus
  * ring and is announced.
  */

@@ -16,7 +16,7 @@ import {
 
 const LABELS = { cash: 'Cash', card: 'Card', split: 'Split' }
 
-describe('paymentOptions (P5.28)', () => {
+describe('paymentOptions', () => {
   it('names the built-in methods by the provider and keeps their kinds', () => {
     expect(paymentOptions(['cash', 'card', 'split'], LABELS)).toEqual([
       { id: 'cash', label: 'Cash', kind: 'cash' },
@@ -43,7 +43,7 @@ const LINES = [
   { id: 'c', available: '2', unavailableReason: 'Refunded in full' },
 ]
 
-describe('lines chosen with quantities (P5.28)', () => {
+describe('lines chosen with quantities', () => {
   it('counts a line as chosen only above zero, exactly', () => {
     expect(isChosen('1')).toBe(true)
     expect(isChosen('0.001')).toBe(true)
@@ -83,7 +83,7 @@ describe('lines chosen with quantities (P5.28)', () => {
   })
 })
 
-describe('kindMarker (P5.28)', () => {
+describe('kindMarker', () => {
   const types = [
     { id: 'normal', label: 'Normal' },
     { id: 'proforma', label: 'Proforma', marker: 'Not a fiscal receipt' },
@@ -100,7 +100,7 @@ describe('kindMarker (P5.28)', () => {
   })
 })
 
-describe('partOverLimit and stillToPay: a part of a payment (P5.94 item 5)', () => {
+describe('partOverLimit and stillToPay: a part of a payment', () => {
   const card = { kind: 'card' as const }
   const voucher = { kind: 'plain' as const, maxAmount: '2000', maxReason: 'Worth 2.000,00 RSD.' }
   it('lets cash be more than what remains: it gives change', () => {

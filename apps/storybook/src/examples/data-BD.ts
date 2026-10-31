@@ -1,7 +1,7 @@
 /*
- * Group BD's example data (P5.63, sign-in flows): what the Core answers at each step of signing in
+ * The example data (sign-in flows): what the Core answers at each step of signing in
  * to Liro on 14.10.2026 at 09:40 — Milica Petrović's password and two-factor code (the e-mail step
- * is the sign-in screen of P4.8) and the forgotten password. Every sentence here is the
+ * is the examples' sign-in screen) and the forgotten password. Every sentence here is the
  * application's: the design system shows it as given. Not part of the package.
  */
 

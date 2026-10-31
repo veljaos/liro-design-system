@@ -79,7 +79,7 @@ export const Failed: Story = {
   },
 }
 
-/** Subscribed: only the thanks — no title, line, form or note (P5.94 item 11). */
+/** Subscribed: only the thanks — no title, line, form or note. */
 export const Subscribed: Story = {
   args: { subscribed: true },
   play: async ({ canvasElement }) => {
@@ -92,7 +92,7 @@ export const Subscribed: Story = {
   },
 }
 
-/** Closed for now (P5.93): the address read-only, Subscribe unavailable, the reason in words. */
+/** Closed for now: the address read-only, Subscribe unavailable, the reason in words. */
 export const Unavailable: Story = {
   name: 'Unavailable with reason',
   args: { unavailableReason: 'The newsletter is paused until 1 November.' },

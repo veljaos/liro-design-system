@@ -43,12 +43,12 @@ import { usePhone } from './use-phone'
 import { Tooltip } from './popover'
 
 /*
- * DashboardGrid (P5.81): the cards of a dashboard the user arranges — the application's cards
+ * DashboardGrid: the cards of a dashboard the user arranges — the application's cards
  * (StatCard, the charts, a SectionCard with a table) in the user's order and sizes. The grid shows
  * what it is given and reports every change with the new layout (`onLayoutChange`); the
- * application keeps the draft, saves it on its "Done" and puts it back on its "Cancel". Added
- * because nothing arranged cards of different widths: Launchpad's editing mode moves and hides
- * module cards of one size, DashboardPage lays out a fixed set (docs/notes/P5.77-reports.md).
+ * application keeps the draft, saves it on its "Done" and puts it back on its "Cancel".
+ * Launchpad's editing mode moves and hides module cards of one size and DashboardPage lays out a
+ * fixed set; this grid arranges cards of different widths.
  * - Grid: `columns` columns (default 4) from md (62em), two from xs (36em), one below and always
  *   one in the phone layout; 16px apart. A card takes its size's columns (the application's
  *   sizes: "Small" 1, "Medium" 2, "Full width" 4), never more than the grid has (two in the
@@ -63,8 +63,7 @@ import { Tooltip } from './popover'
  *   start, Move to the end) and Remove (X, 28px). The content stays visible and inert (its links
  *   and buttons are not reached while arranging). Remove asks nothing: the application's Cancel
  *   puts the card back.
- * - Moving, three ways (WCAG 2.5.7): drag (decisions.md "Launchpad dragging is live": pointer
- *   events, a mouse after 4px, a touch after a 250ms press; the card lifts — shadow lg,
+ * - Moving, three ways (WCAG 2.5.7): drag (live, as every drag of the library: pointer events, a mouse after 4px, a touch after a 250ms press; the card lifts — shadow lg,
  *   border.strong, the raised layer — and follows the pointer, a neutral dashed placeholder of
  *   its size marks where it lands, the slot nearest its centre measured when the drag starts, so
  *   right-to-left needs no mirroring; Escape or a cancelled pointer puts it back); the keyboard
@@ -414,7 +413,7 @@ export function DashboardGrid(props: DashboardGridProps) {
             )
           }
           if (drag?.id === card.id && draggedSlot !== undefined) {
-            // Where the dragged card lands: its size, neutral, never blue (D17).
+            // Where the dragged card lands: its size, neutral, never blue.
             return (
               <li
                 key={card.id}

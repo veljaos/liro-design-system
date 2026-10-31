@@ -119,9 +119,9 @@ function TablePanel({
   note,
 }: {
   table: BistroTable | undefined
-  /** What just happened to the table, with Undo where it can be undone (P5.93 item 3). */
+  /** What just happened to the table, with Undo where it can be undone. */
   note?: ReactNode
-  /** Opens the table's tab on the till, a new one for a free table (P5.90 item 20). */
+  /** Opens the table's tab on the till, a new one for a free table. */
   onOpen: () => void
   onMove: () => void
   onSeat: () => void
@@ -258,7 +258,7 @@ function ChannelOrders({
   channel: ChannelOrder['channel']
   orders: readonly ChannelOrder[]
   onAdvance: (order: ChannelOrder) => void
-  /** The last step, with Undo, at the top of the list (P5.93 item 3: no toast). */
+  /** The last step, with Undo, at the top of the list (no toast). */
   undo?: ReactNode
 }) {
   const shown = orders.filter((order) => order.channel === channel && order.state !== 'done')
@@ -355,7 +355,7 @@ function ChannelOrders({
 }
 
 /**
- * Moving a party (P5.28 items 6, 9, 25): the free tables with seats enough, best first, chosen and
+ * Moving a party: the free tables with seats enough, best first, chosen and
  * confirmed in one dialog — the table old → new and, for a reservation, the guest's SMS as a
  * choice. When no free table is big enough the dialog says so and offers merging tables.
  */
@@ -400,7 +400,7 @@ function MoveGuestsDialog({
                 onOpenChange(false)
               }}
             />
-            {/* The floor plan is edited on a computer or a tablet (P5.28 item 27). */}
+            {/* The floor plan is edited on a computer or a tablet. */}
             {!phone && (
               <Button
                 family="primary"
@@ -478,7 +478,7 @@ function MoveGuestsDialog({
 
 /**
  * Bistro Dunav's evening service: the floor (dine-in), takeaway and delivery. One tap on a table
- * opens its tab — a free table is opened at once, with no question (P5.90 item 20); a reserved
+ * opens its tab — a free table is opened at once, with no question; a reserved
  * table shows its reservation with "Seat guests". Clearing and seating offer Undo instead of a
  * confirmation; a cleared table is free at once (no "Needs cleaning" state).
  */
@@ -498,7 +498,7 @@ export function Service({
   const { format } = useLiro()
   const navigate = useContext(Navigate)
   const number = (value: string) => format.number(value)
-  // The tables and the orders are the restaurant's records: kept above the screens (P5.28).
+  // The tables and the orders are the restaurant's records: kept above the screens.
   const [tables, setTables] = useExampleState<readonly BistroTable[]>(
     'bistro.tables',
     () => BISTRO_TABLES,
@@ -508,7 +508,7 @@ export function Service({
     () => BISTRO_ORDERS,
   )
   const [channel, setChannel] = useState(initialChannel)
-  // The table the waiter just left is chosen, with what went to the kitchen (P5.93 item 3).
+  // The table the waiter just left is chosen, with what went to the kitchen.
   const [left, setLeft] = useExampleState<LeftTable | null>(`left.${BISTRO_VENUE.id}`, () => null)
   const [chosen, setChosen] = useState<string | undefined>(tableId ?? left?.tableId)
   /** The last change on the floor, with its Undo in the table's panel or the orders' list. */
@@ -558,7 +558,7 @@ export function Service({
         setLeft(null)
       }}
       onItemActivate={(item) => {
-        // One tap opens the tab (P5.90 item 20); a reservation is shown first.
+        // One tap opens the tab; a reservation is shown first.
         const tapped = tables.find((each) => each.id === item.id)
         if (tapped === undefined || tapped.state === 'reserved') setChosen(item.id)
         else openTab(tapped)
@@ -596,7 +596,7 @@ export function Service({
           state: 'occupied',
           party: { ...(table.party ?? {}), time: BISTRO.now },
         })
-        // Undo in the table's panel, not a toast (P5.93 item 3).
+        // Undo in the table's panel, not a toast.
         setUndo({
           place: table.id,
           message: `Guests seated at ${BISTRO.now}`,
@@ -645,7 +645,7 @@ export function Service({
       current.map((each) => (each.id === order.id ? { ...each, state: next } : each)),
     )
     // The order's badge changes in place; a finished order leaves the list with Undo at its top
-    // (P5.93 item 3: no toast).
+    // (no toast).
     setUndo(
       next === 'done'
         ? {
@@ -676,7 +676,7 @@ export function Service({
           titleHidden
           subtitle={`${format.dateLong('2026-10-06')} · ${BISTRO.now}`}
         />
-        {/* P5.28 item 26: takeaway and delivery are the till's order channels, not plan areas. */}
+        {/* Takeaway and delivery are the till's order channels, not plan areas. */}
         <Tabs
           label="Orders"
           value={channel}
@@ -713,7 +713,7 @@ export function Service({
           ]}
         />
       </Frame>
-      {/* At page level, outside the Tabs (D16). */}
+      {/* At page level, outside the Tabs. */}
       {table?.party !== undefined && (
         <MoveGuestsDialog
           // A new round of choosing each time it opens: the best table first.
@@ -733,7 +733,7 @@ export function Service({
             update(to.id, { state: table.state, party })
             update(table.id, { state: 'free' }, 'party')
             setChosen(to.id)
-            // The answer in the new table's panel (P5.93 item 3): Undo while no one was told; a
+            // The answer in the new table's panel: Undo while no one was told; a
             // sent SMS cannot be taken back, so it is said, not undone.
             const moved = `Guests moved here from ${tableName(table)}.`
             const texted =
@@ -776,7 +776,7 @@ export const GROUP_K_ROUTES: ExampleRoute[] = [
     render: (phone) => <Service phone={phone} channel="takeaway" />,
   },
   { path: K_ROUTES.floorTerrace, render: (phone) => <Service phone={phone} area="terasa" /> },
-  // Each table's tab (P5.28 item 22).
+  // Each table's tab.
   ...BISTRO_VENUE.tables.map((table) => ({
     path: BISTRO_VENUE.tableRoute(table.id),
     render: (phone: boolean) => <TabTill phone={phone} venue={BISTRO_VENUE} tableId={table.id} />,

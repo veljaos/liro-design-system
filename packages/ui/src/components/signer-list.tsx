@@ -9,7 +9,7 @@ import { ReasonConfirmDialog, type ConfirmAnswer, type ConfirmReason } from './c
 import { PersonAvatar } from './person'
 
 /*
- * SignerList (BUILD-PLAN P5.21, signing): who signs a document, in order, and where each stands.
+ * SignerList (signing): who signs a document, in order, and where each stands.
  * The signing itself is done by the Core or Liro Bridge: the list only reports the user's choice.
  * - The summary first: "1 of 3 signed" (`messages['signing.summary']`, numbers through
  *   `format.number`), sm semibold.
@@ -19,9 +19,9 @@ import { PersonAvatar } from './person'
  *   14:12" (a check, status.success.fg), "Declined 05.10.2026. 15:02" (an X, status.danger.fg)
  *   with the reason on its own line. Never colour alone.
  * - The current user's row, when it is their turn (in order: the first signer still waiting;
- *   `sequential` false: any waiting signer), has Decline then Sign — the main action last
- *   (D13). Sign is the primary button (PenLine). Decline asks for the reason in a
- *   ReasonConfirmDialog (the Core's reasons, or a text), focused on Cancel (P4.9d). While the Core
+ *   `sequential` false: any waiting signer), has Decline then Sign — the main action last.
+ *   Sign is the primary button (PenLine). Decline asks for the reason in a
+ *   ReasonConfirmDialog (the Core's reasons, or a text), focused on Cancel. While the Core
  *   works (a returned promise) the button shows it. When it is not yet the user's turn, the row
  *   says whose turn comes first ("Nenad Kovačević signs first").
  */
@@ -57,7 +57,7 @@ export interface SignerListProps {
   declineMessage?: ReactNode
   /**
    * The document being declined, bold under the decline dialog's title ("Employment contract
-   * RU-2026-017"; P5.28 item 6).
+   * RU-2026-017").
    */
   declineSubject?: ReactNode
   /** Sign's text. Default: `messages['signing.sign']`. */

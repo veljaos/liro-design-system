@@ -22,7 +22,7 @@ describe('accounts', () => {
 })
 
 describe('ipsAmount', () => {
-  it('writes the decimal comma and two decimals, never rounding (D4)', () => {
+  it('writes the decimal comma and two decimals, never rounding', () => {
     expect(ipsAmount('294000.5')).toBe('RSD294000,50')
     expect(ipsAmount('3596.13')).toBe('RSD3596,13')
     expect(ipsAmount('1000')).toBe('RSD1000,00')
@@ -95,7 +95,7 @@ describe('ipsQrText', () => {
   })
 
   // Texts the stories and examples show, each accepted by the National Bank of Serbia's validator
-  // (https://nbs.rs/QRcode/api/qr/v1/validate, "OK.") on 2026-10-15 (P5.31b): a change that writes
+  // (https://nbs.rs/QRcode/api/qr/v1/validate, "OK.") on 2026-10-15: a change that writes
   // them differently must be checked there again.
   it('writes the texts the NBS validator accepted', () => {
     expect(

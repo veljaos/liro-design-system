@@ -76,22 +76,22 @@ import { usePhone } from './use-phone'
 import { keepFocusedRow, overscanRows, spacersBetween } from './virtual-rows'
 
 /*
- * AttendanceGrid (BUILD-PLAN P5.13 attendance and quick marking, P5.24 a and c working time; one
- * pattern by the owner's decision, 2026-10-10): people × days (or lessons), each cell a code and,
+ * AttendanceGrid, one pattern for attendance, quick marking and working time: people × days (or
+ * lessons), each cell a code and,
  * in the hours mode, hours, entered from the keyboard. The codes, their keys and tones, the
  * totals, the marks, the lock, the corrections and the hand-off are the application's data; the
  * grid shows them and reports changes (`onChange` with the list of changes). It computes nothing:
  * the totals come from props, hours are decimal strings read by `format.parseNumber`, and
- * unreadable hours stay in the cell with the field's message, never 0 (D4, B.4).
+ * unreadable hours stay in the cell with the field's message, never 0.
  * - A WAI-ARIA grid (`role="grid"`, one cell in the tab order): the column headers, the row
  *   headers, the day cells and the totals are all cells the arrows reach (the forward arrow in the
- *   reading direction to the next column, B.7); Home and End to the row's ends, Ctrl+Home and
+ *   reading direction to the next column); Home and End to the row's ends, Ctrl+Home and
  *   Ctrl+End to the corners. Shift with an arrow (or a press with Shift) selects a range.
- * - Code mode (P5.13: present / absent / late / excused, a gradebook's marks): a code's key marks
+ * - Code mode (present / absent / late / excused, a gradebook's marks): a code's key marks
  *   the focused cell and moves on (`advance`: down the column by default) or marks the whole
  *   selection; a column header's menu "Mark everyone: <code>", a row header's "Mark all: <code>"
  *   (weekends and holidays left as they are); Delete clears; Enter moves down as in EditableGrid.
- * - Hours mode (P5.24a, a timesheet): a digit starts typing the hours (Enter or F2 edits them), a
+ * - Hours mode (a timesheet): a digit starts typing the hours (Enter or F2 edits them), a
  *   code's key sets the code; Ctrl/Cmd+D fills the selection with its first cell's entry; "Copy
  *   previous week" copies the week before the focused cell's week onto it for the selected rows
  *   (days of the same kind only). Typing hours into an empty cell gives it `defaultCode`.
@@ -100,16 +100,16 @@ import { keepFocusedRow, overscanRows, spacersBetween } from './virtual-rows'
  * - Weekends and holidays are shaded with surface.sunken, never by colour alone: a holiday
  *   column carries a visible mark (and its note in the tooltip and for assistive technology), a
  *   day column its weekday.
- * - The selection is neutral (D17): surface.selected with a 1px border.selected line inside each
+ * - The selection is neutral: surface.selected with a 1px border.selected line inside each
  *   selected cell; the focused cell has the focus colour's inset outline.
- * - Locked (P5.24a: the month locks after payroll): a lock line with the reason; cells read-only;
+ * - Locked (the month locks after payroll): a lock line with the reason; cells read-only;
  *   a change only through `onCorrect` — a dialog that asks for the new entry and a required
  *   reason. The original is kept by the application; a corrected cell carries a hollow marker,
  *   who, when and why (`corrections`) in its description and tooltip, and the corrections are
  *   listed under the grid. Never deleted.
- * - Marks (P5.24c, a shift allowance): a small filled dot in the cell, their labels in its
+ * - Marks (a shift allowance): a small filled dot in the cell, their labels in its
  *   description and tooltip. Night hours are one more total the application passes.
- * - Hand-off (to payroll): an action with its state; unavailable with its reason (P2.7).
+ * - Hand-off (to payroll): an action with its state; unavailable with its reason.
  * - Many rows (`virtualize`, by default from 100): only the rows in view are drawn (TanStack
  *   Virtual with the shared window rules of `virtual-rows.ts`) inside `maxHeight`.
  * - Phones (`layout="phone"`, by default below 48em): one person per screen — Previous, "3 of
@@ -260,7 +260,7 @@ export interface AttendanceGridProps {
 /** From this many rows on, the grid draws only its window. */
 export const ATTENDANCE_VIRTUALIZE_FROM = 100
 
-/** A day row's height (owner's 44px table rows). */
+/** A day row's height. */
 const ROW_HEIGHT = 44
 
 /** The tone of a code's short form (text and background); literal classes for Tailwind. */
@@ -503,7 +503,7 @@ function DesktopView(props: ViewProps) {
   const [scheduledFocus, setScheduledFocus] = useState(0)
   const table = useRef<HTMLDivElement>(null)
   const scroller = useRef<HTMLDivElement>(null)
-  // The header row stays below the shell while the page scrolls (P5.28 item 4).
+  // The header row stays below the shell while the page scrolls.
   useStickyHead(scroller)
 
   // Rows and columns may change under the focus: keep it inside.

@@ -27,8 +27,8 @@ const meta = {
           '**What for:** the frame every field shares: label, description, the control, and ' +
           'under it the error (danger colour with an icon, linked to the control). The control ' +
           'receives its id, aria-describedby and states through a render function.\n\n' +
-          '**Read only** is the one state of a field that cannot be changed (P5.93): the grey ' +
-          'background and drawn border of the old disabled field, the value in the full text ' +
+          '**Read only** is the one state of a field that cannot be changed: a grey ' +
+          'background and a drawn border, the value in the full text ' +
           'colour, focusable and selectable, announced as read-only; no hint, no placeholder, an ' +
           'empty value shows “—”. Fields have no disabled state; an action that cannot be used ' +
           'is unavailable with its reason (ActionGroup).\n\n' +
@@ -73,8 +73,8 @@ export const States: Story = {
 }
 
 /**
- * Read only, every field (P5.93): one look for a value that cannot be changed — the grey
- * background and drawn border of the old disabled field, the value in the full text colour,
+ * Read only, every field: one look for a value that cannot be changed — a grey
+ * background and a drawn border, the value in the full text colour,
  * focusable and selectable. No hints and no placeholders; an empty value shows "—".
  */
 export const ReadOnlyEveryField: Story = {
@@ -171,7 +171,7 @@ export const Japanese: Story = {
 }
 
 /**
- * English in a right-to-left page (P3.6): labels, descriptions and errors take their
+ * English in a right-to-left page: labels, descriptions and errors take their
  * direction from their own text, so ".Enter a number" never happens; the fields and the order
  * of their parts stay right to left.
  */

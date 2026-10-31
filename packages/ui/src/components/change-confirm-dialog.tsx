@@ -12,11 +12,11 @@ import { CheckboxField } from './checkbox-field'
 import { Dialog } from './dialog'
 
 /*
- * ChangeConfirmDialog (BUILD-PLAN P5.28 item 9, the owner's review): moving something other people
+ * ChangeConfirmDialog: moving something other people
  * rely on — an appointment, a shift, a reservation, a seat, a room or a bed — is never final, and
  * never messages anyone, until the user confirms it. A drag, a "Move to…" or a "Transfer…" only
  * proposes the change: the application opens this dialog with it, and applies it on Save.
- * - Title: the action ("Move appointment"); `subject`: the record, bold on its own line (item 6).
+ * - Title: the action ("Move appointment"); `subject`: the record, bold on its own line.
  * - The change, old → new, one line per field ("Doctor  dr Marko Stanković → dr Nada Grujić";
  *   the old value text.secondary, the new one medium; "Before:" and "After:" for assistive
  *   technology; the arrow follows the direction). `affected`: who it concerns, in the
@@ -29,7 +29,7 @@ import { Dialog } from './dialog'
  * - Cancel, then Save (primary, last). Cancel changes nothing: the record stays where it was.
  *   A returned promise keeps the dialog working (Save busy, Cancel disabled, not dismissible); it
  *   closes when the promise resolves and stays open when it rejects.
- * - `children` (P5.28, floor plans): the application's own choice that makes the change, above
+ * - `children` (floor plans): the application's own choice that makes the change, above
  *   it — the free tables a party can move to, the free beds by room —, so the move is chosen and
  *   confirmed in one dialog; the changes follow the choice.
  * - Pending changes: where the user makes several changes before deciding (a seating plan, a week
@@ -82,7 +82,7 @@ export interface ChangeConfirmDialogProps {
   /** A line under the title, from the application. */
   description?: ReactNode
   /**
-   * The application's choice that makes the change, above it (P5.28: the free tables with
+   * The application's choice that makes the change, above it (the free tables with
    * enough seats as a CandidateList); the application keeps `changes` in step with it.
    */
   children?: ReactNode
@@ -90,7 +90,7 @@ export interface ChangeConfirmDialogProps {
   changes: readonly ChangeLine[]
   /**
    * Who the change concerns, in the application's words: each party on its own line under
-   * "Concerns" (P5.93: "Jovana Nikolić (patient)", "dr Marko Stanković"). One node is one line.
+   * "Concerns" ("Jovana Nikolić (patient)", "dr Marko Stanković"). One node is one line.
    */
   affected?: ReactNode | readonly ReactNode[]
   /** The messages the application can send, each an explicit choice. */
@@ -135,7 +135,7 @@ export function changeConfirmLabel(
   return checked > 0 ? messages['change.saveAndNotify'] : messages['change.save']
 }
 
-/** The parties a change concerns, one per line; empty ones dropped (P5.93). */
+/** The parties a change concerns, one per line; empty ones dropped. */
 function affectedParties(value: ReactNode | readonly ReactNode[]): ReactNode[] {
   const list: readonly ReactNode[] = Array.isArray(value) ? value : [value]
   return list.filter((party) => !isEmpty(party))
@@ -171,7 +171,7 @@ function Line({ change }: { change: ChangeLine }) {
 
 /**
  * The "Notify …" checkboxes, one per message the application can send, in a group named
- * "Messages to send". Shared by ChangeConfirmDialog and ConfirmDialog's `notify` (P5.28 item 9);
+ * "Messages to send". Shared by ChangeConfirmDialog and ConfirmDialog's `notify`;
  * not exported from the package. Nothing when there are no options.
  */
 export function NotifyChoices(props: {

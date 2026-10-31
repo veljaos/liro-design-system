@@ -19,9 +19,9 @@ const meta = {
     docs: {
       description: {
         component: internal(
-          'The shadcn/ui Questionnaire (radix-vega, fetched 2026-10-08) on @shadcn/react 0.3.1: a ' +
+          'The shadcn/ui Questionnaire (radix-vega) on @shadcn/react 0.3.1: a ' +
             'question as a fieldset with its legend, choices as radio buttons or checkboxes with ' +
-            'their number keys, the error. Questionnaire (P5.1) is built from it.',
+            'their number keys, the error. Questionnaire is built from it.',
         ),
       },
     },

@@ -38,7 +38,7 @@ export default meta
 
 type Story = StoryObj<typeof meta>
 
-/** A good change in green. No sparkline unless the application asks for one (P5.93). */
+/** A good change in green. No sparkline unless the application asks for one. */
 export const Default: Story = {}
 
 /** With the trend the application asks for: a grey sparkline of its values. */

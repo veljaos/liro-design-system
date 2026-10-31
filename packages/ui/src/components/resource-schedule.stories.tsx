@@ -29,7 +29,7 @@ import {
 } from './sticky-story-helpers'
 
 /**
- * The application around the schedule. A move only proposes (P5.28 item 9): the application asks
+ * The application around the schedule. A move only proposes: the application asks
  * first with ChangeConfirmDialog — the booking, its row and time old → new, the person's message
  * as a choice (unchecked) — and moves the booking on Save; Cancel leaves it where it was.
  */
@@ -124,7 +124,7 @@ function Schedule(
   )
 }
 
-/** Saves the move the schedule proposed (P5.28 item 9). */
+/** Saves the move the schedule proposed. */
 async function saveMove(subject: string) {
   const dialog = await within(document.body).findByRole('dialog', {
     name: `Move booking ${subject}`,
@@ -172,12 +172,12 @@ const meta = {
           'the application’s decision. A move of something other people rely on (an ' +
           'appointment, a reservation) only proposes: the application confirms it with ' +
           'ChangeConfirmDialog — old → new, "Notify …" as a choice, Cancel / Save — and changes ' +
-          '`bookings` on Save (P5.28 item 9; "Move asked").\n\n' +
+          '`bookings` on Save ("Move asked").\n\n' +
           '**Phones:** one row at a time, chosen in a select; the time runs down. With many ' +
           'rows (a hotel with 200 rooms) a phone shows no timeline at all: `phoneLists`, the ' +
           'day’s lists the application passes — Arrivals, Departures, In house — a list at a ' +
           'time with its count, a search over names, rooms and notes, each booking a row that ' +
-          'opens it (`onSelect`). Desktops and tablets keep the timeline (the F7 phone rule).\n\n' +
+          'opens it (`onSelect`). Desktops and tablets keep the timeline.\n\n' +
           '**When:** planning shared people or rooms over one day or a few days.\n\n' +
           '**When not:** one person’s days and weeks (CalendarView); offering free slots to book ' +
           '(SlotPicker); a school week (Timetable).',
@@ -214,7 +214,7 @@ export const Default: Story = {
       4,
     )
     await expect(canvas.getByRole('button', { name: 'Move to…: Ana Petrović' })).toBeVisible()
-    // "Now" is only its time in the hours row, from the application's clock (P5.94 item 16): no
+    // "Now" is only its time in the hours row, from the application's clock: no
     // line across the rows.
     // Named where the rows are (the hours row is decoration).
     await expect(canvas.getByRole('img', { name: /^Now, 10:20\sAM$/ })).toBeInTheDocument()
@@ -247,7 +247,7 @@ export const KeyboardInteraction: Story = {
     )
     await expect(booking(canvasElement, 'Ana Petrović')).toHaveFocus()
     await userEvent.keyboard('{Enter}')
-    // The drop only proposes: nothing moves until the confirmation's Save (P5.28 item 9). The
+    // The drop only proposes: nothing moves until the confirmation's Save. The
     // page under the open dialog is hidden from assistive technology.
     await expect(
       within(canvasElement).getByRole('button', { name: /^Ana Petrović, /, hidden: true }),
@@ -293,7 +293,7 @@ export const MoveToInteraction: Story = {
     const body = within(document.body)
     await userEvent.click(canvas.getByRole('button', { name: 'Move to…: Marko Ilić' }))
     const panel = await body.findByRole('dialog', { name: 'Move to…: Marko Ilić' })
-    // The action, then the booking it moves, bold on its own line (P5.28 item 6).
+    // The action, then the booking it moves, bold on its own line.
     await expect(panel.querySelector('[data-slot="move-subject"]')).toHaveTextContent('Marko Ilić')
     await userEvent.click(within(panel).getByRole('combobox', { name: 'Doctor or room' }))
     await userEvent.click(await body.findByRole('option', { name: 'Dr Jelena Stojanović' }))
@@ -301,7 +301,7 @@ export const MoveToInteraction: Story = {
     await userEvent.click(await within(panel).findByRole('combobox', { name: 'Start' }))
     await userEvent.click(await body.findByRole('option', { name: /^11:00\sAM$/ }))
     await userEvent.click(await within(panel).findByRole('button', { name: 'Move' }))
-    // The confirmation: the message is a choice; checked, Save says so (P5.28 item 9).
+    // The confirmation: the message is a choice; checked, Save says so.
     const dialog = await body.findByRole('dialog', { name: 'Move booking Marko Ilić' })
     await userEvent.click(within(dialog).getByRole('checkbox', { name: /^Notify Marko Ilić/ }))
     await userEvent.click(within(dialog).getByRole('button', { name: 'Save and notify' }))
@@ -353,7 +353,7 @@ export const DraggingInteraction: Story = {
 /**
  * A move proposed (by a drag, the keys or "Move to…"): the application asks first — the booking,
  * its doctor and time old → new, the person's message as an unchecked choice — and moves it only
- * on Save (P5.28 item 9). The schedule still shows the booking where it is.
+ * on Save. The schedule still shows the booking where it is.
  */
 export const MoveAsked: Story = {
   name: 'Move asked',
@@ -634,7 +634,7 @@ export const Japanese: Story = {
   ),
 }
 
-// ── Days (P5.25): stays over two weeks ──
+// ── Days: stays over two weeks ──
 
 const ROOMS = [
   { id: 'r101', name: 'Room 101', description: 'Double' },
@@ -788,7 +788,7 @@ export const DaysPhone: Story = {
   },
 }
 
-// ── Phones with many rows (P5.90 item 19, the F7 phone rule): today's lists, no timeline ──
+// ── Phones with many rows: today's lists, no timeline ──
 
 /** Hotel Fruška's 200 rooms on a phone: the day's lists, a search, a press opens the stay. */
 function HotelPhone({
@@ -919,7 +919,7 @@ export const PhoneListsDesktop: Story = {
 }
 
 /*
- * P5.28 item 4: the hours row stays below the shell's sticky header while the page scrolls, and
+ * The hours row stays below the shell's sticky header while the page scrolls, and
  * the names stay at the start while the schedule scrolls sideways.
  */
 

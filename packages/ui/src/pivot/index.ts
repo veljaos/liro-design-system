@@ -1,4 +1,4 @@
-// @veljaos/ui/pivot (P5.77): Pivot, the pivot analysis built on TanStack Table (MIT, already a
+// @veljaos/ui/pivot: Pivot, the pivot analysis built on TanStack Table (MIT, already a
 // dependency of @veljaos/ui). A subpath of its own, so the pivot's code loads only where an
 // analysis is drawn. The application computes every figure; the library lays them out.
 export { Pivot } from './pivot'

@@ -179,7 +179,7 @@ const meta = {
     docs: {
       description: {
         component:
-          '**What for:** an automation rule as blocks (P5.93, like Zapier or Make) — **When** ' +
+          '**What for:** an automation rule as blocks (like Zapier or Make) — **When** ' +
           '(what starts it), **If** (each condition a sentence of pills: [Number of lines] [is ' +
           'more than] [20]; joined by "All of these" or "Any of these", groups one level deep) ' +
           'with its **Then** (the actions in order), further **Else if** blocks each with its ' +
@@ -269,7 +269,7 @@ export const Problems: Story = {
   },
 }
 
-/** The rule as text: a rule that cannot be changed here (P5.93: no disabled state). */
+/** The rule as text: a rule that cannot be changed here (no disabled state). */
 export const ReadOnly: Story = {
   name: 'Read only',
   args: { readOnly: true },

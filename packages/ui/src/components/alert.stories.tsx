@@ -19,15 +19,15 @@ const meta = {
       description: {
         component:
           '**What for:** a message in the page about what the user is looking at — the period ' +
-          "is closed, the document was sent, a rate is missing. Mantine's Alert, light variant " +
-          "(the owner's old look): the tone's subtle background, the title and icon in the " +
+          "is closed, the document was sent, a rate is missing. Mantine's Alert, light variant: " +
+          "the tone's subtle background, the title and icon in the " +
           "tone's colour. Tones neutral (the default, grey), info, success, warning, danger — info only when asked for, blue being kept for actions; warnings and dangers are " +
           'announced at once (`role="alert"`), the others politely. `onClose` makes it ' +
           'dismissible. `Banner` is the same look in one row across its container, with actions ' +
           'at the end, for something about the whole page or application.\n\n' +
           '**Actions inside** (`actions`: under the message in an Alert, at the end of a ' +
-          'Banner) are neutral secondary buttons, never a family colour on the toned background ' +
-          "(P5.28, the owner's review): the tone already says what it is about.\n\n" +
+          'Banner) are neutral secondary buttons, never a family colour on the toned background: ' +
+          'the tone already says what it is about.\n\n' +
           "**When not:** a result of the user's action that needs no staying (Toast); a problem " +
           'with one field (its error under the field); a question (ConfirmDialog).',
       },
@@ -63,7 +63,7 @@ export const Tones: Story = {
 }
 
 /**
- * Actions inside an alert (P5.28): under the message, neutral secondary buttons — the tone gives
+ * Actions inside an alert: under the message, neutral secondary buttons — the tone gives
  * the meaning, so a blue or green button would be a second colour in one box. What the action
  * asks for (here: which absences, a reason, a note) opens from it.
  */
@@ -231,7 +231,7 @@ export const Japanese: Story = {
 }
 
 /**
- * English in a right-to-left page (P3.6): alert, banner and empty-state texts keep their own
+ * English in a right-to-left page: alert, banner and empty-state texts keep their own
  * order ("3 invoices are ready to send." was ".invoices are ready to send 3"); icons, close
  * buttons and actions stay where right to left puts them.
  */

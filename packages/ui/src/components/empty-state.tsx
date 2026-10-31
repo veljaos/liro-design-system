@@ -8,15 +8,14 @@ import type { LiroMessages } from '../provider/messages'
 import type { IconComponent } from './intents'
 
 /*
- * EmptyState and ErrorState (BUILD-PLAN P2.5), the previous Design System's EmptyState (built on
- * Mantine's), carried over (owner's decision, 2026-09-28, docs/decisions.md "Feedback"):
+ * EmptyState and ErrorState:
  * - Three variants with lucide icons at stroke width 1.5: 'empty' Inbox, 'no-results' SearchX,
  *   'error' CloudAlert. The error state never shares an icon with the empty one: an empty list
  *   and a failed load need different reactions.
  * - The default title and description of each variant come from the provider's messages.
  * - One optional action: a small (Mantine 'xs') button in the neutral "default" weight.
  * - `compact`: Mantine size 'sm' with a 24px icon; otherwise size 'md' with a 32px icon.
- * - Its own space above and below (owner, P5.90 item 13): 32px, 24px when compact. Every "nothing
+ * - Its own space above and below: 32px, 24px when compact. Every "nothing
  *   here", "no results" and "could not load" inside a card, a table, a list or a panel stands with
  *   this space and never against the card's top edge; the places that show it add no vertical
  *   padding of their own (DataTable, TreeView, the templates) — one rule, one look.

@@ -1,5 +1,5 @@
 /*
- * The one dataset of the example screens (P4.8): Kvadrat Gradnja d.o.o., a construction-materials
+ * The one dataset of the example screens: Kvadrat Gradnja d.o.o., a construction-materials
  * trader in Novi Sad, on 6 October 2026. The same invoice — F-2026-0412 to Panonija Agro d.o.o.,
  * total 185.954,00 RSD, amount due 135.954,00 RSD after an advance — appears in the list, the
  * document, its printout and the dashboard. Amounts are decimal strings, added here in whole paras where a total
@@ -229,7 +229,7 @@ const MONTHS = [
 ]
 
 /**
- * Revenue and costs 2026 against 2025, thousands of RSD (P5.93 item 42: the chart's header shows
+ * Revenue and costs 2026 against 2025, thousands of RSD (the chart's header shows
  * both six-month totals as toggle buttons; the totals are the application's, written here).
  */
 export const PERFORMANCE = {

@@ -45,7 +45,7 @@ describe('readDate: what a date field reads on blur', () => {
     ['7/10', '2026-10-07'],
     ['0710', '2026-10-07'],
     ['31.12.', '2026-12-31'],
-  ])('reads a day and a month alone, %j, in the year of today (P5.94 item 2)', (text, expected) => {
+  ])('reads a day and a month alone, %j, in the year of today', (text, expected) => {
     expect(readDate(text, sr, '2026-10-14')).toEqual({ value: expected, valid: true })
   })
 

@@ -9,7 +9,7 @@ import { cn } from '../primitives/cn'
 
 /**
  * Right to left through a nested provider, as an application does it: number and money fields
- * take the direction from the provider (AGENTS.md D11), not from a `dir` attribute.
+ * take the direction from the provider, not from a `dir` attribute.
  */
 function RightToLeft({ children }: { children: ReactNode }) {
   const { colorScheme, locale } = useLiro()
@@ -36,7 +36,7 @@ const meta = {
           'looks the same in a field and in text (Serbian 1.234,56 EUR, English EUR 1,234.56). The ' +
           "currency is the application's; the field never converts or totals.\n\n" +
           '**When not:** a quantity or a rate (NumberField); a total computed by the server ' +
-          '(MoneyText, P2.8, read-only display).',
+          '(MoneyText, read-only display).',
       },
     },
   },

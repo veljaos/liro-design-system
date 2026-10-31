@@ -7,7 +7,7 @@ import { settle } from '../primitives/story-helpers'
 import { useLiro } from '../provider/liro-provider'
 
 /*
- * The chart colours with their contrast against the card (P4.7c, owner), measured in the story's
+ * The chart colours with their contrast against the card, measured in the story's
  * theme: the swatch's computed colour and the card's, by the WCAG formula. Every mark needs 3:1
  * (WCAG 1.4.11); `contrast.ts` checks the same in the build.
  */

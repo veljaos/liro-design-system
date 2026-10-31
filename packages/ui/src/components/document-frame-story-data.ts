@@ -1,6 +1,6 @@
 /*
- * The stories host a small viewer written here (a `srcdoc` document) that speaks the protocol of
- * docs/document-frame.md: it reports 'loading', then 'ready' with its page count, and answers
+ * The stories host a small viewer written here (a `srcdoc` document) that speaks the frame's
+ * protocol (`document-frame-protocol.ts`): it reports 'loading', then 'ready' with its page count, and answers
  * 'goToPage' and 'setZoom' with 'page' and 'zoom'. Its origin is opaque (sandbox without
  * allow-same-origin), so the frame's `allowedOrigin` is "null".
  */

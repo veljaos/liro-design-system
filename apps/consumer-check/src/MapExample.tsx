@@ -22,8 +22,9 @@ const AREAS: MapArea[] = [
 ]
 
 /**
- * The maps (and RegionChart, a chart on the map) through the `@veljaos/ui/map` subpath (P5.41), typed against the packed declarations;
- * Leaflet comes with it as a dependency of `@veljaos/ui`. No tiles: nothing is fetched.
+ * The maps (and RegionChart, a chart on the map) through the `@veljaos/ui/map` subpath, typed
+ * against the packed declarations; Leaflet comes with it as a dependency of `@veljaos/ui`. No
+ * tiles: nothing is fetched.
  */
 export function MapExample() {
   return (

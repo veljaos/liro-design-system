@@ -14,7 +14,7 @@ import {
 /*
  * A checkbox or a switch with its label beside it (Mantine InlineInput.css, size 'sm'): the label
  * column starts 12px after the control, the label is 13px with a 20px line (the control's
- * height), the description and the error sit 5px under the label. Read-only (P5.93 item 1, the
+ * height), the description and the error sit 5px under the label. Read-only (the
  * one non-editable state) draws the control grey with its state still shown, focusable, and
  * announced as read-only (aria-readonly); a click or Space changes nothing. No hint in read-only.
  */

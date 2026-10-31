@@ -2,7 +2,7 @@ import type { CSSProperties, ReactNode } from 'react'
 import { expect, waitFor } from 'storybook/test'
 
 /*
- * The sticky-header stories (P5.28 item 4). Not part of the package: nothing in src/index.ts
+ * The sticky-header stories. Not part of the package: nothing in src/index.ts
  * imports this file. Inline styles only: Storybook compiles Tailwind classes from *.stories.tsx
  * files alone.
  *
@@ -83,7 +83,7 @@ function nextFrame(): Promise<void> {
 }
 
 /**
- * P5.90 item 8: the header is glued below the shell at any scrolling speed. Scrolls the page in
+ * The header is glued below the shell at any scrolling speed. Scrolls the page in
  * large jumps, down and up, without waiting between them, and checks in the very next animation
  * frame after each jump — before any script could react — that the header's top is the shell's
  * bottom edge, while the region's top is under the shell and its end still below the header. The

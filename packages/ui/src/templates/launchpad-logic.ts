@@ -1,5 +1,5 @@
 /*
- * The logic of Launchpad, kept apart from the markup so it can be unit-tested (AGENTS.md C7):
+ * The logic of Launchpad, kept apart from the markup so it can be unit-tested:
  * where the arrow keys move in the grid, which module a digit opens, and how a move reorders.
  */
 
@@ -12,7 +12,7 @@ export function launchpadArrowTarget(
   direction: 'ltr' | 'rtl',
 ): number | null {
   // ArrowRight goes forward in reading order in left-to-right and backward in right-to-left
-  // (Appendix B.7: movement measures from the leading edge).
+  // (movement measures from the leading edge).
   const forward = direction === 'ltr' ? 'ArrowRight' : 'ArrowLeft'
   const backward = direction === 'ltr' ? 'ArrowLeft' : 'ArrowRight'
   let target: number
@@ -86,7 +86,7 @@ export interface CardSlot {
 
 /**
  * The place a dragged card would take: the slot whose centre is nearest to the dragged card's
- * centre. Measured on the laid-out slots, so it holds in both directions (Appendix B.7: the grid
+ * centre. Measured on the laid-out slots, so it holds in both directions (the grid
  * already runs from the leading edge, and the slots are where the cards really stand).
  */
 export function dragTargetIndex(

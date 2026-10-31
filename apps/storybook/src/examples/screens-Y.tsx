@@ -94,12 +94,12 @@ import {
 } from './data-Y'
 
 /*
- * Group Y's example screens (P5.35): the employee portal of Kvadrat Gradnja d.o.o. (PortalShell,
+ * The example screens: the employee portal of Kvadrat Gradnja d.o.o. (PortalShell,
  * made for a phone first), as Nikola Marković, a site worker on Liman 4, sees it on 14.10.2026.
  * - Home: the latest payslip, the leave left, the next shift and what waits for his signature.
  * - Payslips: the list (DataTable, cards on a phone), one payslip (KeyFigures and KeyValueLists:
  *   hours, earnings, deductions, the account, what the employer pays on top) and its PDF
- *   (liro-folio's; FolioPdf stands in for it, P5.95).
+ *   (liro-folio's; FolioPdf stands in for it).
  * - Leave: the balance (KeyFigures), the requests with their state (StatusBadge), one request's
  *   approval (StatusTimeline: submitted, the site manager, HR) and a new request (the
  *   application counts the working days).
@@ -107,15 +107,15 @@ import {
  * - Documents: what waits for his signature and what he signed; an annex on a record page (DetailPage + SignerList) with
  *   SignerList (Sign, Decline with a reason). The signing itself is the application's.
  * - My details: what HR has, and change requests waiting for HR's approval (a Drawer for the
- *   request, D14).
- * - P5.94 (the owner's fifth review): a request is sent with its proof (item 3) — paid leave is
+ *   request).
+ * - A request is sent with its proof — paid leave is
  *   Kind then Reason, each reason with its days and its documents, sick leave with the doctor's
  *   note, a change of address or account with its proof; FileDropzone lists what is expected
  *   (`expected`, from data), the photo from the camera on a phone, AttachmentList shows the files,
- *   and the request's page shows them to whoever opens it. The Dates are typed or picked (item
- *   2). Common questions (item 20): the top four on the home page; a question's button starts
+ *   and the request's page shows them to whoever opens it. The dates are typed or picked.
+ *   Common questions: the top four on the home page; a question's button starts
  *   its request filled in.
- * - P5.96 (the owner's review of P5.94): Questions and answers, a page of its own for 330
+ * - Questions and answers, a page of its own for 330
  *   questions (QuestionsAndAnswers: search as you type with the words marked, categories with
  *   counts, 30 at a time), each answer on its own page (AnswerView) with the request it starts;
  *   nothing found offers "Ask HR" (a Drawer, the words typed filled in). Reached from the home's
@@ -269,9 +269,9 @@ function HomeRow({
 }
 
 /**
- * The portal's home shows only what matters now (P5.93 item 11, the owner's review): the quick
+ * The portal's home shows only what matters now: the quick
  * actions, what waits for Nikola, and what is new for him — no grid of equal cards. Under them the
- * four questions employees ask most, and "All questions" (P5.94 item 20).
+ * four questions employees ask most, and "All questions".
  */
 export function EmployeeHome({ phone }: { phone: boolean }) {
   const { format } = useLiro()
@@ -386,8 +386,8 @@ export function EmployeeHome({ phone }: { phone: boolean }) {
 }
 
 /**
- * The questions with their requests, each starting where it is done, filled in (P5.94 item 20):
- * the ten most asked by default, or every question (P5.96).
+ * The questions with their requests, each starting where it is done, filled in:
+ * the ten most asked by default, or every question.
  */
 function useEmployeeQuestions(
   questions: readonly EmployeeQuestion[] = EMPLOYEE_QUESTIONS,
@@ -412,9 +412,9 @@ function useEmployeeQuestions(
 const answerHref = (question: CommonQuestion) => `#${Y_ROUTES.answer(question.id)}`
 
 /**
- * Every question and its answer (P5.96 item 1): the search first (as you type, the words marked),
+ * Every question and its answer: the search first (as you type, the words marked),
  * the categories with their counts, 30 at a time, each a link to its answer's page. Nothing found:
- * "Ask HR" opens a Drawer with the words typed (D14: a short edit, the list stays in view).
+ * "Ask HR" opens a Drawer with the words typed (a short edit, the list stays in view).
  */
 export function QuestionsScreen({ phone }: { phone: boolean }) {
   const questions = useEmployeeQuestions(ALL_EMPLOYEE_QUESTIONS)
@@ -504,7 +504,7 @@ export function QuestionsScreen({ phone }: { phone: boolean }) {
   )
 }
 
-/** One answer on its own page, with the request it starts (P5.96 item 1). */
+/** One answer on its own page, with the request it starts. */
 export function AnswerScreen({ phone, id }: { phone: boolean; id: string }) {
   const questions = useEmployeeQuestions(ALL_EMPLOYEE_QUESTIONS)
   const question = questions.find((each) => each.id === id)
@@ -730,7 +730,7 @@ export function PayslipScreen({ phone }: { phone: boolean }) {
 }
 
 /**
- * The payslip's PDF (P5.95): a bar with the way back and the file's name, then liro-folio's PDF
+ * The payslip's PDF: a bar with the way back and the file's name, then liro-folio's PDF
  * (FolioPdf stands in for it in the examples).
  */
 export function PayslipPdfScreen() {
@@ -769,7 +769,7 @@ function LeaveBadge({ request }: { request: LeaveRequest }) {
   return <StatusBadge label={request.state} tone={LEAVE_TONES[request.state]} />
 }
 
-/** The requests sent in this visit, kept above the screens as the Core keeps them (P5.94). */
+/** The requests sent in this visit, kept above the screens as the Core keeps them. */
 function useSentRequests() {
   return useExampleState<LeaveRequest[]>('portal.leave.sent', () => [])
 }
@@ -869,7 +869,7 @@ export function LeaveScreen({ phone, sent = false }: { phone: boolean; sent?: bo
 }
 
 /**
- * One request: its approval, its details and the proof sent with it (P5.94 item 3) — what the
+ * One request: its approval, its details and the proof sent with it — what the
  * site manager and HR open to decide; the examples have no approver's screen for leave, so the
  * request's own page shows the attachments to whoever opens it.
  */
@@ -1002,7 +1002,7 @@ function missingProof(rules: readonly ProofRule[], files: number): ProofRule[] {
 }
 
 /**
- * The proof a request is sent with (P5.94 item 3): FileDropzone lists what is expected, from
+ * The proof a request is sent with: FileDropzone lists what is expected, from
  * the data (`expected`), a photo from the camera on a phone; AttachmentList shows the files.
  */
 function ProofField({
@@ -1058,7 +1058,7 @@ function proofError(missing: readonly ProofRule[]): string | undefined {
 }
 
 /**
- * A new leave request (P5.94 items 2 and 3): Kind, then for paid leave its Reason (each with its
+ * A new leave request: Kind, then for paid leave its Reason (each with its
  * days and its proof, from data), the Dates typed or picked, the proof the kind or reason needs,
  * a note. `kind` and `reason` start it filled in, as a common question does.
  */
@@ -1311,7 +1311,7 @@ export function DocumentsScreen({ phone }: { phone: boolean }) {
   )
 }
 
-/** The annex as it is signed: liro-folio's PDF (FolioPdf stands in for it, P5.95). */
+/** The annex as it is signed: liro-folio's PDF (FolioPdf stands in for it). */
 function AnnexSheet() {
   return (
     <div className="p-4">
@@ -1407,8 +1407,8 @@ function detailItems(
 }
 
 /**
- * My details, and a change request in a Drawer with the proof the field needs (P5.94 item 3,
- * from data: proof of the new address, the marriage certificate, a bank statement). `change`
+ * My details, and a change request in a Drawer with the proof the field needs (from
+ * data: proof of the new address, the marriage certificate, a bank statement). `change`
  * opens the request on a field, as a common question does.
  */
 export function MyDetailsScreen({ phone, change }: { phone: boolean; change?: string }) {
@@ -1586,7 +1586,7 @@ export const GROUP_Y_ROUTES: ExampleRoute[] = [
     render: (phone: boolean) => <LeaveRequestScreen phone={phone} id={id} />,
   })),
   { path: Y_ROUTES.newLeave, render: (phone) => <NewLeaveScreen phone={phone} /> },
-  // A request started from a common question, filled in (P5.94 item 20).
+  // A request started from a common question, filled in.
   ...LEAVE_KINDS.flatMap((kind) =>
     kind.reasons === undefined
       ? [

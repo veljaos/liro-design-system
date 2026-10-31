@@ -76,7 +76,7 @@ export const Page: Story = {
 }
 
 /**
- * An answer is being written (P5.94 item 12): "Answering…" shows, the ask button became Stop; the
+ * An answer is being written: "Answering…" shows, the ask button became Stop; the
  * next question can be typed, but Enter does not send it.
  */
 export const Busy: Story = {

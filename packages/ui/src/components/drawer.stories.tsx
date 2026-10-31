@@ -15,7 +15,7 @@ const meta = {
     docs: {
       description: {
         component:
-          '**What for:** a short edit while the list stays visible beside it (Appendix B.8): ' +
+          '**What for:** a short edit while the list stays visible beside it: ' +
           'edit a contact, filter details. It slides in from the `side`: the start by default ' +
           '(the left in left-to-right, the right in right-to-left) or the end. Title, optional ' +
           'description, content, actions with the main action last; the focus stays inside and ' +

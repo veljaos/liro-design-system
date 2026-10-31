@@ -1,9 +1,9 @@
 import { compareDecimal, isDecimal } from '../components/quantity-logic'
 
 /*
- * Values in steps (P5.41's RegionChart, shared with Heatmap in P5.93 item 44): the application's
+ * Values in steps (RegionChart and Heatmap): the application's
  * `breaks` cut its values into at most five steps, each drawn as one shade of one meaning. The
- * values stay decimal strings, compared exactly (D4); a missing or unreadable value has no step —
+ * values stay decimal strings, compared exactly; a missing or unreadable value has no step —
  * "No data", hatched, never 0.
  */
 
@@ -15,7 +15,7 @@ export type StepRamp = 'main' | 'neutral'
 
 /**
  * The step a value falls in, between the application's `breaks` (ascending decimal strings): 0
- * below the first break, n at or above the nth. Compared exactly as decimal strings (D4), never as
+ * below the first break, n at or above the nth. Compared exactly as decimal strings, never as
  * JavaScript numbers. Null — "No data", never 0 — when the value is missing or unreadable.
  */
 export function valueStep(

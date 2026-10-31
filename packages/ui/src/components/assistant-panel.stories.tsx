@@ -62,7 +62,7 @@ const STREAMING_TURN: AssistantTurn = {
   ),
 }
 
-/** A finished answer with its work (P5.93): thinking, a handed-off run and the records used. */
+/** A finished answer with its work: thinking, a handed-off run and the records used. */
 const SEF_TURN: AssistantTurn = {
   id: 't3',
   question: QUESTION_SEF,
@@ -175,7 +175,7 @@ export const Default: Story = {
 }
 
 /**
- * With the assistant's work (P5.93): over each answer how it got there — thinking, a handed-off
+ * With the assistant's work: over each answer how it got there — thinking, a handed-off
  * run, the records used — one calm line each; the next answer's task shows its steps as they
  * happen. Code in an answer is a CodeBlock.
  */
@@ -386,7 +386,7 @@ export const AskInteraction: Story = {
     )
     await expect(log).toHaveTextContent('Revenue in the third quarter')
     // "New conversation" from the keyboard: a pointer resting on it would show its tooltip, and
-    // a hovered tooltip takes the first Escape (P5.93 item 7).
+    // a hovered tooltip takes the first Escape.
     within(panel).getByRole('button', { name: 'New conversation' }).focus()
     await userEvent.keyboard('{Enter}')
     await expect(within(panel).queryByRole('log')).toBeNull()

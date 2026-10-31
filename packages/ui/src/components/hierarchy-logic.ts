@@ -1,7 +1,7 @@
 import type { Tone } from './status-badge'
 
 /*
- * HierarchyChart's logic (BUILD-PLAN P5.42), pure and tested (hierarchy-logic.test.ts): the
+ * HierarchyChart's logic, pure and tested (hierarchy-logic.test.ts): the
  * nodes by their parents, the path to a node, which nodes are open at first, which are drawn and
  * in what order, which children stand as a list, the search on the data, and where the keys of
  * the WAI-ARIA tree move the focus. Nothing here knows what a node means: a person, a unit, a
@@ -285,7 +285,7 @@ export function hierarchyKeyAction(
 }
 
 /**
- * The width of a node's open / close toggle, px (P5.93 item 35): always odd, so the toggle is
+ * The width of a node's open / close toggle, px: always odd, so the toggle is
  * centred exactly on the 1px line it stands on, in both directions — a box of even width cannot
  * be. At least 25px (the 24px target); a "+N" grows 6px a character (12px text, tabular digits).
  */

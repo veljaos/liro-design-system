@@ -32,8 +32,8 @@ const meta = {
     docs: {
       description: {
         component:
-          '**What for:** one month, such as an accounting period to post into or close (the ' +
-          "previous Design System's AccountingPeriodSelect). A button drawn as a field opens a " +
+          '**What for:** one month, such as an accounting period to post into or close. ' +
+          'A button drawn as a field opens a ' +
           'grid of twelve months under a year with previous and next buttons; it opens on the ' +
           "chosen month, else on the provider's `today` (28 September 2026 in these stories). " +
           'The arrows move between months (left and right from the leading edge, up and down by ' +

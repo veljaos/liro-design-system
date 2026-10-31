@@ -3,7 +3,7 @@ import { applyDiagramOperations, Diagram, type DiagramModel } from '@veljaos/ui/
 import { useState } from 'react'
 
 /**
- * One diagram through the `@veljaos/ui/diagram` subpath (P5.26), typed against the packed
+ * One diagram through the `@veljaos/ui/diagram` subpath, typed against the packed
  * declarations; React Flow and dagre come with it as dependencies of `@veljaos/ui`.
  */
 export function DiagramExample() {

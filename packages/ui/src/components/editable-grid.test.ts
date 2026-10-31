@@ -112,7 +112,7 @@ describe('gridKeyAction on phones ("next" on the on-screen keyboard)', () => {
   })
 })
 
-describe('gridKeyAction across line types (P5.18)', () => {
+describe('gridKeyAction across line types', () => {
   // A heading (1 cell), two lines (4 cells), a subtotal (0), a text line (1), a line (4).
   const rowCells = [1, 4, 4, 0, 1, 4]
   const typed = (row: number, column: number, extra: Partial<GridPosition> = {}) =>
@@ -192,7 +192,7 @@ describe('gridKeyAction across line types (P5.18)', () => {
   })
 })
 
-describe('line types (P5.18)', () => {
+describe('line types', () => {
   it('counts the editable cells of each type', () => {
     expect(editableCellCount('line', 5, true)).toBe(5)
     expect(editableCellCount('discount', 5, true)).toBe(5)
@@ -226,7 +226,7 @@ describe('orderMessages', () => {
   })
 })
 
-describe('optional columns (P5.90 item 4)', () => {
+describe('optional columns', () => {
   const columns = [
     { id: 'item' },
     { id: 'discount', optional: { addLabel: 'Discount on a line' } },

@@ -1,5 +1,5 @@
 // Builds @veljaos/tokens from src/tokens.ts. Node runs this TypeScript file directly (type stripping).
-// Outputs (BUILD-PLAN Appendix B.10): dist/tokens.css, dist/fonts.css, dist/fonts/*.woff2 and
+// Outputs: dist/tokens.css, dist/fonts.css, dist/fonts/*.woff2 and
 // dist/fonts/LICENSE-*.txt,
 // dist/theme.css, dist/tokens.json. dist/LICENSE and dist/THIRD-PARTY-NOTICES.md come from
 // scripts/copy-legal.mjs, which runs next.
@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url'
 import { contrastChecks, contrastFailures } from '../src/contrast.ts'
 import { FONT_PACKAGES, fontsCss, themeCss, tokensCss, tokensJson } from '../src/generate.ts'
 
-// Contrast is measured, never assumed (Appendix B.6): the build fails below the minimum.
+// Contrast is measured, never assumed: the build fails below the minimum.
 const failures = contrastFailures()
 if (failures.length > 0) {
   for (const failure of failures) {

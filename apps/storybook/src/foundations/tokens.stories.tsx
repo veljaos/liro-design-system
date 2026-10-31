@@ -110,7 +110,7 @@ function ColourValues() {
   return (
     <Page
       title="Colour values"
-      intro="Layer 1. The ramps of Appendix A.1, 0 lightest to 9 darkest, as --liro-<ramp>-<step>. Components never use them directly; they choose a meaning."
+      intro="Layer 1. The colour ramps, 0 lightest to 9 darkest, as --liro-<ramp>-<step>. Components never use them directly; they choose a meaning."
     >
       {Object.entries(RAMPS).map(([ramp, steps]) => (
         <section key={ramp} aria-label={ramp} className="flex flex-col gap-2">
@@ -155,7 +155,7 @@ function Meanings() {
   return (
     <Page
       title="Meanings"
-      intro="Layer 2. The semantic tokens of Appendix A.2, in both themes side by side. The markup of both panels is identical: only data-liro-theme differs, so the themes switch without a single component rule. Translucent dark values assume the page behind them."
+      intro="Layer 2. The semantic tokens, in both themes side by side. The markup of both panels is identical: only data-liro-theme differs, so the themes switch without a single component rule. Translucent dark values assume the page behind them."
     >
       <BothThemes
         render={(theme) =>
@@ -198,7 +198,7 @@ function StatusTones() {
   return (
     <Page
       title="Status tones"
-      intro="The six tones of Appendix A.2. Text on a tone is always its fg on its bg, with its border. The solid colour is for bars and dots, never for text."
+      intro="The six tones. Text on a tone is always its fg on its bg, with its border. The solid colour is for bars and dots, never for text."
     >
       <BothThemes
         render={() => (
@@ -228,7 +228,7 @@ function SpacingRadiusShadows() {
   return (
     <Page
       title="Spacing, radius and shadows"
-      intro="Appendix A.3. Tailwind's spacing scale gives the same steps (p-1 = 4px, p-2 = 8px, p-3 = 12px, p-4 = 16px, p-6 = 24px, p-8 = 32px, p-12 = 48px, p-16 = 64px). Radius: rounded-xs … rounded-xl, rounded-full. Shadows: shadow-xs … shadow-xl, stronger in the dark theme."
+      intro="Tailwind's spacing scale gives the same steps (p-1 = 4px, p-2 = 8px, p-3 = 12px, p-4 = 16px, p-6 = 24px, p-8 = 32px, p-12 = 48px, p-16 = 64px). Radius: rounded-xs … rounded-xl, rounded-full. Shadows: shadow-xs … shadow-xl, stronger in the dark theme."
     >
       <section aria-label="Spacing" className="flex flex-col gap-2">
         <h3 className="m-0 font-semibold">Spacing</h3>
@@ -332,7 +332,7 @@ function MotionAndLayout() {
   return (
     <Page
       title="Motion and layout"
-      intro="Appendix A.4. With prefers-reduced-motion: reduce, every duration is 0ms. Breakpoints are the Tailwind screens xs … xl (media queries cannot read variables, so the variables are for reference). Sizes: h-header, h-control, h-control-sm, max-w-content. Layers: z-(--liro-layer-modal)."
+      intro="With prefers-reduced-motion: reduce, every duration is 0ms. Breakpoints are the Tailwind screens xs … xl (media queries cannot read variables, so the variables are for reference). Sizes: h-header, h-control, h-control-sm, max-w-content. Layers: z-(--liro-layer-modal)."
     >
       <ValueTable caption="Durations" rows={rowsOf('duration', DURATION)} />
       <ValueTable caption="Easing" rows={rowsOf('ease', EASING)} />

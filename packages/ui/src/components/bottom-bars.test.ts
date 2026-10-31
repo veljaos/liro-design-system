@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { bottomBarsHeight } from './bottom-bars'
 
-describe('bottomBarsHeight (toasts stand above every sticky bottom bar, P5.90)', () => {
+describe('bottomBarsHeight (toasts stand above every sticky bottom bar)', () => {
   it('adds up the bars, in whole pixels', () => {
     expect(bottomBarsHeight([])).toBe(0)
     expect(bottomBarsHeight([57])).toBe(57)

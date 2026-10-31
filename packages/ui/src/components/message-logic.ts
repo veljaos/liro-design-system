@@ -1,6 +1,6 @@
 /*
- * The logic of the Message family and MentionCombobox (P5.1), kept apart from the markup so it can
- * be unit-tested (AGENTS.md C7): which messages start a run under their author's name, and
+ * The logic of the Message family and MentionCombobox, kept apart from the markup so it can
+ * be unit-tested: which messages start a run under their author's name, and
  * mentions. A mention is written into the text as "@" and the
  * person's name ("@Ivana Stojanović"); the component keeps the list of mentions chosen (their ids)
  * beside the text and reports it to the application. Text and ids travel together: the application
@@ -30,8 +30,8 @@ export const MENTION_QUERY_MAX = 40
  * The mention being typed before the caret, or null: an "@" at the start of the text or after a
  * space or line break, followed up to the caret by at most `MENTION_QUERY_MAX` characters without
  * a line break or another "@", and with at most two spaces (a first, middle and last name). An "@"
- * inside a word (an e-mail address) is not a mention. A mention already chosen ends the search
- * (P5.94 item 8): the "@" of "@Ana Petrović" and the words typed after it are text, not a new
+ * inside a word (an e-mail address) is not a mention. A mention already chosen ends the search:
+ * the "@" of "@Ana Petrović" and the words typed after it are text, not a new
  * query; the list opens again only at a new "@" at the start of a word.
  */
 export function mentionQueryAt(
@@ -53,7 +53,7 @@ export function mentionQueryAt(
 }
 
 /**
- * Whether an open suggestion list closes by itself (P5.94 item 8): a space typed after a query
+ * Whether an open suggestion list closes by itself: a space typed after a query
  * that matches nothing ends the search ("@" then a normal word), so the list never says "Nothing
  * found" while the user writes on. Escape closes it too (the component's).
  */

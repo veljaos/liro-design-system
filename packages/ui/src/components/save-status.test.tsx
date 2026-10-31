@@ -2,7 +2,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 import { SaveStatus } from './save-status'
 
-describe('SaveStatus (P5.90)', () => {
+describe('SaveStatus', () => {
   it('keeps an empty live region while idle', () => {
     const html = renderToStaticMarkup(<SaveStatus state="idle" />)
     expect(html).toContain('role="status"')

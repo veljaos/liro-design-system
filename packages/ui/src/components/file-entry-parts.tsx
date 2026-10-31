@@ -31,10 +31,10 @@ import {
 import { StatusBadge } from './status-badge'
 
 /*
- * The pieces every view of files shares (P5.43): a file's icon by its family, and its name with
+ * The pieces every view of files shares: a file's icon by its family, and its name with
  * what the application says beside it (badges in its words and tone, shared, favourite), and the
  * facts line under it. Icons are neutral (text.secondary, folders too): a file's family is said
- * by its type, never by a colour (D17).
+ * by its type, never by a colour.
  */
 
 const ICONS: Record<FileIconKind, LucideIcon> = {
@@ -134,7 +134,7 @@ export function FactsLine({ facts, className }: { facts: readonly string[]; clas
 }
 
 /**
- * While a file is uploaded or checked (P5.5's states, AttachmentList's words): one xs line with
+ * While a file is uploaded or checked (AttachmentList's states and words): one xs line with
  * its icon; blocked and failed in status.danger.fg. Nothing once it is available.
  */
 export function EntryState({ entry }: { entry: FileEntry }) {
@@ -164,30 +164,6 @@ export function EntryState({ entry }: { entry: FileEntry }) {
     >
       <look.icon aria-hidden="true" className="mt-px size-3.5 shrink-0" />
       <span className={TEXT_DIRECTION}>{look.text}</span>
-    </span>
-  )
-}
-
-/** The name with its icon and marks, and the location line (results from everywhere, Trash). */
-export function EntryName({ entry, className }: { entry: FileEntry; className?: string }) {
-  return (
-    <span className={cn('flex min-w-0 items-start gap-2.5', className)}>
-      <FileIcon entry={entry} className="mt-px" />
-      <span className="flex min-w-0 flex-col gap-0.5">
-        <span className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1">
-          <bdi dir="auto" className="min-w-0 font-medium break-words text-primary">
-            {entry.name}
-          </bdi>
-          <EntryMarks entry={entry} />
-        </span>
-        {entry.location !== undefined && (
-          <span className={cn('text-xs text-secondary', TEXT_DIRECTION)}>{entry.location}</span>
-        )}
-        {entry.lockedReason !== undefined && (
-          <span className={cn('text-xs text-tertiary', TEXT_DIRECTION)}>{entry.lockedReason}</span>
-        )}
-        <EntryState entry={entry} />
-      </span>
     </span>
   )
 }

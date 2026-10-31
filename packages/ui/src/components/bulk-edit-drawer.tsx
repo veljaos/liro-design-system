@@ -10,9 +10,9 @@ import { ConfirmDialog } from './confirm-dialog'
 import { Drawer } from './dialog'
 
 /*
- * BulkEditDrawer (BUILD-PLAN P5.19, "edit several records at once"): the step after a selection
+ * BulkEditDrawer ("edit several records at once"): the step after a selection
  * on a catalogue list — BulkActionBar "Edit 24 records" → this Drawer → one ConfirmDialog with
- * the count (D14: a short edit with the list still visible).
+ * the count (a short edit with the list still visible).
  * - Each field that can be set for all the selected records is a checkbox with the field's name,
  *   "Leave unchanged" under it by default (nothing is changed unless asked); ticking it shows the
  *   application's field (its label hidden: the checkbox names it) to give the new value.

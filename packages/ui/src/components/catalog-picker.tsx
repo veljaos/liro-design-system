@@ -43,13 +43,13 @@ import {
 } from './catalog-picker-logic'
 
 /*
- * CatalogPicker (P5.90 item 14): choosing from a large catalogue — 50 to 1,500 services,
+ * CatalogPicker: choosing from a large catalogue — 50 to 1,500 services,
  * products or courses — where radio buttons do not scale. A dialog on a desktop (720px), a
- * full-screen sheet on phones (D19). From the top down:
+ * full-screen sheet on phones. From the top down:
  *
  * - **Search** first: typing finds items in every level by name, detail, provider, keywords or
  *   their levels' names; the results show where each stands.
- * - **Filters** as pressed chips (the neutral selection, D17): the application's rules
+ * - **Filters** as pressed chips (the neutral selection): the application's rules
  *   (`matches`); several pressed all apply, everywhere.
  * - **Sections** at the top level, from data: "Most chosen", "Your recent", "Recommended", "On
  *   discount" — each a short list of cards in the application's order.
@@ -74,7 +74,7 @@ import {
  * Computes nothing: prices, discounts, what combines and what is recommended are the
  * application's data.
  *
- * P5.93 (items 4, 5 and 12, the owner's fourth review): the search and the chips stay at the top
+ * The search and the chips stay at the top
  * and only the cards scroll, in a region of their own that ends above the footer with room to
  * spare — nothing floats over them. One choice has no footer at all (the header's X closes it);
  * several end with one opaque footer behind one line: what is chosen, then "Choose 2". A level
@@ -88,7 +88,7 @@ export interface CatalogPickerProps {
   onOpenChange: (open: boolean) => void
   /** The dialog's title: the action ("Choose a service"). */
   title: string
-  /** What it is chosen for, bold under the title (D22). */
+  /** What it is chosen for, bold under the title. */
   subject?: ReactNode
   description?: ReactNode
   items: readonly CatalogItem[]
@@ -159,7 +159,7 @@ function PickerBody(props: CatalogPickerProps & { phone: boolean }) {
   const count = (value: number) =>
     (props.countLabel ?? messages['catalog.count'])(value, format.number(String(value)))
   const topLabel = props.topLabel ?? messages['catalog.top']
-  /** One column on phones (P5.93 item 5): the layout follows the picker, not the viewport. */
+  /** One column on phones: the layout follows the picker, not the viewport. */
   const grid = props.phone ? 'grid-cols-1' : 'grid-cols-2'
 
   const filtered = applyCatalogFilters(props.items, props.filters ?? [], pressed)
@@ -236,7 +236,7 @@ function PickerBody(props: CatalogPickerProps & { phone: boolean }) {
         <>
           {!searching && current !== undefined && (
             <div className="flex flex-col items-start gap-1">
-              {/* A quiet link back up, not a button (P5.93 item 4). */}
+              {/* A quiet link back up, not a button. */}
               <button
                 type="button"
                 data-slot="catalog-back"
@@ -440,7 +440,7 @@ function PickerBody(props: CatalogPickerProps & { phone: boolean }) {
             </div>
           )}
         </div>
-        {/* Only the cards scroll, above the footer, with room under the last (P5.93 item 4):
+        {/* Only the cards scroll, above the footer, with room under the last:
             the search and the chips stay; nothing is drawn over the cards. The 4px inset keeps
             a card's focus ring inside the region. */}
         <div
@@ -519,7 +519,7 @@ function columnsOf(cards: readonly HTMLElement[]): number {
 
 /** Items as cards in a listbox: one tab stop, the arrows by the measured columns. */
 function CardList(props: {
-  /** One column, the price under the name (P5.93 items 5 and 12). */
+  /** One column, the price under the name. */
   phone: boolean
   label: string
   items: readonly CatalogItem[]
@@ -610,7 +610,7 @@ function CatalogCard(props: {
   const unavailable = item.unavailableReason !== undefined
   const facts = [item.detail, item.provider].filter((each) => each !== undefined).join(' · ')
   // The price (or the application's words for it): at the end beside the name on a desktop, under
-  // the name on a phone, so neither is squeezed into broken words (P5.93 items 5 and 12).
+  // the name on a phone, so neither is squeezed into broken words.
   const price =
     item.price === undefined && item.priceText === undefined ? null : (
       <span
@@ -706,7 +706,7 @@ function CatalogCard(props: {
           </span>
         )}
         {unavailable && (
-          // P5.93: the state line of every tile and card — "Unavailable", the reason under it.
+          // The state line of every tile and card — "Unavailable", the reason under it.
           <StateLine
             id={reasonId}
             icon={Ban}

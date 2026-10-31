@@ -20,17 +20,17 @@ import { TextAreaField } from './text-field'
 import { TimeField } from './time-field'
 
 /*
- * ClockRecordList (BUILD-PLAN P5.24e): clock-in and clock-out records from terminals or a phone,
+ * ClockRecordList: clock-in and clock-out records from terminals or a phone,
  * with audited corrections. The records, their sources, places, durations and corrections are the
  * application's; the list shows them and reports a correction.
- * - A DataTable (its phone cards below 48em, P3.2): name (and a second line), date, clock-in,
+ * - A DataTable (its phone cards below 48em): name (and a second line), date, clock-in,
  *   clock-out, duration, source (and place), correction. Times are the instants' clock times
  *   through `format.time`; a clock-out after midnight says "next day". A missing clock-in or
  *   clock-out is said in words ("No clock-out", warning text with an icon), never 0 or a dash; a
  *   missing duration is "—".
  * - Corrections are audited, never silent: "Correct" in a row's menu opens a Drawer at the end
- *   (D14: a short edit, the list still visible), titled "Correct clock record" with the person
- *   and the day bold under it (P5.28 item 6), with the new clock-in and clock-out (typed freely,
+ *   (a short edit, the list still visible), titled "Correct clock record" with the person
+ *   and the day bold under it, with the new clock-in and clock-out (typed freely,
  *   read as hh:mm) and a required reason. The application keeps the original; a corrected record
  *   shows the new time, then the original struck through ("was" for assistive technology), and
  *   who corrected it, when and why.
@@ -319,7 +319,7 @@ function CorrectionDrawer({
   const [inTime, setInTime] = useState(clockTimeOf(record.in))
   const [outTime, setOutTime] = useState(clockTimeOf(record.out))
   // TimeField reads "630" as 06:30 on leaving the field and keeps unreadable text with its own
-  // message (P5.90 item 12); saving waits until both times can be read.
+  // message; saving waits until both times can be read.
   const [inValid, setInValid] = useState(true)
   const [outValid, setOutValid] = useState(true)
   const [reason, setReason] = useState('')
@@ -374,7 +374,7 @@ function CorrectionDrawer({
         onInteractOutside={keep}
       >
         <DialogHeader className={dialogHeaderClass(record.person)}>
-          {/* The action, then the record bold on its own line (P5.28 item 6). */}
+          {/* The action, then the record bold on its own line. */}
           <DialogTitle>
             <DialogHeading
               title={messages['clock.correctTitle']}

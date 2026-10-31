@@ -343,7 +343,7 @@ describe('changes', () => {
   })
 })
 
-describe('one area at a time (P5.28 item 26)', () => {
+describe('one area at a time', () => {
   const AREAS = [
     { id: 'hall', label: 'Hall', x: 0, y: 0, width: 600, height: 600 },
     { id: 'terrace', label: 'Terrace', x: 600, y: 0, width: 400, height: 300 },
@@ -416,7 +416,7 @@ describe('one area at a time (P5.28 item 26)', () => {
   })
 })
 
-describe('labels are never cut (P5.28 item 24)', () => {
+describe('labels are never cut', () => {
   const NAME = { width: 30, height: 16 }
   const NUMBER = { width: 14, height: 16 }
   const GUESTS = { width: 48, height: 16 }

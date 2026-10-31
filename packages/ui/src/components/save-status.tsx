@@ -5,7 +5,7 @@ import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 
 /*
- * SaveStatus (P5.90 item 21, the owner's review: "toasts never block"): the inline, quiet answer
+ * SaveStatus: the inline, quiet answer
  * to a routine save, placed beside the action that saved ("Saved" beside Save, in a form's bar, in
  * a row). A routine save is never confirmed by a toast; a toast is for an outcome somewhere else,
  * closes by itself and covers nothing (`notice`).

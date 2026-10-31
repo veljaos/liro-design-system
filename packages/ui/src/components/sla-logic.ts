@@ -1,9 +1,9 @@
 /*
- * The logic of SlaTimer (P5.30), kept apart from the markup so it can be unit-tested (AGENTS.md
- * C7): where a deadline stands against the application's `now` — running, soon, overdue, paused,
+ * The logic of SlaTimer, kept apart from the markup so it can be unit-tested:
+ * where a deadline stands against the application's `now` — running, soon, overdue, paused,
  * met or missed — and a number of minutes cut into the parts the words show ("2 h 15 min",
  * "1 d 3 h"). Instants are ISO strings with their offset ("2026-10-14T10:30:00+02:00"); the
- * difference between two of them is whole minutes, never the device's clock (D25).
+ * difference between two of them is whole minutes, never the device's clock.
  */
 
 /** Where a deadline stands. */

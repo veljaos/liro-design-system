@@ -230,7 +230,7 @@ export const messagesEn: LiroMessages = {
   'status.suspendedCompanyDescription': (company) =>
     `Access for ${company} is suspended. Contact your administrator.`,
   'launchpad.show': (name) => `Show: ${name}`,
-  // ── P5 group F ──
+  // Accounting runs: candidates, balance, periodic runs
   'candidates.empty': 'Nothing to suggest',
   'balance.label': 'Balance',
   'balance.debit': 'Debit',
@@ -251,7 +251,7 @@ export const messagesEn: LiroMessages = {
   'run.periodOpen': 'Period open',
   'run.periodLocked': 'Period locked',
   'run.rerun': 'Rerun',
-  // ── P5 group A ──
+  // Collaboration: mentions, history, messages, questionnaires
   'text.join': (items) => items.join(', '),
   'agent.mark': 'Agent',
   'agent.named': (name) => `${name} (agent)`,
@@ -290,7 +290,7 @@ export const messagesEn: LiroMessages = {
   'questionnaire.required': 'Answer this question to go on.',
   'questionnaire.otherRequired': 'Write your own answer to go on.',
 
-  // ── P5 group C ──
+  // Sign-in and security
   'signIn.email': 'E-mail',
   'signIn.continue': 'Continue',
   'signIn.or': 'or',
@@ -356,7 +356,7 @@ export const messagesEn: LiroMessages = {
   'signing.declineTitle': 'Decline to sign',
   'signing.declineConfirm': 'Decline',
   'signing.notYourTurn': (name) => `${name} signs first`,
-  // ── P5 group E ──
+  // Catalogues at scale, registers and official forms
   'lookup.keyboardHint': 'Arrow keys move through the results; Enter chooses.',
   'import.stepFile': 'File',
   'import.stepColumns': 'Columns',
@@ -431,7 +431,7 @@ export const messagesEn: LiroMessages = {
     count === 1 ? `${text} check passed` : `${text} checks passed`,
   'statutory.goToField': (field) => `Go to ${field}`,
   'statutory.checks': 'Checks',
-  // ── P5 group B ──
+  // Shell markers, timelines, jobs and files
   'connection.online': 'Back online',
   'connection.local': (time) =>
     time === null ? 'Saved on this device' : `Saved on this device at ${time}`,
@@ -485,7 +485,7 @@ export const messagesEn: LiroMessages = {
   'frame.error': 'The document could not be shown.',
   'frame.timeout': 'The document viewer did not answer.',
   'frame.retry': 'Try again',
-  // ── P5 group D2 ──
+  // Complex documents
   'references.basedOn': 'Based on',
   'references.lead': (label) => `${label}:`,
   'references.listSeparator': ', ',
@@ -508,7 +508,7 @@ export const messagesEn: LiroMessages = {
   'correction.original': 'Original',
   'correction.change': 'Change',
   'correction.new': 'New',
-  // ── P5 group D1 ──
+  // Document lines and lookup
   'lookup.recent': 'Recent',
   'lookup.create': (kind, query) => `Create ${kind} “${query}”`,
   'lookup.oneOff': (query) => `Use “${query}” as a one-off line`,
@@ -528,7 +528,7 @@ export const messagesEn: LiroMessages = {
   'grid.addDeduction': 'Deduction',
   'grid.internal': 'Internal',
   'grid.line': (_line, text) => `Line ${text}`,
-  // P5.24 shifts
+  // Shifts
   'shifts.person': 'Person',
   'shifts.hours': 'Hours',
   'shifts.coverage': 'Coverage',
@@ -635,7 +635,6 @@ export const messagesEn: LiroMessages = {
   'workingTime.average': 'Average per week',
   'workingTime.warnings': 'Warnings',
   'workingTime.noWarnings': 'No warnings',
-  // P5.9 / P5.14 / P5.16
   'tree.loading': 'Loading…',
   'tree.loadError': 'The items could not be loaded.',
   'tree.retry': 'Try again',
@@ -655,7 +654,7 @@ export const messagesEn: LiroMessages = {
   'portal.sections': 'Sections',
   'portal.sectionNote': (label, note) => `${label}, ${note}`,
   'portal.menu': (name) => `Account: ${name}`,
-  // P5.13 / P5.24 ── AttendanceGrid and ClockRecordList
+  // AttendanceGrid and ClockRecordList
   'attendance.rows': 'Name',
   'attendance.weekend': 'Weekend',
   'attendance.holiday': 'Holiday',
@@ -708,7 +707,7 @@ export const messagesEn: LiroMessages = {
   'clock.time': 'hh:mm',
   'clock.reason': 'Reason for the correction',
   'clock.save': 'Save correction',
-  // P5.8 Calendar and scheduling
+  // Calendar and scheduling
   'calendar.today': 'Today',
   'calendar.previous': (view) => `Previous ${view === 'agenda' ? 'week' : view}`,
   'calendar.next': (view) => `Next ${view === 'agenda' ? 'week' : view}`,
@@ -757,7 +756,7 @@ export const messagesEn: LiroMessages = {
   'timetable.period': 'Period',
   'timetable.free': 'Free',
   'timetable.day': 'Day',
-  // P5.10 / P5.11 touch, POS and warehouse
+  // Touch, POS and warehouse
   'pos.status': 'Register status',
   'pos.register': 'Register',
   'pos.cashier': 'Cashier',
@@ -842,7 +841,6 @@ export const messagesEn: LiroMessages = {
     reason === undefined || reason === '' ? `Minimum ${minText}` : `Minimum ${minText} — ${reason}`,
   'queue.waiting': (count, countText) =>
     `${countText} ${count === 1 ? 'change' : 'changes'} waiting to be sent`,
-  // P5.15 / P5.12
   'quiz.score': (_correct, _total, correctText, totalText) =>
     `${correctText} of ${totalText} correct`,
   'quiz.passed': 'Passed',
@@ -852,7 +850,7 @@ export const messagesEn: LiroMessages = {
   'quiz.incorrect': 'Incorrect',
   'quiz.yourAnswer': (answer) => `Your answer: ${answer}`,
   'quiz.correctAnswer': (answer) => `Correct answer: ${answer}`,
-  // P5.22 ── RichTextField and RichText
+  // RichTextField and RichText
   'richText.toolbar': 'Formatting',
   'richText.textStyle': 'Text style',
   'richText.textStyleCurrent': (style) => `Text style: ${style}`,
@@ -878,7 +876,7 @@ export const messagesEn: LiroMessages = {
   'richText.countLabel': (countText, limitText) => `${countText} of ${limitText} characters`,
   'richText.overLimit': (count, countText) =>
     count === 1 ? '1 character too many' : `${countText} characters too many`,
-  // P5.25 RoomRack
+  // RoomRack
   'rack.search': 'Search by number or name',
   'rack.occupancy': 'Occupancy',
   'rack.housekeeping': 'Housekeeping',
@@ -889,7 +887,7 @@ export const messagesEn: LiroMessages = {
   'rack.empty': 'No rooms yet',
   'rack.emptyDescription': 'The rooms appear here once they are set up.',
   'rack.instructions': 'Use the arrow keys to move between the rooms, and Enter to open one.',
-  // P5.25 FloorPlan
+  // FloorPlan
   'floorPlan.view': 'View',
   'floorPlan.plan': 'Plan',
   'floorPlan.list': 'List',
@@ -938,7 +936,7 @@ export const messagesEn: LiroMessages = {
   'floorPlan.empty': 'Nothing on this plan yet',
   'floorPlan.emptyDescription': 'The plan has no items.',
   'floorPlan.emptyEditing': 'Add the first item from the palette above.',
-  // P5.25 SeatingChart
+  // SeatingChart
   'seating.guests': 'Guests',
   'seating.count': (seatedText, totalText) => `${seatedText} of ${totalText} seated`,
   'seating.search': 'Search guests',
@@ -965,7 +963,7 @@ export const messagesEn: LiroMessages = {
   'seating.freeSeats': (count, countText) => (count === 1 ? '1 free' : `${countText} free`),
   'seating.tableFull': 'This table has no free seat.',
   'seating.emptySeat': 'Empty seat',
-  // P5.26 ── Diagram
+  // Diagram
   'diagram.start': 'Start',
   'diagram.end': 'End',
   'diagram.task': 'Task',
@@ -1043,14 +1041,14 @@ export const messagesEn: LiroMessages = {
   'diagram.stepState': (label, state) => `${label}: ${state}`,
   'diagram.stepAction': (action, label) => `${action}: ${label}`,
   'diagram.defaultWay': 'Default way out, when no condition holds',
-  // P5.27 legal search
+  // Legal search
   'legalSearch.retry': 'Try again',
   'gazette.published': (date) => `Published ${date}`,
   'gazette.acts': (count, text) => (count === 1 ? `${text} act` : `${text} acts`),
   'gazette.showMore': 'Show more issues',
   'gazette.emptyTitle': 'No new issues',
   'gazette.emptyDescription': 'New issues appear here when they are published.',
-  // P5.27 legal text
+  // Legal text
   'legal.copyLink': (label) => `Copy link to ${label}`,
   'legal.linkCopied': 'Link copied',
   'legal.copyFailed': 'The link could not be copied.',
@@ -1088,7 +1086,7 @@ export const messagesEn: LiroMessages = {
   'legal.unchanged': (count, countText) =>
     count === 1 ? '1 unchanged article' : `${countText} unchanged articles`,
   'legal.noChanges': 'The two versions have the same text.',
-  // P5.27 legal page
+  // Legal page
   'legalPanel.versions': 'Versions',
   'legalPanel.history': 'History of changes',
   'legalPanel.hierarchy': 'Legal hierarchy',
@@ -1136,15 +1134,15 @@ export const messagesEn: LiroMessages = {
     return `${article}: ${changes}, ${decisions}, ${opinions}`
   },
   'legalPanel.backToAct': 'Back to the whole act',
-  // P5.25a FloorPlan
+  // FloorPlan: areas
   'floorPlan.level': (percentText) => `${percentText} full`,
-  // P5.28 docs
+  // The statutory form grid
   'statutory.compareWith': (period) => `Compare with ${period}`,
   'statutory.comparing': (current, previous) => `${current}, with ${previous} under each amount`,
   'statutory.previousValue': (period) => `${period}:`,
-  // P5.28 dates
+  // Dates and times
   'schedule.now': (timeText) => `Now, ${timeText}`,
-  // P5.28 screens
+  // Masked values and change confirmation
   'masked.loggedTitle': 'Access is logged.',
   'clock.correctSubject': (person, date) => `${person}, ${date}`,
   'change.save': 'Save',
@@ -1160,11 +1158,11 @@ export const messagesEn: LiroMessages = {
   'attendance.correctAction': 'Correct',
   'attendance.correctSubject': (row, column) => `${row}, ${column}`,
   'shifts.moveAction': 'Move',
-  // P5.28 left
+  // Shifts: swaps
   'shifts.moveSubject': (label, name, dayText) => `${label} · ${name}, ${dayText}`,
   'shifts.publishAndNotify': 'Publish and notify',
   'shifts.publishChangesAndNotify': 'Publish changes and notify',
-  // P5.28 pos
+  // Fiscal receipts and payments at the till
   'payment.qrStart': 'Show the payment code',
   'payment.qrWaiting': 'Waiting for the payment…',
   'payment.qrHint': 'The customer scans the code with their bank’s app.',
@@ -1221,19 +1219,19 @@ export const messagesEn: LiroMessages = {
   'receiptResult.sending': 'Sending…',
   'receiptResult.sent': 'Sent',
   'receiptResult.failed': 'Not sent',
-  // P5.28 floor
+  // Floor plan and seating
   'floorPlan.area': 'Area',
   'floorPlan.allAreas': 'All areas',
   'floorPlan.editOnLarger': 'Edit the plan on a computer or tablet.',
   'seating.seatTitle': 'Seat a guest',
-  // P5.29 admin
+  // Monitoring
   'health.lastSuccess': 'Last success',
   'health.lastError': 'Last error',
   'health.errorMessage': 'Error message',
   'health.never': 'Never',
   'health.empty': 'Nothing is monitored here yet.',
   'health.actionNamed': (actionText, name) => `${actionText}: ${name}`,
-  // P5.29 agent
+  // SlaTimer and the helpdesk
   'sla.dueIn': (durationText) => `Due in ${durationText}`,
   'sla.overdueBy': (durationText) => `Overdue by ${durationText}`,
   'sla.overdue': 'Overdue',
@@ -1262,7 +1260,7 @@ export const messagesEn: LiroMessages = {
   'composer.findSavedReply': 'Find a saved reply',
   'composer.attach': 'Attach files',
   'composer.insertLink': 'Insert a link',
-  // P5.29 portal
+  // Portal: feedback, help and search
   'rating.comment': 'Comment (optional)',
   'rating.send': 'Send',
   'rating.required': 'Choose one of the answers.',
@@ -1282,7 +1280,7 @@ export const messagesEn: LiroMessages = {
   'pageContents.title': 'On this page',
   'searchResults.count': (count, countText) => `${countText} ${count === 1 ? 'result' : 'results'}`,
   'searchResults.retry': 'Try again',
-  // P5.34 ai
+  // The assistant, e-mail preview, reading
   'assistant.generated': 'AI-generated',
   'assistant.thinking': 'Thinking…',
   'assistant.writing': 'Writing…',
@@ -1331,11 +1329,11 @@ export const messagesEn: LiroMessages = {
   'newsletter.invalid': 'Enter an e-mail address such as name@example.com.',
   'newsletter.sending': 'Subscribing…',
   'newsletter.thanks': 'Thank you — check your inbox to confirm.',
-  // P5.31 merge values
+  // Merge values
   'richText.mergeFieldMissing': (label) => `No value: ${label}`,
   'richText.missingValues': (labels) =>
     `No value yet for ${labels.join(', ')}. Fill ${labels.length === 1 ? 'it' : 'them'} in or remove ${labels.length === 1 ? 'it' : 'them'}.`,
-  // P5.40 QR code and IPS QR
+  // QR code and IPS QR
   'qr.tooLong': 'The text is too long for a QR code.',
   'ips.problem': (code, label, limit) => {
     switch (code) {
@@ -1359,7 +1357,7 @@ export const messagesEn: LiroMessages = {
         return `${label}: the control number does not match the model.`
     }
   },
-  // P5.37 gantt
+  // Gantt
   'gantt.kindPhase': 'Phase',
   'gantt.kindTask': 'Task',
   'gantt.kindMilestone': 'Milestone',
@@ -1422,7 +1420,7 @@ export const messagesEn: LiroMessages = {
   'gantt.error': 'The plan could not be loaded.',
   'gantt.retry': 'Try again',
   'gantt.editOnLargerScreen': 'Open this plan on a larger screen to change it.',
-  // P5.36 acct
+  // Plans and usage
   'plan.current': 'Current plan',
   'plan.feature': 'Feature',
   'plan.included': 'Included',
@@ -1430,13 +1428,13 @@ export const messagesEn: LiroMessages = {
   'usage.amount': (number, unit) => `${number} ${unit}`,
   'usage.ofLimit': (usedText, limitText) => `${usedText} of ${limitText}`,
   'usage.noLimit': (usedText) => `${usedText} used, no limit`,
-  // P5.31 docs
+  // Page viewer and recognized fields
   'recognized.confidence': (text) => `Confidence: ${text}`,
   'recognized.low': 'Low confidence',
   'recognized.changed': 'Changed by you',
   'recognized.showSource': 'Show where it was read',
   'viewer.highlighted': (label, pageText) => `Highlighted: ${label}, ${pageText.toLowerCase()}`,
-  // P5.33 docs
+  // Value comparison
   'comparison.count': (count, countText, _total, totalText) =>
     count === 0 ? 'No differences' : `${countText} of ${totalText} differ`,
   'comparison.same': 'Same',
@@ -1444,7 +1442,7 @@ export const messagesEn: LiroMessages = {
   'comparison.item': 'Item',
   'comparison.result': 'Result',
   'comparison.empty': 'Nothing to compare',
-  // P5.41 map
+  // Map
   'map.keys': 'Arrow keys move the map; plus and minus zoom in and out.',
   'map.zoomIn': 'Zoom in',
   'map.zoomOut': 'Zoom out',
@@ -1476,7 +1474,7 @@ export const messagesEn: LiroMessages = {
   'map.stepBetween': (fromText, toText) => `${fromText} to under ${toText}`,
   'map.stepFrom': (fromText) => `${fromText} and more`,
   'map.areaValue': (area, valueText) => `${area}: ${valueText}`,
-  // P5.42 org
+  // Hierarchy
   'hierarchy.vacant': 'Vacant',
   'hierarchy.expand': (_count, countText, name) => `Show the ${countText} under ${name}`,
   'hierarchy.collapse': (name) => `Hide those under ${name}`,
@@ -1493,7 +1491,7 @@ export const messagesEn: LiroMessages = {
   'hierarchy.fit': 'Fit to width',
   'hierarchy.actual': 'Actual size',
   'hierarchy.retry': 'Try again',
-  // P5.43 files
+  // Files
   'files.folders': 'Folders',
   'files.owner': 'Owner',
   'files.modified': 'Modified',
@@ -1573,12 +1571,12 @@ export const messagesEn: LiroMessages = {
   'versions.empty': 'No earlier versions.',
   'files.nameRequired': 'Enter a name.',
   'sharing.setPassword': 'Set password',
-  // ── P5.66 records ──
+  // DefinedForm
   'definedForm.empty': 'There is nothing to fill in here.',
   'definedForm.fill': 'Fill in this field.',
   'definedForm.choose': 'Choose an option.',
   'definedForm.tick': 'Tick this to go on.',
-  // P5.77 pivot
+  // Pivot
   'pivot.fields': 'Fields',
   'pivot.areaFilters': 'Filters',
   'pivot.areaColumns': 'Columns',
@@ -1622,7 +1620,7 @@ export const messagesEn: LiroMessages = {
   'pivot.moved': (field, area, positionText, totalText) =>
     `${field} in ${area}, position ${positionText} of ${totalText}`,
   'pivot.removedField': (field) => `${field} removed from the layout`,
-  // P5.78 auto: RuleBuilder
+  // RuleBuilder
   'rule.when': 'When',
   'rule.if': 'If',
   'rule.then': 'Then',
@@ -1663,7 +1661,7 @@ export const messagesEn: LiroMessages = {
   'rule.moveUp': (item) => `Move up: ${item}`,
   'rule.moveDown': (item) => `Move down: ${item}`,
   'rule.remove': (item) => `Remove: ${item}`,
-  // P5.79 auto: ValueComparison chooses the values to keep
+  // ValueComparison: the values to keep
   'comparison.chosenCount': (_count, countText, total, totalText) =>
     total === 0 ? 'No differences' : `${countText} of ${totalText} chosen`,
   'comparison.choose': 'Choose the value to keep',
@@ -1674,7 +1672,7 @@ export const messagesEn: LiroMessages = {
   'comparison.showIdentical': (_count, countText) => `Show identical fields (${countText})`,
   'comparison.preview': 'Merged record',
   'comparison.notChosen': 'Not chosen yet',
-  // ── P5.81 reports ──
+  // DashboardGrid
   'dashboardGrid.moveCard': (title) => `Move: ${title}`,
   'dashboardGrid.instructions':
     'Press Space to pick up the card, the arrow keys to move it, Space to drop it and Escape to cancel.',
@@ -1695,7 +1693,7 @@ export const messagesEn: LiroMessages = {
   'dashboardGrid.remove': (title) => `Remove: ${title}`,
   'dashboardGrid.removed': (title) => `${title} removed.`,
   'dashboardGrid.empty': 'No cards on this dashboard.',
-  // ── P5.93 code and the assistant's work ──
+  // Code and the assistant's work
   'code.label': 'Code',
   'code.copy': 'Copy',
   'code.copied': 'Copied',
@@ -1722,11 +1720,11 @@ export const messagesEn: LiroMessages = {
   'trace.sourcesUsed': (count, countText) =>
     count === 1 ? 'Used 1 record' : `Used ${countText} records`,
   'trace.result': 'Result',
-  // ── P5.93 (c) ──
+  // InlineUndo
   'undo.label': 'Undo',
-  // ── P5.93 (e) ──
+  // ArticleList
   'articles.read': 'Read article',
-  // ── P5.93 (h) ──
+  // Charts whose marks are reached one by one
   'chart.itemKeys': 'Arrow keys move between the values; Escape hides the details.',
   'chart.open': 'Open',
   'chart.high': 'High',
@@ -1740,7 +1738,7 @@ export const messagesEn: LiroMessages = {
   'chart.to': 'To',
   'chart.none': 'None',
   'chart.more': (_count, countText) => `+${countText} more`,
-  // ── P5.94 (portal) ──
+  // CommonQuestions
   'questions.search': 'Search questions',
   'questions.categories': 'Categories',
   'questions.all': 'All',
@@ -1749,7 +1747,7 @@ export const messagesEn: LiroMessages = {
   'questions.found': (count, countText) =>
     count === 0 ? 'No questions found' : count === 1 ? '1 question' : `${countText} questions`,
   'questions.clear': 'Clear the search',
-  // ── P5.96 (questions and answers) ──
+  // QuestionsAndAnswers
   'questions.showMore': (shownText, totalText) => `Show more (${shownText} of ${totalText} shown)`,
   'questions.askInstead': 'Try other words, or ask your question.',
 }

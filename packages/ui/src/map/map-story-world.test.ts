@@ -3,7 +3,7 @@ import { pointInArea } from './map-logic'
 import { COUNTRY_SHAPES } from './map-story-world'
 
 /*
- * The maps of the stories and examples follow the law of the Republic of Serbia (P5.31a): Kosovo
+ * The maps of the stories and examples follow the law of the Republic of Serbia: Kosovo
  * and Metohija is part of Serbia, drawn within Serbia's area with no shape, border or name of its
  * own.
  */

@@ -1,11 +1,11 @@
 /*
- * Group I's fiscal data (P5.28 items 21 and 22): the till of Pekara Zlatni klas (data-I.ts) issuing
+ * The fiscal data: the till of Pekara Zlatni klas (data-I.ts) issuing
  * receipts after the Serbian fiscal system — the receipt's kind (type × transaction), seven ways to
  * pay, the buyer's ID, refunds of a receipt from the day's journal, advances and the offline queue.
  * **Illustrative:** the kinds, codes, labels, counters and rules are written from general knowledge
  * of the system, in English; every processor number, tax number and person is invented. The
  * application's arithmetic is here, in whole paras (BigInt): the remaining amount, the change, a
- * refund's amount, the advances deducted; the components add nothing (D4). Not part of the
+ * refund's amount, the advances deducted; the components add nothing. Not part of the
  * package. No classes here.
  */
 import type {
@@ -297,7 +297,7 @@ export function searchJournal(
 }
 
 /**
- * The one search field's text read as the application reads it (P5.93 item 14): a day (as the
+ * The one search field's text read as the application reads it: a day (as the
  * provider writes dates), an amount (as it writes numbers), or the end of a receipt's number —
  * a receipt matches any of them.
  */

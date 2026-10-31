@@ -35,7 +35,7 @@ describe('confirmFamily', () => {
     }
   })
 
-  it("takes the tone's own family without an action (owner, P3.2a)", () => {
+  it("takes the tone's own family without an action", () => {
     expect(confirmFamily('warning', undefined)).toBe('caution')
     expect(confirmFamily('danger', undefined)).toBe('destructive')
     expect(confirmFamily('info', undefined)).toBe('primary')

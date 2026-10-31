@@ -48,7 +48,7 @@ const QUESTIONS: CommonQuestion[] = [
 
 const LABELS = { personal: 'Personal data', leave: 'Leave', pay: 'Pay' }
 
-describe('questionMatches and filterQuestions (P5.94 item 20)', () => {
+describe('questionMatches and filterQuestions', () => {
   it('finds every word in the question, the answer, the documents, keywords or category', () => {
     const ids = (query: string, category: string | null = null) =>
       filterQuestions(QUESTIONS, { query, category }, 'en', LABELS).map((each) => each.id)
@@ -167,7 +167,7 @@ describe('CommonQuestions markup', () => {
   })
 })
 
-describe('FileDropzone expected documents (P5.94 item 3)', () => {
+describe('FileDropzone expected documents', () => {
   it('lists each document as required, optional or attached', () => {
     const html = render(
       <FileDropzone

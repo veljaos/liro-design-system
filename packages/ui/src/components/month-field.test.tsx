@@ -21,7 +21,7 @@ describe('moveMonth: arrow keys in the month grid', () => {
     expect(monthOf(moveMonth(march, 'ArrowUp', 'ltr') ?? 0)).toBe('2025-12')
   })
 
-  it('swaps left and right in right-to-left (Appendix B.7)', () => {
+  it('swaps left and right in right-to-left', () => {
     expect(monthOf(moveMonth(march, 'ArrowLeft', 'rtl') ?? 0)).toBe('2026-04')
     expect(monthOf(moveMonth(march, 'ArrowRight', 'rtl') ?? 0)).toBe('2026-02')
   })

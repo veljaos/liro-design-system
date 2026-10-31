@@ -4,7 +4,7 @@
  * *.stories.tsx files.
  */
 
-/** Arabic samples: written right to left, marked with lang and dir (AGENTS.md D15). */
+/** Arabic samples: written right to left, marked with lang and dir. */
 export const ARABIC = {
   label: 'اسم العميل',
   description: 'كما يظهر في الفاتورة',
@@ -39,7 +39,7 @@ export const LONG = {
 }
 
 /**
- * Unbroken text (P5.90 item 7): strings without a single space, which must wrap inside their box
+ * Unbroken text: strings without a single space, which must wrap inside their box
  * rather than overflow it — an IBAN, a URL, a sixty-letter word.
  */
 export const UNBROKEN = {

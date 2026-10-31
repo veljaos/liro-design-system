@@ -1,4 +1,4 @@
-// @veljaos/ui/gantt (P5.37): Gantt, on SVAR React Gantt (@svar-ui/react-gantt, MIT edition). A
+// @veljaos/ui/gantt: Gantt, on SVAR React Gantt (@svar-ui/react-gantt, MIT edition). A
 // subpath of its own, so an application without a project plan does not load SVAR.
 export { Gantt } from './gantt'
 export type { GanttProps } from './gantt'

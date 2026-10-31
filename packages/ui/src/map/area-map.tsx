@@ -30,16 +30,16 @@ import {
 } from './map-logic'
 
 /*
- * AreaMap (BUILD-PLAN P5.41): areas on a map — municipalities, the zones of a city's tax, service
+ * AreaMap: areas on a map — municipalities, the zones of a city's tax, service
  * areas — drawn as lines and fills in tokens, with the list of every area beside the map. Every area takes one colour, the charts' main blue, light; the
- * pointer darkens it a little and the chosen one is darker still (P5.94 item 17): different
+ * pointer darkens it a little and the chosen one is darker still: different
  * colours only when the data sorts the areas into kinds (`tone`, with a legend). The list is the
  * keyboard's and the screen reader's way (a single
- * choice, the arrow keys move and choose). The chosen area (P5.93 item 37) is filled with its own
+ * choice, the arrow keys move and choose). The chosen area is filled with its own
  * colour, clearly stronger, with a thicker line, and the same item is the list's neutral selection
- * (D17: surface.selected and the border.selected bar — never colour alone). The area under the
- * pointer, and the area whose list item has the keys' focus, take one look whatever their size
- * (P5.96b): a stronger line drawn over the neighbours and the name (and detail) in a tooltip —
+ * (surface.selected and the border.selected bar — never colour alone). The area under the
+ * pointer, and the area whose list item has the keys' focus, take one look whatever their size:
+ * a stronger line drawn over the neighbours and the name (and detail) in a tooltip —
  * never a name on the area. An optional point (an address)
  * says which area it falls in ("Falls in: Zone II", `pointInArea`). The legend and every word on
  * an area are the application's; every boundary is the application's data (GeoJSON polygons).
@@ -58,7 +58,7 @@ export interface MapArea {
   geometry: MapAreaGeometry
   /**
    * Its colour, only when the data sorts the areas into kinds (a legend says which): neutral or
-   * one of five categories. Default 'main': every area the charts' main blue (P5.94 item 17).
+   * one of five categories. Default 'main': every area the charts' main blue.
    */
   tone?: MapAreaTone
 }
@@ -137,7 +137,7 @@ export function AreaMap(props: AreaMapProps) {
   const items = useRef<(HTMLDivElement | null)[]>([])
   const headingId = useId()
   // The area the pointer is over on the map (and where), and the area whose list item has the keys'
-  // focus: that area is outlined and named in the tooltip, the same for every area (P5.96b).
+  // focus: that area is outlined and named in the tooltip, the same for every area.
   const [hovered, setHovered] = useState<{ id: string; at: ScreenPoint } | null>(null)
   const [focused, setFocused] = useState<string | null>(null)
   const areaIds = props.areas.map((area) => area.id).join('\n')
@@ -242,7 +242,7 @@ export function AreaMap(props: AreaMapProps) {
         data-ready=""
         className={cn('flex flex-col gap-3', props.className)}
       >
-        {/* A visible loading state (P5.93 item 2): the map's place, and the words over it. */}
+        {/* A visible loading state: the map's place, and the words over it. */}
         <div className="relative w-full" style={{ height }}>
           <Skeleton className="absolute inset-0" />
           <div className="absolute inset-0 flex items-center justify-center p-4">
@@ -321,7 +321,7 @@ export function AreaMap(props: AreaMapProps) {
               }}
               onFocus={(event) => {
                 // The keys' focus marks the area on the map; a press of the pointer only chooses
-                // it (P5.96a: no name left by a click).
+                // it (no name left by a click).
                 if (event.currentTarget.matches(':focus-visible')) setFocused(area.id)
               }}
               onBlur={() => {

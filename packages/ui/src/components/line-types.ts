@@ -1,5 +1,5 @@
 /*
- * Line types of a document (BUILD-PLAN P5.18): how a line READS, never what it means to the
+ * Line types of a document: how a line READS, never what it means to the
  * business. The editable lines (EditableGrid) and the read-only lines (DataTable) of a document,
  * and a specification, draw every type the same way, from this one module:
  *
@@ -11,7 +11,7 @@
  * - `discount`: a line or document discount; its amount is negative (from the application).
  * - `deduction`: a deduction such as an advance; its amount is negative (from the application).
  *
- * Typography, not colour, tells the types apart (P5.18 "Design principles").
+ * Typography, not colour, tells the types apart.
  */
 
 export const LINE_TYPES = ['line', 'text', 'heading', 'subtotal', 'discount', 'deduction'] as const
@@ -36,7 +36,7 @@ export const LINE_TYPE_TEXT: Record<LineType, string> = {
 /** A subtotal's rule above it (on its cells, so sticky and collapsed borders keep it). */
 export const SUBTOTAL_RULE = 'border-t border-strong'
 
-// ── P5 group D1 ── (additive: tax category, unit of measure, editable cells per type)
+// ── Tax category, unit of measure, editable cells per type ──
 
 /**
  * A tax category of a line, from the Core's list (as the e-invoice system names them): its code
@@ -65,7 +65,7 @@ export function taxCategoryText(category: TaxCategory, percent: (value: string) 
 /**
  * A unit of measure, from the Core's list: the short name a person reads ("pc", "m²", "kWh") and
  * its standard code (UN/ECE Recommendation 20: "H87", "MTK", "KWH"), which the application
- * stores. The unit is a value of its own, in its own column, never joined to the quantity (P4.9d).
+ * stores. The unit is a value of its own, in its own column, never joined to the quantity.
  */
 export interface UnitOfMeasure {
   /** The standard code, stored by the application (e.g. "H87"). */

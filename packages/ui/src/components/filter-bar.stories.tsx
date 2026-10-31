@@ -22,14 +22,14 @@ const meta = {
       description: {
         component:
           '**What for:** the search and filters above a list. Search at the start, filters ' +
-          'beside it, actions at the end (Appendix B.8). The first `inline` filters stand in the ' +
+          'beside it, actions at the end. The first `inline` filters stand in the ' +
           'row on desktop, each labelled above; the rest are in a drawer opened by "Filters". ' +
           'Active filters that are not inline show as removable pills, with "Clear all". On ' +
           'phones every filter is in the drawer, and a "Sort" button replaces the column ' +
           'headers. Kinds: select, multiSelect, dateRange, numberRange (decimal strings), ' +
           'boolean (yes / no) and text. **Controlled:** the bar reports the search (after a ' +
           '300ms pause), the values and the sort; the application filters and sorts on the ' +
-          'server.\n\n**When not:** a form (fields in FormSection, P3.5); a search across the ' +
+          'server.\n\n**When not:** a form (fields in FormSection); a search across the ' +
           'whole application (CommandPalette).',
       },
     },
@@ -99,7 +99,7 @@ function Controlled(
   )
 }
 
-/** The list's actions as menu entries for phones (P4.9). */
+/** The list's actions as menu entries for phones. */
 const PHONE_MENU = [{ label: 'Export', icon: FileSpreadsheet, onSelect: () => undefined }]
 
 const ACTIONS = (
@@ -110,9 +110,9 @@ const ACTIONS = (
 )
 
 /**
- * Inline choices stay one control high (P3.6): two customers read "2 selected" on one line (the
+ * Inline choices stay one control high: two customers read "2 selected" on one line (the
  * pills are edited in the list or in the drawer); the amount range has one label over two money
- * fields with "From" and "To" inside them (P3.6c), and the empty date range reads "From – To".
+ * fields with "From" and "To" inside them, and the empty date range reads "From – To".
  */
 export const InlineChoices: Story = {
   render: () => (
@@ -150,7 +150,7 @@ export const InlineChoices: Story = {
 
 /**
  * Actions that do not fit beside search and filters move to their own line ABOVE them, at the
- * end (P3.6) — never wrapped under the filters.
+ * end — never wrapped under the filters.
  */
 export const ActionsAbove: Story = {
   render: () => (
@@ -316,7 +316,7 @@ function LongAmount(props: { inline: number; defaultFiltersOpen?: boolean }) {
 }
 
 /**
- * A long amount fits (P3.6d): each field grows with its number instead of cutting it, and the
+ * A long amount fits: each field grows with its number instead of cutting it, and the
  * pair wraps when it does not fit in the row.
  */
 export const LongAmountInline: Story = {
@@ -398,7 +398,7 @@ export const InCard: Story = {
 
 /**
  * Phone: search first, full width; every filter in the drawer; "Sort" shows the current sort; the
- * list's actions in one "⋯" menu (`phoneMenu`) instead of the desktop row (P4.9).
+ * list's actions in one "⋯" menu (`phoneMenu`) instead of the desktop row.
  */
 export const Phone: Story = {
   name: 'Phone width',
@@ -557,9 +557,9 @@ export const Japanese: Story = {
   ),
 }
 
-// ── P5.27: the tree filter ──
+// ── The tree filter ──
 
-/** An area of law as a tree (P5.27): a filter of the 'tree' kind, always in the drawer. */
+/** An area of law as a tree: a filter of the 'tree' kind, always in the drawer. */
 const AREA_FILTER: FilterDefinition = {
   id: 'area',
   label: 'Area',
@@ -586,7 +586,7 @@ const AREA_FILTER: FilterDefinition = {
 }
 
 /**
- * A tree filter in the drawer (P5.27): the label over a TreeView with checkboxes, the chosen
+ * A tree filter in the drawer: the label over a TreeView with checkboxes, the chosen
  * branch open; a checked branch's pill names only the branch ("Area: Construction"). Among the
  * `inline` filters it still stands in the drawer.
  */

@@ -16,9 +16,9 @@ import type { Tone } from './status-badge'
 import { Tooltip } from './popover'
 
 /*
- * CartPanel (BUILD-PLAN P5.10; docs/decisions.md "Touch and POS"). What is being sold, for a
+ * CartPanel: what is being sold, for a
  * till: the lines, the discounts and totals, and the one main action, "Charge 1.234,00 RSD", last
- * and full width at the bottom (D13), within the thumb's reach. **It computes nothing (D4):**
+ * and full width at the bottom, within the thumb's reach. **It computes nothing:**
  * every quantity, unit price, line total, discount and total arrives from the application as a
  * decimal string; a change of quantity is reported (`onQuantityChange`) and the application sends
  * the new totals, which settle in place (SettlingValue, `pending`) instead of jumping.
@@ -28,7 +28,7 @@ import { Tooltip } from './popover'
  * <name>"), the unit price ("25,00 RSD each") and a 44px remove button ("Remove <name>").
  * The list scrolls; the header (title and count) and the footer (totals and actions) stay.
  *
- * P5.28 (items 21 and 22): the sale's **kind** under the title (`kindLabel`, "Advance · Sale")
+ * The sale's **kind** under the title (`kindLabel`, "Advance · Sale")
  * and, for a kind that is not a real sale, its **marker** in a warning strip above the lines
  * (`marker`, the application's words: "Proforma — not a fiscal receipt"); the application's
  * `details` between the header and the lines (the buyer, open advances); a line's **note**
@@ -37,11 +37,11 @@ import { Tooltip } from './popover'
  * own words (`totalLabel`, "To pay" once advances are deducted). Promotions and an order discount
  * are rows of `totals` and a line's `discount`, all computed by the application.
  *
- * P5.90 (item 20): a line that appears, or whose quantity goes up, is highlighted briefly and
+ * A line that appears, or whose quantity goes up, is highlighted briefly and
  * scrolled into view (`useGrowingLines`), so every tap on a product or on + is seen at once and
  * nobody taps twice out of doubt. Nothing flashes when the cart first appears.
  *
- * P5.93 (item 3): no toasts for routine actions in a till. What just changed shows in the cart,
+ * No toasts for routine actions in a till. What just changed shows in the cart,
  * with its Undo in the place where it happened (`undo`, an InlineUndo row): a removed line's place
  * ("Krempita removed · Undo"), the top of the list for a parked sale or moved items. A line's
  * state says where it stands ("Sent to the kitchen · 19:40", in the application's tone).
@@ -92,7 +92,7 @@ const STATE_TONE: Record<Tone, string> = {
   premium: 'text-status-premium-fg',
 }
 
-/** What just changed in the cart, with its Undo in place (P5.93 item 3). */
+/** What just changed in the cart, with its Undo in place. */
 export interface CartUndo {
   /** What happened, in the application's words ("Krempita removed"). */
   message: string
@@ -132,7 +132,7 @@ export interface CartPanelProps {
   onEditLine?: (id: string) => void
   /**
    * What just changed, with Undo, in its place in the list (a removed line, a parked sale): the
-   * inline answer instead of a toast (P5.93 item 3). The application takes it away at the next
+   * inline answer instead of a toast. The application takes it away at the next
    * change.
    */
   undo?: CartUndo

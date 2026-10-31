@@ -15,12 +15,12 @@ import { cn } from './cn'
  * text.primary on hover and when pressed; a pressed item sits on the raised surface with shadow
  * xs; a 1px border.default line between items.
  *
- * Several pressed (`type="multiple"`; P3.6, owner: the segmented look is only for one choice):
- * separate toggles, Mantine's Chip (Chip.css, size 'sm', variant outline) with the old system's
- * radius sm (4px) — pills are kept for removable filters: 28px high, 13px, padding 20px; the
- * raised surface with a 1px border.default border, surface.hover on hover. Pressed: a 12px check
- * in a 20px slot (12 + 12 / 1.5) at the start, padding 10px, and the neutral selection —
- * surface.selected with a border.selected border — never blue. 8px (xs) between toggles.
+ * Several pressed (`type="multiple"`; the segmented look is only for one choice): separate
+ * toggles, Mantine's Chip (Chip.css, size 'sm', variant outline) with radius sm (4px) — pills are
+ * kept for removable filters: 28px high, 13px, padding 20px; the raised surface with a 1px
+ * border.default border, surface.hover on hover. Pressed: a 12px check in a 20px slot (12 + 12 /
+ * 1.5) at the start, padding 10px, and the neutral selection — surface.selected with a
+ * border.selected border — never blue. 8px (xs) between toggles.
  */
 
 const TypeContext = createContext<'single' | 'multiple'>('single')
@@ -83,7 +83,7 @@ export function ToggleGroupItem({
         'disabled:cursor-not-allowed disabled:text-disabled',
         TEXT_DIRECTION,
         FOCUS_RING,
-        // Inside the option (P5.96b): the group clips its edges and the next option is drawn over it.
+        // Inside the option: the group clips its edges and the next option is drawn over it.
         'focus-visible:-outline-offset-2',
         className,
       )}

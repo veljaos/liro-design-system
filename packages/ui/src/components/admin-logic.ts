@@ -1,8 +1,8 @@
 import type { LiroFormat } from '../provider/format'
 
 /*
- * The logic of the P5.6 and P5.21 building blocks, kept apart from the markup so it can be
- * unit-tested (AGENTS.md C7): the permission matrix's values and keys, the setup checklist's
+ * The logic of the sign-in and administration building blocks, kept apart from the markup so it can be
+ * unit-tested: the permission matrix's values and keys, the setup checklist's
  * progress, the signers' turn, an instant written as date and time, and the recovery codes' file.
  */
 
@@ -11,7 +11,7 @@ import type { LiroFormat } from '../provider/format'
 /**
  * An instant ("2026-10-05T14:12:00+02:00", in the tenant's offset) as its date and clock time,
  * "05.10.2026. 14:12": the day from `format.date` and the time from `format.time`, both as the
- * instant writes them, so the two never disagree (P4.9 notifications). Unreadable input is
+ * instant writes them, so the two never disagree. Unreadable input is
  * returned as it is.
  */
 export function instantText(format: LiroFormat, instant: string): string {
@@ -55,7 +55,7 @@ export interface MatrixCell {
 
 /**
  * The cell the focus moves to in the matrix (the WAI-ARIA grid pattern): the arrows one cell —
- * the arrow pointing forward in the reading direction to the next column (B.7) —, Home and End to
+ * the arrow pointing forward in the reading direction to the next column —, Home and End to
  * the row's first and last cell, Ctrl (or Cmd) with Home or End to the first and last cell of the
  * matrix. Null when the key does not move.
  */
@@ -195,7 +195,7 @@ export function maySign(
 // ── Recovery codes ────────────────────────────────────────────────────────────────────────────
 
 /**
- * The text file of recovery codes made in the browser (P5.6): the heading (the application's
+ * The text file of recovery codes made in the browser: the heading (the application's
  * account line, e.g. "Liro Business Apps — milica.petrovic@kvadratgradnja.rs"), an empty line,
  * one code per line, and a final line break. Windows line breaks would show as one line in no
  * editor any more, so plain "\n".

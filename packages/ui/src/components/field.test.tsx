@@ -50,13 +50,13 @@ describe('Field', () => {
       <TextField id="n" label="Name" hideLabel description="As on the invoice" />,
     )
     expect(described).toContain('id="n-description"')
-    // The hint stands under the control (P5.90), so a hidden label leaves no gap above it.
+    // The hint stands under the control, so a hidden label leaves no gap above it.
     expect(/<div class="([^"]*)"><input/.exec(described)?.[1] ?? '').not.toContain('mt-1')
     const switchHtml = render(<SwitchField id="s" label="Send to SEF" hideLabel />)
     expect(switchHtml).toContain('sr-only')
   })
 
-  it('puts the label, the control, the hint and the error in that order (P5.90 item 18)', () => {
+  it('puts the label, the control, the hint and the error in that order', () => {
     const html = render(
       <TextField id="id" label="Buyer ID" description="9 digits" error="The ID is too short." />,
     )

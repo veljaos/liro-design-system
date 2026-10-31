@@ -151,7 +151,7 @@ describe('hierarchyKeyAction', () => {
   })
 })
 
-describe('toggleWidth (P5.93 item 35)', () => {
+describe('toggleWidth', () => {
   it('is odd, at least 25px, and grows with the label', () => {
     expect(toggleWidth('−')).toBe(25)
     expect(toggleWidth('+3')).toBe(25)

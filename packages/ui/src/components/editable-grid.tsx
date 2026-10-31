@@ -63,13 +63,13 @@ import { usePhone } from './use-phone'
 import { HEAVY_ROW_OVERSCAN, keepFocusedRow, overscanRows, spacersBetween } from './virtual-rows'
 
 /*
- * EditableGrid (BUILD-PLAN P3.4): a keyboard-first line editor for document lines and journal
- * entries. Owner's decisions (2026-10-01, docs/decisions.md "Editable grid"):
- * - Cells are always fields, as in the old grid: the Design System's own fields (TextField,
+ * EditableGrid: a keyboard-first line editor for document lines and journal
+ * entries.
+ * - Cells are always fields: the Design System's own fields (TextField,
  *   NumberField, SelectField, ComboboxField, DateField, LookupField) without their frames, inside
  *   a table with 1px border.default lines, the header on surface.sunken, 4px cell padding,
- *   numbers at the end with tabular digits. The focused cell: the 2px focus ring inside its lines
- *   (P5.90; before, an inset 1px border.focus line on surface.hover). A 44px end
+ *   numbers at the end with tabular digits. The focused cell: the 2px focus ring inside its
+ *   lines. A 44px end
  *   column holds the row's remove (×) button. The frames are taken off in styles.css ("grid-cell").
  * - Enter: the same column, next row; on the last row a new row. Shift+Enter: previous row. Tab
  *   and Shift+Tab: the browser's order. While a cell's option list is open, Enter chooses and does
@@ -84,31 +84,28 @@ import { HEAVY_ROW_OVERSCAN, keepFocusedRow, overscanRows, spacersBetween } from
  * - Totals from props, shown with SettlingValue, under a 2px border.strong line. Nothing is
  *   computed: the application sums, checks the balance and sends the messages.
  *
- * On phones (below 48em; P3.6, rebuilt in P5.90 item 3 — a table scrolling sideways is not usable
- * there):
+ * On phones (below 48em; a table scrolling sideways is not usable there):
  * - every line is a card (border.default, radius md, padding sm; in a card a flat list with
  *   dividers): its title ("Line 3", or the line type) with its remove button (Trash2, 36px), then
  *   its fields under their column labels — text and searches across the card, short fields two to
  *   a row —, its values as a label and a value, its messages;
  * - "Add line" under the cards, without the shortcut hints (no hardware keyboard); the totals and
- *   the footer (the balance) in one place after it, never over a line (the old card sticky at the
- *   top covered the lines);
+ *   the footer (the balance) in one place after it, never over a line;
  * - the on-screen keyboard's "next" goes through a line's fields, then to the next line.
  *
- * P4.9 (the owner's review):
  * - "Add line" is a normal button — the default neutral look (raised, border.default) at the
  *   normal 36px size and padding with the Plus icon — not a small tinted one.
  * - `inCard` (a document's lines card, as DataTable's): no card inside a card. On desktop the
- *   grid is flush with the card's edges as every table (P5.90 item 2), "Add line" in a bar under
+ *   grid is flush with the card's edges as every table, "Add line" in a bar under
  *   it; on phones the lines are a flat list with 1px border.subtle dividers, padded md at the
  *   sides, and the totals after "Add line" under a line.
  *
- * P5.90 (the owner's review): one look for every cell — separate 1px border.default lines drawn
+ * One look for every cell — separate 1px border.default lines drawn
  * once (bottom and end), 36px rows, the header on surface.sunken as one sticky band; one focus
  * style, the library's 2px focus ring round the cell; optional columns (`optional`: a line's
  * discount) shown only while used or once added from "Add line ▾".
  *
- * P5.18 (complex documents) and P5.19 (catalogues at scale):
+ * Complex documents and catalogues at scale:
  * - Line types (`getRowType`, components/line-types.ts), told apart by typography, never colour:
  *   a text line is one field across the row, xs and secondary; a section heading one field across
  *   the row, semibold; a subtotal no field — its text end-aligned and its amounts semibold, with a
@@ -123,7 +120,7 @@ import { HEAVY_ROW_OVERSCAN, keepFocusedRow, overscanRows, spacersBetween } from
  *   an asset number, a sale note; `internal` ones after the "Internal" note) under the row.
  * - 300 lines stay responsive: each editable cell is a memoised component whose props are the
  *   values the application gave for it, so typing in one cell renders that cell's field again,
- *   not the 2,000 others (docs/decisions.md "Liro patterns (Phase 5 part 1)", measured).
+ *   not the 2,000 others (measured).
  */
 
 /*
@@ -193,7 +190,7 @@ interface ColumnBase<Row> {
   /** The cell cannot be changed in this row (shown as plain text, not disabled). */
   readOnly?: (row: Row) => boolean
   /**
-   * A column hidden until it is used (P5.90 item 4, simplicity first), such as a line's discount:
+   * A column hidden until it is used (simplicity first), such as a line's discount:
    * shown while some line uses it — `used`, by default a value in the cell — or once the user
    * chose `addLabel` from "Add line ▾" (its cell on the line last worked on then takes the focus).
    * Without `addLabel` it appears only when a line uses it (an account only a one-off line needs).
@@ -247,7 +244,7 @@ export type EditableGridColumn<Row> = ColumnBase<Row> &
     | { type: 'date'; value: (row: Row) => string | null }
     | {
         /**
-         * One search field per line (P5.18): a LookupField over the catalogues the document
+         * One search field per line: a LookupField over the catalogues the document
          * allows, its results grouped by kind; the chosen record's kind is shown in the line.
          */
         type: 'lookup'
@@ -338,7 +335,7 @@ export interface EditableGridProps<Row> {
   layout?: 'desktop' | 'phone'
   /** Inside a card (a document's lines): no frames of its own on phones, md from the edges. */
   inCard?: boolean
-  /** Each row's line type (P5.18). Default: every row is a normal `line`. */
+  /** Each row's line type. Default: every row is a normal `line`. */
   getRowType?: (row: Row) => LineType
   /**
    * The text of a text line, a section heading and a subtotal: the one field across the row
@@ -356,7 +353,7 @@ export interface EditableGridProps<Row> {
 }
 
 /*
- * The grid's lines (P5.90 item 2): every cell draws its bottom and end line (separate borders, no
+ * The grid's lines: every cell draws its bottom and end line (separate borders, no
  * spacing), the row's last cell no end line, so each line is drawn once, aligned through every row,
  * and moves with its cell — the sticky header and first column carry theirs. The frame is the
  * card's (`inCard`, flush as every table) or the region's own border. Every row is 36px: a 28px
@@ -505,7 +502,7 @@ interface CellProps {
 
 /**
  * The field of one cell. Memoised: its props are the values the application gave for this cell,
- * so a change elsewhere in a long grid does not render its field again (P5.18: 300 lines).
+ * so a change elsewhere in a long grid does not render its field again (300 lines).
  */
 const GridCellEditor = memo(function GridCellEditor(props: CellProps) {
   const { messages, format } = useLiro()
@@ -619,7 +616,7 @@ const GridCellEditor = memo(function GridCellEditor(props: CellProps) {
                     },
                   })}
             />
-            {/* The record's kind, small and secondary (P5.18: words, no colour). */}
+            {/* The record's kind, small and secondary (words, no colour). */}
             {kind !== undefined && (
               <span
                 data-slot="line-kind"
@@ -739,7 +736,7 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
   const inCard = props.inCard === true
   const rootRef = useRef<HTMLDivElement>(null)
   // The header row stays below the shell while the page scrolls; in a card the first column
-  // stays at the start while the lines scroll sideways (P5.28 item 4).
+  // stays at the start while the lines scroll sideways.
   const region = useRef<HTMLDivElement>(null)
   useStickyHead(region, !phone)
   const stickyFirst = inCard ? cn(STICKY_START, 'z-[5]') : undefined
@@ -794,7 +791,7 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
     },
   }))
   const { rows } = props
-  // Optional columns (P5.90 item 4): shown while a line uses them, or once the user added one
+  // Optional columns: shown while a line uses them, or once the user added one
   // from "Add line ▾"; that column's cell then takes the focus.
   const [revealed, setRevealed] = useState<ReadonlySet<string>>(() => new Set<string>())
   const revealing = useRef<string | null>(null)
@@ -1201,7 +1198,7 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
       ref={region}
       className={cn(
         'overflow-x-auto',
-        // Flush in its card as every table (P5.90 item 2); on its own, the region is the frame.
+        // Flush in its card as every table; on its own, the region is the frame.
         !inCard && 'rounded-md border border-solid border-default bg-surface-raised',
         STICKY_CLEARANCE,
       )}
@@ -1250,7 +1247,7 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
         </thead>
         <tbody ref={setBody}>
           {/* One flat list of keyed rows: an array per line would be keyed by its position, and
-              a line inserted at the top would mount every line after it again (P5.18). */}
+              a line inserted at the top would mount every line after it again. */}
           {shown.flatMap(({ row, rowIndex, before }) => {
             const type = rowType(row)
             const { rowId, notes, describedBy } = rowParts(row)
@@ -1431,7 +1428,7 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
                     className={cn(
                       CELL_BORDER,
                       index === 0 && stickyFirst,
-                      // The line above the totals, from the last row's place (P5.90 item 2).
+                      // The line above the totals, from the last row's place.
                       'h-9 border-t-2 border-b-0 border-t-strong bg-surface-sunken px-2 py-1 align-middle font-semibold',
                       total === undefined ? 'text-start' : 'text-end',
                     )}
@@ -1496,7 +1493,7 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
   )
 
   /**
-   * A field that takes the card's full width on phones (P5.90 item 3): text and searches, and any
+   * A field that takes the card's full width on phones: text and searches, and any
    * column the application made wide; the short ones (numbers, units, tax categories) stand two to
    * a row.
    */
@@ -1514,7 +1511,7 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
   )
 
   /*
-   * Phones (P5.90 item 3): one card per line — its title and remove button, then its fields under
+   * Phones: one card per line — its title and remove button, then its fields under
    * their labels (wide ones across, short ones two to a row), its values as label and value, its
    * notes; "Add line" under the cards and the totals after it, in one place that never covers a
    * line.
@@ -1673,7 +1670,7 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
   })
   const singleTotal = totalEntries.length === 1 && props.totalsLabel !== undefined
 
-  /** On phones, the totals and the footer (a balance) in one place after the lines (P5.90 item 3). */
+  /** On phones, the totals and the footer (a balance) in one place after the lines. */
   const phoneTotals = () =>
     hasTotals || props.footer !== undefined ? (
       <div
@@ -1721,7 +1718,7 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
   const addLine = (type: LineType) => {
     run({ type: 'add', at: rows.length, column: 0 }, type)
   }
-  // "Add line ▾" (P5.90 item 4): the plain line is the button; the rarer line types and the
+  // "Add line ▾": the plain line is the button; the rarer line types and the
   // optional columns not shown yet are its menu.
   const addEntries = [
     ...addTypes.map((type) => ({
@@ -1751,7 +1748,7 @@ export function EditableGrid<Row>(props: EditableGridProps<Row>) {
       data-grid-direction={direction}
       className={cn(
         'flex min-w-0 flex-col font-sans text-primary',
-        // In a card the table is flush with its edges (P5.90 item 2), the bar under it padded.
+        // In a card the table is flush with its edges, the bar under it padded.
         inCard ? (phone ? 'gap-3 pb-4' : 'gap-0') : phone ? 'gap-3' : 'gap-2',
         props.className,
       )}

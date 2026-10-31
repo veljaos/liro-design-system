@@ -42,7 +42,7 @@ export interface MultiSelectFieldProps extends FieldBaseProps {
   /**
    * Keeps the field one control high (36px): the choices are summed up on one line - the
    * option's label for one, `messages['field.selectedCount']` for more - instead of pills, and are
-   * changed in the list (P3.6, for a filter in a row of controls).
+   * changed in the list (for a filter in a row of controls).
    */
   summary?: boolean
 }
@@ -83,7 +83,7 @@ export function MultiSelectField(props: MultiSelectFieldProps) {
     setInner(next)
     props.onChange?.(next)
   }
-  // Choosing clears the typed search (P3.6, owner: "URgent" stayed after "Urgent" was added);
+  // Choosing clears the typed search (else "URgent" stays after "Urgent" is added);
   // the list shows every option again, with the chosen one still active.
   const choose = (option: ComboboxOption) => {
     update(toggleValue(values, option.value))
@@ -228,7 +228,7 @@ export function MultiSelectField(props: MultiSelectFieldProps) {
                       setActive(-1)
                     }}
                     onKeyDown={onKeyDown}
-                    // A press shows the list (P5.28), as in ComboboxField and SelectField.
+                    // A press shows the list, as in ComboboxField and SelectField.
                     onClick={() => {
                       setOpen(true)
                     }}

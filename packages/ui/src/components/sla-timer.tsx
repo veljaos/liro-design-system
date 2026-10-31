@@ -8,9 +8,9 @@ import { instantText } from './admin-logic'
 import { durationParts, slaReading, type SlaReading, type SlaState } from './sla-logic'
 
 /*
- * SlaTimer (P5.30): where a deadline stands — a service level's first response or resolution, a
+ * SlaTimer: where a deadline stands — a service level's first response or resolution, a
  * reply promised by a time, any "due by" instant — read against the application's `now`, never
- * the device's clock (D25), and written in words from messages with the minutes through
+ * the device's clock, and written in words from messages with the minutes through
  * `format.number`:
  * - running: "Due in 2 h 15 min" (text.secondary, a clock);
  * - soon (`warnWithin` minutes before): the same words in the warning tone;

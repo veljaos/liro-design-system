@@ -210,7 +210,7 @@ const meta = {
         component:
           '**What for:** the Debit / Credit / Difference of a balanced entry (a journal entry), ' +
           'always in view: in EditableGrid’s `footer` — beside "Add line" on desktop, after the ' +
-          'lines and "Add line" on phones, in the flow (P5.90). The amounts and the state come from the ' +
+          'lines and "Add line" on phones, in the flow. The amounts and the state come from the ' +
           'application: whether an entry balances is the Core’s rule, and the bar adds nothing.\n\n' +
           '**States:** Balanced (a check and the word); Not balanced (the difference and the ' +
           'words in the danger colour — never colour alone); Amounts missing (a line without an ' +
@@ -244,7 +244,7 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 /**
- * P5.94 (item 14), measured: labels, amounts and the state stand on one baseline (the bottoms of
+ * Measured: labels, amounts and the state stand on one baseline (the bottoms of
  * their text, all of one size, within half a pixel); each label is as far from its amount as the
  * others; the groups (debit, credit, difference, the state) stand the same distance apart.
  */
@@ -384,7 +384,7 @@ export const InJournalEntryInteraction: Story = {
   },
 }
 
-/** Phone width: the bar stacked in the grid's one totals place, after the lines, in the flow (P5.90). */
+/** Phone width: the bar stacked in the grid's one totals place, after the lines, in the flow. */
 export const PhoneWidth: Story = {
   name: 'Phone width',
   render: () => (

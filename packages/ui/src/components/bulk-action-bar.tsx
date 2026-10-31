@@ -9,12 +9,11 @@ import { ConfirmDialog } from './confirm-dialog'
 import { INTENTS } from './intents'
 
 /*
- * BulkActionBar (BUILD-PLAN P2.7), the previous Design System's, carried over (owner's decision,
- * 2026-09-28, docs/decisions.md "Actions"):
+ * BulkActionBar:
  * - it appears, sliding down in 140ms, while at least one row is selected;
- * - a panel with a border.strong border, radius md, on surface.sunken — neutral since P3.6
- *   (owner: blue is for actions, links and focus);
- * - P5.23 (owner's review): a row of its own with the filter row's height and padding — at least
+ * - a panel with a border.strong border, radius md, on surface.sunken — neutral (blue is for
+ *   actions, links and focus);
+ * - a row of its own with the filter row's height and padding — at least
  *   60px high (16px + a 36px control line + 8px in the filter row), 16px at the sides, 10px at
  *   the top and bottom — 12px between its items, standard-size (36px) buttons, and a vertical
  *   line between the count and "Select all N"; the list keeps 12px above and below it;
@@ -25,9 +24,9 @@ import { INTENTS } from './intents'
  * - at the end the actions, 8px apart as in every button group, each can be unavailable with a
  *   reason, all disabled while loading;
  * - an action that needs confirmation opens ONE ConfirmDialog for the whole selection, with the
- *   count in its title; confirmation does not scale (Appendix B.8);
+ *   count in its title; confirmation does not scale;
  * - the row wraps on narrow screens; when the actions still do not fit, the ones before the
- *   main action move into a "More" menu (the owner, 2026-09-29, P2.7d), and only then does a
+ *   main action move into a "More" menu, and only then does a
  *   label wrap.
  */
 

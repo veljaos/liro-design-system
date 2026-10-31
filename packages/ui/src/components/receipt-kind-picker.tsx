@@ -6,14 +6,14 @@ import { Alert } from './alert'
 import type { ReceiptKindOption } from './sale-logic'
 
 /*
- * ReceiptKindPicker (P5.28 item 21a). The kind of a receipt is two choices the application
+ * ReceiptKindPicker. The kind of a receipt is two choices the application
  * offers: its **type** (in Serbia: Normal, Advance, Proforma, Copy, Training) and its
  * **transaction** (Sale, Refund). The ids, words, descriptions, which kinds are not a real sale
- * and the words that mark them are the application's data (D1, D5); the picker shows them and
+ * and the words that mark them are the application's data; the picker shows them and
  * reports the pair.
  * - Two groups of 44px pressed buttons, each named by its label above it (`typeLabel`,
  *   `transactionLabel`); the pressed one is the neutral selection (surface.selected with a
- *   border.selected border, D17), never blue. They wrap.
+ *   border.selected border), never blue. They wrap.
  * - A kind that cannot be chosen now stays focusable (`aria-disabled`) with its reason under the
  *   group, linked by `aria-describedby` (a copy needs an original receipt; a refund is opened from
  *   the original).

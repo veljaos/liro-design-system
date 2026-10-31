@@ -41,8 +41,7 @@ import { TreeView } from './tree-view'
 import { usePhone } from './use-phone'
 
 /*
- * FilterBar (BUILD-PLAN P3.3), the previous Design System's Toolbar and FilterBar (owner's
- * decisions, 2026-10-01, docs/decisions.md "Filters"):
+ * FilterBar:
  * - One row that wraps, aligned to the bottom (the control line): on the start side the search
  *   field and the filters, on the end side the actions (8px apart); 12px (sm) between items.
  *   Inside a card (`inCard`): padding 16px at the top and sides, 8px at the bottom.
@@ -51,24 +50,24 @@ import { usePhone } from './use-phone'
  *   given. Reported after typing pauses (`searchDelay`, 300ms); clearing reports at once.
  * - The first `inline` filters stand in the row on desktop, each with its label above it; the
  *   others are in a drawer opened by "Filters" (intent filter). A placeholder never repeats the
- *   label: an empty choice says "All" (`messages['filter.all']`), a text filter has none (P4.9).
+ *   label: an empty choice says "All" (`messages['filter.all']`), a text filter has none.
  *   On phones (below 48em) every filter is in the drawer, full width.
  * - The drawer: from the end side, 320px (100% on phones), titled "Filters" (13px, bold), the
  *   controls stacked 12px apart.
  * - Inline widths: select and text 180px, multiSelect 220px, dateRange 240px, boolean 140px,
- *   each end of a number range at least 140px, growing with its number (P3.6d).
- * - A tree (P5.27: an act's area) is always in the drawer, counted among `inline` or not: its
+ *   each end of a number range at least 140px, growing with its number.
+ * - A tree (an act's area) is always in the drawer, counted among `inline` or not: its
  *   label over a TreeView with checkboxes (or one choice), the chosen nodes' branches open.
- * - P3.6 (owner): an inline multiSelect keeps the control height, its choices summed up on one
+ * - An inline multiSelect keeps the control height, its choices summed up on one
  *   line ("Alfa Trade", "2 selected"); a number range has "From" and "To" labels (messages); the
  *   actions, when they do not fit beside search and filters, take their own line ABOVE them,
- *   end-aligned. The page's main action ("New invoice") belongs in the page header (P4.3); the
+ *   end-aligned. The page's main action ("New invoice") belongs in the page header; the
  *   bar keeps the list's own actions, such as Export.
  * - Active filters that are not inline show as removable pills "Label: value" under the row, with
  *   "Clear all" (subtle, xs), which clears only this bar's filters.
  * - On phones, where cards have no column headers, a "Sort" button beside "Filters" shows the
  *   current sort ("Date ↓") and opens a menu of the sortable columns and the two directions.
- * - Phones (P4.9): search first, full width; then Filters, Sort and, with `phoneMenu`, one "⋯"
+ * - Phones: search first, full width; then Filters, Sort and, with `phoneMenu`, one "⋯"
  *   menu (`messages['action.more']`) holding the list's actions (Export). `actions` is a desktop
  *   row and is not shown on phones when `phoneMenu` is given; choosing columns has no meaning on
  *   cards, so the ColumnChooser belongs only in `actions`.
@@ -101,7 +100,7 @@ export interface FilterBarProps {
   actions?: ReactNode
   /**
    * Phones: the list's actions as menu entries in one "⋯" menu after Filters and Sort, in place of
-   * `actions` (P4.9). Without it, phones show `actions` under the search.
+   * `actions`. Without it, phones show `actions` under the search.
    */
   phoneMenu?: readonly MenuEntry[]
   /** The bar sits at the top of a card: it takes the card's padding. */
@@ -113,7 +112,7 @@ export interface FilterBarProps {
   className?: string
 }
 
-/** Inline widths on desktop (owner); literal classes, so Tailwind finds them. */
+/** Inline widths on desktop; literal classes, so Tailwind finds them. */
 const INLINE_WIDTH: Record<FilterDefinition['type'], string> = {
   select: 'w-45',
   text: 'w-45',
@@ -164,11 +163,11 @@ function TextFilter({ filter, value, onChange, inline, delay }: ControlProps) {
 
 /**
  * A number range: the filter's label over two fields, 8px apart, so it lines up with the other
- * filters (P3.6c, owner). "From" and "To" (messages) are short texts inside each field at its
+ * filters. "From" and "To" (messages) are short texts inside each field at its
  * start; the fields are named "Total from" / "Total to" (`filter.rangeFrom` / `filter.rangeTo`).
  * An amount (`currency`) shows its currency once, in the label ("Total (EUR)",
  * `filter.rangeLabel`), and in the names ("Total from (EUR)"), never inside the fields, and takes
- * the provider's money decimals (P3.6d, owner). Each field is at least 140px and grows with its
+ * the provider's money decimals. Each field is at least 140px and grows with its
  * number, so a long amount ("1.234.567,89") is never cut; the pair wraps when it does not fit.
  * The same in the drawer.
  */
@@ -212,7 +211,7 @@ function NumberRangeFilter({ filter, value, onChange, inline }: ControlProps) {
 }
 
 /**
- * A choice in a hierarchy (P5.27), in the drawer only: the filter's label over a TreeView, 4px
+ * A choice in a hierarchy, in the drawer only: the filter's label over a TreeView, 4px
  * apart, as a field's label stands over its control; checkboxes, or one node with `selection`
  * 'single'. It opens on the branches of the chosen nodes (or the filter's `defaultExpanded`).
  */
@@ -381,7 +380,7 @@ function SearchField(props: {
 /**
  * An active filter as a pill with its remove button: Mantine Pill size 'sm' (as MultiSelectField's),
  * variant "contrast" (the raised surface, text.primary, the × in text.secondary) with a 1px
- * border.default border (owner, 2026-10-01); the remove button is a 24 × 24px target. The
+ * border.default border; the remove button is a 24 × 24px target. The
  * default variant's grey is the page's own, and the border keeps it visible on a card too.
  */
 function FilterPill({
@@ -475,7 +474,7 @@ function SortMenu(props: {
 
 /**
  * The search and filters above a list: search at the start, filters beside it, actions at the
- * end (Appendix B.8). Controlled: it reports the search text, the filter values and, on phones,
+ * end. Controlled: it reports the search text, the filter values and, on phones,
  * the sort; the application fetches the matching rows.
  */
 export function FilterBar(props: FilterBarProps) {
@@ -484,7 +483,7 @@ export function FilterBar(props: FilterBarProps) {
   const phone = props.layout === undefined ? viewportPhone : props.layout === 'phone'
   const delay = props.searchDelay ?? 300
   const inlineCount = phone ? 0 : Math.max(0, props.inline ?? 0)
-  // A tree is never in the row (P5.27): among the first `inline` it stays in the drawer.
+  // A tree is never in the row: among the first `inline` it stays in the drawer.
   const inlineFilters: readonly FilterDefinition[] = props.filters
     .slice(0, inlineCount)
     .filter((filter) => filter.type !== 'tree')
@@ -555,7 +554,7 @@ export function FilterBar(props: FilterBarProps) {
       )}
     >
       {phone ? (
-        // Phones (P4.9): search first, then the filters, the sort and the list's ⋯ menu.
+        // Phones: search first, then the filters, the sort and the list's ⋯ menu.
         <div className="flex flex-col gap-3">
           {props.onSearchChange !== undefined && (
             <SearchField
@@ -586,7 +585,7 @@ export function FilterBar(props: FilterBarProps) {
         </div>
       ) : (
         /*
-          wrap-reverse (P3.6, owner): when the actions do not fit beside search and filters, their
+          wrap-reverse: when the actions do not fit beside search and filters, their
           line goes ABOVE them, end-aligned, never under the filters. With wrap-reverse the cross
           axis runs upwards, so items-start keeps the controls on one bottom line.
         */
@@ -613,8 +612,8 @@ export function FilterBar(props: FilterBarProps) {
       )}
       {pills.length > 0 && (
         <div className="flex flex-wrap items-center gap-2">
-          {/* A pill longer than the row is cut with an ellipsis, never wider than the screen
-              (P5.28): the list and the pill's text may shrink. */}
+          {/* A pill longer than the row is cut with an ellipsis, never wider than the screen:
+              the list and the pill's text may shrink. */}
           <ul className="m-0 flex max-w-full min-w-0 list-none flex-wrap items-center gap-2 p-0">
             {pills.map(({ filter, text }) => (
               <FilterPill

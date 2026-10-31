@@ -1,6 +1,6 @@
 /*
  * Bank statement 189 of 7 October 2026 (Banca Intesa) of Kvadrat Gradnja d.o.o.: 1,240 lines,
- * generated (P5.94 item 19, the owner: the bank statement works with 1,000+ lines). The buyers of
+ * generated (the bank statement works with 1,000+ lines). The buyers of
  * the Temerinski put apartments pay their October instalments; most pay with the instalment's
  * reference and are matched automatically, some pay without a reference (the Core suggests the
  * buyer's instalment), some pay part of it, a few payers are unknown, and the bank charges its

@@ -4,7 +4,7 @@ import { cn } from '../primitives/cn'
 import { Tooltip } from './popover'
 
 /**
- * A short label on one line that never breaks inside a word (P5.94 item 4): where its box is too
+ * A short label on one line that never breaks inside a word: where its box is too
  * narrow it ends in "…", and only then the whole label shows in the library's Tooltip on hover.
  * The text stays whole in the DOM, so the accessible name is never cut. Internal: a button's or a
  * choice's label where the room is tight (the ways to pay); body text wraps between words instead.

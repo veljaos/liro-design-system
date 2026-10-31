@@ -94,7 +94,7 @@ describe('createFormat', () => {
   })
 })
 
-describe('format.percent (P4.7c)', () => {
+describe('format.percent', () => {
   it('follows the locale: no space in sr-Latn and en, a space in de', () => {
     expect(createFormat('sr-Latn-RS').percent('62.4')).toBe('62,4%')
     expect(createFormat('en').percent('62.4')).toBe('62.4%')
@@ -112,7 +112,7 @@ describe('format.percent (P4.7c)', () => {
   })
 })
 
-describe('sign (P5.18)', () => {
+describe('sign', () => {
   const sr = createFormat('sr-Latn-RS')
 
   it('writes "+" before a change above zero only when asked', () => {
@@ -132,7 +132,7 @@ describe('sign (P5.18)', () => {
   })
 })
 
-describe('the formatter cache (P5.20)', () => {
+describe('the formatter cache', () => {
   it('builds one Intl formatter per locale and options', () => {
     const options = { style: 'currency', currency: 'EUR', currencyDisplay: 'code' } as const
     expect(cachedNumberFormat('de-DE', options)).toBe(cachedNumberFormat('de-DE', { ...options }))
@@ -163,7 +163,7 @@ describe('the formatter cache (P5.20)', () => {
     }
   })
 
-  it('keeps every digit of a long amount (D4)', () => {
+  it('keeps every digit of a long amount', () => {
     const sr = createFormat('sr-Latn-RS')
     expect(sr.money('98765432109876543210.123456789', 'RSD', { decimals: 9 })).toBe(
       '98.765.432.109.876.543.210,123456789 RSD',
@@ -174,7 +174,7 @@ describe('the formatter cache (P5.20)', () => {
   })
 })
 
-describe('numericFormat (P5.28 item 2)', () => {
+describe('numericFormat', () => {
   // An English interface for a Serbian company: English words, the tenant's digits.
   const format = createFormat('en-RS', numericFormat('sr-Latn-RS'))
 
@@ -187,7 +187,7 @@ describe('numericFormat (P5.28 item 2)', () => {
     expect(format.time('2026-10-06T09:42')).toBe('09:42')
   })
 
-  it('shows instants in the provider’s time zone when made without one (P5.29)', () => {
+  it('shows instants in the provider’s time zone when made without one', () => {
     const zoned = createFormat('en-RS', numericFormat('sr-Latn-RS'), 'Europe/Belgrade')
     expect(zoned.dateTime('2026-10-14T06:30:00Z')).toBe(
       createFormat('sr-Latn-RS', {}, 'Europe/Belgrade').dateTime('2026-10-14T06:30:00Z'),

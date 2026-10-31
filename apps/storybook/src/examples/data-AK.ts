@@ -1,5 +1,5 @@
 /*
- * Group AK's example data (P5.44): Kvadrat Gradnja d.o.o.'s general ledger on 14 October 2026,
+ * The example data: Kvadrat Gradnja d.o.o.'s general ledger on 14 October 2026,
  * behind the trial balance (screens-AL.tsx) — the chart of accounts (illustrative, in the shape of
  * the Serbian chart: classes 0–9, groups, synthetic and analytic accounts), the opening balances of
  * 01.01.2026, the turnover of January–August as the books' summary, and every posting from
@@ -10,14 +10,14 @@
  *
  * The data plays the Core: the trial balance is worked out here in whole paras, the way the Core
  * would, and checked (a disagreement throws, so every story fails instead of showing books that do
- * not balance). The screens and the components only show the decimal strings (D4). Every account,
+ * not balance). The screens and the components only show the decimal strings. Every account,
  * figure and document is invented. Not part of the package. No classes here.
  */
 import { decimal, paras, sumUnits } from '../../../../packages/ui/src/components/amounts-story-data'
 
 // ── Facts and routes ──────────────────────────────────────────────────────────────────────────
 
-/** The ledger's day: the examples' today in Phase 5's last batch. */
+/** The ledger's day, the examples' today. */
 export const LEDGER_TODAY = '2026-10-14'
 
 export const AK_ROUTES = {

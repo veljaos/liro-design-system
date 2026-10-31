@@ -1,5 +1,5 @@
 /*
- * Group H's example data (P5.17, industry examples): Ambulanta Liman of Dom zdravlja Novi Sad —
+ * The example data (industry examples): Ambulanta Liman of Dom zdravlja Novi Sad —
  * the doctors' week of 12.–16.10.2026, the free times the patient portal offers, Jovana Nikolić's
  * booking (Wed 14.10. at 11:30) and dr Marko Stanković's calendar with it. Counts are worked out
  * here, in whole numbers, as the application would; the components add nothing. Fictitious
@@ -28,7 +28,7 @@ export const CLINIC = {
   week: { start: '2026-10-12', end: '2026-10-16' },
   /** The day the calendar opens on: the day of Jovana's appointment. */
   day: '2026-10-14',
-  /** The clinic's clock on that day, for the "now" marker (P5.28 item 10). */
+  /** The clinic's clock on that day, for the "now" marker. */
   now: '09:40',
 }
 
@@ -48,7 +48,7 @@ export const DOCTORS: readonly ScheduleResource[] = [
 /** Jovana's chosen doctor. */
 export const CHOSEN_DOCTOR = 'stankovic'
 
-// ── The catalogue of services (P5.90 item 14) ───────────────────────────────────────────────────
+// ── The catalogue of services ───────────────────────────────────────────────────
 
 /**
  * Dom zdravlja Novi Sad's services as the patient portal offers them: 62 services in levels
@@ -77,7 +77,7 @@ export const SERVICE_LEVELS: CatalogCategory[] = [
 ]
 
 /**
- * Said once, in the catalogue's description and as a filter (P5.93 item 12): a covered service
+ * Said once, in the catalogue's description and as a filter: a covered service
  * shows no price; only the ones the patient pays show theirs.
  */
 export const COVERED = 'Covered by health insurance'

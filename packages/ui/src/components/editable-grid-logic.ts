@@ -1,6 +1,5 @@
 /*
- * EditableGrid's keyboard logic, without React (owner's decisions, 2026-10-01, docs/decisions.md
- * "Editable grid"). Positions count editable columns only; a row index counts the grid's rows.
+ * EditableGrid's keyboard logic, without React. Positions count editable columns only; a row index counts the grid's rows.
  */
 
 /** What a key press in a cell does. */
@@ -35,7 +34,7 @@ export interface GridPosition {
    */
   phone: boolean
   /**
-   * The editable cells of each row (P5.18 line types): a normal line has `columnCount`, a text
+   * The editable cells of each row (by line type): a normal line has `columnCount`, a text
    * line or a section heading 1, a subtotal 0. Rows without cells are skipped. Default: every row
    * has `columnCount`.
    */
@@ -50,7 +49,7 @@ export interface GridPosition {
 /**
  * The action of a key press, or null when the grid leaves the key to the browser (Tab moves to
  * the next cell in the browser's order) or to the field.
- * - Enter: the same column in the next row; on the last row a new row (Excel, the old grid).
+ * - Enter: the same column in the next row; on the last row a new row (as in Excel).
  *   Shift+Enter: the same column in the previous row.
  * - On phones Enter goes to the next field of the row, then the first field of the next row; on
  *   the last field of the last row it adds a row. Shift+Enter goes back.
@@ -58,7 +57,7 @@ export interface GridPosition {
  *   removes the row, the focus moving to the next row, or the previous one after the last.
  * - Rows without editable cells (a subtotal) are skipped; a row with fewer cells (a heading, a
  *   text line) takes the focus in its last cell at most, and the preferred column comes back in
- *   the next full line (P5.18).
+ *   the next full line.
  */
 export function gridKeyAction(key: GridKey, at: GridPosition): GridAction {
   const { row, column, rowCount, columnCount } = at
@@ -118,7 +117,7 @@ export interface GridMessage {
 }
 
 /**
- * A detail of a line from the application (P5.18), shown under the row in secondary text: a fixed
+ * A detail of a line from the application, shown under the row in secondary text: a fixed
  * asset's number and sale note, a warehouse. `internal` marks a value that never reaches the
  * customer's document (a book value): it is shown after the provider's "Internal" note. What
  * reaches the PDF is the application's; the mark only says so on screen.
@@ -137,7 +136,7 @@ export function orderMessages(messages: readonly GridMessage[]): GridMessage[] {
 }
 
 /**
- * Whether a cell's value counts as used (P5.90 item 4): text that is not empty, a number or a
+ * Whether a cell's value counts as used: text that is not empty, a number or a
  * date, a chosen option or record. Empty text, null and undefined are not.
  */
 export function cellHasValue(value: unknown): boolean {
@@ -147,7 +146,7 @@ export function cellHasValue(value: unknown): boolean {
 }
 
 /**
- * The columns a grid shows (P5.90 item 4, simplicity first): every column that is not optional,
+ * The columns a grid shows (simplicity first): every column that is not optional,
  * and an optional one while some line uses it (`inUse`) or once the user added it (`revealed`).
  */
 export function shownColumns<Column extends { id: string; optional?: unknown }>(

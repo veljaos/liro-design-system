@@ -1,4 +1,4 @@
-// Generated data (P5.94 item 1): do not edit by hand. Boundaries of the city municipalities (gradske
+// Generated data: do not edit by hand. Boundaries of the city municipalities (gradske
 // opštine) of the cities of the Republic of Serbia that have them in OpenStreetMap — Belgrade (17),
 // Niš (5), Požarevac (2), Užice (2) and Vranje (2) — from the OpenStreetMap relations of
 // admin_level 8 (retrieved 29 October 2026), whose data are © OpenStreetMap contributors, Open

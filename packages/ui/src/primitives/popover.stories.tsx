@@ -13,7 +13,7 @@ const meta = {
     docs: {
       description: {
         component: internal(
-          'Floating content 8px from its trigger, 12px by 16px padding. Popover (P2.4), filters (P3.3).',
+          'Floating content 8px from its trigger, 12px by 16px padding. Popover, filters.',
         ),
       },
     },

@@ -4,7 +4,7 @@ import { createFormat, deviceTimeZone, hourStyle, localDateTimeIn } from './form
 import { LiroProvider, useLiro } from './liro-provider'
 
 /*
- * The provider's time zone (P5.8): instants with an offset are shown in it; local values without
+ * The provider's time zone: instants with an offset are shown in it; local values without
  * an offset are shown as written; without a time zone everything behaves as before.
  */
 
@@ -53,7 +53,7 @@ describe('format with a time zone', () => {
     expect(createFormat('sr-Latn-RS').time('2026-10-06T09:42:00+02:00')).toBe('09:42')
   })
 
-  it('writes the hour as the locale does: 12-hour without a leading zero, 24-hour with two digits (P5.94)', () => {
+  it('writes the hour as the locale does: 12-hour without a leading zero, 24-hour with two digits', () => {
     expect(hourStyle('en-US')).toBe('numeric')
     expect(hourStyle('sr-Latn-RS')).toBe('2-digit')
     expect(createFormat('en').time('2026-10-12T07:00')).toMatch(/^7:00\sAM$/)

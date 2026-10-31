@@ -1,6 +1,6 @@
 /*
  * Decimal strings as whole units for the stories and the example screens: the application's
- * arithmetic, played by the story data (components never add, D4). One module for every story,
+ * arithmetic, played by the story data (components never add). One module for every story,
  * so the examples' figures are computed one way. Not part of the package; no classes here.
  */
 

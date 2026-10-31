@@ -22,8 +22,8 @@ import type { LegalArticle, LegalNode } from './legal-model'
 import { StatusBadge } from './status-badge'
 
 /*
- * LegalCompare (BUILD-PLAN P5.27 d, f): two versions of an act, inline, in one column on every
- * width (the decision of P5.27). The library computes the word diff of the texts it is given
+ * LegalCompare: two versions of an act, inline, in one column on every
+ * width. The library computes the word diff of the texts it is given
  * (`wordDiff`, pure and tested); what changed legally is the application's.
  * - Changed articles only by default ("Show all" shows every article); a run of unchanged articles
  *   between them is one line, "8 unchanged articles", which opens that run.
@@ -82,7 +82,7 @@ function Segments({ segments }: { segments: readonly DiffSegment[] }) {
         ) : (
           <del
             key={index}
-            // P5.93: a deletion right before an insertion stands apart from it ("60 30", never
+            // A deletion right before an insertion stands apart from it ("60 30", never
             // "6030"): a visible gap, not a character, so the text read and copied is unchanged.
             className={cn(REMOVED, segments[index + 1]?.kind === 'added' && 'me-1')}
           >

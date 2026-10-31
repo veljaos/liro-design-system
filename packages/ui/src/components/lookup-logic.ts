@@ -1,6 +1,6 @@
 /*
- * The logic of LookupField (BUILD-PLAN P5.19), kept apart from the markup so it can be
- * unit-tested (AGENTS.md C7): which rows the list shows for a query — the recent records while
+ * The logic of LookupField, kept apart from the markup so it can be
+ * unit-tested: which rows the list shows for a query — the recent records while
  * nothing is typed, else the application's results grouped by kind, then "+ Create …", the
  * one-off entry and "Search all…" — their heights for the list's virtualiser (TanStack Virtual's
  * `estimateSize`; the rows are not measured), and the keyboard's movement.

@@ -80,7 +80,7 @@ const meta = {
     docs: {
       description: {
         component:
-          '**What for:** an action. Choose an `intent` (save, delete, pdf, back, …; Appendix A.6): ' +
+          '**What for:** an action. Choose an `intent` (save, delete, pdf, back, …): ' +
           'its family, emphasis, icon and whether it confirms come with it. For any other action, ' +
           'choose a `family` (primary, verify, document, positive, destructive, caution, neutral) ' +
           'and an `icon`. Never a colour: blue means confirm and red means destructive, everywhere. ' +
@@ -89,7 +89,7 @@ const meta = {
           'menu = text only. One primary-emphasis button per screen; the main action is last in its ' +
           'group.\n\n' +
           '**When not:** navigation to another page is a link; an unavailable action shows its ' +
-          'reason as text (unavailable action, P2.7); a row of actions goes into ActionGroup (P2.7). ' +
+          'reason as text (unavailable action); a row of actions goes into ActionGroup. ' +
           'Use IconButton (the same 36px button, only the icon) only where the icon is ' +
           'universally understood; its label is the accessible name. CompactIconButton (28px, ' +
           'neutral and subtle) only in tight places: table row menus, close buttons.',
@@ -115,7 +115,7 @@ export const Families: Story = {
   ),
 }
 
-/** Every interface intent of Appendix A.6 at its default emphasis. */
+/** Every interface intent at its default emphasis. */
 export const Intents: Story = {
   render: () => (
     <Surface>
@@ -133,7 +133,7 @@ export const Intents: Story = {
   ),
 }
 
-/** Disabled: the surface's disabled colours in every emphasis. The reason is shown by P2.7. */
+/** Disabled: the surface's disabled colours in every emphasis. The reason is shown by UnavailableAction. */
 export const Disabled: Story = {
   render: () => (
     <Surface>
@@ -206,7 +206,7 @@ export const IconButtons: Story = {
 
 /**
  * A long label stays on one line while it fits. Where it does not (phone width), it wraps, centred,
- * to two lines and the button grows in height; it is never cut with "…" (P2.7d).
+ * to two lines and the button grows in height; it is never cut with "…".
  */
 export const LongText: Story = {
   render: () => (
