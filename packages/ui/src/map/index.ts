@@ -1,4 +1,4 @@
-// @veljaos/ui/map (P5.41): AreaMap, LocationCheck and RegionChart on Leaflet (BSD-2-Clause), drawn
+// @veljaos/ui/map: AreaMap, LocationCheck and RegionChart on Leaflet (BSD-2-Clause), drawn
 // with SVG.
 // A subpath of its own, so an application without maps does not load Leaflet.
 export { AreaMap, AREA_SWATCH } from './area-map'

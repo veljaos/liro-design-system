@@ -4,36 +4,36 @@ import { INPUT, READ_ONLY, TEXT_DIRECTION } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 
 /*
- * The frame of every field (BUILD-PLAN P2.2): label, the control, and under it the optional
+ * The frame of every field: label, the control, and under it the optional
  * description, then the error. Mantine 9.6.2 Input.Wrapper (Input.css, InputWrapper):
  * label 13px weight 600; description and error at the label size minus 2px (12px here, the
- * smallest A.5 size) with line height 1.2 (A.5 tight, 1.25, here); the control 5px (10 / 2) above
+ * smallest type size) with line height 1.2 (the tight line height, 1.25, here); the control 5px (10 / 2) above
  * an error. The required mark is Mantine's " *" in the error colour.
  *
- * The control sits 4px (spacing xxs) under the label (owner, P3.2a). The description is a hint
- * UNDER the control, never between the label and the control (owner, P5.90 item 18): fields side
+ * The control sits 4px (spacing xxs) under the label. The description is a hint
+ * UNDER the control, never between the label and the control: fields side
  * by side in one row keep their controls on one line whether or not they have a hint.
  *
- * Owner's decisions (2026-09-25, docs/decisions.md "Fields"):
+ * Owner's decisions:
  * - Error: the message sits under the field in status.danger.fg with an icon, the control's border
  *   takes the same colour, the control is aria-invalid and the message is linked with
  *   aria-describedby. Colour is never the only signal.
- * - One state for a field that cannot be changed: read-only (owner, P5.93 item 1; fields have no
- *   disabled state). It looks like the old disabled field — the grey surface.disabled background
- *   and a drawn border.default — but the value stays in the full text colour: readable,
+ * - One state for a field that cannot be changed: read-only (fields have no
+ *   disabled state). The grey surface.disabled background and a drawn border.default, but the
+ *   value stays in the full text colour: readable,
  *   selectable, copyable, focusable and announced as read-only (native `readonly`, or
  *   `aria-readonly` where the role takes it). No hint and no placeholder in read-only; an empty
  *   value shows "—" (READ_ONLY_EMPTY). The error, when the application gives one, still shows.
  */
 
-/** What a read-only field shows for an empty value (P5.93 item 1). */
+/** What a read-only field shows for an empty value. */
 export const READ_ONLY_EMPTY = '—'
 
 /** What every field takes, besides its value. */
 export interface FieldBaseProps {
   /** The field's name for the user. From the application. */
   label: ReactNode
-  /** A hint under the control (never between the label and the control, P5.90). */
+  /** A hint under the control (never between the label and the control). */
   description?: ReactNode
   /** The problem with the value, shown under the field. The field is marked invalid while set. */
   error?: ReactNode
@@ -42,7 +42,7 @@ export interface FieldBaseProps {
   /**
    * The value cannot be changed here: the field is drawn grey with a border, the value stays
    * readable, selectable and focusable; no hint, no placeholder, an empty value shows "—". The
-   * one non-editable state of a field (there is no disabled field, P5.93).
+   * one non-editable state of a field (there is no disabled field).
    */
   readOnly?: boolean
   /** The control's id. Default: generated. */
@@ -54,7 +54,7 @@ export interface FieldBaseProps {
   describedBy?: string
   /**
    * The label for assistive technology only, where the row around the field already names it (a
-   * setting row, P4.6). Description and error stay visible.
+   * setting row). Description and error stay visible.
    */
   hideLabel?: boolean
   /** Layout classes for the field's frame (width, margins). */
@@ -85,7 +85,7 @@ export interface FieldProps extends FieldBaseProps {
 
 /**
  * The required mark after a label: " *" in the error colour, hidden from assistive technology —
- * the control itself is `required` (no browser title on it, P5.93 item 7).
+ * the control itself is `required` (no browser title on it).
  */
 export function RequiredMark() {
   return (
@@ -127,7 +127,7 @@ export function useFieldIds(props: FieldBaseProps) {
   const generated = useId()
   const id = props.id ?? `field-${generated}`
   const hasError = props.error !== undefined && props.error !== null && props.error !== false
-  // No hint in read-only (P5.93 item 1): there is nothing to fill in.
+  // No hint in read-only: there is nothing to fill in.
   const hasDescription =
     props.readOnly !== true && props.description !== undefined && props.description !== null
   const ids = {
@@ -150,7 +150,7 @@ export function useFieldIds(props: FieldBaseProps) {
 /**
  * Inside it, every field's label is for assistive technology only, as with `hideLabel` (not
  * exported from the package): a template whose row already names the control — a SettingsPage
- * row — sets it, so a visible label is never written twice (P4.9, the owner's review). A field's
+ * row — sets it, so a visible label is never written twice. A field's
  * own `hideLabel` still wins.
  */
 export const FieldLabelsHidden = createContext(false)
@@ -174,7 +174,7 @@ export function Field(props: FieldProps) {
     readOnly,
   }
   const labelClass = cn(
-    // Never wider than the field: a word wider than the whole line ends in "…" (P5.94 item 4).
+    // Never wider than the field: a word wider than the whole line ends in "…".
     'inline-block max-w-full overflow-x-clip text-ellipsis text-sm font-semibold break-words text-primary',
     TEXT_DIRECTION,
     hideLabel && 'sr-only',
@@ -197,7 +197,7 @@ export function Field(props: FieldProps) {
           {required && <RequiredMark />}
         </label>
       )}
-      {/* A group's options stand 8px under their question, a single control 4px (P5.90 item 16). */}
+      {/* A group's options stand 8px under their question, a single control 4px. */}
       <div className={cn(!hideLabel && (props.group === true ? 'mt-2' : 'mt-1'))}>
         {props.children(control)}
       </div>
@@ -224,8 +224,7 @@ export function Field(props: FieldProps) {
 
 /**
  * The attributes a Field gives its control. Read-only: native `readonly` (read by assistive
- * technology; no native `title`, P5.93 item 7) and "—" where the value is empty (the placeholder,
- * P5.93 item 1).
+ * technology; no native `title`) and "—" where the value is empty (the placeholder).
  */
 export function controlAttributes(control: FieldControl) {
   return {
@@ -258,7 +257,7 @@ export function fieldProps(props: FieldBaseProps) {
 /**
  * A read-only value that is not one line of text (MultiSelectField's pills, a rich text, a code's
  * boxes): the read-only look of every field (READ_ONLY), focusable and selectable, read as a
- * read-only text box named by the field's label (P5.93 item 1). Empty: "—".
+ * read-only text box named by the field's label. Empty: "—".
  */
 export function ReadOnlyBox({
   control,

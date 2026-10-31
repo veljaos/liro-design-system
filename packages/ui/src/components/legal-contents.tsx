@@ -18,10 +18,10 @@ import type { LegalNode } from './legal-model'
 import { TreeView } from './tree-view'
 
 /*
- * LegalContents (BUILD-PLAN P5.27 b, f): the table of contents of a legal act in a start-side
- * Drawer, opened by "Contents" — one pattern on every width (the decision of P5.27). Inside, the
+ * LegalContents: the table of contents of a legal act in a start-side
+ * Drawer, opened by "Contents" — one pattern on every width. Inside, the
  * act's headings and articles as a TreeView, every heading open, the current entry selected
- * (surface.selected with the border.selected bar, D17). Choosing an entry — the current one
+ * (surface.selected with the border.selected bar). Choosing an entry — the current one
  * included — closes the drawer and then calls `onNavigate(id)`, once the focus is free to move:
  * the page brings the entry into view and focuses its heading (LegalText's `revealNode`).
  */

@@ -9,7 +9,7 @@ import { Field, FieldMessage, READ_ONLY_EMPTY } from './field'
 import { Spinner } from './spinner'
 
 /*
- * AssistantComposer (BUILD-PLAN P5.34): the box where the user asks an assistant in plain words.
+ * AssistantComposer: the box where the user asks an assistant in plain words.
  * - One text box with the ask button inside it, at the bottom end: a 36px IconButton (ArrowUp,
  *   the primary family, filled once there is a question; named "Ask"). Enter asks, Shift+Enter
  *   starts a new line (and Enter while an input method composes a word types), as every
@@ -18,11 +18,11 @@ import { Spinner } from './spinner'
  *   large centred box — 3 lines, 16px text, more room, a soft shadow — with the keys written
  *   under it ("Enter asks, Shift+Enter starts a new line").
  * - The box grows with the text (field-sizing) up to 12 lines, then scrolls.
- * - `busy`: an answer is being written. It shows (P5.94 item 12): "Answering…" with a small ring
+ * - `busy`: an answer is being written. It shows: "Answering…" with a small ring
  *   in the bottom row, and the ask button becomes Stop (a square, named "Stop", `onStop`); without
  *   `onStop` the ask button waits, disabled and without a tooltip. The next question can be typed
  *   meanwhile but not sent: Enter only waits.
- * - `unavailableReason` (the assistant is off for this company, P5.93 item 1): nothing can be
+ * - `unavailableReason` (the assistant is off for this company): nothing can be
  *   asked. The box is read-only (the one non-editable look of every field) and Ask is an
  *   unavailable action with its reason in words under the box, which describes the button.
  * - The label names the box for assistive technology (default "Your question"); the visible

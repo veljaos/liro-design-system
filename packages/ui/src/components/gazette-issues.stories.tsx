@@ -15,8 +15,8 @@ const meta = {
     docs: {
       description: {
         component:
-          '**What for:** what is new in an official gazette, issue by issue, the newest first ' +
-          '(BUILD-PLAN P5.27 e): each issue’s number (a link), its day and how many acts it ' +
+          '**What for:** what is new in an official gazette, issue by issue, the newest first: ' +
+          'each issue’s number (a link), its day and how many acts it ' +
           'holds, then its acts — type, status, the title as a link, and the application’s ' +
           'short note ("Amends …"). "Show more issues" pages from the application.\n\n' +
           '**When to use:** beside the legal search, on a start page, in a watch list. ' +

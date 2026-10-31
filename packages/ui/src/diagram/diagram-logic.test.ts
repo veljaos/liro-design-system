@@ -293,7 +293,7 @@ describe('keyMoveDelta', () => {
     expect(keyMoveDelta('ArrowUp', false, true)).toEqual({ x: 0, y: -8 })
     expect(keyMoveDelta('Enter', false, false)).toBeNull()
   })
-  it('measures from the leading edge in right-to-left (B.7)', () => {
+  it('measures from the leading edge in right-to-left', () => {
     expect(keyMoveDelta('ArrowRight', false, true)).toEqual({ x: -8, y: 0 })
     expect(keyMoveDelta('ArrowLeft', false, true)).toEqual({ x: 8, y: 0 })
   })

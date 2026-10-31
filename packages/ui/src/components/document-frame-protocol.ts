@@ -1,6 +1,6 @@
 /*
- * The message protocol between DocumentFrame and the document viewer it hosts (P5.5), documented
- * for viewer authors in docs/document-frame.md. Every message is a plain object sent with
+ * The message protocol between DocumentFrame and the document viewer it hosts. Every message is
+ * a plain object sent with
  * `postMessage`:
  *
  *   { protocol: 'liro-document-frame', version: 1, type: <name>, …payload }

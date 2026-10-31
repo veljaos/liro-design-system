@@ -16,7 +16,7 @@ import {
   type CatalogItem,
 } from './catalog-picker-logic'
 
-/* P5.90 item 14: CatalogPicker's levels, search, filters and choice. */
+/* CatalogPicker's levels, search, filters and choice. */
 
 const CATEGORIES: CatalogCategory[] = [
   { id: 'specialist', label: 'Specialist exam' },

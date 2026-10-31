@@ -48,7 +48,7 @@ const meta = {
           'always labelled "AI-generated" (AgentMark) and offers "Report a wrong answer" ' +
           '(ReasonConfirmDialog). Follow-up questions and ProposedAction cards come after it.' +
           '\n\n**When to use:** inside AssistantPanel (`size="panel"`: tables as cards) or on ' +
-          'an "Ask" page (`size="page"`: larger text, tables as tables; the Ask recipe, docs/recipes.md). **When not:** a message ' +
+          'an "Ask" page (`size="page"`: larger text, tables as tables; the Ask recipe). **When not:** a message ' +
           'between people (MessageBubble); an agent asking the user something (AgentQuestion); ' +
           'a notification (Toaster).',
       },
@@ -144,7 +144,7 @@ export const Stopped: Story = {
   args: { state: 'stopped', blocks: STREAMING_BLOCKS, onRetry: noop, onReport: noop },
 }
 
-/** It could not be answered: the application's words and Try again (neutral, D23). */
+/** It could not be answered: the application's words and Try again (neutral). */
 export const Failed: Story = {
   name: 'Error',
   args: {
@@ -322,7 +322,7 @@ export const FollowUpInteraction: Story = {
 }
 
 /**
- * With its work (P5.93): how the assistant got there, above the answer — its thinking, the task
+ * With its work: how the assistant got there, above the answer — its thinking, the task
  * and the records it used — each one calm line until opened.
  */
 export const WithWork: Story = {

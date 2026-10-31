@@ -46,7 +46,7 @@ import { usePhone } from './use-phone'
 import { HintedTarget, Tooltip } from './popover'
 
 /*
- * CalendarView (BUILD-PLAN P5.8): events in a day, a week, a month or an agenda (a list of the
+ * CalendarView: events in a day, a week, a month or an agenda (a list of the
  * week's days). Everything that differs between applications comes from the provider: the week's
  * first day (`weekStartsOn`), month and weekday names (`format.monthName`, `format.weekdayName`),
  * dates and times (`format`), "today" (`today`, never the device's clock) and the time zone an
@@ -58,17 +58,17 @@ import { HintedTarget, Tooltip } from './popover'
  * - Day and week: a grid of time slots (`slotMinutes`, 24px each, so every slot is a target) from
  *   `dayStart` to `dayEnd`; events as blocks over their day's column, overlapping events side by
  *   side (`layoutDay`); all-day events, and timed events outside the hours shown, in a strip
- *   above. The days row stays below the shell while the page scrolls (P5.28 item 4). `now` (the
- *   application's clock) writes the time in the time gutter on a small dark tag (P5.94 item 16:
- *   only the tag, no line across the days; nothing covers the gutter), named "Now, 10:20 AM",
+ *   above. The days row stays below the shell while the page scrolls. `now` (the
+ *   application's clock) writes the time in the time gutter on a small dark tag (only the tag,
+ *   no line across the days; nothing covers the gutter), named "Now, 10:20 AM",
  *   and its slot is `aria-current="time"`. Month: whole weeks, at most three lines a day, then "+N more", which
  *   opens the day's
  *   list (a popover with every event and "Open the day"). Agenda: the week's days that have
- *   events, each event a row with its time, without bullet dots (P5.90 item 15).
+ *   events, each event a row with its time, without bullet dots.
  * - Tones: an event's optional status tone (neutral by default) colours its block — the tone's
- *   bg with its fg text and a 3px bar in the fg at the start. Never blue (D17).
- * - Keyboard (role grid, one tab stop): the arrows move between days (from the leading edge,
- *   Appendix B.7) and slots, Home / End and Page Up / Page Down as `calendarKeyTarget`; leaving
+ *   bg with its fg text and a 3px bar in the fg at the start. Never blue.
+ * - Keyboard (role grid, one tab stop): the arrows move between days (from the leading edge)
+ *   and slots, Home / End and Page Up / Page Down as `calendarKeyTarget`; leaving
  *   the period moves the calendar. Enter on a slot reports it (`onSlotSelect`); Enter on a month
  *   day opens its list (or reports the day when it has none). Events are buttons whose names say
  *   the title, the time and the day; in the time grid they follow the grid in the tab order.
@@ -89,7 +89,7 @@ export interface CalendarEvent {
    * start's day, or the start itself.
    */
   end?: string
-  /** A status tone among the six (Appendix A.2); default neutral. Never the only signal. */
+  /** A status tone among the six; default neutral. Never the only signal. */
   tone?: Tone
   /** A line under the title in the agenda and the day list. */
   description?: string
@@ -133,7 +133,7 @@ export interface CalendarViewProps {
   /** The period title's heading level; the agenda's days are one below. Default 2. */
   headingLevel?: 2 | 3
   /**
-   * The application's clock (P5.28 item 10): "HH:mm" (a time of the provider's today), or an
+   * The application's clock: "HH:mm" (a time of the provider's today), or an
    * instant shown in the provider's time zone. The day and week views mark it on its day.
    */
   now?: string
@@ -466,7 +466,7 @@ function EventBox({
           BUTTON_RESET,
           'cursor-pointer hover:border-current',
           FOCUS_RING,
-          // Inside the event (P5.96b): events side by side and the sticky header never cover it.
+          // Inside the event: events side by side and the sticky header never cover it.
           'focus-visible:-outline-offset-2',
           className,
         )}
@@ -533,7 +533,7 @@ function TimeGrid(
     dayStart: number
     dayEnd: number
     slotMinutes: number
-    /** The application's clock, read (P5.28 item 10). */
+    /** The application's clock, read. */
     now: { day: string; minutes: number } | null
   },
 ) {
@@ -541,7 +541,7 @@ function TimeGrid(
   const { format, messages, direction, weekStartsOn, today } = liro
   const container = useRef<HTMLDivElement>(null)
   const focusLater = useCellFocus(container)
-  // The days row stays below the shell while the page scrolls (P5.28 item 4).
+  // The days row stays below the shell while the page scrolls.
   useStickyHead(container)
   const slotMinutes = props.slotMinutes
   const from = props.dayStart
@@ -698,7 +698,7 @@ function TimeGrid(
                       'absolute end-2 whitespace-nowrap',
                       TEXT_ISOLATE,
                       slot === 0 ? 'top-0.5' : '-top-2',
-                      // Off the hour, or under the time of "now" (P5.93 item 8): for screen readers only.
+                      // Off the hour, or under the time of "now": for screen readers only.
                       (!onHour ||
                         (now !== null &&
                           tagCovers(
@@ -743,7 +743,7 @@ function TimeGrid(
             )
           })}
         </div>
-        {/* "Now" is only its time, in the gutter, which nothing covers (P5.94 item 16): no line
+        {/* "Now" is only its time, in the gutter, which nothing covers: no line
             across the days; today's column is named by its date in the header. */}
         {now !== null && (
           <NowTimeTag
@@ -879,7 +879,7 @@ function MonthGrid(
   }
 
   const weekdays = weeks[0] ?? []
-  // The weekdays row stays below the shell while the page scrolls (P5.28 item 4).
+  // The weekdays row stays below the shell while the page scrolls.
   useStickyHead(container)
 
   return (
@@ -1048,7 +1048,7 @@ function MonthGrid(
 
 /**
  * One event as a row of a list: its time at the start, the title and its description; `stacked`
- * (the day list, phones) puts the time above the title. No bullet dot (P5.90 item 15): a toned
+ * (the day list, phones) puts the time above the title. No bullet dot: a toned
  * event carries its blocks' 3px start bar in the tone's fg; a neutral event has no mark.
  */
 function EventRow({

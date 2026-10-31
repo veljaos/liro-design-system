@@ -6,12 +6,12 @@ import type { TreeNode } from './tree-logic'
 import { usageAmount } from './usage-logic'
 
 /*
- * The logic of the files and folders view (BUILD-PLAN P5.43), kept apart from the markup so it
- * can be unit-tested (AGENTS.md C7): which icon a file takes, where a dragged item may land,
+ * The logic of the files and folders view, kept apart from the markup so it
+ * can be unit-tested: which icon a file takes, where a dragged item may land,
  * which folders a move cannot choose, how a selection grows, how an upload's conflicts are
  * answered, and what the uploads add up to in words. Nothing here sorts, filters or sums sizes:
  * the files arrive in the order to show, and every size and total is the application's decimal
- * string (D4).
+ * string.
  */
 
 // ── Entries ───────────────────────────────────────────────────────────────────────────────────
@@ -51,7 +51,7 @@ export interface FileEntry {
   owner?: string
   /** When it was last changed: an ISO instant in the tenant's offset, or YYYY-MM-DD. */
   modified?: string
-  /** Its size, a decimal string in `sizeUnit` ("2.4"), written through `format` (D4). */
+  /** Its size, a decimal string in `sizeUnit` ("2.4"), written through `format`. */
   size?: string
   /** The size's unit, from the application ("MB"). */
   sizeUnit?: string
@@ -69,7 +69,7 @@ export interface FileEntry {
   shared?: boolean
   /** Marked as a favourite: a Star after the name. */
   favourite?: boolean
-  /** While it is uploaded or checked (P5.5's states); 'available' or left out: ready. */
+  /** While it is uploaded or checked (AttachmentList's states); 'available' or left out: ready. */
   state?: AttachmentState
   /** The item cannot be opened, and why, in the application's words. */
   lockedReason?: string

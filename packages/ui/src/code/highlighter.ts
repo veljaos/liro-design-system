@@ -12,7 +12,7 @@ import {
 } from '../components/code-block-logic'
 
 /*
- * Syntax highlighting for CodeBlock (P5.93, the owner's item 48), on Shiki (MIT): its tokenizer
+ * Syntax highlighting for CodeBlock, on Shiki (MIT): its tokenizer
  * (`@shikijs/primitive`), its JavaScript regular-expression engine (no WebAssembly) and its
  * grammars (`@shikijs/langs`), each language loaded the first time it is used. No Shiki theme is
  * shipped: the Liro code theme names CSS variables (`--liro-code-keyword` …), set from the Liro

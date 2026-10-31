@@ -1,8 +1,8 @@
 import { pointInPolygon, polygonCentroid } from '../components/floor-plan-logic'
 
 /*
- * The logic of AreaMap and LocationCheck (BUILD-PLAN P5.41), apart from the markup so it can be
- * unit-tested (AGENTS.md C7). Coordinates are degrees (WGS 84) as GeoJSON writes them: a position
+ * The logic of AreaMap and LocationCheck, apart from the markup so it can be
+ * unit-tested. Coordinates are degrees (WGS 84) as GeoJSON writes them: a position
  * is [longitude, latitude]; a point the components take is `{ lat, lng }`. Nothing here is ever
  * mirrored for a right-to-left page: east stays to the right. The verdicts that matter to people
  * (inside a workplace, which tax zone) are the application's; these helpers are what an
@@ -255,8 +255,8 @@ export function areaListKeyTarget(index: number, key: string, count: number): nu
 }
 
 /**
- * The tones an area may take: the charts' main blue (every area alike, the default, P5.94 item
- * 17), neutral, or one of the five categorical colours of the charts (when the data sorts the
+ * The tones an area may take: the charts' main blue (every area alike, the default), neutral, or
+ * one of the five categorical colours of the charts (when the data sorts the
  * areas into kinds).
  */
 export type MapAreaTone =
@@ -287,10 +287,10 @@ export function circleBounds(centre: LatLng, radius: number): MapBounds {
   }
 }
 
-// ── RegionChart (P5.41, maps in charts) ───────────────────────────────────────────────────────
+// ── RegionChart (maps in charts) ───────────────────────────────────────────────────────
 
-// The steps, their shades and ranges are the charts' (`charts/steps.ts`, shared with Heatmap since
-// P5.93 item 44); the region chart keeps its names.
+// The steps, their shades and ranges are the charts' (`charts/steps.ts`, shared with Heatmap);
+// the region chart keeps its names.
 export {
   MAX_STEPS as REGION_MAX_STEPS,
   stepCount as regionStepCount,
@@ -352,7 +352,7 @@ export function regionKeyTarget(
   return null
 }
 
-/** A bubble's radius in pixels: its area grows with the value (drawing only, D4); 4–22px. */
+/** A bubble's radius in pixels: its area grows with the value (drawing only); 4–22px. */
 export function bubbleRadius(value: number | null, largest: number | null): number {
   if (value === null || largest === null || largest <= 0 || value <= 0) return 4
   return 4 + 18 * Math.sqrt(Math.min(value / largest, 1))

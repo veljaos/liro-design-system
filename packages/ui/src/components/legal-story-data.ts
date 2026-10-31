@@ -1,5 +1,4 @@
 import type {
-  LegalAct,
   LegalArticle,
   LegalFootnote,
   LegalInline,
@@ -10,7 +9,7 @@ import type {
 } from './legal-model'
 
 /*
- * The story data of P5.27 (legal information), shared by the stories of LegalText, LegalContents
+ * The story data of legal information, shared by the stories of LegalText, LegalContents
  * and LegalCompare, the act page and the search page. Not part of the package: nothing in
  * src/index.ts imports this file.
  *
@@ -69,11 +68,6 @@ function article(
 }
 
 export const STATUS_IN_FORCE: LegalStatus = { id: 'in-force', label: 'In force', tone: 'success' }
-export const STATUS_PARTLY: LegalStatus = {
-  id: 'partly',
-  label: 'Partly in force',
-  tone: 'warning',
-}
 export const STATUS_OLD: LegalStatus = {
   id: 'no-longer',
   label: 'No longer in force',
@@ -394,74 +388,6 @@ export const LAW_2018_NODES: LegalNode[] = [
     children: [LAW_ARTICLE_9, LAW_ARTICLE_10, LAW_ARTICLE_11],
   },
 ]
-
-/** The whole act as the application gives it, for the act page. */
-export const ILLUSTRATIVE_LAW: LegalAct = {
-  id: 'illustrative-building-works',
-  type: 'Law',
-  title: 'Law on Illustrative Building Works',
-  issuer: 'Illustrative Assembly',
-  gazette: [
-    {
-      id: 'g-2016',
-      label: 'No. 12/2016',
-      published: '2016-02-10',
-      href: '#/legal/gazette/2016/12',
-    },
-    { id: 'g-2018', label: '47/2018', published: '2018-06-20', href: '#/legal/gazette/2018/47' },
-    { id: 'g-2021', label: '33/2021', published: '2021-05-07', href: '#/legal/gazette/2021/33' },
-    { id: 'g-2024', label: '9/2024', published: '2024-02-22', href: '#/legal/gazette/2024/9' },
-  ],
-  status: STATUS_IN_FORCE,
-  versionId: 'v-2024',
-  versions: [
-    { id: 'v-2024', from: '2024-03-01', amendmentId: 'am-2024', status: STATUS_IN_FORCE },
-    {
-      id: 'v-2021',
-      from: '2021-05-15',
-      to: '2024-02-29',
-      amendmentId: 'am-2021',
-      status: STATUS_OLD,
-    },
-    {
-      id: 'v-2018',
-      from: '2018-07-01',
-      to: '2021-05-14',
-      amendmentId: 'am-2018',
-      status: STATUS_OLD,
-    },
-    { id: 'v-2016', from: '2016-02-18', to: '2018-06-30', status: STATUS_OLD },
-  ],
-  amendments: [
-    {
-      id: 'am-2018',
-      label: 'Law amending the Law on Illustrative Building Works',
-      gazette: { id: 'g-2018', label: 'No. 47/2018', published: '2018-06-20' },
-      appliesFrom: '2018-07-01',
-      articleIds: ['a3', 'a10'],
-      articlesText: 'Articles 3 and 10',
-    },
-    {
-      id: 'am-2021',
-      label: 'Law amending the Law on Illustrative Building Works',
-      gazette: { id: 'g-2021', label: 'No. 33/2021', published: '2021-05-07' },
-      appliesFrom: '2021-05-15',
-      articleIds: ['a5', 'a6'],
-      articlesText: 'Articles 5 and 6',
-    },
-    {
-      id: 'am-2024',
-      label: 'Law amending the Law on Illustrative Building Works',
-      gazette: { id: 'g-2024', label: 'No. 9/2024', published: '2024-02-22' },
-      appliesFrom: '2024-03-01',
-      articleIds: ['a5', 'a8'],
-      articlesText: 'Articles 5 and 8',
-    },
-  ],
-  nodes: LAW_NODES,
-  footnotes: LAW_FOOTNOTES,
-  lang: 'en',
-}
 
 // ── The rulebook (another act), for the preview of a reference ──
 

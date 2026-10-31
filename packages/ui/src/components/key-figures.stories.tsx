@@ -15,7 +15,7 @@ const meta = {
           'label small above, the value 20px semibold, 32px apart; no frame, no card. Colour ' +
           'only for a state (`tone`: "Overdue 3 days" in the danger colour). Two columns on ' +
           'phones.\n\n' +
-          '**When not:** a dashboard’s numbers (StatCard, P4.6); a record’s other fields ' +
+          '**When not:** a dashboard’s numbers (StatCard); a record’s other fields ' +
           '(KeyValueList).',
       },
     },

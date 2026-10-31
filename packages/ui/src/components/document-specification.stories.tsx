@@ -178,11 +178,11 @@ const meta = {
       description: {
         component:
           '**What for:** a long specification (a construction situation’s works, a delivery’s ' +
-          'items) is not inside the lines table (P5.18). In the lines’ card it is one summary ' +
+          'items) is not inside the lines table. In the lines’ card it is one summary ' +
           'row — "Specification of works: 300 positions, 2.418.300,00 RSD" (the count and the ' +
           'amount through the provider’s `format`, the words from the application) — with ' +
           '**Open**, which shows the whole specification read-only in a **full-screen sheet** ' +
-          'over the document (D14: a read-only view; the document stays under it and Escape ' +
+          'over the document (a read-only view; the document stays under it and Escape ' +
           'returns to it with the focus on Open). Inside: a DataTable with `lineType` — groups ' +
           'as headings, their subtotals under a rule — and columns previous / this period / ' +
           'cumulative where the application has them, then the same recap by tax category ' +
@@ -248,7 +248,7 @@ export const Opened: Story = {
 
 /**
  * 300 positions (12 groups of 25): the sheet opens and scrolls without delay; the table is
- * virtualised (44px rows, one line each; measured in docs/decisions.md "Liro patterns (Phase 5 part 1)").
+ * virtualised (44px rows, one line each).
  */
 export const ThreeHundred: Story = {
   name: '300 positions',

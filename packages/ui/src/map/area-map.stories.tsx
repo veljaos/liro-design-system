@@ -69,7 +69,7 @@ export const Default: Story = {
   play: async ({ canvasElement }) => {
     await mapReady(canvasElement)
     const canvas = within(canvasElement)
-    // One colour for every area (P5.94 item 17).
+    // One colour for every area.
     await expect(canvasElement.querySelectorAll('path.liro-map-area')).toHaveLength(4)
     await expect(canvasElement.querySelectorAll('path.liro-map-tone-main')).toHaveLength(4)
     await expect(

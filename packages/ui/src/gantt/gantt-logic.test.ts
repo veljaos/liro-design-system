@@ -261,7 +261,7 @@ describe('applyGanttChange', () => {
   })
 })
 
-describe('the lockfile (P5.37)', () => {
+describe('the lockfile', () => {
   it('finds SVAR’s trial builds and the GPLv3 wx-react-gantt', () => {
     expect(
       forbiddenGanttPackages(
@@ -284,7 +284,7 @@ describe('the lockfile (P5.37)', () => {
   })
 })
 
-describe('where the date of "now" stands on the scale (P5.94 item 6)', () => {
+describe('where the date of "now" stands on the scale', () => {
   it('is centred on the line when it covers no label', () => {
     expect(nowTagStart(400, 70, [{ start: 12, end: 40 }], 1200)).toBe(365)
     expect(nowTagStart(400, 70, [], 1200)).toBe(365)
@@ -303,7 +303,7 @@ describe('where the date of "now" stands on the scale (P5.94 item 6)', () => {
   })
 })
 
-describe('where the chart opens (P5.93 item 34)', () => {
+describe('where the chart opens', () => {
   it("opens at the plan's start when today is in view there", () => {
     expect(openingScroll(300, 64, 800)).toBe(0)
     expect(openingScroll(null, 64, 800)).toBe(0)
@@ -315,7 +315,7 @@ describe('where the chart opens (P5.93 item 34)', () => {
   })
 })
 
-describe("where a bar's name stands (P5.93 item 34)", () => {
+describe("where a bar's name stands", () => {
   it('inside when it fits, after the bar when it does not', () => {
     expect(barLabelPlace({ x: 100, width: 120 }, 80, 1000)).toBe('inside')
     expect(barLabelPlace({ x: 100, width: 60 }, 80, 1000)).toBe('after')

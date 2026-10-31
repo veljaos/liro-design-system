@@ -22,21 +22,21 @@ import { usePhone } from './use-phone'
 import { WizardFooter } from './wizard-footer'
 
 /*
- * Form layout (BUILD-PLAN P3.5; owner's decisions, 2026-10-01, docs/decisions.md "Form layout"):
+ * Form layout:
  * - FormSection: the SectionCard card (title and description at the start, actions at the end, no
  *   icon, no line) with its fields in a grid, `columns` 1–3 (default 2), 16px apart, one column on
- *   phones; FormFullWidth spans the row. `collapsible` (old behaviour, for rarely used fields):
+ *   phones; FormFullWidth spans the row. `collapsible` (for rarely used fields):
  *   closed unless `defaultOpen`; the header is a button with a 14px chevron (pointing to the end
  *   when closed, mirrored in right-to-left; down when open) and the title in 13px, semibold,
  *   text.secondary.
  * - FormTabs: a tab with errors shows a 13px TriangleAlert in the danger colour 6px after its label,
  *   never wrapping, and is named "<label> — has errors"; `focusFirstInvalid` selects the first
- *   such tab and focuses the first invalid field. Since P3.6 (owner) FormTabs is the form's card:
+ *   such tab and focuses the first invalid field. FormTabs is the form's card:
  *   the tab list is its first row, start-aligned, its line across the card's width, and the
  *   FormSections in a panel are drawn flat inside it (no card of their own). Page-level Tabs keep
  *   their own rule (centred).
- * - FormActions (the old RecordFormTemplate): the actions at the top and a bar at the bottom,
- *   sticky, shown only while the top actions are out of view ('auto', P3.6: an
+ * - FormActions: the actions at the top and a bar at the bottom,
+ *   sticky, shown only while the top actions are out of view ('auto': an
  *   IntersectionObserver, so both sets are never visible at once), or 'always' / 'never'; the bar
  *   on surface.page
  *   with a 1px border.default line on top, no shadow, 12px padding, "Unsaved changes" (12px,
@@ -53,7 +53,7 @@ export interface FormSectionProps {
   /** The heading level of the title. Default: 4. */
   headingLevel?: 2 | 3 | 4 | 5 | 6
   /**
-   * Columns of fields by the section's own width (container queries, P4.9): two from 36rem,
+   * Columns of fields by the section's own width (container queries): two from 36rem,
    * three from 54rem, one below — so a phone-width pane gets one column whatever the viewport.
    * Default: 2.
    */
@@ -84,7 +84,7 @@ export interface FormGridProps {
 
 /**
  * Fields in a grid without a card of its own, 16px apart: a DetailPage section in edit mode,
- * where the section is already the card (P4.9). Its columns follow its own width, as the
+ * where the section is already the card. Its columns follow its own width, as the
  * KeyValueList it replaces, so read and edit mode line up.
  */
 export function FormGrid({ columns = 2, children, className }: FormGridProps) {
@@ -174,7 +174,7 @@ export interface FormTab {
   value: string
   /** The tab's name, from the application. */
   label: string
-  /** The panel, mounted only while its tab is active (AGENTS.md D16). */
+  /** The panel, mounted only while its tab is active. */
   content: ReactNode
   /** A field in this tab has an error: the tab shows the warning icon and says so. */
   hasErrors?: boolean
@@ -217,7 +217,7 @@ export function FormTabs(props: FormTabsProps) {
         props.className,
       )}
     >
-      {/* The tab row rule (P5.90 item 6): one line that scrolls sideways with faded edges. */}
+      {/* The tab row rule: one line that scrolls sideways with faded edges. */}
       <div className={TAB_ROW_BOX}>
         <div {...row.scroller} className={TAB_ROW_SCROLLER}>
           <TabsList
@@ -276,7 +276,7 @@ export interface FormActionsProps {
 
 /**
  * Whether `element` (the top actions) is out of view in its scroll container or the page, kept up
- * to date by an IntersectionObserver (P3.6, owner: the top and the bottom actions are never
+ * to date by an IntersectionObserver (the top and the bottom actions are never
  * visible at the same time).
  */
 function useOutOfView(element: HTMLElement | null, active: boolean): boolean {
@@ -302,7 +302,7 @@ function useOutOfView(element: HTMLElement | null, active: boolean): boolean {
 
 /**
  * A record's form with its actions at the top and, once they are scrolled out of view, again in a
- * bar sticky at the bottom (Appendix B.8), where the user is when they finish.
+ * bar sticky at the bottom, where the user is when they finish.
  */
 export function FormActions(props: FormActionsProps) {
   const mode = props.stickyActions ?? 'auto'
@@ -331,7 +331,7 @@ export function FormActions(props: FormActionsProps) {
  */
 export function FormBottomBar({ actions, dirty }: { actions: ReactNode; dirty: boolean }) {
   const { messages } = useLiro()
-  // Toasts stand above the bar, never over its actions (P5.90).
+  // Toasts stand above the bar, never over its actions.
   const [bar, setBar] = useState<HTMLDivElement | null>(null)
   useBottomBar(bar)
   return (
@@ -428,7 +428,7 @@ export interface FormWizardProps {
   finishLabel?: string
   /**
    * 'phone': the Stepper as one line over a thin bar and Back / Next as ONE row stuck to the
-   * bottom of the screen (P5.23). Default by the viewport (48em).
+   * bottom of the screen. Default by the viewport (48em).
    */
   layout?: 'desktop' | 'phone'
   className?: string
@@ -437,7 +437,7 @@ export interface FormWizardProps {
 /**
  * A form in steps: the Stepper on top, one step at a time, Back and Next (Finish on the last).
  * Each step is checked before the next; going back keeps what was entered. On phones the Stepper
- * is one line, "Step 2 of 3 · Address", and Back / Next one sticky row (P5.23).
+ * is one line, "Step 2 of 3 · Address", and Back / Next one sticky row.
  */
 export function FormWizard(props: FormWizardProps) {
   const { messages } = useLiro()

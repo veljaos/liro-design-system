@@ -24,12 +24,12 @@ import {
 } from './map-logic'
 
 /*
- * The map itself (P5.41), shared by AreaMap and LocationCheck: a thin React wrapper on Leaflet
+ * The map itself, shared by AreaMap and LocationCheck: a thin React wrapper on Leaflet
  * 1.9.4 (BSD-2-Clause) — never react-leaflet (Hippocratic licence) — drawing with SVG (never
  * canvas or WebGL, so a picture is the same every time). Leaflet's own controls, attribution and
  * style sheet are not used: zoom is our IconButtons, the tiles' attribution is written under the
  * map by the component, and `map/map.css` keeps Leaflet's structural rules with tokens.
- * - The base map is optional and off by default (`baseLayer`, P5.93 item 37): the application's
+ * - The base map is optional and off by default (`baseLayer`): the application's
  *   tile source (`url`, a `{z}/{x}/{y}` template, `urlDark` for the dark theme, `maxZoom`) and its
  *   attribution, always shown under the map. The provider, its key and its usage terms are the
  *   application's (the public openstreetmap.org tiles are not for heavy commercial use). Without
@@ -46,7 +46,7 @@ import {
  */
 
 /**
- * The application's base map (P5.93 item 37): its tile provider, key and usage terms are the
+ * The application's base map: its tile provider, key and usage terms are the
  * application's; the attribution is always shown under the map.
  */
 export interface MapBaseLayer {
@@ -62,7 +62,7 @@ export interface MapBaseLayer {
 
 /**
  * Whether Leaflet has a view yet: projecting a point before the first fit throws ("Set map center
- * and zoom first"), which a chart remounted with new areas (a drill-down, P5.93 item 43) reached.
+ * and zoom first"), which a chart remounted with new areas (a drill-down) reached.
  */
 function hasView(map: L.Map): boolean {
   try {
@@ -86,12 +86,12 @@ export type CanvasShape =
       interactive: boolean
       /**
        * Whether a press chooses it (default true). An interactive area that cannot be chosen (the
-       * last level of a drill-down, P5.94 item 1) still answers the pointer (its tooltip) but
+       * last level of a drill-down) still answers the pointer (its tooltip) but
        * takes no pointer cursor and reports no click.
        */
       choosable?: boolean
       /**
-       * A region chart's value (P5.41): the fill is this paint — a ramp's meaning laid on the
+       * A region chart's value: the fill is this paint — a ramp's meaning laid on the
        * surface at an opacity, or a pattern (`url(#…)`) for "No data" — and the line is the
        * surface's, thin, between neighbours.
        */
@@ -128,7 +128,7 @@ export interface MapCanvasProps {
   bounds: MapBounds | null
   baseLayer?: MapBaseLayer | undefined
   /**
-   * The areas' own attribution (P5.93 item 43: boundary data under an open licence, such as
+   * The areas' own attribution (boundary data under an open licence, such as
    * `SERBIA_BOUNDARIES_ATTRIBUTION`), written under the map after the base map's.
    */
   attribution?: string | undefined
@@ -144,7 +144,7 @@ export interface MapCanvasProps {
   onKeyDown?: (event: KeyboardEvent<HTMLDivElement>) => void
   onBlur?: () => void
   /**
-   * Whether the map's focus came from the keys (P5.96a): true on a Tab into it or a key pressed
+   * Whether the map's focus came from the keys: true on a Tab into it or a key pressed
    * in it, false on a press of the pointer, a touch or leaving it. Only then is the focus ring
    * drawn and only then may the keys' area be shown.
    */
@@ -201,7 +201,7 @@ const TOOLTIP_HALF = 124
 
 /**
  * A map's tooltip at a point in the map (the pointer, or the area the keys reached): the one way a
- * map names an area (P5.96b), the same for every area. Kept inside the map; below the point near
+ * map names an area, the same for every area. Kept inside the map; below the point near
  * its top.
  */
 export function MapTooltip({
@@ -235,7 +235,7 @@ export function MapTooltip({
 }
 
 /**
- * Draws an area over every other area (P5.96b): last among the areas, still under the places and
+ * Draws an area over every other area: last among the areas, still under the places and
  * points drawn after them, so its whole line shows where it borders a neighbour.
  */
 function raise(element: Element) {
@@ -283,7 +283,7 @@ export function MapCanvas(props: MapCanvasProps) {
     latest.current = props
   })
   const moved = useRef(false)
-  // The pointer (P5.96a). Where it last was over the map (null off it); where it stood when new
+  // The pointer. Where it last was over the map (null off it); where it stood when new
   // shapes were drawn — an area that appears under a pointer that has not moved is not hovered,
   // whatever the browser sends (Chrome repeats a mouse move after the page changes under a still
   // pointer); the area under it marked as hovered (a class, never CSS `:hover`, which follows
@@ -357,7 +357,7 @@ export function MapCanvas(props: MapCanvasProps) {
     }
   }, [])
 
-  // Where the focus came from and where the pointer is (P5.96a), as native listeners on the map.
+  // Where the focus came from and where the pointer is, as native listeners on the map.
   useEffect(() => {
     const element = holder.current
     if (element === null) return
@@ -523,13 +523,13 @@ export function MapCanvas(props: MapCanvasProps) {
         element.style.fill = shape.paint.fill
         element.style.fillOpacity = String(shape.paint.opacity)
       }
-      // Which area a path draws, for the tests that hover every area (P5.96b).
+      // Which area a path draws, for the tests that hover every area.
       if (shape.kind === 'area' && element) element.setAttribute('data-area-id', shape.id)
       if (shape.kind === 'area' && (shape.selected || shape.active === true) && element) {
         raised.push(element)
       }
     }
-    // The chosen area and the keys' area over their neighbours: their whole line shows (P5.96b).
+    // The chosen area and the keys' area over their neighbours: their whole line shows.
     for (const element of raised) raise(element)
     return () => {
       hovered.current = null
@@ -671,7 +671,7 @@ export function MapCanvas(props: MapCanvasProps) {
             className={cn(
               'absolute block max-w-48 -translate-x-1/2 -translate-y-1/2 rounded-xs px-1 text-center text-xs leading-tight',
               !label.strong && 'bg-surface-raised text-primary',
-              // The chosen area's name stands out: the strong tag (P5.93 item 37).
+              // The chosen area's name stands out: the strong tag.
               label.strong ? 'bg-surface-inverse font-semibold text-on-inverse' : 'font-medium',
               shown?.has(label.id) === true ? 'visible' : 'invisible',
             )}

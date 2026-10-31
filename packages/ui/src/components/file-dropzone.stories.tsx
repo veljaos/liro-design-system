@@ -229,7 +229,7 @@ export const CountLimitInteraction: Story = {
 }
 
 /**
- * Files cannot be added now (P5.93): the zone grey, "Choose files" unavailable but focusable, the
+ * Files cannot be added now: the zone grey, "Choose files" unavailable but focusable, the
  * reason in words under the zone.
  */
 export const Unavailable: Story = {
@@ -248,7 +248,7 @@ export const Unavailable: Story = {
 }
 
 /**
- * The documents the application expects (P5.94 item 3), from its data: a request's proof under
+ * The documents the application expects, from its data: a request's proof under
  * the zone, each "Required" or "Optional", the first already attached; the field is marked
  * required because one is.
  */
@@ -511,7 +511,7 @@ export const PhoneWidth: Story = {
 }
 
 /**
- * A photo from the camera on a phone (P5.28): "Take a photo" beside "Choose a file", for a paper
+ * A photo from the camera on a phone: "Take a photo" beside "Choose a file", for a paper
  * note; the photo is checked as any file. Desktops show only "Choose a file".
  */
 export const PhoneCamera: Story = {
@@ -566,7 +566,7 @@ export const Japanese: Story = {
   ),
 }
 
-/** English in a right-to-left page (P3.6): the rejection keeps its word order. */
+/** English in a right-to-left page: the rejection keeps its word order. */
 export const EnglishInRtl: Story = {
   name: 'English in RTL',
   render: (args) => (

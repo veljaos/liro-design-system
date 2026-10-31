@@ -1,5 +1,5 @@
 /*
- * The pure rules of the reading components (BUILD-PLAN P5.39): an e-mail address's shape, a
+ * The pure rules of the reading components: an e-mail address's shape, a
  * byline's parts and how many columns a list of articles takes. Tested in blog-logic.test.ts.
  */
 

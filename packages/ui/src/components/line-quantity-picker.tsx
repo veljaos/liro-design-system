@@ -15,17 +15,17 @@ import {
 } from './sale-logic'
 
 /*
- * LineQuantityPicker (P5.28 items 21d and 22). Choosing some of a sale's lines and how much of
+ * LineQuantityPicker: choosing some of a sale's lines and how much of
  * each: the lines of a refund (a partial refund: two of the three coffees), the items paid now
  * when a bill is split or paid in part, the items moved to another table. One pattern for all.
  * - "All lines" on top (a tri-state checkbox: every line at its whole quantity, or none).
  * - A row per line: a checkbox at the start (ticked = the whole quantity available; cleared =
  *   none), the name (semibold, wrapping), its detail and the application's note ("1 refunded
  *   already"), "of 3 pc" — what is available — and a QuantityStepper from 0 to what is available,
- *   named "Quantity, <name>". A chosen row is the neutral selection (D17). A line that cannot be
+ *   named "Quantity, <name>". A chosen row is the neutral selection. A line that cannot be
  *   chosen shows its reason; its controls are disabled.
  * - Under the rows the application's figure for what is chosen (`chosenTotal`, settling while
- *   `pending`), e.g. "To refund 440,00 RSD": **the picker adds nothing** (D4); quantities are
+ *   `pending`), e.g. "To refund 440,00 RSD": **the picker adds nothing**; quantities are
  *   compared exactly as decimal strings, never as numbers.
  * Controlled (`value`, `onChange` with every line's quantity) or not (`defaultValue`).
  */

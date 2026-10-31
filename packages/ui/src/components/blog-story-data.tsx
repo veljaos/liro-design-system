@@ -1,8 +1,7 @@
-import type { RichTextNode } from '../rich-text/rich-text-logic'
 import type { ArticleSummary } from './article-list'
 
 /*
- * Story data of the reading components (P5.39): a fictitious blog. Covers are drawings in the
+ * Story data of the reading components: a fictitious blog. Covers are drawings in the
  * tokens' colours (no images, no raw colours); they follow the theme. No classes here: story data
  * is not a Tailwind source.
  */
@@ -111,42 +110,6 @@ export const ARTICLES: ArticleSummary[] = [
     cover: <Cover variant={5} />,
   },
 ]
-
-const p = (text: string): RichTextNode => ({
-  type: 'paragraph',
-  content: [{ type: 'text', text }],
-})
-const h2 = (text: string): RichTextNode => ({
-  type: 'heading',
-  attrs: { level: 2 },
-  content: [{ type: 'text', text }],
-})
-
-/** A long article's body: four sections. */
-export const ARTICLE_BODY: RichTextNode = {
-  type: 'doc',
-  content: [
-    p(
-      'Most rejected e-invoices are rejected for one of five reasons. Each takes a minute to check before you send, and each is easier to fix before than after.',
-    ),
-    h2('The buyer is not registered'),
-    p(
-      'A company that is not registered in the e-invoicing system cannot receive an e-invoice. Liro checks the buyer when you choose them and says so on the invoice.',
-    ),
-    h2('The buyer ID is wrong'),
-    p(
-      'A tax number with a missing digit, or a public body’s budget user number left out, returns the invoice at once. Copy the numbers from the buyer’s last invoice or contract.',
-    ),
-    h2('The order number is missing'),
-    p(
-      'Public buyers reject an invoice without their order or contract number. Ask for it when you take the order, and keep it on the customer.',
-    ),
-    h2('The amounts do not add up'),
-    p(
-      'The system checks that the lines, the VAT by rate and the total agree to the para. Liro computes them for you; an imported invoice is checked line by line.',
-    ),
-  ],
-}
 
 export const ARABIC_ARTICLES: ArticleSummary[] = [
   {

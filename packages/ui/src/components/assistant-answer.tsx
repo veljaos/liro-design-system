@@ -23,31 +23,31 @@ import { Sources } from './trace'
 import { usePhone } from './use-phone'
 
 /*
- * AssistantAnswer (BUILD-PLAN P5.34): one answer of an assistant, drawn from the application's
+ * AssistantAnswer: one answer of an assistant, drawn from the application's
  * data. Nothing here calls a model: the answer is a list of blocks — headings, paragraphs, short
  * lists, small tables, charts (a slot) and sources — and a state.
  * - **Labelled as AI-generated**: over the answer the assistant's name (`author`) and AgentMark
- *   with the words "AI-generated" (Bot icon, text.secondary; never blue, D17).
+ *   with the words "AI-generated" (Bot icon, text.secondary; never blue).
  * - **Tables** are real tables (caption, column headers, numbers at the end in tabular digits, a
  *   total row the application computed). Where the width is short — the side panel (`size`
  *   'panel') or a phone — each row is a small card: the first cell as its title, the others as
- *   label / value lines, so nothing scrolls sideways (D19). A row's `href` makes its first cell a
+ *   label / value lines, so nothing scrolls sideways. A row's `href` makes its first cell a
  *   link to the record it came from.
  * - **Charts** are a slot (`kind: 'chart'`): the application passes one from
  *   `@veljaos/ui/charts`, which keeps its own title, legend and "Show as table"; the main entry
  *   never loads the charts.
- * - **Code** (`kind: 'code'`, P5.93): a query, a payload or a log as a CodeBlock with Copy —
+ * - **Code** (`kind: 'code'`): a query, a payload or a log as a CodeBlock with Copy —
  *   small in the panel, scrolling inside past 320px (480px on the page); highlighted where the
  *   application gives `CodeHighlighting` (`@veljaos/ui/code`).
- * - **Sources** (P5.93): the records the answer came from, one calm line "Used 4 records" that
+ * - **Sources**: the records the answer came from, one calm line "Used 4 records" that
  *   opens into the links (Sources), duplicates removed.
- * - **Work** (`work`, P5.93): how the assistant got there — Reasoning, Task, Plan, Sources … from
+ * - **Work** (`work`): how the assistant got there — Reasoning, Task, Plan, Sources … from
  *   the application — above the blocks; while thinking it takes the place of "Thinking…".
  * - **States**: 'thinking' (a spinner and "Thinking…", a polite status); 'streaming' (the blocks
  *   so far, "Writing…" and Stop — the application renders the text it has; nothing here runs a
  *   timer); 'done'; 'stopped' (the blocks written, "Stopped. The answer may be incomplete." and
  *   Try again); 'error' (the application's words in a danger Alert with Try again, a neutral
- *   secondary button, D23); 'noAccess' (the application's words — "You do not have permission to
+ *   secondary button); 'noAccess' (the application's words — "You do not have permission to
  *   see salaries." — in a neutral Alert with a lock: not a failure). While thinking or streaming
  *   the answer is `aria-busy`, so assistive technology reads it once it is written.
  * - **Follow-ups** under a complete answer: the application's questions as buttons; a press
@@ -55,10 +55,10 @@ import { usePhone } from './use-phone'
  * - **Proposed actions** (`actions`): ProposedAction cards, after the blocks.
  * - **Report a wrong answer** under a complete or stopped answer: a small button opens
  *   ReasonConfirmDialog (the application's `reportReasons`, or a required text), titled by the
- *   action with the question as its subject (D22); `onReport` receives the reason. Then "Thank
+ *   action with the question as its subject; `onReport` receives the reason. Then "Thank
  *   you. Your report was sent." (or controlled with `reported`).
  * Every word is the application's or a provider message; texts take their direction from their
- * content (D15).
+ * content.
  */
 
 export interface AssistantAnswerProps {
@@ -72,7 +72,7 @@ export interface AssistantAnswerProps {
   author?: ReactNode
   /**
    * How the assistant works on the answer, from the application: Reasoning, Task, Plan,
-   * ChainOfThought, Subagent, Queue or Sources rows (P5.93), above the blocks. While thinking they
+   * ChainOfThought, Subagent, Queue or Sources rows, above the blocks. While thinking they
    * replace the "Thinking…" line.
    */
   work?: ReactNode

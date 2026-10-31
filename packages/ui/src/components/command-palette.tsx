@@ -10,8 +10,7 @@ import { commandMatches, highlightParts, opensPalette } from './command-logic'
 import type { IconComponent } from './intents'
 
 /*
- * CommandPalette (BUILD-PLAN P2.6), the previous Design System's Mantine Spotlight, carried over
- * (owner's decision, 2026-09-28, docs/decisions.md "Navigation"):
+ * CommandPalette, in the look of Mantine Spotlight:
  * - opens with Ctrl/Cmd+K and Ctrl/Cmd+P; radius lg;
  * - a search field with an 18px search icon at the start and a placeholder from the messages;
  * - the matching text of results highlighted;
@@ -21,12 +20,12 @@ import type { IconComponent } from './intents'
  *
  * Mantine 9.6.2 Spotlight (@mantine/spotlight styles.css and defaults): a modal 80px from the top
  * (yOffset), the Modal's 440px width; the search is an Input of size 'lg' without border or
- * background (50px high, 16px text); the results under a 1px line (gray-2 / dark-4; P3.6, owner:
- * border.subtle, thin and quiet), 4px padding, at most 400px high and scrolling;
+ * background (50px high, 16px text); the results under a 1px line (border.subtle, thin and
+ * quiet), 4px padding, at most 400px high and scrolling;
  * an item 7px by 16px, radius md, surface.hover under the pointer, filled with the brand colour
  * when chosen with the keyboard, its icon 16px before the label, its description 12px in
  * text.secondary (on the brand fill, brand.onSolid: Mantine lowers it with opacity 0.7, which
- * Appendix B.6 forbids for text); a group label 12px, bold, upper case, text.secondary, 16px from
+ * text must never have); a group label 12px, bold, upper case, text.secondary, 16px from
  * the start, 16px above its group; "nothing found" text.secondary, centred, 16px padding. Matches
  * are highlighted as Mantine's Highlight (Mark): here status.warning.bg (the pale yellow orange-0)
  * under text.primary.

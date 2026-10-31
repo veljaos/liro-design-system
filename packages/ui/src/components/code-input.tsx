@@ -23,7 +23,7 @@ import {
 import { FieldMessage, RequiredMark } from './field'
 
 /*
- * CodeInput (BUILD-PLAN P5.6): a one-time code in separate boxes.
+ * CodeInput: a one-time code in separate boxes.
  * - One accessible group named by the label (`role="group"`), each box a text input named
  *   "Character 2 of 6" (`messages['code.box']`, numbers through `format.number`); the description
  *   and the error belong to the group and to every box.
@@ -35,8 +35,8 @@ import { FieldMessage, RequiredMark } from './field'
  * - Keys: a character fills the box and moves on; Backspace empties the box, or the one before
  *   when it is empty, and moves there; Delete empties the box; the arrows move between boxes,
  *   Home and End to the first and last.
- * - The code is written left to right in every language, as numbers are (P2.3a): the boxes keep
- *   that order in a right-to-left page, and the arrows follow it (B.7: the code's leading edge is
+ * - The code is written left to right in every language, as numbers are: the boxes keep
+ *   that order in a right-to-left page, and the arrows follow it (the code's leading edge is
  *   its left; `codeKeyTarget` is given the boxes' direction).
  * - Boxes 40 × 44px, 8px apart (six fit a 360px phone), the field's look; centred text, tabular
  *   digits, the md size. When every box is filled, `onComplete` receives the code.
@@ -65,7 +65,7 @@ export interface CodeInputProps {
   required?: boolean
   /**
    * The code is shown but cannot be changed: the boxes in the read-only look of every field,
-   * focusable, no hint (P5.93; there is no disabled state).
+   * focusable, no hint (there is no disabled state).
    */
   readOnly?: boolean
   /** The form field name: the code is submitted as one value. */

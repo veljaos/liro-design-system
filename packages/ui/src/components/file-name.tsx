@@ -1,8 +1,7 @@
 import { cn } from '../primitives/cn'
 
 /*
- * FileName (P5.93 item 5, the owner's fourth review: "long attachment names truncated in the
- * middle with the full name on hover/focus"). A file's name on one line: when it does not fit, the
+ * FileName: a file's name on one line: when it does not fit, the
  * middle gives way ("Izvestaj_o_izvrsenim_rad…konacna_verzija.pdf"), so its start and its end —
  * the version, the date, the extension — stay readable; a word is never broken. The whole name
  * stays in the text (only drawn shorter), so it is read and found in full; the place that shows it

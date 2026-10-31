@@ -450,7 +450,7 @@ export const Japanese: Story = {
   ),
 }
 
-/** English in a right-to-left page (P3.6). */
+/** English in a right-to-left page. */
 export const EnglishInRtl: Story = {
   name: 'English in RTL',
   args: {

@@ -1,8 +1,8 @@
 /*
- * The logic of dragging an item between (or within) lists stacked on a page (P5.93 items 45 and
- * 46): a pivot field's chip between the zones Rows / Columns / Values / Filters, a rule's
- * condition or action within its list. Pure, measured on the laid-out lists when a drag starts
- * (decisions.md "Launchpad dragging is live"), so right-to-left needs no mirroring: a list's items
+ * The logic of dragging an item between (or within) lists stacked on a page: a pivot field's
+ * chip between the zones Rows / Columns / Values / Filters, a rule's condition or action within
+ * its list. Pure, measured on the laid-out lists when a drag starts, so right-to-left needs no
+ * mirroring: a list's items
  * stand top to bottom in both directions.
  */
 

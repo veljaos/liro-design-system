@@ -84,7 +84,7 @@ export const DueDates: Story = {
 }
 
 /**
- * In a narrow column the note wraps under the date; the date always stays (P4.9: the date is
+ * In a narrow column the note wraps under the date; the date always stays (the date is
  * what a due column is read for).
  */
 export const DueDateNarrow: Story = {

@@ -1,9 +1,9 @@
 /*
- * Story data of FloorPlan and SeatingChart (P5.25): fictitious. Restoran Kej in Novi Sad during
+ * Story data of FloorPlan and SeatingChart: fictitious. Restoran Kej in Novi Sad during
  * Saturday's dinner service (a hall, a terrace and a bar), a hotel floor, and the wedding of Ana
  * and Marko at Sala Fruškać. The states, their words, tones and icons are the application's map
  * (free, occupied, reserved, blocked are only examples; a restaurant has no "needs cleaning" state
- * unless its application turns one on, P5.90 item 20). Not part of the package:
+ * unless its application turns one on). Not part of the package:
  * nothing in src/index.ts imports this file. No classes here: Storybook compiles classes only from
  * *.stories.tsx files.
  */
@@ -100,7 +100,7 @@ function rect(
 
 /**
  * A party at a table, as the application words it: the list's `detail` ("2 guests · since
- * 18:40") and the plan's short second line ("2 guests"; P5.28 item 24: the time is not on the plan).
+ * 18:40") and the plan's short second line ("2 guests"; the time is not on the plan).
  */
 function party(guests: number, time: string, reserved = false): Partial<FloorItem> {
   const count = guests === 1 ? '1 guest' : `${String(guests)} guests`
@@ -110,7 +110,7 @@ function party(guests: number, time: string, reserved = false): Partial<FloorIte
   }
 }
 
-/** No walls, doors or windows (P5.28 item 23): the areas, the tables and the bar. */
+/** No walls, doors or windows: the areas, the tables and the bar. */
 export const RESTAURANT_ITEMS: FloorItem[] = [
   // The hall.
   round('t1', 60, 80, 'hall', 2, 'free'),
@@ -391,7 +391,7 @@ export const WEDDING_CONFLICTS: SeatingConflict[] = [
   },
 ]
 
-// ── Many areas (P5.28 item 26): a garden restaurant on two floors ───────────────────────────
+// ── Many areas: a garden restaurant on two floors ───────────────────────────
 
 /** Seven areas: the switcher is a select (more than four). */
 const MANY: { id: string; label: string; x: number; y: number; width: number; height: number }[] = [

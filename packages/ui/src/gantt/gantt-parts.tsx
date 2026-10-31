@@ -26,10 +26,10 @@ import {
 } from './gantt-logic'
 
 /*
- * Gantt's parts (P5.37): the words of a row, the list by phase (the phone's view and the
+ * Gantt's parts: the words of a row, the list by phase (the phone's view and the
  * timeline's text alternative) and the four dialogs that edit a row without dragging (WCAG 2.5.7):
  * Move…, Change dates…, Set progress… and Dependencies…, each titled by its action with the row
- * bold under it (D22). The dialogs report changes; nothing is saved here.
+ * bold under it. The dialogs report changes; nothing is saved here.
  */
 
 /** The message of each kind of dependency, in a business user's words. */

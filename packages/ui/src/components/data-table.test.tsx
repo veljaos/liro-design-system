@@ -70,7 +70,7 @@ describe('formatCount', () => {
     expect(formatCount(messagesEn, en, 500, false)).toBe('More than 500 rows')
   })
 
-  it('writes the number through the provider format, as every count (P4.9)', () => {
+  it('writes the number through the provider format, as every count', () => {
     const sr = createFormat('sr-Latn-RS')
     expect(formatCount(messagesEn, sr, 1284)).toBe('1.284 rows')
     expect(formatCount(messagesEn, sr, 10_001)).toBe('More than 10.000 rows')
@@ -293,21 +293,21 @@ describe('DataTable on a phone', () => {
     expect(html).toContain('>Amount</dt>')
   })
 
-  it('in a card, draws one flat list with dividers, never cards in a card (P4.9)', () => {
+  it('in a card, draws one flat list with dividers, never cards in a card', () => {
     const flat = render({ layout: 'cards', inCard: true })
     expect(flat).not.toContain('rounded-md border border-solid p-3')
     expect(flat).toContain('[&amp;&gt;li+li]:border-t')
     expect(render({ layout: 'cards' })).toContain('rounded-md border border-solid p-3')
   })
 
-  it('leaves the loader slot out when the container shows the refetch (P5.23)', () => {
+  it('leaves the loader slot out when the container shows the refetch', () => {
     expect(render({ inCard: true, loading: false })).toContain('data-slot="refetch-loader"')
     expect(render({ inCard: true, loading: false, loaderSlot: false })).not.toContain(
       'data-slot="refetch-loader"',
     )
   })
 
-  it('keeps the minimum width of a column without resizing (P5.23)', () => {
+  it('keeps the minimum width of a column without resizing', () => {
     const html = render({
       columns: [
         { id: 'name', header: 'Name', minWidth: 240, cell: (line) => line.name },
@@ -319,7 +319,7 @@ describe('DataTable on a phone', () => {
     expect(html.match(/min-width:/g)).toHaveLength(1)
   })
 
-  it('in a card, ends with the last row when nothing stands under it (P4.9)', () => {
+  it('in a card, ends with the last row when nothing stands under it', () => {
     expect(render({ layout: 'table', inCard: true })).not.toContain('pb-3')
     expect(render({ layout: 'table', inCard: true, count: 3 })).toContain('pb-3')
   })

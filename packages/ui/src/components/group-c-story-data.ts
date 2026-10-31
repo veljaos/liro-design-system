@@ -1,5 +1,5 @@
 /*
- * Story data of the P5.6, P5.7 and P5.21 building blocks (fictitious, about Kvadrat Gradnja
+ * Story data of the sign-in, board and administration building blocks (fictitious, about Kvadrat Gradnja
  * d.o.o. on 6 October 2026). Not part of the package: nothing in src/index.ts imports this file.
  * No classes here: Storybook compiles classes only from *.stories.tsx files.
  */
@@ -14,7 +14,7 @@ import type { SignInProvider } from './sign-in'
 export const PROVIDER_MARKS = { microsoft: 'microsoft', google: 'google' } as const
 
 /**
- * The two providers of the owner's brief, with the labels an application passes (English by
+ * The two sign-in providers, with the labels an application passes (English by
  * default; a story in another language passes its own).
  */
 export function providers(

@@ -16,7 +16,7 @@ const meta = {
       description: {
         component:
           '**What for:** the actions of a form, a page header or a dialog, in order with the ' +
-          'main action last (AGENTS.md D13), at the end of the row by default (`align="start"` ' +
+          'main action last, at the end of the row by default (`align="start"` ' +
           'only beside text). When the row is too narrow, the actions before the main one move ' +
           'into a "More" menu and the main action stays. An action with `unavailableReason` is ' +
           '**UnavailableAction**: greyed, still reachable by keyboard, with its reason written ' +
@@ -108,7 +108,7 @@ export const OverflowInteraction: Story = {
 
 /**
  * Long labels at phone width: the actions before the main one move into "More" first; only the
- * main action, alone and still too wide, wraps its label (P2.7d).
+ * main action, alone and still too wide, wraps its label.
  */
 export const LongTextPhone: Story = {
   name: 'Long text, phone width',
@@ -154,7 +154,7 @@ export const LongTextPhone: Story = {
 }
 
 /**
- * An unavailable action with its reason at phone width (BUILD-PLAN P2.7 "Done when"): the reason
+ * An unavailable action with its reason at phone width: the reason
  * is written, focusable with the keyboard, and shown in a tooltip on focus.
  */
 export const UnavailablePhone: Story = {
@@ -255,8 +255,8 @@ export const Japanese: Story = {
 }
 
 /**
- * English in a right-to-left page (P3.6): the reason reads "Unavailable: The period August 2026
- * is closed." in its own order (it was ".Unavailable: The period August 2026 is closed"); the
+ * English in a right-to-left page: the reason reads "Unavailable: The period August 2026
+ * is closed." in its own order (never ".Unavailable: The period August 2026 is closed"); the
  * buttons and the row stay right to left, the main action at the end (the left).
  */
 export const EnglishInRtl: Story = {

@@ -1,4 +1,4 @@
-// @veljaos/ui/diagram (P5.26): Diagram, on React Flow (@xyflow/react) with dagre for the automatic
+// @veljaos/ui/diagram: Diagram, on React Flow (@xyflow/react) with dagre for the automatic
 // layout. A subpath of its own, so an application without diagrams does not load React Flow.
 export { Diagram } from './diagram'
 export type { DiagramProps } from './diagram'

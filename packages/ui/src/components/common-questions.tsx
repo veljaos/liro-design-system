@@ -26,7 +26,7 @@ export {
 export type { SearchableQuestion } from './common-questions-logic'
 
 /*
- * CommonQuestions (BUILD-PLAN P5.94 item 20, the owner's fifth review): the questions people of a
+ * CommonQuestions: the questions people of a
  * portal keep asking — an employee ("I changed my ID card. Do I have to tell my employer?"), a
  * patient, a tenant, a client — each with its short answer, what to do and the documents needed,
  * and, where the application has a request for it, the button that starts that request filled in.
@@ -74,7 +74,7 @@ export interface CommonQuestion {
    * address" opens the change request with its proof).
    */
   action?: { label: string; onSelect: () => void }
-  /** The language tag of its texts when it differs from the page's (D15). */
+  /** The language tag of its texts when it differs from the page's. */
   lang?: string
 }
 
@@ -350,7 +350,7 @@ export function CommonQuestions(props: CommonQuestionsProps) {
 
 /**
  * The category chips of CommonQuestions and QuestionsAndAnswers: "All" first, then the
- * application's categories, one pressed (the neutral selection, never blue, D17); with `counts`
+ * application's categories, one pressed (the neutral selection, never blue); with `counts`
  * each chip says how many questions it holds (WorklistPage's chips). Internal: not exported from
  * the package.
  */

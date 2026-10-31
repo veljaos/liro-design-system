@@ -23,7 +23,7 @@ import {
 import type { IconComponent } from './intents'
 
 /*
- * DropdownMenu (BUILD-PLAN P2.4) on the P2.1 primitive (Mantine Menu): items with an optional
+ * DropdownMenu on the menu primitive (Mantine Menu): items with an optional
  * 15px icon and shortcut, labels and separators, from a list the application gives. A
  * destructive item takes the danger colours, as Mantine's Menu.Item with color="red": the text in
  * status.danger.fg, and status.danger.bg under the pointer or the keyboard.
@@ -117,7 +117,7 @@ function menuItems(entries: readonly MenuEntry[]): ReactNode {
 }
 
 /**
- * DropdownMenu for lists with a menu on every row (DataTable, P5.20): the menu itself is built
+ * DropdownMenu for lists with a menu on every row (DataTable): the menu itself is built
  * only when it is about to be used. Until then its trigger is the same button, saying that it
  * opens a menu (aria-haspopup, aria-expanded false); pressing it (pointer or touch) builds and
  * opens the menu, and the keyboard's focus builds it, so Enter, Space and ArrowDown work as in
@@ -175,7 +175,7 @@ export function LazyDropdownMenu({
 }
 
 /**
- * The text of a menu item (P5, the owner's review of the phone user menu). With a current value
+ * The text of a menu item. With a current value
  * the item has two lines — the action, then the value in xs text.secondary, wrapping onto more
  * lines rather than ending in "…" — and a chevron at the end. Every menu item that shows a current
  * value uses it (DropdownMenu entries with `value`, the AppShell's "Switch company"). Internal.

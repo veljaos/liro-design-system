@@ -21,7 +21,7 @@ const meta = {
       description: {
         component:
           '**What for:** asking before an action that needs a second thought — delete, send, ' +
-          "post, void. The previous Design System's ConfirmModal: an icon and the question in " +
+          'post, void. An icon and the question in ' +
           "the tone's colour, the text, then Cancel and the confirm button filled in the " +
           "action's family colour (main action last). The tone follows the `intent` or " +
           '`family` (destructive → danger, positive → success, caution → warning, primary and ' +
@@ -31,21 +31,21 @@ const meta = {
           'destructive, info → primary, success → positive, neutral → neutral). When `onConfirm` returns a promise, the button shows a loader, Cancel ' +
           'is disabled and nothing closes the dialog until it settles. `DeleteConfirmDialog` ' +
           'has the delete texts from the provider; `IrreversibleConfirmDialog` enables its ' +
-          'button only when the user types `confirmText`; with `reason` (P5.18, a cancellation) ' +
+          'button only when the user types `confirmText`; with `reason` (a cancellation) ' +
           'the same dialog also asks why — a required text, or a choice from `reason.reasons` ' +
           'with optional details — and `onConfirm` receives the answer: one dialog, never two ' +
           'in a row.\n\n' +
-          '**On one record** (P5.28, the owner’s review): the title is the action (“Reject ' +
+          '**On one record**: the title is the action (“Reject ' +
           'invoice”) and `subject` the record, bold on its own line under it (“UF-2026-1187 · ' +
           'Medic Lab Niš d.o.o.”); both name the dialog. About several records or none, the ' +
           'title stays a question (“Approve 12 invoices?”).\n\n' +
-          '**Messages are a choice** (P5.28 item 9): `notify` lists the messages the ' +
+          '**Messages are a choice**: `notify` lists the messages the ' +
           'application can send with the action (“Notify 8 people in the app”) as checkboxes, ' +
           'checked as the application sets them; while one is checked the button says ' +
           '`notifyConfirmLabel`, and `onConfirm` receives `{ notify }` with the checked ids. ' +
           'A move or change of one record others rely on is ChangeConfirmDialog.\n\n' +
           '**When not:** an action that can be undone (just do it, and offer undo); a bulk ' +
-          'action asks once, with the count, not per item (Appendix B.8).',
+          'action asks once, with the count, not per item.',
       },
     },
   },
@@ -99,7 +99,7 @@ export const DeleteInteraction: Story = {
 }
 
 /**
- * The safe action takes the focus (P4.9d): in every confirmation Cancel is focused when the
+ * The safe action takes the focus: in every confirmation Cancel is focused when the
  * dialog opens, so a single Enter closes it and never deletes, rejects or discards.
  */
 export const SafeInitialFocus: Story = {
@@ -481,7 +481,7 @@ export const Japanese: Story = {
   ),
 }
 
-// ── P5 group D2: a cancellation asks why and for the number, in one dialog (P5.18) ──────────
+// ── A cancellation asks why and for the number, in one dialog ──────────
 
 /**
  * Cancelling an issued invoice: one dialog asks for the reason (required) and the typed number;
@@ -671,8 +671,8 @@ export const WithPreview: Story = {
 }
 
 /**
- * `notify`: the messages the application can send with the action, each an explicit choice
- * (P5.28 item 9); checked as the application sets them, and the button says so.
+ * `notify`: the messages the application can send with the action, each an explicit choice;
+ * checked as the application sets them, and the button says so.
  */
 export const WithMessages: Story = {
   name: 'With messages',

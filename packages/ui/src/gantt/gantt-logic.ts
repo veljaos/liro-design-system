@@ -3,12 +3,11 @@ import { compareDecimal } from '../components/quantity-logic'
 import { addDays, dayNumber } from '../components/schedule-logic'
 
 /*
- * The logic of Gantt (BUILD-PLAN P5.37), apart from the markup so it can be unit-tested (AGENTS.md
- * C7). Dates are YYYY-MM-DD strings read as written; a task's `end` is its last day (included), a
+ * The logic of Gantt, apart from the markup so it can be unit-tested. Dates are YYYY-MM-DD strings read as written; a task's `end` is its last day (included), a
  * milestone's `end` is its `start`. The chart library (SVAR React Gantt) counts in local `Date`
  * objects with an exclusive end; `chartStart` / `chartEnd` / `dayOfChartDate` convert at the edge,
  * so nothing here reads the device's clock or zone. Progress and money are decimal strings; the
- * library compares them exactly (`compareDecimal`) and never adds, rounds or converts them (D4).
+ * library compares them exactly (`compareDecimal`) and never adds, rounds or converts them.
  */
 
 /** A row of the plan: a phase (groups tasks, drawn as a summary bar), a task or a milestone. */
@@ -22,7 +21,7 @@ export interface GanttState {
   tone: Tone
 }
 
-/** A phase's money: what was planned and what was spent, as the application has them (D4). */
+/** A phase's money: what was planned and what was spent, as the application has them. */
 export interface GanttBudget {
   /** Decimal string, or null when not set ("—"). */
   planned: string | null
@@ -257,7 +256,7 @@ export function nowPosition(todayX: number, tomorrowX: number, minutes: number):
 }
 
 /**
- * Where the chart opens (P5.93 item 34), as its scroll from the start, px: at the plan's start
+ * Where the chart opens, as its scroll from the start, px: at the plan's start
  * when today is in view there; otherwise at the start of the column before today's, so "now" and
  * what comes next are in view and no column is cut at the edge. `todayX` null (no `now`, or out
  * of the plan): the plan's start.
@@ -279,7 +278,7 @@ export interface ScaleLabelExtent {
 }
 
 /**
- * Where the date of "now" starts on the scale's upper row (P5.94 item 6), px from the scale's
+ * Where the date of "now" starts on the scale's upper row, px from the scale's
  * start: centred on the line, unless that would cover a label of the row (the year, the month
  * and year); then the nearest place beside that label that covers none, kept inside the scale
  * (`room`, its width). The tag covers no text: the months' names under it stay readable.
@@ -316,7 +315,7 @@ export const BAR_LABEL_ROOM = 14
 export const BAR_LABEL_PADDING = 16
 
 /**
- * Where a bar's name stands (P5.93 item 34): never cut. Inside the bar when it fits (a milestone
+ * Where a bar's name stands: never cut. Inside the bar when it fits (a milestone
  * never holds it); otherwise after the bar when the chart has room there, else before the bar
  * (a bar at the chart's end); after it when neither side has the room.
  */
@@ -342,7 +341,7 @@ export function isProgress(value: string | null | undefined): value is string {
   return compareDecimal(value, '0') >= 0 && compareDecimal(value, '100') <= 0
 }
 
-/** The progress as a width for the chart only (D4: never added, never shown from this number). */
+/** The progress as a width for the chart only (never added, never shown from this number). */
 export function progressWidth(value: string | null | undefined): number {
   return isProgress(value) ? Number(value) : 0
 }
@@ -472,7 +471,7 @@ export function applyGanttChange(model: GanttModel, change: GanttChange): GanttM
   }
 }
 
-// ── The lockfile guard (P5.37) ────────────────────────────────────────────────────────────────
+// ── The lockfile guard ────────────────────────────────────────────────────────────────
 
 /**
  * The packages a lockfile must never hold: SVAR's trial builds (`@svar-ui/trial-*`, a paid licence)

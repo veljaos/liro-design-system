@@ -1,7 +1,7 @@
 /*
- * The logic of FileDropzone and AttachmentList (P5.5): which chosen files are accepted, and what
+ * The logic of FileDropzone and AttachmentList: which chosen files are accepted, and what
  * a file in the list offers. Sizes are byte counts (whole numbers from the browser), compared
- * only; the text the user reads ("up to 10 MB", "2,4 MB") is the application's (D4: the component
+ * only; the text the user reads ("up to 10 MB", "2,4 MB") is the application's (the component
  * does not compute units).
  */
 

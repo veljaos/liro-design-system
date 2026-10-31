@@ -1,5 +1,5 @@
 /*
- * The pure rules of CodeBlock (P5.93): lines, their numbers, diff lines and highlighted lines,
+ * The pure rules of CodeBlock: lines, their numbers, diff lines and highlighted lines,
  * ANSI colours in logs and the text the copy button copies. Tested in code-block-logic.test.ts.
  * Nothing here highlights syntax: that is `@veljaos/ui/code` (Shiki), which returns CodeTokens.
  */

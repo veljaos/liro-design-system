@@ -392,7 +392,7 @@ export const WizardStepsInteraction: Story = {
 }
 
 /**
- * Phones (P5.23): "Step 1 of 3 · Customer" over a thin bar in place of the row of circles, and
+ * Phones: "Step 1 of 3 · Customer" over a thin bar in place of the row of circles, and
  * Back / Next as ONE row stuck to the bottom of the screen.
  */
 export const WizardPhone: Story = {
@@ -583,7 +583,7 @@ export const Japanese: Story = {
 }
 
 /**
- * English in a right-to-left page (P3.6): section titles, tab labels and "Unsaved changes" keep
+ * English in a right-to-left page: section titles, tab labels and "Unsaved changes" keep
  * their own order; the grid, the tabs and the bottom bar stay right to left.
  */
 export const EnglishInRtl: Story = {

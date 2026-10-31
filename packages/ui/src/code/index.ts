@@ -1,4 +1,4 @@
-// @veljaos/ui/code (P5.93): syntax highlighting for CodeBlock on Shiki (MIT; its JavaScript
+// @veljaos/ui/code: syntax highlighting for CodeBlock on Shiki (MIT; its JavaScript
 // regular-expression engine, no WebAssembly). A subpath of its own, so Shiki loads only where an
 // application asks for highlighting: CodeBlock itself is in `@veljaos/ui` and draws plain text,
 // diffs and terminal colours without it.

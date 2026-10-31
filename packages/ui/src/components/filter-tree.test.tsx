@@ -15,7 +15,7 @@ import {
 } from './filter-logic'
 import type { TreeNode } from './tree-logic'
 
-/* The tree filter kind (P5.27): its value, its pill and its place in the bar. */
+/* The tree filter kind: its value, its pill and its place in the bar. */
 
 const AREAS: TreeNode[] = [
   {

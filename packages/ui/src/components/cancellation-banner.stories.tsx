@@ -12,14 +12,14 @@ const meta = {
     docs: {
       description: {
         component:
-          '**What for:** the marker of a cancelled document (P5.18), at the top of its page ' +
+          '**What for:** the marker of a cancelled document, at the top of its page ' +
           '(DocumentPage `banner`): the title "Cancelled", then "by Milica Petrović on ' +
           '06.10.2026. at 11:20. Reason: …", then the link "Cancellation document ' +
-          'ST-2026-0004" — the word said once (P5.23). Who and the reason are the ' +
+          'ST-2026-0004" — the word said once. Who and the reason are the ' +
           'application’s; the date and time are written by the provider’s `format` in the ' +
           'tenant’s time; the cancellation document is a link (the cancellation document shows the ' +
-          'cancelled invoice as its source, `DocumentSource` "Cancels", P5.23). Danger by default — the tone of the ' +
-          '"Cancelled" badge in the application’s status map (P5.23, owner) — with the Ban ' +
+          'cancelled invoice as its source, `DocumentSource` "Cancels"). Danger by default — the tone of the ' +
+          '"Cancelled" badge in the application’s status map — with the Ban ' +
           'icon, announced politely (`role="status"`: a state, not an interruption); ' +
           '`tone="neutral"` only where the application’s map says so. The marker on the PDF is ' +
           'the Core’s.\n\n' +

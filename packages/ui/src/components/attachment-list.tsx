@@ -16,15 +16,15 @@ export { attachmentOffers } from './file-logic'
 export type { AttachmentOffers, AttachmentState } from './file-logic'
 
 /*
- * AttachmentList (BUILD-PLAN P5.5; docs/decisions.md "Files and document frame"): the files of a
+ * AttachmentList: the files of a
  * record or a document, each with its state and its next step in words.
  *
- * - Rows, never cards (P4.9 rule 4): a 1px border.subtle line between rows. On its own or in a
+ * - Rows, never cards: a 1px border.subtle line between rows. On its own or in a
  *   side panel the rows are 8px above and below (the panel lists' rows, `panel-row`, so a side
  *   panel's edge rule holds); `inCard` pads them 12px by 16px for a card's edges.
  * - Each row: the name (13px medium; a button in the link colour that downloads when the file is
- *   available), its size as the application writes it ("2,4 MB": the component computes no units,
- *   D4), an optional flag (a StatusBadge with the application's tone and text, "Not an archival
+ *   available), its size as the application writes it ("2,4 MB": the component computes no
+ *   units), an optional flag (a StatusBadge with the application's tone and text, "Not an archival
  *   format"), then the state line in 12px with a 14px icon:
  *   - uploading: a ProgressBar (5px) and "Uploading, 45%. It is checked for viruses next." (the
  *     percentage through `format.percent`);
@@ -221,7 +221,7 @@ export function AttachmentList(props: AttachmentListProps) {
           canRetry: props.onRetry !== undefined,
         })
         const busy = downloading.has(file.id)
-        // One line, shortened in the middle; the whole name in the tooltip (P5.93 item 5).
+        // One line, shortened in the middle; the whole name in the tooltip.
         const name = <FileName name={file.name} />
         return (
           <li
@@ -232,7 +232,7 @@ export function AttachmentList(props: AttachmentListProps) {
           >
             <div className="flex min-w-0 flex-1 flex-col gap-0.5">
               {/* The first line is as tall as the remove button (28px), so the name and the
-                  button share one line (P5.93 item 6). */}
+                  button share one line. */}
               <div className="flex min-h-7 min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
                 {offers.download ? (
                   <Tooltip label={file.name}>

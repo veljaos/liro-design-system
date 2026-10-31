@@ -20,14 +20,14 @@ interface CommonProps {
   /** Default: 'button'. */
   type?: 'button' | 'submit' | 'reset'
   /**
-   * The action cannot be used. The reason must be visible near the button as text: the
-   * unavailable action of P2.7 does that.
+   * The action cannot be used. The reason must be visible near the button as text:
+   * UnavailableAction does that.
    */
   disabled?: boolean
   onClick?: MouseEventHandler<HTMLButtonElement>
 }
 
-/** An interface intent (Appendix A.6): its family, emphasis and icon come with it. */
+/** An interface intent: its family, emphasis and icon come with it. */
 interface IntentProps {
   intent: Intent
   family?: never
@@ -96,7 +96,7 @@ const OWN = new Set([
 /**
  * The attributes a button did not declare, passed to the element: a Radix trigger (`asChild`)
  * gives its button `aria-expanded`, `aria-haspopup`, `data-state`, its event handlers and a ref,
- * and a button that dropped them could not open a dialog or a menu (found in P2.4).
+ * and a button that dropped them could not open a dialog or a menu.
  */
 function passThrough(props: object): Record<string, unknown> {
   return Object.fromEntries(Object.entries(props).filter(([key]) => !OWN.has(key)))
@@ -122,7 +122,7 @@ function buttonParts(props: CompactIconButtonProps, shape: ButtonShape) {
       className,
       'data-family': family,
       'data-emphasis': emphasis,
-      // The touch density (P5.10) raises the icon shapes to 44px by this attribute.
+      // The touch density raises the icon shapes to 44px by this attribute.
       'data-shape': shape,
       ...data,
     },
@@ -154,9 +154,9 @@ export function IconButton(props: IconButtonProps) {
       {icon}
     </button>
   )
-  // The library's tooltip names it on hover and focus, never the browser's title (P5.93 item 7);
+  // The library's tooltip names it on hover and focus, never the browser's title;
   // inside the application's own Tooltip, that one alone; a disabled button has none — it cannot
-  // be used, so it promises nothing on hover (P5.94 item 12).
+  // be used, so it promises nothing on hover.
   return useInTooltip() || props.disabled === true ? (
     button
   ) : (
@@ -175,9 +175,9 @@ export function CompactIconButton(props: CompactIconButtonProps) {
       {icon}
     </button>
   )
-  // The library's tooltip names it on hover and focus, never the browser's title (P5.93 item 7);
+  // The library's tooltip names it on hover and focus, never the browser's title;
   // inside the application's own Tooltip, that one alone; a disabled button has none — it cannot
-  // be used, so it promises nothing on hover (P5.94 item 12).
+  // be used, so it promises nothing on hover.
   return useInTooltip() || props.disabled === true ? (
     button
   ) : (

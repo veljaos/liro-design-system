@@ -5,7 +5,7 @@ import { COUNTRY_SHAPES } from './map-story-world'
 import type { RegionChartArea, RegionChartPlace } from './region-chart'
 
 /*
- * The maps' story data (P5.41): an invented town's zones, hand-drawn rings around a centre — not
+ * The maps' story data: an invented town's zones, hand-drawn rings around a centre — not
  * a real boundary. No tiles: the stories draw only shapes, so they fetch nothing and their
  * pictures never change. Not part of the package.
  */
@@ -59,7 +59,7 @@ export const EAST_ZONE: MapAreaGeometry = {
   ],
 }
 
-/** The town's zones, all in one colour (P5.94 item 17: the default). */
+/** The town's zones, all in one colour (the default). */
 export const TOWN_AREAS: MapArea[] = [
   { id: 'centre', name: 'Centre', detail: 'Rate A', geometry: CENTRE_ZONE },
   { id: 'inner', name: 'Inner ring', detail: 'Rate B', geometry: INNER_ZONE },
@@ -137,7 +137,7 @@ export async function mapReady(canvasElement: HTMLElement): Promise<void> {
   )
 }
 
-// ── RegionChart (P5.41, maps in charts) ───────────────────────────────────────────────────────
+// ── RegionChart (maps in charts) ───────────────────────────────────────────────────────
 // Invented revenue by country, EUR; the countries' outlines are Natural Earth's (map-story-world).
 
 export const COUNTRY_REVENUE: RegionChartArea[] = [

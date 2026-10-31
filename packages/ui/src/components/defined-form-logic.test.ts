@@ -77,7 +77,7 @@ describe('definedConditionHolds', () => {
     expect(definedConditionHolds({ field: 'kind', equals: 'parts' }, values)).toBe(true)
     expect(definedConditionHolds({ field: 'kind', notEquals: 'parts' }, values)).toBe(false)
     expect(definedConditionHolds({ field: 'kind', oneOf: ['once', 'parts'] }, values)).toBe(true)
-    // Decimal strings are not numbers: "1200.00" is not "1200" (D4).
+    // Decimal strings are not numbers: "1200.00" is not "1200".
     expect(definedConditionHolds({ field: 'amount', equals: '1200' }, values)).toBe(false)
   })
 

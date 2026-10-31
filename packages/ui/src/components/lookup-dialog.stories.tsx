@@ -27,7 +27,7 @@ import { cn } from '../primitives/cn'
 const ALL = storyCustomers(4993)
 const PAGE = 25
 
-// A catalogue sorts by every column and filters by several values (P5.23).
+// A catalogue sorts by every column and filters by several values.
 const COLUMNS: DataTableColumn<StoryCustomer>[] = [
   { id: 'name', header: 'Name', sortable: true, cell: (row) => row.name },
   { id: 'taxId', header: 'Tax number', numeric: true, sortable: true, cell: (row) => row.taxId },
@@ -259,7 +259,7 @@ export const InitialQuery: Story = {
 }
 
 /**
- * A catalogue sorts by its columns (the application sorts its search, P5.23): Open balance
+ * A catalogue sorts by its columns (the application sorts its search): Open balance
  * descending puts the largest balance first.
  */
 export const Sorted: Story = {
@@ -390,7 +390,7 @@ export const LongText: Story = {
 
 /**
  * Phone width: a full-screen sheet, the results as a flat list of compact rows — name; tax number
- * · city; a badge at the end — never every column as a detail card (P5.28 item 13); the keys work
+ * · city; a badge at the end — never every column as a detail card; the keys work
  * the same.
  */
 export const PhoneWidth: Story = {

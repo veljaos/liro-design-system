@@ -2,8 +2,8 @@ import { fold } from './command-logic'
 import { snippetFromRanges, type HighlightPart } from './help-logic'
 
 /*
- * The logic of CommonQuestions (P5.94 item 20), kept apart from the markup so it can be
- * unit-tested (AGENTS.md C7): which questions a search and a category keep, and how many are
+ * The logic of CommonQuestions, kept apart from the markup so it can be
+ * unit-tested: which questions a search and a category keep, and how many are
  * shown. The questions, their answers, their order and their categories are the application's;
  * the search is local, over the words the application gave.
  */
@@ -99,10 +99,10 @@ export function toggleQuestion(open: readonly string[], id: string): string[] {
   return open.includes(id) ? open.filter((each) => each !== id) : [...open, id]
 }
 
-// ── Questions and answers (P5.96 item 1) ──────────────────────────────────────────────────────
+// ── Questions and answers ──────────────────────────────────────────────────────
 
 /**
- * How many entries a page of QuestionsAndAnswers shows before "Show more" (P5.96 item 1): 30
+ * How many entries a page of QuestionsAndAnswers shows before "Show more": 30
  * links, a screen and a half on a desktop. Paged, not windowed: every shown entry is a real link
  * in the page's order (the browser's find, the keyboard and assistive technology reach them all),
  * and a search narrows 300 questions to a few at once.

@@ -1,9 +1,9 @@
 import type { LiroFormat } from '../provider/format'
 
 /*
- * The logic of the help-centre building blocks (BUILD-PLAN P5.30 d and e: SatisfactionRating,
- * HelpfulFeedback, LinkSuggestions, PageContents, SearchResultList, CategoryGrid), kept apart
- * from the markup so it can be unit-tested (AGENTS.md C7). Nothing here searches, ranks or counts
+ * The logic of the help-centre building blocks (SatisfactionRating, HelpfulFeedback,
+ * LinkSuggestions, PageContents, SearchResultList, CategoryGrid), kept apart
+ * from the markup so it can be unit-tested. Nothing here searches, ranks or counts
  * on the application's behalf: the matches, the counts and the order arrive from it.
  */
 

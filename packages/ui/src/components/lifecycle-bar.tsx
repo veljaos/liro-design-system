@@ -6,7 +6,7 @@ import { Tooltip } from './popover'
 import { usePhone } from './use-phone'
 
 /*
- * LifecycleBar (P4.5, the owner's decision, docs/decisions.md "Document page"): where a document
+ * LifecycleBar: where a document
  * stands in its life — Draft → Issued → Sent to SEF → Paid — compact, above the document's
  * header; not a big stepper.
  * - Dots and lines: each step a 16px dot and its name (13px), 1px border.default lines (24px)

@@ -37,8 +37,8 @@ const meta = {
           'load shows skeleton bars; a refetch keeps the rows with a small loader. An empty ' +
           'table says "nothing here yet" (with the first step) or, when filters are set, "no ' +
           'rows match" (with "Clear filters").\n\n**When not:** a few labelled values of one ' +
-          'record (KeyValueList); editing lines (the editable grid, P3.4); a phone (card layout, ' +
-          'P3.2).\n\n**Line types (P5.18):** a document’s read-only lines and a specification ' +
+          'record (KeyValueList); editing lines (the editable grid); a phone (card layout).' +
+          '\n\n**Line types:** a document’s read-only lines and a specification ' +
           'pass `lineType` (the types of `line-types.ts`): a heading bold across the row, a text ' +
           'line smaller and secondary, a subtotal semibold with a rule above and its label ' +
           'end-aligned before the amounts (the trailing end-aligned columns), discounts and ' +
@@ -64,7 +64,7 @@ type Story = StoryObj<typeof meta>
 
 const noop = () => undefined
 
-/** Fictitious data (AGENTS.md D5: examples may use domain words). */
+/** Fictitious data (examples may use domain words). */
 interface Invoice {
   id: string
   number: string
@@ -284,7 +284,7 @@ export const Refetching: Story = {
     const canvas = within(canvasElement)
     const status = canvas.getByRole('status')
     await expect(status).toHaveTextContent('Updating…')
-    // Above the table, never over a header label (P3.6).
+    // Above the table, never over a header label.
     const header = canvas.getByRole('columnheader', { name: 'Amount' }).getBoundingClientRect()
     await expect(status.getBoundingClientRect().bottom).toBeLessThanOrEqual(header.top)
     await settle()
@@ -437,7 +437,7 @@ export const LongTextPhone: Story = {
 }
 
 /**
- * Phones, inside a card (`inCard`): no cards inside the card (P4.9) — one flat list, the rows
+ * Phones, inside a card (`inCard`): no cards inside the card — one flat list, the rows
  * divided by a line, 12px by 16px each; the selected row neutral with its start bar; totals and
  * paging close the card.
  */
@@ -505,7 +505,7 @@ function LargeList({ cards }: { cards: boolean }) {
 
 /**
  * 1,000 rows, virtualized: only the rows in view are drawn (44px each), the header stays at the
- * top and the totals at the bottom. Sorting and selecting stay quick (docs/decisions.md "Table").
+ * top and the totals at the bottom. Sorting and selecting stay quick.
  */
 export const ThousandRows: Story = {
   name: '1,000 rows (virtualized)',
@@ -533,7 +533,7 @@ export const ThousandRowsInteraction: Story = {
 /**
  * 1,000 cards on a phone, virtualized: each card measured once drawn (estimate 104px), and only
  * the cards in view are drawn — in the page's own scroll, never a box of its own (`maxHeight` is
- * not used on phones, P5.90).
+ * not used on phones).
  */
 export const ThousandCards: Story = {
   name: '1,000 cards (phone, virtualized)',
@@ -670,7 +670,7 @@ export const Japanese: Story = {
 }
 
 /**
- * English in a right-to-left page (P3.6): the headers ("Amount (EUR)") and the bulk bar's
+ * English in a right-to-left page: the headers ("Amount (EUR)") and the bulk bar's
  * "2 selected" keep their own order; columns, the selection bar and the selected rows' bar stay
  * right to left.
  */
@@ -713,7 +713,7 @@ export const EnglishInRtlInteraction: Story = {
   },
 }
 
-// ── P5 group D2: line types (P5.18) ──────────────────────────────────────────────────────────
+// ── Line types ──────────────────────────────────────────────────────────
 
 interface DocumentLine {
   id: string
@@ -960,7 +960,7 @@ export const LineTypesJapanese: Story = {
 }
 
 /*
- * P5.28 item 4: a sticky header stays below the shell's sticky header while the page scrolls (no
+ * A sticky header stays below the shell's sticky header while the page scrolls (no
  * `maxHeight` needed), and in a card the first column stays at the start while the table scrolls
  * sideways.
  */
@@ -1001,13 +1001,13 @@ export const UnderTheShell: Story = {
     const amount = table.querySelectorAll('tbody tr')[10]?.querySelector('td:last-child')
     if (amount === null || amount === undefined) throw new Error('no amount cell')
     await expectFirstColumnStays(region, number, amount, 120)
-    // Glued at any speed (P5.90 item 8): large jumps, checked in the very next frame.
+    // Glued at any speed: large jumps, checked in the very next frame.
     await expectGluedWhileJumping(canvasElement, region, head)
   },
 }
 
 /**
- * The same table on a phone (P5.90 item 8): the page scrolls in its 390px frame, the table keeps
+ * The same table on a phone: the page scrolls in its 390px frame, the table keeps
  * its rows (`layout="table"`) and scrolls sideways; its header stays right below the shell in the
  * very next frame of every jump.
  */

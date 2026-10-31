@@ -535,7 +535,7 @@ export const Phone: Story = {
 }
 
 /**
- * A reference's preview on a phone (P5.93 item 31): a bottom sheet with the article's text and
+ * A reference's preview on a phone: a bottom sheet with the article's text and
  * "Open Article 4" at its foot — never a popover over the text.
  */
 export const PhoneReferencePreview: Story = {

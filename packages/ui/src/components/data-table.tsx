@@ -65,14 +65,14 @@ import { usePhone } from './use-phone'
 import { keepFocusedRow, overscanRows, spacersBetween } from './virtual-rows'
 
 /*
- * DataTable (BUILD-PLAN P3.1, P3.2), on TanStack Table and fully controlled: the table never
+ * DataTable, on TanStack Table and fully controlled: the table never
  * fetches, sorts, filters or sums. Rows arrive in the order to show; sort, filters, selection,
  * paging and totals arrive as props, and every change goes back through a callback.
  *
- * The previous Design System's values (the owner, 2026-09-30, docs/decisions.md "Table"):
+ * The values:
  * - table font size sm (13px), cells 12px (sm) top and bottom and 16px (md) at the sides;
  * - the header row on surface.sunken; sticky below the shell's sticky top (`stickyHeader`, default
- *   true since P5.28 item 4; always when virtualized);
+ *   true; always when virtualized);
  * - minimum column width 64px; below 640px the table scrolls sideways inside its container;
  *   resizable, the table is exactly as wide as its columns, so resizing one never moves another;
  * - rows highlight under the pointer only when they can be pressed;
@@ -83,16 +83,16 @@ import { keepFocusedRow, overscanRows, spacersBetween } from './virtual-rows'
  *   some rows are selected; selected rows on surface.selected;
  * - loading: first load 5 skeleton bars (36px, radius sm, 8px apart, 16px around), the header
  *   stays; a refetch keeps the rows as they are with a 14px loader above the table at the end, in
- *   a slot always reserved (P3.6), and "Updating…" for screen readers; never a translucent
+ *   a slot always reserved, and "Updating…" for screen readers; never a translucent
  *   overlay;
  * - totals row: surface.sunken, semibold, a 1px border.strong line above it, sticky at the
  *   bottom while the table scrolls; values from the application, never computed;
  * - filters decide "nothing here yet" or "no rows match" (with "Clear filters");
- * - on a phone (below 48em) the rows are cards, by real branching: only one layout is rendered
- *   (Appendix B.5); virtualized rows are 44px, cards estimated at 104px, drawn by the shared
- *   window rules of `virtual-rows.ts` (600px around the view, the focused row kept; P5.20), each
+ * - on a phone (below 48em) the rows are cards, by real branching: only one layout is rendered;
+ *   virtualized rows are 44px, cards estimated at 104px, drawn by the shared
+ *   window rules of `virtual-rows.ts` (600px around the view, the focused row kept), each
  *   table row memoised (`data-table-row.tsx`). Inside a card (`inCard`)
- *   they are not cards but one flat list divided by border.subtle lines (P4.9: no cards inside a
+ *   they are not cards but one flat list divided by border.subtle lines (no cards inside a
  *   card); in a card nothing is padded under the last row unless totals, a note, the count or the
  *   paging stand there.
  * Everything else is Mantine 9.6.2 Table (Table.css) with Liro meanings.
@@ -121,7 +121,7 @@ export interface DataTableColumn<Row extends RowData> {
   width?: number
   /**
    * The narrowest the column gets, in pixels. Default 64px. With `resizable`, the narrowest it can
-   * be made; without, the table scrolls sideways before this column gets narrower (P5.23: a
+   * be made; without, the table scrolls sideways before this column gets narrower (a
    * document's description column takes 240px, `DESCRIPTION_MIN_WIDTH`, so a name wraps to at most
    * two lines).
    */
@@ -152,7 +152,7 @@ export interface DataTableProps<Row extends RowData> {
   getRowId: (row: Row) => string
   /**
    * Names a row for assistive technology: "Select <label>", "Actions: <label>". A function of the
-   * row only: a row is drawn again when the row, its selection or `columns` change (P5.20), not
+   * row only: a row is drawn again when the row, its selection or `columns` change, not
    * when only this function is new.
    */
   getRowLabel: (row: Row) => string
@@ -183,12 +183,12 @@ export interface DataTableProps<Row extends RowData> {
   /**
    * Pressing a row (pointer, or Space or Enter on the focused row). The application decides what
    * opens. Pressable rows (and cards) are reached with Tab, and from one to the next with
-   * ArrowDown / ArrowUp, Home and End (P5.30: a list worked from the keyboard).
+   * ArrowDown / ArrowUp, Home and End (a list worked from the keyboard).
    */
   onRowClick?: (row: Row) => void
   /**
    * Enter on the focused row (or card) opens the record (its full page), while the pointer and
-   * Space keep `onRowClick` (a quick preview, P4.3). Needs `onRowClick`.
+   * Space keep `onRowClick` (a quick preview). Needs `onRowClick`.
    */
   onRowOpen?: (row: Row) => void
   /** The actions of one row, in a menu at the row's end. */
@@ -216,7 +216,7 @@ export interface DataTableProps<Row extends RowData> {
   exportAction?: ReactNode
   /**
    * False: no loader slot above the table — the container shows the refetch itself, in a row of
-   * its own (RegisterPage's first row, P5.23), so a band right above the table (the locked
+   * its own (RegisterPage's first row), so a band right above the table (the locked
    * periods) meets its header without a white strip. Default true.
    */
   loaderSlot?: boolean
@@ -225,21 +225,21 @@ export interface DataTableProps<Row extends RowData> {
 
   /**
    * The header stays in view while the rows scroll: below the shell's sticky top while the page
-   * scrolls (P5.28 item 4), and at the top inside `maxHeight`. Default true: every table's header
+   * scrolls, and at the top inside `maxHeight`. Default true: every table's header
    * stays below the shell; false only where the table is never taller than the screen and its
    * header must not move (none in the library).
    */
   stickyHeader?: boolean
   /**
-   * The table sits in a card (ListPage, P4.3): the table reaches the card's edges, the parts above
+   * The table sits in a card (ListPage): the table reaches the card's edges, the parts above
    * and below it (the loader and export slot, the bulk bar, the row-limit note, the count and
    * paging) keep 16px from them, and 12px stay under the paging. The loader slot stands right
-   * above the table, without a gap (P4.4).
+   * above the table, without a gap.
    */
   inCard?: boolean
   /**
    * The table scrolls inside this height (CSS length, e.g. "60vh"), so header and totals stay.
-   * Not on phones: the cards flow with the page (P5.90).
+   * Not on phones: the cards flow with the page.
    */
   maxHeight?: string
 
@@ -249,7 +249,7 @@ export interface DataTableProps<Row extends RowData> {
   layout?: 'auto' | 'table' | 'cards'
   /**
    * Renders only the rows in view, for long lists: 44px rows, the header sticky. Needs
-   * `maxHeight`, the height it scrolls in. Not on phones: the cards flow with the page (P5.90).
+   * `maxHeight`, the height it scrolls in. Not on phones: the cards flow with the page.
    */
   virtualize?: boolean
   /** Columns can be resized by pointer, keyboard and a popover (without dragging). */
@@ -257,7 +257,7 @@ export interface DataTableProps<Row extends RowData> {
   /** The widths after each resize, per column id, for the application to keep. */
   onColumnWidthsChange?: (widths: Record<string, number>) => void
   /**
-   * The type of each row (P5.18: a document's read-only lines and a specification; the types of
+   * The type of each row (a document's read-only lines and a specification; the types of
    * `line-types.ts`), told apart by typography, never colour: a `heading` bold across the row; a
    * `text` line smaller and secondary across the row; a `subtotal` semibold with a rule above, its
    * label end-aligned before the amounts (the trailing end-aligned columns); `discount` and
@@ -270,7 +270,7 @@ export interface DataTableProps<Row extends RowData> {
   lineText?: (row: Row) => ReactNode
   /**
    * What a line is ("Item", "Service", "Fixed asset"), from the application: small secondary text
-   * under the first cell (P5.18; no colour).
+   * under the first cell (no colour).
    */
   lineKind?: (row: Row) => ReactNode
   className?: string
@@ -287,7 +287,7 @@ export interface DataTableHandle {
 
 const features = tableFeatures({ rowSelectionFeature })
 
-/** A virtualized row (owner) and the estimated card (owner). */
+/** A virtualized row's height and the estimated card's height. */
 const ROW_HEIGHT = 44
 const CARD_HEIGHT = 104
 
@@ -331,20 +331,20 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
   const phone = usePhone()
   const layout = props.layout ?? 'auto'
   const cards = layout === 'cards' || (layout === 'auto' && phone)
-  // Cards inside a card would be cards in a card (P4.9): in a card the rows are one flat list
+  // Cards inside a card would be cards in a card: in a card the rows are one flat list
   // with dividers instead.
   const flat = cards && props.inCard === true
   // On phones the cards flow with the page: no box with its own scroll inside the page, so no
-  // `maxHeight` there (P5.90 item 5). A long list of cards is still drawn only where it is in
+  // `maxHeight` there. A long list of cards is still drawn only where it is in
   // view, measured against the page's own scroll (`cardWindow`), not a box of its own.
   const virtualize = props.virtualize === true && !cards
   const cardWindow = props.virtualize === true && cards
-  // Every table's header stays below the shell by default (P5.28 item 4).
+  // Every table's header stays below the shell by default.
   const sticky = props.stickyHeader !== false || virtualize
-  // In a card the first column stays at the start while the table scrolls sideways (P5.28 item 4).
+  // In a card the first column stays at the start while the table scrolls sideways.
   const stickyStart = props.inCard === true && !cards
   const resizable = props.resizable === true && !cards
-  // Line types (P5.18): every row a normal line unless the application says otherwise.
+  // Line types: every row a normal line unless the application says otherwise.
   const typeOf = (row: Row): LineType => props.lineType?.(row) ?? 'line'
 
   const rowSelection = useMemo<RowSelectionState>(
@@ -371,7 +371,7 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
     getRowId: (row) => getRowId(row),
     state: { rowSelection },
     onRowSelectionChange: setRowSelection,
-    // Headings, text lines and subtotals are not records: no checkbox (P5.18).
+    // Headings, text lines and subtotals are not records: no checkbox.
     enableRowSelection: selectable
       ? (row) => !spansRow(typeOf(row.original)) && typeOf(row.original) !== 'subtotal'
       : false,
@@ -380,7 +380,7 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
   // The scroll area takes the focus only while it scrolls, so the keyboard can scroll it (WCAG
   // 2.1.1; axe scrollable-region-focusable) and a table that fits adds no tab stop.
   const scroller = useRef<HTMLDivElement>(null)
-  // The header stays below the shell while the page scrolls (P5.28 item 4).
+  // The header stays below the shell while the page scrolls.
   useStickyHead(scroller, sticky && !cards)
   const [scrolls, setScrolls] = useState(false)
   useEffect(() => {
@@ -489,7 +489,7 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
     initialRect: { width: 0, height: 720 },
   })
 
-  // Phone cards in a window of the page's own scroll (P5.90): the closest scrolling ancestor (a
+  // Phone cards in a window of the page's own scroll: the closest scrolling ancestor (a
   // story's phone frame, an application's scrolling layout), or the window; the list's offset in
   // it is the window's scroll margin.
   const cardListElement = useRef<HTMLUListElement>(null)
@@ -561,7 +561,7 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
   const allSelected = tableRows.length > 0 && table.getIsAllRowsSelected()
   const someSelected = !allSelected && table.getIsSomeRowsSelected()
   const filtered = hasActiveFilters(props.filters)
-  // Cells cut what does not fit with an ellipsis: resized columns (owner) and 44px virtual rows.
+  // Cells cut what does not fit with an ellipsis: resized columns and 44px virtual rows.
   const oneLine = fixed || virtualize
   const textOf = (row: Row): ReactNode => props.lineText?.(row) ?? columns[0]?.cell(row) ?? null
   const amountsFrom = subtotalStart(columns.map((column) => column.align))
@@ -665,7 +665,7 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
   }
 
   const header = (column: DataTableColumn<Row>, index: number) => {
-    // The corner (the first column's header) stays at the start too (P5.28 item 4).
+    // The corner (the first column's header) stays at the start too.
     const corner = stickyStart && index === 0
     const align = column.align ?? 'start'
     const sortable = column.sortable === true && onSortChange !== undefined
@@ -687,12 +687,12 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
           'group/header border-0 border-b border-solid border-default bg-surface-sunken font-bold text-primary',
           column.minWidth === undefined && 'min-w-16',
           ALIGN[align],
-          // The header row is one sticky band (the thead, P5.90 item 1): its cells are not
+          // The header row is one sticky band (the thead): its cells are not
           // layers of their own; the corner stays at the start inside it.
           corner ? [selectable ? STICKY_START_AFTER_SELECT : STICKY_START, 'z-20'] : 'relative',
           oneLine && 'truncate',
         )}
-        // Without resizing, a column's minimum width holds in the automatic layout (P5.23); the
+        // Without resizing, a column's minimum width holds in the automatic layout; the
         // cell's minimum width counts without its 16px side paddings.
         style={
           !resizable && column.minWidth !== undefined
@@ -804,7 +804,7 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
   const totals = props.totals
   const footer =
     totals !== undefined && rows.length > 0 ? (
-      // One sticky band at the bottom edge, as the header (P5.90 item 1).
+      // One sticky band at the bottom edge, as the header.
       <tfoot className="sticky bottom-0 z-10 bg-surface-sunken">
         <tr aria-rowindex={virtualize ? rows.length + 2 : undefined}>
           {selectable && (
@@ -852,7 +852,7 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
     if (row === undefined) return null
     const original = row.original
     const type = typeOf(original)
-    // Phones keep the types by typography (P5.18): a heading and a text line are a line of text,
+    // Phones keep the types by typography: a heading and a text line are a line of text,
     // a subtotal its label and amounts, semibold, under a rule (the list item draws it).
     if (spansRow(type)) {
       return (
@@ -898,7 +898,7 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
     const label = getRowLabel(original)
     const kind = props.lineKind?.(original)
     const { mobile, rowActions, onRowClick, onRowOpen } = props
-    // What the line is stands under the title when the card has no subtitle of its own (P5.18).
+    // What the line is stands under the title when the card has no subtitle of its own.
     const subtitle = mobile?.subtitle?.(original) ?? (kind === null ? undefined : kind)
     const badge = mobile?.badge?.(original)
     return (
@@ -959,7 +959,7 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
       )
     }
     // Cards differ in height: each is measured once drawn; the gap is part of its item. The
-    // window follows the page's own scroll (P5.90): the list never scrolls in a box of its own.
+    // window follows the page's own scroll: the list never scrolls in a box of its own.
     return (
       <ul
         ref={cardListElement}
@@ -978,7 +978,7 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
             className={cn(
               'absolute inset-x-0 top-0',
               flat ? item.index > 0 && 'border-0 border-t border-solid border-subtle' : 'pb-4',
-              // A subtotal's rule above it (P5.18), in place of the divider.
+              // A subtotal's rule above it, in place of the divider.
               flat &&
                 lineAt(item.index) === 'subtotal' &&
                 'border-0 border-t border-solid border-strong',
@@ -1025,7 +1025,7 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
     props.maxHeight === undefined || cards ? undefined : { maxHeight: props.maxHeight }
 
   const edge = props.inCard === true ? 'px-4' : undefined
-  // The flat phone list's totals end the card themselves: no white band under them (P5.90).
+  // The flat phone list's totals end the card themselves: no white band under them.
   const under =
     (cardTotals !== null && !flat) ||
     props.rowLimitMessage !== undefined ||
@@ -1039,7 +1039,7 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
         // In a card the reserved loader slot sits right above the table, without a gap of its
         // own (the card's header or the FilterBar already gives the room); the parts under the
         // table keep 12px from it.
-        // Nothing under the last row (P4.9): the card ends with it, without 12px of white; the
+        // Nothing under the last row: the card ends with it, without 12px of white; the
         // flat phone list and its totals follow the parts above them directly.
         props.inCard === true
           ? cn('[&>*+*:not(:has(table)):not([data-flat])]:mt-3', under && 'pb-3')
@@ -1048,13 +1048,13 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
       )}
     >
       {/*
-        Above the table at the end (P3.6, owner; the old system kept it at the top): the refetch
+        Above the table at the end: the refetch
         loader in a slot that is always reserved, so showing or hiding it never moves the table,
         then the export slot. The slot is a polite live region: "Updating…" is announced when a
         refetch starts.
       */}
       {/*
-        In a card (P4.5): the slot only where a refetch can happen (the application passes
+        In a card: the slot only where a refetch can happen (the application passes
         `loading`) or an export slot stands, so a document's lines start at the card's top.
       */}
       {props.loaderSlot !== false &&
@@ -1067,7 +1067,7 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
           </div>
         )}
       {/*
-        The bulk bar is a row of its own (P5.23, owner): 12px above it (the gap, or the card's
+        The bulk bar is a row of its own: 12px above it (the gap, or the card's
         rule for the parts above the table; 12px from the FilterBar's 8px bottom when it comes
         first) and 12px below it, never glued to the table's header.
       */}
@@ -1201,13 +1201,13 @@ export function DataTable<Row extends RowData>(props: DataTableProps<Row>) {
 }
 
 /**
- * The dividers between the rows of the flat phone list in a card (P4.9); a subtotal has the
- * border.strong rule above it instead (P5.18).
+ * The dividers between the rows of the flat phone list in a card; a subtotal has the
+ * border.strong rule above it instead.
  */
 const FLAT_DIVIDERS =
   '[&>li+li]:border-0 [&>li+li]:border-t [&>li+li]:border-solid [&>li+li]:border-subtle [&>li[data-line=subtotal]]:border-0 [&>li[data-line=subtotal]]:border-t [&>li[data-line=subtotal]]:border-solid [&>li[data-line=subtotal]]:border-strong'
 
-/** Marks a list item with its line type (P5.18); a normal line carries nothing. */
+/** Marks a list item with its line type; a normal line carries nothing. */
 function lineAttribute(type: LineType): { 'data-line'?: LineType } {
   return type === 'line' ? {} : { 'data-line': type }
 }

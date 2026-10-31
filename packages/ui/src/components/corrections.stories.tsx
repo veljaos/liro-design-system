@@ -118,16 +118,16 @@ const meta = {
     docs: {
       description: {
         component:
-          '**What for:** the lines of a corrective document (P5.18) — a decrease or an ' +
+          '**What for:** the lines of a corrective document — a decrease or an ' +
           'increase against one document, or against several documents for a period — shown ' +
           'as **Original / Change / New**. `correctionColumns(spec)` makes the three DataTable ' +
           'columns of one corrected value (the quantity, the amount), with the headers from ' +
           '`messages` or the application’s; `ChangeText` writes a change with its sign ("+" for ' +
           'an increase, through the provider’s `format` with `sign: "always"`), never rounded. ' +
           'Every value comes from the application: nothing is computed.\n\n' +
-          '**A corrective document is a DocumentPage** (decided in P5.18): its source in the ' +
+          '**A corrective document is a DocumentPage**: its source in the ' +
           'header beside the customer ("Corrects" with the invoice’s link, state, date and ' +
-          'total: `DocumentSource` in `source`, P5.23), these lines, and the totals of the ' +
+          'total: `DocumentSource` in `source`), these lines, and the totals of the ' +
           'change (DocumentTotals); no template of its own.\n\n' +
           '**Room for the item:** the item column keeps `DESCRIPTION_MIN_WIDTH` (240px), so a ' +
           'name wraps to at most two lines; these columns, the unit and the tax category may ' +

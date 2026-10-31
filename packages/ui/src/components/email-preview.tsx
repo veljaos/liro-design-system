@@ -6,7 +6,7 @@ import { useLiro } from '../provider/liro-provider'
 import { usePhone } from './use-phone'
 
 /*
- * EmailPreview (BUILD-PLAN P5.38): an e-mail as its reader will see it, with the sample data the
+ * EmailPreview: an e-mail as its reader will see it, with the sample data the
  * application filled in — at a desktop mail client's width (600px) or a phone's (360px), in a
  * light or a dark mail client. Generic: the sender, the subject, the body and the footer are the
  * application's (the body usually RichText with `fillMergeFields`).
@@ -14,14 +14,14 @@ import { usePhone } from './use-phone'
  *   segmented groups (the arrows move, the pressed one shows); controlled (`width`, `scheme`) or
  *   not (`defaultWidth`, `defaultScheme`). `controls={false}` leaves them out.
  * - **The client**: a sunken area; the message on it at the chosen width (never wider than the
- *   room, D19), its tokens resolved in the chosen scheme (`data-liro-theme`), as a dark mail
+ *   room), its tokens resolved in the chosen scheme (`data-liro-theme`), as a dark mail
  *   client inverts a message whatever the page's theme.
- * - **The message**, as simple as the printouts (D27): the header lines From, To and Subject over
+ * - **The message**, as simple as the printouts: the header lines From, To and Subject over
  *   a thin rule; the sender's logo at the start; the body; the footer in small grey text under a
  *   thin rule. Black and grey, no boxes, frames or shaded bands; the brand colour only in links.
- * - `lang` marks the message's language when it differs from the page's (D15: a Serbian variant
+ * - `lang` marks the message's language when it differs from the page's (a Serbian variant
  *   previewed in an English interface).
- * - P5.93 (item 5): a sender or recipient given as `{ name, address }` keeps its name whole on its
+ * - A sender or recipient given as `{ name, address }` keeps its name whole on its
  *   own line and the address, left to right, after it on the same line where it fits and under it
  *   where it does not — never "Novi Sad <accounts@" broken across two lines.
  */
@@ -36,7 +36,7 @@ function isAddress(value: ReactNode | EmailAddress): value is EmailAddress {
   return typeof value === 'object' && value !== null && !isValidElement(value) && 'address' in value
 }
 
-/** "Name <address>": the name whole, the address after it or under it (P5.93 item 5). */
+/** "Name <address>": the name whole, the address after it or under it. */
 function AddressText({ value }: { value: EmailAddress }) {
   if (value.name === undefined) {
     return (

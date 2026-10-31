@@ -1,10 +1,10 @@
 import { matrixKeyTarget } from './admin-logic'
 
 /*
- * AttendanceGrid's logic (BUILD-PLAN P5.13 and P5.24 a, c: one pattern), without React: the
+ * AttendanceGrid's logic, without React: the
  * cells a range covers, what a key does, the changes of a marking, a fill and "Copy previous
  * week". Every function returns the changes for the application to apply; nothing here adds hours
- * or reads them as numbers (D4): hours stay decimal strings as typed and read by
+ * or reads them as numbers: hours stay decimal strings as typed and read by
  * `format.parseNumber`.
  */
 
@@ -354,7 +354,7 @@ export function codeForKey(
 /**
  * The action of a key press on a cell of the table.
  * - Arrows move one cell over the whole table (headers and totals included), the arrow pointing
- *   forward in the reading direction to the next column (Appendix B.7); Home and End to the row's
+ *   forward in the reading direction to the next column; Home and End to the row's
  *   ends, Ctrl+Home and Ctrl+End to the table's corners.
  * - Shift with an arrow grows the selection inside the day area.
  * - On a day cell of an editable grid: a code's key marks (the selection, or the cell and the

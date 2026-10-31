@@ -7,8 +7,7 @@ import { Button } from './button'
 import type { IconComponent } from './intents'
 
 /*
- * InlineUndo (P5.93 item 3, the owner's fourth review: "in POS and restaurant flows no toasts for
- * routine actions; Undo inline beside what changed"). What just happened, in the application's
+ * InlineUndo: what just happened, in the application's
  * words, and an Undo button, in the place where it happened: a removed line's place in a cart,
  * the table's panel on a floor plan, a moved booking's row. Nothing to dismiss and nothing that
  * covers the screen; the application takes it away at the next change (or after a while).

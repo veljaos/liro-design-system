@@ -11,7 +11,7 @@ const meta = {
     docs: {
       description: {
         component:
-          '**What for:** the currency block of a foreign-currency document (P5.18), in the ' +
+          '**What for:** the currency block of a foreign-currency document, in the ' +
           'header’s details: the currency, the rate ("1 EUR = 117,1825 RSD", written by the ' +
           'provider’s `format` with every decimal the application gives — never rounded) and ' +
           'the rate’s date, each a small label above its value. The lines stay in the ' +

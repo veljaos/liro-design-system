@@ -1,11 +1,11 @@
 import type { LiroFormat } from '../provider/format'
 
 /*
- * The logic of NumericKeypad (BUILD-PLAN P5.10), kept apart from the markup so it can be
- * unit-tested (AGENTS.md C7). What is being typed is an *entry*: digits and at most one "." in the
+ * The logic of NumericKeypad, kept apart from the markup so it can be
+ * unit-tested. What is being typed is an *entry*: digits and at most one "." in the
  * canonical form ("12.", "0.5"), so a separator just pressed is kept while the value it reports is
  * already a decimal string ("12"). The entry is shown through the provider's `format`, never a
- * JavaScript number (D4).
+ * JavaScript number.
  */
 
 export type KeypadDigit = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'

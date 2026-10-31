@@ -168,7 +168,7 @@ export const Download: Story = {
 
 /**
  * In the document's card, with the application's control per file: "Send with the e-invoice" (the
- * final invoice's attachments, P5.18).
+ * final invoice's attachments).
  */
 export const InACardWithControl: Story = {
   name: 'In a card, a control per file',
@@ -194,7 +194,7 @@ export const InACardWithControl: Story = {
                     }}
                   />
                 ) : (
-                  // A file that cannot be sent says why instead of a dead checkbox (P5.93).
+                  // A file that cannot be sent says why instead of a dead checkbox.
                   <span className="text-xs text-secondary bidi-content">
                     SEF accepts PDF attachments only.
                   </span>
@@ -358,7 +358,7 @@ export const Japanese: Story = {
   ),
 }
 
-/** English in a right-to-left page (P3.6). */
+/** English in a right-to-left page. */
 export const EnglishInRtl: Story = {
   name: 'English in RTL',
   render: (args) => (

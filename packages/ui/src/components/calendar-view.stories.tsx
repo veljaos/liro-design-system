@@ -112,7 +112,7 @@ export const Default: Story = {
     ).toBeVisible()
     await expect(canvas.getByRole('grid')).toBeVisible()
     await expect(canvas.getByRole('radio', { name: 'Week' })).toBeChecked()
-    // "Now" is only its time in the gutter (P5.94 item 16): no line across the days.
+    // "Now" is only its time in the gutter: no line across the days.
     const marker = canvas.getByRole('img', { name: /^Now, 10:20\sAM$/ })
     await expect(marker).toHaveTextContent(/^10:20\sAM$/)
     await expect(canvasElement.querySelector('[data-slot="now-marker"]')).toBeNull()
@@ -507,7 +507,7 @@ export const Japanese: Story = {
 }
 
 /*
- * P5.28 item 2: month and weekday names, dates and the week's first day come only from the
+ * Month and weekday names, dates and the week's first day come only from the
  * provider's locale. An English interface never shows Serbian names; a Serbian week starts on
  * Monday, a week in the United States on Sunday.
  */

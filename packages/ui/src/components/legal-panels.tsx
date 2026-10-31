@@ -29,13 +29,13 @@ import type { SidePanel } from './side-panels'
 import { CURRENT_TONE, StatusBadge } from './status-badge'
 
 /*
- * The side panels of a legal act's page (BUILD-PLAN P5.27 c), as the invoice's panels: each a
+ * The side panels of a legal act's page, as the invoice's panels: each a
  * SidePanel entry for SidePanels (one spacing rule, collapsible, the open keys the
- * application's), the rows drawn as the panel lists (P4.9: 8px above and below, a border.subtle
+ * application's), the rows drawn as the panel lists (8px above and below, a border.subtle
  * line between rows, `data-slot="panel-row"`, so the panel's first and last rows meet its padding).
  * - **Versions:** every consolidated version, its days ("01.07.2024. – 30.06.2026.", the current
  *   one "From …" with a "Current" tag) and the amending act that produced it ("Original text"
- *   without one). The version shown is the selection — neutral (D17): surface.selected with the
+ *   without one). The version shown is the selection — neutral: surface.selected with the
  *   border.selected bar at the start, `aria-current`; a press on another reports it
  *   (`onVersionChange`). "Compare with…" opens a menu of the other versions, newest first
  *   (`onCompare(versionId)`).

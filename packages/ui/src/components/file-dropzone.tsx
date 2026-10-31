@@ -12,7 +12,7 @@ export { acceptsFile, checkFiles } from './file-logic'
 export type { FileFacts, FileRejection, FileRules, RejectionReason } from './file-logic'
 
 /*
- * FileDropzone (BUILD-PLAN P5.5; docs/decisions.md "Files and document frame"): choose files, or
+ * FileDropzone: choose files, or
  * drop them, with what is accepted shown BEFORE choosing.
  *
  * - The field frame (label, description, error) around a zone: radius md,
@@ -22,7 +22,7 @@ export type { FileFacts, FileRejection, FileRules, RejectionReason } from './fil
  *   the accepted types and the size limit as the application writes them ("PDF, XML or JPG",
  *   "up to 10 MB"), 12px text.secondary, linked to the button with aria-describedby.
  * - Dropping is never the only way. While files are dragged over it the zone takes the neutral
- *   selection (surface.selected, a border.selected border), never blue (D17). Dropping files from
+ *   selection (surface.selected, a border.selected border), never blue. Dropping files from
  *   the operating system needs the browser's drop events: there is no dragged element of ours,
  *   so the dragging rule (pointer events, no HTML5 drag and drop) is not touched. Phones show no
  *   "drop" text (there is nothing to drop from).
@@ -31,13 +31,13 @@ export type { FileFacts, FileRejection, FileRules, RejectionReason } from './fil
  *   Accepted files go to `onFiles`; rejected ones to `onReject` and, in the provider's words
  *   (`file.rejectedType`, `file.rejectedSize`, `file.rejectedCount`), under the zone in
  *   status.danger.fg until the next choice (`role="alert"`).
- * - `camera` (P5.28): on phones a second neutral button, "Take a photo", opens the camera (an
+ * - `camera`: on phones a second neutral button, "Take a photo", opens the camera (an
  *   input with `capture="environment"`); the photo goes through the same checks.
  * - The files themselves (upload, scan, list) are the application's: AttachmentList shows them.
- * - It is an action, not a value (P5.93 item 1): there is no read-only or disabled dropzone. When
+ * - It is an action, not a value: there is no read-only or disabled dropzone. When
  *   files cannot be added now, `unavailableReason` draws the zone grey, keeps "Choose files"
  *   focusable but unavailable (aria-disabled), ignores drops, and says why under the zone.
- * - `expected` (P5.94 item 3): the documents the application expects, from its data — "Attach"
+ * - `expected`: the documents the application expects, from its data — "Attach"
  *   and, one per line under the zone, each document's name (a 14px FileText) with "Required" or
  *   "Optional", the application's detail under it, and a success-toned check with "Attached"
  *   once the application says it is there. The list describes "Choose files"; the field is
@@ -45,7 +45,7 @@ export type { FileFacts, FileRejection, FileRules, RejectionReason } from './fil
  *   document, and whether one is missing, stays the application's.
  */
 
-/** A document the application expects among the files (P5.94 item 3). */
+/** A document the application expects among the files. */
 export interface ExpectedFile {
   key: string
   /** Its name, in the application's words ("Death certificate"). */
@@ -87,7 +87,7 @@ export interface FileDropzoneProps extends Omit<FieldBaseProps, 'readOnly'> {
   layout?: 'desktop' | 'phone'
   /**
    * On phones, "Take a photo" beside "Choose files": it opens the camera (an input with
-   * `capture`), for a paper note or a receipt. The photo is checked as any other file. P5.28.
+   * `capture`), for a paper note or a receipt. The photo is checked as any other file.
    */
   camera?: boolean
   /**
@@ -98,7 +98,7 @@ export interface FileDropzoneProps extends Omit<FieldBaseProps, 'readOnly'> {
   /**
    * The documents the application expects, from its data (a request's proof: "Death
    * certificate", required): listed under the zone, each "Required" or "Optional", checked when
-   * `attached`. P5.94 item 3.
+   * `attached`.
    */
   expected?: readonly ExpectedFile[]
 }

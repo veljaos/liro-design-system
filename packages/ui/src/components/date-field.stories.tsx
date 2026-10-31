@@ -213,7 +213,7 @@ export const Japanese: Story = {
 
 /**
  * The touch density (a till, a kiosk): the field is 44px high and the calendar button keeps the
- * look of every DateField — its icon in the same place — with a 44px target around it (P5.93).
+ * look of every DateField — its icon in the same place — with a 44px target around it.
  */
 export const Touch: Story = {
   name: 'Touch density',

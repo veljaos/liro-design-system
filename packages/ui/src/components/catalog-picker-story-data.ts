@@ -1,5 +1,5 @@
 /*
- * Story data of CatalogPicker (P5.90 item 14), fictitious: the services of Auto centar Liman, a
+ * Story data of CatalogPicker, fictitious: the services of Auto centar Liman, a
  * car service in Novi Sad — maintenance, brakes, tyres, diagnostics and bodywork in levels, who
  * does each, the price and the discounts; the sections the application shows first; and a
  * generated catalogue of 1,500 items for paging. The prices, discounts and what combines are the

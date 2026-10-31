@@ -39,7 +39,7 @@ const meta = {
         component:
           '**What for:** moving something other people rely on — an appointment, a shift, a ' +
           'reservation, a seat, a room or a bed — is never final, and never messages anyone, ' +
-          'until the user confirms it (P5.28, the owner’s review). A drag, a “Move to…” or a ' +
+          'until the user confirms it. A drag, a “Move to…” or a ' +
           '“Transfer…” only proposes the change; the application opens this dialog with it and ' +
           'applies it on Save. The title is the action, the record bold under it; the change ' +
           'old → new, one line per field; who it concerns; the application’s own check as a ' +
@@ -298,7 +298,7 @@ export const Confirm: Story = {
   },
 }
 
-// P5.28 floor: the choice that makes the change, in the same dialog.
+// A restaurant floor: the choice that makes the change, in the same dialog.
 const FREE_TABLES = [
   { id: 't10', title: 'Table 10', label: 'Table 10, Hall, 6 seats', subtitle: 'Hall · 6 seats' },
   {
@@ -338,7 +338,7 @@ function MoveGuests() {
 }
 
 /**
- * `children`: the application's own choice above the change (P5.28, the restaurant's free
+ * `children`: the application's own choice above the change (the restaurant's free
  * tables), so the move is chosen and confirmed in one dialog.
  */
 export const WithChoice: Story = {

@@ -20,11 +20,10 @@ const meta = {
           'is selected: a way to clear the selection, the count (announced to screen readers), ' +
           '"Select all N" when the result is larger (after a thin line), and the actions at the ' +
           'end. A row of its own with the height and padding of the filter row (60px, 16px at ' +
-          'the sides), standard-size buttons, 12px from the list above and below (P5.23). An ' +
+          'the sides), standard-size buttons, 12px from the list above and below. An ' +
           'action that needs confirmation asks ONCE for the whole selection, with the count ' +
-          '(Appendix B.8: confirmation does not scale). While an action runs, all are disabled.' +
-          '\n\n**When not:** an action on one row (its row menu); selecting itself (the table, ' +
-          'P3.1).',
+          '(confirmation does not scale). While an action runs, all are disabled.' +
+          '\n\n**When not:** an action on one row (its row menu); selecting itself (the table).',
       },
     },
   },

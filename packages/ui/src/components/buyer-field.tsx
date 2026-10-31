@@ -9,7 +9,7 @@ import { SelectField } from './select-field'
 import { TextField } from './text-field'
 
 /*
- * BuyerField (P5.28 item 21c). Who the buyer is, for a sale that names one: the kind of their ID
+ * BuyerField: who the buyer is, for a sale that names one: the kind of their ID
  * (a list from the application: a tax number, a personal number, a passport, a corporate card…),
  * the ID itself, and an optional second field (the buyer's own reference: a cost centre, an
  * order number), also with its kind. Every list, word and rule is the application's data: whether
@@ -18,12 +18,11 @@ import { TextField } from './text-field'
  * whether it is right (`errors`, the application checks). The field computes and checks nothing.
  * - A `fieldset` named by its legend (`label`, " *" when required); the type and the ID side by
  *   side when the field is 36rem wide (FormGrid), stacked on phones. The ID is written left to right in every
- *   language (`direction="ltr"`, P3.6c), as codes are.
- * - The type is a SelectField, or a searchable ComboboxField when there are more than ten kinds
- *   (P5.28 item 3).
+ *   language (`direction="ltr"`), as codes are.
+ * - The type is a SelectField, or a searchable ComboboxField when there are more than ten kinds.
  * - The optional field appears when the application gives its kinds (`optionalTypes`).
- * - Read-only shows the chosen values in the read-only look of every field, without hints (P5.93:
- *   there is no disabled state).
+ * - Read-only shows the chosen values in the read-only look of every field, without hints (there
+ *   is no disabled state).
  */
 
 /** A kind of ID, from the application. */
@@ -60,7 +59,7 @@ export interface BuyerFieldProps {
   required?: boolean
   /** The application's checks, under each part. */
   errors?: { type?: string; id?: string; optional?: string }
-  /** The buyer is shown but cannot be changed: every part read-only, no hints (P5.93). */
+  /** The buyer is shown but cannot be changed: every part read-only, no hints. */
   readOnly?: boolean
   /** Defaults: `messages['buyer.type']`, `['buyer.id']`, `['buyer.optionalType']`, `['buyer.optional']`. */
   typeLabel?: string
@@ -70,7 +69,7 @@ export interface BuyerFieldProps {
   className?: string
 }
 
-/** Above this many kinds the type is a searchable combobox (P5.28 item 3). */
+/** Above this many kinds the type is a searchable combobox. */
 export const BUYER_TYPES_SEARCHABLE_FROM = 11
 
 const EMPTY: BuyerValue = { typeId: '', id: '' }

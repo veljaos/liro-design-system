@@ -1,5 +1,5 @@
 /*
- * Story data of the collaboration components (P5.1, P5.2): Kvadrat Gradnja d.o.o. on 6 October
+ * Story data of the collaboration components: Kvadrat Gradnja d.o.o. on 6 October
  * 2026, invoice F-2026-0410 to Medic Lab Niš d.o.o. Not part of the package: nothing in
  * src/index.ts imports this file. No classes here: Storybook compiles classes only from
  * *.stories.tsx files.

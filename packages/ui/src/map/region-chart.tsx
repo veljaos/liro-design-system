@@ -26,14 +26,14 @@ import {
 } from './map-logic'
 
 /*
- * RegionChart (P5.41, maps in charts; the owner: "for companies working in several countries, or
- * that want to see their regions"): a choropleth — areas coloured by their value's step — with an
+ * RegionChart (maps in charts, for companies working in several countries or watching their
+ * regions): a choropleth — areas coloured by their value's step — with an
  * optional point or bubble per place. It is a chart of `@veljaos/ui/charts`' kind, drawn on the
  * map subpath's Leaflet SVG map without tiles:
  * - The card, its title and description, "Show as table" (the table is the screen reader's and the
  *   keyboard's way), the loading skeleton, the empty state and the error with Retry are the charts'
  *   own (`ChartCard`); the tooltip and its look too (`ChartTooltipContent`).
- * - Values are decimal strings (D4): the step an area falls in is found by comparing the strings
+ * - Values are decimal strings: the step an area falls in is found by comparing the strings
  *   exactly with the application's `breaks` (`regionStep`); only a bubble's size turns a value into
  *   a number (`plotValue`), to draw it. Nothing is added, rounded or ranked.
  * - The steps are one meaning in shades (`rampShade`): the charts' main blue, or neutral grey,
@@ -44,10 +44,10 @@ import {
  * - Keyboard: the map is one Tab stop; the arrows move between the areas in reading order (rows
  *   north to south, each from the page's start), show the tooltip and announce the area and its
  *   value; Enter or Space chooses; Escape hides the tooltip. The area under the pointer and the
- *   area the keys reached take one look whatever their size (P5.96b): a line in the text colour
+ *   area the keys reached take one look whatever their size: a line in the text colour
  *   drawn over the neighbours and the tooltip — never a name on the area. A chosen area keeps its
- *   fill and takes the neutral selected line (D17). An area that cannot be chosen (`choosable` false: the last
- *   level of a drill-down, P5.94 item 1) shows its tooltip but no pointer cursor, and a press or
+ *   fill and takes the neutral selected line. An area that cannot be chosen (`choosable` false: the last
+ *   level of a drill-down) shows its tooltip but no pointer cursor, and a press or
  *   Enter does nothing.
  * - The map is never mirrored in right-to-left; the card, the legend and the table are.
  * - The geometry is the application's (GeoJSON).
@@ -65,7 +65,7 @@ export interface RegionChartArea {
   detail?: string
   /**
    * Whether the area can be chosen (default true). False for the last level of a drill-down
-   * (`SerbiaArea.hasLowerLevel`, P5.94 item 1): the tooltip still answers the pointer and the keys,
+   * (`SerbiaArea.hasLowerLevel`): the tooltip still answers the pointer and the keys,
    * but no pointer cursor, and a press or Enter does nothing.
    */
   choosable?: boolean
@@ -110,14 +110,14 @@ export interface RegionChartProps extends ChartStateProps {
   baseLayer?: MapBaseLayer
   /**
    * The areas' attribution, written under the map: required by the licence of open boundary data
-   * (`loadSerbiaBoundaries` gives `SERBIA_BOUNDARIES_ATTRIBUTION`, P5.93 item 43).
+   * (`loadSerbiaBoundaries` gives `SERBIA_BOUNDARIES_ATTRIBUTION`).
    */
   attribution?: string
   /** The map's height in pixels. Default 380 (300 on phones). */
   height?: number
   /** The application's controls in the header (a period select). */
   controls?: ReactNode
-  /** The key figures as toggle buttons (a ChartSeriesToggle) at the header's end (P5.93 item 42). */
+  /** The key figures as toggle buttons (a ChartSeriesToggle) at the header's end. */
   toggle?: ReactNode
   /** Default: from the viewport (below 48em 'phone'). */
   layout?: 'desktop' | 'phone'
@@ -141,7 +141,7 @@ export function RegionChart(props: RegionChartProps) {
   const [ready, setReady] = useState(false)
 
   // New areas (a drill-down, Back, another level): nothing is pointed at or reached until the user
-  // does it again (P5.96), so no name or strong line is left behind from the level before.
+  // does it again, so no name or strong line is left behind from the level before.
   const areaIds = props.areas.map((area) => area.id).join('\n')
   const [shownIds, setShownIds] = useState(areaIds)
   if (shownIds !== areaIds) {
@@ -415,7 +415,7 @@ export function RegionChart(props: RegionChartProps) {
     )
   }
 
-  // Without an area to choose, the keys' description says only how to move (P5.94 item 1).
+  // Without an area to choose, the keys' description says only how to move.
   const anyChoosable = props.areas.some((area) => area.choosable !== false)
   const empty = props.areas.length === 0 || drawn.every((each) => each.step === null)
   const waiting = props.loading !== true && props.error === undefined && !empty
@@ -479,7 +479,7 @@ export function RegionChart(props: RegionChartProps) {
             setActive(null)
           }}
           onKeyboardFocus={(keys) => {
-            // The keys' area only while the focus is the keyboard's (P5.96a): a press of the
+            // The keys' area only while the focus is the keyboard's: a press of the
             // pointer or a touch clears it.
             if (!keys) setActive(null)
           }}

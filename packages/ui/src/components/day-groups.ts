@@ -1,14 +1,14 @@
 import type { LiroMessages } from '../provider/messages'
 
 /*
- * Entries grouped by the day they happened on (P5.1): HistoryList (newest first, as the
+ * Entries grouped by the day they happened on: HistoryList (newest first, as the
  * notifications page) and MessageList (oldest first, as a conversation reads). Kept apart from the
- * markup so it can be unit-tested (AGENTS.md C7).
+ * markup so it can be unit-tested.
  *
  * An entry's `at` is an ISO instant in the tenant's offset ("2026-10-06T09:42:00+02:00", as the
  * Core sends it): its date part is its day, compared with the provider's `today`, and its clock
  * part is what `format.time` shows — so a day heading and the times under it always agree (the
- * rule of the notifications page, P4.9).
+ * rule of the notifications page).
  */
 
 /** The day of an instant: its date part as written (YYYY-MM-DD). */

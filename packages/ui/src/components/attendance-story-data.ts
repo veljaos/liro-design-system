@@ -1,12 +1,12 @@
 /*
- * Fictitious data for the AttendanceGrid and ClockRecordList stories (P5.13, P5.24): a class of
+ * Fictitious data for the AttendanceGrid and ClockRecordList stories: a class of
  * OŠ "Jovan Popović" and the site workers of Kvadrat Gradnja d.o.o. Not part of the package:
  * nothing in src/index.ts imports this file. No classes here: Storybook compiles classes only from
  * *.stories.tsx files.
  *
  * The codes, totals and rules are the application's data. Every total below is what an
- * application would send, worked out here in whole tenths of an hour (never JavaScript decimals,
- * D4). Legal limits are not encoded; allowance names are illustrative.
+ * application would send, worked out here in whole tenths of an hour (never JavaScript
+ * decimals). Legal limits are not encoded; allowance names are illustrative.
  */
 import type {
   AttendanceCode,

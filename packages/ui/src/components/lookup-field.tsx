@@ -33,9 +33,9 @@ import {
 import { keepFocusedRow, overscanRows } from './virtual-rows'
 
 /*
- * LookupField (BUILD-PLAN P5.19): the one searching field for catalogues of tens of thousands of
+ * LookupField: the one searching field for catalogues of tens of thousands of
  * records — customers, items, services, accounts — in forms and in document lines (EditableGrid's
- * `lookup` column, P5.18). It is ComboboxField's WAI-ARIA combobox (the input keeps the focus,
+ * `lookup` column). It is ComboboxField's WAI-ARIA combobox (the input keeps the focus,
  * the active row announced through aria-activedescendant, Enter chooses, Escape closes) with:
  * - the application's search while typing (`onSearch` after `searchDelay`, default 300ms, with
  *   `loading`): the field never filters a catalogue itself;
@@ -54,7 +54,7 @@ import { keepFocusedRow, overscanRows } from './virtual-rows'
  *   quick; each row carries aria-setsize and aria-posinset.
  * The list opens on typing, ArrowDown, Alt+ArrowDown or a press on the field, never on Tab alone
  * (a grid of lookup cells would open a list in every cell). While something is typed, the first
- * record found is active, so Enter takes it (as the old grid's item search); nothing is active
+ * record found is active, so Enter takes it; nothing is active
  * before the user types or moves.
  */
 

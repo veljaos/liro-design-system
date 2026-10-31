@@ -7,13 +7,12 @@ import { rowFocusTarget, rowKeyAction } from './data-table-logic'
 import { DropdownMenu, type MenuEntry } from './dropdown-menu'
 
 /*
- * One row as a card, the DataTable's phone layout (BUILD-PLAN P3.2), the previous Design System's
- * (the owner, 2026-09-30, docs/decisions.md "Table"): a border, radius md, padding sm (12px), the
+ * One row as a card, the DataTable's phone layout: a border, radius md, padding sm (12px), the
  * raised surface; selected: surface.selected with border.brand. The top row: an optional
  * checkbox, the title (13px, semibold, one line) and subtitle (12px, text.secondary, one line),
  * and at the end a badge and the row menu (CompactIconButton). Below, the detail rows: the label
  * (12px, text.tertiary) at the start, the value (12px, weight 500, tabular digits) at the end,
- * 2px apart. Gaps the owner did not give are Mantine's Group and Stack default, md (16px).
+ * 2px apart. Other gaps are Mantine's Group and Stack default, md (16px).
  */
 
 /** One label and value of a card. */
@@ -42,7 +41,7 @@ export interface DataTableCardProps {
   /** The card's position for a virtual list. */
   index?: number
   /**
-   * A row of a flat list inside a card (P4.9: no cards inside a card): no border or radius of its
+   * A row of a flat list inside a card (no cards inside a card): no border or radius of its
    * own, padding 12px by 16px; the list draws the dividers.
    */
   flat?: boolean
@@ -58,7 +57,7 @@ export function fromControl(event: MouseEvent | KeyboardEvent): boolean {
 
 /**
  * Moves the focus from a pressable row or card to its neighbour (`rowFocusTarget`): the arrows,
- * Home and End among the rows drawn in the same table (P5.30). True when it moved.
+ * Home and End among the rows drawn in the same table. True when it moved.
  */
 export function focusNeighbourRow(event: KeyboardEvent): boolean {
   const current = event.currentTarget as HTMLElement
@@ -109,7 +108,7 @@ export function DataTableCard(props: DataTableCardProps) {
             )
           : cn(
               'gap-4 rounded-md border border-solid p-3',
-              // Selected (P3.6, owner): neutral, with a 3px start bar; the start padding gives
+              // Selected: neutral, with a 3px start bar; the start padding gives
               // back the 2px the bar adds, so the content does not move.
               props.selected
                 ? 'border-s-[3px] border-selected bg-surface-selected ps-2.5'

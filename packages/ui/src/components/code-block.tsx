@@ -27,7 +27,7 @@ import {
 } from './code-block-logic'
 
 /*
- * CodeBlock (P5.93, the owner's item 48; shadcn/ui's Code Block): code, a payload, terminal output
+ * CodeBlock (shadcn/ui's Code Block): code, a payload, terminal output
  * or a diff, as the application gives it.
  * - **Header** (optional): a title — a file name or a label ("Response 502", "webhook.json") —
  *   and the actions at the end: the application's (`actions`), "Wrap lines" (`wrapToggle`, a

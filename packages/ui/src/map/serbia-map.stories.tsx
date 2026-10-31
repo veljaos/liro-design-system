@@ -14,9 +14,9 @@ import {
 } from './serbia'
 
 /*
- * Maps of Serbia (P5.93 item 43): RegionChart on the boundaries `@veljaos/ui/map` ships, loaded on
+ * Maps of Serbia: RegionChart on the boundaries `@veljaos/ui/map` ships, loaded on
  * demand by level. Invented sales of Kvadrat Gradnja d.o.o., January–September 2026, in millions
- * of RSD; Kosovo and Metohija is part of Serbia (D31), hatched "No data" because the company has
+ * of RSD; Kosovo and Metohija is part of Serbia, hatched "No data" because the company has
  * no sales recorded there.
  */
 
@@ -68,7 +68,7 @@ function withSales(
     name: english ? area.nameEn : area.name,
     geometry: area.geometry,
     value: area.id === 'RS-KM' || area.id === 'kosovo-metohija' ? null : sales(area.id, scale),
-    // In a drill-down only an area with a level under it can be chosen (P5.94 item 1).
+    // In a drill-down only an area with a level under it can be chosen.
     ...(drill ? { choosable: area.hasLowerLevel } : {}),
   }))
 }
@@ -161,7 +161,7 @@ async function open(
 }
 
 /**
- * Region → district → city or municipality → city municipality (P5.94 item 1): choosing an area
+ * Region → district → city or municipality → city municipality: choosing an area
  * opens the level under it (`loadSerbiaChildren`, which skips a level with one area: the Belgrade
  * Region opens its 17 city municipalities at once). An area with no level under it is the last
  * level: not choosable (no pointer cursor, Enter does nothing).
@@ -273,7 +273,7 @@ const meta = {
           'Vranje (2 each).\n\n' +
           '**Source:** geoBoundaries and, for the city municipalities, OpenStreetMap itself ' +
           '(© OpenStreetMap contributors, ODbL), simplified; never GADM. The attribution is ' +
-          'always written under the map. **Kosovo and Metohija is part of Serbia** (D31): the Region ' +
+          'always written under the map. **Kosovo and Metohija is part of Serbia**: the Region ' +
           'Kosovo and Metohija among the regions and the Autonomous Province among the districts ' +
           'and municipalities; its districts and municipalities as Serbian law defines them have ' +
           'no open boundaries, so an application with the official geometry passes its own.\n\n' +
@@ -372,7 +372,7 @@ export const DrillDownInteraction: Story = {
 }
 
 /**
- * The last level (P5.94 item 1): in the Nišava District only Niš opens (its city municipalities);
+ * The last level: in the Nišava District only Niš opens (its city municipalities);
  * every other municipality has no pointer cursor and does nothing; inside Niš nothing opens.
  */
 export const DrillDownLastLevel: Story = {
@@ -422,7 +422,7 @@ function visibleNames(canvasElement: HTMLElement): string[] {
 }
 
 /**
- * No name is left behind (P5.96 item 2): an area's name shows only while the pointer is over it;
+ * No name is left behind: an area's name shows only while the pointer is over it;
  * after a drill-down and once the pointer leaves, no area is named on the map.
  */
 export const DrillDownNoNameLeft: Story = {

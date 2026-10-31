@@ -489,9 +489,9 @@ export const CorrectionDialog: Story = {
   play: async ({ canvasElement }) => {
     await settle()
     const dialog = await within(canvasElement.ownerDocument.body).findByRole('dialog')
-    // The weekday is in the interface's language, from the provider's locale ("Tue 29", P5.28).
+    // The weekday is in the interface's language, from the provider's locale ("Tue 29").
     await expect(dialog).toHaveAccessibleName(/^Correct Ivan Stojanović, \S+ 29$/)
-    // The action is the title; the record stands bold on its own line under it (P5.28 item 6).
+    // The action is the title; the record stands bold on its own line under it.
     await expect(dialog.querySelector('[data-slot="dialog-subject"]')).toHaveTextContent(
       /^Ivan Stojanović, \S+ 29$/,
     )
@@ -824,7 +824,7 @@ export const ManyRowsKeyboard: Story = {
 }
 
 /*
- * P5.28 item 4: the header row (the days) stays below the shell's sticky header while the page
+ * The header row (the days) stays below the shell's sticky header while the page
  * scrolls, and the first column (the people) stays at the start while the grid scrolls sideways.
  */
 

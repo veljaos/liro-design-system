@@ -12,7 +12,7 @@ const LINES: CartLine[] = [
   { id: 'b', name: 'Jogurt', quantity: '1', unitPrice: '90.00', total: '90.00' },
 ]
 
-describe('InlineUndo (P5.93 item 3)', () => {
+describe('InlineUndo', () => {
   it('says what happened politely and describes its Undo with it', () => {
     const html = render(<InlineUndo message="Krempita removed" onUndo={() => undefined} />)
     const id = /<p id="([^"]+)" role="status"/.exec(html)?.[1]

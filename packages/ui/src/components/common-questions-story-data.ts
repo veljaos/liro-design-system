@@ -1,7 +1,7 @@
 import type { CommonQuestion, QuestionCategory } from './common-questions'
 
 /*
- * CommonQuestions' story data (P5.94 item 20): what the employees of a fictitious company keep
+ * CommonQuestions' story data: what the employees of a fictitious company keep
  * asking HR. Illustrative only: the answers, documents and days are invented, not legal advice;
  * a real portal's questions are its application's. `action` is added by each story.
  */

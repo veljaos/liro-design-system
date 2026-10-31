@@ -12,7 +12,7 @@ import { Spinner } from './spinner'
 import { StatusBadge } from './status-badge'
 
 /*
- * GazetteIssues (BUILD-PLAN P5.27 e): what is new in an official gazette, issue by issue, the
+ * GazetteIssues: what is new in an official gazette, issue by issue, the
  * newest first — a SectionCard titled by the application ("New in the Illustrative Gazette").
  * - Each issue: its number as a heading ("No. 9/2024", a link with `href`), its day ("Published
  *   15.02.2024.", through `format.date`) and how many acts it holds, in xs text.secondary; then

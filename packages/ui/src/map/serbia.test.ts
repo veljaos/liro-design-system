@@ -84,7 +84,7 @@ describe('Serbia’s boundaries', () => {
     // The 24 districts, the City of Belgrade and the Autonomous Province of Kosovo and Metohija.
     expect(districts?.areas).toHaveLength(26)
     expect(municipalities?.areas).toHaveLength(146)
-    // Belgrade 17, Niš 5, Požarevac, Užice and Vranje 2 each (P5.94 item 1).
+    // Belgrade 17, Niš 5, Požarevac, Užice and Vranje 2 each.
     expect(cityMunicipalities?.areas).toHaveLength(28)
     expect(regions?.attribution).toContain('OpenStreetMap')
     expect(cityMunicipalities?.attribution).toBe('© OpenStreetMap contributors (ODbL)')
@@ -116,7 +116,7 @@ describe('Serbia’s boundaries', () => {
     )
     const opens = (areas: { id: string; hasLowerLevel: boolean }[] | undefined) =>
       (areas ?? []).filter((area) => area.hasLowerLevel).map((area) => area.id)
-    // Kosovo and Metohija is one area under the region (D31): nothing opens under it.
+    // Kosovo and Metohija is one area under the region: nothing opens under it.
     expect(opens(regions?.areas)).toHaveLength(4)
     expect(opens(districts?.areas)).toHaveLength(25)
     expect(opens(municipalities?.areas).sort()).toEqual([...SERBIA_DIVIDED_CITIES].sort())
@@ -159,7 +159,7 @@ describe('Serbia’s boundaries', () => {
     expect(municipalities.find((area) => area.id === 'cacak')?.name).toBe('Čačak')
   })
 
-  it('draws Kosovo and Metohija within Serbia, as Serbian law names it (D31)', async () => {
+  it('draws Kosovo and Metohija within Serbia, as Serbian law names it', async () => {
     const places = [
       { lat: 42.6629, lng: 21.1655 }, // Priština
       { lat: 42.2139, lng: 20.7397 }, // Prizren
@@ -183,7 +183,7 @@ describe('Serbia’s boundaries', () => {
     expect(areaAt(noviSad, (await loadSerbiaBoundaries('municipality')).areas)?.id).toBe('novi-sad')
   })
 
-  it('draws no city municipality in Kosovo and Metohija (D31)', async () => {
+  it('draws no city municipality in Kosovo and Metohija', async () => {
     const parts = (await loadSerbiaBoundaries('city-municipality')).areas
     expect(areaAt({ lat: 42.6629, lng: 21.1655 }, parts)).toBeUndefined()
   })

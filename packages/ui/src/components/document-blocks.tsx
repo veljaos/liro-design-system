@@ -22,11 +22,11 @@ import type { Tone } from './status-badge'
 import { TextAreaField } from './text-field'
 
 /*
- * The blocks of a complex document (BUILD-PLAN P5.18; docs/decisions.md "Liro patterns (Phase 5 part 1)"). DocumentPage
+ * The blocks of a complex document. DocumentPage
  * renders them in a fixed order — header (with the currency block) → "Based on" references →
  * lines (with the specification's summary row) → totals → notes → attachments — and leaves out a
  * block without content. All rules, codes, numbers and legal texts come from the application;
- * these blocks only present them (D1, D5).
+ * these blocks only present them.
  */
 
 // ── References ──────────────────────────────────────────────────────────────────────────────
@@ -41,7 +41,7 @@ export interface DocumentReference {
   /** The kind in the singular, for the link's name ("Advance invoice"). Default: the group's. */
   kind?: string
   /**
-   * Its state (P4.9 rule 7): small text after the number in the tone's text colour — the words
+   * Its state: small text after the number in the tone's text colour — the words
    * carry it — and part of the link's accessible name.
    */
   status?: { label: string; tone?: Tone }
@@ -62,7 +62,7 @@ export interface DocumentReferencesProps {
   /**
    * The lead before the references: "Based on" by default (`messages['references.basedOn']`).
    * A correcting or cancelling document's source is not a reference: it stands in the header
-   * (`DocumentSource`, P5.23).
+   * (`DocumentSource`).
    */
   label?: string
   className?: string
@@ -78,12 +78,12 @@ const STATE_TEXT: Record<Tone, string> = {
   premium: 'text-status-premium-fg',
 }
 
-/** Link colours named for every state (P4.4). */
+/** Link colours named for every state. */
 const LINK =
   'rounded-sm text-link no-underline visited:text-link hover:text-link hover:underline active:text-link'
 
 /**
- * The documents this one is based on, in one line of links (P5.18): "Based on: Proforma
+ * The documents this one is based on, in one line of links: "Based on: Proforma
  * PR-2026-031 · Advances A-2026-038, A-2026-044 · Contract 12/2026". Wraps on narrow screens.
  */
 export function DocumentReferences({ groups, label, className }: DocumentReferencesProps) {
@@ -171,7 +171,7 @@ export interface DocumentCurrencyProps {
 }
 
 /**
- * The currency block of a foreign-currency document (P5.18), in the header's details: the
+ * The currency block of a foreign-currency document, in the header's details: the
  * currency, the rate ("1 EUR = 117,1825 RSD") and its date, each a label above its value as the
  * header's other values. The lines stay in the document's currency; the home-currency amounts
  * are only in the totals (`DocumentTotals` `exchange`).
@@ -226,7 +226,7 @@ export interface DocumentNotesProps {
 }
 
 /**
- * The notes of a document (P5.18): template texts chosen from the application's list and a free
+ * The notes of a document: template texts chosen from the application's list and a free
  * note. In view mode the texts in order as the document shows them; in edit mode the templates
  * are chosen by name (MultiSelectField) with their texts under it, and the free note is a text
  * area. A document without notes passes none (`hasNotes`), so the block is not rendered.
@@ -325,7 +325,7 @@ export interface DocumentSpecificationProps {
 }
 
 /**
- * A long specification is not inside the lines table (P5.18): one summary row in the lines'
+ * A long specification is not inside the lines table: one summary row in the lines'
  * card — "Specification of works: 300 positions, 2.418.300,00 RSD" — with "Open", which shows the
  * whole specification read-only in a full-screen sheet (the document stays under it; Escape and
  * the close button return to it, the focus back on "Open").
@@ -413,7 +413,7 @@ export interface CancellationBannerProps {
   /** Default: `messages['document.cancelledTitle']`. */
   title?: string
   /**
-   * Default 'danger', the tone of the "Cancelled" badge (P5.23, the owner: Cancelled is red
+   * Default 'danger', the tone of the "Cancelled" badge (Cancelled is red
    * everywhere); 'neutral' only where the application's own status map says so.
    */
   tone?: 'neutral' | 'danger'
@@ -421,9 +421,9 @@ export interface CancellationBannerProps {
 }
 
 /**
- * The marker of a cancelled document (P5.18), at the top of its page: the title "Cancelled", then
+ * The marker of a cancelled document, at the top of its page: the title "Cancelled", then
  * "by Milica Petrović on 06.10.2026. at 11:20. Reason: …", then the link to the cancellation
- * document (P5.23: the word is said once, the title carries it). The date and time are the
+ * document (the word is said once, the title carries it). The date and time are the
  * tenant's (`format.date`, `format.time`). Danger, as the badge. The PDF's marker is the Core's.
  */
 export function CancellationBanner(props: CancellationBannerProps) {
@@ -464,7 +464,7 @@ export interface ChangeTextProps {
 }
 
 /**
- * A change on a corrective document (P5.18): "+" for an increase, "-" for a decrease, through the
+ * A change on a corrective document: "+" for an increase, "-" for a decrease, through the
  * provider's format (`sign: 'always'`), never rounded; "—" when empty.
  */
 export function ChangeText({ value, currency, decimals, className }: ChangeTextProps) {
@@ -502,12 +502,12 @@ function CorrectionHeader({ part }: { part: 'original' | 'change' | 'new' }) {
 }
 
 /**
- * The Original / Change / New columns of a corrective document's lines (P5.18): a decrease or an
+ * The Original / Change / New columns of a corrective document's lines: a decrease or an
  * increase against one document or several, each line's value before, its change (signed) and
  * after — all from the application, nothing computed. Use one call per corrected value (the
  * quantity, the amount) and give its headers when there are several. The columns may be as
  * narrow as 64px (`minWidth`, their headers wrap), so six of them leave the description column
- * its room (P5.23).
+ * its room.
  */
 export function correctionColumns<Row extends RowData>(
   spec: CorrectionColumnSpec<Row>,

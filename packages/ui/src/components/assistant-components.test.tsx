@@ -45,7 +45,7 @@ describe('AssistantAnswer', () => {
     expect(html).toContain('<tfoot')
     expect(html).toContain('href="#/f-1"')
     expect(html).toContain('data-testid="chart"')
-    // The sources are one line "Used 1 record" that opens into the links (P5.93).
+    // The sources are one line "Used 1 record" that opens into the links.
     expect(html).toContain('Used 1 record')
     expect(html).toContain('aria-expanded="false"')
   })
@@ -240,7 +240,7 @@ describe('reading', () => {
   })
 })
 
-describe('every prop does something (C8)', () => {
+describe('every prop does something', () => {
   it('sets the heading level of an answer and of a newsletter band', () => {
     expect(render(<AssistantAnswer blocks={BLOCKS} headingLevel={4} />)).toContain('<h4')
     expect(render(<NewsletterSignup title="News" headingLevel={3} onSubscribe={noop} />)).toContain(

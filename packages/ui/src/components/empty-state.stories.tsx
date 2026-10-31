@@ -21,7 +21,7 @@ const meta = {
           "user must react differently. Titles and texts come from the provider's messages " +
           'unless given. `compact` for cards and table bodies. `ErrorState` adds the case number ' +
           'to quote and a "report a problem" action.\n\n' +
-          '**Its own space (P5.90):** 32px above and below (24px compact), so it never stands ' +
+          '**Its own space:** 32px above and below (24px compact), so it never stands ' +
           "against a card's top edge; the place that shows it adds no vertical padding.\n\n" +
           '**When not:** a problem with part of a page that still works (Alert); a failure the ' +
           'user just caused (Toast).',
@@ -58,7 +58,7 @@ export const Compact: Story = {
 }
 
 /**
- * Inside cards (P5.90 item 13): a SectionCard and a table's card show their empty states with the
+ * Inside cards: a SectionCard and a table's card show their empty states with the
  * same space above and below — the state's own — never against the card's top edge.
  */
 export const InCards: Story = {

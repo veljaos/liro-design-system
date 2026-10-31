@@ -1,5 +1,5 @@
 /*
- * The logic of the document blocks (P5.18), without React: which note texts a document shows,
+ * The logic of the document blocks, without React: which note texts a document shows,
  * and whether it has any. Tested in document-blocks.test.tsx.
  */
 

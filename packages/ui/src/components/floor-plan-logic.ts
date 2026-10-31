@@ -1,12 +1,12 @@
 /*
- * The logic of FloorPlan (P5.25), apart from the markup so it can be unit-tested (AGENTS.md C7):
+ * The logic of FloorPlan, apart from the markup so it can be unit-tested:
  * an item's footprint after a rotation, the item an arrow key goes to, a move by the keys,
  * snapping and keeping inside the plan, resizing a turned item, the zoom steps, overlapping items
  * and the groups of the list view.
  *
  * Geometry is in plan units, the application's own (centimetres, grid squares): whole numbers the
  * plan draws and moves. They are positions, not figures: the plan never adds them into a total
- * (D4 is about amounts and quantities, which stay decimal strings).
+ * (amounts and quantities stay decimal strings).
  *
  * The plan is a physical place: x grows to the right and y downwards in every writing direction.
  * A right-to-left page does not mirror it (the room does not turn round), so ArrowRight always
@@ -15,12 +15,11 @@
 
 /**
  * What an item is; the application names it (`label`). Fixtures are drawn, not chosen. `place`
- * is any other place to choose (P5.25a): a storage bin, a bed, a desk, a parking space.
+ * is any other place to choose: a storage bin, a bed, a desk, a parking space.
  *
- * P5.28 item 23 (the owner: "walls, doors and windows confuse; simplicity first"): there are no
- * walls, doors or windows. A plan is its areas (plain labelled regions) and the things people
+ * There are no walls, doors or windows (they confuse; simplicity first). A plan is its areas (plain labelled regions) and the things people
  * choose or choose around (tables, seats, rooms, places, the bar, a counter, a stage); a real
- * building plan, when the application has one, is the `background` image (P5.25a).
+ * building plan, when the application has one, is the `background` image.
  */
 export type FloorItemKind = 'table' | 'seat' | 'room' | 'place' | 'bar' | 'counter' | 'stage'
 
@@ -302,7 +301,7 @@ export function listGroups<Item extends FloorGeometry & { areaId?: string | unde
 
 /**
  * A box as percentages of the part of the plan drawn (the whole plan, or one area's `frame` with
- * its own corner, P5.28), for drawing: the plan scales to its width.
+ * its own corner), for drawing: the plan scales to its width.
  */
 export function percentBox(
   box: FloorBox,
@@ -330,11 +329,11 @@ export interface FloorItem extends FloorGeometry {
   shortLabel?: string
   /**
    * A line from the application about the item now ("19:30 · 4 guests"): in the list and the
-   * item's name. Not written on the plan (P5.28 item 24: a label on the plan is never cut).
+   * item's name. Not written on the plan (a label on the plan is never cut).
    */
   detail?: string
   /**
-   * The short second line written on the plan under the name and state (P5.28 item 24: the
+   * The short second line written on the plan under the name and state (the
    * guests, "4 guests"). Never cut: where the item is too small for it, the plan leaves it out
    * (the list and the name say `detail`). Default none.
    */
@@ -347,7 +346,7 @@ export interface FloorItem extends FloorGeometry {
   stateId?: string
   /** A note from the application ("By the window"), in the list and the name. */
   note?: string
-  /** How full it is (P5.25a): a percentage from the application, shown in words and a bar. */
+  /** How full it is: a percentage from the application, shown in words and a bar. */
   level?: FloorLevel
 }
 
@@ -456,7 +455,7 @@ export function addedPosition(
   )
 }
 
-// ── P5.25a: polygon areas, the level ─────────────────────────────────────────────────────────
+// ── Polygon areas, the level ─────────────────────────────────────────────────────────
 
 /** A point on the plan, in plan units. */
 export interface FloorPoint {
@@ -477,7 +476,7 @@ export interface FloorRectArea extends FloorAreaCommon, FloorBox {
 }
 
 /**
- * An area of any outline (P5.25a: a room that is not a rectangle, a corridor): its corners in plan
+ * An area of any outline (a room that is not a rectangle, a corridor): its corners in plan
  * units, in order round it. Its name is centred on `labelAt`, else on the outline's centroid.
  */
 export interface FloorPolygonArea extends FloorAreaCommon {
@@ -590,7 +589,7 @@ const LEVEL_DECIMAL = /^[-+]?\d+(\.\d+)?$/
 /**
  * The width of a level's bar as CSS: the percentage kept between 0% and 100% by CSS itself
  * (`clamp(0%, 62.5%, 100%)`), so the plan never turns the application's decimal string into a
- * number (D4). Null when the value is not a decimal string: then only the words show.
+ * number. Null when the value is not a decimal string: then only the words show.
  */
 export function levelWidth(percent: string): string | null {
   const value = percent.trim()
@@ -610,7 +609,7 @@ export function levelText(
   return level.label ?? words(percent(level.percent))
 }
 
-// ── P5.28: one area at a time ────────────────────────────────────────────────────────────────
+// ── One area at a time ────────────────────────────────────────────────────────────────
 
 /**
  * Up to this many areas the area switcher is a segmented control (All + each area); more, or
@@ -687,7 +686,7 @@ export function labelRoom(width: number, height: number, round: boolean, bar: bo
 }
 
 /**
- * How much of an item's label is written on the plan (P5.28 item 24: never cut): both lines
+ * How much of an item's label is written on the plan (never cut): both lines
  * when they fit, else the name line (state icon and name), else the name alone, else nothing —
  * the list and the item's name always say everything.
  */

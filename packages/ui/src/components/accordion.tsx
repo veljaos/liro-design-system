@@ -8,11 +8,11 @@ import {
 import { cn } from '../primitives/cn'
 
 /*
- * Accordion (P3.6): sections that open and close in place, on the Radix accordion that shadcn/ui
+ * Accordion: sections that open and close in place, on the Radix accordion that shadcn/ui
  * uses, with Mantine's default Accordion look (primitives/accordion.tsx). One open at a time
  * (`multiple` false, the default; a press on the open one closes it) or several. The chevron sits
  * at the inline end, so it moves to the other side in right-to-left. Closed panels are not
- * mounted, as in Tabs (AGENTS.md D16): a dialog opened from inside one belongs at page level.
+ * mounted, as in Tabs: a dialog opened from inside one belongs at page level.
  */
 
 /** One section of an Accordion. */

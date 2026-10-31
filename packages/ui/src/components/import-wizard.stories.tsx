@@ -141,14 +141,13 @@ const meta = {
           'problems", "Skip rows with errors", a DuplicateWarning) and **Import** (the progress, ' +
           'then the application’s report). The application reads and checks the file and moves ' +
           'the steps; the wizard decides nothing about the data.\n\n' +
-          '**Phones** (P5.23): "Step 3 of 4 · Check" over a thin bar, the counts as a list, ONE ' +
+          '**Phones**: "Step 3 of 4 · Check" over a thin bar, the counts as a list, ONE ' +
           'sticky row of Back and the main action (an unavailable reason on one line under it), ' +
           'and Cancel as the X in the header; leaving a chosen file asks first.\n\n' +
           '**When:** bringing many records into a catalogue at once (a customer list from the old ' +
           'system).\n\n' +
           '**When not:** one record (the record form); changing a field of records already in ' +
-          'the catalogue (BulkEditDrawer). The file button becomes FileDropzone (P5.5) and the ' +
-          'progress JobProgress (P5.4) when those land.',
+          'the catalogue (BulkEditDrawer).',
       },
     },
   },
@@ -348,7 +347,7 @@ export const FileError: Story = {
 
 /**
  * A file the application could not read (a binary file named .csv): only its error, in words —
- * never the bytes read from it — and Next stays unavailable until another file is read (P5.90).
+ * never the bytes read from it — and Next stays unavailable until another file is read.
  */
 export const UnreadableFile: Story = {
   name: 'Unreadable file',
@@ -416,7 +415,7 @@ async function oneFooterRow(canvasElement: HTMLElement) {
 }
 
 /**
- * Phone width (P5.23): "Step 3 of 4 · Check" over a thin bar, the counts as a list, the mapping
+ * Phone width: "Step 3 of 4 · Check" over a thin bar, the counts as a list, the mapping
  * and the preview as flat lists; ONE sticky row of Back and Import with the reason under it;
  * Cancel is the X in the header, and it asks before leaving a chosen file. Nothing scrolls
  * sideways.

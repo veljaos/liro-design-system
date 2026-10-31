@@ -256,7 +256,7 @@ export const Several: Story = {
       'The big service already includes the small one.',
     )
     await expect(dialog.getByRole('button', { name: 'Choose 2' })).toBeVisible()
-    // One footer, opaque, under the cards: they scroll in their own region above it (P5.93).
+    // One footer, opaque, under the cards: they scroll in their own region above it.
     const footer = document.body.querySelector<HTMLElement>(
       '[data-slot="catalog-picker"] [data-slot="dialog-footer"]',
     )
@@ -395,7 +395,7 @@ export const Phone: Story = {
       </ExampleProvider>
     </PhoneFrame>
   ),
-  // One column of cards, the price under the name; no Cancel — the X closes it (P5.93).
+  // One column of cards, the price under the name; no Cancel — the X closes it.
   play: async ({ canvasElement }) => {
     await settle()
     const dialog = await picker(canvasElement)

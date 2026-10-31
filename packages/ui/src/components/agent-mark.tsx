@@ -10,9 +10,9 @@ import {
 import { useLiro } from '../provider/liro-provider'
 
 /*
- * AgentMark (P5.2): one consistent machine marker, shown after any name that belongs to an agent —
+ * AgentMark: one consistent machine marker, shown after any name that belongs to an agent —
  * in a message's header, a history entry, the presence list, an agent's question. Neutral, never
- * blue (D17: an agent is not an action): lucide's Bot at 14px in text.secondary, a tooltip with
+ * blue (an agent is not an action): lucide's Bot at 14px in text.secondary, a tooltip with
  * `messages['agent.mark']` ("Agent") on hover, and the same word for assistive technology, so a
  * screen reader hears "Liro agent, Agent". With `showLabel` the word is also written beside the
  * icon (xs text.secondary), where there is room and the mark must be read without hovering (a
@@ -24,7 +24,7 @@ export interface AgentMarkProps {
   showLabel?: boolean
   /**
    * The word, from the application or a message. Default `messages['agent.mark']` ("Agent");
-   * an assistant's answer says "AI-generated" (P5.34).
+   * an assistant's answer says "AI-generated".
    */
   label?: string
   className?: string
