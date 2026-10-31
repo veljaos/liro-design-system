@@ -42,7 +42,6 @@ The detailed entries follow under "Minor Changes" and "Patch Changes". In short:
 ### Minor Changes
 
 - 786cdbb: P5.23, the owner's review of Phase 5 part 1.
-
   - New: `CandidateList` (`Candidate`, `chooseCandidate`), `DocumentSource` (`DocumentSourceItem`), DocumentPage `source`, `worklistPosition`, `compactStep`, `hasMessage`, `DESCRIPTION_MIN_WIDTH`, `DataTableHandle` (`ref.revealRow(id)`).
   - WorklistPage: a decision bar (position, Previous, Next, `detailActions`) and `back`, `status`, `subtitle`, `summary`, `onPrevious`.
   - Dialog and ConfirmDialog `size: 'wide'`; ConfirmDialog `preview`. Banner `role`.
@@ -57,7 +56,6 @@ The detailed entries follow under "Minor Changes" and "Patch Changes". In short:
   - A steady view: when content shrinks at the end of WorklistPage's detail (both layouts), a Dialog's or Drawer's body or a confirmation's body, what is in view no longer moves.
 
 - 9b025c5: Phase 5: floor plans, seating, room rack and diagrams; working-time follow-up.
-
   - ShiftPlanner: "Apply rotation…" opens with people chosen (`rotationPeople`, else everyone in view), shows what it will add per person and day, and the application's checks of it (`rotationConflicts`). MyShifts: `swapDefaults` (a colleague suggested).
   - FloorPlan (the plan of a place: items, areas, states as data, choosing, a list view, edit mode reporting adds, moves, resizes, turns and removes) and SeatingChart (seats round tables, the guest list, seating by keyboard, drag or "Seat at…").
   - RoomRack (rooms by floor with occupancy and housekeeping states, search and state chips, keyboard, compact density, phones) and its helpers; ResourceSchedule `scale="days"` for stays over days (`fitOnDays`).
@@ -66,7 +64,6 @@ The detailed entries follow under "Minor Changes" and "Patch Changes". In short:
   - FloorPlan (P5.25a, no new dependency): `background` (the building's plan as an image in plan units under the items; decorative unless `alt`; `srcDark`, else inverted in the dark theme; `opacity`), polygon areas (`FloorArea` is now `FloorRectArea | FloorPolygonArea` with `points` and `labelAt`; code that reads `area.x` narrows it first with `isPolygonArea` or `areaBox`), `FloorItem.level` (a percentage as a decimal string: words and a bar), item kind `place`, and the helpers `isPolygonArea`, `areaBox`, `areaContains`, `areaLabelPoint`, `polygonBounds`, `polygonCentroid`, `pointInPolygon`, `svgPoints`, `percentPoint`, `levelWidth`, `levelText`; message `floorPlan.level`.
 
 - 5c389ce: Legal information (P5.27), no new dependency:
-
   - The shared model of a legal act (`LegalAct`, `LegalNode`, `LegalArticle`, `LegalVersion`, `LegalAmendment`, `RelatedAct`, `PracticeItem`, `LegalNote` and the rest), exported as types.
   - `LegalText` (an act's text: headings, articles with copy link, selection and actions, change marks, deleted articles collapsed, references with a preview, search in the act, Latin / Cyrillic switch, windowing for long acts, `revealNode`), `LegalContents` (the table of contents in a start-side drawer), `LegalCompare` (two versions inline, word diff), and the helpers of `legal-logic.ts` (word diff, Serbian Cyrillic to Latin, search on the data, comparison, contents tree).
   - `LegalActPage` (a legal act in DocumentPage's layout: gazette, version picker, actions, side panels, a phone sheet), the act's side panels (`useLegalPanels`, `LegalArticleSummary`) and their helpers, and `PrintLegalAct` (an act on A4).
@@ -75,7 +72,6 @@ The detailed entries follow under "Minor Changes" and "Patch Changes". In short:
   - New messages `legal.*`, `legalPage.*`, `legalPanel.*`, `legalPrint.footnotes`, `legalSearch.*`, `gazette.*` (English defaults).
 
 - 788bdc7: P5.28, the owner's review of Phase 5 part 2.
-
   - Phones: select lists, popovers, menus and tooltips keep 8px inside the screen and are never wider than the room there (long options wrap); on a phone a popover or menu always moves to stay on the screen. Every dialog (Dialog, ConfirmDialog and its presets, and dialogs built on them) is a full-width bottom sheet on a phone. PeriodField opens a bottom sheet on a phone (presets first, then one month across the sheet).
   - SelectField: from 11 options the list is searched by typing (`searchable` to choose either way; `SEARCHABLE_FROM`, `isSearchable` exported); `defaultOpen`. Select lists scroll natively with a thin scrollbar (the scroll buttons are gone). ComboboxField and MultiSelectField open their list on a press. ComboboxField, MultiSelectField and SelectField keep the active option in view as the keys move.
   - LookupDialog on a phone: one compact row per result (title, `mobile.subtitle`, `mobile.badge`); `mobile.details` default none there.
@@ -104,7 +100,6 @@ The detailed entries follow under "Minor Changes" and "Patch Changes". In short:
   - Messages: new `floorPlan.area`, `floorPlan.allAreas`, `floorPlan.editOnLarger`, `seating.seatTitle`. **Breaking (alpha):** `floorPlan.moveTitle` ("Move"), `floorPlan.sizeTitle` ("Resize") and `seating.seatAtTitle` ("Choose a seat") are strings, no longer functions of the name.
 
 - 061645d: P5.29 and P5.30, the Admin, Superadmin and Helpdesk views.
-
   - `HealthList`: monitored things — connections, services, queues, databases, backups, regions — with their state (the application's words and tone, with an icon by `kind`), figures, last success and last error with its message, and the application's actions (Retry); one card per thing on phones. Helpers `healthIcon`, `healthFacts`, `HEALTH_KINDS`.
   - ImpersonationBar: an optional `note` after the reason, from the application (an audited view of a tenant: "Every page you open is recorded in the audit log").
   - SlaTimer: a deadline in words against the application's now — due in, overdue by (danger), paused, met, missed — with its pure helpers (`slaText`, `durationText`, `slaReading`, `durationParts`, `millisecondsBetween`, `slaUrgency`, `SLA_TONES`).
@@ -118,7 +113,6 @@ The detailed entries follow under "Minor Changes" and "Patch Changes". In short:
   - Messages: new `health.lastSuccess`, `health.lastError`, `health.errorMessage`, `health.never`, `health.empty`, `health.actionNamed`, `sla.dueIn`, `sla.overdueBy`, `sla.overdue`, `sla.paused`, `sla.met`, `sla.missedBy`, `sla.duration`, `sla.dueAt`, `sla.labelled`, `message.internal`, `composer.modes`, `composer.reply`, `composer.note`, `composer.noteHint`, `composer.send`, `composer.addNote`, `composer.sendHint`, `composer.savedReplies`, `composer.findSavedReply`, `composer.attach`, `composer.insertLink`, `rating.comment`, `rating.send`, `rating.required`, `rating.thanks`, `rating.given`, `helpful.question`, `helpful.yes`, `helpful.no`, `helpful.thanks`, `helpful.why`, `helpful.send`, `helpful.commentThanks`, `suggestions.count`, `suggestions.searching`, `pageContents.title`, `searchResults.count`, `searchResults.retry`.
 
 - 0a5cea3: P5.31 to P5.43, the workflows of the accounting product.
-
   - `PageViewer` (P5.31): a document's pages as the application's images, with pages, zoom and one region highlighted in the page's units (helpers `regionBox`, `regionPage`, `clampPage`, `labelSide`); light in both themes, never mirrored; loading, error and `unavailable` (a locked PDF).
   - `RecognizedField` (P5.31): the application's confidence under any field, an uncertain reading marked with an icon and words, "Changed by you" and "Show where it was read".
   - Merge values in `@veljaos/ui/rich-text` (P5.31): typed and computed merge fields (RichTextMergeField `kind`, `currency`, `decimals`, `computed`, `offsetDays`) filled in by RichText, RichTextField and ReplyComposer (`mergeValues`, `now`); a field without a value stays a pill marked "No value". Helpers `resolveMergeFields`, `resolveMergeText`, `mergeFieldText`, `missingMergeFields`.
@@ -155,7 +149,6 @@ The detailed entries follow under "Minor Changes" and "Patch Changes". In short:
   - ActionGroup and BulkActionBar: a row that folded its actions into "More" unfolds again when there is room (a row sized by its content stayed folded).
 
 - 27764d3: P5.77–P5.81, Group D (analytics and automation):
-
   - New subpath `@veljaos/ui/pivot` (P5.77), built on TanStack Table: `Pivot` — the user chooses rows, columns, values with their aggregation and filters (buttons and menus, no dragging; a sheet on phones) and the application computes the result, which the pivot lays out as a treegrid with multi-row headers, row groups, subtotals and totals, sticky header and first column, keyboard navigation, drill-down (`onDrillDown`) and export (`exportAction`); its layout and result helpers. Messages `pivot.*`.
   - New: `RuleBuilder` (P5.78) — an automation rule's "When / If / Then" from the application's triggers, fields, tests and actions, with groups, keyboard reordering, problems and the rule in words; its helpers. Messages `rule.*`.
   - ValueComparison (P5.79): `chosen` and `onChoose` choose the values to keep when two records are merged; `chosenCounts`. Messages `comparison.chosenCount`, `comparison.choose`, `comparison.chosen`.
@@ -164,8 +157,7 @@ The detailed entries follow under "Minor Changes" and "Patch Changes". In short:
 - 55bd3bd: P5.90, the owner's review applied to the floorplans: one sticky header band per table in pure CSS (glued at any speed, no seams); the line editor flush in its card, one focus style, optional columns, rebuilt on phones as one card per line; TimeField and FormTimeField; CatalogPicker; Questionnaire number keys; CoursePage's collapsible outline; ResourceSchedule's phone lists; the "now" line under the content; no nested scroll boxes on phones; module tabs that show they scroll; long text that wraps; empty states with room; a quieter reveal dialog; helper text under the input; toasts that never block. Breaking: PosShell `productsOpen` / `defaultProductsOpen` / `onProductsOpenChange` became `orderOpen` / `defaultOrderOpen` / `onOrderOpenChange`, with `orderSummary` (see P5.91 for the migration).
 - 34c85bb: P5.92: the page templates consolidated to the core (about eighteen). **Breaking (alpha):** these
   templates and their exports are removed; compose the page from the core templates and the
-  components as `docs/recipes.md` ("Pages composed from the core templates") describes:
-
+  components as the recipes in `docs/floorplans.md` describe:
   - `LegalActPage` → `DocumentPage` with `LegalText`, `LegalContents`, `useLegalPanels`.
   - `LegalSearchPage` (`LegalSearchResult`, `LegalSnippet`, `snippetText`, `gazetteNumbers`) →
     `ListPage` with `FilterBar` and `SearchResultList`; `snippetFromRanges` is still exported.
@@ -188,7 +180,6 @@ The detailed entries follow under "Minor Changes" and "Patch Changes". In short:
   P5.93 (helper a): fields have one non-editable state — read only.
 
   **Breaking (alpha):**
-
   - `FieldBaseProps` loses `disabled` and `disabledReason`, so every field does: TextField, TextAreaField, SelectField, ComboboxField, MultiSelectField, CheckboxField, SwitchField, RadioGroupField, DateField, DateRangeField, PeriodField, MonthField, TimeField, NumberField, MoneyField, PasswordField, LookupField, QuantityStepper, ScanField, MentionCombobox, RichTextField, Field (and `FieldControl.disabled`), the `@veljaos/ui/form` bindings. Migration: use `readOnly`. It now looks like the old disabled field (grey, with a border) and stays readable, focusable and selectable; it shows no hint and no placeholder, and an empty value shows "—". A reason under the field is no longer shown: say it once where the page needs it (an Alert above the form, a section's line).
   - `CodeInput`, `BuyerField`, `PlanComparison`, `NumericKeypad`: `disabled` (and `disabledReason`) → `readOnly`. NumericKeypad read only shows the display without keys. ScanField now takes `readOnly`.
   - `DefinedField.disabledReason` is removed: use `readOnly: true` in the definition.
@@ -222,7 +213,6 @@ The detailed entries follow under "Minor Changes" and "Patch Changes". In short:
   - No public prop was removed.
 
   P5.93 (helper d) — breaking changes and how to migrate:
-
   - **ReceiptFinder:** one search field instead of number, date and total. `onSearch` now receives the typed text (`onSearch(text: string)`, trimmed, after 300ms of quiet or at once on Enter) instead of a `ReceiptQuery`; read the text yourself (a date with `format.parseDate`, an amount with `format.parseNumber`, otherwise the receipt's number). `defaultQuery` is replaced by `defaultSearch?: string`; the `ReceiptQuery` type is removed. New: `searchDelay`.
   - **NameConflictDialog:** the answers are buttons and one press answers (`onResolve` is called on the press); the radio group and Continue are gone, and so is `defaultChoice` (Keep both is always the default, focused). `defaultApplyToAll` now ticks "Do this for the other N conflicts". New: `ConflictFile.thumbnail`, `layout`.
   - **ShareDialog:** same props (new `layout`); the link is created by choosing "Anyone with the link" under General access and turned off by choosing "Restricted" (one confirmation) — there is no "Create link" or "Revoke link" button any more; the access level and Remove access are in one menu per person.
@@ -255,7 +245,6 @@ The detailed entries follow under "Minor Changes" and "Patch Changes". In short:
   ```
 
   and back, while a rule has one branch and no Else: `const { join, conditions, actions } = draft.branches[0]`.
-
   - `addRuleCondition(draft, containerId?)`, `addRuleGroup(draft, branchId?)`, `addRuleAction(draft, branchId?)`
     and `setRuleJoin(draft, join, containerId?)` take a branch's (or a group's) id; without it they act on the
     first branch, as before. `addRuleAction(draft, RULE_OTHERWISE)` adds to Else.
@@ -285,7 +274,6 @@ The detailed entries follow under "Minor Changes" and "Patch Changes". In short:
   Not breaking. New: seven charts in `@veljaos/ui/charts` (CandlestickChart, FunnelChart, ScatterChart, Heatmap, SankeyChart, MatrixChart, Treemap) with their helpers; `loadSerbiaBoundaries` and the TopoJSON reader in `@veljaos/ui/map`; RegionChart `attribution`. `regionStep` & co. now come from the charts' step helpers (same names and behaviour; a break beyond the fourth no longer makes a sixth step). New message keys: `chart.itemKeys`, `chart.open`, `chart.high`, `chart.low`, `chart.close`, `chart.rising`, `chart.falling`, `chart.cellName`, `chart.flow`, `chart.from`, `chart.to`, `chart.none`, `chart.more` — an application with its own complete `messages` adds them. `@veljaos/ui/map` now ships boundary data under the ODbL 1.0 (notice in THIRD-PARTY-NOTICES.md).
 
 - 1ca7fb6: P5.94, the owner's fifth review. Breaking changes (alpha) and how to migrate:
-
   - PaymentDialog: with `onAddPart` the default ways are Cash and Card (no "Split" way); every way can take a part. `onCardStart` receives the amount of the part (`(amount: string | null) => void`; a handler without the argument still works). Mark a card's or an instant payment's part `state: 'approved'`: it has no remove button and cancelling the payment says it is reversed, then calls the new `onCancel` (the application reverses it). `PaymentOption.maxAmount` and `maxReason` limit a part of a way (a voucher's value). "Complete payment" waits with "Still to pay" while the remaining amount is more than zero after a part.
   - VersionList: Restore runs at once, without a question (it is not destructive). The messages `versions.restoreTitle`, `versions.restoreMessage` and `versions.restore` are removed; drop them from your messages.
   - New messages: `payment.partPaid`, `payment.partApproved`, `payment.payByCard`, `payment.payByCode`, `payment.overRemaining`, `payment.overLimit`, `payment.stillToPay`, `payment.declinedHint`, `payment.reverseWarning`, `payment.keepPaying`, `payment.cancelPayment`, `assistant.answering`.
@@ -302,7 +290,6 @@ The detailed entries follow under "Minor Changes" and "Patch Changes". In short:
   - WorklistPage for long queues: rows drawn only in view from 100 items (`WORKLIST_WINDOW_FROM`); `search` / `onSearchChange` / `searchLabel`; `filters` (`WorklistFilter`) / `filter` / `onFilterChange` / `filtersLabel` as chips with counts; `toolbar` stands at the top of the queue, outside its scroll; one tab stop with ArrowUp / ArrowDown / Home / End (choosing from 62em) and `onConfirm` on Enter; the focus follows the next chosen item; a new item's detail opens at its top. New exports `WorklistSummary` (`WorklistSummaryProps`, `WorklistFact`), `worklistKeyTarget`, `nextWorklistItem`, `WORKLIST_WINDOW_FROM`. New messages `worklist.search`, `worklist.filters`, `worklist.done`.
 
 - 8040688: P5.95: printed documents leave the Design System. Every printed document (invoices, credit and debit notes, quotes, delivery notes, decisions and rulings, contracts, letters, minutes, payslips, IOS statements, ledger reports, prescribed forms, the fiscal receipt and labels) is now a PDF that **liro-folio** renders (its own repository, on `@veljaos/tokens` only). The Design System keeps the screens around documents and shows the PDF or its page images. Breaking changes (alpha) and what to use instead:
-
   - **`PrintPage`, `PrintDocument` and every print part are removed** (`PrintTitle`, `PrintDetails`, `PrintTable`, `PrintSection`, `PrintSignatures`, `PrintSignatureField`, `PrintAmountDueLine`, `PrintPaymentDetails`, `PrintIssuedLine`, with their types `PrintPageProps`, `PrintFrameProps`, `PrintStatus`, `PrintDocumentProps`, `PrintParty`, `PrintColumn`, `PrintDetail`, `PrintDetailsProps`, `PrintIssued`, `PrintSectionProps`, `PrintSignature`, `PrintSignaturesProps`, `PrintTableProps`, `PrintAmountDue`, `PrintPayment`, `PrintSignatureFieldProps`). Instead: render the document with liro-folio and show its PDF with `FilePreview` or `DocumentFrame`, or its page images with `PageViewer`; offer "PDF" / "Download PDF" as an action.
   - **`print-logic` is removed** (`sheetSize`, `fitZoom`, `resolvedMargins`, `cssString`, `pageNumberContent`, `pageName`, `pageRules`, `lengthToMm`, `signatureFieldPlacement`, `printedPageCount`, `PRINT_MARGINS`, `PX_PER_MM`, `PT_PER_MM`, `PageRulesOptions`, `PrintMargins`, `PrintOrientation`, `PrintBodyArea`, `SheetBox`, `SignatureFieldPlacement`). Instead: liro-folio lays out the pages and returns each signature area as its page (from 1) and its rectangle `x y width height` in PDF points, origin at the page's bottom-left.
   - **`ReceiptPreview` is removed** (`ReceiptPreviewProps`, `ReceiptItem`, `ReceiptAmount`, `ReceiptRecap`, `ReceiptRecapColumn`). Instead: show the issued receipt with `ReceiptResult` (state, number, code and link, Print, Send, Copy); its printed form is liro-folio's. `ReceiptFact` is now exported with `ReceiptResult` (same shape).
@@ -312,7 +299,6 @@ The detailed entries follow under "Minor Changes" and "Patch Changes". In short:
 
 - 97bf7f1: P5.96: Questions and answers, a page of its own. `QuestionsAndAnswers` shows every question of a portal (300 and more) on CommonQuestion's data: one search field that filters as you type and marks the words found, the categories as chips with their counts, a row per question linking to its own answer page (`answerHref`, through the provider's `linkComponent`), 30 at a time with "Show more" (`pageSize`), and nothing found offering the application's `askAction` with the words typed. `AnswerView` is one answer's page: the question as the title with the way back, the answer, "What to do", "What you need" and the request that does it. New helpers `highlightQuestion`, `questionCounts` (`QuestionCounts`) and `QUESTIONS_PAGE`; new messages `questions.showMore` and `questions.askInstead`. `CommonQuestions` is unchanged and stays for a home page's top questions.
 - 820a79a: Phase 5 part 2, Liro patterns.
-
   - P5.8 Calendar and scheduling: `CalendarView` (day, week, month, agenda), `ResourceSchedule` (drag, keyboard and "Move to…" moves; unavailable times), `SlotPicker`, `Timetable`, with their logic helpers. `LiroProvider` takes `timeZone` (IANA; default the browser's) and the context carries it: `format.dateTime` shows instants in it, `format.time` converts an instant with an offset only when a zone is given; local times without an offset are shown as written. `createFormat` takes the zone as a third argument; new `deviceTimeZone`, `localDateTimeIn`.
 
   - P5.9, P5.14, P5.16: `TreeView` and `TreeTable` (with `TreeNode`, `TreeTableColumn`, the tree logic `visibleTreeRows`, `treeKeyAction`, `typeAheadTarget`, `treeCheckStates`, `toggleTreeSelection`, `treeAncestors`, `findTreeNode`, `isExpandable`, `needsChildren`); the sensitive value `MaskedValue`; the `PortalShell` template for external participants. New messages: `tree.*`, `masked.*`, `portal.*`.
@@ -339,14 +325,12 @@ The detailed entries follow under "Minor Changes" and "Patch Changes". In short:
 - badb97a: P4.9d: the phone company switcher is a true full-screen sheet (new `SheetContent` side `full`), focused on its search field and returning the focus to the user menu; one 16px inset for every dialog's header, text and footer; confirmations focus Cancel / Stay when they open; `Toaster` has a `layout` and stands above AppShell's bottom bar on phones (`--liro-shell-bottom`); new message `shell.switchCompanyTitle`.
 - 71950bf: P5.31a: AreaMap, LocationCheck and RegionChart measure their labels again when web fonts finish loading, so whether a name fits inside its area no longer depends on how fast the fonts arrived; the map reports itself ready only once the fonts are settled.
 - 0bd6b4a: P5.44–P5.61, Group A (accounting and trade), assembled from the library's components:
-
   - `StatutoryCell.content`: the application's own content in place of an amount, for a column that holds no figure (a financial statement's Note column with a link to the note).
   - ValueComparison compares two or three sources (`ComparisonValues`), for the three-way match of an order, its receipt and the invoice.
   - DocumentPage `counterparties`: the further parties of a document among three parties, beside the counterparty.
   - Toaster: toasts are shown and removed without the fade in a browser driven by automation, so a test never reads a toast at half contrast.
 
 - 1f09230: P5.62–P5.71, Group B (users, HR, documents and governance):
-
   - New: `DefinedForm` — a form drawn from the application's field definitions (sections, field types, required, `visibleWhen` / `requiredWhen` conditions), with the handle's `check()`, the application's `errors`, `readOnly`, `lang` and a `custom` field; its pure helpers (`definedFormState`, `definedConditionHolds`, `definedFormProblems`, …) and the messages `definedForm.fill`, `definedForm.choose`, `definedForm.tick`.
   - SettingsPage: a section may hold a block after its rows (`content`), such as the signed-in devices.
   - SelectField, ComboboxField and MultiSelectField options take `lang`: a language written in its own name keeps it in the list and once chosen.
@@ -357,7 +341,6 @@ The detailed entries follow under "Minor Changes" and "Patch Changes". In short:
 - 5a40ffb: P5.91: a table's sticky first column never loses a row's line.
 
   **Breaking (from P5.90): PosShell's phone props are renamed.** A phone till now shows the products first and the order as a compact bar that opens a sheet, so the props that opened the products sheet became props that open the order sheet:
-
   - `productsOpen` → `orderOpen`
   - `defaultProductsOpen` → `defaultOrderOpen`
   - `onProductsOpenChange` → `onOrderOpenChange`
