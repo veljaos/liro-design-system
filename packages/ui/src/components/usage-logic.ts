@@ -2,11 +2,11 @@ import type { LiroFormat } from '../provider/format'
 import type { LiroMessages } from '../provider/messages'
 
 /*
- * The logic of UsageMeter (BUILD-PLAN P5.36), kept apart from the markup so it can be
- * unit-tested (AGENTS.md C7): the amounts in words and how far the bar is drawn. The amounts
- * are decimal strings (D4); the words write them through `format.number`, exactly as given. The
+ * The logic of UsageMeter, kept apart from the markup so it can be
+ * unit-tested: the amounts in words and how far the bar is drawn. The amounts
+ * are decimal strings; the words write them through `format.number`, exactly as given. The
  * bar is a picture: only its length is a JavaScript number, as the charts draw their values
- * (`plotValue`), and nothing — no state, no tone — is ever read from that number (D30): whether
+ * (`plotValue`), and nothing — no state, no tone — is ever read from that number: whether
  * an amount is near or over its limit is the application's `state`.
  */
 

@@ -12,7 +12,7 @@ import { canStep, quantityRange, stepQuantity } from './quantity-logic'
 import { entryAttributes, entryError, useEntry, type EntryProps } from './use-entry'
 
 /*
- * QuantityStepper (BUILD-PLAN P5.11; docs/decisions.md "Touch and POS"). − / the quantity / +,
+ * QuantityStepper. − / the quantity / +,
  * every target at least 44px (56px with `size="large"`), for a handheld and a till. The quantity is
  * typed freely as in NumberField (read by `format.parseNumber` on leaving the field, on Enter or
  * on a step) or stepped by `step`; it is a decimal string, never a JavaScript number, and the
@@ -21,16 +21,16 @@ import { entryAttributes, entryError, useEntry, type EntryProps } from './use-en
  * limits. ArrowUp and ArrowDown step in the field. The unit ("pc", "kg") stands after the number.
  * The number is written left to right in every direction, as in NumberField.
  *
- * P5.90 (item 20): a press of − or + answers at once — the quantity is highlighted briefly and a
+ * A press of − or + answers at once — the quantity is highlighted briefly and a
  * device that can vibrate gives a short pulse (`tapFeedback`) — so nobody presses twice out of
  * doubt while the application's totals settle.
  *
- * P5.93 (item 39): at a limit the button that cannot be used says why — never a silent dead
+ * At a limit the button that cannot be used says why — never a silent dead
  * button. It stays focusable (aria-disabled), its tooltip on hover and focus names the limit
  * ("Maximum 6 — the quantity on the order": `messages['quantity.atMax']` with the application's
  * `maxReason`), and a short line under the field says the same, linked to the button. At the
  * lower limit the line shows only with a `minReason` (a quantity at 0 or 1 needs no words); the
- * tooltip always explains. Read-only (P5.93 item 1): the read-only look of every field, no
+ * tooltip always explains. Read-only: the read-only look of every field, no
  * buttons.
  */
 
@@ -126,7 +126,7 @@ export function QuantityStepper(props: QuantityStepperProps) {
           </span>
         )
         if (control.readOnly) {
-          // The read-only look of every field (P5.93 item 1), at the stepper's height.
+          // The read-only look of every field, at the stepper's height.
           return (
             <div
               dir="ltr"
@@ -161,7 +161,7 @@ export function QuantityStepper(props: QuantityStepperProps) {
               emphasis="secondary"
               shape="icon"
               aria-labelledby={`${id} ${control.labelId}`}
-              // At a limit it stays focusable and says why (P5.93 item 39).
+              // At a limit it stays focusable and says why.
               aria-disabled={!usable || undefined}
               {...(limit !== null && limit === limitLine ? { 'aria-describedby': limitId } : {})}
               className={cn('shrink-0 px-0', large ? 'size-14' : 'size-11')}

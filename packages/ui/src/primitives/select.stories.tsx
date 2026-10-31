@@ -19,7 +19,7 @@ const meta = {
     docs: {
       description: {
         component: internal(
-          'A select: the input look with a chevron at the inline end; the list opens 8px below, as wide as the trigger. SelectField (P2.2).',
+          'A select: the input look with a chevron at the inline end; the list opens 8px below, as wide as the trigger. SelectField.',
         ),
       },
     },

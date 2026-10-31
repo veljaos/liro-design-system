@@ -3,12 +3,12 @@ import { useCallback, useLayoutEffect, useState, type RefObject } from 'react'
 import { keepFocusedRow, overscanRows } from './virtual-rows'
 
 /*
- * The row window of TreeView and TreeTable (P5.9), also used by WorklistPage's queue (P5.94 item
- * 19, `useTreeWindow` from 62em and `usePageWindow` below it): TanStack Virtual (docs/decisions.md "TanStack
- * Virtual for every list"), with the shared rules of `virtual-rows.ts` — 600px drawn above and
- * below the view, the focused row kept drawn with its neighbours, spacers between drawn rows that
- * are not next to each other. Rows are measured once drawn (a description or a reason makes a
- * row taller). The only file of the tree and of the worklist that calls `useVirtualizer`.
+ * The row window of TreeView and TreeTable, also used by WorklistPage's queue
+ * (`useTreeWindow` from 62em and `usePageWindow` below it): TanStack Virtual, with the shared rules
+ * of `virtual-rows.ts` — 600px drawn above and below the view, the focused row kept drawn with its
+ * neighbours, spacers between drawn rows that are not next to each other. Rows are measured once
+ * drawn (a description or a reason makes a row taller). The only file of the tree and of the
+ * worklist that calls `useVirtualizer`.
  */
 
 /** The estimated height of a tree row before it is measured: one 32px line (44px on phones). */
@@ -60,10 +60,10 @@ function pageScrollerOf(element: HTMLElement): HTMLElement | 'window' {
 }
 
 /**
- * A row window over `count` rows that flow with the page (P5.94 item 19: WorklistPage's queue
- * below 62em, where no box scrolls on its own, D19): against the closest scrolling ancestor (a
+ * A row window over `count` rows that flow with the page (WorklistPage's queue
+ * below 62em, where no box scrolls on its own): against the closest scrolling ancestor (a
  * story's phone frame, an application's scrolling layout) or the window, the list's offset in it
- * being the scroll margin, as DataTable's phone cards (P5.90). The items' `start` and `end`
+ * being the scroll margin, as DataTable's phone cards. The items' `start` and `end`
  * include that margin; `getTotalSize()` does not. Off when not `enabled`.
  */
 export function usePageWindow({

@@ -7,7 +7,7 @@ import type { LiroMessages } from '../provider/messages'
 import { crossesMidnight, hoursAndMinutes, shiftSpan } from './shift-logic'
 
 /*
- * Parts shared by ShiftPlanner, MyShifts and ShiftSwapDialog (P5.24 b). Internal: not exported
+ * Parts shared by ShiftPlanner, MyShifts and ShiftSwapDialog. Internal: not exported
  * from the package.
  */
 
@@ -28,7 +28,7 @@ export interface ShiftTemplate {
    */
   key?: string
   /**
-   * Tells templates apart; never blue (D17) and never warning or danger, which say "conflict".
+   * Tells templates apart; never blue and never warning or danger, which say "conflict".
    * Default neutral.
    */
   tone?: ShiftTemplateTone

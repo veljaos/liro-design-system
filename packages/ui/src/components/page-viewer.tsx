@@ -21,7 +21,7 @@ export { clampPage, labelSide, regionBox, regionPage } from './page-viewer-logic
 export type { PageRegion, RegionBox, ViewerPage } from './page-viewer-logic'
 
 /*
- * PageViewer (BUILD-PLAN P5.31): a document's pages as the images the application made of them
+ * PageViewer: a document's pages as the images the application made of them
  * (a scan, a photo, a PDF page it rendered), with pages and zoom, and one region highlighted —
  * where a value was read. DocumentFrame shows a viewer from another origin, whose drawing the
  * host can neither see nor mark; here the host draws the pages, so a region given in the page's

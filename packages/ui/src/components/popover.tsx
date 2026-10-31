@@ -18,8 +18,8 @@ import {
 import { useLiro } from '../provider/liro-provider'
 
 /*
- * Popover and Tooltip (BUILD-PLAN P2.4), on the P2.1 primitives: Mantine Popover (8px from its
- * target, padding 12px 16px, the floating surface) and the previous Design System's inverted
+ * Popover and Tooltip, on the primitives: Mantine Popover (8px from its
+ * target, padding 12px 16px, the floating surface) and the inverted
  * tooltip (radius 4px, 12px text, an arrow, 300ms delay).
  */
 
@@ -87,7 +87,7 @@ export function physicalSide(
 /**
  * A short hint on hover and keyboard focus, after 300ms. It adds a description to its target
  * (aria-describedby); anything the user needs to act must also be visible without it. Every hover
- * hint of the library is this one, never the browser's `title` (P5.93 item 7).
+ * hint of the library is this one, never the browser's `title`.
  */
 export function Tooltip({
   label,
@@ -101,7 +101,7 @@ export function Tooltip({
   const focusing = useRef(false)
   const onFocus = trigger.onFocus as ((event: FocusEvent<HTMLElement>) => void) | undefined
   // Props from an outer trigger (a menu's or a dialog's, asChild) pass on to the target, so a
-  // tooltip can stand between a trigger and its button (P5.93 item 7). A focus opens the tooltip
+  // tooltip can stand between a trigger and its button. A focus opens the tooltip
   // only when a key moved it there (FOCUS_KEYS): a dialog that focuses its close button as it
   // opens, after a click or a Space, or a menu that gives the focus back to its button, shows none.
   return (
@@ -136,7 +136,7 @@ export function Tooltip({
 
 /**
  * True inside a tooltip's target: an IconButton given its own Tooltip by the application draws
- * no second one of its own (P5.93 item 7). Internal.
+ * no second one of its own. Internal.
  */
 const InTooltip = createContext(false)
 
@@ -163,8 +163,8 @@ export const FOCUS_KEYS: ReadonlySet<string> = new Set([
 ])
 
 /**
- * How the user last acted: a focus opens a tooltip only after a key that moves the focus (P5.93
- * item 7), so a tooltip never stands open over a dialog's close button and takes its Escape.
+ * How the user last acted: a focus opens a tooltip only after a key that moves the focus, so
+ * a tooltip never stands open over a dialog's close button and takes its Escape.
  */
 let lastInput: 'none' | 'keyboard' | 'other' | 'pointer' = 'none'
 if (typeof document !== 'undefined') {
@@ -185,8 +185,8 @@ if (typeof document !== 'undefined') {
 }
 
 /**
- * The library's tooltip on a target when there is a hint, the target alone when there is none
- * (P5.93 item 7: where the browser's `title` was set only sometimes). Props from an outer trigger
+ * The library's tooltip on a target when there is a hint, the target alone when there is none.
+ * Props from an outer trigger
  * pass on to the target either way. Internal: not exported from the package.
  */
 export function HintedTarget({

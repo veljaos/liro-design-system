@@ -11,7 +11,7 @@ const meta = {
     docs: {
       description: {
         component: internal(
-          'Radio buttons, 16px apart; the arrow keys follow the direction. RadioGroupField (P2.2).',
+          'Radio buttons, 16px apart; the arrow keys follow the direction. RadioGroupField.',
         ),
       },
     },

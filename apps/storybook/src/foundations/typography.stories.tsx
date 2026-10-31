@@ -18,7 +18,7 @@ interface Sample {
   italic?: boolean
 }
 
-/** One sentence per script class (BUILD-PLAN section 2): "Every screen in every module looks and behaves the same." */
+/** One sentence per script class: "Every screen in every module looks and behaves the same." */
 const SCRIPTS: Sample[] = [
   {
     script: 'Latin',
@@ -302,7 +302,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'The type of Appendix A.5 and the fonts of seven script classes, shipped with ' +
+          'The type scale and the fonts of seven script classes, shipped with ' +
           '@veljaos/tokens (fonts.css, imported by tokens.css). Use the text-*, font-*, leading-* ' +
           'and tracking-* utilities; never set a font family or size by hand. Mark text whose ' +
           'language differs from the page with lang, through useLangAttribute.',

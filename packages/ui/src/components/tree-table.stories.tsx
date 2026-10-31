@@ -113,7 +113,7 @@ const meta = {
           'selection); the other columns are DataTable-like definitions, numbers at the end ' +
           'with tabular digits, written by the application through the provider’s `format`.\n\n' +
           '**Figures:** a branch’s figures and the totals row are the application’s — the table ' +
-          'never adds (D4).\n\n' +
+          'never adds.\n\n' +
           '**Keyboard:** a WAI-ARIA treegrid whose rows take the focus: the tree’s keys (arrows ' +
           'mirrored in right-to-left, Home / End, `*`, type-ahead, Enter or Space).\n\n' +
           '**Thousands of nodes:** `maxHeight` scrolls the table inside it with a sticky header ' +
@@ -318,7 +318,7 @@ export const ThousandsKeyboard: Story = {
 }
 
 /**
- * Seventy rows on a page under the shell, without `maxHeight` (P5.28 item 4): the page scrolls,
+ * Seventy rows on a page under the shell, without `maxHeight`: the page scrolls,
  * the header row stays right below the shell.
  */
 export const UnderTheShell: Story = {

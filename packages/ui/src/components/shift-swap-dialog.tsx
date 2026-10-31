@@ -12,11 +12,11 @@ import { ShiftTime, timeTexts } from './shift-parts'
 import { TextAreaField } from './text-field'
 
 /*
- * ShiftSwapDialog (BUILD-PLAN P5.24 b): one person asks to hand a shift over — to a colleague
+ * ShiftSwapDialog: one person asks to hand a shift over — to a colleague
  * from the application's list (who may give one of their shifts back) or to anyone qualified —
  * with a reason. It reports the request (`onSubmit`); who may take the shift, and the approval,
- * are the application's (the approval is a worklist, P4.3).
- * - The shift is the record the dialog acts on (P5.28 item 6): bold under the title "Request a
+ * are the application's (the approval is a worklist).
+ * - The shift is the record the dialog acts on: bold under the title "Request a
  *   swap", on its own line — its day in words, name, times ("22:00–06:00 (+1)" read as "… the
  *   next day") —, its place under it as the description; then "Who takes it" (Anyone qualified / A colleague), the colleague
  *   (required when chosen), their shift taken instead (optional), the reason.

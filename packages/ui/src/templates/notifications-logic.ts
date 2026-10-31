@@ -1,6 +1,6 @@
 /*
- * The logic of the notifications panel and page (P4.9, the owner's review), kept apart from the
- * markup so it can be unit-tested (AGENTS.md C7): the day a notification belongs to, the groups
+ * The logic of the notifications panel and page, kept apart from the
+ * markup so it can be unit-tested: the day a notification belongs to, the groups
  * by day (Today, Yesterday, then dates) and the filters an application may use when it filters on
  * the device. The Design System decides nothing about what a notification says.
  */

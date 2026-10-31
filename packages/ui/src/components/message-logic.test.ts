@@ -113,7 +113,7 @@ describe('day groups', () => {
   })
 })
 
-describe('a chosen mention ends the search; a space closes an empty list (P5.94 item 8)', () => {
+describe('a chosen mention ends the search; a space closes an empty list', () => {
   it('reads the words after a chosen mention as text, not a new query', () => {
     const text = '@Ana Petrović please check the invoice'
     expect(mentionQueryAt(text, text.length, [{ name: 'Ana Petrović' }])).toBeNull()

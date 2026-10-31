@@ -10,29 +10,28 @@ import type { Family, IconComponent } from './intents'
 import { Tooltip } from './popover'
 
 /*
- * Toasts (BUILD-PLAN P2.5): the previous Design System's `notice` API, carried over exactly
- * (owner's decision, 2026-09-28, docs/decisions.md "Feedback"), on sonner (BUILD-PLAN section 3):
+ * Toasts: the `notice` API, on sonner:
  * - Kinds success, info, warning, error and loading; `update(id, …)` turns a loading toast into
  *   success, warning or error. A title is optional, the message required.
  * - Bottom right (bottom left in right-to-left), at most 4 visible.
  * - Radius md, with a border; an 18px icon, coloured by family: success positive (CircleCheck,
  *   lucide's CheckCircle2), info primary (Info), warning caution (TriangleAlert), error destructive
  *   (CircleX). Loading: the primary colour, a loader.
- * - Every toast has a close button (X) (owner, P5.93 item 3; P5.90 had taken it off success and
- *   info). Success and info still close by themselves after 4000ms, a warning after 6000ms; an
- *   error waits until closed or updated (Appendix B.8: success disappears, errors wait), and a
+ * - Every toast has a close button (X). Success and info also close by themselves after 4000ms, a
+ * warning after 6000ms; an
+ *   error waits until closed or updated (success disappears, errors wait), and a
  *   loading toast waits for its update.
- * - Toasts never block (P5.90 item 21, P5.93 item 3): only a toast's buttons (its action and its
+ * - Toasts never block: only a toast's buttons (its action and its
  *   X) take the pointer; a click anywhere else on it passes through to what it covers
  *   (`pointer-events: none` on the toast, `auto` on its buttons).
  * - A routine save is not a toast: "Saved" stands beside the action (SaveStatus), a sent line
- *   says "Sent · 19:40" on the line, a removed one offers Undo in its place (P5.93 item 3). A
+ *   says "Sent · 19:40" on the line, a removed one offers Undo in its place. A
  *   toast reports an error or an outcome outside the screen ("Payroll posted", "Request sent"),
- *   never what to do next (D23).
+ *   never what to do next.
  * - Placed so it never covers actions: 16px above the AppShell's or PortalShell's bottom bar on
  *   phones, WorklistPage's detail bar (`--liro-shell-bottom`) and any sticky bottom bar of the
  *   page — a form's bottom bar, a wizard's Back / Next row (`--liro-bottom-bars`, `useBottomBar`).
- * - `action` (P4.9, the owner's review: "Approved. Undo"): one small neutral button before the
+ * - `action` ("Approved. Undo"): one small neutral button before the
  *   close button, from the application (Undo, only when the Core allows it); pressing it runs the
  *   action and closes the toast. A toast with an action stays at least 8000ms, so there is time to
  *   reach it (sonner also pauses while the pointer or the focus is on it).
@@ -82,7 +81,7 @@ export function noticeDuration(kind: NoticeKind, withAction = false): number {
   return withAction ? Math.max(duration, NOTICE_ACTION_DURATION) : duration
 }
 
-/** The classes of a toast: clicks pass through it, except on its buttons (P5.93 item 3). */
+/** The classes of a toast: clicks pass through it, except on its buttons. */
 export const NOTICE_POINTER = 'pointer-events-none [&_button]:pointer-events-auto'
 
 /** The one action of a toast (Undo), from the application. */
@@ -154,7 +153,7 @@ export function NoticeView({ id, kind, message, title, action }: NoticeViewProps
           <span className={TEXT_DIRECTION}>{action.label}</span>
         </button>
       )}
-      {/* Every toast has its X (P5.93 item 3), also those that close by themselves. */}
+      {/* Every toast has its X, also those that close by themselves. */}
       <Tooltip label={messages['notice.close']}>
         <button
           type="button"
@@ -181,7 +180,7 @@ export interface NoticeOptions {
   id?: string | number
   /**
    * One action before the close button (Undo), only when the application can carry it out. In a
-   * till or on a restaurant's floor an Undo stands beside what changed, not in a toast (P5.93).
+   * till or on a restaurant's floor an Undo stands beside what changed, not in a toast.
    */
   action?: NoticeAction
 }
@@ -199,7 +198,7 @@ function show(kind: NoticeKind, message: ReactNode, options: NoticeOptions = {})
     ),
     {
       duration: noticeDuration(kind, options.action !== undefined),
-      // Clicks pass through a toast to what it covers; only its buttons take them (P5.93).
+      // Clicks pass through a toast to what it covers; only its buttons take them.
       className: NOTICE_POINTER,
       ...(options.id === undefined ? {} : { id: options.id }),
     },
@@ -245,9 +244,9 @@ export function Toaster({ layout }: ToasterProps = {}) {
   const { direction, messages } = useLiro()
   const viewportPhone = usePhone()
   const phone = layout === undefined ? viewportPhone : layout === 'phone'
-  // On phones the toasts span the screen less two 16px margins (P4.9d: a 440px toast in a 390px
-  // frame was cut at the start side). Sonner sizes its list and each toast with --width, so the
-  // screen's width is measured by an empty fixed line across it (the viewport, or a frame that
+  // On phones the toasts span the screen less two 16px margins (a 440px toast in a 390px
+  // frame would be cut at the start side). Sonner sizes its list and each toast with --width, so
+  // the screen's width is measured by an empty fixed line across it (the viewport, or a frame that
   // contains fixed elements, as a story's phone frame does).
   const [span, setSpan] = useState<HTMLSpanElement | null>(null)
   const [screenWidth, setScreenWidth] = useState<number | undefined>(undefined)
@@ -270,7 +269,7 @@ export function Toaster({ layout }: ToasterProps = {}) {
     zIndex: 'var(--liro-layer-toast)',
   } as CSSProperties
   // A browser driven by automation (the story and accessibility tests) shows and removes toasts
-  // without fading, as the charts do not animate there: a toast caught half faded had half its
+  // without fading, as the charts do not animate there: a toast caught half faded has half its
   // contrast. Sonner already drops the motion for reduced motion.
   const still = typeof navigator !== 'undefined' && navigator.webdriver
   const bottom = 'calc(16px + var(--liro-shell-bottom, 0px) + var(--liro-bottom-bars, 0px))'

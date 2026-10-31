@@ -1,12 +1,12 @@
 /*
- * The documents of group D2 (P5.18, complex documents) for the examples: Kvadrat Gradnja
+ * The complex documents of the examples: Kvadrat Gradnja
  * d.o.o. on 6 October 2026, the same dataset as examples-story-data.ts. Every amount is computed
  * here from the lines, in whole paras with BigInt (the application's work, played by the
  * examples; components never add): lines → recap by tax category → totals. Legal texts, codes and tax categories are illustrative. No classes here: Storybook
  * compiles classes only from *.stories.tsx files.
  *
- * - KO-2026-0009: decrease document against F-2026-0410 (Medic Lab Niš d.o.o.), the one D2
- *   screen.
+ * - KO-2026-0009: decrease document against F-2026-0410 (Medic Lab Niš d.o.o.), the one
+ *   complex document screen.
  * - F-2026-0407 (Bojović i sinovi d.o.o.), cancelled on 06.10.2026. by cancellation document
  *   ST-2026-0004: no screen of its own, its figures checked against the invoice list
  *   (dataset-checks.ts).

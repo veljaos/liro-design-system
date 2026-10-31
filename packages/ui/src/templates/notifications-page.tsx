@@ -16,7 +16,7 @@ import { NotificationMeta, UnreadDot } from './notifications-panel'
 import { PageHeader } from './page-header'
 
 /*
- * NotificationsPage (P4.9, the owner's review): every notification, where "View all" in the
+ * NotificationsPage: every notification, where "View all" in the
  * bell's panel leads.
  * - The header: the title (visible h1: no module tab names this page), "Mark all as read" and a
  *   "Notification settings" link at the end (the settings page is the application's).

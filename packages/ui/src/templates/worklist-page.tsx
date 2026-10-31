@@ -23,26 +23,26 @@ import { useLiro } from '../provider/liro-provider'
 import { PageHeader, type PageBack } from './page-header'
 
 /*
- * WorklistPage (BUILD-PLAN P4.3; the owner's values, docs/decisions.md "Worklist"): a queue
+ * WorklistPage: a queue
  * processed item by item.
  * - From md (62em): the queue 380px at the start, the detail fills the rest, a 1px border.default
  *   line between them; each scrolls on its own, the page filling the screen under the shell
  *   (AppShell's --liro-shell-top). The queue's tools (`toolbar`, `search`, `filters`) stand above
- *   its rows and stay in view while the rows scroll (P5.94 item 19).
+ *   its rows and stay in view while the rows scroll.
  * - Below md: the queue; choosing an item shows its detail full width (the whole screen, never a
  *   second list under it), its top row "Back to list" at the start and the position ("3 of 11")
  *   with Previous and Next at the end. The item's decisions go into AppShell's bottom bar (the
- *   application passes them there; P4.9 rule 16).
- * - One way to decide items one by one (P5.23, the owner's review): the position, Previous, Next
+ *   application passes them there).
+ * - One way to decide items one by one: the position, Previous, Next
  *   and the decisions — the main one last ("Confirm", "Approve") — stand in one bar at the bottom
  *   of the detail pane from md, always in view; after a decision the application opens the next
  *   item by itself (`nextWorklistItem`) and offers Undo in place where it can be taken back.
- * - Many items (P5.94 item 19, a bank statement of 1,000+ lines): from WORKLIST_WINDOW_FROM items
+ * - Many items (a bank statement of 1,000+ lines): from WORKLIST_WINDOW_FROM items
  *   only the rows in view are drawn (TanStack Virtual, the shared rules of virtual-rows.ts), in the
  *   queue's own scroll from md and against the page's scroll below it; every row still tells its
  *   place (`aria-posinset`, `aria-setsize`). `filters` (the application's states with their
  *   counts: "Needs you 3", "Done 7") stand as chips that wrap, one pressed, so every state is in
- *   view in the narrow queue; the first chip is always "All" with every item's count (P5.96), so
+ *   view in the narrow queue; the first chip is always "All" with every item's count, so
  *   every item can be seen, while the queue opens on the state that needs the user; `search` is the application's (it narrows `items`). The floorplan
  *   neither filters nor counts.
  * - Keyboard: the queue is one tab stop (a roving focus); ArrowUp / ArrowDown, Home and End move
@@ -54,13 +54,13 @@ import { PageHeader, type PageBack } from './page-header'
  *   `WorklistSummary` (a thin strip of its figures, "3 of 10 done" with a bar, the application's
  *   check and, when nothing waits, its final action) or the application's own. The title row
  *   takes `back`, `status` and `subtitle`.
- * - Rows (the old WorklistItem): the title (sm semibold), a subtitle (xs text.secondary), one
+ * - Rows: the title (sm semibold), a subtitle (xs text.secondary), one
  *   deciding figure at the end (sm medium, tabular) with the status badge under it; rows
  *   separated by border.subtle, padding sm by md. The chosen row is surface.selected with a 3px
- *   border.selected bar at its start (the neutral selection, AGENTS.md D17). The detail pane is
+ *   border.selected bar at its start (the neutral selection). The detail pane is
  *   optional.
  * - Decisions (Approve, Reject) stand only in the detail, where the item is seen whole, and in the
- *   bulk bar for checked rows — never in every row (P4.9, the owner's review). With
+ *   bulk bar for checked rows — never in every row. With
  *   `onCheckedChange` each row has a checkbox at its start (16px, a 24px target); `bulkBar` (a
  *   BulkActionBar) stands above the list while any row is checked.
  */
@@ -142,7 +142,7 @@ export interface WorklistPageProps {
   searchLabel?: string
   /**
    * The states to show, each with its count, as chips above the rows (one pressed). The first is
-   * always "All" with every item's count (P5.96); the application opens the queue on the state
+   * always "All" with every item's count; the application opens the queue on the state
    * that needs the user.
    */
   filters?: readonly WorklistFilter[]
@@ -165,7 +165,7 @@ export interface WorklistPageProps {
   className?: string
 }
 
-/** From this many items only the rows in view are drawn (P5.94 item 19). */
+/** From this many items only the rows in view are drawn. */
 export const WORKLIST_WINDOW_FROM = 100
 
 /** A row's estimated height before it is measured: a title, a subtitle, a figure and a badge. */
@@ -382,8 +382,8 @@ function StackedDetail({ item, children }: { item: string | undefined; children:
 
 /**
  * The detail's bar from md. It publishes how far its top stands above the bottom of the window
- * as --liro-shell-bottom on the provider's root (as AppShell's bottom bar does on phones,
- * P4.9d), so a toast stands above the bar and never covers "Next" or the next decision.
+ * as --liro-shell-bottom on the provider's root (as AppShell's bottom bar does on phones),
+ * so a toast stands above the bar and never covers "Next" or the next decision.
  */
 function DetailBar({ children }: { children: ReactNode }) {
   const bar = useRef<HTMLDivElement>(null)
@@ -971,7 +971,7 @@ export interface WorklistSummaryProps {
 
 /**
  * A thin strip above a worklist: the record's figures, "3 of 10 done" with a bar, the
- * application's check, and its final action once nothing waits (P5.94 item 19).
+ * application's check, and its final action once nothing waits.
  */
 export function WorklistSummary(props: WorklistSummaryProps) {
   const { messages, format } = useLiro()

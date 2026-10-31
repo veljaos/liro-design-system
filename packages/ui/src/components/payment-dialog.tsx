@@ -52,8 +52,8 @@ import { TextField } from './text-field'
 import { usePhone } from './use-phone'
 
 /*
- * PaymentDialog (BUILD-PLAN P5.10; docs/decisions.md "Touch and POS"). Taking the money for a
- * sale: cash, card or split. **The dialog never subtracts (D4):** the amount due, the change, the
+ * PaymentDialog. Taking the money for a
+ * sale: cash, card or split. **The dialog never subtracts:** the amount due, the change, the
  * remaining amount and the parts already paid arrive from the application as decimal strings;
  * the dialog reports what the cashier enters (`onTenderedChange`, `onAddPart`) and the
  * application answers with the new figures. Whether the payment can be completed is the
@@ -71,9 +71,9 @@ import { usePhone } from './use-phone'
  *   "Add cash" or "Add card".
  * - Done: a check, "Payment complete", the change due large, and the application's actions
  *   (print the receipt, a new sale).
- * Footer: Cancel, then "Complete payment" (primary, last; D13).
+ * Footer: Cancel, then "Complete payment" (primary, last).
  *
- * P5.28 (item 21b): the application may offer its **own ways to pay** (`methods` with
+ * The application may offer its **own ways to pay** (`methods` with
  * `PaymentOption`s: cash, card, cheque, wire transfer or deferred payment, voucher, instant
  * payment, other cashless — the ids, words and rules are its data). More than four become a
  * wrapping grid of pressed buttons (the neutral selection, never blue). **Several ways on one
@@ -85,7 +85,7 @@ import { usePhone } from './use-phone'
  * application's `extra` content (the buyer's field). `doneContent` takes the issued receipt
  * (ReceiptResult) in the done view.
  *
- * P5.93 (item 13, the owner's fourth review): **the dialog never scrolls** — at a tablet
+ * **The dialog never scrolls** — at a tablet
  * (1024 × 768) and a phone (390 × 844) everything fits at once: the amount due, the ways to pay,
  * the quick amounts, the amount tendered, the keypad and the main action. It is wider (880px,
  * at most 90% of the screen) and lays out in two columns — the amount due, the ways to pay, the
@@ -98,7 +98,7 @@ import { usePhone } from './use-phone'
  * `doneActions`, "New sale"); the issued receipt (`doneContent`) beside it on a wide screen, and
  * behind "Receipt" on a phone.
  *
- * P5.94 (item 5, the owner's fifth review): **a sale is paid in parts by any ways, in any order**
+ * **A sale is paid in parts by any ways, in any order**
  * (`onAddPart`): part cash, part card, part voucher. The parts paid stand in a list — the way, the
  * amount and its state ("Paid", or "Approved" for a card or an instant payment) — and the
  * remaining amount always beside the amount due. The keypad holds the amount of this part; cash
@@ -110,7 +110,7 @@ import { usePhone } from './use-phone'
  * (a voucher's value, `maxReason`), compared exactly (`partOverLimit`). "Complete payment" waits
  * while something is still to pay. Cancelling after an approved part says first, in the dialog,
  * that the approved parts are reversed ("Keep paying" / "Cancel payment"); the reversal is the
- * application's (`onCancel`). A way's label never breaks inside a word (item 4): the ways wrap as
+ * application's (`onCancel`). A way's label never breaks inside a word: the ways wrap as
  * whole buttons (on a phone the icon above the label) and a label too long for its button ends in
  * "…" with the whole name in the Tooltip.
  */
@@ -151,7 +151,7 @@ export interface PaymentDialogProps {
   currency: string
   /**
    * The methods offered, in this order. Default: cash, card, split. The application's own ways to
-   * pay (P5.28) are `PaymentOption`s; the built-in names may stand among them.
+   * pay are `PaymentOption`s; the built-in names may stand among them.
    */
   methods?: readonly (PaymentMethod | PaymentOption)[]
   /** Controlled method: a built-in name or an option's id. */
@@ -174,10 +174,10 @@ export interface PaymentDialogProps {
   paid?: readonly PaymentPart[]
   /**
    * Split: the cashier adds the keypad's amount as a cash or card part. With the application's
-   * own options (P5.28), the option's id, and every panel takes the amount of this payment.
+   * own options, the option's id, and every panel takes the amount of this payment.
    */
   onAddPart?: (method: string, amount: string) => void
-  /** Adds a remove button to each part paid (an option's own ways, P5.28). */
+  /** Adds a remove button to each part paid (an option's own ways). */
   onRemovePart?: (id: string) => void
   /** A 'qr' way's code (an image), from the application; shown large while waiting. */
   qrCode?: ReactNode
@@ -194,7 +194,7 @@ export interface PaymentDialogProps {
   cardMessage?: string
   /**
    * Sends the amount to the terminal (also "Try again"): the keypad's amount, or the remaining
-   * amount when none is typed (P5.94).
+   * amount when none is typed.
    */
   onCardStart?: (amount: string | null) => void
   /** Cancels the payment on the terminal while waiting. */
@@ -203,7 +203,7 @@ export interface PaymentDialogProps {
   onComplete?: () => void
   /**
    * The cashier cancels the payment (Cancel, the X or Escape); after an approved part only once
-   * the dialog has said that the approved parts are reversed (P5.94). The reversal is the
+   * the dialog has said that the approved parts are reversed. The reversal is the
    * application's.
    */
   onCancel?: () => void
@@ -234,9 +234,9 @@ const KIND_ICON: Record<PaymentKind, typeof Banknote> = {
 }
 
 /**
- * A big choice of the way to pay: the neutral selection when chosen (D17), 56px high. Sized by its
+ * A big choice of the way to pay: the neutral selection when chosen, 56px high. Sized by its
  * label and growing to fill the row, so the ways wrap as whole buttons; a label wider than a whole
- * row ends in "…" (FittedLabel), never broken inside a word (P5.94 item 4).
+ * row ends in "…" (FittedLabel), never broken inside a word.
  */
 const CHOICE = cn(
   BUTTON_RESET,
@@ -251,13 +251,13 @@ const CHOICE_OFF = 'border-default bg-surface-raised enabled:hover:bg-surface-ho
 
 /**
  * The keypad's keys at 44px (the touch minimum) on a phone, so everything fits the screen; no
- * Clear row there (P5.94): Backspace stays, and "Exact amount" and the quick amounts replace the
+ * Clear row there: Backspace stays, and "Exact amount" and the quick amounts replace the
  * amount in one press.
  */
 const PHONE_KEYPAD =
   '[&_[data-key]]:h-11 [&_[data-key]]:min-h-11 [&_div:has(>input)]:h-12 [&_input]:text-h4 [&_[data-key=clear]]:hidden'
 
-/** The focusable elements of the done view's actions; the last is its main action (D13). */
+/** The focusable elements of the done view's actions; the last is its main action. */
 function lastAction(container: HTMLElement | null): HTMLElement | null {
   const all = container?.querySelectorAll<HTMLElement>('button:not([disabled]), a[href]')
   return all === undefined || all.length === 0 ? null : (all[all.length - 1] ?? null)
@@ -267,7 +267,7 @@ function lastAction(container: HTMLElement | null): HTMLElement | null {
 export function PaymentDialog(props: PaymentDialogProps) {
   const { messages, format } = useLiro()
   const phone = usePhone()
-  // With parts every way can pay a part, so no "Split" way is needed (P5.94).
+  // With parts every way can pay a part, so no "Split" way is needed.
   const methods =
     props.methods ??
     (props.onAddPart === undefined
@@ -286,7 +286,7 @@ export function PaymentDialog(props: PaymentDialogProps) {
   )
   const method = props.method ?? innerMethod
   const option = options.find((each) => each.id === method)
-  // The built-in names keep their P5.10 panels; the application's own options take their kind's.
+  // The built-in names keep their own panels; the application's own options take their kind's.
   const kind: PaymentKind | 'split' = ownOptions
     ? (option?.kind ?? 'cash')
     : method === 'split'
@@ -308,7 +308,7 @@ export function PaymentDialog(props: PaymentDialogProps) {
   const paid = props.paid ?? []
   const parts = props.onAddPart !== undefined
   const doneActions = useRef<HTMLDivElement>(null)
-  // The parts a card or an instant payment approved: cancelling reverses them (P5.94).
+  // The parts a card or an instant payment approved: cancelling reverses them.
   const approved = paid.filter((part) => part.state === 'approved')
   const [confirmingCancel, setConfirmingCancel] = useState(false)
   const keepPaying = useRef<HTMLDivElement>(null)
@@ -350,7 +350,7 @@ export function PaymentDialog(props: PaymentDialogProps) {
       setConfirmingCancel(false)
       return
     }
-    // After an approved card part the dialog first says that it is reversed (P5.94).
+    // After an approved card part the dialog first says that it is reversed.
     if (approved.length > 0) {
       setConfirmingCancel(true)
       return
@@ -536,7 +536,7 @@ export function PaymentDialog(props: PaymentDialogProps) {
     </div>
   )
 
-  // Cash and Card are the two big choices; every other way stands behind "Other…" (P5.93).
+  // Cash and Card are the two big choices; every other way stands behind "Other…".
   const isMain = (item: PaymentOption, wanted: 'cash' | 'card') =>
     ownOptions ? item.kind === wanted : item.id === wanted
   const mainChoices = (['cash', 'card'] as const).flatMap((wanted) => {
@@ -626,7 +626,7 @@ export function PaymentDialog(props: PaymentDialogProps) {
 
   /**
    * The parts paid so far (several ways on one sale): the way, its amount and its state, and a
-   * remove button for a part that is not an approval (P5.94).
+   * remove button for a part that is not an approval.
    */
   const paidParts = paid.length > 0 && (
     <div className="flex flex-col gap-1">
@@ -640,7 +640,7 @@ export function PaymentDialog(props: PaymentDialogProps) {
         data-slot="payment-parts"
         className={cn(
           'm-0 flex list-none gap-1 p-0',
-          // On a phone the parts are chips, two to a row, so the dialog still fits (P5.93).
+          // On a phone the parts are chips, two to a row, so the dialog still fits.
           phone ? 'flex-row flex-wrap gap-2' : 'flex-col',
         )}
       >
@@ -749,7 +749,7 @@ export function PaymentDialog(props: PaymentDialogProps) {
     </div>
   )
 
-  // The amount of this part: the keypad's, or for a card what remains (P5.94).
+  // The amount of this part: the keypad's, or for a card what remains.
   const cardLikeNow = kind === 'card' || kind === 'qr'
   const partAmount = tendered ?? (cardLikeNow ? (props.remaining ?? null) : null)
   const over = option === undefined ? null : partOverLimit(option, partAmount, props.remaining)
@@ -760,7 +760,7 @@ export function PaymentDialog(props: PaymentDialogProps) {
         ? messages['payment.overRemaining'](money(over.limit))
         : (over.words ?? messages['payment.overLimit'](money(over.limit)))
   const cardAmount = parts ? partAmount : props.total
-  /** The part's action: cash and the plain ways add it; a card or a code sends it (P5.94). */
+  /** The part's action: cash and the plain ways add it; a card or a code sends it. */
   const addPart = parts && option !== undefined && (
     <div className="flex flex-col gap-1">
       <ButtonPrimitive
@@ -879,7 +879,7 @@ export function PaymentDialog(props: PaymentDialogProps) {
     </>
   )
 
-  // "Complete payment" waits while something is still to pay after a part (P5.94). The remaining
+  // "Complete payment" waits while something is still to pay after a part. The remaining
   // amount stands at the top, so this reason is for assistive technology only; the
   // application's own reason is shown.
   const stillToPayReason =
@@ -966,7 +966,7 @@ export function PaymentDialog(props: PaymentDialogProps) {
         <p className={cn('m-0 text-sm text-secondary', TEXT_ISOLATE)}>{props.doneText}</p>
       )}
       {props.change !== undefined && props.change !== null && (
-        // The change as the application gives it, exact (D4), on a plain row.
+        // The change as the application gives it, exact, on a plain row.
         <dl className="m-0 flex w-full max-w-md flex-wrap items-baseline justify-between gap-x-4 border-0 border-y border-solid border-subtle py-3 text-start">
           <dt className={cn('text-md font-semibold text-primary', TEXT_DIRECTION)}>
             {messages['payment.change']}
@@ -1032,7 +1032,7 @@ export function PaymentDialog(props: PaymentDialogProps) {
     </div>
   )
 
-  // Cancelling after an approved part: the dialog says that it is reversed, in place (P5.94).
+  // Cancelling after an approved part: the dialog says that it is reversed, in place.
   const reverseQuestion = confirmingCancel && (
     <div data-slot="payment-reverse" className="flex flex-col gap-3">
       <Alert
@@ -1105,7 +1105,7 @@ export function PaymentDialog(props: PaymentDialogProps) {
       <DialogContent
         aria-describedby={undefined}
         data-slot="payment-dialog"
-        // Wider, and nearer the top and bottom edges: everything fits at once (P5.93).
+        // Wider, and nearer the top and bottom edges: everything fits at once.
         className="top-[2%] max-h-[96%] w-220"
         onEscapeKeyDown={prevent}
         onPointerDownOutside={prevent}

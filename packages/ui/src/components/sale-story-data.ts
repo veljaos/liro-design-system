@@ -18,7 +18,7 @@ import type { ReceiptDelivery, ReceiptFact } from './receipt-result'
 import type { PaymentOption, ReceiptKindOption } from './sale-logic'
 
 /*
- * Story data of the till's sale flows (P5.28 items 21 and 22): the kinds of a receipt, the ways to
+ * Story data of the till's sale flows: the kinds of a receipt, the ways to
  * pay, the buyer's ID kinds, a receipt found again, the lines of a refund, open advances and an
  * issued receipt — after the Serbian fiscal system (the electronic fiscal device and the
  * processor of fiscal receipts), as an application would pass them. **Illustrative:** the kinds,
@@ -91,7 +91,7 @@ export const PAYMENT_OPTIONS: readonly PaymentOption[] = [
     icon: Ticket,
     referenceLabel: 'Voucher code',
     note: 'Single-purpose vouchers only; a multi-purpose voucher is paid as Other cashless.',
-    // The voucher read from its code is worth 2.000,00 (the application's data, P5.94).
+    // The voucher read from its code is worth 2.000,00 (the application's data).
     maxAmount: '2000.00',
     maxReason: 'This voucher is worth 2.000,00 RSD.',
   },
@@ -291,7 +291,7 @@ export const DELIVERED: readonly ReceiptDelivery[] = [
   },
 ]
 
-// ── An open tab (P5.28 item 22) ───────────────────────────────────────────────────────────────
+// ── An open tab ───────────────────────────────────────────────────────────────
 
 /** Table 3's tab: two lines sent to the bar, one new with a note, a promotion and a discount. */
 export const TAB_LINES: readonly CartLine[] = [
@@ -327,7 +327,7 @@ export const TAB_LINES: readonly CartLine[] = [
   },
 ]
 
-/** A point of sale's account, name and merchant category, for instant payment codes (P5.40). */
+/** A point of sale's account, name and merchant category, for instant payment codes. */
 export interface InstantPayee {
   name: string
   account: string
@@ -342,7 +342,7 @@ export const BAKERY_PAYEE: InstantPayee = {
 }
 
 /**
- * The IPS QR text a till shows for an instant payment (kind PT, P5.40): the payee, the amount
+ * The IPS QR text a till shows for an instant payment (kind PT): the payee, the amount
  * due and the sale's 19-digit point-of-sale reference.
  */
 export function instantPaymentCode(payee: InstantPayee, amount: string, reference: string): string {

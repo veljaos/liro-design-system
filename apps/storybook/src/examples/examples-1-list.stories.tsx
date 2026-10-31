@@ -81,7 +81,7 @@ function boxAround(element: Element | null): Element | null {
   return parent
 }
 
-/** Nothing in the phone frame scrolls sideways (P4.9 rule 16). */
+/** Nothing in the phone frame scrolls sideways. */
 async function noSidewaysScroll(canvasElement: HTMLElement) {
   const frame = boxAround(canvasElement.querySelector('[data-slot="app-shell"]'))
   await expect(frame).not.toBeNull()
@@ -92,7 +92,7 @@ async function noSidewaysScroll(canvasElement: HTMLElement) {
  * The customer catalogue: the dataset's customers and 50,000 generated ones, virtualised
  * (only the rows in view are drawn); views Active / Inactive / All with counts; inactive
  * customers are hidden, never deleted, and marked "Inactive" after the name where the list mixes
- * both (All) — not on the Inactive view, whose tab already says it (P5.23).
+ * both (All) — not on the Inactive view, whose tab already says it.
  */
 export const CustomersScreen: Story = {
   name: 'Customers',
@@ -127,7 +127,7 @@ export const CustomersScreenInteraction: Story = {
 }
 
 /**
- * A catalogue list sorts by its columns and filters by several values (P5.23): customers in Kać
+ * A catalogue list sorts by its columns and filters by several values: customers in Kać
  * or Niš, the largest open balance first; the application sorts (amounts exactly).
  */
 export const CustomersSortAndFilter: Story = {

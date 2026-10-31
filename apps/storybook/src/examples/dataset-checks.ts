@@ -1,6 +1,6 @@
 /*
- * The kept examples' figures checked against each other when the examples load (P4.8 "one
- * dataset", trimmed to the canonical screens in P5.89): a disagreement throws, so every example
+ * The examples' figures checked against each other when the examples load (one dataset for
+ * every screen): a disagreement throws, so every example
  * story fails instead of showing two different amounts for one thing. The application's work,
  * played here; components never add.
  *
@@ -109,7 +109,7 @@ export function checkBooking() {
   }
   const chosen = FREE_SLOTS.find((each) => each.id === JOVANA_SLOT)
   if (chosen?.start !== JOVANA_BOOKING.start) fail('Jovana’s booking is not a free time')
-  // The catalogue of services (P5.90 item 14): every service in a level, every section's service
+  // The catalogue of services: every service in a level, every section's service
   // in the catalogue.
   const levels = new Set(SERVICE_LEVELS.map((each) => each.id))
   for (const each of SERVICES) {

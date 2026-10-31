@@ -103,8 +103,8 @@ import {
 } from './data-I-fiscal'
 
 /*
- * The till of Pekara Zlatni klas (group I, screens-I.tsx registers its routes) with the fiscal
- * flows of P5.28 item 21: the receipt's kind, training, the buyer, the ways to pay and several on
+ * The till of Pekara Zlatni klas (screens-I.tsx registers its routes) with the fiscal
+ * flows: the receipt's kind, training, the buyer, the ways to pay and several on
  * one receipt, refunds of an earlier receipt, advances and the offline queue. The screen plays the
  * application: it keeps the sale, the receipt's kind, the buyer, the payments and the journal of
  * the day — the sale, the journal and the open advances above the screens (`useExampleState`), as
@@ -116,7 +116,7 @@ import {
 /** How long the example's terminal (or the customer's bank) takes to answer. */
 const TERMINAL_DELAY = 1200
 
-/** Where the till stands when the screen opens (one route per state, P5.23). */
+/** Where the till stands when the screen opens (one route per state). */
 export interface TillStart {
   step?:
     | 'cash'
@@ -205,7 +205,7 @@ function deliveryAnswer(
 }
 
 /**
- * An issued receipt as the till shows it (P5.95): ReceiptResult — its state, kind, total and the
+ * An issued receipt as the till shows it: ReceiptResult — its state, kind, total and the
  * processor's facts, its code and link, Print, Send and Copy. Its printed form is liro-folio's.
  */
 function EntryReceipt({
@@ -296,10 +296,10 @@ export function Till({ phone, start = {} }: { phone: boolean; start?: TillStart 
   const [refundOriginalId] = useExampleState('till.refundOriginal', () => ORIGINAL_ID)
 
   // ── The sale ──
-  // The sale outlives the screen, as the Core keeps it (P5.28).
+  // The sale outlives the screen, as the Core keeps it.
   const [sale, setSale] = useExampleState<readonly SaleLine[]>('till.sale', () => SALE)
   /**
-   * The cart's Undo of the last removal or of a parked sale, in its place (P5.93 item 3: no toasts
+   * The cart's Undo of the last removal or of a parked sale, in its place (no toasts
    * for routine actions at a till).
    */
   const [undo, setUndo] = useState<{
@@ -311,7 +311,7 @@ export function Till({ phone, start = {} }: { phone: boolean; start?: TillStart 
   const [feedback, setFeedback] = useState<ScanFeedback | null>(null)
   const [locked, setLocked] = useState(false)
   const [offlineChecked, setOfflineChecked] = useState(false)
-  /** The advance just refunded, said in the cart's details (P5.93 item 3: no toast). */
+  /** The advance just refunded, said in the cart's details (no toast). */
   const [refunded, setRefunded] = useState<string | null>(null)
   const [type, setType] = useState<ReceiptTypeId>(start.type ?? 'normal')
   const [transaction, setTransaction] = useState<TransactionId>(
@@ -412,7 +412,7 @@ export function Till({ phone, start = {} }: { phone: boolean; start?: TillStart 
         : null,
   )
   const [reference, setReference] = useState('')
-  // The buyer showed their own IPS QR code (kind PK) and the cashier scanned it (P5.40).
+  // The buyer showed their own IPS QR code (kind PK) and the cashier scanned it.
   const [buyerCode, setBuyerCode] = useState(false)
   const [cardState, setCardState] = useState<CardState>(
     step === 'card-waiting' || step === 'instant'
@@ -620,7 +620,7 @@ export function Till({ phone, start = {} }: { phone: boolean; start?: TillStart 
     setDone(true)
   }
 
-  // Each tile shows how many of it the sale holds: the count goes up under the finger (P5.90).
+  // Each tile shows how many of it the sale holds: the count goes up under the finger.
   const inSale = new Map(sale.map((line) => [line.productId, line.quantity]))
   const products = (
     <ProductGrid
@@ -729,7 +729,7 @@ export function Till({ phone, start = {} }: { phone: boolean; start?: TillStart 
               )
             },
             onRemove: (id: string) => {
-              // No question first: the line goes, and Undo stands in its place (P5.93 item 3).
+              // No question first: the line goes, and Undo stands in its place.
               const at = sale.findIndex((each) => each.productId === id)
               const name = PRODUCTS.find((each) => each.id === id)?.name ?? ''
               const previous = at > 0 ? sale[at - 1]?.productId : undefined
@@ -795,7 +795,7 @@ export function Till({ phone, start = {} }: { phone: boolean; start?: TillStart 
           onClick={() => {
             const parked = sale
             newSale()
-            // The empty cart says where the sale went, with "Resume" (P5.93 item 3: no toast).
+            // The empty cart says where the sale went, with "Resume" (no toast).
             setUndo({
               message: 'Sale parked. It waits under Parked sales.',
               undoLabel: 'Resume',
@@ -864,7 +864,7 @@ export function Till({ phone, start = {} }: { phone: boolean; start?: TillStart 
   const amountShown = (value: string) => money(value)
 
   if (locked) {
-    // The register locked in place (P5.93 item 3: the screen itself answers, not a toast).
+    // The register locked in place (the screen itself answers, not a toast).
     return (
       <TillTouch>
         <div
@@ -915,7 +915,7 @@ export function Till({ phone, start = {} }: { phone: boolean; start?: TillStart 
           }
           offlineAction={
             <span className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-              {/* The answer beside the action, not a toast (P5.93 item 3). */}
+              {/* The answer beside the action, not a toast. */}
               <span role="status" className="text-xs text-secondary bidi-content">
                 {offlineChecked ? 'Still offline' : ''}
               </span>

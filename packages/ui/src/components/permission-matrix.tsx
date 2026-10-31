@@ -17,7 +17,7 @@ import { Tooltip } from './popover'
 import { usePhone } from './use-phone'
 
 /*
- * PermissionMatrix (BUILD-PLAN P5.21, users and roles): what a role may do, areas × actions, for
+ * PermissionMatrix (users and roles): what a role may do, areas × actions, for
  * a company administrator. The roles, areas, actions and rules are the Core's.
  * - A table: the areas as row headers (name sm semibold, an optional description xs), the actions
  *   as column headers (centred, xs semibold), a checkbox in each cell named "Edit: Sales
@@ -28,9 +28,9 @@ import { usePhone } from './use-phone'
  *   drawn disabled but still focusable (`aria-disabled`), with the reason as its description and
  *   in a tooltip; it cannot be changed.
  * - Read-only (a built-in role, `readOnly`): no checkboxes — a check for allowed and a dash for
- *   not allowed, both named (P2.2: read-only is plain text, never disabled controls).
+ *   not allowed, both named (read-only is plain text, never disabled controls).
  * - Keyboard: the WAI-ARIA grid — one cell in the tab order; the arrows move one cell (the arrow
- *   pointing forward in the reading direction to the next column, B.7), Home and End to the row's
+ *   pointing forward in the reading direction to the next column), Home and End to the row's
  *   ends, Ctrl+Home and Ctrl+End to the matrix's corners; Space changes the checkbox.
  * - Phones: each area is a group of its actions as checkboxes, one under the other (a table of
  *   five checkbox columns does not fit 360px).
@@ -145,7 +145,7 @@ export function PermissionMatrix(props: PermissionMatrixProps) {
                   />
                 )
               }
-              // A cell that cannot be given (P5.93): read-only, and the matrix's own reason under
+              // A cell that cannot be given: read-only, and the matrix's own reason under
               // it, as the desktop cell's tooltip says it.
               const reasonId = `${baseId}-${area.id}-${action.id}-reason`
               return (

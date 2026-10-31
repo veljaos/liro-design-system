@@ -42,7 +42,7 @@ import {
 } from './data-F'
 
 /*
- * Group F's example screens (P5.21): journal entry NK-2026-0912 (balanced, and a separate
+ * The example screens: journal entry NK-2026-0912 (balanced, and a separate
  * unbalanced stage) and the September 2026 payroll run. Every screen plays the application: it
  * keeps the state and computes the figures in whole paras (data-F.ts); the components only show
  * them.
@@ -108,7 +108,7 @@ export function JournalEntry({ phone, unbalanced }: { phone: boolean; unbalanced
   const [journal, setJournalNow] = useState(
     JOURNALS.find((each) => each.label === JOURNAL.journal)?.value ?? 'general',
   )
-  // A routine save answers inline, "Saved" beside the button, until the next edit (P5.90).
+  // A routine save answers inline, "Saved" beside the button, until the next edit.
   const [saved, setSaved] = useState<SaveState>('idle')
   const setLines: typeof setLinesNow = (next) => {
     setSaved('idle')
@@ -191,7 +191,7 @@ export function JournalEntry({ phone, unbalanced }: { phone: boolean; unbalanced
             {phone ? null : post}
           </>
         }
-        // A draft's header as the invoice draft's (P5.23): every value a ChangeableValue on one
+        // A draft's header as the invoice draft's: every value a ChangeableValue on one
         // row — the date and the journal changeable, "Based on" a read-only record link.
         details={
           <>

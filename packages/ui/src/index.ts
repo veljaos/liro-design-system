@@ -357,7 +357,7 @@ export type {
 } from './templates/status-page'
 export { AuthShell } from './templates/auth-shell'
 export type { AuthShellProps } from './templates/auth-shell'
-// ── P5 group F ──
+// ── Accounting runs: candidates, balance, periodic runs ──
 export { CandidateList, chooseCandidate } from './components/candidate-list'
 export type { Candidate, CandidateListProps } from './components/candidate-list'
 export { BalanceBar } from './components/balance-bar'
@@ -374,7 +374,7 @@ export type {
 } from './templates/periodic-run-page'
 export { countChecks, RUN_RESULT_ORDER } from './templates/periodic-run-logic'
 export type { RunCheckResult } from './templates/periodic-run-logic'
-// ── P5 group A ──
+// ── Collaboration: agents, presence, history, messages, questionnaires ──
 export { AgentMark } from './components/agent-mark'
 export type { AgentMarkProps } from './components/agent-mark'
 export { PresenceAvatars } from './components/presence-avatars'
@@ -433,7 +433,7 @@ export type {
 } from './components/questionnaire-logic'
 export { AgentQuestion } from './components/agent-question'
 export type { AgentQuestionProps } from './components/agent-question'
-// ── P5 group C ──
+// ── Sign-in and security ──
 export { EmailFirstForm, ProviderSignInButtons } from './components/sign-in'
 export type {
   EmailFirstFormProps,
@@ -502,7 +502,7 @@ export type {
   SetupStepState,
   SignerState,
 } from './components/admin-logic'
-// ── P5 group E ──
+// ── Catalogues at scale, registers and official forms ──
 export { LookupDialog } from './components/lookup-dialog'
 export type { LookupDialogProps } from './components/lookup-dialog'
 export {
@@ -555,7 +555,7 @@ export {
   rulesTone,
 } from './templates/register-logic'
 export type { RuleResult, StatutoryRule } from './templates/register-logic'
-// ── P5 group B ──
+// ── Shell markers, timelines, jobs and files ──
 export {
   CONNECTION_STATUSES,
   ConnectionState,
@@ -623,7 +623,7 @@ export type {
   HostMessage,
   ViewerMessage,
 } from './components/document-frame'
-// ── P5 group D2 ──
+// ── Complex documents ──
 export {
   CancellationBanner,
   ChangeText,
@@ -657,7 +657,7 @@ export type {
 export type { DocumentBlock } from './templates/document-page'
 export type { IrreversibleReason } from './components/confirm-dialog'
 export { subtotalStart } from './components/data-table-logic'
-// ── P5 group D1 ──
+// ── Document lines and lookup ──
 export type { GridDetail } from './components/editable-grid-logic'
 export type { GridLookupCreate } from './components/editable-grid'
 export {
@@ -691,7 +691,7 @@ export type {
   LookupDraft,
   LookupDraftErrors,
 } from './components/lookup-create-drawer'
-// ── P5.24 shifts ──
+// ── Shifts ──
 export { ShiftPlanner } from './components/shift-planner'
 export type {
   ShiftCoverage,
@@ -742,7 +742,7 @@ export type {
   WorkingTimeWarning,
   WorkingTimeWeek,
 } from './components/working-time-balance'
-// ── P5.9 Tree, P5.14 Sensitive fields, P5.16 Portal shell ──
+// ── Trees, sensitive fields, portal shell ──
 export { TreeView } from './components/tree-view'
 export type { TreeViewProps } from './components/tree-view'
 export { TreeTable } from './components/tree-table'
@@ -765,7 +765,7 @@ export { MaskedValue } from './components/masked-value'
 export type { MaskedValueProps, MaskedValueReason, RevealRequest } from './components/masked-value'
 export { PortalShell } from './templates/portal-shell'
 export type { PortalParticipant, PortalSection, PortalShellProps } from './templates/portal-shell'
-// ── P5.13 / P5.24 AttendanceGrid and ClockRecordList ──
+// ── AttendanceGrid and ClockRecordList ──
 export { AttendanceGrid, ATTENDANCE_VIRTUALIZE_FROM } from './components/attendance-grid'
 export type {
   AttendanceCode,
@@ -808,7 +808,7 @@ export type {
   ClockSource,
 } from './components/clock-record-list'
 export { clockTimeOf, onLaterDay, parseClockTime } from './components/clock-record-logic'
-// ── P5.8 Calendar and scheduling ──
+// ── Calendar and scheduling ──
 export { CalendarView } from './components/calendar-view'
 export type { CalendarEvent, CalendarSlot, CalendarViewProps } from './components/calendar-view'
 export { ResourceSchedule } from './components/resource-schedule'
@@ -857,7 +857,7 @@ export type {
   UnavailableTime,
 } from './components/schedule-logic'
 export { deviceTimeZone, localDateTimeIn } from './provider/format'
-// ── P5.10 / P5.11 touch, POS and warehouse ──
+// ── Touch, POS and warehouse ──
 export type { Density } from './provider/liro-provider'
 export { NumericKeypad } from './components/numeric-keypad'
 export type { NumericKeypadProps } from './components/numeric-keypad'
@@ -943,7 +943,7 @@ export {
 export type { StepOptions } from './components/quantity-logic'
 export { QuizResult } from './components/quiz-result'
 export type { QuizResultProps, QuizReviewItem } from './components/quiz-result'
-// ── P5.25 RoomRack ──
+// ── RoomRack ──
 export { RoomRack } from './components/room-rack'
 export type {
   RackFloor,
@@ -962,7 +962,7 @@ export {
 } from './components/room-rack-logic'
 export type { RackFilter, RackPlace, RackSearchable } from './components/room-rack-logic'
 export { fitOnDays } from './components/schedule-logic'
-// ── P5.25 FloorPlan, SeatingChart ──
+// ── FloorPlan, SeatingChart ──
 export { FloorPlan } from './components/floor-plan'
 export type {
   FloorArea,
@@ -1031,11 +1031,11 @@ export type {
   SeatRef,
 } from './components/seating-logic'
 
-// ── P5.27 legal search ──
+// ── Legal search ──
 export { GazetteIssues } from './components/gazette-issues'
 export type { GazetteIssue, GazetteIssuesProps } from './components/gazette-issues'
 export { treeFilterIds, treeFilterLabels } from './components/filter-logic'
-// ── P5.27 legal text ──
+// ── Legal text ──
 export { LegalText } from './components/legal-text'
 export type { LegalTextHandle, LegalTextProps } from './components/legal-text'
 export { LegalContents } from './components/legal-contents'
@@ -1086,7 +1086,7 @@ export type {
   LegalSearchIndex,
   LegalTextPart,
 } from './components/legal-logic'
-// ── P5.27 legal page ──
+// ── Legal page panels ──
 export {
   LEGAL_PANEL_KEYS,
   LegalArticleSummary,
@@ -1132,7 +1132,7 @@ export type {
   FloorRectArea,
 } from './components/floor-plan-logic'
 
-// ── P5.27 legal model ──
+// ── Legal model ──
 export type {
   GazetteReference,
   LegalAct,
@@ -1152,7 +1152,7 @@ export type {
   PracticeItem,
   RelatedAct,
 } from './components/legal-model'
-// ── P5.28 docs: the statutory form grid ──
+// ── The statutory form grid ──
 export {
   statutoryRows,
   statutoryColumnLabel,
@@ -1176,9 +1176,9 @@ export type {
   StatutoryRow,
 } from './templates/statutory-logic'
 
-// ── P5.28 dates ──
+// ── Dates ──
 export { numericFormat } from './provider'
-// ── P5.28 screens ──
+// ── Change confirmation ──
 export {
   ChangeConfirmDialog,
   changeConfirmLabel,
@@ -1192,10 +1192,10 @@ export type {
   NotifyOption,
 } from './components/change-confirm-dialog'
 
-// ── P5.28 phone ──
+// ── Searchable select ──
 export { isSearchable, SEARCHABLE_FROM } from './components/select-field'
 
-// ── P5.28 pos ──
+// ── Fiscal receipts at the till ──
 export { ReceiptKindPicker } from './components/receipt-kind-picker'
 export type { ReceiptKindPickerProps } from './components/receipt-kind-picker'
 export { BuyerField, BUYER_TYPES_SEARCHABLE_FROM } from './components/buyer-field'
@@ -1230,7 +1230,7 @@ export type {
 } from './components/sale-logic'
 export type { CartLineState } from './components/cart-panel'
 
-// ── P5.28 floor ──
+// ── Floor plan and seating helpers ──
 export {
   AREA_SEGMENTS_UP_TO,
   areaSwitchKind,
@@ -1244,7 +1244,7 @@ export type { LabelFit, LabelSize } from './components/floor-plan-logic'
 export { seatingChanges } from './components/seating-logic'
 export type { SeatingChange } from './components/seating-logic'
 
-// ── P5.29 admin ──
+// ── Monitoring ──
 export { HealthList, healthIcon } from './components/health-list'
 export type {
   HealthAction,
@@ -1256,7 +1256,7 @@ export type {
 export { HEALTH_KINDS, healthFacts } from './components/health-logic'
 export type { HealthFact, HealthKind, HealthTimes } from './components/health-logic'
 
-// ── P5.29 agent: SlaTimer and the helpdesk's keys (P5.30) ──
+// ── SlaTimer and the helpdesk's keys ──
 export { durationText, SlaTimer, slaText } from './components/sla-timer'
 export type { SlaTimerProps } from './components/sla-timer'
 export {
@@ -1268,7 +1268,7 @@ export {
 } from './components/sla-logic'
 export type { DurationParts, SlaOptions, SlaReading, SlaState } from './components/sla-logic'
 export { rowFocusTarget } from './components/data-table-logic'
-// ── P5.29 portal ──
+// ── Portal: feedback, help and search ──
 export { SatisfactionRating } from './components/satisfaction-rating'
 export type { SatisfactionRatingProps } from './components/satisfaction-rating'
 export { HelpfulFeedback } from './components/helpful-feedback'
@@ -1281,7 +1281,7 @@ export { HighlightedText, SearchResultList } from './components/search-result-li
 export type { SearchResult, SearchResultListProps } from './components/search-result-list'
 export { CategoryGrid } from './components/category-grid'
 export type { CategoryCard, CategoryGridProps } from './components/category-grid'
-// P5.94 item 20: a portal's common questions.
+// A portal's common questions.
 export {
   CommonQuestions,
   filterQuestions,
@@ -1297,7 +1297,7 @@ export type {
   QuestionCategory,
   SearchableQuestion,
 } from './components/common-questions'
-// P5.96 item 1: every question of a portal on a page of its own, each answer on its own page.
+// Every question of a portal on a page of its own, each answer on its own page.
 export {
   AnswerView,
   highlightQuestion,
@@ -1328,7 +1328,7 @@ export type {
   SatisfactionAnswer,
   SatisfactionOption,
 } from './components/help-logic'
-// ── P5.34 ai: the assistant (P5.34), e-mail preview (P5.38), reading (P5.39) ──
+// ── The assistant, e-mail preview, reading ──
 export { AssistantAnswer } from './components/assistant-answer'
 export type { AssistantAnswerProps } from './components/assistant-answer'
 export { AssistantComposer } from './components/assistant-composer'
@@ -1408,17 +1408,17 @@ export type {
 export { UsageMeter } from './components/usage-meter'
 export type { UsageMeterProps } from './components/usage-meter'
 export { meterShare, usageAmount, usageWords } from './components/usage-logic'
-// ── P5.31 docs ──
+// ── Page viewer and recognized fields ──
 export { PageViewer } from './components/page-viewer'
 export type { PageViewerProps } from './components/page-viewer'
 export { clampPage, labelSide, regionBox, regionPage } from './components/page-viewer-logic'
 export type { PageRegion, RegionBox, ViewerPage } from './components/page-viewer-logic'
 export { RecognizedField } from './components/recognized-field'
 export type { RecognizedFieldProps } from './components/recognized-field'
-// ── P5.33 docs ──
+// ── Value comparison ──
 export { ValueComparison, valueComparisonCounts } from './components/value-comparison'
 export type { ComparisonRow, ValueComparisonProps } from './components/value-comparison'
-// ── P5.42 org ──
+// ── Hierarchy ──
 export { HierarchyChart } from './components/hierarchy-chart'
 export type { HierarchyChartProps } from './components/hierarchy-chart'
 export {
@@ -1438,7 +1438,7 @@ export type {
   HierarchyKeyAction,
   HierarchyNode,
 } from './components/hierarchy-logic'
-// ── P5.43 files ──
+// ── Files ──
 export {
   blockedFolders,
   canDropInto,
@@ -1492,10 +1492,10 @@ export type { FilePreviewProps } from './components/file-preview'
 export { FileDetails } from './components/file-details'
 export type { FileDetailsProps } from './components/file-details'
 
-// ── P5.49 trade ──
+// ── Three-way comparison ──
 export type { ComparisonValues } from './components/value-comparison'
 
-// ── P5.66 records ──
+// ── Defined forms ──
 export {
   definedConditionFields,
   definedConditionHolds,
@@ -1525,7 +1525,7 @@ export type {
   DefinedValue,
   DefinedValues,
 } from './components/defined-form'
-// ── P5.78 auto ──
+// ── Rule builder ──
 export { RuleBuilder, ruleValueText } from './components/rule-builder'
 export type { RuleBuilderProps } from './components/rule-builder'
 export {
@@ -1570,9 +1570,9 @@ export type {
   RuleValueKind,
 } from './components/rule-builder-logic'
 
-// ── P5.79 auto ──
+// ── Merging ──
 export { chosenCounts } from './components/value-comparison'
-// ── P5.81 reports ──
+// ── Dashboard grid ──
 export { DashboardGrid } from './components/dashboard-grid'
 export type { DashboardCard, DashboardGridProps } from './components/dashboard-grid'
 export {
@@ -1593,7 +1593,7 @@ export type {
   DashboardLayoutItem,
   GridPlace,
 } from './components/dashboard-grid-logic'
-// ── P5.93 code and the assistant's work ──
+// ── Code and the assistant's work ──
 export { CodeBlock, CodeHighlighterProvider } from './components/code-block'
 export type { CodeBlockProps } from './components/code-block'
 export {

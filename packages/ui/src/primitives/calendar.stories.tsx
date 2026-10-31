@@ -11,7 +11,7 @@ const meta = {
     docs: {
       description: {
         component: internal(
-          'A month calendar. Month and weekday names come from the provider format, the first day of the week from weekStartsOn, the direction and the arrow keys from the provider. Change the format locale in the toolbar to see the names and the first day change. DateField, DateRangeField (P2.3).',
+          'A month calendar. Month and weekday names come from the provider format, the first day of the week from weekStartsOn, the direction and the arrow keys from the provider. Change the format locale in the toolbar to see the names and the first day change. DateField, DateRangeField.',
         ),
       },
     },
@@ -68,7 +68,7 @@ export const Range: Story = {
 }
 
 /*
- * P5.28 item 2: the names and the week's first day come only from the provider's locale. An
+ * The names and the week's first day come only from the provider's locale. An
  * English interface never shows Serbian names; a Serbian one starts its weeks on Monday.
  */
 

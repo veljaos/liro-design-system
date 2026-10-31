@@ -23,7 +23,7 @@ import {
 } from './tree-logic'
 
 /*
- * The state and keyboard of TreeView and TreeTable (P5.9), shared: the expanded and selected ids
+ * The state and keyboard of TreeView and TreeTable, shared: the expanded and selected ids
  * (each controlled or not), the visible rows, the roving focus (one row in the tab order), the
  * keys of the WAI-ARIA tree pattern with type-ahead, and the requests for lazy children.
  */

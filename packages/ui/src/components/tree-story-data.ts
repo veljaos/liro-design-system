@@ -1,7 +1,7 @@
 import type { TreeNode } from './tree-logic'
 
 /*
- * Data of the TreeView and TreeTable stories (P5.9): fictitious, Serbian. Not part of the
+ * Data of the TreeView and TreeTable stories: fictitious, Serbian. Not part of the
  * package: nothing in src/index.ts imports this file. No classes here: Storybook compiles classes
  * only from *.stories.tsx files.
  */

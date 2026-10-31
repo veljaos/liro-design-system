@@ -19,7 +19,7 @@ describe('noticeDuration with an action', () => {
   })
 })
 
-describe('toasts never block (P5.90, P5.93)', () => {
+describe('toasts never block', () => {
   it('lets clicks through a toast except on its buttons', () => {
     expect(NOTICE_POINTER.split(' ')).toEqual([
       'pointer-events-none',

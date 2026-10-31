@@ -1,7 +1,7 @@
 import type { CommonQuestion, QuestionCategory } from './common-questions'
 
 /*
- * QuestionsAndAnswers' story data (P5.96 item 1): 320 questions the employees of a fictitious
+ * QuestionsAndAnswers' story data: 320 questions the employees of a fictitious
  * Serbian company ask HR, made without randomness — 80 situations (ten categories of eight) ×
  * four ways of asking about each. The same input gives the same list on every run, so pictures
  * stay still. Illustrative only: the days, documents and approvers are invented, not legal

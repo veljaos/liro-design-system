@@ -14,20 +14,20 @@ import { StatusBadge } from '../components/status-badge'
 import { usePhone } from '../components/use-phone'
 
 /*
- * PosShell (BUILD-PLAN P5.10; docs/decisions.md "Touch and POS"). The frame of a till: the whole
+ * PosShell. The frame of a till: the whole
  * screen, no application header, no navigation (a till is one task), made for fingers.
  *
  * - **Kiosk-safe:** it fills its container (the application gives it the viewport, 100dvh);
  *   nothing scrolls the page (`overscroll-behavior: none`, so a swipe neither reloads nor goes
  *   back), double-tap zoom is off (`touch-action: manipulation`), the strip and the tiles cannot
  *   be selected by a long press, and the safe-area insets of an installed app are kept.
- * - **The strip on top** (not a header: no links): the brand (a prop, D18), the register and the
+ * - **The strip on top** (not a header: no links): the brand (a prop), the register and the
  *   cashier (a label above each value), what is being sent (a neutral "Sending…" badge and "3
  *   sales waiting to be sent") and the application's actions at the end. Offline, the
- *   OfflineIndicator stands under it with the queue (P5.3).
+ *   OfflineIndicator stands under it with the queue.
  * - **Landscape tablet first:** the product area at the start (scrolling), the cart panel at the
  *   end, 26rem (at most 45%), full height, its main action at the bottom within the thumb's reach.
- * - **Phone portrait (below 48em or `layout="phone"`): the products first** (P5.90 item 20: a
+ * - **Phone portrait (below 48em or `layout="phone"`): the products first** (a
  *   waiter taps items, not the cart) — the categories and the items in one scrolling area — and
  *   the order as a compact bar at the bottom ("Order · 3 items · 1.011,00 RSD", the
  *   application's count and total in `orderSummary`), which is highlighted at each change and
@@ -35,13 +35,13 @@ import { usePhone } from '../components/use-phone'
  * - **Scanner:** with `onScan`, a burst of keys anywhere on the screen (not in a field, which has
  *   its own ScanField) is read as a scan (`scanKey`) and reported; the Enter that ends it never
  *   presses the focused button.
- * - P5.28 (item 21): `banners` under the strip for a mode that must stay in view (training: a
+ * - `banners` under the strip for a mode that must stay in view (training: a
  *   persistent warning Banner, the application's words); the queue's state (`queueState`:
  *   'sending', or 'failed' — a danger "Not sent" badge) and `queueAction` (open the journal).
  */
 
 export interface PosShellProps {
-  /** The brand at the start of the strip (BrandLockup, a logo), from the application (D18). */
+  /** The brand at the start of the strip (BrandLockup, a logo), from the application. */
   brand: ReactNode
   /** The register's name ("Kasa 2"). */
   register?: string
@@ -147,7 +147,7 @@ export function PosShell(props: PosShellProps) {
   const summaryKey = summary === undefined ? '' : `${String(summary.count)}|${summary.total ?? ''}`
   const lastSummary = useRef(summaryKey)
   useEffect(() => {
-    // Every change of the order lights the bar up: the tap counted (P5.90 item 20).
+    // Every change of the order lights the bar up: the tap counted.
     if (lastSummary.current === summaryKey) return
     lastSummary.current = summaryKey
     flash(['order'])

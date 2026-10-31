@@ -120,7 +120,7 @@ export const Exit: Story = {
 }
 
 /**
- * A team member's audited, read-only view of a tenant (P5.29, the Superadmin): the application's
+ * A team member's audited, read-only view of a tenant (the Superadmin): the application's
  * `note` after the reason says that every page is recorded.
  */
 export const ImpersonationAudited: Story = {
@@ -434,7 +434,7 @@ export const Japanese: Story = {
   ),
 }
 
-/** English in a right-to-left page (P3.6): the sentences keep their order, the layout is RTL. */
+/** English in a right-to-left page: the sentences keep their order, the layout is RTL. */
 export const EnglishInRtl: Story = {
   name: 'English in RTL',
   render: () => (

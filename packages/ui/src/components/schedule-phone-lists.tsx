@@ -9,7 +9,7 @@ import { scheduleSearchMatches } from './schedule-logic'
 import { TextField } from './text-field'
 
 /*
- * ResourceSchedule's phone lists (P5.90 item 19, the F7 phone rule): a phone never draws the
+ * ResourceSchedule's phone lists: a phone never draws the
  * timeline of a schedule with many rows (a hotel with 200 rooms). It shows the day's lists the
  * application passes (`phoneLists`: arrivals, departures, in house …) — which booking is in which
  * list is the application's data, the component computes nothing — chosen with a segmented

@@ -5,12 +5,12 @@ import { BUTTON_RESET, FOCUS_RING, TEXT_DIRECTION } from './classes'
 import { cn } from './cn'
 
 /*
- * Accordion (shadcn/ui accordion on Radix, adapted; P3.6). Mantine 9.6.2 Accordion.css, variant
+ * Accordion (shadcn/ui accordion on Radix, adapted). Mantine 9.6.2 Accordion.css, variant
  * 'default', chevron at the end: each item has a 1px border.default line under it; the control is
  * a full-width button, 16px (md) at the inline sides, surface.hover on hover; its label regular,
- * 13px (the owner's sm), text.primary, 12px (sm) above and below; a 15px chevron at the inline end
+ * 13px, text.primary, 12px (sm) above and below; a 15px chevron at the inline end
  * (the other side in right-to-left), turning 180° in 200ms when open; the panel 16px padding,
- * 5px (xs / 2) at the top. Disabled: text.disabled (no opacity, Appendix B.6). Height opens and
+ * 5px (xs / 2) at the top. Disabled: text.disabled (no opacity). Height opens and
  * closes as the collapsible (Radix sets --radix-collapsible-content-height for its content too).
  * Keyboard (Radix, WAI-ARIA accordion): Enter and Space toggle; ArrowDown / ArrowUp move between
  * headers, Home and End go to the first and last.

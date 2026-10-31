@@ -9,7 +9,7 @@ import { cn } from './cn'
  * Checkbox defaultProps; not the theme's md),
  * 1px border.control; checked and indeterminate fill with brand.solid and a white mark 60% of the
  * box. Disabled: surface.disabled with border.default, the mark in text.disabled. An invisible
- * 2px margin makes the target 24px (WCAG 2.5.8). `readOnly` (P5.93): the disabled look with the
+ * 2px margin makes the target 24px (WCAG 2.5.8). `readOnly`: the disabled look with the
  * mark in text.secondary, focusable; the caller keeps the state from changing.
  */
 export function Checkbox({

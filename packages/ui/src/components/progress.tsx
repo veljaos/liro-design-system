@@ -8,8 +8,7 @@ import { useLiro } from '../provider/liro-provider'
 import { usePhone } from './use-phone'
 
 /*
- * ProgressBar, Skeleton and Stepper (BUILD-PLAN P2.5), the previous Design System's (owner's
- * decision, 2026-09-28, docs/decisions.md "Feedback"): ProgressBar Mantine size 'sm' with fully
+ * ProgressBar, Skeleton and Stepper: ProgressBar Mantine size 'sm' with fully
  * rounded ends, filling from the start side (it flips in right-to-left); Skeleton radius md;
  * Stepper size 'sm' with 32px step icons in the primary colour.
  */
@@ -27,7 +26,7 @@ export interface ProgressBarProps {
 
 /**
  * How far a task has come: an import, an upload, a job. Mantine Progress 'sm': 5px high, fully
- * rounded (owner), the track surface.sunken (Mantine gray-2), the filled part brand.solid, filling
+ * rounded, the track surface.sunken (Mantine gray-2), the filled part brand.solid, filling
  * from the leading edge.
  */
 export function ProgressBar({ label, value, max = 100, className }: ProgressBarProps) {
@@ -76,7 +75,7 @@ export interface StepperProps {
   onStepClick?: (index: number) => void
   /**
    * 'phone': one line "Step 3 of 4 · Check" over a thin progress bar, never a wrapping row of
-   * circles (P5.23). Default by the viewport (48em).
+   * circles. Default by the viewport (48em).
    */
   layout?: 'desktop' | 'phone'
   /** Layout classes. */
@@ -97,13 +96,13 @@ export function stepState(index: number, active: number): 'completed' | 'current
 /**
  * The steps of a process and where the user is (a wizard, an onboarding). Mantine Stepper size
  * 'sm', horizontal, icons at the start with labels beside them, wrapping on narrow screens:
- * 32px round step icons (owner) with the step's number in bold 13px; completed steps filled with
+ * 32px round step icons with the step's number in bold 13px; completed steps filled with
  * brand.solid and a check (60%), the current one outlined in border.brand, upcoming ones on
  * surface.disabled with a border.subtle ring (Mantine gray-2 for both) and the number in
  * text.secondary; 2px lines between steps in border.subtle, border.brand up to the current step; labels 13px weight 600 and descriptions 12px (Mantine 11px)
  * in text.secondary, 12px after the icon.
  *
- * Phones (P5.23, owner): a row of circles wraps into two rows with broken lines, so below 48em
+ * Phones: a row of circles wraps into two rows with broken lines, so below 48em
  * the Stepper is one line — "Step 3 of 4 · Check" (13px semibold, text.primary; the current
  * step's description under it, 12px text.secondary) — over a 5px ProgressBar filled to the
  * current step (hidden from assistive technology: the line says it). Every multi-step flow uses

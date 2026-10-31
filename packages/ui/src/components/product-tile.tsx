@@ -13,7 +13,7 @@ import { StateLine } from './state-line'
 import { TextField } from './text-field'
 
 /*
- * ProductTile and ProductGrid (BUILD-PLAN P5.10; docs/decisions.md "Touch and POS"). The products
+ * ProductTile and ProductGrid. The products
  * a till sells, as large targets for fingers: a tile is a button (at least 112px high) with an
  * optional image slot, the name (wrapping, never cut), a detail line, the price through
  * `format.money` (a decimal string) and the stock state in the application's words. A tile that
@@ -24,10 +24,10 @@ import { TextField } from './text-field'
  * The grid fills the width with 144px-or-wider columns; one tile is in the tab order and the
  * arrows move from the leading edge (`launchpadArrowTarget`), Home and End to the ends.
  * Categories are pressed chips at the start (the neutral selection: surface.selected with a
- * border.selected border, never blue, D17), "All" first; the grid shows the products of the
+ * border.selected border, never blue), "All" first; the grid shows the products of the
  * chosen category (`categoryId`).
  *
- * P5.90 (item 20, "ease sells"): every press answers at once — the tile is highlighted briefly
+ * Every press answers at once — the tile is highlighted briefly
  * (the neutral selection, kept with reduced motion; only the fade goes) and a device that can
  * vibrate gives a short pulse (`tapFeedback`); `inOrder` shows on the tile how many of it the
  * order holds ("2"), so the count going up is seen where the finger is, and its name says it. A
@@ -35,7 +35,7 @@ import { TextField } from './text-field'
  * chosen by default). `search` adds a search field above the chips: typing finds products by name
  * or detail in every category (a local filter of the products given, as ComboboxField's).
  *
- * P5.93 (item 15, the owner's fourth review): a tile's state is two lines over the price, as on
+ * A tile's state is two lines over the price, as on
  * every tile and card (StateLine) — the icon and the state ("Unavailable", "Low stock", "Out of
  * stock"; `stock.label` or the provider's words), the detail under it ("Sold out", "3 left").
  * Plenty in stock is one quiet line ("12 left").
@@ -48,7 +48,7 @@ export interface ProductStock {
   /** The detail in the application's words ("3 left", "Sold out"). */
   text: string
   /**
-   * P5.93: the state over it, in the application's words. Default for warning
+   * The state over it, in the application's words. Default for warning
    * `messages['pos.lowStock']` ("Low stock"), for danger `messages['pos.outOfStock']`; neutral
    * has none (the detail alone).
    */

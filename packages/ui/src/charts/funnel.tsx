@@ -19,10 +19,10 @@ import {
 } from './shared'
 
 /*
- * FunnelChart (P5.93 item 44, owner: "CRM conversion"): how many reach each stage of a process,
+ * FunnelChart ("CRM conversion"): how many reach each stage of a process,
  * from the first down, on Recharts' Funnel with our own shapes.
  * - One meaning: every stage in the main blue (a stage that means a state takes its tone), 2px of
- *   the card between them; each stage's width follows its value (drawing only, D4).
+ *   the card between them; each stage's width follows its value (drawing only).
  * - Each stage is named at the page's start, on its row (HTML: it wraps, never cut, and keeps its
  *   direction): its name, and its value with the application's share ("38,2%" — the conversion is
  *   the application's, never computed). The text never stands on the data colour.
@@ -56,7 +56,7 @@ export interface FunnelChartProps extends ChartStateProps {
   /** The plot's height in pixels. Default 280 (240 on phones). */
   height?: number
   controls?: ReactNode
-  /** The key figures as toggle buttons (a ChartSeriesToggle) at the header's end (P5.93 item 42). */
+  /** The key figures as toggle buttons (a ChartSeriesToggle) at the header's end. */
   toggle?: ReactNode
   layout?: 'desktop' | 'phone'
   className?: string

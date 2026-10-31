@@ -9,11 +9,11 @@ import { resumeStep, setupProgress, type SetupStepState } from './admin-logic'
 import { ProgressBar } from './progress'
 
 /*
- * SetupChecklist (BUILD-PLAN P5.21): the first-run steps of a new company — company data, the
+ * SetupChecklist: the first-run steps of a new company — company data, the
  * e-invoicing connection, importing customers, the first invoice … The steps, their states and
  * their actions are the Core's.
  * - One card (raised, border.default, radius lg): the steps reach its edges, so the highlighted
- *   step's band does too, and the card ends with its last step (P4.9).
+ *   step's band does too, and the card ends with its last step.
  * - The header: the title (the application's, h2 by default), the progress "2 of 5 done"
  *   (`messages['setup.progress']`, numbers through `format.number`) and a ProgressBar.
  * - The steps in order, rows divided by lines (no cards inside the card it stands in). Each: a
@@ -23,11 +23,11 @@ import { ProgressBar } from './progress'
  *   blocked step's reason in words.
  * - Resume: the step to do now — the application's `current`, else the first step still to do
  *   (`resumeStep`) — is highlighted the neutral way (surface.selected with the 3px
- *   border.selected bar at its start, D17), carries `aria-current="step"` and its action is the
+ *   border.selected bar at its start), carries `aria-current="step"` and its action is the
  *   main button; other open steps show their action as a small neutral button; a blocked step
  *   has none (its reason says what it waits for); a done step may offer a small "Change".
  * - Actions are links (`href`, through the provider's `linkComponent`) or buttons (`onClick`).
- * - All done (P5.93): the header says so in the success tone ("Setup complete" after a
+ * - All done: the header says so in the success tone ("Setup complete" after a
  *   CircleCheck) instead of the progress; the steps fold under "Show steps"; done steps' markers
  *   are success-toned and no step offers its action again (`completeActions` keeps them).
  */

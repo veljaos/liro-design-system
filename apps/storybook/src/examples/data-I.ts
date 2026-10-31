@@ -1,8 +1,8 @@
 /*
- * Group I's example data (P5.17): the till of Pekara Zlatni klas in Novi Sad (a bakery, Kasa 1)
+ * The example data: the till of Pekara Zlatni klas in Novi Sad (a bakery, Kasa 1)
  * on 6 October 2026. Fictitious; English interface text, Serbian data. Amounts are whole paras
  * (BigInt) and quantities whole thousandths: every line total, discount, tax and change is
- * computed here, as the application would; the components add nothing (D4). The stated figures
+ * computed here, as the application would; the components add nothing. The stated figures
  * below are checked against the computation in dataset-checks.ts. Tax labels (E 10%, Đ 20%) and
  * codes are illustrative. Not part of the package. No classes here.
  */
@@ -22,7 +22,7 @@ export const I_ROUTES = {
   posReceipt: '/pos/zlatni-klas?step=receipt',
   /** The connection lost, three sales kept on the till. */
   posOffline: '/pos/zlatni-klas?offline',
-  /** Phones: the order sheet open over the products (P5.90 item 20). */
+  /** Phones: the order sheet open over the products. */
   posOrder: '/pos/zlatni-klas?order=open',
 }
 
@@ -35,7 +35,7 @@ export const BAKERY = {
   register: 'Kasa 1',
   cashier: 'Snežana Kovačević',
   currency: 'RSD',
-  /** The receipt's number (the processor's, invented; P5.28) and time of the sale in the cart. */
+  /** The receipt's number (the processor's, invented) and time of the sale in the cart. */
   receipt: 'ZK7Q2M4P-ZK7Q2M4P-2318',
   time: '09:42',
   /** Sales kept on the till while the connection is lost. */
@@ -67,7 +67,7 @@ export const CATEGORIES: readonly ProductCategory[] = [
 
 /**
  * The bakery's most sold products this week (the application's figures), first under their own
- * chip so most sales need no category (P5.90 item 20).
+ * chip so most sales need no category.
  */
 export const MOST_SOLD: readonly string[] = [
   'kifla',

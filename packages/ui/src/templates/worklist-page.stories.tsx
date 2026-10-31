@@ -177,11 +177,11 @@ const meta = {
           '`back`, `status`, `subtitle` — and the list: a `WorklistSummary` (a thin strip of the ' +
           'record’s figures, "3 of 10 done" with a bar, the application’s check, and its final ' +
           'action once nothing waits).\n\n' +
-          '**Many items (P5.94):** from 100 items only the rows in view are drawn (in the ' +
+          '**Many items:** from 100 items only the rows in view are drawn (in the ' +
           'queue’s own scroll from 62em, against the page’s scroll below); `toolbar` at the top ' +
           'of the queue (a bulk action such as "Accept all exact matches (6)", then its Undo in ' +
           'place), `search` / `onSearchChange` and `filters` (states with their counts, as chips ' +
-          'that wrap, one pressed; `filter` / `onFilterChange`; always "All" first, P5.96, while ' +
+          'that wrap, one pressed; `filter` / `onFilterChange`; always "All" first, while ' +
           'the queue opens on the state that needs the user) stay above the rows. The queue is ' +
           'one tab stop: ArrowUp / ArrowDown, Home and End move it and, from 62em, choose the ' +
           'item; Enter takes the chosen item’s main decision (`onConfirm`). After a decision the ' +
@@ -441,7 +441,7 @@ export const Japanese: Story = {
   ),
 }
 
-// ── A long queue (P5.94 item 19) ───────────────────────────────────────────────────────────────
+// ── A long queue ───────────────────────────────────────────────────────────────
 
 type CardState = 'needs' | 'matched' | 'done'
 
@@ -483,7 +483,7 @@ const CARD_STATES: { value: CardState; label: string; tone: 'warning' | 'neutral
 /** The card payments of October to explain: 1,200 items, the queue's tools and a summary. */
 function LongQueue({ stacked = false }: { stacked?: boolean }) {
   const [payments, setPayments] = useState(CARD_PAYMENTS)
-  // "All" is always the first chip (P5.96); Needs you is the one the queue opens on.
+  // "All" is always the first chip; Needs you is the one the queue opens on.
   const [filter, setFilter] = useState<CardState | 'all'>('needs')
   const [query, setQuery] = useState('')
   const [selected, setSelected] = useState<string | undefined>(stacked ? undefined : 't4')
@@ -655,7 +655,7 @@ function LongQueue({ stacked = false }: { stacked?: boolean }) {
 }
 
 /**
- * 1,200 items (P5.94 item 19): the summary strip, the queue's tools — "Accept all matched", the
+ * 1,200 items: the summary strip, the queue's tools — "Accept all matched", the
  * search, the states with their counts — and only the rows in view drawn.
  */
 export const LongQueueStory: Story = {

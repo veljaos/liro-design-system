@@ -2,13 +2,13 @@ import type { IconComponent } from './intents'
 import { compareDecimal, isDecimal } from './quantity-logic'
 
 /*
- * The pure logic of the till's sale flows (P5.28 items 21 and 22): the ways to pay as the
+ * The pure logic of the till's sale flows: the ways to pay as the
  * application offers them, the lines chosen with their quantities (a refund, a split bill, items
  * moved to another table), and the kind of a receipt. Nothing here adds, subtracts or rounds an
- * amount (D4); quantities are compared exactly as decimal strings (`compareDecimal`).
+ * amount; quantities are compared exactly as decimal strings (`compareDecimal`).
  */
 
-/** The built-in ways to pay of P5.10, named by `messages['payment.<name>']`. */
+/** The built-in ways to pay, named by `messages['payment.<name>']`. */
 export type PaymentMethod = 'cash' | 'card' | 'split'
 
 /**
@@ -21,7 +21,7 @@ export type PaymentMethod = 'cash' | 'card' | 'split'
  */
 export type PaymentKind = 'cash' | 'card' | 'qr' | 'plain'
 
-/** A way to pay the application offers (P5.28): its id, words and kind. */
+/** A way to pay the application offers: its id, words and kind. */
 export interface PaymentOption {
   id: string
   /** In the application's words ("Cheque", "Voucher", "Instant payment"). */
@@ -41,7 +41,7 @@ export interface PaymentOption {
   referenceLabel?: string
   /**
    * The most one payment of this way can take, a decimal string (a voucher's value), from the
-   * application (P5.94 item 5). A part that is not cash can never be more than the remaining
+   * application. A part that is not cash can never be more than the remaining
    * amount either; only cash gives change.
    */
   maxAmount?: string
@@ -65,7 +65,7 @@ export function paymentOptions(
   )
 }
 
-/** Whether the application offers its own options (P5.28) rather than the P5.10 names only. */
+/** Whether the application offers its own options rather than the built-in names only. */
 export function hasOwnOptions(methods: readonly (PaymentMethod | PaymentOption)[]): boolean {
   return methods.some((method) => typeof method !== 'string')
 }
@@ -146,7 +146,7 @@ export function exceedsAvailable(quantity: string | null | undefined, available:
 
 // ── The kind of a receipt ─────────────────────────────────────────────────────────────────
 
-/** A kind the application offers: a type of receipt or a transaction (P5.28 item 21a). */
+/** A kind the application offers: a type of receipt or a transaction. */
 export interface ReceiptKindOption {
   id: string
   /** In the application's words ("Normal", "Proforma", "Refund"). */
@@ -175,15 +175,15 @@ export function kindMarker(
   )
 }
 
-// ── A part of a payment and its limit (P5.94 item 5) ──────────────────────────────────────
+// ── A part of a payment and its limit ──────────────────────────────────────
 
 /** Why an amount cannot be one part of a way to pay: over what remains, or over the way's limit. */
 export type PartOverLimit =
   { reason: 'remaining'; limit: string } | { reason: 'option'; limit: string; words?: string }
 
 /**
- * Whether `amount` can be one part of a payment by `option`, compared exactly as decimal strings
- * (D4). Cash may be more than what remains (it gives change); every other way at most the
+ * Whether `amount` can be one part of a payment by `option`, compared exactly as decimal strings.
+ * Cash may be more than what remains (it gives change); every other way at most the
  * remaining amount and the way's own `maxAmount` (a voucher's value). Null when it can; an
  * unreadable amount or remaining amount is the application's to judge, so null too.
  */

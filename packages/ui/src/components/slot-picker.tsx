@@ -9,15 +9,15 @@ import { Field, fieldProps, type FieldBaseProps } from './field'
 import { groupSlots, localOfAbsolute, slotKey, spanOf, type FreeSlot } from './schedule-logic'
 
 /*
- * SlotPicker (BUILD-PLAN P5.8): the free slots the application offers for booking, grouped by day
+ * SlotPicker: the free slots the application offers for booking, grouped by day
  * (and, with `resources`, by resource within a day), one chosen with radio semantics. The
  * application finds the slots; the picker shows them and reports the choice.
- * - A Field (label, description, error, required, read only — P5.93: the grey chips, the booked
+ * - A Field (label, description, error, required, read only — the grey chips, the booked
  *   slot the neutral selection) around one
  *   radio group. Each day under its date in words ("Today" marked); each slot a 36px chip with its
  *   start time (tabular); its accessible name says the time, the day and the resource. The arrow
  *   keys move between all slots, from the leading edge (Radix).
- * - The chosen slot is a checked radio: brand.solid with its text (D17: a checked radio is blue).
+ * - The chosen slot is a checked radio: brand.solid with its text (a checked radio is blue).
  * - Loading: skeleton chips (`slots.loading` names the busy group). Nothing free: an empty state
  *   (`slots.none`, `slots.noneDescription`) with an optional action ("Show next week").
  */
@@ -167,7 +167,7 @@ export function SlotPicker(props: SlotPickerProps) {
                                 className={cn(
                                   BUTTON_RESET,
                                   'inline-flex h-control min-w-20 items-center justify-center rounded-md border border-solid border-control bg-surface-raised px-3 text-sm text-primary tabular-nums transition-colors duration-(--liro-duration-fast) ease-standard',
-                                  // Read-only (P5.93): the read-only look, the chosen slot the
+                                  // Read-only: the read-only look, the chosen slot the
                                   // neutral selection.
                                   control.readOnly
                                     ? 'cursor-default border-default bg-surface-disabled data-[state=checked]:border-selected data-[state=checked]:bg-surface-selected data-[state=checked]:font-semibold'

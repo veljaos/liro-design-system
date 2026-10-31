@@ -62,8 +62,8 @@ export type {
 } from './statutory-logic'
 
 /*
- * StatutoryFormPage (BUILD-PLAN P5.20; a form grid since P5.28 item 19, the owner: "as the real
- * form grid, like PP PDV, POPDV and the input-VAT records on ePorezi"). An official form (a VAT
+ * StatutoryFormPage, the real form grid (like PP PDV, POPDV and the input-VAT records on
+ * ePorezi). An official form (a VAT
  * return, a statistical report) with its own parts, groups and row numbers ("1.1.5"). Parts,
  * columns, rows, codes, rules and texts come from the Core as data; the page computes nothing.
  * - **Parts** are cards (h2), each collapsible, each a grid with **its own columns**: a group's
@@ -75,10 +75,10 @@ export type {
  *   **Three kinds of cells:** `entered` (the application's field; plain text when read-only),
  *   `computed` (read-only text: a total), `source` (read-only, the value a link-coloured button
  *   that opens its documents — e-invoices, customs declarations — in an end Drawer: each a link
- *   with kind, number, state, date and amount, P4.9 rule 7). A column that holds no figure (a
+ *   with kind, number, state, date and amount). A column that holds no figure (a
  *   financial statement's "Note") takes the application's `content` (a link or button to the
- *   note, P5.45) in place of an amount.
- * - **Sticky** (P5.28 item 4, the shared rule of `components/sticky-head.ts`, as AttendanceGrid):
+ *   note) in place of an amount.
+ * - **Sticky** (the shared rule of `components/sticky-head.ts`, as AttendanceGrid):
  *   the header rows stay right below the shell's sticky top while the page scrolls (`useStickyHead`
  *   moves them), also when the grid scrolls sideways; a grid wider than its card scrolls sideways
  *   in a named, focusable region with its first column (number and label) sticky at the start.
@@ -93,7 +93,7 @@ export type {
  * - **Rule checks** ("3.1.4 must equal 3.1.1 + 3.1.2 + 3.1.3", results from the Core): under
  *   each row they concern (a rule names rows or cells), failed in danger, warnings in warning,
  *   with icon and words; a summary Alert above the parts with "Go to 3.1.4" (a neutral secondary
- *   button, never a link colour on the toned Alert, P5.28 item 7; opening the part
+ *   button, never a link colour on the toned Alert; opening the part
  *   and the groups around it first).
  * - **Phones:** each row is a card (number and label, its checks), each value in it labelled
  *   with its group and column; absent cells are left out.
@@ -142,7 +142,7 @@ export interface StatutoryFormPageProps {
   notice?: ReactNode
   /**
    * The language of the form's own texts (parts, groups, rows, columns) when it is not the
-   * page's ("sr-Cyrl" on an English page): they carry `lang` (D15).
+   * page's ("sr-Cyrl" on an English page): they carry `lang`.
    */
   lang?: string
   /** 'phone' forces the phone layout; default by the viewport (48em). */
@@ -906,7 +906,7 @@ export function StatutoryFormPage(props: StatutoryFormPageProps) {
                   <li key={rule.id} className="flex flex-wrap items-center gap-x-3 gap-y-1">
                     <RuleLine rule={rule} />
                     {first !== undefined && place !== undefined && (
-                      // An action on a toned Alert is a neutral secondary button (P5.28 item 7).
+                      // An action on a toned Alert is a neutral secondary button.
                       <Button
                         family="neutral"
                         emphasis="secondary"
@@ -955,7 +955,7 @@ export function StatutoryFormPage(props: StatutoryFormPageProps) {
           onOpenChange={(isOpen) => {
             if (!isOpen) setDrill(null)
           }}
-          // What it shows, then the row it belongs to, bold on its own line (P5.28 item 6).
+          // What it shows, then the row it belongs to, bold on its own line.
           title={messages['statutory.sources']}
           subject={
             <>

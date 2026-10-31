@@ -24,8 +24,8 @@ const meta = {
       description: {
         component:
           '**What for:** finding an issued receipt again — the original of a refund, a receipt to ' +
-          'copy or to cancel: scan its code, or type its number, date or total in ONE field ' +
-          '(P5.93). The text is reported as typed; the application reads it, searches and ' +
+          'copy or to cancel: scan its code, or type its number, date or total in ONE field. ' +
+          'The text is reported as typed; the application reads it, searches and ' +
           'answers; the finder shows the receipts found and reports the one chosen. A receipt ' +
           'that cannot be chosen (refunded in full) says why.\n\n' +
           '**When:** the first step of a refund, a copy or a cancellation at the till.\n\n' +

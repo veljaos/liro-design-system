@@ -61,10 +61,10 @@ import {
 import { IDLE_TOOLBAR, Toolbar, type ToolbarState } from './toolbar'
 
 /*
- * RichTextField (P5.22): formatted text — a letter template, a note, a comment — on Tiptap's MIT
+ * RichTextField: formatted text — a letter template, a note, a comment — on Tiptap's MIT
  * packages only (no Pro or paid extension). A Field (label, description, error under it, required
- * mark, read-only as RichText in the read-only look of every field, P5.93) around a framed editor: the formatting
- * toolbar on top (toolbar.tsx), the text under it, the counter under the frame when `maxLength` is
+ * mark, read-only as RichText in the read-only look of every field) around a framed editor: the
+ * formatting toolbar on top (toolbar.tsx), the text under it, the counter under the frame when `maxLength` is
  * set.
  *
  * - **The text box** is a contenteditable `role="textbox"` with `aria-multiline`, named by the
@@ -83,18 +83,18 @@ import { IDLE_TOOLBAR, Toolbar, type ToolbarState } from './toolbar'
  *   focus stays in the text, `aria-activedescendant`, ArrowDown / ArrowUp, Home / End, Enter or
  *   Tab chooses, Escape closes). A merge field is one atomic pill (neutral, never blue), read
  *   "Merge field: <label>".
- * - **Mentions** (`mentionCandidates`): "@" offers people as MentionCombobox does (P5.1): all of
+ * - **Mentions** (`mentionCandidates`): "@" offers people as MentionCombobox does: all of
  *   them filtered by name, or the application's search (`onMentionSearch` after 300ms, with
  *   `mentionsLoading`). A mention is one atomic node with the person's id.
  * - **The value** is Tiptap's JSON (`value` / `defaultValue`); `onChange` reports the JSON, the
  *   sanitized HTML, the mentions, the merge fields and the length (rich-text-logic.ts).
- * - **From outside** (P5.30): `ref` gives a handle that inserts content at the caret (where the
+ * - **From outside**: `ref` gives a handle that inserts content at the caret (where the
  *   caret was before a menu or dialog took the focus: a saved reply, a link the application
  *   found), puts the focus back into the text and empties it (after sending). `surface` 'sunken'
  *   draws the text box on surface.sunken (ReplyComposer's internal note).
  */
 
-/** What a RichTextField's `ref` can do (P5.30). */
+/** What a RichTextField's `ref` can do. */
 export interface RichTextFieldHandle {
   /**
    * Inserts content at the caret, replacing the selected text: a whole document (its blocks), a
@@ -120,7 +120,7 @@ export interface RichTextFieldProps extends FieldBaseProps {
   mergeFields?: readonly RichTextMergeField[]
   /**
    * The merge fields' values, for a text written to one recipient (a reply, a message) rather
-   * than a template (P5.31): a field in the first value, one chosen from the menu or "{{", and
+   * than a template: a field in the first value, one chosen from the menu or "{{", and
    * every field in content inserted through the handle (a saved reply), is written in as its value; a field without one
    * stays a pill marked "No value", and a line under the text names them. Fields computed from
    * 'today' or 'now' need no value. Without `mergeValues` the fields stay pills (a template).
@@ -150,7 +150,7 @@ export interface RichTextFieldProps extends FieldBaseProps {
   minRows?: number
   /** The text box's surface: 'raised' (default) or 'sunken' (a note only the team sees). */
   surface?: 'raised' | 'sunken'
-  /** A handle to insert content at the caret, focus and empty the text (P5.30). */
+  /** A handle to insert content at the caret, focus and empty the text. */
   ref?: Ref<RichTextFieldHandle>
 }
 
@@ -356,7 +356,7 @@ function RichTextEditor({
   const loading = props.loading === true
   const mergeFields = props.mergeFields ?? []
   const listId = `${control.id}-suggestions`
-  // Values given: fields are written in as they are inserted (P5.31).
+  // Values given: fields are written in as they are inserted.
   const merge: MergeContext | null =
     props.mergeValues === undefined
       ? null
@@ -478,7 +478,7 @@ function RichTextEditor({
       ? mergeFields.length > 0
       : props.mentionCandidates !== undefined)
   const searching = suggestion?.kind === 'mention' && props.mentionsLoading === true
-  // A space after a query that matches nothing ends the search, as in every composer (P5.94).
+  // A space after a query that matches nothing ends the search, as in every composer.
   const open =
     offered &&
     suggestion.from !== dismissed &&

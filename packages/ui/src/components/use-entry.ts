@@ -10,10 +10,10 @@ import {
 import { READ_ONLY_EMPTY } from './field'
 
 /*
- * Typed entry for the number, money and date fields (BUILD-PLAN P2.3): the user types freely, and
- * the text is read when the user leaves the field or presses Enter. Owner's decision
- * (2026-09-28): unreadable text stays in the field, the value is null (never 0), and the field
- * reports it through `onValidityChange` and shows its own message.
+ * Typed entry for the number, money and date fields: the user types freely, and
+ * the text is read when the user leaves the field or presses Enter. Unreadable text stays in the
+ * field, the value is null (never 0), and the field reports it through `onValidityChange` and shows
+ * its own message.
  */
 
 /** What reading the typed text gives. */
@@ -142,7 +142,7 @@ export function entryAttributes(
     type: 'text',
     autoComplete: 'off',
     value: entry.text,
-    // Read-only: "—" for an empty value, never the application's placeholder (P5.93 item 1).
+    // Read-only: "—" for an empty value, never the application's placeholder.
     ...(readOnly
       ? { placeholder: READ_ONLY_EMPTY }
       : props.placeholder === undefined

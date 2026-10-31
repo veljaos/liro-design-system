@@ -35,7 +35,7 @@ import { focusFirstInvalid } from '../components/form-logic'
 import { useLiro } from '../provider/liro-provider'
 
 /*
- * @veljaos/ui/form (BUILD-PLAN P3.5; owner's decision, 2026-10-01): an optional binding of the
+ * @veljaos/ui/form: an optional binding of the
  * Design System's fields to React Hook Form, which the application installs (an optional peer
  * dependency). Each Form… component is the field of the same name with `control`, `name` and
  * `rules` in place of `value` and `onChange`: it shows the form's value and the rule's error
@@ -43,7 +43,7 @@ import { useLiro } from '../provider/liro-provider'
  * and do not depend on React Hook Form. No validation library: rules are React Hook Form's own
  * (required, min, validate …) or the application's functions. Number, money, date and time fields add
  * one rule of their own: text they cannot read fails with the field's own message, so the form
- * does not submit while it is there (the owner's decision of P2.3a).
+ * does not submit while it is there.
  */
 
 /** What every bound field takes in place of its value and onChange. */

@@ -104,7 +104,7 @@ function boxAround(element: Element | null): Element | null {
 
 /**
  * Approve on a phone: the toast spans the screen less 16px at each side and stands above the
- * bottom action bar, never over Reject and Approve (P4.9d).
+ * bottom action bar, never over Reject and Approve.
  */
 export const ApprovalPhoneToast: Story = {
   name: 'Supplier invoice to approve, phone, approved',
@@ -162,7 +162,7 @@ function lineHeading(canvasElement: HTMLElement): string {
 }
 
 /**
- * Bank statement 188 of 06.10.2026 (Banca Intesa) as a worklist (P5.94 item 19): the strip with
+ * Bank statement 188 of 06.10.2026 (Banca Intesa) as a worklist: the strip with
  * the balances and "0 of 10 done"; the queue with "Accept all exact matches (6)" at its top, the
  * search and the states as chips (All 10, Needs you 1, Suggestion 3, Matched automatically 6,
  * Done 0), Needs you chosen; the one line nothing was found for — Petar Jovanović's payment — open beside
@@ -361,7 +361,7 @@ export const BankStatementPhoneInteraction: Story = {
 }
 
 /**
- * A payment against a proforma invoice (P5.93 item 17): line 9 open — it pays proforma
+ * A payment against a proforma invoice: line 9 open — it pays proforma
  * PR-2026-118; the Core proposes to post it as an advance and to issue the advance invoice at
  * once, one press: "Post advance and issue invoice".
  */
@@ -425,7 +425,7 @@ export const BankStatementProformaInteraction: Story = {
 }
 
 /**
- * Statement 189: 1,240 generated lines (P5.94 item 19). The strip and the chips count them all;
+ * Statement 189: 1,240 generated lines. The strip and the chips count them all;
  * the queue draws only the rows in view.
  */
 export const BankStatementLarge: Story = {

@@ -1,7 +1,7 @@
 /**
- * Contrast, measured after layers composite (Appendix B.6): a translucent token is mixed with
+ * Contrast, measured after layers composite: a translucent token is mixed with
  * the opaque surface under it before its contrast is measured. The build fails when any pair
- * listed here is below its minimum (BUILD-PLAN P1.3, P1.4).
+ * listed here is below its minimum.
  */
 import {
   FAMILIES,
@@ -109,7 +109,7 @@ export function contrastChecks(): ContrastCheck[] {
         }
       }
 
-      // Controls (P2.1): the boundary of inputs, checkboxes and radios, and the off track of a
+      // Controls: the boundary of inputs, checkboxes and radios, and the off track of a
       // switch, against the surface around them (WCAG 1.4.11).
       add(
         `${theme}: border.control ${over}`,
@@ -118,7 +118,7 @@ export function contrastChecks(): ContrastCheck[] {
         NON_TEXT,
       )
 
-      // A selected row or card (P3.6): its text on surface.selected, and the border.selected bar
+      // A selected row or card: its text on surface.selected, and the border.selected bar
       // against the selected background and the surface around it (WCAG 1.4.11).
       const selected = toRgb(pick(MEANINGS.surface.selected, theme), surface)
       for (const textName of ['primary', 'secondary', 'tertiary'] as const) {
@@ -137,7 +137,7 @@ export function contrastChecks(): ContrastCheck[] {
       )
       add(`${theme}: border.selected ${over}`, selectedBorder, surface, NON_TEXT)
 
-      // An invalid field (P2.2): its border takes status.danger.fg (WCAG 1.4.11).
+      // An invalid field: its border takes status.danger.fg (WCAG 1.4.11).
       add(
         `${theme}: status.danger.fg as a border ${over}`,
         toRgb(pick(TONES.danger.fg, theme), surface),
@@ -145,7 +145,7 @@ export function contrastChecks(): ContrastCheck[] {
         NON_TEXT,
       )
 
-      // Status tones: fg on bg (Appendix B.6), P1.4.
+      // Status tones: fg on bg.
       for (const [tone, parts] of Object.entries(TONES)) {
         const background = toRgb(pick(parts.bg, theme), surface)
         add(
@@ -153,11 +153,10 @@ export function contrastChecks(): ContrastCheck[] {
           toRgb(pick(parts.fg, theme), background),
           background,
         )
-        // An Alert's or Banner's message on the tone, and its links (P5.23: the cancellation
+        // An Alert's or Banner's message on the tone, and its links (the cancellation
         // banner is danger, with the link to the cancellation document). Links are measured on
         // the surfaces a page's banner stands on; over a dark overlay the neutral tone gives a
-        // link 4.43:1, so an alert inside a dialog or drawer carries no link in the neutral tone
-        // (docs/decisions.md, P5.23).
+        // link 4.43:1, so an alert inside a dialog or drawer carries no link in the neutral tone.
         add(
           `${theme}: text.primary on tone ${tone} bg ${over}`,
           toRgb(pick(MEANINGS.text.primary, theme), background),
@@ -174,7 +173,7 @@ export function contrastChecks(): ContrastCheck[] {
 
       // Every tone's text straight on the surface (a field's error, a due date's text) and on a
       // selected row or card over it; every tone's badge (fg on bg) over a selected row; every
-      // family's text on a selected row, as a subtle and as a light button (P4.3, owner).
+      // family's text on a selected row, as a subtle and as a light button.
       for (const [tone, parts] of Object.entries(TONES)) {
         add(`${theme}: tone ${tone} fg ${over}`, toRgb(pick(parts.fg, theme), surface), surface)
         const fg = (background: Rgb) =>
@@ -194,7 +193,7 @@ export function contrastChecks(): ContrastCheck[] {
       }
     }
 
-    // The avatar's initials (P3.6): text.primary on surface.sunken, which is opaque in both themes.
+    // The avatar's initials: text.primary on surface.sunken, which is opaque in both themes.
     const sunken = toRgb(pick(MEANINGS.surface.sunken, theme), BLACK)
     add(
       `${theme}: text.primary on surface.sunken (avatar)`,
@@ -202,8 +201,8 @@ export function contrastChecks(): ContrastCheck[] {
       sunken,
     )
 
-    // Chart marks (P4.6) against the raised surface they stand on (WCAG 1.4.11, 3:1). Since P4.7c
-    // every categorical hue reaches 3:1 in both themes (the light teal 5 exception is gone).
+    // Chart marks against the raised surface they stand on (WCAG 1.4.11, 3:1): every
+    // categorical hue reaches 3:1 in both themes.
     const raised = toRgb(pick(MEANINGS.surface.raised, theme), BLACK)
     for (const name of Object.keys(MEANINGS.chart) as (keyof typeof MEANINGS.chart)[]) {
       add(
@@ -214,14 +213,14 @@ export function contrastChecks(): ContrastCheck[] {
       )
     }
 
-    // The warning solid (P4.7c, owner): icons only — a white icon on it at least 3:1 — and it
+    // The warning solid: icons only — a white icon on it at least 3:1 — and it
     // stands on a raised surface (the status pages, a card), never straight on the page
     // background, where orange 6 is 2.84:1 in light.
     const warning = toRgb(pick(TONES.warning.solid, theme), raised)
     add(`${theme}: text.onAccent icon on status.warning.solid`, onAccent, warning, NON_TEXT)
     add(`${theme}: status.warning.solid on surface.raised`, warning, raised, NON_TEXT)
 
-    // The app lockup (P4.1): text.logo on the surfaces it stands on — the header, and the raised
+    // The app lockup: text.logo on the surfaces it stands on — the header, and the raised
     // surface of the status pages and the sign-in card.
     for (const name of ['header', 'raised'] as const) {
       const surface = toRgb(pick(MEANINGS.surface[name], theme), BLACK)
@@ -232,7 +231,7 @@ export function contrastChecks(): ContrastCheck[] {
       )
     }
 
-    // Tooltips (P2.1): text.onInverse on surface.inverse, which is opaque in both themes.
+    // Tooltips: text.onInverse on surface.inverse, which is opaque in both themes.
     const inverse = toRgb(pick(MEANINGS.surface.inverse, theme), BLACK)
     add(
       `${theme}: text.onInverse on surface.inverse`,

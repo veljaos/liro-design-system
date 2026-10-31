@@ -2,10 +2,10 @@ import { useEffect, useRef, useState } from 'react'
 import { compareDecimal } from './quantity-logic'
 
 /*
- * Immediate feedback on every tap of a till (P5.90 item 20, "ease sells"): a waiter with fifty
+ * Immediate feedback on every tap of a till ("ease sells"): a waiter with fifty
  * guests at the door must see at once that a tap counted, or they tap again out of doubt. A line
  * that appears in the order, or whose quantity goes up, is highlighted briefly (the neutral
- * selection surface, never blue, D17; a colour change, not a movement, so it stays with reduced
+ * selection surface, never blue; a colour change, not a movement, so it stays with reduced
  * motion — only the fade is dropped); a pressed product tile does the same, and a device that can
  * vibrate gives a short pulse. Nothing flashes when the screen first appears: only a change does.
  */

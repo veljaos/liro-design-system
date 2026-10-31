@@ -18,10 +18,10 @@ import { NoDataPattern, StepLegend, useStepText } from './step-legend'
 import { stepCount, stepShade, valueStep, type StepRamp } from './steps'
 
 /*
- * Heatmap (P5.93 item 44, owner: "sales by weekday × hour"): a value per cell of rows × columns,
+ * Heatmap ("sales by weekday × hour"): a value per cell of rows × columns,
  * each cell shaded by its value's step, in our own SVG (Recharts has no heatmap).
  * - One meaning in shades, as RegionChart: the application's `breaks` cut the values into at most
- *   five steps, compared exactly as decimal strings (D4); each step the main blue (or neutral
+ *   five steps, compared exactly as decimal strings; each step the main blue (or neutral
  *   grey) laid on the card at 25% up to 100%. A missing value is hatched and says "No data",
  *   never 0. The legend writes the steps' ranges through `format`, or the application's words.
  * - Rows stand top to bottom, their names at the page's start; columns run from the start (the
@@ -57,7 +57,7 @@ export interface HeatmapProps extends ChartStateProps {
   /** A row's height in pixels. Default 28 (24 on phones). */
   rowHeight?: number
   controls?: ReactNode
-  /** The key figures as toggle buttons (a ChartSeriesToggle) at the header's end (P5.93 item 42). */
+  /** The key figures as toggle buttons (a ChartSeriesToggle) at the header's end. */
   toggle?: ReactNode
   layout?: 'desktop' | 'phone'
   className?: string

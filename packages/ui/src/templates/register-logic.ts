@@ -2,7 +2,7 @@ import { Lock } from 'lucide-react'
 import type { MenuEntry } from '../components/dropdown-menu'
 
 /*
- * The logic of RegisterPage and StatutoryFormPage (P5.20), unit-tested in
+ * The logic of RegisterPage and StatutoryFormPage, unit-tested in
  * `register-logic.test.ts`. Nothing here computes a value of the register or the form: rules and
  * their results are the Core's; these functions only order and count what they are given.
  */
@@ -11,7 +11,7 @@ import type { MenuEntry } from '../components/dropdown-menu'
 
 /**
  * A register row's menu: the application's actions, or — for an entry in a locked period — one
- * unavailable item that says why (D3: disabled with a visible reason, never just missing).
+ * unavailable item that says why (disabled with a visible reason, never just missing).
  */
 export function registerMenu(
   entry: { locked?: boolean },

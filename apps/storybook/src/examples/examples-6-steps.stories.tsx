@@ -91,7 +91,7 @@ export const PayrollRerun: Story = {
   },
 }
 
-/** Nothing in the phone frame scrolls sideways (P4.9 rule 16). */
+/** Nothing in the phone frame scrolls sideways. */
 async function noSidewaysScroll(canvasElement: HTMLElement) {
   const frame = boxAround(canvasElement.querySelector('[data-slot="app-shell"]'))
   await expect(frame).not.toBeNull()
@@ -140,7 +140,7 @@ export const CustomerImportScreenInteraction: Story = {
 }
 
 /**
- * A binary file named .csv (P5.90 item 7): the import says in words that it could not be read,
+ * A binary file named .csv: the import says in words that it could not be read,
  * never shows the bytes, and Next waits for another file.
  */
 export const CustomerImportUnreadableInteraction: Story = {
@@ -176,9 +176,9 @@ async function noPageOverflow(canvasElement: HTMLElement) {
 }
 
 /**
- * Health (P5.17): Jovana Nikolić books a check-up in Dom zdravlja Novi Sad's patient portal
+ * Health: Jovana Nikolić books a check-up in Dom zdravlja Novi Sad's patient portal
  * (PortalShell) — the service and her chosen doctor, then a free time (SlotPicker), then Book.
- * The service is chosen from the clinic's 61 services in a CatalogPicker (P5.90 item 14).
+ * The service is chosen from the clinic's 61 services in a CatalogPicker.
  */
 export const HealthBooking: Story = {
   name: 'Health, book an appointment',
@@ -246,7 +246,7 @@ export const HealthBookingWalk: Story = {
     await settle()
     await userEvent.click(dialog.getByRole('button', { name: /^Laboratory/ }))
     await expect(dialog.getByRole('button', { name: /^Blood draw/ })).toBeVisible()
-    // A quiet "‹ All services" link back, no Cancel: the X closes it (P5.93 items 4 and 12).
+    // A quiet "‹ All services" link back, no Cancel: the X closes it.
     await expect(dialog.queryByRole('button', { name: 'Cancel' })).toBeNull()
     await userEvent.click(dialog.getByRole('button', { name: 'Back to All services' }))
     await userEvent.type(dialog.getByRole('searchbox'), 'pressure')

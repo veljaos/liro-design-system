@@ -1,12 +1,12 @@
 /*
- * The pure logic of RuleBuilder (P5.78): a rule as data — "When this happens, if these
+ * The pure logic of RuleBuilder: a rule as data — "When this happens, if these
  * conditions hold, do these actions" — and the edits the builder makes to it. The library never
  * evaluates a rule: the triggers, the fields a condition can test, the tests, the values' kinds,
  * the actions and their parameters are the application's, and so is every check of the result.
  * - A condition tests one field with one test (operator) against one value. A value is a string:
  *   a decimal string for numbers and amounts, YYYY-MM-DD for dates, an option's value for a
  *   choice, or text; `null` while it is not given.
- * - A rule has branches (P5.93 item 46): "If" and each "Else if", tried in order, each its
+ * - A rule has branches: "If" and each "Else if", tried in order, each its
  *   conditions and its actions, then optionally "Else" with actions of its own. In a branch the
  *   conditions stand in one list joined by "all" or "any"; a group is a list of conditions with
  *   its own join, one level deep ("all of: A, and any of: B, C").
@@ -105,7 +105,7 @@ export interface RuleAction {
 }
 
 /**
- * One branch of a rule (P5.93 item 46): its conditions joined by "all" or "any" and the actions
+ * One branch of a rule: its conditions joined by "all" or "any" and the actions
  * taken when they hold. The rule's first branch is "If", the others "Else if", tried in order.
  */
 export interface RuleBranch {
@@ -116,7 +116,7 @@ export interface RuleBranch {
 }
 
 /**
- * A rule as the builder edits it and reports it (P5.93 item 46: branches): when the trigger
+ * A rule as the builder edits it and reports it (branches): when the trigger
  * happens, the first branch whose conditions hold takes its actions; when none holds, the
  * `otherwise` ("Else") actions are taken. The application evaluates; the library never does.
  */

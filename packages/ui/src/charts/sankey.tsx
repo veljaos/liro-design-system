@@ -18,11 +18,11 @@ import {
 import { toneColour, useFormatValue, type ChartStateProps, type ChartTone } from './shared'
 
 /*
- * SankeyChart (P5.93 item 44, owner: "cash flow"): how amounts flow from sources through
+ * SankeyChart ("cash flow"): how amounts flow from sources through
  * accounts to their uses, on Recharts' Sankey with our own nodes and flows.
  * - Nodes are the main blue (a node that means a state takes its tone: a loss); flows are a grey
- *   wash, stronger under the pointer or the keys. A flow's width follows its amount (drawing only,
- *   D4). A node's total is the application's (`value`), never added here.
+ *   wash, stronger under the pointer or the keys. A flow's width follows its amount (drawing
+ *   only). A node's total is the application's (`value`), never added here.
  * - Names stand beside their nodes, toward the inside of the chart, on a halo of the card, with
  *   the node's total under the name when there is room.
  * - Right-to-left: the flow runs from the right (sources at the page's start); the names keep
@@ -61,7 +61,7 @@ export interface SankeyChartProps extends ChartStateProps {
   /** The plot's height in pixels. Default 320 (280 on phones). */
   height?: number
   controls?: ReactNode
-  /** The key figures as toggle buttons (a ChartSeriesToggle) at the header's end (P5.93 item 42). */
+  /** The key figures as toggle buttons (a ChartSeriesToggle) at the header's end. */
   toggle?: ReactNode
   layout?: 'desktop' | 'phone'
   className?: string

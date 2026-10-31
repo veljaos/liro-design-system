@@ -19,7 +19,7 @@ import { TextAreaField } from './text-field'
 import { usePhone } from './use-phone'
 
 /*
- * SatisfactionRating (BUILD-PLAN P5.30 d): after something was done for the user — a request
+ * SatisfactionRating: after something was done for the user — a request
  * solved, an appointment held, a course finished — one question on a scale ("How satisfied are
  * you with how we solved #4796?"), an optional comment, Send, then the thank-you state. Generic:
  * the question, the scale's steps and their words are the application's; the library only shows
@@ -29,7 +29,7 @@ import { usePhone } from './use-phone'
  *   tile — the radio, the value (h3 size, semibold, tabular; digits through `format.number`) and
  *   the step's words (xs text.secondary, wrapping, centred) — so a step is never told by colour
  *   or by a face alone (WCAG 1.4.1; no emoji-only labels: every step has words). The whole tile is
- *   the radio's label, at least 44px high. The chosen tile is the neutral selection (D17):
+ *   the radio's label, at least 44px high. The chosen tile is the neutral selection:
  *   surface.selected with a border.selected border; only the radio's dot is blue.
  *   Desktop: the steps side by side in equal columns; phones (`layout="phone"` or the viewport):
  *   one row per step, the radio at the start, the value and the words in a line.
@@ -45,7 +45,7 @@ import { usePhone } from './use-phone'
  *   for your feedback." or the application's `thanks`) and the answer in words ("Your answer: 4,
  *   Satisfied") with the comment under it. Controlled with `submitted`, or kept by the component
  *   after `onSubmit` succeeds.
- * - **Unavailable** (`unavailableReason`, P5.93): the answer cannot be given now. The scale and
+ * - **Unavailable** (`unavailableReason`): the answer cannot be given now. The scale and
  *   the comment are read-only (the read-only look of every field), Send is unavailable, and the
  *   reason stands under Send in words.
  */

@@ -4,7 +4,7 @@ import { LiroProvider } from '../provider/liro-provider'
 import { ComboboxField } from './combobox-field'
 import { SelectField } from './select-field'
 
-/* P5.62 (D15): an option written in another language carries it, in the list and once chosen. */
+/* An option written in another language carries it, in the list and once chosen. */
 
 const render = (node: React.ReactNode) =>
   renderToStaticMarkup(<LiroProvider locale="en">{node}</LiroProvider>)

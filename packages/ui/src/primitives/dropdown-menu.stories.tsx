@@ -26,7 +26,7 @@ const meta = {
     docs: {
       description: {
         component: internal(
-          'A menu of actions; a submenu opens towards the inline end (to the left in right-to-left). DropdownMenu (P2.4), the "more" menu of ActionGroup (P2.7).',
+          'A menu of actions; a submenu opens towards the inline end (to the left in right-to-left). DropdownMenu, the "more" menu of ActionGroup.',
         ),
       },
     },

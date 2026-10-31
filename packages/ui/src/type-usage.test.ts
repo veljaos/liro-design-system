@@ -3,10 +3,10 @@ import { join, relative } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 /*
- * Font weights come only from the type utilities of the theme (AGENTS.md D15): regular, medium,
+ * Font weights come only from the type utilities of the theme: regular, medium,
  * semibold and bold. The theme removes Tailwind's own weight names (`--font-weight-*: initial`),
  * so a class such as `font-normal` produces no CSS at all and the element silently keeps the
- * weight it inherits (a table header stayed bold; P5.15 found it in seven files).
+ * weight it inherits (a table header stays bold).
  */
 
 const ROOTS = [

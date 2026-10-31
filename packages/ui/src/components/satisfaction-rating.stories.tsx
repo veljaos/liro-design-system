@@ -96,7 +96,7 @@ export const Sent: Story = {
   },
 }
 
-/** No rating any more (P5.93): the scale and the comment read-only, Send unavailable, why in words. */
+/** No rating any more: the scale and the comment read-only, Send unavailable, why in words. */
 export const Unavailable: Story = {
   name: 'Unavailable with reason',
   args: {

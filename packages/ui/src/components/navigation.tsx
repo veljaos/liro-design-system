@@ -9,18 +9,17 @@ import { TAB_ROW_BOX, TAB_ROW_SCROLLER, useTabRow } from './tab-row'
 import { Tooltip } from './popover'
 
 /*
- * Tabs, Breadcrumbs, CursorPagination and ShortcutHint (BUILD-PLAN P2.6), the previous Design
- * System's (owner's decision, 2026-09-28, docs/decisions.md "Navigation"):
- * - Tabs: radius md; the list at the start of the content it heads (P4.7c, owner: business
- *   screens are start-aligned; it was centred until then); hidden panels are not kept mounted, so
- *   a dialog opened from a tab belongs at page level, outside the Tabs (AGENTS.md D14). Only the
- *   AppShell's module tabs are centred (P4.1), and they are not this component.
- *   One gap between the tab list and its panel, md (16px), set here and nowhere else (P5.23, the
- *   owner's review: Users and roles had none) — a panel's content adds no space of its own above.
+ * Tabs, Breadcrumbs, CursorPagination and ShortcutHint:
+ * - Tabs: radius md; the list at the start of the content it heads (business
+ *   screens are start-aligned); hidden panels are not kept mounted, so
+ *   a dialog opened from a tab belongs at page level, outside the Tabs. Only the
+ *   AppShell's module tabs are centred, and they are not this component.
+ *   One gap between the tab list and its panel, md (16px), set here and nowhere else — a
+ *   panel's content adds no space of its own above.
  *   These Tabs switch between DIFFERENT content (Members / Roles / Invitations) and stand above
  *   it; views that filter ONE list (Active / Inactive / All) are not these Tabs but the list
  *   card's saved views (ListPage), inside the card.
- *   The tab row rule (P5.90 item 6, tab-row.tsx): the row never wraps; when its tabs do not fit
+ *   The tab row rule (tab-row.tsx): the row never wraps; when its tabs do not fit
  *   it scrolls sideways with faded edges, and the active tab is kept in view.
  * - Breadcrumbs: the separator "›", which mirrors in right-to-left by itself (a Unicode mirrored
  *   character), 10px (xs) on each side; links underlined only on hover; the last item not a link.
@@ -53,7 +52,7 @@ export interface TabsProps {
   /** Names the list of tabs for assistive technology. From the application. */
   label?: string
   /**
-   * Where the tab list stands. Default 'start' (AGENTS.md D16, P4.7c); 'center' only for a list
+   * Where the tab list stands. Default 'start'; 'center' only for a list
    * that heads centred content.
    */
   align?: 'center' | 'start'
@@ -62,7 +61,7 @@ export interface TabsProps {
 }
 
 /**
- * Parts of one screen shown one at a time (the tabs inside a module, Appendix B.8). Arrow keys
+ * Parts of one screen shown one at a time (the tabs inside a module). Arrow keys
  * move between tabs in the provider's direction.
  */
 export function Tabs(props: TabsProps) {
@@ -85,7 +84,7 @@ export function Tabs(props: TabsProps) {
       }}
       className={props.className}
     >
-      {/* The tab row rule (P5.90 item 6): one line that scrolls sideways with faded edges. */}
+      {/* The tab row rule: one line that scrolls sideways with faded edges. */}
       <div className={TAB_ROW_BOX}>
         <div {...row.scroller} className={TAB_ROW_SCROLLER}>
           <TabsList
@@ -136,13 +135,13 @@ export interface BreadcrumbsProps {
 }
 
 /**
- * Where the user is, from the third level of routes on (Appendix B.8). Links use the provider's
+ * Where the user is, from the third level of routes on. Links use the provider's
  * `linkComponent`, so navigation stays in the application's router; the last item is the current
- * page and is not a link. Fewer than two items render nothing (P4.9).
+ * page and is not a link. Fewer than two items render nothing.
  */
 export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
   const { linkComponent: Link, messages } = useLiro()
-  // One level is no trail: it only repeats the page's title (P4.9, the owner's review).
+  // One level is no trail: it only repeats the page's title.
   if (items.length < 2) return null
   return (
     <nav aria-label={messages['breadcrumbs.label']} className={cn('font-sans text-md', className)}>
@@ -155,7 +154,7 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
                 className={cn(
                   'leading-none whitespace-nowrap',
                   // The current page's crumb, longer than the row, is cut with an ellipsis: a
-                  // trail never makes a phone's page scroll sideways (P5.28). 2px above and below
+                  // trail never makes a phone's page scroll sideways. 2px above and below
                   // keep its descenders inside the cut.
                   last && 'max-w-full min-w-0 truncate py-0.5 -my-0.5',
                 )}
@@ -210,7 +209,7 @@ export interface CursorPaginationProps {
  * Paging by cursor: only "previous" and "next", never page numbers (the server pages by cursor).
  * The count sits at the start, the controls at the end. Mantine Pagination 'sm': 26px square
  * controls with a 14.4px chevron (26 / 1.8), 1px border.strong border, raised surface, radius md,
- * 8px apart; surface.hover on hover; disabled without opacity (Appendix B.6).
+ * 8px apart; surface.hover on hover; disabled without opacity.
  */
 export function CursorPagination(props: CursorPaginationProps) {
   const { messages } = useLiro()

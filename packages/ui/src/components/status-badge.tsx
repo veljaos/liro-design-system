@@ -1,7 +1,7 @@
 import { TEXT_ISOLATE } from '../primitives/classes'
 import type { IconComponent } from './intents'
 
-/** The six status tones (Appendix A.2). */
+/** The six status tones. */
 export type Tone = 'success' | 'warning' | 'danger' | 'info' | 'neutral' | 'premium'
 
 export const TONE_NAMES: readonly Tone[] = [
@@ -14,8 +14,8 @@ export const TONE_NAMES: readonly Tone[] = [
 ]
 
 /**
- * The tone of a status, looked up in a map the application gives as data (Appendix A.7 is an
- * example, in Storybook only). A status the map does not know gets `fallback`, by default neutral.
+ * The tone of a status, looked up in a map the application gives as data (Storybook
+ * shows an example). A status the map does not know gets `fallback`, by default neutral.
  */
 export function toneFor(
   status: string,
@@ -25,7 +25,7 @@ export function toneFor(
   return Object.hasOwn(map, status) ? (map[status] ?? fallback) : fallback
 }
 
-/** Text on a tone is always the tone's fg on its bg (Appendix B.6). Every class is written out. */
+/** Text on a tone is always the tone's fg on its bg. Every class is written out. */
 const TONE_CLASSES: Record<Tone, { colours: string; border: string }> = {
   success: {
     colours: 'bg-status-success-bg text-status-success-fg',
@@ -50,7 +50,7 @@ const TONE_CLASSES: Record<Tone, { colours: string; border: string }> = {
   },
 }
 
-/** The badge of the previous Design System ("button weights" in docs/decisions.md). */
+/** The badge's look: radius xs, xs semibold text, tight padding. */
 const BASE =
   'inline-flex max-w-full shrink-0 items-center gap-1 rounded-xs px-1.5 py-0.5 align-middle font-sans text-xs leading-[1.4] font-semibold'
 
@@ -66,7 +66,7 @@ export interface StatusBadgeProps {
 
 /**
  * A short status: the label on the tone's colours, on one line while it fits; a label longer than
- * the room there wraps inside the badge, never past it (P5.90 item 7).
+ * the room there wraps inside the badge, never past it.
  */
 export function StatusBadge({ label, tone, withBorder = false, icon: Icon }: StatusBadgeProps) {
   const { colours, border } = TONE_CLASSES[tone]
@@ -76,14 +76,14 @@ export function StatusBadge({ label, tone, withBorder = false, icon: Icon }: Sta
   return (
     <span className={className} data-tone={tone}>
       {Icon === undefined ? null : <Icon aria-hidden="true" className="size-3 shrink-0" />}
-      {/* Its direction from its own text: "3 days overdue" in a right-to-left page (P4.3). */}
+      {/* Its direction from its own text: "3 days overdue" in a right-to-left page. */}
       <span className={`min-w-0 ${TEXT_ISOLATE}`}>{label}</span>
     </span>
   )
 }
 
 /**
- * The one "current" look of the library (P5.94 item 13, the owner's choice): the item that is in
+ * The one "current" look of the library: the item that is in
  * force now — a file's current version, the current plan, an act's version in force — carries a
  * success badge ("Current"), and a plain list row the subtle success background. A row that is
  * itself a selection keeps the neutral selection and only the badge.

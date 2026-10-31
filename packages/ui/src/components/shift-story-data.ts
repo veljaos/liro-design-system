@@ -17,7 +17,7 @@ import type { SwapColleague } from './shift-swap-dialog'
 import type { WorkingTimePlan, WorkingTimeRow } from './working-time-balance'
 
 /*
- * Story data for P5.24 b and d (fictitious): a retail store (Prodavnica 12, Novi Sad, shifts
+ * Story data for the shift components (fictitious): a retail store (Prodavnica 12, Novi Sad, shifts
  * 07–15 and 15–23) and a 24/7 health facility (Dom zdravlja, rotating 06–14, 14–22, 22–06).
  * Every limit and warning here is ILLUSTRATIVE, written as the application would pass it — the
  * Design System encodes none. Not part of the package: nothing in src/index.ts imports this file.

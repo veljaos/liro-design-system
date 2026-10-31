@@ -11,22 +11,22 @@ import * as RechartsPrimitive from 'recharts'
 import { cn } from './cn'
 
 /*
- * shadcn/ui's Chart (registry style radix-vega, Recharts 3), adapted (P4.7a). Not exported from
- * `@veljaos/ui` (AGENTS.md D10); the Liro charts of `@veljaos/ui/charts` are built on it.
+ * shadcn/ui's Chart (registry style radix-vega, Recharts 3), adapted. Not exported from
+ * `@veljaos/ui`; the Liro charts of `@veljaos/ui/charts` are built on it.
  *
  * What changed from the original:
  * - Colours: a config entry's `color` is a Liro meaning (`var(--liro-chart-main)`, a status
- *   `solid`), set as `--color-<key>` on the container. The tokens switch with the theme, so the
- *   original's per-theme `<style>` block (light / `.dark`) is gone.
+ *   `solid`), set as `--color-<key>` on the container. The tokens switch with the theme, so no
+ *   per-theme `<style>` block (light / `.dark`) is needed.
  * - The container has a height, not `aspect-video`, and draws the plot only once the page's fonts
  *   are ready (and again when more load): Recharts measures axis labels once, as it draws, and a
- *   fallback font's width stayed (P4.6).
+ *   fallback font's width would stay.
  * - The plot's text is laid out left to right (`[direction:ltr]`): Recharts places text by
  *   physical coordinates and the charts mirror their axes themselves in right-to-left.
  * - Recharts' own colours are replaced by tokens: axis text text.tertiary, grid border.subtle,
  *   the cursor surface.hover / border.strong, a visible focus ring on the focusable surface.
  * - The tooltip and the legend take ready text (decimal strings formatted by the provider, never
- *   `toLocaleString` on a JavaScript number, rule D4), in text tokens; a swatch carries the
+ *   `toLocaleString` on a JavaScript number), in text tokens; a swatch carries the
  *   colour. The tooltip has a `line` indicator, `dot`, `dashed` or none, and an optional total
  *   row.
  */
@@ -136,7 +136,7 @@ export function ChartContainer({
 
 export const ChartTooltip = RechartsPrimitive.Tooltip
 
-// The tooltip's body, the swatch and the legend need no Recharts (P5.41: the map's RegionChart
+// The tooltip's body, the swatch and the legend need no Recharts (the map's RegionChart
 // uses them too).
 export {
   ChartLegendContent,

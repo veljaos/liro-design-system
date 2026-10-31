@@ -1,18 +1,18 @@
 /*
  * Bank statement 188 of 6 October 2026 (Banca Intesa) of Kvadrat Gradnja d.o.o., worked line by
- * line (P5.23, the owner's review): ten lines — two exact matches (an invoice paid by a customer,
+ * line: ten lines — two exact matches (an invoice paid by a customer,
  * a supplier invoice paid by us), a partial payment, a customer paying 0,40 RSD less, the bank's
  * fee, the salary advance batch, the taxes and contributions on it, a transfer to the company's
  * own account at another bank, a payment against a proforma invoice (posted as an advance and
- * its advance invoice issued in one step, P5.93 item 17), and an unknown payment.
+ * its advance invoice issued in one step), and an unknown payment.
  * Amounts are whole paras (BigInt); every total, allocation and journal line is computed here, as
- * the Core would; the components add nothing (D4). The customer invoices are the dataset's open
+ * the Core would; the components add nothing. The customer invoices are the dataset's open
  * ones (examples-story-data.ts, `isOpen`: F-2026-0407 is cancelled and F-2026-0408 a draft, so
  * neither is an open item) and earlier ones of the same customers; the supplier invoice
  * UF-2026-1204 is the one journal entry NK-2026-0912 books. Payment codes, models and accounts are
  * illustrative. Not part of the package. No classes here.
  *
- * A statement is one `StatementData` (P5.94 item 19): its lines, the Core's suggestions (with
+ * A statement is one `StatementData`: its lines, the Core's suggestions (with
  * their reasons as short labels), the ranked candidates, the proformas paid, the open items a
  * line may close and the totals; statement 188 here, the generated 1,240 lines of statement 189 in
  * data-bank-189.ts. The screen (screens-bank.tsx) takes either.
@@ -474,7 +474,7 @@ function part(id: string, account: string, text: string, amount: string): SplitP
 }
 
 /**
- * A payment against a proforma invoice (P5.93 item 17, the owner's fourth review): line 9 pays
+ * A payment against a proforma invoice: line 9 pays
  * proforma PR-2026-118. The Core proposes to post it as an advance received AND to issue the
  * advance invoice at once — one Confirm does both, and the drawer then shows the result: the new
  * advance invoice's number as a link and the related documents.

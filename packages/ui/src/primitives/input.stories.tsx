@@ -10,7 +10,7 @@ const meta = {
     docs: {
       description: {
         component: internal(
-          'A single-line text input: 36px, border.control, the focus colour on focus. TextField (P2.2) adds the label, description, error and read-only state.',
+          'A single-line text input: 36px, border.control, the focus colour on focus. TextField adds the label, description, error and read-only state.',
         ),
       },
     },

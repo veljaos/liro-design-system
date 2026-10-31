@@ -16,7 +16,7 @@ import { Decoration, DecorationSet } from '@tiptap/pm/view'
 import { HEADING_LEVELS, linkFromInput, MERGE_FIELD_KEY, safeHref } from './rich-text-logic'
 
 /*
- * The editor's schema (P5.22): Tiptap's MIT extensions only — document, paragraph, text, heading
+ * The editor's schema: Tiptap's MIT extensions only — document, paragraph, text, heading
  * (levels 2 and 3), bold, italic, underline, link, bulleted and numbered lists, line break, undo —
  * and three of our own: the merge field and the mention (atomic inline nodes) and the direction of
  * each block (`dir="auto"`, as a decoration, so the JSON stays free of it). Nothing else can enter
@@ -30,12 +30,12 @@ const MERGE_FIELD_SHAPE =
 export const MERGE_FIELD_PILL = `${MERGE_FIELD_SHAPE} border-default bg-surface-sunken text-primary`
 
 /**
- * A merge field without a value where the values were given (P5.31): dashed, in the warning tone;
+ * A merge field without a value where the values were given: dashed, in the warning tone;
  * its name says "No value" too, never the look alone.
  */
 export const MERGE_FIELD_MISSING = `${MERGE_FIELD_SHAPE} border-dashed border-status-warning-border bg-status-warning-bg text-status-warning-fg`
 
-/** A mention: the name after "@", semibold, as MentionText (P5.1). */
+/** A mention: the name after "@", semibold, as MentionText. */
 export const MENTION_TEXT = 'font-semibold text-primary'
 
 /** The selected atom (a pill chosen with the arrows or a click) shows the focus ring. */
@@ -47,7 +47,7 @@ export interface MergeFieldOptions {
   labelOf: (key: string) => string
   /** The name assistive technology reads: "Merge field: Customer name". */
   nameOf: (label: string) => string
-  /** The values were given and this key has none: drawn and read as "No value" (P5.31). */
+  /** The values were given and this key has none: drawn and read as "No value". */
   missingOf?: (key: string) => boolean
   /** The name read for a field without a value: "No value: Incident date". */
   missingNameOf?: (label: string) => string

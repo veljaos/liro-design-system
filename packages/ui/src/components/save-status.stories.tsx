@@ -20,7 +20,7 @@ const meta = {
           "application's: 'saving' (a small ring and \"Saving…\"), 'saved' (a check and " +
           "\"Saved\" in the success colour, until the next edit sets 'idle'), 'error' (the " +
           'application\'s words, announced at once). "Saved" is announced politely; nothing ' +
-          'needs closing and nothing covers the page (P5.90: toasts never block).\n\n' +
+          'needs closing and nothing covers the page (toasts never block).\n\n' +
           '**When not:** an outcome somewhere else ("Payroll posted", "Request sent") — a toast ' +
           '(`notice.success`), which closes by itself; a problem with a field — its error under ' +
           'the field; a lasting state of the page — Alert or Banner.',

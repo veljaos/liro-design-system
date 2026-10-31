@@ -52,10 +52,10 @@ import {
 } from './data-H'
 
 /*
- * Group H's example screens (P5.17, industry examples) for Dom zdravlja Novi Sad (data-H.ts):
+ * The example screens (industry examples) for Dom zdravlja Novi Sad (data-H.ts):
  * Jovana Nikolić books a check-up in the patient portal (PortalShell: service and doctor, a free
  * time, booked), and the doctor's week (CalendarView) with her booking. The service is chosen in a
- * CatalogPicker from the clinic's 61 services in levels (P5.90 item 14: radio buttons do not
+ * CatalogPicker from the clinic's 61 services in levels (radio buttons do not
  * scale): most chosen, her recent ones and the recommended first, a search, the specialties and
  * the laboratory as a drill-down, each with who performs it and its price or "Covered by health
  * insurance". Every screen plays the
@@ -64,7 +64,7 @@ import {
 
 export const H_ROUTES = {
   book: '/portal/health/book',
-  /** The catalogue of services open (P5.90 item 14). */
+  /** The catalogue of services open. */
   bookChoose: '/portal/health/book?service=choose',
   bookTime: '/portal/health/book?step=time',
   bookConfirm: '/portal/health/book?step=confirm',
@@ -170,7 +170,7 @@ export function Booking({
   const [service, setService] = useState(DEFAULT_SERVICE)
   const [picking, setPicking] = useState(choosing)
   const [doctor, setDoctor] = useState(CHOSEN_DOCTOR)
-  // Another doctor only on request: the chosen one is the default (P5.93 item 12, simplicity). The
+  // Another doctor only on request: the chosen one is the default (simplicity). The
   // button shows the field in its place, so it has no "…" (which promises a dialog).
   const [changingDoctor, setChangingDoctor] = useState(false)
   const [slot, setSlot] = useState<string | null>(
@@ -406,7 +406,7 @@ export function ClinicShell({
   phone: boolean
   tab: 'schedule' | 'calendar' | 'patients'
   crumb: string
-  /** The calendar is seen on the day of the appointment (P5.28 item 10). */
+  /** The calendar is seen on the day of the appointment. */
   today?: string
   children: ReactNode
 }) {

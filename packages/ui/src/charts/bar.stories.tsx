@@ -169,7 +169,7 @@ export const InteractiveStory: Story = {
     await settle()
     const chosen = within(canvasElement).getByRole('button', { name: /Novi Sad store/ })
     await expect(chosen).toHaveAttribute('aria-pressed', 'true')
-    // The key figures stand in the header band, ruled off from the plot (P5.93 item 42).
+    // The key figures stand in the header band, ruled off from the plot.
     await expect(chosen.closest('[data-slot="chart-header"]')).not.toBeNull()
   },
 }

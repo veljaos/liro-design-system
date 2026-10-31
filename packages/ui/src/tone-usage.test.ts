@@ -3,7 +3,7 @@ import { join, relative } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 /*
- * Where the status `solid` colours may appear (P4.7c, owner; Appendix B.6): a solid is for bars,
+ * Where the status `solid` colours may appear: a solid is for bars,
  * dots and icon squares, never text — so no `text-status-*-solid`. The warning solid (orange 6)
  * reaches only 2.84:1 on the light page background, so it is used only where it stands on a
  * raised surface: the status page's square (on surface.raised) and the charts' marks (in their

@@ -2,7 +2,7 @@ import { TEXT_ISOLATE } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 
 /*
- * The text in the centre of a donut or a radial chart (P4.7a): a value and its name, sized to the
+ * The text in the centre of a donut or a radial chart: a value and its name, sized to the
  * hole. It is an HTML layer over the plot (Recharts draws a polar Label before its sectors exist,
  * at 0,0), so it also keeps the page's text direction. The hole's radius is the ring's inner
  * radius as a share of half the plot's height (the plots are wider than tall); the value's size

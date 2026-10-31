@@ -80,7 +80,7 @@ import { usePhone } from './use-phone'
 import { HintedTarget } from './popover'
 
 /*
- * ShiftPlanner (BUILD-PLAN P5.24 b): people × days of a week or a period, each cell holding zero
+ * ShiftPlanner: people × days of a week or a period, each cell holding zero
  * or more assignments of the application's shift templates. The planner shows what it is given
  * and reports changes (`onChange`); it never decides whether a plan is valid — rest between
  * shifts, double booking and weekly limits arrive as conflicts (data), and legal limits are never
@@ -88,9 +88,9 @@ import { HintedTarget } from './popover'
  * - Toolbar: the period (previous, Today, next; the dates), the view (by person, or by one of the
  *   application's groupings: team, site), then at the end the schedule's state (Draft /
  *   Published / Changed since publishing), "Apply rotation…" and Publish, the page's main action,
- *   last (D13), with a confirmation that states the application's counts and offers the
+ *   last, with a confirmation that states the application's counts and offers the
  *   application's messages (`publishNotify`) as "Notify …" checkboxes: publishing messages
- *   nobody unless the user checks it (P5.28 item 9; "Publish and notify").
+ *   nobody unless the user checks it ("Publish and notify").
  * - The palette: the templates as chips with their times ("22:00–06:00 (+1)", read as "… the next
  *   day") and their key. Drag one onto a day, or press it (or its key) to assign it to the
  *   selected days.
@@ -99,13 +99,13 @@ import { HintedTarget } from './popover'
  *   planned hours at the row's end (`format.number`, "—" for null), the coverage at the columns'
  *   foot. Rows grouped under collapsible headings. A cell's name says the person, the day, its
  *   assignments with their times in words, "Changed", and each conflict in words.
- * - Keyboard: the arrows move (the forward arrow in the reading direction to the next day, B.7),
+ * - Keyboard: the arrows move (the forward arrow in the reading direction to the next day),
  *   Home / End to the row's ends, Ctrl+Home / Ctrl+End to the corners; Shift with an arrow
- *   selects a range (neutral: surface.selected with a border.selected border, D17); a template's
+ *   selects a range (neutral: surface.selected with a border.selected border); a template's
  *   key assigns it to the range or the cell; Delete or Backspace empties them; Escape clears the
  *   range; Enter or Space opens the cell's menu — the templates, "Move … to…", "Remove …". Each
  *   change is announced politely.
- * - Dragging (decisions.md "Launchpad dragging is live", the rule for every drag): pointer events,
+ * - Dragging (the rule for every drag): pointer events,
  *   never the browser's drag and drop; a mouse drag starts after 4px, a touch after a 250ms press
  *   without moving more than 8px. A template from the palette, or an assignment from its cell,
  *   lifts (shadow lg, border.strong, the raised layer) and follows the pointer; a neutral dashed
@@ -209,7 +209,7 @@ export interface ShiftPlannerProps {
   onPublish?: (answer: ChangeConfirmAnswer) => void | Promise<void>
   /**
    * The messages the application can send with publishing ("Notify 8 people in the app"), each
-   * an explicit choice in the confirmation, checked as the application sets it (P5.28 item 9).
+   * an explicit choice in the confirmation, checked as the application sets it.
    * Without it publishing makes the shifts visible and messages nobody.
    */
   publishNotify?: readonly NotifyOption[]
@@ -227,7 +227,7 @@ export interface ShiftPlannerProps {
    */
   rotationPeople?: readonly string[]
   /**
-   * The application's checks of the shifts a rotation would add, shown before Apply (P5.24a):
+   * The application's checks of the shifts a rotation would add, shown before Apply:
    * conflicts by person and day, as `conflicts`. The planner checks nothing itself.
    */
   rotationConflicts?: (
@@ -274,7 +274,7 @@ export function ShiftPlanner(props: ShiftPlannerProps) {
   const baseId = useId()
   const grid = useRef<HTMLTableElement>(null)
   const root = useRef<HTMLDivElement>(null)
-  // The days row stays below the shell while the page scrolls (P5.28 item 4).
+  // The days row stays below the shell while the page scrolls.
   const region = useRef<HTMLDivElement>(null)
   useStickyHead(region, !phone && props.loading !== true && props.rows.length > 0)
   const editable = props.readOnly !== true && props.onChange !== undefined
@@ -1280,7 +1280,7 @@ export function ShiftPlanner(props: ShiftPlannerProps) {
         className={cn(
           BUTTON_RESET,
           FOCUS_RING,
-          // Inside the cell (P5.96b): the next cell and the sticky names never cover it.
+          // Inside the cell: the next cell and the sticky names never cover it.
           'focus-visible:-outline-offset-2',
           'relative box-border flex min-h-14 w-full flex-col items-stretch gap-1 rounded-sm border border-solid p-1 text-start',
           editable ? 'cursor-pointer hover:bg-surface-hover' : 'cursor-default',
@@ -1312,7 +1312,7 @@ export function ShiftPlanner(props: ShiftPlannerProps) {
           />
         ))}
         {isTarget && (
-          // Where the dragged template or assignment lands: neutral, never blue (D17).
+          // Where the dragged template or assignment lands: neutral, never blue.
           <span
             aria-hidden="true"
             data-slot="shift-drop-placeholder"

@@ -32,7 +32,7 @@ const meta = {
           'into the same structure: nothing of the HTML is inserted as it is. Merge fields show ' +
           'their labels (`mergeFields`) as neutral pills — or, with `mergeValues` (a preview with ' +
           'sample data, a letter to one recipient), their values written through `format`, a ' +
-          'field without a value marked "No value" (P5.31); mentions are semibold; links are ' +
+          'field without a value marked "No value"; mentions are semibold; links are ' +
           'underlined and only to http(s) or mailto. Empty: "—" or `empty`.\n\n' +
           '**When:** formatted text from the application’s own editor.\n\n' +
           '**When not:** plain text (show it as text); HTML from anywhere else that must keep ' +
@@ -71,7 +71,7 @@ export const OfferLetter: Story = {
 }
 
 /**
- * The same template previewed with sample values (P5.31): text as given, the due date and the
+ * The same template previewed with sample values: text as given, the due date and the
  * total written through `format`; the invoice number has no value, so it stays a pill marked
  * "No value".
  */

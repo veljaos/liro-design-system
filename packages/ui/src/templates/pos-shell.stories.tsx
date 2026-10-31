@@ -147,12 +147,12 @@ const meta = {
           'area at the start and the cart at the end. Kiosk-safe: nothing scrolls the page, no ' +
           'double-tap zoom, no selection by a long press, safe areas kept. On a phone the ' +
           'products come first and the order is a compact bar at the bottom (the count and the ' +
-          'total, highlighted at each change) that expands into a sheet with the cart (P5.90). A ' +
+          'total, highlighted at each change) that expands into a sheet with the cart. A ' +
           'scanner works anywhere on the screen (`onScan`).\n\n' +
           '**When:** a point of sale, a kiosk, a self-service order screen.\n\n' +
           '**When not:** the back office of a shop (AppShell); a handheld’s warehouse work ' +
           '(a handheld worklist: picking, a stock count).\n\n' +
-          '**P5.28:** `banners` under the strip stay in view (a training mode); the queue’s ' +
+          '**Banners:** `banners` under the strip stay in view (a training mode); the queue’s ' +
           'state (`queueState` “failed”: a danger “Not sent” badge) and `queueAction`.',
       },
     },

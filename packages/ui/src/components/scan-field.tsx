@@ -9,7 +9,7 @@ import { scanDecision, type ScanOptions } from './scan-logic'
 import { Tooltip } from './popover'
 
 /*
- * ScanField (BUILD-PLAN P5.11; docs/decisions.md "Scanning"). A hardware scanner is a keyboard
+ * ScanField. A hardware scanner is a keyboard
  * that types the code in a burst and presses Enter. The field takes both a scan and a person
  * typing the code: on Enter it reports the code with where it came from — 'scanner' when the
  * characters arrived as a burst (`scanDecision`: at least 4, each within 50ms), 'keyboard'
@@ -87,7 +87,7 @@ export function ScanField(props: ScanFieldProps) {
   const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') {
       event.preventDefault()
-      // Read-only (P5.93): nothing is scanned in now.
+      // Read-only: nothing is scanned in now.
       if (props.readOnly === true) return
       const code = text.trim()
       const source =

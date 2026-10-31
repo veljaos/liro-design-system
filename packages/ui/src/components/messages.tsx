@@ -35,16 +35,16 @@ import { Skeleton } from './progress'
 import { Spinner } from './spinner'
 
 /*
- * The Message family (P5.1) for comments on a record and task conversations, on the shadcn/ui
- * Bubble, Marker, Message and Message Scroller primitives (owner, P3.6).
+ * The Message family for comments on a record and task conversations, on the shadcn/ui
+ * Bubble, Marker, Message and Message Scroller primitives.
  *
  * - **MessageBubble:** one message — the author (PersonAvatar 'sm' and the name, AgentMark after
  *   an agent's name, the Bot square as its avatar), the time (`format.time`, or the application's
  *   text), the text in a Bubble and an optional part under it (`extra`: a questionnaire, files).
- *   **No blue bubbles (D17):** others' messages stand at the start on the raised surface with a
+ *   **No blue bubbles:** others' messages stand at the start on the raised surface with a
  *   border, the user's own at the end on surface.sunken, without the avatar and name (the word
  *   "You" for assistive technology). Side and surface tell them apart, never colour alone.
- *   **Internal notes** (`internal`, P5.30): a message only the team sees stands on its author's
+ *   **Internal notes** (`internal`): a message only the team sees stands on its author's
  *   side on the `note` surface — sunken with a dashed border.strong line — and starts with a
  *   visible "Internal" mark (a lock and the word, read first by assistive technology), so it
  *   differs from a reply by its line and its word, never by colour alone.
@@ -64,12 +64,12 @@ import { Spinner } from './spinner'
  *   chooses it. `onSend` may return a promise: the text stays as sent (typing waits; the field
  *   keeps its look and the focus) with a spinner until it resolves, and is cleared then; a
  *   rejection keeps it. `unavailableReason`: the field read only, Send unavailable, the reason
- *   under the field (P5.93).
+ *   under the field.
  *   `attachments` is a slot above the toolbar for the files added to the message.
  * - **MessageThread:** the list and the composer under it, in one column.
  *
  * Which one: MessageThread for a conversation (comments on a record, a task's discussion);
- * ActivityList (P4.9) stays the compact list of the latest comments in a side panel; HistoryList
+ * ActivityList stays the compact list of the latest comments in a side panel; HistoryList
  * is the record's history.
  */
 
@@ -99,7 +99,7 @@ export interface MessageBubbleProps {
   status?: 'sending' | 'failed'
   /** Sends a failed message again. */
   onRetry?: () => void
-  /** Only the team sees it: the note surface and the "Internal" mark (P5.30). */
+  /** Only the team sees it: the note surface and the "Internal" mark. */
   internal?: boolean
   /** Shows the avatar, the name and the time. Default: true (MessageList hides them inside a run). */
   showAuthor?: boolean
@@ -272,7 +272,7 @@ export interface ThreadMessage {
   /** A part inside the bubble under the text (an agent's questionnaire, files). */
   extra?: ReactNode
   status?: 'sending' | 'failed'
-  /** Only the team sees it: an internal note (P5.30). */
+  /** Only the team sees it: an internal note. */
   internal?: boolean
   /**
    * The whole message drawn by the application instead of a bubble — an AgentQuestion, which
@@ -448,7 +448,7 @@ export interface MessageComposerProps {
   /** The application is sending. */
   sending?: boolean
   /**
-   * No message can be written now, and why, from the application (P5.93): the field is
+   * No message can be written now, and why, from the application: the field is
    * read-only, Send is unavailable, and the reason stands under the field.
    */
   unavailableReason?: ReactNode

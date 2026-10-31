@@ -2,7 +2,7 @@ import { LiroProvider } from '@veljaos/ui'
 import { BarChart } from '@veljaos/ui/charts'
 
 /**
- * One chart through the `@veljaos/ui/charts` subpath (P4.7a), typed against the packed
+ * One chart through the `@veljaos/ui/charts` subpath, typed against the packed
  * declarations; Recharts comes with it as a dependency of `@veljaos/ui`.
  */
 export function ChartsExample() {

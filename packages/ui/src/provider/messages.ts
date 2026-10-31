@@ -1,8 +1,8 @@
 import type { IpsProblemCode } from '../components/ips-qr'
 
 /**
- * The Design System's own strings: every text a component shows on its own, and nothing else
- * (BUILD-PLAN section 5). All other text comes in through props. A value is a string, or a
+ * The Design System's own strings: every text a component shows on its own, and nothing else.
+ * All other text comes in through props. A value is a string, or a
  * function where the text depends on a value, so that the application can supply its own
  * plural and gender rules. English defaults: `messages.en.ts`.
  */
@@ -14,7 +14,7 @@ export interface LiroMessages {
   /**
    * The number of rows: exact ("1,234 rows"), or a lower bound when the count stopped at a
    * threshold ("More than 10,000 rows"). Every message that shows a number receives the number
-   * (for plural rules) and its text already written by the provider's `format.number` (P4.9).
+   * (for plural rules) and its text already written by the provider's `format.number`.
    */
   'table.count': (count: number, text: string, exact: boolean) => string
   /** A table that has no rows yet. */
@@ -92,7 +92,7 @@ export interface LiroMessages {
   'filter.rangeTo': (label: string, currency?: string) => string
   /** FilterBar: an amount range's visible label, with its currency once ("Total (EUR)"). */
   'filter.rangeLabel': (label: string, currency: string) => string
-  /** FilterBar: the empty value of a choice filter, meaning no filter ("All"; P4.9). */
+  /** FilterBar: the empty value of a choice filter, meaning no filter ("All"). */
   'filter.all': string
   /** FilterBar on phones: the sort button's text while nothing is sorted, and the start of its name. */
   'filter.sort': string
@@ -191,19 +191,19 @@ export interface LiroMessages {
   'notice.close': string
   /** Names the region where toasts appear, for assistive technology. */
   'notice.region': string
-  /** SaveStatus (P5.90): beside the action while a routine save runs, and after it succeeded. */
+  /** SaveStatus: beside the action while a routine save runs, and after it succeeded. */
   'save.saving': string
   'save.saved': string
   /** Tells assistive technology that a step of a Stepper is completed. */
   'stepper.completed': string
   /**
-   * Stepper on phones (P5.23): where the user is, "Step 3 of 4", before " · " and the step's name
+   * Stepper on phones: where the user is, "Step 3 of 4", before " · " and the step's name
    * on the one line over its thin progress bar; the numbers already formatted.
    */
   'stepper.step': (step: number, stepText: string, total: number, totalText: string) => string
   /** An action that cannot be used, with the reason it is given. */
   'action.unavailable': (reason: string) => string
-  /** P5.93: a tile's or a card's state line — the state over its detail ("Unavailable" / "Sold out"). */
+  /** A tile's or a card's state line — the state over its detail ("Unavailable" / "Sold out"). */
   'stateLine.unavailable': string
   'stateLine.locked': string
   /** EditableGrid: each cell's accessible name, its column and line: "Quantity, line 3". */
@@ -302,7 +302,7 @@ export interface LiroMessages {
   /**
    * ListPage: the saved views that do not fit as tabs, in a "More" menu (desktop); on phones the
    * one select's text ("View: All"; `view` is the current view's name) and its search field,
-   * shown above 7 views (P4.9).
+   * shown above 7 views.
    */
   'list.moreViews': string
   'list.view': (view: string) => string
@@ -363,13 +363,13 @@ export interface LiroMessages {
   /** Charts: the button that shows the values as a table, and back as a chart. */
   'chart.showTable': string
   'chart.showChart': string
-  /** Charts (P4.7a): no values in the period; a failed load and its retry; loading. */
+  /** Charts: no values in the period; a failed load and its retry; loading. */
   'chart.noData': string
   'chart.error': string
   'chart.retry': string
   'chart.loading': string
   /**
-   * Axis ticks written short (P4.7a): `value` is the tick already divided and formatted
+   * Axis ticks written short: `value` is the tick already divided and formatted
    * ("1,5"); the words are the Core's ("1,5 hilj.", "1,5 mil.").
    */
   'chart.thousands': (value: string) => string
@@ -381,7 +381,7 @@ export interface LiroMessages {
   'report.parameters': string
   /** SettingsPage: a setting saved (shown in its row). */
   'settings.saved': string
-  /** Status pages (P4.7): the default title and description of each kind. */
+  /** Status pages: the default title and description of each kind. */
   'status.unauthenticatedTitle': string
   'status.unauthenticatedDescription': string
   'status.planRequiredTitle': string
@@ -397,16 +397,16 @@ export interface LiroMessages {
   /** A suspended page about the user's own account (the default subject). */
   'status.suspendedTitle': string
   'status.suspendedDescription': string
-  /** A suspended page about a company the user works for (P4.9). */
+  /** A suspended page about a company the user works for. */
   'status.suspendedCompanyTitle': string
   /** `company` is the company's name, from the application. */
   'status.suspendedCompanyDescription': (company: string) => string
   /** The accessible name of a hidden module's "Show" button. */
   'launchpad.show': (name: string) => string
-  // ── P5 group F ──
-  /** CandidateList (P5.23): shown when the application proposes nothing. */
+  // Accounting runs: candidates, balance, periodic runs
+  /** CandidateList: shown when the application proposes nothing. */
   'candidates.empty': string
-  /** BalanceBar (P5.21): the three values of a balanced entry and its state. */
+  /** BalanceBar: the three values of a balanced entry and its state. */
   'balance.label': string
   'balance.debit': string
   'balance.credit': string
@@ -415,7 +415,7 @@ export interface LiroMessages {
   'balance.unbalanced': string
   /** An amount cannot be read or is missing, so the balance is not known. */
   'balance.incomplete': string
-  /** PeriodicRunPage (P5.21): the checks of a step and their results. */
+  /** PeriodicRunPage: the checks of a step and their results. */
   'run.checks': string
   'run.passed': string
   'run.warning': string
@@ -432,7 +432,7 @@ export interface LiroMessages {
   'run.periodLocked': string
   /** The button that runs the process again (it asks for a reason first). */
   'run.rerun': string
-  // ── P5 group A ──
+  // Collaboration: mentions, history, messages, questionnaires
   /** Joins a few names or labels into one line ("Dragan Ilić, Ivana Stojanović"). */
   'text.join': (items: readonly string[]) => string
   /** AgentMark: names the machine marker after an agent's name (assistive technology, tooltip). */
@@ -500,8 +500,8 @@ export interface LiroMessages {
   'questionnaire.required': string
   'questionnaire.otherRequired': string
 
-  // ── P5 group C ──
-  /** EmailFirstForm (P5.6): the e-mail field's default label and the button that goes on. */
+  // Sign-in and security
+  /** EmailFirstForm: the e-mail field's default label and the button that goes on. */
   'signIn.email': string
   'signIn.continue': string
   /** The divider between the provider buttons and the e-mail form ("or"). */
@@ -526,7 +526,7 @@ export interface LiroMessages {
   /** The confirmation that enables Continue. */
   'recovery.saved': string
   'recovery.continue': string
-  /** SessionList (P5.6): the current device's mark, its state, another device's last activity. */
+  /** SessionList: the current device's mark, its state, another device's last activity. */
   'session.thisDevice': string
   'session.activeNow': string
   /** `when` is the date and time, already written by `format`. */
@@ -537,7 +537,7 @@ export interface LiroMessages {
   'session.revokeOthers': string
   /** No other device is signed in. */
   'session.noOthers': string
-  /** KanbanBoard (P5.7): an empty column; the card's drag handle and its menu (named by title). */
+  /** KanbanBoard: an empty column; the card's drag handle and its menu (named by title). */
   'kanban.emptyColumn': string
   'kanban.moveCard': (title: string) => string
   'kanban.cardMenu': (title: string) => string
@@ -558,24 +558,24 @@ export interface LiroMessages {
   'kanban.cancelled': (title: string) => string
   /** Phones: the choice of the column shown. */
   'kanban.column': string
-  /** PermissionMatrix (P5.21): a cell's checkbox name, its read-only states, the corner header. */
+  /** PermissionMatrix: a cell's checkbox name, its read-only states, the corner header. */
   'permissions.cell': (area: string, action: string) => string
   'permissions.allowed': string
   'permissions.notAllowed': string
   'permissions.notApplicable': string
   'permissions.area': string
-  /** SetupChecklist (P5.21): "2 of 5 done"; numbers already written by `format.number`. */
+  /** SetupChecklist: "2 of 5 done"; numbers already written by `format.number`. */
   'setup.progress': (done: number, doneText: string, total: number, totalText: string) => string
   /** A step's state for assistive technology (the marker shows it). */
   'setup.done': string
   'setup.next': string
   'setup.todo': string
   'setup.blocked': string
-  /** All steps done (P5.93). */
+  /** All steps done. */
   'setup.complete': string
   'setup.showSteps': string
   'setup.hideSteps': string
-  /** SignerList (P5.21): "1 of 3 signed"; numbers already written by `format.number`. */
+  /** SignerList: "1 of 3 signed"; numbers already written by `format.number`. */
   'signing.summary': (
     signed: number,
     signedText: string,
@@ -595,7 +595,7 @@ export interface LiroMessages {
   'signing.declineConfirm': string
   /** In order: the signer whose turn comes first. */
   'signing.notYourTurn': (name: string) => string
-  // ── P5 group E ──
+  // Catalogues at scale, registers and official forms
   /** LookupDialog: how the keyboard moves through the results (under the table; the search's description). */
   'lookup.keyboardHint': string
   /** ImportWizard: the names of its four steps. */
@@ -634,9 +634,9 @@ export interface LiroMessages {
   'import.run': (count: number, text: string) => string
   /** The import's progress: names its JobProgress. */
   'import.progress': string
-  /** The phone's close button in the wizard's header, in place of Cancel (P5.23). */
+  /** The phone's close button in the wizard's header, in place of Cancel. */
   'import.cancel': string
-  /** Asked before leaving once a file is chosen: the title and the message (P5.23). */
+  /** Asked before leaving once a file is chosen: the title and the message. */
   'import.leaveTitle': string
   'import.leaveMessage': string
   /** BulkEditDrawer: the title ("Edit 24 records"), a field left as it is, and the summary. */
@@ -667,7 +667,7 @@ export interface LiroMessages {
   /** A locked period ("January–June 2026 is locked"); the period is the application's text. */
   'register.periodLocked': (period: string) => string
   /**
-   * DocumentSource (P5.23): the labels of a source document's date and total in a correcting or
+   * DocumentSource: the labels of a source document's date and total in a correcting or
    * cancelling document's header ("Issued 25.09.2026. · Total 186.420,35 RSD").
    */
   'document.sourceDate': string
@@ -699,7 +699,7 @@ export interface LiroMessages {
   'statutory.goToField': (field: string) => string
   /** Names the checks summary. */
   'statutory.checks': string
-  // ── P5 group B ──
+  // Shell markers, timelines, jobs and files
   /** OfflineIndicator: announced politely once the connection returns. */
   'connection.online': string
   /** ConnectionState: a draft saved on this device only; `time` is `format.time`, or null. */
@@ -787,15 +787,15 @@ export interface LiroMessages {
   'frame.timeout': string
   /** DocumentFrame: loads the viewer again. */
   'frame.retry': string
-  // ── P5 group D2 ──
-  /** DocumentReferences (P5.18): the default lead ("Based on") and how a lead is written ("Based on:"). */
+  // Complex documents
+  /** DocumentReferences: the default lead ("Based on") and how a lead is written ("Based on:"). */
   'references.basedOn': string
   'references.lead': (label: string) => string
   /** Between two numbers of the same kind ("A-2026-038, A-2026-044"). */
   'references.listSeparator': string
   /** A reference's accessible name: its kind, number and, when given, its state. */
   'references.link': (kind: string, number: string, state: string | undefined) => string
-  /** DocumentCurrency (P5.18): the labels of a foreign-currency document's currency block. */
+  /** DocumentCurrency: the labels of a foreign-currency document's currency block. */
   'document.currency': string
   'document.exchangeRate': string
   'document.rateDate': string
@@ -803,16 +803,16 @@ export interface LiroMessages {
   'document.rate': (currency: string, homeCurrency: string, rateText: string) => string
   /** The rate line under the totals: the rate and where it comes from (the application's words). */
   'document.rateLine': (rate: string, source: string) => string
-  /** CancellationBanner (P5.18): the title, who and when (both written by `format`), the reason. */
+  /** CancellationBanner: the title, who and when (both written by `format`), the reason. */
   'document.cancelledTitle': string
-  /** Follows the title "Cancelled" (P5.23): "by Milica Petrović on 06.10.2026. at 11:20." */
+  /** Follows the title "Cancelled": "by Milica Petrović on 06.10.2026. at 11:20." */
   'document.cancelledBy': (name: string, dateText: string, timeText: string) => string
   'document.cancelReason': (reason: string) => string
-  /** DocumentNotes (P5.18): the default labels of the template texts and the free note. */
+  /** DocumentNotes: the default labels of the template texts and the free note. */
   'notes.templates': string
   'notes.free': string
   /**
-   * DocumentSpecification (P5.18): the summary row ("Specification of works: 300 positions,
+   * DocumentSpecification: the summary row ("Specification of works: 300 positions,
    * 2.418.300,00 RSD"); `countText` and `amountText` are already written by `format`.
    */
   'specification.summary': (
@@ -822,11 +822,11 @@ export interface LiroMessages {
     amountText: string,
   ) => string
   'specification.open': string
-  /** correctionColumns (P5.18): the default headers of a corrected value's three columns. */
+  /** correctionColumns: the default headers of a corrected value's three columns. */
   'correction.original': string
   'correction.change': string
   'correction.new': string
-  // ── P5 group D1 ──
+  // Document lines and lookup
   /** LookupField: the heading over the recent records shown while nothing is typed. */
   'lookup.recent': string
   /**
@@ -858,9 +858,9 @@ export interface LiroMessages {
   'grid.addDeduction': string
   /** EditableGrid: the note before a line's detail that never reaches the customer's document. */
   'grid.internal': string
-  /** EditableGrid on phones (P5.90): the title of a line's card, its number ("Line 3"). */
+  /** EditableGrid on phones: the title of a line's card, its number ("Line 3"). */
   'grid.line': (line: number, text: string) => string
-  // P5.24 shifts
+  // Shifts
   /** ShiftPlanner: the header of the people column, the hours column and the coverage row. */
   'shifts.person': string
   'shifts.hours': string
@@ -987,7 +987,7 @@ export interface LiroMessages {
   'swap.reason': string
   'swap.reasonRequired': string
   'swap.submit': string
-  /** WorkingTimeBalance (P5.24 d): the plan's header and the table's columns. */
+  /** WorkingTimeBalance: the plan's header and the table's columns. */
   'workingTime.period': string
   'workingTime.weeks': string
   'workingTime.week': (index: number, indexText: string) => string
@@ -998,7 +998,6 @@ export interface LiroMessages {
   'workingTime.average': string
   'workingTime.warnings': string
   'workingTime.noWarnings': string
-  // P5.9 / P5.14 / P5.16
   /** TreeView and TreeTable: the row under an opened node whose children are being loaded. */
   'tree.loading': string
   /** The error row under a node whose children could not be loaded (without the application's words). */
@@ -1035,7 +1034,7 @@ export interface LiroMessages {
   'portal.sectionNote': (label: string, note: string) => string
   /** PortalShell: the participant menu's button, named with the participant ("Account: Jovana Nikolić"). */
   'portal.menu': (name: string) => string
-  // P5.13 / P5.24 ── AttendanceGrid and ClockRecordList
+  // AttendanceGrid and ClockRecordList
   /** AttendanceGrid: the header of the row headers' column, when the application gives none. */
   'attendance.rows': string
   /** The names of a weekend and of a holiday column, for assistive technology and the tooltip. */
@@ -1115,7 +1114,7 @@ export interface LiroMessages {
   'clock.time': string
   'clock.reason': string
   'clock.save': string
-  // P5.8 Calendar and scheduling
+  // Calendar and scheduling
   /** CalendarView: the button that goes to the period holding the provider's `today`. */
   'calendar.today': string
   /** CalendarView: the names of the previous and next buttons, by the view shown. */
@@ -1171,7 +1170,7 @@ export interface LiroMessages {
   'schedule.when': (dateText: string, timeText: string) => string
   /** A start time in the "Move to…" list that overlaps an unavailable time. */
   'schedule.optionUnavailable': (timeText: string, reason: string) => string
-  /** ResourceSchedule's phone lists (P5.90): the search, an empty list, a search without results. */
+  /** ResourceSchedule's phone lists: the search, an empty list, a search without results. */
   'schedule.search': string
   'schedule.listEmpty': string
   'schedule.noMatches': (query: string) => string
@@ -1187,7 +1186,7 @@ export interface LiroMessages {
   'timetable.free': string
   /** Timetable: the label of the phones' day switcher. */
   'timetable.day': string
-  // P5.10 / P5.11 touch, POS and warehouse
+  // Touch, POS and warehouse
   /** PosShell: the status strip (its region, the register and the cashier), the queue, products. */
   'pos.status': string
   'pos.register': string
@@ -1219,12 +1218,12 @@ export interface LiroMessages {
   'pos.inOrder': (countText: string) => string
   /** ProductGrid's search field. */
   'pos.search': string
-  /** P5.93: ProductTile's stock state over the application's detail ("Low stock" / "3 left"). */
+  /** ProductTile's stock state over the application's detail ("Low stock" / "3 left"). */
   'pos.lowStock': string
   'pos.outOfStock': string
   /** PosShell's order bar and sheet on a phone. */
   'pos.order': string
-  /** CatalogPicker (P5.90 item 14). */
+  /** CatalogPicker. */
   'catalog.search': string
   'catalog.filters': string
   /** The top level's name ("Back to All"). */
@@ -1249,9 +1248,9 @@ export interface LiroMessages {
   'payment.cash': string
   'payment.card': string
   'payment.split': string
-  /** P5.93: every way to pay but cash and card stands behind it (a menu). */
+  /** Every way to pay but cash and card stands behind it (a menu). */
   'payment.other': string
-  /** P5.93: on a phone the done view's receipt (`doneContent`) opens under this heading. */
+  /** On a phone the done view's receipt (`doneContent`) opens under this heading. */
   'payment.doneDetails': string
   'payment.tendered': string
   'payment.exact': string
@@ -1281,14 +1280,13 @@ export interface LiroMessages {
   'quantity.belowMin': (minText: string) => string
   'quantity.aboveMax': (maxText: string) => string
   /**
-   * Why + (or −) cannot be used (P5.93 item 39): the limit, and the application's reason when it
+   * Why + (or −) cannot be used: the limit, and the application's reason when it
    * gives one ("Maximum 6 — the quantity on the order").
    */
   'quantity.atMax': (maxText: string, reason?: string) => string
   'quantity.atMin': (minText: string, reason?: string) => string
   /** A handheld worklist (picking, a stock count): changes kept on the device while offline. */
   'queue.waiting': (count: number, countText: string) => string
-  // P5.15 / P5.12
   /** QuizResult: the score ("8 of 10 correct"), the outcome and the answers' review. */
   'quiz.score': (correct: number, total: number, correctText: string, totalText: string) => string
   'quiz.passed': string
@@ -1298,7 +1296,7 @@ export interface LiroMessages {
   'quiz.incorrect': string
   'quiz.yourAnswer': (answer: string) => string
   'quiz.correctAnswer': (answer: string) => string
-  // P5.22 ── RichTextField and RichText
+  // RichTextField and RichText
   /** Names the formatting toolbar of a rich text field. */
   'richText.toolbar': string
   /** The menu of block styles, and its three choices. */
@@ -1333,7 +1331,7 @@ export interface LiroMessages {
   'richText.countLabel': (countText: string, limitText: string) => string
   /** Over the limit: "20 characters too many". */
   'richText.overLimit': (count: number, countText: string) => string
-  // P5.25 RoomRack
+  // RoomRack
   /** RoomRack: the search field's name and placeholder (it matches a number or a name). */
   'rack.search': string
   /** RoomRack: the names of the two groups of state chips. */
@@ -1350,7 +1348,7 @@ export interface LiroMessages {
   'rack.emptyDescription': string
   /** RoomRack: how to move between the tiles (the description of the tile in the tab order). */
   'rack.instructions': string
-  // P5.25 FloorPlan
+  // FloorPlan
   /** The Plan / List switch, and its two choices. */
   'floorPlan.view': string
   'floorPlan.plan': string
@@ -1396,7 +1394,7 @@ export interface LiroMessages {
   'floorPlan.duplicate': string
   'floorPlan.remove': string
   /** The "Move to…" and "Size…" dialogs: titles, hint, fields, buttons and the range error. */
-  /** The "Move to…" and "Size…" dialogs' titles: the action; the item is their subject (P5.28). */
+  /** The "Move to…" and "Size…" dialogs' titles: the action; the item is their subject. */
   'floorPlan.moveTitle': string
   'floorPlan.sizeTitle': string
   'floorPlan.unitsHint': string
@@ -1411,7 +1409,7 @@ export interface LiroMessages {
   'floorPlan.empty': string
   'floorPlan.emptyDescription': string
   'floorPlan.emptyEditing': string
-  // P5.25 SeatingChart
+  // SeatingChart
   /** The guest list's title, its count ("112 of 140 seated") and its search. */
   'seating.guests': string
   'seating.count': (seatedText: string, totalText: string) => string
@@ -1441,7 +1439,7 @@ export interface LiroMessages {
   'seating.seatedHere': string
   'seating.chooseGuest': string
   /** "Seat at…": title, fields, the button, free seats and a full table. */
-  /** "Seat at…": the action; the guest is the dialog's subject (P5.28). */
+  /** "Seat at…": the action; the guest is the dialog's subject. */
   'seating.seatAtTitle': string
   'seating.table': string
   'seating.seat': string
@@ -1450,7 +1448,7 @@ export interface LiroMessages {
   'seating.tableFull': string
   /** An empty seat in a table's list. */
   'seating.emptySeat': string
-  // P5.26 ── Diagram
+  // Diagram
   /** The kinds of step, as the palette, the steps list and the accessible names say them. */
   'diagram.start': string
   'diagram.end': string
@@ -1546,7 +1544,7 @@ export interface LiroMessages {
   'diagram.stepAction': (action: string, label: string) => string
   /** The label dialog's checkbox for a decision's connection. */
   'diagram.defaultWay': string
-  // P5.27 legal search
+  // Legal search
   /** "Try again" after the search failed. */
   'legalSearch.retry': string
   /** GazetteIssues: an issue's day, its number of acts, "Show more issues", the empty state. */
@@ -1555,7 +1553,7 @@ export interface LiroMessages {
   'gazette.showMore': string
   'gazette.emptyTitle': string
   'gazette.emptyDescription': string
-  // P5.27 legal text
+  // Legal text
   /** An article's copy-link button: "Copy link to Article 5"; the confirmation and the failure. */
   'legal.copyLink': (label: string) => string
   'legal.linkCopied': string
@@ -1604,7 +1602,7 @@ export interface LiroMessages {
   'legal.showChanges': string
   'legal.unchanged': (count: number, countText: string) => string
   'legal.noChanges': string
-  // P5.27 legal page
+  // Legal page
   /** The panels' names. */
   'legalPanel.versions': string
   'legalPanel.history': string
@@ -1656,20 +1654,20 @@ export interface LiroMessages {
   ) => string
   /** Leaves the narrowed panel. */
   'legalPanel.backToAct': string
-  // P5.25a FloorPlan
+  // FloorPlan: areas
   /** An item's level in words, from the formatted percentage: "62,5% full". */
   'floorPlan.level': (percentText: string) => string
-  // P5.28 docs
+  // The statutory form grid
   /** The switch that shows the previous period under each value: "Compare with August 2026". */
   'statutory.compareWith': (period: string) => string
   /** Beside the switch while comparing: "September 2026, with August 2026 under each amount". */
   'statutory.comparing': (current: string, previous: string) => string
   /** Names a previous value for assistive technology, before the amount: "August 2026:". */
   'statutory.previousValue': (period: string) => string
-  // P5.28 dates
+  // Dates and times
   /** The "now" marker of the time grids (CalendarView, ResourceSchedule, Timetable): "Now, 10:05". */
   'schedule.now': (timeText: string) => string
-  // P5.28 screens
+  // Masked values and change confirmation
   /** MaskedValue: the start of the note that the access is recorded ("Access is logged."). */
   'masked.loggedTitle': string
   /** ClockRecordList: the correction drawer's record, under its title: "Nenad Ilić, 07.10.2026.". */
@@ -1685,23 +1683,23 @@ export interface LiroMessages {
   'change.notifyGroup': string
   /** FileDropzone on phones: the button that takes a photo with the camera. */
   'file.takePhoto': string
-  /** FileDropzone `expected` (P5.94 item 3): the list's title, and each document's state. */
+  /** FileDropzone `expected`: the list's title, and each document's state. */
   'file.expected': string
   'file.expectedRequired': string
   'file.expectedOptional': string
   'file.expectedAttached': string
-  /** AttendanceGrid: the correction dialog's action and record, "Nenad Ilić, Wed 7" (P5.28 item 6). */
+  /** AttendanceGrid: the correction dialog's action and record, "Nenad Ilić, Wed 7". */
   'attendance.correctAction': string
   'attendance.correctSubject': (row: string, column: string) => string
-  /** ShiftPlanner: the move dialog's action; the shift goes under it (P5.28 item 6). */
+  /** ShiftPlanner: the move dialog's action; the shift goes under it. */
   'shifts.moveAction': string
-  // P5.28 left
+  // Shifts: swaps
   /** ShiftPlanner's move dialog: the shift it moves, under the action ("Morning · Ana Petrović, …"). */
   'shifts.moveSubject': (label: string, name: string, dayText: string) => string
-  /** ShiftPlanner: the publish button while a message is checked (P5.28 item 9). */
+  /** ShiftPlanner: the publish button while a message is checked. */
   'shifts.publishAndNotify': string
   'shifts.publishChangesAndNotify': string
-  // P5.28 pos
+  // Fiscal receipts and payments at the till
   /** A way to pay by a code the customer scans (an instant payment): start, wait, outcome. */
   'payment.qrStart': string
   'payment.qrWaiting': string
@@ -1740,7 +1738,7 @@ export interface LiroMessages {
   'buyer.id': string
   'buyer.optionalType': string
   'buyer.optional': string
-  /** ReceiptFinder: scan, or one search field (P5.93: number, date or total), the results. */
+  /** ReceiptFinder: scan, or one search field (number, date or total), the results. */
   'receiptFinder.scan': string
   'receiptFinder.searchLabel': string
   'receiptFinder.orSearch': string
@@ -1770,15 +1768,15 @@ export interface LiroMessages {
   'receiptResult.sending': string
   'receiptResult.sent': string
   'receiptResult.failed': string
-  // P5.28 floor
-  /** FloorPlan's area switcher (P5.28 item 26). */
+  // Floor plan and seating
+  /** FloorPlan's area switcher. */
   'floorPlan.area': string
   'floorPlan.allAreas': string
-  /** FloorPlan with `editing` on a phone (P5.28 item 27). */
+  /** FloorPlan with `editing` on a phone. */
   'floorPlan.editOnLarger': string
-  /** SeatingChart's seat dialog: the action; the seat is its subject (P5.28 item 6). */
+  /** SeatingChart's seat dialog: the action; the seat is its subject. */
   'seating.seatTitle': string
-  // P5.29 admin
+  // Monitoring
   /** HealthList: the times under a monitored thing's figures, an action's name, nothing. */
   'health.lastSuccess': string
   'health.lastError': string
@@ -1786,9 +1784,9 @@ export interface LiroMessages {
   'health.never': string
   'health.empty': string
   'health.actionNamed': (actionText: string, name: string) => string
-  // P5.29 agent
+  // SlaTimer and the helpdesk
   /**
-   * SlaTimer (P5.30): a deadline in words. The texts are already written: `durationText` by
+   * SlaTimer: a deadline in words. The texts are already written: `durationText` by
    * `sla.duration`, the numbers by `format.number`.
    */
   'sla.dueIn': (durationText: string) => string
@@ -1816,7 +1814,7 @@ export interface LiroMessages {
   'sla.labelled': (label: string) => string
   /** A message only the team sees (MessageBubble `internal`): its visible mark. */
   'message.internal': string
-  /** ReplyComposer (P5.30): its two modes, their group and the note's hint. */
+  /** ReplyComposer: its two modes, their group and the note's hint. */
   'composer.modes': string
   'composer.reply': string
   'composer.note': string
@@ -1833,14 +1831,14 @@ export interface LiroMessages {
   'composer.attach': string
   /** Asking the application for a link to insert (its own search). */
   'composer.insertLink': string
-  // P5.29 portal
-  /** SatisfactionRating (P5.30 d): the comment, Send, the missing choice and the thanks. */
+  // Portal: feedback, help and search
+  /** SatisfactionRating: the comment, Send, the missing choice and the thanks. */
   'rating.comment': string
   'rating.send': string
   'rating.required': string
   'rating.thanks': string
   'rating.given': (valueText: string, label: string) => string
-  /** HelpfulFeedback (P5.30 e): "Was this helpful?", the answers, what was missing, the thanks. */
+  /** HelpfulFeedback: "Was this helpful?", the answers, what was missing, the thanks. */
   'helpful.question': string
   'helpful.yes': string
   'helpful.no': string
@@ -1848,18 +1846,18 @@ export interface LiroMessages {
   'helpful.why': string
   'helpful.send': string
   'helpful.commentThanks': string
-  /** LinkSuggestions (P5.30 d): the count announced while the user types, and the search. */
+  /** LinkSuggestions: the count announced while the user types, and the search. */
   'suggestions.count': (count: number, countText: string) => string
   'suggestions.searching': string
-  /** LinkSuggestions without suggestions (P5.93 item 2): what the box is for. */
+  /** LinkSuggestions without suggestions: what the box is for. */
   'suggestions.empty': string
-  /** PageContents (P5.30 e). */
+  /** PageContents. */
   'pageContents.title': string
-  /** SearchResultList (P5.30 e): the count over the results, and Try again. */
+  /** SearchResultList: the count over the results, and Try again. */
   'searchResults.count': (count: number, countText: string) => string
   'searchResults.retry': string
-  // P5.34 ai
-  /** The assistant (P5.34): the AI-generated mark on every answer. */
+  // The assistant, e-mail preview, reading
+  /** The assistant: the AI-generated mark on every answer. */
   'assistant.generated': string
   /** An answer's states: nothing written yet, being written, Stop, stopped, Try again. */
   'assistant.thinking': string
@@ -1897,7 +1895,7 @@ export interface LiroMessages {
   /** The panel's and the page's buttons. */
   'assistant.newConversation': string
   'assistant.openPage': string
-  /** EmailPreview (P5.38): its name, the width and mail-client switches, the header's labels. */
+  /** EmailPreview: its name, the width and mail-client switches, the header's labels. */
   'emailPreview.label': string
   'emailPreview.width': string
   'emailPreview.desktop': string
@@ -1908,30 +1906,30 @@ export interface LiroMessages {
   'emailPreview.from': string
   'emailPreview.to': string
   'emailPreview.subject': string
-  /** ShareLinks (P5.39). */
+  /** ShareLinks. */
   'share.label': string
   'share.copy': string
   'share.copied': string
   'share.copyFailed': string
-  /** NewsletterSignup (P5.39). */
+  /** NewsletterSignup. */
   'newsletter.email': string
   'newsletter.subscribe': string
   'newsletter.required': string
   'newsletter.invalid': string
   'newsletter.sending': string
   'newsletter.thanks': string
-  // P5.31 merge values
+  // Merge values
   /** A merge field without a value (the values were given): its pill's name. */
   'richText.mergeFieldMissing': (label: string) => string
   /** Under the text: the fields that still have no value, by their labels. */
   'richText.missingValues': (labels: readonly string[]) => string
-  // P5.40 QR code and IPS QR
+  // QR code and IPS QR
   /** QrCode: a text too long for any QR code. */
   'qr.tooLong': string
   /** An IPS QR problem of a field, by its label (`ipsQrText`'s problems). */
   'ips.problem': (code: IpsProblemCode, label: string, limit?: number) => string
-  // P5.37 gantt
-  /** Gantt (P5.37): the kinds of a row, before its name ("Phase: Structure"). */
+  // Gantt
+  /** Gantt: the kinds of a row, before its name ("Phase: Structure"). */
   'gantt.kindPhase': string
   'gantt.kindTask': string
   'gantt.kindMilestone': string
@@ -1954,7 +1952,7 @@ export interface LiroMessages {
   'gantt.changeDates': string
   'gantt.setProgress': string
   'gantt.dependencies': string
-  /** The dialogs' titles: the action; the row goes bold under it (D22). */
+  /** The dialogs' titles: the action; the row goes bold under it. */
   'gantt.moveTitle': string
   'gantt.datesTitle': string
   'gantt.progressTitle': string
@@ -2003,7 +2001,7 @@ export interface LiroMessages {
   'gantt.timeline': (label: string) => string
   'gantt.timelineHint': string
   'gantt.dragHint': string
-  /** The one "now" marker (D25): "Now, 14.10.2026. 09:40". */
+  /** The one "now" marker: "Now, 14.10.2026. 09:40". */
   'gantt.now': (text: string) => string
   /** States. */
   'gantt.empty': string
@@ -2011,18 +2009,18 @@ export interface LiroMessages {
   'gantt.error': string
   'gantt.retry': string
   'gantt.editOnLargerScreen': string
-  // P5.36 acct
-  /** PlanComparison (P5.36): the current plan's mark, the feature column, included or not. */
+  // Plans and usage
+  /** PlanComparison: the current plan's mark, the feature column, included or not. */
   'plan.current': string
   'plan.feature': string
   'plan.included': string
   'plan.notIncluded': string
-  /** UsageMeter (P5.36): an amount with its unit, "24 of 30", and an amount without a limit. */
+  /** UsageMeter: an amount with its unit, "24 of 30", and an amount without a limit. */
   'usage.amount': (number: string, unit: string) => string
   'usage.ofLimit': (usedText: string, limitText: string) => string
   'usage.noLimit': (usedText: string) => string
-  // P5.31 docs
-  /** RecognizedField (P5.31): the application's confidence ("Confidence: 98%"). */
+  // Page viewer and recognized fields
+  /** RecognizedField: the application's confidence ("Confidence: 98%"). */
   'recognized.confidence': (text: string) => string
   /** A reading the application marks as uncertain. */
   'recognized.low': string
@@ -2030,10 +2028,10 @@ export interface LiroMessages {
   'recognized.changed': string
   /** The button that highlights where the value was read. */
   'recognized.showSource': string
-  /** PageViewer (P5.31): the highlighted region, announced ("Highlighted: Total, page 1 of 2"). */
+  /** PageViewer: the highlighted region, announced ("Highlighted: Total, page 1 of 2"). */
   'viewer.highlighted': (label: string, pageText: string) => string
-  // P5.33 docs
-  /** ValueComparison (P5.33): "2 of 5 differ" over the rows. */
+  // Value comparison
+  /** ValueComparison: "2 of 5 differ" over the rows. */
   'comparison.count': (count: number, countText: string, total: number, totalText: string) => string
   /** A row's result: the two values are the same, or differ. */
   'comparison.same': string
@@ -2043,8 +2041,8 @@ export interface LiroMessages {
   'comparison.result': string
   /** No rows to compare. */
   'comparison.empty': string
-  // P5.41 map
-  /** AreaMap and LocationCheck (P5.41): how the keyboard moves the map (its description). */
+  // Map
+  /** AreaMap and LocationCheck: how the keyboard moves the map (its description). */
   'map.keys': string
   /** The map's buttons. */
   'map.zoomIn': string
@@ -2079,9 +2077,9 @@ export interface LiroMessages {
   /** The allowed area and the position, named on the map's list of shapes. */
   'location.allowed': string
   'location.position': string
-  /** RegionChart (P5.41, maps in charts): how the keys move between the areas (its description). */
+  /** RegionChart (maps in charts): how the keys move between the areas (its description). */
   'map.regionKeys': string
-  /** The same when no area can be chosen (the last level of a drill-down, P5.94 item 1). */
+  /** The same when no area can be chosen (the last level of a drill-down). */
   'map.regionKeysView': string
   /** An area without a value (hatched): never 0. */
   'map.noData': string
@@ -2093,8 +2091,8 @@ export interface LiroMessages {
   'map.stepFrom': (fromText: string) => string
   /** The area the keys reached, announced: "Serbia: 412.000.000 RSD". */
   'map.areaValue': (area: string, valueText: string) => string
-  // P5.42 org
-  /** HierarchyChart (P5.42): a position without a person. */
+  // Hierarchy
+  /** HierarchyChart: a position without a person. */
   'hierarchy.vacant': string
   /** The toggle under a closed node, and under an open one. */
   'hierarchy.expand': (count: number, countText: string, name: string) => string
@@ -2116,7 +2114,7 @@ export interface LiroMessages {
   'hierarchy.actual': string
   /** Loading failed. */
   'hierarchy.retry': string
-  // P5.43 files
+  // Files
   'files.folders': string
   'files.owner': string
   'files.modified': string
@@ -2158,7 +2156,7 @@ export interface LiroMessages {
   'folderPicker.here': string
   /**
    * NameConflictDialog: the short question, where the other file is, the three answers (one press
-   * answers, P5.93), Keep both's new name, Replace's reason, "Do this for the other N
+   * answers), Keep both's new name, Replace's reason, "Do this for the other N
    * conflicts", the progress.
    */
   'conflict.title': string
@@ -2179,7 +2177,7 @@ export interface LiroMessages {
   ) => string
   'conflict.cancel': string
   /**
-   * ShareDialog (the familiar pattern since P5.93): adding people or roles and Invite, the people
+   * ShareDialog: adding people or roles and Invite, the people
    * with access and each one's access menu, general access (Restricted / Anyone with the link and
    * what each means), the link with its Copy button and the inline "Copied", the expiry and the
    * password.
@@ -2220,14 +2218,14 @@ export interface LiroMessages {
   'files.nameRequired': string
   /** ShareDialog: saves the link's password. */
   'sharing.setPassword': string
-  // ── P5.66 records ──
+  // DefinedForm
   /** DefinedForm: a required value missing — a value to write, an option to choose, a box to tick. */
-  /** DefinedForm without definitions (P5.93 item 2). */
+  /** DefinedForm without definitions. */
   'definedForm.empty': string
   'definedForm.fill': string
   'definedForm.choose': string
   'definedForm.tick': string
-  // P5.77 pivot
+  // Pivot
   /** Pivot: the field chooser, its areas and the field's actions. */
   'pivot.fields': string
   'pivot.areaFilters': string
@@ -2261,7 +2259,7 @@ export interface LiroMessages {
   'pivot.export': string
   'pivot.drillHint': string
   'pivot.gridHint': string
-  /** P5.93 item 45: the suggested views' group. */
+  /** The suggested views' group. */
   'pivot.views': string
   /** One value in the summary line ("Sum of Amount"). */
   'pivot.summaryValue': (field: string, aggregation: string) => string
@@ -2277,7 +2275,7 @@ export interface LiroMessages {
   'pivot.moved': (field: string, area: string, positionText: string, totalText: string) => string
   /** Announced after a field is taken out of the layout. */
   'pivot.removedField': (field: string) => string
-  // P5.78 auto: RuleBuilder
+  // RuleBuilder
   /** RuleBuilder: the blocks, the fields' labels, the joins, the add buttons, the empty lists. */
   'rule.when': string
   'rule.if': string
@@ -2289,7 +2287,7 @@ export interface LiroMessages {
   'rule.any': string
   'rule.and': string
   'rule.or': string
-  /** P5.93 item 46: the blocks of further branches and of Else. */
+  /** The blocks of further branches and of Else. */
   'rule.elseIf': string
   'rule.else': string
   /** An Else-if block's name ("Else if 1"). */
@@ -2327,7 +2325,7 @@ export interface LiroMessages {
   'rule.moveUp': (item: string) => string
   'rule.moveDown': (item: string) => string
   'rule.remove': (item: string) => string
-  // P5.79 auto: ValueComparison chooses the values to keep
+  // ValueComparison: the values to keep
   /** ValueComparison with `chosen`: how many differing rows have a value chosen. */
   'comparison.chosenCount': (
     count: number,
@@ -2338,14 +2336,14 @@ export interface LiroMessages {
   /** ValueComparison with `chosen`: a differing row without a choice, and one with. */
   'comparison.choose': string
   'comparison.chosen': string
-  /** P5.93: ValueComparison's merge — the kept value's mark, "Keep all from …" (a source's name, or "Source 2"), the identical rows' switch, the merged record's preview and a field not chosen yet. */
+  /** ValueComparison's merge — the kept value's mark, "Keep all from …" (a source's name, or "Source 2"), the identical rows' switch, the merged record's preview and a field not chosen yet. */
   'comparison.kept': string
   'comparison.keepAll': (source: string) => string
   'comparison.source': (numberText: string) => string
   'comparison.showIdentical': (count: number, countText: string) => string
   'comparison.preview': string
   'comparison.notChosen': string
-  // ── P5.81 reports ──
+  // DashboardGrid
   /** DashboardGrid: the handle that moves a card ("Move: Revenue") and its instructions. */
   'dashboardGrid.moveCard': (title: string) => string
   'dashboardGrid.instructions': string
@@ -2369,7 +2367,7 @@ export interface LiroMessages {
   'dashboardGrid.removed': (title: string) => string
   /** The grid without cards. */
   'dashboardGrid.empty': string
-  // ── P5.93 code and the assistant's work ──
+  // Code and the assistant's work
   /** CodeBlock: the code's name without a title, Copy and its result, "Wrap lines". */
   'code.label': string
   'code.copy': string
@@ -2411,14 +2409,14 @@ export interface LiroMessages {
   'trace.sourcesUsed': (count: number, countText: string) => string
   /** Task and Subagent: what the work handed back. */
   'trace.result': string
-  // ── P5.93 (c) ──
-  /** InlineUndo's button (P5.93 item 3). */
+  // InlineUndo
+  /** InlineUndo's button. */
   'undo.label': string
-  // ── P5.93 (e) ──
+  // ArticleList
   /** ArticleList: the words at a card's foot that say where it leads. */
   'articles.read': string
-  // ── P5.93 (h) ──
-  /** Charts whose marks are reached one by one (P5.93 item 44): the plot's keys. */
+  // Charts whose marks are reached one by one
+  /** Charts whose marks are reached one by one: the plot's keys. */
   'chart.itemKeys': string
   /** CandlestickChart: a candle's four prices, and the legend's rising and falling candles. */
   'chart.open': string
@@ -2436,8 +2434,8 @@ export interface LiroMessages {
   /** MatrixChart: a cell with nothing in it, and a tooltip's list cut short ("+3 more"). */
   'chart.none': string
   'chart.more': (count: number, countText: string) => string
-  // ── P5.94 (portal) ──
-  /** CommonQuestions (P5.94 item 20): the search field's label and the categories' group. */
+  // CommonQuestions
+  /** CommonQuestions: the search field's label and the categories' group. */
   'questions.search': string
   'questions.categories': string
   /** CommonQuestions: the chip of every category. */
@@ -2449,8 +2447,8 @@ export interface LiroMessages {
   'questions.found': (count: number, countText: string) => string
   /** CommonQuestions: the no-results action. */
   'questions.clear': string
-  // ── P5.96 (questions and answers) ──
-  /** QuestionsAndAnswers (P5.96 item 1): the next page of questions ("Show more (30 of 312 shown)"). */
+  // QuestionsAndAnswers
+  /** QuestionsAndAnswers: the next page of questions ("Show more (30 of 312 shown)"). */
   'questions.showMore': (shownText: string, totalText: string) => string
   /** QuestionsAndAnswers: nothing found, with the application's way to ask. */
   'questions.askInstead': string

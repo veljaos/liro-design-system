@@ -3,7 +3,7 @@ import { Till, type TillStart } from './screens-I-till'
 import { I_ROUTES } from './data-I'
 
 /*
- * Group I's example screen (P5.17): the till of Pekara Zlatni klas — a device of its own, not a
+ * The example screen: the till of Pekara Zlatni klas — a device of its own, not a
  * page of the back office, so it stands without AppShell and is not reached from the home page.
  * The screen (screens-I-till.tsx) plays the application around the components: it checks every
  * scan, keeps the sale and computes every figure in data-I.ts; the components only show them and

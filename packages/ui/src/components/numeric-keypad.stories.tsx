@@ -87,7 +87,7 @@ export const Weight: Story = {
   },
 }
 
-/** Read only (the register is locked, P5.93): the display in the read-only look, no keys. */
+/** Read only (the register is locked): the display in the read-only look, no keys. */
 export const ReadOnly: Story = {
   name: 'Read only',
   args: { currency: CURRENCY, defaultValue: '500', readOnly: true, onEnter: () => undefined },

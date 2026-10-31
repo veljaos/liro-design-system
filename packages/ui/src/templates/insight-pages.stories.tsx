@@ -457,7 +457,7 @@ export const SettingsPhone: Story = {
 }
 
 /**
- * A section with a block after its rows (`content`, P5.62): a list the rows cannot hold, here the
+ * A section with a block after its rows (`content`): a list the rows cannot hold, here the
  * devices signed in to the account, under the same line as a row.
  */
 export const SettingsWithBlock: Story = {

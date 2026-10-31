@@ -10,7 +10,7 @@ import { Alert } from './alert'
 import { CheckboxField } from './checkbox-field'
 
 /*
- * RecoveryCodes (BUILD-PLAN P5.6): the codes that sign a person in when the second factor is
+ * RecoveryCodes: the codes that sign a person in when the second factor is
  * lost. They are shown once, so the block makes sure they were kept before the flow goes on.
  * - A warning (`messages['recovery.shownOnce']`, an Alert in the warning tone) above the codes.
  * - The codes in two columns (one on phones) on surface.sunken, monospace, left to right,

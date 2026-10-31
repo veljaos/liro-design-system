@@ -19,15 +19,16 @@ import {
 import { currencyFirst } from './number-logic'
 
 /*
- * NumericKeypad (BUILD-PLAN P5.10; docs/decisions.md "Touch and POS"). An amount or a quantity
+ * NumericKeypad. An amount or a quantity
  * entered with fingers at a till, or with the keyboard: 0–9, the decimal separator of the
  * provider's `format`, backspace, clear and an optional Enter. It reports a decimal string or
- * null, never a JavaScript number (D4), and never rounds: `maxDecimals` stops more digits from
+ * null, never a JavaScript number, and never rounds: `maxDecimals` stops more digits from
  * being typed instead.
  *
  * - The display and the keys are laid out left to right in every direction, as calculators and
- *   card terminals are: 7 8 9 on top; the label follows the page. Keys 56px high (at least 44px, P5.10), 8px apart, the raised surface with a 1px
- *   border.default border, 20px semibold digits; Enter is a button of the primary family.
+ *   card terminals are: 7 8 9 on top; the label follows the page. Keys 56px high (at least 44px),
+ *   8px apart, the raised surface with a 1px border.default border, 20px semibold digits; Enter is
+ *   a button of the primary family.
  * - The display is a read-only input named by `label` with `inputmode="none"`, so a tablet shows
  *   no on-screen keyboard over the keypad. It is not a live region: each key is not announced
  *   (nothing noisy); a screen reader reads the value on focus.
@@ -50,7 +51,7 @@ export interface NumericKeypadProps {
   enterLabel?: string
   /**
    * The Enter key's weight. Default 'primary'; 'secondary' where the screen has another main
-   * action (one primary per screen, D13).
+   * action (one primary per screen).
    */
   enterEmphasis?: Extract<Emphasis, 'primary' | 'secondary'>
   /** Shown beside the display, on the side `format.money` puts it. From the application. */
@@ -70,7 +71,7 @@ export interface NumericKeypadProps {
   placeholder?: string
   /**
    * The value is shown but cannot be changed (the register is locked): the display in the
-   * read-only look of every field, no keys (P5.93: there is no disabled keypad).
+   * read-only look of every field, no keys (there is no disabled keypad).
    */
   readOnly?: boolean
   /** Layout classes (width, margins). */

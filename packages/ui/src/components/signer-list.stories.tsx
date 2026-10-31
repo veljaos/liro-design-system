@@ -65,7 +65,7 @@ const meta = {
           '(ReasonConfirmDialog, the Core’s reasons or a text). **The signing itself is the ' +
           'Core’s or Liro Bridge’s**: the list reports the choice (`onSign`, `onDecline`).\n\n' +
           '**When:** a contract, a protocol, an approval that needs several signatures (with ' +
-          'the signing recipe: a record page with SignerList in its side column, docs/recipes.md).\n\n' +
+          'a record page with SignerList in its side column).\n\n' +
           '**When not:** an approval with no signature (Approve / Reject in a worklist).',
       },
     },

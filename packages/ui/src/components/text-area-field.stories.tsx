@@ -12,7 +12,7 @@ const meta = {
         component:
           '**What for:** free text over several lines: a note, a comment, an address. The states ' +
           'of TextField; paste is always allowed. `rows` sets the visible lines (default 2).\n\n' +
-          '**When not:** a single line (TextField); a conversation (MessageComposer, P5.1).',
+          '**When not:** a single line (TextField); a conversation (MessageComposer).',
       },
     },
   },

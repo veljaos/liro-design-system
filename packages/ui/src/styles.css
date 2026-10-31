@@ -6,11 +6,11 @@
 @import 'tailwindcss/theme.css' layer(theme);
 @import 'tailwindcss/utilities.css' layer(utilities) source(none);
 @import '@veljaos/tokens/theme.css';
-/* Diagram's canvas (P5.26): React Flow's structure in tokens, under every utility. */
+/* Diagram's canvas: React Flow's structure in tokens, under every utility. */
 @import './diagram/diagram.css' layer(base);
-/* Gantt's timeline (P5.37): SVAR's structure in tokens, under every utility. */
+/* Gantt's timeline: SVAR's structure in tokens, under every utility. */
 @import './gantt/gantt.css' layer(base);
-/* Maps (P5.41): Leaflet's structure in tokens, under every utility. */
+/* Maps: Leaflet's structure in tokens, under every utility. */
 @import './map/map.css' layer(base);
 @source './';
 /* Stories and tests are not shipped; their classes stay out of the package CSS. */
@@ -20,15 +20,15 @@
 @source not './**/story-helpers.ts';
 
 /*
- * Text direction from the content (P3.6; TEXT_DIRECTION in primitives/classes.ts): the word order
+ * Text direction from the content (TEXT_DIRECTION in primitives/classes.ts): the word order
  * follows the text (unicode-bidi: plaintext), the alignment the parent's direction. Chromium and
  * WebKit know only -webkit-match-parent, Firefox match-parent; the second is applied only where it
  * is supported, so a minifier cannot fold the two declarations into one.
  */
 @utility bidi-content {
   unicode-bidi: plaintext;
-  /* A long unbroken string (an IBAN, a URL, a 60-letter word) breaks rather than overflow its box
-     (P5.90 item 7). break-word, not anywhere: a table's column still sizes by its longest word. */
+  /* A long unbroken string (an IBAN, a URL, a 60-letter word) breaks rather than overflow its box:
+     break-word, not anywhere: a table's column still sizes by its longest word. */
   overflow-wrap: break-word;
   text-align: -webkit-match-parent;
   @supports (text-align: match-parent) {
@@ -36,7 +36,7 @@
   }
 }
 /* A field's typed text whose direction comes from its content (dir="auto") stays at the page's
-   start side, as text blocks do (P3.6c). */
+   start side, as text blocks do. */
 @utility text-match-parent {
   text-align: -webkit-match-parent;
   @supports (text-align: match-parent) {
@@ -49,7 +49,7 @@
 }
 
 /*
- * A button's, a tab's or a field label's words never break inside (P5.94 item 4): "Vouche r" is
+ * A button's, a tab's or a field label's words never break inside: "Vouche r" is
  * never drawn. Their text wraps between words only; where one word is wider than the room, the
  * place gives it room (whole buttons wrap) or shortens the label with "…" (FittedLabel). Body
  * text keeps breaking a long unbroken string (an IBAN, a URL) inside its box. Unlayered, so it
@@ -78,7 +78,7 @@
 }
 
 /* A label's or a legend's one word wider than its whole line ends in "…" on that line (the
-   accessible name keeps all of it); the page never scrolls sideways for it (D19). */
+   accessible name keeps all of it); the page never scrolls sideways for it. */
 :is(legend, label:not(:has(input, select, textarea, button))) {
   overflow-x: clip;
   text-overflow: ellipsis;
@@ -96,10 +96,10 @@
 }
 
 /*
- * How overlays and panels enter and leave (P2.1). Mantine 9 defaults ("Values taken from Mantine
- * defaults" in docs/decisions.md): popover, menu and select fade in 150ms (our base duration),
- * tooltip 100ms (our fast duration); the modal fades down by 30px, the drawer slides in from its
- * side, the overlay fades and a collapsible opens, each in 200ms, which has no motion token.
+ * How overlays and panels enter and leave, with Mantine 9 defaults: popover, menu and select fade
+ * in 150ms (our base duration), tooltip 100ms (our fast duration); the modal fades down by 30px,
+ * the drawer slides in from its side, the overlay fades and a collapsible opens, each in 200ms,
+ * which has no motion token.
  * Easing: our standard curve. With prefers-reduced-motion, the token durations are 0ms and the
  * elements that use a 200ms animation also carry motion-reduce:animate-none.
  */
@@ -188,7 +188,7 @@
       transform: scale(0.9) translateY(10px);
     }
   }
-  /* Mantine transitions 'slide-down': from 100% higher, transparent (the owner's 140ms). */
+  /* Mantine transitions 'slide-down': from 100% higher, transparent, in 140ms. */
   @keyframes liro-slide-down {
     from {
       opacity: 0;
@@ -213,7 +213,7 @@
 }
 
 /*
- * Sticky table headers (P5.90 item 8; components/sticky-head.ts). A region that scrolls sideways
+ * Sticky table headers (components/sticky-head.ts). A region that scrolls sideways
  * is a scroll container, so its header group is sticky only inside it; below the shell it is moved
  * by a scroll-driven animation on the region's view timeline (`data-sticky-region`, named by
  * useStickyHead), the scrollport inset by the shell's sticky height (`--liro-shell-top`). The
@@ -250,9 +250,9 @@
 }
 
 /*
- * EditableGrid (P3.4, owner's decision 2026-10-01): a cell's field loses its own frame, label gap
+ * EditableGrid: a cell's field loses its own frame, label gap
  * and message (the messages stand under the row); the cell draws the focus and an error (the
- * danger line). One focus style (P5.90 item 2): the library's focus ring — 2px border.focus — round
+ * danger line). One focus style: the library's focus ring — 2px border.focus — round
  * the whole cell, inside its lines, while its field has the focus; the field itself draws none (no
  * read-only or amount ring inside the cell's). A button beside the field (a date's calendar) keeps
  * its own ring, and the cell then draws none. Fields are 28px high with
@@ -292,7 +292,7 @@
   :is(input, [data-slot='select-trigger'], [data-slot='money'], [data-slot='date']) {
   outline: none;
 }
-/* A read-only cell (P5.93 item 1): the read-only look of every field, on the whole cell. */
+/* A read-only cell: the read-only look of every field, on the whole cell. */
 [data-slot='grid-cell']:has([data-slot='field'][data-readonly]) {
   background-color: var(--liro-surface-disabled);
 }
@@ -306,7 +306,7 @@
 }
 
 /*
- * EditableGrid on phones (P3.6): each field keeps its frame, under the column's label in the
+ * EditableGrid on phones: each field keeps its frame, under the column's label in the
  * card; the field's own label is for screen readers ("Quantity, line 3"), so its gap goes, and its
  * own message is hidden because the line's messages stand under the card's fields.
  */
@@ -318,7 +318,7 @@
 }
 
 /*
- * The touch density (P5.10; LiroProvider `density="touch"`): for a till, a kiosk or a handheld,
+ * The touch density (LiroProvider `density="touch"`): for a till, a kiosk or a handheld,
  * every target is at least 44px (WCAG 2.5.5, Apple's and Material's finger size). The control
  * heights of A.4 are raised inside the scope, so every button, field and select that uses
  * `h-control` / `min-h-control` grows with no change to the component; the icon buttons, menu
@@ -336,7 +336,7 @@
   min-height: var(--liro-touch-target);
 }
 /*
- * P5.93 (item 14): DateField's calendar button looks the same in every density — the 28px
+ * DateField's calendar button looks the same in every density — the 28px
  * compact button in its 34px section, the icon where every DateField has it; in the touch
  * density its target is still 44px, drawn by an invisible layer around it.
  */
@@ -367,7 +367,7 @@
 }
 
 /*
- * Code (P5.93; components/code-block.tsx): the Liro code theme. Syntax highlighting
+ * Code (components/code-block.tsx): the Liro code theme. Syntax highlighting
  * (`@veljaos/ui/code`, Shiki) and terminal output name these variables, never colours; each is a
  * Liro meaning, so both themes follow. Every one meets 4.5:1 on the code's surface.sunken and on
  * the added, removed and highlighted lines' status backgrounds (measured with contrast.ts).
@@ -402,7 +402,7 @@
 }
 
 /*
- * A running Trace row's title shimmers (P5.93; components/trace.tsx): a lighter band sweeps
+ * A running Trace row's title shimmers (components/trace.tsx): a lighter band sweeps
  * across it through an alpha mask, so the text keeps its colour and contrast. With reduced
  * motion it stands still (the row shows a spinner instead).
  */

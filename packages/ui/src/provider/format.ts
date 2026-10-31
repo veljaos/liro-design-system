@@ -10,11 +10,11 @@ export const NUMBER_SCHEMES: readonly NumberScheme[] = [
   'apostrophe-dot',
 ]
 
-/** Formatting and parsing of numbers, money and dates (BUILD-PLAN section 5). */
+/** Formatting and parsing of numbers, money and dates. */
 export interface LiroFormat {
   /**
    * value is a decimal string, e.g. "1234.5". Never a JavaScript number. `sign: 'always'` writes
-   * "+" before a value above zero (a change on a corrective document, P5.18); default 'auto'.
+   * "+" before a value above zero (a change on a corrective document); default 'auto'.
    */
   number(value: string, options?: { decimals?: number; sign?: 'auto' | 'always' }): string
   money(
@@ -23,7 +23,7 @@ export interface LiroFormat {
     options?: { decimals?: number; sign?: 'auto' | 'always' },
   ): string
   /**
-   * A percentage (P4.7c): `value` is the percentage as a decimal string ("62.4" for 62,4 %), never
+   * A percentage: `value` is the percentage as a decimal string ("62.4" for 62,4 %), never
    * rounded; the sign, the percent sign and the space between them follow the locale (CLDR):
    * "62,4%" in sr-Latn, "62.4%" in en, "62,4 %" in de. `sign: 'always'` writes "+" for a rise.
    */
@@ -33,7 +33,7 @@ export interface LiroFormat {
   /** value is YYYY-MM-DD. */
   date(value: string): string
   /**
-   * The date and time of an instant, in the provider's `timeZone` (P5.8; without one, the
+   * The date and time of an instant, in the provider's `timeZone` (without one, the
    * device's). A local date and time without an offset ("2026-10-12T09:30") is shown as written.
    */
   dateTime(isoInstant: string): string
@@ -41,7 +41,7 @@ export interface LiroFormat {
    * The clock time of an instant as it is written ("2026-10-06T09:42:00+02:00" → "09:42"): the
    * Core sends instants in the tenant's offset, so the time is the tenant's, beside a day the
    * screen has already named (a notification under "Today"). With the provider's `timeZone`
-   * (P5.8) an instant with an offset or "Z" is shown in that zone; a local time without an offset
+   * an instant with an offset or "Z" is shown in that zone; a local time without an offset
    * ("2026-10-12T09:30") is always shown as written. Unreadable input is returned as is.
    */
   time(isoInstant: string): string
@@ -55,7 +55,7 @@ export interface LiroFormat {
   weekdayName(weekday: number, style: 'long' | 'short' | 'narrow'): string
   /**
    * The name of a business year that starts in `startMonth` (1 … 12) of `startYear`: "2026" when
-   * it starts in January, "2025/26" otherwise (owner's decision, 2026-09-28).
+   * it starts in January, "2025/26" otherwise.
    */
   businessYear(startYear: number, startMonth: number): string
   /** Separator scheme: 'dot-comma' (1.234,56), 'comma-dot' (1,234.56), 'space-comma', 'space-dot', 'apostrophe-dot'. */
@@ -94,7 +94,7 @@ export function formatDecimal(value: string, scheme: NumberScheme, decimals?: nu
 }
 
 /**
- * A "+" before a formatted value above zero when `sign` is 'always' (P5.18: the change column of a
+ * A "+" before a formatted value above zero when `sign` is 'always' (the change column of a
  * corrective document). Zero and negative values, and text that is not a decimal, are unchanged.
  */
 export function withSign(value: string, formatted: string, sign?: 'auto' | 'always'): string {
@@ -132,9 +132,9 @@ function validGroups(groups: string[]): boolean {
 
 /**
  * Reads a number as people type it into a decimal string ("1234.56"), or null when the text is
- * not a number: never 0 for unreadable text (Appendix B.4), and never a JavaScript number.
+ * not a number: never 0 for unreadable text, and never a JavaScript number.
  *
- * The rule of Appendix B.3: with both '.' and ',' present, the last one is the decimal separator;
+ * The rule: with both '.' and ',' present, the last one is the decimal separator;
  * with one kind present, it is a decimal separator when it appears once and grouping when it
  * repeats. The screen's scheme is consulted only to break a tie the string cannot break itself: a
  * string that is exactly a grouped integer in the scheme's own grouping ("240.000" on a dot-comma
@@ -186,7 +186,7 @@ export function parseDecimal(text: string, scheme: NumberScheme): string | null 
 }
 
 /**
- * The locale Intl should use. Serbian without a script is read as Latin (Appendix B.1): Intl
+ * The locale Intl should use. Serbian without a script is read as Latin: Intl
  * reads bare 'sr' and 'sr-RS' as Cyrillic.
  */
 export function intlLocale(locale: string): string {
@@ -201,10 +201,10 @@ export function intlLocale(locale: string): string {
 }
 
 /*
- * Intl formatters are slow to build and quick to use (P5.20: a list of 5,000 entries asked for
+ * Intl formatters are slow to build and quick to use (a list of 5,000 entries asked for
  * the currency's side once per amount). Each is built once per locale and options and kept; what
  * they produce is the same, so the cache changes only the time. Only patterns (separators, the
- * currency's side, the percent sign, dates) come from Intl; amounts stay decimal strings (D4).
+ * currency's side, the percent sign, dates) come from Intl; amounts stay decimal strings.
  */
 const numberFormats = new Map<string, Intl.NumberFormat>()
 const dateTimeFormats = new Map<string, Intl.DateTimeFormat>()
@@ -335,7 +335,7 @@ const NUMERIC_DATE: Intl.DateTimeFormatOptions = {
 }
 
 /**
- * How a locale writes the hour (P5.94 item 16): a 12-hour clock without a leading zero ("7:00 AM",
+ * How a locale writes the hour: a 12-hour clock without a leading zero ("7:00 AM",
  * as English writes it), a 24-hour clock with two digits ("07:00", as Serbian writes it).
  */
 export function hourStyle(locale: string): '2-digit' | 'numeric' {
@@ -431,7 +431,7 @@ export function deviceTimeZone(): string {
 }
 
 /**
- * The local date and time ("YYYY-MM-DDTHH:mm") of an instant in an IANA time zone (P5.8): an
+ * The local date and time ("YYYY-MM-DDTHH:mm") of an instant in an IANA time zone: an
  * instant with an offset or "Z" is converted; a local value without an offset is returned as
  * written (minutes precision); anything unreadable is null.
  */
@@ -457,7 +457,7 @@ export function localDateTimeIn(value: string, timeZone: string): string | null 
 }
 
 /**
- * The default format for a locale; `overrides` replace any member. `timeZone` (IANA, P5.8) is the
+ * The default format for a locale; `overrides` replace any member. `timeZone` (IANA) is the
  * zone instants are shown in; without it `dateTime` uses the device's and `time` shows the clock
  * as written, as before.
  */
@@ -467,7 +467,7 @@ export function createFormat(
   timeZone?: string,
 ): LiroFormat {
   const intl = intlLocale(locale)
-  // "7:00 AM" on a 12-hour clock, "07:00" on a 24-hour one (P5.94 item 16).
+  // "7:00 AM" on a 12-hour clock, "07:00" on a 24-hour one.
   const hour = hourStyle(intl)
   const dateFormat = cachedDateTimeFormat(intl, { ...NUMERIC_DATE, timeZone: 'UTC' })
   // An instant is shown in the provider's time zone, else the device's.
@@ -600,7 +600,7 @@ export function createFormat(
       }).format(Date.UTC(2023, 0, 1 + weekday))
     },
     ...overrides,
-    // A numericFormat made without a zone shows instants in the provider's (P5.29): its date
+    // A numericFormat made without a zone shows instants in the provider's: its date
     // and time functions are rebuilt for this zone, so `timeZone` is never lost to `format`.
     ...zonedNumericInstants(overrides, timeZone),
   }
@@ -628,7 +628,7 @@ function zonedNumericInstants(
 }
 
 /**
- * The numbers, amounts and numeric dates of another locale, without its words (P5.28 item 2), for
+ * The numbers, amounts and numeric dates of another locale, without its words, for
  * a provider whose interface language differs from the tenant's conventions: an English
  * interface for a Serbian company passes `locale="en-RS"` and `format={numericFormat('sr-Latn-RS')}`
  * and shows "12.345,60 RSD" and "06.10.2026." with English month and weekday names, English long

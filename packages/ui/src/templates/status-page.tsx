@@ -17,7 +17,7 @@ import { useLiro } from '../provider/liro-provider'
 import type { LiroMessages } from '../provider/messages'
 
 /*
- * StatusPage (P4.7, the owner's values, docs/decisions.md "Status pages and AuthShell"): the
+ * StatusPage: the
  * pages for 401, 402, 403, 404, 500, maintenance and a suspension — the one place where
  * centring is right.
  * - Full height on the raised surface; a centred column at most 440px wide, 24px (lg) apart:
@@ -26,14 +26,14 @@ import type { LiroMessages } from '../provider/messages'
  *   bold, the brand face, never upper case: by default the bare HTTP code), the title (h2 size),
  *   the description (sm, text.secondary), the case number for an error, then up to two
  *   full-width buttons in a column at most 280px wide: the main one filled, the other default.
- * - Tone and icon by kind (owner): 401 warning LogIn, 402 warning CreditCard, 403 warning Lock,
+ * - Tone and icon by kind: 401 warning LogIn, 402 warning CreditCard, 403 warning Lock,
  *   404 neutral FileQuestionMark, 500 danger ServerCrash, maintenance warning Construction,
- *   suspended danger Ban. Blue never fills a large surface (D17).
- * - Suspended (P4.9, owner): the subject is the user's own account (the default, "Your account
+ *   suspended danger Ban. Blue never fills a large surface.
+ * - Suspended: the subject is the user's own account (the default, "Your account
  *   is suspended.") or a company (`subject`, "Access for Kvadrat Gradnja d.o.o. is suspended."),
  *   its name from the application.
  * - Titles and descriptions default to `messages` (the Core translates them); the application
- *   may pass its own. No logo inside (D18): the lockup's names come through `brand`.
+ *   may pass its own. No logo inside: the lockup's names come through `brand`.
  */
 
 export type StatusKind =
@@ -135,7 +135,7 @@ const TITLES: Record<StatusKind, [keyof LiroMessages, keyof LiroMessages]> = {
 }
 
 /**
- * A link drawn as a button keeps its colours in every link state (P4.4): `enabled:` hovers do
+ * A link drawn as a button keeps its colours in every link state: `enabled:` hovers do
  * not apply to links, so they are written for the link.
  */
 const LINK_STATES = {
@@ -229,7 +229,7 @@ export function StatusPage(props: StatusPageProps) {
               {eyebrow}
             </p>
           )}
-          {/* The page's only heading, so an h1, drawn in the h2 size (owner). */}
+          {/* The page's only heading, so an h1, drawn in the h2 size. */}
           <h1 className={cn('m-0 text-h2 text-primary', TEXT_ISOLATE)}>{title}</h1>
           <p className={cn('m-0 text-sm text-secondary', TEXT_ISOLATE)}>{description}</p>
           {props.caseId !== undefined && (

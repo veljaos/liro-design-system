@@ -34,7 +34,7 @@ import {
 } from './statutory-story-data'
 
 const SERBIAN = createFormat('sr-Latn-RS')
-/** The invoices' states in the dataset (P4.8). */
+/** The invoices' states in the dataset. */
 const STATES: Record<string, ReactNode> = {
   'F-2026-0412': <StatusBadge label="Sent" tone="info" />,
   'F-2026-0411': <StatusBadge label="Overdue" tone="danger" />,
@@ -677,7 +677,7 @@ export const Japanese: Story = {
 const RECORD_COUNT = 32
 
 /**
- * An illustrative input-VAT record of 32 rows (P5.28 item 4): one per received invoice, the 20%
+ * An illustrative input-VAT record of 32 rows: one per received invoice, the 20%
  * base from SEF, its VAT computed, the 10% columns typed in every fourth row.
  */
 function recordsSection(
@@ -774,7 +774,7 @@ async function expectTopAtLeast(element: Element, edge: number): Promise<void> {
 }
 
 /**
- * Thirty-two rows in a narrow card on a page under the shell (P5.28 item 4): while the page
+ * Thirty-two rows in a narrow card on a page under the shell: while the page
  * scrolls, both header rows stay right below the shell; while the grid scrolls sideways, the
  * number and label column (and the corner) stay at the start; a field reached under the header
  * is scrolled clear of it.

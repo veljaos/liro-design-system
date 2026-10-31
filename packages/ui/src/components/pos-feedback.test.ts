@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { grownLines, quantitiesOf, TAP_VIBRATION, tapFeedback } from './pos-feedback'
 
-/* P5.90 item 20: every tap of a till answers at once. */
+/* Every tap of a till answers at once. */
 
 describe('grownLines', () => {
   const lines = [

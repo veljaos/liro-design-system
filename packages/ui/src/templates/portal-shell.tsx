@@ -20,32 +20,31 @@ import {
 import { useLiro } from '../provider/liro-provider'
 
 /*
- * PortalShell (BUILD-PLAN P5.16): the frame for people outside the company — a patient, a parent,
+ * PortalShell: the frame for people outside the company — a patient, a parent,
  * a student, a customer. Simpler than AppShell: no launchpad, no company switcher, no command
- * palette; a few sections; phone first. The same tokens and the same header values as AppShell
- * (docs/decisions.md "Application shell").
+ * palette; a few sections; phone first. The same tokens and the same header values as AppShell.
  * - Header: 56px on surface.header with a 1px border.default line under it; 16px at the sides on
  *   phones (with the safe-area insets), 24px from 48em; sticky at the top under the top safe
- *   area. At the start the BrandLockup (the application's brand as props, D18: no logo inside);
+ *   area. At the start the BrandLockup (the application's brand as props: no logo inside);
  *   at the end the participant: on desktop a subtle button with the avatar, the name (13px
  *   medium) and a 14px chevron; on phones the avatar alone (36px). It opens the participant's
  *   menu (neutral, 220px): the name and its detail line ("Parent of Luka Jovanović"), then the
  *   application's entries (profile, language, sign out).
  * - Sections (up to five on phones; a further one, as Questions and answers, is a desktop tab and
- *   an entry of the participant's menu on phones, P5.96): on desktop a second header row of tabs, centred as the AppShell's
- *   module tabs (P5.93 item 11, D16: they are the portal's top navigation), links with `aria-current="page"` and the 2px brand line
- *   (D17); a section's note ("2 new") as small secondary text after its name. On phones a bottom
- *   navigation bar within thumb reach: one equal cell per section, a 20px icon over the 12px
- *   name, at least 56px high, the current one in text.primary semibold with the 2px brand line
- *   on top; a note is a 8px status.danger.solid dot on the icon (never a number alone) and part
- *   of the link's name ("Messages, 2 new"). The bar stands on surface.header with a 1px line on
- *   top and the bottom safe-area inset under it; its height is published as
- *   --liro-shell-bottom (as AppShell's bottom bar), so the Toaster stands above it.
- * - `banners` at the top of the content, full width and square, scrolling with the page (P5.3);
+ *   an entry of the participant's menu on phones): on desktop a second header row of tabs, centred
+ *   as the AppShell's module tabs (they are the portal's top navigation), links with
+ *   `aria-current="page"` and the 2px brand line; a section's note ("2 new") as small secondary
+ *   text after its name. On phones a bottom navigation bar within thumb reach: one equal cell per
+ *   section, a 20px icon over the 12px name, at least 56px high, the current one in text.primary
+ *   semibold with the 2px brand line on top; a note is a 8px status.danger.solid dot on the icon
+ *   (never a number alone) and part of the link's name ("Messages, 2 new"). The bar stands on
+ *   surface.header with a 1px line on top and the bottom safe-area inset under it; its height is
+ *   published as --liro-shell-bottom (as AppShell's bottom bar), so the Toaster stands above it.
+ * - `banners` at the top of the content, full width and square, scrolling with the page;
  *   `footer` under the content (the institution's address and hours), never under the bottom bar.
  * - A skip link to the content first, as AppShell's.
- * - The sticky header's height is published as --liro-shell-top on the shell (as AppShell's,
- *   P5.28 item 4), so table headers and anything sticky in a portal's page stand below it.
+ * - The sticky header's height is published as --liro-shell-top on the shell (as AppShell's),
+ *   so table headers and anything sticky in a portal's page stand below it.
  */
 
 /** A section of the portal: a link to one of its few pages. */
@@ -163,7 +162,7 @@ function ParticipantMenu({
             return <DropdownMenuLabel key={index}>{entry.label}</DropdownMenuLabel>
           }
           const Icon = entry.icon
-          // Neutral, as AppShell's user menu (P4.9): signing out loses nothing.
+          // Neutral, as AppShell's user menu: signing out loses nothing.
           return (
             <DropdownMenuItem
               key={index}
@@ -183,13 +182,13 @@ function ParticipantMenu({
   )
 }
 
-/** Desktop: the sections as a row of tabs under the header's first row, centred (P5.93). */
+/** Desktop: the sections as a row of tabs under the header's first row, centred. */
 function SectionTabs({ sections }: { sections: readonly PortalSection[] }) {
   const { messages, linkComponent: Link } = useLiro()
-  // The tab row rule (P5.90 item 6): faded edges where sections lie past them, the current one
+  // The tab row rule: faded edges where sections lie past them, the current one
   // kept in view.
   const row = useTabRow(sections.find((section) => section.current === true)?.key)
-  // Centred, as the AppShell's module tabs (P5.93 item 11): the portal's few sections are its
+  // Centred, as the AppShell's module tabs: the portal's few sections are its
   // top navigation; a row that does not fit starts at the start and scrolls (justify-center-safe).
   return (
     <div className={cn('-mb-px', TAB_ROW_BOX)}>
@@ -304,7 +303,7 @@ export function PortalShell(props: PortalShellProps) {
   const root = useRef<HTMLDivElement>(null)
   const sections = props.sections ?? []
 
-  // The sticky header's height as --liro-shell-top on the shell (as AppShell's, P5.28 item 4), so
+  // The sticky header's height as --liro-shell-top on the shell (as AppShell's), so
   // a table's header, a phone's totals or any part sticky at a page's top stands below it.
   const top = useRef<HTMLElement>(null)
   useLayoutEffect(() => {

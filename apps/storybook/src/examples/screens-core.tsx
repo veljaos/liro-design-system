@@ -126,7 +126,7 @@ function signInProviders(onClick: (id: string) => void): SignInProvider[] {
   ]
 }
 
-/** Under every sign-in card: the language switch, terms and privacy (P5.63 shares it). */
+/** Under every sign-in card: the language switch, terms and privacy. */
 export function AuthFooter() {
   const { linkComponent: Link } = useLiro()
   return (
@@ -155,13 +155,13 @@ export function SignIn({ phone }: { phone: boolean }) {
       description="Use the e-mail address your company gave you."
       footer={<AuthFooter />}
     >
-      {/* P5.6 (group C): the e-mail first, then the "or" divider and the providers' buttons. */}
+      {/* The e-mail first, then the "or" divider and the providers' buttons. */}
       <EmailFirstForm
         label="Work e-mail"
         placeholder="name@company.rs"
         defaultValue="milica.petrovic@kvadratgradnja.rs"
         onSubmit={() => {
-          // P5.63: the Core asks this account for its password next (group BD), then the code.
+          // The Core asks this account for its password next, then the code.
           navigate(BD_ROUTES.password)
         }}
         providers={signInProviders(() => {
@@ -268,7 +268,7 @@ export const MODULES: LaunchpadModule[] = [
 
 export function Home({ phone }: { phone: boolean }) {
   const { format } = useLiro()
-  // Counts the application writes go through the provider's format, as every number (P4.9).
+  // Counts the application writes go through the provider's format, as every number.
   const modules = MODULES.map((module) =>
     module.id === 'purchasing'
       ? { ...module, counter: `${format.number(String(APPROVALS.length))} to approve` }
@@ -520,7 +520,7 @@ const LINE_COLUMNS: DataTableColumn<ExampleLine>[] = [
   },
 ]
 
-/** The totals of F-2026-0412, on its page and on its printout (P5.17). */
+/** The totals of F-2026-0412, on its page and on its printout. */
 export const TOTAL_ROWS: TotalsRow[] = [
   { key: 'base20', label: 'Tax base S 20%', value: TOTALS.base20, currency: 'RSD' },
   { key: 'vat20', label: 'VAT S 20%', value: TOTALS.vat20, currency: 'RSD' },
@@ -691,7 +691,7 @@ export function Invoice({ phone, invoice }: { phone: boolean; invoice: ExampleIn
               intent="pdf"
               label="PDF"
               emphasis="secondary"
-              // The printout (P5.17): the browser prints it or saves it as a PDF.
+              // The printout: the browser prints it or saves it as a PDF.
               onClick={() => {
                 navigate(ROUTES.invoicePrint(invoice.number))
               }}
@@ -740,7 +740,7 @@ export function Invoice({ phone, invoice }: { phone: boolean; invoice: ExampleIn
 // ── Dashboard ─────────────────────────────────────────────────────────────────────────────────
 
 /**
- * Revenue or costs by month, 2026 against 2025, in the interactive header of P5.93 item 42: the
+ * Revenue or costs by month, 2026 against 2025, in the interactive header: the
  * two six-month totals as toggle buttons at the header's end (under the title on a phone); the
  * chosen one draws the chart.
  */
@@ -827,7 +827,7 @@ export function Dashboard({ phone }: { phone: boolean }) {
           {
             key: 'revenue',
             label: 'Revenue, September',
-            // Money is never rounded: every amount with its paras (P4.9).
+            // Money is never rounded: every amount with its paras.
             value: <MoneyText value="5684200.00" currency="RSD" />,
             change: { text: percentText('16.7', 'always'), direction: 'up', sentiment: 'good' },
             comparison: 'vs September 2025',
@@ -889,7 +889,7 @@ const APPROVAL_LINE_COLUMNS: DataTableColumn<ApprovalLine>[] = [
     cell: (line) => <NumberText value={line.quantity} />,
   },
   // The unit of measure is the Core's (its symbol, with its standard code), in its own column:
-  // a number is never joined to a word that would need a plural ("12 line", P4.9d).
+  // a number is never joined to a word that would need a plural ("12 line").
   { id: 'unit', header: 'Unit', cell: (line) => line.unit },
   { id: 'vat', header: 'VAT', align: 'end', numeric: true, cell: (line) => line.vat },
   {
@@ -919,7 +919,7 @@ function Decisions({ onApprove, onReject }: { onApprove: () => void; onReject: (
 
 /**
  * The chosen supplier invoice, whole: its facts, its lines and its PDF. The two decisions stand
- * in the worklist's bar under the detail on a desktop (after Previous and Next, P5.23) and in
+ * in the worklist's bar under the detail on a desktop (after Previous and Next) and in
  * the bottom bar on a phone.
  */
 function ApprovalDetail({ row, phone }: { row: ExampleApproval; phone: boolean }) {

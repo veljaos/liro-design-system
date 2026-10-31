@@ -2,7 +2,7 @@ import { FileText } from 'lucide-react'
 import { Button } from '@veljaos/ui'
 
 /*
- * A printed document in the examples (P5.95): the PDF liro-folio renders, which the Design System
+ * A printed document in the examples: the PDF liro-folio renders, which the Design System
  * only shows. The examples have no PDF to show, so they draw a neutral stand-in in its place: a
  * page-shaped card with the file's name, "PDF from liro-folio" and "Download PDF". A real
  * application shows the PDF itself (FilePreview, DocumentFrame) or its page images (PageViewer).

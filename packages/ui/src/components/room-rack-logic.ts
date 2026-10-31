@@ -1,6 +1,6 @@
 /*
- * The logic of RoomRack (BUILD-PLAN P5.25), kept apart from the markup so it can be unit-tested
- * (AGENTS.md C7): which rooms a filter shows, how many rooms each state has, and where the arrow
+ * The logic of RoomRack, kept apart from the markup so it can be unit-tested:
+ * which rooms a filter shows, how many rooms each state has, and where the arrow
  * keys move between the tiles. Counting rooms is the only arithmetic here; no amount is involved.
  */
 
@@ -79,7 +79,7 @@ export interface RackPlace {
  * Where a key moves the focus from `at`, or null. `counts` are the tiles of each floor shown, in
  * order; `columns` the tiles in one line of a floor (every floor's grid has the same columns; 1 on
  * phones). The rack is a list of rooms in reading order, not a map of the building, so the
- * arrows follow the reading direction (Appendix B.7): the forward arrow (ArrowRight in
+ * arrows follow the reading direction: the forward arrow (ArrowRight in
  * left-to-right, ArrowLeft in right-to-left) goes to the next room, on to the next floor's first;
  * ArrowDown and ArrowUp go a line down or up in the same column, into the next or previous floor
  * when the floor ends (the nearest room of that line when it is shorter). Home and End go to the

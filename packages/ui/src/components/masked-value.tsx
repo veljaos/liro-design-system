@@ -11,7 +11,7 @@ import { Spinner } from './spinner'
 import { TextAreaField } from './text-field'
 
 /*
- * MaskedValue (BUILD-PLAN P5.14): a sensitive value — a diagnosis, a salary, a personal number —
+ * MaskedValue: a sensitive value — a diagnosis, a salary, a personal number —
  * shown masked until the user says why they need it. The access is the application's to record:
  * the component asks the reason, reports it, and shows the value the application then passes.
  * - Masked: "••••" (decorative) with the value's name and "hidden" for assistive technology, and
@@ -19,10 +19,10 @@ import { TextAreaField } from './text-field'
  *   the application passes `value` only after `onReveal`.
  * - "Show" opens a Dialog titled with the action in sentence case ("Show diagnosis": the label as
  *   it reads in a sentence, `sentenceLabel`) and the record the value belongs to, bold, on its own
- *   line (`subject`, P5.28 item 6). Under it, 24px down, "Why do you need to see it?": the reasons
+ *   line (`subject`). Under it, 24px down, "Why do you need to see it?": the reasons
  *   from the application as radio buttons, with "Other" and its own text (`allowOther`); without a
- *   list the reason is written; the question stands 8px above its options (P5.90 item 16). Above the
- *   buttons one quiet line of secondary text, without icon or box (owner, P5.90 item 16): "Access
+ *   list the reason is written; the question stands 8px above its options. Above the
+ *   buttons one quiet line of secondary text, without icon or box: "Access
  *   is logged." and what is recorded (`logNote`, default from messages). The Show button enables once a reason is given; `onReveal({ reason, text })` —
  *   `reason` the chosen value, or null for "Other" and for a written reason. A returned promise keeps the dialog working (the
  *   button busy, not dismissible); it closes when the promise resolves and stays open when it
@@ -32,7 +32,7 @@ import { TextAreaField } from './text-field'
  *   focus that was on "Hide" goes back to "Show".
  * - `loading`: the value is on its way (a small Spinner and "Showing …"). `readOnly`: only the
  *   mask, no action (a printout, a summary).
- * - A refusal is not an error (owner, P5.93 item 10): `error` outside the dialog (refused) and
+ * - A refusal is not an error: `error` outside the dialog (refused) and
  *   `notAllowedReason` ("Show" unavailable, aria-disabled and focusable) keep the value's shape —
  *   in a KeyValueList row the label at the start, the mask and "Show" at the end — with one
  *   neutral line of secondary text under the value, no red and no error icon. Inside the dialog
@@ -62,11 +62,11 @@ export interface MaskedValueProps {
   sentenceLabel?: string
   /**
    * The record the value belongs to, from the application ("Jovana Nikolić, finding
-   * IZ-2026-03417"): bold under the dialog's title (P5.28 item 6).
+   * IZ-2026-03417"): bold under the dialog's title.
    */
   subject?: ReactNode
   /**
-   * The value, passed by the application only after the reveal (D1: the component never fetches
+   * The value, passed by the application only after the reveal (the component never fetches
    * it). Without it the value is masked.
    */
   value?: ReactNode
@@ -87,7 +87,7 @@ export interface MaskedValueProps {
   loading?: boolean
   /**
    * The application refused to show it, in its words: a danger Alert in the dialog; outside it,
-   * a neutral line under the value (a refusal is not an error, P5.93).
+   * a neutral line under the value (a refusal is not an error).
    */
   error?: ReactNode
   /**
@@ -219,7 +219,7 @@ export function MaskedValue(props: MaskedValueProps) {
     </>
   )
 
-  // The line under the value: why it cannot be shown (P5.93 item 10), neutral, never red.
+  // The line under the value: why it cannot be shown, neutral, never red.
   const refused = props.error !== undefined && props.error !== null && !asking && !shown
   const note =
     !shown && props.loading !== true && props.notAllowedReason !== undefined
@@ -358,7 +358,7 @@ export function MaskedValue(props: MaskedValueProps) {
                 onChange={setText}
               />
             )}
-            {/* A quiet line above the buttons, no icon and no box (owner, P5.90 item 16). */}
+            {/* A quiet line above the buttons, no icon and no box. */}
             <p className={cn('m-0 mt-2 text-xs text-secondary', TEXT_DIRECTION)}>
               {messages['masked.loggedTitle']} {props.logNote ?? messages['masked.logged']}
             </p>

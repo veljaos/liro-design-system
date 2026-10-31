@@ -125,7 +125,7 @@ export const JAPANESE_SAVED: SavedReply[] = [
   },
 ]
 
-/** Merge fields of a support conversation (P5.31): values from the ticket, two computed. */
+/** Merge fields of a support conversation: values from the ticket, two computed. */
 export const TICKET_FIELDS: RichTextMergeField[] = [
   { key: 'contact.firstName', label: 'Contact first name', group: 'Contact' },
   { key: 'ticket.number', label: 'Ticket number', group: 'Ticket' },
