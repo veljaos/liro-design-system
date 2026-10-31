@@ -1,8 +1,7 @@
-# Changing this file is a protected change (BUILD-PLAN rule 10).
+# Changing this file is a protected change (see AGENTS.md).
 #
 # One workflow: lint → typecheck → unit tests → build → consumer check → Storybook build →
-# story tests → accessibility → visual (BUILD-PLAN P0.4), the last three split across machines
-# (P3.0). The protected-files check runs in protected-files.yml, because it must also run when a
+# story tests → accessibility → visual, the last three split across machines. The protected-files check runs in protected-files.yml, because it must also run when a
 # pull request description is edited.
 name: CI
 
@@ -20,7 +19,7 @@ concurrency:
 
 jobs:
   checks:
-    # The name is kept from P0.1, so required-check settings keep matching.
+    # Required-check settings match this name.
     name: Install, lint, typecheck
     runs-on: ubuntu-24.04
     steps:
@@ -54,6 +53,10 @@ jobs:
       - name: Consumer check (packed tarballs)
         run: pnpm consumer-check
 
+      # The list and document example screens built for production stay within apps/perf/budget.json.
+      - name: Performance budget
+        run: pnpm perf
+
       - name: Storybook build
         run: pnpm build-storybook
 
@@ -64,19 +67,15 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
-  # Story tests, accessibility and visual run on several machines at once (P3.0): each suite is
-  # split into twenty-four parts with Playwright's --shard, one machine per part (four until P5.23,
-  # six until Phase 5 part 2, twelve until P5.27, sixteen until P5.31, twenty-four until P5.44,
-  # thirty-two until P5.89: each time the new stories took a part past, or to the edge of, its 25
-  # minutes; P5.89 removed about a third of the stories with the examples). On one
-  # machine the three took about 37 minutes in P3.0; see docs/decisions.md, CI.
+  # Story tests, accessibility and visual run on several machines at once: each suite is split
+  # into parts with Playwright's --shard, one machine per part, each part well under its 25 minutes.
   storybook-tests-shard:
     name: ${{ matrix.suite.name }} (${{ matrix.shard }}/24)
     needs: checks
     runs-on: ubuntu-24.04
     # Each Playwright run stops itself after 25 minutes (globalTimeout in playwright.config.ts),
     # stopping its server with it. No step has its own timeout: a step timeout kills Playwright
-    # but not the server it started (P0.4a).
+    # but not the server it started.
     timeout-minutes: 40
     # The official Playwright image, pinned by digest. Its version matches @playwright/test in
     # apps/storybook/package.json; visual baselines are generated only in this image.

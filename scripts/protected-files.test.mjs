@@ -14,6 +14,7 @@ describe('protectedFiles', () => {
       '.github/workflows/ci.yml',
       'scripts/protected-files.mjs',
       'scripts/static-stories.mjs',
+      'scripts/sample-text-stories.mjs',
       'scripts/consumer-check.mjs',
       'apps/consumer-check/check.mjs',
       'apps/storybook/playwright.config.ts',
@@ -28,8 +29,7 @@ describe('protectedFiles', () => {
     const files = [
       'packages/ui/src/components/button.tsx',
       'packages/ui/src/provider/format.test.ts',
-      'docs/decisions.md',
-      'BUILD-PLAN.md',
+      'docs/principles.md',
       'README.md',
       '.claude/settings.local.json',
       'apps/storybook/tests/__screenshots__/visual.spec.ts/button--light-ltr.png',

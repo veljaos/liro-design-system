@@ -12,7 +12,7 @@ export const plugin = {
 } satisfies ESLint.Plugin
 
 /**
- * Colours only through Liro meanings, and logical properties only (BUILD-PLAN sections 2 and 6).
+ * Colours only through Liro meanings, and logical properties only.
  * The Design System applies this to its own code too.
  */
 export const tokenRules: Linter.Config = {

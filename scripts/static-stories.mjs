@@ -1,4 +1,4 @@
-// The check of "Visual stories are static" (P5.23, docs/decisions.md): a story that the visual
+// Visual stories are static: a story that the visual
 // test pictures renders its state directly from its args or initial state. A story whose play
 // function clicks, types, presses keys, uploads, focuses, blurs, dispatches events or scrolls —
 // itself or through a helper — must carry the tag "interaction", so the visual test skips it
@@ -12,7 +12,7 @@ import ts from 'typescript'
 export const INTERACTION_TAG = 'interaction'
 /** Storybook's tag that keeps a story out of the sidebar; the tests still run it. */
 export const HIDDEN_TAG = '!dev'
-/** The sidebar folder that shows each screen twice, desktop and phone (P5.28). */
+/** The sidebar folder that shows each screen twice, desktop and phone. */
 export const EXAMPLES_TITLE = 'Examples'
 
 /** Objects whose every call acts on the page. */
@@ -358,7 +358,7 @@ export function storyFiles(root) {
 
 /**
  * Whether a story file belongs to the Examples: "Examples" or one of its floorplan groups
- * ("Examples/F1 List", P5.89).
+ * ("Examples/F1 List").
  * @param {string} title
  * @returns {boolean}
  */
@@ -368,7 +368,7 @@ export function isExampleTitle(title) {
 
 /**
  * The Examples stories tagged "interaction" that the sidebar still shows, as "file: Story": the
- * Examples show each screen on a desktop and on a phone, and hide the tests (P5.28).
+ * Examples show each screen on a desktop and on a phone, and hide the tests.
  * @param {string} root
  * @returns {string[]}
  */
