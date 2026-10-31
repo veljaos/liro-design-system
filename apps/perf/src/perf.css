@@ -1,0 +1,4 @@
+/* The tokens and the library's styles, with the example screens as Tailwind sources. */
+@import '@veljaos/tokens/tokens.css';
+@import '../../../packages/ui/src/styles.css';
+@source '../../storybook/src/examples';
