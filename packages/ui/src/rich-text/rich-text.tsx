@@ -15,7 +15,7 @@ import {
 } from './rich-text-logic'
 
 /*
- * RichText (P5.22): the read-only view of a rich text value — what RichTextField shows when it is
+ * RichText: the read-only view of a rich text value — what RichTextField shows when it is
  * read-only, and what a record shows of a stored note, letter or comment. It draws from the JSON
  * (preferred) or, without it, from stored HTML, which is first read into the same structure
  * (`richTextFromHtml`, the sanitizer): nothing of the HTML is inserted as it is, so a stored
@@ -28,7 +28,7 @@ import {
  * "Merge field: Customer name"), mentions semibold. Each paragraph and heading takes its direction
  * from its text (`dir="auto"`) and stays at the page's start side (`text-align: match-parent`).
  *
- * `headingIds` (P5.30 e, a long reading page): every h2 and h3 gets a stable id from its words
+ * `headingIds` (a long reading page): every h2 and h3 gets a stable id from its words
  * (`richTextHeadings`, the same ids a page's contents list), `tabIndex={-1}` so a contents link can
  * move the focus to it, and a scroll margin under the shell's sticky top (`--liro-shell-top` +
  * 16px), so a heading reached from the contents is never hidden under the shell (WCAG 2.4.11).
@@ -43,16 +43,16 @@ export interface RichTextMergeField {
   /** A heading the menu and the list group it under ("Customer"). */
   group?: string
   /**
-   * How a value given as plain text is written (P5.31): 'text' (default), 'date' (YYYY-MM-DD),
+   * How a value given as plain text is written: 'text' (default), 'date' (YYYY-MM-DD),
    * 'dateTime' or 'time' (an instant), 'number' or 'money' (decimal strings), through `format`.
    */
   kind?: MergeValueKind
   /** For 'money': the currency `format.money` writes. */
   currency?: string
-  /** For 'number' and 'money': the decimals shown (never rounded, D4). */
+  /** For 'number' and 'money': the decimals shown (never rounded). */
   decimals?: number
   /**
-   * A field that needs no value (P5.31): 'today' is the provider's `today`, 'now' the
+   * A field that needs no value: 'today' is the provider's `today`, 'now' the
    * application's `now` (date and time; the time with `kind: 'time'`).
    */
   computed?: 'today' | 'now'
@@ -78,7 +78,7 @@ export interface RichTextProps {
   /** The merge fields' labels, so their pills show names instead of keys. */
   mergeFields?: readonly RichTextMergeField[]
   /**
-   * The merge fields' values (P5.31): each field with a value is shown as its text, written
+   * The merge fields' values: each field with a value is shown as its text, written
    * through `format`; a field without one stays a pill marked "No value". Fields computed from
    * 'today' or 'now' need none. Without `mergeValues`, every field is a pill.
    */
@@ -124,7 +124,7 @@ function attr(node: RichTextNode, name: string): string {
 
 /**
  * A merge field's pill: its label shown, "Merge field: <label>" read. `missing` (the values were
- * given, this one has none): dashed in the warning tone, "No value: <label>" read (P5.31).
+ * given, this one has none): dashed in the warning tone, "No value: <label>" read.
  */
 export function MergeFieldPill({
   fieldKey,

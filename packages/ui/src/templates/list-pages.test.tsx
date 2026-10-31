@@ -48,7 +48,7 @@ describe('ListPage', () => {
         <table />
       </ListPage>,
     )
-    // The module tab names the page: the h1 is for screen readers only (owner, P4.3).
+    // The module tab names the page: the h1 is for screen readers only.
     expect(html).toContain('<h1 class="sr-only">Invoices</h1>')
     expect(html).toContain('New invoice')
     expect(html).toContain('aria-label="Views"')
@@ -58,7 +58,7 @@ describe('ListPage', () => {
   })
 })
 
-describe('saved views (P4.9)', () => {
+describe('saved views', () => {
   const VIEWS = ['all', 'unpaid', 'overdue', 'mine', 'drafts', 'sent', 'archived'].map((id) => ({
     id,
     label: id,

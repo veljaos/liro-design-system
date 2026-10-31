@@ -2,10 +2,9 @@ import type { ComponentProps } from 'react'
 import { cn } from './cn'
 
 /*
- * Message (shadcn/ui `message`, registry style radix-vega, fetched 2026-10-08; adapted as the P2.1
- * primitives). The row of one message: the author's avatar at the side, then a column with the
- * header (name, kind, time), the bubble and a footer. The user's own messages stand at the end of
- * the row (`align="end"`, `flex-row-reverse`, which follows the direction: the end is the left in
+ * Message (shadcn/ui `message`, registry style radix-vega, adapted to the Liro tokens). The row of
+ * one message: the author's avatar at the side, then a column with the header (name, kind, time),
+ * the bubble and a footer. The user's own messages stand at the end of the row (`align="end"`, `flex-row-reverse`, which follows the direction: the end is the left in
  * right-to-left).
  *
  * Adapted:

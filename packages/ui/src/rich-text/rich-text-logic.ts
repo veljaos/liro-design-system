@@ -1,5 +1,5 @@
 /*
- * The pure logic of the rich text (P5.22): the value's shape, the HTML it is stored as, the
+ * The pure logic of the rich text: the value's shape, the HTML it is stored as, the
  * sanitizer, the counts, and the keys of the toolbar and of the suggestion lists. No DOM and no
  * Tiptap: it runs alike on a server, in the unit tests and in the browser.
  *
@@ -11,7 +11,7 @@
  * from Word, stored by an older version, sent by another system) into that document and writes it
  * again, so its result is the same canonical HTML; nothing of the input is copied through.
  *
- * The stored HTML (docs/notes P5.22, "Stored format"):
+ * The stored HTML:
  *   <p dir="auto">…</p>, <h2 dir="auto">…</h2>, <h3 dir="auto">…</h3>, <ul>, <ol start="N">, <li>,
  *   <br>, <strong>, <em>, <u>, <a href="…" rel="noopener noreferrer">,
  *   <span data-merge-field="key">{{key}}</span>, <span data-mention="id">@Name</span>.

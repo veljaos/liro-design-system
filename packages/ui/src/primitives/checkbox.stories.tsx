@@ -9,7 +9,7 @@ const meta = {
   parameters: {
     docs: {
       description: {
-        component: internal('A 20px checkbox with a 24px target. CheckboxField (P2.2).'),
+        component: internal('A 20px checkbox with a 24px target. CheckboxField.'),
       },
     },
   },

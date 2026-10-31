@@ -37,12 +37,12 @@ import {
 import { Frame, Tenant } from './screens-G'
 
 /*
- * Group BR's example screen (P5.77, pivot analysis): Kvadrat Gradnja d.o.o.'s cost analysis on
+ * The example screen (pivot analysis): Kvadrat Gradnja d.o.o.'s cost analysis on
  * 14 October 2026 at 09:40 (Analytics → Cost analysis, Milica Petrović): sites and their cost
  * accounts down, July–September across, the amount and the number of supplier invoices under each
  * month, the totals; the saved view "By supplier". A figure opens its invoices in an end Drawer
  * (DataTable: date, number, supplier, text, amount; the latest ten of the application's count).
- * The application suggests its saved views as the Pivot's first row (P5.93 item 45: the user
+ * The application suggests its saved views as the Pivot's first row (the user
  * starts from one); the layout is the user's (a view, or the Fields sheet); the figures are the
  * application's for that layout (data-BR.ts) — this illustrative application has them for the
  * saved views only, so any other layout shows "No figures for this layout". Export is reported in

@@ -1,11 +1,11 @@
 /*
- * Open tabs on tables (P5.28 item 22): Bistro Dunav's service keeps a tab on every open table —
+ * Open tabs on tables: Bistro Dunav's service keeps a tab on every open table —
  * what was ordered, what was sent to the bar or the kitchen and when, notes, discounts, what was
  * paid already — so the waiter adds items, leaves and comes back. The tabs live in the examples'
  * application above the screens (`useExampleState`). The promotions (the dessert of the day), the
  * discounts, the stations and every figure are the application's: computed here in whole paras
  * (BigInt) — line, promotion, discount, order discount, the tax included, what is paid and what
- * remains, equal shares; the components add nothing (D4). Fictitious. Not part of the package. No
+ * remains, equal shares; the components add nothing. Fictitious. Not part of the package. No
  * classes here.
  */
 import type { PosProduct, ProductCategory } from '@veljaos/ui'
@@ -92,7 +92,7 @@ const DISCOUNTS: readonly DiscountChoice[] = [
 
 /**
  * Bistro Dunav's menu (fictitious). "Most sold" is the application's: tonight's most ordered
- * items, first and chosen when a tab opens (P5.90 item 20), so most taps need no category.
+ * items, first and chosen when a tab opens, so most taps need no category.
  */
 const MOST_SOLD = ['pivo', 'limunada', 'cevapi', 'pastrmka', 'voda', 'palacinke']
 
@@ -180,7 +180,7 @@ export interface TabLine {
   /** When it was sent to its station (HH:mm); absent while not sent. */
   sentAt?: string
   /**
-   * Held for a later course (P5.90 item 20): not sent when the waiter leaves the table, only with
+   * Held for a later course: not sent when the waiter leaves the table, only with
    * "Send held".
    */
   held?: boolean
@@ -411,7 +411,7 @@ export function unsentByStation(
 }
 
 /**
- * Sends the new lines (or the held ones) to their stations at `now` (P5.90 item 20): the till
+ * Sends the new lines (or the held ones) to their stations at `now`: the till
  * sends by itself when the waiter leaves the table, and on "Send now" / "Send held". Returns the
  * tab and what went where; the sending itself is the application's.
  */

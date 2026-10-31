@@ -5,9 +5,9 @@ import { TEXT_DIRECTION, TEXT_ISOLATE } from '../primitives/classes'
 import { cn } from '../primitives/cn'
 
 /*
- * AuthShell (P4.7, the owner's values, docs/decisions.md "Status pages and AuthShell"): the frame
+ * AuthShell: the frame
  * of the sign-in screens. The flows themselves (e-mail first, password, code, recovery) are built
- * in the Core from the building blocks of P5.6.
+ * in the Core from the sign-in building blocks.
  * - The page on surface.sunken; the text lockup (24px, the full product name) centred above a
  *   420px card: raised, a 1px border.default border, radius lg, padding xl (32px), the subtle
  *   xs shadow. The card's title (an h1 in the h2 size) and an optional description, then the

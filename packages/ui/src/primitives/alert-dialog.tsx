@@ -12,7 +12,7 @@ import { cn } from './cn'
  * dialog; its confirm modal is a Modal with the actions in a Group at the end, 16px apart and
  * 16px under the text (modals.openConfirmModal). So it has the Dialog look, without a close
  * button: it closes only through its actions or Escape, never by a click outside. On a phone it is
- * the Dialog's bottom sheet (PHONE_DIALOG, P5.28).
+ * the Dialog's bottom sheet (PHONE_DIALOG).
  */
 
 export const AlertDialog = AlertDialogPrimitive.Root
@@ -75,7 +75,7 @@ export function AlertDialogDescription({
   )
 }
 
-/** The actions, at the end, 8px apart as every row of buttons (P4.9); the main action last. */
+/** The actions, at the end, 8px apart as every row of buttons; the main action last. */
 export function AlertDialogFooter({ className, ...props }: ComponentProps<'div'>) {
   return (
     <div

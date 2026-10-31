@@ -26,7 +26,7 @@ import {
 } from './data-D2'
 
 /*
- * A complex document of P5.18 (group D2), linked into the example application: decrease document
+ * A complex document, linked into the example application: decrease document
  * KO-2026-0009 against F-2026-0410, its lines as Original / Change / New. Only the public entry
  * point; every amount comes from data-D2.ts, computed there in whole paras.
  */
@@ -84,7 +84,7 @@ function usePanels(initial: string[]) {
 
 const DECREASE_COLUMNS: DataTableColumn<CorrectedLine>[] = [
   { id: 'item', header: 'Item', minWidth: DESCRIPTION_MIN_WIDTH, cell: (line) => line.text },
-  // Short codes give their room to the item's name (P5.23).
+  // Short codes give their room to the item's name.
   { id: 'unit', header: 'Unit', minWidth: MIN_COLUMN_WIDTH, cell: (line) => line.unit },
   ...correctionColumns<CorrectedLine>({
     id: 'quantity',

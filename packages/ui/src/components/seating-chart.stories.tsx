@@ -83,7 +83,7 @@ const meta = {
           'in a taken seat’s dialog. Every change is reported as `onSeat(guestId, seat | null)`; ' +
           'the chart never decides. A table opens its guests in order. Conflicts — a full table, ' +
           'guests to keep apart — are the application’s: on the table and on the guests.\n\n' +
-          '**Others rely on the seating (P5.28):** the application keeps the changes pending (“3 ' +
+          '**Others rely on the seating:** the application keeps the changes pending (“3 ' +
           'changes not saved”) and saves them together through ChangeConfirmDialog — each guest’s ' +
           'seat old → new (`seatingChanges`), the guests’ e-mail as a choice (the gala example).\n\n' +
           '**When:** seated events with tables. **When not:** a restaurant’s service (FloorPlan ' +

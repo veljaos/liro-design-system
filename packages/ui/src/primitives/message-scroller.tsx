@@ -10,8 +10,8 @@ import { FOCUS_RING } from './classes'
 import { cn } from './cn'
 
 /*
- * Message Scroller (shadcn/ui `message-scroller`, registry style radix-vega, fetched 2026-10-08;
- * on the unstyled `@shadcn/react/message-scroller` 0.3.1, adapted as the P2.1 primitives). A
+ * Message Scroller (shadcn/ui `message-scroller`, registry style radix-vega, on the unstyled
+ * `@shadcn/react/message-scroller` 0.3.1, adapted to the Liro tokens). A
  * scrolling list of messages that keeps the latest in view while the reader is at the end
  * (`autoScroll`), opens at the end, keeps the reader's place when older messages are added above,
  * and offers a button back to the end while the reader is away from it.

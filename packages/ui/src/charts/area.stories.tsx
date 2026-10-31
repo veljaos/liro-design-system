@@ -151,7 +151,7 @@ function Interactive({
 }
 
 /**
- * The interactive header (P5.93 item 42): each store's total as a toggle button at the header's
+ * The interactive header: each store's total as a toggle button at the header's
  * end, a period select beside the title; the application filters the data.
  */
 export const InteractiveStory: Story = {

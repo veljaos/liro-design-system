@@ -1,5 +1,5 @@
 /*
- * The official marks of the sign-in providers (P5.6, the owner: next to ProviderSignInButtons,
+ * The official marks of the sign-in providers (next to ProviderSignInButtons,
  * not in @veljaos/tokens, which holds tokens only). Drawn exactly as Microsoft's and Google's
  * sign-in branding rules require — their own colours, never Liro meanings — which is why this
  * one file is exempt from `liro/no-raw-colors` (eslint.config.mjs). Microsoft and Google and

@@ -22,7 +22,7 @@ import { cn } from './cn'
  * (checkIconPosition 'left', 0.8em, 8px gap); at most 220px of options show at once
  * (OptionsDropdown).
  *
- * On every screen (P5.28 items 1 and 3): the list keeps 8px inside the screen (the viewport, or a
+ * On every screen: the list keeps 8px inside the screen (the viewport, or a
  * phone frame) and is never wider than the room there — a long option wraps; it never makes the
  * page scroll sideways. The list scrolls natively (wheel, finger, keys) with a thin scrollbar;
  * Radix's scroll-up and scroll-down buttons are not used (on touch they stood in the finger's way).
@@ -107,7 +107,7 @@ export function SelectContent({
         {...props}
       >
         {/* Radix hides the viewport's scrollbar for its scroll buttons; the list shows a thin one
-            instead (P5.28 item 3). */}
+            instead. */}
         <SelectPrimitive.Viewport className="max-h-55 p-1 [scrollbar-width:thin]!">
           {children}
         </SelectPrimitive.Viewport>

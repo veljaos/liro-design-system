@@ -5,7 +5,7 @@ import { cn } from '../primitives/cn'
 import { PageHeader } from './page-header'
 
 /*
- * DashboardPage (P4.6, the owner's decision, docs/decisions.md "Dashboard"): numbers first, then
+ * DashboardPage: numbers first, then
  * charts — restrained, no decorative colour.
  * - The title (visible) and the page's actions (a period, an export) at the end.
  * - The StatCards in a row: one column on phones, two from xs (36em), four from md (62em), 16px
@@ -13,7 +13,7 @@ import { PageHeader } from './page-header'
  * - The charts (BarChart, LineChart, AreaChart, DonutChart) under them in two columns from md,
  *   16px apart; a chart or table may span both with `col-span-full` on its wrapper — never a
  *   fixed span such as `md:col-span-2`, which in the phone layout (a phone-width frame in a wide
- *   window) adds a second, implicit column and squeezes two charts side by side (P4.9). The
+ *   window) adds a second, implicit column and squeezes two charts side by side. The
  *   phone layout is one column, whatever the viewport.
  */
 

@@ -18,7 +18,7 @@ import {
 } from './shift-story-data'
 import { WorkingTimeBalance } from './working-time-balance'
 
-// An English interface for a Serbian tenant: English words, the tenant's digits (P5.28 item 2).
+// An English interface for a Serbian tenant: English words, the tenant's digits.
 const SERBIAN = createFormat('en-RS', numericFormat('sr-Latn-RS'))
 
 function render(node: React.ReactNode) {

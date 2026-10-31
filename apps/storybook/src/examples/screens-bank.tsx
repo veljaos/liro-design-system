@@ -83,9 +83,8 @@ import {
 import { STATEMENT_189_DATA } from './data-bank-189'
 
 /*
- * Bank statement 188 (P5.23; auto first in P5.90 item 9; a worklist again in P5.94 item 19, the
- * owner: "the same screen as Supplier invoices to approve, adapted, and it works with 1,000+
- * lines"). The statement is a WorklistPage:
+ * Bank statement 188, the same screen as Supplier invoices to approve, adapted, and working
+ * with 1,000+ lines. The statement is a WorklistPage:
  * - A thin strip under the title: opening balance, money in, money out, closing balance, "3 of
  *   10 done" with a bar, "Balance checks out"; once nothing waits, "Post statement" (the journal
  *   entry in a confirmation: posting cannot be undone).
@@ -99,7 +98,7 @@ import { STATEMENT_189_DATA } from './data-bank-189'
  *   "Change", or at once when nothing was found. Confirm (the main action, last) decides the line
  *   and opens the next line that waits by itself — in the same state first, then Needs you,
  *   Suggestion, Matched automatically — with "Line 3 done … Undo" in place. Up and down move in
- *   the queue, Enter confirms. A payment against a proforma invoice is one step (P5.93 item 17):
+ *   the queue, Enter confirms. A payment against a proforma invoice is one step:
  *   "Post advance and issue invoice", then the result — the advance invoice's link and the
  *   related documents — and "Next line".
  * - Phone: the queue (Needs you first), a line on the whole screen with its position and Previous
@@ -247,7 +246,7 @@ type LineState = 'done' | 'auto' | 'suggestion' | 'needs'
 /** The states in the order the queue offers them, and the order "the next line" looks in. */
 const STATES: readonly LineState[] = ['needs', 'suggestion', 'auto', 'done']
 
-/** The queue's chips: every line ("All", always first, P5.96), or one state's lines. */
+/** The queue's chips: every line ("All", always first), or one state's lines. */
 type QueueFilter = 'all' | LineState
 const FILTERS: readonly QueueFilter[] = ['all', ...STATES]
 
@@ -1606,7 +1605,7 @@ function StatementScreen({
         hasNext={false}
         onNext={() => undefined}
         count={found.length}
-        // One compact row an item on a phone (P5.28): number; partner · due date; open amount.
+        // One compact row an item on a phone: number; partner · due date; open amount.
         mobile={{
           title: (item) => <span dir="ltr">{item.id}</span>,
           subtitle: (item) => (

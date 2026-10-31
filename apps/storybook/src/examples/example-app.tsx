@@ -46,7 +46,7 @@ export interface ExampleRoute {
 }
 
 /**
- * The screens added after P4.8, by the module that adds them (Phase 5). Each group registers its
+ * The further screens, by the module that adds them. Each group registers its
  * screens with one import above and one line here.
  */
 const EXAMPLE_ROUTES: readonly ExampleRoute[] = [
@@ -92,7 +92,7 @@ export function ExampleApp({ start, phone = false }: { start: string; phone?: bo
   const navigate = useCallback((next: string) => {
     setPath(next)
     window.scrollTo(0, 0)
-    // On a phone the page scrolls inside the phone frame (P5.28): a new screen starts at its top.
+    // On a phone the page scrolls inside the phone frame: a new screen starts at its top.
     document.querySelectorAll('[data-liro-phone-page]').forEach((page) => {
       page.scrollTo(0, 0)
     })

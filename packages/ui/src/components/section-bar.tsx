@@ -5,7 +5,7 @@ import { useLiro } from '../provider/liro-provider'
 import { TAB_ROW_BOX, TAB_ROW_SCROLLER, useTabRow } from './tab-row'
 
 /*
- * SectionBar (P4.4, the owner's values, docs/decisions.md "Detail and record form pages"): for
+ * SectionBar: for
  * long detail pages, a row of the page's section names that scrolls to each section and shows
  * the current one. Forms keep their tabs.
  * - Like the module tabs: a 40px row of links, start-aligned, 13px, 16px padding; the current
@@ -117,7 +117,7 @@ export function SectionBar({ sections, className }: SectionBarProps) {
         className,
       )}
     >
-      {/* The tab row rule (P5.90 item 6): faded edges, the current section kept in view. */}
+      {/* The tab row rule: faded edges, the current section kept in view. */}
       <div className={TAB_ROW_BOX}>
         <div {...row.scroller} className={TAB_ROW_SCROLLER}>
           <ul className="m-0 flex h-10 list-none p-0">

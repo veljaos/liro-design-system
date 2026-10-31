@@ -32,13 +32,13 @@ import {
 } from './pivot-logic'
 
 /*
- * Pivot (P5.77): the user chooses the layout — which fields make the rows and the columns, which
+ * Pivot: the user chooses the layout — which fields make the rows and the columns, which
  * figures are shown with which aggregation, which values are kept — and the application computes
  * the result for it. The library lays the result out and never adds, averages or counts.
  * - The layout is controlled (`value` / `onChange`): every change in the chooser is reported at
  *   once; the application then passes the new `result` (`loading` while it computes: skeleton
  *   rows the first time, "Updating…" at the toolbar's end with the old figures kept after).
- * - Simpler (P5.93 item 45, the owner's fourth review): ONE card. Its first row is the
+ * - ONE card. Its first row is the
  *   application's suggested views (`views`, the tab look with the blue line under the one the
  *   layout is, start-aligned, the tab row rule); the user starts from one. The second row says in
  *   one line what the grid shows ("Sum of Amount, Count of Orders by Region / Product line,
@@ -73,7 +73,7 @@ export interface PivotProps {
   /** Reports each change of the layout. Without it the layout is fixed and there is no chooser. */
   onChange?: (layout: PivotLayout) => void
   /**
-   * The views the application suggests (P5.93 item 45), as the card's first row: a press reports
+   * The views the application suggests, as the card's first row: a press reports
    * the view's layout through `onChange`; the view the layout is stands chosen.
    */
   views?: readonly PivotView[]
@@ -95,7 +95,7 @@ export interface PivotProps {
   exportAction?: PivotExport
   /** The chooser's sheet is open (controlled with `onFieldsOpenChange`). */
   fieldsOpen?: boolean
-  /** Uncontrolled: the chooser's sheet open at first. Default: closed (P5.93 item 45). */
+  /** Uncontrolled: the chooser's sheet open at first. Default: closed. */
   defaultFieldsOpen?: boolean
   onFieldsOpenChange?: (open: boolean) => void
   /** More actions at the toolbar's end (before Export), from the application. */
@@ -123,7 +123,7 @@ function Loading() {
   )
 }
 
-/** The one-line summary of what the grid shows, in the fields' names (P5.93 item 45). */
+/** The one-line summary of what the grid shows, in the fields' names. */
 export function pivotSummaryText(
   messages: LiroMessages,
   countText: (count: number) => string,

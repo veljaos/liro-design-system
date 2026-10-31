@@ -6,7 +6,7 @@
 /**
  * A play function that waits until the enter animations of overlays have finished, so the
  * accessibility check sees them at full opacity. Endless animations (a skeleton's pulse) and
- * scroll-driven ones (a sticky table header following the page, P5.90) are not waited for: they
+ * scroll-driven ones (a sticky table header following the page) are not waited for: they
  * never finish.
  */
 export async function settle(): Promise<void> {
@@ -33,7 +33,7 @@ export async function settle(): Promise<void> {
 /** The description of an internal primitive's story page. */
 export function internal(what: string): string {
   return (
-    `**Internal primitive.** Not exported from \`@veljaos/ui\` (AGENTS.md D10): Liro components ` +
+    `**Internal primitive.** Not exported from \`@veljaos/ui\`: Liro components ` +
     `are built from it. ${what}`
   )
 }

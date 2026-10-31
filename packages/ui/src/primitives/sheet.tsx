@@ -12,7 +12,7 @@ import { cn } from './cn'
  *
  * The side is logical: 'start' is the left in left-to-right and the right in right-to-left, and
  * it slides from that side, as Mantine's drawer does. shadcn/ui's sheet uses physical left and
- * right, which stay on the same side of the screen in right-to-left (P2.1 finding).
+ * right, which stay on the same side of the screen in right-to-left.
  */
 
 export const Sheet = SheetPrimitive.Root
@@ -28,7 +28,7 @@ const SIDES: Record<SheetSide, string> = {
   top: 'inset-x-0 top-0 h-110 max-h-full w-full [--liro-slide-from:translateY(-100%)]',
   bottom: 'inset-x-0 bottom-0 h-110 max-h-full w-full [--liro-slide-from:translateY(100%)]',
   // The whole of its containing block — the viewport in an application, a phone frame in a
-  // story — never the window's height (P4.9d: `h-dvh` overran a frame and left the page showing).
+  // story — never the window's height (`h-dvh` overran a frame and left the page showing).
   full: 'inset-0 h-full max-h-full w-full [--liro-slide-from:translateY(100%)]',
 }
 

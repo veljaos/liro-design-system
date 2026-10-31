@@ -4,7 +4,7 @@ import { cn } from './cn'
 /**
  * A placeholder shape while content loads (shadcn/ui skeleton, adapted; Mantine Skeleton.css):
  * radius md, pulsing between 40% and full opacity every 1500ms, still with reduced motion. Fill:
- * text.primary at 10% over whatever it stands on (P5.93 item 2): on a raised surface it is the
+ * text.primary at 10% over whatever it stands on: on a raised surface it is the
  * grey of surface.disabled, and it stays visible on surface.sunken, a selected row or a dark
  * surface — a skeleton of surface.disabled vanished on the sunken surfaces (the same gray-2), and
  * a loading state looked blank. Hidden from assistive technology: the region that loads

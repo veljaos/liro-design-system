@@ -1,5 +1,5 @@
 /*
- * A hotel of 200 rooms for ResourceSchedule's phone lists (P5.90 item 19): fictitious guests,
+ * A hotel of 200 rooms for ResourceSchedule's phone lists: fictitious guests,
  * generated the same way every time. Today is the stories' Wednesday 14 October 2026. Which stay
  * is an arrival, a departure or in house is the application's data: computed here, in the
  * story's application, never by the component. Not part of the package. No classes here:

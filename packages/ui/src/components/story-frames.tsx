@@ -16,7 +16,7 @@ import { ScreenContext } from '../provider/screen'
 /**
  * A nested provider in the story's theme; locale, direction and theme may be given. A story whose
  * text depends on "today" (a due date's "2 days overdue") passes a fixed `today`, so its picture
- * does not change with the date (P5.23: the Kanban Arabic and Japanese stories did).
+ * does not change with the date.
  */
 export function StoryProvider({
   locale,
@@ -31,7 +31,7 @@ export function StoryProvider({
   colorScheme?: 'light' | 'dark'
   /** YYYY-MM-DD; default the story's (the device's date). */
   today?: string
-  /** 'touch' for the till and handheld stories (P5.10); default the story's. */
+  /** 'touch' for the till and handheld stories; default the story's. */
   density?: 'default' | 'touch'
   children: ReactNode
 }) {
@@ -58,14 +58,14 @@ const SERBIAN_FORMAT = createFormat('sr-Latn-RS')
 
 /**
  * A percentage as the application writes it for a Serbian tenant ("62,4%", "+16,7%"): story data
- * goes through the provider's format, never a hand-written "62,4 %" (P4.7c).
+ * goes through the provider's format, never a hand-written "62,4 %".
  */
 export function percentText(value: string, sign: 'auto' | 'always' = 'auto'): string {
   return SERBIAN_FORMAT.percent(value, { sign })
 }
 
 /**
- * The examples' tenant is a Serbian company (P5.28 item 2): the story's language with the region
+ * The examples' tenant is a Serbian company: the story's language with the region
  * RS ("en" → "en-RS"), so the words — month and weekday names, long dates — are the interface
  * language's and the first day of the week is the region's (Monday). A locale that names its
  * region keeps it.
@@ -90,18 +90,18 @@ export const EXAMPLE_FORMAT = createFormat('en-RS', TENANT_DIGITS)
 export const EXAMPLE_TIME_ZONE = 'Europe/Belgrade'
 
 /**
- * The template and example stories (Phase 4): the story's locale (with the tenant's region, see
+ * The template and example stories: the story's locale (with the tenant's region, see
  * `tenantLocale`), direction and theme, the English interface text, but numbers, amounts and
  * numeric dates written as a Serbian tenant writes them (12.345,60 RSD, 06.10.2026.) — never its
- * month or weekday names (P5.28 item 2) — and a fixed today. Instants are shown in the tenant's
- * time zone (Europe/Belgrade), also where a screen formats one above its own shell: before P5.77
- * those fell back to the machine's zone (05:00 for 07:00 in a UTC test container).
+ * month or weekday names — and a fixed today. Instants are shown in the tenant's
+ * time zone (Europe/Belgrade), also where a screen formats one above its own shell, so
+ * none falls back to the machine's zone (05:00 for 07:00 in a UTC test container).
  */
 export function ExampleProvider({
   linkComponent,
   children,
 }: {
-  /** The example screens' router link (P4.8); default a plain anchor. */
+  /** The example screens' router link; default a plain anchor. */
   linkComponent?: ElementType
   children: ReactNode
 }) {
@@ -126,8 +126,8 @@ const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])'
 
 /**
- * A phone's screen (390 × 844px) inside a wider page: what is drawn in it behaves as on a phone
- * (P5.28 items 1, 5 and 11). A handheld scanner's screen is 360 × 740 (P5.11: `width={360}
+ * A phone's screen (390 × 844px) inside a wider page: what is drawn in it behaves as on a phone.
+ * A handheld scanner's screen is 360 × 740 (`width={360}
  * height={740}`).
  * - The frame is the screen: it has a transform, so it is the containing block of every fixed
  *   element inside it — backdrops, dialogs, sheets and bottom bars cover the frame, not the
@@ -180,7 +180,7 @@ export function PhoneFrame({
         transform: 'translateZ(0)',
         width,
         height,
-        // A phone keeps its width inside a story's narrower wrapper (P5.93: a 320px column
+        // A phone keeps its width inside a story's narrower wrapper (a 320px column
         // squeezed the phone and drew the page at the wrong width).
         maxWidth: 'none',
         flexShrink: 0,
@@ -209,7 +209,7 @@ export function PhoneFrame({
 }
 
 /**
- * The "English in right-to-left" stories (P3.6): an Arabic page whose texts fell back to English,
+ * The "English in right-to-left" stories: an Arabic page whose texts fell back to English,
  * as when the application has no translation yet. Proves that each named text block takes its
  * direction from its content (unicode-bidi: plaintext) while the layout (`direction`) stays right
  * to left.

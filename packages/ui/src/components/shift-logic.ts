@@ -2,8 +2,8 @@ import type { Weekday } from '../provider/format'
 import { addDays } from './period-logic'
 
 /*
- * The logic of ShiftPlanner, MyShifts and ShiftSwapDialog (BUILD-PLAN P5.24 b), kept apart from
- * the markup so it can be unit-tested (AGENTS.md C7): the span of a template (crossing midnight,
+ * The logic of ShiftPlanner, MyShifts and ShiftSwapDialog, kept apart from
+ * the markup so it can be unit-tested: the span of a template (crossing midnight,
  * its length as display only), the days of a period and its navigation, the cells of a selected
  * range, the changes a key or a drop reports, the assignments a rotation pattern generates, the
  * cell under a dragged item, and the shifts of one person grouped by week.
@@ -235,7 +235,7 @@ export function moveChange(assignment: ShiftAssignment, to: ShiftCellRef): Shift
 }
 
 /**
- * The assignments a rotation pattern generates (P5.24 b, "Apply rotation…"): for each person,
+ * The assignments a rotation pattern generates ("Apply rotation…"): for each person,
  * each day from `start` to `end` takes the pattern's step for that day — the first day is step 0
  * for the first person, and each further person starts `offsetPerPerson` steps later, so a team
  * covers the pattern's shifts between them. A null step is a day off (no assignment). The
@@ -261,7 +261,7 @@ export function rotationAssignments(
 }
 
 /**
- * The people "Apply rotation…" opens with (P5.24a): the rows of the selected range, else the
+ * The people "Apply rotation…" opens with: the rows of the selected range, else the
  * application's choice (`rotationPeople`, only rows it shows), else everyone in view — each once,
  * in that order.
  */
@@ -278,7 +278,7 @@ export function rotationDefaultPeople(
 }
 
 /**
- * What a rotation will add, per person (P5.24a): every day of the period with the template it
+ * What a rotation will add, per person: every day of the period with the template it
  * gets, or null for a day off — in the order of the people chosen.
  */
 export function rotationPreview(
@@ -306,7 +306,7 @@ export interface CellBox extends ShiftCellRef {
 
 /**
  * The cell under a point (the pointer of a drag), measured on the laid-out grid, so a
- * right-to-left grid needs no mirroring (B.7); null when the point is over no cell.
+ * right-to-left grid needs no mirroring; null when the point is over no cell.
  */
 export function cellAtPoint(
   boxes: readonly CellBox[],

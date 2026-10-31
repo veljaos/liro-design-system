@@ -16,7 +16,7 @@ import {
 import { StatusBadge } from './status-badge'
 
 /*
- * MyShifts (BUILD-PLAN P5.24 b): a person's own upcoming shifts, made for a phone. Weeks under a
+ * MyShifts: a person's own upcoming shifts, made for a phone. Weeks under a
  * heading ("This week", "Next week", then their dates); each shift a card: the weekday and date,
  * the template's name and times ("22:00–06:00 (+1)", read as "… the next day"), the place and
  * team, "Changed" (a warning badge with its icon, and the application's words of what changed)
@@ -52,7 +52,7 @@ export interface MyShiftsProps {
   /** The shift whose swap dialog is open from the start (a request being written, restored). */
   defaultSwapShift?: string
   /**
-   * What a shift's swap request starts with (P5.24a): the colleague the application suggests (a
+   * What a shift's swap request starts with: the colleague the application suggests (a
    * colleague asked first, the one who offered), the shift to take back, a reason.
    */
   swapDefaults?: (shift: MyShift) => Partial<Omit<ShiftSwapRequest, 'shiftId'>> | undefined

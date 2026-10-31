@@ -20,7 +20,7 @@ import type { Tone } from './status-badge'
 import { usePhone } from './use-phone'
 
 /*
- * Timetable (BUILD-PLAN P5.8): a weekly school grid — periods (rows, with their times) by weekdays
+ * Timetable: a weekly school grid — periods (rows, with their times) by weekdays
  * (columns), the lessons from props. The weekday names come from `format.weekdayName`, the times
  * from `format.time`, "today" from the provider; `now` ("HH:mm", the application's clock) marks
  * the period running today.
@@ -30,8 +30,8 @@ import { usePhone } from './use-phone'
  *   tone's colour; the tone's colours (neutral by default) with a 3px bar at the start. An empty
  *   period shows "—" and says `timetable.free` to assistive technology.
  * - The running period: today's cell is `aria-current="time"`; the time of `now` stands on a
- *   small dark tag under the period's times in its own cell (P5.93 item 8), where it covers no
- *   text, named "Now, 10:05 AM" — the only mark of "now" (P5.94 item 16: no line across the
+ *   small dark tag under the period's times in its own cell, where it covers no
+ *   text, named "Now, 10:05 AM" — the only mark of "now" (no line across the
  *   cells). The cell keeps its look: no outline and no badge.
  * - Phones (below 48em or `layout="phone"`): one day at a time, chosen in a segmented control
  *   (today's day first by default); the periods as a list.
@@ -56,7 +56,7 @@ export interface TimetableLesson {
   subject: string
   teacher?: string
   room?: string
-  /** A status tone (Appendix A.2), e.g. a test or a substitution; default neutral. */
+  /** A status tone, e.g. a test or a substitution; default neutral. */
   tone?: Tone
   /** A short line in the tone's colour ("Test", "Substitute: Ivan Grujić"). */
   note?: string
@@ -106,8 +106,8 @@ export function Timetable(props: TimetableProps) {
     return nowWithin(moment.minutes, period.start, period.end)
   }
   /**
-   * "Now" under the running period's times, covering no text (P5.93 item 8): only its time on the
-   * dark tag, named "Now, 10:05 AM"; no line across the cells (P5.94 item 16).
+   * "Now" under the running period's times, covering no text: only its time on the
+   * dark tag, named "Now, 10:05 AM"; no line across the cells.
    */
   const nowTime = (period: TimetablePeriod): ReactNode => {
     if (moment === null || !days.some((day) => nowAt(day, period) !== null)) return null
@@ -163,7 +163,7 @@ export function Timetable(props: TimetableProps) {
 
   const cell = (day: Weekday, period: TimetablePeriod) => {
     const lessons = lessonsAt(day, period.id)
-    // Positioned, after the "now" marker: the lessons and the free mark cover its line (P5.90).
+    // Positioned, after the "now" marker: the lessons and the free mark cover its line.
     return (
       <div className="relative flex flex-col gap-1">
         {lessons.length === 0 ? (
@@ -241,7 +241,7 @@ export function Timetable(props: TimetableProps) {
                 <span className={cn('text-sm font-semibold text-primary', TEXT_DIRECTION)}>
                   {period.label}
                 </span>
-                {/* The start and the end on one line, never broken apart (P5.93 item 5). */}
+                {/* The start and the end on one line, never broken apart. */}
                 <span
                   className={cn(
                     'text-xs whitespace-nowrap text-secondary tabular-nums',

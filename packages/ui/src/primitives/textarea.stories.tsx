@@ -9,7 +9,7 @@ const meta = {
   parameters: {
     docs: {
       description: {
-        component: internal('A multi-line text input with the input look. TextAreaField (P2.2).'),
+        component: internal('A multi-line text input with the input look. TextAreaField.'),
       },
     },
   },

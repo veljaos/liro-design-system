@@ -45,13 +45,12 @@ import {
 } from './shared'
 
 /*
- * AreaChart, BarChart and LineChart (P4.6, rebuilt on the shadcn/ui Chart primitive in P4.7a; the
- * owner's rules, docs/decisions.md "Charts catalogue").
+ * AreaChart, BarChart and LineChart, on the shadcn/ui Chart primitive.
  * - Colour: one series in the brand blue, a second in grey; three or more only with
  *   `palette="categorical"`. Green and red only when the data means it (`signTones`, a series'
  *   `tone`). No gradients, shadows or 3D: an area is a flat 10% wash (stacked areas 40%, so the
  *   layers read), lines are 2px, bars at most 24px thick with 4px rounded ends at the data.
- * - Values are decimal strings, numbers only to draw (D4); every value a person reads — tooltip,
+ * - Values are decimal strings, numbers only to draw; every value a person reads — tooltip,
  *   labels, table — is formatted from its string. A null is a gap in a line or a missing bar.
  *   Axis ticks are the scale's round steps, written short from 10,000 ("12K", words from
  *   `messages`).
@@ -95,7 +94,7 @@ export interface CartesianChartProps extends ChartStateProps {
   height?: number
   /** The application's header controls: a time-range select. */
   controls?: ReactNode
-  /** The key figures as toggle buttons (a ChartSeriesToggle) at the header's end (P5.93 item 42). */
+  /** The key figures as toggle buttons (a ChartSeriesToggle) at the header's end. */
   toggle?: ReactNode
   /** Default: shown for two or more series, and always with the categorical palette. */
   legend?: boolean
@@ -115,7 +114,7 @@ export type ChartCurve = 'monotone' | 'linear' | 'step'
 
 export interface AreaChartProps extends CartesianChartProps {
   /**
-   * Default by density (P4.7c, owner): 'linear' — straight segments — up to 31 points (monthly or
+   * Default by density: 'linear' — straight segments — up to 31 points (monthly or
    * sparse data), 'monotone' for denser series; never a curve that passes the values.
    */
   curve?: ChartCurve

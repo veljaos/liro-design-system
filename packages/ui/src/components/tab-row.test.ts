@@ -3,7 +3,7 @@ import { edgeFade, revealDelta, TAB_ROW_FADE, wheelScroll } from './tab-row'
 
 const ROW = { left: 0, right: 390 }
 
-describe('revealDelta (the tab row rule, P5.90)', () => {
+describe('revealDelta (the tab row rule)', () => {
   it('leaves a tab that stands clear of the fades where it is', () => {
     expect(revealDelta(ROW, { left: 100, right: 180 }, TAB_ROW_FADE)).toBe(0)
   })
@@ -33,7 +33,7 @@ describe('edgeFade', () => {
   })
 })
 
-describe('wheelScroll (P5.93 item 9)', () => {
+describe('wheelScroll', () => {
   const row = { scrollLeft: 0, scrollWidth: 500, clientWidth: 390 }
 
   it('moves a row that scrolls sideways toward its end on a downward turn', () => {

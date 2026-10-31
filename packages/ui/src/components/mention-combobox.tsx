@@ -39,7 +39,7 @@ import {
 import { PersonAvatar } from './person'
 
 /*
- * MentionCombobox (P5.1): a multi-line text field in which typing "@" offers people to mention.
+ * MentionCombobox: a multi-line text field in which typing "@" offers people to mention.
  * The candidates come from the application: all of them (the field filters by name, ignoring case
  * and accents, as ComboboxField), or the results of its own search (`onSearch` after 300ms, with
  * `loading`), exactly as ComboboxField. Choosing one writes "@Name " into the text as one token —
@@ -131,7 +131,7 @@ export function MentionCombobox(props: MentionComboboxProps) {
           value: candidate.id,
           label: candidate.name,
         }))
-  // A space after a query that matches nothing ends the search (P5.94 item 8).
+  // A space after a query that matches nothing ends the search.
   const ended = query !== null && closesOnSpace(query.query, options.length, props.loading === true)
   const open = query !== null && query.start !== dismissed && !ended
   const showEmpty = open && options.length === 0 && props.loading !== true

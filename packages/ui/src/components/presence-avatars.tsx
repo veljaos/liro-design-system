@@ -14,7 +14,7 @@ import { AgentMark } from './agent-mark'
 import { PersonAvatar } from './person'
 
 /*
- * PresenceAvatars (P5.2): who else has this record open. Up to `max` avatars (default 3) in a
+ * PresenceAvatars: who else has this record open. Up to `max` avatars (default 3) in a
  * row, 4px apart (the avatar look of PersonAvatar 'sm', 26px: neutral, never blue); not
  * overlapping, because an overlap needs a ring in the colour of whatever surface the row stands on,
  * which the component cannot know without a colour value. An agent's avatar is the Bot icon on the
@@ -26,7 +26,7 @@ import { PersonAvatar } from './person'
  * `messages['presence.here']`), so nothing depends on seeing the faces; pressing it (a touch, a
  * click, Enter) opens a list of the people with their line from the application ("Viewing",
  * "Editing") and AgentMark after an agent's name. The application decides who is here and keeps
- * it current; the component never polls (D1).
+ * it current; the component never polls.
  */
 
 /** One person (or agent) who has the record open. */

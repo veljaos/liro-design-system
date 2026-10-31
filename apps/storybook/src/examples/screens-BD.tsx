@@ -28,9 +28,9 @@ import {
 } from './data-BD'
 
 /*
- * Group BD's example screens (P5.63, sign-in flows), built only from the sign-in building blocks
+ * The example screens (sign-in flows), built only from the sign-in building blocks
  * (AuthShell, EmailFirstForm, PasswordField, CodeInput, Alert) and the fields. They continue the
- * sign-in screen of P4.8 (screens-core `SignIn`, the e-mail first): its Continue opens the
+ * sign-in screen (screens-core `SignIn`, the e-mail first): its Continue opens the
  * password step, then the two-factor code (or a recovery code), then the home page. From the
  * password step: "Forgot your password?" (the e-mail, then "Check your e-mail").
  *
@@ -169,7 +169,7 @@ export function PasswordStep({ phone, wrong = false }: { phone: boolean; wrong?:
 // ── Two-factor code ───────────────────────────────────────────────────────────────────────────
 
 /**
- * The second step for an account with two-factor sign-in (My profile, P5.62): the code from the
+ * The second step for an account with two-factor sign-in (My profile): the code from the
  * authenticator app in CodeInput, a trusted device, and the recovery code when the phone is lost.
  */
 export function CodeStep({

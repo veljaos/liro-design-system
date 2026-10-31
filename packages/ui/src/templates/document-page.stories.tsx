@@ -627,7 +627,7 @@ const meta = {
           '`onPanelsHiddenChange` let the Core remember the panels. On phones the lines are a ' +
           'flat list in the card (never cards in a card), the key figures two columns, and the ' +
           'main action in the shell’s bottom bar.\n\n' +
-          '**Complex documents (P5.18): a fixed block order** — `banner` (a cancelled ' +
+          '**Complex documents: a fixed block order** — `banner` (a cancelled ' +
           'document’s CancellationBanner) above everything; the header with the `currency` ' +
           'block (DocumentCurrency) in it; the "Based on" `references` (DocumentReferences); the ' +
           'lines (DataTable with `lineType`: headings, subtotals, text lines, discounts) with a ' +
@@ -852,7 +852,7 @@ export const DraftPhone: Story = {
 }
 
 /**
- * A document among three parties (P5.55): a cession's assignee and debtor side by side at the
+ * A document among three parties: a cession's assignee and debtor side by side at the
  * counterparty's level (`counterparties`); the user's own company, the assignor, is in the shell.
  */
 export const ThreeParties: Story = {
@@ -971,9 +971,9 @@ const FINAL_COLUMNS: DataTableColumn<FinalLine>[] = [
   },
 ]
 
-// ── P5 group D2: complex documents (P5.18) ────────────────────────────────────────────────────
+// ── Complex documents ────────────────────────────────────────────────────
 
-/** A final invoice with every block of P5.18, in the fixed order. */
+/** A final invoice with every block, in the fixed order. */
 function ComplexInvoice({ layout = 'desktop' }: { layout?: 'desktop' | 'phone' }) {
   const [notesMode, setNotesMode] = useState<'view' | 'edit'>('view')
   const [notes, setNotes] = useState<DocumentNotesValue>({
@@ -1072,7 +1072,7 @@ function ComplexInvoice({ layout = 'desktop' }: { layout?: 'desktop' | 'phone' }
 }
 
 /**
- * A final invoice with every P5.18 block: "Based on" references, lines, totals with the recap by
+ * A final invoice with every block: "Based on" references, lines, totals with the recap by
  * tax category and two advances deducted (links), notes (template texts and a free note, edited
  * in place), attachments. The block order is fixed.
  */
@@ -1436,7 +1436,7 @@ function CorrectiveInvoice({ layout = 'desktop' }: { layout?: 'desktop' | 'phone
 }
 
 /**
- * A correcting document (P5.23): "Corrects" and the source invoice's link with its state, date
+ * A correcting document: "Corrects" and the source invoice's link with its state, date
  * and total stand beside the customer, at the same level; no "Corrects:" line repeats it. The
  * item names wrap to at most two lines beside six correction columns.
  */

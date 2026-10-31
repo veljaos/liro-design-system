@@ -1,8 +1,8 @@
 import { localDateTimeIn, type Weekday } from '../provider/format'
 
 /*
- * The logic of CalendarView, ResourceSchedule, SlotPicker and Timetable (BUILD-PLAN P5.8), kept
- * apart from the markup so it can be unit-tested (AGENTS.md C7). Days are YYYY-MM-DD strings and
+ * The logic of CalendarView, ResourceSchedule, SlotPicker and Timetable, kept
+ * apart from the markup so it can be unit-tested. Days are YYYY-MM-DD strings and
  * times local "YYYY-MM-DDTHH:mm" strings, both read as written: the calendar never uses the
  * device's clock or zone. An instant with an offset ("…T07:30:00Z") is converted into the
  * provider's time zone first (`readMoment`). "Today" is the provider's `today`.
@@ -285,7 +285,7 @@ export interface GridCell {
 
 /**
  * The cell an arrow key (or Home, End, Page Up, Page Down) moves to in a calendar grid, or null.
- * Left and right move between days measured from the leading edge (Appendix B.7): in
+ * Left and right move between days measured from the leading edge: in
  * right-to-left ArrowLeft goes forward. Month: up and down by a week, Home and End to the week's
  * ends, Page Up and Page Down by a month. Week: up and down by a slot, Home and End to the week's
  * ends, Page Up and Page Down by a week. Day: up and down by a slot, Home and End to the first and
@@ -400,7 +400,7 @@ export function fitOnAxis(
 }
 
 /**
- * Where a booking lands on a days axis (ResourceSchedule `scale="days"`, P5.25): a stay keeps its
+ * Where a booking lands on a days axis (ResourceSchedule `scale="days"`): a stay keeps its
  * length and starts on one of the days shown; it may run on past the last day (it is drawn up to
  * it), so it is never pushed back to fit.
  */
@@ -639,7 +639,7 @@ export function dayListSide(
 }
 
 /**
- * The day and minute of "now" (P5.28 item 10): the application's clock, never the device's. `now`
+ * The day and minute of "now": the application's clock, never the device's. `now`
  * is "HH:mm" (a time of the provider's `today`) or an instant with an offset (shown in
  * `timeZone`), or a local "YYYY-MM-DDTHH:mm". Null when unreadable.
  */
@@ -658,7 +658,7 @@ export function nowMoment(
 
 /**
  * Where "now" stands inside a span of the day, from 0 (its start) to 1 (its end), or null when it
- * is outside it (P5.28 item 10: Timetable's running period).
+ * is outside it (Timetable's running period).
  */
 export function nowWithin(minutes: number, start: string, end: string): number | null {
   const from = minutesOf(start)
@@ -668,7 +668,7 @@ export function nowWithin(minutes: number, start: string, end: string): number |
 }
 
 /**
- * Where "now" stands on a schedule's axis (P5.28 item 10), or null when the axis does not show
+ * Where "now" stands on a schedule's axis, or null when the axis does not show
  * it: a day of the axis within its hours, or — on a days axis, one segment from its first day's
  * midnight — any moment of the days shown.
  */
@@ -688,7 +688,7 @@ export function nowOnAxis(
 }
 
 /**
- * Text folded for a search (P5.90 item 19): lower case in the locale, without accents ("Šuljić" →
+ * Text folded for a search: lower case in the locale, without accents ("Šuljić" →
  * "suljic"), and "đ", which Unicode does not decompose, as "d" ("Đorđević" → "dordevic").
  */
 export function foldSearchText(text: string, locale: string): string {

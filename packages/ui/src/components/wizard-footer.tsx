@@ -4,12 +4,12 @@ import { cn } from '../primitives/cn'
 import { useBottomBar } from './bottom-bars'
 
 /*
- * The buttons of a multi-step flow (P5.23, the owner's review of the import wizard on phones; not
+ * The buttons of a multi-step flow (not
  * exported from the package): Back, then the step's main action last.
  * - Desktop: one row under the step's content, `start` (Cancel) at the start and the buttons at
  *   the end; it wraps only when it must.
  * - Phones: ONE row — the buttons never wrap onto rows of their own; a long label wraps inside its
- *   button (P2.7d) — stuck to the bottom of the screen while the flow is in view: above the
+ *   button — stuck to the bottom of the screen while the flow is in view: above the
  *   AppShell's bottom bar (`--liro-shell-bottom`), clear of the home indicator. Only Back and the
  *   main action; Cancel is not in it (the flow's header has a close button instead). An
  *   unavailable main action's reason is one line under the row (`note`, UnavailableAction
@@ -31,7 +31,7 @@ export interface WizardFooterProps {
 
 /** The row of Back and the main action of a multi-step flow. */
 export function WizardFooter({ phone, start, children, note, className }: WizardFooterProps) {
-  // On phones the row is stuck to the bottom: toasts stand above it (P5.90).
+  // On phones the row is stuck to the bottom: toasts stand above it.
   const [row, setRow] = useState<HTMLDivElement | null>(null)
   useBottomBar(row, phone)
   if (phone) {

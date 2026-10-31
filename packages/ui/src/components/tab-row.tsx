@@ -5,29 +5,26 @@ import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 
 /*
- * One rule for every row of tabs (P5.90 item 6, the owner's review: phones' module tabs did not
- * show that they scroll): a row of tabs never wraps. When its tabs do not fit, the row scrolls
- * sideways — a finger swipes, a tab that takes the focus scrolls into view, no scrollbar — and
- * each edge with more tabs past it fades out over 32px, so the row shows that it goes on. The
+ * One rule for every row of tabs: a row of tabs never wraps. When its tabs do not fit, the row
+ * scrolls sideways — a finger swipes, a tab that takes the focus scrolls into view, no scrollbar —
+ * and each edge with more tabs past it fades out over 32px, so the row shows that it goes on. The
  * active tab is scrolled into view when the row is first drawn and whenever it changes, clear of
  * the fade. The AppShell's module tabs, the page's Tabs, FormTabs, the PortalShell's sections, the
  * SectionBar and the ListPage's saved views all follow it (saved views keep their "More" after the fifth: that
  * is how many views a list shows, not an overflow rule).
  *
- * P5.93 (item 9, the owner's fourth review: "phone header tabs still do not visibly scroll —
- * 'Repor…' cut"): a faded edge alone read as a cut label. Each edge with more past it now also
- * shows a chevron over the fade (`edges`, placed beside the scroller in a `relative` box): a
- * press scrolls the row by most of its width, so a mouse can scroll it too; it is a pointer
- * shortcut only (hidden from assistive technology and out of the Tab order — the keyboard reaches
- * every tab, and a focused tab scrolls into view). A mouse wheel over a row that scrolls moves it
- * sideways (`wheelScroll`); at either end the wheel scrolls the page as before.
+ * A faded edge alone reads as a cut label, so each edge with more past it also shows a chevron over
+ * the fade (`edges`, placed beside the scroller in a `relative` box): a press scrolls the row by
+ * most of its width, so a mouse can scroll it too; it is a pointer shortcut only (hidden from
+ * assistive technology and out of the Tab order — the keyboard reaches every tab, and a focused tab
+ * scrolls into view). A mouse wheel over a row that scrolls moves it sideways (`wheelScroll`); at either end the wheel scrolls the page.
  */
 
 /** The width of the fade at an edge with more past it (px); the active tab stays clear of it. */
 export const TAB_ROW_FADE = 32
 
 /**
- * The width of an edge's chevron (px, P5.93 item 9): under it the row is fully faded, so no label
+ * The width of an edge's chevron (px): under it the row is fully faded, so no label
  * shows through the chevron; the fade runs before it.
  */
 export const TAB_ROW_EDGE = 28
@@ -37,7 +34,7 @@ export const TAB_ROW_SCROLLER = 'min-w-0 overflow-x-auto overflow-y-hidden [scro
 
 /**
  * The mask that fades a scrolling row's edges where more lies past them: 32px from fully drawn to
- * gone, then gone under the edge's 28px chevron (P5.93), toward the start and the end in reading
+ * gone, then gone under the edge's 28px chevron, toward the start and the end in reading
  * order. A mask, not a colour: the row fades into whatever surface is behind it (only the mask's
  * alpha counts, and currentcolor is opaque).
  */
@@ -115,7 +112,7 @@ export function useOverflowEnds(element: HTMLElement | null): { start: boolean; 
     measure()
     element.addEventListener('scroll', measure, { passive: true })
     // The row's own box keeps its width when its tabs grow, so each tab is observed; a web font
-    // that arrives after the first measure changes the tabs' widths (found as a flaky baseline).
+    // that arrives after the first measure changes the tabs' widths.
     const observer = new ResizeObserver(measure)
     observer.observe(element)
     for (const item of element.querySelectorAll('li, [role="tab"]')) observer.observe(item)
@@ -160,14 +157,14 @@ export function useTabRow(active: string | undefined): {
     'data-fade'?: ''
     style?: CSSProperties
   }
-  /** The chevrons over the faded edges (P5.93 item 9); null while every tab fits. */
+  /** The chevrons over the faded edges; null while every tab fits. */
   edges: ReactNode
 } {
   const { direction } = useLiro()
   const [element, setElement] = useState<HTMLElement | null>(null)
   const ends = useOverflowEnds(element)
   const mask = edgeFade(ends, direction)
-  // A wheel over a row that scrolls moves it sideways (P5.93 item 9); not passive, so the page
+  // A wheel over a row that scrolls moves it sideways; not passive, so the page
   // does not scroll as well.
   useEffect(() => {
     if (element === null) return

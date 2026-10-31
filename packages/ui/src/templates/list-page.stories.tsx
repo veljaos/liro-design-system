@@ -92,7 +92,7 @@ const RATES: Rate[] = [
   { currency: 'GBP', date: '2026-10-06', rate: '134,8915' },
 ]
 
-/** Seven views: five tabs and "More" on desktop, one select on phones (P4.9). */
+/** Seven views: five tabs and "More" on desktop, one select on phones. */
 const VIEWS: SavedView[] = [
   { id: 'all', label: 'All', count: 1284 },
   { id: 'unpaid', label: 'Unpaid', count: 37 },
@@ -287,15 +287,15 @@ const meta = {
           'passes it in; the DS only renders and reports. `ColumnChooser` shows, hides and ' +
           'reorders columns without dragging. `QuickPreview` opens from a row (click or Space, ' +
           'DataTable `onRowClick`); Enter opens the full page (`onRowOpen`).\n\n' +
-          '**Catalogues** (customers, suppliers, items, services, fixed assets, accounts; P5.19, ' +
-          'P5.23): every column is `sortable` (the application sorts — text by the language’s ' +
+          '**Catalogues** (customers, suppliers, items, services, fixed assets, accounts): ' +
+          'every column is `sortable` (the application sorts — text by the language’s ' +
           'collation, amounts exactly), each choice filter is a `multiSelect` (several cities ' +
           'at once), the views are Active / Inactive / All, and the "Inactive" badge stands ' +
           'only where the list mixes both (All, a lookup with "Show inactive"). The ' +
           'BulkActionBar is a row of its own between the filters and the table, 12px from ' +
           'each. See Examples / Customers.\n\n' +
           '**When not:** a queue worked item by item (WorklistPage); a single record ' +
-          '(DetailPage, P4.4).',
+          '(DetailPage).',
       },
     },
   },
@@ -464,7 +464,7 @@ export const Keyboard: Story = {
     await settle()
     const body = within(document.body)
     await expect(body.getByRole('dialog', { name: 'F-2026-0410' })).toBeVisible()
-    // The drawer focused its Close button by script: no tooltip takes the Escape (P5.93 item 7).
+    // The drawer focused its Close button by script: no tooltip takes the Escape.
     await expect(body.queryByRole('tooltip')).toBeNull()
     await userEvent.keyboard('{Escape}')
     await waitFor(async () => {

@@ -42,7 +42,7 @@ import {
 } from './pivot-logic'
 
 /*
- * The pivot's grid (P5.77), built on TanStack Table: the application's column tree becomes nested
+ * The pivot's grid, built on TanStack Table: the application's column tree becomes nested
  * column groups, whose header groups give each header cell its column and row span (two or more
  * header rows: "Jul 2026" over "Amount" and "Documents"; a total column spanning them); the rows
  * are a tree (`getSubRows`) drawn through the expanded row model from the open groups. TanStack's
@@ -51,7 +51,7 @@ import {
  *   to left), Home / End, Ctrl+Home / End, Page Up / Down; Enter or Space on a group's row header
  *   opens or closes it (`aria-expanded` on the row), on a figure reports it (`onDrillDown`). A
  *   press does the same.
- * - Sticky (D21): the header rows below the shell while the page scrolls (`STICKY_HEAD` on the
+ * - Sticky: the header rows below the shell while the page scrolls (`STICKY_HEAD` on the
  *   `thead`, the rows move as one), the row headers at the start while the grid scrolls sideways
  *   (`STICKY_START`, opaque), the corner both.
  * - Subtotals: a group's own row (semibold). Totals: a total column (`total`) and the grand total
@@ -192,7 +192,7 @@ export function PivotGrid(props: PivotGridProps) {
     column: Math.min(active.column, Math.max(0, size.columns - 1)),
   }
   const wrapper = useRef<HTMLDivElement>(null)
-  // The header rows stay below the shell while the page scrolls (D21).
+  // The header rows stay below the shell while the page scrolls.
   useStickyHead(wrapper)
   const pendingFocus = useRef(false)
   useEffect(() => {

@@ -33,7 +33,7 @@ import { TextField } from './text-field'
 import { usePhone } from './use-phone'
 
 /*
- * SeatingChart (BUILD-PLAN P5.25; docs/decisions.md "Floor plans and seating"): who sits where at
+ * SeatingChart: who sits where at
  * an event — a wedding, a gala dinner, a conference. Built on FloorPlan: the tables where the
  * application puts them, their seats drawn round them (round tables evenly, rectangular ones
  * along the long sides, `seatCentres`), each seat a target named "Table 3, seat 4, Ana
@@ -47,12 +47,12 @@ import { usePhone } from './use-phone'
  * the guest's menu (a table, then a free seat). "Unseat" in the menu and in a taken seat's
  * dialog. Every change is reported as `onSeat(guestId, seat | null)`; the chart never decides:
  * the application seats the guest (or not) and passes the guests again. Others rely on a seating
- * plan (P5.28 item 9): the application keeps the changes pending and saves them together through
+ * plan: the application keeps the changes pending and saves them together through
  * ChangeConfirmDialog (`seatingChanges`: each guest's seat old → new; the guests' e-mail a choice).
- * The seat and "Seat at…" dialogs are titled by the action with the seat or the guest under it
- * (item 6). A table opens its guests
- * in order. Conflicts are the application's: on the table (an icon, the words in its name and the
- * plan's warnings) and on the guests (an icon and the words in their rows).
+ * The seat and "Seat at…" dialogs are titled by the action with the seat or the guest under it.
+ * A table opens its guests in order. Conflicts are the application's: on the table (an icon, the
+ * words in its name and the plan's warnings) and on the guests (an icon and the words in their
+ * rows).
  */
 
 export type { SeatingConflict, SeatingGuest, SeatingTable, SeatRef } from './seating-logic'
@@ -176,7 +176,7 @@ export function SeatingChart(props: SeatingChartProps) {
       height: table.height,
       ...(table.rotation === undefined ? {} : { rotation: table.rotation }),
       detail: messages['seating.tableCount'](number(taken), number(table.seats)),
-      // "8 of 10" under the table's number on the plan too (P5.28 item 24: dropped, never cut).
+      // "8 of 10" under the table's number on the plan too (dropped, never cut).
       planDetail: messages['seating.tableCount'](number(taken), number(table.seats)),
       ...(table.areaId === undefined ? {} : { areaId: table.areaId }),
       ...(table.note === undefined ? {} : { note: table.note }),
@@ -603,7 +603,7 @@ function SeatDialog({
       onOpenChange={(open) => {
         if (!open) onClose()
       }}
-      // The action, then the seat on its own line (P5.28 item 6).
+      // The action, then the seat on its own line.
       title={messages['seating.seatTitle']}
       subject={seatName}
       actions={<Button intent="cancel" label={messages['dialog.cancel']} onClick={onClose} />}
@@ -752,7 +752,7 @@ function SeatAtDialog({
             }
           })}
         />
-        {/* A full table has no seat to choose: it says so instead of a dead field (P5.93). */}
+        {/* A full table has no seat to choose: it says so instead of a dead field. */}
         {free.length === 0 ? (
           <p className={cn('m-0 text-sm text-secondary', TEXT_DIRECTION)}>
             {messages['seating.tableFull']}

@@ -1,7 +1,7 @@
 /*
- * The logic of the shell markers (P5.3): the minutes left of a session as another user, and when
+ * The logic of the shell markers: the minutes left of a session as another user, and when
  * that number next changes. Times are instants (ISO 8601 with an offset, from the application) and
- * milliseconds since the epoch; nothing here is money (AGENTS.md D4 is about amounts).
+ * milliseconds since the epoch; nothing here is money.
  */
 
 const MINUTE = 60_000

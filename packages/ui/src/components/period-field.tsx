@@ -25,8 +25,7 @@ import {
 import { usePhone } from './use-phone'
 
 /*
- * PeriodField (BUILD-PLAN P2.3), carried over from the previous Design System's PeriodPicker
- * (owner's decision, 2026-09-28, docs/decisions.md "Numbers, money and dates"):
+ * PeriodField:
  * - The trigger is a neutral "default" button: a 15px calendar icon at the start, a 14px chevron
  *   at the end, the current period as its label in regular weight.
  * - It opens a popover (radius md, shadow md, under the trigger at its start) with two parts side
@@ -41,11 +40,11 @@ import { usePhone } from './use-phone'
  * text), our small control height. The caption: Mantine Menu.label (12px, weight 600, dimmed,
  * padding 5px 12px).
  *
- * On a phone (P5.28 item 1) the popover would run off the screen: the field opens a sheet on the
+ * On a phone the popover would run off the screen: the field opens a sheet on the
  * screen's bottom edge instead, titled by the field's label, with the presets first — two columns
  * of the same buttons — then "Custom range" with one month across the sheet's full width.
  *
- * The custom range is typed too (P5.94 item 2): under "Custom range" a Start and an End field
+ * The custom range is typed too: under "Custom range" a Start and an End field
  * read as DateField reads ("07102026", "7.10."), the calendar optional. A typed start is the
  * calendar's first pick; the range applies (and the popover closes) when the end is typed and
  * left, or on Enter in either, once both ends are there in order. Unreadable text and an end

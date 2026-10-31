@@ -9,7 +9,7 @@ import { MoneyField, NumberField } from './number-field'
 
 /**
  * Right to left through a nested provider, as an application does it: number and money fields
- * take the direction from the provider (AGENTS.md D11), not from a `dir` attribute.
+ * take the direction from the provider, not from a `dir` attribute.
  */
 function RightToLeft({ children }: { children: ReactNode }) {
   const { colorScheme, locale } = useLiro()

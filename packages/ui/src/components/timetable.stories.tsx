@@ -78,7 +78,7 @@ export const Default: Story = {
     )
     const now = canvasElement.querySelector<HTMLElement>('[aria-current="time"]')
     await expect(now).toHaveTextContent('Mathematics')
-    // "Now" is only its time, on the tag under the running period's times (P5.94 item 16): no
+    // "Now" is only its time, on the tag under the running period's times: no
     // line across the cells.
     const marker = canvas.getByRole('img', { name: /^Now, 9:10\sAM$/ })
     await expect(marker).toBeVisible()

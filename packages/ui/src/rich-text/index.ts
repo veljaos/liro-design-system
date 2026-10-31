@@ -1,4 +1,4 @@
-// @veljaos/ui/rich-text (P5.22): RichTextField and RichText, on Tiptap's MIT packages. A subpath of
+// @veljaos/ui/rich-text: RichTextField and RichText, on Tiptap's MIT packages. A subpath of
 // its own, so an application without rich text does not load Tiptap and ProseMirror.
 export { insertable, RichTextField } from './rich-text-field'
 export type { RichTextFieldHandle, RichTextFieldProps } from './rich-text-field'
@@ -28,7 +28,7 @@ export type {
   RichTextSuggestion,
   RichTextValue,
 } from './rich-text-logic'
-// ── P5.29 agent: ReplyComposer (P5.30) ──
+// ── ReplyComposer ──
 export { groupSavedReplies, isSendKey, linkNodes, ReplyComposer } from './reply-composer'
 export type {
   ComposedReply,
@@ -38,11 +38,11 @@ export type {
   SavedReply,
 } from './reply-composer'
 
-// ── P5.29 portal ──
+// ── Heading ids ──
 export { headingSlug, richTextHeadings } from './rich-text-headings'
 export type { RichTextHeading } from './rich-text-headings'
 
-// ── P5.31 merge values ──
+// ── Merge values ──
 export {
   mergeFieldText,
   missingMergeFields,

@@ -33,7 +33,7 @@ import {
 import { ConflictIcon, TEMPLATE_TONE, timeTexts, type ShiftTemplate } from './shift-parts'
 
 /*
- * The dialogs of ShiftPlanner (P5.24 b): "Apply rotation…" and "Move to…" — the planner's ways
+ * The dialogs of ShiftPlanner: "Apply rotation…" and "Move to…" — the planner's ways
  * that need no dragging (WCAG 2.5.7). Internal: not exported from the package.
  */
 
@@ -71,7 +71,7 @@ export interface RotationDialogProps {
 
 /**
  * "Apply rotation…": a pattern, the people, the dates and an offset per person; before Apply it
- * shows what it will add (people × days) and the application's checks of it (P5.24a); Apply
+ * shows what it will add (people × days) and the application's checks of it; Apply
  * reports the generated assignments (`rotationAssignments`) as additions. Its fields start
  * afresh each time it opens.
  */
@@ -254,7 +254,7 @@ function RotationForm(props: RotationDialogProps) {
 
 /**
  * A sideways-scrolling area is a tab stop of its own, so the keyboard can scroll it (WCAG 2.1.1;
- * axe scrollable-region-focusable), as DataTable's scrolling body (P3.1).
+ * axe scrollable-region-focusable), as DataTable's scrolling body.
  */
 const SCROLL_REGION = { tabIndex: 0, role: 'region' } as const
 
@@ -367,7 +367,7 @@ export interface MoveDialogProps {
 /** "Move to…": a person and a day for one assignment, without dragging. */
 export function MoveDialog(props: MoveDialogProps) {
   const { messages, format } = useLiro()
-  // The record it acts on (P5.28 item 6): the shift, whose it is and its day.
+  // The record it acts on: the shift, whose it is and its day.
   const from = props.assignment
   const subject =
     from === null

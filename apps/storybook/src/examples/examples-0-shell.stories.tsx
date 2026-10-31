@@ -12,7 +12,7 @@ const meta = {
     docs: {
       description: {
         component:
-          "The shells every screen sits in (docs/floorplans.md): AuthShell (sign in with its password and two-factor steps), AppShell (the home page, the bell's notifications, a page that does not exist) and PortalShell (the employee portal). The walk-through signs in and clicks through a list, a document, a worklist and the overview, as one application linked through the provider's `linkComponent`.",
+          "The shells every screen sits in: AuthShell (sign in with its password and two-factor steps), AppShell (the home page, the bell's notifications, a page that does not exist) and PortalShell (the employee portal). The walk-through signs in and clicks through a list, a document, a worklist and the overview, as one application linked through the provider's `linkComponent`.",
       },
     },
   },
@@ -37,7 +37,7 @@ export const WalkThrough: Story = {
     await settle()
     const canvas = within(canvasElement)
     await userEvent.click(canvas.getByRole('button', { name: 'Continue' }))
-    // P5.63: the password, then the two-factor code (group BD).
+    // The password, then the two-factor code.
     await userEvent.type(await canvas.findByLabelText('Password'), 'correct horse battery')
     await userEvent.click(canvas.getByRole('button', { name: 'Sign in' }))
     await userEvent.click(await canvas.findByRole('textbox', { name: /Character 1 of 6/ }))
@@ -157,7 +157,7 @@ function employeePlay(
 }
 
 /**
- * The employee portal of Kvadrat Gradnja d.o.o. (P5.35, PortalShell) as Nikola Marković, a site
+ * The employee portal of Kvadrat Gradnja d.o.o. (PortalShell) as Nikola Marković, a site
  * worker on Liman 4, sees it on 14.10.2026: the annex waiting for his signature, his latest
  * payslip, the leave left, his next shift (changed to a night pour) and his details.
  */
@@ -181,7 +181,7 @@ export const EmployeePortalPhone: Story = {
 }
 
 /**
- * Questions and answers, a page of its own (P5.96 item 1): 330 questions, the search first, the
+ * Questions and answers, a page of its own: 330 questions, the search first, the
  * categories with their counts, the first 30 and "Show more", each question a link to its answer.
  */
 const QUESTIONS_CHECK = async (canvasElement: HTMLElement) => {
@@ -234,7 +234,7 @@ export const EmployeeAnswerPhone: Story = {
   play: employeePlay(ANSWER_CHECK, true),
 }
 
-/** Paid leave for a death in the family: Kind, Reason (5 days), the proof it needs (P5.94 item 3). */
+/** Paid leave for a death in the family: Kind, Reason (5 days), the proof it needs. */
 const LEAVE_PROOF_CHECK = async (canvasElement: HTMLElement) => {
   const canvas = within(canvasElement)
   await expect(canvas.getByRole('combobox', { name: 'Reason' })).toHaveTextContent(
@@ -270,7 +270,7 @@ function photo(name: string): File {
 }
 
 /**
- * Request paid leave from the home page (P5.94 items 2 and 3; on a phone started filled in, as a
+ * Request paid leave from the home page (on a phone started filled in, as a
  * common question starts it): Kind, Reason, the dates typed the quick way, Send says what is missing, the certificate attached, sent; the request's page shows
  * the proof to whoever opens it.
  */
@@ -334,7 +334,7 @@ export const EmployeeLeaveProofFlowPhone: Story = {
 }
 
 /**
- * A question's answer starts its request (P5.94 item 20, P5.96 item 1): "All questions" on the
+ * A question's answer starts its request: "All questions" on the
  * home page, a search typed ("adresa" — the words marked), the answer opened on its own page,
  * "Report a change of address" opens the change request on the address with its proof.
  */
@@ -374,7 +374,7 @@ export const EmployeeQuestionFlow: Story = {
 }
 
 /**
- * Nothing found asks HR (P5.96 item 1): the questions from the participant's menu, a search that
+ * Nothing found asks HR: the questions from the participant's menu, a search that
  * finds nothing, "Ask HR" with the words typed, sent; the page says so in place.
  */
 export const EmployeeAskFlow: Story = {

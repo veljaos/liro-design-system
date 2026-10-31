@@ -20,7 +20,7 @@ const meta = {
       description: {
         component:
           '**What for:** who may open a file or a folder, in the familiar pattern of the big file ' +
-          'services (P5.93): “Add people or roles” with the access level and Invite; “People ' +
+          'services: “Add people or roles” with the access level and Invite; “People ' +
           'with access”, each with an access menu (the levels, then Remove access); “General ' +
           'access” — Restricted or Anyone with the link — and the link with a Copy button and ' +
           'an inline “Copied”, its expiry and an optional password. Every person, level and ' +
@@ -60,7 +60,7 @@ export default meta
 
 type Story = StoryObj<typeof meta>
 
-/** Four with access (the owner, a role from the folder, a person, a client portal) and a link. */
+/** Four with access (a role from the folder, a person, a client portal) and a link. */
 export const Default: Story = {
   args: { description: 'Harbour Homes Ltd. sees it in its client portal.' },
   play: async () => {

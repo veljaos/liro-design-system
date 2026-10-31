@@ -19,11 +19,10 @@ import {
 import { usePhone } from './use-phone'
 
 /*
- * NameConflictDialog (BUILD-PLAN P5.43; one decision, one click since P5.93 item 20, the owner's
- * fourth review): what happens to an uploaded (or moved, or copied) file whose name is already
- * taken in its folder.
+ * NameConflictDialog (one decision, one click): what happens to an uploaded (or moved, or copied)
+ * file whose name is already taken in its folder.
  * - One conflict at a time, in the order the application gives them: a short question as the
- *   title ("Keep both files?"), the file's name bold under it (D22), where the other one is, then
+ *   title ("Keep both files?"), the file's name bold under it, where the other one is, then
  *   the two files compact side by side ("In the folder" / "Being uploaded"): the thumbnail (the
  *   application's, or the file's kind as an icon), the size and when each changed through
  *   `format`, and who (`owner`), so the choice is made knowing what is replaced.
@@ -47,7 +46,7 @@ export interface ConflictFile {
   sizeUnit?: string
   /** Who owns it (the file in the folder) or uploads it, in the application's words. */
   owner?: string
-  /** P5.93: a small picture of it (an image address, decorative); default the kind's icon. */
+  /** A small picture of it (an image address, decorative); default the kind's icon. */
   thumbnail?: string
 }
 

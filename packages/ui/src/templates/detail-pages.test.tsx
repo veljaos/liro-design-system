@@ -104,7 +104,7 @@ describe('RecordFormPage', () => {
   })
 })
 
-describe('side column in the phone layout (P4.8)', () => {
+describe('side column in the phone layout', () => {
   it('stands under the content whatever the viewport', () => {
     const page = (layout: 'phone' | 'desktop') =>
       render(

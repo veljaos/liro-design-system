@@ -21,7 +21,7 @@ const meta = {
           'buttons.\n\n' +
           '**When:** a new company’s home until it is set up; a module’s first use.\n\n' +
           '**When not:** a multi-step form (FormWizard); questions that lead to a document ' +
-          '(Questionnaire, P5.1); the stages of one document (LifecycleBar).',
+          '(Questionnaire); the stages of one document (LifecycleBar).',
       },
     },
   },

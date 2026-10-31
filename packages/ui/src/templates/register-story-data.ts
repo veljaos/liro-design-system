@@ -1,5 +1,5 @@
 /*
- * Story data for RegisterPage and StatutoryFormPage (P5.20): Kvadrat Gradnja d.o.o.'s
+ * Story data for RegisterPage and StatutoryFormPage: Kvadrat Gradnja d.o.o.'s
  * safety-training register for 2026 and a short illustrative tax form. Legal codes, field
  * numbers and texts are illustrative, not authoritative. Not part of the package: nothing in
  * src/index.ts imports this file. No classes here.
@@ -9,7 +9,7 @@ import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { decimal, paras } from '../components/amounts-story-data'
 
 /**
- * The register's spacing (P5.23), checked in the template's and the examples' stories alike:
+ * The register's spacing, checked in the template's and the examples' stories alike:
  * the locks band meets the table's header, nothing between them.
  */
 export async function expectLocksMeetTable(canvasElement: HTMLElement): Promise<void> {
@@ -21,7 +21,7 @@ export async function expectLocksMeetTable(canvasElement: HTMLElement): Promise<
 }
 
 /**
- * A correction link goes to the other entry (P5.23): pressing it focuses that entry's number,
+ * A correction link goes to the other entry: pressing it focuses that entry's number,
  * drawn first when the register is virtualized.
  */
 export async function expectCorrectionLink(
@@ -218,11 +218,6 @@ export function manyTraining(count: number): TrainingEntry[] {
 /** Decimal strings added in whole paras (the stories play the application; components never add). */
 export function addAmounts(...values: readonly string[]): string {
   return decimal(values.reduce((total, value) => total + paras(value), 0n))
-}
-
-/** One amount less another, in whole paras. */
-export function subtractAmount(value: string, less: string): string {
-  return decimal(paras(value) - paras(less))
 }
 
 /** One fifth of an amount (VAT at 20%), exact in paras. */

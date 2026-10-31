@@ -13,14 +13,14 @@ import { cn } from './cn'
  * 440px wide (size 'md'), 5% of the screen's height from the top and at least 5% of the width
  * from each side, radius md, shadow xl, on the overlay surface over surface.backdrop; it fades
  * down 30px in 200ms. Header: at least
- * 60px, 16px padding on every side — one inset with the body and footer (P4.9d) — sticky while the body
+ * 60px, 16px padding on every side — one inset with the body and footer — sticky while the body
  * scrolls; title 14px regular. Body: 16px padding, none on top under a header. The close button
- * is the CompactIconButton look ("Two icon-only buttons" in docs/decisions.md); its label is
+ * is the CompactIconButton look; its label is
  * required, because the Design System has no text of its own.
  *
  * On a phone (usePhone: below 48em, or a phone frame) a dialog is a sheet across the screen's
- * full width on its bottom edge (PHONE_DIALOG, P5.28 item 1); the backdrop covers the whole
- * screen (item 5).
+ * full width on its bottom edge (PHONE_DIALOG); the backdrop covers the whole
+ * screen.
  */
 
 export const Dialog = DialogPrimitive.Root
@@ -74,7 +74,7 @@ export function DialogTitle({ className, ...props }: ComponentProps<typeof Dialo
     <DialogPrimitive.Title
       data-slot="dialog-title"
       // A long unbroken word (an IBAN, a URL) breaks inside the header rather than push it wider
-      // than the screen (P5.90 item 7).
+      // than the screen.
       className={cn(
         'm-0 min-w-0 text-md leading-none font-regular [overflow-wrap:anywhere]',
         TEXT_DIRECTION,
@@ -116,7 +116,7 @@ export function DialogBody({ className, ...props }: ComponentProps<'div'>) {
 
 /**
  * Actions at the end of the body, the main action last. One rule for every dialog, drawer and
- * confirmation (P4.9, the owner's review): 16px under the body's last part (the body's gap), the
+ * confirmation: 16px under the body's last part (the body's gap), the
  * buttons 8px apart as in every other row of buttons (ActionGroup), the row's end on the body's
  * 16px inset.
  */
@@ -139,7 +139,7 @@ export function DialogCloseButton({
   className,
   ...props
 }: Omit<ComponentProps<typeof DialogPrimitive.Close>, 'children'> & { label: string }) {
-  // The library's tooltip names it on hover and keyboard focus, never the browser's title (P5.93).
+  // The library's tooltip names it on hover and keyboard focus, never the browser's title.
   return (
     <Tooltip label={label}>
       <DialogPrimitive.Close

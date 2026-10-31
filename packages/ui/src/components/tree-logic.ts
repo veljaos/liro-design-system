@@ -1,6 +1,6 @@
 /*
- * The logic of TreeView and TreeTable (P5.9), kept apart from the markup so it can be
- * unit-tested (AGENTS.md C7): which rows are visible for an expanded state, where the keys of the
+ * The logic of TreeView and TreeTable, kept apart from the markup so it can be
+ * unit-tested: which rows are visible for an expanded state, where the keys of the
  * WAI-ARIA tree pattern move the focus, type-ahead, and the checked state of a branch shown from
  * the selected ids. Nothing here knows what a node means: the tree is the application's data.
  */
@@ -146,7 +146,7 @@ export type TreeKeyAction =
   | { type: 'expandMany'; ids: string[] }
 
 /**
- * What a key does on the row at `index` (WAI-ARIA tree pattern; Appendix B.7, from the leading
+ * What a key does on the row at `index` (WAI-ARIA tree pattern, from the leading
  * edge): ArrowDown and ArrowUp move to the next and previous row, Home and End to the first and
  * last. The arrow that points into the tree — toward the trailing side, ArrowRight in
  * left-to-right and ArrowLeft in right-to-left — opens a closed node, or moves to the first child

@@ -74,7 +74,7 @@ export const Simple: Story = {}
 
 /**
  * A ring per representative, each named with its value at its start ("Jovana Marić 112%"); the
- * names identify the rings, so all are the brand blue (owner).
+ * names identify the rings, so all are the brand blue.
  */
 export const WithLabels: Story = {
   name: 'With labels',

@@ -65,19 +65,19 @@ import { BISTRO_TABLES, type BistroTable } from './data-K'
 import { TillTouch } from './screens-I-till'
 
 /*
- * A table's open tab on the till (P5.28 item 22), for Bistro Dunav's service. The tabs live above
+ * A table's open tab on the till, for Bistro Dunav's service. The tabs live above
  * the screens (`useExampleState`, key `tabs.<venue>`): the waiter adds items, leaves for the floor
  * and comes back to the same tab.
  *
- * Sending (P5.90 item 20, as restaurant tills do it — "send on leaving the table"): a new item is
+ * Sending (as restaurant tills do it — "send on leaving the table"): a new item is
  * marked "New" and goes to the bar or the kitchen by itself when the waiter leaves the table
  * (Floor), each line then "Sent to the kitchen · 19:40"; "Send now" is kept for a rush; a line
  * held for a later course (the desserts) waits, marked "Held", until "Send held". A waiter who
- * forgets to press Send no longer leaves an order unsent; nothing is sent while items are still
+ * forgets to press Send never leaves an order unsent; nothing is sent while items are still
  * being tapped. The sending itself is the application's — the screen reports what went where.
  * Every tap answers at once (the tile's count, the line's highlight, the order bar on phones);
- * removing a line offers Undo instead of a confirmation. No toasts for routine actions (P5.93
- * item 3): a sent line says "Sent to the kitchen · 19:40" in green, a removed line or moved items
+ * removing a line offers Undo instead of a confirmation. No toasts for routine actions: a
+ * sent line says "Sent to the kitchen · 19:40" in green, a removed line or moved items
  * leave "… · Undo" in their place in the cart, a printed receipt says "Printed", and the floor
  * shows the table just left with what was sent.
  *
@@ -94,7 +94,7 @@ const TERMINAL_DELAY = 1200
 /** The ways a tab is paid at the table (the application's choice of the seven). */
 const TAB_PAYMENTS = PAYMENT_OPTIONS.filter((each) => ['cash', 'card', 'instant'].includes(each.id))
 
-/** Where the venue's instant payments go (P5.40): an invented account with valid control numbers. */
+/** Where the venue's instant payments go: an invented account with valid control numbers. */
 const VENUE_PAYEES: Record<Venue['id'], InstantPayee> = {
   bistro: {
     name: 'Bistro Dunav, Novi Sad',
@@ -104,7 +104,7 @@ const VENUE_PAYEES: Record<Venue['id'], InstantPayee> = {
 }
 
 /**
- * What the floor shows about the table the waiter just left (P5.93 item 3): it is chosen there,
+ * What the floor shows about the table the waiter just left: it is chosen there,
  * with what went to the bar or the kitchen — instead of a toast.
  */
 export interface LeftTable {
@@ -144,7 +144,7 @@ export function TabTill({
   const [tabs, setTabs] = useExampleState<Record<string, Tab>>(`tabs.${venue.id}`, () =>
     initialTabs(),
   )
-  // The floor's tables: closing the tab frees the table at once (P5.90 item 20).
+  // The floor's tables: closing the tab frees the table at once.
   const [, setTables] = useExampleState<readonly BistroTable[]>(
     'bistro.tables',
     () => BISTRO_TABLES,
@@ -224,7 +224,7 @@ export function TabTill({
   const counts = inOrder(tab)
   /**
    * Sends the new lines (or the held ones): each line then says where it went and when, in green
-   * (P5.93 item 3: no toast). Returns what went where, for the floor.
+   * (no toast). Returns what went where, for the floor.
    */
   const send = (which: 'new' | 'held'): string | null => {
     const result = sendLines(venue, tab, venue.now, which)
@@ -303,8 +303,8 @@ export function TabTill({
 
   const remainingText = decimal(figures.remaining)
   /**
-   * Leaving the table sends the new items by themselves (P5.90 item 20); the floor then shows this
-   * table with what was sent (P5.93 item 3).
+   * Leaving the table sends the new items by themselves; the floor then shows this
+   * table with what was sent.
    */
   const leave = () => {
     setLeft({ tableId, sent: send('new') })
@@ -564,8 +564,8 @@ export function TabTill({
                       lines: current.lines.filter((line) => line.id !== removed.id),
                     }))
                     setEditId(null)
-                    // Undo instead of a confirmation (P5.90 item 20), in the line's place in
-                    // the cart, not in a toast (P5.93 item 3).
+                    // Undo instead of a confirmation, in the line's place in
+                    // the cart, not in a toast.
                     const previous = at > 0 ? tab.lines[at - 1]?.id : undefined
                     setUndo({
                       tableId,
@@ -864,7 +864,7 @@ export function TabTill({
                     ),
                   )
                   setMoveOpen(false)
-                  // The answer stands in the cart, with Undo (P5.93 item 3): the moved tab's,
+                  // The answer stands in the cart, with Undo: the moved tab's,
                   // on the table it went to, or this one's, for some items.
                   setUndo({
                     tableId: moveWhat === 'all' ? moveTo : tableId,
@@ -894,7 +894,7 @@ export function TabTill({
               }}
             />
             {moveOptions.length > 10 ? (
-              // More than ten tables: a searchable combobox (P5.28 item 3).
+              // More than ten tables: a searchable combobox.
               <ComboboxField
                 label="To table"
                 options={moveOptions}
@@ -922,7 +922,7 @@ export function TabTill({
           </div>
         </Dialog>
 
-        {/* Pay: the rest, a share or items; the fiscal receipt (item 21) */}
+        {/* Pay: the rest, a share or items; the fiscal receipt */}
         {paying !== null && (
           <PaymentDialog
             open
@@ -1012,7 +1012,7 @@ export function TabTill({
                           id: 'print',
                           label: 'Print',
                           icon: Receipt,
-                          // The answer in place, not a toast (P5.93 item 3).
+                          // The answer in place, not a toast.
                           ...(printed ? { state: 'sent' as const, stateText: 'Printed' } : {}),
                         },
                       ]}
@@ -1046,7 +1046,7 @@ export function TabTill({
                       }),
                     )
                     setPaying(null)
-                    // The floor shows the table free, chosen (P5.93 item 3: no toast).
+                    // The floor shows the table free, chosen (no toast).
                     setLeft({ tableId, sent: null })
                     navigate(venue.back.route)
                   }}

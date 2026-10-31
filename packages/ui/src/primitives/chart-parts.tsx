@@ -3,8 +3,8 @@ import { TEXT_DIRECTION } from './classes'
 import { cn } from './cn'
 
 /*
- * The parts of shadcn/ui's Chart (adapted in P4.7a, see chart.tsx) that do not need Recharts: the
- * tooltip's body, the swatch and the legend. Kept apart (P5.41) so `@veljaos/ui/map`'s RegionChart
+ * The parts of shadcn/ui's Chart (see chart.tsx) that do not need Recharts: the
+ * tooltip's body, the swatch and the legend. Kept apart so `@veljaos/ui/map`'s RegionChart
  * shows the same tooltip and legend without loading Recharts. Re-exported by chart.tsx.
  */
 

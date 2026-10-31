@@ -212,7 +212,7 @@ export const MentionsInteraction: Story = {
     await userEvent.keyboard('{Enter}')
     await expect(field).toHaveValue('Check with @Ivana Stojanović ')
     await expect(canvas.getByText('Mentioned: u-ivana')).toBeVisible()
-    // The chosen mention ended the search: writing on opens nothing (P5.94 item 8).
+    // The chosen mention ended the search: writing on opens nothing.
     await userEvent.keyboard('please')
     // The list closes as the mention is chosen; typing on never opens it again.
     await waitFor(() => expect(within(document.body).queryByRole('listbox')).toBeNull())
@@ -474,7 +474,7 @@ export const Sending: Story = {
 }
 
 /**
- * No comments can be written (P5.93): the field read-only, Send unavailable, the reason under the
+ * No comments can be written: the field read-only, Send unavailable, the reason under the
  * field; the attach tool in the toolbar.
  */
 export const UnavailableWithReason: Story = {
@@ -664,7 +664,7 @@ export const EnglishInRtl: Story = {
 }
 
 /**
- * Internal notes among the replies (P5.30): a note only the team sees stands on its author's side
+ * Internal notes among the replies: a note only the team sees stands on its author's side
  * on the sunken surface with a dashed line and starts with "Internal" — different from a reply by
  * its line and its word, never by colour alone. A run of one author keeps the mark on each note.
  */

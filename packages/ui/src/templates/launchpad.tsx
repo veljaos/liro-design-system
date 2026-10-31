@@ -28,36 +28,36 @@ import {
 import { Tooltip } from '../components/popover'
 
 /*
- * Launchpad (BUILD-PLAN P4.2; the owner's values, docs/decisions.md "Launchpad"): the home of
+ * Launchpad: the home of
  * the application, a grid of module cards (navigation is the launchpad and module tabs, never a
- * sidebar, Appendix B.8).
+ * sidebar).
  * - Grid: one column on phones, two from xs (36em), three from sm (48em), 16px (md) apart.
  * - Card: radius lg, padding md, a 1px border.default border on the raised surface, 132px high at
  *   least (the skeleton's height). Top row: the module's 20px icon in a 40px square
- *   (surface.sunken, 10px padding, 10px radius — the old Liro Business App detail; the icon in
- *   text.primary) at the start, the counter at the end (xs, medium, text.secondary, plain text).
- *   Then 16px (md) and the name (sm, bold), and an optional one-line description (xs,
- *   text.secondary) 2px under it.
+ *   (surface.sunken, 10px padding, 10px radius; the icon in text.primary) at the start, the counter
+ *   at the end (xs, medium, text.secondary, plain text). Then 16px (md) and the name (sm, bold),
+ *   and an optional one-line description (xs, text.secondary) 2px under it.
  * - Hover: border.strong, no shadow; the icon square turns brand.solid with the icon in
- *   brand.onSolid (the old detail that says the card can be opened); colours change in the base
+ *   brand.onSolid (it says the card can be opened); colours change in the base
  *   duration with the standard easing. Focus: the standard ring.
  * - Locked: surface.sunken, border.default, not a link, no hover change; where the counter stands
- *   the state line of every tile and card (P5.93): a Lock and "Locked", the application's text
+ *   the state line of every tile and card: a Lock and "Locked", the application's text
  *   ("Available in Pro") under it.
  * - Keys: 1–9 open the first nine modules (outside fields, without modifiers); the arrows move
  *   between cards (left and right in reading order, up and down by a row), Home and End.
  * - Editing (`editing`, switched on by the application): each card shows three 28px buttons —
  *   move earlier, move later, hide — and is not a link; dragging also reorders, the buttons always
- *   remain (WCAG 2.5.7). Dragging is live (P4.9, owner): pointer events, not the browser's drag
+ *   remain (WCAG 2.5.7). Dragging is live: pointer events, not the browser's drag
  *   and drop, so there is no grey ghost and touch works (a 250ms press first, so a swipe still
  *   scrolls); the dragged card lifts (shadow lg) and follows the pointer, the others slide to
  *   their new places in the slow duration (0ms under reduced motion, the token), and a dashed
  *   border.strong placeholder on surface.sunken shows where it lands. The target is the slot
- *   nearest to the card's centre, measured on the laid-out grid, so it holds in right-to-left
- *   (B.7). Escape or a cancelled pointer puts everything back. Hidden modules are listed under the grid ("Hidden (2)") with "Show".
- *   Every change is reported through a callback. P5.94 (item 18): the editing mode belongs to the
- *   user's Preferences ("Home page"), never a "Customize" on the home page; the home page has no
- *   visible title (the company is in the header's switcher), the tiles right under the header.
+ *   nearest to the card's centre, measured on the laid-out grid, so it holds in right-to-left.
+ *   Escape or a cancelled pointer puts everything back. Hidden modules are listed under the grid
+ *   ("Hidden (2)") with "Show". Every change is reported through a callback. The editing mode
+ *   belongs to the user's Preferences ("Home page"), never a "Customize" on the home page; the home
+ *   page has no visible title (the company is in the header's switcher), the tiles right under the
+ *   header.
  * - Loading: skeleton cards, 132px high.
  */
 
@@ -127,7 +127,7 @@ function ModuleIcon({ icon: Icon, locked }: { icon: IconComponent; locked: boole
         locked
           ? 'bg-surface-raised'
           : // Only the background animates: the icon turns white at once, so it is never dark on
-            // blue for a moment; the keyboard's focus looks as the hover (P5.94 item 18).
+            // blue for a moment; the keyboard's focus looks as the hover.
             'bg-surface-sunken transition-[background-color] duration-(--liro-duration-base) ease-standard group-hover:bg-brand-solid group-hover:text-brand-on-solid group-focus-visible:bg-brand-solid group-focus-visible:text-brand-on-solid',
       )}
     >
@@ -354,7 +354,7 @@ export function Launchpad(props: LaunchpadProps) {
         className={cn('relative m-0 grid list-none gap-4 p-0', grid)}
       >
         {placeholder !== undefined && drag !== null && (
-          // Where the dragged card lands: neutral, never blue (D17).
+          // Where the dragged card lands: neutral, never blue.
           <li
             aria-hidden="true"
             data-slot="launchpad-drop-placeholder"
@@ -438,7 +438,7 @@ export function Launchpad(props: LaunchpadProps) {
                 >
                   <div className="flex items-start justify-between gap-2">
                     <ModuleIcon icon={module.icon} locked />
-                    {/* P5.93: the state line of every tile and card — "Locked", the reason
+                    {/* The state line of every tile and card — "Locked", the reason
                         under it — where the counter stands. */}
                     <StateLine
                       icon={Lock}

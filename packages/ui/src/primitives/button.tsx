@@ -8,7 +8,7 @@ import { cn } from './cn'
  * the month buttons of the calendar). Adapted from the shadcn/ui button: its `variant` and `size`
  * are replaced by the Liro family, emphasis and shape.
  *
- * Colours by family and emphasis ("button weights" in docs/decisions.md). Tailwind finds classes
+ * Colours by family and emphasis (Mantine's button weights). Tailwind finds classes
  * by reading the source, so every class is written out.
  * - primary (filled): the family fill with white text; one and two shades darker on hover and press.
  * - secondary (light): the family tint with the family's text; the stronger tint and the stronger
@@ -70,23 +70,22 @@ const COLOURS: Record<Family, Record<Emphasis, string>> = {
 
 /**
  * Disabled, in every emphasis: Mantine's disabled colours, transparent border (Button.css).
- * Unavailable (`aria-disabled="true"`: still focusable, so its reason can be read; the
- * unavailable action of P2.7) looks the same; neither changes on hover or press. A loading
+ * Unavailable (`aria-disabled="true"`: still focusable, so its reason can be read: an
+ * unavailable action) looks the same; neither changes on hover or press. A loading
  * button (`aria-busy`, also aria-disabled) keeps its colours, as Mantine's does.
  */
 const DISABLED =
   'disabled:border-transparent disabled:bg-surface-disabled disabled:text-disabled disabled:cursor-not-allowed aria-disabled:not-aria-busy:border-transparent aria-disabled:not-aria-busy:bg-surface-disabled aria-disabled:not-aria-busy:text-disabled aria-disabled:cursor-not-allowed'
 
 /**
- * The previous Design System's Mantine sizes ("Button sizes" in docs/decisions.md, source
- * @mantine/core 9.6.2 styles/Button.css and ActionIcon.css): radius md (8px), 1px border,
- * weight 600, line height 1. Button = size 'sm': height 36px, font size 13px, horizontal padding
- * 18px, 12px (18 / 1.5) on the side of the icon, 10px between icon and label, icon 15px.
+ * Mantine's sizes (@mantine/core 9.6.2 styles/Button.css and ActionIcon.css): radius md (8px), 1px
+ * border, weight 600, line height 1. Button = size 'sm': height 36px, font size 13px, horizontal
+ * padding 18px, 12px (18 / 1.5) on the side of the icon, 10px between icon and label, icon 15px.
  * IconButton = the same button without visible text: 36px high, 8px horizontal padding, icon
- * 16px (the old ActionButton). CompactIconButton = Mantine ActionIcon size 'md': 28px square,
+ * 16px. CompactIconButton = Mantine ActionIcon size 'md': 28px square,
  * neutral and subtle by default, for tight places only.
  *
- * A long label wraps (the owner, 2026-09-29, P2.7d): never cut with "…"; normally at most two
+ * A long label wraps: never cut with "…"; normally at most two
  * lines, a third only when even two do not fit; each line centred; the button grows in height
  * from its 36px (30px small) minimum. It wraps only when it is alone on its line and still too
  * wide: it shrinks down to its container (`min-w-0`, `max-w-full`). The line height is the font
@@ -174,7 +173,7 @@ export type LoadingButtonPrimitiveProps = ButtonPrimitiveProps & {
 }
 
 /**
- * The one busy button (ConfirmDialog's look, P2.4b): while `loading` the content keeps the
+ * The one busy button (ConfirmDialog's look): while `loading` the content keeps the
  * button's size and its accessible name at opacity 0 (Mantine) under the 20px oval loader in the
  * button's text colour, `aria-busy`, and a press does nothing; `waiting` makes it unavailable
  * without the loader. Used by ConfirmDialog, EmailFirstForm, ProviderSignInButtons and SignerList.

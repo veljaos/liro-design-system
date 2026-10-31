@@ -16,7 +16,7 @@ function codeUses(text: string, name: string): number {
   return all - 1
 }
 
-describe('headTrack (P5.90 item 8)', () => {
+describe('headTrack', () => {
   it('starts inside the region’s top border and moves through its inner height less the header', () => {
     expect(headTrack(1, 800, 40)).toEqual({ start: 1, room: 760 })
     expect(headTrack(0, 800, 40)).toEqual({ start: 0, room: 760 })
@@ -29,7 +29,7 @@ describe('headTrack (P5.90 item 8)', () => {
   })
 })
 
-describe('the sticky header is pure CSS (P5.90 item 8)', () => {
+describe('the sticky header is pure CSS', () => {
   it('moves the header group with a scroll-driven animation on the region’s view timeline', () => {
     const css = source('../styles.css')
     expect(STICKY_HEAD).toContain('liro-sticky-head')
@@ -73,12 +73,12 @@ describe('the sticky header is pure CSS (P5.90 item 8)', () => {
   })
 })
 
-describe('the sticky first column keeps every row line (P5.91)', () => {
+describe('the sticky first column keeps every row line', () => {
   it('stands each first-column cell on a translateZ layer, placed on whole pixels', () => {
     for (const classes of [STICKY_START, STICKY_START_AFTER_SELECT]) {
       expect(classes).toContain('[transform:translateZ(0)]')
-      // A will-change layer kept the row's fractional place, and the next row's cell covered the
-      // row's line where the two rounded apart (104 lines in 134 tables, measured in P5.91).
+      // A will-change layer keeps the row's fractional place, and the next row's cell covers the
+      // row's line where the two round apart.
       expect(classes).not.toContain('will-change')
     }
   })
@@ -100,7 +100,7 @@ describe('the sticky first column keeps every row line (P5.91)', () => {
   })
 })
 
-describe('startCover (P5.28 item 4)', () => {
+describe('startCover', () => {
   it('is 0 without a sticky first column', () => {
     expect(startCover(10, [], false)).toBe(0)
   })

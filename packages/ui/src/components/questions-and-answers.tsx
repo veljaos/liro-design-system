@@ -29,8 +29,8 @@ export { highlightQuestion, QUESTIONS_PAGE, questionCounts } from './common-ques
 export type { QuestionCounts } from './common-questions-logic'
 
 /*
- * Questions and answers (BUILD-PLAN P5.96 item 1, the owner's review of P5.94: "an application
- * may have answers to 300+ questions, so the questions get their own page"). Two pieces for any
+ * Questions and answers: an application may have answers to 300+ questions, so the questions
+ * get their own page. Two pieces for any
  * portal (an employee's, a patient's, a tenant's, a client's), on CommonQuestion's data:
  *
  * QuestionsAndAnswers — the page's content under the application's PageHeader:
@@ -38,11 +38,11 @@ export type { QuestionCounts } from './common-questions-logic'
  *   documents, the keywords and the category's name; case and accents ignored, "dj" finds "đ"),
  *   and marks the typed words in each question and answer (HighlightedText).
  * - The categories as chips, "All" first, each with how many questions the search keeps in it;
- *   one pressed (the neutral selection, D17).
+ *   one pressed (the neutral selection).
  * - The list in one card: a row per question — its category (while "All" is chosen), the
  *   question as a link (a heading; the link covers the whole row, a big target), the short answer
- *   under it. The hover is the row's surface and the focus the link's ring; nothing underlined
- *   (D36). Each link goes to the answer's own address (`answerHref`), through the provider's
+ *   under it. The hover is the row's surface and the focus the link's ring; nothing underlined.
+ *   Each link goes to the answer's own address (`answerHref`), through the provider's
  *   `linkComponent`.
  * - 300 questions stay fast by paging: the first 30 (`pageSize`), then "Show more (30 of 312
  *   shown)", which moves the focus to the first new question. Not windowed: every shown entry is a

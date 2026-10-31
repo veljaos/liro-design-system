@@ -253,7 +253,7 @@ describe('progress and moving', () => {
   })
 })
 
-describe('questionnaireKeyAction: number keys choose, Enter goes on (P5.90 item 10)', () => {
+describe('questionnaireKeyAction: number keys choose, Enter goes on', () => {
   it('chooses the numbered option with 1–9, wherever the user is not typing', () => {
     expect(questionnaireKeyAction('1', 'other', 3)).toEqual({ kind: 'choose', index: 0 })
     expect(questionnaireKeyAction('3', 'other', 3)).toEqual({ kind: 'choose', index: 2 })

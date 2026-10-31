@@ -51,11 +51,11 @@ import {
 } from './data-D1'
 
 /*
- * Group D1's example screen (Phase 5: P5.18 document lines, P5.19 LookupField), "Invoice draft,
+ * The example screen "Invoice draft,
  * lines by search" (/sales/invoices/new): a draft to Bojović i sinovi d.o.o. whose lines are found
  * by one search field per line — items with their stock, services, a fixed asset sold with its
  * number and its internal book value —, S 20% and S 10%, and "+ Create service …". Simple by
- * default (P5.90 item 4): the lines show item, quantity, unit, price, VAT and amount; section
+ * default: the lines show item, quantity, unit, price, VAT and amount; section
  * headings, text lines, discount lines and a line's discount (its column appears) come from "Add
  * line ▾", the account only with a one-off line. The header: number, issue date, date of supply,
  * due date and place of issue. Every amount comes from data-D1.ts (whole paras); the screen only
@@ -132,7 +132,7 @@ const KIND_NAMES: Record<CatalogueRecord['kind'], string> = {
   discount: 'Discount',
 }
 
-// A catalogue list sorts by its columns and filters by several values (P5.23).
+// A catalogue list sorts by its columns and filters by several values.
 const CATALOGUE_COLUMNS: DataTableColumn<CatalogueRecord>[] = [
   { id: 'code', header: 'Code', sortable: true, cell: (record) => <bdi>{record.value}</bdi> },
   { id: 'name', header: 'Name', sortable: true, cell: (record) => record.label },
@@ -251,7 +251,7 @@ export function InvoiceDraft({ phone }: { phone: boolean }) {
         value: (line) => line.price,
       },
       {
-        // Only while a line has a discount, or once added from "Add line ▾" (P5.90 item 4).
+        // Only while a line has a discount, or once added from "Add line ▾".
         id: 'discount',
         header: 'Discount %',
         type: 'number',
@@ -276,7 +276,7 @@ export function InvoiceDraft({ phone }: { phone: boolean }) {
         value: (line) => line.account,
         options: ACCOUNTS,
         // A catalogue record brings its account; a one-off line chooses it, so the column is
-        // shown only while the draft has a one-off line (P5.90 item 4).
+        // shown only while the draft has a one-off line.
         readOnly: (line) => line.item !== null && line.item.oneOff !== true,
         optional: { used: (line) => line.item?.oneOff === true },
       },
@@ -449,7 +449,7 @@ export function InvoiceDraft({ phone }: { phone: boolean }) {
           setAllCursor(Math.max(0, allCursor - 25))
         }}
         count={allFound.length}
-        // One compact row a result on a phone (P5.28): name; code · kind; the price at the end.
+        // One compact row a result on a phone: name; code · kind; the price at the end.
         mobile={{
           subtitle: (record) => `${record.value} · ${KIND_NAMES[record.kind]}`,
           badge: (record) => <MoneyText value={record.price} currency="RSD" />,

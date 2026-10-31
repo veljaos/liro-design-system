@@ -8,7 +8,7 @@ import { Launchpad, type LaunchpadProps } from './launchpad'
 import { BRAND, COMMANDS, COMPANIES, MODULES, moduleById, USER } from './shell-story-data'
 
 /**
- * The home screen: the shell without module tabs and the grid right under it (P5.94 item 18): no
+ * The home screen: the shell without module tabs and the grid right under it: no
  * visible title — the company is in the header's switcher — and no "Customize"; the page's h1
  * stays for screen readers.
  */
@@ -42,7 +42,7 @@ function Home({ phone = false, ...props }: Partial<LaunchpadProps> & { phone?: b
 }
 
 /**
- * Choosing, ordering and hiding the tiles is the user's Preferences (P5.94 item 18): the section
+ * Choosing, ordering and hiding the tiles is the user's Preferences: the section
  * "Home page" shows the Launchpad in its editing mode, always; the home page itself has no
  * "Customize". The story keeps the order and the hidden modules, as the Core would.
  */
@@ -112,13 +112,13 @@ const meta = {
           'and does not open. Keys 1–9 open the first nine modules; the arrows move between ' +
           'cards.\n\n' +
           '**How:** `modules` in order, each with an `href`. The application switches ' +
-          '`editing` on in the user’s Preferences (P5.94: “Home page”, never a “Customize” on the ' +
+          '`editing` on in the user’s Preferences (“Home page”, never a “Customize” on the ' +
           'home page itself): the cards then have move and hide buttons and can be dragged, hidden ' +
           'modules are listed with "Show". `onReorder`, `onHide` and `onShow` report every change; ' +
           'the Core stores it. The home page has no visible title — the company stands in the ' +
           'header’s switcher — so the tiles start right under the header.\n\n' +
           '**When not:** navigation inside a module is its tabs (AppShell `moduleTabs`), never ' +
-          'a sidebar; numbers and charts belong to a dashboard (P4.6).',
+          'a sidebar; numbers and charts belong to a dashboard.',
       },
     },
   },

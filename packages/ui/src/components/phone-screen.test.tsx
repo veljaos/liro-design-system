@@ -7,7 +7,7 @@ import { isSearchable, SEARCHABLE_FROM, SelectField } from './select-field'
 import { useBelowMd, usePhone } from './use-phone'
 
 /*
- * P5.28 items 1, 3 and 11: a phone frame's screen makes the components inside behave as on a
+ * A phone frame's screen makes the components inside behave as on a
  * phone, and a long SelectField is searched by typing.
  */
 
@@ -36,7 +36,7 @@ describe('the phone screen', () => {
   })
 })
 
-describe('SelectField with many options (P5.28 item 3)', () => {
+describe('SelectField with many options', () => {
   it('is searched from SEARCHABLE_FROM options unless the application says otherwise', () => {
     expect(SEARCHABLE_FROM).toBe(11)
     expect(isSearchable(10)).toBe(false)

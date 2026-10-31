@@ -5,7 +5,7 @@ import { MaskedValue } from './masked-value'
 import type { QueueItem, TraceSource, TraceStep } from './trace-logic'
 
 /*
- * Story data of the assistant's work display (P5.93): a fictitious company's assistant reading
+ * Story data of the assistant's work display: a fictitious company's assistant reading
  * its records. Not part of the package. Every word is what an application would pass.
  */
 

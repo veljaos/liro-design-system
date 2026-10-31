@@ -34,7 +34,7 @@ export interface SelectOption {
   /** Shown, but cannot be chosen. */
   disabled?: boolean
   /**
-   * The label's language when it differs from the page's (D15): a language written in its own name
+   * The label's language when it differs from the page's: a language written in its own name
    * ("Srpski (latinica)" in an English page) carries `lang="sr-Latn"`, in the list and once chosen.
    */
   lang?: string
@@ -59,10 +59,10 @@ export interface SelectFieldProps extends FieldBaseProps {
   placeholder?: string
   /** The form field name. */
   name?: string
-  /** Shows the list from the start (a story's picture of the open list, P5.28). Closed by default. */
+  /** Shows the list from the start (a story's picture of the open list). Closed by default. */
   defaultOpen?: boolean
   /**
-   * The list is searched by typing (P5.28 item 3): the field is a text box that filters the
+   * The list is searched by typing: the field is a text box that filters the
    * options as the user types, and a press shows them all. Default: when there are more than
    * SEARCHABLE_FROM − 1 (10) options — a class of 30 pupils, a list of countries. False keeps the
    * plain list however long it is; true searches a short one.
@@ -70,7 +70,7 @@ export interface SelectFieldProps extends FieldBaseProps {
   searchable?: boolean
 }
 
-/** From this many options a SelectField is searched by typing (P5.28: "more than about 10"). */
+/** From this many options (more than ten) a SelectField is searched by typing. */
 export const SEARCHABLE_FROM = 11
 
 /** Whether a SelectField with `count` options is searched by typing. */
@@ -155,7 +155,7 @@ export function SelectField(props: SelectFieldProps) {
                 aria-invalid={control.invalid || undefined}
                 className={cn('w-full', showClear && 'pe-9 [&>svg]:hidden')}
               >
-                {/* The chosen option's text takes its direction from itself (P3.6c). */}
+                {/* The chosen option's text takes its direction from itself. */}
                 <SelectValue
                   dir="auto"
                   {...(props.placeholder === undefined ? {} : { placeholder: props.placeholder })}
@@ -207,7 +207,7 @@ export function SelectField(props: SelectFieldProps) {
 }
 
 /**
- * SelectField's searched list (P5.28 item 3): a text box with the chosen option's label and the
+ * SelectField's searched list: a text box with the chosen option's label and the
  * chevron at its end; a press or ArrowDown shows every option, typing filters them (ignoring case
  * and accents, in the page's locale), the keys of ComboboxField choose (the WAI-ARIA combobox
  * pattern). The groups keep their headings. Leaving the box puts the chosen label back; an

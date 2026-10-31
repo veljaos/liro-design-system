@@ -1,5 +1,5 @@
 /**
- * The Liro tokens, in one place (BUILD-PLAN P1.1, Appendix A). Three layers:
+ * The Liro tokens, in one place. Three layers:
  *
  * 1. Values: colour ramps, spacing, radius, shadows, motion and layout sizes. Open; they may
  *    change freely.
@@ -7,14 +7,14 @@
  *    per theme. Meanings change rarely and deliberately.
  * 3. Components choose a meaning, never a value. That layer lives in @veljaos/ui.
  *
- * The values are carried over 1:1 from the previous Design System. `scripts/build.ts` writes
+ * `scripts/build.ts` writes
  * dist/tokens.css, dist/theme.css and dist/tokens.json from this file; nothing else holds a value.
  *
  * A meaning refers to a value by name ('gray1', 'white', 'ink', 'inkRaised'), or gives a literal
- * where the appendix does ('rgba(255,255,255,0.05)', '#B3B0AD').
+ * ('rgba(255,255,255,0.05)', '#B3B0AD').
  */
 
-/** A.1 Colour ramps, 0 = lightest, 9 = darkest. */
+/** Colour ramps, 0 = lightest, 9 = darkest. */
 export const RAMPS = {
   blue: [
     '#E8F5FA',
@@ -104,7 +104,7 @@ export const RAMPS = {
 
 export type RampName = keyof typeof RAMPS
 
-/** A.1 Common colours. */
+/** Common colours. */
 export const COMMON = {
   white: '#FFFFFF',
   black: '#000000',
@@ -120,9 +120,8 @@ export type CommonName = keyof typeof COMMON
 export type Pair = readonly [light: string, dark: string]
 
 /**
- * A.2 Meanings. Keys become --liro-<group>-<kebab-case key>. surface.inverse, text.onInverse and
- * border.control were added in P2.1 by the owner's decision (docs/decisions.md, "Tokens");
- * surface.selected became neutral and border.selected was added in P3.6 (owner, "Less blue").
+ * Meanings. Keys become --liro-<group>-<kebab-case key>. surface.selected is neutral: a
+ * selection is never shown by blue alone.
  */
 export const MEANINGS = {
   surface: {
@@ -147,7 +146,7 @@ export const MEANINGS = {
     brand: ['blue7', 'blue4'],
     link: ['blue7', 'blue4'],
     onInverse: ['white', 'black'],
-    // The app lockup (P4.1, owner): the logo's own colours, #0078D4 and #3EACEB, so the name in
+    // The app lockup: the logo's own colours, #0078D4 and #3EACEB, so the name in
     // the header matches the logo files. Not text.brand (blue 7 in light), which stays.
     logo: ['blue6', 'blue4'],
   },
@@ -169,11 +168,11 @@ export const MEANINGS = {
     onSolid: ['white', 'white'],
     accent: ['teal6', 'teal4'],
   },
-  // Charts (P4.6, the owner's decision): one brand blue for the main series, greys for the
+  // Charts: one brand blue for the main series, greys for the
   // comparison and the rest; an opt-in categorical palette of five hues in a fixed order, validated
-  // for colour-vision deficiency. P4.7c (owner): no hue that reads as a status (red, orange,
-  // green) — blue, magenta, purple, teal, indigo, at least 3:1 on the card in both themes
-  // (docs/decisions.md "Categorical palette"). They are not on the ramps (no magenta ramp exists).
+  // for colour-vision deficiency. No hue that reads as a status (red, orange,
+  // green) — blue, magenta, purple, teal, indigo, at least 3:1 on the card in both themes.
+  // They are not on the ramps (no magenta ramp exists).
   // The dark first hue is blue 5: blue 4 is lighter than the validator's dark band.
   chart: {
     main: ['blue6', 'blue4'],
@@ -187,7 +186,7 @@ export const MEANINGS = {
   },
 } as const satisfies Record<string, Record<string, Pair>>
 
-/** A.2 Status tones: fg (text), bg (background under that text), border, solid (bars and dots, never text). */
+/** Status tones: fg (text), bg (background under that text), border, solid (bars and dots, never text). */
 export const TONES = {
   success: {
     fg: ['green7', 'green3'],
@@ -199,8 +198,8 @@ export const TONES = {
     fg: ['orange8', 'orange3'],
     bg: ['orange0', 'rgba(216,59,1,0.20)'],
     border: ['orange2', 'rgba(216,59,1,0.45)'],
-    // Light orange 6 (P4.7c, owner): orange 7 read like danger's red 7. Icons only, never text;
-    // never straight on the page background (docs/decisions.md "Warning solid").
+    // Light orange 6: orange 7 reads like danger's red 7. Icons only, never text;
+    // never straight on the page background.
     solid: ['orange6', 'orange6'],
   },
   danger: {
@@ -232,7 +231,7 @@ export const TONES = {
 export type Tone = keyof typeof TONES
 
 /**
- * On a selected row or card (surface.selected; P4.3, decided by the owner): measured over the
+ * On a selected row or card (surface.selected): measured over the
  * selection, a few dark-theme text colours fall below 4.5:1, so there they take the shade that
  * passes — the next lighter one, which their hover already uses. Keyed by the variable's name
  * after `--liro-`; the light theme needs none. An element marks the selection with
@@ -250,7 +249,7 @@ export const ON_SELECTED: Record<Theme, Readonly<Record<string, string>>> = {
   },
 }
 
-/** A.3 Spacing. Tailwind's own scale (--spacing: 0.25rem) gives the same steps: p-1 = 4px … p-16 = 64px. */
+/** Spacing. Tailwind's own scale (--spacing: 0.25rem) gives the same steps: p-1 = 4px … p-16 = 64px. */
 export const SPACE = {
   none: '0',
   xxs: '4px',
@@ -263,7 +262,7 @@ export const SPACE = {
   xxxl: '64px',
 } as const
 
-/** A.3 Radius. */
+/** Radius. */
 export const RADIUS = {
   none: '0',
   xs: '2px',
@@ -274,7 +273,7 @@ export const RADIUS = {
   full: '9999px',
 } as const
 
-/** A.3 Shadows: the same offsets in both themes; dark uses a stronger black. */
+/** Shadows: the same offsets in both themes; dark uses a stronger black. */
 const SHADOW_OFFSETS = {
   xs: '0 1px 2px',
   sm: '0 1px 4px',
@@ -307,7 +306,7 @@ export const SHADOWS: Record<ShadowSize, Pair> = {
   xl: shadow('xl'),
 }
 
-/** A.4 Motion. `prefers-reduced-motion: reduce` sets every duration to 0ms. */
+/** Motion. `prefers-reduced-motion: reduce` sets every duration to 0ms. */
 export const DURATION = {
   instant: '75ms',
   fast: '100ms',
@@ -321,7 +320,7 @@ export const EASING = {
   accelerate: 'cubic-bezier(0.9,0.1,1,0.2)',
 } as const
 
-/** A.4 Breakpoints. */
+/** Breakpoints. */
 export const BREAKPOINTS = {
   xs: '36em',
   sm: '48em',
@@ -330,7 +329,7 @@ export const BREAKPOINTS = {
   xl: '88em',
 } as const
 
-/** A.4 Sizes. */
+/** Sizes. */
 export const SIZES = {
   headerHeight: '56px',
   contentMaxWidth: '1440px',
@@ -338,7 +337,7 @@ export const SIZES = {
   controlHeightSm: '30px',
 } as const
 
-/** A.4 Layers (z-index). */
+/** Layers (z-index). */
 export const LAYERS = {
   base: '0',
   raised: '10',
@@ -352,7 +351,7 @@ export const LAYERS = {
 } as const
 
 /**
- * A.5 and P1.2 Fonts. The interface face is Noto Sans with its script families; the files ship
+ * Fonts. The interface face is Noto Sans with its script families; the files ship
  * in @veljaos/tokens (fonts.css), each script subset downloading only when text needs it. Latin,
  * Cyrillic and Greek come from Noto Sans; Arabic and Hebrew from their own families; Han, kana and
  * hangul from the CJK families, in an order that depends on the language (FONT_CJK_ORDER).
@@ -388,14 +387,14 @@ export function sansStack(cjk: readonly string[]): string {
 }
 
 /**
- * A.5 Brand face (wordmark, status pages) and monospace. The brand face falls back to Inter, then
- * the interface stack. JetBrains Mono is shipped (P3.0a): a system monospace differs between
+ * Brand face (wordmark, status pages) and monospace. The brand face falls back to Inter, then
+ * the interface stack. JetBrains Mono is shipped: a system monospace differs between
  * devices, and in the test image Chromium switched between two of them, which changed line heights.
  */
 export const BRAND_STACK = `'${FONT_FAMILY.spaceGrotesk}', '${FONT_FAMILY.inter}', var(--liro-font-sans)`
 export const MONO_STACK = `'${FONT_FAMILY.jetbrainsMono}', 'JetBrains Mono', 'Cascadia Code', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace`
 
-/** A.5 Sizes; md is the body size. */
+/** Sizes; md is the body size. */
 export const FONT_SIZE = {
   xs: '12px',
   sm: '13px',
@@ -404,7 +403,7 @@ export const FONT_SIZE = {
   xl: '20px',
 } as const
 
-/** A.5 Weights. */
+/** Weights. */
 export const FONT_WEIGHT = {
   regular: '400',
   medium: '500',
@@ -412,21 +411,21 @@ export const FONT_WEIGHT = {
   bold: '700',
 } as const
 
-/** A.5 Line heights. */
+/** Line heights. */
 export const LEADING = {
   tight: '1.25',
   base: '1.45',
   relaxed: '1.6',
 } as const
 
-/** A.5 Letter spacing. */
+/** Letter spacing. */
 export const TRACKING = {
   heading: '-0.015em',
   body: '-0.01em',
   caps: '0.5px',
 } as const
 
-/** A.5 Headings, all semibold: [size, line height]. */
+/** Headings, all semibold: [size, line height]. */
 export const HEADINGS = {
   h1: ['24px', '1.3'],
   h2: ['20px', '1.35'],
@@ -437,17 +436,16 @@ export const HEADINGS = {
 } as const satisfies Record<string, readonly [string, string]>
 
 /**
- * P1.2 Per-script adjustment. Arabic script and CJK text get the relaxed line height of A.5 for
+ * Per-script adjustment. Arabic script and CJK text get the relaxed line height for
  * body text, and no letter spacing: spacing breaks the joining of Arabic letters, and CJK text is
  * set solid. Languages are matched with :lang(), so any region or script subtag counts.
  */
 export const RELAXED_SCRIPT_LANGUAGES = ['ar', 'fa', 'ur', 'ja', 'zh'] as const
 
 /**
- * A.6 Families: the colour of an action by its purpose. Carried over from the previous Design
- * System (built on Mantine; "button weights" in docs/decisions.md):
+ * Families: the colour of an action by its purpose, with Mantine's button weights:
  * - solid: the filled button (primary emphasis), white text; hover one shade darker, press two.
- *   Gray and orange fill with shade 7, because shade 6 fails AA with white text (Appendix B.6).
+ *   Gray and orange fill with shade 7, because shade 6 fails AA with white text.
  * - subtle / subtleHover: the light button (secondary emphasis) and the hover of the subtle
  *   button (menu emphasis). Light: shades 0 and 1, as brand.subtle; dark: the solid colour at
  *   0.16 and 0.26, as brand.subtle. The neutral family has none: its secondary button is
@@ -456,7 +454,7 @@ export const RELAXED_SCRIPT_LANGUAGES = ['ar', 'fa', 'ur', 'ja', 'zh'] as const
  *   matching status tone's fg for the others (teal, which has no tone, as the tones: 7 and 3),
  *   text.primary for neutral.
  * - fgHover: the family's text on hover, one shade stronger (darker in light, lighter in dark),
- *   because fg on subtleHover measured below 4.5:1 (decided by the owner, 2026-09-25).
+ *   because fg on subtleHover measured below 4.5:1.
  */
 export const FAMILIES = {
   primary: {
@@ -528,7 +526,7 @@ export const FAMILIES = {
 
 export type Family = keyof typeof FAMILIES
 
-/** A.6 The filled shade of each family, as the plan lists it. */
+/** The filled shade of each family. */
 export const FAMILY_FILLED_SHADE: Record<Family, string> = {
   primary: 'blue6',
   verify: 'teal6',
@@ -595,7 +593,7 @@ const MEANING_GROUPS: Record<string, Record<string, Pair>> = MEANINGS
 const TONE_GROUPS: Record<string, Record<string, Pair>> = TONES
 const FAMILY_GROUPS: Record<string, Record<string, Pair>> = FAMILIES
 
-/** Every meaning (A.2 including tones) as [CSS variable, light, dark], in a stable order. */
+/** Every meaning (tones included) as [CSS variable, light, dark], in a stable order. */
 export function meaningEntries(): { variable: string; path: string; pair: Pair }[] {
   const entries: { variable: string; path: string; pair: Pair }[] = []
   for (const [group, meanings] of Object.entries(MEANING_GROUPS)) {

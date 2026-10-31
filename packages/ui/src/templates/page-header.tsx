@@ -7,15 +7,14 @@ import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 
 /*
- * PageHeader (P4.3, P4.4; the owner's decisions, docs/decisions.md "Page header" and "Detail and
- * record form pages"): the page's title (h1) at the start and its main action at the end, on the
+ * PageHeader: the page's title (h1) at the start and its main action at the end, on the
  * page background.
  * - `titleHidden`: no redundant title — where the active module tab already names the page
  *   ("Invoices"), the h1 stays for screen readers only, and the row holds just the actions at the
  *   end. ListPage hides it by default; detail, document, settings and report pages keep it
  *   visible, because there it carries information (a record's number, a person's name) or no tab
  *   names the page. The document title ("Invoices – Liro Business Apps") is the application's.
- * - `back` (the old style): an icon-only subtle neutral button, 28px, radius md, ArrowLeft 18px
+ * - `back`: an icon-only subtle neutral button, 28px, radius md, ArrowLeft 18px
  *   (mirrored in right-to-left), at the start of the title in the same row; its name and tooltip
  *   "Back to <list>" (`messages['page.backTo']`); a link through the provider's linkComponent.
  * - `status` stands after the title (a StatusBadge); `subtitle` is a line under it (sm,
@@ -46,7 +45,7 @@ export interface PageHeaderProps {
   status?: ReactNode
   /** A line under the title. */
   subtitle?: ReactNode
-  /** The page's actions at the end, the main one last (AGENTS.md D13). */
+  /** The page's actions at the end, the main one last. */
   actions?: ReactNode
   className?: string
 }

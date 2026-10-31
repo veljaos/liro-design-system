@@ -4,7 +4,7 @@ import type { PaymentPart } from './payment-dialog'
 import type { PosProduct, ProductCategory } from './product-tile'
 
 /*
- * Story data of the till (P5.10): Pekara Zlatni klas, a bakery in Novi Sad (fictitious). English
+ * Story data of the till: Pekara Zlatni klas, a bakery in Novi Sad (fictitious). English
  * interface text, Serbian data; every amount a decimal string, and the totals add up as the
  * application would send them. Not part of the package: nothing in src/index.ts imports this
  * file. No classes here: Storybook compiles classes only from *.stories.tsx files.

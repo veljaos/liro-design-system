@@ -1,7 +1,6 @@
 /*
  * Class strings shared by several primitives. Values are Mantine 9.6.2 defaults with the Liro
- * tokens applied, read from @mantine/core styles/*.css (each source is named where it is used and
- * listed in docs/decisions.md, "Values taken from Mantine defaults").
+ * tokens applied, read from @mantine/core styles/*.css (each source is named where it is used).
  */
 
 /**
@@ -19,18 +18,17 @@ export const FOCUS_RING =
 /**
  * A text input (Input.css, size 'sm'): 36px high, 12px (36 / 3) horizontal padding, radius md,
  * 1px border, 13px text; the border turns to the focus colour on focus. Border: border.control,
- * which meets 3:1 on every surface (owner's decision, 2026-09-25; Mantine's gray-4 did not).
- * Placeholder: text.tertiary. Invalid (aria-invalid): the border in status.danger.fg (owner's
- * decision, 2026-09-25). Disabled: surface.disabled and text.disabled, border.default, no
- * opacity (Appendix B.6).
+ * which meets 3:1 on every surface (Mantine's gray-4 did not).
+ * Placeholder: text.tertiary. Invalid (aria-invalid): the border in status.danger.fg.
+ * Disabled: surface.disabled and text.disabled, border.default, no
+ * opacity.
  */
 export const INPUT =
   'block h-control w-full min-w-0 rounded-md border border-solid border-control bg-surface-raised px-3 font-sans text-sm text-primary outline-none transition-colors duration-(--liro-duration-fast) ease-standard placeholder:text-tertiary focus:border-focus disabled:cursor-not-allowed disabled:border-default disabled:bg-surface-disabled disabled:text-disabled aria-invalid:border-status-danger-fg'
 
 /**
- * A read-only control, the one state of a field that cannot be changed (owner, P5.93 item 1; it
- * replaces both the old plain-text read-only of 2026-09-25 and the disabled field): the look of
- * the old disabled control — surface.disabled background and a border.default line — with the
+ * A read-only control, the one state of a field that cannot be changed: the look of a
+ * disabled control — surface.disabled background and a border.default line — with the
  * value in the full text colour, so it stays readable. It can be focused (the focus ring, the
  * border unchanged), selected and copied. An empty value shows "—" as its placeholder, in
  * text.secondary. Every field uses this one class set (READ_ONLY_CHOICE for checkboxes, radios
@@ -40,7 +38,7 @@ export const READ_ONLY =
   'cursor-text border-default bg-surface-disabled text-primary placeholder:text-secondary focus:border-default focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-focus'
 
 /**
- * A read-only checkbox, radio or switch (P5.93 item 1), set with `data-readonly` on the control:
+ * A read-only checkbox, radio or switch, set with `data-readonly` on the control:
  * the disabled look (surface.disabled, border.default) with its state still drawn — the check
  * or the dot in text.secondary, a switch's thumb at its side — focusable, not changeable.
  */
@@ -64,7 +62,7 @@ export const FLOATING_MOTION =
  * highlighted item takes surface.sunken (Mantine: gray-1; surface.hover, gray-0, is too faint to
  * show keyboard focus). Disabled: text.disabled, no opacity. Full width with padding, so its box
  * is border-box: without a reset it would be wider than its list by the padding, and the list
- * would scroll sideways under the highlighted item (P3.2a).
+ * would scroll sideways under the highlighted item.
  */
 export const MENU_ITEM =
   'relative box-border flex w-full cursor-default items-center rounded-md px-3 py-[calc(10px/1.5)] text-sm text-primary outline-none select-none data-highlighted:bg-surface-sunken data-disabled:cursor-not-allowed data-disabled:text-disabled'
@@ -82,7 +80,7 @@ export const BACKDROP =
   'fixed inset-0 z-(--liro-layer-modal) bg-surface-backdrop data-[state=open]:animate-liro-overlay-in data-[state=closed]:animate-liro-overlay-out motion-reduce:animate-none'
 
 /**
- * A dialog on a phone (P5.28 item 1): a sheet across the screen's full width, standing on its
+ * A dialog on a phone: a sheet across the screen's full width, standing on its
  * bottom edge, as high as its content up to the screen's height less 40px (the page above it
  * shows that it is a sheet over the page), radius lg on its top corners, sliding up 200ms; the
  * safe area under it is padding. Percentages, not dvh or vw: its containing block is the screen —
@@ -93,9 +91,9 @@ export const PHONE_DIALOG =
   'inset-x-0 top-auto bottom-0 mx-0 w-full max-w-full max-h-[calc(100%-40px)] rounded-none rounded-t-lg pb-[env(safe-area-inset-bottom)] [--liro-slide-from:translateY(100%)] data-[state=open]:animate-liro-slide-in data-[state=closed]:animate-liro-slide-out motion-reduce:animate-none'
 
 /**
- * A block of text takes its direction from its own content, while the layout keeps the page's
- * (P3.6, owner): an English sentence in a right-to-left page — a message the application has not
- * translated yet — keeps its word order (".Unavailable: The period …" was broken), and an
+ * A block of text takes its direction from its own content, while the layout keeps the page's:
+ * an English sentence in a right-to-left page — a message the application has not
+ * translated yet — keeps its word order (never ".Unavailable: The period …"), and an
  * Arabic one in a left-to-right page keeps its own. `unicode-bidi: plaintext` sets each
  * paragraph's direction from its first strong character and isolates an inline element; it
  * leaves `direction`, so the component's layout (the order of icon, text and buttons, flex rows,
@@ -116,7 +114,7 @@ export const TEXT_DIRECTION = 'bidi-content'
 export const TEXT_ISOLATE = 'bidi-isolate'
 
 /**
- * Props of a field's typing area for free text (P3.6c): its direction from the content
+ * Props of a field's typing area for free text: its direction from the content
  * (`dir="auto"`), so "Alfa Trade d.o.o." keeps its full stop at the end in a right-to-left form,
  * while the text stays at the page's start side (`text-align: match-parent`). Numbers, money,
  * dates and codes are written left to right instead.
@@ -124,7 +122,7 @@ export const TEXT_ISOLATE = 'bidi-isolate'
 export const AUTO_DIRECTION = { dir: 'auto', className: 'text-match-parent' } as const
 
 /**
- * An item whose title is its link — a card, a result, a row (P5.94 item 10): the title is never
+ * An item whose title is its link — a card, a result, a row: the title is never
  * underlined; the item shows the hover on its surface and the keyboard's focus as the link's ring.
  * Rows without side padding add `-mx-2 px-2` so the surface has room round the text.
  */

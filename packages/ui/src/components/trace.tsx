@@ -38,7 +38,7 @@ import {
 } from './trace-logic'
 
 /*
- * Trace (P5.93, the owner's item 49; shadcn/ui's Trace and AI Elements): the work an assistant
+ * Trace (shadcn/ui's Trace and AI Elements): the work an assistant
  * does, shown as calm rows. One row: an icon, a one-line title in the application's words, an
  * optional description (a count, a duration) and a status —
  * - done (the default): the title in the past tense, text.secondary, the step's icon;
@@ -384,7 +384,7 @@ export function Reasoning(props: ReasoningProps) {
         open={open}
         onOpenChange={onOpenChange}
         content={
-          // The application's paragraphs take their direction from their own text (D15).
+          // The application's paragraphs take their direction from their own text.
           <div
             className={cn(
               'flex min-w-0 flex-col gap-2 text-sm text-secondary [&>*]:bidi-content',

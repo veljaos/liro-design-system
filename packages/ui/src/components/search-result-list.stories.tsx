@@ -23,7 +23,7 @@ const meta = {
           'snippets (`snippetFromRanges` makes the marked parts from a text and the ranges ' +
           'its engine reports).\n\n' +
           '**When to use:** a search page over texts. **When not:** records with columns ' +
-          '(ListPage with DataTable); legal acts (the legal search recipe, docs/recipes.md); suggestions while the user ' +
+          '(ListPage with DataTable); legal acts (a legal search page); suggestions while the user ' +
           'types (LinkSuggestions).',
       },
     },

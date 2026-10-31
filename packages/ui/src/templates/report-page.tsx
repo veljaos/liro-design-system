@@ -8,7 +8,7 @@ import { useLiro } from '../provider/liro-provider'
 import { PageHeader } from './page-header'
 
 /*
- * ReportPage (P4.6, the owner's decision, docs/decisions.md "Report page"): a report's
+ * ReportPage: a report's
  * parameters, its result, and its export.
  * - The title (visible: no tab names a report) and the export at the end of the header (the
  *   application's button: exports run as jobs).

@@ -10,7 +10,7 @@ const meta = {
     docs: {
       description: {
         component: internal(
-          'A 38×20px switch; the thumb starts at the leading edge in both directions. SwitchField (P2.2).',
+          'A 38×20px switch; the thumb starts at the leading edge in both directions. SwitchField.',
         ),
       },
     },

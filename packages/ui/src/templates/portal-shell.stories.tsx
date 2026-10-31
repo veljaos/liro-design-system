@@ -79,7 +79,7 @@ function HomeRow(props: { title: string; detail: ReactNode; action?: ReactNode }
 }
 
 /**
- * A portal's home shows only what matters now (P5.93 item 11, the owner's review): the quick
+ * A portal's home shows only what matters now: the quick
  * actions, what the person has to do, and what is new for them — no grid of equal cards.
  */
 function PatientHome() {
@@ -242,7 +242,7 @@ const meta = {
           'parent, a student, a customer. The header (56px) has the brand (BrandLockup props: ' +
           'the application’s names, no logo inside) and the participant, whose menu holds ' +
           'their details, the language and signing out. A few sections (up to five): centred ' +
-          'tabs on desktop, as the module tabs of AppShell (P5.93), a bottom navigation bar on phones within thumb reach, with the ' +
+          'tabs on desktop, as the module tabs of AppShell, a bottom navigation bar on phones within thumb reach, with the ' +
           'safe areas. A section’s note ("2 new") is small text on desktop and a dot on the ' +
           'icon on phones, read with the name. Portal-wide `banners` at the top of the content, ' +
           'the institution’s `footer` under it, a skip link first. Phone first.\n\n' +
@@ -270,7 +270,7 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 /** A patient portal: appointments, results, messages. */
-/** The shell publishes its sticky header's height as --liro-shell-top (P5.28 item 4). */
+/** The shell publishes its sticky header's height as --liro-shell-top. */
 async function expectShellTop(canvasElement: HTMLElement): Promise<void> {
   const shell = canvasElement.querySelector<HTMLElement>('[data-slot="portal-shell"]')
   const header = shell?.querySelector<HTMLElement>('header')
@@ -289,10 +289,10 @@ export const Default: Story = {
     const canvas = within(canvasElement)
     const nav = within(canvas.getByRole('navigation', { name: 'Sections' }))
     await expect(nav.getByRole('link', { name: 'Home' })).toHaveAttribute('aria-current', 'page')
-    // The home shows what matters now: the quick actions, the to-dos, what is new (P5.93).
+    // The home shows what matters now: the quick actions, the to-dos, what is new.
     await expect(canvas.getByRole('heading', { name: 'To do' })).toBeVisible()
     await expect(canvas.getByRole('button', { name: 'Book an appointment' })).toBeVisible()
-    // The sections are centred, as AppShell's module tabs (P5.93 item 11).
+    // The sections are centred, as AppShell's module tabs.
     const list = nav.getByRole('list')
     const items = [...list.children].map((item) => item.getBoundingClientRect())
     const box = list.getBoundingClientRect()

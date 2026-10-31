@@ -11,7 +11,7 @@ const render = (node: React.ReactNode, props: { linkComponent?: React.ElementTyp
   )
 
 describe('Tabs', () => {
-  it('mounts only the active panel and starts the list at the start (P4.7c)', () => {
+  it('mounts only the active panel and starts the list at the start', () => {
     const html = render(
       <Tabs
         items={[
@@ -25,7 +25,7 @@ describe('Tabs', () => {
     expect(html).toContain('justify-start')
   })
 
-  it('puts the one gap token between the tab list and its panel (P5.23)', () => {
+  it('puts the one gap token between the tab list and its panel', () => {
     const html = render(<Tabs items={[{ value: 'a', label: 'Members', content: 'Panel' }]} />)
     expect(html).toMatch(/data-slot="tabs-content" class="[^"]* pt-4"/)
   })

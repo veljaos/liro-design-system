@@ -50,10 +50,10 @@ import {
 } from './data-BC'
 
 /*
- * Group BC's example screens (P5.62, My profile): Milica Petrović's own profile, opened from the
+ * The example screens (My profile): Milica Petrović's own profile, opened from the
  * user menu's "Profile". A SettingsPage with three tabs, each its own address:
  * - Preferences: her name and e-mail (read-only: the administrator changes them), the interface
- *   language (each language in its own name, `lang` on the option, D15) and the theme — the
+ *   language (each language in its own name, `lang` on the option) and the theme — the
  *   provider's choices as the Core offers them; a choice saves at once ("Saved").
  * - Sign-in and security: the password (changed in a Dialog), two-factor sign-in (on: new
  *   recovery codes, turn off with a confirmation; off: "Turn on" opens a Dialog with the QR code
@@ -61,9 +61,9 @@ import {
  *   then RecoveryCodes shown once), the passkeys (rows with created and last used, Remove with a
  *   confirmation; "Add a passkey" — the browser's step is the Core's; a failure is the row's
  *   error; a new passkey is named in a Dialog).
- * - Devices: SessionList in the section's block (SettingsSection `content`, P5.62), with the
+ * - Devices: SessionList in the section's block (SettingsSection `content`), with the
  *   e-mail about a new device as a row.
- * Dialogs stand at page level, outside the tabs (D16). Every code, key, rule and answer is the
+ * Dialogs stand at page level, outside the tabs. Every code, key, rule and answer is the
  * Core's (data-BC).
  */
 
@@ -357,7 +357,7 @@ export function MyProfile({
   const [removing, setRemoving] = useState<ExamplePasskey | null>(null)
   // Devices.
   const [sessions, setSessions] = useState<readonly SessionItem[]>(MY_SESSIONS)
-  // The home page's tiles (P5.94 item 18): chosen, ordered and hidden here, not on the home page.
+  // The home page's tiles: chosen, ordered and hidden here, not on the home page.
   const [tiles, setTiles] = useState(MODULES.map((module) => module.id))
   const [hiddenTiles, setHiddenTiles] = useState<string[]>([])
   const modulesOf = (ids: readonly string[]) =>

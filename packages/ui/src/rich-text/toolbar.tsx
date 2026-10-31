@@ -30,7 +30,7 @@ import { toolbarKeyTarget } from './rich-text-logic'
 import { Tooltip } from '../components/popover'
 
 /*
- * The formatting toolbar of RichTextField (P5.22), the WAI-ARIA toolbar pattern: one control in
+ * The formatting toolbar of RichTextField, the WAI-ARIA toolbar pattern: one control in
  * the tab order (the last one used), the arrows move between the controls (following the screen in
  * right-to-left) and wrap, Home and End go to the ends. Every control is named from messages and
  * says its state: the toggles with `aria-pressed`, the style menu with the current style. A press
@@ -40,7 +40,7 @@ import { Tooltip } from '../components/popover'
  *
  * Look: 28px controls (the compact icon button's size, targets ≥ 24px), radius sm, text.secondary;
  * hover surface.hover; pressed: the neutral selection — surface.selected with a border.selected
- * border and text.primary — never blue (D17).
+ * border and text.primary — never blue.
  */
 
 /** The state of the text at the caret, as the toolbar shows it. */

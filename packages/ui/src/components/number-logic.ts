@@ -1,10 +1,9 @@
 import type { LiroFormat } from '../provider/format'
 
 /*
- * The logic of NumberField and MoneyField, kept apart from the markup so it can be unit-tested
- * (AGENTS.md C7). There is no input mask (Appendix B.3): the text is read by `format.parseNumber`
- * when the user leaves the field or presses Enter, and the value is a decimal string, never a
- * JavaScript number (Appendix B.4).
+ * The logic of NumberField and MoneyField, kept apart from the markup so it can be unit-tested.
+ * There is no input mask: the text is read by `format.parseNumber` when the user leaves the field
+ * or presses Enter, and the value is a decimal string, never a JavaScript number.
  */
 
 /** The result of reading what the user typed. */
@@ -34,8 +33,8 @@ export function showNumber(
 
 /**
  * Whether the currency comes before the amount in this locale: the same rule as a displayed
- * amount (`format.money`), so an amount looks the same in a field and in text (owner's decision,
- * 2026-09-28). Read from `format.money` itself, so an application's own format is followed too.
+ * amount (`format.money`), so an amount looks the same in a field and in text. Read from
+ * `format.money` itself, so an application's own format is followed too.
  */
 export function currencyFirst(format: Pick<LiroFormat, 'money'>, currency: string): boolean {
   const sample = format.money('1', currency)

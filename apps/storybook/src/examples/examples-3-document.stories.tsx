@@ -65,7 +65,7 @@ export const JournalEntryScreen: Story = {
     await expect(bar).toHaveTextContent('144.720,00 RSD')
     await expect(bar).toHaveTextContent('Balanced')
     await expect(within(canvasElement).getByRole('button', { name: 'Post' })).toBeEnabled()
-    // The draft's header follows the invoice draft's (P5.23): three values on one row, the date
+    // The draft's header follows the invoice draft's: three values on one row, the date
     // and the journal changeable, "Based on" read-only; the lines' card has no title.
     const canvas = within(canvasElement)
     const values = Array.from(
@@ -134,7 +134,7 @@ export const JournalEntryPhone: Story = {
   play: async ({ canvasElement }) => {
     await settle()
     const bar = canvasElement.querySelector('[data-slot="balance-bar"]')
-    // The balance in one place after the lines and "Add line", never over a line (P5.90 item 3).
+    // The balance in one place after the lines and "Add line", never over a line.
     const totals = bar?.closest('[data-slot="grid-totals"]')
     const lines = canvasElement.querySelectorAll('[data-row-key]')
     const last = lines[lines.length - 1]
@@ -169,7 +169,7 @@ function totalsAmount(root: Element, label: string): bigint {
 }
 
 /**
- * A document table's description column wraps to at most two lines (P5.23): the lines of each
+ * A document table's description column wraps to at most two lines: the lines of each
  * cell's own text, not the line kind under it, counted by their boxes.
  */
 async function expectAtMostTwoLines(table: HTMLElement, header: string) {
@@ -197,7 +197,7 @@ async function noSidewaysOverflow(canvasElement: HTMLElement) {
 
 /**
  * Decrease document KO-2026-0009 against F-2026-0410 (Medic Lab Niš d.o.o.): the source in the
- * header beside the customer ("Corrects" with the invoice's link, state, date and total; P5.23),
+ * header beside the customer ("Corrects" with the invoice's link, state, date and total),
  * the lines as Original / Change / New (item names on at most two lines), the totals of the
  * change; original total plus the change is the new total.
  */
@@ -223,7 +223,7 @@ export const DecreaseScreen: Story = {
     await expect(canvasElement).toHaveTextContent('186.420,35')
     await expect(paras('186.420,35') + decrease).toBe(paras('167.762,75'))
     await expect(canvasElement).toHaveTextContent('167.762,75')
-    // The source at the customer's level, before the key figures (P5.23).
+    // The source at the customer's level, before the key figures.
     const source = canvasElement.querySelector('[data-slot="document-source"]')
     await expect(source?.closest('[data-slot="document-parties"]')).toHaveTextContent('Medic Lab')
     const link = within(source as HTMLElement).getByRole('link', { name: 'Invoice F-2026-0410' })
@@ -255,9 +255,9 @@ function draftAfterCreate(): DraftLine[] {
 }
 
 /**
- * P5.18: a draft to Bojović i sinovi d.o.o. whose lines are added by search — items with their
+ * A draft to Bojović i sinovi d.o.o. whose lines are added by search — items with their
  * stock (a warning when the quantity is above it), services, a fixed asset sold (its number, and
- * its book value marked internal) —, S 20% and S 10%. Simple by default (P5.90 item 4): item,
+ * its book value marked internal) —, S 20% and S 10%. Simple by default: item,
  * quantity, unit, price, VAT and amount; no discount column while no line has a discount; the
  * header with the date of supply and the place of issue. The walk-through creates the service
  * "Montaža skele" from the last line's search ("+ Create service …"), enters 24 hours, gives the
@@ -276,7 +276,7 @@ export const D1InvoiceDraft: Story = {
       canvas.getByText('Only 36 pc of ART-0118 in stock: the rest goes on back order.'),
     ).toBeVisible()
     await expect(canvas.getByText('Internal')).toBeVisible()
-    // Simple by default: the six columns, no discount or account column (P5.90 item 4).
+    // Simple by default: the six columns, no discount or account column.
     const headers = within(canvas.getByRole('table', { name: 'Lines' }))
       .getAllByRole('columnheader')
       .map((cell) => cell.textContent)
@@ -331,7 +331,7 @@ export const D1InvoiceDraftInteraction: Story = {
     const after = draftTotals(draftAfterCreate())
     await waitFor(() => expect(canvasElement).toHaveTextContent(rsd(after.total.value ?? '0')))
     await expect(canvasElement).toHaveTextContent(rsd(after.net))
-    // A 5% discount on the cement: "Add line ▾" shows the discount column (P5.90 item 4).
+    // A 5% discount on the cement: "Add line ▾" shows the discount column.
     await userEvent.click(canvas.getByRole('textbox', { name: 'Quantity, line 1' }))
     await userEvent.click(canvas.getByRole('button', { name: 'More options: Add line' }))
     await userEvent.click(await body.findByRole('menuitem', { name: 'Discount on a line' }))
@@ -363,7 +363,7 @@ export const D1InvoiceDraftPhone: Story = {
 }
 
 /**
- * The invoice's "PDF" opens liro-folio's PDF (a stand-in in the examples, P5.95); the back button
+ * The invoice's "PDF" opens liro-folio's PDF (a stand-in in the examples); the back button
  * returns to the invoice.
  */
 export const PrintoutInvoiceInteraction: Story = {

@@ -35,7 +35,7 @@ import {
 } from './shared'
 
 /*
- * RadarChart and RadialChart (P4.7a, on the shadcn/ui Chart primitive): for a few scores (radar)
+ * RadarChart and RadialChart (on the shadcn/ui Chart primitive): for a few scores (radar)
  * and progress to a goal (radial) — never for money over time (the "Choosing a chart" page).
  * - Right-to-left: the spokes and the rings run counter-clockwise, in reading order.
  * - The same colour rules as the other charts: blue, then grey; categorical for three or more.
@@ -61,7 +61,7 @@ export interface RadarChartProps extends ChartStateProps {
   legend?: boolean
   height?: number
   controls?: ReactNode
-  /** The key figures as toggle buttons (a ChartSeriesToggle) at the header's end (P5.93 item 42). */
+  /** The key figures as toggle buttons (a ChartSeriesToggle) at the header's end. */
   toggle?: ReactNode
   layout?: 'desktop' | 'phone'
   className?: string
@@ -207,7 +207,7 @@ export interface RadialChartProps extends ChartStateProps {
   palette?: ChartPalette
   /**
    * Each ring's name and value at its start ("Jovana Marić 112%"). The names identify the rings,
-   * so every ring is then the brand blue (P4.7c, owner) unless an item has a tone.
+   * so every ring is then the brand blue unless an item has a tone.
    */
   labels?: boolean
   /** The values are percentages: written with the provider's `format.percent`. */
@@ -222,7 +222,7 @@ export interface RadialChartProps extends ChartStateProps {
   legend?: boolean
   height?: number
   controls?: ReactNode
-  /** The key figures as toggle buttons (a ChartSeriesToggle) at the header's end (P5.93 item 42). */
+  /** The key figures as toggle buttons (a ChartSeriesToggle) at the header's end. */
   toggle?: ReactNode
   layout?: 'desktop' | 'phone'
   className?: string

@@ -14,8 +14,7 @@ import { cn } from './cn'
  * the right in left-to-right, to the left in right-to-left (Radix reads the provider's
  * direction), and its chevron is drawn mirrored in right-to-left. A menu keeps 8px inside the
  * screen (the viewport, or a phone frame) and is never wider than the room there; a long item
- * wraps; on a phone it always moves to stay on the screen, whatever side a component chose (P5.28
- * item 1).
+ * wraps; on a phone it always moves to stay on the screen, whatever side a component chose.
  */
 
 export const DropdownMenu = DropdownMenuPrimitive.Root

@@ -16,7 +16,7 @@ const meta = {
           '**What for:** a file’s versions, newest first — when, who, its size and the ' +
           'application’s note — with Download, Restore and “Upload a new version”. Restore and ' +
           'upload can be unavailable with the application’s reason.\n\n' +
-          '**P5.94:** the current version stands out — its row on the subtle success background, ' +
+          '**The current version stands out** — its row on the subtle success background, ' +
           '“Current” a success badge (the library’s one “current” look). Download and Restore are ' +
           'neutral icon buttons named in the tooltip; restoring is not destructive (it makes a new ' +
           'current version and keeps every other), so it runs at once, without asking.\n\n' +

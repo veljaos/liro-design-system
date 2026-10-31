@@ -1,8 +1,8 @@
 /*
- * Group AA's example data (P5.37): Kvadrat Gradnja d.o.o.'s project "Residential building Liman 4"
+ * The example data: Kvadrat Gradnja d.o.o.'s project "Residential building Liman 4"
  * in Novi Sad on 14.10.2026 at 09:40 — nine phases from design to handover, their tasks and
  * milestones, the dependencies, and each phase's budget against what was spent (RSD). The fourth
- * floor's slab is poured at night on 15.10. (Nikola Marković's changed shift, group Y). Fictitious:
+ * floor's slab is poured at night on 15.10. (Nikola Marković's changed shift). Fictitious:
  * every name, date and amount is invented and illustrative. The scheduling — a phase spans its
  * tasks — and every total are the application's work (`applyPlanChange`); the plan only shows
  * them and reports changes. Not part of the package.

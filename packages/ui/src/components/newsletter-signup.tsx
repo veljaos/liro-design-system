@@ -12,7 +12,7 @@ import { TextField } from './text-field'
 import { usePhone } from './use-phone'
 
 /*
- * NewsletterSignup (BUILD-PLAN P5.39): an e-mail address to receive news — under an article, at
+ * NewsletterSignup: an e-mail address to receive news — under an article, at
  * the end of a blog's list. Generic: the title, the line and the consent note are the
  * application's; the application subscribes and sends the confirmation.
  * - A sunken band (no border; radius lg; 24px, 16px on a phone) with the title (h2 by default,
@@ -27,9 +27,9 @@ import { usePhone } from './use-phone'
  *   rejection keeps the address); `error` is the application's danger Alert.
  * - Subscribed (`subscribed`, or kept after `onSubscribe` succeeds): the band holds only a polite
  *   status with a success CircleCheck and "Thank you — check your inbox to confirm." or the
- *   application's words — no title, line, form or note (P5.94 item 11); after Subscribe the focus
+ *   application's words — no title, line, form or note; after Subscribe the focus
  *   moves to it, so it is not lost with the button.
- * - Unavailable (`unavailableReason`, P5.93): the address read-only, Subscribe unavailable, the
+ * - Unavailable (`unavailableReason`): the address read-only, Subscribe unavailable, the
  *   reason in words under the form.
  */
 
@@ -55,7 +55,7 @@ export interface NewsletterSignupProps {
   /** The address at first. */
   defaultEmail?: string
   /**
-   * No one can subscribe now, and why, from the application (P5.93): the address is read-only,
+   * No one can subscribe now, and why, from the application: the address is read-only,
    * Subscribe is unavailable, and the reason stands under the form.
    */
   unavailableReason?: ReactNode

@@ -1,7 +1,7 @@
 import { useLayoutEffect, type RefObject } from 'react'
 
 /*
- * Table headers that stay in view below the shell (P5.28 item 4; P5.90 item 8). A wide grid
+ * Table headers that stay in view below the shell. A wide grid
  * scrolls sideways in its own region (`overflow-x: auto`), and such a region is a scroll
  * container: a `position: sticky` header inside it sticks to the region, never to the page, so on
  * a long page it would scroll away under the AppShell's header.
@@ -12,7 +12,7 @@ import { useLayoutEffect, type RefObject } from 'react'
  *   itself, inside `maxHeight` or virtualized), and moved down while the region's top is above the
  *   page's sticky edge — the bottom of the shell's sticky top (`--liro-shell-top`). The header
  *   never leaves its region: it stops at the region's last row. Its cells are not layers of their
- *   own (P5.90 item 1): adjacent layers at fractional positions left hairline gaps, white stripes
+ *   own: adjacent layers at fractional positions left hairline gaps, white stripes
  *   on the grey header; the group's background fills any such gap with the header's colour.
  * - The move is pure CSS (styles.css, "Sticky table headers"): a scroll-driven animation on the
  *   region's view timeline, inset by the shell's height. It runs with the scrolling itself (on the
@@ -39,19 +39,19 @@ import { useLayoutEffect, type RefObject } from 'react'
  * The header group (thead, or the header row's element): sticky at its region's top and moved by
  * the page's scroll (`liro-sticky-head` in styles.css). Always one layer of its own
  * (`will-change-transform`): Chromium otherwise decides from frame to frame whether it gets one,
- * and its text was drawn with one antialiasing or the other — the same story gave two pictures
- * (P5.28). The group needs a background (its cells' colour), so nothing shows between its cells.
+ * and its text is drawn with one antialiasing or the other — the same story gives two pictures.
+ * The group needs a background (its cells' colour), so nothing shows between its cells.
  */
 export const STICKY_HEAD = 'liro-sticky-head sticky top-0 will-change-transform'
 
 /**
  * A first column's cells (and the corner): sticky at the region's start, always on a layer of
- * their own for the same reason as `STICKY_HEAD` — without it the statutory grid's labels were
- * antialiased one way or the other from run to run (P5.29). The layer is a 3D transform, not
- * `will-change`: a `will-change` layer kept its row's fractional position, and where the next
- * row's cell rounded the other way its background covered the row's line (rows are fractional:
+ * their own for the same reason as `STICKY_HEAD` — without it the statutory grid's labels are
+ * antialiased one way or the other from run to run. The layer is a 3D transform, not
+ * `will-change`: a `will-change` layer keeps its row's fractional position, and where the next
+ * row's cell rounds the other way its background covers the row's line (rows are fractional:
  * the 1.45 line height). A `translateZ(0)` layer is placed on whole pixels, so every row's line
- * shows in the first column as in the others (P5.91).
+ * shows in the first column as in the others.
  */
 export const STICKY_START = 'sticky start-0 [transform:translateZ(0)]'
 
@@ -68,7 +68,7 @@ export const STICKY_CLEARANCE =
   '[&_:is([role=gridcell],[role=rowheader],td,th[scope=row],tr[tabindex],[data-cell])]:scroll-mt-[calc(var(--liro-shell-top,0px)+var(--liro-head-height,0px))] [&_:is([role=gridcell],td,[data-cell])]:scroll-ms-[var(--liro-start-width,0px)]'
 
 /**
- * Where the header moves (P5.90 item 8), px, as the CSS variables the scroll-driven animation
+ * Where the header moves, px, as the CSS variables the scroll-driven animation
  * reads: it starts once the region's top (its border edge) is `start` px above the sticky edge —
  * the header stands inside the region's top border — and moves at most `room` px, the region's
  * inner height less the header's, so it stops at the last row.
@@ -121,8 +121,8 @@ export const STICKY_VARIABLES = [
 ] as const
 
 /**
- * Makes a region's header group (`STICKY_HEAD`) stay below the shell while the page scrolls (P5.28
- * item 4, P5.90 item 8): names the region for the CSS (`data-sticky-region`) and measures, when
+ * Makes a region's header group (`STICKY_HEAD`) stay below the shell while the page scrolls:
+ * names the region for the CSS (`data-sticky-region`) and measures, when
  * the region, its header or its corner changes size, `--liro-head-height`, `--liro-head-start`,
  * `--liro-head-room` and `--liro-start-width`. Nothing runs on scroll: the header moves with the
  * scrolling itself.

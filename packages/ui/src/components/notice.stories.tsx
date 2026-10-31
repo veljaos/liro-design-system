@@ -17,9 +17,9 @@ const meta = {
           '"Payroll posted", "Could not send the e-mail". Place `<Toaster />` once inside ' +
           'LiroProvider and call `notice.success | info | warning | error | loading(message, ' +
           '{ title })`.\n\n' +
-          '**Toasts never block (P5.90, P5.93).** Every toast has its close button (X). ' +
+          '**Toasts never block.** Every toast has its close button (X). ' +
           'Success and info close by themselves after 4 seconds, a warning after 6; an error ' +
-          'stays until the user closes it (Appendix B.8: successes disappear, errors wait). ' +
+          'stays until the user closes it (successes disappear, errors wait). ' +
           '`notice.loading` stays until `notice.update(id, kind, message)` turns it into the ' +
           'result. Only the buttons take the pointer: a click anywhere else on a toast passes ' +
           'through to what it covers. Bottom right, bottom left in right-to-left; at most four ' +
@@ -27,7 +27,7 @@ const meta = {
           '(`useBottomBar`).\n\n' +
           '**When not:** a routine action whose result shows on the screen — "Saved" beside ' +
           'the action (SaveStatus), a line "Sent · 19:40" in a till, a table\'s state on a ' +
-          'floor plan, and Undo beside what changed (P5.93); a problem ' +
+          'floor plan, and Undo beside what changed; a problem ' +
           'with a field (its error, under the field); something the user must decide ' +
           '(ConfirmDialog); a lasting state of the page (Alert or Banner); a download (the ' +
           'browser shows it).',
@@ -115,7 +115,7 @@ export const LoadingThenResult: Story = {
 
 /**
  * A success closes by itself after 4 seconds; it has its X, and a click anywhere else on it passes
- * through to what it covers (P5.90, P5.93: toasts never block).
+ * through to what it covers (toasts never block).
  */
 export const SuccessNeverBlocks: Story = {
   name: 'Success closes by itself, never blocks',

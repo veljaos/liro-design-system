@@ -64,7 +64,7 @@ import {
 } from '../../../../packages/ui/src/components/catalog-story-data'
 
 /*
- * Group E's example screens (P5.19 catalogues at scale, P5.20 registers and official forms):
+ * Catalogues at scale, registers and official forms:
  * the customer catalogue with its lookup, bulk edit and import, and the VAT return for September
  * 2026. Only the public entry point `@veljaos/ui`.
  */
@@ -86,8 +86,7 @@ const inactiveBadge = statusBadge('Inactive')
 
 /**
  * The name, with "Inactive" after it only where the list mixes active and inactive customers
- * (the All view, the lookup with "Show inactive"): on the Inactive view the tab already says it
- * (P5.23, owner).
+ * (the All view, the lookup with "Show inactive"): on the Inactive view the tab already says it.
  */
 function CustomerName({ customer, marked }: { customer: Customer; marked: boolean }) {
   return (
@@ -98,7 +97,7 @@ function CustomerName({ customer, marked }: { customer: Customer; marked: boolea
   )
 }
 
-/** The catalogue's columns, every one sortable (P5.23: a catalogue list sorts by its columns). */
+/** The catalogue's columns, every one sortable (a catalogue list sorts by its columns). */
 function customerColumns(markInactive: boolean): DataTableColumn<Customer>[] {
   return [
     {
@@ -162,7 +161,7 @@ const TERM_OPTIONS = ['7', '15', '30', '45', '60'].map((days) => ({
   label: `${days} days`,
 }))
 
-// Several cities or groups at once (P5.23: a catalogue's choice filters are multiSelect).
+// Several cities or groups at once (a catalogue's choice filters are multiSelect).
 const CUSTOMER_FILTERS: FilterDefinition[] = [
   { id: 'city', label: 'City', type: 'multiSelect', options: CITY_OPTIONS },
   { id: 'group', label: 'Group', type: 'multiSelect', options: GROUP_OPTIONS },
@@ -607,7 +606,7 @@ export function CustomerImport({ phone }: { phone: boolean }) {
             void chosen.text().then((text) => {
               const read = readImportFile(chosen.name, text)
               setReading(false)
-              // An unreadable file shows its error in words, never its content (P5.90 item 7).
+              // An unreadable file shows its error in words, never its content.
               if ('error' in read) {
                 setFile(undefined)
                 setColumns([])

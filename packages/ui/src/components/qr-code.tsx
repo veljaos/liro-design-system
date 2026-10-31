@@ -5,13 +5,13 @@ import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 
 /*
- * QrCode (P5.40): a QR code drawn from a text — an IPS payment code (`ipsQrText`), a link to a
+ * QrCode: a QR code drawn from a text — an IPS payment code (`ipsQrText`), a link to a
  * record, a pairing code. Encoded in the browser by `qr` 0.7.2 (MIT, no dependencies) and drawn as
  * one SVG path, so it is sharp at any size, in print too.
  *
  * - **Dark on light, always:** a code is read by a camera, and many readers fail on an inverted
  *   one, so the code stands on the light surface in both themes (`data-liro-theme="light"`, as
- *   PageViewer's paper), in the light theme's text colour — tokens only (D6).
+ *   PageViewer's paper), in the light theme's text colour — tokens only.
  * - **The quiet zone** (`quietZone`, default 4 modules, as the standard asks) is part of the
  *   drawing: nothing may touch the code.
  * - **Error correction** (`errorCorrection`): 'medium' by default (15% of the code may be lost).

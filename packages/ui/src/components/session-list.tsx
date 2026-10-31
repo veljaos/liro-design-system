@@ -9,13 +9,13 @@ import { instantText } from './admin-logic'
 import { StatusBadge } from './status-badge'
 
 /*
- * SessionList (BUILD-PLAN P5.6): the devices signed in to the person's account.
- * - Rows divided by lines (no cards inside the card the application puts it in, P4.9): the
+ * SessionList: the devices signed in to the person's account.
+ * - Rows divided by lines (no cards inside the card the application puts it in): the
  *   device kind's icon (Monitor, Smartphone, Tablet: it says which device), the device as the
  *   Core names it ("Chrome on Windows") in sm semibold, "This device" as a neutral badge on the
  *   current one; under it in xs text.secondary the place and the last activity ("Active now" for
  *   this device, else "Last active 06.10.2026. 09:42": the instant's own date and time through
- *   `format`, P4.9). Text from the Core (device, place, address) is shown as given.
+ *   `format`). Text from the Core (device, place, address) is shown as given.
  * - Each other device has "Sign out" (neutral, small, named with the device); while the Core
  *   works (`onRevoke` returns a promise) the button shows it and cannot be pressed again. The
  *   current device has none: signing out here is the user menu's.
@@ -135,13 +135,13 @@ export function SessionList(props: SessionListProps) {
                 <span className={cn('text-xs text-secondary', TEXT_DIRECTION)}>
                   {details.map((part, index) => (
                     <span key={index}>
-                      {/* Never two separators in a row: the dot of "Active now" is its own (P5.94). */}
+                      {/* Never two separators in a row: the dot of "Active now" is its own. */}
                       {index > 0 && !(current && index === details.length - 1) && ' · '}
                       {index > 0 && current && index === details.length - 1 && ' '}
                       {part === session.address ? (
                         <bdi dir="ltr">{part}</bdi>
                       ) : current && index === details.length - 1 ? (
-                        // P5.93: "Active now" in the success tone with a small dot.
+                        // "Active now" in the success tone with a small dot.
                         <span className="inline-flex items-center gap-1 font-medium text-status-success-fg">
                           <span
                             aria-hidden="true"

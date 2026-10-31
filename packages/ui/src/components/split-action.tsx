@@ -14,11 +14,10 @@ import { INTENTS, type Emphasis, type Family, type IconComponent, type Intent } 
 import { Tooltip } from './popover'
 
 /*
- * SplitAction (BUILD-PLAN P2.7), the previous Design System's, carried over (owner's decision,
- * 2026-09-28, docs/decisions.md "Actions"): the main button and a menu button joined into one
+ * SplitAction: the main button and a menu button joined into one
  * control. The main button's end corners are square; the menu button's start corners are square
  * and it overlaps the main button by 1px, so default-weight borders do not double. Between them a
- * 1px line in currentColor at 30% (a pseudo-element at the menu button's inline start: the owner's
+ * 1px line in currentColor at 30% (a pseudo-element at the menu button's inline start: an
  * inset box-shadow with color-mix() is not allowed by liro/no-raw-colors, and a shadow's offset
  * does not follow the direction). The menu button has the main button's family and weight, 8px
  * horizontal padding and a 16px chevron; its name is "<more options>: <main label>". The menu

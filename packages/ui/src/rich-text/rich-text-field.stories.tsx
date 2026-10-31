@@ -178,7 +178,7 @@ export const Empty: Story = {
 }
 
 /**
- * Read only (P5.93): the text as RichText in the read-only look of every field, selectable, no
+ * Read only: the text as RichText in the read-only look of every field, selectable, no
  * toolbar; an empty one shows "—".
  */
 export const ReadOnly: Story = {

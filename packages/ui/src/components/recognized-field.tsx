@@ -5,7 +5,7 @@ import { cn } from '../primitives/cn'
 import { useLiro } from '../provider/liro-provider'
 
 /*
- * RecognizedField (BUILD-PLAN P5.31): a field whose value the application read from a document
+ * RecognizedField: a field whose value the application read from a document
  * (a recognised invoice, a scanned receipt), with how sure the reading is and where it was read.
  * It wraps any field of the library: `children` renders the field and passes the note's id to
  * its `describedBy`, so the note is read with the field.
@@ -18,7 +18,7 @@ import { useLiro } from '../provider/liro-provider'
  * - "Show where it was read" (`onShowSource`): a link-styled button (text.link, a ScanSearch
  *   icon, 24px high) at the end of the line; the application highlights the region on its
  *   PageViewer. While the region is shown (`sourceShown`) the button is pressed (`aria-pressed`)
- *   and takes the neutral selection (surface.selected), never more blue (D17).
+ *   and takes the neutral selection (surface.selected), never more blue.
  */
 
 export interface RecognizedFieldProps {

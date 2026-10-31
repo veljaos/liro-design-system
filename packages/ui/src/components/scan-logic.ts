@@ -1,6 +1,6 @@
 /*
- * The logic of barcode scanning (BUILD-PLAN P5.10, P5.11), kept apart from the markup so it can
- * be unit-tested (AGENTS.md C7). A hardware scanner is a keyboard: it "types" the code in a burst,
+ * The logic of barcode scanning, kept apart from the markup so it can
+ * be unit-tested. A hardware scanner is a keyboard: it "types" the code in a burst,
  * a few milliseconds per character, and ends it with Enter. A person types more slowly (100ms or
  * more between keys). A burst of at least SCAN_MIN_LENGTH characters, each within
  * SCAN_MAX_INTERVAL of the one before, is a scan.

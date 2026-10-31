@@ -7,10 +7,10 @@ import { useLiro } from '../provider/liro-provider'
 import { linkFromInput } from './rich-text-logic'
 
 /*
- * The link dialog of RichTextField (P5.22): one address field (left to right), Apply, and Remove
+ * The link dialog of RichTextField: one address field (left to right), Apply, and Remove
  * link when the text already is one. The address is completed and checked by `linkFromInput`
  * ("liro.rs" → "https://liro.rs", "ana@firma.rs" → "mailto:…"); anything but http(s) and mailto is
- * refused with `richText.linkInvalid`. Enter applies. A dialog (D14): one action with one outcome.
+ * refused with `richText.linkInvalid`. Enter applies. A dialog: one action with one outcome.
  */
 
 export interface LinkDialogProps {

@@ -20,7 +20,7 @@ const meta = {
     docs: {
       description: {
         component: internal(
-          'A searchable list of commands on cmdk, with the Mantine Combobox look. CommandPalette (P2.6), ComboboxField (P2.2).',
+          'A searchable list of commands on cmdk, with the Mantine Combobox look. CommandPalette, ComboboxField.',
         ),
       },
     },

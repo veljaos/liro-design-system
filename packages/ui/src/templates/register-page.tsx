@@ -18,12 +18,12 @@ import { PageHeader, type PageBack } from './page-header'
 import { registerMenu } from './register-logic'
 
 /*
- * RegisterPage (BUILD-PLAN P5.20): a chronological register for a period — VAT records, the
+ * RegisterPage: a chronological register for a period — VAT records, the
  * work-injury register, the safety-training register. Its rules:
  * - **Entries are never deleted.** A correction is a new entry that refers to the one it
  *   corrects: the new one says "Corrects no. 14", the corrected one "Corrected by no. 27", both
  *   in the Correction column the page adds after the application's columns, and both the same
- *   kind of link (P5.23): it scrolls to the other entry — drawing it first in a virtualized
+ *   kind of link: it scrolls to the other entry — drawing it first in a virtualized
  *   register — and focuses its number. An entry outside the rows shown goes to `onGoToEntry`.
  *   The application offers "Correct" in a row's menu; the page offers no delete.
  * - **Locked periods** are marked where the list starts — a lock and words ("January–June 2026 is
@@ -34,13 +34,12 @@ import { registerMenu } from './register-logic'
  * - The period is chosen in the card's first row (the application's PeriodField or MonthField);
  *   export and print are the page's actions (the application's buttons, the main one last).
  * - Long registers stay responsive: `virtualize` draws only the rows in view (DataTable's 44px
- *   rows inside `maxHeight`, default 70% of the screen's height); measured with 5,000 entries
- *   (docs/decisions.md "Liro patterns (Phase 5 part 1)").
+ *   rows inside `maxHeight`, default 70% of the screen's height); measured with 5,000 entries.
  * - The table's header stays below the shell while the page scrolls (DataTable's
- *   `stickyHeader`, default true since P5.28 item 4).
+ *   `stickyHeader`, default true).
  * Layout: the page header (visible title: no module tab names a register), then ONE card (as
  * ListPage): the period row, the locks, the table to the card's edges, count and paging under it.
- * The page owns every space in the card (P5.23): the locks band meets the table's header with
+ * The page owns every space in the card: the locks band meets the table's header with
  * nothing between them, whatever the application passes; the refetch loader stands at the end of
  * the first row, never in a slot of its own between the locks and the table.
  */
@@ -125,7 +124,7 @@ export interface RegisterPageProps<Row extends RowData> {
 const NUMBER = '__number'
 const CORRECTION = '__correction'
 
-/** Link colours named for every state (P4.4), as DocumentReferences' links. */
+/** Link colours named for every state, as DocumentReferences' links. */
 const LINK =
   'inline-flex min-h-6 items-center rounded-sm font-medium whitespace-nowrap text-link no-underline visited:text-link hover:text-link hover:underline active:text-link'
 
@@ -136,7 +135,7 @@ export function RegisterPage<Row extends RowData>(props: RegisterPageProps<Row>)
   const phone = props.layout === undefined ? viewportPhone : props.layout === 'phone'
   const { entry, rows, getRowId, onGoToEntry } = props
   const table = useRef<DataTableHandle>(null)
-  // Each entry's number is an anchor the correction links go to (P5.23).
+  // Each entry's number is an anchor the correction links go to.
   const anchorBase = useId().replace(/[^a-zA-Z0-9_-]/g, '')
   const anchorOf = (number: string) => `${anchorBase}-entry-${number}`
   const shown = useMemo(() => new Set(rows.map((row) => entry(row).number)), [rows, entry])

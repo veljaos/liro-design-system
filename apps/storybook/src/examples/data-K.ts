@@ -1,12 +1,12 @@
 /*
- * Group K's example data (P5.25, floor plans), fictitious, on the examples' today, Tuesday
+ * The example data (floor plans), fictitious, on the examples' today, Tuesday
  * 6 October 2026: Bistro Dunav on the quay in Novi Sad during the evening service (19:40) — the
  * hall (Sala), the terrace (Terasa) and the bar, tables free, occupied (since when, how many) and
  * reserved (for when, how many, for whom); the takeaway and delivery orders. The states and their
- * tones are the application's map: Bistro Dunav has no "Needs cleaning" state (P5.90 item 20, a
+ * tones are the application's map: Bistro Dunav has no "Needs cleaning" state (a
  * cleared table is free at once; an application may turn one on). Amounts are whole paras
  * (BigInt): every line total, total and tax is computed here, as the application would; the
- * components add nothing (D4). The stated figures are checked in dataset-checks.ts. Not part of the
+ * components add nothing. The stated figures are checked in dataset-checks.ts. Not part of the
  * package. No classes here.
  */
 import { CalendarClock, CircleCheck, UsersRound } from 'lucide-react'
@@ -21,9 +21,9 @@ export const K_ROUTES = {
   floorMove: '/restaurant/bistro-dunav/floor?table=t5&move',
   /** Reserved table 8 (six guests): "Move to table…" open; no free table has six seats. */
   floorMoveNone: '/restaurant/bistro-dunav/floor?table=t8&move',
-  /** The takeaway orders (P5.28 item 26: a channel, not an area). */
+  /** The takeaway orders (a channel, not an area). */
   floorTakeaway: '/restaurant/bistro-dunav/floor?channel=takeaway',
-  /** The floor on one area: the terrace (P5.28 item 26). */
+  /** The floor on one area: the terrace. */
   floorTerrace: '/restaurant/bistro-dunav/floor?area=terasa',
   /** The floor plan's editor, where the "Floor plan" tab leads (not one of the examples). */
   floorEdit: '/restaurant/bistro-dunav/floor/edit',
@@ -58,7 +58,7 @@ export const BISTRO_AREAS: FloorArea[] = [
 
 /** A table's party, as the restaurant's application keeps it. */
 export interface Party {
-  /** How many guests; unknown for a table opened with one tap (P5.90 item 20). */
+  /** How many guests; unknown for a table opened with one tap. */
   size?: number
   /** Occupied since, or reserved for (HH:mm). */
   time: string
@@ -159,7 +159,7 @@ export const BISTRO_TABLES: BistroTable[] = [
 ]
 
 /**
- * What else stands on the floor: the bar counter (P5.28 item 23: no walls, doors or windows; the
+ * What else stands on the floor: the bar counter (no walls, doors or windows; the
  * areas are the hall, the terrace and the bar).
  */
 export const BISTRO_FIXTURES: FloorItem[] = [
@@ -189,7 +189,7 @@ function partyText(first: string, second: string): string {
 /**
  * The tables as the plan draws them: the state's words come from the map; the detail (the list and
  * the name) says since when and how many (occupied) or for when and how many (reserved); the plan
- * writes only the guests under the number (P5.28 item 24: the time is in the list and the panel).
+ * writes only the guests under the number (the time is in the list and the panel).
  */
 export function bistroItems(
   tables: readonly BistroTable[],
@@ -248,7 +248,7 @@ export function moveTargets(tables: readonly BistroTable[], from: BistroTable): 
 }
 
 /**
- * Orders that are not at a table (P5.28 item 26): takeaway and delivery are the till's order
+ * Orders that are not at a table: takeaway and delivery are the till's order
  * channels beside dine-in, never areas of the floor plan.
  */
 export interface ChannelOrder {

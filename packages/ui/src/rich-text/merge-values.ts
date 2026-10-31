@@ -4,17 +4,17 @@ import type { RichTextMergeField } from './rich-text'
 import type { RichTextNode } from './rich-text-logic'
 
 /*
- * Merge values (P5.31, the owner's request): a text with merge fields — a saved reply, an e-mail
+ * Merge values: a text with merge fields — a saved reply, an e-mail
  * template, a notification — shown or inserted with the values filled in. "Dear {{name}}, thank
  * you for calling. On {{incident_date}} … we start on {{date_now}}."
  *
  * - **The values are the application's** (`MergeValues`, keyed by the field's key): plain text,
  *   or a typed value — a date (YYYY-MM-DD), an instant, a number or an amount (decimal strings) —
  *   written through the provider's `format`, so a date reads "14.10.2026." in Serbian digits and
- *   an amount keeps every decimal (D4). A field's `kind` says how a plain string is written.
+ *   an amount keeps every decimal. A field's `kind` says how a plain string is written.
  * - **Computed fields** need no value: a field with `computed: 'today'` is the provider's `today`
  *   (moved by `offsetDays`, "in 7 days"), `computed: 'now'` the application's `now` (the date and
- *   time, or the time with `kind: 'time'`) — never the device's clock (D25). The keys are the
+ *   time, or the time with `kind: 'time'`) — never the device's clock. The keys are the
  *   application's ("date_now", "today"); only the meaning is built in.
  * - **A field without a value stays a field**, drawn as a pill marked "No value" (dashed, warning
  *   tone, the words read), so the user sees what is left to fill in; nothing is replaced by an
