@@ -1,0 +1,24 @@
+{
+  "name": "liro-perf",
+  "version": "0.0.0",
+  "private": true,
+  "license": "UNLICENSED",
+  "description": "The performance budget: the list and document example screens built for production; `pnpm perf` measures their JavaScript and CSS against budget.json.",
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "perf": "vite build && node measure.mjs"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "4.3.3",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@veljaos/tokens": "workspace:*",
+    "@vitejs/plugin-react": "6.1.1",
+    "lucide-react": "1.48.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "tailwindcss": "4.3.3",
+    "vite": "8.3.0"
+  }
+}
