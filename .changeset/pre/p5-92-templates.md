@@ -4,7 +4,7 @@
 
 P5.92: the page templates consolidated to the core (about eighteen). **Breaking (alpha):** these
 templates and their exports are removed; compose the page from the core templates and the
-components as `docs/recipes.md` ("Pages composed from the core templates") describes:
+components as the recipes in `docs/floorplans.md` describe:
 
 - `LegalActPage` → `DocumentPage` with `LegalText`, `LegalContents`, `useLegalPanels`.
 - `LegalSearchPage` (`LegalSearchResult`, `LegalSnippet`, `snippetText`, `gazetteNumbers`) →

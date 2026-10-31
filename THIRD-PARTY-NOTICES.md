@@ -85,7 +85,7 @@ notices; they are not listed here.
 
 ## Planned
 
-Entries are added, with their notices, in the step that brings them in (BUILD-PLAN section 3). Nothing is planned now (Recharts arrived in P4.6).
+Entries are added, with their notices, in the pull request that brings the code in.
 
 ## Trademarks
 

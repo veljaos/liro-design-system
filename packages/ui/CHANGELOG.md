@@ -164,7 +164,7 @@ The detailed entries follow under "Minor Changes" and "Patch Changes". In short:
 - 55bd3bd: P5.90, the owner's review applied to the floorplans: one sticky header band per table in pure CSS (glued at any speed, no seams); the line editor flush in its card, one focus style, optional columns, rebuilt on phones as one card per line; TimeField and FormTimeField; CatalogPicker; Questionnaire number keys; CoursePage's collapsible outline; ResourceSchedule's phone lists; the "now" line under the content; no nested scroll boxes on phones; module tabs that show they scroll; long text that wraps; empty states with room; a quieter reveal dialog; helper text under the input; toasts that never block. Breaking: PosShell `productsOpen` / `defaultProductsOpen` / `onProductsOpenChange` became `orderOpen` / `defaultOrderOpen` / `onOrderOpenChange`, with `orderSummary` (see P5.91 for the migration).
 - 34c85bb: P5.92: the page templates consolidated to the core (about eighteen). **Breaking (alpha):** these
   templates and their exports are removed; compose the page from the core templates and the
-  components as `docs/recipes.md` ("Pages composed from the core templates") describes:
+  components as the recipes in `docs/floorplans.md` describe:
 
   - `LegalActPage` → `DocumentPage` with `LegalText`, `LegalContents`, `useLegalPanels`.
   - `LegalSearchPage` (`LegalSearchResult`, `LegalSnippet`, `snippetText`, `gazetteNumbers`) →
