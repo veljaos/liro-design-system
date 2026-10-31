@@ -1,4 +1,4 @@
-// Every component with text has an Arabic and a Japanese story (C4): each story file under
+// Every component with text has an Arabic and a Japanese story: each story file under
 // Components/, Templates/ or Charts/ names a story "Arabic…" and one "Japanese…", except the
 // files listed in WITHOUT_SAMPLES. `pnpm test` runs it (scripts/sample-text-stories.test.mjs).
 import { execFileSync } from 'node:child_process'
