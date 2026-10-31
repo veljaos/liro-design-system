@@ -85,7 +85,7 @@ notices; they are not listed here.
 
 ## Planned
 
-Entries are added, with their notices, in the step that brings them in (BUILD-PLAN section 3). Nothing is planned now (Recharts arrived in P4.6).
+Entries are added, with their notices, in the pull request that brings the code in.
 
 ## Trademarks
 
@@ -551,7 +551,7 @@ SOFTWARE.
 
 ### Recharts and its dependencies
 
-Recharts 3.10.1 and the packages it brings at runtime, each with its own notice: recharts 3.10.1, @reduxjs/toolkit 2.13.0, @standard-schema/spec 1.1.0, @standard-schema/utils 0.3.0, immer 11.1.21, redux 5.0.1, redux-thunk 3.1.0, reselect 5.2.0, clsx 2.1.1, decimal.js-light 2.5.1, es-toolkit 1.52.0, eventemitter3 5.0.4, react-redux 9.3.0, use-sync-external-store 1.7.0, tiny-invariant 1.3.3, d3-array 3.2.4, internmap 2.0.3, d3-ease 3.0.1, d3-interpolate 3.0.1, d3-color 3.1.0, d3-scale 4.0.2, d3-format 3.1.2, d3-time 3.1.0, d3-time-format 4.1.0, d3-shape 3.2.0, d3-path 3.1.0, d3-timer 3.0.1. victory-vendor 37.3.6 (MIT AND ISC) ships no licence file; its code is the d3 modules above, whose notices follow (it declares MIT for its own part). The @types/* packages it depends on carry type declarations only (MIT) and are not part of any bundle.
+Recharts 3.10.1 and the packages it brings at runtime, each with its own notice: recharts 3.10.1, @reduxjs/toolkit 2.13.0, @standard-schema/spec 1.1.0, @standard-schema/utils 0.3.0, immer 11.1.21, redux 5.0.1, redux-thunk 3.1.0, reselect 5.2.0, clsx 2.1.1, decimal.js-light 2.5.1, es-toolkit 1.52.0, eventemitter3 5.0.4, react-redux 9.3.0, use-sync-external-store 1.7.0, tiny-invariant 1.3.3, d3-array 3.2.4, internmap 2.0.3, d3-ease 3.0.1, d3-interpolate 3.0.1, d3-color 3.1.0, d3-scale 4.0.2, d3-format 3.1.2, d3-time 3.1.0, d3-time-format 4.1.0, d3-shape 3.2.0, d3-path 3.1.0, d3-timer 3.0.1. victory-vendor 37.3.6 (MIT AND ISC) ships no licence file; its code is the d3 modules above, whose notices follow (it declares MIT for its own part). The @types/\* packages it depends on carry type declarations only (MIT) and are not part of any bundle.
 
 #### recharts 3.10.1 (MIT)
 

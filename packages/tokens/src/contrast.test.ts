@@ -31,8 +31,8 @@ describe('contrast is measured', () => {
   })
 })
 
-describe('families equal Appendix A.6', () => {
-  const plan = readFileSync(new URL('../../../BUILD-PLAN.md', import.meta.url), 'utf8')
+describe('families equal the reference (A.6)', () => {
+  const plan = readFileSync(new URL('look-reference.md', import.meta.url), 'utf8')
   const start = plan.indexOf('### A.6')
   const table = plan
     .slice(start, plan.indexOf('Gray and orange use shade 7', start))
